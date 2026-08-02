@@ -1,0 +1,137 @@
+{
+  "slug": "diesel",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 25.92,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 70
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 56.7,
+          "durationSec": 10,
+          "maxStacks": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 700
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "instantReload",
+          "fraction": 0.8662
+        },
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 30,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 299.66,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 100.05,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "targetStatus",
+          "name": "Attract",
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates when attacked in Attract status. Affects self. Recovers 12.96% of the skill user's final Max HP as HP. — v1 models no incoming boss damage and TriggerDef has no 'attacked' kind, so the trigger can never fire; no on-recovery consumer in Diesel's own kit (a teammate 'recovery' trigger WOULD be missed if this were ever modelable).",
+      "Activates after landing 150 normal attack(s) in Attract status. Affects self. Stack count of buffs ▲ 1. — no engine primitive raises a buff's maxStacks at runtime (would be Strawberry Candy 10 → 11); also Attract-status gating on the SELF side has no representation."
+    ],
+    "skill2": [],
+    "burst": [
+      "Attract: Taunt all enemies for 10 sec. — the taunt/aggro itself is inert (the sim has no enemy targeting or incoming damage); only the 10s named status is recorded, via targetStatus 'Attract'."
+    ]
+  },
+  "caveats": [
+    "⚑ MG cadence: every hit-count threshold here (70 / 700) converts to wall-clock only through effective rounds/sec, and rate_of_fire is a known-unreliable datamine field — the whole S2 economy shifts with it.",
+    "⚑ Strawberry Candy steady state: modeled as a plain maxStacks:10 stacking buff with a per-application 10s life. The kit does not state whether a new stack REFRESHES the older stacks' duration; if it does not, the cap is unreachable at any plausible MG cadence and the effective ammo lift is ~2-3 stacks, not 10.",
+    "⚑ The S2 ally payoff trigger is a PROXY. The kit condition is 'reaches max stacks of Strawberry Candy … activates after stacks are removed'; the engine has no max-stack trigger and no stack-removal trigger, so this is authored as hitCount:700 (10 × 70). It omits (a) the removal delay of up to 10s between reaching the cap and the payoff, and (b) the requirement that all 10 stacks be simultaneously live. If the real condition is unreachable in a 180s fight, this block over-credits an ally instantReload + Pierce window per 700 rounds.",
+    "⚑ Stack sawtooth: if reaching max CONSUMES the stacks, the maxAmmoPct buff should collapse to 0 at the payoff and rebuild; the model instead lets stacks lapse on their own timers, so ammo capacity is over-credited immediately after each proc.",
+    "S1 DEF ▲ 25.92% and burst Max HP ▲ 100.05% are offensively inert at this scope (defPct is inert in v1; ally-granted / self Max HP only matters via an atkOfMaxHpPct conversion Diesel does not have). Kept for kit completeness and for future consumers.",
+    "⚑ Attract is modeled as an ENEMY-side named status (the burst line taunts enemies), but S1 reads 'in Attract status' as a property of the skill user. Both S1 Attract-gated lines are unmodeled anyway, so no gate consumes it today; the placement is a documentation choice, not a measured one.",
+    "Burst damage: 'Affects 5 enemy unit(s) with the highest final ATK' resolves to a single hit against the partless solo boss. No core (the text does not say core strike). noFb NOT set (default OFF, measured-only); burstSnapshotsPreFb NOT set — the pre-FB resolution of burst-cast damage is treated as engine-wide behaviour, not a per-unit flag.",
+    "hasPierce NOT set: Diesel's own attacks are never stated to be Pierce-tagged — she GRANTS Pierce Damage ▲, which only pays out on allies (or herself) that already carry a pierce tag."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Diesel: MG / Wind / Defender / Burst II, 300 ammo, hitsPerShot 1, burst cd 20s. Her damage surface is almost entirely weapon-state + team support, not personal multipliers. (a) S2 'Strawberry Candy' — maxAmmoPct 56.7 per stack, up to 10, 10s, on a 70-landed-hit trigger: a weapon-state modifier and therefore damage (longer magazines = fewer reload gaps = more rounds fired), never skippable. (b) S2 payoff — ALL allies get instantReload 86.62% of magazine plus Pierce Damage ▲ 30% for 10s; the reload is a direct uptime gain for the whole team and the pierce feeds the Damage-Up bucket for any pierce-tagged ally, so this is the block that actually moves a comp. Its trigger is a hitCount:700 PROXY for 'reaches max stacks … after stacks are removed' (see caveats). (c) S1 gives a self DEF window on Full-Burst entry; kept though inert. (d) Burst is one 299.66%-of-final-ATK flat hit on the boss, a self Max HP ▲ 100.05% window, and Attract recorded as a 10s enemy-side named status — the taunt has no engine consequence because boss targeting and incoming damage are unmodeled. Two S1 lines are deliberately unmodeled: the on-being-attacked self-heal (no incoming-damage model, no 'attacked' trigger kind) and 'Stack count of buffs ▲ 1' (no runtime stack-cap primitive). Every unmodeled row appears verbatim in the `unmodeled` field."
+}

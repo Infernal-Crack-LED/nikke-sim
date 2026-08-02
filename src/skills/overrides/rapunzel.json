@@ -1,0 +1,77 @@
+{
+  "slug": "rapunzel",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 3
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 15
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 8.19,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": ["Incoming healing ▲ 13.65% for 15 sec."],
+    "burst": [
+      "■ Affects 1 incapacitated ally unit(s) with the highest final ATK.\nResurrect with 81.67% HP.",
+      "■ Activates when HP falls below 30%. Affects all enemies.\nStun for 1 sec."
+    ]
+  },
+  "caveats": [
+    "Heal MAGNITUDES (skill1 4.03% / burst 40.83% of the skill user's final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with NO HP amount, and v1 has no HP pool. Both lines are implemented for their TANDEM value only — they fire allies' 'recovery' triggers (Crown-type 'when recovery takes effect' consumers).",
+    "⚑ skill1 trigger read as shotFired: RL is a charge weapon, so every trigger pull is a full charge (helm/liberalio precedent — 'SR = one full charge per pull'); the kit's 'when performing a Full Charge attack' therefore fires once per shot. The unit spec pins that every rapunzel shot is charged. Verify against a rapunzel focus video that the heal lands once per charged shot.",
+    "skill1 target 'alliesLowestHp' count:3 resolves to the leftmost 3 allies — v1 has no HP pool, so 'lowest HP percentage' is indeterminate and uses the documented deterministic stand-in. The heal is event-only (no amount), so the stand-in only affects WHICH 3 allies receive recovery events; it moves no damage.",
+    "skill2 Max HP ▲8.19% is modeled as targetMaxHpPct (the target's OWN-% basis) on the 2 highest-final-ATK allies, converted by the engine to a per-target maxHpFlat grant. Offensively INERT: it lands on teammates (casterIdx≠self) so it does NOT feed their atkOfMaxHpPct conversion (e3 video rule), and v1 has no HP pool for the Max HP to matter. Kit-SSOT completeness only — proven inert in the unit spec (removing it changes no damage).",
+    "⚑ skill2 trigger 'interval' sec:15 is a CONVENTION: the skill has a 15s cooldown and no visible activation clause, so it is modeled as an auto-cast that re-fires every 15s (first at t=15), keeping the 15s buff essentially permanent. Inert regardless (the Max HP grant moves no damage).",
+    "⚑ burst RESURRECT (1 incapacitated highest-final-ATK ally at 81.67% HP) is UNMODELED — there is no resurrection / death / HP-pool primitive in a DPS sim where nobody dies on the partless boss. META-DEFINING for real play (Rapunzel's signature raid value) but offensively inert here; estimate of board impact: none on damage, the entire reason she is fielded is unmodeled. Recipe: needs an HP-pool + death/revive model before it can be enacted; tier meta-defining.",
+    "⚑ burst enemy STUN (all enemies 1s when an ally falls below 30% HP) is UNMODELED — there is no HP pool to gate the 'below 30%' threshold and no enemy-action model for the stun to interrupt (the boss deals no damage and its actions don't gate ally DPS). Status-gate + inert in a DPS sim.",
+    "Zero damage lines and zero weapon-state modifiers in the whole kit — this unit cannot move its OWN damage. Her entire board footprint is cross-unit: recovery events on two channels (skill1 per full charge, burst per cast) plus an inert Max HP buff. Damage-neutral by construction; the unit spec proves byte-identity to the bare weapon whenever no ally consumes her recovery events."
+  ],
+  "note": "PURE SUSTAIN KIT (the BASE Rapunzel, slug `rapunzel` — RL/Iron/Supporter/Burst I, ammo 6, chargeFrames 60; distinct from rapunzel-pure-grace/rpg). Every line is heal / Max HP / incoming-healing / resurrect / CC: NO damage effect, NO DoT, NO weapon swap, NO ammo/reload/fire-rate modifier, NO gauge line. MODELED TODAY: (1) skill1 team heal on every full charge — trigger shotFired (RL = one full charge per pull, helm/liberalio precedent), target alliesLowestHp count:3 (leftmost-3 stand-in, no HP pool), heal ticks:1; present solely to fire teammates' 'recovery' triggers (magnitude 4.03% of caster final Max HP is NOT modeled — no HP pool). (2) skill2 Max HP ▲8.19% for 15s on the 2 highest-final-ATK allies — trigger interval sec:15 (the skill's 15s cooldown, no visible activation clause), target alliesTopAtk count:2 byFinalAtk, as targetMaxHpPct (engine converts to per-target maxHpFlat); offensively INERT (e3 rule: ally-granted Max HP does not feed a teammate's atkOfMaxHpPct; no HP pool). (3) burst team heal on this unit's own burst cast — trigger burstCast, target allies (self included), heal ticks:1; again tandem-only (magnitude 40.83% of caster final Max HP NOT modeled). DELIBERATELY UNMODELED (verbatim in `unmodeled`): skill2 'Incoming healing ▲13.65%' (no incoming-healing StatKey and no HP pool for it to amplify); burst RESURRECT at 81.67% HP (no resurrection/death/HP-pool primitive — ⚑ meta-defining for real play, inert in a DPS sim); burst enemy STUN 1s gated on an ally falling below 30% HP (no HP pool to gate, no enemy-action model — ⚑ status-gate, inert). EVIDENCE TIER: all three modeled values are kit-text-literal (8.19% / 15s); the only conventions are the skill2 interval cadence and the alliesLowestHp leftmost stand-in, both inert. The two heal magnitudes and the three unmodeled lines are measurement-gated on whether the sim ever models an HP pool, an incoming-healing multiplier, or a death/revive model. FAITHFULNESS CORE: damage-neutrality — with this override she sims byte-identical to the bare weapon whenever no ally consumes her recovery events (proven in scripts/tests/units/rapunzel.test.ts group N); in a Crown-type consumer team her recovery channels move the TEAM via the consumer, which is her only legitimate board footprint. Kit-autonomy gauntlet 2026-08-01."
+}

@@ -1,0 +1,136 @@
+{
+  "slug": "avistar",
+  "kitDescription": "Avistar is an Electric MG Supporter whose Burst I does two things: it re-opens Burst Stage 1 so a second Burst-I ally can also cast inside the same chain, and it puts her into a 'Stargazer' state (raising her own Max HP) that lasts until that Full Burst ends. On entering Full Burst while Stargazer is active, she sacrifices 20% of her current HP and grants her 'favorite pop star' — a single designated ally — a permanent 40.13% Attack Damage and 40.13% Projectile Explosion Damage boost. When each Full Burst ends, she gives that same ally a large ATK buff scaled off her own attack (80.26%) that is stripped the moment the next Full Burst begins, and heals herself in ten one-second ticks. Her personal MG damage is minor; her real value is funneling buffs into one carry and enabling double-Burst-I rotations.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S1 ATK value/recipient assertions (3): crown also emits casterAtkPct in the fixture, confounding the value and recipient-set reads (probe: avistar's own grant = 80046.51 = 0.8026 × 99734 on helm only) — mechanical artifact, adapted GREEN",
+      "CF1 inertness self-contamination: the blind all-allies counterfactual includes the caster, so the avistar-self inertness assertion failed on fixture mechanics, not faithfulness",
+      "Heal recovery-event assertions (2): the engine does not log recovery events — unobservable by design, not a divergence (adapted suite skips/pins documentation instead)",
+      "Reentry fixture assertion (1): the blind fixture had liter leading stage 1, so the re-entry shape read was a fixture artifact",
+      "expiresFrame null-vs-undefined (2): event-shape mismatch, not a duration-semantics divergence"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Aftershow: ATK ▲ 80.26% of user's ATK",
+        "category": "DOCUMENTED_GAP",
+        "subkind": "ENGINE",
+        "driverSaid": "casterAtkPct 80.26 on fullBurstEnd, alliesTopAtk count:1, modeled PERMANENT; the 'removed when entering Full Burst' clause is unenactable (no expire-on-FB-entry hook; fbGate is application-only) — disclosed as ⚑1 with a measured bound (total Aftershow contribution ~30% of carry; FB-window leak est. ~8-14% of carry) and a recipe (engine hook / icon-uptime calibration)",
+        "blindSaid": "S6: same stat/trigger/target but durationSec:10 calibration for the anti-window; S2b: flagged the anti-window as the kit's highest-value test; S5: pinned out-of-FB-only application timing",
+        "formulaCheck": "Routing is correct per SSOT §1a/§11: casterAtkPct resolves as a FLAT add of the caster's static (base) ATK outside the recipient's (1+ATK%) — driver test pins flat ≈ 0.8026 × Avistar's Supporter ATK and the atkPct counterfactual moves the carry differently. Only the duration semantics diverge from prose.",
+        "fireRateOk": true,
+        "explanation": "The buff itself is faithfully encoded (stat, caster basis, single-ally target, FB-end trigger — corroborated by both blind agents). The removal clause is a genuine engine-capability gap, extensively documented with a measured magnitude bound and an enactment recipe; the driver's permanent+disclose is the honest upper bound, while S6's durationSec:10 is an unmeasured fabrication (the out-FB gap is comp-dependent: ~10s on a 20s rotation, ~30s on a 40s rotation) that non-negotiable #2 prohibits. Carried as gotcha #1."
+      },
+      {
+        "kitLine": "Recovers 3.52% Max HP /1s ×10",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "heal ticks:10 intervalSec:1 on fullBurstEnd, self; recovery events emitted, HP amount not modeled (no HP pool); probe: self-targeted so it does NOT feed Crown's recovery trigger (616=616 with/without)",
+        "blindSaid": "S2b/S6: identical encoding (ticks:10, 1s); S2b's tandem concern (starving Crown if dropped) empirically ruled out; S5 asserted logged recovery events — engine doesn't log them (artifact)",
+        "formulaCheck": "Matches engine recovery-event design (SSOT: no HP pool; heals emit recovery events only). Self-target scoping correct per prose 'Affects self.'",
+        "fireRateOk": true,
+        "explanation": "Correct trigger, cadence (10 ticks @1s per FB end), and target. The unmodeled 3.52% amount is the engine-standard heal treatment, documented. No finding."
+      },
+      {
+        "kitLine": "Removes Stargazer.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Encoded behaviorally as ownBurstGate:'cast' on the skill2 blocks: Stargazer exists at an FB entry iff Avistar cast her burst that rotation (opened by own burst, removed at FB end) — the gate IS the removal clause's enactment; targetStatus can't carry it (boss-only channel)",
+        "blindSaid": "S2b independently recommended ownBurstGate:'cast' as the faithful encoding (adopted); S6 independently re-derived it and listed 'Removes Stargazer.' in unmodeled.skill1",
+        "formulaCheck": "Equivalence is exact given S1 removes the status at every FB end — a Stargazer instance can never survive a Full Burst, so 'cast this rotation' ⇔ 'in Stargazer at FB entry'. Driver's CD-bump test forces non-cast rotations and proves the gate bites (gated fires == her cast count; ungated over-fires).",
+        "fireRateOk": true,
+        "explanation": "Three independent derivations of the same encoding, with a discriminating pin. Not listing the line verbatim in unmodeled.skill1 (as S6 did) is acceptable because the driver enacts it via the gate and documents the lifecycle in the note."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Current HP ▼ 20%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim in unmodeled.skill2 with reason (no HP pool; the >25% HP gate is always-true and offensively inert in v1)",
+        "blindSaid": "S2b, S5, S6 all agree: unmodeled, inert, must not gate skill2b",
+        "formulaCheck": "No damage primitive exists for a self HP cost and no kit scaler consumes Current HP — inertness confirmed by all parties.",
+        "fireRateOk": true,
+        "explanation": "Correctly documented skip; the blind S5 skip-marker matches. No finding."
+      },
+      {
+        "kitLine": "Projectile Explosion Damage ▲ 40.13%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "projectileExplosionPct 40.13 on fullBurstEnter + ownBurstGate:'cast', alliesTopAtk count:1, no durationSec ('continuously' = permanent, overwrite-refresh per qualifying entry); applied-but-inert on a non-explosive carry",
+        "blindSaid": "S6: structurally identical; S2b: same disposition with bucket-scoping inertness proof requested and delivered",
+        "formulaCheck": "Bucket routing per SSOT §1e/1f is engine-handled (DamageUp for RL normals, Projectile bucket for explosion-flavored hits); the stat only yields on explosive-weapon carriers — correct behavior, not a gap.",
+        "fireRateOk": true,
+        "explanation": "Stat, magnitude, trigger, gate, target cardinality, and permanence all match prose and both blind derivations. S5 pinned value + single-recipient + FB-entry timing GREEN (post-adaptation)."
+      },
+      {
+        "kitLine": "Attack Damage ▲40.13% continuously",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "attackDamagePct 40.13, same block/gate/target as above; driver test proves the bucket is live (noS2 counterfactual drops the carry's total) and the all-allies misread reaches 4 targets",
+        "blindSaid": "S6: identical; S2b: same; S5: same with CF4 load-bearing proof",
+        "formulaCheck": "attackDamagePct is additive inside DamageUp per SSOT §1e — correct bucket; refresh-per-entry with same-(caster,slot,stat,value) overwrite means no stacking per §11.",
+        "fireRateOk": true,
+        "explanation": "Fully corroborated. The continuous/permanent reading is shared by all three agents and matches the literal text."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Re-enters Burst Stage 1.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "reenterStage stage:1 on burstCast, target allies; FIX_B pins liter casting exactly one STAGE_CAST_GAP (30f) after Avistar in chain 1, and the noReenter counterfactual denies liter the chain-1 window",
+        "blindSaid": "S2b/S6: identical encoding; S5's rotation-shape assertion failed only on a fixture artifact (liter led stage 1 in the blind fixture)",
+        "formulaCheck": "Matches the engine's stage-hold re-entry mechanic (Tia/Anis:Star precedent); no extra stages, no FB-window duplication.",
+        "fireRateOk": true,
+        "explanation": "Rotation-load-bearing line correctly encoded and discriminatingly pinned. Live only with a second B1 — the real-kit no-op case, documented."
+      },
+      {
+        "kitLine": "Stargazer: Max HP ▲26.4% continuously",
+        "category": "DOCUMENTED_GAP",
+        "subkind": "FIDELITY",
+        "driverSaid": "casterMaxHpPct 26.4 self, permanent (expiresFrame null); note documents that the S1 removal bounds the real Stargazer lifecycle (cast→FB-end) but the buff is offensively inert (no HP pool, no atkOfMaxHpPct consumer), so permanence moves zero damage",
+        "blindSaid": "S5 asserted expiresFrame null as CORRECT ('continuously' ⇒ no durationSec); S2b expected expiry aligned to the following fullBurstEnd — a cross-family disagreement on a zero-damage line; S6 also modeled permanent with the lifecycle caveat",
+        "formulaCheck": "Offensive inertness proven by the driver's noStargazer run (byte-identical totals); per SSOT §1a only an atkOfMaxHpPct converter would consume Max HP and Avistar has none.",
+        "fireRateOk": true,
+        "explanation": "Prose bounds the buff at FB end via 'Removes Stargazer'; the permanent model is a documented, zero-impact fidelity gap. Low severity; an expire-on-FB-entry hook (the ⚑1 fix) would close this for free."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENGINE",
+      "slot": "skill1",
+      "summary": "Aftershow 'removed when entering Full Burst' is unenacted — the casterAtkPct 80.26 flat ATK persists through Full Burst windows, over-crediting the carry's FB damage (est. ~8-14% of carry damage; total Aftershow contribution measured ~30% via permanent-vs-removed A/B)",
+      "evidence": "Kit: 'This effect is removed when entering Full Burst' (skill1 block 1). Engine: buffs expire only by expiresFrame; fbGate gates application at trigger time only — no expire-on-FB-entry hook exists. Driver: permanent grant + ⚑1 disclosure with measured bound and recipe. Blind S6: durationSec:10 calibration (an unmeasured fudge — the out-FB gap is comp-dependent). S2b: named this the kit's highest-value risk.",
+      "documentedByDriver": true,
+      "severity": "high",
+      "suggestedFix": "Faithful representation: an engine expire-on-FB-entry hook (a buff flag pruned at fullBurstStart), which also closes the Stargazer Max-HP lifecycle — a real, owner-greenlit engine increment. Calibration arm: focus-video read of the Aftershow icon's uptime on the carry (expected out-of-FB-only) to size a window approximation. NOT a fixed durationSec — that fabricates a comp-dependent gap."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1+skill2",
+      "summary": "'Her favorite pop star' is resolved as alliesTopAtk count:1 — a proxy for a kit-defined single-ally designator with no mechanical selector in the prose; every agent (driver, S2b, S5, S6) independently assumed the same proxy, so the agreement proves stability, not correctness",
+      "evidence": "Kit: 'Affects her favorite pop star.' (skill1/skill2 headers) — not 'highest ATK', not positional, not typed. Driver: alliesTopAtk count:1 (static base-ATK ranking, chime 'the king' precedent, excludeSelf off — never self in practice). S6: same proxy + excludeSelf:true, flagged ⛑ as the file's highest-magnitude uncertainty. S5: ⚑-flagged the designator as unresolvable blind.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Needs measurement: in a real fight, read which ally carries the Aftershow/Afterglow buff icons (fixed pre-battle designation vs dynamic highest-ATK; whether it can be Avistar herself; behavior when the designated ally is absent). If the real rule is a named/fixed designation, add a named-target or slot-index TargetDef rather than the ATK-ranking proxy."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "Stargazer Max HP grant modeled permanent though the S1 removal clause bounds it at FB end — zero damage impact (inert stat), documented in the driver note",
+      "evidence": "Kit: 'Stargazer: Max HP ▲ 26.4% ... continuously' + skill1 'Removes Stargazer.' Driver: casterMaxHpPct 26.4 permanent, lifecycle documented; noStargazer A/B byte-identical totals. S2b expected FB-end expiry; S5/S6 modeled permanent.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Faithful representation: the same expire-on-FB-entry hook from gotcha #1 applied to this grant. No measurement needed — the magnitude and inertness are already pinned."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0 (8/8 kit lines FAITHFUL or DOCUMENTED_GAP; every divergence documented with a measured bound or an inertness proof)",
+  "verdict": "GO",
+  "verdictRationale": "All three gotchas are real but documented; ranked: (1) the Aftershow FB-window leak (ENGINE, high, ~8-14% carry over-credit) is the only material one — the driver measured its bound, disclosed it, and correctly rejected S6's durationSec:10 as an unmeasured fabrication of a comp-dependent gap, which is exactly what MEASURED>FUDGE requires; the fix is a real engine increment (expire-on-FB-entry hook), recommended as a prioritized follow-up but not a blocker since the current encoding is the transparent upper bound. (2) The 'favorite pop star' = alliesTopAtk proxy is the key SAME-MODEL residual: driver, S2b, S5, and S6 all independently chose the identical stand-in, so their agreement is stability, not evidence — the owner should spot-check the real targeting rule (and the ~8-14% leak estimate) against footage. (3) The permanent Stargazer Max-HP grant is inert and documented. The blind re-derivations converged strongly where it matters: S6 is a structural match on every load-bearing line and independently re-derived ownBurstGate:'cast'; S2b's dispositions were all adopted and its two concerns (Crown heal-feed, Aftershow removal) were resolved empirically and by disclosure respectively; S5's raw RED is fully accounted for as probe-confirmed test-harness artifacts (crown's casterAtkPct confound, unlogged recovery events, fixture shape, null-vs-undefined), with the mechanically-adapted suite 23/2 GREEN. Discrimination is sound — the CD-bump gate pin, the reenter counterfactual, and the atkPct/all-allies counterfactuals each fail under their nearest-wrong model. What must change for a cleaner GO later: the expire-on-FB-entry engine hook (closes gotchas 1 and 3) and a measured targeting rule for the pop-star designator.",
+  "model": "kimi-code/k3"
+}

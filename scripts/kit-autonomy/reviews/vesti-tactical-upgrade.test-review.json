@@ -1,0 +1,42 @@
+{
+  "slug": "vesti-tactical-upgrade",
+  "stage": "S2c-reconciliation",
+  "reviewerModel": "claude-fable-5",
+  "leakDetected": null,
+  "verdict": "GO (same-model only)",
+  "converged": [
+    "skill1 Charge Speed ▲100% = chargeSpeedPct 100, durationShots 3, removeOnReload (FAITHFUL; reviewer + driver agree round-count not seconds, reload-strip not lastBullet-dispel)",
+    "skill1 Charge Damage ▲58.5% = chargeDamagePct 58.5, durationShots 3 (FAITHFUL; charge bucket, additive ppt)",
+    "skill1 Removes Missile Guide on reload-to-max = removeOnReload:true (FAITHFUL; buffRemove cause 'reload')",
+    "skill2 266.6% true rider = flatDamage 266.6 flavor 'true', once per full charge, crit-eligible/noRange (FAITHFUL; true flavor couples the burst trueDamagePct 60 to the rider — verified rider total 403M with buff vs 319M without)",
+    "skill2 Explosive Round gate = requiresTargetStatus 'Explosive Round' projectileExplosionPct 20, INERT in control comp (FAITHFUL; reviewer + driver agree exact inertness, name-keyed)",
+    "burst True Damage ▲60% = trueDamagePct 60 on burstCast NOT fullBurstEnter (FAITHFUL; count == vesti burstCast count, not FB count)",
+    "burst 492.3% true nuke = flatDamage 492.3 flavor 'true' on burstCast, pre-FB (fbMajorApplied false, inFullBurst false) (FAITHFUL)",
+    "burst Explosion Radius ▲100% UNMODELED inert vs partless boss (FAITHFUL; verbatim in unmodeled.burst)"
+  ],
+  "reconciled": [
+    {
+      "line": "skill2 'Battle Formation' ATK ▲20% gate",
+      "driver": "fbGate:'inFb' (Battle Formation == Full Burst state)",
+      "reviewer": "GAP/inert — a never-granted cross-unit self-status with no engine primitive; belongs in unmodeled",
+      "resolution": "HELD driver fbGate:'inFb' as primary reading. Evidence: 'Battle Formation' is referenced by NO granter anywhere in the roster (a unit-granted status appears in its granter's kit text, as 'Explosive Round' does in eunhwa-tu); a global game state needs no granter. The engine has fbGate:'inFb' purpose-built for 'while in Full Burst'. Reviewer's inert reading is retained as a measurement-gated alternative (⚑6). Test V4 pins the fbGate behaviour (every ATK ▲20% application lands inside an FB window; ungated counterfactual produces out-of-FB applications)."
+    },
+    {
+      "line": "skill1 'while not in Missile Guide' re-trigger gate",
+      "driver": "originally documented as 'no damage impact' (shotFired refresh)",
+      "reviewer": "nearest-wrong = ungated permanent uptime erases the periodic full-120f charge and inflates shot count",
+      "resolution": "REVIEWER ADOPTED. Driver's 'no damage impact' caveat was WRONG and is corrected: shotFired refreshes the durationShots:3 window every full charge → near-permanent Missile Guide uptime, whereas the true kit lapses MG after 3 rounds and re-grants only on the next un-buffed (120f) charge — a duty cycle the encoding over-credits. The engine has no 'not-currently-buffed' self-gate primitive, so the gate is unexpressible; the durationShots:3 + removeOnReload STRUCTURE is faithful, only the uptime is inflated. Elevated to ⚑5 with estimate (~1-in-4 charges slow) + recipe (focus-video the slow-charge recurrence). NOT fudged to an averaged chargeSpeed (measured>fudge)."
+    },
+    {
+      "line": "burst nuke same-cast True Damage coupling",
+      "driver": "buff block precedes nuke block at burstCast",
+      "reviewer": "nuke SHOULD land under its own +60% (block order); framed as multiplicative ×1.60",
+      "resolution": "VERIFIED the nuke lands under its own same-cast trueDamagePct 60 — but ADDITIVE in the Damage-Up bucket (correct per formula SSOT), not multiplicative: nuke mult.dmgUp 1.962 with the buff vs 1.362 without (the +0.60 adds to existing dmgUp; amount ratio 1.44 here, not 1.60). Reviewer's ordering claim satisfied; the ×1.60 framing corrected to additive."
+    }
+  ],
+  "driverHeldAgainstReviewer": [
+    "fbGate:'inFb' for 'Battle Formation' (reviewer preferred inert/unmodeled) — held on the no-granter evidence, flagged ⚑6"
+  ],
+  "testStatus": "24/24 GREEN vs shipped override; RED vs every named counterfactual (durationSec, no-removeOnReload, level-1 magnitudes 34.56/157.53/35.45/290.9, ungated fbGate, ungated requiresTargetStatus, non-true rider flavor)",
+  "notes": "Reviewer's leakDetected null; methodology leak-clean. The two elevated residuals (⚑5 Missile Guide duty-cycle uptime, ⚑6 Battle Formation interpretation) are measurement-gated engine-primitive/interpretation flags, not encoding-structure errors. S5/S6/S7 cross-family still required for the GO to be corroborated."
+}

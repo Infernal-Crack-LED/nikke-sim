@@ -1,0 +1,6 @@
+=== S2d verify: privaty-unkind-maid ===
+--- validate-overrides ---
+✓ privaty-unkind-maid: valid | dmg 184.4M (30.8%) bursts 5 | remaining warnings: 5
+--- vitest ---
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m17 passed[39m[22m[90m (17)[39m

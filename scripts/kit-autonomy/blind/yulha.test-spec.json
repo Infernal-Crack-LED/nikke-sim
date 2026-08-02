@@ -1,0 +1,92 @@
+{
+  "slug": "yulha",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when attacked 30 time(s)",
+      "disposition": "GAP",
+      "assertion": "Trigger identity: an INCOMING-attack counter. The v1 boss deals no damage and the engine has no incoming-attack trigger primitive, so the activation cadence is unknowable from the kit — it is a ⚑ (recipe: count boss attacks/sec from scope-lock footage, divide by 30). The tests assert only that this is NOT silently promoted to an unconditional passive: base run must differ from a `passive`/self/critRatePct 24.53 patch, and no critRatePct 24.53 buffApply may land at frame 0. Fails under the nearest-wrong 'always-on Calm from t=0'."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Calm: Critical Rate ▲24.53%",
+      "disposition": "FAITHFUL",
+      "assertion": "Scope + target: the text says plain 'Critical Rate', not 'Critical Rate of normal attacks' — so stat MUST be critRatePct (unscoped), never critRateNormalPct; and 'Affects self' means targetSlug === yulha on every application. Fails under the nearest-wrong scoped-crit encoding (which would under-credit her burst/skill crit) and under an allies-scoped encoding (teammate totals move)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "for 20 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Duration semantics: wall-clock seconds, not rounds/stacks — expiresFrame - frame === 1200 (20s @60fps). Fails under a durationShots (round-count) encoding or a permanent buff (no expiresFrame)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "(self scope) inertness",
+      "disposition": "FAITHFUL",
+      "assertion": "Inertness: patching skill1 leaves all four teammate totals byte-identical (toBeCloseTo 6dp). Fails if the Calm crit were mis-targeted to allies."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies. ATK ▲90.75%",
+      "disposition": "FAITHFUL",
+      "assertion": "Target set: 'all allies' INCLUDES the caster — the buffApply recipient set must be exactly 5 distinct slugs and contain yulha. Cross-checked behaviourally: a self-scoped patch strictly LOWERS all four teammates' totals. Fails under the nearest-wrong self-only or excludeSelf encoding."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲90.75% (stat identity)",
+      "disposition": "FAITHFUL",
+      "assertion": "'ATK ▲ x%' scales each target's OWN ATK → stat atkPct with raw value 90.75. If mis-encoded as casterAtkPct/highestAllyAtkPct the event would emit a FLAT resolved ATK number, so no such event may carry value 90.75. Fails under a caster-scaled flat-ATK mis-encoding."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "for 5 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Duration semantics: expiresFrame - frame === 300 (5s), durationShots undefined. Behaviourally discriminated: deleting durationSec (permanent) strictly RAISES every teammate's total. A 5s window on a repeating trigger is the trap — a long/permanent duration multiplies. Fails under permanent or round-count encodings."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "(no activation clause)",
+      "disposition": "MEASUREMENT-GATED",
+      "assertion": "⚑ Trigger identity: skill2 carries NO 'Activates when' clause, so per the taxonomy it is an interval / datamined-skill-cooldown line — the PERIOD is not in the kit text and must come from skillCooldownsSec, flagged. The tests assert only per-application structure (target set, duration, stat), never the cadence, so they stay green under any honest ⚑ period estimate."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Equally shares damage taken 10s",
+      "disposition": "GAP",
+      "assertion": "it.skip — purely defensive damage redistribution. v1 has no HP pool and the boss deals no damage, and there is no damage-share primitive in the effect schema; payload unobservable. Belongs verbatim in `unmodeled.skill2`, never as a damage block. Guarded by an inertness assertion: no maxHpFlat/shield channel may be opened by it. NOTE (tandem rule): this is a DEFENSIVE line with no heal/shield event, so it cannot drive a teammate's on-recovery/on-shield trigger — the tandem exception does not apply."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 457.87% as Burst Skill dmg",
+      "disposition": "FAITHFUL",
+      "assertion": "The unconditional line: burst-bucket damage exists and is FB-exempt (fbMajorApplied falsy) — burst-cast damage lands before the Full Burst window opens (verified project fact). Also no core (text never says 'core strike damage') and no +30% range (universal rider rule). Fails under a model that lets the burst take the +50% FB major, a core rate, or the range bonus."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "same target(s) when in Calm",
+      "disposition": "FAITHFUL",
+      "assertion": "THE central trap: the second 457.87% sits under its OWN ■ header gated on 'Calm status' — Calm is skill1's own buff name, so the rider is conditional on skill1 being live at cast, NOT a free doubling. Discriminated by patching to a single unconditional 915.74% hit: totals must differ AND the doubled model must be strictly LARGER (a gate can only subtract). Non-vacuity guard: burst-damage event count must sit in [casts, 2×casts], proving the fixture exercises both gate states rather than the gate being trivially always-on or always-off."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies",
+      "disposition": "FAITHFUL",
+      "assertion": "This header scopes DAMAGE, not a debuff — no boss-held buffApply (casterIdx===null && targetIdx===null) may carry any of this kit's three magnitudes (457.87 / 24.53 / 90.75). Fails under a mis-read that turns the enemy header into a damageTakenPct-style boss debuff."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "burst damage inertness",
+      "disposition": "FAITHFUL",
+      "assertion": "Patching the burst blocks leaves all four teammate totals byte-identical — her burst is pure self-sourced damage with no team payload. Fails if a burst block leaked an allies-targeted buff."
+    }
+  ],
+  "fixtures": "controlComp('yulha', true) for every run — yulha is Burst III with cd 40s, and a lone B3 makes ZERO Full Bursts, so the fixture MUST supply the B1+B2 (liter/crown) that let her burst chain actually fire; without it every burst-line assertion is vacuous. The fixed-B3 4th slot (helm) is KEPT rather than passed false: helm's team crit line is critRateNormalPct (a distinct scoped stat from the critRatePct this kit grants), so it cannot confound the Calm crit-rate reads, while its presence keeps the rotation stable and gives four non-caster slots for the skill2 all-allies target-set assertion (recipients.size === 5) and for the two inertness sweeps. Deterministic, no seed. Five hoisted runs total (base + 4 counterfactuals: passive-Calm, unconditional-doubled-burst, self-scoped-ATK, permanent-ATK), well under the ~20-run budget.",
+  "gaps": [
+    "skill2 'Equally shares damage taken for 10 sec' — it.skip: defensive damage redistribution; v1 has no HP pool and the boss deals no damage, and the effect schema has no damage-share primitive. Unobservable payload; belongs in unmodeled.skill2.",
+    "skill1 'Activates when attacked 30 time(s)' — NOT it.skip'd but structurally GAP: no incoming-attack trigger primitive exists in TriggerDef (passive / burstCast / fullBurstEnter / hitCount / shotFired / lastBullet / recovery / shielded / interval / stageEnter / bossElement all key off the OWNER's actions or team events, none off being attacked). Since the v1 boss deals no damage, the real activation count is 0 unless an explicitly-⚑ proxy cadence is authored. Tests assert the negative (not an unconditional t=0 passive) and the per-application structure, never the cadence.",
+    "⚑ skill2 trigger period — the kit gives no activation clause, so the interval must come from the datamined skillCooldownsSec; not asserted by these tests.",
+    "⚑ charge/reload cadence (chargeFrames 60, reloadFrames 133, ammo 6) — datamine-unreliable per the ALWAYS-⚑ list; the tests assert only that charge-bucket damage exists, never a shot count or DPS magnitude."
+  ],
+  "model": "claude-opus-5"
+}

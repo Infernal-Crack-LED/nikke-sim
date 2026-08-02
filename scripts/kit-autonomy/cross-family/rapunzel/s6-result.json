@@ -1,0 +1,166 @@
+{
+  "slug": "rapunzel",
+  "leakDetected": null,
+  "override": {
+    "slug": "rapunzel",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "alliesLowestHp",
+          "count": 3
+        },
+        "effects": [
+          {
+            "kind": "heal"
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 2,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 8.19,
+            "durationSec": 15
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal"
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": ["Incoming healing ▲ 13.65% for 15 sec."],
+      "burst": [
+        "Affects 1 incapacitated ally unit(s) with the highest final ATK. Resurrect with 81.67% HP.",
+        "Activates when HP falls below 30%. Affects all enemies. Stun for 1 sec."
+      ]
+    },
+    "caveats": [
+      "⚑ skill1 trigger: the kit says \"when performing a Full Charge attack\"; the schema has no full-charge trigger, so it is keyed to shotFired on the premise that every RL trigger pull in the sim is a full charge (chargeFrames 60). If the engine ever fires uncharged shots, this over-fires the recovery event.",
+      "⚑ skill2 carries NO activation clause but a 15 s duration, so its real re-trigger cadence is unknown; modeled as a one-shot passive at t=0 with durationSec 15. Both of its stats are offensively inert here (ally-granted Max HP does not feed a teammate's atkOfMaxHpPct; incoming-healing has no StatKey), so the choice moves no damage — but it must be pinned before any HP-scaling consumer is added.",
+      "⚑ cadence tuple (ammo 6 / reloadFrames 159 / chargeFrames 60) is datamined and unreliable; it sets how often skill1's recovery event fires, which is the load-bearing output of this kit for on-recovery consumers.",
+      "Heal MAGNITUDES (4.03% / 40.83% of caster final Max HP) are not represented — the heal effect emits recovery events with no HP amount, which is the whole of its damage-relevant function (firing teammates' recovery triggers).",
+      "This unit contributes no damage of its own; its entire sim value is the recovery-event stream plus burst-gauge/rotation participation as a Burst I."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rapunzel is a pure sustain Supporter (RL/Iron/Burst I) with zero damage lines. skill1 emits a recovery event to the 3 lowest-HP allies on each full-charge shot (kept, not skipped, because on-recovery consumers such as Crown-style kits key off it). skill2 grants the 2 highest-final-ATK allies targetMaxHpPct 8.19% for 15 s; its incoming-healing line has no StatKey and is unmodeled. The burst emits a recovery event to all allies on cast. Resurrect and the sub-30%-HP stun are unmodeled: v1 has no HP pool (nobody is incapacitated, no HP threshold can be crossed) and the boss has no fire/charge/reload state for a stun to suppress."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when performing a Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'shotFired'} — no full-charge trigger exists in the schema; every RL pull is treated as a full charge (⚑)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects the 3 ally with lowest HP percent",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesLowestHp', count:3} — resolves to the leftmost 3 allies as the documented v1 stand-in (no HP pool)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 4.03% of user Max HP as HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'heal'} — emits one recovery event per fire; HP amount is not modeled by the schema"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects 2 ally with highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesTopAtk', count:2, byFinalAtk:true} — kit says \"final ATK\", so live-ATK ranking per the literal-word rule"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP ▲ 8.19% for 15 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff targetMaxHpPct 8.19, durationSec 15 (target's OWN Max HP, not caster-scaled); trigger is kit-silent → passive (⚑)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Incoming healing ▲ 13.65% for 15 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "No StatKey for incoming-healing multipliers and no HP amounts are modeled, so the stat has no consumer anywhere in the engine; recorded verbatim in unmodeled.skill2"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} (self included — kit says \"all allies\", no except-self clause)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 40.83% of user Max HP as HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'heal'} on trigger {kind:'burstCast'} — one team-wide recovery event per own-burst cast"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "1 incapacitated ally … Resurrect 81.67%",
+      "status": "SKIPPED",
+      "effectOrReason": "v1 models no HP pool and the boss deals no damage, so no unit is ever incapacitated — the branch is unreachable, and no schema kind expresses resurrection; verbatim in unmodeled.burst"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "HP below 30% → all enemies Stun 1 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "Doubly inert: TriggerDef has no HP-threshold trigger (no HP pool, threshold never crosses) and a stun only suppresses fire/charge/reload, which the boss has no state for; verbatim in unmodeled.burst"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "{kind:'shotFired'} — one recovery event per trigger pull (≈ every charge cycle: 60 charge frames + release latency, 6-round magazine, 159-frame reload)",
+      "reasoning": "The kit gates skill1 on a Full Charge attack, but TriggerDef has no full-charge kind. shotFired is correct only if the sim always full-charges this RL; chargeCounter{count:1} was rejected because its per-phase cycling semantics expect one effect per phase and would mis-fire with a single effect.",
+      "recipe": "Instrument a controlComp run with cfg.onEvent, count kind:'shot' events for rapunzel over 180 s, and compare against the charge-release cadence in the rotation log; if any shot is released uncharged, re-key to a charge-gated trigger or add a swapGate/fbGate equivalent."
+    },
+    {
+      "field": "skill2[0].trigger",
+      "estimate": "{kind:'passive'} applied once at frame 0 with durationSec 15 (i.e. live t=0–15 s only)",
+      "reasoning": "The kit prose carries a 15 s duration with NO activation clause, which is the kit-silent-trigger ALWAYS-⚑ case. A true passive would be permanent (over-credit); an interval{sec:15} would leave t=0–15 uncovered (under-credit). Both stats are offensively inert under the e3 ally-Max-HP rule, so the choice is currently damage-neutral.",
+      "recipe": "Re-read the unredacted in-game skill-2 text for the stripped activation clause (most NIKKE 15 s support lines key to burstCast or fullBurstEnter); if a clause exists, key the block to it. Otherwise leave passive and revisit only when an HP-scaling consumer (atkOfMaxHpPct) is added to a teammate."
+    },
+    {
+      "field": "base cadence (ammo 6 / reloadFrames 159 / chargeFrames 60)",
+      "estimate": "Datamined values used as-is: ~1 s charge, 6-round magazine, ~2.65 s reload",
+      "reasoning": "rate_of_fire / reloadFrames are the known-unreliable datamine fields, and here they set the ONLY load-bearing output of this kit — how many recovery events skill1 emits per fight for on-recovery consumers.",
+      "recipe": "Count rapunzel shot events per 180 s in a controlComp run and check against footage ammo-counter timing (shots/sec measured directly, not inferred from a downstream quantity)."
+    },
+    {
+      "field": "skill1[0].effects[0] / burst[0].effects[0] heal magnitude",
+      "estimate": "Amount not modeled; each heal emits a single recovery event (ticks defaults to 1)",
+      "reasoning": "Neither kit line is a heal-over-time (\"Recovers X% … as HP\" with no per-second clause), so ticks:1 is the faithful shape; the % of caster Max HP has no consumer because no HP pool exists.",
+      "recipe": "If a teammate's on-recovery buff ever proves to scale with heal SIZE rather than heal COUNT, the heal effect needs an amount field before this unit can drive it — record the consumer's popup values across a small vs large heal to test."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,261 @@
+{
+  "slug": "vesti-tactical-upgrade",
+  "leakDetected": null,
+  "override": {
+    "slug": "vesti-tactical-upgrade",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "chargeSpeedPct",
+            "value": 100,
+            "durationShots": 3,
+            "removeOnReload": true
+          },
+          {
+            "kind": "buff",
+            "stat": "chargeDamagePct",
+            "value": 58.5,
+            "durationShots": 3,
+            "removeOnReload": true
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 266.6,
+            "flavor": "true",
+            "crit": true
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "requiresTargetStatus": "Explosive Round",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "projectileExplosionPct",
+            "value": 20,
+            "durationSec": 3
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "trueDamagePct",
+            "value": 60,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 492.3,
+            "flavor": "true",
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "■ Activates when landing Full Charge attacks if self is in Battle Formation status. Affects self. ATK ▲ 20% for 3 sec."
+      ],
+      "burst": ["Explosion Radius ▲ 100% for 10 sec."]
+    },
+    "caveats": [
+      "⚑ skill1 trigger: the engine has no self-status gate, so 'while not in Missile Guide status' is approximated by re-applying the Missile Guide buffs on EVERY shot (shotFired) with durationShots:3 + removeOnReload. With ammo 8 and a 3-round window the faithful gate also yields ~100% in-magazine uptime (rounds 1-3 / 4-6 / 7-8, cleared at reload), so the approximation should be damage-equivalent; it diverges only if the engine's shot cadence lets the 3-round window lapse mid-magazine.",
+      "⚑ skill1 'Full Charge attack' is keyed to shotFired on the assumption the sim always fires RL shots at full charge. If partial-charge shots exist in the engine, shotFired over-counts both the Missile Guide refresh and the skill2 266.6% rider.",
+      "⚑ skill2 ATK ▲20% (Battle Formation) is NOT modeled — the gating status is never granted by this kit and the schema has no self-status gate; modeling it ungated would grant a near-permanent 20% ATK. Under-credits if the status is externally supplied.",
+      "⚑ skill2 Projectile Explosion Damage ▲20% is encoded behind requiresTargetStatus:'Explosive Round'. No unit in this kit inflicts that status, so the block is currently INERT by design rather than dropped.",
+      "⚑ Rider crit: the 266.6% and 492.3% true-damage hits are authored crit:true per the rider convention (riders crit at the caster's rate, no core). Unverified for true-flavored damage on this unit.",
+      "⚑ Burst block ordering assumes the self True Damage ▲60% resolves before the 492.3% burst nuke, so the nuke benefits from it. Not stated by the kit text.",
+      "⚑ Cadence/economy inputs (ammo 8, chargeFrames 120, reloadFrames 142) are datamine-sourced and unreliable; charge-speed ▲100% makes shots-fired highly sensitive to them."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. RL/Fire/Attacker/Burst III charge unit. Skill 1 is a self-sustaining Missile Guide loop: each full-charge shot grants Charge Speed ▲100% and Charge Damage ▲58.5% for 3 rounds, cleared on reload-to-max (removeOnReload) — a weapon-state modifier that raises shots fired, not a cosmetic. Skill 2 adds a 266.6%-of-final-ATK true-damage rider per full-charge landing, plus two gated self-buffs: the Explosive-Round-gated Projectile Explosion ▲20% is encoded behind requiresTargetStatus (inert with no carrier), and the Battle-Formation-gated ATK ▲20% is unmodeled (no self-status gate primitive). Burst is a 492.3% true-damage nuke plus a 10s self True Damage ▲60%; explosion radius is unmodeled (no damage channel on a partless boss). FB-by-timing left at the default (no noFb set); noRange is engine-automatic."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when performing a Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired (every RL trigger pull = one full charge). The 'while not in Missile Guide status' self-gate has no schema primitive; refresh-per-shot approximation documented in caveats."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Missile Guide: Charge Speed ▲ 100%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeSpeedPct 100, durationShots:3 (ROUND count, not seconds), removeOnReload:true, target self"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Damage ▲ 58.5% for 3 round(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeDamagePct 58.5 (additive pp in the charge bucket), durationShots:3, removeOnReload:true, target self"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates upon reloading to max ammo",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "not a separate block — expressed as removeOnReload:true on both Missile Guide buffs (stripped at reload-to-max)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Removes Missile Guide.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "same removeOnReload:true flag; Missile Guide is not a separate tracked status, it is the pair of buffs"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when landing Full Charge atk",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired, target enemy (on-landing modeled as on-shot; RL flight time not modeled — no delaySec authored)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 266.6% of final ATK as true dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 266.6, flavor 'true', crit true; noFb/noRange left to engine defaults"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "if self is in Battle Formation status",
+      "status": "SKIPPED",
+      "effectOrReason": "no self-status gate exists in the schema (requiresTargetStatus is boss-only) and this kit never grants Battle Formation; modeling ungated would give a near-permanent ATK ▲20%. Recorded verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 20% for 3 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "same row as its Battle Formation gate above — dropped together, unmodeled.skill2"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "if target(s) is in Explosive Round",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "block gate requiresTargetStatus:'Explosive Round' — named boss status, currently opened by nothing, so the block is inert but faithfully encoded"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Projectile Explosion Damage ▲ 20%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff projectileExplosionPct 20, durationSec 3, target self (RL-only Damage Up stat), behind the Explosive Round gate"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Explosion Radius ▲ 100% for 10 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "no StatKey for explosion radius; AoE geometry has no damage channel against the partless single-target scope-lock boss. Recorded verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "True Damage ▲ 60% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff trueDamagePct 60, durationSec 10, trigger burstCast, target self; ordered before the nuke block so the nuke inherits it"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 492.3% of final ATK as Burst Skill",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 492.3, flavor 'true', crit true, trigger burstCast, target enemy; FB-exempt automatically by cast timing (no noFb authored)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies (including parts).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy — single-target boss with no parts, so all-enemies/parts scope collapses to one hit"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger + effects[*].durationShots",
+      "estimate": "shotFired + durationShots:3 + removeOnReload:true (re-applies every shot)",
+      "reasoning": "The kit gates the grant on 'while not in Missile Guide status' — a self-status the schema cannot express. Refreshing every shot makes the buffs continuously live; the faithful gate would fire on rounds 1, 4, 7 of an 8-round magazine and, with a 3-round window, still covers every round, so the two should be damage-equivalent. The risk is any engine path where the round counter decrements without the buff being re-applied.",
+      "recipe": "Instrument buffApply for stat chargeSpeedPct/chargeDamagePct over one magazine and confirm the apply frames and durationShots; then A/B the refresh-every-shot model against a gated variant (apply only when no live Missile Guide buff) and confirm identical total damage."
+    },
+    {
+      "field": "skill1 charge economy (chargeFrames 120, ammo 8, reloadFrames 142)",
+      "estimate": "2.0s base full charge → 1.0s under Charge Speed ▲100%; 8 rounds/magazine; ~2.37s reload",
+      "reasoning": "ALWAYS-⚑ cadence tuple: chargeFrames/reloadFrames/ammo are datamine-sourced and known-unreliable. Charge Speed ▲100% doubles shot count, so total damage is roughly linear in these three values — an error here dominates every other error in the model.",
+      "recipe": "Count full-charge shots per magazine and time reload→first-shot in a scope-lock recording; compare against the sim's shot event stream for the same window."
+    },
+    {
+      "field": "skill1 — does the TRIGGERING shot get Charge Damage ▲58.5%?",
+      "estimate": "assumed YES for the triggering shot's own damage if the engine applies block effects before damage resolution; charge SPEED can only affect the NEXT charge either way",
+      "reasoning": "'Activates when performing a Full Charge attack' is ambiguous about whether the buff lands before or after that shot's damage. Charge Speed is unambiguous (it can only help the next charge), but Charge Damage ▲58.5% on shot 1 of a magazine is worth a full shot's worth of the charge bucket per reload cycle.",
+      "recipe": "Read the first post-reload popup value against the second in footage; a first-shot value ~58.5pp lower in the charge bucket means the buff lands after the triggering shot."
+    },
+    {
+      "field": "skill2[0].effects[0].crit and burst[1].effects[0].crit",
+      "estimate": "crit: true on both true-damage hits (caster sheet crit rate, no core)",
+      "reasoning": "Per the rider convention, function-damage riders crit at the caster's rate and get no core unless the text says 'core strike damage'. Neither line says core. Whether TRUE-flavored damage is crit-eligible in game is not established by the kit text.",
+      "recipe": "Count orange (crit) vs white popups for the 266.6% rider across a magazine in a recording; a 0% crit share refutes crit:true for true damage."
+    },
+    {
+      "field": "skill2 — Battle Formation ATK ▲20% (unmodeled)",
+      "estimate": "0% uptime assumed (block omitted); true value is either 0% or ~100% uptime while firing",
+      "reasoning": "The status is not granted anywhere in this kit, and there is no self-status block gate. Omitting under-credits by up to ATK ▲20% for effectively the whole fight if some teammate/system supplies Battle Formation; encoding it ungated would over-credit by the same amount. Omission is the honest default.",
+      "recipe": "Identify what grants Battle Formation. If a teammate grants it, add the block with a teamHas gate on that unit; if it is a squad/system state, declare a `modes` array (default off) and gate the block on the mode."
+    },
+    {
+      "field": "skill2[1].requiresTargetStatus 'Explosive Round'",
+      "estimate": "gate never opens → block inert (0 damage contribution today)",
+      "reasoning": "Named target status with no known inflicter in this kit; requiresTargetStatus is the correct primitive and keeps the model complete rather than silently dropping the line. If Vesti's own rockets in fact apply Explosive Round in game, the +20% Projectile Explosion is near-permanent and this is a real under-credit.",
+      "recipe": "Check whether the boss shows an Explosive Round debuff icon while this unit fires; if she self-applies it, add a targetStatus effect (target enemy) on the shotFired block with the observed duration."
+    },
+    {
+      "field": "burst block order (self buff before enemy nuke)",
+      "estimate": "True Damage ▲60% applied first, so the 492.3% burst hit is multiplied by it",
+      "reasoning": "Both blocks fire on the same burstCast; the kit lists the self buff first, and the sim resolves blocks in array order. If the game snapshots the nuke before the buff, the burst hit is over-credited by 60pp of the Damage Up bucket.",
+      "recipe": "Compare the burst popup value against a sim run with the two burst blocks swapped; match the ratio to a recorded burst popup."
+    }
+  ],
+  "model": "claude-opus-5"
+}

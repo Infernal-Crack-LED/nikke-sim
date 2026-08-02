@@ -1,0 +1,210 @@
+{
+  "slug": "sakura",
+  "leakDetected": null,
+  "override": {
+    "slug": "sakura",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 3
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 8.15,
+            "durationSec": 15,
+            "maxStacks": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "burstCdr",
+            "seconds": 4.84
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 23.76,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "partsDamagePct",
+            "value": 23.54,
+            "durationSec": 30
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "When attacking an enemy projectile, damage to that projectile ▲ 7.74% continuously."
+      ],
+      "burst": [
+        "Damage dealt by Wind Code enemies ▼ 90.72% for 30 sec. Activates 1 time(s) per battle."
+      ]
+    },
+    "caveats": [
+      "⚑ The burst Interruption-Parts block's kit gate ('Activates when Cherry Blossom Tea is at max stacks') is NOT enforced — no stack-count resource is declared, so the block fires on every burst cast. Damage-inert either way: partsDamagePct is a no-op on the partless scope-lock boss, so the un-gated model moves zero damage. If parts damage ever becomes live, this MUST be gated (declare a 'cherryBlossomTea' resource + resourceGate min:10) before it is trusted.",
+      "⚑ defPct is engine-inert in v1 (self DEF does not feed own damage); the Cherry Blossom Tea stack buff is carried for kit completeness and as the semantic source of the burst's max-stacks gate, not for damage.",
+      "⚑ Cadence inputs (ammo 6, reloadFrames 121, chargeFrames 60, rate-of-fire) come from the known-unreliable datamine fields; the skill1 hitCount:3 activation rate — and therefore whether 10 stacks are ever reached inside the rolling 15s window — rides entirely on them.",
+      "The only mechanically damage-relevant line in the whole kit is the skill2 full-burst-enter burstCdr (4.84s, all allies), which shortens the TEAM's rotation, plus the burst's 10s caster-scaled ATK grant. Everything else is defensive, projectile-scoped, parts-scoped, or DEF."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Sakura (SR/Fire/Supporter/Burst I, cd 40s). Modeled: S1 'Cherry Blossom Tea' as an allies DEF ▲8.15% stack buff (hitCount:3 — 'after 3 normal attack(s)', counted in ROUNDS, not trigger pulls; maxStacks 10, 15s, refreshing). S2 full-burst-enter allies burstCdr 4.84s (a real rotation lever — it accelerates every ally's burst cooldown on EVERY team Full Burst, not just rotations Sakura bursts on; the kit text says 'entering Full Burst', so it is keyed to fullBurstEnter, not burstCast). Burst: allies ATK ▲23.76% of the skill user's ATK for 10s (casterAtkPct — flat-resolved off Sakura's own staticAtk at apply time, so a Supporter-class caster grants a modest flat add), plus allies Damage to Interruption Parts ▲23.54% for 30s (partsDamagePct, inert on a partless boss, gate not enforced — see caveats). Deliberately unmodeled: the S2 enemy-projectile damage line (no enemy projectiles exist in the sim) and the burst's Wind-Code incoming-damage reduction (purely defensive; the sim models no incoming damage). Both are recorded verbatim in `unmodeled`."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after 3 normal attack(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'hitCount', count:3} — hitCount counts ROUNDS fired by the owner; SR ammo 6 ⇒ ~2 activations per magazine."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} (no excludeSelf — 'all allies' includes the caster)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Cherry Blossom Tea: 8.15% of DEF",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct 8.15 — engine-inert in v1 but retained per the 'keep the stat buff' prior; it is also the currency the burst's max-stacks gate reads."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "stacks up to 10 time(s), lasts 15 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "maxStacks:10, durationSec:15 — wall-clock seconds (not a ROUND count; the text says 'sec')."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} on the full-burst-enter block."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "When attacking an enemy projectile,",
+      "status": "SKIPPED",
+      "effectOrReason": "Damage to enemy PROJECTILES ▲7.74% continuously — the sim has no enemy-projectile entity and the scope-lock boss fires none, so there is no surface for this multiplier. Not a weapon-state / shot-count line, so the weapon-state HARD RULE does not force it in. Recorded verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when entering Full Burst.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'fullBurstEnter'} — literal reading; fires on ANY team Full Burst, NOT gated on Sakura casting her own burst (that would be burstCast/ownBurstGate and would under-credit)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Cooldown of Burst Skill ▼ 4.84 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect {kind:'burstCdr', seconds:4.84} on all allies — the kit's one genuinely damage-moving mechanic (rotation acceleration). No oncePerBattle flag: the text states no per-battle limit."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} on the first burst block."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Wind Code enemies dmg ▼ 90.72%, 30s",
+      "status": "SKIPPED",
+      "effectOrReason": "Incoming-damage reduction vs Wind Code enemies, 1×/battle — purely defensive; the sim models no damage taken by allies, and there is no StatKey for incoming-damage mitigation. Not a heal/shield/lifesteal line (no recovery/shielded trigger to feed a teammate), so the tandem HARD RULE does not force it in. Recorded verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 23.76% of skill user's ATK, 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 23.76, durationSec 10, target allies, trigger burstCast — 'of the skill user's ATK' ⇒ caster-scaled FLAT add (casterAtkPct), never atkPct."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "When Cherry Blossom Tea at max stacks",
+      "status": "SKIPPED",
+      "effectOrReason": "Gate condition only (the effect it guards IS implemented). No stack-count resource is declared, so the gate is not enforced — see caveats. Damage-inert on the partless boss."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Dmg to Interruption Parts ▲23.54%, 30s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff partsDamagePct 23.54, durationSec 30, target allies, trigger burstCast — parsed but engine-inert in v1 (no parts on the boss)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[0].trigger (hitCount count:3) — cadence tuple",
+      "estimate": "SR, ammo 6, chargeFrames 60 (1.0s full charge), reloadFrames 121 (~2.0s). ⇒ roughly one shot per ~1.0–1.3s while firing, ~2.0s reload every 6 shots ⇒ ~1 activation per ~3.5–4.5s.",
+      "reasoning": "Base-stat cadence fields (rate_of_fire, reloadFrames, chargeFrames) are the known-unreliable datamine surface, and the whole S1 stack trajectory hangs off them. The trigger itself is kit-literal ('after 3 normal attack(s)') — only the RATE is ⚑.",
+      "recipe": "Count Sakura's shots in a recording over a fixed 15s window (ammo counter 6→0→reload) and compare to the sim's shotFired event count for the same window; correct pullsPerSec / reload if they disagree."
+    },
+    {
+      "field": "override.skill1[0] — Cherry Blossom Tea stack steady-state",
+      "estimate": "⚑ Reaching the 10-stack cap requires 30 rounds inside a rolling 15s window. At the cadence above (~11–15 rounds per 15s) the realistic steady state is ~4–5 stacks, and the 10-stack cap is likely NEVER reached solo. NOT authored at max magnitude (value is per-stack, 8.15, with maxStacks:10) so the engine accrues the real trajectory — no rampSec haircut applied.",
+      "reasoning": "Per the stack/currency prior: derive the trajectory from the stated accrual (3 rounds/stack) against the stated 15s lifetime. This estimate is what makes the burst's 'at max stacks' gate suspicious — if the cap is unreachable, that burst branch may be effectively dead outside multi-hit/team-fed conditions.",
+      "recipe": "DBG_BUFFS=1 on a solo run: log buffApply stacks for the defPct key over 180s and read the observed steady-state stack count; cross-check against buff-icon stack numbers in footage."
+    },
+    {
+      "field": "override.burst[1] — missing 'Cherry Blossom Tea at max stacks' gate",
+      "estimate": "⚑ Ungated (fires on every burst cast). Correct model would be a declared resource + resourceGate {name:'cherryBlossomTea', min:10}; per the flag above the gate would likely be FALSE most or all of the fight.",
+      "reasoning": "The schema's resourceGate reads a `resources` pool, not a stacking buff's stack count, and there is no faithful way to make a monotonic resource mirror a 15s-decaying stack without over-crediting. Left ungated deliberately because partsDamagePct is inert on the partless boss ⇒ zero damage delta either way; recorded here so it cannot ship silently if parts ever become live.",
+      "recipe": "If parts damage is ever modeled: declare resources:[{name:'cherryBlossomTea', initial:0, min:0, max:10}], add a resource +1 effect to the skill1 block, model decay, then gate this block. Until then, verify the block is damage-neutral by an A/B with the block removed (expect an exact 0.00% delta)."
+    },
+    {
+      "field": "override.skill2[0] — burstCdr trigger identity (fullBurstEnter vs burstCast)",
+      "estimate": "⚑ Keyed to fullBurstEnter per the literal text ('Activates when entering Full Burst'), i.e. it fires on EVERY team Full Burst including rotations Sakura does not cast on.",
+      "reasoning": "Trigger identity is the highest-leverage divergence in this kit: this is the only line that moves damage, and it does so through rotation. burstCast would fire strictly less often in a multi-Burst-I comp; fullBurstEnter is the faithful literal read, but the two diverge in exactly the comps a Burst I unit is used in.",
+      "recipe": "Measure full-burst COUNT over 180s in a real fight with Sakura vs the same comp without her; the FB-count delta discriminates a per-FB 4.84s CDR from a per-own-cast one. FB counts are deterministic cooldown arithmetic, so a single clean recording is decisive."
+    },
+    {
+      "field": "override.burst[0].effects[0] — casterAtkPct magnitude basis",
+      "estimate": "⚑ Resolves to 0.2376 × Sakura's staticAtk (Supporter @ Base 5 ≈ 98,367 ⇒ ~23.4k flat ATK to each ally), applied as a flat add, for 10s per burst cast.",
+      "reasoning": "The harness flat-resolves caster-scaled values at apply time, so the emitted buffApply value is a flat ATK number, not 23.76. Flagged so any downstream assertion checks the flat number, not the kit percentage — and because the Supporter-class ATK anchor is the input, a wrong class basis silently mis-sizes the whole burst.",
+      "recipe": "Assert the buffApply event's value ≈ 0.2376 × 98367 with stat 'casterAtkPct' in a controlComp run; confirm the class ATK anchor against data/reference-stats.json."
+    }
+  ],
+  "model": "claude-opus-5"
+}

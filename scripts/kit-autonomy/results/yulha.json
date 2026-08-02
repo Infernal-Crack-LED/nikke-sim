@@ -1,0 +1,82 @@
+{
+  "slug": "yulha",
+  "kitDescription": "Yulha is a Fire sniper-rifle Burst-III attacker whose defining mechanic is the 'Calm' self-status, earned by being attacked 30 times. While Calm is active her own critical rate rises by 24.53% for 20 seconds, and her burst — which normally hits all enemies for 457.87% of final ATK — fires a second identical 457.87% hit, effectively doubling. Her Skill 2 periodically grants all allies (including herself) a large 90.75% ATK buff for 5 seconds and lets the squad equally share incoming damage for 10 seconds. In the scope-lock sim the boss never attacks, so Calm can never be earned: only the team ATK buff and the single-hit burst fire, with the Calm-gated half of the kit honestly documented as out-of-domain.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates when attacked 30 time(s). Affects self.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim in unmodeled.skill1; no incoming-damage model, no 'attacked N times' trigger primitive; ⚑ tier out-of-domain with recipe",
+        "blindSaid": "S2b: MEASUREMENT-GATED, faithful default = zero buff. S5: passive-Calm pinned as nearest-wrong. S6: interval:12 ⚑ proxy (unmeasured cadence)",
+        "formulaCheck": "Engine trigger taxonomy has no incoming-hit counter; hitCount counts owner-outgoing rounds. Omission with verbatim record satisfies the no-silent-drop audit",
+        "fireRateOk": true,
+        "explanation": "The trigger is unexpressible in the v1 engine (immortal boss never acts). The driver records the line verbatim with an estimate + recipe instead of inventing a cadence; S2b (independent, cross-family) named zero-buff the faithful default and S5 pins the passive mis-model as the discriminator. Driver's conservative path is the faithful one; S6's interval:12 is an unmeasured proxy."
+      },
+      {
+        "kitLine": "Calm: Critical Rate ▲ 24.53% for 20 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim; zero critRatePct buff from yulha (Y3 pins absence, calmAlways counterfactual proves it is a choice)",
+        "blindSaid": "S2b: zero buff is faithful default. S5: asserts no 24.53 critRatePct at frame 0 and scope rules if any appears. S6: modeled via the same interval:12 proxy",
+        "formulaCheck": "Buff is downstream of the untriggerable Calm status; a critRatePct buff that cannot activate must not fire",
+        "fireRateOk": true,
+        "explanation": "Gated on the S1 trigger above; inherits its out-of-domain disposition. Correctly recorded rather than approximated."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "ATK ▲ 90.75% for 5 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval:30 (datamined skillCooldownsSec.skill2) → allies → atkPct 90.75 / durationSec 5; fires t=30/60/90/120/150, 4 holders each, 300-frame windows",
+        "blindSaid": "S2b: FAITHFUL, identical disposition. S5: 21/21 structural assertions green (target set 4, 300f expiry, plain atkPct, not permanent). S6: agrees on value/scope/duration but used interval:20 (invented — not even her burst CD of 40)",
+        "formulaCheck": "atkPct sums inside the (1+ΣATK%) bracket on each recipient's staticAtk — correct bucket; allies-scope includes self per kit wording; 5s is wall-clock not durationShots",
+        "fireRateOk": true,
+        "explanation": "Right stat, right magnitude (lvl-10 90.75, not lvl-1 53.62), right scope (all 4 allies incl. self), right duration (5s, not the 10s belonging to the share sentence), right cadence (datamined 30s CD, first fire at t=30, no force-cast). Fires at the prose-implied cadence over the 180s fight. Driver wins the S6 divergence on measured>fudge: 30 is datamined, 20 is invented."
+      },
+      {
+        "kitLine": "Equally shares damage taken for 10 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim in unmodeled.skill2; defensive redistribution, no HP pool, boss deals no damage, zero damage impact",
+        "blindSaid": "S2b/S5/S6 all agree: belongs in unmodeled, never as a boss damageTakenPct debuff (ally-side mechanic, wrong channel). S5 carries the one legit it.skip GAP",
+        "formulaCheck": "No damage-instance relevance: not a Taken-bucket debuff, purely defensive; unobservable on the v1 basis",
+        "fireRateOk": true,
+        "explanation": "Correctly omitted and recorded verbatim; all three independent agents converge."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 457.87% of final ATK as Burst Skill damage.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy → flatDamage 457.87; one hit per cast; fbMajorApplied false on every nuke; critEligible true; bucket 'burst'",
+        "blindSaid": "S2b: FAITHFUL, identical. S5: asserts FB-exemption, no core, no range, count==casts. S6: agrees on magnitude+routing (its explicit crit/noRange flags are functionally redundant with engine defaults)",
+        "formulaCheck": "Burst-cast damage lands pre-FB by the measured boundary rule (Cinderella worked example) → no +0.5 major, no entry auras; skill/burst function damage crits at caster rate, never cores, never ranges — engine defaults confirmed by green S5 assertions",
+        "fireRateOk": true,
+        "explanation": "Right magnitude (457.87 lvl-10), right trigger (burstCast — the fullBurstEnter counterfactual provably takes the +50%), right routing. Casts ≥2× per fight in the fixture."
+      },
+      {
+        "kitLine": "Affects the same target(s) when in Calm status.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim (both burst rider lines); rider fires zero times because Calm is untriggerable; Y2c pins exactly one burst hit per cast vs the doubled calmAlways counterfactual",
+        "blindSaid": "S2b: MEASUREMENT-GATED, faithful default = zero rider fires; ungated doubling named the nearest-WRONG model and the largest single error available in this kit. S5: pins 'NOT a free doubling'. S6: INCLUDED the rider ungated (self-admitted over-credit in its own caveat)",
+        "formulaCheck": "requiresTargetStatus is boss-side (wrong channel); no self-status gate exists, so the gate cannot be expressed — and making it unconditional is the precise counterfactual both S2b and S5 discriminate against",
+        "fireRateOk": true,
+        "explanation": "The driver's omission is the faithful default corroborated by two independent blind agents; S6's ungated doubling is the outlier and is self-admittedly wrong whenever a cast lands outside Calm (always, in-sim). Documented with ⚑, estimate, and recipe — not a silent drop."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": 1,
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA found. All six kit lines are FAITHFUL (S2 ATK buff, burst base nuke) or DOCUMENTED_GAP with verbatim unmodeled records plus ⚑ estimate/recipe (S1 Calm trigger + crit, S2 damage-share, burst Calm rider). The blind convergence is strong and cross-family: S5 (opus) runs 21 passed / 1 legit skipped / 0 failed UNMODIFIED against the shipped override, and S2b (fable) independently derived the identical per-line dispositions including the same nearest-wrong counterfactuals the driver's spec pins. S6 (opus) is the sole outlier on three gated calls, and on each the driver is corroborated by the other two agents and by the MEASURED>FUDGE rule: interval:30 is datamined where S6's interval:20 is invented (and matches neither the skill CD nor her 40s burst CD); zero Calm crit is the faithful default where S6's interval:12 is an unmeasured cadence; a single 457.87% burst is the faithful default where S6's ungated doubling is the exact nearest-wrong model S2b named and S5 discriminates against, self-admitted as over-crediting. Discrimination holds: every load-bearing assertion fails under its named counterfactual (selfOnly, weakS2, longS2, fastS2, noS2, weakBurst, burstOnFbEnter, calmAlways), and the fire-rate check passes — the S2 buff demonstrably fires at t=30/60/90/120/150 and the burst casts ≥2× with FB-exempt, core-free, range-free hits. Same-model residual for the owner to spot-check: S5 and S6 share the opus family, so the driver's true cross-family corroboration rests on S2b alone; the honest ⚑ exposure the owner should sanity-check is that the shipped board reading reflects HALF Yulha's theoretical Calm-active burst and no Calm crit — the meta-defining lever on her real DPS — gated on a measured Calm-uptime recipe (boss attack cadence vs the squad, noting the S2 damage-share raises her incoming-hit share in-game, so a solo-derived cadence would under-count). The datamined skill2 CD of 30s driving the interval cadence and the SR charge/reload tuple remain standing measurement-gated ⚑ items, out of magnitude scope.",
+  "model": "kimi-code/k3"
+}

@@ -1,0 +1,73 @@
+{
+  "slug": "rapunzel",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 3
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 8.19,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": ["Incoming healing ▲ 13.65% for 15 sec."],
+    "burst": [
+      "Affects 1 incapacitated ally unit(s) with the highest final ATK. Resurrect with 81.67% HP.",
+      "Activates when HP falls below 30%. Affects all enemies. Stun for 1 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ skill1 trigger: the kit says \"when performing a Full Charge attack\"; the schema has no full-charge trigger, so it is keyed to shotFired on the premise that every RL trigger pull in the sim is a full charge (chargeFrames 60). If the engine ever fires uncharged shots, this over-fires the recovery event.",
+    "⚑ skill2 carries NO activation clause but a 15 s duration, so its real re-trigger cadence is unknown; modeled as a one-shot passive at t=0 with durationSec 15. Both of its stats are offensively inert here (ally-granted Max HP does not feed a teammate's atkOfMaxHpPct; incoming-healing has no StatKey), so the choice moves no damage — but it must be pinned before any HP-scaling consumer is added.",
+    "⚑ cadence tuple (ammo 6 / reloadFrames 159 / chargeFrames 60) is datamined and unreliable; it sets how often skill1's recovery event fires, which is the load-bearing output of this kit for on-recovery consumers.",
+    "Heal MAGNITUDES (4.03% / 40.83% of caster final Max HP) are not represented — the heal effect emits recovery events with no HP amount, which is the whole of its damage-relevant function (firing teammates' recovery triggers).",
+    "This unit contributes no damage of its own; its entire sim value is the recovery-event stream plus burst-gauge/rotation participation as a Burst I."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rapunzel is a pure sustain Supporter (RL/Iron/Burst I) with zero damage lines. skill1 emits a recovery event to the 3 lowest-HP allies on each full-charge shot (kept, not skipped, because on-recovery consumers such as Crown-style kits key off it). skill2 grants the 2 highest-final-ATK allies targetMaxHpPct 8.19% for 15 s; its incoming-healing line has no StatKey and is unmodeled. The burst emits a recovery event to all allies on cast. Resurrect and the sub-30%-HP stun are unmodeled: v1 has no HP pool (nobody is incapacitated, no HP threshold can be crossed) and the boss has no fire/charge/reload state for a stun to suppress."
+}

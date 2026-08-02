@@ -1,0 +1,81 @@
+{
+  "slug": "yulha",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 12
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 24.53,
+          "durationSec": 20
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 90.75,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.87,
+          "crit": true,
+          "noRange": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.87,
+          "crit": true,
+          "noRange": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": ["Equally shares damage taken for 10 sec."],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill1 trigger cadence: kit says \"Activates when attacked 30 time(s)\" — an incoming-attack counter the sim has no channel for (the v1 boss deals no modeled damage to allies). Encoded as interval:12s (⚑ UNMEASURED) so the Calm crit window exists at roughly kit-plausible uptime; the real cadence depends on the boss's attack rate against the squad.",
+    "⚑ skill2 trigger: the kit line carries NO activation clause, so it is modeled as an interval. sec=20 is ⚑ UNMEASURED and taken from the unit's datamined burst cooldown as a stand-in; a 5s buff on a 20s interval = 25% uptime, and the interval choice dominates this skill's whole team-ATK contribution.",
+    "⚑ burst Calm-gate: the second 457.87% component is gated on \"Calm status\" — the S1 buff. The engine has no self-status channel that composes with a burstCast damage rider (requiresTargetStatus gates on an ENEMY status, not a self buff), so BOTH components are authored unconditionally. This OVER-CREDITS whenever the burst is cast outside a Calm window. Uptime of Calm is itself ⚑ (see skill1).",
+    "⚑ burst crit: riders crit at the caster's sheet rate by convention; no core (the text does not say \"core strike\"). Burst-cast damage is FB-exempt by engine rule (lands before the FB window opens) — noFb is not set because burstCast damage is already exempt.",
+    "Base cadence tuple (ammo 6 / reloadFrames 133 / chargeFrames 60) is datamined and ⚑ by standing rule; not overridden here."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Yulha is an SR/Fire/Attacker/Burst III charge unit. S1 is a self Critical Rate ▲24.53% / 20s window (\"Calm\") whose real trigger is an incoming-attack counter (30 hits taken) the v1 sim cannot observe — modeled as a ⚑ interval. S2 is a team ATK ▲90.75% / 5s with NO stated activation clause, modeled as a ⚑ interval; its damage-share clause is defensive and unmodeled (no HP pool, no boss damage). The burst is two equal 457.87% components; the second is kit-gated on the caster being in Calm status, which has no engine channel, so it is authored unconditionally and OVER-CREDITS on any burst cast outside a Calm window. The two S2 clauses are the same ■ block (\"Affects all allies\"), so the ATK buff and the share are one effect group — only the ATK half is live."
+}

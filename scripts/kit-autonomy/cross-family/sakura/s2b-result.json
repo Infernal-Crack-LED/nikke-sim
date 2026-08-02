@@ -1,0 +1,107 @@
+{
+  "slug": "sakura",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "After 3 normal attacks: Cherry Blossom Tea",
+      "disposition": "FAITHFUL",
+      "scope": "Triggered by the OWNER's normal attacks only (SR charged shots count as normal attacks; each shot = 1 round). The granted stat is a DEF buff (8.15% of DEF) — offensively inert in v1 (defPct), but the STACK COUNT is the real payload: it feeds the burst's max-stacks gate.",
+      "durationSemantics": "Stack buff: maxStacks 10, each application durationSec 15 (wall-clock — the text says 'sec', so this genuinely IS durationSec, not rounds). ⚑ refresh semantics are kit-silent: at SR cadence (~1 shot/1.3–1.7s incl. reload, 3 shots/stack ≈ 4–5s/stack), a NON-refreshing 15s per-stack expiry caps steady state at ~3–4 stacks and max stacks is NEVER reached; refresh-on-apply (the usual NIKKE behavior) reaches 10 stacks at ~30 rounds (~50s in). This choice decides whether the burst's max-stacks gate can EVER open.",
+      "triggerIdentity": "hitCount count:3 (counts the owner's ROUNDS — 1/shot for SR). Not interval, not teamAmmo, not team-wide hits.",
+      "targetSet": "All allies (including self).",
+      "nearestWrongModel": "An interval or per-shot trigger instead of hitCount:3; or counting TEAM attacks instead of sakura's own; or dropping the block entirely as 'DEF = defensive, inert' — which silently kills the stack pool the burst gate reads.",
+      "distinguishingAssertion": "Collect buffApply events for the skill1 key from sakura: the stacks field increments by exactly 1 immediately after every 3rd sakura shot event (cross-check against her shot events), reaches maxStacks 10, and expiresFrame − applyFrame ≈ 900 (15s). No application occurs without 3 intervening sakura shots (red under interval/per-shot/team-count readings).",
+      "inertness": "Toggling the DEF magnitude itself must move ZERO damage for all 5 units (defPct is inert in v1); only the stack bookkeeping is live.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "damage to that projectile ▲ 7.74%",
+      "disposition": "UNMODELED",
+      "scope": "Scoped to hits ON enemy projectiles only — an entity class the sim does not have (partless, projectile-less scope-lock boss).",
+      "durationSemantics": "'continuously' = passive while attacking a projectile; no timed window.",
+      "triggerIdentity": "Conditional passive on target type (enemy projectile) — no sim-representable trigger.",
+      "targetSet": "All allies.",
+      "nearestWrongModel": "Encoding it as a generic attackDamagePct or partsDamagePct that applies to boss damage — over-credits the whole team by ~7.74% in the Damage-Up bucket.",
+      "distinguishingAssertion": "withPatchedOverride deleting/zeroing any block derived from this line changes NO unit's total (exact equality under deterministic runComp). Any nonzero delta means it was mis-scoped onto boss damage.",
+      "inertness": "Must move zero damage; belongs verbatim in unmodeled.skill2.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Entering Full Burst: Burst CD ▼ 4.84 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Rotation-level effect, not a damage stat: reduces every ally's burst-skill cooldown by a FLAT 4.84 seconds on each Full Burst entry. This is sakura's primary damage-relevant line — it compresses rotations and raises full-burst count over 180s.",
+      "durationSemantics": "Instant, permanent CD reduction per activation (no duration window). NOT once-per-battle — the kit attaches no such clause here.",
+      "triggerIdentity": "fullBurstEnter (ANY team Full Burst), effect kind burstCdr seconds:4.84, oncePerBattle absent/false. Note: as a Burst I unit she is typically the sole B1 in her comps, so burstCast vs fullBurstEnter nearly coincide for HER — the honest distinguishers are repetition (every FB) and target breadth, not the trigger alone.",
+      "targetSet": "All allies (every unit's burst CD, not self-only).",
+      "nearestWrongModel": "oncePerBattle:true (only the first FB reduces CDs); or 4.84 misread as a PERCENT CD reduction; or target self-only; or a one-shot fillGauge-style substitution.",
+      "distinguishingAssertion": "Run 180s with the shipped override vs withPatchedOverride removing the burstCdr effect: the fullBurstStart event count must be STRICTLY greater with the effect present, and inter-FB gaps must keep shrinking on 2nd/3rd/later cycles (green only if the CDR fires on EVERY fullBurstStart — red under oncePerBattle, self-only, or percent readings, whose later-cycle timings match the no-CDR baseline).",
+      "inertness": "Must not add any damage event directly — its entire footprint is FB timing/count; per-shot damage values are untouched.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Wind Code enemies dmg ▼ 90.72% 30s, 1/battle",
+      "disposition": "UNMODELED",
+      "scope": "Reduces damage DEALT BY Wind-element enemies — purely defensive; the v1 boss deals no damage, and the control fixture's boss is Fire besides.",
+      "durationSemantics": "30 sec window, explicitly once per battle ('Activates 1 time(s) per battle' attaches to THIS sentence, not the following ATK line — see notes).",
+      "triggerIdentity": "burstCast (her own Burst I), element-conditioned on the enemy.",
+      "targetSet": "All allies (defensive mitigation).",
+      "nearestWrongModel": "Reading it as a Damage-Taken ▲ boss debuff (offense) instead of an enemy-outgoing-damage ▼ (defense) — would wrongly buff team damage; or letting its '1 time per battle' clause bleed onto the ATK line below.",
+      "distinguishingAssertion": "No damageTakenPct (or any offensive) buffApply is emitted for this line; deleting it changes no unit's total. Red if any boss-debuff encoding exists.",
+      "inertness": "Zero damage movement; verbatim in unmodeled.burst.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 23.76% of skill user's ATK, 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK buff, but CASTER-scaled: a flat add equal to 23.76% of SAKURA's ATK (Supporter static 98,367 at scope lock), not a % of each target's own ATK.",
+      "durationSemantics": "durationSec 10, wall-clock. Applies on EVERY burst cast — no once-per-battle clause on this sentence.",
+      "triggerIdentity": "burstCast (fires when SAKURA casts her Burst I — pre-FB timing), NOT fullBurstEnter. As the sole B1 in a comp she casts every rotation, so the practical distinguisher is the per-cast repetition and the caster-scaled value.",
+      "targetSet": "All allies (including self).",
+      "nearestWrongModel": "stat atkPct 23.76 (scaling each TARGET's own ATK — over-credits Attacker-class carries, whose static ATK is 118,027 > hers) ; or once-per-battle contamination from the preceding sentence; or keying to fullBurstEnter.",
+      "distinguishingAssertion": "buffApply events with stat 'casterAtkPct': emitted value is the FLAT ATK number ≈ 0.2376 × sakura's staticAtk (≈ 23,372 at scope lock, NOT 23.76), targetIdx spans all 5 slots, expiresFrame − applyFrame ≈ 600 (10s), and the application-set count EQUALS sakura's burstCast event count (> 1 over 180s). Red under atkPct (value 23.76), under once-per-battle (count 1), and under fullBurstEnter (applies on FBs without her cast — cannot happen while she is sole B1, so also assert apply frame precedes the paired fullBurstStart).",
+      "inertness": "Buff must lapse at 10s — damage events between t_cast+10s and the next cast carry no residue of it.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "@max Tea stacks: Parts dmg ▲ 23.54% 30s",
+      "disposition": "FAITHFUL",
+      "scope": "Interruption-Parts damage only — partsDamagePct, which is parsed-but-INERT in v1 (partless boss). The GATING is the modelable mechanic: active only when Cherry Blossom Tea is at max stacks (10).",
+      "durationSemantics": "30 sec window per qualifying activation.",
+      "triggerIdentity": "burstCast conditioned on the Tea pool being full at cast time (resourceGate {name:<tea>, min:10} on a burstCast block is the natural encoding) — i.e. 'cast burst WHILE at max stacks', not a standalone 'fires the instant stacks hit max' trigger, and not team fullBurstEnter.",
+      "targetSet": "All allies.",
+      "nearestWrongModel": "Ungated (every burst applies it); or a standalone stacks-reach-max trigger divorced from the burst cast; or — worse — encoding the stat as generic attackDamagePct 'since parts don't exist anyway', which converts an inert line into +23.54% live team damage.",
+      "distinguishingAssertion": "No partsDamagePct buffApply on any burst cast before sakura has fired ≥30 rounds (10 stacks × 3, assuming refresh-on-apply stacks); once stacks==10 at a cast, exactly one 30s partsDamagePct application per qualifying cast. AND: zeroing the magnitude changes NO unit's total (red if smuggled into a live Damage-Up stat).",
+      "inertness": "Damage-inert end to end (no parts on the boss) — its assertions are event/gating assertions plus a strict zero-total-delta check.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Cherry Blossom Tea 3-attack stack pool (gate feeder)",
+    "skill2:Burst Skill CD ▼ 4.84s on every Full Burst entry",
+    "burst:ATK ▲ 23.76% of caster's ATK, 10s, every cast",
+    "burst:Interruption Parts ▲ 23.54% gated on max Tea stacks (gating + inertness)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "When attacking an enemy projectile, damage to that projectile ▲ 7.74% continuously."
+    ],
+    "burst": [
+      "Damage dealt by Wind Code enemies ▼ 90.72% for 30 sec. Activates 1 time(s) per battle."
+    ]
+  },
+  "notes": "Reconcile four expected shared-prior traps. (1) SENTENCE ATTACHMENT: 'Activates 1 time(s) per battle' belongs to the Wind-Code mitigation sentence it follows, NOT to the ATK ▲ 23.76% line — a driver who lets it bleed forward under-credits every burst after the first; the assertion 'ATK-buff application count == burstCast count' is the tripwire. (2) casterAtkPct vs atkPct: sakura is a Supporter (static 98,367); mis-encoding as atkPct inflates Attacker carries by the 118,027/98,367 ratio — assert the FLAT emitted value. (3) FIXTURE SHAPE: sakura is Burst I, so she CANNOT be the controlComp carry (B3 slot); the test comp must place her as the SOLE B1 (replacing liter) with B2 + a B3 present, or her burstCast lines never fire and the CDR line is confounded by a competing B1. (4) TEA-STACK EXPIRY MATH: with a 15s per-stack duration and ~4–5s per stack at SR cadence (chargeFrames 60 + 22f release, ammo 6, reload 121f), NON-refreshing stacks plateau at ~3–4 and the max-stacks burst gate NEVER opens; refresh-on-apply reaches 10 at ~30 rounds. The choice is kit-silent → ⚑ measurement-gated, but damage-neutral today because the gated payload (partsDamagePct) is inert — document it rather than tune it. Also hold the line on inertness: three of six lines (projectile, Wind mitigation, parts) must each show EXACT zero total-damage delta when removed; the only damage-live channels are the FB-count shift from the 4.84s burstCdr and the 10s caster-scaled ATK buff. burstCdr emits no buffApply event, so test it behaviorally via fullBurstStart timestamps/counts.",
+  "model": "claude-fable-5"
+}
