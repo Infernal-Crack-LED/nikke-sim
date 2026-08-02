@@ -5220,6 +5220,44 @@
         "burst: 'Explosion Radius ▲100% for 10s' is UNMODELED — inert vs the single partless boss and no explosion-radius stat exists",
         "burst: the BUb 492.3% nuke is burstCast → noFb (lands before the Full Burst window, never takes the +50% major); the BUa trueDamagePct 60 self-buff pays off on her true-flavored S2a riders across the 10s post-burst window"
       ]
+    },
+    "viper": {
+      "name": "Viper (Treasure)",
+      "burst": "II",
+      "weapon": "SG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-01",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-01: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/viper.json + scripts/kit-autonomy/manual-review/viper.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Activates when entering Full Burst. Affects self. Vamp: Prevents being targeted by single-target attacks continuously. This effect is removed upon taking a direct hit. Invulnerable for 1 sec. — DEFENSIVE: no HP pool / targeting model / boss damage in v1, so prevents-targeting + invulnerable move nothing; only the offensive Vamp GATE for skill1's stacks is modeled (via the Full-Burst window, fbGate:'inFb')."
+        ],
+        "burst": [
+          "Affects the enemy if the enemy is the stage target. DEF ▼ 19.83% for 10 sec. — INERT and UNENACTABLE: boss DEF enters the formula only as the fixed config constant cfg.bossDef (sim.ts:1719 baseAtk = max(0, effectiveAtk − cfg.bossDef)); no buff/debuff channel feeds it, so the engine cannot apply an enemy DEF reduction at all, and the magnitude is negligible regardless (measured boss DEF ≈140 → ~0.01% damage at scope-lock ATK, docs/data/damage-calculation.md). NOT modeled as damageTakenPct (a different bucket/math that would over-credit a ~19.83% team vuln the kit does not deliver) — phantom/guilty/marciana precedent. The stage-target sustained-damage line that shares this header IS modeled (the dot block)."
+        ]
+      },
+      "caveats": [
+        "skill1: the S1b 'in Vamp status' gate is modeled as the Full-Burst window (fbGate:'inFb'), the closest available primitive — Vamp is technically permanent after the first FB in v1 (no direct hits), so the between-FB hit-rate-stack refresh is conservatively under-credited; the load-bearing sustained-DoT coupling is fully captured (⚑1).",
+        "burst: the 1029.6% nuke is the TREASURE prose value (authoritative SSOT); the datamine ulti table carries the untreasured base 462.85%.",
+        "burst: the DEF ▼ 19.83% line is inert (enemy DEF negligible at scope-lock; engine drops enemy DEF debuffs) and is NOT modeled — see unmodeled.burst."
+      ],
+      "board": null,
+      "date": "2026-08-01",
+      "evidence": "kit-autonomy gauntlet 2026-08-01; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged on all 10 lines (8 FAITHFUL + 2 documented gaps: Vamp/invulnerable defensive, DEF▼ inert-unenactable)",
+      "residual": "Vamp permanence ⚑1 (fbGate:'inFb' closest primitive; load-bearing sustained-DoT coupling captured; between-FB HR refresh <~1%); Hit Rate core yield derived ⚑2; SG cadence tuple unverified ⚑3; pellets-vs-pulls S1b accrual convention (moot, cap binds)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     }
   }
 }

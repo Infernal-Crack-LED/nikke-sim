@@ -1,0 +1,295 @@
+{
+  "slug": "viper",
+  "leakDetected": null,
+  "override": {
+    "slug": "viper",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 25.98,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "hitRatePct",
+            "value": 11.13,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "fbGate": "inFb",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "sustainedDamagePct",
+            "value": 4.4,
+            "durationSec": 10,
+            "maxStacks": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "hitRatePct",
+            "value": 1.84,
+            "durationSec": 10,
+            "maxStacks": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "hitRatePct",
+            "value": 21.96
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "reenterStage",
+            "stage": 2
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 1029.6
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": -19.83,
+            "durationSec": 10
+          },
+          {
+            "kind": "dot",
+            "atkPct": 105.3,
+            "durationSec": 10,
+            "intervalSec": 1,
+            "flavor": "sustained"
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Vamp: Prevents being targeted by single-target attacks continuously. This effect is removed upon taking a direct hit.",
+        "Invulnerable for 1 sec."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1 block A trigger: kit says the buff fires \"when the stage target appears\"; modeled as a passive self-applying 10s window at t=0. Whether it re-fires on boss transitions/phase changes is kit-silent and unmeasured.",
+      "⚑ skill1 block B is gated on the unit being in Vamp status (granted by skill2 on Full Burst entry, lost on a direct hit). The schema has no self-status gate (requiresTargetStatus is boss-scoped), so this is proxied with fbGate:'inFb' — CONSERVATIVE: real Vamp persists after the FB window until a direct hit, so the model under-credits post-FB stacking. Do not treat the proxy as the measured mechanic.",
+      "⚑ The self stacks (4.4% Sustained Damage / 1.84% Hit Rate, cap 10, 10s) are modeled as per-trigger-pull accrual via shotFired; the kit says only \"when attacking\", so pellets-vs-pulls accrual is unmeasured. With 9 rounds/magazine the cap is only reachable inside a single FB window if the accrual is per pull and no reload intervenes.",
+      "⚑ Total Hit Rate on this unit is large (21.96 continuous + 11.13 team-wide opener + up to 18.4 stacked). The Hit-Rate→core conversion magnitude is engine-derived and unmeasured for this unit — it is the single biggest lever on her modeled damage.",
+      "⚑ DEF ▼ 19.83% is authored as an enemy-targeted buff with stat 'defPct' and a NEGATIVE value; the sign/stat convention for boss DEF reduction was not verifiable from the schema comments (which describe defPct in its self/Endurance-cube role). If the engine expects a different channel, this line is wrong in encoding, not in magnitude.",
+      "The burst's Sustained Damage DoT is boosted by this unit's own skill1 Sustained Damage stacks — the two lines are coupled, so a stack-model error propagates into burst damage.",
+      "DoT append-not-refresh: each burst cast appends an independent 10s instance. With a 20s burst cooldown, instances should not overlap; if measured rotation lets her burst faster, verify no double-counting.",
+      "noFb is deliberately NOT set anywhere (default FB-by-timing ON, measured-only). The burst-cast instant hit is FB-exempt by cast timing, not by an override flag.",
+      "Weapon cadence (9 ammo, 122 reload frames, 10 pellets/shot) comes from the datamine and is unreliable per the standing prior; it was not adjusted here."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Viper (SG/Water/Attacker/Burst II) is modeled as: (skill1) a fight-open 10s team ATK+Hit-Rate window, plus a self-stacking Sustained-Damage/Hit-Rate ramp gated on Vamp status (proxied by fbGate:'inFb' — no self-status primitive exists); (skill2) a continuous self Hit-Rate passive and a rotation effect — her burst re-enters Burst Stage 2, letting a second Burst II ally cast in the same chain; (burst) a 1029.6% single-target nuke, a 10s boss DEF ▼, and a 10s 105.3%/sec Sustained DoT that her own skill1 stacks amplify. Defensive Vamp untargetability and the 1s invulnerability are deliberately unmodeled (no boss damage in v1) — but Vamp is NOT inert in principle: it is the enabling condition for the skill1 stack block, which is why that block carries a proxy gate rather than being skipped. The rotation-facing reenterStage effect is the highest-leverage line in this override and is the first thing to verify against a rotation log."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when stage target appears",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Block trigger passive + durationSec 10 on both buffs (t=0 one-shot window); target allies. ⚑ trigger mapping."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK 25.98% for 10 sec (all allies)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 25.98 durationSec 10, target allies (includes self)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Hit Rate 11.13% for 10 sec (allies)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff hitRatePct 11.13 durationSec 10, target allies."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Only when attacking in Vamp status",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired + fbGate 'inFb' as a conservative Vamp proxy (Vamp is granted on FB entry by skill2). ⚑ no self-status gate in schema."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Sustained Damage 4.4%, 10 stacks, 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff sustainedDamagePct 4.4 maxStacks 10 durationSec 10, target self; accrues per trigger pull."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Hit Rate 1.84%, 10 stacks, 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff hitRatePct 1.84 maxStacks 10 durationSec 10, target self."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Hit Rate 21.96% continuously (self)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "passive self buff hitRatePct 21.96, no duration (whole fight)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Header retained only as the source of Vamp status, which is proxied by the skill1 fbGate; no separate block authored because both of its payload lines are defensive."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Vamp: prevents single-target targeting",
+      "status": "SKIPPED",
+      "effectOrReason": "Defensive/targeting mechanic; the v1 boss deals no modeled damage so untargetability and its removal-on-hit are inert. Recorded verbatim in unmodeled.skill2. NOTE: it is the gate condition for the skill1 stack block."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Invulnerable for 1 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "Purely defensive; no HP pool / incoming damage modeled. Recorded verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill (allies)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast (own burst only — literal 'when using Burst Skill'), target allies."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Re-enters Burst Stage 2",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect reenterStage stage 2 — rotation stays at stage 2 so another eligible Burst II ally can also cast."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 1 designated enemy unit(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy on the nuke block; single-target is the only target in a solo-raid fight."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1029.6% of final ATK as damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 1029.6 on trigger burstCast. No core (text does not say core strike); noRange left engine-automatic; FB-exempt by cast timing, not by a noFb flag."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "if the enemy is the stage target",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "The scope-lock raid boss IS the stage target, so the gate is always satisfied; no conditional primitive authored."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF 19.83% down for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat defPct value -19.83 durationSec 10, target enemy (boss-held debuff). ⚑ stat/sign convention unverified."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "105.3% sustained dmg every 1s for 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "dot atkPct 105.3 durationSec 10 intervalSec 1 flavor 'sustained', target enemy, trigger burstCast. One instance appended per cast (20s CD ⇒ no overlap)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "passive block + durationSec 10 on each buff ⇒ a single 10s team window starting at t=0",
+      "reasoning": "\"Activates when the stage target appears\" has no matching TriggerDef. The stage target appears once, at fight start, so a passive block whose buffs carry a 10s duration reproduces the observable window. Risk: if the engine treats a passive block's buffs as permanently re-applied, this becomes a whole-fight team ATK+Hit-Rate buff — a large over-credit.",
+      "recipe": "Run controlComp('viper') with cfg.onEvent capturing buffApply for stat 'atkPct' value 25.98 and read expiresFrame; assert exactly one application at frame 0 and expiry at frame 600. If it re-applies or never expires, re-key. Then check footage for a second application at a boss transition."
+    },
+    {
+      "field": "skill1[1].fbGate",
+      "estimate": "'inFb' as a proxy for Vamp status",
+      "reasoning": "Vamp is granted on Full Burst entry and is 'continuous' until a direct hit; with no boss damage modeled it would in reality persist for the rest of the fight after the first FB. The schema's only status gate (requiresTargetStatus) is boss-scoped, so there is no way to express a self-status that turns on at FB entry and never turns off. 'inFb' under-credits (shots between FBs stop stacking); ungated would over-credit (stacks from t=0, before Vamp exists).",
+      "recipe": "Read popup damage on a recorded fight: compare her per-shot damage in the seconds immediately AFTER a Full Burst window closes against the same shots before her first FB. If post-FB shots stay elevated, Vamp persists and the correct model is a latching gate (first-FB onward), not 'inFb'."
+    },
+    {
+      "field": "skill1[1].effects[*].maxStacks accrual",
+      "estimate": "1 stack per trigger pull (shotFired), cap 10, 10s rolling",
+      "reasoning": "\"When attacking\" is ambiguous for a shotgun: 10 pellets land per pull, so a per-HIT reading would cap the stacks on the very first shot while a per-PULL reading needs 10 pulls (more than one 9-round magazine). The two readings differ by roughly a full magazine of ramp, which is material inside a 10s FB window.",
+      "recipe": "Count buffApply events for stat 'sustainedDamagePct' key over one magazine in a harness run; cross-check against footage by watching how many shots it takes for her Sustained DoT tick value to plateau after a burst."
+    },
+    {
+      "field": "skill1[*].hitRatePct + skill2[0]",
+      "estimate": "Hit Rate total up to ~51.5% (21.96 continuous + 11.13 opener + 1.84×10); core-lift magnitude unknown",
+      "reasoning": "Hit-Rate→core conversion is an engine-derived ⚑ per standing rule, and this unit stacks more Hit Rate than most. As a shotgun with 10 pellets per shot, the core-rate lift is the dominant term in her normal-attack damage — an error here swamps every other line in this override.",
+      "recipe": "Compare a run with HRCORE=0 against the default in the same process-free A/B (separate processes — the env table is read once at import) and report the delta; then validate against a recorded fight's core-hit popup fraction for her shots."
+    },
+    {
+      "field": "burst[1].effects[0]",
+      "estimate": "stat 'defPct', value -19.83, target enemy, 10s",
+      "reasoning": "The StatKey list documents defPct only in its self/Endurance-cube (inert) role and offers damageTakenPct as the explicit boss debuff. A boss DEF reduction is mechanically distinct from Damage Taken ▲ (it enters the formula's DEF subtraction, not the Damage Up bucket), so encoding it as damageTakenPct would be wrong even if it happened to move damage. The sign convention for a ▼ on an enemy target is unverified.",
+      "recipe": "Grep the committed overrides for an existing 'DEF ▼' carrier and match its encoding exactly; confirm with a harness run that buffApply fires with casterIdx===null && targetIdx===null (the boss-held-debuff signature) and that total damage rises, not falls."
+    },
+    {
+      "field": "base cadence tuple",
+      "estimate": "9 ammo / 122 reload frames / 10 pellets per shot, fire rate not stated",
+      "reasoning": "Datamined rate_of_fire and reloadFrames are the known-unreliable fields; effective cadence is quantized to 60fps frame boundaries so the nominal value is not the shots/sec the sim should use. Shot count drives both her stack ramp and her total normal damage.",
+      "recipe": "Read shots/sec directly off the ammo counter in a recorded fight (the instrument that measures the disputed quantity) rather than inferring it from full-burst counts."
+    }
+  ],
+  "model": "claude-opus-5"
+}

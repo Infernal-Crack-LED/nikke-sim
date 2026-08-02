@@ -1,0 +1,126 @@
+{
+  "slug": "viper",
+  "kitDescription": "Viper is a Water SG attacker whose identity is Burst-II re-entry: when she uses her burst, the chain re-opens Burst Stage 2 so a second Burst-II ally also casts in the same rotation. At battle start she gives the whole team a 10-second ATK and Hit Rate window. On entering Full Burst she gains Vamp status (untargetable, with 1s of invulnerability), and while attacking in Vamp she builds self-stacking Sustained Damage and Hit Rate buffs up to 10 stacks. Her burst deals a 1029.6% hit to one enemy, lowers the stage target's DEF for 10s, and applies a 105.3%-per-second sustained damage-over-time for 10s — the DoT being what her Sustained Damage stacks amplify. She also carries a permanent self Hit Rate passive.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "(1) 'Vamp persists AFTER the FB window closes' — blind asserts between-FB stack accrual; driver uses fbGate:'inFb'. Classified: DOCUMENTED_GAP (⚑1, reconciled; no permanent-after-first-FB primitive exists, S4 forbids engine change, load-bearing sustained-DoT coupling fully captured, residual <~1%).",
+      "(2) 'DEF 19.83% is a BOSS-held debuff' + (3) 'DEF debuff lifts the WHOLE team' — blind models DEF▼ as load-bearing; driver holds it inert/unmodeled. Classified: RECON_ERROR against the blind on ground truth (sim.ts:1719 cfg.bossDef is a fixed constant with no debuff channel — unenactable; SSOT magnitude ~0.01%; phantom/guilty/marciana precedent).",
+      "(4,5) S1b/S2a 'removing them ... moves NO teammate' — the damage-cost half PASSES (driver probe: -5.2% / -7.2% viper total); only the blind's relDiff<1e-9 byte-identical-teammate tolerance fails on a ~0.07% multi-unit coupling artifact. Classified: RECON_ERROR (blind over-strictness; driver scopes both lines self correctly)."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "stage target appears: ATK ▲25.98% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive → allies atkPct 25.98 dur10 (battle-start window, lapses, never refires)",
+        "blindSaid": "S5+S6 identical: exactly one buffApply per ally at t=0, expires ~f600",
+        "formulaCheck": "atkPct sums into the (1+ΣATK%) multiplier — correct bucket; all-allies scope correct",
+        "fireRateOk": true,
+        "explanation": "Applies to all 4 allies at frame 0 for exactly 600f; boss (the stage target) is present from t=0 so the single-application read is faithful; refire on transitions is a documented conservative read (S6 ⚑, driver note), single-boss scope makes it moot."
+      },
+      {
+        "kitLine": "Hit Rate ▲11.13% 10s (all allies)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "same block, hitRatePct 11.13 dur10 → allies",
+        "blindSaid": "identical encoding, independently derived",
+        "formulaCheck": "hitRatePct feeds the SG core-hit lift (hrCoreMult/UNIGEO) — correct routing; damage YIELD is derived ⚑ (out of scope for magnitude, flagged by both)",
+        "fireRateOk": true,
+        "explanation": "Same 10s opener window as the ATK line; converged by both blind agents."
+      },
+      {
+        "kitLine": "in Vamp: Sustained Dmg ▲4.4% ×10 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired → self sustainedDamagePct 4.4 maxStacks10 dur10, fbGate:'inFb'; ⚑1 documents the Vamp-permanence residual",
+        "blindSaid": "S6 byte-identical block incl. fbGate:'inFb'; S5 asserts the same stacks but also the stricter permanent-after-FB gate (the one red)",
+        "formulaCheck": "sustainedDamagePct gates to sustained-flavored hits only (sim.ts:1688) — sole consumer is the burst DoT; nuke is plain-flavored so no double-dip; correct",
+        "fireRateOk": true,
+        "explanation": "Stacks ramp 1→10 inside the FB window (probe f367→f806, per-pull accrual caps in ~7s < 10s window even under the pellets-vs-pulls ambiguity, so end state is identical). The gate is the closest available primitive: Vamp is permanent-after-first-FB in v1, and the engine has no such gate; the load-bearing coupling (FB DoT ticks shrink when S1b removed) is fully captured. Residual = between-FB hit-rate-stack refresh on normals, <~1%, declared ⚑1 with recipe. DOCUMENTED_GAP-grade residual on an otherwise faithful line — not a gotcha."
+      },
+      {
+        "kitLine": "Hit Rate ▲1.84% ×10 10s (Vamp)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "same stack block, hitRatePct 1.84 maxStacks10",
+        "blindSaid": "identical, both blinds",
+        "formulaCheck": "correct stat/scope/cap; yield derived ⚑ as above",
+        "fireRateOk": true,
+        "explanation": "Rides the same gated stacker; reaches the cap each FB window."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Hit Rate ▲21.96% continuously (self)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive → self hitRatePct 21.96, no expiry",
+        "blindSaid": "identical, both blinds; S5 confirms expiresFrame null",
+        "formulaCheck": "self-only (not allies) — correct; feeds core lift ⚑",
+        "fireRateOk": true,
+        "explanation": "Permanent self buff; driver's removal test proves it is a distinct live line from the V1/V2 hit-rate grants."
+      },
+      {
+        "kitLine": "Vamp + Invulnerable 1 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill2; defensive — no HP pool/targeting/boss damage in v1; only its offensive gate (S1b) is modeled",
+        "blindSaid": "S5: 3 it.skip GAPs; S6: same unmodeled lines",
+        "formulaCheck": "no damage-side term exists for untargetability/invulnerability; inert at scope lock",
+        "fireRateOk": true,
+        "explanation": "Full three-way agreement; recorded verbatim, not silently dropped."
+      },
+      {
+        "kitLine": "using Burst: Re-enters Burst Stage 2",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies reenterStage stage 2; probe: viper B2 f251 → crown B2 f281 (exactly STAGE_CAST_GAP 30f) → helm B3 f311",
+        "blindSaid": "S6 identical block; S5 independently required burstCast trigger identity (not fullBurstEnter) and the two-B2 fixture",
+        "formulaCheck": "matches sim.ts reenterStage detection (burstCast + stage===castStage + eligible partner); Tia/Anis:Star precedent",
+        "fireRateOk": true,
+        "explanation": "Meta-defining line, observable in the driver's crown fixture: both B2s cast before the B3 only with re-entry; counterfactual (removed) leaves crown without a chain-1 cast. Discriminates cleanly."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "1029.6% of final ATK to 1 enemy",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage 1029.6, plain flavor, fbMajorApplied=false verified",
+        "blindSaid": "S6 identical value (TREASURE prose, not base-table 462.85); S5 asserts magnitude + FB-exemption",
+        "formulaCheck": "B2 cast lands before FB opens (SSOT burst boundary rule) — no +50% major, correct; plain flavor correct (no S1b double-dip); '% of final ATK' uses live buffed ATK ✓",
+        "fireRateOk": true,
+        "explanation": "One nuke per cast at the treasure-prose magnitude; the base-table 462.85 counterfactual is pinned as the nearest-wrong model (helm/phantom prose-vs-base precedent, DECISIONS 2026-07-17)."
+      },
+      {
+        "kitLine": "DEF ▼19.83% for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.burst with sim.ts:1719 citation: cfg.bossDef is a fixed config constant, no debuff channel feeds it — unenactable — plus ~0.01% magnitude (SSOT boss DEF ≈140); explicitly NOT damageTakenPct",
+        "blindSaid": "S6 modeled it as inert-visible enemy defPct (guilty-style), NOT damageTakenPct — agrees it is inert; S5 modeled it load-bearing (the red pair)",
+        "formulaCheck": "formula confirms: DEF is a small flat subtractive term; 19.83% of 140 ≈ 28 ATK ≈ 0.01% at scope lock; damageTakenPct would be the wrong bucket and a ~19.83% over-credit",
+        "fireRateOk": true,
+        "explanation": "Engine-verified unenactable + negligible + three-unit precedent (phantom/guilty/marciana). The driver's verbatim-unmodeled style and the blind's inert-visible defPct style are both repo-sanctioned; S2b's load-bearing framing is overridden on ground truth, and S2b itself agreed damageTakenPct is wrong. Reconciled to the driver — a RECON_ERROR by the blind, not a driver gotcha."
+      },
+      {
+        "kitLine": "105.3% sustained every 1s for 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy dot 105.3 dur10 int1 flavor sustained; 10 ticks per cast pinned; stage-target condition collapses to always-true (single boss)",
+        "blindSaid": "S6 byte-identical block; S5 asserts one instance per cast, exact 10s duration, sustained flavor",
+        "formulaCheck": "DoT rules ✓ — no core/range, FB by landing time (early ticks pre-FB, later in-FB), Attack-Damage and sustainedDamagePct apply (the S1b coupling), crit per engine DOT_CRIT default",
+        "fireRateOk": true,
+        "explanation": "Exactly 10 ticks per measurable cast; removal deletes all 105.3 ticks; the S1b sustained-stack coupling is probe-confirmed load-bearing. (Note: S2b's side-remark 'crit default OFF' misstates the engine — DOT_CRIT is ON by default per SSOT 2026-07-21 and the override sets no crit override, so shipped behavior follows the SSOT default; a reviewer misstatement, not an encoding issue.)"
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0 (10/10 kit lines FAITHFUL or DOCUMENTED_GAP: 8 FAITHFUL + 2 DOCUMENTED_GAP [Vamp/invulnerable defensive, DEF▼ inert-unenactable]; the fbGate Vamp-permanence residual is a declared ⚑ inside a FAITHFUL line, not an undocumented divergence)",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA found: every blind-vs-driver divergence is either a reconciled DOCUMENTED_GAP or a blind-side RECON_ERROR. The blind S6 override converges on the driver's full encoding set byte-for-byte on every load-bearing line (battle-start team window, fbGate-gated self stacks, continuous self HR, burstCast reenterStage 2, treasure-value 1029.6 nuke, sustained 105.3 DoT) — the only diff is the cosmetic inert-encoding style of DEF▼19.83% (both agree it is inert; neither uses damageTakenPct). The two contested dispositions resolve to the driver on ground truth: DEF▼ is unenactable (sim.ts:1719, no enemy-DEF debuff channel) and negligible (~0.01%, SSOT) with phantom/guilty/marciana precedent, and fbGate:'inFb' is the closest available Vamp primitive with the load-bearing sustained-DoT coupling fully captured and the <~1% between-FB hit-rate residual declared as ⚑1 with a recipe. Driver tests discriminate (462.85 base-nuke counterfactual, gate-removed stacker, re-entry removal all fail as named); the driver's crown fixture correctly exposes the re-entry the blind's raw fixture vacuated (blind artifact, fixed in the adapted run where 15/20 pass and 0 of 5 fails indicate driver infidelity). Same-model residual the owner should spot-check: (a) the pellets-vs-pulls accrual convention for the S1b stacks (unflagged by the driver, flagged by S6; behaviorally moot since the cap binds inside the window either way, but the ramp profile is cadence-derived ⚑3); (b) S2b's 'DoT crit default OFF' remark contradicts the SSOT DOT_CRIT-on default — the shipped encoding follows the SSOT, but the convergence record's prose is wrong on that point; (c) all three agents share the same 'stage target appears = one t=0 application' read, a stable-but-unmeasured convention.",
+  "model": "kimi-code/k3"
+}

@@ -1,0 +1,148 @@
+{
+  "slug": "viper",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 25.98,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 11.13,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "fbGate": "inFb",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 4.4,
+          "durationSec": 10,
+          "maxStacks": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 1.84,
+          "durationSec": 10,
+          "maxStacks": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 21.96
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "reenterStage",
+          "stage": 2
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1029.6
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": -19.83,
+          "durationSec": 10
+        },
+        {
+          "kind": "dot",
+          "atkPct": 105.3,
+          "durationSec": 10,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Vamp: Prevents being targeted by single-target attacks continuously. This effect is removed upon taking a direct hit.",
+      "Invulnerable for 1 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 skill1 block A trigger: kit says the buff fires \"when the stage target appears\"; modeled as a passive self-applying 10s window at t=0. Whether it re-fires on boss transitions/phase changes is kit-silent and unmeasured.",
+    "\u2691 skill1 block B is gated on the unit being in Vamp status (granted by skill2 on Full Burst entry, lost on a direct hit). The schema has no self-status gate (requiresTargetStatus is boss-scoped), so this is proxied with fbGate:'inFb' \u2014 CONSERVATIVE: real Vamp persists after the FB window until a direct hit, so the model under-credits post-FB stacking. Do not treat the proxy as the measured mechanic.",
+    "\u2691 The self stacks (4.4% Sustained Damage / 1.84% Hit Rate, cap 10, 10s) are modeled as per-trigger-pull accrual via shotFired; the kit says only \"when attacking\", so pellets-vs-pulls accrual is unmeasured. With 9 rounds/magazine the cap is only reachable inside a single FB window if the accrual is per pull and no reload intervenes.",
+    "\u2691 Total Hit Rate on this unit is large (21.96 continuous + 11.13 team-wide opener + up to 18.4 stacked). The Hit-Rate\u2192core conversion magnitude is engine-derived and unmeasured for this unit \u2014 it is the single biggest lever on her modeled damage.",
+    "\u2691 DEF \u25bc 19.83% is authored as an enemy-targeted buff with stat 'defPct' and a NEGATIVE value; the sign/stat convention for boss DEF reduction was not verifiable from the schema comments (which describe defPct in its self/Endurance-cube role). If the engine expects a different channel, this line is wrong in encoding, not in magnitude.",
+    "The burst's Sustained Damage DoT is boosted by this unit's own skill1 Sustained Damage stacks \u2014 the two lines are coupled, so a stack-model error propagates into burst damage.",
+    "DoT append-not-refresh: each burst cast appends an independent 10s instance. With a 20s burst cooldown, instances should not overlap; if measured rotation lets her burst faster, verify no double-counting.",
+    "noFb is deliberately NOT set anywhere (default FB-by-timing ON, measured-only). The burst-cast instant hit is FB-exempt by cast timing, not by an override flag.",
+    "Weapon cadence (9 ammo, 122 reload frames, 10 pellets/shot) comes from the datamine and is unreliable per the standing prior; it was not adjusted here."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Viper (SG/Water/Attacker/Burst II) is modeled as: (skill1) a fight-open 10s team ATK+Hit-Rate window, plus a self-stacking Sustained-Damage/Hit-Rate ramp gated on Vamp status (proxied by fbGate:'inFb' \u2014 no self-status primitive exists); (skill2) a continuous self Hit-Rate passive and a rotation effect \u2014 her burst re-enters Burst Stage 2, letting a second Burst II ally cast in the same chain; (burst) a 1029.6% single-target nuke, a 10s boss DEF \u25bc, and a 10s 105.3%/sec Sustained DoT that her own skill1 stacks amplify. Defensive Vamp untargetability and the 1s invulnerability are deliberately unmodeled (no boss damage in v1) \u2014 but Vamp is NOT inert in principle: it is the enabling condition for the skill1 stack block, which is why that block carries a proxy gate rather than being skipped. The rotation-facing reenterStage effect is the highest-leverage line in this override and is the first thing to verify against a rotation log."
+}
