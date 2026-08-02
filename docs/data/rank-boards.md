@@ -101,18 +101,20 @@ Two boards per unit:
   Aquamarine's Electric Code) set the carries to the advantaged element that
   wakes the debuff.
 
-**Pair profiles** (`w/ Prika` / `w/ Mint` / `w/ Anchor` / `w/ Bunny`):
+**Pair profiles** (`w/ Prika` / `w/ Mint` / `w/ Anchor` / `w/ Rouge`):
 **Mint**, **Prika**, **Mast: Romantic Maid**, and **Blanc** are ranked with and
-without their canonical B2 partner (`w/ Prika` / `w/ Mint` / `w/ Anchor` / `w/
-Bunny` / `null`). The value shown is the _tested buffer's marginal added team
+without their canonical partner (`w/ Prika` / `w/ Mint` / `w/ Anchor` / `w/
+Rouge` / `null`). The value shown is the _tested buffer's marginal added team
 damage %_ when the pair is played together, versus a baseline where the tested
 slot is a no-op B2 but the partner is still present in solo/default mode. Mint
 and Prika force each other into their duet kit modes; Mast and Anchor are real
-units; Blanc's `w/ Bunny` partner is a synthetic no-op placeholder that
-represents her "ally from the same squad" condition being satisfied. The rows are
-not additive: each row measures what the tested unit adds on top of the partner
-already being in the team, including the synergy that forces the partner into
-its duet mode (Mint/Prika) or simply adds the tested B2 alongside the partner
+units; Blanc's `w/ Rouge` partner is a synthetic no-op Rouge (B1) whose
+presence satisfies her "ally from the same squad" gate — her squad is Noir and
+Rouge only, so the plain row leaves that CDR naturally inert while the `w/
+Rouge` row shows the kit engine running. The rows are not additive: each row
+measures what the tested unit adds on top of the partner already being in the
+team, including the synergy that forces the partner into its duet mode
+(Mint/Prika) or simply adds the tested B2 alongside the partner
 (Mast/Anchor/Blanc).
 
 Read generic as plug-and-play value and typed as built-around value. Purely
