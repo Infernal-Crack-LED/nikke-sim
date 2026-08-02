@@ -33,6 +33,10 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # Boards before the gate, so vitest's board-join tests run instead of
+      # skipping — same rationale and same placement as ci.yml's step; see there
+      # for why this is a workflow step rather than part of the `full` tier.
+      - run: npm run dpschart && npm run ranks:all
       # THE gate for a production deploy (2026-08-01). This used to be a cheap
       # typecheck + `npm test` pre-flight, on the rationale that railway.json's
       # buildCommand (`verify.sh deploy`) re-ran the full gate inside the build

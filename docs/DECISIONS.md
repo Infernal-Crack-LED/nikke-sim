@@ -1678,8 +1678,15 @@ ranks:all`. **And where they DID run, unrelated commits failed them:** on 2026-0
   the goldens skipped in exactly the same places — but it does make it visible, and it is now cheap
   to close: `npm run dpschart` fell from 245s to 16s worst-case (entry above), so building the
   boards in CI costs ~25s locally / low minutes on a runner, versus the "multi-minute
-  build-dpschart run" that put them out of `verify.sh full` in the first place. Tracked in
-  QUEUE.md. **Evidence the switch is inert:** with the snapshot in place
+  build-dpschart run" that put them out of `verify.sh full` in the first place.
+  **CLOSED the same day (owner: "CI minutes are free, the only cost is time, which is negligible
+  here"):** `npm run dpschart && npm run ranks:all` now runs as a STEP in both `ci.yml` and
+  deploy.yml's gate job, before `verify.sh full` — deliberately a workflow step rather than a
+  member of the `full` tier, so a fresh isolated engine worktree can still run `full` with no board
+  build, which is the property that excluded them originally. Verified by simulating a fresh
+  checkout (all five board artifacts moved off disk): the step completes in 24s and
+  `unit-card-data.test.ts` + `infographics-golden.test.ts` go from 23 passed / 15 skipped to
+  **38 passed / 0 skipped**. **Evidence the switch is inert:** with the snapshot in place
   all nine fixtures render at 0 differing pixels (so the trim drops nothing the card reads), and
   the golden file passes 13/13 with the five board artifacts moved off disk — previously 2 of
   those skipped. The snapshot is trimmed to what the card actually reads (the fixture slug's
