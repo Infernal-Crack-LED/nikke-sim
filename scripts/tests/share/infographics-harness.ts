@@ -377,19 +377,19 @@ export async function buildResourcesFixtureCard(): Promise<ResourcesCardData> {
 // from `loadUnitCardSources()`'s live read of web/public/*.json. Those five
 // boards are gitignored BUILD OUTPUTS, which made these two goldens the only
 // non-hermetic ones and cost them both ways: the test had to SKIP wherever the
-// boards were absent — which is everywhere automated, since CI runs
-// `verify.sh full` and the deploy box runs `verify.sh artifacts` (no gate), so
-// they only ever executed on a dev machine that had run `dpschart && ranks:all`
-// — and where they DID run, any kit commit that reordered a board failed them.
+// boards were absent — which was everywhere automated, so they only ever
+// executed on a dev machine that had run `dpschart && ranks:all` — and where
+// they DID run, any kit commit that reordered a board failed them.
 // That is data churn wearing renderer drift's clothes: on 2026-08-01 crown's
 // Burst Gen rank moved #37 → #41 (her rate unchanged) purely because a
 // kit-autonomy batch landed above her, and the goldens failed for it. Freezing
 // the join's INPUT makes the picture a pure function of the renderer, which is
-// what a golden is for. The live join is unit-card-data.test.ts's job — though
-// note that file skips its artifact-backed cases without the boards (25/25 on a
-// built tree, 10 pass + 15 SKIP without), so the live join has no automated
-// coverage today either. Separate hole, tracked in QUEUE.md; freezing these
-// goldens neither caused it nor closes it.
+// what a golden is for. The live join is unit-card-data.test.ts's job; that file
+// still skips its artifact-backed cases when the boards are absent (25/25 on a
+// built tree, 10 pass + 15 SKIP without), which is why ci.yml and deploy.yml's
+// gate job build them as a workflow step before `verify.sh full`. A bare local
+// `verify.sh full` in a fresh worktree still skips those — deliberately, so an
+// isolated engine worktree needs no board build.
 //
 // Refresh deliberately, after an intentional data/board change:
 //   npm run fixtures:infographics -- --sources   (then regenerate the PNGs)
