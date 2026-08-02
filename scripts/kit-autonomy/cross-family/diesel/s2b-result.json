@@ -1,0 +1,135 @@
+{
+  "slug": "diesel",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ entering Full Burst → DEF ▲ 25.92%",
+      "disposition": "FAITHFUL",
+      "scope": "generic self DEF stat (defPct) — no attack-type scoping",
+      "durationSemantics": "wall-clock 10 sec (durationSec: 10); 'for 10 sec' is literal seconds, not rounds",
+      "triggerIdentity": "fullBurstEnter — 'Activates when entering Full Burst' fires on ANY team Full Burst, NOT burstCast (diesel's own cast)",
+      "targetSet": "self",
+      "nearestWrongModel": "keying it to burstCast so it only applies on rotations diesel herself bursts — or dropping the block entirely because defPct is engine-inert",
+      "distinguishingAssertion": "onEvent captures a buffApply {stat:'defPct', value:25.92, targetSlug:'diesel'} at EVERY fullBurstStart (including any FB where diesel did not cast), with expiresFrame ≈ apply+600 frames; faithful=one apply per FB entry, nearest-wrong=applies only on diesel's own cast rotations",
+      "inertness": "totals() for all 5 units must be IDENTICAL with this block present vs deleted via withPatchedOverride (defPct is inert in v1 — self DEF never feeds own damage)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ attacked in Attract → recover 12.96% HP",
+      "disposition": "UNMODELED",
+      "scope": "self-heal on RECEIVING an attack while Attract status is live",
+      "durationSemantics": "instant per-proc heal; no duration",
+      "triggerIdentity": "incoming-damage trigger gated on Attract status — NO TriggerDef primitive exists for 'when attacked' (v1 boss deals no modeled damage), and the Attract gate would need the burst's taunt tracked as a named status",
+      "targetSet": "self",
+      "nearestWrongModel": "encoding it as an interval or hitCount self-heal — which would emit spurious 'heal' effects and could someday feed a recovery-trigger consumer; or silently dropping it without an unmodeled entry",
+      "distinguishingAssertion": "event log contains ZERO heal/recovery events sourced from diesel skill1; the line appears VERBATIM in override.unmodeled.skill1",
+      "inertness": "no damage channel may move from this line; no recovery events reach any teammate (self-targeted even if modeled — Crown-style recovery consumers must stay silent)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ 150 normal attacks in Attract → stack+1",
+      "disposition": "GAP",
+      "scope": "diesel's own landed normal attacks, counted only while Attract status is live (10s post-burst windows)",
+      "durationSemantics": "'Stack count of buffs ▲ 1' — a stack-CAP delta (most plausibly Strawberry Candy 10 → 11), not a timed buff; no primitive expresses a runtime max-stack increase",
+      "triggerIdentity": "hitCount:150 (counts ROUNDS; MG hitsPerShot=1 so rounds = pulls) composed with a status gate — would need requiresTargetStatus:'Attract' opened by the burst's taunt; the hit counter must only accrue inside Attract windows, which plain hitCount cannot express",
+      "targetSet": "self",
+      "nearestWrongModel": "ungated hitCount:150 granting a permanent generic buff, or raising maxStacks statically to 11 from t=0 — both over-credit outside Attract windows; alternatively silent drop with no unmodeled record",
+      "distinguishingAssertion": "no buffApply changes any diesel buff's maxStacks field mid-fight; Strawberry Candy buffApply events carry maxStacks:10 throughout; the line appears verbatim in unmodeled.skill1 (engine lacks a stack-cap-delta primitive)",
+      "inertness": "the skill2 max-stacks threshold (and hence team-reload cadence) must NOT shift due to any phantom cap-11 encoding",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ 70 normal attacks → Max Ammo ▲ 56.7%",
+      "disposition": "FAITHFUL",
+      "scope": "self weapon-state modifier — maxAmmoPct; this IS damage (magazine size gates reload frequency and therefore shots fired; reloadFrames=151 ≈ 2.5s per reload avoided)",
+      "durationSemantics": "PER-STACK value 56.7% stacking to 10 (literal: +567% at cap → magazine ≈ 300×6.67 ≈ 2001), each stack/pool lasting 10 sec, refreshed on re-application; durationSec:10 + maxStacks:10 — NOT durationShots",
+      "triggerIdentity": "hitCount:70 — 'after landing 70 normal attack(s)', counts ROUNDS (MG hitsPerShot=1 → 70 bullets), fires every 70 cumulative hits, each fire = +1 stack; no FB gate",
+      "targetSet": "self",
+      "nearestWrongModel": "reading 56.7% as the TOTAL at max stacks (magazine ~470 instead of ~2001) — a ~4× error in reload cadence; second nearest: omitting maxStacks so one application sits at a flat 56.7%",
+      "distinguishingAssertion": "buffApply events {stat:'maxAmmoPct', value:56.7, targetSlug:'diesel'} show stacks incrementing 1→10 as hits accrue (one increment per 70 rounds); under sustained fire diesel's reload events become dramatically sparser after ramp than in the first magazine — faithful=stacks:10 with value 56.7 each, nearest-wrong=a single-stack or value-5.67-per-stack shape",
+      "inertness": "no ally receives maxAmmoPct from this block (self only); diesel's pre-70-hit opening magazine stays exactly 300",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ max Candy stacks → team reload+Pierce▲",
+      "disposition": "FAITHFUL",
+      "scope": "two team-wide effects on one trigger: an instant magazine refill (86.62% of magazine = instantReload fraction ~0.8662, an ammo-economy/damage effect) and Pierce Damage ▲30% (feeds the Damage-Up bucket ONLY for Pierce-tagged attacks — inert on non-pierce attackers)",
+      "durationSemantics": "reload is instantaneous; Pierce Damage ▲30% is durationSec:10; the Strawberry Candy stacks are REMOVED at activation (the maxAmmoPct buff drops to zero and the sawtooth rebuilds from 0 — a build-consume-rebuild cycle of ~700 landed rounds per period)",
+      "triggerIdentity": "threshold event: fires at the moment the 10th Strawberry Candy stack is reached, then consumes the stacks ('when the skill user reaches max stacks … after stacks are removed'); an every-700-hits approximation (hitCount:700 or everyN:10 on the 70-hit block) is acceptable ONLY if stack expiry (10s) provably never interrupts accrual — reload gaps (151f) are shorter than 10s so continuous-fire accrual holds, but this cadence equivalence is a ⚑ claim",
+      "targetSet": "all allies INCLUDING self (NIKKE 'all allies' includes the caster) — target {kind:'allies'} with no excludeSelf",
+      "nearestWrongModel": "'Reload 86.62% of the magazine' mis-encoded as a reloadSpeedPct buff (reload-time reduction) instead of an instantReload fraction refill; second nearest: Pierce Damage ▲ encoded as generic attackDamagePct crediting the whole team's non-pierce attacks; third: stacks NOT removed, leaving the +567% magazine permanent",
+      "distinguishingAssertion": "at the trigger frame the log shows (a) reload/refill effects reaching ALL FIVE slots at once (mid-magazine ammo jumps, not shortened reload durations), (b) buffApply {stat:'pierceDamagePct', value:30} on all 5, and (c) diesel's maxAmmoPct stack pool reset to 0 immediately after (next buffApply restarts at stacks:1) — faithful=refill+stat-30+stack-reset; nearest-wrong=reloadSpeedPct events or a stack pool that never resets",
+      "inertness": "with a non-Pierce carry comp, patching pierceDamagePct 30→0 via withPatchedOverride must leave every unit's totals() UNCHANGED (Pierce Damage ▲ must not leak into non-pierce Damage-Up); the refill must NOT fire lastBullet triggers as if a natural reload completed",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ 5 enemies highest ATK → 299.66% dmg",
+      "disposition": "FAITHFUL",
+      "scope": "instant burst-cast nuke, 299.66% of diesel's final ATK; single-target vs the solo raid boss — 'Affects 5 enemy unit(s)' selects up to 5 DISTINCT enemies, so the partless single boss takes exactly ONE hit, never ×5",
+      "durationSemantics": "instant, once per burst cast (20s cd)",
+      "triggerIdentity": "burstCast (diesel's OWN Burst-II cast) — never fullBurstEnter; burst-cast damage lands BEFORE the Full Burst window opens, so it is FB-exempt (no +50% major) and takes no FB-entry auras",
+      "targetSet": "enemy (boss)",
+      "nearestWrongModel": "multiplying the hit ×5 on the single boss (a flat 5× over-credit); second nearest: letting it land inside FB and collect the +50% full-burst major",
+      "distinguishingAssertion": "per diesel burstCast event there is EXACTLY ONE damage event with mult ≈ 2.9966 (bucket: burst/flat), srcSlot = diesel's, with fbMajorApplied:false and inFullBurst:false (lands pre-FB) — faithful=1 hit no-FB; nearest-wrong=5 damage events or fbMajorApplied:true",
+      "inertness": "hit count per cast is 1; damage does not scale with FB state or with any enemy-count knob",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ self Max HP ▲ 100.05% no-restore 10s",
+      "disposition": "FAITHFUL",
+      "scope": "self Max HP stat buff ('Max HP ▲ X%' of the TARGET's own Max HP → emitted as flat HP under stat 'maxHpFlat'); offensively inert for diesel — she has NO atkOfMaxHpPct / HP-scaling consumer — but the buff is KEPT (future-consumer rule: HP/DEF grants stay modeled even when engine-inert)",
+      "durationSemantics": "durationSec:10; 'without restoring HP' means no heal event accompanies it — the grant must NOT emit a recovery trigger",
+      "triggerIdentity": "burstCast (self line inside her own burst block)",
+      "targetSet": "self",
+      "nearestWrongModel": "emitting a paired heal/recovery event alongside the HP grant (the text explicitly says WITHOUT restoring HP — a heal would wrongly fire any teammate-facing recovery machinery), or dropping the line entirely",
+      "distinguishingAssertion": "on diesel's burst cast, one buffApply {stat:'maxHpFlat', targetSlug:'diesel'} appears (value = 100.05% of her Max HP, flat-resolved) with NO recovery/heal event in the same frame window — faithful=stat-only apply; nearest-wrong=an accompanying heal event",
+      "inertness": "all 5 units' totals() identical with the block present vs removed (no HP→ATK consumer on diesel); no ally receives the grant",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attract: Taunt all enemies for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "defensive taunt — boss targeting/aggro is unmodeled in v1 and the boss deals no modeled damage",
+      "durationSemantics": "10 sec status window per burst cast",
+      "triggerIdentity": "burstCast applying a named status; NOTE: this is the status that GATES skill1's heal line and 150-hit line — if those are ever modeled, the faithful encoding is a targetStatus {name:'Attract', durationSec:10} effect (name-keyed so no other kit's status satisfies it) rather than nothing",
+      "targetSet": "enemy (all enemies / the boss)",
+      "nearestWrongModel": "silently dropping it with no unmodeled record, severing the only gate source for both Attract-gated skill1 lines and hiding the linkage from future modeling passes",
+      "distinguishingAssertion": "the line appears verbatim in unmodeled.burst (or, if modeled as a status key, a buffApply/targetStatus 'Attract' with casterIdx:null && targetIdx:null appears per burst cast and moves ZERO damage)",
+      "inertness": "no damage channel moves from the taunt itself; graded comps unchanged",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:FB-enter DEF ▲25.92% 10s (inert-but-present + inertness assert)",
+    "skill2:Strawberry Candy hitCount:70 maxAmmoPct 56.7 ×10 stacks 10s",
+    "skill2:max-stacks → team instantReload 86.62% + pierceDamagePct 30 + stack reset",
+    "burst:burstCast 299.66% single-hit FB-exempt nuke",
+    "burst:self Max HP ▲100.05% 10s stat-only (no heal event)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Activates when attacked in Attract status. Affects self. Recovers 12.96% of the skill user's final Max HP as HP.",
+      "Activates after landing 150 normal attack(s) in Attract status. Affects self. Stack count of buffs ▲ 1."
+    ],
+    "skill2": [],
+    "burst": ["Attract: Taunt all enemies for 10 sec."]
+  },
+  "notes": "Reconciliation points for the driver. (1) FIXTURE: diesel is Burst II — controlComp() fixes crown at B2 and puts the carry in a B3 slot; a B2 carry either competes with crown at stage 2 or never casts at all depending on first-ready selection. Tests MUST assert diesel actually emits burstCast events in the fixture used (else the burst nuke, Max-HP buff, and Attract lines are all silently dead and every burst assertion is vacuous); if she never casts, build a custom comp with a real B3 instead of blindly using controlComp. (2) SHARED-PRIOR MISREADS I most expect: 'Reload 86.62% of the magazine' encoded as reloadSpeedPct instead of an instantReload-style refill; Pierce Damage ▲30% encoded as generic team damage (it must be inert for non-pierce attackers — assert via 30→0 patch inertness); 56.7% read as the at-cap total instead of per-stack (the literal per-stack reading gives a ~2000-round magazine at 10 stacks — a signature, assertable behavior: reloads nearly vanish at steady state); and the ×5 boss hit on the '5 enemy units' burst. (3) SAWTOOTH: the skill2 pair is a build(700 rounds)-consume-rebuild cycle; the stack REMOVAL at trigger (magazine snapping back toward base) is load-bearing for reload cadence — a model that leaves the +567% magazine permanent over-credits uptime. Whether 'Reload 86.62% of the magazine' resolves against the base (300) or still-buffed magazine at the consume instant is kit-ambiguous — ⚑ flag, don't silently pick. (4) hitCount counts ROUNDS and MG hitsPerShot=1, so 70 'landed attacks' = 70 bullets; MG wind-up shapes early cadence, so first-stack timing assertions should read the event log rather than assume a flat fire rate — the cadence tuple is ALWAYS-⚑. (5) Attract is the gate key for two skill1 lines; today all three Attract-linked lines are unmodeled/GAP, which is coherent — but if any one is modeled, the burst must simultaneously open a name-keyed 'Attract' status window or the gate is dead code.",
+  "model": "claude-fable-5"
+}

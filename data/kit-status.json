@@ -1216,6 +1216,50 @@
       ],
       "board": null
     },
+    "diesel": {
+      "name": "Diesel (Treasure)",
+      "burst": "II",
+      "weapon": "MG",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-01: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/diesel.json + scripts/kit-autonomy/manual-review/diesel.md."
+        ],
+        "date": "2026-08-01"
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "reference": false,
+      "date": "2026-08-01",
+      "evidence": "kit-autonomy gauntlet 2026-08-01; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5+S6(claude-opus-5)/S7(kimi-code/k3) converged; opus blind override line-for-line on all 5 load-bearing blocks; kimi judge 0 gotchas discriminationOk",
+      "residual": "MG cadence datamine (rate_of_fire 60->4200, reloadFrames 151) + Strawberry Candy stack-refresh/sawtooth semantics + max-stack hitCount:700 proxy reachability — all measurement-gated, spot-check a Diesel:Treasure focus video",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "Activates when attacked in Attract status. Affects self.",
+          "Recovers 12.96% of the skill user's final Max HP as HP.",
+          "Activates after landing 150 normal attack(s) in Attract status. Affects self.",
+          "Stack count of buffs ▲ 1."
+        ],
+        "skill2": [],
+        "burst": ["Attract: Taunt all enemies for 10 sec."]
+      },
+      "caveats": [
+        "skill2: the max-stack ally effect (Reload 86.62% + Pierce Damage ▲30% for 10s) is keyed to hitCount:700 as the engine's nearest primitive for 'reaches 10 simultaneous Strawberry Candy stacks then removed' — a cumulative-cycle approximation (ade-agent-bunny precedent), NOT a true stack-threshold trigger. With a 10s stack duration, reachability of 10 simultaneous stacks is measurement-gated on MG cadence (⚑1); pierceDamagePct is inert unless an ally has pierce-tagged attacks",
+        "skill2: the hitCount:700 trigger does NOT consume/reset the Strawberry Candy stacks — the engine has no cross-block stack-removal primitive, so the real kit's sawtooth (build to 10 -> consume -> rebuild from 0) is modeled as a continuous peak hold (magazine stays near +567%). This would OVER-credit firing uptime during the real rebuild phase, BUT the maxAmmoPct damage channel SATURATES (verified in the unit spec: 56.7 and 28.35 x10 stacks land byte-identical totals — any sufficient boost already outlasts the reload windows that matter in 180s), so the missing reset is behaviorally inert in this fixture (⚑1b). recipe = a true 'remove stacks of buff X on trigger Y' primitive + a focus video confirming the sawtooth",
+        "skill2: 'Reload 86.62% of the magazine' resolves (engine instantReload) against the CURRENT buffed magazine (maxAmmo() at the consume frame), not the base 300 — kit-ambiguous which is intended; flagged, not silently picked (⚑1c)",
+        "skill2: Strawberry Candy stack-REFRESH semantics are assumed standard (a new stack refreshes the older stacks' 10s timers, so sustained MG fire holds 10 stacks) — adopted from the S6 blind override (kimi S7 judge verdict). If a new stack does NOT refresh, the 10-cap is unreachable at any plausible MG cadence and the effective ammo lift is ~2-3 stacks, not 10; the saturation result (56.7 ≡ 28.35 in totals) bounds the damage impact either way. recipe = a focus video observing whether the Candy icon refreshes or accrues independent per-stack timers (⚑1d)",
+        "skill1: DEF ▲25.92% (fullBurstEnter, self, 10s) is faithfully encoded but inert in v1 — self DEF does not feed a Defender's own damage (defPct is the Endurance-cube channel)",
+        "burst: Max HP ▲100.05% (burstCast, self, 10s, targetMaxHpPct) is faithfully encoded but inert — diesel has no atkOfMaxHpPct conversion, so the self Max-HP grant moves no damage",
+        "cadence: MG rate_of_fire (60 -> 4200 datamine) + reloadFrames 151 are unverified datamine driving the Strawberry Candy stack accrual + the 700-NA max-stack timing (⚑2)"
+      ]
+    },
     "diesel-winter-sweets": {
       "name": "Diesel: Winter Sweets",
       "burst": "III",

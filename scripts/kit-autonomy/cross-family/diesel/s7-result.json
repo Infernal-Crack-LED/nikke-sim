@@ -1,0 +1,102 @@
+{
+  "slug": "diesel",
+  "kitDescription": "Diesel (Treasure) is a Wind machine-gun Defender whose Burst II strikes up to five enemies with the highest attack for about 300% of her own attack, doubles her maximum HP for 10 seconds without healing her, and taunts all enemies for 10 seconds. Her first skill raises her own DEF for 10 seconds whenever the team enters Full Burst, heals her when she is hit while her taunt is active, and raises her buff stack cap after landing 150 normal attacks while taunting. Her second skill adds a Strawberry Candy stack every 70 normal attacks, each stack enlarging her magazine by 56.7% for 10 seconds, up to ten stacks. When she reaches ten stacks they are consumed and the whole team instantly reloads 86.62% of their magazine and gains +30% Pierce Damage for 10 seconds. In practice she is a tank whose personal damage is her machine-gun fire, with her team value coming from the magazine-refill and Pierce support.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "entering Full Burst → DEF ▲25.92% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → self → defPct 25.92, durationSec 10; faithful but inert in v1 (caveat + note)",
+        "blindSaid": "S6 encodes the identical block; S5 asserts defPct applies == fullBurstStart count (NOT cast count), exact value, finite 10s window, and byte-identical totals on removal",
+        "formulaCheck": "defPct is no damage bucket; self DEF feeds no Defender damage channel — inert is correct. Trigger identity fullBurstEnter matches prose 'entering Full Burst' (any team FB), not burstCast — the S2b nearest-wrong is excluded by the 5-FB vs 9-cast count split",
+        "fireRateOk": true,
+        "explanation": "Fires once per Full Burst window at the prose cadence. Inertness is proven two ways (removal leaves every total identical; the same line as attackDamagePct moves totals), so the block is genuinely encoded yet genuinely inert."
+      },
+      {
+        "kitLine": "attacked in Attract → heal 12.96% HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim; no incoming-damage event, boss deals no damage, no 'attacked' trigger kind",
+        "blindSaid": "S2b: UNMODELED; S5: it.skip GAP; S6: unmodeled verbatim with the same reasoning",
+        "formulaCheck": "No damage channel exists for this line; even if modeled it is a self-heal with no consumer in the v1 DPS sim",
+        "fireRateOk": true,
+        "explanation": "All three independent agents converge on the same gap for the same reason; the verbatim unmodeled record preserves the line and its Attract gate linkage for future modeling passes."
+      },
+      {
+        "kitLine": "150 NA in Attract → stack count ▲1",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim; gated on unmodeled self-Attract status, 'stack count ▲1' has no engine primitive",
+        "blindSaid": "S2b: GAP (no runtime maxStacks-delta primitive; self-status gate inexpressible); S5: it.skip GAP; S6: unmodeled verbatim",
+        "formulaCheck": "No stack-cap-delta primitive exists; raising Strawberry Candy 10→11 cannot be expressed, and an ungated hitCount:150 encoding would over-credit outside Attract windows — the nearest-wrong the reviewer named",
+        "fireRateOk": true,
+        "explanation": "Honest gap. Critically, the driver did NOT statically raise maxStacks to 11 or add an ungated counter, so the skill2 max-stack threshold and team-reload cadence are uncorrupted."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "70 NA → Strawberry Candy Max Ammo ▲56.7% x10/10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:70 → self → maxAmmoPct 56.7, maxStacks 10, durationSec 10; LIVE via reload-avoidance; Treasure threshold 70 (not base 100)",
+        "blindSaid": "S6 line-for-line identical; S5 pins value/maxStacks/self-scope in the event log and asserts the 70-hit cadence (148 applies vs floor(hits/70)=136, within the 15% wind-up tolerance)",
+        "formulaCheck": "maxAmmoPct gates reload frequency and therefore shots fired — a real damage channel, verified LIVE (removal lowers diesel's total). Per-stack 56.7 (not at-cap total) matches the literal prose. The blind cadence band still excludes the per-shot (~9583), every-150 (~63), and base-kit-100 (~95) counterfactuals",
+        "fireRateOk": true,
+        "explanation": "The driver honestly documented that the totals channel saturates (56.7x10 ≡ 28.35x10 byte-identical) and pinned the magnitude in the buffApply log instead of fudging a totals assertion — correct flag-not-fudge behavior. Blind adds one ⚑ the driver holds only in spirit: whether a new stack refreshes older stacks' 10s timers (if not, the cap is unreachable and the effective lift is ~2-3 stacks). Encoding identical on both sides; adopt the caveat, severity low."
+      },
+      {
+        "kitLine": "max stacks → allies reload 86.62% + Pierce ▲30%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:700 → allies → instantReload 0.8662 + pierceDamagePct 30/10s; trigger is a documented ⚑1 proxy (10x70 cycle, ade-agent-bunny precedent) with a footage recipe; stack-reset gap ⚑1b + reload-basis ambiguity ⚑1c both documented",
+        "blindSaid": "S6 encodes the identical proxy and flags the same ⚑ set plus the removal-delay caveat; S5 asserts pierce reaches every ally incl. self, fires far rarer than the 70-hit trigger, is inert on a 30→0 patch, and the refill moves team totals",
+        "formulaCheck": "instantReload fraction 0.8662 is the faithful reading of 'Reload 86.62% of the magazine' (NOT a reloadSpeedPct buff — the reviewer's #1 nearest-wrong avoided). pierceDamagePct routes into the DamageUp pierce term only for pierce-tagged attacks — correct bucket, proven non-leaking by the byte-identical 30→0 run",
+        "fireRateOk": true,
+        "explanation": "The engine genuinely lacks a stack-threshold/stack-removal trigger, so the 700-NA proxy is the best faithful encoding and its over/under-credit direction is bounded and flagged. The missing sawtooth reset is proven behaviorally inert in this fixture by the saturation result, not merely asserted."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "5 enemies highest ATK → 299.66% dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy → flatDamage 299.66; one hit on the solo partless boss; cast lands pre-FB so no +50% major",
+        "blindSaid": "S6 identical block but adds explicit crit:true; S5 asserts exactly one hit per cast, atkPct 299.66, bucket 'burst', linear scaling under a half-value patch, and zero fbMajorApplied hits",
+        "formulaCheck": "SSOT: burst-cast direct damage resolves before Full Burst opens (noFb forced) — the driver's test confirms no FB major. Burst nukes crit at the caster's rate by engine default (helm convention), so the blind's explicit crit:true is behaviorally identical to the driver's omission — a null divergence, not an encoding error",
+        "fireRateOk": true,
+        "explanation": "The '5 enemies' → 1-hit collapse follows the standard multi-target-burst convention and is asserted (extraHits == casts). The x5 over-credit nearest-wrong is excluded."
+      },
+      {
+        "kitLine": "self Max HP ▲100.05% no-restore 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self → targetMaxHpPct 100.05/10s (engine converts to maxHpFlat); inert — no atkOfMaxHpPct feed; documented caveat",
+        "blindSaid": "S6 identical block; S5 asserts one maxHpFlat grant per cast, ZERO heal/recovery events, and byte-identical totals on removal",
+        "formulaCheck": "Max HP ▲% of target's own HP → flat grant is the correct conversion; 'without restoring HP' is honored (no recovery event — the reviewer's nearest-wrong, excluded). No HP→ATK consumer on diesel, so inertness is correct and proven",
+        "fireRateOk": true,
+        "explanation": "Kept modeled per the future-consumer rule, pinned at one grant per burst cast (9x in fixture), never on fullBurstEnter."
+      },
+      {
+        "kitLine": "Attract: Taunt all enemies 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst verbatim; no taunt/Attract primitive, boss targeting unmodeled",
+        "blindSaid": "S2b: UNMODELED (or inert name-keyed status); S6 models an inert targetStatus 'Attract' AND lists it in unmodeled; S5: it.skip GAP",
+        "formulaCheck": "No damage channel moves from the taunt; both Attract-gated skill1 consumers are themselves gaps, so no gate dangles. The driver correctly uses the Treasure 10s duration, not the base-kit 5.06s",
+        "fireRateOk": true,
+        "explanation": "Driver's verbatim listing vs blind's inert-status modeling is a documentation-placement choice, both faithful and inert. The verbatim record preserves the gate linkage for any future modeling of the S1 Attract lines."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": 1.0,
+  "verdict": "GO",
+  "verdictRationale": "All eight kit lines are FAITHFUL or DOCUMENTED_GAP and the three independent derivations converge: the S2b spec, the S5 blind test (20/20 runnable assertions green; the 4 skips are the blind author's own GAP/⚑ lines), and the S6 blind override (line-for-line identical on all five load-bearing blocks). No REAL-GOTCHA exists: the trigger identities (fullBurstEnter vs burstCast on S1; burstCast pre-FB on the nuke), the per-stack 56.7 reading, the instantReload-not-reloadSpeed encoding, the pierce-bucket confinement, the single-hit burst collapse, and the no-heal Max-HP grant are each pinned by a discriminating assertion that fails under its named nearest-wrong model, and every inertness claim is proven by byte-identical counterfactual removal rather than asserted. The two blind-vs-driver divergences are null: crit:true on the nuke equals the engine's default crit-on burst behavior, and the Attract targetStatus-vs-unmodeled split is inert placement both sides document. The real residual risk is shared and flagged, not hidden: the L5 hitCount:700 proxy, the missing stack-reset sawtooth, the stack-refresh ambiguity (a blind-only ⚑ worth adopting verbatim into the driver's caveats), and the MG cadence datamine (rate_of_fire 60→4200, reloadFrames 151) all rest on unmeasured ground — the owner should spot-check a Diesel focus video for rounds/min, whether Strawberry Candy visibly reaches 10 simultaneous stacks, and whether new stacks refresh old ones, since those gate whether the team-reload cadence is over- or under-credited. The driver's adaptation of the blind test (custom B1/B2/B3 fixture per the blind author's own header instruction, reader-bug fixes, ±2→15% cadence tolerance for MG wind-up) is transparently documented and preserves every discriminating assertion — the 15% band still excludes the 100-hit, 150-hit, and per-shot counterfactuals. Nothing must change for GO; adopting the blind's stack-refresh ⚑ caveat is a nice-to-have documentation improvement.",
+  "model": "kimi-code/k3"
+}
