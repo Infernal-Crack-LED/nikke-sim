@@ -435,7 +435,16 @@ def compare_frames(data, frames_dir, start, count):
 # every structural dump here) while the template slot holds a 0-1 normalised match score, so
 # max(conf) > 1 separates them with no overlap. The report prints the discriminator, not just the
 # verdict.
-STALE_COUNTING_OFFSETS = (8, 9, 10, 11)   # the f8-11 counting window (owner lifecycle spec)
+# THE COUNTING WINDOW IS DEFINED AT 60fps SAMPLING and is an OFFSET IN FRAMES, so it does not
+# transfer to a dump extracted at another rate: the owner's pellet-lifecycle spec is 13 native
+# frames at 60fps, and f8-11 is 133-183ms after onset. On a 30fps extraction the same INDEX offsets
+# land 267-367ms after onset -- past the blast. Measured, and the reason --stale-counting-offsets
+# exists: on the three 60fps dumps here the mean total at t0+8..t0+11 is 5.3-6.6 pellets (the window
+# is on the cloud, as designed), while on the four 30fps full-video dumps it is 1.0-1.8; the
+# rate-equivalent window there is t0+4..t0+6, where the mean total is 5.9-6.3 and matches. A dump's
+# sampling rate is NOT recorded in --dump-tracks (its sibling pellets.json carries `fps`), so the
+# window cannot be auto-corrected here -- it is passed in, and mismatching it is silent.
+STALE_COUNTING_OFFSETS = (8, 9, 10, 11)   # the f8-11 counting window (owner lifecycle spec, 60fps)
 STALE_MODE_CONF_SPLIT = 1.0               # max(conf) above this == structural's unnormalised score
 STALE_COUNTING_FIXTURE = "scripts/tests/fixtures/pellets/stale-counting-slice.json"
 
@@ -547,7 +556,7 @@ def _dist_block(vals, radius, center_exclude):
     }
 
 
-def stale_counting_report(path, data, fps, t0_shift):
+def stale_counting_report(path, data, fps, t0_shift, offsets=STALE_COUNTING_OFFSETS):
     """One dump's counting-frame stale audit. Events come from count-pellets.py's OWN
     debounce_shots (imported, not re-implemented -- it is the shipped shot definition and stays in
     lockstep with read-pellets.ts); t0 is the event's rising edge (`start`)."""
@@ -571,7 +580,7 @@ def stale_counting_report(path, data, fps, t0_shift):
     per_shot, cf_flags, rd, it, deltas = [], [], [], [], []
     for sh in shots:
         t0 = sh["start"] + t0_shift
-        idx = [t0 + o for o in STALE_COUNTING_OFFSETS if 0 <= t0 + o < n]
+        idx = [t0 + o for o in offsets if 0 <= t0 + o < n]
         if not idx:
             continue
         flags = [mask[i] for i in idx]
@@ -639,13 +648,13 @@ STALE_PROFILE_OFFSETS = (-8, 0, 4, 8, 9, 10, 11, 12, 16, 20, 40, 60)
 # rate climbs back toward the unconditional prevalence with distance from t0.
 
 
-def audit_stale_counting(paths, fps, t0_shift, save_fixture=None):
+def audit_stale_counting(paths, fps, t0_shift, save_fixture=None, offsets=STALE_COUNTING_OFFSETS):
     reports, pooled_rd, pooled_it, pooled_dc = [], [], [], []
     profile = {o: [0, 0] for o in STALE_PROFILE_OFFSETS}
     for path in paths:
         with open(path) as fh:
             data = json.load(fh)
-        r = stale_counting_report(path, data, fps, t0_shift)
+        r = stale_counting_report(path, data, fps, t0_shift, offsets)
         reports.append(r)
         if r.get("refused"):
             continue
@@ -663,7 +672,7 @@ def audit_stale_counting(paths, fps, t0_shift, save_fixture=None):
                     profile[o][0] += 1 if mask[i] else 0
             if not row["n_stale"]:
                 continue
-            for o in STALE_COUNTING_OFFSETS:
+            for o in offsets:
                 i = row["t0"] + o
                 if 0 <= i < n and mask[i]:
                     if i in rd:
@@ -680,7 +689,7 @@ def audit_stale_counting(paths, fps, t0_shift, save_fixture=None):
     all_rate = tot_fr_stale / tot_fr if tot_fr else 0.0
     cf_rate = tot_cf_stale / tot_cf if tot_cf else 0.0
     out = {
-        "params": {"fps": fps, "t0_shift": t0_shift, "counting_offsets": list(STALE_COUNTING_OFFSETS),
+        "params": {"fps": fps, "t0_shift": t0_shift, "counting_offsets": list(offsets),
                    "t0_definition": "the debounce event's rising edge (count-pellets.py "
                                     "debounce_shots' `start`), + t0_shift"},
         "pooled": {
@@ -929,7 +938,9 @@ def stale_counting_selftest():
     with open(STALE_COUNTING_FIXTURE) as fh:
         fx = json.load(fh)
     p = fx["params"]
-    reports = [stale_counting_report(d["dump"], d, p["fps"], p["t0_shift"]) for d in fx["dumps"]]
+    reports = [stale_counting_report(d["dump"], d, p["fps"], p["t0_shift"],
+                                     tuple(p.get("counting_offsets", STALE_COUNTING_OFFSETS)))
+               for d in fx["dumps"]]
     got = _stale_counting_expected({"dumps": reports})
     expected = fx["_expected"]
     ok = got == expected
@@ -1023,6 +1034,12 @@ def main():
                      help="shift every t0 by N frames -- the alignment-sensitivity sweep. The event "
                           "rising edge reproduces the 5 owner-anchored groundtruth-f8-11 t0 values "
                           "exactly on 3 of 5 and 4 frames early on 2, so +-4 bounds the error")
+    ap.add_argument("--stale-counting-offsets", type=int, nargs="+", metavar="N",
+                     help="frame offsets from t0 that make up the counting window (default "
+                          f"{' '.join(str(o) for o in STALE_COUNTING_OFFSETS)}). The f8-11 default "
+                          "is defined at 60fps SAMPLING; on a 30fps extraction the rate-equivalent "
+                          "window is 4 5 6 (see the section comment -- passing the wrong one is "
+                          "silent, and measured here it moved the stale rate 3.4-4.8%% -> 5.6-6.4%%)")
     ap.add_argument("--save-stale-counting-fixture", metavar="PATH",
                      help=f"write the selftest slice fixture (default path {STALE_COUNTING_FIXTURE})")
     ap.add_argument("--stale-counting-selftest", action="store_true",
@@ -1048,7 +1065,8 @@ def main():
         return
     if args.stale_counting:
         audit_stale_counting(args.stale_counting, args.stale_counting_fps,
-                             args.stale_counting_t0_shift, args.save_stale_counting_fixture)
+                             args.stale_counting_t0_shift, args.save_stale_counting_fixture,
+                             tuple(args.stale_counting_offsets or STALE_COUNTING_OFFSETS))
         return
     if args.selftest:
         raise SystemExit(selftest())
