@@ -2246,3 +2246,214 @@ RECORDS a measurement only. Gate 1's definition, the 150 px jump guard, every `c
 the live path; no `DECISIONS.md` entry was edited and no verdict is stamped. **If a guard is wanted,
 that is a separate gated pass** — it would change what every reader run accepts, and this measurement
 does not by itself justify one.
+
+### 2026-08-01 — the MISSING-SHOT channel: ammo-counter shot count vs pellet-detected shots
+
+Executes `docs/handoffs/2026-08-01-missing-shot-channel-test-plan.md`, whose §3 decision rule was on
+disk before any number was read: **MISSED ≥ 8% of `shots_from_ammo`** ⇒ the channel can carry the
+whole 0.8–1.6 pellets/10 cold bias and the guard work is justified; **MISSED ≤ 2%** ⇒ too small,
+record it and the cold bias stays unexplained; **between** ⇒ report as-is, do not force a bucket.
+Answers the channel the entry above handed forward as explicitly unmeasured.
+
+**Instrument (committed, re-runnable).** `count-pellets.py --ammo-series` reads the ammo counter for
+every frame of an existing `--dump-tracks` dump, reusing that dump's OWN recorded box position — under
+`--locate structural`, `cross_rawloc[i]` IS the accepted digit-row centre, so no re-localization and no
+per-frame `matchTemplate` is needed. Template/external dumps are REFUSED, not read at a position that
+does not mean what the reader needs. `analyze-pellet-tracks.py --missing-shots` reconstructs shots from
+that series and scores them against the dump's own `debounce_shots` events;
+`--missing-shots-selftest` + `scripts/tests/fixtures/pellets/missing-shots-slice.json` pin the whole
+chain (including the §3a gate) with no images and no subprocess.
+
+Reconstruction rules, all fixed before the numbers existed: a read is dropped if it is `None` or above
+the datamined magazine size (9 for all four SGs); a new LEVEL needs `confirm=2` consecutive surviving
+reads, and abstentions do not break a run (missing data, not evidence of change); level DOWN by d = d
+shots, **recoverable ACROSS an abstention gap**; level UP = a reload, 0 recovered shots, with the
+pre-reload level recorded as `reload_headroom` — the size of the hole the method cannot see into.
+
+**Instrument work needed first.** The committed digit atlas held only WHITE glyphs, and the counter
+renders RED at ammo ≤ 4 — exactly the values a 9-round magazine spends half its life at. On red digits
+the matcher was a near-tie between 3 and 4 (0.880 vs 0.868, i.e. confidently wrong half the time) and
+read 3 as 9 at 0.48. 72 red glyphs were harvested (`--build-atlas --atlas-tag red`) from `marciana`
+(SG/Iron — NOT `marciana-marine-study`, AR/Iron) frames **outside** the groundtruth window, hand-labelled
+off the crops, so the §3a gate stays independent of them.
+
+#### §3a GATE — PASSED, and it is what authorises everything below
+
+Reconstruction over the 1801-frame `marciana` groundtruth clip (`at=15 dur=30 fps=60 zoom=2`,
+`groundtruth-f811-v4`), scored against the five owner-confirmed real shots in
+`scripts/tests/fixtures/pellets/groundtruth-f8-11.json` (shot 0 is the owner-confirmed false positive):
+
+| owner shot | owner `t0` | ammo decrement window | transition | `t0` − window |
+| ---------- | ---------- | --------------------- | ---------- | ------------- |
+| 1          | 1060       | [1056, 1056]          | 4→3        | **+4**        |
+| 2          | 1096       | [1096, 1096]          | 3→2        | **0**         |
+| 3          | 1140       | [1136, 1136]          | 2→1        | **+4**        |
+| 4          | 1289       | [1289, 1289]          | 9→8        | **0**         |
+| 5          | 1369       | [1369, 1369]          | 7→6        | **0**         |
+
+**5 of 5 recovered; max |offset| 4 frames; zero negative offsets; and the span contains exactly 5 ammo
+shots, none unmatched.** Two shots land at 4 rather than ≤3, so the rule's row-1 tolerance is missed by
+one frame on 2 of 5 — the plan's row 2 ("misaligned, with a MEASURED explanation") applies, and the
+explanation is measured three ways, not assumed:
+
+1. **Sign.** Every offset is ≥ 0. The counter decrements ON the shot frame; the detector's `t0` is the
+   `EVENT_MIN` rising edge, which cannot precede the blast. A broken pairing would produce both signs.
+2. **Against the pipeline's own t0 definition the alignment is EXACT.** Scored against
+   `debounce_shots`' rising edge — what "t0" means everywhere else in this pipeline, per
+   `make-groundtruth-f811.py`'s own docstring — the ammo decrement and the detected onset coincide on
+   **29 of 29** unambiguous (zero-width-window) decrements in this clip, max lag 0, none negative.
+3. **The 0/0/4/0/4 pattern was already on record, independently.** The entry above measured the same
+   estimator disagreement — "exact on 3 of 5 and 4 frames early on 2, max |error| 4 frames, never late"
+   — before this instrument existed. The ±4 is a property of the fixture's `find_t0`, not of the ammo
+   read, and this measurement localises it.
+
+Full-fight cross-check: the same 0-lag mode holds on the 30 fps dumps — 100/106, 91/97, 66/76 and
+103/126 unambiguous decrements at lag exactly 0, with a thin tail to −8 frames (the detector firing
+before the HUD digit turns over). That measured tail, not a guess, sets the matching slack at 8 frames;
+the whole result is swept across slack 3/6/8/10 below.
+
+#### §3b THE MEASUREMENT — four full-fight dumps, 30 fps, slack 8
+
+`shots_from_ammo` = confirmed decrements. `SPUR?` is the only over-detection column; the rest of
+`SPUR` is the arbiter's own blind spot (see the confounds). `MISSok` excludes decrements the cadence
+arithmetic says are impossible.
+
+| dump                     | read% | ammo | detected | MISSED | MISSED%   | MISSok        | SPUR | SPUR? | reloads | headroom |
+| ------------------------ | ----- | ---- | -------- | ------ | --------- | ------------- | ---- | ----- | ------- | -------- |
+| `h4-marciana-structural` | 62.6% | 195  | 218      | **1**  | **0.5%**  | 1 (0.5%)      | 24   | **0** | 26      | 40       |
+| `h4-guilty-structural`   | 52.2% | 166  | 180      | **8**  | **4.8%**  | 7 (4.3%)      | 22   | **1** | 21      | 23       |
+| `h4-isabel-structural`   | 55.3% | 204  | 203      | **30** | **14.7%** | 8 (4.4%)      | 29   | **1** | 28      | 43       |
+| `g2-noir-structural`     | 70.7% | 205  | 214      | **13** | **6.3%**  | 13 (6.3%)     | 22   | **0** | 29      | 51       |
+| **pooled**               | —     | 770  | 815      | **52** | **6.8%**  | **29 (3.9%)** | 97   | **2** | 104     | 157      |
+
+60 fps clips, same instrument and the same slack 8: `groundtruth-f811-v4` 34 ammo / 37 detected /
+**MISSED 1 (2.9%)**;
+`i2-marciana-60fps` 9 / 10 / **0**; `i3-noir-far-60fps` 8 / 11 / **0**; `i3-noir-near-60fps` 9 / 11 /
+**3** — the last three carry 8–9 shots each and are re-extractions of windows already inside the
+full-fight dumps, so they are shown for completeness and pooled nowhere.
+
+Slack sensitivity (the one instrument knob chosen after the fact, from the measured lag tail):
+MISSED% at slack 3 / 6 / 8 / 10 is 4.1 / 1.0 / 0.5 / 0.5 (`marciana`), 8.4 / 6.6 / 4.8 / 4.8
+(`guilty`), 21.6 / 15.7 / 14.7 / 14.2 (`isabel`), 16.1 / 7.3 / 6.3 / 6.3 (`noir`). **Converged by 8**,
+and `SPUR?` collapses from 6/8/12/19 to 0/1/1/0 over the same sweep — i.e. at slack 3 the matcher was
+manufacturing MISSED/SPURIOUS pairs out of the same shot.
+
+**Landed pellets per shot, measured: 8.4** — the owner's own per-shot totals on the five real fixture
+shots are 7, 10, 8, 9, 8. That is the plan's assumed value exactly, so **the 8% threshold is unchanged**
+(0.8/8.4 ÷ (10/8.4) = 8.0%, 1.6/8.4 ÷ (10/8.4) = 16.0%). The reader's own `avgTotal` on valid shots is
+7.0–7.4 across the four dumps, i.e. ~1.0–1.4 pellets/shot colder than the owner's 8.4 — that gap is the
+already-recorded per-shot bias, not this channel.
+
+**Cadence — MEASURED, not assumed from `rate_of_fire`.** Mode **20 frames at 30 fps** on all four
+full-fight dumps (62/160, 64/139, 37/145, 85/174 of the inter-shot gaps) and **40 frames at 60 fps** on
+the groundtruth clip (22/29). `marciana`'s datamined 90 rpm = 1.5 shots/s, and 60/ceil(60/1.5) = 40, so
+nominal = effective here — checked, not assumed. The spread around the mode (13–27) is abstention
+timestamp jitter, not real cadence variation.
+
+**Cadence-multiple sub-case (§3b's clean case: adjacent detected gaps that are integer multiples of the
+measured cadence and span no reload).** 16 such gaps across the four dumps; the ammo's count of
+undetected shots inside them matches `gap/cadence − 1` on **15 of 16** (pooled: 17 predicted, 16
+observed). The one miss is a `marciana` 38-frame gap where the ammo found none. **The plan's §1 gap
+arithmetic is a good predictor of what the ammo actually sees.**
+
+#### What the two fixture gaps actually contained — the plan's own seed, tested
+
+`groundtruth-f8-11.json`'s six `t0` values are **not** an exhaustive shot list: they come from
+`--shot-times`, an owner-supplied list of six previously-detected shots hand-counted for pellets
+(`make-groundtruth-f811.py`'s own help: "from the existing hand-count table"). §1 read gaps in that list
+as gaps in the READER. They are not:
+
+- **The 80-frame gap (owner `t0` 1289 → 1369), exactly 2.00 cadence periods.** It contains **exactly one
+  shot** — the ammo's 8→7 decrement, window [1329, 1349]. §1's arithmetic is right that a shot is there.
+  But `groundtruth-f811-v4`'s own `debounce_shots` list contains **`t0` = 1329**: the reader detected it.
+  The gap is in the owner's six-shot hand-count list, not in the detector's output.
+- **The 149-frame gap (owner `t0` 1140 → 1289).** It contains **one shot plus a reload**, not ~4 shots:
+  the counter reaches 1 at 1136, goes blank from 1176 to 1277 (101 frames against `marciana`'s datamined
+  `reloadFrames` 111) and returns at 9. `reload_headroom` for that reload is 1 — one round was left, so
+  one shot emptied the magazine — and the reader detected it too (**`t0` = 1176**).
+
+So in the fixture window the reader detected every shot the ammo can account for, plus the one it
+cannot. §1's spacing story predicted the right shots and attributed them to the wrong stage.
+
+#### Decision rule — the "between" row fires; NOT forced into a bucket
+
+Per video: `marciana` **0.5%** (row 2, ≤ 2%), `guilty` **4.8%**, `noir` **6.3%**, `isabel` **14.7%**
+raw / **4.4%** admissible. Pooled **6.8%** raw / **3.9%** admissible. **No video clears 8% on a reading
+whose arbiter is clean**, and only `marciana` clears ≤ 2%, so the board-level answer is the middle row:
+**report as-is.** The channel is REAL and non-zero on every video, but on this evidence it is 3.9–6.8%
+where 8–16% would be needed to carry the whole 0.8–1.6/10 cold bias — it can carry roughly **a quarter
+to a half** of it, not all of it.
+
+**What would decide it, stated explicitly.** (a) An owner hand shot-count on ONE non-`marciana` clip.
+The gate validated this arbiter on `marciana` only, and `isabel` is where it matters — its raw and
+admissible figures differ 3.4×. (b) Lifting the read rate above 52–71%: abstention is 96.2–99.6% on
+stale-lock frames, so the arbiter is blind exactly where the detector is, and the unrecoverable hole
+(`reload_headroom` 23–51 per fight) is the direct cost. A per-video atlas harvest is the cheap route.
+
+#### Two arithmetic corrections to the arbiter, both found without ground truth
+
+Committed as part of the instrument, both surfaced by whole-picture checks the pre-committed rule did
+not encode, and neither changes the §3a gate result:
+
+1. **`noir`'s reload UP-RAMP.** It has the fastest reload in scope (62 datamined frames) and its counter
+   stays readable through the animation, ramping 1 → 3 → 6 → 9. Scoring each up as a reload gave **79
+   reloads in a 190 s fight that fired 205 rounds from a 9-round magazine** — arithmetically impossible
+   — and charged `reload_headroom` three times over (284). Consecutive ups with no shot between are now
+   one reload: **29 and 51**.
+2. **`isabel`'s two-frame glyph flips.** An 8 → 6 → 8 flip scores as 2 shots fired and 2 reloaded inside
+   four frames. A drop of d over a w-frame window needs `w ≥ (d−1) × cadence`, so these are FLAGGED
+   (reported, not enforced — the pre-committed rule's output stands beside the admissible-only figure).
+   5 such events on `isabel`, 1 on `guilty`, 0 on `marciana` and `noir`. This is the whole difference
+   between `isabel`'s 14.7% and 4.4%.
+
+#### Confounds, each with a verdict
+
+- **LOWER BOUND — CONFIRMED, and it is now OBSERVED rather than argued.** Shots inside a reload-spanning
+  abstention gap are unrecoverable. The size of the hole is `reload_headroom` (40 / 23 / 43 / 51 per
+  fight) — and the shots in it are directly visible as the `SPUR` column: 24 / 22 / 29 / 22 unmatched
+  detected onsets against 26 / 21 / 28 / 29 reloads, i.e. **very nearly exactly one per reload, which is
+  the round that emptied the magazine**. So MISSED under-counts by roughly one shot per reload, ~12% of
+  shots fired. This does NOT rescue the ≥8% row: those shots were DETECTED, so they are arbiter blind
+  spots, not reader misses. But it does mean `marciana`'s 0.5% is a floor on a fight where ~26 shots
+  were never up for judgement.
+- **Shared lock — CONFIRMED and quantified.** The ammo read reuses the dump's own localization, so
+  abstention is 96.2–99.6% on stale frames versus 24.1–28.9% on good ones. Overall read rate 52.2–71.5%.
+  The correlation is near-total, exactly as §2 predicted — which is why the method rests on decrements
+  being recoverable ACROSS a gap rather than on any single frame. Note it also cuts the other way: the
+  arbiter's blind spots coincide with the detector's, so a shot destroyed by a stale lock is one this
+  measurement is LEAST able to see, and MISSED is biased low for that reason too.
+- **The 8% threshold's dependence on landed-pellets-per-shot — MEASURED, unchanged.** 8.4 exactly (7,
+  10, 8, 9, 8 on the owner's five real shots). Threshold stays 8–16%.
+- **Cadence not constant — CONTROLLED.** Cadence was measured from the ammo series itself, per dump, on
+  single-shot decrements with no reload between (mode 20 at 30 fps, 40 at 60 fps), and reload-spanning
+  gaps are excluded from the multiple sub-case. `gap ÷ 40` was used to generate hypotheses only; the
+  ammo tested them.
+- **Over-detection — REPORTED SEPARATELY, and it is very small.** `SPUR?` (unmatched onsets that are
+  neither in a reload window nor outside the established level span) is **0 / 1 / 1 / 0** across the four
+  full-fight dumps. On the groundtruth clip it is 1, and that one is `t0` = 3, before the first ammo
+  level was established. MISSED and SPURIOUS are never netted anywhere in this entry.
+- **n and scope — 770 ammo-reconstructed shots against 815 detected events, 4 videos, 4 units
+  (`marciana` SG/Iron, `guilty`, `isabel`, `noir`), one full-fight dump each, plus one 60 fps clip with
+  owner ground truth.** Only `marciana` has that ground truth, so the arbiter is gate-validated on one
+  unit and merely internally-consistent on the other three. The three small 60 fps clips are
+  re-extractions of windows already inside the full-fight dumps and are pooled nowhere.
+
+RECORDS a measurement only. No guard, gate, threshold or constant was changed; no gate was added to the
+live path; no `DECISIONS.md` entry was edited and no verdict is stamped. The reload-merge fix and the
+admissibility flag are inside the new instrument and touch nothing the reader runs on. **If the missing-
+shot channel is to be acted on, that is a separate gated pass** — and on these numbers it would be
+acting on a quarter-to-a-half explanation, not a whole one.
+
+**Reproduce:**
+
+```sh
+scripts/probe/.venv/bin/python scripts/probe/count-pellets.py \
+  --ammo-series  <dump>/tracks.json --ammo-series-frames <dump>/frames-pellet \
+  --ammo-atlas scripts/probe/ammo-atlas --zoom 2 > <dump>-ammo.json
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py \
+  --missing-shots <dump>-ammo.json --missing-shots-fps 30 --missing-shots-slack 8
+# the gate (60 fps groundtruth clip only):
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py \
+  --missing-shots gt-ammo-series.json --missing-shots-fps 60 --missing-shots-slack 6 \
+  --missing-shots-gate
+```
