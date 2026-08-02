@@ -519,16 +519,21 @@ function spawnWorkers(rows: TestedUnit[]): Promise<Map<string, number[]>> {
       })
   );
 
-  return Promise.all(jobs).then((parts) => {
-    rmSync(dir, { recursive: true, force: true });
-    const merged = new Map<string, number[]>();
-    for (const p of parts) {
-      for (const [k, v] of p) {
-        merged.set(k, v);
+  // finally, not the success path: a worker exiting non-zero rejects the Promise.all, and
+  // leaving rows-*.json/out-*.json behind would accumulate on a box that fails repeatedly.
+  return Promise.all(jobs)
+    .then((parts) => {
+      const merged = new Map<string, number[]>();
+      for (const p of parts) {
+        for (const [k, v] of p) {
+          merged.set(k, v);
+        }
       }
-    }
-    return merged;
-  });
+      return merged;
+    })
+    .finally(() => {
+      rmSync(dir, { recursive: true, force: true });
+    });
 }
 
 function computeRows(rows: TestedUnit[]): Promise<Map<string, number[]>> {
@@ -554,9 +559,10 @@ if (IS_WORKER) {
 
 const { globalHash, unitHashes, inputsHash } = computeHashes();
 
-// Prefer a locally pre-built artifact (CI builds it before `railway up`, so the deploy box
-// finds it already on disk) and fall back to the live site, which is the cross-deploy
-// persistence for machines that have no local copy.
+// Prefer a locally pre-built artifact, then fall back to the live site. On the deploy box the
+// local file is essentially never there — `railway up` respects .gitignore and web/public/
+// dpschart.json is gitignored — so the live URL is the real cross-deploy persistence; the local
+// candidate is what makes repeated dev-box runs cheap.
 const candidates: Candidate[] = [];
 if (!FORCE) {
   const local = readLocalCandidate();

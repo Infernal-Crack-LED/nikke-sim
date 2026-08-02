@@ -29,14 +29,13 @@
 // exception — they rendered through the live rank boards (web/public/*.json),
 // gitignored build outputs, so they carried a skip for checkouts that hadn't run
 // `npm run dpschart && npm run ranks:all`. That cost them both ways: the skip
-// fired everywhere automated (CI runs `verify.sh full`, the deploy box runs
-// `verify.sh artifacts`, neither builds the boards before vitest), and where
-// they did run, any kit commit that reordered a board failed them for reasons
-// that had nothing to do with the renderer. They now build from a committed
-// source snapshot (see loadFrozenUnitCardSources in the harness), so they run
-// everywhere and only move when the RENDERER moves. The live data join belongs
-// to unit-card-data.test.ts — which today skips its artifact-backed cases
-// wherever the boards are absent, i.e. everywhere automated (QUEUE.md).
+// fired everywhere automated, and where they did run, any kit commit that
+// reordered a board failed them for reasons that had nothing to do with the
+// renderer. They now build from a committed source snapshot (see
+// loadFrozenUnitCardSources in the harness), so they run everywhere and only
+// move when the RENDERER moves. The live data join belongs to
+// unit-card-data.test.ts, which ci.yml and deploy.yml's gate job now cover by
+// building the boards as a workflow step before `verify.sh full`.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
