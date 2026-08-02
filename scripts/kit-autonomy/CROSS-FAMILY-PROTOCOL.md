@@ -70,9 +70,13 @@ driver/author.** Canonical models for the generic gates (same names as above, sa
   Claude driver → `kimi-code/k3` via `dispatch-kimi.sh`.
 - **code-review** — Kimi/Qwen-authored code → `claude-opus-5` via `dispatch-claude.sh`;
   Claude-authored code → `kimi-code/k3` via `dispatch-kimi.sh`.
-- Kimi-side gate dispatches override the blind agent profile with
-  `KIMI_AGENT_FILE=scripts/gates/kimi-gate-agent.md` (absolute path). Native same-family runs of the
-  pinned `.claude/agents` defs are a labeled fallback ("same-family only"), never a silent substitute.
+- Kimi-side **logic-gate** dispatches override the blind agent profile with
+  `KIMI_AGENT_FILE=scripts/gates/kimi-gate-agent.md` (absolute path). **code-review** dispatches need
+  no override: the bridge detects the `# code-review` packet heading and auto-selects the sighted
+  profile (`scripts/kit-autonomy/kimi-code-review-agent.md`, read-only tools) — detection wins over a
+  stale `KIMI_AGENT_FILE`, so a code review can never be forced back onto the blind profile. Native
+  same-family runs of the pinned `.claude/agents` defs are a labeled fallback ("same-family only"),
+  never a silent substitute.
 - The logic-gate roles additionally ship per-model profiles for all three models
   (`logic-gate-preop` / `logic-gate-postop` on fable, `-opus` variants on opus, kimi-gate-agent.md for
   k3) so the invoker can explicitly name the gate model — see the logic-gate skill § "Choosing the

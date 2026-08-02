@@ -18,10 +18,14 @@ against plain stated intent). Trivial edits (typos, one-liners) may skip.
 
 The author is whoever wrote the code — normally you, the driver.
 
-| Author / driver       | Reviewer        | Bridge                                                                                                                                    |
-| --------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **Kimi** or **Qwen**  | `claude-opus-5` | `bash scripts/kit-autonomy/dispatch-claude.sh <packet> claude-opus-5 <out.json>`                                                          |
-| **Claude** (any tier) | `kimi-code/k3`  | `KIMI_AGENT_FILE=<abs path>/scripts/gates/kimi-gate-agent.md bash scripts/kit-autonomy/dispatch-kimi.sh <packet> kimi-code/k3 <out.json>` |
+| Author / driver       | Reviewer        | Bridge                                                                           |
+| --------------------- | --------------- | -------------------------------------------------------------------------------- |
+| **Kimi** or **Qwen**  | `claude-opus-5` | `bash scripts/kit-autonomy/dispatch-claude.sh <packet> claude-opus-5 <out.json>` |
+| **Claude** (any tier) | `kimi-code/k3`  | `bash scripts/kit-autonomy/dispatch-kimi.sh <packet> kimi-code/k3 <out.json>`    |
+
+Both bridges auto-detect the `# code-review` packet heading and run the reviewer SIGHTED with
+read-only repo access (Read/Grep/Glob/Bash — it can inspect callers and run typecheck/tests). No
+`KIMI_AGENT_FILE` override is needed for code-review; the detection wins over a stale one.
 
 - Canonical model names come from `scripts/kit-autonomy/CROSS-FAMILY-PROTOCOL.md` — `claude-opus-4-8`
   is NOT `claude-opus-5`; `kimi-code/kimi-for-coding` is NOT `kimi-code/k3`. The bridge injects the
@@ -42,9 +46,10 @@ The author is whoever wrote the code — normally you, the driver.
    - `## INTENT` — 2–4 sentences: what the change does and why, in plain terms,
    - `## DIFF` — the full `git diff` (uncommitted work, or branch-vs-base for a PR),
    - `## CONTEXT` — only the anchors the reviewer cannot derive from the diff (e.g. "callers live in
-     web/src/", "verify.sh covers X but not Y"). The Kimi-side reviewer has NO tools — the packet is
-     all it sees, so err toward including the relevant hunks of untouched callers when the diff
-     changes a shared interface.
+     web/src/", "verify.sh covers X but not Y"). The reviewer is sighted with READ-ONLY repo access
+     (Read/Grep/Glob/Bash — it can open callers and run typecheck/tests itself), so you need not paste
+     surrounding code; still NAME the callers/anchors worth checking when the diff changes a shared
+     interface.
 3. **Dispatch** per the routing table with a **600s shell timeout** — large diffs take 2–5 minutes on
    opus/k3. A 60s abort manufactures a fake timeout and pushes you to the weaker same-family fallback;
    suspect impatience before suspecting the bridge.
