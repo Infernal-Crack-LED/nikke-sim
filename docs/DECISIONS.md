@@ -352,7 +352,7 @@ lives. Newest first within each section.
   extended in-flight (+21 s), and entered on **another unit's** status landing; `milk-blooming-bunny`
   needs a stat **clamp scoped by reload count**, status-suppresses-status, and a player-input entry, and
   its kit text never states Embarrassment's exit condition. Do NOT try to complete those three on this
-  registry and then read the failure as a gate bug. → `docs/handoffs/2026-07-22-engine-work-plan.md` 5e.
+  registry and then read the failure as a gate bug. → 5e.
   **`privaty` (Privaty, AR/Water) is NOT enacted.** Her `skill2` still carries the fabricated `dot`
   (`atkPct 1687 / durationSec 10 / intervalSec 3`); rewiring it onto this gate is a separate gated pass,
   still blocked on why the 1687% is present in T4/T4b and absent in the u7 focus video. `wipeOut` is now
@@ -480,7 +480,7 @@ lives. Newest first within each section.
   total and rides with the rest of her explosion residual (U15 stays open on its other four bullets). This
   retires the one FORMULA-level unknown that sat underneath all 86 board readings — per-unit retunes no
   longer risk calibrating against a possibly-wrong shared bracket, which is what gated the engine-work
-  ordering. Trail: open-questions U15, `docs/handoffs/2026-07-22-engine-work-plan.md` §P0.
+  ordering. Trail: open-questions U15, §P0.
 
 - **(2026-07-21) COHERENT FIRST-BURST ROTATION MODEL — LANDED (owner frame-perfect, chisato.mov Liter/Crown/Chisato/Helm Fire).**
   A frame-by-frame read (t0 = first `2:59` frame; the timer starts at 2:59:999 = elapsed 0, NOT 2:59:000 — see
@@ -2643,7 +2643,10 @@ Plan: `docs/handoffs/closed/2026-07-24-roster-generator-perf-plan.md`. Items:
   (6 tests) + `--polish` on `scripts/bench-generator.ts`; 78 pre-existing generator tests green with
   nothing re-pinned; `verify.sh` green.
 
-**Player-facing patch notes: PENDING at next push** (the pre-push hook nudges `/patch-notes`).
+**Player-facing patch notes: SKIPPED (owner ruling 2026-08-02).** No note written — the item is a
+measured NO-OP on the shipped full-pool config (its only payoff, +13%/a recovered team, is on
+constrained small-eligible pools), and a 9-day-old note was not worth publishing. The item-0/1/2/3/5
+search upgrade is already covered by the 2026-07-24 "smarter search, faster runs" note (`035465e`).
 
 ## Probe reader build-out — four hand reads replaced by scripts (2026-07-24)
 

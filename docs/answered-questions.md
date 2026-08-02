@@ -65,10 +65,10 @@ re-add `noFb`. → DECISIONS 2026-07-23, `docs/STATE.md` §1.
 > machinery `prika`/`mint`/`milk-blooming-bunny` need"_ is **REFUTED** (premise gate, kit text, 4-of-4
 > census): the registry is necessary for all four but SUFFICIENT only for `privaty`, whose status is
 > enemy-carried. The other three each need different machinery — see
-> `docs/handoffs/2026-07-22-engine-work-plan.md` §5e.
+> §5e.
 > rider, not a DoT, and must be rewritten before footage is requested. Constraint 3 protects her
 > coefficients, NOT the DoT encoding. Full record + the three encoding options:
-> `docs/handoffs/2026-07-22-engine-work-plan.md` §5f.
+> §5f.
 > **⇒ STATE 2026-07-23: THE `noFb` RELIC SET IS NOW EMPTY — the retune mission this question gated is
 > COMPLETE.** `privaty` was the last carrier, and her flag went with the Designated-Target re-encode
 > (DECISIONS 2026-07-23). A field-form grep for `"noFb"` across `src/skills/overrides/` now returns
@@ -148,7 +148,7 @@ burst-cast, no flag set. ⚠ NAME FIX: the "scarlet 283/565/848% post-patch" abo
 1 unit (board OK 0.971), not 6; it is no longer a rule-level blocker. The MECHANISM half of U14 is
 unchanged and still correct: `FBRULE=timing` remains the documented correct-mechanism knob, `perkit` stays
 the shipped default, and the per-unit in-FB-vs-out-FB recipe above is still how `privaty`'s last flag gets
-retired. → `docs/handoffs/2026-07-22-engine-work-plan.md` §Step 6f.
+retired. → §Step 6f.
 
 ---
 
