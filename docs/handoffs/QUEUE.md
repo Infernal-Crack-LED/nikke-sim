@@ -244,8 +244,8 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   landing: **U34** (Max-Ammo ▲-expiry over-cap belt clip — immediate vs lazy, now reached code at
   20/s). The full work order is CLOSED → `docs/handoffs/closed/2026-07-23-smg-cadence-flip.md`.
 
-- **⇒ ENGINE-WORK ORDER (read FIRST before resuming per-kit retunes) →
-  `docs/handoffs/2026-07-22-engine-work-plan.md`.** The remaining engine work ranked by BLAST RADIUS, with
+- **⇒ ENGINE-WORK ORDER (read FIRST before resuming per-kit retunes).**
+  The remaining engine work ranked by BLAST RADIUS, with
   the rationale that P0/P1 items change the shared math every override is calibrated against (a retune done
   first has to be redone), while P2 primitives are additive and interleave freely. Order: (1) score the
   `CONE_DELTA` holdouts + revert-trigger check; **(2) LANDED 2026-07-22 — `RIDERCRIT` ON, see A32 (U13);
@@ -344,12 +344,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     chisato SMG midfar HR22 stays excluded (WEAK); quency-escape-queen flag-off HOT baseline =
     Explore-Route kit over-credit (owner kit audit). (Mechanics SSOT pair refreshed to UNIGEO
     2026-07-22 — done.)
-
-- **⇒ `fbext` BRANCH — MERGED to main 2026-07-22 (PR #17 `af0592b`, owner-confirmed).** Ordering fix +
-  chip-gated FB-extension ladder + soda-twinkling-bunny's Hit Rate; the `soda-tb control` comp is
-  graded (board 142 datapoints, boss NEUTRAL per owner — the recon's inferred Electric was wrong and
-  would have handed both Iron units a ~10% advantage). The 4 formerly pre-merge items remain open as
-  post-merge follow-ups: `docs/handoffs/2026-07-22-engine-work-plan.md` (FB-extension item).
 
 - **⇒ SG-LANDING GEOMETRY: aim-circle method fix (`docs/data/sg-calc/`)** — all four owner rulings RESOLVED
   2026-07-22, scope collapsed to ONE workstream. Workstreams A + B are RETIRED (superseded by the live
