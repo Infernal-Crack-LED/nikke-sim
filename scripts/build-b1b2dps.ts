@@ -135,6 +135,11 @@ for (const [slug, profileIds] of Object.entries(B1B2_DPS_EXTRA_PROFILES)) {
       continue;
     }
     const partner = profileDef.partner;
+    const partnerChar =
+      NOOP_CHARACTERS[partner] ??
+      (partner === SYNTHETIC_AVISTAR
+        ? undefined
+        : (data.characters[partner] as NoopCharacter | undefined));
     const partnerSupported =
       partner in NOOP_CHARACTERS ||
       partner === SYNTHETIC_AVISTAR ||
@@ -142,6 +147,15 @@ for (const [slug, profileIds] of Object.entries(B1B2_DPS_EXTRA_PROFILES)) {
     if (!partnerSupported) {
       process.stderr.write(
         `b1b2dps: skipping profile ${id} for ${slug} — partner "${partner}" is not sim-supported\n`
+      );
+      continue;
+    }
+    const expectedPartnerBurst = c.burst;
+    const actualPartnerBurst =
+      partner === SYNTHETIC_AVISTAR ? 'I' : partnerChar?.burst;
+    if (actualPartnerBurst !== expectedPartnerBurst) {
+      process.stderr.write(
+        `b1b2dps: skipping profile ${id} for ${slug} — partner "${partner}" burst is ${actualPartnerBurst}, expected ${expectedPartnerBurst}\n`
       );
       continue;
     }

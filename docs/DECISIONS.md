@@ -16,8 +16,8 @@ lives. Newest first within each section.
   no-op templates: 20s B1 `[tested, B2 SR, B2 SR, B3 RL, B3 MG]`; 40s B1 `[tested, B1 AR, B2 SR,
 B3 RL, B3 MG]`; B2 `[B1 AR, tested, B2 SR, B3 RL, B3 MG]`. The no-op B1 in the 40s-B1 and B2
   templates provides the standard 7 s team burst CDR; 20s-B1 rows rely on the tested unit's own CDR.
-  Red Hood is ranked as both B1 and B2 via her Λ `lambdaStage`; Rapi: Red Hood is ranked as B1 by
-  extending `lambdaStage` to non-Λ units (engine now honors the option for any unit, not only Λ).
+  Red Hood is ranked as both B1 and B2 via her Λ `lambdaStage`; Rapi: Red Hood (natively B3) is
+  ranked as B1 via a new `forceStage` unit option, keeping `lambdaStage` Λ-only.
   Partner profiles: Crown with Chime, Anis: Star with a synthetic MG B1 Avistar stand-in and with a
   generic other B1. **Evidence:** green `bash scripts/verify.sh` and `node scripts/web-smoke-ranks.mjs`;
   team-assembly fixtures in `scripts/tests/ranks/b1b2dps.test.ts`.

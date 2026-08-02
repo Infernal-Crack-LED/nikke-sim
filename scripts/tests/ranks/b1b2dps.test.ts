@@ -2,8 +2,9 @@
 //
 // These tests pin the control-team shape for each burst category, partner
 // profile, and forced off-stage row. They are cheap pure-function checks over
-// buildTeam and should catch slot-arithmetic regressions (e.g. a B1 partner
-// overwriting a B2 in a 20s-B1 template).
+// buildTeam and should catch slot-arithmetic regressions (e.g. the tested unit
+// landing in the wrong slot, a partner overwriting the wrong slot, or a stage
+// left unfilled).
 import { describe, expect, it } from 'vitest';
 import {
   buildTeam,
@@ -80,7 +81,7 @@ describe('b1b2 dps team assembly', () => {
     ).toEqual(['anis-star', SYNTHETIC_AVISTAR, NOOP_B2, NOOP_B3_RL, NOOP_B3]);
   });
 
-  it('20s B1 with a generic other B1 keeps the B2 count intact', () => {
+  it('20s B1 with a generic other B1 switches to the 40s template (partner takes the B1 slot, one no-op B2 is dropped)', () => {
     expect(
       buildTeam(
         unit('anis-star', 'I', undefined, 'with-other-b1'),
@@ -202,6 +203,28 @@ describe('b1b2 dps integration', () => {
       eleadv,
       'Water unit deals more DPS against a Fire boss'
     ).toBeGreaterThan(neutral);
+  });
+
+  it('multi-element units use their native element for the eleadv cell', () => {
+    // Rapi: Red Hood is native Fire and also counts as Iron via advantageVs.
+    // The board's eleadv cell must use her NATIVE element (Fire → Wind boss),
+    // not her kit-derived element (Iron → Electric boss).
+    const neutral = dpsFor(
+      'c0-neutral',
+      unit('rapi-red-hood', 'I', 1, 'as-b1'),
+      fullCtx
+    );
+    const eleadv = dpsFor(
+      'c0-eleadv',
+      unit('rapi-red-hood', 'I', 1, 'as-b1'),
+      fullCtx
+    );
+    expect(eleadv, 'native-advantage cell is applied').toBeGreaterThan(neutral);
+    const c = data.characters['rapi-red-hood'];
+    expect(
+      c.countsAsElements?.length,
+      'rapi-red-hood is multi-element'
+    ).toBeGreaterThan(1);
   });
 
   it('rankB1B2Dps produces a ranked list for every cell', () => {

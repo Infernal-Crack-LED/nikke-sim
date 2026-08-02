@@ -76,18 +76,13 @@ function base(
   profile: string | null
 ): RowBase {
   const m = units[slug];
-  // For forced off-stage rows, the profile badge carries the effective burst;
-  // prefer it over the native burst chip so the row doesn't show Λ/III beside
-  // an as-B1/as-B2 badge.
-  const profileBurst =
-    profile === 'as-b1' ? 'I' : profile === 'as-b2' ? 'II' : null;
   return {
     slug,
     name: m?.name ?? slug,
     element: m?.element ?? '',
     elements: m?.elements ?? (m?.element ? [m.element] : []),
     weapon: m?.weapon ?? '',
-    burst: profileBurst ?? m?.burst ?? '',
+    burst: m?.burst ?? '',
     imageUrl: m?.imageUrl ?? null,
     rank,
     profile,
@@ -193,8 +188,17 @@ export function b1b2DpsBars(
     B1B2_DPS_BOARDS.includes(board) && art.cells[board]
       ? board
       : DEFAULT_B1B2_BOARD;
-  return art.cells[b].map(([slug, dps, profile], i) => ({
-    ...base(art.units, slug, i + 1, profile),
-    dps,
-  }));
+  return art.cells[b].map(([slug, dps, profile], i) => {
+    const row = base(art.units, slug, i + 1, profile);
+    // For forced off-stage rows, the profile badge carries the effective burst;
+    // prefer it over the native burst chip so the row doesn't show Λ/III beside
+    // an as-B1/as-B2 badge.
+    if (profile === 'as-b1') {
+      row.burst = 'I';
+    }
+    if (profile === 'as-b2') {
+      row.burst = 'II';
+    }
+    return { ...row, dps };
+  });
 }
