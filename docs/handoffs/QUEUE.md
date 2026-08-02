@@ -52,6 +52,22 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ `build-dpschart.ts` worker-pool robustness — 3 findings filed from a CLEAN cross-family
+  review** (kimi-code/k3, 2026-08-01; packet + both result JSONs in
+  `scratchpad/gates/2026-08-01-deploy-build-timeout/`). All three are on already-failing or
+  currently-unreachable paths, which is why they did not block the merge:
+  1. **Sibling workers are not killed when one rejects** (`spawnWorkers`). `Promise.all` rejects on
+     the first failure, but the other children keep simulating to completion — or crash writing
+     `out-*.json` into the directory `.finally()` just removed — and the parent exits leaving them
+     running. Fix: keep the child handles, `kill()` the rest on first rejection.
+  2. **`rmSync` in the `.finally()` can mask the real error.** If it throws (EPERM/EBUSY on a shared
+     build box) on the failure path, it replaces `dpschart worker N exited X` — the diagnostic you
+     actually need. Fix: wrap the `rmSync` in try/catch.
+  3. **`IS_WORKER` needs BOTH `--rows` and `--rows-out`;** a child given only one silently falls
+     through to the full main path (hashing, candidate fetch, inline simulation of every row) and
+     writes to the default out path. Unreachable from the current parent, which always passes both —
+     robustness only. Fix: error when exactly one is present.
+
 - **⇒ DOT-TICK/FILLGAUGE BURST-GAUGE PAIR — BOTH RESOLVED 2026-07-30.** Fix A (dot-tick concurrency
   election): REJECTED — owner-supplied footage (`docs/probes/burst tests/Raven Solo Burst Gen.MP4`)
   settled U37 against it; see `docs/answered-questions.md` U37 +
