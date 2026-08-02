@@ -2055,3 +2055,141 @@ non-representative subset. **That is the open question this measurement hands fo
 
 RECORDS a measurement only. No constant, guard threshold, gate definition or `DECISIONS.md` entry was
 changed, and no verdict is stamped.
+
+### 2026-08-01 — do stale locks reach the COUNTS? (counting-frame stale rate + the exclude A/B)
+
+Answers the question the entry above handed forward. Instrument:
+`analyze-pellet-tracks.py --stale-counting` (committed this session — the prevalence entry's own
+numbers were computed ad hoc and left no script behind, so this closes that gap too), with
+`--stale-counting-groundtruth` for the owner-anchored arm and
+`--stale-counting-selftest` / `scripts/tests/fixtures/pellets/stale-counting-slice.json` pinning it.
+Decision rule was on disk in the driver's brief before any number was read: **≥10% of counting
+frames stale AND median displacement >80 px** ⇒ stale locks materially corrupt counting;
+**<3% stale, or median displacement <30 px** ⇒ real tracker defect that does not reach the counts;
+anything between ⇒ report as-is, do not force it into a bucket.
+
+**Two gates ran before any number was read.** (1) STALENESS RULE, per mode, because the two hold
+mechanisms are different and neither mode's rule is valid on the other's dump. Structural:
+`locate_crosshair_structural` returns `(last_acc, None)` when a frame yields no digit-row candidate,
+so STALE ⇔ `conf is None` with a position present. Template: the consistency gate's
+`elif last_acc is not None` branch carries the position forward while still recording the FAILING
+numeric confidence, so `conf is None` never fires — but the accepted position stops being derived
+from that frame's own raw match, so `cross_positions[i] − cross_rawloc[i]` departs from the dump's
+modal delta. `--crosshair-file` dumps (no conf, no rawloc) are REFUSED, not scored. Mode is inferred
+from each dump because `--dump-tracks` does not record `locate`: structural's confidence slot holds
+an unnormalised surround brightness (143–211 observed), template's a 0–1 match score, so
+`max(conf) > 1` separates them with no overlap. The structural rule then **reproduces the prevalence
+table above dump-for-dump to 0.1 pp** (31.0 / 23.6 / 17.4 / 13.8 / 8.1 / 7.9 / 5.2%), and the
+template rule scores `run16/tracks.json` — the reference healthy template dump — at 0 of 1800 frames
+held. (2) t0 ALIGNMENT: `find_t0` cannot be used off-fixture, because it ranks onsets by distance to
+an **owner-supplied** approximate shot index that only the 6-shot fixture carries. t0 is therefore
+the debounce event's rising edge (`debounce_shots`' own `start`, exposed additively this session).
+Scored against the five owner-anchored `groundtruth-f8-11.json` values it is **exact on 3 of 5 and
+4 frames early on 2 — max |error| 4 frames, never late**, and the whole result survives a ±4-frame
+sweep (below).
+
+Counting frames are `t0+8…t0+11`. Pooled over the same 7 structural dumps the prevalence table
+covers — 739 shots, 2955 counting frames, 4 units (`guilty`, `isabel`, `marciana` (SG/Iron — NOT
+`marciana-marine-study`, AR/Iron), `noir`):
+
+| dump                     | all frames stale | counting frames stale | enrichment | shots w/ ≥1 stale | run-disp med | interp med | A/B Δcount |
+| ------------------------ | ---------------- | --------------------- | ---------- | ----------------- | ------------ | ---------- | ---------- |
+| `h4-guilty-structural`   | 31.0%            | **3.7%**              | 0.12×      | 10 / 167          | 140 px       | 47 px      | +0.083     |
+| `h4-isabel-structural`   | 23.6%            | **4.5%**              | 0.19×      | 12 / 172          | 294 px       | 86 px      | +0.213     |
+| `h4-marciana-structural` | 17.4%            | **4.2%**              | 0.24×      | 14 / 191          | 108 px       | 47 px      | +0.030     |
+| `i2-marciana-60fps`      | 13.8%            | **0.0%**              | 0.00×      | 0 / 10            | —            | —          | —          |
+| `i3-noir-far-60fps`      | 8.1%             | **13.6%**             | 1.68×      | 3 / 11            | 390 px       | 264 px     | −0.375     |
+| `g2-noir-structural`     | 7.9%             | **3.2%**              | 0.41×      | 14 / 177          | 43 px        | 18 px      | −0.160     |
+| `i3-noir-near-60fps`     | 5.2%             | **9.3%**              | 1.79×      | 3 / 11            | 170 px       | 58 px      | −0.306     |
+| **pooled**               | **19.36%**       | **4.09%**             | **0.21×**  | **56 / 739**      | **138 px**   | **48 px**  | **−0.019** |
+
+**Counting frames are DEPLETED of stale locks ~4.7×, not enriched** (4.09% vs the 19.36% all-frames
+baseline). The two enriched dumps are the two smallest (11 shots each, 6 and 4 stale counting frames);
+every dump with >100 shots is depleted. Superset run over all 26 dumps on disk (1078 shots, including
+the deliberately-broken `noir-near-ce36` frozen lock and the `noir-offset-*` probes) gives 7.7%
+counting vs 20.79% all-frames — same direction, diluted by dumps that are not healthy reads.
+
+**Displacement at the 121 stale counting frames**, against `pellet_radius` 160 and `center_exclude` 36:
+median **138.1** px, p90 427.8, max 597.4 by the prevalence entry's run-spanning measure, of which 55
+exceed 160 px and 86 exceed 80 px. That measure spans a whole run and is therefore an **upper bound**
+for any single interior frame, so the same frames are also scored by linear interpolation between the
+two good endpoints (justified only because the crosshair pans smoothly — the same-day centering
+measurement puts clean-shot motion at ~2 px/frame): median **48.2** px, p90 260.3, max 414.0, with 23
+of 121 still beyond `pellet_radius` and 69 beyond `center_exclude`. So when a counting frame IS stale
+the window is often genuinely mispointed — the rate is what is low, not the severity.
+
+**The A/B costs almost nothing.** Excluding stale counting frames from each shot's f8-11 mean moves
+the affected shots by a median of +0.000 and a mean of **−0.019** pellets (n=43, sd 0.81, worst single
+shot +3.50); diluted over all 739 scored shots that is **−0.001 pellets/shot**. Where a shot's whole
+window is stale there is nothing left to average and the shot drops, which changes the denominator —
+stated, not hidden.
+
+**Ground-truth arm, 6-shot `marciana` (SG/Iron) fixture, owner-anchored t0.** One shot is affected and
+it is shot 4, whose **entire f8–11 window is a template carry-forward** (conf 0.413–0.453, all below
+the 0.55 relock bar). The same-day centering entry independently flagged that shot as low-confidence
+and thrashing; what is new is that those four frames are HELD positions of the same defect class as
+the structural `conf: None` hold, not merely weak matches. Shot 1's stale lock is at `t0` only, and
+its counting frames are clean.
+
+| shot | t0   | locate     | owner | `t0` stale | stale counting frames  | err incl | err excl |
+| ---- | ---- | ---------- | ----- | ---------- | ---------------------- | -------- | -------- |
+| 0    | —    | structural | 0     | —          | (no onset)             | +0.00    | +0.00    |
+| 1    | 1060 | structural | 7     | **yes**    | none                   | −3.75    | −3.75    |
+| 2    | 1096 | structural | 10    | no         | none                   | +0.25    | +0.25    |
+| 3    | 1140 | structural | 8     | no         | none                   | +0.25    | +0.25    |
+| 4    | 1289 | template   | 9     | no         | **f08, f09, f10, f11** | +0.75    | (drop)   |
+| 5    | 1369 | structural | 8     | no         | none                   | +0.25    | +0.25    |
+
+INCLUDED n=6 bias **−0.375** (se 0.682) rmse **1.571**; EXCLUDED n=5 bias **−0.600** (se 0.789) rmse
+**1.688**. The shift is **−0.225 in bias = 0.33× its own SE**, so **the A/B does NOT move the 6-shot
+bias by more than its own SE**, and per the provenance ledger this fixture can fail a candidate but
+never certify one to ±0.25 anyway. Note the direction: shot 4's stale window read **hot** (+0.75), so
+removing it makes the fixture colder — the stale lock there is not a cold-bias source. And the
+fixture's whole cold outlier, shot 1 at −3.75, sits on **clean** counting frames; no stale-frame
+exclusion can touch it.
+
+**Decision rule: NO row fires; this is the "report as-is" case.** 4.09% is neither ≥10% nor <3%, and
+both displacement medians (138 px run-spanning, 48 px interpolated) are above 30 px, so neither the
+"materially corrupts" nor the "does not reach the counts" branch is satisfied. Per the rule's own
+instruction it is not forced into one. What would decide it: (a) owner-labelled pellet positions on
+shots whose counting window IS stale — there is exactly one such shot in the repo today (fixture shot
+4, n=1, and it reads hot); (b) an independent shot COUNT for a clip, from footage rather than from
+this pipeline, to size the missing-shot channel below. Neither is derivable from data already on disk.
+
+**Confounds, each with a verdict.**
+
+- **Circularity — CONFIRMED, and it is the reason the encouraging number is not reassuring.**
+  `build_tracks_and_counts` only counts tracks within `pellet_radius` of `cross_positions[fi]`, so a
+  mispointed held window suppresses the very counts an event is opened on. Measured directly:
+  `P(frame clears event_min | stale)` = 8.4 / 8.6 / 12.0 / 4.5% on the four large structural dumps
+  versus 31.3 / 33.5 / 33.4 / 32.1% given a good lock — a 2.7–7× suppression. And the depletion is
+  LOCAL to the event: stale% along a ladder of offsets from the same t0, all equally conditioned on a
+  detected shot, runs 13.5% at t0, 4.6/3.5/3.8/4.5% across the counting window, then climbs back to
+  19.1% at t0+20, **26.5% at t0+40 and 31.0% at t0+60** — through and past the 19.36% unconditional
+  rate. Conditioning on "a detected shot" is therefore **not** independent of lock quality: the low
+  counting-frame rate is substantially SELECTION, not safety. The corollary is that the shots a stale
+  lock destroys outright are invisible to this measurement, which sizes only the
+  detected-but-corrupted channel. That missing-shot channel is unmeasured and is NOT covered by this
+  entry's numbers.
+- **Mode mismatch — controlled.** No `conf < 0.6` test was applied to a structural dump and no `None`
+  test to a template dump; mode came from each dump's own confidence scale (no overlap between
+  143–211 and 0–1) and each rule was validated separately (structural against the committed
+  prevalence table, template against `run16`'s 0/1800).
+- **Frame-index alignment — controlled.** No index crosses a dump boundary: every dump's events come
+  from its own `frame_counts`, and the ground-truth arm reads each shot from the dump matching its own
+  recorded `locate` mode. The estimated-t0 result is stable under the calibrated error: 5.38 / 4.26 /
+  4.09 / 4.17 / 4.40% at t0 shifts of −4 / −2 / 0 / +2 / +4 frames, and 4.44% when the debounce
+  gap-tolerance is fed 30 fps instead of 60.
+- **Displacement is measured across a run — acknowledged and worked around.** The run-spanning median
+  (138 px) is an upper bound on any interior frame's error; the interpolated per-frame estimate (48 px)
+  is reported beside it, and every threshold count is given for both.
+- **n and representativeness — 739 detected shots, 7 dumps, 4 units, 5 clips.** Two dumps carry only
+  10–11 shots each and are exactly the two that come out enriched, so the enrichment/depletion split
+  is small-n on one side. Only one unit (`marciana`, SG/Iron) has owner-counted ground truth, and the
+  A/B against it rests on a single affected shot.
+
+RECORDS a measurement only. Gate 1's definition, the 150 px jump guard, every `conf` threshold,
+`pellet_radius`, `center_exclude`, `min_area` and `min_circ` are untouched; no new gate was added to
+the live path; no `DECISIONS.md` entry was edited and no verdict is stamped. **If a guard is wanted,
+that is a separate gated pass** — it would change what every reader run accepts, and this measurement
+does not by itself justify one.
