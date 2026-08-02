@@ -758,6 +758,334 @@ def audit_fidelity_real_selftest():
     return 0 if ok else 1
 
 
+# --------------------------------------------- crop-centering audit (2026-08-01, centering plan)
+# docs/handoffs/2026-08-01-pellet-centering-test-plan.md. The f8-11 crops are centred on the
+# crosshair AT THE COUNTING FRAME (`cross[f]`, make-groundtruth-f811.py:168-183), but the owner's
+# marked pellet clouds sit 20-52px off that centre, per-shot, swinging sign between shots. This
+# audit measures whether that offset is the crosshair's OWN motion between the firing frame `t0`
+# and the counting frame `f` (H1 frame-lag), a localization failure (H0a), or a real aim-vs-impact
+# offset (H0b). It RECORDS the measurement; per the plan's §6 it changes no constant, no centring
+# behaviour, and stamps no verdict.
+#
+# SIGN CONVENTION, derived from the crop geometry rather than asserted:
+#   crop_disc() cuts a (2*REAL_CROP_RADIUS)^2 square whose centre pixel (184,184) IS the full-frame
+#   point cross[f]. So a pellet at full-frame point P appears at crop coordinate
+#       p = P - cross[f] + (184,184).
+#   If the pellets are frozen at the aim point of the FIRING frame, their cloud centre is P ~=
+#   cross[t0], which lands at crop coordinate cross[t0] - cross[f] + (184,184). Therefore
+#       CLOUD := centroid(crop) - (184,184)  ==  cross[t0] - cross[f]  =:  DISP
+#   under H1 -- a DIRECT match, no sign flip, with DISP defined exactly as the plan's §3 defines it.
+#   Equivalently: if the crosshair pans +x between t0 and f, DISP is -x and the cloud is left of
+#   centre, which is the plan's own prose statement of the same thing.
+CENTERING_SLICE_FIXTURE = REAL_GT_DIR / 'centering-slice.json'
+CENTERING_T0_PERTURB = 2   # plan §5 confound 5: is DISP stable if find_t0's estimate is off by +-2?
+CENTERING_HEADLINE_OFFSET = 8   # §3 computes the rule on f08; the other offsets are reported too
+
+
+def _mean(vals):
+    return sum(vals) / len(vals) if vals else None
+
+
+def _sd(vals):
+    if len(vals) < 2:
+        return 0.0
+    m = _mean(vals)
+    return math.sqrt(sum((v - m) ** 2 for v in vals) / (len(vals) - 1))
+
+
+def build_centering_slice(tracks_dir):
+    """Extract the minimal crosshair-track slice the centering audit needs from a pair of
+    count-pellets.py --dump-tracks dumps regenerated at the ground-truth clip's EXACT parameters
+    (at=15 dur=30 fps=60 zoom=2). Two dumps because the fixture itself records a per-shot `locate`
+    mode: shot 4's structural lock mislocked onto a floating damage-number stack across its whole
+    f8-11 window, so its crops were cut from a template-mode run (groundtruth-f8-11.json's own
+    `locate_note`). Using the structural dump for shot 4 would measure a DIFFERENT crop's centre
+    than the one the owner annotated.
+
+    Slicing rather than committing the 2.7MB dumps keeps the selftest fixture small; nothing outside
+    frames t0-2..t0+2 and the four counting frames is used by compute_centering()."""
+    tracks_dir = Path(tracks_dir)
+    dumps = {}
+    for mode in ('structural', 'template'):
+        p = tracks_dir / f'tracks-{mode}.json'
+        if p.exists():
+            dumps[mode] = json.loads(p.read_text())
+    if 'structural' not in dumps:
+        raise SystemExit(f'--audit-centering: {tracks_dir}/tracks-structural.json not found. '
+                         'Regenerate it at the ground-truth clip parameters; see '
+                         'docs/handoffs/2026-08-01-pellet-centering-test-plan.md §4.')
+    gt = json.loads(REAL_GT_PATH.read_text())
+    out = []
+    for shot in gt['shots']:
+        if shot.get('t0') is None:
+            continue
+        mode = shot.get('locate', 'structural')
+        if mode not in dumps:
+            raise SystemExit(f'--audit-centering: shot {shot["shot"]} needs the {mode} dump '
+                             f'({tracks_dir}/tracks-{mode}.json), which is missing.')
+        d = dumps[mode]
+        cross, confs = d['cross_positions'], d['cross_confs']
+        t0 = shot['t0']
+        offsets = sorted(int(re.match(r'^f(\d\d)_', Path(c).name).group(1))
+                         for c in shot['crops'] if re.match(r'^f\d\d_', Path(c).name))
+        want = {t0 + k for k in range(-CENTERING_T0_PERTURB, CENTERING_T0_PERTURB + 1)}
+        want |= {t0 + o for o in offsets}
+        out.append({
+            'shot': shot['shot'], 'video_t': shot['video_t'], 't0': t0, 'locate': mode,
+            'owner_white': shot['white'], 'offsets': offsets,
+            # str keys: JSON has no int keys, and round-tripping through the fixture must be lossless
+            'cross': {str(i): cross[i] for i in sorted(want) if i < len(cross)},
+            'confs': {str(i): confs[i] for i in sorted(want) if i < len(confs)},
+        })
+    return out
+
+
+def compute_centering(slice_shots):
+    """Pure arithmetic over the slice + the committed owner positions. No images, no cv2.
+
+    Per shot and counting offset: DISP = cross[t0] - cross[f], CLOUD = centroid - (184,184),
+    residual = CLOUD - DISP. Also the t0 +-CENTERING_T0_PERTURB stability sweep and the cloud's own
+    centroid standard error, both of which the plan lists as confounds that must be reported
+    alongside the number rather than after it."""
+    pos = json.loads(REAL_POSITIONS_PATH.read_text())
+    by_shot = {s['shot']: s for s in pos['shots']}
+    c0 = float(REAL_CROP_RADIUS)
+    shots_out = []
+    for sl in slice_shots:
+        pshot = by_shot.get(sl['shot'])
+        if pshot is None:
+            raise SystemExit(f'--audit-centering: shot {sl["shot"]} has no owner positions in '
+                             f'{REAL_POSITIONS_PATH.name}')
+        frames_by_off = {}
+        for fr in pshot['frames']:
+            m = re.match(r'^f(\d\d)_', fr['frame'])
+            if m:
+                frames_by_off[int(m.group(1))] = fr
+        t0 = sl['t0']
+        cross, confs = sl['cross'], sl['confs']
+        if str(t0) not in cross or cross[str(t0)] is None:
+            raise SystemExit(f'--audit-centering: shot {sl["shot"]} has no crosshair lock at t0={t0}')
+        ct0 = cross[str(t0)]
+        per_offset = []
+        for off in sl['offsets']:
+            fi = t0 + off
+            fr = frames_by_off.get(off)
+            if fr is None:
+                raise SystemExit(f'--audit-centering: shot {sl["shot"]} offset f{off:02d} has no '
+                                 f'owner positions -- refusing to score a frame nobody marked')
+            cf = cross.get(str(fi))
+            if cf is None:
+                raise SystemExit(f'--audit-centering: shot {sl["shot"]} has no crosshair lock at '
+                                 f'counting frame {fi}')
+            xs = [p[0] for p in fr['positions']]
+            ys = [p[1] for p in fr['positions']]
+            n = len(xs)
+            cloud = [_mean(xs) - c0, _mean(ys) - c0]
+            se = [_sd(xs) / math.sqrt(n) if n else None, _sd(ys) / math.sqrt(n) if n else None]
+            disp = [ct0[0] - cf[0], ct0[1] - cf[1]]
+            resid = [cloud[0] - disp[0], cloud[1] - disp[1]]
+            per_offset.append({
+                'offset': off, 'frame_idx': fi, 'n_pellets': n,
+                'cross_t0': ct0, 'cross_f': cf,
+                'conf_t0': confs.get(str(t0)), 'conf_f': confs.get(str(fi)),
+                'DISP': [round(v, 2) for v in disp], 'DISP_mag': round(math.hypot(*disp), 2),
+                'CLOUD': [round(v, 2) for v in cloud], 'CLOUD_mag': round(math.hypot(*cloud), 2),
+                'CLOUD_se': [round(v, 2) if v is not None else None for v in se],
+                'residual': [round(v, 2) for v in resid],
+                'residual_mag': round(math.hypot(*resid), 2),
+            })
+        head = next(o for o in per_offset if o['offset'] == CENTERING_HEADLINE_OFFSET)
+        # EMPIRICAL sign check, independent of t0 and therefore of the whole hypothesis set.
+        # Between two COUNTING frames the pellets are world-fixed (they have already landed), so if
+        # the sign convention above is right the cloud must translate by exactly MINUS the
+        # crosshair's motion: CLOUD(f_last) - CLOUD(f_first) == -(cross[f_last] - cross[f_first]).
+        # A sign error inverts this and shows up as ~2x the crosshair motion instead of ~0.
+        sign_check = None
+        if len(per_offset) >= 2:
+            a, b = per_offset[0], per_offset[-1]
+            obs = [b['CLOUD'][0] - a['CLOUD'][0], b['CLOUD'][1] - a['CLOUD'][1]]
+            pred = [-(b['cross_f'][0] - a['cross_f'][0]), -(b['cross_f'][1] - a['cross_f'][1])]
+            sign_check = {
+                'from_offset': a['offset'], 'to_offset': b['offset'],
+                'observed_cloud_delta': [round(v, 2) for v in obs],
+                'predicted_from_crosshair': [round(v, 2) for v in pred],
+                'error': [round(obs[0] - pred[0], 2), round(obs[1] - pred[1], 2)],
+                'error_mag': round(math.hypot(obs[0] - pred[0], obs[1] - pred[1]), 2),
+                'error_mag_if_sign_flipped': round(math.hypot(obs[0] + pred[0], obs[1] + pred[1]), 2),
+            }
+        # Confound 5: perturb t0, hold the counting frame fixed, and see how far DISP moves.
+        f_head = t0 + CENTERING_HEADLINE_OFFSET
+        cf_head = cross[str(f_head)]
+        perturb = []
+        for k in range(-CENTERING_T0_PERTURB, CENTERING_T0_PERTURB + 1):
+            cp = cross.get(str(t0 + k))
+            if cp is None:
+                perturb.append({'dt0': k, 'DISP': None})
+                continue
+            dp = [cp[0] - cf_head[0], cp[1] - cf_head[1]]
+            perturb.append({'dt0': k, 'frame_idx': t0 + k, 'conf': confs.get(str(t0 + k)),
+                            'DISP': [round(v, 2) for v in dp],
+                            'delta_from_t0': round(math.hypot(dp[0] - head['DISP'][0],
+                                                              dp[1] - head['DISP'][1]), 2)})
+        shots_out.append({
+            'shot': sl['shot'], 'video_t': sl['video_t'], 't0': t0, 'locate': sl['locate'],
+            'owner_white': sl['owner_white'], 'per_offset': per_offset,
+            'headline': {k: head[k] for k in ('offset', 'frame_idx', 'n_pellets', 'DISP', 'DISP_mag',
+                                              'CLOUD', 'CLOUD_mag', 'CLOUD_se', 'residual',
+                                              'residual_mag', 'conf_t0', 'conf_f')},
+            't0_perturbation': perturb,
+            't0_perturb_max_delta': round(max((p['delta_from_t0'] for p in perturb
+                                               if p['DISP'] is not None), default=0.0), 2),
+            'sign_check': sign_check,
+            # residual == P - cross[t0], so it must NOT depend on f. Any spread across the four
+            # counting frames is pure measurement noise, and a large one would mean the pellets are
+            # NOT world-fixed over the counting window (invalidating the whole framing).
+            'residual_spread_across_offsets': round(max(
+                math.hypot(o['residual'][0] - head['residual'][0],
+                           o['residual'][1] - head['residual'][1]) for o in per_offset), 2),
+        })
+    return {
+        'n_shots': len(shots_out),
+        'crop_center': [c0, c0],
+        'headline_offset': CENTERING_HEADLINE_OFFSET,
+        'sign_convention': 'CLOUD == cross[t0] - cross[f] == DISP under H1 (see the section comment)',
+        'shots': shots_out,
+    }
+
+
+def _centering_expected_block(report):
+    """The subset the selftest pins -- per shot, the f08 headline vectors plus the t0-stability
+    number. Small enough to read in a diff, specific enough that any arithmetic or indexing change
+    moves it."""
+    return {str(s['shot']): {
+        'DISP': s['headline']['DISP'], 'CLOUD': s['headline']['CLOUD'],
+        'residual': s['headline']['residual'], 'residual_mag': s['headline']['residual_mag'],
+        't0_perturb_max_delta': s['t0_perturb_max_delta'],
+        'sign_check_error_mag': s['sign_check']['error_mag'] if s['sign_check'] else None,
+        'residual_spread_across_offsets': s['residual_spread_across_offsets'],
+    } for s in report['shots']}
+
+
+def verify_centering_crops(tracks_dir):
+    """THE INDEXING GATE, made re-runnable instead of a one-off (constraint 9).
+
+    Every DISP number depends on the regenerated crosshair track being indexed to the SAME frames
+    the committed crops were cut from. Nothing else in this audit can detect an off-by-N frame
+    index or a wrong --locate mode -- it would just produce confident garbage. So: re-cut each
+    committed crop from the regenerated frames at cross[frame_idx] and require BYTE identity.
+
+    crop_disc() upscales x3 for review; the committed set is the native-resolution re-encode of
+    those (see make-groundtruth-f811.py's commit message), so the comparison is done at scale 1.
+    Returns None when TRACKS_DIR has no frames/ dir (the fixture-replay path can't run this)."""
+    import numpy as np  # local: only this path needs them, and the selftest path must stay
+    import cv2          # dependency-free (no images, no cv2) like every other *-selftest here
+
+    tracks_dir = Path(tracks_dir)
+    frames = sorted((tracks_dir / 'frames').glob('f_*.png'))
+    if not frames:
+        return None
+    gt = json.loads(REAL_GT_PATH.read_text())
+    dumps = {m: json.loads((tracks_dir / f'tracks-{m}.json').read_text())
+             for m in ('structural', 'template') if (tracks_dir / f'tracks-{m}.json').exists()}
+    out = {'n_checked': 0, 'n_identical': 0, 'mismatches': []}
+    for shot in gt['shots']:
+        d = dumps.get(shot.get('locate', 'structural'))
+        if d is None:
+            continue
+        cross = d['cross_positions']
+        rad = int(d['params']['pellet_radius'] * 1.15)
+        for rel in shot['crops']:
+            m = re.search(r'_idx(\d+)\.png$', Path(rel).name)
+            if not m:
+                continue
+            fi = int(m.group(1))
+            ref = cv2.imread(str(REAL_GT_DIR / rel))
+            cx, cy = (int(v) for v in cross[fi])
+            im = cv2.imread(str(frames[fi]))
+            got = im[max(cy - rad, 0):cy + rad, max(cx - rad, 0):cx + rad]
+            out['n_checked'] += 1
+            if got.shape == ref.shape and not np.any(got != ref):
+                out['n_identical'] += 1
+            else:
+                out['mismatches'].append({'crop': rel, 'frame_idx': fi, 'cross': [cx, cy],
+                                          'got_shape': list(got.shape), 'ref_shape': list(ref.shape)})
+    out['all_identical'] = out['n_checked'] > 0 and not out['mismatches']
+    return out
+
+
+def audit_centering(tracks_dir, save_fixture_path=None):
+    gate = verify_centering_crops(tracks_dir)
+    if gate is not None and not gate['all_identical']:
+        print(json.dumps(gate, indent=2), file=sys.stderr)
+        raise SystemExit(
+            '--audit-centering: INDEXING GATE FAILED -- the regenerated crops are not byte-identical '
+            'to the committed ones, so the frame indexing or the --locate mode is wrong and every '
+            'DISP below would be meaningless. Refusing to report numbers. Regenerate the tracks at '
+            'the exact ground-truth clip parameters (at=15 dur=30 fps=60 zoom=2); see '
+            'docs/handoffs/2026-08-01-pellet-centering-test-plan.md §4.')
+    slice_shots = build_centering_slice(tracks_dir)
+    report = compute_centering(slice_shots)
+    report['indexing_gate'] = gate or 'skipped (no frames/ dir alongside the tracks dumps)'
+    if save_fixture_path:
+        Path(save_fixture_path).write_text(json.dumps({
+            '_source': ('count-pellets.py --dump-tracks crosshair tracks, regenerated at the '
+                        'groundtruth-f8-11 clip parameters (at=15 dur=30 fps=60 zoom=2, '
+                        'docs/probes/clean-weapons/marciana-solo.MP4 -- slug `marciana`, SG/Iron, '
+                        'NOT `marciana-marine-study`), sliced to the frames the centering audit '
+                        'reads. Structural for shots 1/2/3/5, template for shot 4, matching each '
+                        "shot's own `locate` field in groundtruth-f8-11.json."),
+            '_note': ('Indexing was gated before this was written: the crops regenerated from these '
+                      'same dumps are BYTE-IDENTICAL to all 21 committed crops under '
+                      'groundtruth-f8-11/, and find_t0 reproduces every recorded t0 '
+                      '(None/1060/1096/1140/1289/1369). Pins compute_centering() with no images, '
+                      'subprocess or cv2 -- see score-pellets.py --audit-centering-selftest and '
+                      'docs/handoffs/2026-08-01-pellet-centering-test-plan.md.'),
+            'clip': {'at': 15, 'dur': 30, 'fps': 60, 'zoom': 2},
+            'shots': slice_shots,
+            '_expected': _centering_expected_block(report),
+        }, indent=2) + '\n')
+        print(f'wrote centering slice fixture -> {save_fixture_path}', file=sys.stderr)
+    print(json.dumps(report, indent=2))
+    print('\naudit-centering (f08 headline; DISP = cross[t0]-cross[f], CLOUD = centroid-(184,184)):',
+          file=sys.stderr)
+    print(f"{'shot':>4} {'loc':>10} {'DISP':>18} {'CLOUD':>18} {'CLOUD-DISP':>18} {'|res|':>7} "
+          f"{'conf_t0':>8} {'conf_f':>7} {'t0+-2':>7}", file=sys.stderr)
+    for s in report['shots']:
+        h = s['headline']
+        fmt = lambda v: f"({v[0]:+7.1f},{v[1]:+7.1f})"  # noqa: E731
+        ct, cf = h['conf_t0'], h['conf_f']
+        print(f"{s['shot']:>4} {s['locate']:>10} {fmt(h['DISP']):>18} {fmt(h['CLOUD']):>18} "
+              f"{fmt(h['residual']):>18} {h['residual_mag']:>7.1f} "
+              f"{(f'{ct:.3f}' if ct is not None else '-'):>8} "
+              f"{(f'{cf:.3f}' if cf is not None else '-'):>7} "
+              f"{s['t0_perturb_max_delta']:>7.1f}", file=sys.stderr)
+    print('\nsign check (pellets are world-fixed between counting frames, so the cloud must move by '
+          'MINUS the crosshair):', file=sys.stderr)
+    for s in report['shots']:
+        sc = s['sign_check']
+        if not sc:
+            continue
+        print(f"  shot{s['shot']}: f{sc['from_offset']:02d}->f{sc['to_offset']:02d} "
+              f"observed={sc['observed_cloud_delta']} predicted={sc['predicted_from_crosshair']} "
+              f"|err|={sc['error_mag']:.1f}  (|err| if sign were flipped: "
+              f"{sc['error_mag_if_sign_flipped']:.1f})   residual spread across f08-f11 = "
+              f"{s['residual_spread_across_offsets']:.1f}px", file=sys.stderr)
+
+
+def audit_centering_selftest():
+    """Constraint 9 self-validation, same precedent as --audit-fidelity-real-selftest /
+    real-fidelity-slice.json: replays compute_centering() over the committed crosshair slice + the
+    committed owner positions and compares to the fixture's own _expected block."""
+    data = json.loads(CENTERING_SLICE_FIXTURE.read_text())
+    got = _centering_expected_block(compute_centering(data['shots']))
+    expected = data['_expected']
+    ok = got == expected
+    print(f'expected: {json.dumps(expected, sort_keys=True)}')
+    print(f'got:      {json.dumps(got, sort_keys=True)}')
+    print('SELFTEST PASS' if ok else 'SELFTEST FAIL')
+    return 0 if ok else 1
+
+
 # ------------------------------------------------------------ pre-registered cheap estimators
 # Phase 2 pre-op (2026-07-31): both cross-family reviewers independently proposed scoring a dumb
 # aggregation over the ALREADY-COMPUTED per-frame counts before building the full lifecycle-
@@ -1201,10 +1529,34 @@ def main():
                      help='pin compute_fidelity_cascade() against the committed '
                           'synthetic-fidelity-slice.json fixture and exit -- no images/subprocess '
                           'needed (constraint 9 self-validation)')
+    ap.add_argument('--audit-centering', metavar='TRACKS_DIR',
+                     help='CROP-CENTERING AUDIT: measure whether the owner-marked pellet cloud\'s '
+                          'offset from the f8-11 crop centre is the crosshair\'s own motion between '
+                          'the firing frame t0 and the counting frame f (DISP = cross[t0]-cross[f] '
+                          'vs CLOUD = centroid-(184,184), plus the residual, the cloud\'s centroid '
+                          'SE, the locator confidences and a t0+-2 stability sweep). TRACKS_DIR must '
+                          'hold tracks-structural.json (and tracks-template.json, which shot 4 '
+                          'needs) from count-pellets.py --dump-tracks regenerated at the ground-'
+                          'truth clip parameters at=15 dur=30 fps=60 zoom=2. Records a measurement; '
+                          'changes no constant and no centring behaviour '
+                          '(docs/handoffs/2026-08-01-pellet-centering-test-plan.md §6). Combine with '
+                          '--save-centering-fixture to refresh the committed selftest fixture.')
+    ap.add_argument('--save-centering-fixture', metavar='PATH',
+                     help='(--audit-centering) also write the sliced crosshair track + expected '
+                          'block, for building/refreshing centering-slice.json')
+    ap.add_argument('--audit-centering-selftest', action='store_true',
+                     help='pin compute_centering() against the committed centering-slice.json '
+                          'fixture and exit -- no images/subprocess needed (constraint 9 '
+                          'self-validation)')
     ap.add_argument('--selftest', action='store_true')
     args = ap.parse_args()
     if args.selftest:
         raise SystemExit(selftest())
+    if args.audit_centering_selftest:
+        raise SystemExit(audit_centering_selftest())
+    if args.audit_centering:
+        audit_centering(args.audit_centering, save_fixture_path=args.save_centering_fixture)
+        return
     if args.audit_fidelity_selftest:
         raise SystemExit(audit_fidelity_selftest())
     if args.audit_fidelity_real_selftest:
