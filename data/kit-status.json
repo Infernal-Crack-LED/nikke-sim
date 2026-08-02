@@ -14,10 +14,10 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 102
+      "unit-tested": 116
     },
     "tier": {
-      "MODEL_ONLY": 68,
+      "MODEL_ONLY": 82,
       "VALIDATED": 10,
       "MEASURED": 14,
       "CALIBRATED": 10
@@ -5591,6 +5591,35 @@
         "skill2: trigger 'when gaining Tilted Scale' proxied by lastBullet (Tilted Scale is only gained on the last bullet) — exact, not an approximation. The ▼51.13% max-ammo team debuff is the kit's stated cost; modeled faithfully (maxAmmoPct -51.13) though its net damage impact on allies is small/second-order.",
         "skill2: S2c 'removes Fulfillment of Righteousness on FB end' — no FB-end removal primitive; moot (10s duration self-expires ≈ the FB window, re-applied on the next last bullet)."
       ]
+    },
+    "kurumi": {
+      "name": "Kurumi",
+      "burst": "I",
+      "weapon": "AR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-02",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-02: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/kurumi.json + scripts/kit-autonomy/manual-review/kurumi.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null,
+      "date": "2026-08-02",
+      "evidence": "kit-autonomy gauntlet 2026-08-02; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "DoT stack-vs-refresh, 5s Hacked window inferred, S2 cumulative-counter (spot-check cluster)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     }
   }
 }
