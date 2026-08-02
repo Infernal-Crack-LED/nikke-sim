@@ -52,6 +52,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ Un-skip the `loadouts-parity.test.ts` `topTeams(5)` byte-parity case on the fast basis** —
+  filed 2026-08-02 from the cross-family code review (claude-opus-5) of the generator-test speedup
+  (branch `kimi/speed-up-generator-tests`; packet + result JSON in
+  `scratchpad/gates/2026-08-02-speed-up-generator-tests/`). The skip comment (2026-07-26) says the
+  case is skipped PURELY for runtime (~165s doubled call vs the 300s vitest ceiling under CPU
+  contention) and TODOs "narrow the pool here or give this file its own longer timeout"; the file
+  now runs on `fastCfg` (30s fight), which is exactly that fix. Un-skip, measure on the 30s basis,
+  then delete or rewrite the now-stale skip comment.
 - **⇒ `build-dpschart.ts` worker-pool robustness — 3 findings filed from a CLEAN cross-family
   review** (kimi-code/k3, 2026-08-01; packet + both result JSONs in
   `scratchpad/gates/2026-08-01-deploy-build-timeout/`). All three are on already-failing or

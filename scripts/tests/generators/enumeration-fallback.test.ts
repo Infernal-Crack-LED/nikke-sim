@@ -5,7 +5,7 @@
 // returning null. Real-pool integration test (real sims, one bestTeam call).
 import { describe, expect, it } from 'vitest';
 import { makeCalc } from '../../../src/teamcalc.js';
-import { scopeLockCfg } from '../../lib/scope-lock.js';
+import { fastCfg } from '../lib/fast-cfg.js';
 import {
   deps,
   distinct5,
@@ -19,7 +19,9 @@ const calc = makeCalc({
   chars: chars as any,
   mult,
   deps: { overrides, ...deps },
-  cfg: scopeLockCfg([], null) as any,
+  // Shorter fight for the fallback-path test: it only needs to prove a
+  // double-B1 lock builds a legal team, not optimal team quality or damage.
+  cfg: fastCfg([], null) as any,
   loadout: {},
 });
 
