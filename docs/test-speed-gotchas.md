@@ -44,8 +44,12 @@ the generator test does not need to re-cover it.
   the canonical-focus sim; at 30s it can tie and the `≥` assertion goes vacuous (passes
   while proving nothing).
 - `burst-cooldown-coverage.test.ts` converted to `fastCfg` on 2026-08-02 (63.8s → 8.4s):
-  its assertions are all structural legality/shape, and the multi-cycle concern belongs
-  to the engine primitive test above.
+  its refuse/build/legality/locked-bestTeam assertions are structural. ONE assertion is
+  score-dependent ("explores double-support shapes" reads the score-ranked top 5) and
+  was re-validated on the 30s basis at conversion — a declared recalibration per §5, not
+  a length-proof property. The multi-cycle concern belongs to the engine primitive test
+  above, and the legality gate reads static cooldowns, so in-sim burstCdr cannot
+  interact with it at any fight length.
 
 ## 3. Keep the suite hermetic so isolation can stay OFF
 
@@ -62,11 +66,19 @@ That is only safe while the suite stays hermetic. A new test breaks this if it:
 - leaves a mock/spy installed (`vi.spyOn(console, ...)` must restore in a `finally`);
 - touches the process-level sim cache bundle — it is keyed per cfg and only used by
   `cache: 'shared'` callers; new users must key uniquely (see `shared-cache.test.ts`);
-- binds a FIXED port — serve tests must keep using ephemeral ports (`listen(0)`).
+- binds a FIXED port — serve tests must keep using ephemeral ports (`listen(0)`);
+- mutates `process.env` without save/restore — under a shared registry the mutation
+  leaks to every later file in the same worker. Save the prior value and RESTORE it
+  (do not `delete` — delete discards a value an earlier setter relied on).
+  `scripts/tests/share/portrait-security.test.ts` (the `NIKKESIM_PORTRAIT_DIR` env var — repo name uppercased plus `_PORTRAIT_DIR`) is the existing instance and does
+  this correctly.
 
-If you add any of these, either fix the test or re-isolate that one file
-(`export const isolate = true` in the file's vitest config section) — do not flip the
-global default back.
+If you add any of these, fix the test's hygiene first — that is almost always the right
+answer. If a file genuinely needs its own module registry, there is NO per-file
+isolation pragma in vitest; the real escape hatch is a second vitest PROJECT with
+`isolate: true` under `test.projects` (verified on vitest 4.1.10: an `isolate: true`
+project gets a fresh registry even while another project runs `isolate: false`). Do not
+flip the global default back for one bad file.
 
 ## 4. Recognize inherent costs — don't optimize them
 

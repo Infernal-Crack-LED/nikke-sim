@@ -24,7 +24,8 @@ export default defineConfig({
     // Safe because the suite is hermetic: harness exports are read-only, override
     // fixtures are deep-cloned before mutation (withPatchedOverride), the process-
     // level sim cache is keyed per cfg and only touched by cache:'shared' users,
-    // serve tests bind ephemeral ports, and the lone console.warn spy is restored.
+    // serve tests bind ephemeral ports, the lone console.warn spy is restored, and
+    // the one process.env mutation (portrait-security.test.ts) saves/restores.
     pool: 'threads',
     isolate: false,
     // Full-roster generator searches take ~10-25s each (generator-lock ~22s); sim

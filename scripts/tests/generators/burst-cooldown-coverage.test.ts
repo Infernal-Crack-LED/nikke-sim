@@ -27,11 +27,18 @@ const calcForPool = (keep: Set<string>) =>
     chars: chars as any,
     mult,
     deps: { overrides, ...deps },
-    // Legality here is STRUCTURAL — teamcalc gates every candidate on
-    // isLegal/stageCovered (static cooldowns) BEFORE any sim runs, so these
-    // assertions (refuse / build / legality / shape) are fight-length-independent
-    // and take the fast 30s basis. Multi-cycle CDR ENGINE behaviour stays pinned
-    // at full length by scripts/tests/engine/burst-cdr.test.ts.
+    // The refuse / build / legality / locked-bestTeam assertions are STRUCTURAL —
+    // teamcalc gates every candidate on isLegal/stageCovered (static cooldowns)
+    // BEFORE any sim runs — so they are fight-length-independent. The one score-
+    // dependent assertion ("explores double-support shapes": a property of the
+    // score-ranked topTeams(5)) was re-validated on the 30s basis 2026-08-02
+    // (cross-family review): the pool fields 9 ≤20s B1 and 14 ≤20s B2 casters
+    // as of this writing, so double-support shapes compete into the top 5 at 30s
+    // as at 180s — a roster change that drops them out is a recalibration event
+    // (docs/test-speed-gotchas.md §5), not a silent pass. The legality gate reads
+    // static data, so burstCdr (an in-sim effect) cannot interact with it at any
+    // length; multi-cycle CDR ENGINE behaviour stays pinned at full length by
+    // scripts/tests/engine/burst-cdr.test.ts.
     cfg: fastCfg([], null) as any,
     loadout: {},
     blocked: Object.keys(chars).filter((s) => !keep.has(s)),
