@@ -52,6 +52,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ B1/B2 DPS RANKING BOARD — LANDED 2026-08-01 (PR #54), three small follow-ups deferred:**
+  1. Register rank-board synthetics (including the `synthetic-avistar` MG B1 stand-in) in a shared
+     registry (`src/ranks/synthetics.ts` or a new `RANK_SYNTHETICS` record) instead of the current
+     ad-hoc special-case in `src/ranks/b1b2dps.ts`.
+  2. Hoist the duplicated B1B2 cell union / array / default from `src/ranks/b1b2dps.ts`,
+     `src/infographics/core/rankTables.ts`, `web/src/rankBoardsData.ts`, and `web/src/builderSpec.ts`
+     into one canonical export.
+  3. Reconcile / document cross-board comparability details against the B3 DPS chart Solo cells
+     (`bossDef`, `rangeBonus`, `durationSec`) and clarify the "Core 100" cell label (core hit rate
+     vs core enhancement). See closed handoff `docs/handoffs/closed/2026-08-01-b1b2-dps-rankings.md`.
+
 - **⇒ `build-dpschart.ts` worker-pool robustness — 3 findings filed from a CLEAN cross-family
   review** (kimi-code/k3, 2026-08-01; packet + both result JSONs in
   `scratchpad/gates/2026-08-01-deploy-build-timeout/`). All three are on already-failing or

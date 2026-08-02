@@ -152,6 +152,11 @@ export function prepareUnit(
     loadout.push(`bursts as B${opts.lambdaStage}`);
   }
   if (opts?.forceStage) {
+    if (char.burst === 'Λ') {
+      throw new Error(
+        `forceStage is for non-Λ units only; ${char.name} is Λ and should use lambdaStage`
+      );
+    }
     loadout.push(`forced to B${opts.forceStage}`);
   }
   const mode = skills.modes?.length

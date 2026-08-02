@@ -18,7 +18,12 @@
 //
 // Forced rows: Red Hood is a Λ unit, so she is pinned to B1 and B2 via
 // lambdaStage. Rapi: Red Hood is normally B3, so she is forced to B1 via
-// forceStage.
+// forceStage. Note: lambdaStage and forceStage behave identically for
+// rotation eligibility, but differ for burst-stage-targeted buffs in the
+// current engine — a Λ unit pinned via lambdaStage is only treated as a B3
+// target (legacy behavior), while forceStage is honored at any stage. The
+// no-op teammates here carry no stage-targeted buffs, so this asymmetry does
+// not affect these rankings.
 //
 // Profiles: a few units are ranked twice — their plain Solo row plus a row with
 // a canonical partner in the matching stage slot — mirroring the buffer board's
@@ -220,7 +225,7 @@ export function buildTeam(
 function unitOptsFor(
   slug: string,
   tested: B1B2TestedUnit,
-  char: NoopCharacter
+  testedChar: NoopCharacter
 ): UnitOptions {
   const opts: UnitOptions = {
     ol: 'base5',
@@ -230,7 +235,7 @@ function unitOptsFor(
   if (slug === tested.slug && tested.forceStage) {
     // Λ units use the existing lambdaStage path; everyone else uses the new
     // forceStage path so lambdaStage stays Λ-only.
-    if (char.burst === 'Λ') {
+    if (testedChar.burst === 'Λ') {
       opts.lambdaStage = tested.forceStage;
     } else {
       opts.forceStage = tested.forceStage;
