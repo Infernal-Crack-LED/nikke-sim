@@ -1653,6 +1653,32 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 ## Engine/data-architecture decisions
 
+- **(2026-08-01) THE UNIT-CARD GOLDENS ARE FROZEN AGAINST A COMMITTED SOURCE SNAPSHOT — a golden
+  image pins the RENDERER, and joining one to live data buys nothing and costs twice.**
+  `unit-card.{discord,twitter}.png` were the only two of nine goldens built from the live rank
+  boards (`web/public/*.json`, gitignored build outputs), so they carried a `HAVE_BOARDS` skip.
+  That cost them in both directions. **They never ran anywhere automated:** CI runs `verify.sh
+full` and the deploy box now runs `verify.sh artifacts`, and neither builds the boards before
+  vitest — so the only place the two executed was a dev machine that had run `npm run dpschart &&
+ranks:all`. **And where they DID run, unrelated commits failed them:** on 2026-08-01 the pair
+  failed at 99.891%/99.894% against the 99.9% gate purely because crown's Burst Gen rank moved
+  #37 → #41 — her rate unchanged at 3.9%/s, the drift confined to the rank glyphs — after the
+  kit-autonomy gauntlet batch landed mica-snow-buddy (#2), maxwell-ordinary-mechanic (#12) and
+  label (#16) above her. **Ruling:** the goldens build from
+  `scripts/tests/fixtures/unit-card-sources.json`, a committed snapshot of the join's INPUT,
+  refreshed deliberately with `npm run fixtures:infographics -- --sources`. The picture is now a
+  pure function of the renderer, which is the property a golden exists to assert; the LIVE join
+  keeps its own coverage in `unit-card-data.test.ts`, which reads the real boards and legitimately
+  skips without them. Do not re-couple these two to `loadUnitCardSources()` — the skip and the
+  false failures come back together. **Evidence the switch is inert:** with the snapshot in place
+  all nine fixtures render at 0 differing pixels (so the trim drops nothing the card reads), and
+  the golden file passes 13/13 with the five board artifacts moved off disk — previously 2 of
+  those skipped. The snapshot is trimmed to what the card actually reads (the fixture slug's
+  character/tag/OL/Tsareena entries, the four rank boards whole for neighbour rows, dpschart
+  narrowed to the two cells `unitCardData.ts` names, imported rather than copied so a cell-id
+  change cannot leave it silently holding the wrong one) and the generator REFUSES to write when a
+  board is missing, so an all-Unranked empty-state card can never be frozen as if it were real.
+
 - **(2026-08-01) THE RAILWAY BUILD STOPPED BEING THE CORRECTNESS GATE, AND THE DPS-CHART SKIP
   GATE WENT TWO-LEVEL — production builds were failing with BuildKit `DeadlineExceeded`.**
   Measured on a 28-core box, `verify.sh deploy` — the entire railway.json `buildCommand` — was
