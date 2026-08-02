@@ -49,12 +49,14 @@ lives. Newest first within each section.
   the "still on the battlefield" clause is scope-trivial (nobody dies at scope lock), so the gate
   is composition-only. The buffer-rank workaround `blancNoCdrOverride` (`src/ranks/buffer.ts`,
   which stripped the CDR from Blanc's plain row) is REMOVED — the plain row is now naturally inert
-  and the profiled row naturally active. **Consequent board change:** Blanc's buffer-board duo
-  profile `w/ Bunny` → `w/ Rouge` — the old synthetic Bunny partner existed to hold the gate open
-  under the same misread; the partner is now `noop-rouge-b1` (`src/dpschart/noop.ts`), a
-  presence-only no-op Rouge B1 (zeroed kit, rouge's cadence) whose curated squad membership opens
-  the gate faithfully. `scripts/tests/ranks/buffer.test.ts`'s pin (profiled casts/value > plain)
-  holds unchanged. **Evidence:** `scripts/tests/units/blanc.test.ts` B3 group (gate inert in the
+  and the profiled row naturally active. **Consequent profile change:** Blanc's buffer-board duo
+  profile DEFINITION changes from the synthetic `w/ Bunny` B2 to `w/ Rouge` (`noop-rouge-b1`) — the
+  old synthetic Bunny partner existed to hold the gate open under the same misread; the partner is
+  now a presence-only no-op Rouge B1 (zeroed kit, rouge's cadence) whose curated squad membership
+  opens the gate faithfully. Blanc remains in `EXCLUDED_BUFFER_SLUGS` (`src/ranks/buffer.ts:174`),
+  so neither the plain row nor the `w/ Rouge` profile is emitted to the published buffer board;
+  they are exercised only by `scripts/tests/ranks/buffer.test.ts` and the Blanc unit tests.
+  `scripts/tests/ranks/buffer.test.ts`'s pin (profiled casts/value > plain) holds unchanged. **Evidence:** `scripts/tests/units/blanc.test.ts` B3 group (gate inert in the
   liter comp == CDR-removed schedule; active ≥5 casts with rouge; the ungated counterfactual
   over-fires — discriminates both nearest-wrongs); noir's N5 gate test passes unchanged;
   `scripts/regression.ts` carries no blanc comp (snapshot untouched); `bash scripts/verify.sh`

@@ -105,7 +105,9 @@ export const NOOP_B3_RL = 'noop-b3-rl';
 // Synthetic stand-in for Rouge (B1/SR) — the buffer-rank `w/ Rouge` duo profile's
 // presence-only partner. Its slug carries curated squad membership in
 // src/data/squads.ts ('Blanc Noir Rouge'), so its presence satisfies blanc's
-// same-squad CDR gate (teamHas.sameSquad). Cadence mirrors the real rouge.
+// same-squad CDR gate (teamHas.sameSquad). Weapon cadence mirrors the real
+// rouge; gauge resolves to the SR class modal (no data/gauge-per-shot.json row
+// for this synthetic), identical to the existing noop-b2-sr fallback.
 export const NOOP_ROUGE_B1 = 'noop-rouge-b1';
 
 // Class-modal MG normal-attack multiplier from data/characters.json modal values.

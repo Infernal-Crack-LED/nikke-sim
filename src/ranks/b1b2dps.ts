@@ -175,18 +175,29 @@ export function buildTeam(
   // For forced Λ/B3 rows, cooldown is taken from the character record.
   const cd = char.burstCooldownSec;
   // Native 40s B1s use the 40s-B1 template. Units whose kit has a formation:'noB1'
-  // block (e.g. Rapi: Red Hood's Combat Assist) must keep the 20s-B1 shape so the
-  // noB1 branch stays active; forceStage already guarantees they fill stage 1.
+  // block (e.g. Rapi: Red Hood's Combat Assist) are pinned to the 20s-B1 shape so
+  // the row is evaluated on their noB1 branch; forceStage already guarantees they
+  // fill stage 1.
   const override = ctx.deps.overrides?.[tested.slug];
   const hasNoB1Formation = (ovr?: OverrideFile): boolean => {
     if (!ovr) {
       return false;
     }
+    const walk = (node: unknown): boolean => {
+      if (Array.isArray(node)) {
+        return node.some(walk);
+      }
+      if (!node || typeof node !== 'object') {
+        return false;
+      }
+      if ((node as { formation?: string }).formation === 'noB1') {
+        return true;
+      }
+      return Object.values(node as object).some(walk);
+    };
     for (const slot of ['skill1', 'skill2', 'burst'] as const) {
-      for (const b of ovr[slot] ?? []) {
-        if (b.formation === 'noB1') {
-          return true;
-        }
+      if (walk(ovr[slot])) {
+        return true;
       }
     }
     return false;

@@ -286,8 +286,10 @@ describe('buffer board', () => {
     );
     expect(plain.profile).toBeNull();
     expect(withRouge.profile).toBe(DUO_BUFFER_PROFILES.blanc.id);
-    // The plain row has no squadmate, so blanc's same-squad CDR gate (teamHas
-    // .sameSquad) is naturally inert; the w/ Rouge synthetic squadmate opens it.
+    // The profiled row out-values the plain row. The delta is a mix of Blanc's
+    // same-squad CDR gate (teamHas.sameSquad) opening and the extra B1 gauge
+    // contribution from the Rouge partner; the precise gate isolation lives in
+    // scripts/tests/units/blanc.test.ts.
     expect(withRouge.testedBurstCasts).toBeGreaterThan(plain.testedBurstCasts);
     expect(withRouge.valuePct).toBeGreaterThan(plain.valuePct);
   });
