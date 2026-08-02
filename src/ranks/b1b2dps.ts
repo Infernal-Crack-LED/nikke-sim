@@ -8,9 +8,10 @@
 // of its stage; with a partner it is inserted immediately after the partner's slot,
 // so the partner bursts first). All no-op placeholders use the B1/B2-board-specific
 // low-ATK variants (src/dpschart/noop.ts B1B2_NOOP_CHARACTERS) so the board's PARTNER
-// rows resolve king-maker selectors to the real partner. Plain rows still resolve to a
-// no-op control (harmless, since no-ops deal zero damage) and the shared no-op stats
-// used by the DPS chart, buffer, sustain, and burst-gen boards are unaffected.
+// rows resolve king-maker selectors to the real partner. In plain rows, `alliesTopAtk`
+// selectors WITHOUT `excludeSelf` resolve to the tested unit (the highest-ATK team
+// member), while `alliesLowestAtk` resolves to a no-op. The shared no-op stats used by
+// the DPS chart, buffer, sustain, and burst-gen boards are unaffected.
 //   B1 20s: [tested, B2 SR, B2 SR, B3 RL, B3 MG]
 //   B1 40s: [tested, B1 AR, B2 SR, B3 RL, B3 MG]  (second B1 covers off-rotations)
 //   B2:     [B1 AR, tested, B2 SR, B3 RL, B3 MG]  (a second B2 is always present)
@@ -45,7 +46,6 @@ import {
   NOOP_B2,
   NOOP_B3,
   NOOP_B3_RL,
-  NOOP_CHARACTERS,
   B1B2_NOOP_CHARACTERS,
   type NoopCharacter,
 } from '../dpschart/noop.js';

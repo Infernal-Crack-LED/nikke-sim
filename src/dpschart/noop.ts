@@ -37,8 +37,12 @@ const NOOP_BASE_STATS: BaseStats = {
 // Low-ATK variant used only by the B1/B2 DPS board. The board's PARTNER rows
 // (crown+chime, anis-star+avistar) need the real partner (base ATK ~400) to outrank
 // the no-op placeholders so an `alliesTopAtk` king-maker buff lands on the partner
-// rather than on a control. In plain rows every non-self candidate is a no-op and
-// the selector still resolves to one — harmless, since no-ops deal zero damage.
+// rather than on a control. In plain rows, an `alliesTopAtk` selector WITHOUT
+// `excludeSelf` resolves to the tested unit (the highest-ATK member of the team),
+// while `alliesLowestAtk` resolves to a no-op placeholder. This silently turns
+// self-includable highest-ATK buffs into self-buffs on this board (e.g. naga's
+// coreDamagePct, rapunzel's maxHpFlat); the effect is small for damage lines and
+// is the intended board semantics for king-maker buffs that do not exclude self.
 const NOOP_LOW_ATK_STATS: BaseStats = {
   ...NOOP_BASE_STATS,
   atk: 100,
@@ -186,91 +190,19 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
   ),
 };
 
-// B1/B2-DPS-board-specific no-op characters. They use the same slugs and the same
-// weapon/rotation scaffolding as the shared set, but their ATK is negligible so the
-// board's PARTNER rows resolve king-maker selectors to the real partner. In plain
-// rows every non-self candidate is a no-op and the selector still resolves to one —
-// harmless, since no-ops deal zero damage. The B3 mock multiplier is the class-modal
-// value; the mock B3's own damage is not reported by the B1/B2 board.
-export const B1B2_NOOP_CHARACTERS: Record<string, NoopCharacter> = {
-  [NOOP_B1]: noop(
-    NOOP_B1,
-    'No-op B1 (AR)',
-    'I',
-    20,
-    'AR',
-    {
-      ammo: 60,
-      reloadFrames: 81,
-      chargeFrames: 0,
-      chargeMultiplier: 0,
-      rl3: 7.6,
-    },
-    0,
-    NOOP_LOW_ATK_STATS
-  ),
-  [NOOP_B2]: noop(
-    NOOP_B2,
-    'No-op B2 (SR)',
-    'II',
-    20,
-    'SR',
-    {
-      ammo: 6,
-      reloadFrames: 141,
-      chargeFrames: 60,
-      chargeMultiplier: 250,
-      rl3: 8.4,
-    },
-    0,
-    NOOP_LOW_ATK_STATS
-  ),
-  [NOOP_B3]: noop(
-    NOOP_B3,
-    'No-op B3 (MG)',
-    'III',
-    40,
-    'MG',
-    {
-      ammo: 300,
-      reloadFrames: 171,
-      chargeFrames: 0,
-      chargeMultiplier: 0,
-      rl3: 3.55,
-    },
-    MG_NORMAL_ATTACK_MULT,
-    NOOP_LOW_ATK_STATS
-  ),
-  [NOOP_B3_RL]: noop(
-    NOOP_B3_RL,
-    'No-op B3 (RL)',
-    'III',
-    40,
-    'RL',
-    {
-      ammo: 6,
-      reloadFrames: 141,
-      chargeFrames: 60,
-      chargeMultiplier: 250,
-      rl3: 16.8,
-    },
-    0,
-    NOOP_LOW_ATK_STATS
-  ),
-  [NOOP_BUNNY_B2]: noop(
-    NOOP_BUNNY_B2,
-    'No-op Bunny B2 (SR)',
-    'II',
-    20,
-    'SR',
-    {
-      ammo: 6,
-      reloadFrames: 141,
-      chargeFrames: 60,
-      chargeMultiplier: 250,
-      rl3: 8.4,
-    },
-    0,
-    NOOP_LOW_ATK_STATS
-  ),
-};
+// B1/B2-DPS-board-specific no-op characters. They are derived from the shared set
+// so weapon/rotation scaffolding cannot drift between the two tables; the only
+// intended difference is `baseStats.atk`. Their ATK is negligible so the board's
+// PARTNER rows resolve king-maker selectors to the real partner. In plain rows,
+// `alliesTopAtk` selectors WITHOUT `excludeSelf` resolve to the tested unit (the
+// highest-ATK team member), while `alliesLowestAtk` resolves to a no-op. This
+// intentionally turns self-includable highest-ATK buffs into self-buffs on this board
+// (e.g. naga's coreDamagePct, rapunzel's maxHpFlat). The B3 mock multiplier is the
+// class-modal value; the mock B3's own damage is not reported by the B1/B2 board.
+export const B1B2_NOOP_CHARACTERS: Record<string, NoopCharacter> =
+  Object.fromEntries(
+    Object.entries(NOOP_CHARACTERS).map(([slug, c]) => [
+      slug,
+      { ...c, baseStats: NOOP_LOW_ATK_STATS },
+    ])
+  );

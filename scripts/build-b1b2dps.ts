@@ -28,10 +28,7 @@ import {
   type B1B2TestedUnit,
   type B1B2DpsCell,
 } from '../src/ranks/b1b2dps.js';
-import {
-  NOOP_CHARACTERS,
-  B1B2_NOOP_CHARACTERS,
-} from '../src/dpschart/noop.js';
+import { NOOP_CHARACTERS, B1B2_NOOP_CHARACTERS } from '../src/dpschart/noop.js';
 import type {
   B1B2DpsArtifact,
   B1B2DpsRow,

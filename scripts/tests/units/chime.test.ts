@@ -180,7 +180,9 @@ function kingOf(
   let best = '';
   let bestAtk = -1;
   for (const s of slugs) {
-    if (s === casterSlug) continue;
+    if (s === casterSlug) {
+      continue;
+    }
     const atk = unitOf(res, s).staticAtk;
     if (atk > bestAtk) {
       bestAtk = atk;
@@ -215,9 +217,9 @@ describe('chime — kit spec', () => {
 
   describe('excludeSelf — the king cannot be Chime herself', () => {
     it('COMP_D: Chime is the highest-staticAtk unit, but the king is Crown because of excludeSelf', () => {
-      expect(
-        unitOf(baseD.res, 'chime').staticAtk
-      ).toBeGreaterThan(unitOf(baseD.res, 'crown').staticAtk);
+      expect(unitOf(baseD.res, 'chime').staticAtk).toBeGreaterThan(
+        unitOf(baseD.res, 'crown').staticAtk
+      );
       const applied = chimeBuffs(baseD.events, 'casterAtkPct');
       expect(distinctTargets(applied)).toEqual(['crown']);
     });

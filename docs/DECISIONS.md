@@ -12,21 +12,24 @@ lives. Newest first within each section.
 - **(2026-08-02, latest) CHIME / AVISTAR KING-MAKER TARGETING EXCLUDES SELF.** Both units use an
   `alliesTopAtk count:1` selector for their designated carry ("the king" / "favorite pop star").
   The engine ranks on static ATK (base stats + class gear). At scope lock (3★/core 7, Base-5 gear)
-  that gives Chime 98,367 > Crown 78,707 and Avistar 98,367 > Anis: Star 78,707 (computed from
-  `data/characters.json`, `data/level-multiplier.json`, and the `src/stats.ts` base-5 class gear
-  table). Without `excludeSelf`, the sim would resolve the selector to Chime/Avistar themselves in
-  those control rows. `excludeSelf` is therefore a design-intent judgment that the king/favorite
-  buff is meant for an ally other than the caster, not a literal reading of the kit text — whether
-  the kit's "ally" wording strictly excludes the caster is unverified (⚑, recipe: focus video of
-  the king/pop-star icon, or the datamined target flag for word_group 10091 / 10103). The override
-  change is inert for the four existing rank boards, the B3-only DPS chart, and the pinned
-  regression comps (no Chime/Avistar entries), but it DOES reach the interactive web sim /
-  teamcalc: any user team where Chime or Avistar is the highest-static-ATK member now buffs a
-  different ally than a literal no-excludeSelf reading would. The B1/B2 board uses dedicated
-  low-ATK no-op variants (`src/dpschart/noop.ts B1B2_NOOP_CHARACTERS`) so the partner rows resolve
-  to the intended carry. **Evidence:** `data/characters.json`; `data/level-multiplier.json`;
-  `src/stats.ts`; `scripts/tests/units/chime.test.ts` and `scripts/tests/units/avistar.test.ts`
-  pin the excludeSelf rule; `scripts/tests/ranks/b1b2dps.test.ts` pins Crown+Chime > Crown default.
+  that gives Chime 100,317 > Crown 80,267 and Avistar 100,317 > Anis: Star 80,267 (measured via
+  the test harness; the class-only line from `src/stats.ts` is 98,367 > 78,707). Without
+  `excludeSelf`, the sim would resolve the selector to Chime/Avistar themselves in those control
+  rows. `excludeSelf` is therefore a design-intent judgment that the king/favorite buff is meant
+  for an ally other than the caster, not a literal reading of the kit text — whether the kit's
+  "ally" wording strictly excludes the caster is unverified (⚑, recipe: focus video of the king/
+  pop-star icon, or the datamined target flag for word_group 10091 / 10103). **Owner approval
+  recorded 2026-08-02:** the project owner explicitly directed landing this design-intent
+  targeting so the B1/B2 partner rows resolve to the intended carry; the ⚑ recipe remains open
+  for a literal kit-text reading. The override change is inert for the four existing rank boards,
+  the B3-only DPS chart, and the pinned regression comps (no Chime/Avistar entries), but it DOES
+  reach the interactive web sim / teamcalc: any user team where Chime or Avistar is the
+  highest-static-ATK member now buffs a different ally than a literal no-excludeSelf reading
+  would. The B1/B2 board uses dedicated low-ATK no-op variants
+  (`src/dpschart/noop.ts B1B2_NOOP_CHARACTERS`) so the partner rows resolve to the intended
+  carry. **Evidence:** `data/characters.json`; `data/level-multiplier.json`; `src/stats.ts`;
+  `scripts/tests/units/chime.test.ts` and `scripts/tests/units/avistar.test.ts` pin the
+  excludeSelf rule; `scripts/tests/ranks/b1b2dps.test.ts` pins Crown+Chime > Crown default.
 
 - **(2026-08-01) B1/B2 DPS RANKING BOARD — Solo-style isolation for B1/B2 units.**
   Added a fifth non-DPS ranking board (`b1b2dps.json`) that ranks every sim-supported Burst-1 and

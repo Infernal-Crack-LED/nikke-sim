@@ -188,7 +188,10 @@ const noStargazer = run({
 
 // COMP_E: Avistar is the highest-staticAtk unit, but excludeSelf still puts the favorite
 // pop star buff on Crown (the intended carry), not on Avistar.
-const COMP_E = { slugs: ['avistar', 'label', 'crown', '2b'], focusSlug: 'crown' };
+const COMP_E = {
+  slugs: ['avistar', 'label', 'crown', '2b'],
+  focusSlug: 'crown',
+};
 const baseE = run(COMP_E);
 const includeSelfE = run({
   ...COMP_E,
@@ -235,9 +238,9 @@ describe('avistar — kit spec', () => {
 
   describe('excludeSelf — the favorite pop star cannot be Avistar herself', () => {
     it('COMP_E: Avistar is the highest-staticAtk unit, but the pop star is Crown because of excludeSelf', () => {
-      expect(
-        unitOf(baseE.res, 'avistar').staticAtk
-      ).toBeGreaterThan(unitOf(baseE.res, 'crown').staticAtk);
+      expect(unitOf(baseE.res, 'avistar').staticAtk).toBeGreaterThan(
+        unitOf(baseE.res, 'crown').staticAtk
+      );
       const i = avistarIdx(baseE);
       const buff = baseE.applies('casterAtkPct', i);
       expect([...new Set(buff.map((b) => b.targetSlug))]).toEqual(['crown']);

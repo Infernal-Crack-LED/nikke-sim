@@ -2824,6 +2824,7 @@ export function runSim(
       const want = romanStage[stage];
       const fillsStage = (u: UnitState) => {
         // Forced non-Λ units (rank-builder controls) ONLY fill their forced stage.
+        // This also suppresses extraStages / Combat-Assist eligibility for the unit.
         if (u.forceStage !== null) {
           return u.forceStage === stage;
         }
