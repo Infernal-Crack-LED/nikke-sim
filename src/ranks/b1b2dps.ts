@@ -4,9 +4,9 @@
 // units that deal zero damage and provide only the baseline rotation support a
 // real team would need.
 //
-// Control teams (the tested unit is inserted at the leftmost slot of its stage;
-// profile rows with a partner put the partner in that leftmost slot and the tested
-// unit immediately after):
+// Control teams (with no partner the tested unit is inserted at the leftmost slot
+// of its stage; with a partner it is inserted immediately after the partner's slot,
+// so the partner bursts first):
 //   B1 20s: [tested, B2 SR, B2 SR, B3 RL, B3 MG]
 //   B1 40s: [tested, B1 AR, B2 SR, B3 RL, B3 MG]  (second B1 covers off-rotations)
 //   B2:     [B1 AR, tested, B2 SR, B3 RL, B3 MG]  (a second B2 is always present)
@@ -210,6 +210,11 @@ export function buildTeam(
   // Profile rows put the partner first in the stage so the partner bursts
   // before the tested unit (e.g. Avistar -> Anis: Star, Chime -> Crown).
   const partnerIdx = resolvedPartner ? base.indexOf(resolvedPartner) : -1;
+  if (resolvedPartner && partnerIdx < 0) {
+    throw new Error(
+      `B1/B2 DPS partner "${resolvedPartner}" for ${tested.slug} is not present in the control team: ${base.join(', ')}`
+    );
+  }
   const slot =
     partnerIdx >= 0 ? partnerIdx + 1 : leftmostSlot(tested.effectiveBurst);
   const team = [...base];

@@ -115,6 +115,12 @@ describe('b1b2 dps team assembly', () => {
     expect(template).toBe('b2');
   });
 
+  it('rejects a partner whose burst stage does not match the tested unit', () => {
+    expect(() =>
+      buildTeam(unit('anis-star', 'I', undefined, 'with-chime'), ctx, 'chime')
+    ).toThrow();
+  });
+
   it('Red Hood forced as B1 uses the 40s B1 template and pins her to stage 1', () => {
     const { team, template } = buildTeam(
       unit('red-hood', 'I', 1, 'as-b1'),
@@ -199,7 +205,7 @@ describe('b1b2 dps integration', () => {
     expect(withOther.template).toBe('b1-40s');
   });
 
-  it('Crown with Chime runs and differs from her plain row', () => {
+  it('Crown with Chime runs and out-damages her plain row', () => {
     const plain = dpsFor('c0-neutral', unit('crown', 'II'), fullCtx);
     const withChime = dpsFor(
       'c0-neutral',
@@ -208,7 +214,7 @@ describe('b1b2 dps integration', () => {
     );
     expect(plain.dps).toBeGreaterThan(0);
     expect(withChime.dps).toBeGreaterThan(0);
-    expect(withChime.dps).not.toEqual(plain.dps);
+    expect(withChime.dps).toBeGreaterThan(plain.dps);
     expect(plain.template).toBe('b2');
     expect(withChime.template).toBe('b2');
   });

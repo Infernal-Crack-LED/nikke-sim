@@ -23,8 +23,10 @@ export type NoopCharacter = CharacterData & { baseStats: BaseStats };
 // ATK is kept negligible so "highest ATK" ally selectors (Chime's "the king",
 // Avistar's "favorite pop star") always pick a real unit in the Solo control teams.
 // The B3 mock also uses negligible ATK for the same reason. Its normal-attack
-// multiplier is scaled by the same factor the ATK was reduced so the mock B3's
-// burst-stage damage output stays unchanged under scope-lock conditions (bossDef=0).
+// multiplier is the historical effective value (derived from the class-modal MG
+// multiplier 5.57 at the original no-op ATK of 30000) and is kept unchanged so
+// existing board numbers stay stable; the mock B3 only supplies rotation / burst-stage
+// coverage and its own damage is not reported by the B1/B2 board.
 const NOOP_BASE_STATS: BaseStats = {
   resourceId: 0,
   atk: 100,
@@ -64,7 +66,7 @@ function noop(
     class: 'Supporter', // only feeds gear ATK/HP — inert at 0 damage
     element: 'Fire', // never elementally relevant at 0 damage
     manufacturer: null, // no relationship bonus on a synthetic control unit
-    normalAttackMultiplier, // 0 for pure controls; B3 gets a scaled class-modal base for the mock burst
+    normalAttackMultiplier, // 0 for pure controls; B3 gets the historical mock-burst multiplier
     coreAttackMultiplier: 200,
     ammo: w.ammo,
     reloadFrames: w.reloadFrames,
@@ -89,14 +91,12 @@ export const NOOP_B3 = 'noop-b3-mg';
 export const NOOP_B3_RL = 'noop-b3-rl';
 export const NOOP_BUNNY_B2 = 'noop-bunny-b2';
 
-// Class-modal MG normal-attack multiplier from data/characters.json modal values.
-const CLASS_MODAL_MG_NORMAL_MULT = 5.57;
-// The original no-op base ATK was 30000. It was reduced to 100 so king-maker selectors
-// target real units; the mock B3 multiplier is raised by the same ratio so its
-// effective ATK×multiplier product (and therefore its damage at bossDef=0) is preserved.
-const ORIGINAL_NOOP_ATK = 30000;
-const MG_NORMAL_ATTACK_MULT =
-  CLASS_MODAL_MG_NORMAL_MULT * (ORIGINAL_NOOP_ATK / NOOP_BASE_STATS.atk);
+// Historical effective MG normal-attack multiplier for the synthetic B3 mock.
+// Derived from the class-modal MG multiplier 5.57 calibrated at the original no-op
+// ATK of 30000; kept at the same effective value after the no-op ATK reduction to
+// avoid shifting existing board numbers. The mock B3 is rotation scaffolding, not a
+// reported damage source.
+const MG_NORMAL_ATTACK_MULT = 1671;
 
 export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
   [NOOP_B1]: noop(

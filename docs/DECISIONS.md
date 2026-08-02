@@ -25,14 +25,19 @@ B3 RL, B3 MG]`; B2 `[B1 AR, tested, B2 SR, B3 RL, B3 MG]`. The no-op B1 in the 4
 
 - **(2026-08-02) CHIME / AVISTAR KING-MAKER TARGETING EXCLUDES SELF.** Both units use an
   `alliesTopAtk count:1` selector for their designated carry ("the king" / "favorite pop star").
-  Datamined base ATK at level 1 shows Chime 500 > Crown 400 and Avistar 500 > Anis: Star 400; the
-  same ordering holds at scope lock. Without `excludeSelf`, the control-row sims would therefore
-  buff Chime/Avistar themselves instead of the intended carry, which is inconsistent with how the
-  skills are used in-game. The original notes relied on a literal "the kit does not say 'except
-  self'" reading; the base-ATK measurement overrides that reading for these two buffers, and the
-  no-op control ATK is kept negligible (100) so other `alliesTopAtk` selectors also target real
-  units. **Evidence:** `data/characters.json` base stats; Crown+Chime and Anis:Star+Avistar profile
-  rows now out-damage their default rows in the regenerated `b1b2dps.json` artifact.
+  The engine ranks on static ATK (base stats + class gear), and the datamined base ATK values are
+  Chime 500 / Crown 400 and Avistar 500 / Anis: Star 400. At scope lock that gives Chime 82,614 >
+  Crown 66,091 and Avistar 82,614 > Anis: Star 66,091 (computed from `data/characters.json`,
+  `data/level-multiplier.json`, and the `src/stats.ts` base-5 class gear table). Without
+  `excludeSelf`, the sim would resolve the selector to Chime/Avistar themselves in those control
+  rows. `excludeSelf` is therefore a design-intent judgment that the king/favorite buff is meant
+  for an ally other than the caster, not a literal reading of the kit text — whether the kit's
+  "ally" wording strictly excludes the caster is unverified (⚑, recipe: focus video of the
+  king/pop-star icon, or the datamined target flag for word_group 10091 / 10103). The symptom check
+  is that Crown+Chime now out-damages Crown default in the regenerated B1/B2 board.
+  The no-op control ATK is kept negligible (100) so other `alliesTopAtk` selectors also target real
+  units. **Evidence:** `data/characters.json` base stats; `data/level-multiplier.json`;
+  `src/stats.ts`; `scripts/tests/ranks/b1b2dps.test.ts` pins Crown+Chime > Crown default.
 
 - **(2026-08-01) CLEAN-WEAPON BASIS INVARIANT REFINED (option 2): CW1 now pins
   damage-NEUTRALITY of any committed override, not file-ABSENCE — `marciana` is the first
