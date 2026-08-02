@@ -34,9 +34,11 @@ const NOOP_BASE_STATS: BaseStats = {
   core: { atk: 0, hp: 0, def: 0 },
 };
 
-// Low-ATK variant used only by the B1/B2 DPS board. With these stats, "highest ATK"
-// ally selectors (Chime's "the king", Avistar's "favorite pop star") always pick a
-// real unit in the B1/B2 control teams instead of a no-op placeholder.
+// Low-ATK variant used only by the B1/B2 DPS board. The board's PARTNER rows
+// (crown+chime, anis-star+avistar) need the real partner (base ATK ~400) to outrank
+// the no-op placeholders so an `alliesTopAtk` king-maker buff lands on the partner
+// rather than on a control. In plain rows every non-self candidate is a no-op and
+// the selector still resolves to one — harmless, since no-ops deal zero damage.
 const NOOP_LOW_ATK_STATS: BaseStats = {
   ...NOOP_BASE_STATS,
   atk: 100,
@@ -185,9 +187,11 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
 };
 
 // B1/B2-DPS-board-specific no-op characters. They use the same slugs and the same
-// weapon/rotation scaffolding as the shared set, but their ATK is negligible so
-// king-maker selectors reliably target the real tested unit. The B3 mock multiplier
-// is the class-modal value; the mock B3's own damage is not reported by the B1/B2 board.
+// weapon/rotation scaffolding as the shared set, but their ATK is negligible so the
+// board's PARTNER rows resolve king-maker selectors to the real partner. In plain
+// rows every non-self candidate is a no-op and the selector still resolves to one —
+// harmless, since no-ops deal zero damage. The B3 mock multiplier is the class-modal
+// value; the mock B3's own damage is not reported by the B1/B2 board.
 export const B1B2_NOOP_CHARACTERS: Record<string, NoopCharacter> = {
   [NOOP_B1]: noop(
     NOOP_B1,

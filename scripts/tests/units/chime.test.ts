@@ -15,10 +15,12 @@
 //      ■ all allies: Max Ammunition Capacity ▲20% for 10 sec                                    [C3b]
 //      ■ the king: Loyalty: Attack Damage ▲92.44% for 10 sec                                    [C4]
 //
-// "THE KING" = the single ally with the highest ATK (word_group=10091). Modeled as
-// alliesTopAtk count:1 with STATIC base-ATK ranking (no byFinalAtk — the kit says plain
-// "the king"/highest ATK, not "final ATK"; the engine evaluates the ranking once at apply, so the
-// designation is fixed at battle start). Chime is a low-ATK Supporter, never herself the king.
+// "THE KING" = the single ally with the highest ATK EXCLUDING the caster
+// (word_group=10091). Modeled as alliesTopAtk count:1 with excludeSelf:true and STATIC
+// base-ATK ranking (no byFinalAtk — the kit says plain "the king"/highest ATK, not "final ATK";
+// the engine evaluates the ranking once at apply, so the designation is fixed at battle start).
+// Chime's datamined base ATK (500) puts her above most B2 carries at scope lock (e.g. Crown 400),
+// so without excludeSelf she would be her own king; excludeSelf is what lands the buff on the carry.
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest wrong model gates
 // nothing):
@@ -60,12 +62,16 @@ const COMP_A = ['liter', 'chime', 'ada', 'helm'];
 const COMP_C = ['liter', 'chime', 'crown', 'ada', 'helm'];
 const CHIME = 1; // chime's slot in BOTH comps
 
-function run(slugs: string[], overrides: Record<string, any> = {}) {
+function run(
+  slugs: string[],
+  overrides: Record<string, any> = {},
+  focusSlug = 'ada'
+) {
   const events: SimEvent[] = [];
   const res = runComp({
     slugs,
     bossElement: 'Fire',
-    focusSlug: 'ada',
+    focusSlug,
     overrides,
     cfg: { onEvent: (e) => events.push(e) },
   });
@@ -120,12 +126,37 @@ const chimeNoReenter = withPatchedOverride('chime', (ov) => {
   }
 });
 
+/** EXCLUDE-SELF DISCRIMINATION: remove excludeSelf from every king line so the selector
+ *  can resolve to Chime herself. */
+const chimeIncludeSelf = withPatchedOverride('chime', (ov) => {
+  let n = 0;
+  for (const slot of ['skill1', 'skill2', 'burst']) {
+    for (const b of ov[slot]) {
+      if (b.target?.kind === 'alliesTopAtk' && b.target.excludeSelf === true) {
+        delete b.target.excludeSelf;
+        n++;
+      }
+    }
+  }
+  if (n !== 3) {
+    throw new Error(
+      `expected 3 excludeSelf king lines, found ${n} — fixture is stale`
+    );
+  }
+});
+
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const baseA = run(COMP_A);
 const s1AtkPctA = run(COMP_A, { chime: chimeS1AtkPct });
 const kingAlliesA = run(COMP_A, { chime: chimeKingToAllies });
 const baseC = run(COMP_C);
 const noReenterC = run(COMP_C, { chime: chimeNoReenter });
+
+// COMP_D: Chime is the highest-staticAtk unit, but excludeSelf still puts the king buff
+// on Crown (the intended carry), not on Chime.
+const COMP_D = ['label', 'chime', 'crown', '2b'];
+const baseD = run(COMP_D, {}, 'crown');
+const includeSelfD = run(COMP_D, { chime: chimeIncludeSelf }, 'crown');
 
 // ---- readers ----------------------------------------------------------------------------------
 const buffs = (evs: SimEvent[]) =>
@@ -139,12 +170,17 @@ const fbStarts = (evs: SimEvent[]) =>
 const distinctTargets = (bs: BuffApply[]) =>
   [...new Set(bs.map((b) => b.targetSlug))].sort();
 
-/** The king, derived INDEPENDENTLY as the highest-staticAtk ally in the comp (the rule the
- *  alliesTopAtk encoding must follow) — not a hardcoded slug. */
-function kingOf(slugs: string[], res: typeof baseA.res): string {
+/** The king, derived INDEPENDENTLY as the highest-staticAtk ally in the comp EXCLUDING
+ *  Chime (the rule the alliesTopAtk/excludeSelf encoding must follow) — not a hardcoded slug. */
+function kingOf(
+  slugs: string[],
+  casterSlug: string,
+  res: typeof baseA.res
+): string {
   let best = '';
   let bestAtk = -1;
   for (const s of slugs) {
+    if (s === casterSlug) continue;
     const atk = unitOf(res, s).staticAtk;
     if (atk > bestAtk) {
       bestAtk = atk;
@@ -153,7 +189,7 @@ function kingOf(slugs: string[], res: typeof baseA.res): string {
   }
   return best;
 }
-const KING_A = kingOf(COMP_A, baseA.res);
+const KING_A = kingOf(COMP_A, 'chime', baseA.res);
 
 describe('chime — kit spec', () => {
   describe('fixture sanity', () => {
@@ -174,6 +210,20 @@ describe('chime — kit spec', () => {
         ],
         'chime is Burst II'
       ).toEqual([2]);
+    });
+  });
+
+  describe('excludeSelf — the king cannot be Chime herself', () => {
+    it('COMP_D: Chime is the highest-staticAtk unit, but the king is Crown because of excludeSelf', () => {
+      expect(
+        unitOf(baseD.res, 'chime').staticAtk
+      ).toBeGreaterThan(unitOf(baseD.res, 'crown').staticAtk);
+      const applied = chimeBuffs(baseD.events, 'casterAtkPct');
+      expect(distinctTargets(applied)).toEqual(['crown']);
+    });
+    it('DISCRIMINATING: removing excludeSelf makes Chime her own king', () => {
+      const applied = chimeBuffs(includeSelfD.events, 'casterAtkPct');
+      expect(distinctTargets(applied)).toEqual(['chime']);
     });
   });
 

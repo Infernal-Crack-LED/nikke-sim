@@ -7,9 +7,10 @@
 // Control teams (with no partner the tested unit is inserted at the leftmost slot
 // of its stage; with a partner it is inserted immediately after the partner's slot,
 // so the partner bursts first). All no-op placeholders use the B1/B2-board-specific
-// low-ATK variants (src/dpschart/noop.ts B1B2_NOOP_CHARACTERS) so king-maker selectors
-// target the real tested unit without affecting the shared no-op stats used by the
-// DPS chart, buffer, sustain, and burst-gen boards.
+// low-ATK variants (src/dpschart/noop.ts B1B2_NOOP_CHARACTERS) so the board's PARTNER
+// rows resolve king-maker selectors to the real partner. Plain rows still resolve to a
+// no-op control (harmless, since no-ops deal zero damage) and the shared no-op stats
+// used by the DPS chart, buffer, sustain, and burst-gen boards are unaffected.
 //   B1 20s: [tested, B2 SR, B2 SR, B3 RL, B3 MG]
 //   B1 40s: [tested, B1 AR, B2 SR, B3 RL, B3 MG]  (second B1 covers off-rotations)
 //   B2:     [B1 AR, tested, B2 SR, B3 RL, B3 MG]  (a second B2 is always present)
@@ -137,8 +138,7 @@ function fillsStage(
 function charFor(ctx: RanksCtx, slug: string): NoopCharacter {
   const found =
     (ctx.characters[slug] as NoopCharacter | undefined) ??
-    B1B2_NOOP_CHARACTERS[slug] ??
-    NOOP_CHARACTERS[slug];
+    B1B2_NOOP_CHARACTERS[slug];
   if (!found) {
     throw new Error(`unknown B1/B2 DPS unit "${slug}"`);
   }
