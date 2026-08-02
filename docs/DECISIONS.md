@@ -23,6 +23,17 @@ B3 RL, B3 MG]`; B2 `[B1 AR, tested, B2 SR, B3 RL, B3 MG]`. The no-op B1 in the 4
   Chime -> Crown). **Evidence:** green `bash scripts/verify.sh` and `node scripts/web-smoke-ranks.mjs`;
   team-assembly fixtures in `scripts/tests/ranks/b1b2dps.test.ts`.
 
+- **(2026-08-02) CHIME / AVISTAR KING-MAKER TARGETING EXCLUDES SELF.** Both units use an
+  `alliesTopAtk count:1` selector for their designated carry ("the king" / "favorite pop star").
+  Datamined base ATK at level 1 shows Chime 500 > Crown 400 and Avistar 500 > Anis: Star 400; the
+  same ordering holds at scope lock. Without `excludeSelf`, the control-row sims would therefore
+  buff Chime/Avistar themselves instead of the intended carry, which is inconsistent with how the
+  skills are used in-game. The original notes relied on a literal "the kit does not say 'except
+  self'" reading; the base-ATK measurement overrides that reading for these two buffers, and the
+  no-op control ATK is kept negligible (100) so other `alliesTopAtk` selectors also target real
+  units. **Evidence:** `data/characters.json` base stats; Crown+Chime and Anis:Star+Avistar profile
+  rows now out-damage their default rows in the regenerated `b1b2dps.json` artifact.
+
 - **(2026-08-01) CLEAN-WEAPON BASIS INVARIANT REFINED (option 2): CW1 now pins
   damage-NEUTRALITY of any committed override, not file-ABSENCE — `marciana` is the first
   clean-weapon unit to carry an override.** The kit-autonomy gauntlet landed `marciana` (the SG

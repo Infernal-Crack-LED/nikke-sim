@@ -20,13 +20,11 @@ export type NoopCharacter = CharacterData & { baseStats: BaseStats };
 
 // Stats are inert for B1/B2: the units deal 0 damage (multiplier 0) and cast nothing,
 // so ATK/HP only need to be valid numbers for the stat formula. No grade/core growth.
-// The B3 is given a class-modal base multiplier plus a mock burst buff via its override.
-// B1/B2 ATK is kept negligible so "highest ATK" ally selectors (Chime's "the king",
+// ATK is kept negligible so "highest ATK" ally selectors (Chime's "the king",
 // Avistar's "favorite pop star") always pick a real unit in the Solo control teams.
-// B1/B2 ATK is negligible so "highest ATK" ally selectors (Chime's "the king",
-// Avistar's "favorite pop star") pick the real unit in the Solo control teams.
-// B3 also uses low base ATK for the same reason; its mock burst damage is preserved
-// by a proportionally higher normalAttackMultiplier.
+// The B3 mock also uses negligible ATK for the same reason. Its normal-attack
+// multiplier is scaled by the same factor the ATK was reduced so the mock B3's
+// burst-stage damage output stays unchanged under scope-lock conditions (bossDef=0).
 const NOOP_BASE_STATS: BaseStats = {
   resourceId: 0,
   atk: 100,
@@ -54,8 +52,7 @@ function noop(
   burstCooldownSec: number,
   weapon: Weapon,
   w: WeaponModal,
-  normalAttackMultiplier: number,
-  baseStats: BaseStats
+  normalAttackMultiplier: number
 ): NoopCharacter {
   return {
     slug,
@@ -67,7 +64,7 @@ function noop(
     class: 'Supporter', // only feeds gear ATK/HP — inert at 0 damage
     element: 'Fire', // never elementally relevant at 0 damage
     manufacturer: null, // no relationship bonus on a synthetic control unit
-    normalAttackMultiplier, // 0 for pure controls; B3 gets a class-modal base for the mock burst
+    normalAttackMultiplier, // 0 for pure controls; B3 gets a scaled class-modal base for the mock burst
     coreAttackMultiplier: 200,
     ammo: w.ammo,
     reloadFrames: w.reloadFrames,
@@ -82,7 +79,7 @@ function noop(
     generatorSupported: true,
     simSupported: true,
     skills: { skill1: '', skill2: '', burst: '' }, // parser → zero blocks
-    baseStats,
+    baseStats: NOOP_BASE_STATS,
   };
 }
 
@@ -92,10 +89,14 @@ export const NOOP_B3 = 'noop-b3-mg';
 export const NOOP_B3_RL = 'noop-b3-rl';
 export const NOOP_BUNNY_B2 = 'noop-bunny-b2';
 
-// Effective MG normal-attack multiplier for the synthetic B3 mock. The base ATK is
-// kept negligible so king-maker selectors target real units; the multiplier is
-// raised proportionally to preserve the mock B3's burst-stage damage output.
-const MG_NORMAL_ATTACK_MULT = 1671;
+// Class-modal MG normal-attack multiplier from data/characters.json modal values.
+const CLASS_MODAL_MG_NORMAL_MULT = 5.57;
+// The original no-op base ATK was 30000. It was reduced to 100 so king-maker selectors
+// target real units; the mock B3 multiplier is raised by the same ratio so its
+// effective ATK×multiplier product (and therefore its damage at bossDef=0) is preserved.
+const ORIGINAL_NOOP_ATK = 30000;
+const MG_NORMAL_ATTACK_MULT =
+  CLASS_MODAL_MG_NORMAL_MULT * (ORIGINAL_NOOP_ATK / NOOP_BASE_STATS.atk);
 
 export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
   [NOOP_B1]: noop(
@@ -111,8 +112,7 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 0,
       rl3: 7.6,
     },
-    0,
-    NOOP_BASE_STATS
+    0
   ),
   [NOOP_B2]: noop(
     NOOP_B2,
@@ -127,8 +127,7 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 250,
       rl3: 8.4,
     },
-    0,
-    NOOP_BASE_STATS
+    0
   ),
   [NOOP_B3]: noop(
     NOOP_B3,
@@ -143,8 +142,7 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 0,
       rl3: 3.55,
     },
-    MG_NORMAL_ATTACK_MULT,
-    NOOP_BASE_STATS
+    MG_NORMAL_ATTACK_MULT
   ),
   [NOOP_B3_RL]: noop(
     NOOP_B3_RL,
@@ -159,8 +157,7 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 250,
       rl3: 16.8,
     },
-    0,
-    NOOP_BASE_STATS
+    0
   ),
   [NOOP_BUNNY_B2]: noop(
     NOOP_BUNNY_B2,
@@ -175,7 +172,6 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 250,
       rl3: 8.4,
     },
-    0,
-    NOOP_BASE_STATS
+    0
   ),
 };

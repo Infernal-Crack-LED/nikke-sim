@@ -4,10 +4,14 @@
 // units that deal zero damage and provide only the baseline rotation support a
 // real team would need.
 //
-// Control teams (the tested unit is inserted at the leftmost slot of its stage):
+// Control teams (the tested unit is inserted at the leftmost slot of its stage;
+// profile rows with a partner put the partner in that leftmost slot and the tested
+// unit immediately after):
 //   B1 20s: [tested, B2 SR, B2 SR, B3 RL, B3 MG]
 //   B1 40s: [tested, B1 AR, B2 SR, B3 RL, B3 MG]  (second B1 covers off-rotations)
 //   B2:     [B1 AR, tested, B2 SR, B3 RL, B3 MG]  (a second B2 is always present)
+//   Partner rows: B1 40s [partner, tested, B2 SR, B3 RL, B3 MG];
+//                 B2     [B1 AR, partner, tested, B3 RL, B3 MG]
 //
 // The no-op B1 (AR) in the 40s-B1 and B2 templates contributes the standard 7 s
 // team burst-cooldown reduction via its override (noop-b1-ar.json); 20s-B1 rows
@@ -47,10 +51,6 @@ import type { RanksCtx } from './burstgen.js';
 const B1_20S_TEAM = [NOOP_B2, NOOP_B2, NOOP_B3_RL, NOOP_B3];
 const B1_40S_TEAM = [NOOP_B1, NOOP_B2, NOOP_B3_RL, NOOP_B3];
 const B2_TEAM = [NOOP_B1, NOOP_B2, NOOP_B3_RL, NOOP_B3];
-
-// Avistar is the canonical MG B1 partner for Anis: Star's "with B1" profile
-// row. She was added to the roster after this board was authored, so the
-// synthetic stand-in has been retired.
 
 export interface B1B2DpsProfile {
   id: string;
@@ -209,7 +209,9 @@ export function buildTeam(
 
   // Profile rows put the partner first in the stage so the partner bursts
   // before the tested unit (e.g. Avistar -> Anis: Star, Chime -> Crown).
-  const slot = leftmostSlot(tested.effectiveBurst) + (resolvedPartner ? 1 : 0);
+  const partnerIdx = resolvedPartner ? base.indexOf(resolvedPartner) : -1;
+  const slot =
+    partnerIdx >= 0 ? partnerIdx + 1 : leftmostSlot(tested.effectiveBurst);
   const team = [...base];
   team.splice(slot, 0, tested.slug);
   assertRotationLegal(team, tested, ctx);

@@ -235,7 +235,7 @@ const artifact: B1B2DpsArtifact = {
     "20s-B1 rows have no second B1, so they rely on the tested B1's own CDR. " +
     'For a 20s-B1 profile row with a B1 partner, the team switches to the 40s-B1 template: the partner fills the second B1 slot and the second no-op B2 is removed, ' +
     'so the row gains rotation coverage from the partner at the cost of one B2 slot. Profile rows put the partner first in the stage (e.g. Avistar -> Anis: Star, Chime -> Crown). ' +
-    '20s-B1 rows without their own built-in burst CDR run slower rotations than 40s-B1 or B2 rows because they lack the second B1; each row is tagged with its template (20s B1 / 40s B1 / B2) so the rank is comparable within the same group. ' +
+    '20s-B1, 40s-B1 and B2 rows run different control templates and are only comparable within the same template group. ' +
     'Investment is scope lock (Base-5, 3★/core 7, no cube/doll). ' +
     'The tested unit is the camera-focused unit (×2.5 burst-gauge generation on charge weapons), matching the Solo framework. ' +
     'Cells: core 0 / core 100 × neutral / elemental advantage (boss weak to the tested unit; for multi-element units the advantage cell uses the native element).',
