@@ -14,7 +14,7 @@ import {
   makeCalc,
   type AlwaysCombos,
 } from '../../../src/teamcalc.js';
-import { scopeLockCfg } from '../../lib/scope-lock.js';
+import { fastCfg } from '../lib/fast-cfg.js';
 import { deps, effBurst, generatorPool, mult } from '../lib/harness.js';
 
 const { chars, overrides } = generatorPool();
@@ -138,7 +138,9 @@ describe('generation still completes with the burst-aware pins', () => {
       chars: chars as any,
       mult,
       deps: { overrides, ...deps },
-      cfg: scopeLockCfg([], null) as any,
+      // Shorter fight for the always-combos generation smoke test: it only
+      // needs to prove topTeams builds 5 disjoint legal teams, not optimal quality.
+      cfg: fastCfg([], null) as any,
       loadout: {},
       poolB3: 16,
       rounds: 1,
