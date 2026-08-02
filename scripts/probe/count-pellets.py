@@ -17,7 +17,7 @@ Usage:
 Output: JSON to stdout — per-frame counts from all three backends.
   [{"file": "f_00001.jpg", "numpy": {"white": 6, "red": 1}, "pil": {...}, "opencv": {...}}, ...]
 """
-import sys, os, json, math, argparse, hashlib
+import sys, os, json, math, argparse, hashlib, collections
 import numpy as np
 from pathlib import Path
 
@@ -813,6 +813,109 @@ def build_atlas_from_cells(cells, label, outdir, tag):
 
 
 # ============================================================
+# Ammo SERIES over an existing --dump-tracks dump.
+# docs/handoffs/2026-08-01-missing-shot-channel-test-plan.md — the missing-shot channel.
+#
+# The ammo counter is the one shot arbiter in this pipeline that is not downstream of the pellet
+# DETECTOR: it decrements once per shot whether or not a blast was detected, so
+# `shots_from_ammo - shots_detected_by_pellets` measures the reader's missing-shot channel
+# directly. `--ammo-digits` above reads one frame at a time and re-localizes the box itself with
+# cv2.matchTemplate; this mode reads a whole dump and reuses the dump's OWN recorded box position
+# instead. Two reasons:
+#   * cost — matchTemplate over a 2604x792 frame is ~10x the rest of the per-frame work, and a
+#     full-fight dump is 5700 frames;
+#   * lockstep — the ammo read then shares exactly the localization the pellet counts were
+#     produced under, which makes the shared-lock confound MEASURABLE (abstention conditioned on
+#     the dump's own stale mask) rather than merely argued. §2 of the test plan names that
+#     non-independence as the method's one real weakness; sharing it deliberately and reporting
+#     the correlation is more honest than half-sharing it.
+#
+# Only `--locate structural` dumps are readable this way: there `cross_rawloc[i]` IS the accepted
+# digit-row centre (count-pellets.py's structural branch stores `round(center)`), which is the
+# exact reference point `segment_ammo_digits` needs. In a template dump `cross_rawloc` is the RAW (possibly
+# rejected) box top-left, so the mode REFUSES it and points at --ammo-digits instead.
+#
+# ABSTENTION CONTRACT (same as --ammo-digits, and the reason this is admissible as an arbiter): a
+# frame either yields a fully-confident counter or it reports None with a reason. It never guesses.
+# A partly-guessed counter is worse than no read because it looks like data.
+# ============================================================
+AMMO_ROI_HALF_X = 1.45   # ROI half-extent around the digit-row centre, in template heights.
+AMMO_ROI_HALF_Y = 0.84   # 1.45/0.84 x 74px reproduces _ammo_roi's 214x124 extent exactly.
+AMMO_DIGIT_CELLS = 3     # this HUD renders a fixed-width 3-digit counter ("004"), measured below
+
+
+def _ammo_roi_centered(img_rgb, center, templ_h):
+    """ROI around a digit-row CENTRE, matching the extent `_ammo_roi` gives the template path."""
+    h, w = img_rgb.shape[:2]
+    hx, hy = int(round(AMMO_ROI_HALF_X * templ_h)), int(round(AMMO_ROI_HALF_Y * templ_h))
+    cx, cy = int(round(center[0])), int(round(center[1]))
+    return img_rgb[max(0, cy - hy):min(h, cy + hy), max(0, cx - hx):min(w, cx + hx)]
+
+
+def read_ammo_at_center(img_rgb, center, templ_h, atlas, digit_score_min, n_cells=AMMO_DIGIT_CELLS):
+    """One frame's ammo value at a KNOWN digit-row centre, or an abstention carrying its reason.
+
+    `n_cells` is a fixed-width requirement, not a filter: the counter renders three glyphs
+    ("009".."000"), so a frame that segments a different number has lost or gained one and its
+    place values can no longer be trusted (dropping the LAST glyph of "004" reads 0, not 4).
+    """
+    import cv2  # noqa: F401  (match_digit needs it; keep the import cost inside the call path)
+    roi = _ammo_roi_centered(img_rgb, center, templ_h)
+    cells = segment_ammo_digits(roi, templ_h)
+    out = {'cells': len(cells)}
+    if len(cells) != n_cells:
+        out.update({'ammo': None, 'reason': 'no-digits' if not cells else 'cell-count'})
+        return out
+    digits, scores = [], []
+    for cell, _ in cells:
+        d, s = match_digit(cell, atlas)
+        digits.append(d)
+        scores.append(round(s, 3))
+    out['digits'] = digits
+    out['scores'] = scores
+    if any(d is None for d in digits) or min(scores) < digit_score_min:
+        out.update({'ammo': None, 'reason': 'low-score'})
+        return out
+    out['ammo'] = int(''.join(str(d) for d in digits))
+    return out
+
+
+def ammo_series_from_dump(tracks_path, frames_dir, atlas, templ_h, digit_score_min,
+                          n_cells=AMMO_DIGIT_CELLS, limit=None):
+    """Per-frame ammo reads for every frame of a structural --dump-tracks dump."""
+    with open(tracks_path) as fh:
+        data = json.load(fh)
+    confs, raw, fnames = data['cross_confs'], data['cross_rawloc'], data['frame_files']
+    numeric = [c for c in confs if c is not None]
+    # Same discriminator analyze-pellet-tracks.py's detect_locate_mode uses: the structural
+    # confidence slot holds an UNNORMALISED surround brightness, the template slot a 0-1 score.
+    if not numeric or max(numeric) <= 1.0:
+        mode = 'external' if not numeric else 'template'
+        return {'tracks': str(tracks_path), 'mode': mode, 'refused': (
+            f'{mode} dump: cross_rawloc is not a digit-row centre, so there is no reference point '
+            f'to read the counter at. Use --ammo-digits with --ammo-template on the frames instead.')}
+    lo, hi = (0, len(fnames)) if limit is None else limit
+    reads = []
+    for i in range(lo, min(hi, len(fnames))):
+        c = raw[i]
+        if c is None:
+            reads.append({'i': i, 'file': fnames[i], 'ammo': None, 'reason': 'no-lock',
+                          'conf': confs[i]})
+            continue
+        img = load_rgb(os.path.join(frames_dir, fnames[i]))
+        e = read_ammo_at_center(img, c, templ_h, atlas, digit_score_min, n_cells)
+        e['i'] = i
+        e['file'] = fnames[i]
+        e['conf'] = confs[i]
+        reads.append(e)
+    return {
+        'tracks': str(tracks_path), 'frames_dir': str(frames_dir), 'mode': 'structural',
+        'templ_h': templ_h, 'digit_score_min': digit_score_min, 'n_cells': n_cells,
+        'n_frames': len(fnames), 'range': [lo, min(hi, len(fnames))], 'reads': reads,
+    }
+
+
+# ============================================================
 # Debug: save thresholded masks with detected dots outlined
 # ============================================================
 def save_debug(img: np.ndarray, path: str, args):
@@ -1194,7 +1297,12 @@ def main():
     parser.add_argument('--ammo-digits', action='store_true', help='read the AMMO COUNTER digits inside the located box (needs --ammo-template + --ammo-atlas)')
     parser.add_argument('--ammo-atlas', help='directory of digit glyph PNGs named <digit>_<tag>.png')
     parser.add_argument('--build-atlas', action='store_true', help='(with --ammo-digits --ammo-atlas --labels) harvest labelled glyphs instead of reading')
+    parser.add_argument('--atlas-tag', default='f', help='(--build-atlas) filename tag for harvested glyphs, written as <digit>_<tag><frame><cell>.png — give a distinct tag when EXTENDING an existing atlas so the new glyphs cannot overwrite its originals (default "f")')
     parser.add_argument('--labels', help='(--build-atlas) comma-separated counter values, one per input frame, in filename order')
+    parser.add_argument('--ammo-series', metavar='TRACKS_JSON', help='read the ammo counter for EVERY frame of an existing --dump-tracks dump, reusing that dump\'s own recorded box localization (structural dumps only). Needs --ammo-series-frames + --ammo-atlas; writes the per-frame read series as JSON to stdout. This is the shot ARBITER half of docs/handoffs/2026-08-01-missing-shot-channel-test-plan.md — analyze-pellet-tracks.py --missing-shots consumes its output.')
+    parser.add_argument('--ammo-series-frames', metavar='DIR', help='(--ammo-series) directory holding the dump\'s extracted frames (its frame_files names are resolved inside it)')
+    parser.add_argument('--ammo-series-range', metavar='LO,HI', help='(--ammo-series) read only frame indices [LO,HI) of the dump — for a quick check without paying for a full 5700-frame fight')
+    parser.add_argument('--ammo-cells', type=int, default=AMMO_DIGIT_CELLS, help=f'(--ammo-series) exact digit count the counter renders; a frame segmenting any other number ABSTAINS (default {AMMO_DIGIT_CELLS})')
     parser.add_argument('--digit-score-min', type=float, default=0.60, help='min glyph match score; a frame below it ABSTAINS rather than guessing (default 0.60)')
     parser.add_argument('--force', action='store_true', help='(--dump-detections) overwrite an existing dump path — refused otherwise (2026-07-31: an unforced overwrite destroyed scratchpad/pellets/h1-cache-test/detections.json with no way back; see docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md Phase H)')
     args = parser.parse_args()
@@ -1250,8 +1358,9 @@ def main():
     backends = {'numpy': count_numpy, 'pil': count_pil, 'opencv': count_opencv}
     active = backends if args.backend == 'all' else {args.backend: backends[args.backend]}
 
-    if args.load_detections:
-        # Frame identity comes from the cache; `input` is unused (and often omitted) in this mode.
+    if args.load_detections or args.ammo_series:
+        # Frame identity comes from the cache / the dump's own frame_files; `input` is unused
+        # (and often omitted) in both modes.
         files = []
     else:
         if not args.input:
@@ -1294,6 +1403,34 @@ def main():
                 return img[y0:y1, x0:x1]
         return img
 
+    if args.ammo_series:
+        if not args.ammo_series_frames:
+            print('--ammo-series needs --ammo-series-frames', file=sys.stderr)
+            sys.exit(1)
+        atlas = load_digit_atlas(args.ammo_atlas or '')
+        if not atlas:
+            print(f'--ammo-series needs a digit atlas (--ammo-atlas {args.ammo_atlas})',
+                  file=sys.stderr)
+            sys.exit(1)
+        rng = None
+        if args.ammo_series_range:
+            lo, hi = args.ammo_series_range.split(',')
+            rng = (int(lo), int(hi))
+        out = ammo_series_from_dump(args.ammo_series, args.ammo_series_frames, atlas,
+                                    args.struct_templ_h, args.digit_score_min,
+                                    args.ammo_cells, rng)
+        if out.get('refused'):
+            print(f'--ammo-series REFUSED {args.ammo_series}: {out["refused"]}', file=sys.stderr)
+            print(json.dumps(out, indent=2))
+            sys.exit(2)
+        n_read = sum(1 for r in out['reads'] if r.get('ammo') is not None)
+        reasons = collections.Counter(r.get('reason') for r in out['reads'] if r.get('ammo') is None)
+        print(f'ammo-series: {n_read}/{len(out["reads"])} frames read '
+              f'({100 * n_read / max(1, len(out["reads"])):.1f}%); abstentions {dict(reasons)}',
+              file=sys.stderr)
+        print(json.dumps(out))
+        return
+
     if args.ammo_digits:
         if ammo_tmpl is None:
             print('--ammo-digits needs --ammo-template', file=sys.stderr)
@@ -1315,7 +1452,8 @@ def main():
                 lab = labels[fi].strip() if fi < len(labels) else ''
                 entry['label'] = lab
                 if lab and cells:
-                    saved += build_atlas_from_cells(cells, lab, args.ammo_atlas, f'f{fi:03d}')
+                    saved += build_atlas_from_cells(cells, lab, args.ammo_atlas,
+                                                    f'{args.atlas_tag}{fi:03d}')
                     entry['saved'] = len(cells) == len(lab)
             elif cells:
                 digits, scores = [], []

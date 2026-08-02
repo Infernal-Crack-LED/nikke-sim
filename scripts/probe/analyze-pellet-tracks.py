@@ -950,6 +950,376 @@ def stale_counting_selftest():
     return 0 if ok else 1
 
 
+# ==================================================================== THE MISSING-SHOT CHANNEL
+# docs/handoffs/2026-08-01-missing-shot-channel-test-plan.md.
+#
+# Every counter-bias measurement so far has been conditioned on a DETECTED shot, so a shot the
+# reader never opened an event for is invisible to all of them -- and a missing shot is a pure cold
+# bias. This section counts those, using the ammo counter (count-pellets.py --ammo-series) as an
+# arbiter that is NOT downstream of the pellet detector: the counter decrements once per shot
+# whether or not a blast was detected.
+#
+# RECONSTRUCTION RULES, all fixed before the numbers existed:
+#   * A read is DROPPED (treated as an abstention) if it is None, or above `ammo_max` -- a 3-glyph
+#     counter can misread as e.g. "201" or "093", and the magazine size is a datamined kit value,
+#     not a fitted one.
+#   * A new LEVEL is accepted only after `confirm` consecutive surviving reads of the same value.
+#     Abstentions do NOT break a run: they are missing data, not evidence of change.
+#   * level DOWN by d  => d shots (recoverable ACROSS an abstention gap -- 7 before, 5 after means
+#     two shots fired while zero were detected; this is why the method survives its shared lock).
+#   * level UP         => a RELOAD, 0 recovered shots. Whatever was fired between the last
+#     confirmed level and the reload is UNRECOVERABLE, so each reload contributes its pre-reload
+#     level to `reload_headroom`: the count is a LOWER BOUND and the headroom is the size of the
+#     hole (confound 1).
+AMMO_CONFIRM = 2
+AMMO_MAX = 9          # SG magazine size for every unit in scope (marciana/guilty/isabel/noir)
+MISSING_SHOTS_FIXTURE = "scripts/tests/fixtures/pellets/missing-shots-slice.json"
+
+
+def reconstruct_ammo(reads, confirm=AMMO_CONFIRM, ammo_max=AMMO_MAX):
+    """Accepted (first_index, value) levels + the index of the last surviving read of each.
+
+    Returns (levels, dropped) where levels is [{"i", "value", "prev_last_i"}] in frame order and
+    `dropped` counts the reads discarded by each rule.
+    """
+    dropped = collections.Counter()
+    levels, cur = [], None
+    run_val, run_n, run_first = None, 0, None
+    last_surviving_i = None
+    for r in reads:
+        v = r.get("ammo")
+        if v is None:
+            dropped[r.get("reason") or "abstain"] += 1
+            continue
+        if v > ammo_max:
+            dropped["out-of-range"] += 1
+            continue
+        if v == run_val:
+            run_n += 1
+        else:
+            run_val, run_n, run_first = v, 1, r["i"]
+        if run_n >= confirm and v != cur:
+            levels.append({"i": run_first, "value": v, "prev_last_i": last_surviving_i})
+            cur = v
+        if run_n >= confirm:
+            last_surviving_i = r["i"]
+        elif cur is not None and v == cur:
+            last_surviving_i = r["i"]
+    return levels, dict(dropped)
+
+
+def ammo_shot_events(levels):
+    """Decrement (=shots) and reload events from an accepted level sequence.
+
+    Each decrement carries the WINDOW the counter changed in: strictly after the last surviving
+    read of the old level, up to and including the first read of the new one.
+    """
+    events = []
+    for k in range(1, len(levels)):
+        prev, cur = levels[k - 1], levels[k]
+        lo = (cur["prev_last_i"] + 1) if cur["prev_last_i"] is not None else cur["i"]
+        lo = min(lo, cur["i"])
+        if cur["value"] < prev["value"]:
+            events.append({"kind": "decrement", "lo": lo, "hi": cur["i"],
+                           "from": prev["value"], "to": cur["value"],
+                           "shots": prev["value"] - cur["value"]})
+        elif cur["value"] > prev["value"]:
+            events.append({"kind": "reload", "lo": lo, "hi": cur["i"],
+                           "from": prev["value"], "to": cur["value"],
+                           "shots": 0, "headroom": prev["value"]})
+    return events
+
+
+def measure_cadence(events):
+    """Inter-shot spacing MEASURED from the ammo series, not assumed from `rate_of_fire`.
+
+    Only single-shot decrements with no reload between them are used, so reload gaps and
+    abstention-hidden multi-shot decrements cannot stretch the estimate.
+    """
+    gaps = []
+    prev = None
+    for e in events:
+        if e["kind"] == "reload":
+            prev = None
+            continue
+        if prev is not None and e["shots"] == 1 and prev["shots"] == 1:
+            gaps.append(e["hi"] - prev["hi"])
+        prev = e
+    if not gaps:
+        return {"n": 0, "median": None, "mode": None, "gaps": []}
+    return {"n": len(gaps), "median": st.median(gaps),
+            "mode": collections.Counter(gaps).most_common(1)[0][0],
+            "p10": _pct(gaps, 10), "p90": _pct(gaps, 90),
+            "hist": dict(sorted(collections.Counter(gaps).items()))}
+
+
+def match_shots(events, detected_t0, slack):
+    """Greedy time-ordered assignment of detected shot onsets to ammo shot slots.
+
+    Returns (slots, spurious). Each ammo shot is one slot with the window its decrement happened
+    in, widened by `slack` -- the pellet detector's t0 is the EVENT_MIN rising edge, which sits AT
+    or AFTER the shot frame (the blast has to brighten), so the two are not expected to coincide
+    exactly. MISSED and SPURIOUS are returned separately and never netted (confound 5).
+    """
+    slots = []
+    for e in events:
+        for _ in range(e["shots"]):
+            slots.append({"lo": e["lo"], "hi": e["hi"], "from": e["from"], "to": e["to"],
+                          "multi": e["shots"] > 1, "t0": None})
+    used = set()
+    for s in slots:
+        for j, t in enumerate(detected_t0):
+            if j in used:
+                continue
+            if s["lo"] - slack <= t <= s["hi"] + slack:
+                s["t0"] = t
+                used.add(j)
+                break
+    spurious = [t for j, t in enumerate(detected_t0) if j not in used]
+    return slots, spurious
+
+
+def cadence_multiple_subcase(detected_t0, slots, events, cadence, tol=0.15):
+    """§3b's cleanest sub-case: adjacent DETECTED gaps that are integer multiples of the measured
+    cadence carry no reload ambiguity, so `gap/cadence - 1` is a prediction the ammo can falsify."""
+    reload_spans = [(e["lo"], e["hi"]) for e in events if e["kind"] == "reload"]
+    rows = []
+    for a, b in zip(detected_t0, detected_t0[1:]):
+        if any(a < hi and lo < b for lo, hi in reload_spans):
+            continue
+        k = (b - a) / cadence
+        if abs(k - round(k)) > tol or round(k) < 2:
+            continue
+        inside = [s for s in slots if a < s["hi"] <= b and s["t0"] is None]
+        rows.append({"from_t0": a, "to_t0": b, "gap": b - a, "k": round(k),
+                     "predicted_missing": round(k) - 1, "ammo_missing": len(inside)})
+    return rows
+
+
+def classify_spurious(spurious, levels, events, slack):
+    """Split the unmatched DETECTED onsets by why the ammo could not account for them.
+
+    Only the last bucket is over-detection. The others are holes in the ARBITER, and lumping them
+    in would inflate the detector's fabrication rate with the ammo's own blind spots:
+      before-first-level / after-last-level  the clip starts or ends mid-magazine, so the level
+                                             either side of the boundary was never established;
+      in-reload-window                       the counter is blank through the reload animation, so
+                                             the shot that EMPTIED the magazine is invisible to it.
+                                             These are the `reload_headroom` shots, observed.
+    """
+    if not levels:
+        return {"unexplained": list(spurious)}
+    first_i, last_i = levels[0]["i"], levels[-1]["i"]
+    reloads = [(e["lo"], e["hi"]) for e in events if e["kind"] == "reload"]
+    out = collections.defaultdict(list)
+    for t in spurious:
+        if t < first_i:
+            out["before-first-level"].append(t)
+        elif t > last_i:
+            out["after-last-level"].append(t)
+        elif any(lo - slack <= t <= hi + slack for lo, hi in reloads):
+            out["in-reload-window"].append(t)
+        else:
+            out["unexplained"].append(t)
+    return dict(out)
+
+
+def gate_against_owner_groundtruth(slots, gt_path=None):
+    """§3a GATE: do the reconstructed shots recover the owner-confirmed real shots of the
+    `marciana` (SG/Iron -- NOT `marciana-marine-study`, AR/Iron) f8-11 fixture?
+
+    The fixture's shot 0 is an owner-confirmed FALSE POSITIVE, so the five remaining `t0` values
+    are the ground truth. Each is matched to the ammo decrement window it falls in; the offset is
+    reported per shot rather than summarised, because its SIGN is the check that matters -- the
+    counter decrements ON the shot frame and t0 is the detector's EVENT_MIN rising edge, so a
+    correct instrument produces offsets that are >= 0 and small, never negative.
+    """
+    with open(gt_path or REAL_GT_PATH) as fh:
+        gt = json.load(fh)
+    real = [s for s in gt["shots"] if s["shot"] != 0 and s.get("t0") is not None]
+    lo, hi = min(s["t0"] for s in real), max(s["t0"] for s in real)
+    rows = []
+    for s in real:
+        t0 = s["t0"]
+        near = [w for w in slots if w["lo"] - 12 <= t0 <= w["hi"] + 12]
+        best = min(near, key=lambda w: abs(t0 - w["hi"])) if near else None
+        rows.append({"shot": s["shot"], "owner_t0": t0,
+                     "ammo_window": [best["lo"], best["hi"]] if best else None,
+                     "offset_t0_minus_window_hi": (t0 - best["hi"]) if best else None,
+                     "transition": f'{best["from"]}->{best["to"]}' if best else None})
+    inside = [w for w in slots if lo <= w["hi"] <= hi]
+    return {
+        "gt_fixture": gt_path or REAL_GT_PATH, "span": [lo, hi],
+        "n_owner_real_shots": len(real),
+        "n_recovered": sum(1 for r in rows if r["ammo_window"] is not None),
+        "max_abs_offset": max((abs(r["offset_t0_minus_window_hi"]) for r in rows
+                               if r["offset_t0_minus_window_hi"] is not None), default=None),
+        "n_negative_offset": sum(1 for r in rows if (r["offset_t0_minus_window_hi"] or 0) < 0),
+        "n_ammo_shots_in_span": len(inside),
+        "ammo_shots_in_span_with_no_detected_t0": sum(1 for w in inside if w["t0"] is None),
+        "per_shot": rows,
+    }
+
+
+def missing_shots_report(ammo, tracks, fps, slack, confirm, ammo_max, gate=False):
+    """One dump's missing-shot measurement. `ammo` is a count-pellets.py --ammo-series payload."""
+    cp = _count_pellets_module()
+    reads = ammo["reads"]
+    levels, dropped = reconstruct_ammo(reads, confirm, ammo_max)
+    events = ammo_shot_events(levels)
+    fc = tracks.get("frame_counts") or []
+    detected, summary = cp.debounce_shots(fc, fps) if fc else ([], {})
+    lo, hi = ammo.get("range", [0, len(reads)])
+    detected_t0 = [s["start"] for s in detected if lo <= s["start"] < hi]
+    slots, spurious = match_shots(events, detected_t0, slack)
+    cad = measure_cadence(events)
+    cadence = cad["mode"] or cad["median"]
+    shots_ammo = len(slots)
+    missed = [s for s in slots if s["t0"] is None]
+    headroom = sum(e.get("headroom", 0) for e in events if e["kind"] == "reload")
+
+    # Confound 2: the ammo read reuses the dump's own lock, so quantify how much of the abstention
+    # sits on the stale runs the 2026-08-01 prevalence entry already characterised.
+    mode, _ev = detect_locate_mode(tracks)
+    mask, _ = stale_mask(tracks, mode)
+    n_stale = n_stale_abst = n_good = n_good_abst = 0
+    for r in reads:
+        i = r["i"]
+        st_ = mask[i] if i < len(mask) else False
+        ab = r.get("ammo") is None or (r.get("ammo") or 0) > ammo_max
+        if st_:
+            n_stale += 1
+            n_stale_abst += ab
+        else:
+            n_good += 1
+            n_good_abst += ab
+    return {
+        "dump": "/".join(Path(ammo["tracks"]).parts[-2:]), "fps": fps, "slack": slack,
+        "confirm": confirm, "ammo_max": ammo_max, "range": [lo, hi],
+        "n_reads": len(reads), "n_read_ok": sum(1 for r in reads if r.get("ammo") is not None),
+        "read_pct": round(100 * sum(1 for r in reads if r.get("ammo") is not None) / max(1, len(reads)), 1),
+        "dropped": dropped, "n_levels": len(levels),
+        "cadence_frames": cad,
+        "shots_from_ammo": shots_ammo,
+        "shots_detected_total": len(detected_t0),
+        "shots_detected_valid": summary.get("validShots"),
+        "avg_total_valid": summary.get("avgTotal"),
+        "MISSED": len(missed),
+        "MISSED_pct_of_ammo": round(100 * len(missed) / shots_ammo, 1) if shots_ammo else None,
+        "SPURIOUS": len(spurious),
+        "SPURIOUS_pct_of_detected": round(100 * len(spurious) / len(detected_t0), 1) if detected_t0 else None,
+        "spurious_by_cause": classify_spurious(spurious, levels, events, slack),
+        "n_reloads": sum(1 for e in events if e["kind"] == "reload"),
+        "reload_headroom": headroom,
+        "missed_in_multi_decrement": sum(1 for s in missed if s["multi"]),
+        # Measured on the UNAMBIGUOUS decrements only (window width 0: the counter was read on both
+        # the last frame of the old level and the first frame of the new one, so the shot frame is
+        # exact). A correct pairing gives lags >= 0 -- the counter moves on the shot frame and the
+        # detector's rising edge cannot precede the blast.
+        "matched_lag_exact": (lambda L: {"n": len(L), "min": min(L), "median": st.median(L),
+                                         "p90": _pct(L, 90), "max": max(L),
+                                         "n_negative": sum(1 for v in L if v < 0)} if L else None)(
+            [s["t0"] - s["hi"] for s in slots if s["t0"] is not None and s["hi"] == s["lo"]]),
+        "cadence_multiple_subcase": (
+            cadence_multiple_subcase(detected_t0, slots, events, cadence) if cadence else []),
+        "abstention_vs_stale": {
+            "stale_mode": mode, "n_stale": n_stale, "n_good": n_good,
+            "abstain_pct_given_stale": round(100 * n_stale_abst / n_stale, 1) if n_stale else None,
+            "abstain_pct_given_good": round(100 * n_good_abst / n_good, 1) if n_good else None,
+        },
+        "missed_windows": [{"lo": s["lo"], "hi": s["hi"], "from": s["from"], "to": s["to"]}
+                           for s in missed],
+        "spurious_t0": spurious,
+        "owner_groundtruth_gate": gate_against_owner_groundtruth(slots) if gate else None,
+    }
+
+
+def _missing_shots_expected(reports):
+    out = []
+    for r in reports:
+        row = {k: r[k] for k in ("dump", "shots_from_ammo", "shots_detected_total", "MISSED",
+                                 "SPURIOUS", "reload_headroom", "n_reloads")}
+        row["cadence_mode"] = r["cadence_frames"]["mode"]
+        row["spurious_unexplained"] = len(r["spurious_by_cause"].get("unexplained", []))
+        g = r.get("owner_groundtruth_gate")
+        if g:
+            row["gate"] = {k: g[k] for k in ("n_owner_real_shots", "n_recovered", "max_abs_offset",
+                                             "n_negative_offset", "n_ammo_shots_in_span",
+                                             "ammo_shots_in_span_with_no_detected_t0")}
+        out.append(row)
+    return out
+
+
+def audit_missing_shots(ammo_paths, fps, slack, confirm, ammo_max, save_fixture=None, gate=False):
+    reports, slims = [], []
+    for p in ammo_paths:
+        with open(p) as fh:
+            ammo = json.load(fh)
+        if ammo.get("refused"):
+            print(f"REFUSED {p}: {ammo['refused']}")
+            continue
+        with open(ammo["tracks"]) as fh:
+            tracks = json.load(fh)
+        reports.append(missing_shots_report(ammo, tracks, fps, slack, confirm, ammo_max, gate))
+        slims.append({
+            "tracks": "/".join(Path(ammo["tracks"]).parts[-2:]),
+            "range": ammo.get("range", [0, len(ammo["reads"])]),
+            "reads": [{"i": r["i"], "ammo": r.get("ammo"), "reason": r.get("reason"),
+                       "conf": r.get("conf")} for r in ammo["reads"]],
+            "cross_positions": tracks["cross_positions"], "cross_confs": tracks["cross_confs"],
+            "cross_rawloc": tracks["cross_rawloc"], "frame_counts": tracks.get("frame_counts", []),
+        })
+    out = {"params": {"fps": fps, "slack": slack, "confirm": confirm, "ammo_max": ammo_max,
+                      "gate": gate},
+           "dumps": reports}
+    if save_fixture:
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("count-pellets.py --ammo-series reads + the --dump-tracks arrays they "
+                            "were scored against, for the marciana (SG/Iron -- NOT "
+                            "marciana-marine-study, AR/Iron) groundtruth clip. Constraint 9 "
+                            "self-validation, same precedent as stale-counting-slice.json."),
+                "_note": ("Pins reconstruct_ammo + ammo_shot_events + match_shots + the cadence "
+                          "measurement with no images and no subprocess. Regenerate with "
+                          "analyze-pellet-tracks.py --missing-shots <ammo-series.json> "
+                          "--save-missing-shots-fixture."),
+                "params": out["params"], "dumps": slims,
+                "_expected": _missing_shots_expected(reports),
+            }, fh)
+        print(f"wrote missing-shots slice fixture -> {save_fixture}")
+    print(json.dumps(out, indent=2))
+    print("\nMISSING-SHOT CHANNEL (ammo decrements vs pellet-detected shot events)")
+    print(f"{'dump':>34} {'read%':>6} {'ammo':>5} {'det':>5} {'MISS':>5} {'MISS%':>6} "
+          f"{'SPUR':>5} {'rlds':>5} {'hdrm':>5} {'cad':>5}")
+    for r in reports:
+        print(f"{r['dump'][-34:]:>34} {r['read_pct']:5.1f}% {r['shots_from_ammo']:5d} "
+              f"{r['shots_detected_total']:5d} {r['MISSED']:5d} "
+              f"{(r['MISSED_pct_of_ammo'] if r['MISSED_pct_of_ammo'] is not None else -1):5.1f}% "
+              f"{r['SPURIOUS']:5d} {r['n_reloads']:5d} {r['reload_headroom']:5d} "
+              f"{str(r['cadence_frames']['mode']):>5}")
+    print("MISSED and SPURIOUS are reported separately and never netted. MISSED is a LOWER BOUND: "
+          "shots inside a reload-spanning abstention gap are unrecoverable (see reload_headroom).")
+    return out
+
+
+def missing_shots_selftest():
+    """Constraint 9 self-validation: replay the whole reconstruction over the committed slice."""
+    with open(MISSING_SHOTS_FIXTURE) as fh:
+        fx = json.load(fh)
+    p = fx["params"]
+    reports = []
+    for d in fx["dumps"]:
+        ammo = {"tracks": d["tracks"], "range": d["range"], "reads": d["reads"]}
+        reports.append(missing_shots_report(ammo, d, p["fps"], p["slack"], p["confirm"],
+                                            p["ammo_max"], p.get("gate", False)))
+    got = _missing_shots_expected(reports)
+    ok = got == fx["_expected"]
+    print(f"expected: {json.dumps(fx['_expected'], sort_keys=True)}")
+    print(f"got     : {json.dumps(got, sort_keys=True)}")
+    print("SELFTEST PASS" if ok else "SELFTEST FAIL")
+    return 0 if ok else 1
+
+
 FIXTURE = "scripts/tests/fixtures/pellets/run16-tracks-slice.json"
 
 # Pinned from the committed fixture (a 400-frame slice of the run16 dump). These reproduce the
@@ -1051,6 +1421,35 @@ def main():
                           "one. TRACKS_DIR holds tracks-structural.json + tracks-template.json "
                           "regenerated at the clip's exact parameters (at=15 dur=30 fps=60 zoom=2); "
                           "requires --gt-score-json")
+    ap.add_argument("--missing-shots", nargs="+", metavar="AMMO_SERIES_JSON",
+                     help="THE MISSING-SHOT CHANNEL (docs/handoffs/2026-08-01-missing-shot-channel-"
+                          "test-plan.md): reconstruct shots fired from a count-pellets.py "
+                          "--ammo-series read series and compare against the pellet-detected shot "
+                          "events of the dump it was read from (each series records its own "
+                          "tracks.json path). Reports MISSED and SPURIOUS SEPARATELY, the measured "
+                          "cadence, the reload headroom that bounds how much MISSED under-counts, "
+                          "and the abstention rate conditioned on the dump's own stale mask")
+    ap.add_argument("--missing-shots-fps", type=float, default=60.0,
+                     help="sampling fps of the dumps being scored (default 60; the full-fight h4/g2 "
+                          "dumps are 30) -- handed to debounce_shots for its gap tolerance")
+    ap.add_argument("--missing-shots-slack", type=int, default=6,
+                     help="frames of tolerance when matching a detected shot onset to an ammo "
+                          "decrement window (default 6 at 60fps). The detector's t0 is the "
+                          "EVENT_MIN rising edge, which sits AT or AFTER the shot frame")
+    ap.add_argument("--missing-shots-confirm", type=int, default=AMMO_CONFIRM,
+                     help=f"consecutive surviving reads needed to accept a new ammo level "
+                          f"(default {AMMO_CONFIRM})")
+    ap.add_argument("--missing-shots-ammo-max", type=int, default=AMMO_MAX,
+                     help=f"magazine size; a read above it is discarded as a glyph misread "
+                          f"(default {AMMO_MAX})")
+    ap.add_argument("--save-missing-shots-fixture", metavar="PATH",
+                     help=f"write the selftest slice fixture (default path {MISSING_SHOTS_FIXTURE})")
+    ap.add_argument("--missing-shots-gate", action="store_true",
+                     help="§3a GATE: also score the reconstruction against the owner-confirmed "
+                          f"real shots in {REAL_GT_PATH}. Only meaningful for a dump of the "
+                          "`marciana` (SG/Iron) groundtruth clip (at=15 dur=30 fps=60 zoom=2)")
+    ap.add_argument("--missing-shots-selftest", action="store_true",
+                     help=f"replay --missing-shots against {MISSING_SHOTS_FIXTURE} and exit")
     ap.add_argument("--gt-score-json", metavar="PATH",
                      help="score-pellets.py --real-fixture stdout JSON (carries each shot's owner "
                           "count, the shipped estimator's error and its per-offset counts)")
@@ -1058,6 +1457,13 @@ def main():
 
     if args.stale_counting_selftest:
         raise SystemExit(stale_counting_selftest())
+    if args.missing_shots_selftest:
+        raise SystemExit(missing_shots_selftest())
+    if args.missing_shots:
+        audit_missing_shots(args.missing_shots, args.missing_shots_fps, args.missing_shots_slack,
+                            args.missing_shots_confirm, args.missing_shots_ammo_max,
+                            args.save_missing_shots_fixture, args.missing_shots_gate)
+        return
     if args.stale_counting_groundtruth:
         if not args.gt_score_json:
             ap.error("--stale-counting-groundtruth requires --gt-score-json")
