@@ -81,14 +81,21 @@ function countStageCasts(
 interface StageRunResult {
   testedBuffs: number;
   testedCasts: number;
+  supportCasts: number;
 }
 
 function runStageRun(
   testedSlug: string,
   supportSlug: string,
-  targetStage: 1 | 2,
   stageOverride: { forceStage: 1 | 2 } | { lambdaStage: 1 | 2 }
 ): StageRunResult {
+  // The support's buff targets the stage *before* its own native stage so that the
+  // buff is active when the tested unit's burst is evaluated.
+  //   B2 support (crown): native stage 2, buff targets stage 1.
+  //   B3 support (ada):   native stage 3, buff targets stage 2.
+  const buffTargetStage: 1 | 2 = supportSlug === SUPPORT_B2 ? 1 : 2;
+  const supportCastStage: 2 | 3 = supportSlug === SUPPORT_B2 ? 2 : 3;
+
   // Build a legal team around the support's stage:
   //   B2 support (stage-1 target): [support, tested(B1 forced), B3, B1 inert, B3 inert]
   //   B3 support (stage-2 target): [support, tested(B2), B1 inert, B1 extra, B3 inert]
@@ -98,7 +105,7 @@ function runStageRun(
       : [supportSlug, testedSlug, B1_INERT, B1_EXTRA, B3_INERT];
 
   const overrides: Record<string, OverrideFile | undefined> = {
-    [supportSlug]: stageTargetSupportOverride(supportSlug, targetStage),
+    [supportSlug]: stageTargetSupportOverride(supportSlug, buffTargetStage),
     [testedSlug]: emptyKitOverride(testedSlug),
     [B1_INERT]: bareWeaponOverride(B1_INERT),
     [B3_INERT]: bareWeaponOverride(B3_INERT),
@@ -127,20 +134,21 @@ function runStageRun(
 
   const events: SimEvent[] = [];
   const cfg: SimConfig = scopeLockCfg(slugs, null, {
-    focusSlug: supportSlug === SUPPORT_B2 ? SUPPORT_B3 : SUPPORT_B3,
+    focusSlug: supportSlug,
     onEvent: (e) => events.push(e),
   });
   runSim(chars, mult, cfg, prepared);
 
   return {
     testedBuffs: countBuffsTo(events, 'attackDamagePct', testedSlug),
-    testedCasts: countStageCasts(events, testedSlug, targetStage),
+    testedCasts: countStageCasts(events, testedSlug, buffTargetStage),
+    supportCasts: countStageCasts(events, supportSlug, supportCastStage),
   };
 }
 
 describe('stage-targeted burst-caster buff selection', () => {
   it('forceStage=1 lets a non-Λ unit be selected by a stage-1 burst-caster buff', () => {
-    const r = runStageRun('anis-star', SUPPORT_B2, 1, { forceStage: 1 });
+    const r = runStageRun('anis-star', SUPPORT_B2, { forceStage: 1 });
     expect(
       r.testedBuffs,
       'anis-star forced to B1 should be targeted as stage 1'
@@ -148,18 +156,22 @@ describe('stage-targeted burst-caster buff selection', () => {
   });
 
   it('forceStage=2 lets a non-Λ unit be selected by a stage-2 burst-caster buff', () => {
-    const r = runStageRun('crown', SUPPORT_B3, 2, { forceStage: 2 });
+    const r = runStageRun('anis-star', SUPPORT_B3, { forceStage: 2 });
     expect(
       r.testedBuffs,
-      'crown forced to B2 should be targeted as stage 2'
+      'anis-star forced to B2 should be targeted as stage 2'
     ).toBeGreaterThan(0);
   });
 
   it('lambdaStage=2 on a Λ unit does NOT count as stage 2, even when it casts at stage 2', () => {
-    const r = runStageRun('red-hood', SUPPORT_B3, 2, { lambdaStage: 2 });
+    const r = runStageRun('red-hood', SUPPORT_B3, { lambdaStage: 2 });
     expect(
       r.testedCasts,
       'red-hood pinned to B2 via lambdaStage should actually cast at stage 2'
+    ).toBeGreaterThan(0);
+    expect(
+      r.supportCasts,
+      "ada's stage-2 burst-caster buff should have fired in the same run"
     ).toBeGreaterThan(0);
     expect(
       r.testedBuffs,
