@@ -155,3 +155,35 @@ This is reader/tooling work, not a damage-model value, so it does **not** requir
 - **Commit per item; prefer synchronous subagents.** Three background subagents lost their completion
   records to process exits on 2026-07-31; committed work survived every time.
 - **Headless session:** do not background shell commands — run foreground with an explicit timeout.
+
+## 8. EXECUTED 2026-08-01 — result
+
+Ran as written. **Nothing above this section was edited after the numbers existed**; §3's rule
+stands exactly as pre-committed and this section only records what it selected.
+
+**The measurement, in full, is the `2026-08-01 — f8–11 crop-CENTERING error` entry in
+[`docs/probe-runs.md`](../probe-runs.md)** — read that, not a summary here. Headline:
+
+- Both §4 gates passed before any number was read: 21/21 committed crops re-cut **byte-identically**
+  (`t0` reproduced on all six shots), and the sign convention was **measured** independently of `t0`
+  (|error| ≤ 1.0px vs 5.0–31.9px if inverted) rather than assumed. It agrees with §3's expectation.
+- **H1 is refuted, 0 of 5 against a ≥4 bar** — closest residual 22.4px, worst 99.3px. §1's
+  by-eye impression did not survive. ⇒ **The re-centring fix is not warranted**, so §6's "even
+  under a clean H1 this is a separate gated pass" never comes up.
+- Read literally on all 5 shots the rule then selects **H0a**; applying §5's own confound-3
+  exclusion first removes the only two shots carrying H0a's mechanism (both independently
+  confirmed by the `t0`±2 sweep), leaving n=3 where no threshold is reachable — **§3 row 4**. Both
+  readings are recorded, neither forced.
+- Not a bucket §3 offered, and the reading that survives: the measured centroid SE is 29.5/22.0px
+  per axis (~1.6× the 18px §5 assumed), so every residual is ≤2.7σ and the pooled mean is
+  indistinguishable from zero. The 20–52px offset is consistent with **small-sample centroid noise
+  around a correctly-centred window**.
+
+Instrument (committed, re-runnable): `score-pellets.py --audit-centering` +
+`--audit-centering-selftest`, pinned by `scripts/tests/fixtures/pellets/centering-slice.json` and
+wired into `scripts/probe/pellet-selftest.sh`.
+
+Still open, and NOT enacted here: §5 confound 4 stands — shot 1's 78px mislock and shot 4's
+thrashing template lock both slipped under the 150px jump guard, so 60 fps localization
+instability (the judge handoff's §5 item 3) is now evidenced on 2 of 5 shots rather than 1. The
+counter's cold bias remains unexplained.
