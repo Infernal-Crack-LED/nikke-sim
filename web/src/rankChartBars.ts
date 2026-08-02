@@ -160,38 +160,13 @@ export function barsForBoard(
     }));
   }
   if (board === 'b1b2dps') {
-    const templateLabel: Record<'b1-20s' | 'b1-40s' | 'b2', string> = {
-      'b1-20s': '20s B1',
-      'b1-40s': '40s B1',
-      b2: 'B2',
-    };
-    const templateTitle: Record<'b1-20s' | 'b1-40s' | 'b2', string> = {
-      'b1-20s':
-        'Control template: 20s B1 — no second B1; relies on the tested unit’s own CDR',
-      'b1-40s':
-        'Control template: 40s B1 — includes a second B1 for the standard team burst CDR',
-      b2: 'Control template: B2 — standard B2 team with a no-op B1 and two B2s',
-    };
     const b1b2Art = art as B1B2DpsArtifact;
     return b1b2DpsBars(b1b2Art, opts.b1b2DpsBoard).map((b) => {
-      const label = b.template ? templateLabel[b.template] : undefined;
-      const title = b.template ? templateTitle[b.template] : undefined;
-      const profileBadge = b.profile ? badge(b) : {};
-      const extra: Partial<RankChartBar> = b.profile
-        ? {
-            ...profileBadge,
-            ...(label ? { sub: label } : {}),
-            ...(label && title
-              ? {
-                  badgeTitle: profileBadge.badgeTitle
-                    ? `${profileBadge.badgeTitle} (${title})`
-                    : title,
-                }
-              : {}),
-          }
-        : label && title
-          ? { badge: label, badgeTitle: title }
-          : {};
+      // Only comp-profile badges (e.g. "B1"/"B2" for Red Hood variants,
+      // "w/ Chime" for partner rows) are shown. The burst-template labels
+      // ("20s B1"/"40s B1"/"B2") are hidden per UI request — the board
+      // switcher already communicates the active cell.
+      const extra: Partial<RankChartBar> = b.profile ? badge(b) : {};
       return {
         ...b,
         key: `${b.slug}:${b.profile ?? ''}:${b.template ?? ''}`,
