@@ -10510,6 +10510,7 @@
       "n_reloads": 4,
       "cadence_mode": 40,
       "spurious_unexplained": 1,
+      "MISSED_admissible": 1,
       "gate": {
         "n_owner_real_shots": 5,
         "n_recovered": 5,

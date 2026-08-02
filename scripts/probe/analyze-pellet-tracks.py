@@ -1013,21 +1013,56 @@ def ammo_shot_events(levels):
 
     Each decrement carries the WINDOW the counter changed in: strictly after the last surviving
     read of the old level, up to and including the first read of the new one.
+
+    CONSECUTIVE upward transitions are ONE reload, not several. On `noir` -- the fastest reload in
+    scope (62 datamined frames) -- the counter is readable THROUGH the reload animation and ramps
+    1 -> 3 -> 6 -> 9, so the naive rule reported 79 reloads across a 190s fight in which 205 shots
+    were fired from a 9-round magazine: arithmetically impossible, and it inflated `reload_headroom`
+    to 284 by charging the hole three times. A magazine can only be reloaded once per emptying, so
+    a run of ups with no shot between them is one event, and the headroom is the level before the
+    FIRST up.
     """
-    events = []
+    events, pending_up = [], None
     for k in range(1, len(levels)):
         prev, cur = levels[k - 1], levels[k]
         lo = (cur["prev_last_i"] + 1) if cur["prev_last_i"] is not None else cur["i"]
         lo = min(lo, cur["i"])
-        if cur["value"] < prev["value"]:
+        if cur["value"] > prev["value"]:
+            if pending_up is None:
+                pending_up = {"kind": "reload", "lo": lo, "hi": cur["i"], "from": prev["value"],
+                              "to": cur["value"], "shots": 0, "headroom": prev["value"], "ups": 1}
+            else:
+                pending_up.update(hi=cur["i"], to=cur["value"], ups=pending_up["ups"] + 1)
+        elif cur["value"] < prev["value"]:
+            if pending_up is not None:
+                events.append(pending_up)
+                pending_up = None
             events.append({"kind": "decrement", "lo": lo, "hi": cur["i"],
                            "from": prev["value"], "to": cur["value"],
                            "shots": prev["value"] - cur["value"]})
-        elif cur["value"] > prev["value"]:
-            events.append({"kind": "reload", "lo": lo, "hi": cur["i"],
-                           "from": prev["value"], "to": cur["value"],
-                           "shots": 0, "headroom": prev["value"]})
+    if pending_up is not None:
+        events.append(pending_up)
     return events
+
+
+def flag_inadmissible_decrements(events, cadence_lo):
+    """Multi-shot decrements whose window is TOO NARROW to hold the shots they claim.
+
+    A weapon cannot fire faster than its cadence, so a drop of d over a window of w frames needs
+    w >= (d-1) * cadence_lo. A d>1 drop with w ~ 0 is not a hidden burst of fire, it is a glyph
+    misread that survived `confirm` (measured on `isabel`: a two-frame 8 -> 6 -> 8 flip, which the
+    naive rule scored as 2 shots fired and 2 shots reloaded inside four frames).
+
+    REPORTED, not enforced: the pre-committed reconstruction rule stands, and this is the
+    whole-picture arithmetic check on what it produced.
+    """
+    bad = []
+    for e in events:
+        if e["kind"] != "decrement" or e["shots"] <= 1:
+            continue
+        if (e["hi"] - e["lo"]) < (e["shots"] - 1) * cadence_lo:
+            bad.append(e)
+    return bad
 
 
 def measure_cadence(events):
@@ -1177,6 +1212,10 @@ def missing_shots_report(ammo, tracks, fps, slack, confirm, ammo_max, gate=False
     shots_ammo = len(slots)
     missed = [s for s in slots if s["t0"] is None]
     headroom = sum(e.get("headroom", 0) for e in events if e["kind"] == "reload")
+    bad = flag_inadmissible_decrements(events, cad.get("p10") or 0)
+    bad_windows = {(e["lo"], e["hi"]) for e in bad}
+    missed_admissible = [s for s in missed if (s["lo"], s["hi"]) not in bad_windows]
+    shots_admissible = sum(1 for s in slots if (s["lo"], s["hi"]) not in bad_windows)
 
     # Confound 2: the ammo read reuses the dump's own lock, so quantify how much of the abstention
     # sits on the stale runs the 2026-08-01 prevalence entry already characterised.
@@ -1212,6 +1251,14 @@ def missing_shots_report(ammo, tracks, fps, slack, confirm, ammo_max, gate=False
         "n_reloads": sum(1 for e in events if e["kind"] == "reload"),
         "reload_headroom": headroom,
         "missed_in_multi_decrement": sum(1 for s in missed if s["multi"]),
+        "inadmissible_decrements": {
+            "n_events": len(bad), "n_shots": sum(e["shots"] for e in bad),
+            "cadence_lo_used": cad.get("p10"),
+            "shots_from_ammo_admissible": shots_admissible,
+            "MISSED_admissible": len(missed_admissible),
+            "MISSED_pct_admissible": round(100 * len(missed_admissible) / shots_admissible, 1)
+            if shots_admissible else None,
+        },
         # Measured on the UNAMBIGUOUS decrements only (window width 0: the counter was read on both
         # the last frame of the old level and the first frame of the new one, so the shot frame is
         # exact). A correct pairing gives lags >= 0 -- the counter moves on the shot frame and the
@@ -1241,6 +1288,7 @@ def _missing_shots_expected(reports):
                                  "SPURIOUS", "reload_headroom", "n_reloads")}
         row["cadence_mode"] = r["cadence_frames"]["mode"]
         row["spurious_unexplained"] = len(r["spurious_by_cause"].get("unexplained", []))
+        row["MISSED_admissible"] = r["inadmissible_decrements"]["MISSED_admissible"]
         g = r.get("owner_groundtruth_gate")
         if g:
             row["gate"] = {k: g[k] for k in ("n_owner_real_shots", "n_recovered", "max_abs_offset",
@@ -1290,20 +1338,65 @@ def audit_missing_shots(ammo_paths, fps, slack, confirm, ammo_max, save_fixture=
     print(json.dumps(out, indent=2))
     print("\nMISSING-SHOT CHANNEL (ammo decrements vs pellet-detected shot events)")
     print(f"{'dump':>34} {'read%':>6} {'ammo':>5} {'det':>5} {'MISS':>5} {'MISS%':>6} "
-          f"{'SPUR':>5} {'rlds':>5} {'hdrm':>5} {'cad':>5}")
+          f"{'MISSok':>6} {'SPUR':>5} {'SPUR?':>6} {'rlds':>5} {'hdrm':>5} {'bad':>4} {'cad':>4}")
     for r in reports:
+        ia = r["inadmissible_decrements"]
         print(f"{r['dump'][-34:]:>34} {r['read_pct']:5.1f}% {r['shots_from_ammo']:5d} "
               f"{r['shots_detected_total']:5d} {r['MISSED']:5d} "
               f"{(r['MISSED_pct_of_ammo'] if r['MISSED_pct_of_ammo'] is not None else -1):5.1f}% "
-              f"{r['SPURIOUS']:5d} {r['n_reloads']:5d} {r['reload_headroom']:5d} "
-              f"{str(r['cadence_frames']['mode']):>5}")
+              f"{ia['MISSED_admissible']:6d} {r['SPURIOUS']:5d} "
+              f"{len(r['spurious_by_cause'].get('unexplained', [])):6d} "
+              f"{r['n_reloads']:5d} {r['reload_headroom']:5d} {ia['n_events']:4d} "
+              f"{str(r['cadence_frames']['mode']):>4}")
     print("MISSED and SPURIOUS are reported separately and never netted. MISSED is a LOWER BOUND: "
-          "shots inside a reload-spanning abstention gap are unrecoverable (see reload_headroom).")
+          "shots inside a reload-spanning abstention gap are unrecoverable (see reload_headroom, "
+          "and SPUR minus SPUR? is how many of those holes were OBSERVED as detected-but-unmatched "
+          "onsets). MISSok excludes the `bad` arithmetically-inadmissible decrements; SPUR? is the "
+          "only column that is over-detection rather than an arbiter blind spot.")
     return out
+
+
+# The two arithmetic corrections above fire on dumps the committed slice does not contain (the
+# `noir` reload up-ramp, the `isabel` two-frame level flip), so they are pinned here on a hand-built
+# read series reproducing both shapes rather than by carrying two more multi-megabyte slices.
+RECON_LOGIC_CASES = [
+    # `noir`-shaped: the counter is readable THROUGH the reload and ramps 1 -> 3 -> 6 -> 9.
+    # One reload, headroom 1 (the level before the FIRST up), not three reloads and headroom 10.
+    {"name": "reload-up-ramp",
+     "reads": ([{"i": i, "ammo": 2} for i in range(0, 4)] + [{"i": i, "ammo": 1} for i in range(4, 8)]
+               + [{"i": i, "ammo": 3} for i in range(8, 10)] + [{"i": i, "ammo": 6} for i in range(10, 12)]
+               + [{"i": i, "ammo": 9} for i in range(12, 16)] + [{"i": i, "ammo": 8} for i in range(16, 20)]),
+     "expect": {"decrements": 2, "shots": 2, "reloads": 1, "headroom": 1, "inadmissible": 0}},
+    # `isabel`-shaped: a two-frame 8 -> 6 -> 8 glyph flip. The pre-committed rule scores it as 2
+    # shots fired and a reload inside four frames; the cadence arithmetic flags the drop as
+    # inadmissible (window width 0 cannot hold a second shot at a 20-frame cadence).
+    {"name": "two-frame-flip",
+     "reads": ([{"i": i, "ammo": 8} for i in range(0, 6)] + [{"i": i, "ammo": 6} for i in range(6, 8)]
+               + [{"i": i, "ammo": 8} for i in range(8, 12)] + [{"i": i, "ammo": 7} for i in range(12, 16)]),
+     "expect": {"decrements": 2, "shots": 3, "reloads": 1, "headroom": 6, "inadmissible": 1}},
+]
+
+
+def _recon_logic_check():
+    ok = True
+    for case in RECON_LOGIC_CASES:
+        levels, _ = reconstruct_ammo(case["reads"])
+        events = ammo_shot_events(levels)
+        dec = [e for e in events if e["kind"] == "decrement"]
+        rel = [e for e in events if e["kind"] == "reload"]
+        got = {"decrements": len(dec), "shots": sum(e["shots"] for e in dec), "reloads": len(rel),
+               "headroom": sum(e["headroom"] for e in rel),
+               "inadmissible": len(flag_inadmissible_decrements(events, 20))}
+        good = got == case["expect"]
+        ok = ok and good
+        print(f"  {case['name']}: expected {case['expect']} got {got} "
+              f"{'PASS' if good else 'FAIL'}")
+    return ok
 
 
 def missing_shots_selftest():
     """Constraint 9 self-validation: replay the whole reconstruction over the committed slice."""
+    logic_ok = _recon_logic_check()
     with open(MISSING_SHOTS_FIXTURE) as fh:
         fx = json.load(fh)
     p = fx["params"]
@@ -1313,7 +1406,7 @@ def missing_shots_selftest():
         reports.append(missing_shots_report(ammo, d, p["fps"], p["slack"], p["confirm"],
                                             p["ammo_max"], p.get("gate", False)))
     got = _missing_shots_expected(reports)
-    ok = got == fx["_expected"]
+    ok = got == fx["_expected"] and logic_ok
     print(f"expected: {json.dumps(fx['_expected'], sort_keys=True)}")
     print(f"got     : {json.dumps(got, sort_keys=True)}")
     print("SELFTEST PASS" if ok else "SELFTEST FAIL")
