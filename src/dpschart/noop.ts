@@ -106,8 +106,9 @@ export const NOOP_B3_RL = 'noop-b3-rl';
 // presence-only partner. Its slug carries curated squad membership in
 // src/data/squads.ts ('Blanc Noir Rouge'), so its presence satisfies blanc's
 // same-squad CDR gate (teamHas.sameSquad). Weapon cadence mirrors the real
-// rouge; gauge resolves to the SR class modal (no data/gauge-per-shot.json row
-// for this synthetic), identical to the existing noop-b2-sr fallback.
+// rouge; gauge falls back to the SR class modal in src/engine/sim.ts:1329/
+// :1406 because there is no data/gauge-per-shot.json row for this synthetic,
+// identical to how noop-b2-sr resolves.
 export const NOOP_ROUGE_B1 = 'noop-rouge-b1';
 
 // Class-modal MG normal-attack multiplier from data/characters.json modal values.

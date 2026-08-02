@@ -289,7 +289,8 @@ describe('buffer board', () => {
     // The profiled row out-values the plain row. The delta is a mix of Blanc's
     // same-squad CDR gate (teamHas.sameSquad) opening and the extra B1 gauge
     // contribution from the Rouge partner; the precise gate isolation lives in
-    // scripts/tests/units/blanc.test.ts.
+    // scripts/tests/units/blanc.test.ts. This test is a liveness pin only — a
+    // dead gate would still pass on the gauge delta.
     expect(withRouge.testedBurstCasts).toBeGreaterThan(plain.testedBurstCasts);
     expect(withRouge.valuePct).toBeGreaterThan(plain.valuePct);
   });

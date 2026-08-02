@@ -183,21 +183,14 @@ export function buildTeam(
     if (!ovr) {
       return false;
     }
-    const walk = (node: unknown): boolean => {
-      if (Array.isArray(node)) {
-        return node.some(walk);
-      }
-      if (!node || typeof node !== 'object') {
-        return false;
-      }
-      if ((node as { formation?: string }).formation === 'noB1') {
-        return true;
-      }
-      return Object.values(node as object).some(walk);
-    };
+    // All current `formation:'noB1'` blocks sit directly in the top-level slot
+    // arrays (verified across the override corpus). Keep the scan flat to avoid
+    // matching gated/conditional sub-objects that should not flip the template.
     for (const slot of ['skill1', 'skill2', 'burst'] as const) {
-      if (walk(ovr[slot])) {
-        return true;
+      for (const b of ovr[slot] ?? []) {
+        if (b.formation === 'noB1') {
+          return true;
+        }
       }
     }
     return false;
