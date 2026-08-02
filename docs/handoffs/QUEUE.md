@@ -127,18 +127,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   bot:** a `characters.json` change (a unit rename) moves pixels without moving the hash — the key
   covers renderer changes, not data changes; if that bites, add a data stamp to the key.
 
-- **⇒ RL3-VS-BOARD OUTLIER GAUGE INVESTIGATION — findings-only, NOT ENACTED →
-  `docs/handoffs/2026-07-27-rl3-rank-outlier-gauge-investigation.md`.** Triage the 53 `|Δrank| ≥ 10`
-  outliers in `docs/rl3-burstgen-rank-comparison.md` (regenerate: `npx tsx scripts/rl3-burstgen-compare.ts`)
-  into legitimate kit/rotation effect vs comparison artifact vs modeling gap. Seeded clusters: **(A)** the
-  RL clip-reload family (arcana/anchor/diesel/mint/ada) sits at the sim board's BOTTOM (1.65–2.2%/s,
-  Δ≈−61..−70) — possible RL cadence datamine gap vs the rl3 4-shot-opener artifact; **(B)** SG units
-  under-generate in sim (landing-fraction `sgGaugeFrac` × the no-op range script; overlaps the SG-landing
-  geometry thread); **(C)** catalogued unmodeled skill-gen (anis-star battery+aura, ein orb, trina/laplace
-  battle-start fill — `burst-gauge.md` §2); **(D)** sim-over-performers with real kit gauge (bready DoT,
-  red-hood, neon — mostly legitimate). flora/rosanna/sugar already resolved 2026-07-27. Findings-only;
-  per-unit enactments gated via `/kit-tdd` / `/scientific-method`.
-
 - **⇒ PROBE READER BUILD-OUT — P0/P1/P2/P4 BUILT 2026-07-24 on branch `probe-readers`, AWAITING
   OWNER MERGE** (DECISIONS 2026-07-24; validation record `docs/probe-runs.md`; instrument registry
   `docs/STATE.md` §7; plan `docs/handoffs/2026-07-24-probe-reader-buildout-plan.md`).
@@ -255,8 +243,8 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   landing: **U34** (Max-Ammo ▲-expiry over-cap belt clip — immediate vs lazy, now reached code at
   20/s). The full work order is CLOSED → `docs/handoffs/closed/2026-07-23-smg-cadence-flip.md`.
 
-- **⇒ ENGINE-WORK ORDER (read FIRST before resuming per-kit retunes) →
-  `docs/handoffs/2026-07-22-engine-work-plan.md`.** The remaining engine work ranked by BLAST RADIUS, with
+- **⇒ ENGINE-WORK ORDER (read FIRST before resuming per-kit retunes).**
+  The remaining engine work ranked by BLAST RADIUS, with
   the rationale that P0/P1 items change the shared math every override is calibrated against (a retune done
   first has to be redone), while P2 primitives are additive and interleave freely. Order: (1) score the
   `CONE_DELTA` holdouts + revert-trigger check; **(2) LANDED 2026-07-22 — `RIDERCRIT` ON, see A32 (U13);
@@ -356,12 +344,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     Explore-Route kit over-credit (owner kit audit). (Mechanics SSOT pair refreshed to UNIGEO
     2026-07-22 — done.)
 
-- **⇒ `fbext` BRANCH — MERGED to main 2026-07-22 (PR #17 `af0592b`, owner-confirmed).** Ordering fix +
-  chip-gated FB-extension ladder + soda-twinkling-bunny's Hit Rate; the `soda-tb control` comp is
-  graded (board 142 datapoints, boss NEUTRAL per owner — the recon's inferred Electric was wrong and
-  would have handed both Iron units a ~10% advantage). The 4 formerly pre-merge items remain open as
-  post-merge follow-ups: `docs/handoffs/2026-07-22-engine-work-plan.md` (FB-extension item).
-
 - **⇒ SG-LANDING GEOMETRY: aim-circle method fix (`docs/data/sg-calc/`)** — all four owner rulings RESOLVED
   2026-07-22, scope collapsed to ONE workstream. Workstreams A + B are RETIRED (superseded by the live
   δ-offset cone — code-verified unreachable); discrete bands KEPT; the `k,c` range measurement is CLOSED as
@@ -374,14 +356,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   **ENGINE MODELING-GAP THREAD MAP → `docs/engine-modeling-gaps.md`.** The open tail of per-unit
   findings + the cross-unit cluster inventory (which primitives are built but not yet enacted per unit —
   all measurement/board-gated). Per-unit tier + finding SSOT: `data/kit-status.json`.
-
-- **⇒ PATCH NOTES PENDING AT NEXT PUSH for roster-generator item 4** (merged to main 2026-07-24,
-  `7ebc77b`, owner-approved — the perf plan is now CLOSED: items 0/1/2/3/5 in `5a50f78`, item 4 here;
-  WHY in DECISIONS, A/B in `docs/handoffs/closed/2026-07-24-gen-item4-polish-ab.md`). Player-facing
-  value is narrow — a measured NO-OP on the shipped full-pool config, +13%/a recovered team only on
-  constrained (small-eligible-roster) pools — so the note should say that honestly rather than sell a
-  speed/quality win. Earlier patch notes (`035465e`) already cover the item-0/1/2/3/5 search upgrade;
-  both ship with the next push/deploy.
 
 - **⇒ UNION-RAID GENERATOR — DEFERRED (owner ruling 2026-07-24) pending board stability.** Plan +
   precondition to resume: **`docs/handoffs/2026-07-24-union-raid-polish-plan.md` ON BRANCH
