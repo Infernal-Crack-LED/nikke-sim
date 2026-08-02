@@ -1820,15 +1820,16 @@ export function runSim(
         if (t.stage === undefined) {
           return byElement;
         }
-        // Match the same stage-resolution priority as fillsStage: an explicit
-        // forceStage overrides native burst; a Λ unit pinned via lambdaStage
-        // only counts at that stage; otherwise native burst wins.
+        // Stage targeting for burst-caster buffs. forceStage (new, rank-builder
+        // only) is honored at any stage. Λ units are otherwise only targeted by
+        // their native burst class; the legacy exception is a Λ unit pinned to
+        // stage 3 via lambdaStage, which existing kits target as B3.
         const countsAsStage = (u: UnitState, stage: number) => {
           if (u.forceStage !== null) {
             return u.forceStage === stage;
           }
-          if (u.lambdaStage !== null) {
-            return u.lambdaStage === stage;
+          if (u.char.burst === 'Λ') {
+            return u.lambdaStage === 3 && stage === 3;
           }
           return u.char.burst === romanStage[stage];
         };

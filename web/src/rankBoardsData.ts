@@ -189,11 +189,12 @@ export function b1b2DpsBars(
   art: B1B2DpsArtifact,
   board: B1B2DpsBoard
 ): B1B2DpsBar[] {
-  const b = B1B2_DPS_BOARDS.includes(board) ? board : DEFAULT_B1B2_BOARD;
-  return (art.cells[b] ?? art.cells[DEFAULT_B1B2_BOARD]).map(
-    ([slug, dps, profile], i) => ({
-      ...base(art.units, slug, i + 1, profile),
-      dps,
-    })
-  );
+  const b =
+    B1B2_DPS_BOARDS.includes(board) && art.cells[board]
+      ? board
+      : DEFAULT_B1B2_BOARD;
+  return art.cells[b].map(([slug, dps, profile], i) => ({
+    ...base(art.units, slug, i + 1, profile),
+    dps,
+  }));
 }

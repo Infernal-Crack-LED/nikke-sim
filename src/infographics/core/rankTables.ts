@@ -198,7 +198,10 @@ export function buildB1B2DpsTable(
   art: B1B2DpsArtifact,
   board: B1B2DpsBoardId
 ): TableCardData {
-  const b = B1B2_DPS_BOARDS.includes(board) ? board : DEFAULT_B1B2_BOARD;
+  const b =
+    B1B2_DPS_BOARDS.includes(board) && art.cells[board]
+      ? board
+      : DEFAULT_B1B2_BOARD;
   return {
     title: `B1/B2 DPS Ranking — ${B1B2_CELL_LABEL[b]}`,
     subtitle: 'own DPS in a Solo-style no-op control team · scope-lock loadout',
@@ -207,13 +210,11 @@ export function buildB1B2DpsTable(
       { header: 'Unit', flex: 2 },
       { header: 'DPS', align: 'right' },
     ],
-    rows: (art.cells[b] ?? art.cells[DEFAULT_B1B2_BOARD]).map(
-      ([slug, dps, profile], i) => [
-        `#${i + 1}`,
-        unitName(art.units, slug, profile),
-        fmtMagnitude(dps),
-      ]
-    ),
+    rows: art.cells[b].map(([slug, dps, profile], i) => [
+      `#${i + 1}`,
+      unitName(art.units, slug, profile),
+      fmtMagnitude(dps),
+    ]),
     window: {},
     footer: 'nikkesim.app/ranks',
   };

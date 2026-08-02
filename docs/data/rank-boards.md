@@ -133,7 +133,7 @@ triggers also read low on the plain board.
 
 Ranks every sim-supported **Burst-1 and Burst-2 unit by its own damage** in a Solo-style no-op control team. The unit under test is inserted at the leftmost slot of its burst stage and is the camera-focused unit (×2.5 burst-gauge generation on charge weapons), matching the Solo framework. Teammates are synthetic no-op controls whose only effects are rotation-support effects (the B1 control carries the standard 7 s team burst-cooldown reduction on its burst cast, mirroring a real B1 enabler), so the ranked value comes from the tested unit's own kit, weapon cadence, and burst rotation.
 
-Cells: **Core 0 / Core 100 × Neutral / Elemental advantage** (the boss is set to the element the tested unit beats). Investment is scope lock.
+Cells: **Core 0 / Core 100 × Neutral / Elemental advantage** (the boss is set to the element the tested unit beats; for multi-element units the advantage cell uses the native element). Investment is scope lock.
 
 Standard no-op teams (the unit under test is inserted at the ▼ slot):
 

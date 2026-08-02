@@ -194,6 +194,16 @@ describe('b1b2 dps integration', () => {
     expect(withMg).not.toEqual(withOther);
   });
 
+  it('eleadv cells use the boss element the tested unit beats', () => {
+    // Anis: Star is Water; she is advantaged against a Fire-code boss.
+    const neutral = dpsFor('c0-neutral', unit('anis-star', 'I'), fullCtx);
+    const eleadv = dpsFor('c0-eleadv', unit('anis-star', 'I'), fullCtx);
+    expect(
+      eleadv,
+      'Water unit deals more DPS against a Fire boss'
+    ).toBeGreaterThan(neutral);
+  });
+
   it('rankB1B2Dps produces a ranked list for every cell', () => {
     const population: B1B2TestedUnit[] = [
       unit('anis-star', 'I'),

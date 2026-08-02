@@ -24,6 +24,7 @@
 // a canonical partner in the matching stage slot — mirroring the buffer board's
 // DUO_BUFFER_PROFILES pattern.
 import type { Element, SimConfig } from '../types.js';
+import { BEATS } from '../elements.js';
 import { prepareTeam, type UnitOptions } from '../prepare.js';
 import { runSim } from '../engine/sim.js';
 import {
@@ -35,14 +36,6 @@ import {
   type NoopCharacter,
 } from '../dpschart/noop.js';
 import type { RanksCtx } from './burstgen.js';
-
-const BEATS: Record<Element, Element> = {
-  Electric: 'Water',
-  Iron: 'Electric',
-  Wind: 'Iron',
-  Fire: 'Wind',
-  Water: 'Fire',
-};
 
 // Base no-op team templates (4-slug arrays; the tested unit is inserted at its
 // stage's leftmost slot).
@@ -183,6 +176,11 @@ export function buildTeam(
   // For forced Λ/B3 rows, cooldown is taken from the character record.
   const cd = char.burstCooldownSec;
   const isLongB1 = tested.effectiveBurst === 'I' && cd > 30;
+  // Resolve the partner from the explicit argument, then from the profile, so
+  // buildTeam and dpsFor can never disagree about a row's team.
+  const resolvedPartner =
+    partner ??
+    (tested.profile ? B1B2_DPS_PROFILES[tested.profile]?.partner : undefined);
   let base: string[];
   if (tested.effectiveBurst === 'I') {
     // If a B1 partner is requested (or the B1 is 40s), use the 40s B1 template.
@@ -190,25 +188,25 @@ export function buildTeam(
     // B1 slot, and the second no-op B2 is removed, so the row gains rotation
     // coverage from the partner at the cost of one B2 slot. This is disclosed
     // in the published methodology and profile notes.
-    base = partner || isLongB1 ? [...B1_40S_TEAM] : [...B1_20S_TEAM];
+    base = resolvedPartner || isLongB1 ? [...B1_40S_TEAM] : [...B1_20S_TEAM];
   } else {
     base = [...B2_TEAM];
   }
 
-  if (partner) {
-    const partnerChar = charFor(ctx, partner);
+  if (resolvedPartner) {
+    const partnerChar = charFor(ctx, resolvedPartner);
     const expectedPartnerStage = tested.effectiveBurst === 'I' ? 1 : 2;
     if (!fillsStage(partnerChar, undefined, expectedPartnerStage)) {
       throw new Error(
-        `B1/B2 DPS profile partner "${partner}" for ${tested.slug} does not fill burst stage ${expectedPartnerStage}`
+        `B1/B2 DPS profile partner "${resolvedPartner}" for ${tested.slug} does not fill burst stage ${expectedPartnerStage}`
       );
     }
     if (tested.effectiveBurst === 'I') {
       // The partner occupies the second B1 slot (the first element of B1_40S_TEAM).
-      base[0] = partner;
+      base[0] = resolvedPartner;
     } else {
       // The partner occupies the second B2 slot.
-      base[1] = partner;
+      base[1] = resolvedPartner;
     }
   }
 
@@ -246,11 +244,7 @@ export function dpsFor(
   tested: B1B2TestedUnit,
   ctx: RanksCtx
 ): number {
-  const partner = tested.profile
-    ? B1B2_DPS_PROFILES[tested.profile]?.partner
-    : undefined;
-
-  const slugs = buildTeam(tested, ctx, partner);
+  const slugs = buildTeam(tested, ctx);
   const chars = slugs.map((s) => charFor(ctx, s));
   const unitIdx = leftmostSlot(tested.effectiveBurst);
   const testedChar = chars[unitIdx];

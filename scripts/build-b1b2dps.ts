@@ -220,7 +220,7 @@ const artifact: B1B2DpsArtifact = {
     'so the row gains rotation coverage from the partner at the cost of one B2 slot. ' +
     'Investment is scope lock (Base-5, 3★/core 7, no cube/doll). ' +
     'The tested unit is the camera-focused unit (×2.5 burst-gauge generation on charge weapons), matching the Solo framework. ' +
-    'Cells: core 0 / core 100 × neutral / elemental advantage (boss weak to the tested unit).',
+    'Cells: core 0 / core 100 × neutral / elemental advantage (boss weak to the tested unit; for multi-element units the advantage cell uses the native element).',
   units,
   profiles,
   cells,
