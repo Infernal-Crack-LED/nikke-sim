@@ -5182,6 +5182,44 @@
           "Damage to Interruption Parts ▲ 23.54% for 30 sec."
         ]
       }
+    },
+    "vesti-tactical-upgrade": {
+      "name": "Vesti: Tactical Upgrade",
+      "burst": "III",
+      "weapon": "RL",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-01",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-01: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/vesti-tactical-upgrade.json + scripts/kit-autonomy/manual-review/vesti-tactical-upgrade.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "date": "2026-08-01",
+      "evidence": "kit-autonomy gauntlet 2026-08-01; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged on all 9 lines (7 FAITHFUL + 2 documented gaps)",
+      "residual": "Missile Guide re-trigger gate uptime over-credit (Q5); Charge Speed 100 subtractive-instant engine convention (Q1); Battle Formation==Full Burst measurement-gated alternative (Q6)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "■ Activates when landing Full Charge attacks if self is in Battle Formation status. Affects self. ATK ▲ 20% for 3 sec."
+        ],
+        "burst": ["■ Affects self. Explosion Radius ▲ 100% for 10 sec."]
+      },
+      "caveats": [
+        "skill1: the 'while not in Missile Guide status' re-trigger gate is NOT encoded (the engine has no 'not-currently-buffed' self-status gate). This is NOT damage-neutral: shotFired refreshes the durationShots:3 window on EVERY full charge, so the sim models Missile Guide at near-permanent uptime while firing, whereas the true kit has a DUTY CYCLE — MG is granted on a full charge performed WHILE NOT in MG, lasts 3 rounds, then LAPSES, so every ~4th charge is an un-buffed (full 120-frame) charge before MG re-applies. The encoding therefore OVER-credits her charge-speed-gated shot count (and every per-shot line that rides it). The durationShots:3 + removeOnReload structure IS faithful (round-count + reload strip); only the missing re-trigger gate inflates uptime (⚑5). Estimate: ~1-in-4 charges should be slow; recipe: focus-video her charge cadence inside Missile Guide and count the slow-charge recurrence",
+        "skill2: 'Battle Formation' (S2b ATK ▲20% gate) is UNMODELED — the driver ADOPTED the blind consensus (S2b claude-fable-5 + S5/S6 claude-opus-5 all independently re-derived INERT). 'Battle Formation' is a self-status granted nowhere in this kit and the schema has no self-status gate, so the line never fires in-scope; encoding it ungated (or even fbGate-gated) would credit an unprovable +20% ATK. The driver's fbGate:'inFb' reading (Battle Formation == Full Burst) is retained as the measurement-gated ALTERNATIVE (⚑6): restore a shotFired + fbGate:'inFb' atkPct 20 / 3s block if footage shows the proc tracking Full Burst windows",
+        "skill2: 'Explosive Round' (S2c projectileExplosionPct 20 gate) is a cross-unit synergy with eunhwa-tactical-upgrade's burst cannon; ETU models her Explosive Round as a boss damageTaken rider, not a named targetStatus, so this requiresTargetStatus gate is INERT in current board comps (no in-scope source opens targetStatus:'Explosive Round'). Faithful structure; goes live when a unit emits the named status (⚑2)",
+        "skill1: Charge Speed ▲100% = chargeSpeedPct 100, which the engine's subtractive-time convention reads as an instant charge (⚑1); the kit magnitude is pinned, the 100→instant interpretation is a global engine convention",
+        "burst: 'Explosion Radius ▲100% for 10s' is UNMODELED — inert vs the single partless boss and no explosion-radius stat exists",
+        "burst: the BUb 492.3% nuke is burstCast → noFb (lands before the Full Burst window, never takes the +50% major); the BUa trueDamagePct 60 self-buff pays off on her true-flavored S2a riders across the 10s post-burst window"
+      ]
     }
   }
 }

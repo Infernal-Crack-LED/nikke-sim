@@ -1,0 +1,150 @@
+{
+  "slug": "vesti-tactical-upgrade",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Missile Guide: Charge Speed ▲ 100%",
+      "disposition": "FAITHFUL",
+      "scope": "Self charge-speed only — a weapon-state modifier that halves the RL's 120-frame charge (taxonomy #6: this gates shots fired, it is damage). Never a generic attack-speed/fire-rate stat.",
+      "durationSemantics": "'for 3 round(s)' = ROUND count → durationShots: 3 (expires after vesti fires 3 rounds, hitsPerShot 1 so 1 round per pull). NEVER durationSec: 3.",
+      "triggerIdentity": "Fires on the owner's full-charge attack (for this RL every trigger pull is a full charge → per-shot trigger) GATED on self NOT currently holding Missile Guide — a non-refreshing application, producing a duty cycle: slow charge → 3 fast rounds → lapse → slow charge → reapply. Not interval, not lastBullet.",
+      "targetSet": "self",
+      "nearestWrongModel": "Ungated re-application on every full charge (buff never lapses → permanent 100% charge-speed uptime, no periodic full-length 120f charge), and/or durationSec:3 instead of durationShots:3.",
+      "distinguishingAssertion": "Filter buffApply {stat:'chargeSpeedPct', value:100, targetSlug:'vesti-tactical-upgrade'}: (a) each event carries durationShots===3 and no wall-clock expiry; (b) consecutive applications are separated by ≥3 vesti shot events (buff must lapse before re-apply); (c) total vesti shot count over 180s is strictly below the permanent-uptime model's count (periodic 120f charges recur after shot 1). Under nearest-wrong, buffApply fires on every shot and inter-shot gaps never return to the unbuffed 120f charge.",
+      "inertness": "No chargeSpeedPct application while Missile Guide is already live (no refresh events back-to-back); no effect on any other unit's cadence.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Damage ▲ 58.5% for 3 round(s)",
+      "disposition": "FAITHFUL",
+      "scope": "Charge bucket only — chargeDamagePct (additive percentage points in the charge bucket), never attackDamagePct/atkPct.",
+      "durationSemantics": "ROUNDS → durationShots: 3, same Missile Guide status window as the charge-speed line (one buff pair sharing the gate + reload removal).",
+      "triggerIdentity": "Same block as above: per full-charge shot, gated on NOT already in Missile Guide.",
+      "targetSet": "self",
+      "nearestWrongModel": "durationSec:3 (wall-clock — with a ~1–2s charge cycle it would expire after ~2 shots instead of exactly 3 rounds and would not stretch with reload timing), or permanent because the ungated trigger keeps refreshing it.",
+      "distinguishingAssertion": "buffApply {stat:'chargeDamagePct', value:58.5} events carry durationShots===3; per-shot damage events show the charge bucket elevated on exactly the 3 rounds following (and including, per the engine's decrement-after-dispatch rule) the applying window, then a shot with the unbuffed charge bucket occurs before the next application.",
+      "inertness": "Must not touch skill2's 266.6% true rider or the burst nuke (those are not charge-bucket hits); must lapse — some vesti shots each magazine land without it.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Removes Missile Guide (reload to max)",
+      "disposition": "FAITHFUL",
+      "scope": "Strips only the Missile Guide buff pair from self.",
+      "durationSemantics": "Instant removal event, not a duration.",
+      "triggerIdentity": "Reload-to-max-ammunition → removeOnReload:true on both Missile Guide buffs (the engine's dedicated primitive), NOT a lastBullet-triggered dispel (lastBullet fires at reload START; removal is at reload COMPLETION).",
+      "targetSet": "self",
+      "nearestWrongModel": "Omitted entirely (harmless-looking because durationShots:3 inside an 8-round magazine usually expires first), or encoded as a lastBullet dispel that strips the buff one reload-duration too early.",
+      "distinguishingAssertion": "If Missile Guide is live when a reload completes (applied on rounds 6–8 of the magazine), a buffRemove with cause:'reload' is emitted for the chargeSpeedPct/chargeDamagePct keys; NO buffRemove is emitted on the ordinary 3-round natural lapse (the engine only emits buffRemove for removeOnReload strips).",
+      "inertness": "Removal must not fire mid-magazine; with the faithful 3-round duration this line moves near-zero damage — its assertion is lifecycle-correctness, not magnitude.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 266.6% of final ATK as true damage",
+      "disposition": "FAITHFUL",
+      "scope": "Per-hit function-damage rider on every landing full charge — for this RL, every shot. flatDamage atkPct:266.6 flavor:'true'. No core (text lacks 'core strike'), crit at caster sheet rate, noRange (rider default), takes +50% FB by landing timing (default ON, no noFb).",
+      "durationSemantics": "Instant hit per trigger, no duration.",
+      "triggerIdentity": "On-HIT per full-charge shot (shotFired-shaped for a always-full-charging RL) — not interval, not hitCount-batched.",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Flavor omitted (plain flatDamage) so the burst's True Damage ▲ 60% does NOT scale it — under-credits every burst window by ×1.60 on the kit's largest per-shot line; secondary misread: encoding 'true damage' as a trueDamagePct buff instead of a damage line.",
+      "distinguishingAssertion": "Exactly one 'true'-flavored damage event per vesti shot, mult 266.6-based; the SAME rider landing inside vesti's 10s post-burst window carries a Damage-Up bucket ×(1+0.60) larger than an identical rider outside the window (compare per-event mult in/out of window). Red if flavor is plain (no 1.60 step) or if two rider events per shot appear.",
+      "inertness": "Never core-boosted; count must equal vesti shot count exactly (no double-fire, no firing during reload).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "if self is in Battle Formation status",
+      "disposition": "GAP",
+      "scope": "ATK ▲ 20% (atkPct, self) for 3 sec — but gated on a self-status ('Battle Formation') that NOTHING in this kit grants; it is a cross-unit tandem gate (taxonomy #4). The engine's status channel (targetStatus/requiresTargetStatus) is enemy-only and requiresShielded is the only self-state gate — no primitive for an ally-granted named self-status.",
+      "durationSemantics": "3 sec wall-clock IF it could fire; with a sub-3s charge cycle it would be near-permanent uptime once triggering.",
+      "triggerIdentity": "Per full-charge landing, gated on self-status presence. With no in-fixture carrier of Battle Formation the block can never fire.",
+      "targetSet": "self",
+      "nearestWrongModel": "Dropping the gate and shipping an ungated per-shot atkPct 20 self-buff → a phantom near-permanent +20% ATK on every stat line.",
+      "distinguishingAssertion": "In the control comp (liter/crown/vesti/helm — no Battle Formation applier), ZERO buffApply events with stat 'atkPct' value 20 sourced from vesti's skill2 across the full 180s.",
+      "inertness": "The whole block must be damage-inert in the control comp; the line belongs verbatim in `unmodeled` (or behind a never-satisfied gate) — never silently ungated.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "if target(s) is in Explosive Round status",
+      "disposition": "FAITHFUL",
+      "scope": "Projectile Explosion Damage ▲ 20% (projectileExplosionPct — RL-only Damage-Up-bucket stat), self, 3 sec — gated on the BOSS carrying the named status 'Explosive Round', which this kit never inflicts (another unit's status; cross-unit rider).",
+      "durationSemantics": "3 sec wall-clock, refreshable per qualifying full-charge landing.",
+      "triggerIdentity": "Per full-charge landing + requiresTargetStatus:'Explosive Round' block gate (the name-keyed enemy-status channel — an unrelated kit's status must NOT open it).",
+      "targetSet": "self (buff); gate reads the enemy",
+      "nearestWrongModel": "Ungated → +20% projectileExplosionPct at effectively full uptime; or gate satisfied by ANY boss status rather than the exact name.",
+      "distinguishingAssertion": "In the control comp (no Explosive Round applier), ZERO buffApply events with stat 'projectileExplosionPct' value 20 across the fight; with a synthetic withPatchedOverride teammate applying targetStatus name:'Explosive Round', the buff appears — and with a DIFFERENT-named status it still does not.",
+      "inertness": "Fully inert on every graded/control comp today; must not leak into totals.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Explosion Radius ▲ 100% for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "AoE radius vs a single partless boss whose damage values never vary by hit location — zero damage effect; no StatKey exists for it.",
+      "durationSemantics": "10 sec (moot).",
+      "triggerIdentity": "burstCast self-buff (moot).",
+      "targetSet": "self",
+      "nearestWrongModel": "Inventing a damage proxy for it (e.g. an attackDamagePct or extra-hit stand-in) 'because radius must do something'.",
+      "distinguishingAssertion": "No buff/damage event attributable to this line exists; removing it from the override changes no total.",
+      "inertness": "Must contribute exactly zero; verbatim line in unmodeled.burst.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "True Damage ▲ 60% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "trueDamagePct 60 (Damage Up bucket) — scales true-FLAVORED damage only: the skill2 266.6% rider and the burst's own 492.3% nuke. Not a generic attackDamagePct.",
+      "durationSemantics": "10 sec wall-clock (durationSec:10).",
+      "triggerIdentity": "burstCast — a self mode inside the unit's OWN burst block. NOT fullBurstEnter. This is the packet's sharpest divergence point: controlComp seats helm as co-B3, so team Full Bursts occur on rotations vesti did NOT burst.",
+      "targetSet": "self",
+      "nearestWrongModel": "Keyed to fullBurstEnter → the +60% (and radius line) goes live on EVERY team FB including helm's rotations, over-crediting the true rider on roughly half the FB windows.",
+      "distinguishingAssertion": "count(buffApply stat:'trueDamagePct' value:60 targetSlug vesti) === count(burstCast events by vesti) AND < count(fullBurstStart events) in the default controlComp(vesti) (helm co-B3 present). Red under fullBurstEnter keying, where the two counts equalize to the FB count.",
+      "inertness": "No application on helm-cast rotations; expires at 10s (read expiresFrame — no buffRemove is emitted on natural lapse).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 492.3% ... Burst Skill true damage",
+      "disposition": "FAITHFUL",
+      "scope": "flatDamage atkPct:492.3 flavor:'true' on the boss ('all enemies (including parts)' collapses to the single partless boss — one hit, no parts multiplication).",
+      "durationSemantics": "Instant per cast.",
+      "triggerIdentity": "burstCast damage — lands BEFORE the Full Burst window opens (verified engine fact): no +50% FB major, no FB-entry auras. Within-cast ordering: the self-buff block is listed first, so the nuke SHOULD land under its own True Damage ▲ 60%.",
+      "targetSet": "enemy",
+      "nearestWrongModel": "A fullBurstEnter-triggered nuke that (a) fires on helm's rotations too and (b) picks up the +50% FB major — a compound ~×1.5×(FB-count ratio) over-credit; secondary misread: nuke NOT receiving its own same-cast +60% (block-order dropped).",
+      "distinguishingAssertion": "Exactly one 'true'-flavored damage event per vesti burstCast (none on helm-only rotations) with fbMajorApplied===false and inFullBurst===false, and its mult carries the ×1.60 trueDamagePct factor from the same cast. Red if the event count tracks fullBurstStart, if fbMajorApplied is true, or if the 1.60 step is absent.",
+      "inertness": "Zero of these events on rotations where vesti did not cast; no core bucket on the nuke.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Missile Guide Charge Speed ▲100% (gated, durationShots 3)",
+    "skill1:Charge Damage ▲58.5% (durationShots 3)",
+    "skill1:Removes Missile Guide on reload-to-max (removeOnReload)",
+    "skill2:266.6% true-flavored per-full-charge rider",
+    "skill2:Explosive Round-gated projectileExplosionPct 20 (inertness in control comp)",
+    "burst:trueDamagePct 60 for 10s on burstCast (NOT fullBurstEnter)",
+    "burst:492.3% true nuke on burstCast, pre-FB (no +50%), ×1.60 same-cast"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Activates when landing Full Charge attacks if self is in Battle Formation status. Affects self. ATK ▲ 20% for 3 sec."
+    ],
+    "burst": ["Explosion Radius ▲ 100% for 10 sec."]
+  },
+  "notes": "Expected shared-prior misreads, in descending damage stakes: (1) burstCast vs fullBurstEnter on the burst block — the control fixture deliberately seats helm as co-B3, so this divergence is directly observable in event counts; a fullBurstEnter model also hands the 492.3% nuke the +50% FB major it must not get. (2) The skill1 'while not in Missile Guide' gate: an ungated per-charge refresh makes charge speed permanently up and erases the periodic full-120f charge, inflating total shot count (and every per-shot line with it) — assert shot-count and application spacing, not just buff presence. (3) 'for 3 round(s)' as durationSec — buffApply exposes durationShots directly, so the test can pin it without inference. (4) The 266.6% rider's 'true' FLAVOR is load-bearing: it is what couples the burst's True Damage ▲60% to the kit's main per-shot line; a plain-flavored rider passes magnitude checks outside burst windows and silently under-credits inside them. (5) Both status-gated skill2 riders (Battle Formation, Explosive Round) have NO carrier in this kit or the control comp — their correct control-comp behavior is exact inertness; Battle Formation additionally has no engine self-status primitive and belongs in unmodeled verbatim, while Explosive Round is encodable today via requiresTargetStatus. Driver must also reconcile: within-cast block ordering (self-buff before nuke) so the nuke lands under its own +60%; and the cadence tuple (chargeFrames 120 / reloadFrames 142) is ALWAYS-⚑ datamine-unreliable — the charge-speed duty cycle assertion should be written against relative spacing, not absolute frame values. No leak detected in the redacted methodology.",
+  "model": "claude-fable-5"
+}
