@@ -489,3 +489,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     squad") — TARGET-SET pattern, not a gate: owner precedent (eunhwa-tu override note) encodes
     same-squad targets as plain `allies` (the sim fields exactly one deployed squad). No migration
     needed unless a future ruling disagrees; listed for completeness.
+  - Review follow-ups (claude-fable-5 code-review NOTEs, 2026-08-02, verdict CLEAN; packet +
+    result: `scratchpad/gates/2026-08-02-squad-primitive/`): (a) `validate-overrides.ts` should
+    allowlist the keys INSIDE `teamHas` (element/class/weapon/burst/slugs/sameSquad) — a typo'd
+    facet key (e.g. `samesquad`) is silently ignored by engine + validator today, leaving the
+    block always-active, one typo away from the dead-authoring failure the sameSquad guard
+    prevents (pre-existing gap for all facets); (b) type `sameSquad?: true` instead of `?: boolean`
+    in `src/skills/types.ts` so the compiler enforces the validator's literal-true contract;
+    (c) optional layering cleanup — keep `src/data/squads.ts` pure game truth and register the
+    `noop-rouge-b1` synthetic from the ranks layer instead of listing it in the game map.
