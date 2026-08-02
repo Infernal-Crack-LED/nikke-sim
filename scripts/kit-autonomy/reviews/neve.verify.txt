@@ -1,0 +1,78 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-08-02[39m
+
+ [31m❯[39m scripts/tests/units/neve.test.ts [2m([22m[2m13 tests[22m[2m | [22m[31m3 failed[39m[2m)[22m[32m 12[2mms[22m[39m
+     [32m✓[39m fixture: Full Bursts outnumber neve's own casts (co-B3 helm alternates)[32m 1[2mms[22m[39m
+       [32m✓[39m is the level-10 magnitude, in the skill bucket, crit-eligible (rider default)[32m 1[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING: the level-1 magnitude (63.63) fails the same pin[32m 1[2mms[22m[39m
+[31m       [31m×[31m fires on a wall-clock 10s grid starting at t=10, ~18 times over 180s[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m is 124.8% for 2 rounds (durationShots 2, NO wall-clock expiry)[39m[32m 2[2mms[22m[39m
+       [32m✓[39m fires on every Full Burst entry (fullBurstEnter), held by neve alone[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING (duration): a timed-seconds encoding carries a wall-clock expiry[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING (trigger): a burstCast re-key collapses the count to neve's own casts[32m 1[2mms[22m[39m
+       [32m✓[39m removing the gainPierce effect changes NO unit total by a single point[32m 0[2mms[22m[39m
+       [32m✓[39m is 31.95% for 20 sec on neve, once per neve burst cast (NOT every FB)[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING (trigger): a fullBurstEnter re-key over-credits to the FB count[32m 1[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING (scope): a scoped critRateNormalPct emits no critRatePct buff[32m 1[2mms[22m[39m
+[31m       [31m×[31m is 22.04% for 20 sec on neve, once per neve burst cast[39m[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/neve.test.ts[2m > [22mneve — kit spec[2m > [22mN2 — S1 is a 10s-CD damage proc (interval), not a one-shot passive[2m > [22mfires on a wall-clock 10s grid starting at t=10, ~18 times over 180s
+[31m[1mAssertionError[22m: 1 S1 hits — a passive fires exactly once (t=0); the 10s CD fires ~18×: expected 1 to be greater than or equal to 16[39m
+[36m [2m❯[22m scripts/tests/units/neve.test.ts:[2m212:9[22m[39m
+    [90m210|[39m         hits[33m.[39mlength[33m,[39m
+    [90m211|[39m         `${hits.length} S1 hits — a passive fires exactly once (t=0); …
+    [90m212|[39m       )[33m.[39m[34mtoBeGreaterThanOrEqual[39m([34m16[39m)[33m;[39m
+    [90m   |[39m         [31m^[39m
+    [90m213|[39m       expect(frames[0], 'first fire must be at t=10s (the CD), not t=0…
+    [90m214|[39m         [34m10[39m [33m*[39m [33mFPS[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/neve.test.ts[2m > [22mneve — kit spec[2m > [22mN3 — S2 ATK ▲124.8% is a 2-ROUND count, self-scoped, on EVERY Full Burst entry[2m > [22mis 124.8% for 2 rounds (durationShots 2, NO wall-clock expiry)
+[31m[1mAssertionError[22m: expected [ null ] to deeply equal [ 2 ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   2,[39m
+[31m+   null,[39m
+[2m  ][22m
+
+[36m [2m❯[22m scripts/tests/units/neve.test.ts:[2m231:61[22m[39m
+    [90m229|[39m       [34mexpect[39m(atk[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m230|[39m       [34mexpect[39m([[33m...[39m[35mnew[39m [33mSet[39m(atk[33m.[39m[34mmap[39m((b) [33m=>[39m b[33m.[39mvalue))])[33m.[39m[34mtoEqual[39m([[34m124.8[39m])[33m;[39m
+    [90m231|[39m       expect([...new Set(atk.map((b) => b.durationShots))]).toEqual([2…
+    [90m   |[39m                                                             [31m^[39m
+    [90m232|[39m       [34mexpect[39m(
+    [90m233|[39m         [[33m...[39m[35mnew[39m [33mSet[39m(atk[33m.[39m[34mmap[39m((b) [33m=>[39m b[33m.[39mexpiresFrame))][33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/neve.test.ts[2m > [22mneve — kit spec[2m > [22mN6 — burst Hit Rate ▲22.04% is hitRatePct, self-scoped, 20s, on burstCast[2m > [22mis 22.04% for 20 sec on neve, once per neve burst cast
+[31m[1mAssertionError[22m: no hitRatePct buff was applied — the line is still unmodeled: expected +0 to be 6 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 6[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/neve.test.ts:[2m310:9[22m[39m
+    [90m308|[39m         hr[33m.[39mlength[33m,[39m
+    [90m309|[39m         [32m'no hitRatePct buff was applied — the line is still unmodeled'[39m
+    [90m310|[39m       )[33m.[39m[34mtoBe[39m(casts)[33m;[39m
+    [90m   |[39m         [31m^[39m
+    [90m311|[39m       [34mexpect[39m([[33m...[39m[35mnew[39m [33mSet[39m(hr[33m.[39m[34mmap[39m((b) [33m=>[39m b[33m.[39mvalue))])[33m.[39m[34mtoEqual[39m([[34m22.04[39m])[33m;[39m
+    [90m312|[39m       [34mexpect[39m([[33m...[39m[35mnew[39m [33mSet[39m(hr[33m.[39m[34mmap[39m((b) [33m=>[39m b[33m.[39mtargetIdx))])[33m.[39m[34mtoEqual[39m([[33mNEVE[39m])[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m10 passed[39m[22m[90m (13)[39m
+[2m   Start at [22m 13:46:40
+[2m   Duration [22m 449ms[2m (transform 86ms, setup 0ms, import 346ms, tests 12ms, environment 0ms)[22m
+

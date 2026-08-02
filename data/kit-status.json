@@ -5729,6 +5729,41 @@
         "teams": 0,
         "within3pct": 0
       }
+    },
+    "neve": {
+      "name": "Neve",
+      "burst": "III",
+      "weapon": "SG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-02",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-02: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/neve.json + scripts/kit-autonomy/manual-review/neve.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "date": "2026-08-02",
+      "evidence": "kit-autonomy gauntlet 2026-08-02; GO faithfulness 1.0 (binding judge kimi-code/k3); cross-family S2b(claude-fable-5)/S5(claude-opus-5)/S6(claude-opus-5)/S7(kimi-code/k3) converged; 4 FAITHFUL + 1 DOCUMENTED_GAP (gainPierce 2-round window — gainPierce has no durationShots primitive, flagged ⚑ rounds->seconds estimate, proven damage-inert byte-identical); S5 blind 12/13 green vs driver override (1 classified false-red: blind perfect-isolation over-assertion vs engine EV SG-core coupling); S6 blind byte-identical on S2 atkPct + entire burst block",
+      "residual": "S1 interval first-fire phase (t=10) engine convention ⚑ never popup-verified for this unit; gainPierce 2s rounds->seconds estimate unmeasured (recipe: read SG pull cadence); hitRate->core conversion magnitude measured-only ⚑; <0.5% deterministic-EV teammate-coupling artifact (engine-side, known SG hitRate test-design trap)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: cadence is the DATAMINED skill cooldown (interval 10s); first-fire phase (t=10 vs t=0) is the engine interval convention (⚑). 'lowest remaining HP' resolves to the single boss (v1 has no HP pool — moot, damage-inert stand-in)",
+        "skill2: 'Gain Pierce for 2 round(s)' is modeled as gainPierce durationSec:2 — a ⚑ rounds→seconds estimate (gainPierce has no round granularity; ≈2 SG pulls, unmeasured — recipe: read Neve's SG pull cadence from footage). Damage-INERT at scope lock (pierceDamagePct inert in v1; no Pierce Damage ▲ carrier lands on a Water SG), proven byte-identical totals with the effect removed",
+        "skill2: ATK ▲124.8% is a 2-ROUND count (durationShots:2, no wall-clock expiry) — the window spans her 2 SG pulls post-FB-entry and would stretch across a reload if she enters FB low on ammo",
+        "burst: Hit Rate ▲22.04% feeds the sim's derived Hit-Rate→core-hit lift (hrCoreMult, live by default); the conversion magnitude is a measured-only ⚑, so the test pins the stat application, not a specific core-rate delta"
+      ]
     }
   }
 }
