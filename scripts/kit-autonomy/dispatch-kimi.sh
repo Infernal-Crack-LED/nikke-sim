@@ -132,25 +132,28 @@ PROMPT+="$(cat "$PACKET")"
 
 echo "→ dispatching $(basename "$PACKET") to $MODEL ($MODE mode) …" >&2
 
-# Dispatch:
-#   blind       — tools structurally DISABLED via the agent profile (tools: []).
-#   code-review — sighted profile (tools: [Read, Grep, Glob, Bash]) plus --auto
-#                 so the headless -p run auto-approves tool calls instead of
-#                 blocking on a permission prompt nobody can answer (--auto
-#                 only approves calls the profile allows; Write/Edit never
-#                 exist in this session).
+# Dispatch: the tool set is bounded by the agent PROFILE, not a permission flag —
+#   blind       — tools: [] (the model has no tools at all).
+#   code-review — tools: [Read, Grep, Glob, Bash] (Write/Edit never exist).
+# -p mode is non-interactive and auto-runs the profile's tools on its own; the
+# interactive approval flags are REJECTED with -p ("Cannot combine --prompt with
+# --auto" / "--yolo", verified live 2026-08-02), so neither is passed.
 # stream-json gives one JSON object per line on stdout; the model's reply is
 # the assistant message(s). stderr carries thinking + progress (discarded).
-KIMI_ARGS=(-p "$PROMPT" --model "$MODEL" --agent-file "$AGENT_FILE" --output-format stream-json)
-if [[ "$MODE" == "code-review" ]]; then
-  KIMI_ARGS+=(--auto)
-fi
-RAW="$(KIMI_CODE_EXPERIMENTAL_FLAG=1 "$KIMI" "${KIMI_ARGS[@]}" \
+RAW="$(KIMI_CODE_EXPERIMENTAL_FLAG=1 "$KIMI" -p "$PROMPT" \
+  --model "$MODEL" \
+  --agent-file "$AGENT_FILE" \
+  --output-format stream-json \
   2>/dev/null)" || true
 
 # Extract the assistant text from the JSONL envelope (last assistant message
-# wins — the final answer; blind mode has exactly one message, code-review
-# mode has one per tool turn plus the final JSON answer).
+# wins — the final answer). Verified against a live sighted envelope
+# (2026-08-02): a tool-call turn is {"role":"assistant","tool_calls":[...]}
+# with NO .content field, so `.content // empty` drops it; tool results are
+# role=="tool" (also dropped); the final answer is {"role":"assistant",
+# "content":"<json string>"} — a plain string, so `last` yields the JSON. No
+# block-array content was observed, so this extraction needs no code-review
+# special-casing.
 RESULT_TEXT="$(printf '%s\n' "$RAW" | jq -rs '[.[] | select(.role == "assistant") | .content // empty] | last // empty' 2>/dev/null)" || true
 if [[ -z "$RESULT_TEXT" ]]; then
   echo "❌ kimi returned no assistant message" >&2
