@@ -2088,9 +2088,11 @@ Scored against the five owner-anchored `groundtruth-f8-11.json` values it is **e
 4 frames early on 2 — max |error| 4 frames, never late**, and the whole result survives a ±4-frame
 sweep (below).
 
-Counting frames are `t0+8…t0+11`. Pooled over the same 7 structural dumps the prevalence table
-covers — 739 shots, 2955 counting frames, 4 units (`guilty`, `isabel`, `marciana` (SG/Iron — NOT
-`marciana-marine-study`, AR/Iron), `noir`):
+Counting frames are `t0+8…t0+11`. First pass, pooled over the same 7 structural dumps the prevalence
+table covers — 739 shots, 2955 counting frames, 4 units (`guilty`, `isabel`, `marciana` (SG/Iron —
+NOT `marciana-marine-study`, AR/Iron), `noir`). **Two provenance facts, checked afterwards, mean this
+7-dump pool is not 7 independent samples — the corrected re-read is below the table and is the number
+to quote:**
 
 | dump                     | all frames stale | counting frames stale | enrichment | shots w/ ≥1 stale | run-disp med | interp med | A/B Δcount |
 | ------------------------ | ---------------- | --------------------- | ---------- | ----------------- | ------------ | ---------- | ---------- |
@@ -2103,26 +2105,67 @@ covers — 739 shots, 2955 counting frames, 4 units (`guilty`, `isabel`, `marcia
 | `i3-noir-near-60fps`     | 5.2%             | **9.3%**              | 1.79×      | 3 / 11            | 170 px       | 58 px      | −0.306     |
 | **pooled**               | **19.36%**       | **4.09%**             | **0.21×**  | **56 / 739**      | **138 px**   | **48 px**  | **−0.019** |
 
-**Counting frames are DEPLETED of stale locks ~4.7×, not enriched** (4.09% vs the 19.36% all-frames
-baseline). The two enriched dumps are the two smallest (11 shots each, 6 and 4 stale counting frames);
-every dump with >100 shots is depleted. Superset run over all 26 dumps on disk (1078 shots, including
+**Corrected re-read — this is the headline.** Two things are wrong with pooling the table above, both
+read out of the dumps' own sibling `pellets.json` provenance:
+
+1. **The 7 dumps come from 4 videos, and 3 of them are re-reads.** `h4-guilty` / `h4-isabel` /
+   `h4-marciana` / `g2-noir` are full-video 30 fps extractions (`at=0, dur=None`) of
+   `guilty solo sg.MP4` / `isabel solo sg.MP4` / `marciana-solo.MP4` / `noir sg.MP4`. The three small
+   dumps are 60 fps 8-second re-extractions of windows INSIDE two of those same videos
+   (`i2-marciana` @31 s, `i3-noir-near` @50 s, `i3-noir-far` @95 s), so their 32 shots are the same
+   physical shots already counted in `h4-marciana` and `g2-noir`, resampled. The independent
+   population is the 4 full-video dumps: **815 shots, 4 videos, 4 units, one dump each.**
+2. **`f8-11` is a 60 fps definition and does not transfer by index.** The owner's lifecycle spec is
+   13 native frames at 60 fps, so f8-11 is 133–183 ms after onset. On a 30 fps extraction the same
+   index offsets land 267–367 ms after onset — past the blast. Measured: mean total at `t0+8…t0+11`
+   is **5.3–6.6** pellets on the three 60 fps dumps (the window is on the cloud, as designed) but
+   **1.0–1.8** on the four 30 fps ones; the rate-equivalent window there is `t0+4…t0+6`, where the
+   mean total is **5.9–6.3** and matches. The first pass measured the wrong physical window on the
+   four large dumps. (`--stale-counting-offsets` exists so this is re-runnable either way; the
+   sampling rate is not recorded in `--dump-tracks`, so the mismatch is silent.)
+
+Re-run on the corrected population and window (4 full-video dumps, `--stale-counting-fps 30
+--stale-counting-offsets 4 5 6`):
+
+| dump                     | all frames stale | counting frames stale | enrichment | shots w/ ≥1 stale | run-disp med | interp med | A/B Δcount |
+| ------------------------ | ---------------- | --------------------- | ---------- | ----------------- | ------------ | ---------- | ---------- |
+| `h4-guilty-structural`   | 31.0%            | **6.1%**              | 0.20×      | 20 / 180          | 97 px        | 48 px      | −0.073     |
+| `h4-isabel-structural`   | 23.6%            | **6.4%**              | 0.27×      | 22 / 203          | 202 px       | 59 px      | −0.135     |
+| `h4-marciana-structural` | 17.4%            | **6.1%**              | 0.35×      | 25 / 218          | 183 px       | 69 px      | +0.123     |
+| `g2-noir-structural`     | 7.9%             | **5.6%**              | 0.71×      | 24 / 214          | 215 px       | 110 px     | −0.757     |
+| **pooled**               | **20.01%**       | **6.05%**             | **0.30×**  | **91 / 815**      | **159 px**   | **65 px**  | **−0.223** |
+
+Corrected displacement at the 148 stale counting frames: run-spanning median **158.9** px (p90 437.2,
+max 1130.6; 74 beyond `pellet_radius` 160, 114 beyond 80 px), interpolated per-frame median **65.1** px
+(p90 230.1; 31 beyond 160 px, 105 beyond `center_exclude` 36). Corrected A/B: mean **−0.223** pellets
+on the 77 affected shots (median +0.000, sd 1.72, worst single shot +6.00 — `g2-noir`'s −0.757 is one
+outlier, not a shift), or **−0.021 pellets/shot** diluted over all 815. **Both correction directions
+push the same way — the rate goes 4.09% → 6.05% and the A/B cost goes up ~20× — and neither moves the
+verdict: 6.05% is still neither ≥10% nor <3%, and both displacement medians are still above 30 px.**
+
+**Counting frames are DEPLETED of stale locks — 3.3× on the corrected population** (6.05% vs the
+20.01% all-frames baseline), 4.7× on the first pass. The two enriched dumps in the first table are the
+two smallest (11 shots each, 6 and 4 stale counting frames) and are re-reads of frames already in
+`g2-noir`; every full-video dump is depleted. Superset run over all 26 dumps on disk (1078 shots, including
 the deliberately-broken `noir-near-ce36` frozen lock and the `noir-offset-*` probes) gives 7.7%
 counting vs 20.79% all-frames — same direction, diluted by dumps that are not healthy reads.
 
-**Displacement at the 121 stale counting frames**, against `pellet_radius` 160 and `center_exclude` 36:
-median **138.1** px, p90 427.8, max 597.4 by the prevalence entry's run-spanning measure, of which 55
-exceed 160 px and 86 exceed 80 px. That measure spans a whole run and is therefore an **upper bound**
-for any single interior frame, so the same frames are also scored by linear interpolation between the
-two good endpoints (justified only because the crosshair pans smoothly — the same-day centering
-measurement puts clean-shot motion at ~2 px/frame): median **48.2** px, p90 260.3, max 414.0, with 23
-of 121 still beyond `pellet_radius` and 69 beyond `center_exclude`. So when a counting frame IS stale
-the window is often genuinely mispointed — the rate is what is low, not the severity.
+**On displacement**, the run-spanning measure (the prevalence entry's own) spans a whole stale run and
+is therefore an **upper bound** for any single interior frame, so every stale counting frame is also
+scored by linear interpolation between the two good endpoints — justified only because the crosshair
+pans smoothly (the same-day centering measurement puts clean-shot motion at ~2 px/frame). Both are in
+the tables above; on the corrected population the interpolated median is 65 px against
+`center_exclude` 36 and `pellet_radius` 160, with 31 of 148 frames still beyond the full radius. **So
+when a counting frame IS stale the window is often genuinely mispointed — the rate is what is low, not
+the severity.** (First-pass figures on the 7-dump pool: 121 stale counting frames, run-spanning median
+138.1 px / p90 427.8 / max 597.4 with 55 beyond 160 px; interpolated median 48.2 px / p90 260.3 with
+23 beyond 160 px.)
 
-**The A/B costs almost nothing.** Excluding stale counting frames from each shot's f8-11 mean moves
-the affected shots by a median of +0.000 and a mean of **−0.019** pellets (n=43, sd 0.81, worst single
-shot +3.50); diluted over all 739 scored shots that is **−0.001 pellets/shot**. Where a shot's whole
-window is stale there is nothing left to average and the shot drops, which changes the denominator —
-stated, not hidden.
+**The A/B costs very little either way.** Excluding stale counting frames from each shot's mean moves
+the affected shots by **−0.223** pellets on the corrected population (n=77, median +0.000, sd 1.72) —
+**−0.021 pellets/shot** over all 815 — and by −0.019 (n=43, sd 0.81) on the first pass, i.e.
+−0.001 pellets/shot over 739. Where a shot's whole window is stale there is nothing left to average
+and the shot drops, which changes the denominator — stated, not hidden.
 
 **Ground-truth arm, 6-shot `marciana` (SG/Iron) fixture, owner-anchored t0.** One shot is affected and
 it is shot 4, whose **entire f8–11 window is a template carry-forward** (conf 0.413–0.453, all below
@@ -2148,9 +2191,10 @@ removing it makes the fixture colder — the stale lock there is not a cold-bias
 fixture's whole cold outlier, shot 1 at −3.75, sits on **clean** counting frames; no stale-frame
 exclusion can touch it.
 
-**Decision rule: NO row fires; this is the "report as-is" case.** 4.09% is neither ≥10% nor <3%, and
-both displacement medians (138 px run-spanning, 48 px interpolated) are above 30 px, so neither the
-"materially corrupts" nor the "does not reach the counts" branch is satisfied. Per the rule's own
+**Decision rule: NO row fires; this is the "report as-is" case.** 6.05% corrected (4.09% first pass)
+is neither ≥10% nor <3%, and every displacement median (159 / 65 px corrected, 138 / 48 px first pass)
+is above 30 px, so neither the
+"materially corrupts" nor the "does not reach the counts" branch is satisfied, on either reading. Per the rule's own
 instruction it is not forced into one. What would decide it: (a) owner-labelled pellet positions on
 shots whose counting window IS stale — there is exactly one such shot in the repo today (fixture shot
 4, n=1, and it reads hot); (b) an independent shot COUNT for a clip, from footage rather than from
@@ -2164,8 +2208,9 @@ this pipeline, to size the missing-shot channel below. Neither is derivable from
   `P(frame clears event_min | stale)` = 8.4 / 8.6 / 12.0 / 4.5% on the four large structural dumps
   versus 31.3 / 33.5 / 33.4 / 32.1% given a good lock — a 2.7–7× suppression. And the depletion is
   LOCAL to the event: stale% along a ladder of offsets from the same t0, all equally conditioned on a
-  detected shot, runs 13.5% at t0, 4.6/3.5/3.8/4.5% across the counting window, then climbs back to
-  19.1% at t0+20, **26.5% at t0+40 and 31.0% at t0+60** — through and past the 19.36% unconditional
+  detected shot, runs 13.2% at t0 and 7.2/4.3/3.7/4.4/4.7/3.9% across t0+4…t0+12 (both candidate
+  counting windows sit in that trough), then climbs back to 18.9% at t0+20, **25.6% at t0+40 and 29.9%
+  at t0+60** — through and past the 20.01% unconditional
   rate. Conditioning on "a detected shot" is therefore **not** independent of lock quality: the low
   counting-frame rate is substantially SELECTION, not safety. The corollary is that the shots a stale
   lock destroys outright are invisible to this measurement, which sizes only the
@@ -2181,10 +2226,17 @@ this pipeline, to size the missing-shot channel below. Neither is derivable from
   4.09 / 4.17 / 4.40% at t0 shifts of −4 / −2 / 0 / +2 / +4 frames, and 4.44% when the debounce
   gap-tolerance is fed 30 fps instead of 60.
 - **Displacement is measured across a run — acknowledged and worked around.** The run-spanning median
-  (138 px) is an upper bound on any interior frame's error; the interpolated per-frame estimate (48 px)
-  is reported beside it, and every threshold count is given for both.
-- **n and representativeness — 739 detected shots, 7 dumps, 4 units, 5 clips.** Two dumps carry only
-  10–11 shots each and are exactly the two that come out enriched, so the enrichment/depletion split
+  (159 px corrected) is an upper bound on any interior frame's error; the interpolated per-frame
+  estimate (65 px) is reported beside it, and every threshold count is given for both.
+- **Sampling rate vs the counting window — CAUGHT, and it moved the numbers.** The first pass applied
+  the 60 fps-defined `f8-11` index window to 30 fps extractions, where it lands past the blast; the
+  corrected window (`t0+4…t0+6`) and the corrected population are the re-read above. Recorded rather
+  than quietly re-run, because the size of the correction (4.09% → 6.05%, A/B ×20) is itself the
+  evidence for why `--stale-counting-offsets` had to become an explicit knob.
+- **n and representativeness — 815 detected shots over 4 videos and 4 units, one full-video dump each
+  (the first pass's 7-dump/739-shot pool double-counted, see the correction above).** In the first
+  pass two dumps carried only 10–11 shots each and were exactly the two that came out enriched, so
+  that enrichment/depletion split
   is small-n on one side. Only one unit (`marciana`, SG/Iron) has owner-counted ground truth, and the
   A/B against it rests on a single affected shot.
 
