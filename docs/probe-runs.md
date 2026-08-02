@@ -2139,7 +2139,8 @@ Corrected displacement at the 148 stale counting frames: run-spanning median **1
 max 1130.6; 74 beyond `pellet_radius` 160, 114 beyond 80 px), interpolated per-frame median **65.1** px
 (p90 230.1; 31 beyond 160 px, 105 beyond `center_exclude` 36). Corrected A/B: mean **−0.223** pellets
 on the 77 affected shots (median +0.000, sd 1.72, worst single shot +6.00 — `g2-noir`'s −0.757 is one
-outlier, not a shift), or **−0.021 pellets/shot** diluted over all 815. **Both correction directions
+outlier, not a shift; sd 1.72 over n=77 puts the SE at 0.196, so −0.223 is 1.1 SE from zero and not
+distinguishable from it), or **−0.021 pellets/shot** diluted over all 815. **Both correction directions
 push the same way — the rate goes 4.09% → 6.05% and the A/B cost goes up ~20× — and neither moves the
 verdict: 6.05% is still neither ≥10% nor <3%, and both displacement medians are still above 30 px.**
 
