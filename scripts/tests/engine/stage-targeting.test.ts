@@ -24,6 +24,25 @@ const B1_INERT = 'emma';
 const B1_EXTRA = 'claire';
 const B3_INERT = 'snow-crane';
 
+const SUPPORT_STAGES: Record<
+  string,
+  { castStage: 2 | 3; buffTargetStage: 1 | 2 }
+> = {
+  [SUPPORT_B2]: { castStage: 2, buffTargetStage: 1 },
+  [SUPPORT_B3]: { castStage: 3, buffTargetStage: 2 },
+};
+
+function supportStages(supportSlug: string): {
+  castStage: 2 | 3;
+  buffTargetStage: 1 | 2;
+} {
+  const spec = SUPPORT_STAGES[supportSlug];
+  if (!spec) {
+    throw new Error(`unsupported support slug: ${supportSlug}`);
+  }
+  return spec;
+}
+
 function emptyKitOverride(slug: string): OverrideFile {
   return withPatchedOverride(slug, (ov) => {
     ov.skill1 = [];
@@ -89,12 +108,13 @@ function runStageRun(
   supportSlug: string,
   stageOverride: { forceStage: 1 | 2 } | { lambdaStage: 1 | 2 }
 ): StageRunResult {
-  // The support's buff targets the stage *before* its own native stage so that the
-  // buff is active when the tested unit's burst is evaluated.
-  //   B2 support (crown): native stage 2, buff targets stage 1.
-  //   B3 support (ada):   native stage 3, buff targets stage 2.
-  const buffTargetStage: 1 | 2 = supportSlug === SUPPORT_B2 ? 1 : 2;
-  const supportCastStage: 2 | 3 = supportSlug === SUPPORT_B2 ? 2 : 3;
+  // The support's buff targets the stage *before* its own native stage, so the tested
+  // unit has already burst at that stage by the time the support casts and its
+  // burst-caster target selection runs.
+  //   B2 support (crown): casts at stage 2, selects stage-1 casters.
+  //   B3 support (ada):   casts at stage 3, selects stage-2 casters.
+  const { castStage: supportCastStage, buffTargetStage } =
+    supportStages(supportSlug);
 
   // Build a legal team around the support's stage:
   //   B2 support (stage-1 target): [support, tested(B1 forced), B3, B1 inert, B3 inert]
@@ -134,7 +154,10 @@ function runStageRun(
 
   const events: SimEvent[] = [];
   const cfg: SimConfig = scopeLockCfg(slugs, null, {
-    focusSlug: supportSlug,
+    // Pin focus to ada; it is a teammate in both team shapes, so this keeps the
+    // behavior identical to the original dead-ternary formulation and avoids
+    // changing gauge accrual in the B2-support run.
+    focusSlug: SUPPORT_B3,
     onEvent: (e) => events.push(e),
   });
   runSim(chars, mult, cfg, prepared);
@@ -147,6 +170,9 @@ function runStageRun(
 }
 
 describe('stage-targeted burst-caster buff selection', () => {
+  // anis-star is natively B1. The forceStage=1 case is therefore the vacuous
+  // baseline; the forceStage=2 case below is the non-vacuous control that
+  // forceStage is actually honored.
   it('forceStage=1 lets a non-Λ unit be selected by a stage-1 burst-caster buff', () => {
     const r = runStageRun('anis-star', SUPPORT_B2, { forceStage: 1 });
     expect(
@@ -155,6 +181,7 @@ describe('stage-targeted burst-caster buff selection', () => {
     ).toBeGreaterThan(0);
   });
 
+  // anis-star is natively B1, so forcing it to B2 is the non-vacuous direction.
   it('forceStage=2 lets a non-Λ unit be selected by a stage-2 burst-caster buff', () => {
     const r = runStageRun('anis-star', SUPPORT_B3, { forceStage: 2 });
     expect(
@@ -171,7 +198,7 @@ describe('stage-targeted burst-caster buff selection', () => {
     ).toBeGreaterThan(0);
     expect(
       r.supportCasts,
-      "ada's stage-2 burst-caster buff should have fired in the same run"
+      'ada should have cast its stage-3 burst in the same run, so testedBuffs===0 is not a no-cast artifact'
     ).toBeGreaterThan(0);
     expect(
       r.testedBuffs,
