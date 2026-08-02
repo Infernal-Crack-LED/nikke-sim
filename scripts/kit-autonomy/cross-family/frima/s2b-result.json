@@ -1,0 +1,137 @@
+{
+  "slug": "frima",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Sleepy: DEF ▼ 4%, stacks up to 5, 10s",
+      "disposition": "FIX",
+      "scope": "Enemy (boss) DEF reduction — affects the DEF subtraction in the damage formula for ALL attackers, not a self stat and not a Damage-Taken bucket. Applied per full-charge HIT (on-hit, not on-fire; equivalent vs an unmissable boss).",
+      "durationSemantics": "10 seconds per application, stack count up to 5; each new full-charge hit adds a stack AND refreshes. With SR cadence (~1.37s/shot: 60 chargeFrames + 22f release) stacks reach 5 in ~5.5s and the 111f (1.85s) reload never lets a 10s stack lapse — steady-state 5 stacks.",
+      "triggerIdentity": "shotFired with full-charge scope. For an auto-charging SR every trigger pull is a full charge, so effectively every shot; must NOT fire on burst damage or skill procs.",
+      "targetSet": "enemy (boss-held debuff; buffApply with casterIdx===null && targetIdx===null)",
+      "nearestWrongModel": "Encoding DEF ▼ as damageTakenPct 4%/stack (boss takes-more channel). 20% damageTaken at max stacks is a huge team-wide multiplier; 20% of boss DEF returned to the (ATK − DEF) subtraction is a small one. A second nearest-wrong: granting 5 stacks instantly at t=0 instead of ramping over the first 5 hits.",
+      "distinguishingAssertion": "onEvent buffApply filtered to the Sleepy key: first application strictly AFTER the first shot event (never frame 0), stacks climbing 1→5 across the first five shot events, stat is a DEF-down channel (value 4, maxStacks 5) and NOT damageTakenPct. Team-total delta from patching the block out must be small (single-digit %), red under the damageTakenPct misread which moves every unit by ~20%.",
+      "inertness": "Must not move any ally's buff state (boss-held only); must not apply on Frima's burst hit or on non-charge damage events.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "6 Full Charge on max Sleepy → Wake Up",
+      "disposition": "FIX",
+      "scope": "Self-only state. Wake Up converts Frima's NORMAL attacks (her SR shots) to true-flavored damage for 10s — normals only, never her burst flatDamage.",
+      "durationSemantics": "10 seconds per activation, re-triggerable: the 6-hit counter keeps cycling while the target stays max-stacked, so ~every 6 shots (~8–10s incl. reload share) it refreshes → near-continuous uptime AFTER first activation, with possible brief lapses across reloads.",
+      "triggerIdentity": "hitCount-style counter of full-charge hits that counts ONLY while the target holds max (5) Sleepy stacks — a hitCount:6 gated on requiresTargetStatus-at-max-stacks. Hits landed before max stacks must NOT count: first Wake Up ≈ hit 11 (5 stacking + 6 counted), t≈16–18s at SR cadence, NOT hit 6 (~t9s).",
+      "targetSet": "self",
+      "nearestWrongModel": "Plain ungated hitCount:6 (fires at the 6th shot, ignoring the max-Sleepy precondition) — shifts first Wake Up ~7s early and, critically, puts it BEFORE effects gated on it can be tested against the first burst rotation. Second misread: Wake Up as permanent once triggered (no 10s expiry).",
+      "distinguishingAssertion": "First true-flavored normal damage event (or the Wake Up self-buffApply) occurs at or after the 11th shot event, never at the 6th. Green under the gated counter, red under ungated hitCount:6. Also assert the state lapses if shots stop (expiresFrame ≈ apply+600f), red under 'permanent'.",
+      "inertness": "Wake Up itself adds no damage magnitude — Frima's normal totals are unchanged by Wake Up alone unless a True Damage ▲ buff is co-active (true flavor merely makes her normals ELIGIBLE for trueDamagePct). Must not flavor her burst 101.66% hit.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge → allies Max HP ▲ 6.09% 4s",
+      "disposition": "FAITHFUL",
+      "scope": "Generic Max HP stat grant to allies; offensively inert here (ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion — caster≠target), but must be encoded, not dropped: it is a future-consumer stat.",
+      "durationSemantics": "4 seconds, refreshed every full-charge shot (~1.37s cadence → effectively continuous while firing, lapses during the 1.85s reload tail).",
+      "triggerIdentity": "shotFired (full-charge scope, on-attack), ungated — active from Frima's first shot, independent of Wake Up.",
+      "targetSet": "allies (all, including self — no except-self clause)",
+      "nearestWrongModel": "Dropped as 'defensive, no damage' (MISSING) — the taxonomy's tandem trap. Lesser misread: targetMaxHpPct scoped to self only.",
+      "distinguishingAssertion": "Per full-charge shot, five buffApply events with stat 'maxHpFlat' (targetMaxHpPct flat-resolves at apply), one per team slot, expiresFrame = apply+240f. Red if absent (dropped) or if only targetIdx===casterIdx (self-scoped).",
+      "inertness": "Zero damage delta on every unit in the control comp when this block is toggled — assert totals unchanged with the block patched out (no atkOfMaxHpPct carrier is fed by an ally grant).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Wake Up: allies True Damage ▲ 28.16% 5s",
+      "disposition": "FIX",
+      "scope": "trueDamagePct (Damage Up bucket) to all allies — boosts only true-FLAVORED damage a holder deals. In practice its main consumer is Frima's own Wake-Up true normals; an ally with no true-flavored hits gets zero benefit from holding it.",
+      "durationSemantics": "5 seconds, refreshed per full-charge attack while the gate holds.",
+      "triggerIdentity": "shotFired (full-charge), GATED on the caster being in Wake Up status ('when in Wake Up status' modifies the caster — only Frima can hold Wake Up, so the ally-status parse collapses to a caster gate). Zero applications before the first Wake Up (~t16–18s).",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Ungated per-shot application from t=0 (dropping the Wake Up gate) — over-credits the whole opening ~17s and every Wake-Up-lapsed window. Second misread: self-only target.",
+      "distinguishingAssertion": "No buffApply with stat trueDamagePct value 28.16 before the Wake Up first-activation frame (≥11th shot); after it, applications track shots with 5s expiry and 5 targetIdx values. Green gated, red ungated.",
+      "inertness": "With Frima's Wake Up removed (block patched out of skill1), this line must produce zero buffApply events all fight; allies dealing no true-flavored damage must show zero total delta from holding it.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 101.66% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "One instant flatDamage hit at 101.66% of Frima's final ATK vs the single boss (the '10 enemy units by highest final DEF' multi-target clause is moot on a solo boss — exactly ONE hit, never ×10).",
+      "durationSemantics": "Instant, once per burst cast (B1, cd 20s).",
+      "triggerIdentity": "burstCast — fires only on rotations Frima herself casts Burst I. Burst-cast damage lands BEFORE the Full Burst window opens: FB-exempt (no +50%), no entry auras, no range bonus per rider defaults.",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Applying the +50% Full Burst major to the hit (mis-timing it inside FB), or multiplying ×10 for the '10 enemy units' clause.",
+      "distinguishingAssertion": "Exactly one damage event with bucket burst per Frima burstCast event, fbMajorApplied===false and inFullBurst===false, mult consistent with 101.66% of her final ATK at cast. Red under FB-major-applied or a ×10 hit count.",
+      "inertness": "Does not gain true flavor from Wake Up (Wake Up scopes NORMAL attacks); trueDamagePct buffs must not inflate this hit.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▼ 9.86% for 10 sec",
+      "disposition": "FIX",
+      "scope": "Second, independent boss DEF-down attached to the burst hit — separate key from Sleepy, co-stacks with Sleepy's 20% (total ~29.86% of boss DEF returned while both live). Benefits ALL attackers.",
+      "durationSemantics": "10 seconds per burst cast, single application (no stack count), refreshed each Frima burst (~every 20s+rotation → partial uptime).",
+      "triggerIdentity": "burstCast (rides the burst hit; on-hit vs on-cast indistinguishable on the boss).",
+      "targetSet": "enemy (boss-held; casterIdx===null buffApply)",
+      "nearestWrongModel": "Merging it into the Sleepy stack pool (same key → refresh instead of co-stack), or encoding as damageTakenPct 9.86% (over-credits, same trap as skill1).",
+      "distinguishingAssertion": "After a Frima burst while Sleepy is at 5 stacks, the event log shows BOTH boss-held debuffs live under distinct keys (Sleepy value 4 × 5 stacks AND a value-9.86 single-stack apply with its own expiresFrame). Red if the burst apply lands as a 6th Sleepy stack/refresh or as damageTakenPct.",
+      "inertness": "Absent between bursts once 10s lapses; no effect on ally buff state.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Allies Max HP ▲ 30.26% for 4 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Ally Max HP grant on burst cast; offensively inert (same e3 rule as skill2's HP line) but encoded for completeness/future consumers.",
+      "durationSemantics": "4 seconds, once per burst cast (notably shorter than the burst cycle — mostly-down uptime).",
+      "triggerIdentity": "burstCast.",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Dropped entirely, or given the burst's 10s duration by line-bleed from the neighbouring lines.",
+      "distinguishingAssertion": "Per Frima burstCast: five buffApply events stat 'maxHpFlat' with expiresFrame = cast+240f (4s, not 600f). Red if absent or 10s.",
+      "inertness": "Zero total-damage delta on all units with the block patched out.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "In Wake Up: allies True Damage ▲ 49.97% 10s",
+      "disposition": "FIX",
+      "scope": "trueDamagePct 49.97 to all allies, evaluated at burst cast: only applies if Frima is in Wake Up status AT CAST TIME. Stacks additively with skill2's 28.16 in the shared Damage Up bucket while both live.",
+      "durationSemantics": "10 seconds, once per qualifying burst cast.",
+      "triggerIdentity": "burstCast GATED on own Wake Up status ('Activiates' = 'Activates' typo; a self-status gate on her OWN burst block → burst-cast, never fullBurstEnter). Load-bearing timing: Frima's FIRST burst (~t3–5s) precedes the first possible Wake Up (~t16–18s), so burst #1 must NOT apply this.",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Keying to fullBurstEnter (fires on ANY team FB — over-credits every rotation Frima doesn't burst, and pushes the apply inside the FB window), or dropping the Wake Up gate (applies on burst #1).",
+      "distinguishingAssertion": "The first Frima burstCast emits NO trueDamagePct-49.97 buffApply; a later burstCast with Wake Up live at cast emits exactly five, timestamped at the cast frame (pre-FB), never at a fullBurstStart frame Frima didn't burst into. Green under gated burstCast; red under fullBurstEnter or ungated.",
+      "inertness": "Zero applications all fight if Wake Up never activates (skill1 line 2 patched out); no application on team FBs cast by other-tier chains alone.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Sleepy DEF▼4% ×5 stacks",
+    "skill1:Wake Up (6 full-charge on max Sleepy)",
+    "skill2:allies Max HP ▲6.09% (inertness pin)",
+    "skill2:Wake-Up-gated True Damage ▲28.16%",
+    "burst:101.66% flat hit (pre-FB, ×1 not ×10)",
+    "burst:DEF ▼9.86% (independent key)",
+    "burst:allies Max HP ▲30.26% (4s, inertness pin)",
+    "burst:Wake-Up-gated True Damage ▲49.97%"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Affects 10 enemy unit(s) with the highest final DEF. (multi-target selection — moot vs the single partless scope-lock boss; the hit itself IS modeled, ×1)"
+    ]
+  },
+  "notes": "Three places I expect a shared-prior misread. (1) BOSS DEF-DOWN CHANNEL: both DEF ▼ lines are enemy debuffs that act through the (ATK − boss DEF) subtraction; the schema's defPct is documented self/inert and damageTakenPct is the wrong magnitude class (20% takes-more ≠ 20%-of-DEF returned). If the engine has no live boss-DEF term, the faithful disposition degrades to GAP (engine primitive) — the tests must then pin the lines as encoded-but-flagged rather than silently absorbed into damageTakenPct. The DEF % values are DATAMINED but their damage magnitude depends on the boss-DEF baseline, which is a separate ⚑/measurement-gated input. (2) WAKE UP AS AN ENGINE STATE: 'normal attacks deal true damage for 10 sec' on a timed, re-triggerable counter has no direct schema primitive — the existing trueNormals lives on weaponSwap. A same-weapon weaponSwap {trueNormals:true, durationSec:10, damagePct:100} emulation is plausible but must preserve SR shot economy (ammo 6, chargeFrames 60, reload 111f) exactly — assert shot cadence and reload events are IDENTICAL with Wake Up active vs patched out, else the emulation is silently changing shots fired (taxonomy #6 in reverse). (3) GATE TOPOLOGY: two separate effects are gated on Wake Up (skill2's 28.16 per-shot, burst's 49.97 at cast) and Wake Up itself is gated on max Sleepy — a chained status dependency. The cheap and decisive fixture fact: Frima's first burst (~t3–5s) strictly precedes the earliest possible Wake Up (11 full-charge hits ≈ t16–18s), so 'burst #1 emits no 49.97 apply' discriminates every ungated/fullBurstEnter variant in one assertion. Also note Wake Up alone is damage-INERT (true flavor only creates eligibility for trueDamagePct) — a test that expects Wake Up by itself to move Frima's total encodes a misread. Fixture note: Frima is Burst I, so controlComp's liter B1 slot competes with her; assertions on her burstCast events must first confirm she actually casts (filter burstCast by her slot) or use a comp without a competing B1.",
+  "model": "claude-fable-5"
+}

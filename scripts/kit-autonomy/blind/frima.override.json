@@ -1,0 +1,153 @@
+{
+  "slug": "frima",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 4,
+          "durationSec": 10,
+          "maxStacks": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 6
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "targetStatus",
+          "name": "Wake Up",
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 6.09,
+          "durationSec": 4
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "requiresTargetStatus": "Wake Up",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "trueDamagePct",
+          "value": 28.16,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 101.66,
+          "noRange": true,
+          "noFb": true
+        },
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 9.86,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 30.26,
+          "durationSec": 4
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "requiresTargetStatus": "Wake Up",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "trueDamagePct",
+          "value": 49.97,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Wake Up: Normal attacks deal true damage for 10 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 DEF \u25bc is modeled as damageTakenPct on the boss (the schema has no boss-DEF-reduction stat). The two DEF \u25bc sources (S1 4%\u00d75 = 20%, burst 9.86%) are therefore ADDITIVE in the Damage Up bucket rather than multiplicative on the boss DEF term \u2014 this is a magnitude approximation, not a faithful DEF model. If boss DEF enters the formula as a subtractive/divisive term, %-DEF-down is NOT equal to the same % damage-taken-up and this over- or under-credits depending on the ATK/DEF ratio.",
+    "\u2691 'Wake Up' is a SELF status but is encoded via the enemy-scoped targetStatus/requiresTargetStatus channel \u2014 the only named-status primitive in the schema. It is functionally correct here only because frima is the sole gate-opener and the sole condition is 'is Wake Up live', which is time-identical whether held on self or boss. It is NOT faithful if any engine path scopes the status per-entity.",
+    "\u2691 Full-charge triggers are encoded as shotFired. frima has chargeFrames 60 and the sim's charge path fires one shot per full charge, so shotFired \u2248 per-full-charge \u2014 but a NON-full-charge (tapped) shot would also fire it. If the engine can emit uncharged shots for a charge weapon this OVER-fires every S1/S2 block.",
+    "\u2691 The Sleepy stack ramp is unmodeled: maxStacks 5 applies the full 20% from the first shot rather than accruing over 5 full charges (~5\u00d7(0.5s charge + fire) \u2248 4-6s). rampSec is a candidate but the per-stack accrual rate is charge-cadence-dependent and unmeasured.",
+    "\u2691 The Wake Up entry condition ('6 full charges on a target at MAX Sleepy') is modeled as a bare hitCount:6 \u2014 it does NOT verify Sleepy is at 5 stacks first. Real entry is therefore LATER than modeled (Sleepy must reach 5 first, then 6 more charges: ~11 charges, not 6). This makes every Wake-Up-gated true-damage buff go live too early.",
+    "\u2691 hitCount:6 re-fires every 6 cumulative hits for the whole fight, so Wake Up refreshes perpetually after first entry. Whether the real kit re-arms the same way (or requires re-stacking Sleepy each time) is not stated in the prose."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. frima is a Burst I SR/Iron Supporter charge unit whose whole kit is a two-stage engine: full charges stack Sleepy (boss DEF \u25bc, 5\u00d74%) and, once max-stacked, 6 more full charges flip her into Wake Up, which unlocks two team-wide True Damage \u25b2 buffs (28.16%/5s on S2, 49.97%/10s on burst). Her burst adds a 101.66% ATK hit + a second DEF \u25bc 9.86%. The team-facing damage contribution is almost entirely the True Damage buffs and the DEF \u25bc; the Max HP \u25b2 grants are ally-granted and offensively inert (they do not feed a teammate's atkOfMaxHpPct per the e3 rule) but are kept for kit completeness and for any future consumer. The single SKIPPED line is 'Wake Up: Normal attacks deal true damage' \u2014 the schema's only true-normals primitive is weaponSwap.trueNormals, and frima does not swap weapons; encoding a no-op swap purely to set the flag would fabricate a fire cadence, ammo count and charge time she does not have. Her own normal damage stays untyped until the engine gains a standalone true-normals self-flag. Both DEF \u25bc lines are modeled as damageTakenPct (see caveats) \u2014 a magnitude proxy, not a DEF model."
+}

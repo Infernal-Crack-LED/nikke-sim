@@ -5466,6 +5466,48 @@
         "teams": 0,
         "within3pct": 0
       }
+    },
+    "frima": {
+      "name": "Frima (Treasure)",
+      "burst": "I",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-02",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-02: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/frima.json + scripts/kit-autonomy/manual-review/frima.md.",
+          "low ENGINE (skill1): Same-weapon trueNormals flavor swaps skip the SR bolt-recovery cycle (sim.ts:3566-3573, chisato/takina exemption), so Frima fires at 60f (1.0s) during Wake Up vs 82f (1.37s) outside it — her true window runs ~27% more shots than her real cadence."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "date": "2026-08-02",
+      "evidence": "kit-autonomy gauntlet 2026-08-02; GO faithfulness 1.0 (kimi-code/k3 binding judge, discriminationOk true); cross-family S2b(claude-fable-5)/S5(claude-opus-5)/S6(claude-opus-5)/S7(kimi-code/k3) converged; S6 block-for-block on 28.16/49.97/101.66/count-6; driver 19/19 assertions green",
+      "residual": "spot-check cluster: (1) Wake Up onset count hit-6 vs hit-11 interpretation (popup-read FC-count-to-Wake-Up-icon in a frima focus recording; steady-state near-identical); (2) engine bolt-recovery exemption on same-weapon flavor swaps (~27% faster in-window cadence; engine-core, low, takina/chisato/laplace share it); (3) treasure-prose SSOT over datamine base-kit tables (roster-wide ruling); (4) both DEF-down + both Max HP lines are documented schema GAPs (near-inert at scope lock)",
+      "unmodeled": {
+        "skill1": [
+          "Activates when hitting a target with Full Charge. Sleepy: DEF ▼ 4%, stacks up to 5 time(s) for 10 sec. — INERT and UNENACTABLE: boss DEF enters the formula only as the fixed config constant cfg.bossDef (sim.ts:1722 baseAtk = max(0, effectiveAtk − cfg.bossDef)); no buff/debuff channel feeds it, so the engine cannot apply an enemy DEF reduction at all, and the magnitude is negligible regardless (max 20% of measured boss DEF ≈140 ≈ 28 ATK against scope-lock ATK in the hundreds of thousands ≈ 0.02% damage, docs/data/damage-calculation.md §enemy-DEF). NOT modeled as damageTakenPct (a different bucket/math that would over-credit a ~20% team vuln the kit does not deliver) — viper/phantom/guilty/marciana precedent. Its ONLY load-bearing consequence — the max-stack precondition for Wake Up — is carried by the chargeCounter:6 encoding (see note + caveat 1)."
+        ],
+        "skill2": [
+          "Activates when attacking with Full Charge. Affects all allies. Max HP ▲ 6.09% for 4 sec. — offensively INERT: v1 has no HP pool and ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion (e3 video rule; effectiveAtk counts only OWN-kit maxHpFlat, casterIdx === u.idx, sim.ts:1513), and frima has no HP scaling of her own — blanc/moran precedent."
+        ],
+        "burst": [
+          "DEF ▼ 9.86% for 10 sec (the rider on the 10-highest-DEF enemies) — INERT and UNENACTABLE, same as S1 Sleepy: cfg.bossDef is a fixed config constant with no debuff channel (sim.ts:1722); ~9.86% of ≈140 ≈ 14 ATK ≈ 0.01% damage at scope. NOT damageTakenPct — viper/phantom/marciana precedent.",
+          "Affects all allies. Max HP ▲ 30.26% for 4 sec. — offensively INERT, same as the S2 Max HP line (no HP pool; ally-granted Max HP excluded from atkOfMaxHpPct conversions, sim.ts:1513)."
+        ]
+      },
+      "caveats": [
+        "⚑ Wake Up trigger proxy (low): the kit gates the 6-FC count on the target being at MAX Sleepy stacks; the sim counts every full charge (chargeCounter:6) because the Sleepy debuff is unenactable (see unmodeled) and there is no boss-debuff-stack gate. Faithful where it matters: stacks accrue 1/FC hit and max at 5, so the 6th FC always lands on a max-stack target while stacks hold; the proxy would over-fire ONLY if Sleepy stacks lapsed mid-count (a >10s firing pause — boss transitions/downtime, unmodeled in the continuous scope-lock fight). Estimate: damage-neutral at scope (near-permanent uptime either way). Recipe: a boss-debuff-stack channel + a 'target at N stacks' block gate would enact the precondition exactly; popup-read Wake Up icon uptime in a frima focus recording.",
+        "⚑ Engine artifact (low): same-weapon flavor swaps skip the SR bolt-recovery cycle (sim.ts:3566-3573, the chisato/takina exemption), so frima's shots cycle at 60f (1.0s) during Wake Up vs 82f (1.37s) outside it — her true window fires ~27% faster than her base cadence. Pre-existing engine behavior for all trueNormals swaps (takina/chisato/laplace ship with it), not an encoding choice here; it slightly over-represents her true-window shot count. Recipe: extend the bolt-recovery rule to flavor swaps (engine-core), then re-grade.",
+        "⚑ countInFb:6 is a faithfulness detail that is damage-neutral in every fixture (steady-state Wake Up uptime is ~100% regardless, since the re-trigger cycle < duration); it is set to keep the '6 Full Charges' threshold honest within 10s of her own burst cast (the engine's chargeCounter defaults countInFb to 1 there — the SBS semantics). Not behaviour-pinnable; documented, not fudged."
+      ]
     }
   }
 }
