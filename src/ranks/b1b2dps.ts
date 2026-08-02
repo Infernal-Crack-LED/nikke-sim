@@ -254,8 +254,8 @@ export function dpsFor(
   cell: B1B2DpsCell,
   tested: B1B2TestedUnit,
   ctx: RanksCtx
-): number {
-  const { team: slugs } = buildTeam(tested, ctx);
+): { dps: number; template: B1B2DpsTemplate } {
+  const { team: slugs, template } = buildTeam(tested, ctx);
   const chars = slugs.map((s) => charFor(ctx, s));
   const unitIdx = leftmostSlot(tested.effectiveBurst);
   const testedChar = chars[unitIdx];
@@ -282,7 +282,7 @@ export function dpsFor(
 
   const prepared = prepareTeam(chars, unitOpts, ctx.deps);
   const r = runSim(chars, ctx.mult, cfg, prepared);
-  return r.units[unitIdx].dps;
+  return { dps: r.units[unitIdx].dps, template };
 }
 
 export function rankB1B2Dps(
@@ -291,12 +291,15 @@ export function rankB1B2Dps(
 ): Record<B1B2DpsCell, B1B2DpsEntry[]> {
   const byCell: Partial<Record<B1B2DpsCell, B1B2DpsEntry[]>> = {};
   for (const cell of B1B2_DPS_CELLS) {
-    const scored = population.map((t) => ({
-      slug: t.slug,
-      dps: dpsFor(cell, t, ctx),
-      profile: t.profile ?? null,
-      template: buildTeam(t, ctx).template,
-    }));
+    const scored = population.map((t) => {
+      const { dps, template } = dpsFor(cell, t, ctx);
+      return {
+        slug: t.slug,
+        dps,
+        profile: t.profile ?? null,
+        template,
+      };
+    });
     scored.sort((a, b) => b.dps - a.dps);
     byCell[cell] = scored.map((s, i) => ({ ...s, rank: i + 1 }));
   }

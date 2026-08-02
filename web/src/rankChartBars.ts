@@ -160,31 +160,39 @@ export function barsForBoard(
     }));
   }
   if (board === 'b1b2dps') {
+    const templateLabel: Record<'b1-20s' | 'b1-40s' | 'b2', string> = {
+      'b1-20s': '20s B1',
+      'b1-40s': '40s B1',
+      b2: 'B2',
+    };
+    const templateTitle: Record<'b1-20s' | 'b1-40s' | 'b2', string> = {
+      'b1-20s':
+        'Control template: 20s B1 — no second B1; relies on the tested unit’s own CDR',
+      'b1-40s':
+        'Control template: 40s B1 — includes a second B1 for the standard team burst CDR',
+      b2: 'Control template: B2 — standard B2 team with a no-op B1 and two B2s',
+    };
     return b1b2DpsBars(art as B1B2DpsArtifact, opts.b1b2DpsBoard).map((b) => {
-      const templateLabel =
-        b.template === 'b1-20s'
-          ? '20s B1'
-          : b.template === 'b1-40s'
-            ? '40s B1'
-            : 'B2';
-      const templateTitle = `Control template: ${templateLabel} — ${
-        b.template === 'b1-20s'
-          ? 'no second B1; relies on the tested unit’s own CDR'
-          : b.template === 'b1-40s'
-            ? 'includes a second B1 for the standard 7 s team CDR'
-            : 'standard B2 team with a no-op B1 and two B2s'
-      }`;
+      const label = b.template ? templateLabel[b.template] : undefined;
+      const title = b.template ? templateTitle[b.template] : undefined;
+      const profileBadge = b.profile ? badge(b) : {};
+      const extra: Partial<RankChartBar> =
+        label && title
+          ? b.profile
+            ? {
+                ...profileBadge,
+                sub: label,
+                badgeTitle: `${art.profiles[b.profile] ?? ''} (${title})`,
+              }
+            : { badge: label, badgeTitle: title }
+          : {};
       return {
         ...b,
-        key: `${b.slug}:${b.profile ?? ''}:${b.template}`,
+        key: `${b.slug}:${b.profile ?? ''}`,
         value: b.dps,
         valueText: fmtMagnitude(b.dps),
         valueTitle: 'own DPS in the Solo-style no-op control team',
-        // Profile rows keep the profile badge and show the template as a sub-line;
-        // plain rows are badged by their template so rows are comparable by group.
-        ...(b.profile
-          ? { ...badge(b), sub: templateLabel }
-          : { badge: templateLabel, badgeTitle: templateTitle }),
+        ...extra,
       };
     });
   }

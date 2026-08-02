@@ -157,21 +157,21 @@ describe('b1b2 dps integration', () => {
       unit('rapi-red-hood', 'I', 1, 'as-b1'),
       fullCtx
     );
-    expect(rapi, 'rapi-red-hood as B1').toBeGreaterThan(0);
+    expect(rapi.dps, 'rapi-red-hood as B1').toBeGreaterThan(0);
 
     const redHoodB1 = dpsFor(
       'c0-neutral',
       unit('red-hood', 'I', 1, 'as-b1'),
       fullCtx
     );
-    expect(redHoodB1, 'red-hood as B1').toBeGreaterThan(0);
+    expect(redHoodB1.dps, 'red-hood as B1').toBeGreaterThan(0);
 
     const redHoodB2 = dpsFor(
       'c0-neutral',
       unit('red-hood', 'II', 2, 'as-b2'),
       fullCtx
     );
-    expect(redHoodB2, 'red-hood as B2').toBeGreaterThan(0);
+    expect(redHoodB2.dps, 'red-hood as B2').toBeGreaterThan(0);
   });
 
   it('Anis: Star profile rows run and differ from her plain row', () => {
@@ -186,14 +186,14 @@ describe('b1b2 dps integration', () => {
       unit('anis-star', 'I', undefined, 'with-other-b1'),
       fullCtx
     );
-    expect(plain).toBeGreaterThan(0);
-    expect(withMg).toBeGreaterThan(0);
-    expect(withOther).toBeGreaterThan(0);
+    expect(plain.dps).toBeGreaterThan(0);
+    expect(withMg.dps).toBeGreaterThan(0);
+    expect(withOther.dps).toBeGreaterThan(0);
     // The two profile rows differ both from the plain row and from each other
     // (different partner weapons + the 20s-B1 template switch).
-    expect(withMg).not.toEqual(plain);
-    expect(withOther).not.toEqual(plain);
-    expect(withMg).not.toEqual(withOther);
+    expect(withMg.dps).not.toEqual(plain.dps);
+    expect(withOther.dps).not.toEqual(plain.dps);
+    expect(withMg.dps).not.toEqual(withOther.dps);
   });
 
   it('Crown with Chime runs and differs from her plain row', () => {
@@ -203,9 +203,9 @@ describe('b1b2 dps integration', () => {
       unit('crown', 'II', undefined, 'with-chime'),
       fullCtx
     );
-    expect(plain).toBeGreaterThan(0);
-    expect(withChime).toBeGreaterThan(0);
-    expect(withChime).not.toEqual(plain);
+    expect(plain.dps).toBeGreaterThan(0);
+    expect(withChime.dps).toBeGreaterThan(0);
+    expect(withChime.dps).not.toEqual(plain.dps);
   });
 
   it('eleadv cells use the boss element the tested unit beats', () => {
@@ -213,9 +213,9 @@ describe('b1b2 dps integration', () => {
     const neutral = dpsFor('c0-neutral', unit('anis-star', 'I'), fullCtx);
     const eleadv = dpsFor('c0-eleadv', unit('anis-star', 'I'), fullCtx);
     expect(
-      eleadv,
+      eleadv.dps,
       'Water unit deals more DPS against a Fire boss'
-    ).toBeGreaterThan(neutral);
+    ).toBeGreaterThan(neutral.dps);
   });
 
   it('multi-element units use their native element for the eleadv cell', () => {
@@ -232,7 +232,9 @@ describe('b1b2 dps integration', () => {
       unit('rapi-red-hood', 'I', 1, 'as-b1'),
       fullCtx
     );
-    expect(eleadv, 'native-advantage cell is applied').toBeGreaterThan(neutral);
+    expect(eleadv.dps, 'native-advantage cell is applied').toBeGreaterThan(
+      neutral.dps
+    );
     const c = data.characters['rapi-red-hood'];
     expect(
       c.countsAsElements?.length,
