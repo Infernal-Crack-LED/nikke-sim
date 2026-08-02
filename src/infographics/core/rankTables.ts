@@ -185,6 +185,7 @@ export const B1B2_DPS_BOARDS: B1B2DpsBoardId[] = [
   'c100-neutral',
   'c100-eleadv',
 ];
+const DEFAULT_B1B2_BOARD: B1B2DpsBoardId = 'c100-eleadv';
 
 export const B1B2_CELL_LABEL: Record<B1B2DpsBoardId, string> = {
   'c0-neutral': 'No Core · Neutral',
@@ -205,11 +206,13 @@ export function buildB1B2DpsTable(
       { header: 'Unit', flex: 2 },
       { header: 'DPS', align: 'right' },
     ],
-    rows: art.cells[board].map(([slug, dps, profile], i) => [
-      `#${i + 1}`,
-      unitName(art.units, slug, profile),
-      fmtMagnitude(dps),
-    ]),
+    rows: (art.cells[board] ?? art.cells[DEFAULT_B1B2_BOARD]).map(
+      ([slug, dps, profile], i) => [
+        `#${i + 1}`,
+        unitName(art.units, slug, profile),
+        fmtMagnitude(dps),
+      ]
+    ),
     window: {},
     footer: 'nikkesim.app/ranks',
   };

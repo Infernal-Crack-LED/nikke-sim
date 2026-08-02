@@ -84,20 +84,20 @@ for (const [slug, c] of Object.entries(data.characters)) {
   }
 }
 
-// Force Red Hood as B1 and B2, and Rapi: Red Hood as B1 (lambdaStage pins the
-// rotation slot; the engine treats Λ units as eligible ONLY at that stage).
+// Force Red Hood as B1 and B2, and Rapi: Red Hood as B1. Λ units are pinned via
+// lambdaStage; non-Λ units are forced via forceStage.
 const FORCED_ROWS: {
   slug: string;
   effectiveBurst: 'I' | 'II';
-  lambdaStage: 1 | 2;
+  forceStage: 1 | 2;
   profile: string;
 }[] = [
-  { slug: 'red-hood', effectiveBurst: 'I', lambdaStage: 1, profile: 'as-b1' },
-  { slug: 'red-hood', effectiveBurst: 'II', lambdaStage: 2, profile: 'as-b2' },
+  { slug: 'red-hood', effectiveBurst: 'I', forceStage: 1, profile: 'as-b1' },
+  { slug: 'red-hood', effectiveBurst: 'II', forceStage: 2, profile: 'as-b2' },
   {
     slug: 'rapi-red-hood',
     effectiveBurst: 'I',
-    lambdaStage: 1,
+    forceStage: 1,
     profile: 'as-b1',
   },
 ];
@@ -111,7 +111,7 @@ for (const f of FORCED_ROWS) {
     effectiveBurst: f.effectiveBurst,
     element: c.element as Element,
     profile: f.profile,
-    lambdaStage: f.lambdaStage,
+    forceStage: f.forceStage,
   });
 }
 
@@ -189,6 +189,8 @@ const artifact: B1B2DpsArtifact = {
     'Team shape: B1 20s [tested, B2 SR, B2 SR, B3 RL, B3 MG]; B1 40s [tested, B1 AR, B2 SR, B3 RL, B3 MG]; ' +
     'B2 [B1 AR, tested, B2 SR, B3 RL, B3 MG]. The no-op B1 (AR) in the 40s-B1 and B2 templates contributes the standard 7 s team burst CDR via its override; ' +
     "20s-B1 rows have no second B1, so they rely on the tested B1's own CDR. " +
+    'For a 20s-B1 profile row with a B1 partner, the team switches to the 40s-B1 template: the partner fills the second B1 slot and the second no-op B2 is removed, ' +
+    'so the row gains rotation coverage from the partner at the cost of one B2 slot. ' +
     'Investment is scope lock (Base-5, 3★/core 7, no cube/doll). ' +
     'Cells: core 0 / core 100 × neutral / elemental advantage (boss weak to the tested unit).',
   units,

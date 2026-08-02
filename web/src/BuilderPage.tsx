@@ -415,9 +415,15 @@ export function BuilderPage() {
               : state.board === 'b1b2dps'
                 ? state.b1b2DpsBoard
                 : null;
+        const subModeLabel =
+          state.board === 'b1b2dps' && subMode
+            ? B1B2_CELL_LABEL[subMode as B1B2DpsBoard]
+            : subMode
+              ? cap(subMode)
+              : null;
         const chartData: RankChartData = {
-          title: subMode
-            ? `${boardMeta.title} · ${B1B2_CELL_LABEL[subMode as B1B2DpsBoard] ?? cap(subMode)}`
+          title: subModeLabel
+            ? `${boardMeta.title} · ${subModeLabel}`
             : boardMeta.title,
           subtitle: `top 10 of ${allBars.length} · generated ${new Date(art.generatedAt).toLocaleDateString()}`,
           bars: allBars.slice(0, 10),

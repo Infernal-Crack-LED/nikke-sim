@@ -173,12 +173,15 @@ export interface B1B2DpsBar extends RowBase {
 }
 export type B1B2DpsBoard =
   'c0-neutral' | 'c0-eleadv' | 'c100-neutral' | 'c100-eleadv';
+const DEFAULT_B1B2_BOARD: B1B2DpsBoard = 'c100-eleadv';
 export function b1b2DpsBars(
   art: B1B2DpsArtifact,
   board: B1B2DpsBoard
 ): B1B2DpsBar[] {
-  return art.cells[board].map(([slug, dps, profile], i) => ({
-    ...base(art.units, slug, i + 1, profile),
-    dps,
-  }));
+  return (art.cells[board] ?? art.cells[DEFAULT_B1B2_BOARD]).map(
+    ([slug, dps, profile], i) => ({
+      ...base(art.units, slug, i + 1, profile),
+      dps,
+    })
+  );
 }

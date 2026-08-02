@@ -45,7 +45,7 @@ const fullCtx: RanksCtx = {
 function unit(
   slug: string,
   effectiveBurst: 'I' | 'II',
-  lambdaStage?: 1 | 2,
+  forceStage?: 1 | 2,
   profile: string | null = null
 ): B1B2TestedUnit {
   const c = data.characters[slug];
@@ -54,7 +54,7 @@ function unit(
     effectiveBurst,
     element: c.element as any,
     profile,
-    lambdaStage,
+    forceStage,
   };
 }
 
@@ -186,10 +186,11 @@ describe('b1b2 dps integration', () => {
     expect(plain).toBeGreaterThan(0);
     expect(withMg).toBeGreaterThan(0);
     expect(withOther).toBeGreaterThan(0);
-    // The two profile rows use different partner weapons, so they should not
-    // collapse to the same number.
+    // The two profile rows differ both from the plain row and from each other
+    // (different partner weapons + the 20s-B1 template switch).
     expect(withMg).not.toEqual(plain);
     expect(withOther).not.toEqual(plain);
+    expect(withMg).not.toEqual(withOther);
   });
 
   it('rankB1B2Dps produces a ranked list for every cell', () => {

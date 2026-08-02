@@ -17,7 +17,8 @@
 // to scope lock (Base-5, 3★/core 7, no cube/doll).
 //
 // Forced rows: Red Hood is a Λ unit, so she is pinned to B1 and B2 via
-// lambdaStage. Rapi: Red Hood is normally B3, so she is also pinned to B1.
+// lambdaStage. Rapi: Red Hood is normally B3, so she is forced to B1 via
+// forceStage.
 //
 // Profiles: a few units are ranked twice — their plain Solo row plus a row with
 // a canonical partner in the matching stage slot — mirroring the buffer board's
@@ -78,17 +79,17 @@ export const B1B2_DPS_PROFILES: Record<string, B1B2DpsProfile> = {
   'with-avistar': {
     id: 'with-avistar',
     partner: SYNTHETIC_AVISTAR,
-    note: 'with a synthetic MG B1 partner (Avistar stand-in) — Anis: Star enters her "Everyone\'s Star" re-entry mode',
+    note: 'with a synthetic MG B1 partner (Avistar stand-in) — models Anis: Star alongside a magazine-fed B1',
   },
   'with-other-b1': {
     id: 'with-other-b1',
     partner: NOOP_B1,
-    note: 'with a generic other B1 — Anis: Star enters her "Everyone\'s Star" re-entry mode',
+    note: 'with a generic other B1 — models Anis: Star alongside a standard AR B1 partner',
   },
   'with-chime': {
     id: 'with-chime',
     partner: 'chime',
-    note: 'with Chime as a second B2 — Chime re-enters Burst Stage 2 to keep the rotation moving',
+    note: 'with Chime as a second B2 — models Crown alongside an extra Burst-2 partner',
   },
 };
 
@@ -114,7 +115,7 @@ export interface B1B2TestedUnit {
   effectiveBurst: 'I' | 'II';
   element: Element;
   profile: string | null;
-  lambdaStage?: 1 | 2;
+  forceStage?: 1 | 2; // pin Λ units via lambdaStage, non-Λ units via forceStage
 }
 
 export interface B1B2DpsEntry {
@@ -132,11 +133,11 @@ const STAGE_ROMAN = { 1: 'I', 2: 'II', 3: 'III' } as const;
 
 function fillsStage(
   char: NoopCharacter,
-  lambdaStage: 1 | 2 | 3 | undefined,
+  forceStage: 1 | 2 | 3 | undefined,
   stage: 1 | 2 | 3
 ): boolean {
-  if (lambdaStage !== undefined) {
-    return lambdaStage === stage;
+  if (forceStage !== undefined) {
+    return forceStage === stage;
   }
   return char.burst === STAGE_ROMAN[stage];
 }
@@ -161,7 +162,7 @@ function assertRotationLegal(
   for (const stage of [1, 2, 3] as const) {
     const has = chars.some((c, i) => {
       const isTested = team[i] === tested.slug;
-      return fillsStage(c, isTested ? tested.lambdaStage : undefined, stage);
+      return fillsStage(c, isTested ? tested.forceStage : undefined, stage);
     });
     if (!has) {
       throw new Error(
@@ -184,8 +185,11 @@ export function buildTeam(
   const isLongB1 = tested.effectiveBurst === 'I' && cd > 30;
   let base: string[];
   if (tested.effectiveBurst === 'I') {
-    // If a B1 partner is requested, use the 40s B1 template so the partner
-    // occupies the second B1 slot without displacing a B2.
+    // If a B1 partner is requested (or the B1 is 40s), use the 40s B1 template.
+    // For a 20s B1 this is a TEMPLATE SWITCH: the partner occupies the second
+    // B1 slot, and the second no-op B2 is removed, so the row gains rotation
+    // coverage from the partner at the cost of one B2 slot. This is disclosed
+    // in the published methodology and profile notes.
     base = partner || isLongB1 ? [...B1_40S_TEAM] : [...B1_20S_TEAM];
   } else {
     base = [...B2_TEAM];
@@ -208,14 +212,24 @@ export function buildTeam(
   return team;
 }
 
-function unitOptsFor(slug: string, tested: B1B2TestedUnit): UnitOptions {
+function unitOptsFor(
+  slug: string,
+  tested: B1B2TestedUnit,
+  char: NoopCharacter
+): UnitOptions {
   const opts: UnitOptions = {
     ol: 'base5',
     stars: 3,
     core: 7,
   };
-  if (slug === tested.slug && tested.lambdaStage) {
-    opts.lambdaStage = tested.lambdaStage;
+  if (slug === tested.slug && tested.forceStage) {
+    // Λ units use the existing lambdaStage path; everyone else uses the new
+    // forceStage path so lambdaStage stays Λ-only.
+    if (char.burst === 'Λ') {
+      opts.lambdaStage = tested.forceStage;
+    } else {
+      opts.forceStage = tested.forceStage;
+    }
   }
   return opts;
 }
@@ -232,7 +246,8 @@ export function dpsFor(
   const slugs = buildTeam(tested, ctx, partner);
   const chars = slugs.map((s) => charFor(ctx, s));
   const unitIdx = leftmostSlot(tested.effectiveBurst);
-  const unitOpts = slugs.map((s) => unitOptsFor(s, tested));
+  const testedChar = chars[unitIdx];
+  const unitOpts = slugs.map((s) => unitOptsFor(s, tested, testedChar));
 
   const [coreStr, eleStr] = cell.split('-') as [string, string];
   const coreHitRate = coreStr === 'c100' ? 1 : 0;

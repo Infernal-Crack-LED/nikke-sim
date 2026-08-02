@@ -506,7 +506,8 @@ interface UnitState {
   burstFirstPending: boolean; // takes the first eligible burst of its stage (Prika duet opener)
   mpThreshold: number;
   extraStages: Set<number>; // extra burst stages this unit may fill (Combat Assist)
-  lambdaStage: number | null; // pinned units (Λ or forced via UnitOptions): burst ONLY at this stage
+  lambdaStage: number | null; // Λ units: pinned to burst ONLY at this stage
+  forceStage: number | null; // non-Λ units: forced to fill ONLY this stage (rank-builder controls)
   advantageVs: Set<string>; // boss elements this unit counts as advantaged against
   // weapon runtime
   ammo: number;
@@ -815,7 +816,9 @@ export function runSim(
         12
       ),
       extraStages: new Set(),
-      lambdaStage: prepared?.[idx]?.lambdaStage ?? null,
+      lambdaStage:
+        char.burst === 'Λ' ? (prepared?.[idx]?.lambdaStage ?? null) : null,
+      forceStage: prepared?.[idx]?.forceStage ?? null,
       advantageVs: new Set(),
       ammo: char.ammo,
       fireAcc: 0,
@@ -1820,9 +1823,11 @@ export function runSim(
         return byElement.filter(
           (u) =>
             (t.stage === 3 &&
-              (u.char.burst === 'III' || u.lambdaStage === 3)) ||
-            (t.stage === 2 && u.char.burst === 'II') ||
-            (t.stage === 1 && u.char.burst === 'I')
+              (u.char.burst === 'III' ||
+                u.lambdaStage === 3 ||
+                u.forceStage === 3)) ||
+            (t.stage === 2 && (u.char.burst === 'II' || u.forceStage === 2)) ||
+            (t.stage === 1 && (u.char.burst === 'I' || u.forceStage === 1))
         );
       }
       case 'nonBurstCasters':
@@ -2813,10 +2818,13 @@ export function runSim(
     ) {
       const want = romanStage[stage];
       const fillsStage = (u: UnitState) => {
+        // Forced non-Λ units (rank-builder controls) ONLY fill their forced stage.
+        if (u.forceStage !== null) {
+          return u.forceStage === stage;
+        }
         // Λ units default to all-stage eligible; if one has been pinned
-        // (lambdaStage), it only fills that stage. Non-Λ units can also be
-        // pinned to an off-stage role via UnitOptions.lambdaStage.
-        if (u.char.burst === 'Λ' || u.lambdaStage !== null) {
+        // (lambdaStage), it only fills that stage.
+        if (u.char.burst === 'Λ') {
           return u.lambdaStage === null || u.lambdaStage === stage;
         }
         return u.char.burst === want || u.extraStages.has(stage);
