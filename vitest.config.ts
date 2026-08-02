@@ -10,7 +10,7 @@ import { defineConfig } from 'vitest/config';
 //   scripts/tests/engine/      — engine primitive tests (step 2 backfill)
 //   scripts/tests/units/<slug> — per-unit kit specs (step 3, owner-driven)
 //   scripts/tests/generators/  — roster/team generator + web-logic tests
-//   scripts/tests/lib/         — shared fixtures (harness.ts)
+//   scripts/tests/lib/         — shared fixtures (harness.ts, fast-cfg.ts) + their own tests
 export default defineConfig({
   test: {
     include: ['scripts/tests/**/*.test.ts'],

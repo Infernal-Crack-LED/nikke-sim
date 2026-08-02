@@ -62,7 +62,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   3. Reconcile / document cross-board comparability details against the B3 DPS chart Solo cells
      (`bossDef`, `rangeBonus`, `durationSec`) and clarify the "Core 100" cell label (core hit rate
      vs core enhancement). See closed handoff `docs/handoffs/closed/2026-08-01-b1b2-dps-rankings.md`.
-
+- **⇒ Un-skip the `loadouts-parity.test.ts` `topTeams(5)` byte-parity case on the fast basis** —
+  filed 2026-08-02 from the cross-family code review (claude-opus-5) of the generator-test speedup
+  (branch `kimi/speed-up-generator-tests`; packet + result JSON in
+  `scratchpad/gates/2026-08-02-speed-up-generator-tests/`). The skip comment (2026-07-26) says the
+  case is skipped PURELY for runtime (~165s doubled call vs the 300s vitest ceiling under CPU
+  contention) and TODOs "narrow the pool here or give this file its own longer timeout"; the file
+  now runs on `fastCfg` (30s fight), which is exactly that fix. Un-skip, measure on the 30s basis,
+  then delete or rewrite the now-stale skip comment.
 - **⇒ `build-dpschart.ts` worker-pool robustness — 3 findings filed from a CLEAN cross-family
   review** (kimi-code/k3, 2026-08-01; packet + both result JSONs in
   `scratchpad/gates/2026-08-01-deploy-build-timeout/`). All three are on already-failing or
@@ -481,11 +488,31 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **Per-unit rotation re-tunes (answered-questions U16)** — RESOLVED 2026-07-26: the rotation
   over-generation is settled (DECISIONS 2026-07-21); the per-unit over-models (chisato, trina, naga,
   soda-twinkling-bunny) are rotation-independent and tracked as standard hand-tune queue items.
-- **Blanc same-squad CDR override cleanup** — `src/skills/overrides/blanc.json` currently models the
-  S2 "ally from the same squad still on the battlefield" CDR (40.76s) as unconditional because nobody
-  dies at scope lock. The buffer-rank `w/ Bunny` profile works around this by suppressing the CDR in
-  Blanc's plain row and keeping it active when the synthetic Bunny partner is present. The engine/
-  override should instead gate the CDR with a `teamHas` slug condition (or a proper squad primitive)
-  so the plain row is naturally inert without the partner and active with the partner. Out of scope for
-  the current rank-board PR; the buffer-code workaround (`blancNoCdrOverride` in
-  `src/ranks/buffer.ts`) should be removed once the override/engine is fixed.
+- **Same-squad primitive migrations** — the squad primitive LANDED 2026-08-02 (DECISIONS.md):
+  `teamHas.sameSquad` resolves squad membership from the curated map `src/data/squads.ts` (fail-closed;
+  validator rejects an unmapped owner) and blanc's S2 CDR is gated on it (squad = noir+rouge ONLY,
+  owner-confirmed — the bunny/maid units are a different squad; the buffer-board `blancNoCdrOverride`
+  workaround is gone and the `w/ Bunny` profile is now `w/ Rouge`, a synthetic no-op Rouge B1 whose
+  PRESENCE opens the gate). Remaining units with "same squad" kit text, for adoption:
+  - `noir` (burst block 3) — uses the older `teamHas.slugs:['blanc','rouge']`; drop-in migration to
+    `sameSquad:true` (identical extension — the curated squad is exactly blanc+rouge). Mechanical;
+    noir's N5 kit test discriminates either spelling, so it pins the gate, not the facet.
+  - `anchor-innocent-maid` (S1 block B heal gate) — currently modeled always-satisfied (override
+    caveat). BLOCKED on an owner ruling for her squad membership (the maid costumes — mast-romantic-
+    maid, privaty-unkind-maid — are the candidates; NOT verified). Once ruled: add the squad to
+    `src/data/squads.ts`, gate the block, rewrite the caveat.
+  - `ram` (S1 "Full Burst ends with an ally from the same squad") — no override yet (not
+    simSupported); collab-unit squad unknown — confirm before authoring the gate.
+  - `emma-tactical-upgrade` / `eunhwa-tactical-upgrade` (S2 "affects all allies from the same
+    squad") — TARGET-SET pattern, not a gate: owner precedent (eunhwa-tu override note) encodes
+    same-squad targets as plain `allies` (the sim fields exactly one deployed squad). No migration
+    needed unless a future ruling disagrees; listed for completeness.
+  - Review follow-ups (claude-fable-5 code-review NOTEs, 2026-08-02, verdict CLEAN; packet +
+    result: `scratchpad/gates/2026-08-02-squad-primitive/`): (a) `validate-overrides.ts` should
+    allowlist the keys INSIDE `teamHas` (element/class/weapon/burst/slugs/sameSquad) — a typo'd
+    facet key (e.g. `samesquad`) is silently ignored by engine + validator today, leaving the
+    block always-active, one typo away from the dead-authoring failure the sameSquad guard
+    prevents (pre-existing gap for all facets); (b) type `sameSquad?: true` instead of `?: boolean`
+    in `src/skills/types.ts` so the compiler enforces the validator's literal-true contract;
+    (c) optional layering cleanup — keep `src/data/squads.ts` pure game truth and register the
+    `noop-rouge-b1` synthetic from the ranks layer instead of listing it in the game map.

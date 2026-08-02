@@ -362,9 +362,6 @@ export interface BufferValue {
 // count; the baseline swaps the tested unit for its stage-matched no-op (same
 // carries). When `profile` is set, every no-op filler also carries the
 // profile's synthetic kit (the with-healer/with-shielder gate opener).
-// `characterOverrides` lets per-profile runs temporarily mutate a real unit's
-// override without editing the source file (e.g. Blanc's same-squad CDR is
-// suppressed in her plain row so the w/ Rouge profile can show the difference).
 function carryDpsSum(
   team: AssembledBufferTeam,
   ctx: RanksCtx,
@@ -372,8 +369,7 @@ function carryDpsSum(
   pierceOverride: boolean,
   testedSlug?: string,
   profile?: string | null,
-  unitOptsMap: Record<string, UnitOptions> = {},
-  characterOverrides: Record<string, any> = {}
+  unitOptsMap: Record<string, UnitOptions> = {}
 ): { sum: number; testedBurstCasts: number } {
   const chars = team.slugs.map((s) => charFor(ctx, s, team.chars as any));
   const element = (chars[team.carryIdxs[0]] as CharacterData)
@@ -424,13 +420,6 @@ function carryDpsSum(
         burst: [],
       };
     }
-  }
-  for (const [s, ovr] of Object.entries(characterOverrides)) {
-    extraOverrides[s] = {
-      ...(extraOverrides[s] ?? ctx.deps.overrides[s] ?? {}),
-      ...ovr,
-      slug: s,
-    };
   }
   const deps = Object.keys(extraOverrides).length
     ? { ...ctx.deps, overrides: { ...ctx.deps.overrides, ...extraOverrides } }
@@ -489,26 +478,6 @@ export function bufferValueFor(
   const baselineKey = duoProfile
     ? `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile}|partner=${duoProfile.partner}|partnerMode=solo|b1filler=${b1Filler}`
     : `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile ?? 'plain'}|b1filler=${b1Filler}`;
-
-  // Blanc's same-squad CDR is composition-gated (teamHas.sameSquad). Her plain
-  // row has no squadmate, so the CDR block would be inert; suppress it entirely
-  // for the plain row so the profiled row (w/ synthetic Rouge squadmate) shows a
-  // clean rotation delta.
-  function blancNoCdrOverride(ctx: RanksCtx): any {
-    const ovr = ctx.deps.overrides.blanc ?? {};
-    return {
-      ...ovr,
-      skill2: (ovr.skill2 ?? []).filter(
-        (b: any) => !b.effects?.some((e: any) => e.kind === 'burstCdr')
-      ),
-      slug: 'blanc',
-    };
-  }
-  const characterOverrides: Record<string, any> = {};
-  if (slug === 'blanc' && activeProfile === null) {
-    characterOverrides.blanc = blancNoCdrOverride(ctx);
-  }
-
   let baseline = baselineMemo.get(baselineKey);
   if (baseline === undefined) {
     const baselineOpts: Record<string, UnitOptions> = {};
@@ -524,8 +493,7 @@ export function bufferValueFor(
       board === 'typed' && spec.pierce,
       undefined,
       activeProfile,
-      baselineOpts,
-      characterOverrides
+      baselineOpts
     ).sum;
     baselineMemo.set(baselineKey, baseline);
   }
@@ -541,8 +509,7 @@ export function bufferValueFor(
     board === 'typed' && spec.pierce,
     slug,
     activeProfile,
-    testedOpts,
-    characterOverrides
+    testedOpts
   );
   return {
     slug,

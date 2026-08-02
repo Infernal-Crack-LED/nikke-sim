@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import { makeCalc, type TeamCalcInput } from '../../../src/teamcalc.js';
 import type { UnitOptions } from '../../../src/prepare.js';
-import { scopeLockCfg } from '../../lib/scope-lock.js';
+import { fastCfg } from '../lib/fast-cfg.js';
 import { deps, generatorPool, mult, archetypeTags } from '../lib/harness.js';
 
 const { chars, overrides } = generatorPool();
@@ -25,7 +25,9 @@ const base = (loadouts?: Record<string, UnitOptions>): TeamCalcInput => ({
   chars: chars as any,
   mult,
   deps: { overrides, ...deps },
-  cfg: scopeLockCfg([], null) as any,
+  // Shorter fight for the parity gate: it asserts the two loadout paths are
+  // byte-identical to each other, not that they match any canonical damage number.
+  cfg: fastCfg([], null) as any,
   loadoutFor: loadouts ? undefined : loadoutFor,
   loadouts,
   synergy: {

@@ -347,14 +347,22 @@ export interface Block {
   // burst matches literally (a Λ unit does NOT satisfy burst:'III'). Omit = always
   // active (back-compatible). Burst codes 'I'|'II'|'III'|'Λ'; weapon AR/SMG/SG/SR/RL/MG.
   // `slugs`: the team contains one of these SPECIFIC units (matches some OTHER ally's exact slug) —
-  // for kit gates keyed to named squad-mates the data has no squad axis for (noir's burst block 3
-  // "an ally from the same squad": owner-ruled 2026-07-20 satisfied by blanc or rouge).
+  // for kit gates keyed to named squad-mates (noir's burst block 3 "an ally from the same squad":
+  // owner-ruled 2026-07-20 satisfied by blanc or rouge; predates `sameSquad` below — same extension,
+  // migration pending).
+  // `sameSquad`: the team contains SOME OTHER ally from the OWNER's squad — the primitive for kit
+  // gates worded "an ally from the same squad … on the battlefield" (blanc's S2 burst-CDR). Squad
+  // membership is curated in src/data/squads.ts (characters.json has no squad axis); the "still on
+  // the battlefield" clause is scope-trivial (nobody dies at scope lock), so the gate is
+  // composition-only. FAILS CLOSED: an owner with no curated squad never satisfies the gate
+  // (validate-overrides.ts rejects the authoring). Prefer this over `.slugs` for same-squad gates.
   teamHas?: {
     element?: string;
     class?: string;
     weapon?: string;
     burst?: string;
     slugs?: string[];
+    sameSquad?: boolean;
   };
   // mode gate: block active only when the unit's selected mode matches (the
   // override's top-level `modes` array declares the choices; first = default)

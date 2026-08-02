@@ -17,6 +17,7 @@ import {
 import type { PreparedUnit } from '../prepare.js';
 import gaugeTable from '../../data/gauge-per-shot.json' with { type: 'json' };
 import { relationshipBonus } from '../relationship.js';
+import { squadOf } from '../data/squads.js';
 import {
   ACCURACY_CIRCLE_SCALE,
   BAND_CORE_PX,
@@ -716,6 +717,10 @@ export function runSim(
     // SOME OTHER ally matches ALL specified facets (element/class/weapon/burst,
     // ANDed). Owner never counts; burst matches literally (Λ ≠ 'III'). Omit =
     // always active, so this is inert until an override opts in.
+    // `sameSquad`: some OTHER ally shares the owner's curated squad
+    // (src/data/squads.ts). Fails closed — an owner with no curated squad
+    // (ownerSquad undefined) never satisfies the facet.
+    const ownerSquad = squadOf(chars[idx].slug);
     const teamHasMatch = (need: NonNullable<Block['teamHas']>) =>
       chars.some(
         (c, i) =>
@@ -724,7 +729,9 @@ export function runSim(
           (!need.class || c.class === need.class) &&
           (!need.weapon || c.weapon === need.weapon) &&
           (!need.burst || c.burst === need.burst) &&
-          (!need.slugs || need.slugs.includes(c.slug))
+          (!need.slugs || need.slugs.includes(c.slug)) &&
+          (!need.sameSquad ||
+            (ownerSquad !== undefined && squadOf(c.slug) === ownerSquad))
       );
     const activeBlocks = skills.blocks.filter(
       (b) =>

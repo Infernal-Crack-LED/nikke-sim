@@ -277,7 +277,7 @@ describe('buffer board', () => {
   it('blanc: w/ Rouge profile emits and shows the CDR difference vs plain', () => {
     const memo = new Map<string, number>();
     const plain = bufferValueFor('blanc', 'generic', ctx, memo, null);
-    const rouge = bufferValueFor(
+    const withRouge = bufferValueFor(
       'blanc',
       'generic',
       ctx,
@@ -285,10 +285,11 @@ describe('buffer board', () => {
       DUO_BUFFER_PROFILES.blanc.id
     );
     expect(plain.profile).toBeNull();
-    expect(rouge.profile).toBe(DUO_BUFFER_PROFILES.blanc.id);
-    // Plain row suppresses the same-squad CDR; w/ Rouge keeps it active.
-    expect(rouge.testedBurstCasts).toBeGreaterThan(plain.testedBurstCasts);
-    expect(rouge.valuePct).toBeGreaterThan(plain.valuePct);
+    expect(withRouge.profile).toBe(DUO_BUFFER_PROFILES.blanc.id);
+    // The plain row has no squadmate, so blanc's same-squad CDR gate (teamHas
+    // .sameSquad) is naturally inert; the w/ Rouge synthetic squadmate opens it.
+    expect(withRouge.testedBurstCasts).toBeGreaterThan(plain.testedBurstCasts);
+    expect(withRouge.valuePct).toBeGreaterThan(plain.valuePct);
   });
 
   it('rankBuffers dual-enters blanc with the w/ Rouge profile', () => {

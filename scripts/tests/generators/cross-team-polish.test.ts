@@ -14,6 +14,10 @@
 // These tests use a small restricted pool (fast) and NO meta/synergy input, so
 // the ranking score reduces to raw teamDamage and the sums here ARE the roster
 // score the polish gate compares.
+//
+// NOTE: this file deliberately keeps the canonical 180 s fight duration
+// (scopeLockCfg) because its damage-ratio floor is calibrated against the
+// canonical run; shortening the fight would change the ratio baseline.
 import { describe, expect, it } from 'vitest';
 import { makeCalc } from '../../../src/teamcalc.js';
 import { scopeLockCfg } from '../../lib/scope-lock.js';
@@ -53,6 +57,7 @@ const calc = makeCalc({
   chars: chars as any,
   mult,
   deps: { overrides, ...deps },
+  // 180s deliberately — see the NOTE in the file header.
   cfg: scopeLockCfg([], null) as any,
   loadout: {},
   blocked: Object.keys(chars).filter((s) => !POOL.has(s)),

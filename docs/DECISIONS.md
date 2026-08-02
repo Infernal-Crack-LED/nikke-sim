@@ -31,6 +31,38 @@ lives. Newest first within each section.
   `scripts/tests/units/chime.test.ts` and `scripts/tests/units/avistar.test.ts` pin the
   excludeSelf rule; `scripts/tests/ranks/b1b2dps.test.ts` pins Crown+Chime > Crown default.
 
+- **(2026-08-02, latest) SQUAD PRIMITIVE LANDED — "an ally from the same squad" kit gates resolve
+  against a curated squad map; Blanc's squad is Noir+Rouge ONLY (the bunny/maid units are a
+  DIFFERENT squad).** New block-gate facet `teamHas.sameSquad` (`src/skills/types.ts`; evaluated at
+  sim setup in `sim.ts`'s block filter alongside the other `teamHas` facets): the block is active
+  only when SOME OTHER ally shares the owner's squad per `src/data/squads.ts` — a hand-curated
+  slug→squad map, because characters.json carries no squad axis (the blablalink `role_meta`
+  snapshot has no squad field). The gate FAILS CLOSED: an owner with no curated squad never
+  satisfies it, and `validate-overrides.ts` rejects a `sameSquad` authoring on an unmapped owner
+  (a dead block can't ship silently). **Owner-confirmed membership (2026-08-02):** Blanc `blanc` /
+  Noir `noir` / Rouge `rouge` form one squad — extending the 2026-07-20 Noir ruling (same-squad
+  burst gate "satisfied by blanc or rouge") to its full extension, and CORRECTING the common
+  misread that the bunny/maid units (bunny, milk, zwei, guilty, quency, soda, the maid costumes)
+  share it — they do NOT. M.M.R. = Tia `tia` / Naga `naga` / Marciana `marciana` (owner-stated;
+  seeded in the map, no gate consumes it yet). **Enacted:** `blanc`'s S2 burst-CDR (40.76s on
+  fullBurstEnd) is now gated on `sameSquad` — inert in comps without noir/rouge, active with one;
+  the "still on the battlefield" clause is scope-trivial (nobody dies at scope lock), so the gate
+  is composition-only. The buffer-rank workaround `blancNoCdrOverride` (`src/ranks/buffer.ts`,
+  which stripped the CDR from Blanc's plain row) is REMOVED — the plain row is now naturally inert
+  and the profiled row naturally active. **Consequent board change:** Blanc's buffer-board duo
+  profile `w/ Bunny` → `w/ Rouge` — the old synthetic Bunny partner existed to hold the gate open
+  under the same misread; the partner is now `noop-rouge-b1` (`src/dpschart/noop.ts`), a
+  presence-only no-op Rouge B1 (zeroed kit, rouge's cadence) whose curated squad membership opens
+  the gate faithfully. `scripts/tests/ranks/buffer.test.ts`'s pin (profiled casts/value > plain)
+  holds unchanged. **Evidence:** `scripts/tests/units/blanc.test.ts` B3 group (gate inert in the
+  liter comp == CDR-removed schedule; active ≥5 casts with rouge; the ungated counterfactual
+  over-fires — discriminates both nearest-wrongs); noir's N5 gate test passes unchanged;
+  `scripts/regression.ts` carries no blanc comp (snapshot untouched); `bash scripts/verify.sh`
+  green. **Migration list** (other "same squad" kit text) lives in
+  [docs/handoffs/QUEUE.md](handoffs/QUEUE.md) "Same-squad primitive migrations": noir (`.slugs` →
+  `.sameSquad`, drop-in), anchor-innocent-maid (blocked on an owner squad-membership ruling), ram
+  (no override yet), emma/eunhwa-tactical-upgrade (target-set pattern, not a gate — no migration).
+
 - **(2026-08-01) B1/B2 DPS RANKING BOARD — Solo-style isolation for B1/B2 units.**
   Added a fifth non-DPS ranking board (`b1b2dps.json`) that ranks every sim-supported Burst-1 and
   Burst-2 unit by its own damage in a standardized no-op control team. Four cells only: Core 0 /

@@ -27,6 +27,8 @@ const calcForPool = (keep: Set<string>) =>
     chars: chars as any,
     mult,
     deps: { overrides, ...deps },
+    // Cooldown coverage is intrinsically multi-cycle: keep the canonical 180s
+    // fight so gaps that appear only after several burst cycles are visible.
     cfg: scopeLockCfg([], null) as any,
     loadout: {},
     blocked: Object.keys(chars).filter((s) => !keep.has(s)),
