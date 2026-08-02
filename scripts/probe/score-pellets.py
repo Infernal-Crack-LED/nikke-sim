@@ -1370,6 +1370,18 @@ def run(args):
         row = {
             'seq': seq['seq'], 'video': seq['video'], 'n_pellets': seq['n_pellets'],
             'f8_11_mean_count': round(mean_count, 2), 'error': round(err, 2),
+            # The per-frame counts `f8_11_mean_count` averages, keyed by the sequence's own offset
+            # labels. Additive (2026-08-01): a consumer that needs to re-average over a SUBSET of
+            # the counting window -- e.g. dropping the frames where the crosshair lock was a held
+            # carry-forward (analyze-pellet-tracks.py --stale-counting-groundtruth) -- otherwise has
+            # only the already-collapsed mean and would have to re-run the counter to get them back.
+            # Keyed by the sequence's OWN offset label (f08..f11 for the real fixture, parsed from
+            # the crop filenames), not score_sequence's positional `offset` (which is just fi+1 and
+            # would read 1..4 on a 4-crop real sequence). compute_estimators' `current` selects its
+            # window by the same labels, so the mean is re-derivable from these keys.
+            'per_offset_pred': {
+                str((seq.get('offset_labels') or [None] * len(per_offset))[i] or o['offset']): o['pred']
+                for i, o in enumerate(per_offset)},
         }
         if args.real_positions:
             # Raw admitted-detection total across this shot's frames -- the "how many detections did

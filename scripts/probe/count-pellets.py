@@ -532,6 +532,17 @@ def debounce_shots(frame_counts, fps, marker_min=2, min_pellets=5, max_pellets=1
                 shots.append({
                     'frame': rep_idx, 'white': rep['white'], 'red': shot_red,
                     'total': rep['white'] + shot_red, 'frames': event_frames, 'core': core_hit,
+                    # DIAGNOSTIC-ONLY, additive (2026-08-01): the event's own frame bounds.
+                    # `frame` is the REPRESENTATIVE (median-total) frame, which is not the blast
+                    # onset -- but every offset-indexed counting rule in this pipeline (f8-11) is
+                    # defined relative to the ONSET t0, and make-groundtruth-f811.py's find_t0
+                    # can only be used where an owner-supplied approximate shot index exists.
+                    # `start` is the rising edge this event was opened on, so a consumer with no
+                    # owner shot times can index counting frames off the SAME event grouping the
+                    # shipped estimator uses instead of re-deriving onsets from a private copy.
+                    # Nothing in the returned counts/summary depends on these two keys, so
+                    # read-pellets.ts's debounce block stays in lockstep unchanged.
+                    'start': event_start, 'end': event_end,
                 })
             event_start = -1
             zero_run = 0
