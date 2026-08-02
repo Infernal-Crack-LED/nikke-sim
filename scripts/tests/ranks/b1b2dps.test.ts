@@ -62,90 +62,91 @@ function unit(
 
 describe('b1b2 dps team assembly', () => {
   it('20s B1 plain row keeps two B2s and no extra B1', () => {
-    expect(buildTeam(unit('anis-star', 'I'), ctx)).toEqual([
+    const { team, template } = buildTeam(unit('anis-star', 'I'), ctx);
+    expect(team).toEqual(['anis-star', NOOP_B2, NOOP_B2, NOOP_B3_RL, NOOP_B3]);
+    expect(template).toBe('b1-20s');
+  });
+
+  it('20s B1 with a B1 partner uses the 40s B1 template (partner replaces the no-op B1)', () => {
+    const { team, template } = buildTeam(
+      unit('anis-star', 'I', undefined, 'with-avistar'),
+      ctx,
+      SYNTHETIC_AVISTAR
+    );
+    expect(team).toEqual([
       'anis-star',
-      NOOP_B2,
+      SYNTHETIC_AVISTAR,
       NOOP_B2,
       NOOP_B3_RL,
       NOOP_B3,
     ]);
-  });
-
-  it('20s B1 with a B1 partner uses the 40s B1 template (partner replaces the no-op B1)', () => {
-    expect(
-      buildTeam(
-        unit('anis-star', 'I', undefined, 'with-avistar'),
-        ctx,
-        SYNTHETIC_AVISTAR
-      )
-    ).toEqual(['anis-star', SYNTHETIC_AVISTAR, NOOP_B2, NOOP_B3_RL, NOOP_B3]);
+    expect(template).toBe('b1-40s');
   });
 
   it('20s B1 with a generic other B1 switches to the 40s template (partner takes the B1 slot, one no-op B2 is dropped)', () => {
-    expect(
-      buildTeam(
-        unit('anis-star', 'I', undefined, 'with-other-b1'),
-        ctx,
-        NOOP_B1
-      )
-    ).toEqual(['anis-star', NOOP_B1, NOOP_B2, NOOP_B3_RL, NOOP_B3]);
+    const { team, template } = buildTeam(
+      unit('anis-star', 'I', undefined, 'with-other-b1'),
+      ctx,
+      NOOP_B1
+    );
+    expect(team).toEqual(['anis-star', NOOP_B1, NOOP_B2, NOOP_B3_RL, NOOP_B3]);
+    expect(template).toBe('b1-40s');
   });
 
   it('40s B1 plain row has a second no-op B1', () => {
     // rosanna is a 40s B1.
-    expect(buildTeam(unit('rosanna', 'I'), ctx)).toEqual([
-      'rosanna',
-      NOOP_B1,
-      NOOP_B2,
-      NOOP_B3_RL,
-      NOOP_B3,
-    ]);
+    const { team, template } = buildTeam(unit('rosanna', 'I'), ctx);
+    expect(team).toEqual(['rosanna', NOOP_B1, NOOP_B2, NOOP_B3_RL, NOOP_B3]);
+    expect(template).toBe('b1-40s');
   });
 
   it('B2 plain row has a no-op B1 and a second no-op B2', () => {
-    expect(buildTeam(unit('crown', 'II'), ctx)).toEqual([
-      NOOP_B1,
-      'crown',
-      NOOP_B2,
-      NOOP_B3_RL,
-      NOOP_B3,
-    ]);
+    const { team, template } = buildTeam(unit('crown', 'II'), ctx);
+    expect(team).toEqual([NOOP_B1, 'crown', NOOP_B2, NOOP_B3_RL, NOOP_B3]);
+    expect(template).toBe('b2');
   });
 
   it('B2 with a partner replaces the second no-op B2', () => {
-    expect(
-      buildTeam(unit('crown', 'II', undefined, 'with-chime'), ctx, 'chime')
-    ).toEqual([NOOP_B1, 'crown', 'chime', NOOP_B3_RL, NOOP_B3]);
+    const { team, template } = buildTeam(
+      unit('crown', 'II', undefined, 'with-chime'),
+      ctx,
+      'chime'
+    );
+    expect(team).toEqual([NOOP_B1, 'crown', 'chime', NOOP_B3_RL, NOOP_B3]);
+    expect(template).toBe('b2');
   });
 
   it('Red Hood forced as B1 uses the 40s B1 template and pins her to stage 1', () => {
-    expect(buildTeam(unit('red-hood', 'I', 1, 'as-b1'), ctx)).toEqual([
-      'red-hood',
-      NOOP_B1,
-      NOOP_B2,
-      NOOP_B3_RL,
-      NOOP_B3,
-    ]);
+    const { team, template } = buildTeam(
+      unit('red-hood', 'I', 1, 'as-b1'),
+      ctx
+    );
+    expect(team).toEqual(['red-hood', NOOP_B1, NOOP_B2, NOOP_B3_RL, NOOP_B3]);
+    expect(template).toBe('b1-40s');
   });
 
   it('Red Hood forced as B2 keeps the standard B2 shape and pins her to stage 2', () => {
-    expect(buildTeam(unit('red-hood', 'II', 2, 'as-b2'), ctx)).toEqual([
-      NOOP_B1,
-      'red-hood',
-      NOOP_B2,
-      NOOP_B3_RL,
-      NOOP_B3,
-    ]);
+    const { team, template } = buildTeam(
+      unit('red-hood', 'II', 2, 'as-b2'),
+      ctx
+    );
+    expect(team).toEqual([NOOP_B1, 'red-hood', NOOP_B2, NOOP_B3_RL, NOOP_B3]);
+    expect(template).toBe('b2');
   });
 
   it('Rapi: Red Hood forced as B1 uses the 40s B1 template and pins her to stage 1', () => {
-    expect(buildTeam(unit('rapi-red-hood', 'I', 1, 'as-b1'), ctx)).toEqual([
+    const { team, template } = buildTeam(
+      unit('rapi-red-hood', 'I', 1, 'as-b1'),
+      ctx
+    );
+    expect(team).toEqual([
       'rapi-red-hood',
       NOOP_B1,
       NOOP_B2,
       NOOP_B3_RL,
       NOOP_B3,
     ]);
+    expect(template).toBe('b1-40s');
   });
 });
 
@@ -195,6 +196,18 @@ describe('b1b2 dps integration', () => {
     expect(withMg).not.toEqual(withOther);
   });
 
+  it('Crown with Chime runs and differs from her plain row', () => {
+    const plain = dpsFor('c0-neutral', unit('crown', 'II'), fullCtx);
+    const withChime = dpsFor(
+      'c0-neutral',
+      unit('crown', 'II', undefined, 'with-chime'),
+      fullCtx
+    );
+    expect(plain).toBeGreaterThan(0);
+    expect(withChime).toBeGreaterThan(0);
+    expect(withChime).not.toEqual(plain);
+  });
+
   it('eleadv cells use the boss element the tested unit beats', () => {
     // Anis: Star is Water; she is advantaged against a Fire-code boss.
     const neutral = dpsFor('c0-neutral', unit('anis-star', 'I'), fullCtx);
@@ -227,7 +240,7 @@ describe('b1b2 dps integration', () => {
     ).toBeGreaterThan(1);
   });
 
-  it('rankB1B2Dps produces a ranked list for every cell', () => {
+  it('rankB1B2Dps produces a ranked list for every cell and carries each row template', () => {
     const population: B1B2TestedUnit[] = [
       unit('anis-star', 'I'),
       unit('crown', 'II'),
@@ -245,6 +258,7 @@ describe('b1b2 dps integration', () => {
       expect(ranked[cell][0].rank, cell).toBe(1);
       for (const row of ranked[cell]) {
         expect(row.dps, `${cell} ${row.slug}`).toBeGreaterThan(0);
+        expect(row.template).toMatch(/^(b1-20s|b1-40s|b2)$/);
       }
     }
   });

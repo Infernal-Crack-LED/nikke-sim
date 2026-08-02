@@ -170,6 +170,7 @@ export function bufferBars(
 
 export interface B1B2DpsBar extends RowBase {
   dps: number;
+  template: 'b1-20s' | 'b1-40s' | 'b2';
 }
 export type B1B2DpsBoard =
   'c0-neutral' | 'c0-eleadv' | 'c100-neutral' | 'c100-eleadv';
@@ -188,7 +189,7 @@ export function b1b2DpsBars(
     B1B2_DPS_BOARDS.includes(board) && art.cells[board]
       ? board
       : DEFAULT_B1B2_BOARD;
-  return art.cells[b].map(([slug, dps, profile], i) => {
+  return art.cells[b].map(([slug, dps, profile, template], i) => {
     const row = base(art.units, slug, i + 1, profile);
     // For forced off-stage rows, the profile badge carries the effective burst;
     // prefer it over the native burst chip so the row doesn't show Λ/III beside
@@ -199,6 +200,6 @@ export function b1b2DpsBars(
     if (profile === 'as-b2') {
       row.burst = 'II';
     }
-    return { ...row, dps };
+    return { ...row, dps, template };
   });
 }

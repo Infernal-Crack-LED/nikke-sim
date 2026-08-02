@@ -91,8 +91,14 @@ export interface BufferChartArtifact {
   cells: { generic: BufferRow[]; typed: BufferRow[] };
 }
 
-// [slug, dps, profile] — fixed arity 3; profile null = plain Solo row.
-export type B1B2DpsRow = [slug: string, dps: number, profile: string | null];
+// [slug, dps, profile, template] — fixed arity 4; profile null = plain Solo row.
+// template marks the control-team template used, so rows are comparable within the same group.
+export type B1B2DpsRow = [
+  slug: string,
+  dps: number,
+  profile: string | null,
+  template: 'b1-20s' | 'b1-40s' | 'b2',
+];
 export interface B1B2DpsArtifact {
   generatedAt: string;
   methodology: string;

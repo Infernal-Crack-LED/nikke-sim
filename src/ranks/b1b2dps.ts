@@ -116,10 +116,13 @@ export interface B1B2TestedUnit {
   forceStage?: 1 | 2; // pin Λ units via lambdaStage, non-Λ units via forceStage
 }
 
+export type B1B2DpsTemplate = 'b1-20s' | 'b1-40s' | 'b2';
+
 export interface B1B2DpsEntry {
   slug: string;
   dps: number;
   profile: string | null;
+  template: B1B2DpsTemplate;
   rank: number;
 }
 
@@ -176,7 +179,7 @@ export function buildTeam(
   tested: B1B2TestedUnit,
   ctx: RanksCtx,
   partner?: string
-): string[] {
+): { team: string[]; template: B1B2DpsTemplate } {
   const char = charFor(ctx, tested.slug);
   // For forced Λ/B3 rows, cooldown is taken from the character record.
   const cd = char.burstCooldownSec;
@@ -187,14 +190,17 @@ export function buildTeam(
     partner ??
     (tested.profile ? B1B2_DPS_PROFILES[tested.profile]?.partner : undefined);
   let base: string[];
+  let template: B1B2DpsTemplate;
   if (tested.effectiveBurst === 'I') {
     // If a B1 partner is requested (or the B1 is 40s), use the 40s B1 template.
     // For a 20s B1 this is a TEMPLATE SWITCH: the partner occupies the second
     // B1 slot, and the second no-op B2 is removed, so the row gains rotation
     // coverage from the partner at the cost of one B2 slot. This is disclosed
     // in the published methodology and profile notes.
+    template = resolvedPartner || isLongB1 ? 'b1-40s' : 'b1-20s';
     base = resolvedPartner || isLongB1 ? [...B1_40S_TEAM] : [...B1_20S_TEAM];
   } else {
+    template = 'b2';
     base = [...B2_TEAM];
   }
 
@@ -219,7 +225,7 @@ export function buildTeam(
   const team = [...base];
   team.splice(slot, 0, tested.slug);
   assertRotationLegal(team, tested, ctx);
-  return team;
+  return { team, template };
 }
 
 function unitOptsFor(
@@ -249,7 +255,7 @@ export function dpsFor(
   tested: B1B2TestedUnit,
   ctx: RanksCtx
 ): number {
-  const slugs = buildTeam(tested, ctx);
+  const { team: slugs } = buildTeam(tested, ctx);
   const chars = slugs.map((s) => charFor(ctx, s));
   const unitIdx = leftmostSlot(tested.effectiveBurst);
   const testedChar = chars[unitIdx];
@@ -289,6 +295,7 @@ export function rankB1B2Dps(
       slug: t.slug,
       dps: dpsFor(cell, t, ctx),
       profile: t.profile ?? null,
+      template: buildTeam(t, ctx).template,
     }));
     scored.sort((a, b) => b.dps - a.dps);
     byCell[cell] = scored.map((s, i) => ({ ...s, rank: i + 1 }));
