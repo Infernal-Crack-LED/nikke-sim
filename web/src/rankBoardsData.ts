@@ -76,13 +76,18 @@ function base(
   profile: string | null
 ): RowBase {
   const m = units[slug];
+  // For forced off-stage rows, the profile badge carries the effective burst;
+  // prefer it over the native burst chip so the row doesn't show Λ/III beside
+  // an as-B1/as-B2 badge.
+  const profileBurst =
+    profile === 'as-b1' ? 'I' : profile === 'as-b2' ? 'II' : null;
   return {
     slug,
     name: m?.name ?? slug,
     element: m?.element ?? '',
     elements: m?.elements ?? (m?.element ? [m.element] : []),
     weapon: m?.weapon ?? '',
-    burst: m?.burst ?? '',
+    burst: profileBurst ?? m?.burst ?? '',
     imageUrl: m?.imageUrl ?? null,
     rank,
     profile,
@@ -173,12 +178,19 @@ export interface B1B2DpsBar extends RowBase {
 }
 export type B1B2DpsBoard =
   'c0-neutral' | 'c0-eleadv' | 'c100-neutral' | 'c100-eleadv';
+const B1B2_DPS_BOARDS: B1B2DpsBoard[] = [
+  'c0-neutral',
+  'c0-eleadv',
+  'c100-neutral',
+  'c100-eleadv',
+];
 const DEFAULT_B1B2_BOARD: B1B2DpsBoard = 'c100-eleadv';
 export function b1b2DpsBars(
   art: B1B2DpsArtifact,
   board: B1B2DpsBoard
 ): B1B2DpsBar[] {
-  return (art.cells[board] ?? art.cells[DEFAULT_B1B2_BOARD]).map(
+  const b = B1B2_DPS_BOARDS.includes(board) ? board : DEFAULT_B1B2_BOARD;
+  return (art.cells[b] ?? art.cells[DEFAULT_B1B2_BOARD]).map(
     ([slug, dps, profile], i) => ({
       ...base(art.units, slug, i + 1, profile),
       dps,

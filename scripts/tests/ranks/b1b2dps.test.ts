@@ -17,6 +17,7 @@ import {
   NOOP_B2,
   NOOP_B3,
   NOOP_B3_RL,
+  NOOP_CHARACTERS,
 } from '../../../src/dpschart/noop.js';
 import type { RanksCtx } from '../../../src/ranks/burstgen.js';
 import { data, mult, cubes, olLines, skillLevels } from '../lib/harness.js';
@@ -33,7 +34,7 @@ const overrides: Record<string, OverrideFile | undefined> = {};
 for (const slug of Object.keys(data.characters)) {
   overrides[slug] = loadOverride(slug);
 }
-for (const slug of [NOOP_B1, NOOP_B3, SYNTHETIC_AVISTAR]) {
+for (const slug of [...Object.keys(NOOP_CHARACTERS), SYNTHETIC_AVISTAR]) {
   overrides[slug] = loadOverride(slug);
 }
 const fullCtx: RanksCtx = {

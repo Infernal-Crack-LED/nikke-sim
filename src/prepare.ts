@@ -149,7 +149,7 @@ export function prepareUnit(
     loadout.push(`Doll ${dollOpt.rarity} ${dollOpt.level}`);
   }
   if (opts?.lambdaStage) {
-    loadout.push(`Λ bursts as B${opts.lambdaStage}`);
+    loadout.push(`bursts as B${opts.lambdaStage}`);
   }
   if (opts?.forceStage) {
     loadout.push(`forced to B${opts.forceStage}`);

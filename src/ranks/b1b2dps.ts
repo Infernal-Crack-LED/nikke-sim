@@ -196,6 +196,13 @@ export function buildTeam(
   }
 
   if (partner) {
+    const partnerChar = charFor(ctx, partner);
+    const expectedPartnerStage = tested.effectiveBurst === 'I' ? 1 : 2;
+    if (!fillsStage(partnerChar, undefined, expectedPartnerStage)) {
+      throw new Error(
+        `B1/B2 DPS profile partner "${partner}" for ${tested.slug} does not fill burst stage ${expectedPartnerStage}`
+      );
+    }
     if (tested.effectiveBurst === 'I') {
       // The partner occupies the second B1 slot (the first element of B1_40S_TEAM).
       base[0] = partner;

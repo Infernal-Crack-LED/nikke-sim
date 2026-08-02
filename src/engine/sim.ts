@@ -1820,15 +1820,19 @@ export function runSim(
         if (t.stage === undefined) {
           return byElement;
         }
-        return byElement.filter(
-          (u) =>
-            (t.stage === 3 &&
-              (u.char.burst === 'III' ||
-                u.lambdaStage === 3 ||
-                u.forceStage === 3)) ||
-            (t.stage === 2 && (u.char.burst === 'II' || u.forceStage === 2)) ||
-            (t.stage === 1 && (u.char.burst === 'I' || u.forceStage === 1))
-        );
+        // Match the same stage-resolution priority as fillsStage: an explicit
+        // forceStage overrides native burst; a Λ unit pinned via lambdaStage
+        // only counts at that stage; otherwise native burst wins.
+        const countsAsStage = (u: UnitState, stage: number) => {
+          if (u.forceStage !== null) {
+            return u.forceStage === stage;
+          }
+          if (u.lambdaStage !== null) {
+            return u.lambdaStage === stage;
+          }
+          return u.char.burst === romanStage[stage];
+        };
+        return byElement.filter((u) => countsAsStage(u, t.stage as number));
       }
       case 'nonBurstCasters':
         return units.filter((u) => !rotationCasters.includes(u.idx));

@@ -198,15 +198,16 @@ export function buildB1B2DpsTable(
   art: B1B2DpsArtifact,
   board: B1B2DpsBoardId
 ): TableCardData {
+  const b = B1B2_DPS_BOARDS.includes(board) ? board : DEFAULT_B1B2_BOARD;
   return {
-    title: `B1/B2 DPS Ranking — ${B1B2_CELL_LABEL[board]}`,
+    title: `B1/B2 DPS Ranking — ${B1B2_CELL_LABEL[b]}`,
     subtitle: 'own DPS in a Solo-style no-op control team · scope-lock loadout',
     columns: [
       { header: '#', flex: 0.5 },
       { header: 'Unit', flex: 2 },
       { header: 'DPS', align: 'right' },
     ],
-    rows: (art.cells[board] ?? art.cells[DEFAULT_B1B2_BOARD]).map(
+    rows: (art.cells[b] ?? art.cells[DEFAULT_B1B2_BOARD]).map(
       ([slug, dps, profile], i) => [
         `#${i + 1}`,
         unitName(art.units, slug, profile),

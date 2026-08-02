@@ -21,6 +21,7 @@ import type { RanksCtx } from '../src/ranks/burstgen.js';
 import type { NoopCharacter } from '../src/dpschart/noop.js';
 import {
   rankB1B2Dps,
+  buildTeam,
   B1B2_DPS_CELLS,
   B1B2_DPS_PROFILES,
   B1B2_DPS_EXTRA_PROFILES,
@@ -28,7 +29,7 @@ import {
   type B1B2TestedUnit,
   type B1B2DpsCell,
 } from '../src/ranks/b1b2dps.js';
-import { NOOP_B1, NOOP_B3 } from '../src/dpschart/noop.js';
+import { NOOP_CHARACTERS } from '../src/dpschart/noop.js';
 import type {
   B1B2DpsArtifact,
   B1B2DpsRow,
@@ -55,8 +56,9 @@ for (const slug of Object.keys(data.characters)) {
 }
 // Synthetic controls (and the synthetic MG B1 partner) are not roster entries,
 // but their overrides carry framework effects (no-op B1 CDR, no-op B3 mock
-// burst, synthetic Avistar CDR).
-for (const slug of [NOOP_B1, NOOP_B3, SYNTHETIC_AVISTAR]) {
+// burst, synthetic Avistar CDR). Load every registered synthetic control so a
+// future addition cannot be forgotten.
+for (const slug of [...Object.keys(NOOP_CHARACTERS), SYNTHETIC_AVISTAR]) {
   overrides[slug] = loadOverride(slug);
 }
 
@@ -132,12 +134,37 @@ for (const [slug, profileIds] of Object.entries(B1B2_DPS_EXTRA_PROFILES)) {
       );
       continue;
     }
-    population.push({
+    const partner = profileDef.partner;
+    const partnerSupported =
+      partner in NOOP_CHARACTERS ||
+      partner === SYNTHETIC_AVISTAR ||
+      data.characters[partner]?.simSupported;
+    if (!partnerSupported) {
+      process.stderr.write(
+        `b1b2dps: skipping profile ${id} for ${slug} — partner "${partner}" is not sim-supported\n`
+      );
+      continue;
+    }
+    const plainUnit: B1B2TestedUnit = {
       slug,
       effectiveBurst: c.burst,
       element: c.element as Element,
+      profile: null,
+    };
+    const profileUnit: B1B2TestedUnit = {
+      ...plainUnit,
       profile: id,
-    });
+    };
+    if (
+      buildTeam(plainUnit, ctx).join(',') ===
+      buildTeam(profileUnit, ctx).join(',')
+    ) {
+      process.stderr.write(
+        `b1b2dps: skipping profile ${id} for ${slug} — assembled team is identical to the plain row\n`
+      );
+      continue;
+    }
+    population.push(profileUnit);
   }
 }
 
@@ -192,6 +219,7 @@ const artifact: B1B2DpsArtifact = {
     'For a 20s-B1 profile row with a B1 partner, the team switches to the 40s-B1 template: the partner fills the second B1 slot and the second no-op B2 is removed, ' +
     'so the row gains rotation coverage from the partner at the cost of one B2 slot. ' +
     'Investment is scope lock (Base-5, 3★/core 7, no cube/doll). ' +
+    'The tested unit is the camera-focused unit (×2.5 burst-gauge generation on charge weapons), matching the Solo framework. ' +
     'Cells: core 0 / core 100 × neutral / elemental advantage (boss weak to the tested unit).',
   units,
   profiles,
