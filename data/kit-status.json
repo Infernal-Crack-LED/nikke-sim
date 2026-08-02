@@ -14,10 +14,10 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 116
+      "unit-tested": 117
     },
     "tier": {
-      "MODEL_ONLY": 82,
+      "MODEL_ONLY": 83,
       "VALIDATED": 10,
       "MEASURED": 14,
       "CALIBRATED": 10
@@ -5620,6 +5620,40 @@
         "teams": 0,
         "within3pct": 0
       }
+    },
+    "mary-bay-goddess": {
+      "name": "Mary: Bay Goddess",
+      "burst": "I",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-02",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-02: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/mary-bay-goddess.json + scripts/kit-autonomy/manual-review/mary-bay-goddess.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "date": "2026-08-02",
+      "evidence": "kit-autonomy gauntlet 2026-08-02; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5(claude-opus-5)/S6(claude-opus-5)/S7(kimi-code/k3) converged; S6 blind override byte-equal to driver; 8/8 substantive S5 assertions green",
+      "residual": "elemAdvantageDamagePct SSOT bucket-placement tension (damage-calc §1c element-mult vs game-mechanics §10 Damage-Up; behavior identical here, stacking-magnitude-only, measurement-gated); datamine cadence ⚑s (pullsPerSec/reloadFrames 111/bolt-gap) affect only her negligible personal damage",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: heal MAGNITUDE escalation (1.05/3.69/6.86% of the skill user's final Max HP) is event-only — no HP pool is modeled, so the ramp has no damage observable; the escalating[3×heal] structure preserves the recovery-event COUNT ramp (5/10/15 per target) that drives on-recovery consumers",
+        "skill2: elemAdvantageDamagePct is gated to elemental advantage — live vs an advantaged (e.g. Fire) boss, inert vs a neutral one; the escalating ramp applies the three tiers as separate co-active buffs with their own durations",
+        "burst: the 27.87% Max HP grant is casterMaxHpPct (caster-scaled flat maxHpFlat) — damage-inert in the DPS basis (feeds atkOfMaxHpPct only on self-grant, and Mary has no HP→ATK consumer); encoded for kit completeness",
+        "cadence: pullsPerSec / reloadFrames 111 / bolt-gap-vs-autofire are unverified datamine values affecting her OWN shots only (parser baseline)"
+      ]
     }
   }
 }

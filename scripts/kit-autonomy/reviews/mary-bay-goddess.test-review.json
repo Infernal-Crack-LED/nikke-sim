@@ -1,0 +1,75 @@
+{
+  "slug": "mary-bay-goddess",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates when entering Full Burst",
+      "disposition": "FAITHFUL",
+      "scope": "Heal-over-time (no damage scope); amounts scale the SKILL USER's final Max HP, not each target's",
+      "durationSemantics": "Seconds — 'every 1 sec for 5 sec' = a HoT with ticks:5, intervalSec:1 per step; NOT a single instant heal. Escalating: Nth FB entry (capped at 3) runs steps 1..N concurrently — 3rd+ FB = three co-active 5-tick HoTs (15 recovery events per target per FB)",
+      "triggerIdentity": "fullBurstEnter — 'when entering Full Burst' fires on ANY team Full Burst, not only rotations Mary bursts. The escalating counter counts FB ENTRIES (team-wide), a distinct counter from skill2's burst-use counter",
+      "targetSet": "allies (all 5, including self) — every ally receives the recovery events, so every ally's 'recovery' trigger fires",
+      "nearestWrongModel": "Skipped as 'defensive heal, no damage' (isolation-inert), or encoded as a single instant heal (ticks:1) instead of a 5-tick HoT — either starves teammate on-recovery consumers (Crown's 'when recovery takes effect' is IN the control fixture as B2)",
+      "distinguishingAssertion": "Patch a sentinel ally via withPatchedOverride with a {kind:'recovery'}-triggered marker buff; after the 1st fullBurstStart count 5 marker buffApply events spread over ~5s (frames ~cast..cast+300), after the 2nd FB count 10, after the 3rd count 15. Red under skip (0) and under instant-heal (1/2/3). Also assert every comp slug appears as a recovery recipient, not just self",
+      "inertness": "Zero direct damage events from this block (heal carries no damage); with NO on-recovery consumer in the comp, totals must be bit-identical with the block removed",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Activates when using Burst Skill",
+      "disposition": "FAITHFUL",
+      "scope": "Elemental-Advantage Attack Damage — Damage-Up bucket stat active ONLY under elemental advantage (elemAdvantageDamagePct), NOT generic elementDamagePct or attackDamagePct. Live vs the Fire control boss (Water > Fire); must be dead vs a non-advantaged boss",
+      "durationSemantics": "Seconds, PER STEP: Once 20.85%/3s, Twice 13.88%/5s, Thrice 8.36%/10s. Escalating: Nth use applies steps 1..N as SEPARATE co-active buffs with their own expiries (3rd cast → 20.85+13.88+8.36 all live for the first 3s, then 13.88+8.36 to 5s, then 8.36 alone to 10s) — never one merged buff or one shared duration",
+      "triggerIdentity": "burstCast — 'when using Burst Skill' = fires ONLY on rotations MARY casts her own Burst I. NOT fullBurstEnter. Counter counts HER burst uses, capped 3",
+      "targetSet": "alliesOfElement Water, including self (Mary is Water) — non-Water allies get nothing",
+      "nearestWrongModel": "Keyed to fullBurstEnter (fires on every team FB even when another B1 wins the cast — over-credits and diverges the counter), and/or stat mis-encoded as elementDamagePct/attackDamagePct (credits damage without elemental advantage)",
+      "distinguishingAssertion": "Filter buffApply stat:'elemAdvantageDamagePct': after Mary's 1st burstCast exactly 1 apply/target (value 20.85, expiresFrame≈cast+180); after her 2nd, 2 applies (adds 13.88, +300f); after her 3rd, 3 (adds 8.36, +600f). Each apply frame equals her burstCast frame and PRECEDES that rotation's fullBurstStart (red under fullBurstEnter-keying). targetSlug set = Water comp members only. In a comp where Mary never casts (another B1 takes the slot), zero applies",
+      "inertness": "Non-Water allies' damage unmoved by this block; vs a non-Fire (non-advantaged) boss config the buff must move zero damage",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 23.23% for 3 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK ▲ (atkPct, scales each target's own ATK) — no normal-attack/charge scoping in the text",
+      "durationSemantics": "Seconds — exactly 3s (180 frames). This is SHORT: cast at B1, Full Burst opens ~1.9s later (30f B1→30f B2→30f B3→22f), so only ~1.1s of the buff overlaps FB. A padded duration is a large over-credit",
+      "triggerIdentity": "burstCast (her Burst I, cd 20s) — applies at cast, pre-FB",
+      "targetSet": "alliesOfElement Water including self — NOT all allies (the second ■ block is the all-allies one)",
+      "nearestWrongModel": "Target widened to all allies (the two ■ target clauses conflated), or durationSec inflated to match the HP line's 10s",
+      "distinguishingAssertion": "buffApply stat:'atkPct' value 23.23 at each Mary burstCast frame with expiresFrame = cast+180 (not +600); recipients = Water slugs only — a non-Water comp member must never appear as targetSlug for this key",
+      "inertness": "Non-Water allies' effectiveAtk unmoved; no application on rotations Mary does not cast",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max HP ▲ 27.87% of the skill user's",
+      "disposition": "FAITHFUL",
+      "scope": "Max HP grant scaled by the CASTER's (Mary's) final Max HP → casterMaxHpPct, emitted as stat 'maxHpFlat' with value (27.87/100)×Mary's Max HP — one identical flat number for every recipient. NOT targetMaxHpPct (% of each target's own HP)",
+      "durationSemantics": "Seconds — 10s (600 frames)",
+      "triggerIdentity": "burstCast, same cast as the ATK line",
+      "targetSet": "allies — ALL 5 including self (this ■ block is all-allies, unlike the Water-only ATK block)",
+      "nearestWrongModel": "targetMaxHpPct 27.87 (per-target-varying flat values), or target narrowed to Water allies by copying the first ■ clause",
+      "distinguishingAssertion": "buffApply stat:'maxHpFlat' at Mary's burstCast: exactly 5 recipients (every comp slug), all carrying the SAME flat value (caster-scaled), expiresFrame = cast+600. Red under targetMaxHpPct (values differ per target) and under Water-only targeting (<5 recipients)",
+      "inertness": "Ally-granted Max HP must not feed any teammate's atkOfMaxHpPct conversion (caster≠target); with no HP-scaling consumer in the fixture, total damage is bit-identical with this effect removed. Self-grant is caster===target so it MAY feed a self HP→ATK scaler, but Mary has none — still zero damage movement",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:fullBurstEnter escalating 5-tick HoT ladder (tandem feed for on-recovery consumers — Crown is the fixture's B2)",
+    "skill2:burstCast escalating elemAdvantageDamagePct 20.85/3s → +13.88/5s → +8.36/10s (Water allies)",
+    "burst:atkPct 23.23 / 3s (Water allies)",
+    "burst:casterMaxHpPct 27.87 / 10s (all allies)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Three reconciliation points where I expect a shared-prior misread. (1) FIXTURE VALIDITY: Mary is BURST I — controlComp(carry) seats the carry in the B3 slot, where a B1 unit either never casts or must compete with liter (also B1) for the stage-1 cast; if liter wins first-ready selection every rotation, Mary's skill2 AND both burst blocks are silent and every burstCast assertion vacuously passes as 0. The tests MUST build a comp with Mary as the actual B1 caster (replace liter) and assert she actually emits burstCast events before asserting anything downstream. (2) TWO DISTINCT ESCALATION COUNTERS: skill1 counts team FB ENTRIES (fullBurstEnter), skill2 counts HER burst USES (burstCast) — in a comp where Mary skips a rotation these counters diverge; a model sharing one counter or one trigger is the prime shared misread, and 'Each subsequent effect triggers all effects before it' means steps 1..N are ALL applied (the engine 'escalating' kind), not just step N. (3) The two burst ■ blocks have DIFFERENT target clauses (Water-only ATK vs all-allies HP) and DIFFERENT durations (3s vs 10s) — conflating either axis is the nearest-wrong for both lines. Also confirm the elemental stat is elemAdvantageDamagePct specifically: it is live in the Fire-boss control fixture but must die on a non-advantaged boss — an elementDamagePct/attackDamagePct encoding passes the advantaged fixture and silently over-credits elsewhere, so a non-advantaged-boss inertness run is the discriminating test. Heal magnitudes (% of caster Max HP) are engine-unmodeled by design (heal carries no HP amount) — the assertable surface is recovery-event COUNT/timing, via a patched on-recovery sentinel, not amounts; note the burst's own +27.87% Max HP self-grant raising her S1 heal amounts is therefore inherently inert.",
+  "model": "claude-fable-5"
+}

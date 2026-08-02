@@ -27,7 +27,7 @@
 | `alliesLowestAtk` | 1 | liberalio |
 | `alliesLowestHp` | 3 | blanc, naga, rapunzel |
 | `alliesOfClass` | 1 | biscuit |
-| `alliesOfElement` | 9 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, exia, guillotine-winter-slayer, guilty, maiden-ice-rose, … |
+| `alliesOfElement` | 10 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, exia, guillotine-winter-slayer, guilty, maiden-ice-rose, … |
 | `alliesOfElementWeapon` | 3 | ark-ranger-black, sugar, trina |
 | `alliesOfWeapon` | 9 | arcana-fortune-mate, d-killer-wife, drake, leona, miranda, noir, rem, sugar, … |
 | `alliesTopAtk` | 8 | alice, avistar, chime, maxwell, miranda, naga, rapunzel, soda-twinkling-bunny |
@@ -41,7 +41,7 @@
 | `burstSnapshotsPreFb` | 1 | cinderella |
 | `byFinalAtk` | 5 | alice, liberalio, miranda, rapunzel, soda-twinkling-bunny |
 | `cast` | 6 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |
-| `casterMaxHpPct` | 7 | anis-star, avistar, cinderella, maxwell-ordinary-mechanic, rouge, soline-frost-ticket, trina |
+| `casterMaxHpPct` | 8 | anis-star, avistar, cinderella, mary-bay-goddess, maxwell-ordinary-mechanic, rouge, soline-frost-ticket, trina |
 | `charge` | 1 | snow-white |
 | `chargeCounter` | 3 | frima, noise, scarlet-black-shadow |
 | `chargeMultPct` | 9 | ada, cinderella-crystal-wave, e-h, eunhwa-tactical-upgrade, maxwell-ordinary-mechanic, nayuta, red-hood, snow-white, … |
@@ -51,7 +51,7 @@
 | `critRateNormalPct` | 3 | biscuit, helm, julia |
 | `delaySec` | 4 | asuka-wille, dorothy, rapi-red-hood, snow-white |
 | `durationShots` | 6 | helm, miranda, phantom, snow-white-heavy-arms, vesti-tactical-upgrade, zwei |
-| `escalating` | 7 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, volume |
+| `escalating` | 8 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, mary-bay-goddess, volume |
 | `everyN` | 5 | mast-romantic-maid, neon-vision-eye, phantom, rouge, soda-twinkling-bunny |
 | `everyNOffset` | 2 | neon-vision-eye, phantom |
 | `excludeSelf` | 10 | arcana-fortune-mate, blanc, brid-silent-track, grave, label, liberalio, maiden-ice-rose, miranda, … |
