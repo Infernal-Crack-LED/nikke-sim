@@ -17,8 +17,7 @@ SETUP
 3. Sanity-check: in the worktree `git status` is clean and `git log -1` matches origin/main.
    Report the worktree path + branch.
 
-PER-UNIT LOOP 4. Next slug: in <worktree>/data/kit-status.json walk `units` in file order; take the first
-whose kitParse.provenance != "gauntlet" and not already done this run. 5. Spawn ONE fresh kit-gauntlet-driver sub-agent in the FOREGROUND, working_dir pinned to the
+PER-UNIT LOOP 4. Next slug in the owner provided list at the top of the prompt, none of which should have current kit-status.json entries. 5. Spawn ONE fresh kit-gauntlet-driver sub-agent in the FOREGROUND, working_dir pinned to the
 worktree (NOT isolation — units share the worktree so provenance flips + commits accumulate
 on the one branch). Task: "Run the full kit-autonomy gauntlet on <slug> (<Full Name> —
 <weapon/class/element/burst>; for a variant, name its base counterpart). Follow your agent

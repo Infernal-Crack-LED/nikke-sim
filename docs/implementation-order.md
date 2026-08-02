@@ -23,33 +23,18 @@
 
 # # Batch 2 — B (10 units)
 
-| #   | Slug              | Tier |
-| --- | ----------------- | ---- |
-| 12  | `chime`           | B    |
-| 13  | `crust`           | B    |
-| 14  | `dolla`           | B    |
-| 15  | `dorothy`         | B    |
-| 16  | `julia`           | B    |
-| 17  | `label`           | B    |
-| 18  | `marciana`        | B    |
-| 19  | `mica-snow-buddy` | B    |
-| 20  | `noise`           | B    |
-| 21  | `phantom`         | B    |
-
 ## Batch 3 — B / C (10 units)
 
-| #   | Slug                     | Tier |
-| --- | ------------------------ | ---- |
-| 22  | `privaty-unkind-maid`    | B    |
-| 23  | `rapunzel`               | B    |
-| 24  | `rem`                    | B    |
-| 25  | `sakura`                 | B    |
-| 26  | `vesti-tactical-upgrade` | B    |
-| 27  | `viper`                  | B    |
-| 28  | `yulha`                  | B    |
-| 29  | `avistar`                | C    |
-| 30  | `biscuit`                | C    |
-| 31  | `diesel`                 | C    |
+`privaty-unkind-maid`  
+`rapunzel`  
+`rem`  
+`sakura`  
+`vesti-tactical-upgrade`
+`viper`  
+`yulha`  
+`avistar`  
+`biscuit`  
+`diesel`
 
 ## Batch 4 — C (10 units)
 
