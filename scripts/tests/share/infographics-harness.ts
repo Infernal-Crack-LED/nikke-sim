@@ -54,9 +54,10 @@ import {
   type ResourcesCardData,
   type ResourcesIcons,
 } from '../../../src/infographics/node/render.js';
+import { existsSync, readFileSync } from 'node:fs';
 import {
-  loadUnitCardSources,
   buildUnitCardRender,
+  type UnitCardSourceSet,
 } from '../../lib/unit-card-sources.js';
 
 // Ink regions are declared in LOGICAL px; a variant rendered at dpr != 1 needs
@@ -363,18 +364,63 @@ export async function buildResourcesFixtureCard(): Promise<ResourcesCardData> {
 
 // ---- renders ----------------------------------------------------------------
 
-// A real unit card, built from the REAL artifacts through the same loader the
-// pre-render pipeline uses — so the golden fixture pins the shipping join, not a
+// A real unit card, built through the same `buildUnitCardRender` the pre-render
+// pipeline uses — so the golden fixture pins the shipping join, not a
 // hand-written stand-in that can drift from it.
 //
 // crown is the deliberate subject: she is profiled on bufferchart (with-healer),
 // so this one fixture exercises the dual-rank tile, the appended default row,
 // the 3-segment sustain bar AND a full Tsareena panel. A unit on no board would
 // pin only the empty states.
+//
+// FROZEN SOURCES (2026-08-01). The sources come from a committed snapshot, NOT
+// from `loadUnitCardSources()`'s live read of web/public/*.json. Those five
+// boards are gitignored BUILD OUTPUTS, which made these two goldens the only
+// non-hermetic ones and cost them both ways: the test had to SKIP wherever the
+// boards were absent — which was everywhere automated, so they only ever
+// executed on a dev machine that had run `dpschart && ranks:all` — and where
+// they DID run, any kit commit that reordered a board failed them.
+// That is data churn wearing renderer drift's clothes: on 2026-08-01 crown's
+// Burst Gen rank moved #37 → #41 (her rate unchanged) purely because a
+// kit-autonomy batch landed above her, and the goldens failed for it. Freezing
+// the join's INPUT makes the picture a pure function of the renderer, which is
+// what a golden is for. The live join is unit-card-data.test.ts's job; that file
+// still skips its artifact-backed cases when the boards are absent (25/25 on a
+// built tree, 10 pass + 15 SKIP without), which is why ci.yml and deploy.yml's
+// gate job build them as a workflow step before `verify.sh full`. A bare local
+// `verify.sh full` in a fresh worktree still skips those — deliberately, so an
+// isolated engine worktree needs no board build.
+//
+// Refresh deliberately, after an intentional data/board change:
+//   npm run fixtures:infographics -- --sources   (then regenerate the PNGs)
+export const UNIT_CARD_FIXTURE_SLUG = 'crown';
+export const UNIT_CARD_SOURCES_FIXTURE = new URL(
+  '../fixtures/unit-card-sources.json',
+  import.meta.url
+);
+
+export function loadFrozenUnitCardSources(): UnitCardSourceSet {
+  if (!existsSync(UNIT_CARD_SOURCES_FIXTURE)) {
+    throw new Error(
+      'unit-card golden: no committed source snapshot at ' +
+        'scripts/tests/fixtures/unit-card-sources.json — regenerate it with ' +
+        '`npm run fixtures:infographics -- --sources` on a tree that has run ' +
+        '`npm run dpschart && npm run ranks:all`'
+    );
+  }
+  return JSON.parse(
+    readFileSync(UNIT_CARD_SOURCES_FIXTURE, 'utf8')
+  ) as UnitCardSourceSet;
+}
+
 export async function buildUnitCard(
   variant: UnitCardVariant = 'discord'
 ): Promise<UnitCardData> {
-  return await buildUnitCardRender(loadUnitCardSources(), 'crown', variant);
+  return await buildUnitCardRender(
+    loadFrozenUnitCardSources(),
+    UNIT_CARD_FIXTURE_SLUG,
+    variant
+  );
 }
 
 export interface FixtureRender {

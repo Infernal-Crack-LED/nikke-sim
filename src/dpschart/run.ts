@@ -116,6 +116,15 @@ export interface RankedEntry {
 // Rank the whole tested population for one cell. A profiled slug appears TWICE
 // in `tested` (plain + variant) and both rows compete in the SAME ranking, same
 // convention as the buffer/sustain/burstgen boards (src/ranks/*.ts).
+//
+// This is the BROWSER's live custom-mode path and sorts on RAW dps, rounding
+// afterwards. scripts/build-dpschart.ts deliberately does NOT call this — it
+// rounds BEFORE sorting, with a stable tiebreak on the name-sorted tested order,
+// because a row carried over from a prior artifact only has that artifact's
+// already-rounded value and must rank identically to a freshly simulated one.
+// So on an EXACT integer tie the precomputed board and this live view can order
+// two units differently. That divergence is intended — don't "fix" either side
+// to match the other without reading the 2026-08-01 DECISIONS entry.
 export function runCell(
   cell: Cell,
   tested: TestedUnit[],

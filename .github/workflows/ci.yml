@@ -3,15 +3,18 @@ name: CI
 # Runs the safety checks on every PR into main and on pushes to main.
 # Make these checks "required" in the branch ruleset so nothing merges red.
 #
-# This runs the SAME gate the Railway build runs (railway.json buildCommand =
-# `verify.sh deploy`), one tier down: `full` = everything in `deploy` except the
-# DPS-chart artifact build + its smoke, which need a multi-minute `npm run dpschart`
-# and only matter on the deploy box. That equivalence is the point — CI used to run
-# only `npm test` (web build + client smoke, ~40s), so every other verify step
-# (vitest, engine + control regression, doc-drift, sg-geometry, kit-status, …) was
-# first exercised inside the Railway BUILD, i.e. after merge. On 2026-07-25 that let
-# PR #22 merge green and then fail the deploy twice on generator unit tests. A PR now
-# fails on the same step the deploy would.
+# `verify.sh full` is THE correctness gate — everything except the DPS-chart /
+# rank-board artifact SMOKES, which only matter on the deploy box
+# (`verify.sh artifacts`, railway.json's buildCommand). deploy.yml runs this same
+# `full` tier as the gate on a push to main, so a PR fails on exactly the step a
+# deploy would.
+#
+# CI used to run only `npm test` (web build + client smoke, ~40s), so every other
+# verify step (vitest, engine + control regression, doc-drift, sg-geometry,
+# kit-status, …) was first exercised inside the Railway BUILD, i.e. after merge. On
+# 2026-07-25 that let PR #22 merge green and then fail the deploy twice on generator
+# unit tests. As of 2026-08-01 the Railway build no longer runs the gate at all —
+# these runners are the only place it runs, which is why it must stay required.
 on:
   pull_request:
     branches: [main]
@@ -41,6 +44,22 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # Build the rank boards BEFORE the gate, so vitest sees them (2026-08-01).
+      # web/public/{dpschart,burstgen,bufferchart,sustain,burstcdr}.json are
+      # gitignored build outputs, and the tests that join against them SKIP when
+      # they're absent — measured, unit-card-data.test.ts is 25/25 with the boards
+      # and 10 pass + 15 SKIP without (whole suite: 8 skipped vs 23). Nothing
+      # automated built them, so the live board join had no CI coverage at all.
+      #
+      # Deliberately a WORKFLOW STEP and not part of the `full` tier: a fresh
+      # isolated engine worktree (CLAUDE.md constraint 8) must still be able to run
+      # `verify.sh full` without a board build, which is exactly why they were
+      # excluded from it. Affordable only since `npm run dpschart` went 245s -> 16s
+      # worst case; in practice it's seconds, because the skip gate carries over
+      # every unit whose inputs match the live artifact.
+      - name: Build rank-board artifacts (un-skips the board-join tests)
+        run: npm run dpschart && npm run ranks:all
 
       # verify.sh runs `npm run typecheck` as its FIRST step and `npm run web:build`
       # + the client smoke (i.e. `npm test`) as its last, so this one step is a strict

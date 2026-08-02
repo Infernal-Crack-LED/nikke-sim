@@ -1653,6 +1653,99 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 ## Engine/data-architecture decisions
 
+- **(2026-08-01) THE UNIT-CARD GOLDENS ARE FROZEN AGAINST A COMMITTED SOURCE SNAPSHOT — a golden
+  image pins the RENDERER, and joining one to live data buys nothing and costs twice.**
+  `unit-card.{discord,twitter}.png` were the only two of nine goldens built from the live rank
+  boards (`web/public/*.json`, gitignored build outputs), so they carried a `HAVE_BOARDS` skip.
+  That cost them in both directions. **They never ran anywhere automated:** CI runs `verify.sh
+full` and the deploy box now runs `verify.sh artifacts`, and neither builds the boards before
+  vitest — so the only place the two executed was a dev machine that had run `npm run dpschart &&
+ranks:all`. **And where they DID run, unrelated commits failed them:** on 2026-08-01 the pair
+  failed at 99.891%/99.894% against the 99.9% gate purely because crown's Burst Gen rank moved
+  #37 → #41 — her rate unchanged at 3.9%/s, the drift confined to the rank glyphs — after the
+  kit-autonomy gauntlet batch landed mica-snow-buddy (#2), maxwell-ordinary-mechanic (#12) and
+  label (#16) above her. **Ruling:** the goldens build from
+  `scripts/tests/fixtures/unit-card-sources.json`, a committed snapshot of the join's INPUT,
+  refreshed deliberately with `npm run fixtures:infographics -- --sources`. The picture is now a
+  pure function of the renderer, which is the property a golden exists to assert; the LIVE join is
+  `unit-card-data.test.ts`'s job, which reads the real boards. Do not re-couple these two to
+  `loadUnitCardSources()` — the skip and the false failures come back together.
+  **Known hole, measured 2026-08-01 and NOT closed by this entry:** `unit-card-data.test.ts` skips
+  its artifact-backed cases without the boards, and no automated context builds them — 25/25 pass
+  on a built tree, but **10 pass and 15 SKIP** wherever the boards are absent, which today is every
+  CI run (`verify.sh full`) and the deploy box (`verify.sh artifacts`, no gate). So the live join
+  currently has no automated coverage anywhere. This entry does not make that worse — before it,
+  the goldens skipped in exactly the same places — but it does make it visible, and it is now cheap
+  to close: `npm run dpschart` fell from 245s to 16s worst-case (entry above), so building the
+  boards in CI costs ~25s locally / low minutes on a runner, versus the "multi-minute
+  build-dpschart run" that put them out of `verify.sh full` in the first place.
+  **CLOSED the same day (owner: "CI minutes are free, the only cost is time, which is negligible
+  here"):** `npm run dpschart && npm run ranks:all` now runs as a STEP in both `ci.yml` and
+  deploy.yml's gate job, before `verify.sh full` — deliberately a workflow step rather than a
+  member of the `full` tier, so a fresh isolated engine worktree can still run `full` with no board
+  build, which is the property that excluded them originally. Verified by simulating a fresh
+  checkout (all five board artifacts moved off disk): the step completes in 24s and
+  `unit-card-data.test.ts` + `infographics-golden.test.ts` go from 23 passed / 15 skipped to
+  **38 passed / 0 skipped**. **Evidence the switch is inert:** with the snapshot in place
+  all nine fixtures render at 0 differing pixels (so the trim drops nothing the card reads), and
+  the golden file passes 13/13 with the five board artifacts moved off disk — previously 2 of
+  those skipped. The snapshot is trimmed to what the card actually reads (the fixture slug's
+  character/tag/OL/Tsareena entries, the four rank boards whole for neighbour rows, dpschart
+  narrowed to the two cells `unitCardData.ts` names, imported rather than copied so a cell-id
+  change cannot leave it silently holding the wrong one) and the generator REFUSES to write when a
+  board is missing, so an all-Unranked empty-state card can never be frozen as if it were real.
+
+- **(2026-08-01) THE RAILWAY BUILD STOPPED BEING THE CORRECTNESS GATE, AND THE DPS-CHART SKIP
+  GATE WENT TWO-LEVEL — production builds were failing with BuildKit `DeadlineExceeded`.**
+  Measured on a 28-core box, `verify.sh deploy` — the entire railway.json `buildCommand` — was
+  ~400s: `npm run dpschart` 245s (single-threaded), the correctness gate 111s (vitest alone is
+  ~576 CPU-seconds across workers, so it degrades sharply on a builder with few cores),
+  infographics 26s, ranks 8s, web build + smokes ~5s. Three rulings.
+  **(1) The gate moved off the deploy box.** `railway.json` now builds `verify.sh artifacts` — a
+  new tier that runs the build outputs only (DPS-chart + rank-board artifacts, web build, the
+  three client smokes, infographics, server bundle) with no typecheck/regression/vitest. Those
+  were already running on the SAME commit in ci.yml, so the build container was paying for them
+  twice inside the one place with a hard deadline. The safety property is preserved by upgrading
+  deploy.yml's pre-flight from typecheck + `npm test` to the full `verify.sh full` gate with
+  `needs:` on the deploy job: a red gate still means no deploy, it just fails on a runner with a
+  30-minute budget. The owner's stated workflow — push to main impatiently to get code onto main,
+  without waiting — survives, because main updates on push and the workflow run can be cancelled.
+  The smokes deliberately STAY on the deploy box: they validate the artifacts that box just built.
+  **(2) The DPS-chart skip gate is now two-level, keyed on what actually moves a number.** The
+  single all-or-nothing `inputsHash` (2026-07-29, below) covered all ~93 override files wholesale,
+  so every kit-autonomy gauntlet commit invalidated the entire 90-cell matrix — i.e. the skip
+  almost never fired on the deploys that actually happen. It is split into a GLOBAL hash (engine,
+  matrix/run code, shared data tables, and the CONTROL units' overrides + character entries — a
+  control sits in every cell's team, so it moves every tested unit) and a PER-UNIT hash (each
+  tested slug's own override + characters.json entry + bossing-tier). When a prior artifact's
+  globalHash matches, only units whose own hash moved are resimulated and the rest carry over
+  verbatim. **This is sound because each tested unit is simulated ALONE in a fixed control team**
+  — its dps depends on no other tested unit, so a cell's ranking is a sort over independent
+  numbers. The control set is DERIVED by assembling every (cell × tested row) rather than
+  hand-listed, so adding a control in `matrix.ts` cannot silently desynchronize the bucket. An
+  override belonging to neither a control nor a tested unit is now hashed by NEITHER bucket, and
+  correctly so: `prepareTeam` only indexes `deps.overrides[<team member slug>]` and never iterates
+  the map, so such a file cannot reach the artifact's numbers. The 2026-07-29 fail-open discipline
+  is unchanged and extended — stale format, a missing carry-over row, or any network/parse doubt
+  all fall straight back to the full rebuild.
+  **(3) The same per-unit decomposition is the parallelism axis.** Rows fan out to child processes
+  of `build-dpschart.ts` itself (`--rows`, inheriting the tsx loader flags verbatim), each owning
+  its own optimizer memo — nothing is shared and the merge is a sort. Ranking now rounds BEFORE
+  sorting, with a stable tiebreak on the name-sorted tested order, so a carried-over row (which
+  only has the prior artifact's already-rounded value) ranks identically to a freshly simulated
+  one. **Evidence:** parallel output is byte-identical to the serial baseline across all 90 cells
+  — values and ordering — and a partial rebuild is byte-identical to a full one; a corrupted
+  globalHash falls back to full; the dpschart web smoke is green. Timings: full rebuild 245s →
+  16.4s, one changed unit → 6.7s, nothing changed → 1s, and the whole `verify.sh artifacts` tier
+  53s including a worst-case full chart rebuild. Pre-building the artifact in GitHub Actions and
+  shipping it via `railway up --no-gitignore` was considered and NOT done: `railway up` respects
+  `.gitignore`, so it would need either a `.railwayignore` re-listing every exclusion (a wrong one
+  uploads the gitignored `docs/probes/` media) or an artifact staged at a non-ignored path, which
+  reintroduces the "a stale committed copy reports green on an older engine's output" hazard that
+  the 2026-07-29 entry already rejected. With (2) and (3) the deploy box's worst case is a full
+  rebuild it can now do in well under a minute, so the complexity buys nothing. It stays available
+  if the build budget ever tightens again.
+
 - **(2026-07-28) SHAREABLE SAVED CONFIGS — three owner rulings on how a shared card gets its
   numbers, its id, and its URLs.** A card rendered server-side from a build code alone can only
   show a SELECTION, so the roster/team cards printed literal zeros; and a `?b=` share link for a
