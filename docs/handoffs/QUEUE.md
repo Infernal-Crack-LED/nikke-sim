@@ -116,18 +116,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   bot:** a `characters.json` change (a unit rename) moves pixels without moving the hash — the key
   covers renderer changes, not data changes; if that bites, add a data stamp to the key.
 
-- **⇒ RL3-VS-BOARD OUTLIER GAUGE INVESTIGATION — findings-only, NOT ENACTED →
-  `docs/handoffs/2026-07-27-rl3-rank-outlier-gauge-investigation.md`.** Triage the 53 `|Δrank| ≥ 10`
-  outliers in `docs/rl3-burstgen-rank-comparison.md` (regenerate: `npx tsx scripts/rl3-burstgen-compare.ts`)
-  into legitimate kit/rotation effect vs comparison artifact vs modeling gap. Seeded clusters: **(A)** the
-  RL clip-reload family (arcana/anchor/diesel/mint/ada) sits at the sim board's BOTTOM (1.65–2.2%/s,
-  Δ≈−61..−70) — possible RL cadence datamine gap vs the rl3 4-shot-opener artifact; **(B)** SG units
-  under-generate in sim (landing-fraction `sgGaugeFrac` × the no-op range script; overlaps the SG-landing
-  geometry thread); **(C)** catalogued unmodeled skill-gen (anis-star battery+aura, ein orb, trina/laplace
-  battle-start fill — `burst-gauge.md` §2); **(D)** sim-over-performers with real kit gauge (bready DoT,
-  red-hood, neon — mostly legitimate). flora/rosanna/sugar already resolved 2026-07-27. Findings-only;
-  per-unit enactments gated via `/kit-tdd` / `/scientific-method`.
-
 - **⇒ PROBE READER BUILD-OUT — P0/P1/P2/P4 BUILT 2026-07-24 on branch `probe-readers`, AWAITING
   OWNER MERGE** (DECISIONS 2026-07-24; validation record `docs/probe-runs.md`; instrument registry
   `docs/STATE.md` §7; plan `docs/handoffs/2026-07-24-probe-reader-buildout-plan.md`).
