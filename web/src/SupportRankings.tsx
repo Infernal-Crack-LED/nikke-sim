@@ -14,6 +14,7 @@ import {
   buildBurstCdrTable,
   buildSustainTable,
   buildBufferTable,
+  buildB1B2DpsTable,
 } from '../../src/infographics/core/rankTables';
 import { copyTableCardImage } from './tableShare';
 import { copyTextToClipboard } from './clipboard';
@@ -22,13 +23,16 @@ import {
   loadBurstCdr,
   loadSustain,
   loadBufferChart,
+  loadB1B2Dps,
   type BoardId,
   type BufferBoard,
   type BurstGenBoard,
+  type B1B2DpsBoard,
   type BurstGenArtifact,
   type BurstCdrArtifact,
   type SustainArtifact,
   type BufferChartArtifact,
+  type B1B2DpsArtifact,
 } from './rankBoardsData';
 import {
   profileLabel,
@@ -41,6 +45,7 @@ const BOARDS: { id: BoardId; label: string; title: string }[] = [
   { id: 'burstgen', label: 'Burst Gen', title: 'Burst Generation' },
   { id: 'sustain', label: 'Sustain', title: 'Sustain' },
   { id: 'burstcdr', label: 'Burst CDR', title: 'Burst Cooldown Reduction' },
+  { id: 'b1b2dps', label: 'B1/B2 DPS', title: 'B1/B2 DPS' },
 ];
 
 // Methodology disclosure — the Custom Profiles pattern from DpsChartTab:
@@ -84,6 +89,19 @@ export function SupportRankings() {
   const [burstGenBoard, setBurstGenBoard] = useState<BurstGenBoard>(() =>
     params.get('bg') === 'focused' ? 'focused' : 'unfocused'
   );
+  const B1B2_DPS_BOARDS: B1B2DpsBoard[] = [
+    'c0-neutral',
+    'c0-eleadv',
+    'c100-neutral',
+    'c100-eleadv',
+  ];
+  const parseB1B2Board = (v: string | null): B1B2DpsBoard =>
+    B1B2_DPS_BOARDS.includes(v as B1B2DpsBoard)
+      ? (v as B1B2DpsBoard)
+      : 'c0-neutral';
+  const [b1b2DpsBoard, setB1b2DpsBoard] = useState<B1B2DpsBoard>(() =>
+    parseB1B2Board(params.get('b1b2'))
+  );
   const [arts, setArts] = useState<Partial<Record<BoardId, AnyRankArtifact>>>(
     {}
   );
@@ -99,6 +117,7 @@ export function SupportRankings() {
       burstcdr: loadBurstCdr,
       sustain: loadSustain,
       buffer: loadBufferChart,
+      b1b2dps: loadB1B2Dps,
     } as const;
     let alive = true;
     loaders[board]()
@@ -135,7 +154,9 @@ export function SupportRankings() {
           ? buildBurstCdrTable(art as BurstCdrArtifact)
           : board === 'sustain'
             ? buildSustainTable(art as SustainArtifact)
-            : buildBufferTable(art as BufferChartArtifact, bufferBoard);
+            : board === 'b1b2dps'
+              ? buildB1B2DpsTable(art as B1B2DpsArtifact, b1b2DpsBoard)
+              : buildBufferTable(art as BufferChartArtifact, bufferBoard);
     return copyTableCardImage(data, `nikke-ranks-${board}.png`);
   };
 
@@ -154,12 +175,17 @@ export function SupportRankings() {
     } else {
       u.searchParams.delete('bg');
     }
+    if (board === 'b1b2dps') {
+      u.searchParams.set('b1b2', b1b2DpsBoard);
+    } else {
+      u.searchParams.delete('b1b2');
+    }
     return copyTextToClipboard(u.toString());
   };
 
   // Map the active board's typed rows into the chart's uniform bar shape.
   const bars = art
-    ? barsForBoard(board, art, { bufferBoard, burstGenBoard })
+    ? barsForBoard(board, art, { bufferBoard, burstGenBoard, b1b2DpsBoard })
     : [];
   const profiles = art?.profiles ?? {};
 
@@ -221,6 +247,25 @@ export function SupportRankings() {
           ))}
         </div>
       )}
+      {board === 'b1b2dps' && (
+        <div className="pills ranks-subboards">
+          {B1B2_DPS_BOARDS.map((b) => (
+            <button
+              key={b}
+              className={b1b2DpsBoard === b ? 'on' : ''}
+              onClick={() => setB1b2DpsBoard(b)}
+            >
+              {b === 'c0-neutral'
+                ? 'No Core · Neutral'
+                : b === 'c0-eleadv'
+                  ? 'No Core · Ele Adv'
+                  : b === 'c100-neutral'
+                    ? 'Core 100 · Neutral'
+                    : 'Core 100 · Ele Adv'}
+            </button>
+          ))}
+        </div>
+      )}
 
       {err && !art ? (
         <p className="muted">
@@ -237,7 +282,9 @@ export function SupportRankings() {
                 ? `${meta.title} · ${bufferBoard}`
                 : board === 'burstgen'
                   ? `${meta.title} · ${burstGenBoard}`
-                  : meta.title
+                  : board === 'b1b2dps'
+                    ? `${meta.title} · ${b1b2DpsBoard.replace('-', ' · ').replace('c0', 'No Core').replace('c100', 'Core 100').replace('neutral', 'Neutral').replace('eleadv', 'Ele Adv')}`
+                    : meta.title
             }
             subtitle={`${bars.length} entries · generated ${new Date(
               art.generatedAt

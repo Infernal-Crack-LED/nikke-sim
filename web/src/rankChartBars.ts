@@ -9,13 +9,16 @@ import {
   burstCdrBars,
   sustainBars,
   bufferBars,
+  b1b2DpsBars,
   type BoardId,
   type BufferBoard,
   type BurstGenBoard,
+  type B1B2DpsBoard,
   type BurstGenArtifact,
   type BurstCdrArtifact,
   type SustainArtifact,
   type BufferChartArtifact,
+  type B1B2DpsArtifact,
 } from './rankBoardsData';
 
 // Short chip label for a comp-profile variant. Explicit map for the known
@@ -29,6 +32,11 @@ const PROFILE_LABELS: Record<string, string> = {
   'with-healer': 'w/ Healer',
   'with-mast-rm': 'w/ Mast RM',
   'with-shielder': 'w/ Shielder',
+  'with-avistar': 'w/ Avistar',
+  'with-other-b1': 'w/ Other B1',
+  'with-chime': 'w/ Chime',
+  'as-b1': 'B1',
+  'as-b2': 'B2',
   'w/ Prika': 'w/ Prika',
   'w/ Mint': 'w/ Mint',
   'w/ Anchor': 'w/ Anchor',
@@ -74,7 +82,11 @@ export const fmtMagnitude = (n: number): string =>
         : n.toFixed(0);
 
 export type AnyRankArtifact =
-  BurstGenArtifact | BurstCdrArtifact | SustainArtifact | BufferChartArtifact;
+  | BurstGenArtifact
+  | BurstCdrArtifact
+  | SustainArtifact
+  | BufferChartArtifact
+  | B1B2DpsArtifact;
 
 // Map the active board's typed rows into the chart's uniform bar shape.
 // `art.profiles` resolves each row's profile id into its badge tooltip. Feeds
@@ -83,7 +95,11 @@ export type AnyRankArtifact =
 export function barsForBoard(
   board: BoardId,
   art: AnyRankArtifact,
-  opts: { bufferBoard: BufferBoard; burstGenBoard: BurstGenBoard }
+  opts: {
+    bufferBoard: BufferBoard;
+    burstGenBoard: BurstGenBoard;
+    b1b2DpsBoard: B1B2DpsBoard;
+  }
 ): RankChartBar[] {
   const profiles = art.profiles;
   const badge = (b: { profile: string | null }) =>
@@ -140,6 +156,16 @@ export function barsForBoard(
             ]
           : null,
       splitTitle: `heal ${b.healPct.toFixed(1)}% · shield ${b.shieldPct.toFixed(1)}% · lifesteal ${b.lifestealPct.toFixed(1)}% of max HP`,
+      ...badge(b),
+    }));
+  }
+  if (board === 'b1b2dps') {
+    return b1b2DpsBars(art as B1B2DpsArtifact, opts.b1b2DpsBoard).map((b) => ({
+      ...b,
+      key: `${b.slug}:${b.profile ?? ''}`,
+      value: b.dps,
+      valueText: fmtMagnitude(b.dps),
+      valueTitle: 'own DPS in the Solo-style no-op control team',
       ...badge(b),
     }));
   }

@@ -9,6 +9,7 @@ import type {
   BurstCdrArtifact,
   SustainArtifact,
   BufferChartArtifact,
+  B1B2DpsArtifact,
   RankUnitMeta,
 } from '../../src/ranks/types';
 
@@ -17,15 +18,18 @@ export type {
   BurstCdrArtifact,
   SustainArtifact,
   BufferChartArtifact,
+  B1B2DpsArtifact,
 } from '../../src/ranks/types';
 
-export type BoardId = 'burstgen' | 'burstcdr' | 'sustain' | 'buffer';
+export type BoardId =
+  'burstgen' | 'burstcdr' | 'sustain' | 'buffer' | 'b1b2dps';
 
 const FILES: Record<BoardId, string> = {
   burstgen: 'burstgen.json',
   burstcdr: 'burstcdr.json',
   sustain: 'sustain.json',
   buffer: 'bufferchart.json',
+  b1b2dps: 'b1b2dps.json',
 };
 
 // Lazy per-board fetch: only the active board's artifact downloads, and a
@@ -50,6 +54,7 @@ export const loadBurstGen = () => load<BurstGenArtifact>('burstgen');
 export const loadBurstCdr = () => load<BurstCdrArtifact>('burstcdr');
 export const loadSustain = () => load<SustainArtifact>('sustain');
 export const loadBufferChart = () => load<BufferChartArtifact>('buffer');
+export const loadB1B2Dps = () => load<B1B2DpsArtifact>('b1b2dps');
 
 // ---- shared row base --------------------------------------------------------
 interface RowBase {
@@ -160,5 +165,20 @@ export function bufferBars(
     ...base(art.units, slug, i + 1, profile),
     addedPct,
     rules,
+  }));
+}
+
+export interface B1B2DpsBar extends RowBase {
+  dps: number;
+}
+export type B1B2DpsBoard =
+  'c0-neutral' | 'c0-eleadv' | 'c100-neutral' | 'c100-eleadv';
+export function b1b2DpsBars(
+  art: B1B2DpsArtifact,
+  board: B1B2DpsBoard
+): B1B2DpsBar[] {
+  return art.cells[board].map(([slug, dps, profile], i) => ({
+    ...base(art.units, slug, i + 1, profile),
+    dps,
   }));
 }

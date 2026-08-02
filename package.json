@@ -37,7 +37,8 @@
     "ranks:burstcdr": "tsx scripts/build-burstcdr.ts",
     "ranks:sustain": "tsx scripts/build-sustain.ts",
     "ranks:buffer": "tsx scripts/build-bufferchart.ts",
-    "ranks:all": "npm run ranks:burstgen && npm run ranks:burstcdr && npm run ranks:sustain && npm run ranks:buffer",
+    "ranks:b1b2dps": "tsx scripts/build-b1b2dps.ts",
+    "ranks:all": "npm run ranks:burstgen && npm run ranks:burstcdr && npm run ranks:sustain && npm run ranks:buffer && npm run ranks:b1b2dps",
     "fonts:subsets": "tsx scripts/subset-fonts.ts"
   },
   "dependencies": {

@@ -12,6 +12,7 @@ const artifacts = {
   'burstcdr.json': JSON.parse(readFileSync('dist/burstcdr.json', 'utf8')),
   'sustain.json': JSON.parse(readFileSync('dist/sustain.json', 'utf8')),
   'bufferchart.json': JSON.parse(readFileSync('dist/bufferchart.json', 'utf8')),
+  'b1b2dps.json': JSON.parse(readFileSync('dist/b1b2dps.json', 'utf8')),
 };
 
 // expected content, read from the artifacts themselves (not hardcoded):
@@ -31,6 +32,11 @@ const PROFILE_LABELS = {
   'w/ Mint': 'w/ Mint',
   'w/ Anchor': 'w/ Anchor',
   'w/ Bunny': 'w/ Bunny',
+  'with-avistar': 'w/ Avistar',
+  'with-other-b1': 'w/ Other B1',
+  'with-chime': 'w/ Chime',
+  'as-b1': 'B1',
+  'as-b2': 'B2',
 };
 const profileBadge = profiledEntry?.[3]
   ? (PROFILE_LABELS[profiledEntry[3]] ?? null)
@@ -39,6 +45,8 @@ const burstgenTop = artifacts['burstgen.json'].entries[0][0];
 const burstgenTopName = artifacts['burstgen.json'].units[burstgenTop].name;
 const typedTop = artifacts['bufferchart.json'].cells.typed[0][0];
 const typedTopName = artifacts['bufferchart.json'].units[typedTop].name;
+const b1b2Top = artifacts['b1b2dps.json'].cells['c0-neutral'][0][0];
+const b1b2TopName = artifacts['b1b2dps.json'].units[b1b2Top].name;
 
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -126,14 +134,25 @@ const checks = {
     'Burst Gen',
     'Sustain',
     'Burst CDR',
+    'B1/B2 DPS',
   ].every((s) => text().includes(s)),
-  // owner 2026-07-26: pill order Buffer → Burst Gen → Sustain → Burst CDR
+  // owner 2026-07-26: pill order Buffer → Burst Gen → Sustain → Burst CDR → B1/B2 DPS
   // (first occurrences are the pills; the intro copy is lowercase)
-  'pill order: buffer, burst gen, sustain, cdr': (() => {
-    const i = ['Team Buffs', 'Burst Gen', 'Sustain', 'Burst CDR'].map((s) =>
-      text().indexOf(s)
+  'pill order: buffer, burst gen, sustain, cdr, b1/b2 dps': (() => {
+    const i = [
+      'Team Buffs',
+      'Burst Gen',
+      'Sustain',
+      'Burst CDR',
+      'B1/B2 DPS',
+    ].map((s) => text().indexOf(s));
+    return (
+      i.every((x) => x >= 0) &&
+      i[0] < i[1] &&
+      i[1] < i[2] &&
+      i[2] < i[3] &&
+      i[3] < i[4]
     );
-    return i.every((x) => x >= 0) && i[0] < i[1] && i[1] < i[2] && i[2] < i[3];
   })(),
   [`buffer default top bar renders (${bufferTopName})`]:
     text().includes(bufferTopName),
@@ -168,6 +187,10 @@ try {
   checks['buffer Generic/Typed pills render'] = true;
   checks[`buffer typed top bar renders (${typedTopName})`] =
     text().includes(typedTopName);
+  clickPill('B1/B2 DPS');
+  await waitFor(/B1\/B2 DPS · No Core · Neutral/, 'b1b2 dps board');
+  checks[`b1b2 dps top bar renders (${b1b2TopName})`] =
+    text().includes(b1b2TopName);
 } catch (e) {
   checks['board switching works'] = false;
   console.error('  board switch error:', e.message);

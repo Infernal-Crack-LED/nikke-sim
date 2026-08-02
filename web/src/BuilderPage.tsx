@@ -24,12 +24,14 @@ import {
   loadBurstCdr,
   loadSustain,
   loadBufferChart,
+  loadB1B2Dps,
 } from './rankBoardsData';
 import type {
   BurstGenArtifact,
   BurstCdrArtifact,
   SustainArtifact,
   BufferChartArtifact,
+  B1B2DpsArtifact,
 } from '../../src/ranks/types';
 import { barsForBoard } from './rankChartBars';
 import { buildRankChartCanvas } from './rankChartShare';
@@ -103,6 +105,7 @@ const BOARDS: { key: BuilderBoard; label: string; title: string }[] = [
   { key: 'burstcdr', label: 'Burst CDR', title: 'Burst Cooldown Reduction' },
   { key: 'sustain', label: 'Sustain', title: 'Sustain' },
   { key: 'buffer', label: 'Team Buffs', title: 'Team Buffs' },
+  { key: 'b1b2dps', label: 'B1/B2 DPS', title: 'B1/B2 DPS' },
 ];
 
 // Unit-card shapes. `discord` is the 2:1 landscape card the bot embeds and the
@@ -125,6 +128,7 @@ const RANK_LOADERS = {
   burstcdr: loadBurstCdr,
   sustain: loadSustain,
   buffer: loadBufferChart,
+  b1b2dps: loadB1B2Dps,
 } as const;
 
 const cap = (el: string) => el[0].toUpperCase() + el.slice(1);
@@ -220,6 +224,7 @@ export function BuilderPage() {
     board: 'burstgen',
     bufferBoard: 'generic',
     burstGenBoard: 'unfocused',
+    b1b2DpsBoard: 'c100-eleadv',
     olLines: OL_DEFAULT_LINES,
     olTier: OL_DEFAULT_TIER,
     unitVariant: 'discord',
@@ -389,21 +394,31 @@ export function BuilderPage() {
           | BurstGenArtifact
           | BurstCdrArtifact
           | SustainArtifact
-          | BufferChartArtifact;
+          | BufferChartArtifact
+          | B1B2DpsArtifact;
         const allBars = barsForBoard(state.board, art, {
           bufferBoard: state.bufferBoard,
           burstGenBoard: state.burstGenBoard,
+          b1b2DpsBoard: state.b1b2DpsBoard,
         });
         const boardMeta = BOARDS.find((b) => b.key === state.board)!;
+        const B1B2_BOARD_LABEL: Record<string, string> = {
+          'c0-neutral': 'No Core · Neutral',
+          'c0-eleadv': 'No Core · Ele Adv',
+          'c100-neutral': 'Core 100 · Neutral',
+          'c100-eleadv': 'Core 100 · Ele Adv',
+        };
         const subMode =
           state.board === 'buffer'
             ? state.bufferBoard
             : state.board === 'burstgen'
               ? state.burstGenBoard
-              : null;
+              : state.board === 'b1b2dps'
+                ? state.b1b2DpsBoard
+                : null;
         const chartData: RankChartData = {
           title: subMode
-            ? `${boardMeta.title} · ${cap(subMode)}`
+            ? `${boardMeta.title} · ${B1B2_BOARD_LABEL[subMode] ?? cap(subMode)}`
             : boardMeta.title,
           subtitle: `top 10 of ${allBars.length} · generated ${new Date(art.generatedAt).toLocaleDateString()}`,
           bars: allBars.slice(0, 10),
@@ -781,6 +796,37 @@ export function BuilderPage() {
                         }
                       >
                         {bg === 'unfocused' ? 'Unfocused' : 'Focused'}
+                      </button>
+                    ))}
+                  </PillGrid>
+                </div>
+              )}
+              {s.board === 'b1b2dps' && (
+                <div className="field">
+                  <label>Cell</label>
+                  <PillGrid>
+                    {(
+                      [
+                        'c0-neutral',
+                        'c0-eleadv',
+                        'c100-neutral',
+                        'c100-eleadv',
+                      ] as const
+                    ).map((b) => (
+                      <button
+                        key={b}
+                        className={s.b1b2DpsBoard === b ? 'on' : ''}
+                        onClick={() =>
+                          setS((cur) => ({ ...cur, b1b2DpsBoard: b }))
+                        }
+                      >
+                        {b === 'c0-neutral'
+                          ? 'No Core · Neutral'
+                          : b === 'c0-eleadv'
+                            ? 'No Core · Ele Adv'
+                            : b === 'c100-neutral'
+                              ? 'Core 100 · Neutral'
+                              : 'Core 100 · Ele Adv'}
                       </button>
                     ))}
                   </PillGrid>
