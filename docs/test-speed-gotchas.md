@@ -70,8 +70,9 @@ That is only safe while the suite stays hermetic. A new test breaks this if it:
 - mutates `process.env` without save/restore — under a shared registry the mutation
   leaks to every later file in the same worker. Save the prior value and RESTORE it
   (do not `delete` — delete discards a value an earlier setter relied on).
-  `scripts/tests/share/portrait-security.test.ts` (the `NIKKESIM_PORTRAIT_DIR` env var — repo name uppercased plus `_PORTRAIT_DIR`) is the existing instance and does
-  this correctly.
+  `scripts/tests/share/portrait-security.test.ts` (the `NIKKESIM_PORTRAIT_DIR` env var — a hardcoded literal read lazily by
+  `src/infographics/node/portraits.ts`) is the existing instance and does this
+  correctly.
 
 If you add any of these, fix the test's hygiene first — that is almost always the right
 answer. If a file genuinely needs its own module registry, there is NO per-file
