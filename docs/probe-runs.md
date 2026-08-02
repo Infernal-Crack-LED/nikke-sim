@@ -1919,3 +1919,92 @@ Significance, bounded: the same-day real cascade puts both filters near-inert on
 GENERATOR's composited pellets, not about the detector, and `min_circ` remains a non-suspect for
 the counter's cold bias. This settles a provenance question and reopens nothing. RECORDS a
 measurement only — no constant, fixture, `DECISIONS.md` entry or plan direction was changed.
+
+### 2026-08-01 — f8–11 crop-CENTERING error: is it crosshair frame-lag? (`marciana`, SG/Iron)
+
+Executes `docs/handoffs/2026-08-01-pellet-centering-test-plan.md`, whose §3 decision rule was on
+disk before any of these numbers existed. Question: the owner-marked pellet clouds sit 20–52px off
+the f8–11 crop centre, roughly constant within a shot but swinging −51…+62px between shots. **H1**
+— the crop is centred on the crosshair at the COUNTING frame while the pellets landed at the aim
+point of the FIRING frame, so the offset is that 8-frame lag — versus **H0a** (localization is
+simply wrong) and **H0b** (real aim-vs-impact offset, not a reader bug).
+
+Instrument: `score-pellets.py --audit-centering` (committed this session), fed
+`count-pellets.py --dump-tracks` regenerated at the ground-truth clip's exact parameters
+(`at=15 dur=30 fps=60 zoom=2`, structural + template). `DISP = cross[t0] − cross[f]`,
+`CLOUD = owner centroid − (184,184)`, residual `CLOUD − DISP`.
+
+**Two gates ran before any number was read.** (1) INDEXING: no committed dump covers this window,
+so a frame-index error would silently produce confident garbage. All **21/21 committed crops
+re-cut byte-identically** from the regenerated frames, and `find_t0` reproduced every recorded
+`t0` (None/1060/1096/1140/1289/1369). Negative control: giving shot 4 the structural dump instead
+of the template one it was actually cut from fails the gate (exit 1). (2) SIGN, derived from crop
+geometry then MEASURED independently of `t0`: between two counting frames the pellets have landed
+and are world-fixed, so the cloud must translate by exactly minus the crosshair's motion —
+observed |error| ≤ 1.0px on all 5 shots, versus 5.0–31.9px had the sign been inverted.
+`CLOUD = cross[t0] − cross[f] = DISP` under H1, a direct match with no flip, agreeing with the
+plan.
+
+| shot | locate     | `DISP` (f08) | \|DISP\| | `CLOUD` (f08) | \|CLOUD\| | residual `CLOUD−DISP` | \|res\| | centroid SE  | conf `t0` | conf f08 | `t0±2` max Δ |
+| ---- | ---------- | ------------ | -------- | ------------- | --------- | --------------------- | ------- | ------------ | --------- | -------- | ------------ |
+| 1    | structural | (+24, −70)   | 74.0     | (−49.2, −2.9) | 49.3      | (−73.2, +67.1)        | 99.3    | (38.0, 27.0) | **none**  | 44.5     | **78.2**     |
+| 2    | structural | (+15, +2)    | 15.1     | (+61.8,+15.8) | 63.8      | (+46.8, +13.8)        | 48.8    | (30.5, 22.8) | 44.6      | 41.7     | 16.0         |
+| 3    | structural | (−6, +17)    | 18.0     | (+23.7,−25.0) | 34.4      | (+29.7, −42.0)        | 51.4    | (25.8, 21.0) | 43.1      | 41.2     | 4.0          |
+| 4    | template   | (+37, −7)    | 37.7     | (+18.9, +6.1) | 19.8      | (−18.1, +13.1)        | 22.4    | (26.9, 15.6) | **0.478** | 0.413    | **38.0**     |
+| 5    | structural | (−18, −4)    | 18.4     | (−46.5,+15.2) | 48.9      | (−28.5, +19.1)        | 34.3    | (26.1, 23.9) | 96.5      | 95.7     | 12.0         |
+
+Confidences are not comparable across modes: structural reports an unnormalised shape score
+(~41–97), template a 0–1 match score.
+
+**H1 is dead: 0 of 5, needing ≥4.** No shot has the residual within ±10px on both axes; the
+closest any shot gets is 22.4px, and the largest is 99.3px. **The eyeball impression that
+motivated H1 does not survive measurement, and the re-centring fix it implied is not warranted.**
+
+Applied literally to the 5-shot set, §3 then selects **H0a**: |`DISP`| > 15px on 5/5 and
+|residual| > 25px on 4/5 (needing ≥3). H0b is not selected — it required |`DISP`| < 10px, and
+`DISP` is 15–18px even where the locator is perfectly clean. **But §5's own confound-3 instruction
+("a low-confidence lock makes that shot's `DISP` meaningless; exclude it") disqualifies exactly the
+two shots carrying H0a's mechanism**, and applying it first leaves n=3, where no row's ≥4/5 or
+≥3/5 threshold can be reached at all — §3 row 4, "report as-is, do not force it into a bucket."
+Both readings are recorded here; only H1's refutation is threshold-independent.
+
+- **Shot 1 — excluded.** `cross[t0]` is a HELD STALE LOCK: `conf=None` for three consecutive
+  frames (1058–1060) frozen at (2098,438), 78px off the smooth track, snapping back to (2070,511)
+  at 1061. Its whole `DISP` is that artefact.
+- **Shot 4 — excluded.** Template confidence 0.413–0.478, below the 0.55 relock bar, with the lock
+  thrashing 2101→2063→2096→2062 across consecutive frames.
+- **Shots 2/3/5 — clean.** Smooth monotone pans at normal confidence. `DISP` 15–18px over 8 frames
+  is ~2px/frame of genuine aim tracking, not instability. H0a's threshold sits just below the
+  magnitude of real crosshair pan, which is why the letter of the rule selects it here.
+
+**The `t0` instability and the low confidences are the same two shots, not two problems.** The
+`t0±2` sweep moves `DISP` by 78.2px (shot 1) and 38.0px (shot 4) but only 4.0–16.0px on the clean
+shots — the perturbation test independently fingers the same pair, which is corroboration rather
+than a second defect.
+
+**Whole-picture check, and the reading that actually survives.** The residual is algebraically
+`P − cross[t0]` and so cannot depend on `f`; measured, it is constant across f08–f11 to **≤1.8px
+on every shot**, confirming the pellets are world-fixed over the counting window and that the
+plan's "f08→f11 centroid travel" column (0.7–15.9px) is entirely crosshair motion, not pellet
+motion. Against that, the measured centroid SE is **29.5px (x) / 22.0px (y)** per axis — ~1.6×
+the 18px §5 assumed — so every residual is ≤2.7σ and four of five are ≤1.4σ, with the pooled mean
+(−8.7, +14.2) over 5 shots or (+16.0, −3.0) over the clean three, both statistically
+indistinguishable from zero. **A 7–10-pellet centroid drawn from a wide SG spread scatters by
+about this much; the 20–52px "centering error" is consistent with small-sample centroid noise
+around a correctly-centred window.** That is not a bucket §3 offered, and it is recorded, not
+enacted.
+
+Also corrected while measuring, and recorded rather than fixed in place: the plan's §1 table is
+the **mean over f08–f11**, not "measured on f08" as its prose says — the means reproduce all five
+rows and the travel column to the last decimal, while §3's formula specifies `centroid(f08)`.
+These differ materially only on shot 2 (+61.8 f08 vs +49.6 mean, because a 16px structural x-toggle
+lands on f08), and the verdict is unchanged under either. The f08 figures are used above, per §3.
+
+Honest limits. **n=5 shots, one clip, one unit — `marciana` (SG/Iron), NOT
+`marciana-marine-study` (AR/Iron)** — and per the provenance ledger this fixture can FAIL a
+candidate but never certify one to ±0.25. The set is conditioned by the 150px jump guard, so it
+cannot see the worst localization excursions; shot 1's 78px mislock slipped under that guard and
+shot 0 has no `t0` at all. RECORDS a measurement only: the crop-centring behaviour, `pellet_radius`,
+`center_exclude`, `FIDELITY_BOTH_PASS_FLOOR`, `min_area` and `min_circ` are untouched, no
+`DECISIONS.md` entry is edited, no plan direction is rewritten and no verdict is stamped elsewhere.
+The counter's cold bias remains unexplained.
