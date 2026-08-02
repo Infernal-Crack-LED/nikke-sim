@@ -32,7 +32,7 @@ const PROFILE_LABELS: Record<string, string> = {
   'w/ Prika': 'w/ Prika',
   'w/ Mint': 'w/ Mint',
   'w/ Anchor': 'w/ Anchor',
-  'w/ Bunny': 'w/ Bunny',
+  'w/ Rouge': 'w/ Rouge',
   // DPS-chart-only variant profiles (src/dpschart/matrix.ts CHART_VARIANTS) —
   // this page never reads dpschart.json, but rankTables.ts's copy is kept in
   // sync per the shared comment on both maps.

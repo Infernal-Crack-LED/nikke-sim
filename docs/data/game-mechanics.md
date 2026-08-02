@@ -325,9 +325,16 @@ follow the REAL shield machinery (owner-ruled default-off 2026-07-20): "when a S
 set" lines fire on the shield-application EVENT (`shielded` trigger); "if a Shield is set"
 lines check the live shield-state WINDOW at their own trigger time (`requiresShielded`,
 window = the emitting shield's stated duration). No shielder in the team ⇒ the lines are
-inert. Same-squad gates ("with an ally from the same squad on the battlefield" — Noir
-`noir`, satisfied by Blanc `blanc` / Rouge `rouge`, owner-confirmed) are static team-
-composition checks (`teamHas.slugs`), exact at scope lock where no ally ever dies.
+inert. Same-squad gates ("with an ally from the same squad on the battlefield") are
+static team-composition checks, exact at scope lock where no ally ever dies. The
+primitive is `teamHas.sameSquad`: squad membership is curated in `src/data/squads.ts`
+(characters.json has no squad axis) and the gate fails closed for unmapped owners.
+Squad of Blanc `blanc` / Noir `noir` / Rouge `rouge` — owner-confirmed 2026-08-02
+(extending the 2026-07-20 Noir ruling; the bunny/maid units are a DIFFERENT squad, a
+common misread): Blanc's S2 burst-CDR is gated on it. Noir's same-squad burst line
+still uses the older `teamHas.slugs:['blanc','rouge']` spelling (same extension,
+migration pending). M.M.R. (Tia `tia` / Naga `naga` / Marciana `marciana`,
+owner-confirmed 2026-08-02) is seeded in the map; no gate consumes it yet.
 
 ## 10. Elemental advantage
 

@@ -343,7 +343,11 @@ Function-type instances (DATAMINED rules, table in
   (the emitter's stated duration) covers the unit (`shieldedUntilFrame`). Naga (`naga`).
 - Static team-composition gates (`teamHas`) can also match SPECIFIC units (`slugs`,
   2026-07-20): noir's same-squad burst line requires `blanc` or `rouge` in the team
-  (owner-confirmed the gate is real).
+  (owner-confirmed the gate is real). The same-squad primitive is `teamHas.sameSquad`
+  (2026-08-02): some OTHER ally shares the owner's squad per the curated map
+  `src/data/squads.ts`; fails closed for unmapped owners. Blanc's (`blanc`) S2
+  burst-CDR is gated on it (squad = noir+rouge; noir's `.slugs` spelling predates the
+  primitive and migrates to it).
 
 ### 2c. Damage over time
 
