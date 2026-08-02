@@ -5299,6 +5299,45 @@
         "teams": 0,
         "within3pct": 0
       }
+    },
+    "avistar": {
+      "name": "Avistar",
+      "burst": "I",
+      "weapon": "MG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-01: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/avistar.json + scripts/kit-autonomy/manual-review/avistar.md.",
+          "high ENGINE (skill1): Aftershow 'removed when entering Full Burst' is unenacted — the casterAtkPct 80.26 flat ATK persists through Full Burst windows, over-crediting the carry's FB damage (est. ~8-14% of carry damage; total Aftershow contribution measured ~30% via permanent-vs-removed A/B)",
+          "med FIDELITY (skill1+skill2): 'Her favorite pop star' is resolved as alliesTopAtk count:1 — a proxy for a kit-defined single-ally designator with no mechanical selector in the prose; every agent (driver, S2b, S5, S6) independently assumed the same proxy, so the agreement proves stability, not correctness",
+          "low FIDELITY (burst): Stargazer Max HP grant modeled permanent though the S1 removal clause bounds it at FB end — zero damage impact (inert stat), documented in the driver note"
+        ],
+        "date": "2026-08-01"
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "date": "2026-08-01",
+      "evidence": "kit-autonomy gauntlet 2026-08-01; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "Aftershow 'removed when entering FB' unenacted (no expire-on-FB-entry engine hook) -> permanent grant, ~8-14% carry FB over-credit (measured ~30% total contribution); engine hook is a prioritized follow-up. favorite-pop-star = alliesTopAtk count:1 proxy (prose gives no mechanical selector) -> owner spot-check the real targeting rule + the leak estimate vs footage.",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "■ Activates when entering Full Burst while in Stargazer status with over 25% HP. Affects self. Current HP ▼ 20% — UNMODELED: v1 has no HP pool, so the self HP drain (and its >25% HP gate) move no damage and feed no mechanic; Avistar has no low-HP offensive gate."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1(Aftershow): the 'removed when entering Full Burst' clause is NOT enacted (no expire-on-FB-entry engine hook; fbGate is application-only) — the casterAtkPct 80.26 flat ATK is modeled permanent, a MATERIAL over-credit of the carry's FB-window damage (⚑1: total Aftershow contribution ~30% of carry damage measured; FB-window leak estimated ~8-14% of carry).",
+        "skill1(self-heal): a real unit-HP heal but SELF-targeted and offensively inert (no HP pool; fires only her own nonexistent recovery triggers) — modeled for recovery-event fidelity, moves no board damage.",
+        "skill2: the Projectile Explosion Damage line is applied to the favorite pop star but only yields damage on an explosive-weapon carry (RL/explosive SR); the Attack Damage 40.13 is the always-live bucket.",
+        "burst: the Stargazer Max HP 26.4% is offensively inert (self Max HP, no atkOfMaxHpPct consumer); the re-entry is live only with a 2nd B1 in the comp."
+      ]
     }
   }
 }

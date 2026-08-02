@@ -1,0 +1,114 @@
+{
+  "slug": "avistar",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1,
+        "excludeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 80.26,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "ownBurstGate": "cast",
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1,
+        "excludeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "projectileExplosionPct",
+          "value": 40.13
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 40.13
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "reenterStage",
+          "stage": 1
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 26.4
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": ["Removes Stargazer."],
+    "skill2": ["Current HP ▼ 20%"],
+    "burst": []
+  },
+  "caveats": [
+    "⛑ TARGET PROXY: both ally-facing blocks are scoped to a SPECIFIC NAMED ally ('her favorite pop star'). The schema has no named-slug TargetDef, so they are authored as alliesTopAtk count 1 excludeSelf. This is a PROXY, not the kit: it (a) may pick the wrong ally, and (b) still buffs someone on a team where the real named ally is ABSENT, where the true kit grants ZERO. Highest-magnitude uncertainty in this file.",
+    "⛑ Aftershow duration: the kit bounds it by an EVENT ('removed when entering Full Burst'), not a clock. No removeOnFullBurstEnter primitive exists, so durationSec 10 stands in for the out-of-Full-Burst window. Over-long bleeds the +50% FB major onto a buff the kit strips at FB entry (over-credit); 10s is chosen deliberately short.",
+    "Stargazer is a SELF status with no schema representation (requiresTargetStatus is boss-scoped). Its lifecycle is exactly burst-cast → status → that rotation's FB entry → stripped at FB end, so skill2 is keyed fullBurstEnter + ownBurstGate:'cast'. This is faithful only while she bursts on the rotation she buffs; it under-fires if a Stargazer instance ever survives a Full Burst.",
+    "'continuously' on the skill2 pair is read as PERMANENT (no durationSec) from the first qualifying FB entry. If the real behaviour is FB-window-scoped, this over-credits every out-of-FB second after the first burst.",
+    "The >25% HP condition on skill2's self-cost line is not gated: v1 has no HP pool and the boss deals no damage, so the condition is unconditionally true and the gate would be inert either way.",
+    "The heal models the RECOVERY EVENTS only (10 ticks, 1s apart) so on-recovery consumers fire; the 3.52%-of-final-Max-HP amount is not modeled because the engine tracks no HP pool.",
+    "casterMaxHpPct 26.4 is offensively INERT here — avistar carries no atkOfMaxHpPct converter — and is retained for kit completeness / future consumers."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. MG/Electric/Supporter/Burst I. Avistar deals no kit damage: her entire offensive contribution is two buff packages routed at ONE specific named ally ('her favorite pop star') plus a Burst Stage 1 re-entry. skill1 fires at Full Burst END (Aftershow, caster-scaled flat ATK, stripped at the next FB entry) and self-heals 10 ticks. skill2 fires at Full Burst ENTRY on rotations she bursted (the Stargazer state proxy), granting a permanent 40.13% Projectile Explosion + 40.13% Attack Damage pair to the same ally — note the pair is only worth its full value on a projectile-explosion carrier. The burst grants self Max HP (Stargazer) and re-opens Burst Stage 1 for a second B1 caster. Three fields are unresolvable from the text alone: the named-ally target, the event-bounded Aftershow duration, and the Stargazer status lifecycle."
+}
