@@ -2008,3 +2008,52 @@ shot 0 has no `t0` at all. RECORDS a measurement only: the crop-centring behavio
 `center_exclude`, `FIDELITY_BOTH_PASS_FLOOR`, `min_area` and `min_circ` are untouched, no
 `DECISIONS.md` entry is edited, no plan direction is rewritten and no verdict is stamped elsewhere.
 The counter's cold bias remains unexplained.
+
+### 2026-08-01 — stale-lock prevalence across the committed crosshair dumps
+
+Scoping measurement for the 60fps-localization item, computed entirely from `tracks.json` dumps
+already on disk (`scratchpad/pellets/*/`) — no new extraction. Prompted by the centering run finding
+one shot's `cross[t0]` was a held stale lock 78px off-track.
+
+**The tracker HOLDS the last good position during a lost lock and marks it `conf: None`, rather than
+signalling loss.** Verified structurally: in 154/155, 147/148, 151/152 and 134/135 of the stale runs
+across the four long structural dumps, every position inside the run is byte-identical to the last
+good one. So a downstream consumer cannot distinguish "locked here" from "lost, showing you a stale
+value" — and nothing downstream currently gates on `conf`.
+
+Prevalence and cost, per dump (displacement = how far the crosshair actually moved between the frame
+before a stale run and the frame after it, i.e. how wrong the held position had become):
+
+| dump                     | frames | stale runs | % frames stale | displacement median / p90 / max | run len median / max |
+| ------------------------ | ------ | ---------- | -------------- | ------------------------------- | -------------------- |
+| `h4-guilty-structural`   | 5738   | 147        | **31.0%**      | 206 / 478 / 1184 px             | 2 / 101              |
+| `h4-isabel-structural`   | 5721   | 151        | **23.6%**      | 188 / 498 / 1514 px             | 1 / 103              |
+| `h4-marciana-structural` | 5697   | 134        | **17.4%**      | 168 / 447 / 716 px              | 2 / 146              |
+| `i2-marciana-60fps`      | 480    | 4          | 13.8%          | 178 / 517 / 517 px              | 3 / 61               |
+| `i3-noir-far-60fps`      | 480    | 11         | 8.1%           | 111 / 390 / 525 px              | 2 / 13               |
+| `g2-noir-structural`     | 5722   | 154        | 7.9%           | 112 / 387 / 600 px              | 1 / 191              |
+| `i3-noir-near-60fps`     | 481    | 13         | 5.2%           | 122 / 291 / 301 px              | 1 / 4                |
+
+**`pellet_radius` is 160px.** The MEDIAN stale-lock displacement (111–206px) is therefore comparable
+to or larger than the entire counting-window radius, and the p90 is 2–3× it. During a stale run the
+window can be pointed completely off the pellet cloud. Longest runs reach 101–191 frames (~1.7–3.2 s
+at 60fps).
+
+**Gate 1 does not see any of this** — it is a whole-video conjunction (near-fraction ≥5% AND wander
+
+> 300px), so 70–83% good frames dilute the failures. Separately confirmed on disk: `run21-60fps-farband`
+> (901 frames) and `run21b-60fps-farband` (721 frames) have **no valid consecutive positions at all**,
+> which is the previously-recorded "2 of 4 windows locked zero frames".
+
+Note the two confidence scales, which must not be conflated: structural dumps score ~91–95 with `None`
+for a held lock; template dumps score 0–1 (medians 0.41–0.60). A `conf < 0.6` test is meaningful only
+in template mode.
+
+**What this does NOT yet establish.** Whether stale frames reach the COUNTS. On the 6-shot `marciana`
+(SG/Iron — NOT `marciana-marine-study`, AR/Iron) ground truth the counting-frame locks were good — the measured cloud offsets sat within
+noise of the crop centre — and the one stale lock found there was at `t0`, not at a counting frame.
+The prevalence above is over ALL frames; counting frames are t0+8…t0+11, a small and possibly
+non-representative subset. **That is the open question this measurement hands forward.**
+
+RECORDS a measurement only. No constant, guard threshold, gate definition or `DECISIONS.md` entry was
+changed, and no verdict is stamped.
