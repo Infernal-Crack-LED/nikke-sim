@@ -7,11 +7,10 @@
 // Control teams (with no partner the tested unit is inserted at the leftmost slot
 // of its stage; with a partner it is inserted immediately after the partner's slot,
 // so the partner bursts first). All no-op placeholders use the B1/B2-board-specific
-// low-ATK variants (src/dpschart/noop.ts B1B2_NOOP_CHARACTERS) so the board's PARTNER
-// rows resolve king-maker selectors to the real partner. In plain rows, `alliesTopAtk`
-// selectors WITHOUT `excludeSelf` resolve to the tested unit (the highest-ATK team
-// member), while `alliesLowestAtk` resolves to a no-op. The shared no-op stats used by
-// the DPS chart, buffer, sustain, and burst-gen boards are unaffected.
+// low-ATK variants (src/dpschart/noop.ts B1B2_NOOP_CHARACTERS); see the
+// NOOP_LOW_ATK_STATS comment for how this changes ally-ATK selector resolution.
+// The shared no-op stats used by the DPS chart, buffer, sustain, and burst-gen
+// boards are unaffected.
 //   B1 20s: [tested, B2 SR, B2 SR, B3 RL, B3 MG]
 //   B1 40s: [tested, B1 AR, B2 SR, B3 RL, B3 MG]  (second B1 covers off-rotations)
 //   B2:     [B1 AR, tested, B2 SR, B3 RL, B3 MG]  (a second B2 is always present)
@@ -174,7 +173,11 @@ export function buildTeam(
   const char = charFor(ctx, tested.slug);
   // For forced Λ/B3 rows, cooldown is taken from the character record.
   const cd = char.burstCooldownSec;
-  const isLongB1 = tested.effectiveBurst === 'I' && cd > 30;
+  // Only native 40s B1s use the 40s-B1 template. Forced off-stage rows must keep
+  // the 20s-B1 shape so their formation:'noB1' blocks (e.g. Rapi: Red Hood's
+  // Combat Assist) stay active; forceStage already guarantees they fill stage 1.
+  const isLongB1 =
+    tested.effectiveBurst === 'I' && tested.forceStage === undefined && cd > 30;
   // Resolve the partner from the explicit argument, then from the profile, so
   // buildTeam and dpsFor can never disagree about a row's team.
   const resolvedPartner =

@@ -204,7 +204,8 @@ export function buildB1B2DpsTable(
       : DEFAULT_B1B2_BOARD;
   return {
     title: `B1/B2 DPS Ranking — ${B1B2_CELL_LABEL[b]}`,
-    subtitle: 'own DPS in a Solo-style no-op control team · scope-lock loadout',
+    subtitle:
+      'own DPS in a Solo-style no-op control team · scope-lock loadout · 20s-B1 / 40s-B1 / B2 templates are not directly comparable',
     columns: [
       { header: '#', flex: 0.5 },
       { header: 'Unit', flex: 2 },

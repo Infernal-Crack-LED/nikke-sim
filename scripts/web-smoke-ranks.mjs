@@ -31,11 +31,15 @@ const PROFILE_LABELS = {
   'w/ Prika': 'w/ Prika',
   'w/ Mint': 'w/ Mint',
   'w/ Anchor': 'w/ Anchor',
-  'w/ Bunny': 'w/ Bunny',
+  'w/ Rouge': 'w/ Rouge',
 };
-const profileBadge = profiledEntry?.[3]
-  ? (PROFILE_LABELS[profiledEntry[3]] ?? null)
-  : null;
+const profileId = profiledEntry?.[3];
+if (profileId && !(profileId in PROFILE_LABELS)) {
+  throw new Error(
+    `unmapped buffer profile id "${profileId}" — update PROFILE_LABELS in web-smoke-ranks.mjs and web/src/rankChartBars.ts`
+  );
+}
+const profileBadge = profileId ? PROFILE_LABELS[profileId] : null;
 
 // B1/B2 board profile ids and their rendered badge text (rankChartBars.ts).
 const B1B2_PROFILE_LABELS = {
@@ -48,8 +52,14 @@ const B1B2_PROFILE_LABELS = {
 const b1b2ProfiledEntry = artifacts['b1b2dps.json'].cells['c100-eleadv'].find(
   (e) => e[3]
 );
-const b1b2ProfileBadge = b1b2ProfiledEntry?.[3]
-  ? (B1B2_PROFILE_LABELS[b1b2ProfiledEntry[3]] ?? null)
+const b1b2ProfileId = b1b2ProfiledEntry?.[3];
+if (b1b2ProfileId && !(b1b2ProfileId in B1B2_PROFILE_LABELS)) {
+  throw new Error(
+    `unmapped B1/B2 profile id "${b1b2ProfileId}" — update B1B2_PROFILE_LABELS in web-smoke-ranks.mjs and web/src/rankChartBars.ts`
+  );
+}
+const b1b2ProfileBadge = b1b2ProfileId
+  ? B1B2_PROFILE_LABELS[b1b2ProfileId]
   : null;
 const burstgenTop = artifacts['burstgen.json'].entries[0][0];
 const burstgenTopName = artifacts['burstgen.json'].units[burstgenTop].name;

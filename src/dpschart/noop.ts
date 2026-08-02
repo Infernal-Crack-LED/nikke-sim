@@ -39,10 +39,12 @@ const NOOP_BASE_STATS: BaseStats = {
 // the no-op placeholders so an `alliesTopAtk` king-maker buff lands on the partner
 // rather than on a control. In plain rows, an `alliesTopAtk` selector WITHOUT
 // `excludeSelf` resolves to the tested unit (the highest-ATK member of the team),
-// while `alliesLowestAtk` resolves to a no-op placeholder. This silently turns
-// self-includable highest-ATK buffs into self-buffs on this board (e.g. naga's
-// coreDamagePct, rapunzel's maxHpFlat); the effect is small for damage lines and
-// is the intended board semantics for king-maker buffs that do not exclude self.
+// while `alliesLowestAtk` resolves to a no-op placeholder. The two live carriers
+// (naga skill2, rapunzel skill2) use `count: 2`, so the second target is an inert
+// no-op. This silently turns self-includable highest-ATK buffs into self-buffs on
+// this board (e.g. naga's coreDamagePct, rapunzel's targetMaxHpPct); the effect is
+// small for damage lines and is the intended board semantics for king-maker buffs
+// that do not exclude self.
 const NOOP_LOW_ATK_STATS: BaseStats = {
   ...NOOP_BASE_STATS,
   atk: 100,
@@ -190,15 +192,10 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
   ),
 };
 
-// B1/B2-DPS-board-specific no-op characters. They are derived from the shared set
-// so weapon/rotation scaffolding cannot drift between the two tables; the only
-// intended difference is `baseStats.atk`. Their ATK is negligible so the board's
-// PARTNER rows resolve king-maker selectors to the real partner. In plain rows,
-// `alliesTopAtk` selectors WITHOUT `excludeSelf` resolve to the tested unit (the
-// highest-ATK team member), while `alliesLowestAtk` resolves to a no-op. This
-// intentionally turns self-includable highest-ATK buffs into self-buffs on this board
-// (e.g. naga's coreDamagePct, rapunzel's maxHpFlat). The B3 mock multiplier is the
-// class-modal value; the mock B3's own damage is not reported by the B1/B2 board.
+// B1/B2-DPS-board-specific no-op characters. Derived from the shared set so
+// weapon/rotation scaffolding cannot drift; the only intended difference is
+// `baseStats.atk` (NOOP_LOW_ATK_STATS). See the NOOP_LOW_ATK_STATS comment above
+// for how this changes `alliesTopAtk` / `alliesLowestAtk` resolution on the board.
 export const B1B2_NOOP_CHARACTERS: Record<string, NoopCharacter> =
   Object.fromEntries(
     Object.entries(NOOP_CHARACTERS).map(([slug, c]) => [

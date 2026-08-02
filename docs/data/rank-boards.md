@@ -158,10 +158,12 @@ rely on the tested B1's own CDR.
 
 Because the no-op teammates have negligible ATK, `alliesTopAtk` selectors that do
 not set `excludeSelf` resolve to the **tested unit** in plain rows, while
-`alliesLowestAtk` resolves to a no-op placeholder. This intentionally turns
-self-includable highest-ATK buffs into self-buffs on this board (e.g. naga's
-core damage buff, rapunzel's Max HP buff). Partner rows are unaffected because
-the real partner outranks the controls.
+`alliesLowestAtk` resolves to a no-op placeholder. The two live carriers (naga
+skill2, rapunzel skill2) use `count: 2`, so the first target is the tested unit
+and the second is an inert no-op. This intentionally turns self-includable
+highest-ATK buffs into self-buffs on this board (e.g. naga's core damage buff,
+rapunzel's `targetMaxHpPct` buff). Partner rows are unaffected because the real
+partner outranks the controls.
 
 Λ units are pinned with `lambdaStage`; non-Λ units forced off-stage
 (Rapi: Red Hood as B1) use a separate `forceStage` so `lambdaStage` stays
