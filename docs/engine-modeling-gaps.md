@@ -35,7 +35,7 @@
 | `bossElement` | 1 | eve |
 | `bossElementGate` | 6 | brid-silent-track, eve, helm-aquamarine, marciana-marine-study, phantom, rosanna |
 | `burstCasters` | 3 | ada, arcana, crown |
-| `burstCdr` | 18 | anis-star, arcana, blanc, d-killer-wife, dolla, dorothy, helm-aquamarine, liter, … |
+| `burstCdr` | 19 | anis-star, arcana, blanc, d-killer-wife, dolla, dorothy, helm-aquamarine, liter, … |
 | `burstEligibility` | 1 | rapi-red-hood |
 | `burstFirst` | 1 | prika |
 | `burstSnapshotsPreFb` | 1 | cinderella |
@@ -63,7 +63,7 @@
 | `hasB1` | 2 | anis-star, rapi-red-hood |
 | `hasPierce` | 6 | alice, laplace, laplace-ultimate-hero, maxwell-ordinary-mechanic, red-hood, zwei |
 | `highestAllyAtkPct` | 1 | guilty |
-| `hitCount` | 44 | 2b, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, … |
+| `hitCount` | 45 | 2b, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, … |
 | `hitRatePct` | 14 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, miranda, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
 | `inFb` | 6 | eunhwa-tactical-upgrade, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, zwei |

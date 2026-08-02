@@ -5148,6 +5148,40 @@
         "teams": 0,
         "within3pct": 0
       }
+    },
+    "sakura": {
+      "name": "Sakura",
+      "burst": "I",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-01",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-01: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/sakura.json + scripts/kit-autonomy/manual-review/sakura.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "date": "2026-08-01",
+      "evidence": "kit-autonomy gauntlet 2026-08-01; GO faithfulness 1.0 (kimi-code/k3 judge, 0 gotchas, discriminationOk); cross-family S2b(claude-fable-5)/S5(claude-opus-5)/S6(claude-opus-5)/S7(kimi-code/k3) converged — S6 override block-for-block identical except K6 (documentation-style); K1 inert defPct modeled on 3-way blind convergence. 5 S5 REDs = blind-fixture FB-count coarseness (RECON_ERROR; CDR live via team-dmg + cycle-length).",
+      "residual": "Cherry Blossom Tea refresh-vs-expiry stack semantics kit-silent/unobservable (defPct inert); max-stacks reachability at real SR cadence unmeasured — both matter only if DEF feeds damage or the K6 parts gate gains a primitive.",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "When attacking an enemy projectile, damage to that projectile ▲ 7.74% continuously."
+        ],
+        "burst": [
+          "Damage dealt by Wind Code enemies ▼ 90.72% for 30 sec. Activates 1 time(s) per battle.",
+          "Activates when Cherry Blossom Tea is at max stacks. Affects all allies.",
+          "Damage to Interruption Parts ▲ 23.54% for 30 sec."
+        ]
+      }
     }
   }
 }
