@@ -1,0 +1,62 @@
+{
+  "slug": "n102",
+  "kitDescription": "N102 is a Water rocket-launcher Supporter whose entire kit is buffs for the team's hardest hitter. Every time she fires a full-charge shot, she grants the single ally with the highest final ATK +3 max ammunition and +10.34% crit damage for 10 seconds \u2014 at her rocket charge cadence this refreshes fast enough to be effectively permanent on that carry. On a 15-second cycle she also gives that same ally +25.84% charge damage for 5 seconds, so it pulses at roughly a third uptime. Her Burst I gives the whole team, herself included, +25.86% ATK for 10 seconds when she casts. She has no personal damage skills at all \u2014 her contribution is entirely the buffs she places on others.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Max Ammunition Capacity \u25b2 3 for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "maxAmmoFlat 3 / 10s, shotFired trigger, alliesTopAtk{count:1,byFinalAtk}",
+        "blindSaid": "identical encoding (S6); S5 asserts stat identity maxAmmoFlat, integer 3, bounded window, per-shot re-fire count \u226540",
+        "formulaCheck": "flat +3 rounds on a 6-round magazine is a shot-economy effect (fewer reloads); wiring into maxAmmo() is confirmed behaviorally by S5's removal test moving the recipient's damage",
+        "fireRateOk": true,
+        "explanation": "FLAT round count (not maxAmmoPct) matches the prose's '\u25b2 3' with no % sign; shotFired-as-full-charge is the documented helm precedent and observationally exact on a charge weapon (S5 honestly flags the two triggers as non-discriminable here). Refreshes ~79\u00d7/180s so uptime is effectively continuous, as S2b predicted."
+      },
+      {
+        "kitLine": "Critical Damage \u25b2 10.34% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "critDamagePct 10.34 / 10s, same block/trigger/target as ammo line",
+        "blindSaid": "identical encoding (S6); S5 pins stat critDamagePct (not critRatePct), single non-self target, teammates byte-identical on removal",
+        "formulaCheck": "unscoped crit damage (no 'of normal attacks' clause) correctly lands in the Major-bucket critBonus term for all the target's crit-eligible hits",
+        "fireRateOk": true,
+        "explanation": "Stat choice, magnitude, scope, duration, and trigger all match prose; S2b's rate-vs-damage and self-target nearest-wrong models are both excluded by green S5 assertions."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Charge Damage \u25b2 25.84% for 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval 15s (datamined skillCooldownsSec.skill2=15), first fire t=15, chargeDamagePct 25.84 / 5s, alliesTopAtk byFinalAtk",
+        "blindSaid": "identical structure but interval sec:10, self-flagged \u2691 INVENTED with a recipe pointing at the datamined cooldown \u2014 the exact value the driver used",
+        "formulaCheck": "chargeDamagePct adds percentage points inside the Charge bucket (1d) \u2014 NOT chargeDamageMultPct and NOT attackDamagePct, both nearest-wrong placements excluded; gates correctly onto the SR carry's charged shots only",
+        "fireRateOk": true,
+        "explanation": "The no-activation-clause shape is the repo's documented interval-trigger mechanic (snow-white precedent); 15s comes from the datamined cooldown the blind author lacked and explicitly asked for, so the blind divergence is an input-gap, not a driver error. 5s/15s = 33% uptime as S2b required (never passive). Driver N4 pins the 900-frame grid and first-fire at t=15; the t=N first-fire phase is the repo's standing global \u2691 convention, documented in driver caveats, not a per-unit invention."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "ATK \u25b2 25.86% for 10 sec (all allies)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast trigger, target allies (self included), atkPct 25.86 / 10s",
+        "blindSaid": "identical encoding (S6); S5 asserts raw 25.86 under atkPct (never a caster-scaled flat), 5-target reach in its comp, apply frames preceding FB start",
+        "formulaCheck": "plain 'ATK \u25b2 x%' scales each recipient's OWN static ATK (atkPct), correctly rejecting casterAtkPct \u2014 material here since a Supporter-scaled flat add would under-credit the Attacker carry; burst-cast timing correctly pre-FB per the measured boundary rule",
+        "fireRateOk": true,
+        "explanation": "All four S2b load-bearing properties hold: stat identity, raw percentage, all-allies scope, burstCast keying. Note: the driver's own sole-B1 fixture cannot by itself discriminate burstCast from fullBurstEnter (cast count == FB count), but S5's two-B1 contention fixture does (apply-before-FB-start assertion) and ran GREEN against this override."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": 1.0,
+  "verdict": "GO",
+  "verdictRationale": "No gotchas. All four kit lines are FAITHFUL: the two blind re-derivations converged with the driver on every structural decision (triggers shotFired/interval/burstCast, alliesTopAtk byFinalAtk single-target scope, all-allies burst, stat identities maxAmmoFlat/critDamagePct/chargeDamagePct/atkPct, durations 10/5/10). The sole numeric divergence \u2014 blind's \u2691-flagged interval sec:10 vs driver's sec:15 \u2014 resolves in the driver's favor via the datamined skillCooldownsSec the blind explicitly requested in its own recipe; it is an input gap, not a modeling dispute. The S5 blind suite runs GREEN unmodified (18 passed, 4 honestly-skipped measurement flags), and every load-bearing assertion has a live counterfactual: shot-count cadence kills burst/interval S1 keyings, stat-name identity kills maxAmmoPct and critRatePct, the 900-frame grid with t=15 first-fire kills passive S2, unscoped/scope-narrowed patches flip target counts on all three slots, and S5's two-B1 fixture supplies the burstCast-vs-fullBurstEnter timing discrimination the driver's sole-B1 fixture structurally cannot. Fire-rate check passes: S1 applies ~79\u00d7/180s (matches shot count), S2 ~11 fires, burst 9 casts \u00d7 3 targets. Same-model residual for the owner to spot-check: the interval-15s cadence and t=N first-fire phase rest on the repo's global interval convention (\u2691 pending a popup-cadence read), and the byFinalAtk live-vs-static ranking is unobservable in every fixture tried here \u2014 both are inherited conventions, not n102-specific claims, and both are documented in the driver's caveats.",
+  "model": "kimi-code/k3"
+}

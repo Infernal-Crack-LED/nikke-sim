@@ -5694,6 +5694,41 @@
         "burst: Storm is modeled at the 50-stack CAP mirror (4.52% x 50 = 226%/tick, 7 ticks/burst) — the steady-state stack count (⚑ near-cap; the ~12s opening ramp where stacks accrue 0->50 is folded into the 180s average). Refine the stack count on a Mast-focus recording if the sim reads hot/cold. The DoT crits at Mast's sheet rate (DOT_CRIT default ON, U13 2026-07-21 — DoT/function damage crits in NIKKE, confirmed ginmy/maiden footage; the kit need not say so explicitly) and never cores (DoTs are core-ineligible). It is unflavored (plain damage — not sustained/distributed/sequential), so it rides the normal Damage-Up bucket. ENCODING CHOICE: a FIXED steady-state DoT (the mihara-bonding-chain precedent — mihara's Ensnaring/Dragons DoTs are fixed atkPct, NOT perResource). The S2b reviewer proposed a LIVE perResource seaBreeze pool read per tick; that is theoretically sharper (an early burst would mirror fewer stacks) but is NOT faithfully drivable here: the pool would accrue on a 2-normal-CRIT trigger, and the engine's hitCount counts ROUNDS not crits (no crit-count primitive), so any accrual threshold is a crit-rate-dependent ⚑ estimate. The fixed cap-mirror trades that unmodeled ramp for a single documented ⚑ (near-cap steady state), consistent with mihara; the first-burst over-credit is ~1/10 of Storm damage and partially bounded (stacks reach near-cap within the ~12s ramp). STACK-COUNT ⚑ (cross-family): the 50 cap assumes the 3s window REFRESHES on each application (shared timer — applications land every ~0.2s at the SMG fire rate × buffed crit rate, far faster than the 3s expiry, so stacks pile to the cap and bind there; 'stacks up to 50' implies the cap is reachable in normal play, and stack-building is Mast's design identity). The S5 blind writer (claude-opus-5) read 'lasts for 3 sec' as a PER-STACK expiry (each stack dies 3s after it lands), giving a turnover steady state of critRate×fireRate/2×3s ≈ 14 stacks where the cap never binds (Storm ≈ 63%/tick). The two differ ~3.6×; the shared-refresh/cap-bind reading is encoded here as the more standard NIKKE stacking-debuff behaviour, but the magnitude is measurement-gated — a Mast-focus popup read of a Storm tick settles stacks = tick% / 4.52%.",
         "burst: 'Max HP ▲86.2% of the skill user's Max HP without restoring HP' is casterMaxHpPct, offensively inert in v1 (no HP pool; ally-granted Max HP does not feed atkOfMaxHpPct per the e3 rule, and Mast has no self HP-scaling ATK). Encoded for kit completeness; it moves no damage."
       ]
+    },
+    "n102": {
+      "name": "N102",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-02",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-02: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/n102.json + scripts/kit-autonomy/manual-review/n102.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: 'Max Ammunition Capacity ▲ 3' is maxAmmoFlat (a flat +3 rounds on the recipient's magazine, wired into maxAmmo()); the damage gain is the carry's reduced reload frequency — a real but secondary effect, faithfully encoded rather than fudged",
+        "skill1: trigger is shotFired — RL fires only full-charge shots so every trigger pull is a 'Full Charge attack' (helm precedent for the same kit phrasing on a charge weapon)",
+        "skill2: modeled as interval 15s (the skill cooldown; first fire t=15) — a CD skill that fires whenever off-CD in a sustained fight; 5s duration ⇒ 33% uptime on the carry's charge bucket",
+        "cadence: pullsPerSec / chargeFrames 90 / bolt-gap are datamine values affecting N102's OWN shot cadence (and thus her S1 refresh rate / burst gauge) only; her SUPPORT buff magnitudes are kit-exact, not cadence-dependent"
+      ],
+      "board": null,
+      "date": "2026-08-02",
+      "evidence": "kit-autonomy gauntlet 2026-08-02; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "S2 interval-15s cadence + t=N first-fire phase (global interval convention, popup-cadence read pending); byFinalAtk live-vs-static ranking unobservable in every fixture tried",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     }
   }
 }

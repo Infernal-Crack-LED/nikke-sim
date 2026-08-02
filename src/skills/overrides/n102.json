@@ -1,0 +1,53 @@
+{
+  "note": "n102 (N102) — RL / Supporter / Water / Burst I, cd 20s, ammo 6, chargeFrames 90. A pure single-target buffer whose entire kit is three ATK-seeking grants: she has NO personal-damage lines (no riders, no DoTs, no nukes) — her value is the buffs she puts on the team's highest-final-ATK carry. || S1 'Written Memories' (shotFired trigger — RL fires ONLY full-charge shots, so every trigger pull IS a 'Full Charge attack'; the same encoding helm uses for her 'attacking with Full Charge' line): 'Affects the 1 ally unit(s) with the highest final ATK. Max Ammunition Capacity ▲ 3 for 10 sec. Critical Damage ▲ 10.34% for 10 sec.' → ONE block, target alliesTopAtk{count:1, byFinalAtk:true} (kit says 'highest FINAL ATK' → live effectiveAtk ranking per A3; no 'except self' so self is eligible but a 450-ATK Supporter is never the top), two effects: maxAmmoFlat 3 / 10s + critDamagePct 10.34 / 10s. At the RL charge cadence (~1.5-2s/charge) the 10s window is refreshed continuously, so both grants sit at ~100% uptime on the carry after the first charge. maxAmmoFlat is wired into maxAmmo() (sim.ts) — +3 rounds on the carry's magazine = fewer reloads = a small real damage gain; critDamagePct is the standard crit-damage bucket. || S2 'Impaired Memory' (interval 15s — the 15s skill cooldown; first fire t=15 then every 15s, the snow-white 15s-CD precedent): 'Affects 1 ally unit(s) with the highest final ATK. Charge Damage ▲ 25.84% for 5 sec.' → target alliesTopAtk{count:1, byFinalAtk:true}, chargeDamagePct 25.84 / 5s (additive percentage points in the charge bucket). 5s duration on a 15s CD = 33% uptime. || BURST 'Memories of Blue Butterflies' (burstCast — the cast lands BEFORE the Full Burst window opens): 'Affects all allies. ATK ▲ 25.86% for 10 sec.' → target allies (all, includes self), atkPct 25.86 / 10s (plain 'ATK ▲' = percent of each recipient's OWN ATK, NOT casterAtkPct). || TIER 2: scoped highest-final-ATK single-target buffs (S1/S2) vs all-allies burst; byFinalAtk live-ranking; shotFired-as-full-charge trigger. Faithful>fit; measured>fudge. || Kit-autonomy gauntlet 2026-08-02.",
+  "caveats": [
+    "skill1: 'Max Ammunition Capacity ▲ 3' is maxAmmoFlat (a flat +3 rounds on the recipient's magazine, wired into maxAmmo()); the damage gain is the carry's reduced reload frequency — a real but secondary effect, faithfully encoded rather than fudged",
+    "skill1: trigger is shotFired — RL fires only full-charge shots so every trigger pull is a 'Full Charge attack' (helm precedent for the same kit phrasing on a charge weapon)",
+    "skill2: modeled as interval 15s (the skill cooldown; first fire t=15) — a CD skill that fires whenever off-CD in a sustained fight; 5s duration ⇒ 33% uptime on the carry's charge bucket",
+    "cadence: pullsPerSec / chargeFrames 90 / bolt-gap are datamine values affecting N102's OWN shot cadence (and thus her S1 refresh rate / burst gauge) only; her SUPPORT buff magnitudes are kit-exact, not cadence-dependent"
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "shotFired" },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1,
+        "byFinalAtk": true
+      },
+      "effects": [
+        { "kind": "buff", "stat": "maxAmmoFlat", "value": 3, "durationSec": 10 },
+        { "kind": "buff", "stat": "critDamagePct", "value": 10.34, "durationSec": 10 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "interval", "sec": 15 },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1,
+        "byFinalAtk": true
+      },
+      "effects": [
+        { "kind": "buff", "stat": "chargeDamagePct", "value": 25.84, "durationSec": 5 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 25.86, "durationSec": 10 }
+      ]
+    }
+  ]
+}
