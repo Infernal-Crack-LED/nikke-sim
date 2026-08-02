@@ -364,14 +364,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   findings + the cross-unit cluster inventory (which primitives are built but not yet enacted per unit —
   all measurement/board-gated). Per-unit tier + finding SSOT: `data/kit-status.json`.
 
-- **⇒ PATCH NOTES PENDING AT NEXT PUSH for roster-generator item 4** (merged to main 2026-07-24,
-  `7ebc77b`, owner-approved — the perf plan is now CLOSED: items 0/1/2/3/5 in `5a50f78`, item 4 here;
-  WHY in DECISIONS, A/B in `docs/handoffs/closed/2026-07-24-gen-item4-polish-ab.md`). Player-facing
-  value is narrow — a measured NO-OP on the shipped full-pool config, +13%/a recovered team only on
-  constrained (small-eligible-roster) pools — so the note should say that honestly rather than sell a
-  speed/quality win. Earlier patch notes (`035465e`) already cover the item-0/1/2/3/5 search upgrade;
-  both ship with the next push/deploy.
-
 - **⇒ UNION-RAID GENERATOR — DEFERRED (owner ruling 2026-07-24) pending board stability.** Plan +
   precondition to resume: **`docs/handoffs/2026-07-24-union-raid-polish-plan.md` ON BRANCH
   `gen-union-item3`** (worktree `../nikke-sim-wt-gen-union-item3`, tip `7eb2174`; not on main).

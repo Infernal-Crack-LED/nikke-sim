@@ -2611,7 +2611,10 @@ Plan: `docs/handoffs/closed/2026-07-24-roster-generator-perf-plan.md`. Items:
   (6 tests) + `--polish` on `scripts/bench-generator.ts`; 78 pre-existing generator tests green with
   nothing re-pinned; `verify.sh` green.
 
-**Player-facing patch notes: PENDING at next push** (the pre-push hook nudges `/patch-notes`).
+**Player-facing patch notes: SKIPPED (owner ruling 2026-08-02).** No note written — the item is a
+measured NO-OP on the shipped full-pool config (its only payoff, +13%/a recovered team, is on
+constrained small-eligible pools), and a 9-day-old note was not worth publishing. The item-0/1/2/3/5
+search upgrade is already covered by the 2026-07-24 "smarter search, faster runs" note (`035465e`).
 
 ## Probe reader build-out — four hand reads replaced by scripts (2026-07-24)
 
