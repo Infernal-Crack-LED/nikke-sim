@@ -9,8 +9,9 @@
 //   B1 40s: [tested, B1 AR, B2 SR, B3 RL, B3 MG]  (second B1 covers off-rotations)
 //   B2:     [B1 AR, tested, B2 SR, B3 RL, B3 MG]  (a second B2 is always present)
 //
-// The no-op B1 in the 40s-B1 and B2 templates contributes the standard 7 s team
-// burst-cooldown reduction; 20s-B1 rows rely on the tested B1's own CDR.
+// The no-op B1 (AR) in the 40s-B1 and B2 templates contributes the standard 7 s
+// team burst-cooldown reduction via its override (noop-b1-ar.json); 20s-B1 rows
+// have no second B1, so they rely on the tested B1's own CDR.
 //
 // Cells: core 0 / core 100 × neutral / elemental advantage. Investment is fixed
 // to scope lock (Base-5, 3★/core 7, no cube/doll).
@@ -50,18 +51,19 @@ const B2_TEAM = [NOOP_B1, NOOP_B2, NOOP_B3_RL, NOOP_B3];
 
 // Synthetic MG B1 partner used as a stand-in for Avistar, who is not yet
 // sim-supported but is the canonical partner for Anis: Star's "with B1" mode.
-// Stats are class-modal MG values (mirroring the no-op B3 MG) pending real-unit
-// support.
+// It is built from the class-modal MG no-op (so MG cadence / gauge / wind-up
+// are correct) and pinned as a 20s Burst-1 unit. Its override
+// (src/skills/overrides/synthetic-avistar.json) mirrors the no-op B1 AR's 7s
+// team burst CDR, so the profile row compares on weapon class rather than on
+// missing rotation support.
 export const SYNTHETIC_AVISTAR = 'synthetic-avistar';
 const AVISTAR_CHAR: NoopCharacter = {
-  ...NOOP_CHARACTERS[NOOP_B1],
+  ...NOOP_CHARACTERS[NOOP_B3],
   slug: SYNTHETIC_AVISTAR,
   name: 'Avistar (synthetic MG B1)',
-  weapon: 'MG',
+  burst: 'I',
   burstCooldownSec: 20,
-  ammo: 300,
-  reloadFrames: 171,
-  rl3: 3.55,
+  normalAttackMultiplier: 0,
 };
 
 export interface B1B2DpsProfile {

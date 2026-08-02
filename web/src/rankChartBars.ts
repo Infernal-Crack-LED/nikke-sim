@@ -32,7 +32,7 @@ const PROFILE_LABELS: Record<string, string> = {
   'with-healer': 'w/ Healer',
   'with-mast-rm': 'w/ Mast RM',
   'with-shielder': 'w/ Shielder',
-  'with-avistar': 'w/ Avistar',
+  'with-avistar': 'w/ MG B1',
   'with-other-b1': 'w/ Other B1',
   'with-chime': 'w/ Chime',
   'as-b1': 'B1',

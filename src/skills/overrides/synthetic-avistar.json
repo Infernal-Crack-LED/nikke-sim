@@ -1,0 +1,18 @@
+{
+  "note": "Synthetic MG B1 partner standing in for Avistar. Mirrors the no-op B1 AR's 7s team burst CDR so the partner row compares on weapon class, not on missing rotation support. Has no other skills and deals zero damage.",
+  "skill1": [],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 7
+        }
+      ]
+    }
+  ]
+}

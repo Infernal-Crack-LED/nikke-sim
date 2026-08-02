@@ -7,6 +7,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildTeam,
+  dpsFor,
+  rankB1B2Dps,
   SYNTHETIC_AVISTAR,
   type B1B2TestedUnit,
 } from '../../../src/ranks/b1b2dps.js';
@@ -17,12 +19,27 @@ import {
   NOOP_B3_RL,
 } from '../../../src/dpschart/noop.js';
 import type { RanksCtx } from '../../../src/ranks/burstgen.js';
-import { data, mult } from '../lib/harness.js';
+import { data, mult, cubes, olLines, skillLevels } from '../lib/harness.js';
+import { loadOverride } from '../../../src/skills/overrides-node.js';
+import type { OverrideFile } from '../../../src/skills/index.js';
 
 const ctx: RanksCtx = {
   characters: data.characters as any,
   mult,
   deps: {} as any,
+};
+
+const overrides: Record<string, OverrideFile | undefined> = {};
+for (const slug of Object.keys(data.characters)) {
+  overrides[slug] = loadOverride(slug);
+}
+for (const slug of [NOOP_B1, NOOP_B3, SYNTHETIC_AVISTAR]) {
+  overrides[slug] = loadOverride(slug);
+}
+const fullCtx: RanksCtx = {
+  characters: data.characters as any,
+  mult,
+  deps: { overrides, skillLevels, cubes, olLines },
 };
 
 function unit(
@@ -127,5 +144,73 @@ describe('b1b2 dps team assembly', () => {
       NOOP_B3_RL,
       NOOP_B3,
     ]);
+  });
+});
+
+describe('b1b2 dps integration', () => {
+  it('forced rows run through the engine and produce non-zero DPS', () => {
+    const rapi = dpsFor(
+      'c0-neutral',
+      unit('rapi-red-hood', 'I', 1, 'as-b1'),
+      fullCtx
+    );
+    expect(rapi, 'rapi-red-hood as B1').toBeGreaterThan(0);
+
+    const redHoodB1 = dpsFor(
+      'c0-neutral',
+      unit('red-hood', 'I', 1, 'as-b1'),
+      fullCtx
+    );
+    expect(redHoodB1, 'red-hood as B1').toBeGreaterThan(0);
+
+    const redHoodB2 = dpsFor(
+      'c0-neutral',
+      unit('red-hood', 'II', 2, 'as-b2'),
+      fullCtx
+    );
+    expect(redHoodB2, 'red-hood as B2').toBeGreaterThan(0);
+  });
+
+  it('Anis: Star profile rows run and differ from her plain row', () => {
+    const plain = dpsFor('c0-neutral', unit('anis-star', 'I'), fullCtx);
+    const withMg = dpsFor(
+      'c0-neutral',
+      unit('anis-star', 'I', undefined, 'with-avistar'),
+      fullCtx
+    );
+    const withOther = dpsFor(
+      'c0-neutral',
+      unit('anis-star', 'I', undefined, 'with-other-b1'),
+      fullCtx
+    );
+    expect(plain).toBeGreaterThan(0);
+    expect(withMg).toBeGreaterThan(0);
+    expect(withOther).toBeGreaterThan(0);
+    // The two profile rows use different partner weapons, so they should not
+    // collapse to the same number.
+    expect(withMg).not.toEqual(plain);
+    expect(withOther).not.toEqual(plain);
+  });
+
+  it('rankB1B2Dps produces a ranked list for every cell', () => {
+    const population: B1B2TestedUnit[] = [
+      unit('anis-star', 'I'),
+      unit('crown', 'II'),
+      unit('red-hood', 'I', 1, 'as-b1'),
+      unit('rapi-red-hood', 'I', 1, 'as-b1'),
+    ];
+    const ranked = rankB1B2Dps(population, fullCtx);
+    for (const cell of [
+      'c0-neutral',
+      'c0-eleadv',
+      'c100-neutral',
+      'c100-eleadv',
+    ] as const) {
+      expect(ranked[cell].length, cell).toBe(population.length);
+      expect(ranked[cell][0].rank, cell).toBe(1);
+      for (const row of ranked[cell]) {
+        expect(row.dps, `${cell} ${row.slug}`).toBeGreaterThan(0);
+      }
+    }
   });
 });

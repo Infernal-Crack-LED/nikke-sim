@@ -33,7 +33,7 @@ Both units are ranked **both ways** — plain base team and profiled — flagged
 
 ## B1/B2 DPS (`b1b2dps.json`)
 
-Ranks every sim-supported **Burst-1 and Burst-2 unit by its own damage** in a Solo-style no-op control team. The unit under test is inserted at the leftmost slot of its burst stage; teammates are weapon-modal no-op controls with empty kits, so the value comes from the unit's own kit, weapon cadence, and burst rotation.
+Ranks every sim-supported **Burst-1 and Burst-2 unit by its own damage** in a Solo-style no-op control team. The unit under test is inserted at the leftmost slot of its burst stage; teammates are synthetic no-op controls whose only effects are rotation-support effects (the B1 control carries the standard 7 s team burst-cooldown reduction on its burst cast, mirroring a real B1 enabler), so the ranked value comes from the tested unit's own kit, weapon cadence, and burst rotation.
 
 Cells: **Core 0 / Core 100 × Neutral / Elemental advantage** (the boss is set to the element the tested unit beats). Investment is scope lock.
 
@@ -43,7 +43,7 @@ Standard no-op teams (the unit under test is inserted at the ▼ slot):
 - **B1 40s** — `[▼unit, B1 AR, B2 SR, B3 RL, B3 MG]` (a second B1 covers off-rotations)
 - **B2** — `[B1 AR, ▼unit, B2 SR, B3 RL, B3 MG]`
 
-The no-op B1 in the **40s-B1** and **B2** templates provides the standard 7 s team burst-cooldown reduction; 20s-B1 rows rely on the tested B1's own CDR.
+The no-op B1 (AR) in the **40s-B1** and **B2** templates contributes the standard 7 s team burst-cooldown reduction via its override (`src/skills/overrides/noop-b1-ar.json`); 20s-B1 rows have no second B1, so they rely on the tested B1's own CDR.
 
 Λ units and forced off-stage rows are pinned with `lambdaStage`:
 

@@ -22,7 +22,7 @@ B3 RL, B3 MG]`; B2 `[B1 AR, tested, B2 SR, B3 RL, B3 MG]`. The no-op B1 in the 4
   generic other B1. **Evidence:** green `bash scripts/verify.sh` and `node scripts/web-smoke-ranks.mjs`;
   team-assembly fixtures in `scripts/tests/ranks/b1b2dps.test.ts`.
 
-- **(2026-08-01, latest) CLEAN-WEAPON BASIS INVARIANT REFINED (option 2): CW1 now pins
+- **(2026-08-01) CLEAN-WEAPON BASIS INVARIANT REFINED (option 2): CW1 now pins
   damage-NEUTRALITY of any committed override, not file-ABSENCE — `marciana` is the first
   clean-weapon unit to carry an override.** The kit-autonomy gauntlet landed `marciana` (the SG
   clean-weapon basis cell) at GO faithfulness 1.0, cross-family corroborated (S2b claude-fable-5 /

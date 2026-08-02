@@ -24,9 +24,11 @@ import {
   B1B2_DPS_CELLS,
   B1B2_DPS_PROFILES,
   B1B2_DPS_EXTRA_PROFILES,
+  SYNTHETIC_AVISTAR,
   type B1B2TestedUnit,
   type B1B2DpsCell,
 } from '../src/ranks/b1b2dps.js';
+import { NOOP_B1, NOOP_B3 } from '../src/dpschart/noop.js';
 import type {
   B1B2DpsArtifact,
   B1B2DpsRow,
@@ -49,6 +51,12 @@ try {
 
 const overrides: Record<string, OverrideFile | undefined> = {};
 for (const slug of Object.keys(data.characters)) {
+  overrides[slug] = loadOverride(slug);
+}
+// Synthetic controls (and the synthetic MG B1 partner) are not roster entries,
+// but their overrides carry framework effects (no-op B1 CDR, no-op B3 mock
+// burst, synthetic Avistar CDR).
+for (const slug of [NOOP_B1, NOOP_B3, SYNTHETIC_AVISTAR]) {
   overrides[slug] = loadOverride(slug);
 }
 
@@ -118,9 +126,15 @@ for (const [slug, profileIds] of Object.entries(B1B2_DPS_EXTRA_PROFILES)) {
     if (!profileDef) {
       continue;
     }
+    if (c.burst !== 'I' && c.burst !== 'II') {
+      process.stderr.write(
+        `b1b2dps: skipping profile ${id} for ${slug} — burst is ${c.burst}, expected I or II\n`
+      );
+      continue;
+    }
     population.push({
       slug,
-      effectiveBurst: c.burst as 'I' | 'II',
+      effectiveBurst: c.burst,
       element: c.element as Element,
       profile: id,
     });
@@ -164,8 +178,8 @@ const profiles: Record<string, string> = {
   ...Object.fromEntries(
     Object.values(B1B2_DPS_PROFILES).map((p) => [p.id, p.note])
   ),
-  'as-b1': 'operating as Burst 1 (lambdaStage forced)',
-  'as-b2': 'operating as Burst 2 (lambdaStage forced)',
+  'as-b1': 'ranked in the Burst 1 slot',
+  'as-b2': 'ranked in the Burst 2 slot',
 };
 
 const artifact: B1B2DpsArtifact = {
@@ -173,8 +187,8 @@ const artifact: B1B2DpsArtifact = {
   methodology:
     'B1/B2 units ranked by their own DPS in a Solo-style no-op control team. ' +
     'Team shape: B1 20s [tested, B2 SR, B2 SR, B3 RL, B3 MG]; B1 40s [tested, B1 AR, B2 SR, B3 RL, B3 MG]; ' +
-    'B2 [B1 AR, tested, B2 SR, B3 RL, B3 MG]. The no-op B1 in the 40s-B1 and B2 templates provides the standard 7 s team burst CDR; ' +
-    "20s-B1 rows rely on the tested B1's own CDR. " +
+    'B2 [B1 AR, tested, B2 SR, B3 RL, B3 MG]. The no-op B1 (AR) in the 40s-B1 and B2 templates contributes the standard 7 s team burst CDR via its override; ' +
+    "20s-B1 rows have no second B1, so they rely on the tested B1's own CDR. " +
     'Investment is scope lock (Base-5, 3★/core 7, no cube/doll). ' +
     'Cells: core 0 / core 100 × neutral / elemental advantage (boss weak to the tested unit).',
   units,

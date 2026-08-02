@@ -32,7 +32,7 @@ const PROFILE_LABELS = {
   'w/ Mint': 'w/ Mint',
   'w/ Anchor': 'w/ Anchor',
   'w/ Bunny': 'w/ Bunny',
-  'with-avistar': 'w/ Avistar',
+  'with-avistar': 'w/ MG B1',
   'with-other-b1': 'w/ Other B1',
   'with-chime': 'w/ Chime',
   'as-b1': 'B1',
