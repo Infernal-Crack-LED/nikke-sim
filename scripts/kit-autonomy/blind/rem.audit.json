@@ -1,0 +1,147 @@
+{
+  "slug": "rem",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after landing 15 normal atk",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount{count:15} — 'landing 15 normal attack(s)' counts ROUNDS, not trigger pulls; MG hitsPerShot is 1 so rounds==hits here"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "in Demon's Breath status",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "block gate mode:'demonsBreath' + top-level modes:['demonsBreath'] — the status is named in her OWN burst block, so the stack counter is treated as burst-gated. ⚑ source of the status is kit-silent (see caveats)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 4.22%, 30 stacks, 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 4.22, maxStacks 30, durationSec 10, rampSec 8 (⚑ stack-ramp haircut; authored at per-stack value with engine stacking)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when using Burst Skill",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast — literal 'when using Burst Skill' = HER cast, NOT fullBurstEnter (over-credits in multi-B2 comps)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies (includes self — no 'except self' clause)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Equally shares HP recovery 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal{ticks:10, intervalSec:1} — no HP pool in v1, so this is a recovery-EVENT emitter that keeps teammates' 'recovery' triggers live for 10s. Also listed in unmodeled: the HP-SHARING semantics (redistributing recovery between allies) are genuinely not represented, only the recovery events"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates at the start of battle",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger passive (battle-start + 'continuously' = always-on)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recovers 42.24% of atk dmg as HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal{ticks:180,intervalSec:1} on self — lifesteal; the 42.24% HP amount is unmodeled (no HP pool), only the recovery events fire. Line also recorded in unmodeled for the magnitude"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "self and 2 RL allies highest ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "split into two blocks: self (first skill2 block) + alliesOfWeapon{weapon:'RL',excludeSelf:true}. ⚑ schema has no 'top-N by weapon' target so the count:2 slice is NOT enforced — see caveats"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Equally shares HP recovery cont.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal{ticks:180,intervalSec:1} to the RL allies — recovery-event channel; the sharing semantics themselves recorded in unmodeled"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target self"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Demon's Breath: Crit Rate ▲37.8%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 37.8, durationSec 10, trigger burstCast. UNSCOPED crit (kit says plain 'Critical Rate', not 'Critical Rate of normal attacks') so critRatePct not critRateNormalPct. The 'Demon's Breath:' prefix is what names the skill1 status"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies with a RL",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target alliesOfWeapon{weapon:'RL'} — weapon-typed, class-blind. Rem is MG so the filter excludes her naturally"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲50.78% of skill user's ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 50.78, durationSec 10 — 'of the skill user's ATK' is the flat caster-scaled add, NOT atkPct (which would scale the RECEIVER's own ATK)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammo ▲5 round(s) 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff maxAmmoFlat 5, durationSec 10 — a weapon-state modifier and therefore DAMAGE (gates shots fired per magazine); flat round count, not a percentage"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[0].mode / override.modes",
+      "estimate": "Demon's Breath = the self status granted by her own burst (10s window); skill1's stack counter only runs inside it",
+      "reasoning": "The status name appears in exactly one place in the whole kit — as the prefix on her burst's self crit line ('Demon's Breath: Critical Rate ▲ 37.8% for 10 sec'). The only structural read is that the burst GRANTS the status; skill1 then reads 'in Demon's Breath status' as a gate. The alternative (a battle-start permanent status the prose never grants) has no supporting line. Consequence is large: gated, the ATK pool can only build during ~10s post-burst windows and can plausibly never approach 30 stacks; ungated, it ramps from t=0 and caps early. This is the single highest-leverage unknown in the kit.",
+      "recipe": "Record a solo/enabled fight with DBG_BUFFS and read whether an atkPct buff on rem appears before her first burst cast. If ATK stacks appear from ~t=2s onward with no burst, the mode gate is wrong — drop `mode` and `modes`. If they appear only in 10s clusters starting at each burst cast, the gate is confirmed. A second, cheaper read: compare her own normal-attack popup magnitudes in the first 20s vs the 20s after her first burst."
+    },
+    {
+      "field": "override.skill1[0].rampSec",
+      "estimate": "8s to reach cap-equivalent contribution",
+      "reasoning": "30 stacks × 15 landed rounds = 450 rounds to cap. Her belt is 300 with reloadFrames 171 (~2.85s), so a full belt plus most of a second is needed — but each stack lasts only 10s, so unless the pool refreshes as a whole, the tail stacks expire while the head is still building and 30 is unreachable. rampSec 8 is a mid estimate between 'caps almost instantly' and 'never caps'; it is NOT derived from a measured cadence because the MG cadence tuple is datamine-unreliable. Cross-check: 4.22 × 30 = 126.6% ATK is a very large self buff for a Supporter, which weakly suggests the real steady state sits well below cap.",
+      "recipe": "Two measurements. (1) Cadence: read her ammo counter across one full belt from footage to get true rounds/sec (never trust rate_of_fire). (2) Stack semantics: watch her buff icon stack number in footage — if it climbs monotonically to a plateau then drops to 0 all at once, the pool refreshes as a whole (current model); if it oscillates/sawtooths, each stack has its own timer and the model should switch to a steady-state haircut (~cap/2 or lower) instead of a ramp."
+    },
+    {
+      "field": "override.skill1[0] stack-expiry semantics",
+      "estimate": "whole-pool refresh (each new stack refreshes the 10s window on all stacks)",
+      "reasoning": "'stacks up to 30 time(s) and lasts for 10 sec' is ambiguous between per-stack timers and a refreshing pool. The engine's maxStacks buff path is a refresh-to-full model, so the override inherits that. If the game runs per-stack timers, this model OVER-CREDITS: with per-stack expiry the pool can only hold as many stacks as she can generate in 10s.",
+      "recipe": "Same footage read as above — the buff-icon stack counter's decay shape is decisive (single cliff = refresh; staircase down = per-stack). No engine change needed if refresh is confirmed."
+    },
+    {
+      "field": "override.skill2[1].target",
+      "estimate": "alliesOfWeapon{weapon:'RL', excludeSelf:true} as a stand-in for 'self and 2 RL allies with the highest final ATK'",
+      "reasoning": "The schema has alliesOfWeapon (all, no count) and alliesTopAtk (count, no weapon filter) but no weapon+count intersection, and no self+allies composite. The split keeps self covered by the sibling block and covers RL allies without the top-2 slice. Because the effect is a heal with no HP amount, the over-targeting is damage-inert TODAY; it only matters if a 3rd RL ally is present AND some unit carries an on-recovery damage trigger.",
+      "recipe": "No measurement needed — this is a schema gap, not an empirical unknown. If a team ever runs 3+ RL units alongside a recovery-consumer (crown-style 'when recovery takes effect'), either extend TargetDef with an alliesOfWeapon count/byFinalAtk field or hard-restrict via alliesOfElementWeapon-style slicing. Record the limitation until then."
+    },
+    {
+      "field": "override.skill1[1].effects[0].ticks / skill2 heal ticks",
+      "estimate": "10 ticks for the 10s burst heal; 180 ticks for the two 'continuously' channels",
+      "reasoning": "The kit states durations ('for 10 sec', 'continuously') but no tick cadence. The engine's heal effect emits one recovery event per tick at intervalSec (default 1). 1/sec over the stated window is the neutral convention and matches how a continuous heal-over-time keeps an on-recovery consumer refreshed. 180 = the fight length. Neither number is kit-stated.",
+      "recipe": "Only matters if a teammate's on-recovery trigger is rate-sensitive. If a recovery-consumer's proc COUNT is ever popup-read in a team with rem, compare it against 1/sec and adjust intervalSec. Otherwise leave as convention."
+    },
+    {
+      "field": "cadence tuple (MG 300 ammo / 171 reloadFrames / 5.57 normal mult)",
+      "estimate": "use as given",
+      "reasoning": "ALWAYS-⚑ per methodology: datamined cadence fields (rate_of_fire, reloadFrames) are known-unreliable, and the effective rate is quantized to 60fps frame boundaries (60/ceil(60/nominal)), so the nominal value is not the effective one. Rem's whole skill1 stack rate is downstream of this, and MG wind-up further modulates early-fight rate.",
+      "recipe": "Read her ammo counter across a full belt in footage to get shots/sec directly (the instrument that measures the disputed quantity), rather than inferring from burst-gauge or FB counts."
+    },
+    {
+      "field": "noFb (not set anywhere)",
+      "estimate": "not set — all effects take Full Burst by timing (default ON)",
+      "reasoning": "Per methodology, per-kit noFb is measured-only and defaults OFF. Rem's kit carries no flatDamage/dot riders at all (she is a pure buffer/healer), so there is nothing for noFb to apply to — the field is genuinely N/A here rather than deferred.",
+      "recipe": "N/A — no damage riders in this kit."
+    },
+    {
+      "field": "hitRatePct (absent)",
+      "estimate": "no Hit-Rate line in this kit",
+      "reasoning": "Confirming a negative: the ALWAYS-⚑ Hit-Rate→core magnitude flag does not apply because no skill line mentions Hit Rate. Recorded so a reviewer can see the check was made rather than omitted.",
+      "recipe": "N/A."
+    }
+  ],
+  "model": "claude-opus-5"
+}

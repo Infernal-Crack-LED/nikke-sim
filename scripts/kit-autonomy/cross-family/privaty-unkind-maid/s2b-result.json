@@ -1,0 +1,90 @@
+{
+  "slug": "privaty-unkind-maid",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "hitting the target with 30 pellet(s)",
+      "disposition": "FAITHFUL",
+      "scope": "Flat-damage rider off pellet landings from normal attacks; deals 202.84% final ATK per proc. Single partless boss means the 'Affects 2 enemy unit(s) nearest to the crosshair' clause resolves to exactly ONE instance per proc — never two.",
+      "durationSemantics": "Instant hit, no duration. Counter is cumulative landed PELLETS (persists across reloads until threshold).",
+      "triggerIdentity": "Pellet-hit counter at 30 LANDED PELLETS — for an SG with hitsPerShot 10 that is ~every 3 shots (stretched by the per-pellet landing fraction), NOT 30 rounds/trigger-pulls. No FB gate — active whole fight. Rider takes +50% FB by landing timing (default ON), noRange, no core.",
+      "targetSet": "Enemy (boss). One damage instance in the single-boss sim.",
+      "nearestWrongModel": "hitCount{count:30} counting ROUNDS (trigger pulls) — the engine's documented hitCount unit — giving one proc per ~30 shells (~3.3 magazines, ~10x too rare). Secondary misread: emitting 2 damage instances for the '2 enemy unit(s)' clause.",
+      "distinguishingAssertion": "Collect damage events for privaty-unkind-maid with mult===202.84 over a full controlComp run: (a) consecutive procs are separated by <=4 of her shot events (green under pellet counting; red under round counting, where spacing is ~30 shots); (b) total proc count is on the order of (landed pellets)/30 — tens of procs per fight, not <=6; (c) exactly one 202.84 damage event per proc frame, never two.",
+      "inertness": "Proc count must not double for the 2-enemy clause; procs must not stop outside Full Burst (no fbGate on this line).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "5 or more pellets hit with a single norm",
+      "disposition": "FAITHFUL",
+      "scope": "Self weapon-state buff: Reload Speed ▲ 20.88%. This IS damage — reloadFrames 141 (~2.35s) on a 9-shell magazine means reload uptime gates shots fired.",
+      "durationSemantics": "2 sec wall-clock, refreshed per qualifying shot (per-shot condition, not a cumulative counter). Effectively near-continuous while firing at close range where >=5 of 10 pellets land.",
+      "triggerIdentity": "Per-SHOT gate (>=5 of the shot's 10 pellets land) — closest primitive is shotFired (with the >=5 landing condition approximated as always-true at boss range, ⚑ if landing fraction can drop below 0.5). NOT hitCount:5 (that would fire every 5 rounds regardless of per-shot landing).",
+      "targetSet": "Self only.",
+      "nearestWrongModel": "Dropped as 'reload speed = defensive, no damage' (the documented Grave failure), or encoded as a permanent passive with no 2s window (over-credits if the unit idles), or hitCount:5.",
+      "distinguishingAssertion": "buffApply events with stat 'reloadSpeedPct', value 20.88, targetSlug privaty-unkind-maid recur approximately once per shot event (many per magazine), each with a fresh ~2s expiresFrame; AND totals(runComp) for her under the committed override strictly exceeds totals under withPatchedOverride stripping this block (more shots fired) — red if the line is absent entirely.",
+      "inertness": "Must never apply to allies; must not alter damage-per-shot, only reload duration / shot count.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "hitting 30 times with pellets during FB",
+      "disposition": "FAITHFUL",
+      "scope": "Self: (1) 'Reload 1 round(s)' — an ammo drip of ONE shell (instantReload fraction 1/9 of the 9-shell magazine), which during FB can defer or entirely skip the 141-frame reload; (2) ATK ▲ 11.22% stacking to 5.",
+      "durationSemantics": "ATK buff: 2 sec wall-clock per application ('lasts for 2 sec' — genuinely seconds, refresh-on-reapply, maxStacks 5). Given ~30 landed pellets needs >=3 SG shots (~2s of firing), steady-state stacks are LOW (~1-2), not a pinned 5-stack. Reload effect: instant, no duration.",
+      "triggerIdentity": "Pellet-hit counter at 30 landed pellets, FB-GATED (fbGate 'inFb' on a repeating pellet counter) — fires MULTIPLE times per FB window, and never outside FB. Same pellets-not-rounds trap as skill1. NOT fullBurstEnter (which would fire exactly once per FB and also on any team FB).",
+      "targetSet": "Self only.",
+      "nearestWrongModel": "Two compounding misreads: 'Reload 1 round(s)' encoded as a FULL magazine instantReload (fraction 1 — massively over-credits FB uptime, 9 shells vs 1); and the trigger keyed to fullBurstEnter once-per-FB (or hitCount counting 30 rounds), collapsing a repeating in-FB engine into a single entry proc. Also 'lasts for 2 sec' silently promoted to a permanent 5-stack FB buff.",
+      "distinguishingAssertion": "Within one fullBurstStart→fullBurstEnd window in controlComp: (a) buffApply stat 'atkPct' value 11.22 for her fires MULTIPLE times with stacks field climbing (maxStacks 5) — red under a single once-per-FB apply; (b) her ammo timeline shows +1-shell top-ups (reload-event count / full 141-frame reloads during FB strictly lower than under withPatchedOverride stripping the reload effect, but NOT zero-reload-forever as a full-refill encoding would produce); (c) zero applications of this block outside FB windows.",
+      "inertness": "Zero buffApply/reload activity from this block outside Full Burst; the ATK stacks must lapse (expiresFrame ~2s) rather than persist across the whole FB; the drip must not refill the full magazine.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack damage ▲ 10.56% / Crit Dmg ▲ 88.17",
+      "disposition": "FAITHFUL",
+      "scope": "Self buffs: attackDamagePct 10.56 (Damage Up bucket) and critDamagePct 88.17, both 10 sec.",
+      "durationSemantics": "10 sec wall-clock each, from her own burst cast.",
+      "triggerIdentity": "burstCast (her OWN Burst-III cast — the self mode sits in her own burst block), NOT fullBurstEnter. This diverges hard in controlComp, which fixes helm as a second Burst III: on rotations where helm carries the FB chain, these buffs must NOT apply.",
+      "targetSet": "Self only.",
+      "nearestWrongModel": "Keyed to fullBurstEnter — applies on EVERY team Full Burst including helm-cast rotations, over-crediting her by ~2x buff uptime in any dual-B3 comp.",
+      "distinguishingAssertion": "Count her buffApply events with stat 'critDamagePct' value 88.17: the count equals the number of burstCast events whose caster is privaty-unkind-maid, and NO such buffApply lands on a rotation whose burstCast at stage 3 was helm — red under fullBurstEnter keying, where applies == total FB count.",
+      "inertness": "Zero applications on Full Bursts she did not personally cast; never applied to allies.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1066.66% of final ATK as Burst Ski",
+      "disposition": "FAITHFUL",
+      "scope": "Instant burst-cast damage, 1066.66% final ATK, Burst-Skill flavored. 'Affects all enemies' collapses to one hit on the single boss.",
+      "durationSemantics": "Instant, once per her burst cast.",
+      "triggerIdentity": "burstCast damage. Per the measured timing rule, burst-cast damage lands BEFORE the Full Burst window opens — FB-exempt (no +50% major, no FB-entry auras). Her simultaneously-cast 10s self-buffs from the same cast apply at cast; whether they snapshot into this hit is an ordering question the test must pin one way (assert the emitted mult/fbMajorApplied rather than assuming).",
+      "targetSet": "Enemy (boss), single instance.",
+      "nearestWrongModel": "The +50% Full Burst major applied to the nuke (treating it as landing inside the FB window), inflating every rotation's burst contribution by 50%; secondary: double instance for 'all enemies'.",
+      "distinguishingAssertion": "For each of her burstCast events, exactly one damage event with mult===1066.66 whose fbMajorApplied is false (and inFullBurst false / pre-FB timing) — red if fbMajorApplied is true or two instances appear.",
+      "inertness": "Must not fire on helm's burst casts or on FB entry alone; exactly one instance per cast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:30-pellet 202.84% rider",
+    "skill2:>=5-pellet reload-speed 20.88%",
+    "skill2:in-FB 30-pellet reload-1-round + ATK 11.22%x5",
+    "burst:self attackDamage 10.56 + critDamage 88.17 (10s)",
+    "burst:1066.66% burst-cast nuke"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in priority order: (1) PELLETS vs ROUNDS on BOTH pellet-counter lines — the engine's hitCount trigger documents 'counts ROUNDS not pulls'; this SG kit counts LANDED PELLETS (hitsPerShot 10), so a naive hitCount:{count:30} is ~10x too slow. The faithful cadence also depends on the per-pellet landing fraction (⚑ CALIBRATED — proc spacing stretches when <10 pellets land per shot), so proc-count assertions should be banded, not exact. (2) 'Reload 1 round(s)' is a ONE-shell drip (fraction 1/9), not a full instantReload — the full-refill misread effectively deletes her FB reload downtime and is a large over-credit given reloadFrames 141. (3) burstCast vs fullBurstEnter on the burst self-buffs is live in the control fixture itself because controlComp pins helm as a second Burst III — a fullBurstEnter misread passes in any solo-B3 fixture, so the test MUST run the dual-B3 controlComp and assert zero applies on helm-cast rotations. (4) The 1066.66% nuke is FB-exempt by cast timing (assert fbMajorApplied false). (5) Reload Speed ▲ is damage-bearing (shot-count gate) — a 'defensive, skip' disposition is wrong. Environment note, not a model gap: both 'Affects 2 enemy unit(s)' and 'Affects all enemies' collapse to one boss instance in the partless single-boss sim; tests must assert exactly ONE damage instance per proc. Also note the effect-schema commentary references base 'privaty' (a DIFFERENT unit) for a Designated Target status — do not import that mechanic into this slug; nothing in this unit's prose mentions it.",
+  "model": "claude-fable-5"
+}

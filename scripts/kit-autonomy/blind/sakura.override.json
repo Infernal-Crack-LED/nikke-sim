@@ -1,0 +1,93 @@
+{
+  "slug": "sakura",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 3
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 8.15,
+          "durationSec": 15,
+          "maxStacks": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 4.84
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 23.76,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 23.54,
+          "durationSec": 30
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "When attacking an enemy projectile, damage to that projectile ▲ 7.74% continuously."
+    ],
+    "burst": [
+      "Damage dealt by Wind Code enemies ▼ 90.72% for 30 sec. Activates 1 time(s) per battle."
+    ]
+  },
+  "caveats": [
+    "⚑ The burst Interruption-Parts block's kit gate ('Activates when Cherry Blossom Tea is at max stacks') is NOT enforced — no stack-count resource is declared, so the block fires on every burst cast. Damage-inert either way: partsDamagePct is a no-op on the partless scope-lock boss, so the un-gated model moves zero damage. If parts damage ever becomes live, this MUST be gated (declare a 'cherryBlossomTea' resource + resourceGate min:10) before it is trusted.",
+    "⚑ defPct is engine-inert in v1 (self DEF does not feed own damage); the Cherry Blossom Tea stack buff is carried for kit completeness and as the semantic source of the burst's max-stacks gate, not for damage.",
+    "⚑ Cadence inputs (ammo 6, reloadFrames 121, chargeFrames 60, rate-of-fire) come from the known-unreliable datamine fields; the skill1 hitCount:3 activation rate — and therefore whether 10 stacks are ever reached inside the rolling 15s window — rides entirely on them.",
+    "The only mechanically damage-relevant line in the whole kit is the skill2 full-burst-enter burstCdr (4.84s, all allies), which shortens the TEAM's rotation, plus the burst's 10s caster-scaled ATK grant. Everything else is defensive, projectile-scoped, parts-scoped, or DEF."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Sakura (SR/Fire/Supporter/Burst I, cd 40s). Modeled: S1 'Cherry Blossom Tea' as an allies DEF ▲8.15% stack buff (hitCount:3 — 'after 3 normal attack(s)', counted in ROUNDS, not trigger pulls; maxStacks 10, 15s, refreshing). S2 full-burst-enter allies burstCdr 4.84s (a real rotation lever — it accelerates every ally's burst cooldown on EVERY team Full Burst, not just rotations Sakura bursts on; the kit text says 'entering Full Burst', so it is keyed to fullBurstEnter, not burstCast). Burst: allies ATK ▲23.76% of the skill user's ATK for 10s (casterAtkPct — flat-resolved off Sakura's own staticAtk at apply time, so a Supporter-class caster grants a modest flat add), plus allies Damage to Interruption Parts ▲23.54% for 30s (partsDamagePct, inert on a partless boss, gate not enforced — see caveats). Deliberately unmodeled: the S2 enemy-projectile damage line (no enemy projectiles exist in the sim) and the burst's Wind-Code incoming-damage reduction (purely defensive; the sim models no incoming damage). Both are recorded verbatim in `unmodeled`."
+}

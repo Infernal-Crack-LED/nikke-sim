@@ -1,0 +1,122 @@
+{
+  "slug": "biscuit",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Rate of normal attack ▲ 5.77%",
+      "disposition": "FAITHFUL",
+      "scope": "NORMAL-ATTACK-SCOPED crit rate only — must be stat 'critRateNormalPct' (opt-in, applies solely to category==='normal' hits), never the unscoped 'critRatePct'. Applies only to Attacker-class allies; biscuit (Supporter) herself is excluded by the class filter.",
+      "durationSemantics": "'for 10 sec' = literal durationSec:10 (wall-clock; no round count anywhere in this line). No stacks; a second FB-end inside 10s refreshes.",
+      "triggerIdentity": "fullBurstEnd — 'Activates at the END of Full Burst'. NOT fullBurstEnter, NOT burstCast. Fires on EVERY team Full Burst's end regardless of who bursted. Note the timing consequence: the 10s buff window lives almost entirely OUTSIDE Full Burst (in the post-FB downtime), so it must not overlap the +50% FB window of the FB that spawned it.",
+      "targetSet": "alliesOfClass 'Attacker' — Attacker allies only. Not self, not the team, not Supporters/Defenders.",
+      "nearestWrongModel": "Encoding as generic critRatePct on fullBurstEnter targeting all allies — (a) generic crit over-credits skill/burst-proc crit for every recipient, (b) FB-enter shifts the 10s window INSIDE Full Burst where it stacks with the +50% major, (c) team-wide targeting credits non-Attackers.",
+      "distinguishingAssertion": "Filter buffApply events for stat:'critRateNormalPct', value:5.77 from biscuit's casterIdx: (1) each apply frame coincides with a fullBurstEnd event, not fullBurstStart; (2) every targetSlug is an Attacker-class comp member and the set contains NO Supporter/Defender slug (and not biscuit herself); (3) expiresFrame = applyFrame + 600; (4) zero buffApply events with stat:'critRatePct' sourced from biscuit. Green under faithful; red under any of the three misreads.",
+      "inertness": "Must move ONLY the Attacker carry's normal-attack crit contribution. Zeroing this line must leave biscuit's own damage, Supporter/Defender allies' damage, skill/burst-bucket crit rates, and all FB counts unchanged.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "recovers 1.53% ... every 1 sec for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Heal-over-time to Attacker allies; amount scales off the SKILL USER's (biscuit's) final Max HP — but the engine models no HP amounts, so the mechanical content is the stream of recovery events feeding targets' 'recovery' triggers (tandem channel — never skip heal lines on isolation).",
+      "durationSemantics": "10 ticks at 1s intervals over 10 sec → heal effect with ticks:10, intervalSec:1. NOT a single instant heal.",
+      "triggerIdentity": "fullBurstEnd (same ■ header as the crit line — one block or two blocks on the same trigger).",
+      "targetSet": "alliesOfClass 'Attacker' (same header). Notably NOT Defenders — a Defender on-recovery consumer (e.g. crown) must NOT be fed by this line.",
+      "nearestWrongModel": "Dropped as 'defensive, no damage' (MISSING), or collapsed to a single instant heal (ticks:1) — under-feeds any Attacker on-recovery consumer 10:1; or mis-targeted to all allies, spuriously feeding Defender/Supporter recovery-triggered kits (crown-class over-credit).",
+      "distinguishingAssertion": "Via cfg.onEvent, count recovery events sourced from biscuit's skill1 after each fullBurstEnd: exactly 10 per FB-end per Attacker target, spaced 60 frames; zero such events target a non-Attacker slug. Red if 0 (skipped), 1 (instant collapse), or if any Defender/Supporter receives one.",
+      "inertness": "Zero direct damage. Must not change biscuit's or any ally's damage in a comp with no on-recovery Attacker consumer; must never fire a Defender's 'recovery' trigger.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Invincible for 5 sec ... 2 time(s)",
+      "disposition": "UNMODELED",
+      "scope": "Defensive invincibility on one Defender ally; no offensive channel and no invincibility primitive in the schema.",
+      "durationSemantics": "5 sec, capped 2 activations per battle — moot in v1.",
+      "triggerIdentity": "'when a Defender ally's HP falls below 50%' — an HP-threshold trigger. v1 has NO HP pool (immortal boss deals no damage; the alliesLowestHp comment confirms 'nobody takes damage'), so this trigger is INDETERMINATE and can never legitimately fire.",
+      "targetSet": "The triggering Defender ally.",
+      "nearestWrongModel": "Inventing a proxy trigger (interval/passive) to 'represent' it — there is nothing to represent; any encoding is a fabricated activation.",
+      "distinguishingAssertion": "The shipped override emits NO block for this line; the sim event log for a biscuit comp contains no buff/heal/shield event attributable to skill2. Verbatim text must appear in override.unmodeled.skill2. Red if any skill2-sourced event exists.",
+      "inertness": "Totally inert — zero events, zero damage delta, zero recovery events from skill2.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recovers 23.26% of the skill user's ... HP",
+      "disposition": "UNMODELED",
+      "scope": "Instant heal (23.26% of biscuit's Max HP) to the triggering Defender ally — normally a tandem-relevant recovery event, BUT it shares the un-fireable HP-below-50% trigger.",
+      "durationSemantics": "Instant, 2 activations per battle — moot in v1.",
+      "triggerIdentity": "Same indeterminate HP-threshold trigger as the invincibility line; cannot fire in v1.",
+      "targetSet": "The target Defender ally — the DANGEROUS part: a Defender recovery-consumer (crown's 'when recovery takes effect') sits exactly in this target class.",
+      "nearestWrongModel": "Modeling it as a heal on an invented trigger (interval / lastBullet / fullBurstEnd) 'so the line isn't dropped' — this would spuriously fire a Defender ally's on-recovery kit up to continuously, a direct cross-unit over-credit. The faithful move is UNMODELED + verbatim record.",
+      "distinguishingAssertion": "In a comp of biscuit + a recovery-triggered Defender (crown), the Defender's recovery-gated buffApply count is IDENTICAL with biscuit's skill2 present vs the whole skill2 slot emptied via withPatchedOverride. Red if biscuit's presence adds any recovery event to a Defender.",
+      "inertness": "Must contribute zero recovery events; crown-style on-recovery uptime must be unchanged by biscuit's skill2.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Rebuild Cover with 93.6% HP",
+      "disposition": "UNMODELED",
+      "scope": "Cover reconstruction for 2 random allies with destroyed cover — cover has no representation in v1 (no cover entity, boss deals no damage, so no cover is ever destroyed and the target set is empty by construction).",
+      "durationSemantics": "Instant, per burst cast — moot.",
+      "triggerIdentity": "burstCast (biscuit's own Burst II cast) — but the effect has no primitive.",
+      "targetSet": "2 random allies whose cover has been destroyed — indeterminate/empty in v1.",
+      "nearestWrongModel": "Encoding it as a heal/shield event to 2 allies — fabricates recovery/shielded trigger feeds (tandem over-credit) from a mechanic the sim cannot host.",
+      "distinguishingAssertion": "No heal/shield event and no recovery/shielded trigger firing attributable to this burst line in the event log; verbatim text present in override.unmodeled.burst. Red if biscuit's burst emits any cover-proxy heal/shield event.",
+      "inertness": "Zero events, zero damage.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 43.08% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Plain ATK ▲ (stat 'atkPct', raw percentage 43.08 on the buffApply — scales each TARGET's own ATK; not casterAtkPct, the text says 'ATK ▲', not '% of the caster's ATK').",
+      "durationSemantics": "durationSec:10, wall-clock. No rounds, no stacks.",
+      "triggerIdentity": "burstCast — biscuit's OWN Burst II cast. Fires ONLY on rotations biscuit actually bursts. NOT fullBurstEnter: biscuit is Burst II, and any comp with a second B2 (the control fixture's crown IS a B2) makes burstCast vs fullBurstEnter diverge every rotation the other B2 takes the slot. Burst-cast damage/buffs land PRE-FB (before the +50% window opens).",
+      "targetSet": "alliesOfClass 'Supporter' INCLUDING biscuit herself (plain 'all Supporter allies', no except-self clause; in the control comp liter is also a Supporter). NOT all allies — the Attacker carry gets nothing.",
+      "nearestWrongModel": "Target 'allies' (team-wide) — hands the Attacker carry +43.08% ATK, the single largest possible over-credit in this kit; second misread: trigger fullBurstEnter, which over-fires in any two-B2 comp on rotations crown bursts instead of biscuit.",
+      "distinguishingAssertion": "Filter buffApply stat:'atkPct', value:43.08, casterIdx===biscuit's index: (1) targetSlug set ⊆ Supporter-class comp members (biscuit + liter in the control fixture) and NEVER contains the carry's slug or any Defender; (2) apply count === count of biscuit's own burstCast events (not fullBurstStart count), and each apply frame precedes its fullBurstStart; (3) carry's totals(res)[carry] is bit-identical when this line's value is zeroed via withPatchedOverride. Fixture caveat: with crown fixed at B2, the test must confirm biscuit emits burstCast events at all (two-B2 selection) — or drop crown so biscuit is the B2 that casts.",
+      "inertness": "Attacker carry damage and Defender damage must NOT move when this value is toggled; buff must be absent on rotations biscuit did not cast (in a two-B2 comp).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 55.44% of attack damage as HP",
+      "disposition": "FAITHFUL",
+      "scope": "Lifesteal-over-time ('over 10 sec') to all Supporter allies; HP amounts are unmodeled, so its mechanical content is recovery events feeding Supporter targets' 'recovery' triggers across the 10s window.",
+      "durationSemantics": "'over 10 sec' = a 10s window, encode as heal ticks:10, intervalSec:1 (sustained recovery stream), not a single instant event.",
+      "triggerIdentity": "burstCast (same burst block ■2 as the ATK line) — same burstCast-not-fullBurstEnter discipline applies.",
+      "targetSet": "alliesOfClass 'Supporter' including self (same header as the ATK line). NOT Defenders — must not feed a Defender on-recovery kit.",
+      "nearestWrongModel": "Dropped as 'defensive/no damage' (MISSING) — silently severing a Supporter on-recovery tandem channel; or collapsed to one instant recovery event; or team-targeted, feeding crown-class Defender recovery triggers she is not entitled to.",
+      "distinguishingAssertion": "Per biscuit burstCast, the event log shows ~10 recovery events over 600 frames sourced from biscuit's burst, targets ⊆ Supporter slugs only; zero recovery events from this line reach a Defender or the Attacker carry. Red if absent, single-tick, or Defender-fed.",
+      "inertness": "No direct damage; zero effect on any comp lacking an on-recovery Supporter consumer; Defender recovery-trigger counts unchanged by this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:critRateNormalPct 5.77% Attackers @fullBurstEnd",
+    "skill1:HoT 1.53%/1s×10 recovery stream to Attackers",
+    "burst:atkPct 43.08% Supporters-only @burstCast",
+    "burst:lifesteal recovery stream to Supporters @burstCast"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Invincible for 5 sec. Activates 2 time(s) per battle.",
+      "Recovers 23.26% of the skill user's final Max HP. Activates 2 time(s) per battle."
+    ],
+    "burst": [
+      "■ Affects 2 random ally unit(s) whose cover has been destroyed. Rebuild Cover with 93.6% HP."
+    ]
+  },
+  "notes": "Expected shared-prior misreads, in descending board impact: (1) burst ATK targeted team-wide instead of Supporter-only — the ONLY line here that could touch the Attacker carry's damage, so the carry-inertness toggle assertion is mandatory; (2) skill1 crit encoded as generic critRatePct instead of the normal-attack-scoped critRateNormalPct; (3) skill1 trigger read as fullBurstEnter instead of fullBurstEnd — the faithful 10s crit window sits in POST-FB downtime and must not overlap the +50% window of the FB that spawned it; (4) burst trigger read as fullBurstEnter instead of burstCast — diverges every rotation in a two-B2 comp, and the control fixture pins crown (a B2) at that slot, so the driver's fixture must either drop crown or explicitly assert biscuit wins the B2 cast, else all burst assertions are vacuously green; (5) skill2's heal modeled on an invented trigger 'to avoid dropping it' — its HP-below-50% trigger cannot fire in v1 (no HP pool), and a proxy encoding would spuriously drive a Defender ally's on-recovery kit (crown-class over-credit); the faithful disposition is UNMODELED + verbatim record, with an explicit no-recovery-events-to-Defenders inertness assertion. Biscuit is a Supporter, so she receives her own burst ATK/lifesteal lines but NOT her skill1 Attacker-scoped lines — self-exclusion-by-class is worth an explicit assertion. All magnitudes are kit-literal (DATAMINED); no ALWAYS-⚑ field is exercised — no damage line exists anywhere in this kit, so any flatDamage/dot block in the shipped override is an invention and should fail review.",
+  "model": "claude-fable-5"
+}

@@ -1,0 +1,180 @@
+{
+  "slug": "yulha",
+  "leakDetected": null,
+  "override": {
+    "slug": "yulha",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 12
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 24.53,
+            "durationSec": 20
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 20
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 90.75,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 457.87,
+            "crit": true,
+            "noRange": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 457.87,
+            "crit": true,
+            "noRange": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": ["Equally shares damage taken for 10 sec."],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1 trigger cadence: kit says \"Activates when attacked 30 time(s)\" — an incoming-attack counter the sim has no channel for (the v1 boss deals no modeled damage to allies). Encoded as interval:12s (⚑ UNMEASURED) so the Calm crit window exists at roughly kit-plausible uptime; the real cadence depends on the boss's attack rate against the squad.",
+      "⚑ skill2 trigger: the kit line carries NO activation clause, so it is modeled as an interval. sec=20 is ⚑ UNMEASURED and taken from the unit's datamined burst cooldown as a stand-in; a 5s buff on a 20s interval = 25% uptime, and the interval choice dominates this skill's whole team-ATK contribution.",
+      "⚑ burst Calm-gate: the second 457.87% component is gated on \"Calm status\" — the S1 buff. The engine has no self-status channel that composes with a burstCast damage rider (requiresTargetStatus gates on an ENEMY status, not a self buff), so BOTH components are authored unconditionally. This OVER-CREDITS whenever the burst is cast outside a Calm window. Uptime of Calm is itself ⚑ (see skill1).",
+      "⚑ burst crit: riders crit at the caster's sheet rate by convention; no core (the text does not say \"core strike\"). Burst-cast damage is FB-exempt by engine rule (lands before the FB window opens) — noFb is not set because burstCast damage is already exempt.",
+      "Base cadence tuple (ammo 6 / reloadFrames 133 / chargeFrames 60) is datamined and ⚑ by standing rule; not overridden here."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Yulha is an SR/Fire/Attacker/Burst III charge unit. S1 is a self Critical Rate ▲24.53% / 20s window (\"Calm\") whose real trigger is an incoming-attack counter (30 hits taken) the v1 sim cannot observe — modeled as a ⚑ interval. S2 is a team ATK ▲90.75% / 5s with NO stated activation clause, modeled as a ⚑ interval; its damage-share clause is defensive and unmodeled (no HP pool, no boss damage). The burst is two equal 457.87% components; the second is kit-gated on the caster being in Calm status, which has no engine channel, so it is authored unconditionally and OVER-CREDITS on any burst cast outside a Calm window. The two S2 clauses are the same ■ block (\"Affects all allies\"), so the ATK buff and the share are one effect group — only the ATK half is live."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when attacked 30 time(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger. No incoming-attack channel exists in v1 (boss deals no modeled damage), so encoded as trigger interval sec:12 — ⚑ UNMEASURED stand-in cadence, not a kit value."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'}."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Calm: Critical Rate ▲ 24.53% for 20 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 24.53 durationSec 20. UNSCOPED crit — the line says plain \"Critical Rate\", not \"Critical Rate of normal attacks\", so critRatePct (not critRateNormalPct) is correct. \"Calm\" is the status NAME this buff confers; it is the condition the burst's second component reads."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} — no excludeSelf, so Yulha is included."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 90.75% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 90.75 durationSec 5. atkPct (scales each target's OWN ATK) not casterAtkPct — the line is a plain \"ATK ▲ x%\" with no \"of the skill user's ATK\" qualifier. No activation clause anywhere in the block ⇒ interval trigger per the trigger-identity rule; sec is ⚑."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Equally shares damage taken for 10 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "Pure damage-redistribution among allies. Not a heal/shield/DEF/HP/lifesteal/gauge line (those are never auto-skipped) and drives no known on-recovery/on-shield consumer — it only reallocates incoming damage, which v1 does not model at all (immortal boss, no ally HP pool). Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'}; single-target boss, so \"all enemies\" = the one boss."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 457.87% of final ATK as Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 457.87, crit true, noRange true. Trigger burstCast (this is the unit's own burst block). No core: the text does not say \"core strike damage\"."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects the same target(s) when in Calm",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "The second ■ header is a CONDITIONAL gate on the caster being in Calm status (the S1 buff). No engine gate expresses \"caster holds own named self-buff\" — requiresTargetStatus is an ENEMY-status channel. Authored UNGATED; over-credit flagged in caveats."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 457.87% of final ATK as additional",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Second flatDamage atkPct 457.87, same crit/noRange treatment. Kept as a SEPARATE effect (not merged to 915.74%) so the Calm gate can be attached later without re-deriving the split, and so popups can be reconciled 2-for-1 against footage."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "interval sec:12 (≈ a 20s Calm buff at ~60% uptime)",
+      "reasoning": "Kit trigger is \"attacked 30 time(s)\" — a counter over INCOMING attacks. The v1 sim has no incoming-damage model (immortal boss, no ally HP pool), so this trigger has no faithful channel. An interval is the schema's stand-in for a line with no observable activation. 12s is chosen so the 20s window is mostly-but-not-always up, which is the honest middle between \"never fires\" (drops the crit entirely) and \"passive\" (100% uptime, unearned). This is NOT a kit number.",
+      "recipe": "Record a scope-lock fight with yulha and read the Calm buff icon on/off frames from the squad HUD; the first-fire time gives the boss's effective 30-attack accrual and the gap between windows gives the true cadence. Cross-check against the boss attack script in docs/data/range-data.md — if the boss's attack rate against the squad is scriptable, the 30-hit threshold becomes DERIVABLE without footage."
+    },
+    {
+      "field": "skill2[0].trigger",
+      "estimate": "interval sec:20 (5s buff ⇒ 25% uptime)",
+      "reasoning": "The skill2 block carries NO activation clause at all — per the trigger-identity rule that means interval, not passive and not full-burst-enter. The period is not in the text. 20s is the unit's datamined burst cooldown used as a plausible internal-cooldown stand-in; a 5s duration strongly implies a short recurring cooldown rather than a long one. This single ⚑ dominates the skill's entire team-ATK contribution (period 10s vs 20s halves/doubles it), so it is the highest-value measurement on this unit.",
+      "recipe": "Popup-free method: run the sim with sec ∈ {10,15,20,30} and compare the TEAM's total damage against a recorded scope-lock fight's Battle Records totals; the ATK buff is team-wide so the discriminating signal is large. Direct method: read the ATK-up icon flicker on the squad HUD across a full 180s recording and count activations — N activations over 180s gives the period directly."
+    },
+    {
+      "field": "burst[0] (Calm gate on the 2nd 457.87% component)",
+      "estimate": "ungated (both components always fire) — over-credits by up to 457.87% ATK per burst",
+      "reasoning": "The kit gates the doubling on the caster holding her own Calm self-buff. No block gate in the schema tests a CASTER-HELD self-buff: requiresTargetStatus reads an enemy status set by a targetStatus effect, resourceGate reads a declared resource pool, and mode/fbGate/swapGate are unrelated. Authoring it ungated is the choice that keeps the damage line visible and auditable; authoring it away would silently delete half the burst. Magnitude of the error = (1 - P(Calm at burst cast)) x 457.87%, and P(Calm) depends entirely on the skill1 cadence ⚑ above — the two flags are coupled and should be resolved together.",
+      "recipe": "Once the skill1 cadence is measured, compute P(Calm at each burst cast) from the rotation log (ROT=1 in scripts/experiment.ts gives the burst-cast frames; the Calm windows are then deterministic). If P < 1, the faithful fix is a resource-pool encoding: declare a `calm` resource set to 1 by the skill1 block and to 0 at window end, and put resourceGate {name:'calm', min:1} on a SECOND burst block carrying the additional 457.87% — that is the only existing primitive that expresses a caster-held condition. Confirm the split against footage: two separate burst popups (2 x 457.87%) in Calm vs one outside it."
+    },
+    {
+      "field": "burst[0].effects (split vs merge)",
+      "estimate": "split into two 457.87% flatDamage effects rather than one 915.74%",
+      "reasoning": "Kit-silent whether the game renders one merged popup or two. Damage-identical while both are ungated, so this costs nothing today — but merging would forfeit the ability to gate only the second half on Calm, which is the known-correct future shape. Split is the strictly-safer authoring.",
+      "recipe": "Read the burst popups in a scope-lock recording: two adjacent numbers of equal magnitude = split (and confirms the Calm gate was open); one doubled number = merged render. Either way the model stays split for gateability."
+    },
+    {
+      "field": "base cadence tuple (ammo 6 / reloadFrames 133 / chargeFrames 60)",
+      "estimate": "datamined values used as-is; not overridden",
+      "reasoning": "Standing ALWAYS-⚑ rule: rate_of_fire and reloadFrames are known-unreliable datamine fields. Nothing in the kit text contradicts them and no measurement exists here, so the honest action is to leave them alone and flag, not to invent a correction.",
+      "recipe": "Count charge-shot cadence and reload duration frame-by-frame from a scope-lock recording of yulha; compare shots-fired over 180s against the sim's count. Per the standing convention, effective rate = 60/ceil(60/nominal) on frame boundaries."
+    }
+  ],
+  "model": "claude-opus-5"
+}

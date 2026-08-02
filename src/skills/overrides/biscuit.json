@@ -1,0 +1,48 @@
+{
+  "note": "Kit-autonomy gauntlet 2026-08-01 (cross-family corroborated). Biscuit (`biscuit`, RL B2 Supporter Electric, ammo 6 / chargeFrames 60 / reloadFrames 141): a support unit with NO damage line of her own — her kit is two CLASS-SCOPED buffs plus two CLASS-SCOPED heals, all keyed off the team rotation. S1 ('Activates at the END of Full Burst', all ATTACKER allies) = (B1) critRateNormalPct ▲5.77% for 10s + (B2) a heal-over-time (ticks:10, intervalSec:1) on trigger fullBurstEnd (the literal 'end of Full Burst', NOT fullBurstEnter — the 10s window opens as the FB window CLOSES), target alliesOfClass Attacker. critRateNormalPct is the normal-attack-scoped crit stat (helm S1 carrier; sim.ts joins it to the roll ONLY on normal-attack hits, so skill/burst buckets are untouched). Burst ('Walk Training', all SUPPORTER allies) = (B6) atkPct ▲43.08% for 10s + (B7) a lifesteal-over-time heal (ticks:10, intervalSec:1) on trigger burstCast, target alliesOfClass Supporter (reaches the other Supporter allies AND herself). THE TWO HEALS ARE MODELED as `heal` effects (NOT dropped), per the helm precedent (helm's burst 'recovers 54.45% of attack damage as HP for 10 sec' is a heal ticks:10 intervalSec:1 that drives recovery consumers — scripts/tests/units/helm.test.ts H8) and the independent blind re-derivation (claude-fable-5 S2b converged on the recovery-stream encoding for both lines). A `heal` emits recovery events to its targets and fires THEIR 'recovery'-triggered blocks; the engine models no HP AMOUNT, so the heal's only sim content is that recovery channel. CRITICAL SCOPE GUARD: both heals are class-scoped (S1→Attacker, burst→Supporter) and so do NOT feed a DEFENDER recovery consumer — Crown's S2 'when recovery takes effect → team ATK ▲20.99%' is the canonical consumer and is a Defender, exactly the class biscuit's heals exclude. This is the inverse of the liter cover-HP trap (owner ruling 2026-07-21): liter's cover-restore was dropped because cover-HP is NOT a unit heal and was spuriously firing Crown; biscuit's lines ARE genuine unit heals but are scoped AWAY from Defenders, so they fire only matching-class consumers (e.g. asuka, an Attacker 'on-recovery → self ATK ▲96.98%' carrier, fed by S1) and never Crown. S2 ('when a Defender ally's HP falls below 50%') stays UNMODELED: v1 has no HP pool / damage-taken model (immortal boss), so the HP-threshold trigger is indeterminate and can never legitimately fire — both the invincibility and the 23.26% heal share that un-fireable trigger (fable concurred). The burst cover-rebuild stays UNMODELED (cover has no sim representation; same NO-OP class as liter S2). PINNED END-TO-END by scripts/tests/units/biscuit.test.ts: B1/B6 buff scoping is discriminated on the CLASS axis (all-allies counterfactual reaches the whole team; shipped reaches exactly the 2 Attackers / 2 Supporters) and, for B1, the NORMAL-SCOPE axis (generic critRatePct moves skill/burst crit; shipped is byte-identical to buff-removed there); B2/B7 heal scoping is discriminated with asuka as an Attacker recovery probe (S1 HoT feeds asuka's self-ATK recovery buff; the burst lifesteal does NOT — proven by isolating each heal) and a Crown negative (neither heal feeds the Defender consumer — the liter-trap guard).",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Invincible for 5 sec. Activates 2 time(s) per battle. — UNMODELED (inert): defensive invincibility on a Defender ally whose HP falls below 50%; v1 has no damage-taken / HP-threshold model (immortal boss), so the trigger is indeterminate and can never legitimately fire. No invincibility primitive exists in the schema.",
+      "Recovers 23.26% of the skill user's final Max HP. Activates 2 time(s) per battle. — UNMODELED (inert): a genuine unit heal, BUT it shares skill2's un-fireable HP-below-50% trigger (no HP pool in v1), so it can never legitimately fire either. NOT encoded on an invented proxy trigger — doing so would spuriously drive a Defender ally's on-recovery kit (Crown-class over-credit); the faithful disposition is UNMODELED + verbatim record."
+    ],
+    "burst": [
+      "Affects 2 random ally unit(s) whose cover has been destroyed. Rebuild Cover with 93.6% HP. — UNMODELED (inert): restores COVER HP, not a unit's HP; no sim cover-HP representation (same NO-OP class as liter S2, owner ruling 2026-07-21). Emits no unit-recovery event, so it must not trigger recovery-consumer teammates."
+    ]
+  },
+  "caveats": [
+    "skill1: trigger is fullBurstEnd (the literal 'at the end of Full Burst') — the 10s window opens as the FB window closes, NOT on FB entry. Both effects are Attacker-class-scoped (alliesOfClass Attacker), so biscuit herself (a Supporter) receives neither.",
+    "skill1: the heal-over-time IS modeled (heal ticks:10 intervalSec:1) as an Attacker-scoped recovery stream — it feeds Attacker 'on-recovery' consumers (e.g. asuka) but, being Attacker-scoped, never the Defender consumer Crown.",
+    "burst: ATK buff AND lifesteal heal are Supporter-class-scoped (alliesOfClass Supporter), reaching biscuit herself plus any other Supporter. The lifesteal is a Supporter recovery stream; no Supporter 'on-recovery' consumer exists in the current roster, so the channel is faithfully encoded but presently inert (it does NOT feed the Attacker probe asuka, nor the Defender Crown).",
+    "burst: the cover-rebuild line is an inert NO-OP in v1 (no cover representation).",
+    "weapon: biscuit's own RL damage is minor relative to her support value; the base-weapon cadence is datamined (rate_of_fire 60, reloadFrames 141, chargeFrames 60) and unverified by footage — read rounds/min + reload gap from a focus video if her self-damage ever matters."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "fullBurstEnd" },
+      "target": { "kind": "alliesOfClass", "cls": "Attacker" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRateNormalPct",
+          "value": 5.77,
+          "durationSec": 10
+        },
+        { "kind": "heal", "ticks": 10, "intervalSec": 1 }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "alliesOfClass", "cls": "Supporter" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 43.08, "durationSec": 10 },
+        { "kind": "heal", "ticks": 10, "intervalSec": 1 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "slug": "biscuit",
+  "kitDescription": "Biscuit is an Electric rocket-launcher Supporter whose entire kit is team support keyed off the burst rotation. When any Full Burst ends, she gives all Attacker allies +5.77% critical rate on their normal attacks for 10 seconds and trickle-heals them for 10 seconds. Her own Burst II buffs all Supporter allies (including herself) with +43.08% ATK for 10 seconds and lets them recover HP equal to a portion of the damage they deal over the next 10 seconds, while also rebuilding destroyed cover on two allies. Her Skill 2 is a defensive rescue: when a Defender ally drops below half HP she makes them briefly invincible and heals them, twice per battle. She has no damage-dealing skill line of her own.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Critical Rate of normal attack ▲ 5.77%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "critRateNormalPct 5.77, 10s, fullBurstEnd, alliesOfClass Attacker",
+        "blindSaid": "S2b + S5 + S6 all independently derived the identical encoding (stat, trigger, scope, duration)",
+        "formulaCheck": "SSOT §1b: normal-only crit rate (critRateNormalPct) joins the roll ONLY on normal-attack instances — matches prose 'of normal attack'; helm S1 is the canonical carrier. fullBurstEnd is the literal prose trigger; driver test pins 600-frame windows opening at FB end.",
+        "fireRateOk": true,
+        "explanation": "Three independent derivations + driver converge byte-identically; discriminated on both the class axis (all-allies counterfactual reaches whole team) and the normal-scope axis (generic critRatePct moves skill/burst buckets, shipped does not). Fires on all 5 FB ends over 180s."
+      },
+      {
+        "kitLine": "recovers 1.53% ... every 1 sec for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "heal ticks:10 intervalSec:1 on the same fullBurstEnd/Attacker block — modeled as a recovery stream, not dropped",
+        "blindSaid": "S6 byte-identical; S5 skipped it only because the blind fixture had no recovery consumer (honest GAP, not a divergence)",
+        "formulaCheck": "Prose cadence is literally 1/sec × 10, so ticks:10 intervalSec:1 matches; HP AMOUNT is unmodeled engine-wide (no HP pool) — the heal's only sim content is the recovery channel, same as helm H8 precedent.",
+        "fireRateOk": true,
+        "explanation": "Driver test proves the channel live and correctly scoped: removing only the S1 heal collapses asuka's (Attacker) on-recovery buff count by ≥10 per FB end; removing the burst heal leaves it unchanged; the Crown Defender-consumer negative confirms no cross-class leak (liter-trap guard)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Invincible for 5 sec. 2 time(s) per battle.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "skill2: [] + verbatim unmodeled entry with reason (no HP-threshold model, no invincibility primitive)",
+        "blindSaid": "S2b + S6 concur: UNMODELED, trigger un-fireable in v1 (immortal boss, no HP pool)",
+        "formulaCheck": "Correct: any encoding would require an invented proxy trigger — a fabricated activation (MEASURED>FUDGE).",
+        "fireRateOk": true,
+        "explanation": "Deliberately unmodeled, verbatim-recorded, inert by construction. Driver S2 board-inertness assertion (s2Off ≡ control) and blind inertness spec both green."
+      },
+      {
+        "kitLine": "Recovers 23.26% ... 2 time(s) per battle.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim unmodeled; explicitly refused a proxy trigger because it would spuriously feed a Defender on-recovery consumer (Crown-class over-credit)",
+        "blindSaid": "S2b flagged this exact trap as the nearest-wrong model; S6 concurs",
+        "formulaCheck": "Faithful disposition: the trigger cannot fire in v1, so the heal cannot either.",
+        "fireRateOk": true,
+        "explanation": "The dangerous line (a real heal aimed at the Defender class) is correctly withheld; the Crown guard in the driver test empirically confirms biscuit contributes zero recovery events to a Defender."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Rebuild Cover with 93.6% HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim unmodeled — cover-HP is not a unit heal; liter S2 NO-OP class (owner ruling 2026-07-21)",
+        "blindSaid": "S2b + S6 concur (S6 splits it into two unmodeled lines, cosmetic only)",
+        "formulaCheck": "No cover entity in the engine; boss deals no damage so no cover is ever destroyed — target set empty by construction.",
+        "fireRateOk": true,
+        "explanation": "Correctly NOT proxied as a heal/shield (which would fabricate recovery/shielded trigger feeds). Documented in unmodeled + caveats."
+      },
+      {
+        "kitLine": "ATK ▲ 43.08% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "atkPct 43.08, 10s, burstCast, alliesOfClass Supporter (self included)",
+        "blindSaid": "S2b/S5/S6 identical; S5 pinned atkPct-vs-casterAtkPct, burstCast-vs-fullBurstEnter, Supporter-scope, and bounded duration via four independent counterfactuals",
+        "formulaCheck": "SSOT §1a: plain ATK ▲ % sums into the target's own (1+ΣATK%) — atkPct, not casterAtkPct ✓. Burst-cast buffs resolve pre-FB per the boundary rule; burstCast (not fullBurstEnter) is required so it fires only on rotations biscuit actually casts ✓.",
+        "fireRateOk": true,
+        "explanation": "Driver MAIN fixture correctly swaps crown→ada so biscuit is the sole B2 caster (the blind author's own as-authored fixture was vacuous here — crown out-rotates biscuit — and its non-vacuity guard caught exactly that; the adapted fixture confirms green). 5 biscuit casts over 180s, buff reaches exactly liter+biscuit, live on totals."
+      },
+      {
+        "kitLine": "Recovers 55.44% of attack damage as HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "heal ticks:10 intervalSec:1 on the burst block, Supporter-scoped; caveated as a lifesteal channel stand-in per the helm precedent, presently inert (no Supporter on-recovery consumer in roster)",
+        "blindSaid": "S6 identical encoding with an explicit ⚑: real lifesteal fires per damage instance, so the 10-tick cadence is invented and a consumer would be under-credited; S5 skipped (no consumer in fixture)",
+        "formulaCheck": "HP amounts unmodeled engine-wide; the only sim content is the recovery channel. The cadence approximation is documented by both sides (driver note + S6 ⚑) and is currently immaterial — no Supporter recovery consumer exists to be miscredited.",
+        "fireRateOk": true,
+        "explanation": "Channel faithfully encoded and scoping proven by the asuka negative (burst-heal removal leaves the Attacker probe's count unchanged) and the Crown negative. The ⚑ cadence flag stands as a refit candidate if a Supporter on-recovery unit ever ships."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": 1,
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. All four load-bearing lines (S1 scoped crit, S1 HoT, burst ATK, burst lifesteal) are FAITHFUL and converge byte-identically across the driver and two independent blind derivations; all three un-fireable/un-representable lines (S2 invincibility, S2 heal, cover rebuild) are DOCUMENTED_GAPs with verbatim records, correct inertness reasoning, and empirical guard tests (S2 board-inert identity; Crown Defender-consumer negative). Discrimination is real on every load-bearing axis: class scope (all-allies counterfactual reaches the whole team where shipped reaches exactly the class subset), normal-vs-generic crit scope (generic critRatePct moves skill/burst buckets, shipped is byte-identical to buff-removed there), trigger identity (fullBurstEnd/burstCast vs fullBurstEnter), liveness (amp/remove counterfactuals move totals), and the heal channel (asuka probe isolates each heal's class scope; the liter-trap guard proves zero Defender leakage). The one fixture hazard — crown out-rotating biscuit at B2 making burst assertions vacuous — was independently caught by the blind author's non-vacuity guard and already handled in the driver's MAIN fixture (crown→ada swap). Residual same-model caveats for owner spot-check: (1) the burst lifesteal's 10-tick stand-in cadence is a documented ⚑ (S6-flagged) that would under-credit a future Supporter on-recovery consumer; (2) biscuit's RL weapon cadence tuple is datamined and footage-unverified (driver caveat), which bounds her minor self-damage; (3) convergence here is cross-agent stability on kit-literal prose, not independent measurement — but per PROVE-IT-DIFFERENTLY the existing pins (driver test 14/14 + adapted blind test green) are the independent labeled check, and the bar is met.",
+  "model": "kimi-code/k3"
+}

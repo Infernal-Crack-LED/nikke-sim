@@ -1,0 +1,75 @@
+{
+  "slug": "biscuit",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "alliesOfClass",
+        "cls": "Attacker"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRateNormalPct",
+          "value": 5.77,
+          "durationSec": 10
+        },
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfClass",
+        "cls": "Supporter"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 43.08,
+          "durationSec": 10
+        },
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Activates when a Defender ally's HP falls below 50%. Affects the target Defender ally.",
+      "Invincible for 5 sec. Activates 2 time(s) per battle.",
+      "Recovers 23.26% of the skill user's final Max HP. Activates 2 time(s) per battle."
+    ],
+    "burst": [
+      "Affects 2 random ally unit(s) whose cover has been destroyed.",
+      "Rebuild Cover with 93.6% HP."
+    ]
+  },
+  "caveats": [
+    "⚑ Base weapon cadence tuple (RL, ammo 6, reloadFrames 141, chargeFrames 60) is datamined and unverified — shot count, and therefore this unit's own damage contribution, rides on it.",
+    "⚑ Burst line 'Recovers 55.44% of attack damage as HP over 10 sec' is a LIFESTEAL, not a periodic heal. Modeled as a 10-tick heal (1/sec) purely so the recovery CHANNEL exists for on-recovery consumers (heal-synergy kits). The tick cadence is invented; a real lifesteal fires once per damage instance, so an on-recovery consumer is likely UNDER-credited here. No HP amount is modeled either way.",
+    "Skill 2 is entirely unmodeled: its trigger is an ally HP threshold and the v1 boss deals no damage, so it can never fire. Both the invincibility and the 23.26% Max-HP heal are therefore inert. If a heal-synergy teammate is present, this under-credits them by up to 2 recovery events per battle.",
+    "'Affects all Supporter allies' is read as INCLUDING this unit (a Supporter) — no excludeSelf. Same for 'all Attacker allies' on skill 1, which cannot include this unit.",
+    "Skill 1 crit is scoped: 'Critical Rate of normal attack' → critRateNormalPct, NOT generic critRatePct (a generic model would over-credit every Attacker ally's skill and burst damage).",
+    "noFb is not set anywhere: this kit contains no damage lines at all, so the flag has no surface to apply to. noRange is engine-automatic and untouched."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Biscuit is a pure support kit — zero damage lines, zero weapon-state modifiers, no stacks, no swap, no DoT. Modeled: skill 1 fires at Full-Burst END (fullBurstEnd, not fullBurstEnter) granting all Attacker allies scoped normal-attack Critical Rate ▲5.77%/10s plus a 10-tick heal-over-time (1/sec, kit-stated cadence) whose only sim-visible role is emitting recovery events; burst fires on this unit's own cast (burstCast) granting all Supporter allies (self included) ATK ▲43.08%/10s plus a lifesteal channel proxied as a 10-tick heal. Skill 2 and the burst's cover-rebuild branch are unmodeled — both are gated on mechanics the v1 sim has no state for (ally HP pool, destroyed cover), and neither can ever fire against a boss that deals no damage. The two ATK/crit numbers and both durations are read verbatim from kit prose; nothing here is calibrated to any board reading."
+}

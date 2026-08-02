@@ -115,20 +115,31 @@ const tokLower = tokens.map((t) => t.toLowerCase());
 const displayNameLower = (u.name as string).toLowerCase();
 const nickLower = safeNicknames.map((n) => n.toLowerCase());
 // Component parts (schema/methodology/template) must not name the target AT ALL — display name + safe nicknames
-// + answer tokens (substring), plus the slug matched separately on a WORD BOUNDARY (slugRe — a short slug like
-// `eve` is a substring of `event`/`level`/`never`, so it must not be a substring needle here). (The assembled-
-// packet check below is tokens-only: the assembled packet includes the generic harnessNote, whose infrastructure
-// terms collide with short nicknames — "removeOnReload" contains "veon" — and the packet header names the unit
-// by slug, which collides with the display name for base units.)
-const componentNeedles = [displayNameLower, ...nickLower, ...tokLower];
+// + answer tokens, plus the slug matched separately on a WORD BOUNDARY (slugRe — a short slug like `eve` is a
+// substring of `event`/`level`/`never`, so it must not be a substring needle here). (The assembled-packet check
+// below is tokens-only: the assembled packet includes the generic harnessNote, whose infrastructure terms collide
+// with short nicknames — "removeOnReload" contains "veon" — and the packet header names the unit by slug, which
+// collides with the display name for base units.)
+//
+// SHORT-NAME FIX (2026-08-01, mirrors the eve slug fix above): the display name + nicknames are ALSO matched on a
+// WORD BOUNDARY, not a raw substring. A 3-letter display name like `rem` (Rem) is a substring of
+// `MEASUREMENT`/`premise`/`requirement`/`framework`, which a substring match treats as a leak — false-positiving
+// the template/schema redaction on generic vocabulary. Word-boundary matching still catches the unit NAME standing
+// alone (a real leak) while letting common substrings through. Answer TOKENS stay substring-matched (they are
+// distinctive magnitudes/mechanic names, not common substrings).
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const nameNeedles = [displayNameLower, ...nickLower];
+const nameRes = nameNeedles.map((n) => new RegExp('\\b' + escapeRe(n) + '\\b'));
 
-// Component redaction predicate: the slug on a word boundary, OR any substring needle (display name / nickname /
-// answer token). Used to strip target-naming lines from the schema + methodology.
+// Component redaction predicate: the slug OR a name needle on a word boundary, OR an answer token as a substring.
+// Used to strip target-naming lines from the schema + methodology.
 const namesTarget = (lower: string): boolean =>
-  slugRe.test(lower) || componentNeedles.some((n) => lower.includes(n));
+  slugRe.test(lower) ||
+  nameRes.some((re) => re.test(lower)) ||
+  tokLower.some((t) => lower.includes(t));
 
-// Component leak assertion: the slug (word-boundary) plus the substring needles. The assembled-packet check uses
-// leakCheck directly with tokLower (tokens-only).
+// Component leak assertion: the slug + name needles on a word boundary, plus the answer tokens as substrings. The
+// assembled-packet check uses leakCheck directly with tokLower (tokens-only).
 function componentLeakCheck(label: string, text: string) {
   const lower = text.toLowerCase();
   if (slugRe.test(lower)) {
@@ -136,7 +147,13 @@ function componentLeakCheck(label: string, text: string) {
       `${label} still names the target slug "${slug}" — redaction incomplete`
     );
   }
-  leakCheck(label, text, componentNeedles);
+  const hitName = nameNeedles.filter((_, i) => nameRes[i].test(lower));
+  if (hitName.length) {
+    fail(
+      `${label} still names the target (${hitName.join(', ')}) — redaction incomplete`
+    );
+  }
+  leakCheck(label, text, tokLower);
 }
 
 const prose = `=== KIT PROSE (legitimate input — ground truth; the answer tokens appear HERE by design) ===

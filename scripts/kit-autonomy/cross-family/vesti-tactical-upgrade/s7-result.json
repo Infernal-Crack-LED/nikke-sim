@@ -1,0 +1,112 @@
+{
+  "slug": "vesti-tactical-upgrade",
+  "kitDescription": "Vesti: Tactical Upgrade is a Fire rocket-launcher carry whose full-charge shots grant her a 3-round 'Missile Guide' window: +100% Charge Speed and +58.5% Charge Damage, stripped when she reloads to a full magazine. Every full-charge rocket that lands also deals an extra 266.6% of her final ATK as true damage to the target. Two conditional self-buffs ride the same trigger — +20% ATK while she is in 'Battle Formation' status, and +20% Projectile Explosion Damage while the target carries 'Explosive Round' status — neither of which her own kit can supply. Her burst doubles her explosion radius and grants +60% True Damage for 10 seconds, then hits all enemies for 492.3% of final ATK as Burst Skill true damage. In practice her damage is a slow charged-rocket cadence sped up by Missile Guide, with true-damage riders on every shot and a true-damage nuke per rotation.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Missile Guide: Charge Speed ▲ 100% for 3 round(s).",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired → self chargeSpeedPct 100, durationShots 3, removeOnReload; ⚑1 engine subtractive-time reads 100 as instant charge (global convention); ⚑5 missing 'while not in Missile Guide' re-trigger gate inflates uptime",
+        "blindSaid": "S6 derived the identical encoding (chargeSpeedPct 100 / durationShots 3 / removeOnReload); S5 pins round-count vs seconds, reload-strip, self-scope — all green",
+        "formulaCheck": "Charge Speed is subtractive on charge time per SSOT §4 (charge-weapons); round-count durations map to durationShots per SSOT §11 — routing correct. ⚑1 (100 → 0-frame charge) is a documented engine-convention residual shared by all chargeSpeedPct carriers, not a per-unit fudge.",
+        "fireRateOk": true,
+        "explanation": "Structure faithful. Two documented residuals: the unexpressible 'while not in Missile Guide' gate means shotFired refreshes the 3-round window every charge (near-permanent uptime vs the true duty cycle of a slow 120f charge every ~4th round — ⚑5, estimate + focus-video recipe given, not fudged), and the engine's subtractive reading of 100 as instant charge (⚑1, measurement recipe given). Both are flagged honestly with recipes; magnitude impact is measurement-gated."
+      },
+      {
+        "kitLine": "Charge Damage ▲ 58.5% for 3 round(s).",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired → self chargeDamagePct 58.5, durationShots 3, removeOnReload (max-level value, not level-1 34.56)",
+        "blindSaid": "S6 identical; S5 asserts chargeDamagePct (additive) and explicitly excludes chargeDamageMultPct — green",
+        "formulaCheck": "Ordinary Charge Damage ▲ buffs add flat points inside the Charge bucket (SSOT §1d) — chargeDamagePct is the correct stat; chargeDamageMultPct would scale base charge damage and over-credit. Correct bucket.",
+        "fireRateOk": true,
+        "explanation": "Faithful; shares the ⚑5 uptime residual via the common trigger. Counterfactual discrimination (level-1 34.56, time-window encoding) confirmed RED in the driver's suite."
+      },
+      {
+        "kitLine": "Activates upon reloading to max ammunition... Removes Missile Guide.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "removeOnReload:true on both S1 buffs; buffRemove cause 'reload' observed in event log",
+        "blindSaid": "S6 identical; S5 asserts buffRemove events with cause 'reload' for both stats and that the no-removeOnReload counterfactual emits none — green",
+        "formulaCheck": "Reload-strip matches the kit clause directly; engine buffRemove-on-reload is the documented primitive (cinderella precedent). Correct.",
+        "fireRateOk": true,
+        "explanation": "Faithful. The buff ends at the earlier of 3 rounds fired or reload-to-max, matching the prose."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Deals 266.6% of final ATK as true damage.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired → enemy flatDamage 266.6 flavor 'true'; crit-eligible by flatDamage default (true damage can crit, owner ruling 2026-07-25); noRange rider; fires once per landed full charge (rider count == shot count pinned)",
+        "blindSaid": "S6 identical (adds explicit crit:true, equivalent to the default); S5 pins per-round cadence, range-exemption, FB-major-by-timing, true-flavor coupling to the burst buff — green",
+        "formulaCheck": "Function-type skill damage: crits at caster rate, never cores, never ranges, FB by landing time (SSOT §2b). True flavor correctly couples the burst's trueDamagePct 60 into the Damage-Up bucket on true-flavored hits only. RL shots are always full-charge (isCharge), so shotFired == 'landing Full Charge attacks'. Correct.",
+        "fireRateOk": true,
+        "explanation": "Faithful; rider count tied 1:1 to landed shots and verified live (removing it drops only vesti's total)."
+      },
+      {
+        "kitLine": "...if self is in Battle Formation status. ATK ▲ 20% for 3 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED, verbatim in unmodeled.skill2; adopted the blind consensus (S2b fable + S5/S6 opus all independently derived inert) over the driver's initial fbGate:'inFb' reading; fbGate alternative retained as measurement-gated ⚑6 with restore recipe",
+        "blindSaid": "S5 it.skip GAP + active assertion that no atkPct 20 self-buff is credited (passes vs driver); S6 leaves it unmodeled with the same no-carrier/no-primitive reasoning",
+        "formulaCheck": "'Battle Formation' is granted by no kit in the roster (a unit-granted status appears in its granter's text, as Explosive Round does in eunhwa-tactical-upgrade), and the schema has no self-status gate. Ungated encoding would grant near-permanent +20% ATK — a clear over-credit. Inert-until-measured is the honest model.",
+        "fireRateOk": true,
+        "explanation": "Deliberate, recorded, cross-family-corroborated gap. The driver's alternative reading (Battle Formation == Full Burst) is preserved as ⚑6 with a concrete footage recipe; not a silent drop."
+      },
+      {
+        "kitLine": "...if target(s) is in Explosive Round status. Projectile Explosion Damage ▲ 20%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired + requiresTargetStatus 'Explosive Round' → self projectileExplosionPct 20 / 3s; inert because no in-scope unit opens the named status (ETU models hers as damageTaken, not a targetStatus); ⚑2 with go-live recipe",
+        "blindSaid": "S6 identical structure; S5 asserts zero applications in the control comp AND that deleting the gate produces per-round value-20 applications (non-vacuity) — green",
+        "formulaCheck": "Named-status gating is the established faithful pattern (marciana/privaty/rem); the stat targets the correct Damage-Up/Projectile-bucket family for explosion-flavored hits. Structure faithful, inert by design until a carrier exists.",
+        "fireRateOk": true,
+        "explanation": "Faithful structure with the gate proven live-by-counterfactual rather than absent; documented ⚑2 for the cross-unit synergy."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Explosion Radius ▲ 100% for 10 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED, verbatim in unmodeled.burst; inert vs the single partless scope-lock boss, no explosion-radius stat exists",
+        "blindSaid": "S6 identical decision; S5 it.skip GAP (no radius primitive); driver's V8 pins both the verbatim record and the absence of any explosionRadiusPct block",
+        "formulaCheck": "Radius/AoE geometry moves no damage on a single partless target; there is no Damage-Up or Major bucket this line could legitimately feed. Unmodeled-with-note is correct.",
+        "fireRateOk": true,
+        "explanation": "Deliberate, recorded gap; converged by all three independent derivations."
+      },
+      {
+        "kitLine": "True Damage ▲ 60% for 10 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self trueDamagePct 60 / 10s; once per own burst cast (count == burstCast count, not FB count, pinned in the dual-B3 fixture); pays off on her true-flavored riders and nuke",
+        "blindSaid": "S6 identical; S5 pins value 60, self-scope, 10s wall-clock (not rounds), per-cast trigger identity vs fullBurstEnter — green",
+        "formulaCheck": "True Damage ▲ is a Damage-Up-bucket flavor-gated entry (SSOT §1e) that only pays on true-flavored hits — exactly her S2a riders and the nuke. Additive-in-bucket confirmed (dmgUp 1.962 vs 1.362). Correct routing and trigger keying.",
+        "fireRateOk": true,
+        "explanation": "Faithful; keyed to her own cast rather than team FB entry, with the discrimination fixture proving the distinction."
+      },
+      {
+        "kitLine": "Deals 492.3% of final ATK as Burst Skill true damage.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage 492.3 flavor 'true', burst bucket, noFb (lands before the FB window, never takes +50%); lands UNDER its own same-cast trueDamagePct 60 (buff block precedes nuke block), additive in Damage-Up",
+        "blindSaid": "S6 identical; S5 pins once-per-cast at 492.3, fbMajorApplied false, rangeApplied false, and buff-before-nuke event ordering — green",
+        "formulaCheck": "Burst-cast direct damage lands before Full Burst begins (SSOT §1b/§8, popup-verified boundary rule): no +50%, no entry auras, but same-cast self-buffs ordered ahead of the nuke do apply — the engine's block ordering matches. Burst nukes crit, never core/range. Correct on every axis.",
+        "fireRateOk": true,
+        "explanation": "Faithful, including the subtle same-cast buff ordering (additive +0.60 in Damage-Up, not a ×1.60 step — the S2b reviewer's framing corrected)."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No undocumented divergence exists on any of the 9 kit lines: 7 are FAITHFUL and 2 are deliberate DOCUMENTED_GAPs recorded verbatim (Battle Formation ATK ▲20% — no carrier, no self-status gate primitive, blind-consensus inert; Explosion Radius — no primitive, inert on a partless boss). The blind re-derivations converged strongly: S6's override is structurally identical to the driver's on every line (only a cosmetic one-block-vs-two split), and S5's blind suite runs GREEN (21 pass / 2 self-declared GAP skips / 0 fail) against the shipped override, including its active assertion that the Battle Formation line is NOT credited — the driver adopted the blind consensus over its own initial fbGate reading, which is exactly the cross-family correction the gauntlet exists to produce. Every load-bearing assertion discriminates: the driver's suite is RED against each named counterfactual (seconds-vs-rounds, no-removeOnReload, level-1 magnitudes 34.56/157.53/35.45/290.9, ungated status gates, non-true rider flavor, added-back ATK block), and S5's counterfactual patches each demonstrably dropped what they claimed. Fire-rate check passes — riders fire 1:1 with landed shots, buffs apply per cast, the reload strip emits observed buffRemove events. The real residuals are all documented, estimated, and recipe'd rather than fudged: ⚑5 (the unexpressible 'while not in Missile Guide' gate inflates Missile Guide uptime toward permanent vs the true ~1-in-4 slow-charge duty cycle — the single largest likely accuracy risk, since it compounds with ⚑1's instant-charge reading of Charge Speed 100 to over-credit her shot count), ⚑1 (engine-global subtractive convention), and ⚑6 (Battle Formation == Full Burst as the measurement-gated alternative). The same-model residual the owner should spot-check: every agent is one model family, so the shared interpretation risks are (a) that Charge Speed ▲100% truly means instant/0-frame charge rather than ÷2-time, and (b) that 'Battle Formation' is genuinely unsupplied rather than a Full-Burst alias — both resolve with one focus-video each (slow-charge recurrence; whether the ATK ▲20% icon tracks Full Burst windows), and the overrides already carry those recipes. Nothing must change for GO.",
+  "model": "kimi-code/k3"
+}

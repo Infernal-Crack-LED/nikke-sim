@@ -1,0 +1,26 @@
+{
+  "slug": "yulha",
+  "stage": "S2b/S2c — cross-family test-faithfulness review (claude-fable-5) reconciled with driver",
+  "date": "2026-08-01",
+  "reviewerModel": "claude-fable-5",
+  "verdict": "GO",
+  "converged": true,
+  "realGotcha": false,
+  "summary": "Blind claude-fable-5 re-derivation CONVERGES with the driver on every line. The two FAITHFUL lines (S2 all-ally ATK ▲90.75%/5s on the datamined 30s CD via interval; burst 457.87% final-ATK nuke on burstCast, pre-FB, own-cast-only) and the three out-of-domain/gated omissions (S1 Calm crit, S2 damage-share, burst Calm-additional rider) match the driver's disposition exactly. The reviewer's independent nearest-wrong counterfactuals are precisely the ones the driver's spec pins.",
+  "lineByLine": {
+    "skill1-calm-crit": "REVIEWER: MEASUREMENT-GATED — 'attacked 30×' is an INCOMING-hit counter with NO engine primitive (hitCount counts the OWNER's outgoing rounds; recovery/shielded are the only incoming triggers); faithful default = ZERO critRatePct buff. DRIVER: UNMODELED (no incoming-damage model, immortal boss, no self-status). CONVERGED. Pinned by Y3 (zero yulha critRatePct buff; calmAlways counterfactual adds one).",
+    "skill2-atk-buff": "REVIEWER: FAITHFUL — interval at datamined CD, first fire t=CD, all allies incl self, RAW atkPct 90.75 (not casterAtkPct), durationSec 5 NOT 10 (the 10s belongs to the separate share sentence). DRIVER: identical. CONVERGED. Pinned by Y1 (value 90.75, 4 holders, 300-frame window, t=30/60/90/120/150 fire frames, live-not-inert; the 10s and self-only and 53.62 and interval:15 counterfactuals).",
+    "skill2-damage-share": "REVIEWER: UNMODELED — defensive redistribution; must be verbatim in unmodeled.skill2; NO damageTakenPct debuff (it is ally-side, not a boss Damage Taken ▲). DRIVER: identical. CONVERGED. Pinned by Y4 + unmodeled.skill2 verbatim.",
+    "burst-base-nuke": "REVIEWER: FAITHFUL — burstCast (own cast only, never fullBurstEnter), pre-FB so fbMajorApplied false, one hit per cast == burstCast count. DRIVER: identical. CONVERGED. Pinned by Y2 (457.87, burst bucket, count==casts, fbMajorApplied false, critEligible; fullBurstEnter counterfactual takes +50%).",
+    "burst-calm-additional": "REVIEWER: MEASUREMENT-GATED — gated on YULHA's OWN Calm self-status; no requiresSelfStatus primitive (requiresTargetStatus is boss-side, wrong channel); faithful default = rider fires ZERO times; nearest-wrong = ungated doubling (915.74 or two 457.87 hits = 2× over-credit, the largest single error available in this kit). DRIVER: UNMODELED (helm-aquamarine precedent). CONVERGED. Pinned by Y2c (exactly one burst hit per cast; calmAlways counterfactual doubles to 2×)."
+  },
+  "reviewerFlags": [
+    "The 'attacked 30×' Calm trigger is an incoming-hit counter with no engine primitive; any interval approximation of Calm uptime is a ⚑ requiring a measured boss-attack cadence (and the S2 damage-share raises her incoming-hit share in-game, so a solo-derived cadence under-counts).",
+    "'when in Calm status' gates on HER OWN status, not a boss status — requiresTargetStatus is the wrong channel; with no self-status gate and no Calm model the faithful default is zero rider fires; the key inertness test is that the burst is NOT silently doubled.",
+    "S2 carries TWO durations in one block (5s ATK vs 10s share); conflating them to 10s doubles the ATK buff duty cycle — the driver's yulhaLongS2 counterfactual pins this.",
+    "Verify burst hits carry no +50% FB major (pre-FB cast timing) and the interval cadence (kit-silent) is ⚑ with the datamined CD as estimate.",
+    "All magnitudes kit-literal DATAMINED; nothing CALIBRATED."
+  ],
+  "driverNotes": "Reviewer's unmodeledVerbatim listed only the damage-share (it labeled S1 + burst-rider MEASUREMENT-GATED rather than UNMODELED); the driver's override records ALL THREE unmodeled lines verbatim in the `unmodeled` field (skill1×2, skill2×1, burst×2), which satisfies the no-silent-drops audit and is the more complete record. No override or test changes required — full convergence, no REAL-GOTCHA.",
+  "testsGreen": "scripts/tests/units/yulha.test.ts — 11/11 GREEN vs shipped (reviews/yulha.verify.txt)"
+}

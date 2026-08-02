@@ -1,0 +1,63 @@
+{
+  "slug": "rem",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "15 normal attacks in Demon's Breath",
+      "disposition": "FIX",
+      "assertion": "Self-only atkPct 4.22, maxStacks 30, and the FIRST stack apply must come after the first self 37.8 crit apply (her own burst opening the window); plus at least one expiresFrame gap > 600 frames proving the pool lapses between windows. RED under the nearest-wrong ungated hitCount model, where an MG clears 15 rounds inside the first second and stacks are applied continuously all fight (first stack precedes any burst; no 10 s hole ever opens). Also RED if authored as one pre-summed 126.6 buff (no stacked applies)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Equally shares HP recovery 10 sec",
+      "disposition": "GAP",
+      "assertion": "it.skip — no HP pool and no recovery-sharing primitive. Flagged as an adjudication fork, not a silent skip: the fixture's B2 support consumes recovery triggers, so encoding the share as heals to all allies would move a teammate's damage materially."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recovers % of attack damage as HP",
+      "disposition": "GAP",
+      "assertion": "it.skip — lifesteal has no primitive (v1 models no HP pool); rem carries no on-recovery consumer of her own, so it is offensively inert on isolation."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "self + 2 RL allies, highest final ATK",
+      "disposition": "GAP",
+      "assertion": "it.skip — the target vocabulary cannot express a weapon-filtered top-N-by-final-ATK set (alliesOfWeapon has no count/ranking; alliesTopAtk{byFinalAtk} has no weapon filter; alliesOfElementWeapon ranks positionally), and the shared-recovery payload has no primitive either."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Demon's Breath: Critical Rate ▲37.8%",
+      "disposition": "FAITHFUL",
+      "assertion": "A critRatePct (NOT critRateNormalPct) apply of 37.8 targeting rem herself, with zero critRateNormalPct applies from rem and zero 37.8 crit applies leaking to teammates. RED under the scope trap (normal-attack-scoped crit, which under-credits her skill/burst hits) and under a 0.378-fraction authoring."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲50.78% of skill user's ATK (RL)",
+      "disposition": "FAITHFUL",
+      "assertion": "casterAtkPct applies from rem reach exactly one target slug — the Rocket-Launcher ally — and never liter (SMG), helm (SR) or rem (MG); the emitted value is FLAT-resolved (> 1000, not 50.78). Counterfactual: stripping the effect lowers the RL ally's total while liter/helm/rem stay byte-identical. RED under a {kind:'allies'} target (leaks onto the SMG/SR allies), under self-targeting, and under a raw-percentage emission."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammunition ▲5 round(s) (RL)",
+      "disposition": "FAITHFUL",
+      "assertion": "maxAmmoFlat value 5 from rem on the SAME target set as the ATK buff, with zero maxAmmoPct applies from rem; the counterfactual strip changes the RL ally's total, proving the weapon-state modifier is live damage (it gates shots fired). RED if authored as maxAmmoPct 5 (a percent of an RL magazine is a fraction of a round, essentially inert) or dropped as 'defensive'."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "shared trigger across all 3 burst lines",
+      "disposition": "FIX",
+      "assertion": "Count of self-crit applies === count of RL ATK applies === count of RL ammo applies (with exactly one RL ally). RED if any line is keyed to fullBurstEnter instead of her own burst cast — rem is Burst II and shares stage 2 with the fixture's B2 support, so a full-burst-enter keying over-fires on rotations she does not cast."
+    }
+  ],
+  "fixtures": "controlComp('rem', true) → liter (B1) / crown (B2, Rocket Launcher) / rem / helm (B3, SR/Water), deterministic, no seed; 3 hoisted runs (baseline + two withPatchedOverride counterfactuals stripping the burst casterAtkPct and the burst max-ammo effects). The fixed B3 slot is REQUIRED, not optional: rem is Burst II and a chain cannot complete without a B3 — with helm dropped the comp makes ZERO full bursts and every burst-keyed line goes vacuous. The RL-scoped burst buffs need a Rocket-Launcher ally, which the fixture's B2 support supplies, while liter (SMG) and helm (SR) serve as the weapon-scope negative controls. KNOWN FIXTURE RISK, asserted rather than assumed: rem shares burst stage 2 with the fixed B2 support, so she may cast rarely or never; the first test hard-asserts she casts at least once (via her self-crit marker), and a failure there means re-fixture with a non-B2 support, not an override defect. Her own burst cast is identified by that self-targeted 37.8 crit apply rather than by burstCast event fields, and her unit index is read off that same event — so no assumption is made about slot ordering or burstCast's caster field. No frame field is used anywhere; window structure is read from expiresFrame spacing and from event ordering within the log.",
+  "gaps": [
+    "skill1 b (burst-cast 'Equally shares HP recovery' to all allies) — it.skip: no HP pool and no recovery-sharing primitive; the `heal` effect only emits amount-less recovery events. Highest-value adjudication fork in this kit: the fixture's B2 support consumes recovery triggers, so modeling the share as ally heals would materially move a teammate's damage.",
+    "skill2 a (recovers a % of attack damage as HP continuously, self) — it.skip: lifesteal has no primitive; no on-recovery consumer on rem herself.",
+    "skill2 b (shares recovery with self + 2 highest-final-ATK Rocket-Launcher allies) — it.skip: target set inexpressible (no weapon-filtered top-N-by-final-ATK selector) AND no share primitive.",
+    "ENCODING-OPEN, not asserted: 'Demon's Breath' is a SELF status, but the engine's only status-window primitive (targetStatus / requiresTargetStatus) is enemy-scoped and the validator requires the carrying block to be authored with target `enemy`. The tests therefore assert the observable window behaviour (stacks start at her own burst, lapse between windows) and deliberately do not assert any particular encoding.",
+    "⚑ MG cadence tuple (pulls/s, wind-up) is datamine-unreliable and outside the kit text — no assertion depends on an absolute stack count per window, only on stacking being real (peak stacks ≥ 2, ≤ 30)."
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,118 @@
+{
+  "note": "Kit-autonomy gauntlet 2026-08-01. diesel (Diesel (Treasure)) — MG / Defender / Wind, Burst II (cd 20s, ammo 300, reloadFrames 151, normalMult 5.38, coreMult 200, hitsPerShot 1). TREASURE (favorite-item) KIT — the authoritative prose is the top-level data/characters.json skills field; the datamine role.skillDetails.*_detail.description_localkey is the UNTREASURED BASE kit and DISAGREES (base: S1 heal triggers 'when attacked during Full Burst' with no 150-NA clause; S2 threshold 100 NA and no Pierce line; burst taunt 5.06s with no Max HP line). This encoding models the Treasure prose. She is a TANK: most of the kit is defensive/utility and inert in the v1 DPS sim (no incoming damage, no HP pool, no taunt/Attract primitive). MODELED (L1,L4,L5,L6,L7): (S1/L1) fullBurstEnter -> self -> defPct 25.92 for 10s — FAITHFUL but INERT in v1 (self DEF does not feed own damage; defPct is the Endurance-cube channel, parsed-but-inert). (S2/L4) hitCount:70 -> self -> maxAmmoPct 56.7, maxStacks 10, 10s — 'Strawberry Candy: Max Ammunition Capacity ▲56.7% x10 stacks, 10s'; the Treasure threshold is 70 NA (base was 100). LIVE: a larger magazine means fewer reloads -> more firing uptime -> a real (small) DPS gain. (S2/L5) hitCount:700 -> all allies -> instantReload fraction 0.8662 + pierceDamagePct 30 for 10s — 'when the skill user reaches max stacks of Strawberry Candy ... Reload 86.62% of the magazine; Pierce Damage ▲30% for 10s'. The engine has NO buff-stack-threshold / on-stack-removal trigger, so 'reaches max stacks (10) then removed' is approximated as the cumulative 700th NA (= 10 x 70-NA procs = one full Strawberry Candy cycle), repeating — the same hitCount 'max stacks' approximation as ade-agent-bunny (⚑1). pierceDamagePct feeds Damage Up ONLY for pierce-tagged attackers (sim.ts pierceTagged); diesel and a generic comp have no pierce, so that half is inert unless a pierce ally is present — the DPS-relevant half is the instantReload (no event; refills 86.62% of each ally's magazine). (burst/L6) burstCast -> enemy -> flatDamage 299.66 — '5 enemies with the highest final ATK, 299.66% of final ATK as damage'; the v1 boss is a single partless target so '5 enemies' collapses to the one boss (standard multi-target-burst convention). Burst CAST lands BEFORE the Full Burst window, so it never takes the +50% FB major (verified fact). (burst/L7) burstCast -> self -> targetMaxHpPct 100.05 for 10s — 'Max HP ▲100.05% without restoring HP for 10s'; FAITHFUL but INERT (diesel has no atkOfMaxHpPct feed, so self Max HP moves no damage; targetMaxHpPct -> maxHpFlat self-grant in sim.ts). UNMODELED (verbatim, L2/L3/L8 — all inert for DPS, no engine primitive): S1 'when attacked in Attract status -> Recovers 12.96% final Max HP' (no incoming-damage event in v1; boss deals no damage) and 'after landing 150 normal attacks in Attract status -> Stack count of buffs ▲1' (gated on an unmodeled self-Attract status; effect 'Stack count of buffs ▲1' is ambiguous); burst 'Attract: Taunt all enemies for 10s' (no taunt/Attract primitive; tanking is out of domain for a DPS sim). FLAGS (UNMEASURED): (⚑1) L5 trigger fidelity — 'reaches 10 simultaneous stacks then removed' is modeled as the cumulative 700th-NA cycle; with a 10s stack duration, whether 10 stacks actually accumulate within the window rests on MG cadence (rate_of_fire ramps 60 -> 4200 in the datamine). If stacks lapse before maxing, the real effect fires LESS often than hitCount:700 (over-credit risk); if MG sustains ~70 NA/<=10s it matches. recipe = a Diesel:Treasure focus video reading rounds/min + whether Strawberry Candy visibly reaches 10 stacks. (⚑2) MG cadence tuple (rate_of_fire 60->4200 / reloadFrames 151) is the unverified datamine driving the L4 stack accrual rate + the L5 700-NA timing; recipe = read rounds/min + reload gap from footage. SAME-MODEL RESIDUALS: L1/L7 are inert-by-design (tank stats), pinned inert in the unit spec; L5 pierceDamagePct is inert without a pierce ally (documented, not fudged).",
+  "unmodeled": {
+    "skill1": [
+      "Activates when attacked in Attract status. Affects self.",
+      "Recovers 12.96% of the skill user's final Max HP as HP.",
+      "Activates after landing 150 normal attack(s) in Attract status. Affects self.",
+      "Stack count of buffs ▲ 1."
+    ],
+    "skill2": [],
+    "burst": ["Attract: Taunt all enemies for 10 sec."]
+  },
+  "caveats": [
+    "skill2: the max-stack ally effect (Reload 86.62% + Pierce Damage ▲30% for 10s) is keyed to hitCount:700 as the engine's nearest primitive for 'reaches 10 simultaneous Strawberry Candy stacks then removed' — a cumulative-cycle approximation (ade-agent-bunny precedent), NOT a true stack-threshold trigger. With a 10s stack duration, reachability of 10 simultaneous stacks is measurement-gated on MG cadence (⚑1); pierceDamagePct is inert unless an ally has pierce-tagged attacks",
+    "skill2: the hitCount:700 trigger does NOT consume/reset the Strawberry Candy stacks — the engine has no cross-block stack-removal primitive, so the real kit's sawtooth (build to 10 -> consume -> rebuild from 0) is modeled as a continuous peak hold (magazine stays near +567%). This would OVER-credit firing uptime during the real rebuild phase, BUT the maxAmmoPct damage channel SATURATES (verified in the unit spec: 56.7 and 28.35 x10 stacks land byte-identical totals — any sufficient boost already outlasts the reload windows that matter in 180s), so the missing reset is behaviorally inert in this fixture (⚑1b). recipe = a true 'remove stacks of buff X on trigger Y' primitive + a focus video confirming the sawtooth",
+    "skill2: 'Reload 86.62% of the magazine' resolves (engine instantReload) against the CURRENT buffed magazine (maxAmmo() at the consume frame), not the base 300 — kit-ambiguous which is intended; flagged, not silently picked (⚑1c)",
+    "skill2: Strawberry Candy stack-REFRESH semantics are assumed standard (a new stack refreshes the older stacks' 10s timers, so sustained MG fire holds 10 stacks) — adopted from the S6 blind override (kimi S7 judge verdict). If a new stack does NOT refresh, the 10-cap is unreachable at any plausible MG cadence and the effective ammo lift is ~2-3 stacks, not 10; the saturation result (56.7 ≡ 28.35 in totals) bounds the damage impact either way. recipe = a focus video observing whether the Candy icon refreshes or accrues independent per-stack timers (⚑1d)",
+    "skill1: DEF ▲25.92% (fullBurstEnter, self, 10s) is faithfully encoded but inert in v1 — self DEF does not feed a Defender's own damage (defPct is the Endurance-cube channel)",
+    "burst: Max HP ▲100.05% (burstCast, self, 10s, targetMaxHpPct) is faithfully encoded but inert — diesel has no atkOfMaxHpPct conversion, so the self Max-HP grant moves no damage",
+    "cadence: MG rate_of_fire (60 -> 4200 datamine) + reloadFrames 151 are unverified datamine driving the Strawberry Candy stack accrual + the 700-NA max-stack timing (⚑2)"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 25.92,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 70
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 56.7,
+          "durationSec": 10,
+          "maxStacks": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 700
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "instantReload",
+          "fraction": 0.8662
+        },
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 30,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 299.66
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 100.05,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

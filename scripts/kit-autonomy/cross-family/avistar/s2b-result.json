@@ -1,0 +1,137 @@
+{
+  "slug": "avistar",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Aftershow: ATK ▲ 80.26% of user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK buff (casterAtkPct — flat add of 80.26% of Avistar's own static ATK), not scoped to normal/charge/crit.",
+      "durationSemantics": "Window buff: applied at Full Burst END, explicitly 'removed when entering Full Burst' — active ONLY in the out-of-FB gap. Not durationSec, not permanent. The buff schema has no remove-at-FB-enter primitive, so the encoding must approximate (calibrated window ⚑) or gain a primitive; either way the OBSERVABLE contract is out-of-FB-only.",
+      "triggerIdentity": "fullBurstEnd (team FB ends — no own-burst gate stated on this block). Note it cannot fire before the first FB completes.",
+      "targetSet": "'Her favorite pop star' — exactly ONE ally, not self, not all allies. Prose does not define resolution; most plausible engine stand-in is alliesTopAtk{count:1, excludeSelf:true}. The chosen resolution is an authoring decision the test must pin.",
+      "nearestWrongModel": "Buff active DURING Full Burst (permanent or durationSec≈10s from FB end that bleeds into the next FB) — over-credits the pop star's FB damage, which carries the +50% major and is where an MG-era carry does most damage. Second misread: target=self or target=all allies.",
+      "distinguishingAssertion": "After the first fullBurstEnd, a buffApply with stat 'casterAtkPct' and flat value ≈ 0.8026 × 98367 ≈ 78,949 (Supporter static ATK) lands on exactly ONE non-self target slug. The target's damage events with inFullBurst:false between fullBurstEnd and the next fullBurstStart reflect the flat ATK add; damage events with inFullBurst:true in the NEXT FB window do NOT. Also: zero applications before the first fullBurstEnd (t=0 must be clean).",
+      "inertness": "Avistar's own damage unchanged by this line; the other three non-target allies unchanged; no contribution inside any FB window.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 3.52% Max HP /1 sec for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Heal-over-time on self. The HP amount is not simulated (no HP pool), but the RECOVERY EVENTS are the payload — taxonomy #4 tandem: a heal received drives 'recovery'-triggered consumers (Crown's 'when recovery takes effect' — Crown is in the standard control fixture).",
+      "durationSemantics": "10 ticks at 1s intervals per activation: heal{ticks:10, intervalSec:1}, NOT a single instant heal event.",
+      "triggerIdentity": "fullBurstEnd, self-targeted.",
+      "targetSet": "Self only.",
+      "nearestWrongModel": "Dropped as 'defensive, no damage' — silently starves any on-recovery teammate (Crown) of 10 recovery events per rotation. Second misread: ticks:1 (single event) instead of 10 over time, which under-refreshes recovery-keyed consumer windows.",
+      "distinguishingAssertion": "After each fullBurstEnd, Avistar receives 10 recovery events spread over ~10s (1/sec), not 1. In a comp with crown, crown's recovery-triggered buffApply count is strictly greater than in an A/B where this heal block is deleted via withPatchedOverride.",
+      "inertness": "No direct damage events from this line; no recovery events to any ally other than Avistar herself.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Removes Stargazer.",
+      "disposition": "FAITHFUL",
+      "scope": "Self-status lifecycle: closes the Stargazer window opened by her own burst.",
+      "durationSemantics": "Instant removal at Full Burst end. Net Stargazer lifetime = own burst cast → that FB's end. Consequence: Stargazer is present at an FB ENTRY if and only if Avistar cast her own burst in the rotation leading into that FB.",
+      "triggerIdentity": "fullBurstEnd, self. The engine has no self-status primitive (targetStatus is boss-only); the faithful ENCODING of the whole Stargazer gate is ownBurstGate:'cast' on the skill2 fullBurstEnter blocks — this removal line is what licenses that equivalence.",
+      "targetSet": "Self.",
+      "nearestWrongModel": "Ignoring removal so 'Stargazer' persists across rotations — skill2's FB-enter buffs then fire on FBs where she never burst (over-credit in any rotation where her 20s CD or a competing B1 skips her cast).",
+      "distinguishingAssertion": "In a run where Avistar does NOT cast her burst before some FB (e.g. patch her burst CD up so a rotation proceeds without her cast), the skill2 buffApply events (attackDamagePct/projectileExplosionPct 40.13) do NOT fire at that FB's entry; they DO fire at FBs immediately following her own burstCast. Also the burst's Stargazer Max HP grant must not persist past fullBurstEnd.",
+      "inertness": "Removal itself moves no damage directly; it must not strip unrelated buffs (the Aftershow ATK applied the same frame must survive).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Current HP ▼ 20%",
+      "disposition": "UNMODELED",
+      "scope": "Self HP cost at FB entry while in Stargazer with >25% HP. v1 has no live HP pool with consequences (nobody takes damage; Current HP feeds no scaler in this kit — the S1 heal event carries no amount, Max HP scalers ignore Current HP).",
+      "durationSemantics": "Instant, one-shot per qualifying FB entry.",
+      "triggerIdentity": "fullBurstEnter + Stargazer gate + '>25% HP' condition (indeterminate/always-true in v1 — with the S1 heal restoring 35.2% Max HP per rotation her HP floor never approaches 25%).",
+      "targetSet": "Self.",
+      "nearestWrongModel": "Modeling the HP loss as a damage event, or treating the >25% gate as a reason to periodically disable skill2b.",
+      "distinguishingAssertion": "No damage/heal/buff event attributable to this line; skill2b (the 40.13 buffs) fires on EVERY Stargazer-qualified FB entry, never suppressed by an HP bookkeeping model.",
+      "inertness": "Zero effect on any unit's totalDamage; must appear verbatim in unmodeled.skill2.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Projectile Explosion Damage ▲ 40.13%",
+      "disposition": "FAITHFUL",
+      "scope": "projectileExplosionPct — Damage Up bucket, but only RL kits carry projectile-explosion flavored damage. Inert unless the resolved 'favorite pop star' is an RL unit; keep the buff anyway (correct target may be RL in real comps).",
+      "durationSemantics": "'Continuously' = no self-expiry; re-applied each qualifying FB entry with same-caster-slot overwrite (no stacking). Ambiguity the test must pin: whether it survives Stargazer removal at FB end (literal 'continuously' → yes, permanent once applied) — either way it is NOT a 10s FB-window buff.",
+      "triggerIdentity": "fullBurstEnter GATED on Stargazer (⇒ ownBurstGate:'cast' encoding) — NOT ungated fullBurstEnter, NOT burstCast (the buff keys to FB entry, after the +50% window opens).",
+      "targetSet": "The single 'favorite pop star' ally (same resolution as skill1's Aftershow — the two blocks must resolve to the SAME unit).",
+      "nearestWrongModel": "Encoded as a generic damage buff on a non-RL target that moves damage (wrong bucket), or given durationSec:10 so it lapses between FBs, or stacked per FB entry (2× after two rotations).",
+      "distinguishingAssertion": "buffApply stat 'projectileExplosionPct' value 40.13 on exactly one non-self target at a Stargazer-qualified fullBurstStart; on a non-RL pop star the target's totalDamage is IDENTICAL with this effect deleted via withPatchedOverride (bucket-scoping inertness proof); repeated FB entries emit refresh, never a stacked value > 40.13.",
+      "inertness": "Moves nothing for a non-RL target; never applies to self or the other allies.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attack Damage ▲ 40.13% continuously",
+      "disposition": "FAITHFUL",
+      "scope": "attackDamagePct — additive in the Damage Up bucket (diluted by other support buffs, e.g. crown's), applying to all the target's damage. Not crit/normal-scoped.",
+      "durationSemantics": "'Continuously' — same semantics as the projectile-explosion line above: no self-expiry, overwrite-refresh per qualifying FB entry, never a 10s window.",
+      "triggerIdentity": "fullBurstEnter gated on Stargazer (ownBurstGate:'cast' encoding); first possible application is the first FB AFTER her burst cast — never t=0.",
+      "targetSet": "The single 'favorite pop star' ally.",
+      "nearestWrongModel": "Ungated fullBurstEnter (fires even on rotations where Avistar didn't burst), or durationSec:10 (drops the buff for all out-of-FB damage), or target=all allies (multiplies a single-ally grant by the team).",
+      "distinguishingAssertion": "buffApply stat 'attackDamagePct' value 40.13, targetSlug = the one pop-star ally, occurring at fullBurstStart only on rotations where an avistar burstCast preceded it; after first application the target's out-of-FB damage events still reflect the Damage-Up contribution (continuity vs the 10s misread). Exactly one target per application.",
+      "inertness": "Avistar's own damage and the three non-target allies unchanged; zero applications before her first burst cast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Re-enters Burst Stage 1.",
+      "disposition": "FAITHFUL",
+      "scope": "Rotation-machine effect: reenterStage{stage:1} — after her B1 cast the rotation stays at stage 1 so ANOTHER eligible B1 (e.g. liter) also casts, then B2→B3→FB.",
+      "durationSemantics": "Per-cast, instant.",
+      "triggerIdentity": "burstCast (her own Burst I, cd 20s). This is THE rotation-load-bearing line — it changes burst chain anatomy and potentially FB timing/counts.",
+      "targetSet": "All allies (rotation-global).",
+      "nearestWrongModel": "Omitting reenterStage so a double-B1 comp gets only ONE stage-1 cast per rotation — the co-B1's burst (liter's CDR + buffs) silently never fires, or Avistar herself never casts and the entire Stargazer→skill2 chain goes dead.",
+      "distinguishingAssertion": "In a comp with avistar + a second B1 (liter), the burstCast event log shows TWO stage-1 casts in the same rotation chain before the stage-2 cast, and measured FB count on the fixture is preserved. With the reenterStage effect deleted via withPatchedOverride, only one stage-1 cast appears per rotation — the assertion is RED.",
+      "inertness": "Must not grant extra stage-2/3 casts, must not extend or duplicate Full Burst windows themselves.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Stargazer: Max HP ▲ 26.4% of user's Max HP",
+      "disposition": "FAITHFUL",
+      "scope": "Self Max HP grant (casterMaxHpPct 26.4, caster===target so it would feed an atkOfMaxHpPct converter — she has none, so offensively inert; keep per taxonomy #7 as a future-consumer stat) AND the opener of the Stargazer status window that skill2 gates on.",
+      "durationSemantics": "'Continuously' but bounded by kit: skill1 'Removes Stargazer' at FB end ⇒ lifetime = burst cast → that FB's end, NOT permanent.",
+      "triggerIdentity": "burstCast (her own Burst I) — the status can only ever exist via her own cast; this is what makes ownBurstGate:'cast' the faithful skill2 gate encoding.",
+      "targetSet": "Self.",
+      "nearestWrongModel": "Permanent Max HP buff (ignoring the S1 removal), or encoding Stargazer via the boss-status channel (targetStatus is enemy-only — the validator/engine ignore non-enemy targets there), or treating the Max-HP grant itself as damage-moving.",
+      "distinguishingAssertion": "On her burstCast, a buffApply with stat 'maxHpFlat' value = 0.264 × her max HP, casterIdx === targetIdx (self); its expiry aligns with the following fullBurstEnd (not fight-length). Deleting the effect changes NO unit's totalDamage on the fixture (offensive inertness pin).",
+      "inertness": "Zero totalDamage movement for every unit in the comp; no ally receives the grant.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Aftershow ATK ▲80.26% (FB-end→FB-enter window, pop-star target)",
+    "skill1:heal 3.52%/s ×10 (recovery-event tandem)",
+    "skill1:Removes Stargazer (gate lifecycle)",
+    "skill2:Projectile Explosion ▲40.13% (bucket + target scoping)",
+    "skill2:Attack Damage ▲40.13% (Stargazer-gated FB-enter)",
+    "burst:Re-enters Burst Stage 1 (rotation)",
+    "burst:Stargazer Max HP ▲26.4% (status opener + self stat)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Current HP ▼ 20%",
+      "with over 25% HP (activation condition — indeterminate in v1, no HP pool)"
+    ],
+    "burst": []
+  },
+  "notes": "Five places I expect a shared-prior misread. (1) TARGET RESOLUTION: 'her favorite pop star' is undefined in the prose — it is a single-ally designation, and whatever stand-in the override picks (most plausibly alliesTopAtk{count:1,excludeSelf:true}) is an authoring decision that MUST be ⚑-flagged and pinned by a targetSlug assertion; skill1's Aftershow and skill2's buffs must resolve to the SAME unit. (2) THE AFTERSHOW ANTI-WINDOW: the 80.26% ATK is active ONLY outside Full Burst ('removed when entering Full Burst') — the schema has no remove-at-FB-enter primitive, so a lazy durationSec or permanent encoding leaks it into FB windows where +50% damage lives; the in-FB-clean assertion is the highest-value test in this kit. (3) STARGAZER = ownBurstGate:'cast': the status is opened only by her own burst and removed at FB end, so a plain ungated fullBurstEnter on skill2 is the canonical over-credit; note targetStatus cannot carry it (enemy-only channel). Her cd 20s vs a ~20s rotation cycle means the gate may look inert on the happy path — the test must force a non-cast rotation (CD patch) to make the assertion discriminating. (4) THE HEAL IS NOT DEFENSIVE-ONLY: 10 recovery events/rotation on self feed any on-recovery consumer (crown sits in the standard fixture) — dropping it silently deflates crown. (5) FIXTURE SHAPE: Avistar is Burst I — she CANNOT be the controlComp carry (carry sits in the B3 slot and a B1 there never bursts, killing the entire Stargazer chain and both skills); the fixture must place her in the B1 slot alongside/instead of liter, and her reenterStage makes a double-B1 chain the expected rotation anatomy. All magnitudes are kit-text (DATAMINED); no MEASURED values exist in this packet.",
+  "model": "claude-fable-5"
+}

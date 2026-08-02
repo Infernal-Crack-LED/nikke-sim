@@ -1,0 +1,88 @@
+{
+  "slug": "sakura",
+  "kitDescription": "Sakura is a Burst I Fire Supporter whose value is almost entirely team support rather than personal damage. Her Skill 1 grants all allies a stacking DEF buff (Cherry Blossom Tea, 8.15% of DEF, up to 10 stacks, 15s) after every 3 of her normal attacks — defensive in nature, but the stack count gates one of her burst lines. Her Skill 2 lets allies deal extra damage to enemy projectiles (relevant only in Anomaly-style fights) and, on every Full Burst entry, refunds 4.84 seconds of burst cooldown to all allies, accelerating the whole team's rotation. Her Burst reduces the damage the team takes from Wind-code enemies once per battle, grants all allies a flat ATK bonus equal to 23.76% of her own ATK for 10 seconds on every cast, and — only when Cherry Blossom Tea is at max stacks — boosts the team's damage to interruption parts for 30 seconds. In a single-boss damage sim with no incoming damage, no projectiles, and no parts, only the cooldown refund and the caster-scaled ATK buff move damage.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S2b group: 'is live: removing it costs full bursts' (base.fb > cdrZero.fb)",
+      "S2b group: 'fires on EVERY full burst, not once per battle' (base.fb > cdrOnce.fb)",
+      "S2b group: 'reaches all allies, not just sakura' (base.fb > cdrSelf.fb)",
+      "S2b group: 'keys to full-burst ENTRY' (cdrOnCast.fb <= base.fb directionality)",
+      "S2b group: 'fewer full bursts means less team damage' (cdrZero.fb < base.fb)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "After 3 normal attacks: Cherry Blossom Tea",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "defPct 8.15, hitCount:3 → allies, maxStacks 10, durationSec 15; inert-but-modeled on three-way blind convergence; damage-neutrality pinned byte-identical",
+        "blindSaid": "S6 encoded the identical block (defPct 8.15, hitCount:3, allies, 10 stacks, 15s); S5 asserted magnitude/stacks/targets/inertness and all passed",
+        "formulaCheck": "defPct feeds no damage bucket (FinalATK uses atk, not def; boss deals no damage) — inert in v1 confirmed; hitCount:3 matches 'after 3 normal attack(s)'; SR shot = 1 round so count semantics correct",
+        "fireRateOk": true,
+        "explanation": "Three independent derivations (S2b, S5, S6) converged on the identical encoding; driver test proves activations == floor(shots/3) and byte-identical totals with the block removed. The one kit-silent detail (refresh-vs-expiry stack semantics) is unobservable because the stat is inert — correctly left as a documented caveat, not a fudge."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "damage to that projectile ▲ 7.74%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — no projectile channel in the sim (Anomaly-only mechanic)",
+        "blindSaid": "S5 asserted zero 7.74-magnitude buffs leak (passed); S6 unmodeled verbatim identically",
+        "formulaCheck": "No enemy-projectile entity exists at scope lock; encoding as generic attackDamagePct would wrongly add ~7.74% team DamageUp — correctly absent",
+        "fireRateOk": true,
+        "explanation": "Out-of-domain line, verbatim in unmodeled on both driver and blind; zero-leak assertion confirms no smuggling into a live bucket."
+      },
+      {
+        "kitLine": "Entering Full Burst: Burst CD ▼ 4.84 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCdr 4.84 on fullBurstEnter → allies, no oncePerBattle; proven live via steady-state FB cycle length (2110f vs 2400f) in a sole-B1 fixture; discriminates oncePerBattle",
+        "blindSaid": "S6 identical block; S5 asserted it via FB COUNT in a liter-dominated controlComp — 5 REDs because the 4.84s refund crosses no FB-count boundary in 180s there (count ties at 5), though the blind's own run data shows the CDR live by finer observables (team damage 862.7M vs 856.7M, all-allies targeting)",
+        "formulaCheck": "Rotation arithmetic (game-mechanics §8: cooldown-gated rotation) confirms a per-FB 4.84s refund shortens cycle length; whether it converts to an extra FB inside 180s is comp-dependent — exactly what the two fixtures show",
+        "fireRateOk": true,
+        "explanation": "Encoding matches prose (fullBurstEnter, all allies, every FB — no 1/battle clause on this sentence). The S5 REDs are a blind-fixture observable coarseness (FB count in a comp where liter drives the cycle), not an override fault; the driver's sole-B1 cycle-length observable is the correct instrument and discriminates the oncePerBattle nearest-wrong cleanly. Classified per Method A/E as a blind-test artifact."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Wind Code enemies dmg ▼ 90.72% 30s, 1/battle",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — defensive incoming-damage reduction; immortal boss deals no damage",
+        "blindSaid": "S5 asserted no 90.72-magnitude buff anywhere (passed); S6 unmodeled verbatim identically",
+        "formulaCheck": "No Taken/outgoing-damage bucket application exists for this; nearest-wrong (boss damageTakenPct) would inflate the whole team — confirmed absent",
+        "fireRateOk": true,
+        "explanation": "Correctly out-of-domain and recorded; the '1 time per battle' clause correctly attaches to this sentence and does not bleed onto the ATK line in any of the three derivations."
+      },
+      {
+        "kitLine": "ATK ▲ 23.76% of skill user's ATK, 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 23.76 on burstCast → allies, durationSec 10, every cast; flat-resolved 0.2376×staticAtk asserted at the exact float; once per cast, all 3 allies, 600-frame window",
+        "blindSaid": "S6 identical block; S5 asserted single flat value != 23.76 reaching >=3 targets including self (passed); S2b spec matched",
+        "formulaCheck": "Formula SSOT: '% of caster's ATK' = caster's static ATK added FLAT outside the recipient's (1+ATK%) — engine uses owner.staticAtk ✓; burst-cast trigger timing correct (skill-slot/burst-cast grant, applies on every cast)",
+        "fireRateOk": true,
+        "explanation": "All four derivations converged (caster-scaled flat, not atkPct). Driver pins the exact flat value, per-cast application count, 10s expiry, and the atkPct nearest-wrong. Fires at prose cadence (every one of her casts as sole B1)."
+      },
+      {
+        "kitLine": "@max Tea stacks: Parts dmg ▲ 23.54% 30s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim (both the gate clause and the parts line) — no buff-stack-count gate primitive exists, partsDamagePct is inert vs the partless boss (helm H4 precedent), and an ungated block would misrepresent the gate",
+        "blindSaid": "S6 encoded an UNGATED inert partsDamagePct 23.54 block with a self-flagged caveat (gate unenforced, must-gate-if-parts-ever-live); S5 skipped the gate as a declared GAP and asserted zero leak into non-parts stats (passed)",
+        "formulaCheck": "partsDamagePct has no live consumer on the partless scope-lock boss — driver's counterfactual ADD of the block is byte-identical on every total, proving damage-neutrality of either disposition",
+        "fireRateOk": true,
+        "explanation": "The sole driver-vs-blind divergence, and it is documentation-style, not behavioral: both dispositions are documented and damage-identical. The driver's UNMODELED-verbatim choice is the cleaner representation since the gate cannot be faithfully enforced (no primitive) and the S5 blind independently declared the same GAP. Not a gotcha; S6's caveat itself concedes the point."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. All six kit lines are either FAITHFUL (K1 Tea stack buff, K3 burstCdr, K5 caster-scaled ATK) or DOCUMENTED_GAP (K2 projectile, K4 wind mitigation, K6 gated parts) with verbatim unmodeled records and zero-leak assertions. The blind re-derivations converged strongly: S6's override is block-for-block identical on all four modeled/unmodeled structural decisions except K6, where S6's ungated-inert block is damage-identical to the driver's unmodeled verbatim and S6's own caveat concedes the gate cannot be enforced — a documentation-style divergence, not a finding. The 5 S5 REDs are a blind-fixture artifact (FB count in a liter-dominated comp is too coarse an observable for a 4.84s refund that crosses no count boundary in 180s); the blind's own run data corroborates the CDR is live (team damage delta, all-allies targeting), and the driver's sole-B1 cycle-length instrument discriminates the oncePerBattle nearest-wrong cleanly — RECON_ERROR-class, attributed to the blind, not the driver. Discrimination holds on every load-bearing driver test (K1 stat + trigger counterfactuals, K3 oncePerBattle, K5 atkPct, K6 add-parts byte-equality). Same-model residual the owner should spot-check: the refresh-vs-expiry stack semantics of Cherry Blossom Tea are kit-silent and currently unobservable (defPct inert) — if DEF ever feeds damage or the K6 gate gains a primitive, the 15s/stack-refresh question becomes live and needs a measurement, not an assumption; secondarily, whether max stacks are ever reachable at real SR cadence (driver/S5 both estimate ~3–4 stacks steady state under non-refresh) remains unmeasured and only matters if parts damage ever becomes live.",
+  "model": "kimi-code/k3"
+}

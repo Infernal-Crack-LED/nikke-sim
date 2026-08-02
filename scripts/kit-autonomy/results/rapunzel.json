@@ -1,0 +1,85 @@
+{
+  "slug": "rapunzel",
+  "kitDescription": "Rapunzel is a Pilgrim rocket-launcher Burst-I supporter whose entire kit is team sustain. Every full-charge shot she fires heals the 3 allies with the lowest HP percentage for a fraction of her own max HP. Her Skill 2 repeatedly grants the 2 highest-ATK allies a max-HP increase and an incoming-healing increase for 15 seconds at a time. Her burst heals the whole team for a large share of her max HP, revives one fallen ally at 81.67% HP, and stuns all enemies for 1 second whenever an ally drops below 30% HP. She contributes no damage buffs, debuffs, or weapon modifiers of any kind — her value is keeping the team alive and enabling allies whose kits react to being healed.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S5 skill2 'targets.size === 2' (union over all applications): observed union {helm,liter,rapunzel} = 3 across 11 firings — blind-test miscalibration; byFinalAtk:true (the prose's literal 'highest FINAL ATK') legitimately re-ranks the #2 slot as live ATK shifts, while EVERY application targets exactly 2 (per-frame counts === [2]). Classified RECON_ERROR; adapted test asserts per-frame === 2 and is green, as is the driver's own spec.",
+      "S5 FB_TRIGGER counterfactual 'CROWN_HEALS_FB <= FB + 2': observed 8 heals vs 5 fullBurstStart events (8 <= 7 fails by one) — blind-test bound miscalibration; the discrimination signal (fullBurstEnter << shotFired cadence) is intact via the unchanged '< CROWN_HEALS/3' (8 < ~33). Classified RECON_ERROR; adapted bound <= FB*2 absorbs it without touching the signal. Adapted suite vs driver override: 10 passed / 4 skipped (the 4 skips are the declared GAP lines) — GREEN."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Full Charge atk → heal 3 lowest-HP% allies",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired trigger (RL = one full charge per pull, helm/liberalio precedent), alliesLowestHp count:3 (documented leftmost-3 stand-in, no HP pool), heal effect with NO amount — event-only, fires allies' recovery triggers; magnitude 4.03% recorded in caveats but not modeled (no HP pool)",
+        "blindSaid": "S5: identical encoding recovered from prose alone (shotFired/alliesLowestHp:3/heal); S6: identical. Both flag the magnitude as GAP (it.skip) and the lowest-HP stand-in + shotFired≈fullCharge premise as ⚑ — same flags the driver carries",
+        "formulaCheck": "Heal is not a damage line; its only sim-observable is the recovery event stream, which is exactly what is modeled. SSOT: skill lines with no activation clause vs per-shot procs — this one HAS a printed clause (full charge), so per-shot keying on a charge weapon is the faithful read, not interval. Driver R-fixture pins every rapunzel shot charged (charged-flag assert) and ≥90% of shots firing the Crown consumer.",
+        "fireRateOk": true,
+        "explanation": "All three agents (driver, S5, S6, corroborated by S2b) independently converge on shotFired + count:3 + event-only heal. The two conventions (leftmost-3 stand-in, magnitude omitted) are documented ⚑ with reasons and move no damage. Cadence proven live over 180s (R1: firings ≥ 90% of ~100 charged pulls; R2: removing S1 collapses to burst-only)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "2 highest final ATK allies: Max HP ▲8.19% 15s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval sec:15 (datamined 15s CD, no printed activation clause — auto-cast convention, first fire t=15), alliesTopAtk count:2 byFinalAtk:true, targetMaxHpPct 8.19 durationSec 15 (engine converts to per-target maxHpFlat); proven offensively inert (e3 rule: ally-granted Max HP feeds no atkOfMaxHpPct)",
+        "blindSaid": "S6: identical except trigger {kind:'passive'} — the SOLE functional divergence; blind itself notes the choice is inert and 'must be pinned before any HP-scaling consumer is added'. S5: asserts maxHpFlat on exactly 2 allies incl. helm (highest ATK), value === 8.19% of each TARGET's own HP, 15s expiry, removal changes no totals",
+        "formulaCheck": "SSOT §2b: a kit line with no printed activation clause and a datamined cooldown is the internal-cooldown/interval pattern (snow-white S2a precedent) — the driver's interval:15 matches that engine primitive; blind's passive+durationSec:15 is a one-shot that expires at t=15 and under-models uptime. byFinalAtk honors the literal 'final ATK' (live effectiveAtk ranking); targetMaxHpPct is the correct own-% basis per the SSOT HP-conversion rule. Inertness confirmed: removing the block changes no total in a live consumer team.",
+        "fireRateOk": true,
+        "explanation": "Driver's interval trigger is the MORE faithful of the two blind-driver variants (continuous ~permanent uptime matching a 15s-CD auto-cast vs a one-shot passive) and matches the engine's documented interval precedent; the divergence is documented ⚑ in the driver's caveats and is damage-inert either way. Driver spec pins per-frame target count === 2, flat value === 8.19% × each target's own maxHp, expiresFrame − applyFrame === 900, and byte-identical totals on removal."
+      },
+      {
+        "kitLine": "Incoming healing ▲13.65% for 15 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled — no incoming-healing StatKey exists and no HP pool to amplify; verbatim line preserved in unmodeled.skill2",
+        "blindSaid": "S5 it.skip with the same GAP reason; S6 unmodeled identically; S2b: correct disposition is verbatim unmodeled, NOT a proxy damage stat",
+        "formulaCheck": "No bucket in the damage formula consumes incoming-healing; the sim models no HP amounts. Zero damage and zero recovery-event-count change — a pure capability gap.",
+        "fireRateOk": true,
+        "explanation": "Correct DOCUMENTED_GAP: missing engine primitive, recorded verbatim, zero behavioral consequence in v1. All four agents agree."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "All allies: recover 40.83% caster Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast trigger (her OWN cast, 60s CD B1), target allies incl. self, heal event-only; magnitude 40.83% recorded in caveats, not modeled",
+        "blindSaid": "S5/S6: identical encoding (burstCast/allies/heal); S5 additionally pins trigger identity structurally (burstCast, not fullBurstEnter; excludeSelf false) because its fixture's two B1s mean rapunzel may never cast",
+        "formulaCheck": "SSOT §8 + the scope clarification: a burst-slot heal keyed to burstCast fires on her cast — keying it to fullBurstEnter would fire on liter's rotations (two-B1 fixture) and over-credit every recovery consumer. The burst-cast boundary rule concerns DAMAGE, not recovery events; the event must key to the cast itself.",
+        "fireRateOk": true,
+        "explanation": "The burstCast-vs-fullBurstEnter keying is the load-bearing trap and it is correctly encoded and DIRECTLY pinned: driver R4 (added on S2b's recommendation) requires every burst-channel recovery frame to coincide exactly with a rapunzel burstCast frame in the two-B1 fixture — red under a fullBurstEnter mis-key. R2/R3 prove the two channels are distinct and independent."
+      },
+      {
+        "kitLine": "Resurrect 1 incapacitated ally at 81.67% HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled ⚑ meta-defining — no resurrection/death/HP-pool primitive; nobody dies on the partless boss; verbatim in unmodeled.burst with recipe (needs HP-pool + death/revive model) and tier",
+        "blindSaid": "S5 it.skip (no HP pool, no incapacitation state); S6 unmodeled verbatim; S2b: must NOT be encoded as a live heal to the highest-ATK ally (would fire recovery events that never happen) — the driver does not do this",
+        "formulaCheck": "No damage-formula interaction; the target set (incapacitated allies) is always empty at scope lock. Inert by construction.",
+        "fireRateOk": true,
+        "explanation": "Correct DOCUMENTED_GAP with estimate + recipe + tier as required. Not a SILENT_DROP: the line is verbatim in unmodeled with reasoning. The driver's restraint (not proxying it as a heal) matches S2b's explicit warning."
+      },
+      {
+        "kitLine": "HP<30% → stun all enemies 1s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled ⚑ status-gate — no HP pool to gate the threshold, no enemy-action model for a stun to interrupt; verbatim in unmodeled.burst",
+        "blindSaid": "S5 it.skip (threshold unmodellable; enemy target resolves to no entity) plus a structural guard that any stun in the kit must target 'enemy', never an ally; S6 unmodeled verbatim; S2b: must NOT be mis-scoped onto allies/self — the driver's override contains NO stun block at all, so the guard is vacuously satisfied",
+        "formulaCheck": "The boss neither fires nor reloads; a stun has no enemy-side effect on any damage bucket. Zero board impact at scope lock.",
+        "fireRateOk": true,
+        "explanation": "Correct DOCUMENTED_GAP. The driver's fixture includes the enemy-facing guard (no ally stun anywhere in the override), closing the mis-scope trap S2b named."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs. All six kit lines are accounted for: three FAITHFUL (S1 per-full-charge heal event, S2 targetMaxHpPct on the 2 highest-final-ATK allies, burst heal keyed to her own burstCast) and three DOCUMENTED_GAPs (incoming-healing, resurrect, HP-gated stun — each verbatim in unmodeled with ⚑, recipe, and tier, and each gated on a primitive v1 genuinely lacks: no HP pool, no incoming-healing StatKey, no death/revive or enemy-action model). The two REDs in the raw S5 run are blind-test calibration errors, not driver faults: the S2 union-count assertion ignores that the prose's literal 'highest FINAL ATK' legitimately re-ranks the #2 slot between applications (per-application count is exactly 2 — proven by per-frame counts and by the driver's own spec), and the FB+2 counterfactual bound was mis-set by one while its actual discrimination signal (fullBurstEnter << per-shot cadence) held and holds. Both adapted assertions pass; the adapted blind suite is GREEN against the shipped override, and the blind override (S6) is functionally identical to the driver's except the S2 trigger, where the driver's interval:15 is the more faithful reading under the engine's own internal-cooldown precedent — a documented, inert, defensible choice. Discrimination is strong: damage-neutrality is proven byte-identical solo and in a bare team (group N); R1–R4 pin per-shot cadence, channel attribution, and the burstCast-vs-fullBurstEnter keying at frame level in a two-B1 fixture; the S2 tests pin count, basis (target's own HP), duration, and inertness-by-removal. Ranked residuals the owner should spot-check (all same-model convergence, none blocking): (1) the alliesLowestHp leftmost-3 stand-in is a shared assumption across all agents — it is inert today (heals carry no amount) but becomes load-bearing the moment an HP pool or heal magnitudes land; (2) the shotFired≈full-charge identity rests on the helm/liberalio RL precedent, unverified against a rapunzel-focus video — the driver's charged-flag assert makes the sim-side read honest but the game-side premise is a ⚑ worth one popup-cadence read; (3) the S2 interval first-fire phase (t=15) is convention, per the standing interval-trigger ⚑. For GO, nothing must change.",
+  "model": "kimi-code/k3"
+}

@@ -1,0 +1,54 @@
+{
+  "note": "Kit-autonomy gauntlet 2026-08-01 (Qwen driver; slug `sakura` = the original SR/Fire Supporter, DISTINCT from sakura-bloom-in-summer AR/Wind). Sakura is a Burst I Supporter whose damage footprint is entirely her two team buffs; four of six kit lines are offensively inert in the damage-only sim — three ride verbatim in `unmodeled` (K2/K4/K6) and a fourth (K1) is modeled as an inert defPct stack buff (blind-converged; see below). LOAD-BEARING: (K3) S2 'entering Full Burst → Cooldown of Burst Skill ▼4.84 sec' = burstCdr 4.84 on fullBurstEnter → all allies, NOT once-per-battle (the kit attaches no 1/battle clause here; that clause belongs to the burst's Wind-mitigation sentence — cross-family S2b review note 1). burstCdr refunds ally burstCdFrames directly (sim.ts) and emits no event; observable as a higher team Full-Burst count over 180s (volume V2 precedent). (K5) burst 'ATK ▲23.76% of the skill user's ATK for 10 sec' = casterAtkPct 23.76 on burstCast → all allies, 10s, EVERY cast — caster-scaled FLAT add (0.2376×sakura staticAtk ≈ 23,372 at scope lock), NOT atkPct (which would scale each target's own ATK and over-credit Attacker carries; S2b note 2). INERT-BUT-MODELED: (K1) S1 'Cherry Blossom Tea: 8.15% of DEF ×10/15s' is a DEF buff (defup icon, no 'ATK ▲' prefix — contrast K5) = defPct 8.15 on hitCount:3 → all allies, maxStacks 10, 15s. defPct is inert in v1 and the boss deals no damage, so this is provably damage-neutral (whole-board totals byte-identical with the block removed — pinned in the unit test). It is modeled (rather than left unmodeled) on the strength of the cross-family convergence: BOTH blind models (S2b claude-fable-5, S5 claude-opus-5) independently encoded it as an inert defPct stack buff, and it is a real always-firing in-domain buff whose values are fully datamined (no fudge — the only kit-silent detail, refresh-vs-expiry stack semantics, is unobservable because the stat is inert). Its stack count feeds ONLY K6, which is unmodelable (no buff-stack-count block gate primitive) and inert anyway. Nearest-wrong: an ATK-from-DEF misread (atkPct/casterAtkPct 8.15) — there is no atkOfDefPct StatKey, so any offensive encoding is a misread. UNMODELED (out-of-domain): (K2) S2 projectile-intercept damage = Anomaly-only, no projectile channel in the sim. (K4) burst 'damage dealt by Wind Code enemies ▼90.72% / 1 per battle' = defensive damage-taken reduction; the immortal boss deals no damage. (K6) burst 'at max Tea stacks → Damage to Interruption Parts ▲23.54%' = partsDamagePct, inert vs the partless scope-lock boss (helm H4 precedent) AND gated on the unmodeled K1 stacks. Fixture: scripts/tests/units/sakura.test.ts (sole-B1 sakura/crown/helm, boss Iron). Cross-family: S2b claude-fable-5 test review converged on K2-K5; K1 modeled-inert on blind convergence (S2b + S5 both encoded an inert defPct stack buff) and K6 UNMODELED, both documented above.",
+  "kitDescription": "Burst I Supporter. S1 Cherry Blossom Tea: after 3 of her normal attacks, all allies gain a stacking DEF buff (8.15% of DEF, ×10, 15s) — defensive, inert in the DPS sim, and the stack count gates her burst's interruption-parts line. S2: allies deal more damage to enemy projectiles (Anomaly-only); and on every Full Burst entry she refunds all allies' burst cooldowns by 4.84s (her primary rotation-acceleration tool). Burst: reduces damage the team takes from Wind-code enemies (defensive, 1/battle); grants all allies ATK equal to 23.76% of her own ATK for 10s (her main offensive buff, every cast); and — only when Cherry Blossom Tea is at max stacks — boosts damage to interruption parts (niche, inert vs a partless boss).",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "When attacking an enemy projectile, damage to that projectile ▲ 7.74% continuously."
+    ],
+    "burst": [
+      "Damage dealt by Wind Code enemies ▼ 90.72% for 30 sec. Activates 1 time(s) per battle.",
+      "Activates when Cherry Blossom Tea is at max stacks. Affects all allies.",
+      "Damage to Interruption Parts ▲ 23.54% for 30 sec."
+    ]
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 3 },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 8.15,
+          "durationSec": 15,
+          "maxStacks": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "allies" },
+      "effects": [{ "kind": "burstCdr", "seconds": 4.84 }]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 23.76,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}
