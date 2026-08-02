@@ -21,9 +21,15 @@ export type NoopCharacter = CharacterData & { baseStats: BaseStats };
 // Stats are inert for B1/B2: the units deal 0 damage (multiplier 0) and cast nothing,
 // so ATK/HP only need to be valid numbers for the stat formula. No grade/core growth.
 // The B3 is given a class-modal base multiplier plus a mock burst buff via its override.
+// B1/B2 ATK is kept negligible so "highest ATK" ally selectors (Chime's "the king",
+// Avistar's "favorite pop star") always pick a real unit in the Solo control teams.
+// B1/B2 ATK is negligible so "highest ATK" ally selectors (Chime's "the king",
+// Avistar's "favorite pop star") pick the real unit in the Solo control teams.
+// B3 also uses low base ATK for the same reason; its mock burst damage is preserved
+// by a proportionally higher normalAttackMultiplier.
 const NOOP_BASE_STATS: BaseStats = {
   resourceId: 0,
-  atk: 30000,
+  atk: 100,
   hp: 1000000,
   def: 0,
   critRate: 15,
@@ -48,7 +54,8 @@ function noop(
   burstCooldownSec: number,
   weapon: Weapon,
   w: WeaponModal,
-  normalAttackMultiplier: number
+  normalAttackMultiplier: number,
+  baseStats: BaseStats
 ): NoopCharacter {
   return {
     slug,
@@ -75,7 +82,7 @@ function noop(
     generatorSupported: true,
     simSupported: true,
     skills: { skill1: '', skill2: '', burst: '' }, // parser → zero blocks
-    baseStats: NOOP_BASE_STATS,
+    baseStats,
   };
 }
 
@@ -85,8 +92,10 @@ export const NOOP_B3 = 'noop-b3-mg';
 export const NOOP_B3_RL = 'noop-b3-rl';
 export const NOOP_BUNNY_B2 = 'noop-bunny-b2';
 
-// Class-modal MG normal-attack multiplier for the synthetic B3 mock.
-const MG_NORMAL_ATTACK_MULT = 5.57;
+// Effective MG normal-attack multiplier for the synthetic B3 mock. The base ATK is
+// kept negligible so king-maker selectors target real units; the multiplier is
+// raised proportionally to preserve the mock B3's burst-stage damage output.
+const MG_NORMAL_ATTACK_MULT = 1671;
 
 export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
   [NOOP_B1]: noop(
@@ -102,7 +111,8 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 0,
       rl3: 7.6,
     },
-    0
+    0,
+    NOOP_BASE_STATS
   ),
   [NOOP_B2]: noop(
     NOOP_B2,
@@ -117,7 +127,8 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 250,
       rl3: 8.4,
     },
-    0
+    0,
+    NOOP_BASE_STATS
   ),
   [NOOP_B3]: noop(
     NOOP_B3,
@@ -132,7 +143,8 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 0,
       rl3: 3.55,
     },
-    MG_NORMAL_ATTACK_MULT
+    MG_NORMAL_ATTACK_MULT,
+    NOOP_BASE_STATS
   ),
   [NOOP_B3_RL]: noop(
     NOOP_B3_RL,
@@ -147,7 +159,8 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 250,
       rl3: 16.8,
     },
-    0
+    0,
+    NOOP_BASE_STATS
   ),
   [NOOP_BUNNY_B2]: noop(
     NOOP_BUNNY_B2,
@@ -162,6 +175,7 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 250,
       rl3: 8.4,
     },
-    0
+    0,
+    NOOP_BASE_STATS
   ),
 };
