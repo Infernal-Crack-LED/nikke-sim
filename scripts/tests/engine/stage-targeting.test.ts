@@ -2,8 +2,8 @@
 //
 // `countsAsStage` (src/engine/sim.ts) is the only semantic difference between the two
 // stage-override paths. forceStage is honored at any stage; lambdaStage on a Λ unit only
-// counts as B3 (legacy). This test pins both halves with the SAME stage-2 burst-caster buff
-// so the asymmetry fails the moment lambdaStage starts being honored like forceStage.
+// counts as B3 (legacy). This test pins both halves with burst-caster buffs so the
+// asymmetry fails the moment lambdaStage starts being honored like forceStage.
 import { describe, expect, it } from 'vitest';
 import type { SimConfig, SimEvent } from '../../../src/types.js';
 import { runSim } from '../../../src/engine/sim.js';
@@ -18,9 +18,10 @@ import {
 } from '../lib/harness.js';
 import { scopeLockCfg } from '../../lib/scope-lock.js';
 
-const SUPPORT = 'ada';
-const POSITIVE_CONTROL = 'anis-star';
+const SUPPORT_B2 = 'crown';
+const SUPPORT_B3 = 'ada';
 const B1_INERT = 'emma';
+const B1_EXTRA = 'claire';
 const B3_INERT = 'snow-crane';
 
 function emptyKitOverride(slug: string): OverrideFile {
@@ -31,15 +32,18 @@ function emptyKitOverride(slug: string): OverrideFile {
   });
 }
 
-function stageTwoSupportOverride(): OverrideFile {
-  return withPatchedOverride(SUPPORT, (ov) => {
+function stageTargetSupportOverride(
+  supportSlug: string,
+  stage: 1 | 2
+): OverrideFile {
+  return withPatchedOverride(supportSlug, (ov) => {
     ov.skill1 = [];
     ov.skill2 = [];
     ov.burst = [
       {
         slot: 'burst',
         trigger: { kind: 'burstCast' },
-        target: { kind: 'burstCasters', stage: 2 },
+        target: { kind: 'burstCasters', stage },
         effects: [
           {
             kind: 'buff',
@@ -64,36 +68,47 @@ function countBuffsTo(
   ).length;
 }
 
+function countStageCasts(
+  events: SimEvent[],
+  slug: string,
+  stage: number
+): number {
+  return events.filter(
+    (e) => e.kind === 'burstCast' && e.slug === slug && e.stage === stage
+  ).length;
+}
+
 interface StageRunResult {
   testedBuffs: number;
-  positiveControlBuffs: number;
+  testedCasts: number;
 }
 
 function runStageRun(
   testedSlug: string,
-  stageOverride: { forceStage: 2 } | { lambdaStage: 2 }
+  supportSlug: string,
+  targetStage: 1 | 2,
+  stageOverride: { forceStage: 1 | 2 } | { lambdaStage: 1 | 2 }
 ): StageRunResult {
-  // Slot order matters: the positive-control unit must sit left of the Λ unit
-  // so the rotation builder picks it first when both are eligible for B2.
+  // Build a legal team around the support's stage:
+  //   B2 support (stage-1 target): [support, tested(B1 forced), B3, B1 inert, B3 inert]
+  //   B3 support (stage-2 target): [support, tested(B2), B1 inert, B1 extra, B3 inert]
   const slugs =
-    testedSlug === POSITIVE_CONTROL
-      ? [SUPPORT, POSITIVE_CONTROL, B1_INERT, B3_INERT]
-      : [SUPPORT, POSITIVE_CONTROL, testedSlug, B1_INERT, B3_INERT];
+    supportSlug === SUPPORT_B2
+      ? [supportSlug, testedSlug, SUPPORT_B3, B1_INERT, B3_INERT]
+      : [supportSlug, testedSlug, B1_INERT, B1_EXTRA, B3_INERT];
 
   const overrides: Record<string, OverrideFile | undefined> = {
-    [SUPPORT]: stageTwoSupportOverride(),
+    [supportSlug]: stageTargetSupportOverride(supportSlug, targetStage),
     [testedSlug]: emptyKitOverride(testedSlug),
-    [POSITIVE_CONTROL]:
-      testedSlug === POSITIVE_CONTROL
-        ? emptyKitOverride(POSITIVE_CONTROL)
-        : withPatchedOverride(POSITIVE_CONTROL, (ov) => {
-            ov.skill1 = [];
-            ov.skill2 = [];
-            ov.burst = [];
-          }),
     [B1_INERT]: bareWeaponOverride(B1_INERT),
     [B3_INERT]: bareWeaponOverride(B3_INERT),
   };
+  if (supportSlug === SUPPORT_B2) {
+    overrides[SUPPORT_B3] = emptyKitOverride(SUPPORT_B3);
+  }
+  if (supportSlug === SUPPORT_B3) {
+    overrides[B1_EXTRA] = bareWeaponOverride(B1_EXTRA);
+  }
 
   const chars = slugs.map((s) => {
     const c = data.characters[s];
@@ -103,48 +118,48 @@ function runStageRun(
     return c;
   });
 
-  const unitOpts: UnitOptions[] = slugs.map((s) => {
-    if (s === testedSlug) {
-      return { ol: 'base5', doll: false, ...stageOverride };
-    }
-    if (s === POSITIVE_CONTROL && testedSlug !== POSITIVE_CONTROL) {
-      return { ol: 'base5', doll: false, forceStage: 2 };
-    }
-    return { ol: 'base5', doll: false };
-  });
+  const unitOpts: UnitOptions[] = slugs.map((s) =>
+    s === testedSlug
+      ? { ol: 'base5', doll: false, ...stageOverride }
+      : { ol: 'base5', doll: false }
+  );
   const prepared = prepareTeam(chars, unitOpts, { overrides, ...deps });
 
   const events: SimEvent[] = [];
   const cfg: SimConfig = scopeLockCfg(slugs, null, {
-    focusSlug: SUPPORT,
+    focusSlug: supportSlug === SUPPORT_B2 ? SUPPORT_B3 : SUPPORT_B3,
     onEvent: (e) => events.push(e),
   });
   runSim(chars, mult, cfg, prepared);
 
   return {
     testedBuffs: countBuffsTo(events, 'attackDamagePct', testedSlug),
-    positiveControlBuffs: countBuffsTo(
-      events,
-      'attackDamagePct',
-      POSITIVE_CONTROL
-    ),
+    testedCasts: countStageCasts(events, testedSlug, targetStage),
   };
 }
 
 describe('stage-targeted burst-caster buff selection', () => {
-  it('forceStage=2 lets a non-Λ unit be selected by a stage-2 burst-caster buff', () => {
-    const r = runStageRun(POSITIVE_CONTROL, { forceStage: 2 });
+  it('forceStage=1 lets a non-Λ unit be selected by a stage-1 burst-caster buff', () => {
+    const r = runStageRun('anis-star', SUPPORT_B2, 1, { forceStage: 1 });
     expect(
       r.testedBuffs,
-      'anis-star forced to B2 should be targeted as stage 2'
+      'anis-star forced to B1 should be targeted as stage 1'
     ).toBeGreaterThan(0);
   });
 
-  it('lambdaStage=2 on a Λ unit does NOT count as stage 2', () => {
-    const r = runStageRun('red-hood', { lambdaStage: 2 });
+  it('forceStage=2 lets a non-Λ unit be selected by a stage-2 burst-caster buff', () => {
+    const r = runStageRun('crown', SUPPORT_B3, 2, { forceStage: 2 });
     expect(
-      r.positiveControlBuffs,
-      'the forceStage=2 positive control should be targeted as stage 2'
+      r.testedBuffs,
+      'crown forced to B2 should be targeted as stage 2'
+    ).toBeGreaterThan(0);
+  });
+
+  it('lambdaStage=2 on a Λ unit does NOT count as stage 2, even when it casts at stage 2', () => {
+    const r = runStageRun('red-hood', SUPPORT_B3, 2, { lambdaStage: 2 });
+    expect(
+      r.testedCasts,
+      'red-hood pinned to B2 via lambdaStage should actually cast at stage 2'
     ).toBeGreaterThan(0);
     expect(
       r.testedBuffs,

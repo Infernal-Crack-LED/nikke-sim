@@ -194,6 +194,10 @@ describe('b1b2 dps integration', () => {
     expect(withMg.dps).not.toEqual(plain.dps);
     expect(withOther.dps).not.toEqual(plain.dps);
     expect(withMg.dps).not.toEqual(withOther.dps);
+    // The reported template is the one the simulated team was built from.
+    expect(plain.template).toBe('b1-20s');
+    expect(withMg.template).toBe('b1-40s');
+    expect(withOther.template).toBe('b1-40s');
   });
 
   it('Crown with Chime runs and differs from her plain row', () => {
@@ -206,6 +210,8 @@ describe('b1b2 dps integration', () => {
     expect(plain.dps).toBeGreaterThan(0);
     expect(withChime.dps).toBeGreaterThan(0);
     expect(withChime.dps).not.toEqual(plain.dps);
+    expect(plain.template).toBe('b2');
+    expect(withChime.template).toBe('b2');
   });
 
   it('eleadv cells use the boss element the tested unit beats', () => {

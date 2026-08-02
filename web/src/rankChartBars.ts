@@ -172,23 +172,29 @@ export function barsForBoard(
         'Control template: 40s B1 — includes a second B1 for the standard team burst CDR',
       b2: 'Control template: B2 — standard B2 team with a no-op B1 and two B2s',
     };
-    return b1b2DpsBars(art as B1B2DpsArtifact, opts.b1b2DpsBoard).map((b) => {
+    const b1b2Art = art as B1B2DpsArtifact;
+    return b1b2DpsBars(b1b2Art, opts.b1b2DpsBoard).map((b) => {
       const label = b.template ? templateLabel[b.template] : undefined;
       const title = b.template ? templateTitle[b.template] : undefined;
       const profileBadge = b.profile ? badge(b) : {};
-      const extra: Partial<RankChartBar> =
-        label && title
-          ? b.profile
-            ? {
-                ...profileBadge,
-                sub: label,
-                badgeTitle: `${art.profiles[b.profile] ?? ''} (${title})`,
-              }
-            : { badge: label, badgeTitle: title }
+      const extra: Partial<RankChartBar> = b.profile
+        ? {
+            ...profileBadge,
+            ...(label ? { sub: label } : {}),
+            ...(label && title
+              ? {
+                  badgeTitle: profileBadge.badgeTitle
+                    ? `${profileBadge.badgeTitle} (${title})`
+                    : title,
+                }
+              : {}),
+          }
+        : label && title
+          ? { badge: label, badgeTitle: title }
           : {};
       return {
         ...b,
-        key: `${b.slug}:${b.profile ?? ''}`,
+        key: `${b.slug}:${b.profile ?? ''}:${b.template ?? ''}`,
         value: b.dps,
         valueText: fmtMagnitude(b.dps),
         valueTitle: 'own DPS in the Solo-style no-op control team',
