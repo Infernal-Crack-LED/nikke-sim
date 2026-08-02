@@ -506,7 +506,7 @@ interface UnitState {
   burstFirstPending: boolean; // takes the first eligible burst of its stage (Prika duet opener)
   mpThreshold: number;
   extraStages: Set<number>; // extra burst stages this unit may fill (Combat Assist)
-  lambdaStage: number | null; // Λ units: pinned to burst ONLY at this stage
+  lambdaStage: number | null; // pinned units (Λ or forced via UnitOptions): burst ONLY at this stage
   advantageVs: Set<string>; // boss elements this unit counts as advantaged against
   // weapon runtime
   ammo: number;
@@ -815,8 +815,7 @@ export function runSim(
         12
       ),
       extraStages: new Set(),
-      lambdaStage:
-        char.burst === 'Λ' ? (prepared?.[idx]?.lambdaStage ?? null) : null,
+      lambdaStage: prepared?.[idx]?.lambdaStage ?? null,
       advantageVs: new Set(),
       ammo: char.ammo,
       fireAcc: 0,
@@ -2814,8 +2813,10 @@ export function runSim(
     ) {
       const want = romanStage[stage];
       const fillsStage = (u: UnitState) => {
-        if (u.char.burst === 'Λ') {
-          // pinned Λ (e.g. "Red Hood operates as B2") only fills its chosen stage
+        // Λ units default to all-stage eligible; if one has been pinned
+        // (lambdaStage), it only fills that stage. Non-Λ units can also be
+        // pinned to an off-stage role via UnitOptions.lambdaStage.
+        if (u.char.burst === 'Λ' || u.lambdaStage !== null) {
           return u.lambdaStage === null || u.lambdaStage === stage;
         }
         return u.char.burst === want || u.extraStages.has(stage);

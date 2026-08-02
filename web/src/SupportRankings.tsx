@@ -1,9 +1,9 @@
 // Support Rankings tab (/ranks/support, inside the sim App's rankings
-// section) — four ranked boards over the precomputed artifacts: Burst
-// Generation, Burst CDR, Sustain, Team Buffs. One shared ranked-bar UI
-// (RankBarChart) with a board pill-switcher; the buffer board gets a second
-// pill row (Generic / Typed carries). Only the active board's artifact
-// fetches. Every board's `methodology` string sits in a collapsible
+// section) — five ranked boards over the precomputed artifacts: Burst
+// Generation, Burst CDR, Sustain, Team Buffs, and B1/B2 DPS. One shared
+// ranked-bar UI (RankBarChart) with a board pill-switcher; the buffer board
+// gets a second pill row (Generic / Typed carries). Only the active board's
+// artifact fetches. Every board's `methodology` string sits in a collapsible
 // "How this works" card — mirroring the DPS chart's Custom Profiles
 // disclosure (DpsChartTab). No row links into the sim: the sustain board
 // includes non-simSupported units, so no links at all is the simplest truth.
@@ -15,6 +15,8 @@ import {
   buildSustainTable,
   buildBufferTable,
   buildB1B2DpsTable,
+  B1B2_CELL_LABEL,
+  B1B2_DPS_BOARDS,
 } from '../../src/infographics/core/rankTables';
 import { copyTableCardImage } from './tableShare';
 import { copyTextToClipboard } from './clipboard';
@@ -47,6 +49,11 @@ const BOARDS: { id: BoardId; label: string; title: string }[] = [
   { id: 'burstcdr', label: 'Burst CDR', title: 'Burst Cooldown Reduction' },
   { id: 'b1b2dps', label: 'B1/B2 DPS', title: 'B1/B2 DPS' },
 ];
+
+const parseB1B2Board = (v: string | null): B1B2DpsBoard =>
+  B1B2_DPS_BOARDS.includes(v as B1B2DpsBoard)
+    ? (v as B1B2DpsBoard)
+    : 'c100-eleadv';
 
 // Methodology disclosure — the Custom Profiles pattern from DpsChartTab:
 // a collapsible card with the board's conventions one click away, plus the
@@ -89,16 +96,6 @@ export function SupportRankings() {
   const [burstGenBoard, setBurstGenBoard] = useState<BurstGenBoard>(() =>
     params.get('bg') === 'focused' ? 'focused' : 'unfocused'
   );
-  const B1B2_DPS_BOARDS: B1B2DpsBoard[] = [
-    'c0-neutral',
-    'c0-eleadv',
-    'c100-neutral',
-    'c100-eleadv',
-  ];
-  const parseB1B2Board = (v: string | null): B1B2DpsBoard =>
-    B1B2_DPS_BOARDS.includes(v as B1B2DpsBoard)
-      ? (v as B1B2DpsBoard)
-      : 'c0-neutral';
   const [b1b2DpsBoard, setB1b2DpsBoard] = useState<B1B2DpsBoard>(() =>
     parseB1B2Board(params.get('b1b2'))
   );
@@ -255,13 +252,7 @@ export function SupportRankings() {
               className={b1b2DpsBoard === b ? 'on' : ''}
               onClick={() => setB1b2DpsBoard(b)}
             >
-              {b === 'c0-neutral'
-                ? 'No Core · Neutral'
-                : b === 'c0-eleadv'
-                  ? 'No Core · Ele Adv'
-                  : b === 'c100-neutral'
-                    ? 'Core 100 · Neutral'
-                    : 'Core 100 · Ele Adv'}
+              {B1B2_CELL_LABEL[b]}
             </button>
           ))}
         </div>
@@ -283,7 +274,7 @@ export function SupportRankings() {
                 : board === 'burstgen'
                   ? `${meta.title} · ${burstGenBoard}`
                   : board === 'b1b2dps'
-                    ? `${meta.title} · ${b1b2DpsBoard.replace('-', ' · ').replace('c0', 'No Core').replace('c100', 'Core 100').replace('neutral', 'Neutral').replace('eleadv', 'Ele Adv')}`
+                    ? `${meta.title} · ${B1B2_CELL_LABEL[b1b2DpsBoard]}`
                     : meta.title
             }
             subtitle={`${bars.length} entries · generated ${new Date(

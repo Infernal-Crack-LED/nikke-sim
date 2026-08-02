@@ -45,7 +45,7 @@ const burstgenTop = artifacts['burstgen.json'].entries[0][0];
 const burstgenTopName = artifacts['burstgen.json'].units[burstgenTop].name;
 const typedTop = artifacts['bufferchart.json'].cells.typed[0][0];
 const typedTopName = artifacts['bufferchart.json'].units[typedTop].name;
-const b1b2Top = artifacts['b1b2dps.json'].cells['c0-neutral'][0][0];
+const b1b2Top = artifacts['b1b2dps.json'].cells['c100-eleadv'][0][0];
 const b1b2TopName = artifacts['b1b2dps.json'].units[b1b2Top].name;
 
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -188,7 +188,7 @@ try {
   checks[`buffer typed top bar renders (${typedTopName})`] =
     text().includes(typedTopName);
   clickPill('B1/B2 DPS');
-  await waitFor(/B1\/B2 DPS · No Core · Neutral/, 'b1b2 dps board');
+  await waitFor(/B1\/B2 DPS · Core 100 · Ele Adv/, 'b1b2 dps board');
   checks[`b1b2 dps top bar renders (${b1b2TopName})`] =
     text().includes(b1b2TopName);
 } catch (e) {

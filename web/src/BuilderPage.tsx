@@ -25,6 +25,7 @@ import {
   loadSustain,
   loadBufferChart,
   loadB1B2Dps,
+  type B1B2DpsBoard,
 } from './rankBoardsData';
 import type {
   BurstGenArtifact,
@@ -48,6 +49,10 @@ import {
   OL_PIECES,
   type OlLinesPreset,
 } from '../../src/infographics/core/tableData';
+import {
+  B1B2_CELL_LABEL,
+  B1B2_DPS_BOARDS,
+} from '../../src/infographics/core/rankTables';
 import {
   drawUnitCardVariant,
   unitCardSize,
@@ -402,12 +407,6 @@ export function BuilderPage() {
           b1b2DpsBoard: state.b1b2DpsBoard,
         });
         const boardMeta = BOARDS.find((b) => b.key === state.board)!;
-        const B1B2_BOARD_LABEL: Record<string, string> = {
-          'c0-neutral': 'No Core · Neutral',
-          'c0-eleadv': 'No Core · Ele Adv',
-          'c100-neutral': 'Core 100 · Neutral',
-          'c100-eleadv': 'Core 100 · Ele Adv',
-        };
         const subMode =
           state.board === 'buffer'
             ? state.bufferBoard
@@ -418,7 +417,7 @@ export function BuilderPage() {
                 : null;
         const chartData: RankChartData = {
           title: subMode
-            ? `${boardMeta.title} · ${B1B2_BOARD_LABEL[subMode] ?? cap(subMode)}`
+            ? `${boardMeta.title} · ${B1B2_CELL_LABEL[subMode as B1B2DpsBoard] ?? cap(subMode)}`
             : boardMeta.title,
           subtitle: `top 10 of ${allBars.length} · generated ${new Date(art.generatedAt).toLocaleDateString()}`,
           bars: allBars.slice(0, 10),
@@ -805,14 +804,7 @@ export function BuilderPage() {
                 <div className="field">
                   <label>Cell</label>
                   <PillGrid>
-                    {(
-                      [
-                        'c0-neutral',
-                        'c0-eleadv',
-                        'c100-neutral',
-                        'c100-eleadv',
-                      ] as const
-                    ).map((b) => (
+                    {B1B2_DPS_BOARDS.map((b) => (
                       <button
                         key={b}
                         className={s.b1b2DpsBoard === b ? 'on' : ''}
@@ -820,13 +812,7 @@ export function BuilderPage() {
                           setS((cur) => ({ ...cur, b1b2DpsBoard: b }))
                         }
                       >
-                        {b === 'c0-neutral'
-                          ? 'No Core · Neutral'
-                          : b === 'c0-eleadv'
-                            ? 'No Core · Ele Adv'
-                            : b === 'c100-neutral'
-                              ? 'Core 100 · Neutral'
-                              : 'Core 100 · Ele Adv'}
+                        {B1B2_CELL_LABEL[b]}
                       </button>
                     ))}
                   </PillGrid>

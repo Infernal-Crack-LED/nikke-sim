@@ -1,11 +1,11 @@
 # Ranking boards beyond DPS — methodology
 
-> Four ranked lists that sit next to the DPS chart: burst generation, burst
-> cooldown reduction, sustain, and buffer value. Backend artifacts live in
-> `web/public/` (`burstgen.json`, `burstcdr.json`, `sustain.json`,
-> `bufferchart.json`), built by `npm run ranks:all` (sources in `src/ranks/`,
-> builders in `scripts/build-*.ts`). Everything below is scope lock: level 400,
-> Base-5 gear, 3★ / core 7, 10/10/10 skills, 180-second fight.
+> Five ranked lists that sit next to the DPS chart: burst generation, burst
+> cooldown reduction, sustain, buffer value, and B1/B2 DPS. Backend artifacts
+> live in `web/public/` (`burstgen.json`, `burstcdr.json`, `sustain.json`,
+> `bufferchart.json`, `b1b2dps.json`), built by `npm run ranks:all` (sources in
+> `src/ranks/`, builders in `scripts/build-*.ts`). Everything below is scope
+> lock: level 400, Base-5 gear, 3★ / core 7, 10/10/10 skills, 180-second fight.
 
 ## Burst generation (`burstgen.json`)
 
@@ -30,6 +30,30 @@ Standard no-op teams (the unit under test is inserted at the ▼ slot):
 - **Cinderella: Crystal Wave** — the second B3 becomes MG: `[B1 AR, B2 SR, B2 SR, CWC, B3 MG]`
 
 Both units are ranked **both ways** — plain base team and profiled — flagged `null` / `with-2mg` / `with-mg` so the two standings compare at a glance.
+
+## B1/B2 DPS (`b1b2dps.json`)
+
+Ranks every sim-supported **Burst-1 and Burst-2 unit by its own damage** in a Solo-style no-op control team. The unit under test is inserted at the leftmost slot of its burst stage; teammates are weapon-modal no-op controls with empty kits, so the value comes from the unit's own kit, weapon cadence, and burst rotation.
+
+Cells: **Core 0 / Core 100 × Neutral / Elemental advantage** (the boss is set to the element the tested unit beats). Investment is scope lock.
+
+Standard no-op teams (the unit under test is inserted at the ▼ slot):
+
+- **B1 20s** — `[▼unit, B2 SR, B2 SR, B3 RL, B3 MG]`
+- **B1 40s** — `[▼unit, B1 AR, B2 SR, B3 RL, B3 MG]` (a second B1 covers off-rotations)
+- **B2** — `[B1 AR, ▼unit, B2 SR, B3 RL, B3 MG]`
+
+The no-op B1 in the **40s-B1** and **B2** templates provides the standard 7 s team burst-cooldown reduction; 20s-B1 rows rely on the tested B1's own CDR.
+
+Λ units and forced off-stage rows are pinned with `lambdaStage`:
+
+- **Red Hood** — ranked as both B1 and B2.
+- **Rapi: Red Hood** — ranked as B1.
+
+**Partner profiles:** a few units are ranked both plain and with a canonical partner in the matching stage slot:
+
+- **Crown** — with **Chime** as a second B2 (`with-chime`).
+- **Anis: Star** — with a synthetic MG B1 partner that stands in for **Avistar** (`with-avistar`), and with a generic other B1 (`with-other-b1`).
 
 ## Burst cooldown reduction (`burstcdr.json`)
 

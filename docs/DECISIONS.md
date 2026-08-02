@@ -9,6 +9,19 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-01, latest) B1/B2 DPS RANKING BOARD — Solo-style isolation for B1/B2 units.**
+  Added a fifth non-DPS ranking board (`b1b2dps.json`) that ranks every sim-supported Burst-1 and
+  Burst-2 unit by its own damage in a standardized no-op control team. Four cells only: Core 0 /
+  Core 100 × neutral / elemental advantage, all at scope lock. Team shapes mirror the support-rank
+  no-op templates: 20s B1 `[tested, B2 SR, B2 SR, B3 RL, B3 MG]`; 40s B1 `[tested, B1 AR, B2 SR,
+B3 RL, B3 MG]`; B2 `[B1 AR, tested, B2 SR, B3 RL, B3 MG]`. The no-op B1 in the 40s-B1 and B2
+  templates provides the standard 7 s team burst CDR; 20s-B1 rows rely on the tested unit's own CDR.
+  Red Hood is ranked as both B1 and B2 via her Λ `lambdaStage`; Rapi: Red Hood is ranked as B1 by
+  extending `lambdaStage` to non-Λ units (engine now honors the option for any unit, not only Λ).
+  Partner profiles: Crown with Chime, Anis: Star with a synthetic MG B1 Avistar stand-in and with a
+  generic other B1. **Evidence:** green `bash scripts/verify.sh` and `node scripts/web-smoke-ranks.mjs`;
+  team-assembly fixtures in `scripts/tests/ranks/b1b2dps.test.ts`.
+
 - **(2026-08-01, latest) CLEAN-WEAPON BASIS INVARIANT REFINED (option 2): CW1 now pins
   damage-NEUTRALITY of any committed override, not file-ABSENCE — `marciana` is the first
   clean-weapon unit to carry an override.** The kit-autonomy gauntlet landed `marciana` (the SG

@@ -9,8 +9,8 @@
 //   B1 40s: [tested, B1 AR, B2 SR, B3 RL, B3 MG]  (second B1 covers off-rotations)
 //   B2:     [B1 AR, tested, B2 SR, B3 RL, B3 MG]  (a second B2 is always present)
 //
-// The no-op B1 contributes the standard 7 s team burst-cooldown reduction, so
-// B1/B2 units that do not have their own CDR still rotate in a realistic team.
+// The no-op B1 in the 40s-B1 and B2 templates contributes the standard 7 s team
+// burst-cooldown reduction; 20s-B1 rows rely on the tested B1's own CDR.
 //
 // Cells: core 0 / core 100 × neutral / elemental advantage. Investment is fixed
 // to scope lock (Base-5, 3★/core 7, no cube/doll).
@@ -50,6 +50,8 @@ const B2_TEAM = [NOOP_B1, NOOP_B2, NOOP_B3_RL, NOOP_B3];
 
 // Synthetic MG B1 partner used as a stand-in for Avistar, who is not yet
 // sim-supported but is the canonical partner for Anis: Star's "with B1" mode.
+// Stats are class-modal MG values (mirroring the no-op B3 MG) pending real-unit
+// support.
 export const SYNTHETIC_AVISTAR = 'synthetic-avistar';
 const AVISTAR_CHAR: NoopCharacter = {
   ...NOOP_CHARACTERS[NOOP_B1],
@@ -68,28 +70,32 @@ export interface B1B2DpsProfile {
   note: string;
 }
 
+// Partner profiles keyed by profile id. `dpsFor` looks up the partner for a row
+// by its `profile` value, so each id must be unique and self-contained.
 export const B1B2_DPS_PROFILES: Record<string, B1B2DpsProfile> = {
-  'anis-star': {
+  'with-avistar': {
     id: 'with-avistar',
     partner: SYNTHETIC_AVISTAR,
-    note: 'with Avistar (synthetic MG B1 partner) — Anis: Star enters her "Everyone\'s Star" re-entry mode',
+    note: 'with a synthetic MG B1 partner (Avistar stand-in) — Anis: Star enters her "Everyone\'s Star" re-entry mode',
   },
-  crown: {
+  'with-other-b1': {
+    id: 'with-other-b1',
+    partner: NOOP_B1,
+    note: 'with a generic other B1 — Anis: Star enters her "Everyone\'s Star" re-entry mode',
+  },
+  'with-chime': {
     id: 'with-chime',
     partner: 'chime',
     note: 'with Chime as a second B2 — Chime re-enters Burst Stage 2 to keep the rotation moving',
   },
 };
 
-// Additional profile rows, keyed by the parent slug. These are ranked alongside
-// the plain row; the id must match an entry in B1B2_DPS_PROFILES.
+// Additional profile rows, keyed by the parent slug. ids must match entries in
+// B1B2_DPS_PROFILES.
 export const B1B2_DPS_EXTRA_PROFILES: Record<string, string[]> = {
   'anis-star': ['with-avistar', 'with-other-b1'],
   crown: ['with-chime'],
 };
-
-// The generic "other B1" profile reuses the existing no-op AR B1 as the partner.
-export const WITH_OTHER_B1_PARTNER = NOOP_B1;
 
 export type B1B2DpsCell =
   'c0-neutral' | 'c0-eleadv' | 'c100-neutral' | 'c100-eleadv';
@@ -120,6 +126,19 @@ function leftmostSlot(burst: 'I' | 'II'): number {
   return burst === 'I' ? 0 : 1;
 }
 
+const STAGE_ROMAN = { 1: 'I', 2: 'II', 3: 'III' } as const;
+
+function fillsStage(
+  char: NoopCharacter,
+  lambdaStage: 1 | 2 | 3 | undefined,
+  stage: 1 | 2 | 3
+): boolean {
+  if (lambdaStage !== undefined) {
+    return lambdaStage === stage;
+  }
+  return char.burst === STAGE_ROMAN[stage];
+}
+
 function charFor(ctx: RanksCtx, slug: string): NoopCharacter {
   const found =
     (ctx.characters[slug] as NoopCharacter | undefined) ??
@@ -131,7 +150,28 @@ function charFor(ctx: RanksCtx, slug: string): NoopCharacter {
   return found;
 }
 
-function buildTeam(
+function assertRotationLegal(
+  team: string[],
+  tested: B1B2TestedUnit,
+  ctx: RanksCtx
+): void {
+  const chars = team.map((s) => charFor(ctx, s));
+  for (const stage of [1, 2, 3] as const) {
+    const has = chars.some((c, i) => {
+      const isTested = team[i] === tested.slug;
+      return fillsStage(c, isTested ? tested.lambdaStage : undefined, stage);
+    });
+    if (!has) {
+      throw new Error(
+        `B1/B2 DPS team for ${tested.slug}${
+          tested.profile ? ` [${tested.profile}]` : ''
+        } has no eligible unit for stage ${stage}: ${team.join(', ')}`
+      );
+    }
+  }
+}
+
+export function buildTeam(
   tested: B1B2TestedUnit,
   ctx: RanksCtx,
   partner?: string
@@ -142,7 +182,9 @@ function buildTeam(
   const isLongB1 = tested.effectiveBurst === 'I' && cd > 30;
   let base: string[];
   if (tested.effectiveBurst === 'I') {
-    base = isLongB1 ? [...B1_40S_TEAM] : [...B1_20S_TEAM];
+    // If a B1 partner is requested, use the 40s B1 template so the partner
+    // occupies the second B1 slot without displacing a B2.
+    base = partner || isLongB1 ? [...B1_40S_TEAM] : [...B1_20S_TEAM];
   } else {
     base = [...B2_TEAM];
   }
@@ -160,6 +202,7 @@ function buildTeam(
   const slot = leftmostSlot(tested.effectiveBurst);
   const team = [...base];
   team.splice(slot, 0, tested.slug);
+  assertRotationLegal(team, tested, ctx);
   return team;
 }
 
@@ -180,12 +223,9 @@ export function dpsFor(
   tested: B1B2TestedUnit,
   ctx: RanksCtx
 ): number {
-  const partner =
-    tested.profile && tested.profile !== 'with-other-b1'
-      ? B1B2_DPS_PROFILES[tested.slug]?.partner
-      : tested.profile === 'with-other-b1'
-        ? WITH_OTHER_B1_PARTNER
-        : undefined;
+  const partner = tested.profile
+    ? B1B2_DPS_PROFILES[tested.profile]?.partner
+    : undefined;
 
   const slugs = buildTeam(tested, ctx, partner);
   const chars = slugs.map((s) => charFor(ctx, s));
