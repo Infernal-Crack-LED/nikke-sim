@@ -24,7 +24,7 @@ const profiledEntry = artifacts['bufferchart.json'].cells.generic.find(
   (e) => e[3]
 );
 // Map buffer comp-profile ids to the badge text rendered by the frontend's
-// profileLabel(). Keep in sync with web/src/SupportRankings.tsx.
+// profileLabel(). Keep in sync with web/src/rankChartBars.ts.
 const PROFILE_LABELS = {
   'with-healer': 'w/ Healer',
   'with-shielder': 'w/ Shielder',
@@ -32,14 +32,24 @@ const PROFILE_LABELS = {
   'w/ Mint': 'w/ Mint',
   'w/ Anchor': 'w/ Anchor',
   'w/ Bunny': 'w/ Bunny',
-  'with-avistar': 'w/ MG B1',
+};
+const profileBadge = profiledEntry?.[3]
+  ? (PROFILE_LABELS[profiledEntry[3]] ?? null)
+  : null;
+
+// B1/B2 board profile ids and their rendered badge text (rankChartBars.ts).
+const B1B2_PROFILE_LABELS = {
+  'with-avistar': 'w/ Avistar',
   'with-other-b1': 'w/ Other B1',
   'with-chime': 'w/ Chime',
   'as-b1': 'B1',
   'as-b2': 'B2',
 };
-const profileBadge = profiledEntry?.[3]
-  ? (PROFILE_LABELS[profiledEntry[3]] ?? null)
+const b1b2ProfiledEntry = artifacts['b1b2dps.json'].cells['c100-eleadv'].find(
+  (e) => e[3]
+);
+const b1b2ProfileBadge = b1b2ProfiledEntry?.[3]
+  ? (B1B2_PROFILE_LABELS[b1b2ProfiledEntry[3]] ?? null)
   : null;
 const burstgenTop = artifacts['burstgen.json'].entries[0][0];
 const burstgenTopName = artifacts['burstgen.json'].units[burstgenTop].name;
@@ -191,6 +201,10 @@ try {
   await waitFor(/B1\/B2 DPS · Core 100 · Ele Adv/, 'b1b2 dps board');
   checks[`b1b2 dps top bar renders (${b1b2TopName})`] =
     text().includes(b1b2TopName);
+  if (b1b2ProfileBadge) {
+    checks[`b1b2 dps profile badge renders (${b1b2ProfileBadge})`] =
+      text().includes(b1b2ProfileBadge);
+  }
 } catch (e) {
   checks['board switching works'] = false;
   console.error('  board switch error:', e.message);

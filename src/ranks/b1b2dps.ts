@@ -6,7 +6,10 @@
 //
 // Control teams (with no partner the tested unit is inserted at the leftmost slot
 // of its stage; with a partner it is inserted immediately after the partner's slot,
-// so the partner bursts first):
+// so the partner bursts first). All no-op placeholders use the B1/B2-board-specific
+// low-ATK variants (src/dpschart/noop.ts B1B2_NOOP_CHARACTERS) so king-maker selectors
+// target the real tested unit without affecting the shared no-op stats used by the
+// DPS chart, buffer, sustain, and burst-gen boards.
 //   B1 20s: [tested, B2 SR, B2 SR, B3 RL, B3 MG]
 //   B1 40s: [tested, B1 AR, B2 SR, B3 RL, B3 MG]  (second B1 covers off-rotations)
 //   B2:     [B1 AR, tested, B2 SR, B3 RL, B3 MG]  (a second B2 is always present)
@@ -42,6 +45,7 @@ import {
   NOOP_B3,
   NOOP_B3_RL,
   NOOP_CHARACTERS,
+  B1B2_NOOP_CHARACTERS,
   type NoopCharacter,
 } from '../dpschart/noop.js';
 import type { RanksCtx } from './burstgen.js';
@@ -133,6 +137,7 @@ function fillsStage(
 function charFor(ctx: RanksCtx, slug: string): NoopCharacter {
   const found =
     (ctx.characters[slug] as NoopCharacter | undefined) ??
+    B1B2_NOOP_CHARACTERS[slug] ??
     NOOP_CHARACTERS[slug];
   if (!found) {
     throw new Error(`unknown B1/B2 DPS unit "${slug}"`);

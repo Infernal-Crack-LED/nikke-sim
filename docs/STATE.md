@@ -353,7 +353,7 @@ Planned follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
   no-op B1 with the standard 7 s team burst CDR; 20s-B1 rows rely on the tested unit's own CDR.
   Forced rows: red-hood as B1 and B2 (via `lambdaStage`), rapi-red-hood as B1 (via `forceStage`).
   Partner profiles:
-  crown `with-chime`, anis-star `with-avistar` (synthetic MG B1 stand-in) and `with-other-b1`.
+  crown `with-chime`, anis-star `with-avistar` (real `avistar` as a MG B1 partner) and `with-other-b1`.
 
 **Comp profiles (all boards, 2026-07-26):** profiled units are ranked BOTH plain and profiled, each
 entry flagged `profile: null | <id>` (the frontend differentiator). burstgen: little-mermaid

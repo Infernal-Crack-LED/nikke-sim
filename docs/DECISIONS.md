@@ -9,35 +9,37 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-01, latest) B1/B2 DPS RANKING BOARD — Solo-style isolation for B1/B2 units.**
+- **(2026-08-02, latest) CHIME / AVISTAR KING-MAKER TARGETING EXCLUDES SELF.** Both units use an
+  `alliesTopAtk count:1` selector for their designated carry ("the king" / "favorite pop star").
+  The engine ranks on static ATK (base stats + class gear). At scope lock (3★/core 7, Base-5 gear)
+  that gives Chime 98,367 > Crown 78,707 and Avistar 98,367 > Anis: Star 78,707 (computed from
+  `data/characters.json`, `data/level-multiplier.json`, and the `src/stats.ts` base-5 class gear
+  table). Without `excludeSelf`, the sim would resolve the selector to Chime/Avistar themselves in
+  those control rows. `excludeSelf` is therefore a design-intent judgment that the king/favorite
+  buff is meant for an ally other than the caster, not a literal reading of the kit text — whether
+  the kit's "ally" wording strictly excludes the caster is unverified (⚑, recipe: focus video of
+  the king/pop-star icon, or the datamined target flag for word_group 10091 / 10103). The B1/B2
+  board uses dedicated low-ATK no-op variants (`src/dpschart/noop.ts B1B2_NOOP_CHARACTERS`) so this
+  targeting fix is scoped to that board and does not move the existing DPS chart / buffer /
+  sustain / burst-gen boards. **Evidence:** `data/characters.json`; `data/level-multiplier.json`;
+  `src/stats.ts`; `scripts/tests/ranks/b1b2dps.test.ts` pins Crown+Chime > Crown default.
+
+- **(2026-08-01) B1/B2 DPS RANKING BOARD — Solo-style isolation for B1/B2 units.**
   Added a fifth non-DPS ranking board (`b1b2dps.json`) that ranks every sim-supported Burst-1 and
   Burst-2 unit by its own damage in a standardized no-op control team. Four cells only: Core 0 /
   Core 100 × neutral / elemental advantage, all at scope lock. Team shapes mirror the support-rank
   no-op templates: 20s B1 `[tested, B2 SR, B2 SR, B3 RL, B3 MG]`; 40s B1 `[tested, B1 AR, B2 SR,
-B3 RL, B3 MG]`; B2 `[B1 AR, tested, B2 SR, B3 RL, B3 MG]`. The no-op B1 in the 40s-B1 and B2
-  templates provides the standard 7 s team burst CDR; 20s-B1 rows rely on the tested unit's own CDR.
-  Red Hood is ranked as both B1 and B2 via her Λ `lambdaStage`; Rapi: Red Hood (natively B3) is
-  ranked as B1 via a new `forceStage` unit option, keeping `lambdaStage` Λ-only.
-  Partner profiles: Crown with Chime, Anis: Star with Avistar as a MG B1 partner and with a
-  generic other B1. Profile rows put the partner first in the stage (e.g. Avistar -> Anis: Star,
-  Chime -> Crown). **Evidence:** green `bash scripts/verify.sh` and `node scripts/web-smoke-ranks.mjs`;
-  team-assembly fixtures in `scripts/tests/ranks/b1b2dps.test.ts`.
-
-- **(2026-08-02) CHIME / AVISTAR KING-MAKER TARGETING EXCLUDES SELF.** Both units use an
-  `alliesTopAtk count:1` selector for their designated carry ("the king" / "favorite pop star").
-  The engine ranks on static ATK (base stats + class gear), and the datamined base ATK values are
-  Chime 500 / Crown 400 and Avistar 500 / Anis: Star 400. At scope lock that gives Chime 82,614 >
-  Crown 66,091 and Avistar 82,614 > Anis: Star 66,091 (computed from `data/characters.json`,
-  `data/level-multiplier.json`, and the `src/stats.ts` base-5 class gear table). Without
-  `excludeSelf`, the sim would resolve the selector to Chime/Avistar themselves in those control
-  rows. `excludeSelf` is therefore a design-intent judgment that the king/favorite buff is meant
-  for an ally other than the caster, not a literal reading of the kit text — whether the kit's
-  "ally" wording strictly excludes the caster is unverified (⚑, recipe: focus video of the
-  king/pop-star icon, or the datamined target flag for word_group 10091 / 10103). The symptom check
-  is that Crown+Chime now out-damages Crown default in the regenerated B1/B2 board.
-  The no-op control ATK is kept negligible (100) so other `alliesTopAtk` selectors also target real
-  units. **Evidence:** `data/characters.json` base stats; `data/level-multiplier.json`;
-  `src/stats.ts`; `scripts/tests/ranks/b1b2dps.test.ts` pins Crown+Chime > Crown default.
+B3 RL, B3 MG]`; B2 `[B1 AR, tested, B2 SR, B3 RL, B3 MG]`. The board uses dedicated low-ATK no-op
+  placeholders (`B1B2_NOOP_CHARACTERS`) so king-maker selectors target the tested unit instead of
+  the shared high-ATK controls used by the DPS chart / buffer / sustain / burst-gen boards. The
+  no-op B1 in the 40s-B1 and B2 templates provides the standard 7 s team burst CDR; 20s-B1 rows
+  rely on the tested unit's own CDR. Red Hood is ranked as both B1 and B2 via her Λ `lambdaStage`;
+  Rapi: Red Hood (natively B3) is ranked as B1 via a new `forceStage` unit option, keeping
+  `lambdaStage` Λ-only. Partner profiles: Crown with Chime, Anis: Star with Avistar as a MG B1
+  partner and with a generic other B1. Profile rows put the partner first in the stage (e.g.
+  Avistar -> Anis: Star, Chime -> Crown). **Evidence:** green `bash scripts/verify.sh` and
+  `node scripts/web-smoke-ranks.mjs`; team-assembly fixtures in
+  `scripts/tests/ranks/b1b2dps.test.ts`.
 
 - **(2026-08-01) CLEAN-WEAPON BASIS INVARIANT REFINED (option 2): CW1 now pins
   damage-NEUTRALITY of any committed override, not file-ABSENCE — `marciana` is the first

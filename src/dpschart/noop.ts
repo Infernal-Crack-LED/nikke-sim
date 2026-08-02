@@ -18,18 +18,13 @@ import type { BaseStats, BurstType, CharacterData, Weapon } from '../types.js';
 
 export type NoopCharacter = CharacterData & { baseStats: BaseStats };
 
-// Stats are inert for B1/B2: the units deal 0 damage (multiplier 0) and cast nothing,
-// so ATK/HP only need to be valid numbers for the stat formula. No grade/core growth.
-// ATK is kept negligible so "highest ATK" ally selectors (Chime's "the king",
-// Avistar's "favorite pop star") always pick a real unit in the Solo control teams.
-// The B3 mock also uses negligible ATK for the same reason. Its normal-attack
-// multiplier is the historical effective value (derived from the class-modal MG
-// multiplier 5.57 at the original no-op ATK of 30000) and is kept unchanged so
-// existing board numbers stay stable; the mock B3 only supplies rotation / burst-stage
-// coverage and its own damage is not reported by the B1/B2 board.
+// Default stats are inert for B1/B2: the units deal 0 damage (multiplier 0) and cast
+// nothing, so ATK/HP only need to be valid numbers for the stat formula. No grade/core
+// growth. ATK is kept high enough that existing boards (DPS chart Solo, buffer,
+// sustain, burstgen) keep their current `alliesTopAtk` / `alliesLowestAtk` resolution.
 const NOOP_BASE_STATS: BaseStats = {
   resourceId: 0,
-  atk: 100,
+  atk: 30000,
   hp: 1000000,
   def: 0,
   critRate: 15,
@@ -37,6 +32,14 @@ const NOOP_BASE_STATS: BaseStats = {
   maxLevel: 400,
   grade: { ratio: 0, atk: 0, hp: 0, def: 0 },
   core: { atk: 0, hp: 0, def: 0 },
+};
+
+// Low-ATK variant used only by the B1/B2 DPS board. With these stats, "highest ATK"
+// ally selectors (Chime's "the king", Avistar's "favorite pop star") always pick a
+// real unit in the B1/B2 control teams instead of a no-op placeholder.
+const NOOP_LOW_ATK_STATS: BaseStats = {
+  ...NOOP_BASE_STATS,
+  atk: 100,
 };
 
 interface WeaponModal {
@@ -54,7 +57,8 @@ function noop(
   burstCooldownSec: number,
   weapon: Weapon,
   w: WeaponModal,
-  normalAttackMultiplier: number
+  normalAttackMultiplier: number,
+  baseStats: BaseStats
 ): NoopCharacter {
   return {
     slug,
@@ -66,7 +70,7 @@ function noop(
     class: 'Supporter', // only feeds gear ATK/HP — inert at 0 damage
     element: 'Fire', // never elementally relevant at 0 damage
     manufacturer: null, // no relationship bonus on a synthetic control unit
-    normalAttackMultiplier, // 0 for pure controls; B3 gets the historical mock-burst multiplier
+    normalAttackMultiplier, // 0 for pure controls; B3 gets a class-modal base for the mock burst
     coreAttackMultiplier: 200,
     ammo: w.ammo,
     reloadFrames: w.reloadFrames,
@@ -81,7 +85,7 @@ function noop(
     generatorSupported: true,
     simSupported: true,
     skills: { skill1: '', skill2: '', burst: '' }, // parser → zero blocks
-    baseStats: NOOP_BASE_STATS,
+    baseStats,
   };
 }
 
@@ -91,13 +95,12 @@ export const NOOP_B3 = 'noop-b3-mg';
 export const NOOP_B3_RL = 'noop-b3-rl';
 export const NOOP_BUNNY_B2 = 'noop-bunny-b2';
 
-// Historical effective MG normal-attack multiplier for the synthetic B3 mock.
-// Derived from the class-modal MG multiplier 5.57 calibrated at the original no-op
-// ATK of 30000; kept at the same effective value after the no-op ATK reduction to
-// avoid shifting existing board numbers. The mock B3 is rotation scaffolding, not a
-// reported damage source.
-const MG_NORMAL_ATTACK_MULT = 1671;
+// Class-modal MG normal-attack multiplier from data/characters.json modal values.
+const MG_NORMAL_ATTACK_MULT = 5.57;
 
+// Default shared no-op characters used by the DPS chart Solo framework, buffer board,
+// sustain board, and burst-gen board. Keep these byte-identical to the historical
+// control set so existing board numbers do not shift.
 export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
   [NOOP_B1]: noop(
     NOOP_B1,
@@ -112,7 +115,8 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 0,
       rl3: 7.6,
     },
-    0
+    0,
+    NOOP_BASE_STATS
   ),
   [NOOP_B2]: noop(
     NOOP_B2,
@@ -127,7 +131,8 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 250,
       rl3: 8.4,
     },
-    0
+    0,
+    NOOP_BASE_STATS
   ),
   [NOOP_B3]: noop(
     NOOP_B3,
@@ -142,7 +147,8 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 0,
       rl3: 3.55,
     },
-    MG_NORMAL_ATTACK_MULT
+    MG_NORMAL_ATTACK_MULT,
+    NOOP_BASE_STATS
   ),
   [NOOP_B3_RL]: noop(
     NOOP_B3_RL,
@@ -157,7 +163,8 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 250,
       rl3: 16.8,
     },
-    0
+    0,
+    NOOP_BASE_STATS
   ),
   [NOOP_BUNNY_B2]: noop(
     NOOP_BUNNY_B2,
@@ -172,6 +179,94 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 250,
       rl3: 8.4,
     },
-    0
+    0,
+    NOOP_BASE_STATS
+  ),
+};
+
+// B1/B2-DPS-board-specific no-op characters. They use the same slugs and the same
+// weapon/rotation scaffolding as the shared set, but their ATK is negligible so
+// king-maker selectors reliably target the real tested unit. The B3 mock multiplier
+// is the class-modal value; the mock B3's own damage is not reported by the B1/B2 board.
+export const B1B2_NOOP_CHARACTERS: Record<string, NoopCharacter> = {
+  [NOOP_B1]: noop(
+    NOOP_B1,
+    'No-op B1 (AR)',
+    'I',
+    20,
+    'AR',
+    {
+      ammo: 60,
+      reloadFrames: 81,
+      chargeFrames: 0,
+      chargeMultiplier: 0,
+      rl3: 7.6,
+    },
+    0,
+    NOOP_LOW_ATK_STATS
+  ),
+  [NOOP_B2]: noop(
+    NOOP_B2,
+    'No-op B2 (SR)',
+    'II',
+    20,
+    'SR',
+    {
+      ammo: 6,
+      reloadFrames: 141,
+      chargeFrames: 60,
+      chargeMultiplier: 250,
+      rl3: 8.4,
+    },
+    0,
+    NOOP_LOW_ATK_STATS
+  ),
+  [NOOP_B3]: noop(
+    NOOP_B3,
+    'No-op B3 (MG)',
+    'III',
+    40,
+    'MG',
+    {
+      ammo: 300,
+      reloadFrames: 171,
+      chargeFrames: 0,
+      chargeMultiplier: 0,
+      rl3: 3.55,
+    },
+    MG_NORMAL_ATTACK_MULT,
+    NOOP_LOW_ATK_STATS
+  ),
+  [NOOP_B3_RL]: noop(
+    NOOP_B3_RL,
+    'No-op B3 (RL)',
+    'III',
+    40,
+    'RL',
+    {
+      ammo: 6,
+      reloadFrames: 141,
+      chargeFrames: 60,
+      chargeMultiplier: 250,
+      rl3: 16.8,
+    },
+    0,
+    NOOP_LOW_ATK_STATS
+  ),
+  [NOOP_BUNNY_B2]: noop(
+    NOOP_BUNNY_B2,
+    'No-op Bunny B2 (SR)',
+    'II',
+    20,
+    'SR',
+    {
+      ammo: 6,
+      reloadFrames: 141,
+      chargeFrames: 60,
+      chargeMultiplier: 250,
+      rl3: 8.4,
+    },
+    0,
+    NOOP_LOW_ATK_STATS
   ),
 };

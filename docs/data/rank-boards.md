@@ -167,9 +167,8 @@ rely on the tested B1's own CDR.
 partner in the matching stage slot:
 
 - **Crown** — with **Chime** as a second B2 (`with-chime`).
-- **Anis: Star** — with a synthetic MG B1 partner that stands in for
-  **Avistar** (`with-avistar`), and with a generic other B1
-  (`with-other-b1`).
+- **Anis: Star** — with the real **Avistar** as a MG B1 partner (`with-avistar`),
+  and with a generic other B1 (`with-other-b1`).
 
 For a **20s-B1 profile row with a B1 partner**, the team switches to the
 40s-B1 template: the partner fills the second B1 slot and the second no-op B2
