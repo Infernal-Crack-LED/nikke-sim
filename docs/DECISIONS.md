@@ -18,8 +18,9 @@ B3 RL, B3 MG]`; B2 `[B1 AR, tested, B2 SR, B3 RL, B3 MG]`. The no-op B1 in the 4
   templates provides the standard 7 s team burst CDR; 20s-B1 rows rely on the tested unit's own CDR.
   Red Hood is ranked as both B1 and B2 via her Λ `lambdaStage`; Rapi: Red Hood (natively B3) is
   ranked as B1 via a new `forceStage` unit option, keeping `lambdaStage` Λ-only.
-  Partner profiles: Crown with Chime, Anis: Star with a synthetic MG B1 Avistar stand-in and with a
-  generic other B1. **Evidence:** green `bash scripts/verify.sh` and `node scripts/web-smoke-ranks.mjs`;
+  Partner profiles: Crown with Chime, Anis: Star with Avistar as a MG B1 partner and with a
+  generic other B1. Profile rows put the partner first in the stage (e.g. Avistar -> Anis: Star,
+  Chime -> Crown). **Evidence:** green `bash scripts/verify.sh` and `node scripts/web-smoke-ranks.mjs`;
   team-assembly fixtures in `scripts/tests/ranks/b1b2dps.test.ts`.
 
 - **(2026-08-01) CLEAN-WEAPON BASIS INVARIANT REFINED (option 2): CW1 now pins

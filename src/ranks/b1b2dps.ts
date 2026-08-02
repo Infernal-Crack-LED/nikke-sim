@@ -48,22 +48,9 @@ const B1_20S_TEAM = [NOOP_B2, NOOP_B2, NOOP_B3_RL, NOOP_B3];
 const B1_40S_TEAM = [NOOP_B1, NOOP_B2, NOOP_B3_RL, NOOP_B3];
 const B2_TEAM = [NOOP_B1, NOOP_B2, NOOP_B3_RL, NOOP_B3];
 
-// Synthetic MG B1 partner used as a stand-in for Avistar, who is not yet
-// sim-supported but is the canonical partner for Anis: Star's "with B1" mode.
-// It is built from the class-modal MG no-op (so MG cadence / gauge / wind-up
-// are correct) and pinned as a 20s Burst-1 unit. Its override
-// (src/skills/overrides/synthetic-avistar.json) mirrors the no-op B1 AR's 7s
-// team burst CDR, so the profile row compares on weapon class rather than on
-// missing rotation support.
-export const SYNTHETIC_AVISTAR = 'synthetic-avistar';
-const AVISTAR_CHAR: NoopCharacter = {
-  ...NOOP_CHARACTERS[NOOP_B3],
-  slug: SYNTHETIC_AVISTAR,
-  name: 'Avistar (synthetic MG B1)',
-  burst: 'I',
-  burstCooldownSec: 20,
-  normalAttackMultiplier: 0,
-};
+// Avistar is the canonical MG B1 partner for Anis: Star's "with B1" profile
+// row. She was added to the roster after this board was authored, so the
+// synthetic stand-in has been retired.
 
 export interface B1B2DpsProfile {
   id: string;
@@ -76,8 +63,8 @@ export interface B1B2DpsProfile {
 export const B1B2_DPS_PROFILES: Record<string, B1B2DpsProfile> = {
   'with-avistar': {
     id: 'with-avistar',
-    partner: SYNTHETIC_AVISTAR,
-    note: 'with a synthetic MG B1 partner (Avistar stand-in) — models Anis: Star alongside a magazine-fed B1',
+    partner: 'avistar',
+    note: 'with Avistar as a MG B1 partner — models Anis: Star alongside a magazine-fed B1',
   },
   'with-other-b1': {
     id: 'with-other-b1',
@@ -146,8 +133,7 @@ function fillsStage(
 function charFor(ctx: RanksCtx, slug: string): NoopCharacter {
   const found =
     (ctx.characters[slug] as NoopCharacter | undefined) ??
-    NOOP_CHARACTERS[slug] ??
-    (slug === SYNTHETIC_AVISTAR ? AVISTAR_CHAR : undefined);
+    NOOP_CHARACTERS[slug];
   if (!found) {
     throw new Error(`unknown B1/B2 DPS unit "${slug}"`);
   }
@@ -221,7 +207,9 @@ export function buildTeam(
     }
   }
 
-  const slot = leftmostSlot(tested.effectiveBurst);
+  // Profile rows put the partner first in the stage so the partner bursts
+  // before the tested unit (e.g. Avistar -> Anis: Star, Chime -> Crown).
+  const slot = leftmostSlot(tested.effectiveBurst) + (resolvedPartner ? 1 : 0);
   const team = [...base];
   team.splice(slot, 0, tested.slug);
   assertRotationLegal(team, tested, ctx);
@@ -257,7 +245,12 @@ export function dpsFor(
 ): { dps: number; template: B1B2DpsTemplate } {
   const { team: slugs, template } = buildTeam(tested, ctx);
   const chars = slugs.map((s) => charFor(ctx, s));
-  const unitIdx = leftmostSlot(tested.effectiveBurst);
+  const unitIdx = slugs.indexOf(tested.slug);
+  if (unitIdx === -1) {
+    throw new Error(
+      `B1/B2 DPS team for ${tested.slug} does not contain the tested unit: ${slugs.join(', ')}`
+    );
+  }
   const testedChar = chars[unitIdx];
   const unitOpts = slugs.map((s) => unitOptsFor(s, tested, testedChar));
 

@@ -10,7 +10,6 @@ import {
   buildTeam,
   dpsFor,
   rankB1B2Dps,
-  SYNTHETIC_AVISTAR,
   type B1B2TestedUnit,
 } from '../../../src/ranks/b1b2dps.js';
 import {
@@ -35,7 +34,7 @@ const overrides: Record<string, OverrideFile | undefined> = {};
 for (const slug of Object.keys(data.characters)) {
   overrides[slug] = loadOverride(slug);
 }
-for (const slug of [...Object.keys(NOOP_CHARACTERS), SYNTHETIC_AVISTAR]) {
+for (const slug of Object.keys(NOOP_CHARACTERS)) {
   overrides[slug] = loadOverride(slug);
 }
 const fullCtx: RanksCtx = {
@@ -67,15 +66,15 @@ describe('b1b2 dps team assembly', () => {
     expect(template).toBe('b1-20s');
   });
 
-  it('20s B1 with a B1 partner uses the 40s B1 template (partner replaces the no-op B1)', () => {
+  it('20s B1 with a B1 partner uses the 40s B1 template (partner leads the stage)', () => {
     const { team, template } = buildTeam(
       unit('anis-star', 'I', undefined, 'with-avistar'),
       ctx,
-      SYNTHETIC_AVISTAR
+      'avistar'
     );
     expect(team).toEqual([
+      'avistar',
       'anis-star',
-      SYNTHETIC_AVISTAR,
       NOOP_B2,
       NOOP_B3_RL,
       NOOP_B3,
@@ -83,13 +82,13 @@ describe('b1b2 dps team assembly', () => {
     expect(template).toBe('b1-40s');
   });
 
-  it('20s B1 with a generic other B1 switches to the 40s template (partner takes the B1 slot, one no-op B2 is dropped)', () => {
+  it('20s B1 with a generic other B1 switches to the 40s template (partner leads the stage)', () => {
     const { team, template } = buildTeam(
       unit('anis-star', 'I', undefined, 'with-other-b1'),
       ctx,
       NOOP_B1
     );
-    expect(team).toEqual(['anis-star', NOOP_B1, NOOP_B2, NOOP_B3_RL, NOOP_B3]);
+    expect(team).toEqual([NOOP_B1, 'anis-star', NOOP_B2, NOOP_B3_RL, NOOP_B3]);
     expect(template).toBe('b1-40s');
   });
 
@@ -106,13 +105,13 @@ describe('b1b2 dps team assembly', () => {
     expect(template).toBe('b2');
   });
 
-  it('B2 with a partner replaces the second no-op B2', () => {
+  it('B2 with a partner puts the partner first in the stage', () => {
     const { team, template } = buildTeam(
       unit('crown', 'II', undefined, 'with-chime'),
       ctx,
       'chime'
     );
-    expect(team).toEqual([NOOP_B1, 'crown', 'chime', NOOP_B3_RL, NOOP_B3]);
+    expect(team).toEqual([NOOP_B1, 'chime', 'crown', NOOP_B3_RL, NOOP_B3]);
     expect(template).toBe('b2');
   });
 

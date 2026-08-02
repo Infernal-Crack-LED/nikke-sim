@@ -25,7 +25,6 @@ import {
   B1B2_DPS_CELLS,
   B1B2_DPS_PROFILES,
   B1B2_DPS_EXTRA_PROFILES,
-  SYNTHETIC_AVISTAR,
   type B1B2TestedUnit,
   type B1B2DpsCell,
 } from '../src/ranks/b1b2dps.js';
@@ -54,11 +53,10 @@ const overrides: Record<string, OverrideFile | undefined> = {};
 for (const slug of Object.keys(data.characters)) {
   overrides[slug] = loadOverride(slug);
 }
-// Synthetic controls (and the synthetic MG B1 partner) are not roster entries,
-// but their overrides carry framework effects (no-op B1 CDR, no-op B3 mock
-// burst, synthetic Avistar CDR). Load every registered synthetic control so a
-// future addition cannot be forgotten.
-for (const slug of [...Object.keys(NOOP_CHARACTERS), SYNTHETIC_AVISTAR]) {
+// Synthetic controls are not roster entries, but their overrides carry
+// framework effects (no-op B1 CDR, no-op B3 mock burst). Load every registered
+// synthetic control so a future addition cannot be forgotten.
+for (const slug of Object.keys(NOOP_CHARACTERS)) {
   overrides[slug] = loadOverride(slug);
 }
 
@@ -137,13 +135,9 @@ for (const [slug, profileIds] of Object.entries(B1B2_DPS_EXTRA_PROFILES)) {
     const partner = profileDef.partner;
     const partnerChar =
       NOOP_CHARACTERS[partner] ??
-      (partner === SYNTHETIC_AVISTAR
-        ? undefined
-        : (data.characters[partner] as NoopCharacter | undefined));
+      (data.characters[partner] as NoopCharacter | undefined);
     const partnerSupported =
-      partner in NOOP_CHARACTERS ||
-      partner === SYNTHETIC_AVISTAR ||
-      data.characters[partner]?.simSupported;
+      partner in NOOP_CHARACTERS || data.characters[partner]?.simSupported;
     if (!partnerSupported) {
       process.stderr.write(
         `b1b2dps: skipping profile ${id} for ${slug} — partner "${partner}" is not sim-supported\n`
@@ -151,8 +145,7 @@ for (const [slug, profileIds] of Object.entries(B1B2_DPS_EXTRA_PROFILES)) {
       continue;
     }
     const expectedPartnerBurst = c.burst;
-    const actualPartnerBurst =
-      partner === SYNTHETIC_AVISTAR ? 'I' : partnerChar?.burst;
+    const actualPartnerBurst = partnerChar?.burst;
     if (actualPartnerBurst !== expectedPartnerBurst) {
       process.stderr.write(
         `b1b2dps: skipping profile ${id} for ${slug} — partner "${partner}" burst is ${actualPartnerBurst}, expected ${expectedPartnerBurst}\n`
@@ -241,7 +234,7 @@ const artifact: B1B2DpsArtifact = {
     'B2 [B1 AR, tested, B2 SR, B3 RL, B3 MG]. The no-op B1 (AR) in the 40s-B1 and B2 templates contributes the standard 7 s team burst CDR via its override; ' +
     "20s-B1 rows have no second B1, so they rely on the tested B1's own CDR. " +
     'For a 20s-B1 profile row with a B1 partner, the team switches to the 40s-B1 template: the partner fills the second B1 slot and the second no-op B2 is removed, ' +
-    'so the row gains rotation coverage from the partner at the cost of one B2 slot. ' +
+    'so the row gains rotation coverage from the partner at the cost of one B2 slot. Profile rows put the partner first in the stage (e.g. Avistar -> Anis: Star, Chime -> Crown). ' +
     '20s-B1 rows without their own built-in burst CDR run slower rotations than 40s-B1 or B2 rows because they lack the second B1; each row is tagged with its template (20s B1 / 40s B1 / B2) so the rank is comparable within the same group. ' +
     'Investment is scope lock (Base-5, 3★/core 7, no cube/doll). ' +
     'The tested unit is the camera-focused unit (×2.5 burst-gauge generation on charge weapons), matching the Solo framework. ' +
