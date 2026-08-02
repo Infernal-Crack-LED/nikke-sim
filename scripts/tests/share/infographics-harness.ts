@@ -385,9 +385,11 @@ export async function buildResourcesFixtureCard(): Promise<ResourcesCardData> {
 // Burst Gen rank moved #37 → #41 (her rate unchanged) purely because a
 // kit-autonomy batch landed above her, and the goldens failed for it. Freezing
 // the join's INPUT makes the picture a pure function of the renderer, which is
-// what a golden is for. The live join is still covered — by
-// unit-card-data.test.ts, which reads the real boards and legitimately skips
-// without them.
+// what a golden is for. The live join is unit-card-data.test.ts's job — though
+// note that file skips its artifact-backed cases without the boards (25/25 on a
+// built tree, 10 pass + 15 SKIP without), so the live join has no automated
+// coverage today either. Separate hole, tracked in QUEUE.md; freezing these
+// goldens neither caused it nor closes it.
 //
 // Refresh deliberately, after an intentional data/board change:
 //   npm run fixtures:infographics -- --sources   (then regenerate the PNGs)

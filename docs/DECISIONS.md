@@ -1667,10 +1667,19 @@ ranks:all`. **And where they DID run, unrelated commits failed them:** on 2026-0
   label (#16) above her. **Ruling:** the goldens build from
   `scripts/tests/fixtures/unit-card-sources.json`, a committed snapshot of the join's INPUT,
   refreshed deliberately with `npm run fixtures:infographics -- --sources`. The picture is now a
-  pure function of the renderer, which is the property a golden exists to assert; the LIVE join
-  keeps its own coverage in `unit-card-data.test.ts`, which reads the real boards and legitimately
-  skips without them. Do not re-couple these two to `loadUnitCardSources()` — the skip and the
-  false failures come back together. **Evidence the switch is inert:** with the snapshot in place
+  pure function of the renderer, which is the property a golden exists to assert; the LIVE join is
+  `unit-card-data.test.ts`'s job, which reads the real boards. Do not re-couple these two to
+  `loadUnitCardSources()` — the skip and the false failures come back together.
+  **Known hole, measured 2026-08-01 and NOT closed by this entry:** `unit-card-data.test.ts` skips
+  its artifact-backed cases without the boards, and no automated context builds them — 25/25 pass
+  on a built tree, but **10 pass and 15 SKIP** wherever the boards are absent, which today is every
+  CI run (`verify.sh full`) and the deploy box (`verify.sh artifacts`, no gate). So the live join
+  currently has no automated coverage anywhere. This entry does not make that worse — before it,
+  the goldens skipped in exactly the same places — but it does make it visible, and it is now cheap
+  to close: `npm run dpschart` fell from 245s to 16s worst-case (entry above), so building the
+  boards in CI costs ~25s locally / low minutes on a runner, versus the "multi-minute
+  build-dpschart run" that put them out of `verify.sh full` in the first place. Tracked in
+  QUEUE.md. **Evidence the switch is inert:** with the snapshot in place
   all nine fixtures render at 0 differing pixels (so the trim drops nothing the card reads), and
   the golden file passes 13/13 with the five board artifacts moved off disk — previously 2 of
   those skipped. The snapshot is trimmed to what the card actually reads (the fixture slug's

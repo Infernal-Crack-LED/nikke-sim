@@ -52,6 +52,21 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ THE LIVE UNIT-CARD DATA JOIN HAS NO AUTOMATED COVERAGE — build the rank boards in CI.**
+  Measured 2026-08-01: `scripts/tests/share/unit-card-data.test.ts` is **25/25 on a tree with the
+  boards built, but 10 pass + 15 SKIP without them** (whole suite: 8 skipped vs 23). The boards
+  (`web/public/{dpschart,burstgen,bufferchart,sustain,burstcdr}.json`) are gitignored build
+  outputs, and nothing automated builds them before vitest — `ci.yml` runs `verify.sh full` and
+  the deploy box runs `verify.sh artifacts` (no gate at all). So those 15 assertions about the
+  real board join run only on a dev machine. Freezing the unit-card goldens (DECISIONS 2026-08-01)
+  did not cause this — they skipped in the same places — it just made it visible.
+  **Now cheap to close:** `npm run dpschart` went 245s → 16s worst case, so the "multi-minute
+  build-dpschart run" that kept boards out of `verify.sh full` no longer applies. **Proposed:** add
+  `npm run dpschart && npm run ranks:all` as a step in `ci.yml` (and deploy.yml's gate job) BEFORE
+  `verify.sh full`, rather than moving them into the `full` tier itself — that keeps a fresh
+  isolated engine worktree able to run `full` without a board build, which is why they were
+  excluded originally. Owner decision: costs ~25s locally / low minutes on a runner per CI run.
+
 - **⇒ DOT-TICK/FILLGAUGE BURST-GAUGE PAIR — BOTH RESOLVED 2026-07-30.** Fix A (dot-tick concurrency
   election): REJECTED — owner-supplied footage (`docs/probes/burst tests/Raven Solo Burst Gen.MP4`)
   settled U37 against it; see `docs/answered-questions.md` U37 +
