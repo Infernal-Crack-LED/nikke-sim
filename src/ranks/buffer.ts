@@ -46,6 +46,7 @@ import {
   NOOP_B2,
   NOOP_B3,
   NOOP_CHARACTERS,
+  NOOP_ROUGE_B1,
 } from '../dpschart/noop.js';
 
 const BEATS: Record<Element, Element> = {
@@ -161,9 +162,9 @@ export const DUO_BUFFER_PROFILES: Record<
     note: 'paired with Anchor: Innocent Maid as the second B2',
   },
   blanc: {
-    partner: 'noop-bunny-b2',
-    id: 'w/ Bunny',
-    note: 'synthetic Bunny squadmate keeps the same-squad CDR gate active',
+    partner: NOOP_ROUGE_B1,
+    id: 'w/ Rouge',
+    note: 'synthetic Rouge squadmate keeps the same-squad CDR gate active',
     synthetic: true,
   },
 };
@@ -363,7 +364,7 @@ export interface BufferValue {
 // profile's synthetic kit (the with-healer/with-shielder gate opener).
 // `characterOverrides` lets per-profile runs temporarily mutate a real unit's
 // override without editing the source file (e.g. Blanc's same-squad CDR is
-// suppressed in her plain row so the w/ Bunny profile can show the difference).
+// suppressed in her plain row so the w/ Rouge profile can show the difference).
 function carryDpsSum(
   team: AssembledBufferTeam,
   ctx: RanksCtx,
@@ -470,17 +471,6 @@ export function bufferValueFor(
       ? DUO_BUFFER_PROFILES[slug]
       : undefined;
 
-  function blancNoCdrOverride(ctx: RanksCtx): any {
-    const ovr = ctx.deps.overrides.blanc ?? {};
-    return {
-      ...ovr,
-      skill2: (ovr.skill2 ?? []).filter(
-        (b: any) => !b.effects?.some((e: any) => e.kind === 'burstCdr')
-      ),
-      slug: 'blanc',
-    };
-  }
-
   const b1CdSec =
     burst === 'I' ? effectiveBurstCooldownSec(ctx, slug) : undefined;
   const team = assemble(slug, burst, board, spec, duoProfile?.partner, b1CdSec);
@@ -499,11 +489,27 @@ export function bufferValueFor(
   const baselineKey = duoProfile
     ? `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile}|partner=${duoProfile.partner}|partnerMode=solo|b1filler=${b1Filler}`
     : `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile ?? 'plain'}|b1filler=${b1Filler}`;
-  let baseline = baselineMemo.get(baselineKey);
+
+  // Blanc's same-squad CDR is composition-gated (teamHas.sameSquad). Her plain
+  // row has no squadmate, so the CDR block would be inert; suppress it entirely
+  // for the plain row so the profiled row (w/ synthetic Rouge squadmate) shows a
+  // clean rotation delta.
+  function blancNoCdrOverride(ctx: RanksCtx): any {
+    const ovr = ctx.deps.overrides.blanc ?? {};
+    return {
+      ...ovr,
+      skill2: (ovr.skill2 ?? []).filter(
+        (b: any) => !b.effects?.some((e: any) => e.kind === 'burstCdr')
+      ),
+      slug: 'blanc',
+    };
+  }
   const characterOverrides: Record<string, any> = {};
   if (slug === 'blanc' && activeProfile === null) {
     characterOverrides.blanc = blancNoCdrOverride(ctx);
   }
+
+  let baseline = baselineMemo.get(baselineKey);
   if (baseline === undefined) {
     const baselineOpts: Record<string, UnitOptions> = {};
     if (duoProfile) {

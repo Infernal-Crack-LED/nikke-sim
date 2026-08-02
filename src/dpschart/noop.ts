@@ -35,9 +35,10 @@ const NOOP_BASE_STATS: BaseStats = {
 };
 
 // Low-ATK variant used only by the B1/B2 DPS board. The board's PARTNER rows
-// (crown+chime, anis-star+avistar) need the real partner (base ATK ~400) to outrank
-// the no-op placeholders so an `alliesTopAtk` king-maker buff lands on the partner
-// rather than on a control. In plain rows, an `alliesTopAtk` selector WITHOUT
+// (crown+chime, anis-star+avistar) need the real partner (chime / avistar, base
+// ATK 500) to outrank both the tested unit (crown / anis-star, base ATK 400) and
+// the no-op placeholders (base ATK 100) so an `alliesTopAtk` king-maker buff lands
+// on the partner rather than on a control. In plain rows, an `alliesTopAtk` selector WITHOUT
 // `excludeSelf` resolves to the tested unit (the highest-ATK member of the team),
 // while `alliesLowestAtk` resolves to a no-op placeholder. The two live carriers
 // (naga skill2, rapunzel skill2) use `count: 2`, so the second target is an inert
@@ -101,7 +102,11 @@ export const NOOP_B1 = 'noop-b1-ar';
 export const NOOP_B2 = 'noop-b2-sr';
 export const NOOP_B3 = 'noop-b3-mg';
 export const NOOP_B3_RL = 'noop-b3-rl';
-export const NOOP_BUNNY_B2 = 'noop-bunny-b2';
+// Synthetic stand-in for Rouge (B1/SR) — the buffer-rank `w/ Rouge` duo profile's
+// presence-only partner. Its slug carries curated squad membership in
+// src/data/squads.ts ('Blanc Noir Rouge'), so its presence satisfies blanc's
+// same-squad CDR gate (teamHas.sameSquad). Cadence mirrors the real rouge.
+export const NOOP_ROUGE_B1 = 'noop-rouge-b1';
 
 // Class-modal MG normal-attack multiplier from data/characters.json modal values.
 const MG_NORMAL_ATTACK_MULT = 5.57;
@@ -174,18 +179,18 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
     0,
     NOOP_BASE_STATS
   ),
-  [NOOP_BUNNY_B2]: noop(
-    NOOP_BUNNY_B2,
-    'No-op Bunny B2 (SR)',
-    'II',
+  [NOOP_ROUGE_B1]: noop(
+    NOOP_ROUGE_B1,
+    'No-op Rouge B1 (SR)',
+    'I',
     20,
     'SR',
     {
       ammo: 6,
-      reloadFrames: 141,
+      reloadFrames: 161,
       chargeFrames: 60,
       chargeMultiplier: 250,
-      rl3: 8.4,
+      rl3: 8.7,
     },
     0,
     NOOP_BASE_STATS

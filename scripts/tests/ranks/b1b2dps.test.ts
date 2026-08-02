@@ -121,19 +121,19 @@ describe('b1b2 dps team assembly', () => {
     ).toThrow();
   });
 
-  it('Red Hood forced as B1 uses the 20s B1 template (no second B1) and pins her to stage 1', () => {
+  it('Red Hood forced as B1 uses the 40s B1 template and pins her to stage 1', () => {
     const { team, template } = buildTeam(
       unit('red-hood', 'I', 1, 'as-b1'),
-      ctx
+      fullCtx
     );
-    expect(team).toEqual(['red-hood', NOOP_B2, NOOP_B2, NOOP_B3_RL, NOOP_B3]);
-    expect(template).toBe('b1-20s');
+    expect(team).toEqual(['red-hood', NOOP_B1, NOOP_B2, NOOP_B3_RL, NOOP_B3]);
+    expect(template).toBe('b1-40s');
   });
 
   it('Red Hood forced as B2 keeps the standard B2 shape and pins her to stage 2', () => {
     const { team, template } = buildTeam(
       unit('red-hood', 'II', 2, 'as-b2'),
-      ctx
+      fullCtx
     );
     expect(team).toEqual([NOOP_B1, 'red-hood', NOOP_B2, NOOP_B3_RL, NOOP_B3]);
     expect(template).toBe('b2');
@@ -142,7 +142,7 @@ describe('b1b2 dps team assembly', () => {
   it('Rapi: Red Hood forced as B1 uses the 20s B1 template (no second B1) and pins her to stage 1', () => {
     const { team, template } = buildTeam(
       unit('rapi-red-hood', 'I', 1, 'as-b1'),
-      ctx
+      fullCtx
     );
     expect(team).toEqual([
       'rapi-red-hood',
@@ -220,12 +220,13 @@ describe('b1b2 dps integration', () => {
   });
 
   it('eleadv cells use the boss element the tested unit beats', () => {
-    // Anis: Star is Water; she is advantaged against a Fire-code boss.
+    // Anis: Star is Electric; BEATS.Electric = Water, so the eleadv cell sets a
+    // Water-code boss she is advantaged against.
     const neutral = dpsFor('c0-neutral', unit('anis-star', 'I'), fullCtx);
     const eleadv = dpsFor('c0-eleadv', unit('anis-star', 'I'), fullCtx);
     expect(
       eleadv.dps,
-      'Water unit deals more DPS against a Fire boss'
+      'Electric unit deals more DPS against a Water boss'
     ).toBeGreaterThan(neutral.dps);
   });
 

@@ -48,6 +48,7 @@ import {
   B1B2_NOOP_CHARACTERS,
   type NoopCharacter,
 } from '../dpschart/noop.js';
+import type { OverrideFile } from '../skills/index.js';
 import type { RanksCtx } from './burstgen.js';
 
 // Base no-op team templates (4-slug arrays; the tested unit is inserted at its
@@ -173,11 +174,25 @@ export function buildTeam(
   const char = charFor(ctx, tested.slug);
   // For forced Λ/B3 rows, cooldown is taken from the character record.
   const cd = char.burstCooldownSec;
-  // Only native 40s B1s use the 40s-B1 template. Forced off-stage rows must keep
-  // the 20s-B1 shape so their formation:'noB1' blocks (e.g. Rapi: Red Hood's
-  // Combat Assist) stay active; forceStage already guarantees they fill stage 1.
+  // Native 40s B1s use the 40s-B1 template. Units whose kit has a formation:'noB1'
+  // block (e.g. Rapi: Red Hood's Combat Assist) must keep the 20s-B1 shape so the
+  // noB1 branch stays active; forceStage already guarantees they fill stage 1.
+  const override = ctx.deps.overrides?.[tested.slug];
+  const hasNoB1Formation = (ovr?: OverrideFile): boolean => {
+    if (!ovr) {
+      return false;
+    }
+    for (const slot of ['skill1', 'skill2', 'burst'] as const) {
+      for (const b of ovr[slot] ?? []) {
+        if (b.formation === 'noB1') {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
   const isLongB1 =
-    tested.effectiveBurst === 'I' && tested.forceStage === undefined && cd > 30;
+    tested.effectiveBurst === 'I' && cd > 30 && !hasNoB1Formation(override);
   // Resolve the partner from the explicit argument, then from the profile, so
   // buildTeam and dpsFor can never disagree about a row's team.
   const resolvedPartner =

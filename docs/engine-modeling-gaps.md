@@ -108,7 +108,7 @@
 | `targetMaxHpPct` | 7 | 2b, blanc, diesel, label, maiden-ice-rose, noise, rapunzel |
 | `targetStatus` | 8 | asuka-wille, d-killer-wife, emma-tactical-upgrade, marciana-marine-study, phantom, privaty, rei-ayanami-tentative-name, rem |
 | `teamAmmo` | 3 | cinderella-crystal-wave, elegg-boom-and-shock, little-mermaid |
-| `teamHas` | 2 | eunhwa-tactical-upgrade, noir |
+| `teamHas` | 3 | blanc, eunhwa-tactical-upgrade, noir |
 | `trueNormals` | 4 | chisato, eunhwa-tactical-upgrade, laplace, takina |
 | `unlimitedAmmo` | 5 | grave, modernia, moran, nayuta, red-hood |
 | `unswapped` | 2 | laplace, laplace-ultimate-hero |

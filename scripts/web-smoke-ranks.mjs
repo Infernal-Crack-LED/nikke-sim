@@ -20,9 +20,6 @@ const artifacts = {
 // badge, burst-gen's #1 row, buffer typed's #1
 const bufferTop = artifacts['bufferchart.json'].cells.generic[0][0];
 const bufferTopName = artifacts['bufferchart.json'].units[bufferTop].name;
-const profiledEntry = artifacts['bufferchart.json'].cells.generic.find(
-  (e) => e[3]
-);
 // Map buffer comp-profile ids to the badge text rendered by the frontend's
 // profileLabel(). Keep in sync with web/src/rankChartBars.ts.
 const PROFILE_LABELS = {
@@ -33,13 +30,23 @@ const PROFILE_LABELS = {
   'w/ Anchor': 'w/ Anchor',
   'w/ Rouge': 'w/ Rouge',
 };
-const profileId = profiledEntry?.[3];
-if (profileId && !(profileId in PROFILE_LABELS)) {
-  throw new Error(
-    `unmapped buffer profile id "${profileId}" — update PROFILE_LABELS in web-smoke-ranks.mjs and web/src/rankChartBars.ts`
-  );
+const bufferProfileIds = new Set([
+  ...artifacts['bufferchart.json'].cells.generic.map((e) => e[3]),
+  ...artifacts['bufferchart.json'].cells.typed.map((e) => e[3]),
+]);
+for (const id of bufferProfileIds) {
+  if (id && !(id in PROFILE_LABELS)) {
+    throw new Error(
+      `unmapped buffer profile id "${id}" — update PROFILE_LABELS in web-smoke-ranks.mjs and web/src/rankChartBars.ts`
+    );
+  }
 }
-const profileBadge = profileId ? PROFILE_LABELS[profileId] : null;
+const profiledEntry = artifacts['bufferchart.json'].cells.generic.find(
+  (e) => e[3]
+);
+const profileBadge = profiledEntry?.[3]
+  ? PROFILE_LABELS[profiledEntry[3]]
+  : null;
 
 // B1/B2 board profile ids and their rendered badge text (rankChartBars.ts).
 const B1B2_PROFILE_LABELS = {
@@ -49,17 +56,23 @@ const B1B2_PROFILE_LABELS = {
   'as-b1': 'B1',
   'as-b2': 'B2',
 };
+const b1b2ProfileIds = new Set(
+  Object.values(artifacts['b1b2dps.json'].cells)
+    .flat()
+    .map((e) => e[3])
+);
+for (const id of b1b2ProfileIds) {
+  if (id && !(id in B1B2_PROFILE_LABELS)) {
+    throw new Error(
+      `unmapped B1/B2 profile id "${id}" — update B1B2_PROFILE_LABELS in web-smoke-ranks.mjs and web/src/rankChartBars.ts`
+    );
+  }
+}
 const b1b2ProfiledEntry = artifacts['b1b2dps.json'].cells['c100-eleadv'].find(
   (e) => e[3]
 );
-const b1b2ProfileId = b1b2ProfiledEntry?.[3];
-if (b1b2ProfileId && !(b1b2ProfileId in B1B2_PROFILE_LABELS)) {
-  throw new Error(
-    `unmapped B1/B2 profile id "${b1b2ProfileId}" — update B1B2_PROFILE_LABELS in web-smoke-ranks.mjs and web/src/rankChartBars.ts`
-  );
-}
-const b1b2ProfileBadge = b1b2ProfileId
-  ? B1B2_PROFILE_LABELS[b1b2ProfileId]
+const b1b2ProfileBadge = b1b2ProfiledEntry?.[3]
+  ? B1B2_PROFILE_LABELS[b1b2ProfiledEntry[3]]
   : null;
 const burstgenTop = artifacts['burstgen.json'].entries[0][0];
 const burstgenTopName = artifacts['burstgen.json'].units[burstgenTop].name;
