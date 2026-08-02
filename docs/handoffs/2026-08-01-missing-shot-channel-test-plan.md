@@ -157,3 +157,43 @@ Reader/tooling work, so `/scientific-method` does not apply (`CLAUDE.md` §suffi
   `scratchpad/pellets/_centering_tmp/` holds ~2.1 GB from a prior run; leave it.
 - **"Not flagged broken" ≠ sound.** Read the underlying numbers, not a pass/fail banner.
 - **Headless:** never background a shell command; foreground with an explicit timeout, split if long.
+
+---
+
+## 8. OUTCOME — executed 2026-08-01. §3a PASSED; §3b fires the "between" row
+
+Appended after the run. **Nothing above this line was edited** — §3's rule stands as written.
+Full numbers, tables and confound verdicts:
+[`docs/probe-runs.md`](../probe-runs.md) → "2026-08-01 — the MISSING-SHOT channel".
+
+**§3a gate — PASSED.** 5 of 5 owner-confirmed real shots recovered, max |offset| 4 frames, zero
+negative, 5 ammo shots in the span with none unmatched. Two offsets are 4 rather than ≤3, so row 2
+applies; the explanation is measured (sign is uniformly ≥ 0; against `debounce_shots`' own rising edge
+the alignment is exact on 29/29 unambiguous decrements; and the identical 3-of-5-exact / 2-at-4-frames
+pattern was already on record in `probe-runs.md` as a property of the fixture's `find_t0`).
+
+**§3b.** MISSED 0.5% / 4.8% / 14.7% / 6.3% on `marciana` / `guilty` / `isabel` / `noir`; pooled 6.8%
+raw, 3.9% excluding arithmetically-inadmissible decrements. **No video clears 8% on a clean-arbiter
+reading and only `marciana` clears ≤2% ⇒ the "between" row.** The channel is real everywhere and can
+carry roughly a quarter to a half of the 0.8–1.6/10 cold bias, not all of it. Over-detection
+(SPURIOUS that is neither a reload hole nor a span boundary) is 0/1/1/0 — the detector barely
+fabricates.
+
+**§1's seed does not survive contact, and that is the most useful result here.** The 80-frame gap does
+contain one shot (ammo 8→7) and the 149-frame gap contains one shot plus a reload — but
+`groundtruth-f811-v4`'s own `debounce_shots` list carries `t0` = 1329 and 1176. **The reader detected
+both.** `groundtruth-f8-11.json`'s six `t0` values are an owner-supplied `--shot-times` hand-count
+list, never an exhaustive shot list, so its gaps are gaps in that list rather than in the detector.
+The spacing arithmetic predicted the right shots and attributed them to the wrong stage.
+
+**Instrument:** `count-pellets.py --ammo-series` + `analyze-pellet-tracks.py --missing-shots`
+(`--missing-shots-gate` re-runs §3a), pinned by
+`scripts/tests/fixtures/pellets/missing-shots-slice.json` via `--missing-shots-selftest` in
+`scripts/probe/pellet-selftest.sh`. Cadence is MEASURED from the series (mode 40 frames at 60 fps /
+20 at 30 fps on all five dumps), not taken from the nominal `rate_of_fire`; landed pellets per shot
+measured at 8.4 exactly, so §3b's 8% threshold is unchanged.
+
+**What would decide the open half:** an owner hand shot-count on ONE non-`marciana` clip (the gate
+validated this arbiter on `marciana` only, and `isabel`'s raw vs admissible figures differ 3.4×), and
+a per-video red-digit atlas harvest to lift the 52–71% read rate — abstention is 96–99.6% on
+stale-lock frames, so the arbiter is blind exactly where the detector is.
