@@ -1882,6 +1882,43 @@
         "temp": "HOT ▲"
       }
     },
+    "guillotine": {
+      "name": "Guillotine",
+      "burst": "III",
+      "weapon": "MG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-02",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-02: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/guillotine.json + scripts/kit-autonomy/manual-review/guillotine.md.",
+          "low FIDELITY (skill1): Heal-interaction caveat not recorded: the hpLost pool is monotone (no decrement), so a healing B1 (e.g. liter in the control fixture) cannot retreat the below-70%/below-50% thresholds the way real HP would be refilled — the sim's HP-gate windows are permanently open once crossed, over-crediting vs a healed real fight."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the 'HP ▼2.01%' self-drain is modeled as the live resource pool 'hpLost' (+2.01 per 30-NA proc) — the kit's only HP-loss source in the no-boss-damage sim; it is inert AS HP (no HP pool / damage / heal) and load-bearing as the mechanism that opens the two HP gates",
+        "skill2: the HP<70% '→ ATK ▲0.96% per 1% HP lost' buff is a perResource atkPct (hpLost×0.96, live) behind resourceGate{hpLost min:30}; the gate MAGNITUDE is kit-exact, the crossing WALL-CLOCK is self-drain-only (real fights cross earlier via boss damage, ⚑2); the trigger is hitCount:30 (re-checks the gate) NOT passive (which would lock off at frame 0)",
+        "burst: the HP<50% additional 1237.5% (Bb) is a resourceGate{hpLost min:50} flatDamage rider — early casts (hpLost<50) deal one nuke, later casts deal two; faithful gating, not an ungated over-credit",
+        "cadence: datamined MG fire rate + reloadFrames 171 are unverified; they drive the hitCount proc counts AND the hpLost accumulation / gate-crossing timing (⚑1, mandatory)",
+        "hpLost is MONOTONE (no decrement): engine heals carry no HP amount, so a healing ally (e.g. liter in the control fixture) cannot retreat the below-70%/below-50% thresholds the way real HP refill would — once crossed, the HP gates never close, over-crediting S2b/Bb vs a healed real fight (⚑5; the boss-damage direction in ⚑2 under-credits, this heal direction over-credits). No v1 behavioral change is possible (nothing to wire); a focus-video HP-bar read across a heal tick would settle it"
+      ],
+      "board": null,
+      "date": "2026-08-02",
+      "evidence": "kit-autonomy gauntlet 2026-08-02; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5+S6(claude-opus-5)/S7(kimi-code/k3) converged; HP subsystem on resource-counter primitive (hpLost pool + resourceGate 30/50 + perResource 0.96); driver live-resource encoding ruled more faithful than S6 flat-86.4 plateau",
+      "residual": "shared-prior cluster (S7 judge): HP ▼2.01% read additive-of-max + HP-below-X% read as one-way gate (no heal recovery) — every agent assumed both; one focus-video HP-bar read (decay per 30-hit proc + behavior across a liter heal) settles the whole HP subsystem; plus mandatory MG cadence tuple (⚑1) and the monotone-hpLost heal-interaction caveat (⚑5)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "guillotine-winter-slayer": {
       "name": "Guillotine: Winter Slayer",
       "burst": "III",

@@ -1,0 +1,92 @@
+{
+  "slug": "guillotine",
+  "kitDescription": "Guillotine is an Electric MG Burst-III Attacker whose whole kit runs on a self-inflicted HP drain. Every 30 landed normal attacks she gains a self Critical Rate buff for 10 seconds and loses 2.01% of her HP; every 150 landed attacks she gains a self Critical Damage buff for 5 seconds. Once her HP drops below 70%, she continuously gains ATK equal to 0.96% per 1% of HP lost, growing the longer the fight runs. Her burst is a single-target 1237.5% nuke on the highest-ATK enemy, and once her own HP falls below 50% each burst cast lands a second 1237.5% hit on the same target. In practice she ramps: crit buffs come online early, the ATK scaler switches on mid-early fight, and late-fight bursts hit twice.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Critical Rate ▲ 9.28% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:30 -> self critRatePct 9.28 /10s; generic crit rate (no 'of normal attacks' qualifier), refreshes every 30 bullets",
+        "blindSaid": "S2b + S5 both require hitCount(30), unscoped critRatePct, 10s bounded window, self-only; S5 asserts exactly this and passes",
+        "formulaCheck": "critRatePct feeds the shared crit-rate term in the Major bucket for all hit types incl. burst (SSOT §1b); correct stat choice — critRateNormalPct would wrongly exclude burst/proc crit",
+        "fireRateOk": true,
+        "explanation": "Trigger identity, stat scope, value, duration, and target all match prose; S5's ~5:1 proc-ratio test vs the 150-hit line confirms it fires at the prose cadence on the shared hit counter."
+      },
+      {
+        "kitLine": "HP ▼ 2.01%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "modeled as resource effect hpLost +2.01 on the same hitCount:30 proc — inert as HP (no pool/damage/heal), load-bearing as the gate enabler; ambiguity current-vs-max flagged ⚑4",
+        "blindSaid": "S2b: the kit's design center, must not be dropped as 'defensive'; faithful encoding is a named resource pool read by perResource + gates at 30/50. S5 it.skip'd it believing no HP primitive existed",
+        "formulaCheck": "no damage-formula interaction itself; the resource pool is accounting that feeds the two gates — matches S2b's prescribed faithful representation exactly",
+        "fireRateOk": true,
+        "explanation": "The driver models the line on the engine's resource-counter primitive exactly as the blind S2b reviewer prescribed (pool + 30/50 gates + perResource scaler). S5's skip was a spurious no-primitive belief, not a divergence — its non-skipped structural checks pass against the resource model. One residual: the driver did not record the heal-interaction caveat S2b asked for (heals would retreat the thresholds in a real fight); low-severity documentation omission, see gotchas."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Critical Damage ▲ 14.69% for 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:150 -> self critDamagePct 14.69 /5s; independent counter from S1's 30-hit; genuinely partial uptime (150-hit gap >> 5s window)",
+        "blindSaid": "S2b: independent 150 counter, 5s window must lapse; S5's s2Permanent counterfactual (totals rise when made permanent) confirms the lapse is real against the shipped override",
+        "formulaCheck": "critDamagePct enters the Major bucket's critBonus term (SSOT §1b); correct",
+        "fireRateOk": true,
+        "explanation": "Trigger, value, duration, scope all match; the S5 permanent-vs-5s A/B proves the buff actually lapses between procs — the nearest-wrong permanent model is excluded."
+      },
+      {
+        "kitLine": "ATK ▲ 0.96% per 1% of HP lost",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:30 + resourceGate{hpLost min:30} -> self atkPct perResource{hpLost, 0.96} /10s; live re-read each frame (+28.8% at gate, growing); crossing wall-clock self-drain-only flagged ⚑2; hitCount:30 (not passive) to avoid the frame-0 lock-off",
+        "blindSaid": "S2b: gate at hpLost>=30, value = 0.96 x TOTAL lost (jumps to ~28.8% at activation), must be live not snapshot, gate evaluated live not at t=0; S6 instead fabricated a flat 86.4 plateau on hitCount:450 (flagged estimate)",
+        "formulaCheck": "atkPct sums into the (1+ΣATK%) term of effectiveAtk (SSOT §1a); perResource live re-read matches 'continuously'; gate-below-70% == lost>=30 is arithmetically exact",
+        "fireRateOk": true,
+        "explanation": "The driver's encoding satisfies every S2b requirement (live gate, live scaler, total-lost counting) and is strictly more faithful than S6's fabricated plateau — a driver-over-blind convergence where the prose + arithmetic side with the driver. Gate timing (self-drain only, no boss damage) is flagged ⚑2 with a measurement recipe, which is the sanctioned treatment."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 1237.5% ATK as Burst Skill damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> enemy flatDamage 1237.5; highest-final-ATK = the single boss; burstCast resolves pre-FB (no +50% major, no range); crit-eligible; NOT fullBurstEnter (helm co-B3 in fixture would over-fire)",
+        "blindSaid": "S2b: burstCast keying, count == her cast count not FB count, fbMajorApplied false; S5's burstZero/burstDoubled counterfactuals confirm the nuke is live and detectable in this fixture",
+        "formulaCheck": "burst-nuke row of the applicability table (SSOT §1): crit yes, core no, range no, FB by cast-timing rule — burst-cast damage lands before FB opens (MEASURED, worked example 5b); engine noFb default applies",
+        "fireRateOk": true,
+        "explanation": "Correct trigger identity (burstCast, not fullBurstEnter), correct pre-FB timing semantics, correct magnitude and crit eligibility. Driver test pins fbMajorApplied === false and count-vs-casts."
+      },
+      {
+        "kitLine": "1237.5% additional dmg when HP < 50%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + resourceGate{hpLost min:50} -> enemy flatDamage 1237.5; early casts one nuke, late casts two; 3-way discriminator (absent/gated/ungated) in tests",
+        "blindSaid": "S2b: per-cast gate on the skill user's live HP pool (min:50), first cast single, late cast double; S6 used a requiresPulls:750 fixed proxy — the driver's live pool gate is more faithful",
+        "formulaCheck": "same burst-nuke applicability as the first hit; 'additional damage' here is a second burst hit on the same target at cast (the driver's reading, shared by both blind agents), not a function-type proc — consistent with its placement in the burst slot",
+        "fireRateOk": true,
+        "explanation": "Gate semantics match prose exactly (HP<50% == hpLost>=50), evaluated per cast against the live pool. Driver tests pin first-cast-single/late-cast-double plus both counterfactual directions. Crossing timing inherits the ⚑2 self-drain-only flag — documented, measurement-gated."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "Heal-interaction caveat not recorded: the hpLost pool is monotone (no decrement), so a healing B1 (e.g. liter in the control fixture) cannot retreat the below-70%/below-50% thresholds the way real HP would be refilled — the sim's HP-gate windows are permanently open once crossed, over-crediting vs a healed real fight.",
+      "evidence": "S2b note (4): 'HEAL INTERACTION GAP: the fixture's B1 (liter) heals in-game, refilling HP and retreating the thresholds, but engine heal effects carry no HP amount — record as a known caveat, not silently.' The driver's four caveats cover the drain model, perResource gate, Bb gate, and cadence, but not the heal direction (⚑2 covers only the boss-damage direction, which under-credits). Kit lines themselves are silent on healing; this is model-vs-reality, not encoding-vs-prose.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Add a caveat line to the override: 'hpLost is monotone; heals (e.g. liter) do not decrement it, so once crossed the HP gates never close — a healed real fight would retreat the thresholds. Needs measurement: HP-bar refill per heal tick from a focus video with a healing B1; enact only if an HP-amount heal primitive lands.' No magnitude change at v1 (engine heals carry no HP amount, so nothing to wire)."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All six kit lines are FAITHFUL against the prose and the formula SSOT; no silent drops, no encoding errors, no engine mis-routings. Convergence is real and two-directional: the S5 blind suite runs GREEN against the shipped override (14/14 non-skipped; the 3 skips were the blind's spurious 'no HP primitive' belief, refuted by the driver's resource-counter model — its remaining structural checks pass), and on the HP subsystem the driver's live resource-pool encoding (hpLost pool + resourceGate{30/50} + perResource 0.96) is demonstrably more faithful than S6's fabricated 86.4-flat plateau and requiresPulls:750 proxy, exactly matching what the independent S2b reviewer prescribed. Discrimination holds: value pins (level-1 counterfactuals), the S1 stat-rescope counterfactual, the drain-removal collapse, and the burst 3-way (absent/gated/ungated) all bite; fire-rate checks confirm every block actually fires at the prose cadence (S1 ~5x S2 proc ratio, G4 gate opens mid-fight, first burst single/late burst double). The one fresh finding is minor: the driver omitted S2b's requested heal-interaction caveat (monotone hpLost can't be retreated by liter's heals) — a documentation gap, low severity, no behavioral change possible at v1 since engine heals carry no HP amount. All remaining uncertainties (MG cadence tuple, gate-crossing wall-clock, drain current-vs-max reading, gate off-by-one) are ⚑-flagged with recipes and tiers, and magnitudes are out of scope per contract. Same-model residual the owner should spot-check: every agent in this chain (S2b, S5, S6, driver, and this judge) read 'HP ▼2.01%' as additive-of-max and 'HP falls below X%' as a one-way gate with no heal recovery — both are shared-prior interpretations of ambiguous prose that a single focus-video HP-bar read (decay per 30-hit proc + behavior across a liter heal) would settle; that measurement is the cheapest independent check on the whole HP subsystem.",
+  "model": "kimi-code/k3"
+}

@@ -1,0 +1,105 @@
+{
+  "slug": "guillotine",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Rate ▲ 9.28% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic crit rate (text is unscoped — NOT 'of normal attacks'), so it applies to all her hits incl. burst; only the TRIGGER counts normal attacks.",
+      "durationSemantics": "durationSec: 10 (wall-clock), refreshed on each re-proc. With MG cadence, 30 hits accrue in ~2-3s, so uptime is near-permanent after the opening wind-up; the buff still must NOT be modeled as passive — the first ~2-3s (wind-up ladder + first 30 hits) are genuinely uncovered.",
+      "triggerIdentity": "hitCount count:30 (counts ROUNDS; MG hitsPerShot=1 so 1 round = 1 hit), repeating every 30 cumulative hits — NOT one-time, NOT interval, NOT shotFired.",
+      "targetSet": "self only",
+      "nearestWrongModel": "Passive/permanent critRatePct 9.28 from t=0 (or a one-time hitCount that never re-fires), erasing the wind-up-gated ramp-in and the trigger identity; secondary misread: scoping it to critRateNormalPct because the trigger mentions normal attacks.",
+      "distinguishingAssertion": "Collect buffApply events with stat==='critRatePct' && value===9.28 targeting guillotine: assert the FIRST apply lands strictly after her 30th shot event (frame > 0), and that applies recur throughout the fight (count >> 1, refresh:true on re-procs). Red under passive (apply at frame 0) and red under one-shot (single apply). Also assert her burst-bucket damage events carry the buffed crit rate (green under generic critRatePct, red under critRateNormalPct scoping).",
+      "inertness": "No buffApply of this stat may target any ally slot (targetIdx must be her slot); ally damage totals unchanged when this block is zeroed via withPatchedOverride.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "HP ▼ 2.01%",
+      "disposition": "FAITHFUL",
+      "scope": "Self HP cost per S1 activation (every 30 hits). It is NOT defensive flavor — it is the ENGINE of the whole kit: the sole HP-loss source in a no-boss-damage sim, feeding skill2's below-70% ATK-per-%-lost scaler and the burst's below-50% second hit.",
+      "durationSemantics": "Permanent/cumulative — each proc adds 2.01% to lifetime HP lost; nothing in-kit restores it. Steady-state: HP lost accrues ~2.01% per 30 rounds; the below-70% threshold crosses mid-early fight and below-50% mid-fight (exact timing depends on MG effective cadence ⚑).",
+      "triggerIdentity": "Same hitCount count:30 activation as the crit line (one block, two effects). Expressible as a `resource` effect (e.g. name 'hpLost', delta +2.01, clamped to a floor cap) on that block.",
+      "targetSet": "self",
+      "nearestWrongModel": "Dropped as 'defensive, no damage impact' (the classic weapon-state/HP-line skip) — which silently kills skill2's ATK scaler AND the burst's second hit, the two biggest levers in the kit.",
+      "distinguishingAssertion": "withPatchedOverride removing ONLY the HP-loss effect must collapse the downstream consumers: guillotine's total damage drops (ATK scaler never activates) and every burst cast emits exactly ONE 1237.5% hit. Under the shipped model, a late-fight burst cast emits the second hit — green only if HP loss is actually tracked.",
+      "inertness": "The HP-loss effect itself must emit NO damage event to the boss, no heal, and must not change shots fired, ammo economy, or gauge.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Damage ▲ 14.69% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic critDamagePct (unscoped), self.",
+      "durationSemantics": "durationSec: 5 — and UNLIKE skill1 this is a genuinely PARTIAL-uptime buff: 150 rounds between procs takes well over 5s at any plausible MG cadence plus reloads (~1/3-ish duty cycle ⚑ on cadence), so the buff must lapse between procs.",
+      "triggerIdentity": "hitCount count:150 (rounds), an INDEPENDENT counter from skill1's 30-hit counter — the two blocks must not share accrual.",
+      "targetSet": "self only",
+      "nearestWrongModel": "Passive/permanent critDamagePct 14.69 (over-credits ~3×), or a time-averaged fudge; secondary misread: sharing one hit counter with skill1 (proc at 150 also resetting the 30-counter or vice versa).",
+      "distinguishingAssertion": "For buffApply events with stat==='critDamagePct' && value===14.69: assert expiresFrame − applyFrame === 300 frames (5s), and the NEXT apply's frame is strictly after the prior expiresFrame (buff has real downtime — no permanent uptime). Also assert applies land at cumulative-shot counts ≈ multiples of 150, interleaved with skill1's 30-hit applies still firing on their own cadence (independent counters).",
+      "inertness": "No ally receives it; totals of liter/crown/helm unchanged when zeroed.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 0.96% per 1% of HP lost",
+      "disposition": "FAITHFUL",
+      "scope": "Self ATK (atkPct, scales own ATK). Activation gate: HP below 70% (i.e. ≥30% lost).",
+      "durationSemantics": "'continuously' = live-tracking, not a snapshot: value re-reads current HP lost every frame (perResource shape: mult 0.96 × hpLost pool), growing as S1 drains. NOT durationSec, NOT stacks-with-cap-at-apply.",
+      "triggerIdentity": "HP-threshold gate — passive perResource self-buff gated on the pool (resourceGate name:'hpLost' min:30). The gate must be evaluated live at read time, not once at t=0 (a passive whose gate is checked only at setup would be permanently OFF).",
+      "targetSet": "self only",
+      "nearestWrongModel": "Two near-misses: (a) ungated scaling from t=0 (credits ~+19% ATK at 20% lost, before the threshold — over-credits the first ~third of the fight); (b) counting only the portion BELOW 70% (value = 0.96×(lost−30)), which under-credits by a flat ~29% ATK for the whole active window. Faithful: zero until lost≥30, then 0.96×TOTAL lost (jumps to ~+28.8% at first activation).",
+      "distinguishingAssertion": "Track guillotine damage events' effective per-hit output (or emitted atkPct buff value if the encoding emits applies): assert ZERO ATK contribution from this line while cumulative HP lost < 30% (early-fight per-shot damage matches a control with this block removed), and at first activation the contribution is ≈ 0.96×30 ≈ 28.8% — not ≈0 (red under below-threshold-only counting) and not present pre-threshold (red under ungated).",
+      "inertness": "Inert for the entire pre-threshold window; never targets allies; must contribute nothing if the HP-loss effect is removed (composes with the skill1 HP▼ assertion).",
+      "evidenceTier": "DATAMINED (0.96 magnitude); the activation TIME and steady-state trajectory are CALIBRATED ⚑ (downstream of the ⚑ MG cadence tuple and the ⚑ HP floor)",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1237.5% ATK as Burst Skill damage",
+      "disposition": "FAITHFUL",
+      "scope": "Single instant hit, % of HER final ATK, burst-damage bucket. Snapshots her live buff state at cast (so a post-threshold cast includes the HP-lost ATK scaler).",
+      "durationSemantics": "Instant, once per cast; cd 40s bounds cast frequency.",
+      "triggerIdentity": "burstCast — fires ONLY on rotations SHE casts, never on the co-B3's (helm's) full bursts. Per the noFb convention, burst-cast instant damage lands PRE-FB-window: no +50% Full Burst major, no range bonus.",
+      "targetSet": "enemy ('highest final ATK' collapses to the single boss)",
+      "nearestWrongModel": "Keyed to fullBurstEnter (fires on helm's rotations too in the controlComp — over-credits ~2× on alternating-B3 rotations), and/or taking the +50% FB major on the hit.",
+      "distinguishingAssertion": "Count damage events with bucket burst and mult 1237.5: the count must equal her burstCast event count exactly (not the fullBurstStart count), and each such event must carry fbMajorApplied===false / inFullBurst===false. Red under fullBurstEnter keying (count too high in the helm co-B3 fixture) and red under FB-major application.",
+      "inertness": "Emits nothing on rotations where helm bursts; no range bonus applied (rangeApplied false).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "1237.5% additional dmg when HP < 50%",
+      "disposition": "FAITHFUL",
+      "scope": "A SECOND 1237.5% hit on the same target, conditional on HER HP being below 50% at cast time — an HP-gated rider on her own burst, not a separate trigger.",
+      "durationSemantics": "Instant per qualifying cast; the gate is evaluated per cast against the live pool (hpLost ≥ 50), so early casts are single-hit and post-threshold casts are double.",
+      "triggerIdentity": "burstCast + HP gate (resourceGate name:'hpLost' min:50 on the second flatDamage, or an equivalent conditional). Same noFb/no-range/burst-bucket semantics as the first hit.",
+      "targetSet": "enemy (same target)",
+      "nearestWrongModel": "Unconditional 2475% (or two hits) on every cast — over-credits every pre-threshold burst by 2×; secondary misread: gating on the ENEMY's HP falling below 50% (always/never true vs the immortal boss) instead of the skill user's.",
+      "distinguishingAssertion": "Group burst-bucket 1237.5%-mult damage events by cast frame: her FIRST cast (long before 50% HP lost can accrue at 2.01% per 30 rounds) must contain exactly ONE such hit; a late-fight cast (after the drain crosses 50% lost) must contain exactly TWO. Red under unconditional doubling (first cast has two) and red under a missing/never-true gate (no cast ever has two).",
+      "inertness": "Absent on every cast while HP lost < 50%; absent entirely if the skill1 HP-loss effect is removed; never fires on helm's rotations.",
+      "evidenceTier": "DATAMINED (magnitude); the CROSSING TIME is CALIBRATED ⚑ (MG cadence + HP floor)",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Critical Rate ▲ 9.28% for 10 sec",
+    "skill1:HP ▼ 2.01%",
+    "skill2:Critical Damage ▲ 14.69% for 5 sec",
+    "skill2:ATK ▲ 0.96% per 1% of HP lost",
+    "burst:Deals 1237.5% ATK as Burst Skill damage",
+    "burst:1237.5% additional dmg when HP < 50%"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "This kit has NO safely-unmodelable line: the HP ▼ 2.01% cost is the single mechanic every big lever hangs off, and the highest-probability shared-prior misread is dropping it as 'defensive'. Reconciliation points the driver must address: (1) HP-lost bookkeeping — the sim has no HP pool, so the faithful encoding is a named resource pool (drain +2.01 per 30-hit proc) read by a perResource ATK buff and min-thresholded gates at 30/50 lost; if the engine's resourceGate cannot be evaluated live under a passive trigger, that is a GAP to surface, not to paper over. (2) HP FLOOR is kit-silent and MEASUREMENT-GATED ⚑: whether self-drain floors near 0 HP (lost→~99%, ATK scaler →~+95%, second burst hit permanently on late-fight) or stops earlier changes the steady state materially — ship a flagged cap, don't guess silently. (3) Threshold-crossing TIMES are downstream of the ⚑ MG cadence tuple (effective rounds/s incl. wind-up + 171f reloads) — assert orderings (first cast single-hit, late cast double), not exact frames. (4) HEAL INTERACTION GAP: the fixture's B1 (liter) heals in-game, refilling HP and retreating the thresholds, but engine heal effects carry no HP amount — the sim's monotone drain therefore OVER-credits the below-50%/below-70% windows vs a healed real fight; record as a known caveat, not silently. (5) Skill1's 30-hit and skill2's 150-hit counters must accrue independently. (6) The ATK scaler counts TOTAL HP lost once active (~+28.8% at first activation), not only the below-70% portion — assert the jump magnitude at activation.",
+  "model": "claude-fable-5"
+}
