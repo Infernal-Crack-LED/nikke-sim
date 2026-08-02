@@ -1,12 +1,44 @@
 # Spec — center-weighted pellet-landing model (SG landing + unified core-hit)
 
-> **Status:** IMPLEMENTED and **LIVE by default** (`ENV.PELLET_GAUSS`; `=0`/`off` reverts to the prior
-> measured tables for A/B), owner-enabled 2026-07-17 to run as the live model and re-evaluate the
-> band-shape overshoot later. **Snapshot regen PENDING a clean tree** (see the A/B note below). Helpers +
-> constants in `sg-geometry.ts` (`rayleighWithin`, `pelletSigma`, `pelletLandFrac`, `pelletCoreFrac`,
-> `K_SIGMA`, `CORE_AUTOAIM`); wired into `sim.ts` core-hit (`acrForHR`) + SG landing (`firePull`);
-> unit tests in `sg-geometry-regression.ts` (reproduce the §3 table). Supersedes the flat area-fraction
-> Workstream C (`SGLANDING=geo`). Grounded in the `noir sg.MP4` frame study + KR/JP spread research.
+> **Status: NOT the live model — its central claim was REFUTED by direct measurement.** Read this file
+> as the historical derivation of the `PELLET_GAUSS` A/B fallback layer, not as a description of what
+> the engine does. For the live geometry see [`docs/STATE.md`](../../STATE.md) §UNIGEO.
+>
+> **What is live instead.** `UNIGEO` (default `'all'`, shipped 2026-07-22) models AR/SMG/SG on the
+> scope-lock boss profile as **uniform-in-circle** — SG core-per-landed is an area ratio, SG landing is
+> ε·coverage — and pre-empts everything below it. `CONE_DELTA` (default ON, 2026-07-19) pre-empts
+> `PELLET_GAUSS` for the remaining accuracy-circle core paths, explicitly replacing "the flat
+> `CORE_AUTOAIM=0.55` cap + the fractional reticle floor", which it calls two confirmed bugs.
+> `PELLET_GAUSS` is therefore reachable only as an A/B arm (`UNIGEO=off CONE_DELTA=0`).
+> → DECISIONS 2026-07-19 and 2026-07-22.
+>
+> **Why the center-weighted shape was rejected.** Two independent methods converged against it:
+> `docs/probe-data/sg-pellet-marker-radial.json` (n=101 machine-read pellet positions, near band)
+> reports a **KS statistic of 0.376** (live σ) / **0.210** (σ=32) for the centered Gaussian against a
+> 0.135 critical value — its own status line calls that a decisive refutation — while uniform-per-area
+> sits at the acceptance boundary (0.139) with a mild rim shift (inner third 0.069 observed vs 0.111
+> uniform); and the 16-cell hand-counted fit in `docs/probe-data/sg-drawn-geometry.json` independently
+> selects the same uniform-per-area winner. Those two files, plus the owner enactment recorded in
+> DECISIONS 2026-07-22, are what carry this verdict — not this section.
+>
+> §3's `CORE_AUTOAIM = 0.55` is the mechanism by which the error hid: it was fit on the AR near-core
+> cell and applied unchanged to SG, where it absorbs a radial-SHAPE error rather than an auto-aim loss.
+> Its own §3 note that the constant "nails AR near (0.400) and is close on SMG/SG" is that
+> fit-then-transfer, visible in place. ⚑ Corroborating arithmetic over §3's published cells, done
+> 2026-08-01 in-session and NOT an independent measurement: the scale-free ratio F(R_core)/F(R_far) is
+> 0.065 measured, 0.079 under uniform, 0.143 under the centered Gaussian — the latter carrying ~2.2×
+> too much mass at the center, which is the same direction and rough size as the position measurement.
+>
+> §3's landing MAE cannot arbitrate this and should not be cited as if it could: the recon column is
+> internally inconsistent (mid, R_boss 68.3, measures 0.986 landing versus near, R_boss 72.3, at 0.888
+> — no monotonic radial model can produce that), so it carries ~0.1 of noise and both families fit it
+> within that. **The core cell is the discriminating measurement, not the band curve.**
+>
+> Helpers + constants remain in `sg-geometry.ts` (`rayleighWithin`, `pelletSigma`, `pelletLandFrac`,
+> `pelletCoreFrac`, `K_SIGMA`, `CORE_AUTOAIM`); unit tests in `sg-geometry-regression.ts` still
+> reproduce the §3 table, which is what pins the fallback arm. Grounded in the `noir sg.MP4` frame
+> study + KR/JP spread research — that study's qualitative "dense core at the reticle" read is the
+> specific claim the position measurement overturned.
 >
 > **BOARD A/B (2026-07-17, `PELLET_GAUSS=1`):** in ISOLATION the model reproduces the measured cells
 > (unit tests pass: AR core 0.400, SG landing MAE 0.044). On the board it runs SG **hotter** — noir
