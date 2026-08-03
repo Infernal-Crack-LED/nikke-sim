@@ -211,11 +211,12 @@ describe('core/rankTables builders (shared server pre-render + web share)', () =
     expect(t.rows).toEqual([['#1', 'Unit A', '12.30M', '146%']]);
   });
 
-  it('buffer: generic default, typed variant, negative rows dropped and ranks closed up', () => {
+  it('buffer: generic default, typed variant, negative + hidden rows dropped and ranks closed up', () => {
     const art = {
       ...ART_BASE,
       cells: {
         generic: [
+          ['chime', 126.3, null, null],
           ['unit-a', 12.34, null, null],
           ['unit-c', -3.21, null, null],
           ['unit-b', 0, null, null],
@@ -225,8 +226,9 @@ describe('core/rankTables builders (shared server pre-render + web share)', () =
     } as unknown as BufferChartArtifact;
     const g = buildBufferTable(art);
     expect(g.title).toBe('Team Buffs Ranking — Generic');
-    // unit-c costs the comp damage, so it leaves the board entirely; unit-b
-    // adds nothing but takes nothing away, so it stays and inherits #2.
+    // chime is a HIDDEN_BUFFER_SLUGS unit, so the artifact's #1 is not the
+    // board's; unit-c costs the comp damage, so it leaves entirely; unit-b adds
+    // nothing but takes nothing away, so it stays and inherits #2.
     expect(g.rows).toEqual([
       ['#1', 'Unit A', '+12.3%'],
       ['#2', 'Unit B', '+0.0%'],

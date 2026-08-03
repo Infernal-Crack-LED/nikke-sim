@@ -36,7 +36,7 @@
     "fixtures:infographics": "tsx scripts/update-infographic-fixtures.ts",
     "test:unit:watch": "vitest",
     "test:dpschart": "npm run dpschart && npm run build && node scripts/web-smoke-dpschart.mjs",
-    "test:ranks": "npm run ranks:all && npm run build && node scripts/web-smoke-ranks.mjs",
+    "test:ranks": "npm run ranks:all && npm run build && tsx scripts/web-smoke-ranks.mjs",
     "ranks:burstgen": "tsx scripts/build-burstgen.ts",
     "ranks:burstcdr": "tsx scripts/build-burstcdr.ts",
     "ranks:sustain": "tsx scripts/build-sustain.ts",

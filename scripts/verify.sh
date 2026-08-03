@@ -118,7 +118,9 @@ if [ "$MODE" = "full" ] || [ "$MODE" = "deploy" ] || [ "$MODE" = "artifacts" ]; 
     say "DPS-chart tab smoke (headliners, bars, matrix, compare)"
     node scripts/web-smoke-dpschart.mjs
     say "rank-boards smoke (pills, bars, profile badges, methodology, buffer boards)"
-    node scripts/web-smoke-ranks.mjs
+    # tsx, not node: the smoke imports the buffer board's row filter from
+    # src/ranks/buffer-rows.ts instead of restating it
+    npx tsx scripts/web-smoke-ranks.mjs
     say "infographics pre-generation (dist/img + manifest — deploy/artifacts tiers only; reads the artifacts above, writes after vite's emptyOutDir)"
     npm run build:infographics
     say "server bundle (dist-server — exercises esbuild + asset copies on the deploy platform; startCommand flips to it separately)"
