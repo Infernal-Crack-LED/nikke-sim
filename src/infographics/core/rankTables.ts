@@ -19,6 +19,7 @@ import {
   resolveB1B2Cell,
   type B1B2DpsCell,
 } from '../../ranks/b1b2-cells.js';
+import { rankedBufferRows } from '../../ranks/buffer-rows.js';
 
 export type BufferBoardId = 'generic' | 'typed';
 
@@ -171,11 +172,13 @@ export function buildBufferTable(
       { header: 'Unit', flex: 2 },
       { header: 'Added DMG', align: 'right' },
     ],
-    rows: art.cells[board].map(([slug, addedPct, , profile], i) => [
-      `#${i + 1}`,
-      unitName(art.units, slug, profile),
-      `${addedPct >= 0 ? '+' : '-'}${Math.abs(addedPct).toFixed(1)}%`,
-    ]),
+    rows: rankedBufferRows(art.cells[board]).map(
+      ([slug, addedPct, , profile], i) => [
+        `#${i + 1}`,
+        unitName(art.units, slug, profile),
+        `+${addedPct.toFixed(1)}%`,
+      ]
+    ),
     window: {},
     footer: 'nikkesim.app/ranks',
   };
