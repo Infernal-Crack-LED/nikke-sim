@@ -15,9 +15,12 @@ import {
   buildSustainTable,
   buildBufferTable,
   buildB1B2DpsTable,
-  B1B2_CELL_LABEL,
-  B1B2_DPS_BOARDS,
 } from '../../src/infographics/core/rankTables';
+import {
+  B1B2_CELL_LABEL,
+  B1B2_DPS_CELLS,
+  type B1B2DpsCell,
+} from '../../src/ranks/b1b2-cells';
 import { copyTableCardImage } from './tableShare';
 import { copyTextToClipboard } from './clipboard';
 import {
@@ -29,7 +32,6 @@ import {
   type BoardId,
   type BufferBoard,
   type BurstGenBoard,
-  type B1B2DpsBoard,
   type BurstGenArtifact,
   type BurstCdrArtifact,
   type SustainArtifact,
@@ -50,9 +52,9 @@ const BOARDS: { id: BoardId; label: string; title: string }[] = [
   { id: 'b1b2dps', label: 'B1/B2 DPS', title: 'B1/B2 DPS' },
 ];
 
-const parseB1B2Board = (v: string | null): B1B2DpsBoard =>
-  B1B2_DPS_BOARDS.includes(v as B1B2DpsBoard)
-    ? (v as B1B2DpsBoard)
+const parseB1B2Board = (v: string | null): B1B2DpsCell =>
+  B1B2_DPS_CELLS.includes(v as B1B2DpsCell)
+    ? (v as B1B2DpsCell)
     : 'c100-eleadv';
 
 // Methodology disclosure — the Custom Profiles pattern from DpsChartTab:
@@ -96,7 +98,7 @@ export function SupportRankings() {
   const [burstGenBoard, setBurstGenBoard] = useState<BurstGenBoard>(() =>
     params.get('bg') === 'focused' ? 'focused' : 'unfocused'
   );
-  const [b1b2DpsBoard, setB1b2DpsBoard] = useState<B1B2DpsBoard>(() =>
+  const [b1b2DpsBoard, setB1b2DpsBoard] = useState<B1B2DpsCell>(() =>
     parseB1B2Board(params.get('b1b2'))
   );
   const [arts, setArts] = useState<Partial<Record<BoardId, AnyRankArtifact>>>(
@@ -246,7 +248,7 @@ export function SupportRankings() {
       )}
       {board === 'b1b2dps' && (
         <div className="pills ranks-subboards">
-          {B1B2_DPS_BOARDS.map((b) => (
+          {B1B2_DPS_CELLS.map((b) => (
             <button
               key={b}
               className={b1b2DpsBoard === b ? 'on' : ''}

@@ -7,6 +7,11 @@
 // tool tab inside App (addressable at /builder); App provides the .app chrome
 // and the "Card Builder" h1, this supplies the picker + preview.
 import { useEffect, useRef, useState } from 'react';
+import {
+  B1B2_CELL_LABEL,
+  B1B2_DPS_CELLS,
+  type B1B2DpsCell,
+} from '../../src/ranks/b1b2-cells';
 import { MatrixFilter } from './components/MatrixFilter';
 import { PillGrid } from './components/PillGrid';
 import { CharPicker, CharSearch } from './components/CharSearch';
@@ -25,7 +30,6 @@ import {
   loadSustain,
   loadBufferChart,
   loadB1B2Dps,
-  type B1B2DpsBoard,
 } from './rankBoardsData';
 import type {
   BurstGenArtifact,
@@ -49,10 +53,7 @@ import {
   OL_PIECES,
   type OlLinesPreset,
 } from '../../src/infographics/core/tableData';
-import {
-  B1B2_CELL_LABEL,
-  B1B2_DPS_BOARDS,
-} from '../../src/infographics/core/rankTables';
+import {} from '../../src/infographics/core/rankTables';
 import {
   drawUnitCardVariant,
   unitCardSize,
@@ -417,7 +418,7 @@ export function BuilderPage() {
                 : null;
         const subModeLabel =
           state.board === 'b1b2dps' && subMode
-            ? B1B2_CELL_LABEL[subMode as B1B2DpsBoard]
+            ? B1B2_CELL_LABEL[subMode as B1B2DpsCell]
             : subMode
               ? cap(subMode)
               : null;
@@ -810,7 +811,7 @@ export function BuilderPage() {
                 <div className="field">
                   <label>Cell</label>
                   <PillGrid>
-                    {B1B2_DPS_BOARDS.map((b) => (
+                    {B1B2_DPS_CELLS.map((b) => (
                       <button
                         key={b}
                         className={s.b1b2DpsBoard === b ? 'on' : ''}

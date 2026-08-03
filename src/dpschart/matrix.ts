@@ -111,13 +111,17 @@ export const ELEADVS: Record<EleAdvId, { id: EleAdvId; label: string }> = {
   eleweak: { id: 'eleweak', label: 'Ele Weak' },
 };
 
+// `exposure` = the share of the fight the boss core is available to hit, which is what
+// the cell labels count. "Core 100" does NOT mean every shot cores: the engine multiplies
+// this by the accuracy-derived core rate (SimConfig.coreHitRate — see its comment), so at
+// c100 a unit's realized core fraction is still its aim geometry.
 export const CORES: Record<
   CoreId,
-  { id: CoreId; label: string; rate: number }
+  { id: CoreId; label: string; exposure: number }
 > = {
-  c0: { id: 'c0', label: 'No Core', rate: 0 },
-  c50: { id: 'c50', label: 'Core 50', rate: 0.5 },
-  c100: { id: 'c100', label: 'Core 100', rate: 1 },
+  c0: { id: 'c0', label: 'No Core', exposure: 0 },
+  c50: { id: 'c50', label: 'Core 50', exposure: 0.5 },
+  c100: { id: 'c100', label: 'Core 100', exposure: 1 },
 };
 
 export const INVESTS: Record<InvestId, { id: InvestId; label: string }> = {
@@ -475,7 +479,7 @@ export function assembleTeam(
     copies: 0, // per-unit stars/core win
     doll: false,
     ol: cell.invest === 'scope' ? 'base5' : 5, // fallback; per-unit opt.ol wins
-    coreHitRate: CORES[cell.core].rate,
+    coreHitRate: CORES[cell.core].exposure,
     rangeBonus: true,
     durationSec: 180,
     focusSlug: tested.slug,

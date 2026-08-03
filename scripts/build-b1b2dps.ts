@@ -22,12 +22,11 @@ import type { NoopCharacter } from '../src/dpschart/noop.js';
 import {
   rankB1B2Dps,
   buildTeam,
-  B1B2_DPS_CELLS,
   B1B2_DPS_PROFILES,
   B1B2_DPS_EXTRA_PROFILES,
   type B1B2TestedUnit,
-  type B1B2DpsCell,
 } from '../src/ranks/b1b2dps.js';
+import { B1B2_DPS_CELLS, type B1B2DpsCell } from '../src/ranks/b1b2-cells.js';
 import { NOOP_CHARACTERS, B1B2_NOOP_CHARACTERS } from '../src/dpschart/noop.js';
 import type {
   B1B2DpsArtifact,
@@ -195,12 +194,9 @@ const pack = (
     e.template,
   ]);
 
-const cells: B1B2DpsArtifact['cells'] = {
-  'c0-neutral': pack(ranked['c0-neutral']),
-  'c0-eleadv': pack(ranked['c0-eleadv']),
-  'c100-neutral': pack(ranked['c100-neutral']),
-  'c100-eleadv': pack(ranked['c100-eleadv']),
-};
+const cells = Object.fromEntries(
+  B1B2_DPS_CELLS.map((c) => [c, pack(ranked[c])])
+) as B1B2DpsArtifact['cells'];
 
 // Gather unit metadata for every slug that appears in a ranked row.
 const rankedSlugs = new Set(population.map((t) => t.slug));

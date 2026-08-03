@@ -50,6 +50,7 @@ import {
 } from '../dpschart/noop.js';
 import type { OverrideFile } from '../skills/index.js';
 import type { RanksCtx } from './burstgen.js';
+import { B1B2_DPS_CELLS, type B1B2DpsCell } from './b1b2-cells.js';
 
 // Base no-op team templates (4-slug arrays; the tested unit is inserted at its
 // stage's leftmost slot).
@@ -90,15 +91,8 @@ export const B1B2_DPS_EXTRA_PROFILES: Record<string, string[]> = {
   crown: ['with-chime'],
 };
 
-export type B1B2DpsCell =
-  'c0-neutral' | 'c0-eleadv' | 'c100-neutral' | 'c100-eleadv';
-
-export const B1B2_DPS_CELLS: B1B2DpsCell[] = [
-  'c0-neutral',
-  'c0-eleadv',
-  'c100-neutral',
-  'c100-eleadv',
-];
+// The cell axis lives in ./b1b2-cells.ts — shared with the artifact type, the
+// infographics table builder and web/. Import it from there, not from here.
 
 export interface B1B2TestedUnit {
   slug: string;

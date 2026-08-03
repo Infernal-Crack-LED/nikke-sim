@@ -8,6 +8,7 @@
 // (imported with the repo's nodenext .js extension so the vitest suite can
 // pull this module in under the root tsconfig — vite resolves it identically)
 import type { RenderSpec } from '../../src/infographics/spec.js';
+import type { B1B2DpsCell } from '../../src/ranks/b1b2-cells.js';
 
 export type BuilderCardType =
   'dps' | 'rank' | 'unit' | 'ol' | 'charge' | 'ammo';
@@ -17,8 +18,6 @@ export type BuilderDpsMode = 'top' | 'window' | 'compare';
 export type OlLinesPreset = '4of12' | '8of12' | '12of12';
 export type BufferBoard = 'generic' | 'typed';
 export type BurstGenBoard = 'unfocused' | 'focused';
-export type B1B2DpsBoard =
-  'c0-neutral' | 'c0-eleadv' | 'c100-neutral' | 'c100-eleadv';
 
 // The exact (lines, tier) the static ol-default.json artifact was built at —
 // the ONE OL combo manifestKeyFor can still serve from the pre-rendered
@@ -36,7 +35,7 @@ export interface BuilderState {
   board: BuilderBoard; // rank board
   bufferBoard: BufferBoard; // rank/buffer sub-mode
   burstGenBoard: BurstGenBoard; // rank/burstgen sub-mode
-  b1b2DpsBoard: B1B2DpsBoard; // rank/b1b2dps sub-mode
+  b1b2DpsBoard: B1B2DpsCell; // rank/b1b2dps sub-mode
   olLines: OlLinesPreset; // ol: desired line count
   olTier: number; // ol: desired tier (1-15)
   // unit card: which variant to preview. 'discord' is the 2:1 landscape card the

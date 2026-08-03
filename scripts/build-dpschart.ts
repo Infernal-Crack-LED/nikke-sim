@@ -706,7 +706,10 @@ const artifact = {
     cores: CORE_IDS.map((id) => ({
       id,
       label: CORES[id].label,
-      rate: CORES[id].rate,
+      // Emitted key stays `rate` — it is published in dpschart.json and read by
+      // downstream consumers (bakery-bot). The value is the core EXPOSURE fraction;
+      // see the CORES comment in src/dpschart/matrix.ts.
+      rate: CORES[id].exposure,
     })),
     invests: axis(INVEST_IDS, INVESTS),
     headliners: ALL_HEADLINERS.map((h) => ({
