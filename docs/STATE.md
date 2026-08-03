@@ -347,11 +347,17 @@ Planned follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
   `src/ranks/sustain-table.ts`. Profiles: prika+mint duet, anchor-innocent-maid+mast-romantic-maid.
 - **buffer** — 74 B1/B2 + B3-buffer units, added carry DPS vs a no-op baseline over two synthetic
   standard carries (`src/ranks/synthetics.ts`, class-modal MG+RL). Two arms: generic and typed
-  (carries auto-adapt to the kit: weapon swap / pierce / projectile-explosion / element). The
-  leaderboard shows rows ≥ 0 only, minus `HIDDEN_BUFFER_SLUGS` (chime, avistar) — `rankedBufferRows`
-  (`src/ranks/buffer-rows.ts`) filters both the chart bars and the share/pre-render table card, so
-  ranks are numbered over one set; the artifact itself keeps every row for the unit card, and
-  `EXCLUDED_BUFFER_SLUGS` (blanc) never enters the population at all.
+  (carries auto-adapt to the kit: weapon swap / pierce / projectile-explosion / element).
+  **STANDARD TEAM (owner spec, landed 2026-08-03):** no-op B1 (20s, 7s CDR) + two no-op B2 (20s) +
+  the two carries; the tested unit takes the second B2's slot and leads its own stage (behind the
+  same-stage no-op it would lose every contest and stop bursting), and the baseline puts a
+  stage-matched no-op back in that slot. The spare keeps every stage covered, so a 40s/60s cooldown
+  no longer costs the team Full Bursts — pinned in `scripts/tests/ranks/buffer.test.ts`, audited by
+  `scripts/probe/buffer-rotation-audit.ts`. The leaderboard shows rows ≥ 0 only, minus
+  `HIDDEN_BUFFER_SLUGS` (chime, avistar) — `rankedBufferRows` (`src/ranks/buffer-rows.ts`) filters
+  both the chart bars and the share/pre-render table card, so ranks are numbered over one set; the
+  artifact itself keeps every row for the unit card, and `EXCLUDED_BUFFER_SLUGS` (blanc) never
+  enters the population at all.
 - **b1b2dps** — every sim-supported B1/B2 unit, ranked by own DPS in a Solo-style no-op control team.
   Four cells: Core 0 / Core 100 × neutral / elemental advantage. 40s-B1 and B2 templates include a
   no-op B1 with the standard 7 s team burst CDR; 20s-B1 rows rely on the tested unit's own CDR.

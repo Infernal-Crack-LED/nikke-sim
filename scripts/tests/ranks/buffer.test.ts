@@ -8,7 +8,7 @@ import {
   deriveCarrySpec,
   DUO_BUFFER_PROFILES,
 } from '../../../src/ranks/buffer.js';
-import { NOOP_B1, NOOP_B2 } from '../../../src/dpschart/noop.js';
+import { NOOP_B1, NOOP_B2, NOOP_B3 } from '../../../src/dpschart/noop.js';
 import { CARRY_MG, CARRY_RL } from '../../../src/ranks/synthetics.js';
 import type { RanksCtx } from '../../../src/ranks/burstgen.js';
 import { loadOverride } from '../../../src/skills/overrides-node.js';
@@ -32,14 +32,105 @@ describe('buffer board', () => {
     expect(r.valuePct).toBeGreaterThan(20); // liter is a premier buffer (+26% measured)
   });
 
-  it('B1 comp filler matches the tested B1 cooldown: short-CD gets B2, long-CD gets B1', () => {
+  // The standard team keeps every burst stage covered by a 20s no-op, so a
+  // tested unit's own cooldown never holds up the chain (owner spec 2026-08-03).
+  // The tested unit leads its OWN stage — behind the same-stage no-op it would
+  // lose every contest and stop bursting.
+  it('standard team: tested unit takes the spare B2 slot and leads its own stage', () => {
     const spec = { weapon: null, pierce: false, element: null } as const;
-    const long = assemble('claire', 'I', 'generic', spec, undefined, 40);
-    expect(long.slugs).toEqual(['claire', NOOP_B1, CARRY_MG, CARRY_RL]);
-    const short = assemble('liter', 'I', 'generic', spec, undefined, 20);
-    expect(short.slugs).toEqual(['liter', NOOP_B2, CARRY_MG, CARRY_RL]);
-    const defaultShort = assemble('liter', 'I', 'generic', spec);
-    expect(defaultShort.slugs).toEqual(['liter', NOOP_B2, CARRY_MG, CARRY_RL]);
+    expect(assemble('liter', 'I', 'generic', spec).slugs).toEqual([
+      'liter',
+      NOOP_B1,
+      NOOP_B2,
+      CARRY_MG,
+      CARRY_RL,
+    ]);
+    expect(assemble('crown', 'II', 'generic', spec).slugs).toEqual([
+      NOOP_B1,
+      'crown',
+      NOOP_B2,
+      CARRY_MG,
+      CARRY_RL,
+    ]);
+    // a tested B3 never bursts, so it sits rightmost and the carries win stage 3
+    expect(assemble('maiden-ice-rose', 'III', 'generic', spec).slugs).toEqual([
+      NOOP_B1,
+      NOOP_B2,
+      CARRY_MG,
+      CARRY_RL,
+      'maiden-ice-rose',
+    ]);
+    // the cooldown no longer changes the shape — 40s and 20s assemble alike
+    expect(assemble('moran', 'I', 'generic', spec).slugs).toEqual([
+      'moran',
+      NOOP_B1,
+      NOOP_B2,
+      CARRY_MG,
+      CARRY_RL,
+    ]);
+  });
+
+  // The baseline is the SAME team with a no-op of the tested unit's own stage
+  // in its slot. Standing every unit against one fixed team instead would
+  // charge each B1 for trading a no-op B2 away — measured at up to -2 Full
+  // Bursts and -34 points (anis-star), i.e. the same rotation distortion this
+  // shape exists to remove, merely pointed at a different stage.
+  it("baseline: a stage-matched no-op takes the tested unit's slot", () => {
+    const spec = { weapon: null, pierce: false, element: null } as const;
+    expect(assemble(null, 'I', 'generic', spec).slugs).toEqual([
+      NOOP_B1,
+      NOOP_B1,
+      NOOP_B2,
+      CARRY_MG,
+      CARRY_RL,
+    ]);
+    expect(assemble(null, 'II', 'generic', spec).slugs).toEqual([
+      NOOP_B1,
+      NOOP_B2,
+      NOOP_B2,
+      CARRY_MG,
+      CARRY_RL,
+    ]);
+    expect(assemble(null, 'III', 'generic', spec).slugs).toEqual([
+      NOOP_B1,
+      NOOP_B2,
+      CARRY_MG,
+      CARRY_RL,
+      NOOP_B3,
+    ]);
+  });
+
+  // The property the whole shape exists for: no unit may cost the team Full
+  // Bursts merely by having a long cooldown. Checked across every tested unit
+  // whose cooldown outlasts the 20s no-op it displaces.
+  it('no long-cooldown unit lands below its baseline Full Burst count', () => {
+    const longCd = Object.entries(data.characters as Record<string, any>)
+      .filter(
+        ([slug, c]) =>
+          c.simSupported &&
+          (c.burst === 'I' || c.burst === 'II') &&
+          (overrides[slug]?.charFixes?.burstCooldownSec ?? c.burstCooldownSec) >
+            20
+      )
+      .map(([slug]) => slug);
+    expect(longCd.length).toBeGreaterThan(10);
+    for (const slug of longCd) {
+      const r = bufferValueFor(slug, 'generic', ctx, new Map(), null);
+      expect({
+        slug,
+        short: r.fullBursts >= r.baselineFullBursts,
+      }).toEqual({ slug, short: true });
+    }
+  });
+
+  // The requirement the standard team exists to satisfy: a long cooldown must
+  // not cost the TEAM Full Bursts, because the spare no-op covers the stage.
+  it('a 40s tested unit no longer lowers the team Full Burst count', () => {
+    for (const slug of ['flora', 'prika', 'biscuit', 'anchor-innocent-maid']) {
+      const r = bufferValueFor(slug, 'generic', ctx, new Map(), null);
+      expect(r.baselineFullBursts).toBe(9); // 180s / 20s
+      expect(r.fullBursts).toBe(r.baselineFullBursts);
+    }
   });
 
   it('a unit whose buffs cannot apply at scope lock reads ~0', () => {
@@ -54,7 +145,7 @@ describe('buffer board', () => {
   });
 
   it('typed board: tove is worth more with SG carries than generic', () => {
-    const memo = new Map<string, number>();
+    const memo = new Map();
     const generic = bufferValueFor('tove', 'generic', ctx, memo);
     const typed = bufferValueFor('tove', 'typed', ctx, memo);
     expect(typed.valuePct).toBeGreaterThan(generic.valuePct);
@@ -66,7 +157,7 @@ describe('buffer board', () => {
   });
 
   it('typed board: ade-agent-bunny is worth more with Pierce carries', () => {
-    const memo = new Map<string, number>();
+    const memo = new Map();
     const generic = bufferValueFor('ade-agent-bunny', 'generic', ctx, memo);
     const typed = bufferValueFor('ade-agent-bunny', 'typed', ctx, memo);
     expect(typed.valuePct).toBeGreaterThan(generic.valuePct);
@@ -80,7 +171,7 @@ describe('buffer board', () => {
   });
 
   it('crown: with-healer profile beats plain (her recovery-triggered AD buff at full uptime)', () => {
-    const memo = new Map<string, number>();
+    const memo = new Map();
     const plain = bufferValueFor('crown', 'generic', ctx, memo, null);
     const profiled = bufferValueFor(
       'crown',
@@ -96,7 +187,7 @@ describe('buffer board', () => {
   });
 
   it('naga: with-shielder profile beats plain (her shield-gated lines come alive)', () => {
-    const memo = new Map<string, number>();
+    const memo = new Map();
     const plain = bufferValueFor('naga', 'generic', ctx, memo, null);
     const profiled = bufferValueFor(
       'naga',
@@ -141,7 +232,7 @@ describe('buffer board', () => {
   });
 
   it('mint: w/ Prika profile emits and differs from plain', () => {
-    const memo = new Map<string, number>();
+    const memo = new Map();
     const plain = bufferValueFor('mint', 'generic', ctx, memo, null);
     const duo = bufferValueFor(
       'mint',
@@ -157,7 +248,7 @@ describe('buffer board', () => {
   });
 
   it('prika: w/ Mint profile emits and differs from plain', () => {
-    const memo = new Map<string, number>();
+    const memo = new Map();
     const plain = bufferValueFor('prika', 'generic', ctx, memo, null);
     const duo = bufferValueFor(
       'prika',
@@ -173,7 +264,7 @@ describe('buffer board', () => {
   });
 
   it('duo baselines do not collide when Mint and Prika share the same memo', () => {
-    const memo = new Map<string, number>();
+    const memo = new Map();
     const mintDuo = bufferValueFor(
       'mint',
       'generic',
@@ -207,7 +298,7 @@ describe('buffer board', () => {
   });
 
   it('mast-romantic-maid: w/ Anchor profile emits and differs from plain', () => {
-    const memo = new Map<string, number>();
+    const memo = new Map();
     const plain = bufferValueFor(
       'mast-romantic-maid',
       'generic',
@@ -247,7 +338,7 @@ describe('buffer board', () => {
   });
 
   it('typed board: brid-silent-track is worth more when the Wind debuff is active', () => {
-    const memo = new Map<string, number>();
+    const memo = new Map();
     const generic = bufferValueFor('brid-silent-track', 'generic', ctx, memo);
     const typed = bufferValueFor('brid-silent-track', 'typed', ctx, memo);
     expect(typed.valuePct).toBeGreaterThan(generic.valuePct);
@@ -264,7 +355,7 @@ describe('buffer board', () => {
   });
 
   it('typed board: helm-aquamarine is worth more when the Electric debuff is active', () => {
-    const memo = new Map<string, number>();
+    const memo = new Map();
     const generic = bufferValueFor('helm-aquamarine', 'generic', ctx, memo);
     const typed = bufferValueFor('helm-aquamarine', 'typed', ctx, memo);
     // The generic board already uses Iron carries vs an Electric boss, so the
@@ -275,7 +366,7 @@ describe('buffer board', () => {
   });
 
   it('blanc: w/ Rouge profile emits and shows the CDR difference vs plain', () => {
-    const memo = new Map<string, number>();
+    const memo = new Map();
     const plain = bufferValueFor('blanc', 'generic', ctx, memo, null);
     const withRouge = bufferValueFor(
       'blanc',

@@ -82,17 +82,25 @@ never bursts, so its value must come through passives. Value that comes through
 faster rotations (gauge batteries, cooldown reduction) is captured, because the
 whole fight is simulated.
 
-Rotation cuts both ways, and it is the single biggest thing to know when reading
-a low number. The no-op the tested unit displaces bursts every 20 seconds, so a
-unit whose own burst cooldown is longer holds up the team's whole Full Burst
-chain: a 40-second Burst-2 lands 5 Full Bursts in the 180-second fight where the
-no-op baseline lands 9, and the damage those four lost Full Bursts would have
-done is charged against the unit's percentage before a single buff is counted.
-It costs roughly 8% of team damage. That is a real cost of fielding the unit in
-that team, and it is why a long-cooldown support can sit mid-board on the
-strength of a buff that is individually excellent. `npx tsx
-scripts/build-bufferchart.ts --explain <slug>` breaks any unit's number into
-that rotation floor plus the contribution of each buff line.
+The **standard team** is five slots: a no-op Burst-1 (20 seconds, carrying the
+7-second team burst-cooldown reduction a real enabler would provide), two no-op
+Burst-2s (20 seconds), and the two carries (Burst-3, 40 seconds, one machine gun
+and one rocket launcher, alternating). The tested unit takes the second Burst-2's
+slot, and the baseline puts a no-op of the tested unit's own burst stage back in
+that slot, so both sides field the same stage distribution.
+
+The spare no-op is what makes long burst cooldowns readable. Every burst stage
+stays covered by a 20-second unit, so a support with a 40- or 60-second cooldown
+does not hold up the team's Full Burst chain while it waits: it is measured on
+what its buffs add, not docked for a rotation the rest of the team can sustain
+without it. A unit can still land above or below its baseline's Full Burst count
+— its own cooldown reduction or burst-gauge generation genuinely speeds the team
+up, and a slow weapon generating less gauge than the no-op it replaced genuinely
+slows it down — and the board counts both, because they are the unit's doing.
+`npx tsx scripts/probe/buffer-rotation-audit.ts` lists every unit that differs
+from its baseline and which way; `npx tsx scripts/build-bufferchart.ts --explain
+<slug>` breaks one unit's number into its rotation floor plus the contribution
+of each buff line.
 
 The board lists only units whose value comes out at zero or above. A unit that
 reduces team damage in the standard comp has no standing to rank on a support
