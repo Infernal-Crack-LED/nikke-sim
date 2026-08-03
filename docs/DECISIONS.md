@@ -13,7 +13,10 @@ lives. Newest first within each section.
   superseding the 50%-uptime halving proxy — owner-confirmed parity (Dancing-first) + strict
   alternation, zero graded-board impact.** Follows directly from the same-day mode-default ruling
   entry below, which had left this as an open owner decision pending two facts: which state she
-  starts in, and whether the alternation is strict. Owner-confirmed both directly in conversation:
+  starts in, and whether the alternation is strict, and which explicitly named a confirming
+  RECORDING as the route to those two facts — that recording requirement is DISCHARGED here by the
+  owner's direct conversational confirmation of both facts instead, not by footage; the entry below
+  is left as originally written (append-only) rather than edited to match. Owner-confirmed both directly in conversation:
   "she starts with nothing on, which means she goes dancing first" (matches the kit-literal Status
   1/2 gate — "if NOT in Dancing [incl. no part yet] → gain Dancing" — already assumed Dancing-first)
   and "the alternation is that clean/strict," then directed the fix: "we should actually alternate

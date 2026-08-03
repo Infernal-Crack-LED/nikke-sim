@@ -613,8 +613,11 @@ temporary `maxAmmoFlat 200` passive on a low-mag AR lifted pulls 1099→1908 (fe
 +65% total), the expected direction. **ENACTED (kit-literal `maxAmmoFlat`), 2026-07-20 → 2026-08-03:**
 emilia, grave (+3), n102, noir (+5 all-allies), rem, tove (+2), trina (+20) — 7 units, see the primitive
 census above; each converted off its earlier percent-approximation and the conversions verified
-regression/board-neutral or board-A/B'd per unit. **Still approximating as a percent:** drake ("Max Ammo
-▲50.14%/10s" — no flat-count kit line to convert against, unlike the others).
+regression/board-neutral or board-A/B'd per unit. **`drake` is NOT a gap here (checked 2026-08-03):**
+her two Max-Ammo lines are genuinely percent in kit text (`data/characters.json`: "Max Ammunition
+Capacity ▲50.14%/10s" and "▲72.18%/10s") — unlike the 7 flat-converted units above, she was never a
+flat-round line mis-encoded as percent; the shipped `maxAmmoPct` is already the faithful, kit-literal
+encoding. Nothing to convert.
 
 ### 15. Ammo-dump / forced-reload "Removes 100% of ammo" inexpressible — 3 units — ✅ CAPABILITY LANDED 2026-07-17
 
