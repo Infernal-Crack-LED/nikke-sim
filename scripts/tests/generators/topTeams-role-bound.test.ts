@@ -40,9 +40,7 @@ const calcForPool = (keep: Set<string>) =>
     blocked: Object.keys(chars).filter((s) => !keep.has(s)),
   });
 
-// Ample BII/BIII so Burst I is the only binding constraint. BII needs headroom
-// beyond one-per-team: the generator now explores double-B2 shapes (B1+B2+B2+
-// 2×B3), so a team can consume 2 B2 — 16 keeps BII non-binding for 5 teams.
+// Ample BII/BIII so Burst I is the only binding constraint for 5 teams.
 const AMPLE_B2 = B2.slice(0, 16);
 const AMPLE_B3 = B3.slice(0, 16);
 
