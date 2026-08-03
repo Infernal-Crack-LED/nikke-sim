@@ -83,6 +83,7 @@ const TARGETS = new Set([
 const EFFECTS = new Set([
   'buff',
   'flatDamage',
+  'hitRepeat',
   'dot',
   'weaponSwap',
   'fillGauge',
@@ -191,6 +192,20 @@ function checkEffect(e: any, path: string, errors: string[]) {
       errors.push(`${path}: unknown flavor "${e.flavor}"`);
     }
   }
+  if (e.kind === 'hitRepeat') {
+    // `pct` is a share of the PARENT HIT's damage, not a % of ATK — a positive number, and
+    // never a `flatDamage`-style atkPct that wandered onto the wrong effect kind.
+    if (typeof e.pct !== 'number' || !(e.pct > 0)) {
+      errors.push(
+        `${path}: hitRepeat needs pct > 0 (% of the parent hit's damage)`
+      );
+    }
+    if ('atkPct' in e) {
+      errors.push(
+        `${path}: hitRepeat has no atkPct — it scales off the parent hit's damage, not off final ATK (use flatDamage for a %-of-ATK rider)`
+      );
+    }
+  }
   if (
     e.kind === 'dot' &&
     (typeof e.atkPct !== 'number' || typeof e.durationSec !== 'number')
@@ -294,6 +309,17 @@ function validate(slug: string): boolean {
       if (b.formation && !['noB1', 'hasB1'].includes(b.formation)) {
         errors.push(`${p}: bad formation`);
       }
+      // Block.delaySec: "the block's effects apply delaySec seconds after its trigger fires".
+      // A non-number is silently falsy in sim.ts (the block would apply inline), and a negative
+      // would schedule into the past — both are dead authoring that looks live in the JSON.
+      if (
+        b.delaySec !== undefined &&
+        !(typeof b.delaySec === 'number' && b.delaySec > 0)
+      ) {
+        errors.push(
+          `${p}: delaySec must be a number > 0 (omit it for an inline block)`
+        );
+      }
       // Every facet inside `teamHas` is optional and omitting one leaves it
       // unconstrained, so a MISSPELLED facet key is invisible: the engine's
       // teamHasMatch (sim.ts) reads only the keys it knows, ignores the rest, and
@@ -367,6 +393,26 @@ function validate(slug: string): boolean {
         errors.push(
           `${p}: a targetStatus effect must sit on a block with target "enemy" (the status is inflicted on the boss)`
         );
+      }
+      // `hitRepeat` is a rider on the owner's OWN hit ("X% of the damage dealt by self"). The
+      // engine reads the parent instance the weapon path recorded on the SAME frame, so the
+      // effect is only expressible on a trigger the engine dispatches from firePull, right
+      // after that instance resolves. Authored anywhere else it would silently do nothing
+      // (the engine's frame lock declines to ride a stale hit) — reject it at authoring time
+      // instead of shipping a dead line. Target is the boss, like every other damage effect.
+      // Collected recursively for the same reason as targetStatus above.
+      if (collectEffectKinds(b.effects).has('hitRepeat')) {
+        const PER_PULL = ['shotFired', 'hitCount', 'chargeCounter'];
+        if (!PER_PULL.includes(b.trigger?.kind)) {
+          errors.push(
+            `${p}: a hitRepeat effect needs a per-pull trigger (${PER_PULL.join(' / ')}) — it rides the parent hit dispatched on the same frame, and would never fire on "${b.trigger?.kind}"`
+          );
+        }
+        if (b.target?.kind !== 'enemy') {
+          errors.push(
+            `${p}: a hitRepeat effect must sit on a block with target "enemy" (it deals damage to the boss)`
+          );
+        }
       }
       // gate is a bare status name; a typo'd name would silently never open
       if (
