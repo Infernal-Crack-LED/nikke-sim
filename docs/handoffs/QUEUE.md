@@ -124,10 +124,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      in-flight duration mutation; `milk-blooming-bunny` a **reload-count-scoped stat CLAMP** (also the
      `docs/engine-modeling-gaps.md` §1b LOCK gap — NOT a timed window). Do not re-attempt them on the
      registry alone.
-  4. **`FBRULE=perkit` default flip** — `privaty` was the roster's LAST `noFb` carrier, so `perkit` is
-     now behaviourally identical to `timing` for every unit and the promised flip is provably a no-op.
-     NOT taken — engine default, owner-gated; queued.
-  5. **U28** — `extraHitDamagePct` vs `flatDamage` gauge + flavor asymmetry.
+  4. **U28** — `extraHitDamagePct` vs `flatDamage` gauge + flavor asymmetry.
 - **⇒ ENGINE PRIMITIVE GAP: `addStack`** — no effect increments an existing buff's stack count by N on
   a trigger. Blocks `flora` S1 ("after 100 normal attacks, all Electric Code allies: increases the
   stack count of stackable buffs by 1" — trigger `hitCount:100` and target `alliesOfElement` are both
