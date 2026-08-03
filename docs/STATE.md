@@ -282,6 +282,13 @@ noted.
   that overshoots (kept on purpose) isolates a compensating error — don't fudge it back.
 - **Prose-free runtime.** The engine never parses kit text at runtime; each override fully describes the
   kit (all 3 slots + `unmodeled`). Blablalink/DB prose is the objective SSOT. → DECISIONS 2026-07-16.
+- **Kit work is test-first.** A unit's kit lines are pinned as assertion groups in
+  `scripts/tests/units/<slug>.test.ts`, written RED against the shipped override before the override or
+  engine change lands; the board A/B is the outer accuracy loop. The tests gate FAITHFULNESS
+  (stat- and footage-independent), the board gates FIT. Engine primitives are pinned in
+  `scripts/tests/engine/`; everything under `scripts/tests/` runs as the one `npx vitest run` step in
+  `verify.sh`. Per-unit path: `/kit-tdd` (owner-driven spec) or `/kit-autonomy` (authorized autonomous
+  branch work); `/audit-kit` samples, `/kit-parse` seeds untuned units. → CONVENTIONS.md.
 - **Per-unit tier SSOT = `data/kit-status.json`** (via `scripts/kit-status.ts`). Every tuning change
   updates it. Evidence tiers (MEASURED > DATAMINED > COMMUNITY > CALIBRATED ⚑): → CONVENTIONS.md.
 - **Supported roster** = enikk top-100 audit list + all hand-tuned overrides; never remove a
@@ -347,11 +354,24 @@ Planned follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
   `src/ranks/sustain-table.ts`. Profiles: prika+mint duet, anchor-innocent-maid+mast-romantic-maid.
 - **buffer** — 74 B1/B2 + B3-buffer units, added carry DPS vs a no-op baseline over two synthetic
   standard carries (`src/ranks/synthetics.ts`, class-modal MG+RL). Two arms: generic and typed
-  (carries auto-adapt to the kit: weapon swap / pierce / projectile-explosion / element). The
-  leaderboard shows rows ≥ 0 only, minus `HIDDEN_BUFFER_SLUGS` (chime, avistar) — `rankedBufferRows`
-  (`src/ranks/buffer-rows.ts`) filters both the chart bars and the share/pre-render table card, so
-  ranks are numbered over one set; the artifact itself keeps every row for the unit card, and
-  `EXCLUDED_BUFFER_SLUGS` (blanc) never enters the population at all.
+  (carries auto-adapt to the kit: weapon swap / pierce / projectile-explosion / element).
+  **STANDARD TEAM (owner spec, landed 2026-08-03):** no-op B1 (20s, 7s CDR) + two no-op B2 (20s) +
+  the two carries; the tested unit takes the second B2's slot and leads its own stage (behind the
+  same-stage no-op it would lose every contest and stop bursting), and the baseline puts a
+  stage-matched no-op back in that slot. The spare keeps every stage covered, so a 40s/60s cooldown
+  no longer costs the team Full Bursts — pinned by ISOLATION (forcing a unit's cooldown to 20s must
+  not change its FB count) in `scripts/tests/ranks/buffer.test.ts`, audited by
+  `scripts/probe/buffer-rotation-audit.ts`. **Camera focus is the spare no-op B2 (SR)**, never the
+  tested unit, so burst generation is identical in every run (it used to follow the second carry,
+  whose weapon the typed board rewrites per unit); on a duo row the partner holds it, symmetrically.
+  A tested B3's burst slot is suppressed outright (`burstOffSlug`) rather than relying on rightmost
+  placement to lose the stage-3 cast. The leaderboard shows rows ≥ 0 only, minus
+  `HIDDEN_BUFFER_SLUGS` (chime, avistar) — `rankedBufferRows` (`src/ranks/buffer-rows.ts`) filters
+  both the chart bars and the share/pre-render table card, so ranks are numbered over one set; the
+  artifact itself keeps every row for the unit card. `EXCLUDED_BUFFER_SLUGS` is a second, harder
+  screen at the population filter — a kit that outright REDUCES team damage in the standard comp
+  would report a misleadingly negative % and never enters the board — and it is currently **empty**;
+  `scripts/probe/buffer-rotation-audit.ts --excluded` checks each entry against that criterion.
 - **b1b2dps** — every sim-supported B1/B2 unit, ranked by own DPS in a Solo-style no-op control team.
   Four cells: Core 0 / Core 100 × neutral / elemental advantage. 40s-B1 and B2 templates include a
   no-op B1 with the standard 7 s team burst CDR; 20s-B1 rows rely on the tested unit's own CDR.

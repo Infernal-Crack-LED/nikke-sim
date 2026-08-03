@@ -5,6 +5,7 @@
 // verify.sh.
 //
 //   npx tsx scripts/build-bufferchart.ts [--out <path>]
+//   npx tsx scripts/build-bufferchart.ts --explain <slug> [--typed]  (diagnostic)
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { DataFile, LevelMultiplier, Element } from '../src/types.js';
@@ -19,9 +20,11 @@ import type {
 } from '../src/prepare.js';
 import {
   rankBuffers,
+  bufferValueFor,
   COMP_PROFILES,
   DUO_BUFFER_PROFILES,
   EXCLUDED_BUFFER_SLUGS,
+  type BufferBoard,
   type BufferValue,
 } from '../src/ranks/buffer.js';
 import type { RanksCtx } from '../src/ranks/burstgen.js';
@@ -52,11 +55,19 @@ for (const slug of Object.keys(data.characters)) {
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
 
-// EXCLUDED_BUFFER_SLUGS (currently Blanc) never enters the population: the kit
-// reduces team damage in the standard comp, so its % increase is misleadingly
-// negative and not useful for ranking support value. The artifact keeps every
-// other row it computes, negatives included; the leaderboard trims those at
-// render time (src/ranks/buffer-rows.ts) so the unit card can still quote a
+const SLOTS = ['skill1', 'skill2', 'burst'] as const;
+const explainArg = process.argv.indexOf('--explain');
+const explainSlug = explainArg >= 0 ? process.argv[explainArg + 1] : null;
+if (explainSlug && !data.characters[explainSlug]) {
+  throw new Error(`--explain: "${explainSlug}" is not in characters.json`);
+}
+
+// EXCLUDED_BUFFER_SLUGS never enters the population: a kit that reduces team
+// damage in the standard comp would report a misleadingly negative % increase,
+// useless for ranking support value. The set is currently EMPTY — no unit meets
+// that criterion — so this filter passes everything through today. The artifact
+// keeps every row it computes, negatives included; the leaderboard trims those
+// at render time (src/ranks/buffer-rows.ts) so the unit card can still quote a
 // unit's own value.
 const population: string[] = [];
 for (const [slug, c] of Object.entries(data.characters)) {
@@ -73,6 +84,65 @@ for (const [slug, c] of Object.entries(data.characters)) {
   }
 }
 population.sort();
+
+// --explain <slug>: why does this unit sit where it sits? Prints the shipped
+// value, then two ablations against it — the unit with its kit stripped
+// entirely (its ROTATION floor: a tested unit replaces a 20s-cooldown no-op in
+// the baseline team, so a longer-cooldown burst costs the carries Full Bursts
+// before any buff is counted) and one run per buff effect with that effect
+// removed (which lines actually reach the carries, and which are inert).
+// Diagnostic only — writes nothing.
+if (explainSlug) {
+  const board: BufferBoard = process.argv.includes('--typed')
+    ? 'typed'
+    : 'generic';
+  const ctxWith = (ov: Record<string, OverrideFile | undefined>): RanksCtx => ({
+    ...ctx,
+    deps: { ...deps, overrides: ov },
+  });
+  // always the PLAIN row — a comp profile is a different team, so mixing the
+  // two would compare a unit against a baseline it never ran with
+  const value = (ov: Record<string, OverrideFile | undefined>): number =>
+    bufferValueFor(explainSlug, board, ctxWith(ov), new Map(), null).valuePct;
+  const shipped = value(overrides);
+  const c = data.characters[explainSlug];
+  const clone = (): OverrideFile =>
+    JSON.parse(JSON.stringify(overrides[explainSlug])) as OverrideFile;
+
+  process.stdout.write(
+    `${explainSlug} — ${board} board\n` +
+      `  ${c.burst}, ${c.burstCooldownSec}s burst cooldown, ${c.weapon}, ${c.class}\n` +
+      `  shipped                            ${shipped.toFixed(2)}%\n`
+  );
+  const stripped = clone();
+  for (const slot of SLOTS) {
+    stripped[slot] = [];
+  }
+  const floor = value({ ...overrides, [explainSlug]: stripped });
+  process.stdout.write(
+    `  kit stripped (rotation floor)      ${floor.toFixed(2)}%` +
+      `   ← what the body alone is worth\n`
+  );
+  for (const slot of SLOTS) {
+    const blocks = overrides[explainSlug]?.[slot] ?? [];
+    blocks.forEach((block, bi) => {
+      (block.effects ?? []).forEach((eff, ei) => {
+        const ov = clone();
+        const target = ov[slot]?.[bi];
+        if (!target) {
+          return;
+        }
+        target.effects = block.effects.filter((_, i) => i !== ei);
+        const v = value({ ...overrides, [explainSlug]: ov });
+        const label = `${slot}[${bi}] ${eff.kind}${'stat' in eff && eff.stat ? ` ${eff.stat} ${eff.value ?? ''}` : ''}`;
+        process.stdout.write(
+          `  without ${label.padEnd(42)} ${v.toFixed(2)}%   (Δ ${(v - shipped).toFixed(2)})\n`
+        );
+      });
+    });
+  }
+  process.exit(0);
+}
 
 const boards = {
   generic: rankBuffers(population, 'generic', ctx),

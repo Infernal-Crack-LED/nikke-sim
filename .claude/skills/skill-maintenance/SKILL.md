@@ -11,7 +11,7 @@ After ANY non-trivial change, and especially after a surprise: a video measureme
 an assumption, a multi-step extraction procedure you had to reconstruct, an engine mechanic change,
 or a data-source discovery.
 
-## The loop (run all four checks)
+## The loop (run all five checks)
 
 1. **Did this teach a repeatable procedure or gotcha?**
    - Refines an existing playbook → update the matching `.claude/skills/*/SKILL.md` body (dated
@@ -33,6 +33,9 @@ or a data-source discovery.
 4. **For work you can't eyeball** (rotation timing, popup values, gauge behavior): what would you
    need to SEE or MEASURE to know it's right? If no check exists, build one (the probe-processing
    skill catalogs the existing video/gauge tooling) and fold it into the relevant skill.
+5. **Did any doc go stale, or did a handoff finish?** That is `/doc-maintenance` — fact routing
+   (which doc owns it), QUEUE.md pruning, closing a finished handoff (archiving UNTRACKS it),
+   resolved-question moves, and deleting stale current-state narration. Run it before a PR or push.
 
 ## Verify
 

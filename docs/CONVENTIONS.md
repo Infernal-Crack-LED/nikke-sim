@@ -62,6 +62,30 @@ harnesses that must do this:
   focused unit. Burst-bar full-burst detection near cut-ins is unreliable — count nuke/laser
   signatures. The bar's full-resting render is 83.5% of pixel width; ≥96% is the pre-chain glow.
 
+## Kit work is test-first
+
+A unit's kit is specified as TESTS before its model changes. Each kit line becomes an assertion group
+in `scripts/tests/units/<slug>.test.ts` — trigger, target, scope, magnitude, duration semantics, plus
+an explicit acknowledgment of every line deliberately left unmodeled — written RED against the shipped
+override; the override (or engine primitive) change then lands green. The board A/B
+(`scripts/board-read.ts`, `scripts/control-regression.ts`) is the OUTER accuracy loop, run after.
+
+Why the tests and not the board: the board gates **fit** only. A scoping or semantics error worth a few
+percent — a "Critical Rate of normal attacks" line shipped as a generic crit buff, a "for 10 round(s)"
+duration faked as seconds — is absorbed by calibration and leaves the board green. Unit tests are the
+only instrument that gates **faithfulness**, because they are stat-independent and footage-independent,
+and an assertion that discriminates a kit line from its nearest wrong model is unwritable from a vague
+reading of the kit. Unit tests pin _faithful_, the board pins _accurate_; neither substitutes for the
+other.
+
+The per-unit session runs through `/kit-tdd` (the owner drives the line-by-line spec) or, where the
+owner has authorized autonomous authoring on a branch, `/kit-autonomy` (the owner's spec review is
+replaced by independent re-derivation plus a binding judge). `/audit-kit` is the post-validation
+sampling layer over units that already have spec tests, and `/kit-parse` authors baselines for units
+with no hand-tuned override yet; neither is the build path. Engine primitives carry their own specs in
+`scripts/tests/engine/`. Every file under `scripts/tests/` runs from the single `npx vitest run` step
+in `verify.sh`, so a new test file joins the gate by existing.
+
 ## Ratio direction (sim/real vs real/sim) — DO NOT CONFLATE
 
 Two accuracy metrics live in this repo and they point in **OPPOSITE directions**. Treating one as
@@ -113,11 +137,22 @@ without flipping it. (Root case 2026-07-16: the SG model pass read board `arcana
 Every doc is exactly one class. This is what keeps `docs/STATE.md` current and stops the changelog
 logs from poisoning agent context with stale-but-retained narration.
 
+> The rules below are normative; the **procedure** that applies them — fact routing, QUEUE.md
+> pruning, closing a finished handoff, resolved-question moves, stale-narration deletion — is the
+> `/doc-maintenance` skill, which a PreToolUse hook nudges at push / PR time.
+
 - **CHANGELOG class — append-only, immutable, never delete.** Outdated content is marked
   **`SUPERSEDED (date) — disregard`** or struck through IN PLACE — this is the provenance trail.
   Members: `docs/DECISIONS.md`, `docs/answered-questions.md`,
   `docs/probe-runs.md`, `web/src/patch-notes.json` (prepend-only), `data/sources.json` (cumulative
   accreditation), and the `docs/handoffs/closed/` + `docs/closed/` archives.
+  - **The two archives are gitignored on purpose — archiving a doc UNTRACKS it.** A finished handoff
+    or plan doc gets a `CLOSED (date)` block at the top, then `git rm --cached <path>` followed by a
+    plain `mv` into the archive: it survives on disk for a human to read and leaves the repo. `git mv`
+    cannot do this, and staging a new path under either archive aborts the pre-commit hook — that is
+    the missing `git rm --cached`, not a broken hook. Move any residual open item to
+    `docs/handoffs/QUEUE.md` first, and check nothing cites the doc by name (a `docs/DECISIONS.md`
+    citation to an untracked file is a dangling pointer) before it goes.
 - **CURRENT-STATE class — freely rewritten; stale content is DELETED, not marked.** History lives in
   the changelog class, so deletion loses nothing. **Capture-first rule:** before deleting a
   still-true-but-resolved block, confirm the fact is in a changelog doc (DECISIONS /

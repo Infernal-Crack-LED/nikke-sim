@@ -25,20 +25,16 @@
 
 `centi`
 
-## Batch 6 — D (10 units)
-
-| #   | Slug       | Tier |
-| --- | ---------- | ---- |
-| 52  | `claire`   | D    |
-| 53  | `clay`     | D    |
-| 54  | `cocoa`    | D    |
-| 55  | `d`        | D    |
-| 56  | `epinel`   | D    |
-| 57  | `flora`    | D    |
-| 58  | `folkwang` | D    |
-| 59  | `maiden`   | D    |
-| 60  | `milk`     | D    |
-| 61  | `noah`     | D    |
+`claire`  
+`clay`  
+`cocoa`  
+`d`  
+`epinel`  
+`flora`  
+`folkwang`
+`maiden`  
+`milk`  
+`noah`
 
 ## Batch 7 — D (10 units)
 

@@ -1,17 +1,20 @@
 // Buffer ranking board — how much damage a support unit ADDS to two standard
 // carries, ranked. Owner methodology (2026-07-26):
 //
-//   Comp: the tested buffer + synthetic no-op stage fillers + two standard
-//   damage-dealing carries (src/ranks/synthetics.ts), at scope lock, both
-//   carries elementally advantaged.
-//     tested B1 → [tested, no-op B2, carry, carry] (no-op B1 if B1 CD > 20s)
-//     tested B2 → [no-op B1, tested, carry, carry]
+//   Comp: the STANDARD TEAM (see assemble) — no-op B1 + two no-op B2 + the two
+//   standard damage-dealing carries (src/ranks/synthetics.ts) — with the tested
+//   buffer in place of the second no-op B2, at scope lock, both carries
+//   elementally advantaged.
+//     tested B1 → [tested, no-op B1, no-op B2, carry, carry]
+//     tested B2 → [no-op B1, tested, no-op B2, carry, carry]
 //     tested B3 → [no-op B1, no-op B2, carry, carry, tested-rightmost]
+//   The baseline is the same team with a no-op of the tested unit's OWN stage
+//   in its place, so both sides field the same stage distribution.
 //   A tested B3 sits RIGHTMOST so the two carries always win the stage-3 cast
 //   and it never bursts (pinned in tests) — its value must come through
 //   passives and cast-free lines.
 //   Value = % team damage increase = (Σ carry DPS with the buffer − Σ carry
-//   DPS with a stage-matched no-op baseline) / Σ carry DPS with the baseline.
+//   DPS with the stage-matched baseline) / Σ carry DPS with that baseline.
 //   The buffer's own weapon damage is NOT counted. Rotation-driven value
 //   (gauge batteries, CDR) IS captured — the whole fight is simmed.
 //
@@ -63,10 +66,6 @@ const BEATS_INVERSE: Record<Element, Element> = {
   Wind: 'Fire',
   Fire: 'Water',
 };
-
-// A B1 with cooldown above this cannot solo-sustain a standard 1-B1/1-B2 rotation
-// (matches CD_SHORT in src/teamcalc.ts), so the buffer comp gives it a second B1.
-const B1_SOLO_CD_THRESHOLD = 20;
 
 // ---- typed-board carry adaptation -------------------------------------------
 
@@ -169,9 +168,14 @@ export const DUO_BUFFER_PROFILES: Record<
   },
 };
 
-// Slugs excluded from the buffer population: kits whose net effect is to reduce
-// team damage in the standard comp produce a misleadingly negative % increase.
-export const EXCLUDED_BUFFER_SLUGS = new Set(['blanc']);
+// Slugs kept out of the buffer population entirely. The criterion is a kit whose
+// net effect in the standard comp is to REDUCE team damage: the board would
+// report a misleadingly negative % increase that says nothing about the unit's
+// support value. NO UNIT CURRENTLY MEETS IT — the set is empty, and the hook is
+// kept because the criterion can be met again whenever the comp shape moves.
+// `npx tsx scripts/probe/buffer-rotation-audit.ts --excluded` checks each entry's
+// live value against the criterion.
+export const EXCLUDED_BUFFER_SLUGS = new Set<string>();
 
 // Walk every {target, effects} block in the override JSON (any nesting — skill
 // slots, modes, steps) and derive what the carries must provide for the unit's
@@ -268,17 +272,8 @@ interface AssembledBufferTeam {
   slugs: string[];
   chars: (CharacterData & { baseStats: any })[];
   carryIdxs: number[];
-  noopSlot: string; // stage-matched no-op for the baseline
-}
-
-// Effective burst cooldown for a real unit, honoring override charFixes.
-function effectiveBurstCooldownSec(ctx: RanksCtx, slug: string): number {
-  const char = ctx.characters[slug];
-  return (
-    ctx.deps.overrides[slug]?.charFixes?.burstCooldownSec ??
-    char?.burstCooldownSec ??
-    40
-  );
+  focusSlot: number; // the spare stage slot — camera focus, see carryDpsSum
+  burstOffSlug: string | null; // a tested B3: its burst is turned off outright
 }
 
 // The two carry records for one board arm (typed adapts both).
@@ -298,43 +293,69 @@ function carriesFor(board: BufferBoard, spec: CarrySpec): SyntheticCharacter[] {
   ];
 }
 
+// The STANDARD TEAM (owner spec 2026-08-03), five slots:
+//
+//   1  no-op B1 (AR, 20s, 7s team CDR)   2  no-op B2 (SR, 20s)
+//   3  no-op B2 (SR, 20s)  ← the unit under test replaces THIS slot
+//   4  carry (B3, 40s, MG)               5  carry (B3, 40s, RL)
+//
+// Slot 3's spare is the whole point: every burst stage stays covered by a 20s
+// no-op, so a tested unit with a 40s or 60s cooldown no longer holds up the
+// chain and no longer pays for Full Bursts the baseline gets and it does not.
+// Both carries are B3/40s and alternate, which covers stage 3 on the same 20s
+// cadence.
+//
+// One WRINKLE the slot numbering does not capture: burst-stage contests are
+// won by slot ORDER, so a tested unit left sitting behind the no-op of its own
+// stage would simply stop bursting (measured: a tested B2 placed after the
+// no-op B2 casts 1 burst in 180s instead of 5; a tested B1 behind the no-op B1
+// casts none at all). The tested unit therefore leads its own stage and the
+// spare no-op falls in behind it — same five units, same spare coverage. This
+// is the rule src/ranks/b1b2dps.ts already relies on for its partner rows.
 export function assemble(
-  slug: string,
+  slug: string | null, // null = the baseline: a stage-matched no-op in its place
   burst: string,
   board: BufferBoard,
   spec: CarrySpec,
-  partner?: string,
-  b1CdSec?: number
+  partner?: string
 ): AssembledBufferTeam {
   const [c1, c2] = carriesFor(board, spec);
+  // slot 3 holds the partner on a duo row, else the spare no-op B2
+  const spare = partner ?? NOOP_B2;
+  // The baseline swaps the tested unit for a no-op of ITS OWN stage, so both
+  // teams field the same stage distribution and can reach the same number of
+  // Full Bursts. Standing the tested unit against the plain standard team
+  // instead would charge every B1 for trading a no-op B2 away: measured, that
+  // is up to -2 Full Bursts and -34 points (anis-star), which is the same
+  // rotation distortion this whole change exists to remove, aimed elsewhere.
+  const tested =
+    slug ?? (burst === 'I' ? NOOP_B1 : burst === 'II' ? NOOP_B2 : NOOP_B3);
   let slugs: string[];
-  let noopSlot: string;
   if (burst === 'I') {
-    // A B1 with >20s cooldown cannot solo-sustain a standard rotation; give it
-    // a second B1 filler instead of a B2 so the team can still full-burst.
-    const needsSecondB1 =
-      b1CdSec !== undefined && b1CdSec > B1_SOLO_CD_THRESHOLD;
-    slugs = partner
-      ? [slug, partner, c1.slug, c2.slug]
-      : [slug, needsSecondB1 ? NOOP_B1 : NOOP_B2, c1.slug, c2.slug];
-    noopSlot = NOOP_B1;
+    slugs = [tested, NOOP_B1, spare, c1.slug, c2.slug];
   } else if (burst === 'II') {
-    slugs = partner
-      ? [NOOP_B1, slug, partner, c1.slug, c2.slug]
-      : [NOOP_B1, slug, c1.slug, c2.slug];
-    noopSlot = NOOP_B2;
+    slugs = [NOOP_B1, tested, spare, c1.slug, c2.slug];
   } else {
-    // B3 (or Λ): tested rightmost so the carries always win the stage-3 cast.
-    slugs = partner
-      ? [NOOP_B1, NOOP_B2, slug, partner, c1.slug, c2.slug]
-      : [NOOP_B1, NOOP_B2, c1.slug, c2.slug, slug];
-    noopSlot = NOOP_B3;
+    // B3 (or Λ): rightmost, so the carries always win the stage-3 cast and the
+    // tested unit never bursts — its own damage must not enter a SUPPORT rank.
+    slugs = [NOOP_B1, spare, c1.slug, c2.slug, tested];
   }
   return {
     slugs,
     chars: [c1, c2] as any,
     carryIdxs: [slugs.indexOf(c1.slug), slugs.lastIndexOf(c2.slug)],
-    noopSlot,
+    focusSlot: slugs.indexOf(spare),
+    // A tested B3's burst is turned OFF, so its own damage cannot enter a
+    // SUPPORT rank and its value has to come through passives and cast-free
+    // lines. Sitting it rightmost only makes that LIKELY — the carries win the
+    // stage-3 cast while both are off cooldown, but they are 40s units, and a
+    // fast enough rotation reaches a stage 3 where only the tested unit is
+    // ready. That is exactly what happened when camera focus moved to the SR
+    // no-op and the team sped up: ada took a cast. Suppressing the burst slot
+    // outright makes the documented rule true by construction instead of by
+    // rotation luck. Byte-identical for the 16 B3 buffers that never cast one.
+    burstOffSlug:
+      slug !== null && burst !== 'I' && burst !== 'II' ? slug : null,
   };
 }
 
@@ -353,6 +374,8 @@ export interface BufferValue {
   carryDps: number; // Σ carry DPS with the buffer (internal context, not emitted)
   baselineDps: number; // Σ carry DPS with the no-op baseline (internal context, not emitted)
   testedBurstCasts: number; // pin: a tested B3 must be 0 (rightmost rule)
+  fullBursts: number; // the team's Full Bursts over the fight
+  baselineFullBursts: number; // ...and the standard team's, which it must match
   profile: string | null; // comp profile id (with-healer/with-shielder/duo); null = plain
   rules: string[]; // typed-board adaptation audit trail ([] on generic)
   rank: number;
@@ -370,7 +393,7 @@ function carryDpsSum(
   testedSlug?: string,
   profile?: string | null,
   unitOptsMap: Record<string, UnitOptions> = {}
-): { sum: number; testedBurstCasts: number } {
+): { sum: number; testedBurstCasts: number; fullBursts: number } {
   const chars = team.slugs.map((s) => charFor(ctx, s, team.chars as any));
   const element = (chars[team.carryIdxs[0]] as CharacterData)
     .element as Element;
@@ -393,10 +416,24 @@ function carryDpsSum(
     coreHitRate: 0,
     rangeBonus: true,
     durationSec: 180,
-    focusSlug: team.slugs[team.carryIdxs[1]], // the right carry (RL on generic)
+    // Camera focus sits on the SPARE stage slot — the no-op B2 (SR) on every
+    // plain row. Focus is what grants a charge weapon x2.5 burst gauge, so
+    // whoever holds it sets the pace of the whole team's rotation, and pinning
+    // it to a fixed inert SR standardizes burst generation across every run.
+    // It used to sit on the second carry, whose weapon the TYPED board rewrites
+    // per tested unit: an RL carry banks the x2.5 (140 + 250 full charge) while
+    // an SG carry cannot take it at all (200, no full-charge bonus), so the
+    // team's gauge — and its Full Burst count — moved with the kit under test.
+    // On a duo row the partner occupies this slot and holds focus instead;
+    // that is symmetric, since the duo baseline seats the partner there too.
+    focusSlug: team.slugs[team.focusSlot],
   };
   const compProfile = profile ? COMP_PROFILES[profile] : undefined;
   const extraOverrides: Record<string, any> = {};
+  if (team.burstOffSlug) {
+    const own = ctx.deps.overrides[team.burstOffSlug];
+    extraOverrides[team.burstOffSlug] = { ...(own ?? {}), burst: [] };
+  }
   if (pierceOverride) {
     for (const i of team.carryIdxs) {
       extraOverrides[team.slugs[i]] = {
@@ -430,18 +467,23 @@ function carryDpsSum(
   const testedBurstCasts = testedSlug
     ? r.units[team.slugs.indexOf(testedSlug)].burstCasts
     : 0;
-  return { sum, testedBurstCasts };
+  return { sum, testedBurstCasts, fullBursts: r.fullBursts };
 }
 
 // Value of one buffer on one board. Baselines are memoized per (burst, board,
 // spec, profile) — every buffer of the same burst stage + adaptation shares one.
 // `profile` forces a comp-profile variant (null = plain); when omitted the
 // unit's own BUFFER_COMP_PROFILES entry is used (rankBuffers passes both).
+interface BaselineRun {
+  sum: number;
+  fullBursts: number;
+}
+
 export function bufferValueFor(
   slug: string,
   board: BufferBoard,
   ctx: RanksCtx,
-  baselineMemo: Map<string, number> = new Map(),
+  baselineMemo: Map<string, BaselineRun> = new Map(),
   profile?: string | null
 ): Omit<BufferValue, 'rank'> {
   const char = ctx.characters[slug];
@@ -460,24 +502,11 @@ export function bufferValueFor(
       ? DUO_BUFFER_PROFILES[slug]
       : undefined;
 
-  const b1CdSec =
-    burst === 'I' ? effectiveBurstCooldownSec(ctx, slug) : undefined;
-  const team = assemble(slug, burst, board, spec, duoProfile?.partner, b1CdSec);
-  const baselineTeam = assemble(
-    team.noopSlot,
-    burst,
-    board,
-    spec,
-    duoProfile?.partner,
-    b1CdSec
-  );
-  const b1Filler =
-    burst === 'I' && b1CdSec !== undefined && b1CdSec > B1_SOLO_CD_THRESHOLD
-      ? 'b1'
-      : 'b2';
+  const team = assemble(slug, burst, board, spec, duoProfile?.partner);
+  const baselineTeam = assemble(null, burst, board, spec, duoProfile?.partner);
   const baselineKey = duoProfile
-    ? `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile}|partner=${duoProfile.partner}|partnerMode=solo|b1filler=${b1Filler}`
-    : `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile ?? 'plain'}|b1filler=${b1Filler}`;
+    ? `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile}|partner=${duoProfile.partner}|partnerMode=solo`
+    : `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile ?? 'plain'}`;
   let baseline = baselineMemo.get(baselineKey);
   if (baseline === undefined) {
     const baselineOpts: Record<string, UnitOptions> = {};
@@ -486,7 +515,7 @@ export function bufferValueFor(
         mode: duoProfile.partnerMode ?? 'solo',
       };
     }
-    baseline = carryDpsSum(
+    const b = carryDpsSum(
       baselineTeam,
       ctx,
       spec,
@@ -494,7 +523,8 @@ export function bufferValueFor(
       undefined,
       activeProfile,
       baselineOpts
-    ).sum;
+    );
+    baseline = { sum: b.sum, fullBursts: b.fullBursts };
     baselineMemo.set(baselineKey, baseline);
   }
   const testedOpts: Record<string, UnitOptions> = {};
@@ -513,10 +543,13 @@ export function bufferValueFor(
   );
   return {
     slug,
-    valuePct: baseline > 0 ? ((run.sum - baseline) / baseline) * 100 : 0,
+    valuePct:
+      baseline.sum > 0 ? ((run.sum - baseline.sum) / baseline.sum) * 100 : 0,
     carryDps: run.sum,
-    baselineDps: baseline,
+    baselineDps: baseline.sum,
     testedBurstCasts: run.testedBurstCasts,
+    fullBursts: run.fullBursts,
+    baselineFullBursts: baseline.fullBursts,
     profile: activeProfile,
     rules,
   };
@@ -530,7 +563,7 @@ export function rankBuffers(
   board: BufferBoard,
   ctx: RanksCtx
 ): BufferValue[] {
-  const memo = new Map<string, number>();
+  const memo = new Map<string, BaselineRun>();
   const results = population.flatMap((slug) => {
     const rows = [bufferValueFor(slug, board, ctx, memo, null)];
     if (BUFFER_COMP_PROFILES[slug]) {
