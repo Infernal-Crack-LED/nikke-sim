@@ -49,7 +49,7 @@
 | `consumeAmmo` | 2 | asuka-wille, jill |
 | `countInFb` | 4 | frima, rapi-red-hood, scarlet-black-shadow, snow-white-innocent-days |
 | `critRateNormalPct` | 3 | biscuit, helm, julia |
-| `delaySec` | 4 | asuka-wille, dorothy, rapi-red-hood, snow-white |
+| `delaySec` | 5 | asuka-wille, dorothy, flora, rapi-red-hood, snow-white |
 | `durationShots` | 7 | helm, miranda, neve, phantom, snow-white-heavy-arms, vesti-tactical-upgrade, zwei |
 | `escalating` | 8 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, mary-bay-goddess, volume |
 | `everyN` | 5 | mast-romantic-maid, neon-vision-eye, phantom, rouge, soda-twinkling-bunny |
@@ -97,10 +97,10 @@
 | `resourceGate` | 13 | e-h, elegg-boom-and-shock, exia, guillotine, guillotine-winter-slayer, julia, laplace-ultimate-hero, mana, … |
 | `selfAndAdjacent` | 2 | flora, rouge |
 | `sequentialMultPct` | 1 | eve |
-| `shielded` | 1 | naga |
+| `shielded` | 2 | flora, naga |
 | `shotFired` | 33 | a2, ade-agent-bunny, anis-star, bready, cinderella, delta-ninja-thief, diesel-winter-sweets, eunhwa-tactical-upgrade, … |
 | `stackedNuke` | 1 | maiden-ice-rose |
-| `stageEnter` | 10 | cinderella, ein, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, rei-ayanami, … |
+| `stageEnter` | 11 | cinderella, ein, flora, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, … |
 | `storedHit` | 1 | rapi-red-hood |
 | `stun` | 1 | mast-romantic-maid |
 | `swapGate` | 8 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
