@@ -3192,3 +3192,26 @@ skills/overrides/cinderella-crystal-wave.json` also carries a `fillGauge` block 
   (rather than cooldown-limited) rotation windows could legitimately make `base > noFill` again with a
   CORRECT guard, and the test would need re-measuring, not reverting. The landed test comment already
   states this explicitly.
+
+- **(2026-08-03) Unit-card portraits: a build-time GATE that FILLS, and coverage stays advisory.** A
+  card's portrait comes from a committed thumb (`web/public/img/portraits/<slug>-{128,256}.webp`);
+  `loadPortrait` returns null for a missing file and every consumer degrades silently — the unit card
+  to its letter placeholder, DPS/rank rows to a blank chip. Nothing re-ran `npm run thumbs` as data
+  syncs added units, so four (`laplace-ultimate-hero`, `maxwell-ordinary-mechanic`,
+  `anne-miracle-fairy`, `rei-ayanami-tentative-name`) shipped placeholder cards — including through
+  `/nikke` in Discord, which embeds the pre-rendered card and caches it by URL indefinitely. Ruling:
+  `scripts/build-infographics.ts` gains a **portrait gate** beside the font/icon gates — it generates
+  any missing thumb before the first render and mirrors into `dist/img/portraits` (what the deployed
+  server reads for on-demand renders). Two deliberate asymmetries with those gates: (1) it **fills
+  rather than fails**, because the fix is mechanical and a CDN blip must not redden a deploy of
+  unrelated work — a filled card is strictly better than the placeholder that would otherwise ship;
+  (2) the fill uses **sharp**, not the Playwright pipeline, so it needs no browser binaries on the
+  deploy box — same `PORTRAIT_CROP_TOP` framing (shared via `scripts/lib/portrait-thumbs.ts`, so the
+  two can't drift), differing only in resampling kernel/encoder (measured: mean abs channel diff
+  6.3/255 vs the browser thumb for `laplace-ultimate-hero`). Playwright stays CANONICAL for
+  _committed_ thumbs, since its bytes match the web's own runtime canvas fallback. Coverage is
+  reported by `npm run thumbs -- --check` and run **advisory** in `verify.sh` rather than as a gate
+  or a vitest assertion: a hard failure would redden the tree the moment a sync adds a unit, in
+  worktrees that have neither a browser nor the art CDN, and the deploy now self-heals anyway. —
+  `scripts/lib/portrait-thumbs.ts`, `scripts/build-infographics.ts` `fillMissingPortraits`,
+  `scripts/tests/share/portrait-thumbs.test.ts`
