@@ -16,19 +16,19 @@ ranking per unit).
 
 ## What already exists (do not rebuild)
 
-| Piece                    | Where                                                                     | State                                                                        |
-| ------------------------ | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `/unit/:slug` route      | `web/src/router.ts` (`unitSlugFromPath`), `main.tsx`                      | live                                                                         |
-| Minimal unit page        | `web/src/UnitPage.tsx` (213 lines)                                        | portrait + pills + OL picks + tool links — the stub this plan replaces        |
-| Server-side meta + HTML  | `src/server/static.ts` (`TAB_META`, `unitStaticHtml`)                     | per-unit title/desc/OG built from `characters.json` at boot; no-JS body       |
-| Landscape "Nikke card"   | `src/infographics/core/unitCard.ts`, prerendered by `build-infographics`  | 1200×600 `discord` variant, hashed into `dist/img/`, keyed `unit/<slug>.discord` |
-| Card data builder        | `src/infographics/core/unitCardData.ts`                                   | rank tiles + neighbour rows + OL floor, from the board artifacts             |
-| Portrait grid + filters  | `web/src/components/CharacterGrid.tsx`                                    | `useCharacterFilter` / `CharacterFilters` / `CharacterCards`                  |
-| Sitemap                  | `scripts/build-sitemap.ts` → `web/public/sitemap.xml`                     | already emits all 196 `/unit/<slug>` URLs                                     |
-| Kit prose                | `data/characters.json` → `skills.{skill1,skill2,burst}`                   | blablalink SSOT                                                              |
-| Kit-role tags            | `data/archetype-tags.json`                                                | tag ids + player-facing `label`/`blurb`                                       |
-| Model status             | `data/kit-status.json`                                                    | `tier`, `tuned`, `graded`, `unmodeled`, `caveats` per unit                    |
-| Best OL picks            | `data/ol-optimal.json`                                                    | the 4 free lines only — no ranking, no gain %                                 |
+| Piece                   | Where                                                                    | State                                                                            |
+| ----------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `/unit/:slug` route     | `web/src/router.ts` (`unitSlugFromPath`), `main.tsx`                     | live                                                                             |
+| Minimal unit page       | `web/src/UnitPage.tsx` (213 lines)                                       | portrait + pills + OL picks + tool links — the stub this plan replaces           |
+| Server-side meta + HTML | `src/server/static.ts` (`TAB_META`, `unitStaticHtml`)                    | per-unit title/desc/OG built from `characters.json` at boot; no-JS body          |
+| Landscape "Nikke card"  | `src/infographics/core/unitCard.ts`, prerendered by `build-infographics` | 1200×600 `discord` variant, hashed into `dist/img/`, keyed `unit/<slug>.discord` |
+| Card data builder       | `src/infographics/core/unitCardData.ts`                                  | rank tiles + neighbour rows + OL floor, from the board artifacts                 |
+| Portrait grid + filters | `web/src/components/CharacterGrid.tsx`                                   | `useCharacterFilter` / `CharacterFilters` / `CharacterCards`                     |
+| Sitemap                 | `scripts/build-sitemap.ts` → `web/public/sitemap.xml`                    | already emits all 196 `/unit/<slug>` URLs                                        |
+| Kit prose               | `data/characters.json` → `skills.{skill1,skill2,burst}`                  | blablalink SSOT                                                                  |
+| Kit-role tags           | `data/archetype-tags.json`                                               | tag ids + player-facing `label`/`blurb`                                          |
+| Model status            | `data/kit-status.json`                                                   | `tier`, `tuned`, `graded`, `unmodeled`, `caveats` per unit                       |
+| Best OL picks           | `data/ol-optimal.json`                                                   | the 4 free lines only — no ranking, no gain %                                    |
 
 So the work is **filling the page in**, plus a Characters index and one new
 artifact. The routing, meta, OG image and sitemap plumbing is already done.
@@ -93,7 +93,7 @@ Ordered by what a searcher wants first, and by what is unique to this site.
 8. **Tools row** — deep links into the Overload Optimizer, Team Builder, DPS
    Rankings, Card Builder, prefilled with this unit where the tab supports it.
 9. **JSON-LD** — `WebPage` + `BreadcrumbList` (server) and a page-level
-   `FAQPage`-style block is deliberately *not* used; the unit page gets a plain
+   `FAQPage`-style block is deliberately _not_ used; the unit page gets a plain
    `WebPage` with `about` naming the character.
 
 ### New artifact — `data/unit-pages.json`
@@ -122,7 +122,8 @@ Shape:
 
 ```json
 {
-  "framework": "solo", "tier": 11,
+  "framework": "solo",
+  "tier": 11,
   "units": {
     "maiden-ice-rose": {
       "baseline": 123456789,
@@ -142,15 +143,15 @@ and would read as a claim about the player's own damage.
 same line multiset as the greedy `bestOl` pass. It does for **32 of 73** units. The
 `--tier` flag on the build script exists to isolate why; the measured split:
 
-| Cause                                                              | Units | Status |
-| ------------------------------------------------------------------ | ----- | ------ |
-| Agree                                                               | 32    | —      |
-| **Tier basis**: `build-ol-optimal` passes no tier values → optimizes at MAX ROLL; this table is T11 | 23 | open |
-| Genuine **greedy local optimum** — differs at the same tier and pool | 18   | open   |
-| ~~Hit Rate excluded from the free-line pool~~                        | 0     | **FIXED** |
+| Cause                                                                                               | Units | Status    |
+| --------------------------------------------------------------------------------------------------- | ----- | --------- |
+| Agree                                                                                               | 32    | —         |
+| **Tier basis**: `build-ol-optimal` passes no tier values → optimizes at MAX ROLL; this table is T11 | 23    | open      |
+| Genuine **greedy local optimum** — differs at the same tier and pool                                | 18    | open      |
+| ~~Hit Rate excluded from the free-line pool~~                                                       | 0     | **FIXED** |
 
 **Hit Rate — owner ruling 2026-08-02, LANDED.** `src/olconfigs.ts`'s free-line pool
-excluded Hit Rate for every weapon, on the comment *"hit/def are dead for damage"*.
+excluded Hit Rate for every weapon, on the comment _"hit/def are dead for damage"_.
 That was true when written and stale from the moment `HRCORE` landed (2026-07-17).
 The pool now offers Hit Rate for **AR/SMG/SG** and withholds it for **RL/SR/MG**
 (and Pistol) — which is not a new policy but a restatement of the engine:
@@ -213,17 +214,17 @@ Three traps, all of which cost time here:
 
 ## Phasing
 
-| Phase | Content                                                                                     | Status |
-| ----- | ------------------------------------------------------------------------------------------- | ------ |
-| 1     | `build-unit-pages.ts` + `data/unit-pages.json`                                                | ✅ landed |
-| 2     | Rewrite `UnitPage.tsx` (all sections above) + styles                                          | ✅ landed |
+| Phase | Content                                                                                         | Status    |
+| ----- | ----------------------------------------------------------------------------------------------- | --------- |
+| 1     | `build-unit-pages.ts` + `data/unit-pages.json`                                                  | ✅ landed |
+| 2     | Rewrite `UnitPage.tsx` (all sections above) + styles                                            | ✅ landed |
 | 3     | `/characters` index + nav + `linkFor` on `CharacterCards` + `TAB_META` (BOTH servers) + sitemap | ✅ landed |
-| 3b    | Profile entry point on the roster grids (see below)                                           | ✅ landed |
-| 3c    | `ui-shot` coverage for the new pages + a `SHOTS=` filter                                      | ✅ landed |
+| 3b    | Profile entry point on the roster grids (see below)                                             | ✅ landed |
+| 3c    | `ui-shot` coverage for the new pages + a `SHOTS=` filter                                        | ✅ landed |
 | 4     | **Owner design iteration** — hero card, tabs, boxed skills, icon identity row, New Characters   | ✅ landed |
-| 5     | Roll-out checks across the uneven record shapes (`scripts/unit-page-check.mjs`)                | ✅ landed |
-| 6/7   | No-JS crawler bodies for `/unit/*` and `/characters`, both servers                             | ✅ landed |
-| 8     | Thin-content policy for the ~85 kit-only pages — **needs a first crawl**, see below            | blocked  |
+| 5     | Roll-out checks across the uneven record shapes (`scripts/unit-page-check.mjs`)                 | ✅ landed |
+| 6/7   | No-JS crawler bodies for `/unit/*` and `/characters`, both servers                              | ✅ landed |
+| 8     | Thin-content policy for the ~85 kit-only pages — **needs a first crawl**, see below             | blocked   |
 
 ### Phase 5 — roll-out checks (`npm run unit-page-check`)
 
@@ -300,12 +301,88 @@ the rest of the visual pass.
   A page for an unmodeled unit must degrade to kit + identity + "not in the sim yet"
   without empty tables. Fixed-geometry-style: sections that have no data say so
   rather than vanishing, so the page never looks broken.
-- **Thin-content risk at scale — the one genuinely open item.** ~85 units have kit +
-  identity only. Those pages are now considerably less thin than they were (the kit
-  prose alone is ~800 characters of unique text), but whether Google treats them as
-  soft-404s is not answerable from here — it needs a real crawl. **Decide after
-  Search Console has data**, then either gate `/unit/*` sitemap entries on
-  `simSupported` or `noindex` the remainder. Acting now would be guessing.
+- **Thin-content risk — the one genuinely open item.** See the dedicated section below.
+
+## Thin-content policy for the low-data unit pages (OPEN — needs a crawl)
+
+### What the risk actually is
+
+Google does not hard-fail thin pages; it declines to index them. The symptoms in
+Search Console are **"Crawled — currently not indexed"** and **"Discovered —
+currently not indexed"** under Pages, and occasionally **"Soft 404"** when a page
+looks like a placeholder. The cost of getting this wrong is not a penalty — it is
+196 URLs consuming crawl budget while a fraction of them earn nothing, which can
+slow how fast the pages that DO deserve to rank get recrawled.
+
+There is no published character/word threshold. Anything below is a heuristic.
+
+### Measured state (2026-08-03, crawler-visible text in the no-JS body)
+
+Measured by fetching each `/unit/<slug>` and stripping tags from the `#root` body —
+i.e. exactly what a crawler that runs no JS sees.
+
+| Tier                                | Pages | Min   | Median    | Max   |
+| ----------------------------------- | ----- | ----- | --------- | ----- |
+| All                                 | 196   | 369   | **1,024** | 3,008 |
+| Has an overload table               | 73    | 1,179 | 1,673     | 3,008 |
+| Simulated, no overload table        | 38    | 530   | 921       | 2,024 |
+| Kit + identity only (not simulated) | 85    | 369   | **616**   | 1,259 |
+
+**This is materially better than the "85 thin pages" framing suggested, and the
+risk is far more concentrated than expected.** No page is under 300 characters, and
+only **17** are under 500 — and they are not the 85 unsimulated units generally,
+they are the ones with genuinely short kits:
+
+`soldier-fa` (369) · `idoll-sun` · `soldier-eg` · `product-23` · `product-12` ·
+`product-08` · `admi` · `neve` · `mica` · `idoll-flower` · `soldier-ow` · `anis` ·
+`delta` · `n102` · `signal` · `rapi` · `himeno` (499)
+
+Mostly starter/NPC-tier units whose in-game kits are two short lines. Their pages
+are honest and complete — there is simply not much to say about them, which is a
+content-supply fact, not a page defect.
+
+### Options
+
+1. **Do nothing.** Every unit stays in the sitemap and indexable. Cheapest, and
+   correct if Google indexes them — the kit text IS unique, and a search for a
+   niche unit's kit has almost no competition.
+2. **`noindex` a threshold set, keep them crawlable and linked.** They still pass
+   link equity to the good pages and still serve a human who lands on one; they
+   just stop competing for index slots. Reversible by deleting one condition.
+3. **Drop them from the sitemap, keep them indexable.** Weakest option: it removes
+   the discovery hint without removing the page, so Google finds them anyway via
+   `/characters` and the outcome is roughly option 1 with less control.
+4. **Enrich instead of suppress.** Add per-unit content that does not exist yet
+   (base stats table, weapon cadence numbers, element matchup line). Turns a
+   suppression problem into a content problem and lifts every tier, not just the
+   thin one.
+
+### Recommendation
+
+**Do nothing now, and do not gate on `simSupported`.** The measurement kills that
+rule: `simSupported` does not track page thinness well (the thinnest tier's median
+is 616 characters, and plenty of unsimulated units clear 1,000). Gating on it would
+suppress ~85 pages to solve a problem that at most 17 have.
+
+If a crawl shows a real problem, prefer **option 2 scoped by measured length**, not
+by `simSupported` — and 4 is the better long-term answer.
+
+### Decision rule — check after ~4-6 weeks of Search Console data
+
+1. Search Console → **Pages** → look at "Crawled — currently not indexed" and
+   "Soft 404". Cross-reference the URL list against the 17 above.
+2. **If < ~20 unit URLs are unindexed:** do nothing. That is the expected tail for
+   any large catalogue.
+3. **If a large share of the 85 unsimulated pages are unindexed BUT the 73
+   overload-table pages are indexed:** the thin tier is the problem. Apply option 2
+   with a measured-length condition, and re-measure with the snippet below.
+4. **If overload-table pages are also unindexed:** thinness is NOT the cause —
+   look at crawl budget, canonicalisation or site-level signals before touching
+   these pages at all.
+
+Re-measure at any time by serving `dist/` and stripping the `#root` body per unit;
+that is the one number this decision turns on.
+
 - **Bundle size.** `ol-table.json` is a static import in the `UnitPage` chunk
   (~70KB raw / ~15KB gzipped for the whole roster). Acceptable in a lazy route
   chunk; revisit if it grows a per-row breakdown.

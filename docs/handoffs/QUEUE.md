@@ -64,8 +64,13 @@ scripts/ui-shot.mjs`.
   3. Spot-check a spread of units (untuned, no-OL-data, `simSupported:false`, Λ burst) before merge.
   4. Prerender `/unit/*` + `/characters` (`scripts/prerender.ts` covers only /howto,/mechanics) and
      extend `unitStaticHtml` in BOTH servers to emit the new sections for no-JS crawlers.
-  5. Decide the thin-content policy if Search Console flags the ~85 kit-only pages as soft-404s
-     (gate the sitemap on `simSupported`, or `noindex` them).
+  5. **Thin-content policy — revisit after ~4-6 weeks of Search Console data.** Full analysis,
+     measured page-length distribution and a 4-step decision rule are in the plan doc's
+     "Thin-content policy" section. Headline: the "85 thin pages" framing was WRONG — measured,
+     no page is under 300 chars and only **17** are under 500 (short-kit starter/NPC units, not
+     the unsimulated 85, whose median is 616). **Do not gate the sitemap on `simSupported`** —
+     it doesn't track thinness. Do nothing unless Search Console shows unindexed URLs
+     concentrated in the thin tier.
 - **⇒ DATA BUG: `sugar.releaseDate` is her Treasure date, not her release (found
   2026-08-02).** She reads **2026-07-23**; her true release is **2022-11-04** (NIKKE's
   global launch), which `characters.json` held correctly until commit `fda93643`
