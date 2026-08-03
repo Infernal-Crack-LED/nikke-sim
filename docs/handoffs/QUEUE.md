@@ -162,15 +162,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   rows where that mode is inactive, leaving the team with no enabler at all. No unit does this today
   (verified end-to-end: exactly the documented enablers, `--cdr` mode of
   `scripts/probe/buffer-rotation-audit.ts`). Harden when a mode-gated CDR kit first lands.
-- **⇒ TYPED-BUFFER-BOARD FLAVOR FIX IS ON A PR BRANCH, NOT MAIN (`flora-typed-board-true-damage`,
-  2026-08-03).** `deriveCarrySpec` (`src/ranks/buffer.ts`) now grants the typed carries
-  `hasTrueNormals` off an ally-facing `trueDamagePct` buff (flora), and a synthetic `MOCK_TICK`
-  rider off an ally-facing `sustainedDamagePct`/`distributedDamagePct` buff (crust,
-  rosanna-chic-ocean, delta-ninja-thief, elegg, mast-romantic-maid) — see §8 in `docs/STATE.md` for
-  the mechanism, `docs/DECISIONS.md` for the ruling. All landed and green there (`verify.sh`,
-  including every graded-comp snapshot, is byte-identical — the change only touches the ranking
-  board's synthetic carries). Open: the branch needs the owner's PR review/merge.
-
 - **⇒ `noop-rouge-b1` squad layering — owner call (2026-08-03).**
   `src/data/squads.ts:26` carries one synthetic (`'noop-rouge-b1': 'Blanc Noir Rouge'`) so the buffer
   board's `w/ Rouge` duo profile satisfies `blanc`'s same-squad burst-CDR gate — a ranks-layer concern
