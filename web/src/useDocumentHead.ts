@@ -151,13 +151,23 @@ function setCanonical(href: string) {
   el.setAttribute('href', href);
 }
 
+// Canonical paths never carry a trailing slash, except the root.
+function normalizeCanonicalPath(pathname: string): string {
+  if (!pathname || pathname === '/') {
+    return '/';
+  }
+  return pathname.replace(/\/{2,}/g, '/').replace(/\/+$/, '') || '/';
+}
+
 // Resolve the active tab key from the current URL (mirrors tabFromLocation
 // in App.tsx but without importing the full sim state). The rankings section
 // lives under /ranks/* (owner decision 2026-07-26): bare /ranks is the DPS
 // chart, /ranks/support is Support Rankings, /ranks/compare is Unit
 // Comparison.
 function tabKey(): string {
-  const segs = window.location.pathname.replace(/^\/+|\/+$/g, '').split('/');
+  const segs = normalizeCanonicalPath(window.location.pathname.toLowerCase())
+    .replace(/^\/+|\/+$/g, '')
+    .split('/');
   if (segs[0] === 'ranks') {
     if (segs[1] === 'support') {
       return 'ranks';
@@ -178,6 +188,7 @@ function tabKey(): string {
 const LEGACY_CANONICAL: Record<string, string> = {
   dpschart: '/ranks',
   dps: '/ranks/compare',
+  sim: '/',
 };
 
 // Sync <title>, <meta description>, OG tags, and <link rel="canonical"> to
@@ -185,13 +196,23 @@ const LEGACY_CANONICAL: Record<string, string> = {
 export function useDocumentHead() {
   useEffect(() => {
     function sync() {
+      const pathname = normalizeCanonicalPath(
+        window.location.pathname.toLowerCase()
+      );
+
+      // /unit/:slug head updates are handled by the lazy UnitPage so the full
+      // characters.json dataset does not need to live in the eager entry chunk.
+      if (pathname.startsWith('/unit/')) {
+        return;
+      }
+
       const key = tabKey();
       const m = META[key] ?? DEFAULT_META;
-      const seg = window.location.pathname
-        .replace(/^\/+|\/+$/g, '')
-        .split('/')[0];
-      const canonical =
-        SITE + (LEGACY_CANONICAL[seg] ?? window.location.pathname);
+      const seg = pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
+      const canonicalPath = normalizeCanonicalPath(
+        Object.hasOwn(LEGACY_CANONICAL, seg) ? LEGACY_CANONICAL[seg] : pathname
+      );
+      const canonical = SITE + canonicalPath;
 
       document.title = m.title;
       setMeta('description', m.description);

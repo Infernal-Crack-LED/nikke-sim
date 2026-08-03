@@ -5289,6 +5289,10 @@ export function App({ user }: { user: AuthUser | null }) {
                         dps: res.varDamage,
                         rank: i + 1,
                         profile: null,
+                        // Comparator rows are synthetic variable groups; they do
+                        // not link to a unit page even when the group happens to
+                        // contain one real unit.
+                        known: false,
                       };
                     })}
                     onShareImage={() =>

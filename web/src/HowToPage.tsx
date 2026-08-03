@@ -1,8 +1,41 @@
-import { intro, sections } from './howto-data';
+import { escapeJsonLd } from './jsonLd';
+import { intro, sections, type HowToItem } from './howto-data';
+
+interface DefinedTermLd {
+  '@context': 'https://schema.org';
+  '@type': 'DefinedTermSet';
+  name: string;
+  description: string;
+  hasDefinedTerm: Array<{
+    '@type': 'DefinedTerm';
+    name: string;
+    description: string;
+  }>;
+}
+
+function itemToDefinedTerm(it: HowToItem) {
+  return {
+    '@type': 'DefinedTerm' as const,
+    name: it.term,
+    description: it.def,
+  };
+}
+
+const definedTermSetLd: DefinedTermLd = {
+  '@context': 'https://schema.org',
+  '@type': 'DefinedTermSet',
+  name: 'How to Use the NIKKE Solo Raid Sim',
+  description: intro,
+  hasDefinedTerm: sections.flatMap((s) => s.items ?? []).map(itemToDefinedTerm),
+};
 
 export function HowToPage() {
   return (
     <div className="app howto-page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: escapeJsonLd(definedTermSetLd) }}
+      />
       <header>
         <h1>How to use this site</h1>
         <p className="muted">{intro}</p>

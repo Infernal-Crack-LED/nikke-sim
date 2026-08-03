@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { SiteFooter, SiteNav } from './SiteChrome';
-import { useRoute } from './router';
+import { useRouteAndSlug } from './router';
 import { useDocumentHead } from './useDocumentHead';
 import {
   captureTokenFromUrl,
@@ -43,6 +43,9 @@ const RosterSyncPage = lazy(() =>
 const CreditsPage = lazy(() =>
   import('./CreditsPage').then((m) => ({ default: m.CreditsPage }))
 );
+const UnitPage = lazy(() =>
+  import('./UnitPage').then((m) => ({ default: m.UnitPage }))
+);
 
 // Feed the shared portrait-crop constant into CSS as `--portrait-crop-top` (a
 // percentage), so the `object-position` on portrait <img>s stays in lockstep with
@@ -62,7 +65,7 @@ function PageFallback() {
 }
 
 function Root() {
-  const route = useRoute();
+  const { route, unitSlug } = useRouteAndSlug();
   useDocumentHead();
 
   // Discord auth lives here so the login control can sit in the shared header
@@ -93,7 +96,9 @@ function Root() {
         onLogout={onLogout}
       />
       <Suspense fallback={<PageFallback />}>
-        {route === 'howto' ? (
+        {route === 'unit' ? (
+          <UnitPage slug={unitSlug} />
+        ) : route === 'howto' ? (
           <HowToPage />
         ) : route === 'mechanics' ? (
           <MechanicsPage />

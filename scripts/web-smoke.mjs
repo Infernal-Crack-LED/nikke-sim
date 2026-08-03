@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom';
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync, existsSync } from 'node:fs';
 
 const GLOBALS = [
   'window',
@@ -89,6 +89,28 @@ async function mountAt(url) {
   return dom;
 }
 
+// ---- Prerendered static pages ---------------------------------------------
+// build:deploy runs scripts/prerender.ts before this smoke test. When the
+// prerendered files exist, verify they contain the page-specific content and do
+// not carry server-injected request-time artifacts that would freeze metadata
+// at build time (those are stripped before saving and re-injected by the
+// server). The bare `web:build` smoke command documented in CLAUDE.md does not
+// run prerendering, so a missing file is a skip, not a failure.
+function assertPrerendered(rel, waitForText) {
+  const file = new URL(rel, import.meta.url);
+  if (!existsSync(file)) {
+    console.warn(
+      `prerender smoke skipped — ${file.pathname} not found (run build:deploy to exercise)`
+    );
+    return true;
+  }
+  const html = readFileSync(file, 'utf8');
+  return (
+    html.includes(waitForText) &&
+    !html.includes('"@type":"BreadcrumbList"')
+  );
+}
+
 // ---- Sim tab --------------------------------------------------------------
 const sim = await mountAt(
   'http://localhost:4173/?team=liter,crown,naga,modernia,alice'
@@ -151,6 +173,14 @@ const groupLabels = [
 const pillCount = tbDoc.querySelectorAll('.teambuilder-pill').length;
 
 const checks = {
+  'howto is prerendered': assertPrerendered(
+    '../dist/howto/index.html',
+    'How to use this site'
+  ),
+  'mechanics is prerendered': assertPrerendered(
+    '../dist/mechanics/index.html',
+    'Game mechanics'
+  ),
   'renders title': text.includes('NIKKE Solo Raid Sim'),
   'default team loaded': text.includes('Modernia') && text.includes('Liter'),
   'sim produced team damage': /team\s*\d+(\.\d+)?[MB]/.test(text),
