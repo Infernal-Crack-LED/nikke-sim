@@ -594,13 +594,6 @@ export function UnitPage({ slug }: { slug: string | null }) {
         </div>
       )}
 
-      <UnitOverloadSection
-        name={character.name}
-        rows={ol}
-        best={best}
-        character={character}
-      />
-
       <section className="unit-section">
         <h2>Skills</h2>
         {kitSections.length ? (
@@ -627,6 +620,13 @@ export function UnitPage({ slug }: { slug: string | null }) {
           <p className="muted">Kit text not available for this unit yet.</p>
         )}
       </section>
+
+      <UnitOverloadSection
+        name={character.name}
+        rows={ol}
+        best={best}
+        character={character}
+      />
 
       <section className="unit-section">
         <h2>DPS ranking</h2>

@@ -57,7 +57,7 @@ const tsareenaUnits = (tsareenaJson as unknown as TsareenaBuildFile).units;
 // raster visibly softens.
 const ICON_EXT = ['svg', 'png', 'webp'];
 
-const iconCache = new Map<string, Promise<HTMLImageElement | null>>();
+const iconCache = new Map<string, Promise<CanvasImageSource | null>>();
 
 function loadOne(src: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
@@ -68,11 +68,87 @@ function loadOne(src: string): Promise<HTMLImageElement | null> {
   });
 }
 
-// Try each extension in order; a name with no variant resolves to null and the
-// card simply omits that mark rather than drawing a broken image.
+// An SVG with a viewBox but NO width/height has no intrinsic size, and Chromium
+// reports a 150x150 default for it. That breaks the card renderer two ways: the
+// aspect is wrong (code_electric's viewBox is 73x73, not 150x150), and — the
+// visible symptom — core/unitCard.ts drawContained() uses the NINE-argument
+// drawImage(img, sx, sy, sw, sh, ...) source-rect form, which Chromium silently
+// declines to draw for an intrinsic-less SVG. The five-arg form draws it fine.
+//
+// That is why the element code icon was missing from every browser-rendered unit
+// card (the Card Builder preview and its "Copy image" output included) while the
+// Node-rendered PNGs had it: sharp reads the viewBox and rasterizes correctly.
+//
+// So: rasterize here, at the viewBox's aspect, via the five-arg form, and hand
+// the renderer a CANVAS. A canvas has a real width/height, so the source-rect
+// draw downstream is well-defined.
+const SVG_RASTER_H = 256; // ~3x the largest size any card draws an icon at
+
+function viewBoxAspect(svg: string): number {
+  const m = /viewBox\s*=\s*["']([-\d.\s]+)["']/.exec(svg);
+  const p = m?.[1]
+    .trim()
+    .split(/[\s,]+/)
+    .map(Number);
+  return p?.length === 4 && p[2] > 0 && p[3] > 0 ? p[2] / p[3] : 1;
+}
+
+// True when the canvas has ANY non-transparent pixel. Guards the case where the
+// browser "loads" the SVG but draws nothing — returning a blank canvas would
+// reintroduce the invisible-icon bug while looking like a success.
+function hasInk(cv: HTMLCanvasElement): boolean {
+  try {
+    const ctx = cv.getContext('2d');
+    if (!ctx) {
+      return false;
+    }
+    const { data } = ctx.getImageData(0, 0, cv.width, cv.height);
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] !== 0) {
+        return true;
+      }
+    }
+    return false;
+  } catch {
+    return false; // tainted or no 2d context — treat as a miss, fall to the raster
+  }
+}
+
+async function rasterizeSvg(src: string): Promise<HTMLCanvasElement | null> {
+  let aspect: number;
+  try {
+    const res = await fetch(src);
+    if (!res.ok) {
+      return null;
+    }
+    aspect = viewBoxAspect(await res.text());
+  } catch {
+    return null;
+  }
+  const img = await loadOne(src);
+  if (!img) {
+    return null;
+  }
+  const cv = document.createElement('canvas');
+  cv.width = Math.max(1, Math.round(SVG_RASTER_H * aspect));
+  cv.height = SVG_RASTER_H;
+  const ctx = cv.getContext('2d');
+  if (!ctx) {
+    return null;
+  }
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0, cv.width, cv.height); // five-arg — see above
+  return hasInk(cv) ? cv : null;
+}
+
+// Try each extension in order; a name with no usable variant resolves to null and
+// the card simply omits that mark rather than drawing a broken image. An SVG that
+// can't be rasterized falls through to its raster twin (every code_* icon ships a
+// .png), so a browser quirk costs sharpness, never the icon.
 export function loadIconImage(
   name: string | null
-): Promise<HTMLImageElement | null> {
+): Promise<CanvasImageSource | null> {
   if (!name) {
     return Promise.resolve(null);
   }
@@ -80,7 +156,9 @@ export function loadIconImage(
   if (!hit) {
     hit = (async () => {
       for (const ext of ICON_EXT) {
-        const img = await loadOne(`/nikke-icons/${name}.${ext}`);
+        const src = `/nikke-icons/${name}.${ext}`;
+        const img =
+          ext === 'svg' ? await rasterizeSvg(src) : await loadOne(src);
         if (img) {
           return img;
         }
