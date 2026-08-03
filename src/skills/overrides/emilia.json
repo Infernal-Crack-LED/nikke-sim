@@ -1,0 +1,77 @@
+{
+  "slug": "emilia",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 13.01,
+          "durationShots": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 12.06,
+          "durationShots": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "hitRepeat", "pct": 58.99 }]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoFlat",
+          "value": 3,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 1300.53,
+          "durationShots": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Explosion Range ▲ 101.24% for 10 sec.",
+      "Freezing Witch Function: Decreases Charge Speed and increases Charge Damage for 1 shot(s). Effect 1: Charge Speed ▼ 300%."
+    ]
+  },
+  "caveats": [
+    "⚑ BOTH S1 EFFECTS ARE CURRENTLY INERT — engine gap, not an encoding choice (docs/engine-modeling-gaps.md theme 21). 'Activates when attacking with Full Charge ... for 1 round(s)' means 'buff my NEXT round', which the engine cannot express: firePull dispatches a pull's shotFired blocks and then, later in the SAME pull, decrements every round-scoped buff the unit holds — including the one that pull just applied. A shotFired + durationShots:1 buff therefore reaches zero rounds. Proven by counterfactual on the control comp: with durationShots 1 her charge bucket only ever reads {2.5, 15.5053} and she fires 116 shots; bumping ONLY durationShots to 2 yields {2.5, 2.6206, 15.6259} and 128 shots. The encoding here is the faithful one and matches the roster's prior art (zwei, phantom and vesti-tactical-upgrade all pair shotFired with the literal kit round count and lose the same round); durationShots:2 would be a fudge meaning 'the next TWO rounds'. ESTIMATE while it stands: she is COLD by roughly the whole S1 contribution — ~10% fewer shots (116 vs 128) and a charge bucket of 2.5 instead of 2.6206 on ordinary shots (-4.6%), so on the order of -12% to -15% of her total. RECIPE: skip the round-count decrement for buffs applied on the frame being decremented (e.g. record an appliedFrame on the buff entry); it moves four units, so it is a batched engine change with its own board A/B, not an override edit.",
+    "⚑ S1 Charge Damage is encoded STATIC at 12.06 (= 2.01 x her base Max Ammunition Capacity of 6). The kit scales by LIVE 'final Max Ammunition Capacity', which is 9 while S2's +3 window is up, so the faithful value inside a Full Burst is 18.09 — a +6.03pp charge-bucket shortfall there. No primitive scales a buff by the computed maxAmmo(): `perResource` reads named resource pools, not a derived stat. ESTIMATE: the charge bucket reads 2.6206 instead of 2.6809 on shots inside the 10s window (-2.25% on those hits); the window covers roughly a quarter of a 180s fight, so whole-fight ~-0.5%. RECIPE: a `perMaxAmmo: { mult }` buff source read live in sim.ts stat(), or a resource pool mirroring maxAmmo(). The encoding is ALSO basis-specific — it assumes base ammo 6 with no cube/overload ammo lines, which is the scope-lock basis but not the web app's OL configurations; scripts/tests/units/emilia.test.ts pins the arithmetic against characters.json so it cannot drift unnoticed.",
+    "⚑ The burst's 'Charge Speed ▼ 300%' downside is UNMODELED: sim.ts clamps the live charge-speed sum to [0,100], so a negative (slower-charge) value is unrepresentable. Omitting it OVER-credits her — the nuke shot charges at 60 frames minus her own S1 +13.01% instead of the ~4x longer charge the kit imposes. ESTIMATE: one shot per burst cast arrives roughly 3 seconds early, which at her ~1.2s cycle is worth on the order of two extra ordinary shots per 40s rotation (~2-4% of her total, direction HOT). RECIPE: widen the clamp's lower bound (`Math.max(1, round(chargeFrames x (1 - cs/100)))` already guards against a zero or negative charge time) and encode burstCast -> self chargeSpeedPct -300, durationShots 1. The line is recorded verbatim in `unmodeled` until then; scripts/tests/units/emilia.test.ts carries the skipped assertion for it.",
+    "⚑ The S2 rider generates one skill-damage impact of burst gauge, the engine-wide treatment of function damage (flatDamage procs and DoT ticks; MEASURED for maiden-ice-rose's per-shot rider). Whether a %-of-hit repeat specifically generates energy is UNMEASURED. ESTIMATE: it roughly doubles her per-shot gauge contribution, so a wrong call here moves full-burst timing rather than her damage. RECIPE: a focus recording of emilia — count full bursts over the fixed 180s, or read the gauge-bar slope, against the same cadence.",
+    "⚑ CADENCE TUPLE (ALWAYS-⚑): chargeFrames 60 / reloadFrames 141 / ammo 6 shipped from the datamine, plus the engine-wide 22-frame release latency (her weapon's input_type is 'UP', so she is not an autofire-charge unit). RECIPE: rounds-per-minute plus the reload gap off any focus video.",
+    "The burst's Explosion Range ▲101.24% is splash RADIUS, for which there is no primitive, and it is inert against the single partless scope-lock boss (nothing to splash onto). Recorded verbatim in `unmodeled` rather than approximated with a damage stat."
+  ],
+  "note": "emilia (Emilia) — RL / Attacker / Water / Burst III, cd 40s, ammo 6, chargeFrames 60, chargeMultiplier 250%, normalAttackMultiplier 61.3, coreAttackMultiplier 200%, reloadFrames 141, Abnormal (Re:Zero collab). Slug is unique; approved nickname 'emi'. Every magnitude below is kit-text-literal, read from data/characters.json — the blablalink prose plus the datamined role.skillDetails level arrays at index 9 (skill level 10). || MODELED TODAY. S1 'Lesser Spirit's Blessing' (one block, '■ Activates when attacking with Full Charge. Affects self.'): (a) Charge Speed ▲13.01% 'for 1 round(s)' -> shotFired -> self, durationShots 1. An RL trigger pull IS one full charge in this engine (a charge weapon always dispatches charged=true), which is why shotFired is the full-charge trigger — the same encoding maiden-ice-rose's full-charge rider uses. (b) 'Charge Damage ▲2.01% for every unit in the final Max Ammunition Capacity' -> chargeDamagePct 12.06 (2.01 x base ammo 6), durationShots 1 — a static approximation of a live-Max-Ammo scaling, see caveats. BOTH S1 EFFECTS ARE ENCODED FAITHFULLY BUT REACH NO SHOT: 'buff my NEXT round' is inexpressible in the engine today, because a pull's round-count decrement consumes the very buff that pull applied, so she runs COLD by the whole S1 contribution (~-12% to -15%). That is an engine gap with its own batched fix across four carriers, not something this file can correct — full estimate and recipe in `caveats`, cross-unit thread in docs/engine-modeling-gaps.md theme 21. S2 'Great Spirit's Mace': (a) '■ Activates when hitting a target with Full Charge. Affects target(s). Deals Fixed Damage to the main body equal to 58.99% of the damage dealt by self' -> shotFired -> enemy -> hitRepeat pct 58.99. This is a '%-of-hit repeat' (docs/data/nikke-damage-formula.md §3): the rider deals 58.99% of the parent hit's FINAL damage and inherits that hit's crit expectation, core, element, Damage-Up and Full-Burst state IMPLICITLY, by being a fraction of an already-composed number — it applies no multiplier of its own, so it never takes a second core and never takes the +30% range bonus. It is her largest sustained contribution and rides the burst nuke as well. Folding it into chargeDamagePct is NOT equivalent: the rider is multiplicative on the whole parent while the charge bucket is additive, so any constant that is right on an ordinary shot is badly wrong on the nuke (her burst adds +1300.53 charge points). (b) '■ Activates when entering Full Burst. Affects self. Max Ammunition Capacity ▲3 round(s) for 10 sec' -> fullBurstEnter -> self -> maxAmmoFlat 3, durationSec 10 (theme-14 flat round-count precedent: grave/noir/tove/drake/trina); it acts through the reload refill, so she leaves the window's reloads with a 9-round magazine. Burst 'Freezing Witch' ('■ Affects self.'): 'Charge Damage ▲1300.53%' for 1 shot -> burstCast -> self -> chargeDamagePct 1300.53, durationShots 1 — an ordinary ADDITIVE charge-bucket buff, not a base-scaling chargeDamageMultPct, so exactly one shot per cast fires at charge 2.5 + (12.06 + 1300.53)/100. || NOT MODELED (both verbatim in `unmodeled`, never an `ignored` drop): the burst's Explosion Range ▲101.24% (splash radius; no primitive, and inert against a single partless boss) and the burst's Charge Speed ▼300% downside (the engine clamps the charge-speed sum to [0,100]). Both carry an estimate + recipe in `caveats`; the charge-speed omission is the one that moves damage, and it moves it HOT. || EVIDENCE TIER: every live value is kit-text-literal (datamined level arrays), none fitted. She is in no graded comp and no recording exists, so nothing here is board-validated. TIER 2 (round-count durations on three of five modeled effects; a burstCast-vs-fullBurstEnter split within one skill; a meta-defining single-shot charge nuke). Faithful > fit; measured > fudge."
+}
