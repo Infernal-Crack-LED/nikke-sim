@@ -1,0 +1,114 @@
+{
+  "slug": "bay",
+  "kitDescription": "Bay (Treasure) is a Fire-element rocket-launcher Defender with a Burst II skill on a 40-second cooldown, and her entire kit is survivability — she has no offensive line of any kind. When she uses her Burst Skill, all allies proportionally share incoming damage and gain DEF scaled off her own DEF, both persistently. Every full-charge shot she fires (and a rocket launcher's every shot is a full charge) heals all allies except herself for 4% of her Max HP. Her Skill 2 shares damage onto her cover, regenerates cover HP for 5 seconds when Full Burst ends, and heals her for 20% Max HP when entering Burst Stage 1 with her cover destroyed. Her Burst rebuilds a destroyed cover once per battle, raises her cover's Max HP for 20 seconds, and reduces all allies' damage taken by 8.87% for 10 seconds.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "skill1 b) 'is encoded as a per-shot heal to allies EXCEPT self' — expected trigger.kind 'shotFired', received 'chargeCounter' count:1 (structural-only failure; every behavioral assertion — cadence vs burstCast/lastBullet/fullBurstEnter counterfactuals, crown consumer reach, excludeSelf inertness — PASSED against the driver's encoding)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Proportionally shares damage taken",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill1 — no incoming-damage model, no redistribution primitive",
+        "blindSaid": "S2b: UNMODELED (inertness assertion: zero damage movement, no buff events); S5: it.skip; S6: unmodeled verbatim",
+        "formulaCheck": "v1 boss deals no damage; no bucket or consumer exists for damage redistribution — inert by construction",
+        "fireRateOk": true,
+        "explanation": "All three agents converge: unmodelable defensive mechanic, recorded verbatim, not an ignored-drop."
+      },
+      {
+        "kitLine": "DEF ▲ 10.13% of the skill user's DEF",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "defPct 10.13, burstCast trigger, allies (incl. self), no durationSec; explicit SEMANTIC-APPROXIMATION caveat (no casterDefPct key; DEF offensively inert in v1; marciana precedent)",
+        "blindSaid": "S2b: GAP (no caster-DEF-scaled key; must not become casterAtkPct); S5: asserts defPct 10.13/burstCast/allies/no-duration present AND totals identical with line stripped; S6: identical encoding with the same caveat",
+        "formulaCheck": "DEF has no offensive consumer in the damage formula (DEF subtracts inside the base on the boss side only); trigger identity (burstCast, own cast, 'only if self is alive' scope-trivial), target set (all allies incl. self), and 'continuously' = no expiry all match the prose",
+        "fireRateOk": true,
+        "explanation": "Driver fires it once per own burst cast to all 3 allies (B3 test: bursts × 3 applications, expiresFrame null, byte-identical totals when stripped). The caster-vs-target DEF scaling gap is documented, and the approximation is observably inert — S2b's pure-GAP disposition and the driver's documented-approximation disposition are operationally the same decision; the driver's is acceptable and arguably more kit-complete. Not a gotcha."
+      },
+      {
+        "kitLine": "Full Charge: recover 4% final Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "chargeCounter count:1 → heal ticks:1, allies excludeSelf; event-only magnitude (no HP pool), modeled solely for tandem recovery-consumer value",
+        "blindSaid": "S5: asserts shotFired structurally (sole RED) but every behavioral assertion passes vs chargeCounter; S6: shotFired, claiming 'schema has no full-charge trigger'",
+        "formulaCheck": "per the SSOT, sim.ts advances chargeCounter only on full charges and every dumped RL rocket dispatches charged=true — so chargeCounter count:1 fires on EXACTLY the frames 'Full Charge attacks' specifies; it is the more literal encoding of the prose, and S6's claim that no full-charge trigger exists is factually wrong about the schema",
+        "fireRateOk": true,
+        "explanation": "OPEN ITEM 1 RULED: chargeCounter count:1 is FAITHFUL, not a gotcha — behaviorally identical to shotFired on an always-charged RL AND semantically tighter (it is keyed to full-charge events, not trigger pulls; a hypothetical partial-charge shot would fire shotFired but not this line, matching the prose gate). Driver test proves per-shot cadence: asuka recovery-consumer firings == bay shot count, collapsing to the FB count under the fullBurstEnter counterfactual and to 0 when stripped. The S5 red is a strictness artifact of one structural assertion, not a behavioral divergence. Magnitude (4%) is event-only — measurement/HP-pool-gated, out of scope, documented."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "shares damage taken — self's cover",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill2; explicitly NOT a 'shield' effect (would falsely fire shielded-trigger gates)",
+        "blindSaid": "S2b: UNMODELED, pre-registered the shield-encoding trap; S5/S6 agree",
+        "formulaCheck": "no cover entity, no incoming damage — inert by construction",
+        "fireRateOk": true,
+        "explanation": "Convergent; no shield events anywhere in the run."
+      },
+      {
+        "kitLine": "Cover HP 2.88%/1s for 5s at FB end",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim unmodeled; deliberately NOT heal ticks:5 — cover repair is not a Nikke recovery and the encoding would falsely pulse on-recovery consumers at every FB end (marciana Storage≠shield precedent)",
+        "blindSaid": "S2b: UNMODELED, pre-registered this EXACT trap; S6: modeled it as self heal ticks:5 intervalSec:1 with a ⚑; S5: asserts no fullBurstEnd ally heal and that the cover-HoT-as-heal counterfactual moves crown's cadence",
+        "formulaCheck": "cover has no HP pool; a heal effect emits recovery events that feed the tandem consumer channel (SSOT §2b/§9: recovery triggers are real engine consumers) — emitting 5 recovery events per FB end for a cover-repair line is an event the mechanic does not have",
+        "fireRateOk": true,
+        "explanation": "OPEN ITEM 2 RULED: the driver's UNMODELED disposition is MORE faithful. S6's self-heal encoding is self-scoped so it is inert TODAY (no consumer keys off Bay's own recovery), but it fabricates an event stream the kit line does not produce and invites a future consumer to fire falsely — precisely the S2b pre-registered trap and the marciana precedent. S6's divergence is spurious (a RECON-side over-modeling, documented here, not held against the driver). Driver correct."
+      },
+      {
+        "kitLine": "Stage 1 + cover destroyed: 20% HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim unmodeled; cover-destroyed gate never satisfiable at scope (boss deals no damage)",
+        "blindSaid": "S2b: UNMODELED, 'fires never at scope'; S5: it.skip; S6: unmodeled verbatim",
+        "formulaCheck": "no cover state exists to gate on; an ungated stageEnter:1 heal would emit a false recovery event per rotation — driver correctly does NOT model it ungated",
+        "fireRateOk": true,
+        "explanation": "Convergent."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Rebuild Cover 20% HP, once",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim unmodeled.burst",
+        "blindSaid": "S2b/S5/S6: unmodeled; never satisfied at scope",
+        "formulaCheck": "no cover entity; no heal/shield event may be fabricated",
+        "fireRateOk": true,
+        "explanation": "Convergent."
+      },
+      {
+        "kitLine": "Max HP of Cover ▲ 18% for 20s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim unmodeled; explicitly NOT targetMaxHpPct/maxHpFlat (would pollute the HP→ATK feed path)",
+        "blindSaid": "S2b: pre-registered the self-Max-HP misread; S5: asserts no Max-HP buffApply to any ally and inertness of a self-Max-HP counterfactual; S6: unmodeled verbatim with same reasoning",
+        "formulaCheck": "COVER Max HP is a separate pool; SSOT §1a: atkOfMaxHpPct feeds off own Max HP — mis-encoding would touch the FinalATK path for conversion carriers",
+        "fireRateOk": true,
+        "explanation": "Convergent; no maxHp/maxHpFlat/targetMaxHpPct buff originates from Bay."
+      },
+      {
+        "kitLine": "Damage Taken ▼ 8.87% for 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim unmodeled; deliberately NOT damageTakenPct (boss-targeted amplifier, wrong direction and wrong target)",
+        "blindSaid": "S2b: HIGHEST-RISK pre-registered trap (the 'Damage Taken is always damageTakenPct' reflex); S5: asserts no damageTakenPct anywhere + non-vacuity proof the mis-encoding moves team damage; S6: unmodeled with the same explicit note",
+        "formulaCheck": "SSOT §1g: damageTakenPct is a boss-side Taken-bucket entry (positive = boss takes MORE); the kit line is ▼ on ALL ALLIES — defensive mitigation, inert in v1 (boss deals no damage)",
+        "fireRateOk": true,
+        "explanation": "The single largest over-credit available on this unit was avoided by all three agents. Driver carries the negative assertion behaviorally and structurally."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. All nine kit lines are FAITHFUL (the S1 DEF grant with a documented, observably-inert semantic approximation; the S1 full-charge ally heal keyed to chargeCounter count:1) or DOCUMENTED_GAP (all seven defensive/cover lines verbatim in unmodeled with correct rejection of the three pre-registered traps: damageTakenPct mis-keying, cover-HoT-as-heal, cover-Max-HP-as-unit-Max-HP). Convergence is GREEN in substance: the S5 suite's sole RED is a structural strictness artifact (shotFired vs chargeCounter count:1) whose every behavioral counterpart passed against the driver, and chargeCounter is the more literal encoding of 'Full Charge attacks' since it only advances on full charges — the S5/S6 shotFired preference would actually over-fire on any hypothetical partial-charge release. The S6 cover-HoT-as-self-heal divergence is spurious (driver + S2b + the marciana precedent agree it must not emit recovery events; ruled against S6, not the driver). Discrimination is live: the driver's tests prove the per-shot cadence against fullBurstEnter/stripped counterfactuals via the asuka sole-consumer fixture, prove defPct inertness against a defAsDamage counterfactual that moves totals, and pin the damageTakenPct negative assertion; S5 independently proves non-vacuity (the mis-encoded 8.87% boss debuff would move team damage). For GO nothing must change. Same-model residual the owner should spot-check: (1) the defPct caster-vs-target approximation is inert only because v1 has no DEF→damage path — if a defensive or conversion consumer ever lands, this line must be revisited first; (2) the chargeCounter/shotFired equivalence rests on the sim.ts claim that every RL dump dispatches charged=true — one focus-video cadence read (rounds/min + reload gap, already ⚑-flagged in the driver's caveats) would close it; (3) Bay never bursting in crown-shared-B2 fixtures was handled correctly by both blind suites via sole-B2 comps, but any future Bay fixture reuse should re-verify the burst-cast non-vacuity marker.",
+  "model": "kimi-code/k3"
+}

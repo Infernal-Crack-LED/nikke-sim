@@ -844,6 +844,53 @@
       ],
       "board": null
     },
+    "bay": {
+      "name": "Bay (Treasure)",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/bay.json + scripts/kit-autonomy/manual-review/bay.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Activates when using Burst Skill, only if self is alive. Affects all allies. Proportionally shares damage taken continuously."
+        ],
+        "skill2": [
+          "Activates when using Burst Skill, only if self is alive. Affects self's cover. Proportionally shares damage taken continuously.",
+          "Activates when Full Burst ends. Affects self. Continuously recovers Cover's HP equal to 2.88% of the skill user's final Max HP every 1 sec for 5 sec.",
+          "Activates when entering Burst Stage 1 and self's cover has been destroyed. Affects self. Recovers 20% of the skill user's final Max HP."
+        ],
+        "burst": [
+          "Affects self if self's cover has been destroyed. Rebuild Cover with 20% HP. Activates once per battle.",
+          "Affects self. Max HP of Cover ▲ 18% of the skill user's Max HP for 20 sec.",
+          "Affects all allies. Damage Taken ▼ 8.87% for 10 sec."
+        ]
+      },
+      "caveats": [
+        "skill1 DEF line is a SEMANTIC APPROXIMATION (marciana precedent): the kit grants DEF equal to 10.13% of the SKILL USER's DEF, but the schema's only DEF stat is defPct, which scales the TARGET's own DEF. There is no casterDefPct. Kept for kit completeness (DEF is offensively inert in v1); the value is NOT a faithful caster-scaled grant — the distinction has zero observable consequence in the DPS sim.",
+        "skill1 Treasure heal magnitude (4% of the skill user's final Max HP) is event-only — the 'heal' effect emits ONE recovery event per full charge with no HP amount (v1 has no HP pool). The line is modeled solely for its TANDEM value: it fires allies' 'recovery' triggers every bay shot.",
+        "skill2/burst are EMPTY by construction, not by omission: every line there is out-of-domain for the DPS sim — cover is not an entity the sim models (damage-share onto cover, cover-HP HoT, cover rebuild, cover Max HP), the boss deals no damage (ally Damage Taken ▼ 8.87% has nothing to reduce), and the cover-destroyed gates can never be satisfied at scope. All seven lines live VERBATIM in unmodeled.",
+        "The S2 cover-HP HoT (2.88%/1s x5s at Full Burst end) is deliberately NOT encoded as a self 'heal' ticks:5 — cover repair is not a Nikke recovery, and the encoding would falsely pulse teammates' on-recovery consumers at every FB end. The burst's ally Damage-Taken-▼ is deliberately NOT encoded as damageTakenPct — that stat is a boss-targeted AMPLIFIER (positive = boss takes MORE damage); the kit line is defensive mitigation on ALL ALLIES (wrong direction and wrong target). The cover share/rebuild lines are NOT 'shield' effects (would falsely fire shielded-trigger gates).",
+        "⚑ CADENCE TUPLE (ALWAYS-⚑): pullsPerSec / reloadFrames 141 / chargeFrames 60 shipped from datamine (ammo 6); RL charge cycle ≈ 1 shot/s + 141f reload gap every 6 rounds — plausible, NOT escalated. Affects her OWN shots (and therefore the per-shot recovery channel's cadence) only; recipe: rounds/min + reload gap from any focus video.",
+        "⚑ AUTOFIRE vs CHARGE-GAP (ALWAYS-⚑, charge weapon): engine default shipped; ~affects her OWN shots/burst-gauge only (pure tank — small board impact); recipe: focus video, does she re-charge immediately with no dead gap."
+      ],
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "defPct caster-vs-target approximation is inert only while v1 has no DEF-to-damage path (revisit first if a conversion consumer lands); chargeCounter/shotFired equivalence rests on every RL dump dispatching charged=true — one focus-video cadence read (rounds/min + reload gap, already flagged) would close it; future bay fixture reuse should re-verify burst-cast non-vacuity (crown shares B2)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "biscuit": {
       "name": "Biscuit",
       "burst": "II",

@@ -1,0 +1,64 @@
+{
+  "slug": "bay",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 10.13
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 1
+      },
+      "target": {
+        "kind": "allies",
+        "excludeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [],
+  "unmodeled": {
+    "skill1": [
+      "Activates when using Burst Skill, only if self is alive. Affects all allies. Proportionally shares damage taken continuously."
+    ],
+    "skill2": [
+      "Activates when using Burst Skill, only if self is alive. Affects self's cover. Proportionally shares damage taken continuously.",
+      "Activates when Full Burst ends. Affects self. Continuously recovers Cover's HP equal to 2.88% of the skill user's final Max HP every 1 sec for 5 sec.",
+      "Activates when entering Burst Stage 1 and self's cover has been destroyed. Affects self. Recovers 20% of the skill user's final Max HP."
+    ],
+    "burst": [
+      "Affects self if self's cover has been destroyed. Rebuild Cover with 20% HP. Activates once per battle.",
+      "Affects self. Max HP of Cover ▲ 18% of the skill user's Max HP for 20 sec.",
+      "Affects all allies. Damage Taken ▼ 8.87% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "skill1 DEF line is a SEMANTIC APPROXIMATION (marciana precedent): the kit grants DEF equal to 10.13% of the SKILL USER's DEF, but the schema's only DEF stat is defPct, which scales the TARGET's own DEF. There is no casterDefPct. Kept for kit completeness (DEF is offensively inert in v1); the value is NOT a faithful caster-scaled grant — the distinction has zero observable consequence in the DPS sim.",
+    "skill1 Treasure heal magnitude (4% of the skill user's final Max HP) is event-only — the 'heal' effect emits ONE recovery event per full charge with no HP amount (v1 has no HP pool). The line is modeled solely for its TANDEM value: it fires allies' 'recovery' triggers every bay shot.",
+    "skill2/burst are EMPTY by construction, not by omission: every line there is out-of-domain for the DPS sim — cover is not an entity the sim models (damage-share onto cover, cover-HP HoT, cover rebuild, cover Max HP), the boss deals no damage (ally Damage Taken ▼ 8.87% has nothing to reduce), and the cover-destroyed gates can never be satisfied at scope. All seven lines live VERBATIM in unmodeled.",
+    "The S2 cover-HP HoT (2.88%/1s x5s at Full Burst end) is deliberately NOT encoded as a self 'heal' ticks:5 — cover repair is not a Nikke recovery, and the encoding would falsely pulse teammates' on-recovery consumers at every FB end. The burst's ally Damage-Taken-▼ is deliberately NOT encoded as damageTakenPct — that stat is a boss-targeted AMPLIFIER (positive = boss takes MORE damage); the kit line is defensive mitigation on ALL ALLIES (wrong direction and wrong target). The cover share/rebuild lines are NOT 'shield' effects (would falsely fire shielded-trigger gates).",
+    "⚑ CADENCE TUPLE (ALWAYS-⚑): pullsPerSec / reloadFrames 141 / chargeFrames 60 shipped from datamine (ammo 6); RL charge cycle ≈ 1 shot/s + 141f reload gap every 6 rounds — plausible, NOT escalated. Affects her OWN shots (and therefore the per-shot recovery channel's cadence) only; recipe: rounds/min + reload gap from any focus video.",
+    "⚑ AUTOFIRE vs CHARGE-GAP (ALWAYS-⚑, charge weapon): engine default shipped; ~affects her OWN shots/burst-gauge only (pure tank — small board impact); recipe: focus video, does she re-charge immediately with no dead gap."
+  ],
+  "note": "bay (Bay (Treasure)) — RL / Defender / Fire / Burst II, cd 40s, ammo 6, chargeFrames 60, reloadFrames 141, Tetra. treasure:true variant — the ONLY Bay entry in the data (no base-Bay entry exists; never conflated with mary-bay-goddess, the SR/Water BAY GODDESS variant of Mary). A PURE TANK whose kit is 100% survivability: damage-taken sharing, cover HP (share / heal / rebuild / Max HP), a continuous DEF grant, an ally damage-taken reduction, and two HP heals. ZERO damage lines and ZERO weapon-state modifiers in the whole kit — this unit cannot move her own damage or anyone else's; her board footprint is tandem (one per-shot recovery channel + one inert DEF buff). || MODELED TODAY (both lines in S1 'You Can Do It'): (1) 'DEF ▲ 10.13% of the skill user's DEF continuously' on 'using Burst Skill' → burstCast-keyed defPct 10.13 with NO duration ('continuously' = never expires; re-casts refresh), target all allies (self included). 'only if self is alive' is scope-trivial in v1 (nothing dies). SEMANTIC APPROXIMATION: the kit scales off the CASTER's DEF; the schema has no casterDefPct, so defPct (target-own) stands in — DEF being offensively inert in v1, the distinction has zero observable consequence (marciana precedent). (2) TREASURE line 'Activates when performing Full Charge attacks. Affects all allies (except self). Recovers 4% of the skill user's final Max HP' → chargeCounter count:1 (fires EVERY full charge; the phase counter resets each time) → heal ticks:1 to allies excludeSelf. An RL unit's every shot IS a full charge (sim.ts: all dumped rockets dispatch charged=true), so this emits ONE recovery event per bay shot to each of the other two allies — the load-bearing line, solely through teammates' on-recovery consumers (Crown/Asuka 'when recovery takes effect'). Heal MAGNITUDE is event-only (no HP pool in v1). || DELIBERATELY UNMODELED (all seven VERBATIM in `unmodeled`, never an `ignored` drop): S1 'Proportionally shares damage taken continuously' (allies — no incoming-damage model, no redistribution primitive); S2 'shares damage taken' onto SELF'S COVER (cover is not a sim entity); S2 cover-HP HoT 2.88%/1s x5s at Full Burst END (cover repair is NOT a Nikke recovery — a heal ticks:5 self-encoding would falsely pulse on-recovery consumers at every FB end); S2 Treasure 'entering Burst Stage 1 + cover destroyed → self 20% Max HP' (the cover-destroyed gate can never be satisfied at scope — boss deals no damage); burst Treasure 'Rebuild Cover with 20% HP once per battle' (cover + destroyed gate); burst 'Max HP of Cover ▲ 18% for 20s' (COVER Max HP, not unit Max HP — a targetMaxHpPct/maxHpFlat encoding would pollute the HP→ATK feed path); burst 'Damage Taken ▼ 8.87% for 10s' on ALL ALLIES (defensive mitigation — NOT the damageTakenPct stat, which is a boss-targeted amplifier with the wrong direction and target; v1 boss deals no damage so ally mitigation is inert by construction). || EVIDENCE TIER: both live values (10.13 DEF, per-full-charge recovery) are kit-text-literal; the only estimated quantities are the cadence tuple (her own shots only). || TIER 1 (clean-weapon-like: zero damage lines, zero weapon-state modifiers; the encoding is one recovery-event channel + one inert defPct; no scoped buffs, no round counts, no status gates among the modeled lines). Faithful>fit; measured>fudge. || Kit-autonomy gauntlet 2026-08-03."
+}
