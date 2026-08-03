@@ -1,0 +1,82 @@
+{
+  "slug": "epinel",
+  "kitDescription": "Epinel is a Wind SMG Attacker (Burst III, 40s cooldown, 120-round magazine) whose sustained damage comes from a self crit package: each time she empties her magazine, she gains +5.05% Critical Rate and +6.4% Critical Damage for 5 seconds, so the buff cycles on and off with her reload rhythm. Her burst is a single-target-collapsed AoE nuke dealing 457.87% of final ATK to all enemies. Her first skill, Total Noob, would grant her stacking ATK (+13.86% per stack, up to 5 stacks, 15s) each time she kills an enemy, and if those stacks are maxed when she bursts, the burst deals a second 457.87% hit — but both of those effects depend on enemies dying, which never happens in the simulator's single immortal boss fight, so they are recorded as unmodeled with zero in-sim contribution.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates when killing an enemy. Affects self.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim in unmodeled.skill1; ⚑1 with estimate (~+69.3% ATK in real multi-add content) + recipe (resource pool totalNoob on a future kill event) + tier (out-of-domain world model); nearest-wrong passive-69.3 counterfactual pinned RED",
+        "blindSaid": "S2b + S5 + S6 all independently: no kill primitive in TriggerDef, scope-lock boss immortal with no adds, trigger fires zero times; faithful encoding is verbatim-unmodeled or inert pool; S5 GAP-skip + A2 zero-buffApply + A3 load-bearing patch-in",
+        "formulaCheck": "SSOT world model confirms: ONE immortal partless boss, no kill event, no adds — the line contributes exactly zero in any sim run; encoding it would fabricate damage",
+        "fireRateOk": true,
+        "explanation": "Correctly zero cadence. Driver, cross-family reviewer, blind test-writer, and blind override-writer all converged on the identical disposition and the identical nearest-wrong (passive max-stacks atkPct 69.3). Inertness is positively pinned by the driver's suite (only critDamagePct/critRatePct ever originate from epinel) and by S5 A2; load-bearingness is proven by A3 / the driver's maxPassive counterfactual."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when the last bullet hits the target",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "lastBullet → self, one block; lastBullet (magazine empty / reload start) IS the named archetype (privaty/marciana/anis-sparkling-summer precedent); 'hits the target' scope-trivial on the partless boss; cadence tuple ⚑3, uptime asserted structurally",
+        "blindSaid": "S2b/S5/S6 all: {kind:'lastBullet'}, self, cyclical ~65–70% uptime given 120 ammo + 81f reload at SMG cadence; nearest-wrong = passive or shotFired (permanent uptime)",
+        "formulaCheck": "SSOT: lastBullet trigger fires when owner's magazine empties / reload starts — matches the kit's named last-bullet clause; ~28 magazines per 180s ≫ burst casts and ≪ shot count, both bounds pinned",
+        "fireRateOk": true,
+        "explanation": "Block fires at the prose-implied per-magazine cadence (driver pins rates.length > casts×3 and < shots/20; S5 B3 pins expiresFrame=apply+300 and a real lapse gap > the 5s window). Both blind agents produced the identical trigger identity independently."
+      },
+      {
+        "kitLine": "Critical Rate ▲ 5.05% for 5 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "critRatePct 5.05, durationSec 5, self — unscoped prose ⇒ generic crit stat, not critRateNormalPct",
+        "blindSaid": "S2b + S6 identical; S5 B1 filters stat+value so a critRateNormalPct encoding finds zero events (RED under the scope misread)",
+        "formulaCheck": "SSOT: critRatePct is the generic crit stat applying to every crit-eligible hit; prose says 'Critical Rate' with no normal-attacks qualifier — correct stat routing",
+        "fireRateOk": true,
+        "explanation": "Exact kit magnitude, 300-frame duration, self-only target set all pinned by event assertions; liveness proven (removal lowers her total) and the shotFired/15s counterfactuals over-credit as predicted."
+      },
+      {
+        "kitLine": "Critical Damage ▲ 6.4% for 5 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "critDamagePct 6.4 riding the same lastBullet block, same frame as the crit-rate effect",
+        "blindSaid": "S2b + S5 B2 + S6 identical: frame-coincident 1:1 with the 5.05 applies",
+        "formulaCheck": "SSOT: critDamagePct generic crit stat; expected-value crit factor 1+rate×(dmg−1) consumes both — co-application on one trigger is the faithful read of the shared '■' bullet",
+        "fireRateOk": true,
+        "explanation": "Same-block co-application pinned frame-exactly by both the driver and S5; no drift, no de-synchronization misread possible under the shipped encoding."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 457.87% of final ATK as Burst Skill",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy → flatDamage 457.87, burst bucket, own casts only, pre-FB so no +50% major; co-B3 helm fixture makes burstCast-vs-fullBurstEnter genuinely diverge",
+        "blindSaid": "S2b + S6 identical block; S5 C1 ratio-test (≈1.0 vs ≈2.0) and C2 (fbMajorApplied !== true on all burst-slot damage)",
+        "formulaCheck": "SSOT: burst nukes ride the 'burst' bucket with srcSlot 'burst'; a burst CAST lands before the FB window opens, so burstCast damage never takes the +50% FB major — the shipped encoding satisfies both by construction",
+        "fireRateOk": true,
+        "explanation": "Once-per-own-cast firing pinned (nukes.length === casts.length, ≥2 casts in-fixture), magnitude and bucket pinned, FB-exemption pinned on every hit, and the fullBurstEnter counterfactual over-fires on helm-led FBs in-FB exactly as the formula predicts. Only residual: S6 authored crit:true where the driver keeps the text-silent default (no crit flag) — see verdictRationale; impact ≈1.6% of her total, not load-bearing."
+      },
+      {
+        "kitLine": "when Total Noob is at max stacks",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim in unmodeled.burst; ⚑2 gated by ⚑1 (kill-fed pool can never open at scope); in-game estimate effectively 915.74%/cast in multi-add content; recipe: second flatDamage 457.87 block under resourceGate{totalNoob,min:5} once a kill event exists; nearest-wrong ungated-double-hit pinned RED",
+        "blindSaid": "S2b + S5 (GAP skip + C1 exactly-one-component) + S6 (no resourceGate authored since nothing can increment the pool) — all identical",
+        "formulaCheck": "SSOT world model: no kill event ⇒ gate satisfied zero times ⇒ rider deals zero all fight; faithful record is inert, and the driver's per-frame exactly-one-hit assertion proves the shipped encoding pays exactly one 457.87 per cast",
+        "fireRateOk": true,
+        "explanation": "Correctly zero cadence, proven positively: driver's E4 per-frame count==1, S5 C1 shipped/reference ratio ≈1.0, and the doubleNuke counterfactual doubling hit count and total. All four agents converged on the same disposition and the same nearest-wrong independently."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All five kit lines are FAITHFUL (3 live) or DOCUMENTED_GAP (2 kill-gated lines whose inertness is a world-model necessity, verbatim-recorded, ⚑-flagged with estimate+recipe+tier, and positively pinned inert by event-log assertions) — no SILENT_DROP, ENGINE, FIDELITY, or ENCODING divergence exists. Convergence is strong for a same-model ensemble: the S5 blind suite runs 12/0-RED/2-author-GAP-skips against the shipped override with only mechanical adaptations, the S6 blind override is block-for-block identical on every live and unmodeled line, and the cross-family S2b reviewer independently named the same three nearest-wrong counterfactuals (passive 69.3% ATK, shotFired/permanent crit uptime, ungated 915.74% double-hit) that the driver's suite pins RED. Discrimination holds on every load-bearing test: removing skill2 lowers her total, the 15s/shotFired variants strictly out-earn the 5s lastBullet window, the fullBurstEnter keying over-fires in-FB on helm-led rotations, and the folded second hit doubles per-cast burst hits. Residuals the owner should spot-check: (1) the burst nuke's crit flag — S6 authored crit:true from the rider prior while the driver follows the repo's text-silent default; kit prose is silent, formula cannot adjudicate, and the swing is ≈1.6% of her total (burst bucket ~21.7%), so this is a documented judgment call, not a gotcha — a popup-colour read over ≥5 casts would settle it if ever needed; (2) the cadence tuple (ammo 120 / reloadFrames 81 / RoF 1440) is datamine-sourced and ⚑3-flagged — it sets skill2's uptime (~65–80%), which both suites assert only structurally, so a fire-cadence video read is the one cheap measurement that would firm up the single load-bearing live line; (3) same-model residual: every agent here shares the lastBullet-archetype prior, so convergence proves stability, not correctness — the whole-picture checks (per-magazine count bounds, lapse-window proof, pre-FB cast timing) are what carry the correctness argument, and they all pass.",
+  "model": "kimi-code/k3"
+}

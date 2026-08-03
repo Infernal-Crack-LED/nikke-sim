@@ -2163,6 +2163,44 @@
       },
       "board": null
     },
+    "epinel": {
+      "name": "Epinel",
+      "burst": "III",
+      "weapon": "SMG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/epinel.json + scripts/kit-autonomy/manual-review/epinel.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Activates when killing an enemy. Affects self. Total Noob: ATK ▲ 13.86%, stacks up to 5 time(s) and lasts for 15 sec."
+        ],
+        "skill2": [],
+        "burst": [
+          "Activates when Total Noob is at max stacks. Affects the same targets. Deals 457.87% of final ATK as additional damage."
+        ]
+      },
+      "caveats": [
+        "skill1: 'Total Noob' (ATK ▲13.86% ×5 stacks on killing an enemy, 15s) is UNMODELED — the engine has no kill event and the scope-lock boss is immortal with no adds, so the stacks can never accrue; provably zero contribution in every sim run (⚑1)",
+        "burst: the 'Total Noob at max stacks' conditional (457.87% additional damage) is UNMODELED with the pool that feeds its gate — zero contribution at scope; in real multi-add content the gate is effectively always open (⚑2)",
+        "skill2: the crit-window uptime (~65–80%) rides the datamine cadence tuple (ammo 120 / reloadFrames 81 / RoF 1440) — unverified for this unit (⚑3)"
+      ],
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check cluster: (a) burst nuke crit flag — text-silent default vs S6's crit:true (~1.6% of total; popup-colour read over ≥5 casts settles it); (b) cadence tuple ammo 120 / reloadFrames 81 / RoF 1440 datamine — sets the S2 crit-window uptime (~65–80%); (c) same-model lastBullet-archetype prior shared by all agents",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "eunhwa-tactical-upgrade": {
       "name": "Eunhwa: Tactical Upgrade",
       "burst": "II",
