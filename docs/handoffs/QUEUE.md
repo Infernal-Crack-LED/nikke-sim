@@ -141,16 +141,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      NOT taken — engine default, owner-gated; queued.
   5. **U28** — `extraHitDamagePct` vs `flatDamage` gauge + flavor asymmetry.
 - **⇒ EMILIA GAUNTLET NO-GO(engine-core) — owner decision: authorize a `hitRepeat` rider primitive.**
-  2026-08-02 batch gauntlet (branch `kit-autonomy-batch-2026-08-02`, commit `35f0f0f6`, unmerged): S2
-  "Fixed Damage to the main body = 58.99% of the damage dealt by self" is a %-of-hit repeat
+  2026-08-02 batch gauntlet (branch `kit-autonomy-batch-2026-08-02`, commit `35f0f0f6`, merged via
+  PR #60): S2 "Fixed Damage to the main body = 58.99% of the damage dealt by self" is a %-of-hit repeat
   (`docs/data/nikke-damage-formula.md` §3) — load-bearing (fires every full charge), in-domain, and no
   `src/` primitive scales a rider off the parent hit's final damage; omitting is a forced weakening and
   folding it into `chargeDamagePct` is a fudge (function damage never cores). The other six kit lines
   are fully pre-encoded + the proposed primitive spec (pct-of-parent final damage, never-core function
   damage inheriting parent crit/element/Damage-Up/FB; secondary: negative `chargeSpeedPct`,
-  live-`maxAmmo()`-scaled buff source) is in `scripts/kit-autonomy/manual-review/emilia.md` (lands with
-  the batch merge). `simSupported` stays false, no kit-status row; re-run the gauntlet after the
-  primitive lands.
+  live-`maxAmmo()`-scaled buff source) is in `scripts/kit-autonomy/manual-review/emilia.md` (on main).
+  `simSupported` stays false, no kit-status row; re-run the gauntlet after the primitive lands.
 - **⇒ SG LANDING — fix the WEAPON MODEL before any SG override re-tune.** SG units carry 12–24% landing
   calibration debt (board SG mean |ratio−1| 0.084→0.131 post-UNIGEO), but `marciana` (SG, **no override,
   zero damage kit**) reads **0.850 COLD at n=2** and `/probe-processing` localized it to the **landing
