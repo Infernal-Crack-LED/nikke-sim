@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 
 // Tiny path router — no dependency. Every view is addressed by URL PATH (not a
 // hash): the sim owns "/" plus its own sub-tab paths (/dpschart, /team, …), and
@@ -18,8 +18,12 @@ export type Route =
   | 'patch-notes'
   | 'testing-requests'
   | 'roster-sync'
-  | 'credits';
+  | 'credits'
+  | 'unit';
 
+// Flat list of nav/analytics routes. Parameterized routes (e.g. /unit/:slug)
+// are intentionally excluded — hrefFor('unit') would produce /unit, which only
+// renders "Unit not found"; unit pages are driven by the slug in the path.
 export const ROUTES: Route[] = [
   'sim',
   'rankings',
@@ -68,6 +72,9 @@ export function routeFromPath(pathname: string): Route {
     .replace(/^\/+|\/+$/g, '')
     .split('/')[0]
     .toLowerCase();
+  if (seg === 'unit') {
+    return 'unit';
+  }
   if ((PAGE_ROUTES as string[]).includes(seg)) {
     return seg as Route;
   }
@@ -81,6 +88,18 @@ export function routeFromPath(pathname: string): Route {
     return 'tools';
   }
   return 'sim';
+}
+
+export function unitSlugFromPath(pathname: string): string | null {
+  const segs = pathname
+    .toLowerCase()
+    .replace(/\/{2,}/g, '/')
+    .replace(/^\/+|\/+$/g, '')
+    .split('/');
+  if (segs[0] !== 'unit') {
+    return null;
+  }
+  return segs[1] ?? null;
 }
 
 // href for a route — a real path so links are hyperlinkable and crawlable
@@ -100,22 +119,71 @@ export function navigate(url: string): void {
   window.dispatchEvent(new PopStateEvent('popstate'));
 }
 
-export function useRoute(): Route {
-  const [route, setRoute] = useState<Route>(() =>
-    routeFromPath(window.location.pathname)
+// Single subscription to the browser location pathname. Both useRoute and
+// useUnitSlug derive from this so they can never desync on the event type.
+export function useLocationPathname(): string {
+  const [pathname, setPathname] = useState<string>(
+    () => window.location.pathname
   );
-  const prev = useRef(route);
   useEffect(() => {
-    const onNav = () => {
-      const next = routeFromPath(window.location.pathname);
-      if (next !== prev.current) {
-        prev.current = next;
-        window.scrollTo(0, 0); // jump to top only when the page actually changes
-        setRoute(next);
-      }
-    };
+    const onNav = () =>
+      setPathname((p) =>
+        p === window.location.pathname ? p : window.location.pathname
+      );
     window.addEventListener('popstate', onNav);
     return () => window.removeEventListener('popstate', onNav);
   }, []);
+  return pathname;
+}
+
+export function useRoute(): Route {
+  const pathname = useLocationPathname();
+  const route = routeFromPath(pathname);
+  const prev = useRef(route);
+  useEffect(() => {
+    if (route !== prev.current) {
+      prev.current = route;
+      window.scrollTo(0, 0); // jump to top only when the page actually changes
+    }
+  }, [route]);
   return route;
+}
+
+// Single subscription that yields both the route and the unit slug. Use this
+// in Root instead of calling useRoute separately; this keeps only one popstate
+// listener and avoids re-rendering the tree twice per navigation.
+export function useRouteAndSlug(): { route: Route; unitSlug: string | null } {
+  const pathname = useLocationPathname();
+  const route = routeFromPath(pathname);
+  const unitSlug = unitSlugFromPath(pathname);
+  const prev = useRef(route);
+  useEffect(() => {
+    if (route !== prev.current) {
+      prev.current = route;
+      window.scrollTo(0, 0); // jump to top only when the page actually changes
+    }
+  }, [route]);
+  return { route, unitSlug };
+}
+
+// Click handler for in-app anchor links. Lets Ctrl/Cmd/Shift/Alt-clicks and
+// middle-clicks fall through to the browser; otherwise converts the click into
+// an SPA navigate.
+export function onSpaLinkClick(
+  href: string
+): (e: MouseEvent<HTMLAnchorElement>) => void {
+  return (e: MouseEvent<HTMLAnchorElement>) => {
+    if (
+      e.defaultPrevented ||
+      e.button !== 0 ||
+      e.metaKey ||
+      e.ctrlKey ||
+      e.shiftKey ||
+      e.altKey
+    ) {
+      return;
+    }
+    e.preventDefault();
+    navigate(href);
+  };
 }

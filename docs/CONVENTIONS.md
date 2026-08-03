@@ -124,7 +124,8 @@ logs from poisoning agent context with stale-but-retained narration.
   answered-questions); if
   not, append it there first, then delete. Members: `docs/STATE.md`, `docs/data/*.md` (incl.
   sg-calc), `docs/CONVENTIONS.md`, `docs/modeling-priors.md`, `docs/engine-modeling-gaps.md`,
-  `CLAUDE.md`, open `docs/handoffs/*` (incl. `docs/handoffs/QUEUE.md`, the live work queue),
+  `docs/test-speed-gotchas.md`, `CLAUDE.md`, open `docs/handoffs/*` (incl.
+  `docs/handoffs/QUEUE.md`, the live work queue),
   `docs/open-questions.md` (UNANSWERED only), the
   backlog/ledger docs, and **the prose fields of every override** — `src/skills/overrides/*.json`
   `note` / `caveats` / `unmodeled`.

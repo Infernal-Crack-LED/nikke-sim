@@ -18,9 +18,10 @@ import type { BaseStats, BurstType, CharacterData, Weapon } from '../types.js';
 
 export type NoopCharacter = CharacterData & { baseStats: BaseStats };
 
-// Stats are inert for B1/B2: the units deal 0 damage (multiplier 0) and cast nothing,
-// so ATK/HP only need to be valid numbers for the stat formula. No grade/core growth.
-// The B3 is given a class-modal base multiplier plus a mock burst buff via its override.
+// Default stats are inert for B1/B2: the units deal 0 damage (multiplier 0) and cast
+// nothing, so ATK/HP only need to be valid numbers for the stat formula. No grade/core
+// growth. ATK is kept high enough that existing boards (DPS chart Solo, buffer,
+// sustain, burstgen) keep their current `alliesTopAtk` / `alliesLowestAtk` resolution.
 const NOOP_BASE_STATS: BaseStats = {
   resourceId: 0,
   atk: 30000,
@@ -31,6 +32,23 @@ const NOOP_BASE_STATS: BaseStats = {
   maxLevel: 400,
   grade: { ratio: 0, atk: 0, hp: 0, def: 0 },
   core: { atk: 0, hp: 0, def: 0 },
+};
+
+// Low-ATK variant used only by the B1/B2 DPS board. The board's PARTNER rows
+// (crown+chime, anis-star+avistar) need the real partner (chime / avistar, base
+// ATK 500) to outrank both the tested unit (crown / anis-star, base ATK 400) and
+// the no-op placeholders (base ATK 100) so an `alliesTopAtk` king-maker buff lands
+// on the partner rather than on a control. In plain rows, an `alliesTopAtk` selector WITHOUT
+// `excludeSelf` resolves to the tested unit (the highest-ATK member of the team),
+// while `alliesLowestAtk` resolves to a no-op placeholder. The two live carriers
+// (naga skill2, rapunzel skill2) use `count: 2`, so the second target is an inert
+// no-op. This silently turns self-includable highest-ATK buffs into self-buffs on
+// this board (e.g. naga's coreDamagePct, rapunzel's targetMaxHpPct); the effect is
+// small for damage lines and is the intended board semantics for king-maker buffs
+// that do not exclude self.
+const NOOP_LOW_ATK_STATS: BaseStats = {
+  ...NOOP_BASE_STATS,
+  atk: 100,
 };
 
 interface WeaponModal {
@@ -48,7 +66,8 @@ function noop(
   burstCooldownSec: number,
   weapon: Weapon,
   w: WeaponModal,
-  normalAttackMultiplier: number
+  normalAttackMultiplier: number,
+  baseStats: BaseStats
 ): NoopCharacter {
   return {
     slug,
@@ -75,7 +94,7 @@ function noop(
     generatorSupported: true,
     simSupported: true,
     skills: { skill1: '', skill2: '', burst: '' }, // parser → zero blocks
-    baseStats: NOOP_BASE_STATS,
+    baseStats,
   };
 }
 
@@ -86,12 +105,18 @@ export const NOOP_B3_RL = 'noop-b3-rl';
 // Synthetic stand-in for Rouge (B1/SR) — the buffer-rank `w/ Rouge` duo profile's
 // presence-only partner. Its slug carries curated squad membership in
 // src/data/squads.ts ('Blanc Noir Rouge'), so its presence satisfies blanc's
-// same-squad CDR gate (teamHas.sameSquad). Cadence mirrors the real rouge.
+// same-squad CDR gate (teamHas.sameSquad). Weapon cadence mirrors the real
+// rouge; gauge falls back to the SR class modal in src/engine/sim.ts:1329/
+// :1406 because there is no data/gauge-per-shot.json row for this synthetic,
+// identical to how noop-b2-sr resolves.
 export const NOOP_ROUGE_B1 = 'noop-rouge-b1';
 
-// Class-modal MG normal-attack multiplier for the synthetic B3 mock.
+// Class-modal MG normal-attack multiplier from data/characters.json modal values.
 const MG_NORMAL_ATTACK_MULT = 5.57;
 
+// Default shared no-op characters used by the DPS chart Solo framework, buffer board,
+// sustain board, and burst-gen board. Keep these byte-identical to the historical
+// control set so existing board numbers do not shift.
 export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
   [NOOP_B1]: noop(
     NOOP_B1,
@@ -106,7 +131,8 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 0,
       rl3: 7.6,
     },
-    0
+    0,
+    NOOP_BASE_STATS
   ),
   [NOOP_B2]: noop(
     NOOP_B2,
@@ -121,7 +147,8 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 250,
       rl3: 8.4,
     },
-    0
+    0,
+    NOOP_BASE_STATS
   ),
   [NOOP_B3]: noop(
     NOOP_B3,
@@ -136,7 +163,8 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 0,
       rl3: 3.55,
     },
-    MG_NORMAL_ATTACK_MULT
+    MG_NORMAL_ATTACK_MULT,
+    NOOP_BASE_STATS
   ),
   [NOOP_B3_RL]: noop(
     NOOP_B3_RL,
@@ -151,7 +179,8 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 250,
       rl3: 16.8,
     },
-    0
+    0,
+    NOOP_BASE_STATS
   ),
   [NOOP_ROUGE_B1]: noop(
     NOOP_ROUGE_B1,
@@ -166,6 +195,19 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       chargeMultiplier: 250,
       rl3: 8.7,
     },
-    0
+    0,
+    NOOP_BASE_STATS
   ),
 };
+
+// B1/B2-DPS-board-specific no-op characters. Derived from the shared set so
+// weapon/rotation scaffolding cannot drift; the only intended difference is
+// `baseStats.atk` (NOOP_LOW_ATK_STATS). See the NOOP_LOW_ATK_STATS comment above
+// for how this changes `alliesTopAtk` / `alliesLowestAtk` resolution on the board.
+export const B1B2_NOOP_CHARACTERS: Record<string, NoopCharacter> =
+  Object.fromEntries(
+    Object.entries(NOOP_CHARACTERS).map(([slug, c]) => [
+      slug,
+      { ...c, baseStats: NOOP_LOW_ATK_STATS },
+    ])
+  );

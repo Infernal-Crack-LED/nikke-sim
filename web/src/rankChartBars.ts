@@ -9,13 +9,16 @@ import {
   burstCdrBars,
   sustainBars,
   bufferBars,
+  b1b2DpsBars,
   type BoardId,
   type BufferBoard,
   type BurstGenBoard,
+  type B1B2DpsBoard,
   type BurstGenArtifact,
   type BurstCdrArtifact,
   type SustainArtifact,
   type BufferChartArtifact,
+  type B1B2DpsArtifact,
 } from './rankBoardsData';
 
 // Short chip label for a comp-profile variant. Explicit map for the known
@@ -29,6 +32,11 @@ const PROFILE_LABELS: Record<string, string> = {
   'with-healer': 'w/ Healer',
   'with-mast-rm': 'w/ Mast RM',
   'with-shielder': 'w/ Shielder',
+  'with-avistar': 'w/ Avistar',
+  'with-other-b1': 'w/ Other B1',
+  'with-chime': 'w/ Chime',
+  'as-b1': 'B1',
+  'as-b2': 'B2',
   'w/ Prika': 'w/ Prika',
   'w/ Mint': 'w/ Mint',
   'w/ Anchor': 'w/ Anchor',
@@ -74,7 +82,11 @@ export const fmtMagnitude = (n: number): string =>
         : n.toFixed(0);
 
 export type AnyRankArtifact =
-  BurstGenArtifact | BurstCdrArtifact | SustainArtifact | BufferChartArtifact;
+  | BurstGenArtifact
+  | BurstCdrArtifact
+  | SustainArtifact
+  | BufferChartArtifact
+  | B1B2DpsArtifact;
 
 // Map the active board's typed rows into the chart's uniform bar shape.
 // `art.profiles` resolves each row's profile id into its badge tooltip. Feeds
@@ -83,7 +95,11 @@ export type AnyRankArtifact =
 export function barsForBoard(
   board: BoardId,
   art: AnyRankArtifact,
-  opts: { bufferBoard: BufferBoard; burstGenBoard: BurstGenBoard }
+  opts: {
+    bufferBoard: BufferBoard;
+    burstGenBoard: BurstGenBoard;
+    b1b2DpsBoard: B1B2DpsBoard;
+  }
 ): RankChartBar[] {
   const profiles = art.profiles;
   const badge = (b: { profile: string | null }) =>
@@ -142,6 +158,24 @@ export function barsForBoard(
       splitTitle: `heal ${b.healPct.toFixed(1)}% · shield ${b.shieldPct.toFixed(1)}% · lifesteal ${b.lifestealPct.toFixed(1)}% of max HP`,
       ...badge(b),
     }));
+  }
+  if (board === 'b1b2dps') {
+    const b1b2Art = art as B1B2DpsArtifact;
+    return b1b2DpsBars(b1b2Art, opts.b1b2DpsBoard).map((b) => {
+      // Only comp-profile badges (e.g. "B1"/"B2" for Red Hood variants,
+      // "w/ Chime" for partner rows) are shown. The burst-template labels
+      // ("20s B1"/"40s B1"/"B2") are hidden per UI request — the board
+      // switcher already communicates the active cell.
+      const extra: Partial<RankChartBar> = b.profile ? badge(b) : {};
+      return {
+        ...b,
+        key: `${b.slug}:${b.profile ?? ''}:${b.template ?? ''}`,
+        value: b.dps,
+        valueText: fmtMagnitude(b.dps),
+        valueTitle: 'own DPS in the Solo-style no-op control team',
+        ...extra,
+      };
+    });
   }
   return bufferBars(art as BufferChartArtifact, opts.bufferBoard).map((b) => ({
     ...b,

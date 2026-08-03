@@ -14,8 +14,10 @@
 // .mjs original) AND serve-api.test.ts (which runs against this port) — keep
 // the two servers' behavior in lockstep until serve.mjs is retired.
 import type { Context } from 'hono';
+import { existsSync, readFileSync } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { join, normalize, extname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -32,6 +34,7 @@ const MIME: Record<string, string> = {
   '.ico': 'image/x-icon',
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
+  '.txt': 'text/plain; charset=utf-8',
   '.map': 'application/json',
 };
 
@@ -48,97 +51,119 @@ const SITE = 'https://nikkesim.app';
 interface TabMeta {
   title: string;
   desc: string;
+  // Short breadcrumb label; falls back to title when absent.
+  label?: string;
   // Optional build-infographics manifest key (e.g. 'unit/<slug>.discord') for
   // a tab-specific OG/Twitter image — resolved at request time since the
   // served file name is content-hashed. Omitted tabs keep index.html's
   // generic og:image.
   image?: string;
 }
-const TAB_META: Record<string, TabMeta> = {
+let TAB_META: Record<string, TabMeta> = {
   sim: {
     title:
       'NIKKE Solo Raid Sim — DPS Calculator, Overload Optimizer & Team Builder',
+    label: 'Sim',
     desc: 'NIKKE solo raid damage simulator: per-unit DPS calculator, overload optimizer, best overload lines, team builder, and game mechanics reference. Frame-tick accuracy, runs in your browser.',
   },
   dpschart: {
     title:
       'NIKKE DPS Rankings — Neutral, Elemental Advantaged, with and without Supports',
+    label: 'DPS Rankings',
     desc: 'Ranked DPS of every B3 under standardized frameworks.',
   },
   dps: {
     title: 'Unit Comparison — NIKKE Head-to-Head DPS Comparator',
+    label: 'Unit Comparison',
     desc: 'Head-to-head per-unit DPS comparison with a custom control group. Pit any NIKKE against any other under identical conditions.',
   },
   ranks: {
     title:
       'NIKKE Support Rankings — Team Damage Buffs, Burst Gen, Burst CDR, & Sustain',
+    label: 'Support Rankings',
     desc: 'Ranked NIKKE support boards: team damage buffs, burst generation, burst cooldown reduction, and sustain. Computed from the same frame-tick solo raid sim as the DPS rankings.',
   },
   team: {
     title: 'NIKKE Team Generator — Best 5 Nikke Team',
+    label: 'Team Generator',
     desc: 'Generate the best 5 Nikke team against a custom boss profile. Factors element, burst rotation, and overload synergy.',
   },
   roster: {
     title:
       'NIKKE Roster Generator — Best Solo Raid/Union Raid Teams from Your Units',
+    label: 'Roster Generator',
     desc: 'Input your NIKKE roster and generate the optimal solo raid teams. Accounts for your actual units, gear, and overload lines.',
   },
   rostersim: {
     title: 'NIKKE Roster Sim — Sim Your Solo Raid and Union Raid Teams',
+    label: 'Roster Sim',
     desc: 'Sim your own five solo raid teams at once and compare their damage side by side. See which roster lineup deals the most DPS.',
   },
   overload: {
     title: 'NIKKE Overload Optimizer — Best Overload Lines Calculator',
+    label: 'Overload Optimizer',
     desc: 'Find the optimal overload lines for any Nikke. The overload calculator uses frame-tick sim data to rank every roll by DPS gain.',
   },
   olsim: {
     title: 'NIKKE Overload Rolling Simulator — Module Cost Calculator',
+    label: 'Overload Simulator',
     desc: 'Estimate the rerolls and Custom Modules needed to hit a target overload build. Plan your overload rolling budget before spending.',
   },
   doll: {
     title: 'NIKKE Doll Leveling Calculator — Efficient SR Leveling Path',
+    label: 'Doll Calculator',
     desc: 'Calculate the most resource-efficient path to level your dolls (Favorite Items) to SR phase 15. Minimize waste, maximize stats.',
   },
   charge: {
     title: 'NIKKE Overload Breakpoints — Charge Speed & Max Ammo Tables',
+    label: 'Charge Breakpoints',
     desc: 'Charge-speed frame breakpoints and max-ammo line costs for every RL and SR in NIKKE. See exactly how many overload lines each breakpoint takes.',
   },
   teambuilder: {
     title: 'NIKKE Team Builder — Visual Team Planner & Loadout Editor',
+    label: 'Team Builder',
     desc: 'Build and share NIKKE solo raid, union raid, tower, and campaign teams visually. Filter the full roster, set loadouts, and copy your team into the sim or roster sim.',
   },
   resources: {
     title:
       'NIKKE Resource Calculator — Daily Custom Module & Anomaly Interception Outcome',
+    label: 'Resource Calculator',
     desc: 'Expected daily custom module and T9 drops by stage. Supports Kraken and other Anomaly Interception bosses. Plan your daily farming.',
   },
   howto: {
     title: 'How to Use the NIKKE Solo Raid Sim — Quick Start Guide',
+    label: 'How To',
     desc: 'Learn how to use the NIKKE Solo Raid Sim: build a team, configure the boss, read DPS results, and optimize your overload lines.',
   },
   mechanics: {
     title:
       'NIKKE Game Mechanics Reference — Damage Formula & Other Game Mechanics',
+    label: 'Mechanics',
     desc: 'Comprehensive NIKKE mechanics reference: damage formula, burst rotation, charge math, and other game mechanics — all sourced and tiered.',
   },
   dev: {
     title: 'Meet the Dev — NIKKE Solo Raid Sim',
+    label: 'Dev',
     desc: 'About the developer behind the NIKKE Solo Raid Sim and the Maiden Discord bot.',
   },
   'patch-notes': {
     title: 'Patch Notes — NIKKE Solo Raid Sim Changelog',
+    label: 'Patch Notes',
     desc: 'Changelog for the NIKKE Solo Raid Sim: accuracy improvements, new unit models, mechanics updates, and bug fixes.',
   },
   'testing-requests': {
     title: 'Testing Requested — Help Improve NIKKE Sim Accuracy',
+    label: 'Testing Requests',
     desc: 'Units and matchups the NIKKE sim needs real recordings for. Submit your Union Shooting Range tests to help close the accuracy gap.',
   },
   'roster-sync': {
     title: 'Sync Your NIKKE Roster — Import from blablalink',
+    label: 'Roster Sync',
     desc: 'Import your real NIKKE roster into the sim via blablalink. Auto-fills your units, gear, and overload lines for accurate team generation.',
   },
   builder: {
     title: 'NIKKE Card Builder — Custom DPS Charts & Infographics',
+    label: 'Card Builder',
     desc: 'Build a shareable NIKKE infographic: custom DPS chart, unit comparison, rank board, unit card, or overload table — with a live preview and a hosted, Discord-embeddable URL.',
     // Showcases an actual generated card (the builder's Nikke Card default
     // pick) instead of the generic site screenshot.
@@ -146,9 +171,77 @@ const TAB_META: Record<string, TabMeta> = {
   },
   credits: {
     title: 'Credits — NIKKE Solo Raid Sim',
+    label: 'Credits',
     desc: 'The community research, datamines, and tools the NIKKE Solo Raid Sim is built on.',
   },
 };
+
+const NOT_FOUND_META: TabMeta = {
+  title: 'Page not found — NIKKE Solo Raid Sim',
+  label: 'Not Found',
+  desc: 'The requested page could not be found. Browse the NIKKE Solo Raid Sim for DPS rankings, overload optimization, team building, and game mechanics.',
+};
+
+// Per-unit meta derived from data/characters.json so /unit/:slug pages get unique
+// titles, descriptions, and unit-card OG images. Resolved relative to the repo
+// root so the server works from source (src/server/static.ts) and the esbuild
+// bundle (dist-server/index.js) regardless of cwd.
+const REPO_ROOT: string | undefined = ['..', '../..']
+  .map((r) => fileURLToPath(new URL(`${r}/`, import.meta.url)))
+  .find((d) => existsSync(join(d, 'package.json')));
+
+interface CharacterData {
+  name?: string;
+  element?: string;
+  weapon?: string;
+  burst?: string;
+  class?: string;
+  manufacturer?: string;
+}
+
+const UNIT_META: Record<string, TabMeta> = {};
+let CHARACTERS: Record<string, CharacterData> = {};
+let OL_OPTIMAL: Record<string, unknown> = {};
+if (!REPO_ROOT) {
+  console.error(
+    'WARN: could not locate repo root — /unit/* pages will 404; confirm data/ and package.json are adjacent to the server'
+  );
+} else {
+  try {
+    const charsPath = join(REPO_ROOT, 'data', 'characters.json');
+    const raw = readFileSync(charsPath, 'utf8');
+    const json = JSON.parse(raw) as {
+      characters?: Record<string, CharacterData>;
+    };
+    CHARACTERS = json.characters ?? {};
+    for (const [slug, c] of Object.entries(CHARACTERS)) {
+      const name = c.name ?? slug;
+      UNIT_META[`unit/${slug}`] = {
+        title: `${name} — NIKKE Unit Profile, Best Overload Lines & DPS Ranking`,
+        label: name,
+        desc: `NIKKE ${name} unit profile: element, weapon, burst stage, and best overload lines. See how ${name} ranks in the solo-raid DPS sim.`,
+        image: `unit/${slug}.discord`,
+      };
+    }
+    TAB_META = { ...TAB_META, ...UNIT_META };
+  } catch (e) {
+    console.error('failed to load unit meta', e);
+  }
+  try {
+    const olPath = join(REPO_ROOT, 'data', 'ol-optimal.json');
+    const raw = readFileSync(olPath, 'utf8');
+    OL_OPTIMAL =
+      (JSON.parse(raw) as { units?: Record<string, unknown> }).units ?? {};
+  } catch (e) {
+    console.error('failed to load ol-optimal data', e);
+  }
+}
+
+if (Object.keys(UNIT_META).length === 0) {
+  throw new Error(
+    '/unit/* meta failed to load; /unit pages would 404. Confirm data/characters.json is readable and adjacent to the server bundle.'
+  );
+}
 
 export interface StaticOptions {
   distDir: string;
@@ -162,7 +255,12 @@ function injectUmami(html: string, opts: StaticOptions): string {
   if (!opts.umamiUrl || !opts.umamiWebsiteId) {
     return html;
   }
-  const tag = `<script defer src="${opts.umamiUrl}/script.js" data-website-id="${opts.umamiWebsiteId}"></script>`;
+  const src = `${opts.umamiUrl}/script.js`;
+  // Idempotent: do not inject twice (e.g. prerendered HTML already contains it).
+  if (html.includes(src)) {
+    return html;
+  }
+  const tag = `<script defer src="${src}" data-website-id="${opts.umamiWebsiteId}"></script>`;
   return html.replace('</head>', `  ${tag}\n  </head>`);
 }
 
@@ -173,6 +271,11 @@ const escapeAttr = (s: string): string =>
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
+// JSON-LD must escape '<' so a value containing '</script>' cannot break out of
+// the script block. '\u003c' is the standard safe escape used by e.g. Next.js.
+const escapeJsonLd = (obj: unknown): string =>
+  JSON.stringify(obj).replace(/</g, '\\u003c');
+
 // The rankings section lives under /ranks/* (owner decision 2026-07-26):
 // bare /ranks is the DPS chart, /ranks/support is Support Rankings, and
 // /ranks/compare is Unit Comparison — mirrors tabFromLocation in App.tsx.
@@ -180,7 +283,8 @@ const escapeAttr = (s: string): string =>
 // replaceState; a non-JS crawler still needs the right tab meta AND a
 // canonical tag pointing at the real URL (legacyCanonical below), not itself.
 function tabFromReqUrl(u: URL): string {
-  const segs = u.pathname.replace(/^\/+|\/+$/g, '').split('/');
+  const pathname = normalizeCanonicalPath(u.pathname.toLowerCase());
+  const segs = pathname.replace(/^\/+|\/+$/g, '').split('/');
   if (segs[0] === 'ranks') {
     if (segs[1] === 'support') {
       return 'ranks';
@@ -190,7 +294,10 @@ function tabFromReqUrl(u: URL): string {
     }
     return 'dpschart';
   }
-  if (segs[0] && TAB_META[segs[0]]) {
+  if (segs[0] === 'unit' && segs[1]) {
+    return `unit/${segs[1]}`;
+  }
+  if (segs[0] && Object.hasOwn(TAB_META, segs[0])) {
     return segs[0];
   }
   return u.searchParams.has('chart') ? 'dpschart' : 'sim';
@@ -199,7 +306,47 @@ function tabFromReqUrl(u: URL): string {
 const LEGACY_CANONICAL: Record<string, string> = {
   dpschart: '/ranks',
   dps: '/ranks/compare',
+  // `sim: '/'` is unreachable server-side because /sim now 301-redirects; kept
+  // for parity with the client-side table in useDocumentHead.ts.
+  sim: '/',
 };
+
+// 301 redirects for legacy paths that used to be canonical.
+const LEGACY_REDIRECT: Record<string, string> = {
+  '/dpschart': '/ranks',
+  '/dps': '/ranks/compare',
+  '/sim': '/',
+  '/index.html': '/',
+};
+
+// Canonical paths never carry a trailing slash, except the root.
+function normalizeCanonicalPath(pathname: string): string {
+  if (!pathname || pathname === '/') {
+    return '/';
+  }
+  return pathname.replace(/\/{2,}/g, '/').replace(/\/+$/, '') || '/';
+}
+
+// Valid first-party routes we want search engines to index. Anything else
+// that falls back to index.html is a soft 404 and should return 404.
+function isKnownRoute(u: URL): boolean {
+  const pathname = normalizeCanonicalPath(u.pathname.toLowerCase());
+  if (pathname === '/') {
+    return true;
+  }
+  const segs = pathname.replace(/^\/+|\/+$/g, '').split('/');
+  if (segs[0] === 'ranks') {
+    // Whitelist only valid /ranks children (mirrors tabFromReqUrl).
+    return (
+      segs.length <= 2 &&
+      (!segs[1] || segs[1] === 'support' || segs[1] === 'compare')
+    );
+  }
+  if (segs[0] === 'unit') {
+    return segs.length === 2 && Object.hasOwn(TAB_META, `unit/${segs[1]}`);
+  }
+  return segs.length === 1 && Object.hasOwn(TAB_META, segs[0]);
+}
 
 // Replaces a <meta property|name="attr" content="..."> tag's content,
 // tolerant of Prettier's multi-line wrap (attribute per line) — vite's build
@@ -214,6 +361,103 @@ function replaceMetaContent(
 ): string {
   const re = new RegExp(`(<meta\\s+${key}="${attr}"\\s+content=")[^"]*(")`);
   return html.replace(re, `$1${value}$2`);
+}
+
+function replaceLinkHref(html: string, rel: string, value: string): string {
+  const re = new RegExp(`(<link\\s+rel="${rel}"\\s+href=")[^"]*(")`);
+  return html.replace(re, `$1${value}$2`);
+}
+
+// Static unit-page body content for /unit/:slug. Crawlers that do not execute
+// JS still see the unit name, tags, and best overload lines; React replaces this
+// markup once the chunk loads (createRoot, not hydration).
+interface OlPick {
+  type: string;
+  count: number;
+}
+const OL_LABEL: Record<string, string> = {
+  ammo: 'Max Ammo',
+  chargedmg: 'Charge DMG',
+  chargespd: 'Charge Speed',
+  critrate: 'Crit Rate',
+  critdmg: 'Crit DMG',
+  elem: 'Elemental DMG',
+  atk: 'ATK',
+  hitrate: 'Hit Rate',
+  def: 'DEF',
+};
+
+function isOptimalPicks(value: unknown): value is OlPick[] {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (p) =>
+        p != null &&
+        typeof (p as OlPick).type === 'string' &&
+        typeof (p as OlPick).count === 'number'
+    )
+  );
+}
+
+function unitOptimalLines(slug: string): string {
+  const picks = isOptimalPicks(OL_OPTIMAL[slug]) ? OL_OPTIMAL[slug] : null;
+  if (!picks?.length) {
+    return 'No optimal line data yet.';
+  }
+  return picks
+    .map(
+      (p) =>
+        `${p.count}× ${Object.hasOwn(OL_LABEL, p.type) ? OL_LABEL[p.type] : p.type}`
+    )
+    .join(', ');
+}
+
+function unitStaticHtml(slug: string): string {
+  const c = CHARACTERS[slug];
+  if (!c) {
+    return '';
+  }
+  const name = escapeAttr(c.name ?? slug);
+  const lines = escapeAttr(unitOptimalLines(slug));
+  const tags = [
+    c.element,
+    c.weapon,
+    c.burst ? `Burst ${c.burst}` : '',
+    c.class,
+    c.manufacturer,
+  ]
+    .filter(Boolean)
+    .map((t) => `<span class="pill">${escapeAttr(t as string)}</span>`)
+    .join('');
+  return (
+    '<div class="app unit-page">' +
+    `<header class="unit-header"><div class="unit-meta"><h1>${name}</h1>` +
+    `<div class="unit-tags">${tags}</div></div></header>` +
+    '<section class="unit-section"><h2>Best overload lines</h2>' +
+    '<p>Solo-framework damage-optimal 12/12 remainder lines ' +
+    '(beyond the 4× Elemental DMG + 4× ATK floor):</p>' +
+    `<p class="unit-lines">${lines}</p></section>` +
+    '<section class="unit-section"><h2>Tools</h2>' +
+    '<div class="unit-tools">' +
+    '<a href="/ranks">DPS Rankings</a>' +
+    '<a href="/overload">Overload Optimizer</a>' +
+    '<a href="/teambuilder">Team Builder</a>' +
+    '</div></section></div>'
+  );
+}
+
+function injectUnitBody(html: string, slug: string): string {
+  const content = unitStaticHtml(slug);
+  if (!content) {
+    return html;
+  }
+  if (html.includes('<div id="root"></div>')) {
+    return html.replace(
+      '<div id="root"></div>',
+      `<div id="root">${content}</div>`
+    );
+  }
+  return html.replace('<body>', `<body>${content}`);
 }
 
 interface ImgManifestEntry {
@@ -243,24 +487,36 @@ function loadImgManifest(
   return p;
 }
 
+function pageMeta(reqUrl: string) {
+  // Collapse leading slashes so `//ranks` is parsed as a path, not a
+  // protocol-relative URL with host `ranks`.
+  const safeUrl = (reqUrl || '/').replace(/^\/+/, '/');
+  const u = new URL(safeUrl, SITE);
+  const pathname = u.pathname.toLowerCase();
+  const seg = pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
+  const key = tabFromReqUrl(u);
+  const m = TAB_META[key] ?? TAB_META.sim;
+  const canonicalPath = normalizeCanonicalPath(
+    (Object.hasOwn(LEGACY_CANONICAL, seg) ? LEGACY_CANONICAL[seg] : null) ??
+      (pathname || '/')
+  );
+  return { key, m, canonicalPath };
+}
+
 async function injectMeta(
   html: string,
   reqUrl: string,
-  distDir: string
+  distDir: string,
+  metaOverride?: TabMeta
 ): Promise<string> {
-  const u = new URL(reqUrl || '/', SITE);
-  const seg = u.pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
-  const m = TAB_META[tabFromReqUrl(u)];
-  const canonicalPath = LEGACY_CANONICAL[seg] ?? (u.pathname || '/');
+  const { m: defaultM, canonicalPath } = pageMeta(reqUrl);
+  const m = metaOverride ?? defaultM;
   const canonical = escapeAttr(SITE + canonicalPath);
   const title = escapeAttr(m.title);
   const desc = escapeAttr(m.desc);
   let out = html.replace(/(<title>)[^<]*(<\/title>)/, `$1${title}$2`);
   out = replaceMetaContent(out, 'name', 'description', desc);
-  out = out.replace(
-    /(<link rel="canonical" href=")[^"]*(")/,
-    `$1${canonical}$2`
-  );
+  out = replaceLinkHref(out, 'canonical', canonical);
   out = replaceMetaContent(out, 'property', 'og:title', title);
   out = replaceMetaContent(out, 'property', 'og:description', desc);
   out = replaceMetaContent(out, 'property', 'og:url', canonical);
@@ -296,13 +552,136 @@ async function injectMeta(
   return out;
 }
 
+function breadcrumbItems(canonicalPath: string, pageLabel: string) {
+  if (canonicalPath === '/') {
+    return null;
+  }
+  const home = { name: 'Home', item: SITE + '/' };
+  const leaf = { name: pageLabel, item: SITE + canonicalPath };
+  // Drop entries whose URL duplicates an earlier one (e.g. the section parent
+  // IS the leaf on /overload, /teambuilder, /mechanics; /team's Sim ancestor
+  // duplicates Home).
+  const dedupe = (arr: { name: string; item: string }[]) =>
+    arr.filter((it, i, a) => a.findIndex((x) => x.item === it.item) === i);
+
+  const items: { name: string; item: string }[] = (() => {
+    if (canonicalPath === '/ranks') {
+      return [home, { name: 'DPS Rankings', item: SITE + '/ranks' }];
+    }
+    if (canonicalPath === '/ranks/support') {
+      return [
+        home,
+        { name: 'Rankings', item: SITE + '/ranks' },
+        { name: 'Support Rankings', item: SITE + '/ranks/support' },
+      ];
+    }
+    if (canonicalPath === '/ranks/compare') {
+      return [
+        home,
+        { name: 'Rankings', item: SITE + '/ranks' },
+        { name: 'Unit Comparison', item: SITE + '/ranks/compare' },
+      ];
+    }
+    if (canonicalPath.startsWith('/unit/')) {
+      return [home, { name: 'Rankings', item: SITE + '/ranks' }, leaf];
+    }
+    if (
+      canonicalPath.startsWith('/overload') ||
+      canonicalPath === '/olsim' ||
+      canonicalPath === '/charge'
+    ) {
+      return [home, { name: 'Overload', item: SITE + '/overload' }, leaf];
+    }
+    if (
+      canonicalPath === '/team' ||
+      canonicalPath === '/roster' ||
+      canonicalPath === '/rostersim'
+    ) {
+      return [home, { name: 'Sim', item: SITE + '/' }, leaf];
+    }
+    if (
+      canonicalPath === '/teambuilder' ||
+      canonicalPath === '/builder' ||
+      canonicalPath === '/doll' ||
+      canonicalPath === '/resources'
+    ) {
+      return [home, { name: 'Tools', item: SITE + '/teambuilder' }, leaf];
+    }
+    if (
+      canonicalPath === '/mechanics' ||
+      canonicalPath === '/howto' ||
+      canonicalPath === '/testing-requests' ||
+      canonicalPath === '/patch-notes'
+    ) {
+      return [home, { name: 'Reference', item: SITE + '/mechanics' }, leaf];
+    }
+    return [home, leaf];
+  })();
+  // Drop ancestors whose URL duplicates the leaf URL so the leaf's own label
+  // wins (e.g. /teambuilder must not render as "Home > Tools"). First-wins
+  // dedupe still applies to earlier duplicates like Home vs Sim on /team.
+  const leafUrl = items[items.length - 1].item;
+  const collapsed = items.filter(
+    (it, i, a) => i === a.length - 1 || it.item !== leafUrl
+  );
+  return dedupe(collapsed);
+}
+
+function injectBreadcrumb(
+  html: string,
+  canonicalPath: string,
+  pageLabel: string
+): string {
+  // Idempotent: prerendered HTML may already contain a BreadcrumbList.
+  if (html.includes('"@type":"BreadcrumbList"')) {
+    return html;
+  }
+  const items = breadcrumbItems(canonicalPath, pageLabel);
+  if (!items) {
+    return html;
+  }
+  const ld = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((it, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: it.name,
+      item: it.item,
+    })),
+  };
+  const tag = `  <script type="application/ld+json">${escapeJsonLd(ld)}</script>\n  </head>`;
+  return html.replace('</head>', tag);
+}
+
 async function sendIndex(
   reqUrl: string,
-  opts: StaticOptions
+  opts: StaticOptions,
+  file: string,
+  status = 200
 ): Promise<Response> {
-  const raw = await readFile(join(opts.distDir, 'index.html'), 'utf8');
-  const html = injectUmami(await injectMeta(raw, reqUrl, opts.distDir), opts);
+  const { key, m, canonicalPath } = pageMeta(reqUrl);
+  let html = await readFile(file, 'utf8');
+  html = await injectMeta(
+    html,
+    reqUrl,
+    opts.distDir,
+    status === 404 ? NOT_FOUND_META : undefined
+  );
+  if (status === 404) {
+    // 404 responses canonicalize to the root and carry no breadcrumb.
+    const root = escapeAttr(SITE + '/');
+    html = replaceLinkHref(html, 'canonical', root);
+    html = replaceMetaContent(html, 'property', 'og:url', root);
+  } else {
+    html = injectBreadcrumb(html, canonicalPath, m.label ?? m.title);
+    if (key.startsWith('unit/')) {
+      html = injectUnitBody(html, key.slice(5));
+    }
+  }
+  html = injectUmami(html, opts);
   return new Response(html, {
+    status,
     headers: {
       'content-type': MIME['.html'],
       'cache-control': 'no-cache',
@@ -419,6 +798,25 @@ export async function handleStatic(
   const reqUrl = u.pathname + u.search;
   try {
     const url = decodeURIComponent(u.pathname);
+
+    // Redirect legacy aliases to their canonical home with a 301 so link equity
+    // flows to the current URL, not just via <link rel="canonical">.
+    const canonicalUrl = normalizeCanonicalPath(url.toLowerCase());
+    const redirectTarget = Object.hasOwn(LEGACY_REDIRECT, canonicalUrl)
+      ? LEGACY_REDIRECT[canonicalUrl]
+      : undefined;
+    if (redirectTarget) {
+      const qi = reqUrl.indexOf('?');
+      const query = qi === -1 ? '' : reqUrl.slice(qi + 1);
+      return new Response(null, {
+        status: 301,
+        headers: {
+          location: redirectTarget + (query ? `?${query}` : ''),
+          'cache-control': 'no-cache',
+        },
+      });
+    }
+
     // block path traversal, then resolve within dist/
     const rel = normalize(url).replace(/^(\.\.[/\\])+/, '');
     let file = join(opts.distDir, rel);
@@ -426,18 +824,37 @@ export async function handleStatic(
       file = join(opts.distDir, 'index.html');
     }
 
+    const requestedExt = extname(url);
     try {
       const s = await stat(file);
       if (s.isDirectory()) {
-        file = join(file, 'index.html');
+        const indexFile = join(file, 'index.html');
+        try {
+          await stat(indexFile);
+          file = indexFile;
+        } catch {
+          // Directory with no index.html is not a known route; fall back to the
+          // SPA shell so the normal 404 path below handles it.
+          file = join(opts.distDir, 'index.html');
+        }
       }
     } catch {
+      // A request with a real file extension that does not exist is a missing
+      // static asset, not an unknown SPA route. Serve a plain 404 so module
+      // loaders and image tags get the right MIME instead of an HTML shell.
+      if (requestedExt && requestedExt !== '.html') {
+        return new Response('not found', {
+          status: 404,
+          headers: { 'content-type': 'text/plain; charset=utf-8' },
+        });
+      }
       file = join(opts.distDir, 'index.html'); // SPA fallback
     }
     // index.html carries per-tab embed metadata injected per request; everything
     // else is a static asset served as-is.
     if (file.endsWith('index.html')) {
-      return await sendIndex(reqUrl, opts);
+      const notFound = !isKnownRoute(u);
+      return await sendIndex(reqUrl, opts, file, notFound ? 404 : 200);
     }
     return await sendFile(
       file,
@@ -447,9 +864,15 @@ export async function handleStatic(
       c.req.header('if-modified-since')
     );
   } catch {
-    // last-resort fallback
+    // last-resort fallback: preserve 404 for unknown routes instead of soft-200ing.
     try {
-      return await sendIndex(reqUrl, opts);
+      const notFound = !isKnownRoute(u);
+      return await sendIndex(
+        reqUrl,
+        opts,
+        join(opts.distDir, 'index.html'),
+        notFound ? 404 : 200
+      );
     } catch {
       return new Response('server error', { status: 500 });
     }

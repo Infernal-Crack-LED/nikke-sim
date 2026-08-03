@@ -38,7 +38,8 @@ export interface PreparedUnit {
   dollAtk?: number;
   dollHp?: number;
   dollWeapon?: DollBonus;
-  lambdaStage?: 1 | 2 | 3; // Λ units only: burst ONLY at this stage (Red Hood "operating as BX")
+  lambdaStage?: 1 | 2 | 3; // Λ units only: pin to burst ONLY at this stage (Red Hood "operates as BX").
+  forceStage?: 1 | 2 | 3; // Non-Λ units only: force this unit to fill ONLY this burst stage (rank-builder controls).
   stars?: number; // per-unit Limit Break stars / grade 0-3 (falls back to cfg.copies)
   core?: number; // per-unit Core enhancement 0-7 (falls back to cfg.copies)
   relationshipLevel?: number; // per-unit bond level (falls back to cfg.relationshipLevel, then the
@@ -70,7 +71,8 @@ export interface UnitOptions {
   // true = maxed SSR (level 15, back-compat); false = explicit no-doll; the object
   // form carries a synced rarity + level resolved against the doll stat table.
   doll?: boolean | { rarity: DollRarity; level: number };
-  lambdaStage?: 1 | 2 | 3;
+  lambdaStage?: 1 | 2 | 3; // Λ units only: pin to burst ONLY at this stage
+  forceStage?: 1 | 2 | 3; // Non-Λ units only: force this unit to fill ONLY this burst stage
   stars?: number; // Limit Break stars / grade 0-3
   core?: number; // Core enhancement 0-7
   relationshipLevel?: number; // bond level (undefined = the manufacturer's max)
@@ -148,6 +150,14 @@ export function prepareUnit(
   }
   if (opts?.lambdaStage) {
     loadout.push(`bursts as B${opts.lambdaStage}`);
+  }
+  if (opts?.forceStage) {
+    if (char.burst === 'Λ') {
+      throw new Error(
+        `forceStage is for non-Λ units only; ${char.name} is Λ and should use lambdaStage`
+      );
+    }
+    loadout.push(`forced to B${opts.forceStage}`);
   }
   const mode = skills.modes?.length
     ? opts?.mode && skills.modes.includes(opts.mode)
@@ -248,6 +258,7 @@ export function prepareUnit(
     dollHp,
     dollWeapon,
     lambdaStage: opts?.lambdaStage,
+    forceStage: opts?.forceStage,
     stars: opts?.stars,
     core: opts?.core,
     relationshipLevel: opts?.relationshipLevel,

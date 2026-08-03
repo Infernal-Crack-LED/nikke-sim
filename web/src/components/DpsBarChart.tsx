@@ -7,6 +7,7 @@ import { relScore } from '../../../src/infographics/core/dpsChart';
 import { profileLabel } from '../../../src/infographics/core/rankTables';
 import type { BarEntry } from '../dpschartData';
 import { usePortraitThumbs } from '../usePortraitThumbs';
+import { onSpaLinkClick } from '../router';
 import { ChartModal } from './ChartModal';
 
 const PORTRAIT_CSS = 33; // must match .dpschart-portrait width/height in styles.css
@@ -41,7 +42,7 @@ function DpsBarsList({
   // (capital-heavy short names can render wider than longer ones), so measure
   // the real pixel width against the name span's own computed font — falls
   // back to a `ch` estimate for the first paint, before layout is known.
-  const firstNameRef = useRef<HTMLSpanElement | null>(null);
+  const firstNameRef = useRef<HTMLAnchorElement | null>(null);
   const [maxNamePx, setMaxNamePx] = useState<number | null>(null);
   useLayoutEffect(() => {
     const el = firstNameRef.current;
@@ -62,57 +63,86 @@ function DpsBarsList({
   }
   return (
     <div className="dpschart-bars">
-      {bars.map((b, i) => (
-        <div
-          className="dpschart-row ranks-row"
-          style={{
-            gridTemplateColumns: `18px 33px ${nameColWidth} minmax(0, 1fr) auto`,
-          }}
-          key={`${b.slug}:${b.profile ?? ''}`}
-        >
-          <span className="dpschart-rank">{i + 1}</span>
-          {b.imageUrl ? (
-            <img
-              className="dpschart-portrait"
-              src={thumbs[b.imageUrl] ?? b.imageUrl}
-              alt={b.name}
-              loading="lazy"
-              title={`${b.name} · ${b.weapon} · ${b.element}`}
-            />
-          ) : (
-            <span
-              className="dpschart-portrait ranks-no-portrait"
-              aria-hidden="true"
-            />
-          )}
-          <span className="ranks-name dpschart-name-row">
-            <span
-              className="dpschart-name"
-              ref={i === 0 ? firstNameRef : undefined}
-              title={`${b.name} · ${b.weapon} · ${b.element}`}
-            >
-              {b.name}
-            </span>
-            {b.profile && (
-              <span className="ranks-badge" title={profiles?.[b.profile]}>
-                {profileLabel(b.profile)}
-              </span>
+      {bars.map((b, i) => {
+        const tooltip = `${b.name} · ${b.weapon} · ${b.element}`;
+        const portraitImg = b.imageUrl ? (
+          <img
+            className="dpschart-portrait"
+            src={thumbs[b.imageUrl] ?? b.imageUrl}
+            alt={b.name}
+            title={tooltip}
+            loading="lazy"
+          />
+        ) : (
+          <span
+            className="dpschart-portrait ranks-no-portrait"
+            title={tooltip}
+            aria-hidden="true"
+          />
+        );
+        return (
+          <div
+            className="dpschart-row ranks-row"
+            style={{
+              gridTemplateColumns: `18px 33px ${nameColWidth} minmax(0, 1fr) auto`,
+            }}
+            key={`${b.slug}:${b.profile ?? ''}`}
+          >
+            <span className="dpschart-rank">{i + 1}</span>
+            {b.known ? (
+              <a
+                className="dpschart-portrait-link"
+                href={`/unit/${b.slug}`}
+                onClick={onSpaLinkClick(`/unit/${b.slug}`)}
+                aria-hidden="true"
+                tabIndex={-1}
+              >
+                {portraitImg}
+              </a>
+            ) : (
+              portraitImg
             )}
-          </span>
-          <span className="dpschart-track">
-            <span
-              className="dpschart-fill"
-              style={{
-                width: `${Math.max(2, (b.dps / max) * 100)}%`,
-                background: ELEMENT_COLORS[b.element] ?? '#9aa3b2',
-              }}
-            />
-          </span>
-          <span className="dpschart-val" title={`${fmt(b.dps)} DPS`}>
-            {relScore(b.dps, max)}
-          </span>
-        </div>
-      ))}
+            <span className="ranks-name dpschart-name-row">
+              {b.known ? (
+                <a
+                  className="dpschart-name"
+                  ref={i === 0 ? firstNameRef : undefined}
+                  href={`/unit/${b.slug}`}
+                  onClick={onSpaLinkClick(`/unit/${b.slug}`)}
+                  title={tooltip}
+                >
+                  {b.name}
+                </a>
+              ) : (
+                <span
+                  className="dpschart-name"
+                  ref={i === 0 ? firstNameRef : undefined}
+                  title={tooltip}
+                >
+                  {b.name}
+                </span>
+              )}
+              {b.profile && (
+                <span className="ranks-badge" title={profiles?.[b.profile]}>
+                  {profileLabel(b.profile)}
+                </span>
+              )}
+            </span>
+            <span className="dpschart-track">
+              <span
+                className="dpschart-fill"
+                style={{
+                  width: `${Math.max(2, (b.dps / max) * 100)}%`,
+                  background: ELEMENT_COLORS[b.element] ?? '#9aa3b2',
+                }}
+              />
+            </span>
+            <span className="dpschart-val" title={`${fmt(b.dps)} DPS`}>
+              {relScore(b.dps, max)}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }

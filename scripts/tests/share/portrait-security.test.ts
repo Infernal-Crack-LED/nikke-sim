@@ -19,9 +19,14 @@ import { PORTRAIT_SLUG_RE } from '../../../src/infographics/node/portraits.js';
 let dir: string;
 let outsideFile: string;
 let loadPortrait: (slug: string) => Promise<Canvas | null>;
+// Save/restore (not delete): under isolate:false the env var is shared with
+// every later file in this worker, so the afterAll must hand back exactly what
+// it found (docs/test-speed-gotchas.md §3).
+let prevPortraitDir: string | undefined;
 
 beforeAll(async () => {
   dir = mkdtempSync(join(tmpdir(), 'portrait-sec-'));
+  prevPortraitDir = process.env.NIKKESIM_PORTRAIT_DIR;
   process.env.NIKKESIM_PORTRAIT_DIR = dir;
   const sharp = (await import('sharp')).default;
   const webp = await sharp({
@@ -41,7 +46,11 @@ beforeAll(async () => {
 afterAll(() => {
   rmSync(dir, { recursive: true, force: true });
   rmSync(outsideFile, { force: true });
-  delete process.env.NIKKESIM_PORTRAIT_DIR;
+  if (prevPortraitDir === undefined) {
+    delete process.env.NIKKESIM_PORTRAIT_DIR;
+  } else {
+    process.env.NIKKESIM_PORTRAIT_DIR = prevPortraitDir;
+  }
 });
 
 describe('loadPortrait slug validation', () => {

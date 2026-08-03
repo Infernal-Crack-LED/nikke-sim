@@ -12,6 +12,7 @@ import type {
   BurstCdrArtifact,
   SustainArtifact,
   BufferChartArtifact,
+  B1B2DpsArtifact,
 } from '../../ranks/types.js';
 
 export type BufferBoardId = 'generic' | 'typed';
@@ -43,6 +44,11 @@ const PROFILE_LABELS: Record<string, string> = {
   'with-healer': 'w/ Healer',
   'with-mast-rm': 'w/ Mast RM',
   'with-shielder': 'w/ Shielder',
+  'with-avistar': 'w/ Avistar',
+  'with-other-b1': 'w/ Other B1',
+  'with-chime': 'w/ Chime',
+  'as-b1': 'B1',
+  'as-b2': 'B2',
   snipe: 'SR',
   distributed: 'Distributed',
   'bursts-second': 'Bursts Second',
@@ -164,6 +170,51 @@ export function buildBufferTable(
       `#${i + 1}`,
       unitName(art.units, slug, profile),
       `${addedPct >= 0 ? '+' : '-'}${Math.abs(addedPct).toFixed(1)}%`,
+    ]),
+    window: {},
+    footer: 'nikkesim.app/ranks',
+  };
+}
+
+export type B1B2DpsBoardId =
+  'c0-neutral' | 'c0-eleadv' | 'c100-neutral' | 'c100-eleadv';
+
+export const B1B2_DPS_BOARDS: B1B2DpsBoardId[] = [
+  'c0-neutral',
+  'c0-eleadv',
+  'c100-neutral',
+  'c100-eleadv',
+];
+const DEFAULT_B1B2_BOARD: B1B2DpsBoardId = 'c100-eleadv';
+
+export const B1B2_CELL_LABEL: Record<B1B2DpsBoardId, string> = {
+  'c0-neutral': 'No Core · Neutral',
+  'c0-eleadv': 'No Core · Ele Adv',
+  'c100-neutral': 'Core 100 · Neutral',
+  'c100-eleadv': 'Core 100 · Ele Adv',
+};
+
+export function buildB1B2DpsTable(
+  art: B1B2DpsArtifact,
+  board: B1B2DpsBoardId
+): TableCardData {
+  const b =
+    B1B2_DPS_BOARDS.includes(board) && art.cells[board]
+      ? board
+      : DEFAULT_B1B2_BOARD;
+  return {
+    title: `B1/B2 DPS Ranking — ${B1B2_CELL_LABEL[b]}`,
+    subtitle:
+      'own DPS in a Solo-style no-op control team · scope-lock loadout · 20s-B1 / 40s-B1 / B2 templates are not directly comparable',
+    columns: [
+      { header: '#', flex: 0.5 },
+      { header: 'Unit', flex: 2 },
+      { header: 'DPS', align: 'right' },
+    ],
+    rows: art.cells[b].map(([slug, dps, profile], i) => [
+      `#${i + 1}`,
+      unitName(art.units, slug, profile),
+      fmtMagnitude(dps),
     ]),
     window: {},
     footer: 'nikkesim.app/ranks',

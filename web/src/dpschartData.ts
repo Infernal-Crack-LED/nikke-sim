@@ -54,6 +54,9 @@ export interface BarEntry {
   // Cinderella: Crystal Wave's Snipe mode) appears TWICE in the population —
   // same convention as the buffer/sustain/burstgen boards.
   profile: string | null;
+  // True when the slug resolves to a real character in the artifact's unit map.
+  // Synthetic/test rows may be present in chart data without a unit page.
+  known: boolean;
 }
 
 // full ranked population for a cell (already sorted desc in the artifact)
@@ -73,6 +76,7 @@ export function rankedFor(art: DpsArtifact, cell: Cell): BarEntry[] {
       rank: i + 1,
       imageUrl: m?.imageUrl ?? null,
       profile: profile ?? null,
+      known: m != null,
     };
   });
 }
