@@ -215,7 +215,10 @@ These paths are load-bearing for the sim's accuracy guarantees. **Never modify t
   test-first session that is now the PRIMARY kit build path (TDD transition step 3), demoting
   `/audit-kit` + `/kit-parse` to post-validation sampling / untuned-unit baselines;
   processing a recording → `/probe-processing`; engine/data changed →
-  `/mechanics-doc-upkeep`; after any non-trivial change → `/skill-maintenance`; before a PR/push
+  `/mechanics-doc-upkeep`; after any non-trivial change → `/skill-maintenance`; **doc state stale,
+  a handoff finished, or unsure which doc owns a fact → `/doc-maintenance`** (routing, QUEUE.md
+  pruning, closing/untracking a done handoff, stale-narration deletion; a PreToolUse hook nudges it
+  together with `/skill-maintenance` at push/PR time); before a PR/push
   to `main` → `/patch-notes` (drafts player-facing patch notes from DECISIONS for the web Dev
   page; a PreToolUse hook nudges on `git push` / `gh pr create`); full-roster sim-only batteries
   - blast-radius diffing → `/sim-battery` (scripts/battery/); top-ranker team/roster snapshots

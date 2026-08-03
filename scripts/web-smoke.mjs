@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom';
-import { readdirSync, readFileSync, existsSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 
 const GLOBALS = [
   'window',
@@ -89,27 +89,13 @@ async function mountAt(url) {
   return dom;
 }
 
-// ---- Prerendered static pages ---------------------------------------------
-// build:deploy runs scripts/prerender.ts before this smoke test. When the
-// prerendered files exist, verify they contain the page-specific content and do
-// not carry server-injected request-time artifacts that would freeze metadata
-// at build time (those are stripped before saving and re-injected by the
-// server). The bare `web:build` smoke command documented in CLAUDE.md does not
-// run prerendering, so a missing file is a skip, not a failure.
-function assertPrerendered(rel, waitForText) {
-  const file = new URL(rel, import.meta.url);
-  if (!existsSync(file)) {
-    console.warn(
-      `prerender smoke skipped — ${file.pathname} not found (run build:deploy to exercise)`
-    );
-    return true;
-  }
-  const html = readFileSync(file, 'utf8');
-  return (
-    html.includes(waitForText) &&
-    !html.includes('"@type":"BreadcrumbList"')
-  );
-}
+// NOTE: /howto and /mechanics used to be checked here, against files written by
+// scripts/prerender.ts. That check could not fail — it skipped when the files
+// were absent, and they were ALWAYS absent in the deploy build, because
+// prerender.ts ran only from build:deploy while railway.json builds with
+// `verify.sh artifacts`. Both routes are now served by request-time injection
+// (web/public/content-pages.json) and asserted on the SERVED BYTES in
+// scripts/tests/share/serve-headers.test.ts, which cannot skip.
 
 // ---- Sim tab --------------------------------------------------------------
 const sim = await mountAt(
@@ -173,14 +159,6 @@ const groupLabels = [
 const pillCount = tbDoc.querySelectorAll('.teambuilder-pill').length;
 
 const checks = {
-  'howto is prerendered': assertPrerendered(
-    '../dist/howto/index.html',
-    'How to use this site'
-  ),
-  'mechanics is prerendered': assertPrerendered(
-    '../dist/mechanics/index.html',
-    'Game mechanics'
-  ),
   'renders title': text.includes('NIKKE Solo Raid Sim'),
   'default team loaded': text.includes('Modernia') && text.includes('Liter'),
   'sim produced team damage': /team\s*\d+(\.\d+)?[MB]/.test(text),

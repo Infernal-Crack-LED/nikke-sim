@@ -81,11 +81,12 @@ if (explainSlug && !data.characters[explainSlug].simSupported) {
   );
 }
 
-// EXCLUDED_BUFFER_SLUGS (currently Blanc) never enters the population: the kit
-// reduces team damage in the standard comp, so its % increase is misleadingly
-// negative and not useful for ranking support value. The artifact keeps every
-// other row it computes, negatives included; the leaderboard trims those at
-// render time (src/ranks/buffer-rows.ts) so the unit card can still quote a
+// EXCLUDED_BUFFER_SLUGS never enters the population: a kit that reduces team
+// damage in the standard comp would report a misleadingly negative % increase,
+// useless for ranking support value. The set is currently EMPTY — no unit meets
+// that criterion — so this filter passes everything through today. The artifact
+// keeps every row it computes, negatives included; the leaderboard trims those
+// at render time (src/ranks/buffer-rows.ts) so the unit card can still quote a
 // unit's own value.
 const population: string[] = [];
 for (const [slug, c] of Object.entries(data.characters)) {

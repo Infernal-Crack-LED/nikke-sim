@@ -120,6 +120,38 @@ if (process.argv.includes('--cdr')) {
   process.exit(0);
 }
 
+// --excluded: is each EXCLUDED_BUFFER_SLUGS entry still earning its exclusion?
+//
+// The exclusion exists for kits whose net effect is to REDUCE team damage in
+// the standard comp, since those produce a misleadingly negative % increase
+// (src/ranks/buffer.ts, scripts/build-bufferchart.ts). That rationale is a
+// claim about a number, and the number moves whenever the board's comp shape
+// changes — so print it. A positive value here means the stated rationale no
+// longer describes the unit and the exclusion wants an owner call; it is NOT
+// on its own a reason to lift the exclusion.
+if (process.argv.includes('--excluded')) {
+  if (EXCLUDED_BUFFER_SLUGS.size === 0) {
+    process.stdout.write(
+      'no units are currently excluded — EXCLUDED_BUFFER_SLUGS is empty, so ' +
+        'every simSupported buffer enters the board population ' +
+        '(src/ranks/buffer.ts, scripts/build-bufferchart.ts). Nothing to check.\n'
+    );
+    process.exit(0);
+  }
+  process.stdout.write(
+    `${'unit'.padEnd(26)} ${'value'.padStart(8)}   FB v base   rationale still holds?\n`
+  );
+  for (const slug of [...EXCLUDED_BUFFER_SLUGS].sort()) {
+    const r = bufferValueFor(slug, 'generic', ctx, new Map(), null);
+    process.stdout.write(
+      `${slug.padEnd(26)} ${r.valuePct.toFixed(2).padStart(7)}%   ` +
+        `${r.fullBursts} v ${r.baselineFullBursts}       ` +
+        `${r.valuePct < 0 ? 'yes (negative)' : 'NO — value is positive'}\n`
+    );
+  }
+  process.exit(0);
+}
+
 const rows = population.map((slug) => {
   const r = bufferValueFor(slug, 'generic', ctx, new Map(), null);
   const c = (data.characters as any)[slug];

@@ -282,6 +282,13 @@ noted.
   that overshoots (kept on purpose) isolates a compensating error — don't fudge it back.
 - **Prose-free runtime.** The engine never parses kit text at runtime; each override fully describes the
   kit (all 3 slots + `unmodeled`). Blablalink/DB prose is the objective SSOT. → DECISIONS 2026-07-16.
+- **Kit work is test-first.** A unit's kit lines are pinned as assertion groups in
+  `scripts/tests/units/<slug>.test.ts`, written RED against the shipped override before the override or
+  engine change lands; the board A/B is the outer accuracy loop. The tests gate FAITHFULNESS
+  (stat- and footage-independent), the board gates FIT. Engine primitives are pinned in
+  `scripts/tests/engine/`; everything under `scripts/tests/` runs as the one `npx vitest run` step in
+  `verify.sh`. Per-unit path: `/kit-tdd` (owner-driven spec) or `/kit-autonomy` (authorized autonomous
+  branch work); `/audit-kit` samples, `/kit-parse` seeds untuned units. → CONVENTIONS.md.
 - **Per-unit tier SSOT = `data/kit-status.json`** (via `scripts/kit-status.ts`). Every tuning change
   updates it. Evidence tiers (MEASURED > DATAMINED > COMMUNITY > CALIBRATED ⚑): → CONVENTIONS.md.
 - **Supported roster** = enikk top-100 audit list + all hand-tuned overrides; never remove a
@@ -365,8 +372,10 @@ Planned follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
   `build-bufferchart.ts` now loads the synthetic control overrides at all, which it never did. The leaderboard shows rows ≥ 0 only, minus
   `HIDDEN_BUFFER_SLUGS` (chime, avistar) — `rankedBufferRows` (`src/ranks/buffer-rows.ts`) filters
   both the chart bars and the share/pre-render table card, so ranks are numbered over one set; the
-  artifact itself keeps every row for the unit card, and `EXCLUDED_BUFFER_SLUGS` (blanc) never
-  enters the population at all.
+  artifact itself keeps every row for the unit card. `EXCLUDED_BUFFER_SLUGS` is a second, harder
+  screen at the population filter — a kit that outright REDUCES team damage in the standard comp
+  would report a misleadingly negative % and never enters the board — and it is currently **empty**;
+  `scripts/probe/buffer-rotation-audit.ts --excluded` checks each entry against that criterion.
 - **b1b2dps** — every sim-supported B1/B2 unit, ranked by own DPS in a Solo-style no-op control team.
   Four cells: Core 0 / Core 100 × neutral / elemental advantage. 40s-B1 and B2 templates include a
   no-op B1 with the standard 7 s team burst CDR; 20s-B1 rows rely on the tested unit's own CDR.
@@ -382,3 +391,34 @@ her own Relax self-heal), naga `with-shielder` (shield-gated core/ATK lines live
 via a synthetic heal/shield kit on the no-op fillers (`COMP_PROFILES` in `src/ranks/buffer.ts`).
 Frontend: `/ranks` (Rankings section home, `/ranks/support` boards + `/ranks/compare` comparator,
 pill-switched, profile badges — `web/src/App.tsx`, PR #31).
+
+---
+
+## 9. No-JS / crawler surface (what a client that runs no JavaScript receives)
+
+The site is a client-rendered SPA, so the served `dist/index.html` carries meta tags but an EMPTY
+`<div id="root">`. Routes that need indexable text get a body injected **at request time** by both
+servers — `src/server/static.ts` (the TypeScript port, which is what production runs via
+`npm run start:server` → `dist-server/index.js`) and its hand-mirror `scripts/serve.mjs`. React
+replaces the markup wholesale on load (`createRoot`, not hydration), so it must be valid and
+crawlable, not identical to React's output.
+
+| Route        | Body source                                                   | Emits                                                      |
+| ------------ | ------------------------------------------------------------- | ---------------------------------------------------------- |
+| `/unit/*`    | `unitStaticHtml` ← `data/characters.json` + `data/unit-pages.json` | identity row, tags, kit, ranked overload table, sim-status badge |
+| `/characters`| `charactersStaticHtml` ← `data/characters.json`                | an `<a>` to every character — the crawl hub                 |
+| `/mechanics` | `web/public/content-pages.json` ← `web/src/mechanics-data.ts`  | intro, tier legend, every section heading + bullets         |
+| `/howto`     | `web/public/content-pages.json` ← `web/src/howto-data.ts`      | intro, every section heading, bullets, glossary `<dl>`      |
+
+Every other route serves the empty-`#root` shell. **`/doll`'s FAQ is deliberately excluded** — its
+web copy is JSX in `App.tsx` while `web/src/doll-faq-data.ts` is the Discord bot's separate copy, so
+injecting from the data module would show crawlers text the page does not render.
+
+**Two standing rules.** (1) A no-JS body is generated from the SAME artifact the React page reads, so
+the two cannot recommend different things — serving text the page does not show is worse than serving
+none. (2) **No prerender pass**: build-time prerendering is rejected for every route
+(→ DECISIONS 2026-08-03, `docs/seo-followups.md`). A route that needs a body gets request-time
+injection. `web/public/content-pages.json` is committed AND regenerated by
+`scripts/build-content-pages.ts` in verify.sh's `artifacts` tier — the tier `railway.json` builds
+with; `content-pages-drift.test.ts` fails on drift, and both serve test suites assert the served
+bytes.
