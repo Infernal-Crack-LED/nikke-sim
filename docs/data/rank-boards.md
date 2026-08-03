@@ -152,12 +152,14 @@ already being in the team, including the synergy that forces the partner into
 its duet mode (Mint/Prika) or simply adds the tested B2 alongside the partner
 (Mast/Anchor).
 
-**Blanc pair profile (code-only):** Blanc's duo profile is defined as `w/ Rouge`
-— a synthetic no-op Rouge B1 whose presence satisfies her "ally from the same
-squad" gate — but Blanc is in `EXCLUDED_BUFFER_SLUGS`, so neither her plain row
-nor the `w/ Rouge` row is emitted to the published buffer board. The profile is
-kept code-healthy in `scripts/tests/ranks/buffer.test.ts` and the Blanc unit
-tests.
+**Blanc pair profile:** Blanc's duo partner is a synthetic no-op Rouge B1, whose
+presence satisfies her "ally from the same squad" gate, so the `w/ Rouge` row
+shows what her burst-cooldown reduction is worth once that gate is open. Both her
+rows are published: plain +7.9%, `w/ Rouge` +20.9% (generic and typed alike — no
+line of her kit is weapon- or element-typed, so the two boards read the same).
+The gap is her own burst frequency — 3 casts in 180 seconds with the gate shut
+against 8 with it open. The profile is also pinned in
+`scripts/tests/ranks/buffer.test.ts` and the Blanc unit tests.
 
 Read generic as plug-and-play value and typed as built-around value. Purely
 defensive kits read near zero — the scope-lock boss deals no damage, so there

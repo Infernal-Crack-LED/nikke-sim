@@ -126,6 +126,14 @@ if (process.argv.includes('--noop-cdr')) {
 // longer describes the unit and the exclusion wants an owner call; it is NOT
 // on its own a reason to lift the exclusion.
 if (process.argv.includes('--excluded')) {
+  if (EXCLUDED_BUFFER_SLUGS.size === 0) {
+    process.stdout.write(
+      'no units are currently excluded — EXCLUDED_BUFFER_SLUGS is empty, so ' +
+        'every simSupported buffer enters the board population ' +
+        '(src/ranks/buffer.ts, scripts/build-bufferchart.ts). Nothing to check.\n'
+    );
+    process.exit(0);
+  }
   process.stdout.write(
     `${'unit'.padEnd(26)} ${'value'.padStart(8)}   FB v base   rationale still holds?\n`
   );
