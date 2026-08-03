@@ -48,6 +48,7 @@ import {
   TABLE_W,
   drawUnitCardVariant,
   unitCardSize,
+  UNIT_CARD_WEBP_QUALITY,
   buildOlTable,
   buildChargeTable,
   GENERIC_BASE_FRAMES,
@@ -187,7 +188,9 @@ interface Rendered {
 //
 // Scoped to the unit set deliberately: it is the only ~200-file kind, and the
 // other kinds' sizes were never measured.
-const UNIT_CARD_WEBP_QUALITY = 90;
+//
+// The quality number itself lives on core/unitCard.ts so the browser fallback
+// renderer encodes at the SAME quality — see the note there.
 const encodeCard = (canvas: Canvas): Buffer =>
   canvas.toBuffer('image/webp', UNIT_CARD_WEBP_QUALITY);
 interface Job {

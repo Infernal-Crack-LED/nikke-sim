@@ -261,7 +261,7 @@ async function renderUnitCardDataUrl(
 ): Promise<string | null> {
   const [
     { buildUnitCardShare },
-    { drawUnitCardVariant, unitCardSize },
+    { drawUnitCardVariant, unitCardSize, UNIT_CARD_WEBP_QUALITY },
     { ensureRoboto, loadPortrait },
     boards,
   ] = await Promise.all([
@@ -297,7 +297,15 @@ async function renderUnitCardDataUrl(
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   drawUnitCardVariant(ctx as never, card, 'discord');
-  return cv.toDataURL('image/png');
+  // WEBP at the build's own quality, not a lossless PNG. Production serves the
+  // prerendered lossy WebP, so encoding the fallback losslessly makes the card
+  // look subtly different in dev than the file that actually ships — most
+  // visibly on the small icon-strip labels, which is exactly where q90 shows.
+  // (A residual difference remains and is NOT fixable here: @napi-rs/canvas and
+  // the browser's Skia antialias glyphs differently. Font metrics are identical
+  // across the two hosts — measured, all four weights match to 0.01px — so this
+  // is rasterization, not a different font.)
+  return cv.toDataURL('image/webp', UNIT_CARD_WEBP_QUALITY / 100);
 }
 
 // Every board the card can draw a tile from. Each is independently nullable and
