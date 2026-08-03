@@ -13,13 +13,13 @@ import {
   type BoardId,
   type BufferBoard,
   type BurstGenBoard,
-  type B1B2DpsBoard,
   type BurstGenArtifact,
   type BurstCdrArtifact,
   type SustainArtifact,
   type BufferChartArtifact,
   type B1B2DpsArtifact,
 } from './rankBoardsData';
+import type { B1B2DpsCell } from '../../src/ranks/b1b2-cells';
 
 // Short chip label for a comp-profile variant. Explicit map for the known
 // ids; fallback humanizes `with-<x>` → `w/ <X>` so a new profile still
@@ -98,7 +98,7 @@ export function barsForBoard(
   opts: {
     bufferBoard: BufferBoard;
     burstGenBoard: BurstGenBoard;
-    b1b2DpsBoard: B1B2DpsBoard;
+    b1b2DpsBoard: B1B2DpsCell;
   }
 ): RankChartBar[] {
   const profiles = art.profiles;

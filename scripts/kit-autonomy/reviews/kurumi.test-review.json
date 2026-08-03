@@ -1,0 +1,75 @@
+{
+  "slug": "kurumi",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ after landing 36 normal attack(s)",
+      "disposition": "FAITHFUL",
+      "scope": "Landed normal-attack rounds only (AR, hitsPerShot 1, so 36 rounds = 36 trigger pulls); no charge/crit scoping.",
+      "durationSemantics": "DoT: 52.24% tick every 1 sec for 5 sec (wall-clock, intervalSec 1). The 'Hacked' STATUS window it opens is also 5 sec — this line is BOTH a dot AND a targetStatus source.",
+      "triggerIdentity": "hitCount count:36 (counts ROUNDS, spans reloads); no FB gate, no status gate.",
+      "targetSet": "enemy (the boss; 'the target').",
+      "nearestWrongModel": "Two plausible misreads: (a) encoding the cadence as interval sec:~3 (36 hits / AR fire rate) — drifts from truth across reload stalls and MG-free downtime; (b) modeling ONLY the dot and dropping the targetStatus 'Hacked' channel — skill2's status gate then never opens and skill2 is silently inert (or gets modeled ungated to compensate).",
+      "distinguishingAssertion": "Via cfg.onEvent: the first sustained-flavor damage tick from kurumi's skill1 occurs strictly AFTER her 36th shot event (not at a fixed wall-clock time), and a later proc window that straddles a reload starts LATER than 36/fireRate seconds would predict (hitCount green / interval red). Separately assert a targetStatus-driven consumer works: with the committed override, skill2 damage > 0 (green under status-channel modeled, red under dot-only).",
+      "inertness": "Zero skill1 dot ticks before the 36th landed round; no buffApply to any ally from this line (it is enemy-targeted damage, not a team buff).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ when using Burst Skill → all enemies",
+      "disposition": "FAITHFUL",
+      "scope": "Fires on kurumi's OWN burst cast only; damage line identical to line A (52.24%/1s/5s sustained + Hacked status).",
+      "durationSemantics": "Same as line A: 5 sec dot, 1 sec interval, 5 sec Hacked status window.",
+      "triggerIdentity": "burstCast (this unit uses Burst Skill) — NOT fullBurstEnter. Kurumi is Burst I, cd 20s, so this keys to rotations SHE wins the B1 slot.",
+      "targetSet": "enemy ('all enemies' = the single boss).",
+      "nearestWrongModel": "Keying to fullBurstEnter — fires on EVERY team Full Burst including rotations where a different Burst I unit (e.g. liter in the control fixture) casts instead of kurumi. Over-credits both the dot and the Hacked uptime feeding skill2.",
+      "distinguishingAssertion": "Build a comp where another B1 competes and kurumi does NOT cast a given rotation's burst (verify via burstCast events by srcSlot): in that rotation there must be NO burst-sourced Hacked dot application at FB entry (red under fullBurstEnter). When kurumi DOES cast, the dot application frame coincides with her burstCast event, before fullBurstStart — and the cast-sourced application itself is pre-FB (burst-cast damage lands before the FB window opens).",
+      "inertness": "No application on Full Bursts kurumi did not initiate with her own burst; no ally-targeted effects.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ during Full Burst … 36 … Hacked status",
+      "disposition": "FAITHFUL",
+      "scope": "Normal-attack round counter (36 rounds), rider is plain 'additional damage' — flatDamage, noRange per the universal rider rule, crit at caster's sheet rate (RIDERCRIT), NO core (text lacks 'core strike').",
+      "durationSemantics": "Instant hit per activation; no duration. Not a dot.",
+      "triggerIdentity": "hitCount count:36 COMPOSED WITH two gates checked at fire time: fbGate 'inFb' AND requiresTargetStatus 'Hacked'. Both gates are load-bearing.",
+      "targetSet": "enemy (the boss).",
+      "nearestWrongModel": "Dropping one of the two gates: (a) no Hacked gate — fires on every 36th round inside any FB even if the status lapsed (Hacked is only 5 s per application; with kurumi not bursting a rotation, coverage inside that FB can be zero); (b) no FB gate — fires outside Full Burst. Secondary misread: giving the rider core, or denying it the +50% FB major (it fires DURING FB, so timing-based FB applies).",
+      "distinguishingAssertion": "Via withPatchedOverride('kurumi', strip skill1) so no Hacked source exists: skill2's flat-damage total must be exactly 0 (red under a missing status gate). With the committed override: every skill2 damage event has inFullBurst true and fbMajorApplied true, rangeApplied false, and each lands only while a live Hacked window (opened ≤5 s earlier by a skill1 application) covers it.",
+      "inertness": "Zero skill2 damage outside fullBurstStart..fullBurstEnd windows; zero when Hacked is absent; no core bucket contribution.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ all enemies: Damage Taken ▲ 18.06% 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Boss DEBUFF benefiting the WHOLE TEAM's damage — not a self buff, not an ally attackDamagePct.",
+      "durationSemantics": "10 sec wall-clock; uptime ceiling 10/20 = 50% of rotations kurumi actually bursts (cd 20s).",
+      "triggerIdentity": "burstCast (her burst block, cast-time application). Same burstCast-vs-fullBurstEnter divergence as skill1 line B when another B1 is present.",
+      "targetSet": "enemy (boss-held debuff — buffApply emits casterIdx===null AND targetIdx===null; filter by stat+value).",
+      "nearestWrongModel": "Encoding as a self or team-ally damage buff (attackDamagePct on allies) instead of damageTakenPct on the boss — team-wide amplification collapses to one unit; or keying to fullBurstEnter so the debuff appears on rotations liter bursts.",
+      "distinguishingAssertion": "onEvent: at each kurumi burstCast frame, a buffApply with stat 'damageTakenPct', value 18.06, casterIdx===null, targetIdx===null appears; and a TEAMMATE's (not just kurumi's) damage during the 10 s window exceeds its outside-window baseline (green under boss-debuff, red under self-buff). No such buffApply on rotations where kurumi's burstCast event is absent.",
+      "inertness": "No self-only or ally-targeted buffApply from the burst; no effect on rotations kurumi does not burst.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:hitCount36-hacked-dot",
+    "skill1:burstCast-hacked-dot",
+    "skill2:fb-hacked-36hit-rider",
+    "burst:damageTakenPct-18.06-10s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in order of likelihood: (1) 'Activates when using Burst Skill' keyed to fullBurstEnter instead of burstCast — kurumi is Burst I and the control fixture already carries liter (B1), so first-ready selection can hand rotations to liter; a fullBurstEnter model over-credits BOTH the second Hacked source and the burst debuff. Tests must verify via burstCast events which unit actually won each B1 slot before asserting per-rotation effects. (2) Dropping the named targetStatus 'Hacked' channel: skill1 is a dot AND a status source; both skill1 lines must open a 5 s 'Hacked' window (name-keyed) or skill2's requiresTargetStatus gate is dead — the compensating error is shipping skill2 ungated, which over-credits whenever Hacked coverage inside FB is partial. (3) Fixture validity: controlComp(carry) seats the carry in the B3 slot; kurumi is B1, so a naive controlComp('kurumi') either mis-slots her or leaves no B3 — the comp must retain a real B1→B2→B3 chain (a lone/enabler-less arrangement makes ZERO Full Bursts and vacuously greens every FB-gated assertion). (4) DoT overlap ⚑: skill1 line A re-fires every 36 rounds (~3 s of AR fire) with a 5 s duration; the engine appends an independent dot instance per fire and never dedups, so instances overlap. Whether in-game re-application of Hacked REFRESHES (one live instance) or STACKS is kit-silent — flag as a ⚑/measurement-gated stacking question, do not silently ship the multiplying reading as validated. (5) Both S1 line A and S2 carry independent per-block 36-hit counters; whether S2's counter counts only in-FB rounds or cumulative rounds (gate checked at fire) is a genuine prose ambiguity — the cumulative-with-gate reading is the engine-native default; note it as an assumption rather than asserting either as measured.",
+  "model": "claude-fable-5"
+}

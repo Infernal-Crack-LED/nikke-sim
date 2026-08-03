@@ -9,7 +9,32 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-02, latest) CHIME / AVISTAR KING-MAKER TARGETING EXCLUDES SELF.** Both units use an
+- **(2026-08-02, latest) THE SYNTHETIC NO-OP CONTROLS USE LOW BASE ATK (100), AND IT IS THE SHARED
+  DEFAULT.** The controls in `src/dpschart/noop.ts` carried base ATK 30,000 while real units sit near
+  400–500, so a control ALWAYS won an `alliesTopAtk` selector: a king-maker buff on the unit under
+  test was spent on scaffolding that deals no damage and is never ranked. The B1/B2 DPS board had
+  already worked around it with a private low-ATK fork (`B1B2_NOOP_CHARACTERS`, ATK 100), which split
+  the no-op registry in two and let `src/ranks/b1b2dps.ts` diverge from the resolution chain every
+  other board uses. **Owner ruling 2026-08-02: make the low-ATK basis standard.** The fork is deleted
+  (one registry) and `b1b2dps.ts` now resolves real unit → `syntheticFor` → `NOOP_CHARACTERS` like
+  buffer/sustain/burstgen. Rationale: a control must never be the SUBJECT of a buff — that is what
+  makes it a control. `alliesLowestAtk` still resolves to a control, which is correct for the same
+  reason: the lowest-ATK ally genuinely is the inert one.
+  **Measured effect** (`npx tsx scripts/noop-basis-ab.ts`, the committed probe — deterministic, all 12
+  ally-ATK-selector carriers, Solo framework neutral/c100/scope): tested-unit DPS rises for four —
+  `maxwell` 301,075 → 386,148 (+28.3%), `alice` 490,328 → 579,816 (+18.3%), `n102` 181,407 → 198,881
+  (+9.6%), `naga` 223,145 → 224,918 (+0.8%) — and is byte-identical for the other eight. Those four
+  are the fix working: with only no-ops for company a self-includable highest-ATK buff now resolves to
+  the tested unit instead of a control. Regression snapshots all stable, verify.sh green.
+  **Known side effect, accepted:** the no-op B3's OWN damage scales with the same ATK and fell ~200×
+  (5.09e9 → 2.52e7). It never enters a published number (`src/dpschart/run.ts:106` ranks
+  `r.units[testedIndex].dps` alone) and the controls give zero buffs, so it cannot reach the tested
+  unit except through the very selectors this ruling is about; `regression.ts` asserts only that it is
+
+  > 0, which still holds. It does retire the older "contributes realistic B3-stage damage" intent —
+  > reopen only if a future board wants to rank team totals.
+
+- **(2026-08-02) CHIME / AVISTAR KING-MAKER TARGETING EXCLUDES SELF.** Both units use an
   `alliesTopAtk count:1` selector for their designated carry ("the king" / "favorite pop star").
   The engine ranks on static ATK (base stats + class gear). At scope lock (3★/core 7, Base-5 gear)
   that gives Chime 100,317 > Crown 80,267 and Avistar 100,317 > Anis: Star 80,267 (measured via

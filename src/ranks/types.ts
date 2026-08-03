@@ -1,3 +1,5 @@
+import type { B1B2DpsCell } from './b1b2-cells.js';
+
 // Shared artifact types for the ranking boards — the single source both
 // the builders (scripts/build-*.ts) and the web frontend (web/src/rankBoardsData.ts)
 // import, so the emitted JSON and the consuming UI can't drift. Rows are TUPLES
@@ -104,10 +106,5 @@ export interface B1B2DpsArtifact {
   methodology: string;
   units: Record<string, RankUnitMeta>;
   profiles: Record<string, string>;
-  cells: {
-    'c0-neutral': B1B2DpsRow[];
-    'c0-eleadv': B1B2DpsRow[];
-    'c100-neutral': B1B2DpsRow[];
-    'c100-eleadv': B1B2DpsRow[];
-  };
+  cells: Record<B1B2DpsCell, B1B2DpsRow[]>;
 }

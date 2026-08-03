@@ -45,7 +45,7 @@ import {
   readdirSync,
   rmSync,
 } from 'node:fs';
-import { spawn } from 'node:child_process';
+import { spawn, type ChildProcess } from 'node:child_process';
 import { availableParallelism, tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
@@ -99,6 +99,17 @@ const out =
 // in CELLS order. Not a user-facing flag — the parent spawns it.
 const ROWS_IN = argValue('--rows');
 const ROWS_OUT = argValue('--rows-out');
+// Both or neither: a child given only one would fall through to the full main path —
+// re-hashing, re-fetching candidates, simulating every row inline, and overwriting the
+// real `out` — instead of doing its slice. The parent always passes both, so this only
+// catches a future caller or a hand-run debug invocation.
+if ((ROWS_IN === undefined) !== (ROWS_OUT === undefined)) {
+  throw new Error(
+    'worker mode needs BOTH --rows and --rows-out (got only ' +
+      (ROWS_IN !== undefined ? '--rows' : '--rows-out') +
+      ')'
+  );
+}
 const IS_WORKER = ROWS_IN !== undefined && ROWS_OUT !== undefined;
 
 const WORKERS = Math.max(
@@ -484,9 +495,32 @@ function spawnWorkers(rows: TestedUnit[]): Promise<Map<string, number[]>> {
     }
   }
 
+  // `Promise.all` settles on the FIRST rejection, so without this the surviving children
+  // keep simulating after the parent has given up — and then crash writing out-*.json into
+  // the directory the `.finally()` below just removed. Kill them at the first failure.
+  const children: ChildProcess[] = [];
+  let aborted = false;
+  const abortSiblings = () => {
+    if (aborted) {
+      return;
+    }
+    aborted = true;
+    for (const c of children) {
+      if (c.exitCode === null && c.signalCode === null) {
+        c.kill();
+      }
+    }
+  };
+
   const jobs = buckets.map(
     (bucket, i) =>
-      new Promise<Map<string, number[]>>((resolve, reject) => {
+      new Promise<Map<string, number[]>>((resolve, rawReject) => {
+        // Killing the siblings makes them exit non-zero too; those later rejections are
+        // already handled by Promise.all and ignored, so only the first error surfaces.
+        const reject = (e: Error) => {
+          abortSiblings();
+          rawReject(e);
+        };
         const inPath = join(dir, `rows-${i}.json`);
         const outPath = join(dir, `out-${i}.json`);
         writeFileSync(inPath, JSON.stringify(bucket));
@@ -495,6 +529,7 @@ function spawnWorkers(rows: TestedUnit[]): Promise<Map<string, number[]>> {
           [...loaderArgs, SCRIPT, '--rows', inPath, '--rows-out', outPath],
           { stdio: ['ignore', 'inherit', 'inherit'] }
         );
+        children.push(child);
         child.on('error', reject);
         child.on('exit', (code) => {
           if (code !== 0) {
@@ -532,7 +567,15 @@ function spawnWorkers(rows: TestedUnit[]): Promise<Map<string, number[]>> {
       return merged;
     })
     .finally(() => {
-      rmSync(dir, { recursive: true, force: true });
+      // Best-effort: on the failure path a throw here (EPERM/EBUSY on a shared build box)
+      // would replace `dpschart worker N exited X` — the diagnostic you actually need.
+      try {
+        rmSync(dir, { recursive: true, force: true });
+      } catch (e) {
+        process.stderr.write(
+          `  (could not remove ${dir}: ${(e as Error).message})\n`
+        );
+      }
     });
 }
 
@@ -663,7 +706,7 @@ const artifact = {
     cores: CORE_IDS.map((id) => ({
       id,
       label: CORES[id].label,
-      rate: CORES[id].rate,
+      exposure: CORES[id].exposure,
     })),
     invests: axis(INVEST_IDS, INVESTS),
     headliners: ALL_HEADLINERS.map((h) => ({

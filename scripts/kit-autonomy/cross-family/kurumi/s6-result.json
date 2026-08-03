@@ -1,0 +1,229 @@
+{
+  "slug": "kurumi",
+  "leakDetected": null,
+  "override": {
+    "slug": "kurumi",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 36
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "targetStatus",
+            "name": "Hacked",
+            "durationSec": 5
+          },
+          {
+            "kind": "dot",
+            "atkPct": 52.24,
+            "durationSec": 5,
+            "intervalSec": 1,
+            "flavor": "sustained"
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "targetStatus",
+            "name": "Hacked",
+            "durationSec": 5
+          },
+          {
+            "kind": "dot",
+            "atkPct": 52.24,
+            "durationSec": 5,
+            "intervalSec": 1,
+            "flavor": "sustained"
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 36
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "fbGate": "inFb",
+        "requiresTargetStatus": "Hacked",
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 86.17,
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 18.06,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ hitCount:36 counts ROUNDS fired (engine convention), not trigger pulls — kurumi is AR hitsPerShot 1 so rounds == pulls; no divergence expected, but the 36-hit cadence in-fight is unmeasured.",
+      "⚑ Hacked status window (5 sec) is INFERRED from the sustained-damage duration — the kit text names the status but never states its own duration independently. If Hacked outlives the DoT, skill2's requiresTargetStatus gate opens wider than modeled.",
+      "⚑ The two skill1 branches each append an independent DoT instance (engine never dedups) — faithful to 'append-not-refresh', but overlapping 36-hit and burst-cast triggers stack concurrent 5s instances. Unverified against popup counts.",
+      "⚑ skill2 crit:true is the caster-rate default for function-damage riders; no core (text says 'additional damage', not 'core strike'). Full Burst by timing is left ON (default) — noFb NOT set, unmeasured.",
+      "⚑ skill2's hit counter is modeled as an INDEPENDENT 36-hit counter from skill1's; the kit does not state whether the two share one counter. If shared, skill2 would fire in lockstep with skill1 rather than on its own accrual.",
+      "⚑ Cadence tuple (ammo 60 / reloadFrames 81 / AR pulls-per-sec) is datamine-sourced and known-unreliable; it drives how often the 36-hit threshold is reached, so it directly gates both skill1 and skill2 proc counts."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. kurumi (AR/Iron/Supporter/Burst I) is a status-and-sustained-damage supporter: S1 applies a named 'Hacked' status + a 5s/1s-tick sustained DoT on two independent triggers (every 36 landed normal attacks, and on her own burst cast); S2 is an in-Full-Burst, Hacked-gated additional-damage rider on the same 36-hit cadence; her burst is a pure team-wide enemy debuff (Damage Taken ▲18.06% for 10s), which benefits the whole team and is NOT a self buff. The 'Hacked' targetStatus effect is the sole channel that opens S2's requiresTargetStatus gate; both S1 branches carry it so either path can enable the S2 rider. Both S1 blocks and the burst block are authored with target 'enemy' as the validator requires for targetStatus / boss-debuff channels."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after landing 36 normal at",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'hitCount', count:36} — 'landing N normal attack(s)' is the hit-count trigger; engine counts ROUNDS (hitsPerShot 1 for this AR, so rounds == pulls)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects the target.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single-target enemy scope."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Hacked: ... 52.24% ... every 1 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "TWO effects on one block: (a) targetStatus {name:'Hacked', durationSec:5} — the 'Hacked:' label is a NAMED enemy status, the sole gate-opener for skill2's requiresTargetStatus; (b) dot {atkPct:52.24, durationSec:5, intervalSec:1, flavor:'sustained'} — 'sustained damage' maps to the sustained flavor; append-not-refresh is the engine default."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when using Burst Skill.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'} — 'when using Burst Skill' is literally the OWNER's own burst cast, NOT fullBurstEnter. Keying to fullBurstEnter would over-credit on rotations where another B1 casts."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — v1 boss is a single entity, so 'all enemies' collapses to the same enemy scope as the target branch; no multi-target split modeled."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Hacked: ... 52.24% ... for 5 sec (burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Second independent targetStatus 'Hacked' (5s) + dot (52.24%/1s/5s, sustained). Identical magnitudes to the 36-hit branch but a SEPARATE block — the engine appends an independent DoT instance per fire and never dedups, which is the faithful reading of two distinct activation clauses."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates during Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "block gate fbGate:'inFb' — 'during Full Burst' is a state gate on the trigger, not a fullBurstEnter trigger (it does not fire AT entry; it fires when the hit threshold is reached WHILE in FB)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "after landing 36 normal attack(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'hitCount', count:36} — same threshold as S1 but authored as its own counter (kit does not state a shared counter; flagged)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "while the target is in Hacked status",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "block gate requiresTargetStatus:'Hacked' — name-keyed to the status opened by S1's targetStatus effect; composes with fbGate and the hitCount trigger."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects the target.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'}."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 86.17% ... additional damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage {atkPct:86.17, crit:true} — 'additional damage' is an instant function-damage rider; crit at caster rate per the rider convention; NO core (text does not say 'core strike'); noRange is engine-automatic (not set); noFb left OFF (default, FB-by-timing)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — boss-scoped debuff."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage Taken ▲ 18.06% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff {stat:'damageTakenPct', value:18.06, durationSec:10} on trigger {kind:'burstCast'} — a boss DEBUFF benefiting the whole team, never a self buff. Burst-cast trigger: the burst block's own activation is the cast."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].effects[0].durationSec / skill1[1].effects[0].durationSec (Hacked status window)",
+      "estimate": "5 sec (matched to the sustained-damage duration)",
+      "reasoning": "The kit prefixes the damage line with 'Hacked:' but never states an independent duration for the Hacked STATUS itself — only 'for 5 sec' on the sustained damage. The status is required to exist because skill2 gates on it ('while the target is in Hacked status'). The minimal faithful reading is that Hacked co-terminates with the damage window it labels. If the real status window is longer (a common pattern where the debuff outlives its tick), skill2's gate is open more often than modeled and kurumi's S2 contribution is UNDER-credited here.",
+      "recipe": "Record a fight with kurumi + a B2/B3 enabler. Count skill2's 86.17% popups per Full Burst window and compare against the count predicted when the Hacked window is 5s vs when it is continuously maintained. If S2 popups appear at 36-hit intervals that fall MORE than 5s after the last S1 proc, the status outlives the DoT — widen durationSec accordingly."
+    },
+    {
+      "field": "skill2.trigger (independent vs shared 36-hit counter)",
+      "estimate": "Independent counter, count:36",
+      "reasoning": "S1 and S2 both read 'after landing 36 normal attack(s)' but are separate skill slots with separate activation clauses. The engine's hitCount trigger is per-block, so authoring both at 36 gives each its own accrual. The kit gives no evidence either way. If the game shares one counter, S2 would fire in exact lockstep with S1 (whenever in FB + Hacked), which is a strictly different proc pattern than two counters that drift apart across S2's fbGate-blocked activations.",
+      "recipe": "In footage, timestamp every S1 sustained-tick onset and every S2 86.17% popup. If every S2 popup coincides with an S1 proc onset, the counters are shared; if S2 popups fall at 36-hit offsets that are NOT S1 proc points, they are independent. n≥3 Full Burst windows."
+    },
+    {
+      "field": "cadence tuple (ammo 60, reloadFrames 81, AR pulls/s)",
+      "estimate": "datamined values as given",
+      "reasoning": "ALWAYS-⚑ field 1 — rate_of_fire and reloadFrames are known-unreliable datamine fields, and the effective rate is 60/ceil(60/nominal) on 60fps frame boundaries. For kurumi this is unusually load-bearing: the 36-hit threshold gates BOTH skill1's DoT cadence and skill2's rider, so a cadence error scales her entire non-burst output roughly linearly in proc count.",
+      "recipe": "Read the ammo counter frame-by-frame from a fight recording to get shots/sec directly (the instrument that measures the disputed quantity, not one downstream of it). Time a full 60-round magazine plus reload to pin reloadFrames."
+    },
+    {
+      "field": "skill1 DoT stacking (two independent instances)",
+      "estimate": "Two separate blocks, each appending an independent 5s DoT instance; concurrent overlap allowed",
+      "reasoning": "The engine appends an independent DoT instance per fire and never dedups. Two distinct activation clauses in the kit produce two blocks, so a burst cast landing within 5s of a 36-hit proc yields two concurrent 52.24%/s streams. This is the faithful default encoding, but the game may instead REFRESH a single Hacked DoT (the shared 'Hacked:' label and identical 52.24% magnitude hint the two lines may be one mechanic with two entry points). If it refreshes, this model over-credits during overlap windows.",
+      "recipe": "Trigger a burst cast within 5s of a known 36-hit proc and count sustained-damage popups per second in that overlap: 2 ticks/sec = independent instances (as modeled); 1 tick/sec = refresh semantics, collapse to a single instance."
+    },
+    {
+      "field": "skill2.effects[0].noFb (absent — FB-by-timing ON)",
+      "estimate": "Not set (rider takes the +50% Full Burst major by landing timing)",
+      "reasoning": "Per-kit noFb is measured-only and defaults OFF. Note this rider is fbGate:'inFb', so it fires ONLY inside Full Burst — meaning the FB major applies to 100% of its procs and any noFb error is not diluted by out-of-FB procs. That makes this flag disproportionately impactful for kurumi versus a typical rider.",
+      "recipe": "Compare an observed 86.17% popup value against (final ATK × 0.8617 × 1.5 × other live buffs) vs the same without ×1.5. One clean popup with a known buff state decides it."
+    },
+    {
+      "field": "skill1[1].trigger (burstCast, not fullBurstEnter)",
+      "estimate": "burstCast — fires only on rotations where kurumi herself casts",
+      "reasoning": "'Activates when using Burst Skill' is read literally as the owner's own cast. kurumi is Burst I with a 20s cooldown, so she will cast on essentially every rotation in a standard comp and the two triggers rarely diverge THERE — but in a comp with a second B1, keying to fullBurstEnter would over-credit. Also note: a burst-cast-triggered DoT lands BEFORE the Full Burst window opens, so its early ticks miss the FB major even though later ticks may catch it.",
+      "recipe": "Verify with a two-B1 comp where kurumi does not cast every rotation: if the sustained-damage stream still appears on rotations she sat out, the trigger is fullBurstEnter, not burstCast."
+    }
+  ],
+  "model": "claude-opus-5"
+}

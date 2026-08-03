@@ -305,7 +305,12 @@ export interface SimConfig {
   copies: number; // 0-10 → grade = min(3, c), core = clamp(c-3, 0, 7)
   doll: boolean;
   ol: GearLevel;
-  coreHitRate: number; // 0..1, default 0
+  // Fraction of the fight the boss core is EXPOSED, 0..1, default 0 — NOT the fraction
+  // of shots that hit it. The engine multiplies it by the accuracy-derived core rate
+  // (`coreRateUsed = cfg.coreHitRate * acr`, sim.ts), so even at 1 a share of auto-aim
+  // shots land off-core. Named `coreHitRate` for historical reasons; the damage-formula
+  // SSOT calls this term `coreExposure` (docs/data/damage-calculation.md).
+  coreHitRate: number;
   rangeBonus: boolean; // +0.3 major modifier
   bossRange?: 'near' | 'mid' | 'midfar' | 'far'; // override scripted range transitions to a fixed band
   durationSec: number; // 180

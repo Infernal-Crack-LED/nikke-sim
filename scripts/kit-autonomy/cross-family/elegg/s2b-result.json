@@ -1,0 +1,137 @@
+{
+  "slug": "elegg",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "damage to that projectile ▲ 59.66%",
+      "disposition": "UNMODELED",
+      "scope": "Damage to ENEMY PROJECTILE entities only — never boss damage; sim has no projectile entities and the scope-lock boss is partless",
+      "durationSemantics": "continuous (whole fight) — but inert regardless",
+      "triggerIdentity": "passive, start of battle",
+      "targetSet": "all allies",
+      "nearestWrongModel": "Encoded as a generic team damage buff (attackDamagePct/elementDamagePct 59.66 to all allies) — a massive team-wide over-credit of a line that touches zero boss damage",
+      "distinguishingAssertion": "No buffApply with value 59.66 exists for any unit; totals(res) for every slug identical whether this line is present or stripped via withPatchedOverride",
+      "inertness": "ALL boss damage, every unit — this line must move nothing",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "After 100 normal attacks: 158.65% dist",
+      "disposition": "FAITHFUL",
+      "scope": "Instant proc damage, flavor 'distributed'; no core (text silent), rider noRange default; takes FB +50% by landing timing (default ON for hit-triggered riders)",
+      "durationSemantics": "instant hit per proc",
+      "triggerIdentity": "hitCount count:100 — counts ROUNDS (MG hitsPerShot 1, so 100 rounds ≈ 1/3 of the 300 magazine); UNGATED on status. Key structural read: the 'if the target is in BOOM Install' clause sits in the AFFECTS clause and widens the target set (adds 2 surrounding enemies), it does NOT gate activation — contrast skill2, where the gate is written into the ACTIVATION clause ('after landing 60 normal attacks ON A TARGET IN BOOM INSTALL')",
+      "targetSet": "enemy (the target); the +2-surrounding-enemies spread is inert vs the single partless boss",
+      "nearestWrongModel": "requiresTargetStatus 'BOOM Install' on the whole block — proc fires only inside 10s BOOM windows, i.e. zero procs before her first burst and ~2/3+ of procs deleted; the shared-prior misread is reading skill2's activation-gate phrasing into skill1's target-set conditional",
+      "distinguishingAssertion": "A damage event from elegg with flavor distributed and mult 158.65 occurs BEFORE her first burstCast event (i.e. before any BOOM Install status can exist). Green under ungated hitCount:100; red under a status-gated block",
+      "inertness": "The 2-surrounding-enemies spread adds no damage (one boss); proc count per magazine = floor(rounds/100) — no extra procs from the spread clause",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "60 hits on BOOM target: ATK ▲ 13.09%",
+      "disposition": "FAITHFUL",
+      "scope": "ATK ▲ 13.09% OF THE SKILL USER'S ATK — casterAtkPct (flat add resolved from elegg's staticAtk), NOT atkPct scaling each holder's own ATK; Supporter static ATK 98,367 → emitted flat value ≈ 12,876",
+      "durationSemantics": "5 sec wall-clock (durationSec 5) — genuinely seconds, not rounds",
+      "triggerIdentity": "hitCount count:60 (rounds) gated on target status: hits must land ON a target in BOOM Install ('requiresTargetStatus' composition, or counter accrues only during BOOM windows). The gate is in the activation clause — this trigger is DEAD outside the 10s BOOM windows her own burst opens",
+      "targetSet": "all allies (team-wide flat-ATK grant, same-caster-slot overwrite semantics)",
+      "nearestWrongModel": "Ungated hitCount:60 firing all fight — over-credits by whatever fraction of the fight BOOM Install is down (BOOM uptime ≈ 10s per elegg burst rotation, so most of the fight); secondary misread: stat atkPct 13.09 (scales each ally's own ATK) instead of casterAtkPct flat",
+      "distinguishingAssertion": "Every buffApply with stat 'casterAtkPct' and value ≈ 0.1309×98,367 from elegg's slot falls inside a [burstCast, burstCast+10s] window, and ZERO occur before her first burstCast. Green under the gated model; red under ungated (procs from ~t=1s onward). The value assertion (flat ≈12,876, not 13.09) separately kills the atkPct misread",
+      "inertness": "No team ATK procs while BOOM Install is down; buff lapses by expiresFrame (no buffRemove event on natural expiry — assert via expiresFrame, not buffRemove)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Fills Burst Gauge by 100%. Once",
+      "disposition": "FAITHFUL",
+      "scope": "Instant burst-gauge fill, whole team gauge — a rotation-shaping utility line, NOT skippable as 'no damage' (it advances every FB window for all 5 units)",
+      "durationSemantics": "one-shot, once per battle",
+      "triggerIdentity": "'when the stage target appears' — the boss is present from t=0 in this sim, so effectively a battle-start one-shot (fillGauge pct:100 on a t≈0 trigger with a once-per-battle latch). NOT interval, NOT stageEnter, NOT repeatable",
+      "targetSet": "all allies (team gauge)",
+      "nearestWrongModel": "Dropped entirely as defensive/utility (MISSING) — the classic 'gauge lines aren't damage' skip; or modeled without the once-per-battle latch so it re-fires and collapses every rotation's gauge phase",
+      "distinguishingAssertion": "First fullBurstStart frame in a comp with elegg is ≪ the identical comp without her (first FB ≈ only the fixed gauge-full→30f→B1→30f→B2→30f→B3→22f cast-chain latency from t≈0, instead of natural gauge-fill time); AND the second FB arrives at normal cooldown cadence (no second instant refill). Judge by FB count/timing, green under fillGauge-once, red under MISSING or repeating",
+      "inertness": "Exactly one gauge jump; later rotations' gauge accrual unchanged",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Distributed Damage dealt ▲ 39.74% 10s",
+      "disposition": "FAITHFUL",
+      "scope": "distributedDamagePct — scales ONLY distributed-flavor hits (notably her own skill1 158.65% proc when it lands in-window); normal attacks, charge, burst-skill, DoT buckets untouched",
+      "durationSemantics": "10 sec wall-clock",
+      "triggerIdentity": "burstCast (her OWN Burst II cast) — not fullBurstEnter; in any comp with a competing same-tier caster these diverge (fires only on rotations SHE bursts)",
+      "targetSet": "all allies (any ally's distributed-flavor damage benefits)",
+      "nearestWrongModel": "Generic attackDamagePct 39.74 for the team — boosts ALL damage for 10s/rotation instead of the (small) distributed slice; huge over-credit. Secondary: keying to fullBurstEnter",
+      "distinguishingAssertion": "buffApply with stat 'distributedDamagePct' value 39.74 at her burstCast; during the window a NORMAL-attack damage event from a teammate shows an unchanged Damage-Up composition, while an elegg skill1 distributed event landing in-window is scaled by ×(1+0.3974) vs an identical out-of-window proc. Green under scoped stat; red under attackDamagePct",
+      "inertness": "Teammates' normal/charge/burst damage per-hit values identical in- vs out-of-window",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 316.66% final ATK Burst Skill dmg",
+      "disposition": "FAITHFUL",
+      "scope": "One instant flatDamage hit, 316.66% of caster final ATK (no distributed/sustained flavor stated — plain); no core (text silent), rider noRange; NOT crit unless measured",
+      "durationSemantics": "instant, once per cast",
+      "triggerIdentity": "burstCast — and burst-cast damage lands BEFORE the Full Burst window opens (project-verified), so this hit is FB-exempt: no +50%, no FB-entry auras",
+      "targetSet": "enemy (nearest to crosshair = the single boss)",
+      "nearestWrongModel": "Keyed to fullBurstEnter and/or allowed the +50% FB major — lands inside FB (over-credit ×1.5) and fires on any team FB rather than only her own casts",
+      "distinguishingAssertion": "The mult-316.66 damage event has inFullBurst false and fbMajorApplied false, and its frame coincides with an elegg burstCast event (not fullBurstStart). Green under burst-cast pre-FB; red under FB-entry/FB-boosted",
+      "inertness": "No +50% Full Burst on this hit; zero occurrences on rotations where elegg did not cast",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "BOOM Install: … for 10 sec (status)",
+      "disposition": "FAITHFUL",
+      "scope": "Applies the kit-NAMED boss status 'BOOM Install' — the name-keyed window that skill2's 60-hit gate (and skill1's spread clause) read; must be a targetStatus effect, not a bare buff",
+      "durationSemantics": "10 sec window per cast; refreshed/re-opened each burst",
+      "triggerIdentity": "burstCast; targetStatus name must match the gate's requiresTargetStatus string EXACTLY (name-keyed windows — a mismatch silently kills skill2)",
+      "targetSet": "enemy (validator requires the carrying block authored target 'enemy')",
+      "nearestWrongModel": "Status omitted (or name-mismatched) — skill2's team ATK proc then NEVER fires all fight; or duration authored permanent, making skill2 effectively ungated",
+      "distinguishingAssertion": "skill2 casterAtkPct buffApply events EXIST (>0 across the fight) AND every one falls within 10s of an elegg burstCast; none between window-end and her next cast. Green under 10s targetStatus; red under omitted (zero events) or permanent (procs continue past +10s)",
+      "inertness": "No BOOM-gated activity outside the 10s windows",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▼ 35.64% for 10 sec",
+      "disposition": "GAP",
+      "scope": "Boss DEF reduction — in the subtractive damage formula this is worth bossDEF×0.3564 ADDED to the (finalATK − bossDEF) term per hit for every attacker, i.e. a smallish flat per-hit lift, NOT a 35.64% damage multiplier. The visible schema has no bossDefPct StatKey (defPct is documented self-DEF-inert), so the encoding channel needs an engine primitive or an explicitly-converted boss debuff",
+      "durationSemantics": "10 sec, tied to the BOOM Install window",
+      "triggerIdentity": "burstCast, same window as the status application",
+      "targetSet": "enemy (boss-held debuff — harness: boss-held debuffs emit buffApply with casterIdx===null and targetIdx===null; filter by stat+value)",
+      "nearestWrongModel": "Encoded as damageTakenPct 35.64 ('boss takes +35.64% damage') — treats a DEF-term cut as a whole-damage multiplier and grossly over-credits every unit for 10s/rotation, since boss DEF is small relative to final ATK",
+      "distinguishingAssertion": "In-window vs out-of-window per-hit damage for a fixed attacker differs by exactly bossDEF×0.3564 in the pre-multiplier base term (a flat delta), NOT by a ×1.3564 ratio on the final value. A ratio assertion (in/out ≈ 1.3564) must be RED; the flat-delta assertion GREEN",
+      "inertness": "Out-of-window hits unchanged; the lift is identical per-hit for all five units' hits (flat DEF-term effect), not proportional to hit size",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:hitCount-100 distributed 158.65%",
+    "skill2:hitCount-60 BOOM-gated casterAtkPct 13.09% 5s",
+    "skill2:battle-start fillGauge 100% once",
+    "burst:distributedDamagePct 39.74% 10s",
+    "burst:316.66% burst-cast hit (pre-FB)",
+    "burst:targetStatus BOOM Install 10s",
+    "burst:boss DEF ▼35.64% 10s (GAP channel)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "When attacking an enemy projectile, damage dealt to that projectile ▲ 59.66% continuously.",
+      "and 2 surrounding enemy unit(s) (spread clause — single partless boss, no surrounding enemies)"
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Reconcile these five points against the driver. (1) EXPECTED SHARED-PRIOR MISREAD: skill1's 100-hit proc is NOT BOOM-gated — the conditional lives in the Affects clause (widens the target set to 2 surrounding enemies) whereas skill2 puts its gate in the Activation clause ('60 normal attacks ON A TARGET IN BOOM INSTALL'); a driver who pattern-matches the two lines will status-gate both and delete most of skill1's proc damage. The pre-first-burst proc assertion is the discriminator. (2) DEF ▼ CONVERSION TRAP: encoding 'DEF ▼ 35.64%' as damageTakenPct 35.64 is the nearest-wrong for the whole burst — a DEF-term cut is a flat bossDEF×0.3564 per-hit add, not a 35.64% damage scaler; the schema exposes no boss-DEF stat, so verify what primitive the engine actually has before asserting magnitudes. (3) FIXTURE: elegg is Burst II — controlComp's fixed slots include crown (also Burst II), so first-ready selection may or may not pick elegg; the tests must construct a comp where elegg demonstrably casts (assert her burstCast events exist) or her entire burst block plus skill2's gate go silently untested. (4) hitCount counts ROUNDS (MG hitsPerShot 1, ammo 300, high effective MG cadence with wind-up): skill1 procs ~3×/magazine; for skill2 clarify whether the 60-counter ACCRUES only during BOOM windows or accrues always with a fire-time gate — at MG cadence both give procs inside a 10s window but different counts (window-scoped accrual is the literal reading). (5) The once-per-battle 100% gauge fill is the kit's biggest board lever (advances the first Full Burst for the entire team) — judge it by measured-FB-count/first-FB-frame preservation, not aggregate ratio; do not let it be dropped as a non-damage utility line.",
+  "model": "claude-fable-5"
+}

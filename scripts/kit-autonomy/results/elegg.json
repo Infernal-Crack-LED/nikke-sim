@@ -1,0 +1,112 @@
+{
+  "slug": "elegg",
+  "kitDescription": "Elegg is an Electric MG Supporter whose Burst II does three things: buffs the whole team's Distributed Damage by ~40% for 10s, lands a ~317% ATK hit on the boss, and stamps the boss with a 10-second 'BOOM Install' status (which also lowers boss DEF, a magnitude the sim cannot represent). While BOOM Install is up, every 60 of her MG rounds that land grant all allies a flat ATK bonus scaled off her own attack for 5 seconds. Separately, every 100 MG rounds she fires off a ~159% ATK hit of distributed damage — the BOOM-Install wording on that line only adds splash to two nearby enemies (inert against a single boss), it does not gate the hit. At battle start she instantly fills the team's burst gauge once, yanking the first Full Burst to the front of the fight. Her remaining passive (bonus damage against enemy projectiles) has no target in this sim.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "dmg to enemy projectile ▲59.66%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Out-of-domain: sim has no enemy projectiles; verbatim in unmodeled.skill1; no projectileExplosionPct block authored.",
+        "blindSaid": "S5 it.skip (no projectile entity in v1); S6 also unmodeled. All three agree.",
+        "formulaCheck": "No boss-damage channel exists for this line; nearest-wrong (generic team damage buff 59.66) correctly absent — driver's E8 asserts no such block.",
+        "fireRateOk": true,
+        "explanation": "Deliberate, recorded skip of an inert line. Correct disposition; the trap encoding (team-wide damage buff) is absent in both overrides."
+      },
+      {
+        "kitLine": "after 100 NA: 158.65% distributed",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:100 → enemy flatDamage 158.65 flavor 'distributed', NO requiresTargetStatus — UNGATED; the BOOM conditional sits in the Affects clause and only widens the target set.",
+        "blindSaid": "S2b (fable): UNGATED, 'the clause sits in the AFFECTS clause and widens the target set'; S5 (opus): asserts dmg(S1_STATUS_GATED) < dmg(BASE), i.e. gate must COST damage; S6 (opus): GATED via requiresTargetStatus, self-flagged ⚑ UNMEASURED with the alternate reading stated.",
+        "formulaCheck": "Skill-proc rules: crit at caster rate, no core, no range, FB +50% by landing timing — engine defaults on flatDamage match; flavor 'distributed' correctly routes the burst's distributedDamagePct onto it (driver E4 observes mult.distributed 1.3974 in-window / 1.0 out). Distributed does same TOTAL on one target (SSOT §1g), so no split penalty owed.",
+        "fireRateOk": true,
+        "explanation": "BINDING RULING — UNGATED is correct. The prose places the BOOM reference inside the Affects clause ('Affects the target and 2 surrounding enemy unit(s) if the target is in BOOM Install'), while skill2 writes its gate into the Activation clause ('after landing 60 normal attacks ON A TARGET IN BOOM INSTALL status'); NIKKE kit prose is rigid about this distinction, and the deliberate phrasing difference between two lines of the same kit is structural evidence, not style. Three of four readers (driver, S2b, S5) independently converged on UNGATED; S6 is the lone dissenter and itself labels the read an unmeasured hypothesis. S6's divergence is a RECON_ERROR, not a driver finding. Driver's E2 discriminates properly: deleting the status leaves the proc count unchanged (a gated model would zero it). Driver S2d measured the wrong-gate cost at ~7.5% team total, confirming load-bearing."
+      },
+      {
+        "kitLine": "+2 surrounding if in BOOM",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Spread clause verbatim in unmodeled.skill1 with the Affects-clause reasoning; inert on the single partless boss.",
+        "blindSaid": "S2b and S5 both call the spread inert vs one boss; S6's caveat flags split-vs-merge as ⚑ popup-read (SSOT §1g settles: distributed deals same TOTAL to one target, full value on the boss is correct).",
+        "formulaCheck": "SSOT: 'Distributed damage deals the same TOTAL against 1 target as against many — never model a split penalty.' Driver's full-value single-target model matches; S6's ~1/3 worry is refuted by the SSOT.",
+        "fireRateOk": true,
+        "explanation": "Recorded, inert, and the one substantive uncertainty it raised (split) is answered by the mechanics SSOT."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "60 hits on BOOM target: ATK ▲13.09%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:60 + requiresTargetStatus 'BOOM Install' → allies casterAtkPct 13.09 /5s, maxStacks 1. Gated per the activation-clause reading; ⚑2 flags fire-time-gate vs window-scoped-accrual phasing.",
+        "blindSaid": "S2b: casterAtkPct flat ≈12,876, gated, 5s, same distinguishing assertions; S5: gated (ungated counterfactual must increase count), caster-scaled single value on all allies; S6: identical encoding.",
+        "formulaCheck": "SSOT §1a: 'X% of caster's ATK' = caster BASE/static ATK as flat add outside recipient's (1+ATK%) — casterAtkPct matches; S5's sentinel attribution confirms one flat value lands on all allies incl. self.",
+        "fireRateOk": true,
+        "explanation": "Four-way agreement on stat, scope, gate, and duration. The accrual-semantics subtlety (counter accrues always, gate at crossing vs literal window-scoped accrual) is driver-flagged as ⚑2 with a recipe — documented, low severity; proc count differs but each proc is the exact kit coefficient."
+      },
+      {
+        "kitLine": "fills Burst Gauge 100%, once",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive → allies fillGauge 100 (once at frame 0; 'stage target appears' = t=0, ⚑3); asserted behaviorally via strictly-earlier first burstCast.",
+        "blindSaid": "S2b: load-bearing, judge by first-FB timing + normal later cadence; S5: removal must cost team damage and FB-count delta ≤2; S6: same encoding with a ⚑ verify-once caveat.",
+        "formulaCheck": "Gauge mechanics SSOT: a 100% fill at t≈0 snaps the first chain to cast-chain latency only; passive trigger is the schema's once-at-setup channel. Not a damage line but rotation-shaping — correctly NOT dropped.",
+        "fireRateOk": true,
+        "explanation": "The kit's biggest board lever, modeled and behaviorally discriminated (E7 / S5 NO_FILL). The once-per-battle latch holds because passive resolves once at setup."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Distributed Damage dealt ▲39.74% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies distributedDamagePct 39.74 /10s, maxStacks 1; LIVE + SCOPED proof via S1b proc mult.distributed 1.3974 in-window / 1.0 out.",
+        "blindSaid": "S2b: distributedDamagePct not attackDamagePct; S5: zeroing must cost elegg and move no ally; S6: identical.",
+        "formulaCheck": "SSOT §1g: Distributed bucket scales distributed instances only — stat choice matches; scoped flavor gate verified in the driver's E4 with both window states observed (modeled-and-working check passes, not merely present).",
+        "fireRateOk": true,
+        "explanation": "Right bucket, right trigger (own casts, not fullBurstEnter), proven live with in/out-window discrimination. The generic-attackDamagePct trap is absent."
+      },
+      {
+        "kitLine": "316.66% final ATK burst dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage 316.66, burst bucket, once per cast, fbMajorApplied false on every nuke.",
+        "blindSaid": "S2b: cast-frame, pre-FB, no +50%; S5: BURST_NOFB must be a no-op; S6: identical, correctly refuses a noFb override (engine handles cast timing).",
+        "formulaCheck": "SSOT FB boundary rule (popup-verified on Cinderella): burst-cast direct damage resolves before FB opens — engine forced-noFb path applies; driver's E5 asserts !fbMajorApplied on all nukes.",
+        "fireRateOk": true,
+        "explanation": "Exact coefficient, correct bucket, correct FB-exempt timing. Four-way agreement."
+      },
+      {
+        "kitLine": "BOOM Install status, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy targetStatus 'BOOM Install' 10s (own block); name-keyed gate S2a reads; E6 proves deletion zeroes S2a while S1b/nuke/dist-buff are untouched.",
+        "blindSaid": "S2b: name must match the gate's string exactly; S5: NO_BOOM must zero elegg's casterAtkPct events; S6: identical name and duration.",
+        "formulaCheck": "Name-keyed status windows are the engine primitive for this class of gate (SSOT §9 precedent); name string matches requiresTargetStatus exactly in both overrides.",
+        "fireRateOk": true,
+        "explanation": "The linchpin window — modeled as status not bare debuff, name-keyed correctly, and the cross-slot coupling is tested in both suites."
+      },
+      {
+        "kitLine": "DEF ▼35.64% for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Verbatim in unmodeled.burst; explicitly NOT damageTakenPct (×1.3564 over-credit trap); engine drops enemy DEF debuffs, bossDef≈0 at scope lock.",
+        "blindSaid": "S2b: GAP channel, nearest-wrong = damageTakenPct 35.64; S5: it.skip, same reasoning; S6: same unmodeled disposition, same refusal of damageTakenPct.",
+        "formulaCheck": "SSOT: DEF is a small FLAT subtractive term inside the base; measured boss DEF ≈140 is negligible (≤0.12% board shift) and scope lock runs bossDef:0 — the line is near-inert at scope lock regardless. No bossDefPct StatKey exists; the multiplicative substitution would be the wrong bucket (S2b's ratio-vs-flat-delta discriminator).",
+        "fireRateOk": true,
+        "explanation": "All four agents independently refuse the damageTakenPct substitution and record the gap. Correct disposition; materiality is ~nil at scope lock."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Convergence is GREEN: the S5 blind suite, once its own fixture bug is repaired (controlComp fields crown as a second Burst II so elegg never cast — an S5-side fixture defect, classified RECON_ERROR, not a driver divergence; S2b independently predicted this exact failure), passes 15/15 non-skipped assertions against the driver's shipped override, with only the two documented GAP skips. All 9 kit lines are FAITHFUL (7) or DOCUMENTED_GAP (2: the out-of-domain anti-projectile line and the schema-blocked DEF▼ magnitude, both correctly kept off the damageTakenPct trap channel by all four agents). The one contested question is RULED for the driver: skill1's 100-hit rider is UNGATED — the BOOM-Install conditional sits in the Affects clause (widening the target set by 2 surrounding enemies, inert on one boss) while skill2 deliberately writes its gate into the Activation clause; the driver, S2b, and S5 read this independently and identically, and S6's GATED encoding is a RECON_ERROR its own author flagged as an unmeasured hypothesis. Discrimination holds throughout: the driver's E2 kills the gated counterfactual (status deletion leaves the proc count unchanged), E3/E6 pin the cross-slot gate by name, E4 proves the distributed buff live and scoped in both window states, E5 pins pre-FB burst timing, E7 discriminates the gauge fill behaviorally, and every counterfactual patch has a stale-fixture guard. No REAL-GOTCHA of any subkind was found against the shipped implementation; the cadence-tuple (⚑1) and hitCount-accrual-phasing (⚑2) items are driver-documented measurement flags, not gotchas. Same-model residual for the owner to spot-check: the UNGATED ruling, though structurally strong (two differently-phrased conditionals in one kit) and triply converged, is still a prose inference never confirmed against footage — a single popup read of an S1b proc landing before Elegg's first burst cast would settle it empirically; S2d measured the wrong-gate cost at ~7.5% team total, so this is the one residual worth a real-fight glance alongside the MG cadence-tuple verification (⚑1).",
+  "model": "kimi-code/k3"
+}

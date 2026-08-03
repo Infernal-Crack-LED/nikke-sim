@@ -156,43 +156,43 @@
       "ol": [
         {
           "label": "3× Charge Speed + 1× Max Ammo",
-          "gainPct": 37.48
-        },
-        {
-          "label": "2× Max Ammo + 2× Charge Speed",
-          "gainPct": 36.23
-        },
-        {
-          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
-          "gainPct": 31.99
-        },
-        {
-          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 29.5
-        },
-        {
-          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 29.31
-        },
-        {
-          "label": "3× Max Ammo + 1× Charge Speed",
-          "gainPct": 28.84
-        },
-        {
-          "label": "4× Charge Speed",
-          "gainPct": 28.53
+          "gainPct": 45.72
         },
         {
           "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
-          "gainPct": 27.02
+          "gainPct": 42.64
         },
         {
-          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
-          "gainPct": 26.63
+          "label": "3× Max Ammo + 1× Charge Speed",
+          "gainPct": 42.54
         },
         {
-          "label": "3× Charge Speed + 1× Charge DMG",
-          "gainPct": 24.97
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 40.11
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge Speed",
+          "gainPct": 39.99
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge Speed",
+          "gainPct": 39.78
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 38.7
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 37.51
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 37.3
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 34.62
         }
       ]
     },
@@ -1443,6 +1443,22 @@
         }
       ]
     },
+    "elegg": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Activates at the start of battle. Affects all allies.",
+            "When attacking an enemy projectile, damage dealt to that projectile ▲ 59.66% continuously. — OUT-OF-DOMAIN: the sim models no enemy projectiles to intercept; inert to DPS.",
+            "Affects the target and 2 surrounding enemy unit(s) if the target is in BOOM Install. — the '+2 surrounding' spread is out-of-domain in the single-target sim (only the primary target/boss receives the 158.65% proc). The 'if the target is in BOOM Install' conditional governs that SPREAD (Affects-clause), NOT the proc's activation — the proc fires every 100 normal attacks regardless of BOOM Install (contrast S2a, whose gate is in the activation clause)."
+          ],
+          "burst": [
+            "BOOM Install: DEF ▼ 35.64% for 10 sec. — the DEF▼ MAGNITUDE is inert (the engine drops enemy DEF debuffs, boss DEF≈0, sim.ts). NOT encoded as damageTakenPct (that would be a ×1.3564 whole-damage over-credit). The BOOM Install status WINDOW itself IS modeled (targetStatus) as the gate for the S2a rider."
+          ]
+        }
+      }
+    },
     "elegg-boom-and-shock": {
       "status": {
         "tier": "MODEL_ONLY",
@@ -1618,6 +1634,24 @@
         }
       }
     },
+    "frima": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Activates when hitting a target with Full Charge. Sleepy: DEF ▼ 4%, stacks up to 5 time(s) for 10 sec. — INERT and UNENACTABLE: boss DEF enters the formula only as the fixed config constant cfg.bossDef (sim.ts:1722 baseAtk = max(0, effectiveAtk − cfg.bossDef)); no buff/debuff channel feeds it, so the engine cannot apply an enemy DEF reduction at all, and the magnitude is negligible regardless (max 20% of measured boss DEF ≈140 ≈ 28 ATK against scope-lock ATK in the hundreds of thousands ≈ 0.02% damage, docs/data/damage-calculation.md §enemy-DEF). NOT modeled as damageTakenPct (a different bucket/math that would over-credit a ~20% team vuln the kit does not deliver) — viper/phantom/guilty/marciana precedent. Its ONLY load-bearing consequence — the max-stack precondition for Wake Up — is carried by the chargeCounter:6 encoding (see note + caveat 1)."
+          ],
+          "skill2": [
+            "Activates when attacking with Full Charge. Affects all allies. Max HP ▲ 6.09% for 4 sec. — offensively INERT: v1 has no HP pool and ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion (e3 video rule; effectiveAtk counts only OWN-kit maxHpFlat, casterIdx === u.idx, sim.ts:1513), and frima has no HP scaling of her own — blanc/moran precedent."
+          ],
+          "burst": [
+            "DEF ▼ 9.86% for 10 sec (the rider on the 10-highest-DEF enemies) — INERT and UNENACTABLE, same as S1 Sleepy: cfg.bossDef is a fixed config constant with no debuff channel (sim.ts:1722); ~9.86% of ≈140 ≈ 14 ATK ≈ 0.01% damage at scope. NOT damageTakenPct — viper/phantom/marciana precedent.",
+            "Affects all allies. Max HP ▲ 30.26% for 4 sec. — offensively INERT, same as the S2 Max HP line (no HP pool; ally-granted Max HP excluded from atkOfMaxHpPct conversions, sim.ts:1513)."
+          ]
+        }
+      }
+    },
     "grave": {
       "status": {
         "tier": "MODEL_ONLY",
@@ -1681,6 +1715,12 @@
           "gainPct": 50.12
         }
       ]
+    },
+    "guillotine": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      }
     },
     "guillotine-winter-slayer": {
       "status": {
@@ -1950,6 +1990,27 @@
       ]
     },
     "julia": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      }
+    },
+    "k": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "■ Activates when pellets land a critical hit 4 time(s). Affects the target.\nDeals 23.9% of final ATK as additional damage.",
+            "■ Activates when Full Burst ends. Affects self.\nRemoves Tilted Scale."
+          ],
+          "skill2": [
+            "■ Activates when Full Burst ends. Affects all allies.\nRemoves Fulfillment of Righteousness."
+          ]
+        }
+      }
+    },
+    "kurumi": {
       "status": {
         "tier": "MODEL_ONLY",
         "tuned": false
@@ -2521,6 +2582,23 @@
         }
       ]
     },
+    "mary-bay-goddess": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      }
+    },
+    "mast": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Sea Breeze: DEF ▼ 1.9% of the skill user's DEF, stacks up to 50 time(s) and lasts for 3 sec."
+          ]
+        }
+      }
+    },
     "mast-romantic-maid": {
       "status": {
         "tier": "VALIDATED",
@@ -2595,44 +2673,44 @@
       },
       "ol": [
         {
-          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
-          "gainPct": 17.54
-        },
-        {
           "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
-          "gainPct": 17.23
-        },
-        {
-          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
-          "gainPct": 17.16
-        },
-        {
-          "label": "3× Charge Speed + 1× Max Ammo",
-          "gainPct": 16.82
+          "gainPct": 19.67
         },
         {
           "label": "2× Max Ammo + 2× Charge Speed",
-          "gainPct": 16.78
+          "gainPct": 19.05
         },
         {
           "label": "2× Max Ammo + 2× Charge DMG",
-          "gainPct": 16.7
+          "gainPct": 18.27
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 18.07
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 17.62
         },
         {
           "label": "3× Max Ammo + 1× Charge DMG",
-          "gainPct": 16.66
+          "gainPct": 17.51
         },
         {
           "label": "3× Charge DMG + 1× Max Ammo",
-          "gainPct": 16.39
-        },
-        {
-          "label": "4× Charge DMG",
-          "gainPct": 15.81
+          "gainPct": 17.32
         },
         {
           "label": "3× Max Ammo + 1× Charge Speed",
-          "gainPct": 15.41
+          "gainPct": 16.99
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge Speed",
+          "gainPct": 16.45
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge Speed",
+          "gainPct": 16.26
         }
       ]
     },
@@ -3014,6 +3092,12 @@
         }
       ]
     },
+    "n102": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      }
+    },
     "naga": {
       "status": {
         "tier": "CALIBRATED",
@@ -3031,43 +3115,43 @@
       "ol": [
         {
           "label": "2× Max Ammo + 2× Hit Rate",
-          "gainPct": 32.08
+          "gainPct": 32.6
         },
         {
           "label": "3× Hit Rate + 1× Max Ammo",
-          "gainPct": 30.94
+          "gainPct": 32
         },
         {
           "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 27.53
+          "gainPct": 28.02
         },
         {
           "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 27.19
-        },
-        {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
-          "gainPct": 26.39
-        },
-        {
-          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
-          "gainPct": 26.05
+          "gainPct": 27.68
         },
         {
           "label": "4× Hit Rate",
-          "gainPct": 25.56
+          "gainPct": 27.39
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 26.57
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 26.23
         },
         {
           "label": "3× Max Ammo + 1× Hit Rate",
-          "gainPct": 25.52
+          "gainPct": 25.74
         },
         {
           "label": "1× Max Ammo + 1× Crit Rate + 1× Crit DMG + 1× Hit Rate",
-          "gainPct": 23.03
+          "gainPct": 23.18
         },
         {
           "label": "2× Crit Rate + 1× Max Ammo + 1× Hit Rate",
-          "gainPct": 22.57
+          "gainPct": 22.73
         }
       ]
     },
@@ -3198,6 +3282,12 @@
           "gainPct": 16.86
         }
       ]
+    },
+    "neve": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      }
     },
     "noir": {
       "status": {

@@ -1,0 +1,109 @@
+{
+  "slug": "mast",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Sea Breeze: DEF ▼ 1.9%, 50 stacks, 3s",
+      "disposition": "FIX",
+      "scope": "Boss DEBUFF (taxonomy #4 — benefits whole team), stacked per PAIR of critical normal-attack hits. Two payloads: (a) the DEF-shred value — the schema has NO enemy-DEF StatKey (defPct is self-inert), so the magnitude is a GAP to record/approximate, never silently dropped; (b) the Sea Breeze STATUS + live STACK COUNT — load-bearing input to the burst's Storm line, must be tracked (targetStatus name 'Sea Breeze' + a resource pool for the count) even if the DEF value stays unmodeled.",
+      "durationSemantics": "Stacks up to 50; window 'lasts for 3 sec' — refresh-on-reapply. Sustained only while crits keep landing <3s apart; the 111-frame (~1.85s) reload does NOT break the window, so near-cap steady state is reachable but ramp-limited: cap needs 100 crits (~100/critRate rounds), NOT 100 rounds. Ramp/steady-state derivation is CALIBRATED ⚑.",
+      "triggerIdentity": "'after landing 2 critical hit(s) with normal attacks' — a CRIT-GATED hit counter. The engine's hitCount counts ROUNDS, not crits; a faithful encoding needs an expected-value threshold ≈ 2/critRate (⚑, crit-rate-dependent, incl. her own S2's +23.56% for the first 30s) or an explicit crit-gated mechanism.",
+      "targetSet": "enemy (the boss). Boss-held debuffs emit buffApply with casterIdx===null AND targetIdx===null.",
+      "nearestWrongModel": "Plain {kind:'hitCount', count:2} ungated by crit — stacks hit cap in 100 rounds (~5s) regardless of crit rate, over-crediting the ramp and handing Storm a full 50-stack mirror far too early; and/or omitting the targetStatus/stack pool entirely so the burst's Storm gate can never open.",
+      "distinguishingAssertion": "Count Sea Breeze stack applications vs mast's shot events: applications/shots ≈ critRate/2, NOT 1/2. Sharper: withPatchedOverride to zero mast's crit-rate sources → Sea Breeze must apply at (base-crit)/2 rate only; a crit-blind hitCount:2 model is invariant to that patch (RED).",
+      "inertness": "With no crit-eligible normal attacks landing (or crit forced to 0 and base crit hypothetically 0), Sea Breeze must never apply and Storm must deal 0.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "HP < 70%: Crit Damage ▲ 50.94% cont.",
+      "disposition": "FIX",
+      "scope": "Generic critDamagePct (no normal-attack scoping in the text) to self + 2 allies.",
+      "durationSemantics": "'continuously' = held WHILE the condition holds, not a timed buff and not permanent-once-triggered. Faithful window: the condition is opened by mast's OWN burst — 'Max HP ▲ 86.2% without restoring HP' lifts her max HP while current HP stays, so her HP ratio drops to 1/1.862 ≈ 53.7% < 70% for the 7s the Max-HP grant lives, then max HP lapses and the ratio returns to ~100%, closing the condition. Net: a 7s critDamagePct 50.94 window per mast burst cast. Whether the game instead latches it permanently on first trip is a MEASUREMENT-GATED nuance; condition-held (7s) is the literal reading.",
+      "triggerIdentity": "HP-threshold condition. v1 has no HP pool from boss damage, but the condition is NOT inert — it is self-tripped by the burst's un-restoring Max-HP grant. Natural encoding: keyed to mast's burstCast with durationSec 7 (NOT passive, NOT fullBurstEnter).",
+      "targetSet": "self + 2 OTHER allies with highest FINAL ATK (except skill user) → alliesTopAtk count:2 excludeSelf:true byFinalAtk:true, plus self.",
+      "nearestWrongModel": "Marked UNMODELED with note 'boss deals no damage, HP never falls below 70%' — the classic shared-prior misread that misses the burst self-trigger. Runner-up wrongs: passive-from-t=0 (over-credits pre-first-burst), or permanent-once-triggered (over-credits between bursts).",
+      "distinguishingAssertion": "No buffApply with stat critDamagePct value 50.94 exists before mast's first burstCast event; after each mast burstCast there IS one targeting self + the 2 top-final-ATK allies with expiresFrame ≈ castFrame + 420 (7s×60). An 'unmodeled' encoding emits zero such events (RED); a passive encoding emits one at frame 0 (RED).",
+      "inertness": "Zero critDamagePct-50.94 contribution at t=0 and on any rotation before mast's first own burst; must not fire on Full Bursts where a different B2 (crown) cast instead of mast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Crit Rate ▲ 23.56% for 30 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic critRatePct (text has no 'of normal attacks' scoping — NOT critRateNormalPct).",
+      "durationSemantics": "Wall-clock 30 seconds, applied once at battle start, then gone for the remaining ~150s. NOT permanent, NOT rounds.",
+      "triggerIdentity": "'Activates at the start of battle' — one-shot at t=0 (passive-style application at frame 0 with durationSec:30), NOT an interval repeat.",
+      "targetSet": "self + 2 allies with highest FINAL ATK (except skill user) — byFinalAtk:true; 3 units total, never all 5.",
+      "nearestWrongModel": "Permanent passive critRatePct 23.56 (dropping the 30s expiry) — over-credits ~150s of team crit; second wrong: static-ATK ranking instead of byFinalAtk.",
+      "distinguishingAssertion": "buffApply stat critRatePct value 23.56 at frame ~0 with expiresFrame ≈ 1800, exactly 3 targets; damage events after t=30s show crit rates reverted (compare a mid-fight window's crit fraction under the shipped override vs withPatchedOverride removing the buff — must be identical after t=30s, RED for a permanent encoding). Note it also feeds the Sea Breeze crit-counter cadence for the first 30s.",
+      "inertness": "No critRatePct contribution after frame 1800; the 2 non-selected units never receive it.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max HP ▲ 86.2% of user's Max HP, 7s",
+      "disposition": "FAITHFUL",
+      "scope": "casterMaxHpPct (86.2% of MAST's Max HP, a flat grant — emitted under stat 'maxHpFlat' at apply time), 'without restoring HP'. Offensively inert for allies (ally-granted Max HP never feeds a teammate's atkOfMaxHpPct — e3 rule) but MUST be kept: (a) taxonomy #7 keep-the-stat rule, (b) it is the mechanism that trips skill1's HP<70% condition on mast herself.",
+      "durationSemantics": "7 seconds wall-clock.",
+      "triggerIdentity": "burstCast (mast's own Burst II cast) — NOT fullBurstEnter. Mast is B2; in any comp with another B2 (the control fixture fixes crown at B2) burstCast vs fullBurstEnter diverge every rotation crown takes.",
+      "targetSet": "self + 2 highest-final-ATK allies (except skill user), byFinalAtk:true.",
+      "nearestWrongModel": "Dropped as 'defensive Max HP, no damage relevance' — which silently severs the skill1 crit-damage chain; or keyed to fullBurstEnter (fires on crown's rotations too).",
+      "distinguishingAssertion": "buffApply stat maxHpFlat with value ≈ 0.862 × mast's final Max HP (a FLAT HP number, not 86.2) appears only paired with mast burstCast events, 3 targets, expiresFrame ≈ cast + 420. A dropped line emits nothing (RED); fullBurstEnter emits on every FB including crown's (RED).",
+      "inertness": "Must move NO ally damage in the control comp (no atkOfMaxHpPct consumer among liter/crown/helm); absent on rotations mast does not burst.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Critical Damage ▲ 25.19% for 7 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic critDamagePct, stacking additively alongside the skill1 50.94% during the same 7s window (both live post-cast → combined +76.13 crit-damage points on the 3 targets).",
+      "durationSemantics": "7 seconds wall-clock.",
+      "triggerIdentity": "burstCast (own burst), same divergence-vs-fullBurstEnter argument as the Max HP line.",
+      "targetSet": "self + 2 highest-final-ATK allies (except skill user), byFinalAtk:true.",
+      "nearestWrongModel": "fullBurstEnter keying — over-credits every crown-led Full Burst with 25.19% team crit damage mast never cast.",
+      "distinguishingAssertion": "Every buffApply critDamagePct 25.19 is preceded (same rotation) by a mast burstCast event; count(buffApply 25.19) === count(mast burstCast), NOT count(fullBurstStart).",
+      "inertness": "Zero on Full Bursts whose B2 cast was crown's.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Storm: 4.52% ATK, mirrors stacks, 1s/7s",
+      "disposition": "FIX",
+      "scope": "Mast's only kit damage line. Per-tick damage = 4.52% of final ATK × CURRENT Sea Breeze stack count, read LIVE each tick ('mirrors the stack count … every 1 sec') — perResource DoT encoding (mihara-bonding-chain precedent: perResource {name:<seaBreeze pool>, mult:4.52}), NOT a static atkPct. Gated on the target being afflicted: requiresTargetStatus 'Sea Breeze'. DoT ticks never core-boosted; crit default OFF (opt-in measured-only); FB +50% by tick-landing timing (default ON) — the 7s of ticks straddle the FB window her cast opens.",
+      "durationSemantics": "Ticks every 1 sec for 7 sec (7 ticks per cast), intervalSec 1, durationSec 7 — a per-cast instance, NOT a maintained whole-fight DoT.",
+      "triggerIdentity": "burstCast (rider of mast's own burst) + requiresTargetStatus 'Sea Breeze' — no Sea Breeze on the boss at cast ⇒ no Storm.",
+      "targetSet": "enemy (the boss, the Sea-Breeze-afflicted target).",
+      "nearestWrongModel": "A flat dot {atkPct: 4.52, durationSec: 7} ignoring the stack mirror — under-credits by up to ×50; or the opposite over-credit, a static 4.52×50=226%/tick assuming instant cap; or snapshotting the stack count at cast instead of reading it live per tick.",
+      "distinguishingAssertion": "Storm tick damage events (mast srcSlot, dot-path, 7 per cast at ~60-frame spacing) scale with the live stack pool: on a first burst cast before stacks cap, successive tick magnitudes are non-decreasing toward cap×4.52%, and withPatchedOverride zeroing mast's crit rate (no crits → no Sea Breeze) yields ZERO Storm damage events — a flat-4.52% or snapshot-50 model still deals damage under that patch (RED).",
+      "inertness": "Zero Storm damage when Sea Breeze has never been applied; no Storm on crown-cast rotations; ticks must not receive core.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Sea Breeze DEF▼ stack/status tracking",
+    "skill1:HP<70% Crit Damage ▲50.94 (burst-self-tripped)",
+    "skill2:Crit Rate ▲23.56 for 30s",
+    "burst:Max HP ▲86.2% 7s (S1-condition driver)",
+    "burst:Crit Damage ▲25.19 7s",
+    "burst:Storm stack-mirroring DoT"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "DEF ▼ 1.9% of the skill user's DEF (enemy DEF-shred magnitude — no enemy-DEF StatKey in the effect schema; record verbatim as a GAP if not approximated, but the Sea Breeze status + stack count MUST still be tracked)"
+    ],
+    "skill2": [],
+    "burst": [
+      "without restoring HP (no heal modeled — consistent with no-HP-pool v1; noted so the 'no restore' clause isn't mistaken for a dropped heal)"
+    ]
+  },
+  "notes": "Expected shared-prior misreads, in order of damage: (1) skill1's HP<70% line dismissed as UNMODELED 'boss deals no damage' — the burst's un-restoring Max-HP grant self-trips it (HP ratio → ≈53.7% < 70%) for 7s per mast burst; this is the kit's central synergy and any test set must assert the 50.94% window exists post-cast and does NOT exist at t=0. (2) Sea Breeze counted as plain hitCount:2 (rounds) instead of crit-gated pairs — assert stack-accrual rate tracks crit rate, incl. the S2-boosted first 30s; the expected-value threshold conversion is CALIBRATED ⚑. (3) Storm without the live stack mirror (flat 4.52% or static ×50) — assert tick magnitude follows the live pool and collapses to zero under a crit-zeroing patch. (4) burstCast vs fullBurstEnter: mast is Burst II and the control fixture pins crown at B2, so the two triggers diverge every rotation — all three burst lines and the S1 window must key to mast's own casts; note the test fixture must guarantee mast actually casts B2 at least once (verify via burstCast events, per the burst-eligibility rule). (5) All four target clauses say highest FINAL ATK → byFinalAtk:true (A3 literal-word rule); static ranking is the near-miss. (6) skill2's 30s expiry dropped → permanent team crit. Assertion hygiene: no buffRemove on natural lapse — reason from expiresFrame/durationShots on buffApply; caster-scaled values arrive FLAT (maxHpFlat = 0.862×mast Max HP, not 86.2); Sea-Breeze/boss-held buffApply events carry casterIdx===null — filter by stat+value. MEASUREMENT-GATED nuances: whether the 50.94% latches permanently vs condition-held 7s, and Sea Breeze refresh-all-stacks vs per-stack expiry (3s window vs reload gaps decides steady-state).",
+  "model": "claude-fable-5"
+}

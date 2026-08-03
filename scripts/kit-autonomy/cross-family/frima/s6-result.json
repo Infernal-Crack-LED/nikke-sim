@@ -1,0 +1,306 @@
+{
+  "slug": "frima",
+  "leakDetected": null,
+  "override": {
+    "slug": "frima",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 4,
+            "durationSec": 10,
+            "maxStacks": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 6
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "targetStatus",
+            "name": "Wake Up",
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 6.09,
+            "durationSec": 4
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "requiresTargetStatus": "Wake Up",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "trueDamagePct",
+            "value": 28.16,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 101.66,
+            "noRange": true,
+            "noFb": true
+          },
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 9.86,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 30.26,
+            "durationSec": 4
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "requiresTargetStatus": "Wake Up",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "trueDamagePct",
+            "value": 49.97,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Wake Up: Normal attacks deal true damage for 10 sec."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ DEF ▼ is modeled as damageTakenPct on the boss (the schema has no boss-DEF-reduction stat). The two DEF ▼ sources (S1 4%×5 = 20%, burst 9.86%) are therefore ADDITIVE in the Damage Up bucket rather than multiplicative on the boss DEF term — this is a magnitude approximation, not a faithful DEF model. If boss DEF enters the formula as a subtractive/divisive term, %-DEF-down is NOT equal to the same % damage-taken-up and this over- or under-credits depending on the ATK/DEF ratio.",
+      "⚑ 'Wake Up' is a SELF status but is encoded via the enemy-scoped targetStatus/requiresTargetStatus channel — the only named-status primitive in the schema. It is functionally correct here only because frima is the sole gate-opener and the sole condition is 'is Wake Up live', which is time-identical whether held on self or boss. It is NOT faithful if any engine path scopes the status per-entity.",
+      "⚑ Full-charge triggers are encoded as shotFired. frima has chargeFrames 60 and the sim's charge path fires one shot per full charge, so shotFired ≈ per-full-charge — but a NON-full-charge (tapped) shot would also fire it. If the engine can emit uncharged shots for a charge weapon this OVER-fires every S1/S2 block.",
+      "⚑ The Sleepy stack ramp is unmodeled: maxStacks 5 applies the full 20% from the first shot rather than accruing over 5 full charges (~5×(0.5s charge + fire) ≈ 4-6s). rampSec is a candidate but the per-stack accrual rate is charge-cadence-dependent and unmeasured.",
+      "⚑ The Wake Up entry condition ('6 full charges on a target at MAX Sleepy') is modeled as a bare hitCount:6 — it does NOT verify Sleepy is at 5 stacks first. Real entry is therefore LATER than modeled (Sleepy must reach 5 first, then 6 more charges: ~11 charges, not 6). This makes every Wake-Up-gated true-damage buff go live too early.",
+      "⚑ hitCount:6 re-fires every 6 cumulative hits for the whole fight, so Wake Up refreshes perpetually after first entry. Whether the real kit re-arms the same way (or requires re-stacking Sleepy each time) is not stated in the prose."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. frima is a Burst I SR/Iron Supporter charge unit whose whole kit is a two-stage engine: full charges stack Sleepy (boss DEF ▼, 5×4%) and, once max-stacked, 6 more full charges flip her into Wake Up, which unlocks two team-wide True Damage ▲ buffs (28.16%/5s on S2, 49.97%/10s on burst). Her burst adds a 101.66% ATK hit + a second DEF ▼ 9.86%. The team-facing damage contribution is almost entirely the True Damage buffs and the DEF ▼; the Max HP ▲ grants are ally-granted and offensively inert (they do not feed a teammate's atkOfMaxHpPct per the e3 rule) but are kept for kit completeness and for any future consumer. The single SKIPPED line is 'Wake Up: Normal attacks deal true damage' — the schema's only true-normals primitive is weaponSwap.trueNormals, and frima does not swap weapons; encoding a no-op swap purely to set the flag would fabricate a fire cadence, ammo count and charge time she does not have. Her own normal damage stays untyped until the engine gains a standalone true-normals self-flag. Both DEF ▼ lines are modeled as damageTakenPct (see caveats) — a magnitude proxy, not a DEF model."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when hitting w/ Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired (⚑ full-charge proxy — frima is a charge weapon, chargeFrames 60, so each trigger pull is one full charge in the sim's charge path)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Sleepy: DEF ▼ 4%, 5 stacks, 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff damageTakenPct 4, maxStacks 5, durationSec 10, target enemy — ⚑ DEF-down encoded as damage-taken-up (no boss-DEF stat in schema); additive-bucket approximation"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates on 6 Full Charges @ max Sleepy",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount count:6 — ⚑ the 'at max stacks of Sleepy' precondition is NOT verified; real entry needs Sleepy at 5 first (~11 charges total), so modeled entry is early"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Wake Up status (self), 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "targetStatus name 'Wake Up' durationSec 10 — ⚑ self-status carried on the enemy-scoped status channel (only named-status primitive available); opens the requiresTargetStatus gates on S2b/burst-c"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Normal attacks deal true damage 10s",
+      "status": "SKIPPED",
+      "effectOrReason": "No standalone true-normals primitive: EffectDef has no self-scoped normal-attack flavor override, and the only trueNormals field lives on weaponSwap. frima does not swap weapons, so a synthetic swap would have to invent damagePct/maxAmmo/chargeTimeSec/pullsPerSec — fabricated mechanics to reach one boolean. Verbatim in unmodeled.skill1"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when attacking w/ Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired (same ⚑ full-charge proxy as skill1)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies (includes self — the prose says 'all allies' with no except-self clause)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP ▲ 6.09% for 4 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff targetMaxHpPct 6.09 durationSec 4 — 'Max HP ▲ X%' scales the TARGET's own Max HP (not caster's), so targetMaxHpPct not casterMaxHpPct. Offensively inert on allies (ally-granted Max HP does not feed atkOfMaxHpPct); kept for completeness"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "all allies when in Wake Up status",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "requiresTargetStatus 'Wake Up' block gate — the status is frima's, the buff targets allies; gate composes with the shotFired trigger"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "True Damage ▲ 28.16% for 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff trueDamagePct 28.16 durationSec 5, target allies — Damage Up bucket"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 10 enemies w/ highest final DEF",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy — the single-boss scope-lock fight has one enemy, so the 10-target highest-DEF selection collapses to the boss; no count/ranking primitive needed"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 101.66% of final ATK as damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 101.66, noRange true, noFb true — burst-cast instant damage lands before the FB window opens (FB-exempt per hard rule 9); no core (text says no core strike), crit omitted (defaults off for burst-cast riders absent a crit clause)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▼ 9.86% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff damageTakenPct 9.86 durationSec 10, target enemy — same ⚑ DEF-down-as-damage-taken proxy as skill1"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies / Max HP ▲ 30.26% 4s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff targetMaxHpPct 30.26 durationSec 4, target allies — same target-own-HP scaling and same offensive inertness as the S2 grant"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Activiates when in Wake Up status",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "requiresTargetStatus 'Wake Up' block gate on the third burst block — burst-cast trigger, so the gate reads the status at CAST time"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "True Damage ▲ 49.97% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff trueDamagePct 49.97 durationSec 10, target allies — Damage Up bucket; stacks additively with the S2 28.16% (different caster-slot key is not in play, same caster, so ⚑ whether the engine's same-caster-slot overwrite collapses these two trueDamagePct buffs is an open question)"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].effects[0].stat / burst[0].effects[1].stat",
+      "estimate": "damageTakenPct 4 (×5 stacks) and 9.86",
+      "reasoning": "The kit says DEF ▼, but StatKey has no boss-DEF-reduction member. damageTakenPct is the only enemy-side damage stat. These are NOT equivalent: DEF ▼ changes the boss DEF term inside the formula, while damageTakenPct adds to the Damage Up bucket. The error direction depends on how boss DEF enters the damage calc and on the ATK/DEF ratio — at high ATK/DEF a %-DEF-down is worth much LESS than the same % damage-up, so this likely OVER-credits frima.",
+      "recipe": "Read docs/data/damage-calculation.md for the boss-DEF term, then compute the true damage delta of a 20%/9.86% DEF reduction at scope-lock ATK vs the boss DEF constant in the engine. If the engine lacks a DEF-reduction channel entirely, this is an engine-modeling gap (file it in docs/engine-modeling-gaps.md) — not something to calibrate around. Cross-check against any other roster unit carrying a DEF ▼ line to see the established convention."
+    },
+    {
+      "field": "skill1[1].trigger (Wake Up entry condition)",
+      "estimate": "hitCount count:6; TRUE entry is ~11 full charges",
+      "reasoning": "The prose gates entry on 6 full charges landed on a target ALREADY at max Sleepy. Sleepy itself needs 5 full charges to cap. So the real first-entry cost is 5 + 6 = 11 full charges, not 6. The schema has no 'requires own buff at N stacks' gate, so the precondition is dropped and Wake Up opens ~5 charges (roughly 5×(1s charge + fire cycle) ≈ 5-8s) too early — advancing every True Damage buff in the kit.",
+      "recipe": "Measure first-Wake-Up time from footage: count full-charge shots from t=0 to the first frame the True Damage buff icon appears on the team, or to the first true-flavored popup. Compare against the sim's DBG_BUFFS apply frame for trueDamagePct. If the gap is ~5 charges, add an engine primitive for a stack-threshold gate (resourceGate is the closest existing shape — model Sleepy as a named resource with min:5) rather than hand-shifting the hitCount."
+    },
+    {
+      "field": "skill1[1] re-arm behaviour",
+      "estimate": "re-fires every 6 cumulative hits (perpetual refresh after first entry)",
+      "reasoning": "hitCount fires every `count` CUMULATIVE hits, so after the first entry at hit 6 the block re-fires at 12, 18, 24… refreshing Wake Up's 10s window indefinitely. Given frima's charge cadence (chargeFrames 60), 6 charges takes well under 10s, so modeled Wake Up is effectively PERMANENT from first entry onward. The prose does not state whether real Wake Up re-arms on the same 6-charge counter or requires Sleepy to be re-capped.",
+      "recipe": "From footage, check whether the Wake Up / True Damage buff icon ever LAPSES mid-fight after first appearing. If it is continuous, the modeled perpetual refresh is correct and the only error is the early first entry (previous flag). If it visibly cycles on/off, the re-arm needs the Sleepy precondition too and the whole entry mechanic should move to a resource-gated model."
+    },
+    {
+      "field": "skill1[*].trigger / skill2[*].trigger (full-charge proxy)",
+      "estimate": "shotFired",
+      "reasoning": "Both skills trigger on Full Charge specifically. The TriggerDef list has no fullCharge kind; shotFired fires on every trigger pull. For a charge weapon whose shots are all full charges in the sim, these coincide — but if the engine models tapped/partial-charge shots for a charge weapon, shotFired over-fires. Note the kit distinguishes 'hitting a target with Full Charge' (S1a, on-HIT) from 'attacking with Full Charge' (S2, on-ATTACK); shotFired is an on-fire trigger, so S1a's on-hit semantics are approximated (a miss would still stack Sleepy).",
+      "recipe": "Grep src/engine/sim.ts for the charge-weapon fire path and confirm every emitted shot for a chargeFrames>0 unit is a completed full charge (check whether release latency / interrupted charges can emit a non-full shot). If partial shots exist, the trigger needs a charge-gated variant. Separately, confirm shot-count-per-fight against a real recording: at chargeFrames 60 + 22f release latency, expected full charges over 180s bounds the Sleepy/Wake-Up timeline."
+    },
+    {
+      "field": "skill1 unmodeled — Wake Up true normals",
+      "estimate": "frima's own normal-attack damage re-flavored as true damage for 10s windows; magnitude = 100% of her normal damage moving buckets",
+      "reasoning": "Cannot be expressed without weaponSwap. The damage impact is not zero: if true-flavored damage bypasses or differently applies the boss DEF term, re-flavoring ALL of her normal attacks during Wake Up changes her personal damage — and she is a Supporter with a 65.95 normal / 200 core multiplier, so her personal contribution is small but non-trivial. Also, her own trueDamagePct buffs (28.16 + 49.97) would apply to her own normals once flavored, which the current model cannot express.",
+      "recipe": "Add a self-scoped true-normals primitive (mirror weaponSwap.trueNormals as a buff-level or block-level flag, e.g. a StatKey-free EffectDef kind or a `trueNormals` block field) — this is an engine change, so it goes through /scientific-method, not a blind parse. Until then, quantify the gap: run frima in controlComp and compare her totalDamage with all normal hits force-flavored true vs untyped, to size whether the omission is board-visible at all."
+    },
+    {
+      "field": "skill2[1] / burst[2] trueDamagePct stacking",
+      "estimate": "28.16 and 49.97 stack additively in the Damage Up bucket",
+      "reasoning": "Both are trueDamagePct buffs from the SAME caster (frima). The engine's buff model uses same-caster-slot OVERWRITE. If both resolve to the same stat+key, the burst's 49.97 would REPLACE the skill2 28.16 rather than adding — and worse, the skill2 buff re-applying every full charge could overwrite the burst's larger value mid-window, silently deleting most of the burst's contribution.",
+      "recipe": "Run controlComp(frima) with DBG_BUFFS=1 and inspect the buffApply stream for stat trueDamagePct: check the emitted key, casterIdx and value for both blocks during a burst window. If the burst's 49.97 disappears after the next full charge, the two blocks need distinct keys (or the skill2 block needs a gate preventing it from overwriting). This is a modeling correctness issue, not a magnitude estimate."
+    },
+    {
+      "field": "burst[0].effects[0] flatDamage crit/core",
+      "estimate": "crit omitted (false), core omitted (false), noFb true, noRange true",
+      "reasoning": "The prose gives no core-strike clause and no crit clause for the 101.66% hit, so per the hard rules it gets no core. noFb is certain (burst-cast damage lands before the FB window). crit is the genuinely uncertain field: the RIDERCRIT convention makes flat-damage riders crit-eligible at the caster's sheet rate on some units, but this is a burst-cast instant, and the kit text is silent.",
+      "recipe": "Read the popup colour for frima's burst hit in footage — orange body + crit icon = crit-eligible, plain white = not. One clean burst cast is enough for a binary read. Cross-check the established convention for other Burst I supporters with a flat burst-damage line before flipping."
+    },
+    {
+      "field": "cadence tuple (ammo 6, reloadFrames 111, chargeFrames 60)",
+      "estimate": "as datamined",
+      "reasoning": "ALWAYS-⚡ per the taxonomy: reloadFrames and rate-of-fire datamine fields are known-unreliable, and the effective rate is frame-quantized (60/ceil(60/nominal)). frima's whole kit timeline — Sleepy ramp, Wake Up entry at ~11 charges, buff uptime — is DIRECTLY driven by her charge cadence, so a cadence error propagates into every gate above. This is the single highest-leverage unmeasured input for this unit.",
+      "recipe": "Count full-charge shots per magazine and time a full reload from footage (ammo counter is the direct instrument for shots/sec — do NOT infer cadence from FB counts, which are downstream of gauge). 6 rounds at chargeFrames 60 + 22f release latency predicts a specific magazine duration; compare to the recording and correct chargeFrames/reloadFrames before trusting any Wake-Up timing conclusion."
+    }
+  ],
+  "model": "claude-opus-5"
+}

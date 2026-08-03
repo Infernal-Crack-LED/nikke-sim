@@ -48,6 +48,12 @@ jobs:
       # before `railway up`; if you pushed to main just to get the code onto main
       # and don't want to wait, cancel this workflow run — main is already updated.
       - run: bash scripts/verify.sh full
+      # The artifacts tier — same command railway.json runs as its buildCommand, so a
+      # broken board smoke fails HERE instead of after `railway up` has already started
+      # (added 2026-08-02; see ci.yml's header for the two failures that motivated it).
+      # Railway re-runs it during the build; that duplication is the point — this is the
+      # early-fail copy.
+      - run: bash scripts/verify.sh artifacts
 
   deploy:
     name: deploy to Railway
