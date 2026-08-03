@@ -195,18 +195,28 @@ const REPO_ROOT: string | undefined = ['..', '../..']
   .map((r) => fileURLToPath(new URL(`${r}/`, import.meta.url)))
   .find((d) => existsSync(join(d, 'package.json')));
 
+// Only the fields the static body renders — this is the server's own narrow view
+// of data/characters.json, not the engine's full CharacterData.
 interface CharacterData {
+  slug?: string;
   name?: string;
   element?: string;
   weapon?: string;
   burst?: string;
+  burstCooldownSec?: number;
   class?: string;
   manufacturer?: string;
+  skills?: { skill1?: string; skill2?: string; burst?: string };
 }
 
 const UNIT_META: Record<string, TabMeta> = {};
 let CHARACTERS: Record<string, CharacterData> = {};
-let OL_OPTIMAL: Record<string, unknown> = {};
+// data/unit-pages.json — the SAME artifact the React page reads, so the no-JS
+// body and the hydrated page can't recommend different overload lines.
+let UNIT_PAGES: Record<
+  string,
+  { ol?: { label: string; gainPct: number }[]; status?: { tier?: string } }
+> = {};
 if (!REPO_ROOT) {
   console.error(
     'WARN: could not locate repo root — /unit/* pages will 404; confirm data/ and package.json are adjacent to the server'
@@ -233,12 +243,11 @@ if (!REPO_ROOT) {
     console.error('failed to load unit meta', e);
   }
   try {
-    const olPath = join(REPO_ROOT, 'data', 'ol-optimal.json');
-    const raw = readFileSync(olPath, 'utf8');
-    OL_OPTIMAL =
-      (JSON.parse(raw) as { units?: Record<string, unknown> }).units ?? {};
+    const upPath = join(REPO_ROOT, 'data', 'unit-pages.json');
+    const raw = readFileSync(upPath, 'utf8');
+    UNIT_PAGES = (JSON.parse(raw) as { units?: typeof UNIT_PAGES }).units ?? {};
   } catch (e) {
-    console.error('failed to load ol-optimal data', e);
+    console.error('failed to load unit-pages data', e);
   }
 }
 
@@ -376,83 +385,129 @@ function replaceLinkHref(html: string, rel: string, value: string): string {
 // Static unit-page body content for /unit/:slug. Crawlers that do not execute
 // JS still see the unit name, tags, and best overload lines; React replaces this
 // markup once the chunk loads (createRoot, not hydration).
-interface OlPick {
-  type: string;
-  count: number;
-}
-const OL_LABEL: Record<string, string> = {
-  ammo: 'Max Ammo',
-  chargedmg: 'Charge DMG',
-  chargespd: 'Charge Speed',
-  critrate: 'Crit Rate',
-  critdmg: 'Crit DMG',
-  elem: 'Elemental DMG',
-  atk: 'ATK',
-  hitrate: 'Hit Rate',
-  def: 'DEF',
-};
-
-function isOptimalPicks(value: unknown): value is OlPick[] {
-  return (
-    Array.isArray(value) &&
-    value.every(
-      (p) =>
-        p != null &&
-        typeof (p as OlPick).type === 'string' &&
-        typeof (p as OlPick).count === 'number'
-    )
-  );
-}
-
-function unitOptimalLines(slug: string): string {
-  const picks = isOptimalPicks(OL_OPTIMAL[slug]) ? OL_OPTIMAL[slug] : null;
-  if (!picks?.length) {
-    return 'No optimal line data yet.';
-  }
-  return picks
-    .map(
-      (p) =>
-        `${p.count}× ${Object.hasOwn(OL_LABEL, p.type) ? OL_LABEL[p.type] : p.type}`
-    )
-    .join(', ');
-}
-
 function unitStaticHtml(slug: string): string {
   const c = CHARACTERS[slug];
   if (!c) {
     return '';
   }
   const name = escapeAttr(c.name ?? slug);
-  const lines = escapeAttr(unitOptimalLines(slug));
+  const page = UNIT_PAGES[slug];
   const tags = [
     c.element,
     c.weapon,
     c.burst ? `Burst ${c.burst}` : '',
+    c.burstCooldownSec ? `${c.burstCooldownSec}s CD` : '',
     c.class,
     c.manufacturer,
   ]
     .filter(Boolean)
     .map((t) => `<span class="pill">${escapeAttr(t as string)}</span>`)
     .join('');
+
+  // The KIT is the unique text on this page — the one thing no other site words
+  // the same way — so it is the part a crawler most needs. Split on the '■'
+  // block marker the way the React page does.
+  const skills = (['skill1', 'skill2', 'burst'] as const)
+    .map((k) => {
+      const blocks = String(c.skills?.[k] ?? '')
+        .split('\u25a0')
+        .map((b) => b.trim())
+        .filter(Boolean);
+      if (!blocks.length) {
+        return '';
+      }
+      const label =
+        k === 'burst' ? 'Burst Skill' : k === 'skill1' ? 'Skill 1' : 'Skill 2';
+      return (
+        `<div class="unit-skill"><h3>${label}</h3>` +
+        blocks
+          .map((b) => `<p class="unit-skill-block">${escapeAttr(b)}</p>`)
+          .join('') +
+        '</div>'
+      );
+    })
+    .join('');
+
+  // Overload table from data/unit-pages.json — the same source the React page
+  // uses. It deliberately does NOT fall back to ol-optimal.json: that artifact's
+  // greedy pick disagrees with this ranking for most units, and a crawler
+  // indexing a different recommendation than the visitor sees is worse than
+  // indexing none.
+  const rows = page?.ol ?? [];
+  const olSection = rows.length
+    ? '<section class="unit-section"><h2>Overload Lines</h2>' +
+      `<p class="unit-lines">4\u00d7 Attack + 4\u00d7 Elemental Damage + ${escapeAttr(rows[0].label)}</p>` +
+      `<p>+${rows[0].gainPct.toFixed(1)}% damage over 4\u00d7 Attack + 4\u00d7 Elemental Damage</p>` +
+      '<table class="unit-ol-table"><thead><tr><th>Optimal Overload Lines</th>' +
+      '<th>vs 8/12</th></tr></thead><tbody>' +
+      rows
+        .map(
+          (r) =>
+            `<tr><td>${escapeAttr(r.label)}</td><td>+${r.gainPct.toFixed(1)}%</td></tr>`
+        )
+        .join('') +
+      '</tbody></table></section>'
+    : '';
+
+  const tier = page?.status?.tier;
+  const statusSection = tier
+    ? `<section class="unit-section"><h2>Sim status</h2><p>${escapeAttr(
+        TIER_LABEL[tier] ?? tier
+      )}</p></section>`
+    : '';
+
   return (
     '<div class="app unit-page">' +
+    '<nav class="unit-crumbs"><a href="/characters">Characters</a></nav>' +
     `<header class="unit-header"><div class="unit-meta"><h1>${name}</h1>` +
     `<div class="unit-tags">${tags}</div></div></header>` +
-    '<section class="unit-section"><h2>Best overload lines</h2>' +
-    '<p>Solo-framework damage-optimal 12/12 remainder lines ' +
-    '(beyond the 4× Elemental DMG + 4× ATK floor):</p>' +
-    `<p class="unit-lines">${lines}</p></section>` +
+    olSection +
+    (skills
+      ? `<section class="unit-section"><h2>Skills</h2>${skills}</section>`
+      : '') +
+    statusSection +
     '<section class="unit-section"><h2>Tools</h2>' +
     '<div class="unit-tools">' +
     '<a href="/ranks">DPS Rankings</a>' +
     '<a href="/overload">Overload Optimizer</a>' +
     '<a href="/teambuilder">Team Builder</a>' +
+    '<a href="/characters">All characters</a>' +
     '</div></section></div>'
   );
 }
 
-function injectUnitBody(html: string, slug: string): string {
-  const content = unitStaticHtml(slug);
+// Mirror of the web page's TIER_COPY labels (web/src/UnitPage.tsx).
+const TIER_LABEL: Record<string, string> = {
+  MEASURED: 'Measured',
+  CALIBRATED: 'Calibrated',
+  VALIDATED: 'Validated',
+  MODEL_ONLY: 'Untuned',
+};
+
+// Static /characters body: every character as a real link. This IS the crawl
+// surface the page exists for, so it must survive with JS off.
+function charactersStaticHtml(): string {
+  const links = Object.values(CHARACTERS)
+    .map((c) => c as { slug?: string; name?: string })
+    .filter((c) => c.slug)
+    .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
+    .map(
+      (c) =>
+        `<a href="/unit/${escapeAttr(c.slug as string)}">${escapeAttr(c.name ?? (c.slug as string))}</a>`
+    )
+    .join('');
+  return (
+    '<div class="app characters-page">' +
+    '<header><h1>NIKKE Characters</h1></header>' +
+    `<section class="characters-all"><h2>All Characters</h2>${links}</section>` +
+    '</div>'
+  );
+}
+
+// Put a no-JS body into #root. React later replaces it wholesale (createRoot,
+// not hydration), so the markup only has to be valid and crawlable, not to match
+// what React renders.
+function injectStaticBody(html: string, content: string): string {
   if (!content) {
     return html;
   }
@@ -681,7 +736,9 @@ async function sendIndex(
   } else {
     html = injectBreadcrumb(html, canonicalPath, m.label ?? m.title);
     if (key.startsWith('unit/')) {
-      html = injectUnitBody(html, key.slice(5));
+      html = injectStaticBody(html, unitStaticHtml(key.slice(5)));
+    } else if (key === 'characters') {
+      html = injectStaticBody(html, charactersStaticHtml());
     }
   }
   html = injectUmami(html, opts);

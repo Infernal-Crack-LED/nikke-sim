@@ -723,7 +723,9 @@ describe('static port parity with serve.mjs', () => {
     expect(dpschartSlash.headers.get('location')).toBe('/ranks');
 
     // Mixed-case legacy URLs must redirect too — they are not known SPA routes.
-    const dpschartMixed = await fetch(`${base}/DpsChart`, { redirect: 'manual' });
+    const dpschartMixed = await fetch(`${base}/DpsChart`, {
+      redirect: 'manual',
+    });
     expect(dpschartMixed.status).toBe(301);
     expect(dpschartMixed.headers.get('location')).toBe('/ranks');
   });
@@ -821,14 +823,14 @@ describe('static port parity with serve.mjs', () => {
     expect(res.status).toBe(200);
     const liter = await fetch(`${base}/unit/Liter`);
     expect(liter.status).toBe(200);
-    expect((await liter.text())).toContain('Best overload lines');
+    expect(await liter.text()).toContain('unit-ol-table');
   });
 
   it('collapses interior repeated slashes into the canonical route', async () => {
     const liter = await fetch(`${base}/unit//liter`);
     expect(liter.status).toBe(200);
     const html = await liter.text();
-    expect(html).toContain('Best overload lines');
+    expect(html).toContain('unit-ol-table');
     const canonical = /<link rel="canonical" href="([^"]*)"/.exec(html)?.[1];
     expect(canonical).toBe('https://nikkesim.app/unit/liter');
   });
@@ -914,10 +916,20 @@ describe('static port parity with serve.mjs', () => {
     expect(res.status).toBe(200);
     const html = await res.text();
     const body = html.split('</head>')[1] ?? '';
-    expect(body).toContain('Best overload lines');
     expect(body).toContain('unit-page');
-    expect(body).not.toContain('No optimal line data yet.');
+    // The no-JS body carries the page's real content, not a stub: the ranked
+    // overload table, the kit (the unique text a crawler most needs), and the
+    // model-status badge. Liter is simulated and hand-modelled, so all three are
+    // present for her.
+    expect(body).toContain('Overload Lines');
+    expect(body).toContain('unit-ol-table');
+    expect(body).toContain('<h2>Skills</h2>');
+    expect(body).toContain('Sim status');
     expect(body).toMatch(/\d+× /);
+    // It must never advertise the OTHER overload artifact's pick: ol-optimal.json
+    // disagrees with this ranking for most units, and indexing a different
+    // recommendation than the visitor sees is worse than indexing none.
+    expect(body).not.toContain('No optimal line data yet.');
   });
 
   it('previously-valid top-level routes still return 200', async () => {
