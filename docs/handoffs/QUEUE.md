@@ -118,17 +118,40 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Engine / model threads (measurement- or owner-gated)
 
-- **⇒ BUFFER BOARD: the 40s-cooldown B2 penalty — one owner decision, findings only.** The tested
-  unit replaces a no-op filler whose burst cooldown is fixed at 20s (`NOOP_B2`,
-  `src/dpschart/noop.ts:130`), so a 40s-cooldown B2 halves the team's Full Burst cadence and pays a
-  flat toll before any buff is counted. Kit-stripped floor via
-  `npx tsx scripts/build-bufferchart.ts --explain <slug>`: flora −7.67%, prika −7.80%, versus crown
-  +0.21% and n102 −0.40% at 20s. Confirmed on the independent observable (FB count, not DPS %): the
-  baseline team runs **9** Full Bursts in 180s, flora's **5**, crown's **9**. It is a real property
-  of the unit in that team, not a bug — but it is charged against every long-cooldown B2's headline
-  number and the board does not say so. DECIDE: leave as is (the toll is real value lost),
-  stage-match the baseline filler's cooldown to the tested unit, or report the two components
-  separately.
+- **⇒ BUFFER BOARD: long burst cooldowns are handled three different ways — one owner decision,
+  findings only (2026-08-03).** The board inserts the tested unit against a no-op filler that bursts
+  every 20s (`NOOP_B2`, `src/dpschart/noop.ts:130`), so a longer-cooldown unit holds up the team's
+  Full Burst chain and pays for the Full Bursts the baseline gets and it does not. **16 tested units
+  are affected — 8 B1 and 8 B2.** Audit:
+  `npx tsx scripts/probe/buffer-rotation-audit.ts` (self-validating: every shipped value is checked
+  against `bufferValueFor`, the board's own path).
+  - **B2 (8 units): no compensation at all** — `assemble` gives `[NOOP_B1, tested, carry, carry]`
+    (`src/ranks/buffer.ts:321`). 5 Full Bursts against the baseline's 9 (3 for blanc at 60s). This
+    is NOT a regression: that shape is unchanged since the board's first commit (`91f53ea9`).
+  - **B1 (8 units): compensated by a device that removes the rotation entirely** — a >20s B1 gets a
+    second no-op B1 _instead of_ the B2 (`buffer.ts:315`), leaving the team with no B2, so the chain
+    can never complete: **0 Full Bursts, both sides, all 180s**. Their own burst still casts, so
+    burst buffs apply, but every Full-Burst-gated line is dead (moran's `fullBurstEnter` trigger,
+    for one) and no buff is ever valued inside a Full Burst window.
+  - **The pairing that WOULD fix it already exists on another board** — `src/ranks/b1b2dps.ts:59`
+    `B2_TEAM = [NOOP_B1, NOOP_B2, NOOP_B3_RL, NOOP_B3]` keeps a no-op in the tested unit's own
+    stage (pinned, `scripts/tests/ranks/b1b2dps.test.ts:104`). The buffer board never adopted it.
+  - **Nothing pins any of this**: `scripts/tests/ranks/buffer.test.ts:35` pins the B1 filler rule
+    itself, but no test covers the B2 team shape or any Full Burst count on this board.
+  - **Measured effect of pairing** (hypothetical, board unchanged): `flora` 14.8→24.1, `prika`
+    17.4→42.4, `anchor-innocent-maid` 8.3→26.2, `mast-romantic-maid` 61.0→77.3, `delta-ninja-thief`
+    3.1→15.5, `arcana` (RL/Electric, NOT `arcana-fortune-mate`) −0.4→13.0, `biscuit` −7.7→+1.0,
+    `blanc` −3.4→+7.5. The 20s controls also move (`crown` 75.4→71.6, `liter` 26.5→35.3) because the
+    extra filler changes their baseline too — a fix re-ranks the whole board, it is not a patch on
+    16 rows.
+  - **Note the knock-on**: `blanc` is hard-excluded from the board for reading negative
+    (`EXCLUDED_BUFFER_SLUGS`), and `biscuit` / `arcana` are two of the negative rows the leaderboard
+    now trims — all three go positive once the rotation is matched. The negatives are substantially
+    an artifact of this, and the display trim is treating the symptom.
+  - DECIDE: (a) leave it — a long cooldown really does cost that team Full Bursts; (b) pair the
+    tested unit's stage with a no-op, matching the B1/B2 DPS board, and re-rank; or (c) keep the
+    value as is but report rotation and buff as two numbers. Whichever way, the B1 zero-Full-Burst
+    path should not stay as it is.
 - **⇒ ENGINE REGRESSION FULL-BURST COUNT FAILURES — four comps disabled in `scripts/regression.ts`**
   (`:106`, `:131`, `:158`, `:236`): `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`,
   `N3 scarlet/liberalio iron` each read 1–3 Full Bursts short of their video-measured counts on clean
