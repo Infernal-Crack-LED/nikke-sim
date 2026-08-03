@@ -9,10 +9,10 @@ import {
   type PrepareDeps,
 } from '../prepare.js';
 import { runSim } from '../engine/sim.js';
-import { bestOl } from '../bestol.js';
+import { rankFreeLineConfigs } from '../olconfigs.js';
 import {
   assembleTeam,
-  FLOOR_SEED_COUNTS,
+  OL_TIER_VALUES,
   type Cell,
   type TestedUnit,
 } from './matrix.js';
@@ -50,8 +50,18 @@ const PROBE_CELL: Cell = {
   invest: '12of12',
 };
 
-// Greedy-optimize the tested unit's last 4 OL lines (12/12 tier) once per unit,
-// memoized. Returns the extra lines beyond the 4 elem + 4 atk floor.
+// Optimize the tested unit's last 4 OL lines (12/12 tier) once per unit, memoized.
+// Returns the extra lines beyond the 4 elem + 4 atk floor.
+//
+// EXHAUSTIVE, at the project tier (owner ruling 2026-08-03). The greedy marginal-gain
+// search this replaced could not see a stat whose FIRST line is worthless and whose third
+// or fourth wins outright — Charge Speed buys nothing until it crosses a frame boundary,
+// Hit Rate's core-rate curve is convex — and it was measured leaving up to 31% of a unit's
+// achievable gain unclaimed. The pool is 3 candidate types (5 on RL/SR), so the exhaustive
+// pass is 15 or 70 sims per unit against greedy's ~28: strictly better AND cheaper.
+//
+// The tier is OL_TIER_VALUES, the same values tierLoadout stamps on the lines when they
+// are applied, so this cannot optimize on a basis the chart does not then use.
 function optimizedLines(
   tested: TestedUnit,
   ctx: RunCtx,
@@ -66,23 +76,18 @@ function optimizedLines(
   // provisional team: tested carries only the 8-line floor.
   const team = assembleTeam(PROBE_CELL, tested); // no optimizedTestedLines → floor only
   const chars = team.slugs.map((s) => charFor(ctx, s));
-  const prepared = prepareTeam(chars, team.unitOpts, ctx.deps);
-  const res = bestOl(
+  const { results } = rankFreeLineConfigs({
     chars,
-    ctx.mult,
-    team.cfg,
-    prepared,
-    team.testedIndex,
-    ctx.deps.olLines,
-    4,
-    FLOOR_SEED_COUNTS
-  );
-
-  const counts = new Map<string, number>();
-  for (const p of res.picks) {
-    counts.set(p.type, (counts.get(p.type) ?? 0) + 1);
-  }
-  const lines: LineSelection[] = [...counts].map(([type, count]) => ({
+    mult: ctx.mult,
+    cfg: team.cfg,
+    deps: ctx.deps,
+    baseOpts: team.unitOpts,
+    carryIdx: team.testedIndex,
+    topN: 1,
+    tierValues: OL_TIER_VALUES,
+  });
+  // counts only — tierLoadout stamps the value when these are applied
+  const lines: LineSelection[] = results[0].lines.map(({ type, count }) => ({
     type,
     count,
   }));
