@@ -368,8 +368,10 @@ Planned follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
   placement to lose the stage-3 cast. The leaderboard shows rows ≥ 0 only, minus
   `HIDDEN_BUFFER_SLUGS` (chime, avistar) — `rankedBufferRows` (`src/ranks/buffer-rows.ts`) filters
   both the chart bars and the share/pre-render table card, so ranks are numbered over one set; the
-  artifact itself keeps every row for the unit card, and `EXCLUDED_BUFFER_SLUGS` (blanc) never
-  enters the population at all.
+  artifact itself keeps every row for the unit card. `EXCLUDED_BUFFER_SLUGS` is a second, harder
+  screen at the population filter — a kit that outright REDUCES team damage in the standard comp
+  would report a misleadingly negative % and never enters the board — and it is currently **empty**;
+  `scripts/probe/buffer-rotation-audit.ts --excluded` checks each entry against that criterion.
 - **b1b2dps** — every sim-supported B1/B2 unit, ranked by own DPS in a Solo-style no-op control team.
   Four cells: Core 0 / Core 100 × neutral / elemental advantage. 40s-B1 and B2 templates include a
   no-op B1 with the standard 7 s team burst CDR; 20s-B1 rows rely on the tested unit's own CDR.

@@ -9,7 +9,29 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-03, latest) OVERLOAD LINES: ONE BASIS EVERYWHERE — EXHAUSTIVE RANKING AT T11. Greedy
+- **(2026-08-03, latest) BUFFER BOARD: `blanc` UN-EXCLUDED — both her rows ship, and
+  `EXCLUDED_BUFFER_SLUGS` is now EMPTY.** Blanc was the set's sole member, excluded on the stated
+  grounds that her kit's net effect is to REDUCE team damage in the standard comp and so produce a
+  misleadingly negative % increase. **That rationale no longer describes her.** The buffer board's
+  comp reshape — the standard team with a spare no-op per stage (`bede1524`) plus camera focus moved
+  to the spare no-op B2 (`11c047aa`) — removed the rotation distortion the negative reading came
+  from: a tested unit's own burst cooldown no longer costs its team Full Bursts, because the spare
+  no-op covers its stage. Blanc now reads **+7.88% plain (9 Full Bursts v 9 baseline)** and **+20.93%
+  `w/ Rouge` (8 v 8)**, identical on the generic and typed boards (no line of her kit is weapon- or
+  element-typed). **Owner ruling: ship BOTH rows** — the plain row (her same-squad CDR gate shut, 3
+  burst casts in 180 s) and the `w/ Rouge` duo row (gate open via the synthetic no-op Rouge B1, 8
+  casts). **Landed:** `EXCLUDED_BUFFER_SLUGS = new Set<string>()` in `src/ranks/buffer.ts`. The
+  mechanism is deliberately KEPT, not deleted — it is the policy hook for a kit that genuinely reads
+  net-negative after some future comp change, and `scripts/build-bufferchart.ts` still filters through
+  it. The board population grows 84 → 85 units, 89 → 91 generic rows. **Evidence / how to re-check:**
+  `npx tsx scripts/probe/buffer-rotation-audit.ts --excluded` (committed; prints each entry's live
+  value against the criterion, and now reports the empty set); `scripts/tests/ranks/buffer.test.ts`
+  already pinned both Blanc rows through `bufferValueFor`/`rankBuffers` directly, so they were
+  computed and asserted the whole time the population filter was hiding them — those pins pass
+  unchanged. **Tier:** owner ruling + deterministic sim measurement, no game footage involved (a
+  board-population policy, not a damage-model value).
+
+- **(2026-08-03) OVERLOAD LINES: ONE BASIS EVERYWHERE — EXHAUSTIVE RANKING AT T11. Greedy
   search and the max-roll basis are both DELETED.** Three separate searches used to pick a unit's
   four free overload lines (the lines beyond the 4× Elemental DMG + 4× ATK floor), on two different
   tiers, and they disagreed with each other on 28 of 73 units. Owner ruling: exhaustive, at T11, for
@@ -123,10 +145,11 @@ lives. Newest first within each section.
   profile DEFINITION changes from the synthetic `w/ Bunny` B2 to `w/ Rouge` (`noop-rouge-b1`) — the
   old synthetic Bunny partner existed to hold the gate open under the same misread; the partner is
   now a presence-only no-op Rouge B1 (zeroed kit, rouge's cadence) whose curated squad membership
-  opens the gate faithfully. Blanc remains in `EXCLUDED_BUFFER_SLUGS` in
+  opens the gate faithfully. ~~Blanc remains in `EXCLUDED_BUFFER_SLUGS` in
   `src/ranks/buffer.ts`, so neither the plain row nor the `w/ Rouge` profile is emitted to the
   published buffer board; they are exercised only by `scripts/tests/ranks/buffer.test.ts` and the
-  Blanc unit tests. `scripts/tests/ranks/buffer.test.ts`'s pin (profiled casts/value > plain) holds
+  Blanc unit tests.~~ **SUPERSEDED (2026-08-03) — disregard this sentence; see the buffer-population
+  entry below. Both Blanc rows now ship.** `scripts/tests/ranks/buffer.test.ts`'s pin (profiled casts/value > plain) holds
   unchanged. **Evidence:** `scripts/tests/units/blanc.test.ts` B3 group (gate inert in the liter
   comp == CDR-removed schedule; active ≥5 casts with rouge; the ungated counterfactual over-fires —
   discriminates both nearest-wrongs); noir's N5 gate test passes unchanged;

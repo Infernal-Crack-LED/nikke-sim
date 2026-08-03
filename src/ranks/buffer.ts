@@ -168,9 +168,14 @@ export const DUO_BUFFER_PROFILES: Record<
   },
 };
 
-// Slugs excluded from the buffer population: kits whose net effect is to reduce
-// team damage in the standard comp produce a misleadingly negative % increase.
-export const EXCLUDED_BUFFER_SLUGS = new Set(['blanc']);
+// Slugs kept out of the buffer population entirely. The criterion is a kit whose
+// net effect in the standard comp is to REDUCE team damage: the board would
+// report a misleadingly negative % increase that says nothing about the unit's
+// support value. NO UNIT CURRENTLY MEETS IT — the set is empty, and the hook is
+// kept because the criterion can be met again whenever the comp shape moves.
+// `npx tsx scripts/probe/buffer-rotation-audit.ts --excluded` checks each entry's
+// live value against the criterion.
+export const EXCLUDED_BUFFER_SLUGS = new Set<string>();
 
 // Walk every {target, effects} block in the override JSON (any nesting — skill
 // slots, modes, steps) and derive what the carries must provide for the unit's

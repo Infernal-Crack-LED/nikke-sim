@@ -5,8 +5,8 @@
 //    it has no standing on a support ranking, and its bar wrecks the chart's
 //    geometry besides: the track spans min↔max, so one −18.8% row pushes the
 //    zero axis a fifth of the way across and squashes every positive bar into
-//    the remainder. Same property that keeps EXCLUDED_BUFFER_SLUGS (blanc) out
-//    of the population a step earlier (src/ranks/buffer.ts).
+//    the remainder. Same property EXCLUDED_BUFFER_SLUGS screens for a step
+//    earlier, at the population filter (src/ranks/buffer.ts).
 // 2. HIDDEN_BUFFER_SLUGS are dropped by name.
 //
 // Both hosts filter through here — the web tab / Card Builder bars
