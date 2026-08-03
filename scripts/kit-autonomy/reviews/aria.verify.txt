@@ -1,0 +1,8 @@
+
+ [32m✓[39m scripts/tests/units/aria.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m19 passed[39m[22m[90m (19)[39m
+[2m   Start at [22m 08:31:54
+[2m   Duration [22m 487ms[2m (transform 90ms, setup 0ms, import 404ms, tests 23ms, environment 0ms)[22m
+

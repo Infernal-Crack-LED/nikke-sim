@@ -1,0 +1,75 @@
+{
+  "slug": "aria",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "beginning of Full Burst: Crit Dmg ▲26.99%",
+      "disposition": "FAITHFUL",
+      "scope": "Generic Critical Damage — no normal-attack/charge/crit-only scoping clause; applies to all crit-eligible hits of every ally (critDamagePct, NOT a scoped variant).",
+      "durationSemantics": "durationSec: 10 — wall-clock seconds ('for 10 sec'), which exactly spans the 10s Full Burst window. NOT rounds, NOT permanent.",
+      "triggerIdentity": "fullBurstEnter — 'at the beginning of Full Burst' fires on ANY team Full Burst, regardless of which units cast the chain. No gate.",
+      "targetSet": "allies (all allies, including self — no 'except self' clause).",
+      "nearestWrongModel": "burstCast-keyed: firing only on rotations aria herself casts Burst II. In the control fixture aria (B2) COMPETES with crown (B2) for the stage-2 slot under first-ready selection, so burstCast fires on strictly fewer rotations than fullBurstEnter — an under-credit that a solo-aria comp would never expose. Secondary misread: permanent duration (10s == FB length makes an always-on model nearly indistinguishable on damage alone).",
+      "distinguishingAssertion": "Collect fullBurstStart events and buffApply events with stat 'critDamagePct', value 26.99: assert one application batch (5 targets) per fullBurstStart INCLUDING rotations where crown, not aria, cast the B2 (identify via burstCast events' srcSlot); assert expiresFrame - applyFrame == 600 (10s at 60fps). Green under fullBurstEnter; red under burstCast (missing applies on crown-cast rotations) and red under permanent (wrong expiresFrame).",
+      "inertness": "Must NOT apply before the first fullBurstStart (no t=0 buffApply); must NOT fire on aria's burstCast frame itself (pre-FB).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "last bullet hits: Crit Rate ▲7.03% 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic Critical Rate — unscoped ('Critical Rate ▲', not 'of normal attacks'), so critRatePct, NOT critRateNormalPct.",
+      "durationSemantics": "durationSec: 5 — wall-clock. NOT rounds. Uptime is inherently partial: aria's 300-round MG belt means lastBullet fires once per full magazine cycle, so the 5s window covers roughly the reload (161f ≈ 2.68s) plus ~2.3s of the next belt.",
+      "triggerIdentity": "lastBullet — 'when the last bullet hits the target' is the per-magazine trigger, firing once per belt exhaustion. No gate (no FB condition, no status condition).",
+      "targetSet": "allies (all allies, including self).",
+      "nearestWrongModel": "shotFired or interval keying — treating it as effectively-permanent uptime. An MG fires thousands of rounds; a shotFired-keyed 5s buff is 100%-uptime and over-credits the whole team's crit. Second misread: hitCount with some invented threshold, or scoping to critRateNormalPct (under-credits skill/burst crit for the team).",
+      "distinguishingAssertion": "Count buffApply events with stat 'critRatePct', value 7.03: assert the application count equals aria's reload-event count ±1 (one batch per magazine exhaustion, each frame-adjacent to a reload event for aria), 5 targets per batch, and expiresFrame - applyFrame == 300. Green under lastBullet; red under shotFired (count ~ shots, thousands) and red under interval (applications not aligned to aria's reload frames).",
+      "inertness": "Must NOT re-apply mid-magazine; uptime must drop to zero if aria never exhausts a belt (e.g. a patched huge-ammo override ⇒ zero applications).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Shield 37.86% user's final Max HP 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "A shield grant, not a stat buff — engine 'shield' effect with maxHpPct: 37.86 (percent of CASTER aria's final Max HP), durationSec: 10. No HP pool is modeled at scope, but the effect must exist.",
+      "durationSemantics": "durationSec: 10 — wall-clock shield window.",
+      "triggerIdentity": "burstCast — it is aria's own Burst II block, so it fires only on rotations aria actually casts (NOT on crown's B2 rotations).",
+      "targetSet": "allies (all allies including self).",
+      "nearestWrongModel": "Dropped as 'defensive, no damage' (taxonomy trap #4). A shield is a TANDEM channel: it must emit shield events that fire teammates' 'shielded' triggers and open 'requiresShielded' gates. Skipping it silently kills any future shield-synergy comp (naga-style kits). Second misread: keying maxHpPct to the TARGET's Max HP instead of the caster's.",
+      "distinguishingAssertion": "Using withPatchedOverride on a teammate (e.g. liter), add a test block {trigger:{kind:'shielded'}, target:{kind:'self'}, effects:[buff atkPct sentinel]}: assert the sentinel buffApply fires exactly once per aria burstCast (match count to aria's burstCast events) and zero times when aria's shield block is patched out. Green under a live shield effect on burstCast; red if the line was dropped or keyed to fullBurstEnter.",
+      "inertness": "Removing the shield block must NOT change totals(res)['aria'] or any teammate's totals in the control comp (no shielded-consumers there) — it is damage-inert in isolation, tandem-live only.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "self: Hit Rate ▲30.37% for 15 sec",
+      "disposition": "FAITHFUL",
+      "scope": "hitRatePct — the core-hit lift channel (hrCoreMult). SELF-only; boosts aria's own core exposure while active.",
+      "durationSemantics": "durationSec: 15 — wall-clock, deliberately LONGER than the 10s FB window (persists ~5s past fullBurstEnd). A 10s duration is a misread.",
+      "triggerIdentity": "burstCast — a self mode inside her OWN burst block fires only when aria casts, never on any team Full Burst.",
+      "targetSet": "self only.",
+      "nearestWrongModel": "fullBurstEnter-keyed: applying the Hit Rate lift on EVERY Full Burst including rotations where crown takes the B2 slot — over-credits aria's core rate in exactly the multi-B2 fixture the harness builds. Secondary misreads: target 'allies' (kit says self), or durationSec 10 (copying the shield's window).",
+      "distinguishingAssertion": "Filter buffApply stat 'hitRatePct' value 30.37: assert targetIdx === aria's slot index on every application, application frames coincide with aria's own burstCast events (subset — NOT one per fullBurstStart), and expiresFrame - applyFrame == 900 (15s). Green under burstCast/self/15s; red under fullBurstEnter (applications on crown-cast rotations), red under allies-target (targetIdx spread), red under 10s.",
+      "inertness": "Must NOT apply to any teammate; must NOT fire on Full Bursts aria did not burst into. The 30.37 value is kit-literal, but the Hit-Rate→core-rate SLOPE it feeds is the measured-only ⚑ channel (ALWAYS-⚑ #7) — the test asserts the buff's presence/value/duration, not a core-rate magnitude.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:critDamage-fullBurstEnter",
+    "skill2:critRate-lastBullet",
+    "burst:shield-allies-burstCast",
+    "burst:hitRate-self-burstCast"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Kit is small (4 lines) and fully expressible in the schema — expect zero unmodeled text; any driver 'unmodeled' entry needs justification. The two highest-risk shared-prior misreads both hinge on the SAME structural fact: the control fixture holds TWO Burst II units (crown + aria), so burstCast vs fullBurstEnter diverge on every rotation crown wins first-ready. Skill1 must be fullBurstEnter (fires even on crown-cast rotations); the burst self Hit Rate must be burstCast (silent on crown-cast rotations) — a driver who keys both to the same trigger has misread one of them. Verify aria actually casts B2 at least once in the fixture (cd 40s vs crown's first-ready priority) before trusting any burstCast assertion — if she never casts, the burst-block tests are vacuous and the comp needs adjusting (e.g. patch crown out or check burstCast srcSlot). Skill2's uptime is belt-cycle-bound: 300 ammo + 161-frame reload makes lastBullet cadence low; a shotFired misread inflates team crit materially. The shield line is damage-inert in the control comp but is the unit's only tandem channel — assert emission via a patched shielded-trigger consumer, not via totals. Boss is Fire, aria is Water: clean ×1.10 element advantage with NO kit elemental-damage buff — assert no elemAdvantageDamagePct buffApply exists. All four magnitudes are kit-literal (DATAMINED); the only ⚑ surfaces are base cadence (MG pulls/s, datamine-unreliable) and the HR→core slope, both outside the kit lines proper.",
+  "model": "claude-fable-5"
+}

@@ -646,6 +646,43 @@
         "temp": "COLD ▼"
       }
     },
+    "aria": {
+      "name": "Aria",
+      "burst": "II",
+      "weapon": "MG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/aria.json + scripts/kit-autonomy/manual-review/aria.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: fullBurstEnter — the 10s team Critical Damage window opens on EVERY team Full Burst (including rotations aria sits out); her own stage-2 cast lands ~0.8s before the window opens, so a burstCast keying would shift the window off the FB frames (Tier-2 lever, pinned on the STARVED comp in the unit test)",
+        "skill2: critRatePct is UNSCOPED (kit: 'Critical Rate ▲', no 'of normal attacks' clause) — it lifts team skill/burst crit too, unlike helm's scoped line; cadence is belt-cycle-bound (one 5s window per emptied 300-round belt, ~50% uptime)",
+        "burst: the 37.86%-of-final-Max-HP shield is EVENT-ONLY (no HP pool at scope) — damage-inert in isolation, tandem-live (fires `shielded` triggers / opens `requiresShielded` gates; asserted via a patched shielded-consumer sentinel in the unit test) (⚑3)",
+        "burst: the self hitRatePct 30.37/15s buff applies faithfully but is damage-inert on an MG — the engine's Hit-Rate→core channel has no MG coverage (AR/SMG/SG accuracy-circle models only); canary-pinned by totals-equality in the unit test (⚑2)",
+        "cadence tuple (MG wind-up ladder, reloadFrames 161, ammo 300) is the unverified datamine — read rounds/min + reload gap from a focus video (⚑1)",
+        "multi-B2 comps starve aria to zero casts (same-stage first-ready selection; PROBED with crown) — graded comps should field her as the only B2"
+      ],
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0 (judge kimi-code/k3); cross-family S2b(claude-fable-5)/S5/S6(claude-opus-5)/S7(kimi-k3) converged; FROM-SCRATCH build (simSupported was false) — fullBurstEnter team critDamagePct 26.99/10s + lastBullet team critRatePct 7.03/5s (UNSCOPED, helm-scoped-stat mirror) + burstCast all-ally shield 37.86% final Max HP/10s (event-only, tandem-live) + burstCast self hitRatePct 30.37/15s (buff-live, damage-inert — no MG HR->core channel engine-wide, canary-pinned); STARVED-comp two-way trigger lever pinned both directions. Artifacts: scripts/kit-autonomy/results/aria.json + scripts/kit-autonomy/manual-review/aria.md",
+      "residual": "All agents share the prose-literal priors that 'last bullet hits' = once-per-belt lastBullet and S1 ~50% uptime rests on the unverified datamine MG cadence tuple (⚑1) — one focused aria video (rounds/min + reload gap) closes both | MG Hit-Rate->core channel absent engine-wide (⚑2 out-of-domain, canary-pinned) | shield magnitude unobservable without an HP pool (⚑3)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "ark-ranger-black": {
       "name": "Ark Ranger Black",
       "burst": "III",
