@@ -87,13 +87,28 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **⇒ Pellet-reader: cherry-pick the `+62.5` crosshair-offset fix (`b69b5c6`)** — verified NOT an
   ancestor of `main`; `scripts/probe/read-pellets.ts:66` still defaults `-62.5`, latent, and poisons the
   next run. (It did **not** cause the 2026-07-29 REJECT: artifacts 12:19–13:33, commit 15:17.)
-- **⇒ Tell the owner before the next deploy build: the DPS chart moves for 4 units.** The 2026-08-02
-  no-op low-ATK standardization lifts Solo-framework DPS for `maxwell` +28.3%, `alice` +18.3%,
-  `n102` +9.6%, `naga` +0.8% (the other 8 ally-ATK-selector carriers are byte-identical) — a control
-  no longer wins their king-maker buff. `web/public/dpschart.json` + `b1b2dps.json` are gitignored
-  build output, so nothing is stale in the tree, but the DEPLOYED chart changes on the next build and
-  the movement is worth a patch-notes line (`/patch-notes`). Re-measure any time with
-  `npx tsx scripts/noop-basis-ab.ts`. Open question for the owner: the no-op B3's own damage fell
+- **⇒ REVIEW `maxwell` (+28.3%) AND `alice` (+18.3%) AFTER THE NO-OP LOW-ATK STANDARDIZATION**
+  (2026-08-02, DECISIONS). These two moved far more than the other carriers (`n102` +9.6%, `naga`
+  +0.8%, other 8 byte-identical — owner ruling: those are fine as-is, review only these two).
+  Re-measure any time with `npx tsx scripts/noop-basis-ab.ts` (deterministic, prints all 12).
+  **What to check:** the jump means a self-includable `alliesTopAtk` buff that used to be spent on a
+  control now resolves to the tested unit itself. For each of the two, read the kit line behind the
+  selector and answer:
+  1. Is the buff genuinely SELF-APPLICABLE per kit text, or does it need `excludeSelf` the way
+     `chime`/`avistar` did (DECISIONS 2026-08-02, the king-maker ruling directly above this one)?
+     A self-buff that the kit means for an ally is now inflating the Solo row by the full delta.
+  2. Is the magnitude plausible for the buff's stated value? +28.3% on `maxwell` from one selector
+     flip is large enough to be worth arithmetic, not just a plausibility read.
+  3. Their board/graded readings did NOT move (regression snapshots all stable), so this is a
+     Solo-framework/DPS-chart question only — do not re-tune the override off the board.
+     ⚠ Exact slugs: `maxwell` (SR/Iron), NOT `maxwell-ordinary-mechanic`; `alice` (SR/Fire), NOT
+     `alice-wonderland-bunny`. The variants do not carry an ally-ATK selector.
+- **⇒ Patch-notes line owed before the next deploy: the DPS chart moves for 4 units.** Same 2026-08-02
+  change. `web/public/dpschart.json` + `b1b2dps.json` are gitignored build output, so nothing is stale
+  in the tree, but the DEPLOYED chart changes on the next build → `/patch-notes`. Also settled that
+  pass: the emitted `meta.cores[].rate` key is now `exposure` (verified 2026-08-02 that bakery-bot only
+  DECLARES the field and never dereferences it; its type was updated in lockstep at
+  `apps/bot/src/lib/nikkesim/dpschart.ts`). Open question for the owner: the no-op B3's own damage fell
   ~200× (5.09e9 → 2.52e7) since it scales with the same ATK — harmless today (it is never ranked;
   `src/dpschart/run.ts:106` returns the tested unit's dps alone) but it retires the "contributes
   realistic B3-stage damage" intent in `src/dpschart/noop.ts`.
