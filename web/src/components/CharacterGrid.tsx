@@ -12,6 +12,7 @@ import {
 } from '../../../src/infographics/core/iconNames';
 import { useIconThumbs } from '../useIconThumbs';
 import { usePortraitThumbs } from '../usePortraitThumbs';
+import { onSpaLinkClick } from '../router';
 
 const data = charactersJson as unknown as DataFile;
 
@@ -418,10 +419,19 @@ export type CharacterFilterState = ReturnType<typeof useCharacterFilter>;
 // M" count — everything above the card grid. Rendered separately from
 // CharacterCards so a caller can place it wherever it wants (e.g. above a set
 // of team slots instead of directly above the grid).
-export function CharacterFilters({ filter }: { filter: CharacterFilterState }) {
+export function CharacterFilters({
+  filter,
+  defaultOpen = true,
+}: {
+  filter: CharacterFilterState;
+  // The Team Builder and the Browse modals want the panel open — filtering IS
+  // the task there. The /characters index wants it closed, so the roster is the
+  // first thing on screen. Defaults to open so no existing caller changes.
+  defaultOpen?: boolean;
+}) {
   return (
     <>
-      <details className="teambuilder-filters-details" open>
+      <details className="teambuilder-filters-details" open={defaultOpen}>
         <summary>Filters</summary>
         <div className="teambuilder-filters">
           {/* Left — the stat-axis icon rows */}
@@ -534,12 +544,26 @@ export function CharacterCards({
   onToggle,
   dragProps,
   draggingSlug,
+  linkFor,
+  profileHref,
 }: {
   filter: CharacterFilterState;
-  onToggle: (slug: string) => void;
+  // Optional only when `linkFor` makes the whole card a link instead.
+  onToggle?: (slug: string) => void;
   dragProps?: (slug: string) => Record<string, unknown>;
   draggingSlug?: string | null;
+  // NAVIGATION mode (the /characters index): the whole card becomes an <a> to
+  // this href. Real links, so a crawler can follow them and ⌘/middle-click opens
+  // a new tab — the reason the index page is worth having for search at all.
+  linkFor?: (slug: string) => string;
+  // BADGE mode (Team Builder + the Browse modals): the card keeps its existing
+  // click behaviour and gains a separate corner link to the unit's profile. The
+  // card's own click target is untouched, because on those surfaces clicking a
+  // portrait means "put her on my team" and hijacking it would break the page's
+  // whole purpose. Ignored when `linkFor` is set (the card is already a link).
+  profileHref?: (slug: string) => string;
 }) {
+  const badge = profileHref && !linkFor;
   return (
     <>
       <div className="teambuilder-grid">
@@ -551,19 +575,9 @@ export function CharacterCards({
           // instead of falling into the B3 branch this used to have.
           const burstSrc = `/nikke-icons/${ICON_BY_BURST[c.burst] ?? ICON_BY_BURST.III}.webp`;
           const classSrc = `/nikke-icons/${ICON_BY_CLASS[c.class] ?? ICON_BY_CLASS.Attacker}.webp`;
-          return (
-            <button
-              key={c.slug}
-              type="button"
-              className={`teambuilder-card${c.simSupported ? '' : ' unsupported'}${draggingSlug === c.slug ? ' dragging' : ''}`}
-              onClick={dragProps ? undefined : () => onToggle(c.slug)}
-              {...(dragProps ? dragProps(c.slug) : {})}
-              title={
-                c.simSupported
-                  ? `${c.name} — click to add to team, or drag onto a slot`
-                  : `${c.name} — not in the sim yet (can be placed, but not simmed)`
-              }
-            >
+          const cardClass = `teambuilder-card${c.simSupported ? '' : ' unsupported'}${draggingSlug === c.slug ? ' dragging' : ''}`;
+          const inner = (
+            <>
               <div className="teambuilder-portrait">
                 {c.imageUrl ? (
                   <img
@@ -617,7 +631,70 @@ export function CharacterCards({
                   />
                 </div>
               </div>
+            </>
+          );
+
+          // Navigation mode: the card IS the link.
+          if (linkFor) {
+            const href = linkFor(c.slug);
+            return (
+              <a
+                key={c.slug}
+                href={href}
+                onClick={onSpaLinkClick(href)}
+                className={cardClass}
+                title={`${c.name} — kit, best overload lines and DPS ranking`}
+              >
+                {inner}
+              </a>
+            );
+          }
+
+          const card = (
+            <button
+              key={badge ? undefined : c.slug}
+              type="button"
+              className={cardClass}
+              onClick={dragProps ? undefined : () => onToggle?.(c.slug)}
+              {...(dragProps ? dragProps(c.slug) : {})}
+              title={
+                c.simSupported
+                  ? `${c.name} — click to add to team, or drag onto a slot`
+                  : `${c.name} — not in the sim yet (can be placed, but not simmed)`
+              }
+            >
+              {inner}
             </button>
+          );
+          if (!badge) {
+            return card;
+          }
+
+          // Badge mode: the profile link is a SIBLING of the button, not a
+          // child — an <a> inside a <button> is invalid HTML and browsers
+          // resolve the nesting unpredictably. The wrapper only appears when a
+          // badge was asked for, so every existing caller's DOM is unchanged.
+          //
+          // NEW TAB, deliberately. These grids are mid-task surfaces: the Browse
+          // modals hold a STAGED team that an SPA navigation would discard, and
+          // the Team Builder holds a team in progress. Opening the profile in a
+          // new tab is the only variant that cannot interrupt the task the grid
+          // exists for — which is the whole constraint on this entry point.
+          const href = profileHref(c.slug);
+          return (
+            <div className="teambuilder-card-wrap" key={c.slug}>
+              {card}
+              <a
+                className="teambuilder-card-profile"
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`${c.name} — open her profile in a new tab`}
+                aria-label={`${c.name} — open her profile in a new tab`}
+              >
+                <span aria-hidden="true">i</span>
+              </a>
+            </div>
           );
         })}
       </div>
@@ -644,17 +721,25 @@ export function CharacterGrid({
   onToggle,
   allowUnsupported = false,
   restrict,
+  profileHref,
 }: {
   exclude: Set<string>;
   onToggle: (slug: string) => void;
   allowUnsupported?: boolean;
   restrict?: Set<string>;
+  // Adds the corner "open her profile" link to each card without touching the
+  // card's own click behaviour — see CharacterCards.
+  profileHref?: (slug: string) => string;
 }) {
   const filter = useCharacterFilter({ exclude, allowUnsupported, restrict });
   return (
     <div className="teambuilder-picker">
       <CharacterFilters filter={filter} />
-      <CharacterCards filter={filter} onToggle={onToggle} />
+      <CharacterCards
+        filter={filter}
+        onToggle={onToggle}
+        profileHref={profileHref}
+      />
     </div>
   );
 }

@@ -152,6 +152,11 @@ let TAB_META = {
     // content-hashed.
     image: 'unit/maiden-ice-rose.discord',
   },
+  characters: {
+    title: 'NIKKE Characters — Every Nikke’s Kit, Overload Lines & DPS Rank',
+    label: 'Characters',
+    desc: 'Browse every NIKKE character. Filter by element, weapon, burst stage, class or kit role, then open a Nikke for her full kit, best overload lines, and solo-raid DPS ranking.',
+  },
   credits: {
     title: 'Credits — NIKKE Solo Raid Sim',
     label: 'Credits',
@@ -169,7 +174,7 @@ const NOT_FOUND_META = {
 // pages get unique titles, descriptions, and unit-card OG images.
 const UNIT_META = {};
 let CHARACTERS = {};
-let OL_OPTIMAL = {};
+let UNIT_PAGES = {};
 async function loadUnitMeta() {
   if (!REPO_ROOT) {
     console.error(
@@ -197,11 +202,11 @@ async function loadUnitMeta() {
     console.error('failed to load unit meta', e);
   }
   try {
-    const olPath = join(REPO_ROOT, 'data', 'ol-optimal.json');
-    const raw = await readFile(olPath, 'utf8');
-    OL_OPTIMAL = JSON.parse(raw).units ?? {};
+    const upPath = join(REPO_ROOT, 'data', 'unit-pages.json');
+    const raw = await readFile(upPath, 'utf8');
+    UNIT_PAGES = JSON.parse(raw).units ?? {};
   } catch (e) {
-    console.error('failed to load ol-optimal data', e);
+    console.error('failed to load unit-pages data', e);
   }
 }
 await loadUnitMeta();
@@ -331,41 +336,13 @@ function replaceLinkHref(html, rel, value) {
 
 // Static unit-page body content for /unit/:slug. Crawlers that do not execute
 // JS still see the unit name, tags, and best overload lines; React replaces this
-// markup once the chunk loads (createRoot, not hydration).
-const OL_LABEL = {
-  ammo: 'Max Ammo',
-  chargedmg: 'Charge DMG',
-  chargespd: 'Charge Speed',
-  critrate: 'Crit Rate',
-  critdmg: 'Crit DMG',
-  elem: 'Elemental DMG',
-  atk: 'ATK',
-  hitrate: 'Hit Rate',
-  def: 'DEF',
+// Mirror of the web page's TIER_COPY labels (web/src/UnitPage.tsx).
+const TIER_LABEL = {
+  MEASURED: 'Measured',
+  CALIBRATED: 'Calibrated',
+  VALIDATED: 'Validated',
+  MODEL_ONLY: 'Untuned',
 };
-
-function isOptimalPicks(value) {
-  return (
-    Array.isArray(value) &&
-    value.every(
-      (p) =>
-        p != null && typeof p.type === 'string' && typeof p.count === 'number'
-    )
-  );
-}
-
-function unitOptimalLines(slug) {
-  const picks = isOptimalPicks(OL_OPTIMAL[slug]) ? OL_OPTIMAL[slug] : null;
-  if (!picks?.length) {
-    return 'No optimal line data yet.';
-  }
-  return picks
-    .map(
-      (p) =>
-        `${p.count}× ${Object.hasOwn(OL_LABEL, p.type) ? OL_LABEL[p.type] : p.type}`
-    )
-    .join(', ');
-}
 
 function unitStaticHtml(slug) {
   const c = CHARACTERS[slug];
@@ -373,36 +350,111 @@ function unitStaticHtml(slug) {
     return '';
   }
   const name = escapeAttr(c.name ?? slug);
-  const lines = escapeAttr(unitOptimalLines(slug));
+  const page = UNIT_PAGES[slug];
   const tags = [
     c.element,
     c.weapon,
     c.burst ? `Burst ${c.burst}` : '',
+    c.burstCooldownSec ? `${c.burstCooldownSec}s CD` : '',
     c.class,
     c.manufacturer,
   ]
     .filter(Boolean)
     .map((t) => `<span class="pill">${escapeAttr(t)}</span>`)
     .join('');
+
+  // The KIT is the unique text on this page — the one thing no other site words
+  // the same way — so it is the part a crawler most needs.
+  const skills = ['skill1', 'skill2', 'burst']
+    .map((k) => {
+      const blocks = String(c.skills?.[k] ?? '')
+        .split('\u25a0')
+        .map((b) => b.trim())
+        .filter(Boolean);
+      if (!blocks.length) {
+        return '';
+      }
+      const label =
+        k === 'burst' ? 'Burst Skill' : k === 'skill1' ? 'Skill 1' : 'Skill 2';
+      return (
+        `<div class="unit-skill"><h3>${label}</h3>` +
+        blocks
+          .map((b) => `<p class="unit-skill-block">${escapeAttr(b)}</p>`)
+          .join('') +
+        '</div>'
+      );
+    })
+    .join('');
+
+  // From data/unit-pages.json — the same source the React page uses. It
+  // deliberately does NOT fall back to ol-optimal.json: that artifact's greedy
+  // pick disagrees with this ranking for most units, and a crawler indexing a
+  // different recommendation than the visitor sees is worse than indexing none.
+  const rows = page?.ol ?? [];
+  const olSection = rows.length
+    ? '<section class="unit-section"><h2>Overload Lines</h2>' +
+      `<p class="unit-lines">4\u00d7 Attack + 4\u00d7 Elemental Damage + ${escapeAttr(rows[0].label)}</p>` +
+      `<p>+${rows[0].gainPct.toFixed(1)}% damage over 4\u00d7 Attack + 4\u00d7 Elemental Damage</p>` +
+      '<table class="unit-ol-table"><thead><tr><th>Optimal Overload Lines</th>' +
+      '<th>vs 8/12</th></tr></thead><tbody>' +
+      rows
+        .map(
+          (r) =>
+            `<tr><td>${escapeAttr(r.label)}</td><td>+${r.gainPct.toFixed(1)}%</td></tr>`
+        )
+        .join('') +
+      '</tbody></table></section>'
+    : '';
+
+  const tier = page?.status?.tier;
+  const statusSection = tier
+    ? `<section class="unit-section"><h2>Sim status</h2><p>${escapeAttr(
+        TIER_LABEL[tier] ?? tier
+      )}</p></section>`
+    : '';
+
   return (
     '<div class="app unit-page">' +
+    '<nav class="unit-crumbs"><a href="/characters">Characters</a></nav>' +
     `<header class="unit-header"><div class="unit-meta"><h1>${name}</h1>` +
     `<div class="unit-tags">${tags}</div></div></header>` +
-    '<section class="unit-section"><h2>Best overload lines</h2>' +
-    '<p>Solo-framework damage-optimal 12/12 remainder lines ' +
-    '(beyond the 4× Elemental DMG + 4× ATK floor):</p>' +
-    `<p class="unit-lines">${lines}</p></section>` +
+    olSection +
+    (skills
+      ? `<section class="unit-section"><h2>Skills</h2>${skills}</section>`
+      : '') +
+    statusSection +
     '<section class="unit-section"><h2>Tools</h2>' +
     '<div class="unit-tools">' +
     '<a href="/ranks">DPS Rankings</a>' +
     '<a href="/overload">Overload Optimizer</a>' +
     '<a href="/teambuilder">Team Builder</a>' +
+    '<a href="/characters">All characters</a>' +
     '</div></section></div>'
   );
 }
 
-function injectUnitBody(html, slug) {
-  const content = unitStaticHtml(slug);
+// Static /characters body: every character as a real link. This IS the crawl
+// surface the page exists for, so it must survive with JS off.
+function charactersStaticHtml() {
+  const links = Object.values(CHARACTERS)
+    .filter((c) => c.slug)
+    .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
+    .map(
+      (c) =>
+        `<a href="/unit/${escapeAttr(c.slug)}">${escapeAttr(c.name ?? c.slug)}</a>`
+    )
+    .join('');
+  return (
+    '<div class="app characters-page">' +
+    '<header><h1>NIKKE Characters</h1></header>' +
+    `<section class="characters-all"><h2>All Characters</h2>${links}</section>` +
+    '</div>'
+  );
+}
+
+// React later replaces this wholesale (createRoot, not hydration), so the markup
+// only has to be valid and crawlable, not to match what React renders.
+function injectStaticBody(html, content) {
   if (!content) {
     return html;
   }
@@ -599,7 +651,9 @@ async function sendIndex(res, reqUrl, file, status = 200) {
   } else {
     html = injectBreadcrumb(html, canonicalPath, m.label ?? m.title);
     if (key.startsWith('unit/')) {
-      html = injectUnitBody(html, key.slice(5));
+      html = injectStaticBody(html, unitStaticHtml(key.slice(5)));
+    } else if (key === 'characters') {
+      html = injectStaticBody(html, charactersStaticHtml());
     }
   }
   html = injectUmami(html);

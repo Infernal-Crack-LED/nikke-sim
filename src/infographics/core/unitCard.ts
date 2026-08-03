@@ -67,6 +67,15 @@ export const UNIT_CARD_H = 600;
 export const UNIT_CARD_PORTRAIT_W = 1200;
 export const UNIT_CARD_PORTRAIT_H = 1600;
 
+// Unit cards ship as LOSSY WEBP (§12, build-infographics.ts) — it is the only
+// ~200-file kind and q90 measured −86% vs PNG. The constant lives here, not in the
+// build script, because the BROWSER fallback renderer has to encode at the same
+// quality: a lossless PNG preview does not look like the lossy file production
+// serves, and small text is exactly where q90 shows. Scales differ by host —
+// @napi-rs/canvas toBuffer takes 0-100, the browser's toDataURL takes 0-1 — so
+// each host converts, but from ONE number.
+export const UNIT_CARD_WEBP_QUALITY = 90;
+
 export const unitCardSize = (
   variant: UnitCardVariant
 ): { w: number; h: number; dpr: number } =>
@@ -153,11 +162,7 @@ function panel(ctx: Canvas2DLike, r: Rect, radius = 12): void {
 // Draw an image contained in a box, preserving its aspect ratio and centring it.
 // Icons are not uniformly square (code_* is 63×73, burst_1 is 17×37), so a
 // stretch-to-fit would distort the artwork.
-function drawContained(
-  ctx: Canvas2DLike,
-  img: unknown,
-  r: Rect
-): void {
+function drawContained(ctx: Canvas2DLike, img: unknown, r: Rect): void {
   const im = img as {
     naturalWidth?: number;
     naturalHeight?: number;
@@ -172,7 +177,17 @@ function drawContained(
   const scale = Math.min(r.w / iw, r.h / ih);
   const w = iw * scale;
   const h = ih * scale;
-  ctx.drawImage(img, 0, 0, iw, ih, r.x + (r.w - w) / 2, r.y + (r.h - h) / 2, w, h);
+  ctx.drawImage(
+    img,
+    0,
+    0,
+    iw,
+    ih,
+    r.x + (r.w - w) / 2,
+    r.y + (r.h - h) / 2,
+    w,
+    h
+  );
 }
 
 // Character art, square-cropped and element-ringed. Degrades to a tinted box
@@ -242,7 +257,13 @@ function drawTitle(
 ): void {
   const m = d.model;
   const col = ELEMENT_COLORS[m.element] ?? '#9aa3b2';
-  drawArt(ctx, { x: r.x, y: r.y, w: art, h: art }, d.portrait, col, (m.name[0] ?? '?').toUpperCase());
+  drawArt(
+    ctx,
+    { x: r.x, y: r.y, w: art, h: art },
+    d.portrait,
+    col,
+    (m.name[0] ?? '?').toUpperCase()
+  );
 
   const big = art >= PORTRAIT_ART_P;
   const textX = r.x + art + (big ? 24 : 20);
@@ -301,12 +322,20 @@ function drawTitle(
   ctx.font = `400 ${art >= PORTRAIT_ART_P ? 20 : 15}px ${FONT}`;
   ctx.fillStyle = TEXT_SECONDARY;
   const sub = m.releaseDate ? `Released ${m.releaseDate}` : '';
-  ctx.fillText(fitText(ctx, sub, nameMax), textX, nameBase + (art >= PORTRAIT_ART_P ? 34 : 26));
+  ctx.fillText(
+    fitText(ctx, sub, nameMax),
+    textX,
+    nameBase + (art >= PORTRAIT_ART_P ? 34 : 26)
+  );
 
   if (m.prerelease) {
     ctx.font = `700 ${art >= PORTRAIT_ART_P ? 16 : 12}px ${FONT}`;
     ctx.fillStyle = '#e5cc80';
-    ctx.fillText('UNRELEASED — PROJECTED', textX, nameBase + (art >= PORTRAIT_ART_P ? 64 : 48));
+    ctx.fillText(
+      'UNRELEASED — PROJECTED',
+      textX,
+      nameBase + (art >= PORTRAIT_ART_P ? 64 : 48)
+    );
   }
 }
 
@@ -338,23 +367,26 @@ function drawIconStrip(
 ): void {
   const m = d.model;
   const icons = d.icons ?? {};
-  const items: { img?: unknown; text?: string; label: string; fit?: number }[] = [
-    { img: icons.burst, label: `B${m.burst}`, fit: ICON_FIT.burst },
-    {
-      text: m.burstCooldownSec != null ? `${m.burstCooldownSec}s` : '—',
-      label: 'CD',
-    },
-    { img: icons.element, label: m.element, fit: ICON_FIT.element },
-    { img: icons.weapon, label: m.weapon, fit: ICON_FIT.weapon },
-    { img: icons.class, label: m.class, fit: ICON_FIT.class },
-    {
-      fit: ICON_FIT.manufacturer,
-      img: icons.manufacturer,
-      // The 4 overspec units keep the distinction visible rather than having it
-      // silently dropped when the icon name is resolved (§10.2c).
-      label: m.overspec ? `${m.manufacturerBase} OS` : (m.manufacturerBase ?? '—'),
-    },
-  ];
+  const items: { img?: unknown; text?: string; label: string; fit?: number }[] =
+    [
+      { img: icons.burst, label: `B${m.burst}`, fit: ICON_FIT.burst },
+      {
+        text: m.burstCooldownSec != null ? `${m.burstCooldownSec}s` : '—',
+        label: 'CD',
+      },
+      { img: icons.element, label: m.element, fit: ICON_FIT.element },
+      { img: icons.weapon, label: m.weapon, fit: ICON_FIT.weapon },
+      { img: icons.class, label: m.class, fit: ICON_FIT.class },
+      {
+        fit: ICON_FIT.manufacturer,
+        img: icons.manufacturer,
+        // The 4 overspec units keep the distinction visible rather than having it
+        // silently dropped when the icon name is resolved (§10.2c).
+        label: m.overspec
+          ? `${m.manufacturerBase} OS`
+          : (m.manufacturerBase ?? '—'),
+      },
+    ];
 
   const cell = r.w / items.length;
   const labelSize = size >= ICON_SIZE_P ? 15 : 12;
@@ -381,7 +413,11 @@ function drawIconStrip(
     ctx.textAlign = 'center';
     ctx.fillStyle = TEXT_DIM;
     ctx.font = `600 ${labelSize}px ${FONT}`;
-    ctx.fillText(fitText(ctx, item.label, cell - 6), cx, r.y + size + labelSize + 4);
+    ctx.fillText(
+      fitText(ctx, item.label, cell - 6),
+      cx,
+      r.y + size + labelSize + 4
+    );
   });
   ctx.textAlign = 'left';
 }
@@ -442,7 +478,11 @@ function drawTile(
 
   ctx.fillStyle = TEXT_SECONDARY;
   ctx.font = `700 ${big ? 15 : 11}px ${FONT}`;
-  ctx.fillText(fitText(ctx, tile.title.toUpperCase(), r.w - 16), cx, r.y + (big ? 24 : 18));
+  ctx.fillText(
+    fitText(ctx, tile.title.toUpperCase(), r.w - 16),
+    cx,
+    r.y + (big ? 24 : 18)
+  );
 
   // Unranked draws at FULL SIZE with an em dash — never an omitted or shrunken
   // tile (ruling 2). TEXT_DIM keeps "no data" visually distinct from any real
@@ -523,7 +563,13 @@ function drawTiles(
   // ONE block height for the row — see drawTile.
   const blockH = Math.max(...tiles.map((t) => tileBlockHeight(t, big)));
   tiles.forEach((t, i) => {
-    drawTile(ctx, { x: r.x + (w + TILE_GAP) * i, y: r.y, w, h: r.h }, t, big, blockH);
+    drawTile(
+      ctx,
+      { x: r.x + (w + TILE_GAP) * i, y: r.y, w, h: r.h },
+      t,
+      big,
+      blockH
+    );
   });
 }
 
@@ -595,7 +641,11 @@ function drawBarChart(
     ctx.textAlign = 'center';
     ctx.fillStyle = TEXT_DIM;
     ctx.font = `400 ${rowH >= BAR_ROW_H_P ? 17 : 13}px ${FONT}`;
-    ctx.fillText('Not ranked on this board', r.x + r.w / 2, boxTop + boxH / 2 + 5);
+    ctx.fillText(
+      'Not ranked on this board',
+      r.x + r.w / 2,
+      boxTop + boxH / 2 + 5
+    );
     ctx.textAlign = 'left';
     return;
   }
@@ -651,7 +701,13 @@ function drawBarChart(
     const shown = fitText(ctx, label, nameW - chipW);
     ctx.fillText(shown, r.x, y + barH);
     if (chip) {
-      drawChip(ctx, r.x + ctx.measureText(shown).width + 6, y + barH, chip, small);
+      drawChip(
+        ctx,
+        r.x + ctx.measureText(shown).width + 6,
+        y + barH,
+        chip,
+        small
+      );
     }
 
     // track
@@ -691,7 +747,14 @@ function drawBarChart(
           return;
         }
         ctx.fillStyle = c;
-        roundRect(ctx, sx, by, pi === parts.length - 1 ? Math.max(1, pw) : pw, bh, 4);
+        roundRect(
+          ctx,
+          sx,
+          by,
+          pi === parts.length - 1 ? Math.max(1, pw) : pw,
+          bh,
+          4
+        );
         ctx.fill();
         sx += pw;
       });
@@ -721,7 +784,12 @@ function drawBarChart(
 // a FIXED-HEIGHT box with clamped text (ruling 2). Absent for ~55% of the
 // roster, in which case it draws its heading and one muted line rather than
 // collapsing.
-function drawNotes(ctx: Canvas2DLike, r: Rect, d: UnitCardData, big: boolean): void {
+function drawNotes(
+  ctx: Canvas2DLike,
+  r: Rect,
+  d: UnitCardData,
+  big: boolean
+): void {
   const m = d.model;
   panel(ctx, r);
   const px = r.x + 16;
@@ -871,7 +939,9 @@ function layoutCharts(
   headerH: number
 ): { y: number; h: number }[] {
   const natural = charts.map((c) =>
-    c.unranked || !c.rows.length ? headerH + rowH : headerH + c.rows.length * rowH
+    c.unranked || !c.rows.length
+      ? headerH + rowH
+      : headerH + c.rows.length * rowH
   );
   const sum = natural.reduce((a, b) => a + b, 0) || 1;
   let y = top;
@@ -883,7 +953,12 @@ function layoutCharts(
   });
 }
 
-function drawTags(ctx: Canvas2DLike, r: Rect, m: UnitCardModel, big: boolean): void {
+function drawTags(
+  ctx: Canvas2DLike,
+  r: Rect,
+  m: UnitCardModel,
+  big: boolean
+): void {
   ctx.textAlign = 'left';
   const size = big ? 15 : 11;
   const h = big ? 30 : 22;
@@ -906,7 +981,12 @@ function drawTags(ctx: Canvas2DLike, r: Rect, m: UnitCardModel, big: boolean): v
 
 // ---- variant layouts ---------------------------------------------------------
 
-function background(ctx: Canvas2DLike, w: number, h: number, col: string): void {
+function background(
+  ctx: Canvas2DLike,
+  w: number,
+  h: number,
+  col: string
+): void {
   ctx.fillStyle = BG;
   ctx.fillRect(0, 0, w, h);
   ctx.fillStyle = col; // element accent, not the generic blue — the card is a unit
@@ -932,7 +1012,13 @@ export function drawUnitCard(ctx: Canvas2DLike, d: UnitCardData): void {
   // so height taken here comes straight out of chart rows.
   const TITLE_GAP = 14;
   const STRIP_GAP = 22;
-  drawTitle(ctx, { x: PAD, y: PAD, w: leftW, h: PORTRAIT_ART }, d, PORTRAIT_ART, [34, 30, 26]);
+  drawTitle(
+    ctx,
+    { x: PAD, y: PAD, w: leftW, h: PORTRAIT_ART },
+    d,
+    PORTRAIT_ART,
+    [34, 30, 26]
+  );
   drawIconStrip(
     ctx,
     { x: PAD, y: PAD + PORTRAIT_ART + TITLE_GAP, w: leftW, h: ICON_SIZE + 18 },
@@ -961,7 +1047,12 @@ export function drawUnitCard(ctx: Canvas2DLike, d: UnitCardData): void {
   drawTiles(ctx, { x: rightX, y: PAD, w: rightW, h: tilesH }, m.tiles, false);
   drawNotes(
     ctx,
-    { x: rightX, y: PAD + tilesH + 16, w: rightW, h: H - PAD * 2 - tilesH - 16 },
+    {
+      x: rightX,
+      y: PAD + tilesH + 16,
+      w: rightW,
+      h: H - PAD * 2 - tilesH - 16,
+    },
     d,
     false
   );
@@ -992,7 +1083,13 @@ export function drawUnitCardPortrait(ctx: Canvas2DLike, d: UnitCardData): void {
   const TILES_GAP = 24;
 
   // 1 — title bar
-  drawTitle(ctx, { x, y, w: innerW, h: PORTRAIT_ART_P }, d, PORTRAIT_ART_P, [50, 44, 38, 32]);
+  drawTitle(
+    ctx,
+    { x, y, w: innerW, h: PORTRAIT_ART_P },
+    d,
+    PORTRAIT_ART_P,
+    [50, 44, 38, 32]
+  );
   y += PORTRAIT_ART_P + TITLE_GAP;
 
   // 2 — icon strip

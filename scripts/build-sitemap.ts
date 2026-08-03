@@ -34,6 +34,7 @@ const ROUTES: Array<{ path: string; priority: number }> = [
   { path: '/team', priority: PRIORITY.generators },
   { path: '/roster', priority: PRIORITY.generators },
   { path: '/rostersim', priority: PRIORITY.generators },
+  { path: '/characters', priority: PRIORITY.rankings },
   { path: '/teambuilder', priority: PRIORITY.tools },
   { path: '/builder', priority: PRIORITY.tools },
   { path: '/doll', priority: PRIORITY.tools },

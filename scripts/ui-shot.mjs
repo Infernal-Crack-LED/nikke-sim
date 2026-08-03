@@ -16,7 +16,18 @@ mkdirSync(outDir, { recursive: true });
 const browser = await chromium.launch();
 const shots = [];
 
+// SHOTS=<substring>[,<substring>] renders only the matching shots. The roster and
+// team captures each drive a full generator run (30 s+), so iterating on one
+// page's layout otherwise means waiting through every unrelated shot.
+const only = (process.env.SHOTS || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
 async function shot(name, { path: urlPath, width, height = 900, actions }) {
+  if (only.length && !only.some((f) => name.includes(f))) {
+    return;
+  }
   const ctx = await browser.newContext({
     viewport: { width, height },
     deviceScaleFactor: 2,
@@ -99,6 +110,40 @@ await shot('rostersim-desktop', {
       timeout: 30000,
     });
     await page.waitForTimeout(400);
+  },
+});
+
+// Character landing pages: the /characters index and one unit page at both
+// widths. maiden-ice-rose is the design reference — she is MEASURED-tier with
+// graded comps, an overload table, kit-role tags and unmodeled kit lines, so her
+// page is the only one that exercises every section at once.
+await shot('characters-index', { path: '/characters', width: 1180 });
+await shot('unit-desktop', { path: '/unit/maiden-ice-rose', width: 1180 });
+await shot('unit-mobile', { path: '/unit/maiden-ice-rose', width: 390 });
+// The Overload Lines tab switcher. maiden-ice-rose is RL, so she carries all three
+// tabs (an AR/SMG/SG unit has no CS Breakpoints tab — no charge frames to shorten).
+// NOTE: the hero Nikke card only appears once build-infographics has run AFTER the
+// vite build — `npm run build` empties dist/, which takes dist/img with it.
+await shot('unit-tab-ammo', {
+  path: '/unit/maiden-ice-rose',
+  width: 1180,
+  actions: async (page) => {
+    await page.getByRole('button', { name: 'Max Ammo Breakpoints' }).click();
+    await page.waitForTimeout(250);
+  },
+});
+// The team-builder profile badge — hover-revealed on a pointer device, so the
+// shot has to hover a card or it captures an empty corner.
+await shot('teambuilder-profile-badge', {
+  path: '/teambuilder',
+  width: 1180,
+  actions: async (page) => {
+    await page
+      .locator('.teambuilder-card-wrap')
+      .first()
+      .waitFor({ timeout: 15000 });
+    await page.locator('.teambuilder-card-wrap').first().hover();
+    await page.waitForTimeout(250);
   },
 });
 

@@ -35,6 +35,12 @@ export interface CharacterData {
   weapon: Weapon;
   burst: BurstType;
   burstCooldownSec: number;
+  // Per-slot skill cooldowns (see SkillCooldownsSec above). OPTIONAL and omitted
+  // entirely when the unit hasn't been matched to a wiki page — "unknown", which
+  // is distinct from a `null` slot meaning "passive, no cooldown". Written by
+  // src/data/sync.ts; the comment above has always described this field as living
+  // here, but it was never actually declared.
+  skillCooldownsSec?: SkillCooldownsSec;
   class: NikkeClass;
   element: Element;
   // Every element this unit counts as for ELEMENTAL ADVANTAGE — its own code plus any granted by

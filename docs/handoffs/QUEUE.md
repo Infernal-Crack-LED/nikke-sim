@@ -58,6 +58,18 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Code / tooling (unblocked, no footage or owner ruling needed)
 
+- **⇒ OL TOOLING — two remaining basis gaps, findings-only (Hit Rate half RESOLVED
+  2026-08-02).** The exhaustive free-line table now agrees with `data/ol-optimal.json`'s
+  greedy pick on 32/73 units (was 20). The Hit Rate cause is closed: owner ruled Hit Rate
+  counts for AR/SMG/SG and not RL/SR/MG, `src/olconfigs.ts`'s pool was updated to match the
+  engine's own `HR_CORE_CIRCLE` set, and `scripts/tests/engine/ol-hitrate-pool.test.ts` pins
+  the pool against measured engine behaviour. Still open, one batched decision:
+  1. **Tier basis (23 units)** — `build-ol-optimal` passes no tier values so it optimizes at
+     MAX ROLL, but the web applies its picks at T11. Pick one basis.
+  2. **Greedy local optima (18 units)** — `bestOl` finds a worse combo than the exhaustive
+     search at the same tier and pool. Decide whether `ol-optimal.json` should just use the
+     exhaustive ranking for the weapon-aware pool.
+
 - **⇒ B1/B2 DPS rank-board follow-up (1 of 3 left):** reconcile / document cross-board comparability
   against the B3 DPS chart Solo cells (`bossDef`, `rangeBonus`, `durationSec`). Context:
   `docs/handoffs/closed/2026-07-26-dps-ranks-b1b2.md`. (The "Core 100" half is settled — owner ruling
@@ -223,6 +235,32 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   class-mismatch core-row guard (no current violator).
 
 #### Product / web
+
+- **⇒ SEO FOLLOW-UPS — deferred pending a real crawl: [docs/seo-followups.md](../seo-followups.md).**
+  Search-visibility decisions that are NOT answerable from the repo. Nothing to do until Search
+  Console has ~4-6 weeks of data; the doc carries the measurement, the options and a 4-step
+  decision rule so the call is decidable rather than open-ended. Headline: measured
+  (`MEASURE=1 node scripts/unit-page-check.mjs`), no unit page is under 300 crawler-visible
+  characters and only **17** are under 500 — short-kit starter/NPC units, NOT the 85
+  unsimulated ones (median 616). That killed the originally-planned rule: **do not gate the
+  sitemap on `simSupported`**, it does not track thinness. Recommendation is do nothing.
+- **⇒ DATA BUG: `sugar.releaseDate` is her Treasure date, not her release (found 2026-08-02).**
+  She reads **2026-07-23**; her true release is **2022-11-04** (NIKKE's global launch), which
+  `characters.json` held correctly until commit `fda93643` ("updating for maxwell",
+  2026-07-31). `releaseDate` is copied straight from upstream (`src/data/sync.ts:282`), so the
+  fix belongs in bakery-bot / the synced source — `data/` is protected and regenerated.
+  - **NOT a rule about Treasures.** `flora`, `rosanna` and `phantom` got their Treasures in the
+    same batch (all four flipped `treasure: true` together on 2026-07-28) and all three kept
+    correct dates. Per-unit anomaly; the mechanism is upstream and was not determined here.
+  - **The same commit was a release-date fix-up pass** and moved five values: `drake`
+    2022-11-04 → 2025-01-16 and `helm` 2025-01-16 → 2022-11-10 (both look CORRECTED),
+    `laplace-ultimate-hero` → 2026-07-23 and `maxwell-ordinary-mechanic` → 2026-07-30 (both
+    correct, genuinely new), and `sugar` → 2026-07-23 (broken). Two units having previously
+    held each other's dates suggests the upstream mapping has had alignment trouble before —
+    worth auditing the whole column, not just this row.
+  - **Blast radius:** the unit card's "Released <date>" line states the wrong date for `sugar`.
+    The /characters "New Characters" row is defended (it excludes `treasure` entries); the card
+    is NOT.
 
 - **⇒ UNION-RAID GENERATOR — DEFERRED (owner ruling 2026-07-24) pending board stability.** Code +
   record live on branch **`gen-union-item3`** (tip `15e35dc1`; not on main, rebases cleanly). ⚠ **The

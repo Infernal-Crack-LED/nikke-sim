@@ -32,9 +32,10 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
-  unicode-range: U+20-7E, U+A0-FF, U+391-3A1, U+3A3-3A9, U+3B1-3C9, U+2010-2027,
-    U+2030, U+2202, U+2206, U+220F, U+2211-2212, U+221A, U+221E, U+222B, U+2248,
-    U+2260, U+2264-2265, U+25CA;
+  unicode-range:
+    U+20-7E, U+A0-FF, U+391-3A1, U+3A3-3A9, U+3B1-3C9, U+2010-2027, U+2030,
+    U+2202, U+2206, U+220F, U+2211-2212, U+221A, U+221E, U+222B, U+2248, U+2260,
+    U+2264-2265, U+25CA;
 }
 @font-face {
   font-family: 'Roboto';
@@ -42,9 +43,10 @@
   font-weight: 500;
   font-style: normal;
   font-display: swap;
-  unicode-range: U+20-7E, U+A0-FF, U+391-3A1, U+3A3-3A9, U+3B1-3C9, U+2010-2027,
-    U+2030, U+2202, U+2206, U+220F, U+2211-2212, U+221A, U+221E, U+222B, U+2248,
-    U+2260, U+2264-2265, U+25CA;
+  unicode-range:
+    U+20-7E, U+A0-FF, U+391-3A1, U+3A3-3A9, U+3B1-3C9, U+2010-2027, U+2030,
+    U+2202, U+2206, U+220F, U+2211-2212, U+221A, U+221E, U+222B, U+2248, U+2260,
+    U+2264-2265, U+25CA;
 }
 @font-face {
   font-family: 'Roboto';
@@ -52,9 +54,10 @@
   font-weight: 700;
   font-style: normal;
   font-display: swap;
-  unicode-range: U+20-7E, U+A0-FF, U+391-3A1, U+3A3-3A9, U+3B1-3C9, U+2010-2027,
-    U+2030, U+2202, U+2206, U+220F, U+2211-2212, U+221A, U+221E, U+222B, U+2248,
-    U+2260, U+2264-2265, U+25CA;
+  unicode-range:
+    U+20-7E, U+A0-FF, U+391-3A1, U+3A3-3A9, U+3B1-3C9, U+2010-2027, U+2030,
+    U+2202, U+2206, U+220F, U+2211-2212, U+221A, U+221E, U+222B, U+2248, U+2260,
+    U+2264-2265, U+25CA;
 }
 
 * {
@@ -2385,6 +2388,326 @@ a.dpschart-name:hover {
 }
 .unit-tools a:hover {
   text-decoration: underline;
+}
+.unit-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.unit-crumbs a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.unit-crumbs a:hover {
+  text-decoration: underline;
+}
+/* Identity row: element / weapon / burst / class / manufacturer, each with its
+   nikke-icons glyph. Sits directly under the H1, above the hero card. */
+.unit-idents {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.unit-ident {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 6px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+}
+.unit-ident img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+/* Kit-role archetype tags sit under the identity row, visually quieter. */
+.unit-roletags {
+  margin-top: 6px;
+}
+/* A bordered container for a whole section's contents (the Overload Lines tabs
+   + whichever table is showing), so the section reads as one box rather than
+   loose rows on the page background. */
+.unit-panel {
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.unit-panel > :last-child {
+  margin-bottom: 0;
+}
+.pill-role {
+  background: var(--panel2);
+  color: var(--muted);
+  cursor: help;
+}
+/* The prerendered 2:1 Nikke card — the same image as this page's og:image.
+   Sits at the very top of the page as the hero (owner 2026-08-02). */
+.unit-cardshot {
+  margin: 0 0 16px;
+}
+.unit-cardshot img {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.unit-ol-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+}
+.unit-ol-table th,
+.unit-ol-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.unit-ol-table th.r,
+.unit-ol-table td.r {
+  text-align: right;
+}
+.unit-ol-table thead th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 13px;
+}
+.unit-ol-table tbody tr.hl {
+  background: var(--panel2);
+}
+.unit-status-list,
+.unit-standings {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+.unit-status-list li,
+.unit-standings li {
+  margin-bottom: 4px;
+}
+.pill-tier {
+  font-weight: 500;
+}
+.tier-measured {
+  border-color: #3f7d4a;
+  color: #8fd6a0;
+}
+.tier-calibrated,
+.tier-validated {
+  border-color: #6b5a2c;
+  color: var(--warn);
+}
+.tier-model_only {
+  border-color: var(--border);
+  color: var(--muted);
+}
+.unit-unmodeled {
+  margin-top: 8px;
+}
+.unit-unmodeled summary {
+  cursor: pointer;
+}
+.unit-unmodeled ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+.unit-unmodeled li {
+  margin-bottom: 6px;
+}
+/* 2×2: Skill 1 and Skill 2 stack down the left, the Burst Skill takes the whole
+   right column. Named areas rather than auto-flow because a unit whose kit is
+   missing a slot (or whose burst has no parsed blocks) must not let the others
+   reflow into the wrong cell — an empty area just stays empty. */
+.unit-skills-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    'skill1 burst'
+    'skill2 burst';
+  gap: 12px;
+  /* Boxes STRETCH to their grid area (the default) rather than hugging their
+     text, so the burst card fills the whole right column instead of leaving a
+     tall gap under a short kit. */
+}
+.unit-skills-grid .slot-skill1 {
+  grid-area: skill1;
+}
+.unit-skills-grid .slot-skill2 {
+  grid-area: skill2;
+}
+.unit-skills-grid .slot-burst {
+  grid-area: burst;
+}
+/* Each skill is its own boxed card — three dense walls of game text are hard to
+   scan when they run together as plain paragraphs. */
+.unit-skill {
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.unit-skill h3 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+  color: var(--muted);
+}
+/* Cooldown chip, right-aligned in the skill's header row. Absent entirely when
+   the skill has no cooldown rather than showing a dash — most skills are
+   passives, and an em-dash on two of three boxes reads as missing data. */
+.unit-skill-cd {
+  flex-shrink: 0;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+/* One column below the two-column breakpoint — side-by-side skill text at phone
+   width is unreadable. */
+@media (max-width: 760px) {
+  .unit-skills-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'skill1'
+      'skill2'
+      'burst';
+  }
+}
+/* One '■' block per row, separated rather than bulleted — the game text already
+   reads as "trigger line / effect line" pairs. */
+.unit-skill-block {
+  margin: 0;
+  padding: 8px 0;
+  white-space: pre-line;
+  border-top: 1px solid var(--border);
+}
+.unit-skill-block:first-of-type {
+  padding-top: 0;
+  border-top: none;
+}
+.unit-skill-block:last-child {
+  padding-bottom: 0;
+}
+
+/* Overload Lines tab switcher (Optimal / CS Breakpoints / Max Ammo Breakpoints) */
+.unit-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+.unit-tabs button {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition:
+    border-color 0.12s,
+    color 0.12s;
+}
+.unit-tabs button:hover {
+  border-color: var(--muted);
+  color: var(--text);
+}
+.unit-tabs button.on {
+  border-color: var(--accent);
+  color: var(--text);
+  background: var(--panel2);
+}
+
+/* Characters index (web/src/CharactersPage.tsx) */
+.characters-page header {
+  margin-bottom: 20px;
+}
+.characters-page h1 {
+  margin: 0 0 8px;
+}
+.characters-new,
+.characters-all {
+  margin-bottom: 28px;
+}
+.characters-new h2,
+.characters-all h2 {
+  font-size: 16px;
+  margin: 0 0 10px;
+}
+/* In NAVIGATION mode the roster card is an <a>, not a <button> — restore the
+   button's box model so the two modes lay out identically. */
+a.teambuilder-card {
+  text-decoration: none;
+}
+/* BADGE mode wrapper: the profile link is a sibling of the card button (an <a>
+   inside a <button> is invalid), positioned over its top-right corner. */
+.teambuilder-card-wrap {
+  position: relative;
+  display: flex;
+}
+.teambuilder-card-wrap > .teambuilder-card {
+  width: 100%;
+}
+.teambuilder-card-profile {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1;
+  text-decoration: none;
+  color: var(--text);
+  background: rgba(16, 18, 22, 0.78);
+  border: 1px solid var(--border);
+  /* Touch has no hover, so the badge is always visible there; a pointer device
+     fades it in on hover/focus so it doesn't clutter a 196-card grid. */
+  opacity: 0.85;
+  transition:
+    opacity 0.12s,
+    border-color 0.12s;
+}
+.teambuilder-card-profile:hover,
+.teambuilder-card-profile:focus-visible {
+  opacity: 1;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .teambuilder-card-profile {
+    opacity: 0;
+  }
+  .teambuilder-card-wrap:hover .teambuilder-card-profile,
+  .teambuilder-card-profile:focus-visible {
+    opacity: 1;
+  }
 }
 
 /* Overload Calc rows: label the OL-line mix (may wrap), stack damage + % gain */
