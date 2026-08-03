@@ -169,6 +169,12 @@ function identsFor(character: DataFile['characters'][string]): Ident[] {
       icon: ICON_BY_BURST[character.burst] ?? null,
       label: `Burst ${character.burst}`,
     },
+    // Burst cooldown, immediately after the stage it belongs to. No icon — the
+    // nikke-icons set has no cooldown glyph, and the card renders it as bare
+    // text under the stage icon for the same reason.
+    ...(character.burstCooldownSec
+      ? [{ icon: null, label: `${character.burstCooldownSec}s CD` }]
+      : []),
     { icon: ICON_BY_CLASS[character.class] ?? null, label: character.class },
     ...(character.manufacturer
       ? [
@@ -239,32 +245,120 @@ function loadImgManifest(): Promise<ImgManifest> {
   return manifestPromise;
 }
 
-// The 2:1 landscape card that build-infographics already renders for every unit
-// — the same file the page's own og:image points at, so the share card and the
-// page hero can never show different numbers. Null until resolved, and null
-// forever on a host without the img API (vite dev, or a deploy predating it),
-// where the portrait carries the hero instead.
-function useUnitCardUrl(slug: string | null): string | null {
+// Draw the card in the browser, as a data URL. This is the FALLBACK for hosts
+// that serve no prerendered set — above all `npm run web` (vite dev), which
+// serves web/public/ and never dist/, so /img/manifest.json 404s there and the
+// hero could otherwise never appear during development.
+//
+// Same core renderer and same data builder as the prerendered PNG
+// (infographics/core/unitCard.ts via unitCardShare.ts, the path the Card Builder
+// already drives), so the fallback is the same card, not a lookalike. Everything
+// heavy — the canvas renderer, the board artifacts — is imported dynamically, so
+// a page that resolves the manifest never pays for any of it.
+async function renderUnitCardDataUrl(
+  slug: string,
+  imageUrl: string | null
+): Promise<string | null> {
+  const [
+    { buildUnitCardShare },
+    { drawUnitCardVariant, unitCardSize },
+    { ensureRoboto, loadPortrait },
+    boards,
+  ] = await Promise.all([
+    import('./unitCardShare'),
+    import('../../src/infographics/core/unitCard'),
+    import('./teamShare'),
+    loadCardBoards(),
+  ]);
+  const [portrait] = await Promise.all([
+    imageUrl ? loadPortrait(imageUrl) : null,
+    // Without this the first paint draws with fallback font metrics.
+    ensureRoboto(),
+  ]);
+  const card = await buildUnitCardShare(
+    slug,
+    boards,
+    portrait,
+    undefined,
+    'discord'
+  );
+  if (!card) {
+    return null;
+  }
+  const { w, h, dpr } = unitCardSize('discord');
+  const cv = document.createElement('canvas');
+  cv.width = w * dpr;
+  cv.height = h * dpr;
+  const ctx = cv.getContext('2d');
+  if (!ctx) {
+    return null;
+  }
+  ctx.scale(dpr, dpr);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  drawUnitCardVariant(ctx as never, card, 'discord');
+  return cv.toDataURL('image/png');
+}
+
+// Every board the card can draw a tile from. Each is independently nullable and
+// the card draws an absent state, so a board that fails to load THINS the card
+// rather than losing it.
+async function loadCardBoards() {
+  const { loadBurstGen, loadBurstCdr, loadSustain, loadBufferChart } =
+    await import('./rankBoardsData');
+  const settle = <T,>(p: Promise<T>) => p.catch(() => null);
+  const [dpschart, burstgen, burstcdr, sustain, bufferchart] =
+    await Promise.all([
+      settle(loadDpsChart()),
+      settle(loadBurstGen()),
+      settle(loadBurstCdr()),
+      settle(loadSustain()),
+      settle(loadBufferChart()),
+    ]);
+  return { dpschart, burstgen, burstcdr, sustain, bufferchart } as never;
+}
+
+// The 2:1 landscape card. Prefers the PREBUILT PNG that build-infographics
+// hashes into dist/img — it is the same file this page's og:image points at, so
+// the share card and the page hero can never show different numbers, and it
+// costs one cached image request. When no prerendered set is reachable, falls
+// back to drawing the identical card client-side (above).
+function useUnitCardUrl(
+  slug: string | null,
+  imageUrl: string | null
+): string | null {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     if (slug == null) {
       return;
     }
     let live = true;
-    loadImgManifest()
-      .then((m) => {
+    void (async () => {
+      try {
+        const m = await loadImgManifest();
         const entry = m.images[`unit/${slug}.discord`];
-        if (live && entry) {
-          setUrl(`/img/${entry.file}`);
+        if (entry) {
+          if (live) {
+            setUrl(`/img/${entry.file}`);
+          }
+          return;
         }
-      })
-      .catch(() => {
-        /* no img API here — the portrait hero is the fallback */
-      });
+      } catch {
+        /* no prerendered set here — draw it instead */
+      }
+      try {
+        const drawn = await renderUnitCardDataUrl(slug, imageUrl);
+        if (live && drawn) {
+          setUrl(drawn);
+        }
+      } catch {
+        /* canvas unavailable (jsdom smoke) — the page just has no hero */
+      }
+    })();
     return () => {
       live = false;
     };
-  }, [slug]);
+  }, [slug, imageUrl]);
   return url;
 }
 
@@ -358,7 +452,7 @@ export function UnitPage({ slug }: { slug: string | null }) {
     () => manifestThumbUrl(unitImageUrl(slug), 256),
     [slug]
   );
-  const cardUrl = useUnitCardUrl(character ? slug : null);
+  const cardUrl = useUnitCardUrl(character ? slug : null, unitImageUrl(slug));
   const dps = useDpsStanding(character ? slug : null);
 
   useEffect(() => {
@@ -569,8 +663,7 @@ export function UnitPage({ slug }: { slug: string | null }) {
               )}
             </ul>
             <p className="muted">
-              Solo isolation, full core exposure, 8/12 overload — the same basis
-              as the{' '}
+              See the full breakdown on{' '}
               <a href="/ranks" onClick={onSpaLinkClick('/ranks')}>
                 DPS Rankings
               </a>
