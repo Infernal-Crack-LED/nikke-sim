@@ -66,6 +66,22 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      extend `unitStaticHtml` in BOTH servers to emit the new sections for no-JS crawlers.
   5. Decide the thin-content policy if Search Console flags the ~85 kit-only pages as soft-404s
      (gate the sitemap on `simSupported`, or `noindex` them).
+- **⇒ DATA REGRESSION: a Treasure release overwrites the character's `releaseDate`
+  (found 2026-08-02).** `characters.sugar.releaseDate` carried her true **2022-11-04**
+  release as recently as the 2026-07-28 sync, and a sync on **2026-07-31** replaced it
+  with **2026-07-23** — her Treasure (favorite item) release date. Verified by walking
+  `git show <sha>:data/characters.json` back through the file's history, not inferred.
+  `releaseDate` is copied straight from upstream (`src/data/sync.ts:282`,
+  `a.releaseDate ?? null`), so the fix belongs in bakery-bot / the synced source, not
+  in `data/` (protected + regenerated).
+  - **Blast radius:** the unit card's "Released <date>" line (`unitCardData`) now states
+    a wrong date for `sugar`, and it floated a 2022 unit into the /characters "New
+    Characters" row. The row is defended (it filters `treasure` entries out), but the
+    card is not.
+  - **Check the other 20 `treasure: true` units** when fixing: the rest still hold
+    original dates (helm 2022-11-10, viper 2023-01-19, drake 2025-01-16), so today
+    `sugar` looks like the only one re-dated — consistent with "the row is re-dated when
+    a Treasure ships" and only her Treasure being recent.
 - **⇒ OL TOOLING — two remaining basis gaps, findings-only (Hit Rate half RESOLVED
   2026-08-02).** The exhaustive free-line table now agrees with `data/ol-optimal.json`'s
   greedy pick on 32/73 units (was 20). The Hit Rate cause is closed: owner ruled Hit Rate
