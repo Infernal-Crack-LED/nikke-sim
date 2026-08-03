@@ -50,6 +50,11 @@
 //   B1 "Explosion Range ▲ 101.24% for 10 sec." UNMODELED (splash RADIUS; no primitive, and inert
 //      against the single partless scope-lock boss). Pinned verbatim in `unmodeled` below.
 //   B2 "Charge Speed ▼ 300%" for 1 shot — a real DOWNSIDE on the nuke.
+//      -> burstCast -> self -> chargeSpeedPct -300, durationShots 1, in the SAME block as B3
+//      (the kit pairs them as one Function). Charge Speed is subtractive on charge TIME, so this
+//      is 60 x (1 - (-300)/100) = 240 frames of charge instead of 60.
+//      DISCRIMINATES: the long-charge shots and the big-charge-bucket shots are the SAME shots —
+//      the cost rides the payoff, not some neighbouring pull.
 //   B3 "Charge Damage ▲ 1300.53%" for 1 shot.
 //      -> burstCast -> self -> chargeDamagePct 1300.53, durationShots 1.
 //      An ordinary additive charge-bucket buff, NOT a collection-item `chargeDamageMultPct`.
@@ -98,6 +103,7 @@ const CD_PER_AMMO = 2.01; // S1b, per unit of final Max Ammunition Capacity
 const REPEAT_PCT = 58.99; // S2a
 const AMMO_GRANT = 3; // S2b
 const NUKE_CD = 1300.53; // B3
+const BURST_CS_DOWN = 300; // B2, a ▼ DOWNSIDE — authored as chargeSpeedPct -300
 
 const BASE_CHARGE = CHAR.chargeMultiplier / 100; // 2.5
 // 12.06 — the ⚑ static encoding of S1b. Rounded to 2dp because 2.01 * 6 is 12.059999999999999 in
@@ -156,7 +162,11 @@ describe('emilia — kit spec', () => {
 
   // ---- S1a: full charge -> self Charge Speed ▲13.01%, 1 round -------------------------------
   describe('S1a — Charge Speed ▲13.01% for 1 round, on every full charge', () => {
-    const cs = shipped.cast.filter((b) => b.stat === 'chargeSpeedPct');
+    // Scoped to THIS line's value: her burst grants a SECOND chargeSpeedPct (the ▼300% downside),
+    // so an unscoped filter would collect both sources and count her burst casts as full charges.
+    const cs = shipped.cast.filter(
+      (b) => b.stat === 'chargeSpeedPct' && b.value === CS_PER_CHARGE
+    );
 
     it('applies once per full-charge pull, at the kit value', () => {
       expect(cs.length).toBe(shipped.unit.pulls);
@@ -434,6 +444,7 @@ describe('emilia — kit spec', () => {
           'skill1:shotFired:self:chargeDamagePct',
           'skill2:shotFired:enemy:hitRepeat',
           'skill2:fullBurstEnter:self:maxAmmoFlat',
+          'burst:burstCast:self:chargeSpeedPct',
           'burst:burstCast:self:chargeDamagePct',
         ].sort()
       );
@@ -446,14 +457,66 @@ describe('emilia — kit spec', () => {
     });
   });
 
-  // ---- GAP: the burst's Charge Speed ▼300% downside -----------------------------------------
-  it.skip('GAP — burst Charge Speed ▼300% slows the nuke shot (needs negative chargeSpeedPct)', () => {
-    // sim.ts clamps the live charge-speed sum to [0,100], so a "Charge Speed ▼" DOWNSIDE is
-    // unrepresentable and omitting it OVER-credits her (the nuke charges ~4x faster than it
-    // should). Un-skip when the clamp's lower bound is widened.
-    const csAtCast = shipped.cast.filter(
-      (b) => b.stat === 'chargeSpeedPct' && b.value === -300
-    );
-    expect(csAtCast.length).toBe(shipped.unit.burstCasts);
+  // ---- Burst: Charge Speed ▼300% for 1 shot — the nuke's DOWNSIDE ----------------------------
+  describe('Burst B2 — Charge Speed ▼300% for 1 shot', () => {
+    it('is granted once per burst cast, self, for ONE round', () => {
+      const cs = shipped.cast.filter(
+        (b) => b.stat === 'chargeSpeedPct' && b.value === -BURST_CS_DOWN
+      );
+      expect(cs.length).toBe(shipped.unit.burstCasts);
+      expect(
+        cs.every((b) => b.durationShots === 1 && b.expiresFrame === null)
+      ).toBe(true);
+      expect(new Set(cs.map((b) => b.targetSlug))).toEqual(new Set([SLUG]));
+    });
+
+    it('DISCRIMINATING: the nuke shot really is the slowest charge in the fight', () => {
+      // Charge Speed is SUBTRACTIVE on charge TIME, so ▼300% means 60 x 4 = 240 frames of charge
+      // instead of 60 — the nuke is bought with a genuinely long one. Asserted as a CLEAN
+      // SEPARATION between the two populations of inter-shot gaps: every boosted shot is preceded
+      // by a longer gap than EVERY unboosted shot, with no overlap. That is strictly sharper than
+      // a fixed threshold (which cannot be tuned to sit between them without knowing the answer)
+      // and it is what proves the cost rides the SAME pull as the payoff rather than a neighbour.
+      // Measured on this fixture: nuke gaps {262, 322}, ordinary gaps {82, 142, 172} — the 142/172
+      // are reload-inflated cycles, which is exactly what a naive "gap > 2x chargeFrames" test
+      // would have mistaken for slow charges.
+      const gapBefore = new Map<number, number>();
+      for (let i = 1; i < shipped.shots.length; i++) {
+        gapBefore.set(
+          shipped.shots[i].frame,
+          shipped.shots[i].frame - shipped.shots[i - 1].frame
+        );
+      }
+      const nukeFrames = new Set(
+        shipped.parents.filter((p) => p.mult.charge > 10).map((p) => p.frame)
+      );
+      const nukeGaps: number[] = [];
+      const otherGaps: number[] = [];
+      for (const [f, g] of gapBefore) {
+        (nukeFrames.has(f) ? nukeGaps : otherGaps).push(g);
+      }
+      expect(nukeGaps.length).toBe(nukeFrames.size);
+      expect(
+        Math.min(...nukeGaps),
+        `nuke gaps ${nukeGaps.join(',')} vs ordinary ${[...new Set(otherGaps)].sort((a, b) => a - b).join(',')}`
+      ).toBeGreaterThan(Math.max(...otherGaps));
+      // ...and the slow charge is the RIGHT length: 60 x 4 = 240 frames, plus the 22-frame release
+      // latency she pays after the previous shot. (A nuke that follows a reload waits longer.)
+      expect(Math.min(...nukeGaps)).toBe(CHAR.chargeFrames * 4 + 22);
+    });
+
+    it('COUNTERFACTUAL: omitting the downside would OVER-credit her', () => {
+      const without = run(
+        withPatchedOverride(SLUG, (ov: any) => {
+          ov.burst[0].effects = ov.burst[0].effects.filter(
+            (e: any) => e.stat !== 'chargeSpeedPct'
+          );
+        })
+      );
+      expect(without.unit.pulls).toBeGreaterThan(shipped.unit.pulls);
+      expect(without.unit.totalDamage).toBeGreaterThan(
+        shipped.unit.totalDamage
+      );
+    });
   });
 });

@@ -3266,10 +3266,25 @@ export function runSim(
           // Swap states with an explicit cadence are fire-rate-gated (decoded: Red Wolf
           // rate_of_fire 200rpm; eunhwa/nayuta/maxwell cycles hand-measured) — charge
           // speed does not shorten them.
+          //
+          // NEGATIVE sums are legal and mean a SLOWER charge — "Charge Speed ▼ X%" downside
+          // kit lines (emilia's burst pays ▼300% for its nuke, i.e. a 4x longer charge). The
+          // subtractive formula already extends to them with no special case, so the old
+          // `Math.max(0, …)` floor did not protect anything, it just made a real downside
+          // unrepresentable (and therefore silently OVER-credited every carrier). The three
+          // failure modes it might have guarded are all impossible here, and
+          // scripts/tests/engine/negative-charge-speed.test.ts pins each: `cs` is only ever
+          // used as `1 - cs/100` (no division), `Math.max(1, …)` below already floors the
+          // result at one frame and a negative `cs` only makes the product LARGER, and the
+          // charge advances one frame per simulated frame against a value that is merely
+          // compared — so a bigger `needed` means fewer shots, never a loop. No artificial
+          // lower bound is imposed: an absurd debuff simply yields a charge longer than the
+          // fight, which is the faithful outcome.
+          // The UPPER clamp is a real rule and stays.
           const cs =
             u.swap?.chargeFrames != null
               ? 0
-              : Math.min(100, Math.max(0, stat(u, 'chargeSpeedPct', frame)));
+              : Math.min(100, stat(u, 'chargeSpeedPct', frame));
           const needed = Math.max(1, Math.round(chargeFrames * (1 - cs / 100)));
           if (u.chargeProgress >= needed) {
             u.chargeProgress = 0;
