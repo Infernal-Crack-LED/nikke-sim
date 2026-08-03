@@ -294,6 +294,17 @@ function validate(slug: string): boolean {
       if (b.formation && !['noB1', 'hasB1'].includes(b.formation)) {
         errors.push(`${p}: bad formation`);
       }
+      // Block.delaySec: "the block's effects apply delaySec seconds after its trigger fires".
+      // A non-number is silently falsy in sim.ts (the block would apply inline), and a negative
+      // would schedule into the past — both are dead authoring that looks live in the JSON.
+      if (
+        b.delaySec !== undefined &&
+        !(typeof b.delaySec === 'number' && b.delaySec > 0)
+      ) {
+        errors.push(
+          `${p}: delaySec must be a number > 0 (omit it for an inline block)`
+        );
+      }
       // Every facet inside `teamHas` is optional and omitting one leaves it
       // unconstrained, so a MISSPELLED facet key is invisible: the engine's
       // teamHasMatch (sim.ts) reads only the keys it knows, ignores the rest, and

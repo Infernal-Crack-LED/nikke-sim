@@ -378,6 +378,20 @@ export interface Block {
   // phase for everyN: fire on activations ≡ offset (mod everyN), e.g. offset 1 + everyN 3
   // fires on the 1st, 4th, 7th… activation (Neon:VE starts at full Firepower Gauge)
   everyNOffset?: number;
+  // BLOCK-LEVEL DELAY: the block's EFFECTS apply delaySec seconds after its TRIGGER fires.
+  // Every gate above (fbGate / swapGate / requiresCore / requiresShielded / bossElementGate /
+  // ownBurstGate / resourceGate / teamHas / everyN) is evaluated at TRIGGER time — the state the
+  // kit line's activation clause actually reads — while targets and effect values resolve at
+  // LANDING. For kit lines whose activation condition is only satisfied a fixed time after the
+  // observable event that causes it, e.g. flora's S2-2 "when either adjacent ally reaches max HP":
+  // her S1's 2-second Max HP grant is what drops the allies below max, so they return to max
+  // exactly 2 sec after Burst Stage 2 entry (`stageEnter{stage:2}` + delaySec 2).
+  // A landing frame past the end of the fight simply never applies.
+  // Distinct from `flatDamage.delaySec`, which is FLIGHT time on ONE damage effect (a missile in
+  // the air, snapshotting buffs at impact) — this delays the WHOLE block, effects of any kind.
+  // Omit or 0 = applied inline on the trigger frame (strict no-op; pinned by
+  // scripts/tests/engine/block-delay.test.ts).
+  delaySec?: number;
   // core-hit gate: the block's in-game trigger needs a core hit, so it is
   // inert when the fight has no core exposure (e.g. Liberalio's 20.83% rider)
   requiresCore?: boolean;
