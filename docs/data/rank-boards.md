@@ -77,8 +77,8 @@ attackers (no skills, scope-lock attacker stats, both elementally advantaged),
 simulated with the tested buffer versus a no-op in the same burst slot. The
 reported number is `(carry DPS with buffer − carry DPS with no-op) / carry DPS
 with no-op × 100`. The buffer's own weapon damage is not counted. Burst-1 and
-Burst-2 units burst on cooldown; a tested Burst-3 buffer sits rightmost and
-never bursts, so its value must come through passives. Value that comes through
+Burst-2 units burst on cooldown; a tested Burst-3 buffer does not burst at all,
+so its value must come through passives. Value that comes through
 faster rotations (gauge batteries, cooldown reduction) is captured, because the
 whole fight is simulated.
 
