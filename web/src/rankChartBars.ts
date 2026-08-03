@@ -181,7 +181,7 @@ export function barsForBoard(
     ...b,
     key: `${b.slug}:${b.profile ?? ''}`,
     value: b.addedPct,
-    valueText: `${b.addedPct >= 0 ? '+' : '−'}${Math.abs(b.addedPct).toFixed(1)}%`,
+    valueText: `+${b.addedPct.toFixed(1)}%`,
     valueTitle: 'total % team damage increase vs the no-op baseline',
     info: null,
     ...badge(b),

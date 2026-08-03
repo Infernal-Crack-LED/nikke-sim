@@ -132,6 +132,22 @@ await shot('unit-tab-ammo', {
     await page.waitForTimeout(250);
   },
 });
+// Support Rankings, Team Buffs board — the one ranked chart whose bar geometry
+// depends on the row set: the track spans min↔max, so a single negative row
+// would move the zero axis inward and squash every positive bar. The board
+// trims negatives (src/ranks/buffer-rows.ts); this shot is what shows the bars
+// all starting from the left edge again.
+await shot('ranks-buffer', {
+  path: '/ranks/support',
+  width: 1180,
+  actions: async (page) => {
+    await page.locator('.dpschart-bars .dpschart-row').first().waitFor({
+      timeout: 15000,
+    });
+    await page.waitForTimeout(250);
+  },
+});
+
 // The team-builder profile badge — hover-revealed on a pointer device, so the
 // shot has to hover a card or it captures an empty corner.
 await shot('teambuilder-profile-badge', {

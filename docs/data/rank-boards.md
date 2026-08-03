@@ -82,9 +82,11 @@ never bursts, so its value must come through passives. Value that comes through
 faster rotations (gauge batteries, cooldown reduction) is captured, because the
 whole fight is simulated.
 
-Soline: Frost Ticket is excluded from this board: her kit reduces team damage
-in the standard comp, so her negative percentage is not useful for ranking
-support value.
+The board lists only units whose value comes out at zero or above. A unit that
+reduces team damage in the standard comp has no standing to rank on a support
+board, and its bar would also set the chart's left edge, compressing every
+positive bar into what is left of the track. Blanc is dropped one step earlier,
+for the same reason, before the boards are computed at all.
 
 Two boards per unit:
 

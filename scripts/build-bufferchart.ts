@@ -52,9 +52,12 @@ for (const slug of Object.keys(data.characters)) {
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
 
-// Soline: Frost Ticket is excluded: her kit reduces team damage in the
-// standard comp, so her % increase is misleadingly negative and not useful
-// for ranking support value.
+// EXCLUDED_BUFFER_SLUGS (currently Blanc) never enters the population: the kit
+// reduces team damage in the standard comp, so its % increase is misleadingly
+// negative and not useful for ranking support value. The artifact keeps every
+// other row it computes, negatives included; the leaderboard trims those at
+// render time (src/ranks/buffer-rows.ts) so the unit card can still quote a
+// unit's own value.
 const population: string[] = [];
 for (const [slug, c] of Object.entries(data.characters)) {
   if (EXCLUDED_BUFFER_SLUGS.has(slug)) {

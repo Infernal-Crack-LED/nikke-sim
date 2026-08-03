@@ -13,6 +13,7 @@ import type {
   RankUnitMeta,
 } from '../../src/ranks/types';
 import { resolveB1B2Cell, type B1B2DpsCell } from '../../src/ranks/b1b2-cells';
+import { rankedBufferRows } from '../../src/ranks/buffer-rows';
 
 export type {
   BurstGenArtifact,
@@ -154,19 +155,24 @@ export function sustainBars(art: SustainArtifact): SustainBar[] {
 }
 
 export interface BufferBar extends RowBase {
-  addedPct: number; // total % team damage increase vs the no-op baseline (CAN BE NEGATIVE)
+  addedPct: number; // total % team damage increase vs the no-op baseline
   rules: string[] | null; // typed board: derivation audit ("why did the carries change?")
 }
 export type BufferBoard = 'generic' | 'typed';
+// Rows the leaderboard shows, and their ranks, come from rankedBufferRows —
+// the shared filter the table-card builder uses too, so the chart and its
+// share image never disagree about who is #4.
 export function bufferBars(
   art: BufferChartArtifact,
   board: BufferBoard
 ): BufferBar[] {
-  return art.cells[board].map(([slug, addedPct, rules, profile], i) => ({
-    ...base(art.units, slug, i + 1, profile),
-    addedPct,
-    rules,
-  }));
+  return rankedBufferRows(art.cells[board]).map(
+    ([slug, addedPct, rules, profile], i) => ({
+      ...base(art.units, slug, i + 1, profile),
+      addedPct,
+      rules,
+    })
+  );
 }
 
 export interface B1B2DpsBar extends RowBase {
