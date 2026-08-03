@@ -6163,6 +6163,50 @@
         "burst: swap weapon range-band/core eligibility (charge cannon on an SG base) is an SR-like guess ⚑; base SG cadence tuple is datamine-unreliable ⚑"
       ],
       "board": null
+    },
+    "cocoa": {
+      "name": "Cocoa",
+      "burst": "I",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/cocoa.json + scripts/kit-autonomy/manual-review/cocoa.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Affects all allies. Restores 17.76% of Cover HP.",
+          "Affects 2 random ally unit(s) with debuffs. Removes 1 debuff(s)."
+        ],
+        "skill2": [
+          "Activates when attacking with Full Charge. Affects self. Professional Tomato Sauce: Damage Taken ▼ 4.37%, stacks up to 15 time(s) and lasts for 5 sec."
+        ],
+        "burst": [
+          "Affects all allies. Removes 1 debuff(s).",
+          "Activates when Professional Tomato Sauce is at max stacks. Affects all enemies. ATK ▼ 13.59% for 10 sec."
+        ]
+      },
+      "caveats": [
+        "⚑ Cover-HP restore (17.76% of Cover HP, all allies, skill1 cd 15s) is UNMODELED, tier out-of-domain (no cover/HP pool in v1). It is NOT encoded as a `heal` effect on purpose: cover repair is not HP recovery in the kit's own terms, and a heal would emit recovery events that fire teammates' on-recovery consumers (e.g. crown's 'when recovery takes effect') — a synergy cocoa does not have. Whether in-game cover repair fires on-recovery triggers is UNMEASURED; the default is no-emit, and flipping that default needs a measurement, not a prior. Recipe if a cover pool is ever modeled: emit a cover-restore event on skill1's 15s clock, no recovery trigger.",
+        "⚑ Debuff removal (skill1: 1 debuff from 2 random debuffed allies; burst: 1 debuff from all allies) is UNMODELED, tier out-of-domain: v1 models no ally debuffs (the boss deals no damage and applies none), so there is nothing to cleanse. Recipe if ally debuffs are ever modeled: cleanse 1 on skill1's 15s clock (2 random debuffed holders) and 1 on cocoa's OWN burstCast (all allies — burstCast, not fullBurstEnter).",
+        "⚑ Self Damage Taken ▼4.37% per full-charge attack (15 stacks, 5 sec) is UNMODELED, tier out-of-domain: v1 models no incoming damage, so a damage-taken modifier has no consumer. Estimate if it ever mattered: with SR cadence (60-frame charge, 6 ammo, 141 reload) stacks would saturate ~25-30s into the fight and stay up (UNMEASURED derivation). Its only consumer is the burst's max-stacks gate — both are unmodeled together. Nearest-wrong encoding to avoid: the schema's damageTakenPct is a BOSS debuff (positive = boss takes MORE damage); writing this self ▼ line onto the boss would swing team damage up to 15×4.37% ≈ 65.55%.",
+        "⚑ Enemy ATK ▼13.59% for 10 sec, gated on Tomato Sauce at max stacks at cast time, is UNMODELED, tier out-of-domain: the engine explicitly drops enemy ATK▼/DEF▼ debuffs (src/engine/sim.ts — they cannot affect damage dealt at DEF=0; the boss never attacks into our numbers). It is NOT damageTakenPct (that is 'boss takes more damage' — a different mechanic). Recipe if boss attacks are ever modeled: 10s ATK-down on all enemies, applied only when the caster holds 15 Tomato stacks at her own burstCast.",
+        "Zero damage lines, zero weapon-state modifiers, zero gauge modifiers in the whole kit — cocoa cannot move her own or any teammate's damage. Her committed override is byte-identical in effect to the bare weapon: the board value is entirely defensive and lives outside v1's domain. Any future edit that adds an effect to this file is an over-encoding unless it cites a new primitive + measurement."
+      ],
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "cover-repair-fires-recovery: whether in-game Cover HP restoration fires ally on-recovery triggers (crown/helm-style synergy) is unmeasured — all agents defaulted no-emit, recipe in override caveats; burst max-stacks gate rides the same unmeasured 15-stack pool (refresh-semantics read: ~25-30s to saturate)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     }
   }
 }

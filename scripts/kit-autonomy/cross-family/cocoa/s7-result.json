@@ -1,0 +1,72 @@
+{
+  "slug": "cocoa",
+  "kitDescription": "Cocoa is a Burst I sniper whose entire kit is defensive support. Her Skill 1 periodically restores cover HP to the whole team and cleanses one debuff from two debuffed allies. Her Skill 2 builds a stacking self-buff on every full-charge shot that reduces the damage she personally takes. Her burst cleanses one debuff from all allies, and if her Skill 2 stacks are maxed at cast time, it also lowers all enemies' attack for 10 seconds. Nothing in her kit increases anyone's damage dealt — her battlefield role is healing cover, cleansing, and softening incoming damage.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Restores 17.76% of Cover HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled, out-of-domain (no cover/HP pool in v1); deliberately NOT encoded as heal — heal would emit recovery events that fire crown's on-recovery consumer, a synergy cocoa has never been measured to have; no-emit default with recipe in caveats.",
+        "blindSaid": "S5: no-heal inertness asserted, discriminating via a heal counterfactual. S6: DIVERGED — authored a 20s-interval heal block 'so tandem on-recovery consumers can fire', self-flagged as UNVERIFIED and deletable if cover repair is not recovery.",
+        "formulaCheck": "Cover HP appears in no damage bucket; a heal-emit has no formula basis and only matters through an external consumer (crown). Driver + S2b + S5 (three independent agents) favor no-emit; the S6 emit choice is uncorroborated by prose ('Cover HP', not unit HP) and by the marciana no-false-synergy precedent.",
+        "fireRateOk": true,
+        "explanation": "Honest documented gap with the correct default (no-emit) and a measurement recipe. The S6 divergence is the packet's one real disagreement; it is a flagged blind hypothesis, not a corroborated find, so it does not downgrade the driver's line."
+      },
+      {
+        "kitLine": "2 random allies: Removes 1 debuff(s)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled — no ally-debuff model; boss applies none; verbatim in unmodeled with recipe.",
+        "blindSaid": "S5: it.skip GAP (no debuff-cleanse primitive). S6: unmodeled, same prose. Converged.",
+        "formulaCheck": "No debuff state exists in the sim's damage pipeline; the line can have no damage observable at scope lock.",
+        "fireRateOk": true,
+        "explanation": "Fully inert at scope lock, documented verbatim, all three agents agree."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Damage Taken ▼ 4.37%, 15 stacks, 5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled — self mitigation with no consumer in v1; caveats name the damageTakenPct sign/target-flip trap (up to +65.55% team damage if mis-encoded) and give the ⚑ ~25-30s saturation estimate.",
+        "blindSaid": "S5: asserts no boss-held damageTakenPct debuff and no offensive stat from cocoa; counterfactual sensitive. S6: unmodeled, identical reasoning (damageTakenPct is boss-side, opposite semantics). Converged.",
+        "formulaCheck": "damageTakenPct lives in the Taken bucket on the boss (positive = boss takes more); a self ▼ line has no bucket to land in. The stack resource's only consumer is the burst gate, itself out-of-domain — unmodeling both together is internally consistent.",
+        "fireRateOk": true,
+        "explanation": "The kit's biggest over-credit trap correctly identified and avoided by all agents; N4/N1 pins prove the shipped file carries no stat at all."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "all allies: Removes 1 debuff(s)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled — no debuff pool; recipe notes the trigger is her own burstCast, not fullBurstEnter.",
+        "blindSaid": "S5: it.skip GAP (same missing primitive). S6: unmodeled. Converged.",
+        "formulaCheck": "No damage observable; cleanse has no bucket.",
+        "fireRateOk": true,
+        "explanation": "Inert, documented verbatim, fixture proves her burstCast actually fires (9 casts) so the line is exercised-and-empty, not vacuously absent."
+      },
+      {
+        "kitLine": "max stacks → enemies ATK ▼ 13.59% 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled — the engine explicitly drops enemy ATK▼/DEF▼ (no boss-offense model, DEF=0); NOT damageTakenPct; gate unmodeled with its resource; recipe recorded.",
+        "blindSaid": "S5: it.skip GAP (no boss-offense model) plus a boss-debuff counterfactual that moves totals. S6: unmodeled, same engine-cited reasoning; claimed the max-stacks gate is structurally unreachable (~3-4 live stacks in a 5s window).",
+        "formulaCheck": "Enemy ATK feeds only damage dealt TO allies, which v1 never computes; engine behavior matches. On reachability: NIKKE stacking semantics refresh the stack duration per application, and cocoa's worst gap (reload ≈2.35s + next charge) stays under 5s, so driver/S2b's ~25-30s-to-max read is the better one — S5/S6's 'unreachable' assumes per-stack decay. Moot either way: the gated payload is defensive.",
+        "fireRateOk": true,
+        "explanation": "Correctly inert and documented; the N2 counterfactual proves the fixture can see the nearest-wrong damageTakenPct mis-encode. The stack-reachability disagreement is a blind-side arithmetic read that changes nothing."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Convergence is mechanical and real: the S5 blind suite runs GREEN (10 pass / 3 self-labeled GAP skips / 0 red) against the shipped override after only two mechanical, pre-registered adaptations (import path, fixture re-cut), with no assertion text changed. All five kit lines are DOCUMENTED_GAPs — every line is defensive and out-of-domain for a damage-dealt sim, and the driver records each verbatim in unmodeled with ⚑ tiers and recipes, so faithfulness is 5/5. The two genuine over-credit traps (self Damage-Taken ▼ → boss damageTakenPct, and cover-repair → heal emitting recovery into crown's consumer) are not only avoided but pinned by discriminating counterfactuals (N2, N3) that provably fail under the shipped inertness, and S5 independently pins the same two traps — that is the strongest evidence available in a same-model pipeline. The one blind divergence (S6's heal block on skill1) is uncorroborated by prose and by two other independent agents, was self-flagged by its own author as unverified, and the driver's no-emit default is the correct call pending measurement; the S5/S6 'max-stacks unreachable' arithmetic conflicts with refresh-on-application stacking semantics but is moot since the gated payload is defensive. Nothing must change for GO. Owner spot-check (the same-model residual): whether in-game cover-HP restoration fires ally on-recovery triggers is genuinely unmeasured — every agent defaulted to no-emit, so if a measurement ever shows it does, cocoa gains a real crown/helm-style synergy this override deliberately omits; that is a measurement recipe already sitting in the caveats, not a blocker.",
+  "model": "kimi-code/k3"
+}

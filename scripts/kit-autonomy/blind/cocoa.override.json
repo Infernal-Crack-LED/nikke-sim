@@ -1,0 +1,49 @@
+{
+  "slug": "cocoa",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [],
+  "unmodeled": {
+    "skill1": [
+      "■ Affects 2 random ally unit(s) with debuffs.",
+      "Removes 1 debuff(s)."
+    ],
+    "skill2": [
+      "■ Activates when attacking with Full Charge. Affects self.",
+      "Professional Tomato Sauce: Damage Taken ▼ 4.37%, stacks up to 15 time(s) and lasts for 5 sec."
+    ],
+    "burst": [
+      "■ Affects all allies.",
+      "Removes 1 debuff(s).",
+      "■ Activates when Professional Tomato Sauce is at max stacks. Affects all enemies.",
+      "ATK ▼ 13.59% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ skill1 trigger/cadence is kit-silent — the prose carries no activation clause, so it is modeled as an interval (20 s placeholder). Pin from the datamined skill cooldown before trusting any recovery-event count.",
+    "⚑ skill1 restores COVER HP, not unit HP. It is offensively inert on its own (no HP pool at scope lock); it is authored as a `heal` solely so tandem on-recovery consumers (crown-style 'when recovery takes effect') can fire. Whether cover-HP restoration counts as recovery in-game is UNVERIFIED — if it does not, delete this block.",
+    "⚑ skill2's Professional Tomato Sauce is a SELF Damage-Taken reduction: purely defensive, with no engine stat to carry it (the schema's damageTakenPct is a boss debuff, opposite semantics). Only its stack COUNT is load-bearing, and its sole consumer (the burst enemy ATK ▼) is itself defensive, so the stack pool is not tracked.",
+    "⚑ Derived steady state: ammo 6, chargeFrames 60 (~1 s) + ~22 f release latency ≈ 1.37 s per full-charge shot, reload 141 f ≈ 2.35 s; each stack lasts 5 s, so ~3–4 stacks are concurrently live and the 15-stack cap is unreachable without external charge-speed/ammo support. The burst's max-stack gate therefore likely never opens. Unverified — count stacks in footage before relying on it.",
+    "⚑ Cadence tuple (pullsPerSec / chargeFrames 60 / reloadFrames 141) comes from datamine fields with a known reliability problem; the derivation above inherits that uncertainty.",
+    "Modeled damage contribution is ZERO: every kit line is defensive, cleanse, or cover repair. In the sim cocoa contributes burst gauge, her Burst I cast, and (if the heal block is real) recovery events only."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Model as authored: skill1 emits a single ally-wide recovery event on a ⚑20 s interval, standing in for the Cover-HP restoration so heal-synergy teammates can fire; nothing else in the kit is represented. The skill1 cleanse (2 random allies, 1 debuff) and the burst cleanse are unmodeled — the sim has no debuff pool and the scope-lock boss applies none. skill2's Professional Tomato Sauce (self Damage Taken ▼ 4.37%, ≤15 stacks, 5 s) is unmodeled: self damage reduction has no engine stat (damageTakenPct is the boss-side debuff, opposite direction) and the boss deals no modeled damage. The burst's max-stack-gated enemy ATK ▼ 13.59% is unmodeled for the same reason — reducing the boss's ATK changes no damage the sim computes — so no resource pool or resourceGate is authored to feed it. skill2 and burst are therefore genuinely effect-free arrays, not omissions. cocoa's live sim contribution is burst-gauge generation, her Burst I cast, and the recovery events above.",
+  "hasPierce": false
+}
