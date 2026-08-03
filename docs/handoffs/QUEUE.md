@@ -10,10 +10,9 @@
 > items below carry ONLY genuinely-open action items as short pointers into their handoff/plan docs
 > — no landed-work narration (landed state → `docs/STATE.md`; settled WHY → `docs/DECISIONS.md`).
 > When an item lands, DELETE it here (keep only its open follow-up clause); a done handoff →
-> `CLOSED (date)` marker + **`git rm --cached` then `mv`** into `docs/handoffs/closed/` (that
-> directory is gitignored on purpose — a closed doc STOPS being tracked and survives on disk only;
-> `git mv` cannot work there, and staging a new path under it aborts the pre-commit hook); a
-> fully-landed top-level `docs/*.md`
+> `CLOSED (date)` marker + **`git rm --cached` then a plain `mv`** into `docs/handoffs/closed/`
+> (archiving UNTRACKS — the archives are gitignored; procedure and its failure modes in
+> `docs/CONVENTIONS.md` → Doc hygiene); a fully-landed top-level `docs/*.md`
 > (never a living log) → same into `docs/closed/`; a resolved question → close it in
 > `docs/open-questions.md` (single U-numbering — move it to `docs/answered-questions.md` with the
 > answer inline, no new A-number).
@@ -75,21 +74,19 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **⇒ `scripts/tests/fixtures/unit-card-sources.json` is BADLY STALE — owner call, findings-only
   (2026-08-03).** It is a deliberately FROZEN join input, so the crown-card golden stays a pure
   function of the renderer rather than of board data — that design is sound and is not the issue.
-  The issue is how far it has drifted: frozen 2026-08-02 at 76 rows / 71 units against a live 91 / 85
-  (re-verified post-merge), with **64 generic and 70 typed shared rows differing in value**, some
-  hugely (`anis-star` generic 59.4 → 33.4 and typed 99.7 → 61.4; `arcana` typed 93.9 → 169.1;
-  `mast-romantic-maid` 61 → 77.2). Note the artifact is gitignored, so compare only after
-  `npm run ranks:buffer` — and its cells are TUPLES (`[slug, value, tags, profile]`), not objects,
-  which silently yields "0 differing" if you read them as `c.slug` / `c.value`.
-  All of that already landed on `main` and is invisible to the golden. Nothing is broken and the gate
-  is green, so this is not urgent — but a refresh should be its own deliberate pass (new golden PNGs,
-  reviewed for renderer-visible change) rather than something that rides along with an unrelated
-  board edit, which is exactly the "data churn wearing renderer drift's clothes" the fixture's own
-  header warns about. Found while un-excluding `blanc`; deliberately NOT regenerated there.
+  The issue is how far it has drifted: frozen 2026-08-02 at 76 rows / 71 units against a live 91 / 85,
+  with **64 generic and 70 typed shared rows differing in value**, some hugely (`anis-star` generic
+  59.4 → 33.4 and typed 99.7 → 61.4; `arcana` typed 93.9 → 169.1; `mast-romantic-maid` 61 → 77.2).
+  All of that is already on `main` and invisible to the golden. Nothing is broken and the gate is
+  green, so this is not urgent — but a refresh wants its own deliberate pass (new golden PNGs, reviewed
+  for renderer-visible change) rather than riding along with an unrelated board edit, which is exactly
+  the "data churn wearing renderer drift's clothes" the fixture's own header warns about.
+  ⚠ Two traps when measuring the drift: the live artifact is gitignored, so compare only after
+  `npm run ranks:buffer`; and its cells are TUPLES (`[slug, value, tags, profile]`), not objects — read
+  them as `c.slug` / `c.value` and every comparison silently comes back "0 differing".
 - **⇒ Three closed handoffs are still git-TRACKED, against the convention — leave or untrack?
-  (2026-08-03, findings-only).** Closing a handoff means it stops being tracked: `git rm --cached`
-  then move the file into `docs/handoffs/closed/`, which is gitignored, so it survives on disk and
-  leaves the repo. 69 of the 72 files there follow that. The three that do not —
+  (2026-08-03, findings-only).** Archiving a doc untracks it (procedure: `docs/CONVENTIONS.md` →
+  Doc hygiene), and 69 of the 72 files in `docs/handoffs/closed/` follow that. The three that do not —
   `2026-07-27-focus-charge-gauge-per-unit.md`, `2026-07-29-alice-focus-gauge-implement.md`,
   `2026-07-29-cinderella-focus-gauge-owner-override.md` — are each cited by NAME from
   `docs/DECISIONS.md` or `docs/handoffs/scientific-method-harness.md`, so untracking them turns
@@ -117,10 +114,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Engine / model threads (measurement- or owner-gated)
 
-- **⇒ `noop-rouge-b1` squad layering — owner call, and the recommendation is LEAVE IT (2026-08-03).**
+- **⇒ `noop-rouge-b1` squad layering — owner call (2026-08-03).**
   `src/data/squads.ts:26` carries one synthetic (`'noop-rouge-b1': 'Blanc Noir Rouge'`) so the buffer
   board's `w/ Rouge` duo profile satisfies `blanc`'s same-squad burst-CDR gate — a ranks-layer concern
-  written into a game-truth file. Three findings settle the cost/benefit:
+  written into a game-truth file. Three findings frame the cost/benefit:
   1. **The existing guard BITES, verified empirically.** Commenting the entry out fails
      `scripts/tests/ranks/buffer.test.ts:427` (`expected 3 to be greater than 3`); the gate closing
      costs `blanc` 5 burst casts and ~23 percentage points (registered: 8 casts / +20.93%;
@@ -130,14 +127,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      registration side effect" path does not exist to be tested — and any test reading
      `DUO_BUFFER_PROFILES` must import `buffer.ts`, firing the very side effect it would check for.
      So registering from the ranks layer relocates the violation into a hazard no test can catch.
-  3. **The blast radius is ONE SHIPPED ROW.** `blanc` was un-excluded on 2026-08-03 (owner ruling,
-     DECISIONS), so the `w/ Rouge` row is published — it is no longer the orphaned profile
-     description it was when the "leave it" recommendation was first written, and the synthetic is
-     now load-bearing for a real board row worth +20.9% against her +7.9% plain. That weakens the
-     case for leaving it, without making Option A any safer: the import-order hazard in (2) is
-     structural and does not depend on how many rows ship.
-     ⚠ Whichever option is chosen, `src/skills/overrides/noir.json` (`note`, `caveats`) also references
-     the synthetic and is CURRENT-STATE prose — update it or it ships a stale claim.
+  3. **The blast radius is ONE SHIPPED ROW.** The `w/ Rouge` row is published (+20.9% against her
+     +7.9% plain), so the synthetic is load-bearing for a real board row, not decoration.
+  - **Where that leaves the three options.** Leaving it alone stays defensible — the guard in (1) is
+    strong and the entry already carries an explanatory comment. Registering from the ranks layer is
+    still the trap, and (2) is structural: it does not get safer as the board grows. Carrying squad
+    membership on the prepared unit is the only option that actually fixes the layering, and it has
+    the better case now that the row ships — but it touches the engine's block filter, a protected
+    path, so it needs an explicit owner go-ahead before anyone builds it.
+    ⚠ Whichever option is chosen, `src/skills/overrides/noir.json` (`note`, `caveats`) also references
+    the synthetic and is CURRENT-STATE prose — update it or it ships a stale claim.
   - Cheap improvement available regardless: a reciprocal pointer in `src/ranks/buffer.ts` near `:164`
     noting that registration lives in `src/data/squads.ts`, so the coupling is discoverable both ways.
 - **⇒ BUFFER BOARD: the no-op B1's 7s team CDR is NOT LOADED on this board — owner decision, findings
@@ -353,15 +352,9 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   1. **Step 3 — per-unit dedicated sessions, OWNER drives the spec line-by-line from kit text; run them
      with `/kit-tdd`.** Fully unblocked. Rationale: the board gates FIT only; faithfulness errors of a
      few % are absorbed by calibration and only unit tests can gate them.
-  2. **Step 4 — doc/skill reframe is DONE (2026-08-03).** `docs/CONVENTIONS.md` carries a "Kit work is
-     test-first" section, `docs/STATE.md` §6 carries the standing ruling, and `.claude/skills/audit-kit`
-     is reframed as the post-validation sampling layer (`kit-parse`'s reframe had already landed in
-     `2a5cf5b8`). Both docs word the per-unit path as TWO-PRONGED — `/kit-tdd` (owner-driven spec) and
-     `/kit-autonomy` (authorized autonomous branch work) — because that is what the tree shows: of the
-     128 unit specs in `scripts/tests/units/`, **107 carry a kit-autonomy header and none name kit-tdd**.
-     ⚠ The plan doc itself is now the stale artifact: it lists only `helm` (SR/Water) + `liter` as landed
-     step-3 specs (vs 128 files against 130 overrides) and still calls the two step-2 items deferred though both
-     landed in `03021eeb`. Step 2 looks closable — worth a hygiene pass over the plan doc.
+  2. **Hygiene pass on the plan doc itself** — it is the stale artifact now. It lists two landed step-3
+     specs (`helm` (SR/Water) + `liter`) against the 128 files actually in `scripts/tests/units/`, and
+     still calls the two step-2 items deferred though both landed in `03021eeb`. Refresh it or close it.
   3. Six `cfg.onEvent` payload follow-ups (weapon-swap events, perResource/ramp/swap-gate fields on
      `buffApply`, …) listed under §1d in the plan — build them as step-3 tests need them.
 - **⇒ SAME-SQUAD PRIMITIVE MIGRATIONS** (the primitive landed 2026-08-02; `teamHas.sameSquad` resolves
