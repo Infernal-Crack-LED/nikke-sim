@@ -128,12 +128,21 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   with a trigger change to an override they never load). May be a deliberate choice for an own-DPS
   board. DECIDE: load the control like the three sibling boards, or record in `docs/DECISIONS.md`
   that the Solo framework deliberately runs CDR-free.
+- **⇒ A duo row whose partner is not a B2 loses the spare-stage guarantee (kimi-code/k3 review round
+  5, 2026-08-03).** `assemble` seats a duo partner in the SPARE slot, which assumes the partner
+  covers that slot's stage. True for `mint`/`prika` and `mast-romantic-maid`/`anchor-innocent-maid`
+  (all B2), but `blanc`'s partner is the synthetic `noop-rouge-b1`, a B1 — so her `w/ Rouge` row is
+  `[NOOP_B1, blanc(60s B2), noop-rouge-b1, carry, carry]` with NO spare B2, against a baseline that
+  has one. That reintroduces on that single row exactly the long-cooldown Full Burst toll this
+  branch removes everywhere else. Invisible today: `blanc` is in `EXCLUDED_BUFFER_SLUGS`, so only the
+  test exercises the row. Fix when a non-B2 duo partner first ships for a ranked unit — either seat
+  the partner by its own stage or keep the spare B2 and drop a carry.
 - **⇒ `suppliesTeamCdr` does not check mode gating (deferred NOTE from the kimi-code/k3 review,
   2026-08-03).** `src/ranks/buffer.ts` classifies a unit as the team's cooldown enabler by walking its
   override for an ally-facing `burstCdr`. It does not skip blocks nested under a non-default `modes`
   entry, so a unit whose ally CDR lives ONLY in a non-default mode would stand the no-op B1 down on
   rows where that mode is inactive, leaving the team with no enabler at all. No unit does this today
-  (verified end-to-end: exactly the 14 documented enablers, `--cdr` mode of
+  (verified end-to-end: exactly the documented enablers, `--cdr` mode of
   `scripts/probe/buffer-rotation-audit.ts`). Harden when a mode-gated CDR kit first lands.
 - **⇒ BUFFER-BOARD METHODOLOGY CHAIN IS ON A PR BRANCH, NOT MAIN (`buffer-board-methodology`,
   2026-08-03).** Standard team + spare no-op, camera focus on the no-op B2 (SR), tested-B3 burst

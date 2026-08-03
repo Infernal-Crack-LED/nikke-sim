@@ -224,6 +224,7 @@ export function suppliesTeamCdr(
       trigger?: any;
       target?: any;
       formation?: string;
+      teamHas?: unknown;
       effects?: unknown[];
     };
     if (
@@ -243,6 +244,16 @@ export function suppliesTeamCdr(
       // gate, so counting it stood the control down and left those two teams
       // with no enabler at all.
       (!block.formation || block.formation === 'hasB1') &&
+      // `teamHas` is the third static gate the engine applies in that same
+      // filter (sim.ts:740). The standard team is synthetic no-ops plus two
+      // synthetic carries, so a real kit's roster/element/class condition is
+      // essentially never satisfied here — and the direction of the error
+      // matters: treating a gated block as inert leaves the control standing
+      // (one enabler, possibly a weaker one), while counting it can leave the
+      // team with NONE, which is what the noB1 gate did. No live case either
+      // way today — the only teamHas + burstCdr block belongs to blanc, is
+      // self-targeted, and blanc is excluded from the population.
+      !block.teamHas &&
       hasCdr(block.effects)
     ) {
       found = true;

@@ -118,8 +118,8 @@ population.sort();
 // 'effect removed' with 'carry adaptation lost'. Read per-effect ablations on
 // the generic board; --typed is honest only for the shipped and floor rows.
 //
-// The same shape applies to the ONE-ENABLER rule on either board: for the 14
-// units that supply team cooldown reduction, stripping the kit or ablating the
+// The same shape applies to the ONE-ENABLER rule on either board: for the
+// units that supply team cooldown reduction (12 today), stripping the kit or ablating the
 // ally-CDR line flips them out of the enabler role and stands the no-op B1's 7s
 // control back up, so those rows read net of the restored standard enabler
 // (liter's ally-CDR ablation reads -11.29 with the control regained, and her
