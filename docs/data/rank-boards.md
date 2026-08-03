@@ -147,7 +147,10 @@ unit's own kit, weapon cadence, and burst rotation.
 
 Cells: **Core 0 / Core 100 × Neutral / Elemental advantage** (the boss is set to
 the element the tested unit beats; for multi-element units the advantage cell
-uses the native element). Investment is scope lock.
+uses the native element). Investment is scope lock. The core axis is an
+**exposure** — Core 100 means the boss core is available for the whole fight, and
+each unit's realized core fraction is still set by its own aim geometry, so two
+units in the same Core 100 cell do not core at the same rate.
 
 Standard no-op teams (the unit under test is inserted at the ▼ slot):
 

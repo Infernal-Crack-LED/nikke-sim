@@ -49,6 +49,13 @@ const profileBadge = profiledEntry?.[3]
   : null;
 
 // B1/B2 board profile ids and their rendered badge text (rankChartBars.ts).
+//
+// ⚠ B1B2DpsRow is [slug, dps, PROFILE, TEMPLATE] (src/ranks/types.ts) — profile is
+// index 2. It is NOT BufferRow, which is [slug, addedPct, rules, PROFILE] with profile
+// at index 3, the shape the block above this one reads. Reading e[3] here yields the
+// template ('b1-20s' | 'b1-40s' | 'b2'), which is never a profile id.
+const B1B2_PROFILE_IDX = 2;
+const B1B2_TEMPLATE_IDX = 3;
 const B1B2_PROFILE_LABELS = {
   'with-avistar': 'w/ Avistar',
   'with-other-b1': 'w/ Other B1',
@@ -56,23 +63,33 @@ const B1B2_PROFILE_LABELS = {
   'as-b1': 'B1',
   'as-b2': 'B2',
 };
-const b1b2ProfileIds = new Set(
-  Object.values(artifacts['b1b2dps.json'].cells)
-    .flat()
-    .map((e) => e[3])
-);
-for (const id of b1b2ProfileIds) {
+// Templates are not rendered as badges, but pinning them here is what catches a row
+// re-ordering: if profile and template ever swap indices, one of these two loops throws
+// with the value it actually found instead of silently badging the wrong field.
+const B1B2_TEMPLATES = ['b1-20s', 'b1-40s', 'b2'];
+const b1b2Rows = Object.values(artifacts['b1b2dps.json'].cells).flat();
+for (const id of new Set(b1b2Rows.map((e) => e[B1B2_PROFILE_IDX]))) {
   if (id && !(id in B1B2_PROFILE_LABELS)) {
     throw new Error(
-      `unmapped B1/B2 profile id "${id}" — update B1B2_PROFILE_LABELS in web-smoke-ranks.mjs and web/src/rankChartBars.ts`
+      `unmapped B1/B2 profile id "${id}" at row index ${B1B2_PROFILE_IDX} — either a new profile needs a label in B1B2_PROFILE_LABELS (web-smoke-ranks.mjs) and web/src/rankChartBars.ts, or B1B2DpsRow's field order changed`
     );
   }
 }
+for (const t of new Set(b1b2Rows.map((e) => e[B1B2_TEMPLATE_IDX]))) {
+  if (!B1B2_TEMPLATES.includes(t)) {
+    throw new Error(
+      `unexpected B1/B2 template "${t}" at row index ${B1B2_TEMPLATE_IDX} — expected one of ${B1B2_TEMPLATES.join(', ')}; B1B2DpsRow's field order may have changed`
+    );
+  }
+}
+// The loops above validate EVERY cell; the badge assertion must come from the cell the
+// page actually renders on load (DEFAULT_B1B2_CELL in src/ranks/b1b2-cells.ts), or the
+// text check below looks for a badge that is not on screen.
 const b1b2ProfiledEntry = artifacts['b1b2dps.json'].cells['c100-eleadv'].find(
-  (e) => e[3]
+  (e) => e[B1B2_PROFILE_IDX]
 );
-const b1b2ProfileBadge = b1b2ProfiledEntry?.[3]
-  ? B1B2_PROFILE_LABELS[b1b2ProfiledEntry[3]]
+const b1b2ProfileBadge = b1b2ProfiledEntry
+  ? B1B2_PROFILE_LABELS[b1b2ProfiledEntry[B1B2_PROFILE_IDX]]
   : null;
 const burstgenTop = artifacts['burstgen.json'].entries[0][0];
 const burstgenTopName = artifacts['burstgen.json'].units[burstgenTop].name;

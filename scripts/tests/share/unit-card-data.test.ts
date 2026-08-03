@@ -395,20 +395,53 @@ describe('buildUnitCardData — comp profiles (§8a, ruling 14)', () => {
   it.runIf(haveBoards)(
     'a neighbourhood wide enough to contain the default row labels it in place',
     () => {
-      // The portrait variant draws two neighbours each side, which pulls crown's
-      // own no-profile row into the window in rank order. It is then NOT an
-      // appendix — not appended, not dimmed — but it must still carry the
-      // 'default' chip or the card shows the same unit twice with no
+      // The portrait variant draws two neighbours each side, which can pull a
+      // profiled unit's own no-profile row into the window in rank order. It is
+      // then NOT an appendix — not appended, not dimmed — but it must still carry
+      // the 'default' chip or the card shows the same unit twice with no
       // explanation.
-      const model = build('crown', { neighbourRows: NEIGHBOUR_ROWS_PORTRAIT });
-      const chart = model.charts[0];
-      const own = chart.rows.filter((r) => r.slug === 'crown');
-      expect(own.length).toBe(2);
-      expect(chart.rows.some((r) => r.isDefaultAppendix)).toBe(false);
-      expect(own.map((r) => r.profileChip).sort()).toEqual([
-        'default',
-        'w/ Healer',
-      ]);
+      //
+      // The fixture is DISCOVERED, not hardcoded. This property depends on how far
+      // apart a unit's profiled and default rows sit on a live board, which moves
+      // whenever the boards are rebuilt: `crown` was the fixture until 2026-08-02,
+      // when the no-op low-ATK standardization (DECISIONS) lifted chime + avistar
+      // above it on the buffer board and pushed its two rows from 3 apart to 5 —
+      // outside the window. That is a legitimate ranking change, so the test finds
+      // a unit the window DOES contain rather than pinning one that may drift out.
+      const candidates = Object.keys(characters.characters)
+        .map((slug) => ({
+          slug,
+          chart: build(slug, { neighbourRows: NEIGHBOUR_ROWS_PORTRAIT })
+            .charts[0],
+        }))
+        .filter(({ slug, chart }) => {
+          const own = chart?.rows.filter((r) => r.slug === slug) ?? [];
+          return (
+            own.length === 2 && !chart!.rows.some((r) => r.isDefaultAppendix)
+          );
+        });
+
+      // If no unit on today's boards has both rows inside the window, the property
+      // is untestable rather than violated — say so loudly instead of passing mute.
+      expect(
+        candidates.length,
+        'no unit has both its profiled and default rows inside the portrait window — ' +
+          'the in-place labelling path is unexercised on these artifacts'
+      ).toBeGreaterThan(0);
+
+      for (const { slug, chart } of candidates) {
+        const own = chart.rows.filter((r) => r.slug === slug);
+        const chips = own.map((r) => r.profileChip);
+        // exactly one of the two is the default row, and the other names a profile
+        expect(
+          chips.filter((c) => c === 'default'),
+          slug
+        ).toHaveLength(1);
+        expect(
+          chips.filter((c) => c && c !== 'default'),
+          slug
+        ).toHaveLength(1);
+      }
     }
   );
 

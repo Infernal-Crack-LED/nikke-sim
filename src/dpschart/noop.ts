@@ -3,13 +3,16 @@
 // (empty kit text → the parser yields zero blocks: no buffs, no procs, no burst
 // damage). The B3 keeps empty skill slots but is given a class-modal base multiplier
 // plus a mock +50% ATK / +100% Attack Damage self buff on its own burst cast via the
-// `noop-b3-mg` override, so it contributes realistic B3-stage damage only during its turn
-// being a synthetic control. All three still fire on their weapon class's canon
-// cadence so they generate burst gauge exactly like a default unit of that weapon
-// (data/gauge-per-shot.json carries matching class-modal noop-* entries) and take
-// their burst-chain stages. The B1 control additionally gets a 7 s team burst-cooldown
-// reduction via the `noop-b1-ar` override, so the no-op team is normalized for the CDR
-// a real B1 enabler would contribute even though the placeholder has no other skills.
+// `noop-b3-mg` override, so it takes a real B3 turn — casts, holds the stage, and deals
+// NON-ZERO damage. Its damage MAGNITUDE is not meaningful and is not meant to be: it
+// scales off the deliberately low no-op ATK below, and nothing ranks it (the DPS chart
+// returns the tested unit's dps alone, src/dpschart/run.ts). All three still fire on
+// their weapon class's canon cadence so they generate burst gauge exactly like a
+// default unit of that weapon (data/gauge-per-shot.json carries matching class-modal
+// noop-* entries) and take their burst-chain stages. The B1 control additionally gets
+// a 7 s team burst-cooldown reduction via the `noop-b1-ar` override, so the no-op team
+// is normalized for the CDR a real B1 enabler would contribute even though the
+// placeholder has no other skills.
 // Weapon data = the weapon-class MODAL values from data/characters.json (2026-07-26:
 // MG 300 ammo / 171f reload; AR 60 ammo / 81f reload; SR + RL 6 ammo / 141f reload /
 // 60f charge ×250%; burst cooldown 20s B1/B2, 40s B3).
@@ -18,13 +21,20 @@ import type { BaseStats, BurstType, CharacterData, Weapon } from '../types.js';
 
 export type NoopCharacter = CharacterData & { baseStats: BaseStats };
 
-// Default stats are inert for B1/B2: the units deal 0 damage (multiplier 0) and cast
-// nothing, so ATK/HP only need to be valid numbers for the stat formula. No grade/core
-// growth. ATK is kept high enough that existing boards (DPS chart Solo, buffer,
-// sustain, burstgen) keep their current `alliesTopAtk` / `alliesLowestAtk` resolution.
+// Stats are inert: the B1/B2 units deal 0 damage (multiplier 0) and cast nothing, so
+// ATK/HP only need to be valid numbers for the stat formula. No grade/core growth.
+//
+// ATK IS DELIBERATELY LOW (owner ruling 2026-08-02). A control must never win an
+// `alliesTopAtk` selector — the whole point of a no-op is that it is not the subject of
+// anything. At base ATK 100 it sits under every real unit (~400+), so a king-maker buff
+// resolves to the tested unit or its real partner, which is what the board is measuring.
+// `alliesLowestAtk` still resolves to a control; that is correct for the same reason —
+// the lowest-ATK slot is genuinely the inert one. Previously the shared set used ATK
+// 30000 and only the B1/B2 board took a low-ATK fork, which split the no-op registry in
+// two and let a control out-rank the unit under test on every other board.
 const NOOP_BASE_STATS: BaseStats = {
   resourceId: 0,
-  atk: 30000,
+  atk: 100,
   hp: 1000000,
   def: 0,
   critRate: 15,
@@ -32,23 +42,6 @@ const NOOP_BASE_STATS: BaseStats = {
   maxLevel: 400,
   grade: { ratio: 0, atk: 0, hp: 0, def: 0 },
   core: { atk: 0, hp: 0, def: 0 },
-};
-
-// Low-ATK variant used only by the B1/B2 DPS board. The board's PARTNER rows
-// (crown+chime, anis-star+avistar) need the real partner (chime / avistar, base
-// ATK 500) to outrank both the tested unit (crown / anis-star, base ATK 400) and
-// the no-op placeholders (base ATK 100) so an `alliesTopAtk` king-maker buff lands
-// on the partner rather than on a control. In plain rows, an `alliesTopAtk` selector WITHOUT
-// `excludeSelf` resolves to the tested unit (the highest-ATK member of the team),
-// while `alliesLowestAtk` resolves to a no-op placeholder. The two live carriers
-// (naga skill2, rapunzel skill2) use `count: 2`, so the second target is an inert
-// no-op. This silently turns self-includable highest-ATK buffs into self-buffs on
-// this board (e.g. naga's coreDamagePct, rapunzel's targetMaxHpPct); the effect is
-// small for damage lines and is the intended board semantics for king-maker buffs
-// that do not exclude self.
-const NOOP_LOW_ATK_STATS: BaseStats = {
-  ...NOOP_BASE_STATS,
-  atk: 100,
 };
 
 interface WeaponModal {
@@ -200,14 +193,5 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
   ),
 };
 
-// B1/B2-DPS-board-specific no-op characters. Derived from the shared set so
-// weapon/rotation scaffolding cannot drift; the only intended difference is
-// `baseStats.atk` (NOOP_LOW_ATK_STATS). See the NOOP_LOW_ATK_STATS comment above
-// for how this changes `alliesTopAtk` / `alliesLowestAtk` resolution on the board.
-export const B1B2_NOOP_CHARACTERS: Record<string, NoopCharacter> =
-  Object.fromEntries(
-    Object.entries(NOOP_CHARACTERS).map(([slug, c]) => [
-      slug,
-      { ...c, baseStats: NOOP_LOW_ATK_STATS },
-    ])
-  );
+// The B1/B2 board used to carry its own low-ATK fork of the set above; the low ATK is
+// now the shared default (see NOOP_BASE_STATS), so there is ONE no-op registry.

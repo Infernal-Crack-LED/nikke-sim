@@ -53,6 +53,11 @@ read-only repo access (Read/Grep/Glob/Bash — it can inspect callers and run ty
 3. **Dispatch** per the routing table with a **600s shell timeout** — large diffs take 2–5 minutes on
    opus/k3. A 60s abort manufactures a fake timeout and pushes you to the weaker same-family fallback;
    suspect impatience before suspecting the bridge.
+   - **If the bridge leaves only a raw session log** (the model narrated its tool calls around the
+     verdict, or the bridge died after it answered), rescue the verdict instead of re-spending the
+     dispatch: `python3 scripts/extract-review-json.py <log-path> <out.json>`. Add `--model <name>`
+     only when the bridge never stamped one, and use the canonical name — an off-protocol `model`
+     voids the review.
 4. **Read the result JSON:**
    - `CLEAN` → land it. A cross-family CLEAN is real evidence.
    - `FIX-BEFORE-MERGE` → resolve every `FIX` finding, then re-review the new diff (full loop —

@@ -12,7 +12,7 @@ const fmt = (n: number) =>
 export function printReport(r: SimResult, showRotation: boolean) {
   const c = r.config;
   console.log(
-    `\nNIKKE solo raid sim — ${c.durationSec}s | lvl ${c.level}, ${c.copies} copies | boss element: ${c.bossElement ?? 'none'}${c.bossDef ? ` | boss DEF ${c.bossDef}` : ''} | core rate ${(c.coreHitRate * 100).toFixed(0)}%${c.rangeBonus ? '' : ' | no range bonus'} | gear/doll per unit (see loadout)`
+    `\nNIKKE solo raid sim — ${c.durationSec}s | lvl ${c.level}, ${c.copies} copies | boss element: ${c.bossElement ?? 'none'}${c.bossDef ? ` | boss DEF ${c.bossDef}` : ''} | core exposure ${(c.coreHitRate * 100).toFixed(0)}%${c.rangeBonus ? '' : ' | no range bonus'} | gear/doll per unit (see loadout)`
   );
   console.log(
     `full bursts: ${r.fullBursts}  |  full burst uptime: ${(r.fullBurstUptime * 100).toFixed(0)}%  |  rotation stalled: ${r.rotationStallSec.toFixed(1)}s\n`

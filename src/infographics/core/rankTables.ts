@@ -14,6 +14,11 @@ import type {
   BufferChartArtifact,
   B1B2DpsArtifact,
 } from '../../ranks/types.js';
+import {
+  B1B2_CELL_LABEL,
+  resolveB1B2Cell,
+  type B1B2DpsCell,
+} from '../../ranks/b1b2-cells.js';
 
 export type BufferBoardId = 'generic' | 'typed';
 
@@ -176,32 +181,11 @@ export function buildBufferTable(
   };
 }
 
-export type B1B2DpsBoardId =
-  'c0-neutral' | 'c0-eleadv' | 'c100-neutral' | 'c100-eleadv';
-
-export const B1B2_DPS_BOARDS: B1B2DpsBoardId[] = [
-  'c0-neutral',
-  'c0-eleadv',
-  'c100-neutral',
-  'c100-eleadv',
-];
-const DEFAULT_B1B2_BOARD: B1B2DpsBoardId = 'c100-eleadv';
-
-export const B1B2_CELL_LABEL: Record<B1B2DpsBoardId, string> = {
-  'c0-neutral': 'No Core · Neutral',
-  'c0-eleadv': 'No Core · Ele Adv',
-  'c100-neutral': 'Core 100 · Neutral',
-  'c100-eleadv': 'Core 100 · Ele Adv',
-};
-
 export function buildB1B2DpsTable(
   art: B1B2DpsArtifact,
-  board: B1B2DpsBoardId
+  board: B1B2DpsCell
 ): TableCardData {
-  const b =
-    B1B2_DPS_BOARDS.includes(board) && art.cells[board]
-      ? board
-      : DEFAULT_B1B2_BOARD;
+  const b = resolveB1B2Cell(art.cells, board);
   return {
     title: `B1/B2 DPS Ranking — ${B1B2_CELL_LABEL[b]}`,
     subtitle:
