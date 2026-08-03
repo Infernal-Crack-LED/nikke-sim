@@ -1,0 +1,120 @@
+{
+  "slug": "clay",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "after landing 60 normal attacks during FB",
+      "disposition": "FAITHFUL",
+      "scope": "Counts NORMAL-attack hits only (SMG rounds; hitsPerShot 1 so pulls = rounds); only hits landed DURING Full Burst accrue toward the 60. At ~20 rounds/s effective SMG cadence, 60 hits ≈ 3s of FB fire, so ~2 procs per 10s FB window (ammo 120 / reload 81f permitting).",
+      "durationSemantics": "The trigger itself is a hit counter, not timed. Counter scope is 'during Full Burst' — hits outside FB must not advance it.",
+      "triggerIdentity": "hitCount count:60 gated to Full Burst (fbGate:'inFb' on the block, or countInFb-style FB-only accrual). NOT interval, NOT fullBurstEnter.",
+      "targetSet": "allies (all allies, including self)",
+      "nearestWrongModel": "hitCount:60 with NO FB gate — out-of-FB fire advances the counter, so Victorious Battle Cry procs before/between Full Bursts and sits at max stacks from early fight.",
+      "distinguishingAssertion": "Filter buffApply events for the 6.45% trueDamagePct key: the FIRST application frame must be ≥ the first fullBurstStart frame plus ~60 rounds of Clay fire (~3s at 20/s); under the ungated misread the first application lands before any fullBurstStart. Also: total applications per FB window ≈ floor(FB hits/60), not one per 60 lifetime hits.",
+      "inertness": "Zero buffApply events for this key before the first fullBurstStart. No proc during FB downtime between windows.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Victorious Battle Cry: True Damage ▲ 6.45%",
+      "disposition": "FAITHFUL",
+      "scope": "True-Damage-scoped buff: it scales only true-flavored damage (flavor:'true' hits / true normals). It must NOT lift plain normal/skill damage of allies who deal no true damage — for most of the control comp this buff is present-but-inert.",
+      "durationSemantics": "durationSec 6 per application, maxStacks 3, refresh/stack on re-proc. Wall-clock seconds, correct here ('lasts for 6 sec'). With ~60 hits/3s cadence in FB, stacks realistically reach 2–3 late in an FB window.",
+      "triggerIdentity": "Rides the skill1 hitCount(60, FB-gated) trigger. This application IS the 'Victorious Battle Cry' status that skill2's second block gates on — tandem coupling, do not model in isolation.",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Encoded as attackDamagePct (or otherwise unscoped Damage-Up) so it lifts ALL team damage — massive over-credit, since almost no control-comp damage is true-flavored; secondary misread: single instance with no stacking (or instant 3-stack value with no ramp).",
+      "distinguishingAssertion": "With Clay in comp, an ally with zero true-flavored damage events must show IDENTICAL totalDamage with skill1's buff effect present vs stripped via withPatchedOverride — while Clay's OWN damage during her burst's true-normals window DOES move with it. buffApply events must show stacks climbing 1→2→3 with maxStacks 3, each expiresFrame ≈ apply+360 frames.",
+      "inertness": "Non-true-dealing ally totals unchanged; no contribution outside the 6s windows; never exceeds 3 stacks (3 × 6.45%).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "attacking an enemy projectile … ▲ 45.05%",
+      "disposition": "UNMODELED",
+      "scope": "Damage to enemy PROJECTILES only — no projectile entities exist in the sim (partless, immortal scope-lock boss).",
+      "durationSemantics": "6 sec, moot.",
+      "triggerIdentity": "On-hit vs a projectile — no such event exists.",
+      "targetSet": "the projectile (enemy object), not the boss",
+      "nearestWrongModel": "Encoded as a generic damageTakenPct/attackDamagePct vs the boss for 6s — credits 45.05% of damage that in-game only ever hits interception objects.",
+      "distinguishingAssertion": "No buffApply and no damage-event mult change traceable to a 45.05 value anywhere in a boss fight; the line lives verbatim in unmodeled.skill1.",
+      "inertness": "Must move zero damage; boss-held debuff list must never contain a 45.05% entry.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "entering Burst Stage 1 … debuff immunity",
+      "disposition": "UNMODELED",
+      "scope": "Defensive utility (debuff cleanse-immunity); the scope-lock boss applies no debuffs to allies.",
+      "durationSemantics": "10 sec, moot.",
+      "triggerIdentity": "stageEnter stage:1 (fires when ANY unit casts a Stage-1 burst — liter every rotation), NOT Clay's own burstCast (she is B2) and NOT fullBurstEnter.",
+      "targetSet": "allies (all)",
+      "nearestWrongModel": "Any attempt to model it as an offensive stat, or mis-keying a sibling effect to this trigger.",
+      "distinguishingAssertion": "No damage-affecting buffApply keyed to stageEnter-1 from Clay's skill2 block 1; line recorded verbatim in unmodeled.skill2.",
+      "inertness": "Zero damage movement from this block.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "while in Victorious Battle Cry … ATK ▲ 20.07%",
+      "disposition": "FAITHFUL",
+      "scope": "Team ATK buff, flat-add: 20.07% OF THE SKILL USER'S (Clay's) ATK — casterAtkPct, resolving to 0.2007 × 98,367 (Supporter static ATK) ≈ 19,742 flat ATK per ally. NOT 20.07% of each target's own ATK.",
+      "durationSemantics": "'continuously' WHILE the Victorious Battle Cry status is active — i.e. exactly the union of the 6s VBC windows opened by skill1's FB-gated hitCount proc. Not permanent, not stack-scaled (one instance regardless of VBC stack count). Natural encoding: co-applied on the same hitCount trigger with durationSec 6 and refresh on re-proc.",
+      "triggerIdentity": "Status-conditional passive gated on VBC uptime; in practice keyed to the skill1 hitCount(60, in-FB) trigger. NOT a plain passive, NOT stageEnter (that header belongs to the immunity block above).",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Two near-misreads of equal plausibility: (a) atkPct 20.07 (scales each target's OWN ATK — over-credits every Attacker, since 20.07% of 118,027 > the true flat 19,742); (b) always-on passive ignoring the VBC gate — credits full-fight uptime when true uptime is only the ~6s tails after each 60-hit FB proc.",
+      "distinguishingAssertion": "buffApply for this line must carry stat 'casterAtkPct' with emitted flat value ≈ 19,742 (0.2007 × 98,367), NOT the raw 20.07 under atkPct; and its first application frame must coincide with the first VBC application (post-first-FB, ~60 Clay rounds in), with expiresFrame tracking the VBC window. A pre-FB buffApply, or a value of 20.07 under stat 'atkPct', is RED.",
+      "inertness": "No ATK contribution before the first VBC proc or after the last VBC window lapses; value does not scale with VBC stack count.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "True Damage ▲ 12.56% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "True-Damage-scoped (same scoping caveat as skill1's VBC line): lifts only true-flavored damage. Its main real consumer in a Clay comp is Clay HERSELF via her burst's self true-normals window (both last 10s from the same cast) — they are designed to overlap.",
+      "durationSemantics": "durationSec 10, wall-clock. Correct as seconds.",
+      "triggerIdentity": "burstCast (fires ONLY on rotations Clay herself casts her Burst II; cd 40s means she does not cast every ~20s rotation, and the control fixture's crown is ALSO Burst II, so another B2 can complete rotations Clay sits out). NOT fullBurstEnter.",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Keyed to fullBurstEnter — the buff then fires on EVERY team Full Burst including rotations where crown (the other B2) cast, over-crediting uptime roughly 2×. This is the canonical burst-cast-vs-FB-enter divergence and it is LIVE in this exact fixture because crown shares Clay's burst tier.",
+      "distinguishingAssertion": "Collect burstCast events by srcSlot: buffApply for the 12.56% key must appear once per Clay-cast rotation and NEVER on a fullBurstStart whose preceding rotation has no Clay burstCast. Count(12.56% applies) == count(Clay burstCasts) < count(fullBurstStarts).",
+      "inertness": "No application on crown-cast rotations; non-true-dealing allies' totals unmoved by this buff's presence.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Normal attacks deal true damage for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "SELF only. Converts Clay's own normal-attack hits to true-flavored for 10s: they bypass boss DEF and become eligible for every live True Damage ▲ buff (her own 12.56% team buff + up to 3×6.45% VBC stacks). This is the payload that makes the kit's other true-damage lines non-inert — dropping it as 'cosmetic flavor' guts the kit's internal synergy.",
+      "durationSemantics": "durationSec 10 from her burst cast, wall-clock.",
+      "triggerIdentity": "burstCast, self mode — a self block inside the unit's OWN burst is burst-cast by definition; fires only when Clay casts. NOT fullBurstEnter, NOT a permanent mode.",
+      "targetSet": "self",
+      "nearestWrongModel": "Skipped as damage-neutral flavor text (loses DEF bypass AND deactivates the trueDamagePct buffs against her biggest damage source), or applied to all allies, or keyed to fullBurstEnter so it runs on crown-cast rotations.",
+      "distinguishingAssertion": "During the 10s after a Clay burstCast, Clay's normal-attack damage events must be true-flavored (and their mult must respond to a patched-in trueDamagePct test buff / show no boss-DEF subtraction); the SAME shots outside the window are plain-flavored and unmoved by trueDamagePct. Per-shot damage inside vs outside the window must differ even with all other buffs held equal.",
+      "inertness": "No ally's normals gain true flavor; Clay's normals outside the 10s windows keep plain flavor and stay inert to True Damage ▲ buffs.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:hitCount-60-in-FB trigger",
+    "skill1:VBC trueDamagePct 6.45 x3 (6s)",
+    "skill2:casterAtkPct 20.07 while VBC",
+    "burst:team trueDamagePct 12.56 (10s, burstCast)",
+    "burst:self true-normals mode (10s, burstCast)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "When attacking an enemy projectile, damage to that projectile ▲ 45.05% for 6 sec."
+    ],
+    "skill2": ["Gains debuff immunity to 1 debuff(s) for 10 sec."],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to reconcile hardest: (1) 'ATK ▲ 20.07% of the skill user's ATK' encoded as atkPct instead of casterAtkPct — the flat-vs-percent distinction is worth ~×1.2 on Attacker allies and the buffApply value assertion (≈19,742 flat, not 20.07) is the only test that catches it. (2) burstCast vs fullBurstEnter on BOTH burst blocks — the divergence is live in the control fixture itself because crown shares Clay's Burst II tier and Clay's 40s cd guarantees skipped rotations; any test that only counts applies-per-FB on a comp where Clay is the sole B2 caster will falsely pass the fullBurstEnter misread. (3) The skill2 ATK buff's gate is the VBC STATUS (an ally-held buff window), not the 'entering Burst Stage 1' header above it — a parser that attaches both skill2 effects to the stageEnter-1 header produces an every-rotation 10s team ATK buff, a large over-credit; assert first-apply is post-first-FB-proc, not at the first B1 cast (~t≈3s). (4) trueDamagePct scoping: both True Damage ▲ lines are present-but-inert on non-true-dealing allies; if the engine's trueDamagePct is an unscoped Damage-Up bucket entry, the whole team gets credited — the strip-the-buff inertness A/B on a no-true-damage ally is the distinguishing test. (5) The self true-normals window is the kit's keystone: it is what converts the two team True Damage ▲ lines from dead weight into Clay's own multiplier; a driver that marks it UNMODELED must not simultaneously claim the trueDamagePct lines are load-bearing for Clay. Open convention to pin (⚑, does not block): whether the 60-hit counter carries over between FB windows or resets at fullBurstEnd — kit text is silent; at ~2 procs per full FB window the difference is one marginal proc per fight; recommend asserting only the in-FB gating, not carryover, until measured.",
+  "model": "claude-fable-5"
+}

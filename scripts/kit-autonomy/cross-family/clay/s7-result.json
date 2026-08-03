@@ -1,0 +1,92 @@
+{
+  "slug": "clay",
+  "kitDescription": "Clay is an Electric SMG Supporter whose kit amplifies the team's true damage. While the team is in Full Burst, every 60 of her normal attacks grants all allies a stacking True Damage buff (up to 3 stacks, 6 seconds each), and whenever that Victorious Battle Cry status is active she also feeds every ally a flat ATK bonus worth about a fifth of her own attack. Her Burst II gives the whole team a further 10-second True Damage buff and turns her own normal attacks into true damage for 10 seconds, making her the first consumer of her own buffs. She also carries a defensive debuff-immunity line on Burst Stage 1 entry and a damage bonus against enemy projectiles, neither of which has any target on the scope-lock boss.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "after landing 60 normal attacks during FB",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired + fbGate:'inFb' + everyN:60 — abort-gates run before the everyN counter, so only in-FB shots accrue; hitCount was rejected because its counter is burned by out-of-FB shots (sim.ts firePull)",
+        "blindSaid": "S5 assumed hitCount but adapted mechanically; S6 shipped hitCount{60}+fbGate, which the diff shows is the semantically wrong primitive in this engine",
+        "formulaCheck": "SSOT §2b per-shot proc gating (fbGate/everyN) matches; driver test pins first application at exactly the 60th in-FB shot and recurrence across ≥3 windows; ~2-3 procs per 10s FB at SMG cadence is arithmetically consistent",
+        "fireRateOk": true,
+        "explanation": "The driver's construction is the exact kit reading ('which hits count' = in-FB only); the blind hitCount proposal would silently burn the count out-of-FB. Counter carryover across FB boundaries is the one open point — kit-silent, driver-flagged ⚑ with a measurement recipe (caveat 2)."
+      },
+      {
+        "kitLine": "Victorious Battle Cry: True Damage ▲ 6.45%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trueDamagePct 6.45, maxStacks 3, durationSec 6, allies; flavor-gated so it pays only on true-flavored hits",
+        "blindSaid": "S5/S6 identical stat, value, stacks, duration, target; S5 asserts 6.45 value, 3-cap exercised, all-ally sweep, in-FB-only applies",
+        "formulaCheck": "SSOT 1e DamageUp flavor gates: True Damage ▲ applies only to true-flavored instances — driver negative-controls liter/helm byte-exact, confirming the gate routes correctly",
+        "fireRateOk": true,
+        "explanation": "Value, stacking rule, duration semantics and scope all match prose; the flavor gate is verified load-bearing on the true consumers (clay's swap-window normals, ada's DoT) and inert on plain dealers."
+      },
+      {
+        "kitLine": "attacking an enemy projectile … ▲ 45.05%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim + ⚑ caveat 3: no projectile entity or interception channel exists at scope lock; zero-impact estimate with an enactment recipe",
+        "blindSaid": "S2b UNMODELED; S5 it.skip GAP; S6 unmodeled verbatim — all three agree",
+        "formulaCheck": "No damage instance type in the SSOT can target a projectile; the partless boss fires none — inert by world-model",
+        "fireRateOk": true,
+        "explanation": "Deliberate, documented, identical across all agents; nothing fabricated in its place."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "entering Burst Stage 1 … debuff immunity",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim including the trigger clause; the stageEnter trigger is dropped with the unenactable effect (nothing rides it)",
+        "blindSaid": "S2b UNMODELED; S5 it.skip GAP; S6 kept an empty-effects stageEnter anchor block (validator-hostile; driver reasonably omitted it)",
+        "formulaCheck": "The boss applies no debuffs to allies; no immunity primitive or debuff list exists — inert by world-model",
+        "fireRateOk": true,
+        "explanation": "Defensive utility with no observable payload in any comp the sim can field; recorded verbatim, not silently dropped."
+      },
+      {
+        "kitLine": "while in Victorious Battle Cry … ATK ▲ 20.07%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "co-extensive construction: same shotFired+fbGate+everyN:60 trigger re-declared on skill2 → casterAtkPct 20.07 / 6s, so uptime is identical to Cry presence; flat add = 0.2007 × clay staticAtk",
+        "blindSaid": "S5 pins flat-resolved value >1000 and ≠20.07, expiry set == VBC expiry set, presence-gated not stacked; S6 converged on the identical casterAtkPct/6s encoding and flagged the status-gate proxy as ⚑",
+        "formulaCheck": "SSOT 1a/§11: 'ATK ▲ X% of caster's ATK' converts at application to a flat add of the caster's ATK outside the recipient's (1+ATK%) — casterAtkPct is exactly that channel; driver test pins value ≈ 0.2007×staticAtk and frame-set equality with Cry",
+        "fireRateOk": true,
+        "explanation": "The two shared-prior misreads (atkPct self-scaling; always-on 'continuously' passive) are both discriminated-against and absent. The status-presence gate has no engine primitive, and the co-extensive proxy gives provably identical uptime because both blocks share one trigger and refresh window; both blind agents independently adopted the same proxy."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "True Damage ▲ 12.56% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies trueDamagePct 12.56 / 10s; application frame set == clay cast frame set, 4 allies per cast, 600-frame expiry",
+        "blindSaid": "S5 asserts ≥1 full sweep per cast with a distinct key from the S1 buff; S6 identical encoding",
+        "formulaCheck": "SSOT §8: burst-cast-granted buffs apply from the cast (they are buffs, not cast damage, so the no-FB rule does not exclude them); the fullBurstEnter nearest-wrong is avoided — cast-keyed, and the self-only counterfactual is discriminated (ada gets nothing)",
+        "fireRateOk": true,
+        "explanation": "Cast-keyed, team-scoped, correct duration; the fixture re-cut (sole-B2) makes the burstCast-vs-fullBurstEnter distinction testable and the driver is on the right side of it."
+      },
+      {
+        "kitLine": "Normal attacks deal true damage for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self weaponSwap {damagePct:10.12, trueNormals:true, 10s} — the frima/takina flavor swap: swap shots equal her base multiplier, only flavor changes",
+        "blindSaid": "S5 pins load-bearing self-scope and true carrier; S6 shipped damagePct:100 — a genuine blind misread (~10× her normal multiplier) caught by the structural diff",
+        "formulaCheck": "SSOT §9/2c: true-flavored hits bypass DEF and are crit-eligible; flavor swap uses baseMult = swap.damagePct ?? normalAttackMultiplier — 10.12 keeps per-shot damage identical, confirmed by the driver test pinning every normal instance at atkPct 10.12 in and out of the window, with true-bucket payoff exactly inside [cast, cast+10s]",
+        "fireRateOk": true,
+        "explanation": "The keystone line that activates the kit's true-damage stack on clay herself; driver models it as flavor-only with the multiplier pinned, and the removal reference (not a flag flip, which would grant free reloads) isolates the true payoff. S6's damagePct:100 is a RECON_ERROR-grade blind miss, not a driver finding."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. All five load-bearing lines are FAITHFUL and both unenactable lines are documented gaps carried verbatim, with three independent agents (S2b, S5, S6) converging on the same dispositions. The two genuine divergences resolved in the driver's favor on engine mechanics, not preference: (1) the S1 trigger — the blind hitCount+fbGate construction is demonstrably wrong in this engine (its counter is consumed by out-of-FB shots, sim.ts firePull), while the driver's shotFired+fbGate+everyN:60 accrues in-FB only, the exact kit reading, and the adapted S5 run is GREEN against it; (2) S6's burst-swap damagePct:100 would have inflated clay's swap-window normals ~10× — a blind misread the driver avoided via the flavor-swap precedent, and the driver test pins every normal instance at 10.12. Discrimination holds: every load-bearing assertion has a counterfactual that moves the right totals (fbGate-strip, everyN:1, maxStacks:1, passive-ATK, self-only burst true, doubled swap multiplier, zeroed true/ATK lines) with byte-exact no-true controls (liter/helm) proving the flavor gate routes correctly. Owner spot-check (same-model residual): the ⚑ counter-carryover question (does the 60-count reset at FB end — kit-silent, ≤1 marginal proc per fight, measurement recipe recorded) and the driver note's stale '24 pulls/s' SMG cadence phrasing versus the 2026-07-23 engine default of frame-quantized 20/s — cosmetic in the note, engine-governed in behavior, but worth a one-line note touch-up. Nothing blocks GO.",
+  "model": "kimi-code/k3"
+}

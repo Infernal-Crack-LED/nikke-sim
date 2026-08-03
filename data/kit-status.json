@@ -14,11 +14,11 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 128,
+      "unit-tested": 129,
       "pending": 1
     },
     "tier": {
-      "MODEL_ONLY": 95,
+      "MODEL_ONLY": 96,
       "VALIDATED": 10,
       "MEASURED": 14,
       "CALIBRATED": 10
@@ -1290,6 +1290,13 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "date": "2026-08-03",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "judge-named spot-checks: (a) sim.ts all dumped RL rockets dispatch charged=true (shot-count/3 == full-charge procs), (b) chargeCounter defaults in-window threshold countInFb??1 post-own-cast (claire pins countInFb:3 against it); plus the always-flagged RL cadence tuple (datamine)",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
@@ -1304,10 +1311,41 @@
         "countInFb:3 is EXPLICIT, not a copy of count: the engine's chargeCounter defaults the in-window threshold to countInFb ?? 1 during the 10s after the owner's OWN burst cast (scarlet-black-shadow's burst-lowered-thresholds mechanic). claire's kit has NO such threshold change, so the faithful encoding pins the same threshold (3) in-window; omitting countInFb would silently accelerate her S1 channel to per-shot for 10s after every cast of her own.",
         "Zero damage lines and zero weapon-state modifiers in the whole kit — claire is a clean-weapon BASIS unit (RL cell, CLEAN_WEAPON_TEAMS.b): clean-weapons.test.ts CW1 additionally pins this committed override byte-identical to the bare empty kit. Her board footprint is tandem only: one 3rd-full-charge recovery channel (top-2 allies), one burst-keyed all-ally shield event, one burst-keyed all-ally recovery event."
       ],
+      "board": null
+    },
+    "clay": {
+      "name": "Clay",
+      "burst": "II",
+      "weapon": "SMG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/clay.json + scripts/kit-autonomy/manual-review/clay.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "When attacking an enemy projectile, damage to that projectile ▲ 45.05% for 6 sec."
+        ],
+        "skill2": [
+          "■ Activates when entering Burst Stage 1. Affects all allies.\nGains debuff immunity to 1 debuff(s) for 10 sec."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "⚑ CADENCE TUPLE (ALWAYS-⚑): nominal 24 pulls/s = the SMG class rate (datamine rate_of_fire 1440 ÷ 60), frame-quantized by the engine to the MEASURED 20.0 rounds/s effective cadence (DECISIONS 2026-07-23, idoll-ocean ammo-counter evidence — sim.ts FRAME QUANTIZATION) + reloadFrames 81 datamine (single-chunk reload, datamine reload_bullet 10000; ammo 120 → 5s mag). Plausible, NOT escalated (no <1s-mag tell). Affects her OWN SMG damage AND the Battle Cry cadence (~3.0s per 60-shot proc inside Full Burst at the 20/s effective cadence) — both her own shots only, so the cadence uncertainty does not propagate into teammates' damage, only into how fast her team buffs reach max stacks.",
+        "⚑ MEASUREMENT-GATED (fable-S2b-adopted): the 60-hit counter's behaviour at the Full-Burst BOUNDARY — the kit text ('after landing 60 normal attacks during Full Burst') specifies WHICH hits count (in-FB only) but is silent on whether the accrued count resets when Full Burst ends. Encoded CARRYOVER (the everyN activation counter is cumulative across windows) — the literal reading restricts the counting, not the counter's lifetime. ESTIMATE: ≤1 marginal proc per fight (a full 10s FB window accrues ~3 procs on its own at the 20/s effective cadence, so cross-boundary remainder rarely changes a proc count). RECIPE: popup-read the Victorious Battle Cry stack icon across an FB boundary in a clay focus recording (do stacks/proc timing show carried count?). TIER: override-only (measurement-gated).",
+        "⚑ OUT-OF-DOMAIN: S1 'When attacking an enemy projectile, damage to that projectile ▲45.05% for 6 sec.' — ESTIMATE: zero damage impact in any comp the sim can field: v1's scope-lock boss is partless, launches NO projectiles and has no interception model, so the line has no target object to act on (it is an anti-projectile/interception mechanic, defensive-side of the fight). RECIPE: an enemy-projectile entity + interception-damage channel in the engine (does not exist); popup-read projectile-hit numbers in a boss-with-missiles recording on enactment. TIER: out-of-domain (no override or engine path exists today; carried VERBATIM in unmodeled.skill1, nothing fabricated in its place)."
+      ],
       "board": null,
       "date": "2026-08-03",
       "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
-      "residual": "judge-named spot-checks: (a) sim.ts all dumped RL rockets dispatch charged=true (shot-count/3 == full-charge procs), (b) chargeCounter defaults in-window threshold countInFb??1 post-own-cast (claire pins countInFb:3 against it); plus the always-flagged RL cadence tuple (datamine)",
+      "residual": "spot-check cluster: 60-hit counter carryover across FB boundaries (kit-silent; <=1 marginal proc/fight); SMG cadence datamine-derived (nominal 24, effective measured 20.0/s); projectile + immunity lines out-of-domain (verbatim unmodeled)",
       "graded": {
         "teams": 0,
         "within3pct": 0
