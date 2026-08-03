@@ -1,0 +1,245 @@
+{
+  "slug": "d",
+  "leakDetected": null,
+  "override": {
+    "slug": "d",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "elemAdvantageDamagePct",
+            "value": 46.93,
+            "durationSec": 15
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "fillGauge",
+            "pct": 98.56
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "elemAdvantageDamagePct",
+            "value": 91.09,
+            "durationSec": 15
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 426.24,
+            "noFb": true
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesOfClass",
+          "cls": "Attacker"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "partsDamagePct",
+            "value": 42.38,
+            "durationSec": 15
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "fullBurstExtend",
+            "seconds": 5.04
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Recovers 3.52% of attack damage as HP, lasts for 15 sec.",
+        "■ Affects self when first activated.",
+        "Additionally recovers 16.5% of ATK damage as HP, lasts for 15 sec."
+      ],
+      "skill2": [
+        "Activates 1 time(s) per battle.",
+        "Gains immunity to Stun for 36.95 sec."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill2 trigger: kit says 'Activates when the stage target appears' — a battle-start event with no matching TriggerDef. Modeled as `passive` (fires at t=0, which is what stage-target-appearance means at scope lock). The 15s duration on the 91.09% elemental-advantage buff therefore expires ~15s into the fight and never returns; a passive with a durationSec is a one-shot window, not a permanent buff.",
+      "⚑ SAME-CASTER-SLOT OVERWRITE RISK: skill1 (46.93%) and skill2 (91.09%) are both `elemAdvantageDamagePct` self-buffs from the SAME caster slot. The buff engine overwrites same-caster-slot entries, so the two are almost certainly NOT additive — the first Full Burst inside the opening 15s likely REPLACES the 91.09% with 46.93%, a net LOSS. Whether the kit intends them to stack (separate buff identities) is not derivable from the prose; measure a real fight before trusting either number.",
+      "⚑ Burst block 3 gate: 'if the skill user has immunity to Stun' is satisfied by skill2's own 36.95s immunity, so the +5.04s Full Burst extension is live only for roughly the first 37s of a 180s fight. No schema primitive expresses a self-status window, so this override applies the extension on EVERY burst cast — it OVER-CREDITS full-burst duration for the remaining ~143s. Recipe: add a self-status gate (targetStatus is enemy-only) or drop the block after the first rotation; measure FB duration late-fight to confirm.",
+      "⚑ fillGauge 98.56% is authored as `passive`, which fires once at setup — matching 'Activates 1 time(s) per battle'. If the engine re-evaluates passives, this would multiply the opening gauge; verify one burst-gauge fill event in the rotation log.",
+      "Lifesteal ('Recovers X% of attack damage as HP') has no StatKey and no HP pool at scope lock. Left unmodeled rather than encoded as `heal`: a `heal` effect would emit spurious recovery events that a teammate's on-recovery damage buff could consume, over-crediting the team. If a recovery-consumer teammate is ever paired with this unit, revisit.",
+      "partsDamagePct is inert at scope lock (partless boss) — kept for kit completeness per the schema note."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. D is a Wind SMG Attacker Burst III whose damage contribution is two elemental-advantage buffs plus a 426.24% burst nuke. The two elemental-advantage lines are the load-bearing modeling question (same stat, same caster slot — see caveats), and the burst's Full Burst Duration extension is gated on a self-status window the schema cannot express, so it is currently over-credited past ~37s. Lifesteal and stun immunity are deliberately unmodeled (no HP pool, no self-status primitive); the stun-immunity line is NOT decorative — it is the gate for the burst's third block."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter — kit says 'entering Full Burst', not 'when using Burst Skill', so it fires on ANY team Full Burst, not only rotations this unit bursts. Target self per 'Affects self'."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Elemental Advantage Atk Dmg 46.93%/15s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff elemAdvantageDamagePct 46.93, durationSec 15, self. Prior #8: the kit carries an explicit elemental-advantage damage line, so this unit exceeds the clean x1.10 and must be modeled. NOT attackDamagePct — the scope is elemental-advantage-only."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 3.52% of atk damage as HP",
+      "status": "SKIPPED",
+      "effectOrReason": "Lifesteal: no StatKey exists and no HP pool at scope lock. Deliberately NOT encoded as `heal` — heal emits recovery events that a teammate's on-recovery consumer would fire on, over-crediting. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self when first activated",
+      "status": "SKIPPED",
+      "effectOrReason": "A once-per-battle rider (first activation only). No 'first activation only' primitive; everyN/everyNOffset expresses periodicity, not a one-shot. Its payload is lifesteal, which is unmodeled anyway, so the skip costs no damage. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Additionally recovers 16.5% ATK as HP",
+      "status": "SKIPPED",
+      "effectOrReason": "Same lifesteal reason as above; rider of the 'first activated' block. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when stage target appears",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "No TriggerDef matches a stage-target-appearance event. Modeled as `passive` (t=0), which is when the stage target appears at scope lock. ⚑ flagged — this is an invented trigger."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Fills Burst Gauge by 98.56%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "fillGauge pct 98.56, target allies ('Affects all allies'). Gauge lines are never skippable — this materially accelerates the first burst."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates 1 time(s) per battle",
+      "status": "SKIPPED",
+      "effectOrReason": "A frequency qualifier on the fillGauge, not a separate effect. Satisfied structurally by authoring it on a `passive` block (fires at setup). Recorded verbatim in unmodeled.skill2 so the once-per-battle constraint is auditable."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Gains immunity to Stun for 36.95 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "Defensive status with no self-status primitive (targetStatus is enemy-only, and the engine ignores its target). NOT decorative: it is the gate for the burst's Full Burst Duration block — see caveats. Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Elemental Advantage Atk Dmg 91.09%/15s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff elemAdvantageDamagePct 91.09, durationSec 15, self ('Affects self'). Same stat + same caster slot as skill1's 46.93% — overwrite risk flagged, not silently stacked."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 426.24% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 426.24, target enemy, noFb true. Rule #9: burst-cast/instant damage is always FB-exempt (the cast lands before the FB window opens). No core (text does not say 'core strike'); crit omitted (default)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage to Parts 42.38% for 15 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff partsDamagePct 42.38, durationSec 15, target alliesOfClass Attacker ('all Attacker allies'). Inert in v1 (partless boss) but kept per the schema's explicit 'parsed but inert' contract."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Full Burst Duration 5.04 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "fullBurstExtend seconds 5.04, target allies. The 'if the skill user has immunity to Stun' gate is NOT expressible (no self-status gate), so this fires on every burst — a known over-credit past the 36.95s immunity window. ⚑ flagged."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[0].trigger / skill2[1].trigger",
+      "estimate": "passive (fires at t=0)",
+      "reasoning": "'Activates when the stage target appears' is a battle-start event with no matching TriggerDef in the schema. At scope lock the stage target is present from the opening frame, so passive is the faithful stand-in. This is an INVENTED trigger (ALWAYS-⚑ category 2) — the kit gives an activation clause the vocabulary cannot express, not a damage line with no trigger, but the same honesty rule applies.",
+      "recipe": "Read the opening ~2s of a real fight: confirm the burst gauge jumps to ~98.56% before any shot lands (t=0 fill) rather than after a delay. If the fill is delayed, the trigger is a real stage-enter event and needs an engine primitive."
+    },
+    {
+      "field": "skill1[0].effects[0].value vs skill2[1].effects[0].value",
+      "estimate": "Treat as OVERWRITING (net 46.93% after the first Full Burst inside the opening 15s), not additive 138.02%",
+      "reasoning": "Both are elemAdvantageDamagePct self-buffs from the same caster slot; the buff engine's documented behaviour is same-caster-slot overwrite. The prose gives no indication these are distinct buff identities. If they DO stack in game, this override under-credits the opening window by ~91 percentage points of Damage-Up; if they overwrite as modeled, entering Full Burst inside the first 15s is a net DPS LOSS for this unit, which is an odd kit design and worth confirming.",
+      "recipe": "Solo-ish fight with a forced early Full Burst (<15s): compare a normal-attack popup value just before FB entry against one just after. A drop implies overwrite (46.93 replacing 91.09); a rise implies stacking. Cross-check against a fight where FB lands after t=15s, where only 46.93% should be live."
+    },
+    {
+      "field": "burst[2] (fullBurstExtend 5.04)",
+      "estimate": "Live for the whole fight as authored; TRUE behaviour is live only for the first ~36.95s",
+      "reasoning": "The kit gates this on the skill user having stun immunity, which skill2 grants for 36.95 sec from battle start (once per battle). At 180s that is ~20% of the fight — after which the extension should stop. No schema primitive expresses a self-status window (targetStatus/requiresTargetStatus are enemy-only), so this block over-credits Full Burst duration on every rotation past ~37s. Full Burst duration drives every unit's damage, so this is the single largest faithfulness risk in the override.",
+      "recipe": "Measure Full Burst window length from footage on the FIRST rotation vs a rotation after ~40s. If the later windows are ~5s shorter, the gate is real and the block must be restricted (drop it after rotation 1, or add a self-status gate to the schema). If all windows are equal, stun immunity is either permanent or the gate is trivially satisfied and the block stands as authored."
+    },
+    {
+      "field": "cadence tuple (base weapon)",
+      "estimate": "SMG, ammo 120, reloadFrames 111 as supplied; pulls/sec not stated in the packet",
+      "reasoning": "ALWAYS-⚑ category 1: rate_of_fire and reloadFrames are known-unreliable datamine fields, and the effective rate is 60/ceil(60/nominal) on 60fps frame boundaries, not the nominal figure. No cadence override is authored here (nothing in the kit modifies it), but any downstream shot-count reasoning inherits the datamine's unreliability.",
+      "recipe": "Read the ammo counter across one magazine in footage to get shots/sec directly — the instrument that measures the disputed quantity, not one downstream of it."
+    },
+    {
+      "field": "override.unmodeled.skill1 (lifesteal lines)",
+      "estimate": "Zero damage contribution as modeled",
+      "reasoning": "Lifesteal has no StatKey and the v1 boss deals no damage, so there is no HP pool to restore. Encoding it as `heal` would be actively WRONG in a team context: heal emits recovery events, which fire a teammate's `recovery` trigger (e.g. an on-recovery damage buff), manufacturing damage the kit never grants. Skipping is the faithful choice, but it is a real cross-unit modeling decision, not a trivial drop.",
+      "recipe": "If this unit is ever paired with a recovery-consumer teammate, re-open: determine whether in-game lifesteal counts as 'recovery' for those kits' triggers, then either add the heal effects or document the exclusion."
+    }
+  ],
+  "model": "claude-opus-5"
+}

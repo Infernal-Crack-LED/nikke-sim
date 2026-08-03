@@ -1,0 +1,46 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-08-03-2[39m
+
+ [31m❯[39m scripts/kit-autonomy/blind/d.adapted.test.ts [2m([22m[2m21 tests[22m[2m | [22m[31m1 failed[39m[2m | [22m[33m5 skipped[39m[2m)[22m[32m 11[2mms[22m[39m
+     [32m✓[39m runs d in the control comp and emits an event stream[32m 1[2mms[22m[39m
+     [32m✓[39m actually chains Full Bursts (a lone B3 would make zero)[32m 1[2mms[22m[39m
+     [32m✓[39m lands in the elemental-advantage bucket, on self[32m 0[2mms[22m[39m
+     [32m✓[39m fires on EVERY team Full Burst, not only on d’s own burst casts[32m 1[2mms[22m[39m
+     [32m✓[39m carries a finite 15s window rather than a whole-fight passive[32m 0[2mms[22m[39m
+     [32m✓[39m applies exactly once (the stage target appears once at scope lock) and is self-scoped[32m 0[2mms[22m[39m
+     [32m✓[39m stripping BOTH elemental-advantage magnitudes moves no unit’s damage[32m 0[2mms[22m[39m
+     [32m✓[39m fires at battle start and pulls the first Full Burst dramatically earlier[32m 0[2mms[22m[39m
+     [32m✓[39m is ONCE per battle, not once per rotation[32m 1[2mms[22m[39m
+     [32m✓[39m contributes real damage attributed to d[32m 0[2mms[22m[39m
+     [32m✓[39m is enemy-directed only — no teammate total moves[32m 0[2mms[22m[39m
+     [32m✓[39m is emitted in the parts bucket[32m 0[2mms[22m[39m
+     [32m✓[39m is class-scoped — the Burst I support slot (liter, Supporter) never receives it[32m 0[2mms[22m[39m
+     [32m✓[39m is damage-inert on the partless control boss[32m 0[2mms[22m[39m
+     [32m✓[39m lengthens the team Full Burst windows[32m 3[2mms[22m[39m
+[31m     [31m×[31m raises TEAM output, not just d’s (it is an all-allies effect)[39m[32m 2[2mms[22m[39m
+     [2m[90m↓[39m[22m suppresses the extension for d bursts cast after the 36.95s stun-immunity window (GAP: no ally-status primitive)
+     [2m[90m↓[39m[22m pins the extended Full Burst window at 15.04s (GAP: SimEvent frame field not in the blind contract)
+     [2m[90m↓[39m[22m models the self lifesteal lines (3.52% + first-activation 16.5% of attack damage as HP) — GAP: no HP pool, self-scoped, no on-recovery consumer
+     [2m[90m↓[39m[22m models the 36.95s team stun immunity — GAP: no stun in the scope-lock fight and no ally-status primitive
+     [2m[90m↓[39m[22m exercises the ACTIVE case of the 46.93% / 91.09% elemental-advantage buffs — GAP: control boss is Fire, Wind d has no advantage
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/d.adapted.test.ts[2m > [22md burst — Full Burst Duration ▲5.04 sec (all allies, gated on stun immunity)[2m > [22mraises TEAM output, not just d’s (it is an all-allies effect)
+[31m[1mAssertionError[22m: expected 1034657732.8296071 to be greater than 1077967867.3365548[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/d.adapted.test.ts:[2m316:30[22m[39m
+    [90m314|[39m   [90m// substantive blind-vs-driver divergence for the judge to classify.[39m
+    [90m315|[39m   it('raises TEAM output, not just d\u2019s (it is an all-allies effec…
+    [90m316|[39m     [34mexpect[39m([34msumDmg[39m(base[33m.[39mdmg))[33m.[39m[34mtoBeGreaterThan[39m([34msumDmg[39m(noFbExtend[33m.[39mdmg))[33m;[39m
+    [90m   |[39m                              [31m^[39m
+    [90m317|[39m     [35mfor[39m ([35mconst[39m slug [35mof[39m [33mObject[39m[33m.[39m[34mkeys[39m(base[33m.[39mdmg)) {
+    [90m318|[39m       [35mif[39m (slug [33m===[39m [33mSLUG[39m) [35mcontinue[39m[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m15 passed[39m[22m[2m | [22m[33m5 skipped[39m[90m (21)[39m
+[2m   Start at [22m 13:47:15
+[2m   Duration [22m 474ms[2m (transform 84ms, setup 0ms, import 374ms, tests 11ms, environment 0ms)[22m
+

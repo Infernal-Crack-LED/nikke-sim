@@ -1,0 +1,128 @@
+{
+  "slug": "d",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 46.93,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "fillGauge",
+          "pct": 98.56
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 91.09,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 426.24,
+          "noFb": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfClass",
+        "cls": "Attacker"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 42.38,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "fullBurstExtend",
+          "seconds": 5.04
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Recovers 3.52% of attack damage as HP, lasts for 15 sec.",
+      "\u25a0 Affects self when first activated.",
+      "Additionally recovers 16.5% of ATK damage as HP, lasts for 15 sec."
+    ],
+    "skill2": [
+      "Activates 1 time(s) per battle.",
+      "Gains immunity to Stun for 36.95 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 skill2 trigger: kit says 'Activates when the stage target appears' \u2014 a battle-start event with no matching TriggerDef. Modeled as `passive` (fires at t=0, which is what stage-target-appearance means at scope lock). The 15s duration on the 91.09% elemental-advantage buff therefore expires ~15s into the fight and never returns; a passive with a durationSec is a one-shot window, not a permanent buff.",
+    "\u2691 SAME-CASTER-SLOT OVERWRITE RISK: skill1 (46.93%) and skill2 (91.09%) are both `elemAdvantageDamagePct` self-buffs from the SAME caster slot. The buff engine overwrites same-caster-slot entries, so the two are almost certainly NOT additive \u2014 the first Full Burst inside the opening 15s likely REPLACES the 91.09% with 46.93%, a net LOSS. Whether the kit intends them to stack (separate buff identities) is not derivable from the prose; measure a real fight before trusting either number.",
+    "\u2691 Burst block 3 gate: 'if the skill user has immunity to Stun' is satisfied by skill2's own 36.95s immunity, so the +5.04s Full Burst extension is live only for roughly the first 37s of a 180s fight. No schema primitive expresses a self-status window, so this override applies the extension on EVERY burst cast \u2014 it OVER-CREDITS full-burst duration for the remaining ~143s. Recipe: add a self-status gate (targetStatus is enemy-only) or drop the block after the first rotation; measure FB duration late-fight to confirm.",
+    "\u2691 fillGauge 98.56% is authored as `passive`, which fires once at setup \u2014 matching 'Activates 1 time(s) per battle'. If the engine re-evaluates passives, this would multiply the opening gauge; verify one burst-gauge fill event in the rotation log.",
+    "Lifesteal ('Recovers X% of attack damage as HP') has no StatKey and no HP pool at scope lock. Left unmodeled rather than encoded as `heal`: a `heal` effect would emit spurious recovery events that a teammate's on-recovery damage buff could consume, over-crediting the team. If a recovery-consumer teammate is ever paired with this unit, revisit.",
+    "partsDamagePct is inert at scope lock (partless boss) \u2014 kept for kit completeness per the schema note."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. D is a Wind SMG Attacker Burst III whose damage contribution is two elemental-advantage buffs plus a 426.24% burst nuke. The two elemental-advantage lines are the load-bearing modeling question (same stat, same caster slot \u2014 see caveats), and the burst's Full Burst Duration extension is gated on a self-status window the schema cannot express, so it is currently over-credited past ~37s. Lifesteal and stun immunity are deliberately unmodeled (no HP pool, no self-status primitive); the stun-immunity line is NOT decorative \u2014 it is the gate for the burst's third block."
+}

@@ -1511,6 +1511,43 @@
       ],
       "board": null
     },
+    "d": {
+      "name": "D",
+      "burst": "III",
+      "weapon": "SMG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/d.json + scripts/kit-autonomy/manual-review/d.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Recovers 3.52% of attack damage as HP, lasts for 15 sec.",
+          "Additionally recovers 16.5% of ATK damage as HP, lasts for 15 sec."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill2: 'Gains immunity to Stun for 36.95 sec' is defensively INERT in v1 (no CC model; the boss never stuns) — it is carried as the `stunImmune` resource window (seed +1 at frame 0, decrement at t=36.95s via interval) ONLY because her burst's Full Burst Duration extension gates on it; the all-ally scope of the immunity itself contributes nothing at scope",
+        "skill1: both lifesteal lines are UNMODELED verbatim — self-targeted HP recovery with no HP pool modeled and no consumer reachable (recovery triggers fire only when their OWNER receives a heal)",
+        "burst: the Full Burst Duration ▲5.04s extension fires at most once per battle — her burst CD (40s) exceeds the immunity window (36.95s), so only a cast inside the window is extended (in practice her first)"
+      ],
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check cluster: (1) ⚑2 stun-gate window-vs-first-cast — verify in-game d's SECOND burst (t>36.95s) does NOT extend Full Burst while her first does; (2) ⚑1 SMG cadence/reload tuple (pullsPerSec / reloadFrames 111) vs a d focus video; (3) ⚑3 elem-adv magnitudes live only vs Iron boss — confirm boss element when grading; (4) ⚑4 passive-as-stage-appear exact at single-boss scope only",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "d-killer-wife": {
       "name": "D: Killer Wife",
       "burst": "I",

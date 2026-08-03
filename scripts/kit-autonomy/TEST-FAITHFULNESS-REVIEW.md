@@ -33,12 +33,13 @@ choices, the truth file. If handed any of these, the review is void — say so.
 For EVERY line, independently produce:
 
 1. **Disposition** (FAITHFUL / FIX / MISSING / GAP / UNMODELED / MEASUREMENT-GATED) — from the prose alone.
-2. **The 4 questions:** (a) SCOPE — normal-attacks vs charge vs crit-only? (b) DURATION SEMANTICS — seconds
+2. **The 4 questions:** (i) SCOPE — normal-attacks vs charge vs crit-only? (ii) DURATION SEMANTICS — seconds
    vs ROUNDS (`durationShots`) vs stacks vs until-reload vs permanent? "for N round(s)" is never `durationSec`.
-   (c) TRIGGER IDENTITY — `lastBullet`/`shotFired`/`hitCount`(counts ROUNDS)/`interval`/`fullBurstEnter`/
+   (iii) TRIGGER IDENTITY — `lastBullet`/`shotFired`/`hitCount`(counts ROUNDS)/`interval`/`fullBurstEnter`/
    `burstCast`/on-cast-vs-on-hit, and any gate (`fbGate`/`everyN`/`requiresCore`/`requiresTargetStatus`)?
-   `burstCast` (this unit's own bursts) ≠ `fullBurstEnter` (any team FB). (d) TARGET SET — self / allies /
+   `burstCast` (this unit's own bursts) ≠ `fullBurstEnter` (any team FB). (iv) TARGET SET — self / allies /
    all-including-self / enemy / caster-slot overwrite?
+   (Enumeration uses roman numerals since 2026-08-03 — the old letter labels collided with a one-letter unit slug under the leak-check word-boundary regex.)
 3. **The NEAREST-WONG reading** — the most plausible misread of this line (the one a reasonable model would
    make: e.g. generic crit for a scoped line; `durationSec` for a round count; `fullBurstEnter` for a
    `burstCast`-gated self mode; ungated for a status-gated rider). This is the adversarial payload.
