@@ -122,6 +122,19 @@ describe('buffer board', () => {
   // nothing to do with cooldown (rosanna reads 7 v 8 identically at 40s and at
   // 20s — that is her gauge, not her rotation), so that phrasing fails on units
   // this shape never claimed to fix.
+  // Why the comp-profile filler merge iterates a DEDUPED slug set: a
+  // stage-matched baseline seats the same no-op twice, so a per-slug merge
+  // would inject the profile's kit into it twice on the baseline side and once
+  // on the tested side. Inert while the profiles inject only heals and shields,
+  // silently wrong the day one carries a damage-relevant line.
+  it('a stage-matched baseline repeats a no-op slug', () => {
+    const spec = { weapon: null, pierce: false, element: null } as const;
+    const b2 = assemble(null, 'II', 'generic', spec).slugs;
+    expect(b2.filter((s) => s === NOOP_B2)).toHaveLength(2);
+    const b1 = assemble(null, 'I', 'generic', spec).slugs;
+    expect(b1.filter((s) => s === NOOP_B1)).toHaveLength(2);
+  });
+
   it("a unit's Full Burst count does not depend on its burst cooldown", () => {
     const longCd = Object.entries(data.characters as Record<string, any>)
       .filter(

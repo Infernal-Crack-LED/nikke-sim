@@ -188,10 +188,13 @@ export const EXCLUDED_BUFFER_SLUGS = new Set(['blanc']);
 // `steps`, so a shallow "block.effects has a burstCdr" check silently misses
 // the board's most important CDR unit.
 //
-// `burstSuppressed` drops burstCast-triggered blocks: a tested B3 does not
-// burst (see assemble), so CDR hung on its own cast cannot fire and cannot be
-// the team's source. No unit relies on that path today; the guard is here so
-// one arriving later does not quietly leave a team with no enabler at all.
+// `burstSuppressed` drops the WHOLE burst slot, matching what burstOffSlug
+// actually wipes (`{...own, burst: []}`). Dropping only burstCast-triggered
+// blocks would disagree with it: a burst-slot block on some other trigger would
+// still count the unit as the team's enabler while the wipe had already removed
+// its CDR, leaving a team with no enabler at all. No unit relies on that path
+// today — every B3 buffer's burst slot is burstCast-triggered or empty, and no
+// burstCdr carrier is a B3 — but the two must not drift apart.
 export function suppliesTeamCdr(
   override: unknown,
   burstSuppressed = false
@@ -216,7 +219,12 @@ export function suppliesTeamCdr(
     if (!node || typeof node !== 'object') {
       return;
     }
-    const block = node as { trigger?: any; target?: any; effects?: unknown[] };
+    const block = node as {
+      slot?: string;
+      trigger?: any;
+      target?: any;
+      effects?: unknown[];
+    };
     if (
       block.target &&
       // ally-facing only: `!== 'self'` would also admit an enemy-targeted
@@ -224,7 +232,7 @@ export function suppliesTeamCdr(
       // reducing an ally's cooldown. None exists today.
       String(block.target.kind).startsWith('allies') &&
       Array.isArray(block.effects) &&
-      !(burstSuppressed && block.trigger?.kind === 'burstCast') &&
+      !(burstSuppressed && block.slot === 'burst') &&
       hasCdr(block.effects)
     ) {
       found = true;
@@ -515,7 +523,13 @@ function carryDpsSum(
     }
   }
   if (compProfile) {
-    for (const s of team.slugs) {
+    // DEDUPED: a stage-matched baseline seats the same no-op slug twice
+    // ([B1, B2, B2, ...] for a tested B2; [B1, B1, B2, ...] for a tested B1),
+    // so iterating team.slugs merged the profile kit in TWICE on the baseline
+    // side and once on the tested side. Inert today — the profiles inject heals
+    // and shields, which touch no carry damage — but asymmetric, and it would
+    // double-apply silently the day a profile carries a damage-relevant line.
+    for (const s of new Set(team.slugs)) {
       if (!(NOOP_CHARACTERS as any)[s]) {
         continue;
       } // no-op fillers only
