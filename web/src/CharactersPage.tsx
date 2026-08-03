@@ -27,35 +27,29 @@ const NONE = new Set<string>();
 
 const data = charactersJson as unknown as DataFile;
 
-// Slugs released within the last calendar month, newest first.
+// The N most recently released characters, newest first.
 //
-// Evaluated at RENDER time, not build time, so the section keeps itself current
-// between deploys — a unit ages out of "new" on its own without a rebuild. One
-// calendar month back (setMonth(-1)) rather than a flat 30 days, so the window
-// means the same thing in every month.
+// A FIXED COUNT rather than a date window (owner 2026-08-02). It keeps the row
+// the same size in a quiet month as in a busy one, and it removes the whole class
+// of bug a "released since <date>" rule invites: nothing here compares against
+// today, so there is no timezone to get wrong. (The date-window version did get
+// it wrong — toISOString() shifted the cutoff to UTC and hid a unit released
+// exactly one month prior for any viewer west of UTC in the evening.)
 //
-// The cutoff is formatted from LOCAL date parts, never toISOString(). `releaseDate`
-// is a plain calendar date, so it has to be compared against the viewer's calendar
-// date — toISOString() converts to UTC first, which silently shifts the cutoff a
-// day for anyone west of UTC in the evening and drops a unit released exactly one
-// month ago. (Observed: at 23:43 PDT the UTC cutoff read 2026-07-03 and hid
-// cinderella-crystal-wave, released 2026-07-02.)
+// Computed once at module load: `releaseDate` is static roster data, so there is
+// nothing to recompute per render. Ties (two units sharing a release date) keep
+// characters.json order, which is stable across builds.
 //
-// `releaseDate` is absent on one unit today; it is simply never new.
-function localIsoDate(d: Date): string {
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}
+// `releaseDate` is absent on one unit today; it sorts out rather than crashing.
+const NEW_CHARACTER_COUNT = 5;
 
-function recentlyReleased(now: Date): { slug: string; releaseDate: string }[] {
-  const cutoff = new Date(now);
-  cutoff.setMonth(cutoff.getMonth() - 1);
-  const iso = localIsoDate(cutoff);
-  return Object.values(data.characters)
-    .filter((c) => c.releaseDate && c.releaseDate >= iso)
-    .map((c) => ({ slug: c.slug, releaseDate: c.releaseDate as string }))
-    .sort((a, b) => b.releaseDate.localeCompare(a.releaseDate));
-}
+const NEWEST_RELEASED: string[] = Object.values(data.characters)
+  .filter((c) => c.releaseDate)
+  .sort((a, b) => (b.releaseDate ?? '').localeCompare(a.releaseDate ?? ''))
+  .slice(0, NEW_CHARACTER_COUNT)
+  .map((c) => c.slug);
+
+const NEWEST_SLUGS = new Set(NEWEST_RELEASED);
 
 export function CharactersPage() {
   const filter = useCharacterFilter({
@@ -66,25 +60,23 @@ export function CharactersPage() {
   // Its own filter instance, restricted to the new slugs — so the section shows
   // the same card markup and thumbnail pipeline as the full grid, and the user's
   // filter selections below never hide a new release.
-  const recent = useMemo(() => recentlyReleased(new Date()), []);
-  const newSlugs = useMemo(() => new Set(recent.map((r) => r.slug)), [recent]);
   const newFilter = useCharacterFilter({
     exclude: NONE,
     allowUnsupported: true,
-    restrict: newSlugs,
+    restrict: NEWEST_SLUGS,
   });
   // useCharacterFilter sorts its output by name; a "New Characters" row has to
   // read newest-first, so the release order is reapplied here. Only the card
   // ORDER differs — thumbnails and every other field still come from the hook.
   const newestFirst = useMemo(() => {
-    const rank = new Map(recent.map((r, i) => [r.slug, i]));
+    const rank = new Map(NEWEST_RELEASED.map((slug, i) => [slug, i]));
     return {
       ...newFilter,
       characters: [...newFilter.characters].sort(
         (a, b) => (rank.get(a.slug) ?? 0) - (rank.get(b.slug) ?? 0)
       ),
     };
-  }, [newFilter, recent]);
+  }, [newFilter]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -113,8 +105,8 @@ export function CharactersPage() {
         </p>
       </header>
 
-      {/* Hidden entirely in a quiet release month — an empty "New Characters"
-          heading reads as broken rather than as "nothing shipped lately". */}
+      {/* Unreachable while any unit carries a release date; kept so an empty
+          roster degrades to no section rather than a bare heading. */}
       {newFilter.characters.length > 0 && (
         <section className="characters-new">
           <h2>New Characters</h2>
