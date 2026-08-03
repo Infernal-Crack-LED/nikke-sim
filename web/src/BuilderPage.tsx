@@ -53,7 +53,6 @@ import {
   OL_PIECES,
   type OlLinesPreset,
 } from '../../src/infographics/core/tableData';
-import {} from '../../src/infographics/core/rankTables';
 import {
   drawUnitCardVariant,
   unitCardSize,

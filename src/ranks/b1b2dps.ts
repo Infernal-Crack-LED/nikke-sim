@@ -6,11 +6,10 @@
 //
 // Control teams (with no partner the tested unit is inserted at the leftmost slot
 // of its stage; with a partner it is inserted immediately after the partner's slot,
-// so the partner bursts first). All no-op placeholders use the B1/B2-board-specific
-// low-ATK variants (src/dpschart/noop.ts B1B2_NOOP_CHARACTERS); see the
-// NOOP_LOW_ATK_STATS comment for how this changes ally-ATK selector resolution.
-// The shared no-op stats used by the DPS chart, buffer, sustain, and burst-gen
-// boards are unaffected.
+// so the partner bursts first). Placeholders are the shared no-op controls
+// (src/dpschart/noop.ts) — their low base ATK keeps a control from ever winning an
+// `alliesTopAtk` selector, so a king-maker buff lands on the tested unit or its real
+// partner rather than on scaffolding.
 //   B1 20s: [tested, B2 SR, B2 SR, B3 RL, B3 MG]
 //   B1 40s: [tested, B1 AR, B2 SR, B3 RL, B3 MG]  (second B1 covers off-rotations)
 //   B2:     [B1 AR, tested, B2 SR, B3 RL, B3 MG]  (a second B2 is always present)
@@ -45,12 +44,13 @@ import {
   NOOP_B2,
   NOOP_B3,
   NOOP_B3_RL,
-  B1B2_NOOP_CHARACTERS,
+  NOOP_CHARACTERS,
   type NoopCharacter,
 } from '../dpschart/noop.js';
 import type { OverrideFile } from '../skills/index.js';
 import type { RanksCtx } from './burstgen.js';
 import { B1B2_DPS_CELLS, type B1B2DpsCell } from './b1b2-cells.js';
+import { syntheticFor } from './synthetics.js';
 
 // Base no-op team templates (4-slug arrays; the tested unit is inserted at its
 // stage's leftmost slot).
@@ -129,10 +129,15 @@ function fillsStage(
   return char.burst === STAGE_ROMAN[stage];
 }
 
+// Same resolution chain as the other rank boards (buffer/sustain/burstgen): real unit,
+// then a ranks synthetic, then a no-op control. This board used to skip `syntheticFor`
+// and read its own low-ATK no-op fork, so a stand-in registered the normal way was
+// invisible here and threw.
 function charFor(ctx: RanksCtx, slug: string): NoopCharacter {
   const found =
     (ctx.characters[slug] as NoopCharacter | undefined) ??
-    B1B2_NOOP_CHARACTERS[slug];
+    (syntheticFor(slug) as NoopCharacter | undefined) ??
+    NOOP_CHARACTERS[slug];
   if (!found) {
     throw new Error(`unknown B1/B2 DPS unit "${slug}"`);
   }

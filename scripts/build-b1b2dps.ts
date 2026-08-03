@@ -27,7 +27,7 @@ import {
   type B1B2TestedUnit,
 } from '../src/ranks/b1b2dps.js';
 import { B1B2_DPS_CELLS, type B1B2DpsCell } from '../src/ranks/b1b2-cells.js';
-import { NOOP_CHARACTERS, B1B2_NOOP_CHARACTERS } from '../src/dpschart/noop.js';
+import { NOOP_CHARACTERS } from '../src/dpschart/noop.js';
 import type {
   B1B2DpsArtifact,
   B1B2DpsRow,
@@ -55,10 +55,7 @@ for (const slug of Object.keys(data.characters)) {
 // Synthetic controls are not roster entries, but their overrides carry
 // framework effects (no-op B1 CDR, no-op B3 mock burst). Load every registered
 // synthetic control so a future addition cannot be forgotten.
-for (const slug of new Set([
-  ...Object.keys(NOOP_CHARACTERS),
-  ...Object.keys(B1B2_NOOP_CHARACTERS),
-])) {
+for (const slug of Object.keys(NOOP_CHARACTERS)) {
   overrides[slug] = loadOverride(slug);
 }
 
@@ -136,10 +133,10 @@ for (const [slug, profileIds] of Object.entries(B1B2_DPS_EXTRA_PROFILES)) {
     }
     const partner = profileDef.partner;
     const partnerChar =
-      B1B2_NOOP_CHARACTERS[partner] ??
+      NOOP_CHARACTERS[partner] ??
       (data.characters[partner] as NoopCharacter | undefined);
     const partnerSupported =
-      partner in B1B2_NOOP_CHARACTERS || data.characters[partner]?.simSupported;
+      partner in NOOP_CHARACTERS || data.characters[partner]?.simSupported;
     if (!partnerSupported) {
       process.stderr.write(
         `b1b2dps: skipping profile ${id} for ${slug} — partner "${partner}" is not sim-supported\n`
