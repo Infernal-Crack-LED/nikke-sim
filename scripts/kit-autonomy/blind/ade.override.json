@@ -1,0 +1,85 @@
+{
+  "slug": "ade",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 5.19,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 120
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 15.62,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 25.15,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 10.15,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Perfect Maid: Gain debuff immunity to 1 debuff(s), stacking up to 1 time(s) continuously."
+    ],
+    "skill2": [
+      "Perfect Maid: Gain debuff immunity to 1 debuff(s), stacking up to 1 time(s) continuously."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 skill1 ATK buff trigger: kit says 'Activates when own HP falls below 90%'. The sim models no HP pool and the scope-lock boss deals no damage, so the literal trigger NEVER fires. Modeled as `passive` with the 5s duration retained as a placeholder \u2014 this is an UNMEASURED uptime assumption and is the single largest source of error in this override. If the real uptime is intermittent, this over-credits the team's ATK for the whole fight.",
+    "\u2691 skill2 hitCount 120: 'normal attack(s)' read as ROUNDS fired by ade (1/pull, AR ammo 60), so the trigger lands roughly every two magazines. Not verified against a popup/buff-apply cadence.",
+    "\u2691 Both Max HP grants use casterMaxHpPct ('of the skill user's Max HP'). Per the e3 rule ally-granted Max HP does not feed a teammate's atkOfMaxHpPct, so these are offensively INERT at scope lock; kept for kit completeness and any future HP-scaling consumer.",
+    "\u2691 Burst keyed to burstCast (her own Burst II cast), not fullBurstEnter. If the buff is observed on rotations where ade does NOT burst, this is wrong and under-credits.",
+    "skill2's 420-normal-attack Perfect Maid line is unmodeled (debuff immunity, no damage path and no schema kind). At AR cadence 420 rounds is reached late in a 180s fight, if at all.",
+    "FB-by-timing left default ON for all buffs; noFb not set (measured-only). noRange not set (engine-automatic)."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. ade is a Wind/AR/Supporter Burst II whose entire damage contribution to a team is buff-side: two casterAtkPct grants (5.19% skill1, 10.15% burst) and two casterMaxHpPct grants (15.62% skill2, 25.15% burst), all targeting all allies. The two Perfect Maid debuff-immunity lines are defensive utility with no schema representation and no damage path \u2014 recorded verbatim in `unmodeled`. The load-bearing uncertainty is skill1's HP-threshold trigger, which cannot fire in a sim with no HP pool against a partless boss that deals no damage; it is modeled as an always-on passive, which is an UPTIME ASSUMPTION, not a reading of the kit. Treat the skill1 ATK contribution as an upper bound until a recording shows the real uptime."
+}

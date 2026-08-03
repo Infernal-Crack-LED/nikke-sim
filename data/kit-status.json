@@ -160,6 +160,46 @@
         "temp": "OK  ·"
       }
     },
+    "ade": {
+      "name": "Ade",
+      "burst": "II",
+      "weapon": "AR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/ade.json + scripts/kit-autonomy/manual-review/ade.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Activates at the start of battle. Affects all allies. Perfect Maid: Gain debuff immunity to 1 debuff(s), stacking up to 1 time(s) continuously. — UNMODELED (defensive): debuff immunity; the v1 boss applies no debuffs (nothing to be immune to) and the engine has no debuff/immunity primitive (biscuit / diesel-winter-sweets precedent)."
+        ],
+        "skill2": [
+          "Activates after 420 normal attack(s). Affects all allies. Perfect Maid: Gain debuff immunity to 1 debuff(s), stacking up to 1 time(s) continuously. — UNMODELED (defensive): the same immunity REFRESH at the 420-NA mark; same reason as skill1 (no enemy debuff model in v1)."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the 'own HP falls below 90%' gate is collapsed always-on (interval:5 refresh keeps the 5s window continuously live from t=5s) — v1 has no ally HP pool / incoming boss damage to evaluate the gate; mast precedent (GO 1.0) governs offensive HP-below gates. S2b (claude-fable-5) dissented: UNMODELED as trigger-unrealizable at scope lock — recorded as the rejected alternative; a real fight's uptime is measurement-gated (⚑2)",
+        "skill2 + burst: the Max HP grants (casterMaxHpPct → maxHpFlat) are OFFENSIVELY INERT — ade has no atkOfMaxHpPct consumer and the e3 rule excludes ally-granted maxHpFlat from holders' live-Max-HP conversions; encoded for kit completeness + future consumers, proven inert by totals-equality in the unit test",
+        "burst: 'without restoring HP' — no heal effect is used, so the grants emit no recovery events and cannot proc on-recovery consumers",
+        "skill2: 'after 120 normal attack(s)' = 120 hit-counter units — hitsPerShot 1 makes pulls == hits (no lever); the counter re-fires every crossing (no once qualifier)",
+        "cadence tuple (AR RoF 720, reloadFrames 111) is the unverified datamine — read rounds/min + the reload gap from a focus video (⚑1)"
+      ],
+      "board": null,
+      "date": null,
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged | kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check cluster | flag-1 cadence tuple (AR 720 rpm / reloadFrames 111 unmeasured datamine); flag-2 S1 HP<90% gate collapsed always-on (mast precedent; recipe = HP-bar crossing + ATK-buff-icon uptime from an ade focus video; a healer comp keeping her above 90% would shrink it); Max HP grants (S2/burst) offensively inert per the e3 rule — revisit only if an HP-pool/Max-HP consumer lands",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "ade-agent-bunny": {
       "name": "Ade: Agent Bunny",
       "burst": "II",
