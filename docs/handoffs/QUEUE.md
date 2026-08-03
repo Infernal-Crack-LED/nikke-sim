@@ -259,11 +259,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   out of `topTeams` and parameterize per row. Hard constraint: **union must NEVER be sorted** (row _i_ is
   bound to boss _i_; `shareUnionRoster` zips by index). Cheap pre-check first: does union greedy leave a
   team on the table on a constrained pool the way solo did?
-- **⇒ SEO — parked, low-prio → `docs/handoffs/2026-07-30-seo-notes.md`.** GSC's "Page with redirect"
-  flag on the http:// variants is expected (Google confirming the 301→canonical works), not a defect —
-  no fix needed. The real item is whether to prerender/SSR the docs/FAQ content so non-Google AI
-  crawlers (GPTBot/PerplexityBot, which don't execute JS) can see it; the owner is unsure it's worth
-  doing. Revisit only if AI-citation/organic traffic to the docs pages becomes a priority.
+- **⇒ SEO / AI-crawler visibility — LANDED 2026-08-03 (see DECISIONS), one open tail.** Both items in
+  `docs/handoffs/closed/2026-07-30-seo-notes.md` are closed: the owner added the `www`→apex redirect at
+  Cloudflare, and `/mechanics` + `/howto` now serve their prose to non-JS crawlers via request-time
+  injection (`scripts/build-content-pages.ts` → `web/public/content-pages.json`). The
+  `scripts/prerender.ts` Playwright pass they relied on is DELETED — it lived in `build:deploy` while
+  the deploy builds with `verify.sh artifacts`, so it had never once run in production. **Open tail:
+  the `/doll` FAQ is still JS-only.** It was deliberately left out of scope: `web/src/doll-faq-data.ts`
+  is the _bot's_ copy and `App.tsx` renders its own richer JSX version separately, so injecting from
+  the data module would serve crawlers different text than the page shows — which the `/unit/*`
+  no-JS ruling forbids. Reconciling the two copies is the prerequisite, and is its own task.
 - **⇒ Bakery-bot share-URL durability — one residual to tell the bot:** a `characters.json` change (e.g.
   a unit rename) moves pixels without moving the render cache key — `specCacheKey` covers renderer
   changes, not data changes. If that bites, add a data stamp to the key.

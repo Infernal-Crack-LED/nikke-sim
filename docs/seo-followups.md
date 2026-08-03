@@ -116,6 +116,14 @@ scoped by measured length** (never by `simSupported`), with **option 4** as the 
   `scripts/audit-release-dates.ts`. The rest of the column was audited at the same time and is
   exact. See [DECISIONS.md](DECISIONS.md).
 
+- **Prerendering ANY route through Playwright: REJECTED (2026-08-03), and the existing pass was
+  deleted.** `scripts/prerender.ts` did exactly this for `/mechanics` and `/howto` — and had never
+  run in production, because it was wired into `npm run build:deploy` while `railway.json` builds
+  with `bash scripts/verify.sh artifacts`. Both routes served 1 character of body text to non-JS
+  crawlers until 2026-08-03. They are now request-time-injected from
+  `web/public/content-pages.json` (`scripts/build-content-pages.ts`), generated from the same
+  modules the React pages import. See DECISIONS.md.
+
 - **Prerendering `/unit/*` through Playwright: REJECTED (2026-08-03).** `unitStaticHtml`
   already existed as the request-time pattern, covers every unit at no build cost, and a
   prerender pass would have duplicated it while adding minutes to every deploy. Both servers

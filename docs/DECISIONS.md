@@ -3260,3 +3260,30 @@ skills/overrides/cinderella-crystal-wave.json` also carries a `fillGauge` block 
   worktrees that have neither a browser nor the art CDN, and the deploy now self-heals anyway. —
   `scripts/lib/portrait-thumbs.ts`, `scripts/build-infographics.ts` `fillMissingPortraits`,
   `scripts/tests/share/portrait-thumbs.test.ts`
+
+- **(2026-08-03) The `/mechanics` + `/howto` prerender pass is DELETED; both routes serve their prose
+  by request-time injection.** `scripts/prerender.ts` booted the server, rendered the two content
+  routes in Playwright and saved the DOM to `dist/<route>/index.html` — wired into `npm run
+build:deploy` **only**. But `railway.json`'s `buildCommand` is `bash scripts/verify.sh artifacts`,
+  a tier that never calls `build:deploy`, so the step **never executed on the deploy box** and both
+  routes shipped an empty `<div id="root"></div>` to every crawler that does not run JS — precisely
+  the population (GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, PerplexityBot, all allowlisted in
+  `web/public/robots.txt`) the pass existed to serve. Confirmed two independent ways: reading the
+  build config, and fetching production, where `/mechanics` and `/howto` returned **1 character** of
+  body text while `/unit/rapi` and `/characters` — which already used request-time injection —
+  returned full bodies, proving the deploy current and this step alone inert. The old
+  `web-smoke.mjs` check could not have caught it: `assertPrerendered()` **skipped** when the file was
+  missing, and it was always missing in that build — a green check asserting nothing. Ruling: delete
+  the pass and extend the injection functions instead, which is what the same-day `/unit/*`
+  prerender rejection already settled ("extend those functions — do not add a prerender pass"), and
+  which matches the portrait-gate entry above in avoiding any dependency on browser binaries being
+  present on the deploy box. `scripts/build-content-pages.ts` renders
+  `web/public/content-pages.json` from the SAME modules `MechanicsPage.tsx` / `HowToPage.tsx`
+  import, so the crawler-visible copy cannot drift from the rendered page (the guarantee
+  `data/unit-pages.json` gives the unit pages); both servers inject it into `#root`; the generator
+  runs in verify.sh's **`artifacts`** tier — the tier the deploy actually runs. Measured on the
+  production bundle: `/mechanics` 1 → **5,030**, `/howto` 1 → **10,128** characters of
+  crawler-visible body text. Pinned by `content-pages-drift.test.ts` (byte-for-byte vs the
+  generator) plus served-byte assertions in **both** serve suites — `serve-headers` (serve.mjs) and
+  `serve-api` (the `static.ts` port production runs); none of them can skip. — `scripts/build-content-pages.ts`,
+  `src/server/static.ts`, `scripts/serve.mjs`, `scripts/verify.sh`
