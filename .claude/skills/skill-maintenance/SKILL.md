@@ -33,29 +33,9 @@ or a data-source discovery.
 4. **For work you can't eyeball** (rotation timing, popup values, gauge behavior): what would you
    need to SEE or MEASURE to know it's right? If no check exists, build one (the probe-processing
    skill catalogs the existing video/gauge tooling) and fold it into the relevant skill.
-5. **Did a handoff or plan doc finish?** Then CLOSE it — a done doc left in `docs/handoffs/` reads as
-   live work to every future session. Closing means it stops being tracked:
-
-   ```sh
-   # 1. mark it: a CLOSED (date) block at the top saying what landed and what moved to QUEUE.md
-   # 2. untrack, then move on disk — in this order:
-   git rm --cached docs/handoffs/<doc>.md
-   mv docs/handoffs/<doc>.md docs/handoffs/closed/
-   ```
-
-   `docs/handoffs/closed/` and `docs/closed/` are **gitignored on purpose**: a closed doc survives on
-   disk for a human to read and LEAVES the repo. So `git mv` cannot work there, and staging a new path
-   under those directories aborts the pre-commit hook (`git add` refuses ignored paths, and
-   lint-staged's own `git add` then fails the commit) — that failure means you skipped `git rm
---cached`, not that the hook is broken. Never reach for `--no-verify`.
-
-   Two riders:
-   - **Residual open items do not stay in the closed doc** — move them to `docs/handoffs/QUEUE.md`
-     first, as their own entries. The doc is closed when nothing plans from it.
-   - **Check nothing cites it by name** (`grep -rn "<doc-name>" docs/ CLAUDE.md`) before untracking.
-     A changelog-class doc — `docs/DECISIONS.md` above all — citing a file that just left the repo
-     turns the provenance trail into a dangling pointer. If something cites it, either keep it
-     tracked or reword the citation first; say which you did.
+5. **Did any doc go stale, or did a handoff finish?** That is `/doc-maintenance` — fact routing
+   (which doc owns it), QUEUE.md pruning, closing a finished handoff (archiving UNTRACKS it),
+   resolved-question moves, and deleting stale current-state narration. Run it before a PR or push.
 
 ## Verify
 

@@ -137,6 +137,10 @@ without flipping it. (Root case 2026-07-16: the SG model pass read board `arcana
 Every doc is exactly one class. This is what keeps `docs/STATE.md` current and stops the changelog
 logs from poisoning agent context with stale-but-retained narration.
 
+> The rules below are normative; the **procedure** that applies them — fact routing, QUEUE.md
+> pruning, closing a finished handoff, resolved-question moves, stale-narration deletion — is the
+> `/doc-maintenance` skill, which a PreToolUse hook nudges at push / PR time.
+
 - **CHANGELOG class — append-only, immutable, never delete.** Outdated content is marked
   **`SUPERSEDED (date) — disregard`** or struck through IN PLACE — this is the provenance trail.
   Members: `docs/DECISIONS.md`, `docs/answered-questions.md`,
