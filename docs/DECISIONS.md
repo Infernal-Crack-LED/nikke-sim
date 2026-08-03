@@ -1776,6 +1776,25 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
   an independent reason (a Treasure upgrades an existing character), and that filter is now
   load-bearing — Treasures ship in same-date batches that would otherwise crowd the row.
   `anne-miracle-fairy` remains the one unit with no date; Synergy has no row for her.
+  **Treasures got their own row instead (owner, same day): "New Favorite Items", a 30-DAY WINDOW
+  rather than a fixed count.** The two rows answer different questions — "New Characters" is a
+  standing row that should look the same in a quiet month as a busy one, while a Treasure batch is
+  an EVENT that drops several units on one date and then nothing for months, so a fixed count would
+  either truncate a batch or pad it with year-old Treasures. The section hides itself when the
+  window empties, which is its resting state most of the year. **The cutoff is UTC on both sides,
+  by owner ruling** — one global instant flips the row for everyone at once, which suits a roster
+  whose release dates are themselves global game dates, and it makes the boundary a single testable
+  moment instead of 38 of them. The accepted cost is that a viewer far enough west loses the row
+  during their afternoon of the last day. This re-opens the date-window bug class the 2026-08-02
+  fixed-count ruling had closed by construction, but not the BUG: the original failure was a
+  `toISOString()` that mixed a LOCAL Date into a UTC comparison, and both-sides-UTC is coherent
+  where the mixed version never was. UTC days are exactly 86,400,000 ms with no DST, so the day
+  count is exact and needs no rounding.
+  **The window is one-sided — no lower bound** (owner: Treasures have no banner, so their date is
+  always "out now" and never an announcement ahead of release, leaving no future-dated case to
+  guard and no reachable branch to write). Logic lives in `web/src/releaseRows.ts` (split out of
+  the page so it is testable without mounting React); the boundary is pinned at fixed UTC instants
+  by `scripts/tests/share/new-favorite-items.test.ts`, green under UTC, UTC−8, UTC+14 and UTC+5:30.
 
 - **(2026-08-01) THE UNIT-CARD GOLDENS ARE FROZEN AGAINST A COMMITTED SOURCE SNAPSHOT — a golden
   image pins the RENDERER, and joining one to live data buys nothing and costs twice.**
