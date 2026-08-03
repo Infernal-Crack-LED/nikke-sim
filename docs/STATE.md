@@ -282,6 +282,13 @@ noted.
   that overshoots (kept on purpose) isolates a compensating error — don't fudge it back.
 - **Prose-free runtime.** The engine never parses kit text at runtime; each override fully describes the
   kit (all 3 slots + `unmodeled`). Blablalink/DB prose is the objective SSOT. → DECISIONS 2026-07-16.
+- **Kit work is test-first.** A unit's kit lines are pinned as assertion groups in
+  `scripts/tests/units/<slug>.test.ts`, written RED against the shipped override before the override or
+  engine change lands; the board A/B is the outer accuracy loop. The tests gate FAITHFULNESS
+  (stat- and footage-independent), the board gates FIT. Engine primitives are pinned in
+  `scripts/tests/engine/`; everything under `scripts/tests/` runs as the one `npx vitest run` step in
+  `verify.sh`. Per-unit path: `/kit-tdd` (owner-driven spec) or `/kit-autonomy` (authorized autonomous
+  branch work); `/audit-kit` samples, `/kit-parse` seeds untuned units. → CONVENTIONS.md.
 - **Per-unit tier SSOT = `data/kit-status.json`** (via `scripts/kit-status.ts`). Every tuning change
   updates it. Evidence tiers (MEASURED > DATAMINED > COMMUNITY > CALIBRATED ⚑): → CONVENTIONS.md.
 - **Supported roster** = enikk top-100 audit list + all hand-tuned overrides; never remove a

@@ -5,6 +5,8 @@ description: Baseline override authoring from raw kit text — parses a unit's k
 
 # kit-parse — baseline override authoring from raw kit text
 
+Baseline layer only: this seeds units that have no hand-tuned override yet — per-unit kit work is built test-first via `/kit-tdd`, and `/audit-kit` samples it.
+
 ## When to use
 
 - Producing the **baseline override** for a new or untuned unit from its raw skill text, so hand-tuning

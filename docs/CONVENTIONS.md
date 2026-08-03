@@ -62,6 +62,30 @@ harnesses that must do this:
   focused unit. Burst-bar full-burst detection near cut-ins is unreliable — count nuke/laser
   signatures. The bar's full-resting render is 83.5% of pixel width; ≥96% is the pre-chain glow.
 
+## Kit work is test-first
+
+A unit's kit is specified as TESTS before its model changes. Each kit line becomes an assertion group
+in `scripts/tests/units/<slug>.test.ts` — trigger, target, scope, magnitude, duration semantics, plus
+an explicit acknowledgment of every line deliberately left unmodeled — written RED against the shipped
+override; the override (or engine primitive) change then lands green. The board A/B
+(`scripts/board-read.ts`, `scripts/control-regression.ts`) is the OUTER accuracy loop, run after.
+
+Why the tests and not the board: the board gates **fit** only. A scoping or semantics error worth a few
+percent — a "Critical Rate of normal attacks" line shipped as a generic crit buff, a "for 10 round(s)"
+duration faked as seconds — is absorbed by calibration and leaves the board green. Unit tests are the
+only instrument that gates **faithfulness**, because they are stat-independent and footage-independent,
+and an assertion that discriminates a kit line from its nearest wrong model is unwritable from a vague
+reading of the kit. Unit tests pin _faithful_, the board pins _accurate_; neither substitutes for the
+other.
+
+The per-unit session runs through `/kit-tdd` (the owner drives the line-by-line spec) or, where the
+owner has authorized autonomous authoring on a branch, `/kit-autonomy` (the owner's spec review is
+replaced by independent re-derivation plus a binding judge). `/audit-kit` is the post-validation
+sampling layer over units that already have spec tests, and `/kit-parse` authors baselines for units
+with no hand-tuned override yet; neither is the build path. Engine primitives carry their own specs in
+`scripts/tests/engine/`. Every file under `scripts/tests/` runs from the single `npx vitest run` step
+in `verify.sh`, so a new test file joins the gate by existing.
+
 ## Ratio direction (sim/real vs real/sim) — DO NOT CONFLATE
 
 Two accuracy metrics live in this repo and they point in **OPPOSITE directions**. Treating one as
