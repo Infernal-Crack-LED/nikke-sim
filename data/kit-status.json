@@ -4220,6 +4220,50 @@
       ],
       "board": null
     },
+    "poli": {
+      "name": "Poli (Treasure)",
+      "burst": "II",
+      "weapon": "SG",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/poli.json + scripts/kit-autonomy/manual-review/poli.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "hitCount:50 SG convention unmeasured for poli specifically (flag3 focus-video cadence); shared-shield allies fan-out + prose-40-vs-datamine-22.27 inert until a shield consumer joins a graded comp (flag2); interval first-fire phase t=20 convention",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Equally shares damage taken for 10 sec.",
+          "Activates when Police Badge ends. Affects self.",
+          "Continuously recovers 5% of the skill user's final Max HP every 1 sec for 5 sec."
+        ],
+        "burst": [
+          "Activates when in Police Badge status. Affects self.",
+          "Gains Indomitability for 5 sec. Removes Police Badge."
+        ]
+      },
+      "caveats": [
+        "skill1: 'after 5 normal attacks' is encoded hitCount:50 — SG units advance the engine's hit counter by hitsPerShot (10 pellets) per trigger pull (guilty precedent), so 5 attacks = 5 trigger pulls = one proc every ~3.3s at the SG class rate; the 10s window saturates to ~100% uptime",
+        "skill1: the Police Badge is a shield EVENT (no HP pool at scope): it fires shield-synergy 'shielded' triggers and opens poli's requiresShielded window for 10s from battle start; its in-kit roles (burst Indomitability gate, S2 ending-heal anchor) are unmodeled — see unmodeled",
+        "skill2: the DEF grant is damage-inert in v1 (encoded for kit completeness); 'lowest-HP' targeting resolves to the engine's deterministic leftmost stand-in; the damage-sharing line is unmodeled (no primitive; defensive)",
+        "skill2: the badge-ending recovery line is unmodeled — no own-shield-expiry trigger primitive; heal amount inert (no HP pool), recovery events second-order (⚑1)",
+        "burst: Indomitability + 'Removes Police Badge' unmodeled (no primitive; defensive; the badge gate is structurally unsatisfiable at scope lock — badge ends t=10s, first burst >=40s)",
+        "burst: the shared shield ships at the prose 40% — the datamine description_value_list says 22.27% at level 10 (⚑2); magnitude unobservable in v1 (no HP pool), the block exists for shield-synergy wiring"
+      ]
+    },
     "prika": {
       "name": "Prika",
       "burst": "II",

@@ -1,0 +1,251 @@
+{
+  "slug": "poli",
+  "leakDetected": null,
+  "override": {
+    "slug": "poli",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 5
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 5.46,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 100,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 20
+        },
+        "target": {
+          "kind": "alliesLowestHp",
+          "count": 3
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 23.51,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 10
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 5,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 40,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 44.55,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Police Badge: Creates a Shield equal to 100% of the skill user's final Max HP for 10 sec. — the named STATUS 'Police Badge' itself (a self-status gating the burst branch) is not modeled; only the shield event is emitted. No HP pool exists at scope lock, so the shield absorbs nothing."
+      ],
+      "skill2": [
+        "Equally shares damage taken for 10 sec.",
+        "Continuously recovers 5% of the skill user's final Max HP every 1 sec for 5 sec. — the HP amount is unmodeled (no HP pool); only the 5 recovery EVENTS are emitted, to feed teammates' on-recovery triggers."
+      ],
+      "burst": [
+        "Gains Indomitability for 5 sec. Removes Police Badge.",
+        "Creates a shared Shield equal to 40% of the skill user's final Max HP that protects all allies from damage. Lasts for 10 sec. — 'shared/protects all allies' scoping is not modeled; the shield event is emitted to self only (see caveats)."
+      ]
+    },
+    "caveats": [
+      "⚑ skill1 block 1 trigger: 'Activates after 5 normal attack(s)' is modeled as hitCount:5. Poli is an SG with hitsPerShot 10 — if the game counts a normal ATTACK as one trigger pull (not one pellet/hit), the true threshold is 5 TRIGGER PULLS = 50 engine hits. hitCount counts ROUNDS per the schema comment, and an SG round is one trigger pull, so count:5 is the literal read; but the pellet/round ambiguity is the single largest uncertainty in this override (a 10x cadence error on a team-wide ATK buff).",
+      "⚑ skill2 block 1 trigger: 'every 20 sec' with no activation clause → interval:20, first fire at t=20s. Whether the game fires this at t=0 or t=20 is kit-silent.",
+      "⚑ skill2 block 2 trigger: 'Activates when Police Badge ends' — the Badge is created at battle start for 10 sec, so it ends at t≈10s (or earlier, when the burst removes it). Modeled as a ONE-SHOT-shaped interval:10 approximation; the engine has no badge-status clock, so this RE-FIRES every 10s, over-emitting recovery events. See flags — a real fix needs either a one-shot trigger primitive or a targetStatus-style self-status clock.",
+      "⚑ burst shield target: the kit says the 40% shield 'protects all allies', but the shield effect's maxHpPct is caster-scaled and the engine emits per-target 'shielded' events. Modeled as self-only to avoid over-firing teammates' shielded-triggers off ONE shared shield instance; if the game applies a distinct shield instance per ally, target should be {kind:'allies'}. Damage-inert either way EXCEPT for a teammate with a 'shielded' trigger.",
+      "poli is offensively near-inert at scope lock beyond her two ATK buffs: DEF is inert in v1, shields/heals model no HP, and Indomitability/damage-sharing are pure survivability. Her whole simulated contribution is the 5.46% rolling team ATK buff, the 44.55% burst ATK buff, and burst-gauge generation."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Poli (SG/Water/Defender/Burst II). Full-kit audit: 8 kit lines, 6 IMPLEMENTED, 2 SKIPPED (damage-sharing, Indomitability — both pure defensive with no v1 surface). Load-bearing ⚑: (1) the S1 hitCount:5 threshold — SG pellet-vs-round ambiguity is a potential 10x cadence error on a team-wide ATK buff, the single value most worth measuring; (2) the S2b 'when Police Badge ends' trigger, approximated as interval:10 because the engine has no self-status clock, which re-fires every 10s instead of once. Heals/shields are kept (never skipped on isolation) so a teammate's on-recovery / on-shielded triggers fire; the HP magnitudes are recorded for completeness and are inert at scope lock. DEF ▲23.51% is kept as defPct (engine-inert in v1) for kit completeness. Burst ATK ▲44.55% is keyed burstCast (poli's OWN burst block, self-mode-shaped) — it lands pre-FB and is FB-major-exempt by cast timing, which is correct for a burst-cast stat buff. No noFb set anywhere (no function-damage riders in this kit); no damage lines at all — poli contributes ZERO direct skill damage.",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after 5 normal attack(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount count:5 — ⚑ SG round-vs-pellet ambiguity (see caveats)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies. ATK ▲5.46% 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 5.46 durationSec 10, target allies (includes self — 'all allies')"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at start of battle. Self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger passive (fires frame 0) target self"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Police Badge: Shield 100% Max HP 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "shield maxHpPct:100 durationSec:10 — emits shielded event; HP absorption unmodeled (no HP pool). The NAMED status 'Police Badge' is not modeled as a gate (see burst)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Self + 2 lowest-HP allies every 20 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger interval sec:20; target alliesLowestHp count:3 (self is eligible — no excludeSelf, and 'self and 2 others' = 3 total). ⚑ first-fire phase."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▲23.51% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct 23.51 durationSec 10 — engine-inert in v1 (self DEF doesn't affect own damage), kept for completeness"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Equally shares damage taken for 10 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "Pure damage-redistribution mechanic; the v1 boss deals no modeled damage and no HP pool exists, so there is no surface. Not a weapon-state/heal/shield/gauge line, so the no-auto-skip rules do not bind. Recorded verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when Police Badge ends",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "approximated as trigger interval sec:10 (Badge is created at t=0 for 10s) — ⚑ re-fires every 10s instead of once; no self-status clock primitive exists"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recovers 5% Max HP/sec for 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal ticks:5 intervalSec:1 target self — emits 5 recovery events (feeds a teammate's 'recovery' trigger, e.g. crown); HP amount unmodeled"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "When in Police Badge status. Self.",
+      "status": "SKIPPED",
+      "effectOrReason": "Gate not modeled — no self-status clock; the gated effect (Indomitability) is itself defensive-only, so the gate has nothing to gate. Recorded in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Gains Indomitability 5s. Removes Badge.",
+      "status": "SKIPPED",
+      "effectOrReason": "Indomitability = death-prevention/survivability; zero damage surface at scope lock (nobody takes damage). 'Removes Police Badge' has no modeled state to remove. Verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Shared Shield 40% Max HP, allies, 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "shield maxHpPct:40 durationSec:10, target self — ⚑ 'shared/all allies' scoping reduced to self (see caveats); emits the shielded event"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies. ATK ▲44.55% 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 44.55 durationSec 10, target allies, trigger burstCast — the primary offensive contribution of this kit"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger.count",
+      "estimate": "5 (literal kit read: 5 normal attacks = 5 trigger pulls)",
+      "reasoning": "Poli is a Shotgun with hitsPerShot 10. The engine's hitCount trigger 'counts ROUNDS not pulls' per the schema, and for an SG one trigger pull is one round that sprays 10 pellets — so 5 rounds is the literal reading. BUT if the engine's hit accumulator increments per PELLET/hit rather than per round, count:5 fires after half a trigger pull — a ~10x over-cadence on a team-wide ATK buff. This is the single highest-leverage uncertainty in the override: at 5 rounds with 9 ammo the buff refreshes ~twice per magazine and is effectively permanent uptime; at 50 hits it also lands near-permanently, so the DAMAGE difference may be small — but the buffApply cadence differs by 10x and any downstream stack/consumer would diverge.",
+      "recipe": "Instrument: run controlComp('poli') with cfg.onEvent, filter buffApply where stat==='atkPct' && value===5.46, and count applications per magazine against the shot events. Cross-check the engine's hitCount accumulator in src/engine/sim.ts (does it add 1 per shot or hitsPerShot per shot for an SG?). If per-pellet, set count:50. This is answerable from CODE alone — no footage needed — and should be resolved before any board A/B."
+    },
+    {
+      "field": "skill2[1].trigger (Police Badge ends)",
+      "estimate": "interval sec:10 (Badge starts t=0, lasts 10s → ends t=10s)",
+      "reasoning": "The kit trigger is a one-shot status-expiry event. The engine has no self-status expiry trigger and no primitive for 'fire once at t=N'. interval:10 first-fires at t=10 (correct) but then RE-FIRES at 20/30/…/180 — over-emitting 5 recovery events every 10 sec for the whole fight, i.e. ~90 spurious recovery events. That is damage-inert alone but WILL over-feed a teammate with a 'recovery' trigger (crown-style on-recovery buffs), which is a real over-credit in a comp containing one. Also, the burst REMOVES the Badge early, which would move the real expiry earlier on the first rotation — unmodeled.",
+      "recipe": "Two options, both cheap: (a) if a one-shot primitive is wanted, the closest existing shape is a `targetStatus`-style clock, but that channel is enemy-only — so this needs an engine primitive (out of scope for a parser baseline); (b) pragmatically, if the comp contains no 'recovery'-trigger ally, drop this block entirely (fully inert) and record it in unmodeled. Decide by grepping the graded comps for a `recovery` trigger; if none, the choice is provably damage-zero and the simplest correct move is to keep it as authored and note the limitation."
+    },
+    {
+      "field": "burst[0].target (shared shield)",
+      "estimate": "self (conservative)",
+      "reasoning": "'Creates a shared Shield … that protects all allies' is ONE shield instance covering the team, not five instances. Targeting {kind:'allies'} would emit 5 separate 'shielded' events, over-firing any teammate's shielded-gated block (naga-style requiresShielded / shielded triggers) five times over for a single game-side shield. Targeting self emits one event and under-covers teammates. Neither is exactly right; self is the under-crediting choice, which is the correct default under measured>fudge.",
+      "recipe": "Only matters in a comp with a `shielded`-trigger or `requiresShielded`-gated ally. Grep overrides for trigger kind 'shielded' / block gate requiresShielded; if a co-teammate carries one, record a real fight with that pairing and read whether the teammate's shield-gated effect goes live for ALL allies or only poli. Until then keep self."
+    },
+    {
+      "field": "skill2[0].trigger.sec first-fire phase",
+      "estimate": "first fire at t=20s (schema default for interval)",
+      "reasoning": "'every 20 sec' carries no activation clause, so it is an interval trigger. The schema states interval first-fires at t=sec. Whether the game fires it at battle start (t=0) or after the first 20s window is kit-silent; a t=0 first fire would shift every subsequent activation 20s earlier.",
+      "recipe": "Damage-inert here (defPct is engine-inert in v1), so this needs no measurement unless a future consumer reads DEF. If ever needed: read the DEF-buff icon appearance frame off a recording anchored to the 03:00→02:59 frame."
+    },
+    {
+      "field": "skill1[1] / burst[0] / skill2[1] — HP-scaled magnitudes",
+      "estimate": "recorded as authored (100% / 40% Max HP shields; 5%/sec heal)",
+      "reasoning": "All three are % of poli's final Max HP. The v1 sim models no HP pool and the scope-lock boss deals no damage, so these absorb/restore nothing — they exist purely to emit the shielded/recovery EVENTS that teammates' triggers consume. Per the HARD RULES, heal/shield/DEF/HP lines are never skipped on isolation grounds, so they are kept with their kit magnitudes recorded for completeness.",
+      "recipe": "No measurement needed at scope lock. If HP modeling ever lands, these magnitudes are already kit-exact (no ⚑ on the VALUES — the flag is on their inertness, not their correctness)."
+    }
+  ],
+  "model": "claude-opus-5"
+}
