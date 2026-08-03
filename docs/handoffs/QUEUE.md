@@ -103,6 +103,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Engine / model threads (measurement- or owner-gated)
 
+- **⇒ THE SUSTAIN BOARD HAS THE SAME NEVER-LOADED-CONTROL DEFECT — owner ruling (kimi-code/k3
+  review round 6, 2026-08-03).** `scripts/build-sustain.ts:46` loads `noop-b3-mg` only, and
+  `git log -S noop-b1-ar -- scripts/build-sustain.ts` returns NOTHING across all history — yet
+  `src/ranks/sustain.ts:111,113` seats `NOOP_B1` in two of its three comp shapes, so its B1 control
+  runs skill-less and CDR-free. Same defect the buffer board carried from `91f53ea9`, still live.
+  It is also why sustain is byte-identical to the buffer branch's control-trigger change: a control
+  it never loads cannot move. Sustain values HP restored/shielded rather than damage, so a faster
+  rotation changes its numbers only through burst-timed heals — decide whether that matters before
+  loading the control. Same call as the DPS-chart item below; take them together.
 - **⇒ THE DPS CHART HAS THE SAME NEVER-LOADED-CONTROL DEFECT — owner ruling (found by the
   kimi-code/k3 review, 2026-08-03).** `scripts/build-dpschart.ts:148` loads only `noop-b3-mg`, so
   `src/skills/overrides/noop-b1-ar.json` is never read there — yet the Solo framework seats `NOOP_B1`
@@ -113,6 +122,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   with a trigger change to an override they never load). May be a deliberate choice for an own-DPS
   board. DECIDE: load the control like the three sibling boards, or record in `docs/DECISIONS.md`
   that the Solo framework deliberately runs CDR-free.
+- **⇒ ⚠ COLLISION: local `main` un-excluded `blanc` against a PRE-one-enabler snapshot of this
+  branch (2026-08-03).** Another session emptied `EXCLUDED_BUFFER_SLUGS` and shipped blanc's numbers
+  (+7.88 plain, +20.93 `w/ Rouge`) measured on a board with NO control CDR loaded and no
+  `suppliesTeamCdr` — neither of which is true of this branch. Two consequences when the two meet:
+  those figures must be re-measured, and the round-5 note below (a duo row whose partner is not a B2
+  loses the spare-stage guarantee) stops being latent — blanc's partner IS a B1, so her `w/ Rouge`
+  row becomes the one row on the board that still pays the long-cooldown Full Burst toll. Resolve
+  together with the rewind-vs-PR decision.
 - **⇒ A duo row whose partner is not a B2 loses the spare-stage guarantee (kimi-code/k3 review round
   5, 2026-08-03).** `assemble` seats a duo partner in the SPARE slot, which assumes the partner
   covers that slot's stage. True for `mint`/`prika` and `mast-romantic-maid`/`anchor-innocent-maid`

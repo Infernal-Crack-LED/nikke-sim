@@ -19,8 +19,14 @@ lives. Newest first within each section.
   **Two things this exposed first.** (1) `scripts/build-bufferchart.ts` loaded overrides for roster
   slugs only, and the synthetic controls are not roster entries, so this board had NEVER applied the
   7s its own methodology doc described — `src/skills/overrides/noop-b1-ar.json` was simply never read.
-  Every sibling loads it (`build-burstgen.ts:48`, `build-b1b2dps.ts:56`, `build-sustain.ts:46`), added
-  `c044fcbd` 2026-07-27, the day after this board was written (`91f53ea9`), never backported.
+  Two siblings load it (`build-burstgen.ts:48`, `build-b1b2dps.ts:56`), added `c044fcbd` 2026-07-27,
+  the day after this board was written (`91f53ea9`), never backported. **`build-sustain.ts` does NOT
+  and never has** — `git log -S noop-b1-ar -- scripts/build-sustain.ts` returns nothing across all
+  history, and its `:46` loads the B3 control only — while `src/ranks/sustain.ts:111,113` seats
+  `NOOP_B1` in two of its three comp shapes. The sustain board is therefore a SECOND live instance of
+  this defect, not collateral of the fix here: it is why that board is byte-identical to the trigger
+  change below (a control it never loads cannot move), and it is queued for its own owner ruling
+  rather than fixed in passing.
   `scripts/tests/ranks/buffer.test.ts` had the identical gap, so every ranks test was validating a
   configuration the board does not run. (2) `suppliesTeamCdr` must walk ARBITRARY nesting: liter,
   volume, dolla and helm-aquamarine bury their `burstCdr` inside an `escalating` effect's `steps`, so
@@ -39,7 +45,8 @@ lives. Newest first within each section.
   **Blast radius, accepted by the owner in advance** (`noop-b1-ar.json` is shared; before/after
   artifacts diffed on row identity = slug + profile + template): **burstgen** 4 of 244 rows move,
   largest `rosanna` 3.9% (rank 90→102); **b1b2dps** 12 of 272, largest `red-hood` 11.3% (rank 38→31);
-  **burstcdr** and **sustain** byte-identical. Buffer board, cumulative with the standard-team and
+  **burstcdr** and **sustain** byte-identical — sustain necessarily so, since it never loads the
+  control being changed (see above). Buffer board, cumulative with the standard-team and
   focus rulings above: `prika` 17.4 → 45.9 (rank 32→14), `anchor-innocent-maid` 8.3 → 29.7,
   `chime` 126.3 → 142.7, `alice-wonderland-bunny` 0 → 15.5; `anis-star` 59.4 → 25.1 (rank 10→28).
   Negative rows 5 → 12 — expected under this model, since an enabler weaker than the standard 7s now

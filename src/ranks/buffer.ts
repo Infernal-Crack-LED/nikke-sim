@@ -245,14 +245,19 @@ export function suppliesTeamCdr(
       // with no enabler at all.
       (!block.formation || block.formation === 'hasB1') &&
       // `teamHas` is the third static gate the engine applies in that same
-      // filter (sim.ts:740). The standard team is synthetic no-ops plus two
-      // synthetic carries, so a real kit's roster/element/class condition is
-      // essentially never satisfied here — and the direction of the error
-      // matters: treating a gated block as inert leaves the control standing
-      // (one enabler, possibly a weaker one), while counting it can leave the
-      // team with NONE, which is what the noB1 gate did. No live case either
-      // way today — the only teamHas + burstCdr block belongs to blanc, is
-      // self-targeted, and blanc is excluded from the population.
+      // filter (sim.ts:740), and this treats EVERY teamHas-gated block as
+      // inert. That is exact for the `slugs` and `sameSquad` facets — the
+      // synthetic no-ops and carries carry no curated squad, and the gate fails
+      // closed — but deliberately approximate for the structural ones: the two
+      // carries are B3 / Attacker / MG+RL at a fixed element, so a future
+      // `teamHas: {burst: 'III'}` (or class/weapon/element) gate WOULD in fact
+      // fire here, and treating it as inert leaves the control standing beside
+      // a unit whose CDR really does apply — two enablers rather than one.
+      // Chosen anyway because the opposite error is worse: counting a gate that
+      // does NOT fire leaves the team with NO enabler, which is exactly what
+      // the noB1 gate did. Revisit when a structural teamHas first appears on
+      // an ally-facing burstCdr; none exists today (the only teamHas +
+      // burstCdr block is blanc's, self-targeted).
       !block.teamHas &&
       hasCdr(block.effects)
     ) {
