@@ -421,7 +421,7 @@ export const CHART_VARIANTS: Record<string, ChartVariant> = {
 };
 
 // Build the 4- or 5-unit control team for one cell + tested unit. Pass
-// `optimizedTestedLines` (from run.ts's bestOl pass) for the 12/12 tier's tested unit;
+// `optimizedTestedLines` (from run.ts's exhaustive optimizer pass) for the 12/12 tested unit;
 // omit it for 8/12, scope, or the provisional optimizer run (tested gets the 8-line floor).
 export function assembleTeam(
   cell: Cell,

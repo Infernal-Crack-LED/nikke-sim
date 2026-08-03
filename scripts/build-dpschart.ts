@@ -233,7 +233,7 @@ const GLOBAL_DIRS = [
 const GLOBAL_FILES = [
   'scripts/build-dpschart.ts',
   'src/prepare.ts',
-  'src/bestol.ts',
+  'src/olconfigs.ts',
   'src/relationship.ts',
   'src/elements.ts',
   'src/types.ts',
@@ -244,6 +244,7 @@ const GLOBAL_FILES = [
   'data/level-multiplier.json',
   'data/cubes.json',
   'data/ol-lines.json',
+  'data/ol-tiers.json', // OL_TIER's per-line values — matrix.ts imports it statically
   'data/gauge-per-shot.json', // read via a static `with { type: 'json' }` import in sim.ts
   'data/relationship-bonus.json', // read the same way via relationship.ts
   'data/skill-levels.json', // optional (try/catch above) — hashPath skips missing paths

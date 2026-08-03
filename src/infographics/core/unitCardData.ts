@@ -561,8 +561,8 @@ function burstCdrChart(
 
 // ---- overload ----------------------------------------------------------------
 
-// Line-type labels, matching src/olcalc.ts's LABEL map (kept local rather than
-// imported: olcalc pulls in the overload model, and core/ renderers must stay
+// Line-type labels (kept local rather than imported: the overload modules pull in the
+// engine, and core/ renderers must stay
 // dependency-light enough for the web bundle).
 const OL_LABEL: Record<string, string> = {
   elem: 'Elemental DMG',
