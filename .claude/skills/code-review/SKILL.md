@@ -50,14 +50,69 @@ read-only repo access (Read/Grep/Glob/Bash — it can inspect callers and run ty
      (Read/Grep/Glob/Bash — it can open callers and run typecheck/tests itself), so you need not paste
      surrounding code; still NAME the callers/anchors worth checking when the diff changes a shared
      interface.
-3. **Dispatch** per the routing table with a **600s shell timeout** — large diffs take 2–5 minutes on
-   opus/k3. A 60s abort manufactures a fake timeout and pushes you to the weaker same-family fallback;
-   suspect impatience before suspecting the bridge.
+3. **Dispatch** per the routing table. A real review takes **2–15 minutes** on opus/k3 and scales with
+   packet size; a 60s abort manufactures a fake timeout and pushes you to the weaker same-family
+   fallback, so suspect impatience before suspecting the bridge. **How you launch it depends on
+   whether the session is headless — check FIRST:**
+
+   ```bash
+   echo $CLAUDE_CODE_ENTRYPOINT   # sdk-cli (or any non-interactive entrypoint) …
+   tty                            # … plus "not a tty"  ⇒ HEADLESS
+   ```
+
+   - **Interactive session:** a foreground `Bash` call with `timeout: 600000` (10 min — the tool's
+     MAXIMUM, not a target you can raise). If the review needs longer than that, use the headless
+     pattern below rather than letting it auto-background.
+   - **HEADLESS session — launch DETACHED, then poll.** Do NOT rely on `run_in_background`, on the
+     auto-background that fires when a foreground call exceeds its timeout, or on `Monitor`. In
+     headless mode the harness can kill backgrounded shells silently: the output file is left
+     **empty**, no result is written, and there is nothing to rescue — a state indistinguishable
+     from "still running." (Observed 2026-08-03: a 125 KB packet exceeded 600s, auto-backgrounded,
+     and both it and the Monitor watching it were reaped with zero output.) Instead put the dispatch
+     outside the agent's process group so teardown cannot reach it, and poll with short foreground
+     calls:
+
+     ```python
+     # python3 - <<'PY'   — NOT `nohup setsid …`: setsid is a Linux binary that does not
+     # exist on macOS, so that form dies instantly with "setsid: No such file or directory".
+     # start_new_session=True calls the setsid(2) SYSCALL, which macOS does have.
+     import subprocess, pathlib
+     d = pathlib.Path('<abs-gate-dir>')
+     log = open(d/'dispatch.log', 'wb')
+     p = subprocess.Popen(
+         ['bash', '<abs-repo>/scripts/kit-autonomy/dispatch-kimi.sh',
+          str(d/'review-packet.md'), 'kimi-code/k3', str(d/'result.json')],
+         stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+         start_new_session=True, cwd='<abs-repo>')
+     (d/'dispatch.pid').write_text(str(p.pid))
+     PY
+     ```
+
+     Then poll with short foreground calls — each returns in milliseconds:
+
+     ```bash
+     kill -0 $(cat <gate-dir>/dispatch.pid) 2>/dev/null && echo ALIVE || echo EXITED
+     ls -la <gate-dir>/result.json 2>/dev/null; tail -5 <gate-dir>/dispatch.log
+     ```
+
+     Use ABSOLUTE paths (the detached process does not inherit your cwd) and keep `dispatch.log` —
+     it is the rescue input if the bridge answers but dies before writing the JSON.
+
+     ⚠ **Check liveness by PID, never `pgrep -f dispatch-kimi.sh`** — `pgrep -f` matches its own
+     command line and the shell wrapping it, so it reports the dispatch as alive when nothing is
+     running. That false positive will happily mask a dispatch that died on launch.
+
+   - **Keep the packet lean so the dispatch fits comfortably.** The lever on runtime is packet SIZE,
+     not the timeout. EXCLUDE regenerated artifacts from the pasted diff
+     (`git diff <base>...HEAD -- . ':(exclude)data/<artifact>.json'`) and instead NAME them in
+     `## CONTEXT` with the command that verifies them — the reviewer has read-only repo access and
+     can open and re-derive them, and 250 lines of mechanical JSON buys nothing but latency.
    - **If the bridge leaves only a raw session log** (the model narrated its tool calls around the
      verdict, or the bridge died after it answered), rescue the verdict instead of re-spending the
      dispatch: `python3 scripts/extract-review-json.py <log-path> <out.json>`. Add `--model <name>`
      only when the bridge never stamped one, and use the canonical name — an off-protocol `model`
      voids the review.
+
 4. **Read the result JSON:**
    - `CLEAN` → land it. A cross-family CLEAN is real evidence.
    - `FIX-BEFORE-MERGE` → resolve every `FIX` finding, then re-review the new diff (full loop —

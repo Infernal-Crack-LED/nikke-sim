@@ -347,9 +347,9 @@ export interface Block {
   // burst matches literally (a Λ unit does NOT satisfy burst:'III'). Omit = always
   // active (back-compatible). Burst codes 'I'|'II'|'III'|'Λ'; weapon AR/SMG/SG/SR/RL/MG.
   // `slugs`: the team contains one of these SPECIFIC units (matches some OTHER ally's exact slug) —
-  // for kit gates keyed to named squad-mates (noir's burst block 3 "an ally from the same squad":
-  // owner-ruled 2026-07-20 satisfied by blanc or rouge; predates `sameSquad` below — same extension,
-  // migration pending).
+  // for kit gates keyed to a NAMED partner rather than a squad (eunhwa-tactical-upgrade's S2, gated
+  // on emma-tactical-upgrade). For "an ally from the same squad" wording use `sameSquad` below, which
+  // states the condition instead of enumerating today's answer to it.
   // `sameSquad`: the team contains SOME OTHER ally from the OWNER's squad — the primitive for kit
   // gates worded "an ally from the same squad … on the battlefield" (blanc's S2 burst-CDR). Squad
   // membership is curated in src/data/squads.ts (characters.json has no squad axis); the "still on
@@ -362,7 +362,12 @@ export interface Block {
     weapon?: string;
     burst?: string;
     slugs?: string[];
-    sameSquad?: boolean;
+    // literal `true`, never `false`: the facet is opt-in and omitting it means "no
+    // squad gate", so `sameSquad: false` would read as an explicit negative gate the
+    // engine does not implement (sim.ts treats falsy as unconstrained). This is the
+    // contract validate-overrides.ts enforces at authoring time — typed so the
+    // compiler catches it first.
+    sameSquad?: true;
   };
   // mode gate: block active only when the unit's selected mode matches (the
   // override's top-level `modes` array declares the choices; first = default)

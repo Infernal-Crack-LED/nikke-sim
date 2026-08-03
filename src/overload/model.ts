@@ -1,7 +1,7 @@
 // Overload (OL) ROLL model — the acquisition-cost side of OL gear: given a target
 // set of substat lines, how expensive is it to actually roll them. This is the
-// stochastic counterpart to the DPS-value side (src/olcalc.ts, src/olconfigs.ts,
-// src/bestol.ts), which answers *what* to target; this module answers *how much
+// stochastic counterpart to the DPS-value side (src/olconfigs.ts), which answers
+// *what* to target; this module answers *how much
 // it costs to get there*. Pure/deterministic per seed — no engine dependency.
 //
 // Probability model + cost constants: data/ol-probabilities.json (datamined).

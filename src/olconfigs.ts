@@ -1,7 +1,7 @@
 // Overload-Calc core: for one carry sitting in a fixed 8/12 team, rank every way
 // its four FREE overload lines can be spent. The 8/12 floor (4× Elemental DMG +
 // 4× ATK) is held constant; only the remaining four lines vary, drawn from a
-// weapon-aware candidate pool (mirrors src/olcalc.ts). Each candidate loadout is
+// weapon-aware candidate pool. Each candidate loadout is
 // simulated in-team and scored by the carry's own damage, reported as the % gain
 // over the plain 8/12 baseline (the four free lines empty).
 //
@@ -51,7 +51,11 @@ const CAND_LABEL: Record<string, string> = {
 // data/ol-optimal.json's greedy pass on 24 units, all of them AR/SMG/SG. The greedy
 // side was right; it never picks Hit Rate for RL/SR/MG because the gain really is
 // zero there.
-const HITRATE_WEAPONS: ReadonlySet<Weapon> = new Set<Weapon>(['AR', 'SMG', 'SG']);
+const HITRATE_WEAPONS: ReadonlySet<Weapon> = new Set<Weapon>([
+  'AR',
+  'SMG',
+  'SG',
+]);
 
 export function freeLineCandidates(weapon: Weapon): string[] {
   const charge = weapon === 'RL' || weapon === 'SR';

@@ -9,78 +9,50 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-03, latest) THE BUFFER BOARD'S CAMERA FOCUS IS THE SPARE NO-OP B2 (SR), AND A TESTED
-  B3'S BURST IS SUPPRESSED OUTRIGHT.** Focus grants a charge weapon ×2.5 burst gauge, so whoever
-  holds it sets the pace of the team's whole rotation. It sat on the second carry
-  (`carryDpsSum` `focusSlug: team.slugs[team.carryIdxs[1]]`) — whose WEAPON the typed board rewrites
-  per tested unit: `carry-rl` banks the ×2.5 (140 base + 250 full charge) while `carry-sg` cannot
-  take it at all (200, no full-charge bonus), so the team's gauge, and its Full Burst count, moved
-  with the kit under test. **Owner ruling 2026-08-03: focus the no-op B2 (SR) so burst generation is
-  standardized.** It is now the spare stage slot (`assemble` returns `focusSlot`), which is
-  `noop-b2-sr` on every plain row, generic and typed, tested side and baseline alike. On a duo row
-  the partner occupies that slot and holds focus — symmetric, since the duo baseline seats the
-  partner there too, but it is the one row shape where focus is not the standard SR.
-  **Consequence, and the second half of this ruling:** the standardized focus makes the team's
-  rotation faster, and that broke the "a tested B3 never bursts" rule — rightmost placement only wins
-  the stage-3 cast for the carries while either is off cooldown, and they are 40s units, so a fast
-  enough rotation reaches a stage 3 where only the tested unit is ready. `ada` took a cast. The
-  tested B3's burst slot is therefore emptied outright (`burstOffSlug`, applied through the
-  `extraOverrides` channel `carryDpsSum` already uses) rather than left to rotation luck —
-  byte-identical for the 16 B3 buffers that never cast one. **Pinned by injection, not tautology:**
-  giving `ada` a 500% team-ATK burst buff moves her value by exactly 0.000 points.
-  **Residual, disclosed:** a tested B3 can still OCCUPY one stage-3 turn it would not have taken
-  (`burstCasts` is a rotation counter, not an effect counter), displacing one carry burst. Removing
-  that needs a per-unit burst-suppression option in `src/engine/**`, a protected path — not taken
-  without a separate owner call. It costs `ada` ~1 of 9 stage-3 casts and no other unit today.
-  **Measured effect, focus change only** (`npx tsx scripts/build-bufferchart.ts` before/after on the
-  same HEAD): 71 of 83 generic rows move, all modestly — chime +8.4, little-mermaid +7.7 (rank
-  28→23), mint +6.2, crown +5.1, liter +4.2; drops avistar −2.8, ada −1.3 (the suppression),
-  mint `w/ Prika` −1.2. Typed: arcana +9.6, tove +8.4, anis-star −7.8, mint −6.8. Negative rows
-  6 → 2 generic and 4 → 2 typed. No rank upheaval — the largest move is 5 places.
-  **Also landed here:** the long-cooldown pin was rewritten to ISOLATE its variable. It asserted "no
-  unit with a >20s cooldown lands below its baseline Full Burst count", which uses cooldown as a
-  proxy and fails on units this shape never claimed to fix — `rosanna` reads 7 v 8 at 40s and
-  reads 7 v 8, byte-identical, at a forced 20s, so her shortfall is gauge, not rotation. The pin is
-  now: forcing a unit's cooldown to the no-op's 20s must not change its Full Burst count. verify.sh
-  green.
-
-- **(2026-08-03) THE BUFFER BOARD'S STANDARD TEAM CARRIES A SPARE NO-OP OF THE TESTED
-  UNIT'S STAGE, SO A LONG BURST COOLDOWN NO LONGER COSTS THE TEAM FULL BURSTS.** The board was built
-  without the design requirement it was supposed to have: the tested unit displaced the only no-op of
-  its stage, so a 40s Burst-2 landed **5** Full Bursts against the baseline's **9** (3 for the 60s
-  blanc) and was docked for four Full Bursts before a single buff was counted — roughly 8% of team
-  damage. Worse, a >20s Burst-1 was "compensated" by swapping the no-op B2 for a second no-op B1,
-  which left the team with no Burst-2 at all: **0 Full Bursts, both sides, all 180s** for 8 units,
-  killing every Full-Burst-gated line (moran's `fullBurstEnter` trigger among them). Not a
-  regression — `assemble`'s Burst-2 branch was unchanged since the board's first commit
-  (`91f53ea9`); the pairing existed only on the B1/B2 DPS board (`B2_TEAM`, pinned at
-  `scripts/tests/ranks/b1b2dps.test.ts:104`) and was never carried over. **Owner spec 2026-08-03:**
-  the standard team is no-op B1 (20s, 7s CDR) + two no-op B2 (20s) + the two carries (B3/40s, MG and
-  RL), with the tested unit taking the second B2's slot.
-  **Two things the spec's slot numbering does not say, both settled by measurement:**
-  (1) _The tested unit must LEAD its own stage._ Burst-stage contests are won by slot order, so a
-  tested unit left sitting behind the same-stage no-op simply stops bursting — a tested B2 in the
-  literal slot 3 casts **1** burst in 180s instead of 5 (flora 24.05% → 4.51%, crown 71.58% →
-  41.81%) and a tested B1 behind the no-op B1 casts **none** (liter 26.53% → **1.13%**). Owner
-  confirmed the wording was not meant literally for team order. Same five units, spare behind.
-  (2) _The baseline must be STAGE-MATCHED, not one fixed team._ Standing every unit against the plain
-  standard team charges each Burst-1 for trading a no-op B2 away: measured at up to −2 Full Bursts
-  and −34 points (anis-star 59.4 → 25.7), i.e. the same rotation distortion aimed at a different
-  stage. The baseline therefore puts a no-op of the tested unit's own stage back in its slot.
-  **Measured effect** (`npx tsx scripts/probe/buffer-rotation-audit.ts`): 61 of 78 units now match
-  their baseline's Full Burst count exactly, and NO unit with a >20s cooldown lands below it. Board
-  movement, generic: prika 17.4 → 42.4 (rank 32→13), anchor-innocent-maid 8.3 → 26.2 (52→23),
-  mast-romantic-maid 61.0 → 77.3, alice-wonderland-bunny 0 → 13.8, arcana −0.4 → 13.0,
-  delta-ninja-thief 3.1 → 15.5, moran 13.9 → 25.1, flora 14.8 → 24.0 (37→26), liter 26.5 → 35.3,
-  biscuit −7.7 → +1.0. The largest drop is anis-star 59.4 → 30.6: she is an RL whose gauge over the
-  fight is below the AR no-op she now sits beside (7 Full Bursts vs the baseline's 8), which the
-  methodology counts on purpose — rotation value cuts both ways. Negative rows 5 → 6.
-  **Residual, accepted:** units still land above or below their baseline's Full Burst count for
-  their OWN cooldown reduction or gauge (little-mermaid +3, liter/moran +2, anis-star/frima/kurumi
-  −1). That is unit-attributable value and the board should count it; what is gone is the structural
-  toll for merely having a long cooldown. Pinned in `scripts/tests/ranks/buffer.test.ts` (team shape,
-  stage-matched baseline, and "no long-cooldown unit lands below its baseline" over the whole
-  population). verify.sh green.
+- **(2026-08-03, latest) OVERLOAD LINES: ONE BASIS EVERYWHERE — EXHAUSTIVE RANKING AT T11. Greedy
+  search and the max-roll basis are both DELETED.** Three separate searches used to pick a unit's
+  four free overload lines (the lines beyond the 4× Elemental DMG + 4× ATK floor), on two different
+  tiers, and they disagreed with each other on 28 of 73 units. Owner ruling: exhaustive, at T11, for
+  everything.
+  **The two defects, both measured** (`npx tsx scripts/ol-search-compare.ts`, committed):
+  1. **TIER** — `scripts/build-ol-optimal.ts` optimized at MAX ROLL while every consumer applies the
+     picks at T11, and `src/dpschart/matrix.ts` stamped no `value` at all, so the chart applied max
+     roll too. Not cosmetic: several candidates are THRESHOLD stats whose winner moves with the tier.
+  2. **SEARCH** — the greedy marginal-gain optimizer (`src/bestol.ts`) adds one best line at a time,
+     so it cannot see a stat whose FIRST line is worthless and whose third or fourth wins outright.
+     Charge Speed buys nothing until it crosses a frame boundary; Hit Rate's core-rate curve is
+     convex. At T11 it left a mean 1.35% / median 0.00% / **max 31.19%** of achievable gain unclaimed
+     across 73 units. `asuka-wille` is the clean case: one Max Ammo line gains 1.41% and LOSES step 1
+     to Crit Rate's 1.72%, so greedy took 2× Crit DMG + 2× Crit Rate (8.66%) over the exhaustive
+     winner 3× Max Ammo + 1× Crit Rate (57.91%) — row 7 of its own ranking. No threshold tweak
+     reaches this; the failure is structural. (The 1.41% is greedy's own first-step figure, taken
+     against the MAX-ROLL floor it searched on. Re-measured on the landed T11 basis the same line
+     reads **1.29%**, which is what `ol-search-compare.ts --only asuka-wille` reproduces today —
+     the ordering, and so the conclusion, is identical.)
+     **Landed:** `src/bestol.ts` DELETED (greedy) and `src/olcalc.ts` DELETED (a third greedy searcher,
+     unimported anywhere, still carrying the all-weapons Hit Rate exclusion `src/olconfigs.ts` fixed on
+     2026-08-02 — a known-wrong model parked beside its replacement). `src/dpschart/matrix.ts` gains
+     `OL_TIER = 11` + `atOlTier()`, the single knob every invested tier now stamps; `run.ts`,
+     `build-ol-optimal.ts`, `build-unit-pages.ts` and `src/cli.ts --best-ol` all call
+     `rankFreeLineConfigs`. Exhaustive is also CHEAPER: 15 sims per unit (MG/Pistol), 35 (AR/SMG/SG) or
+     70 (RL/SR) against greedy's
+     ~28, because the pool is only 3 candidate types.
+     **Result:** `data/ol-optimal.json` regenerated — 28/73 picks changed, and the artifact is now
+     optimal on **73/73** units (mean gap 0.00%, max 0.00%, against greedy's mean 1.35% / max 31.19%).
+     It is the same computation `build-unit-pages.ts` runs, so the two artifacts can no longer disagree.
+     **Accepted consequence — the DPS chart's invested tiers move, and substantially.** Applying T11
+     instead of max roll makes every invested cell weaker: per-unit DPS mean **−8.85%** at 8/12 (range
+     −15.81% … −1.71%) and **−11.41%** at 12/12 (−27.11% … **+20.39%**, the positives being units the
+     exhaustive search fixes), with **1108 of 1830** rank positions moving at 12/12 and 514 at 8/12.
+     The 8/12 tier has no optimizer, so its shift is the tier change alone — a clean decomposition of
+     the two effects. This is a basis change, not an accuracy fix: the chart previously claimed max-roll
+     numbers and now claims T11 numbers. Revert is one line (`OL_TIER = 15`) if the chart is ever meant
+     to be aspirational-max.
+     **NOT touched:** the `scope` investment tier carries no overload lines at all, so the scope-lock
+     validation basis is **byte-identical** (measured: 0.00% delta across all 30 scope cells, 0/1830
+     rank positions moved) and the regression gate — both cells `invest: 'scope'` — is unaffected.
+     `data/unit-pages.json` is likewise unchanged: its Solo cell's controls are the synthetic no-ops,
+     whose lines cannot reach the carry. verify.sh green, 2805 tests passing.
 
 - **(2026-08-02) THE SYNTHETIC NO-OP CONTROLS USE LOW BASE ATK (100), AND IT IS THE SHARED
   DEFAULT.** The controls in `src/dpschart/noop.ts` carried base ATK 30,000 while real units sit near

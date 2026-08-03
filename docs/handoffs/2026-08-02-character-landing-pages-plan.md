@@ -114,8 +114,9 @@ page never renders. The projection is ~49 kB. **UnitPage chunk: 366 kB → 96 kB
 (gzip 106 → 22 kB).** The projection also means a future verbose finding can't
 silently re-inflate the bundle.
 
-Cost is small: the free-line pool is 3 types (non-charge weapons) or 5 (RL/SR), so
-the exhaustive search is `C(6,4)=15` or `C(8,4)=70` sims per unit — ~5k sims for
+Cost is small: the free-line pool is weapon-aware — 3 types (MG/Pistol), 4 (AR/SMG/SG,
+which get Hit Rate) or 5 (RL/SR, which get the charge lines) — so the exhaustive search
+is `C(6,4)=15`, `C(7,4)=35` or `C(8,4)=70` sims per unit — ~5k sims for
 the whole roster, seconds not minutes.
 
 Shape:
@@ -139,46 +140,15 @@ and would read as a claim about the player's own damage.
 
 `build:deploy` gains `npm run build-ol-table` right after `build-ol-optimal`.
 
-**Consistency check vs `data/ol-optimal.json`.** Row 0 of the table should name the
-same line multiset as the greedy `bestOl` pass. It does for **32 of 73** units. The
-`--tier` flag on the build script exists to isolate why; the measured split:
-
-| Cause                                                                                               | Units | Status    |
-| --------------------------------------------------------------------------------------------------- | ----- | --------- |
-| Agree                                                                                               | 32    | —         |
-| **Tier basis**: `build-ol-optimal` passes no tier values → optimizes at MAX ROLL; this table is T11 | 23    | open      |
-| Genuine **greedy local optimum** — differs at the same tier and pool                                | 18    | open      |
-| ~~Hit Rate excluded from the free-line pool~~                                                       | 0     | **FIXED** |
-
-**Hit Rate — owner ruling 2026-08-02, LANDED.** `src/olconfigs.ts`'s free-line pool
-excluded Hit Rate for every weapon, on the comment _"hit/def are dead for damage"_.
-That was true when written and stale from the moment `HRCORE` landed (2026-07-17).
-The pool now offers Hit Rate for **AR/SMG/SG** and withholds it for **RL/SR/MG**
-(and Pistol) — which is not a new policy but a restatement of the engine:
-`HR_CORE_CIRCLE = { AR: 75, SMG: 110, SG: 250 }` in `sim.ts`, and for every other
-weapon `hrCoreExp` returns 0 → `hrCoreMult` returns 1 → the line is inert.
-
-`bestOl` needed no change: all 24 of its Hit Rate picks were already AR/SMG/SG, so
-the greedy side was right and the exhaustive pool was the stale one. Agreement moved
-20 → 32; Hit Rate now appears in the #1 row for 26 units (SG 10, SMG 8, AR 8) and on
-**zero** RL/SR/MG units.
-
-Pinned by `scripts/tests/engine/ol-hitrate-pool.test.ts`, which asserts the pool
-against MEASURED engine behaviour rather than a hardcoded list — for each weapon
-class it checks whether a `hitRatePct` buff actually moves the resolved core rate,
-and requires the pool to offer Hit Rate exactly when it does. Verified to bite: it
-fails 3/8 against the old pool (AR core rate 0.214 → 0.461, SMG 0.164 → 0.323, SG
-0.026 → 0.061 under a 40pt buff; RL/SR/MG unmoved). A hardcoded assertion would have
-gone stale exactly the way the original comment did.
-
-Note the greedy-local-optimum count rose 11 → 18. That is not a regression: widening
-the exhaustive pool gives it more room to beat greedy, so more units now have a
-better combo than greedy finds.
-
-**Still open, findings-only** (batch-and-stop — one owner decision, not three fixes):
-`build-ol-optimal` optimizes at max roll while the web applies its picks at T11; and
-greedy lands on a local optimum for 18 units where the exhaustive search does better.
-Neither is touched by this branch.
+**Consistency check vs `data/ol-optimal.json` — now VACUOUS, and deliberately so.** Row 0
+of this table and `ol-optimal.json`'s pick used to be produced by different searches on
+different tiers, and disagreed on 28 of 73 units. Since the owner's 2026-08-03 ruling
+(exhaustive ranking at T11 everywhere — `docs/DECISIONS.md`) both are the SAME call to
+`rankFreeLineConfigs` at the same tier, so they agree on 73/73 by construction and can no
+longer drift apart. The historical split that motivated the ruling — 32 agree, 23 tier
+basis, 18 greedy local optimum, and the Hit Rate pool bug fixed on 2026-08-02 — is recorded
+in DECISIONS; `npx tsx scripts/ol-search-compare.ts` re-scores the shipped artifact against
+the exhaustive optimum any time (currently: 73/73 optimal, mean gap 0.00%).
 
 **Consequence for the page (decided):** the page's "best lines" recommendation is
 **row 1 of this table**, not `ol-optimal.json`. The table is the self-consistent
