@@ -71,6 +71,12 @@ const explainSlug = explainArg >= 0 ? process.argv[explainArg + 1] : null;
 if (explainSlug && !data.characters[explainSlug]) {
   throw new Error(`--explain: "${explainSlug}" is not in characters.json`);
 }
+// A roster slug with no override dies deep inside prepareUnit; fail at the door
+if (explainSlug && !data.characters[explainSlug].simSupported) {
+  throw new Error(
+    `--explain: "${explainSlug}" is not sim-supported, so it has no override to explain`
+  );
+}
 
 // EXCLUDED_BUFFER_SLUGS (currently Blanc) never enters the population: the kit
 // reduces team damage in the standard comp, so its % increase is misleadingly

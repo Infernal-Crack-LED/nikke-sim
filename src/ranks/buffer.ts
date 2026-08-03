@@ -10,9 +10,10 @@
 //     tested B3 → [no-op B1, no-op B2, carry, carry, tested-rightmost]
 //   The baseline is the same team with a no-op of the tested unit's OWN stage
 //   in its place, so both sides field the same stage distribution.
-//   A tested B3 sits RIGHTMOST so the two carries always win the stage-3 cast
-//   and it never bursts (pinned in tests) — its value must come through
-//   passives and cast-free lines.
+//   A tested B3's BURST IS SUPPRESSED outright (`burstOffSlug`); rightmost
+//   placement only orders the stage-3 cast and does not on its own keep the
+//   tested unit from taking one.
+//   A tested B3's value must come through passives and cast-free lines.
 //   Value = % team damage increase = (Σ carry DPS with the buffer − Σ carry
 //   DPS with the stage-matched baseline) / Σ carry DPS with that baseline.
 //   The buffer's own weapon damage is NOT counted. Rotation-driven value
@@ -218,7 +219,10 @@ export function suppliesTeamCdr(
     const block = node as { trigger?: any; target?: any; effects?: unknown[] };
     if (
       block.target &&
-      block.target.kind !== 'self' &&
+      // ally-facing only: `!== 'self'` would also admit an enemy-targeted
+      // burstCdr, which would make a unit the team's enabler without ever
+      // reducing an ally's cooldown. None exists today.
+      String(block.target.kind).startsWith('allies') &&
       Array.isArray(block.effects) &&
       !(burstSuppressed && block.trigger?.kind === 'burstCast') &&
       hasCdr(block.effects)
@@ -427,7 +431,7 @@ export interface BufferValue {
   valuePct: number; // total % team damage increase vs the no-op baseline (CAN BE NEGATIVE)
   carryDps: number; // Σ carry DPS with the buffer (internal context, not emitted)
   baselineDps: number; // Σ carry DPS with the no-op baseline (internal context, not emitted)
-  testedBurstCasts: number; // pin: a tested B3 must be 0 (rightmost rule)
+  testedBurstCasts: number; // a tested B3's burst EFFECTS are suppressed (burstOffSlug); this counts rotation turns, which it can still take
   fullBursts: number; // the team's Full Bursts over the fight
   baselineFullBursts: number; // ...and the standard team's, which it must match
   profile: string | null; // comp profile id (with-healer/with-shielder/duo); null = plain
@@ -515,11 +519,22 @@ function carryDpsSum(
       if (!(NOOP_CHARACTERS as any)[s]) {
         continue;
       } // no-op fillers only
+      // MERGE, never replace. The fillers' own overrides carry the framework
+      // effects — the B1 control's team CDR, the B3 control's mock burst — and
+      // replacing them wholesale stripped the team's only cooldown enabler on
+      // every profiled row: crown `with-healer` ran 9 Full Bursts beside its
+      // own plain row at 10, contradicting the one-enabler rule this board is
+      // documented on. Start from whatever extraOverrides already holds for
+      // this filler so the disableNoopCdr write above survives too.
+      // All three slots stay present: a filler with no override file at all
+      // (noop-b2-sr) would otherwise fail the every-slot-defined contract.
+      const own = extraOverrides[s] ?? ctx.deps.overrides[s];
       extraOverrides[s] = {
+        ...(own ?? {}),
         slug: s,
-        skill1: compProfile.noopSkill1,
-        skill2: [],
-        burst: [],
+        skill1: [...(own?.skill1 ?? []), ...compProfile.noopSkill1],
+        skill2: own?.skill2 ?? [],
+        burst: own?.burst ?? [],
       };
     }
   }
@@ -575,7 +590,7 @@ export function bufferValueFor(
   const team = assemble(slug, burst, board, spec, duoProfile?.partner);
   const baselineTeam = assemble(null, burst, board, spec, duoProfile?.partner);
   const baselineKey = duoProfile
-    ? `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile}|partner=${duoProfile.partner}|partnerMode=solo`
+    ? `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile}|partner=${duoProfile.partner}|partnerMode=${duoProfile.partnerMode ?? 'solo'}`
     : `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile ?? 'plain'}`;
   let baseline = baselineMemo.get(baselineKey);
   if (baseline === undefined) {

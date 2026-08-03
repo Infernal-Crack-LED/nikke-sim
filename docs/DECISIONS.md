@@ -44,6 +44,16 @@ lives. Newest first within each section.
   `chime` 126.3 → 142.7, `alice-wonderland-bunny` 0 → 15.5; `anis-star` 59.4 → 25.1 (rank 10→28).
   Negative rows 5 → 12 — expected under this model, since an enabler weaker than the standard 7s now
   reads below its baseline, and the leaderboard trims them.
+  **Found by the cross-family review (kimi-code/k3, FIX-BEFORE-MERGE), not by me:** the comp-profile
+  path replaced each no-op filler's ENTIRE override with the profile's synthetic kit, which was
+  harmless only while this board loaded no control overrides at all. Once it loaded them, every
+  profiled row lost the team's only enabler — `crown` `with-healer` ran **9** Full Bursts beside its
+  own plain row at **10**, and `naga` `with-shielder` likewise — so the two profiled rows were ranked
+  beside plain rows measured on a faster rotation, and the one-enabler rule this entry states was
+  false for exactly those rows. The loop now MERGES: it keeps the filler's own override (the B1's
+  CDR, the B3's mock burst) and appends the profile's blocks, starting from any `extraOverrides`
+  entry already written so the enabler stand-down is not undone. `crown` `with-healer` 97.7 → 105.2,
+  `naga` `with-shielder` 22.0 → 25.5, both now 10 v 10.
   **A caution for whoever reads a diff next:** two of my own before/after comparisons were wrong
   before this one was right. Keying rows on `slug + last field` mispaired a unit that has both a
   plain and a profiled row (it reported `anis-star` +311% on b1b2dps, a phantom), and keying on
