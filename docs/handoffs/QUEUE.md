@@ -52,6 +52,28 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ CHARACTER LANDING PAGES — phase 1-3 landed on branch `character-pages` (worktree
+  `../nikke-sim-wt-character-pages`), NOT merged, NOT pushed.** Plan +
+  landed/open split: `docs/handoffs/2026-08-02-character-landing-pages-plan.md`. Open:
+  1. **Owner design pass on `/unit/maiden-ice-rose`** (phase 4) — layout, density, section order;
+     the ⓘ badge glyph on the roster grids is a placeholder (↗ may read better). Shots:
+     `PORT=<free> SHOTS=unit-,characters-index,teambuilder-profile OUT=/tmp/unit-shots node
+     scripts/ui-shot.mjs`.
+  2. **Owner sign-off on `data/unit-pages.json`** — a NEW generated artifact in the protected
+     `data/` dir (no existing file touched).
+  3. Spot-check a spread of units (untuned, no-OL-data, `simSupported:false`, Λ burst) before merge.
+  4. Prerender `/unit/*` + `/characters` (`scripts/prerender.ts` covers only /howto,/mechanics) and
+     extend `unitStaticHtml` in BOTH servers to emit the new sections for no-JS crawlers.
+  5. Decide the thin-content policy if Search Console flags the ~85 kit-only pages as soft-404s
+     (gate the sitemap on `simSupported`, or `noindex` them).
+- **⇒ OL TOOLING DISAGREEMENT — findings only, nothing enacted (surfaced 2026-08-02).** The new
+  exhaustive free-line table agrees with `data/ol-optimal.json`'s greedy pick for only **20 of 73**
+  units. Measured attribution (via the new `--tier` flag on `scripts/build-unit-pages.ts`): 24 =
+  greedy picks Hit Rate/DEF, which `src/olconfigs.ts`'s free-line pool excludes on the comment
+  "hit/def are dead for damage" — that predates `HRCORE` (STATE.md §1: live Hit Rate raises the core
+  fraction), so the two tools now disagree about whether Hit Rate is a damage line; 18 = tier basis
+  (`build-ol-optimal` optimizes at MAX ROLL, the web applies its picks at T11); 11 = greedy local
+  optima. Needs one batched owner decision, not three separate fixes.
 - **⇒ B1/B2 DPS RANKING BOARD — LANDED 2026-08-01 (PR #54), three small follow-ups deferred:**
   1. Register rank-board synthetics (the `noop-*` controls and any future real-unit stand-ins) in
      a shared registry (`src/ranks/synthetics.ts` or a new `RANK_SYNTHETICS` record) instead of
