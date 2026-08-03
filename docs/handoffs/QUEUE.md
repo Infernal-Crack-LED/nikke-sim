@@ -149,34 +149,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      now behaviourally identical to `timing` for every unit and the promised flip is provably a no-op.
      NOT taken — engine default, owner-gated; queued.
   5. **U28** — `extraHitDamagePct` vs `flatDamage` gauge + flavor asymmetry.
-- **⇒ EMILIA `hitRepeat` PRIMITIVE — AUTHORIZED 2026-08-03, IN FLIGHT on `kit/emilia-hitrepeat`**
-  (worktree `../nikke-sim-wt-emilia`). `emilia` is the roster's only live NO-GO(engine-core): S2
-  "Fixed Damage to the main body = 58.99% of the damage dealt by self" is a %-of-hit repeat
-  (`docs/data/nikke-damage-formula.md` §3) — load-bearing (fires every full charge), in-domain, and no
-  `src/` primitive scales a rider off the parent hit's final damage; omitting is a forced weakening and
-  folding it into `chargeDamagePct` is a fudge (function damage never cores). The other six kit lines
-  are fully pre-encoded + the primitive spec (pct-of-parent final damage, never-core / never-range
-  function damage inheriting parent crit/element/Damage-Up/FB; secondaries: negative `chargeSpeedPct`
-  — today clamped `[0,100]` so her burst's Charge Speed ▼300% over-credits when omitted — and a
-  live-`maxAmmo()`-scaled buff source) is in `scripts/kit-autonomy/manual-review/emilia.md`.
-  Provenance: 2026-08-02 batch gauntlet, branch `kit-autonomy-batch-2026-08-02`, commit `35f0f0f6`,
-  PR #60. **Landing gate:** the primitive must be snapshot-inert as its own commit before the
-  `emilia` override lands on top; `simSupported`/kit-status flip only if it lands faithful. Re-run
-  the gauntlet afterwards (separate owner-gated pass).
-- **⇒ FLORA S2 SELF-PROC — OWNER RULING 2026-08-03, IN FLIGHT on `kit/flora-s2-selfproc`**
-  (worktree `../nikke-sim-wt-flora`). `flora`'s S2 slot ships as `"skill2": []` on the premise that
-  all three lines are gated on HP dynamics v1 cannot represent and "never fire". **That premise is
-  wrong** — S2 self-procs off her own S1, deterministically, every burst rotation, with no HP pool
-  and no boss damage: entering Burst Stage 2, S1 grants Peace-of-Mind allies Max HP ▲15.01% _without
-  restoring HP_, so their HP fraction drops to 1/1.1501 ≈ 86.95% → satisfies S2-1's "≤90%" shield
-  trigger; the shield landing on `flora` satisfies S2-3's `shielded` ATK ▲45.12%; 2s later the Max HP
-  buff expires, allies return to max HP → satisfies S2-2's "reaches max HP" True Damage ▲30.97%.
-  Every primitive needed already exists (`stageEnter{stage:2}` types.ts:87, `shield{maxHpPct}` :271,
-  `shielded` :85, `selfAndAdjacent` :129) **except a block-level delay** for the +2s step — `delaySec`
-  today lives only on `flatDamage` (:203), so `Block` is gaining a general `delaySec`. The
-  `stageEnter{stage:2}` trigger is a derived-deterministic PROXY for the ≤90% HP transition and must
-  be documented as such in the override note. Expect a real board move (she gains a high-uptime team
-  ATK + True Damage buff); board A/B is FINDINGS-ONLY, no re-tune off it in the landing session.
 - **⇒ ENGINE PRIMITIVE GAP: `addStack`** — no effect increments an existing buff's stack count by N on
   a trigger. Blocks `flora` S1 ("after 100 normal attacks, all Electric Code allies: increases the
   stack count of stackable buffs by 1" — trigger `hitCount:100` and target `alliesOfElement` are both
@@ -292,7 +264,29 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **⇒ KIT-PARSE RECONCILIATION BACKLOG → `docs/handoffs/closed/kit-parse-reconciliation-backlog.md`**
   (archived but still carries a live per-unit tail) + **ENGINE MODELING-GAP THREAD MAP →
   `docs/engine-modeling-gaps.md`** (§A done / §B wired-not-enacted / §C unwired). Per-unit tier +
-  finding SSOT: `data/kit-status.json`.
+  finding SSOT: `data/kit-status.json`. Individually open threads not yet tracked elsewhere in this
+  file (full context at the cited theme):
+  - **Theme 3 `rampSec` backlog** — chisato, leona, guilty, mast-romantic-maid, mihara-bonding-chain,
+    `laplace` (base, RL/Iron — not laplace-ultimate-hero), soda-twinkling-bunny, red-hood, rouge,
+    sakura-bloom-in-summer still bake stack-ramp buffs to max instead of time-averaging;
+    measurement/Fable-gated per unit.
+  - **Theme 4 `arcana` (base, RL/Electric — not arcana-fortune-mate) `teamHas` mono-Electric
+    enactment** — capability landed, no override opts in yet (MODEL_ONLY, no board data; owner grades
+    her "mono-Electric comp only").
+  - **Theme 5 `prika` `gainPierce` hold** — held on an owner popup measurement (probe-runs 2026-07-14
+    inconclusive); the other 8 carriers are enacted.
+  - **Theme 14 `drake` `maxAmmoFlat`** — still approximated as a percent (no flat-count kit line to
+    convert against, unlike the other 7 now-flat carriers).
+  - **Theme 17 mode-default owner rulings** — cinderella-crystal-wave (MG/Snipe), the mint/prika duet
+    pair, and milk-blooming-bunny's no-Embarrassment default all still need an owner ruling on which
+    mode is the graded default.
+  - **Theme 20 `gauge-per-shot.json` `fullChargeBonus` vs `characters.json.chargeMultiplier`
+    disagreement** — 6/44 SR/RL gauge rows are synthesized, 4 units have a value with no gauge row at
+    all, `raven` has a live one-field disagreement; suggested fix (source from `characters.json`,
+    gauge row as an override-only-when-it-disagrees) not yet built.
+  - **Theme 21 `durationShots`-eats-its-own-pull engine bug** — a per-pull `durationShots:1` buff
+    reaches zero rounds (confirmed via `emilia`'s self-clearing CANARY test, still `it.skip`ped);
+    affects emilia, zwei, phantom, vesti-tactical-upgrade COLD→warmer. Fix + board A/B not yet done.
 - **⇒ ROLE-AUDIT FOLLOW-UPS → `docs/handoffs/closed/2026-07-17-role-audit-followups.md`:** (1)
   custom-weaponry `role` sweep — mostly deflated; what's left = pierce-from-kit-text + the
   (data-blocked) weapon-swap secondary-weapon row; (2) **`anis-star` dot-gauge re-model**
