@@ -9,6 +9,32 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-03, latest) B3 DPS CHART LOADS THE NEVER-LOADED B1 CONTROL — the fourth instance of the
+  same defect.** Owner ruling: fix it, matching `build-bufferchart.ts` / `build-sustain.ts` /
+  `build-b1b2dps.ts`. `scripts/build-dpschart.ts:148` loaded only `noop-b3-mg`'s override; the Solo
+  framework's synthetic B1 control (`NOOP_B1`, `noop-b1-ar`) is not a roster entry, so its
+  `fullBurstEnter → allies: burstCdr 7s` block was never read. Silent, not a crash: `NOOP_B1`'s
+  character data ships empty skill prose by design (`skills: {skill1:'',skill2:'',burst:''}`), so
+  `resolveSkills()` (`src/skills/index.ts:82-91`) takes its "genuinely empty kit, no override needed"
+  fallback and returns zero blocks rather than erroring — the control silently ran with no CDR at
+  all instead of failing loudly. Every Solo-framework cell (`matrix.ts:436`,
+  `variant.solo ? [NOOP_B1, NOOP_B2, tested.slug, NOOP_B3] : ...`) was affected; every other named
+  framework (standard/anis/anis-hc) seats a real B1 and was untouched. `scripts/regression.ts`'s own
+  "Solo framework" check (§5) never caught this because it builds its overrides independently
+  (loads every `team.slugs` member, including `noop-b1-ar`), so it was validating a configuration
+  the shipped board did not run — the same blind spot the buffer-board ruling above already named
+  for `scripts/tests/ranks/buffer.test.ts`.
+  **Fix:** `scripts/build-dpschart.ts` now loads every `NOOP_CHARACTERS` override in a loop, the same
+  pattern the three sibling boards use.
+  **Blast radius, measured (before/after full `--force` rebuild, rows keyed on cellId + slug +
+  variant):** 135 of 1152 Solo-framework rows move (0 of 4608 non-Solo rows move — exactly the
+  Solo-only scope the code predicts). Mixed direction, not a uniform buff: `helm` (SR/Water, NOT
+  `helm-aquamarine`) +11.0% (scope) to +20.6% (8/12) — a cooldown-bound unit that gains the most
+  from an actually-firing 7s CDR;
+  `snow-white-heavy-arms` −1.5% to −2.0% — a unit that loses ground once the no-op B3 also bursts
+  more often and contests stage-3 casts harder. Most Solo rows (1017 of 1152) are byte-identical —
+  units whose own kit already saturates the rotation independent of the control's CDR.
+
 - **(2026-08-03) SUSTAIN BOARD PORTS THE BUFFER BOARD'S STAGE-COVERAGE SHAPE, AND LOADS THE
   NEVER-LOADED B1 CONTROL.** Owner ruling on the two linked findings queued after the buffer-board
   methodology PR: (1) the tested unit should measure throughput in a team that covers its own burst

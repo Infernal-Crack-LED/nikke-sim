@@ -106,16 +106,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Engine / model threads (measurement- or owner-gated)
 
-- **⇒ THE DPS CHART HAS THE SAME NEVER-LOADED-CONTROL DEFECT — owner ruling (found by the
-  kimi-code/k3 review, 2026-08-03).** `scripts/build-dpschart.ts:148` loads only `noop-b3-mg`, so
-  `src/skills/overrides/noop-b1-ar.json` is never read there — yet the Solo framework seats `NOOP_B1`
-  in its teams (`src/dpschart/matrix.ts:101,408`) and `src/dpschart/noop.ts` documents that control's
-  7s team CDR as normalizing the no-op team. Solo cells therefore run with no enabler cooldown
-  reduction at all. Exactly the oversight the buffer board carried undetected from `91f53ea9`, and
-  the reason the DPS chart is correctly absent from that branch's blast radius (its cells cannot move
-  with a trigger change to an override they never load). May be a deliberate choice for an own-DPS
-  board. DECIDE: load the control like the three sibling boards, or record in `docs/DECISIONS.md`
-  that the Solo framework deliberately runs CDR-free.
 - **⇒ A duo row whose partner is not a B2 has no spare of the tested unit's stage — latent, VERIFIED
   non-biting (kimi-code/k3 review round 5; re-checked 2026-08-03 after `blanc` shipped).**
   `assemble` seats a duo partner in the spare slot, assuming the partner covers that slot's stage.
