@@ -225,6 +225,9 @@ export const DUO_BUFFER_PROFILES: Record<
     note: 'paired with Anchor: Innocent Maid as the second B2',
   },
   blanc: {
+    // NOOP_ROUGE_B1's squad membership (satisfying the sameSquad gate) is registered in
+    // src/data/squads.ts, not here — see that file's comment for why it lives there
+    // (DECISIONS.md 2026-08-03 `noop-rouge-b1` ruling).
     partner: NOOP_ROUGE_B1,
     id: 'w/ Rouge',
     note: 'synthetic Rouge squadmate keeps the same-squad CDR gate active',
@@ -246,6 +249,14 @@ export const EXCLUDED_BUFFER_SLUGS = new Set<string>();
 // The board fields exactly one CDR source per team, the way an optimal team
 // does (owner ruling 2026-08-03): the tested unit if it is an enabler, the
 // no-op B1 otherwise. This is what decides which.
+//
+// KNOWN GAP, no carrier today (owner-deferred 2026-08-03): this walk does not
+// check `block.mode` (types.ts's per-block mode gate, sim.ts:750's
+// `!b.mode || b.mode === selectedMode`) the way it already checks `formation`
+// and `teamHas` below. A unit whose only ally-facing burstCdr lives behind a
+// non-default mode would still count as an enabler here even when that mode
+// is not the one running, standing the no-op B1 control down for nothing.
+// Harden if a mode-gated ally-facing burstCdr kit ever ships.
 //
 // Ally-facing only. Self-only reduction does not make a unit the team's
 // enabler — the same line the burst-CDR board already draws ("self-only
