@@ -1,0 +1,88 @@
+{
+  "note": "soline (Soline) — SMG / Attacker / Iron / Burst III, cd 40s, ammo 120, hitsPerShot 2 (muzzle_count 2, shot_timing Concurrence), RoF 1440, reloadFrames 141, normalMult 11.7 / coreMult 250. ⚠ EXACT SLUG: this is BASE soline (SMG/Iron/B3 Attacker) — NOT soline-frost-ticket (SG/Water/B1 Supporter healer/enabler); the two share a base name (the slug-disambiguation lint flags bare 'Soline' as AMBIGUOUS — expected per the arcana/asuka precedent; everything here reasons from characters['soline']). Kit-autonomy gauntlet 2026-08-03: FROM-SCRATCH build (no shipped override existed; simSupported was false) — test-first re-derivation (scripts/tests/units/soline.test.ts, groups L1–L4). MODELED: (S1 'On the Ball!') 'Activates after 40 normal attacks. Affects self. Attack Speed▲ 7.26% for 3 sec' → ONE hitCount:80 self block: attackSpeedPct 7.26 / durationSec 3. Count = 40 normal attacks × hitsPerShot 2 = 80 engine hit-counter units — the standard SHOT reading for multi-hit weapons (brid-silent-track MEASURED anchor: the in-game NA counter advances per trigger PULL, not per pellet/projectile — 'every 5th PULL' exact from her solo read); ⚑1 the shot-vs-hit lever (a per-hit reading would be count 40 = 2× proc cadence). The engine hitCounter carries over and re-fires every threshold, so this models the repeating 'after 40 normal attacks' (the prose names no once-per-battle qualifier). (S2 'Grow up!') '■ Only affects self at Max HP. Critical Rate ▲ 21.62% permanently. Critical Damage ▲ 62.27% permanently' → ONE passive self block (one ■ header) with the two PERMANENT buffs: critRatePct 21.62 + critDamagePct 62.27. MAX-HP GATE: the sim models NO incoming boss damage to allies (v1 scope lock), so Soline is at Max HP for the entire battle — the gate is always-true and the buffs are unconditional; the gate is documented (caveats), never enacted as a blocker. Unscoped critRatePct — the prose says plain 'Critical Rate' (NOT 'Critical Rate of normal attacks'), so it feeds ALL her crit rolls including the burst nuke (not critRateNormalPct — the helm-scoping precedent is the counterfactual, not the model). 'permanently' = passive, no durationSec. (BURST 'My Word, My Bond!') line 1 '■ Affects enemies within attack range. Deals 396% of final ATK as damage' → burstCast flatDamage 396; line 2 '■ Affects the same target(s) when at Max HP. Deals 924% of final ATK as additional damage' → a SECOND burstCast flatDamage 924 on the same (single) boss — its Max-HP gate is the same always-true scope-lock fact as S2. Two blocks (one per ■ line), NOT one fused 1320% hit, so each kit line stays individually queryable. Bare flatDamage burst-nuke defaults per the SSOT table (damage-calculation.md §1): crit ✅ at sheet rate (engine default), never core, no range bonus, Attack-Dmg/FB/element by timing — her stage-3 cast lands BEFORE the Full Burst window opens, so the nuke takes no +50% FB major (same shape as novel's pre-FB B2 nuke, here by B3 cast timing). 'enemies within attack range' / 'the same target(s)' multi-target clauses collapse to the single scope-lock boss ({kind:'enemy'} documented stand-in — v1 fields one immortal enemy). No heal/shield/DEF/gauge/ammo/reload/weapon-swap lines in this kit → no charFixes. Element: Iron (advantage vs Electric is engine-handled; no elemental-advantage line in kit). TIER 2: status-gate kit (two Max-HP-gated lines, both always-true under the scope lock). ⚑ FLAGS (all UNMEASURED): (⚑1) NA-counter shot-vs-hit reading — shipped the brid-standard SHOT reading (hitCount 80 = 40 pulls); the per-hit reading would be count 40 (a 2× lever on S1 proc cadence; damage impact small because the 3s attack-speed window's uptime is high under either reading); recipe = count pulls between 'On the Ball!' activations in a focus video. (⚑2) CADENCE TUPLE (mandatory): SMG RoF 1440 + reloadFrames 141 + hitsPerShot 2 shipped datamine as-is (no charFixes); recipe = read rounds/min + the reload gap from any focus video. Kit-autonomy gauntlet 2026-08-03.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "skill2 + burst line 2: the 'at Max HP' gates are modeled always-true — the sim has no incoming boss damage to allies (v1 scope lock), so Max HP is the only reachable state; if an HP pool is ever modeled, both lines need a status-gate primitive",
+    "skill1: 'after 40 normal attacks' is the standard SHOT reading for multi-hit weapons (40 pulls × hitsPerShot 2 = hitCount 80; brid-silent-track measured anchor 'every 5th PULL'); the per-hit reading would be count 40 — 2× proc cadence (⚑)",
+    "skill1: cadence tuple (SMG RoF 1440, reloadFrames 141, hitsPerShot 2) is the unverified datamine — read rounds/min + the reload gap from a focus video (⚑)"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 80
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackSpeedPct",
+          "value": 7.26,
+          "durationSec": 3
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 21.62
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 62.27
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 396
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 924
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "slug": "admi",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates when attacked 20 time(s)",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "Trigger scope: counts ATTACKS RECEIVED (incoming boss hits), not attacks made. v1 models no incoming boss damage/HP pool, so the accrual rate (hits-taken/sec, and whether 'attacked' counts hits on Admi only vs the whole team) is outside the sim's input domain.",
+      "durationSemantics": "Uptime window of the resulting buff is wall-clock 20 sec per activation (see the paired effect line). The ACCRUAL period (time to absorb 20 attacks) is the unknown.",
+      "triggerIdentity": "No engine primitive counts incoming attacks (no 'attackedCount' TriggerDef). The honest encoding is `interval` with a ⚑ sec = 20 ÷ (measured boss attacks/sec), first fire at t=sec — an ALWAYS-⚑ invented-cadence field (taxonomy item 2). NOT passive, NOT fullBurstEnter, NOT hitCount (hitCount counts the OWNER'S fired rounds, the exact opposite direction).",
+      "targetSet": "All allies (including self — Admi is SR/chargeFrames 60, so she self-benefits).",
+      "nearestWrongModel": "Two plausible misreads: (a) trigger as `passive`/always-on — permanent 9.59% uptime instead of a duty cycle of 20s-per-accrual-period; (b) trigger as `hitCount:{count:20}` on Admi's OWN shots — with ammo 6 / reloadFrames 125 she'd cycle it far faster or slower than real boss-attack cadence, and it inverts who is being counted.",
+      "distinguishingAssertion": "Under the faithful interval-⚑ model: buffApply events for the charge stat appear at t = k·intervalSec with expiresFrame ≈ apply+20s and there exist frames with NO live instance (duty cycle < 100%) whenever intervalSec > 20. Under nearest-wrong (a) the buff is live from frame 0 with no gap; under (b) buffApply count correlates with Admi's shotFired/hitCount events (assert it does NOT — patch Admi to a non-firing config via withPatchedOverride and the trigger cadence must be unchanged).",
+      "inertness": "Must NOT move damage of any ally with zero charge-bucket damage (e.g. an AR/MG-only comp): totals identical with this block deleted via withPatchedOverride.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Damage Multiplier ▲ 9.59% for 20 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Charge-bucket ONLY, and specifically the MULTIPLIER flavor: the schema distinguishes `chargeDamagePct` (additive percentage points in the charge bucket) from `chargeDamageMultPct` ('Charge Damage Multiplier' — scales by BASE charge damage, the collection-item/Helm-treasure stat). The kit word 'Multiplier' selects `chargeDamageMultPct`.",
+      "durationSemantics": "Wall-clock `durationSec: 20` — literal 'for 20 sec', no rounds/stacks.",
+      "triggerIdentity": "Rides the skill1 attacked-20 trigger above (one block, this effect).",
+      "targetSet": "`allies` including self (kit: 'Affects all allies').",
+      "nearestWrongModel": "Encoding as `chargeDamagePct` (additive points on the charge percentage) instead of `chargeDamageMultPct` (scales by base charge damage) — same-looking number, different bucket math; diverges hardest on a carry whose charge multiplier is far from 100% (e.g. a high-chargeMultPct SR like the alice-style kits). Second misread: generic `attackDamagePct` (over-credits non-charge hits).",
+      "distinguishingAssertion": "buffApply carries stat === 'chargeDamageMultPct' with value 9.59 (plain percentage stat, raw value). Damage delta check: with an SR/charge carry, the per-shot charge-bucket component while the buff is live scales by base-charge×1.0959 — assert the damage-event delta matches the MULT path, and that a normal-attack-only unit's totals move 0.",
+      "inertness": "Zero movement on any damage event with bucket ≠ charge; zero movement out-of-window.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Damage Taken ▼ 28.65% for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "Defensive mitigation on ALLIES. Offensively inert at v1 scope: the boss deals no modeled damage and there is no ally HP pool.",
+      "durationSemantics": "10 sec if it were modeled; moot.",
+      "triggerIdentity": "No activation clause in the header → would be interval by convention; moot because the effect is defensive.",
+      "targetSet": "2 allies with the highest FINAL ATK — if ever modeled, that is `alliesTopAtk {count:2, byFinalAtk:true}` (kit literally says 'final ATK', the A3 rule; plain static ranking would be wrong).",
+      "nearestWrongModel": "THE trap on this line: 'Damage Taken ▼' mis-encoded via the schema's `damageTakenPct` stat — which is a BOSS debuff where POSITIVE = boss takes more damage. Any block emitting `damageTakenPct` (in either sign, on any target) turns a pure ally-defensive line into a ±28.65% swing on TEAM DAMAGE. Target-set inversion (ally mitigation → enemy vulnerability) is the shared-prior misread I most expect here.",
+      "distinguishingAssertion": "Over a full run, assert ZERO buffApply events with stat === 'damageTakenPct' from Admi's slots (including boss-held debuffs, which emit casterIdx===null/targetIdx===null — filter by stat+value 28.65), AND totals(res) for every unit are identical with skill2 emptied via withPatchedOverride.",
+      "inertness": "The entire line must move NOTHING. It belongs verbatim in `unmodeled.skill2`, not as a block.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Reload Speed ▲ 50.91% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Reload speed — NOT a 'defensive, no damage' drop candidate: reload uptime changes shots fired for every non-infinite-ammo ally (the Grave lesson). Stat `reloadSpeedPct`.",
+      "durationSemantics": "`durationSec: 10`, literal seconds.",
+      "triggerIdentity": "`burstCast` — the effect sits in Admi's OWN burst block with no separate activation clause, so it fires ONLY on rotations Admi (Burst II, cd 20s) actually casts. NOT `fullBurstEnter`: with another Burst II in the team (e.g. crown in the control fixture), first-ready selection means Admi does not cast every rotation, and the two triggers diverge exactly there. Note burst-cast lands PRE-FB, so the 10s window covers the following Full Burst.",
+      "targetSet": "`allies` including self ('Affects all allies').",
+      "nearestWrongModel": "(a) `fullBurstEnter` — the buff fires on EVERY team Full Burst including rotations where the other B2 cast, over-crediting team reload uptime; (b) silently dropping the line as defensive/utility.",
+      "distinguishingAssertion": "Count Admi's burstCast events vs buffApply events with stat 'reloadSpeedPct' value 50.91: they must be 1:1 ×5 targets, each apply frame at/near the burstCast frame (pre-fullBurstStart), and on any fullBurstStart of a rotation with NO Admi burstCast there must be NO such buffApply. Against misread (b): deleting the effect must LOWER a reload-bound ally's shot/damage total (assert strictly fewer 'reload'-cycle-limited shots — e.g. an MG/SG ally's totals drop).",
+      "inertness": "No application on Full Bursts Admi did not chain into via her own cast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Critical Damage ▲ 28.34% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "GENERIC Critical Damage — the kit line carries no 'of normal attacks' scoping, so plain `critDamagePct` is correct (the scoped-stat trap runs the OTHER way here: over-narrowing to a normal-only scope would under-credit skill/burst crits).",
+      "durationSemantics": "`durationSec: 10`, literal seconds — a separate effect in the same block, same window as the reload line.",
+      "triggerIdentity": "`burstCast` (same block as the reload line; same divergence-vs-`fullBurstEnter` argument).",
+      "targetSet": "`allies` including self.",
+      "nearestWrongModel": "(a) `fullBurstEnter` keying (over-fires in dual-B2 comps); (b) mis-stat as `critRatePct` (rate vs damage — changes the crit ROLL frequency instead of the crit multiplier); (c) permanent/duration-omitted.",
+      "distinguishingAssertion": "buffApply events with stat === 'critDamagePct' value 28.34 (raw percentage), expiresFrame ≈ castFrame + 10×60, one per ally per Admi burstCast, and ZERO buffApply with stat 'critRatePct' from Admi. Crit-eligible damage events inside the window show the lifted crit multiplier; a damage event after expiry does not.",
+      "inertness": "No crit-RATE movement; no application outside Admi's own cast rotations; nothing past the 10s window.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:attacked-20-trigger+chargeDamageMultPct-9.59-20s",
+    "burst:reloadSpeedPct-50.91-10s",
+    "burst:critDamagePct-28.34-10s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Damage Taken ▼ 28.65% for 10 sec."
+    ],
+    "burst": []
+  },
+  "notes": "Three reconciliation points for the driver. (1) skill1's trigger is the hard part: 'when attacked 20 time(s)' counts INCOMING hits, which v1 does not simulate — the only honest encoding is an interval with a ⚑ cadence derived from measured boss attack rate (state the recipe: boss attacks/sec from footage × 20 → intervalSec; also resolve whether 'attacked' counts hits on Admi alone or the whole team, which changes the period). Expect the shared-prior misread to be passive/always-on, which over-credits uptime whenever the accrual period exceeds ~0s duty-cycle-neutral point; a driver test that never asserts a NO-buff gap window cannot catch it. (2) skill1's stat word is 'Multiplier' — chargeDamageMultPct (scales base charge damage), not additive chargeDamagePct; a test asserting only 'some charge buff exists' passes both encodings. (3) skill2 is the inversion trap: the schema's damageTakenPct is a BOSS-takes-more debuff, so any attempt to 'model' the ally mitigation with that stat manufactures a large phantom team-damage swing — the test must assert total inertness of skill2, not merely skip it. Burst trigger identity (burstCast vs fullBurstEnter) only discriminates in a comp with a second Burst II unit; the default controlComp fixes crown at B2, so the driver must either build a variant comp or assert the burstCast→buffApply 1:1 frame pairing to make the distinction observable.",
+  "model": "claude-fable-5"
+}

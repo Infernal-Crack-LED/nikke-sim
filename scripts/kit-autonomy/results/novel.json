@@ -1,0 +1,72 @@
+{
+  "slug": "novel",
+  "kitDescription": "Novel is an Iron SMG Defender whose Skill 1 periodically fires a small 52.36% hit at the enemies with the highest DEF and briefly lowers their DEF by 7.05%. Her Skill 2 builds Cornucopia: every 100 normal attacks she lands grants a stacking self-DEF buff, up to 5 stacks. Her Burst II nuke deals 330.61% of her ATK to the highest-ATK enemy, and — only while Cornucopia is at max stacks — also marks an enemy to take 67.5% increased damage for 5 seconds, a large team-wide amp. At her SMG fire rate the stacks build in roughly 30 seconds and then stay pinned at 5, so the mark rides every burst after the opening ramp. In practice she is a modest personal-damage Defender whose real contribution is the gated damage-taken debuff.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Deals 52.36% of final ATK as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval:10 trigger → enemy flatDamage 52.36 (10s = datamined skillCooldownsSec.skill1; first-fire t=10 is engine interval convention)",
+        "blindSaid": "S5: interval shape, many hits, FB-by-timing, inert to teammates — all PASS vs driver. S6: same shape but ⚑ 15s guess (its packet lacked the datamined cooldown)",
+        "formulaCheck": "Function-type skill damage: crit-eligible, no core/range, FB +50% by landing timing — engine defaults match prose (no exemption stated). Interval seconds come from datamined skillCooldownsSec.skill1=10 per S2b's explicit ruling; S6's 15s was a flagged blind estimate, not a divergence in mechanism.",
+        "fireRateOk": true,
+        "explanation": "Fires every 10s (≥16 procs/180s, pinned cadence asserted); single hit per activation on the one boss — the 3-target clause correctly NOT multiplied. First-fire phase t=CD is the standing ⚑ interval convention (neve/snow-white precedent), documented in caveats."
+      },
+      {
+        "kitLine": "DEF ▼ 7.05% for 5 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim in unmodeled.skill1 + caveat with magnitude estimate (~0.02% team damage at 140-DEF scope-lock boss) and a recipe; mast Sea-Breeze precedent",
+        "blindSaid": "S5: authored 3 assertions, reconciled to documented it.skip after confirming the engine has no enemy-DEF primitive (applyBuff drops enemy DEF▼ silently; no boss-held defPct representable). S6: also left unmodeled, same reasoning, refused to fudge into damageTakenPct",
+        "formulaCheck": "Boss DEF is a small flat subtractive term inside the base (SSOT §1a); 7.05% × 140 ≈ 9.9 flat DEF off a ~78k effective-ATK term — genuinely negligible, and no engine channel exists to route it. Both blind agents independently converged on the same gap.",
+        "fireRateOk": true,
+        "explanation": "All three parties agree: no enemy-DEF-reduction primitive exists, converting to damageTakenPct would fabricate the magnitude (S2b's named fudge), and the recorded gap carries value + recipe + tier. Correctly NOT silently dropped — it is in unmodeled verbatim."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Cornucopia: DEF▲ 13.5%, stacks up to 5, 15s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "ONE hitCount:100 block, two effects: literal self defPct 13.5/maxStacks 5/durationSec 15 (the accrual observable) + resource cornucopia +1 (pool 0..5, the gate-feeder proxy, soda Golden-Chip pattern)",
+        "blindSaid": "S6's Cornucopia block is BYTE-IDENTICAL to the driver's buff effect. S5 asserts hitCount keying, 1→5 ramp, 15s windows, damage-inertness — all PASS vs driver",
+        "formulaCheck": "hitCount counts rounds (hitsPerShot 1 → rounds=hits) per SSOT §2b; KR stacking rule (SSOT §11): same caster+slot refreshes, so at ~19-20 shots/s a stack lands every ~5.3s, far inside the 15s window — the pile pins at 5 and the monotonic pool equals the true live stack count in every sustained fight (divergence only possible across >15s firing gaps, which scope-lock combat never produces; documented in caveats).",
+        "fireRateOk": true,
+        "explanation": "Ramp measured in the driver's fixture (5th stack ~29.7s) and asserted by both suites, including the per-application 'kth stack rides the 100k-th shot' pin and the post-cap holds-at-5 refresh assertion — the exact mechanism S6's no-refresh arithmetic denied. The dual encoding (literal buff + resource proxy) is the faithful way to expose the stack count to the burst gate given no own-buff-stack gate primitive exists."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 330.61% of final ATK as Burst Skill",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage 330.61, FB-exempt by cast timing (no explicit noFb)",
+        "blindSaid": "S6: identical block plus explicit noFb:true — behaviorally identical. S5: once-per-own-cast, fbMajorApplied false — PASS vs driver",
+        "formulaCheck": "Burst-cast damage lands before the FB window opens (MEASURED boundary rule, SSOT §1b/§8): no +50%, no entry auras. Engine forces noFb on burst-cast direct damage, so the missing explicit flag is inert (isabel precedent). Hit count == own cast count, never team FB count; the sole-B2 fixture makes burstCast-vs-fullBurstEnter observable and the counterfactual (fullBurstEnter) goes RED.",
+        "fireRateOk": true,
+        "explanation": "One nuke per novel cast (10 casts/180s as sole B2), stage-2 frames not stage-3, all fbMajorApplied false. Both blind agents agree on the mechanism."
+      },
+      {
+        "kitLine": "Damage Taken ▲ 67.5% @ Cornucopia max",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast block + resourceGate {cornucopia, min:5} → boss-held damageTakenPct 67.5/5s (caster/target null, Taken bucket, team-wide amp)",
+        "blindSaid": "S5 REQUIRES exactly this gated encoding (boss-held, 5s window, no marks pre-max-stacks, gate load-bearing counterfactual) — all PASS vs driver. S6 left it unmodeled, claiming (a) the resource latches and (b) only ~3 of 5 stacks ever coexist so the cap is unreachable",
+        "formulaCheck": "Damage Taken ▲ is a boss-side Taken-bucket debuff (SSOT §1g) — routing correct. S6's reason (b) contradicts the KR refresh stacking rule (SSOT §11): with refresh, accrual is cumulative and the cap is reached at ~29.7s then pinned; S6's reason (a) is moot because the pool only needs to match the live stack count, which it does under any sustained fire. The driver observed BOTH gate sides in-fixture (casts at ~4.9s/~26.3s unmarked, 8 later casts marked) — direct empirical refutation of S6's trajectory claim.",
+        "fireRateOk": true,
+        "explanation": "The gate is observably load-bearing in both directions: pre-ramp casts land without the mark, post-ramp casts carry it, and the ungated counterfactual strictly increases team damage (RED as required). S6's divergence is a blind-side misread of the stacking rule, not a driver defect."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. All five kit lines are FAITHFUL (4) or DOCUMENTED_GAP (1: the S1 DEF▼ line, unanimously identified by driver + both blind agents as unrepresentable — no enemy-DEF primitive — and recorded verbatim with a magnitude estimate and recipe rather than fudged into damageTakenPct). Convergence is GREEN: the S5 blind suite runs 18 passed / 0 failed against the driver's shipped override, with its 6 skips all documented gaps (3 the DEF▼ line, 3 S5-authored single-enemy/⚑-cadence gaps), and the S6 blind override is byte-identical on Cornucopia and shape-identical on both damage lines. The one S6 divergence (leaving the gated Damage-Taken mark unmodeled on a 'cap unreachable' theory) is a RECON_ERROR: it ignores the KR refresh stacking rule, is refuted by the driver's fixture measurement (5th stack at ~29.7s, gate closed on the two early casts and open on all eight later ones), and is independently contradicted by the S5 suite, whose gated-encoding assertions pass against the driver. Discrimination holds: every load-bearing assertion has a named nearest-wrong counterfactual that goes RED (20s S1 cadence, one-stack cap, ungated mark, fullBurstEnter nuke, self-buff misroutes). Same-model residuals the owner should spot-check: (1) the interval first-fire phase (t=10 vs t=0) remains a ⚑ engine convention, never popup-pinned for this unit; (2) the resource-pool ≡ live-stack-count equivalence is proven only under sustained fire — any future fight model with >15s firing gaps would break it; (3) the DEF▼ gap's ~0.02% estimate rests on the 140-DEF scope-lock boss, so it stays negligible only while bossDef remains near-zero.",
+  "model": "kimi-code/k3"
+}

@@ -1,0 +1,108 @@
+{
+  "note": "Kit-autonomy gauntlet 2026-08-03 (FROM-SCRATCH unit — no shipped override existed before this run; simSupported was false; authored test-first, pinned by scripts/tests/units/snow-white-innocent-days.test.ts). snow-white-innocent-days — Snow White: Innocent Days, AR/Iron/Attacker/Burst III (40s CD), variant of base snow-white (slug snow-white — the AR/Iron cannon-swap unit; NOT this unit) and of snow-white-heavy-arms (SR/Water). Her kit is a hit-counter kit: every 30 normal-attack hits her S1 fires (ammo-capacity stack + damage rider), every 50 hits her S2 fires an AoE rider — and her burst drops that S2 requirement by 20 (50 → 30) for 10s while granting ATK + unlimited ammo. LINE-BY-LINE: S1-L1 'Max Ammunition Capacity ▲ 25.66%, stacks up to 5 time(s), lasts 5 sec' (self, every 30 hits) → buff maxAmmoPct 25.66 / durationSec 5 / maxStacks 5 (engine stacks add value×stacks into maxAmmo(); re-apply refreshes duration and adds a stack up to the cap). STACK DYNAMICS (measured in the control fixture): 67 applies over 180s (= floor(2028 shots/30)) and the cap IS reached — stacks climb to 5, driven by her unlimited-ammo burst windows (no reload downtime → 2.5s per 30-hit proc < the 5s duration); out-of-window cadence with reloads is ~3.2s/proc. S1-L2 'enemies within attack range: 188.68% of final ATK' (every 30 hits) → flatDamage 188.68, target enemy (single partless boss at scope), same hitCount-30 trigger as L1 (two blocks, same cadence — the kit fires both lines off the same 30-hit activation). S2-L3 '50 normal attacks → all enemies: 61.69% of final ATK' → flatDamage 61.69 on hitCount 50 with countInFb 30 (see L5). S2-L4 'using Burst Skill → self: Attack Damage ▲ 21.12% for 10 sec' → buff attackDamagePct 21.12 (Damage-Up bucket — 'Attack Damage' per StatKey SSOT) on burstCast — NOT fullBurstEnter: the kit says 'when using Burst Skill', and a fullBurstEnter encoding would re-fire her on every FB window including another B3's (2× uptime in a two-B3 comp). BURST-L5 'Hit count required for Skill 2 ▼ 20 time(s) for 10 sec' → enacted as countInFb 30 on the S2 hitCount trigger (rapi-red-hood precedent: own-burst threshold switch modeled as the FB-window threshold; her B3 cast opens the FB window, and the ~10s FB window ≈ the kit's 10s duration). ⚑⚑ KNOWN SCOPE DIVERGENCE (S2b claude-fable-5 flagged; driver reconciled, kept): countInFb reads the GLOBAL FB window, not her cast — in a multi-B3 comp (the control fixture has helm alternating) the lowered threshold also applies during FB windows ANOTHER B3 opened (~+1-2 extra 61.69% procs per foreign window; ~0.5-1% of her total), and her window is FB-anchored, not cast-anchored (cast lands ~0.3s before FB opens). The owner-anchored primitive exists ONLY for chargeCounter (sim.ts inBurst = lastBurstCastFrame + 10s), NOT for hitCount — an exact encoding would need an engine change, and S4 freezes src/engine/**. Two-block ownBurstGate/fbGate compositions were analyzed and rejected (parallel counters drift phase from the true carry-over switch, and no gate expresses 'outside the owner's 10s window' — they under-credit foreign windows worse than countInFb over-credits them). So: countInFb + this ⚑, exact at single-B3 scope, bounded over-credit in multi-B3. The counter CARRIES OVER the window boundary (no reset — RRH semantics). Owner recipe to falsify: count 61.69% popups in a recording during a foreign-B3 FB window (should be 50-hit spacing, not 30). BURST-L6 'ATK ▲ 97.2% for 10 sec' → buff atkPct 97.2 on burstCast (self). BURST-L7 'Unlimited ammunition for 10 sec' → unlimitedAmmo effect, durationSec 10 (engine buff stat 'unlimitedAmmo'; shots in-window neither consume ammo nor advance the magazine ordinal; a reload already in flight at cast still completes mid-window — observed 3× in the fixture). CADENCE TUPLE ⚑ (datamine, unmeasured): rate_of_fire 720 → 12 pulls/s = engine AR class default (no charFixes needed); reloadFrames 81 (datamine); ammo 60; burstGaugePerShot 0.05 (datamine burst_energy_pershot 500); hitsPerShot 1. Burst gauge: no gauge-per-shot.json row (engine falls back to characters.json). Element: Iron vs the Fire-boss fixture is NEUTRAL (Iron beats Water), no elemental major at scope. UNMODELED: none — all 7 kit lines are modeled. RESIDUAL for owner spot-check: the multi-B3 countInFb scope divergence (L5 ⚑⚑ — the only open item; bounded ~0.5-1%, exact at single-B3 scope).",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "burst: L5 ('Hit count required for Skill 2 ▼ 20 for 10 sec') is enacted as countInFb 30 on the S2 hitCount trigger (RRH precedent) — the engine's hitCount threshold switch is keyed to the GLOBAL FB window, not her cast (only chargeCounter has the owner-anchored inBurst check); exact while she is the sole B3, bounded over-credit (~+1-2 extra 61.69% procs per foreign-B3 window, ~0.5-1% of total) in multi-B3 comps (⚑⚑, S2b-flagged, driver reconciled — an exact encoding needs an engine primitive; S4 freezes src/engine/**)",
+    "burst: her cast lands ~0.3s BEFORE the FB window opens (burstCast precedes fullBurstStart), so the countInFb window and the 10s self-buff windows start ~0.3s apart — the kit's cast-anchored 10s is approximated by the FB-anchored 10s for the threshold line only (the 21.12/97.2/unlimited-ammo lines ARE cast-anchored)"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 25.66,
+          "durationSec": 5,
+          "maxStacks": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 188.68
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 50,
+        "countInFb": 30
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 61.69
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 21.12,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 97.2,
+          "durationSec": 10
+        },
+        {
+          "kind": "unlimitedAmmo",
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

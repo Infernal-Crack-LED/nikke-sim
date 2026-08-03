@@ -1,0 +1,79 @@
+{
+  "slug": "novel",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 15
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 52.36
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 100
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 13.5,
+          "durationSec": 15,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 330.61,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "DEF ▼ 7.05% for 5 sec."
+    ],
+    "skill2": [],
+    "burst": [
+      "■ Activates when Cornucopia is at max stacks. Affects 1 enemy unit(s).",
+      "Damage Taken ▲ 67.5% for 5 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ skill1 has NO activation clause, so it is modeled as an interval trigger; the 15s period is an UNMEASURED estimate (the 20s in the base stats is the Burst II cooldown, not a skill cooldown). Both the damage cadence and the debuff uptime scale directly with this number.",
+    "⚑ The skill1 enemy DEF ▼ 7.05% is NOT modeled: the effect schema has no enemy-DEF-reduction stat (defPct is self-DEF and inert in v1; damageTakenPct is a different bucket and encoding DEF▼ as it would fabricate the magnitude). This under-credits Novel and every teammate by the boss-DEF term.",
+    "⚑ The burst's second block (Damage Taken ▲ 67.5% for 5 sec, gated on Cornucopia at max stacks) is NOT modeled: no block gate expresses 'owner's buff X is at N stacks' (resourceGate cannot model the 15s per-stack decay, so a resource proxy would latch permanently satisfied). Derived stack trajectory says 5 stacks is likely unreachable from normal attacks alone (~3 concurrent at steady state), so authoring it ungated would fabricate a large team-wide debuff.",
+    "The skill2 Cornucopia buff (defPct) is offensively inert in v1; it is retained because it is the kit's stack counter and the precondition of the burst's Damage Taken ▲ rider.",
+    "⚑ Kit says 'after landing 100 normal attack(s)'. The hitCount trigger counts ROUNDS dispatched (hitsPerShot 1 for this SMG), not rounds that connect; any miss fraction slows the real stack cadence relative to the model.",
+    "Burst-cast damage is authored FB-exempt (noFb) per the burst-cast-lands-before-Full-Burst rule; the 52.36% skill1 rider keeps FB-by-timing (default ON)."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Novel (SMG/Iron/Defender/Burst II) is modeled as three lines: skill1 an interval-triggered 52.36%-of-final-ATK hit on the boss (⚑ 15s period — the kit gives no activation clause); skill2 a self Cornucopia stack (DEF ▲13.5%, up to 5, 15s) on every 100 rounds fired; burst a 330.61%-of-final-ATK burst-cast hit, FB-exempt because a burst cast resolves before the Full Burst window opens. Two kit lines are deliberately unmodeled for lack of a primitive, both recorded verbatim in `unmodeled`: the skill1 enemy DEF ▼7.05% (no enemy-DEF stat in the schema) and the burst's Cornucopia-at-max-stacks Damage Taken ▲67.5% (no buff-stack block gate). Whole-picture check on the second one: at 120 ammo / ~20 rounds per sec / 81-frame reload the unit averages ~16.3 rounds per sec, so 100 rounds arrive about every 6.1s and at most ~3 of the 5 stacks are ever alive inside the 15s window — reaching the cap needs roughly +63% sustained round throughput from ally fire-rate/reload buffs, so the rider is expected to be rare-to-never rather than routine."
+}

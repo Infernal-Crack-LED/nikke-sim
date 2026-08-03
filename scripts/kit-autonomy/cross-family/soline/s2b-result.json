@@ -1,0 +1,90 @@
+{
+  "slug": "soline",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "after 40 normal attacks: Atk Speed▲7.26%",
+      "disposition": "FAITHFUL",
+      "scope": "Attack Speed on the holder's own weapon cycle — a weapon-state modifier (taxonomy #6: gates shots fired, IS damage; never 'skip as defensive')",
+      "durationSemantics": "genuine wall-clock seconds — 'for 3 sec' → durationSec:3 (NOT rounds; no 'round(s)' wording)",
+      "triggerIdentity": "hitCount count:40 — 'Activates after 40 normal attacks'. CRITICAL: hitCount counts ROUNDS/hits, not trigger pulls, and Soline has hitsPerShot:2 — 40 normal-attack HITS accrue after ~20 pulls. At SMG cadence the threshold refills every ~1–2s while the buff lasts 3s, so faithful uptime is near-100%, not a rare proc",
+      "targetSet": "self only",
+      "nearestWrongModel": "counter keyed to trigger PULLS (every 40 pulls ≈ half the proc rate, uptime gaps appear), or an interval trigger approximation, or dropping the line as 'negligible small buff'",
+      "distinguishingAssertion": "controlComp(soline): first buffApply{stat:'attackSpeedPct',value:7.26,targetSlug:soline} lands after exactly 40 normal-attack hit events (the 20th pull at hitsPerShot 2), re-applies every subsequent 40 hits, each with expiresFrame ≈ applyFrame+180. RED under a 40-pull counter (first apply ~2× later, visible uptime gaps) and RED under interval (applies decouple from shot events). Do NOT assert a buffRemove on lapse — the engine emits none for time expiry",
+      "inertness": "no effect on crit rate/damage events, no ally-targeted buffApply, no change to burst-cast damage counts",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "self at Max HP: Crit Rate ▲21.62% perm",
+      "disposition": "FAITHFUL",
+      "scope": "GENERIC crit — prose says plain 'Critical Rate', no 'of normal attacks' qualifier, so critRatePct, NOT critRateNormalPct. Applies to every crit roll the holder makes",
+      "durationSemantics": "permanent — no durationSec, no expiresFrame; the Max-HP condition is the only bound",
+      "triggerIdentity": "passive. The 'Only affects self at Max HP' gate is scope-TRIVIAL at scope lock (v1 boss deals no damage, nobody leaves Max HP) → condition always satisfied, buff always on. The gate belongs in the note, not as a live mechanic",
+      "targetSet": "self only",
+      "nearestWrongModel": "dropping or gating OFF the buff because 'Max-HP condition is unmodeled' (massively under-credits Soline's signature crit identity), or scoping to critRateNormalPct, or attaching a finite duration",
+      "distinguishingAssertion": "exactly one buffApply{stat:'critRatePct',value:21.62,targetSlug:soline} at battle start with NO finite expiresFrame; damage events for soline show a crit rate elevated by 21.62 points over her sheet base. RED if stat is critRateNormalPct (burst/skill damage crit unchanged), RED if absent or time-bounded",
+      "inertness": "no ally receives it (self-only); no attackSpeed/atkPct movement from this slot",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "self at Max HP: Crit Dmg ▲62.27% perm",
+      "disposition": "FAITHFUL",
+      "scope": "generic critDamagePct — same unqualified wording as the crit-rate line",
+      "durationSemantics": "permanent, same Max-HP gate, scope-trivially always on",
+      "triggerIdentity": "passive",
+      "targetSet": "self only",
+      "nearestWrongModel": "same family as the crit-rate line: dropped/gated-off for the Max-HP condition, or duration invented. Also plausible: value entered as a multiplier instead of additive percentage points in the crit-damage term",
+      "distinguishingAssertion": "one buffApply{stat:'critDamagePct',value:62.27,targetSlug:soline} at battle start, permanent; A/B via withPatchedOverride zeroing the value must move soline's totals by the crit-damage share (nonzero, direction down). RED if missing or finite-duration",
+      "inertness": "no ally-targeted apply; boss-debuff channel untouched",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "enemies in range: 396% final ATK dmg",
+      "disposition": "FAITHFUL",
+      "scope": "instant burst damage, % of caster final ATK; single scope-lock boss so the AoE clause collapses to one target",
+      "durationSemantics": "instant hit per cast, no duration",
+      "triggerIdentity": "burstCast — this is Soline's OWN burst block. THE key trap: controlComp co-slots helm as the fixed B3, so burstCast vs fullBurstEnter genuinely diverge in the very fixture the tests run — on rotations helm bursts, Soline's 396% must NOT fire. Additionally, burst-cast damage lands PRE-Full-Burst (verified project fact): expect noFb semantics — fbMajorApplied false — and riders take no +30% range (rangeApplied false)",
+      "targetSet": "enemy",
+      "nearestWrongModel": "keyed to fullBurstEnter (fires on EVERY team FB including helm's rotations — over-credits ~2×), or granted the +50% FB major because 'it's burst damage'",
+      "distinguishingAssertion": "count damage events with mult 396 and srcSlot === soline's slot === count of soline's own burstCast events (and zero on FBs whose burstCast came from helm); each such event has fbMajorApplied === false and rangeApplied === false. RED under fullBurstEnter keying (count equals total FB count) and RED if fbMajorApplied true",
+      "inertness": "zero occurrences on helm-cast rotations; no buffApply from this line",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "same target(s) at Max HP: +924% addl",
+      "disposition": "FAITHFUL",
+      "scope": "additional instant damage on the same cast, % of caster final ATK",
+      "durationSemantics": "instant, per qualifying cast",
+      "triggerIdentity": "same burstCast block, gated 'when at Max HP'. Read this as the CASTER at Max HP (consistent with the kit's self-Max-HP theme in skill2) — scope-trivially always true, so the rider lands on EVERY cast; effective burst = 396+924 = 1320% per cast",
+      "targetSet": "enemy (same target)",
+      "nearestWrongModel": "reading 'at Max HP' as the TARGET's HP — since the boss takes damage from t=0, that reading fires the 924% on at most the opening cast (or never), silently deleting ~70% of her burst damage. Second-nearest: same fullBurstEnter mis-key as the 396% line",
+      "distinguishingAssertion": "every soline burstCast is followed by BOTH a mult-396 and a mult-924 damage event from her slot (counts equal across the whole 180s: n(924) === n(396) === n(soline burstCast)). RED under the target-Max-HP misread (924 count ≤ 1) and RED under fullBurstEnter keying. Same fbMajorApplied===false / rangeApplied===false checks as the 396% line",
+      "inertness": "never fires without a paired 396% hit; never on helm's rotations",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:attackSpeed-7.26-per-40-hits",
+    "skill2:critRatePct-21.62-permanent",
+    "skill2:critDamagePct-62.27-permanent",
+    "burst:flatDamage-396-burstCast",
+    "burst:flatDamage-924-maxHp-rider"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Reconciliation points for the driver: (1) HIT-COUNT SEMANTICS — hitsPerShot:2 makes 'after 40 normal attacks' ambiguous between 40 hits (20 pulls) and 40 pulls; the engine's hitCount counts rounds/hits, so the test must pin the observed cadence against shot events, and the tuple choice is effectively a ⚑ convention until popup-read. Either way faithful uptime is near-permanent at SMG cadence — a model where skill1 has large uptime gaps is the misread. (2) BURST CRIT ELIGIBILITY — the kit is silent on whether the 396/924 hits crit; the methodology says riders crit at the caster's rate while the effect schema makes flatDamage crit opt-in (default off). With skill2 granting +21.62% crit rate and +62.27% crit damage this choice moves real damage; the test should assert whichever the shipped encoding does EXPLICITLY (crit flag on/off) so the choice is visible, and flag it ⚑ if enabled without measurement. (3) MAX-HP GATES — both skill2 and the 924% rider are Max-HP-conditioned; at scope lock (no incoming damage) both are always-true for the CASTER. The expected shared-prior misread is applying the condition to the BOSS's HP for the burst rider, which kills the 924% after t=0 — the count assertion n(924)===n(burstCast) is the guard. (4) FB KEYING — the control fixture itself (helm co-B3) is the discriminator for burstCast vs fullBurstEnter; do not let the driver substitute a solo/no-co-B3 comp where the two readings are indistinguishable. (5) No unmodeled lines expected — all five effect lines are engine-expressible; an override shipping any of them in `unmodeled` is a FIX finding.",
+  "model": "claude-fable-5"
+}
