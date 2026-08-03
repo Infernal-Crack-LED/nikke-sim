@@ -21,50 +21,9 @@
 
 ---
 
-# # Batch 2 — B (10 units)
-
-## Batch 3 — B / C (10 units)
-
-`privaty-unkind-maid`  
-`rapunzel`  
-`rem`  
-`sakura`  
-`vesti-tactical-upgrade`
-`viper`  
-`yulha`  
-`avistar`  
-`biscuit`  
-`diesel`
-
-## Batch 4 — C (10 units)
-
-| #   | Slug               | Tier |
-| --- | ------------------ | ---- |
-| 32  | `elegg`            | C    |
-| 33  | `emilia`           | C    |
-| 34  | `frima`            | C    |
-| 35  | `guillotine`       | C    |
-| 36  | `k`                | C    |
-| 37  | `kurumi`           | C    |
-| 38  | `mary-bay-goddess` | C    |
-| 39  | `mast`             | C    |
-| 40  | `n102`             | C    |
-| 41  | `neve`             | C    |
-
 ## Batch 5 — C / D (10 units)
 
-| #   | Slug                       | Tier |
-| --- | -------------------------- | ---- |
-| 42  | `novel`                    | C    |
-| 43  | `poli`                     | C    |
-| 44  | `snow-white-innocent-days` | C    |
-| 45  | `soline`                   | C    |
-| 46  | `sugar`                    | C    |
-| 47  | `ade`                      | D    |
-| 48  | `admi`                     | D    |
-| 49  | `aria`                     | D    |
-| 50  | `bay`                      | D    |
-| 51  | `centi`                    | D    |
+`centi`
 
 ## Batch 6 — D (10 units)
 
