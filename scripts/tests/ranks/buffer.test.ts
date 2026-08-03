@@ -112,16 +112,6 @@ describe('buffer board', () => {
     ]);
   });
 
-  // The property the whole shape exists for, pinned by ISOLATING it: a unit's
-  // Full Burst count must not depend on its own burst cooldown, because the
-  // spare no-op covers its stage while it waits. Forcing the cooldown to the
-  // no-op's 20s must therefore change nothing.
-  //
-  // Asserting "no long-cooldown unit lands below its baseline" instead would be
-  // the wrong pin: a unit can land a Full Burst short for reasons that have
-  // nothing to do with cooldown (rosanna reads 7 v 8 identically at 40s and at
-  // 20s — that is her gauge, not her rotation), so that phrasing fails on units
-  // this shape never claimed to fix.
   // Why the comp-profile filler merge iterates a DEDUPED slug set: a
   // stage-matched baseline seats the same no-op twice, so a per-slug merge
   // would inject the profile's kit into it twice on the baseline side and once
@@ -135,6 +125,16 @@ describe('buffer board', () => {
     expect(b1.filter((s) => s === NOOP_B1)).toHaveLength(2);
   });
 
+  // The property the whole shape exists for, pinned by ISOLATING it: a unit's
+  // Full Burst count must not depend on its own burst cooldown, because the
+  // spare no-op covers its stage while it waits. Forcing the cooldown to the
+  // no-op's 20s must therefore change nothing.
+  //
+  // Asserting "no long-cooldown unit lands below its baseline" instead would be
+  // the wrong pin: a unit can land a Full Burst short for reasons that have
+  // nothing to do with cooldown (rosanna reads 7 v 8 identically at 40s and at
+  // 20s — that is her gauge, not her rotation), so that phrasing fails on units
+  // this shape never claimed to fix.
   it("a unit's Full Burst count does not depend on its burst cooldown", () => {
     const longCd = Object.entries(data.characters as Record<string, any>)
       .filter(
@@ -150,10 +150,27 @@ describe('buffer board', () => {
       const shipped = bufferValueFor(slug, 'generic', ctx, new Map(), null);
       const short = { ...(data.characters as any) };
       short[slug] = { ...short[slug], burstCooldownSec: 20 };
+      // prepare.ts prefers charFixes.burstCooldownSec over the character field,
+      // so a unit carrying that charFix would run the "forced" pass at its real
+      // cooldown and pass this vacuously. None does today; keep them in step.
+      const own = overrides[slug];
+      const forcedOverrides = own?.charFixes?.burstCooldownSec
+        ? {
+            ...overrides,
+            [slug]: {
+              ...own,
+              charFixes: { ...own.charFixes, burstCooldownSec: 20 },
+            },
+          }
+        : overrides;
       const forced = bufferValueFor(
         slug,
         'generic',
-        { ...ctx, characters: short },
+        {
+          ...ctx,
+          characters: short,
+          deps: { ...ctx.deps, overrides: forcedOverrides },
+        },
         new Map(),
         null
       );

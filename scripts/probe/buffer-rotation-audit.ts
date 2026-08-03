@@ -11,13 +11,16 @@
 //   ABOVE baseline  the unit's own CDR or gauge speeds the team up — real,
 //                   unit-attributable value, and the board should credit it
 //   BELOW baseline  the unit is slower than the no-op it replaced (a heavy
-//                   weapon generating less gauge over the fight, say). Also
-//                   real — but a unit landing below for its COOLDOWN would be
-//                   the framework bug this shape removed, so anything here
-//                   with a >20s cooldown wants investigating.
+//                   weapon generating less gauge over the fight), or it is an
+//                   ENABLER being measured against the control enabler it
+//                   displaces and is simply the weaker of the two. Both are
+//                   real and both are expected — long-cooldown units appear
+//                   here routinely and are not alarms.
 //
-// A clean run prints no long-cooldown unit below its baseline; that property is
-// also pinned in scripts/tests/ranks/buffer.test.ts.
+// The criterion is the ISOLATION property, not the sign of the gap: forcing a
+// unit's cooldown down to the no-op's 20s must not change its Full Burst count.
+// That is what the closing check tests, and what
+// scripts/tests/ranks/buffer.test.ts pins.
 //
 //   npx tsx scripts/probe/buffer-rotation-audit.ts
 import { readFileSync } from 'node:fs';
@@ -149,12 +152,29 @@ const shortfalls = rows.filter((r) => {
   if (r.stage === 'B3' || r.cd <= 20) {
     return false;
   }
+  // prepare.ts prefers charFixes.burstCooldownSec over the character field, so
+  // rewriting the character alone would leave such a unit at its real cooldown
+  // and quietly compare a run against itself. No override uses charFixes today.
   const short = { ...(data.characters as any) };
   short[r.slug] = { ...short[r.slug], burstCooldownSec: 20 };
+  const own = overrides[r.slug];
+  const forcedOverrides = own?.charFixes?.burstCooldownSec
+    ? {
+        ...overrides,
+        [r.slug]: {
+          ...own,
+          charFixes: { ...own.charFixes, burstCooldownSec: 20 },
+        },
+      }
+    : overrides;
   const forced = bufferValueFor(
     r.slug,
     'generic',
-    { ...ctx, characters: short },
+    {
+      ...ctx,
+      characters: short,
+      deps: { ...deps, overrides: forcedOverrides },
+    },
     new Map(),
     null
   );

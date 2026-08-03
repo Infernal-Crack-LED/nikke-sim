@@ -82,7 +82,8 @@ lives. Newest first within each section.
   **Residual, disclosed:** a tested B3 can still OCCUPY one stage-3 turn it would not have taken
   (`burstCasts` is a rotation counter, not an effect counter), displacing one carry burst. Removing
   that needs a per-unit burst-suppression option in `src/engine/**`, a protected path — not taken
-  without a separate owner call. It costs `ada` ~1 of 9 stage-3 casts and no other unit today.
+  without a separate owner call. It costs nothing on the board as it stands: after the one-enabler
+  ruling below changed the rotation, all 17 tested B3 buffers read 0 burst casts, `ada` included.
   **Measured effect, focus change only** (`npx tsx scripts/build-bufferchart.ts` before/after on the
   same HEAD): 71 of 83 generic rows move, all modestly — chime +8.4, little-mermaid +7.7 (rank
   28→23), mint +6.2, crown +5.1, liter +4.2; drops avistar −2.8, ada −1.3 (the suppression),

@@ -117,6 +117,13 @@ population.sort();
 // the carries to the generic pair for that row — the printed change then mixes
 // 'effect removed' with 'carry adaptation lost'. Read per-effect ablations on
 // the generic board; --typed is honest only for the shipped and floor rows.
+//
+// The same shape applies to the ONE-ENABLER rule on either board: for the 14
+// units that supply team cooldown reduction, stripping the kit or ablating the
+// ally-CDR line flips them out of the enabler role and stands the no-op B1's 7s
+// control back up, so those rows read net of the restored standard enabler
+// (liter's ally-CDR ablation reads -11.29 with the control regained, and her
+// floor reads -0.33% for the same reason).
 // Diagnostic only — writes nothing.
 if (explainSlug) {
   const board: BufferBoard = process.argv.includes('--typed')
@@ -191,7 +198,9 @@ const artifact: BufferChartArtifact = {
     'MG + RL, Attacker scope-lock stats, both elementally advantaged) are simmed ' +
     '180s with the tested buffer vs a stage-matched no-op baseline. The team is ' +
     'the standard five: a no-op B1, two no-op B2 and the two carries, with the ' +
-    "tested unit in the second B2's slot — the spare keeps every burst stage " +
+    'tested unit taking the spare slot of its own burst stage and leading that ' +
+    'stage (the second no-op B2 is the spare on B2 rows) — the spare keeps ' +
+    'every burst stage ' +
     'covered, so a long burst cooldown does not cost the team Full Bursts. ' +
     'Camera focus sits on that spare no-op B2 (SR), never on the tested unit, ' +
     'so burst generation is identical in every run. Exactly one burst-cooldown ' +

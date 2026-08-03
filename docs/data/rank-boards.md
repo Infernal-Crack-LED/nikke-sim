@@ -85,9 +85,11 @@ whole fight is simulated.
 The **standard team** is five slots: a no-op Burst-1 (20 seconds, carrying the
 7-second team burst-cooldown reduction a real enabler would provide), two no-op
 Burst-2s (20 seconds), and the two carries (Burst-3, 40 seconds, one machine gun
-and one rocket launcher, alternating). The tested unit takes the second Burst-2's
-slot, and the baseline puts a no-op of the tested unit's own burst stage back in
-that slot, so both sides field the same stage distribution.
+and one rocket launcher, alternating). The tested unit takes the spare slot of
+its own burst stage and leads that stage — the second no-op Burst-2 is that
+spare on a Burst-2 row, while a Burst-1 leads slot one and a Burst-3 sits
+rightmost — and the baseline puts a no-op of that same stage back in its place,
+so both sides field the same stage distribution.
 
 **Camera focus sits on the spare no-op Burst-2 (the SR)**, never on the unit
 under test. Focus is what grants a charge weapon ×2.5 burst gauge, so whoever
