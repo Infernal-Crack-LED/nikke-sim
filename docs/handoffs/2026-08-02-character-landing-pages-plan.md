@@ -114,8 +114,9 @@ page never renders. The projection is ~49 kB. **UnitPage chunk: 366 kB → 96 kB
 (gzip 106 → 22 kB).** The projection also means a future verbose finding can't
 silently re-inflate the bundle.
 
-Cost is small: the free-line pool is 3 types (non-charge weapons) or 5 (RL/SR), so
-the exhaustive search is `C(6,4)=15` or `C(8,4)=70` sims per unit — ~5k sims for
+Cost is small: the free-line pool is weapon-aware — 3 types (MG/Pistol), 4 (AR/SMG/SG,
+which get Hit Rate) or 5 (RL/SR, which get the charge lines) — so the exhaustive search
+is `C(6,4)=15`, `C(7,4)=35` or `C(8,4)=70` sims per unit — ~5k sims for
 the whole roster, seconds not minutes.
 
 Shape:

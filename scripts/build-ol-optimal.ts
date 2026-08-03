@@ -22,7 +22,8 @@
 //   took 2× Crit DMG + 2× Crit Rate (8.66%) over 3× Max Ammo + 1× Crit Rate (57.91%),
 //   because one ammo line gains 1.41% and loses step 1 to Crit Rate's 1.72%.
 //
-// Exhaustive is also CHEAPER here: the pool is 3 types (5 on RL/SR), so C(6,4)=15 or
+// Exhaustive is also CHEAPER here: the weapon-aware pool is 3 types (MG/Pistol), 4
+// (AR/SMG/SG) or 5 (RL/SR), so C(6,4)=15, C(7,4)=35 or
 // C(8,4)=70 sims per unit against greedy's ~28, and it is the same call
 // scripts/build-unit-pages.ts already makes — so the two artifacts can no longer
 // disagree about a unit's best lines. Score any basis with

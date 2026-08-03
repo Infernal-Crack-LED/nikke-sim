@@ -31,7 +31,8 @@ lives. Newest first within each section.
      2026-08-02 — a known-wrong model parked beside its replacement). `src/dpschart/matrix.ts` gains
      `OL_TIER = 11` + `atOlTier()`, the single knob every invested tier now stamps; `run.ts`,
      `build-ol-optimal.ts`, `build-unit-pages.ts` and `src/cli.ts --best-ol` all call
-     `rankFreeLineConfigs`. Exhaustive is also CHEAPER: 15 sims per unit (70 on RL/SR) against greedy's
+     `rankFreeLineConfigs`. Exhaustive is also CHEAPER: 15 sims per unit (MG/Pistol), 35 (AR/SMG/SG) or
+     70 (RL/SR) against greedy's
      ~28, because the pool is only 3 candidate types.
      **Result:** `data/ol-optimal.json` regenerated — 28/73 picks changed, and the artifact is now
      optimal on **73/73** units (mean gap 0.00%, max 0.00%, against greedy's mean 1.35% / max 31.19%).

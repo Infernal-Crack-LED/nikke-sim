@@ -18,8 +18,9 @@
 //    disagree — they used to, on 28 of 73 units, because ol-optimal ran a greedy
 //    search at max roll.
 //
-//    The pool is 3 types (non-charge) or 5 (RL/SR), so the exhaustive search is only
-//    C(6,4)=15 or C(8,4)=70 sims per unit. `--tier` remains for basis A/Bs.
+//    The pool is weapon-aware — 3 types (MG/Pistol), 4 (AR/SMG/SG, which get Hit Rate)
+//    or 5 (RL/SR, which get the charge lines) — so the exhaustive search is C(6,4)=15,
+//    C(7,4)=35 or C(8,4)=70 sims per unit. `--tier` remains for basis A/Bs.
 //
 // 2. `status` — a SLIM PUBLIC PROJECTION of data/kit-status.json: the four
 //    structured fields the page renders (tier / tuned / graded / unmodeled) and

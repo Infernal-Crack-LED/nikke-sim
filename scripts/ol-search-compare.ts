@@ -146,7 +146,7 @@ for (const [slug, c] of eligible) {
     baseStats: unknown;
   })[];
 
-  // the full ranking (topN large enough to hold the whole pool: 15 or 70 combos)
+  // the full ranking (topN large enough to hold the whole pool: 15, 35 or 70 combos)
   const { baselineDamage, results } = rankFreeLineConfigs({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     chars: chars as any,
