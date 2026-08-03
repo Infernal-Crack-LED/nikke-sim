@@ -40,6 +40,17 @@ lives. Newest first within each section.
   `scripts/tests/ranks/sustain.test.ts`
   (band-pinned, not exact game-truth) passed unchanged; `scripts/verify.sh` green — sustain is not
   part of the graded-comp regression snapshot, so this carries no damage-model risk.
+  **Follow-up (same day): the cross-family `/code-review` (kimi-code/k3) on this landing came back
+  CLEAN with two real FOLLOW-UPs, both closed rather than queued.** (a) `sustainTeam()` now throws if
+  a seated profile partner's burst stage differs from the tested unit's, or if a profile ever lists
+  more than one partner — the `partners[0] ?? NOOP_Bn` fallback was previously correct only by
+  coincidence (both `SUSTAIN_PROFILES` entries happen to be same-stage, single-partner). (b)
+  `scripts/tests/ranks/sustain.test.ts` now loads every `NOOP_CHARACTERS` override, mirroring
+  `build-bufferchart.ts`/`build-sustain.ts` (previously it ran with NO no-op overrides at all, so the
+  `noop-b1-ar` CDR path this ruling added had zero test coverage). Loading the CDR override moved
+  `prika`'s plain-row band (51.3M/1709% pinned range <2000% → measured 66999130/2233.2%, matching the
+  combined-blast-radius figure above exactly); rebanded to <3000% rather than re-deriving a tighter
+  number, since the pin exists to catch regressions, not to re-litigate this ruling's own effect.
 
 - **(2026-08-03, latest) EVERY BUFFER-BOARD TEAM FIELDS EXACTLY ONE BURST-COOLDOWN ENABLER, AND THE
   CONTROL'S REDUCTION FIRES ON `fullBurstEnter`.** Owner ruling: an optimal team always carries one
