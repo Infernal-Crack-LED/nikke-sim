@@ -9,11 +9,16 @@
 // kit lines in src/ranks/sustain-table.ts are then valued against that
 // timeline. No engine change.
 //
-// Methodology (owner, 2026-07-26):
-//   - Comp: tested unit + synthetic no-op teammates covering the other burst
-//     stages (two no-op B3s so the rotation cycles ~20s), bursts ENABLED, scope
-//     lock (Base-5, 3★/core 7, 10/10/10). The tested unit bursts at its natural
-//     stage on cooldown.
+// Methodology (owner, 2026-07-26; stage-covered spare 2026-08-03):
+//   - Comp: tested unit + synthetic no-op teammates covering EVERY burst
+//     stage, including the tested unit's own (a spare no-op of its stage, or a
+//     same-stage profile partner when one is seated), bursts ENABLED, scope
+//     lock (Base-5, 3★/core 7, 10/10/10). This is the buffer board's
+//     stage-coverage shape (`src/ranks/buffer.ts`): a healer on a 40s/60s
+//     cooldown no longer holds up its own team's rotation. The tested unit
+//     LEADS its own stage in slot order (a unit placed behind the no-op of its
+//     own stage loses every contest for that stage and stops bursting) and the
+//     spare falls in behind it.
 //   - Pair profiles: prika runs with mint (duet modes — prika opens once,
 //     mint's Sing Along keeps Performance, and with it the HoT and the +49.92%
 //     outgoing-heal potency, up permanently); anchor-innocent-maid runs with
@@ -96,8 +101,11 @@ function charFor(ctx: RanksCtx, slug: string) {
   );
 }
 
-// tested + no-op stage fillers (+ profile partners when withProfile), two
-// no-op B3s so the rotation cycles ~20s for B1/B2-tested comps.
+// tested unit + a stage-matched spare for its OWN stage (a profile partner
+// already on that stage stands in for the spare, else a synthetic no-op of
+// the stage) + no-op fillers for the other two stages, two no-op B3s so the
+// rotation cycles ~20s for B1/B2-tested comps. The tested unit always leads
+// its own stage's spare in slot order (see methodology note above).
 export function sustainTeam(
   slug: string,
   burst: string,
@@ -105,12 +113,14 @@ export function sustainTeam(
 ): string[] {
   const partners = withProfile ? (SUSTAIN_PROFILES[slug]?.partners ?? []) : [];
   if (burst === 'I') {
-    return [slug, ...partners, NOOP_B2, NOOP_B3, NOOP_B3];
+    const spare = partners[0] ?? NOOP_B1;
+    return [slug, spare, NOOP_B2, NOOP_B3, NOOP_B3];
   }
   if (burst === 'II') {
-    return [NOOP_B1, slug, ...partners, NOOP_B3, NOOP_B3];
+    const spare = partners[0] ?? NOOP_B2;
+    return [NOOP_B1, slug, spare, NOOP_B3, NOOP_B3];
   }
-  return [NOOP_B1, NOOP_B2, slug, NOOP_B3]; // B3 tested alternates with the no-op B3
+  return [NOOP_B1, NOOP_B2, slug, NOOP_B3]; // B3 already stage-covered: tested leads the alternate no-op B3
 }
 
 // Run the board comp, capture the timeline, value the kit lines.
