@@ -157,7 +157,8 @@ const recoveryFirings = (evs: SimEvent[]) =>
   buffs(evs).filter(
     (b) => b.casterIdx === ASUKA && b.stat === 'atkPct' && b.value === 96.98
   ).length;
-const bayBuffs = (evs: SimEvent[]) => buffs(evs).filter((b) => b.casterIdx === BAY);
+const bayBuffs = (evs: SimEvent[]) =>
+  buffs(evs).filter((b) => b.casterIdx === BAY);
 /** Every RL shot is a full charge (sim.ts: all dumped rockets dispatch charged=true). */
 const bayShots = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'shot' && e.slug === 'bay').length;
@@ -328,7 +329,7 @@ describe('B4/U — the seven unmodelable lines are documented, not dropped or fa
     const s2 = shipped.unmodeled.skill2.join(' ');
     expect(s2).toContain('shares damage taken continuously');
     expect(s2).toContain('2.88%');
-    expect(s2).toContain("cover has been destroyed");
+    expect(s2).toContain('cover has been destroyed');
     const bu = shipped.unmodeled.burst.join(' ');
     expect(bu).toContain('Rebuild Cover');
     expect(bu).toContain('18%');
@@ -345,7 +346,9 @@ describe('B4/U — the seven unmodelable lines are documented, not dropped or fa
     );
     expect(heals.length).toBe(1);
     expect(heals[0].slot).toBe('skill1');
-    const kinds = allBlocks.flatMap((b: any) => b.effects.map((e: any) => e.kind));
+    const kinds = allBlocks.flatMap((b: any) =>
+      b.effects.map((e: any) => e.kind)
+    );
     expect(kinds).not.toContain('shield');
   });
 });

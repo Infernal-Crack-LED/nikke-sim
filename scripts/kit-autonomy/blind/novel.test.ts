@@ -69,30 +69,30 @@ const base = {
 const baseRun = run(base);
 
 const novelDamage = baseRun.events.filter(
-  (e) => e.kind === 'damage' && e.slug === 'novel', // field fixed by driver: SimEvent carries `slug`, not `srcSlug`
+  (e) => e.kind === 'damage' && e.slug === 'novel' // field fixed by driver: SimEvent carries `slug`, not `srcSlug`
 ) as Extract<SimEvent, { kind: 'damage' }>[];
 
 const buffApplies = baseRun.events.filter(
-  (e) => e.kind === 'buffApply',
+  (e) => e.kind === 'buffApply'
 ) as Extract<SimEvent, { kind: 'buffApply' }>[];
 
 const novelShots = baseRun.events.filter(
-  (e) => e.kind === 'shot' && e.slug === 'novel', // field fixed by driver (same)
+  (e) => e.kind === 'shot' && e.slug === 'novel' // field fixed by driver (same)
 );
 
 const burstCasts = baseRun.events.filter(
-  (e) => e.kind === 'burstCast' && e.slug === 'novel', // field fixed by driver (same)
+  (e) => e.kind === 'burstCast' && e.slug === 'novel' // field fixed by driver (same)
 );
 
 // Boss-held debuffs: casterIdx === null AND targetIdx === null. Filter by stat.
 const defDebuffs = buffApplies.filter(
-  (e) => e.stat === 'defPct' && e.casterIdx === null && e.targetIdx === null,
+  (e) => e.stat === 'defPct' && e.casterIdx === null && e.targetIdx === null
 );
 const dmgTakenDebuffs = buffApplies.filter((e) => e.stat === 'damageTakenPct');
 
 // Self Cornucopia stacks: targeted at novel, stat defPct, real caster.
 const cornucopia = buffApplies.filter(
-  (e) => e.stat === 'defPct' && e.targetSlug === 'novel' && e.casterIdx !== null,
+  (e) => e.stat === 'defPct' && e.targetSlug === 'novel' && e.casterIdx !== null
 );
 
 describe('novel — base weapon economy (fixture sanity, non-vacuity)', () => {
@@ -103,7 +103,7 @@ describe('novel — base weapon economy (fixture sanity, non-vacuity)', () => {
   });
 
   it('novel deals damage in the control comp', () => {
-    expect(totals(baseRun.res)['novel']).toBeGreaterThan(0);
+    expect(totals(baseRun.res).novel).toBeGreaterThan(0);
   });
 });
 
@@ -128,9 +128,12 @@ describe('novel skill1 — 52.36% ATK damage line', () => {
 
   it('zeroing the 52.36% line strictly lowers novel damage and moves NO teammate', () => {
     const patched = withPatchedOverride('novel', (ov) => {
-      for (const b of ov.skill1!) { // shape fixed by driver: override slots are plain Block[] arrays, no .blocks wrapper
+      for (const b of ov.skill1!) {
+        // shape fixed by driver: override slots are plain Block[] arrays, no .blocks wrapper
         for (const e of b.effects) {
-          if (e.kind === 'flatDamage') e.atkPct = 0;
+          if (e.kind === 'flatDamage') {
+            e.atkPct = 0;
+          }
         }
       }
     });
@@ -138,9 +141,11 @@ describe('novel skill1 — 52.36% ATK damage line', () => {
     const after = totals(res);
     const before = totals(baseRun.res);
 
-    expect(after['novel']).toBeLessThan(before['novel']);
+    expect(after.novel).toBeLessThan(before.novel);
     for (const slug of Object.keys(before)) {
-      if (slug === 'novel') continue;
+      if (slug === 'novel') {
+        continue;
+      }
       // Inertness: a self-sourced damage line must not perturb any ally's damage.
       expect(after[slug]).toBeCloseTo(before[slug], 6);
     }
@@ -167,7 +172,8 @@ describe('novel skill1 — DEF \u25bc 7.05% for 5 sec (enemy debuff)', () => {
     const first = defDebuffs[0];
     expect(first.expiresFrame).toBeDefined();
     // 5 sec at 60fps; allow the frame the buff was applied on.
-    const windowFrames = (first.expiresFrame as number) - (first.frame as number);
+    const windowFrames =
+      (first.expiresFrame as number) - (first.frame as number);
     expect(windowFrames).toBeGreaterThan(0);
     expect(windowFrames).toBeLessThanOrEqual(5 * FPS + 1);
   });
@@ -177,9 +183,10 @@ describe('novel skill1 — DEF \u25bc 7.05% for 5 sec (enemy debuff)', () => {
     // every attacker's damage through the boss-DEF term. Under the nearest-wrong
     // (self-scoped) model, teammates would be byte-identical.
     const patched = withPatchedOverride('novel', (ov) => {
-      for (const b of ov.skill1!) { // shape fixed by driver: override slots are plain Block[] arrays, no .blocks wrapper
+      for (const b of ov.skill1!) {
+        // shape fixed by driver: override slots are plain Block[] arrays, no .blocks wrapper
         b.effects = b.effects.filter(
-          (e) => !(e.kind === 'buff' && e.stat === 'defPct'),
+          (e) => !(e.kind === 'buff' && e.stat === 'defPct')
         );
       }
     });
@@ -189,7 +196,7 @@ describe('novel skill1 — DEF \u25bc 7.05% for 5 sec (enemy debuff)', () => {
 
     const others = Object.keys(before).filter((s) => s !== 'novel');
     const someAllyMoved = others.some(
-      (s) => Math.abs(after[s] - before[s]) > 1e-6,
+      (s) => Math.abs(after[s] - before[s]) > 1e-6
     );
     expect(someAllyMoved).toBe(true);
     for (const s of others) {
@@ -205,8 +212,8 @@ describe('novel skill2 — Cornucopia: DEF \u25b2 13.5%, 5 stacks, 15 sec, self'
     // must come strictly after the 100th shot's frame.
     expect(cornucopia.length).toBeGreaterThan(0);
     const hundredth = novelShots[99] as Extract<SimEvent, { kind: 'shot' }>;
-    expect((cornucopia[0].frame as number)).toBeGreaterThanOrEqual(
-      hundredth.frame as number,
+    expect(cornucopia[0].frame as number).toBeGreaterThanOrEqual(
+      hundredth.frame as number
     );
   });
 
@@ -219,7 +226,9 @@ describe('novel skill2 — Cornucopia: DEF \u25b2 13.5%, 5 stacks, 15 sec, self'
       expect(window).toBeGreaterThan(0);
       expect(window).toBeLessThanOrEqual(15 * FPS + 1);
     }
-    expect(Math.max(...cornucopia.map((e) => e.stacks ?? 0))).toBeLessThanOrEqual(5);
+    expect(
+      Math.max(...cornucopia.map((e) => e.stacks ?? 0))
+    ).toBeLessThanOrEqual(5);
   });
 
   it('self DEF is offensively INERT — changing 13.5% moves NO damage at all', () => {
@@ -228,9 +237,12 @@ describe('novel skill2 — Cornucopia: DEF \u25b2 13.5%, 5 stacks, 15 sec, self'
     // to the magnitude must not move a single unit's total. Nearest-wrong: modeling
     // "DEF \u25b2" as an ATK/damage buff to hit a number would fail here loudly.
     const patched = withPatchedOverride('novel', (ov) => {
-      for (const b of ov.skill2!) { // shape fixed by driver (same)
+      for (const b of ov.skill2!) {
+        // shape fixed by driver (same)
         for (const e of b.effects) {
-          if (e.kind === 'buff' && e.stat === 'defPct') e.value = 135;
+          if (e.kind === 'buff' && e.stat === 'defPct') {
+            e.value = 135;
+          }
         }
       }
     });
@@ -262,17 +274,22 @@ describe('novel burst — 330.61% of final ATK as Burst Skill damage', () => {
 
   it('zeroing 330.61% lowers ONLY novel', () => {
     const patched = withPatchedOverride('novel', (ov) => {
-      for (const b of ov.burst!) { // shape fixed by driver (same)
+      for (const b of ov.burst!) {
+        // shape fixed by driver (same)
         for (const e of b.effects) {
-          if (e.kind === 'flatDamage') e.atkPct = 0;
+          if (e.kind === 'flatDamage') {
+            e.atkPct = 0;
+          }
         }
       }
     });
     const after = totals(run({ ...base, overrides: { novel: patched } }).res);
     const before = totals(baseRun.res);
-    expect(after['novel']).toBeLessThan(before['novel']);
+    expect(after.novel).toBeLessThan(before.novel);
     for (const slug of Object.keys(before)) {
-      if (slug === 'novel') continue;
+      if (slug === 'novel') {
+        continue;
+      }
       expect(after[slug]).toBeCloseTo(before[slug], 6);
     }
   });
@@ -290,9 +307,10 @@ describe('novel burst — Damage Taken \u25b2 67.5% for 5 sec, gated on max Corn
     }
 
     const patched = withPatchedOverride('novel', (ov) => {
-      for (const b of ov.burst!) { // shape fixed by driver (same)
+      for (const b of ov.burst!) {
+        // shape fixed by driver (same)
         b.effects = b.effects.filter(
-          (e) => !(e.kind === 'buff' && e.stat === 'damageTakenPct'),
+          (e) => !(e.kind === 'buff' && e.stat === 'damageTakenPct')
         );
       }
     });
@@ -316,7 +334,7 @@ describe('novel burst — Damage Taken \u25b2 67.5% for 5 sec, gated on max Corn
     const maxStackFrame = cornucopia.find((e) => (e.stacks ?? 0) >= 5)?.frame;
     expect(maxStackFrame).toBeDefined();
     const early = burstCasts.filter(
-      (e) => (e.frame as number) < (maxStackFrame as number),
+      (e) => (e.frame as number) < (maxStackFrame as number)
     );
     expect(early.length).toBeGreaterThan(0);
   });
@@ -333,11 +351,14 @@ describe('novel burst — Damage Taken \u25b2 67.5% for 5 sec, gated on max Corn
 
   it('removing the max-stack gate strictly INCREASES team damage (the gate is load-bearing)', () => {
     const patched = withPatchedOverride('novel', (ov) => {
-      for (const b of ov.burst!) { // shape fixed by driver (same)
+      for (const b of ov.burst!) {
+        // shape fixed by driver (same)
         const carries = b.effects.some(
-          (e) => e.kind === 'buff' && e.stat === 'damageTakenPct',
+          (e) => e.kind === 'buff' && e.stat === 'damageTakenPct'
         );
-        if (carries) delete (b as { resourceGate?: unknown }).resourceGate;
+        if (carries) {
+          delete (b as { resourceGate?: unknown }).resourceGate;
+        }
       }
     });
     const after = totals(run({ ...base, overrides: { novel: patched } }).res);
@@ -357,13 +378,17 @@ describe('novel — inertness / no invented mechanics', () => {
   it('the kit grants no ATK/crit stat to self or allies — no such buffApply from novel', () => {
     // Whole-picture guard: nothing in the kit text is an ATK, crit, or damage-up buff.
     // A model that invented one to fit a number fails here.
-    const novelIdx = unitOf(baseRun.res, 'novel').position - 1 // field fixed by driver: UnitResult has 1-based position, no slotIndex;
+    const novelIdx = unitOf(baseRun.res, 'novel').position - 1; // field fixed by driver: UnitResult has 1-based position, no slotIndex;
     const invented = buffApplies.filter(
       (e) =>
         e.casterIdx === novelIdx &&
-        ['atkPct', 'casterAtkPct', 'critRatePct', 'critDamagePct', 'attackDamagePct'].includes(
-          e.stat as string,
-        ),
+        [
+          'atkPct',
+          'casterAtkPct',
+          'critRatePct',
+          'critDamagePct',
+          'attackDamagePct',
+        ].includes(e.stat as string)
     );
     expect(invented).toHaveLength(0);
   });

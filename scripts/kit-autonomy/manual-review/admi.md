@@ -24,14 +24,14 @@ boss damage to allies).
 
 ## Line-by-line
 
-| Kit line | Disposition | Encoding / reason |
-|---|---|---|
-| S1 "Activates when attacked 20 time(s)" | UNMODELED ⚑1 | no incoming-damage channel, no attacked-count trigger primitive (v1 scope lock); never fires |
+| Kit line                                                      | Disposition  | Encoding / reason                                                                                                                                                        |
+| ------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| S1 "Activates when attacked 20 time(s)"                       | UNMODELED ⚑1 | no incoming-damage channel, no attacked-count trigger primitive (v1 scope lock); never fires                                                                             |
 | S1 "Charge Damage Multiplier ▲ 9.59% for 20 sec" (all allies) | UNMODELED ⚑1 | effect side representable as `chargeDamageMultPct` (helm-wording precedent; a2's additive ruling covers only bare 'Charge Damage ▲') but unreachable without the trigger |
-| S2 "Affects 2 allies with the highest final ATK" | UNMODELED ⚑2 | `alliesTopAtk{count:2, byFinalAtk:true}` exists but is moot with the inert effect |
-| S2 "Damage Taken ▼ 28.65% for 10 sec" | UNMODELED ⚑2 | ally mitigation — nothing to mitigate; `damageTakenPct` boss-debuff primitive deliberately NOT used (sign/direction trap) |
-| Burst "Reload Speed ▲ 50.91% for 10 sec" (all allies) | FAITHFUL | `reloadSpeedPct 50.91`, `burstCast`, `allies`, 10s; feeds `reloadFramesNeeded` → more shots (live arm proves it) |
-| Burst "Critical Damage ▲ 28.34% for 10 sec" (all allies) | FAITHFUL | `critDamagePct 28.34`, same block/window; major-bracket feed pinned at `critRate × 0.2834` on matched in-window hits |
+| S2 "Affects 2 allies with the highest final ATK"              | UNMODELED ⚑2 | `alliesTopAtk{count:2, byFinalAtk:true}` exists but is moot with the inert effect                                                                                        |
+| S2 "Damage Taken ▼ 28.65% for 10 sec"                         | UNMODELED ⚑2 | ally mitigation — nothing to mitigate; `damageTakenPct` boss-debuff primitive deliberately NOT used (sign/direction trap)                                                |
+| Burst "Reload Speed ▲ 50.91% for 10 sec" (all allies)         | FAITHFUL     | `reloadSpeedPct 50.91`, `burstCast`, `allies`, 10s; feeds `reloadFramesNeeded` → more shots (live arm proves it)                                                         |
+| Burst "Critical Damage ▲ 28.34% for 10 sec" (all allies)      | FAITHFUL     | `critDamagePct 28.34`, same block/window; major-bracket feed pinned at `critRate × 0.2834` on matched in-window hits                                                     |
 
 Driver test: `scripts/tests/units/admi.test.ts` — 14/14 GREEN, deterministic, fixture
 liter/admi/modernia/helm (sole-B2; the standard controlComp cannot be used — crown is also

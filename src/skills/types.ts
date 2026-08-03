@@ -223,6 +223,42 @@ export type EffectDef =
       rampSec?: number;
     }
   | {
+      // "%-of-hit repeat" — kit text "Deals Fixed Damage ... equal to X% of the damage dealt
+      // by self". A first-class mechanic in the SSOT (docs/data/nikke-damage-formula.md §3:
+      // "%-of-hit repeats ('deals X% of the damage dealt') inherit everything from the parent
+      // hit implicitly"). When the owner's hit lands for final damage `parentDmg`, this deals an
+      // ADDITIONAL function-damage instance of `pct`% x parentDmg.
+      //
+      // DISTINCT PRIMITIVE FROM `flatDamage`, and not expressible as a field on it: flatDamage
+      // scales off the caster's FINAL ATK and then composes its own multiplier stack, whereas a
+      // hitRepeat scales off an ALREADY-COMPUTED damage number. Every bucket the parent took —
+      // crit expectation, core, the +30% range bonus, Full Burst, element, the charge
+      // multiplier, Damage Up, Damage Taken — is already inside that number, so the repeat
+      // applies NONE of them again (re-applying any is a double-count) and never cores / never
+      // takes range in its own right, exactly as §3's function-damage table requires. Its own
+      // multiplier decomposition is all 1s.
+      //
+      // Folding it into a damage bucket instead (e.g. `chargeDamagePct` = pct x baseCharge)
+      // reproduces the total on a body hit ONLY — charge-bucket damage cores and takes range,
+      // this does not, so the fold silently over-credits every core hit. That is the fudge this
+      // primitive exists to make unnecessary.
+      //
+      // AUTHORING: carried on a per-pull trigger (`shotFired` / `hitCount` / `chargeCounter`),
+      // which the engine dispatches immediately after the pull's own damage instance, and
+      // target `enemy` (validate-overrides enforces both). The engine additionally frame-locks
+      // it to a damage instance the owner landed on THAT frame, so it can never ride a stale
+      // hit. Lands in the owning slot's bucket (skill1/skill2 -> skill, burst -> burst).
+      //
+      // ⚑ BURST-GAUGE: generates one skill-damage impact of gauge, the same as `flatDamage` and
+      // a DoT tick (sim.ts skillGauge — MEASURED for maiden-ice-rose's per-shot rider). Whether
+      // a %-of-hit repeat specifically generates energy is UNMEASURED; the engine follows the
+      // function-damage precedent rather than inventing an exception. Recipe: a focus recording
+      // of a carrier — compare her gauge-bar slope against the same weapon cadence without the
+      // proc, or count full bursts over a fixed window.
+      kind: 'hitRepeat';
+      pct: number;
+    }
+  | {
       kind: 'dot'; // ticks every intervalSec (default 1); never core-boosted
       atkPct: number;
       durationSec: number;

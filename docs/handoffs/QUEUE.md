@@ -114,6 +114,80 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Engine / model threads (measurement- or owner-gated)
 
+- **⇒ SUSTAIN BOARD: the tested unit is the SOLE holder of its burst stage, so a 40s/60s cooldown
+  gates the team's Full Bursts — owner ruling needed, deliberately NOT fixed in the buffer-board PR
+  (2026-08-03).** `src/ranks/sustain.ts:107-113` builds `[slug, NOOP_B2, NOOP_B3, NOOP_B3]` for a
+  tested B1 and `[NOOP_B1, slug, NOOP_B3, NOOP_B3]` for a tested B2 — no spare of the tested unit's
+  own stage. That is exactly the shape the buffer board carried before `buffer-board-methodology`
+  fixed it. **The symptom is NOT the same, so do not port that fix blind:** sustain reports an
+  ABSOLUTE (HP restored + shielded), not a delta against a baseline, so there is no asymmetry to
+  poison, and a 40s healer bursting half as often genuinely does burst-heal half as often.
+  - **Do not use the naive isolation test.** Forcing a candidate's cooldown to 20s moves 14 of 17
+    candidates, some hugely (`blanc` +155%, `anchor-innocent-maid` / `aria` / `noise` /
+    `rei-ayanami` +80%, `helm` +68%) — but it changes the unit's OWN burst cadence and the team's
+    Full Burst count together, so it cannot tell a real property from an artifact.
+  - **The A/B that separates them** is adding a stage-matched spare while leaving the cooldown
+    alone. Add ONLY — an early attempt swapped a `NOOP_B3` out for the spare, which changed stage-3
+    coverage too and inverted several results. The shipped comps are 4 units, so there is room for a
+    5th. Clean result: `alice-wonderland-bunny`, `anchor-innocent-maid`, `aria`, `bay`, `biscuit`,
+    `delta-ninja-thief`, `flora` and `rapunzel` are byte-identical; `blanc` 29.4M → 47.0M (+60%),
+    `tia` 19.6M → 13.8M (−30%), `noise` 18.5M → 14.8M (−20%), `soline-frost-ticket` 29.0M → 24.2M
+    (−17%), `prika` 51.3M → 44.4M (−13%).
+  - **Four of the five movers go DOWN**, because the spare competes for the stage cast and the
+    tested unit then bursts less — the same ordering effect the buffer board hit, which it solved by
+    having the tested unit LEAD its stage. So the current shape is not uniformly penalising long
+    cooldowns; `blanc` is the one clear buffer-board-pattern case.
+  - DECIDE what this board should measure: a healer's throughput at its OWN natural cadence (current
+    behaviour, defensible) or its throughput in a team that covers its stage (what the buffer board
+    now does). Then port the shape, with the lead-own-stage rule, and re-measure. Take this together
+    with the never-loaded-control item directly below — same board, same pass.
+- **⇒ THE SUSTAIN BOARD HAS THE SAME NEVER-LOADED-CONTROL DEFECT — owner ruling (kimi-code/k3
+  review round 6, 2026-08-03).** `scripts/build-sustain.ts:46` loads `noop-b3-mg` only, and
+  `git log -S noop-b1-ar -- scripts/build-sustain.ts` returns NOTHING across all history — yet
+  `src/ranks/sustain.ts:111,113` seats `NOOP_B1` in two of its three comp shapes, so its B1 control
+  runs skill-less and CDR-free. Same defect the buffer board carried from `91f53ea9`, still live.
+  It is also why sustain is byte-identical to the buffer branch's control-trigger change: a control
+  it never loads cannot move. Sustain values HP restored/shielded rather than damage, so a faster
+  rotation changes its numbers only through burst-timed heals — decide whether that matters before
+  loading the control. Same call as the DPS-chart item below; take them together.
+- **⇒ THE DPS CHART HAS THE SAME NEVER-LOADED-CONTROL DEFECT — owner ruling (found by the
+  kimi-code/k3 review, 2026-08-03).** `scripts/build-dpschart.ts:148` loads only `noop-b3-mg`, so
+  `src/skills/overrides/noop-b1-ar.json` is never read there — yet the Solo framework seats `NOOP_B1`
+  in its teams (`src/dpschart/matrix.ts:101,408`) and `src/dpschart/noop.ts` documents that control's
+  7s team CDR as normalizing the no-op team. Solo cells therefore run with no enabler cooldown
+  reduction at all. Exactly the oversight the buffer board carried undetected from `91f53ea9`, and
+  the reason the DPS chart is correctly absent from that branch's blast radius (its cells cannot move
+  with a trigger change to an override they never load). May be a deliberate choice for an own-DPS
+  board. DECIDE: load the control like the three sibling boards, or record in `docs/DECISIONS.md`
+  that the Solo framework deliberately runs CDR-free.
+- **⇒ A duo row whose partner is not a B2 has no spare of the tested unit's stage — latent, VERIFIED
+  non-biting (kimi-code/k3 review round 5; re-checked 2026-08-03 after `blanc` shipped).**
+  `assemble` seats a duo partner in the spare slot, assuming the partner covers that slot's stage.
+  True for `mint`/`prika` and `mast-romantic-maid`/`anchor-innocent-maid` (all B2); `blanc`'s partner
+  is the synthetic `noop-rouge-b1`, a B1, so her `w/ Rouge` row fields her 60s B2 as the only B2
+  against a baseline whose only B2 is a 20s no-op. That is the asymmetry this branch removes
+  everywhere else — but measured after the merge that put her on the board, **both her rows sit at
+  Full Burst parity** (plain 11 v 10, `w/ Rouge` 10 v 10), because her own self-CDR plus the control
+  enabler carry the rotation. So the shape is wrong in principle and inert in fact. Fix if a non-B2
+  duo partner ever lands on a unit whose cooldown actually gates: seat the partner by its own stage,
+  or keep the spare B2 and drop a carry.
+
+- **⇒ `suppliesTeamCdr` does not check mode gating (deferred NOTE from the kimi-code/k3 review,
+  2026-08-03).** `src/ranks/buffer.ts` classifies a unit as the team's cooldown enabler by walking its
+  override for an ally-facing `burstCdr`. It does not skip blocks nested under a non-default `modes`
+  entry, so a unit whose ally CDR lives ONLY in a non-default mode would stand the no-op B1 down on
+  rows where that mode is inactive, leaving the team with no enabler at all. No unit does this today
+  (verified end-to-end: exactly the documented enablers, `--cdr` mode of
+  `scripts/probe/buffer-rotation-audit.ts`). Harden when a mode-gated CDR kit first lands.
+- **⇒ BUFFER-BOARD METHODOLOGY CHAIN IS ON A PR BRANCH, NOT MAIN (`buffer-board-methodology`,
+  2026-08-03).** Standard team + spare no-op, camera focus on the no-op B2 (SR), tested-B3 burst
+  suppression, and the one-CDR-enabler rule with the control's reduction moved to `fullBurstEnter`.
+  All landed and green there; `docs/DECISIONS.md` carries the rulings. Open: the branch needs the
+  owner's PR review, and local `main` still carries the first nine of these commits from before the
+  branch existed (`origin/main..main`) — decide whether main gets rewound to `origin/main` or the PR
+  simply supersedes it. Note `noop-b1-ar.json`'s trigger change moves burstgen (4 of 244 rows, ≤3.9%)
+  and b1b2dps (12 of 272, ≤11.3%); burstcdr and sustain are byte-identical.
+
 - **⇒ `noop-rouge-b1` squad layering — owner call (2026-08-03).**
   `src/data/squads.ts:26` carries one synthetic (`'noop-rouge-b1': 'Blanc Noir Rouge'`) so the buffer
   board's `w/ Rouge` duo profile satisfies `blanc`'s same-squad burst-CDR gate — a ranks-layer concern
@@ -139,84 +213,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     the synthetic and is CURRENT-STATE prose — update it or it ships a stale claim.
   - Cheap improvement available regardless: a reciprocal pointer in `src/ranks/buffer.ts` near `:164`
     noting that registration lives in `src/data/squads.ts`, so the coupling is discoverable both ways.
-- **⇒ BUFFER BOARD: the no-op B1's 7s team CDR is NOT LOADED on this board — owner decision, findings
-  only (2026-08-03).** `scripts/build-bufferchart.ts:51` loads overrides for roster slugs only, and
-  the synthetic controls are not roster entries, so `src/skills/overrides/noop-b1-ar.json` is never
-  read and the buffer board has **never** applied the 7s normalization its own methodology doc
-  claims. Every sibling board does load it — `build-burstgen.ts:48`, `build-b1b2dps.ts:56`,
-  `build-sustain.ts:46` (B3 only) — added in `c044fcbd` on 2026-07-27, the day AFTER the buffer board
-  was written (`91f53ea9`), and never backported. The B3 control's mock-burst override
-  (`noop-b3-mg`) is missing here for the same reason.
-  - **Measured cost of closing the gap** (`npx tsx scripts/probe/buffer-rotation-audit.ts
---noop-cdr`): a large two-way re-rank, not a correction. Gains: `chime` +12.5, `grave` +10.9,
-    `mint` +8.5, `maxwell-ordinary-mechanic` +7.1, `crown` +6.6, `ade-agent-bunny` +6.5, `helm` +6.5.
-    Losses: `label` −12.2, `miranda` −9.8, `liter` −8.7, `exia` −8.2, `little-mermaid` −8.0,
-    `n102` −7.9, `moran` −7.8, `emma-tactical-upgrade` −7.6, `d-killer-wife` −7.4. `dorothy` goes to
-    exactly 0.00.
-  - **The owner's proposed rule — disable the no-op CDR when the tested unit already has CDR — does
-    not isolate what it is aiming at.** All 13 units carrying their own `burstCdr` do lose value when
-    the control CDR is added (liter −8.7, little-mermaid −8.0, moran −7.8, dorothy −6.5; only `prika`
-    gains, +3.2), which is the redundancy the rule targets. But the cause is the BASELINE speeding up
-    (a B1 baseline goes 8 → 11 Full Bursts), and that hits units with NO CDR just as hard — `label`
-    −12.2 and `miranda` −9.8 are the two largest losses on the board. Conditioning on the tested
-    unit's kit therefore treats a symptom that is not specific to it.
-  - DECIDE between three coherent end states: (a) leave the control CDR off on this board and correct
-    `docs/data/rank-boards.md`, which claims it is on — nothing else moves; (b) load the controls to
-    match the sibling boards and apply the conditional disable, which moves only the non-CDR units
-    versus today; (c) load them unconditionally, matching the documented methodology, and accept the
-    full two-way re-rank above. Also fold in `noop-b3-mg` either way.
 
-- **⇒ BUFFER BOARD: long burst cooldowns are handled three different ways — one owner decision,
-  findings only (2026-08-03).** The board inserts the tested unit against a no-op filler that bursts
-  every 20s (`NOOP_B2`, `src/dpschart/noop.ts:130`), so a longer-cooldown unit holds up the team's
-  Full Burst chain and pays for the Full Bursts the baseline gets and it does not. **16 tested units
-  are affected — 8 B1 and 8 B2.** Audit:
-  `npx tsx scripts/probe/buffer-rotation-audit.ts` (self-validating: every shipped value is checked
-  against `bufferValueFor`, the board's own path).
-  - **B2 (8 units): no compensation at all** — `assemble` gives `[NOOP_B1, tested, carry, carry]`
-    (`src/ranks/buffer.ts:321`). 5 Full Bursts against the baseline's 9 (3 for blanc at 60s). This
-    is NOT a regression: that shape is unchanged since the board's first commit (`91f53ea9`).
-  - **B1 (8 units): compensated by a device that removes the rotation entirely** — a >20s B1 gets a
-    second no-op B1 _instead of_ the B2 (`buffer.ts:315`), leaving the team with no B2, so the chain
-    can never complete: **0 Full Bursts, both sides, all 180s**. Their own burst still casts, so
-    burst buffs apply, but every Full-Burst-gated line is dead (moran's `fullBurstEnter` trigger,
-    for one) and no buff is ever valued inside a Full Burst window.
-  - **The pairing that WOULD fix it already exists on another board** — `src/ranks/b1b2dps.ts:59`
-    `B2_TEAM = [NOOP_B1, NOOP_B2, NOOP_B3_RL, NOOP_B3]` keeps a no-op in the tested unit's own
-    stage (pinned, `scripts/tests/ranks/b1b2dps.test.ts:104`). The buffer board never adopted it.
-  - **Nothing pins any of this**: `scripts/tests/ranks/buffer.test.ts:35` pins the B1 filler rule
-    itself, but no test covers the B2 team shape or any Full Burst count on this board.
-  - **Measured effect of pairing** (hypothetical, board unchanged): `flora` 14.8→24.1, `prika`
-    17.4→42.4, `anchor-innocent-maid` 8.3→26.2, `mast-romantic-maid` 61.0→77.3, `delta-ninja-thief`
-    3.1→15.5, `arcana` (RL/Electric, NOT `arcana-fortune-mate`) −0.4→13.0, `biscuit` −7.7→+1.0,
-    `blanc` −3.4→+7.5. The 20s controls also move (`crown` 75.4→71.6, `liter` 26.5→35.3) because the
-    extra filler changes their baseline too — a fix re-ranks the whole board, it is not a patch on
-    16 rows.
-  - **Note the knock-on**: `blanc` is hard-excluded from the board for reading negative
-    (`EXCLUDED_BUFFER_SLUGS`), and `biscuit` / `arcana` are two of the negative rows the leaderboard
-    now trims — all three go positive once the rotation is matched. The negatives are substantially
-    an artifact of this, and the display trim is treating the symptom.
-  - **OWNER SPEC (2026-08-03) — the board was built without it.** Standard team is FIVE slots:
-    1 no-op B1 (SR, 20s, **7.5s** CDR), 2 no-op B2 (SR, 20s), 3 no-op B2 (SR, 20s) ← **the tested
-    unit replaces slot 3**, 4 no-op B3 (MG, 40s), 5 no-op B3 (RL, 40s); a tested B3 has its burst
-    turned off so its own damage cannot poison its support rank. The spare same-stage no-op is what
-    keeps a 40s unit from lowering the team's Full Burst count.
-  - **⚠ ORDERING TRAP — do not implement slot 3 literally.** Burst-stage contests are won by slot
-    order, so a tested unit sitting BEHIND a same-stage no-op stops bursting: tested B2 in slot 3
-    casts **1** burst in 180s (flora 24.05%→4.51%, crown 71.58%→41.81%) and a tested B1 behind the
-    slot-1 no-op B1 casts **0** (liter 26.53%→1.13%). The spec's intent needs the tested unit FIRST
-    in its own stage with the spare no-op behind it — `[tested, noopB1, noopB2, mg, rl]` for a B1,
-    `[noopB1, tested, noopB2, mg, rl]` for a B2. That shape delivers the requirement: B2s reach FB
-    parity (flora/prika/blanc/biscuit all 9v9). B1s mostly do (liter/moran 10v9 on their own CDR)
-    but a 40s B1 still lands 8v9 — a 1-FB residual, versus today's 9-FB wipeout.
-  - **Also divergent from the spec, needs an owner call before implementing:** slot 1 is
-    `noop-b1-ar` — an **AR**, not an SR — and its CDR is **7s**, not 7.5s
-    (`src/skills/overrides/noop-b1-ar.json`). That control is SHARED with the burst-gen, sustain,
-    B1/B2 DPS and DPS-chart Solo boards, and `src/dpschart/noop.ts:10` pins the set byte-identical
-    so those boards do not shift — changing it re-ranks four other boards. Buffer-local SR B1, or
-    change the shared control? Separately, "tested B3's burst is off" is today achieved positionally
-    (rightmost so the carries win stage 3), not by a flag: `cfg.disableBursts` is team-wide and
-    `UnitOptions` has no per-unit equivalent.
 - **⇒ ENGINE REGRESSION FULL-BURST COUNT FAILURES — four comps disabled in `scripts/regression.ts`**
   (`:106`, `:131`, `:158`, `:236`): `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`,
   `N3 scarlet/liberalio iron` each read 1–3 Full Bursts short of their video-measured counts on clean

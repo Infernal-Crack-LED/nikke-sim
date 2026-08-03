@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-08-03",
+    "title": "Team Buffs board: fairer test teams for long-cooldown supports",
+    "notes": [
+      "The Team Buffs board's test team has been rebuilt. Every burst stage is now covered by a stand-in teammate, so a support with a 40- or 60-second burst cooldown is measured on what its buffs add — not charged for Full Bursts the rest of the team could have kept going without it.",
+      "Long-cooldown supports moved up substantially as a result: Prika, Anchor: Innocent Maid, Mast: Romantic Maid, Alice: Wonderland Bunny, Delta: Ninja Thief, Arcana and Flora (Treasure) all gained. Anis: Star moved down — over a full fight she generates less burst gauge than the teammate she stands in for, which the board now counts properly.",
+      "Every test team now fields exactly one burst-cooldown-reduction unit, the way a real team does: the unit being tested when its kit reduces its allies' cooldowns, a stand-in otherwise. Cooldown supports are now measured against the standard enabler they replace.",
+      "Camera focus now stays on the same stand-in teammate in every run, so burst generation is identical for every unit tested. It previously sat on one of the damage dealers, whose weapon changes between the Generic and Typed boards.",
+      "The board no longer lists supports whose net effect is to reduce team damage."
+    ]
+  },
+  {
+    "date": "2026-08-03",
     "title": "Favorite items on the Characters page",
     "notes": [
       "A Nikke with a Treasure now shows the date her Treasure released, rather than the date the base character first launched. Most of them were showing the original character's date and a few were already showing the Treasure's — all 21 now read the same way.",

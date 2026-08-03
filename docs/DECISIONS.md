@@ -9,7 +9,154 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-03, latest) BUFFER BOARD: `blanc` UN-EXCLUDED — both her rows ship, and
+- **(2026-08-03, latest) EVERY BUFFER-BOARD TEAM FIELDS EXACTLY ONE BURST-COOLDOWN ENABLER, AND THE
+  CONTROL'S REDUCTION FIRES ON `fullBurstEnter`.** Owner ruling: an optimal team always carries one
+  CDR unit and almost never two, so the board should model that case. The tested unit takes the
+  enabler role whenever its kit reduces ALLY cooldowns; the no-op B1 keeps it otherwise. The BASELINE
+  always keeps the control's — the tested unit is not in it, so standing the control down there would
+  field a team with no enabler at all and measure every CDR unit against a rotation nobody runs. A
+  cooldown enabler's number therefore reads as what it adds over the standard 7s enabler it replaces.
+  **Two things this exposed first.** (1) `scripts/build-bufferchart.ts` loaded overrides for roster
+  slugs only, and the synthetic controls are not roster entries, so this board had NEVER applied the
+  7s its own methodology doc described — `src/skills/overrides/noop-b1-ar.json` was simply never read.
+  Two siblings load it (`build-burstgen.ts:48`, `build-b1b2dps.ts:56`), added `c044fcbd` 2026-07-27,
+  the day after this board was written (`91f53ea9`), never backported. **`build-sustain.ts` does NOT
+  and never has** — `git log -S noop-b1-ar -- scripts/build-sustain.ts` returns nothing across all
+  history, and its `:46` loads the B3 control only — while `src/ranks/sustain.ts:111,113` seats
+  `NOOP_B1` in two of its three comp shapes. The sustain board is therefore a SECOND live instance of
+  this defect, not collateral of the fix here: it is why that board is byte-identical to the trigger
+  change below (a control it never loads cannot move), and it is queued for its own owner ruling
+  rather than fixed in passing.
+  `scripts/tests/ranks/buffer.test.ts` had the identical gap, so every ranks test was validating a
+  configuration the board does not run. (2) `suppliesTeamCdr` must walk ARBITRARY nesting: liter,
+  volume, dolla and helm-aquamarine bury their `burstCdr` inside an `escalating` effect's `steps`, so
+  a shallow "block.effects has a burstCdr" scan drops the board's most important enabler. Self-only
+  carriers (mint, prika, tia) do not qualify — the line the burst-CDR board already draws.
+  **THE CONTROL'S TRIGGER MOVED, and that is the load-bearing half.** Its 7s fired on its own
+  `burstCast`, so its contribution depended on WINNING the stage-1 cast — which a tested B1 shares.
+  Measured, isolated: `rapunzel` at her real 60s cooldown took 3 casts, left the control 8, and the
+  team reached **9** Full Bursts; forced to 20s she took 6, left the control 6, and the team reached
+  **8**. A unit bursting more often made its own team slower, inverting what the board measures. The
+  reduction now fires on `fullBurstEnter` from `skill1` — the shape every real enabler uses (liter,
+  sakura, soline-frost-ticket are all `fullBurstEnter` → `allies`) — so the control contributes the
+  same 7s per Full Burst whoever holds the stage. `scripts/probe/buffer-rotation-audit.ts` then
+  reports no unit whose Full Burst count depends on its own cooldown, the property pinned in
+  `scripts/tests/ranks/buffer.test.ts`.
+  **Blast radius, accepted by the owner in advance** (`noop-b1-ar.json` is shared; before/after
+  artifacts diffed on row identity = slug + profile + template): **burstgen** 4 of 244 rows move,
+  largest `rosanna` 3.9% (rank 90→102); **b1b2dps** 12 of 272, largest `red-hood` 11.3% (rank 38→31);
+  **burstcdr** and **sustain** byte-identical — sustain necessarily so, since it never loads the
+  control being changed (see above). Buffer board, cumulative with the standard-team and
+  focus rulings above: `prika` 17.4 → 45.9 (rank 32→14), `anchor-innocent-maid` 8.3 → 29.7,
+  `chime` 126.3 → 142.7, `alice-wonderland-bunny` 0 → 15.5; `anis-star` 59.4 → 25.1 (rank 10→28).
+  Negative rows 5 → 12 — expected under this model, since an enabler weaker than the standard 7s now
+  reads below its baseline, and the leaderboard trims them.
+  **A formation gate makes 12 enablers, not 14 (cross-family review round 4, BLOCKER).** The
+  classifier counted any ally-facing `burstCdr`, ignoring the block's `formation` gate. The engine
+  activates such a block only when `(formation === 'hasB1') === teamHasB1` (`src/engine/sim.ts:737`),
+  and the standard team ALWAYS seats a B1 — so a `noB1` block is permanently inert here.
+  `anis-star` and `rapi-red-hood` carry their ONLY ally-facing reduction behind exactly that gate, so
+  the board stood the control down for them and fielded teams with NO enabler at all, the one thing
+  this ruling forbids. Both now keep the control: `anis-star` 25.1 → 43.0 (rank 29→15),
+  `rapi-red-hood` −2.7 → 0.0. No other unit moves.
+  **Found by the cross-family review (kimi-code/k3, FIX-BEFORE-MERGE), not by me:** the comp-profile
+  path replaced each no-op filler's ENTIRE override with the profile's synthetic kit, which was
+  harmless only while this board loaded no control overrides at all. Once it loaded them, every
+  profiled row lost the team's only enabler — `crown` `with-healer` ran **9** Full Bursts beside its
+  own plain row at **10**, and `naga` `with-shielder` likewise — so the two profiled rows were ranked
+  beside plain rows measured on a faster rotation, and the one-enabler rule this entry states was
+  false for exactly those rows. The loop now MERGES: it keeps the filler's own override (the B1's
+  CDR, the B3's mock burst) and appends the profile's blocks, starting from any `extraOverrides`
+  entry already written so the enabler stand-down is not undone. `crown` `with-healer` 97.7 → 105.2,
+  `naga` `with-shielder` 22.0 → 25.5, both now 10 v 10.
+  **`blanc` re-measured on this methodology.** Her un-exclusion (entry below) shipped from a
+  PRE-standard-team snapshot, so the figures recorded there — +7.88% plain, +20.93% `w/ Rouge` —
+  were taken on a board with no control CDR loaded and no one-enabler rule. That entry stands as
+  written (this log is append-only); on the merged methodology she reads **+9.7% plain** and
+  **+25.2% `w/ Rouge`**, both at Full Burst parity with their baselines. Her duo row was the one
+  place the non-B2-partner shape could have bitten — it does not, because her self-CDR and the
+  control enabler carry the rotation.
+  **A caution for whoever reads a diff next:** two of my own before/after comparisons were wrong
+  before this one was right. Keying rows on `slug + last field` mispaired a unit that has both a
+  plain and a profiled row (it reported `anis-star` +311% on b1b2dps, a phantom), and keying on
+  everything after the value silently DROPPED changed rows as unmatched (it reported burstgen as
+  0-of-244). Row identity is slug + profile (+ template); everything else in the tuple is output.
+
+- **(2026-08-03) THE BUFFER BOARD'S CAMERA FOCUS IS THE SPARE NO-OP B2 (SR), AND A TESTED
+  B3'S BURST IS SUPPRESSED OUTRIGHT.** Focus grants a charge weapon ×2.5 burst gauge, so whoever
+  holds it sets the pace of the team's whole rotation. It sat on the second carry
+  (`carryDpsSum` `focusSlug: team.slugs[team.carryIdxs[1]]`) — whose WEAPON the typed board rewrites
+  per tested unit: `carry-rl` banks the ×2.5 (140 base + 250 full charge) while `carry-sg` cannot
+  take it at all (200, no full-charge bonus), so the team's gauge, and its Full Burst count, moved
+  with the kit under test. **Owner ruling 2026-08-03: focus the no-op B2 (SR) so burst generation is
+  standardized.** It is now the spare stage slot (`assemble` returns `focusSlot`), which is
+  `noop-b2-sr` on every plain row, generic and typed, tested side and baseline alike. On a duo row
+  the partner occupies that slot and holds focus — symmetric, since the duo baseline seats the
+  partner there too, but it is the one row shape where focus is not the standard SR.
+  **Consequence, and the second half of this ruling:** the standardized focus makes the team's
+  rotation faster, and that broke the "a tested B3 never bursts" rule — rightmost placement only wins
+  the stage-3 cast for the carries while either is off cooldown, and they are 40s units, so a fast
+  enough rotation reaches a stage 3 where only the tested unit is ready. `ada` took a cast. The
+  tested B3's burst slot is therefore emptied outright (`burstOffSlug`, applied through the
+  `extraOverrides` channel `carryDpsSum` already uses) rather than left to rotation luck —
+  byte-identical for the 16 B3 buffers that never cast one. **Pinned by injection, not tautology:**
+  giving `ada` a 500% team-ATK burst buff moves her value by exactly 0.000 points.
+  **Residual, disclosed:** a tested B3 can still OCCUPY one stage-3 turn it would not have taken
+  (`burstCasts` is a rotation counter, not an effect counter), displacing one carry burst. Removing
+  that needs a per-unit burst-suppression option in `src/engine/**`, a protected path — not taken
+  without a separate owner call. It costs nothing on the board as it stands: after the one-enabler
+  ruling below changed the rotation, all 17 tested B3 buffers read 0 burst casts, `ada` included.
+  **Measured effect, focus change only** (`npx tsx scripts/build-bufferchart.ts` before/after on the
+  same HEAD): 71 of 83 generic rows move, all modestly — chime +8.4, little-mermaid +7.7 (rank
+  28→23), mint +6.2, crown +5.1, liter +4.2; drops avistar −2.8, ada −1.3 (the suppression),
+  mint `w/ Prika` −1.2. Typed: arcana +9.6, tove +8.4, anis-star −7.8, mint −6.8. Negative rows
+  6 → 2 generic and 4 → 2 typed. No rank upheaval — the largest move is 5 places.
+  **Also landed here:** the long-cooldown pin was rewritten to ISOLATE its variable. It asserted "no
+  unit with a >20s cooldown lands below its baseline Full Burst count", which uses cooldown as a
+  proxy and fails on units this shape never claimed to fix — `rosanna` reads 7 v 8 at 40s and
+  reads 7 v 8, byte-identical, at a forced 20s, so her shortfall is gauge, not rotation. The pin is
+  now: forcing a unit's cooldown to the no-op's 20s must not change its Full Burst count. verify.sh
+  green.
+
+- **(2026-08-03) THE BUFFER BOARD'S STANDARD TEAM CARRIES A SPARE NO-OP OF THE TESTED
+  UNIT'S STAGE, SO A LONG BURST COOLDOWN NO LONGER COSTS THE TEAM FULL BURSTS.** The board was built
+  without the design requirement it was supposed to have: the tested unit displaced the only no-op of
+  its stage, so a 40s Burst-2 landed **5** Full Bursts against the baseline's **9** (3 for the 60s
+  blanc) and was docked for four Full Bursts before a single buff was counted — roughly 8% of team
+  damage. Worse, a >20s Burst-1 was "compensated" by swapping the no-op B2 for a second no-op B1,
+  which left the team with no Burst-2 at all: **0 Full Bursts, both sides, all 180s** for 8 units,
+  killing every Full-Burst-gated line (moran's `fullBurstEnter` trigger among them). Not a
+  regression — `assemble`'s Burst-2 branch was unchanged since the board's first commit
+  (`91f53ea9`); the pairing existed only on the B1/B2 DPS board (`B2_TEAM`, pinned at
+  `scripts/tests/ranks/b1b2dps.test.ts:104`) and was never carried over. **Owner spec 2026-08-03:**
+  the standard team is no-op B1 (20s, 7s CDR) + two no-op B2 (20s) + the two carries (B3/40s, MG and
+  RL), with the tested unit taking the second B2's slot.
+  **Two things the spec's slot numbering does not say, both settled by measurement:**
+  (1) _The tested unit must LEAD its own stage._ Burst-stage contests are won by slot order, so a
+  tested unit left sitting behind the same-stage no-op simply stops bursting — a tested B2 in the
+  literal slot 3 casts **1** burst in 180s instead of 5 (flora 24.05% → 4.51%, crown 71.58% →
+  41.81%) and a tested B1 behind the no-op B1 casts **none** (liter 26.53% → **1.13%**). Owner
+  confirmed the wording was not meant literally for team order. Same five units, spare behind.
+  (2) _The baseline must be STAGE-MATCHED, not one fixed team._ Standing every unit against the plain
+  standard team charges each Burst-1 for trading a no-op B2 away: measured at up to −2 Full Bursts
+  and −34 points (anis-star 59.4 → 25.7), i.e. the same rotation distortion aimed at a different
+  stage. The baseline therefore puts a no-op of the tested unit's own stage back in its slot.
+  **Measured effect** (`npx tsx scripts/probe/buffer-rotation-audit.ts`): 61 of 78 units now match
+  their baseline's Full Burst count exactly, and NO unit with a >20s cooldown lands below it. Board
+  movement, generic: prika 17.4 → 42.4 (rank 32→13), anchor-innocent-maid 8.3 → 26.2 (52→23),
+  mast-romantic-maid 61.0 → 77.3, alice-wonderland-bunny 0 → 13.8, arcana −0.4 → 13.0,
+  delta-ninja-thief 3.1 → 15.5, moran 13.9 → 25.1, flora 14.8 → 24.0 (37→26), liter 26.5 → 35.3,
+  biscuit −7.7 → +1.0. The largest drop is anis-star 59.4 → 30.6: she is an RL whose gauge over the
+  fight is below the AR no-op she now sits beside (7 Full Bursts vs the baseline's 8), which the
+  methodology counts on purpose — rotation value cuts both ways. Negative rows 5 → 6.
+  **Residual, accepted:** units still land above or below their baseline's Full Burst count for
+  their OWN cooldown reduction or gauge (little-mermaid +3, liter/moran +2, anis-star/frima/kurumi
+  −1). That is unit-attributable value and the board should count it; what is gone is the structural
+  toll for merely having a long cooldown. Pinned in `scripts/tests/ranks/buffer.test.ts` (team shape,
+  stage-matched baseline, and "no long-cooldown unit lands below its baseline" over the whole
+  population). verify.sh green.
+
+- **(2026-08-03) BUFFER BOARD: `blanc` UN-EXCLUDED — both her rows ship, and
   `EXCLUDED_BUFFER_SLUGS` is now EMPTY.** Blanc was the set's sole member, excluded on the stated
   grounds that her kit's net effect is to REDUCE team damage in the standard comp and so produce a
   misleadingly negative % increase. **That rationale no longer describes her.** The buffer board's

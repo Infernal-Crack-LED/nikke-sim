@@ -58,18 +58,19 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- readers ----------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const novelShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'novel');
 const novelCasts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'novel');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'novel'
+  );
 /** The stage-3 cast of each rotation — when the Full Burst chain completes. */
 const stage3Casts = (evs: SimEvent[]) =>
-  evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.stage === 3
-  );
+  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.stage === 3);
 
 /** Cornucopia DEF▲ stack applications (the S2 line's observable). */
 const cornucopiaApplies = (evs: SimEvent[]) =>
@@ -128,7 +129,9 @@ const novelUngatedMark = withPatchedOverride('novel', (ov) => {
       x.effects.some((e: any) => e.stat === 'damageTakenPct')
   );
   if (!b) {
-    throw new Error('novel burst cornucopia-gated mark missing — fixture is stale');
+    throw new Error(
+      'novel burst cornucopia-gated mark missing — fixture is stale'
+    );
   }
   delete b.resourceGate;
 });
@@ -286,7 +289,9 @@ describe('novel — kit spec', () => {
       );
       const outside = all.filter(
         (d) =>
-          !applied.some((b) => d.frame >= b.frame && d.frame < b.frame + 5 * FPS)
+          !applied.some(
+            (b) => d.frame >= b.frame && d.frame < b.frame + 5 * FPS
+          )
       );
       expect(
         [...new Set(inWindow.map((d) => d.mult.taken))],
@@ -317,9 +322,10 @@ describe('novel — kit spec', () => {
             false
           );
         } else {
-          expect(marked, `cast at ${c.sec.toFixed(2)}s is post-max-stacks`).toBe(
-            true
-          );
+          expect(
+            marked,
+            `cast at ${c.sec.toFixed(2)}s is post-max-stacks`
+          ).toBe(true);
         }
       }
     });

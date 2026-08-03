@@ -10,9 +10,10 @@
 //     tested B3 → [no-op B1, no-op B2, carry, carry, tested-rightmost]
 //   The baseline is the same team with a no-op of the tested unit's OWN stage
 //   in its place, so both sides field the same stage distribution.
-//   A tested B3 sits RIGHTMOST so the two carries always win the stage-3 cast
-//   and it never bursts (pinned in tests) — its value must come through
-//   passives and cast-free lines.
+//   A tested B3's BURST IS SUPPRESSED outright (`burstOffSlug`); rightmost
+//   placement only orders the stage-3 cast and does not on its own keep the
+//   tested unit from taking one.
+//   A tested B3's value must come through passives and cast-free lines.
 //   Value = % team damage increase = (Σ carry DPS with the buffer − Σ carry
 //   DPS with the stage-matched baseline) / Σ carry DPS with that baseline.
 //   The buffer's own weapon damage is NOT counted. Rotation-driven value
@@ -176,6 +177,102 @@ export const DUO_BUFFER_PROFILES: Record<
 // `npx tsx scripts/probe/buffer-rotation-audit.ts --excluded` checks each entry's
 // live value against the criterion.
 export const EXCLUDED_BUFFER_SLUGS = new Set<string>();
+
+// Does this unit supply the TEAM's burst-cooldown reduction?
+//
+// The board fields exactly one CDR source per team, the way an optimal team
+// does (owner ruling 2026-08-03): the tested unit if it is an enabler, the
+// no-op B1 otherwise. This is what decides which.
+//
+// Ally-facing only. Self-only reduction does not make a unit the team's
+// enabler — the same line the burst-CDR board already draws ("self-only
+// cooldown reduction is a note column, never part of the ranked value"), and
+// the reason prika, tia and red-hood do not count despite carrying `burstCdr`.
+// The scan must reach ARBITRARY nesting: the four ladder enablers (liter,
+// volume, dolla, helm-aquamarine) bury theirs inside an `escalating` effect's
+// `steps`, so a shallow "block.effects has a burstCdr" check silently misses
+// the board's most important CDR unit.
+//
+// `burstSuppressed` drops the WHOLE burst slot, matching what burstOffSlug
+// actually wipes (`{...own, burst: []}`). Dropping only burstCast-triggered
+// blocks would disagree with it: a burst-slot block on some other trigger would
+// still count the unit as the team's enabler while the wipe had already removed
+// its CDR, leaving a team with no enabler at all. No unit relies on that path
+// today — every B3 buffer's burst slot is burstCast-triggered or empty, and no
+// burstCdr carrier is a B3 — but the two must not drift apart.
+export function suppliesTeamCdr(
+  override: unknown,
+  burstSuppressed = false
+): boolean {
+  let found = false;
+  const hasCdr = (node: unknown): boolean => {
+    if (Array.isArray(node)) {
+      return node.some(hasCdr);
+    }
+    if (!node || typeof node !== 'object') {
+      return false;
+    }
+    if ((node as { kind?: string }).kind === 'burstCdr') {
+      return true;
+    }
+    return Object.values(node as Record<string, unknown>).some(hasCdr);
+  };
+  const visit = (node: unknown) => {
+    if (Array.isArray(node)) {
+      return node.forEach(visit);
+    }
+    if (!node || typeof node !== 'object') {
+      return;
+    }
+    const block = node as {
+      slot?: string;
+      trigger?: any;
+      target?: any;
+      formation?: string;
+      teamHas?: unknown;
+      effects?: unknown[];
+    };
+    if (
+      block.target &&
+      // ally-facing only: `!== 'self'` would also admit an enemy-targeted
+      // burstCdr, which would make a unit the team's enabler without ever
+      // reducing an ally's cooldown. None exists today.
+      String(block.target.kind).startsWith('allies') &&
+      Array.isArray(block.effects) &&
+      !(burstSuppressed && block.slot === 'burst') &&
+      // The standard team ALWAYS seats a B1 (the no-op B1 on every row, plus
+      // the tested unit on B1 rows), and the engine activates a formation-gated
+      // block only when `(formation === 'hasB1') === teamHasB1`
+      // (src/engine/sim.ts:737). A `noB1` block is therefore permanently inert
+      // here and cannot make anyone the team's enabler — anis-star and
+      // rapi-red-hood carry their ONLY ally-facing burstCdr behind exactly that
+      // gate, so counting it stood the control down and left those two teams
+      // with no enabler at all.
+      (!block.formation || block.formation === 'hasB1') &&
+      // `teamHas` is the third static gate the engine applies in that same
+      // filter (sim.ts:740), and this treats EVERY teamHas-gated block as
+      // inert. That is exact for the `slugs` and `sameSquad` facets — the
+      // synthetic no-ops and carries carry no curated squad, and the gate fails
+      // closed — but deliberately approximate for the structural ones: the two
+      // carries are B3 / Attacker / MG+RL at a fixed element, so a future
+      // `teamHas: {burst: 'III'}` (or class/weapon/element) gate WOULD in fact
+      // fire here, and treating it as inert leaves the control standing beside
+      // a unit whose CDR really does apply — two enablers rather than one.
+      // Chosen anyway because the opposite error is worse: counting a gate that
+      // does NOT fire leaves the team with NO enabler, which is exactly what
+      // the noB1 gate did. Revisit when a structural teamHas first appears on
+      // an ally-facing burstCdr; none exists today (the only teamHas +
+      // burstCdr block is blanc's, self-targeted).
+      !block.teamHas &&
+      hasCdr(block.effects)
+    ) {
+      found = true;
+    }
+    Object.values(node as Record<string, unknown>).forEach(visit);
+  };
+  visit(override);
+  return found;
+}
 
 // Walk every {target, effects} block in the override JSON (any nesting — skill
 // slots, modes, steps) and derive what the carries must provide for the unit's
@@ -373,9 +470,9 @@ export interface BufferValue {
   valuePct: number; // total % team damage increase vs the no-op baseline (CAN BE NEGATIVE)
   carryDps: number; // Σ carry DPS with the buffer (internal context, not emitted)
   baselineDps: number; // Σ carry DPS with the no-op baseline (internal context, not emitted)
-  testedBurstCasts: number; // pin: a tested B3 must be 0 (rightmost rule)
+  testedBurstCasts: number; // a tested B3's burst EFFECTS are suppressed (burstOffSlug); this counts rotation turns, which it can still take
   fullBursts: number; // the team's Full Bursts over the fight
-  baselineFullBursts: number; // ...and the standard team's, which it must match
+  baselineFullBursts: number; // ...and its baseline's. They legitimately differ (gauge, own CDR, a weaker enabler); the guarantee is only that neither depends on the tested unit's own cooldown
   profile: string | null; // comp profile id (with-healer/with-shielder/duo); null = plain
   rules: string[]; // typed-board adaptation audit trail ([] on generic)
   rank: number;
@@ -392,7 +489,10 @@ function carryDpsSum(
   pierceOverride: boolean,
   testedSlug?: string,
   profile?: string | null,
-  unitOptsMap: Record<string, UnitOptions> = {}
+  unitOptsMap: Record<string, UnitOptions> = {},
+  // The team fields exactly ONE burst-cooldown enabler. When the tested unit
+  // (or its duo partner) is that enabler, the no-op B1 stands down.
+  disableNoopCdr = false
 ): { sum: number; testedBurstCasts: number; fullBursts: number } {
   const chars = team.slugs.map((s) => charFor(ctx, s, team.chars as any));
   const element = (chars[team.carryIdxs[0]] as CharacterData)
@@ -430,6 +530,14 @@ function carryDpsSum(
   };
   const compProfile = profile ? COMP_PROFILES[profile] : undefined;
   const extraOverrides: Record<string, any> = {};
+  if (disableNoopCdr) {
+    extraOverrides[NOOP_B1] = {
+      slug: NOOP_B1,
+      skill1: [],
+      skill2: [],
+      burst: [],
+    };
+  }
   if (team.burstOffSlug) {
     const own = ctx.deps.overrides[team.burstOffSlug];
     extraOverrides[team.burstOffSlug] = { ...(own ?? {}), burst: [] };
@@ -446,15 +554,32 @@ function carryDpsSum(
     }
   }
   if (compProfile) {
-    for (const s of team.slugs) {
+    // DEDUPED: a stage-matched baseline seats the same no-op slug twice
+    // ([B1, B2, B2, ...] for a tested B2; [B1, B1, B2, ...] for a tested B1),
+    // so iterating team.slugs merged the profile kit in TWICE on the baseline
+    // side and once on the tested side. Inert today — the profiles inject heals
+    // and shields, which touch no carry damage — but asymmetric, and it would
+    // double-apply silently the day a profile carries a damage-relevant line.
+    for (const s of new Set(team.slugs)) {
       if (!(NOOP_CHARACTERS as any)[s]) {
         continue;
       } // no-op fillers only
+      // MERGE, never replace. The fillers' own overrides carry the framework
+      // effects — the B1 control's team CDR, the B3 control's mock burst — and
+      // replacing them wholesale stripped the team's only cooldown enabler on
+      // every profiled row: crown `with-healer` ran 9 Full Bursts beside its
+      // own plain row at 10, contradicting the one-enabler rule this board is
+      // documented on. Start from whatever extraOverrides already holds for
+      // this filler so the disableNoopCdr write above survives too.
+      // All three slots stay present: a filler with no override file at all
+      // (noop-b2-sr) would otherwise fail the every-slot-defined contract.
+      const own = extraOverrides[s] ?? ctx.deps.overrides[s];
       extraOverrides[s] = {
+        ...(own ?? {}),
         slug: s,
-        skill1: compProfile.noopSkill1,
-        skill2: [],
-        burst: [],
+        skill1: [...(own?.skill1 ?? []), ...compProfile.noopSkill1],
+        skill2: own?.skill2 ?? [],
+        burst: own?.burst ?? [],
       };
     }
   }
@@ -502,10 +627,15 @@ export function bufferValueFor(
       ? DUO_BUFFER_PROFILES[slug]
       : undefined;
 
+  // Exactly one burst-cooldown enabler per team (owner ruling 2026-08-03).
+  // The tested unit takes that role when it can; otherwise the no-op B1 keeps
+  // it. The BASELINE always keeps the no-op's — the tested unit is not in it,
+  // so standing the control down there would field a team with no enabler at
+  // all and measure every CDR unit against a rotation nobody would run.
   const team = assemble(slug, burst, board, spec, duoProfile?.partner);
   const baselineTeam = assemble(null, burst, board, spec, duoProfile?.partner);
   const baselineKey = duoProfile
-    ? `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile}|partner=${duoProfile.partner}|partnerMode=solo`
+    ? `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile}|partner=${duoProfile.partner}|partnerMode=${duoProfile.partnerMode ?? 'solo'}`
     : `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile ?? 'plain'}`;
   let baseline = baselineMemo.get(baselineKey);
   if (baseline === undefined) {
@@ -522,7 +652,10 @@ export function bufferValueFor(
       board === 'typed' && spec.pierce,
       undefined,
       activeProfile,
-      baselineOpts
+      baselineOpts,
+      duoProfile
+        ? suppliesTeamCdr(ctx.deps.overrides[duoProfile.partner])
+        : false
     );
     baseline = { sum: b.sum, fullBursts: b.fullBursts };
     baselineMemo.set(baselineKey, baseline);
@@ -532,6 +665,15 @@ export function bufferValueFor(
     testedOpts[slug] = { mode: duoProfile.mode ?? 'solo' };
     testedOpts[duoProfile.partner] = { mode: duoProfile.partnerMode ?? 'solo' };
   }
+  // A duo partner sits in BOTH teams, so an enabler partner stands the control
+  // down on both sides; a tested enabler only does so on its own side.
+  const partnerIsEnabler = duoProfile
+    ? suppliesTeamCdr(ctx.deps.overrides[duoProfile.partner])
+    : false;
+  const testedIsEnabler = suppliesTeamCdr(
+    ctx.deps.overrides[slug],
+    team.burstOffSlug === slug
+  );
   const run = carryDpsSum(
     team,
     ctx,
@@ -539,7 +681,8 @@ export function bufferValueFor(
     board === 'typed' && spec.pierce,
     slug,
     activeProfile,
-    testedOpts
+    testedOpts,
+    testedIsEnabler || partnerIsEnabler
   );
   return {
     slug,

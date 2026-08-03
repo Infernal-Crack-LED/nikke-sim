@@ -118,7 +118,10 @@ const run = (opts: CompOptions) => {
   });
   return { events, t: totals(res) };
 };
-const withBay = (opts: CompOptions, ov: ReturnType<typeof withPatchedOverride>): CompOptions => ({
+const withBay = (
+  opts: CompOptions,
+  ov: ReturnType<typeof withPatchedOverride>
+): CompOptions => ({
   ...opts,
   overrides: { ...opts.overrides, bay: ov },
 });
@@ -231,12 +234,12 @@ describe('bay — fixture non-vacuity', () => {
     expect(
       R_CTL_BASE.events.filter((e) => e.kind === 'shot').length
     ).toBeGreaterThan(0);
-    expect(R_CTL_BASE.t['crown']).toBeGreaterThan(0);
+    expect(R_CTL_BASE.t.crown).toBeGreaterThan(0);
   });
 
-  it('FX_SOLE actually casts bay\'s burst (marker probe)', () => {
+  it("FX_SOLE actually casts bay's burst (marker probe)", () => {
     // Without this, every burst-slot assertion below would be vacuously green.
-    expect(R_SOLE_MARKER.t['bay']).toBeGreaterThan(R_SOLE_BASE.t['bay']);
+    expect(R_SOLE_MARKER.t.bay).toBeGreaterThan(R_SOLE_BASE.t.bay);
     expect(
       R_SOLE_BASE.events.filter((e) => e.kind === 'fullBurstStart').length
     ).toBeGreaterThan(0);
@@ -257,7 +260,7 @@ describe('bay skill1 b) — full-charge ally heal (the only cross-unit channel)'
     expect(blk.target.excludeSelf).toBe(true);
   });
 
-  it('reaches the on-recovery consumer (crown) — removing it drops crown\'s buff applications', () => {
+  it("reaches the on-recovery consumer (crown) — removing it drops crown's buff applications", () => {
     // Discriminates against: heal absent, heal scoped to self, or heal emitting no recovery event.
     expect(crownApplies(R_CTL_BASE.events)).toBeGreaterThan(
       crownApplies(R_CTL_NO_HEAL.events)
@@ -324,7 +327,7 @@ describe('bay skill2 b) — Full-Burst-end COVER heal is NOT an ally heal', () =
     );
   });
 
-  it('no heal in bay\'s kit targets allies at Full Burst end', () => {
+  it("no heal in bay's kit targets allies at Full Burst end", () => {
     const fbEndAllyHeals = effectsOf(OV).filter(
       (x) =>
         x.e.kind === 'heal' &&
@@ -357,9 +360,7 @@ describe('bay burst c) — "Damage Taken ▼ 8.87%, all allies" is ALLY MITIGATI
         (b) => b.stat === 'damageTakenPct'
       ).length
     ).toBeGreaterThan(0);
-    expect(teamTotal(R_SOLE_DAMAGE_TAKEN.t)).not.toBe(
-      teamTotal(R_SOLE_BASE.t)
-    );
+    expect(teamTotal(R_SOLE_DAMAGE_TAKEN.t)).not.toBe(teamTotal(R_SOLE_BASE.t));
   });
 });
 
@@ -381,10 +382,10 @@ describe('bay burst b) — "Max HP of COVER ▲18%" is not a nikke Max-HP grant'
     ).toHaveLength(0);
   });
 
-  it('INERTNESS: even a self Max-HP reading cannot move bay\'s damage', () => {
+  it("INERTNESS: even a self Max-HP reading cannot move bay's damage", () => {
     // bay has no atkOfMaxHpPct conversion, so the cover-HP line is damage-inert either way —
     // recorded so no future calibration is hung on it.
-    expect(R_SOLE_COVER_MAXHP.t['bay']).toBe(R_SOLE_BASE.t['bay']);
+    expect(R_SOLE_COVER_MAXHP.t.bay).toBe(R_SOLE_BASE.t.bay);
   });
 });
 

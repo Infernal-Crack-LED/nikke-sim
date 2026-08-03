@@ -49,6 +49,8 @@ export function scaleBlocks(
         return { ...e, atkPct: scaleVal(e.atkPct, slot) };
       case 'dot':
         return { ...e, atkPct: scaleVal(e.atkPct, slot) };
+      case 'hitRepeat':
+        return { ...e, pct: scaleVal(e.pct, slot) };
       case 'burstCdr':
         return { ...e, seconds: scaleVal(e.seconds, slot) };
       case 'escalating':

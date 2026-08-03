@@ -557,6 +557,17 @@ interface UnitState {
   resourceCfg: { name: string; initial: number; min?: number; max?: number }[];
   burstCdFrames: number;
   lastBurstCastFrame: number;
+  // The PRIMARY weapon-fire damage instance of this unit's most recent trigger pull, and the
+  // frame it landed on. Written by firePull immediately after that instance resolves, i.e.
+  // BEFORE the pull's shotFired/hitCount/chargeCounter blocks dispatch — which is what lets a
+  // `hitRepeat` rider ("Deals Fixed Damage equal to X% of the damage dealt by self") read the
+  // parent hit's FINAL number. `lastHitFrame` frame-locks the rider: it fires only when the
+  // owner actually landed a hit on the same frame, never off a stale value.
+  // Deliberately the primary instance only — not the Pierce double-hit and not the summed
+  // extraHitDamagePct rider, both of which are separate instances of the same pull.
+  // Read by nothing else; inert for every unit with no hitRepeat effect.
+  lastHitDamage: number;
+  lastHitFrame: number;
   // results
   damage: { normal: number; skill: number; burst: number };
   pulls: number;
@@ -866,6 +877,8 @@ export function runSim(
       resourceCfg: skills.resources ?? [],
       burstCdFrames: 0,
       lastBurstCastFrame: -1,
+      lastHitDamage: 0,
+      lastHitFrame: -1,
       damage: { normal: 0, skill: 0, burst: 0 },
       pulls: 0,
       burstCasts: 0,
@@ -1586,7 +1599,11 @@ export function runSim(
       srcSlot?: SkillSlot | 'normal';
       chargeMultPct?: number; // full-charge multiplier override when there is no swap to source it (delayed charge hit — snow-white's cannon); only read when charge:true
     }
-  ) {
+    // RETURNS the instance's final damage. Every existing caller ignores it; it exists so the
+    // weapon-fire path can hand the parent hit's FINAL number to a `hitRepeat` rider ("X% of the
+    // damage dealt by self"), which is a fraction of an already-composed number rather than a
+    // fresh composition of its own.
+  ): number {
     const fb = fbEndFrame > frame;
     // During a weapon swap that overrides the weapon class, range/core banding follows the SWAP
     // weapon (nayuta: SMG base → SR "Memory Incineration" mode gains SR range eligibility + HI core).
@@ -1810,6 +1827,67 @@ export function runSim(
           projFactor,
           taken,
           distributed,
+        },
+      });
+    }
+    return dmg;
+  }
+
+  /**
+   * A "%-of-hit repeat" instance (`hitRepeat`): an ADDITIONAL function-damage hit worth a
+   * fraction of a parent instance's ALREADY-COMPUTED final damage — SSOT
+   * docs/data/nikke-damage-formula.md §3, "%-of-hit repeats ('deals X% of the damage dealt')
+   * inherit everything from the parent hit implicitly".
+   *
+   * It deliberately does NOT go through dealDamage: the parent's number already contains every
+   * bucket (crit expectation, core, range, Full Burst, element, charge, Damage Up, Damage
+   * Taken), so composing a fresh multiplier stack on top would double-count each of them. The
+   * inheritance is implicit, by construction — and the two multipliers function damage may
+   * never take (core, the +30% range bonus) are excluded for free, because nothing is applied.
+   */
+  function dealRepeatDamage(
+    u: UnitState,
+    amount: number,
+    frame: number,
+    category: 'skill' | 'burst',
+    srcSlot: SkillSlot
+  ) {
+    u.damage[category] += amount;
+    if (onEvent) {
+      const baseAtk = Math.max(0, effectiveAtk(u, frame) - cfg.bossDef);
+      onEvent({
+        kind: 'damage',
+        frame,
+        sec: frame / FPS,
+        unitIdx: u.idx,
+        slug: u.char.slug,
+        bucket: category,
+        srcSlot,
+        amount,
+        // The SimEvent contract is `amount = baseAtk x atkPct/100 x the product of mult`. A
+        // repeat carries no multipliers of its own, so every bucket reads 1 and atkPct is
+        // reported as the %-of-final-ATK this instance is EQUIVALENT to — DERIVED from the
+        // amount, not an authored coefficient (the authored number is a % of the parent HIT).
+        atkPct: baseAtk > 0 ? (100 * amount) / baseAtk : 0,
+        baseAtk,
+        critEligible: false,
+        coreEligible: false,
+        critRate: 0,
+        coreRate: 0,
+        inFullBurst: fbEndFrame > frame,
+        // The parent already took (or did not take) the +50%; this instance never takes it in
+        // its own right. Same for the range bonus.
+        fbMajorApplied: false,
+        rangeApplied: false,
+        mult: {
+          major: 1,
+          elem: 1,
+          charge: 1,
+          dmgUp: 1,
+          seqMult: 1,
+          projFactor: 1,
+          taken: 1,
+          distributed: 1,
         },
       });
     }
@@ -2332,6 +2410,28 @@ export function runSim(
               e.flavor
             ),
           });
+          break;
+        }
+        case 'hitRepeat': {
+          // "%-of-hit repeat": deal `pct`% of the damage the owner's hit JUST dealt (SSOT
+          // nikke-damage-formula.md §3). FRAME-LOCKED to that hit — the rider fires only when
+          // the owner landed a weapon instance on this very frame, so it can never re-use a
+          // stale number if a kit ever carries it on an off-pull trigger. (validate-overrides
+          // restricts authoring to the per-pull triggers the engine dispatches from firePull,
+          // right after the parent instance resolves; this is the engine-side backstop.)
+          if (owner.lastHitFrame !== frame || owner.lastHitDamage <= 0) {
+            break;
+          }
+          // Function-damage impacts generate weapon-base gauge, same as a flatDamage proc or a
+          // DoT tick (⚑ unmeasured for this mechanic specifically — see skills/types.ts).
+          skillGauge(owner, frame);
+          dealRepeatDamage(
+            owner,
+            (e.pct / 100) * owner.lastHitDamage,
+            frame,
+            category,
+            block.slot
+          );
           break;
         }
         case 'dot': {
@@ -3219,10 +3319,25 @@ export function runSim(
           // Swap states with an explicit cadence are fire-rate-gated (decoded: Red Wolf
           // rate_of_fire 200rpm; eunhwa/nayuta/maxwell cycles hand-measured) — charge
           // speed does not shorten them.
+          //
+          // NEGATIVE sums are legal and mean a SLOWER charge — "Charge Speed ▼ X%" downside
+          // kit lines (emilia's burst pays ▼300% for its nuke, i.e. a 4x longer charge). The
+          // subtractive formula already extends to them with no special case, so the old
+          // `Math.max(0, …)` floor did not protect anything, it just made a real downside
+          // unrepresentable (and therefore silently OVER-credited every carrier). The three
+          // failure modes it might have guarded are all impossible here, and
+          // scripts/tests/engine/negative-charge-speed.test.ts pins each: `cs` is only ever
+          // used as `1 - cs/100` (no division), `Math.max(1, …)` below already floors the
+          // result at one frame and a negative `cs` only makes the product LARGER, and the
+          // charge advances one frame per simulated frame against a value that is merely
+          // compared — so a bigger `needed` means fewer shots, never a loop. No artificial
+          // lower bound is imposed: an absurd debuff simply yields a charge longer than the
+          // fight, which is the faithful outcome.
+          // The UPPER clamp is a real rule and stays.
           const cs =
             u.swap?.chargeFrames != null
               ? 0
-              : Math.min(100, Math.max(0, stat(u, 'chargeSpeedPct', frame)));
+              : Math.min(100, stat(u, 'chargeSpeedPct', frame));
           const needed = Math.max(1, Math.round(chargeFrames * (1 - cs / 100)));
           if (u.chargeProgress >= needed) {
             u.chargeProgress = 0;
@@ -3582,7 +3697,10 @@ export function runSim(
       consolidating && consol ? consol.pelletFraction : bandSg.dmg;
     const sgGaugeFrac =
       consolidating && consol ? consol.pelletFraction : bandSg.gauge;
-    dealDamage(u, baseMult * normalScale * sgFalloff, frame, {
+    // The PARENT instance of this pull. Its final damage is recorded on the unit (below) so the
+    // per-pull block dispatch further down can hand it to a `hitRepeat` rider — the dispatch
+    // runs after this line, which is what makes "X% of the damage dealt by self" expressible.
+    u.lastHitDamage = dealDamage(u, baseMult * normalScale * sgFalloff, frame, {
       crit: true,
       core: !(isMg && u.mgRampRound < MG_NO_CORE_RAMP_ROUNDS),
       charge: charged,
@@ -3606,6 +3724,7 @@ export function runSim(
       // value = full-shot base × dmgUp with major ≈ 1.0, not 1.3 — dorothy-solo-reanalysis.json)
       noRange: consolidating || undefined,
     });
+    u.lastHitFrame = frame;
     if (consolidating) {
       u.consolShotsLeft--;
     }

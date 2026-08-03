@@ -29,16 +29,16 @@ crit-eligible burst-bucket hits that land on her cast frame, before the Full Bur
 
 ## Line-by-line
 
-| Line                                                              | Disposition | Notes                                                                                                                                  |
-| ----------------------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| S1: after 40 normal attacks (trigger)                             | FAITHFUL    | `hitCount:80` = 40 trigger PULLS × hitsPerShot 2 — the repo SHOT convention; ⚑1 carries the 2× shot-vs-hit lever with a popup recipe    |
-| S1: Attack Speed ▲7.26% for 3 sec (self)                          | FAITHFUL    | `attackSpeedPct 7.26 / durationSec 3`; kth application rides the 40k-th pull; recurring (no once qualifier); removing it lowers totals |
-| S2: "Only affects self at Max HP" (gate)                          | FAITHFUL    | Always-true under scope lock (no incoming damage modeled); documented in caveats, never enacted as a blocker                            |
-| S2: Critical Rate ▲21.62% permanently (self)                      | FAITHFUL    | UNSCOPED `critRatePct` (prose has no "of normal attacks" qualifier — feeds burst/skill rolls too); frame-0 passive, no expiry          |
-| S2: Critical Damage ▲62.27% permanently (self)                    | FAITHFUL    | `critDamagePct 62.27`, additive pp in the crit term (SSOT §1b); major-bucket delta pinned at exactly critRate × 0.6227 on matched hits |
-| Burst: 396% of final ATK to enemies within attack range           | FAITHFUL    | `burstCast` → enemy `flatDamage 396`; crit at sheet rate (SSOT burst-nuke row), never core, no range, FB-exempt by cast timing          |
-| Burst: +924% of final ATK to the same targets when at Max HP      | FAITHFUL    | Second `burstCast` block, same target; gate read as the CASTER's HP (kit-internal consistency with S2), always-true in scope            |
-| (none)                                                            | —           | `unmodeled` is EMPTY for all three slots — the whole kit is engine-expressible; no `ignored` blocks                                     |
+| Line                                                         | Disposition | Notes                                                                                                                                  |
+| ------------------------------------------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| S1: after 40 normal attacks (trigger)                        | FAITHFUL    | `hitCount:80` = 40 trigger PULLS × hitsPerShot 2 — the repo SHOT convention; ⚑1 carries the 2× shot-vs-hit lever with a popup recipe   |
+| S1: Attack Speed ▲7.26% for 3 sec (self)                     | FAITHFUL    | `attackSpeedPct 7.26 / durationSec 3`; kth application rides the 40k-th pull; recurring (no once qualifier); removing it lowers totals |
+| S2: "Only affects self at Max HP" (gate)                     | FAITHFUL    | Always-true under scope lock (no incoming damage modeled); documented in caveats, never enacted as a blocker                           |
+| S2: Critical Rate ▲21.62% permanently (self)                 | FAITHFUL    | UNSCOPED `critRatePct` (prose has no "of normal attacks" qualifier — feeds burst/skill rolls too); frame-0 passive, no expiry          |
+| S2: Critical Damage ▲62.27% permanently (self)               | FAITHFUL    | `critDamagePct 62.27`, additive pp in the crit term (SSOT §1b); major-bucket delta pinned at exactly critRate × 0.6227 on matched hits |
+| Burst: 396% of final ATK to enemies within attack range      | FAITHFUL    | `burstCast` → enemy `flatDamage 396`; crit at sheet rate (SSOT burst-nuke row), never core, no range, FB-exempt by cast timing         |
+| Burst: +924% of final ATK to the same targets when at Max HP | FAITHFUL    | Second `burstCast` block, same target; gate read as the CASTER's HP (kit-internal consistency with S2), always-true in scope           |
+| (none)                                                       | —           | `unmodeled` is EMPTY for all three slots — the whole kit is engine-expressible; no `ignored` blocks                                    |
 
 Multi-target clauses ("enemies within attack range" / "the same target(s)") collapse to the single
 scope-lock boss (`{kind:'enemy'}` documented stand-in; v1 fields one immortal enemy).
@@ -50,9 +50,9 @@ scope-lock boss (`{kind:'enemy'}` documented stand-in; v1 fields one immortal en
   independently rejected the scoped `critRateNormalPct` reading), the always-true Max-HP gates,
   and the 396+924 pair on `burstCast`. One convention divergence: the reviewer chose hitCount 40
   (per-HIT reading) — reconciled to the driver's 80 on the brid-silent-track MEASURED pull anchor
-  + five uniform multi-hit precedents; reviewer itself conceded the tuple is "effectively a ⚑
-  convention until popup-read". The reviewer's "flatDamage crit is opt-in (default off)" claim was
-  STALE — engine default is crit-ON (sim.ts + SSOT table "burst nuke crit ✅").
+  - five uniform multi-hit precedents; reviewer itself conceded the tuple is "effectively a ⚑
+    convention until popup-read". The reviewer's "flatDamage crit is opt-in (default off)" claim was
+    STALE — engine default is crit-ON (sim.ts + SSOT table "burst nuke crit ✅").
 - **S5 (claude-opus-5, blind test):** `leakDetected:null`. Independently derived the same 5 lines.
   The pristine file guessed five harness/event shapes wrong (import path, onEvent routing, slot
   field — `UnitResult.position` is a battle position, not the slot —, event ownership, override
