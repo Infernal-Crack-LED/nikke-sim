@@ -415,11 +415,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   out of `topTeams` and parameterize per row. Hard constraint: **union must NEVER be sorted** (row _i_ is
   bound to boss _i_; `shareUnionRoster` zips by index). Cheap pre-check first: does union greedy leave a
   team on the table on a constrained pool the way solo did?
-- **⇒ SEO — parked, low-prio → `docs/handoffs/2026-07-30-seo-notes.md`.** GSC's "Page with redirect"
-  flag on the http:// variants is expected (Google confirming the 301→canonical works), not a defect —
-  no fix needed. The real item is whether to prerender/SSR the docs/FAQ content so non-Google AI
-  crawlers (GPTBot/PerplexityBot, which don't execute JS) can see it; the owner is unsure it's worth
-  doing. Revisit only if AI-citation/organic traffic to the docs pages becomes a priority.
+- **⇒ `/doll` FAQ is the last route with no crawler-visible body** (current no-JS surface:
+  `docs/STATE.md` §9). Blocked on a prerequisite, not on effort: `web/src/doll-faq-data.ts` is the
+  Discord bot's copy while `App.tsx` renders its own richer JSX version, so injecting from the data
+  module would serve crawlers text the page does not show — which the no-JS ruling forbids.
+  **Reconcile the two copies first**, then it is a one-line addition to
+  `scripts/build-content-pages.ts`.
+- **⇒ First deploy after PR #68: confirm `/mechanics` returns a real body.** The bug it fixes was a
+  build step that looked wired and never ran, and the deploy-box path is the one thing no test can
+  exercise — `curl -s https://nikkesim.app/mechanics | grep -c 'mech-page'` should be 1, not 0.
 - **⇒ Bakery-bot share-URL durability — one residual to tell the bot:** a `characters.json` change (e.g.
   a unit rename) moves pixels without moving the render cache key — `specCacheKey` covers renderer
   changes, not data changes. If that bites, add a data stamp to the key.
