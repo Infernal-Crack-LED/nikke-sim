@@ -14,6 +14,55 @@ DECISIONS leaves the stale question here reading as live — always move it.
 
 ## UNANSWERED
 
+### U38 — "self and 2 allies on both sides": does `selfAndAdjacent.sides` mean 1 each side or 2? (opened 2026-08-03)
+
+Two overrides use the positional `selfAndAdjacent` selector and both author `sides: 2`, which the
+engine reads as every ally within TWO slots on each side — up to five units:
+
+- `flora` skill 1 — blablalink prose: "Affects self and **both adjacent allies**"; the datamined
+  table for the same line: "Affects self and 2 allies on both sides".
+- `rouge` skill 2 — both prose and datamine: "Affects self and 2 allies on both sides".
+
+The two phrasings do not agree. Read as "the 2 allies on either side of me", the set is **three**
+units (`sides: 1`); read as "2 allies on each side", it is **five** (`sides: 2`, what ships).
+Flora's English prose ("both adjacent allies") points at three; Rouge has no such second phrasing.
+
+Why it matters now: Flora's S2-3 ATK ▲45.12%-of-caster buff targets "all allies in the Peace of Mind
+state", i.e. whatever set S1 covers, so the same number decides how many allies a large team buff
+reaches. The two units must stay consistent with each other and Flora's S1/S2-3 must stay consistent
+internally — which is why the 2026-08-03 S2 landing kept `sides: 2` rather than splitting them.
+
+**Resolving it:** a Korean/Japanese kit-text read of either unit's clause (the KR "자신과 양옆 N명"
+form is unambiguous about which side the count attaches to), or an in-game observation of which
+slots receive Rouge's Sword Coin in a 5-unit team. Do not resolve it from the English alone.
+
+**Blast radius if it flips to `sides: 1`:** both units' team-buff reach shrinks from 5 to 3. Neither
+is on the accuracy board today, so nothing measured constrains it.
+
+---
+
+### U37 — `flora` S2 True Damage ▲30.97%: 10 sec (prose) or 5 sec (datamine)? (opened 2026-08-03)
+
+`data/characters.json` carries two descriptions of Flora's second skill and they disagree on one
+number:
+
+- `characters.flora.skills.skill2` (blablalink prose, the SSOT): "True Damage ▲ 30.97% for **10
+  sec**."
+- `characters.flora.role.skillDetails.skill2_detail` (datamined table, skill group 24112):
+  `description_value_05` = **5** at every skill level.
+
+The sim ships 10 sec, because that datamined capture is demonstrably PARTIAL for this unit — it is
+missing three kit lines outright (S1's Burst-Stage-2 Max HP grant, S2's "shield placed in front of
+this unit → ATK ▲45.12%", and the burst's "ATK ▲85.86% of the skill user's ATK"), which is the
+signature of a table captured before/behind the unit's release state (Flora released 2026-07-23).
+A table that is missing whole lines is not a trustworthy source for a duration on the lines it kept.
+
+**Resolving it:** a fresh datamine of skill group 24112, or a footage read of the buff icon's
+lifetime on an ally after Burst Stage 2 entry. Halving the window would roughly halve this line's
+overlap with the Full Burst window.
+
+---
+
 ### U36 — the popup reader's AUTO-ACCEPT path is unexercised: does it hold on a clean-band unit? (opened 2026-07-24)
 
 **Status: an INSTRUMENT question, not a game-mechanics one — but it gates how much popup reading can

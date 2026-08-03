@@ -164,8 +164,8 @@ current but not a contract.
 | `teamAmmo`               | Fires when total ally ammo consumed crosses N                        | cinderella-crystal-wave, little-mermaid                                                                                   |
 | `shotFired`              | Every owner trigger pull                                             | ~21 units (cinderella, soda-twinkling-bunny, prika, milk-blooming-bunny, …)                                               |
 | `lastBullet`             | On owner's last bullet / reload start                                | anis-sparkling-summer, helm, privaty                                                                                      |
-| `recovery` / `shielded`  | When owner receives a heal / shield event                            | asuka, crown / naga                                                                                                       |
-| `stageEnter`             | When a stage-N burst is cast by anyone                               | cinderella, ein, mast-romantic-maid, mint, mihara-bonding-chain, rei-ayanami, snow-white-heavy-arms, soda-twinkling-bunny |
+| `recovery` / `shielded`  | When owner receives a heal / shield event                            | asuka, crown / flora, naga                                                                                                |
+| `stageEnter`             | When a stage-N burst is cast by anyone                               | cinderella, ein, flora, mast-romantic-maid, mint, mihara-bonding-chain, rei-ayanami, snow-white-heavy-arms, soda-twinkling-bunny |
 | `bossElement`            | Permanent passive, active only if boss has this element              | eve                                                                                                                       |
 
 ### Block-level gates
@@ -184,6 +184,7 @@ current but not a contract.
 | `formation` (`noB1`/`hasB1`)       | Static squad-formation gate                                                                                                                                           | anis-star, rapi-red-hood                                                             |
 | `teamHas` (+`.slugs`/`.sameSquad`) | Static team-composition gate (element/class/weapon/burst/named slugs/same-squad). `.sameSquad` resolves membership from the curated squad map `src/data/squads.ts` and fails closed on unmapped owners | blanc (`.sameSquad`), eunhwa-tactical-upgrade, noir (`.slugs` — migration pending)   |
 | `mode` / `modes`                   | Block active only in the unit's selected kit mode                                                                                                                     | bready, cinderella-crystal-wave, delta-ninja-thief, mint, milk-blooming-bunny, prika |
+| `delaySec` (block-level)           | The block's EFFECTS apply `delaySec` seconds after its TRIGGER fires. Gates + the `everyN` counter evaluate at TRIGGER time; targets and values resolve at LANDING; a landing past the end of the fight never applies. Absent/0 = inline (strict no-op). NOT `flatDamage.delaySec`, which is flight time on one damage effect | flora (S2 True Damage, Burst Stage 2 entry + 2 s)                                    |
 
 ### Targeting selectors (`block.target`)
 
@@ -192,7 +193,7 @@ current but not a contract.
 | `burstCasters` / `nonBurstCasters`                                               | Allies who did / didn't burst this rotation                                           | ada, arcana, crown / crown                                                                                           |
 | `alliesTopAtk` / `alliesLowestAtk` / `alliesLowestHp`                            | N highest / lowest ATK / lowest HP allies                                             | alice, maxwell, miranda, naga, soda-twinkling-bunny / liberalio / blanc                                              |
 | `alliesOfElement` / `alliesOfClass` / `alliesOfWeapon` / `alliesOfElementWeapon` | All allies of an element / class / weapon / element+weapon                            | (element) 9 units; arcana-fortune-mate; (weapon) arcana-fortune-mate, d-killer-wife, drake, leona, noir, rem, tove; trina |
-| `selfAndAdjacent`                                                                | Self + N allies each side (positional)                                                | rouge                                                                                                                |
+| `selfAndAdjacent`                                                                | Self + N allies each side (positional). Whether `sides` counts per-side or in total is open — U38  | flora, rouge                                                                                                         |
 | `excludeSelf`                                                                    | Drops owner from the pool before slicing                                              | arcana-fortune-mate, blanc, brid-silent-track, grave, liberalio, maiden-ice-rose, miranda, soda-twinkling-bunny      |
 | `byFinalAtk`                                                                     | Rank by live buffed ATK instead of base staticAtk (keyed on the literal word "final") | alice, liberalio, miranda, soda-twinkling-bunny                                                                      |
 

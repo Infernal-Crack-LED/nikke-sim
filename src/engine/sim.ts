@@ -959,6 +959,20 @@ export function runSim(
     pierce?: boolean;
     rangeOk?: boolean;
   }> = [];
+  // block-level delay (Block.delaySec): the block's TRIGGER fired — every gate and the everyN
+  // activation counter were evaluated then — but its EFFECTS are held here and applied delaySec
+  // later, resolving targets/values against the state that exists at LANDING. Entries whose
+  // resolveFrame falls past the end of the fight simply never apply.
+  // Distinct from pendingHits above, which flights ONE damage effect; this defers a whole block.
+  // Carrier: flora's S2-2 True Damage (Burst Stage 2 entry + 2 s, when her own S1 Max HP grant
+  // expires and her allies return to max HP).
+  let pendingBlocks: Array<{
+    ownerIdx: number;
+    block: Block;
+    bKey: string;
+    activations: number;
+    resolveFrame: number;
+  }> = [];
   // teamAmmo triggers: fire whenever TOTAL ally ammo consumed crosses each block's count
   // (infinite-ammo shots never consume, matching the in-game rule)
   const teamAmmoBlocks: Array<{
@@ -2200,6 +2214,19 @@ export function runSim(
         return;
       }
     }
+    // block-level delay: the trigger has fired and every gate above passed AT THIS FRAME; the
+    // effects are held and applied delaySec later (targets/values resolve at landing). Absent or
+    // 0 → applied inline, byte-identical for every block that does not set it.
+    if (block.delaySec) {
+      pendingBlocks.push({
+        ownerIdx,
+        block,
+        bKey,
+        activations,
+        resolveFrame: frame + Math.round(block.delaySec * FPS),
+      });
+      return;
+    }
     block.effects.forEach((e: EffectDef, ei) =>
       applyEffect(ownerIdx, block, e, `${bKey}:${ei}`, activations, frame)
     );
@@ -2839,6 +2866,32 @@ export function runSim(
       emitFbEnter(frame);
       pendingFbStartFrame = -1;
     }
+
+    // ---- delayed block effects (Block.delaySec) ----
+    // Resolved at the TOP of the frame, before any damage is dealt this frame, so a buff whose
+    // landing frame is F is live for all of frame F (the same convention the interval blocks
+    // below use). FIFO within a frame: entries keep their scheduling order.
+    if (
+      pendingBlocks.length > 0 &&
+      pendingBlocks.some((p) => frame >= p.resolveFrame)
+    ) {
+      for (const p of pendingBlocks) {
+        if (frame >= p.resolveFrame) {
+          p.block.effects.forEach((e: EffectDef, ei) =>
+            applyEffect(
+              p.ownerIdx,
+              p.block,
+              e,
+              `${p.bKey}:${ei}`,
+              p.activations,
+              frame
+            )
+          );
+        }
+      }
+      pendingBlocks = pendingBlocks.filter((p) => frame < p.resolveFrame);
+    }
+
     const fbActive = fbEndFrame > frame;
     if (fbActive) {
       fbFrames++;
