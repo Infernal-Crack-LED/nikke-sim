@@ -2646,6 +2646,15 @@ a.dpschart-name:hover {
 .characters-page h1 {
   margin: 0 0 8px;
 }
+.characters-new,
+.characters-all {
+  margin-bottom: 28px;
+}
+.characters-new h2,
+.characters-all h2 {
+  font-size: 16px;
+  margin: 0 0 10px;
+}
 /* In NAVIGATION mode the roster card is an <a>, not a <button> — restore the
    button's box model so the two modes lay out identically. */
 a.teambuilder-card {

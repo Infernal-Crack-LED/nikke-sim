@@ -419,10 +419,19 @@ export type CharacterFilterState = ReturnType<typeof useCharacterFilter>;
 // M" count — everything above the card grid. Rendered separately from
 // CharacterCards so a caller can place it wherever it wants (e.g. above a set
 // of team slots instead of directly above the grid).
-export function CharacterFilters({ filter }: { filter: CharacterFilterState }) {
+export function CharacterFilters({
+  filter,
+  defaultOpen = true,
+}: {
+  filter: CharacterFilterState;
+  // The Team Builder and the Browse modals want the panel open — filtering IS
+  // the task there. The /characters index wants it closed, so the roster is the
+  // first thing on screen. Defaults to open so no existing caller changes.
+  defaultOpen?: boolean;
+}) {
   return (
     <>
-      <details className="teambuilder-filters-details" open>
+      <details className="teambuilder-filters-details" open={defaultOpen}>
         <summary>Filters</summary>
         <div className="teambuilder-filters">
           {/* Left — the stat-axis icon rows */}
