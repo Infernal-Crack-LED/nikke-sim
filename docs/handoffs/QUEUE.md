@@ -10,7 +10,10 @@
 > items below carry ONLY genuinely-open action items as short pointers into their handoff/plan docs
 > — no landed-work narration (landed state → `docs/STATE.md`; settled WHY → `docs/DECISIONS.md`).
 > When an item lands, DELETE it here (keep only its open follow-up clause); a done handoff →
-> `CLOSED (date)` marker + `mv` into `docs/handoffs/closed/`; a fully-landed top-level `docs/*.md`
+> `CLOSED (date)` marker + **`git rm --cached` then `mv`** into `docs/handoffs/closed/` (that
+> directory is gitignored on purpose — a closed doc STOPS being tracked and survives on disk only;
+> `git mv` cannot work there, and staging a new path under it aborts the pre-commit hook); a
+> fully-landed top-level `docs/*.md`
 > (never a living log) → same into `docs/closed/`; a resolved question → close it in
 > `docs/open-questions.md` (single U-numbering — move it to `docs/answered-questions.md` with the
 > answer inline, no new A-number).
@@ -69,16 +72,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   3. **The browser icon loader still probes extensions and eats 404s** — `web/src/unitCardShare.ts:58`
      `ICON_EXT = ['svg','png','webp']` per icon via onload/onerror. The icon set is static and tracked,
      so the extension is knowable at build time; carry it in the `iconNames` mapping (`{ name, ext }`).
-- **⇒ The `mv`-into-`closed/` hygiene step is UNPERFORMABLE for a NEW closure — owner call
-  (2026-08-03).** `docs/handoffs/closed` and `docs/closed` are gitignored, so `git add` refuses any
-  path not already tracked there ("The following paths are ignored"), and lint-staged's own
-  `git add` then aborts the commit. Files already in `closed/` are fine (gitignore does not affect
-  tracked paths) — only NEW closures break. So the hygiene rule at the top of this file cannot be
-  followed without `--no-verify` (forbidden) or a `.gitignore` change (owner's call, and it has a
-  privacy dimension: the ignore entries presumably exist to keep closed docs out of the public
-  repo, yet several are tracked anyway). Until ruled, a closed handoff stays in `docs/handoffs/`
-  with its `CLOSED (date)` marker — which is where
-  `2026-08-03-b1b2-comparability-and-squad-layering.md` now sits.
+- **⇒ Three closed handoffs are still git-TRACKED, against the convention — leave or untrack?
+  (2026-08-03, findings-only).** Closing a handoff means it stops being tracked: `git rm --cached`
+  then move the file into `docs/handoffs/closed/`, which is gitignored, so it survives on disk and
+  leaves the repo. 69 of the 72 files there follow that. The three that do not —
+  `2026-07-27-focus-charge-gauge-per-unit.md`, `2026-07-29-alice-focus-gauge-implement.md`,
+  `2026-07-29-cinderella-focus-gauge-owner-override.md` — are each cited by NAME from
+  `docs/DECISIONS.md` or `docs/handoffs/scientific-method-harness.md`, so untracking them turns
+  live citations in the immutable provenance trail into dangling pointers for anyone who clones.
+  Not enacted for that reason. If they should go, the citations want rewording first.
 - **⇒ Pellet-reader: cherry-pick the `+62.5` crosshair-offset fix (`b69b5c6`)** — verified NOT an
   ancestor of `main`; `scripts/probe/read-pellets.ts:66` still defaults `-62.5`, latent, and poisons the
   next run. (It did **not** cause the 2026-07-29 REJECT: artifacts 12:19–13:33, commit 15:17.)
@@ -101,17 +103,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Engine / model threads (measurement- or owner-gated)
 
-- **⇒ B1/B2 board: add a Core 50 row, or is two-way core exposure deliberate? — ONE OWNER CALL
-  (2026-08-03).** The cross-board comparability write-up is DONE and landed in
-  `docs/data/rank-boards.md` ("What the B1/B2 board and the B3 DPS chart do and don't share"): the
-  fight basis is verified identical on both sides, and the three real differences (no investment
-  axis, two-way vs three-way core exposure, different teams by construction) are documented, with
-  the headline that **a B1/B2 number is comparable only to a DPS-chart Scope Lock cell**. The only
-  residue is this call — the chart carries No Core / Core 50 / Core 100, the B1/B2 board resolves
-  `coreStr === 'c100' ? 1 : 0` (`src/ranks/b1b2dps.ts:291`), so a chart Core 50 cell has no
-  counterpart. Cheap either way: one ternary plus a cell id in `src/ranks/b1b2-cells.ts`. An
-  investment axis on the B1/B2 board is a much larger ask — recommend NOT doing it; the documented
-  Scope-Lock-only comparability is the cheaper answer.
 - **⇒ `noop-rouge-b1` squad layering — owner call, and the recommendation is LEAVE IT (2026-08-03).**
   `src/data/squads.ts:26` carries one synthetic (`'noop-rouge-b1': 'Blanc Noir Rouge'`) so the buffer
   board's `w/ Rouge` duo profile satisfies `blanc`'s same-squad burst-CDR gate — a ranks-layer concern

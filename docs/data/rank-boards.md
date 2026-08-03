@@ -289,7 +289,8 @@ cells and 0 for everything else (`src/ranks/b1b2dps.ts:291`,
 `src/ranks/b1b2-cells.ts:17-25`). The chart carries three exposures, No Core /
 Core 50 / Core 100 (`src/dpschart/matrix.ts:119-126`, `:143`, `:510`). There is
 no Core 50 row on the B1/B2 board, so a chart Core 50 cell has no counterpart to
-be read against.
+be read against. That is deliberate and settled — adding the row for symmetry was
+considered and declined (DECISIONS, 2026-08-03).
 
 **3. Different teams by construction.** The chart assembles one of five named
 frameworks (`assembleTeam`, `src/dpschart/matrix.ts:426`); the B1/B2 board builds
