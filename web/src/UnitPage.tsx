@@ -28,6 +28,12 @@ import {
   ELEWEAK_CELL,
 } from '../../src/infographics/core/unitCardData';
 import { parseCellId } from '../../src/dpschart/matrix';
+import {
+  buildAmmoTable,
+  buildChargeTable,
+  chargeLatencyFrames,
+} from '../../src/infographics/core/tableData';
+import type { TableCardData } from '../../src/infographics/core/tableCard';
 import { loadDpsChart, rankedFor } from './dpschartData';
 import { manifestThumbUrl } from './portraitManifest';
 import { escapeJsonLd } from './jsonLd';
@@ -99,7 +105,6 @@ const unitPages = unitPagesJson as {
   tier: number;
   units: Record<string, { ol?: OlRow[]; status?: KitStatus }>;
 };
-const OL_TIER = unitPages.tier;
 
 // ---- kit-role tags ----------------------------------------------------------
 
@@ -110,31 +115,16 @@ const archetype = archetypeJson as unknown as {
 
 // ---- model status -----------------------------------------------------------
 
-// Player-facing rendering of data/kit-status.json's `tiers`. The artifact's own
-// blurbs are written for the repo's own agents ("focus recording / frame-count /
-// gauge-popup read set or confirmed the values"); these say the same thing to
-// someone who has never read CONVENTIONS.md.
-const TIER_COPY: Record<string, { label: string; blurb: string }> = {
-  MEASURED: {
-    label: 'Measured',
-    blurb:
-      'Her values were read frame-by-frame out of a recording of a real fight — damage popups, fire cadence and burst timing confirmed against footage.',
-  },
-  CALIBRATED: {
-    label: 'Calibrated',
-    blurb:
-      'Her numbers were tuned until the sim matched real recorded fights. The mechanic is inferred rather than directly observed, so the value is the sim’s, not the game’s.',
-  },
-  VALIDATED: {
-    label: 'Validated',
-    blurb:
-      'Her total damage matches a recorded fight, but the individual mechanics have not been frame-verified yet.',
-  },
-  MODEL_ONLY: {
-    label: 'Model only',
-    blurb:
-      'Built from her kit text and datamined weapon values, and not yet checked against a recording of a real fight.',
-  },
+// One-word, player-facing label per data/kit-status.json tier. The artifact's own
+// blurbs ("focus recording / frame-count / gauge-popup read set or confirmed the
+// values") are written for the repo's own agents; the page shows a badge only
+// (owner 2026-08-02), so only the label survives here. MODEL_ONLY uses the
+// artifact's own gloss for it — "= UNTUNED".
+const TIER_COPY: Record<string, { label: string }> = {
+  MEASURED: { label: 'Measured' },
+  CALIBRATED: { label: 'Calibrated' },
+  VALIDATED: { label: 'Validated' },
+  MODEL_ONLY: { label: 'Untuned' },
 };
 
 // ---- kit prose --------------------------------------------------------------
@@ -164,7 +154,12 @@ interface ImgManifest {
 }
 let manifestPromise: Promise<ImgManifest> | null = null;
 function loadImgManifest(): Promise<ImgManifest> {
-  manifestPromise ??= fetch('/api/v1/img/manifest.json').then((r) => {
+  // The STATIC path, not /api/v1/img/manifest.json. The API route only exists on
+  // the hono server (src/server/api.ts); scripts/serve.mjs — the zero-dependency
+  // static server used by the Railway start command and every local preview —
+  // doesn't have it, so the API URL silently 404s there and the hero vanishes.
+  // dist/img/manifest.json is a plain file both servers serve.
+  manifestPromise ??= fetch('/img/manifest.json').then((r) => {
     if (!r.ok) {
       throw new Error(`manifest ${r.status}`);
     }
@@ -288,7 +283,10 @@ export function UnitPage({ slug }: { slug: string | null }) {
     slug != null && Object.hasOwn(data.characters, slug)
       ? data.characters[slug]
       : undefined;
-  const thumb = useMemo(() => manifestThumbUrl(unitImageUrl(slug), 256), [slug]);
+  const thumb = useMemo(
+    () => manifestThumbUrl(unitImageUrl(slug), 256),
+    [slug]
+  );
   const cardUrl = useUnitCardUrl(character ? slug : null);
   const dps = useDpsStanding(character ? slug : null);
 
@@ -371,6 +369,18 @@ export function UnitPage({ slug }: { slug: string | null }) {
         dangerouslySetInnerHTML={{ __html: escapeJsonLd(jsonLd) }}
       />
 
+      {cardUrl && (
+        <div className="unit-cardshot">
+          <img
+            src={cardUrl}
+            alt={`${character.name} stat card — rank tiles, kit tags and best overload lines`}
+            loading="eager"
+            width={1200}
+            height={600}
+          />
+        </div>
+      )}
+
       <nav className="unit-crumbs" aria-label="Breadcrumb">
         <a href="/characters" onClick={onSpaLinkClick('/characters')}>
           Characters
@@ -421,24 +431,15 @@ export function UnitPage({ slug }: { slug: string | null }) {
         </div>
       </header>
 
-      {cardUrl && (
-        <section className="unit-section unit-cardshot">
-          <img
-            src={cardUrl}
-            alt={`${character.name} stat card — rank tiles, kit tags and best overload lines`}
-            loading="lazy"
-            width={1200}
-            height={600}
-          />
-        </section>
-      )}
-
-      <UnitOverloadSection name={character.name} rows={ol} best={best} />
-
-      <UnitStatusSection name={character.name} status={status} />
+      <UnitOverloadSection
+        name={character.name}
+        rows={ol}
+        best={best}
+        character={character}
+      />
 
       <section className="unit-section">
-        <h2>{character.name}’s kit</h2>
+        <h2>Skills</h2>
         {kitSections.length ? (
           kitSections.map(({ slot, blocks }) => (
             <div className="unit-skill" key={slot}>
@@ -526,136 +527,183 @@ export function UnitPage({ slug }: { slug: string | null }) {
           </a>
         </div>
       </section>
+
+      <UnitStatusSection status={status} />
     </div>
   );
 }
 
 // ---- sections ---------------------------------------------------------------
 
+// The 8-line floor every ranked loadout holds constant, spelled out the way the
+// summary line reads rather than as the internal "8/12" shorthand.
+const OL_FLOOR_LABEL = '4× Attack + 4× Elemental Damage';
+
+// A TableCardData (the platform-free builders in core/tableData.ts, the same ones
+// that render the shareable breakpoint cards and the /charge panel) as an HTML
+// table. Reused rather than re-derived so a breakpoint shown here can never
+// disagree with the card or the calculator — the frame/rounding constants in
+// those builders are load-bearing.
+function CardTable({ card }: { card: TableCardData }) {
+  return (
+    <>
+      {card.subtitle && <p className="muted">{card.subtitle}</p>}
+      <table className="unit-ol-table">
+        <thead>
+          <tr>
+            {card.columns.map((c) => (
+              <th key={c.header} className={c.align === 'right' ? 'r' : ''}>
+                {c.header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {card.rows.map((row, i) => (
+            <tr key={i}>
+              {row.map((cell, j) => (
+                <td
+                  key={j}
+                  className={card.columns[j]?.align === 'right' ? 'r' : ''}
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+type OlTab = 'optimal' | 'cs' | 'ammo';
+
 function UnitOverloadSection({
   name,
   rows,
   best,
+  character,
 }: {
   name: string;
   rows: OlRow[];
   best: OlRow | null;
+  character: DataFile['characters'][string];
 }) {
+  // Charge Speed breakpoints only exist for charge weapons — an AR has no charge
+  // frames to shorten, so the tab is absent rather than empty.
+  const hasCharge = character.weapon === 'SR' || character.weapon === 'RL';
+  const [tab, setTab] = useState<OlTab>('optimal');
+  const TABS: { key: OlTab; label: string }[] = [
+    { key: 'optimal', label: 'Optimal Overload' },
+    ...(hasCharge ? [{ key: 'cs' as OlTab, label: 'CS Breakpoints' }] : []),
+    { key: 'ammo' as OlTab, label: 'Max Ammo Breakpoints' },
+  ];
+  // A unit whose tab set shrank (or a stale tab after navigating between units)
+  // must not land on a tab that no longer exists.
+  const active = TABS.some((t) => t.key === tab) ? tab : 'optimal';
+
   return (
     <section className="unit-section">
-      <h2>Best overload lines for {name}</h2>
-      {best ? (
-        <>
-          <p className="unit-lines">
-            <b>{best.label}</b>{' '}
-            <span className="muted">
-              — +{best.gainPct.toFixed(1)}% damage over the 8/12 floor
-            </span>
-          </p>
-          <p className="muted">
-            Every loadout below keeps the 8/12 floor (4× Elemental DMG + 4× ATK)
-            and spends the four remaining lines differently. Ranked by {name}’s
-            own damage in a solo fight, lines rolled at T{OL_TIER}.
-          </p>
-          <table className="unit-ol-table">
-            <thead>
-              <tr>
-                <th></th>
-                <th>Four free overload lines</th>
-                <th className="r">vs 8/12</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, i) => (
-                <tr key={r.label} className={i === 0 ? 'hl' : ''}>
-                  <td className="muted">{i + 1}</td>
-                  <td>{r.label}</td>
-                  <td className="r share">+{r.gainPct.toFixed(1)}%</td>
+      <h2>Overload Lines</h2>
+      <nav className="unit-tabs">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            className={active === t.key ? 'on' : ''}
+            onClick={() => setTab(t.key)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </nav>
+
+      {active === 'optimal' &&
+        (best ? (
+          <>
+            <p className="unit-lines">
+              <b>
+                {OL_FLOOR_LABEL} + {best.label}
+              </b>
+            </p>
+            <p className="muted">
+              +{best.gainPct.toFixed(1)}% damage over {OL_FLOOR_LABEL}
+            </p>
+            <table className="unit-ol-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Optimal Overload Lines</th>
+                  <th className="r">vs 8/12</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr key={r.label} className={i === 0 ? 'hl' : ''}>
+                    <td className="muted">{i + 1}</td>
+                    <td>{r.label}</td>
+                    <td className="r share">+{r.gainPct.toFixed(1)}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="muted">
+              Run this for your own team and boss on the{' '}
+              <a href="/overload" onClick={onSpaLinkClick('/overload')}>
+                Overload Optimizer
+              </a>
+              .
+            </p>
+          </>
+        ) : (
           <p className="muted">
-            Run this for your own team and boss on the{' '}
-            <a href="/overload" onClick={onSpaLinkClick('/overload')}>
-              Overload Optimizer
-            </a>
-            .
+            No overload ranking for {name} yet — the optimizer covers units with
+            a modelled kit that the team generator can build around.
           </p>
-        </>
-      ) : (
-        <p className="muted">
-          No overload ranking for {name} yet — the optimizer covers units with a
-          modelled kit that the team generator can build around.
-        </p>
+        ))}
+
+      {active === 'cs' && (
+        <CardTable
+          card={buildChargeTable(
+            character.chargeFrames,
+            name,
+            chargeLatencyFrames(character)
+          )}
+        />
+      )}
+
+      {active === 'ammo' && (
+        <CardTable card={buildAmmoTable(character.ammo, name)} />
       )}
     </section>
   );
 }
 
-function UnitStatusSection({
-  name,
-  status,
-}: {
-  name: string;
-  status: KitStatus | undefined;
-}) {
-  if (!status) {
+// Bottom-of-page, one word (owner 2026-08-02). The tier label alone — the
+// explanatory blurb and the tuned/graded breakdown are deliberately not here.
+// The full evidence tiers live in the mechanics/conventions docs; this is a
+// one-glance badge, not a trust essay.
+function UnitStatusSection({ status }: { status: KitStatus | undefined }) {
+  const tier = status?.tier ? TIER_COPY[status.tier] : undefined;
+  if (!tier) {
     return (
       <section className="unit-section">
         <h2>Sim status</h2>
-        <p className="muted">
-          {name} isn’t modelled in the sim yet — this page shows her kit and
-          stats only.
+        <p>
+          <span className="pill pill-tier">Unmodelled</span>
         </p>
       </section>
     );
   }
-  const tier = status.tier ? TIER_COPY[status.tier] : undefined;
-  const graded = status.graded;
-  const unmodeled = Object.entries(status.unmodeled ?? {}).flatMap(
-    ([slot, lines]) => lines.map((line) => ({ slot, line }))
-  );
   return (
     <section className="unit-section">
       <h2>Sim status</h2>
-      {tier && (
-        <p>
-          <span className={`pill pill-tier tier-${status.tier?.toLowerCase()}`}>
-            {tier.label}
-          </span>{' '}
-          {tier.blurb}
-        </p>
-      )}
-      <ul className="unit-status-list">
-        <li>
-          {status.tuned
-            ? 'Hand-tuned against real recorded fights.'
-            : 'Not hand-tuned yet — her model comes straight from her kit text.'}
-        </li>
-        {graded?.teams != null && graded.teams > 0 && (
-          <li>
-            Graded on {graded.teams} recorded team{graded.teams === 1 ? '' : 's'}
-            , {graded.within3pct ?? 0} of them within ±3% of the real fight.
-          </li>
-        )}
-      </ul>
-      {unmodeled.length > 0 && (
-        <details className="unit-unmodeled">
-          <summary className="muted">
-            {unmodeled.length} kit effect{unmodeled.length === 1 ? '' : 's'} not
-            in the sim yet
-          </summary>
-          <ul>
-            {unmodeled.map((u, i) => (
-              <li key={i}>
-                <span className="muted">{SKILL_LABEL[u.slot] ?? u.slot}: </span>
-                {u.line}
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
+      <p>
+        <span className={`pill pill-tier tier-${status?.tier?.toLowerCase()}`}>
+          {tier.label}
+        </span>
+      </p>
     </section>
   );
 }

@@ -120,6 +120,18 @@ await shot('rostersim-desktop', {
 await shot('characters-index', { path: '/characters', width: 1180 });
 await shot('unit-desktop', { path: '/unit/maiden-ice-rose', width: 1180 });
 await shot('unit-mobile', { path: '/unit/maiden-ice-rose', width: 390 });
+// The Overload Lines tab switcher. maiden-ice-rose is RL, so she carries all three
+// tabs (an AR/SMG/SG unit has no CS Breakpoints tab — no charge frames to shorten).
+// NOTE: the hero Nikke card only appears once build-infographics has run AFTER the
+// vite build — `npm run build` empties dist/, which takes dist/img with it.
+await shot('unit-tab-ammo', {
+  path: '/unit/maiden-ice-rose',
+  width: 1180,
+  actions: async (page) => {
+    await page.getByRole('button', { name: 'Max Ammo Breakpoints' }).click();
+    await page.waitForTimeout(250);
+  },
+});
 // The team-builder profile badge — hover-revealed on a pointer device, so the
 // shot has to hover a card or it captures an empty corner.
 await shot('teambuilder-profile-badge', {

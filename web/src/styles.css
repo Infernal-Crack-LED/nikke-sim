@@ -32,9 +32,10 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
-  unicode-range: U+20-7E, U+A0-FF, U+391-3A1, U+3A3-3A9, U+3B1-3C9, U+2010-2027,
-    U+2030, U+2202, U+2206, U+220F, U+2211-2212, U+221A, U+221E, U+222B, U+2248,
-    U+2260, U+2264-2265, U+25CA;
+  unicode-range:
+    U+20-7E, U+A0-FF, U+391-3A1, U+3A3-3A9, U+3B1-3C9, U+2010-2027, U+2030,
+    U+2202, U+2206, U+220F, U+2211-2212, U+221A, U+221E, U+222B, U+2248, U+2260,
+    U+2264-2265, U+25CA;
 }
 @font-face {
   font-family: 'Roboto';
@@ -42,9 +43,10 @@
   font-weight: 500;
   font-style: normal;
   font-display: swap;
-  unicode-range: U+20-7E, U+A0-FF, U+391-3A1, U+3A3-3A9, U+3B1-3C9, U+2010-2027,
-    U+2030, U+2202, U+2206, U+220F, U+2211-2212, U+221A, U+221E, U+222B, U+2248,
-    U+2260, U+2264-2265, U+25CA;
+  unicode-range:
+    U+20-7E, U+A0-FF, U+391-3A1, U+3A3-3A9, U+3B1-3C9, U+2010-2027, U+2030,
+    U+2202, U+2206, U+220F, U+2211-2212, U+221A, U+221E, U+222B, U+2248, U+2260,
+    U+2264-2265, U+25CA;
 }
 @font-face {
   font-family: 'Roboto';
@@ -52,9 +54,10 @@
   font-weight: 700;
   font-style: normal;
   font-display: swap;
-  unicode-range: U+20-7E, U+A0-FF, U+391-3A1, U+3A3-3A9, U+3B1-3C9, U+2010-2027,
-    U+2030, U+2202, U+2206, U+220F, U+2211-2212, U+221A, U+221E, U+222B, U+2248,
-    U+2260, U+2264-2265, U+25CA;
+  unicode-range:
+    U+20-7E, U+A0-FF, U+391-3A1, U+3A3-3A9, U+3B1-3C9, U+2010-2027, U+2030,
+    U+2202, U+2206, U+220F, U+2211-2212, U+221A, U+221E, U+222B, U+2248, U+2260,
+    U+2264-2265, U+25CA;
 }
 
 * {
@@ -2410,7 +2413,11 @@ a.dpschart-name:hover {
   color: var(--muted);
   cursor: help;
 }
-/* The prerendered 2:1 Nikke card — the same image as this page's og:image. */
+/* The prerendered 2:1 Nikke card — the same image as this page's og:image.
+   Sits at the very top of the page as the hero (owner 2026-08-02). */
+.unit-cardshot {
+  margin: 0 0 16px;
+}
 .unit-cardshot img {
   display: block;
   width: 100%;
@@ -2480,19 +2487,66 @@ a.dpschart-name:hover {
 .unit-unmodeled li {
   margin-bottom: 6px;
 }
+/* Each skill is its own boxed card — three dense walls of game text are hard to
+   scan when they run together as plain paragraphs. */
 .unit-skill {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
 .unit-skill h3 {
-  font-size: 14px;
-  margin: 0 0 4px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 0 10px;
   color: var(--muted);
 }
+/* One '■' block per row, separated rather than bulleted — the game text already
+   reads as "trigger line / effect line" pairs. */
 .unit-skill-block {
-  margin: 0 0 6px;
-  padding-left: 12px;
-  border-left: 2px solid var(--border);
+  margin: 0;
+  padding: 8px 0;
   white-space: pre-line;
+  border-top: 1px solid var(--border);
+}
+.unit-skill-block:first-of-type {
+  padding-top: 0;
+  border-top: none;
+}
+.unit-skill-block:last-child {
+  padding-bottom: 0;
+}
+
+/* Overload Lines tab switcher (Optimal / CS Breakpoints / Max Ammo Breakpoints) */
+.unit-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+.unit-tabs button {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition:
+    border-color 0.12s,
+    color 0.12s;
+}
+.unit-tabs button:hover {
+  border-color: var(--muted);
+  color: var(--text);
+}
+.unit-tabs button.on {
+  border-color: var(--accent);
+  color: var(--text);
+  background: var(--panel2);
 }
 
 /* Characters index (web/src/CharactersPage.tsx) */
