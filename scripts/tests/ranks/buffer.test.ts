@@ -49,7 +49,12 @@ describe('buffer board', () => {
   // The tested unit leads its OWN stage — behind the same-stage no-op it would
   // lose every contest and stop bursting.
   it('standard team: tested unit takes the spare B2 slot and leads its own stage', () => {
-    const spec = { weapon: null, pierce: false, element: null } as const;
+    const spec = {
+      weapon: null,
+      pierce: false,
+      element: null,
+      trueFlavor: false,
+    } as const;
     expect(assemble('liter', 'I', 'generic', spec).slugs).toEqual([
       'liter',
       NOOP_B1,
@@ -88,7 +93,12 @@ describe('buffer board', () => {
   // Bursts and -34 points (anis-star), i.e. the same rotation distortion this
   // shape exists to remove, merely pointed at a different stage.
   it("baseline: a stage-matched no-op takes the tested unit's slot", () => {
-    const spec = { weapon: null, pierce: false, element: null } as const;
+    const spec = {
+      weapon: null,
+      pierce: false,
+      element: null,
+      trueFlavor: false,
+    } as const;
     expect(assemble(null, 'I', 'generic', spec).slugs).toEqual([
       NOOP_B1,
       NOOP_B1,
@@ -118,7 +128,12 @@ describe('buffer board', () => {
   // on the tested side. Inert while the profiles inject only heals and shields,
   // silently wrong the day one carries a damage-relevant line.
   it('a stage-matched baseline repeats a no-op slug', () => {
-    const spec = { weapon: null, pierce: false, element: null } as const;
+    const spec = {
+      weapon: null,
+      pierce: false,
+      element: null,
+      trueFlavor: false,
+    } as const;
     const b2 = assemble(null, 'II', 'generic', spec).slugs;
     expect(b2.filter((s) => s === NOOP_B2)).toHaveLength(2);
     const b1 = assemble(null, 'I', 'generic', spec).slugs;
@@ -211,6 +226,19 @@ describe('buffer board', () => {
     expect(typed.valuePct).toBeGreaterThan(generic.valuePct);
   });
 
+  it('typed derivation: flora (True Damage ▲ burst buff) gives carries True-flavored normals', () => {
+    const { spec, rules } = deriveCarrySpec(overrides.flora);
+    expect(spec.trueFlavor).toBe(true);
+    expect(rules.some((r) => r.includes('trueDamagePct'))).toBe(true);
+  });
+
+  it('typed board: flora is worth more with True-flavored carries than generic (her burst trueDamagePct is otherwise inert)', () => {
+    const memo = new Map();
+    const generic = bufferValueFor('flora', 'generic', ctx, memo);
+    const typed = bufferValueFor('flora', 'typed', ctx, memo);
+    expect(typed.valuePct).toBeGreaterThan(generic.valuePct);
+  });
+
   it('anis-star (projectile-explosion) already scores on the generic board via the RL carry', () => {
     const r = bufferValueFor('anis-star', 'generic', ctx);
     expect(r.valuePct).toBeGreaterThan(20);
@@ -269,7 +297,12 @@ describe('buffer board', () => {
   // unit is ready (ada does exactly this once the SR no-op holds focus). The
   // burst slot is therefore suppressed outright, which is what these pin.
   it('a tested B3 has its burst slot suppressed, a B1/B2 does not', () => {
-    const spec = { weapon: null, pierce: false, element: null } as const;
+    const spec = {
+      weapon: null,
+      pierce: false,
+      element: null,
+      trueFlavor: false,
+    } as const;
     expect(assemble('ada', 'III', 'generic', spec).burstOffSlug).toBe('ada');
     expect(assemble('flora', 'II', 'generic', spec).burstOffSlug).toBeNull();
     expect(assemble('liter', 'I', 'generic', spec).burstOffSlug).toBeNull();

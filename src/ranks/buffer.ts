@@ -27,9 +27,11 @@
 //     typed   — the carries adapt to the tested unit's kit, AUTO-DERIVED from
 //               its override: alliesOfWeapon W → both carries become W;
 //               pierceDamagePct / gainPierce on allies → both carries gain
-//               Pierce; projectileExplosionPct on allies → both carries RL;
-//               alliesOfElement E → both carries element E. Manual
-//               BUFFER_PROFILES patches what the derivation can't see.
+//               Pierce; trueDamagePct on allies → both carries' normal attacks
+//               become True-flavored (hasTrueNormals); projectileExplosionPct
+//               on allies → both carries RL; alliesOfElement E → both carries
+//               element E. Manual BUFFER_PROFILES patches what the derivation
+//               can't see.
 //
 // Reading: generic = the buffer's plug-and-play value; typed = its value when
 // the team is built around it. Known caveat (same as the DPS chart): purely
@@ -74,8 +76,14 @@ export interface CarrySpec {
   weapon: Weapon | null; // both carries become this weapon (null = keep MG+RL)
   pierce: boolean; // both carries gain Pierce
   element: Element | null; // both carries become this element (null = Iron)
+  trueFlavor: boolean; // both carries' normal attacks become True-flavored (hasTrueNormals)
 }
-const PLAIN_SPEC: CarrySpec = { weapon: null, pierce: false, element: null };
+const PLAIN_SPEC: CarrySpec = {
+  weapon: null,
+  pierce: false,
+  element: null,
+  trueFlavor: false,
+};
 
 // Manual patches for what the override scan can't see (applied over the derived
 // spec). Keep each entry justified by a kit line.
@@ -338,6 +346,16 @@ export function deriveCarrySpec(override: unknown): {
         }
         if (
           e?.kind === 'buff' &&
+          e.stat === 'trueDamagePct' &&
+          !spec.trueFlavor
+        ) {
+          spec.trueFlavor = true;
+          rules.push(
+            'trueDamagePct on allies → carries deal True-flavored normal attacks'
+          );
+        }
+        if (
+          e?.kind === 'buff' &&
           e.stat === 'projectileExplosionPct' &&
           !spec.weapon
         ) {
@@ -487,6 +505,7 @@ function carryDpsSum(
   ctx: RanksCtx,
   spec: CarrySpec,
   pierceOverride: boolean,
+  trueFlavorOverride: boolean,
   testedSlug?: string,
   profile?: string | null,
   unitOptsMap: Record<string, UnitOptions> = {},
@@ -542,11 +561,12 @@ function carryDpsSum(
     const own = ctx.deps.overrides[team.burstOffSlug];
     extraOverrides[team.burstOffSlug] = { ...(own ?? {}), burst: [] };
   }
-  if (pierceOverride) {
+  if (pierceOverride || trueFlavorOverride) {
     for (const i of team.carryIdxs) {
       extraOverrides[team.slugs[i]] = {
         slug: team.slugs[i],
-        hasPierce: true,
+        hasPierce: pierceOverride,
+        hasTrueNormals: trueFlavorOverride,
         skill1: [],
         skill2: [],
         burst: [],
@@ -650,6 +670,7 @@ export function bufferValueFor(
       ctx,
       spec,
       board === 'typed' && spec.pierce,
+      board === 'typed' && spec.trueFlavor,
       undefined,
       activeProfile,
       baselineOpts,
@@ -679,6 +700,7 @@ export function bufferValueFor(
     ctx,
     spec,
     board === 'typed' && spec.pierce,
+    board === 'typed' && spec.trueFlavor,
     slug,
     activeProfile,
     testedOpts,
