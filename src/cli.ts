@@ -11,6 +11,8 @@ import { OL_TIER, OL_TIER_VALUES } from './dpschart/matrix.js';
 import { loadOverride } from './skills/overrides-node.js';
 import {
   prepareTeam,
+  OL_MAX_PER_TYPE,
+  OL_MAX_TOTAL,
   type CubesFile,
   type OlLinesFile,
   type SkillLevelData,
@@ -353,6 +355,26 @@ perSlot(opts.lines as string, ';').forEach((spec, i) => {
         value: m[3] ? Number(m[3]) : undefined,
       };
     });
+  // prepareUnit enforces the same two caps and is the real guard (every caller passes
+  // through it); repeating them here only buys a clean `usage()` message instead of a
+  // stack trace for what is a typo in an argument.
+  const perType = new Map<string, number>();
+  for (const sel of unitOpts[i].lines ?? []) {
+    perType.set(sel.type, (perType.get(sel.type) ?? 0) + sel.count);
+  }
+  for (const [type, n] of perType) {
+    if (n > OL_MAX_PER_TYPE) {
+      usage(
+        `slot ${i + 1}: ${n}× "${type}" OL lines — max ${OL_MAX_PER_TYPE} of any one type (one per overload piece, 4 pieces)`
+      );
+    }
+  }
+  const total = [...perType.values()].reduce((a, b) => a + b, 0);
+  if (total > OL_MAX_TOTAL) {
+    usage(
+      `slot ${i + 1}: ${total} OL lines — max ${OL_MAX_TOTAL} (4 pieces × 3 lines)`
+    );
+  }
 });
 
 perSlot(opts['skill-levels'] as string, ',').forEach((spec, i) => {
