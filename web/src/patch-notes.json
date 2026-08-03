@@ -1,5 +1,15 @@
 [
   {
+    "date": "2026-08-03",
+    "title": "New: a page for every NIKKE",
+    "notes": [
+      "Every NIKKE now has her own page — her full kit with skill cooldowns, her best overload lines, charge speed and max ammo breakpoints, where she lands on the DPS boards, and her info card. Open one from the new Characters tab, or from the ⓘ button on any portrait in the Team Builder.",
+      "The Characters tab lists the whole roster with the same filters as the Team Builder — element, weapon, burst stage, class and kit role — plus a New Characters row showing the five most recent releases.",
+      "Overload Optimizer: Hit Rate now counts as a damage line for AR, SMG and SG. The sim has modelled Hit Rate raising how often your shots land on the core since July, but the optimizer was not offering it at all — so its recommendations for those weapons have changed. Rocket launchers, snipers and miniguns are unaffected: Hit Rate does not change their core rate, so it is still not offered for them.",
+      "Fixed: the element icon was missing from unit cards drawn in your browser, including the Card Builder preview and anything copied from it. Pre-generated cards were never affected — if you saved a card image before today, copy it again to pick the icon up."
+    ]
+  },
+  {
     "date": "2026-08-01",
     "title": "New: B1/B2 DPS Rankings board",
     "notes": [
