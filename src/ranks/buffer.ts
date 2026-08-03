@@ -187,6 +187,14 @@ export const EXCLUDED_BUFFER_SLUGS = new Set<string>();
 // does (owner ruling 2026-08-03): the tested unit if it is an enabler, the
 // no-op B1 otherwise. This is what decides which.
 //
+// KNOWN GAP, no carrier today (owner-deferred 2026-08-03): this walk does not
+// check `block.mode` (types.ts's per-block mode gate, sim.ts:750's
+// `!b.mode || b.mode === selectedMode`) the way it already checks `formation`
+// and `teamHas` below. A unit whose only ally-facing burstCdr lives behind a
+// non-default mode would still count as an enabler here even when that mode
+// is not the one running, standing the no-op B1 control down for nothing.
+// Harden if a mode-gated ally-facing burstCdr kit ever ships.
+//
 // Ally-facing only. Self-only reduction does not make a unit the team's
 // enabler — the same line the burst-CDR board already draws ("self-only
 // cooldown reduction is a note column, never part of the ranked value"), and
