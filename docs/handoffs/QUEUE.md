@@ -148,10 +148,27 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     (`EXCLUDED_BUFFER_SLUGS`), and `biscuit` / `arcana` are two of the negative rows the leaderboard
     now trims — all three go positive once the rotation is matched. The negatives are substantially
     an artifact of this, and the display trim is treating the symptom.
-  - DECIDE: (a) leave it — a long cooldown really does cost that team Full Bursts; (b) pair the
-    tested unit's stage with a no-op, matching the B1/B2 DPS board, and re-rank; or (c) keep the
-    value as is but report rotation and buff as two numbers. Whichever way, the B1 zero-Full-Burst
-    path should not stay as it is.
+  - **OWNER SPEC (2026-08-03) — the board was built without it.** Standard team is FIVE slots:
+    1 no-op B1 (SR, 20s, **7.5s** CDR), 2 no-op B2 (SR, 20s), 3 no-op B2 (SR, 20s) ← **the tested
+    unit replaces slot 3**, 4 no-op B3 (MG, 40s), 5 no-op B3 (RL, 40s); a tested B3 has its burst
+    turned off so its own damage cannot poison its support rank. The spare same-stage no-op is what
+    keeps a 40s unit from lowering the team's Full Burst count.
+  - **⚠ ORDERING TRAP — do not implement slot 3 literally.** Burst-stage contests are won by slot
+    order, so a tested unit sitting BEHIND a same-stage no-op stops bursting: tested B2 in slot 3
+    casts **1** burst in 180s (flora 24.05%→4.51%, crown 71.58%→41.81%) and a tested B1 behind the
+    slot-1 no-op B1 casts **0** (liter 26.53%→1.13%). The spec's intent needs the tested unit FIRST
+    in its own stage with the spare no-op behind it — `[tested, noopB1, noopB2, mg, rl]` for a B1,
+    `[noopB1, tested, noopB2, mg, rl]` for a B2. That shape delivers the requirement: B2s reach FB
+    parity (flora/prika/blanc/biscuit all 9v9). B1s mostly do (liter/moran 10v9 on their own CDR)
+    but a 40s B1 still lands 8v9 — a 1-FB residual, versus today's 9-FB wipeout.
+  - **Also divergent from the spec, needs an owner call before implementing:** slot 1 is
+    `noop-b1-ar` — an **AR**, not an SR — and its CDR is **7s**, not 7.5s
+    (`src/skills/overrides/noop-b1-ar.json`). That control is SHARED with the burst-gen, sustain,
+    B1/B2 DPS and DPS-chart Solo boards, and `src/dpschart/noop.ts:10` pins the set byte-identical
+    so those boards do not shift — changing it re-ranks four other boards. Buffer-local SR B1, or
+    change the shared control? Separately, "tested B3's burst is off" is today achieved positionally
+    (rightmost so the carries win stage 3), not by a flag: `cfg.disableBursts` is team-wide and
+    `UnitOptions` has no per-unit equivalent.
 - **⇒ ENGINE REGRESSION FULL-BURST COUNT FAILURES — four comps disabled in `scripts/regression.ts`**
   (`:106`, `:131`, `:158`, `:236`): `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`,
   `N3 scarlet/liberalio iron` each read 1–3 Full Bursts short of their video-measured counts on clean
