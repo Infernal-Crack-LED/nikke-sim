@@ -1,12 +1,26 @@
 # Handoff — B1/B2 cross-board comparability + the `noop-rouge-b1` squad layering
 
-> Opened 2026-08-03. Two unrelated leftovers pulled out of `QUEUE.md` so they can be picked up
-> in a dedicated session. Both are FINDINGS-ONLY as written: neither has an owner ruling yet,
-> and item 1 turns out to be mostly a documentation task rather than the reconciliation its
-> old queue entry implied.
+> **CLOSED 2026-08-03** — both items delivered; the residual owner calls moved to `QUEUE.md`
+> under "Engine / model threads". Kept for the reasoning trail; do not plan from it.
 >
-> Neither is touched by the 2026-08-03 overload work (PR #66). That matters for item 1 — see
-> the note at the end of it.
+> - **Item 1 — DONE.** The comparability write-up landed in `docs/data/rank-boards.md` as
+>   "What the B1/B2 board and the B3 DPS chart do and don't share". Every field in the table
+>   below was re-verified in code before it was written. **Three corrections to this doc:**
+>   `PARTNER_PROFILES` does not exist anywhere in the repo (the real symbols are
+>   `B1B2_DPS_PROFILES` / `B1B2_DPS_EXTRA_PROFILES`); `doll: false` and `ol` agree only at the
+>   team-default level, since the chart's 8/12 and 12/12 tiers set `doll: true` and `ol: 5`
+>   per-unit; and the `copies: 0` "(per-unit stars/core win)" annotation is chart-side only.
+>   The landed doc also records a rotation-CDR asymmetry this doc missed. Open: the Core 50 row.
+> - **Item 2 — ANSWERED, recommendation is C (leave it).** The guard at
+>   `scripts/tests/ranks/buffer.test.ts` **does bite** — removing the synthetic fails it, and the
+>   gate closing costs `blanc` 5 burst casts and ~23 percentage points. Option A is worse than
+>   this doc argues: the import-order hazard is not test-coverable in principle. And the blast
+>   radius is **zero shipped rows**, not one — `blanc` is in `EXCLUDED_BUFFER_SLUGS`, so
+>   `w/ Rouge` ships as an orphaned profile description. Also: the synthetic has four references,
+>   not two, and the two prose ones are in `src/skills/overrides/noir.json`, noir-side.
+>
+> Neither item is touched by the 2026-08-03 overload work (PR #66) — see the note at the end of
+> item 1.
 
 ---
 

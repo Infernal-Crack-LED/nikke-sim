@@ -58,12 +58,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Code / tooling (unblocked, no footage or owner ruling needed)
 
-- **⇒ B1/B2 cross-board comparability → [`docs/handoffs/2026-08-03-b1b2-comparability-and-squad-layering.md`](2026-08-03-b1b2-comparability-and-squad-layering.md) §1.**
-  The three fields the old entry named (`bossDef`, `rangeBonus`, `durationSec`) were verified
-  IDENTICAL across both boards on 2026-08-03, so what is left is documentation plus one owner call
-  (the B1/B2 board has no `c50` row and no investment axis — its numbers are comparable to DPS-chart
-  `scope` cells ONLY). ⚠ the old context pointer `docs/handoffs/closed/2026-07-26-dps-ranks-b1b2.md`
-  does not exist — do not go looking for it.
 - **⇒ Unit-card infographic follow-ups (3, code-verified still open 2026-08-02):**
   1. **No vector source for burst icons.** `web/public/nikke-icons/burst_*` is webp-only (~100px native)
      — fine at every size drawn today, but a surface wanting it large has nothing to rasterize from.
@@ -75,12 +69,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   3. **The browser icon loader still probes extensions and eats 404s** — `web/src/unitCardShare.ts:58`
      `ICON_EXT = ['svg','png','webp']` per icon via onload/onerror. The icon set is static and tracked,
      so the extension is knowable at build time; carry it in the `iconNames` mapping (`{ name, ext }`).
-- **⇒ `noop-rouge-b1` squad layering → [`docs/handoffs/2026-08-03-b1b2-comparability-and-squad-layering.md`](2026-08-03-b1b2-comparability-and-squad-layering.md) §2.**
-  Optional cleanup: keep `src/data/squads.ts` pure game truth and move the synthetic out. The
-  obvious fix (register from the ranks layer at module load) is a TRAP — it makes the engine's
-  fail-closed `sameSquad` gate depend on import order, failing silently. Owner call needed before
-  building the version that actually works. (The other two NOTEs from that review landed in
-  `09f3702c`.)
+- **⇒ The `mv`-into-`closed/` hygiene step is UNPERFORMABLE for a NEW closure — owner call
+  (2026-08-03).** `docs/handoffs/closed` and `docs/closed` are gitignored, so `git add` refuses any
+  path not already tracked there ("The following paths are ignored"), and lint-staged's own
+  `git add` then aborts the commit. Files already in `closed/` are fine (gitignore does not affect
+  tracked paths) — only NEW closures break. So the hygiene rule at the top of this file cannot be
+  followed without `--no-verify` (forbidden) or a `.gitignore` change (owner's call, and it has a
+  privacy dimension: the ignore entries presumably exist to keep closed docs out of the public
+  repo, yet several are tracked anyway). Until ruled, a closed handoff stays in `docs/handoffs/`
+  with its `CLOSED (date)` marker — which is where
+  `2026-08-03-b1b2-comparability-and-squad-layering.md` now sits.
 - **⇒ Pellet-reader: cherry-pick the `+62.5` crosshair-offset fix (`b69b5c6`)** — verified NOT an
   ancestor of `main`; `scripts/probe/read-pellets.ts:66` still defaults `-62.5`, latent, and poisons the
   next run. (It did **not** cause the 2026-07-29 REJECT: artifacts 12:19–13:33, commit 15:17.)
@@ -103,6 +101,48 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Engine / model threads (measurement- or owner-gated)
 
+- **⇒ B1/B2 board: add a Core 50 row, or is two-way core exposure deliberate? — ONE OWNER CALL
+  (2026-08-03).** The cross-board comparability write-up is DONE and landed in
+  `docs/data/rank-boards.md` ("What the B1/B2 board and the B3 DPS chart do and don't share"): the
+  fight basis is verified identical on both sides, and the three real differences (no investment
+  axis, two-way vs three-way core exposure, different teams by construction) are documented, with
+  the headline that **a B1/B2 number is comparable only to a DPS-chart Scope Lock cell**. The only
+  residue is this call — the chart carries No Core / Core 50 / Core 100, the B1/B2 board resolves
+  `coreStr === 'c100' ? 1 : 0` (`src/ranks/b1b2dps.ts:291`), so a chart Core 50 cell has no
+  counterpart. Cheap either way: one ternary plus a cell id in `src/ranks/b1b2-cells.ts`. An
+  investment axis on the B1/B2 board is a much larger ask — recommend NOT doing it; the documented
+  Scope-Lock-only comparability is the cheaper answer.
+- **⇒ `noop-rouge-b1` squad layering — owner call, and the recommendation is LEAVE IT (2026-08-03).**
+  `src/data/squads.ts:26` carries one synthetic (`'noop-rouge-b1': 'Blanc Noir Rouge'`) so the buffer
+  board's `w/ Rouge` duo profile satisfies `blanc`'s same-squad burst-CDR gate — a ranks-layer concern
+  written into a game-truth file. Three findings settle the cost/benefit:
+  1. **The existing guard BITES, verified empirically.** Commenting the entry out fails
+     `scripts/tests/ranks/buffer.test.ts:427` (`expected 3 to be greater than 3`); the gate closing
+     costs `blanc` 5 burst casts and ~23 percentage points (registered: 8 casts / +20.93%;
+     unregistered: 3 casts / −2.02%). A migration that leaves the synthetic unregistered cannot pass.
+  2. **The import-order hazard is not test-coverable, in principle.** `buffer.ts` is the only module
+     that ever puts the synthetic on a team and it imports `noop.ts`, so the "sims blanc without the
+     registration side effect" path does not exist to be tested — and any test reading
+     `DUO_BUFFER_PROFILES` must import `buffer.ts`, firing the very side effect it would check for.
+     So registering from the ranks layer relocates the violation into a hazard no test can catch.
+  3. **The blast radius is ZERO shipped rows, not one.** `blanc` is in `EXCLUDED_BUFFER_SLUGS`
+     (`src/ranks/buffer.ts:173`) and `scripts/build-bufferchart.ts:73` skips excluded slugs before the
+     population is built, so `w/ Rouge` ships as an orphaned profile description with no row.
+     Carrying squad membership on the prepared unit is the only option that really fixes the layering,
+     but it touches the engine's block filter (protected) to serve zero shipped rows.
+     ⚠ Whichever option is chosen, `src/skills/overrides/noir.json` (`note`, `caveats`) also references
+     the synthetic and is CURRENT-STATE prose — update it or it ships a stale claim.
+  - Cheap improvement available regardless: a reciprocal pointer in `src/ranks/buffer.ts` near `:164`
+    noting that registration lives in `src/data/squads.ts`, so the coupling is discoverable both ways.
+- **⇒ Is `blanc`'s buffer-board exclusion rationale STALE? — new, findings-only (2026-08-03).**
+  `EXCLUDED_BUFFER_SLUGS` justifies excluding her on the grounds that her kit reduces team damage and
+  reads "misleadingly negative" (`src/ranks/buffer.ts:171-172`, `scripts/build-bufferchart.ts:65-70`).
+  On current `main` her plain buffer value measures **+7.88%** (9 Full Bursts v 9 baseline) — positive.
+  Re-run: `npx tsx scripts/probe/buffer-rotation-audit.ts --excluded`, which prints every
+  `EXCLUDED_BUFFER_SLUGS` entry's current value against its stated rationale. It read −3.44% before the
+  buffer-board comp reshape (`bede1524` / `11c047aa`), so that merge appears to have flipped it. If the
+  exclusion is lifted, the `w/ Rouge` row starts shipping and the squad-layering item above changes
+  from zero shipped rows to one. Not enacted; a sim-only read of one board, no ruling.
 - **⇒ BUFFER BOARD: the no-op B1's 7s team CDR is NOT LOADED on this board — owner decision, findings
   only (2026-08-03).** `scripts/build-bufferchart.ts:51` loads overrides for roster slugs only, and
   the synthetic controls are not roster entries, so `src/skills/overrides/noop-b1-ar.json` is never
@@ -203,16 +243,57 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      now behaviourally identical to `timing` for every unit and the promised flip is provably a no-op.
      NOT taken — engine default, owner-gated; queued.
   5. **U28** — `extraHitDamagePct` vs `flatDamage` gauge + flavor asymmetry.
-- **⇒ EMILIA GAUNTLET NO-GO(engine-core) — owner decision: authorize a `hitRepeat` rider primitive.**
-  2026-08-02 batch gauntlet (branch `kit-autonomy-batch-2026-08-02`, commit `35f0f0f6`, merged via
-  PR #60): S2 "Fixed Damage to the main body = 58.99% of the damage dealt by self" is a %-of-hit repeat
+- **⇒ EMILIA `hitRepeat` PRIMITIVE — AUTHORIZED 2026-08-03, IN FLIGHT on `kit/emilia-hitrepeat`**
+  (worktree `../nikke-sim-wt-emilia`). `emilia` is the roster's only live NO-GO(engine-core): S2
+  "Fixed Damage to the main body = 58.99% of the damage dealt by self" is a %-of-hit repeat
   (`docs/data/nikke-damage-formula.md` §3) — load-bearing (fires every full charge), in-domain, and no
   `src/` primitive scales a rider off the parent hit's final damage; omitting is a forced weakening and
   folding it into `chargeDamagePct` is a fudge (function damage never cores). The other six kit lines
-  are fully pre-encoded + the proposed primitive spec (pct-of-parent final damage, never-core function
-  damage inheriting parent crit/element/Damage-Up/FB; secondary: negative `chargeSpeedPct`,
-  live-`maxAmmo()`-scaled buff source) is in `scripts/kit-autonomy/manual-review/emilia.md` (on main).
-  `simSupported` stays false, no kit-status row; re-run the gauntlet after the primitive lands.
+  are fully pre-encoded + the primitive spec (pct-of-parent final damage, never-core / never-range
+  function damage inheriting parent crit/element/Damage-Up/FB; secondaries: negative `chargeSpeedPct`
+  — today clamped `[0,100]` so her burst's Charge Speed ▼300% over-credits when omitted — and a
+  live-`maxAmmo()`-scaled buff source) is in `scripts/kit-autonomy/manual-review/emilia.md`.
+  Provenance: 2026-08-02 batch gauntlet, branch `kit-autonomy-batch-2026-08-02`, commit `35f0f0f6`,
+  PR #60. **Landing gate:** the primitive must be snapshot-inert as its own commit before the
+  `emilia` override lands on top; `simSupported`/kit-status flip only if it lands faithful. Re-run
+  the gauntlet afterwards (separate owner-gated pass).
+- **⇒ FLORA S2 SELF-PROC — OWNER RULING 2026-08-03, IN FLIGHT on `kit/flora-s2-selfproc`**
+  (worktree `../nikke-sim-wt-flora`). `flora`'s S2 slot ships as `"skill2": []` on the premise that
+  all three lines are gated on HP dynamics v1 cannot represent and "never fire". **That premise is
+  wrong** — S2 self-procs off her own S1, deterministically, every burst rotation, with no HP pool
+  and no boss damage: entering Burst Stage 2, S1 grants Peace-of-Mind allies Max HP ▲15.01% _without
+  restoring HP_, so their HP fraction drops to 1/1.1501 ≈ 86.95% → satisfies S2-1's "≤90%" shield
+  trigger; the shield landing on `flora` satisfies S2-3's `shielded` ATK ▲45.12%; 2s later the Max HP
+  buff expires, allies return to max HP → satisfies S2-2's "reaches max HP" True Damage ▲30.97%.
+  Every primitive needed already exists (`stageEnter{stage:2}` types.ts:87, `shield{maxHpPct}` :271,
+  `shielded` :85, `selfAndAdjacent` :129) **except a block-level delay** for the +2s step — `delaySec`
+  today lives only on `flatDamage` (:203), so `Block` is gaining a general `delaySec`. The
+  `stageEnter{stage:2}` trigger is a derived-deterministic PROXY for the ≤90% HP transition and must
+  be documented as such in the override note. Expect a real board move (she gains a high-uptime team
+  ATK + True Damage buff); board A/B is FINDINGS-ONLY, no re-tune off it in the landing session.
+- **⇒ ENGINE PRIMITIVE GAP: `addStack`** — no effect increments an existing buff's stack count by N on
+  a trigger. Blocks `flora` S1 ("after 100 normal attacks, all Electric Code allies: increases the
+  stack count of stackable buffs by 1" — trigger `hitCount:100` and target `alliesOfElement` are both
+  expressible, only the EFFECT is missing) and is the same family as `k`'s Tilted Scale stack-ramp
+  (+29 stacks per last bullet, cap 100), which shipped as DOCUMENTED_GAP encoded as a flat
+  `burstCast critRatePct 75` steady-state — correct for the burst window, under-credits the pre-burst
+  ramp and the first burst's build. Magnitude for `flora` depends entirely on which stack-ramp buffs
+  are live on her Electric allies (could be large, could be zero), so it is correctly not estimated.
+  Two carriers is not yet a mandate; log a third before building. Not authorized.
+- **⇒ ENGINE PRIMITIVE GAP: HP pool + HP-threshold triggers** — v1 models no ally HP pool and the
+  scope-lock boss deals no damage, so "HP ≤ X%" / "reaches max HP" / "while shielded by damage" kit
+  lines are structurally out of domain (precedents: `liter` cover-HP NO-OP, owner 2026-07-21; the
+  `alliesLowestHp` "no HP pool" stand-in). ⚠ **This is NO LONGER a `flora` item** — her S2 turned out
+  to self-proc off S1 (entry above) and needs no HP pool. Before building this, census who actually
+  still needs it: the honest list is the `incomingHealingPct` / heal-magnitude family, not the
+  threshold triggers. Low priority, no authorized carrier. Not authorized.
+- **⇒ ENGINE PRIMITIVE GAPS (logged, no carrier pressure)** — surfaced by the 2026-08-02/03 gauntlet
+  sweep, all shipped as DOCUMENTED_GAP with the ⚑ triple, none blocking a GO: **FB-end buff removal**
+  (`k` S1/S2 both "Full Burst ends → remove <buff>"; moot today because the 10s durations self-expire
+  ≈ the FB window) · **empty-magazine effect + status-end trigger** (`grave` S1 "Removes 100% of ammo"
+  at Prediction-end — ~9–11 forgone 201f reloads/fight, an over-credit consistent with her board HOT;
+  tracked as **U19**) · **crit-gated hit counter** (`k` S1 "every 4 critical pellet hits" — `hitCount`
+  counts all hits, not crits; ~5% of her burst damage). Each is honest omission, not a fudge.
 - **⇒ SG LANDING — fix the WEAPON MODEL before any SG override re-tune.** SG units carry 12–24% landing
   calibration debt (board SG mean |ratio−1| 0.084→0.131 post-UNIGEO), but `marciana` (SG, **no override,
   zero damage kit**) reads **0.850 COLD at n=2** and `/probe-processing` localized it to the **landing
@@ -275,8 +356,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   1. **Step 3 — per-unit dedicated sessions, OWNER drives the spec line-by-line from kit text; run them
      with `/kit-tdd`.** Fully unblocked. Rationale: the board gates FIT only; faithfulness errors of a
      few % are absorbed by calibration and only unit tests can gate them.
-  2. **Step 4 — doc/skill reframe still open** (CONVENTIONS test-first note, audit-kit/kit-parse one-line
-     reframe as post-validation sampling, STATE.md pointer); pick up with `/skill-maintenance`.
+  2. **Step 4 — doc/skill reframe is DONE (2026-08-03).** `docs/CONVENTIONS.md` carries a "Kit work is
+     test-first" section, `docs/STATE.md` §6 carries the standing ruling, and `.claude/skills/audit-kit`
+     is reframed as the post-validation sampling layer (`kit-parse`'s reframe had already landed in
+     `2a5cf5b8`). Both docs word the per-unit path as TWO-PRONGED — `/kit-tdd` (owner-driven spec) and
+     `/kit-autonomy` (authorized autonomous branch work) — because that is what the tree shows: of the
+     128 unit specs in `scripts/tests/units/`, **107 carry a kit-autonomy header and none name kit-tdd**.
+     ⚠ The plan doc itself is now the stale artifact: it lists only `helm` (SR/Water) + `liter` as landed
+     step-3 specs (vs 128 files against 130 overrides) and still calls the two step-2 items deferred though both
+     landed in `03021eeb`. Step 2 looks closable — worth a hygiene pass over the plan doc.
   3. Six `cfg.onEvent` payload follow-ups (weapon-swap events, perResource/ramp/swap-gate fields on
      `buffApply`, …) listed under §1d in the plan — build them as step-3 tests need them.
 - **⇒ SAME-SQUAD PRIMITIVE MIGRATIONS** (the primitive landed 2026-08-02; `teamHas.sameSquad` resolves
