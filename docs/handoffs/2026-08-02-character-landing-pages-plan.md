@@ -303,6 +303,104 @@ the rest of the visual pass.
   rather than vanishing, so the page never looks broken.
 - **Thin-content risk — the one genuinely open item.** See the dedicated section below.
 
+## Thin-content policy → moved out
+
+The analysis, the measured page-length census and the decision rule now live in
+**[../seo-followups.md](../seo-followups.md)** — it outlives this branch and covers
+more than this one question. Headline: the "85 thin pages" framing was wrong, and
+gating the sitemap on `simSupported` is the WRONG rule.
+
+## Phasing
+
+| Phase | Content                                                                                         | Status    |
+| ----- | ----------------------------------------------------------------------------------------------- | --------- |
+| 1     | `build-unit-pages.ts` + `data/unit-pages.json`                                                  | ✅ landed |
+| 2     | Rewrite `UnitPage.tsx` (all sections above) + styles                                            | ✅ landed |
+| 3     | `/characters` index + nav + `linkFor` on `CharacterCards` + `TAB_META` (BOTH servers) + sitemap | ✅ landed |
+| 3b    | Profile entry point on the roster grids (see below)                                             | ✅ landed |
+| 3c    | `ui-shot` coverage for the new pages + a `SHOTS=` filter                                        | ✅ landed |
+| 4     | **Owner design iteration** — hero card, tabs, boxed skills, icon identity row, New Characters   | ✅ landed |
+| 5     | Roll-out checks across the uneven record shapes (`scripts/unit-page-check.mjs`)                 | ✅ landed |
+| 6/7   | No-JS crawler bodies for `/unit/*` and `/characters`, both servers                              | ✅ landed |
+| 8     | Thin-content policy for the ~85 kit-only pages — **needs a first crawl**, see below             | blocked   |
+
+### Phase 5 — roll-out checks (`npm run unit-page-check`)
+
+The page is data-driven over 196 characters with wildly uneven records, and the
+design was iterated on ONE fully-populated unit — so every section's absent-state
+was untested. The script picks one representative per structurally-distinct shape
+**by querying the artifacts**, not by a hardcoded list, so it keeps covering the
+edge cases as the roster changes: no release date, Λ burst, not-in-the-sim,
+simulated-but-no-overload-table, no archetype tags, a Treasure entry, charge vs
+non-charge. It also checks an unknown slug lands on a real not-found page, and that
+`/characters` links every character exactly once.
+
+All 9 shapes pass; nothing needed a code fix.
+
+### Phases 6/7 — no-JS bodies
+
+Prerendering all 196 pages through Playwright was rejected: `unitStaticHtml`
+already existed as the established request-time pattern, covers every unit with no
+build cost, and would have been duplicated by a prerender pass. Both servers
+(`src/server/static.ts` and its hand-mirror `scripts/serve.mjs`) now emit the
+identity row **plus the kit, the ranked overload table and the sim-status badge**,
+and `/characters` emits its full link list.
+
+Effect on `maiden-ice-rose`: ~40 words → **~2,000 characters** of indexable text.
+`/characters` exposes all **196** unit links with JS off.
+
+This also fixed a live inconsistency: the old static body advertised
+`ol-optimal.json`'s greedy pick, which disagrees with the ranking the visitor sees
+for most units. Crawlers were indexing a different recommendation than the page
+showed. The server now reads the same `unit-pages.json` the React page does, and
+the dead `ol-optimal` code path was removed from `static.ts`.
+
+### Entry point from the roster grids (owner ask, 2026-08-02)
+
+The Team Builder page and the four Browse Nikkes modals share `CharacterCards`.
+The constraint the owner set: **clicking the portrait must keep meaning "put her on
+my team"** — that is the whole job of those surfaces, and hijacking the tap would
+break it.
+
+**Landed:** a `profileHref` prop puts a small round **ⓘ** badge in each card's
+top-right corner, as a SIBLING of the card button (an `<a>` inside a `<button>` is
+invalid HTML), inside a `.teambuilder-card-wrap`. The wrapper is only emitted when a
+badge was asked for, so every existing caller's DOM is byte-identical.
+
+Two decisions worth keeping:
+
+- **It opens in a new tab** (`target="_blank"`). These are mid-task surfaces: the
+  Browse modals hold a STAGED team that an SPA navigation would discard, and the
+  Team Builder holds a team in progress. A new tab is the only variant that
+  provably cannot interrupt the task, which is exactly the constraint.
+- **Hover-revealed on pointer devices, always visible on touch**
+  (`@media (hover: hover) and (pointer: fine)`). A 196-card grid with a permanent
+  badge on every card is visual noise on desktop; touch has no hover, so hiding it
+  there would make it undiscoverable.
+
+Alternatives considered and rejected: long-press (undiscoverable, and it fights the
+existing drag-to-slot gesture), right-click menu (no touch equivalent), making the
+name text the link (too small a target, and it sits inside the button).
+
+**Open for the design pass:** the ⓘ glyph is a placeholder — an outward arrow (↗)
+reads as "opens elsewhere" more honestly than an info glyph. Worth deciding with
+the rest of the visual pass.
+
+## Risks / open items
+
+- **`data/` is a protected path.** `data/unit-pages.json` is a NEW generated
+  artifact, not a change to any existing source of truth — but it lands in a
+  protected dir and needs owner sign-off before merge. No existing `data/` file was
+  touched.
+- **`scripts/serve.mjs` duplicates `src/server/static.ts`'s route table** by hand.
+  Adding `/characters` to only one of them 404s the route; the
+  `serve-headers.test.ts` route-parity test catches it (it did). Both are updated.
+- **Units with no data.** 196 characters, 111 `simSupported`, 74 `generatorSupported`.
+  A page for an unmodeled unit must degrade to kit + identity + "not in the sim yet"
+  without empty tables. Fixed-geometry-style: sections that have no data say so
+  rather than vanishing, so the page never looks broken.
+- **Thin-content risk — the one genuinely open item.** See the dedicated section below.
+
 ## Thin-content policy for the low-data unit pages (OPEN — needs a crawl)
 
 ### What the risk actually is

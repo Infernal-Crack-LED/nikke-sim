@@ -4,6 +4,7 @@
 //   npm run web:build && node scripts/unit-page-check.mjs
 //   SLUGS=a,b,c node scripts/unit-page-check.mjs     # check specific units
 //   PORT=4400 node scripts/unit-page-check.mjs       # pick a free port
+//   MEASURE=1 node scripts/unit-page-check.mjs       # crawler-visible text census
 //
 // WHY A SCRIPT AND NOT A GLANCE. The page is data-driven over 196 characters
 // whose records are wildly uneven — 85 aren't simulated at all, 38 more have no
@@ -59,6 +60,60 @@ const targets = process.env.SLUGS
 
 const browser = await chromium.launch();
 const failures = [];
+
+// MEASURE=1 — the crawler-visible text census behind the thin-content policy in
+// docs/seo-followups.md. Fetches every unit page and counts the characters a
+// crawler that runs NO JS actually sees: strip tags from the server-injected
+// #root body. That is the one number the indexing decision turns on, so it has to
+// be reproducible rather than a figure someone measured once by hand.
+async function measure() {
+  const rows = [];
+  for (const slug of Object.keys(characters)) {
+    const html = await (await fetch(`${base}/unit/${slug}`)).text();
+    const i = html.indexOf('id="root">');
+    const body = i >= 0 ? html.slice(i, html.indexOf('</body>', i)) : '';
+    const text = body
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    rows.push({
+      slug,
+      n: text.length,
+      ol: Boolean(unitPages[slug]?.ol?.length),
+      sim: Boolean(characters[slug].simSupported),
+    });
+  }
+  const tier = (label, f) => {
+    const ns = rows
+      .filter(f)
+      .map((r) => r.n)
+      .sort((a, b) => a - b);
+    if (!ns.length) {
+      return;
+    }
+    console.log(
+      `  ${label.padEnd(34)} n=${String(ns.length).padStart(3)}  min=${String(ns[0]).padStart(5)}` +
+        `  median=${String(ns[Math.floor(ns.length / 2)]).padStart(5)}  max=${String(ns[ns.length - 1]).padStart(5)}`
+    );
+  };
+  console.log('\ncrawler-visible text per unit page (characters)\n');
+  tier('all', () => true);
+  tier('has an overload table', (r) => r.ol);
+  tier('simulated, no overload table', (r) => r.sim && !r.ol);
+  tier('kit + identity only', (r) => !r.sim);
+  const thin = rows.filter((r) => r.n < 500).sort((a, b) => a.n - b.n);
+  console.log(
+    `\n  under 500 chars: ${thin.length}   under 300: ${rows.filter((r) => r.n < 300).length}`
+  );
+  thin.forEach((r) => console.log(`    ${String(r.n).padStart(5)}  ${r.slug}`));
+  console.log('');
+}
+
+if (process.env.MEASURE) {
+  await measure();
+  await browser.close();
+  process.exit(0);
+}
 
 async function checkUnit(label, slug) {
   const ctx = await browser.newContext({

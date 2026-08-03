@@ -64,13 +64,21 @@ scripts/ui-shot.mjs`.
   3. Spot-check a spread of units (untuned, no-OL-data, `simSupported:false`, Λ burst) before merge.
   4. Prerender `/unit/*` + `/characters` (`scripts/prerender.ts` covers only /howto,/mechanics) and
      extend `unitStaticHtml` in BOTH servers to emit the new sections for no-JS crawlers.
-  5. **Thin-content policy — revisit after ~4-6 weeks of Search Console data.** Full analysis,
-     measured page-length distribution and a 4-step decision rule are in the plan doc's
-     "Thin-content policy" section. Headline: the "85 thin pages" framing was WRONG — measured,
-     no page is under 300 chars and only **17** are under 500 (short-kit starter/NPC units, not
-     the unsimulated 85, whose median is 616). **Do not gate the sitemap on `simSupported`** —
-     it doesn't track thinness. Do nothing unless Search Console shows unindexed URLs
-     concentrated in the thin tier.
+  5. Thin-content policy → moved to **[docs/seo-followups.md](../seo-followups.md)** (see the
+     dedicated SEO item below).
+- **⇒ SEO FOLLOW-UPS — deferred pending a real crawl: [docs/seo-followups.md](../seo-followups.md).**
+  Search-visibility decisions that are NOT answerable from the repo. Nothing to do until Search
+  Console has ~4-6 weeks of data; the doc carries the measurement, the options and a 4-step
+  decision rule so the call is decidable rather than open-ended.
+  - **Thin-content policy for the low-data unit pages.** Measured
+    (`MEASURE=1 node scripts/unit-page-check.mjs`): no page is under 300 crawler-visible
+    characters and only **17** are under 500 — short-kit starter/NPC units, NOT the 85
+    unsimulated ones (median 616). That killed the originally-planned rule: **do not gate the
+    sitemap on `simSupported`**, it does not track thinness. Recommendation is do nothing.
+  - Also tracks `sugar`'s wrong card release date (item below) and records the settled calls —
+    prerendering `/unit/*` was REJECTED, sitemap coverage is complete — so they don't get
+    re-litigated.
+
 - **⇒ DATA BUG: `sugar.releaseDate` is her Treasure date, not her release (found
   2026-08-02).** She reads **2026-07-23**; her true release is **2022-11-04** (NIKKE's
   global launch), which `characters.json` held correctly until commit `fda93643`
