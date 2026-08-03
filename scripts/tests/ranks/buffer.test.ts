@@ -54,6 +54,8 @@ describe('buffer board', () => {
       pierce: false,
       element: null,
       trueFlavor: false,
+      sustained: false,
+      distributed: false,
     } as const;
     expect(assemble('liter', 'I', 'generic', spec).slugs).toEqual([
       'liter',
@@ -98,6 +100,8 @@ describe('buffer board', () => {
       pierce: false,
       element: null,
       trueFlavor: false,
+      sustained: false,
+      distributed: false,
     } as const;
     expect(assemble(null, 'I', 'generic', spec).slugs).toEqual([
       NOOP_B1,
@@ -133,6 +137,8 @@ describe('buffer board', () => {
       pierce: false,
       element: null,
       trueFlavor: false,
+      sustained: false,
+      distributed: false,
     } as const;
     const b2 = assemble(null, 'II', 'generic', spec).slugs;
     expect(b2.filter((s) => s === NOOP_B2)).toHaveLength(2);
@@ -239,6 +245,35 @@ describe('buffer board', () => {
     expect(typed.valuePct).toBeGreaterThan(generic.valuePct);
   });
 
+  it('typed derivation: crust (Distributed + Sustained Damage ▲ burst buffs) grants carries a flavor MOCK_TICK rider', () => {
+    const { spec, rules } = deriveCarrySpec(overrides.crust);
+    expect(spec.distributed).toBe(true);
+    expect(spec.sustained).toBe(true);
+    expect(rules.some((r) => r.includes('distributedDamagePct'))).toBe(true);
+    expect(rules.some((r) => r.includes('sustainedDamagePct'))).toBe(true);
+  });
+
+  // The same silently-inert shape True Damage had (2026-08-03 typed-board flavor
+  // audit): crust/rosanna-chic-ocean/delta-ninja-thief/elegg/mast-romantic-maid
+  // each buff allies' Distributed and/or Sustained Damage ▲, but a kit-less
+  // carry can never generate either flavor on its own — the MOCK_TICK rider
+  // (buffer.ts) is what gives the buff a real instance to multiply.
+  it('typed board: crust/rosanna-chic-ocean/delta-ninja-thief/elegg/mast-romantic-maid are worth more with the flavor-mocked carries than generic', () => {
+    const slugs = [
+      'crust',
+      'rosanna-chic-ocean',
+      'delta-ninja-thief',
+      'elegg',
+      'mast-romantic-maid',
+    ];
+    for (const slug of slugs) {
+      const memo = new Map();
+      const generic = bufferValueFor(slug, 'generic', ctx, memo);
+      const typed = bufferValueFor(slug, 'typed', ctx, memo);
+      expect(typed.valuePct, slug).toBeGreaterThan(generic.valuePct);
+    }
+  });
+
   it('anis-star (projectile-explosion) already scores on the generic board via the RL carry', () => {
     const r = bufferValueFor('anis-star', 'generic', ctx);
     expect(r.valuePct).toBeGreaterThan(20);
@@ -302,6 +337,8 @@ describe('buffer board', () => {
       pierce: false,
       element: null,
       trueFlavor: false,
+      sustained: false,
+      distributed: false,
     } as const;
     expect(assemble('ada', 'III', 'generic', spec).burstOffSlug).toBe('ada');
     expect(assemble('flora', 'II', 'generic', spec).burstOffSlug).toBeNull();
