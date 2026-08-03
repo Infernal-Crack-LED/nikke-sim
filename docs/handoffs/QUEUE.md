@@ -58,24 +58,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Code / tooling (unblocked, no footage or owner ruling needed)
 
-- **⇒ OL TOOLING — ONE decision left: should `ol-optimal.json` come from the EXHAUSTIVE
-  search instead of greedy?** (Hit Rate cause closed 2026-08-02; tier basis closed
-  2026-08-03 — owner ruled T11, landed in `dd74ec62`.) Measure any time with
-  `npx tsx scripts/ol-search-compare.ts --tier <n> [--only <slug>] [--shipped <path>]`,
-  which scores both searches and any artifact's picks on one basis.
-  - **Measured at T11, post-tier-fix:** greedy leaves a mean 1.35% / median 0.00% /
-    **max 31.19%** on the table vs the exhaustive winner; 45/73 units are already optimal.
-  - **The failure is structural, not tunable.** Several candidates are THRESHOLD or convex
-    stats, so their first line looks worthless and their third or fourth wins outright —
-    greedy never takes the first step. `asuka-wille` is the clean case: 1× Max Ammo gains
-    1.41% and loses step 1 to Crit Rate's 1.72%, while 2× Max Ammo is worth ~54%
-    (`--only asuka-wille --tier 11`). No threshold tweak in `bestOl` reaches it.
-  - **Cost of switching is ~zero:** the pool is 3 types (5 on RL/SR), so exhaustive is 15 or
-    70 sims/unit vs greedy's ~28, and `scripts/build-unit-pages.ts` already runs it for all 73. It would also collapse the two artifacts onto one search, putting every unit at
-    gap 0.00% by construction and retiring this whole class of disagreement.
-  - Adjacent finding, NOT enacted: `src/olcalc.ts` (`bestOlAtTier`) is a THIRD greedy
-    searcher, unimported anywhere, and its candidate pool still carries the stale
-    all-weapons Hit Rate exclusion that `src/olconfigs.ts` fixed. Delete or fold in.
+- **⇒ OL BASIS — CLOSED 2026-08-03** (owner ruling: exhaustive ranking at T11 everywhere; greedy
+  and the max-roll basis deleted — see `docs/DECISIONS.md`). One follow-up left, and it is a
+  PRESENTATION call, not a defect: the DPS chart's invested tiers now report T11 numbers instead of
+  max-roll ones, so per-unit DPS fell a mean 8.85% at 8/12 and 11.41% at 12/12, moving 1108 of 1830
+  rank positions at 12/12. Confirm that is the intended claim for a "12/12" row — if the chart is
+  meant to be aspirational-max, `OL_TIER = 15` in `src/dpschart/matrix.ts` reverts just that half
+  and leaves the (unambiguous) search fix in place. The scope-lock basis and the regression gate
+  are byte-identical either way. Score any artifact with `npx tsx scripts/ol-search-compare.ts`.
 
 - **⇒ B1/B2 DPS rank-board follow-up (1 of 3 left):** reconcile / document cross-board comparability
   against the B3 DPS chart Solo cells (`bossDef`, `rangeBonus`, `durationSec`). Context:

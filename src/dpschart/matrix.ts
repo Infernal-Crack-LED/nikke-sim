@@ -25,6 +25,7 @@
 import type { Element, GearLevel, SimConfig } from '../types.js';
 import type { LineSelection, UnitOptions } from '../prepare.js';
 import { NOOP_B1, NOOP_B2, NOOP_B3 } from './noop.js';
+import olTiers from '../../data/ol-tiers.json' with { type: 'json' };
 
 // unit.element beats … (mirror of BEATS in engine/sim.ts). For "ele weak" the boss
 // is set to the element the TESTED unit beats, so only the tested unit is advantaged.
@@ -274,8 +275,30 @@ const CONTROL_REMAINDER: LineSelection[] = [
   { type: 'critdmg', count: 2 },
 ];
 
-// counts to seed the tested unit's 12/12 optimizer so it never exceeds 4/type
-export const FLOOR_SEED_COUNTS: Record<string, number> = { elem: 4, atk: 4 };
+// THE OVERLOAD TIER, one knob for the whole project (owner ruling 2026-08-03: exhaustive
+// ranking at T11 everywhere, no max-roll basis left). Every invested-tier line below is
+// stamped with this tier's per-line value; without a `value` prepareUnit falls back to the
+// line's MAX ROLL, which is what this replaces.
+//
+// It is deliberately the SAME tier the search optimizes at (src/dpschart/run.ts,
+// scripts/build-ol-optimal.ts, scripts/build-unit-pages.ts). Optimizing at one tier and
+// applying at another is not cosmetic — several candidates are threshold stats whose
+// winner moves with the tier — and it was a measured defect on the ol-optimal artifact
+// before this landed.
+//
+// The `scope` tier carries NO overload lines at all, so the scope-lock validation basis
+// and the regression gate (scripts/regression.ts, both cells `invest: 'scope'`) are
+// untouched by this constant.
+export const OL_TIER = 11;
+export const OL_TIER_VALUES: Record<string, number> = olTiers.tiers.find(
+  (t) => t.tier === OL_TIER
+) as unknown as Record<string, number>;
+if (!OL_TIER_VALUES) {
+  throw new Error(`data/ol-tiers.json has no tier ${OL_TIER}`);
+}
+/** Stamp the project tier's per-line value onto a line selection. */
+export const atOlTier = (lines: LineSelection[]): LineSelection[] =>
+  lines.map((l) => ({ ...l, value: OL_TIER_VALUES[l.type] }));
 
 interface TierOpts {
   cube?: { id: string; level: number };
@@ -293,14 +316,19 @@ function tierLoadout(
     return { cube, ol: 'base5', doll: false, lines: [] };
   }
   if (invest === '8of12') {
-    return { cube, ol: 5, doll: true, lines: [...FLOOR_LINES] };
+    return { cube, ol: 5, doll: true, lines: atOlTier(FLOOR_LINES) };
   }
   // 12of12
   const extra =
     role === 'tested'
       ? (optimizedTestedLines ?? []) // undefined during the provisional optimizer run
       : CONTROL_REMAINDER;
-  return { cube, ol: 5, doll: true, lines: [...FLOOR_LINES, ...extra] };
+  return {
+    cube,
+    ol: 5,
+    doll: true,
+    lines: atOlTier([...FLOOR_LINES, ...extra]),
+  };
 }
 
 // ---- team assembly --------------------------------------------------------

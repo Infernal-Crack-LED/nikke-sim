@@ -3,16 +3,30 @@
 // B3 ranking basis (owner 2026-07-16). Writes data/ol-optimal.json, a slug → line
 // selection table the web's "12/12" Overload pill applies per unit.
 //
-// The optimizer is a per-unit greedy marginal-gain search (src/bestol.ts): a unit's
+// The optimizer is the EXHAUSTIVE free-line ranking (src/olconfigs.ts): every size-4
+// multiset of the weapon-aware candidate pool is simulated and the best kept. A unit's
 // best remaining lines (crit / ammo / charge …) are governed by its own kit, so we
 // optimize each unit once in the solo isolation team and reuse the result everywhere.
 //
-// TIER: the search runs at T11, the tier the web's 12/12 Overload pill APPLIES these
-// picks at (and the tier scripts/build-unit-pages.ts ranks its table at). It used to
-// pass no tier values, so bestOl optimized at max roll and shipped picks chosen under
-// stat values no consumer ever uses — not cosmetic, because several candidates are
-// threshold stats whose winner moves with the tier. Override with --tier for a basis
-// A/B; `--tier 15` reproduces the old max-roll behaviour.
+// SEARCH + TIER (owner ruling 2026-08-03): exhaustive, at T11, everywhere. Both halves
+// were measured failures of the greedy marginal-gain search this replaced:
+//
+//   TIER — it optimized at MAX ROLL while every consumer applies the picks at T11 (the
+//   web's 12/12 Overload pill; scripts/build-unit-pages.ts ranks its table at T11). Not
+//   cosmetic: several candidates are THRESHOLD stats whose winner moves with the tier.
+//
+//   SEARCH — greedy adds one best line at a time, so it cannot see a stat whose FIRST
+//   line is worthless and whose third or fourth wins outright. Charge Speed buys nothing
+//   until it crosses a frame boundary; Hit Rate's core-rate curve is convex. Measured at
+//   T11 it left a mean 1.35% / max 31.19% on the table across 73 units — `asuka-wille`
+//   took 2× Crit DMG + 2× Crit Rate (8.66%) over 3× Max Ammo + 1× Crit Rate (57.91%),
+//   because one ammo line gains 1.41% and loses step 1 to Crit Rate's 1.72%.
+//
+// Exhaustive is also CHEAPER here: the pool is 3 types (5 on RL/SR), so C(6,4)=15 or
+// C(8,4)=70 sims per unit against greedy's ~28, and it is the same call
+// scripts/build-unit-pages.ts already makes — so the two artifacts can no longer
+// disagree about a unit's best lines. Score any basis with
+// `npx tsx scripts/ol-search-compare.ts`. Override the tier with --tier for an A/B.
 //
 //   npx tsx scripts/build-ol-optimal.ts [--out <path>] [--tier <n>]
 import { readFileSync } from 'node:fs';
@@ -26,13 +40,8 @@ import type {
   PrepareDeps,
   SkillLevelData,
 } from '../src/prepare.js';
-import { prepareTeam } from '../src/prepare.js';
-import { bestOl } from '../src/bestol.js';
-import {
-  assembleTeam,
-  FLOOR_SEED_COUNTS,
-  type Cell,
-} from '../src/dpschart/matrix.js';
+import { rankFreeLineConfigs } from '../src/olconfigs.js';
+import { assembleTeam, type Cell } from '../src/dpschart/matrix.js';
 import { NOOP_CHARACTERS } from '../src/dpschart/noop.js';
 
 const load = <T>(rel: string): T =>
@@ -87,26 +96,23 @@ const units: Record<string, { type: string; count: number }[]> = {};
 let done = 0;
 for (const [slug, c] of eligible) {
   const tested = { slug, element: c.element as Element };
-  // provisional solo team: tested carries only the 8-line floor; bestOl fills the rest.
+  // provisional solo team: tested carries only the 8-line floor; the ranking substitutes
+  // the four free lines per candidate loadout.
   const team = assembleTeam(SOLO_CELL, tested);
   const chars = team.slugs.map(charFor);
-  const prepared = prepareTeam(chars, team.unitOpts, deps);
-  const res = bestOl(
+  const { results } = rankFreeLineConfigs({
     chars,
     mult,
-    team.cfg,
-    prepared,
-    team.testedIndex,
-    olLines,
-    4,
-    FLOOR_SEED_COUNTS,
-    tierValues
-  );
-  const counts = new Map<string, number>();
-  for (const p of res.picks) {
-    counts.set(p.type, (counts.get(p.type) ?? 0) + 1);
-  }
-  units[slug] = [...counts].map(([type, count]) => ({ type, count }));
+    cfg: team.cfg,
+    deps,
+    baseOpts: team.unitOpts,
+    carryIdx: team.testedIndex,
+    topN: 1,
+    tierValues,
+  });
+  // `value` is dropped deliberately: the artifact stores WHICH lines, and each consumer
+  // stamps its own tier when it applies them (the web pill at T11).
+  units[slug] = results[0].lines.map(({ type, count }) => ({ type, count }));
   done++;
   if (done % 20 === 0) {
     process.stderr.write(`  …${done}/${eligible.length}\n`);
@@ -116,9 +122,10 @@ for (const [slug, c] of eligible) {
 const artifact = {
   _comment:
     'Damage-optimal 12/12 remainder OL lines per unit (beyond the 4 elem + 4 atk floor), ' +
-    'computed by scripts/build-ol-optimal.ts in the Solo framework, optimized AT the T11 ' +
-    "line values the web's 12/12 Overload pill applies them at. Regenerate when " +
-    'kits/overrides/engine change.',
+    'computed by scripts/build-ol-optimal.ts in the Solo framework by EXHAUSTIVE search ' +
+    "at the T11 line values the web's 12/12 Overload pill applies them at. Regenerate " +
+    'when kits/overrides/engine change.',
+  search: 'exhaustive',
   framework: 'solo',
   tier: TIER,
   units,

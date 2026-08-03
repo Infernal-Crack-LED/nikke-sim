@@ -10,18 +10,16 @@
 // 1. `ol` — the FULL ranked free-line overload table, the same ranking the web's
 //    "Optimize Overload" tab computes live, baked out so a landing page can publish
 //    it without running the sim in the visitor's browser. Sibling of
-//    scripts/build-ol-optimal.ts and deliberately in the SAME basis: the Solo
-//    isolation cell at 12/12, lines measured at T11. The difference is the SEARCH —
-//    build-ol-optimal runs the greedy marginal-gain optimizer (src/bestol.ts) over
-//    all 9 line types, this runs the EXHAUSTIVE multiset ranking (src/olconfigs.ts)
-//    over the weapon-aware free-line pool. That pool is 3 types (non-charge) or 5
-//    (RL/SR), so the exhaustive search is only C(6,4)=15 or C(8,4)=70 sims per unit.
+//    scripts/build-ol-optimal.ts and in the SAME basis in every respect since the
+//    owner's 2026-08-03 ruling: the Solo isolation cell at 12/12, the EXHAUSTIVE
+//    multiset ranking (src/olconfigs.ts) over the weapon-aware free-line pool, at the
+//    project tier (src/dpschart/matrix.ts OL_TIER = T11). Row 0 of this table and
+//    data/ol-optimal.json's pick are therefore the same computation and can no longer
+//    disagree — they used to, on 28 of 73 units, because ol-optimal ran a greedy
+//    search at max roll.
 //
-//    `--tier` exists for basis A/B: build-ol-optimal passes no tier values, so it
-//    optimizes at MAX ROLL, while this ships T11 to match what the Optimize Overload
-//    tab shows by default. `--tier 15` reproduces the greedy pass's tier, which is
-//    how a table-vs-ol-optimal disagreement gets attributed to tier rather than to
-//    the search or the pool.
+//    The pool is 3 types (non-charge) or 5 (RL/SR), so the exhaustive search is only
+//    C(6,4)=15 or C(8,4)=70 sims per unit. `--tier` remains for basis A/Bs.
 //
 // 2. `status` — a SLIM PUBLIC PROJECTION of data/kit-status.json: the four
 //    structured fields the page renders (tier / tuned / graded / unmodeled) and
@@ -48,7 +46,7 @@ import type {
   SkillLevelData,
 } from '../src/prepare.js';
 import { rankFreeLineConfigs } from '../src/olconfigs.js';
-import { assembleTeam, type Cell } from '../src/dpschart/matrix.js';
+import { assembleTeam, OL_TIER, type Cell } from '../src/dpschart/matrix.js';
 import { NOOP_CHARACTERS } from '../src/dpschart/noop.js';
 
 const load = <T>(rel: string): T =>
@@ -74,10 +72,10 @@ for (const slug of Object.keys(data.characters)) {
 }
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 
-// T11 — the tier the web's Optimize Overload tab measures at by default, so the
-// page's table and the live tab agree row-for-row.
+// The project tier — what the web's Optimize Overload tab measures at by default and
+// what every consumer applies, so the page's table and the live tab agree row-for-row.
 const tierArg = process.argv.indexOf('--tier');
-const TIER = tierArg >= 0 ? Number(process.argv[tierArg + 1]) : 11;
+const TIER = tierArg >= 0 ? Number(process.argv[tierArg + 1]) : OL_TIER;
 const tierValues = olTiers.tiers.find((t) => t.tier === TIER);
 if (!tierValues) {
   throw new Error(`data/ol-tiers.json has no tier ${TIER}`);
@@ -134,7 +132,10 @@ const slimStatus = (s: KitStatusEntry): KitStatusEntry => {
     out.tuned = s.tuned;
   }
   if (s.graded?.teams) {
-    out.graded = { teams: s.graded.teams, within3pct: s.graded.within3pct ?? 0 };
+    out.graded = {
+      teams: s.graded.teams,
+      within3pct: s.graded.within3pct ?? 0,
+    };
   }
   // Drop empty slot arrays — most units have unmodeled: {skill1: [], ...}, which
   // is pure weight in the bundle and renders as nothing.
