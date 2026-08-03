@@ -494,6 +494,12 @@ export interface CharacterSkills {
   unmodeled?: UnmodeledText; // kit text deliberately not modeled (display/audit only)
   modes?: string[]; // user-selectable kit modes declared by the override (first = default)
   hasPierce?: boolean; // kit's attacks are Pierce-tagged → Pierce Damage ▲ feeds Damage Up
+  hasTrueNormals?: boolean; // kit's normal attacks are ALWAYS True-flavored (no swap gate) →
+  // ally True Damage ▲ buffs feed them. STATIC whole-fight, unlike weaponSwap.trueNormals
+  // (chisato's/takina's/base laplace's — slug `laplace`, RL/Iron — temporary swap-scoped flavor
+  // change). Set only on kit-confirmed carriers; today's sole user is the buffer-board's synthetic
+  // typed-carry adaptation (src/ranks/buffer.ts deriveCarrySpec), since no real roster unit's
+  // normals are true-flavored outside a swap window.
   burstSnapshotsPreFb?: boolean; // burst damage resolves pre-FB/pre-stage (per-unit cast timing)
   pierceModes?: string[]; // pierce only while in one of these kit modes (CCW: SR only)
   consolidation?: ConsolidationConfig; // pellet-consolidation mode (dorothy-S) — see OverrideFile / A26

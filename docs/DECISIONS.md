@@ -34,6 +34,72 @@ lives. Newest first within each section.
   `snow-white-heavy-arms` −1.5% to −2.0% — a unit that loses ground once the no-op B3 also bursts
   more often and contests stage-3 casts harder. Most Solo rows (1017 of 1152) are byte-identical —
   units whose own kit already saturates the rotation independent of the control's CDR.
+- **(2026-08-03) TYPED BUFFER BOARD: FLAVOR-GATED ALLY BUFFS NEED A CARRY THAT CAN ACTUALLY DEAL
+  THAT FLAVOR — `hasTrueNormals` PRIMITIVE (True Damage), MOCK_TICK RIDER (Distributed/Sustained
+  Damage), OWNER-PICKED OPTION 3.** Flora's burst grants allies "True Damage ▲ 42.39% for 10s"
+  (`trueDamagePct`), but the typed board's synthetic carries (`src/ranks/synthetics.ts`, empty
+  skill1/skill2/burst) never dealt True-flavored damage — confirmed on the pre-fix tree via
+  `--explain flora --typed`: shipped 23.62%, removing the buff moved it by exactly Δ0.00, the buff
+  was silently inert. Auditing the whole roster for the same shape (any ally-facing buff keyed to a
+  damage FLAVOR the carries structurally cannot produce) found four more stats with real users in
+  the buffer population: `sustainedDamagePct` (crust, rosanna-chic-ocean), `distributedDamagePct`
+  (crust, delta-ninja-thief, elegg, mast-romantic-maid) — all confirmed Δ0.00 the same way.
+  **True Damage fix:** added a static `hasTrueNormals` kit primitive (`CharacterSkills`, parallel to
+  the existing `hasPierce`) — `src/skills/types.ts` → `src/skills/index.ts` →
+  `src/engine/sim.ts` (`UnitState.hasTrueNormals`, OR'd into `trueFlavor` at both normal-attack
+  `dealDamage` call sites alongside the existing swap-scoped `u.swap?.trueNormals`).
+  `deriveCarrySpec` (`src/ranks/buffer.ts`) grants it to both typed-board carries whenever the
+  tested unit has an ally-facing `trueDamagePct` buff. Flora's typed value: 23.62% → 47.78%.
+  **Distributed/Sustained fix:** unlike True Damage, no new engine primitive was needed — both
+  flavors are already fully expressible via ordinary `flatDamage`/`dot` blocks (`flavor:
+'sustained'|'distributed'`), always targeting the enemy, always cast by the unit's OWN
+  skill/burst kit line (verified across the whole roster — every real sustained user is a `dot`,
+  every real distributed user a `flatDamage`; none is ally-facing). The gap is purely that the
+  kit-less carries never fire one. Presented four options to the owner (fixed passive tick sized
+  off the weapon modal; a burstCast-triggered rider matching the dominant real-kit shape but
+  coupling the registered value to Full Burst count/rotation; a fixed-interval tick decoupled from
+  rotation; or leave the gap undocumented-fixed and just caveat it, since the size is inherently an
+  invented policy constant with no measured anchor). **Owner picked Option 3** (rejected 2 for the
+  rotation-coupling, rejected 4 given the option to actually register the buff without a large
+  invented number): `deriveCarrySpec` grants each carry a synthetic `MOCK_TICK` rider — one instant
+  `flatDamage` hit every 10s tagged the needed flavor, sized at 5× the carry's own weapon's modal
+  per-shot multiplier (`MODAL_WEAPON`), clearly commented in `buffer.ts` as a POLICY mock, not a
+  measured value, chosen to be a minority contributor (~1–4 points out of each unit's 10–80% total,
+  checked via `--explain <slug> --typed`) — enough surface for the flavor gate to multiply, not a
+  claim about what a "generic carry" should deal. `sustained`/`distributed` are folded into
+  `carryDpsSum`'s baseline-run memo key (unlike `pierce`/`trueFlavor`, pure tags with no damage of
+  their own) because the rider is a real damage source that fires whether or not any buff
+  multiplies it, so two units sharing every other key component but differing here would otherwise
+  read each other's wrong baseline.
+  Evidence: `--explain <slug> --typed` before/after for all six units (flora/crust/
+  rosanna-chic-ocean/delta-ninja-thief/elegg/mast-romantic-maid); `scripts/tests/ranks/buffer.test.ts`
+  pins both derivations + typed>generic for all six; `verify.sh` green, every graded-comp
+  snapshot byte-identical — the change only ever fires on the typed board's synthetic carries.
+  Branch `flora-typed-board-true-damage`, PR #75.
+  **Follow-up (same day): the cross-family `/code-review` (kimi-code/k3) on this landing came back
+  FIX-BEFORE-MERGE with one real FIX, one confirmed-safe FOLLOW-UP, and two NOTEs, all resolved.**
+  (a) The roster sweep for `sustainedDamagePct`/`distributedDamagePct` was exhaustive, but the
+  `trueDamagePct` half rode on Flora being the unit that surfaced the bug and was never
+  independently re-swept — the reviewer's own roster walk found three more genuine, ungated,
+  ally-facing `trueDamagePct` carriers in the buffer population: `frima` (B1), `takina` (B2), `ada`
+  (B3 `buffer`, targets `burstCasters`). Verified each via `--explain <slug> --typed` (all show a
+  real nonzero Δ post-fix) and added to `scripts/tests/ranks/buffer.test.ts`. The reviewer also
+  flagged `emma-tactical-upgrade`/`eunhwa-tactical-upgrade` as apparently-affected — checked and
+  confirmed these are NOT: both units' `trueDamagePct` lines are gated behind a duo `mode`/`teamHas`
+  condition (`"AS Formation (w/ eunhwa-tactical-upgrade)"` / `teamHas.slugs: [emma-tactical-upgrade]`)
+  the standalone buffer-board comp never satisfies, so they read `Δ0.00` before AND after this fix —
+  an unrelated, pre-existing gap (their duo synergy is simply unmodeled on this board), not something
+  this change touches. (b) The reviewer flagged the QUEUE.md entry this landing deleted
+  ("BUFFER-BOARD METHODOLOGY CHAIN IS ON A PR BRANCH") as possibly dropping a live decision + a
+  blast-radius record — checked: the blast-radius numbers (`burstgen` 4/244, `b1b2dps` 12/272) are
+  already preserved verbatim in this file's own buffer-board-methodology entry above, and the
+  "rewind main vs let the PR supersede" question was already settled by the CLAUDE.md ruling
+  "worktree branches land via PR, never a local merge to main" — nothing was actually lost, the
+  deletion was correct. (c) `carryDpsSum`'s per-carry weapon lookup (`team.chars[ci]`) relied on an
+  unenforced parallel-array assumption between `carryIdxs` and `chars`; changed to read the weapon
+  directly off the slug (`syntheticFor(team.slugs[slugIdx])`), removing the fragile pairing. (d) a
+  stale exact test count in this entry was replaced with "green" (the count drifts with every
+  landing and buys nothing pinned to a date).
 
 - **(2026-08-03) SUSTAIN BOARD PORTS THE BUFFER BOARD'S STAGE-COVERAGE SHAPE, AND LOADS THE
   NEVER-LOADED B1 CONTROL.** Owner ruling on the two linked findings queued after the buffer-board

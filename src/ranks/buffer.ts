@@ -27,9 +27,14 @@
 //     typed   — the carries adapt to the tested unit's kit, AUTO-DERIVED from
 //               its override: alliesOfWeapon W → both carries become W;
 //               pierceDamagePct / gainPierce on allies → both carries gain
-//               Pierce; projectileExplosionPct on allies → both carries RL;
-//               alliesOfElement E → both carries element E. Manual
-//               BUFFER_PROFILES patches what the derivation can't see.
+//               Pierce; trueDamagePct on allies → both carries' normal attacks
+//               become True-flavored (hasTrueNormals); sustainedDamagePct /
+//               distributedDamagePct on allies → each carry gets a synthetic
+//               MOCK_TICK rider (a small periodic hit tagged that flavor — see
+//               FLAVOR MOCK below, neither flavor is otherwise producible by a
+//               kit-less carry); projectileExplosionPct on allies → both
+//               carries RL; alliesOfElement E → both carries element E.
+//               Manual BUFFER_PROFILES patches what the derivation can't see.
 //
 // Reading: generic = the buffer's plug-and-play value; typed = its value when
 // the team is built around it. Known caveat (same as the DPS chart): purely
@@ -42,6 +47,7 @@ import {
   CARRY_MG,
   CARRY_RL,
   carryWithWeapon,
+  MODAL_WEAPON,
   syntheticFor,
   type SyntheticCharacter,
 } from './synthetics.js';
@@ -74,12 +80,69 @@ export interface CarrySpec {
   weapon: Weapon | null; // both carries become this weapon (null = keep MG+RL)
   pierce: boolean; // both carries gain Pierce
   element: Element | null; // both carries become this element (null = Iron)
+  trueFlavor: boolean; // both carries' normal attacks become True-flavored (hasTrueNormals)
+  sustained: boolean; // each carry gets a synthetic MOCK_TICK sustained-flavored rider
+  distributed: boolean; // each carry gets a synthetic MOCK_TICK distributed-flavored rider
 }
-const PLAIN_SPEC: CarrySpec = { weapon: null, pierce: false, element: null };
+const PLAIN_SPEC: CarrySpec = {
+  weapon: null,
+  pierce: false,
+  element: null,
+  trueFlavor: false,
+  sustained: false,
+  distributed: false,
+};
 
 // Manual patches for what the override scan can't see (applied over the derived
 // spec). Keep each entry justified by a kit line.
 export const BUFFER_PROFILES: Record<string, Partial<CarrySpec>> = {};
+
+// ---- FLAVOR MOCK (sustained / distributed, typed board only) ---------------
+// Sustained (dot) and distributed (flatDamage) damage are only ever produced by
+// a skill/burst kit line targeting the ENEMY (docs/data/damage-calculation.md
+// §1e/§1g) — every real user of either flavor casts it themselves (dot for
+// sustained, flatDamage for distributed; verified across the whole roster,
+// 2026-08-03 typed-board flavor audit). The synthetic carries have empty
+// skill1/skill2/burst (pure weapon fire), so they can NEVER generate a
+// sustained- or distributed-flavored instance on their own — an ally-facing
+// Sustained/Distributed Damage ▲ buff (crust, rosanna-chic-ocean,
+// delta-ninja-thief, elegg, mast-romantic-maid) read exactly 0 on BOTH boards,
+// the same silently-inert shape True Damage had before hasTrueNormals.
+// OWNER-CHOSEN MOCK (Option 3 of the 2026-08-03 audit, POLICY not measurement):
+// each carry takes one instant hit every MOCK_TICK_INTERVAL_SEC, tagged the
+// needed flavor, sized at MOCK_TICK_ATK_MULT × that carry's OWN weapon's modal
+// per-shot multiplier (MODAL_WEAPON) so it scales sensibly across a typed-board
+// weapon swap. Fixed-interval (not burstCast-triggered) so the registered total
+// is independent of the team's Full Burst count/rotation — deterministic and
+// reproducible the way every other typed-board rule is. The interval/mult pair
+// is picked to be a MINORITY of the carry's own DPS (empirically <15% at
+// scope-lock, checked via `--explain <slug> --typed`) — just enough surface for
+// the flavor gate to multiply, not a claim about what a "generic carry" should
+// deal. Modeled as `flatDamage` (not `dot`) for both flavors: the engine's
+// flavor gate reads identically off either kind (sim.ts's flatDamage case sets
+// `sustained: e.flavor === 'sustained'` the same as the dot case), and a single
+// instant hit avoids a dot's own intervalSec/durationSec bookkeeping for what
+// is a mock, not a modeled kit line.
+const MOCK_TICK_INTERVAL_SEC = 10;
+const MOCK_TICK_ATK_MULT = 5;
+function flavorMockBlock(
+  weapon: Weapon,
+  flavor: 'sustained' | 'distributed'
+): object {
+  return {
+    slot: 'skill1',
+    trigger: { kind: 'interval', sec: MOCK_TICK_INTERVAL_SEC },
+    target: { kind: 'enemy' },
+    effects: [
+      {
+        kind: 'flatDamage',
+        atkPct:
+          MOCK_TICK_ATK_MULT * MODAL_WEAPON[weapon].normalAttackMultiplier,
+        flavor,
+      },
+    ],
+  };
+}
 
 // ---- comp profiles (with-healer / with-shielder) -----------------------------
 // Some headline buffs are gated on a teammate the standard comp doesn't field:
@@ -349,6 +412,36 @@ export function deriveCarrySpec(override: unknown): {
         }
         if (
           e?.kind === 'buff' &&
+          e.stat === 'trueDamagePct' &&
+          !spec.trueFlavor
+        ) {
+          spec.trueFlavor = true;
+          rules.push(
+            'trueDamagePct on allies → carries deal True-flavored normal attacks'
+          );
+        }
+        if (
+          e?.kind === 'buff' &&
+          e.stat === 'sustainedDamagePct' &&
+          !spec.sustained
+        ) {
+          spec.sustained = true;
+          rules.push(
+            'sustainedDamagePct on allies → carries gain a synthetic sustained-flavored MOCK_TICK rider'
+          );
+        }
+        if (
+          e?.kind === 'buff' &&
+          e.stat === 'distributedDamagePct' &&
+          !spec.distributed
+        ) {
+          spec.distributed = true;
+          rules.push(
+            'distributedDamagePct on allies → carries gain a synthetic distributed-flavored MOCK_TICK rider'
+          );
+        }
+        if (
+          e?.kind === 'buff' &&
           e.stat === 'projectileExplosionPct' &&
           !spec.weapon
         ) {
@@ -498,6 +591,9 @@ function carryDpsSum(
   ctx: RanksCtx,
   spec: CarrySpec,
   pierceOverride: boolean,
+  trueFlavorOverride: boolean,
+  sustainedOverride: boolean,
+  distributedOverride: boolean,
   testedSlug?: string,
   profile?: string | null,
   unitOptsMap: Record<string, UnitOptions> = {},
@@ -553,16 +649,35 @@ function carryDpsSum(
     const own = ctx.deps.overrides[team.burstOffSlug];
     extraOverrides[team.burstOffSlug] = { ...(own ?? {}), burst: [] };
   }
-  if (pierceOverride) {
-    for (const i of team.carryIdxs) {
-      extraOverrides[team.slugs[i]] = {
-        slug: team.slugs[i],
-        hasPierce: true,
-        skill1: [],
+  if (
+    pierceOverride ||
+    trueFlavorOverride ||
+    sustainedOverride ||
+    distributedOverride
+  ) {
+    team.carryIdxs.forEach((slugIdx) => {
+      // Read the weapon off the slug itself (syntheticFor), not team.chars[ci] —
+      // chars is carries-only ([c1, c2]) and happens to sit in the same order as
+      // carryIdxs today, but nothing enforces that pairing; a future reorder or a
+      // chars shape that goes slugs-parallel would silently size the MOCK_TICK
+      // off the wrong carry's weapon (kimi-code/k3 cross-family review, 2026-08-03).
+      const weapon = syntheticFor(team.slugs[slugIdx])!.weapon;
+      const skill1: object[] = [];
+      if (sustainedOverride) {
+        skill1.push(flavorMockBlock(weapon, 'sustained'));
+      }
+      if (distributedOverride) {
+        skill1.push(flavorMockBlock(weapon, 'distributed'));
+      }
+      extraOverrides[team.slugs[slugIdx]] = {
+        slug: team.slugs[slugIdx],
+        hasPierce: pierceOverride,
+        hasTrueNormals: trueFlavorOverride,
+        skill1,
         skill2: [],
         burst: [],
       };
-    }
+    });
   }
   if (compProfile) {
     // DEDUPED: a stage-matched baseline seats the same no-op slug twice
@@ -645,9 +760,15 @@ export function bufferValueFor(
   // all and measure every CDR unit against a rotation nobody would run.
   const team = assemble(slug, burst, board, spec, duoProfile?.partner);
   const baselineTeam = assemble(null, burst, board, spec, duoProfile?.partner);
+  // sustained/distributed MUST be in the key (unlike pierce/trueFlavor, which are
+  // pure flavor TAGS with no damage of their own): the MOCK_TICK rider they
+  // inject is a real flatDamage instance that fires whether or not any buff
+  // ever multiplies it, so it changes the baseline's raw DPS by itself — two
+  // units sharing every other key component but differing here would
+  // otherwise read each other's wrong (mock-rider-sized) baseline.
   const baselineKey = duoProfile
-    ? `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile}|partner=${duoProfile.partner}|partnerMode=${duoProfile.partnerMode ?? 'solo'}`
-    : `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile ?? 'plain'}`;
+    ? `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${spec.sustained}|${spec.distributed}|${activeProfile}|partner=${duoProfile.partner}|partnerMode=${duoProfile.partnerMode ?? 'solo'}`
+    : `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${spec.sustained}|${spec.distributed}|${activeProfile ?? 'plain'}`;
   let baseline = baselineMemo.get(baselineKey);
   if (baseline === undefined) {
     const baselineOpts: Record<string, UnitOptions> = {};
@@ -661,6 +782,9 @@ export function bufferValueFor(
       ctx,
       spec,
       board === 'typed' && spec.pierce,
+      board === 'typed' && spec.trueFlavor,
+      board === 'typed' && spec.sustained,
+      board === 'typed' && spec.distributed,
       undefined,
       activeProfile,
       baselineOpts,
@@ -690,6 +814,9 @@ export function bufferValueFor(
     ctx,
     spec,
     board === 'typed' && spec.pierce,
+    board === 'typed' && spec.trueFlavor,
+    board === 'typed' && spec.sustained,
+    board === 'typed' && spec.distributed,
     slug,
     activeProfile,
     testedOpts,

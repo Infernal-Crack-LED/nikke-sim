@@ -49,7 +49,14 @@ describe('buffer board', () => {
   // The tested unit leads its OWN stage — behind the same-stage no-op it would
   // lose every contest and stop bursting.
   it('standard team: tested unit takes the spare B2 slot and leads its own stage', () => {
-    const spec = { weapon: null, pierce: false, element: null } as const;
+    const spec = {
+      weapon: null,
+      pierce: false,
+      element: null,
+      trueFlavor: false,
+      sustained: false,
+      distributed: false,
+    } as const;
     expect(assemble('liter', 'I', 'generic', spec).slugs).toEqual([
       'liter',
       NOOP_B1,
@@ -88,7 +95,14 @@ describe('buffer board', () => {
   // Bursts and -34 points (anis-star), i.e. the same rotation distortion this
   // shape exists to remove, merely pointed at a different stage.
   it("baseline: a stage-matched no-op takes the tested unit's slot", () => {
-    const spec = { weapon: null, pierce: false, element: null } as const;
+    const spec = {
+      weapon: null,
+      pierce: false,
+      element: null,
+      trueFlavor: false,
+      sustained: false,
+      distributed: false,
+    } as const;
     expect(assemble(null, 'I', 'generic', spec).slugs).toEqual([
       NOOP_B1,
       NOOP_B1,
@@ -118,7 +132,14 @@ describe('buffer board', () => {
   // on the tested side. Inert while the profiles inject only heals and shields,
   // silently wrong the day one carries a damage-relevant line.
   it('a stage-matched baseline repeats a no-op slug', () => {
-    const spec = { weapon: null, pierce: false, element: null } as const;
+    const spec = {
+      weapon: null,
+      pierce: false,
+      element: null,
+      trueFlavor: false,
+      sustained: false,
+      distributed: false,
+    } as const;
     const b2 = assemble(null, 'II', 'generic', spec).slugs;
     expect(b2.filter((s) => s === NOOP_B2)).toHaveLength(2);
     const b1 = assemble(null, 'I', 'generic', spec).slugs;
@@ -211,6 +232,70 @@ describe('buffer board', () => {
     expect(typed.valuePct).toBeGreaterThan(generic.valuePct);
   });
 
+  it('typed derivation: flora (True Damage ▲ burst buff) gives carries True-flavored normals', () => {
+    const { spec, rules } = deriveCarrySpec(overrides.flora);
+    expect(spec.trueFlavor).toBe(true);
+    expect(rules.some((r) => r.includes('trueDamagePct'))).toBe(true);
+  });
+
+  it('typed board: flora is worth more with True-flavored carries than generic (her burst trueDamagePct is otherwise inert)', () => {
+    const memo = new Map();
+    const generic = bufferValueFor('flora', 'generic', ctx, memo);
+    const typed = bufferValueFor('flora', 'typed', ctx, memo);
+    expect(typed.valuePct).toBeGreaterThan(generic.valuePct);
+  });
+
+  // Flora is the headline example, not the only one — the trueDamagePct rule is
+  // generic and fires for every ally-facing carrier in the buffer population
+  // (kimi-code/k3 cross-family review, 2026-08-03, caught the initial landing
+  // documenting Flora alone). frima/takina/ada each have a live, non-self,
+  // ungated trueDamagePct line and move on the typed board the same way.
+  // emma-tactical-upgrade/eunhwa-tactical-upgrade also carry ally-facing
+  // trueDamagePct lines but stay correctly Δ0.00 here — both are gated behind a
+  // duo `mode`/`teamHas` condition the standalone buffer-board comp never
+  // satisfies (their duo synergy is simply unmodeled on this board, an
+  // unrelated pre-existing gap), verified via `--explain <slug> --typed`.
+  it('typed board: frima/takina/ada are worth more with True-flavored carries than generic', () => {
+    const slugs = ['frima', 'takina', 'ada'];
+    for (const slug of slugs) {
+      const { spec } = deriveCarrySpec(overrides[slug]);
+      expect(spec.trueFlavor, slug).toBe(true);
+      const memo = new Map();
+      const generic = bufferValueFor(slug, 'generic', ctx, memo);
+      const typed = bufferValueFor(slug, 'typed', ctx, memo);
+      expect(typed.valuePct, slug).toBeGreaterThan(generic.valuePct);
+    }
+  });
+
+  it('typed derivation: crust (Distributed + Sustained Damage ▲ burst buffs) grants carries a flavor MOCK_TICK rider', () => {
+    const { spec, rules } = deriveCarrySpec(overrides.crust);
+    expect(spec.distributed).toBe(true);
+    expect(spec.sustained).toBe(true);
+    expect(rules.some((r) => r.includes('distributedDamagePct'))).toBe(true);
+    expect(rules.some((r) => r.includes('sustainedDamagePct'))).toBe(true);
+  });
+
+  // The same silently-inert shape True Damage had (2026-08-03 typed-board flavor
+  // audit): crust/rosanna-chic-ocean/delta-ninja-thief/elegg/mast-romantic-maid
+  // each buff allies' Distributed and/or Sustained Damage ▲, but a kit-less
+  // carry can never generate either flavor on its own — the MOCK_TICK rider
+  // (buffer.ts) is what gives the buff a real instance to multiply.
+  it('typed board: crust/rosanna-chic-ocean/delta-ninja-thief/elegg/mast-romantic-maid are worth more with the flavor-mocked carries than generic', () => {
+    const slugs = [
+      'crust',
+      'rosanna-chic-ocean',
+      'delta-ninja-thief',
+      'elegg',
+      'mast-romantic-maid',
+    ];
+    for (const slug of slugs) {
+      const memo = new Map();
+      const generic = bufferValueFor(slug, 'generic', ctx, memo);
+      const typed = bufferValueFor(slug, 'typed', ctx, memo);
+      expect(typed.valuePct, slug).toBeGreaterThan(generic.valuePct);
+    }
+  });
+
   it('anis-star (projectile-explosion) already scores on the generic board via the RL carry', () => {
     const r = bufferValueFor('anis-star', 'generic', ctx);
     expect(r.valuePct).toBeGreaterThan(20);
@@ -269,7 +354,14 @@ describe('buffer board', () => {
   // unit is ready (ada does exactly this once the SR no-op holds focus). The
   // burst slot is therefore suppressed outright, which is what these pin.
   it('a tested B3 has its burst slot suppressed, a B1/B2 does not', () => {
-    const spec = { weapon: null, pierce: false, element: null } as const;
+    const spec = {
+      weapon: null,
+      pierce: false,
+      element: null,
+      trueFlavor: false,
+      sustained: false,
+      distributed: false,
+    } as const;
     expect(assemble('ada', 'III', 'generic', spec).burstOffSlug).toBe('ada');
     expect(assemble('flora', 'II', 'generic', spec).burstOffSlug).toBeNull();
     expect(assemble('liter', 'I', 'generic', spec).burstOffSlug).toBeNull();

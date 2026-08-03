@@ -483,6 +483,8 @@ interface UnitState {
   blocks: Block[];
   warnings: string[];
   hasPierce: boolean; // kit's attacks are Pierce-tagged (Q10) — STATIC (whole-fight or mode-gated)
+  hasTrueNormals: boolean; // kit's normal attacks are ALWAYS True-flavored — STATIC, unlike
+  // swap.trueNormals (a temporary swap-scoped flavor change)
   pierceUntilFrame: number; // timed "Gain Pierce for N sec" window end (0 = none); pierce active when > frame
   shieldedUntilFrame: number; // shield-state window end (0 = none): set when a 'shield' effect targets this
   // unit (durationSec; none = permanent at scope — boss damage unmodeled, nothing
@@ -803,6 +805,7 @@ export function runSim(
       hasPierce:
         skills.hasPierce === true ||
         (skills.pierceModes?.includes(selectedMode ?? '') ?? false),
+      hasTrueNormals: skills.hasTrueNormals === true,
       pierceUntilFrame: 0,
       shieldedUntilFrame: 0,
       consolidation: skills.consolidation,
@@ -3706,7 +3709,7 @@ export function runSim(
       charge: charged,
       category: 'normal',
       srcSlot: 'normal',
-      trueFlavor: !!u.swap?.trueNormals,
+      trueFlavor: !!u.swap?.trueNormals || u.hasTrueNormals,
       // The consolidation single bullet is one ALIGNED 98%-hit bullet, NOT spray — so it keeps its
       // measured reliable-core value (consol.coreRate) under the δ-cone too, treated like a regular
       // single bullet rather than routed through the SG pellet-spray cone (owner ruling 2026-07-19;
@@ -3739,7 +3742,7 @@ export function runSim(
         charge: charged,
         category: 'normal',
         srcSlot: 'normal',
-        trueFlavor: !!u.swap?.trueNormals,
+        trueFlavor: !!u.swap?.trueNormals || u.hasTrueNormals,
       });
     }
     u.pulls++;

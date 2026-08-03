@@ -106,27 +106,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Engine / model threads (measurement- or owner-gated)
 
-- **⇒ A duo row whose partner is not a B2 has no spare of the tested unit's stage — latent, VERIFIED
-  non-biting (kimi-code/k3 review round 5; re-checked 2026-08-03 after `blanc` shipped).**
-  `assemble` seats a duo partner in the spare slot, assuming the partner covers that slot's stage.
-  True for `mint`/`prika` and `mast-romantic-maid`/`anchor-innocent-maid` (all B2); `blanc`'s partner
-  is the synthetic `noop-rouge-b1`, a B1, so her `w/ Rouge` row fields her 60s B2 as the only B2
-  against a baseline whose only B2 is a 20s no-op. That is the asymmetry this branch removes
-  everywhere else — but measured after the merge that put her on the board, **both her rows sit at
-  Full Burst parity** (plain 11 v 10, `w/ Rouge` 10 v 10), because her own self-CDR plus the control
-  enabler carry the rotation. So the shape is wrong in principle and inert in fact. Fix if a non-B2
-  duo partner ever lands on a unit whose cooldown actually gates: seat the partner by its own stage,
-  or keep the spare B2 and drop a carry.
-
-- **⇒ BUFFER-BOARD METHODOLOGY CHAIN IS ON A PR BRANCH, NOT MAIN (`buffer-board-methodology`,
-  2026-08-03).** Standard team + spare no-op, camera focus on the no-op B2 (SR), tested-B3 burst
-  suppression, and the one-CDR-enabler rule with the control's reduction moved to `fullBurstEnter`.
-  All landed and green there; `docs/DECISIONS.md` carries the rulings. Open: the branch needs the
-  owner's PR review, and local `main` still carries the first nine of these commits from before the
-  branch existed (`origin/main..main`) — decide whether main gets rewound to `origin/main` or the PR
-  simply supersedes it. Note `noop-b1-ar.json`'s trigger change moves burstgen (4 of 244 rows, ≤3.9%)
-  and b1b2dps (12 of 272, ≤11.3%); burstcdr and sustain are byte-identical.
-
 - **⇒ ENGINE REGRESSION FULL-BURST COUNT FAILURES — four comps disabled in `scripts/regression.ts`**
   (`:106`, `:131`, `:158`, `:236`): `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`,
   `N3 scarlet/liberalio iron` each read 1–3 Full Bursts short of their video-measured counts on clean
