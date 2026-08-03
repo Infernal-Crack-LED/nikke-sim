@@ -140,15 +140,16 @@ and would read as a claim about the player's own damage.
 `build:deploy` gains `npm run build-ol-table` right after `build-ol-optimal`.
 
 **Consistency check vs `data/ol-optimal.json`.** Row 0 of the table should name the
-same line multiset as the greedy `bestOl` pass. It does for **32 of 73** units. The
-`--tier` flag on the build script exists to isolate why; the measured split:
+same line multiset as the greedy `bestOl` pass. It does for **45 of 73** units (was 32
+before the tier basis was settled). The `--tier` flag on the build script exists to
+isolate why; the measured split, both sides at T11:
 
-| Cause                                                                                               | Units | Status    |
-| --------------------------------------------------------------------------------------------------- | ----- | --------- |
-| Agree                                                                                               | 32    | —         |
-| **Tier basis**: `build-ol-optimal` passes no tier values → optimizes at MAX ROLL; this table is T11 | 23    | open      |
-| Genuine **greedy local optimum** — differs at the same tier and pool                                | 18    | open      |
-| ~~Hit Rate excluded from the free-line pool~~                                                       | 0     | **FIXED** |
+| Cause                                                                  | Units | Status    |
+| ---------------------------------------------------------------------- | ----- | --------- |
+| Agree                                                                  | 45    | —         |
+| Genuine **greedy local optimum** — differs at the same tier and pool   | 28    | open      |
+| ~~Tier basis: `build-ol-optimal` optimized at MAX ROLL, table is T11~~ | 0     | **FIXED** |
+| ~~Hit Rate excluded from the free-line pool~~                          | 0     | **FIXED** |
 
 **Hit Rate — owner ruling 2026-08-02, LANDED.** `src/olconfigs.ts`'s free-line pool
 excluded Hit Rate for every weapon, on the comment _"hit/def are dead for damage"_.
@@ -171,14 +172,23 @@ fails 3/8 against the old pool (AR core rate 0.214 → 0.461, SMG 0.164 → 0.32
 0.026 → 0.061 under a 40pt buff; RL/SR/MG unmoved). A hardcoded assertion would have
 gone stale exactly the way the original comment did.
 
-Note the greedy-local-optimum count rose 11 → 18. That is not a regression: widening
-the exhaustive pool gives it more room to beat greedy, so more units now have a
-better combo than greedy finds.
+Note the greedy-local-optimum count rose 11 → 18 → 28. That is not a regression: each
+widening (the Hit Rate pool, then the T11 basis) gives the exhaustive search more room to
+beat greedy, so more units now have a better combo than greedy finds.
 
-**Still open, findings-only** (batch-and-stop — one owner decision, not three fixes):
-`build-ol-optimal` optimizes at max roll while the web applies its picks at T11; and
-greedy lands on a local optimum for 18 units where the exhaustive search does better.
-Neither is touched by this branch.
+**Tier basis — owner ruling 2026-08-03, LANDED.** `build-ol-optimal.ts` now optimizes at
+T11, the tier its picks are applied at; `bestOl` gained an optional `lineValues` param and
+`data/ol-optimal.json` records the tier it was built at. 44 of 73 picks moved, and scored
+at T11 the new table is better on aggregate (mean gap vs the exhaustive optimum
+2.03% → 1.35%, units already optimal 32/73 → 45/73) but NOT uniformly — 11 units regress,
+headlined by `asuka-wille` at −46.5pp / 31.19% off optimal, because greedy's local-optimum
+failure is tier-dependent and the max-roll run got her right by luck.
+
+**Still open, findings-only — ONE owner decision:** whether `ol-optimal.json` should come
+from the exhaustive ranking instead of greedy, which resolves all 28 remaining
+disagreements (and all 11 regressions) by construction. Measure with
+`npx tsx scripts/ol-search-compare.ts`, which scores both searches and any artifact's picks
+on one basis; `--only asuka-wille --tier 11` prints the diagnosis.
 
 **Consequence for the page (decided):** the page's "best lines" recommendation is
 **row 1 of this table**, not `ol-optimal.json`. The table is the self-consistent
