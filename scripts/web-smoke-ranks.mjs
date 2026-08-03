@@ -4,8 +4,18 @@
 // the Buffer default board (+ profile badge), the hidden boss-settings panel,
 // the methodology disclosure, and the Burst Gen / Buffer Typed switches all
 // render. Mirrors web-smoke-dpschart.mjs.
+//
+// Run through tsx, not bare node: the buffer board's row filter is TypeScript
+// (src/ranks/buffer-rows.ts) and this file imports it rather than restating
+// which rows the page drops — a copy here would go stale the first time that
+// list changed, and the smoke would then assert a top row the board no longer
+// shows.
 import { JSDOM } from 'jsdom';
 import { readFileSync, readdirSync } from 'node:fs';
+import {
+  rankedBufferRows,
+  HIDDEN_BUFFER_SLUGS,
+} from '../src/ranks/buffer-rows.js';
 
 const artifacts = {
   'burstgen.json': JSON.parse(readFileSync('dist/burstgen.json', 'utf8')),
@@ -17,9 +27,19 @@ const artifacts = {
 
 // expected content, read from the artifacts themselves (not hardcoded):
 // buffer generic's #1 row (the default board), a profiled buffer unit's
-// badge, burst-gen's #1 row, buffer typed's #1
-const bufferTop = artifacts['bufferchart.json'].cells.generic[0][0];
+// badge, burst-gen's #1 row, buffer typed's #1. The buffer rows go through
+// rankedBufferRows first — the artifact's #1 is not necessarily the board's.
+const bufferGeneric = rankedBufferRows(
+  artifacts['bufferchart.json'].cells.generic
+);
+const bufferTyped = rankedBufferRows(artifacts['bufferchart.json'].cells.typed);
+const bufferTop = bufferGeneric[0][0];
 const bufferTopName = artifacts['bufferchart.json'].units[bufferTop].name;
+// Names the board must NOT render, so the filter is asserted on the rendered
+// DOM and not just trusted from the module it came from.
+const hiddenNames = [...HIDDEN_BUFFER_SLUGS]
+  .map((slug) => artifacts['bufferchart.json'].units[slug]?.name)
+  .filter(Boolean);
 // Map buffer comp-profile ids to the badge text rendered by the frontend's
 // profileLabel(). Keep in sync with web/src/rankChartBars.ts.
 const PROFILE_LABELS = {
@@ -41,9 +61,7 @@ for (const id of bufferProfileIds) {
     );
   }
 }
-const profiledEntry = artifacts['bufferchart.json'].cells.generic.find(
-  (e) => e[3]
-);
+const profiledEntry = bufferGeneric.find((e) => e[3]);
 const profileBadge = profiledEntry?.[3]
   ? PROFILE_LABELS[profiledEntry[3]]
   : null;
@@ -93,7 +111,7 @@ const b1b2ProfileBadge = b1b2ProfiledEntry
   : null;
 const burstgenTop = artifacts['burstgen.json'].entries[0][0];
 const burstgenTopName = artifacts['burstgen.json'].units[burstgenTop].name;
-const typedTop = artifacts['bufferchart.json'].cells.typed[0][0];
+const typedTop = bufferTyped[0][0];
 const typedTopName = artifacts['bufferchart.json'].units[typedTop].name;
 const b1b2Top = artifacts['b1b2dps.json'].cells['c100-eleadv'][0][0];
 const b1b2TopName = artifacts['b1b2dps.json'].units[b1b2Top].name;
@@ -173,6 +191,12 @@ await waitFor(/Support Rankings/, 'rankings section tabs');
 await waitFor(new RegExp(esc(bufferTopName)), 'buffer default board');
 
 const text = () => dom.window.document.body.textContent ?? '';
+// The drawn rows' unit names only — an absence check against the whole page
+// text would also see nav links and profile badges that mention a unit.
+const rowNames = () =>
+  [
+    ...dom.window.document.querySelectorAll('.dpschart-bars .dpschart-name'),
+  ].map((el) => el.textContent ?? '');
 const checks = {
   'section tabs render': [
     'DPS Rankings',
@@ -206,6 +230,9 @@ const checks = {
   })(),
   [`buffer default top bar renders (${bufferTopName})`]:
     text().includes(bufferTopName),
+  // the filter, asserted on what the page actually drew
+  [`buffer generic omits ${hiddenNames.join(', ') || '(nothing hidden)'}`]:
+    hiddenNames.every((n) => !rowNames().some((r) => r.includes(n))),
   'profile badge renders': profileBadge ? text().includes(profileBadge) : false,
   'methodology disclosure present': text().includes('How this works'),
   // the boards are precomputed — the App's boss/team settings can't affect
@@ -237,6 +264,8 @@ try {
   checks['buffer Generic/Typed pills render'] = true;
   checks[`buffer typed top bar renders (${typedTopName})`] =
     text().includes(typedTopName);
+  checks[`buffer typed omits ${hiddenNames.join(', ') || '(nothing hidden)'}`] =
+    hiddenNames.every((n) => !rowNames().some((r) => r.includes(n)));
   clickPill('B1/B2 DPS');
   await waitFor(/B1\/B2 DPS · Core 100 · Ele Adv/, 'b1b2 dps board');
   checks[`b1b2 dps top bar renders (${b1b2TopName})`] =

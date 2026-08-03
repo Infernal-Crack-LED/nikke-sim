@@ -1,10 +1,13 @@
 // The one place that decides which buffer rows the Team Buffs leaderboard
-// shows. Rows whose value is negative — the unit costs the standard comp
-// damage — are dropped, generalizing the Soline: Frost Ticket exclusion
-// (src/ranks/buffer.ts EXCLUDED_BUFFER_SLUGS) from a hand-kept slug list to
-// the property that motivated it. They also wreck the chart's geometry: the
-// bar track spans min↔max, so one −18.8% row pushes the zero axis a fifth of
-// the way across and squashes every positive bar into the remainder.
+// shows. Two rules:
+//
+// 1. Negative rows are dropped — the unit costs the standard comp damage, so
+//    it has no standing on a support ranking, and its bar wrecks the chart's
+//    geometry besides: the track spans min↔max, so one −18.8% row pushes the
+//    zero axis a fifth of the way across and squashes every positive bar into
+//    the remainder. Same property that keeps EXCLUDED_BUFFER_SLUGS (blanc) out
+//    of the population a step earlier (src/ranks/buffer.ts).
+// 2. HIDDEN_BUFFER_SLUGS are dropped by name.
 //
 // Both hosts filter through here — the web tab / Card Builder bars
 // (web/src/rankBoardsData.ts bufferBars) and the shared table card
@@ -14,5 +17,12 @@
 // (src/infographics/core/unitCardData.ts) and is not a leaderboard.
 import type { BufferRow } from './types.js';
 
+// Kept off the board by owner direction (2026-08-03). Unlike
+// EXCLUDED_BUFFER_SLUGS these units are still simmed and still carry their
+// value everywhere else it is quoted — only the ranked board omits them.
+export const HIDDEN_BUFFER_SLUGS = new Set(['chime', 'avistar']);
+
 export const rankedBufferRows = (rows: BufferRow[]): BufferRow[] =>
-  rows.filter(([, addedPct]) => addedPct >= 0);
+  rows.filter(
+    ([slug, addedPct]) => addedPct >= 0 && !HIDDEN_BUFFER_SLUGS.has(slug)
+  );

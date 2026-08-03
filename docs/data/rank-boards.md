@@ -86,7 +86,9 @@ The board lists only units whose value comes out at zero or above. A unit that
 reduces team damage in the standard comp has no standing to rank on a support
 board, and its bar would also set the chart's left edge, compressing every
 positive bar into what is left of the track. Blanc is dropped one step earlier,
-for the same reason, before the boards are computed at all.
+for the same reason, before the boards are computed at all. Chime and Avistar
+are held off the board as well; they are simmed as normal and their values are
+unaffected everywhere else those are used.
 
 Two boards per unit:
 
