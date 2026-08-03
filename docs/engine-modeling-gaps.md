@@ -120,7 +120,7 @@
 
 ## Status dashboard — at a glance
 
-> Every theme bucketed by implementation state (verified against the live tree 2026-07-17). Jump to the
+> Every theme bucketed by implementation state (verified against the live tree 2026-08-03). Jump to the
 > numbered theme below for detail. **Nearly every discrete engine-primitive gap has now been built** — what
 > remains is per-unit _enactment_ of built primitives (board-moving → measurement-gated) plus inherent-v1
 > limitations and measurement backlogs.
@@ -143,12 +143,12 @@
 
 | Theme                    | Capability (inert until opt-in)        | State                                                                                     |
 | ------------------------ | -------------------------------------- | ----------------------------------------------------------------------------------------- |
-| 3. Stack-ramp            | `buff.rampSec`                         | ENACTED cinderella + arcana-fortune-mate; rest (chisato/leona/guilty/…) measurement-gated |
-| 4. Team-composition gate | `teamHas:{element/class/weapon/burst}` | **0 enactments**; arcana deferred (no board data + WoF gate unmodeled)                    |
-| 5. Timed pierce          | `gainPierce`/`pierceUntilFrame`        | grave ENABLED (0.83→1.18, faithful>fit, U19); milk/prika deferred                         |
+| 3. Stack-ramp            | `buff.rampSec`                         | ENACTED cinderella + arcana-fortune-mate + scarlet (HP-gate proxy); rest (chisato/leona/guilty/…) measurement-gated |
+| 4. Team-composition gate | `teamHas:{element/class/weapon/burst/sameSquad}` | ENACTED blanc, eunhwa-tactical-upgrade, noir (sameSquad); arcana (mono-Electric predicate) deferred (no board data + WoF gate unmodeled) |
+| 5. Timed pierce          | `gainPierce`/`pierceUntilFrame`        | ENACTED ade-agent-bunny, asuka, dorothy, grave (0.83→1.18, faithful>fit, U19), mari, naga, neve; milk/prika deferred |
 | 7. Weapon-swap spec      | `weaponSwap.weapon`/`pullsPerSec`      | nayuta FIXED; moran throughput + chisato/takina/velvet pending                            |
-| 14. Flat Max-Ammo        | `maxAmmoFlat` StatKey                  | **0 enactments**; grave/noir/tove/drake/trina approximate as %                            |
-| 15. Ammo-dump            | `consumeAmmo` effect                   | **0 enactments**; grave/asuka-wille/jill need trigger authoring                           |
+| 14. Flat Max-Ammo        | `maxAmmoFlat` StatKey                  | ENACTED (kit-literal) emilia, grave, n102, noir, rem, tove, trina                          |
+| 15. Ammo-dump            | `consumeAmmo` effect                   | ENACTED asuka-wille, jill; grave's Prediction-end trigger remains open (U19)               |
 
 ### ❌ C. Unwired / inherent-v1 limitation / measurement-only — no discrete primitive to build
 
@@ -450,8 +450,10 @@ inert when absent (Wind → 0%), correctly inert when only self would match (own
 grades her "mono-Electric comp only", and her separate Wheel-of-Fortune status gate is still unmodeled).
 **2026-08-02: the `sameSquad` facet landed** — "an ally from the same squad … on the battlefield"
 gates resolve squad membership from the curated map `src/data/squads.ts` (fail-closed; validator-
-guarded); blanc's S2 burst-CDR is the first enactment (see DECISIONS.md 2026-08-02). The remaining
-same-squad kit text (noir's `.slugs` spelling, anchor-innocent-maid, ram) is tracked in QUEUE.md.
+guarded); blanc's S2 burst-CDR is the first enactment (see DECISIONS.md 2026-08-02). `noir` migrated
+from `.slugs` to `.sameSquad` 2026-08-03; the remaining same-squad kit text (anchor-innocent-maid,
+ram) is tracked in QUEUE.md. `teamHas` now has 3 enactments total (blanc, eunhwa-tactical-upgrade,
+noir) — see the primitive census above.
 
 ### 5. Pierce gating — static `hasPierce` only — ~14 units (usually COLD)
 
@@ -460,9 +462,13 @@ pierce now expressible (`gainPierce`, 2026-07-17 — see ranked fix #7).** Pierc
 Damage-Up-bucket entry that applies to any pierce-damage-type unit, on the partless boss too (only the
 pierce CORE+BODY DOUBLE-HIT is multipart-only — `PIERCE_CORE_DOUBLE=false`; don't conflate). grave is
 ENABLED with faithful pierce (0.83→1.18 HOT kept on purpose, faithful>fit); the residual HOT is a separate
-burst-window over-model, now cleanly isolated as open-questions U19. Units: alice, d-killer-wife,
-grave (ENABLED; residual = burst-window over-model, U19), mari, milk-blooming-bunny (dead block, 0.70 COLD),
-prika, red-hood, snow-white, snow-white-heavy-arms, zwei, laplace, maxwell, naga, mana.
+burst-window over-model, now cleanly isolated as open-questions U19. **8 units now carry a live
+`gainPierce` enactment** (kit-autonomy gauntlet passes 2026-07-20 → 2026-08-02, per the primitive census
+above): ade-agent-bunny, asuka, dorothy, grave (ENABLED; residual = burst-window over-model, U19), mari,
+milk-blooming-bunny (ENACTED 2026-07-20, 0.653 COLD→1.301 HOT — the residual HOT is now isolated to her
+SEPARATE Embarrassment mode-split, not the pierce; U23), naga, neve. Units: alice, d-killer-wife,
+prika (held — owner popup measurement pending, probe-runs 2026-07-14 inconclusive), red-hood, snow-white,
+snow-white-heavy-arms, zwei, laplace, maxwell, mana.
 
 ### 6. Parts / core branches inert on the partless v1 boss — ~11 units
 
@@ -590,12 +596,11 @@ with triggers/targets like any other stat. **Inert until an override opts in** (
 `stat(u,'maxAmmoFlat')` sums 0 → byte-identical `maxAmmo()`; verified by an isolated A/B of the
 `maxAmmo()` edit against the working tree: regression totals identical). Functional check: injecting a
 temporary `maxAmmoFlat 200` passive on a low-mag AR lifted pulls 1099→1908 (fewer reloads → more shots,
-+65% total), the expected direction. **NOT auto-enacted:** the listed units currently APPROXIMATE the flat
-grant as a percent (noir `maxAmmoPct 55.56` self-only for +5 all-allies; trina `maxAmmoPct 33.3` for +20
-assuming a 60-round base; grave +3, tove +2, drake), and converting to the faithful flat form is
-board-MOVING (noir's +5 becomes team-wide; the others change the exact round count) → measurement/owner-gated
-per unit, routed to the kit-parse reconciliation backlog.
-Units: grave (+3), noir (+5 all-allies → modeled self-only), tove (+2), drake, trina (+20).
++65% total), the expected direction. **ENACTED (kit-literal `maxAmmoFlat`), 2026-07-20 → 2026-08-03:**
+emilia, grave (+3), n102, noir (+5 all-allies), rem, tove (+2), trina (+20) — 7 units, see the primitive
+census above; each converted off its earlier percent-approximation and the conversions verified
+regression/board-neutral or board-A/B'd per unit. **Still approximating as a percent:** drake ("Max Ammo
+▲50.14%/10s" — no flat-count kit line to convert against, unlike the others).
 
 ### 15. Ammo-dump / forced-reload "Removes 100% of ammo" inexpressible — 3 units — ✅ CAPABILITY LANDED 2026-07-17
 
@@ -604,10 +609,10 @@ A new `consumeAmmo` effect (types.ts; the inverse of `instantReload`) drains the
 — firing the target's `lastBullet` triggers exactly as if it had fired dry (sim.ts `applyEffect`).
 **Inert until an override opts in** (no unit references it → regression byte-identical). Functional check:
 injecting a temporary per-shot `consumeAmmo` collapsed pulls 1099→96 (constant forced reloads eat fire time,
-−89% total), the expected direction. **NOT auto-enacted:** the three units need per-unit trigger authoring
-(grave = Prediction/burst-window END forced reload, the documented comp-COLD cause; asuka-wille + jill on
-their own kit triggers) + board verification → deferred to the reconciliation backlog.
-Units: asuka-wille, grave (Prediction-end forced reload, comp-cold cause), jill.
+−89% total), the expected direction. **2 of 3 ENACTED** (kit-autonomy gauntlet, 2026-07-24 → 2026-07-26):
+jill (burst trigger) and asuka-wille (`fullBurstEnd` forced reload) both carry a live `consumeAmmo`
+block on their own kit triggers. **Still open:** grave's Prediction/burst-window END forced reload — the
+documented comp-COLD cause — remains unauthored, tracked as open-questions U19.
 
 ### 16. TREASURE-phase prose SSOT gap — 5 units (RESOLVED 2026-07-17)
 
