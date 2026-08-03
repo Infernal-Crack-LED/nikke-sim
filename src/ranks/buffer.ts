@@ -267,6 +267,8 @@ interface AssembledBufferTeam {
   slugs: string[];
   chars: (CharacterData & { baseStats: any })[];
   carryIdxs: number[];
+  focusSlot: number; // the spare stage slot — camera focus, see carryDpsSum
+  burstOffSlug: string | null; // a tested B3: its burst is turned off outright
 }
 
 // The two carry records for one board arm (typed adapts both).
@@ -337,6 +339,18 @@ export function assemble(
     slugs,
     chars: [c1, c2] as any,
     carryIdxs: [slugs.indexOf(c1.slug), slugs.lastIndexOf(c2.slug)],
+    focusSlot: slugs.indexOf(spare),
+    // A tested B3's burst is turned OFF, so its own damage cannot enter a
+    // SUPPORT rank and its value has to come through passives and cast-free
+    // lines. Sitting it rightmost only makes that LIKELY — the carries win the
+    // stage-3 cast while both are off cooldown, but they are 40s units, and a
+    // fast enough rotation reaches a stage 3 where only the tested unit is
+    // ready. That is exactly what happened when camera focus moved to the SR
+    // no-op and the team sped up: ada took a cast. Suppressing the burst slot
+    // outright makes the documented rule true by construction instead of by
+    // rotation luck. Byte-identical for the 16 B3 buffers that never cast one.
+    burstOffSlug:
+      slug !== null && burst !== 'I' && burst !== 'II' ? slug : null,
   };
 }
 
@@ -397,10 +411,24 @@ function carryDpsSum(
     coreHitRate: 0,
     rangeBonus: true,
     durationSec: 180,
-    focusSlug: team.slugs[team.carryIdxs[1]], // the right carry (RL on generic)
+    // Camera focus sits on the SPARE stage slot — the no-op B2 (SR) on every
+    // plain row. Focus is what grants a charge weapon x2.5 burst gauge, so
+    // whoever holds it sets the pace of the whole team's rotation, and pinning
+    // it to a fixed inert SR standardizes burst generation across every run.
+    // It used to sit on the second carry, whose weapon the TYPED board rewrites
+    // per tested unit: an RL carry banks the x2.5 (140 + 250 full charge) while
+    // an SG carry cannot take it at all (200, no full-charge bonus), so the
+    // team's gauge — and its Full Burst count — moved with the kit under test.
+    // On a duo row the partner occupies this slot and holds focus instead;
+    // that is symmetric, since the duo baseline seats the partner there too.
+    focusSlug: team.slugs[team.focusSlot],
   };
   const compProfile = profile ? COMP_PROFILES[profile] : undefined;
   const extraOverrides: Record<string, any> = {};
+  if (team.burstOffSlug) {
+    const own = ctx.deps.overrides[team.burstOffSlug];
+    extraOverrides[team.burstOffSlug] = { ...(own ?? {}), burst: [] };
+  }
   if (pierceOverride) {
     for (const i of team.carryIdxs) {
       extraOverrides[team.slugs[i]] = {

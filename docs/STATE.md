@@ -352,8 +352,13 @@ Planned follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
   the two carries; the tested unit takes the second B2's slot and leads its own stage (behind the
   same-stage no-op it would lose every contest and stop bursting), and the baseline puts a
   stage-matched no-op back in that slot. The spare keeps every stage covered, so a 40s/60s cooldown
-  no longer costs the team Full Bursts — pinned in `scripts/tests/ranks/buffer.test.ts`, audited by
-  `scripts/probe/buffer-rotation-audit.ts`. The leaderboard shows rows ≥ 0 only, minus
+  no longer costs the team Full Bursts — pinned by ISOLATION (forcing a unit's cooldown to 20s must
+  not change its FB count) in `scripts/tests/ranks/buffer.test.ts`, audited by
+  `scripts/probe/buffer-rotation-audit.ts`. **Camera focus is the spare no-op B2 (SR)**, never the
+  tested unit, so burst generation is identical in every run (it used to follow the second carry,
+  whose weapon the typed board rewrites per unit); on a duo row the partner holds it, symmetrically.
+  A tested B3's burst slot is suppressed outright (`burstOffSlug`) rather than relying on rightmost
+  placement to lose the stage-3 cast. The leaderboard shows rows ≥ 0 only, minus
   `HIDDEN_BUFFER_SLUGS` (chime, avistar) — `rankedBufferRows` (`src/ranks/buffer-rows.ts`) filters
   both the chart bars and the share/pre-render table card, so ranks are numbered over one set; the
   artifact itself keeps every row for the unit card, and `EXCLUDED_BUFFER_SLUGS` (blanc) never

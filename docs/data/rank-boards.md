@@ -89,6 +89,21 @@ and one rocket launcher, alternating). The tested unit takes the second Burst-2'
 slot, and the baseline puts a no-op of the tested unit's own burst stage back in
 that slot, so both sides field the same stage distribution.
 
+**Camera focus sits on the spare no-op Burst-2 (the SR)**, never on the unit
+under test. Focus is what grants a charge weapon ×2.5 burst gauge, so whoever
+holds it sets the pace of the team's whole rotation; pinning it to a fixed inert
+SR keeps burst generation identical in every run. It previously sat on the
+second carry, whose weapon the typed board rewrites per tested unit — a rocket
+launcher banks the ×2.5, a shotgun cannot take it at all — so the team's gauge,
+and its Full Burst count, moved with the kit being measured. On a duo row the
+partner occupies that slot and holds focus instead, on both sides of the
+comparison.
+
+A tested Burst-3's burst is turned off outright rather than merely being
+outranked for the stage-3 cast. Sitting it rightmost makes the carries win that
+cast while either is off cooldown, but they are 40-second units, and a fast
+enough rotation reaches a stage 3 where only the tested unit is ready.
+
 The spare no-op is what makes long burst cooldowns readable. Every burst stage
 stays covered by a 20-second unit, so a support with a 40- or 60-second cooldown
 does not hold up the team's Full Burst chain while it waits: it is measured on

@@ -100,10 +100,17 @@ describe('buffer board', () => {
     ]);
   });
 
-  // The property the whole shape exists for: no unit may cost the team Full
-  // Bursts merely by having a long cooldown. Checked across every tested unit
-  // whose cooldown outlasts the 20s no-op it displaces.
-  it('no long-cooldown unit lands below its baseline Full Burst count', () => {
+  // The property the whole shape exists for, pinned by ISOLATING it: a unit's
+  // Full Burst count must not depend on its own burst cooldown, because the
+  // spare no-op covers its stage while it waits. Forcing the cooldown to the
+  // no-op's 20s must therefore change nothing.
+  //
+  // Asserting "no long-cooldown unit lands below its baseline" instead would be
+  // the wrong pin: a unit can land a Full Burst short for reasons that have
+  // nothing to do with cooldown (rosanna reads 7 v 8 identically at 40s and at
+  // 20s — that is her gauge, not her rotation), so that phrasing fails on units
+  // this shape never claimed to fix.
+  it("a unit's Full Burst count does not depend on its burst cooldown", () => {
     const longCd = Object.entries(data.characters as Record<string, any>)
       .filter(
         ([slug, c]) =>
@@ -115,21 +122,20 @@ describe('buffer board', () => {
       .map(([slug]) => slug);
     expect(longCd.length).toBeGreaterThan(10);
     for (const slug of longCd) {
-      const r = bufferValueFor(slug, 'generic', ctx, new Map(), null);
-      expect({
+      const shipped = bufferValueFor(slug, 'generic', ctx, new Map(), null);
+      const short = { ...(data.characters as any) };
+      short[slug] = { ...short[slug], burstCooldownSec: 20 };
+      const forced = bufferValueFor(
         slug,
-        short: r.fullBursts >= r.baselineFullBursts,
-      }).toEqual({ slug, short: true });
-    }
-  });
-
-  // The requirement the standard team exists to satisfy: a long cooldown must
-  // not cost the TEAM Full Bursts, because the spare no-op covers the stage.
-  it('a 40s tested unit no longer lowers the team Full Burst count', () => {
-    for (const slug of ['flora', 'prika', 'biscuit', 'anchor-innocent-maid']) {
-      const r = bufferValueFor(slug, 'generic', ctx, new Map(), null);
-      expect(r.baselineFullBursts).toBe(9); // 180s / 20s
-      expect(r.fullBursts).toBe(r.baselineFullBursts);
+        'generic',
+        { ...ctx, characters: short },
+        new Map(),
+        null
+      );
+      expect({ slug, fb: shipped.fullBursts }).toEqual({
+        slug,
+        fb: forced.fullBursts,
+      });
     }
   });
 
@@ -214,12 +220,48 @@ describe('buffer board', () => {
     expect(ranked.map((r) => r.rank)).toEqual(ranked.map((_, i) => i + 1));
   });
 
-  it('a tested B3 buffer never bursts (rightmost rule)', () => {
-    // ada is a sim-supported B3 buffer: placed rightmost, the two carries must
-    // take every stage-3 cast.
-    const r = bufferValueFor('ada', 'generic', ctx);
-    expect(r.testedBurstCasts).toBe(0);
-    expect(r.carryDps).toBeGreaterThan(0);
+  // A tested B3's burst is turned off, so its value comes through passives and
+  // cast-free lines only. Rightmost placement alone does not guarantee that:
+  // the carries win stage 3 while either is off cooldown, but they are 40s
+  // units and a fast enough rotation reaches a stage 3 where only the tested
+  // unit is ready (ada does exactly this once the SR no-op holds focus). The
+  // burst slot is therefore suppressed outright, which is what these pin.
+  it('a tested B3 has its burst slot suppressed, a B1/B2 does not', () => {
+    const spec = { weapon: null, pierce: false, element: null } as const;
+    expect(assemble('ada', 'III', 'generic', spec).burstOffSlug).toBe('ada');
+    expect(assemble('flora', 'II', 'generic', spec).burstOffSlug).toBeNull();
+    expect(assemble('liter', 'I', 'generic', spec).burstOffSlug).toBeNull();
+    expect(assemble(null, 'III', 'generic', spec).burstOffSlug).toBeNull();
+  });
+
+  it("a tested B3's burst contributes nothing, however loud it is", () => {
+    const plain = bufferValueFor('ada', 'generic', ctx, new Map(), null);
+    expect(plain.carryDps).toBeGreaterThan(0);
+    // an absurd team buff on her burst: suppressed, it cannot move her value
+    const loud = {
+      ...overrides,
+      ada: {
+        ...(overrides.ada as object),
+        burst: [
+          {
+            slot: 'burst',
+            trigger: { kind: 'burstCast' },
+            target: { kind: 'allies' },
+            effects: [
+              { kind: 'buff', stat: 'atkPct', value: 500, durationSec: 15 },
+            ],
+          },
+        ],
+      },
+    } as Record<string, OverrideFile | undefined>;
+    const shouted = bufferValueFor(
+      'ada',
+      'generic',
+      { ...ctx, deps: { ...ctx.deps, overrides: loud } },
+      new Map(),
+      null
+    );
+    expect(shouted.valuePct).toBe(plain.valuePct);
   });
 
   it('rankBuffers sorts descending and numbers ranks', () => {
