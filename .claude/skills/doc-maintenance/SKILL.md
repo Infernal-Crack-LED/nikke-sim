@@ -47,6 +47,16 @@ the WHAT in STATE.md (rewrite). They are different classes and neither substitut
 - **It landed** → DELETE it. Keep only its still-open follow-up clause, promoted to its own bullet.
   Do not leave "DONE (date)" / "LANDED" / "COMPLETE" narration — that is the single most common
   drift in this file, and it buries the items that are actually open.
+- **A just-opened PR is not itself a new queue item.** This step is nudged before a PR/push
+  specifically so a landed item's QUEUE.md entry gets DELETED because the PR now carries the work
+  forward — not so a fresh entry gets FILED announcing "PR #N open, awaiting review/merge." GitHub
+  already tracks open PRs; QUEUE.md tracks work a future session needs to plan around, and "wait for
+  the owner to merge" is not that. If the only open item left is review/merge itself, delete the
+  entry outright — do not replace a stale "landed, needs review" entry with a fresh one for your own
+  branch that says the same thing. Only keep or add an entry here if it holds a genuine unresolved
+  decision or follow-up that survives the PR merging either way (e.g. a fork-in-the-road the owner
+  still has to pick, or a blast-radius consequence worth flagging) — never "PR pending" as the sole
+  content.
 - **It is still open** → keep it SHORT: a pointer into the detail doc, not the detail itself.
 - **Its claims are load-bearing** → re-verify before trusting them. Status claims in this file
   drift: resolutions land in a commit or an override note and never get re-filed here. Check the

@@ -89,6 +89,31 @@ skills.modes?.[0]`) already defaults to array-index 0 in both cases, and no grad
   and needs a confirming recording on the even/odd cast-parity assumption before it can land. —
   `src/skills/overrides/mint.json`, `docs/handoffs/closed/kit-parse-reconciliation-backlog.md`
 
+- **(2026-08-03, latest) B3 DPS CHART LOADS THE NEVER-LOADED B1 CONTROL — the fourth instance of the
+  same defect.** Owner ruling: fix it, matching `build-bufferchart.ts` / `build-sustain.ts` /
+  `build-b1b2dps.ts`. `scripts/build-dpschart.ts:148` loaded only `noop-b3-mg`'s override; the Solo
+  framework's synthetic B1 control (`NOOP_B1`, `noop-b1-ar`) is not a roster entry, so its
+  `fullBurstEnter → allies: burstCdr 7s` block was never read. Silent, not a crash: `NOOP_B1`'s
+  character data ships empty skill prose by design (`skills: {skill1:'',skill2:'',burst:''}`), so
+  `resolveSkills()` (`src/skills/index.ts:82-91`) takes its "genuinely empty kit, no override needed"
+  fallback and returns zero blocks rather than erroring — the control silently ran with no CDR at
+  all instead of failing loudly. Every Solo-framework cell (`matrix.ts:436`,
+  `variant.solo ? [NOOP_B1, NOOP_B2, tested.slug, NOOP_B3] : ...`) was affected; every other named
+  framework (standard/anis/anis-hc) seats a real B1 and was untouched. `scripts/regression.ts`'s own
+  "Solo framework" check (§5) never caught this because it builds its overrides independently
+  (loads every `team.slugs` member, including `noop-b1-ar`), so it was validating a configuration
+  the shipped board did not run — the same blind spot the buffer-board ruling above already named
+  for `scripts/tests/ranks/buffer.test.ts`.
+  **Fix:** `scripts/build-dpschart.ts` now loads every `NOOP_CHARACTERS` override in a loop, the same
+  pattern the three sibling boards use.
+  **Blast radius, measured (before/after full `--force` rebuild, rows keyed on cellId + slug +
+  variant):** 135 of 1152 Solo-framework rows move (0 of 4608 non-Solo rows move — exactly the
+  Solo-only scope the code predicts). Mixed direction, not a uniform buff: `helm` (SR/Water, NOT
+  `helm-aquamarine`) +11.0% (scope) to +20.6% (8/12) — a cooldown-bound unit that gains the most
+  from an actually-firing 7s CDR;
+  `snow-white-heavy-arms` −1.5% to −2.0% — a unit that loses ground once the no-op B3 also bursts
+  more often and contests stage-3 casts harder. Most Solo rows (1017 of 1152) are byte-identical —
+  units whose own kit already saturates the rotation independent of the control's CDR.
 - **(2026-08-03) TYPED BUFFER BOARD: FLAVOR-GATED ALLY BUFFS NEED A CARRY THAT CAN ACTUALLY DEAL
   THAT FLAVOR — `hasTrueNormals` PRIMITIVE (True Damage), MOCK_TICK RIDER (Distributed/Sustained
   Damage), OWNER-PICKED OPTION 3.** Flora's burst grants allies "True Damage ▲ 42.39% for 10s"
@@ -2212,6 +2237,21 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
   attribution across units is forbidden — it burned us twice. — u8 processing; owner corrections.
 
 ## Engine/data-architecture decisions
+
+- **(2026-08-03) `noop-rouge-b1` STAYS IN `src/data/squads.ts` — OPTION C, OWNER-CONFIRMED.** Closes
+  the `docs/handoffs/closed/2026-08-03-b1b2-comparability-and-squad-layering.md` open call: the
+  ranks-layer synthetic (a presence-only no-op Rouge B1 that satisfies `blanc`'s same-squad burst-CDR
+  gate for the buffer board's `w/ Rouge` duo profile) stays put rather than moving behind a
+  registration mechanism. Option A (`registerSquad()` called from the ranks layer at module load) was
+  already ruled out as a trap in that handoff — it makes the engine's `sameSquad` gate depend on
+  import order, and the failure mode is untestable in principle (any test importing `buffer.ts` to
+  check the registration also fires the very side effect it would need to catch absent). Option B
+  (carry squad membership on the prepared unit instead of a global lookup) is the one that actually
+  fixes the layering, but touches `sim.ts`'s block filter, a protected path — not built without a
+  separate go-ahead. Cost of C is conceptual purity only: one synthetic in a curated GAME-TRUTH map,
+  already carrying an explanatory comment (`src/data/squads.ts:23-26`), documented again in
+  `noir.json`'s prose. Not revisited unless a second synthetic-partner pattern makes the layering
+  concern compound.
 
 - **(2026-08-03) A TREASURE UNIT'S `releaseDate` IS ITS TREASURE'S RELEASE DATE — and the "sugar
   data bug" was never a bug, it was the column silently disagreeing with itself.** `releaseDate`

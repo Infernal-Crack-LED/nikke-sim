@@ -78,6 +78,7 @@ import {
   type TestedUnit,
 } from '../src/dpschart/matrix.js';
 import { dpsFor, type RunCtx, type OptMemo } from '../src/dpschart/run.js';
+import { NOOP_CHARACTERS } from '../src/dpschart/noop.js';
 
 const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
 const SCRIPT = fileURLToPath(import.meta.url);
@@ -142,10 +143,15 @@ const overrides: Record<string, OverrideFile | undefined> = {};
 for (const slug of Object.keys(data.characters)) {
   overrides[slug] = loadOverride(slug);
 }
-// The no-op B3 (MG) is a synthetic control, not a roster entry, so it is not in
-// characters.json. Load its mock-B3 override explicitly so the Solo framework
-// gives it a damage profile during its stage-3 casts.
-overrides['noop-b3-mg'] = loadOverride('noop-b3-mg');
+// Synthetic controls are not roster entries, but their overrides carry the
+// framework effects: the no-op B1's 7s team burst-cooldown reduction and the
+// no-op B3's mock burst. Load every registered control so a future addition
+// cannot be forgotten — the same loop build-bufferchart.ts / build-sustain.ts /
+// build-b1b2dps.ts use. Without it the Solo framework silently ran with no
+// enabler at all (same defect those three boards carried until 2026-08-03).
+for (const slug of Object.keys(NOOP_CHARACTERS)) {
+  overrides[slug] = loadOverride(slug);
+}
 
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RunCtx = { characters: data.characters as any, mult, deps };
