@@ -3,11 +3,22 @@ name: CI
 # Runs the safety checks on every PR into main and on pushes to main.
 # Make these checks "required" in the branch ruleset so nothing merges red.
 #
-# `verify.sh full` is THE correctness gate — everything except the DPS-chart /
-# rank-board artifact SMOKES, which only matter on the deploy box
-# (`verify.sh artifacts`, railway.json's buildCommand). deploy.yml runs this same
-# `full` tier as the gate on a push to main, so a PR fails on exactly the step a
-# deploy would.
+# Two tiers run here, and together they are what the deploy box does:
+#   `verify.sh full`      — THE correctness gate (typecheck, validations, regressions,
+#                           vitest, web build + client smoke).
+#   `verify.sh artifacts` — the BUILD-OUTPUT tier, byte-identical to railway.json's
+#                           buildCommand: rebuilds the boards, then the DPS-chart and
+#                           rank-board SMOKES, infographics pre-generation and the
+#                           server bundle.
+# deploy.yml runs the same pair before `railway up`, so a PR fails on exactly the step
+# a deploy would.
+#
+# The artifacts tier was added to CI on 2026-08-02, after two failures reached a deploy
+# that CI was green on. `verify.sh full` does not run web-smoke-ranks.mjs /
+# web-smoke-dpschart.mjs at all — they are gated to the deploy/artifacts tiers — so a
+# broken smoke had NO pre-deploy coverage anywhere. One of the two (a B1/B2 row index
+# read as index 3 instead of 2) had been wrong since the morning it was written and
+# had simply never executed.
 #
 # CI used to run only `npm test` (web build + client smoke, ~40s), so every other
 # verify step (vitest, engine + control regression, doc-drift, sg-geometry,
@@ -68,3 +79,12 @@ jobs:
       # there must reach CI by existing, exactly as vitest's glob wires in test files.
       - name: Verify (typecheck · validations · regressions · unit tests · web smoke)
         run: bash scripts/verify.sh full
+
+      # The tier the deploy box runs (railway.json buildCommand). Kept as its own step
+      # so a red artifact smoke is legible as such instead of hiding inside the gate.
+      # It rebuilds the boards the step above already built — cheap, because both
+      # builders skip every unit whose inputs match the live artifact — and that
+      # redundancy is deliberate: this step stays a faithful stand-in for the deploy
+      # box rather than depending on earlier steps having primed it.
+      - name: Verify artifacts (board smokes · infographics · server bundle)
+        run: bash scripts/verify.sh artifacts
