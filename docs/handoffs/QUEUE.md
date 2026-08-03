@@ -109,8 +109,23 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **⇒ ENGINE REGRESSION FULL-BURST COUNT FAILURES — four comps disabled in `scripts/regression.ts`**
   (`:106`, `:131`, `:158`, `:236`): `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`,
   `N3 scarlet/liberalio iron` each read 1–3 Full Bursts short of their video-measured counts on clean
-  `HEAD`, skipped via the `disabled` flag so `verify.sh` stays green. Same family as **U29**/**U31**;
-  re-enable once the shortfall is fixed.
+  `HEAD`, skipped via the `disabled` flag so `verify.sh` stays green.
+  **2026-08-03 /scientific-method pass (LOG, 2-of-2 ACCEPT both MEDIUM — full account:
+  `docs/handoffs/scientific-method-harness.md`): NOT the same family as U29/U31 (that framing was an
+  editing artifact, refuted at the premise gate) — root cause is `liberalio`'s 2026-07-26 gauge-datamine
+  fix (`c12fcf4e`, a legitimate correction) unmasking a pre-existing, GENERAL, board-wide charge-B3
+  gauge-fill-tempo gap — not liberalio-specific.** A pre-registered non-liberalio baseline
+  (`N6 mihara/maiden wind`, currently passing) shows the SAME-OR-LARGER gauge-fill excess per cycle as
+  these 4 comps, invisible there only because its own measured target has slack these 4 don't. Per
+  CLAUDE.md's blast-radius rule this is NOT a narrow per-comp fix — needs its own dedicated
+  `/scientific-method` pass scoped to the general charge-B3 gauge-generation rate (committed instrument:
+  `decomposeCycles()`/`DECOMP=1` in `scripts/experiment.ts`, pinned by
+  `scripts/tests/gauge-cycle-decomp.test.ts`). Confidence capped MEDIUM on one open question: does a
+  real fight hit the sim's own opening/first-FB time (raising to HIGH needs a direct frame-measurement
+  of the real FB-end→next-B1 gap on one disabled comp's footage). Leave `disabled: true` until then.
+  Separately logged (do NOT bundle in): a general (non-liberalio) `skillGauge`-fires-twice-per-shot
+  pattern on any `shotFired`-triggered `flatDamage` rider (`sim.ts:2393`) — its correction direction is
+  gauge-DOWN, which would worsen these 4 comps if "fixed" alone; needs its own pre-op pass.
 - **⇒ ENGINE-WORK ORDER (read FIRST before resuming per-kit retunes)** — remaining engine work ranked by
   BLAST RADIUS: items that change the shared math every override is calibrated against come before
   per-unit retunes (a retune done first has to be redone). Still open:
