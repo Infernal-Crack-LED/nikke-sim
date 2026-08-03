@@ -1,0 +1,84 @@
+{
+  "note": "mary-bay-goddess (Mary: Bay Goddess) — SR / Supporter / Water / Burst I, cd 20s, ammo 6, chargeFrames 60. The SR/Water BAY GODDESS variant of Mary — NOT the base `mary` (SG/Water); the two are never conflated. A HEALER-SUPPORTER whose personal damage is negligible: her value is the Water-Code Elemental-Advantage damage buff (S2) + the Water-Code ATK buff (burst) + an entering-Full-Burst team HoT (S1). NO HP-scaling damage conversion anywhere in her kit — every 'final Max HP' reference (the S1 heal amounts, the burst Max HP grant) is heal-magnitude/defensive. || S1 'Seaside Sunshine' (fullBurstEnter — fires on EVERY team Full Burst; the escalating counter counts FB ENTRIES, team-wide): 'Effects vary according to the number of times entered; each subsequent effect triggers all effects before it: Once 1.05% / Twice 3.69% / Three times 6.86% of the skill user's final Max HP every 1 sec for 5 sec' → `escalating` with THREE heal steps (ticks:5 / intervalSec:1 each), target all allies. The engine's escalating kind applies steps 1..N on the Nth activation (cumulative, never resets), so the 3rd+ FB entry fires three concurrent 5-tick HoTs — faithful to 'triggers all effects before it'. HEAL MAGNITUDE IS EVENT-ONLY (hard rule 2 — no HP pool is modeled), so the 1.05/3.69/6.86% ramp has NO damage observable; the assertable surface is the recovery-event CADENCE/COUNT (5/10/15 recovery events per target on the 1st/2nd/3rd+ FB entry), which drives on-recovery consumers (Crown's 'when recovery takes effect → team ATK ▲'). || S2 'Waves Kiss The Feet' (burstCast — fires ONLY on rotations Mary casts her own Burst I; a DISTINCT counter from S1's FB-entry counter): 'Affects all Water Code allies. Effects vary according to the number of times used; each subsequent effect triggers all effects before it: Once Elemental Advantage Attack Damage ▲ 20.85% for 3 sec / Twice ▲ 13.88% for 5 sec / Three times ▲ 8.36% for 10 sec' → `escalating` [elemAdvantageDamagePct 20.85/3s, 13.88/5s, 8.36/10s], target alliesOfElement Water (includes self — Mary is Water). The three steps apply as SEPARATE co-active buffs with their OWN expiries (3rd cast → all three live for the first 3s, then 13.88+8.36 to 5s, then 8.36 alone to 10s). elemAdvantageDamagePct is the Damage-Up bucket gated to advantaged() — Water beats Fire, so it is LIVE vs a Fire boss and INERT vs a neutral one (sim.ts advantaged()/elemAdvantageDamagePct). NOT elementDamagePct/attackDamagePct (those would credit damage without elemental advantage). || BURST 'Tranquil Waters' (burstCast, same cast; the cast lands BEFORE the FB window opens): TWO ■ blocks with DIFFERENT target clauses and durations — (a) 'Affects all Water Code allies: ATK ▲ 23.23% for 3 sec' → atkPct 23.23/3s, target alliesOfElement Water (plain 'ATK ▲' = percent of each recipient's OWN ATK, NOT casterAtkPct); (b) 'Affects all allies: Max HP ▲ 27.87% of the skill user's final Max HP for 10 sec' → casterMaxHpPct 27.87/10s, target all allies (the engine converts it to a flat maxHpFlat grant = 27.87% of MARY's Max HP, one identical flat number for every recipient; per the e3 self-feed rule it feeds atkOfMaxHpPct only when caster===target, and Mary has no such consumer, so it is damage-INERT in the DPS basis — defensive). The two blocks are deliberately kept separate so the Water-only/3s ATK clause is never conflated with the all-allies/10s HP clause. || ⚑ FLAGS (all UNMEASURED estimates): (1) CADENCE TUPLE (ALWAYS-⚑ 1) — pullsPerSec / reloadFrames 111 / chargeFrames 60 shipped from datamine (ammo 6); mag-empty ≈ 7-8s at (60f charge + bolt)/shot — plausible, NOT escalated; recipe: rounds/min + reload gap from any focus video. (2) AUTOFIRE vs BOLT GAP (ALWAYS-⚑, charge weapon) — engine default (bolt gap ON) shipped; NEVER set noBoltRecovery unmeasured; ~15-20% swing on her OWN shots/burst-gen only (support — small board impact); recipe: focus video, does she re-charge immediately with no dead gap. Both ⚑s affect her OWN shots only; her SUPPORT buffs (the load-bearing lines) are kit-exact magnitudes, not cadence-dependent. || TIER 2 (scoped Water-Code buffs; two distinct escalating round-counters — S1 FB-entries vs S2 burst-uses; burstCast-vs-fullBurstEnter trigger split; casterMaxHpPct e3 self-feed rule). Faithful>fit; measured>fudge. || Kit-autonomy gauntlet 2026-08-02: VALIDATED faithful test-first — scripts/tests/units/mary-bay-goddess.test.ts (PINs + counterfactuals GREEN vs this override; cross-family S2b claude-fable-5 test review converged on all 4 lines FAITHFUL+load-bearing).",
+  "caveats": [
+    "skill1: heal MAGNITUDE escalation (1.05/3.69/6.86% of the skill user's final Max HP) is event-only — no HP pool is modeled, so the ramp has no damage observable; the escalating[3×heal] structure preserves the recovery-event COUNT ramp (5/10/15 per target) that drives on-recovery consumers",
+    "skill2: elemAdvantageDamagePct is gated to elemental advantage — live vs an advantaged (e.g. Fire) boss, inert vs a neutral one; the escalating ramp applies the three tiers as separate co-active buffs with their own durations",
+    "burst: the 27.87% Max HP grant is casterMaxHpPct (caster-scaled flat maxHpFlat) — damage-inert in the DPS basis (feeds atkOfMaxHpPct only on self-grant, and Mary has no HP→ATK consumer); encoded for kit completeness",
+    "cadence: pullsPerSec / reloadFrames 111 / bolt-gap-vs-autofire are unverified datamine values affecting her OWN shots only (parser baseline)"
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "heal", "ticks": 5, "intervalSec": 1 },
+            { "kind": "heal", "ticks": 5, "intervalSec": 1 },
+            { "kind": "heal", "ticks": 5, "intervalSec": 1 }
+          ]
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Water"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "buff", "stat": "elemAdvantageDamagePct", "value": 20.85, "durationSec": 3 },
+            { "kind": "buff", "stat": "elemAdvantageDamagePct", "value": 13.88, "durationSec": 5 },
+            { "kind": "buff", "stat": "elemAdvantageDamagePct", "value": 8.36, "durationSec": 10 }
+          ]
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Water"
+      },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 23.23, "durationSec": 3 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        { "kind": "buff", "stat": "casterMaxHpPct", "value": 27.87, "durationSec": 10 }
+      ]
+    }
+  ]
+}

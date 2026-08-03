@@ -1,0 +1,263 @@
+{
+  "slug": "k",
+  "leakDetected": null,
+  "override": {
+    "slug": "k",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 18.75,
+            "maxStacks": 4
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 5
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 23.9,
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "maxAmmoPct",
+            "value": -51.13,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 10.62,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "weaponSwap",
+            "damagePct": 925,
+            "pullsPerSec": 2,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 63.36,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 21.12,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "■ Activates when Full Burst ends. Affects self.",
+        "Removes Tilted Scale."
+      ],
+      "skill2": [
+        "■ Activates when Full Burst ends. Affects all allies.",
+        "Removes Fulfillment of Righteousness."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ Tilted Scale granularity: the kit grants 29 stacks × 0.75% per last bullet, capped at 100 stacks (=75% crit rate). The engine adds ONE stack per trigger, so the buff is authored as 18.75%/stack × maxStacks 4 = the correct 75% cap reached after 4 last-bullet triggers (kit truth: cap reached on the 4th, partial, grant). Per-application credit is 18.75% vs the true 21.75%, so the early ramp is slightly under-credited and the cap is exact.",
+      "⚑ 'Removes Tilted Scale' on Full-Burst-end is NOT modeled — the effect schema has no buff-removal primitive (removeOnReload is reload-keyed only). The sim therefore HOLDS crit rate at the 75% cap for the rest of the fight instead of resetting it each Full Burst; this OVER-CREDITS average crit rate. Real behaviour is a sawtooth: reset at FB end, rebuilt over ~4 magazines (~15-20 s with the S2 ammo cut live).",
+      "⚑ Skill-1 rider trigger is crit-COUNT gated ('pellets land a critical hit 4 times'); the engine has no crit-count trigger, so it is approximated as hitCount:5 (4 crits ÷ an assumed ~0.8 time-average crit rate). Unmeasured.",
+      "⚑ Burst swap: the 10 pellets are MERGED into one 925% shot (10 × 92.5%). Split-vs-merge is kit-silent and matters for per-pellet core/landing/gauge. If the engine applies the base hitsPerShot (2) to swap shots this double-counts — halve to 462.5 if a swap-shot popup ladder shows two hits per pull.",
+      "⚑ Burst swap cadence 2 pulls/s = base SMG effective ~20/s with Attack Speed ▼90%. The base rate is a datamine-derived value and the swap's own cadence is kit-silent; unmeasured.",
+      "⚑ 'Removes Fulfillment of Righteousness' at FB end is not modeled (no removal primitive); the 10 s duration bounds the over-credit to at most the remainder of an in-flight window.",
+      "The S2 Max Ammunition ▼51.13% is modeled as a real weapon-state effect on ALL allies (it cuts every ally's magazine, raising reload frequency and, for k herself, last-bullet frequency — which feeds both her own stacking and the S2 re-application). It is a damage-relevant line, not a defensive one."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Model of k (SMG/Electric/Attacker/Burst III, ammo 120, hitsPerShot 2): S1 is a last-bullet crit-rate stacker (Tilted Scale, 0.75%/stack × 29 per trigger, cap 100 stacks = +75% crit) plus a crit-count-gated 23.9%-of-final-ATK rider on the boss; S2 rides the SAME last-bullet trigger ('when gaining Tilted Scale') to give ALL allies a 10 s Attack Damage ▲10.62% paired with a Max Ammunition ▼51.13% weapon-state cut; the burst is a 10 s self weapon swap (92.5%/pellet × 10 pellets, Attack Speed ▼90%) with self ATK ▲63.36%-of-own-ATK and Attack Damage ▲21.12%. Two Full-Burst-end removal lines are unrepresentable in the current schema and are recorded in `unmodeled` — the Tilted Scale one is the largest known over-credit in this baseline."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when firing the last bullet",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'lastBullet'}, target self — per-magazine, so its frequency rises with the S2 ammo cut"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Rate ▲ 0.75%, stacks to 100",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct, unscoped (kit says plain Critical Rate, not 'of normal attacks'), no durationSec ('continuously')"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Tilted Scale stacks ▲ 29.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "granularity re-expression: value 18.75 × maxStacks 4 = the true 75% cap; engine cannot add 29 stacks per application (⚑)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "pellets land a critical hit 4 time(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'hitCount', count:5} — crit-count→hit-count conversion at an assumed ~0.8 crit rate (⚑); no crit-gated trigger exists"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 23.9% of final ATK as add. dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 23.9, crit:true (riders crit at caster rate), target enemy; no core (text says no core strike), noRange engine-automatic, FB-by-timing default ON"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB ends → Removes Tilted Scale",
+      "status": "SKIPPED",
+      "effectOrReason": "No buff-removal EffectDef exists (removeOnReload is reload-keyed only); verbatim in unmodeled.skill1. Known over-credit — crit stays at cap instead of resetting per FB."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when gaining Tilted Scale",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Tilted Scale is gained on the S1 last-bullet trigger, so this block reuses trigger {kind:'lastBullet'}; target {kind:'allies'} (includes self)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max ammunition capacity ▼ 51.13%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff maxAmmoPct -51.13, durationSec 10 — weapon-state modifier IS damage (fewer rounds/mag → more reloads, more last bullets)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "(Similar effects cannot be stacked.)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "expressed by omitting maxStacks — repeat applications refresh a single instance per caster slot"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attack damage ▲ 10.62% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 10.62, durationSec 10, all allies (Damage Up bucket)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB ends → Removes Fulfillment",
+      "status": "SKIPPED",
+      "effectOrReason": "No buff-removal primitive; verbatim in unmodeled.skill2. Bounded over-credit (≤ the tail of a live 10 s window)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Change the weapon: Damage 92.5%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap damagePct (see pellet merge below), durationSec 10, self"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Pelletcount: 10",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "merged into damagePct 925 (10 × 92.5%) — weaponSwap has no pellet field (⚑ split-vs-merge)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack speed: ▼ 90%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.pullsPerSec 2 (base SMG ~20/s × 0.10) rather than a separate attackSpeedPct buff, to avoid double-counting (⚑)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Duration: 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.durationSec 10 (time-bound, no maxShots stated)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 63.36% of skill user's ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 63.36 (flat add of 63.36% of caster staticAtk), durationSec 10, self — literal 'of the skill user's ATK' reading, not atkPct"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack damage ▲ 21.12% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 21.12, durationSec 10, self — stacks with the S2 10.62% (different slot, so no same-caster-slot overwrite)"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].effects[0].value / maxStacks",
+      "estimate": "value 18.75, maxStacks 4 (= 75% cap)",
+      "reasoning": "Kit grants 29 stacks × 0.75% per last bullet with a 100-stack cap (75%). The engine adds one stack per trigger application, so the per-application magnitude must be re-expressed. 18.75 × 4 hits the cap EXACTLY after 4 last bullets (kit truth: the cap lands on the 4th, partial, grant of 13 stacks); 21.75 × 4 would overshoot to 87%, 21.75 × 3 would undershoot to 65.25%. Cap fidelity chosen over per-application fidelity because the unit sits at cap for most of a magazine cycle.",
+      "recipe": "Read k's crit-rate stat in-fight (or infer from the crit share of her SMG popups) at ~5 s, ~15 s and ~30 s after a Full Burst ends; fit the ramp shape and the plateau. Plateau should read base crit + 75%."
+    },
+    {
+      "field": "skill1 — FB-end reset of Tilted Scale (unmodeled)",
+      "estimate": "over-credit of roughly 10-25% of the crit-rate contribution over a 180 s fight",
+      "reasoning": "The schema has no buff-removal effect, so the sim holds the cap permanently. Real behaviour is a sawtooth: full reset at every FB end, rebuilt at 29 stacks per last bullet. With the S2 Max-Ammo ▼51.13% live, k's magazine is ~59 rounds; at ~20 pulls/s × 2 hits she empties in ~1.5-3 s plus a ~2.15 s reload, so 4 last bullets ≈ 15-20 s — a large fraction of the inter-FB gap is spent at or near cap, which is why the error is a partial rather than a total over-credit. NOT patched with an invented haircut value.",
+      "recipe": "Either add a buff-removal primitive keyed to fullBurstEnd (engine work), or measure the crit share of k's popups in the 5 s window immediately after a Full Burst ends vs the 5 s before the next one, and compare against the sim's flat-cap assumption."
+    },
+    {
+      "field": "skill1[1].trigger.count",
+      "estimate": "5 hits (literal kit value is 4 CRITS)",
+      "reasoning": "No crit-gated trigger exists in TriggerDef. Converting: 4 crits ÷ p(crit). p is itself driven by this unit's own Tilted Scale stack (base sheet crit ~15% + up to 75% → ~0.9 at cap, lower during the ramp); a ~0.8 time-average gives 4/0.8 = 5 hits. hitCount counts ROUNDS, and k's hitsPerShot is 2, so count 5 ≈ 2.5 trigger pulls. This is an ESTIMATE, not a kit value.",
+      "recipe": "Count 23.9%-of-ATK rider popups over a full recorded fight and divide k's total landed hit count by that number; that ratio IS the correct hitCount threshold. Cross-check against the crit share of her normal popups in the same footage."
+    },
+    {
+      "field": "burst[0].effects[0].damagePct",
+      "estimate": "925 (10 pellets × 92.5%, merged into one shot)",
+      "reasoning": "weaponSwap has no pellet-count field. Split-vs-merge is kit-silent (ALWAYS-⚑ #5). Merge is chosen because the alternative (92.5% per shot) makes the burst weapon a damage DOWNGRADE vs her base SMG (92.5% × 2/s = 185%/s vs 9.1% × 2 hits × 20/s = 364%/s), which is not a plausible reading of a Burst III weapon change. Residual risk: if the engine applies the base hitsPerShot (2) to swap shots, this double-counts and the correct value is 462.5.",
+      "recipe": "Read one burst window frame-by-frame: count popups per trigger pull (10 small vs 1 large) and their values relative to a known ATK. Popup count also settles the hitsPerShot question — divide the observed per-pull total by 92.5% of final ATK to get the true effective pellet count."
+    },
+    {
+      "field": "burst[0].effects[0].pullsPerSec",
+      "estimate": "2 pulls/s",
+      "reasoning": "Attack Speed ▼90% applied to the base SMG's effective cadence. The base cadence itself comes from a datamine field flagged unreliable, and the swap weapon's own cadence is never stated; a swap can also load a different shot spec entirely. Weapon-swap shot economy is ALWAYS-⚑ (#3) — estimated optimistically (no wind-up, no reload assumed inside the 10 s window).",
+      "recipe": "Count trigger pulls (or popup groups) across a full 10 s burst window in footage — 20 pulls confirms 2/s. Also check whether the swap weapon reloads within the window; if it does, the shot economy needs a maxAmmo on the weaponSwap."
+    },
+    {
+      "field": "burst[0].effects[0].weapon (not set)",
+      "estimate": "left unset — swap keeps the base SMG class",
+      "reasoning": "'Pelletcount: 10' is shotgun-shaped and tempts weapon:'SG', which would route the swap through the SG per-pellet landing-fraction / range-band / auto-core model. Blind, that is a bigger unverified change than the merge already assumed, and it would compound with the merged damagePct (a merged shot passed through a per-pellet landing model is not the same thing). Deliberately NOT set; recorded here so the tuner sees the choice.",
+      "recipe": "If burst-window popups show sub-shot fractional landing (fewer than 10 pellet hits at range, or falloff by band), re-author as weapon:'SG' with damagePct 92.5 per pellet plus the appropriate pellet-count representation, and re-verify the core rate of swap shots against the SMG baseline."
+    }
+  ],
+  "model": "claude-opus-5"
+}

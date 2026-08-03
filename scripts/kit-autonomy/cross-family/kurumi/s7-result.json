@@ -1,0 +1,65 @@
+{
+  "slug": "kurumi",
+  "kitDescription": "Kurumi is an Iron AR Supporter whose kit revolves around inflicting a named 'Hacked' status on the boss. Every 36 normal attacks she hacks her target, and she also hacks all enemies whenever she uses her own Burst Skill; each hack deals 52.24% of her final ATK as sustained damage every second for 5 seconds. While the boss is Hacked and the team is in Full Burst, every further 36 normal attacks trigger an extra hit of 86.17% of final ATK on the target. Her Burst Skill itself deals no damage — it makes all enemies take 18.06% more damage for 10 seconds, amplifying the whole team's output. In practice she is a Burst-I debuffer whose personal damage comes from the repeating Hacked damage-over-time and the Full-Burst rider it enables.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "Failure A — NON-VACUITY probe ('expected 0 to be greater than 0'): blind helper wired onEvent at the top level of the runComp argument instead of inside cfg, so its event log was empty; independent probe of the SAME fixture with cfg.onEvent wiring finds 6 damageTakenPct buffApply + 6 kurumi burstCast events. Blind-test artifact (RECON_ERROR), not an override defect.",
+      "Failure B — 'teammates byte-identical under damage counterfactuals' (~0.04% diff): blind fixture controlComp('kurumi') seats TWO Burst-I units (liter + kurumi); DoT ticks feed burst gauge (skillGauge on the dot-tick path), so zeroing kurumi's DoT shifts B1 slot contention and perturbs liter/crown/helm burst timing by ~0.04%. A faithful engine interaction violating the blind byte-identity assumption (RECON_ERROR), not an override defect."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "after 36 normal attacks: Hacked 52.24%/1s/5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:36 (rounds; AR hitsPerShot 1) → targetStatus 'Hacked' 5s + dot 52.24 sustained, 1s interval, 5s, enemy target",
+        "blindSaid": "S5 derived hitCount:36/enemy/dot 52.24-1s-5s-sustained + targetStatus 'Hacked' ≥5s; S6 blind override is byte-identical on this block",
+        "formulaCheck": "DoT = sustained-flavored function damage: no core, no range, crit at caster rate (DOT_CRIT default ON, kit does not exempt), ticks reference current buffs — routing matches SSOT §1b/§2c. hitCount counts landed rounds; at AR 12/s the 36-round cadence (~3s of fire + reloads) is the correct reading vs the rejected interval-sec approximation",
+        "fireRateOk": true,
+        "explanation": "Encoding matches prose and formula; driver K2/K4 prove the block FIRES (ticks ≈ 5×(bursts + ⌊normals/36⌋), dominant over the burst-only floor). Two documented ⚑s ride on it: Hacked window 5s is inferred from the DoT duration (kit-silent), and overlapping re-applications STACK as independent DoT instances (engine-native append; refresh-vs-stack is kit-silent) — both recorded in the driver note and independently flagged by S2b and S6."
+      },
+      {
+        "kitLine": "when using Burst Skill, all enemies: same Hacked DoT",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast trigger (own cast only), enemy target, same targetStatus+dot pair; note explicitly rejects fullBurstEnter",
+        "blindSaid": "S5 asserts burstCast-keyed dot block exists and that NO block uses fullBurstEnter; S6 identical encoding",
+        "formulaCheck": "'When using Burst Skill' = own burst cast, not FB entry — matches SSOT §8 cast semantics; the DoT ticks land during FB by timing and correctly take the +50% then. Kurumi is Burst I cd 20s, so this keys only to rotations she wins the B1 slot",
+        "fireRateOk": true,
+        "explanation": "Driver K3 proves independent firing: removing only this block drops skill1 ticks by exactly 5 per burst cast. Driver fixture (kurumi sole B1, 9 bursts) and the corrected-wiring S5 probe (6 casts / 6 applications) both confirm real cadence."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "during FB, after 36 hits, while Hacked: 86.17% addl dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "single block: hitCount:36 + fbGate inFb + requiresTargetStatus 'Hacked' + flatDamage 86.17; crit via engine rider default; no core; noFb absent so it takes the +50% FB major by timing",
+        "blindSaid": "S5 derived the identical triple-gated block and asserted core!==true, noFb!==true; S6 byte-identical except an explicit crit:true that is behaviorally identical to the engine default",
+        "formulaCheck": "'Additional damage' rider = function-type skill damage: crit at caster rate, never core (text lacks 'core strike'), no range, FB +50% by landing time — it fires inside FB so the major applies. SSOT §2b/§9 confirm routing",
+        "fireRateOk": true,
+        "explanation": "All three gates load-bearing and discriminated: K5b ungated → procs spill outside FB and count rises to exactly ⌊normals/36⌋; K5c removing the status APPLICATION → exactly 0 procs (the gate itself is near-redundant in the driver fixture because burstCast keeps Hacked up in most FB windows — documented ⚑, discrimination routed through application-removal instead, which is the correct isolation per contract C). Block order (S1a before S2) makes same-frame 36th-hit Hacked application visible to the gate. Cumulative-counter-with-gate reading noted as an engine-native assumption (prose ambiguity, flagged by S2b/S6 too)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "all enemies: Damage Taken ▲18.06% for 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy buff damageTakenPct 18.06, 10s; no damage, no self/ally grant",
+        "blindSaid": "S5 derived identical shape (single burstCast enemy block, buff damageTakenPct 18.06/10s, boss-held casterIdx/targetIdx null); S6 identical encoding",
+        "formulaCheck": "Damage Taken ▲ lives in the boss-side Taken bucket and amplifies ALL damage dealt to the boss — correct bucket, correct target set, burstCast trigger matches 'Affects all enemies' on cast; 10s window vs 20s cd = ≤50% uptime ceiling as S2b scoped",
+        "fireRateOk": true,
+        "explanation": "K1 proves it FIRES and is team-wide: one buffApply per kurumi cast (9 in the driver fixture, value exactly 18.06, 600f duration), and removing it lowers all four units' totals. Correctly distinguished from the nearest-wrong self/ally attackDamagePct encoding and from fullBurstEnter keying."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA exists: all four kit lines are FAITHFUL, cross-corroborated by the prose, the formula SSOT, and both blind agents. The two S5 reds are blind-test artifacts, not divergences — one is a harness miswiring (top-level onEvent never delivered events; a correctly-wired probe of the same fixture shows 6 debuff applications on 6 kurumi casts), the other is a broken byte-identity assumption (DoT ticks feed burst gauge, so in the blind's two-B1 fixture zeroing the DoT legitimately perturbs liter's burst timing by 0.04%); both are RECON_ERROR with hard evidence supplied. The 13 green S5 assertions independently re-derived every load-bearing encoding (hitCount:36, burstCast-not-fullBurstEnter, fbGate+requiresTargetStatus 'Hacked', damageTakenPct 18.06/10s on the boss), and S6's override is byte-identical except an explicit crit:true that matches the engine default — and because the driver is Qwen while both blinds are claude, this agreement is cross-family, stronger than the usual same-model convergence. Discrimination holds on every load-bearing test, with the one masked case (requiresTargetStatus gate removal is inert in the driver fixture because burstCast keeps Hacked up through most FB windows) documented and re-routed through status-application removal, which cleanly zeroes S2. What must change for GO: nothing. Owner spot-check residuals (all documented ⚑s, none blocking): (1) Hacked re-application is shipped as stacking independent DoT instances — if the real status REFRESHES, S1 damage is overcredited during overlap windows (both blinds and the driver share this engine-native reading, so it is the one place agreement proves nothing); (2) the 5s Hacked status window is inferred from the DoT duration, kit-silent; (3) S2's 36-hit counter is read cumulative-with-gate rather than per-FB-resetting. A Hacked popup/footage read settles all three when available.",
+  "model": "kimi-code/k3"
+}

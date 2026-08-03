@@ -1,0 +1,258 @@
+{
+  "slug": "mary-bay-goddess",
+  "leakDetected": null,
+  "override": {
+    "slug": "mary-bay-goddess",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "escalating",
+            "steps": [
+              {
+                "kind": "heal",
+                "ticks": 5,
+                "intervalSec": 1
+              },
+              {
+                "kind": "heal",
+                "ticks": 5,
+                "intervalSec": 1
+              },
+              {
+                "kind": "heal",
+                "ticks": 5,
+                "intervalSec": 1
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesOfElement",
+          "element": "Water"
+        },
+        "effects": [
+          {
+            "kind": "escalating",
+            "steps": [
+              {
+                "kind": "buff",
+                "stat": "elemAdvantageDamagePct",
+                "value": 20.85,
+                "durationSec": 3
+              },
+              {
+                "kind": "buff",
+                "stat": "elemAdvantageDamagePct",
+                "value": 13.88,
+                "durationSec": 5
+              },
+              {
+                "kind": "buff",
+                "stat": "elemAdvantageDamagePct",
+                "value": 8.36,
+                "durationSec": 10
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesOfElement",
+          "element": "Water"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 23.23,
+            "durationSec": 3
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterMaxHpPct",
+            "value": 27.87,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill2 escalating tiers: the prose says each subsequent activation ALSO triggers every earlier effect, so from the 3rd burst cast onward three separate elemAdvantageDamagePct windows (20.85%/3s, 13.88%/5s, 8.36%/10s) should be live concurrently and sum additively in the Damage Up bucket. If the buff engine's same-caster-slot overwrite collapses same-stat grants from one caster, the modelled magnitude collapses toward the last-applied step instead — UNVERIFIED, pin with a buffApply-value assertion before trusting the magnitude.",
+      "⚑ elemAdvantageDamagePct is live only while the holder has elemental advantage over the boss. The whole skill2 payload is therefore inert on a non-advantaged boss element (Water allies need a Fire boss); it is not a generic attackDamagePct and must not be modelled as one.",
+      "skill1's heal is modelled as recovery EVENTS only (5 ticks, 1s apart, per escalating step) — the engine models no HP pool, so the 1.05%/3.69%/6.86%-of-caster-Max-HP magnitudes carry no damage of their own. The line is kept because on-recovery consumers (heal-synergy kits) key off these events, and dropping it would silently break a teammate's trigger.",
+      "The burst Max HP grant is ally-scoped; an ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion, and this unit carries no HP→ATK scaler of her own, so the grant is offensively inert at present scope. It is retained for kit completeness and for any future consumer.",
+      "This unit carries no damage effects at all (no flatDamage/dot/storedHit), so noFb, noRange, core and crit riders are moot — nothing here is a damage rider whose Full-Burst/range/core eligibility could be mis-set."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Mary: Bay Goddess (mary-bay-goddess) is modelled as a pure Water/Supporter Burst I enabler with zero damage effects. skill1 is a team-wide heal-over-time keyed to fullBurstEnter (fires on ANY team Full Burst, per the literal 'when entering Full Burst' clause), authored as an escalating effect whose Nth activation applies steps 1..N — each step a 5-tick, 1s-interval heal so on-recovery consumers stay refreshed. skill2 is keyed to burstCast (the literal 'when using Burst Skill' clause = this unit's own cast, so it only fires on rotations she bursts), targets Water Code allies including herself, and grants escalating Elemental Advantage Attack Damage windows of 20.85%/3s, 13.88%/5s, 8.36%/10s. The burst slot carries two separately-scoped blocks matching the two '■ Affects' headers: ATK ▲23.23% for 3s to Water Code allies (plain 'ATK ▲ x%' = target's own ATK, atkPct), and a caster-scaled Max HP grant of 27.87% of the skill user's final Max HP for 10s to all allies. All three slots are fully represented; unmodeled is empty for every slot."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'fullBurstEnter'} — literal 'entering Full Burst' clause, fires on ANY team Full Burst, not gated on her own burst cast"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} (no excludeSelf — 'all allies' includes the caster)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Each subsequent triggers all before",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effects[0] = {kind:'escalating', steps:[…]} — the Nth activation applies steps 1..N, which is exactly this semantics"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Once: Recovers 1.05% MaxHP/1s for 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 1 = {kind:'heal', ticks:5, intervalSec:1}; HP magnitude not representable (no HP pool / heal carries no amount) — emits 5 recovery events for on-recovery consumers"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Twice: Recovers 3.69% MaxHP/1s 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 2 = {kind:'heal', ticks:5, intervalSec:1}; same amount-not-modelled note"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Three: Recovers 6.86% MaxHP/1s 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 3 = {kind:'heal', ticks:5, intervalSec:1}; same amount-not-modelled note"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'} — literal 'using Burst Skill' = this unit's OWN cast; keying it to fullBurstEnter would over-credit in comps where another Burst I casts"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all Water Code allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesOfElement', element:'Water'} — no excludeSelf, she is Water and self-included"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Each subsequent triggers all before",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effects[0] = {kind:'escalating', steps:[…]}"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Once: Elem Adv Atk Dmg ▲20.85% 3s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 1 = buff elemAdvantageDamagePct 20.85 durationSec 3 (advantage-gated Damage Up, NOT generic attackDamagePct)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Twice: Elem Adv Atk Dmg ▲13.88% 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 2 = buff elemAdvantageDamagePct 13.88 durationSec 5"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Three: Elem Adv Atk Dmg ▲8.36% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 3 = buff elemAdvantageDamagePct 8.36 durationSec 10"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all Water Code allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burst block 1 target {kind:'alliesOfElement', element:'Water'}"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 23.23% for 3 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 23.23 durationSec 3 on trigger burstCast — plain 'ATK ▲ x%' scales the target's own ATK"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burst block 2 target {kind:'allies'} — a SECOND '■ Affects' header, so a separate block rather than a second effect on block 1"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max HP ▲ 27.87% of user's Max HP 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterMaxHpPct 27.87 durationSec 10 — 'of the skill user's final Max HP' selects the caster-scaled stat, not targetMaxHpPct"
+    }
+  ],
+  "flags": [
+    {
+      "field": "base weapon cadence (SR: ammo 6, reloadFrames 111, chargeFrames 60, hitsPerShot 1)",
+      "estimate": "Use the datamined values as supplied; effective fire cadence is whatever the engine derives from the SR shot spec, with the 22-frame charge-release latency applied.",
+      "reasoning": "ALWAYS-⚑ item 1: datamined rate_of_fire / reloadFrames are known-unreliable fields, and a nominal rate is quantised to 60fps frame boundaries so the effective rate is 60/ceil(60/nominal). This unit contributes no damage effects, so cadence only moves her own weapon damage and her burst-gauge generation — but gauge feeds rotation, so an error here can shift full-burst counts.",
+      "recipe": "Count trigger pulls and reload gaps for this unit across one magazine in a recorded fight (ammo counter is the direct instrument for shots/sec); compare against the sim's shot events for the same window."
+    },
+    {
+      "field": "skill2.effects[0] — coexistence of the three escalating elemAdvantageDamagePct windows",
+      "estimate": "Assume all three windows coexist and sum additively in the Damage Up bucket once the 3rd burst cast lands (peak +43.09% for the first 3s after that cast, decaying to +22.24% then +8.36%).",
+      "reasoning": "The prose states each subsequent effect also triggers every effect before it, and the three grants have distinct magnitudes AND distinct durations — a decaying staircase only makes sense if they coexist. But all three come from the SAME caster and the SAME stat, so the buff engine's same-caster-slot overwrite rule may collapse them to a single live instance, silently changing the magnitude. This is a modelling uncertainty, not a kit-text uncertainty.",
+      "recipe": "Harness test: run a comp containing this unit plus at least one other Water ally on a Fire boss, capture buffApply events filtered to stat 'elemAdvantageDamagePct', and assert that after the 3rd burstCast three concurrent instances with values 20.85 / 13.88 / 8.36 are live with the stated expiresFrame spread. If the engine collapses them, the honest fix is a per-step key or three separate blocks, not a re-magnituded single buff."
+    },
+    {
+      "field": "skill1 / skill2 escalation tier reached over a 180s fight",
+      "estimate": "Both escalations saturate at tier 3 well inside the fight — skill1 by the 3rd team Full Burst, skill2 by her 3rd own-burst cast (Burst I, 20s cooldown).",
+      "reasoning": "ALWAYS-⚑ item 4 (stack/currency steady-state). The engine's escalating counter derives the tier from actual activations, so no haircut is authored — but the two counters advance on DIFFERENT clocks (any team Full Burst vs her own casts), and in a comp where another Burst I sometimes takes the cast, skill2's counter lags skill1's. Nothing in the kit text pins either count; it is emergent from rotation.",
+      "recipe": "Read the rotation log (ROT=1) for the graded comp: count team Full Bursts and this unit's own burst casts separately, and confirm the tier-3 windows are live for the fraction of the fight the model assumes."
+    },
+    {
+      "field": "override.burst — burst-cast timing vs the Full Burst window",
+      "estimate": "Both burst blocks are keyed to burstCast and therefore apply BEFORE the Full Burst window opens; the 3s ATK ▲23.23% window is consumed largely by the pre-FB burst chain rather than by Full Burst uptime.",
+      "reasoning": "Burst-cast effects land before Full Burst begins, and this unit is Burst I — first in the chain — so a 3s window opening at her cast may expire before or shortly into Full Burst depending on the measured chain timing between stages. The magnitude is kit-exact; only the fraction of Full Burst it actually covers is uncertain, and that is a rotation-timing question, not a kit-reading one.",
+      "recipe": "Capture buffApply expiresFrame for the atkPct grant alongside fullBurstStart in a rotation log, and confirm the overlap fraction against footage; do not adjust the 23.23% or the 3s to compensate for a timing mismatch."
+    },
+    {
+      "field": "override — noFb / noRange / core / crit riders",
+      "estimate": "None set; not applicable.",
+      "reasoning": "ALWAYS-⚑ item 6 requires noFb to be flagged rather than silently defaulted, but this kit contains no damage-dealing effect of any kind (no flatDamage, dot, storedHit or weaponSwap), so there is no rider whose Full-Burst, range, core or crit eligibility could be set. noRange is engine-automatic and is not authored. Hit-Rate→core (item 7) is likewise absent from the kit text.",
+      "recipe": "No measurement required unless a future kit revision adds a damage line."
+    }
+  ],
+  "model": "claude-opus-5"
+}

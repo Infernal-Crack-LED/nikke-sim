@@ -1,0 +1,291 @@
+{
+  "slug": "mast",
+  "leakDetected": null,
+  "override": {
+    "slug": "mast",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 13
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "targetStatus",
+            "name": "Sea Breeze",
+            "durationSec": 3
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 23.56,
+            "durationSec": 30
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 2,
+          "excludeSelf": true,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 23.56,
+            "durationSec": 30
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterMaxHpPct",
+            "value": 86.2,
+            "durationSec": 7
+          },
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 25.19,
+            "durationSec": 7
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 2,
+          "excludeSelf": true,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterMaxHpPct",
+            "value": 86.2,
+            "durationSec": 7
+          },
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 25.19,
+            "durationSec": 7
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "requiresTargetStatus": "Sea Breeze",
+        "effects": [
+          {
+            "kind": "dot",
+            "atkPct": 22.6,
+            "durationSec": 7,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Sea Breeze: DEF ▼ 1.9% of the skill user's DEF, stacks up to 50 time(s) and lasts for 3 sec. (magnitude only — the named status window IS modeled)",
+        "Activates when HP falls below 70%. Affects self and 2 other ally unit(s) with the highest final ATK (except the skill user).",
+        "Critical Damage ▲ 50.94% continuously."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⛑ Storm magnitude is an UNMEASURED estimate. The kit deals 4.52% of final ATK per Sea Breeze stack, once per second for 7 sec; the shipped atkPct 22.6 assumes a ~5-stack steady state (see flags). The stack pool is dynamic and 3-sec-decaying, so it cannot be encoded as a `resource`/`perResource` pool (resources do not decay and would ratchet toward the 50 cap).",
+      "⛑ Sea Breeze's DEF ▼ is a FLAT reduction scaled by the CASTER's DEF applied to the boss. The schema has no enemy-DEF-reduction channel (`defPct` is self-scoped and documented inert; `enemy` targets resolve to an empty set for buff effects), so the debuff's damage contribution — which is a TEAM-WIDE lift, not a self buff — is currently uncredited. This UNDER-models mast.",
+      "⛑ The skill1 HP<70% branch (Critical Damage ▲ 50.94% to self + 2 highest-final-ATK allies, continuous) is NOT modeled: the sim has no HP pool and no HP-threshold trigger primitive. If a real fight shows it firing, the whole crit-damage buff is missing from every mast comp — this is the single largest known gap in this baseline.",
+      "⛑ skill1's trigger is 2 CRITICAL hits with normal attacks; the schema's `hitCount` cannot filter for crits, so count is a crit-rate-derived round count (see flags). It affects only whether the Sea Breeze window is open, not any magnitude.",
+      "⛑ skill2 is encoded as a `passive` trigger carrying durationSec 30 to express \"at the start of battle … for 30 sec\". If the engine re-applies passive blocks continuously rather than once at setup, this would become a whole-fight crit-rate buff and OVER-credit the team — verify against a buffApply/expiresFrame read before trusting it.",
+      "Storm ticks are left DoT-default non-crit and Full-Burst-by-timing (no `noFb`), per the standing conventions — both are unmeasured for this unit.",
+      "The burst Max HP grant is recorded for kit completeness; ally-granted Max HP does not feed a teammate's HP→ATK conversion, so only the self block can ever be offensively live."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. mast is an SMG/Electric/Supporter/Burst II crit enabler with an enemy-DEF-shred status. skill1 stamps the named status Sea Breeze on the boss off normal-attack crits (status window modeled; the caster-DEF-scaled flat DEF ▼ has no schema channel and is unmodeled), plus an HP-threshold crit-damage branch that the sim cannot express. skill2 is a battle-start 30-sec Critical Rate ▲ 23.56% to self + the 2 highest-final-ATK other allies (split into a self block and an alliesTopAtk/excludeSelf/byFinalAtk block — the schema has no single \"self and N others\" target). The burst repeats that target split for a 7-sec Max HP + Critical Damage grant and adds Storm, a 1-sec-interval 7-tick DoT gated on the Sea Breeze status whose per-tick magnitude scales with the live stack count — shipped as a static stack-count estimate.",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after landing 2 critical hit",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount count 13 ⛑ — crit-count trigger approximated as a round count = 2 / base crit rate; schema has no crit-filtered trigger"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects the target(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy (required by the validator for targetStatus)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Sea Breeze: (named status, 3 sec)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "targetStatus name 'Sea Breeze' durationSec 3 — opens the requiresTargetStatus gate the burst's Storm rider reads"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▼ 1.9% of the skill user's DEF",
+      "status": "SKIPPED",
+      "effectOrReason": "no schema channel: a flat enemy-DEF reduction scaled by the CASTER's DEF. defPct is self-scoped/inert and buff effects on an `enemy` target resolve to an empty set. Under-credits the team. Verbatim in unmodeled.skill1"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "stacks up to 50 time(s)",
+      "status": "SKIPPED",
+      "effectOrReason": "stack cap belongs to the unmodeled DEF ▼ magnitude; the status window itself is binary. The stack count IS consumed by the burst's Storm rider as a ⛑ estimate"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when HP falls below 70%",
+      "status": "SKIPPED",
+      "effectOrReason": "no HP pool and no HP-threshold trigger in the sim; encoding it as `passive` would credit the buff from t=0 for the whole fight (fudge). Flagged, verbatim in unmodeled.skill1"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Damage ▲ 50.94% continuously",
+      "status": "SKIPPED",
+      "effectOrReason": "effect of the unreachable HP<70% branch above — largest known gap in this baseline"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates at the start of battle.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger passive (fires at setup) carrying the 30-sec duration on the buff"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects self and 2 ally … (except user)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "split into target self + target alliesTopAtk{count:2, excludeSelf:true, byFinalAtk:true} — kit says 'highest FINAL ATK', so live-ATK ranking"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Rate ▲ 23.56% for 30 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 23.56 durationSec 30 on both blocks — unscoped in the prose (no 'of normal attacks'), so generic critRatePct, not critRateNormalPct"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self and 2 ally … (except user)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "same self + alliesTopAtk{2, excludeSelf, byFinalAtk} split, trigger burstCast"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max HP ▲ 86.2% of skill user's Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterMaxHpPct 86.2 durationSec 7 ('of the skill user's Max HP' ⇒ caster-scaled, not targetMaxHpPct); 'without restoring HP' is inherent (no HP restore modeled)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Critical Damage ▲ 25.19% for 7 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 25.19 durationSec 7 on both target blocks"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects target(s) afflicted w/ Sea Breeze",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "block gate requiresTargetStatus 'Sea Breeze' on the Storm block — name-keyed, so no other kit's status can open it"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Storm: Deals 4.52% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "dot atkPct 22.6 ⛑ = 4.52 × 5 estimated Sea Breeze stacks; left crit-default-off and FB-by-timing (no noFb) per convention"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Mirrors stacks every 1 sec for 7 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "dot durationSec 7 intervalSec 1 (7 ticks). The per-tick stack scaling is folded into the ⛑ atkPct — a perResource pool cannot express a 3-sec-decaying stack count"
+    }
+  ],
+  "flags": [
+    {
+      "field": "burst[2].effects[0].atkPct",
+      "estimate": "22.6 (= 4.52% × ~5 Sea Breeze stacks)",
+      "reasoning": "Storm's magnitude mirrors the live Sea Breeze stack count, which is a steady state, not the 50 cap: stacks are gained per 2 normal-attack crits and each expires after 3 sec. At an SMG cadence of ~20 rounds/s with ~76% fire uptime (120 ammo, 111f reload) and a ~15% base crit rate, that is ~1.5 stacks/s → ~4–5 concurrent. Inside her own skill2 window (first 30 sec, crit ~38.6%) it roughly doubles to ~10–12, so early bursts mirror far more stacks than late ones; ~5 is the rotation-weighted middle over a 180-sec fight. Both the cadence and the crit rate feeding this are themselves unmeasured.",
+      "recipe": "Record a fight with mast bursting; in the 7 sec after her burst banner, read the 7 Storm popups and divide each by a same-frame normal-hit popup scaled to 4.52%/8.73% of the normal multiplier — the quotient IS the mirrored stack count per tick. Confirm the early-vs-late asymmetry by comparing her first burst (inside the skill2 crit window) against a burst after t=60s; if the two differ materially, the static atkPct must be replaced by a per-tick dynamic read rather than retuned."
+    },
+    {
+      "field": "skill1[0].trigger.count",
+      "estimate": "hitCount count 13",
+      "reasoning": "The kit trigger is 2 CRITICAL hits with normal attacks; the schema's hitCount counts all rounds and cannot filter crits, so count = 2 / crit rate. At ~15% base crit that is ~13 rounds; inside her own skill2 crit window it would be ~5. At SMG cadence 13 rounds is ~0.65 sec, so the Sea Breeze window is effectively continuous while she fires and this value is near-inert for the burst gate — it would only matter if a future model made the stack count itself dynamic.",
+      "recipe": "Not worth a dedicated measurement while Sea Breeze is used only as a binary gate. It becomes load-bearing the moment the DEF ▼ or a dynamic Storm stack count is modeled — at that point derive it from the sheet crit rate at scope lock rather than measuring, and verify by checking that the status never lapses during a firing window in footage."
+    },
+    {
+      "field": "skill1 — HP<70% branch (absent from the override)",
+      "estimate": "If measured to fire, encode as two blocks (target self / alliesTopAtk{2,excludeSelf,byFinalAtk}) with buff critDamagePct 50.94 and NO durationSec ('continuously'), on trigger {kind:'interval', sec:≈45} so the buff switches on at the measured drop time and then persists.",
+      "reasoning": "The sim models no incoming damage, so no unit's HP ever falls, and there is no HP-threshold trigger primitive. The two available encodings are both wrong in a known direction: `passive` credits +50.94% crit damage to three units for the full 180 sec (a large unearned buff), and omission credits none of it. Faithful > fit, so this baseline omits it and flags it rather than shipping the optimistic reading. The interval-trigger form above is the only way to express a mid-fight switch-on, and its `sec` would be a measured value, not a guess.",
+      "recipe": "From raid footage, timestamp the frame mast's HP bar first crosses 70% (and whether it does so at all under scope-lock conditions). If it never crosses, the omission is CORRECT and should be recorded as such. If it crosses at time T, land the interval encoding with sec=T and re-run the board A/B — note this changes three units' crit damage, so it is a rotation-wide movement, not a mast-only one."
+    },
+    {
+      "field": "skill1 — Sea Breeze DEF ▼ (absent from the override)",
+      "estimate": "Unmodelable in the current schema. Real magnitude at cap = 50 × 1.9% = 95% of mast's own DEF subtracted flat from boss DEF.",
+      "reasoning": "The reduction is scaled by the CASTER's DEF and applied to the enemy, and the boss-DEF term sits in the damage formula for every unit — so this is a team-wide damage lift, the opposite of a skippable defensive line. No StatKey expresses it: defPct is self-scoped and documented inert, and buff effects targeting `enemy` resolve to an empty target set (only the boss-held damageTakenPct path special-cases the boss). Re-expressing it as damageTakenPct would be a fudge, since converting a flat DEF subtraction into a damage-taken percentage requires the boss's DEF value and the formula's DEF term, neither of which is being measured here.",
+      "recipe": "Two-part. (1) Derive the ceiling: with mast's DEF from the scope-lock class table and the boss DEF constant, compute what a 95%-of-caster-DEF subtraction does to the formula's DEF term — if the shift is below the noise floor the gap is academic and should be recorded as such. (2) If material, measure directly: same comp, same teammate, compare that teammate's normal-hit popup values before mast's first crit (no stacks) against values during sustained fire (stacks up), holding buff state constant — the popup ratio backs out the effective DEF reduction. That measurement, not this baseline, is what would justify adding an enemy-DEF channel to the schema."
+    },
+    {
+      "field": "base weapon cadence tuple (SMG, 120 ammo, 111f reload)",
+      "estimate": "~20 effective rounds/s",
+      "reasoning": "Mandatory ⛑: datamined rate_of_fire and reloadFrames are known-unreliable fields, and a nominal rate is not the effective rate because the game fires on 60fps frame boundaries. Everything in this baseline that depends on shots-per-second — the hitCount trigger translation and, through the stack steady state, the entire Storm magnitude — inherits this uncertainty.",
+      "recipe": "Read the ammo counter across a full magazine in footage (rounds spent per second measures the disputed quantity directly, unlike full-burst counts which are downstream of gauge). Confirm against the existing SMG cadence pins in the repo before deriving anything new."
+    },
+    {
+      "field": "burst[2].effects[0] — Storm crit + Full Burst treatment",
+      "estimate": "non-crit (schema default); Full Burst applied by tick timing (no noFb)",
+      "reasoning": "Per convention DoT ticks are validated non-crit on most carriers and crit is opt-in only where measured, and function-damage riders take Full Burst by landing timing with noFb default OFF and measured-only. Storm is cast at burst time but runs 7 sec, so its later ticks land inside the Full Burst window and currently receive the +50% major — that is the default, not a finding.",
+      "recipe": "In the same footage used for the magnitude read, check Storm popup colour (orange + icon = crit) across the 7 ticks, and compare the in-FB ticks against the out-of-FB ticks for a ~1.5× step. Only set crit:true or noFb:true if the footage shows it."
+    }
+  ],
+  "model": "claude-opus-5"
+}

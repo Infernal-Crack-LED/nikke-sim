@@ -1,0 +1,74 @@
+{
+  "slug": "neve",
+  "kitDescription": "Neve is a Water shotgun Burst-III attacker whose kit is entirely self-contained. On a 10-second internal cooldown she automatically fires a bonus hit at the enemy with the lowest remaining HP for 145.45% of her final ATK. Every time the team enters Full Burst she gains Pierce and a 124.8% ATK buff, each lasting for her next 2 shots. Her own burst is a pure self-buff: for 20 seconds after casting she gains 31.95% Critical Rate and 22.04% Hit Rate, the latter sharpening her shotgun pellet grouping onto the boss core. She deals no burst-cast damage of her own.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "Blind line 353: others(hitRateZero).toEqual(others(base)) — asserts perfect teammate-total isolation when neve's SELF hitRatePct is zeroed. FALSE-RED: the engine's deterministic EV path couples SG hitRate->core-geometry into teammate totals by <0.5% (neve base 219.3M / hrZero 202.7M; critZero's others() passes, isolating the coupling to the SG-core path). The buff itself is proven self-only by two independent pins (blind 'both buffs are self-only' PASSED; driver N6 targetIdx===NEVE PASSED). This is a blind over-assertion / engine EV artifact, not a driver divergence."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Affects 1 enemy lowest HP; 145.45% dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval sec:10 (DATAMINED skillCooldownsSec.skill1=10), target {kind:'enemy'}, bare flatDamage atkPct:145.45 (engine rider defaults: crit-eligible, no core, skill bucket, FB-by-landing-timing); lowest-HP clause moot on the single partless boss, documented in note+caveats; first-fire phase t=10 is the flagged engine convention ⚑",
+        "blindSaid": "S6: identical trigger/magnitude but target {kind:'self'} (mis-scope, damage-neutral since flatDamage always resolves to the boss) and explicit crit:true (equivalent to the engine default). S5: pins interval/enemy/145.45/no-core/no-flavor structurally, liveness + linear scaling behaviourally; cadence and lowest-HP selection it.skip'd as ALWAYS-⚑ — all PASSED vs the driver override",
+        "formulaCheck": "Function-type skill damage per damage-calculation.md §2b/§1b: crit at caster rate (default on), never core, noRange, FB by landing timing — the driver's bare flatDamage matches the SSOT table exactly; interval trigger matches the owner-stated internal-cooldown mechanic for clause-less lines",
+        "fireRateOk": true,
+        "explanation": "Driver is the most faithful of the three derivations (correct enemy target where the blind used self). N2 pins the wall-clock 10s grid: first fire at frame 600, constant 600f gaps, ~18 fires — the rider FIRES at the prose-implied cadence. N1 discriminates the level-10 magnitude against the 63.63 counterfactual. The blind target mis-scope is a RECON_ERROR for S6, not a driver finding."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Entering Full Burst; ATK ▲124.8% 2 rd",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter / self / atkPct 124.8 / durationShots:2 with NO wall-clock expiry — round-count semantics per game-mechanics.md §11 (durationShots, implemented 2026-07-23); fires on EVERY team FB, proven by count === FB count > neve cast count on the dual-B3 fixture",
+        "blindSaid": "S6 identical (atkPct 124.8, durationShots:2, fullBurstEnter, self). S5: pins value/target/durationShots, count === FB_STARTS, and demonstrates the burstCast re-key and seconds-encoding counterfactuals both fail — all PASSED",
+        "formulaCheck": "Round-scoped window per §11 buff-window rules: ends after the holder fires N bullets, stretches across reloads; durationShots:2 is the correct primitive and atkPct (not casterAtkPct) matches plain 'ATK ▲' phrasing in the FinalATK bucket",
+        "fireRateOk": true,
+        "explanation": "All three derivations converged identically. Discriminated on BOTH named nearest-wrong models: driver N3 proves the timed-seconds counterfactual carries expiresFrame and the burstCast re-key collapses the application count to neve's own casts. The dual-B3 controlComp is what makes fullBurstEnter-vs-burstCast separable — correctly exercised."
+      },
+      {
+        "kitLine": "Entering Full Burst; Pierce 2 round(s)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "gainPierce durationSec:2 on the fullBurstEnter block — flagged ⚑ rounds→seconds estimate (schema has no round-count primitive for gainPierce), recipe in caveats (read SG pull cadence from footage); damage-INERT at scope lock, proven byte-identical totals with the effect removed; NEVER top-level hasPierce",
+        "blindSaid": "S6: same approach, durationSec 2.4 — equivalently flagged ⚑, trivially different estimate, damage-identical. S5: shape assertions (gainPierce on the FB-enter block, no top-level hasPierce) PASSED; round-count expiry and damage contribution it.skip'd (no primitive / no carrier) — 1:1 with the driver's dispositions",
+        "formulaCheck": "game-mechanics.md §11: gainPierce windows tag shots for the DamageUp Pierce term; pierceDamagePct is inert in v1 and no Pierce Damage ▲ carrier exists in the comp, so the estimate moves zero damage; the ade-agent-bunny whole-fight hasPierce failure shape is correctly avoided",
+        "fireRateOk": true,
+        "explanation": "The round-count pierce window is genuinely inexpressible (no durationShots on gainPierce) — a missing-primitive GAP, documented with an estimate + recipe per non-negotiable #2, not a fudge. The 2 vs 2.4 delta between driver and blind is noise inside a flagged, damage-inert estimate. Faithful fallback, correctly recorded."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Self; Critical Rate ▲31.95% 20 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast / self / critRatePct 31.95 / durationSec:20 — UNSCOPED (no 'of normal attacks' qualifier in prose), so it also lifts the S1 rider's crit roll; fires only on neve's own casts, count === burstCast count < FB count",
+        "blindSaid": "S6 identical block. S5: pins value/self/20s/burstCast-count, rejects critRateNormalPct scoping, expiry shared with the hitRate line — all PASSED",
+        "formulaCheck": "critRate joins the Major bucket additively per §1b; unscoped rate (not critRateNormalPct) is correct since the prose lacks the normal-only qualifier; burstCast trigger matches the burst-button self-buff, distinct from the FB-entry aura per the §8 timing rules",
+        "fireRateOk": true,
+        "explanation": "Converged identically across all three derivations. Discriminated on both nearest-wrong models: driver N5 proves the fullBurstEnter re-key over-credits to the FB count and the scoped critRateNormalPct emits no critRatePct. Zeroing the buff provably lowers neve's total (S5) while leaving teammates unmoved."
+      },
+      {
+        "kitLine": "Self; Hit Rate ▲22.04% for 20 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast / self / hitRatePct 22.04 / durationSec:20 — a real primitive feeding the live UNIGEO Hit-Rate→core geometry (R(hr) shrink; SG ACR per landed pellet), NOT defensive, NOT skippable; conversion MAGNITUDE flagged measured-only ⚑, test pins application not a core-rate delta",
+        "blindSaid": "S6 identical block. S5: pins value/self/20s/count and that zeroing lowers neve's total (PASSED); the Hit-Rate→core magnitude it.skip'd as measured-only — 1:1 with the driver. The only S5 RED sits here and is a false-red (perfect teammate isolation over-assertion vs the engine's EV coupling)",
+        "formulaCheck": "§1b/§7 UNIGEO: R(hr) shrinks linearly with Hit Rate, raising SG core-per-landed-pellet — strictly damage-positive on a 200% core multiplier, matching the observed 219.3M vs 202.7M zeroed delta; hitRatePct is the correct stat and burstCast/self/20s matches the prose",
+        "fireRateOk": true,
+        "explanation": "The line is LIVE and correctly scoped — zeroing it moves neve's total in the right direction. The sole S5 RED is a blind over-assertion: the <0.5% teammate coupling is a deterministic-EV geometry artifact (only the hitRate→SG-core path couples; critZero passes the same isolation check), not a buff leak — the buff's self-only scope is independently proven by two passing pins. RECON_ERROR on the blind side, not a driver gotcha."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": 1,
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: all 5 load-bearing kit lines are FAITHFUL (4) or DOCUMENTED_GAP (1 — the gainPierce round-count window, a missing schema primitive flagged ⚑ with a recipe and proven damage-inert byte-identically). The driver's encoding is at least as faithful as both blind re-derivations on every line and strictly more faithful on S1 (correct {kind:'enemy'} target where S6 mis-scoped self — a blind RECON_ERROR, damage-neutral). The single RED in the S5-vs-driver run is a classified FALSE-RED: a blind over-assertion of perfect teammate isolation against the engine's deterministic-EV SG-core-geometry coupling (<0.5%), with the buff's self-only scope independently proven by two passing pins — not a divergence. Discrimination holds on every named nearest-wrong model: level-1 S1 magnitude, passive S1 trigger, seconds-for-rounds S2 duration, burstCast S2 re-key, whole-fight hasPierce shape (via the S5 shape pin, which the driver's own N4 inertness test does not by itself discriminate — acceptable since the blind suite covers it), fullBurstEnter burst re-key, and normal-scoped crit. Same-model residuals the owner should spot-check: (a) the S1 interval first-fire phase (t=10) is a standing ⚑ engine convention, never popup-verified for this unit; (b) the gainPierce 2s estimate is unmeasured (recipe recorded); (c) the <0.5% EV teammate-coupling artifact that produced the false-red is worth an owner note as a known test-design trap for future SG hitRate kits, but it is engine-side and out of scope for this unit's GO.",
+  "model": "kimi-code/k3"
+}

@@ -1,0 +1,172 @@
+{
+  "slug": "n102",
+  "leakDetected": null,
+  "override": {
+    "slug": "n102",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 1,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "maxAmmoFlat",
+            "value": 3,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 10.34,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 10
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 1,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "chargeDamagePct",
+            "value": 25.84,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 25.86,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1 trigger: the kit says 'when performing a Full Charge attack'; there is no full-charge TriggerDef, so it is keyed to shotFired on the assumption that every RL trigger pull is a full charge (chargeFrames 90). If the engine ever fires an uncharged RL shot, this over-fires.",
+      "⚑ skill2 trigger + cadence are INVENTED: the prose carries no activation clause, so it is modeled as interval sec 10 (a 5 s buff on an unstated cooldown ⇒ ~50% uptime). The real cooldown is datamined, not in the kit text.",
+      "⚑ cadence tuple (reloadFrames 141 / chargeFrames 90 / 6 ammo) is datamine-sourced and known-unreliable; it drives how often the skill1 refresh lands.",
+      "skill1 refreshes on every full charge, so on a fight where n102 fires freely the 10 s Max Ammo +3 / Crit DMG +10.34% buff is effectively continuous on the top-ATK ally — the 10 s duration only bites during long idle/burst-cast gaps.",
+      "Target pools do NOT exclude self (no 'except self' in the prose), so n102 can be her own skill1/skill2 target if she has the highest final ATK.",
+      "Both single-target lines rank by LIVE effective ATK (byFinalAtk) because the prose says 'highest final ATK' literally."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. n102 (RL/Water/Supporter/Burst I) is modeled as a pure single-target + team ATK support with no damage riders. skill1 fires on each full-charge shot and grants the highest-final-ATK ally Max Ammunition +3 (flat rounds — a weapon-state/shot-count modifier, so it IS damage) and Critical Damage +10.34%, both 10 s. skill2 grants the same single ally Charge Damage +25.84% for 5 s; the kit text gives NO activation clause, so it is keyed to an interval trigger with a ⚑ estimated 10 s cadence. The burst grants all allies (self included) ATK +25.86% for 10 s on burst cast. Nothing in the kit is a damage line, a DoT, a weapon swap, a stack/currency pool, a heal/shield, or a Hit-Rate line, so no noFb / core / pierce / resource machinery applies."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when performing a Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'shotFired'} — RL with chargeFrames 90; each trigger pull is treated as one full-charge shot. ⚑ no full-charge TriggerDef exists in the schema."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects the 1 ally with highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesTopAtk', count:1, byFinalAtk:true} — 'final ATK' is literal, so live effectiveAtk ranking; no excludeSelf clause in the prose."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Max Ammunition Capacity ▲ 3 for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff maxAmmoFlat 3, durationSec 10 — '▲ 3' is a FLAT round count, not a percent; weapon-state modifier that raises shots per magazine (HARD RULE: never skipped as defensive)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Damage ▲ 10.34% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 10.34, durationSec 10 — unscoped in the prose (no 'of normal attacks'), so generic crit damage."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects 1 ally with highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesTopAtk', count:1, byFinalAtk:true} — same pool as skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Charge Damage ▲ 25.84% for 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeDamagePct 25.84, durationSec 5 (additive points in the charge bucket) on trigger {kind:'interval', sec:10}. ⚑ trigger + cadence invented — prose has no activation clause."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} — self included (no 'except self')."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 25.86% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 25.86, durationSec 10 on trigger {kind:'burstCast'} — target-scaled ATK%, not casterAtkPct (prose says plain 'ATK ▲ x%')."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "{kind:'shotFired'} — fires once per trigger pull (~1 per charge+fire cycle, chargeFrames 90 ≈ 1.5 s + release latency)",
+      "reasoning": "The kit's activation is 'performing a Full Charge attack'; the TriggerDef vocabulary has no full-charge kind. For an RL every shot is charge-released, so shotFired is the closest 1:1 mapping. chargeCounter{count:1} is the alternative but its per-phase effects[] semantics are wrong for a flat single-effect buff. Risk: if the engine can emit a non-full-charge RL shot, this over-fires; with a 10 s duration and a ~2 s cycle the buff is refresh-saturated either way, so the error is bounded to the first application's timing.",
+      "recipe": "Instrument buffApply events for stat maxAmmoFlat/critDamagePct in a control comp; count applications vs n102's shot count in the shot event stream. If the engine ever emits an RL shot without a full charge, re-key to chargeCounter{count:1} and compare application counts."
+    },
+    {
+      "field": "skill2[0].trigger",
+      "estimate": "{kind:'interval', sec:10} → 5 s of 25.84% Charge Damage per 10 s ≈ 50% uptime on the top-ATK ally",
+      "reasoning": "ALWAYS-⚑ case 2: the prose carries NO activation clause for skill2, so per the methodology it defaults to interval — but the period is not in the kit text. 10 s is a generic support-skill cooldown guess giving a clean 50% duty cycle against the stated 5 s duration; it is NOT derived. If the true cooldown is shorter the buff approaches permanent; if longer, uptime drops proportionally. First-fire phase (t=sec vs t=0) is also a convention, not a measurement.",
+      "recipe": "Read the datamined skillCooldownsSec entry for n102 skill2 and set sec to it (first-fire t=sec for an interval-shaped skill, t=0 only if the kit force-casts). Cross-check against footage: count Charge Damage buff icon appearances on the focused ally over a 180 s fight — N appearances ⇒ period ≈ 180/N."
+    },
+    {
+      "field": "cadence tuple (base stats)",
+      "estimate": "reloadFrames 141 (2.35 s), chargeFrames 90 (1.5 s), ammo 6, hitsPerShot 1 — as datamined",
+      "reasoning": "ALWAYS-⚑ case 1: rate_of_fire / reloadFrames are known-unreliable datamine fields. For n102 they are load-bearing indirectly — they set how often the skill1 full-charge trigger fires, and therefore the refresh cadence of both ally buffs. They do not affect the buff magnitudes.",
+      "recipe": "Ammo-counter read from footage: time a full 6-round magazine plus reload on n102 and compare shots/sec and reload duration to the datamined values (the ammo counter measures the disputed quantity directly, unlike FB-count-derived estimates)."
+    },
+    {
+      "field": "skill1/skill2 target byFinalAtk",
+      "estimate": "byFinalAtk: true on both alliesTopAtk targets",
+      "reasoning": "The prose says 'highest FINAL ATK' literally, which per the A3 rule means live effectiveAtk ranking rather than static base ATK. This is a literal read, but it makes the target set DYNAMIC — n102's own burst ATK ▲25.86% is uniform across allies so it does not reorder, yet another support's single-target ATK buff could flip which ally receives skill1/skill2 mid-fight.",
+      "recipe": "Log buffApply targetSlug for stat maxAmmoFlat across a comp containing a single-target ATK buffer; confirm the recipient switches when the other buffer's window opens. If it never switches under byFinalAtk, the flag is cosmetic."
+    },
+    {
+      "field": "override.burst[0].effects[0].stat",
+      "estimate": "atkPct 25.86 (target-scaled), NOT casterAtkPct/highestAllyAtkPct",
+      "reasoning": "The prose is a bare 'ATK ▲ 25.86%' with no 'of the caster's ATK' / 'of the highest ally's ATK' qualifier, so it scales each recipient's own ATK. Getting this wrong would be a large magnitude error on a Supporter (n102's own ATK 98,367 at scope-lock vs an Attacker's 118,027).",
+      "recipe": "No measurement needed if the prose is complete — but confirm against the datamined function type (buff_atk vs buff_atk_by_caster) before treating the burst magnitude as settled."
+    }
+  ],
+  "model": "claude-opus-5"
+}

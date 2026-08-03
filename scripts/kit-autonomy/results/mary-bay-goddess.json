@@ -1,0 +1,65 @@
+{
+  "slug": "mary-bay-goddess",
+  "kitDescription": "Mary: Bay Goddess is a Water Burst-I supporter whose own damage is negligible; her value is team support. Each time the team enters Full Burst she heals all allies over 5 seconds, and the heal strengthens with each subsequent Full Burst entry (all earlier tiers keep firing alongside the new one). Each time she personally casts her Burst Skill, she grants all Water-Code allies an escalating Elemental-Advantage Attack Damage buff (20.85%/3s, then adding 13.88%/5s, then 8.36%/10s, stacking cumulatively). Her burst itself gives Water-Code allies +23.23% ATK for 3 seconds and raises every ally's Max HP by 27.87% of her own Max HP for 10 seconds. All of her buffs are scoped: the offensive lines reach Water allies only, the HP line reaches everyone.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S2 + burst fire on mary's OWN burst cast, never on team Full-Burst entry (run-A zero-emission assertion)",
+      "S1 (Full-Burst entry) grants NO stat buff — it is a heal only (run-A mary-casterIdx zero assertion)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates when entering Full Burst",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → all allies → escalating[3× heal ticks:5/intervalSec:1]; counter counts team FB entries; heal magnitude event-only (no HP pool), assertable surface is recovery-event count 5/10/15",
+        "blindSaid": "S5 structural assertions pass (escalating, 3 heals, ticks:5/1s, allies, no stat buffs, no burstCast trigger); S6 override JSON-equal; S5 skips magnitude + on-recovery tandem as honest GAPs",
+        "formulaCheck": "Heal carries no damage instance, so no bucket routing applies; escalating-applies-steps-1..N matches 'each subsequent effect triggers all effects before it'; fullBurstEnter (any team FB) matches the literal 'when entering Full Burst' clause and is distinct from S2's burst-use counter",
+        "fireRateOk": true,
+        "explanation": "Structure, trigger identity, target set, tick cadence, and the escalating ramp all match the prose. The 1.05/3.69/6.86% magnitudes are unrepresentable (no HP pool) — documented in driver caveats and S5's it.skip, a DOCUMENTED-GAP inside an otherwise faithful line. Driver's M1 group pins the 5→10→15 recovery-event ramp through Crown's on-recovery consumer with crown/helm heals patched out (proper isolation fixture), and discriminates against instant-heal, single-heal, and no-S1 counterfactuals."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when using Burst Skill",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → alliesOfElement Water (incl. self) → escalating[elemAdvantageDamagePct 20.85/3s, 13.88/5s, 8.36/10s] as separate co-active buffs; distinct counter from S1",
+        "blindSaid": "S5 wave analysis confirms cumulative tiers {20.85}→{13.88,20.85}→{8.36,13.88,20.85}, exact 3/5/10s durations, Water-only targets, damage-live vs Fire; S6 JSON-equal",
+        "formulaCheck": "elemAdvantageDamagePct is the advantage-gated stat (SSOT §1c/§10 — see rationale for the element-vs-DamageUp bucket doc tension, magnitude-only); live vs Fire boss, inert vs neutral — driver pins both arms (Iron-boss byte-identical inertness); burstCast keying matches 'when using Burst Skill' (her own cast, not team FB entry)",
+        "fireRateOk": true,
+        "explanation": "Trigger identity, escalation semantics (cumulative steps 1..N, cap 3), per-tier values and durations, and Water scoping all match the prose exactly. Driver's counterfactuals (single-tier, unscoped, no-S2, Iron boss) each go RED under the named nearest-wrong. The two S5 reds touching this line are fixture-premise artifacts (see gotchas/rationale), not encoding defects — all eight substantive S5 assertions on this line pass."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "ATK ▲ 23.23% for 3 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → alliesOfElement Water → atkPct 23.23/3s; plain 'ATK ▲' = percent of recipient's own ATK, kept as a separate block from the all-allies HP clause",
+        "blindSaid": "S5 confirms value 23.23, 180f duration, Water-only targets (incl. self), damage-live, non-Water byte-identical under zeroing; S6 JSON-equal",
+        "formulaCheck": "atkPct sums into the (1+ΣATK%) multiplier on each recipient's staticAtk per §1a — correct bucket for plain 'ATK ▲ x%'; 3s duration means only ~1.1s overlaps the FB window given the measured 30/30/30/22f chain timing — the driver ships exactly 3s, no padding",
+        "fireRateOk": true,
+        "explanation": "Value, duration, scope, and trigger all match the prose; the two ■ blocks are correctly not conflated (Water-only/3s here vs all-allies/10s on the HP line). Discriminating counterfactual (unscoped → reaches all 4 allies) is pinned."
+      },
+      {
+        "kitLine": "Max HP ▲ 27.87% of the skill user's",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → all allies → casterMaxHpPct 27.87/10s → engine emits one identical flat maxHpFlat per recipient; damage-inert (feeds atkOfMaxHpPct only on self-grant; Mary has no consumer)",
+        "blindSaid": "S5 confirms single shared flat value across all recipients, 5-target set, 600f duration, 7s expiry offset vs the 3s ATK buff from the same cast, offensive inertness (zero-HP run byte-identical); S6 JSON-equal",
+        "formulaCheck": "'X% of the skill user's final Max HP' = caster-scaled flat grant per the caster-ATK/caster-HP conversion rule (§1a); ally-granted Max HP does not feed teammates' HP→ATK conversions (SSOT, measured Cinderella rule) — the driver's inertness note matches",
+        "fireRateOk": true,
+        "explanation": "Caster-scaling, all-ally targeting, and 10s duration all match the prose; the targetMaxHpPct nearest-wrong is pinned (per-target distinct values). Retained for kit completeness with the inertness documented — correct handling of a defensive line."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. All four load-bearing kit lines are FAITHFUL: triggers (fullBurstEnter vs burstCast — two genuinely distinct escalating counters), targets (Water-only S2/ATK vs all-allies S1-heal/HP), values, durations, and escalation semantics (cumulative steps 1..N, cap 3) match the prose, and every line fires at its prose cadence over 180s (9 FB entries for S1; >2 own casts for S2/burst, fixture-sanity-asserted). Convergence is strong where it counts: the S6 blind override is byte-equal to the driver's, and 8/8 substantive S5 assertions pass against the shipped override. The mechanical S5 run is RED on 2 assertions, but both trace to a single blind fixture-premise error — the assumption that liter monopolizes every B1 window in controlComp so Mary never casts — which the engine disproves (both B1s cast alternately; Mary casts 7×). That is a RECON_ERROR in the blind test, not a driver divergence; the driver's own fixture (Mary as sole B1) is the design S2b's note 1 explicitly demanded. The heal-magnitude ladder (1.05/3.69/6.86%) is a documented gap (no HP pool; recovery-event count preserved), flagged by driver, S5 (it.skip), and S6 alike. Discrimination is genuine: the driver ships counterfactual arms for every nearest-wrong (single-tier, unscoped ×2, targetMaxHpPct, instant-heal, single-heal, no-S1, Iron-boss inertness), and S2d shows the suite RED before the override existed. Same-model residuals the owner should spot-check: (1) the SSOT's internal tension on elemAdvantageDamagePct bucket placement (damage-calculation.md §1c places it in the element multiplier; game-mechanics.md §10 and the driver note say Damage-Up) — behavior tested here is identical under either, the divergence is stacking-magnitude-only and owner/measurement-gated; (2) S6's ⚑ that same-caster same-stat escalating steps could overwrite rather than co-stack — empirically refuted in this run (all three tier values and durations observed co-active, per-FB recovery count reaches ≥10), so the bar is met, but it is the kind of engine-shared prior worth one glance; (3) the driver's own datamine cadence ⚑s (pullsPerSec, reloadFrames 111, bolt-gap) affect only her negligible personal damage.",
+  "model": "kimi-code/k3"
+}

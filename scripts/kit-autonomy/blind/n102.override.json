@@ -1,0 +1,85 @@
+{
+  "slug": "n102",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoFlat",
+          "value": 3,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 10.34,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 10
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 25.84,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 25.86,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill1 trigger: the kit says 'when performing a Full Charge attack'; there is no full-charge TriggerDef, so it is keyed to shotFired on the assumption that every RL trigger pull is a full charge (chargeFrames 90). If the engine ever fires an uncharged RL shot, this over-fires.",
+    "⚑ skill2 trigger + cadence are INVENTED: the prose carries no activation clause, so it is modeled as interval sec 10 (a 5 s buff on an unstated cooldown ⇒ ~50% uptime). The real cooldown is datamined, not in the kit text.",
+    "⚑ cadence tuple (reloadFrames 141 / chargeFrames 90 / 6 ammo) is datamine-sourced and known-unreliable; it drives how often the skill1 refresh lands.",
+    "skill1 refreshes on every full charge, so on a fight where n102 fires freely the 10 s Max Ammo +3 / Crit DMG +10.34% buff is effectively continuous on the top-ATK ally — the 10 s duration only bites during long idle/burst-cast gaps.",
+    "Target pools do NOT exclude self (no 'except self' in the prose), so n102 can be her own skill1/skill2 target if she has the highest final ATK.",
+    "Both single-target lines rank by LIVE effective ATK (byFinalAtk) because the prose says 'highest final ATK' literally."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. n102 (RL/Water/Supporter/Burst I) is modeled as a pure single-target + team ATK support with no damage riders. skill1 fires on each full-charge shot and grants the highest-final-ATK ally Max Ammunition +3 (flat rounds — a weapon-state/shot-count modifier, so it IS damage) and Critical Damage +10.34%, both 10 s. skill2 grants the same single ally Charge Damage +25.84% for 5 s; the kit text gives NO activation clause, so it is keyed to an interval trigger with a ⚑ estimated 10 s cadence. The burst grants all allies (self included) ATK +25.86% for 10 s on burst cast. Nothing in the kit is a damage line, a DoT, a weapon swap, a stack/currency pool, a heal/shield, or a Hit-Rate line, so no noFb / core / pierce / resource machinery applies."
+}

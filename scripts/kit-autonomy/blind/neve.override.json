@@ -1,0 +1,84 @@
+{
+  "slug": "neve",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 10
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 145.45,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 2.4
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 124.8,
+          "durationShots": 2
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 31.95,
+          "durationSec": 20
+        },
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 22.04,
+          "durationSec": 20
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill1 cadence INVENTED: the kit line carries no activation clause, so it is modeled as an interval trigger at an unmeasured 10s. Every skill1 damage number scales linearly with this guess.",
+    "⚑ skill2 Pierce window is a ROUND count (2 rounds) but gainPierce has no round-count field; the 2.4s durationSec is a shots→seconds conversion off an unmeasured SG cadence.",
+    "⚑ Hit Rate ▲22.04% → core-rate lift goes through the engine's hrCoreMult derivation; the damage magnitude of the conversion is unmeasured for this unit.",
+    "⚑ SG pellet split-vs-merge (hitsPerShot 10) is kit-silent and left to the engine's SG landing path; not verified against popups.",
+    "noFb deliberately NOT set on the skill1 rider (FB-by-timing default ON) — noFb is measurement-only.",
+    "The skill2 ATK buff is keyed to fullBurstEnter (any team Full Burst) per the literal activation text, NOT to Neve's own burst cast."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Neve (SG/Water/Attacker/B3, cd 40s, ammo 9, hitsPerShot 10) is modeled as: S1 a single-target 145.45%-of-final-ATK rider on an invented 10s interval (the kit line states no trigger); S2 a Full-Burst-entry self package — Pierce plus ATK ▲124.8%, both bounded by a 2-ROUND count (the ATK buff uses durationShots:2, one round = one SG trigger pull, so it survives at most two shots and can span a reload); burst a pure self-buff cast with Critical Rate ▲31.95% and Hit Rate ▲22.04% for 20s, no burst damage component. The S1 rider is crit-eligible at the caster's sheet rate and takes no core (the text says plain damage, not core strike) and no range bonus (engine-automatic). Pierce is windowed via a gainPierce effect rather than the whole-fight hasPierce flag, since the kit grants it only inside the post-FB-entry round window."
+}
