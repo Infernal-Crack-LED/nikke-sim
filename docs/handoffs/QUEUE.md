@@ -118,32 +118,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Engine / model threads (measurement- or owner-gated)
 
-- **⇒ BUFFER BOARD: one-CDR-enabler rule is BUILT but NOT MERGED — one structural defect blocks it
-  (branch `buffer-one-cdr`, 2026-08-03).** Owner ruling: every team fields exactly one burst-cooldown
-  enabler, since an optimal team always has one and almost never two. Implemented as: the tested unit
-  takes the role when it is an ally-facing CDR carrier (`suppliesTeamCdr`, 14 units — it must walk
-  arbitrary nesting, the four ladder enablers bury theirs in an `escalating` effect's `steps`;
-  self-only carriers mint/prika/tia do NOT qualify, the same line the burst-CDR board draws), and the
-  no-op B1 keeps it otherwise. The BASELINE always keeps the control's, or a tested enabler's baseline
-  would field none. `build-bufferchart.ts` now loads the synthetic control overrides at all (see
-  below) — without that there was no CDR anywhere on this board.
-  - **BLOCKER, measured:** the control enabler is a **B1**, so it shares a stage with any tested B1,
-    and its 7s fires on `burstCast` — every stage-1 cast the tested unit takes is a CDR proc the team
-    loses. `rapunzel` at her real 60s cooldown: 3 casts, enabler 8, **9 Full Bursts**; forced to 20s:
-    6 casts, enabler 6, **8 Full Bursts**. `rosanna` 40s: 5/8 → 9 FB; at 20s: 7/7 → 8 FB. A B1 that
-    bursts more makes its own team slower, which inverts what the board is trying to measure and
-    breaks the pinned cooldown-independence property (`scripts/tests/ranks/buffer.test.ts` is RED on
-    the branch for `rapunzel` — the red test IS the finding, not an oversight).
-  - **Fix options, all owner calls:** (a) move the control's CDR to a cast-independent trigger
-    (`fullBurstEnter`, which is what real enablers liter/sakura/soline use) — cleanest, but
-    `src/skills/overrides/noop-b1-ar.json` is a PROTECTED path shared with the burst-gen, B1/B2 DPS
-    and sustain boards, so it moves them too; (b) inject a board-local control override with that
-    trigger via the `extraOverrides` channel, leaving the shared file alone; (c) hand the enabler role
-    to a slot the tested unit never contests.
-  - **Also on the branch, independently true and worth keeping either way:** `scripts/tests/ranks/
-buffer.test.ts` was building its ctx from roster slugs only, exactly like the builder was, so
-    every ranks test was validating a configuration the board does not run. Fixed to mirror the
-    builder.
+- **⇒ BUFFER-BOARD METHODOLOGY CHAIN IS ON A PR BRANCH, NOT MAIN (`buffer-board-methodology`,
+  2026-08-03).** Standard team + spare no-op, camera focus on the no-op B2 (SR), tested-B3 burst
+  suppression, and the one-CDR-enabler rule with the control's reduction moved to `fullBurstEnter`.
+  All landed and green there; `docs/DECISIONS.md` carries the rulings. Open: the branch needs the
+  owner's PR review, and local `main` still carries the first nine of these commits from before the
+  branch existed (`origin/main..main`) — decide whether main gets rewound to `origin/main` or the PR
+  simply supersedes it. Note `noop-b1-ar.json`'s trigger change moves burstgen (4 of 244 rows, ≤3.9%)
+  and b1b2dps (12 of 272, ≤11.3%); burstcdr and sustain are byte-identical.
 
 - **⇒ BUFFER BOARD: long burst cooldowns are handled three different ways — one owner decision,
   findings only (2026-08-03).** The board inserts the tested unit against a no-op filler that bursts

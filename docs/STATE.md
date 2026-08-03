@@ -358,7 +358,11 @@ Planned follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
   tested unit, so burst generation is identical in every run (it used to follow the second carry,
   whose weapon the typed board rewrites per unit); on a duo row the partner holds it, symmetrically.
   A tested B3's burst slot is suppressed outright (`burstOffSlug`) rather than relying on rightmost
-  placement to lose the stage-3 cast. The leaderboard shows rows ≥ 0 only, minus
+  placement to lose the stage-3 cast. **Exactly one burst-cooldown enabler per team** — the tested
+  unit when its kit reduces ALLY cooldowns (`suppliesTeamCdr`, 14 units; self-only carriers do not
+  qualify), else the no-op B1, which the baseline always keeps. The control's 7s fires on
+  `fullBurstEnter`, NOT its own cast, so it cannot be suppressed by a tested B1 sharing its stage;
+  `build-bufferchart.ts` now loads the synthetic control overrides at all, which it never did. The leaderboard shows rows ≥ 0 only, minus
   `HIDDEN_BUFFER_SLUGS` (chime, avistar) — `rankedBufferRows` (`src/ranks/buffer-rows.ts`) filters
   both the chart bars and the share/pre-render table card, so ranks are numbered over one set; the
   artifact itself keeps every row for the unit card, and `EXCLUDED_BUFFER_SLUGS` (blanc) never

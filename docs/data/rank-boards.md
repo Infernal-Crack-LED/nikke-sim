@@ -13,7 +13,7 @@ Ranks every sim-supported unit by the **gauge-percent it contributes per second 
 
 The reported value is `unit.gaugeGenerated / sim.gaugeBuildTimeSec` — the unit's uncapped total contribution divided by the time the team bar was actively accepting energy (not full, not locked in Full Burst or a chain stage). The artifact also reports the team's **Full Burst count** for that fight.
 
-The no-op B1 (AR) is a synthetic placeholder with a 7 s team burst-cooldown reduction on its burst cast. This normalizes control teams for the baseline CDR a real B1 enabler contributes, even though the placeholder has no other skills.
+The no-op B1 (AR) is a synthetic placeholder with a 7 s team burst-cooldown reduction, fired on **Full Burst entry** — the same trigger every real enabler uses (Liter, Sakura, Soline: Frost Ticket). This normalizes control teams for the baseline CDR a real B1 enabler contributes, even though the placeholder has no other skills. It deliberately does not key off the placeholder's own burst cast: that made its contribution depend on winning the stage-1 cast, so a tested Burst-1 sharing that stage suppressed the very cooldown reduction it was being measured against.
 
 Standard no-op teams (the unit under test is inserted at the ▼ slot):
 
@@ -103,6 +103,17 @@ A tested Burst-3's burst is turned off outright rather than merely being
 outranked for the stage-3 cast. Sitting it rightmost makes the carries win that
 cast while either is off cooldown, but they are 40-second units, and a fast
 enough rotation reaches a stage 3 where only the tested unit is ready.
+
+**Every team fields exactly one burst-cooldown enabler**, the way an optimal
+team does: an optimal team always has one and almost never two. The unit under
+test takes that role whenever its kit reduces its ALLIES' cooldowns, and the
+no-op Burst-1 stands down for it; otherwise the no-op keeps the role.
+Reduction a unit applies only to itself does not qualify — the same line the
+burst-cooldown board draws — so Mint, Prika and Tia keep the no-op as their
+enabler despite carrying reduction of their own. The baseline always keeps the
+no-op's, since the unit under test is not in it and the team would otherwise
+field no enabler at all. Reading a cooldown enabler's number, then, is reading
+what it adds over the standard one it replaces.
 
 The spare no-op is what makes long burst cooldowns readable. Every burst stage
 stays covered by a 20-second unit, so a support with a 40- or 60-second cooldown

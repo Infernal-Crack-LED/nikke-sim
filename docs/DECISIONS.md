@@ -9,7 +9,48 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-03, latest) THE BUFFER BOARD'S CAMERA FOCUS IS THE SPARE NO-OP B2 (SR), AND A TESTED
+- **(2026-08-03, latest) EVERY BUFFER-BOARD TEAM FIELDS EXACTLY ONE BURST-COOLDOWN ENABLER, AND THE
+  CONTROL'S REDUCTION FIRES ON `fullBurstEnter`.** Owner ruling: an optimal team always carries one
+  CDR unit and almost never two, so the board should model that case. The tested unit takes the
+  enabler role whenever its kit reduces ALLY cooldowns; the no-op B1 keeps it otherwise. The BASELINE
+  always keeps the control's — the tested unit is not in it, so standing the control down there would
+  field a team with no enabler at all and measure every CDR unit against a rotation nobody runs. A
+  cooldown enabler's number therefore reads as what it adds over the standard 7s enabler it replaces.
+  **Two things this exposed first.** (1) `scripts/build-bufferchart.ts` loaded overrides for roster
+  slugs only, and the synthetic controls are not roster entries, so this board had NEVER applied the
+  7s its own methodology doc described — `src/skills/overrides/noop-b1-ar.json` was simply never read.
+  Every sibling loads it (`build-burstgen.ts:48`, `build-b1b2dps.ts:56`, `build-sustain.ts:46`), added
+  `c044fcbd` 2026-07-27, the day after this board was written (`91f53ea9`), never backported.
+  `scripts/tests/ranks/buffer.test.ts` had the identical gap, so every ranks test was validating a
+  configuration the board does not run. (2) `suppliesTeamCdr` must walk ARBITRARY nesting: liter,
+  volume, dolla and helm-aquamarine bury their `burstCdr` inside an `escalating` effect's `steps`, so
+  a shallow "block.effects has a burstCdr" scan drops the board's most important enabler. Self-only
+  carriers (mint, prika, tia) do not qualify — the line the burst-CDR board already draws.
+  **THE CONTROL'S TRIGGER MOVED, and that is the load-bearing half.** Its 7s fired on its own
+  `burstCast`, so its contribution depended on WINNING the stage-1 cast — which a tested B1 shares.
+  Measured, isolated: `rapunzel` at her real 60s cooldown took 3 casts, left the control 8, and the
+  team reached **9** Full Bursts; forced to 20s she took 6, left the control 6, and the team reached
+  **8**. A unit bursting more often made its own team slower, inverting what the board measures. The
+  reduction now fires on `fullBurstEnter` from `skill1` — the shape every real enabler uses (liter,
+  sakura, soline-frost-ticket are all `fullBurstEnter` → `allies`) — so the control contributes the
+  same 7s per Full Burst whoever holds the stage. `scripts/probe/buffer-rotation-audit.ts` then
+  reports no unit whose Full Burst count depends on its own cooldown, the property pinned in
+  `scripts/tests/ranks/buffer.test.ts`.
+  **Blast radius, accepted by the owner in advance** (`noop-b1-ar.json` is shared; before/after
+  artifacts diffed on row identity = slug + profile + template): **burstgen** 4 of 244 rows move,
+  largest `rosanna` 3.9% (rank 90→102); **b1b2dps** 12 of 272, largest `red-hood` 11.3% (rank 38→31);
+  **burstcdr** and **sustain** byte-identical. Buffer board, cumulative with the standard-team and
+  focus rulings above: `prika` 17.4 → 45.9 (rank 32→14), `anchor-innocent-maid` 8.3 → 29.7,
+  `chime` 126.3 → 142.7, `alice-wonderland-bunny` 0 → 15.5; `anis-star` 59.4 → 25.1 (rank 10→28).
+  Negative rows 5 → 12 — expected under this model, since an enabler weaker than the standard 7s now
+  reads below its baseline, and the leaderboard trims them.
+  **A caution for whoever reads a diff next:** two of my own before/after comparisons were wrong
+  before this one was right. Keying rows on `slug + last field` mispaired a unit that has both a
+  plain and a profiled row (it reported `anis-star` +311% on b1b2dps, a phantom), and keying on
+  everything after the value silently DROPPED changed rows as unmatched (it reported burstgen as
+  0-of-244). Row identity is slug + profile (+ template); everything else in the tuple is output.
+
+- **(2026-08-03) THE BUFFER BOARD'S CAMERA FOCUS IS THE SPARE NO-OP B2 (SR), AND A TESTED
   B3'S BURST IS SUPPRESSED OUTRIGHT.** Focus grants a charge weapon ×2.5 burst gauge, so whoever
   holds it sets the pace of the team's whole rotation. It sat on the second carry
   (`carryDpsSum` `focusSlug: team.slugs[team.carryIdxs[1]]`) — whose WEAPON the typed board rewrites
