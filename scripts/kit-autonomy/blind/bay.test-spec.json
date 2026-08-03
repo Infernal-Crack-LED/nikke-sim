@@ -1,0 +1,68 @@
+[
+  {
+    "slot": "skill1",
+    "kitLine": "Burst Skill / all allies: shares dmg taken",
+    "disposition": "UNMODELED",
+    "assertion": "GAP (it.skip): boss deals no damage at scope lock and no damage-sharing primitive exists. Asserted indirectly \u2014 the whole-kit invariant test forbids any effect outside buff/heal/shield, and the unmodeled[] record for skill1 must be non-empty, so the line cannot be silently dropped."
+  },
+  {
+    "slot": "skill1",
+    "kitLine": "DEF \u25b210.13% of user's DEF, continuous",
+    "disposition": "FAITHFUL",
+    "assertion": "Structural: exactly one defPct buff, value \u224810.13, trigger burstCast (NOT fullBurstEnter \u2014 \"when using Burst Skill\" is the owner's own cast), target allies with excludeSelf falsy, durationSec undefined (\"continuously\"). Behavioural: a defPct buffApply reaches all three FX_SOLE slugs. Plus an inertness assertion (stripping it leaves totals byte-identical) so no calibration can ride on it. Fails under: fullBurstEnter keying, excludeSelf, a wall-clock duration, self-only target, or dropping the line into unmodeled. Note: the kit scales off the CASTER's DEF and no caster-DEF stat key exists \u2014 defPct is the only faithful home; a driver that omits it entirely is the flagged divergence."
+  },
+  {
+    "slot": "skill1",
+    "kitLine": "Full Charge \u2192 allies except self: heal 4%",
+    "disposition": "FAITHFUL",
+    "assertion": "THE load-bearing line \u2014 bay's only cross-unit channel. Structural: a heal effect in skill1 with trigger shotFired (bay is RL, chargeFrames 60 \u2192 every trigger pull is a full charge), target allies + excludeSelf true. Behavioural (tandem rule 4): crown's buffApply COUNT in FX_CTL must strictly exceed the count with the heal removed, with it re-keyed to burstCast, and with it re-keyed to lastBullet (ammo 6 \u2192 ~1/6 cadence). A count rather than an uptime is used because helm also heals crown and a duty-cycle read would saturate. Fails under: heal MISSING, self-scoped, or keyed to any per-burst/per-magazine trigger."
+  },
+  {
+    "slot": "skill1",
+    "kitLine": "heal amount 4% of final Max HP",
+    "disposition": "GAP",
+    "assertion": "it.skip \u2014 the `heal` effect has no magnitude field (only ticks/intervalSec); the sim models the recovery EVENT, not HP. Nothing to assert."
+  },
+  {
+    "slot": "skill2",
+    "kitLine": "Burst Skill / self's cover: shares dmg",
+    "disposition": "UNMODELED",
+    "assertion": "GAP (it.skip): cover has no HP pool and the boss deals no damage. Covered by the unmodeled[skill2] non-empty assertion."
+  },
+  {
+    "slot": "skill2",
+    "kitLine": "FB end / self: cover HoT 2.88%\u00d75",
+    "disposition": "UNMODELED",
+    "assertion": "Cover HP is a distinct pool from the nikke's HP and the target is SELF, so this must not become an ally heal. Structural: no heal in bay's kit has trigger fullBurstEnd + target allies. Behavioural non-vacuity: adding exactly that mis-encoding raises crown's buffApply count above baseline, proving the fixture WOULD see it. Fails under: modelling the cover HoT as a team heal (which would drive crown once per Full Burst)."
+  },
+  {
+    "slot": "skill2",
+    "kitLine": "Stage 1 + cover destroyed: heal 20%",
+    "disposition": "GAP",
+    "assertion": "it.skip \u2014 cover destruction is unreachable at scope lock. Additionally asserted: bay carries no requiresShielded / requiresTargetStatus / resourceGate block, so no invented cover-state gate is silently sitting unreachable in the encoding."
+  },
+  {
+    "slot": "burst",
+    "kitLine": "Rebuild Cover 20%, once per battle",
+    "disposition": "GAP",
+    "assertion": "it.skip \u2014 no cover entity, and the destroyed-cover precondition is unreachable."
+  },
+  {
+    "slot": "burst",
+    "kitLine": "Max HP of Cover \u25b218%, 20 sec",
+    "disposition": "UNMODELED",
+    "assertion": "\"Max HP of COVER\" \u2260 the nikke's Max HP. Structural: no maxHpPct/casterMaxHpPct/targetMaxHpPct buff with a non-self target anywhere in the kit, and no maxHpFlat buffApply lands on a non-bay slug. Inertness: even encoded as a self targetMaxHpPct grant, bay's total is unchanged (she has no atkOfMaxHpPct conversion) \u2014 recorded so nothing is calibrated onto it. Fails under: granting Max HP to allies (rule 7's conversion path)."
+  },
+  {
+    "slot": "burst",
+    "kitLine": "Damage Taken \u25bc8.87% all allies, 10s",
+    "disposition": "FAITHFUL (damage-inert)",
+    "assertion": "The single biggest over-credit risk on bay. The engine's damageTakenPct is a BOSS debuff (positive = boss takes more); this kit line is a \u25bc on ALL ALLIES \u2014 mitigation, worth zero damage. Asserted: no damageTakenPct effect anywhere in the override, and no damageTakenPct buffApply in either fixture's event stream. NON-VACUITY: the mis-encoding (burst block, target enemy, damageTakenPct 8.87) both emits the buffApply and moves FX_SOLE team damage \u2014 so the absence assertion is a real check, not a tautology. Fails under: keying the ally mitigation to damageTakenPct in either sign."
+  },
+  {
+    "slot": "all",
+    "kitLine": "whole-kit: zero offensive lines",
+    "disposition": "FAITHFUL",
+    "assertion": "Whitelist invariant: every effect in all three slots is buff/heal/shield, and every buff stat is one of defPct/maxHpPct/casterMaxHpPct/targetMaxHpPct. Bay's kit contains no ATK/crit/damage/ammo/reload/fire-rate/charge/pierce/swap line at all, so ANY offensive effect is an invention. Fails under: any fudge added to make bay's board reading fit."
+  }
+]

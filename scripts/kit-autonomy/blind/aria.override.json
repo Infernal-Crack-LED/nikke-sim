@@ -1,0 +1,90 @@
+{
+  "slug": "aria",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 26.99,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 7.03,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 37.86,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 30.37,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ Hit Rate ▲30.37% (burst, self, 15s): the kit percentage is literal, but its damage consequence is the engine's Hit-Rate→core-lift conversion (hrCoreMult), which is a derived/measured quantity, not a kit value. Aria's whole self-damage upside from her burst rides on that unmeasured conversion.",
+    "⚑ MG cadence tuple (rate_of_fire / reloadFrames 161 / ammo 300 / hitsPerShot 1) is datamine-sourced and known-unreliable; it sets how often skill2's lastBullet trigger fires, so the team-wide Critical Rate ▲7.03%/5s UPTIME is cadence-derived, not kit-stated. An MG magazine of 300 with MG wind-up means very few magazine cycles per 180s fight — skill2 uptime is likely low and sensitive to the cadence numbers.",
+    "Shield (burst, all allies, 37.86% of caster final Max HP, 10s) carries no HP pool at scope lock, but is NOT skipped: it emits shield events that fire teammates' `shielded` triggers / satisfy `requiresShielded` gates (tandem rule).",
+    "`allies` target includes self (no excludeSelf in either kit line — neither skill1 nor skill2 says 'except self'), so Aria receives her own Crit Damage / Crit Rate buffs.",
+    "skill1 is keyed `fullBurstEnter`, not `burstCast`: the text says 'at the beginning of Full Burst', so it fires on ANY team Full Burst, independent of whether Aria (Burst II) casts.",
+    "Both crit buffs are UNSCOPED in the prose (no 'of normal attacks' qualifier), so generic critDamagePct / critRatePct are correct — not critRateNormalPct."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Aria (MG/Water/Attacker/Burst II) is a pure crit-support kit with zero damage lines of her own: S1 grants the team Critical Damage ▲26.99%/10s at every Full Burst entry; S2 grants the team Critical Rate ▲7.03%/5s each time her last bullet hits (per-magazine, so its uptime is governed entirely by the ⚑ MG cadence tuple); her burst is a 10s team shield (37.86% of her final Max HP — no HP pool at scope lock, kept for tandem `shielded` consumers and kit completeness) plus a self Hit Rate ▲30.37%/15s whose damage effect flows through the engine's ⚑ Hit-Rate→core conversion. No flatDamage, no DoT, no weapon swap, no ammo/reload modifier, no stack or resource pool, no formation/element/status gate. Nothing in the kit is dropped: `unmodeled` is empty for all three slots."
+}

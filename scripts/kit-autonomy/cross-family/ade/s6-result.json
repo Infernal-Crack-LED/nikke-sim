@@ -1,0 +1,190 @@
+{
+  "slug": "ade",
+  "leakDetected": null,
+  "override": {
+    "slug": "ade",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 5.19,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 120
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterMaxHpPct",
+            "value": 15.62,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterMaxHpPct",
+            "value": 25.15,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 10.15,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Perfect Maid: Gain debuff immunity to 1 debuff(s), stacking up to 1 time(s) continuously."
+      ],
+      "skill2": [
+        "Perfect Maid: Gain debuff immunity to 1 debuff(s), stacking up to 1 time(s) continuously."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1 ATK buff trigger: kit says 'Activates when own HP falls below 90%'. The sim models no HP pool and the scope-lock boss deals no damage, so the literal trigger NEVER fires. Modeled as `passive` with the 5s duration retained as a placeholder — this is an UNMEASURED uptime assumption and is the single largest source of error in this override. If the real uptime is intermittent, this over-credits the team's ATK for the whole fight.",
+      "⚑ skill2 hitCount 120: 'normal attack(s)' read as ROUNDS fired by ade (1/pull, AR ammo 60), so the trigger lands roughly every two magazines. Not verified against a popup/buff-apply cadence.",
+      "⚑ Both Max HP grants use casterMaxHpPct ('of the skill user's Max HP'). Per the e3 rule ally-granted Max HP does not feed a teammate's atkOfMaxHpPct, so these are offensively INERT at scope lock; kept for kit completeness and any future HP-scaling consumer.",
+      "⚑ Burst keyed to burstCast (her own Burst II cast), not fullBurstEnter. If the buff is observed on rotations where ade does NOT burst, this is wrong and under-credits.",
+      "skill2's 420-normal-attack Perfect Maid line is unmodeled (debuff immunity, no damage path and no schema kind). At AR cadence 420 rounds is reached late in a 180s fight, if at all.",
+      "FB-by-timing left default ON for all buffs; noFb not set (measured-only). noRange not set (engine-automatic)."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. ade is a Wind/AR/Supporter Burst II whose entire damage contribution to a team is buff-side: two casterAtkPct grants (5.19% skill1, 10.15% burst) and two casterMaxHpPct grants (15.62% skill2, 25.15% burst), all targeting all allies. The two Perfect Maid debuff-immunity lines are defensive utility with no schema representation and no damage path — recorded verbatim in `unmodeled`. The load-bearing uncertainty is skill1's HP-threshold trigger, which cannot fire in a sim with no HP pool against a partless boss that deals no damage; it is modeled as an always-on passive, which is an UPTIME ASSUMPTION, not a reading of the kit. Treat the skill1 ATK contribution as an upper bound until a recording shows the real uptime."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at the start of battle",
+      "status": "SKIPPED",
+      "effectOrReason": "Activation clause only; the effect it introduces (Perfect Maid debuff immunity) is itself unmodeled, so no block is authored."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Perfect Maid: debuff immunity 1",
+      "status": "SKIPPED",
+      "effectOrReason": "Debuff immunity — no EffectDef kind represents status-immunity, and the sim models no incoming debuffs. Verbatim in unmodeled.skill1. NOT a damage line; skipping does not violate the heal/shield/DEF/HP/lifesteal rule."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when own HP < 90%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "⚑ Trigger substituted: no HP pool exists in the sim and the boss deals no damage, so the literal condition is unreachable. Authored as {kind:'passive'} — an explicit uptime assumption, flagged, not a silent drop."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK 5.19% of user's ATK, 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 5.19 durationSec 5, target allies. 'of the skill user's ATK' = flat add scaled off caster, not atkPct."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after 420 normal attacks",
+      "status": "SKIPPED",
+      "effectOrReason": "Activation clause for the second Perfect Maid line, which is unmodeled. Threshold recorded; at AR cadence 420 rounds is very late in a 180s fight."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Perfect Maid: debuff immunity 1",
+      "status": "SKIPPED",
+      "effectOrReason": "Same as skill1's Perfect Maid — no schema kind for debuff immunity. Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after 120 normal attacks",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'hitCount', count:120} — literal round count, NOT seconds. ⚑ 'normal attack' read as rounds fired (1/pull for AR)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP 15.62% of user's Max HP, 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterMaxHpPct 15.62 durationSec 5, target allies. 'without restoring HP' = a Max-HP grant, not a heal — no heal effect authored, so no 'recovery' trigger is fired."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} (includes self — no 'except self' clause)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max HP 25.15% of user Max HP, 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterMaxHpPct 25.15 durationSec 10. 'without restoring HP' — Max-HP grant, not a heal."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK 10.15% of user's ATK, 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 10.15 durationSec 10. Trigger burstCast (her own Burst II)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "passive (100% uptime) — modeled as always-on",
+      "reasoning": "Kit trigger is 'own HP falls below 90%'. The sim has no HP pool and the scope-lock boss is non-damaging, so the literal trigger is unreachable and a faithful encoding would make the buff permanently dead. Neither extreme is knowable from the kit text alone. Chose always-on so the buff is at least visible to a tuner, and flagged it as the dominant error source. A 5.19% caster-ATK flat add to all allies is small but not negligible across a 5-unit team.",
+      "recipe": "In a real fight, watch ade's HP bar for the first drop below 90% and time from there; if she is never damaged in a solo-raid scope-lock run the buff is genuinely dead and skill1[0] should be deleted (or the block gated off). Cross-check with a buffApply event filter on stat 'casterAtkPct' value ≈ (5.19/100)×ade.staticAtk in the harness."
+    },
+    {
+      "field": "skill2[0].trigger.count",
+      "estimate": "hitCount 120 (rounds fired by ade)",
+      "reasoning": "'normal attack(s)' is read as ROUNDS, matching the hitCount trigger's documented semantics (counts rounds, not pulls). ade is AR with hitsPerShot 1 and ammo 60, so 120 rounds ≈ two full magazines. Whether the game counts pulls, landed hits, or rounds is not stated in the kit text.",
+      "recipe": "Count ade's shots to the first buff-icon appearance in footage; or in the harness, log buffApply events for stat 'maxHpFlat' from ade's casterIdx and compare the firing frames against her shot events (cumulative round count at each apply)."
+    },
+    {
+      "field": "burst[0].trigger",
+      "estimate": "burstCast (her own Burst II cast)",
+      "reasoning": "The lines sit in ade's OWN burst block with no 'when entering Full Burst' wording, so per the trigger-identity rule this is burst-cast, firing only on rotations where ade actually bursts. Keying it to fullBurstEnter would over-credit in any comp with another Burst II unit.",
+      "recipe": "Run a comp with a second Burst II and check whether the ATK buff appears on rotations ade does not cast. If it does, re-key to fullBurstEnter."
+    },
+    {
+      "field": "skill2[0].effects[0].stat / burst[0].effects[0].stat",
+      "estimate": "casterMaxHpPct (offensively inert at scope lock)",
+      "reasoning": "'of the skill user's Max HP' selects casterMaxHpPct over targetMaxHpPct. Per the e3 rule, ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion, so these grants move zero damage unless a teammate with HP-scaling ATK is present AND the conversion rule is later revised. Kept per the 'never skip HP lines' rule and as a future consumer.",
+      "recipe": "A/B the comp with and without the two casterMaxHpPct effects; confirm the per-unit totals are identical. If a teammate carries atkOfMaxHpPct, re-verify the e3 caster===target rule holds before assuming inertness."
+    },
+    {
+      "field": "unmodeled (both Perfect Maid lines)",
+      "estimate": "zero damage contribution",
+      "reasoning": "Debuff immunity has no representation in EffectDef and the sim models no incoming debuffs or status effects on allies. This is a genuine no-damage-path skip, distinct from the heal/shield/DEF/HP lines the HARD RULES forbid skipping (those can drive teammate on-recovery/on-shield consumers; debuff immunity has no such known consumer).",
+      "recipe": "If a future unit's kit gates damage on 'while not debuffed' or similar, revisit — Perfect Maid would then become a tandem enabler and need a schema kind."
+    }
+  ],
+  "model": "claude-opus-5"
+}

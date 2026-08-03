@@ -1,0 +1,77 @@
+{
+  "slug": "admi",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamageMultPct",
+          "value": 9.59,
+          "durationSec": 20
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "byFinalAtk": true
+      },
+      "effects": []
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 50.91,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 28.34,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "\u25a0 Affects 2 allies with the highest final ATK. Damage Taken \u25bc 28.65% for 10 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 S1 trigger: kit says \"Activates when attacked 20 time(s)\" \u2014 an INCOMING-hit counter the sim has no channel for (the scope-lock boss's attack cadence on this unit is unmodeled). Encoded as interval:20s as a stand-in; the real re-fire cadence is UNMEASURED and the 20s duration means uptime is ~100% if the boss lands 20 hits per 20s and much lower if not.",
+    "\u2691 S1 stat routing: \"Charge Damage Multiplier \u25b2\" is read as chargeDamageMultPct (scales BASE charge damage, the multiplier lane), NOT the additive chargeDamagePct lane. Wording match is on \"Multiplier\"; unconfirmed against a popup.",
+    "S2 Damage Taken \u25bc on ALLIES is a defensive mitigation \u2014 no HP pool at scope lock, so it is offensively inert; kept as an empty-effect block so the target set (2 highest FINAL ATK allies) stays auditable, and listed in unmodeled verbatim. Note damageTakenPct in the schema is the BOSS-side debuff (positive = boss takes more); an ally-side incoming-damage reduction is a different sign and a different consumer, so it is NOT encoded with that stat.",
+    "Burst is keyed to burstCast (this unit's own Burst II cast), not fullBurstEnter \u2014 the block sits in her own burst slot with no \"entering Full Burst\" clause."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Admi (SR/Wind/Supporter/Burst II) is a pure buffer: no self damage lines, no weapon swap, no DoT, no stacks. S1 grants an all-ally Charge Damage Multiplier \u25b29.59%/20s off an incoming-hit counter (\u2691 stand-in trigger). S2 is a defensive Damage Taken \u25bc on the 2 highest-final-ATK allies \u2014 inert at scope lock (no HP pool), retained as a target-only block. Burst grants all allies Reload Speed \u25b250.91% + Critical Damage \u25b228.34% for 10s; reload speed is NOT skippable (it gates shots fired).",
+  "hasPierce": false
+}

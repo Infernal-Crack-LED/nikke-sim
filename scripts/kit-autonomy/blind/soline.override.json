@@ -1,0 +1,88 @@
+{
+  "slug": "soline",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 40
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackSpeedPct",
+          "value": 7.26,
+          "durationSec": 3
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 21.62
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 62.27
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 396,
+          "crit": true,
+          "noRange": true,
+          "noFb": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 924,
+          "crit": true,
+          "noRange": true,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 skill1 hitCount:40 counts ROUNDS. Base is SMG with hitsPerShot 2 \u2014 if the engine counts each trigger pull as 1 round the buff fires every 40 pulls; if it counts landed hits it fires every 20 pulls, doubling uptime. Unverified which the kit means by 'normal attacks'.",
+    "\u2691 skill1 attackSpeedPct 7.26% for 3s on a ~40-attack cycle is a very low-duty-cycle buff; its board contribution is near-noise and is a poor discriminator for validating the trigger encoding.",
+    "Max-HP gates (skill2 whole block, burst 924% branch) are modeled as ALWAYS-TRUE: the scope-lock boss deals no damage and the sim models no HP pool, so the unit never leaves Max HP. This is faithful AT SCOPE ONLY \u2014 on any content where the unit takes damage both would intermittently drop, and neither is currently expressible as a gate.",
+    "burst 924% is authored as a SEPARATE flatDamage, not merged into 1320%, so the Max-HP branch stays independently togglable if HP is ever modeled. Split-vs-merge is popup-readable and unverified: if real footage shows ONE popup the two should merge.",
+    "\u2691 noFb:true on both burst branches follows the hard rule that burst-cast damage lands before the Full Burst window opens; measured-only per the ALWAYS-\u2691 taxonomy, not read off this kit text.",
+    "\u2691 cadence tuple (ammo 120, reloadFrames 141, hitsPerShot 2, chargeFrames 0) is datamined and known-unreliable; a nominal rate_of_fire is quantized to 60fps frame boundaries."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Soline is a structurally simple SMG/Iron/Attacker B3: no weapon swap, no stacks/currency, no DoT, no resource pool, no cross-unit or tandem effects, no team-facing buff of any kind \u2014 every line is self-scoped or enemy-damage. S1 is a low-duty-cycle self Attack Speed pulse on a 40-normal-attack counter (a weapon-state modifier, so it IS damage: it gates shots fired). S2 is a permanent self crit pair (generic, NOT normal-attack-scoped \u2014 the text carries no scope word), gated on Max HP, which is scope-trivially always-true. Burst is pure instant damage in two branches, 396% unconditional + 924% at Max HP, both crit-eligible at the caster's sheet rate, neither core (the text never says 'core strike'), both FB-exempt as burst-cast damage. Nothing in this kit is skipped \u2014 unmodeled is empty for all three slots.",
+  "hasPierce": false
+}

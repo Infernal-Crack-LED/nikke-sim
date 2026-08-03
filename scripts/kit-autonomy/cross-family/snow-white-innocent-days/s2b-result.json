@@ -1,0 +1,120 @@
+{
+  "slug": "snow-white-innocent-days",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Max Ammunition Capacity ▲ 25.66%",
+      "disposition": "FAITHFUL",
+      "scope": "Self stat buff; maxAmmoPct 25.66 per stack, maxStacks 5 — a weapon-state modifier that gates shot count (larger magazine → fewer reloads → more shots), NOT a defensive skip.",
+      "durationSemantics": "durationSec 5, refresh-on-reapply expected. At AR cadence 30 landed hits accrue in well under 5s, so stacks climb toward 5 and hold while she keeps firing; expiry only bites across long non-firing gaps.",
+      "triggerIdentity": "hitCount count:30 (counts landed ROUNDS; AR hitsPerShot 1 so rounds = pulls). Repeating — fires every 30 cumulative hits, not once.",
+      "targetSet": "self",
+      "nearestWrongModel": "Dropped/skipped as a 'defensive, no damage' line (failure-mode 6), or modeled without stacking (single 25.66% instead of up to 5 stacks = +128.3% capacity).",
+      "distinguishingAssertion": "In controlComp(carry): buffApply events with stat 'maxAmmoPct', value 25.66, targetSlug=carry appear starting ~the 30th landed hit and 'stacks' climbs to 5 during sustained fire; her reload-event count is strictly LOWER (and shot count higher) than the same run with this block removed via withPatchedOverride. Red if the buff is absent, unstacked, or reload count is unchanged.",
+      "inertness": "Must not buff allies (targetIdx = her slot only) and must not alter helm/liter/crown damage.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 188.68% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "flatDamage atkPct 188.68, skill1 bucket; AoE 'enemies within attack range' collapses to the single boss. Default rider rules: FB +50% by landing timing (default ON), noRange, no core, crits only if measured.",
+      "durationSemantics": "Instant hit per activation, no duration.",
+      "triggerIdentity": "hitCount count:30 — same counter shape as the s1 ammo buff, repeating every 30 landed hits for the whole fight.",
+      "targetSet": "enemy",
+      "nearestWrongModel": "One-time trigger (fires only on the first 30 hits) instead of every-30 repeating; or the trigger re-keyed to interval with a guessed cadence.",
+      "distinguishingAssertion": "Count damage events with mult 188.68 (srcSlot=carry, skill1 bucket) over 180s ≈ floor(her total landed normal hits / 30) — i.e. dozens of procs, with the count scaling when firing uptime changes (e.g. it RISES when her unlimited-ammo windows are active because hits accrue faster). Red under a fires-once model (count = 1) or a fixed-interval model (count invariant to hit rate).",
+      "inertness": "Proc count must track HITS, not wall-clock — patching her fire cadence down must reduce proc count.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 61.69% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "flatDamage atkPct 61.69, skill2 bucket, single boss ('all enemies' collapses). Default rider FB/range/core rules as above.",
+      "durationSemantics": "Instant hit per activation.",
+      "triggerIdentity": "hitCount count:50 — repeating, counts landed rounds. CRITICAL: the burst's 'Hit count required for Skill 2 ▼ 20' line lowers this threshold to 30 for 10s after HER OWN burst cast only (see burst line 1).",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Encoding the threshold reduction as countInFb:30 — which drops the requirement during ANY Full Burst, including rotations where the co-B3 (helm, present in the control fixture) cast the burst and she did not. That over-credits every helm-led FB window.",
+      "distinguishingAssertion": "Instrument damage events with mult 61.69: inside the 10s following one of HER burstCast events, consecutive-proc hit spacing = 30 landed hits; inside a Full Burst window whose B3 cast came from helm (a fullBurstStart with no snow-white-innocent-days burstCast in that rotation), spacing stays 50. Green under own-burst gating; red under plain countInFb (spacing 30 in helm-led FBs too).",
+      "inertness": "Threshold outside her own 10s windows must remain 50 at all times, including during helm-led Full Bursts.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attack damage ▲ 21.12% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "'Attack damage ▲' is the Damage-Up bucket → stat attackDamagePct, NOT atkPct. Bucket identity is load-bearing: attackDamagePct dilutes additively with other Damage-Up sources, atkPct would compound with her burst's ATK ▲ 97.2% instead.",
+      "durationSemantics": "durationSec 10, wall-clock ('for 10 sec' — no round wording).",
+      "triggerIdentity": "burstCast ('Activates when using Burst Skill' = HER burst only), NOT fullBurstEnter. With helm as co-B3 in the control fixture, the two diverge: fullBurstEnter would fire on helm-led rotations too.",
+      "targetSet": "self",
+      "nearestWrongModel": "Keyed to fullBurstEnter (applies on every team FB, over-crediting helm-led rotations); secondary misread: stat encoded as atkPct (wrong bucket).",
+      "distinguishingAssertion": "buffApply events with stat 'attackDamagePct', value 21.12, targetSlug=carry occur exactly once per HER burstCast event, count == her burstCast count and < fullBurstStart count when helm takes some rotations. Red if the apply count equals the FB count, or if the stat key is 'atkPct'.",
+      "inertness": "No application on Full Bursts she did not cast into; no ally receives it.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Hit count required for Skill 2 ▼ 20 for 10 sec",
+      "disposition": "FIX",
+      "scope": "Mechanic modifier on her own skill2 hit-count trigger: requirement 50 → 30 ('▼ 20' = reduce BY 20, not 'set to 20') for the 10s after her burst cast.",
+      "durationSemantics": "durationSec 10 from HER cast frame. Note her burst buffs apply at cast, ~22f before FB opens, so the window is cast-anchored, not FB-anchored.",
+      "triggerIdentity": "burstCast, self. The schema's natural primitive (hitCount countInFb) is FB-anchored and team-FB-keyed — a faithful encoding must gate on HER cast (e.g. ownBurstGate 'cast' composition or equivalent), which is why this is FIX rather than a drop-in.",
+      "targetSet": "self (modifies her own skill2 counter)",
+      "nearestWrongModel": "(a) countInFb:30 with no own-burst gate — reduction live in helm-led FBs; (b) '▼ 20' misread as 'set to 20' (threshold 20 → ~67% too many procs in-window); (c) reduction applied permanently.",
+      "distinguishingAssertion": "In her own 10s post-cast windows, 61.69%-mult procs are spaced exactly 30 landed hits apart (not 20, not 50); in helm-led FB windows and everywhere outside her windows, spacing is exactly 50. All three misreads go red on at least one leg of this two-sided spacing assertion.",
+      "inertness": "Skill1's separate 30-hit counter must be untouched by this line (188.68% proc spacing stays 30 everywhere, never 10).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 97.2% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Self ATK stat → atkPct 97.2 (scales her own ATK; for a self-target this is equivalent to caster-scaled, but atkPct is the literal encoding).",
+      "durationSemantics": "durationSec 10, wall-clock.",
+      "triggerIdentity": "burstCast — self line inside her own burst block; fires only on rotations SHE bursts.",
+      "targetSet": "self",
+      "nearestWrongModel": "Keyed to fullBurstEnter (fires on helm-led FBs too), or stat mis-bucketed as attackDamagePct (Damage-Up dilution instead of ATK-term scaling — materially different final damage when composed with s2's 21.12% attackDamagePct).",
+      "distinguishingAssertion": "buffApply events with stat 'atkPct', value 97.2, targetSlug=carry: apply-frame set equals her burstCast frame set exactly (count == her burst count, not the FB count), with expiresFrame = castFrame + 600. Red if applies appear on helm-led rotations or the stat key is attackDamagePct.",
+      "inertness": "No ally targeting; no application outside her cast rotations.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Unlimited ammunition for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "unlimitedAmmo effect, durationSec 10 — pure fire-uptime damage (no reload downtime for 10s; her 60-round AR magazine would otherwise empty inside a 10s window, so this deletes ≥1 reload per burst rotation). Infinite-ammo shots also don't consume ammo (no lastBullet during the window).",
+      "durationSemantics": "durationSec 10 from her cast.",
+      "triggerIdentity": "burstCast, self.",
+      "targetSet": "self",
+      "nearestWrongModel": "Modeled as a one-shot instantReload at cast (refills once but she still reloads mid-window), or skipped as non-damage.",
+      "distinguishingAssertion": "Zero reload events for carry within 600 frames of each of her burstCast events, while shot events continue uninterrupted through the window; her total-fight shot count drops when the effect is removed via withPatchedOverride. instantReload goes red because a 60-round magazine at AR cadence still forces a reload inside 10s.",
+      "inertness": "Reload cadence outside her 10s windows must be unchanged; allies' ammo untouched.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:maxAmmoPct 25.66 ×5 stacks",
+    "skill1:188.68% per-30-hits damage",
+    "skill2:61.69% per-50-hits damage",
+    "skill2:attackDamagePct 21.12 on own burst",
+    "burst:skill2 hit-count ▼20 for 10s",
+    "burst:atkPct 97.2 for 10s",
+    "burst:unlimitedAmmo 10s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in order of likelihood: (1) The burst's hit-count reduction encoded as plain hitCount countInFb — the control fixture deliberately includes helm as co-B3, so team-FB-keyed encodings (countInFb for the threshold, fullBurstEnter for the two self buffs and unlimited ammo) over-credit every helm-led rotation; every burst-slot assertion above is two-sided (her windows vs helm-led windows) to catch this. (2) '▼ 20 time(s)' read as 'set to 20' instead of 'reduce by 20 → 30'. (3) The s1 Max Ammunition stack line skipped as defensive — it is a shot-count gate and its 5-stack ceiling (+128% capacity) materially cuts reload downtime; assert via reload-count A/B, not just buffApply presence. (4) 'Attack damage ▲ 21.12%' mis-bucketed as atkPct (or the burst's ATK ▲ 97.2% as attackDamagePct) — the two lines coexist in her own burst window, so bucket identity changes composition; assert on the emitted stat keys. (5) Both hit-count damage riders read as one-time instead of repeating — assert proc counts scale with landed hits. Counter hygiene: skill1's 30-hit counter and skill2's 50-hit counter are independent; the burst reduction touches ONLY skill2's. All magnitudes are kit-literal (DATAMINED); no ALWAYS-⚑ field is exercised except default noFb/range conventions on the two flat-damage riders, which follow engine defaults. The effect-schema comments mention base snow-white (a different unit, exact-slug rule) — not a leak of this unit's answer.",
+  "model": "claude-fable-5"
+}

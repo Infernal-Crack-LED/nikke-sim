@@ -1,0 +1,135 @@
+{
+  "slug": "poli",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "After 5 normal attack(s): ATK ▲ 5.46%",
+      "disposition": "FAITHFUL",
+      "scope": "generic ATK buff (atkPct) — no normal-attack/charge/crit scoping on the stat itself; only the TRIGGER is normal-attack-counted",
+      "durationSemantics": "durationSec: 10 (wall-clock seconds, refreshing on each proc)",
+      "triggerIdentity": "hitCount count:5 — counts ROUNDS (trigger pulls for an SG), NOT pellets. Poli is SG hitsPerShot=10: 5 attacks = 5 pulls, never 5 pellets",
+      "targetSet": "allies, all-including-self (no excludeSelf)",
+      "nearestWrongModel": "hitCount counting PELLETS (10/pull → proc every half-pull, 10× cadence) or an interval trigger; both saturate the 10s uptime so total damage barely moves and calibration hides it. Secondary misread: excludeSelf on 'all allies'.",
+      "distinguishingAssertion": "count buffApply events with stat 'atkPct', value 5.46, casterIdx==poli: total must ≈ floor(poli's total trigger pulls / 5) (green faithful), NOT ≈ pulls×2 (red pellet-counted); and at least one buffApply has targetSlug==poli (self included)",
+      "inertness": "must not fire during reload gaps faster than pull cadence allows; no proc before the 5th pull (no buffApply with this stat+value in the first 4 shot events)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Start of battle: Shield 100% Max HP 10s",
+      "disposition": "FAITHFUL",
+      "scope": "shield grant (Police Badge), no damage stat",
+      "durationSemantics": "durationSec: 10, applied ONCE at t=0 (start of battle), never re-applied",
+      "triggerIdentity": "passive / one-shot at battle start — NOT interval, NOT lastBullet",
+      "targetSet": "self only",
+      "nearestWrongModel": "dropped entirely as 'defensive' — which silently deletes the Police Badge status chain (burst block 1's gate, skill2 block 2's end-trigger) and the self shielded event; or modeled as recurring every 10s",
+      "distinguishingAssertion": "exactly ONE shield event targeting poli at t≈0 with maxHpPct 100 semantics; the burst's badge-gated block resolves as active for a burst cast before t=10 (plus badge-removal)",
+      "inertness": "zero damage delta from this block in isolation (no shield-synergy consumer in controlComp); must NOT emit shielded events to allies",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Every 20 sec: DEF ▲ 23.51% 10s",
+      "disposition": "FAITHFUL",
+      "scope": "DEF stat buff — defPct is engine-inert in v1 but must be KEPT (future consumer rule; never silently dropped)",
+      "durationSemantics": "durationSec: 10 on a 20s cycle (50% uptime), NOT permanent, NOT durationSec 20",
+      "triggerIdentity": "interval sec:20 (no 'Activates when' clause → interval), first fire t=20 by convention (⚑ first-fire phase)",
+      "targetSet": "self + 2 other lowest-HP allies — alliesLowestHp stand-in (leftmost) + self; NOT all allies",
+      "nearestWrongModel": "target 'all allies' (wrong set — harmless today for inert defPct, wrong the day DEF gains a consumer), or trigger read as hitCount/passive",
+      "distinguishingAssertion": "buffApply stat 'defPct' value 23.51 fires at t≈20,40,60… with exactly 3 target events per cycle (poli + 2 stand-in allies), not 5; and totals() for every unit are IDENTICAL with this block deleted via withPatchedOverride",
+      "inertness": "zero damage movement on any unit — defPct is inert; any totals delta from this block is a bug",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Equally shares damage taken for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "incoming-damage redistribution — no HP pool / boss damage at scope lock",
+      "durationSemantics": "durationSec 10 (same window as the DEF buff) — moot, unmodeled",
+      "triggerIdentity": "same interval-20s block as the DEF line",
+      "targetSet": "self + 2 lowest-HP allies",
+      "nearestWrongModel": "inventing a damage-taken or damageTakenPct encoding — damageTakenPct is a BOSS debuff stat and would wrongly BUFF team damage if misused here",
+      "distinguishingAssertion": "no buffApply with stat 'damageTakenPct' sourced from poli anywhere in the event log; line appears verbatim in unmodeled.skill2",
+      "inertness": "must move nothing; specifically must never appear as a boss debuff",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "When Police Badge ends: recover 5%/1s 5s",
+      "disposition": "GAP",
+      "scope": "heal-over-time, SELF only",
+      "durationSemantics": "5 ticks at 1s intervals (heal ticks:5, intervalSec:1), triggered ONCE per badge end — badge ends at t≈10 naturally OR earlier when her burst removes it",
+      "triggerIdentity": "status-end trigger — NO TriggerDef primitive exists for 'when a named self-status/shield ends'; nearest approximations (interval one-shot at t=10) break if the burst removes the badge early. Engine gap; offensively inert either way",
+      "targetSet": "self ONLY — the recovery events land on poli and fire only HER 'recovery' triggers (she has none)",
+      "nearestWrongModel": "heal target mis-scoped to ALLIES — this is the dangerous one: crown (in controlComp) carries an on-recovery trigger, so an ally-targeted heal FEEDS CROWN's recovery-gated buffs and moves team damage on every badge end. Second misread: keying to fullBurstEnd",
+      "distinguishingAssertion": "every heal/recovery event sourced by poli has targetIdx == poli's index; crown's recovery-triggered buffApply count is IDENTICAL with poli's heal block deleted (withPatchedOverride) — green faithful, red if ally-scoped",
+      "inertness": "zero damage delta on all units, in particular ZERO change to crown's buff economy",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "In Police Badge: Indomitability 5s, remove",
+      "disposition": "UNMODELED",
+      "scope": "defensive (Indomitability) + status removal; only the badge-REMOVAL side-effect matters (accelerates the skill2 badge-end heal, itself inert)",
+      "durationSemantics": "Indomitability 5s; badge removal instant at burst cast",
+      "triggerIdentity": "burstCast (her own burst) + badge-status gate (requiresShielded-shaped) — active only if she bursts before the badge lapses at t≈10",
+      "targetSet": "self",
+      "nearestWrongModel": "THE trap on this kit: reading the badge gate as covering the WHOLE burst — gating the 44.55% team ATK (block 3) on Police Badge status, so every burst after the first grants nothing (badge is gone) → massive under-credit. The ■ headers are separate blocks; the gate binds ONLY this line",
+      "distinguishingAssertion": "poli's 2nd+ burst casts (badge long expired) still emit the atkPct 44.55 buffApply set — green faithful, red if badge-gated; and no damage delta from deleting the Indomitability block",
+      "inertness": "zero damage movement from this block in isolation",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Shared Shield 40% Max HP, all allies, 10s",
+      "disposition": "FAITHFUL",
+      "scope": "shield grant recorded for kit completeness / tandem (shielded-trigger consumers)",
+      "durationSemantics": "durationSec: 10",
+      "triggerIdentity": "burstCast — fires only on rotations POLI casts her burst, never on other units' bursts",
+      "targetSet": "encoding ambiguity the kit itself carries: header says 'Affects self' but the shield 'protects all allies'. Whichever encoding ships, the SHIELDED-event fan-out decides tandem behavior",
+      "nearestWrongModel": "target 'allies' emitting shielded events to every unit — over-credits any shield-synergy teammate (naga-style shield gates) on every poli burst; or trigger keyed to fullBurstEnter (fires on FBs poli did not cast)",
+      "distinguishingAssertion": "shield events with maxHpPct-40 semantics appear ONLY at frames where a poli burstCast event exists (never at other units' FB entries); in controlComp, totals() identical with the block deleted (no shield consumer present)",
+      "inertness": "no damage movement in controlComp; no shield event without a poli burstCast",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "All allies: ATK ▲ 44.55% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "generic team ATK buff (atkPct) — the kit's single load-bearing damage line",
+      "durationSemantics": "durationSec: 10 (covers the Full Burst window)",
+      "triggerIdentity": "burstCast (own-burst block) — NOT fullBurstEnter. Poli is Burst II; in any comp with another B2 the two diverge: fullBurstEnter would credit the buff on rotations the OTHER B2 casts",
+      "targetSet": "allies, all-including-self; UNGATED — explicitly NOT bound to Police Badge status (that gate belongs to burst block 1 only)",
+      "nearestWrongModel": "(a) fullBurstEnter keying → buff on every team FB even when crown casts B2 instead of poli (over-credit); (b) Police-Badge gate bleeding onto this block → only the first burst grants it (under-credit)",
+      "distinguishingAssertion": "every atkPct 44.55 buffApply frame coincides with a poli burstCast event AND buffs appear on ALL 5 units including poli; rotations where the other B2 casts show NO 44.55 application (red under fullBurstEnter); poli's later casts still apply it (red under badge-gated)",
+      "inertness": "no application on full bursts poli did not burst into",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:ATK ▲ 5.46% after 5 normal attacks",
+    "skill1:Police Badge shield 100% Max HP at battle start",
+    "skill2:DEF ▲ 23.51% every 20s (kept, engine-inert)",
+    "burst:shared Shield 40% Max HP on burst cast",
+    "burst:ATK ▲ 44.55% all allies on burst cast"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Equally shares damage taken for 10 sec.",
+      "Continuously recovers 5% of the skill user's final Max HP every 1 sec for 5 sec. (Police Badge end trigger — no status-end primitive; self-only, offensively inert)"
+    ],
+    "burst": ["Gains Indomitability for 5 sec. Removes Police Badge."]
+  },
+  "notes": "Three reconciliation points. (1) FIXTURE HAZARD — poli is Burst II, and controlComp fixes crown into the B2 slot: poli and crown COMPETE for the B2 cast under first-ready in-window selection (poli cd 40s vs crown's shorter cd). Any burst-line test must first assert poli actually emits burstCast events in the fixture before asserting the 44.55% buff; a silent zero-cast fixture makes every burst assertion vacuously green. If the driver's tests assert burst effects without confirming poli's burstCast count > 0, that is a defect. (2) Expected shared-prior misreads: (a) keying the burst team ATK to fullBurstEnter — with a second B2 in the fixture this OVER-credits on crown-cast rotations, and it is exactly the trap the taxonomy's burst-cast-vs-full-burst-enter item describes; (b) letting the 'when in Police Badge status' gate bleed onto the whole burst (it binds only the Indomitability block); (c) hitCount counting SG PELLETS (hitsPerShot 10) instead of trigger pulls for the 5-normal-attacks S1 — note both readings saturate the 10s duration so TOTAL damage barely moves; only a buffApply-cadence assertion distinguishes them. (3) TANDEM LANDMINE with the fixed fixture: crown carries an on-recovery trigger, so poli's badge-end self-heal MUST be self-scoped (or absent) — an ally-scoped heal encoding feeds crown's recovery-gated buffs and silently moves team damage; a withPatchedOverride delete-the-heal A/B pinning crown's buff economy is the cheapest guard. All magnitudes (5.46 / 100 / 23.51 / 5%/s / 40 / 44.55) are literal kit text → DATAMINED; the only ⚑ is the interval first-fire phase (t=20 vs t=0) on skill2, per the stated convention.",
+  "model": "claude-fable-5"
+}

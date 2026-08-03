@@ -142,6 +142,51 @@ lives. Newest first within each section.
   stage-matched baseline, and "no long-cooldown unit lands below its baseline" over the whole
   population). verify.sh green.
 
+- **(2026-08-03) OVERLOAD LINES: ONE BASIS EVERYWHERE — EXHAUSTIVE RANKING AT T11. Greedy
+  search and the max-roll basis are both DELETED.** Three separate searches used to pick a unit's
+  four free overload lines (the lines beyond the 4× Elemental DMG + 4× ATK floor), on two different
+  tiers, and they disagreed with each other on 28 of 73 units. Owner ruling: exhaustive, at T11, for
+  everything.
+  **The two defects, both measured** (`npx tsx scripts/ol-search-compare.ts`, committed):
+  1. **TIER** — `scripts/build-ol-optimal.ts` optimized at MAX ROLL while every consumer applies the
+     picks at T11, and `src/dpschart/matrix.ts` stamped no `value` at all, so the chart applied max
+     roll too. Not cosmetic: several candidates are THRESHOLD stats whose winner moves with the tier.
+  2. **SEARCH** — the greedy marginal-gain optimizer (`src/bestol.ts`) adds one best line at a time,
+     so it cannot see a stat whose FIRST line is worthless and whose third or fourth wins outright.
+     Charge Speed buys nothing until it crosses a frame boundary; Hit Rate's core-rate curve is
+     convex. At T11 it left a mean 1.35% / median 0.00% / **max 31.19%** of achievable gain unclaimed
+     across 73 units. `asuka-wille` is the clean case: one Max Ammo line gains 1.41% and LOSES step 1
+     to Crit Rate's 1.72%, so greedy took 2× Crit DMG + 2× Crit Rate (8.66%) over the exhaustive
+     winner 3× Max Ammo + 1× Crit Rate (57.91%) — row 7 of its own ranking. No threshold tweak
+     reaches this; the failure is structural. (The 1.41% is greedy's own first-step figure, taken
+     against the MAX-ROLL floor it searched on. Re-measured on the landed T11 basis the same line
+     reads **1.29%**, which is what `ol-search-compare.ts --only asuka-wille` reproduces today —
+     the ordering, and so the conclusion, is identical.)
+     **Landed:** `src/bestol.ts` DELETED (greedy) and `src/olcalc.ts` DELETED (a third greedy searcher,
+     unimported anywhere, still carrying the all-weapons Hit Rate exclusion `src/olconfigs.ts` fixed on
+     2026-08-02 — a known-wrong model parked beside its replacement). `src/dpschart/matrix.ts` gains
+     `OL_TIER = 11` + `atOlTier()`, the single knob every invested tier now stamps; `run.ts`,
+     `build-ol-optimal.ts`, `build-unit-pages.ts` and `src/cli.ts --best-ol` all call
+     `rankFreeLineConfigs`. Exhaustive is also CHEAPER: 15 sims per unit (MG/Pistol), 35 (AR/SMG/SG) or
+     70 (RL/SR) against greedy's
+     ~28, because the pool is only 3 candidate types.
+     **Result:** `data/ol-optimal.json` regenerated — 28/73 picks changed, and the artifact is now
+     optimal on **73/73** units (mean gap 0.00%, max 0.00%, against greedy's mean 1.35% / max 31.19%).
+     It is the same computation `build-unit-pages.ts` runs, so the two artifacts can no longer disagree.
+     **Accepted consequence — the DPS chart's invested tiers move, and substantially.** Applying T11
+     instead of max roll makes every invested cell weaker: per-unit DPS mean **−8.85%** at 8/12 (range
+     −15.81% … −1.71%) and **−11.41%** at 12/12 (−27.11% … **+20.39%**, the positives being units the
+     exhaustive search fixes), with **1108 of 1830** rank positions moving at 12/12 and 514 at 8/12.
+     The 8/12 tier has no optimizer, so its shift is the tier change alone — a clean decomposition of
+     the two effects. This is a basis change, not an accuracy fix: the chart previously claimed max-roll
+     numbers and now claims T11 numbers. Revert is one line (`OL_TIER = 15`) if the chart is ever meant
+     to be aspirational-max.
+     **NOT touched:** the `scope` investment tier carries no overload lines at all, so the scope-lock
+     validation basis is **byte-identical** (measured: 0.00% delta across all 30 scope cells, 0/1830
+     rank positions moved) and the regression gate — both cells `invest: 'scope'` — is unaffected.
+     `data/unit-pages.json` is likewise unchanged: its Solo cell's controls are the synthetic no-ops,
+     whose lines cannot reach the carry. verify.sh green, 2805 tests passing.
+
 - **(2026-08-02) THE SYNTHETIC NO-OP CONTROLS USE LOW BASE ATK (100), AND IT IS THE SHARED
   DEFAULT.** The controls in `src/dpschart/noop.ts` carried base ATK 30,000 while real units sit near
   400–500, so a control ALWAYS won an `alliesTopAtk` selector: a king-maker buff on the unit under

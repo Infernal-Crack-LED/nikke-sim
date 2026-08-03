@@ -1,0 +1,89 @@
+{
+  "note": "aria (Aria) — Tetra MG Attacker, Water, Burst II, cd 40s, ammo 300, reloadFrames 161, hitsPerShot 1, normalMult 5.47 / coreMult 200, critRate 15 / critDamage 150. Kit-autonomy gauntlet 2026-08-03: FROM-SCRATCH build (no shipped override existed; simSupported was false) — test-first re-derivation (scripts/tests/units/aria.test.ts, groups A1–A4 + the STARVED-comp two-way trigger lever). TRIGGER DISPOSITIONS (the whole kit rides on these): S1 'Activates at the beginning of Full Burst' → fullBurstEnter, NOT burstCast — the kit names the Full Burst itself, so the team Critical Damage window opens on ANY team Full Burst, including rotations aria does not cast (proved on the STARVED fixture ['liter','crown','aria','helm'], where crown's 20s cd takes every stage-2 slot and aria casts ZERO bursts while the buff still fires on every FB — Tier-2 lever, pinned in the test; her own stage-2 cast lands ~0.8s BEFORE the window opens, so a burstCast keying shifts the 10s window off the FB frames). S2 'Activates when the last bullet hits the target' → lastBullet — fires once per emptied 300-round belt (5 windows per 180s, ~50% uptime); a shotFired misread would run the team crit buff at near-permanent uptime. Stat is critRatePct, UNSCOPED — the kit reads 'Critical Rate ▲' with no 'of normal attacks' clause (helm carries that clause and is the scoped stat; aria is the mirror image: the nearest-wrong model for aria is helm's scoped stat, which would leave team skill/burst crit untouched — pinned via the skill-bucket crit rates on helm's crit-eligible riders). BURST (both lines burstCast — her own cast only, silent on FBs she sits out, pinned on the STARVED comp): (a) all allies: shield = 37.86% of the skill user's FINAL Max HP for 10s — modeled as the engine `shield` effect (EVENT-ONLY: no HP pool at scope; emits no SimEvent of its own but fires `shielded` triggers / opens `requiresShielded` gates — the tandem channel is asserted in the unit test via a patched shielded-consumer sentinel; maxHpPct is CASTER-basis per the schema, the kit's literal 'of the skill user's final Max HP'); (b) self: Hit Rate ▲30.37% for 15s (deliberately OUTLASTS the 10s FB window by 5s) — modeled as hitRatePct, buff faithfully applied, but DAMAGE-INERT on an MG (see ⚑2). UNMODELED: none — all four kit lines are represented (the two inert channels are modeled structure + event, not dropped). TIER 2: burstCast-vs-fullBurstEnter lever (both directions, pinned on the STARVED comp) + the generic-vs-scoped crit-stat lever. ⚑ FLAGS: (⚑1 CADENCE TUPLE, mandatory) MG rate of fire (engine MG wind-up ladder + class default; not text-derivable) + reloadFrames 161 + ammo 300 shipped datamine as-is (no charFixes); estimate = datamine as-is; recipe = rounds/min + reload gap from any focused aria video; 300-round belt empties in ~8-9s at MG rates — normal MG profile, no odd-fire-mode text tell → NOT escalated. (⚑2 OUT-OF-DOMAIN, Hit-Rate channel — TIER 2) the self hitRatePct 30.37/15s line is faithfully applied but moves no damage today: the engine's Hit-Rate→core models (PELLET_GAUSS / CONE_DELTA / UNIGEO / the hrCoreMult fallback) are accuracy-circle models for AR/SMG/SG only; MG has no circle row (sim.ts), so the buff applies but scales no core fraction — estimate = zero damage impact at scope lock until an MG HR channel exists; recipe = if the engine ever gains MG circle coverage, re-judge from a focused aria recording (core fraction inside vs outside her post-burst 15s Hit Rate window); the unit test pins the inertness as a canary (totals-equality under removal). (⚑3 OUT-OF-DOMAIN, shield magnitude — TIER 3) the shield's 37.86%-of-final-Max-HP SIZE is recorded in the effect but no HP pool exists to absorb damage, so the magnitude moves nothing at scope lock; the EVENT channel (shielded triggers / requiresShielded gates) is live and tested; recipe = none until an incoming-damage model exists. FIXTURE NOTE: multi-B2 comps starve aria — same-stage selection takes the ready slot-first unit and a 20s-cd B2 (crown) is always up, so aria casts zero bursts there (PROBED); graded aria comps should field her as the only B2 or accept the rotation share. Kit-autonomy gauntlet 2026-08-03: cross-family S2b (claude-fable-5) review converged FAITHFUL on all 4 lines (leakDetected null); driver adopted the reviewer's shielded-consumer sentinel probe + the STARVED-comp two-way trigger discrimination.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 26.99,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 7.03,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 37.86,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 30.37,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "caveats": [
+    "skill1: fullBurstEnter — the 10s team Critical Damage window opens on EVERY team Full Burst (including rotations aria sits out); her own stage-2 cast lands ~0.8s before the window opens, so a burstCast keying would shift the window off the FB frames (Tier-2 lever, pinned on the STARVED comp in the unit test)",
+    "skill2: critRatePct is UNSCOPED (kit: 'Critical Rate ▲', no 'of normal attacks' clause) — it lifts team skill/burst crit too, unlike helm's scoped line; cadence is belt-cycle-bound (one 5s window per emptied 300-round belt, ~50% uptime)",
+    "burst: the 37.86%-of-final-Max-HP shield is EVENT-ONLY (no HP pool at scope) — damage-inert in isolation, tandem-live (fires `shielded` triggers / opens `requiresShielded` gates; asserted via a patched shielded-consumer sentinel in the unit test) (⚑3)",
+    "burst: the self hitRatePct 30.37/15s buff applies faithfully but is damage-inert on an MG — the engine's Hit-Rate→core channel has no MG coverage (AR/SMG/SG accuracy-circle models only); canary-pinned by totals-equality in the unit test (⚑2)",
+    "cadence tuple (MG wind-up ladder, reloadFrames 161, ammo 300) is the unverified datamine — read rounds/min + reload gap from a focus video (⚑1)",
+    "multi-B2 comps starve aria to zero casts (same-stage first-ready selection; PROBED with crown) — graded comps should field her as the only B2"
+  ]
+}

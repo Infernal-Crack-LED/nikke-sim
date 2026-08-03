@@ -1,0 +1,92 @@
+[
+  {
+    "slot": "skill1",
+    "kitLine": "Activates when using Burst Skill",
+    "status": "IMPLEMENTED",
+    "effectOrReason": "trigger burstCast (owner's own burst cast, NOT fullBurstEnter \u2014 keying to FB-enter would over-fire in any comp with another Burst II)"
+  },
+  {
+    "slot": "skill1",
+    "kitLine": "only if self is alive",
+    "status": "SKIPPED",
+    "effectOrReason": "scope-trivial \u2014 nobody dies at scope lock; no gate primitive needed (documented in caveats, not a separate unmodeled row)"
+  },
+  {
+    "slot": "skill1",
+    "kitLine": "Affects all allies.",
+    "status": "IMPLEMENTED",
+    "effectOrReason": "target {kind:'allies'} \u2014 no excludeSelf ('all allies' includes self)"
+  },
+  {
+    "slot": "skill1",
+    "kitLine": "Proportionally shares damage taken",
+    "status": "SKIPPED",
+    "effectOrReason": "damage-share redistribution; no HP pool / no incoming boss damage modeled in v1. No schema primitive. Verbatim in unmodeled.skill1"
+  },
+  {
+    "slot": "skill1",
+    "kitLine": "DEF \u25b2 10.13% of user's DEF",
+    "status": "IMPLEMENTED",
+    "effectOrReason": "buff defPct 10.13, no durationSec ('continuously'). Kept despite defPct being damage-inert in v1 (HARD RULE: DEF/HP lines are never skippable \u2014 future scaler consumer). Caster-DEF-scaling is unrepresentable \u2014 see caveats"
+  },
+  {
+    "slot": "skill1",
+    "kitLine": "when performing Full Charge attacks",
+    "status": "IMPLEMENTED",
+    "effectOrReason": "trigger shotFired \u2014 \u26d1 no full-charge trigger kind exists; RL base weapon (chargeFrames 60) fires only charged shots, so shotFired \u2248 per-full-charge"
+  },
+  {
+    "slot": "skill1",
+    "kitLine": "Affects all allies (except self).",
+    "status": "IMPLEMENTED",
+    "effectOrReason": "target {kind:'allies', excludeSelf:true}"
+  },
+  {
+    "slot": "skill1",
+    "kitLine": "Recovers 4% of user's final Max HP",
+    "status": "IMPLEMENTED",
+    "effectOrReason": "heal {ticks:1} \u2014 emits a recovery event per full charge to every ally but self; HP amount is not modeled (no HP pool), the recovery CHANNEL is the point (tandem rule)"
+  },
+  {
+    "slot": "skill2",
+    "kitLine": "when using Burst Skill / self's cover",
+    "status": "SKIPPED",
+    "effectOrReason": "cover-scoped damage share; no cover HP pool and no incoming damage at scope lock. Verbatim in unmodeled.skill2"
+  },
+  {
+    "slot": "skill2",
+    "kitLine": "Activates when Full Burst ends.",
+    "status": "IMPLEMENTED",
+    "effectOrReason": "trigger fullBurstEnd, target self"
+  },
+  {
+    "slot": "skill2",
+    "kitLine": "recovers Cover's HP 2.88%/1s for 5s",
+    "status": "IMPLEMENTED",
+    "effectOrReason": "heal {ticks:5, intervalSec:1} \u2014 5 recovery events over 5s. Self-scoped, so inert for allies; \u26d1 cover-HP recovery may not count as 'recovery' in game"
+  },
+  {
+    "slot": "skill2",
+    "kitLine": "Burst Stage 1 + cover destroyed",
+    "status": "SKIPPED",
+    "effectOrReason": "gate is never satisfied \u2014 cover destruction is not modeled (boss deals no damage at scope lock); a stageEnter heal here would fire unconditionally and falsely spam recovery events. Verbatim in unmodeled.skill2"
+  },
+  {
+    "slot": "burst",
+    "kitLine": "Rebuild Cover with 20% HP, once/battle",
+    "status": "SKIPPED",
+    "effectOrReason": "cover HP pool unmodeled; the 'cover has been destroyed' gate is never satisfied. Verbatim in unmodeled.burst"
+  },
+  {
+    "slot": "burst",
+    "kitLine": "Max HP of Cover \u25b2 18% for 20 sec",
+    "status": "SKIPPED",
+    "effectOrReason": "COVER Max HP is a separate pool from unit Max HP \u2014 encoding as maxHpPct/casterMaxHpPct would wrongly feed atkOfMaxHpPct conversions. Verbatim in unmodeled.burst"
+  },
+  {
+    "slot": "burst",
+    "kitLine": "Damage Taken \u25bc 8.87% for 10 sec",
+    "status": "SKIPPED",
+    "effectOrReason": "targets ALL ALLIES = mitigation, not a boss debuff. `damageTakenPct` is defined as a boss debuff (positive = boss takes MORE); putting an ally-side \u25bc on that stat is a wrong-target model. Offensively inert. Verbatim in unmodeled.burst"
+  }
+]

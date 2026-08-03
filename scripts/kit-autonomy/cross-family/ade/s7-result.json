@@ -1,0 +1,82 @@
+{
+  "slug": "ade",
+  "kitDescription": "Ade is a Wind-element Supporter who fires an assault rifle and carries a Burst II skill on a 20-second cooldown. At the start of battle she makes all allies immune to one debuff (stacking once, maintained), and whenever her own HP falls below 90% she grants the whole team an ATK buff equal to 5.19% of her own ATK for 5 seconds. Her second skill refreshes that same debuff immunity after 420 normal attacks, and after every 120 normal attacks she raises all allies' Max HP by 15.62% of her own Max HP for 5 seconds without healing anyone. Her burst raises all allies' Max HP by 25.15% of her Max HP and their ATK by 10.15% of her ATK, both for 10 seconds, again without restoring HP. She contributes no skill or burst damage of her own — her entire offensive value is the two team ATK buffs riding on her rifle normal attacks.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Perfect Maid: debuff immunity, 1 stack",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED, verbatim + reason in unmodeled.skill1 (no debuff primitive; v1 boss applies no debuffs; biscuit/diesel-winter-sweets precedent)",
+        "blindSaid": "S2b UNMODELED; S5 GAP (it.skip + structural assertion the line is recorded in unmodeled.skill1); S6 UNMODELED with the same reasoning",
+        "formulaCheck": "No damage bucket touched; no StatKey/EffectDef expresses debuff immunity; inert by construction at scope lock",
+        "fireRateOk": true,
+        "explanation": "Four-way convergence on UNMODELED with the prose recorded verbatim and a reason attached — a documented gap, not a silent drop. The S5 structural assertion (unmodeled record must match /Perfect Maid/i) passes against the shipped override."
+      },
+      {
+        "kitLine": "HP<90%: ATK ▲5.19% user ATK, 5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "MODELED as interval:5 refresh (first fire t=5s) → casterAtkPct 5.19 / allies / durationSec 5 — the 5s timed shape kept exactly, only the HP gate collapsed; ⚑2 flag with estimate (near-full uptime from a few seconds in), recipe (HP-bar crossing + buff-icon uptime from a focus video), and tier (status-gate approximation, minor flat add); S2b's UNMODELED logged as the rejected alternative",
+        "blindSaid": "S2b UNMODELED (trigger unrealizable at scope lock; over-credit risk). S5 disposition-neutral: pins casterAtkPct + allies in the modeled branch, passes on the driver encoding. S6 MODELED (corroborates driver vs S2b) but as passive + durationSec 5",
+        "formulaCheck": "Stat routing is exactly right per SSOT §1a/§11: 'of the skill user's ATK' = casterAtkPct flat add of ade's static ATK outside the holders' (1+ATK%), uniform value across holders — NOT atkPct. Duration 5s matches prose. Only the trigger is approximated: no HP-threshold primitive exists and the v1 boss deals no damage, so the literal gate cannot be evaluated.",
+        "fireRateOk": true,
+        "explanation": "RULING ON THE OPEN QUESTION: the driver's encoding is FAITHFUL-as-documented-gap, not a REAL-GOTCHA, and it must NOT be forced back to UNMODELED. The mast precedent governs: an offensive HP-below gate with a missing primitive ships always-on with a measurement-gated flag, and mast's reconciling judge ruled exactly this DOCUMENTED_GAP inside a GO verdict; biscuit's UNMODELED case is distinguishable (defensive invincibility, no damage channel). Ade's 90% threshold is easier to cross than mast's 70%, so the near-full-uptime estimate is if anything stronger, and every agent including S2b agrees the over-credit direction is bounded and measurement-gated. Between the two modeled encodings, the driver's interval:5 is strictly more faithful than S6's: S6's passive + durationSec 5 under the fused-passive semantics (sim.ts ~2179) applies once at frame 0 and expires at t=5s, never re-applying — covering 5 of 180 seconds and contradicting S6's own 'always-on' caveat. That is a blind-side engine-semantics misread (a RECON_ERROR-grade divergence on S6's artifact), not corroboration of any driver defect; the driver's refresh keeps the kit's 5s window continuously live from t=5s. The divergence is fully documented on both sides (⚑2 note + caveats + rejected-alternative record), which is exactly what DOCUMENTED_GAP requires. Residual risk is the mast-identical one — the pre-onset transient and real-fight uptime — and the stated recipe is the correct next step."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Perfect Maid after 420 normal atks",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED, verbatim + reason in unmodeled.skill2 (same immunity refresh; no primitive, no incoming debuffs)",
+        "blindSaid": "S2b UNMODELED; S5 GAP (it.skip + structural record assertion); S6 UNMODELED",
+        "formulaCheck": "No damage path; the hitCount:420 trigger would be expressible but the payload is not — correct model is no block, which is what shipped",
+        "fireRateOk": true,
+        "explanation": "Four-way convergence; recorded verbatim with reason. Not merged with the 120-NA Max HP line (S2b's nearest-wrong trap avoided — separate slots in unmodeled, separate blocks for the modeled line)."
+      },
+      {
+        "kitLine": "120 NA: Max HP ▲15.62% user HP, 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:120 → casterMaxHpPct 15.62 / allies / durationSec 5; offensively inert by e3 rule + no own atkOfMaxHpPct, proven by byte-identical totals when stripped",
+        "blindSaid": "S2b FAITHFUL with identical spec; S5 FAITHFUL (relative ≥120-own-shots cadence assertion, maxHpFlat value, all-holders target set); S6 identical encoding",
+        "formulaCheck": "hitCount counts the owner's rounds (AR hitsPerShot 1 collapses pull-vs-hit); first fire at the 120th round, not t=0, not interval-seconds — all three nearest-wrong models excluded. casterMaxHpPct = % of CASTER's Max HP, uniform flat across holders (SSOT §2c), vs targetMaxHpPct per-holder scatter — driver's counterfactual shows the scatter. e3 rule (sim.ts ~1521, video-measured) makes the ally grant offensively inert; the buff still exists in the log for future consumers, satisfying the future-consumer rule.",
+        "fireRateOk": true,
+        "explanation": "Fires at the prose cadence: at 720 rpm / 60 ammo / 111 reload frames the 120-round crossing lands every ~13.7s (~13 grants over 180s), pinned by the driver's kth-grant-at-120k-pulls assertion and S5's cadence-robust relative variant. Modeled AND firing AND inert — fully faithful."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Max HP ▲25.15% user HP, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → casterMaxHpPct 25.15 / allies / durationSec 10, in one block with the ATK line; no heal effect ('without restoring HP'), proven inert by totals-equality",
+        "blindSaid": "S2b FAITHFUL identical; S5 FAITHFUL (maxHpFlat 25.15% value + strict strip-invariance proof); S6 identical encoding",
+        "formulaCheck": "burstCast (own B2 cast), not fullBurstEnter — count equals ade's cast count in the co-B2 comp where the team opens strictly more FBs than she casts. No heal effect means no recovery events, so crown-style on-recovery consumers cannot proc — correct reading of 'without restoring HP'. Uniform caster-basis flat; 10s window matches the FB window.",
+        "fireRateOk": true,
+        "explanation": "Fires once per ade cast (≥4 casts in the fixture) reaching all allies on the cast frame; the 5s-window counterfactual expires 5s early as required. Faithful on trigger, basis, value, scope, and duration."
+      },
+      {
+        "kitLine": "ATK ▲10.15% user ATK, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → casterAtkPct 10.15 / allies / durationSec 10 — the kit's only damage-moving line; load-bearing assertions + non-vacuity strip + atkPct/self-only/fullBurstEnter counterfactuals all red as designed",
+        "blindSaid": "S2b FAITHFUL identical (the flat-identical-across-targets discriminator); S5 FAITHFUL with five discriminating assertions (flat-resolved value, carry-side divergence under atkPct, 10s vs 5s, cast-frame-before-FB timing, all-allies scope); S6 identical encoding",
+        "formulaCheck": "casterAtkPct resolves to 0.1015 × ade.staticAtk (Supporter 98,367 at scope) as a uniform flat add per SSOT §1a — the Supporter-buffing-Attacker basis makes atkPct materially over-credit the carry, and the carry totals move under that counterfactual while ade's own total is byte-identical (the correct isolation, since 10.15% of ade applied to ade is basis-invariant). Apply frame ≥ her burstCast frame and strictly before fullBurstStart — burst-cast, not FB-entry, timing.",
+        "fireRateOk": true,
+        "explanation": "Fires on every ade cast and demonstrably moves team damage (strip test strictly reduces it), so no modeled-but-dead risk. The co-B2 discrimination comp is the one configuration that separates burstCast from fullBurstEnter on counts, and it does. Fully faithful."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: all six kit lines are either FAITHFUL (skill2 Max HP grant, both burst lines — all three firing at prose cadence and discriminated against their nearest-wrong models) or DOCUMENTED_GAP (the two Perfect Maid immunity lines recorded verbatim with reasons, and the S1 HP<90% ATK gate shipped always-on under the mast GO-1.0 precedent with ⚑2 estimate + recipe + tier and S2b's UNMODELED logged as the rejected alternative). The blind re-derivations converged on everything except the one arbitrated line: S5's intent-preserved assertions run 15/15 green + 2 intentional GAP skips against the shipped override (its original file's 12 reds were all blind-internal wiring bugs B1–B5 — onEvent placement, OverrideFile shape, the crown-slot-priority fixture starvation, 5-vs-4 comp size, and the basis-invariant self-total comparison — each a RECON_ERROR, none a driver divergence), and S6's override is byte-identical to the driver's on skill2/burst/unmodeled. On the HP-gate line the driver's interval:5 refresh is the strongest of the three positions: S2b's UNMODELED is defensible but loses to the mast precedent for an offensive gate, and S6's passive + durationSec 5 contradicts its own 'always-on' caveat under the engine's fused-passive semantics (live t∈[0,5] only, never re-applies) — a blind-side engine-semantics misread, not corroboration of any driver defect. The same-model residual the owner should spot-check: every agent in this gauntlet converged on MODELED for the HP gate, and same-family convergence proves stability, not correctness — the ⚑2 recipe (HP-bar crossing time + buff-icon uptime from an ade focus video) is the one measurement that could still move this line, in either direction (a healer comp keeping ade above 90% would make even UNMODELED optimistic relative to always-on). Minor doc nit, not a finding: the shipped override note names 'liter/ade/crown/ada/helm' as the co-B2 comp while the test correctly uses biscuit (40s CD) after the test's own comment explains crown (20s CD) never splits stage 2 under liter's CDR — worth a one-line note cleanup, no behavioral impact. Nothing must change for GO.",
+  "model": "kimi-code/k3"
+}

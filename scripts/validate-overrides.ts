@@ -113,6 +113,16 @@ const FLAVORS = new Set([
   'projectileAttachment',
   'projectileExplosion',
 ]);
+// the facets sim.ts's teamHasMatch actually reads — keep in lockstep with
+// Block['teamHas'] in src/skills/types.ts
+const TEAM_HAS_FACETS = new Set([
+  'element',
+  'class',
+  'weapon',
+  'burst',
+  'slugs',
+  'sameSquad',
+]);
 
 const data: DataFile = JSON.parse(
   readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8')
@@ -283,6 +293,52 @@ function validate(slug: string): boolean {
       }
       if (b.formation && !['noB1', 'hasB1'].includes(b.formation)) {
         errors.push(`${p}: bad formation`);
+      }
+      // Every facet inside `teamHas` is optional and omitting one leaves it
+      // unconstrained, so a MISSPELLED facet key is invisible: the engine's
+      // teamHasMatch (sim.ts) reads only the keys it knows, ignores the rest, and
+      // the gate silently matches any team — which is exactly the dead-authoring
+      // failure the sameSquad checks below exist to prevent. Allowlist the keys.
+      if (b.teamHas !== undefined) {
+        if (
+          typeof b.teamHas !== 'object' ||
+          b.teamHas === null ||
+          Array.isArray(b.teamHas)
+        ) {
+          errors.push(`${p}: teamHas must be an object of facets`);
+        } else {
+          for (const k of Object.keys(b.teamHas)) {
+            if (!TEAM_HAS_FACETS.has(k)) {
+              errors.push(
+                `${p}: unknown teamHas facet "${k}" (allowed: ${[...TEAM_HAS_FACETS].join(', ')}) — an unrecognised facet is IGNORED by the engine, leaving the block always-active`
+              );
+            }
+          }
+          // an all-empty gate matches any team of 2+ — the same always-active
+          // block, reached by writing the gate and constraining nothing
+          if (Object.keys(b.teamHas).length === 0) {
+            errors.push(
+              `${p}: teamHas is empty — it constrains nothing and the block is always active; omit it`
+            );
+          }
+        }
+      }
+      if (b.teamHas?.slugs !== undefined) {
+        if (
+          !Array.isArray(b.teamHas.slugs) ||
+          b.teamHas.slugs.length === 0 ||
+          b.teamHas.slugs.some((s: unknown) => typeof s !== 'string')
+        ) {
+          errors.push(`${p}: teamHas.slugs must be a non-empty array of slugs`);
+        } else {
+          for (const s of b.teamHas.slugs) {
+            if (!data.characters[s]) {
+              errors.push(
+                `${p}: teamHas.slugs "${s}" is not a character slug — the gate can never open`
+              );
+            }
+          }
+        }
       }
       // `teamHas.sameSquad` resolves the owner's squad from the curated map
       // (src/data/squads.ts) — an unmapped owner fails closed (the gate can

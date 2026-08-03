@@ -1,0 +1,176 @@
+{
+  "slug": "novel",
+  "leakDetected": null,
+  "override": {
+    "slug": "novel",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 15
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 52.36
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 100
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 13.5,
+            "durationSec": 15,
+            "maxStacks": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 330.61,
+            "noFb": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": ["DEF ▼ 7.05% for 5 sec."],
+      "skill2": [],
+      "burst": [
+        "■ Activates when Cornucopia is at max stacks. Affects 1 enemy unit(s).",
+        "Damage Taken ▲ 67.5% for 5 sec."
+      ]
+    },
+    "caveats": [
+      "⚑ skill1 has NO activation clause, so it is modeled as an interval trigger; the 15s period is an UNMEASURED estimate (the 20s in the base stats is the Burst II cooldown, not a skill cooldown). Both the damage cadence and the debuff uptime scale directly with this number.",
+      "⚑ The skill1 enemy DEF ▼ 7.05% is NOT modeled: the effect schema has no enemy-DEF-reduction stat (defPct is self-DEF and inert in v1; damageTakenPct is a different bucket and encoding DEF▼ as it would fabricate the magnitude). This under-credits Novel and every teammate by the boss-DEF term.",
+      "⚑ The burst's second block (Damage Taken ▲ 67.5% for 5 sec, gated on Cornucopia at max stacks) is NOT modeled: no block gate expresses 'owner's buff X is at N stacks' (resourceGate cannot model the 15s per-stack decay, so a resource proxy would latch permanently satisfied). Derived stack trajectory says 5 stacks is likely unreachable from normal attacks alone (~3 concurrent at steady state), so authoring it ungated would fabricate a large team-wide debuff.",
+      "The skill2 Cornucopia buff (defPct) is offensively inert in v1; it is retained because it is the kit's stack counter and the precondition of the burst's Damage Taken ▲ rider.",
+      "⚑ Kit says 'after landing 100 normal attack(s)'. The hitCount trigger counts ROUNDS dispatched (hitsPerShot 1 for this SMG), not rounds that connect; any miss fraction slows the real stack cadence relative to the model.",
+      "Burst-cast damage is authored FB-exempt (noFb) per the burst-cast-lands-before-Full-Burst rule; the 52.36% skill1 rider keeps FB-by-timing (default ON)."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Novel (SMG/Iron/Defender/Burst II) is modeled as three lines: skill1 an interval-triggered 52.36%-of-final-ATK hit on the boss (⚑ 15s period — the kit gives no activation clause); skill2 a self Cornucopia stack (DEF ▲13.5%, up to 5, 15s) on every 100 rounds fired; burst a 330.61%-of-final-ATK burst-cast hit, FB-exempt because a burst cast resolves before the Full Burst window opens. Two kit lines are deliberately unmodeled for lack of a primitive, both recorded verbatim in `unmodeled`: the skill1 enemy DEF ▼7.05% (no enemy-DEF stat in the schema) and the burst's Cornucopia-at-max-stacks Damage Taken ▲67.5% (no buff-stack block gate). Whole-picture check on the second one: at 120 ammo / ~20 rounds per sec / 81-frame reload the unit averages ~16.3 rounds per sec, so 100 rounds arrive about every 6.1s and at most ~3 of the 5 stacks are ever alive inside the 15s window — reaching the cap needs roughly +63% sustained round throughput from ally fire-rate/reload buffs, so the rider is expected to be rare-to-never rather than routine."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Affects 3 enemy unit(s) with the hig…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — the scope-lock boss is a single partless enemy, so the '3 highest final DEF' target set collapses to 1; no multi-enemy primitive is needed."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 52.36% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 52.36 on an interval trigger (no activation clause in the text ⇒ interval per the trigger-identity rule). FB-by-timing left default ON; noRange is engine-automatic; crit left to the engine's rider-crit gate; no core (text does not say 'core strike')."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▼ 7.05% for 5 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "No enemy-DEF-reduction StatKey exists (defPct = self DEF, inert in v1; damageTakenPct is a distinct formula bucket, so reusing it would invent the magnitude). Recorded verbatim in unmodeled.skill1 + flagged; this is a real under-credit, not a judgement that the line is inert."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Activates after landing 100 normal a…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'hitCount', count:100}, target {kind:'self'}. hitCount counts rounds (hitsPerShot 1 here), so 'landing' vs 'firing' is a modeled approximation — see caveats."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Cornucopia: DEF▲ 13.5%, stacks up to 5…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat defPct value 13.5, durationSec 15, maxStacks 5. Offensively inert in v1 but kept per the 'keep the stat buff even if the engine treats it inert' prior — it is also the currency the burst's second block reads."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects the 1 enemy unit(s) with the…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single-boss scope, the highest-final-ATK selection is a no-op."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 330.61% of final ATK as Burst Sk…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 330.61 on trigger {kind:'burstCast'}, noFb:true (burst-cast damage lands before Full Burst begins — no +50% major, no entry auras)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Activates when Cornucopia is at max …",
+      "status": "SKIPPED",
+      "effectOrReason": "No block gate expresses 'the owner's named buff is at N stacks'. resourceGate is the nearest primitive but resources never decay, so a resource proxy would latch permanently true from ~31s onward — strictly further from the truth than omission, since the derived steady state never reaches 5 stacks. Verbatim in unmodeled.burst + flagged."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage Taken ▲ 67.5% for 5 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "The effect itself IS expressible (damageTakenPct, boss-held debuff, 5s) and is a whole-team damage lift — it is skipped only because its max-stacks precondition is not expressible. Authoring it ungated would fabricate uptime for a large team-wide debuff. Verbatim in unmodeled.burst + flagged."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger.sec",
+      "estimate": "15s (interval, first fire at t=15s per the engine's interval convention)",
+      "reasoning": "The kit gives skill1 NO activation clause, so the trigger identity is 'interval' by rule, but the period is not in the kit text at all. The '20s' in the base stats is the Burst II burst cooldown, not a skill cooldown. 15s is a mid-range guess for a debuff skill carrying a 5s ▼ window; the whole skill1 damage contribution and the DEF▼ uptime scale linearly with it, so this is the single largest unmeasured lever in this override.",
+      "recipe": "Read novel's datamined skillCooldownsSec (the skill-cooldown table / data source used for other units) and set sec to it; also decide first-fire phase (force-cast skills first-fire t=0, interval skills t=sec). Failing a datamine, count skill-1 damage popups in a recorded fight and take the inter-popup spacing."
+    },
+    {
+      "field": "skill1[0].effects — missing enemy DEF ▼ 7.05% / 5s",
+      "estimate": "Damage lift on the whole team of roughly +1–3% while active, i.e. under ~1% averaged over a 180s fight at the ⚑15s cadence with a 5s window (≈33% uptime).",
+      "reasoning": "Boss DEF enters the damage formula as a subtraction/divisor term, so a 7.05% DEF cut is worth far less than 7.05% damage and its value depends on the boss-DEF-to-ATK ratio — that is exactly why it must NOT be transcribed into damageTakenPct (which would enter a different bucket at face value and over-credit by roughly an order of magnitude).",
+      "recipe": "Either (a) add an enemy-DEF StatKey and let the engine apply it to the boss-DEF term, then re-derive the lift from the scope-lock boss DEF constant; or (b) compute the equivalent damageTakenPct analytically from the boss-DEF term at scope-lock values and author THAT number with the derivation cited. Do not do (b) by eyeball."
+    },
+    {
+      "field": "burst[1] — missing Damage Taken ▲67.5% / 5s (Cornucopia max-stacks rider)",
+      "estimate": "Expected real uptime ≈ 0 on a standard comp; non-zero only in heavy fire-rate/reload-buff teams.",
+      "reasoning": "Stack trajectory derived from the base stats: 120 ammo at ~20 rounds/sec = 6.0s of firing, 81-frame reload = 1.35s, so ~16.3 rounds/sec averaged over the cycle and ~6.1s per 100-round stack. With a 15s stack life, at most 3 stacks (t, t+6.1, t+12.2) coexist. Reaching 5 requires ≤3.75s per 100 rounds ⇒ ≥26.7 rounds/sec sustained, ~+63% over the effective average — attainable only with substantial ally fire-rate/reload support, and further out of reach if 'landing' means accuracy-filtered hits. So the rider is a conditional the sim currently cannot gate and probably should not be firing.",
+      "recipe": "Add a stack-count block gate (e.g. requiresBuffStacks {key, min}) — this unit is its first carrier — then author the block as trigger burstCast, target enemy, effects [{kind:'damageTakenPct'-style buff, value 67.5, durationSec 5}] behind that gate. Validate by instrumenting buffApply events for the Cornucopia key on a real comp and reading peak concurrent stacks; confirm against footage (does the ▲ Damage Taken icon appear on the boss after her burst?)."
+    },
+    {
+      "field": "skill2[0].trigger (cadence tuple)",
+      "estimate": "~6.1s per 100 rounds at scope lock (≈16.3 rounds/sec cycle-averaged, from 20 rounds/sec fire + 120 ammo + 81-frame reload)",
+      "reasoning": "Both the datamined rate_of_fire and reloadFrames are known-unreliable fields, and the effective rate is frame-quantised (60/ceil(60/nominal)), so the derived stack cadence — which drives the entire Cornucopia trajectory above — is an estimate, not a kit fact.",
+      "recipe": "Instrument shot + reload events for novel in the harness and measure frames between the 1st and 100th round; cross-check against an ammo-counter read from footage (the counter measures shots/sec directly, unlike downstream FB-count instruments)."
+    },
+    {
+      "field": "skill2[0].trigger — 'landing' vs 'firing' semantics",
+      "estimate": "Modeled as rounds FIRED (hitCount), i.e. 100% landing.",
+      "reasoning": "hitCount counts rounds dispatched; the kit says 'landing'. If SMG shots can miss at the scope-lock band, the real stack cadence is slower than the derived 6.1s, pushing max stacks even further out of reach and slightly delaying every stack.",
+      "recipe": "Check whether the engine's SMG landing model can drop rounds at the boss's range band; if it can, the trigger needs a landed-hit variant or a miss-rate haircut on count."
+    },
+    {
+      "field": "burst[0].effects[0].noFb / crit eligibility of both flat hits",
+      "estimate": "noFb:true on the burst-cast hit (rule-based, not per-unit); crit left unset on both hits so the engine's rider-crit gate decides.",
+      "reasoning": "Burst-cast damage resolving before the Full Burst window is a stated rule rather than a per-unit measurement, so setting noFb here is a convention re-assertion, harmless if the engine already exempts burst-cast damage. Crit is deliberately NOT hard-set: guessing crit:true on a rider would be inventing a mechanic the kit text does not state.",
+      "recipe": "Confirm from a recording that the 330.61% popup is white/orange-consistent with the caster's sheet crit rate and carries no +50% FB scaling; if the engine already force-exempts burstCast damage, drop the redundant noFb."
+    }
+  ],
+  "model": "claude-opus-5"
+}

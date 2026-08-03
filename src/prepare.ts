@@ -59,9 +59,19 @@ export interface PreparedUnit {
 
 export interface LineSelection {
   type: string; // key in ol-lines.json
-  count: number; // number of lines (max 4 across pieces)
+  // Number of lines of this type. A line type can appear at most ONCE PER OVERLOAD
+  // PIECE and there are four pieces, so the game caps this at 4 (owner, 2026-08-03);
+  // three lines per piece caps the whole loadout at 12. Both limits are enforced in
+  // prepareUnit — see OL_MAX_PER_TYPE / OL_MAX_TOTAL.
+  count: number;
   value?: number; // per-line roll value; default = max roll
 }
+
+// Overload gear limits, enforced on every loadout the sim prepares.
+//   4 pieces × up to 3 lines each = 12 lines total
+//   a given line type cannot repeat on one piece ⇒ at most 4 of any one type
+export const OL_MAX_PER_TYPE = 4;
+export const OL_MAX_TOTAL = 12;
 
 export interface UnitOptions {
   cube?: { id: string; level: number }; // level 1-15
@@ -204,6 +214,35 @@ export function prepareUnit(
       });
     }
     loadout.push(`${cube.name} L${lvl}`);
+  }
+
+  // Validate the loadout against the game's gear limits BEFORE converting it to stats.
+  // prepareUnit is the one choke point every caller passes through — the CLI's --lines,
+  // the web, the dps-chart tiers and the overload optimizer — so enforcing here catches
+  // all of them, and an impossible loadout fails loudly instead of silently producing a
+  // damage number no account could reach. Counts are aggregated BY TYPE first: two
+  // separate `{type:'atk',count:3}` entries are 6 atk lines, not two legal 3s.
+  const perType = new Map<string, number>();
+  for (const sel of opts?.lines ?? []) {
+    if (!Number.isInteger(sel.count) || sel.count < 0) {
+      throw new Error(
+        `OL line "${sel.type}": count must be a non-negative integer (got ${sel.count})`
+      );
+    }
+    perType.set(sel.type, (perType.get(sel.type) ?? 0) + sel.count);
+  }
+  for (const [type, n] of perType) {
+    if (n > OL_MAX_PER_TYPE) {
+      throw new Error(
+        `OL loadout for ${char.slug}: ${n}× "${type}" exceeds the ${OL_MAX_PER_TYPE}-line cap — a line type appears at most once per overload piece, and there are ${OL_MAX_PER_TYPE} pieces`
+      );
+    }
+  }
+  const totalLines = [...perType.values()].reduce((a, b) => a + b, 0);
+  if (totalLines > OL_MAX_TOTAL) {
+    throw new Error(
+      `OL loadout for ${char.slug}: ${totalLines} lines exceeds the ${OL_MAX_TOTAL}-line cap (${OL_MAX_PER_TYPE} pieces × 3 lines)`
+    );
   }
 
   for (const sel of opts?.lines ?? []) {

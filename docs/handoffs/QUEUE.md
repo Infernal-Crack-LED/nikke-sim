@@ -58,23 +58,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Code / tooling (unblocked, no footage or owner ruling needed)
 
-- **⇒ OL TOOLING — two remaining basis gaps, findings-only (Hit Rate half RESOLVED
-  2026-08-02).** The exhaustive free-line table now agrees with `data/ol-optimal.json`'s
-  greedy pick on 32/73 units (was 20). The Hit Rate cause is closed: owner ruled Hit Rate
-  counts for AR/SMG/SG and not RL/SR/MG, `src/olconfigs.ts`'s pool was updated to match the
-  engine's own `HR_CORE_CIRCLE` set, and `scripts/tests/engine/ol-hitrate-pool.test.ts` pins
-  the pool against measured engine behaviour. Still open, one batched decision:
-  1. **Tier basis (23 units)** — `build-ol-optimal` passes no tier values so it optimizes at
-     MAX ROLL, but the web applies its picks at T11. Pick one basis.
-  2. **Greedy local optima (18 units)** — `bestOl` finds a worse combo than the exhaustive
-     search at the same tier and pool. Decide whether `ol-optimal.json` should just use the
-     exhaustive ranking for the weapon-aware pool.
-
-- **⇒ B1/B2 DPS rank-board follow-up (1 of 3 left):** reconcile / document cross-board comparability
-  against the B3 DPS chart Solo cells (`bossDef`, `rangeBonus`, `durationSec`). Context:
-  `docs/handoffs/closed/2026-07-26-dps-ranks-b1b2.md`. (The "Core 100" half is settled — owner ruling
-  2026-08-02: the axis is core EXPOSURE, not hit rate; landed in `src/ranks/b1b2-cells.ts`,
-  `SimConfig.coreHitRate`, `CORES[].exposure` and `docs/data/rank-boards.md`.)
+- **⇒ B1/B2 cross-board comparability → [`docs/handoffs/2026-08-03-b1b2-comparability-and-squad-layering.md`](2026-08-03-b1b2-comparability-and-squad-layering.md) §1.**
+  The three fields the old entry named (`bossDef`, `rangeBonus`, `durationSec`) were verified
+  IDENTICAL across both boards on 2026-08-03, so what is left is documentation plus one owner call
+  (the B1/B2 board has no `c50` row and no investment axis — its numbers are comparable to DPS-chart
+  `scope` cells ONLY). ⚠ the old context pointer `docs/handoffs/closed/2026-07-26-dps-ranks-b1b2.md`
+  does not exist — do not go looking for it.
 - **⇒ Unit-card infographic follow-ups (3, code-verified still open 2026-08-02):**
   1. **No vector source for burst icons.** `web/public/nikke-icons/burst_*` is webp-only (~100px native)
      — fine at every size drawn today, but a surface wanting it large has nothing to rasterize from.
@@ -86,16 +75,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   3. **The browser icon loader still probes extensions and eats 404s** — `web/src/unitCardShare.ts:58`
      `ICON_EXT = ['svg','png','webp']` per icon via onload/onerror. The icon set is static and tracked,
      so the extension is knowable at build time; carry it in the `iconNames` mapping (`{ name, ext }`).
-- **⇒ Squad-primitive review follow-ups** (claude-fable-5 code-review NOTEs, 2026-08-02, verdict CLEAN;
-  the scratchpad gate packet is gone — findings restated here in full):
-  1. `scripts/validate-overrides.ts` should allowlist the keys INSIDE `teamHas`
-     (element/class/weapon/burst/slugs/sameSquad). A typo'd facet key (e.g. `samesquad`) is silently
-     ignored by engine + validator today, leaving the block always-active — one typo from the
-     dead-authoring failure the `sameSquad` guard (`:290`) prevents. Pre-existing gap for all facets.
-  2. Type `sameSquad?: true` instead of `?: boolean` in `src/skills/types.ts:365`, so the compiler
-     enforces the validator's literal-true contract.
-  3. Optional layering cleanup — keep `src/data/squads.ts` pure game truth and register the
-     `noop-rouge-b1` synthetic (`src/data/squads.ts:26`) from the ranks layer instead.
+- **⇒ `noop-rouge-b1` squad layering → [`docs/handoffs/2026-08-03-b1b2-comparability-and-squad-layering.md`](2026-08-03-b1b2-comparability-and-squad-layering.md) §2.**
+  Optional cleanup: keep `src/data/squads.ts` pure game truth and move the synthetic out. The
+  obvious fix (register from the ranks layer at module load) is a TRAP — it makes the engine's
+  fail-closed `sameSquad` gate depend on import order, failing silently. Owner call needed before
+  building the version that actually works. (The other two NOTEs from that review landed in
+  `09f3702c`.)
 - **⇒ Pellet-reader: cherry-pick the `+62.5` crosshair-offset fix (`b69b5c6`)** — verified NOT an
   ancestor of `main`; `scripts/probe/read-pellets.ts:66` still defaults `-62.5`, latent, and poisons the
   next run. (It did **not** cause the 2026-07-29 REJECT: artifacts 12:19–13:33, commit 15:17.)
@@ -291,24 +276,19 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 #### Kit / override threads
 
 - **⇒ TDD TRANSITION (the kit workflow) → `docs/handoffs/2026-07-23-tdd-transition-plan.md`.** Steps
-  1a–1d and the step-2 primitive backfill are on `main` (`scripts/tests/engine/*`). Open:
-  1. **Two step-2 items deliberately deferred** — the trigger-kind matrix as its own cross-cutting suite
-     (`lastBullet`/`shotFired`/`interval` first-fire phase/`stageEnter`/`fullBurstEnter`/`End` — exercised
-     incidentally, never pinned), and gauge suppression during FB/chain. Use the same zeroed-kit-carrier
-     pattern (`blanc` + bare-weapon `crown`) the landed files establish.
-  2. **Step 3 — per-unit dedicated sessions, OWNER drives the spec line-by-line from kit text; run them
+  1a–1d and the step-2 primitive backfill are on `main` (`scripts/tests/engine/*`). **Step 2 is now
+  fully closed** — the two deferred items (trigger-kind matrix, gauge suppression during FB/chain)
+  landed 2026-08-03 in `03021eeb` as `trigger-kinds.test.ts` + `gauge-suppression.test.ts`, 15
+  assertions, both bite-verified against a deliberately broken engine. Open:
+  1. **Step 3 — per-unit dedicated sessions, OWNER drives the spec line-by-line from kit text; run them
      with `/kit-tdd`.** Fully unblocked. Rationale: the board gates FIT only; faithfulness errors of a
      few % are absorbed by calibration and only unit tests can gate them.
-  3. **Step 4 — doc/skill reframe still open** (CONVENTIONS test-first note, audit-kit/kit-parse one-line
+  2. **Step 4 — doc/skill reframe still open** (CONVENTIONS test-first note, audit-kit/kit-parse one-line
      reframe as post-validation sampling, STATE.md pointer); pick up with `/skill-maintenance`.
-  4. Six `cfg.onEvent` payload follow-ups (weapon-swap events, perResource/ramp/swap-gate fields on
+  3. Six `cfg.onEvent` payload follow-ups (weapon-swap events, perResource/ramp/swap-gate fields on
      `buffApply`, …) listed under §1d in the plan — build them as step-3 tests need them.
 - **⇒ SAME-SQUAD PRIMITIVE MIGRATIONS** (the primitive landed 2026-08-02; `teamHas.sameSquad` resolves
   from `src/data/squads.ts`, fail-closed). Remaining units with "same squad" kit text:
-  - `noir` (burst block 3) — still on the older `teamHas.slugs:['blanc','rouge']`
-    (`src/skills/overrides/noir.json:67`); drop-in migration to `sameSquad:true` (identical extension —
-    the curated squad is exactly blanc+rouge). Mechanical; noir's kit test discriminates either
-    spelling, so it pins the gate, not the facet.
   - `anchor-innocent-maid` (S1 block B heal gate) — modeled always-satisfied (override caveat). BLOCKED
     on an owner ruling for her squad membership (the maid costumes — `mast-romantic-maid`,
     `privaty-unkind-maid` — are candidates, NOT verified). Once ruled: add the squad to

@@ -1,0 +1,89 @@
+{
+  "slug": "admi",
+  "kitDescription": "Admi is a Wind SR Supporter whose Burst II is the core of her kit: when she casts, all allies (herself included) gain 50.91% Reload Speed and 28.34% Critical Damage for 10 seconds, and her cast lands just before the Full Burst window so both buffs cover it. Her Skill 1 is a defensive trigger: after she has been attacked 20 times, the whole team gains 9.59% Charge Damage Multiplier for 20 seconds, which scales the base charge damage of charge-weapon allies. Her Skill 2 is purely protective, cutting damage received by the two highest-final-ATK allies by 28.65% for 10 seconds. She has no self-damage lines, no DoT, no stacks, and no weapon swap — she is a pure team buffer whose value flows through faster reloads (more shots) and stronger crits.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "skill1: emits a chargeDamageMultPct buff at the kit magnitude 9.59",
+      "skill1: is a MULTIPLIER on base charge damage, not additive charge-damage points",
+      "skill1: affects ALL allies, not just admi",
+      "skill1: carries a 20 sec window, not permanent",
+      "skill1: NON-VACUITY counted activation fires later than frame 0",
+      "skill1: INERTNESS — moves no crit/ATK stat of its own"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "■ Activates when attacked 20 time(s)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim + ⚑1 (TIER 2, out-of-domain): no attacked-count trigger primitive, no incoming boss damage at scope lock, counter never accrues; recipe = attacked-count primitive + focus-video accrual cadence",
+        "blindSaid": "S5 modeled it as a live block (all 6 S1 assertions RED vs driver); S6 modeled it as interval:{sec:20} with its own ⚑ admitting the 20s is a stand-in chosen for ~100% uptime, 'NOT because 20 attacks are known to take 20s'; S2b wanted interval+⚑ with a measured sec",
+        "formulaCheck": "Scope lock: boss deals no damage, no ally HP pool — the trigger is outside the sim's input domain. No engine primitive counts incoming attacks. Any interval stand-in manufactures an unmeasured uptime (S6's own caveat concedes over-credit risk); the driver's zero-impact-at-scope-lock posture with estimate+recipe is the measured>fudge reading and matches the noise/yulha precedent",
+        "fireRateOk": true,
+        "explanation": "Moot — the line is deliberately unmodeled, so its faithful scope-lock cadence is 0 fires and that is what the sim produces. The S5 RED here is a posture divergence (blind assumed a modeled block), not a misread of clear code: the divergence IS documented, formula-confirmed, and pinned by the driver's phantom-S1 arm. Classified DOCUMENTED_GAP, not SILENT_DROP. S2b preferred an interval-⚑ over full unmodeling — a legitimate posture difference the owner should be aware of (a measured boss attack rate would let an interval encode real uptime), but with the cadence unmeasured the driver's choice invents no number."
+      },
+      {
+        "kitLine": "Charge Damage Multiplier ▲ 9.59% for 20 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Effect side named but unreachable: chargeDamageMultPct (base-charge-scaling, helm-wording precedent; a2's additive ruling covers only bare 'Charge Damage ▲'); unmodeled with its trigger",
+        "blindSaid": "S2b, S5, and S6 all independently route 'Multiplier' → chargeDamageMultPct, not additive chargeDamagePct",
+        "formulaCheck": "Schema §types: chargeDamageMultPct scales by BASE charge damage; chargeDamagePct adds points to the charge bucket. 'Charge Damage Multiplier' wording matches helm's burst (identical wording precedent) → mult lane. Four voices agree; the routing is formula-consistent",
+        "fireRateOk": true,
+        "explanation": "Moot with the trigger gap, but the stat flavor is correctly identified in the driver's note and caveats, so if a trigger primitive ever lands the effect side is already right. Magnitude 9.59 matches prose. Residual: the helm-wording inference is a same-model agreement (all four agents), never checked against an in-game popup — flagged for owner spot-check, not a gotcha."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "■ Affects 2 allies with the highest final ATK.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Targeting clause kept in unmodeled prose; 'moot with the inert effect'; alliesTopAtk{byFinalAtk} noted as the correct primitive if ever modeled",
+        "blindSaid": "S2b: alliesTopAtk{count:2, byFinalAtk:true} is the right target set but unobservable with no payload. S6: shipped an empty-effects passive block 'for auditability' — observationally identical to the driver (emits nothing). S5: skipped with a GAP note",
+        "formulaCheck": "A targeting shell with no payload asserts nothing in the event stream; driver and S6 differ only in where the audit trail lives (unmodeled prose vs empty block). No behavioral difference",
+        "fireRateOk": true,
+        "explanation": "Moot — the clause rides an effect that is offensively inert at scope lock. Documented verbatim in unmodeled.skill2."
+      },
+      {
+        "kitLine": "Damage Taken ▼ 28.65% for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim + ⚑2: the only damageTakenPct primitive is a BOSS debuff (positive = boss takes MORE); encoding the ally mitigation with it would invert target and sign and manufacture a phantom team damage gain (noise precedent)",
+        "blindSaid": "S2b named this exact trap as 'THE trap on this line'. S6's caveat carries the same direction reasoning. S5's global absence assertions (zero damageTakenPct anywhere) are GREEN vs the driver",
+        "formulaCheck": "Schema/sim.ts:2143-2161: damageTakenPct with positive value on an enemy target applies to enemyBuffs = boss takes more damage. There is no ally-side damage-taken stat. Driver emits zero damageTakenPct events (S5 global pin GREEN; driver's own absence pin GREEN with a phantom-S2 counterfactual proving teeth)",
+        "fireRateOk": true,
+        "explanation": "The inversion trap is avoided by all parties. Pure defensive mitigation with no damage channel at scope lock; unmodeled with estimate (zero impact) + recipe (measure during an incoming-damage phase once an HP model exists). DOCUMENTED_GAP."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Reload Speed ▲ 50.91% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast block, target allies (includes self), reloadSpeedPct 50.91, durationSec 10; cast lands pre-FB so the window covers the following Full Burst; pinned frame-exact per cast × 4 targets",
+        "blindSaid": "S6 burst block is BYTE-IDENTICAL (four-way convergence driver=S2b=S5=S6). S5 burst group fully GREEN: magnitude 50.91, >1 targets including admi, burstCast-keyed (applies ≤ casts), 10s wall-clock, and the reload-removed counterfactual strictly lowers team damage",
+        "formulaCheck": "sim.ts reload model: reloadSpeedPct is read live in reloadFramesNeeded → faster reload → more shots → more gauge. Driver's shot-count arm (admi AND helm shots strictly higher with the buff) proves it fires as a live lever, not cosmetic. burstCast-vs-fullBurstEnter discrimination: counterfactual moves every application onto FB-start frames, none on cast frames",
+        "fireRateOk": true,
+        "explanation": "10 admi casts / 180s as the sole B2 (fixture sanity: exactly 10 stage-2 casts), each emitting 4 applications at the cast frame with 600-frame windows — fires at the prose-implied cadence. FAITHFUL with discrimination proven in both directions."
+      },
+      {
+        "kitLine": "Critical Damage ▲ 28.34% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Same burstCast block, critDamagePct 28.34/10s; compositional matched-hit pin vs the noCritBuff counterfactual (reload kept → byte-identical cadence): in-window majors differ by exactly critRate × 28.34pp, out-of-window by 0",
+        "blindSaid": "S6 byte-identical. S5 GREEN: magnitude 28.34, crit-DAMAGE not crit-RATE (wrongCritStat arm diverges), all allies including admi, no critRatePct ever attributed to admi",
+        "formulaCheck": "damage-calculation.md §1b: a critDamagePct buff lifts the major bracket by exactly critRate × value/100 while live — the driver's matched-hit assertion is precisely this compositional form, not a multiplier. Generic (unscoped) crit damage is correct; the prose carries no 'of normal attacks' scoping",
+        "fireRateOk": true,
+        "explanation": "Same per-cast cadence as the reload line (10 casts × 4 targets); window coverage proven both inside and outside (inN>0, outN>0). FAITHFUL."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: all six kit lines are FAITHFUL (both burst lines) or DOCUMENTED_GAP (both S1 lines, both S2 lines), each gap carrying verbatim prose + ⚑ with estimate, recipe, and tier. The burst block converged four ways (driver = S2b = S5 = S6, byte-identical vs S6) and discriminates in both directions (fullBurstEnter re-keying, excludeSelf, matched-hit major-bucket arithmetic, reload shot-economy arm). The S5 RED is a single posture divergence, not a misread: S5 assumed S1 would ship as a modeled block; the driver ships it unmodeled because no attacked-count primitive exists and any interval stand-in invents an unmeasured cadence — a decision documented, formula-confirmed (scope lock has no incoming-damage channel), and consistent with the noise/yulha precedent, with the driver's phantom-S1/S2 arms proving the absence pins have teeth. Nothing must change for GO. Owner spot-checks for the same-model residual: (1) 'Charge Damage Multiplier ▲' → chargeDamageMultPct rests on the helm-wording inference agreed by all four agents, never confirmed against an in-game popup — worth one popup screenshot before a trigger primitive ever lands; (2) burstCast-over-fullBurstEnter is also a four-agent consensus (strongly supported by the kit's lack of a full-burst clause and the pre-FB cast timing, and discriminated by test, but still single-family reasoning); (3) S2b preferred an interval-⚑ over full unmodeling for S1 — if boss attack cadence is ever measured, revisit encoding S1 as a measured interval rather than leaving it dark, since real-fight uptime is plausibly near-permanent.",
+  "model": "kimi-code/k3"
+}

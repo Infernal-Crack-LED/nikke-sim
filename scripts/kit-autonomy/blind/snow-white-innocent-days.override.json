@@ -1,0 +1,114 @@
+{
+  "slug": "snow-white-innocent-days",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 25.66,
+          "durationSec": 5,
+          "maxStacks": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 188.68,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 50,
+        "countInFb": 30
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 61.69,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 21.12,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 97.2,
+          "durationSec": 10
+        },
+        {
+          "kind": "unlimitedAmmo",
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ The burst line \"Hit count required for Skill 2 ▼ 20 time(s) for 10 sec\" has no first-class effect primitive; it is modeled as countInFb:30 on the skill2 hit-count trigger (50 → 30). countInFb keys to the FULL-BURST window, while the kit keys the reduction to HER OWN burst cast for 10 sec. The two coincide when she is the sole/actual Burst III caster; in a multi-B3 comp where another unit completes the chain, countInFb OVER-CREDITS (fires without her burst) and, symmetrically, the ~1s of her own 10s window that precedes FB entry is UNDER-credited.",
+    "⚑ The reduction is scoped to Skill 2 ONLY — skill1's two 30-hit triggers are deliberately left at a flat count:30 with no countInFb. This is a discriminating read of the prose, not an oversight.",
+    "⚑ Both skill triggers say \"landing\" normal attacks; the engine's hitCount counts ROUNDS dispatched, not confirmed landed hits. At scope-lock accuracy this is near-identity for an AR, but it makes proc cadence an upper bound.",
+    "⚑ Rider crit is set true per the standing prior (function-damage riders crit at the caster's sheet rate, no core); neither line says \"core strike\", so no core is set. FB-by-timing is left default ON and noRange is left to the engine.",
+    "⚑ The maxAmmoPct grant is authored at its per-stack magnitude with maxStacks:5 and a 5s window — steady state is assumed to sit at or near cap (30 AR rounds ≈ 2.5s of fire, so a fresh stack lands well inside each 5s window), but the actual occupancy is unmeasured and interacts with the burst's unlimited-ammo window, during which no reload occurs at all."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. AR/Iron/Attacker/Burst III. Two hit-count engines: skill1 fires every 30 normal attacks for a self Max-Ammunition stack (25.66%, up to 5, 5s) AND a 188.68% area rider; skill2 fires every 50 normal attacks for a 61.69% rider, with her own burst cutting that requirement to 30 for 10s (modeled as countInFb:30). Her burst is a pure self-buff package — ATK ▲97.2% and unlimited ammunition for 10s — with the skill2 rider Attack Damage ▲21.12% (Damage Up bucket, distinct from the burst's ATK buff, so the two do not share a bucket) keyed to burst CAST, not full-burst entry, per the literal \"when using Burst Skill\" wording. Unlimited ammo plus the stacking Max-Ammunition buff both act as shot-count multipliers, so they are damage lines, not defensive ones: they raise sustained fire uptime and therefore the rate at which both hit-count triggers proc. No weapon swap, no charge, no DoT, no cross-unit effect, no core-strike or pierce language anywhere in the kit; every line of every slot is implemented, so unmodeled is empty for all three slots."
+}

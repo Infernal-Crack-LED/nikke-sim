@@ -1,0 +1,136 @@
+{
+  "slug": "ade",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "\u25a0 start of battle: Perfect Maid immunity",
+      "disposition": "UNMODELED",
+      "scope": "Debuff immunity (1 debuff, 1 stack, continuous) \u2014 defensive utility, no damage stat",
+      "durationSemantics": "\"continuously\" = permanent maintained state, not a timed window",
+      "triggerIdentity": "passive (start of battle), target-set application",
+      "targetSet": "all allies (including self)",
+      "nearestWrongModel": "Inventing a stat buff (e.g. damage-taken or DEF encoding) for an immunity line, or an `ignored`-kind block (validator rejects those)",
+      "distinguishingAssertion": "Event log contains ZERO buffApply events attributable to ade's skill1; adding ade to a comp changes no ally's damage via skill1 (totals identical with skill1 blocks empty)",
+      "inertness": "Must move nothing \u2014 scope-lock boss applies no debuffs; belongs verbatim in `unmodeled.skill1`",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "\u25a0 own HP < 90%: ATK \u25b2 5.19% user ATK 5s",
+      "disposition": "UNMODELED",
+      "scope": "Generic ATK buff, caster-ATK-scaled (\"of the skill user's ATK\" = flat add, casterAtkPct \u2014 NOT atkPct)",
+      "durationSemantics": "durationSec 5 (genuine seconds; no round wording)",
+      "triggerIdentity": "HP-threshold trigger \u2014 NO engine primitive exists, and at scope lock the boss deals no damage so own HP never falls below 90%; the trigger is unrealizable",
+      "targetSet": "all allies (including self)",
+      "nearestWrongModel": "Modeling it as passive/always-on (assuming the HP condition is met) or as an interval re-proc \u2014 over-credits a flat +5.19%-of-caster-ATK to the whole team for the entire fight",
+      "distinguishingAssertion": "NO buffApply with stat 'casterAtkPct' and value \u2248 0.0519 \u00d7 ade.staticAtk appears anywhere in the event log (ade's only casterAtkPct emissions are the 0.1015-valued burst applications)",
+      "inertness": "Must contribute zero damage; the only ade-sourced casterAtkPct buffs in the log are burst-valued",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "\u25a0 after 420 normal attacks: Perfect Maid",
+      "disposition": "UNMODELED",
+      "scope": "Debuff immunity refresh \u2014 defensive, no damage stat",
+      "durationSemantics": "\"continuously\" \u2014 maintained stack, not timed",
+      "triggerIdentity": "hitCount count:420 (counts the owner's ROUNDS fired, not seconds, not trigger pulls beyond 1:1 for AR hitsPerShot 1)",
+      "targetSet": "all allies",
+      "nearestWrongModel": "Any damage-side encoding; or conflating this 420-count trigger with the 120-count Max HP line below (one merged block)",
+      "distinguishingAssertion": "No buffApply from this line; the 120-count Max HP grant fires ~3.5\u00d7 more often than any 420-count artifact would \u2014 cadence of maxHpFlat applies keys to 120, never 420",
+      "inertness": "Zero damage movement; verbatim in `unmodeled.skill2`",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "\u25a0 after 120 normal attacks: Max HP \u25b2 15.62%",
+      "disposition": "FAITHFUL",
+      "scope": "Max HP grant scaled by the CASTER's Max HP (\"of the skill user's Max HP\") \u2192 casterMaxHpPct, emitted in events as stat 'maxHpFlat' with value = 0.1562 \u00d7 ade's final Max HP \u2014 NOT targetMaxHpPct (target's own HP)",
+      "durationSemantics": "durationSec 5 (genuine seconds \u2014 'lasts for 5 sec'); with a ~120-round rebuild cadence the buff is DOWN most of the fight, a sawtooth not a permanent",
+      "triggerIdentity": "hitCount count:120 \u2014 counts ade's own ROUNDS (AR, hitsPerShot 1, ammo 60 \u2192 roughly every 2 magazines + reloads), first fire at the 120th round, NOT at t=0 and NOT an interval-seconds trigger",
+      "targetSet": "all allies (including self)",
+      "nearestWrongModel": "passive/t=0 permanent Max HP, or targetMaxHpPct (each ally's own HP), or interval sec:120",
+      "distinguishingAssertion": "First buffApply stat 'maxHpFlat' value \u2248 0.1562 \u00d7 ade.maxHp occurs only AFTER ade's 120th shot event (well past t=0, shifted later by her reload at 60 rounds), applies to all 5 targetIdx with the SAME flat value, and expiresFrame \u2248 apply + 300 frames",
+      "inertness": "Must move ZERO damage: ally-granted Max HP never feeds a teammate's atkOfMaxHpPct conversion (e3 rule), and ade has no own HP\u2192ATK scaler \u2014 totals with this block present vs stripped (withPatchedOverride) must be identical. The buff must still EXIST in the event log (future-consumer rule).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max HP \u25b2 25.15% user Max HP, 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "casterMaxHpPct 25.15 (caster-HP-scaled grant, emitted as flat 'maxHpFlat'), \"without restoring HP\" = pure stat grant, no heal event \u2014 must NOT fire teammates' 'recovery' triggers",
+      "durationSemantics": "durationSec 10 (seconds, matches the FB window)",
+      "triggerIdentity": "burstCast (ade's OWN Burst II cast) \u2014 fires only on rotations ade is the selected B2 caster; NOT fullBurstEnter (any team FB)",
+      "targetSet": "all allies (including self)",
+      "nearestWrongModel": "Encoding as a 'heal' effect (would wrongly fire on-recovery consumers like crown's) or keying to fullBurstEnter",
+      "distinguishingAssertion": "buffApply stat 'maxHpFlat' value \u2248 0.2515 \u00d7 ade.maxHp appears once per ade burstCast event (count equals her burstCast count, not the comp's fullBurstStart count), and NO recovery-triggered consumer fires off it",
+      "inertness": "Zero damage movement on its own (ally Max HP grants feed no converter; ade self has none); crown-style on-recovery kits must NOT proc",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK \u25b2 10.15% of user's ATK for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "casterAtkPct \u2014 flat add of 10.15% of ADE's (Supporter, static 98,367 at scope) ATK, identical flat value on every target; NOT atkPct (which would scale each TARGET's own ATK and over-credit the Attacker-class carry)",
+      "durationSemantics": "durationSec 10 (seconds)",
+      "triggerIdentity": "burstCast (own Burst II) \u2014 diverges from fullBurstEnter exactly when another Burst II unit (e.g. the fixture's crown) shares the team and takes some rotations",
+      "targetSet": "all allies (including self)",
+      "nearestWrongModel": "(a) atkPct 10.15 scaling each target's own ATK; (b) fullBurstEnter so the buff lands on EVERY full burst even on rotations crown casts B2",
+      "distinguishingAssertion": "Each buffApply carries stat 'casterAtkPct' with the SAME flat value \u2248 0.1015 \u00d7 ade.staticAtk for every targetIdx (a per-target-varying value = atkPct misread \u2192 RED); number of application volleys == ade's burstCast event count, strictly fewer than fullBurstStart count in a comp where crown also casts B2",
+      "inertness": "On rotations where the OTHER B2 casts, no ade burst buffApply may appear; carry damage in those FB windows must not include ade's +10.15%",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill2:MaxHP \u25b215.62% after 120 normal attacks",
+    "burst:MaxHP \u25b225.15% 10s",
+    "burst:ATK \u25b210.15% caster-scaled 10s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Perfect Maid: Gain debuff immunity to 1 debuff(s), stacking up to 1 time(s) continuously.",
+      "Activates when own HP falls below 90%. Affects all allies. ATK \u25b2 5.19% of the skill user's ATK for 5 sec."
+    ],
+    "skill2": [
+      "Perfect Maid: Gain debuff immunity to 1 debuff(s), stacking up to 1 time(s) continuously. (after 420 normal attacks)"
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to force apart: (1) BOTH ATK lines say 'of the skill user's ATK' \u2192 casterAtkPct flat adds, never atkPct \u2014 the flat-value-identical-across-targets assertion is the discriminator since ade is a Supporter (98,367 static) buffing an Attacker carry (118,027). (2) Burst is her OWN B2 cast \u2192 trigger burstCast, not fullBurstEnter; controlComp's fixture pins crown in the B2 slot, so an ade test comp either replaces crown or deliberately co-runs two B2 units \u2014 the co-B2 comp is the ONLY configuration that turns the burstCast-vs-fullBurstEnter misread red, so at least one test must include a second B2 and assert ade's burst buffs appear on strictly fewer windows than fullBurstStart events. Note the harness restatement fixes liter B1/crown B2/carry B3 \u2014 verify how a B2 carry slots in before writing the comp. (3) skill2's '120 normal attack(s)' is hitCount (rounds), not interval seconds \u2014 assert first apply strictly after her 120th shot event and after her first reload (magazine 60 < 120). (4) All Max HP grants emit stat 'maxHpFlat' = pct \u00d7 ade's Max HP; they are damage-INERT by the e3 ally-grant rule and ade has no own atkOfMaxHpPct \u2014 the load-bearing tests are therefore mostly EVENT-SHAPE tests plus a totals-invariance (strip-block A/B via withPatchedOverride) rather than damage-delta tests; the only damage-moving line in the whole kit is the burst +10.15% casterAtkPct. (5) 'without restoring HP' forbids a heal-event encoding \u2014 assert no on-recovery consumer (crown-style) procs from ade's burst. (6) skill1's HP<90% ATK buff is trigger-unrealizable at scope (boss deals no damage, no HP-threshold primitive) \u2014 the inertness assertion (no 0.0519-valued casterAtkPct anywhere) guards against a driver modeling it as passive. All magnitudes are literal kit text \u2192 DATAMINED; no \u2691 fields needed (AR base cadence, no damage riders, no stacks/currency).",
+  "model": "claude-fable-5",
+  "driverReconciliation": {
+    "driver": "Qwen (gauntlet driver)",
+    "reviewer": "claude-fable-5 (S2b, blind)",
+    "converged": [
+      "L1 S1 Perfect Maid debuff immunity \u2014 UNMODELED verbatim (defensive; v1 boss applies no debuffs; biscuit/diesel-winter-sweets precedent)",
+      "L3 S2 420-NA Perfect Maid refresh \u2014 UNMODELED verbatim (same reason)",
+      "L4 S2 120-NA Max HP grant \u2014 casterMaxHpPct 15.62 / hitCount:120 / all allies / 5s; caster-basis flat value uniform across holders; offensively inert by the e3 ally-grant rule + no own atkOfMaxHpPct; pinned by event-shape + totals-invariance",
+      "L5 burst Max HP grant \u2014 casterMaxHpPct 25.15 / burstCast (own B2 cast, NOT fullBurstEnter) / all allies / 10s; 'without restoring HP' = no heal effect, so no recovery-trigger procs; inert, pinned the same way",
+      "L6 burst ATK grant \u2014 casterAtkPct 10.15 (flat add of ADE's ATK, identical value on every holder \u2014 NOT atkPct) / burstCast / all allies incl. self / 10s; the only damage-moving line in the kit",
+      "120 normal attacks = 120 hit-counter units (hitsPerShot 1 collapses the pull-vs-hit lever); counter re-fires indefinitely (no once qualifier)"
+    ],
+    "divergences": [
+      {
+        "line": "L2 S1 'own HP falls below 90% -> all allies ATK +5.19% of user ATK, 5s'",
+        "reviewerSaid": "UNMODELED \u2014 no HP-threshold primitive; at scope lock the boss deals no damage so own HP never falls below 90%; modeling it always-on/interval over-credits a flat team ATK add for the whole fight; distinguishing assertion = no 5.19-valued casterAtkPct anywhere in the log.",
+        "driverSaid": "MODELED always-on (interval:5 refresh, first fire t=5s, 5s window) via the mast precedent (GO 1.0, cross-family corroborated): mast's offensive 'HP falls below 70% -> Crit Damage +50.94% continuously' was encoded passive always-on with a measurement-gated flag, and the reconciling judge ruled DOCUMENTED_GAP \u2014 'the driver's encoding matches the S5 blind re-derivation... the over-credit risk is the pre-onset transient'. Ade's threshold (90%) is easier to cross than mast's (70%), strengthening the real-fight near-full-uptime reading; the timed 5s shape is kept exactly (only the gate is collapsed). Biscuit's UNMODELED precedent is distinguishable: that line was DEFENSIVE invincibility with no damage channel; L2 is an offensive team ATK buff.",
+        "resolution": "DRIVER STANDS (documented-gap treatment): keep the always-on encoding with an explicit flag (estimate = near-full uptime from a few seconds in; recipe = HP-bar crossing time + buff-icon uptime from an ade focus video; tier = status-gate approximation, minor damage-relevant flat add). Both positions recorded in override caveats as the mast precedent requires (S2b's UNMODELED reading logged as the rejected alternative). The S5/S6/S7 blind roles will arbitrate; if the judge rules the line must be UNMODELED, the fix is mechanical (strip the skill1 block + move the prose verbatim to unmodeled)."
+      }
+    ],
+    "adopts": [
+      "Reviewer recommendation #2 adopted: a SECOND co-B2 fixture (liter/ade/crown/ada/helm) added as group X1 \u2014 the only configuration that turns the burstCast-vs-fullBurstEnter misread RED; asserts ade's burst buff volleys == her own cast count < team FB count, plus an inline fullBurstEnter-rekey counterfactual that over-fires.",
+      "Reviewer recommendation #5 partially adopted: 'without restoring HP' is enforced by encoding (no heal effect in any ade block); there is no heal/recovery SimEvent kind in the log to assert absence of (checked src/types.ts), so the guard is structural."
+    ],
+    "rejects": [
+      "Reviewer's L2 UNMODELED disposition (see divergence) \u2014 mast GO-1.0 precedent governs offensive HP-below gates; documented-gap treatment, not silent skip.",
+      "Reviewer note 'applies to all 5 targetIdx' \u2014 the primary fixture is 4 units; the co-B2 fixture has 5. N_ALLIES pinned per comp.",
+      "Reviewer 'no flag fields needed' \u2014 driver keeps the mandatory cadence-tuple flag (AR 720 rpm / reloadFrames 111 datamine-unverified) per the gauntlet contract."
+    ]
+  }
+}

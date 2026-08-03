@@ -1,0 +1,62 @@
+{
+  "slug": "aria",
+  "kitDescription": "Aria is a Water MG Attacker whose kit is pure team crit support with no damage lines of her own. At the start of every Full Burst — including ones she did not cast — she gives all allies Critical Damage +26.99% for 10 seconds. Each time she empties her 300-round belt, she gives all allies Critical Rate +7.03% for 5 seconds, so that buff's uptime is paced by her magazine-and-reload cycle. Her Burst II shields the whole team for 37.86% of her own final Max HP for 10 seconds, and separately gives herself Hit Rate +30.37% for 15 seconds, outlasting the Full Burst window by 5 seconds.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "beginning of Full Burst: Crit Dmg ▲26.99% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter, allies, critDamagePct 26.99/10s — fires on ANY team FB incl. rotations aria sits out (pinned on STARVED comp)",
+        "blindSaid": "S2b + S5 + S6 all independently chose fullBurstEnter/allies/critDamagePct/10s; S5 asserted applies land on FB-start frames, never on aria cast frames, one batch of all comp members per FB, 600-frame duration",
+        "formulaCheck": "critDamagePct feeds the generic critBonus term in the Major bucket — correct unscoped routing (kit has no normal-attack scoping); 10s wall-clock matches prose and spans the FB window",
+        "fireRateOk": true,
+        "explanation": "Three independent derivations converged on the trigger-identity trap correctly: the kit names the Full Burst, not her cast. Driver's STARVED comp (aria casts 0, buff fires on every FB) is the strongest discriminator and S5's adapted run confirmed green. No divergence."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "last bullet hits: Crit Rate ▲7.03% 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "lastBullet, allies, critRatePct 7.03/5s — UNSCOPED (helm's scoped stat is the nearest-wrong, pinned three ways via skill-bucket crit rates); cadence one window per emptied belt",
+        "blindSaid": "S2b + S5 + S6 all chose lastBullet/allies/critRatePct/5s; S5 asserted activation count == reload count ±1, 300-frame duration, shotFired counterfactual explodes the count",
+        "formulaCheck": "critRatePct (unscoped) joins critRate on all crit-eligible instances incl. skill/burst — matches prose's lack of scoping clause; lastBullet cadence is belt-cycle-bound, consistent with 300 ammo + 161f reload arithmetic",
+        "fireRateOk": true,
+        "explanation": "Full three-way convergence including the unscoped-vs-scoped stat trap (aria is the mirror of helm). Driver's discrimination (scoped counterfactual matches the removed reference on skill/burst buckets but still moves normals) proves the stat key is live and correctly routed. Uptime rides the ⚑1 MG cadence tuple — flagged, not a gotcha."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Shield 37.86% user's final Max HP 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, allies, shield maxHpPct 37.86/10s — EVENT-ONLY (no HP pool at scope), tandem channel live via shielded triggers; magnitude recorded but unobservable (⚑3, Tier 3)",
+        "blindSaid": "S2b + S6: identical block, caster-basis maxHpPct, kept for tandem consumers; S5 asserted one shield emission per aria cast reaching every ally via patched shielded-consumer sentinel, silence when the block is removed",
+        "formulaCheck": "Schema maxHpPct is caster-basis = the kit's literal 'skill user's final Max HP'; no HP pool exists in v1 so the SIZE moves nothing, but the shielded/requiresShielded channel is real engine machinery (naga precedent) — emission is the faithful routing",
+        "fireRateOk": true,
+        "explanation": "Not dropped as 'defensive' (the taxonomy trap S2b named): modeled as the engine shield effect, burstCast-keyed (silent on crown-cast rotations, pinned on STARVED), with the tandem channel proven via a damage-neutral defPct sentinel. Magnitude observability is documented ⚑3 — the only honest disposition absent an incoming-damage model."
+      },
+      {
+        "kitLine": "self: Hit Rate ▲30.37% for 15 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": "ENGINE",
+        "driverSaid": "burstCast, self, hitRatePct 30.37/15s — buff faithfully applied but DAMAGE-INERT on an MG: the engine HR→core channels (PELLET_GAUSS/CONE_DELTA/UNIGEO/hrCoreMult) are AR/SMG/SG accuracy-circle models only; canary-pinned by totals-equality (⚑2, Tier 2, recipe recorded)",
+        "blindSaid": "S2b/S6 flagged the HR→core slope as measured-only ⚑; S5 assumed a core lift would move damage — its damage-delta assertion was structurally adapted to inertness after the driver surfaced the engine fact (sim.ts: hrCoreExp returns 0 for MG)",
+        "formulaCheck": "Formula SSOT confirms the gap: core-hit models are accuracy-circle geometry for AR/SMG/SG; MG/SR/RL hold the flat 0.95 core rate with no Hit-Rate input. The kit line genuinely does nothing at scope lock today — an engine-core coverage gap, not an aria encoding error",
+        "fireRateOk": true,
+        "explanation": "The buff FIRES at the prose cadence (once per own cast, self-only, 900 frames — all asserted) and is correctly keyed burstCast (silent on rotations she sits out — pinned on STARVED). The downstream effect is absent because no MG HR→core channel exists engine-wide. Driver documented estimate + recipe + tier and pinned a canary that fails loudly if the engine ever gains the channel — this is a textbook DOCUMENTED_GAP, and the S5 adaptation was a legitimate correction of the blind agent's engine-fact misread (RECON_ERROR on the blind side, resolved)."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: every kit line is either FAITHFUL or a documented ⚑ gap with estimate, recipe, and tier. The two load-bearing trigger-identity traps (S1 fullBurstEnter vs burstCast; burst self-lines burstCast vs fullBurstEnter) were read identically by S2b, S5, S6, and the driver, and the driver's STARVED comp discriminates both directions maximally — the strongest evidence in the packet. S2's unscoped-vs-scoped stat trap is discriminated three ways. The adapted S5 run is 32/0 GREEN against the shipped override with all 5 adaptations structurally justified (the fixture rebuild was mandated by S2b's own non-vacuity warning — controlComp genuinely starves aria to zero casts — and the Hit-Rate adaptation corrected a blind-side engine-fact misread, not a driver defect). The only non-faithful behavior is the engine-wide absence of an MG Hit-Rate→core channel, which is documented, canary-pinned, and not aria-specific. Same-model residual for the owner to spot-check: all agents share the prose-literal priors that (a) 'last bullet hits' = once-per-belt lastBullet and (b) S1's ~50%-uptime reading rests on the unverified datamine MG cadence tuple (⚑1) — one focused aria video (rounds/min + reload gap) closes both.",
+  "model": "kimi-code/k3"
+}
