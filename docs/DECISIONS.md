@@ -31,8 +31,9 @@ lives. Newest first within each section.
   pattern `build-bufferchart.ts` / `build-b1b2dps.ts` use) instead of `noop-b3-mg` alone, so the no-op
   B1's 7s team burst-cooldown reduction is applied — sustain values HP restored/shielded, not damage,
   but a faster team rotation still changes burst-timed heal/shield windows.
-  **Combined blast radius** (both changes together, full 46-candidate board, before/after by slug +
-  profile identity): 17 of 46 byte-identical; largest movers `blanc` +79.3%, `quiry` +33.3%,
+  **Combined blast radius** (both changes together, before/after by slug + profile identity, the 46
+  rows the board LISTS — nonzero `totalHp` — out of the 51-slug tag-driven candidate population):
+  17 of 46 byte-identical; largest movers `blanc` +79.3%, `quiry` +33.3%,
   `snow-crane` +32.5%, `prika` (plain row) +30.7% — her `with-mint` row is unaffected (0.0%; the
   permanent duet HoT/potency window does not depend on burst cadence); `tia` −28.6%,
   `soline-frost-ticket` −16.7%, `mint` −5.6% the largest negative movers besides tia/soline.

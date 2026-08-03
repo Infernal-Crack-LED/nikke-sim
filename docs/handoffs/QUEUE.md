@@ -124,6 +124,25 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   with a trigger change to an override they never load). May be a deliberate choice for an own-DPS
   board. DECIDE: load the control like the three sibling boards, or record in `docs/DECISIONS.md`
   that the Solo framework deliberately runs CDR-free.
+- **⇒ SUSTAIN's own-stage-spare fallback assumes a profile partner shares the tested unit's burst
+  stage and there is at most one partner — unenforced (kimi-code/k3 review, 2026-08-03).**
+  `src/ranks/sustain.ts` `sustainTeam()` uses `partners[0] ?? NOOP_Bn` as the tested unit's own-stage
+  spare. True today (verified against `data/characters.json`: both `SUSTAIN_PROFILES` entries — mint
+  for prika, mast-romantic-maid for anchor-innocent-maid — are burst II, matching their tested unit,
+  and each profile has exactly one partner) but nothing checks it. A future profile with a
+  cross-stage partner would silently seat no spare of the tested unit's stage (reintroducing the
+  defect `2026-08-03` fixed); a future 2-partner profile would silently drop `partners[1+]`. The
+  buffer board tracks its equivalent assumption as its own QUEUE item (the "duo row" entry directly
+  below) — sustain's only lives in a code comment. Fix: guard in `sustainTeam` (throw if a seated
+  partner's burst stage differs from the tested unit's, or if `partners.length > 1`).
+- **⇒ `scripts/tests/ranks/sustain.test.ts` never loads the no-op overrides — the newly-landed CDR
+  path is untested (kimi-code/k3 review, 2026-08-03).** The test harness builds its `overrides` map
+  from `data.characters` slugs only, so `sustainFor`/`sustainRank` run in tests with NO no-op
+  overrides at all — no `noop-b3-mg` mock burst and, since `2026-08-03`'s `build-sustain.ts` fix, no
+  `noop-b1-ar` 7s CDR either. The 10 band-pinned tests still pass (none happen to depend on either),
+  but a regression in the CDR wiring would be invisible here. Fix: mirror `build-sustain.ts`'s
+  `for (const slug of Object.keys(NOOP_CHARACTERS)) overrides[slug] = loadOverride(slug);` loop in
+  the test harness ctx setup, then re-pin any bands that shift.
 - **⇒ A duo row whose partner is not a B2 has no spare of the tested unit's stage — latent, VERIFIED
   non-biting (kimi-code/k3 review round 5; re-checked 2026-08-03 after `blanc` shipped).**
   `assemble` seats a duo partner in the spare slot, assuming the partner covers that slot's stage.
