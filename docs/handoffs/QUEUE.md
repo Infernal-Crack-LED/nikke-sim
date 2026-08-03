@@ -103,15 +103,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      Solo-framework/DPS-chart question only — do not re-tune the override off the board.
      ⚠ Exact slugs: `maxwell` (SR/Iron), NOT `maxwell-ordinary-mechanic`; `alice` (SR/Fire), NOT
      `alice-wonderland-bunny`. The variants do not carry an ally-ATK selector.
-- **⇒ Patch-notes line owed before the next deploy: the DPS chart moves for 4 units.** Same 2026-08-02
-  change. `web/public/dpschart.json` + `b1b2dps.json` are gitignored build output, so nothing is stale
-  in the tree, but the DEPLOYED chart changes on the next build → `/patch-notes`. Also settled that
-  pass: the emitted `meta.cores[].rate` key is now `exposure` (verified 2026-08-02 that bakery-bot only
-  DECLARES the field and never dereferences it; its type was updated in lockstep at
-  `apps/bot/src/lib/nikkesim/dpschart.ts`). Open question for the owner: the no-op B3's own damage fell
-  ~200× (5.09e9 → 2.52e7) since it scales with the same ATK — harmless today (it is never ranked;
-  `src/dpschart/run.ts:106` returns the tested unit's dps alone) but it retires the "contributes
-  realistic B3-stage damage" intent in `src/dpschart/noop.ts`.
 
 #### Engine / model threads (measurement- or owner-gated)
 
