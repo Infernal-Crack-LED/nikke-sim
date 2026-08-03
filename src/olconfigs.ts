@@ -32,16 +32,34 @@ const CAND_LABEL: Record<string, string> = {
   critdmg: 'Crit DMG',
   chargespd: 'Charge Speed',
   chargedmg: 'Charge DMG',
+  hitrate: 'Hit Rate',
 };
 
-// weapon-aware pool for the free four (elem/atk are the fixed floor; hit/def are
-// dead for damage; charge lines only matter on RL/SR).
+// Weapon-aware pool for the free four. elem/atk are the fixed floor; DEF is
+// genuinely dead for damage; charge lines only matter on RL/SR.
+//
+// HIT RATE is weapon-conditional (owner ruling 2026-08-02), and the condition is
+// exactly the engine's: `HRCORE` converts live Hit Rate into a higher core-hit
+// fraction only for the weapons with a datamined accuracy-circle row —
+// `HR_CORE_CIRCLE = { AR: 75, SMG: 110, SG: 250 }` in sim.ts. For MG/SR/RL (and
+// Pistol) `hrCoreExp` returns 0, `hrCoreMult` returns 1, and a Hit Rate line moves
+// nothing, so offering it there would only pad the search with dead candidates.
+//
+// This pool used to exclude Hit Rate for EVERY weapon on the flat claim that it was
+// "dead for damage" — true before HRCORE landed (2026-07-17), stale after. That
+// staleness was measurable: it is why this exhaustive ranking disagreed with
+// data/ol-optimal.json's greedy pass on 24 units, all of them AR/SMG/SG. The greedy
+// side was right; it never picks Hit Rate for RL/SR/MG because the gain really is
+// zero there.
+const HITRATE_WEAPONS: ReadonlySet<Weapon> = new Set<Weapon>(['AR', 'SMG', 'SG']);
+
 export function freeLineCandidates(weapon: Weapon): string[] {
   const charge = weapon === 'RL' || weapon === 'SR';
   return [
     'ammo',
     'critrate',
     'critdmg',
+    ...(HITRATE_WEAPONS.has(weapon) ? ['hitrate'] : []),
     ...(charge ? ['chargespd', 'chargedmg'] : []),
   ];
 }

@@ -275,6 +275,30 @@
       },
       "ol": [
         {
+          "label": "4× Hit Rate",
+          "gainPct": 13.65
+        },
+        {
+          "label": "2× Hit Rate + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 11.85
+        },
+        {
+          "label": "2× Crit Rate + 2× Hit Rate",
+          "gainPct": 11.46
+        },
+        {
+          "label": "3× Hit Rate + 1× Crit Rate",
+          "gainPct": 11.44
+        },
+        {
+          "label": "3× Hit Rate + 1× Crit DMG",
+          "gainPct": 11.16
+        },
+        {
+          "label": "2× Crit DMG + 2× Hit Rate",
+          "gainPct": 10.91
+        },
+        {
           "label": "2× Crit Rate + 2× Crit DMG",
           "gainPct": 9.51
         },
@@ -283,36 +307,12 @@
           "gainPct": 9.14
         },
         {
-          "label": "3× Crit DMG + 1× Crit Rate",
-          "gainPct": 8.63
+          "label": "2× Crit Rate + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 8.93
         },
         {
-          "label": "4× Crit Rate",
-          "gainPct": 7.54
-        },
-        {
-          "label": "4× Crit DMG",
-          "gainPct": 6.51
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 1.38
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 1.13
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 0.44
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": -0.29
-        },
-        {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": -1.45
+          "label": "2× Crit DMG + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 8.66
         }
       ]
     },
@@ -452,6 +452,34 @@
       },
       "ol": [
         {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 35.56
+        },
+        {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 35.13
+        },
+        {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 34.24
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 30.47
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 30.41
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 30.11
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 30.05
+        },
+        {
           "label": "3× Max Ammo + 1× Crit Rate",
           "gainPct": 29.94
         },
@@ -462,34 +490,6 @@
         {
           "label": "4× Max Ammo",
           "gainPct": 29.39
-        },
-        {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 25.89
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 25.4
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 24.72
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 21.99
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 21.66
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 20.75
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 19.79
         }
       ]
     },
@@ -532,6 +532,10 @@
           "gainPct": 7.14
         },
         {
+          "label": "2× Crit Rate + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 6.99
+        },
+        {
           "label": "3× Crit Rate + 1× Max Ammo",
           "gainPct": 6.99
         },
@@ -540,12 +544,8 @@
           "gainPct": 6.99
         },
         {
-          "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 6.64
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 6.25
+          "label": "2× Crit DMG + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 6.75
         }
       ]
     },
@@ -563,6 +563,10 @@
           "gainPct": 61.36
         },
         {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 52.83
+        },
+        {
           "label": "3× Max Ammo + 1× Crit Rate",
           "gainPct": 52.74
         },
@@ -571,32 +575,28 @@
           "gainPct": 52.51
         },
         {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 41.64
+        },
+        {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
           "gainPct": 41.18
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 40.96
         },
         {
           "label": "2× Max Ammo + 2× Crit Rate",
           "gainPct": 40.88
         },
         {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 40.75
+        },
+        {
           "label": "2× Max Ammo + 2× Crit DMG",
           "gainPct": 40.46
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 30.48
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 30.29
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 29.75
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 29.17
         }
       ]
     },
@@ -749,12 +749,28 @@
       },
       "ol": [
         {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 24.21
+        },
+        {
           "label": "4× Max Ammo",
           "gainPct": 21.97
         },
         {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 21.95
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 21.61
+        },
+        {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
           "gainPct": 21.01
+        },
+        {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 20.68
         },
         {
           "label": "2× Max Ammo + 2× Crit Rate",
@@ -765,28 +781,12 @@
           "gainPct": 19.88
         },
         {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 18.36
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 19.86
         },
         {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 18.02
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 17.77
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 17.45
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 16.55
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 15.6
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 19.72
         }
       ]
     },
@@ -815,6 +815,26 @@
       },
       "ol": [
         {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 21.65
+        },
+        {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 20.38
+        },
+        {
+          "label": "4× Hit Rate",
+          "gainPct": 18.93
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 18.44
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 18.16
+        },
+        {
           "label": "4× Max Ammo",
           "gainPct": 18.13
         },
@@ -823,36 +843,16 @@
           "gainPct": 18.12
         },
         {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 17.78
+        },
+        {
           "label": "2× Max Ammo + 2× Crit Rate",
           "gainPct": 17.72
         },
         {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 17.16
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 16.33
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 16.31
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 16.04
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 16.04
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 15.26
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 14.44
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 17.5
         }
       ]
     },
@@ -1247,8 +1247,28 @@
       },
       "ol": [
         {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 36.59
+        },
+        {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 35.46
+        },
+        {
           "label": "4× Max Ammo",
           "gainPct": 33.12
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 32.9
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 32.64
+        },
+        {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 32.57
         },
         {
           "label": "3× Max Ammo + 1× Crit Rate",
@@ -1259,32 +1279,12 @@
           "gainPct": 29.93
         },
         {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 26.47
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 28.2
         },
         {
-          "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 26.12
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 25.62
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 18.61
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 18.38
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 17.73
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 17.04
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 27.95
         }
       ]
     },
@@ -1295,44 +1295,44 @@
       },
       "ol": [
         {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 13.31
+          "label": "4× Hit Rate",
+          "gainPct": 21.83
         },
         {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 13.03
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 20.91
         },
         {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 12.85
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 16.38
         },
         {
-          "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 12.45
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 15.56
         },
         {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 11.88
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 15.26
         },
         {
-          "label": "4× Max Ammo",
-          "gainPct": 11.05
+          "label": "3× Hit Rate + 1× Crit Rate",
+          "gainPct": 14.72
         },
         {
-          "label": "2× Crit Rate + 2× Crit DMG",
-          "gainPct": 9.74
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 14.69
         },
         {
-          "label": "3× Crit Rate + 1× Crit DMG",
-          "gainPct": 9.37
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 14.66
         },
         {
-          "label": "3× Crit DMG + 1× Crit Rate",
-          "gainPct": 8.84
+          "label": "3× Hit Rate + 1× Crit DMG",
+          "gainPct": 14.43
         },
         {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 8.38
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 14.36
         }
       ]
     },
@@ -1350,44 +1350,44 @@
       },
       "ol": [
         {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 26.47
+        },
+        {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 23.71
+        },
+        {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 23.1
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 22.9
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 22.64
+        },
+        {
           "label": "3× Max Ammo + 1× Crit Rate",
           "gainPct": 21.7
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 21.53
         },
         {
           "label": "3× Max Ammo + 1× Crit DMG",
           "gainPct": 21.44
         },
         {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 20.64
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 21.27
         },
         {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 20.46
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 20.27
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 20.21
-        },
-        {
-          "label": "4× Max Ammo",
-          "gainPct": 19.94
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 19.75
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 19.49
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 18.73
+          "label": "1× Max Ammo + 1× Crit Rate + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 21.09
         }
       ]
     },
@@ -1560,8 +1560,16 @@
           "gainPct": 26.91
         },
         {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Hit Rate",
+          "gainPct": 25.26
+        },
+        {
           "label": "3× Crit DMG + 1× Crit Rate",
           "gainPct": 24.85
+        },
+        {
+          "label": "3× Crit DMG + 1× Hit Rate",
+          "gainPct": 22.74
         },
         {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
@@ -1574,14 +1582,6 @@
         {
           "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
           "gainPct": 20.99
-        },
-        {
-          "label": "2× Crit Rate + 2× Crit DMG",
-          "gainPct": 19.87
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 15.26
         }
       ]
     },
@@ -1641,44 +1641,44 @@
       },
       "ol": [
         {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 63.99
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 59.9
+        },
+        {
           "label": "3× Crit DMG + 1× Max Ammo",
           "gainPct": 58.76
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Hit Rate",
+          "gainPct": 58.45
         },
         {
           "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
           "gainPct": 57.27
         },
         {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 57.02
+        },
+        {
+          "label": "1× Max Ammo + 1× Crit Rate + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 56.27
+        },
+        {
           "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
           "gainPct": 54.39
         },
         {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Hit Rate",
+          "gainPct": 52.69
+        },
+        {
           "label": "3× Crit Rate + 1× Max Ammo",
           "gainPct": 50.12
-        },
-        {
-          "label": "4× Max Ammo",
-          "gainPct": 41.06
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 38.8
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 38.45
-        },
-        {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 34.03
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 33.56
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 32.89
         }
       ]
     },
@@ -1693,44 +1693,44 @@
       },
       "ol": [
         {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 17.3
+        },
+        {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 16.16
+        },
+        {
+          "label": "4× Hit Rate",
+          "gainPct": 15.4
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 14.56
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 14.52
+        },
+        {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 14.48
+        },
+        {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
           "gainPct": 14.3
         },
         {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 14.3
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 14.27
+        },
+        {
           "label": "2× Max Ammo + 2× Crit Rate",
           "gainPct": 13.93
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 13.84
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 13.57
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 13.51
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 13.4
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 13.25
-        },
-        {
-          "label": "4× Max Ammo",
-          "gainPct": 13.25
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 12.53
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 11.76
         }
       ]
     },
@@ -1802,11 +1802,31 @@
       },
       "ol": [
         {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 20.27
+        },
+        {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 20.06
+        },
+        {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 18.91
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 18.5
+        },
+        {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
           "gainPct": 18.24
         },
         {
           "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 18.19
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
           "gainPct": 18.19
         },
         {
@@ -1818,28 +1838,8 @@
           "gainPct": 17.81
         },
         {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 17.19
-        },
-        {
-          "label": "4× Max Ammo",
-          "gainPct": 17.02
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 15.83
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 15.54
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 14.71
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 13.83
+          "label": "4× Hit Rate",
+          "gainPct": 17.4
         }
       ]
     },
@@ -1850,44 +1850,44 @@
       },
       "ol": [
         {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 32.35
+        },
+        {
+          "label": "1× Max Ammo + 1× Crit Rate + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 25.7
+        },
+        {
           "label": "3× Max Ammo + 1× Crit Rate",
           "gainPct": 25.66
+        },
+        {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 25.52
         },
         {
           "label": "3× Max Ammo + 1× Crit DMG",
           "gainPct": 25.47
         },
         {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 20.23
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Hit Rate",
+          "gainPct": 25.12
         },
         {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 20.07
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Hit Rate",
+          "gainPct": 24.76
         },
         {
-          "label": "4× Max Ammo",
-          "gainPct": 19.55
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 24.6
         },
         {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 18.98
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 24.42
         },
         {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 18.5
-        },
-        {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 17.72
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 17.17
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 16.84
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 21.85
         }
       ]
     },
@@ -1908,6 +1908,10 @@
       },
       "ol": [
         {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 14.56
+        },
+        {
           "label": "3× Max Ammo + 1× Crit Rate",
           "gainPct": 14.46
         },
@@ -1920,8 +1924,16 @@
           "gainPct": 14.14
         },
         {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 13.83
+        },
+        {
           "label": "2× Max Ammo + 2× Crit Rate",
           "gainPct": 13.79
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 13.59
         },
         {
           "label": "4× Max Ammo",
@@ -1932,20 +1944,8 @@
           "gainPct": 13.31
         },
         {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 9.91
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 9.68
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 9.01
-        },
-        {
-          "label": "2× Crit Rate + 2× Crit DMG",
-          "gainPct": 8.33
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 13.3
         }
       ]
     },
@@ -2132,12 +2132,24 @@
       },
       "ol": [
         {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 24.59
+        },
+        {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 23.96
+        },
+        {
           "label": "3× Max Ammo + 1× Crit Rate",
           "gainPct": 23.7
         },
         {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
           "gainPct": 23.64
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 23.54
         },
         {
           "label": "3× Max Ammo + 1× Crit DMG",
@@ -2148,28 +2160,16 @@
           "gainPct": 23.27
         },
         {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 23.14
+        },
+        {
           "label": "2× Max Ammo + 2× Crit DMG",
           "gainPct": 22.49
         },
         {
           "label": "4× Max Ammo",
           "gainPct": 21.86
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 18.53
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 18.18
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 17.44
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 16.38
         }
       ]
     },
@@ -2194,6 +2194,10 @@
       },
       "ol": [
         {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 17.7
+        },
+        {
           "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
           "gainPct": 17.48
         },
@@ -2206,32 +2210,28 @@
           "gainPct": 16.9
         },
         {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 16.72
+        },
+        {
           "label": "3× Max Ammo + 1× Crit DMG",
           "gainPct": 16.6
+        },
+        {
+          "label": "1× Max Ammo + 1× Crit Rate + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 16.54
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 16.47
         },
         {
           "label": "3× Crit Rate + 1× Max Ammo",
           "gainPct": 16.36
         },
         {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 15.48
-        },
-        {
-          "label": "4× Max Ammo",
-          "gainPct": 14.79
-        },
-        {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 14.77
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 14.36
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 13.77
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 16.18
         }
       ]
     },
@@ -2368,12 +2368,24 @@
           "gainPct": 12.58
         },
         {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 12.42
+        },
+        {
           "label": "3× Max Ammo + 1× Crit DMG",
           "gainPct": 12.38
         },
         {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 12.31
+        },
+        {
           "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
           "gainPct": 12.23
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 12.21
         },
         {
           "label": "2× Max Ammo + 2× Crit DMG",
@@ -2382,18 +2394,6 @@
         {
           "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
           "gainPct": 11.98
-        },
-        {
-          "label": "4× Max Ammo",
-          "gainPct": 11.26
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 11.26
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 10.5
         }
       ]
     },
@@ -2430,12 +2430,24 @@
           "gainPct": 12
         },
         {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 11.72
+        },
+        {
           "label": "2× Max Ammo + 2× Crit Rate",
           "gainPct": 11.63
         },
         {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 11.45
+        },
+        {
           "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
           "gainPct": 11.39
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 11.36
         },
         {
           "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
@@ -2446,24 +2458,12 @@
           "gainPct": 11.13
         },
         {
-          "label": "2× Max Ammo + 2× Crit DMG",
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
           "gainPct": 11.1
         },
         {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 10.86
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 10.4
-        },
-        {
-          "label": "4× Max Ammo",
-          "gainPct": 10.08
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 9.63
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 11.1
         }
       ]
     },
@@ -2845,44 +2845,44 @@
       },
       "ol": [
         {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 29.1
+        },
+        {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 26.72
+        },
+        {
+          "label": "4× Hit Rate",
+          "gainPct": 25.26
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 24.34
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 24.09
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 23.9
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 23.64
+        },
+        {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 23.18
+        },
+        {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
           "gainPct": 23.03
         },
         {
           "label": "2× Max Ammo + 2× Crit DMG",
           "gainPct": 22.83
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 21.94
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 21.93
-        },
-        {
-          "label": "4× Max Ammo",
-          "gainPct": 21.7
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 21.48
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 21.44
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 21.01
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 20.63
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 19.32
         }
       ]
     },
@@ -2973,44 +2973,44 @@
       },
       "ol": [
         {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 14.29
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 21.62
         },
         {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 14
+          "label": "4× Hit Rate",
+          "gainPct": 21.51
         },
         {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 13.6
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 17.15
         },
         {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 13.42
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 17.07
         },
         {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 13.3
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 16.87
         },
         {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 13.2
+          "label": "3× Hit Rate + 1× Crit Rate",
+          "gainPct": 15.29
         },
         {
-          "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 13
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 15.03
         },
         {
-          "label": "4× Max Ammo",
-          "gainPct": 12.98
+          "label": "3× Hit Rate + 1× Crit DMG",
+          "gainPct": 15.02
         },
         {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 12.42
+          "label": "1× Max Ammo + 1× Crit Rate + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 14.95
         },
         {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 12.35
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Hit Rate",
+          "gainPct": 14.54
         }
       ]
     },
@@ -3030,44 +3030,44 @@
       },
       "ol": [
         {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 22.24
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 32.08
         },
         {
-          "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 21.78
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 30.94
         },
         {
-          "label": "4× Max Ammo",
-          "gainPct": 21.56
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 27.53
         },
         {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 21.13
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 27.19
         },
         {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 20.71
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 26.39
         },
         {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 20.38
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 26.05
         },
         {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 19.06
+          "label": "4× Hit Rate",
+          "gainPct": 25.56
         },
         {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 18.75
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 25.52
         },
         {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 17.88
+          "label": "1× Max Ammo + 1× Crit Rate + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 23.03
         },
         {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 16.95
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Hit Rate",
+          "gainPct": 22.57
         }
       ]
     },
@@ -3092,8 +3092,28 @@
       },
       "ol": [
         {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 25.01
+        },
+        {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 24.85
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 22.66
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 22.36
+        },
+        {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
           "gainPct": 21.9
+        },
+        {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 21.86
         },
         {
           "label": "4× Max Ammo",
@@ -3104,32 +3124,12 @@
           "gainPct": 21.48
         },
         {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 20.88
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 21.44
         },
         {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 20.68
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 20.37
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 19.31
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 19.02
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 18.21
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 17.35
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 21.15
         }
       ]
     },
@@ -3210,44 +3210,44 @@
       },
       "ol": [
         {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 10.11
+          "label": "4× Hit Rate",
+          "gainPct": 23.69
         },
         {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 9.85
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 21.98
         },
         {
-          "label": "2× Crit Rate + 2× Crit DMG",
-          "gainPct": 9.56
+          "label": "3× Hit Rate + 1× Crit Rate",
+          "gainPct": 19.7
         },
         {
-          "label": "3× Crit Rate + 1× Crit DMG",
-          "gainPct": 9.2
+          "label": "3× Hit Rate + 1× Crit DMG",
+          "gainPct": 19.41
         },
         {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 9.09
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 18.48
         },
         {
-          "label": "4× Max Ammo",
-          "gainPct": 8.69
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 18.18
         },
         {
-          "label": "3× Crit DMG + 1× Crit Rate",
-          "gainPct": 8.68
+          "label": "2× Hit Rate + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 16.81
         },
         {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 8.52
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 16.79
         },
         {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 8.48
+          "label": "2× Crit Rate + 2× Hit Rate",
+          "gainPct": 16.41
         },
         {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 8.3
+          "label": "2× Crit DMG + 2× Hit Rate",
+          "gainPct": 15.84
         }
       ]
     },
@@ -3374,32 +3374,32 @@
           "gainPct": 8.46
         },
         {
+          "label": "2× Crit Rate + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 7.51
+        },
+        {
           "label": "4× Crit Rate",
           "gainPct": 7.39
         },
         {
+          "label": "2× Crit DMG + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 7.26
+        },
+        {
+          "label": "4× Hit Rate",
+          "gainPct": 6.94
+        },
+        {
+          "label": "3× Crit Rate + 1× Hit Rate",
+          "gainPct": 6.55
+        },
+        {
+          "label": "2× Hit Rate + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 6.43
+        },
+        {
           "label": "4× Crit DMG",
           "gainPct": 6.39
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": -19.19
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": -19.38
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": -19.93
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": -20.5
-        },
-        {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": -35.56
         }
       ]
     },
@@ -3420,44 +3420,44 @@
       },
       "ol": [
         {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 20.3
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 40.11
         },
         {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 19.6
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 38.15
         },
         {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 18.71
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 35.58
         },
         {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 18.64
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 34.38
         },
         {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 18.48
+          "label": "3× Hit Rate + 1× Crit DMG",
+          "gainPct": 29.49
         },
         {
-          "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 17.83
+          "label": "3× Hit Rate + 1× Crit Rate",
+          "gainPct": 28.58
         },
         {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 17.45
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 28.26
         },
         {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 17.28
+          "label": "4× Hit Rate",
+          "gainPct": 27.6
         },
         {
-          "label": "4× Max Ammo",
-          "gainPct": 17.19
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 27.02
         },
         {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 15.04
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 26.76
         }
       ]
     },
@@ -3733,44 +3733,44 @@
       },
       "ol": [
         {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 21.69
+        },
+        {
+          "label": "4× Hit Rate",
+          "gainPct": 21.11
+        },
+        {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 20.75
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 18.07
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 17.77
+        },
+        {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 17.75
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 17.39
+        },
+        {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
           "gainPct": 17.12
         },
         {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 17.11
+        },
+        {
           "label": "2× Max Ammo + 2× Crit Rate",
           "gainPct": 16.7
-        },
-        {
-          "label": "4× Max Ammo",
-          "gainPct": 16.38
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 16.34
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 16.1
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 16.03
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 14.78
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 14.49
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 13.68
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 12.83
         }
       ]
     },
@@ -3901,12 +3901,12 @@
           "gainPct": 8.61
         },
         {
-          "label": "4× Crit Rate",
-          "gainPct": 8.19
+          "label": "1× Max Ammo + 1× Crit Rate + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 8.27
         },
         {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 8.03
+          "label": "2× Crit Rate + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 8.24
         }
       ]
     },
@@ -3928,12 +3928,28 @@
           "gainPct": 75.09
         },
         {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 69.16
+        },
+        {
           "label": "3× Max Ammo + 1× Crit DMG",
           "gainPct": 67.86
         },
         {
           "label": "3× Max Ammo + 1× Crit Rate",
           "gainPct": 67.44
+        },
+        {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 63.47
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 60.49
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 60.1
         },
         {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
@@ -3946,22 +3962,6 @@
         {
           "label": "2× Max Ammo + 2× Crit Rate",
           "gainPct": 58.43
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 41.71
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 41.33
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 40.57
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 39.42
         }
       ]
     },
@@ -4024,8 +4024,28 @@
       },
       "ol": [
         {
+          "label": "4× Hit Rate",
+          "gainPct": 19.08
+        },
+        {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 19.04
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 16.75
+        },
+        {
           "label": "3× Crit DMG + 1× Max Ammo",
           "gainPct": 16.43
+        },
+        {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 16.38
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Hit Rate",
+          "gainPct": 16.05
         },
         {
           "label": "2× Max Ammo + 2× Crit DMG",
@@ -4036,32 +4056,12 @@
           "gainPct": 15.91
         },
         {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 14.9
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 15.62
         },
         {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 14.34
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 14.28
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 12.69
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 12.66
-        },
-        {
-          "label": "3× Crit DMG + 1× Crit Rate",
-          "gainPct": 12.39
-        },
-        {
-          "label": "4× Crit DMG",
-          "gainPct": 12.37
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 15.13
         }
       ]
     },
@@ -4149,40 +4149,40 @@
           "gainPct": 44.97
         },
         {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 44.9
+        },
+        {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 43.4
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 42.1
+        },
+        {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 41.39
+        },
+        {
           "label": "2× Max Ammo + 2× Crit Rate",
           "gainPct": 41.36
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 39.93
         },
         {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
           "gainPct": 39.88
         },
         {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 39.81
+        },
+        {
           "label": "3× Max Ammo + 1× Crit Rate",
           "gainPct": 39.31
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 37.06
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 36.89
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 36.04
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 35.47
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 33.48
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 30.07
         }
       ]
     },
@@ -4204,44 +4204,44 @@
       },
       "ol": [
         {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 31.92
+        },
+        {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 30.32
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 27.2
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 26.85
+        },
+        {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 26.31
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 25.76
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 25.41
+        },
+        {
+          "label": "4× Hit Rate",
+          "gainPct": 25.38
+        },
+        {
           "label": "3× Max Ammo + 1× Crit Rate",
           "gainPct": 23.71
         },
         {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 23.37
-        },
-        {
-          "label": "4× Max Ammo",
-          "gainPct": 22.46
-        },
-        {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 20.53
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 20.07
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 19.71
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 19.41
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 19.4
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 18.51
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 17.57
+          "label": "1× Max Ammo + 1× Crit Rate + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 23.53
         }
       ]
     },
@@ -4346,44 +4346,44 @@
       },
       "ol": [
         {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 24.68
+        },
+        {
+          "label": "4× Hit Rate",
+          "gainPct": 24.14
+        },
+        {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 22.54
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 20.22
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 20.07
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 19.55
+        },
+        {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 19.49
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 19.38
+        },
+        {
           "label": "2× Max Ammo + 2× Crit DMG",
           "gainPct": 19.06
         },
         {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
           "gainPct": 19.03
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 18.46
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 17.76
-        },
-        {
-          "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 17.68
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 17.5
-        },
-        {
-          "label": "4× Max Ammo",
-          "gainPct": 17.23
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 16.87
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 16.83
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 14.87
         }
       ]
     },
@@ -4557,8 +4557,24 @@
       },
       "ol": [
         {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 23.64
+        },
+        {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 23.41
+        },
+        {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
           "gainPct": 23.28
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 22.71
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 22.7
         },
         {
           "label": "4× Max Ammo",
@@ -4573,28 +4589,12 @@
           "gainPct": 22.52
         },
         {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 22
+        },
+        {
           "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
           "gainPct": 21.9
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 21.85
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 21.8
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 21.75
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 20.5
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 20.37
         }
       ]
     },
@@ -4627,44 +4627,44 @@
       },
       "ol": [
         {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 30.29
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 28.28
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 26.99
+        },
+        {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 26.06
+        },
+        {
           "label": "2× Max Ammo + 2× Crit DMG",
           "gainPct": 25.14
+        },
+        {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 25
         },
         {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
           "gainPct": 24.67
         },
         {
+          "label": "4× Hit Rate",
+          "gainPct": 24.13
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 23.7
+        },
+        {
           "label": "2× Max Ammo + 2× Crit Rate",
           "gainPct": 22.7
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 22.03
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 20.81
-        },
-        {
-          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 18.07
-        },
-        {
-          "label": "4× Max Ammo",
-          "gainPct": 17.75
-        },
-        {
-          "label": "3× Crit DMG + 1× Max Ammo",
-          "gainPct": 17.73
-        },
-        {
-          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 16.99
-        },
-        {
-          "label": "3× Crit Rate + 1× Max Ammo",
-          "gainPct": 14.51
         }
       ]
     }

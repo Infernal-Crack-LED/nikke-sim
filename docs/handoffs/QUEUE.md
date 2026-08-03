@@ -66,14 +66,18 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      extend `unitStaticHtml` in BOTH servers to emit the new sections for no-JS crawlers.
   5. Decide the thin-content policy if Search Console flags the ~85 kit-only pages as soft-404s
      (gate the sitemap on `simSupported`, or `noindex` them).
-- **⇒ OL TOOLING DISAGREEMENT — findings only, nothing enacted (surfaced 2026-08-02).** The new
-  exhaustive free-line table agrees with `data/ol-optimal.json`'s greedy pick for only **20 of 73**
-  units. Measured attribution (via the new `--tier` flag on `scripts/build-unit-pages.ts`): 24 =
-  greedy picks Hit Rate/DEF, which `src/olconfigs.ts`'s free-line pool excludes on the comment
-  "hit/def are dead for damage" — that predates `HRCORE` (STATE.md §1: live Hit Rate raises the core
-  fraction), so the two tools now disagree about whether Hit Rate is a damage line; 18 = tier basis
-  (`build-ol-optimal` optimizes at MAX ROLL, the web applies its picks at T11); 11 = greedy local
-  optima. Needs one batched owner decision, not three separate fixes.
+- **⇒ OL TOOLING — two remaining basis gaps, findings-only (Hit Rate half RESOLVED
+  2026-08-02).** The exhaustive free-line table now agrees with `data/ol-optimal.json`'s
+  greedy pick on 32/73 units (was 20). The Hit Rate cause is closed: owner ruled Hit Rate
+  counts for AR/SMG/SG and not RL/SR/MG, `src/olconfigs.ts`'s pool was updated to match the
+  engine's own `HR_CORE_CIRCLE` set, and
+  `scripts/tests/engine/ol-hitrate-pool.test.ts` pins the pool against measured engine
+  behaviour. Still open, one batched decision:
+  1. **Tier basis (23 units)** — `build-ol-optimal` passes no tier values so it optimizes at
+     MAX ROLL, but the web applies its picks at T11. Pick one basis.
+  2. **Greedy local optima (18 units)** — `bestOl` finds a worse combo than the exhaustive
+     search at the same tier and pool. Decide whether `ol-optimal.json` should just use the
+     exhaustive ranking for the weapon-aware pool.
 - **⇒ B1/B2 DPS RANKING BOARD — LANDED 2026-08-01 (PR #54), three small follow-ups deferred:**
   1. Register rank-board synthetics (the `noop-*` controls and any future real-unit stand-ins) in
      a shared registry (`src/ranks/synthetics.ts` or a new `RANK_SYNTHETICS` record) instead of

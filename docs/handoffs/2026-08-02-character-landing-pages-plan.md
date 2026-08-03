@@ -138,41 +138,52 @@ and would read as a claim about the player's own damage.
 
 `build:deploy` gains `npm run build-ol-table` right after `build-ol-optimal`.
 
-**Consistency check — RUN, and it does NOT agree with `ol-optimal.json`.** Row 0 of
-the table names the same line multiset as `ol-optimal.json` for only **20 of 73**
-units. Measured attribution (`--tier` was added to the script to isolate it):
+**Consistency check vs `data/ol-optimal.json`.** Row 0 of the table should name the
+same line multiset as the greedy `bestOl` pass. It does for **32 of 73** units. The
+`--tier` flag on the build script exists to isolate why; the measured split:
 
-| Cause                                                              | Units  |
-| ------------------------------------------------------------------ | ------ |
-| Greedy picked **Hit Rate** or **DEF**, which the free-line pool excludes by design | 24 |
-| **Tier basis**: `build-ol-optimal` passes no tier values → optimizes at MAX ROLL; this table is T11 | 18 |
-| Genuine **greedy local optimum** — differs even at the same tier and pool | 11 |
-| Agree                                                               | 20     |
+| Cause                                                              | Units | Status |
+| ------------------------------------------------------------------ | ----- | ------ |
+| Agree                                                               | 32    | —      |
+| **Tier basis**: `build-ol-optimal` passes no tier values → optimizes at MAX ROLL; this table is T11 | 23 | open |
+| Genuine **greedy local optimum** — differs at the same tier and pool | 18   | open   |
+| ~~Hit Rate excluded from the free-line pool~~                        | 0     | **FIXED** |
 
-All three are pre-existing properties of the two tools; none was introduced here.
-`--tier 15` reproduces the greedy pass's tier and resolves 18 of the 29 non-Hit-Rate
-cases, which is how the split above was measured rather than guessed.
+**Hit Rate — owner ruling 2026-08-02, LANDED.** `src/olconfigs.ts`'s free-line pool
+excluded Hit Rate for every weapon, on the comment *"hit/def are dead for damage"*.
+That was true when written and stale from the moment `HRCORE` landed (2026-07-17).
+The pool now offers Hit Rate for **AR/SMG/SG** and withholds it for **RL/SR/MG**
+(and Pistol) — which is not a new policy but a restatement of the engine:
+`HR_CORE_CIRCLE = { AR: 75, SMG: 110, SG: 250 }` in `sim.ts`, and for every other
+weapon `hrCoreExp` returns 0 → `hrCoreMult` returns 1 → the line is inert.
+
+`bestOl` needed no change: all 24 of its Hit Rate picks were already AR/SMG/SG, so
+the greedy side was right and the exhaustive pool was the stale one. Agreement moved
+20 → 32; Hit Rate now appears in the #1 row for 26 units (SG 10, SMG 8, AR 8) and on
+**zero** RL/SR/MG units.
+
+Pinned by `scripts/tests/engine/ol-hitrate-pool.test.ts`, which asserts the pool
+against MEASURED engine behaviour rather than a hardcoded list — for each weapon
+class it checks whether a `hitRatePct` buff actually moves the resolved core rate,
+and requires the pool to offer Hit Rate exactly when it does. Verified to bite: it
+fails 3/8 against the old pool (AR core rate 0.214 → 0.461, SMG 0.164 → 0.323, SG
+0.026 → 0.061 under a 40pt buff; RL/SR/MG unmoved). A hardcoded assertion would have
+gone stale exactly the way the original comment did.
+
+Note the greedy-local-optimum count rose 11 → 18. That is not a regression: widening
+the exhaustive pool gives it more room to beat greedy, so more units now have a
+better combo than greedy finds.
+
+**Still open, findings-only** (batch-and-stop — one owner decision, not three fixes):
+`build-ol-optimal` optimizes at max roll while the web applies its picks at T11; and
+greedy lands on a local optimum for 18 units where the exhaustive search does better.
+Neither is touched by this branch.
 
 **Consequence for the page (decided):** the page's "best lines" recommendation is
-**row 1 of this table**, not `ol-optimal.json`. Showing both would contradict itself
-on 53 of 73 units. The table is the self-consistent artifact and it matches what a
-visitor sees if they go re-run the Optimize Overload tab, which is the trust-critical
-property for a page whose whole pitch is "these are the sim's numbers".
-
-**Findings-only — NOT enacted here** (batch-and-stop): the three causes above are a
-cross-cutting signal about the OL tooling, not this page's business. Surfaced for the
-owner as one batched item:
-
-- `src/olconfigs.ts`'s free-line pool comment says "hit/def are dead for damage".
-  That predates `HRCORE` (landed 2026-07-17 → STATE.md §1: live Hit Rate shrinks the
-  reticle and raises the core fraction on AR/SMG/SG). The greedy optimizer picks Hit
-  Rate for 24 units, so the two tools now disagree about whether Hit Rate is a damage
-  line. One of them is wrong and it is worth deciding which.
-- `build-ol-optimal` optimizes at max roll but the web applies its picks at T11.
-- Greedy `bestOl` lands on a local optimum for ≥11 units where the exhaustive search
-  finds better.
-
-None of these is touched by this branch.
+**row 1 of this table**, not `ol-optimal.json`. The table is the self-consistent
+artifact and it matches what a visitor sees if they re-run the Optimize Overload tab,
+which is the trust-critical property for a page whose pitch is "these are the sim's
+numbers".
 
 ## Phasing
 
