@@ -9,7 +9,42 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-03, latest) THE BUFFER BOARD'S STANDARD TEAM CARRIES A SPARE NO-OP OF THE TESTED
+- **(2026-08-03, latest) THE BUFFER BOARD'S CAMERA FOCUS IS THE SPARE NO-OP B2 (SR), AND A TESTED
+  B3'S BURST IS SUPPRESSED OUTRIGHT.** Focus grants a charge weapon ×2.5 burst gauge, so whoever
+  holds it sets the pace of the team's whole rotation. It sat on the second carry
+  (`carryDpsSum` `focusSlug: team.slugs[team.carryIdxs[1]]`) — whose WEAPON the typed board rewrites
+  per tested unit: `carry-rl` banks the ×2.5 (140 base + 250 full charge) while `carry-sg` cannot
+  take it at all (200, no full-charge bonus), so the team's gauge, and its Full Burst count, moved
+  with the kit under test. **Owner ruling 2026-08-03: focus the no-op B2 (SR) so burst generation is
+  standardized.** It is now the spare stage slot (`assemble` returns `focusSlot`), which is
+  `noop-b2-sr` on every plain row, generic and typed, tested side and baseline alike. On a duo row
+  the partner occupies that slot and holds focus — symmetric, since the duo baseline seats the
+  partner there too, but it is the one row shape where focus is not the standard SR.
+  **Consequence, and the second half of this ruling:** the standardized focus makes the team's
+  rotation faster, and that broke the "a tested B3 never bursts" rule — rightmost placement only wins
+  the stage-3 cast for the carries while either is off cooldown, and they are 40s units, so a fast
+  enough rotation reaches a stage 3 where only the tested unit is ready. `ada` took a cast. The
+  tested B3's burst slot is therefore emptied outright (`burstOffSlug`, applied through the
+  `extraOverrides` channel `carryDpsSum` already uses) rather than left to rotation luck —
+  byte-identical for the 16 B3 buffers that never cast one. **Pinned by injection, not tautology:**
+  giving `ada` a 500% team-ATK burst buff moves her value by exactly 0.000 points.
+  **Residual, disclosed:** a tested B3 can still OCCUPY one stage-3 turn it would not have taken
+  (`burstCasts` is a rotation counter, not an effect counter), displacing one carry burst. Removing
+  that needs a per-unit burst-suppression option in `src/engine/**`, a protected path — not taken
+  without a separate owner call. It costs `ada` ~1 of 9 stage-3 casts and no other unit today.
+  **Measured effect, focus change only** (`npx tsx scripts/build-bufferchart.ts` before/after on the
+  same HEAD): 71 of 83 generic rows move, all modestly — chime +8.4, little-mermaid +7.7 (rank
+  28→23), mint +6.2, crown +5.1, liter +4.2; drops avistar −2.8, ada −1.3 (the suppression),
+  mint `w/ Prika` −1.2. Typed: arcana +9.6, tove +8.4, anis-star −7.8, mint −6.8. Negative rows
+  6 → 2 generic and 4 → 2 typed. No rank upheaval — the largest move is 5 places.
+  **Also landed here:** the long-cooldown pin was rewritten to ISOLATE its variable. It asserted "no
+  unit with a >20s cooldown lands below its baseline Full Burst count", which uses cooldown as a
+  proxy and fails on units this shape never claimed to fix — `rosanna` reads 7 v 8 at 40s and
+  reads 7 v 8, byte-identical, at a forced 20s, so her shortfall is gauge, not rotation. The pin is
+  now: forcing a unit's cooldown to the no-op's 20s must not change its Full Burst count. verify.sh
+  green.
+
+- **(2026-08-03) THE BUFFER BOARD'S STANDARD TEAM CARRIES A SPARE NO-OP OF THE TESTED
   UNIT'S STAGE, SO A LONG BURST COOLDOWN NO LONGER COSTS THE TEAM FULL BURSTS.** The board was built
   without the design requirement it was supposed to have: the tested unit displaced the only no-op of
   its stage, so a 40s Burst-2 landed **5** Full Bursts against the baseline's **9** (3 for the 60s
