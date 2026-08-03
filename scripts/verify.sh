@@ -110,6 +110,14 @@ if [ "$MODE" = "full" ] || [ "$MODE" = "deploy" ] || [ "$MODE" = "artifacts" ]; 
     say "DPS-chart + rank-board artifacts (gitignored build outputs — deploy/artifacts tiers only)"
     npm run dpschart
     npm run ranks:all
+    # Regenerated here and not only in build:deploy because THIS is the tier the
+    # deploy box runs (railway.json buildCommand). scripts/prerender.ts lived in
+    # build:deploy only, so it never executed in production and /mechanics +
+    # /howto shipped an empty #root to every non-JS crawler for as long as it
+    # was wired that way. The committed copy is what the servers read; this run
+    # is the freshness guarantee, and content-pages-drift.test.ts is the gate.
+    say "content-page no-JS bodies (web/public/content-pages.json)"
+    npm run build:content-pages
   fi
   say "web build + smoke"
   npm run web:build

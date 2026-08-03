@@ -137,11 +137,22 @@ without flipping it. (Root case 2026-07-16: the SG model pass read board `arcana
 Every doc is exactly one class. This is what keeps `docs/STATE.md` current and stops the changelog
 logs from poisoning agent context with stale-but-retained narration.
 
+> The rules below are normative; the **procedure** that applies them — fact routing, QUEUE.md
+> pruning, closing a finished handoff, resolved-question moves, stale-narration deletion — is the
+> `/doc-maintenance` skill, which a PreToolUse hook nudges at push / PR time.
+
 - **CHANGELOG class — append-only, immutable, never delete.** Outdated content is marked
   **`SUPERSEDED (date) — disregard`** or struck through IN PLACE — this is the provenance trail.
   Members: `docs/DECISIONS.md`, `docs/answered-questions.md`,
   `docs/probe-runs.md`, `web/src/patch-notes.json` (prepend-only), `data/sources.json` (cumulative
   accreditation), and the `docs/handoffs/closed/` + `docs/closed/` archives.
+  - **The two archives are gitignored on purpose — archiving a doc UNTRACKS it.** A finished handoff
+    or plan doc gets a `CLOSED (date)` block at the top, then `git rm --cached <path>` followed by a
+    plain `mv` into the archive: it survives on disk for a human to read and leaves the repo. `git mv`
+    cannot do this, and staging a new path under either archive aborts the pre-commit hook — that is
+    the missing `git rm --cached`, not a broken hook. Move any residual open item to
+    `docs/handoffs/QUEUE.md` first, and check nothing cites the doc by name (a `docs/DECISIONS.md`
+    citation to an untracked file is a dangling pointer) before it goes.
 - **CURRENT-STATE class — freely rewritten; stale content is DELETED, not marked.** History lives in
   the changelog class, so deletion loses nothing. **Capture-first rule:** before deleting a
   still-true-but-resolved block, confirm the fact is in a changelog doc (DECISIONS /

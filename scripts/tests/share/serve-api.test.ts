@@ -880,7 +880,9 @@ describe('static port parity with serve.mjs', () => {
       const raw = /<script type="application\/ld\+json">([^<]+)<\/script>/.exec(
         html
       )?.[1];
-      if (!raw) return null;
+      if (!raw) {
+        return null;
+      }
       const data = JSON.parse(raw) as {
         itemListElement?: { item?: string }[];
       };
@@ -930,6 +932,30 @@ describe('static port parity with serve.mjs', () => {
     // disagrees with this ranking for most units, and indexing a different
     // recommendation than the visitor sees is worse than indexing none.
     expect(body).not.toContain('No optimal line data yet.');
+  });
+
+  // The lockstep half of the same assertion in serve-headers.test.ts. This port
+  // is what production actually runs (start:server -> dist-server/index.js), so
+  // the prose pages have to be pinned HERE too — covering only the .mjs server
+  // would leave the deployed path unasserted, which is the shape of the gap
+  // that let /mechanics ship an empty #root in the first place.
+  it.each([
+    ['/mechanics', 'mech-page', 'Game mechanics'],
+    ['/howto', 'howto-page', 'How to use this site'],
+  ])('%s serves its prose in the body with JS off', async (path, cls, h1) => {
+    const res = await fetch(`${base}${path}`);
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    const body = html.split('</head>')[1] ?? '';
+    expect(body).toContain(cls);
+    expect(body).toContain(`<h1>${h1}</h1>`);
+    expect((body.match(/<h2>/g) ?? []).length).toBeGreaterThanOrEqual(5);
+    expect((body.match(/<li>|<dd>/g) ?? []).length).toBeGreaterThanOrEqual(10);
+    const text = body
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    expect(text.length).toBeGreaterThan(2000);
   });
 
   it('previously-valid top-level routes still return 200', async () => {
