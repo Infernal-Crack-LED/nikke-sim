@@ -508,6 +508,7 @@ interface UnitState {
   mpThreshold: number;
   extraStages: Set<number>; // extra burst stages this unit may fill (Combat Assist)
   lambdaStage: number | null; // Λ units: pinned to burst ONLY at this stage
+  forceStage: number | null; // non-Λ units: forced to fill ONLY this stage (rank-builder controls)
   advantageVs: Set<string>; // boss elements this unit counts as advantaged against
   // weapon runtime
   ammo: number;
@@ -824,6 +825,7 @@ export function runSim(
       extraStages: new Set(),
       lambdaStage:
         char.burst === 'Λ' ? (prepared?.[idx]?.lambdaStage ?? null) : null,
+      forceStage: prepared?.[idx]?.forceStage ?? null,
       advantageVs: new Set(),
       ammo: char.ammo,
       fireAcc: 0,
@@ -1825,13 +1827,20 @@ export function runSim(
         if (t.stage === undefined) {
           return byElement;
         }
-        return byElement.filter(
-          (u) =>
-            (t.stage === 3 &&
-              (u.char.burst === 'III' || u.lambdaStage === 3)) ||
-            (t.stage === 2 && u.char.burst === 'II') ||
-            (t.stage === 1 && u.char.burst === 'I')
-        );
+        // Stage targeting for burst-caster buffs. forceStage (new, rank-builder
+        // only) is honored at any stage. Λ units are otherwise only targeted by
+        // their native burst class; the legacy exception is a Λ unit pinned to
+        // stage 3 via lambdaStage, which existing kits target as B3.
+        const countsAsStage = (u: UnitState, stage: number) => {
+          if (u.forceStage !== null) {
+            return u.forceStage === stage;
+          }
+          if (u.char.burst === 'Λ') {
+            return u.lambdaStage === 3 && stage === 3;
+          }
+          return u.char.burst === romanStage[stage];
+        };
+        return byElement.filter((u) => countsAsStage(u, t.stage as number));
       }
       case 'nonBurstCasters':
         return units.filter((u) => !rotationCasters.includes(u.idx));
@@ -2821,8 +2830,14 @@ export function runSim(
     ) {
       const want = romanStage[stage];
       const fillsStage = (u: UnitState) => {
+        // Forced non-Λ units (rank-builder controls) ONLY fill their forced stage.
+        // This also suppresses extraStages / Combat-Assist eligibility for the unit.
+        if (u.forceStage !== null) {
+          return u.forceStage === stage;
+        }
+        // Λ units default to all-stage eligible; if one has been pinned
+        // (lambdaStage), it only fills that stage.
         if (u.char.burst === 'Λ') {
-          // pinned Λ (e.g. "Red Hood operates as B2") only fills its chosen stage
           return u.lambdaStage === null || u.lambdaStage === stage;
         }
         return u.char.burst === want || u.extraStages.has(stage);

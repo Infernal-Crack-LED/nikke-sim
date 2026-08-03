@@ -25,6 +25,7 @@ const BASE: BuilderState = {
   board: 'burstgen',
   bufferBoard: 'generic',
   burstGenBoard: 'unfocused',
+  b1b2DpsBoard: 'c100-eleadv',
   olLines: OL_DEFAULT_LINES,
   olTier: OL_DEFAULT_TIER,
   unitVariant: 'discord',
@@ -59,6 +60,7 @@ describe('manifestKeyFor — pre-rendered head set only', () => {
       'burstcdr',
       'sustain',
       'buffer',
+      'b1b2dps',
     ] as const) {
       expect(manifestKeyFor({ ...BASE, card: 'rank', board })).toBeNull();
     }

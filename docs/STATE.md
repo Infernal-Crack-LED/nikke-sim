@@ -325,14 +325,13 @@ Two structural facts that keep getting re-derived:
 - **The "team burst bar" and "solo BURST meter" crops are SUB-STRIPS of that same gauge crop**, so
   they are not an independent instrument — they are diagnostics only.
 
-## 8. Ranking boards beyond DPS (landed 2026-07-26; frontend landed 2026-07-27)
+## 8. Ranking boards beyond DPS (landed 2026-07-26; frontend landed 2026-07-27; B1/B2 DPS added 2026-08-01)
 
-Four non-DPS ranked lists. Sources `src/ranks/`, builders
-`scripts/build-{burstgen,burstcdr,sustain,bufferchart}.ts` (`npm run ranks:all`), artifacts
-`web/public/{burstgen,burstcdr,sustain,bufferchart}.json` (gitignored build outputs, not in
+Five ranked lists. Sources `src/ranks/`, builders
+`scripts/build-{burstgen,burstcdr,sustain,bufferchart,b1b2dps}.ts` (`npm run ranks:all`), artifacts
+`web/public/{burstgen,burstcdr,sustain,bufferchart,b1b2dps}.json` (gitignored build outputs, not in
 verify.sh), tests `scripts/tests/ranks/*.test.ts`. Methodology of record: `docs/data/rank-boards.md`.
-Handoffs for the two planned follow-ups: `docs/handoffs/2026-07-26-dps-ranks-b1b2.md`,
-`docs/handoffs/2026-07-26-support-rank-composite.md`.
+Planned follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
 
 - **burstgen** — all sim-supported units, standard no-op team, bursting enabled, unit focused and
   leftmost in its burst category. Ranked by `gaugePerSec` = `gaugeGenerated` / `gaugeBuildTimeSec`
@@ -349,6 +348,12 @@ Handoffs for the two planned follow-ups: `docs/handoffs/2026-07-26-dps-ranks-b1b
 - **buffer** — 74 B1/B2 + B3-buffer units, added carry DPS vs a no-op baseline over two synthetic
   standard carries (`src/ranks/synthetics.ts`, class-modal MG+RL). Two arms: generic and typed
   (carries auto-adapt to the kit: weapon swap / pierce / projectile-explosion / element).
+- **b1b2dps** — every sim-supported B1/B2 unit, ranked by own DPS in a Solo-style no-op control team.
+  Four cells: Core 0 / Core 100 × neutral / elemental advantage. 40s-B1 and B2 templates include a
+  no-op B1 with the standard 7 s team burst CDR; 20s-B1 rows rely on the tested unit's own CDR.
+  Forced rows: red-hood as B1 and B2 (via `lambdaStage`), rapi-red-hood as B1 (via `forceStage`).
+  Partner profiles:
+  crown `with-chime`, anis-star `with-avistar` (real `avistar` as a MG B1 partner) and `with-other-b1`.
 
 **Comp profiles (all boards, 2026-07-26):** profiled units are ranked BOTH plain and profiled, each
 entry flagged `profile: null | <id>` (the frontend differentiator). burstgen: little-mermaid

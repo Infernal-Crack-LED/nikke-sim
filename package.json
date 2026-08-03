@@ -16,9 +16,11 @@
     "web:build": "vite build",
     "web:preview": "vite preview",
     "build": "vite build",
+    "build:sitemap": "tsx scripts/build-sitemap.ts",
     "build:infographics": "tsx scripts/build-infographics.ts",
+    "build:prerender": "tsx scripts/prerender.ts",
     "build:server": "node scripts/build-server.mjs",
-    "build:deploy": "npm run dpschart && npm run ranks:all && npm run build-ol-optimal && npm run build && npm run build:infographics && npm run build:server",
+    "build:deploy": "npm run dpschart && DPSCHART_PARITY_FAIL_ON_MISSING=1 npx vitest run scripts/tests/share/dpschart-parity.test.ts && npm run ranks:all && npm run build-ol-optimal && npm run build:sitemap && npm run build && npm run build:prerender && npm run build:infographics && npm run build:server",
     "start": "node scripts/serve.mjs",
     "start:server": "node dist-server/index.js",
     "typecheck": "tsc -p web/tsconfig.json --noEmit && tsc -p tsconfig.json --noEmit",
@@ -37,7 +39,8 @@
     "ranks:burstcdr": "tsx scripts/build-burstcdr.ts",
     "ranks:sustain": "tsx scripts/build-sustain.ts",
     "ranks:buffer": "tsx scripts/build-bufferchart.ts",
-    "ranks:all": "npm run ranks:burstgen && npm run ranks:burstcdr && npm run ranks:sustain && npm run ranks:buffer",
+    "ranks:b1b2dps": "tsx scripts/build-b1b2dps.ts",
+    "ranks:all": "npm run ranks:burstgen && npm run ranks:burstcdr && npm run ranks:sustain && npm run ranks:buffer && npm run ranks:b1b2dps",
     "fonts:subsets": "tsx scripts/subset-fonts.ts"
   },
   "dependencies": {

@@ -1,9 +1,32 @@
-User-agent: *
+User-agent: Discordbot
 Allow: /
 
-# AI assistants / answer engines — explicitly allowed (same as the wildcard
-# above; listed by name so intent is unambiguous to crawlers that check for
-# an explicit rule rather than inheriting the default).
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Slackbot-LinkExpanding
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+User-agent: TelegramBot
+Allow: /
+
+User-agent: *
+Allow: /
+# Query-string URLs (share links with ?team=, ?chart=, ?id=) are allowed so
+# crawlers can read their <link rel="canonical"> tags, which point to the clean
+# URL and consolidate indexing. Named social/embed crawlers above are listed
+# explicitly because some platforms respect only their own user-agent group.
+
+# AI assistants / answer engines — allowed to crawl clean URLs.
 User-agent: GPTBot
 Allow: /
 

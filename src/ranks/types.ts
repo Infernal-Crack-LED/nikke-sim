@@ -1,9 +1,8 @@
-// Shared artifact types for the four ranking boards — the single source both
-// the builders (scripts/build-{burstgen,burstcdr,sustain,bufferchart}.ts) and
-// the web frontend (web/src/rankBoardsData.ts) import, so the emitted JSON and
-// the consuming UI can't drift. Rows are TUPLES of fixed arity (profile is
-// always the LAST element); keep tuple index access in the web data module.
-// Methodology of record: docs/data/rank-boards.md.
+// Shared artifact types for the ranking boards — the single source both
+// the builders (scripts/build-*.ts) and the web frontend (web/src/rankBoardsData.ts)
+// import, so the emitted JSON and the consuming UI can't drift. Rows are TUPLES
+// of fixed arity (profile is always the LAST element); keep tuple index access
+// in the web data module. Methodology of record: docs/data/rank-boards.md.
 
 // Per-unit display metadata (same shape as dpschart's units minus tier,
 // which is dpschart-only).
@@ -90,4 +89,25 @@ export interface BufferChartArtifact {
   units: Record<string, RankUnitMeta>;
   profiles: Record<string, string>;
   cells: { generic: BufferRow[]; typed: BufferRow[] };
+}
+
+// [slug, dps, profile, template] — fixed arity 4; profile null = plain Solo row.
+// template marks the control-team template used, so rows are comparable within the same group.
+export type B1B2DpsRow = [
+  slug: string,
+  dps: number,
+  profile: string | null,
+  template: 'b1-20s' | 'b1-40s' | 'b2',
+];
+export interface B1B2DpsArtifact {
+  generatedAt: string;
+  methodology: string;
+  units: Record<string, RankUnitMeta>;
+  profiles: Record<string, string>;
+  cells: {
+    'c0-neutral': B1B2DpsRow[];
+    'c0-eleadv': B1B2DpsRow[];
+    'c100-neutral': B1B2DpsRow[];
+    'c100-eleadv': B1B2DpsRow[];
+  };
 }

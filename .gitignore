@@ -21,6 +21,7 @@ web/public/burstgen.json
 web/public/burstcdr.json
 web/public/sustain.json
 web/public/bufferchart.json
+web/public/b1b2dps.json
 
 # ephemeral probe-processing workspace (frame extractions, regenerable from the
 # videoSec anchors in docs/probe-data/*.json; never source of truth)
