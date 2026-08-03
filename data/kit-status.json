@@ -4135,6 +4135,42 @@
       ],
       "board": null
     },
+    "novel": {
+      "name": "Novel",
+      "burst": "II",
+      "weapon": "SMG",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/novel.json + scripts/kit-autonomy/manual-review/novel.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": ["DEF ▼ 7.05% for 5 sec."],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: cadence is the DATAMINED skill cooldown (interval 10s); first-fire phase (t=10 vs t=0) is the engine interval convention (⚑, neve/snow-white precedent). 'Affects 3 enemy unit(s) with the highest final DEF' collapses to the single boss — v1 fields one immortal enemy, so the selection clause is a moot documented stand-in (neve precedent)",
+        "skill1: the DEF ▼ 7.05%/5s enemy debuff is UNMODELED — no dynamic enemy-DEF-reduction primitive (cfg.bossDef is fixed; damageTakenPct is a different bucket). At the 140-DEF scope-lock boss this is 9.87 flat DEF ≈ ~0.02% team damage — minor, not load-bearing. Recipe if a primitive lands: a boss-DEF-reduction debuff (7.05% for 5s, refreshed on the 10s skill CD) feeding the subtractive DEF term",
+        "skill2: Cornucopia's 15s per-stack EXPIRY is not tracked by the resource gate pool (resources are monotonic — soda Golden-Chip precedent). Divergence from the real kit is only possible during >15s firing gaps, where stacks would decay; at novel's SMG cadence (~19 shots/s, one stack per ~5.3s) sustained combat always refreshes before expiry, so the pool equals the real stack count in every fight the sim models. The DEF▲ buff itself DOES carry the 15s expiry + 5-stack cap (faithful accrual, observable in the event log)",
+        "skill2: 'landing 100 normal attacks' is encoded as hitCount:100 — the counter advances by hitsPerShot per trigger pull (novel hitsPerShot 1, so 100 shots = 100 hits); SMG shots at scope lock do not miss",
+        "burst: the Damage-Taken mark targets '1 enemy unit(s)' — unspecified WHICH enemy in prose; with one boss it is boss-held regardless (enemy buffs key on the enemyBuffs list). Gate reads the PRE-fire pool at cast time; casts before the 5th Cornucopia stack accrue land without the mark — faithful to 'Activates when Cornucopia is at max stacks'"
+      ],
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5(claude-opus-5)/S6(claude-opus-5)/S7(kimi-code-k3) converged; no REAL-GOTCHA",
+      "residual": "interval first-fire phase (t=10 vs t=0) unpinned by popups + resource-pool==live-stack equivalence proven only under sustained fire (>15s firing gaps would break it) + S1 DEF▼ gap ~0.02% estimate rests on the 140-DEF scope-lock boss — all three spot-check on a novel-focus recording",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "phantom": {
       "name": "Phantom (Treasure)",
       "burst": "III",
