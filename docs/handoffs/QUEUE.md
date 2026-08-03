@@ -84,14 +84,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   ⚠ Two traps when measuring the drift: the live artifact is gitignored, so compare only after
   `npm run ranks:buffer`; and its cells are TUPLES (`[slug, value, tags, profile]`), not objects — read
   them as `c.slug` / `c.value` and every comparison silently comes back "0 differing".
-- **⇒ Three closed handoffs are still git-TRACKED, against the convention — leave or untrack?
-  (2026-08-03, findings-only).** Archiving a doc untracks it (procedure: `docs/CONVENTIONS.md` →
-  Doc hygiene), and 69 of the 72 files in `docs/handoffs/closed/` follow that. The three that do not —
-  `2026-07-27-focus-charge-gauge-per-unit.md`, `2026-07-29-alice-focus-gauge-implement.md`,
-  `2026-07-29-cinderella-focus-gauge-owner-override.md` — are each cited by NAME from
-  `docs/DECISIONS.md` or `docs/handoffs/scientific-method-harness.md`, so untracking them turns
-  live citations in the immutable provenance trail into dangling pointers for anyone who clones.
-  Not enacted for that reason. If they should go, the citations want rewording first.
 - **⇒ Pellet-reader: cherry-pick the `+62.5` crosshair-offset fix (`b69b5c6`)** — verified NOT an
   ancestor of `main`; `scripts/probe/read-pellets.ts:66` still defaults `-62.5`, latent, and poisons the
   next run. (It did **not** cause the 2026-07-29 REJECT: artifacts 12:19–13:33, commit 15:17.)
@@ -113,70 +105,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `alice-wonderland-bunny`. The variants do not carry an ally-ATK selector.
 
 #### Engine / model threads (measurement- or owner-gated)
-
-- **⇒ THE DPS CHART HAS THE SAME NEVER-LOADED-CONTROL DEFECT — owner ruling (found by the
-  kimi-code/k3 review, 2026-08-03).** `scripts/build-dpschart.ts:148` loads only `noop-b3-mg`, so
-  `src/skills/overrides/noop-b1-ar.json` is never read there — yet the Solo framework seats `NOOP_B1`
-  in its teams (`src/dpschart/matrix.ts:101,408`) and `src/dpschart/noop.ts` documents that control's
-  7s team CDR as normalizing the no-op team. Solo cells therefore run with no enabler cooldown
-  reduction at all. Exactly the oversight the buffer board carried undetected from `91f53ea9`, and
-  the reason the DPS chart is correctly absent from that branch's blast radius (its cells cannot move
-  with a trigger change to an override they never load). May be a deliberate choice for an own-DPS
-  board. DECIDE: load the control like the three sibling boards, or record in `docs/DECISIONS.md`
-  that the Solo framework deliberately runs CDR-free.
-- **⇒ A duo row whose partner is not a B2 has no spare of the tested unit's stage — latent, VERIFIED
-  non-biting (kimi-code/k3 review round 5; re-checked 2026-08-03 after `blanc` shipped).**
-  `assemble` seats a duo partner in the spare slot, assuming the partner covers that slot's stage.
-  True for `mint`/`prika` and `mast-romantic-maid`/`anchor-innocent-maid` (all B2); `blanc`'s partner
-  is the synthetic `noop-rouge-b1`, a B1, so her `w/ Rouge` row fields her 60s B2 as the only B2
-  against a baseline whose only B2 is a 20s no-op. That is the asymmetry this branch removes
-  everywhere else — but measured after the merge that put her on the board, **both her rows sit at
-  Full Burst parity** (plain 11 v 10, `w/ Rouge` 10 v 10), because her own self-CDR plus the control
-  enabler carry the rotation. So the shape is wrong in principle and inert in fact. Fix if a non-B2
-  duo partner ever lands on a unit whose cooldown actually gates: seat the partner by its own stage,
-  or keep the spare B2 and drop a carry.
-
-- **⇒ `suppliesTeamCdr` does not check mode gating (deferred NOTE from the kimi-code/k3 review,
-  2026-08-03).** `src/ranks/buffer.ts` classifies a unit as the team's cooldown enabler by walking its
-  override for an ally-facing `burstCdr`. It does not skip blocks nested under a non-default `modes`
-  entry, so a unit whose ally CDR lives ONLY in a non-default mode would stand the no-op B1 down on
-  rows where that mode is inactive, leaving the team with no enabler at all. No unit does this today
-  (verified end-to-end: exactly the documented enablers, `--cdr` mode of
-  `scripts/probe/buffer-rotation-audit.ts`). Harden when a mode-gated CDR kit first lands.
-- **⇒ BUFFER-BOARD METHODOLOGY CHAIN IS ON A PR BRANCH, NOT MAIN (`buffer-board-methodology`,
-  2026-08-03).** Standard team + spare no-op, camera focus on the no-op B2 (SR), tested-B3 burst
-  suppression, and the one-CDR-enabler rule with the control's reduction moved to `fullBurstEnter`.
-  All landed and green there; `docs/DECISIONS.md` carries the rulings. Open: the branch needs the
-  owner's PR review, and local `main` still carries the first nine of these commits from before the
-  branch existed (`origin/main..main`) — decide whether main gets rewound to `origin/main` or the PR
-  simply supersedes it. Note `noop-b1-ar.json`'s trigger change moves burstgen (4 of 244 rows, ≤3.9%)
-  and b1b2dps (12 of 272, ≤11.3%); burstcdr and sustain are byte-identical.
-
-- **⇒ `noop-rouge-b1` squad layering — owner call (2026-08-03).**
-  `src/data/squads.ts:26` carries one synthetic (`'noop-rouge-b1': 'Blanc Noir Rouge'`) so the buffer
-  board's `w/ Rouge` duo profile satisfies `blanc`'s same-squad burst-CDR gate — a ranks-layer concern
-  written into a game-truth file. Three findings frame the cost/benefit:
-  1. **The existing guard BITES, verified empirically.** Commenting the entry out fails
-     `scripts/tests/ranks/buffer.test.ts:427` (`expected 3 to be greater than 3`); the gate closing
-     costs `blanc` 5 burst casts and ~23 percentage points (registered: 8 casts / +20.93%;
-     unregistered: 3 casts / −2.02%). A migration that leaves the synthetic unregistered cannot pass.
-  2. **The import-order hazard is not test-coverable, in principle.** `buffer.ts` is the only module
-     that ever puts the synthetic on a team and it imports `noop.ts`, so the "sims blanc without the
-     registration side effect" path does not exist to be tested — and any test reading
-     `DUO_BUFFER_PROFILES` must import `buffer.ts`, firing the very side effect it would check for.
-     So registering from the ranks layer relocates the violation into a hazard no test can catch.
-  3. **The blast radius is ONE SHIPPED ROW.** The `w/ Rouge` row is published (+20.9% against her
-     +7.9% plain), so the synthetic is load-bearing for a real board row, not decoration.
-  - **Where that leaves the three options.** Leaving it alone stays defensible — the guard in (1) is
-    strong and the entry already carries an explanatory comment. Registering from the ranks layer is
-    still the trap, and (2) is structural: it does not get safer as the board grows. Carrying squad
-    membership on the prepared unit is the only option that actually fixes the layering, and it has
-    the better case now that the row ships — but it touches the engine's block filter, a protected
-    path, so it needs an explicit owner go-ahead before anyone builds it.
-    ⚠ Whichever option is chosen, `src/skills/overrides/noir.json` (`note`, `caveats`) also references
-    the synthetic and is CURRENT-STATE prose — update it or it ships a stale claim.
-  - Cheap improvement available regardless: a reciprocal pointer in `src/ranks/buffer.ts` near `:164`
-    noting that registration lives in `src/data/squads.ts`, so the coupling is discoverable both ways.
 
 - **⇒ ENGINE REGRESSION FULL-BURST COUNT FAILURES — four comps disabled in `scripts/regression.ts`**
   (`:106`, `:131`, `:158`, `:236`): `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`,
@@ -278,16 +206,27 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 #### Kit / override threads
 
 - **⇒ TDD TRANSITION (the kit workflow) → `docs/handoffs/2026-07-23-tdd-transition-plan.md`.** Steps
-  1a–1d and the step-2 primitive backfill are on `main` (`scripts/tests/engine/*`). **Step 2 is now
-  fully closed** — the two deferred items (trigger-kind matrix, gauge suppression during FB/chain)
-  landed 2026-08-03 in `03021eeb` as `trigger-kinds.test.ts` + `gauge-suppression.test.ts`, 15
-  assertions, both bite-verified against a deliberately broken engine. Open:
+  1a–1d and the step-2 primitive backfill are on `main` (`scripts/tests/engine/*`). **Steps 1, 2, and
+  4 are now all landed** (refreshed 2026-08-03) — step 2's two deferred items (trigger-kind matrix,
+  gauge suppression during FB/chain) landed 2026-08-03 in `03021eeb`; step 4 (doc/skill reframe) was
+  verified already done (`docs/STATE.md:291`, `docs/CONVENTIONS.md:81`, the `audit-kit`/`kit-parse`
+  SKILL.md descriptions). The plan doc's stale step-3 unit list (2 named vs 129 actual files) is
+  fixed — it now points to `data/kit-status.json` as the live source instead of hand-listing units,
+  and states the provenance split found while refreshing it: **127 of 129 specs are `/kit-autonomy`
+  gauntlet output, only 2 (`helm` SR/Water, `liter`) are hand-authored via a dedicated `/kit-tdd`
+  session** — not a problem (`STATE.md`/`CONVENTIONS.md` already license both paths), just a fact
+  the doc previously obscured. Open:
   1. **Step 3 — per-unit dedicated sessions, OWNER drives the spec line-by-line from kit text; run them
-     with `/kit-tdd`.** Fully unblocked. Rationale: the board gates FIT only; faithfulness errors of a
-     few % are absorbed by calibration and only unit tests can gate them.
-  2. **Hygiene pass on the plan doc itself** — it is the stale artifact now. It lists two landed step-3
-     specs (`helm` (SR/Water) + `liter`) against the 128 files actually in `scripts/tests/units/`, and
-     still calls the two step-2 items deferred though both landed in `03021eeb`. Refresh it or close it.
+     with `/kit-tdd`.** Fully unblocked, ongoing by design (never "completes"). Rationale: the board
+     gates FIT only; faithfulness errors of a few % are absorbed by calibration and only unit tests
+     can gate them.
+  2. **The doc itself now meets its own closure bar (1–2, 4 landed) but is NOT archived** — it is an
+     active citation target, not just a reasoning trail: `.claude/skills/kit-tdd/SKILL.md` (its
+     `description` and `:211`) points here by name for `§1d event payloads` + the step-2 checklist,
+     and `docs/kit-autonomy-decisions.md:29` cites it as "today's plan-of-record". Archiving into the
+     gitignored `docs/handoffs/closed/` would dangle those pointers — same failure mode as the "three
+     closed handoffs still git-tracked" item below. Reword the citations (or migrate the cited
+     content into CONVENTIONS.md/the skill file) before closing.
   3. Six `cfg.onEvent` payload follow-ups (weapon-swap events, perResource/ramp/swap-gate fields on
      `buffApply`, …) listed under §1d in the plan — build them as step-3 tests need them.
 - **⇒ SAME-SQUAD PRIMITIVE MIGRATIONS** (the primitive landed 2026-08-02; `teamHas.sameSquad` resolves

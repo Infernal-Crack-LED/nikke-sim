@@ -211,7 +211,12 @@ const artifact: BufferChartArtifact = {
     'no-op × 100. B3 buffers sit rightmost and never burst. generic: plain ' +
     'MG+RL carries — only requirement-free buffs counted. typed: carries adapt ' +
     'to the kit (auto-derived from the override: weapon-typed targets swap both ' +
-    "carries' weapon; pierce buffs grant both carries Pierce; " +
+    "carries' weapon; pierce buffs grant both carries Pierce; True Damage ▲ " +
+    'buffs give both carries True-flavored normal attacks; Distributed/' +
+    'Sustained Damage ▲ buffs give each carry a small synthetic periodic hit ' +
+    '(one flavored tick every 10s, sized off the weapon modal — a MOCK, not a ' +
+    'measured value, since a kit-less carry cannot otherwise generate either ' +
+    'flavor) tagged that flavor; ' +
     'projectile-explosion buffs make both RL; element-typed targets and ' +
     'boss-element-gated enemy debuffs set both carries to the advantaged element). ' +
     "The buffer's own damage is not counted; rotation value (gauge/CDR) is " +
