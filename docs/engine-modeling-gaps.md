@@ -120,7 +120,7 @@
 
 ## Status dashboard — at a glance
 
-> Every theme bucketed by implementation state (verified against the live tree 2026-07-17). Jump to the
+> Every theme bucketed by implementation state (verified against the live tree 2026-08-03). Jump to the
 > numbered theme below for detail. **Nearly every discrete engine-primitive gap has now been built** — what
 > remains is per-unit _enactment_ of built primitives (board-moving → measurement-gated) plus inherent-v1
 > limitations and measurement backlogs.
@@ -143,12 +143,12 @@
 
 | Theme                    | Capability (inert until opt-in)        | State                                                                                     |
 | ------------------------ | -------------------------------------- | ----------------------------------------------------------------------------------------- |
-| 3. Stack-ramp            | `buff.rampSec`                         | ENACTED cinderella + arcana-fortune-mate; rest (chisato/leona/guilty/…) measurement-gated |
-| 4. Team-composition gate | `teamHas:{element/class/weapon/burst}` | **0 enactments**; arcana deferred (no board data + WoF gate unmodeled)                    |
-| 5. Timed pierce          | `gainPierce`/`pierceUntilFrame`        | grave ENABLED (0.83→1.18, faithful>fit, U19); milk/prika deferred                         |
+| 3. Stack-ramp            | `buff.rampSec`                         | ENACTED cinderella + arcana-fortune-mate + scarlet (HP-gate proxy); rest (chisato/leona/guilty/…) measurement-gated |
+| 4. Team-composition gate | `teamHas:{element/class/weapon/burst/sameSquad}` | ENACTED blanc, eunhwa-tactical-upgrade, noir (sameSquad); arcana (mono-Electric predicate) deferred (no board data + WoF gate unmodeled) |
+| 5. Timed pierce          | `gainPierce`/`pierceUntilFrame`        | ENACTED ade-agent-bunny, asuka, dorothy, grave (0.83→1.18, faithful>fit, U19), mari, naga, neve; milk/prika deferred |
 | 7. Weapon-swap spec      | `weaponSwap.weapon`/`pullsPerSec`      | nayuta FIXED; moran throughput + chisato/takina/velvet pending                            |
-| 14. Flat Max-Ammo        | `maxAmmoFlat` StatKey                  | **0 enactments**; grave/noir/tove/drake/trina approximate as %                            |
-| 15. Ammo-dump            | `consumeAmmo` effect                   | **0 enactments**; grave/asuka-wille/jill need trigger authoring                           |
+| 14. Flat Max-Ammo        | `maxAmmoFlat` StatKey                  | ENACTED (kit-literal) emilia, grave, n102, noir, rem, tove, trina                          |
+| 15. Ammo-dump            | `consumeAmmo` effect                   | ENACTED asuka-wille, jill; grave's Prediction-end trigger remains open (U19)               |
 
 ### ❌ C. Unwired / inherent-v1 limitation / measurement-only — no discrete primitive to build
 
@@ -159,7 +159,7 @@
 | 17. User-selected modes (8 units)          | config/owner-review, not a primitive                                                     |
 | 18. Kill-gated effects (~4 units)          | inherent (immortal solo boss)                                                            |
 | 19. SG pull-vs-pellet `hitCount` 10× lever | measurement/calibration; per-unit landing CLOSED (A31/U17), open tail = U27              |
-| 12-tail. eve Mk2 sequential-doubling       | open sub-caveat, no primitive yet                                                        |
+| 12-tail. eve Mk2 crit-count proxy (U26)    | static proxy can't track external crit buffs; ungraded/no footage, not a primitive gap   |
 
 ---
 
@@ -236,10 +236,12 @@
   CAN crit).** `sim.ts` crits true swap normals (`crit: true`), which is CORRECT; the former §2c "true
   damage cannot crit" carve-out is reversed (and was never an engine guard). `chisato`/`laplace`
   `trueNormals` critting is faithful. No change needed.
-- `snow-white-heavy-arms` — **`sequentialDamagePct` inert on flatDamage riders.** The engine flatDamage path
-  does not route `flavor: 'sequential'` → `seqMult`, so her W16 `sequentialDamagePct 158.4` never lands on the
-  flatDamage rider (relates to theme 12-tail / eve Mk2 sequential-doubling). Low severity — inert on the
-  partless boss in her comps.
+- `snow-white-heavy-arms` — **`sequentialDamagePct` inert on flatDamage riders — RESOLVED 2026-07-26
+  (owner ruling): misidentification, not a gap.** The engine DOES route `flavor: 'sequential'`
+  `flatDamage` riders into the dmgUp bucket via `sequentialDamagePct` (`sim.ts` `dealDamage`
+  `opts.sequential` gate); the gauntlet's original residual measured `seqMult` (eve's separate
+  multiplicative `sequentialMultPct` bucket, theme 12-tail) and misidentified the consumption path —
+  her W16 `sequentialDamagePct 158.4` feeds `dmgUp` and is LIVE on the 527.95/1055.9 riders.
 
 **One faithfulness FIX landed (theme 14 enactment, not a new gap):** `trina` burst "Max Ammunition Capacity
 ▲20 round(s)" was encoded `maxAmmoPct 33.3` (a %-proxy exact only for 60-round magazines — a 20-round
@@ -253,15 +255,16 @@ Systematic limitations, not per-unit fudge — each corrects many units at once.
 - board deltas are in DECISIONS (dates below); live flag/primitive state in `docs/STATE.md`. Compact:
 
 1. **Per-tick recovery-event emitter** (theme 2b) — ✅ CAPABILITY LANDED 2026-07-17 (`heal.ticks`/
-   `intervalSec` + `recoveryEmitters` queue; opted in anchor-innocent-maid, blanc). Open HoT backfill:
-   prika/trina/mint (no `heal` block yet); naga/mana instant; anis-star dropped.
+   `intervalSec` + `recoveryEmitters` queue; opted in anchor-innocent-maid, blanc, prika [cadence only,
+   2026-07-25 — HP magnitude still unmodeled]). Open HoT backfill: trina/mint (no `heal` block at all);
+   naga/mana instant; anis-star dropped.
 2. **`excludeSelf` on typed-ally targets** (theme 11) — ✅ LANDED 2026-07-17 (maiden-ice-rose 1.55→1.03;
    brid-silent-track/miranda/soda-twinkling-bunny faithful, board-neutral).
 3. **`hitRatePct` → core-hit lift** (theme 8) — ✅ LIVE BY DEFAULT 2026-07-17 (`HRCORE`). Open refinements:
    asuka saturation bracket; quency-escape-queen cadence + the +1.04 overshoot; slope validation.
 4. **Own-burst-gated FB** (theme 9) — ✅ LANDED 2026-07-17 (`ownBurstGate:'cast'/'notCast'`; opted in
-   cinderella-crystal-wave T8 1.062→1.001, T5 1.009→0.978). diesel-winter-sweets `'notCast'` expressible,
-   owner-deferred.
+   cinderella-crystal-wave T8 1.062→1.001, T5 1.009→0.978). diesel-winter-sweets `'notCast'` Highlight
+   sustained ENACTED 2026-07-25 (both Intro/Highlight tiers modeled).
 5. **Swap weapon datamine spec** (theme 7) — ✅ CAPABILITY LANDED 2026-07-17 (`weaponSwap.weapon`/
    `pullsPerSec`; nayuta 0.637→0.894). moran throughput footage-blocked; chisato/takina/velvet HOT-unaddressed.
 6. **`bossElementGate` block gate** (theme 10) — ✅ LANDED 2026-07-17 (helm-aquamarine Electric rider,
@@ -374,10 +377,12 @@ soline-frost-ticket, trina, zwei, mihara-bonding-chain, mint, anis-star.
 A repeated "hard rule 2" violation: dropping/collapsing a heal breaks the recovery-trigger synergy
 chain (Crown's "when recovery takes effect"). **Single-fix candidate #1 — ✅ CAPABILITY LANDED
 2026-07-17** (`heal.ticks`/`intervalSec` + `recoveryEmitters` queue; see ranked fix #1 above). Opted
-in: anchor-innocent-maid (ticks:8), blanc (ticks:5 / ticks:8). Remaining units carry their HoT heals
-as UNMODELED (prika/trina) or no heal block (mint) or instant heals (naga/mana) or dropped (anis-star)
-— convert per-unit when touched.
-Units: anchor-innocent-maid ✅, blanc ✅, prika, mint, naga, trina, anis-star, mana.
+in: anchor-innocent-maid (ticks:8), blanc (ticks:5 / ticks:8), **prika** (burst Performance heal,
+ticks:25/intervalSec:1 — cadence modeled per judge gotcha 3, 2026-07-25; only the heal's HP MAGNITUDE
+remains unmodeled, the engine's heal effect carries no HP amount). Remaining units carry their HoT heals
+as no heal block at all (trina/mint) or instant heals (naga/mana) or dropped (anis-star) — convert
+per-unit when touched.
+Units: anchor-innocent-maid ✅, blanc ✅, prika ✅ (cadence only), mint, naga, trina, anis-star, mana.
 
 ### 3. Stack-ramp buffs baked to max, not time-averaged — ~13 units (HOT) — ⚙️ ENGINE CAPABILITY LANDED 2026-07-17
 
@@ -446,12 +451,16 @@ override opts in** (regression byte-identical, verified by a stash A/B of the tw
 the pre-existing working-tree snapshot). Verified end-to-end by injecting a `teamHas`-gated +100% ATK
 self-buff on a focus unit: fires with a matching present ally (Water/Electric/B3 → +57%), correctly
 inert when absent (Wind → 0%), correctly inert when only self would match (owner excluded → 0%).
-**No override opts in yet** — enacting arcana is deferred (MODEL_ONLY, no board data; owner currently
-grades her "mono-Electric comp only", and her separate Wheel-of-Fortune status gate is still unmodeled).
+**No `teamHas` override opts in on `arcana` (RL/Electric, base — NOT arcana-fortune-mate) yet** —
+enacting the mono-Electric predicate is deferred (MODEL_ONLY, no board data; owner currently grades
+her "mono-Electric comp only"). Her separate Wheel-of-Fortune status gate is a DIFFERENT mechanic and
+is no longer unmodeled: `ownBurstGate:'cast'` now covers it (kit-autonomy gauntlet, 2026-07-24).
 **2026-08-02: the `sameSquad` facet landed** — "an ally from the same squad … on the battlefield"
 gates resolve squad membership from the curated map `src/data/squads.ts` (fail-closed; validator-
-guarded); blanc's S2 burst-CDR is the first enactment (see DECISIONS.md 2026-08-02). The remaining
-same-squad kit text (noir's `.slugs` spelling, anchor-innocent-maid, ram) is tracked in QUEUE.md.
+guarded); blanc's S2 burst-CDR is the first enactment (see DECISIONS.md 2026-08-02). `noir` migrated
+from `.slugs` to `.sameSquad` 2026-08-03; the remaining same-squad kit text (anchor-innocent-maid,
+ram) is tracked in QUEUE.md. `teamHas` now has 3 enactments total (blanc, eunhwa-tactical-upgrade,
+noir) — see the primitive census above.
 
 ### 5. Pierce gating — static `hasPierce` only — ~14 units (usually COLD)
 
@@ -460,9 +469,13 @@ pierce now expressible (`gainPierce`, 2026-07-17 — see ranked fix #7).** Pierc
 Damage-Up-bucket entry that applies to any pierce-damage-type unit, on the partless boss too (only the
 pierce CORE+BODY DOUBLE-HIT is multipart-only — `PIERCE_CORE_DOUBLE=false`; don't conflate). grave is
 ENABLED with faithful pierce (0.83→1.18 HOT kept on purpose, faithful>fit); the residual HOT is a separate
-burst-window over-model, now cleanly isolated as open-questions U19. Units: alice, d-killer-wife,
-grave (ENABLED; residual = burst-window over-model, U19), mari, milk-blooming-bunny (dead block, 0.70 COLD),
-prika, red-hood, snow-white, snow-white-heavy-arms, zwei, laplace, maxwell, naga, mana.
+burst-window over-model, now cleanly isolated as open-questions U19. **8 units now carry a live
+`gainPierce` enactment** (kit-autonomy gauntlet passes 2026-07-20 → 2026-08-02, per the primitive census
+above): ade-agent-bunny, asuka, dorothy, grave (ENABLED; residual = burst-window over-model, U19), mari,
+milk-blooming-bunny (ENACTED 2026-07-20, 0.653 COLD→1.301 HOT — the residual HOT is now isolated to her
+SEPARATE Embarrassment mode-split, not the pierce; U23), naga, neve. Units: alice, d-killer-wife,
+prika (held — owner popup measurement pending, probe-runs 2026-07-14 inconclusive), red-hood, snow-white,
+snow-white-heavy-arms, zwei, laplace, maxwell, mana.
 
 ### 6. Parts / core branches inert on the partless v1 boss — ~11 units
 
@@ -499,9 +512,10 @@ override opts in.
 
 Was engine-inert; now a live core-hit-rate lift (`HRCORE`, sim.ts:830 — a live Hit Rate shrinks the
 reticle → higher core fraction; `ENV.HRCORE=0/off` disables for A/B). jill measured core 0.20→0.90.
-OPEN refinements only (not a capability gap): asuka's saturation bracket, quency-escape-queen's cadence +
-the +1.04 overshoot, slope validation via a measurement (e.g. `soda-tb-control`). Related still-open:
-tove (crit-rate stale 3.32→10.08) is a separate crit-rate fix, not hitRatePct.
+OPEN refinements only (not a capability gap): asuka (base, AR/Fire — not asuka-wille)'s saturation
+bracket, quency-escape-queen's cadence + the +1.04 overshoot, slope validation via a measurement (e.g.
+`soda-tb-control`). Related, was tracked here but is now RESOLVED: tove's crit-rate (stale 3.32→10.08%,
+a separate crit-rate fix, not hitRatePct) landed 2026-07-20.
 Units affected: anchor-innocent-maid, drake, leona, modernia, noir, quency-escape-queen,
 soda-twinkling-bunny, jill, nayuta.
 
@@ -560,7 +574,12 @@ falls back to the still-OFF global DOT_CRIT gate when unset) — enabled ONLY wh
   `extraHitDamagePct` rider crit (the latter since `RIDERCRIT`, 2026-07-22 — worth ~+12% on that term
   via her Critical Damage ▲ 14.25%×5 stacks, which moved her 0.83→0.84). She remains COLD; the residual
   is elsewhere and is not a DoT tick.
-- eve Mk2 sequential-doubling caveat still open (separate).
+- **eve Mk2 sequential-doubling — RESOLVED 2026-07-20.** New engine primitive `sequentialMultPct`
+  (its own multiplicative bucket, `sim.ts` `seqMult`) gives Mk2's Unstable Energy doubling a TRUE ×2
+  that no longer dilutes against other Damage-Up buffs (superseded the old "undercounts ~20%" ⚑;
+  DECISIONS 2026-07-20). A DIFFERENT residual survives on eve, not this one: U26's static
+  crit-count-proxy carve-out (her `hitCount 59` proxy can't track external team crit buffs) — no
+  primitive gap, ungraded/no footage.
 
 ### 13. Max-HP-scaling grants with no stat key / no lowest-HP targeting — ~6 units ✅ LANDED 2026-07-17
 
@@ -590,12 +609,11 @@ with triggers/targets like any other stat. **Inert until an override opts in** (
 `stat(u,'maxAmmoFlat')` sums 0 → byte-identical `maxAmmo()`; verified by an isolated A/B of the
 `maxAmmo()` edit against the working tree: regression totals identical). Functional check: injecting a
 temporary `maxAmmoFlat 200` passive on a low-mag AR lifted pulls 1099→1908 (fewer reloads → more shots,
-+65% total), the expected direction. **NOT auto-enacted:** the listed units currently APPROXIMATE the flat
-grant as a percent (noir `maxAmmoPct 55.56` self-only for +5 all-allies; trina `maxAmmoPct 33.3` for +20
-assuming a 60-round base; grave +3, tove +2, drake), and converting to the faithful flat form is
-board-MOVING (noir's +5 becomes team-wide; the others change the exact round count) → measurement/owner-gated
-per unit, routed to the kit-parse reconciliation backlog.
-Units: grave (+3), noir (+5 all-allies → modeled self-only), tove (+2), drake, trina (+20).
++65% total), the expected direction. **ENACTED (kit-literal `maxAmmoFlat`), 2026-07-20 → 2026-08-03:**
+emilia, grave (+3), n102, noir (+5 all-allies), rem, tove (+2), trina (+20) — 7 units, see the primitive
+census above; each converted off its earlier percent-approximation and the conversions verified
+regression/board-neutral or board-A/B'd per unit. **Still approximating as a percent:** drake ("Max Ammo
+▲50.14%/10s" — no flat-count kit line to convert against, unlike the others).
 
 ### 15. Ammo-dump / forced-reload "Removes 100% of ammo" inexpressible — 3 units — ✅ CAPABILITY LANDED 2026-07-17
 
@@ -604,10 +622,10 @@ A new `consumeAmmo` effect (types.ts; the inverse of `instantReload`) drains the
 — firing the target's `lastBullet` triggers exactly as if it had fired dry (sim.ts `applyEffect`).
 **Inert until an override opts in** (no unit references it → regression byte-identical). Functional check:
 injecting a temporary per-shot `consumeAmmo` collapsed pulls 1099→96 (constant forced reloads eat fire time,
-−89% total), the expected direction. **NOT auto-enacted:** the three units need per-unit trigger authoring
-(grave = Prediction/burst-window END forced reload, the documented comp-COLD cause; asuka-wille + jill on
-their own kit triggers) + board verification → deferred to the reconciliation backlog.
-Units: asuka-wille, grave (Prediction-end forced reload, comp-cold cause), jill.
+−89% total), the expected direction. **2 of 3 ENACTED** (kit-autonomy gauntlet, 2026-07-24 → 2026-07-26):
+jill (burst trigger) and asuka-wille (`fullBurstEnd` forced reload) both carry a live `consumeAmmo`
+block on their own kit triggers. **Still open:** grave's Prediction/burst-window END forced reload — the
+documented comp-COLD cause — remains unauthored, tracked as open-questions U19.
 
 ### 16. TREASURE-phase prose SSOT gap — 5 units (RESOLVED 2026-07-17)
 
