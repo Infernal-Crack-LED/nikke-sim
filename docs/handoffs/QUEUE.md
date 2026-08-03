@@ -103,6 +103,33 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Engine / model threads (measurement- or owner-gated)
 
+- **⇒ SUSTAIN BOARD: the tested unit is the SOLE holder of its burst stage, so a 40s/60s cooldown
+  gates the team's Full Bursts — owner ruling needed, deliberately NOT fixed in the buffer-board PR
+  (2026-08-03).** `src/ranks/sustain.ts:107-113` builds `[slug, NOOP_B2, NOOP_B3, NOOP_B3]` for a
+  tested B1 and `[NOOP_B1, slug, NOOP_B3, NOOP_B3]` for a tested B2 — no spare of the tested unit's
+  own stage. That is exactly the shape the buffer board carried before `buffer-board-methodology`
+  fixed it. **The symptom is NOT the same, so do not port that fix blind:** sustain reports an
+  ABSOLUTE (HP restored + shielded), not a delta against a baseline, so there is no asymmetry to
+  poison, and a 40s healer bursting half as often genuinely does burst-heal half as often.
+  - **Do not use the naive isolation test.** Forcing a candidate's cooldown to 20s moves 14 of 17
+    candidates, some hugely (`blanc` +155%, `anchor-innocent-maid` / `aria` / `noise` /
+    `rei-ayanami` +80%, `helm` +68%) — but it changes the unit's OWN burst cadence and the team's
+    Full Burst count together, so it cannot tell a real property from an artifact.
+  - **The A/B that separates them** is adding a stage-matched spare while leaving the cooldown
+    alone. Add ONLY — an early attempt swapped a `NOOP_B3` out for the spare, which changed stage-3
+    coverage too and inverted several results. The shipped comps are 4 units, so there is room for a
+    5th. Clean result: `alice-wonderland-bunny`, `anchor-innocent-maid`, `aria`, `bay`, `biscuit`,
+    `delta-ninja-thief`, `flora` and `rapunzel` are byte-identical; `blanc` 29.4M → 47.0M (+60%),
+    `tia` 19.6M → 13.8M (−30%), `noise` 18.5M → 14.8M (−20%), `soline-frost-ticket` 29.0M → 24.2M
+    (−17%), `prika` 51.3M → 44.4M (−13%).
+  - **Four of the five movers go DOWN**, because the spare competes for the stage cast and the
+    tested unit then bursts less — the same ordering effect the buffer board hit, which it solved by
+    having the tested unit LEAD its stage. So the current shape is not uniformly penalising long
+    cooldowns; `blanc` is the one clear buffer-board-pattern case.
+  - DECIDE what this board should measure: a healer's throughput at its OWN natural cadence (current
+    behaviour, defensible) or its throughput in a team that covers its stage (what the buffer board
+    now does). Then port the shape, with the lead-own-stage rule, and re-measure. Take this together
+    with the never-loaded-control item directly below — same board, same pass.
 - **⇒ THE SUSTAIN BOARD HAS THE SAME NEVER-LOADED-CONTROL DEFECT — owner ruling (kimi-code/k3
   review round 6, 2026-08-03).** `scripts/build-sustain.ts:46` loads `noop-b3-mg` only, and
   `git log -S noop-b1-ar -- scripts/build-sustain.ts` returns NOTHING across all history — yet
