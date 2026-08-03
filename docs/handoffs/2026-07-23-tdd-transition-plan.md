@@ -210,11 +210,15 @@ steps.length))` re-applied in full on every activation), not "fire only the newe
       this stat as "⚑ UNVALIDATED (R8)" — not something this test assumes an answer to). All 4
       assertions passed on the shipped default engine first try — no engine bug surfaced.
 
-**Not yet backfilled (next sessions):** the trigger-kind matrix not yet isolated as its own
-cross-cutting test (`lastBullet`, `shotFired`, `interval` first-fire phase, `stageEnter`,
-`fullBurstEnter`/`End` — largely exercised incidentally by the backfills above, but never pinned as a
-dedicated suite); gauge suppression during FB/chain. Single-carrier exotics defer to their unit's
-step-3 session. **Every census-row primitive with >1 carrier now has a dedicated backfill test.**
+- [x] trigger-kind matrix (`lastBullet`, `shotFired`, `interval` first-fire phase, `stageEnter`,
+      `fullBurstEnter`/`End`) → `scripts/tests/engine/trigger-kinds.test.ts` (landed 2026-08-03,
+      `03021eeb`).
+- [x] gauge suppression during FB/chain → `scripts/tests/engine/gauge-suppression.test.ts` (landed
+      2026-08-03, `03021eeb`) — 15 assertions across both files, both bite-verified against a
+      deliberately broken engine. Step 2 is now fully closed: every census-row primitive with >1
+      carrier has a dedicated backfill test, and both cross-cutting items above are pinned.
+
+Single-carrier exotics still defer to their unit's step-3 session.
 
 ## Step 3 — per-unit TDD sessions (the new kit workflow)
 
@@ -241,24 +245,41 @@ Per unit, in a **dedicated session with the owner driving the spec**:
    unit tests pin _faithful_, the board pins _accurate_; neither substitutes for the other.
 5. Override `note`/`caveats` updated to current-state prose; DECISIONS entry if a ruling was made.
 
-### Step-3 landed unit specs (slug → test file)
+### Step-3 unit specs — current state (refreshed 2026-08-03; do not hand-maintain this list)
 
-- [x] `helm` (SR/Water) → `scripts/tests/units/helm.test.ts` — 16 assertions over her 9 kit lines,
-      1 skipped GAP. **One FIX enacted:** the burst's "recovers … for 10 sec" was a single instant
-      recovery event → a 10-second window (`heal ticks 10 / intervalSec 1`) → DECISIONS 2026-07-23.
-      **Board-neutral** (byte-identical `board-read` A/B; control snapshots stable) because her S1
-      full-charge heal already saturates crown-style consumers — so the window is invisible to BOTH
-      the board and the regression snapshot, and H8 (which isolates S1's heal out of the fixture) is
-      the only thing in the repo that gates it. GAP: S1's gauge-fill line is pinned only as the
-      datamined `flatPerTrigger 1431`; focus-unscaling + FB/chain suppression need the step-2 gauge
-      backfill (the gauge pipeline emits no events).
-- [x] `liter` (SMG/Supporter) → `scripts/tests/units/liter.test.ts` — 11 assertions over her 4 kit
-      lines. **No fix — all four lines FAITHFUL**, so these are pins. L1 (the team burst-CDR ladder)
-      is pinned END-TO-END per owner ruling: exact arithmetic on the fight's ONE cooldown-bound
-      interval (`baseCD − tier1`) plus dose-response against four counterfactual ladders. Everything
-      after her second cast is rotation-bound, which is why the upper tiers are not readable from her
-      gaps — a reusable lesson for any CDR unit. Her 1.208 HOT is NOT kit-encoding (zero self-damage
-      lines) → the SMG weapon-model thread; batch-and-stop, nothing enacted.
+**Stale as of this refresh: this section named only `helm`+`liter` against 129 files actually in
+`scripts/tests/units/`.** The live count and per-unit provenance/tier/evidence is
+`data/kit-status.json` (`counts.status`, `counts.tier`, each unit's `kitParse`) — read that, not a
+hand list here, since it is generated and this section drifts the moment it isn't.
+
+**Provenance split (2026-08-03, `kitParse.provenance` census): 127 of 129 specs are `gauntlet`
+(`/kit-autonomy`), 2 are `hand-authored` (`helm`, `liter` — the original dedicated-session pair
+below).** This is worth stating plainly because it means `/kit-autonomy`, not the owner-driven
+`/kit-tdd` session this section originally tracked, has been the volume path into
+`scripts/tests/units/`. That is not a drift to correct here — `docs/STATE.md`/`CONVENTIONS.md`
+already document both as legitimate per-unit build paths (`/kit-tdd` owner-driven,
+`/kit-autonomy` authorized-autonomous) — just a fact this section previously obscured by only
+ever naming the two hand-authored units.
+
+**The original two, kept for the reasoning trail (both later also gauntlet-sampled per
+`kit-status.json`, which reflects the latest `kitParse` event, not original authorship):**
+
+- `helm` (SR/Water) → `scripts/tests/units/helm.test.ts` — 16 assertions over her 9 kit lines,
+  1 skipped GAP. **One FIX enacted:** the burst's "recovers … for 10 sec" was a single instant
+  recovery event → a 10-second window (`heal ticks 10 / intervalSec 1`) → DECISIONS 2026-07-23.
+  **Board-neutral** (byte-identical `board-read` A/B; control snapshots stable) because her S1
+  full-charge heal already saturates crown-style consumers — so the window is invisible to BOTH
+  the board and the regression snapshot, and H8 (which isolates S1's heal out of the fixture) is
+  the only thing in the repo that gates it. GAP: S1's gauge-fill line is pinned only as the
+  datamined `flatPerTrigger 1431`; focus-unscaling + FB/chain suppression need the step-2 gauge
+  backfill (the gauge pipeline emits no events).
+- `liter` (SMG/Supporter) → `scripts/tests/units/liter.test.ts` — 11 assertions over her 4 kit
+  lines. **No fix — all four lines FAITHFUL**, so these are pins. L1 (the team burst-CDR ladder)
+  is pinned END-TO-END per owner ruling: exact arithmetic on the fight's ONE cooldown-bound
+  interval (`baseCD − tier1`) plus dose-response against four counterfactual ladders. Everything
+  after her second cast is rotation-bound, which is why the upper tiers are not readable from her
+  gaps — a reusable lesson for any CDR unit. Her 1.208 HOT is NOT kit-encoding (zero self-damage
+  lines) → the SMG weapon-model thread; batch-and-stop, nothing enacted.
 
 **Pattern worth reusing:** a line whose only observable is a _consumer's_ reaction (helm H8) needs a
 fixture that strips the unit's OTHER sources of that same signal — otherwise saturation hides it and
@@ -295,12 +316,24 @@ cover-HP restore emits nothing).
       (`kimi-code/k3` via `/code-review`; packet + result under `scratchpad/gates/` on that branch,
       gitignored/local). Findings-only discipline had nothing to record across all 5 files — every
       assertion passed against the shipped default engine on first or second try, no engine bug
-      surfaced. **NOT fully closed:** two diffuse items remain, deliberately deferred as lower-value/
-      harder-to-scope-as-one-file (see the coverage checklist's "Not yet backfilled" line) — the
-      trigger-kind matrix as its own cross-cutting suite, and gauge suppression during FB/chain.
+      surfaced. **Fully closed 2026-08-03** — the two deferred items (trigger-kind matrix,
+      gauge suppression during FB/chain) landed in `03021eeb` as `trigger-kinds.test.ts` +
+      `gauge-suppression.test.ts`, 15 assertions, both bite-verified.
 - [x] 3: per-unit TDD sessions begin (owner-driven; ongoing — this bullet never "completes", it
-      replaces the old kit workflow)
-- [ ] 4: doc/skill reframe + `/skill-maintenance`
+      replaces the old kit workflow). 129 specs now in `scripts/tests/units/` (127 `/kit-autonomy`,
+      2 hand-authored via dedicated `/kit-tdd` sessions) — see the refreshed step-3 section above.
+- [x] 4: doc/skill reframe + `/skill-maintenance` — **done, verified 2026-08-03**: `docs/STATE.md:291`
+      and `docs/CONVENTIONS.md:81` both document `/kit-tdd` and `/kit-autonomy` as the two per-unit
+      build paths with `/audit-kit`/`/kit-parse` demoted to sampling/seeding; `.claude/skills/
+audit-kit/SKILL.md` and `.claude/skills/kit-parse/SKILL.md` descriptions carry the same reframe.
 
-**HYGIENE:** when 1–2 and 4 are landed, fold the workflow into CONVENTIONS/STATE, mark this doc
-CLOSED + `mv` to `docs/handoffs/closed/`, and keep only the step-2 checklist if still in flight.
+**HYGIENE:** 1–2 and 4 are now all landed (2026-08-03 refresh, above) — this doc's own closure
+criterion is technically met. **Not closed/archived anyway:** unlike a typical handoff, this doc is
+an active citation target, not just a reasoning trail — `.claude/skills/kit-tdd/SKILL.md` (its
+`description` field and `:211`) points readers here by name for `§1d event payloads` and the
+`step-2 checklist`, and `docs/kit-autonomy-decisions.md:29` cites it as "today's plan-of-record".
+Archiving into the gitignored `docs/handoffs/closed/` (untracking it, per the standard procedure)
+would turn those into dangling pointers for a fresh clone — the same failure mode already flagged
+in `QUEUE.md`'s "three closed handoffs are still git-TRACKED" item. Closing it needs those citations
+reworded (or the cited content migrated into CONVENTIONS.md/the skill file) FIRST; that is a
+separate, larger edit than this hygiene pass, filed in `QUEUE.md`.

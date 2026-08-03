@@ -280,16 +280,27 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 #### Kit / override threads
 
 - **⇒ TDD TRANSITION (the kit workflow) → `docs/handoffs/2026-07-23-tdd-transition-plan.md`.** Steps
-  1a–1d and the step-2 primitive backfill are on `main` (`scripts/tests/engine/*`). **Step 2 is now
-  fully closed** — the two deferred items (trigger-kind matrix, gauge suppression during FB/chain)
-  landed 2026-08-03 in `03021eeb` as `trigger-kinds.test.ts` + `gauge-suppression.test.ts`, 15
-  assertions, both bite-verified against a deliberately broken engine. Open:
+  1a–1d and the step-2 primitive backfill are on `main` (`scripts/tests/engine/*`). **Steps 1, 2, and
+  4 are now all landed** (refreshed 2026-08-03) — step 2's two deferred items (trigger-kind matrix,
+  gauge suppression during FB/chain) landed 2026-08-03 in `03021eeb`; step 4 (doc/skill reframe) was
+  verified already done (`docs/STATE.md:291`, `docs/CONVENTIONS.md:81`, the `audit-kit`/`kit-parse`
+  SKILL.md descriptions). The plan doc's stale step-3 unit list (2 named vs 129 actual files) is
+  fixed — it now points to `data/kit-status.json` as the live source instead of hand-listing units,
+  and states the provenance split found while refreshing it: **127 of 129 specs are `/kit-autonomy`
+  gauntlet output, only 2 (`helm` SR/Water, `liter`) are hand-authored via a dedicated `/kit-tdd`
+  session** — not a problem (`STATE.md`/`CONVENTIONS.md` already license both paths), just a fact
+  the doc previously obscured. Open:
   1. **Step 3 — per-unit dedicated sessions, OWNER drives the spec line-by-line from kit text; run them
-     with `/kit-tdd`.** Fully unblocked. Rationale: the board gates FIT only; faithfulness errors of a
-     few % are absorbed by calibration and only unit tests can gate them.
-  2. **Hygiene pass on the plan doc itself** — it is the stale artifact now. It lists two landed step-3
-     specs (`helm` (SR/Water) + `liter`) against the 128 files actually in `scripts/tests/units/`, and
-     still calls the two step-2 items deferred though both landed in `03021eeb`. Refresh it or close it.
+     with `/kit-tdd`.** Fully unblocked, ongoing by design (never "completes"). Rationale: the board
+     gates FIT only; faithfulness errors of a few % are absorbed by calibration and only unit tests
+     can gate them.
+  2. **The doc itself now meets its own closure bar (1–2, 4 landed) but is NOT archived** — it is an
+     active citation target, not just a reasoning trail: `.claude/skills/kit-tdd/SKILL.md` (its
+     `description` and `:211`) points here by name for `§1d event payloads` + the step-2 checklist,
+     and `docs/kit-autonomy-decisions.md:29` cites it as "today's plan-of-record". Archiving into the
+     gitignored `docs/handoffs/closed/` would dangle those pointers — same failure mode as the "three
+     closed handoffs still git-tracked" item below. Reword the citations (or migrate the cited
+     content into CONVENTIONS.md/the skill file) before closing.
   3. Six `cfg.onEvent` payload follow-ups (weapon-swap events, perResource/ramp/swap-gate fields on
      `buffApply`, …) listed under §1d in the plan — build them as step-3 tests need them.
 - **⇒ SAME-SQUAD PRIMITIVE MIGRATIONS** (the primitive landed 2026-08-02; `teamHas.sameSquad` resolves
