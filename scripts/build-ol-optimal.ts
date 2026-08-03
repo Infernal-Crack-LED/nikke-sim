@@ -8,7 +8,8 @@
 // best remaining lines (crit / ammo / charge …) are governed by its own kit, so we
 // optimize each unit once in the solo isolation team and reuse the result everywhere.
 //
-// SEARCH + TIER (owner ruling 2026-08-03): exhaustive, at T11, everywhere. Both halves
+// SEARCH + TIER (owner ruling 2026-08-03): exhaustive, at the project tier (OL_TIER in
+// src/dpschart/matrix.ts — T11 today), everywhere. Both halves
 // were measured failures of the greedy marginal-gain search this replaced:
 //
 //   TIER — it optimized at MAX ROLL while every consumer applies the picks at T11 (the
@@ -124,7 +125,7 @@ const artifact = {
   _comment:
     'Damage-optimal 12/12 remainder OL lines per unit (beyond the 4 elem + 4 atk floor), ' +
     'computed by scripts/build-ol-optimal.ts in the Solo framework by EXHAUSTIVE search ' +
-    "at the T11 line values the web's 12/12 Overload pill applies them at. Regenerate " +
+    `at the T${TIER} line values the web's 12/12 Overload pill applies them at. Regenerate ` +
     'when kits/overrides/engine change.',
   search: 'exhaustive',
   framework: 'solo',
