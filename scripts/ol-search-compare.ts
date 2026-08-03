@@ -38,7 +38,11 @@ import type {
 } from '../src/prepare.js';
 import { prepareTeam } from '../src/prepare.js';
 import { runSim } from '../src/engine/sim.js';
-import { rankFreeLineConfigs, OL_FLOOR } from '../src/olconfigs.js';
+import {
+  rankFreeLineConfigs,
+  freeLineCandidates,
+  OL_FLOOR,
+} from '../src/olconfigs.js';
 import { assembleTeam, OL_TIER, type Cell } from '../src/dpschart/matrix.js';
 import { NOOP_CHARACTERS } from '../src/dpschart/noop.js';
 
@@ -216,7 +220,11 @@ for (const [slug, c] of eligible) {
     // CONVEX (Hit Rate's core-rate curve), one line looks worthless while three or four
     // win outright — the shape any one-line-at-a-time search is blind to.
     process.stdout.write(`\nsingle-line gain, per candidate type:\n`);
-    for (const type of Object.keys(tierValues).filter((k) => k !== 'tier')) {
+    // The unit's own FREE-line pool, not every key in the tier row. elem/atk are the
+    // floor — probing one on top of it asks for a 5th line of that type and trips the
+    // per-type cap in prepareUnit — and def is dead for damage. Both were never
+    // "candidates", so this also makes the listing match its own heading.
+    for (const type of freeLineCandidates(chars[team.testedIndex].weapon)) {
       const one = scorePick({ [type]: 1 });
       process.stdout.write(
         `  ${one.gainPct.toFixed(2).padStart(6)}%  ${LABEL[type] ?? type}\n`

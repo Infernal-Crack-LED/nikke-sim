@@ -42,7 +42,7 @@ import type {
   SkillLevelData,
 } from '../src/prepare.js';
 import { rankFreeLineConfigs } from '../src/olconfigs.js';
-import { assembleTeam, type Cell } from '../src/dpschart/matrix.js';
+import { assembleTeam, OL_TIER, type Cell } from '../src/dpschart/matrix.js';
 import { NOOP_CHARACTERS } from '../src/dpschart/noop.js';
 
 const load = <T>(rel: string): T =>
@@ -69,7 +69,7 @@ for (const slug of Object.keys(data.characters)) {
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 
 const tierArg = process.argv.indexOf('--tier');
-const TIER = tierArg >= 0 ? Number(process.argv[tierArg + 1]) : 11;
+const TIER = tierArg >= 0 ? Number(process.argv[tierArg + 1]) : OL_TIER;
 const tierValues = olTiers.tiers.find((t) => t.tier === TIER);
 if (!tierValues) {
   throw new Error(`data/ol-tiers.json has no tier ${TIER}`);

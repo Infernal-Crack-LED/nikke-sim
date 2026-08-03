@@ -227,7 +227,7 @@ const GLOBAL_DIRS = [
 // Individual files: flat under src/ with no isolating subdirectory, so a directory
 // scoop would either miss them or drag in unrelated siblings (teamcalc.ts, ranks/,
 // share/, …). Hand-listed because there's no cheaper automatic boundary here; all
-// six are foundational/low-churn (team-prep, the OL optimizer, relationship-bonus,
+// of them are foundational/low-churn (team-prep, the OL optimizer, relationship-bonus,
 // element helpers, shared types, the skill-scaling/override-loading plumbing) —
 // per-unit modeling churn lives in src/skills/overrides/, which is hashed per-unit below.
 const GLOBAL_FILES = [

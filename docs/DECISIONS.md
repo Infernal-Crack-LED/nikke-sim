@@ -25,7 +25,10 @@ lives. Newest first within each section.
      across 73 units. `asuka-wille` is the clean case: one Max Ammo line gains 1.41% and LOSES step 1
      to Crit Rate's 1.72%, so greedy took 2× Crit DMG + 2× Crit Rate (8.66%) over the exhaustive
      winner 3× Max Ammo + 1× Crit Rate (57.91%) — row 7 of its own ranking. No threshold tweak
-     reaches this; the failure is structural.
+     reaches this; the failure is structural. (The 1.41% is greedy's own first-step figure, taken
+     against the MAX-ROLL floor it searched on. Re-measured on the landed T11 basis the same line
+     reads **1.29%**, which is what `ol-search-compare.ts --only asuka-wille` reproduces today —
+     the ordering, and so the conclusion, is identical.)
      **Landed:** `src/bestol.ts` DELETED (greedy) and `src/olcalc.ts` DELETED (a third greedy searcher,
      unimported anywhere, still carrying the all-weapons Hit Rate exclusion `src/olconfigs.ts` fixed on
      2026-08-02 — a known-wrong model parked beside its replacement). `src/dpschart/matrix.ts` gains
