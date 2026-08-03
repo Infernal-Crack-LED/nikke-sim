@@ -2487,21 +2487,73 @@ a.dpschart-name:hover {
 .unit-unmodeled li {
   margin-bottom: 6px;
 }
+/* 2×2: Skill 1 and Skill 2 stack down the left, the Burst Skill takes the whole
+   right column. Named areas rather than auto-flow because a unit whose kit is
+   missing a slot (or whose burst has no parsed blocks) must not let the others
+   reflow into the wrong cell — an empty area just stays empty. */
+.unit-skills-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    'skill1 burst'
+    'skill2 burst';
+  gap: 12px;
+  /* Boxes STRETCH to their grid area (the default) rather than hugging their
+     text, so the burst card fills the whole right column instead of leaving a
+     tall gap under a short kit. */
+}
+.unit-skills-grid .slot-skill1 {
+  grid-area: skill1;
+}
+.unit-skills-grid .slot-skill2 {
+  grid-area: skill2;
+}
+.unit-skills-grid .slot-burst {
+  grid-area: burst;
+}
 /* Each skill is its own boxed card — three dense walls of game text are hard to
    scan when they run together as plain paragraphs. */
 .unit-skill {
-  margin-bottom: 12px;
   padding: 14px 16px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 10px;
 }
 .unit-skill h3 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
   font-size: 13px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   margin: 0 0 10px;
   color: var(--muted);
+}
+/* Cooldown chip, right-aligned in the skill's header row. Absent entirely when
+   the skill has no cooldown rather than showing a dash — most skills are
+   passives, and an em-dash on two of three boxes reads as missing data. */
+.unit-skill-cd {
+  flex-shrink: 0;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+/* One column below the two-column breakpoint — side-by-side skill text at phone
+   width is unreadable. */
+@media (max-width: 760px) {
+  .unit-skills-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'skill1'
+      'skill2'
+      'burst';
+  }
 }
 /* One '■' block per row, separated rather than bulleted — the game text already
    reads as "trigger line / effect line" pairs. */

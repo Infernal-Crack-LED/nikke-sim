@@ -185,6 +185,32 @@ artifact and it matches what a visitor sees if they re-run the Optimize Overload
 which is the trust-critical property for a page whose pitch is "these are the sim's
 numbers".
 
+## Previewing this locally (a fresh worktree shows a broken-looking page)
+
+Three of the page's surfaces read BUILD ARTIFACTS that are gitignored, so a fresh
+worktree renders without the hero card and without DPS ranks — which looks like a
+bug and isn't. Full sequence:
+
+```bash
+npm run dpschart && npm run ranks:all   # web/public/*.json — ~30 s total
+npm run web:build                       # vite → dist/   (EMPTIES dist/ first)
+npx tsx scripts/build-infographics.ts   # dist/img/ + manifest.json — MUST be after the vite build
+PORT=<free> SHOTS=unit- OUT=/tmp/unit-shots node scripts/ui-shot.mjs
+```
+
+Three traps, all of which cost time here:
+
+1. **`npm run build` empties `dist/`**, taking `dist/img` with it. Run
+   `build-infographics` AFTER it or the hero card silently disappears.
+2. **Don't symlink `web/public/*.json` from the main worktree.** It works until
+   main moves ahead of the branch, and then the artifact is newer than the code
+   reading it: `scripts/tests/share/unit-card-data.test.ts` went red on a `crown`
+   neighbourhood assertion purely from that skew. Generate them in the worktree.
+3. **Those board tests are `it.runIf(haveBoards)`** — they SKIP silently when the
+   artifacts are absent, which is the default state of a fresh worktree. A green
+   `verify.sh` there is weaker than it looks; generate the artifacts and ~16 more
+   tests actually run.
+
 ## Phasing
 
 | Phase | Content                                                                                     | Status |

@@ -135,6 +135,23 @@ const SKILL_LABEL: Record<string, string> = {
   burst: 'Burst Skill',
 };
 
+// Datamined cooldown for a skill slot, in seconds — null when the skill has none.
+// Most kits don't: skill1 carries a cooldown on 10 of 196 units and skill2 on 37,
+// because the rest are passives or event-triggered blocks with nothing to time.
+// The burst slot almost always has one (190/196), and falls back to the unit's
+// top-level burstCooldownSec, which is the field the sim's rotation actually runs
+// on — so the number shown here is the one the fight is simulated with.
+function cooldownFor(
+  character: DataFile['characters'][string],
+  slot: 'skill1' | 'skill2' | 'burst'
+): number | null {
+  const cd = character.skillCooldownsSec?.[slot];
+  if (cd != null) {
+    return cd;
+  }
+  return slot === 'burst' ? (character.burstCooldownSec ?? null) : null;
+}
+
 // Kit text arrives as one string with '■' starting each trigger/effect block.
 // Splitting on it gives one readable paragraph per block instead of a wall.
 function kitBlocks(text: string | undefined): string[] {
@@ -441,16 +458,25 @@ export function UnitPage({ slug }: { slug: string | null }) {
       <section className="unit-section">
         <h2>Skills</h2>
         {kitSections.length ? (
-          kitSections.map(({ slot, blocks }) => (
-            <div className="unit-skill" key={slot}>
-              <h3>{SKILL_LABEL[slot]}</h3>
-              {blocks.map((b, i) => (
-                <p className="unit-skill-block" key={i}>
-                  {b}
-                </p>
-              ))}
-            </div>
-          ))
+          <div className="unit-skills-grid">
+            {kitSections.map(({ slot, blocks }) => (
+              <div className={`unit-skill slot-${slot}`} key={slot}>
+                <h3>
+                  {SKILL_LABEL[slot]}
+                  {cooldownFor(character, slot) != null && (
+                    <span className="unit-skill-cd">
+                      {cooldownFor(character, slot)}s CD
+                    </span>
+                  )}
+                </h3>
+                {blocks.map((b, i) => (
+                  <p className="unit-skill-block" key={i}>
+                    {b}
+                  </p>
+                ))}
+              </div>
+            ))}
+          </div>
         ) : (
           <p className="muted">Kit text not available for this unit yet.</p>
         )}
