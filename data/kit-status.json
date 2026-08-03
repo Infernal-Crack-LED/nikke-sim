@@ -5263,6 +5263,40 @@
         "temp": "COLD ▼"
       }
     },
+    "snow-white-innocent-days": {
+      "name": "Snow White: Innocent Days",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/snow-white-innocent-days.json + scripts/kit-autonomy/manual-review/snow-white-innocent-days.md.",
+          "low FIDELITY (burst): L5 'Hit count required for Skill 2 ▼ 20 for 10 sec' is own-cast-anchored in the prose but enacted as countInFb:30, which keys to the global Full Burst window — in multi-B3 comps the lowered threshold also applies during FB windows another B3 opened (~+1-2 extra 61.69% procs per foreign window, ~0.5-1% of her total), and the window is FB-anchored rather than cast-anchored (~0.3s offset). Exact in single-B3 scope."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6(claude-opus-5)/S7(kimi-code/k3) converged — 6 FAITHFUL + L5 countInFb DOCUMENTED_GAP (bounded ~0.5-1% multi-B3 scope, exact single-B3; falsification recipe in override note)",
+      "residual": "L5 foreign-B3-window popup spacing (kit-true 50 vs shipped 30); cadence tuple datamined (AR 12/s, reload 81f); maxAmmo 5-stack occupancy vs sawtooth",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "burst: L5 ('Hit count required for Skill 2 ▼ 20 for 10 sec') is enacted as countInFb 30 on the S2 hitCount trigger (RRH precedent) — the engine's hitCount threshold switch is keyed to the GLOBAL FB window, not her cast (only chargeCounter has the owner-anchored inBurst check); exact while she is the sole B3, bounded over-credit (~+1-2 extra 61.69% procs per foreign-B3 window, ~0.5-1% of total) in multi-B3 comps (⚑⚑, S2b-flagged, driver reconciled — an exact encoding needs an engine primitive; S4 freezes src/engine/**)",
+        "burst: her cast lands ~0.3s BEFORE the FB window opens (burstCast precedes fullBurstStart), so the countInFb window and the 10s self-buff windows start ~0.3s apart — the kit's cast-anchored 10s is approximated by the FB-anchored 10s for the threshold line only (the 21.12/97.2/unlimited-ammo lines ARE cast-anchored)"
+      ]
+    },
     "soda-twinkling-bunny": {
       "name": "Soda: Twinkling Bunny",
       "burst": "III",

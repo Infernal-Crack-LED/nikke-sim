@@ -47,7 +47,7 @@
 | `chargeMultPct` | 9 | ada, cinderella-crystal-wave, e-h, eunhwa-tactical-upgrade, maxwell-ordinary-mechanic, nayuta, red-hood, snow-white, … |
 | `consolidation` | 1 | dorothy-serendipity |
 | `consumeAmmo` | 2 | asuka-wille, jill |
-| `countInFb` | 3 | frima, rapi-red-hood, scarlet-black-shadow |
+| `countInFb` | 4 | frima, rapi-red-hood, scarlet-black-shadow, snow-white-innocent-days |
 | `critRateNormalPct` | 3 | biscuit, helm, julia |
 | `delaySec` | 4 | asuka-wille, dorothy, rapi-red-hood, snow-white |
 | `durationShots` | 7 | helm, miranda, neve, phantom, snow-white-heavy-arms, vesti-tactical-upgrade, zwei |
@@ -56,14 +56,14 @@
 | `everyNOffset` | 2 | neon-vision-eye, phantom |
 | `excludeSelf` | 14 | arcana-fortune-mate, avistar, blanc, brid-silent-track, chime, grave, label, liberalio, … |
 | `fbGate` | 8 | eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, zwei |
-| `flatDamage` | 68 | 2b, a2, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, … |
+| `flatDamage` | 69 | 2b, a2, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 3 | isabel, modernia, soda-twinkling-bunny |
 | `gainPierce` | 8 | ade-agent-bunny, asuka, dorothy, grave, mari, milk-blooming-bunny, naga, neve |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
 | `hasPierce` | 6 | alice, laplace, laplace-ultimate-hero, maxwell-ordinary-mechanic, red-hood, zwei |
 | `highestAllyAtkPct` | 1 | guilty |
-| `hitCount` | 51 | 2b, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, … |
+| `hitCount` | 52 | 2b, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, … |
 | `hitRatePct` | 16 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, miranda, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
 | `inFb` | 8 | eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, zwei |
@@ -110,7 +110,7 @@
 | `teamAmmo` | 3 | cinderella-crystal-wave, elegg-boom-and-shock, little-mermaid |
 | `teamHas` | 3 | blanc, eunhwa-tactical-upgrade, noir |
 | `trueNormals` | 5 | chisato, eunhwa-tactical-upgrade, frima, laplace, takina |
-| `unlimitedAmmo` | 5 | grave, modernia, moran, nayuta, red-hood |
+| `unlimitedAmmo` | 6 | grave, modernia, moran, nayuta, red-hood, snow-white-innocent-days |
 | `unswapped` | 2 | laplace, laplace-ultimate-hero |
 | `weapon` | 12 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, leona, miranda, nayuta, noir, … |
 | `weaponSwap` | 17 | ada, chisato, cinderella-crystal-wave, e-h, eunhwa-tactical-upgrade, frima, k, laplace, … |
