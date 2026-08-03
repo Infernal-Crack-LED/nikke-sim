@@ -29,7 +29,11 @@ export * from '../core/window.js';
 // The Node host surface: canvas factory + image decode (sharp → putImageData;
 // skia's Image silently no-ops on the owner's Mac — see portraits.ts).
 export { createCanvas, type Canvas } from '@napi-rs/canvas';
-export { decodeToCanvas, loadPortrait } from './portraits.js';
+export {
+  decodeToCanvas,
+  loadPortrait,
+  portraitSourceDir,
+} from './portraits.js';
 // Icon rasterization (sharp, SVG-first) + the build-time icon gate. Node-only,
 // like fonts: core/ renderers take icons ALREADY LOADED.
 export {

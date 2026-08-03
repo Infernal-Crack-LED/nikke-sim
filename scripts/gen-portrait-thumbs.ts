@@ -9,29 +9,41 @@
 // framing, imageSmoothingQuality:'high' halving — see web/src/imageDownscale.ts
 // for why a single big drawImage reduction aliases).
 //
-// Usage: npm run thumbs            (only generates missing thumbnails)
-//        npm run thumbs -- --force (re-derive everything)
-// Re-run after a data sync adds new units; units without a thumbnail fall
-// back to the runtime canvas path until then.
+// Usage: npm run thumbs               (only generates missing thumbnails)
+//        npm run thumbs -- --force    (re-derive everything)
+//        npm run thumbs -- --check    (report coverage, generate nothing)
+//        npm run thumbs -- --only a,b (restrict generation to those slugs)
+//
+// Re-run after a data sync adds new units. A unit with no thumb still RENDERS —
+// the web falls back to its runtime canvas path, and the unit-card build fills
+// the gap with the sharp pipeline (scripts/lib/portrait-thumbs.ts) — but the
+// committed thumb is the canonical one, so --check reports the gap until this
+// script has produced it.
 import { chromium } from 'playwright';
-import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
+import { writeFile, mkdir, stat } from 'node:fs/promises';
 import { PORTRAIT_CROP_TOP } from '../src/infographics/core/canvas2d.js';
+import {
+  PORTRAIT_MANIFEST_PATH,
+  PORTRAIT_SRC_DIR,
+  PORTRAIT_TIERS,
+  PORTRAIT_WEBP_QUALITY,
+  missingThumbs,
+  portraitUnits,
+} from './lib/portrait-thumbs.js';
 
-const TIERS = [128, 256]; // px squares; runtime picks the smallest tier ≥ cssSize×dpr
-const QUALITY = 0.85; // webp quality
+const TIERS = [...PORTRAIT_TIERS]; // px squares; runtime picks the smallest tier ≥ cssSize×dpr
+const QUALITY = PORTRAIT_WEBP_QUALITY; // webp quality
 const BATCH = 8; // concurrent image loads inside the page
 
-const outDir = fileURLToPath(
-  new URL('../web/public/img/portraits/', import.meta.url)
-);
-const manifestPath = fileURLToPath(
-  new URL('../web/src/portrait-manifest.json', import.meta.url)
-);
-const dataPath = fileURLToPath(
-  new URL('../data/characters.json', import.meta.url)
-);
+const outDir = PORTRAIT_SRC_DIR;
+const manifestPath = PORTRAIT_MANIFEST_PATH;
 const force = process.argv.includes('--force');
+const check = process.argv.includes('--check');
+const onlyArg = process.argv[process.argv.indexOf('--only') + 1];
+const only =
+  process.argv.includes('--only') && onlyArg
+    ? new Set(onlyArg.split(',').map((s) => s.trim()))
+    : null;
 
 const exists = async (p: string) => {
   try {
@@ -42,16 +54,41 @@ const exists = async (p: string) => {
   }
 };
 
+// Coverage report — no browser, no network. Exits non-zero when a unit with
+// source art has no committed thumb, so a caller can gate on it; verify.sh runs
+// it advisory-only (the card build self-heals, so this is a nudge to commit the
+// canonical thumb, not a reason to block the tree).
+function reportCoverage(): void {
+  const units = portraitUnits();
+  const missing = missingThumbs(units, outDir);
+  if (missing.length === 0) {
+    console.log(
+      `gen-portrait-thumbs --check: all ${units.length} units with source art have committed thumbs`
+    );
+    return;
+  }
+  console.error(
+    `gen-portrait-thumbs --check: ${missing.length}/${units.length} unit(s) missing a committed thumb ` +
+      `(their unit cards render the letter placeholder until the build fills them):`
+  );
+  for (const u of missing) {
+    console.error(`  - ${u.slug}`);
+  }
+  console.error(
+    `  fix: npm run thumbs${missing.length < units.length ? ` -- --only ${missing.map((u) => u.slug).join(',')}` : ''}  (then commit web/public/img/portraits + web/src/portrait-manifest.json)`
+  );
+  process.exitCode = 1;
+}
+
 async function main() {
-  const data = JSON.parse(await readFile(dataPath, 'utf8'));
-  const units: { slug: string; url: string }[] = Object.entries(
-    data.characters as Record<string, { imageUrl?: string }>
-  )
-    .filter(([, c]) => c.imageUrl)
-    .map(([slug, c]) => ({ slug, url: c.imageUrl! }))
-    .sort((a, b) => a.slug.localeCompare(b.slug));
+  if (check) {
+    reportCoverage();
+    return;
+  }
+  const units = portraitUnits();
   console.log(
-    `gen-portrait-thumbs: ${units.length} units, tiers ${TIERS.join('/')}`
+    `gen-portrait-thumbs: ${units.length} units, tiers ${TIERS.join('/')}` +
+      (only ? `, --only ${[...only].join(',')}` : '')
   );
 
   await mkdir(outDir, { recursive: true });
@@ -69,8 +106,14 @@ async function main() {
     await Promise.all(
       batch.map(async (u) => {
         const files = TIERS.map((t) => `${outDir}${u.slug}-${t}.webp`);
-        if (!force && (await Promise.all(files.map(exists))).every(Boolean)) {
-          manifest[u.url] = u.slug; // thumb already on disk from a previous run
+        const onDisk = (await Promise.all(files.map(exists))).every(Boolean);
+        // --only narrows what we ATTEMPT, never what the manifest covers: a unit
+        // outside the selection keeps its entry if its thumbs are already there,
+        // and is simply left alone if they aren't.
+        if ((!force && onDisk) || (only && !only.has(u.slug))) {
+          if (onDisk) {
+            manifest[u.url] = u.slug; // thumb already on disk from a previous run
+          }
           skipped++;
           return;
         }

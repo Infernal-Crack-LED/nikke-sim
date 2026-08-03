@@ -38,6 +38,15 @@ npx tsx scripts/kit-status.ts --check
 say "approved-nickname validation (characters.json nicknames unambiguous)"
 npx tsx scripts/validate-nicknames.ts
 
+say "portrait-thumb coverage (ADVISORY — a unit with no committed thumb ships a placeholder card until the build fills it)"
+# Advisory, not a gate: build-infographics' portrait gate generates any missing
+# thumb at deploy time, so a fresh sync is never a broken deploy — but the
+# COMMITTED thumb is the canonical one (browser pipeline, byte-parity with the
+# web's runtime fallback), and this is the nudge to run `npm run thumbs`. Not
+# fatal because the fix needs a browser + the art CDN, which an isolated engine
+# worktree (constraint 8) has no business requiring.
+npx tsx scripts/gen-portrait-thumbs.ts --check || true
+
 say "chunked-reload convention (reloadFrames == reload_time × chunks × 0.6 + 21, chunks from reload_bullet)"
 npx tsx scripts/check-reload-chunks.ts
 

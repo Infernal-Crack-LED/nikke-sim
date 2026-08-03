@@ -19,6 +19,11 @@ const DEFAULT_PORTRAIT_DIR = fileURLToPath(
 const portraitDir = (): string =>
   process.env.NIKKESIM_PORTRAIT_DIR ?? DEFAULT_PORTRAIT_DIR;
 
+/** The directory loadPortrait reads THIS call — exported so a build-time filler
+ * (scripts/build-infographics.ts) writes exactly where the loader will look
+ * instead of keeping its own copy of this resolution. Lazy, same as above. */
+export const portraitSourceDir = (): string => portraitDir();
+
 // ⚠ WHY NOT `new Image()`: @napi-rs/canvas's Image rasterization is BROKEN on
 // the owner's Mac (macOS 26 arm64, node 22) in both 1.0.2 and 0.1.x — src
 // assignment decodes dimensions but every drawImage(image) silently no-ops

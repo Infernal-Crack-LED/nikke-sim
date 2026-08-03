@@ -24,6 +24,7 @@
 // build than 200 textless images under immutable cache headers.
 import { createHash } from 'node:crypto';
 import {
+  copyFileSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -36,6 +37,7 @@ import {
   createCanvas,
   decodeToCanvas,
   loadPortrait,
+  portraitSourceDir,
   assertFontsLive,
   assertTitleInk,
   chartWindow,
@@ -75,6 +77,14 @@ import {
   buildUnitCardRender,
   type UnitCardSourceSet,
 } from './lib/unit-card-sources.js';
+import {
+  PORTRAIT_TIERS,
+  fetchPortraitSource,
+  missingThumbs,
+  portraitUnits,
+  renderThumbTiers,
+  thumbPath,
+} from './lib/portrait-thumbs.js';
 import { parseCellId, cellLabel } from '../src/dpschart/matrix.js';
 import type {
   BurstGenArtifact,
@@ -158,6 +168,85 @@ interface CharacterRow {
 const DATA_HINT =
   'run the data builders first (npm run dpschart && npm run ranks:all) — ' +
   'build-infographics reads their web/public outputs (build:deploy orders this)';
+
+// ---- portrait gate ------------------------------------------------------------
+
+/**
+ * PORTRAIT GATE: fill any thumbnail this build is about to need but doesn't
+ * have, before a single image is rendered.
+ *
+ * loadPortrait() returns null for a missing thumb and every consumer degrades to
+ * a placeholder — the unit card to its letter box, the DPS/rank rows to a blank
+ * chip — silently, inside content-hashed images that nothing will re-render and
+ * that Discord caches by URL indefinitely. That is the same failure the font and
+ * icon gates above exist to prevent, and it shipped: four units synced after the
+ * last `npm run thumbs` had been serving placeholder cards on /nikke (2026-08-03).
+ *
+ * So the deploy self-heals instead of relying on someone remembering. Committed
+ * thumbs are still canonical — `npm run thumbs -- --check` reports anything filled
+ * here, and generating + committing it is what makes this a no-op again.
+ *
+ * Deliberately NOT fatal: a filled build is strictly better than today's silent
+ * placeholder, and a CDN blip must not be able to redden a deploy of unrelated
+ * work. It writes to loadPortrait's OWN source dir, and mirrors into the dist
+ * copy (vite already put the committed set there) so the runtime server's
+ * on-demand renders see the same portraits this build did.
+ * Set SKIP_PORTRAIT_FILL=1 for an offline/hermetic build.
+ */
+async function fillMissingPortraits(): Promise<void> {
+  const srcDir = portraitSourceDir();
+  const mirrorDir = join(OUT_DIR, 'portraits');
+  const units = portraitUnits();
+  const missing =
+    process.env.SKIP_PORTRAIT_FILL === '1' ? [] : missingThumbs(units, srcDir);
+
+  if (missing.length) {
+    console.warn(
+      `infographics: ${missing.length} unit(s) have no committed portrait thumb, ` +
+        `generating now so their cards aren't placeholders: ${missing.map((u) => u.slug).join(', ')} ` +
+        `(commit them with: npm run thumbs)`
+    );
+    mkdirSync(srcDir, { recursive: true });
+    for (const unit of missing) {
+      try {
+        const tiers = await renderThumbTiers(
+          await fetchPortraitSource(unit.url)
+        );
+        for (const [tier, bytes] of tiers) {
+          writeFileSync(thumbPath(srcDir, unit.slug, tier), bytes);
+        }
+      } catch (e) {
+        // Placeholder card — exactly what would have shipped anyway.
+        console.warn(
+          `infographics: portrait fill failed for ${unit.slug}: ${(e as Error).message}`
+        );
+      }
+    }
+  }
+
+  // Mirror into dist/img/portraits when vite has made one: it is what the
+  // deployed server reads (NIKKESIM_PORTRAIT_DIR, see src/server/env-defaults.ts),
+  // and it was copied BEFORE anything above ran.
+  if (!existsSync(mirrorDir) || mirrorDir === srcDir) {
+    return;
+  }
+  let mirrored = 0;
+  for (const unit of units) {
+    for (const tier of PORTRAIT_TIERS) {
+      const from = thumbPath(srcDir, unit.slug, tier);
+      const to = thumbPath(mirrorDir, unit.slug, tier);
+      if (existsSync(from) && !existsSync(to)) {
+        copyFileSync(from, to);
+        mirrored++;
+      }
+    }
+  }
+  if (mirrored) {
+    console.warn(
+      `infographics: mirrored ${mirrored} portrait file(s) into dist`
+    );
+  }
+}
 
 // ---- small formatting helpers ------------------------------------------------
 
@@ -545,6 +634,9 @@ async function main(): Promise<void> {
   // degrades to a blank slot in an immutable, content-hashed image that nothing
   // will re-render — so fail the build instead.
   await assertIconsLive();
+  // PORTRAIT GATE: same contract, but fillable — see fillMissingPortraits.
+  // Runs before any render, since loadPortrait caches its misses per process.
+  await fillMissingPortraits();
 
   const chars = loadJson<{ characters: Record<string, CharacterRow> }>(
     new URL('../data/characters.json', import.meta.url)
