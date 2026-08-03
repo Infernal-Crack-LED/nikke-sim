@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-08-03",
+    "title": "Sustain board: fairer test teams for long-cooldown healers and shielders",
+    "notes": [
+      "The Sustain board's test team has been rebuilt the same way the Team Buffs board's was: every burst stage is now covered by a stand-in teammate, so a healer or shielder with a 40- or 60-second burst cooldown is measured on what it actually restores — not penalized for Full Bursts the rest of the team could have kept going without it.",
+      "The test team also now includes the standard cooldown-reduction stand-in the other ranking boards use, so a faster team rotation is reflected in burst-timed heals and shields the same way it is elsewhere."
+    ]
+  },
+  {
+    "date": "2026-08-03",
     "title": "Team Buffs board: fairer test teams for long-cooldown supports",
     "notes": [
       "The Team Buffs board's test team has been rebuilt. Every burst stage is now covered by a stand-in teammate, so a support with a 40- or 60-second burst cooldown is measured on what its buffs add — not charged for Full Bursts the rest of the team could have kept going without it.",
