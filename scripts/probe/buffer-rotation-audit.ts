@@ -32,8 +32,10 @@ import type {
 } from '../../src/prepare.js';
 import {
   bufferValueFor,
+  suppliesTeamCdr,
   EXCLUDED_BUFFER_SLUGS,
 } from '../../src/ranks/buffer.js';
+import { NOOP_CHARACTERS } from '../../src/dpschart/noop.js';
 import type { RanksCtx } from '../../src/ranks/burstgen.js';
 
 const load = <T>(rel: string): T =>
@@ -54,6 +56,10 @@ try {
 }
 const overrides: Record<string, OverrideFile | undefined> = {};
 for (const slug of Object.keys(data.characters)) {
+  overrides[slug] = loadOverride(slug);
+}
+// mirror build-bufferchart.ts: the synthetic controls carry framework effects
+for (const slug of Object.keys(NOOP_CHARACTERS)) {
   overrides[slug] = loadOverride(slug);
 }
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
@@ -77,42 +83,31 @@ const population = Object.entries(data.characters as any)
   .map(([slug]) => slug)
   .sort();
 
-// --noop-cdr: what the no-op B1's 7s team burst-cooldown reduction is worth.
+// --cdr: who is the team's burst-cooldown enabler, and is there exactly one?
 //
-// scripts/build-bufferchart.ts loads overrides for roster slugs only, and the
-// synthetic controls are not roster entries, so THIS BOARD HAS NEVER APPLIED
-// that CDR — `src/skills/overrides/noop-b1-ar.json` is simply never read. Its
-// siblings do load it (build-burstgen.ts:48, build-b1b2dps.ts:56, and
-// build-sustain.ts:46 for the B3), added 2026-07-27, the day after the buffer
-// board was written and never backported here. This mode reports each unit's
-// value as shipped versus with the control loaded, so the cost of closing that
-// gap is visible before anyone closes it.
-if (process.argv.includes('--noop-cdr')) {
-  const withCdr = { ...overrides, 'noop-b1-ar': loadOverride('noop-b1-ar') };
-  const ctxWith: RanksCtx = {
-    ...ctx,
-    deps: { ...deps, overrides: withCdr },
-  };
-  const hasOwnCdr = (slug: string): boolean =>
-    JSON.stringify(overrides[slug] ?? {}).includes('"burstCdr"');
-  process.stdout.write(
-    'the no-op B1 team CDR is NOT loaded by build-bufferchart.ts; ' +
-      'this is what loading it would cost\n\n' +
-      `${'unit'.padEnd(26)} ownCDR   ${'shipped'.padStart(8)}      ${'with 7s'.padStart(8)}       change\n`
+// Every team fields exactly one (owner ruling 2026-08-03): the tested unit when
+// it is an ally-facing CDR carrier, the no-op B1 otherwise. Self-only reduction
+// does not qualify — prika, tia, mint, red-hood and blanc carry `burstCdr` but
+// only for themselves. This mode lists the classification so a mis-scan is
+// visible; the four ladder enablers (liter, volume, dolla, helm-aquamarine)
+// bury theirs inside an `escalating` effect's `steps`, which is exactly the
+// shape a shallow scan drops.
+if (process.argv.includes('--cdr')) {
+  const enablers = population.filter((slug) =>
+    suppliesTeamCdr(overrides[slug])
   );
-  for (const slug of population) {
-    const a = bufferValueFor(slug, 'generic', ctx, new Map(), null);
-    const b = bufferValueFor(slug, 'generic', ctxWith, new Map(), null);
-    if (Math.abs(a.valuePct - b.valuePct) < 0.05) {
-      continue;
-    }
-    process.stdout.write(
-      `${slug.padEnd(26)} ${hasOwnCdr(slug) ? 'yes' : ' - '}     ` +
-        `${a.valuePct.toFixed(2).padStart(7)}% (FB ${a.fullBursts}v${a.baselineFullBursts})  ` +
-        `${b.valuePct.toFixed(2).padStart(7)}% (FB ${b.fullBursts}v${b.baselineFullBursts})  ` +
-        `${(b.valuePct - a.valuePct >= 0 ? '+' : '') + (b.valuePct - a.valuePct).toFixed(2)}\n`
-    );
-  }
+  const selfOnly = population.filter(
+    (slug) =>
+      !suppliesTeamCdr(overrides[slug]) &&
+      JSON.stringify(overrides[slug] ?? {}).includes('burstCdr')
+  );
+  process.stdout.write(
+    `TESTED UNIT IS THE ENABLER (no-op B1 stands down) — ${enablers.length}\n  ` +
+      enablers.join(', ') +
+      `\n\nCARRIES burstCdr BUT SELF-ONLY (no-op B1 keeps the role) — ${selfOnly.length}\n  ` +
+      selfOnly.join(', ') +
+      `\n\nevery other unit on the board runs with the no-op B1 as its enabler\n`
+  );
   process.exit(0);
 }
 
@@ -143,14 +138,30 @@ for (const r of off) {
   );
 }
 
-// A tested B3 never bursts (it sits rightmost so the carries win stage 3), so
-// its cooldown cannot hold anything up and it is not what this shape protects —
-// the check is on the B1/B2 units whose stage the spare no-op covers.
-const shortfalls = off.filter(
-  (r) => r.fb < r.base && r.cd > 20 && r.stage !== 'B3'
-);
+// Which shortfalls actually matter? Not "landed below baseline with a long
+// cooldown" — that fires on cases the design intends. An ENABLER is measured
+// against the control enabler it displaces, so reading below it just means the
+// unit is the weaker enabler (sakura, soline-frost-ticket), and a unit can land
+// below for gauge reasons at ANY cooldown (rosanna reads the same 40s or 20s).
+// The real signal is the property the shape guarantees and the test pins:
+// forcing the cooldown down to the no-op's 20s must not change the count.
+const shortfalls = rows.filter((r) => {
+  if (r.stage === 'B3' || r.cd <= 20) {
+    return false;
+  }
+  const short = { ...(data.characters as any) };
+  short[r.slug] = { ...short[r.slug], burstCooldownSec: 20 };
+  const forced = bufferValueFor(
+    r.slug,
+    'generic',
+    { ...ctx, characters: short },
+    new Map(),
+    null
+  );
+  return forced.fullBursts !== r.fb;
+});
 process.stdout.write(
   shortfalls.length
-    ? `\n✗ ${shortfalls.length} unit(s) with a >20s cooldown land BELOW their baseline — the spare no-op is not covering the stage: ${shortfalls.map((r) => r.slug).join(', ')}\n`
-    : '\n✓ no unit with a cooldown longer than 20s lands below its baseline\n'
+    ? `\n✗ ${shortfalls.length} unit(s) gain Full Bursts when their cooldown is forced to 20s — the spare no-op is not covering the stage: ${shortfalls.map((r) => r.slug).join(', ')}\n`
+    : "\n✓ no unit's Full Burst count depends on its own burst cooldown\n"
 );

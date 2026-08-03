@@ -8,7 +8,12 @@ import {
   deriveCarrySpec,
   DUO_BUFFER_PROFILES,
 } from '../../../src/ranks/buffer.js';
-import { NOOP_B1, NOOP_B2, NOOP_B3 } from '../../../src/dpschart/noop.js';
+import {
+  NOOP_B1,
+  NOOP_B2,
+  NOOP_B3,
+  NOOP_CHARACTERS,
+} from '../../../src/dpschart/noop.js';
 import { CARRY_MG, CARRY_RL } from '../../../src/ranks/synthetics.js';
 import type { RanksCtx } from '../../../src/ranks/burstgen.js';
 import { loadOverride } from '../../../src/skills/overrides-node.js';
@@ -17,6 +22,13 @@ import { data, mult, cubes, olLines, skillLevels } from '../lib/harness.js';
 
 const overrides: Record<string, OverrideFile | undefined> = {};
 for (const s of Object.keys(data.characters)) {
+  overrides[s] = loadOverride(s);
+}
+// mirror scripts/build-bufferchart.ts — the synthetic controls are not roster
+// entries but their overrides carry the framework effects (the no-op B1's team
+// CDR, the no-op B3's mock burst). Loading roster slugs only would test a
+// configuration the board does not run.
+for (const s of Object.keys(NOOP_CHARACTERS)) {
   overrides[s] = loadOverride(s);
 }
 const ctx: RanksCtx = {

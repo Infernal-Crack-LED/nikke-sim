@@ -11,6 +11,7 @@ import { dirname } from 'node:path';
 import type { DataFile, LevelMultiplier, Element } from '../src/types.js';
 import { loadOverride } from '../src/skills/overrides-node.js';
 import { unitElements } from '../src/elements.js';
+import { NOOP_CHARACTERS } from '../src/dpschart/noop.js';
 import type { OverrideFile } from '../src/skills/index.js';
 import type {
   CubesFile,
@@ -49,6 +50,15 @@ const tags = load<{ tags: Record<string, string[]> }>(
 
 const overrides: Record<string, OverrideFile | undefined> = {};
 for (const slug of Object.keys(data.characters)) {
+  overrides[slug] = loadOverride(slug);
+}
+// Synthetic controls are not roster entries, but their overrides carry the
+// framework effects: the no-op B1's 7s team burst-cooldown reduction and the
+// no-op B3's mock burst. Load every registered control so a future addition
+// cannot be forgotten — the same loop build-b1b2dps.ts uses. Without it this
+// board silently ran with no enabler at all, which is what it did from
+// 91f53ea9 until 2026-08-03.
+for (const slug of Object.keys(NOOP_CHARACTERS)) {
   overrides[slug] = loadOverride(slug);
 }
 

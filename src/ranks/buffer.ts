@@ -172,6 +172,65 @@ export const DUO_BUFFER_PROFILES: Record<
 // team damage in the standard comp produce a misleadingly negative % increase.
 export const EXCLUDED_BUFFER_SLUGS = new Set(['blanc']);
 
+// Does this unit supply the TEAM's burst-cooldown reduction?
+//
+// The board fields exactly one CDR source per team, the way an optimal team
+// does (owner ruling 2026-08-03): the tested unit if it is an enabler, the
+// no-op B1 otherwise. This is what decides which.
+//
+// Ally-facing only. Self-only reduction does not make a unit the team's
+// enabler — the same line the burst-CDR board already draws ("self-only
+// cooldown reduction is a note column, never part of the ranked value"), and
+// the reason prika, tia and red-hood do not count despite carrying `burstCdr`.
+// The scan must reach ARBITRARY nesting: the four ladder enablers (liter,
+// volume, dolla, helm-aquamarine) bury theirs inside an `escalating` effect's
+// `steps`, so a shallow "block.effects has a burstCdr" check silently misses
+// the board's most important CDR unit.
+//
+// `burstSuppressed` drops burstCast-triggered blocks: a tested B3 does not
+// burst (see assemble), so CDR hung on its own cast cannot fire and cannot be
+// the team's source. No unit relies on that path today; the guard is here so
+// one arriving later does not quietly leave a team with no enabler at all.
+export function suppliesTeamCdr(
+  override: unknown,
+  burstSuppressed = false
+): boolean {
+  let found = false;
+  const hasCdr = (node: unknown): boolean => {
+    if (Array.isArray(node)) {
+      return node.some(hasCdr);
+    }
+    if (!node || typeof node !== 'object') {
+      return false;
+    }
+    if ((node as { kind?: string }).kind === 'burstCdr') {
+      return true;
+    }
+    return Object.values(node as Record<string, unknown>).some(hasCdr);
+  };
+  const visit = (node: unknown) => {
+    if (Array.isArray(node)) {
+      return node.forEach(visit);
+    }
+    if (!node || typeof node !== 'object') {
+      return;
+    }
+    const block = node as { trigger?: any; target?: any; effects?: unknown[] };
+    if (
+      block.target &&
+      block.target.kind !== 'self' &&
+      Array.isArray(block.effects) &&
+      !(burstSuppressed && block.trigger?.kind === 'burstCast') &&
+      hasCdr(block.effects)
+    ) {
+      found = true;
+    }
+    Object.values(node as Record<string, unknown>).forEach(visit);
+  };
+  visit(override);
+  return found;
+}
+
 // Walk every {target, effects} block in the override JSON (any nesting — skill
 // slots, modes, steps) and derive what the carries must provide for the unit's
 // ALLY-FACING typed buffs to apply. Returns the spec + an audit trail.
@@ -387,7 +446,10 @@ function carryDpsSum(
   pierceOverride: boolean,
   testedSlug?: string,
   profile?: string | null,
-  unitOptsMap: Record<string, UnitOptions> = {}
+  unitOptsMap: Record<string, UnitOptions> = {},
+  // The team fields exactly ONE burst-cooldown enabler. When the tested unit
+  // (or its duo partner) is that enabler, the no-op B1 stands down.
+  disableNoopCdr = false
 ): { sum: number; testedBurstCasts: number; fullBursts: number } {
   const chars = team.slugs.map((s) => charFor(ctx, s, team.chars as any));
   const element = (chars[team.carryIdxs[0]] as CharacterData)
@@ -425,6 +487,14 @@ function carryDpsSum(
   };
   const compProfile = profile ? COMP_PROFILES[profile] : undefined;
   const extraOverrides: Record<string, any> = {};
+  if (disableNoopCdr) {
+    extraOverrides[NOOP_B1] = {
+      slug: NOOP_B1,
+      skill1: [],
+      skill2: [],
+      burst: [],
+    };
+  }
   if (team.burstOffSlug) {
     const own = ctx.deps.overrides[team.burstOffSlug];
     extraOverrides[team.burstOffSlug] = { ...(own ?? {}), burst: [] };
@@ -497,6 +567,11 @@ export function bufferValueFor(
       ? DUO_BUFFER_PROFILES[slug]
       : undefined;
 
+  // Exactly one burst-cooldown enabler per team (owner ruling 2026-08-03).
+  // The tested unit takes that role when it can; otherwise the no-op B1 keeps
+  // it. The BASELINE always keeps the no-op's — the tested unit is not in it,
+  // so standing the control down there would field a team with no enabler at
+  // all and measure every CDR unit against a rotation nobody would run.
   const team = assemble(slug, burst, board, spec, duoProfile?.partner);
   const baselineTeam = assemble(null, burst, board, spec, duoProfile?.partner);
   const baselineKey = duoProfile
@@ -517,7 +592,10 @@ export function bufferValueFor(
       board === 'typed' && spec.pierce,
       undefined,
       activeProfile,
-      baselineOpts
+      baselineOpts,
+      duoProfile
+        ? suppliesTeamCdr(ctx.deps.overrides[duoProfile.partner])
+        : false
     );
     baseline = { sum: b.sum, fullBursts: b.fullBursts };
     baselineMemo.set(baselineKey, baseline);
@@ -527,6 +605,15 @@ export function bufferValueFor(
     testedOpts[slug] = { mode: duoProfile.mode ?? 'solo' };
     testedOpts[duoProfile.partner] = { mode: duoProfile.partnerMode ?? 'solo' };
   }
+  // A duo partner sits in BOTH teams, so an enabler partner stands the control
+  // down on both sides; a tested enabler only does so on its own side.
+  const partnerIsEnabler = duoProfile
+    ? suppliesTeamCdr(ctx.deps.overrides[duoProfile.partner])
+    : false;
+  const testedIsEnabler = suppliesTeamCdr(
+    ctx.deps.overrides[slug],
+    team.burstOffSlug === slug
+  );
   const run = carryDpsSum(
     team,
     ctx,
@@ -534,7 +621,8 @@ export function bufferValueFor(
     board === 'typed' && spec.pierce,
     slug,
     activeProfile,
-    testedOpts
+    testedOpts,
+    testedIsEnabler || partnerIsEnabler
   );
   return {
     slug,
