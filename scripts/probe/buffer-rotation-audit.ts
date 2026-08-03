@@ -77,6 +77,45 @@ const population = Object.entries(data.characters as any)
   .map(([slug]) => slug)
   .sort();
 
+// --noop-cdr: what the no-op B1's 7s team burst-cooldown reduction is worth.
+//
+// scripts/build-bufferchart.ts loads overrides for roster slugs only, and the
+// synthetic controls are not roster entries, so THIS BOARD HAS NEVER APPLIED
+// that CDR — `src/skills/overrides/noop-b1-ar.json` is simply never read. Its
+// siblings do load it (build-burstgen.ts:48, build-b1b2dps.ts:56, and
+// build-sustain.ts:46 for the B3), added 2026-07-27, the day after the buffer
+// board was written and never backported here. This mode reports each unit's
+// value as shipped versus with the control loaded, so the cost of closing that
+// gap is visible before anyone closes it.
+if (process.argv.includes('--noop-cdr')) {
+  const withCdr = { ...overrides, 'noop-b1-ar': loadOverride('noop-b1-ar') };
+  const ctxWith: RanksCtx = {
+    ...ctx,
+    deps: { ...deps, overrides: withCdr },
+  };
+  const hasOwnCdr = (slug: string): boolean =>
+    JSON.stringify(overrides[slug] ?? {}).includes('"burstCdr"');
+  process.stdout.write(
+    'the no-op B1 team CDR is NOT loaded by build-bufferchart.ts; ' +
+      'this is what loading it would cost\n\n' +
+      `${'unit'.padEnd(26)} ownCDR   ${'shipped'.padStart(8)}      ${'with 7s'.padStart(8)}       change\n`
+  );
+  for (const slug of population) {
+    const a = bufferValueFor(slug, 'generic', ctx, new Map(), null);
+    const b = bufferValueFor(slug, 'generic', ctxWith, new Map(), null);
+    if (Math.abs(a.valuePct - b.valuePct) < 0.05) {
+      continue;
+    }
+    process.stdout.write(
+      `${slug.padEnd(26)} ${hasOwnCdr(slug) ? 'yes' : ' - '}     ` +
+        `${a.valuePct.toFixed(2).padStart(7)}% (FB ${a.fullBursts}v${a.baselineFullBursts})  ` +
+        `${b.valuePct.toFixed(2).padStart(7)}% (FB ${b.fullBursts}v${b.baselineFullBursts})  ` +
+        `${(b.valuePct - a.valuePct >= 0 ? '+' : '') + (b.valuePct - a.valuePct).toFixed(2)}\n`
+    );
+  }
+  process.exit(0);
+}
+
 const rows = population.map((slug) => {
   const r = bufferValueFor(slug, 'generic', ctx, new Map(), null);
   const c = (data.characters as any)[slug];

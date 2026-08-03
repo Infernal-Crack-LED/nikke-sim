@@ -118,6 +118,33 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Engine / model threads (measurement- or owner-gated)
 
+- **⇒ BUFFER BOARD: the no-op B1's 7s team CDR is NOT LOADED on this board — owner decision, findings
+  only (2026-08-03).** `scripts/build-bufferchart.ts:51` loads overrides for roster slugs only, and
+  the synthetic controls are not roster entries, so `src/skills/overrides/noop-b1-ar.json` is never
+  read and the buffer board has **never** applied the 7s normalization its own methodology doc
+  claims. Every sibling board does load it — `build-burstgen.ts:48`, `build-b1b2dps.ts:56`,
+  `build-sustain.ts:46` (B3 only) — added in `c044fcbd` on 2026-07-27, the day AFTER the buffer board
+  was written (`91f53ea9`), and never backported. The B3 control's mock-burst override
+  (`noop-b3-mg`) is missing here for the same reason.
+  - **Measured cost of closing the gap** (`npx tsx scripts/probe/buffer-rotation-audit.ts
+--noop-cdr`): a large two-way re-rank, not a correction. Gains: `chime` +12.5, `grave` +10.9,
+    `mint` +8.5, `maxwell-ordinary-mechanic` +7.1, `crown` +6.6, `ade-agent-bunny` +6.5, `helm` +6.5.
+    Losses: `label` −12.2, `miranda` −9.8, `liter` −8.7, `exia` −8.2, `little-mermaid` −8.0,
+    `n102` −7.9, `moran` −7.8, `emma-tactical-upgrade` −7.6, `d-killer-wife` −7.4. `dorothy` goes to
+    exactly 0.00.
+  - **The owner's proposed rule — disable the no-op CDR when the tested unit already has CDR — does
+    not isolate what it is aiming at.** All 13 units carrying their own `burstCdr` do lose value when
+    the control CDR is added (liter −8.7, little-mermaid −8.0, moran −7.8, dorothy −6.5; only `prika`
+    gains, +3.2), which is the redundancy the rule targets. But the cause is the BASELINE speeding up
+    (a B1 baseline goes 8 → 11 Full Bursts), and that hits units with NO CDR just as hard — `label`
+    −12.2 and `miranda` −9.8 are the two largest losses on the board. Conditioning on the tested
+    unit's kit therefore treats a symptom that is not specific to it.
+  - DECIDE between three coherent end states: (a) leave the control CDR off on this board and correct
+    `docs/data/rank-boards.md`, which claims it is on — nothing else moves; (b) load the controls to
+    match the sibling boards and apply the conditional disable, which moves only the non-CDR units
+    versus today; (c) load them unconditionally, matching the documented methodology, and accept the
+    full two-way re-rank above. Also fold in `noop-b3-mg` either way.
+
 - **⇒ BUFFER BOARD: long burst cooldowns are handled three different ways — one owner decision,
   findings only (2026-08-03).** The board inserts the tested unit against a no-op filler that bursts
   every 20s (`NOOP_B2`, `src/dpschart/noop.ts:130`), so a longer-cooldown unit holds up the team's
