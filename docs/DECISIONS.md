@@ -9,6 +9,47 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-03) `trina` S1 fullBurstEnd HoT recovery cadence ENACTED (5-tick heal stream);
+  Full-Charge threshold heals stay unmodeled.** Her 2026-07-24 kit-autonomy gauntlet had flagged the
+  fix conditionally ("if a recovery-event primitive lands, the fullBurstEnd 4.06%/s×5s HoT becomes a
+  recovery emitter" — `scripts/kit-autonomy/manual-review/trina.md`); the `heal`/recovery-emitter
+  primitive landed for `prika`'s own burst HoT (2026-07-25 gauntlet fix, `heal ticks:25
+intervalSec:1`). This pass applies the same shape to `trina`: `skill1` now carries `fullBurstEnd` →
+  `allies` → `heal ticks:5 intervalSec:1`. Structural/magnitude-free (both cadence numbers — "every 1
+  sec for 5 sec" — are printed verbatim in kit prose; nothing about the cadence is measurable, only
+  the HP amount is, and the engine's heal effect carries none), so no scientific-method pipeline
+  applies (kit-completeness fix on an already-gauntlet-certified unit, not a new empirical claim on
+  the damage model — the heal itself deals zero damage and sets no buff on Trina). Regression-neutral:
+  neither of Trina's two snapshot comps (`elec battery`, `N3`) fields an on-recovery consumer
+  (Crown-type), so board impact today is zero; pinned end-to-end on a dedicated
+  liter/trina/crown/ada fixture in `scripts/tests/units/trina.test.ts` (T1b) proving the stream keeps
+  Crown's "when recovery takes effect" consumer refreshed across the 5s window, discriminated against
+  a collapsed `ticks:1` counterfactual and the heal removed entirely. The two Full-Charge
+  threshold heals (2.03%/1.57%, gated on ally HP%<30/<50) remain wholly unmodeled — v1 has no HP pool
+  to evaluate the gate. — `src/skills/overrides/trina.json`, `scripts/tests/units/trina.test.ts`
+
+- **(2026-08-03) Mode-default owner ruling: `cinderella-crystal-wave` MG, `mint` solo — both already
+  the shipped default, no code change; `mint`'s Singing/Dancing `resourceGate` is a SEPARATE,
+  still-unbuilt mechanism from the already-landed `mint`/`prika` duet burst-order fix.** Closes the
+  "modes owner-review" item from `docs/handoffs/closed/kit-parse-reconciliation-backlog.md`.
+  `cinderella-crystal-wave`'s `modes` array is `["MG", "Snipe"]` and `mint`'s is `["solo", "duet (w/
+Prika)"]` — the engine's mode-selection (`sim.ts` `selectedMode = prepared?.[idx]?.mode ??
+skills.modes?.[0]`) already defaults to array-index 0 in both cases, and no graded comp
+  (`scripts/regression.ts`/`scripts/experiment.ts`) overrides either default, so this ruling
+  CONFIRMS the shipped behavior rather than changing it; `cinderella-crystal-wave`'s override note
+  already documented the MG rationale ("matches the user's validated real solo-raid sample at core
+  100%"), `mint`'s note now states the ruling explicitly too. Separately investigated the owner's
+  hypothesis that `mint`'s dynamic Singing/Dancing `resourceGate` (spec'd but not built — see her
+  override note's residual (1)) might already be solved by the landed `mint`/`prika` duet
+  burst-order mechanism (`burstFirst` + `burstCdr -9999`, owner-confirmed 2026-07-23) — checked
+  directly against both code paths, not by measurement: the duet mechanism answers "who wins the B2
+  cast in a two-B2 team," a different question from "is mint in Singing or Dancing status on a given
+  SOLO cast" (in duet mode she is forced into permanent Singing by prika's kit, so the toggle
+  question doesn't even arise there) — the hypothesis does not hold. The dynamic
+  `resourceGate` remains unbuilt, stays an owner decision (board-moving on her graded 1.015 comp),
+  and needs a confirming recording on the even/odd cast-parity assumption before it can land. —
+  `src/skills/overrides/mint.json`, `docs/handoffs/closed/kit-parse-reconciliation-backlog.md`
+
 - **(2026-08-03) TYPED BUFFER BOARD: FLAVOR-GATED ALLY BUFFS NEED A CARRY THAT CAN ACTUALLY DEAL
   THAT FLAVOR — `hasTrueNormals` PRIMITIVE (True Damage), MOCK_TICK RIDER (Distributed/Sustained
   Damage), OWNER-PICKED OPTION 3.** Flora's burst grants allies "True Damage ▲ 42.39% for 10s"

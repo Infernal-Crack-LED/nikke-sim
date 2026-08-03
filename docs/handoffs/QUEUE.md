@@ -306,11 +306,9 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     her "mono-Electric comp only").
   - **Theme 5 `prika` `gainPierce` hold** — held on an owner popup measurement (probe-runs 2026-07-14
     inconclusive); the other 8 carriers are enacted.
-  - **Theme 14 `drake` `maxAmmoFlat`** — still approximated as a percent (no flat-count kit line to
-    convert against, unlike the other 7 now-flat carriers).
-  - **Theme 17 mode-default owner rulings** — cinderella-crystal-wave (MG/Snipe), the mint/prika duet
-    pair, and milk-blooming-bunny's no-Embarrassment default all still need an owner ruling on which
-    mode is the graded default.
+  - **Theme 17 mode-default owner ruling — `milk-blooming-bunny`'s no-Embarrassment default** — still
+    needs an owner ruling on which mode is graded-default (`cinderella-crystal-wave` and the
+    `mint`/`prika` duet pair were resolved 2026-08-03, see DECISIONS.md).
   - **Theme 20 `gauge-per-shot.json` `fullChargeBonus` vs `characters.json.chargeMultiplier`
     disagreement** — 6/44 SR/RL gauge rows are synthesized, 4 units have a value with no gauge row at
     all, `raven` has a live one-field disagreement; suggested fix (source from `characters.json`,

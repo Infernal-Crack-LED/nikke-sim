@@ -7,10 +7,14 @@
 // discriminate against) — never the encoding under test.
 //
 // Kit (data/characters.json → characters.trina.skills, levels 10/10/10):
-//   S1 (Nature's Grace — all HEALS, no HP pool in v1 → UNMODELED, inert):
-//      ■ after Full Burst ends → all allies: recover 4.06% of caster final Max HP / 1s for 5s        [T1]
-//      ■ Full Charge, if 2 lowest-HP% allies < 30% → target(s): recover 2.03% caster final Max HP     [T1]
-//      ■ Full Charge, if 2 lowest-HP% allies < 50% → target(s): recover 1.57% caster final Max HP     [T1]
+//   S1 (Nature's Grace — all HEALS, no HP pool in v1):
+//      ■ after Full Burst ends → all allies: recover 4.06% of caster final Max HP / 1s for 5s        [T1 —
+//        recovery CADENCE modeled (heal ticks:5 intervalSec:1); HP MAGNITUDE stays unmodeled, landed
+//        2026-08-03 once the recovery-emitter primitive existed (prika's P7 precedent)]
+//      ■ Full Charge, if 2 lowest-HP% allies < 30% → target(s): recover 2.03% caster final Max HP     [T1 —
+//        UNMODELED, gate unevaluable (no HP pool)]
+//      ■ Full Charge, if 2 lowest-HP% allies < 50% → target(s): recover 1.57% caster final Max HP     [T1 —
+//        UNMODELED, gate unevaluable (no HP pool)]
 //   S2 (Peaceful Tree):
 //      ■ start of battle, only if self alive → all Electric AR allies: Max HP ▲44.98% of caster Max HP
 //        without restoring HP, constantly (passive/constant)                                          [T2]
@@ -30,12 +34,22 @@
 //      ■ all Electric AR allies: Max Ammunition Capacity ▲20 round(s) for 10s                         [T8]
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest-wrong gates nothing):
-//   T1  skill1 is THREE heal lines. v1 has NO HP pool (immortal boss, nobody takes damage), so healing
-//       is unmodelable and the slot is a sanctioned UNMODELED skip (recorded verbatim). PIN the absence:
-//       trina emits ZERO skill1-keyed buff events and ZERO skill1-sourced damage. Nearest-wrong: a driver
-//       that FABRICATES a heal-as-buff encoding (e.g. a fake passive skill1 buff) — the counterfactual
-//       adds one and proves the harness CAN emit skill1 events, so the empty slot is a deliberate skip,
-//       not a harness blind spot. GREEN vs shipped (0 skill1 events), RED vs the fabricated-skill1 cf.
+//   T1  skill1 is THREE heal lines. v1 has NO HP pool (immortal boss, nobody takes damage), so heal
+//       MAGNITUDE is unmodelable — but the fullBurstEnd HoT's recovery CADENCE (every 1s for 5s = 5
+//       ticks, printed verbatim in kit prose, nothing about it measurable) IS modeled as
+//       heal{ticks:5,intervalSec:1}, precedent-matched to prika's P7 (landed 2026-07-25, same shape).
+//       A `heal` effect emits no buffApply of its own (no HP amount to log) — its only observable
+//       trace is a downstream on-recovery consumer, so the cadence is pinned on a SEPARATE fixture
+//       (liter/trina/crown/ada, trina LEFT of crown) via crown's "when recovery takes effect → team
+//       Attack Damage ▲20.99%" block. Nearest-wrong: ticks:1 (a single instant tick, starving the
+//       consumer after the first firing) and the heal removed entirely (crown falls back to her own
+//       self-heal-cadence baseline). The two Full-Charge threshold heals stay wholly UNMODELED (the
+//       ally-HP%<30/<50 gate is unevaluable — every ally is pinned at 100% HP in v1); PIN the absence:
+//       trina emits ZERO skill1-keyed TRINA buffApply events (a heal carries no buff of its own) and
+//       ZERO skill1-sourced damage. Nearest-wrong: a driver that FABRICATES a heal-as-buff encoding
+//       (e.g. a fake passive skill1 buff) — the counterfactual adds one and proves the harness CAN
+//       emit skill1-keyed buffApply events, so the zero is a deliberate (partial) skip, not a harness
+//       blind spot. GREEN vs shipped (0 skill1 buffApply events), RED vs the fabricated-skill1 cf.
 //   T2  "Max HP ▲44.98% of the skill USER'S Max HP … constantly" = casterMaxHpPct 44.98 (a flat add of
 //       44.98% of TRINA's Max HP, resolved to maxHpFlat ≈1.35M at apply), passive trigger (frame 0),
 //       NO duration (always-on "constantly"), targeting all Electric AR allies (count 99). The engine
@@ -96,6 +110,11 @@
 // count:99 ("all") lines land on [0,3]; liter (slot 1) and helm (slot 4) are NOT Electric AR, so the
 // "all allies" burst line reaches all 5 slots [0,1,2,3,4] but the Electric-AR-scoped lines reach only [0,3].
 // Boss Fire, focus Trina. Deterministic (no seed). Slot order: moran 0 / liter 1 / trina 2 / scarlet 3 / helm 4.
+//
+// HEAL fixture (T1's recovery-cadence sub-group only): liter (B1) / trina (B2) / crown (B2) / ada (B3),
+// boss Fire, focus ada — trina is slot 1, LEFT of crown (slot 2), so leftmost burst-priority lets trina
+// win the B2 cast every rotation (mirrors prika's P7 fixture) and crown stays in as the on-recovery
+// consumer. Trina's own MAIN fixture has no recovery consumer, so this cadence can only be observed here.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
 import { runComp, unitOf, withPatchedOverride } from '../lib/harness.js';
@@ -158,6 +177,26 @@ const fbStarts = (evs: SimEvent[]) =>
 const castFrames = (evs: SimEvent[]) => trinaBursts(evs).map((e) => e.frame);
 /** Full-Burst-window opening frames (after the B3 step — strictly AFTER Trina's cast frame). */
 const fbStartFrames = (evs: SimEvent[]) => fbStarts(evs).map((e) => e.frame);
+
+// ---- T1 HEAL fixture (liter/trina/crown/ada — trina LEFT of crown so she wins the B2 cast) ---
+const HEAL_COMP = ['liter', 'trina', 'crown', 'ada'];
+const CROWN = 2;
+function runHeal(overrides: Record<string, any> = {}) {
+  const events: SimEvent[] = [];
+  const res = runComp({
+    slugs: HEAL_COMP,
+    bossElement: 'Fire',
+    focusSlug: 'ada',
+    overrides,
+    cfg: { onEvent: (e) => events.push(e) },
+  });
+  return { events, res };
+}
+const healTrinaBursts = (evs: SimEvent[]) =>
+  evs.filter(
+    (e): e is Extract<SimEvent, { kind: 'burstCast' }> =>
+      e.kind === 'burstCast' && e.slug === 'trina'
+  );
 
 // ---- counterfactual patches (nearest-wrong readings) -----------------------------------------
 // T1 nearest-wrong: FABRICATE a skill1 heal-as-buff encoding (proves the empty slot is a deliberate
@@ -283,6 +322,36 @@ const cfMaxAmmoScopeAllies = withPatchedOverride('trina', (ov: any) => {
   }
   b.target = { kind: 'allies' };
 });
+// T1 nearest-wrong: the heal stream collapsed to a single instant tick (ticks:1) — fires one
+// recovery event per Full-Burst-end instead of 5, so an on-recovery consumer lapses after the first.
+const healOnce = withPatchedOverride('trina', (ov: any) => {
+  let hit = 0;
+  for (const b of ov.skill1) {
+    for (const e of b.effects) {
+      if (e.kind === 'heal') {
+        e.ticks = 1;
+        hit++;
+      }
+    }
+  }
+  if (!hit) {
+    throw new Error('trina skill1 heal block missing — fixture is stale');
+  }
+});
+/** Reference: the heal removed entirely (no recovery events from Trina). */
+const healRemoved = withPatchedOverride('trina', (ov: any) => {
+  let hit = 0;
+  for (const b of ov.skill1) {
+    const before = b.effects.length;
+    b.effects = b.effects.filter((e: any) => e.kind !== 'heal');
+    if (b.effects.length !== before) {
+      hit++;
+    }
+  }
+  if (!hit) {
+    throw new Error('trina skill1 heal block missing — fixture is stale');
+  }
+});
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run();
@@ -297,6 +366,9 @@ const burstFbEnter = run({ trina: cfBurstFbEnter });
 const burstScopeElecAR = run({ trina: cfBurstScopeElecAR });
 const maxAmmoPct = run({ trina: cfMaxAmmoPct });
 const maxAmmoScopeAllies = run({ trina: cfMaxAmmoScopeAllies });
+const healBase = runHeal();
+const healOnceRun = runHeal({ trina: healOnce });
+const healNoneRun = runHeal({ trina: healRemoved });
 
 const casts = trinaBursts(base.events).length; // trina's burst casts (13)
 const fbs = fbStarts(base.events).length; // team Full Bursts (12)
@@ -341,6 +413,73 @@ describe('trina — kit spec', () => {
         buffs(fabricateSkill1.events).filter((b) => b.key.includes(':skill1:'))
           .length
       ).toBeGreaterThan(0);
+    });
+  });
+
+  describe('T1b — S1 fullBurstEnd HoT is a 5-tick recovery STREAM (heal ticks:5 / 1s), driving on-recovery consumers', () => {
+    // Crown's "when recovery takes effect → team Attack Damage ▲20.99%" is the observable: one firing
+    // per recovery event that reaches her. Distinct frames per Trina FB-end window = recovery cadence.
+    const crownRecoveryFrames = (evs: SimEvent[]): number[] =>
+      [
+        ...new Set(
+          evs
+            .filter(
+              (e): e is BuffApply =>
+                e.kind === 'buffApply' &&
+                e.casterIdx === CROWN &&
+                e.stat === 'attackDamagePct' &&
+                Math.abs(e.value - 20.99) < 0.01
+            )
+            .map((b) => b.frame)
+        ),
+      ].sort((a, b) => a - b);
+    const fbEndFrames = (evs: SimEvent[]): number[] =>
+      evs.filter((e) => e.kind === 'fullBurstEnd').map((e) => e.frame);
+
+    /** Distinct crown-recovery frames falling in the 5s window after each team Full-Burst end. */
+    const perWindowFrames = (evs: SimEvent[]): number[] => {
+      const frames = crownRecoveryFrames(evs);
+      const ends = fbEndFrames(evs);
+      const out: number[] = [];
+      for (const end of ends) {
+        out.push(frames.filter((f) => f >= end && f <= end + 5 * FPS).length);
+      }
+      return out;
+    };
+
+    it("non-vacuity: trina wins the B2 cast (left of crown), the team reaches Full Burst, and Nature's Grace actually fires", () => {
+      expect(
+        healTrinaBursts(healBase.events).length,
+        'trina (slot 1, left of crown) must win the B2 cast'
+      ).toBeGreaterThan(0);
+      expect(fbEndFrames(healBase.events).length).toBeGreaterThan(0);
+    });
+
+    it("keeps crown's recovery consumer firing across the whole 5s after each Full Burst end (~5 ticks)", () => {
+      const windows = perWindowFrames(healBase.events);
+      expect(windows.length).toBeGreaterThan(0);
+      for (const n of windows) {
+        expect(
+          n,
+          `${n} recovery frames in a 5s window — a 5-tick stream lands ~5, a single instant lands 1`
+        ).toBeGreaterThanOrEqual(4);
+      }
+    });
+
+    it('DISCRIMINATING: collapsing to ticks:1 starves the consumer (one firing per window, then lapse)', () => {
+      const shipped = perWindowFrames(healBase.events);
+      const once = perWindowFrames(healOnceRun.events);
+      const sum = (a: number[]) => a.reduce((s, x) => s + x, 0);
+      expect(
+        sum(once),
+        'ticks:1 must produce far fewer recovery firings than the 5-tick stream'
+      ).toBeLessThan(sum(shipped) / 2);
+    });
+
+    it('is live: removing the heal drops crown to its self-proc baseline (strictly fewer firings)', () => {
+      expect(crownRecoveryFrames(healNoneRun.events).length).toBeLessThan(
+        crownRecoveryFrames(healBase.events).length
+      );
     });
   });
 
