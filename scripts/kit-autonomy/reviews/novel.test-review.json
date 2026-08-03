@@ -1,0 +1,90 @@
+{
+  "slug": "novel",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 52.36% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "Skill proc damage (flatDamage), not normal-attack-scoped; no crit/charge scoping stated.",
+      "durationSemantics": "Instant hit per activation; no duration.",
+      "triggerIdentity": "NO activation clause on the ■ header → interval trigger per convention (first fire at t=CD, not t=0). The interval seconds are NOT in the prose — ALWAYS-⚑ cadence, must come from datamined skillCooldownsSec or be flagged.",
+      "targetSet": "'3 enemy unit(s) with highest final DEF' — the scope-lock boss is a SINGLE partless enemy, so exactly ONE hit lands per activation.",
+      "nearestWrongModel": "Multiplying the hit ×3 for the 3-target clause (52.36×3 per proc), and/or first-firing at t=0 instead of t=CD.",
+      "distinguishingAssertion": "Filter damage events by srcSlot skill1: exactly ONE event per activation with mult≈52.36 (never 3 per activation); first such event occurs at t≈CD, none at t=0. Rider takes FB +50% by landing timing (default ON — assert fbMajorApplied true when it lands inside a FB window).",
+      "inertness": "Proc count must not scale with team composition or FB count; removing the effect moves ONLY novel's own total.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▼ 7.05% for 5 sec.",
+      "disposition": "GAP",
+      "scope": "Enemy (boss) DEF reduction — raises the WHOLE TEAM's damage through the boss-DEF term of the formula; not a self/ally stat.",
+      "durationSemantics": "5 wall-clock seconds per application (durationSec 5); uptime is duty-cycled by the skill1 interval — if interval > 5s the debuff has downtime windows.",
+      "triggerIdentity": "Same interval activation as the damage line (one block, two effects).",
+      "targetSet": "Boss debuff — buffApply with casterIdx===null AND targetIdx===null.",
+      "nearestWrongModel": "Two plausible misreads: (a) encoding it as self defPct (inert self stat — silently drops a team-wide damage lift); (b) fudging it into damageTakenPct or a team attackDamagePct because the schema has no enemy-DEF primitive. There is no enemy-DEF StatKey in the effect schema, so this line is likely an engine GAP — the honest encodings are a documented-inert boss-held defPct record or an unmodeled entry, NEVER a converted damage buff.",
+      "distinguishingAssertion": "Assert a boss-held buffApply (casterIdx===null, targetIdx===null) with value 7.05 and expiresFrame ≈ applyFrame+300, re-applied each skill1 activation. Assert it is NOT emitted under stat damageTakenPct and NOT targeted at self (targetIdx must not resolve to novel).",
+      "inertness": "If the engine has no boss-DEF path, the line must move ZERO damage (documented, not silently converted); if a boss-DEF path exists, it must move ALL FIVE units' totals slightly, not only novel's.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after landing 100 normal attack",
+      "disposition": "FAITHFUL",
+      "scope": "Counts the owner's NORMAL-attack hits only — burst/skill proc hits must not advance the counter.",
+      "durationSemantics": "Stack buff: DEF▲13.5% per stack, maxStacks 5, durationSec 15 with REFRESH on each re-apply (standard same-caster-slot overwrite/refresh). SMG cadence check: ~20 rounds/s effective, 120-round magazine + 81f reload → ~100 hits every ~6s, well inside the 15s window, so stacks climb 1→5 by roughly t≈30s and then STAY pinned at 5. NOT 'for 5 rounds' — 15 sec is wall-clock.",
+      "triggerIdentity": "hitCount count:100 (counts ROUNDS; SMG hitsPerShot 1 so rounds==pulls).",
+      "targetSet": "Self only.",
+      "nearestWrongModel": "Skipping the line as 'defensive, no damage' (self defPct is inert in v1) — which silently KILLS the burst's 67.5% Damage-Taken rider, because Cornucopia max-stacks is that rider's gate. Second misread: per-stack independent expiry (no refresh), so 5 stacks are never simultaneously live and the burst gate never opens.",
+      "distinguishingAssertion": "Assert buffApply events stat defPct value 13.5, targetSlug novel, with stacks incrementing 1,2,3,4,5 across successive applies, the Nth apply occurring after ≈100×N cumulative novel shot events; assert refresh:true / advancing expiresFrame on re-applies at max stacks so the stack pile persists past t=45s.",
+      "inertness": "The defPct value itself must move ZERO damage for any unit (patch 13.5→0 with the stack COUNT intact: all totals unchanged). Only the stack-count state is load-bearing, via the burst gate.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 330.61% of final ATK as Burst Skill",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-skill damage bucket (crit-eligible at sheet rate, no core unless stated — not stated).",
+      "durationSemantics": "Instant single hit per own burst cast.",
+      "triggerIdentity": "burstCast (novel's OWN casts only). Novel is Burst II with 20s CD — in any comp with ANOTHER B2 (the control fixture's crown IS one), she casts only on rotations SHE wins the B2 slot, so burstCast vs fullBurstEnter genuinely diverge here.",
+      "targetSet": "1 highest-final-ATK enemy — single boss, trivially the boss.",
+      "nearestWrongModel": "Keying to fullBurstEnter (fires on EVERY team FB including rotations crown bursts — over-credits), and/or letting the hit take the +50% Full-Burst major (burst-cast damage lands BEFORE the FB window opens; always FB-exempt).",
+      "distinguishingAssertion": "Count novel's burstCast events; assert exactly one damage event mult≈330.61 per novel burstCast (zero on rotations another B2 casts), each with fbMajorApplied===false / inFullBurst===false.",
+      "inertness": "Hit count must equal novel's own burst-cast count, never the team FB count.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Activates when Cornucopia is at max stacks",
+      "disposition": "FAITHFUL",
+      "scope": "Boss debuff benefiting the ENTIRE team (taxonomy: 'Damage Taken ▲' is never a self buff) — damageTakenPct 67.5 on the boss.",
+      "durationSemantics": "5 wall-clock seconds per proc. With bursts ≥20s apart that is ~25% uptime per contributing rotation — NOT permanent, NOT the 10s FB window.",
+      "triggerIdentity": "Rider inside novel's own burst block → burstCast trigger GATED on Cornucopia stacks === 5 (max) at cast time. Given the ~30s ramp to 5 stacks, the FIRST burst of the fight must NOT proc it; steady-state later bursts do.",
+      "targetSet": "Enemy (boss) — buffApply with casterIdx===null and targetIdx===null; benefits all five units' damage while live.",
+      "nearestWrongModel": "Ungated — firing the 67.5% Damage-Taken on EVERY burst cast (over-credits the opening rotation before 5 stacks exist), or keying it to fullBurstEnter (procs even on rotations another B2 bursts), or hanging it off 'Cornucopia reaches max' as a standalone state trigger firing at t≈30s independent of bursting.",
+      "distinguishingAssertion": "Assert NO buffApply stat damageTakenPct value 67.5 exists at/near novel's FIRST burst cast (stacks < 5 at that frame), and one boss-held (casterIdx===null) damageTakenPct 67.5 apply with expiresFrame ≈ castFrame+300 on each LATER novel burst cast where the Cornucopia stack state is 5. Assert every unit's damage events inside the 5s window carry the lifted bucket vs an identical shot outside it.",
+      "inertness": "Zero procs on rotations novel does not cast; zero procs while stacks < 5; the debuff must expire (no damage lift at castFrame+6s).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:52.36% interval damage",
+    "skill1:DEF ▼ 7.05% boss debuff (5s)",
+    "skill2:Cornucopia hitCount(100) stack tracker",
+    "burst:330.61% burst-cast hit",
+    "burst:Damage Taken ▲ 67.5% @ max-stacks gate"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in likely order: (1) THE TRAP IS SKILL2 — self DEF▲ pattern-matches to 'defensive, skip/unmodeled', but Cornucopia's stack COUNT is the gate for the kit's biggest line (burst Damage Taken ▲ 67.5%); a driver who drops skill2 or models it without live stack state silently zeroes the rider forever. The test suite MUST include the ramp assertion (first burst: no rider; a post-ramp burst: rider present) — a suite that only checks steady-state can go green under an ungated model. (2) Burst rider gate identity: 'Activates when Cornucopia is at max stacks' inside the burst block is a cast-time stack gate on burstCast, not a standalone state trigger and not fullBurstEnter; the control fixture contains crown (another B2), so burstCast-vs-fullBurstEnter divergence is directly observable — keep crown in the fixture rather than swapping her out, precisely because the divergence is the assertion. (3) skill1's '3 enemy units' must not become a ×3 damage multiplier against the single partless boss. (4) skill1 has no activation clause → interval trigger with the interval seconds OUTSIDE the prose (ALWAYS-⚑ cadence: take from datamined skillCooldownsSec, first fire t=CD, else flag ⚑ with recipe — never invent silently; the DEF▼ uptime duty-cycle depends on this same interval, so the ⚑ propagates to two effects). (5) skill1's enemy DEF ▼ has NO StatKey in the effect schema (defPct is documented self-inert) — the driver must either use a real boss-DEF primitive if one exists in the engine, or record it as documented-inert/unmodeled; converting it to damageTakenPct/attackDamagePct to 'capture the value' is a fudge and the tests must assert it is NOT emitted under those stats. (6) The 330.61% burst hit is FB-exempt by cast timing (no +50%, no entry auras). Reconcile: driver dispositions that mark skill2 or the DEF▼ line non-load-bearing are objectively wrong under this spec — skill2 bears load through the gate, DEF▼ through the boss-DEF term (or must be an explicit documented gap).",
+  "model": "claude-fable-5"
+}

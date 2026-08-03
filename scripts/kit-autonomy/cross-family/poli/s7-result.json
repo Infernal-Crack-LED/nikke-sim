@@ -1,0 +1,109 @@
+{
+  "slug": "poli",
+  "kitDescription": "Poli (Treasure) is a Water shotgun Defender whose kit is almost entirely team protection, with two offensive auras. Every 5 shots she raises all allies' ATK by 5.46% for 10 seconds, which in practice stays up nearly permanently, and at battle start she gains the Police Badge, a self-shield equal to her full Max HP for 10 seconds. Every 20 seconds she raises the DEF of herself and the two most wounded allies by 23.51% for 10 seconds and shares incoming damage with them, and when the Badge ends she heals herself over 5 seconds. Her burst grants the whole team ATK +44.55% for 10 seconds and a shared shield equal to 40% of her Max HP for 10 seconds; if the Badge is still up when she bursts she instead gains Indomitability and consumes the Badge. In a damage sim without incoming boss damage, only the two ATK buffs and her burst-gauge generation move the board.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "F1 fixture non-vacuity (expects 5-unit comp; controlComp is 4 units) — BLIND-FIXTURE BUG, not a driver divergence",
+      "F2 'reaches ALL FIVE allies' (5-vs-4 comp-size assumption; buff reaches all 4 real units) — BLIND-FIXTURE BUG",
+      "F3 'targets the lowest-HP ally set' (expects one alliesLowestHp count-3 block; driver ships self block + alliesLowestHp count-2 excludeSelf, which alone guarantees self per the prose 'self AND 2 other') — ENCODING-SHAPE divergence, damage-inert (defPct), driver semantically closer to prose",
+      "F4 'badge-end heal must be encoded (5 ticks)' — driver records it UNMODELED + ⚑1 (no shield-expiry trigger primitive; S5's own file skips trigger identity as a GAP; S6's flag offers the identical resolution); UNMODELED upheld as DOCUMENTED_GAP",
+      "F5 'emits the 44.55 buff to ALL FIVE allies' — blind fixture fields crown (B2, 20s CD) who takes all 10 stage-II casts, poli casts 0 bursts; assertion vacuous — BLIND-FIXTURE BUG (the exact hazard S2b pre-warned; the driver's fixture fields poli as sole B2)",
+      "F6 'burst-cast keyed before FB' — same root cause as F5 — BLIND-FIXTURE BUG"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "After 5 normal attacks: ATK ▲ 5.46% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:50 → allies → atkPct 5.46/10s; 5 normal attacks on an SG = 5 trigger pulls = 50 engine hits (counter advances by hitsPerShot 10/pull; guilty hitCount:60 SG precedent)",
+        "blindSaid": "S6 shipped hitCount:5 (pellet-count misread) but its own caveat said the code check resolves it; S5's pellet-vs-pull discriminating test passes against the driver",
+        "formulaCheck": "atkPct is the correct generic-ATK bucket entry (sums inside the (1+ΣATK%) term); target all-allies-including-self and 10s refresh semantics match prose; engine sim.ts ~3607 confirms counter += hitsPerShot per pull, so count 50 = 5 pulls",
+        "fireRateOk": true,
+        "explanation": "At SG 1.5 pulls/s the line procs every ~3.3s against a 10s window — ~100% uptime after shot 5, matching the prose cadence. Driver's test pins the kth proc to the 5k-th shot and is RED under the pellet-count counterfactual in both directions. S6's count-5 is a blind RECON_ERROR resolved by engine code, not a driver finding."
+      },
+      {
+        "kitLine": "Start of battle: Shield 100% Max HP 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive → self → shield{maxHpPct:100, durationSec:10}; event-only (no HP pool), fires poli's shielded triggers and her requiresShielded window from frame 0; badge's in-kit roles (burst gate, heal anchor) noted as unmodeled",
+        "blindSaid": "S5 structural assertion (self / 100 / 10s / passive) passes; S6 converged on identical encoding",
+        "formulaCheck": "shield is event-only in v1 (sim.ts ~2380-2420); damage-neutral — driver's probe test and a totals-equality arm both confirm zero damage movement, and deleting the badge silences exactly the frame-0 probe",
+        "fireRateOk": true,
+        "explanation": "One-shot at frame 0 as prose requires; encoding discriminated against 40-vs-100, allies-vs-self, and silent-drop misreads. The Police Badge as a named STATUS is not modeled, but both of its consumers are documented gaps, so nothing load-bearing is lost."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Every 20s: DEF ▲ 23.51% 10s, self+2 lowHP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "two interval:20 blocks — self + alliesLowestHp count:2 excludeSelf — defPct 23.51/10s; inert in v1, kept for kit completeness; lowest-HP = deterministic leftmost stand-in (no HP pool)",
+        "blindSaid": "S6 shipped a single alliesLowestHp count:3 (leftmost-3 stand-in does not guarantee self); S5 F3 failed on the block SHAPE, not on any behavioral divergence; S2b's own wording ('alliesLowestHp stand-in + self') matches the driver",
+        "formulaCheck": "defPct is damage-inert in v1 (verified: driver's NO-S2 run is totals-identical byte-for-byte); interval first-fires at t=20 per the engine convention (the only ⚑, a phase convention, documented); 9 activations/180s at strict 20s cadence confirmed on the buffApply log",
+        "fireRateOk": true,
+        "explanation": "Prose says 'self AND 2 other allies' — only the driver's split encoding guarantees self inclusion; damage-identical either way today, but the driver's is the correct target set the day DEF gains a consumer. FAITHFUL with the targeting stand-in and the first-fire phase documented."
+      },
+      {
+        "kitLine": "Equally shares damage taken 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED, recorded verbatim in unmodeled.skill2 — no damage-redistribution primitive; defensive (v1 boss deals no damage)",
+        "blindSaid": "S2b disposition UNMODELED (loadBearing:false); S6 converged; S5 asserts presence in unmodeled rather than encoding — passes",
+        "formulaCheck": "correctly NOT encoded as damageTakenPct — that stat is a boss debuff and would wrongly buff team damage; no damageTakenPct events sourced from poli anywhere",
+        "fireRateOk": true,
+        "explanation": "Deliberate, recorded, formula-safe gap. No silent drop."
+      },
+      {
+        "kitLine": "When Police Badge ends: heal 5%/s x5",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED ⚑1 — no own-shield-expiry trigger primitive; heal amount inert (no HP pool); recovery events second-order (could feed a Crown-type on-recovery consumer in a poli+crown comp); recipe: engine shield-expired trigger primitive, size only if a poli+crown recording shows it",
+        "blindSaid": "S6 encoded interval:10 + heal ticks:5 but flagged it re-fires ~90 spurious recovery events over 180s and itself offered the driver's UNMODELED resolution as 'the simplest correct move'; S5's own file skips trigger identity as a GAP (F4 asserts payload presence only); S2b disposition GAP, loadBearing:false",
+        "formulaCheck": "self-targeted heal fires only the recipient's own recovery triggers (sim.ts ~2665-2678) — poli has none — so it is damage-inert in EVERY comp; the S2b tandem-landmine (ally-scoped heal feeding crown) is structurally avoided by dropping the block",
+        "fireRateOk": true,
+        "explanation": "Three independent agents converge on the same resolution (two explicitly, one by offering it). The gap is primitive-missing, documented with an estimate + recipe + tier — a textbook DOCUMENTED_GAP, not a fudge."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "In Police Badge: Indomitability 5s, rm",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED (blanc Indomitability precedent; no self-status gate); gate structurally unsatisfiable at scope lock — badge expires t=10s, first burst cannot cast before her 40s CD",
+        "blindSaid": "S2b disposition UNMODELED; S6 converged; S5 accepts gated-or-recorded — recorded",
+        "formulaCheck": "critical negative check PASSES: the badge gate did NOT bleed onto the 44.55% team ATK block — the driver's 2nd+ burst casts (badge long gone) still emit the aura (fixture: sole-B2 poli, 3-5 casts/180s, aura frame-exact on every cast). This was the kit's named trap and the driver avoided it",
+        "fireRateOk": true,
+        "explanation": "Defensive payload with no primitive, and the gate is unreachable at scope lock anyway — the structurally unsatisfiable observation is a whole-picture catch (badge t=10 vs 40s CD arithmetic) that independently justifies the skip."
+      },
+      {
+        "kitLine": "Shared Shield 40% Max HP, allies, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → shield{maxHpPct:40, durationSec:10}; event-only; fires every ally's shielded trigger per cast (tia precedent); ⚑2: prose 40 vs datamine 22.27 — shipped prose value, flagged with popup-read recipe, inert without an HP pool",
+        "blindSaid": "S6 shipped target self ('under-crediting default') and flagged both readings for the judge; S5 structural assertion (40/10s encoded) passes; S2b noted the header-vs-body ambiguity and that the shielded-event fan-out decides tandem behavior",
+        "formulaCheck": "kit text: the shield 'protects all allies' — a team-wide shared shield puts every ally in shielded state, so allies-targeted fan-out is the faithful read of in-game tandem behavior; event-only and damage-inert in comps without a shield consumer (verified: driver's probe tests show exactly one firing per poli cast per ally, frame-exact with burstCast, and the block never fires off her cast)",
+        "fireRateOk": true,
+        "explanation": "Driver resolved the kit's own ambiguity the faithful direction (allies) with explicit reasoning and probed observability; the prose-vs-datamine magnitude disagreement is shipped at the prose value and flagged ⚑2 — magnitude is out of scope and unobservable in v1 regardless."
+      },
+      {
+        "kitLine": "All allies: ATK ▲ 44.55% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → atkPct 44.55/10s; lands frame-exact on her stage-2 cast BEFORE the FB window opens; UNGATED (badge gate belongs to block 1 only)",
+        "blindSaid": "S6 converged identically; S5's behavioral assertions (F5/F6) failed only because the blind fixture never lets poli cast (crown takes all B2 stages) — the hazard S2b pre-warned; S2b's distinguishing assertions (own-cast frames, ungated on later casts, all-allies target) are exactly what the driver's P8 suite pins green",
+        "formulaCheck": "correct trigger identity: burstCast, not fullBurstEnter — a fullBurstEnter keying would credit the buff on rotations another B2 casts and mis-time it behind stage-3 completion; driver's counterfactual arm shows fullBurstEnter moves every application off her cast frames; generic atkPct bucket routing correct; burst-cast stat buff correctly receives no noFb handling (it is a buff, not burst-cast damage)",
+        "fireRateOk": true,
+        "explanation": "The kit's single load-bearing damage line is encoded with the right trigger, target, magnitude, and duration, fires on all 3-5 of her casts per 180s in the driver's fixture, and is proven LIVE (removal strictly lowers every unit total). Both nearest-wrong models (fullBurstEnter over-credit, badge-gate under-credit) are pinned RED."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: all 8 kit lines are FAITHFUL (5) or DOCUMENTED_GAP (3), and every gap carries a recorded reason plus, where material, an estimate/recipe/tier (⚑1 badge-end heal, ⚑2 shield magnitude, ⚑3 cadence tuple). The nominal RED convergence is entirely blind-side: four of six S5 failures are blind-fixture bugs (a 5-unit comp assumption against a 4-unit controlComp, and crown monopolizing the B2 slot so poli casts zero bursts — the precise hazard S2b pre-registered), one is a block-shape divergence the driver's encoding wins on the prose ('self AND 2 other'), and one upholds a documented UNMODELED that S6's own flag endorses. The two highest-value traps on this kit were both avoided: the Police-Badge gate stayed bound to the Indomitability line only (the 44.55% aura fires on every later cast), and the burst aura is burstCast-keyed, not fullBurstEnter-keyed — each pinned by a RED counterfactual in the driver's suite, which also isolates the SG pellet-vs-pull hitCount:50 question in both directions. What must change for GO: nothing. Same-model residual for owner spot-check: (1) hitCount:50 rests on the guilty SG convention + engine code, not a poli-specific measurement — ⚑3's rounds/min + reload-gap read from any poli focus video is the cheap independent confirmation; (2) the burst shared-shield allies-vs-self fan-out and the prose-40-vs-datamine-22.27 magnitude are inert today but become live the day a shield-consumer teammate joins a graded comp — worth a popup/HUD check then; (3) the interval first-fire phase (t=20 vs t=0) remains the standing convention flag.",
+  "model": "kimi-code/k3"
+}

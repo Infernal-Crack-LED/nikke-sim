@@ -1,0 +1,193 @@
+{
+  "slug": "soline",
+  "leakDetected": null,
+  "override": {
+    "slug": "soline",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 40
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackSpeedPct",
+            "value": 7.26,
+            "durationSec": 3
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 21.62
+          },
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 62.27
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 396,
+            "crit": true,
+            "noRange": true,
+            "noFb": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 924,
+            "crit": true,
+            "noRange": true,
+            "noFb": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1 hitCount:40 counts ROUNDS. Base is SMG with hitsPerShot 2 — if the engine counts each trigger pull as 1 round the buff fires every 40 pulls; if it counts landed hits it fires every 20 pulls, doubling uptime. Unverified which the kit means by 'normal attacks'.",
+      "⚑ skill1 attackSpeedPct 7.26% for 3s on a ~40-attack cycle is a very low-duty-cycle buff; its board contribution is near-noise and is a poor discriminator for validating the trigger encoding.",
+      "Max-HP gates (skill2 whole block, burst 924% branch) are modeled as ALWAYS-TRUE: the scope-lock boss deals no damage and the sim models no HP pool, so the unit never leaves Max HP. This is faithful AT SCOPE ONLY — on any content where the unit takes damage both would intermittently drop, and neither is currently expressible as a gate.",
+      "burst 924% is authored as a SEPARATE flatDamage, not merged into 1320%, so the Max-HP branch stays independently togglable if HP is ever modeled. Split-vs-merge is popup-readable and unverified: if real footage shows ONE popup the two should merge.",
+      "⚑ noFb:true on both burst branches follows the hard rule that burst-cast damage lands before the Full Burst window opens; measured-only per the ALWAYS-⚑ taxonomy, not read off this kit text.",
+      "⚑ cadence tuple (ammo 120, reloadFrames 141, hitsPerShot 2, chargeFrames 0) is datamined and known-unreliable; a nominal rate_of_fire is quantized to 60fps frame boundaries."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Soline is a structurally simple SMG/Iron/Attacker B3: no weapon swap, no stacks/currency, no DoT, no resource pool, no cross-unit or tandem effects, no team-facing buff of any kind — every line is self-scoped or enemy-damage. S1 is a low-duty-cycle self Attack Speed pulse on a 40-normal-attack counter (a weapon-state modifier, so it IS damage: it gates shots fired). S2 is a permanent self crit pair (generic, NOT normal-attack-scoped — the text carries no scope word), gated on Max HP, which is scope-trivially always-true. Burst is pure instant damage in two branches, 396% unconditional + 924% at Max HP, both crit-eligible at the caster's sheet rate, neither core (the text never says 'core strike'), both FB-exempt as burst-cast damage. Nothing in this kit is skipped — unmodeled is empty for all three slots.",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after 40 normal attacks",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount count:40. Recurring conditional trigger — never auto-skipped. ⚑ round-vs-hit accounting unverified at hitsPerShot 2."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'}"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Attack Speed▲ 7.26% for 3 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackSpeedPct 7.26 durationSec 3. Weapon-state modifier = damage (gates shots fired); explicitly 'sec' so wall-clock, not a round count."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Only affects self at Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target self; the Max-HP condition resolves ALWAYS-TRUE at scope lock (no HP pool, boss deals no damage). Documented in caveats rather than dropped."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Rate ▲ 21.62% permanently",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 21.62, passive, no durationSec ('permanently'). Generic crit — no 'of normal attacks' scope word, so NOT critRateNormalPct."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Damage ▲ 62.27% permanently",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 62.27, passive, no durationSec"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects enemies within attack range",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'}; 'within attack range' is the standard AoE scope clause, no extra gate at a single-target partless boss"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 396% of final ATK as damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 396, crit true, noRange true, noFb true (burst-cast lands pre-FB); core omitted — text says no 'core strike'"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects the same target(s) at Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "same enemy target; Max-HP condition ALWAYS-TRUE at scope lock, same reasoning as skill2"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 924% of final ATK additional",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "second flatDamage atkPct 924, same flags. Kept SEPARATE from the 396% (not merged to 1320%) to preserve the Max-HP branch boundary."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger.count",
+      "estimate": "40 (literal), interpreted as 40 trigger pulls",
+      "reasoning": "'40 normal attacks' is a ROUND count, but the base carries hitsPerShot 2, so a hit-based reading would fire the buff twice as often (every ~20 pulls) and double its uptime. The kit text cannot distinguish 'attack' = pull vs = landed hit, and this is the single largest structural uncertainty in the kit.",
+      "recipe": "DBG_BUFFS=1 on a solo run: log every attackSpeedPct buffApply frame and divide by the shot count between applications. Cross-check against footage — the buff icon should appear at a fixed, countable shot interval; 40 pulls vs 20 pulls is unmistakable on an ammo counter."
+    },
+    {
+      "field": "skill1[0].effects[0] (cadence dependency)",
+      "estimate": "attackSpeedPct 7.26 for 3s, ~duty cycle unknown",
+      "reasoning": "The buff's board contribution is the product of magnitude (small) and duty cycle (unknown, set by the count:40 question above). At a nominal SMG cadence a 40-round cycle is short enough that 3s of +7.26% may be near-continuous, or sparse — the two readings differ by ~2x in effective uptime. Datamined rate_of_fire is itself an ALWAYS-⛑ field (nominal, quantized to 60fps frame boundaries), so the duty cycle is not derivable from the datamine alone.",
+      "recipe": "Measure real shots/sec directly off the ammo counter (the instrument that measures the disputed quantity), not off FB counts; combine with the resolved count:40 semantics to get true uptime, then A/B the buff on/off."
+    },
+    {
+      "field": "burst[0].effects[*].noFb",
+      "estimate": "true (both branches FB-exempt)",
+      "reasoning": "Hard rule: burst-cast/instant damage is always FB-exempt because a burst cast lands before the Full Burst window opens (a verified-facts item, not a per-unit read). Listed here because per-kit noFb is in the ALWAYS-⛑ taxonomy as measured-only and must never ship silently.",
+      "recipe": "Popup-read the burst hits against the FB banner frame: if the 396%/924% popups precede the banner they take no +50% major. Confirm via a damage event's fbMajorApplied flag on a burstCast-triggered flatDamage."
+    },
+    {
+      "field": "burst[0].effects (split vs merge)",
+      "estimate": "SPLIT — two flatDamage entries (396 + 924), not one 1320",
+      "reasoning": "Kit-silent per the ALWAYS-⛑ taxonomy; unreadable from prose. Split preserves the Max-HP branch as an independently togglable unit if an HP pool is ever modeled, and is damage-identical to a merge at scope lock (both branches always fire, same flags, same bucket). The only observable difference is popup count.",
+      "recipe": "Read the burst popups in footage: ONE popup at the combined value → merge to 1320%; TWO popups → keep split. Damage-neutral either way at scope, so this is a faithfulness call, not an accuracy one."
+    },
+    {
+      "field": "skill2 / burst[0].effects[1] Max-HP gate",
+      "estimate": "modeled ALWAYS-TRUE (no gate emitted)",
+      "reasoning": "The sim has no HP pool and the scope-lock boss deals no damage, so the unit is permanently at Max HP; a gate would be a no-op that never evaluates false. Flagged because this is a real kit condition being silently satisfied by the scope, not by faithfulness — roughly half this unit's kit value (924 of 1320 burst % plus the whole crit pair) rides on it.",
+      "recipe": "No sim-side test discriminates this at scope. If HP modeling ever lands, both sites need a real gate; until then verify only that the schema has no suitable primitive (there is no requiresMaxHp block gate in types.ts) and keep the caveat live."
+    },
+    {
+      "field": "override.hasPierce / core flags",
+      "estimate": "hasPierce false; no core on either burst hit",
+      "reasoning": "Kit text carries no Pierce clause and no 'core strike damage' wording. Per the hard rule, riders crit at the caster's rate but get NO core unless the text says so — both burst branches therefore take crit:true and omit core.",
+      "recipe": "Confirm from popup colour: red 'CORE HIT' on a burst popup would refute the no-core read; orange+icon confirms crit-eligible. No Pierce-tagged behaviour should appear."
+    }
+  ],
+  "model": "claude-opus-5"
+}

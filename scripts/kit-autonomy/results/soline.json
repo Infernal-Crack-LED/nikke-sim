@@ -1,0 +1,74 @@
+{
+  "slug": "soline",
+  "kitDescription": "Soline is an Iron-element SMG Attacker who closes the burst chain at stage 3. Her Skill 1 gives herself +7.26% attack speed for 3 seconds after every 40 normal attacks, so at SMG cadence it re-triggers constantly and is up for most of the fight. Her Skill 2 permanently raises her own critical rate by 21.62% and critical damage by 62.27% while she is at max HP \u2014 a condition that never breaks in the scope-lock fight since nothing damages her. Her burst deals 396% of final ATK to enemies in range, plus a further 924% to the same target when she is at max HP, both as instant crit-eligible hits that land just before Full Burst begins. She is entirely selfish: no line in the kit touches an ally.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "skill1 'DISCRIMINATES the 40-HIT threshold from a 40-PULL threshold (hitsPerShot 2)' \u2014 the blind test patches count\u219280 expecting the proc count to halve, but 80 IS the driver's shipped value (the pull reading), so the patched run is identical to base and the assertion fails"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "after 40 normal attacks: AtkSpd\u25b27.26% 3s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount count:80 = 40 trigger pulls \u00d7 hitsPerShot 2 \u2014 the SHOT reading, anchored on the brid-silent-track MEASURED in-game NA counter ('every 5th PULL' exact from her solo read), five uniform multi-hit precedents (drake/leona/poli/guilty/brid), and the repo's prose-wording distinction ('normal attacks' = pulls; 'hits'/'pellets' = raw hits). Carried as \u26911 with a popup recipe.",
+        "blindSaid": "Both blind families (fable S2b, opus S5+S6) derived count:40 \u2014 the schema-literal reading of the types.ts hitCount comment ('every count cumulative hits'). Fable itself conceded the tuple is 'effectively a \u2691 convention until popup-read' and that faithful uptime is near-permanent either way.",
+        "formulaCheck": "The engine increments its hit counter by hitsPerShot per shot event, so count:80 in the engine = 40 pulls in game terms. The load-bearing question is what the IN-GAME counter counts, and the repo's only multi-hit NA-counter measurement (brid, MEASURED tier, docs/probe-runs.md) says pulls. That labeled measurement is an independent method produced independently of this derivation \u2014 per the prove-it-differently rule, the bar is MET. Effect routing (attackSpeedPct, self, durationSec 3 wall-clock) matches prose exactly.",
+        "fireRateOk": true,
+        "explanation": "Driver's test pins the kth application at exactly the 40k-th pull (\u226510 applications, last past 150s) and discriminates against the per-hit reading by patching 80\u219240 (first proc at pull 20). The blind count:40 is a RECON_ERROR \u2014 a schema-literal inference about the engine counter mistaken for the game counter, made without access to repo precedent by design; the divergence is documented by the driver (\u26911 + caveat), not a gotcha. Damage impact is minor under either reading (S5's own note concedes near-permanent uptime)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "self at Max HP: Crit Rate \u25b221.62% perm",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive, self, critRatePct 21.62, no durationSec; Max-HP gate always-true under scope lock (no incoming damage), documented in caveats, never enacted as a blocker",
+        "blindSaid": "Both blind families: identical encoding, identical gate posture, both independently rejected critRateNormalPct",
+        "formulaCheck": "SSOT \u00a71b: unscoped critRatePct joins every crit roll; the normal-only term (critRateNormalPct) joins only normal-attack instances. Prose says plain 'Critical Rate' with no scope word \u2192 unscoped is correct. Driver's L2 test pins the burst nuke's resolved critRate at 0.3662 (15% base + 21.62pp) and the noS2 counterfactual at 0.15.",
+        "fireRateOk": true,
+        "explanation": "Live from frame 0, permanent (expiresFrame null), self-scoped. Full three-way convergence; the scoped-crit counterfactual lifts normals but never the nuke, so the distinction is genuinely discriminated."
+      },
+      {
+        "kitLine": "self at Max HP: Crit Dmg \u25b262.27% perm",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "same passive block, critDamagePct 62.27, permanent, self",
+        "blindSaid": "Both blind families: identical",
+        "formulaCheck": "SSOT \u00a71b: critBonus = (critDamage\u2212100)/100 + Crit Damage \u25b2%/100 \u2014 additive percentage points inside the major bracket. Driver's L2 test pins major-bucket deltas of exactly critRate \u00d7 0.6227 on matched hits vs the noCritDmg counterfactual \u2014 the correct compositional form, not a multiplier.",
+        "fireRateOk": true,
+        "explanation": "Frame-0 permanent self passive; S5's strip-test confirms it is load-bearing (totals drop) and ally-inert (teammate totals byte-identical when removed)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "enemies in range: 396% final ATK dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast trigger, enemy target, flatDamage 396, bare defaults (crit on, no core, no range, FB-exempt by cast timing)",
+        "blindSaid": "Both blind families: same trigger/target/magnitude. S6 adds explicit crit:true/noRange:true/noFb:true flags and fuses both lines into one block \u2014 observationally identical to the driver's defaults + two-block split (same event stream: two flatDamage hits per cast).",
+        "formulaCheck": "SSOT burst-nuke row: crit \u2705 (engine default for flatDamage \u2014 the S2b reviewer's 'default off' claim was stale, correctly flagged in the reconciliation), core only if 'as core dmg' (not in prose \u2192 none), skill/burst riders never take range, FB by timing \u2014 the stage-3 cast resolves 22f before the FB window opens (MEASURED chain timing), so fbMajorApplied false is correct without an explicit noFb flag. Matches the novel precedent on the identical shape.",
+        "fireRateOk": true,
+        "explanation": "Fires once per soline cast (\u22654 casts/180s, stage 3 only), paired with the 924 hit on the cast frame. The fullBurstEnter mis-keying is discriminated not by cast count (helm never casts in this fixture \u2014 near-degenerate) but by the fbMajorApplied===false assertion: a fullBurstEnter encoding would land the hits inside the window with the +50% applied."
+      },
+      {
+        "kitLine": "same target(s) at Max HP: +924% addl",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "second burstCast block, flatDamage 924, same defaults; Max-HP gate read as the CASTER's HP (kit-internal consistency with S2's self-Max-HP theme), always-true at scope lock, documented",
+        "blindSaid": "Both blind families: identical reading, identical always-true gate posture; S6 keeps it as a separate effect for independent togglability, matching the driver's separate-block rationale",
+        "formulaCheck": "n(924) === n(396) === n(casts) is pinned by both the driver's L4 and S5's rider-count test \u2014 the named nearest-wrong model (gate on the BOSS's HP, which would fire the 924 at most once and silently delete ~70% of burst damage) is excluded. Per-cast 924/396 amount ratio pins the magnitudes at equal buff state.",
+        "fireRateOk": true,
+        "explanation": "Two \u25a0 lines \u2192 two blocks keeps each kit line individually queryable; S6's fused-block variant produces the identical event stream, so the split is stylistic, not behavioral. noFb-by-timing vs S6's explicit noFb:true diverge only if a B3 chain-closer's cast ever landed inside a live FB window, which cannot happen under scope lock."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": 1.0,
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: all five kit lines are FAITHFUL, both blind families converged with the driver on every line except one, and that lone divergence (S1 count 40 vs 80) is adjudicated in the driver's favor by evidence the blind agents could not see by design \u2014 the repo's only MEASURED multi-hit NA-counter anchor (brid-silent-track: the in-game counter advances per trigger PULL), five uniform landed precedents reading 'normal attacks' as pulls \u00d7 hitsPerShot, and the prose-wording distinction ('hits'/'pellets' when raw hits are meant). Per the prove-it-differently rule, that existing labeled measurement IS the independent method, so the bar is met and the blind count:40 is recorded as a RECON_ERROR, not a finding; the driver carries it as \u26911 with a popup recipe regardless. The 18/19 S5 green (with the single red being exactly this convention dispute, an artifact of the blind counterfactual patch being a no-op against the shipped value) plus full S6 structural agreement constitutes strong cross-family convergence. Discrimination holds on every load-bearing assertion \u2014 the driver's own L1 patches 80\u219240 and observes the first proc move to pull 20, so the convention is genuinely pinned in both directions; the burstCast-vs-fullBurstEnter keying is degenerate on cast count in this fixture (helm never casts) but remains discriminated by the fbMajorApplied===false timing assertion. The same-model residuals the owner should spot-check: (1) all agents share the reading that both Max-HP gates refer to the CASTER \u2014 kit-internal consistency supports it strongly, but no independent source was consulted; (2) the brid pull-measurement is an SG anchor extrapolated to an SMG unit \u2014 the \u26911 recipe (count pulls between 'On the Ball!' activations in a focus video) closes this if the owner wants unit-level confirmation.",
+  "model": "kimi-code/k3"
+}

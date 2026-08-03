@@ -1,0 +1,208 @@
+{
+  "slug": "bay",
+  "leakDetected": null,
+  "override": {
+    "slug": "bay",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 10.13
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "allies",
+          "excludeSelf": true
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnd"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 5,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "burst": [],
+    "unmodeled": {
+      "skill1": [
+        "Proportionally shares damage taken continuously."
+      ],
+      "skill2": [
+        "Proportionally shares damage taken continuously. (Affects self's cover.)",
+        "Activates when entering Burst Stage 1 and self's cover has been destroyed. Affects self. Recovers 20% of the skill user's final Max HP."
+      ],
+      "burst": [
+        "Affects self if self's cover has been destroyed. Rebuild Cover with 20% HP. Activates once per battle.",
+        "Max HP of Cover ▲ 18% of the skill user's Max HP for 20 sec.",
+        "Affects all allies. Damage Taken ▼ 8.87% for 10 sec."
+      ]
+    },
+    "caveats": [
+      "⛑ skill1 full-charge heal is keyed to `shotFired` — the schema has no full-charge trigger. bay is RL (chargeFrames 60), so every trigger pull is treated as a full-charge attack; any partial-charge firing would over-fire this heal.",
+      "⛑ `defPct` scales the TARGET's own DEF, but the kit line grants '10.13% of the SKILL USER's DEF'. There is no casterDefPct StatKey; the value is encoded verbatim. defPct is inert for damage in v1, so this mis-scaling moves no number today — it must be revisited if DEF ever feeds an offensive conversion.",
+      "⛑ The skill2 heal recovers COVER HP, not unit HP. It is modeled as a self-targeted `heal` (5 ticks / 1s) so the recovery channel exists; whether cover-HP recovery satisfies an on-recovery consumer in game is unverified. bay has no `recovery` trigger and the effect is self-scoped, so it is currently inert either way — do NOT widen its target without a measurement.",
+      "⛑ Cadence tuple unverified (datamine-unreliable): ammo 6 / reloadFrames 141 / chargeFrames 60 / hitsPerShot 1. These drive the `shotFired` heal frequency — the only cadence-sensitive block here.",
+      "burst is authored as a genuinely effect-free slot: all three burst lines are cover-HP or ally damage-mitigation, neither of which has an offensive channel. 'Damage Taken ▼ 8.87%' targets ALL ALLIES (mitigation), NOT the boss — it is deliberately NOT encoded as `damageTakenPct`, which the schema defines as a boss debuff where positive = boss takes more; encoding an ally-side ▼ there would be a wrong-target model.",
+      "'only if self is alive' / 'cover has been destroyed' conditions are scope-trivial or never satisfied at scope lock (immortal allies, boss deals no modeled damage)."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. bay is RL/Fire/Defender/Burst II — a pure sustain kit with ZERO damage lines in any slot: no flatDamage, no dot, no ATK/crit/core/damage-up buff, no weapon-state modifier, no gauge effect. Modeled: (S1a) own-burst-cast ally DEF buff, continuous/no duration; (S1b) per-full-charge heal to allies except self, kept because heal lines are never skippable on isolation — they fire teammates' `recovery` triggers (e.g. crown-style on-recovery consumers); (S2b) full-burst-end self cover regen as a 5-tick heal. Unmodeled: both damage-share lines (no HP pool at scope lock), the cover-destroyed heal and cover rebuild (cover destruction is never reached — the boss deals no modeled damage), Cover Max HP ▲ (a separate pool from unit Max HP; encoding it as maxHpPct/casterMaxHpPct would falsely feed atkOfMaxHpPct conversions), and the ally Damage Taken ▼ (mitigation, not a boss debuff). Expected sim footprint: bay contributes no self damage and no team damage buff; her only cross-unit channel is the S1b recovery event stream."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when using Burst Skill",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast (owner's own burst cast, NOT fullBurstEnter — keying to FB-enter would over-fire in any comp with another Burst II)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "only if self is alive",
+      "status": "SKIPPED",
+      "effectOrReason": "scope-trivial — nobody dies at scope lock; no gate primitive needed (documented in caveats, not a separate unmodeled row)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} — no excludeSelf ('all allies' includes self)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Proportionally shares damage taken",
+      "status": "SKIPPED",
+      "effectOrReason": "damage-share redistribution; no HP pool / no incoming boss damage modeled in v1. No schema primitive. Verbatim in unmodeled.skill1"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▲ 10.13% of user's DEF",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct 10.13, no durationSec ('continuously'). Kept despite defPct being damage-inert in v1 (HARD RULE: DEF/HP lines are never skippable — future scaler consumer). Caster-DEF-scaling is unrepresentable — see caveats"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "when performing Full Charge attacks",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired — ⛑ no full-charge trigger kind exists; RL base weapon (chargeFrames 60) fires only charged shots, so shotFired ≈ per-full-charge"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies (except self).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies', excludeSelf:true}"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 4% of user's final Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal {ticks:1} — emits a recovery event per full charge to every ally but self; HP amount is not modeled (no HP pool), the recovery CHANNEL is the point (tandem rule)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "when using Burst Skill / self's cover",
+      "status": "SKIPPED",
+      "effectOrReason": "cover-scoped damage share; no cover HP pool and no incoming damage at scope lock. Verbatim in unmodeled.skill2"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when Full Burst ends.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnd, target self"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "recovers Cover's HP 2.88%/1s for 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal {ticks:5, intervalSec:1} — 5 recovery events over 5s. Self-scoped, so inert for allies; ⛑ cover-HP recovery may not count as 'recovery' in game"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Burst Stage 1 + cover destroyed",
+      "status": "SKIPPED",
+      "effectOrReason": "gate is never satisfied — cover destruction is not modeled (boss deals no damage at scope lock); a stageEnter heal here would fire unconditionally and falsely spam recovery events. Verbatim in unmodeled.skill2"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Rebuild Cover with 20% HP, once/battle",
+      "status": "SKIPPED",
+      "effectOrReason": "cover HP pool unmodeled; the 'cover has been destroyed' gate is never satisfied. Verbatim in unmodeled.burst"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max HP of Cover ▲ 18% for 20 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "COVER Max HP is a separate pool from unit Max HP — encoding as maxHpPct/casterMaxHpPct would wrongly feed atkOfMaxHpPct conversions. Verbatim in unmodeled.burst"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage Taken ▼ 8.87% for 10 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "targets ALL ALLIES = mitigation, not a boss debuff. `damageTakenPct` is defined as a boss debuff (positive = boss takes MORE); putting an ally-side ▼ on that stat is a wrong-target model. Offensively inert. Verbatim in unmodeled.burst"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[1].trigger",
+      "estimate": "{kind:'shotFired'} — one heal per trigger pull",
+      "reasoning": "Kit says 'when performing Full Charge attacks'; TriggerDef has no full-charge kind. bay's base weapon is RL with chargeFrames 60, so in practice every fired round is a full-charge shot and shotFired is 1:1 with full charges. `chargeCounter` was rejected: its per-phase cycling semantics (effects[P] indexed by phase) are wrong for a single unconditional effect.",
+      "recipe": "Record a bay fight with an on-recovery consumer (crown-style) in the team; count recovery-driven proc popups vs bay's shot count over 180s. Equal counts → shotFired correct. Fewer → partial charges exist and the block needs a full-charge gate. Cheap sim-side pre-check: instrument cfg.onEvent for kind:'shot' with srcSlot=bay and compare against the per-shot cadence implied by chargeFrames 60 + reloadFrames 141 + ammo 6."
+    },
+    {
+      "field": "override.skill1[0].effects[0] (stat defPct, value 10.13)",
+      "estimate": "10.13 encoded verbatim on defPct",
+      "reasoning": "The kit grants DEF equal to 10.13% of the SKILL USER's DEF (a caster-scaled flat grant, the DEF analogue of casterAtkPct). The schema's only DEF stat is defPct, which scales the TARGET's own DEF — semantically different whenever an ally's DEF differs from bay's. Not fabricating a value; flagging the schema gap. defPct is explicitly inert for damage in v1, so the mis-scaling currently moves nothing.",
+      "recipe": "No measurement needed while DEF is damage-inert. If a `casterDefPct` StatKey is ever added (mirroring casterAtkPct's flat-resolve-at-apply-time path), re-key this block to it and assert the emitted buffApply value equals 0.1013 × bay's DEF rather than a raw percentage."
+    },
+    {
+      "field": "override.skill2[0].effects[0] (cover-HP heal → recovery event)",
+      "estimate": "heal {ticks:5, intervalSec:1}, target self",
+      "reasoning": "The engine's `heal` effect models no HP amount — its only observable is the recovery event that fires `recovery` triggers. This line recovers COVER HP, which may or may not count as 'recovery taking effect' for an on-recovery consumer. Modeled for kit completeness; self-scoped and bay has no recovery trigger, so it is inert today and cannot over-credit anything.",
+      "recipe": "Only decidable with a unit whose kit consumes recovery while a cover-only heal lands. If cover regen turns out NOT to fire recovery consumers, this reduces to an unmodeled row — no damage change either way at scope lock."
+    },
+    {
+      "field": "base cadence tuple (ammo 6 / reloadFrames 141 / chargeFrames 60 / hitsPerShot 1)",
+      "estimate": "as datamined",
+      "reasoning": "ALWAYS-⛑: datamined cadence fields are known-unreliable (rate_of_fire / reloadFrames). For bay these are load-bearing ONLY through the shotFired-keyed ally heal frequency — she deals no rider damage, so a cadence error cannot distort her own output, just the recovery-event rate she feeds teammates.",
+      "recipe": "Frame-count one bay magazine from footage: charge start → release, and last-round → next-round-ready, versus the 60/141-frame datamine. Pin as a scripts/tests/units/bay.test.ts shot-timing assertion."
+    },
+    {
+      "field": "burst (empty slot)",
+      "estimate": "burst: []",
+      "reasoning": "All three burst lines resolve to cover-HP mechanics or ally damage mitigation. Emitting an empty array is the schema's stated representation for a genuinely effect-free slot; the alternative (encoding Damage Taken ▼ 8.87% as a damageTakenPct buff) would be an actively WRONG model, since that stat is the boss-side debuff channel and a negative ally-scoped value could later be read as a team damage change.",
+      "recipe": "No measurement gates this — it is a schema-semantics call, re-openable only if the engine ever gains an ally-side mitigation channel or a boss damage model. Note: burst casting itself is rotation/gauge-driven and unaffected by an empty burst array, so bay still contributes her Burst II slot to the chain."
+    }
+  ],
+  "model": "claude-opus-5"
+}

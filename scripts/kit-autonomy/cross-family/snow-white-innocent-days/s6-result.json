@@ -1,0 +1,249 @@
+{
+  "slug": "snow-white-innocent-days",
+  "leakDetected": null,
+  "override": {
+    "slug": "snow-white-innocent-days",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 30
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "maxAmmoPct",
+            "value": 25.66,
+            "durationSec": 5,
+            "maxStacks": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 30
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 188.68,
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 50,
+          "countInFb": 30
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 61.69,
+            "crit": true
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 21.12,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 97.2,
+            "durationSec": 10
+          },
+          {
+            "kind": "unlimitedAmmo",
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ The burst line \"Hit count required for Skill 2 ▼ 20 time(s) for 10 sec\" has no first-class effect primitive; it is modeled as countInFb:30 on the skill2 hit-count trigger (50 → 30). countInFb keys to the FULL-BURST window, while the kit keys the reduction to HER OWN burst cast for 10 sec. The two coincide when she is the sole/actual Burst III caster; in a multi-B3 comp where another unit completes the chain, countInFb OVER-CREDITS (fires without her burst) and, symmetrically, the ~1s of her own 10s window that precedes FB entry is UNDER-credited.",
+      "⚑ The reduction is scoped to Skill 2 ONLY — skill1's two 30-hit triggers are deliberately left at a flat count:30 with no countInFb. This is a discriminating read of the prose, not an oversight.",
+      "⚑ Both skill triggers say \"landing\" normal attacks; the engine's hitCount counts ROUNDS dispatched, not confirmed landed hits. At scope-lock accuracy this is near-identity for an AR, but it makes proc cadence an upper bound.",
+      "⚑ Rider crit is set true per the standing prior (function-damage riders crit at the caster's sheet rate, no core); neither line says \"core strike\", so no core is set. FB-by-timing is left default ON and noRange is left to the engine.",
+      "⚑ The maxAmmoPct grant is authored at its per-stack magnitude with maxStacks:5 and a 5s window — steady state is assumed to sit at or near cap (30 AR rounds ≈ 2.5s of fire, so a fresh stack lands well inside each 5s window), but the actual occupancy is unmeasured and interacts with the burst's unlimited-ammo window, during which no reload occurs at all."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. AR/Iron/Attacker/Burst III. Two hit-count engines: skill1 fires every 30 normal attacks for a self Max-Ammunition stack (25.66%, up to 5, 5s) AND a 188.68% area rider; skill2 fires every 50 normal attacks for a 61.69% rider, with her own burst cutting that requirement to 30 for 10s (modeled as countInFb:30). Her burst is a pure self-buff package — ATK ▲97.2% and unlimited ammunition for 10s — with the skill2 rider Attack Damage ▲21.12% (Damage Up bucket, distinct from the burst's ATK buff, so the two do not share a bucket) keyed to burst CAST, not full-burst entry, per the literal \"when using Burst Skill\" wording. Unlimited ammo plus the stacking Max-Ammunition buff both act as shot-count multipliers, so they are damage lines, not defensive ones: they raise sustained fire uptime and therefore the rate at which both hit-count triggers proc. No weapon swap, no charge, no DoT, no cross-unit effect, no core-strike or pierce language anywhere in the kit; every line of every slot is implemented, so unmodeled is empty for all three slots."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after landing 30 normal",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'hitCount', count:30} on BOTH skill1 blocks; no countInFb (the burst reduction is scoped to Skill 2 only)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'} on the ammo block"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Max Ammunition Capacity ▲ 25.66%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat maxAmmoPct value 25.66 — a weapon-state modifier, i.e. a damage line (gates shots per magazine / reload frequency), never skipped as defensive"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "stacks up to 5 time(s), lasts 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "maxStacks:5, durationSec:5 (wall-clock seconds — the text says 'sec', not 'round(s)', so no durationShots)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects enemies within attack range",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single-boss scope, so the area wording resolves to one hit"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 188.68% of final ATK as damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 188.68, crit:true, no core (no 'core strike' wording), noRange engine-automatic, FB-by-timing default ON"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when landing 50 normal",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'hitCount', count:50, countInFb:30} — countInFb carries the burst's ▼20 reduction (⚑ FB-window vs own-burst-window proxy)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — one boss, so 'all enemies' = one hit"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 61.69% of final ATK as damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 61.69, crit:true, no core"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'} — literal 'when using Burst Skill' = her OWN cast, deliberately NOT fullBurstEnter (fullBurstEnter would over-credit on rotations another B3 completes)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attack damage ▲ 21.12% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat attackDamagePct value 21.12 durationSec 10, target self (Damage Up bucket)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'} on the burst block; trigger burstCast"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Hit count required for Skill 2 ▼ 20",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "no dedicated effect kind exists; expressed as countInFb:30 (50−20) on the skill2 hitCount trigger — see caveats for the FB-window vs own-burst-window divergence"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 97.2% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat atkPct value 97.2 durationSec 10 (self-scaling ATK, not casterAtkPct — target is self)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Unlimited ammunition for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect {kind:'unlimitedAmmo', durationSec:10} — removes reloads for the window, raising both hit-count trigger rates"
+    }
+  ],
+  "flags": [
+    {
+      "field": "burst[0] / skill2[0].trigger.countInFb",
+      "estimate": "countInFb: 30 (50 − 20) on the skill2 hitCount trigger",
+      "reasoning": "The kit reduces the Skill-2 hit requirement for 10 sec from HER OWN burst cast, but the schema's only threshold-override primitive keys to the Full Burst state. On a comp where she is the sole/actual Burst III caster the two windows overlap almost exactly (her 10s starts at cast, FB opens ~1s later and runs 10s). In a multi-B3 comp the FB-keyed model fires the reduced threshold on rotations she did not burst — an OVER-credit — and it misses the sub-second pre-FB tail of her own window.",
+      "recipe": "Count skill2's 61.69% popups over one fight in a comp where ANOTHER Burst III completes the chain. If the reduced cadence appears on rotations she did not cast, the countInFb proxy is over-firing and the block needs an ownBurstGate:'cast' companion or a burstCast-keyed reformulation."
+    },
+    {
+      "field": "cadence tuple (pullsPerSec / reloadFrames 81 / ammo 60)",
+      "estimate": "datamined AR values taken as given; effective pulls/s = 60/ceil(60/nominal)",
+      "reasoning": "rate_of_fire and reloadFrames are known-unreliable datamine fields, and this unit's ENTIRE damage identity is hit-count-driven — every proc of both skills is a direct function of rounds/sec. A cadence error propagates one-to-one into proc counts for the 188.68% and 61.69% riders, not just into normal-attack damage.",
+      "recipe": "Read the ammo counter frame-by-frame over one full magazine on a solo recording (shots/sec directly, not inferred from gauge or FB counts) and compare against the datamined nominal."
+    },
+    {
+      "field": "skill1[0] maxAmmoPct steady-state / stack occupancy",
+      "estimate": "near-cap (5 stacks, +128.3% → ~137 rounds) for most of the fight; no rampSec applied",
+      "reasoning": "The 5s window is refreshed roughly every 30 rounds (≈2.5s at nominal AR cadence), so stacks should build to cap early and hold — but the interaction with the burst's unlimited-ammo window (no reload, no magazine bound) and with any accuracy shortfall on the 'landing' clause is unmeasured. If real occupancy sawtooths below cap, magazine length and therefore reload count are over-modeled.",
+      "recipe": "DBG_BUFFS on a solo run: log the maxAmmoPct stack count per frame and take the time-average; cross-check against the on-screen ammo capacity number at several points in a recording."
+    },
+    {
+      "field": "both flatDamage riders — crit:true, core absent",
+      "estimate": "riders crit at the caster's sheet rate; zero core rate",
+      "reasoning": "Applying the standing rider convention rather than anything in this unit's text. Neither line says 'core strike damage', so no core; the crit setting follows the prior that function-damage riders are crit-eligible. Both are conventions, not measurements, and together they scale two of the kit's three damage channels.",
+      "recipe": "Popup-read a solo recording: check whether the 188.68% and 61.69% popups ever render orange (crit) and whether any renders red 'CORE HIT'. Non-crit white-only popups across ≥30 procs would refute crit:true."
+    },
+    {
+      "field": "hitCount semantics — 'landing' vs rounds dispatched",
+      "estimate": "1 landed hit per round fired (hitsPerShot 1, accuracy assumed ~100% at scope lock)",
+      "reasoning": "Both skills say 'landing' N normal attacks; the engine's hitCount counts rounds dispatched. Any accuracy shortfall stretches the real proc interval, so the modeled proc counts are an upper bound. This compounds with the cadence flag above.",
+      "recipe": "Count 188.68% popups over a 180s solo fight and divide total rounds fired by the popup count; a quotient materially above 30 means landed < fired."
+    },
+    {
+      "field": "burst[0] unlimitedAmmo / burst-window damage accounting",
+      "estimate": "10s of reload-free fire from burst cast, stacking with the maxAmmoPct buff",
+      "reasoning": "Unlimited ammo and Max Ammunition are both weapon-state modifiers that raise shots fired, and their combined effect on the two hit-count engines during the FB window is the single largest lever on her burst-window output. Whether the engine suppresses reloads for exactly the authored 10s from CAST (rather than from FB entry) is a timing assumption not stated in the kit.",
+      "recipe": "ROT=1 plus a shot-event count inside the FB window on a solo run; compare rounds fired in-window against 10s × effective pulls/s and confirm zero reload events between cast and window end."
+    }
+  ],
+  "model": "claude-opus-5"
+}
