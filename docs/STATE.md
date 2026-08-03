@@ -353,6 +353,13 @@ Planned follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
 - **sustain** — 50 candidates (healer/shield tags + nayuta), team-total HP restored+shielded: thin
   analytic layer over one sim run (maxHp + `cfg.onEvent` timeline), curated lines in
   `src/ranks/sustain-table.ts`. Profiles: prika+mint duet, anchor-innocent-maid+mast-romantic-maid.
+  **Stage-covered comp (landed 2026-08-03, `src/ranks/sustain.ts` `sustainTeam()`):** ports the
+  buffer board's shape — a stage-matched spare (a same-stage profile partner stands in when one is
+  seated) covers the tested unit's own burst stage, with the tested unit leading it in slot order, so
+  a 40s/60s healer no longer holds up its own team's rotation. B3-tested comps already had this shape
+  (the alternating no-op B3). `scripts/build-sustain.ts` also loads every synthetic control override
+  (previously `noop-b3-mg` only), so the no-op B1's 7s team burst-cooldown reduction now applies here
+  too.
 - **buffer** — 74 B1/B2 + B3-buffer units, added carry DPS vs a no-op baseline over two synthetic
   standard carries (`src/ranks/synthetics.ts`, class-modal MG+RL). Two arms: generic and typed
   (carries auto-adapt to the kit: weapon swap / pierce / projectile-explosion / element).
