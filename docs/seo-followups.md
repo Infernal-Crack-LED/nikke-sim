@@ -106,22 +106,15 @@ scoped by measured length** (never by `simSupported`), with **option 4** as the 
 
 ---
 
-## 2. `sugar`'s unit card states the wrong release date — OPEN (upstream)
-
-`characters.sugar.releaseDate` is her Treasure date (2026-07-23) rather than her real
-2022-11-04 release, so the unit card's "Released &lt;date&gt;" line is wrong for her. The
-`/characters` "New Characters" row is already defended (it excludes Treasure entries); the
-card is not.
-
-`releaseDate` is copied straight from upstream (`src/data/sync.ts`) into `data/`, which is
-protected and regenerated — it must be fixed at the source. Full evidence, including the
-commit that introduced it and the note that `drake` and `helm` previously held each
-other's dates (so the whole column deserves an audit), is in
-[handoffs/QUEUE.md](handoffs/QUEUE.md).
-
----
-
 ## Settled — do not re-litigate
+
+- **Treasure units state their Treasure's release date (2026-08-03).** What looked like a
+  per-unit data bug on `sugar` was the column being inconsistent about which Synergy row it
+  read — the base entry for 18 of the 21 Treasure units, the `宝` entry for the other 3. The
+  owner ruled the `宝` date is the right one to show (this roster carries the Treasure
+  version), `src/data/sync.ts` now resolves that row itself, and the audit is re-runnable via
+  `scripts/audit-release-dates.ts`. The rest of the column was audited at the same time and is
+  exact. See [DECISIONS.md](DECISIONS.md).
 
 - **Prerendering `/unit/*` through Playwright: REJECTED (2026-08-03).** `unitStaticHtml`
   already existed as the request-time pattern, covers every unit at no build cost, and a

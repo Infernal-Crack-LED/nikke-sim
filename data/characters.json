@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-07-31T22:10:27.484Z",
+  "syncedAt": "2026-08-03T09:14:41.692Z",
   "characters": {
     "2b": {
       "slug": "2b",
@@ -10515,7 +10515,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
-      "releaseDate": "2024-04-11",
+      "releaseDate": "2025-07-17",
       "burstGaugePerShot": 1.4,
       "treasure": true,
       "skills": {
@@ -13843,7 +13843,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 41.4,
-      "releaseDate": "2022-11-04",
+      "releaseDate": "2026-02-12",
       "burstGaugePerShot": 3.45,
       "treasure": true,
       "skills": {
@@ -20754,7 +20754,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
-      "releaseDate": "2022-11-04",
+      "releaseDate": "2024-05-30",
       "burstGaugePerShot": 0.05,
       "treasure": true,
       "skills": {
@@ -29910,7 +29910,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
-      "releaseDate": "2022-11-04",
+      "releaseDate": "2024-05-30",
       "burstGaugePerShot": 2.8,
       "treasure": true,
       "skills": {
@@ -30383,7 +30383,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
-      "releaseDate": "2024-11-21",
+      "releaseDate": "2026-07-23",
       "burstGaugePerShot": 0.05,
       "treasure": true,
       "skills": {
@@ -31342,7 +31342,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 7.95,
-      "releaseDate": "2022-11-04",
+      "releaseDate": "2024-05-30",
       "burstGaugePerShot": 2.65,
       "treasure": true,
       "skills": {
@@ -34329,7 +34329,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
-      "releaseDate": "2022-11-10",
+      "releaseDate": "2025-01-16",
       "burstGaugePerShot": 2.8,
       "treasure": true,
       "nicknames": ["thelm"],
@@ -38412,7 +38412,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
-      "releaseDate": "2022-11-04",
+      "releaseDate": "2025-07-17",
       "burstGaugePerShot": 0.2,
       "treasure": true,
       "skills": {
@@ -41133,7 +41133,7 @@
       "releaseDate": "2026-07-23",
       "burstGaugePerShot": 1.5,
       "treasure": false,
-      "nicknames": ["luh"],
+      "nicknames": ["luh", "lapuh", "lap alt", "laplaceuh"],
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects self.\nATK ▲ 4.05% of the skill user's final max HP continuously.\n■ Activates when performing a Full Charge attack. Affects self.\nWarm Up: Charge Speed ▲ 10% continuously. Stacks up to 5 times.\n■ Activates when Warm Up is at max stacks. Removes stacks and affects self.\nChanges the weapon in use: Electric Power, Fully Full Charge\nDamage: 9.45% of final ATK\nMax Ammunition Capacity: 120 (max ammunition effects refresh when the weapon in use changes)\nDeactivation condition: When all rounds are fired\nAdditional Effect: Gains Pierce\n■ Activates when Electric Power, Fully Full Charge ends. Affects self.\nRemoves 100% of ammo.",
         "skill2": "■ Activates after performing 12 normal attacks while in the Electric Power, Fully Full Charge state. Affects self.\nOver Energy ▲ 5% continuously, up to 100%.\n■ Activates when Over Energy reaches 100%. Resets Over Energy and affects self.\nAdvances to the next Over Energy stage. Effects vary for each stage of Over Energy. Each subsequent effect triggers all effects before it:\nStage 1: Max HP ▲ 2% continuously.\nStage 2: Max HP ▲ 3% continuously.\nStage 3: Max HP ▲ 7% continuously.\nStage 4: Max HP ▲ 10.5% continuously.\n■ Activates when entering Burst Stage 3. Affects self.\nAttack Damage ▲ 52.14% for 10 sec.",
@@ -53581,7 +53581,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
-      "releaseDate": "2022-11-04",
+      "releaseDate": "2025-01-16",
       "burstGaugePerShot": 2.8,
       "treasure": true,
       "skills": {
@@ -55006,7 +55006,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
-      "releaseDate": "2022-11-04",
+      "releaseDate": "2025-01-16",
       "burstGaugePerShot": 0.1,
       "treasure": true,
       "nicknames": ["tmiranda"],
@@ -56461,7 +56461,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 9.5,
-      "releaseDate": "2024-01-25",
+      "releaseDate": "2026-02-12",
       "burstGaugePerShot": 0.25,
       "treasure": true,
       "nicknames": ["tmoran"],
@@ -65055,7 +65055,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 9.5,
-      "releaseDate": "2024-10-10",
+      "releaseDate": "2026-07-23",
       "burstGaugePerShot": 0.25,
       "treasure": true,
       "skills": {
@@ -65580,7 +65580,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12,
-      "releaseDate": "2022-11-04",
+      "releaseDate": "2025-07-17",
       "burstGaugePerShot": 2,
       "treasure": true,
       "skills": {
@@ -67040,7 +67040,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
-      "releaseDate": "2022-11-04",
+      "releaseDate": "2026-02-12",
       "burstGaugePerShot": 0.2,
       "treasure": true,
       "nicknames": ["tpriv", "priv"],
@@ -76203,7 +76203,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.65,
-      "releaseDate": "2023-06-01",
+      "releaseDate": "2026-07-23",
       "burstGaugePerShot": 0.05,
       "treasure": true,
       "skills": {
@@ -88153,6 +88153,7 @@
       "releaseDate": "2026-07-23",
       "burstGaugePerShot": 4.5,
       "treasure": true,
+      "nicknames": ["tsugar"],
       "skills": {
         "skill1": "■ Activates when cover is attacked. Affects self.\nCritical Damage ▲ 16.39% for 10 sec.\nReload Speed ▲ 12.12% for 10 sec.\nRestores Cover HP an amount equal to 1.5% of the skill user's final Max HP.\n■ Activates if this unit's cover is still intact. Affects self.\nAttack Damage ▲ 19.98% continuously.\n■ Activates at the start of battle. Affects self.\nConverts damage to Elemental Advantage damage against Fire Code enemies. This effect is continuous and cannot be removed.",
         "skill2": "■ Activates when entering Full Burst. Affects self.\nCritical Rate ▲ 13.02% for 10 sec.\nATK ▲ 25.01% for 10 sec.\n■ Activates when entering Full Burst. Affects all allies with shotguns.\nMax Ammunition Capacity ▲ 83.8% for 15 sec.\n■ Activates when entering Full Burst. Affects all Water Code and Iron Code allies with shotguns.\nElemental Advantage Attack Damage ▲ 40.02% for 15 sec.",
@@ -89662,7 +89663,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
-      "releaseDate": "2023-11-23",
+      "releaseDate": "2025-07-17",
       "burstGaugePerShot": 0.2,
       "treasure": true,
       "nicknames": ["ttove"],
@@ -92874,7 +92875,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 27,
-      "releaseDate": "2023-01-19",
+      "releaseDate": "2024-07-04",
       "burstGaugePerShot": 4.5,
       "treasure": true,
       "skills": {
@@ -95111,7 +95112,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 21,
-      "releaseDate": "2024-08-08",
+      "releaseDate": "2026-02-12",
       "burstGaugePerShot": 1.75,
       "treasure": true,
       "nicknames": ["tzwei"],

@@ -1752,6 +1752,31 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 ## Engine/data-architecture decisions
 
+- **(2026-08-03) A TREASURE UNIT'S `releaseDate` IS ITS TREASURE'S RELEASE DATE — and the "sugar
+  data bug" was never a bug, it was the column silently disagreeing with itself.** `releaseDate`
+  is display-only (the unit card's "Released &lt;date&gt;" line; the engine never reads it) and
+  reaches `data/characters.json` from bakery-bot's `attributes` blob, which takes the FIRST date of
+  whichever Synergy `attack_damage_characters` row the DB matched the unit to. Synergy carries a
+  Treasure as its own row — `宝` + the base unit's Japanese name — with its own release date, so
+  that match decided everything. **Audited the full column against the live DB + Synergy
+  (`scripts/audit-release-dates.ts`, 2026-08-03): all 195 units with a Synergy row carried exactly
+  their matched row's first date — zero transcription errors — but 18 of the 21 Treasure units were
+  matched to the base row and 3 (`drake`, `laplace`, `sugar`) to the `宝` row.** So `sugar` reading
+  2026-07-23 was not a per-unit anomaly to fix upstream, and the QUEUE's suspicion that `drake` and
+  `helm` had "held each other's dates" is REFUTED: both Treasures released 2025-01-16, and the two
+  units simply sat on opposite sides of the same base-vs-`宝` split.
+  **Owner ruling: show the Treasure date.** This roster carries the Treasure version of those 21
+  units — `name` is suffixed "(Treasure)", the kit prose is the Treasure kit — so the card states
+  when that version arrived. `src/data/sync.ts` now resolves the `宝` row from the unit's own
+  Synergy entry rather than trusting the upstream match, which needs no hand-maintained id table
+  (it resolved all 21 on the first pass) and makes the column uniform instead of 18/3.
+  Landed with the 18 dates regenerated through `npm run sync`, pinned by
+  `scripts/tests/data/release-dates.test.ts`, re-auditable with `scripts/audit-release-dates.ts`.
+  Consequence worth knowing: `/characters` "New Characters" already excluded Treasure entries for
+  an independent reason (a Treasure upgrades an existing character), and that filter is now
+  load-bearing — Treasures ship in same-date batches that would otherwise crowd the row.
+  `anne-miracle-fairy` remains the one unit with no date; Synergy has no row for her.
+
 - **(2026-08-01) THE UNIT-CARD GOLDENS ARE FROZEN AGAINST A COMMITTED SOURCE SNAPSHOT — a golden
   image pins the RENDERER, and joining one to live data buys nothing and costs twice.**
   `unit-card.{discord,twitter}.png` were the only two of nine goldens built from the live rank

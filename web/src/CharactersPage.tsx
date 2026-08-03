@@ -44,12 +44,11 @@ const data = charactersJson as unknown as DataFile;
 // upgrade to an EXISTING character, not a new one. That is the whole reason; it
 // holds no matter what the dates say.
 //
-// It also happens to defend against a live upstream data bug: `sugar` carries
-// releaseDate 2026-07-23 (her Treasure date) instead of her true 2022-11-04 —
-// NIKKE's global launch — so a launch unit sorts to the top of a "newest" list.
-// Filed in docs/handoffs/QUEUE.md; data/ is synced, so it is fixed at the source,
-// not here. Note the bug is PER-UNIT, not a rule about Treasures: flora, rosanna
-// and phantom got their Treasures in the same batch and kept correct dates.
+// This filter is load-bearing, not belt-and-braces: every Treasure unit's
+// `releaseDate` is the date its TREASURE released (2026-08-03 ruling), and
+// Treasures ship in batches of four-ish sharing one date. Today that batch is
+// 2026-07-23 — drop the filter and it takes three of the five slots, burying
+// the real new characters behind it.
 //
 // `releaseDate` is absent on one unit today; it sorts out rather than crashing.
 const NEW_CHARACTER_COUNT = 5;
