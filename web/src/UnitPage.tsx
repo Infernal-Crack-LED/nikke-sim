@@ -36,6 +36,13 @@ import {
 import type { TableCardData } from '../../src/infographics/core/tableCard';
 import { loadDpsChart, rankedFor } from './dpschartData';
 import { manifestThumbUrl } from './portraitManifest';
+import {
+  ICON_BY_BURST,
+  ICON_BY_CLASS,
+  iconNameForElement,
+  iconNameForManufacturer,
+  iconNameForWeapon,
+} from '../../src/infographics/core/iconNames';
 import { escapeJsonLd } from './jsonLd';
 import { onSpaLinkClick } from './router';
 
@@ -126,6 +133,53 @@ const TIER_COPY: Record<string, { label: string }> = {
   VALIDATED: { label: 'Validated' },
   MODEL_ONLY: { label: 'Untuned' },
 };
+
+// ---- identity icons ---------------------------------------------------------
+
+// nikke-icons/ is not uniform: the element codes ship .svg (crisp at any size),
+// the weapons .png, and the class/burst/manufacturer sets .webp. Resolving the
+// extension from the basename here keeps that knowledge in ONE place instead of
+// hardcoded per call site, which is how CharacterGrid ended up with three
+// different literal patterns.
+function iconUrl(name: string | null): string | null {
+  if (!name) {
+    return null;
+  }
+  const ext = name.startsWith('code_')
+    ? 'svg'
+    : name.startsWith('weapon_')
+      ? 'png'
+      : 'webp';
+  return `/nikke-icons/${name}.${ext}`;
+}
+
+interface Ident {
+  icon: string | null;
+  label: string;
+}
+
+// The unit's identity attributes, in the order the card draws them. An attribute
+// with no icon asset (Pistol has none) still shows its label — the text is the
+// part a crawler reads, and the card is an image it can't read at all.
+function identsFor(character: DataFile['characters'][string]): Ident[] {
+  return [
+    { icon: iconNameForElement(character.element), label: character.element },
+    { icon: iconNameForWeapon(character.weapon), label: character.weapon },
+    {
+      icon: ICON_BY_BURST[character.burst] ?? null,
+      label: `Burst ${character.burst}`,
+    },
+    { icon: ICON_BY_CLASS[character.class] ?? null, label: character.class },
+    ...(character.manufacturer
+      ? [
+          {
+            icon: iconNameForManufacturer(character.manufacturer),
+            label: character.manufacturer,
+          },
+        ]
+      : []),
+  ].filter((i) => i.label);
+}
 
 // ---- kit prose --------------------------------------------------------------
 
@@ -386,18 +440,6 @@ export function UnitPage({ slug }: { slug: string | null }) {
         dangerouslySetInnerHTML={{ __html: escapeJsonLd(jsonLd) }}
       />
 
-      {cardUrl && (
-        <div className="unit-cardshot">
-          <img
-            src={cardUrl}
-            alt={`${character.name} stat card — rank tiles, kit tags and best overload lines`}
-            loading="eager"
-            width={1200}
-            height={600}
-          />
-        </div>
-      )}
-
       <nav className="unit-crumbs" aria-label="Breadcrumb">
         <a href="/characters" onClick={onSpaLinkClick('/characters')}>
           Characters
@@ -417,20 +459,18 @@ export function UnitPage({ slug }: { slug: string | null }) {
         )}
         <div className="unit-meta">
           <h1>{character.name}</h1>
-          <div className="unit-tags">
-            {character.element && (
-              <span className="pill">{character.element}</span>
-            )}
-            {character.weapon && (
-              <span className="pill">{character.weapon}</span>
-            )}
-            {character.burst && (
-              <span className="pill">Burst {character.burst}</span>
-            )}
-            {character.class && <span className="pill">{character.class}</span>}
-            {character.manufacturer && (
-              <span className="pill">{character.manufacturer}</span>
-            )}
+          {/* Identity as icon + label. The hero card below shows the same five
+              attributes, but it is an IMAGE — this is the copy a crawler reads. */}
+          <div className="unit-idents">
+            {identsFor(character).map((ident) => {
+              const src = iconUrl(ident.icon);
+              return (
+                <span className="unit-ident" key={ident.label}>
+                  {src && <img src={src} alt="" aria-hidden="true" />}
+                  {ident.label}
+                </span>
+              );
+            })}
           </div>
           {tags.length > 0 && (
             <div className="unit-tags unit-roletags">
@@ -447,6 +487,18 @@ export function UnitPage({ slug }: { slug: string | null }) {
           )}
         </div>
       </header>
+
+      {cardUrl && (
+        <div className="unit-cardshot">
+          <img
+            src={cardUrl}
+            alt={`${character.name} stat card — rank tiles, kit tags and best overload lines`}
+            loading="eager"
+            width={1200}
+            height={600}
+          />
+        </div>
+      )}
 
       <UnitOverloadSection
         name={character.name}
@@ -632,76 +684,78 @@ function UnitOverloadSection({
   return (
     <section className="unit-section">
       <h2>Overload Lines</h2>
-      <nav className="unit-tabs">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            className={active === t.key ? 'on' : ''}
-            onClick={() => setTab(t.key)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </nav>
+      <div className="unit-panel">
+        <nav className="unit-tabs">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              className={active === t.key ? 'on' : ''}
+              onClick={() => setTab(t.key)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </nav>
 
-      {active === 'optimal' &&
-        (best ? (
-          <>
-            <p className="unit-lines">
-              <b>
-                {OL_FLOOR_LABEL} + {best.label}
-              </b>
-            </p>
-            <p className="muted">
-              +{best.gainPct.toFixed(1)}% damage over {OL_FLOOR_LABEL}
-            </p>
-            <table className="unit-ol-table">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>Optimal Overload Lines</th>
-                  <th className="r">vs 8/12</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r, i) => (
-                  <tr key={r.label} className={i === 0 ? 'hl' : ''}>
-                    <td className="muted">{i + 1}</td>
-                    <td>{r.label}</td>
-                    <td className="r share">+{r.gainPct.toFixed(1)}%</td>
+        {active === 'optimal' &&
+          (best ? (
+            <>
+              <p className="unit-lines">
+                <b>
+                  {OL_FLOOR_LABEL} + {best.label}
+                </b>
+              </p>
+              <p className="muted">
+                +{best.gainPct.toFixed(1)}% damage over {OL_FLOOR_LABEL}
+              </p>
+              <table className="unit-ol-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Optimal Overload Lines</th>
+                    <th className="r">vs 8/12</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {rows.map((r, i) => (
+                    <tr key={r.label} className={i === 0 ? 'hl' : ''}>
+                      <td className="muted">{i + 1}</td>
+                      <td>{r.label}</td>
+                      <td className="r share">+{r.gainPct.toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="muted">
+                Run this for your own team and boss on the{' '}
+                <a href="/overload" onClick={onSpaLinkClick('/overload')}>
+                  Overload Optimizer
+                </a>
+                .
+              </p>
+            </>
+          ) : (
             <p className="muted">
-              Run this for your own team and boss on the{' '}
-              <a href="/overload" onClick={onSpaLinkClick('/overload')}>
-                Overload Optimizer
-              </a>
-              .
+              No overload ranking for {name} yet — the optimizer covers units
+              with a modelled kit that the team generator can build around.
             </p>
-          </>
-        ) : (
-          <p className="muted">
-            No overload ranking for {name} yet — the optimizer covers units with
-            a modelled kit that the team generator can build around.
-          </p>
-        ))}
+          ))}
 
-      {active === 'cs' && (
-        <CardTable
-          card={buildChargeTable(
-            character.chargeFrames,
-            name,
-            chargeLatencyFrames(character)
-          )}
-        />
-      )}
+        {active === 'cs' && (
+          <CardTable
+            card={buildChargeTable(
+              character.chargeFrames,
+              name,
+              chargeLatencyFrames(character)
+            )}
+          />
+        )}
 
-      {active === 'ammo' && (
-        <CardTable card={buildAmmoTable(character.ammo, name)} />
-      )}
+        {active === 'ammo' && (
+          <CardTable card={buildAmmoTable(character.ammo, name)} />
+        )}
+      </div>
     </section>
   );
 }

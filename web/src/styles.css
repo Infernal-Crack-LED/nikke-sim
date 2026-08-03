@@ -2404,9 +2404,47 @@ a.dpschart-name:hover {
 .unit-crumbs a:hover {
   text-decoration: underline;
 }
-/* Kit-role archetype tags sit under the identity pills, visually quieter. */
+/* Identity row: element / weapon / burst / class / manufacturer, each with its
+   nikke-icons glyph. Sits directly under the H1, above the hero card. */
+.unit-idents {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.unit-ident {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 6px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+}
+.unit-ident img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+/* Kit-role archetype tags sit under the identity row, visually quieter. */
 .unit-roletags {
   margin-top: 6px;
+}
+/* A bordered container for a whole section's contents (the Overload Lines tabs
+   + whichever table is showing), so the section reads as one box rather than
+   loose rows on the page background. */
+.unit-panel {
+  padding: 14px 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.unit-panel > :last-child {
+  margin-bottom: 0;
 }
 .pill-role {
   background: var(--panel2);
