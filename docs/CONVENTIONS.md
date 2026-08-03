@@ -142,6 +142,13 @@ logs from poisoning agent context with stale-but-retained narration.
   Members: `docs/DECISIONS.md`, `docs/answered-questions.md`,
   `docs/probe-runs.md`, `web/src/patch-notes.json` (prepend-only), `data/sources.json` (cumulative
   accreditation), and the `docs/handoffs/closed/` + `docs/closed/` archives.
+  - **The two archives are gitignored on purpose — archiving a doc UNTRACKS it.** A finished handoff
+    or plan doc gets a `CLOSED (date)` block at the top, then `git rm --cached <path>` followed by a
+    plain `mv` into the archive: it survives on disk for a human to read and leaves the repo. `git mv`
+    cannot do this, and staging a new path under either archive aborts the pre-commit hook — that is
+    the missing `git rm --cached`, not a broken hook. Move any residual open item to
+    `docs/handoffs/QUEUE.md` first, and check nothing cites the doc by name (a `docs/DECISIONS.md`
+    citation to an untracked file is a dangling pointer) before it goes.
 - **CURRENT-STATE class — freely rewritten; stale content is DELETED, not marked.** History lives in
   the changelog class, so deletion loses nothing. **Capture-first rule:** before deleting a
   still-true-but-resolved block, confirm the fact is in a changelog doc (DECISIONS /
