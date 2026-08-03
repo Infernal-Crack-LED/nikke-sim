@@ -1,0 +1,103 @@
+{
+  "slug": "folkwang",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Shield 13.71% of user's Max HP, 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Shield grant — no attack-category scoping; magnitude keys off the CASTER's (skill user's) final Max HP, so skill2's self Max HP ▲ raises it while live.",
+      "durationSemantics": "durationSec: 10 (wall-clock; no round/stack semantics).",
+      "triggerIdentity": "No '■ Activates when' clause → interval trigger on the datamined skillCooldownsSec, first fire at t=CD (no 'Forcefully uses' wording, so not a t=0 force-cast).",
+      "targetSet": "alliesTopAtk count:2 with byFinalAtk:true — the prose literally says 'highest final ATK', which mandates live-effectiveAtk ranking, not static. Self (Defender, 78,707 static) effectively never ranks top-2 in a real comp.",
+      "nearestWrongModel": "Skipped entirely as 'defensive, no damage' (no shield event emitted), or authored with static-ATK ranking (byFinalAtk omitted), or targeted at self.",
+      "distinguishingAssertion": "Patch a top-ATK teammate via withPatchedOverride to carry a {trigger:{kind:'shielded'}} marker block granting a sentinel buff; run the comp and assert the sentinel buffApply appears at ~t=CD (and re-fires each CD), lands on exactly the 2 highest-final-ATK allies, and never on the other slots. RED if the shield was dropped or mis-targeted.",
+      "inertness": "With no shielded-trigger consumer in the comp, totals for every unit must be identical with the shield block removed — the shield itself carries no damage.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Incoming healing ▲ 45.7% for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "Amplifies heal AMOUNT received by the 2 targets; heal amounts have no representation in the sim (no HP pool, heal effects are event-only).",
+      "durationSemantics": "durationSec: 10 if it were encoded; moot.",
+      "triggerIdentity": "Same interval/CD block as the shield line.",
+      "targetSet": "Same 2 highest-final-ATK allies.",
+      "nearestWrongModel": "Force-fitting it onto an existing StatKey (e.g. a generic damage or heal-ish stat) — there is no incoming-healing StatKey in the schema, and 'recovery' triggers fire per heal EVENT regardless of amount, so an amplifier cannot change any consumer.",
+      "distinguishingAssertion": "Assert NO buffApply with any damage-relevant stat is emitted for this line; verbatim text must appear in override.unmodeled.skill1. Totals identical with/without.",
+      "inertness": "Must move zero damage for all 5 units; must not add any buffApply beyond the shield/CD block's own.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Taunt for 5 sec (enemy, highest ATK)",
+      "disposition": "UNMODELED",
+      "scope": "Enemy-targeted aggro control; the scope-lock boss deals no modeled damage and there is no enemy entity for targeting effects (resolveTargets enemy → []).",
+      "durationSemantics": "5 sec wall-clock; moot.",
+      "triggerIdentity": "Same no-activation-clause interval/CD as the rest of skill2.",
+      "targetSet": "enemy (single boss).",
+      "nearestWrongModel": "Encoding it as a targetStatus or damageTakenPct debuff — taunt is not a damage-taken modifier; inventing one would over-credit the whole team.",
+      "distinguishingAssertion": "Assert no boss-held buffApply (casterIdx===null && targetIdx===null) exists attributable to folkwang; verbatim line in override.unmodeled.skill2. Totals unchanged with the line present/absent.",
+      "inertness": "Zero damage movement for all units; no damageTakenPct anywhere in the event log from folkwang.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP ▲ 44.96% for 10 sec (self)",
+      "disposition": "FAITHFUL",
+      "scope": "Self stat buff; 'Max HP ▲ X%' of the TARGET's own Max HP → StatKey targetMaxHpPct (the blanc/maiden kit-line convention), NOT maxHpPct (that is the Vigor-cube authoring key). Offensively inert on folkwang (no atkOfMaxHpPct converter in her kit) but kept per the keep-the-stat rule — it is a live feed for the shield lines' 'skill user's final Max HP' scaler and any future consumer.",
+      "durationSemantics": "durationSec: 10 — with a datamined skill CD likely >10s this buff has real downtime; NOT permanent.",
+      "triggerIdentity": "Interval on datamined skill2 CD, first fire t=CD. Nearest trap: first-fire t=0 or passive/permanent encoding (over-credits uptime for the shield scaler).",
+      "targetSet": "self only — never the 2 allies from the other ■ header (separate target block).",
+      "nearestWrongModel": "Encoded as a permanent passive (always-on Max HP), or dropped as 'defensive/inert', or scoped to allies alongside the taunt header.",
+      "distinguishingAssertion": "Assert a buffApply with stat 'maxHpFlat' (targetMaxHpPct flat-resolves at apply), value ≈ 0.4496 × folkwang's base Max HP, casterIdx === targetIdx === folkwang's slot, first at ~t=CD with expiresFrame ≈ apply+600f, refreshing each CD. RED under passive (t=0/no expiry) and under an ally-targeted misread.",
+      "inertness": "Must move zero totalDamage for every unit in the control comp (folkwang has no HP→ATK conversion); its presence is asserted via buffApply, not damage.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Shield 32.9% of user's Max HP, 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-tier shield grant, caster-Max-HP-scaled (same scaler note as skill1).",
+      "durationSemantics": "durationSec: 10.",
+      "triggerIdentity": "burstCast — this sits in folkwang's OWN burst block, so it fires only on rotations folkwang casts Burst II (cd 40s), NOT on every team Full Burst. She is a B2; in any comp with another B2 (e.g. crown in the control fixture) burstCast vs fullBurstEnter diverge materially.",
+      "targetSet": "alliesTopAtk count:2, byFinalAtk:true (prose says 'highest final ATK').",
+      "nearestWrongModel": "Keyed to fullBurstEnter (fires on every team FB including rotations another B2 carried) — the classic over-credit; or byFinalAtk omitted.",
+      "distinguishingAssertion": "With a shielded-trigger sentinel patched onto a top-ATK ally, assert sentinel buffApply timestamps correlate 1:1 with burstCast events whose caster is folkwang, and that no sentinel fires on Full Bursts where folkwang did not burst. RED under fullBurstEnter keying.",
+      "inertness": "No shield-consumer in comp → removing the block changes no unit's total.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 65.81% of atk damage as HP, 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Lifesteal-over-time on the 2 targets. The HP AMOUNT (65.81% of attack damage) is unrepresentable (no HP pool) — the modelable substance is the RECOVERY EVENT STREAM, which drives teammates' 'recovery' triggers (crown-style 'when recovery takes effect' kits). Taxonomy rule 4: never skip a heal line on isolation grounds.",
+      "durationSemantics": "'over 10 sec' → a heal-over-time: heal effect with ticks:10, intervalSec:1 (durationSec-shaped window), NOT a single instant recovery event — an on-recovery consumer with a short buff needs the repeated ticks to stay refreshed across the 10s.",
+      "triggerIdentity": "burstCast (own burst block) — same fullBurstEnter trap as the burst shield.",
+      "targetSet": "Same 2 highest-final-ATK allies (byFinalAtk:true).",
+      "nearestWrongModel": "Dropped as 'no HP modeled', or encoded as ticks:1 (single instant recovery — a recovery-consumer's 1s-scale buff would see 1 refresh instead of 10), or keyed to fullBurstEnter.",
+      "distinguishingAssertion": "Patch a top-ATK ally with a {trigger:{kind:'recovery'}} sentinel block (short-duration marker buff); assert ~10 sentinel buffApply events per folkwang burst spread over ~600 frames after her burstCast, zero on non-folkwang rotations. RED under drop, under ticks:1 (exactly 1 per burst), and under fullBurstEnter keying.",
+      "inertness": "With no recovery-consumer among the 2 targets, totals unchanged; the 65.81% magnitude itself must appear nowhere as a damage or stat value.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:shield-13.71pct-topAtk2",
+    "skill2:self-maxhp-44.96pct",
+    "burst:shield-32.9pct-topAtk2",
+    "burst:heal-over-10s-topAtk2"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": ["Incoming healing ▲ 45.7% for 10 sec."],
+    "skill2": ["Taunt for 5 sec."],
+    "burst": []
+  },
+  "notes": "Folkwang carries ZERO offensive kit — no damage effect, no damage-relevant stat buff anywhere; her own total must be pure AR normal-attack output (ammo 60, reloadFrames 99, mult 14.29) and every kit line is damage-inert absent a tandem consumer. Expected shared-prior misreads to check hard: (1) 'defensive unit, skip the kit' — the shields and the heal-over-time MUST still be encoded because they emit shielded/recovery events that drive consumer kits (crown-style on-recovery, naga-style shield gates); a driver that models nothing and a driver that models everything produce identical control-comp totals ONLY if no consumer is present, so the tests must use patched sentinel consumers, not totals. (2) burstCast vs fullBurstEnter on both burst lines — she is Burst II and the standard fixture contains another B2 (crown), so the wrong key over-fires; also note controlComp(carry) assumes the audited unit sits the B3 slot, so a B2 unit needs a fixture where folkwang occupies the B2 slot and actually casts (verify via burstCast events that she bursts at all, else every burst-line test is vacuously green). (3) 'highest final ATK' appears in ALL three target headers → byFinalAtk:true is mandatory on each alliesTopAtk; static ranking is the documented default trap. (4) Max HP self line: targetMaxHpPct (kit-line key), not maxHpPct (cube key); assert via stat 'maxHpFlat' flat-resolved value. (5) skill1/skill2 first-fire phase is t=CD by the interval convention — the CDs themselves are datamined, flag ⚑ if the driver pinned different values without a source.",
+  "model": "claude-fable-5"
+}

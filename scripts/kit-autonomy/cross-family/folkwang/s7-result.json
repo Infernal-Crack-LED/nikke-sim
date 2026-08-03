@@ -1,0 +1,89 @@
+{
+  "slug": "folkwang",
+  "kitDescription": "Folkwang is a pure sustain Defender whose kit contains zero damage effects of any kind. Her first passive (30s cooldown) places a 10-second shield equal to 13.71% of her own Max HP on the two allies with the highest final ATK, and also boosts the healing they receive by 45.7% for 10 seconds. Her second passive (20s cooldown) taunts the highest-ATK enemy for 5 seconds and raises her own Max HP by 44.96% for 10 seconds. Her Burst II gives the same two top-ATK allies a larger shield (32.9% of her Max HP, 10 seconds) and a 10-second heal-over-time that recovers HP based on their attack damage. In game terms she is a shield-and-heal support whose value is keeping the team's two main attackers alive.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "fixture sanity (controlComp puts the B2 audited unit in the B3 slot; folkwang casts zero bursts there — the blind author's own non-vacuity guard catches its own fixture)",
+      "5 assertions reading SimEvent kind:'shield' (no such event kind in this engine; shield landings are observable only through a consumer's shielded-trigger block, which the driver's naga fixture uses)",
+      "3 assertions reading SimEvent kind:'recovery' (no such event kind; recovery landings surface only through a recovery-trigger consumer, which the driver's asuka-control fixture uses — the demanded ticks:10 HoT is shipped and green there)",
+      "1 assertion demanding an incomingHealingPct buffApply for the S1 incoming-healing line the driver (and S2b, and S6) all ruled unmodelable — no such StatKey exists and no HP pool exists for it to amplify",
+      "2 .blocks-shaped override mutations (TypeError — OverrideFile slots are arrays, not {blocks})",
+      "1 durationShots toBeUndefined check failing on an explicit null"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Shield 13.71% of user's final Max HP, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval 30s (datamined CD, first fire t=30 ⚑ phase convention), alliesTopAtk count:2 byFinalAtk:true, shield maxHpPct:13.71 durationSec:10",
+        "blindSaid": "S2b + S6 converge exactly (trigger identity, target set, event channel over magnitude); S5 demands the same behavior through a nonexistent kind:shield event",
+        "formulaCheck": "Shield is a no-damage line — the damage formula is untouched; its in-domain surface is the shielded event + 10s shieldedUntilFrame window (game-mechanics §9 shield-gate rules), which is exactly what the shield effect emits",
+        "fireRateOk": true,
+        "explanation": "Fires at the prose-implied cadence (5 interval landings over 180s, t=30..150) proven by the driver's naga-consumer count, not merely present in the JSON. S1 CD 30s is datamine-literal (skillCooldownsSec); S6's sec:40 is a blind placeholder error, driver correct."
+      },
+      {
+        "kitLine": "Incoming healing ▲ 45.7% for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — no incoming-healing StatKey, no HP pool, and recovery triggers are amount-blind so the amplifier can move no consumer in v1",
+        "blindSaid": "S2b independently rules UNMODELED on identical reasoning; S6 concurs; only S5 demands a buff that no schema stat can express",
+        "formulaCheck": "No bucket in the damage formula consumes incoming-healing; the line is damage-inert by construction",
+        "fireRateOk": true,
+        "explanation": "Deliberate, documented, three-way-converged skip. S5's red here is a RECON_ERROR (invented incomingHealingPct), not a driver gap."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Taunt for 5 sec (enemy, highest ATK)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim (with the full ■ header) — no aggro model, resolveTargets enemy → []; explicitly NOT fabricated as targetStatus or damageTakenPct",
+        "blindSaid": "S2b + S6 concur (S5 it.skips on the same grounds)",
+        "formulaCheck": "Taunt is not a damage-taken modifier; encoding it as one would over-credit the whole team — the skip is the formula-correct disposition",
+        "fireRateOk": true,
+        "explanation": "Documented gap, correctly not fabricated. The U1-U2 test pins the verbatim text and the absence of any boss-side fabrication."
+      },
+      {
+        "kitLine": "Max HP ▲ 44.96% for 10 sec (self)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval 20s, self, buff targetMaxHpPct 44.96 durationSec:10 — the kit-line stat that converts to maxHpFlat at apply; NOT the raw maxHpPct cube key, which an override buff cannot convert and would be silently inert",
+        "blindSaid": "S2b independently derives targetMaxHpPct and the maxHpFlat observable; S6 writes the raw maxHpPct key (inert — blind error, driver correct)",
+        "formulaCheck": "Max HP feeds only atkOfMaxHpPct conversions (own-kit grants per the e3 rule); folkwang carries none, so the grant is offensively inert — matching the prose, which grants no damage",
+        "fireRateOk": true,
+        "explanation": "8 self maxHpFlat buffApply events pinned over 180s (t=20..160), with the raw-maxHpPct counterfactual proven red (zero maxHpFlat) — the modeled line demonstrably fires at cadence and the S6 divergence is classified a blind recon error."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Shield 32.9% of user's final Max HP, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast-keyed (her OWN cast — she is B2; fullBurstEnter would over-fire on chains a competing B2 carries), alliesTopAtk count:2 byFinalAtk, shield 32.9 dur 10",
+        "blindSaid": "S2b + S6 converge on burstCast + byFinalAtk top-2; S5 demands the same own-cast identity via the nonexistent kind:shield event",
+        "formulaCheck": "No damage bucket involved; the trigger identity is the load-bearing routing and burstCast is the own-burst-block default, behaviorally pinned",
+        "fireRateOk": true,
+        "explanation": "The C4/DIV group is the strongest discrimination in the file: the fixture's competing B2 (naga, 20s CD) opens chains folkwang does not cast, and the fullBurstEnter counterfactual is proven to over-fire by exactly those chains while the shipped burstCast encoding matches own-cast count exactly."
+      },
+      {
+        "kitLine": "Recovers 65.81% of attack damage as HP over 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "MODELED as heal ticks:10 intervalSec:1 on the same top-2 target (marciana convention for the identical 'Recovers X% of attack damage as HP over N sec' construction — her owner-landed override encodes 'over 3 sec' as ticks:3); 65.81% magnitude deliberately unmodeled (no HP pool); tick count the ⚑ estimate (in-game recovery is damage-linked and continuous, not clock-ticked). Driver initially ruled UNMODELED on ada/tia precedent, revised 2026-08-03 on three-way blind convergence + the marciana analog",
+        "blindSaid": "S2b, S5 and S6 ALL independently converged on the HoT tandem-stream encoding before the driver revised — the one substantive dispute, now resolved in the blinds' favor with an in-repo precedent",
+        "formulaCheck": "Damage-inert line (no damage instance created); the modelable substance is the recovery event stream for on-recovery consumers, and ticks:10/intervalSec:1 is the faithful shape of 'over 10 sec' vs the nearest-wrong ticks:1",
+        "fireRateOk": true,
+        "explanation": "Fires at cadence: asuka's live recovery consumer counts asukaBursts + 10×folkwangBursts exactly, with ticks:1 and dropped-line counterfactuals both red. The magnitude skip and tick-count estimate are flagged ⚑ with the recipe per the rules — acceptable DOCUMENTED_GAP components inside a FAITHFUL event-stream encoding."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. All six kit lines are FAITHFUL or DOCUMENTED_GAP: both shields carry the correct trigger identity (interval 30s datamined / burstCast own-cast), the literal byFinalAtk top-2 target set, and 10s durations; the S2 Max HP line uses the convertible targetMaxHpPct key with cadence and inertness both behaviorally pinned; the burst lifesteal rider — the gauntlet's one substantive dispute — is now modeled as the ticks:10 HoT that all three blind agents independently demanded and that the owner-landed marciana override precedent (identical prose construction) sanctions, with its magnitude and tick count honestly ⚑-flagged rather than fudged. The S5 reds are 13/13 mechanical or recon errors (nonexistent kind:shield/kind:recovery event APIs, a .blocks schema shape, a vacuous controlComp B2-slot fixture its own sanity test catches, an incomingHealingPct stat that does not exist, a null-vs-undefined nit) — none reflects a real encoding fault, and the HoT the blind test demands is shipped and green through the real consumer observable. The S6 divergences (both passive CDs written 40s vs datamined 30/20; the inert raw maxHpPct key) are blind errors the driver is verifiably correct on. Discrimination is strong: every load-bearing assertion has a proven-red counterfactual (strip, shield-as-heal, wrong CD, raw stat key, fullBurstEnter over-fire via the competing-B2 fixture, ticks:1, dropped rider), and CW1 clean-weapon byte-identity passes 27/27 with per-unit inertness non-vacuous (team totals move through the tandem channels while her own never does). Residual same-model risk for owner spot-check: the interval first-fire phase (t=CD vs t=0) is an engine-wide ⚑ convention no agent here could independently measure, and the ticks:10 count inherits marciana's ⚑ estimate — both are flagged in the override caveats with recipes, which is the sanctioned disposition.",
+  "model": "kimi-code/k3"
+}

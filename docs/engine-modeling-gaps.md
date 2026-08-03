@@ -30,7 +30,7 @@
 | `alliesOfElement` | 10 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, exia, guillotine-winter-slayer, guilty, maiden-ice-rose, … |
 | `alliesOfElementWeapon` | 3 | ark-ranger-black, sugar, trina |
 | `alliesOfWeapon` | 9 | arcana-fortune-mate, d-killer-wife, drake, leona, miranda, noir, rem, sugar, … |
-| `alliesTopAtk` | 11 | alice, avistar, chime, claire, mast, maxwell, miranda, n102, … |
+| `alliesTopAtk` | 12 | alice, avistar, chime, claire, folkwang, mast, maxwell, miranda, … |
 | `atkOfMaxHpPct` | 5 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose, maxwell-ordinary-mechanic |
 | `bossElement` | 1 | eve |
 | `bossElementGate` | 6 | brid-silent-track, eve, helm-aquamarine, marciana-marine-study, phantom, rosanna |
@@ -39,7 +39,7 @@
 | `burstEligibility` | 1 | rapi-red-hood |
 | `burstFirst` | 1 | prika |
 | `burstSnapshotsPreFb` | 1 | cinderella |
-| `byFinalAtk` | 8 | alice, claire, liberalio, mast, miranda, n102, rapunzel, soda-twinkling-bunny |
+| `byFinalAtk` | 9 | alice, claire, folkwang, liberalio, mast, miranda, n102, rapunzel, … |
 | `cast` | 6 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |
 | `casterMaxHpPct` | 10 | ade, anis-star, avistar, cinderella, mary-bay-goddess, mast, maxwell-ordinary-mechanic, rouge, … |
 | `charge` | 1 | snow-white |
@@ -69,7 +69,7 @@
 | `inFb` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |
 | `instantInFb` | 1 | rapi-red-hood |
 | `instantReload` | 10 | alice-wonderland-bunny, asuka-wille, diesel, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, … |
-| `interval` | 22 | ade, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, elegg-boom-and-shock, emma-tactical-upgrade, … |
+| `interval` | 23 | ade, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, elegg-boom-and-shock, emma-tactical-upgrade, … |
 | `lastBullet` | 9 | anis-sparkling-summer, aria, dorothy, epinel, exia, helm, k, marciana, … |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 6 | grave, n102, noir, rem, tove, trina |
@@ -105,7 +105,7 @@
 | `stun` | 1 | mast-romantic-maid |
 | `swapGate` | 8 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
 | `swapped` | 8 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
-| `targetMaxHpPct` | 7 | 2b, blanc, diesel, label, maiden-ice-rose, noise, rapunzel |
+| `targetMaxHpPct` | 8 | 2b, blanc, diesel, folkwang, label, maiden-ice-rose, noise, rapunzel |
 | `targetStatus` | 11 | asuka-wille, d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, … |
 | `teamAmmo` | 3 | cinderella-crystal-wave, elegg-boom-and-shock, little-mermaid |
 | `teamHas` | 3 | blanc, eunhwa-tactical-upgrade, noir |

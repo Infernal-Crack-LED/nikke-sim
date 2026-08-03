@@ -1,0 +1,84 @@
+{
+  "slug": "folkwang",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 40
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 13.71,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 40
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxHpPct",
+          "value": 44.96,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 32.9,
+          "durationSec": 10
+        },
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": ["Incoming healing \u25b2 45.7% for 10 sec."],
+    "skill2": ["Taunt for 5 sec."],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 skill1/skill2 trigger identity is KIT-SILENT \u2014 neither block carries an activation clause, so both are modeled as interval-fired on the datamined skill cooldown (\u2691 40s placeholder taken from the unit's burst cooldown field, NOT a datamined per-skill cooldown). Cadence drives how often the shield/heal events fire, which is the ONLY damage-relevant output of this kit (tandem consumers: on-shielded / on-recovery kits).",
+    "\u2691 Shield/heal magnitudes (13.71% / 32.9% of caster Max HP, 65.81% lifesteal) are recorded for kit completeness only \u2014 the sim models no HP pool, so their NUMERIC values move no damage. What matters is that the shield/recovery EVENTS fire, and their target set + cadence.",
+    "\u2691 'Affects 2 allies with the highest final ATK' is modeled with byFinalAtk:true (literal 'final ATK' wording) and WITHOUT excludeSelf (the kit does not say 'except the skill user') \u2014 folkwang is a Defender, so she is unlikely to be in her own top-2 by ATK, making excludeSelf near-inert either way.",
+    "Taunt is SKIPPED: the v1 boss is scripted and has no aggro model, so a taunt changes nothing in the sim. It is NOT a damage-adjacent line (no shots/weapon-state effect).",
+    "'Incoming healing \u25b2' is SKIPPED: the sim models no HP amounts, so a healing-received multiplier has no consumer. It does not gate any recovery EVENT (heal events still fire), so no on-recovery tandem synergy is lost.",
+    "maxHpPct self-buff is retained despite being offensively inert for folkwang herself (no atkOfMaxHpPct in her kit) \u2014 it is kept per the HP/DEF-scaler prior as a future consumer, and because it self-scales her own shield output (shields are % of HER final Max HP)."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. folkwang (AR/Water/Defender/Burst II) is a pure sustain kit: every line is shield / heal / taunt / self-Max-HP. She contributes ZERO direct damage effects. Her only damage-relevant channel is TANDEM: the shield events (skill1 + burst, 2 highest-final-ATK allies) fire teammates' `shielded` triggers, and the burst's over-time recovery fires their `recovery` triggers \u2014 per the hard rule that heal/shield/DEF/HP/lifesteal lines are never skipped on isolation. The burst lifesteal (65.81% of attack damage as HP over 10 sec) is modeled as a 10-tick heal (1s interval) so on-recovery consumers stay refreshed across the window rather than seeing a single instant event. Both non-burst skills are \u2691 interval-triggered at an ESTIMATED cadence \u2014 the kit prose gives no activation clause for either, which is the single largest uncertainty in this baseline.",
+  "hasPierce": false
+}
