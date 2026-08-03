@@ -1,0 +1,170 @@
+{
+  "slug": "admi",
+  "leakDetected": null,
+  "override": {
+    "slug": "admi",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 20
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "chargeDamageMultPct",
+            "value": 9.59,
+            "durationSec": 20
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 2,
+          "byFinalAtk": true
+        },
+        "effects": []
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "reloadSpeedPct",
+            "value": 50.91,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 28.34,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "■ Affects 2 allies with the highest final ATK. Damage Taken ▼ 28.65% for 10 sec."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ S1 trigger: kit says \"Activates when attacked 20 time(s)\" — an INCOMING-hit counter the sim has no channel for (the scope-lock boss's attack cadence on this unit is unmodeled). Encoded as interval:20s as a stand-in; the real re-fire cadence is UNMEASURED and the 20s duration means uptime is ~100% if the boss lands 20 hits per 20s and much lower if not.",
+      "⚑ S1 stat routing: \"Charge Damage Multiplier ▲\" is read as chargeDamageMultPct (scales BASE charge damage, the multiplier lane), NOT the additive chargeDamagePct lane. Wording match is on \"Multiplier\"; unconfirmed against a popup.",
+      "S2 Damage Taken ▼ on ALLIES is a defensive mitigation — no HP pool at scope lock, so it is offensively inert; kept as an empty-effect block so the target set (2 highest FINAL ATK allies) stays auditable, and listed in unmodeled verbatim. Note damageTakenPct in the schema is the BOSS-side debuff (positive = boss takes more); an ally-side incoming-damage reduction is a different sign and a different consumer, so it is NOT encoded with that stat.",
+      "Burst is keyed to burstCast (this unit's own Burst II cast), not fullBurstEnter — the block sits in her own burst slot with no \"entering Full Burst\" clause."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Admi (SR/Wind/Supporter/Burst II) is a pure buffer: no self damage lines, no weapon swap, no DoT, no stacks. S1 grants an all-ally Charge Damage Multiplier ▲9.59%/20s off an incoming-hit counter (⚑ stand-in trigger). S2 is a defensive Damage Taken ▼ on the 2 highest-final-ATK allies — inert at scope lock (no HP pool), retained as a target-only block. Burst grants all allies Reload Speed ▲50.91% + Critical Damage ▲28.34% for 10s; reload speed is NOT skippable (it gates shots fired).",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when attacked 20 time(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "⚑ Trigger has no sim channel (no incoming-damage model at scope lock). Encoded as trigger interval:{sec:20} as a documented stand-in so the buff exists with plausible cadence; flagged."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} (no excludeSelf clause — self included)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Dmg Multiplier ▲9.59% 20s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeDamageMultPct 9.59, durationSec 20 — the 'Multiplier' wording routes to the base-charge-scaling lane, not additive chargeDamagePct"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects 2 allies w/ highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target alliesTopAtk {count:2, byFinalAtk:true} — kit says literally 'final ATK', so live effectiveAtk ranking. No excludeSelf clause. Block carried with empty effects for auditability."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Damage Taken ▼ 28.65% for 10 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "Ally-side incoming-damage mitigation. The boss deals no modeled damage and no unit has an HP pool at scope lock, so it moves zero damage and drives no on-heal/on-shield consumer. schema's damageTakenPct is the opposite-sign BOSS debuff and would OVER-CREDIT if misused here. Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'}"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Reload Speed ▲ 50.91% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff reloadSpeedPct 50.91, durationSec 10 — NOT skippable: reload speed gates shots fired (HARD RULE)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Critical Damage ▲ 28.34% 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 28.34, durationSec 10 — unscoped (no 'of normal attacks' qualifier), so generic crit damage"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "(burst trigger identity)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast — effects live in her OWN burst block with no 'entering Full Burst' clause, so they fire only on rotations where Admi actually casts"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "{kind:'interval', sec:20} (stand-in); real cadence = time for the boss to land 20 attacks on this unit",
+      "reasoning": "'Activates when attacked 20 time(s)' is an incoming-hit counter. The sim models an immortal boss that deals no tracked damage to units, so there is no 'attacked' event channel — the trigger is outside the input domain entirely. An interval is the closest available primitive; sec:20 is chosen so the 20s buff has ~100% uptime (an optimistic-but-plausible support assumption), NOT because 20 attacks are known to take 20s. If the boss's attack cadence on a single unit is slower, this OVER-CREDITS the whole team's charge damage.",
+      "recipe": "From scope-lock footage, count boss attacks that land on the Admi slot over the 180s fight → attacks/sec; re-fire period = 20 / that rate. Then set interval sec to that period (or, if the period exceeds 20s, accept sub-100% uptime rather than a permanent buff). Alternative: run a full-charge-carry comp with and without Admi and back out the effective uptime from the charge-bucket delta."
+    },
+    {
+      "field": "skill1[0].effects[0].stat",
+      "estimate": "chargeDamageMultPct 9.59 (vs the additive chargeDamagePct lane)",
+      "reasoning": "The kit says 'Charge Damage Multiplier', matching the multiplier lane's description (scales by BASE charge damage) rather than the additive-percentage-points lane. This is a wording-based routing call, not a measurement — the two lanes give materially different numbers on a charge carry, so if the wording convention is wrong the whole contribution is mis-sized.",
+      "recipe": "Run a single charge-weapon carry solo, record one full-charge popup with and without a 9.59% Admi buff active. Additive lane → the popup rises by 9.59 percentage points of the charge bucket's summed percentage; multiplier lane → it rises by 9.59% of the BASE charge damage. Compare the observed delta against both predictions."
+    },
+    {
+      "field": "burst[0].trigger",
+      "estimate": "burstCast (not fullBurstEnter)",
+      "reasoning": "Per the trigger-identity rule, effects in a unit's own burst block with no 'entering Full Burst' clause are burst-cast: they fire only on rotations where THIS unit bursts. Admi is Burst II, so in a comp with a second B2 she may not cast every rotation and keying to fullBurstEnter would over-credit. Low residual risk — but it is a reading of the block's position, not of an explicit activation clause.",
+      "recipe": "Two-B2 comp footage: check whether the Reload Speed / Crit Damage buff icons appear on allies during rotations where the OTHER B2 casts. Present on every FB → fullBurstEnter; present only on Admi's own casts → burstCast (as modeled)."
+    },
+    {
+      "field": "skill2[0] (Damage Taken ▼ 28.65%)",
+      "estimate": "offensively inert at scope lock — zero damage contribution",
+      "reasoning": "Ally-side incoming-damage reduction with no HP pool, no boss damage model, and no on-damage-taken consumer anywhere in the schema. The HARD RULE that DEF/HP/lifesteal lines are 'not skippable' is about lines that feed a scaler (atkOfMaxHpPct) or a synergy trigger (recovery/shielded); this one feeds neither. Retained as a target-only block so the ranking is auditable if a future consumer appears.",
+      "recipe": "Re-check if any roster unit gains an offensive benefit keyed to damage taken / mitigation. If one lands, encode this as a real ally-side mitigation stat (the schema has no such StatKey today — damageTakenPct is the boss-side debuff and has the opposite sign)."
+    },
+    {
+      "field": "cadence tuple (base weapon)",
+      "estimate": "SR, ammo 6, reloadFrames 125, chargeFrames 60, hitsPerShot 1 — taken as given from the supplied base stats",
+      "reasoning": "reloadFrames / rate_of_fire are known-unreliable datamine fields. Admi is a Supporter with no self-damage kit lines, so her own DPS contribution is small, but her reloadFrames DOES interact with her own uptime and her burst's own Reload Speed ▲ applies to her too.",
+      "recipe": "Ammo-counter read from footage: time a full 6-round magazine + the reload gap on a scope-lock recording; compare to 125 frames (~2.08s). Effective pull rate = 60/ceil(60/nominal)."
+    }
+  ],
+  "model": "claude-opus-5"
+}
