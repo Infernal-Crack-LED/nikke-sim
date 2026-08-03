@@ -9,7 +9,45 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-02, latest) THE SYNTHETIC NO-OP CONTROLS USE LOW BASE ATK (100), AND IT IS THE SHARED
+- **(2026-08-03, latest) THE BUFFER BOARD'S STANDARD TEAM CARRIES A SPARE NO-OP OF THE TESTED
+  UNIT'S STAGE, SO A LONG BURST COOLDOWN NO LONGER COSTS THE TEAM FULL BURSTS.** The board was built
+  without the design requirement it was supposed to have: the tested unit displaced the only no-op of
+  its stage, so a 40s Burst-2 landed **5** Full Bursts against the baseline's **9** (3 for the 60s
+  blanc) and was docked for four Full Bursts before a single buff was counted — roughly 8% of team
+  damage. Worse, a >20s Burst-1 was "compensated" by swapping the no-op B2 for a second no-op B1,
+  which left the team with no Burst-2 at all: **0 Full Bursts, both sides, all 180s** for 8 units,
+  killing every Full-Burst-gated line (moran's `fullBurstEnter` trigger among them). Not a
+  regression — `assemble`'s Burst-2 branch was unchanged since the board's first commit
+  (`91f53ea9`); the pairing existed only on the B1/B2 DPS board (`B2_TEAM`, pinned at
+  `scripts/tests/ranks/b1b2dps.test.ts:104`) and was never carried over. **Owner spec 2026-08-03:**
+  the standard team is no-op B1 (20s, 7s CDR) + two no-op B2 (20s) + the two carries (B3/40s, MG and
+  RL), with the tested unit taking the second B2's slot.
+  **Two things the spec's slot numbering does not say, both settled by measurement:**
+  (1) _The tested unit must LEAD its own stage._ Burst-stage contests are won by slot order, so a
+  tested unit left sitting behind the same-stage no-op simply stops bursting — a tested B2 in the
+  literal slot 3 casts **1** burst in 180s instead of 5 (flora 24.05% → 4.51%, crown 71.58% →
+  41.81%) and a tested B1 behind the no-op B1 casts **none** (liter 26.53% → **1.13%**). Owner
+  confirmed the wording was not meant literally for team order. Same five units, spare behind.
+  (2) _The baseline must be STAGE-MATCHED, not one fixed team._ Standing every unit against the plain
+  standard team charges each Burst-1 for trading a no-op B2 away: measured at up to −2 Full Bursts
+  and −34 points (anis-star 59.4 → 25.7), i.e. the same rotation distortion aimed at a different
+  stage. The baseline therefore puts a no-op of the tested unit's own stage back in its slot.
+  **Measured effect** (`npx tsx scripts/probe/buffer-rotation-audit.ts`): 61 of 78 units now match
+  their baseline's Full Burst count exactly, and NO unit with a >20s cooldown lands below it. Board
+  movement, generic: prika 17.4 → 42.4 (rank 32→13), anchor-innocent-maid 8.3 → 26.2 (52→23),
+  mast-romantic-maid 61.0 → 77.3, alice-wonderland-bunny 0 → 13.8, arcana −0.4 → 13.0,
+  delta-ninja-thief 3.1 → 15.5, moran 13.9 → 25.1, flora 14.8 → 24.0 (37→26), liter 26.5 → 35.3,
+  biscuit −7.7 → +1.0. The largest drop is anis-star 59.4 → 30.6: she is an RL whose gauge over the
+  fight is below the AR no-op she now sits beside (7 Full Bursts vs the baseline's 8), which the
+  methodology counts on purpose — rotation value cuts both ways. Negative rows 5 → 6.
+  **Residual, accepted:** units still land above or below their baseline's Full Burst count for
+  their OWN cooldown reduction or gauge (little-mermaid +3, liter/moran +2, anis-star/frima/kurumi
+  −1). That is unit-attributable value and the board should count it; what is gone is the structural
+  toll for merely having a long cooldown. Pinned in `scripts/tests/ranks/buffer.test.ts` (team shape,
+  stage-matched baseline, and "no long-cooldown unit lands below its baseline" over the whole
+  population). verify.sh green.
+
+- **(2026-08-02) THE SYNTHETIC NO-OP CONTROLS USE LOW BASE ATK (100), AND IT IS THE SHARED
   DEFAULT.** The controls in `src/dpschart/noop.ts` carried base ATK 30,000 while real units sit near
   400–500, so a control ALWAYS won an `alliesTopAtk` selector: a king-maker buff on the unit under
   test was spent on scaffolding that deals no damage and is never ranked. The B1/B2 DPS board had
