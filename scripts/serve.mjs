@@ -240,7 +240,9 @@ function injectUmami(html) {
     return html;
   }
   const src = `${UMAMI_URL}/script.js`;
-  // Idempotent: do not inject twice (e.g. prerendered HTML already contains it).
+  // Idempotent: never inject the tag twice. Defensive — nothing upstream emits
+  // it today, since the served shell is dist/index.html and this is the only
+  // thing that adds Umami.
   if (html.includes(src)) {
     return html;
   }
@@ -625,7 +627,9 @@ function breadcrumbItems(canonicalPath, pageLabel) {
 }
 
 function injectBreadcrumb(html, canonicalPath, pageLabel) {
-  // Idempotent: prerendered HTML may already contain a BreadcrumbList.
+  // Idempotent: skip when a BreadcrumbList is already present. Defensive —
+  // nothing upstream emits one today (React's own JSON-LD renders client-side,
+  // after this response is built).
   if (html.includes('"@type":"BreadcrumbList"')) {
     return html;
   }

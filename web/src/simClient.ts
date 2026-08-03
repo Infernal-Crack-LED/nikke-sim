@@ -3,7 +3,7 @@
 // sim batch to the worker pool (web/src/simPool.ts) via makeCalc's `evaluator` —
 // so the heavy work is parallel across cores while the coordinator only does light
 // bookkeeping between awaited batches (the UI thread stays responsive). When the
-// pool is unavailable (SSR prerender, JSDOM smoke) the same buildGenCalc runs
+// pool is unavailable (JSDOM smoke) the same buildGenCalc runs
 // in-process with no evaluator — identical results, just single-threaded.
 //
 // Output is byte-identical to a single-thread run (the pool only executes sims;
@@ -45,7 +45,7 @@ function coordinator(params: GenCalcParams, onProgress?: ProgressFn) {
     };
     return buildGenCalc(params, evaluator, 'shared');
   }
-  // in-process fallback (prerender / no workers) — still shares the cross-run cache
+  // in-process fallback (no workers) — still shares the cross-run cache
   return buildGenCalc(params, undefined, 'shared');
 }
 

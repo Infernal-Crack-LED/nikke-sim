@@ -259,16 +259,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   out of `topTeams` and parameterize per row. Hard constraint: **union must NEVER be sorted** (row _i_ is
   bound to boss _i_; `shareUnionRoster` zips by index). Cheap pre-check first: does union greedy leave a
   team on the table on a constrained pool the way solo did?
-- **⇒ SEO / AI-crawler visibility — LANDED 2026-08-03 (see DECISIONS), one open tail.** Both items in
-  `docs/handoffs/closed/2026-07-30-seo-notes.md` are closed: the owner added the `www`→apex redirect at
-  Cloudflare, and `/mechanics` + `/howto` now serve their prose to non-JS crawlers via request-time
-  injection (`scripts/build-content-pages.ts` → `web/public/content-pages.json`). The
-  `scripts/prerender.ts` Playwright pass they relied on is DELETED — it lived in `build:deploy` while
-  the deploy builds with `verify.sh artifacts`, so it had never once run in production. **Open tail:
-  the `/doll` FAQ is still JS-only.** It was deliberately left out of scope: `web/src/doll-faq-data.ts`
-  is the _bot's_ copy and `App.tsx` renders its own richer JSX version separately, so injecting from
-  the data module would serve crawlers different text than the page shows — which the `/unit/*`
-  no-JS ruling forbids. Reconciling the two copies is the prerequisite, and is its own task.
+- **⇒ `/doll` FAQ is the last route with no crawler-visible body** (current no-JS surface:
+  `docs/STATE.md` §9). Blocked on a prerequisite, not on effort: `web/src/doll-faq-data.ts` is the
+  Discord bot's copy while `App.tsx` renders its own richer JSX version, so injecting from the data
+  module would serve crawlers text the page does not show — which the no-JS ruling forbids.
+  **Reconcile the two copies first**, then it is a one-line addition to
+  `scripts/build-content-pages.ts`.
+- **⇒ First deploy after PR #68: confirm `/mechanics` returns a real body.** The bug it fixes was a
+  build step that looked wired and never ran, and the deploy-box path is the one thing no test can
+  exercise — `curl -s https://nikkesim.app/mechanics | grep -c 'mech-page'` should be 1, not 0.
 - **⇒ Bakery-bot share-URL durability — one residual to tell the bot:** a `characters.json` change (e.g.
   a unit rename) moves pixels without moving the render cache key — `specCacheKey` covers renderer
   changes, not data changes. If that bites, add a data stamp to the key.

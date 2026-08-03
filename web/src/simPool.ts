@@ -5,8 +5,8 @@
 // thread and calls simMany() for each decision point; the pool round-robins the
 // batch's teams across workers and reassembles results in the original order.
 //
-// Falls back cleanly when workers are unavailable (SSR prerender, JSDOM smoke,
-// or a browser that refuses to construct one): init() returns false and the
+// Falls back cleanly when workers are unavailable (JSDOM smoke, or a browser
+// that refuses to construct one): init() returns false and the
 // caller runs the search in-process instead.
 import type { GenCalcParams, TeamResult } from './genCalc';
 import type { PoolRequest, PoolResponse } from './simWorker';
