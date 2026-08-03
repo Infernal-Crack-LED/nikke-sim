@@ -104,6 +104,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      ⚠ Exact slugs: `maxwell` (SR/Iron), NOT `maxwell-ordinary-mechanic`; `alice` (SR/Fire), NOT
      `alice-wonderland-bunny`. The variants do not carry an ally-ATK selector.
 
+- **⇒ Run `bash scripts/verify.sh deploy` before a push that touches boards/artifacts — the default
+  tier CANNOT catch that class.** Learned 2026-08-02 the expensive way: two failures reached a deploy
+  that the default gate was green on, because both depend on `web/public/*.json` — gitignored build
+  outputs only the `deploy`/`artifacts` tiers generate. `web-smoke-ranks.mjs` only runs in those
+  tiers, and `unit-card-data.test.ts`'s cases are `it.runIf(haveBoards)`, so on a clean checkout they
+  silently skip. Anything touching `src/ranks/**`, `src/dpschart/**`, or the no-op controls should
+  take the deploy tier before it leaves the machine.
+
 #### Engine / model threads (measurement- or owner-gated)
 
 - **⇒ ENGINE REGRESSION FULL-BURST COUNT FAILURES — four comps disabled in `scripts/regression.ts`**
