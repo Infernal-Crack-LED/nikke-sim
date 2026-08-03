@@ -58,20 +58,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Code / tooling (unblocked, no footage or owner ruling needed)
 
-- **⇒ OL BASIS — CLOSED 2026-08-03** (owner ruling: exhaustive ranking at T11 everywhere; greedy
-  and the max-roll basis deleted — see `docs/DECISIONS.md`). One follow-up left, and it is a
-  PRESENTATION call, not a defect: the DPS chart's invested tiers now report T11 numbers instead of
-  max-roll ones, so per-unit DPS fell a mean 8.85% at 8/12 and 11.41% at 12/12, moving 1108 of 1830
-  rank positions at 12/12. Confirm that is the intended claim for a "12/12" row — if the chart is
-  meant to be aspirational-max, `OL_TIER = 15` in `src/dpschart/matrix.ts` reverts just that half
-  and leaves the (unambiguous) search fix in place. The scope-lock basis and the regression gate
-  are byte-identical either way. Score any artifact with `npx tsx scripts/ol-search-compare.ts`.
-
-- **⇒ B1/B2 DPS rank-board follow-up (1 of 3 left):** reconcile / document cross-board comparability
-  against the B3 DPS chart Solo cells (`bossDef`, `rangeBonus`, `durationSec`). Context:
-  `docs/handoffs/closed/2026-07-26-dps-ranks-b1b2.md`. (The "Core 100" half is settled — owner ruling
-  2026-08-02: the axis is core EXPOSURE, not hit rate; landed in `src/ranks/b1b2-cells.ts`,
-  `SimConfig.coreHitRate`, `CORES[].exposure` and `docs/data/rank-boards.md`.)
+- **⇒ B1/B2 cross-board comparability → [`docs/handoffs/2026-08-03-b1b2-comparability-and-squad-layering.md`](2026-08-03-b1b2-comparability-and-squad-layering.md) §1.**
+  The three fields the old entry named (`bossDef`, `rangeBonus`, `durationSec`) were verified
+  IDENTICAL across both boards on 2026-08-03, so what is left is documentation plus one owner call
+  (the B1/B2 board has no `c50` row and no investment axis — its numbers are comparable to DPS-chart
+  `scope` cells ONLY). ⚠ the old context pointer `docs/handoffs/closed/2026-07-26-dps-ranks-b1b2.md`
+  does not exist — do not go looking for it.
 - **⇒ Unit-card infographic follow-ups (3, code-verified still open 2026-08-02):**
   1. **No vector source for burst icons.** `web/public/nikke-icons/burst_*` is webp-only (~100px native)
      — fine at every size drawn today, but a surface wanting it large has nothing to rasterize from.
@@ -83,10 +75,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   3. **The browser icon loader still probes extensions and eats 404s** — `web/src/unitCardShare.ts:58`
      `ICON_EXT = ['svg','png','webp']` per icon via onload/onerror. The icon set is static and tracked,
      so the extension is knowable at build time; carry it in the `iconNames` mapping (`{ name, ext }`).
-- **⇒ Squad-primitive review follow-up (1 of 3 left, owner-deferred 2026-08-03):** optional layering
-  cleanup — keep `src/data/squads.ts` pure game truth and register the `noop-rouge-b1` synthetic
-  (`src/data/squads.ts:26`) from the ranks layer instead. (The other two NOTEs landed in `09f3702c`:
-  the `teamHas` facet allowlist and `sameSquad?: true`.)
+- **⇒ `noop-rouge-b1` squad layering → [`docs/handoffs/2026-08-03-b1b2-comparability-and-squad-layering.md`](2026-08-03-b1b2-comparability-and-squad-layering.md) §2.**
+  Optional cleanup: keep `src/data/squads.ts` pure game truth and move the synthetic out. The
+  obvious fix (register from the ranks layer at module load) is a TRAP — it makes the engine's
+  fail-closed `sameSquad` gate depend on import order, failing silently. Owner call needed before
+  building the version that actually works. (The other two NOTEs from that review landed in
+  `09f3702c`.)
 - **⇒ Pellet-reader: cherry-pick the `+62.5` crosshair-offset fix (`b69b5c6`)** — verified NOT an
   ancestor of `main`; `scripts/probe/read-pellets.ts:66` still defaults `-62.5`, latent, and poisons the
   next run. (It did **not** cause the 2026-07-29 REJECT: artifacts 12:19–13:33, commit 15:17.)
