@@ -58,36 +58,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Code / tooling (unblocked, no footage or owner ruling needed)
 
-- **⇒ Un-skip `loadouts-parity.test.ts` `topTeams(5)` byte-parity** — `scripts/tests/generators/loadouts-parity.test.ts:67`
-  is still `it.skip`, but the file now runs on `fastCfg` (30s fight, `../lib/fast-cfg.js`), which is
-  exactly the fix the 2026-07-26 skip comment TODOs ("narrow the pool here or give this file its own
-  longer timeout"). Un-skip, measure on the 30s basis, then delete or rewrite the now-stale comment.
-- **⇒ `scripts/build-dpschart.ts` worker-pool robustness — 3 findings, all still present** (filed from a
-  CLEAN cross-family review, kimi-code/k3 2026-08-01; packet + result JSONs in
-  `scratchpad/gates/2026-08-01-deploy-build-timeout/`). All on already-failing or currently-unreachable
-  paths, which is why they did not block the merge:
-  1. **Sibling workers are not killed when one rejects** (`spawnWorkers`, `:469`). `Promise.all` rejects on
-     the first failure; the other children keep simulating — or crash writing `out-*.json` into the
-     directory `.finally()` just removed — and the parent exits leaving them running. Fix: keep the child
-     handles, `kill()` the rest on first rejection.
-  2. **`rmSync` in the `.finally()` (`:535`) can mask the real error.** If it throws (EPERM/EBUSY on a
-     shared build box) on the failure path it replaces `dpschart worker N exited X` — the diagnostic you
-     actually need. Fix: wrap it in try/catch.
-  3. **`IS_WORKER` (`:102`) needs BOTH `--rows` and `--rows-out`;** a child given only one silently falls
-     through to the full main path (hashing, candidate fetch, inline simulation of every row) and writes
-     to the default out path. Unreachable from the current parent — robustness only. Fix: error when
-     exactly one is present.
-- **⇒ B1/B2 DPS rank-board follow-ups (3, deferred at landing):**
-  1. **Two synthetic registries, only one consulted.** `src/ranks/synthetics.ts` (`syntheticFor`) serves
-     buffer/sustain/burstgen; `src/ranks/b1b2dps.ts` `charFor` (`:138`) instead falls back to
-     `B1B2_NOOP_CHARACTERS` from `src/dpschart/noop.ts`. Unify behind one lookup so a future real-unit
-     stand-in registers once.
-  2. **The B1B2 cell union is declared four times** — `src/ranks/b1b2dps.ts:93` (`B1B2DpsCell` +
-     `B1B2_DPS_CELLS`), `src/infographics/core/rankTables.ts:179` (`B1B2DpsBoardId` + `B1B2_DPS_BOARDS`),
-     `web/src/rankBoardsData.ts:175`, `web/src/builderSpec.ts:20`. Hoist to one canonical export.
-  3. Reconcile / document cross-board comparability against the B3 DPS chart Solo cells (`bossDef`,
-     `rangeBonus`, `durationSec`) and clarify the "Core 100" cell label (core hit rate vs core
-     enhancement). Context: `docs/handoffs/closed/2026-07-26-dps-ranks-b1b2.md`.
+- **⇒ B1/B2 DPS rank-board follow-up (1 of 3 left):** reconcile / document cross-board comparability
+  against the B3 DPS chart Solo cells (`bossDef`, `rangeBonus`, `durationSec`). Context:
+  `docs/handoffs/closed/2026-07-26-dps-ranks-b1b2.md`. (The "Core 100" half is settled — owner ruling
+  2026-08-02: the axis is core EXPOSURE, not hit rate; landed in `src/ranks/b1b2-cells.ts`,
+  `SimConfig.coreHitRate`, `CORES[].exposure` and `docs/data/rank-boards.md`.)
 - **⇒ Unit-card infographic follow-ups (3, code-verified still open 2026-08-02):**
   1. **No vector source for burst icons.** `web/public/nikke-icons/burst_*` is webp-only (~100px native)
      — fine at every size drawn today, but a surface wanting it large has nothing to rasterize from.
@@ -112,6 +87,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **⇒ Pellet-reader: cherry-pick the `+62.5` crosshair-offset fix (`b69b5c6`)** — verified NOT an
   ancestor of `main`; `scripts/probe/read-pellets.ts:66` still defaults `-62.5`, latent, and poisons the
   next run. (It did **not** cause the 2026-07-29 REJECT: artifacts 12:19–13:33, commit 15:17.)
+- **⇒ Tell the owner before the next deploy build: the DPS chart moves for 4 units.** The 2026-08-02
+  no-op low-ATK standardization lifts Solo-framework DPS for `maxwell` +28.3%, `alice` +18.3%,
+  `n102` +9.6%, `naga` +0.8% (the other 8 ally-ATK-selector carriers are byte-identical) — a control
+  no longer wins their king-maker buff. `web/public/dpschart.json` + `b1b2dps.json` are gitignored
+  build output, so nothing is stale in the tree, but the DEPLOYED chart changes on the next build and
+  the movement is worth a patch-notes line (`/patch-notes`). Re-measure any time with
+  `npx tsx scripts/noop-basis-ab.ts`. Open question for the owner: the no-op B3's own damage fell
+  ~200× (5.09e9 → 2.52e7) since it scales with the same ATK — harmless today (it is never ranked;
+  `src/dpschart/run.ts:106` returns the tested unit's dps alone) but it retires the "contributes
+  realistic B3-stage damage" intent in `src/dpschart/noop.ts`.
 
 #### Engine / model threads (measurement- or owner-gated)
 
