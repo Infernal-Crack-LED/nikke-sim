@@ -63,7 +63,12 @@
 // expectations are re-derived from the event log, not hard-coded totals.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, data, runComp, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  data,
+  runComp,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const SLUG = 'snow-white-innocent-days';
 const FPS = 60;
@@ -78,7 +83,9 @@ type Shot = Extract<SimEvent, { kind: 'shot' }>;
 type FbStart = Extract<SimEvent, { kind: 'fullBurstStart' }>;
 
 if (data.characters[SLUG].hitsPerShot !== 1) {
-  throw new Error(`${SLUG} hitsPerShot changed — the 1-hit-per-shot walks below are stale`);
+  throw new Error(
+    `${SLUG} hitsPerShot changed — the 1-hit-per-shot walks below are stale`
+  );
 }
 
 function run(overrides: Record<string, any> = {}) {
@@ -92,7 +99,8 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- counterfactual / isolation patches -------------------------------------------------------
-const hasStat = (b: any, stat: string) => b.effects.some((e: any) => e.stat === stat);
+const hasStat = (b: any, stat: string) =>
+  b.effects.some((e: any) => e.stat === stat);
 const riderBlock = (b: any, atkPct: number) =>
   b.effects.some((e: any) => e.kind === 'flatDamage' && e.atkPct === atkPct);
 
@@ -116,27 +124,42 @@ const s1RiderFast = withPatchedOverride(SLUG, (ov) => {
 const noCountInFb = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill2.find((x: any) => riderBlock(x, 61.69));
   if (!b || b.trigger?.kind !== 'hitCount' || b.trigger.countInFb == null) {
-    throw new Error('SWID S2 61.69 hitCount/countInFb block missing — fixture is stale');
+    throw new Error(
+      'SWID S2 61.69 hitCount/countInFb block missing — fixture is stale'
+    );
   }
   delete b.trigger.countInFb;
 });
 /** SW4/SW6 counterfactual: the prose trigger swapped for the FB-window trigger. */
-const asFullBurstEnter = (slot: 'skill2' | 'burst', pick: (b: any) => boolean) =>
+const asFullBurstEnter = (
+  slot: 'skill2' | 'burst',
+  pick: (b: any) => boolean
+) =>
   withPatchedOverride(SLUG, (ov) => {
-    const b = ov[slot].find((x: any) => pick(x) && x.trigger?.kind === 'burstCast');
+    const b = ov[slot].find(
+      (x: any) => pick(x) && x.trigger?.kind === 'burstCast'
+    );
     if (!b) {
-      throw new Error(`SWID ${slot} burstCast block missing — fixture is stale`);
+      throw new Error(
+        `SWID ${slot} burstCast block missing — fixture is stale`
+      );
     }
     b.trigger = { kind: 'fullBurstEnter' };
   });
-const s2BuffFbEnter = asFullBurstEnter('skill2', (b) => hasStat(b, 'attackDamagePct'));
+const s2BuffFbEnter = asFullBurstEnter('skill2', (b) =>
+  hasStat(b, 'attackDamagePct')
+);
 const atkBuffFbEnter = asFullBurstEnter('burst', (b) => hasStat(b, 'atkPct'));
 /** SW7 counterfactual: the unlimited-ammunition line dropped. */
 const noUnlimited = withPatchedOverride(SLUG, (ov) => {
   const before = ov.burst[0]?.effects?.length ?? 0;
-  ov.burst[0].effects = ov.burst[0].effects.filter((e: any) => e.kind !== 'unlimitedAmmo');
+  ov.burst[0].effects = ov.burst[0].effects.filter(
+    (e: any) => e.kind !== 'unlimitedAmmo'
+  );
   if (ov.burst[0].effects.length === before) {
-    throw new Error('SWID burst unlimitedAmmo effect missing — fixture is stale');
+    throw new Error(
+      'SWID burst unlimitedAmmo effect missing — fixture is stale'
+    );
   }
 });
 
@@ -163,12 +186,18 @@ const inFb = (windows: { start: number; end: number }[], frame: number) =>
 const riders = (evs: SimEvent[], srcSlot: Damage['srcSlot'], atkPct: number) =>
   evs.filter(
     (e): e is Damage =>
-      e.kind === 'damage' && e.slug === SLUG && e.srcSlot === srcSlot && e.atkPct === atkPct
+      e.kind === 'damage' &&
+      e.slug === SLUG &&
+      e.srcSlot === srcSlot &&
+      e.atkPct === atkPct
   );
 const buffs = (evs: SimEvent[], stat: string, value: number) =>
   evs.filter(
     (e): e is BuffApply =>
-      e.kind === 'buffApply' && e.casterIdx === SWID && e.stat === stat && e.value === value
+      e.kind === 'buffApply' &&
+      e.casterIdx === SWID &&
+      e.stat === stat &&
+      e.value === value
   );
 const totalOf = (evs: SimEvent[]) =>
   evs
@@ -246,7 +275,9 @@ describe('snow-white-innocent-days — kit spec', () => {
     });
 
     it('DISCRIMINATING: an every-3-hits misread produces far more riders', () => {
-      expect(riders(fastRider, 'skill1', 188.68).length).toBeGreaterThan(hits.length * 5);
+      expect(riders(fastRider, 'skill1', 188.68).length).toBeGreaterThan(
+        hits.length * 5
+      );
     });
   });
 
@@ -284,7 +315,7 @@ describe('snow-white-innocent-days — kit spec', () => {
       }
     });
 
-    it('DISCRIMINATING: fullBurstEnter would fire on helm\'s windows too (strictly more)', () => {
+    it("DISCRIMINATING: fullBurstEnter would fire on helm's windows too (strictly more)", () => {
       const fbFired = buffs(s2Fb, 'attackDamagePct', 21.12);
       expect(fbFired.length).toBeGreaterThan(applied.length);
     });
@@ -320,8 +351,10 @@ describe('snow-white-innocent-days — kit spec', () => {
       }
     });
 
-    it('DISCRIMINATING: fullBurstEnter would re-fire on helm\'s windows (strictly more)', () => {
-      expect(buffs(atkFb, 'atkPct', 97.2).length).toBeGreaterThan(applied.length);
+    it("DISCRIMINATING: fullBurstEnter would re-fire on helm's windows (strictly more)", () => {
+      expect(buffs(atkFb, 'atkPct', 97.2).length).toBeGreaterThan(
+        applied.length
+      );
     });
 
     it('DISCRIMINATING (live arm): removing the ATK window drops her total', () => {
@@ -331,7 +364,9 @@ describe('snow-white-innocent-days — kit spec', () => {
           (e: any) => !(e.kind === 'buff' && e.stat === 'atkPct')
         );
         if (ov.burst[0].effects.length === before) {
-          throw new Error('SWID burst atkPct effect missing — fixture is stale');
+          throw new Error(
+            'SWID burst atkPct effect missing — fixture is stale'
+          );
         }
       });
       expect(totalOf(run({ [SLUG]: noAtk }))).toBeLessThan(totalOf(base));
@@ -339,7 +374,9 @@ describe('snow-white-innocent-days — kit spec', () => {
   });
 
   describe('SW7 — burst: unlimited ammunition for 10s', () => {
-    const casts = bursts(base).filter((c) => c.frame + 10 * FPS <= FIGHT_FRAMES);
+    const casts = bursts(base).filter(
+      (c) => c.frame + 10 * FPS <= FIGHT_FRAMES
+    );
 
     it('has bursts with a complete 10s window inside the fight', () => {
       expect(casts.length).toBeGreaterThan(0);
@@ -355,9 +392,15 @@ describe('snow-white-innocent-days — kit spec', () => {
         const inWindow = all.filter(
           (s) => s.frame >= cast.frame && s.frame < cast.frame + 10 * FPS
         );
-        expect(inWindow.length, 'window had no shots — cadence broken').toBeGreaterThan(0);
+        expect(
+          inWindow.length,
+          'window had no shots — cadence broken'
+        ).toBeGreaterThan(0);
         for (const s of inWindow) {
-          expect(s.unlimitedAmmo, `shot at ${(s.frame / FPS).toFixed(2)}s`).toBe(true);
+          expect(
+            s.unlimitedAmmo,
+            `shot at ${(s.frame / FPS).toFixed(2)}s`
+          ).toBe(true);
         }
         for (let i = 1; i < inWindow.length; i++) {
           expect(
@@ -388,11 +431,11 @@ describe('snow-white-innocent-days — kit spec', () => {
     });
 
     it('DISCRIMINATING: dropping the line leaves zero unlimited shots and reloads inside windows', () => {
-      expect(
-        shots(limited).filter((s) => s.unlimitedAmmo).length
-      ).toBe(0);
+      expect(shots(limited).filter((s) => s.unlimitedAmmo).length).toBe(0);
       const reloadsInWindow = limited.filter((e) => {
-        if (e.kind !== 'reload' || e.slug !== SLUG) {return false;}
+        if (e.kind !== 'reload' || e.slug !== SLUG) {
+          return false;
+        }
         return bursts(limited).some(
           (c) => e.frame >= c.frame && e.frame < c.frame + 10 * FPS
         );

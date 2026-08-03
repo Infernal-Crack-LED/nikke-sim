@@ -80,9 +80,7 @@
   ],
   "unmodeledVerbatim": {
     "skill1": [],
-    "skill2": [
-      "Damage Taken ▼ 28.65% for 10 sec."
-    ],
+    "skill2": ["Damage Taken ▼ 28.65% for 10 sec."],
     "burst": []
   },
   "notes": "Three reconciliation points for the driver. (1) skill1's trigger is the hard part: 'when attacked 20 time(s)' counts INCOMING hits, which v1 does not simulate — the only honest encoding is an interval with a ⚑ cadence derived from measured boss attack rate (state the recipe: boss attacks/sec from footage × 20 → intervalSec; also resolve whether 'attacked' counts hits on Admi alone or the whole team, which changes the period). Expect the shared-prior misread to be passive/always-on, which over-credits uptime whenever the accrual period exceeds ~0s duty-cycle-neutral point; a driver test that never asserts a NO-buff gap window cannot catch it. (2) skill1's stat word is 'Multiplier' — chargeDamageMultPct (scales base charge damage), not additive chargeDamagePct; a test asserting only 'some charge buff exists' passes both encodings. (3) skill2 is the inversion trap: the schema's damageTakenPct is a BOSS-takes-more debuff, so any attempt to 'model' the ally mitigation with that stat manufactures a large phantom team-damage swing — the test must assert total inertness of skill2, not merely skip it. Burst trigger identity (burstCast vs fullBurstEnter) only discriminates in a comp with a second Burst II unit; the default controlComp fixes crown at B2, so the driver must either build a variant comp or assert the burstCast→buffApply 1:1 frame pairing to make the distinction observable.",

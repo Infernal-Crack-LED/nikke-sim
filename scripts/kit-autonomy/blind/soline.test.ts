@@ -57,7 +57,10 @@ type Ev = SimEvent & Record<string, unknown>;
 
 function run(opts: ReturnType<typeof controlComp>) {
   const events: Ev[] = [];
-  const res = runComp({ ...opts, onEvent: (ev: SimEvent) => events.push(ev as Ev) });
+  const res = runComp({
+    ...opts,
+    onEvent: (ev: SimEvent) => events.push(ev as Ev),
+  });
   return { res, events };
 }
 
@@ -72,22 +75,24 @@ const baseTotals = totals(baseRun.res);
 const solineIdx = soline.slotIndex ?? soline.idx;
 
 const buffsOnSoline = ev.filter(
-  (e) => e.kind === 'buffApply' && e.targetSlug === SLUG,
+  (e) => e.kind === 'buffApply' && e.targetSlug === SLUG
 );
 const atkSpeedBuffs = buffsOnSoline.filter((e) => e.stat === 'attackSpeedPct');
 const critRateBuffs = buffsOnSoline.filter((e) => e.stat === 'critRatePct');
 const critDmgBuffs = buffsOnSoline.filter((e) => e.stat === 'critDamagePct');
 const critRateNormalBuffs = buffsOnSoline.filter(
-  (e) => e.stat === 'critRateNormalPct',
+  (e) => e.stat === 'critRateNormalPct'
 );
 
-const solineShots = ev.filter((e) => e.kind === 'shot' && e.srcSlot === solineIdx);
+const solineShots = ev.filter(
+  (e) => e.kind === 'shot' && e.srcSlot === solineIdx
+);
 const solineDamage = ev.filter(
-  (e) => e.kind === 'damage' && e.srcSlot === solineIdx,
+  (e) => e.kind === 'damage' && e.srcSlot === solineIdx
 );
 const solineNormalDamage = solineDamage.filter((e) => e.bucket === 'normal');
 const solineBurstCasts = ev.filter(
-  (e) => e.kind === 'burstCast' && e.srcSlot === solineIdx,
+  (e) => e.kind === 'burstCast' && e.srcSlot === solineIdx
 );
 
 // non-normal, non-DoT hits sourced by soline = her burst riders
@@ -140,7 +145,10 @@ describe('soline skill1 — Attack Speed ▲7.26% for 3 sec, every 40 normal att
     });
     const alt = run({ ...base, overrides: { [SLUG]: patched } });
     const altAtkSpeed = alt.events.filter(
-      (e) => e.kind === 'buffApply' && e.targetSlug === SLUG && e.stat === 'attackSpeedPct',
+      (e) =>
+        e.kind === 'buffApply' &&
+        e.targetSlug === SLUG &&
+        e.stat === 'attackSpeedPct'
     );
     // Doubling the threshold must roughly HALVE the application count — proving the
     // assertion above is sensitive to the threshold and not trivially satisfied.
@@ -153,7 +161,7 @@ describe('soline skill1 — Attack Speed ▲7.26% for 3 sec, every 40 normal att
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.skill1!.blocks) {
         b.effects = b.effects.filter(
-          (e) => !(e.kind === 'buff' && e.stat === 'attackSpeedPct'),
+          (e) => !(e.kind === 'buff' && e.stat === 'attackSpeedPct')
         );
       }
     });
@@ -168,7 +176,7 @@ describe('soline skill1 — Attack Speed ▲7.26% for 3 sec, every 40 normal att
         e.kind === 'buffApply' &&
         e.stat === 'attackSpeedPct' &&
         e.casterIdx === solineIdx &&
-        e.targetSlug !== SLUG,
+        e.targetSlug !== SLUG
     );
     expect(onOthers).toHaveLength(0);
   });
@@ -197,7 +205,7 @@ describe('soline skill2 — Critical Rate ▲21.62% + Critical Damage ▲62.27%,
     // Nearest-wrong: encoding it as critRateNormalPct, which would deny crit lift to her
     // burst riders. soline must carry NO self-sourced critRateNormalPct.
     const solineSourcedNormalScoped = critRateNormalBuffs.filter(
-      (e) => e.casterIdx === solineIdx,
+      (e) => e.casterIdx === solineIdx
     );
     expect(solineSourcedNormalScoped).toHaveLength(0);
 
@@ -229,7 +237,7 @@ describe('soline skill2 — Critical Rate ▲21.62% + Critical Damage ▲62.27%,
             !(
               e.kind === 'buff' &&
               (e.stat === 'critRatePct' || e.stat === 'critDamagePct')
-            ),
+            )
         );
       }
     });
@@ -245,14 +253,16 @@ describe('soline skill2 — Critical Rate ▲21.62% + Critical Damage ▲62.27%,
             !(
               e.kind === 'buff' &&
               (e.stat === 'critRatePct' || e.stat === 'critDamagePct')
-            ),
+            )
         );
       }
     });
     const alt = run({ ...base, overrides: { [SLUG]: patched } });
     const altTotals = totals(alt.res);
     for (const slug of Object.keys(baseTotals)) {
-      if (slug === SLUG) continue;
+      if (slug === SLUG) {
+        continue;
+      }
       expect(altTotals[slug]).toBeCloseTo(baseTotals[slug], 6);
     }
   });
@@ -269,7 +279,9 @@ describe('soline burst — 396% base + 924% Max-HP additional, on burst cast', (
   it('the two rider magnitudes sit in a 924/396 = 7:3 ratio at equal buff state', () => {
     // Both land on the same cast at the same buff snapshot, so their damage ratio is
     // the atkPct ratio (modulo crit rolls — the sim is deterministic/expected-value here).
-    const perCast = solineRiders.map((e) => e.amount as number).sort((a, b) => a - b);
+    const perCast = solineRiders
+      .map((e) => e.amount as number)
+      .sort((a, b) => a - b);
     expect(perCast.length).toBeGreaterThanOrEqual(2);
     const small = perCast[0];
     const large = perCast[perCast.length - 1];
@@ -280,13 +292,14 @@ describe('soline burst — 396% base + 924% Max-HP additional, on burst cast', (
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.burst!.blocks) {
         b.effects = b.effects.filter(
-          (e) => !(e.kind === 'flatDamage' && Math.abs(e.atkPct - 924) < 0.001),
+          (e) => !(e.kind === 'flatDamage' && Math.abs(e.atkPct - 924) < 0.001)
         );
       }
     });
     const alt = run({ ...base, overrides: { [SLUG]: patched } });
     const altRiders = alt.events.filter(
-      (e) => e.kind === 'damage' && e.srcSlot === solineIdx && e.bucket !== 'normal',
+      (e) =>
+        e.kind === 'damage' && e.srcSlot === solineIdx && e.bucket !== 'normal'
     );
     expect(altRiders.length).toBe(solineBurstCasts.length);
     expect(totals(alt.res)[SLUG]).toBeLessThan(baseTotals[SLUG]);
@@ -316,15 +329,19 @@ describe('soline burst — 396% base + 924% Max-HP additional, on burst cast', (
             !(
               e.kind === 'buff' &&
               (e.stat === 'critRatePct' || e.stat === 'critDamagePct')
-            ),
+            )
         );
       }
     });
     const alt = run({ ...base, overrides: { [SLUG]: patched } });
     const altRiders = alt.events.filter(
-      (e) => e.kind === 'damage' && e.srcSlot === solineIdx && e.bucket !== 'normal',
+      (e) =>
+        e.kind === 'damage' && e.srcSlot === solineIdx && e.bucket !== 'normal'
     );
-    const baseRiderSum = solineRiders.reduce((s, e) => s + (e.amount as number), 0);
+    const baseRiderSum = solineRiders.reduce(
+      (s, e) => s + (e.amount as number),
+      0
+    );
     const altRiderSum = altRiders.reduce((s, e) => s + (e.amount as number), 0);
     expect(altRiderSum).toBeLessThan(baseRiderSum);
   });
@@ -334,7 +351,7 @@ describe('soline burst — 396% base + 924% Max-HP additional, on burst cast', (
       (e) =>
         e.kind === 'buffApply' &&
         e.casterIdx === solineIdx &&
-        e.targetSlug !== SLUG,
+        e.targetSlug !== SLUG
     );
     expect(teamBuffsFromSoline).toHaveLength(0);
   });
@@ -348,7 +365,7 @@ describe('soline — cross-line inertness', () => {
       (e) =>
         (e.kind === 'buffApply' || e.kind === 'heal' || e.kind === 'shield') &&
         e.casterIdx === solineIdx &&
-        e.targetSlug !== SLUG,
+        e.targetSlug !== SLUG
     );
     expect(allyTargets).toHaveLength(0);
   });

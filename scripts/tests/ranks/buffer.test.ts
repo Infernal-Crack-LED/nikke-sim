@@ -8,7 +8,12 @@ import {
   deriveCarrySpec,
   DUO_BUFFER_PROFILES,
 } from '../../../src/ranks/buffer.js';
-import { NOOP_B1, NOOP_B2, NOOP_B3 } from '../../../src/dpschart/noop.js';
+import {
+  NOOP_B1,
+  NOOP_B2,
+  NOOP_B3,
+  NOOP_CHARACTERS,
+} from '../../../src/dpschart/noop.js';
 import { CARRY_MG, CARRY_RL } from '../../../src/ranks/synthetics.js';
 import type { RanksCtx } from '../../../src/ranks/burstgen.js';
 import { loadOverride } from '../../../src/skills/overrides-node.js';
@@ -17,6 +22,13 @@ import { data, mult, cubes, olLines, skillLevels } from '../lib/harness.js';
 
 const overrides: Record<string, OverrideFile | undefined> = {};
 for (const s of Object.keys(data.characters)) {
+  overrides[s] = loadOverride(s);
+}
+// mirror scripts/build-bufferchart.ts — the synthetic controls are not roster
+// entries but their overrides carry the framework effects (the no-op B1's team
+// CDR, the no-op B3's mock burst). Loading roster slugs only would test a
+// configuration the board does not run.
+for (const s of Object.keys(NOOP_CHARACTERS)) {
   overrides[s] = loadOverride(s);
 }
 const ctx: RanksCtx = {
@@ -100,6 +112,19 @@ describe('buffer board', () => {
     ]);
   });
 
+  // Why the comp-profile filler merge iterates a DEDUPED slug set: a
+  // stage-matched baseline seats the same no-op twice, so a per-slug merge
+  // would inject the profile's kit into it twice on the baseline side and once
+  // on the tested side. Inert while the profiles inject only heals and shields,
+  // silently wrong the day one carries a damage-relevant line.
+  it('a stage-matched baseline repeats a no-op slug', () => {
+    const spec = { weapon: null, pierce: false, element: null } as const;
+    const b2 = assemble(null, 'II', 'generic', spec).slugs;
+    expect(b2.filter((s) => s === NOOP_B2)).toHaveLength(2);
+    const b1 = assemble(null, 'I', 'generic', spec).slugs;
+    expect(b1.filter((s) => s === NOOP_B1)).toHaveLength(2);
+  });
+
   // The property the whole shape exists for, pinned by ISOLATING it: a unit's
   // Full Burst count must not depend on its own burst cooldown, because the
   // spare no-op covers its stage while it waits. Forcing the cooldown to the
@@ -125,10 +150,27 @@ describe('buffer board', () => {
       const shipped = bufferValueFor(slug, 'generic', ctx, new Map(), null);
       const short = { ...(data.characters as any) };
       short[slug] = { ...short[slug], burstCooldownSec: 20 };
+      // prepare.ts prefers charFixes.burstCooldownSec over the character field,
+      // so a unit carrying that charFix would run the "forced" pass at its real
+      // cooldown and pass this vacuously. None does today; keep them in step.
+      const own = overrides[slug];
+      const forcedOverrides = own?.charFixes?.burstCooldownSec
+        ? {
+            ...overrides,
+            [slug]: {
+              ...own,
+              charFixes: { ...own.charFixes, burstCooldownSec: 20 },
+            },
+          }
+        : overrides;
       const forced = bufferValueFor(
         slug,
         'generic',
-        { ...ctx, characters: short },
+        {
+          ...ctx,
+          characters: short,
+          deps: { ...ctx.deps, overrides: forcedOverrides },
+        },
         new Map(),
         null
       );

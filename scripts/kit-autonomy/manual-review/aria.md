@@ -27,12 +27,12 @@ no circle row (⚑2, canary-pinned).
 
 ## Line-by-line
 
-| Line                                                        | Disposition      | Notes                                                                                                                                          |
-| ----------------------------------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| S1: fullBurstEnter → allies critDamagePct 26.99/10s          | FAITHFUL         | Kit names the Full Burst itself, not her cast; fires on FBs she sits out (STARVED comp pins this); frame-exact on fullBurstStart               |
-| S2: lastBullet → allies critRatePct 7.03/5s                  | FAITHFUL         | UNSCOPED stat (no "of normal attacks" clause — helm's scoped stat is the nearest-wrong, discriminated 3 ways); one window per emptied belt     |
-| Burst: burstCast → allies shield 37.86% final Max HP / 10s   | FAITHFUL         | Engine `shield` effect: event-only (no HP pool at scope), tandem-live (`shielded` triggers / `requiresShielded` gates); caster-basis maxHpPct |
-| Burst: burstCast → self hitRatePct 30.37/15s                 | DOCUMENTED_GAP   | Buff fires at prose cadence (self-only, 900 frames, burstCast-keyed — all asserted); downstream core lift absent: no MG HR→core channel       |
+| Line                                                       | Disposition    | Notes                                                                                                                                         |
+| ---------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1: fullBurstEnter → allies critDamagePct 26.99/10s        | FAITHFUL       | Kit names the Full Burst itself, not her cast; fires on FBs she sits out (STARVED comp pins this); frame-exact on fullBurstStart              |
+| S2: lastBullet → allies critRatePct 7.03/5s                | FAITHFUL       | UNSCOPED stat (no "of normal attacks" clause — helm's scoped stat is the nearest-wrong, discriminated 3 ways); one window per emptied belt    |
+| Burst: burstCast → allies shield 37.86% final Max HP / 10s | FAITHFUL       | Engine `shield` effect: event-only (no HP pool at scope), tandem-live (`shielded` triggers / `requiresShielded` gates); caster-basis maxHpPct |
+| Burst: burstCast → self hitRatePct 30.37/15s               | DOCUMENTED_GAP | Buff fires at prose cadence (self-only, 900 frames, burstCast-keyed — all asserted); downstream core lift absent: no MG HR→core channel       |
 
 Zero `unmodeled` text: all four kit lines are represented (the two inert channels are modeled
 as structure + event, not dropped). Zero silent drops.

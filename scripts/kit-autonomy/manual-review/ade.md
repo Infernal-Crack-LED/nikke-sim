@@ -26,14 +26,14 @@ so no on-recovery consumer can proc off her grants.
 
 ## Line-by-line
 
-| Line                                                            | Disposition        | Notes                                                                                                                                        |
-| --------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| S1: battle start → allies Perfect Maid debuff immunity (1/1)    | DOCUMENTED_GAP     | Defensive; v1 boss applies no debuffs; no immunity primitive; verbatim + reason in `unmodeled.skill1` (biscuit / diesel-winter-sweets precedent) |
-| S1: own HP < 90% → allies casterAtkPct 5.19/5s                  | DOCUMENTED_GAP (⚑2)| Gate collapsed always-on (`interval:5` refresh, first fire t=5s); mast GO-1.0 precedent governs offensive HP-below gates; S2b's UNMODELED dissent logged as the rejected alternative; recipe = focus-video HP-bar crossing + buff-icon uptime |
-| S2: 420 NA → allies Perfect Maid immunity refresh               | DOCUMENTED_GAP     | Same as S1 immunity; verbatim + reason in `unmodeled.skill2`                                                                                   |
-| S2: 120 NA → allies casterMaxHpPct 15.62/5s                     | FAITHFUL (inert)   | `hitCount:120` (hitsPerShot 1: pulls == hits, no lever); caster-basis flat uniform across holders; kth-grant-at-120k-pulls pinned; totals-equal when stripped |
-| Burst: allies casterMaxHpPct 25.15/10s                          | FAITHFUL (inert)   | One block with the ATK line (one ■ header); uniform caster-basis flat; 10s window pinned; totals-equal when stripped; no heal ⇒ no recovery procs |
-| Burst: allies casterAtkPct 10.15/10s                            | FAITHFUL           | The ONLY damage-moving line; flat add of ADE's static ATK (SSOT §1a: "% of caster's ATK" = flat, outside holders' (1+ATK%)); value-ratio pin 10.15/5.19 exact |
+| Line                                                         | Disposition         | Notes                                                                                                                                                                                                                                         |
+| ------------------------------------------------------------ | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1: battle start → allies Perfect Maid debuff immunity (1/1) | DOCUMENTED_GAP      | Defensive; v1 boss applies no debuffs; no immunity primitive; verbatim + reason in `unmodeled.skill1` (biscuit / diesel-winter-sweets precedent)                                                                                              |
+| S1: own HP < 90% → allies casterAtkPct 5.19/5s               | DOCUMENTED_GAP (⚑2) | Gate collapsed always-on (`interval:5` refresh, first fire t=5s); mast GO-1.0 precedent governs offensive HP-below gates; S2b's UNMODELED dissent logged as the rejected alternative; recipe = focus-video HP-bar crossing + buff-icon uptime |
+| S2: 420 NA → allies Perfect Maid immunity refresh            | DOCUMENTED_GAP      | Same as S1 immunity; verbatim + reason in `unmodeled.skill2`                                                                                                                                                                                  |
+| S2: 120 NA → allies casterMaxHpPct 15.62/5s                  | FAITHFUL (inert)    | `hitCount:120` (hitsPerShot 1: pulls == hits, no lever); caster-basis flat uniform across holders; kth-grant-at-120k-pulls pinned; totals-equal when stripped                                                                                 |
+| Burst: allies casterMaxHpPct 25.15/10s                       | FAITHFUL (inert)    | One block with the ATK line (one ■ header); uniform caster-basis flat; 10s window pinned; totals-equal when stripped; no heal ⇒ no recovery procs                                                                                             |
+| Burst: allies casterAtkPct 10.15/10s                         | FAITHFUL            | The ONLY damage-moving line; flat add of ADE's static ATK (SSOT §1a: "% of caster's ATK" = flat, outside holders' (1+ATK%)); value-ratio pin 10.15/5.19 exact                                                                                 |
 
 ## Cross-family corroboration
 
@@ -54,12 +54,12 @@ so no on-recovery consumer can proc off her grants.
   (`blind/ade.adapted.test.ts`, assertion intents preserved): **GREEN 15/15 + 2 GAP skips**.
 - **S6 (claude-opus-5, blind override):** `leakDetected:null`. Converges line-for-line on skill2
   (`hitCount:120` → casterMaxHpPct 15.62/5s), burst (one `burstCast` block: casterMaxHpPct 25.15/10s
-  + casterAtkPct 10.15/10s), unmodeled immunity lines, and all four flags. On the contested S1 line
-  S6 corroborates the DRIVER (MODELED-always-on with an uptime flag) against S2b's UNMODELED — but
-  encoded it `passive` + durationSec 5, which under the engine's fused-passive semantics applies once
-  at frame 0, expires at t=5s, and never re-applies: coverage t∈[0,5] only, contradicting its own
-  "always-on" caveat (blind-side engine-semantics misread; the driver's `interval:5` refresh keeps
-  the window live throughout).
+  - casterAtkPct 10.15/10s), unmodeled immunity lines, and all four flags. On the contested S1 line
+    S6 corroborates the DRIVER (MODELED-always-on with an uptime flag) against S2b's UNMODELED — but
+    encoded it `passive` + durationSec 5, which under the engine's fused-passive semantics applies once
+    at frame 0, expires at t=5s, and never re-applies: coverage t∈[0,5] only, contradicting its own
+    "always-on" caveat (blind-side engine-semantics misread; the driver's `interval:5` refresh keeps
+    the window live throughout).
 - **S7 (kimi-code/k3, binding judge):** **GO, faithfulness 1.0, discriminationOk:true, zero
   gotchas.** All six lines accounted (3 FAITHFUL + 3 DOCUMENTED_GAP, zero silent drops). Ruling on
   the open question: the driver's S1 encoding is FAITHFUL-as-documented-gap, NOT a REAL-GOTCHA, and

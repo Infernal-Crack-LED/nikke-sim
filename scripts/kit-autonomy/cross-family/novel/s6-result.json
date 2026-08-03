@@ -61,9 +61,7 @@
       }
     ],
     "unmodeled": {
-      "skill1": [
-        "DEF ▼ 7.05% for 5 sec."
-      ],
+      "skill1": ["DEF ▼ 7.05% for 5 sec."],
       "skill2": [],
       "burst": [
         "■ Activates when Cornucopia is at max stacks. Affects 1 enemy unit(s).",

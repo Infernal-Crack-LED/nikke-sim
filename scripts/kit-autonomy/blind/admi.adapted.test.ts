@@ -52,15 +52,21 @@ const BUFF_ADMI = (evs: SimEvent[], stat: string) =>
     (e) =>
       e.kind === 'buffApply' &&
       (e as any).stat === stat &&
-      (e as any).casterIdx === ADM,
+      (e as any).casterIdx === ADM
   ) as any[];
 /** buffApply events by stat, any caster (the global skill2 absence pins). */
 const BUFF = (evs: SimEvent[], stat: string) =>
-  evs.filter((e) => e.kind === 'buffApply' && (e as any).stat === stat) as any[];
+  evs.filter(
+    (e) => e.kind === 'buffApply' && (e as any).stat === stat
+  ) as any[];
 
 function run(overrides: Record<string, any> = {}) {
   const evs: SimEvent[] = [];
-  const res = runComp({ ...ADAMI_COMP, overrides, cfg: { onEvent: (e: SimEvent) => evs.push(e) } });
+  const res = runComp({
+    ...ADAMI_COMP,
+    overrides,
+    cfg: { onEvent: (e: SimEvent) => evs.push(e) },
+  });
   return { res, evs };
 }
 
@@ -74,7 +80,9 @@ const wrongChargeStat = run({
   admi: withPatchedOverride('admi', (ov) => {
     for (const b of ov.skill1!) {
       for (const e of b.effects as any[]) {
-        if (e.kind === 'buff' && e.stat === 'chargeDamageMultPct') e.stat = 'chargeDamagePct';
+        if (e.kind === 'buff' && e.stat === 'chargeDamageMultPct') {
+          e.stat = 'chargeDamagePct';
+        }
       }
     }
   }),
@@ -84,8 +92,9 @@ const wrongChargeStat = run({
 const wrongChargeTarget = run({
   admi: withPatchedOverride('admi', (ov) => {
     for (const b of ov.skill1!) {
-      if ((b.effects as any[]).some((e) => e.stat === 'chargeDamageMultPct'))
+      if ((b.effects as any[]).some((e) => e.stat === 'chargeDamageMultPct')) {
         b.target = { kind: 'self' };
+      }
     }
   }),
 });
@@ -95,8 +104,9 @@ const wrongChargeTarget = run({
 const wrongChargeTrigger = run({
   admi: withPatchedOverride('admi', (ov) => {
     for (const b of ov.skill1!) {
-      if ((b.effects as any[]).some((e) => e.stat === 'chargeDamageMultPct'))
+      if ((b.effects as any[]).some((e) => e.stat === 'chargeDamageMultPct')) {
         b.trigger = { kind: 'passive' };
+      }
     }
   }),
 });
@@ -106,7 +116,9 @@ const wrongCritStat = run({
   admi: withPatchedOverride('admi', (ov) => {
     for (const b of ov.burst!) {
       for (const e of b.effects as any[]) {
-        if (e.kind === 'buff' && e.stat === 'critDamagePct') e.stat = 'critRatePct';
+        if (e.kind === 'buff' && e.stat === 'critDamagePct') {
+          e.stat = 'critRatePct';
+        }
       }
     }
   }),
@@ -115,15 +127,20 @@ const wrongCritStat = run({
 // Nearest-wrong for the burst TARGET SET: self-only instead of "all allies".
 const wrongBurstTarget = run({
   admi: withPatchedOverride('admi', (ov) => {
-    for (const b of ov.burst!) b.target = { kind: 'self' };
+    for (const b of ov.burst!) {
+      b.target = { kind: 'self' };
+    }
   }),
 });
 
 // Reload-speed removed entirely — isolates the reload line's shot-economy footprint.
 const noReload = run({
   admi: withPatchedOverride('admi', (ov) => {
-    for (const b of ov.burst!)
-      b.effects = (b.effects as any[]).filter((e) => e.stat !== 'reloadSpeedPct');
+    for (const b of ov.burst!) {
+      b.effects = (b.effects as any[]).filter(
+        (e) => e.stat !== 'reloadSpeedPct'
+      );
+    }
   }),
 });
 
@@ -132,24 +149,34 @@ describe('admi — skill1: charge damage multiplier, all allies, counted activat
     const evs = BUFF_ADMI(base.evs, 'chargeDamageMultPct');
     expect(evs.length).toBeGreaterThan(0);
     // Plain percentage stats keep their raw kit value (not caster-scaled/flat-resolved).
-    for (const e of evs) expect(e.value).toBeCloseTo(9.59, 5);
+    for (const e of evs) {
+      expect(e.value).toBeCloseTo(9.59, 5);
+    }
   });
 
   it('is a MULTIPLIER on base charge damage, not additive charge-damage points', () => {
     // Nearest-wrong: chargeDamagePct. The two stats enter different buckets, so a
     // faithful model and the wrong one cannot produce identical team damage.
-    expect(BUFF_ADMI(wrongChargeStat.evs, 'chargeDamageMultPct')).toHaveLength(0);
-    expect(BUFF_ADMI(wrongChargeStat.evs, 'chargeDamagePct').length).toBeGreaterThan(0);
+    expect(BUFF_ADMI(wrongChargeStat.evs, 'chargeDamageMultPct')).toHaveLength(
+      0
+    );
+    expect(
+      BUFF_ADMI(wrongChargeStat.evs, 'chargeDamagePct').length
+    ).toBeGreaterThan(0);
     expect(totals(wrongChargeStat.res)).not.toEqual(totals(base.res));
   });
 
   it('affects ALL allies, not just admi (>1 distinct buff target)', () => {
-    const targets = new Set(BUFF_ADMI(base.evs, 'chargeDamageMultPct').map((e) => e.targetSlug));
+    const targets = new Set(
+      BUFF_ADMI(base.evs, 'chargeDamageMultPct').map((e) => e.targetSlug)
+    );
     expect(targets.size).toBeGreaterThan(1);
     expect(targets.has('admi')).toBe(true);
     // Nearest-wrong: self-only. Must collapse to exactly one target.
     const wrongTargets = new Set(
-      BUFF_ADMI(wrongChargeTarget.evs, 'chargeDamageMultPct').map((e) => e.targetSlug),
+      BUFF_ADMI(wrongChargeTarget.evs, 'chargeDamageMultPct').map(
+        (e) => e.targetSlug
+      )
     );
     expect(wrongTargets.size).toBe(1);
   });
@@ -168,7 +195,10 @@ describe('admi — skill1: charge damage multiplier, all allies, counted activat
     // first application must be strictly after battle start. A passive model applies at 0.
     const [first] = BUFF_ADMI(base.evs, 'chargeDamageMultPct');
     expect(first.expiresFrame).toBeGreaterThan(0);
-    const [wrongFirst] = BUFF_ADMI(wrongChargeTrigger.evs, 'chargeDamageMultPct');
+    const [wrongFirst] = BUFF_ADMI(
+      wrongChargeTrigger.evs,
+      'chargeDamageMultPct'
+    );
     expect(wrongFirst).toBeDefined();
     // The wrong (passive) model must differ observably from the faithful one.
     expect(totals(wrongChargeTrigger.res)).not.toEqual(totals(base.res));
@@ -176,7 +206,7 @@ describe('admi — skill1: charge damage multiplier, all allies, counted activat
 
   it('INERTNESS: skill1 moves no crit/ATK stat of its own', () => {
     const s1Stats = new Set(
-      BUFF_ADMI(base.evs, 'chargeDamageMultPct').map((e) => e.stat),
+      BUFF_ADMI(base.evs, 'chargeDamageMultPct').map((e) => e.stat)
     );
     expect([...s1Stats]).toEqual(['chargeDamageMultPct']);
   });
@@ -188,9 +218,14 @@ describe('admi — skill2: Damage Taken reduction on 2 highest-final-ATK allies'
     // damageTakenPct is a BOSS debuff where positive = boss takes MORE. Encoding this
     // line as damageTakenPct would be a sign error that hands the team free damage.
     // (Intent is GLOBAL: no such debuff anywhere in the fight.)
-    const boss = (base.evs.filter(
-      (e) => e.kind === 'buffApply' && (e as any).casterIdx === null && (e as any).targetIdx === null,
-    ) as any[]).filter((e) => e.stat === 'damageTakenPct');
+    const boss = (
+      base.evs.filter(
+        (e) =>
+          e.kind === 'buffApply' &&
+          (e as any).casterIdx === null &&
+          (e as any).targetIdx === null
+      ) as any[]
+    ).filter((e) => e.stat === 'damageTakenPct');
     expect(boss).toHaveLength(0);
     const anyDt = BUFF(base.evs, 'damageTakenPct');
     expect(anyDt).toHaveLength(0);
@@ -216,8 +251,12 @@ describe('admi — burst: Reload Speed + Critical Damage, all allies, 10 sec', (
     const cd = BUFF_ADMI(base.evs, 'critDamagePct');
     expect(rl.length).toBeGreaterThan(0);
     expect(cd.length).toBeGreaterThan(0);
-    for (const e of rl) expect(e.value).toBeCloseTo(50.91, 5);
-    for (const e of cd) expect(e.value).toBeCloseTo(28.34, 5);
+    for (const e of rl) {
+      expect(e.value).toBeCloseTo(50.91, 5);
+    }
+    for (const e of cd) {
+      expect(e.value).toBeCloseTo(28.34, 5);
+    }
   });
 
   it('the crit line is Critical DAMAGE, not Critical RATE', () => {
@@ -228,13 +267,19 @@ describe('admi — burst: Reload Speed + Critical Damage, all allies, 10 sec', (
   });
 
   it('both burst lines affect ALL allies, not just admi', () => {
-    const rlTargets = new Set(BUFF_ADMI(base.evs, 'reloadSpeedPct').map((e) => e.targetSlug));
-    const cdTargets = new Set(BUFF_ADMI(base.evs, 'critDamagePct').map((e) => e.targetSlug));
+    const rlTargets = new Set(
+      BUFF_ADMI(base.evs, 'reloadSpeedPct').map((e) => e.targetSlug)
+    );
+    const cdTargets = new Set(
+      BUFF_ADMI(base.evs, 'critDamagePct').map((e) => e.targetSlug)
+    );
     expect(rlTargets.size).toBeGreaterThan(1);
     expect(cdTargets.size).toBeGreaterThan(1);
     expect(rlTargets.has('admi')).toBe(true);
     expect(cdTargets.has('admi')).toBe(true);
-    const wrongCd = new Set(BUFF_ADMI(wrongBurstTarget.evs, 'critDamagePct').map((e) => e.targetSlug));
+    const wrongCd = new Set(
+      BUFF_ADMI(wrongBurstTarget.evs, 'critDamagePct').map((e) => e.targetSlug)
+    );
     expect(wrongCd.size).toBe(1);
     expect(totals(wrongBurstTarget.res)).not.toEqual(totals(base.res));
   });
@@ -244,19 +289,25 @@ describe('admi — burst: Reload Speed + Critical Damage, all allies, 10 sec', (
     // Burst" clause, so they must apply on her burstCast. Applies must not exceed the
     // number of bursts admi actually cast.
     const casts = base.evs.filter(
-      (e) => e.kind === 'burstCast' && (e as any).slug === 'admi',
+      (e) => e.kind === 'burstCast' && (e as any).slug === 'admi'
     ).length;
     expect(casts).toBeGreaterThan(0);
     const applyRounds = new Set(
-      BUFF_ADMI(base.evs, 'critDamagePct').map((e) => e.expiresFrame),
+      BUFF_ADMI(base.evs, 'critDamagePct').map((e) => e.expiresFrame)
     );
     expect(applyRounds.size).toBeLessThanOrEqual(casts);
   });
 
   it('the 10 sec windows are time-bounded, not round-bounded or permanent', () => {
-    for (const e of [...BUFF_ADMI(base.evs, 'reloadSpeedPct'), ...BUFF_ADMI(base.evs, 'critDamagePct')]) {
+    for (const e of [
+      ...BUFF_ADMI(base.evs, 'reloadSpeedPct'),
+      ...BUFF_ADMI(base.evs, 'critDamagePct'),
+    ]) {
       expect(Number.isFinite(e.expiresFrame)).toBe(true);
-      expect(e.durationShots == null, 'no round budget (null or undefined)').toBe(true);
+      expect(
+        e.durationShots == null,
+        'no round budget (null or undefined)'
+      ).toBe(true);
     }
   });
 
@@ -264,23 +315,35 @@ describe('admi — burst: Reload Speed + Critical Damage, all allies, 10 sec', (
     // Faster reload => more shots fired => strictly more team damage than with the line
     // stripped. Guards against the "defensive/utility, skip it" failure mode.
     const withRl = Object.values(totals(base.res)).reduce((a, b) => a + b, 0);
-    const without = Object.values(totals(noReload.res)).reduce((a, b) => a + b, 0);
+    const without = Object.values(totals(noReload.res)).reduce(
+      (a, b) => a + b,
+      0
+    );
     expect(withRl).toBeGreaterThan(without);
   });
 
   it('INERTNESS: admi grants no ATK buff of any kind', () => {
-    for (const stat of ['atkPct', 'casterAtkPct', 'highestAllyAtkPct', 'atkOfMaxHpPct']) {
+    for (const stat of [
+      'atkPct',
+      'casterAtkPct',
+      'highestAllyAtkPct',
+      'atkOfMaxHpPct',
+    ]) {
       expect(BUFF_ADMI(base.evs, stat)).toHaveLength(0);
     }
   });
 
   it('INERTNESS: admi deals no rider/DoT damage — all her damage is her own weapon', () => {
     const dmg = base.evs.filter(
-      (e) => e.kind === 'damage' && (e as any).slug === 'admi',
+      (e) => e.kind === 'damage' && (e as any).slug === 'admi'
     ) as any[];
     expect(dmg.length).toBeGreaterThan(0);
     // The kit has no flatDamage/dot/storedHit line at all.
-    for (const d of dmg) expect(['normal', 'charge', 'core', 'crit']).toContain(String(d.bucket ?? 'normal'));
+    for (const d of dmg) {
+      expect(['normal', 'charge', 'core', 'crit']).toContain(
+        String(d.bucket ?? 'normal')
+      );
+    }
     expect(unitOf(base.res, 'admi').totalDamage).toBeGreaterThan(0);
   });
 });

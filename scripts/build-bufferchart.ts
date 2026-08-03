@@ -11,6 +11,7 @@ import { dirname } from 'node:path';
 import type { DataFile, LevelMultiplier, Element } from '../src/types.js';
 import { loadOverride } from '../src/skills/overrides-node.js';
 import { unitElements } from '../src/elements.js';
+import { NOOP_CHARACTERS } from '../src/dpschart/noop.js';
 import type { OverrideFile } from '../src/skills/index.js';
 import type {
   CubesFile,
@@ -51,6 +52,15 @@ const overrides: Record<string, OverrideFile | undefined> = {};
 for (const slug of Object.keys(data.characters)) {
   overrides[slug] = loadOverride(slug);
 }
+// Synthetic controls are not roster entries, but their overrides carry the
+// framework effects: the no-op B1's 7s team burst-cooldown reduction and the
+// no-op B3's mock burst. Load every registered control so a future addition
+// cannot be forgotten — the same loop build-b1b2dps.ts uses. Without it this
+// board silently ran with no enabler at all, which is what it did from
+// 91f53ea9 until 2026-08-03.
+for (const slug of Object.keys(NOOP_CHARACTERS)) {
+  overrides[slug] = loadOverride(slug);
+}
 
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
@@ -58,8 +68,17 @@ const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
 const SLOTS = ['skill1', 'skill2', 'burst'] as const;
 const explainArg = process.argv.indexOf('--explain');
 const explainSlug = explainArg >= 0 ? process.argv[explainArg + 1] : null;
+if (explainArg >= 0 && !explainSlug) {
+  throw new Error('--explain requires a slug');
+}
 if (explainSlug && !data.characters[explainSlug]) {
   throw new Error(`--explain: "${explainSlug}" is not in characters.json`);
+}
+// A roster slug with no override dies deep inside prepareUnit; fail at the door
+if (explainSlug && !data.characters[explainSlug].simSupported) {
+  throw new Error(
+    `--explain: "${explainSlug}" is not sim-supported, so it has no override to explain`
+  );
 }
 
 // EXCLUDED_BUFFER_SLUGS never enters the population: a kit that reduces team
@@ -87,10 +106,25 @@ population.sort();
 
 // --explain <slug>: why does this unit sit where it sits? Prints the shipped
 // value, then two ablations against it — the unit with its kit stripped
-// entirely (its ROTATION floor: a tested unit replaces a 20s-cooldown no-op in
-// the baseline team, so a longer-cooldown burst costs the carries Full Bursts
-// before any buff is counted) and one run per buff effect with that effect
-// removed (which lines actually reach the carries, and which are inert).
+// entirely (its floor: what the BODY alone is worth, which is now weapon and
+// gauge only, since the standard team's spare no-op covers the tested unit's
+// burst stage and a long cooldown no longer costs the team Full Bursts) and one
+// run per buff effect with that effect removed (which lines actually reach the
+// carries, and which are inert).
+//
+// CAVEAT on --typed: each ablation re-derives the carry spec from the ABLATED
+// override, so removing the very effect that drives a typed adaptation
+// (alliesOfWeapon, pierce, projectile-explosion, an element gate) also reverts
+// the carries to the generic pair for that row — the printed change then mixes
+// 'effect removed' with 'carry adaptation lost'. Read per-effect ablations on
+// the generic board; --typed is honest only for the shipped and floor rows.
+//
+// The same shape applies to the ONE-ENABLER rule on either board: for the
+// units that supply team cooldown reduction (12 today), stripping the kit or ablating the
+// ally-CDR line flips them out of the enabler role and stands the no-op B1's 7s
+// control back up, so those rows read net of the restored standard enabler
+// (liter's ally-CDR ablation reads -11.29 with the control regained, and her
+// floor reads -0.33% for the same reason).
 // Diagnostic only — writes nothing.
 if (explainSlug) {
   const board: BufferBoard = process.argv.includes('--typed')
@@ -163,7 +197,16 @@ const artifact: BufferChartArtifact = {
   methodology:
     'Total % team damage increase: two standard carries (synthetic class-modal ' +
     'MG + RL, Attacker scope-lock stats, both elementally advantaged) are simmed ' +
-    '180s with the tested buffer vs a stage-matched no-op baseline. The reported ' +
+    '180s with the tested buffer vs a stage-matched no-op baseline. The team is ' +
+    'the standard five: a no-op B1, two no-op B2 and the two carries, with the ' +
+    'tested unit taking the spare slot of its own burst stage and leading that ' +
+    'stage (the second no-op B2 is the spare on B2 rows) — the spare keeps ' +
+    'every burst stage ' +
+    'covered, so a long burst cooldown does not cost the team Full Bursts. ' +
+    'Camera focus sits on that spare no-op B2 (SR), never on the tested unit, ' +
+    'so burst generation is identical in every run. Exactly one burst-cooldown ' +
+    'enabler is fielded: the tested unit when its kit reduces ally cooldowns, ' +
+    'the no-op B1 otherwise. The reported ' +
     'value is (carry DPS with buffer − carry DPS with no-op) / carry DPS with ' +
     'no-op × 100. B3 buffers sit rightmost and never burst. generic: plain ' +
     'MG+RL carries — only requirement-free buffs counted. typed: carries adapt ' +
