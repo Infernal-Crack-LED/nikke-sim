@@ -245,6 +245,28 @@ describe('buffer board', () => {
     expect(typed.valuePct).toBeGreaterThan(generic.valuePct);
   });
 
+  // Flora is the headline example, not the only one — the trueDamagePct rule is
+  // generic and fires for every ally-facing carrier in the buffer population
+  // (kimi-code/k3 cross-family review, 2026-08-03, caught the initial landing
+  // documenting Flora alone). frima/takina/ada each have a live, non-self,
+  // ungated trueDamagePct line and move on the typed board the same way.
+  // emma-tactical-upgrade/eunhwa-tactical-upgrade also carry ally-facing
+  // trueDamagePct lines but stay correctly Δ0.00 here — both are gated behind a
+  // duo `mode`/`teamHas` condition the standalone buffer-board comp never
+  // satisfies (their duo synergy is simply unmodeled on this board, an
+  // unrelated pre-existing gap), verified via `--explain <slug> --typed`.
+  it('typed board: frima/takina/ada are worth more with True-flavored carries than generic', () => {
+    const slugs = ['frima', 'takina', 'ada'];
+    for (const slug of slugs) {
+      const { spec } = deriveCarrySpec(overrides[slug]);
+      expect(spec.trueFlavor, slug).toBe(true);
+      const memo = new Map();
+      const generic = bufferValueFor(slug, 'generic', ctx, memo);
+      const typed = bufferValueFor(slug, 'typed', ctx, memo);
+      expect(typed.valuePct, slug).toBeGreaterThan(generic.valuePct);
+    }
+  });
+
   it('typed derivation: crust (Distributed + Sustained Damage ▲ burst buffs) grants carries a flavor MOCK_TICK rider', () => {
     const { spec, rules } = deriveCarrySpec(overrides.crust);
     expect(spec.distributed).toBe(true);

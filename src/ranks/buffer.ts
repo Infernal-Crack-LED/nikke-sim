@@ -644,8 +644,13 @@ function carryDpsSum(
     sustainedOverride ||
     distributedOverride
   ) {
-    team.carryIdxs.forEach((slugIdx, ci) => {
-      const weapon = (team.chars[ci] as SyntheticCharacter).weapon;
+    team.carryIdxs.forEach((slugIdx) => {
+      // Read the weapon off the slug itself (syntheticFor), not team.chars[ci] —
+      // chars is carries-only ([c1, c2]) and happens to sit in the same order as
+      // carryIdxs today, but nothing enforces that pairing; a future reorder or a
+      // chars shape that goes slugs-parallel would silently size the MOCK_TICK
+      // off the wrong carry's weapon (kimi-code/k3 cross-family review, 2026-08-03).
+      const weapon = syntheticFor(team.slugs[slugIdx])!.weapon;
       const skill1: object[] = [];
       if (sustainedOverride) {
         skill1.push(flavorMockBlock(weapon, 'sustained'));

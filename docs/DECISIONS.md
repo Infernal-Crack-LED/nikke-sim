@@ -48,9 +48,33 @@ lives. Newest first within each section.
   read each other's wrong baseline.
   Evidence: `--explain <slug> --typed` before/after for all six units (flora/crust/
   rosanna-chic-ocean/delta-ninja-thief/elegg/mast-romantic-maid); `scripts/tests/ranks/buffer.test.ts`
-  pins both derivations + typed>generic for all six; `verify.sh` (2978 tests, every graded-comp
-  snapshot byte-identical — the change only ever fires on the typed board's synthetic carries) is
-  unaffected. Branch `flora-typed-board-true-damage`, PR pending.
+  pins both derivations + typed>generic for all six; `verify.sh` green, every graded-comp
+  snapshot byte-identical — the change only ever fires on the typed board's synthetic carries.
+  Branch `flora-typed-board-true-damage`, PR #75.
+  **Follow-up (same day): the cross-family `/code-review` (kimi-code/k3) on this landing came back
+  FIX-BEFORE-MERGE with one real FIX, one confirmed-safe FOLLOW-UP, and two NOTEs, all resolved.**
+  (a) The roster sweep for `sustainedDamagePct`/`distributedDamagePct` was exhaustive, but the
+  `trueDamagePct` half rode on Flora being the unit that surfaced the bug and was never
+  independently re-swept — the reviewer's own roster walk found three more genuine, ungated,
+  ally-facing `trueDamagePct` carriers in the buffer population: `frima` (B1), `takina` (B2), `ada`
+  (B3 `buffer`, targets `burstCasters`). Verified each via `--explain <slug> --typed` (all show a
+  real nonzero Δ post-fix) and added to `scripts/tests/ranks/buffer.test.ts`. The reviewer also
+  flagged `emma-tactical-upgrade`/`eunhwa-tactical-upgrade` as apparently-affected — checked and
+  confirmed these are NOT: both units' `trueDamagePct` lines are gated behind a duo `mode`/`teamHas`
+  condition (`"AS Formation (w/ eunhwa-tactical-upgrade)"` / `teamHas.slugs: [emma-tactical-upgrade]`)
+  the standalone buffer-board comp never satisfies, so they read `Δ0.00` before AND after this fix —
+  an unrelated, pre-existing gap (their duo synergy is simply unmodeled on this board), not something
+  this change touches. (b) The reviewer flagged the QUEUE.md entry this landing deleted
+  ("BUFFER-BOARD METHODOLOGY CHAIN IS ON A PR BRANCH") as possibly dropping a live decision + a
+  blast-radius record — checked: the blast-radius numbers (`burstgen` 4/244, `b1b2dps` 12/272) are
+  already preserved verbatim in this file's own buffer-board-methodology entry above, and the
+  "rewind main vs let the PR supersede" question was already settled by the CLAUDE.md ruling
+  "worktree branches land via PR, never a local merge to main" — nothing was actually lost, the
+  deletion was correct. (c) `carryDpsSum`'s per-carry weapon lookup (`team.chars[ci]`) relied on an
+  unenforced parallel-array assumption between `carryIdxs` and `chars`; changed to read the weapon
+  directly off the slug (`syntheticFor(team.slugs[slugIdx])`), removing the fragile pairing. (d) a
+  stale exact test count in this entry was replaced with "green" (the count drifts with every
+  landing and buys nothing pinned to a date).
 
 - **(2026-08-03) SUSTAIN BOARD PORTS THE BUFFER BOARD'S STAGE-COVERAGE SHAPE, AND LOADS THE
   NEVER-LOADED B1 CONTROL.** Owner ruling on the two linked findings queued after the buffer-board

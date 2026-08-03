@@ -366,10 +366,15 @@ Planned follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
   (carries auto-adapt to the kit: weapon swap / pierce / projectile-explosion / element / True
   Damage / Distributed+Sustained Damage — `CarrySpec` in `src/ranks/buffer.ts`).
   **Flavor-gated typed adaptation (landed 2026-08-03):** an ally-facing `trueDamagePct` buff
-  (flora) grants both carries `hasTrueNormals` (a new static kit primitive, §5) so its True
+  (flora, frima, takina, ada — a general rule, not a Flora-only patch; verified via a full roster
+  walk after a cross-family review caught the initial landing under-claiming its own scope)
+  grants both carries `hasTrueNormals` (a new static kit primitive, §5) so its True
   Damage ▲ has a real True-flavored hit to multiply — until this, the buff read exactly 0 on
   both boards (the carries have no skill/burst kit and normal fire is never True-flavored on its
-  own). An ally-facing `sustainedDamagePct`/`distributedDamagePct` buff (crust,
+  own). `emma-tactical-upgrade`/`eunhwa-tactical-upgrade` also carry ally-facing `trueDamagePct`
+  lines but are unaffected — both are gated behind a duo `mode`/`teamHas` condition the standalone
+  comp never satisfies, an unrelated pre-existing gap. An ally-facing `sustainedDamagePct`/
+  `distributedDamagePct` buff (crust,
   rosanna-chic-ocean, delta-ninja-thief, elegg, mast-romantic-maid) grants each carry a synthetic
   `MOCK_TICK` rider instead — one instant `flatDamage` hit every 10s tagged the needed flavor,
   sized off the carry's own weapon modal (`MODAL_WEAPON`). No engine primitive exists for a
