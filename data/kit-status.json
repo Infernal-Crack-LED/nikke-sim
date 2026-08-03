@@ -5355,6 +5355,40 @@
         "temp": "COLD ▼"
       }
     },
+    "soline": {
+      "name": "Soline",
+      "burst": "III",
+      "weapon": "SMG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/soline.json + scripts/kit-autonomy/manual-review/soline.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill2 + burst line 2: the 'at Max HP' gates are modeled always-true — the sim has no incoming boss damage to allies (v1 scope lock), so Max HP is the only reachable state; if an HP pool is ever modeled, both lines need a status-gate primitive",
+        "skill1: 'after 40 normal attacks' is the standard SHOT reading for multi-hit weapons (40 pulls × hitsPerShot 2 = hitCount 80; brid-silent-track measured anchor 'every 5th PULL'); the per-hit reading would be count 40 — 2× proc cadence (⚑)",
+        "skill1: cadence tuple (SMG RoF 1440, reloadFrames 141, hitsPerShot 2) is the unverified datamine — read rounds/min + the reload gap from a focus video (⚑)"
+      ],
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03: GO faithfulness 1.0 (judge kimi-code/k3). Cross-family S2b(claude-fable-5)/S5+S6(claude-opus-5)/S7(kimi-code/k3) converged on all 5 lines FAITHFUL, zero unmodeled, zero gotchas. Contested S1 NA-counter convention (blind count:40 vs driver count:80) adjudicated for the driver: brid-silent-track MEASURED pull anchor + 5 uniform multi-hit precedents; carried as flag-1 with popup recipe. Artifacts: scripts/kit-autonomy/results/soline.json + scripts/kit-autonomy/manual-review/soline.md.",
+      "residual": "flag-1 shot-vs-hit NA-counter convention (pulls shipped; recipe = pulls between On the Ball! activations in a focus video); flag-2 cadence tuple (SMG RoF 1440 / reloadFrames 141 / hitsPerShot 2 unmeasured datamine); both Max-HP gates modeled always-true under scope lock (no incoming damage) — owner spot-check the CASTER-HP reading",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "soline-frost-ticket": {
       "name": "Soline: Frost Ticket",
       "burst": "I",
