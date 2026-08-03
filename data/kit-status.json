@@ -3371,6 +3371,48 @@
       ],
       "board": null
     },
+    "maiden": {
+      "name": "Maiden",
+      "burst": "III",
+      "weapon": "SG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/maiden.json + scripts/kit-autonomy/manual-review/maiden.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "Revenge-omission posture (board reads ~half theoretical burst); interval:30 S2 cadence datamine-sourced; SG cadence tuple (rof 90 / reloadFrames 142 / 10 pellets) unmeasured",
+      "unmodeled": {
+        "skill1": [
+          "Activates when attacked 20 time(s). Affects self.",
+          "Revenge: ATK ▲ 26.66% for 20 sec."
+        ],
+        "skill2": ["Affects all enemies.", "Taunt for 10 sec."],
+        "burst": [
+          "Affects the same target(s) when in Revenge status.",
+          "Deals 457.87% of final ATK as additional damage."
+        ]
+      },
+      "caveats": [
+        "skill1: the entire Revenge mechanic (attacked 20× → Revenge: self ATK ▲26.66%/20s) is UNMODELED — the sim has no incoming-damage model, no 'attacked N times' trigger, and no self-status gate; the boss never acts",
+        "burst: the 'when in Revenge status → 457.87% additional damage' rider is UNMODELED — it is gated on the untriggerable Revenge self-status, so the burst fires at half its theoretical (Revenge-active) magnitude",
+        "skill2: 'Affects all enemies. Taunt for 10 sec.' is UNMODELED — no taunt/aggro primitive; the single partless boss already takes everyone's attacks; its in-game role is feeding the attacked-counter (⚑1)",
+        "skill2: the 30s interval cadence is the datamined skillCooldownsSec.skill2 (the kit prose carries no number) — ⚑ cadence tuple",
+        "skill1/skill2/burst: SG cadence tuple (rate_of_fire 90 / reloadFrames 142 / 10 pellets) is an unmeasured datamine estimate"
+      ]
+    },
     "maiden-ice-rose": {
       "name": "Maiden: Ice Rose",
       "burst": "III",
