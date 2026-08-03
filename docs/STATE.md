@@ -348,10 +348,10 @@ Planned follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
 - **buffer** — 74 B1/B2 + B3-buffer units, added carry DPS vs a no-op baseline over two synthetic
   standard carries (`src/ranks/synthetics.ts`, class-modal MG+RL). Two arms: generic and typed
   (carries auto-adapt to the kit: weapon swap / pierce / projectile-explosion / element). The
-  leaderboard shows rows ≥ 0 only — `rankedBufferRows` (`src/ranks/buffer-rows.ts`) filters both the
-  chart bars and the share/pre-render table card, so ranks are numbered over one set; the artifact
-  itself keeps negatives for the unit card, and `EXCLUDED_BUFFER_SLUGS` (blanc) never enters the
-  population at all.
+  leaderboard shows rows ≥ 0 only, minus `HIDDEN_BUFFER_SLUGS` (chime, avistar) — `rankedBufferRows`
+  (`src/ranks/buffer-rows.ts`) filters both the chart bars and the share/pre-render table card, so
+  ranks are numbered over one set; the artifact itself keeps every row for the unit card, and
+  `EXCLUDED_BUFFER_SLUGS` (blanc) never enters the population at all.
 - **b1b2dps** — every sim-supported B1/B2 unit, ranked by own DPS in a Solo-style no-op control team.
   Four cells: Core 0 / Core 100 × neutral / elemental advantage. 40s-B1 and B2 templates include a
   no-op B1 with the standard 7 s team burst CDR; 20s-B1 rows rely on the tested unit's own CDR.
