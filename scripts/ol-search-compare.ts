@@ -16,12 +16,12 @@
 // This script measures the cost: for every unit it reports the greedy pick's own
 // gain, the exhaustive best's gain, and the gap between them.
 //
-// BASIS. `bestOl` has no tier parameter — it always tries lines at `line.max`, which
-// is exactly tier 15 in data/ol-tiers.json. So `--tier 15` (the default here) holds
-// tier constant and isolates the SEARCH; any disagreement it reports is a genuine
-// greedy local optimum, not a basis artifact. `--tier 11` instead answers "what does
-// ol-optimal.json's max-roll pick cost at the T11 the web actually applies it at",
-// which folds the tier question back in.
+// BASIS. `--tier <n>` runs BOTH searches at the same tier, so any disagreement it
+// reports is a genuine greedy local optimum and never a basis artifact. Independently
+// of that, the `--shipped` artifact's own picks are scored at the same tier — which is
+// how a regenerated ol-optimal.json is A/B'd against its predecessor: point `--shipped`
+// at the old copy and compare the "shipped picks APPLIED at tier N" summary across
+// the two runs. Default tier is 15 = max roll = the tier `bestOl` used to hardcode.
 //
 // Both searches run in the same Solo isolation cell as scripts/build-ol-optimal.ts
 // and scripts/build-unit-pages.ts, and every damage number here is produced by the
@@ -67,11 +67,19 @@ const olLines = load<OlLinesFile>('../data/ol-lines.json');
 const olTiers = load<{ tiers: Array<Record<string, number>> }>(
   '../data/ol-tiers.json'
 );
-// the shipped greedy artifact, so the report can also say whether it is STALE —
-// i.e. whether bestOl still produces today what data/ol-optimal.json holds.
-const shipped = load<{
-  units: Record<string, Array<{ type: string; count: number }>>;
-}>('../data/ol-optimal.json');
+// A shipped pick table to score. Defaults to data/ol-optimal.json, so the report can
+// say whether the artifact is STALE (does bestOl still produce what it holds?) and
+// what its picks are worth ON THIS TIER. `--shipped <path>` points at another copy of
+// the same shape, which is how a regenerated artifact is A/B'd against its predecessor.
+const shippedArg = process.argv.indexOf('--shipped');
+const shippedPath =
+  shippedArg >= 0 ? process.argv[shippedArg + 1] : '../data/ol-optimal.json';
+const shipped = JSON.parse(
+  readFileSync(
+    shippedArg >= 0 ? shippedPath : new URL(shippedPath, import.meta.url),
+    'utf8'
+  )
+) as { units: Record<string, Array<{ type: string; count: number }>> };
 let skillLevels: SkillLevelData = {};
 try {
   skillLevels = load<SkillLevelData>('../data/skill-levels.json');
@@ -90,7 +98,7 @@ const arg = (flag: string): string | null => {
   return i >= 0 ? (process.argv[i + 1] ?? null) : null;
 };
 
-// 15 = max roll = the tier bestOl implicitly optimizes at (see BASIS above).
+// 15 = max roll (see BASIS above).
 const TIER = Number(arg('--tier') ?? 15);
 const tierValues = olTiers.tiers.find((t) => t.tier === TIER);
 if (!tierValues) {
@@ -142,7 +150,9 @@ interface Row {
   greedyGainPct: number;
   greedyLineCount: number;
   bestLabel: string;
-  shippedLabel: string; // what data/ol-optimal.json actually ships today
+  shippedLabel: string; // the pick held by the --shipped artifact
+  shippedGainPct: number; // that pick's gain when APPLIED at this tier
+  shippedGapRelPct: number; // what it leaves on the table vs the exhaustive winner
   bestGainPct: number;
   gapPct: number; // percentage points of gain left on the table
   gapRelPct: number; // gap as a % of the exhaustive winner's damage
@@ -172,7 +182,7 @@ for (const [slug, c] of eligible) {
     tierValues,
   });
 
-  // --- greedy: bestOl, exactly as build-ol-optimal.ts runs it (max roll) ---
+  // --- greedy: bestOl, exactly as build-ol-optimal.ts runs it, at THIS tier ---
   const prepared = prepareTeam(chars, team.unitOpts, deps);
   const greedy = bestOl(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -183,38 +193,53 @@ for (const [slug, c] of eligible) {
     team.testedIndex,
     olLines,
     4,
-    FLOOR_SEED_COUNTS
+    FLOOR_SEED_COUNTS,
+    tierValues
   );
   const greedyCounts: Record<string, number> = {};
   for (const p of greedy.picks) {
     greedyCounts[p.type] = (greedyCounts[p.type] ?? 0) + 1;
   }
 
-  // Re-evaluate the greedy pick through the EXHAUSTIVE evaluator so both gains sit
-  // on one scale (bestOl injects extraStats directly; rankFreeLineConfigs goes
-  // through prepareTeam's line path, and this basis may be a different tier).
-  const greedyFree: LineSelection[] = Object.entries(greedyCounts).map(
-    ([type, count]) => ({ type, count, value: tierValues[type] })
-  );
+  // Score an arbitrary pick through the EXHAUSTIVE evaluator, so every gain in the
+  // report sits on one scale (bestOl injects extraStats directly; rankFreeLineConfigs
+  // goes through prepareTeam's line path, and this basis may be a different tier).
   const floorAtTier: LineSelection[] = OL_FLOOR.map((l) => ({
     ...l,
     value: tierValues[l.type],
   }));
-  const greedyOpts = team.unitOpts.map((o, i) =>
-    i === team.testedIndex
-      ? { ...o, lines: [...floorAtTier, ...greedyFree] }
-      : o
+  const scorePick = (
+    counts: Record<string, number>
+  ): { damage: number; gainPct: number } => {
+    const free: LineSelection[] = Object.entries(counts)
+      .filter(([, count]) => count > 0)
+      .map(([type, count]) => ({ type, count, value: tierValues[type] }));
+    const opts = team.unitOpts.map((o, i) =>
+      i === team.testedIndex ? { ...o, lines: [...floorAtTier, ...free] } : o
+    );
+    const damage = runSim(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      chars as any,
+      mult,
+      team.cfg,
+      prepareTeam(chars, opts, deps)
+    ).units[team.testedIndex].totalDamage;
+    return {
+      damage,
+      gainPct: baselineDamage
+        ? ((damage - baselineDamage) / baselineDamage) * 100
+        : 0,
+    };
+  };
+
+  const { damage: greedyDamage, gainPct: greedyGainPct } =
+    scorePick(greedyCounts);
+
+  // the shipped artifact's own pick, scored on this same tier
+  const shippedCounts: Record<string, number> = Object.fromEntries(
+    (shipped.units[slug] ?? []).map((l) => [l.type, l.count])
   );
-  const greedyDamage = runSim(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    chars as any,
-    mult,
-    team.cfg,
-    prepareTeam(chars, greedyOpts, deps)
-  ).units[team.testedIndex].totalDamage;
-  const greedyGainPct = baselineDamage
-    ? ((greedyDamage - baselineDamage) / baselineDamage) * 100
-    : 0;
+  const shippedScore = scorePick(shippedCounts);
 
   // Both sides are re-labelled through THIS file's comboLabel: src/olconfigs.ts's
   // own label sorts by count alone, so two spellings of the same multiset
@@ -261,11 +286,11 @@ for (const [slug, c] of eligible) {
     greedyGainPct,
     greedyLineCount: greedy.picks.length,
     bestLabel,
-    shippedLabel: comboLabel(
-      Object.fromEntries(
-        (shipped.units[slug] ?? []).map((l) => [l.type, l.count])
-      )
-    ),
+    shippedLabel: comboLabel(shippedCounts),
+    shippedGainPct: shippedScore.gainPct,
+    shippedGapRelPct: best.damage
+      ? ((best.damage - shippedScore.damage) / best.damage) * 100
+      : 0,
     bestGainPct: best.gainPct,
     gapPct: best.gainPct - greedyGainPct,
     gapRelPct: best.damage
@@ -310,16 +335,27 @@ if (gaps.length) {
 }
 const stale = rows.filter((r) => r.shippedLabel !== r.greedyLabel);
 process.stdout.write(
-  `\ndata/ol-optimal.json vs a live bestOl run: ${rows.length - stale.length}/${rows.length} match` +
+  `\n${shippedPath} vs a live bestOl run at this tier: ${rows.length - stale.length}/${rows.length} match` +
     (stale.length
-      ? ` — ${stale.length} STALE (artifact predates a kit/override/engine change):\n` +
+      ? ` — ${stale.length} differ:\n` +
         stale
           .map(
             (r) =>
-              `  ${r.slug.padEnd(28)} shipped ${r.shippedLabel}  |  live ${r.greedyLabel}\n`
+              `  ${r.slug.padEnd(28)} ${(r.shippedGainPct - r.greedyGainPct).toFixed(2).padStart(6)}pp  shipped ${r.shippedLabel}  |  live ${r.greedyLabel}\n`
           )
           .join('')
       : '\n')
+);
+
+// What the SHIPPED picks are worth when applied at this tier — the number that
+// decides whether regenerating the artifact on a different basis was an improvement.
+const shippedGaps = rows.map((r) => r.shippedGapRelPct).sort((a, b) => a - b);
+process.stdout.write(
+  `\nshipped picks APPLIED at tier ${TIER}, vs the exhaustive winner:\n` +
+    `  mean ${(shippedGaps.reduce((a, b) => a + b, 0) / shippedGaps.length).toFixed(2)}%   ` +
+    `median ${shippedGaps[Math.floor(shippedGaps.length / 2)].toFixed(2)}%   ` +
+    `max ${shippedGaps[shippedGaps.length - 1].toFixed(2)}%   ` +
+    `optimal on ${rows.filter((r) => r.shippedGapRelPct < 0.005).length}/${rows.length}\n`
 );
 
 const shortGreedy = rows.filter((r) => r.greedyLineCount < 4);

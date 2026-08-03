@@ -7,7 +7,14 @@
 // best remaining lines (crit / ammo / charge …) are governed by its own kit, so we
 // optimize each unit once in the solo isolation team and reuse the result everywhere.
 //
-//   npx tsx scripts/build-ol-optimal.ts [--out <path>]
+// TIER: the search runs at T11, the tier the web's 12/12 Overload pill APPLIES these
+// picks at (and the tier scripts/build-unit-pages.ts ranks its table at). It used to
+// pass no tier values, so bestOl optimized at max roll and shipped picks chosen under
+// stat values no consumer ever uses — not cosmetic, because several candidates are
+// threshold stats whose winner moves with the tier. Override with --tier for a basis
+// A/B; `--tier 15` reproduces the old max-roll behaviour.
+//
+//   npx tsx scripts/build-ol-optimal.ts [--out <path>] [--tier <n>]
 import { readFileSync } from 'node:fs';
 import { writeJsonArtifact } from '../src/data/json-artifact.js';
 import type { DataFile, LevelMultiplier, Element } from '../src/types.js';
@@ -35,6 +42,9 @@ const data = load<DataFile>('../data/characters.json');
 const mult = load<LevelMultiplier>('../data/level-multiplier.json');
 const cubes = load<CubesFile>('../data/cubes.json');
 const olLines = load<OlLinesFile>('../data/ol-lines.json');
+const olTiers = load<{ tiers: Array<Record<string, number>> }>(
+  '../data/ol-tiers.json'
+);
 let skillLevels: SkillLevelData = {};
 try {
   skillLevels = load<SkillLevelData>('../data/skill-levels.json');
@@ -47,6 +57,13 @@ for (const slug of Object.keys(data.characters)) {
   overrides[slug] = loadOverride(slug);
 }
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
+
+const tierArg = process.argv.indexOf('--tier');
+const TIER = tierArg >= 0 ? Number(process.argv[tierArg + 1]) : 11;
+const tierValues = olTiers.tiers.find((t) => t.tier === TIER);
+if (!tierValues) {
+  throw new Error(`data/ol-tiers.json has no tier ${TIER}`);
+}
 
 // Solo isolation, elemental-advantage, full core exposure, 12/12 tier — the same
 // probe context the DPS-chart Solo headliners rank under.
@@ -82,7 +99,8 @@ for (const [slug, c] of eligible) {
     team.testedIndex,
     olLines,
     4,
-    FLOOR_SEED_COUNTS
+    FLOOR_SEED_COUNTS,
+    tierValues
   );
   const counts = new Map<string, number>();
   for (const p of res.picks) {
@@ -98,9 +116,11 @@ for (const [slug, c] of eligible) {
 const artifact = {
   _comment:
     'Damage-optimal 12/12 remainder OL lines per unit (beyond the 4 elem + 4 atk floor), ' +
-    'computed by scripts/build-ol-optimal.ts in the Solo framework. Applied at T11 by the ' +
-    "web's 12/12 Overload pill. Regenerate when kits/overrides/engine change.",
+    'computed by scripts/build-ol-optimal.ts in the Solo framework, optimized AT the T11 ' +
+    "line values the web's 12/12 Overload pill applies them at. Regenerate when " +
+    'kits/overrides/engine change.',
   framework: 'solo',
+  tier: TIER,
   units,
 };
 

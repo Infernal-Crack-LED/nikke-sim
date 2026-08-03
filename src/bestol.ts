@@ -1,8 +1,14 @@
 // Best-OL calculator: greedy marginal-gain search. Starting from the unit's
-// current loadout, repeatedly try adding one max-roll line of each type (cap 4
-// per type = one per OL piece), re-run the full sim, and keep whichever line
-// adds the most damage for that unit. Reports the marginal gain of every pick
-// so diminishing returns are visible.
+// current loadout, repeatedly try adding one line of each type (cap 4 per type =
+// one per OL piece), re-run the full sim, and keep whichever line adds the most
+// damage for that unit. Reports the marginal gain of every pick so diminishing
+// returns are visible.
+//
+// Lines are tried at their MAX ROLL unless `lineValues` supplies a per-type value
+// (data/ol-tiers.json holds one row per tier). The tier is not cosmetic: several
+// candidates are threshold stats — Charge Speed buys nothing until it crosses a
+// frame boundary — so the tier the search runs at can change which line wins.
+// Optimize at the tier the picks will actually be APPLIED at.
 import type { CharacterData, LevelMultiplier, SimConfig } from './types.js';
 import { runSim } from './engine/sim.js';
 import type { OlLinesFile, PreparedUnit } from './prepare.js';
@@ -34,8 +40,13 @@ export function bestOl(
   // Pre-consumed line counts (per type, cap 4 each). Pass e.g. { elem: 4, atk: 4 }
   // when the unit already carries a fixed floor of lines (DPS-chart 12/12 tier),
   // so the greedy search only fills the *remaining* pieces and never exceeds 4/type.
-  seedCounts: Record<string, number> = {}
+  seedCounts: Record<string, number> = {},
+  // Per-line-type stat value to search at, keyed as in data/ol-tiers.json
+  // (e.g. { atk: 11.81, elem: 23.56, … } for T11). Omit for max roll.
+  lineValues?: Record<string, number>
 ): BestOlResult {
+  const valueOf = (type: string, max: number): number =>
+    lineValues?.[type] ?? max;
   const simWith = (extra: Array<{ stat: string; value: number }>) => {
     const p = prepared.map((u, i) =>
       i === unitIdx ? { ...u, extraStats: [...u.extraStats, ...extra] } : u
@@ -58,7 +69,10 @@ export function bestOl(
       if ((counts[type] ?? 0) >= 4) {
         continue;
       }
-      const result = simWith([...added, { stat: line.stat, value: line.max }]);
+      const result = simWith([
+        ...added,
+        { stat: line.stat, value: valueOf(type, line.max) },
+      ]);
       if (!best || result.unit > best.result.unit) {
         best = { type, result };
       }
@@ -83,14 +97,14 @@ export function bestOl(
     picks.push({
       type: best.type,
       name: line.name,
-      value: line.max,
+      value: valueOf(best.type, line.max),
       unitGainPct: prev.unit ? (gain / prev.unit) * 100 : 0,
       teamGainPct: prev.team
         ? ((best.result.team - prev.team) / prev.team) * 100
         : 0,
     });
     counts[best.type] = (counts[best.type] ?? 0) + 1;
-    added.push({ stat: line.stat, value: line.max });
+    added.push({ stat: line.stat, value: valueOf(best.type, line.max) });
     prev = best.result;
   }
 
