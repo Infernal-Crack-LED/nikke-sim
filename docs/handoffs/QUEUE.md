@@ -118,6 +118,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Engine / model threads (measurement- or owner-gated)
 
+- **⇒ BUFFER BOARD: the 40s-cooldown B2 penalty — one owner decision, findings only.** The tested
+  unit replaces a no-op filler whose burst cooldown is fixed at 20s (`NOOP_B2`,
+  `src/dpschart/noop.ts:130`), so a 40s-cooldown B2 halves the team's Full Burst cadence and pays a
+  flat toll before any buff is counted. Kit-stripped floor via
+  `npx tsx scripts/build-bufferchart.ts --explain <slug>`: flora −7.67%, prika −7.80%, versus crown
+  +0.21% and n102 −0.40% at 20s. Confirmed on the independent observable (FB count, not DPS %): the
+  baseline team runs **9** Full Bursts in 180s, flora's **5**, crown's **9**. It is a real property
+  of the unit in that team, not a bug — but it is charged against every long-cooldown B2's headline
+  number and the board does not say so. DECIDE: leave as is (the toll is real value lost),
+  stage-match the baseline filler's cooldown to the tested unit, or report the two components
+  separately.
 - **⇒ ENGINE REGRESSION FULL-BURST COUNT FAILURES — four comps disabled in `scripts/regression.ts`**
   (`:106`, `:131`, `:158`, `:236`): `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`,
   `N3 scarlet/liberalio iron` each read 1–3 Full Bursts short of their video-measured counts on clean

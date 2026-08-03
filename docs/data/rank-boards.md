@@ -82,6 +82,18 @@ never bursts, so its value must come through passives. Value that comes through
 faster rotations (gauge batteries, cooldown reduction) is captured, because the
 whole fight is simulated.
 
+Rotation cuts both ways, and it is the single biggest thing to know when reading
+a low number. The no-op the tested unit displaces bursts every 20 seconds, so a
+unit whose own burst cooldown is longer holds up the team's whole Full Burst
+chain: a 40-second Burst-2 lands 5 Full Bursts in the 180-second fight where the
+no-op baseline lands 9, and the damage those four lost Full Bursts would have
+done is charged against the unit's percentage before a single buff is counted.
+It costs roughly 8% of team damage. That is a real cost of fielding the unit in
+that team, and it is why a long-cooldown support can sit mid-board on the
+strength of a buff that is individually excellent. `npx tsx
+scripts/build-bufferchart.ts --explain <slug>` breaks any unit's number into
+that rotation floor plus the contribution of each buff line.
+
 The board lists only units whose value comes out at zero or above. A unit that
 reduces team damage in the standard comp has no standing to rank on a support
 board, and its bar would also set the chart's left edge, compressing every
