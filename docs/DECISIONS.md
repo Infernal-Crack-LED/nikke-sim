@@ -9,6 +9,37 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-03) SUSTAIN BOARD PORTS THE BUFFER BOARD'S STAGE-COVERAGE SHAPE, AND LOADS THE
+  NEVER-LOADED B1 CONTROL.** Owner ruling on the two linked findings queued after the buffer-board
+  methodology PR: (1) the tested unit should measure throughput in a team that covers its own burst
+  stage (a 40s/60s healer no longer holds up its team's rotation), not throughput at its bare natural
+  cadence; (2) the sustain board should load `noop-b1-ar` like its sibling boards, normalizing for the
+  standard 7s team-CDR enabler.
+  **(1) `src/ranks/sustain.ts` `sustainTeam()`** now seats a stage-matched spare behind the tested
+  unit for burst I/II comps (a same-stage profile partner stands in for the spare when one is seated —
+  prika/mint and anchor-innocent-maid/mast-romantic-maid are both same-stage pairs already, so those
+  rows are unaffected by this alone), mirroring `src/ranks/buffer.ts`'s lead-own-stage rule (a tested
+  unit placed behind the no-op of its own stage loses every contest for that stage and stops
+  bursting). B3-tested comps already had this shape (`slug, NOOP_B3`) and are untouched. **Isolated
+  from the control fix**, this reproduces the pre-landing probe exactly: `blanc` +59.9% (the clear
+  buffer-board-pattern case — her 60s B2 no longer gates the team), `tia` −29.9%, `soline-frost-ticket`
+  −16.7%, `prika` (plain row) −13.3%, `noise` −20.0%; `alice-wonderland-bunny`, `anchor-innocent-maid`,
+  `aria`, `bay`, `biscuit`, `delta-ninja-thief`, `flora`, `rapunzel` byte-identical, as the probe found.
+  Most movers are _negative_ — the spare competes for the stage cast and the tested unit bursts less —
+  so this is a real behavior change with mixed direction, not a uniform boost to long-cooldown units.
+  **(2) `scripts/build-sustain.ts`** now loads every `NOOP_CHARACTERS` override in a loop (the same
+  pattern `build-bufferchart.ts` / `build-b1b2dps.ts` use) instead of `noop-b3-mg` alone, so the no-op
+  B1's 7s team burst-cooldown reduction is applied — sustain values HP restored/shielded, not damage,
+  but a faster team rotation still changes burst-timed heal/shield windows.
+  **Combined blast radius** (both changes together, full 46-candidate board, before/after by slug +
+  profile identity): 17 of 46 byte-identical; largest movers `blanc` +79.3%, `quiry` +33.3%,
+  `snow-crane` +32.5%, `prika` (plain row) +30.7% — her `with-mint` row is unaffected (0.0%; the
+  permanent duet HoT/potency window does not depend on burst cadence); `tia` −28.6%,
+  `soline-frost-ticket` −16.7%, `mint` −5.6% the largest negative movers besides tia/soline.
+  `scripts/tests/ranks/sustain.test.ts`
+  (band-pinned, not exact game-truth) passed unchanged; `scripts/verify.sh` green — sustain is not
+  part of the graded-comp regression snapshot, so this carries no damage-model risk.
+
 - **(2026-08-03, latest) EVERY BUFFER-BOARD TEAM FIELDS EXACTLY ONE BURST-COOLDOWN ENABLER, AND THE
   CONTROL'S REDUCTION FIRES ON `fullBurstEnter`.** Owner ruling: an optimal team always carries one
   CDR unit and almost never two, so the board should model that case. The tested unit takes the
