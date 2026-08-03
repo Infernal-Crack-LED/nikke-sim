@@ -7,7 +7,7 @@
 // (mint+prika together; naga → a `shield`-tagged teammate).
 import { describe, expect, it } from 'vitest';
 import { makeCalc, type TeamCalcInput } from '../../../src/teamcalc.js';
-import { scopeLockCfg } from '../../lib/scope-lock.js';
+import { fastCfg } from '../lib/fast-cfg.js';
 import {
   archetypeTags,
   deps,
@@ -31,7 +31,9 @@ const calcWith = (blocked: string[] = []) =>
     chars: chars as any,
     mult,
     deps: { overrides, ...deps },
-    cfg: scopeLockCfg([], null) as any,
+    // Shorter fight for constraint tests: they assert together/companions rules,
+    // not absolute team quality or exact damage numbers.
+    cfg: fastCfg([], null) as any,
     loadout: {},
     blocked,
     constraints: CONSTRAINTS,

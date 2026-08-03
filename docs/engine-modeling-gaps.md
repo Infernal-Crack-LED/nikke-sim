@@ -448,6 +448,10 @@ self-buff on a focus unit: fires with a matching present ally (Water/Electric/B3
 inert when absent (Wind → 0%), correctly inert when only self would match (owner excluded → 0%).
 **No override opts in yet** — enacting arcana is deferred (MODEL_ONLY, no board data; owner currently
 grades her "mono-Electric comp only", and her separate Wheel-of-Fortune status gate is still unmodeled).
+**2026-08-02: the `sameSquad` facet landed** — "an ally from the same squad … on the battlefield"
+gates resolve squad membership from the curated map `src/data/squads.ts` (fail-closed; validator-
+guarded); blanc's S2 burst-CDR is the first enactment (see DECISIONS.md 2026-08-02). The remaining
+same-squad kit text (noir's `.slugs` spelling, anchor-innocent-maid, ram) is tracked in QUEUE.md.
 
 ### 5. Pierce gating — static `hasPierce` only — ~14 units (usually COLD)
 

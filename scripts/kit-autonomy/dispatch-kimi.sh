@@ -1,16 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# dispatch-kimi.sh — dispatch a cross-family blind packet to Kimi via the CLI.
+# dispatch-kimi.sh — dispatch a cross-family packet to Kimi via the CLI.
 #
 #   bash scripts/kit-autonomy/dispatch-kimi.sh <packet.md> <model> <result-out.json>
 #
-# Kimi equivalent of dispatch-claude.sh: prepends the subagent non-negotiables,
-# runs the full prompt through `kimi -p` with tools DISABLED (a --agent-file
-# profile whose `tools: []` leaves the model with no tools at all — verified
-# 2026-07-26: it cannot read files), extracts the assistant text from the
-# stream-json envelope, strips markdown fences, validates it parses as JSON,
-# and writes to <result-out.json>.
+# Kimi equivalent of dispatch-claude.sh, with the same two modes, selected by
+# the packet's role heading in its first 10 lines:
+#
+#   BLIND (default — every packet that does not start with "# code-review"):
+#     runs the blind agent profile (kimi-blind-agent.md, `tools: []`), which
+#     leaves the model with no tools at all (verified 2026-07-26: it cannot
+#     read files), and prepends the no-tools preamble. Generic gates may
+#     override the profile with KIMI_AGENT_FILE (e.g. logic-gate's
+#     scripts/gates/kimi-gate-agent.md — also `tools: []`).
+#
+#   CODE-REVIEW (packet starts with "# code-review"):
+#     the sighted post-op review (.claude/skills/code-review). Runs the sighted
+#     profile (kimi-code-review-agent.md, `tools: [Read, Grep, Glob, Bash]`)
+#     and omits the no-tools preamble. Write/Edit are NOT in the profile — the
+#     reviewer stays findings-only (Bash is governed by the role body's "never
+#     edit, never mutate" instruction). Detection WINS over KIMI_AGENT_FILE: a
+#     code-review packet always gets the sighted profile even if the caller
+#     still exports the old blind gate profile.
+#
+# Both modes prepend the subagent non-negotiables, run the full prompt through
+# `kimi -p`, extract the assistant text from the stream-json envelope, strip
+# markdown fences, validate it parses as JSON, and write to <result-out.json>.
 #
 # The model field is injected into the result so the verdict can report provenance.
 #
@@ -24,9 +40,23 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-# Agent profile: kit-autonomy's blind profile by default; generic gates (logic-gate /
-# code-review skills) override with KIMI_AGENT_FILE=scripts/gates/kimi-gate-agent.md.
-AGENT_FILE="${KIMI_AGENT_FILE:-$SCRIPT_DIR/kimi-blind-agent.md}"
+
+# A packet is the sighted code-review role iff its role heading appears in the
+# first 10 lines: "# code-review ..." (the packet is the role body of
+# .claude/agents/code-review.md + INTENT/DIFF/CONTEXT). Signature-stable; every
+# other role heading (kit-autonomy, logic-gate, scientific-method) stays blind.
+detect_code_review() {
+  local packet="$1"
+  if head -n 10 "$packet" | grep -qE '^# code-review\b'; then
+    return 0
+  fi
+  return 1
+}
+
+# Agent profile: selected by mode once the packet is known (see below) — the
+# sighted kimi-code-review-agent.md for code-review packets, kit-autonomy's
+# blind profile otherwise; generic gates (logic-gate) override the BLIND
+# profile with KIMI_AGENT_FILE=scripts/gates/kimi-gate-agent.md.
 
 # Resolve the kimi binary: PATH first, then the default install location.
 KIMI="$(command -v kimi || true)"
@@ -62,13 +92,35 @@ if [[ ! -f "$PACKET" ]]; then
   exit 1
 fi
 
-# Build the full prompt: no-tools preamble + non-negotiables + the packet.
-# The agent profile already removes the tools, but the preamble keeps the
-# instruction unambiguous (the role templates say "Save to <path>", which the
-# model must instead return as text).
-PROMPT="IMPORTANT: You have NO tools available. Do NOT attempt to use any tools (no file writes, no reads, no shell commands). Return your complete JSON response directly in your response text.
+# Mode selection: a packet whose role heading (first 10 lines) is "# code-review"
+# is the sighted code-review skill and runs with read-only tools; everything
+# else stays blind (no tools) — the blindness boundary is the whole point of
+# the audit/gate roles. Detection wins over KIMI_AGENT_FILE so a stale caller
+# export cannot force a code review back onto the blind profile.
+if detect_code_review "$PACKET"; then
+  MODE="code-review"
+  AGENT_FILE="$SCRIPT_DIR/kimi-code-review-agent.md"
+else
+  MODE="blind"
+  AGENT_FILE="${KIMI_AGENT_FILE:-$SCRIPT_DIR/kimi-blind-agent.md}"
+fi
+
+# Build the full prompt: mode preamble + non-negotiables + the packet.
+# BLIND: the agent profile already removes the tools, but the preamble keeps
+# the instruction unambiguous (the role templates say "Save to <path>", which
+# the model must instead return as text).
+# CODE-REVIEW: tools are ON (sighted profile); the preamble instead pins the
+# read-only contract and that the FINAL message must be the JSON object
+# (multi-turn tool use otherwise tends to end on a prose summary).
+if [[ "$MODE" == "code-review" ]]; then
+  PROMPT="IMPORTANT: You have READ-ONLY repository access via the Read, Grep, Glob and Bash tools — use them to verify assumptions against the code and to run fast read-only checks (typecheck, tests). NEVER edit, write, commit, or run anything that mutates state; you are a findings-only reviewer. Return your JSON object as your FINAL message, with no markdown fences and no prose around it.
 
 "
+else
+  PROMPT="IMPORTANT: You have NO tools available. Do NOT attempt to use any tools (no file writes, no reads, no shell commands). Return your complete JSON response directly in your response text.
+
+"
+fi
 if [[ -n "$NON_NEG" ]]; then
   PROMPT+="$(cat "$NON_NEG")
 
@@ -78,9 +130,14 @@ if [[ -n "$NON_NEG" ]]; then
 fi
 PROMPT+="$(cat "$PACKET")"
 
-echo "→ dispatching $(basename "$PACKET") to $MODEL …" >&2
+echo "→ dispatching $(basename "$PACKET") to $MODEL ($MODE mode) …" >&2
 
-# Dispatch: tools structurally DISABLED via the agent profile (tools: []).
+# Dispatch: the tool set is bounded by the agent PROFILE, not a permission flag —
+#   blind       — tools: [] (the model has no tools at all).
+#   code-review — tools: [Read, Grep, Glob, Bash] (Write/Edit never exist).
+# -p mode is non-interactive and auto-runs the profile's tools on its own; the
+# interactive approval flags are REJECTED with -p ("Cannot combine --prompt with
+# --auto" / "--yolo", verified live 2026-08-02), so neither is passed.
 # stream-json gives one JSON object per line on stdout; the model's reply is
 # the assistant message(s). stderr carries thinking + progress (discarded).
 RAW="$(KIMI_CODE_EXPERIMENTAL_FLAG=1 "$KIMI" -p "$PROMPT" \
@@ -90,7 +147,13 @@ RAW="$(KIMI_CODE_EXPERIMENTAL_FLAG=1 "$KIMI" -p "$PROMPT" \
   2>/dev/null)" || true
 
 # Extract the assistant text from the JSONL envelope (last assistant message
-# wins; with no tools there is exactly one).
+# wins — the final answer). Verified against a live sighted envelope
+# (2026-08-02): a tool-call turn is {"role":"assistant","tool_calls":[...]}
+# with NO .content field, so `.content // empty` drops it; tool results are
+# role=="tool" (also dropped); the final answer is {"role":"assistant",
+# "content":"<json string>"} — a plain string, so `last` yields the JSON. No
+# block-array content was observed, so this extraction needs no code-review
+# special-casing.
 RESULT_TEXT="$(printf '%s\n' "$RAW" | jq -rs '[.[] | select(.role == "assistant") | .content // empty] | last // empty' 2>/dev/null)" || true
 if [[ -z "$RESULT_TEXT" ]]; then
   echo "❌ kimi returned no assistant message" >&2

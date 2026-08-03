@@ -4,6 +4,7 @@
 // 2. resolveSkills with the override — reports remaining warnings
 // 3. smoke sim: unit in a standard team; flags crashes, zero damage, absurd shares
 import { readFileSync } from 'node:fs';
+import { squadOf } from '../src/data/squads.js';
 import { runSim } from '../src/engine/sim.js';
 import { resolveSkills } from '../src/skills/index.js';
 import { loadOverride } from '../src/skills/overrides-node.js';
@@ -282,6 +283,21 @@ function validate(slug: string): boolean {
       }
       if (b.formation && !['noB1', 'hasB1'].includes(b.formation)) {
         errors.push(`${p}: bad formation`);
+      }
+      // `teamHas.sameSquad` resolves the owner's squad from the curated map
+      // (src/data/squads.ts) — an unmapped owner fails closed (the gate can
+      // never open), so reject the authoring instead of shipping a dead block
+      if (b.teamHas?.sameSquad !== undefined) {
+        if (b.teamHas.sameSquad !== true) {
+          errors.push(
+            `${p}: teamHas.sameSquad must be true (omit it for no gate)`
+          );
+        }
+        if (!squadOf(slug)) {
+          errors.push(
+            `${p}: teamHas.sameSquad but "${slug}" has no curated squad — add its membership to src/data/squads.ts`
+          );
+        }
       }
       // `targetStatus` lands on the BOSS and the engine ignores block.target (there is no enemy
       // entity — see sim.ts). Require the authoring block to say so explicitly, so a real carrier

@@ -30,7 +30,7 @@ const PROFILE_LABELS = {
   'w/ Prika': 'w/ Prika',
   'w/ Mint': 'w/ Mint',
   'w/ Anchor': 'w/ Anchor',
-  'w/ Bunny': 'w/ Bunny',
+  'w/ Rouge': 'w/ Rouge',
 };
 const profileBadge = profiledEntry?.[3]
   ? (PROFILE_LABELS[profiledEntry[3]] ?? null)

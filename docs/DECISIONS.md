@@ -9,7 +9,39 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-01, latest) CLEAN-WEAPON BASIS INVARIANT REFINED (option 2): CW1 now pins
+- **(2026-08-02, latest) SQUAD PRIMITIVE LANDED — "an ally from the same squad" kit gates resolve
+  against a curated squad map; Blanc's squad is Noir+Rouge ONLY (the bunny/maid units are a
+  DIFFERENT squad).** New block-gate facet `teamHas.sameSquad` (`src/skills/types.ts`; evaluated at
+  sim setup in `sim.ts`'s block filter alongside the other `teamHas` facets): the block is active
+  only when SOME OTHER ally shares the owner's squad per `src/data/squads.ts` — a hand-curated
+  slug→squad map, because characters.json carries no squad axis (the blablalink `role_meta`
+  snapshot has no squad field). The gate FAILS CLOSED: an owner with no curated squad never
+  satisfies it, and `validate-overrides.ts` rejects a `sameSquad` authoring on an unmapped owner
+  (a dead block can't ship silently). **Owner-confirmed membership (2026-08-02):** Blanc `blanc` /
+  Noir `noir` / Rouge `rouge` form one squad — extending the 2026-07-20 Noir ruling (same-squad
+  burst gate "satisfied by blanc or rouge") to its full extension, and CORRECTING the common
+  misread that the bunny/maid units (bunny, milk, zwei, guilty, quency, soda, the maid costumes)
+  share it — they do NOT. M.M.R. = Tia `tia` / Naga `naga` / Marciana `marciana` (owner-stated;
+  seeded in the map, no gate consumes it yet). **Enacted:** `blanc`'s S2 burst-CDR (40.76s on
+  fullBurstEnd) is now gated on `sameSquad` — inert in comps without noir/rouge, active with one;
+  the "still on the battlefield" clause is scope-trivial (nobody dies at scope lock), so the gate
+  is composition-only. The buffer-rank workaround `blancNoCdrOverride` (`src/ranks/buffer.ts`,
+  which stripped the CDR from Blanc's plain row) is REMOVED — the plain row is now naturally inert
+  and the profiled row naturally active. **Consequent board change:** Blanc's buffer-board duo
+  profile `w/ Bunny` → `w/ Rouge` — the old synthetic Bunny partner existed to hold the gate open
+  under the same misread; the partner is now `noop-rouge-b1` (`src/dpschart/noop.ts`), a
+  presence-only no-op Rouge B1 (zeroed kit, rouge's cadence) whose curated squad membership opens
+  the gate faithfully. `scripts/tests/ranks/buffer.test.ts`'s pin (profiled casts/value > plain)
+  holds unchanged. **Evidence:** `scripts/tests/units/blanc.test.ts` B3 group (gate inert in the
+  liter comp == CDR-removed schedule; active ≥5 casts with rouge; the ungated counterfactual
+  over-fires — discriminates both nearest-wrongs); noir's N5 gate test passes unchanged;
+  `scripts/regression.ts` carries no blanc comp (snapshot untouched); `bash scripts/verify.sh`
+  green. **Migration list** (other "same squad" kit text) lives in
+  [docs/handoffs/QUEUE.md](handoffs/QUEUE.md) "Same-squad primitive migrations": noir (`.slugs` →
+  `.sameSquad`, drop-in), anchor-innocent-maid (blocked on an owner squad-membership ruling), ram
+  (no override yet), emma/eunhwa-tactical-upgrade (target-set pattern, not a gate — no migration).
+
+- **(2026-08-01) CLEAN-WEAPON BASIS INVARIANT REFINED (option 2): CW1 now pins
   damage-NEUTRALITY of any committed override, not file-ABSENCE — `marciana` is the first
   clean-weapon unit to carry an override.** The kit-autonomy gauntlet landed `marciana` (the SG
   clean-weapon basis cell) at GO faithfulness 1.0, cross-family corroborated (S2b claude-fable-5 /
@@ -320,7 +352,7 @@ lives. Newest first within each section.
   extended in-flight (+21 s), and entered on **another unit's** status landing; `milk-blooming-bunny`
   needs a stat **clamp scoped by reload count**, status-suppresses-status, and a player-input entry, and
   its kit text never states Embarrassment's exit condition. Do NOT try to complete those three on this
-  registry and then read the failure as a gate bug. → `docs/handoffs/2026-07-22-engine-work-plan.md` 5e.
+  registry and then read the failure as a gate bug. → 5e.
   **`privaty` (Privaty, AR/Water) is NOT enacted.** Her `skill2` still carries the fabricated `dot`
   (`atkPct 1687 / durationSec 10 / intervalSec 3`); rewiring it onto this gate is a separate gated pass,
   still blocked on why the 1687% is present in T4/T4b and absent in the u7 focus video. `wipeOut` is now
@@ -448,7 +480,7 @@ lives. Newest first within each section.
   total and rides with the rest of her explosion residual (U15 stays open on its other four bullets). This
   retires the one FORMULA-level unknown that sat underneath all 86 board readings — per-unit retunes no
   longer risk calibrating against a possibly-wrong shared bracket, which is what gated the engine-work
-  ordering. Trail: open-questions U15, `docs/handoffs/2026-07-22-engine-work-plan.md` §P0.
+  ordering. Trail: open-questions U15, §P0.
 
 - **(2026-07-21) COHERENT FIRST-BURST ROTATION MODEL — LANDED (owner frame-perfect, chisato.mov Liter/Crown/Chisato/Helm Fire).**
   A frame-by-frame read (t0 = first `2:59` frame; the timer starts at 2:59:999 = elapsed 0, NOT 2:59:000 — see
@@ -2611,7 +2643,10 @@ Plan: `docs/handoffs/closed/2026-07-24-roster-generator-perf-plan.md`. Items:
   (6 tests) + `--polish` on `scripts/bench-generator.ts`; 78 pre-existing generator tests green with
   nothing re-pinned; `verify.sh` green.
 
-**Player-facing patch notes: PENDING at next push** (the pre-push hook nudges `/patch-notes`).
+**Player-facing patch notes: SKIPPED (owner ruling 2026-08-02).** No note written — the item is a
+measured NO-OP on the shipped full-pool config (its only payoff, +13%/a recovered team, is on
+constrained small-eligible pools), and a 9-day-old note was not worth publishing. The item-0/1/2/3/5
+search upgrade is already covered by the 2026-07-24 "smarter search, faster runs" note (`035465e`).
 
 ## Probe reader build-out — four hand reads replaced by scripts (2026-07-24)
 

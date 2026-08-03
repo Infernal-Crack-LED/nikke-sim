@@ -52,6 +52,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ Un-skip the `loadouts-parity.test.ts` `topTeams(5)` byte-parity case on the fast basis** —
+  filed 2026-08-02 from the cross-family code review (claude-opus-5) of the generator-test speedup
+  (branch `kimi/speed-up-generator-tests`; packet + result JSON in
+  `scratchpad/gates/2026-08-02-speed-up-generator-tests/`). The skip comment (2026-07-26) says the
+  case is skipped PURELY for runtime (~165s doubled call vs the 300s vitest ceiling under CPU
+  contention) and TODOs "narrow the pool here or give this file its own longer timeout"; the file
+  now runs on `fastCfg` (30s fight), which is exactly that fix. Un-skip, measure on the 30s basis,
+  then delete or rewrite the now-stale skip comment.
 - **⇒ `build-dpschart.ts` worker-pool robustness — 3 findings filed from a CLEAN cross-family
   review** (kimi-code/k3, 2026-08-01; packet + both result JSONs in
   `scratchpad/gates/2026-08-01-deploy-build-timeout/`). All three are on already-failing or
@@ -115,18 +123,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   a different hash) — the short URL is now as durable as the long one. **Still open / to tell the
   bot:** a `characters.json` change (a unit rename) moves pixels without moving the hash — the key
   covers renderer changes, not data changes; if that bites, add a data stamp to the key.
-
-- **⇒ RL3-VS-BOARD OUTLIER GAUGE INVESTIGATION — findings-only, NOT ENACTED →
-  `docs/handoffs/2026-07-27-rl3-rank-outlier-gauge-investigation.md`.** Triage the 53 `|Δrank| ≥ 10`
-  outliers in `docs/rl3-burstgen-rank-comparison.md` (regenerate: `npx tsx scripts/rl3-burstgen-compare.ts`)
-  into legitimate kit/rotation effect vs comparison artifact vs modeling gap. Seeded clusters: **(A)** the
-  RL clip-reload family (arcana/anchor/diesel/mint/ada) sits at the sim board's BOTTOM (1.65–2.2%/s,
-  Δ≈−61..−70) — possible RL cadence datamine gap vs the rl3 4-shot-opener artifact; **(B)** SG units
-  under-generate in sim (landing-fraction `sgGaugeFrac` × the no-op range script; overlaps the SG-landing
-  geometry thread); **(C)** catalogued unmodeled skill-gen (anis-star battery+aura, ein orb, trina/laplace
-  battle-start fill — `burst-gauge.md` §2); **(D)** sim-over-performers with real kit gauge (bready DoT,
-  red-hood, neon — mostly legitimate). flora/rosanna/sugar already resolved 2026-07-27. Findings-only;
-  per-unit enactments gated via `/kit-tdd` / `/scientific-method`.
 
 - **⇒ PROBE READER BUILD-OUT — P0/P1/P2/P4 BUILT 2026-07-24 on branch `probe-readers`, AWAITING
   OWNER MERGE** (DECISIONS 2026-07-24; validation record `docs/probe-runs.md`; instrument registry
@@ -244,8 +240,8 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   landing: **U34** (Max-Ammo ▲-expiry over-cap belt clip — immediate vs lazy, now reached code at
   20/s). The full work order is CLOSED → `docs/handoffs/closed/2026-07-23-smg-cadence-flip.md`.
 
-- **⇒ ENGINE-WORK ORDER (read FIRST before resuming per-kit retunes) →
-  `docs/handoffs/2026-07-22-engine-work-plan.md`.** The remaining engine work ranked by BLAST RADIUS, with
+- **⇒ ENGINE-WORK ORDER (read FIRST before resuming per-kit retunes).**
+  The remaining engine work ranked by BLAST RADIUS, with
   the rationale that P0/P1 items change the shared math every override is calibrated against (a retune done
   first has to be redone), while P2 primitives are additive and interleave freely. Order: (1) score the
   `CONE_DELTA` holdouts + revert-trigger check; **(2) LANDED 2026-07-22 — `RIDERCRIT` ON, see A32 (U13);
@@ -345,12 +341,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     Explore-Route kit over-credit (owner kit audit). (Mechanics SSOT pair refreshed to UNIGEO
     2026-07-22 — done.)
 
-- **⇒ `fbext` BRANCH — MERGED to main 2026-07-22 (PR #17 `af0592b`, owner-confirmed).** Ordering fix +
-  chip-gated FB-extension ladder + soda-twinkling-bunny's Hit Rate; the `soda-tb control` comp is
-  graded (board 142 datapoints, boss NEUTRAL per owner — the recon's inferred Electric was wrong and
-  would have handed both Iron units a ~10% advantage). The 4 formerly pre-merge items remain open as
-  post-merge follow-ups: `docs/handoffs/2026-07-22-engine-work-plan.md` (FB-extension item).
-
 - **⇒ SG-LANDING GEOMETRY: aim-circle method fix (`docs/data/sg-calc/`)** — all four owner rulings RESOLVED
   2026-07-22, scope collapsed to ONE workstream. Workstreams A + B are RETIRED (superseded by the live
   δ-offset cone — code-verified unreachable); discrete bands KEPT; the `k,c` range measurement is CLOSED as
@@ -363,14 +353,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   **ENGINE MODELING-GAP THREAD MAP → `docs/engine-modeling-gaps.md`.** The open tail of per-unit
   findings + the cross-unit cluster inventory (which primitives are built but not yet enacted per unit —
   all measurement/board-gated). Per-unit tier + finding SSOT: `data/kit-status.json`.
-
-- **⇒ PATCH NOTES PENDING AT NEXT PUSH for roster-generator item 4** (merged to main 2026-07-24,
-  `7ebc77b`, owner-approved — the perf plan is now CLOSED: items 0/1/2/3/5 in `5a50f78`, item 4 here;
-  WHY in DECISIONS, A/B in `docs/handoffs/closed/2026-07-24-gen-item4-polish-ab.md`). Player-facing
-  value is narrow — a measured NO-OP on the shipped full-pool config, +13%/a recovered team only on
-  constrained (small-eligible-roster) pools — so the note should say that honestly rather than sell a
-  speed/quality win. Earlier patch notes (`035465e`) already cover the item-0/1/2/3/5 search upgrade;
-  both ship with the next push/deploy.
 
 - **⇒ UNION-RAID GENERATOR — DEFERRED (owner ruling 2026-07-24) pending board stability.** Plan +
   precondition to resume: **`docs/handoffs/2026-07-24-union-raid-polish-plan.md` ON BRANCH
@@ -496,11 +478,31 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **Per-unit rotation re-tunes (answered-questions U16)** — RESOLVED 2026-07-26: the rotation
   over-generation is settled (DECISIONS 2026-07-21); the per-unit over-models (chisato, trina, naga,
   soda-twinkling-bunny) are rotation-independent and tracked as standard hand-tune queue items.
-- **Blanc same-squad CDR override cleanup** — `src/skills/overrides/blanc.json` currently models the
-  S2 "ally from the same squad still on the battlefield" CDR (40.76s) as unconditional because nobody
-  dies at scope lock. The buffer-rank `w/ Bunny` profile works around this by suppressing the CDR in
-  Blanc's plain row and keeping it active when the synthetic Bunny partner is present. The engine/
-  override should instead gate the CDR with a `teamHas` slug condition (or a proper squad primitive)
-  so the plain row is naturally inert without the partner and active with the partner. Out of scope for
-  the current rank-board PR; the buffer-code workaround (`blancNoCdrOverride` in
-  `src/ranks/buffer.ts`) should be removed once the override/engine is fixed.
+- **Same-squad primitive migrations** — the squad primitive LANDED 2026-08-02 (DECISIONS.md):
+  `teamHas.sameSquad` resolves squad membership from the curated map `src/data/squads.ts` (fail-closed;
+  validator rejects an unmapped owner) and blanc's S2 CDR is gated on it (squad = noir+rouge ONLY,
+  owner-confirmed — the bunny/maid units are a different squad; the buffer-board `blancNoCdrOverride`
+  workaround is gone and the `w/ Bunny` profile is now `w/ Rouge`, a synthetic no-op Rouge B1 whose
+  PRESENCE opens the gate). Remaining units with "same squad" kit text, for adoption:
+  - `noir` (burst block 3) — uses the older `teamHas.slugs:['blanc','rouge']`; drop-in migration to
+    `sameSquad:true` (identical extension — the curated squad is exactly blanc+rouge). Mechanical;
+    noir's N5 kit test discriminates either spelling, so it pins the gate, not the facet.
+  - `anchor-innocent-maid` (S1 block B heal gate) — currently modeled always-satisfied (override
+    caveat). BLOCKED on an owner ruling for her squad membership (the maid costumes — mast-romantic-
+    maid, privaty-unkind-maid — are the candidates; NOT verified). Once ruled: add the squad to
+    `src/data/squads.ts`, gate the block, rewrite the caveat.
+  - `ram` (S1 "Full Burst ends with an ally from the same squad") — no override yet (not
+    simSupported); collab-unit squad unknown — confirm before authoring the gate.
+  - `emma-tactical-upgrade` / `eunhwa-tactical-upgrade` (S2 "affects all allies from the same
+    squad") — TARGET-SET pattern, not a gate: owner precedent (eunhwa-tu override note) encodes
+    same-squad targets as plain `allies` (the sim fields exactly one deployed squad). No migration
+    needed unless a future ruling disagrees; listed for completeness.
+  - Review follow-ups (claude-fable-5 code-review NOTEs, 2026-08-02, verdict CLEAN; packet +
+    result: `scratchpad/gates/2026-08-02-squad-primitive/`): (a) `validate-overrides.ts` should
+    allowlist the keys INSIDE `teamHas` (element/class/weapon/burst/slugs/sameSquad) — a typo'd
+    facet key (e.g. `samesquad`) is silently ignored by engine + validator today, leaving the
+    block always-active, one typo away from the dead-authoring failure the sameSquad guard
+    prevents (pre-existing gap for all facets); (b) type `sameSquad?: true` instead of `?: boolean`
+    in `src/skills/types.ts` so the compiler enforces the validator's literal-true contract;
+    (c) optional layering cleanup — keep `src/data/squads.ts` pure game truth and register the
+    `noop-rouge-b1` synthetic from the ranks layer instead of listing it in the game map.

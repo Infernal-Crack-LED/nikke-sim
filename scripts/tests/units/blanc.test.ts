@@ -4,7 +4,8 @@
 // Kit (blablalink prose, data/characters.json → characters.blanc.skills):
 //   S1 ■ after 120 normal attacks → all allies: Shield = 11.8% caster final Max HP, 5 sec  [B1]
 //   S2 ■ after Full Burst ends → all allies: recover 3.68% caster final Max HP / 1s × 5s  [B2]
-//      ■ after Full Burst ends (ally alive) → self: Burst Skill CD ▼ 40.76 sec             [B3]
+//      ■ after Full Burst ends (same-squad ally on the battlefield) → self:
+//                                      Burst Skill CD ▼ 40.76 sec                          [B3]
 //   BU ■ burstCast → all allies: recover 3.84% caster final Max HP / 1s × 8s              [B4]
 //      ■ burstCast → 1 lowest-HP ally (excl. self): Max HP ▲ 31.68% for 10 sec            [B5]
 //      ■ burstCast → 1 lowest-HP ally (excl. self): Indomitability 10 sec                 [B6 UNMODELED]
@@ -19,10 +20,15 @@
 //
 // Discrimination notes:
 //   B7  nearest-wrong = level-1 value 20.08 (vs shipped 39.26); also wrong duration (5s vs 10s)
-//   B3  nearest-wrong = no CDR (60s CD → ~3 casts in 180s vs ~9 with 40.76s CDR)
+//   B3  GATED on a same-squad ally (teamHas.sameSquad; curated squad = noir+rouge ONLY,
+//       owner-confirmed 2026-08-02 — the bunny/maid units are a different squad). Nearest-wrong
+//       #1 = UNGATED (fires without a squadmate — the pre-primitive model); nearest-wrong #2 = no
+//       CDR at all. mainComp (liter, not a squadmate) ⇒ gate inert, schedule == no-CDR patch;
+//       mateComp (rouge) ⇒ gate active, 60s CD collapses to ~19.24s residual (≥5 casts in 180s).
 //   B5  nearest-wrong = casterMaxHpPct (wrong basis) or wrong value 18.72 (level-1)
 //
 // Fixture: liter(B1)/blanc(B2)/ada(B3), boss Fire, focus ada. Deterministic (no seed).
+// Gate fixture: rouge(B1)/blanc(B2)/ada(B3) — same shape, liter→rouge: rouge IS a squadmate.
 // Recovery fixture: liter(B1)/blanc(B2)/crown(B2)/ada(B3) — crown's recovery trigger
 // observes blanc's heal events (B2/B4).
 import { describe, expect, it } from 'vitest';
@@ -47,6 +53,13 @@ const recoveryComp = () => ({
   focusSlug: 'ada',
 });
 
+/** B3 gate fixture: mainComp with liter→rouge (a curated same-squad ally). */
+const mateComp = () => ({
+  slugs: ['rouge', 'blanc', 'ada'],
+  bossElement: 'Fire' as const,
+  focusSlug: 'ada',
+});
+
 function run(overrides: Record<string, any> = {}, comp = mainComp()) {
   const events: SimEvent[] = [];
   const res = runComp({
@@ -67,6 +80,19 @@ const blancNoCdr = withPatchedOverride('blanc', (ov) => {
   if (ov.skill2.length === before) {
     throw new Error('blanc S2 burstCdr block missing — fixture stale');
   }
+});
+
+/** B3 counterfactual: strip the sameSquad gate → CDR fires in EVERY comp (pre-primitive model). */
+const blancUngated = withPatchedOverride('blanc', (ov) => {
+  const b = ov.skill2.find((x: any) =>
+    x.effects.some((e: any) => e.kind === 'burstCdr')
+  );
+  if (!b?.teamHas?.sameSquad) {
+    throw new Error(
+      'blanc S2 burstCdr sameSquad gate missing — fixture stale'
+    );
+  }
+  delete b.teamHas;
 });
 
 /** B7 counterfactual: level-1 value 20.08 instead of 39.26. */
@@ -144,14 +170,32 @@ describe('blanc — kit spec', () => {
     });
   });
 
-  describe('B3 — S2 grants self Burst CDR 40.76s on Full Burst end (kit engine)', () => {
-    it('blanc casts significantly more often with CDR than without', () => {
-      const withCdr = blancBursts(base.events).length;
-      const without = blancBursts(noCdr.events).length;
-      // 60s CD → ~3 casts in 180s; with 40.76s CDR → effective ~19.24s CD → more casts
-      expect(withCdr).toBeGreaterThan(without);
-      expect(withCdr).toBeGreaterThanOrEqual(5);
-      expect(without).toBeLessThanOrEqual(4);
+  describe('B3 — S2 grants self Burst CDR 40.76s on Full Burst end, gated on a same-squad ally', () => {
+    it('inert without a same-squad ally: shipped schedule == CDR-removed (gate is real)', () => {
+      // mainComp's liter is NOT a squadmate (curated squad = noir+rouge) → the
+      // gated block never fires → blanc's burst schedule matches the no-CDR patch
+      expect(blancBursts(base.events).length).toBe(
+        blancBursts(noCdr.events).length
+      );
+      // 60s raw CD → ≤4 casts in 180s
+      expect(blancBursts(base.events).length).toBeLessThanOrEqual(4);
+    });
+
+    it('active with a same-squad ally: rouge unlocks the CDR engine', () => {
+      const mated = run({}, mateComp());
+      // 60s CD collapsed to ~19.24s residual → ≥5 casts in 180s
+      expect(blancBursts(mated.events).length).toBeGreaterThanOrEqual(5);
+      expect(blancBursts(mated.events).length).toBeGreaterThan(
+        blancBursts(base.events).length
+      );
+    });
+
+    it('DISCRIMINATING: the ungated model (pre-2026-08-02) over-fires without a squadmate', () => {
+      const ungated = run({ blanc: blancUngated });
+      expect(blancBursts(ungated.events).length).toBeGreaterThanOrEqual(5);
+      expect(blancBursts(ungated.events).length).toBeGreaterThan(
+        blancBursts(base.events).length
+      );
     });
   });
 

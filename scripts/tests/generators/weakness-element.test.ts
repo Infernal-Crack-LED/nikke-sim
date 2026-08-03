@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from '../../../src/types.js';
 import { makeCalc } from '../../../src/teamcalc.js';
-import { scopeLockCfg } from '../../lib/scope-lock.js';
+import { fastCfg } from '../lib/fast-cfg.js';
 import { deps, generatorPool, mult, rotationLegal } from '../lib/harness.js';
 
 const { genChars, chars, overrides } = generatorPool();
@@ -19,7 +19,11 @@ const calcWith = (requireElement: Element | null, keep?: Set<string>) =>
     chars: chars as any,
     mult,
     deps: { overrides, ...deps },
-    cfg: scopeLockCfg([], null) as any,
+    // Shorter fight for the element-gate tests: they assert the weakness rule
+    // and the static rotation-legality check (src/teamcalc.ts stageCovered,
+    // which uses only burstCooldownSec, not cfg.durationSec), not multi-cycle
+    // sim sustainability or exact damage numbers.
+    cfg: fastCfg([], null) as any,
     loadout: {},
     blocked: keep ? Object.keys(chars).filter((s) => !keep.has(s)) : [],
     requireElement,

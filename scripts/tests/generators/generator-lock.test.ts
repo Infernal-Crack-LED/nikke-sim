@@ -13,7 +13,7 @@ import {
   locksFeasible,
   makeCalc,
 } from '../../../src/teamcalc.js';
-import { scopeLockCfg } from '../../lib/scope-lock.js';
+import { fastCfg } from '../lib/fast-cfg.js';
 import { data, deps, distinct5, generatorPool, mult } from '../lib/harness.js';
 
 const { genChars, chars, overrides } = generatorPool();
@@ -22,7 +22,10 @@ const calc = makeCalc({
   chars: chars as any,
   mult,
   deps: { overrides, ...deps },
-  cfg: scopeLockCfg([], null) as any,
+  // Use a shorter fight duration for lock-mechanic tests: they assert
+  // legality, determinism, and lock inclusion — not absolute optimal team
+  // quality or exact damage numbers. The generator code paths are identical.
+  cfg: fastCfg([], null) as any,
   loadout: {},
 });
 

@@ -70,10 +70,14 @@ const run = (overrides: Record<string, any> = {}) =>
   runOn(controlComp(CARRY), overrides);
 
 // Gauge-rich, SMG-cadence-robust vehicle for the two rotation-count discriminations (see header):
-// liter B1 / blanc B2 / maiden-ice-rose B3 (focus, ×2.5 charge gauge) / helm B3. No claim about
-// these units' own kits — only liter's ladder is varied; the rest are a constant gauge/cooldown bed.
+// liter B1 / blanc B2 / maiden-ice-rose B3 (focus, ×2.5 charge gauge) / helm B3 / rouge B1. No
+// claim about these units' own kits — only liter's ladder is varied; the rest are a constant
+// gauge/cooldown bed. Rouge (a curated same-squad ally of blanc, src/data/squads.ts) keeps
+// blanc's same-squad CDR gate (teamHas.sameSquad) OPEN, preserving the bed this fixture was
+// tuned on — without a squadmate blanc's CDR is correctly inert and the two ladder models
+// become rotation-indistinguishable (both 18 casts).
 const LADDER_COMP: CompOptions = {
-  slugs: ['liter', 'blanc', 'maiden-ice-rose', 'helm'],
+  slugs: ['liter', 'blanc', 'maiden-ice-rose', 'helm', 'rouge'],
   bossElement: 'Fire',
   focusSlug: 'maiden-ice-rose',
 };
@@ -113,6 +117,17 @@ const stripHeals = (slug: string) =>
     }
   });
 
+/** Presence-only rouge for LADDER_COMP: her SLUG (a curated same-squad ally of blanc) is what
+ *  opens blanc's same-squad CDR gate; her own kit is zeroed so she adds no cooldown reduction of
+ *  her own — the bed stays the gauge/cooldown constant the L1 discriminations were tuned on
+ *  (with her kit live, the rotation saturates at the chain-timing floor and the ladder models
+ *  become indistinguishable). */
+const rougePresenceOnly = withPatchedOverride('rouge', (ov) => {
+  ov.skill1 = [];
+  ov.skill2 = [];
+  ov.burst = [];
+});
+
 const base = run();
 const noCdr = run({ liter: cdrLadder(null) });
 const flatTier1 = run({ liter: cdrLadder(2.34) });
@@ -122,9 +137,15 @@ const noOtherHeals = run({
 });
 
 // The two rotation-count discriminations run on the gauge-rich vehicle (see LADDER_COMP).
-const ladderBase = runOn(LADDER_COMP);
-const ladderNonCumulative = runOn(LADDER_COMP, { liter: cdrLadder(3.17) }); // 3rd tier REPLACES, not adds
-const ladderSaturated = runOn(LADDER_COMP, { liter: cdrLadder(8.21) }); // instantly at max from entry 1
+const ladderBase = runOn(LADDER_COMP, { rouge: rougePresenceOnly });
+const ladderNonCumulative = runOn(LADDER_COMP, {
+  liter: cdrLadder(3.17), // 3rd tier REPLACES, not adds
+  rouge: rougePresenceOnly,
+});
+const ladderSaturated = runOn(LADDER_COMP, {
+  liter: cdrLadder(8.21), // instantly at max from entry 1
+  rouge: rougePresenceOnly,
+});
 
 const fbCount = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstStart').length;
