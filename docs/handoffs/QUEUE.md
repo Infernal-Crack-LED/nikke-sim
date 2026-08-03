@@ -143,15 +143,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   rows where that mode is inactive, leaving the team with no enabler at all. No unit does this today
   (verified end-to-end: exactly the documented enablers, `--cdr` mode of
   `scripts/probe/buffer-rotation-audit.ts`). Harden when a mode-gated CDR kit first lands.
-- **⇒ BUFFER-BOARD METHODOLOGY CHAIN IS ON A PR BRANCH, NOT MAIN (`buffer-board-methodology`,
-  2026-08-03).** Standard team + spare no-op, camera focus on the no-op B2 (SR), tested-B3 burst
-  suppression, and the one-CDR-enabler rule with the control's reduction moved to `fullBurstEnter`.
-  All landed and green there; `docs/DECISIONS.md` carries the rulings. Open: the branch needs the
-  owner's PR review, and local `main` still carries the first nine of these commits from before the
-  branch existed (`origin/main..main`) — decide whether main gets rewound to `origin/main` or the PR
-  simply supersedes it. Note `noop-b1-ar.json`'s trigger change moves burstgen (4 of 244 rows, ≤3.9%)
-  and b1b2dps (12 of 272, ≤11.3%); burstcdr and sustain are byte-identical.
-
 - **⇒ `noop-rouge-b1` squad layering — owner call (2026-08-03).**
   `src/data/squads.ts:26` carries one synthetic (`'noop-rouge-b1': 'Blanc Noir Rouge'`) so the buffer
   board's `w/ Rouge` duo profile satisfies `blanc`'s same-squad burst-CDR gate — a ranks-layer concern
