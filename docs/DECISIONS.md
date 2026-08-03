@@ -83,6 +83,17 @@ lives. Newest first within each section.
   `scripts/tests/ranks/sustain.test.ts`
   (band-pinned, not exact game-truth) passed unchanged; `scripts/verify.sh` green — sustain is not
   part of the graded-comp regression snapshot, so this carries no damage-model risk.
+  **Follow-up (same day): the cross-family `/code-review` (kimi-code/k3) on this landing came back
+  CLEAN with two real FOLLOW-UPs, both closed rather than queued.** (a) `sustainTeam()` now throws if
+  a seated profile partner's burst stage differs from the tested unit's, or if a profile ever lists
+  more than one partner — the `partners[0] ?? NOOP_Bn` fallback was previously correct only by
+  coincidence (both `SUSTAIN_PROFILES` entries happen to be same-stage, single-partner). (b)
+  `scripts/tests/ranks/sustain.test.ts` now loads every `NOOP_CHARACTERS` override, mirroring
+  `build-bufferchart.ts`/`build-sustain.ts` (previously it ran with NO no-op overrides at all, so the
+  `noop-b1-ar` CDR path this ruling added had zero test coverage). Loading the CDR override moved
+  `prika`'s plain-row band (51.3M/1709% pinned range <2000% → measured 66999130/2233.2%, matching the
+  combined-blast-radius figure above exactly); rebanded to <3000% rather than re-deriving a tighter
+  number, since the pin exists to catch regressions, not to re-litigate this ruling's own effect.
 
 - **(2026-08-03, latest) EVERY BUFFER-BOARD TEAM FIELDS EXACTLY ONE BURST-COOLDOWN ENABLER, AND THE
   CONTROL'S REDUCTION FIRES ON `fullBurstEnter`.** Owner ruling: an optimal team always carries one
@@ -264,6 +275,50 @@ lives. Newest first within each section.
   larger question — an investment axis on the B1/B2 board — stays declined for the same reason: the
   board is Scope-Lock-only by design, and the comparability rule that follows from it (a B1/B2
   number is comparable only to a DPS-chart Scope Lock cell) is documented instead of engineered away.
+
+- **(2026-08-03) `flora`'s SKILL 2 IS NOT HP-GATED-DEAD — IT SELF-PROCS OFF HER OWN SKILL 1,
+  EVERY BURST ROTATION.** The shipped model carried `"skill2": []` and called all three S2 lines
+  out-of-domain ("gated on an HP threshold the sim cannot represent … never fires", ⚑ engine-core,
+  filed beside liter's cover-HP NO-OP). That premise is WRONG, and the mechanism is entirely inside
+  Flora's own kit — no HP pool, no boss damage and no second healer are involved:
+  1. On **entering Burst Stage 2**, S1 grants Peace-of-Mind allies `Max HP ▲ 15.01% of the skill
+user's max HP (WITHOUT restoring HP) for 2 sec`. Current HP does not rise with max HP, so each
+     affected ally's HP **fraction** drops that instant to 1/1.1501 = **86.95%**.
+  2. That clears S2-1's "when the HP of an adjacent ally drops to **90% or below**" by ~3 percentage
+     points ⇒ the 10.22%-max-HP shield lands **at Burst Stage 2 entry**.
+  3. The shield landing on Flora satisfies S2-3's "when a shield is placed in front of this unit" ⇒
+     ATK ▲45.12% of the skill user's ATK, **same frame**.
+  4. **2 sec later** the Max HP grant expires, the allies' max HP returns to normal and they are
+     therefore at max HP ⇒ S2-2's "when either adjacent ally reaches max HP" ⇒ True Damage ▲30.97%,
+     at **entry + 2 s**.
+     **Ruling: `stageEnter{stage:2}` is a DERIVED-DETERMINISTIC PROXY for the HP-threshold clause**, not
+     a re-keying to a different kit line. The HP transition it stands in for is _caused by Flora's own
+     S1 on exactly that frame_, in every team, every rotation — the trigger is deterministic in the
+     sim's own domain even though the clause is written in HP. It is a FLOOR on the real line's uptime,
+     not a ceiling: a boss that actually damages allies would re-open "HP ≤ 90%" between rotations, and
+     that additional firing is still unmodeled.
+     **Target clauses are NOT uniform across the slot** and were checked line by line against
+     `data/characters.json`: S2-1 and S2-2 say "all allies"; S2-3 says "all allies **in the Peace of
+     Mind state**" = S1's `selfAndAdjacent` set, so it does not reach the whole team.
+     **This forced a new engine primitive**, `Block.delaySec` — step 4 needs the effects of a block to
+     land a fixed time after its trigger, and the only delay in the schema was `flatDamage.delaySec`
+     (flight time on ONE damage effect). The offset is load-bearing, not cosmetic: Full Burst opens
+     ~0.87 s after Burst Stage 2 entry (30f B2→B3 + 22f B3→FB), so a 10-sec buff starting at +0 s vs
+     +2 s covers a materially different slice of the Full Burst window. Contract: gates and the `everyN`
+     counter evaluate at TRIGGER time, targets and values resolve at LANDING, absent/0 is a strict
+     no-op. Pinned by `scripts/tests/engine/block-delay.test.ts` (6 assertions, all bite-verified
+     against two deliberate engine breaks).
+     **Evidence tier: KIT-TEXT (blablalink prose SSOT) + owner ruling**, no measurement claimed. The
+     datamined `role.skillDetails` tables corroborate 90% / 10.22 / 30.97 / 10.45 / 42.39, but are a
+     PARTIAL capture for this unit — they omit S1's Burst-Stage-2 Max HP line, S2's shield→ATK line and
+     the burst's ATK ▲85.86% line outright, and give the S2 True Damage duration as **5 sec** where the
+     prose says 10 sec (open-questions U37).
+     **Board/regression impact: ZERO.** `flora` appears in no graded comp and no snapshot entry, so
+     `scripts/regression.ts` is stable on every entry (no measured-truth full-burst-count assert moved)
+     and `scripts/board-read.ts` is byte-identical before/after — median 0.93–0.99 across 45 units, 142
+     datapoints, unchanged. The change is a faithfulness landing with no fit evidence behind it; her
+     real contribution is now materially larger in-sim and that is unvalidated against footage.
+     Pinned by `scripts/tests/units/flora.test.ts` F5–F8 (every assertion bite-verified).
 
 - **(2026-08-03) OVERLOAD LINES: ONE BASIS EVERYWHERE — EXHAUSTIVE RANKING AT T11. Greedy
   search and the max-roll basis are both DELETED.** Three separate searches used to pick a unit's

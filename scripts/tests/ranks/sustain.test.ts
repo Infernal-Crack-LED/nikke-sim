@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { sustainFor, sustainRank } from '../../../src/ranks/sustain.js';
 import { SUSTAIN_TABLE } from '../../../src/ranks/sustain-table.js';
+import { NOOP_CHARACTERS } from '../../../src/dpschart/noop.js';
 import type { RanksCtx } from '../../../src/ranks/burstgen.js';
 import { loadOverride } from '../../../src/skills/overrides-node.js';
 import type { OverrideFile } from '../../../src/skills/index.js';
@@ -18,6 +19,13 @@ import {
 
 const overrides: Record<string, OverrideFile | undefined> = {};
 for (const s of Object.keys(data.characters)) {
+  overrides[s] = loadOverride(s);
+}
+// mirror scripts/build-sustain.ts — the synthetic controls are not roster
+// entries but their overrides carry the framework effects (the no-op B1's
+// team CDR, the no-op B3's mock burst). Loading roster slugs only would test
+// a configuration the board does not run.
+for (const s of Object.keys(NOOP_CHARACTERS)) {
   overrides[s] = loadOverride(s);
 }
 const ctx: RanksCtx = {
@@ -47,9 +55,11 @@ describe('sustain board', () => {
   it('prika solo (plain run): only her own 25s Performance windows', () => {
     const r = sustainFor('prika', ctx, false);
     expect(r.profile).toBeNull();
-    // a few casts × 25 ticks × 3.04 × 1.4992 × 5 — well below the duet
+    // a few casts × 25 ticks × 3.04 × 1.4992 × 5 — well below the duet (3988%);
+    // upper bound wide because her cast count depends on the now-loaded no-op
+    // B1's 7s team CDR (2026-08-03) as well as her own 20s cooldown
     expect(r.totalPct).toBeGreaterThan(200);
-    expect(r.totalPct).toBeLessThan(2000);
+    expect(r.totalPct).toBeLessThan(3000);
   });
 
   it('anchor-innocent-maid: regen gate holds without the mast profile', () => {

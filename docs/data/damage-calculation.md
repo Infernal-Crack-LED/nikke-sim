@@ -191,6 +191,16 @@ resolution; the cast-instant no-Full-Burst rule does not apply to flighted damag
 also charge-gated (`requiresPulls` 120 — it fired at every banner where she had 120+ shots
 banked and skipped the one banner where she did not).
 
+**Delayed BLOCKS, distinct from flighted damage (2026-08-03):** a separate `delaySec` sits on the
+BLOCK rather than on a flat-damage effect, and delays the whole block — every effect kind, buffs
+included. It exists for kit lines whose activation condition is only satisfied a fixed time after
+the observable event that causes it: Flora's "when either adjacent ally reaches max HP" fires 2
+seconds after Burst Stage 2 entry, because her own skill 1 hands those allies a 2-second Max HP
+grant there and they return to max HP when it expires (DECISIONS 2026-08-03). The block's gates and
+its `everyN` counter are evaluated when the TRIGGER fires — that is the state the kit line's
+activation clause reads — while targets and effect values resolve at LANDING; a landing frame past
+the end of the fight never applies, and an absent or zero value is a strict no-op.
+
 **Scope clarification (2026-07-13):** the measured rule (and the engine's forced `noFb`) governs
 BURST-slot casts — the burst button's own damage, which is what the Cinderella popups measured.
 A skill-slot block that happens to trigger on a burst cast resolves after the window opens and
