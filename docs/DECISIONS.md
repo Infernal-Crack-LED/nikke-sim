@@ -1752,6 +1752,50 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 ## Engine/data-architecture decisions
 
+- **(2026-08-03) A TREASURE UNIT'S `releaseDate` IS ITS TREASURE'S RELEASE DATE — and the "sugar
+  data bug" was never a bug, it was the column silently disagreeing with itself.** `releaseDate`
+  is display-only (the unit card's "Released &lt;date&gt;" line; the engine never reads it) and
+  reaches `data/characters.json` from bakery-bot's `attributes` blob, which takes the FIRST date of
+  whichever Synergy `attack_damage_characters` row the DB matched the unit to. Synergy carries a
+  Treasure as its own row — `宝` + the base unit's Japanese name — with its own release date, so
+  that match decided everything. **Audited the full column against the live DB + Synergy
+  (`scripts/audit-release-dates.ts`, 2026-08-03): all 195 units with a Synergy row carried exactly
+  their matched row's first date — zero transcription errors — but 18 of the 21 Treasure units were
+  matched to the base row and 3 (`drake`, `laplace`, `sugar`) to the `宝` row.** So `sugar` reading
+  2026-07-23 was not a per-unit anomaly to fix upstream, and the QUEUE's suspicion that `drake` and
+  `helm` had "held each other's dates" is REFUTED: both Treasures released 2025-01-16, and the two
+  units simply sat on opposite sides of the same base-vs-`宝` split.
+  **Owner ruling: show the Treasure date.** This roster carries the Treasure version of those 21
+  units — `name` is suffixed "(Treasure)", the kit prose is the Treasure kit — so the card states
+  when that version arrived. `src/data/sync.ts` now resolves the `宝` row from the unit's own
+  Synergy entry rather than trusting the upstream match, which needs no hand-maintained id table
+  (it resolved all 21 on the first pass) and makes the column uniform instead of 18/3.
+  Landed with the 18 dates regenerated through `npm run sync`, pinned by
+  `scripts/tests/data/release-dates.test.ts`, re-auditable with `scripts/audit-release-dates.ts`.
+  Consequence worth knowing: `/characters` "New Characters" already excluded Treasure entries for
+  an independent reason (a Treasure upgrades an existing character), and that filter is now
+  load-bearing — Treasures ship in same-date batches that would otherwise crowd the row.
+  `anne-miracle-fairy` remains the one unit with no date; Synergy has no row for her.
+  **Treasures got their own row instead (owner, same day): "New Favorite Items", a 30-DAY WINDOW
+  rather than a fixed count.** The two rows answer different questions — "New Characters" is a
+  standing row that should look the same in a quiet month as a busy one, while a Treasure batch is
+  an EVENT that drops several units on one date and then nothing for months, so a fixed count would
+  either truncate a batch or pad it with year-old Treasures. The section hides itself when the
+  window empties, which is its resting state most of the year. **The cutoff is UTC on both sides,
+  by owner ruling** — one global instant flips the row for everyone at once, which suits a roster
+  whose release dates are themselves global game dates, and it makes the boundary a single testable
+  moment instead of 38 of them. The accepted cost is that a viewer far enough west loses the row
+  during their afternoon of the last day. This re-opens the date-window bug class the 2026-08-02
+  fixed-count ruling had closed by construction, but not the BUG: the original failure was a
+  `toISOString()` that mixed a LOCAL Date into a UTC comparison, and both-sides-UTC is coherent
+  where the mixed version never was. UTC days are exactly 86,400,000 ms with no DST, so the day
+  count is exact and needs no rounding.
+  **The window is one-sided — no lower bound** (owner: Treasures have no banner, so their date is
+  always "out now" and never an announcement ahead of release, leaving no future-dated case to
+  guard and no reachable branch to write). Logic lives in `web/src/releaseRows.ts` (split out of
+  the page so it is testable without mounting React); the boundary is pinned at fixed UTC instants
+  by `scripts/tests/share/new-favorite-items.test.ts`, green under UTC, UTC−8, UTC+14 and UTC+5:30.
+
 - **(2026-08-01) THE UNIT-CARD GOLDENS ARE FROZEN AGAINST A COMMITTED SOURCE SNAPSHOT — a golden
   image pins the RENDERER, and joining one to live data buys nothing and costs twice.**
   `unit-card.{discord,twitter}.png` were the only two of nine goldens built from the live rank

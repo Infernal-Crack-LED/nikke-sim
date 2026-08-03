@@ -69,6 +69,11 @@ const BURST_STEP_BY_STAGE: Record<string, string> = {
 
 const titleCase = (s: string) => s.charAt(0) + s.slice(1).toLowerCase();
 
+// Synergy's `release_date` may list several banner ranges ("2023-01-01~2023-01-19 / 2025-10-30~…");
+// the first date is the original release. Same rule bakery-bot applies to the base-unit column.
+const firstReleaseDate = (v: string | null | undefined): string | null =>
+  v?.match(/\d{4}-\d{2}-\d{2}/)?.[0] ?? null;
+
 // Shape of the DB's nikke_characters.sheet_data jsonb (the community Tsareena build sheet), as
 // measured against the live table 2026-07-28: top-level keys are exactly {build, priority,
 // annotations}; `build` carries 9 keys on all 88 populated rows plus the sparse `notes` (37) and
@@ -155,6 +160,10 @@ async function main() {
   }
   const apiRows: any[] = await apiRes.json();
   const bySynergyId = new Map(apiRows.map((r) => [r.id, r]));
+  // Synergy lists a Treasure as its OWN row, named 宝 + the base unit's Japanese name
+  // (宝シュガー for シュガー). That makes a unit's Treasure row derivable from the unit's own
+  // synergy entry, so the Treasure release date below needs no hand-maintained id table.
+  const bySynergyName = new Map(apiRows.map((r) => [r.name as string, r]));
 
   // Approved nicknames from the DB alias lists — derived over the FULL row set
   // (ambiguity is judged against every unit, not just the kept roster).
@@ -226,6 +235,15 @@ async function main() {
     const isTreasure =
       row.favorite_item_id != null ||
       (row.prydwen_slug ?? '').endsWith('-treasure');
+    // The unit's OWN synergy row (no Treasure re-point) — `api` above may already have been
+    // swapped to a Treasure entry for the four TREASURE_SYNERGY_IDS units, and the release date
+    // resolves off the base name either way.
+    const synRow =
+      row.synergy_id != null ? bySynergyId.get(row.synergy_id) : undefined;
+    const treasureRow =
+      isTreasure && synRow?.name
+        ? bySynergyName.get(`宝${synRow.name.replace(/^宝/, '')}`)
+        : undefined;
     const char: CharacterData & { baseStats: any } = {
       slug: row.id,
       name:
@@ -278,8 +296,18 @@ async function main() {
       hitsPerShot: wf?.hitsPerShot ?? api?.hits_per_shot ?? 1,
       rl3: a.rl3 ?? null,
       // Global release date (YYYY-MM-DD) — display-only, for the unit-card infographic. The engine
-      // never reads it. Null for the 2 units whose `attributes` blob upstream isn't curated yet.
-      releaseDate: a.releaseDate ?? null,
+      // never reads it. Null for a unit that has no synergy match yet (anne-miracle-fairy today).
+      //
+      // For a Treasure unit this is the date the TREASURE released, not the base unit's debut
+      // (owner ruling 2026-08-03). This roster carries the Treasure version of those 21 units —
+      // the name is suffixed "(Treasure)", the kit prose is the Treasure kit — so the card's
+      // "Released" line states the date that version arrived. Upstream `a.releaseDate` is
+      // whichever synergy entry the DB happened to match, which was the base row for 18 of the 21
+      // and the 宝 row for the other 3; reading the 宝 row directly makes it uniform.
+      releaseDate:
+        (isTreasure ? firstReleaseDate(treasureRow?.release_date) : null) ??
+        a.releaseDate ??
+        null,
       // Clean datamined burst gauge — reference only; the engine reads data/gauge-per-shot.json.
       burstGaugePerShot: wf
         ? wf.burstGaugePerShot
