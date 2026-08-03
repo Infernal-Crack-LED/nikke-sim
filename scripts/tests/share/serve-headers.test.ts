@@ -403,7 +403,9 @@ describe('serve.mjs cache-control classes', () => {
       const raw = /<script type="application\/ld\+json">([^<]+)<\/script>/.exec(
         html
       )?.[1];
-      if (!raw) return null;
+      if (!raw) {
+        return null;
+      }
       return JSON.parse(raw) as {
         itemListElement?: { name?: string; item?: string }[];
       };
@@ -482,6 +484,37 @@ describe('serve.mjs cache-control classes', () => {
     );
     expect(hrefs.size).toBeGreaterThanOrEqual(190);
     expect(body).toContain('characters-page');
+  });
+
+  // These two routes are the reason non-Google AI crawlers (GPTBot,
+  // PerplexityBot et al., allowlisted in robots.txt) were served nothing but a
+  // meta description: they don't execute JS, and the prerender pass that was
+  // supposed to cover them lived in a build script the deploy never invoked.
+  // Assert the served bytes, not the existence of a build artifact — the old
+  // smoke checked for a file and SKIPPED when it was absent, which is exactly
+  // how the gap stayed green for as long as it did.
+  it.each([
+    ['/mechanics', 'mech-page', 'Game mechanics'],
+    ['/howto', 'howto-page', 'How to use this site'],
+  ])('%s serves its prose in the body with JS off', async (path, cls, h1) => {
+    const res = await fetch(`${base}${path}`);
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    const body = html.split('</head>')[1] ?? '';
+    expect(body).toContain(cls);
+    expect(body).toContain(`<h1>${h1}</h1>`);
+    // Section headings and list items, i.e. the actual indexable copy rather
+    // than a shell that merely carries the right class name.
+    expect((body.match(/<h2>/g) ?? []).length).toBeGreaterThanOrEqual(5);
+    // /mechanics is bullet lists; /howto is mostly a glossary <dl>. Count both
+    // so the assertion tracks "carries itemised copy" rather than one page's
+    // markup shape.
+    expect((body.match(/<li>|<dd>/g) ?? []).length).toBeGreaterThanOrEqual(10);
+    const text = body
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    expect(text.length).toBeGreaterThan(2000);
   });
 
   it('previously-valid top-level routes still return 200', async () => {
