@@ -1,0 +1,72 @@
+{
+  "slug": "claire",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 3,
+        "countInFb": 3
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 10.13,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": ["Removes 1 debuff(s)."]
+  },
+  "caveats": [
+    "⚑ CADENCE TUPLE (ALWAYS-⚑): pullsPerSec / reloadFrames 141 / chargeFrames 60 shipped from datamine (ammo 6); RL charge cycle ≈ 1 shot/s + 141f reload gap every 6 rounds — plausible, NOT escalated. Affects her OWN shots only, and therefore the cadence of the S1 3rd-full-charge recovery channel (a wrong cadence rescales that channel's feed into teammates' on-recovery consumers); recipe: rounds/min + reload gap from any focus video.",
+    "⚑ AUTOFIRE vs CHARGE-GAP (ALWAYS-⚑, charge weapon): engine default shipped; affects her OWN shots/burst-gauge only (pure sustain unit — small board impact); recipe: focus video, does she re-charge immediately with no dead gap.",
+    "Heal MAGNITUDES (skill1 2.86% of caster final Max HP; burst 34.35% of caster final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount (v1 has no HP pool). Both lines are implemented for their TANDEM value only — they fire allies' 'recovery' triggers (asuka/crown 'when recovery takes effect').",
+    "Shield MAGNITUDE (skill2 10.13% of caster final Max HP) is recorded on the shield effect as maxHpPct but not consumed: v1 models no shield HP pool (the boss deals no damage). The shield effect's durationSec:10 opens each target's shieldedUntilFrame window and fires their 'shielded' triggers (naga-style shield-gated kits) — that event/window channel is the line's entire in-domain surface.",
+    "'2 ally unit(s) with the highest FINAL ATK' resolves by live effectiveAtk at proc time (byFinalAtk:true per the A3 literal-word ruling); the pool is self-inclusive, but as a Supporter claire will rarely rank top-2 herself.",
+    "countInFb:3 is EXPLICIT, not a copy of count: the engine's chargeCounter defaults the in-window threshold to countInFb ?? 1 during the 10s after the owner's OWN burst cast (scarlet-black-shadow's burst-lowered-thresholds mechanic). claire's kit has NO such threshold change, so the faithful encoding pins the same threshold (3) in-window; omitting countInFb would silently accelerate her S1 channel to per-shot for 10s after every cast of her own.",
+    "Zero damage lines and zero weapon-state modifiers in the whole kit — claire is a clean-weapon BASIS unit (RL cell, CLEAN_WEAPON_TEAMS.b): clean-weapons.test.ts CW1 additionally pins this committed override byte-identical to the bare empty kit. Her board footprint is tandem only: one 3rd-full-charge recovery channel (top-2 allies), one burst-keyed all-ally shield event, one burst-keyed all-ally recovery event."
+  ],
+  "note": "claire (Claire) — RL / Supporter / Electric / Burst I, cd 40s, ammo 6, chargeFrames 60, reloadFrames 141, Abnormal. One of the six clean-weapon BASIS units (RL cell — heals / shield only; not SSR, fixture rarity ceiling 2★/core 0). A PURE SUSTAIN kit: one heal channel, one shield grant, one burst heal, one debuff cleanse. ZERO damage lines and ZERO weapon-state modifiers in the whole kit — this unit cannot move her own damage; her board footprint is tandem (recovery consumers such as asuka/crown, shield consumers such as naga). || MODELED TODAY: (1) S1 Green Herb 'Activates when landing 3 Full Charge attack(s). Affects 2 ally unit(s) with the highest final ATK. Recovers 2.86% of the skill user's final Max HP as HP.' → chargeCounter count:3 countInFb:3 (scalar = same threshold every phase; one effect, so the phase wraps — fires every 3rd full charge; countInFb pins the SAME threshold inside the 10s post-own-cast window, against the engine's scarlet-black-shadow-inspired countInFb ?? 1 default — claire's kit has no threshold-change line). An RL unit's every shot IS a full charge (sim.ts: all dumped rockets dispatch charged=true), so 'landing 3 Full Charge attacks' == every 3rd RL shot; 'landing' == firing (v1 has no miss model). Target alliesTopAtk count:2 byFinalAtk:true ('highest FINAL ATK' per the A3 literal-word ruling). Effect heal ticks:1 (instant — the prose has no 'over N sec' clause; a multi-tick encoding would over-fire on-recovery consumers across a window the prose never grants). Heal magnitude is event-only (no HP pool) — the line is modeled solely for its TANDEM value: it fires the recipients' 'recovery' triggers. (2) S2 Blue Herb 'Activates when using Burst Skill. Affects all allies. Creates a Shield equal to 10.13% of the skill user's final Max HP for 10 sec.' → burstCast-keyed (her OWN cast — 'when using Burst Skill' is own-cast, NOT fullBurstEnter: a competing Burst I can open chains she does not cast, and fullBurstEnter would over-fire every shielded trigger / requiresShielded gate on those rotations; pinned behaviorally in claire.test.ts C3/DIV against a liter-competed chain) → shield maxHpPct:10.13 durationSec:10 to all allies (self included). The kit text literally says SHIELD — the marciana-reverse: where marciana's Storage was deliberately NOT a shield, claire's Blue Herb MUST emit the shield event, firing teammates' 'shielded' triggers and opening their 10s requiresShielded windows. (3) Burst R+G+B 'Affects all allies. Restores 34.35% of the skill user's final Max HP as HP.' → burstCast-keyed heal ticks:1 to all allies (self included) — one recovery landing per own cast, event-only magnitude. || DELIBERATELY UNMODELED (verbatim in `unmodeled`, never an `ignored` drop): burst 'Removes 1 debuff(s).' — v1 models no debuff list (the partless boss applies nothing to allies), so no cleanse can be enacted and nothing is fabricated in its place; measurement-gated on the sim ever modeling ally debuffs. || EVIDENCE TIER: all live values are kit-text-literal (3-charge cadence, 2.86/10.13/34.35 magnitudes recorded, 10s shield window); the only estimated quantities are the cadence tuple (her own shots only). || TIER 1 (clean-weapon-like: zero damage lines, zero weapon-state modifiers; the encoding is event channels only — no scoped buffs, no round counts, no status gates among the modeled lines). Faithful>fit; measured>fudge. || Kit-autonomy gauntlet 2026-08-03."
+}

@@ -1,0 +1,104 @@
+{
+  "slug": "claire",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when landing 3 Full Charge",
+      "disposition": "FAITHFUL",
+      "scope": "Counts FULL CHARGE attacks that LAND, not trigger pulls or partial charges. Claire is RL (chargeFrames 60, 1s full charge, ammo 6), so under auto-play every fired shot is normally a full charge — hitCount(3) and chargeCounter(count:3) coincide numerically at scope, but chargeCounter is the faithful primitive (charge-specific counter).",
+      "durationSemantics": "No duration — an instant heal proc every 3rd full-charge landing. The counter spans reloads (nothing in the prose resets it on reload).",
+      "triggerIdentity": "chargeCounter count:3 (or equivalently a full-charge-scoped counter). NOT interval, NOT lastBullet. Expected cadence ≈ every 3 shot cycles (~3×(charge 1s + release latency + fire), stretching across the 141-frame reload after 6 rounds).",
+      "targetSet": "alliesTopAtk count:2, byFinalAtk:true — the kit literally says 'highest final ATK', which per the A3 rule REQUIRES live effectiveAtk ranking, not static. Self-inclusive pool ('2 ally unit(s)' with no except-self clause), but as a Supporter (98,367 static) Claire will rarely rank top-2 herself.",
+      "nearestWrongModel": "Two plausible misreads: (a) target 'all allies' (generic heal) — over-fires every teammate's recovery trigger every 3 charges; (b) byFinalAtk omitted (static-ATK ranking) because plain-'highest ATK' kits keep static ranking — but this kit says FINAL, so static ranking is the misread here.",
+      "distinguishingAssertion": "Attach a probe block via withPatchedOverride to each teammate: { trigger:{kind:'recovery'}, target:{kind:'self'}, effects:[marker buff with a unique key] }. Faithful: per S1 proc, marker buffApply appears on EXACTLY the 2 highest-FINAL-ATK units (e.g. carry + helm in controlComp) and on no one else — crown's marker count from S1 is ZERO. Nearest-wrong (a): crown's marker fires every 3 charges. For (b): patch a large flat-ATK buff (casterAtkPct-style) onto a lower-static-ATK ally so its live effectiveAtk overtakes a static-rank winner; faithful (byFinalAtk:true) redirects the heal to the buffed ally, static ranking does not.",
+      "inertness": "Claire's own totalDamage must be IDENTICAL with skill1 stripped (no damage effect). In a comp with no recovery-consumer kits, S1 must move NO unit's damage.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 2.86% of user's final Max HP",
+      "disposition": "FAITHFUL",
+      "scope": "A heal effect (the primitive that fires 'recovery' triggers on the RECEIVING units), scaled off CLAIRE's own final Max HP — 'skill user's final Max HP', caster-scaled, not target-scaled.",
+      "durationSemantics": "Instant, no duration.",
+      "triggerIdentity": "Rides the skill1 chargeCounter block above.",
+      "targetSet": "The 2 highest-final-ATK allies (see block above) — the heal RECIPIENTS are who the tandem 'recovery' trigger fires on, so target precision directly gates cross-unit crediting (Crown-style kits).",
+      "nearestWrongModel": "Encoding the heal as a skip/note ('defensive, no damage') or as an inert stat buff — which silences every 'recovery'-triggered teammate kit. Taxonomy rule 4 explicitly forbids this. Secondary misread: scaling off the TARGET's Max HP instead of the caster's.",
+      "distinguishingAssertion": "With the recovery probe blocks installed, faithful model emits probe buffApply events on the 2 top-final-ATK recipients at S1 cadence; a note-only skip emits ZERO probe events for the whole fight (RED). If the engine's heal event carries a value, assert it resolves from CLAIRE's Max HP (Supporter HP pool), not the recipient's.",
+      "inertness": "Must add zero damage directly; must NOT fire recovery triggers on non-recipients.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill",
+      "disposition": "FAITHFUL",
+      "scope": "Applies on Claire's OWN burst cast only.",
+      "durationSemantics": "Shield lasts 10 sec (durationSec:10) — wall-clock, prose says 'for 10 sec' explicitly, no round-count ambiguity.",
+      "triggerIdentity": "burstCast — 'when using Burst Skill' is the unit's OWN burst, the textbook trap-3 line. NOT fullBurstEnter. Claire is Burst I with a 40s cooldown; in any comp with another B1 (controlComp fixes liter in B1), rotations exist where the OTHER B1 casts and Claire does not — burstCast fires zero times those rotations, fullBurstEnter fires every FB. This is exactly where the two encodings diverge.",
+      "targetSet": "All allies, self-inclusive ('Affects all allies', no except-self clause).",
+      "nearestWrongModel": "fullBurstEnter — shields every Full Burst regardless of who cast B1, over-firing every 'shielded' trigger / requiresShielded gate on the team in multi-B1 comps. This is the single most likely shared-prior misread in the kit.",
+      "distinguishingAssertion": "Run a comp containing BOTH liter and claire (both B1, different cooldowns, so burst selection alternates/diverges). Install a shielded probe on a teammate via withPatchedOverride ({ trigger:{kind:'shielded'}, effects:[marker buff] }). Faithful: marker buffApply count === count of burstCast events with Claire's srcSlot, and each marker frame PRECEDES the following fullBurstStart frame (burst cast lands pre-FB in the B1→30f→B2 chain). Nearest-wrong: marker count === fullBurstStart count and fires even on rotations where liter's burstCast, not Claire's, appears in the log. WARNING for the driver: an existence-only test in a comp where Claire is the sole B1 (bursts every rotation) CANNOT distinguish these — the fixture must include a competing B1.",
+      "inertness": "No shield events on Full Bursts whose B1 cast was not Claire's. No direct damage.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Shield = 10.13% of user's Max HP, 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "shield effect, maxHpPct:10.13 (% of CASTER's final Max HP per the schema's shield semantics — matches the prose 'skill user's final Max HP' exactly), durationSec:10.",
+      "durationSemantics": "10 seconds wall-clock.",
+      "triggerIdentity": "Rides the skill2 burstCast block.",
+      "targetSet": "All allies including self — the shield application is what fires teammates' 'shielded' triggers and opens their requiresShielded gates for the 10s window, so the target set gates cross-unit crediting.",
+      "nearestWrongModel": "Dropping the shield as 'no HP pool modeled, inert' — silencing shielded-trigger and requiresShielded-gated teammate kits (naga-style). Or attaching durationSec to the wrong thing (a 10s buff instead of a shield effect), which never fires 'shielded'.",
+      "distinguishingAssertion": "Shielded probe (as above) fires once per ally per Claire burst cast; additionally a requiresShielded-gated probe block on a teammate is active only within the 10s post-cast window (assert its gated marker appears inside the window and not at, say, t=15s after cast).",
+      "inertness": "Zero direct damage; zero shield events in a comp variant where Claire never casts her burst.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Restores 34.35% of user's Max HP",
+      "disposition": "FAITHFUL",
+      "scope": "Heal to ALL allies (self-inclusive), scaled off Claire's own final Max HP; on her burst cast.",
+      "durationSemantics": "Instant, no duration.",
+      "triggerIdentity": "burstCast (it IS her burst's effect). Same multi-B1 caveat as skill2: fires only on rotations Claire actually casts B1. Not FB-gated damage — it's a heal, so the +50%/pre-FB timing questions are moot; but timing still matters for WHEN teammates' recovery triggers fire (pre-FB, at cast).",
+      "targetSet": "All allies including self — unlike S1's top-2 slice. This is the line that DOES reach crown in controlComp, so crown's 'when recovery takes effect' machinery keys off the burst heal, not S1.",
+      "nearestWrongModel": "Conflating the two heal target sets — burst heal narrowed to top-2 (under-credits crown's recovery kit) or S1 widened to all-allies (over-credits it). The paired assertion set across S1/burst pins both directions.",
+      "distinguishingAssertion": "Recovery probes on all 4 teammates: per Claire burst cast, EVERY unit (all 5 slots incl. Claire) gets exactly one probe marker buffApply; between bursts, only the S1 top-2 recipients accumulate markers. In controlComp specifically: crown's recovery-marker count === Claire's burstCast count exactly (never S1-cadence).",
+      "inertness": "No damage bucket contribution; team damage moves ONLY through genuine recovery-consumer kits (crown), never through the heal itself.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Removes 1 debuff(s).",
+      "disposition": "UNMODELED",
+      "scope": "Ally debuff-cleanse.",
+      "durationSemantics": "Instant, per cast.",
+      "triggerIdentity": "burstCast.",
+      "targetSet": "All allies.",
+      "nearestWrongModel": "Inventing a cleanse interaction (e.g. stripping boss-applied ally debuffs) — v1 scope has no channel that puts debuffs ON allies (partless boss, boss deals no damage/debuffs), so there is nothing to remove.",
+      "distinguishingAssertion": "Inertness-only: overriding this line in/out changes NO event and NO unit's total. It must appear verbatim in the override's unmodeled.burst array (the no-silent-drops record).",
+      "inertness": "Everything — the line must move nothing.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:chargeCounter(3) trigger + top-2-final-ATK target",
+    "skill1:heal 2.86% caster Max HP (recovery-trigger feed)",
+    "skill2:burstCast trigger (NOT fullBurstEnter)",
+    "skill2:shield 10.13% caster Max HP / 10s (shielded-trigger feed)",
+    "burst:heal 34.35% caster Max HP, all allies (recovery-trigger feed)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": ["Removes 1 debuff(s)."]
+  },
+  "notes": "Three things the driver must reconcile. (1) THE FIXTURE TRAP: Claire is Burst I, and controlComp hard-fixes liter in the B1 slot — in that fixture either Claire never casts (skill2/burst silently never fire, and a wrong fullBurstEnter encoding of skill2 would PASS an existence check while the faithful burstCast encoding shows zero shields) or the two B1s alternate. Tests MUST use a comp where Claire verifiably casts (assert burstCast events with her srcSlot exist) AND a divergence comp with a competing B1 to separate burstCast from fullBurstEnter — this is where I most expect a shared-prior misread. (2) OBSERVABILITY: cfg.onEvent has no heal/shield event kind listed, so every heal/shield assertion must route through consumer probes installed with withPatchedOverride (recovery-trigger and shielded-trigger marker blocks on teammates) — this is also the semantically correct test, since the tandem channel is the ONLY damage-relevant consequence of this kit. The 'recovery' trigger doc references a 'heal' effect kind that the redacted effect-schema excerpt does not list; the driver must confirm the engine's actual heal primitive and must NOT downgrade the heals to notes/skips — a heal encoded as a skip silences crown-style kits (taxonomy rule 4). (3) TARGET-SET ASYMMETRY: S1 heals exactly the 2 highest-FINAL-ATK allies (byFinalAtk:true is mandatory — the kit says 'final ATK', per the A3 literal-word rule), while the burst heals ALL allies — in controlComp that means crown receives heals ONLY from the burst, so crown's recovery-marker cadence is the clean discriminator between the two target sets. Claire herself carries zero damage effects; every test should pin her own total as invariant under all patches.",
+  "model": "claude-fable-5"
+}

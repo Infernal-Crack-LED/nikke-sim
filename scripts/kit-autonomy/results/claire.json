@@ -1,0 +1,86 @@
+{
+  "slug": "claire",
+  "kitDescription": "Claire is a pure-sustain rocket-launcher Supporter whose kit contains no damage or stat-buff lines at all. Every third fully-charged shot she heals the two allies with the highest final ATK for a small fraction of her own max HP. When she uses her burst, she first grants the whole team a 10-second shield scaled off her max HP, and her burst itself heals all allies for a large fraction of her max HP while removing one debuff. Her personal contribution to a damage board is only her own rocket fire; her real value is feeding teammates whose kits react to being healed or shielded.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "'is keyed to a FULL-CHARGE counter of 3' — fails only on expect(b.trigger.countInFb).toBeUndefined(); driver pins countInFb:3 explicitly",
+      "'carries the 2.86% ... as a heal' — fails on hasMagnitude(blocks, 2.86); the engine heal EffectDef carries no magnitude field",
+      "'heals all allies for 34.35%' — fails on hasMagnitude(blocks, 34.35); same schema absence"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates when landing 3 Full Charge",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "chargeCounter{count:3, countInFb:3}; RL shots are all full charges, so proc = every 3rd shot; countInFb:3 pins the constant threshold against the engine's countInFb ?? 1 post-own-cast default",
+        "blindSaid": "S5/S6 both chose chargeCounter count:3 but expected countInFb absent, unaware of the engine's in-window default of 1",
+        "formulaCheck": "Trigger identity correct (charge-specific counter, not hitCount/interval); cadence behaviorally pinned as floor(claireShots/3) recovery landings via the asuka consumer, and the count:1 counterfactual goes RED as required",
+        "fireRateOk": true,
+        "explanation": "The driver's explicit countInFb:3 is the MORE faithful encoding of the blind's own stated intent ('no in-FB threshold change'): omitting it would silently accelerate the channel to per-shot for 10s after each of claire's own casts. The S5 RED here is a blind blind-spot, not a divergence in kit reading."
+      },
+      {
+        "kitLine": "Recovers 2.86% of user's final Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "heal effect (event-only, ticks:1) to alliesTopAtk{count:2, byFinalAtk:true}; magnitude 2.86 recorded verbatim in caveats/note because the engine heal kind has no magnitude field (v1 has no HP pool)",
+        "blindSaid": "S5 demanded the magnitude survive as a number; S6 invented maxHpPct:2.86 on the heal by analogy to shield, flagging it as inference",
+        "formulaCheck": "A heal is offensively inert except through teammates' recovery triggers; the tandem channel is proven live (asuka's atkPct-96.98 fires floor(shots/3)+bursts times). Magnitude is out-of-scope per the magnitude rule (no HP pool exists to consume it) and is documented, not dropped",
+        "fireRateOk": true,
+        "explanation": "Target set is exactly per prose ('highest final ATK' → byFinalAtk:true, self-inclusive, count 2 — S2b's mandatory reading). The S5 magnitude assertion fails on a schema limitation both blinds acknowledged, not on a kit misread; the heal-as-event encoding is what S2b's taxonomy rule 4 required (never a note-only skip)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when using Burst Skill",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast on the shield block; DIV fixture with competing B1 (liter) behaviorally separates burstCast from fullBurstEnter",
+        "blindSaid": "S2b pre-registered this as the kit's highest-value trap; S5 asserted burstCast and rejected fullBurstEnter structurally; all agree",
+        "formulaCheck": "Own-cast keying matches the burst-rotation SSOT (skill-slot effects keyed to the cast, not the window); DIV run shows shield-channel firings == claire's own casts while fullBurstEnter counterfactual over-fires to the FB count on liter-opened chains",
+        "fireRateOk": true,
+        "explanation": "Full three-way convergence (S2b, S5/S6, driver) on the trap-3 line, and the driver's DIV fixture is exactly the discrimination S2b demanded — the sole-B1 existence-check trap is avoided."
+      },
+      {
+        "kitLine": "Shield = 10.13% of user's Max HP, 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shield{maxHpPct:10.13, durationSec:10} to all allies (self-inclusive); fires naga's shielded trigger once per cast and opens her requiresShielded burst gate every rotation",
+        "blindSaid": "S5/S6 identical encoding (shield, 10.13, 10s, allies)",
+        "formulaCheck": "Real shield primitive per the shield-state SSOT (shielded event + shieldedUntilFrame window); the shield-as-heal counterfactual silences both naga channels and over-fires recovery by one landing per cast, proving the kind is load-bearing",
+        "fireRateOk": true,
+        "explanation": "Exact magnitude and duration on the schema-supported effect, correct event semantics, behaviorally exercised through two independent consumer channels."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Restores 34.35% of user's Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast-keyed heal (event-only) to all allies; magnitude in caveats; with S1 stripped, recovery firings == claireBursts exactly",
+        "blindSaid": "S5/S6 same trigger/target; S6 again attached an inferred maxHpPct the schema lacks",
+        "formulaCheck": "Target-set asymmetry (S1 top-2 vs burst all-allies) is structurally pinned both directions; timing (cast, pre-FB) is moot for a heal but correct for when recovery consumers fire",
+        "fireRateOk": true,
+        "explanation": "Faithful encoding of the second recovery channel; the magnitude absence is the same documented schema limitation as S1, not a drop."
+      },
+      {
+        "kitLine": "Removes 1 debuff(s).",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.burst; no cleanse primitive exists and the scope-lock boss applies no ally debuffs, so the line is scope-inert; nothing fabricated in its place",
+        "blindSaid": "S2b UNMODELED with the same reasoning; S5 skipped by design and asserted the verbatim record; S6 identical",
+        "formulaCheck": "No debuff channel exists in v1; any invented cleanse would be a fabrication — the no-silent-drops record is the correct handling",
+        "fireRateOk": true,
+        "explanation": "Full four-way agreement; the line is recorded, inert, and honestly gated on the sim ever modeling ally debuffs."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: all six kit lines are FAITHFUL or a unanimously-agreed DOCUMENTED_GAP (the cleanse). The three S5 REDs are all blind-side artifacts, not divergences in kit reading — two fail on the engine heal EffectDef carrying no magnitude field (a schema absence S5's own gap notes anticipated; the magnitudes are recorded verbatim in caveats per the marciana/bay precedent, and magnitudes are out-of-scope under the magnitude rule since v1 has no HP pool), and one fails on the countInFb pin, where the driver's explicit countInFb:3 is the more faithful realization of the blind's own stated intent given the engine's countInFb ?? 1 post-own-cast default. The two blinds and the driver converged independently on every load-bearing structural choice (chargeCounter 3, alliesTopAtk byFinalAtk, burstCast over fullBurstEnter, shield kind with 10.13/10s, target-set asymmetry, verbatim unmodeled cleanse), and the driver's suite discriminates each against its nearest-wrong model behaviorally — including the S2b-pre-registered competing-B1 DIV fixture that separates burstCast from fullBurstEnter, and live fire-cadence checks through isolated recovery/shield consumers (modeled≠working satisfied). Same-model residual for the owner to spot-check: the two driver-asserted engine facts no blind could see — (a) that all dumped RL rockets dispatch charged=true (so shot-count/3 == full-charge-count/3), and (b) that sim.ts's chargeCounter really defaults the in-window threshold to countInFb ?? 1 (the scarlet-black-shadow mechanic) — both are one-line greps in sim.ts and are the only load-bearing claims resting on a single derivation.",
+  "model": "kimi-code/k3"
+}

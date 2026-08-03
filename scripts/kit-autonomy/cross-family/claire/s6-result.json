@@ -1,0 +1,172 @@
+{
+  "slug": "claire",
+  "leakDetected": null,
+  "override": {
+    "slug": "claire",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "chargeCounter",
+          "count": 3
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 2,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "maxHpPct": 2.86
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 10.13,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "maxHpPct": 34.35
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": ["Removes 1 debuff(s)."]
+    },
+    "caveats": [
+      "⚑ EFFECT-KIND AVAILABILITY: the schema excerpt supplied to this blind pass lists no `heal` member in EffectDef, yet the `recovery` TriggerDef comment references \"a 'heal' effect targets them\". Both heal lines are authored as {kind:'heal', maxHpPct} by analogy to the `shield` effect (maxHpPct = % of CASTER final Max HP). If validate-overrides rejects that kind, the two heal lines move verbatim to `unmodeled` and this unit becomes fully effect-free offensively — do NOT silently re-encode them as a stat buff.",
+      "⚑ SKILL1 TRIGGER SHAPE: `chargeCounter` with a scalar count of 3 and a single effect is the closest schema match to \"landing 3 Full Charge attack(s)\"; the assumption is that the phase counter wraps and re-fires every 3rd full charge for the whole fight. If the engine's chargeCounter only walks the effects[] array once, the block fires once and under-credits.",
+      "⚑ SKILL1 PROC CADENCE: the proc rate is entirely a function of the datamined charge cadence (chargeFrames 60, ammo 6, reloadFrames 141) — a known-unreliable datamine surface. Every heal count downstream of skill1 inherits that uncertainty.",
+      "TANDEM (not a flag, a warning): both heal lines and the shield line are offensively inert in isolation but ARE the input to teammates' `recovery` and `shielded` triggers (e.g. a crown-style \"when recovery takes effect\" damage buff). They must never be dropped as \"defensive\".",
+      "\"landing\" in skill1 implies the full-charge attack must connect; the model treats every full charge as landing (no miss channel exists at scope lock).",
+      "\"Affects 2 ally unit(s) with the highest final ATK\" is authored byFinalAtk:true per the literal-word rule (\"final ATK\"), so ranking reads live effectiveAtk, not staticAtk."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Claire is a pure sustain Supporter (RL/Electric/Burst I): S1 heals the 2 highest-final-ATK allies for 2.86% of her own final Max HP every 3rd landed full charge; S2 shields all allies for 10.13% of her final Max HP for 10s on her own burst cast; her burst heals all allies for 34.35% of her final Max HP and cleanses 1 debuff. No damage line, no stat buff, no weapon-state modifier, no gauge line anywhere in the kit — her entire contribution to a damage sim is (a) her own base RL fire and (b) driving teammates' recovery/shielded triggers. The cleanse is unmodeled: there is no debuff-removal primitive and the scope-lock boss applies no debuffs, so it is scope-inert. Both heals are authored with the `heal` effect kind by analogy to `shield`; see caveats — the supplied schema excerpt did not list that member.",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when landing 3 Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'chargeCounter', count:3} — per-full-charge phase counter, the schema's only full-charge-counting trigger. Not hitCount (that counts rounds/normal hits, not full charges); not interval (the kit states an explicit activation condition)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects 2 ally unit(s) w/ highest ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesTopAtk', count:2, byFinalAtk:true} — \"final ATK\" is literal, so live-effectiveAtk ranking. No excludeSelf (kit does not say \"except the skill user\")."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Green Herb: Recovers 2.86% ... as HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'heal', maxHpPct:2.86} — % of the SKILL USER's final Max HP (caster-scaled, same convention as the shield effect). Heal lines are never skipped on isolation (HARD RULE: tandem/cross-unit — this fires teammates' `recovery` triggers). \"Green Herb\" is a flavor label, not a stack/currency."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'} — literal \"when using Burst Skill\" = this unit's OWN burst cast, NOT fullBurstEnter. Keying it to fullBurstEnter would over-credit on rotations where Claire does not burst."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} — no excludeSelf clause, so the caster is included."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Blue Herb: Creates a Shield 10.13%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'shield', maxHpPct:10.13, durationSec:10} — maxHpPct is % of CASTER final Max HP per the schema. Recorded for kit completeness AND because it fires teammates' `shielded` triggers; no HP pool is modeled at scope lock."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'}, trigger {kind:'burstCast'} — a burst block with no separate activation clause fires on the owner's burst cast."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Restores 34.35% ... final Max HP as HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'heal', maxHpPct:34.35} — caster-Max-HP-scaled team heal; same tandem rationale as S1."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Removes 1 debuff(s).",
+      "status": "SKIPPED",
+      "effectOrReason": "No debuff-removal primitive exists in EffectDef, and the scope-lock boss applies no debuffs to allies, so the line is scope-inert. Recorded verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "(no damage / stat / gauge line present)",
+      "status": "SKIPPED",
+      "effectOrReason": "Whole-picture check: the kit contains zero ATK/crit/damage-taken/ammo/reload/fire-rate/charge-speed/burst-gauge lines and no weapon swap. Nothing was dropped — there is genuinely no offensive line to model. Consequently `noFb` is not set anywhere (no function-damage rider exists), and `noRange` is engine-automatic."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[0].effects[0].kind / override.burst[0].effects[0].kind",
+      "estimate": "{kind:'heal', maxHpPct:<pct>} for both heal lines",
+      "reasoning": "The EffectDef union in the supplied (redacted) types.ts excerpt contains no `heal` member, but TriggerDef's `recovery` entry documents itself as firing \"when the owner RECEIVES a heal (a 'heal' effect targets them)\" — so a heal channel must exist for that trigger to be reachable. Field name `maxHpPct` is taken by analogy to `shield`, whose comment fixes the same caster-final-Max-HP semantics that both of Claire's heal lines use. This is a schema-availability hypothesis, not a magnitude guess: 2.86% and 34.35% are kit-literal.",
+      "recipe": "Run `npx tsx src/skills/validate-overrides.ts` (or the repo's validate-overrides entrypoint) against this file. If it passes, the kind is real and the model is done. If it rejects `heal`, grep types.ts for the union member that `recovery` consumes and re-encode both lines to it; if no such member exists, move both lines verbatim into `unmodeled` and open an engine-modeling-gaps entry — do NOT substitute a stat buff."
+    },
+    {
+      "field": "override.skill1[0].trigger",
+      "estimate": "{kind:'chargeCounter', count:3} — recurring every 3rd landed full charge for the whole fight",
+      "reasoning": "The schema documents chargeCounter as a CYCLING phase counter whose phase P fires effects[P]. With one effect and a scalar count, the intended reading is \"fire every 3 full charges\", but the wrap behaviour after the single phase is not stated in the excerpt. If the counter walks effects[] exactly once and stops, this block fires once at ~3 charges instead of ~every 3 charges — a large under-credit on a 180s fight.",
+      "recipe": "In a vitest harness fixture (controlComp with claire, cfg.onEvent), count buffApply/heal-side events attributable to claire's skill1 over a full 180s run and divide by her observed full-charge count; expect ≈ n_fullCharges/3. If the count is exactly 1, re-key to {kind:'hitCount', count:3} (RL hitsPerShot 1, so rounds ≈ charges) and re-check."
+    },
+    {
+      "field": "engine cadence for claire (not an override field)",
+      "estimate": "chargeFrames 60 (1.0s charge), ammo 6, reloadFrames 141 (~2.35s) as datamined",
+      "reasoning": "ALWAYS-⚑ #1: the cadence tuple comes from a known-unreliable datamine surface, and here it is load-bearing in an unusual way — it is the SOLE driver of skill1's proc count (3 full charges per proc). A 10% cadence error propagates 1:1 into how many times the 2-ally heal lands, which propagates into any teammate's `recovery`-triggered damage buff.",
+      "recipe": "Read the full-charge cadence off real footage: count Claire's charge-shot releases between two known timestamps (or read her ammo counter cycling 6→0 and the reload gap) and compare against the sim's shot events for her slot. Pin the result as a scripts/tests/units/claire.test.ts assertion on shot-event spacing before trusting any skill1 proc count."
+    },
+    {
+      "field": "override.skill1[0].target.byFinalAtk",
+      "estimate": "true",
+      "reasoning": "The kit says \"highest final ATK\" literally, and the schema states byFinalAtk is set ONLY when the kit literally says final ATK. Flagged rather than assumed silently because the choice changes WHICH two allies receive the heal in any comp where a buff reorders the ATK ranking mid-fight — which in turn changes whose `recovery` trigger fires.",
+      "recipe": "Emit buffApply/heal events with targetSlug in a controlComp run, then re-run with byFinalAtk removed; if the recipient set differs, the ranking basis is observable and should be confirmed against footage of which allies show heal numbers."
+    },
+    {
+      "field": "override.skill2[0].trigger (burstCast vs fullBurstEnter)",
+      "estimate": "burstCast",
+      "reasoning": "Kit-literal per the trigger-identity rule, so this is low-risk — but it is called out because Claire is Burst I and therefore casts on essentially every rotation, which makes burstCast and fullBurstEnter numerically near-identical on the graded comps. The distinction only becomes observable in a comp with a second Burst I unit where Claire does not cast; a wrong choice would be invisible in validation and wrong in the field.",
+      "recipe": "Build a fixture with two Burst I units where Claire loses the cast, and assert zero shield events from her slot on that rotation."
+    }
+  ],
+  "model": "claude-opus-5"
+}
