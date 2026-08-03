@@ -58,7 +58,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   1. **Owner design pass on `/unit/maiden-ice-rose`** (phase 4) — layout, density, section order;
      the ⓘ badge glyph on the roster grids is a placeholder (↗ may read better). Shots:
      `PORT=<free> SHOTS=unit-,characters-index,teambuilder-profile OUT=/tmp/unit-shots node
-     scripts/ui-shot.mjs`.
+scripts/ui-shot.mjs`.
   2. **Owner sign-off on `data/unit-pages.json`** — a NEW generated artifact in the protected
      `data/` dir (no existing file touched).
   3. Spot-check a spread of units (untuned, no-OL-data, `simSupported:false`, Λ burst) before merge.
@@ -66,22 +66,26 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      extend `unitStaticHtml` in BOTH servers to emit the new sections for no-JS crawlers.
   5. Decide the thin-content policy if Search Console flags the ~85 kit-only pages as soft-404s
      (gate the sitemap on `simSupported`, or `noindex` them).
-- **⇒ DATA REGRESSION: a Treasure release overwrites the character's `releaseDate`
-  (found 2026-08-02).** `characters.sugar.releaseDate` carried her true **2022-11-04**
-  release as recently as the 2026-07-28 sync, and a sync on **2026-07-31** replaced it
-  with **2026-07-23** — her Treasure (favorite item) release date. Verified by walking
-  `git show <sha>:data/characters.json` back through the file's history, not inferred.
-  `releaseDate` is copied straight from upstream (`src/data/sync.ts:282`,
-  `a.releaseDate ?? null`), so the fix belongs in bakery-bot / the synced source, not
-  in `data/` (protected + regenerated).
-  - **Blast radius:** the unit card's "Released <date>" line (`unitCardData`) now states
-    a wrong date for `sugar`, and it floated a 2022 unit into the /characters "New
-    Characters" row. The row is defended (it filters `treasure` entries out), but the
-    card is not.
-  - **Check the other 20 `treasure: true` units** when fixing: the rest still hold
-    original dates (helm 2022-11-10, viper 2023-01-19, drake 2025-01-16), so today
-    `sugar` looks like the only one re-dated — consistent with "the row is re-dated when
-    a Treasure ships" and only her Treasure being recent.
+- **⇒ DATA BUG: `sugar.releaseDate` is her Treasure date, not her release (found
+  2026-08-02).** She reads **2026-07-23**; her true release is **2022-11-04** (NIKKE's
+  global launch), which `characters.json` held correctly until commit `fda93643`
+  ("updating for maxwell", 2026-07-31). `releaseDate` is copied straight from upstream
+  (`src/data/sync.ts:282`, `a.releaseDate ?? null`), so the fix belongs in bakery-bot /
+  the synced source — `data/` is protected and regenerated.
+  - **NOT a rule about Treasures.** `flora`, `rosanna` and `phantom` got their Treasures
+    in the same batch (all four flipped `treasure: true` together on 2026-07-28) and all
+    three kept correct dates. It is a per-unit anomaly; the mechanism is upstream and
+    was not determined from here.
+  - **The same commit was a release-date fix-up pass** and moved five values:
+    `drake` 2022-11-04 → 2025-01-16 and `helm` 2025-01-16 → 2022-11-10 (both look
+    CORRECTED), `laplace-ultimate-hero` → 2026-07-23 and `maxwell-ordinary-mechanic`
+    → 2026-07-30 (both correct, genuinely new), and `sugar` → 2026-07-23 (broken).
+    Two units having previously held each other's dates suggests the upstream
+    release-date mapping has had alignment trouble before — worth auditing the whole
+    column, not just this row.
+  - **Blast radius:** the unit card's "Released <date>" line (`unitCardData`) states the
+    wrong date for `sugar`. The /characters "New Characters" row is defended (it
+    excludes `treasure` entries); the card is NOT.
 - **⇒ OL TOOLING — two remaining basis gaps, findings-only (Hit Rate half RESOLVED
   2026-08-02).** The exhaustive free-line table now agrees with `data/ol-optimal.json`'s
   greedy pick on 32/73 units (was 20). The Hit Rate cause is closed: owner ruled Hit Rate

@@ -40,15 +40,16 @@ const data = charactersJson as unknown as DataFile;
 // nothing to recompute per render. Ties (two units sharing a release date) keep
 // characters.json order, which is stable across builds.
 //
-// TREASURE ENTRIES ARE EXCLUDED. A Treasure (favorite item) is a kit upgrade to
-// an EXISTING character, not a new one, so it never belongs in "New Characters" —
-// and upstream re-dates the roster row when one ships. `sugar` is the live case:
-// characters.json carried her true 2022-11-04 release until a sync on 2026-07-31
-// overwrote it with 2026-07-23, her Treasure date, which floated a 2022 unit into
-// this row. Filtering on the `treasure` flag is right on its own terms and is
-// also immune to that happening to the next one. (The underlying value is still
-// wrong — it is what the unit card's "Released" line reads — and is filed in
-// docs/handoffs/QUEUE.md for a fix at the source, since data/ is synced.)
+// TREASURE ENTRIES ARE EXCLUDED, because a Treasure (favorite item) is a kit
+// upgrade to an EXISTING character, not a new one. That is the whole reason; it
+// holds no matter what the dates say.
+//
+// It also happens to defend against a live upstream data bug: `sugar` carries
+// releaseDate 2026-07-23 (her Treasure date) instead of her true 2022-11-04 —
+// NIKKE's global launch — so a launch unit sorts to the top of a "newest" list.
+// Filed in docs/handoffs/QUEUE.md; data/ is synced, so it is fixed at the source,
+// not here. Note the bug is PER-UNIT, not a rule about Treasures: flora, rosanna
+// and phantom got their Treasures in the same batch and kept correct dates.
 //
 // `releaseDate` is absent on one unit today; it sorts out rather than crashing.
 const NEW_CHARACTER_COUNT = 5;
