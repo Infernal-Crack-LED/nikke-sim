@@ -44,6 +44,12 @@ const END = '<!-- END GENERATED: primitive-census -->';
 // Prose fields are current-state narration, never structural — see CONVENTIONS "Doc hygiene".
 const PROSE_FIELDS = new Set(['note', 'caveats', 'unmodeled']);
 
+// Synthetic controls (noop-* placeholders and synthetic-* stand-ins) are build-framework
+// scaffolding, not roster entries. They must not inflate the primitive census in
+// engine-modeling-gaps.md, which counts real units only.
+const isSyntheticSlug = (s: string) =>
+  s.startsWith('noop-') || s.startsWith('synthetic-');
+
 const update = process.argv.includes('--update');
 const problems: string[] = [];
 
@@ -51,6 +57,7 @@ const problems: string[] = [];
 const slugs = readdirSync(OVERRIDES)
   .filter((f) => f.endsWith('.json'))
   .map((f) => f.slice(0, -5))
+  .filter((s) => !isSyntheticSlug(s))
   .sort();
 
 const structural = new Map<string, string>();

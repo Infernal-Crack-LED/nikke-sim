@@ -13,7 +13,7 @@
 // gitignored web/public data artifacts.
 //
 // BUILD-ORDER DEPENDENCY: the DPS charts and rank boards read the gitignored
-// build outputs web/public/{dpschart,burstgen,burstcdr,sustain,bufferchart}.json,
+// build outputs web/public/{dpschart,burstgen,burstcdr,sustain,bufferchart,b1b2dps}.json,
 // so `npm run dpschart && npm run ranks:all` must have run first (build:deploy
 // orders it this way). dist/ is wiped by every vite build (emptyOutDir), so
 // this script must run AFTER `npm run build` — never before.
@@ -55,6 +55,7 @@ import {
   buildBurstCdrTable,
   buildSustainTable,
   buildBufferTable,
+  buildB1B2DpsTable,
   unitName,
   type OlDefaultArtifact,
   DPS_TITLE_INK_REGION,
@@ -79,6 +80,7 @@ import type {
   BurstCdrArtifact,
   SustainArtifact,
   BufferChartArtifact,
+  B1B2DpsArtifact,
 } from '../src/ranks/types.js';
 
 // ---- CLI --------------------------------------------------------------------
@@ -351,6 +353,17 @@ function rankJobs(): Job[] {
             new URL('../web/public/bufferchart.json', import.meta.url),
             DATA_HINT
           )
+        ),
+    },
+    {
+      board: 'b1b2dps',
+      build: () =>
+        buildB1B2DpsTable(
+          loadJson<B1B2DpsArtifact>(
+            new URL('../web/public/b1b2dps.json', import.meta.url),
+            DATA_HINT
+          ),
+          'c100-eleadv'
         ),
     },
   ];

@@ -1,9 +1,9 @@
 // Support Rankings tab (/ranks/support, inside the sim App's rankings
-// section) — four ranked boards over the precomputed artifacts: Burst
-// Generation, Burst CDR, Sustain, Team Buffs. One shared ranked-bar UI
-// (RankBarChart) with a board pill-switcher; the buffer board gets a second
-// pill row (Generic / Typed carries). Only the active board's artifact
-// fetches. Every board's `methodology` string sits in a collapsible
+// section) — five ranked boards over the precomputed artifacts: Burst
+// Generation, Burst CDR, Sustain, Team Buffs, and B1/B2 DPS. One shared
+// ranked-bar UI (RankBarChart) with a board pill-switcher; the buffer board
+// gets a second pill row (Generic / Typed carries). Only the active board's
+// artifact fetches. Every board's `methodology` string sits in a collapsible
 // "How this works" card — mirroring the DPS chart's Custom Profiles
 // disclosure (DpsChartTab). No row links into the sim: the sustain board
 // includes non-simSupported units, so no links at all is the simplest truth.
@@ -14,6 +14,9 @@ import {
   buildBurstCdrTable,
   buildSustainTable,
   buildBufferTable,
+  buildB1B2DpsTable,
+  B1B2_CELL_LABEL,
+  B1B2_DPS_BOARDS,
 } from '../../src/infographics/core/rankTables';
 import { copyTableCardImage } from './tableShare';
 import { copyTextToClipboard } from './clipboard';
@@ -22,13 +25,16 @@ import {
   loadBurstCdr,
   loadSustain,
   loadBufferChart,
+  loadB1B2Dps,
   type BoardId,
   type BufferBoard,
   type BurstGenBoard,
+  type B1B2DpsBoard,
   type BurstGenArtifact,
   type BurstCdrArtifact,
   type SustainArtifact,
   type BufferChartArtifact,
+  type B1B2DpsArtifact,
 } from './rankBoardsData';
 import {
   profileLabel,
@@ -41,7 +47,13 @@ const BOARDS: { id: BoardId; label: string; title: string }[] = [
   { id: 'burstgen', label: 'Burst Gen', title: 'Burst Generation' },
   { id: 'sustain', label: 'Sustain', title: 'Sustain' },
   { id: 'burstcdr', label: 'Burst CDR', title: 'Burst Cooldown Reduction' },
+  { id: 'b1b2dps', label: 'B1/B2 DPS', title: 'B1/B2 DPS' },
 ];
+
+const parseB1B2Board = (v: string | null): B1B2DpsBoard =>
+  B1B2_DPS_BOARDS.includes(v as B1B2DpsBoard)
+    ? (v as B1B2DpsBoard)
+    : 'c100-eleadv';
 
 // Methodology disclosure — the Custom Profiles pattern from DpsChartTab:
 // a collapsible card with the board's conventions one click away, plus the
@@ -84,6 +96,9 @@ export function SupportRankings() {
   const [burstGenBoard, setBurstGenBoard] = useState<BurstGenBoard>(() =>
     params.get('bg') === 'focused' ? 'focused' : 'unfocused'
   );
+  const [b1b2DpsBoard, setB1b2DpsBoard] = useState<B1B2DpsBoard>(() =>
+    parseB1B2Board(params.get('b1b2'))
+  );
   const [arts, setArts] = useState<Partial<Record<BoardId, AnyRankArtifact>>>(
     {}
   );
@@ -99,6 +114,7 @@ export function SupportRankings() {
       burstcdr: loadBurstCdr,
       sustain: loadSustain,
       buffer: loadBufferChart,
+      b1b2dps: loadB1B2Dps,
     } as const;
     let alive = true;
     loaders[board]()
@@ -135,7 +151,9 @@ export function SupportRankings() {
           ? buildBurstCdrTable(art as BurstCdrArtifact)
           : board === 'sustain'
             ? buildSustainTable(art as SustainArtifact)
-            : buildBufferTable(art as BufferChartArtifact, bufferBoard);
+            : board === 'b1b2dps'
+              ? buildB1B2DpsTable(art as B1B2DpsArtifact, b1b2DpsBoard)
+              : buildBufferTable(art as BufferChartArtifact, bufferBoard);
     return copyTableCardImage(data, `nikke-ranks-${board}.png`);
   };
 
@@ -154,12 +172,17 @@ export function SupportRankings() {
     } else {
       u.searchParams.delete('bg');
     }
+    if (board === 'b1b2dps') {
+      u.searchParams.set('b1b2', b1b2DpsBoard);
+    } else {
+      u.searchParams.delete('b1b2');
+    }
     return copyTextToClipboard(u.toString());
   };
 
   // Map the active board's typed rows into the chart's uniform bar shape.
   const bars = art
-    ? barsForBoard(board, art, { bufferBoard, burstGenBoard })
+    ? barsForBoard(board, art, { bufferBoard, burstGenBoard, b1b2DpsBoard })
     : [];
   const profiles = art?.profiles ?? {};
 
@@ -221,6 +244,19 @@ export function SupportRankings() {
           ))}
         </div>
       )}
+      {board === 'b1b2dps' && (
+        <div className="pills ranks-subboards">
+          {B1B2_DPS_BOARDS.map((b) => (
+            <button
+              key={b}
+              className={b1b2DpsBoard === b ? 'on' : ''}
+              onClick={() => setB1b2DpsBoard(b)}
+            >
+              {B1B2_CELL_LABEL[b]}
+            </button>
+          ))}
+        </div>
+      )}
 
       {err && !art ? (
         <p className="muted">
@@ -237,7 +273,9 @@ export function SupportRankings() {
                 ? `${meta.title} · ${bufferBoard}`
                 : board === 'burstgen'
                   ? `${meta.title} · ${burstGenBoard}`
-                  : meta.title
+                  : board === 'b1b2dps'
+                    ? `${meta.title} · ${B1B2_CELL_LABEL[b1b2DpsBoard]}`
+                    : meta.title
             }
             subtitle={`${bars.length} entries · generated ${new Date(
               art.generatedAt
