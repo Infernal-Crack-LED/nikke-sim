@@ -15,7 +15,7 @@ import {
   makeCalc,
   type AlwaysCombos,
 } from '../../../src/teamcalc.js';
-import { scopeLockCfg } from '../../lib/scope-lock.js';
+import { fastCfg } from '../lib/fast-cfg.js';
 import { archetypeTags, deps, generatorPool, mult } from '../lib/harness.js';
 
 // Mirrors web/src/App.tsx.
@@ -114,7 +114,9 @@ describe('generation still completes with the synergy bias active', () => {
     chars: chars as any,
     mult,
     deps: { overrides, ...deps },
-    cfg: scopeLockCfg([], null) as any,
+    // Shorter fight for the synergy-generation smoke test: it only needs to
+    // prove bestTeam/topTeams still build legal teams, not optimal quality.
+    cfg: fastCfg([], null) as any,
     loadout: {},
     poolB3: 16,
     rounds: 1,

@@ -76,6 +76,9 @@ describe('set-keyed sim (permutations collapse, focus post-pass ≥ pre-pass)', 
       chars: chars as any,
       mult,
       deps: { overrides, ...deps },
+      // Focus post-pass needs the canonical fight length to have room to improve
+      // over the canonical-focus sim; at 30s the post-pass can tie and the test
+      // becomes vacuous.
       cfg: scopeLockCfg([], null) as any,
       loadoutFor: () => {
         loadoutCalls++;

@@ -17,9 +17,12 @@
 //   BU ■ all allies: Re-enters Burst Stage 1                                                     [B1]
 //      ■ self: Stargazer Max HP ▲26.4% of skill user's Max HP continuously                       [A3]
 //
-// FAVORITE POP STAR = the single highest-ATK ally (alliesTopAtk count:1, STATIC base-ATK ranking —
-// the chime 'the king' precedent). In FIX_A ada/helm TIE for highest ATK; the engine slices to exactly
-// ONE (lowest idx), which the spec asserts (count:1, not 'all highest-ATK').
+// FAVORITE POP STAR = the single highest-ATK ally EXCLUDING the caster (alliesTopAtk count:1,
+// excludeSelf:true, STATIC base-ATK ranking — the chime 'the king' precedent). In FIX_A ada/helm
+// TIE for highest ATK; the engine slices to exactly ONE (lowest idx), which the spec asserts
+// (count:1, not 'all highest-ATK'). Avistar's datamined base ATK (500) puts her above most B1
+// carries at scope lock (e.g. Anis: Star 400), so without excludeSelf she would be her own pop
+// star; excludeSelf is what lands the buff on the carry.
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest wrong model gates nothing):
 //   A1  caster-basis: the flat ATK add is 0.8026 × AVISTAR.staticAtk (a Supporter), NOT 0.8026 × the
@@ -154,6 +157,25 @@ const avistarNoReenter = withPatchedOverride('avistar', (ov) => {
   }
 });
 
+/** EXCLUDE-SELF DISCRIMINATION: remove excludeSelf from every favorite-pop-star line so the
+ *  selector can resolve to Avistar herself. */
+const avistarIncludeSelf = withPatchedOverride('avistar', (ov) => {
+  let n = 0;
+  for (const slot of ['skill1', 'skill2']) {
+    for (const b of ov[slot]) {
+      if (b.target?.kind === 'alliesTopAtk' && b.target.excludeSelf === true) {
+        delete b.target.excludeSelf;
+        n++;
+      }
+    }
+  }
+  if (n !== 2) {
+    throw new Error(
+      `expected 2 excludeSelf favorite-pop-star lines, found ${n} — fixture is stale`
+    );
+  }
+});
+
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const baseA = run(FIX_A);
 const atkPct = run({ ...FIX_A, overrides: { avistar: avistarAtkPct } });
@@ -162,6 +184,18 @@ const noS2 = run({ ...FIX_A, overrides: { avistar: avistarNoS2 } });
 const noStargazer = run({
   ...FIX_A,
   overrides: { avistar: avistarNoStargazer },
+});
+
+// COMP_E: Avistar is the highest-staticAtk unit, but excludeSelf still puts the favorite
+// pop star buff on Crown (the intended carry), not on Avistar.
+const COMP_E = {
+  slugs: ['avistar', 'label', 'crown', '2b'],
+  focusSlug: 'crown',
+};
+const baseE = run(COMP_E);
+const includeSelfE = run({
+  ...COMP_E,
+  overrides: { avistar: avistarIncludeSelf },
 });
 
 /** Avistar's slot index + final static ATK in a run (the caster basis for Aftershow / Stargazer). */
@@ -199,6 +233,22 @@ describe('avistar — kit spec', () => {
       // The nearest-wrong model resolves the buff against the carry’s (higher) ATK, so the
       // carry’s total must differ from the caster-basis shipped value.
       expect(atkPct.totals.ada).not.toBe(baseA.totals.ada);
+    });
+  });
+
+  describe('excludeSelf — the favorite pop star cannot be Avistar herself', () => {
+    it('COMP_E: Avistar is the highest-staticAtk unit, but the pop star is Crown because of excludeSelf', () => {
+      expect(unitOf(baseE.res, 'avistar').staticAtk).toBeGreaterThan(
+        unitOf(baseE.res, 'crown').staticAtk
+      );
+      const i = avistarIdx(baseE);
+      const buff = baseE.applies('casterAtkPct', i);
+      expect([...new Set(buff.map((b) => b.targetSlug))]).toEqual(['crown']);
+    });
+    it('DISCRIMINATING: removing excludeSelf makes Avistar her own pop star', () => {
+      const i = avistarIdx(includeSelfE);
+      const buff = includeSelfE.applies('casterAtkPct', i);
+      expect([...new Set(buff.map((b) => b.targetSlug))]).toEqual(['avistar']);
     });
   });
 

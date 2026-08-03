@@ -1,3 +1,4 @@
+import { escapeJsonLd } from './jsonLd';
 import { intro, sections, tierLegend, type Tier } from './mechanics-data';
 
 const TIER_ORDER: Tier[] = ['Measured', 'Datamined', 'Community', 'Calibrated'];
@@ -8,9 +9,43 @@ function TierBadge({ tier }: { tier: Tier }) {
   );
 }
 
+interface WebPageLd {
+  '@context': 'https://schema.org';
+  '@type': 'WebPage';
+  name: string;
+  description: string;
+  mainEntity: {
+    '@type': 'ItemList';
+    itemListElement: Array<{
+      '@type': 'ListItem';
+      position: number;
+      name: string;
+    }>;
+  };
+}
+
+const webPageLd: WebPageLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'NIKKE Game Mechanics Reference',
+  description: intro,
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: sections.map((s, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: s.title,
+    })),
+  },
+};
+
 export function MechanicsPage() {
   return (
     <div className="app mech-page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: escapeJsonLd(webPageLd) }}
+      />
       <header>
         <h1>Game mechanics</h1>
         <p className="muted">{intro}</p>

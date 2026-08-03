@@ -9,7 +9,7 @@
 // store doesn't leak between tests. Correctness (shared === none) is asserted too.
 import { describe, expect, it } from 'vitest';
 import { makeCalc } from '../../../src/teamcalc.js';
-import { scopeLockCfg } from '../../lib/scope-lock.js';
+import { fastCfg } from '../lib/fast-cfg.js';
 import { deps, generatorPool, mult } from '../lib/harness.js';
 
 const { chars, overrides } = generatorPool();
@@ -20,8 +20,10 @@ const mk = (cache: 'shared' | 'none', bossDef: number) =>
     chars: chars as any,
     mult,
     deps: { overrides, ...deps },
-    // unique cfg per test → its own bundle; bossDef doesn't change legality
-    cfg: scopeLockCfg([], null, { bossDef } as any) as any,
+    // unique cfg per test → its own bundle; bossDef doesn't change legality.
+    // Shorter fight for the cache-semantics tests: they assert reuse counts and
+    // byte parity, not absolute team quality.
+    cfg: fastCfg([], null, { bossDef }) as any,
     loadoutFor: () => {
       calls++;
       return {};

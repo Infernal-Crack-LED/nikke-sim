@@ -1,11 +1,11 @@
 # Ranking boards beyond DPS — methodology
 
-> Four ranked lists that sit next to the DPS chart: burst generation, burst
-> cooldown reduction, sustain, and buffer value. Backend artifacts live in
-> `web/public/` (`burstgen.json`, `burstcdr.json`, `sustain.json`,
-> `bufferchart.json`), built by `npm run ranks:all` (sources in `src/ranks/`,
-> builders in `scripts/build-*.ts`). Everything below is scope lock: level 400,
-> Base-5 gear, 3★ / core 7, 10/10/10 skills, 180-second fight.
+> Five ranked lists that sit next to the DPS chart: burst generation, burst
+> cooldown reduction, sustain, buffer value, and B1/B2 DPS. Backend artifacts
+> live in `web/public/` (`burstgen.json`, `burstcdr.json`, `sustain.json`,
+> `bufferchart.json`, `b1b2dps.json`), built by `npm run ranks:all` (sources in
+> `src/ranks/`, builders in `scripts/build-*.ts`). Everything below is scope
+> lock: level 400, Base-5 gear, 3★ / core 7, 10/10/10 skills, 180-second fight.
 
 ## Burst generation (`burstgen.json`)
 
@@ -101,19 +101,24 @@ Two boards per unit:
   Aquamarine's Electric Code) set the carries to the advantaged element that
   wakes the debuff.
 
-**Pair profiles** (`w/ Prika` / `w/ Mint` / `w/ Anchor` / `w/ Bunny`):
-**Mint**, **Prika**, **Mast: Romantic Maid**, and **Blanc** are ranked with and
-without their canonical B2 partner (`w/ Prika` / `w/ Mint` / `w/ Anchor` / `w/
-Bunny` / `null`). The value shown is the _tested buffer's marginal added team
-damage %_ when the pair is played together, versus a baseline where the tested
-slot is a no-op B2 but the partner is still present in solo/default mode. Mint
-and Prika force each other into their duet kit modes; Mast and Anchor are real
-units; Blanc's `w/ Bunny` partner is a synthetic no-op placeholder that
-represents her "ally from the same squad" condition being satisfied. The rows are
+**Pair profiles** (`w/ Prika` / `w/ Mint` / `w/ Anchor`):
+**Mint**, **Prika**, and **Mast: Romantic Maid** are ranked with and without
+their canonical partner (`w/ Prika` / `w/ Mint` / `w/ Anchor` / `null`). The
+value shown is the _tested buffer's marginal added team damage %_ when the pair
+is played together, versus a baseline where the tested slot is a no-op B2 but
+the partner is still present in solo/default mode. Mint and Prika force each
+other into their duet kit modes; Mast and Anchor are real units. The rows are
 not additive: each row measures what the tested unit adds on top of the partner
 already being in the team, including the synergy that forces the partner into
 its duet mode (Mint/Prika) or simply adds the tested B2 alongside the partner
-(Mast/Anchor/Blanc).
+(Mast/Anchor).
+
+**Blanc pair profile (code-only):** Blanc's duo profile is defined as `w/ Rouge`
+— a synthetic no-op Rouge B1 whose presence satisfies her "ally from the same
+squad" gate — but Blanc is in `EXCLUDED_BUFFER_SLUGS`, so neither her plain row
+nor the `w/ Rouge` row is emitted to the published buffer board. The profile is
+kept code-healthy in `scripts/tests/ranks/buffer.test.ts` and the Blanc unit
+tests.
 
 Read generic as plug-and-play value and typed as built-around value. Purely
 defensive kits read near zero — the scope-lock boss deals no damage, so there
@@ -128,3 +133,61 @@ no-op teammate a synthetic heal/shield kit that holds the gate at full uptime.
 Profiled units are ranked **both ways** — plain and profiled — flagged
 `null` / `with-healer` / `with-shielder`. Buffs gated on other missing
 triggers also read low on the plain board.
+
+## B1/B2 DPS (`b1b2dps.json`)
+
+Ranks every sim-supported **Burst-1 and Burst-2 unit by its own damage** in a
+Solo-style no-op control team. The unit under test is inserted at the leftmost
+slot of its burst stage and is the camera-focused unit (×2.5 burst-gauge
+generation on charge weapons), matching the Solo framework. Teammates are
+synthetic no-op controls whose only effects are rotation-support effects (the
+B1 control carries the standard 7 s team burst-cooldown reduction on its burst
+cast, mirroring a real B1 enabler), so the ranked value comes from the tested
+unit's own kit, weapon cadence, and burst rotation.
+
+Cells: **Core 0 / Core 100 × Neutral / Elemental advantage** (the boss is set to
+the element the tested unit beats; for multi-element units the advantage cell
+uses the native element). Investment is scope lock.
+
+Standard no-op teams (the unit under test is inserted at the ▼ slot):
+
+- **B1 20s** — `[▼unit, B2 SR, B2 SR, B3 RL, B3 MG]`
+- **B1 40s** — `[▼unit, B1 AR, B2 SR, B3 RL, B3 MG]` (a second B1 covers
+  off-rotations)
+- **B2** — `[B1 AR, ▼unit, B2 SR, B3 RL, B3 MG]`
+
+The no-op B1 (AR) in the **40s-B1** and **B2** templates contributes the
+standard 7 s team burst-cooldown reduction via its override
+(`src/skills/overrides/noop-b1-ar.json`); 20s-B1 rows have no second B1, so they
+rely on the tested B1's own CDR.
+
+Because the no-op teammates have negligible ATK, `alliesTopAtk` selectors that do
+not set `excludeSelf` resolve to the **tested unit** in plain rows, while
+`alliesLowestAtk` resolves to a no-op placeholder. The two live carriers (naga
+skill2, rapunzel skill2) use `count: 2`, so the first target is the tested unit
+and the second is an inert no-op. This intentionally turns self-includable
+highest-ATK buffs into self-buffs on this board (e.g. naga's core damage buff,
+rapunzel's `targetMaxHpPct` buff). Partner rows are unaffected because the real
+partner outranks the controls.
+
+Λ units are pinned with `lambdaStage`; non-Λ units forced off-stage
+(Rapi: Red Hood as B1) use a separate `forceStage` so `lambdaStage` stays
+Λ-only:
+
+- **Red Hood** — ranked as both B1 and B2.
+- **Rapi: Red Hood** — ranked as B1.
+
+**Partner profiles:** a few units are ranked both plain and with a canonical
+partner in the matching stage slot:
+
+- **Crown** — with **Chime** as a second B2 (`with-chime`).
+- **Anis: Star** — with the real **Avistar** as a MG B1 partner (`with-avistar`),
+  and with a generic other B1 (`with-other-b1`).
+
+For a **20s-B1 profile row with a B1 partner**, the team switches to the
+40s-B1 template: the partner fills the second B1 slot and the second no-op B2
+is removed. The row therefore gains rotation coverage from the partner at the
+cost of one B2 slot; the delta is not "same team + partner" but "20s-B1 solo
+template → 40s-B1 partner template". 20s-B1 units without built-in burst CDR run
+slower rotations than 40s-B1 or B2 rows, so the standing is most comparable
+within the same template group.

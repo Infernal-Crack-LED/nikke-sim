@@ -1,19 +1,46 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# dispatch-claude.sh — dispatch a cross-family blind packet to Claude via the CLI.
+# dispatch-claude.sh — dispatch a cross-family packet to Claude via the CLI.
 #
 #   bash scripts/kit-autonomy/dispatch-claude.sh <packet.md> <model> <result-out.json>
 #
-# Prepends the subagent non-negotiables, pipes the full prompt to `claude -p` with
-# tools disabled (--allowedTools ""), extracts the model's JSON from the CLI
-# envelope, strips markdown fences, validates it parses as JSON, and writes to
-# <result-out.json>.
+# Two modes, selected by the packet's role heading in its first 10 lines:
+#
+#   BLIND (default — every packet that does not start with "# code-review"):
+#     kit-autonomy audits, scientific-method, logic-gate, etc. Prepends the
+#     no-tools preamble and dispatches with tools DISABLED (--allowedTools
+#     "DISABLED"), preserving the blindness boundary — the role cannot read the
+#     driver's artifacts or the repo; the packet is all it sees.
+#
+#   CODE-REVIEW (packet starts with "# code-review"):
+#     the sighted post-op review (.claude/skills/code-review). Omits the
+#     no-tools preamble and dispatches with READ-ONLY repo access
+#     (--allowedTools "Read,Grep,Glob,Bash", --max-turns 12 so the reviewer can
+#     actually read callers and run typecheck/tests). Write/Edit are NOT on the
+#     allow-list — the reviewer stays findings-only (Bash is governed by the
+#     role body's "never edit, never mutate" instruction).
+#
+# Both modes prepend the subagent non-negotiables, pipe the full prompt to
+# `claude -p`, extract the model's JSON from the CLI envelope, strip markdown
+# fences, validate it parses as JSON, and write to <result-out.json>.
 #
 # The model field is injected into the result so the verdict can report provenance.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+# A packet is the sighted code-review role iff its role heading appears in the
+# first 10 lines: "# code-review ..." (the packet is the role body of
+# .claude/agents/code-review.md + INTENT/DIFF/CONTEXT). Signature-stable; every
+# other role heading (kit-autonomy, logic-gate, scientific-method) stays blind.
+detect_code_review() {
+  local packet="$1"
+  if head -n 10 "$packet" | grep -qE '^# code-review\b'; then
+    return 0
+  fi
+  return 1
+}
 
 # Non-negotiables: try the worktree first, fall back to the main repo.
 NON_NEG=""
@@ -39,14 +66,33 @@ if [[ ! -f "$PACKET" ]]; then
   exit 1
 fi
 
-# Build the full prompt: no-tools preamble + non-negotiables + the packet.
-# The preamble is required: the templates say "Save to <path>" which triggers
-# tool-use attempts; with tools disabled + --max-turns 1 the model burns its
-# one turn on a denied tool call and never returns JSON. The preamble + the
-# extra turns give it a clear instruction and a recovery path.
-PROMPT="IMPORTANT: You have NO tools available. Do NOT attempt to use any tools (no file writes, no reads, no shell commands). Return your complete JSON response directly in your response text.
+# Mode selection: a packet whose role heading (first 10 lines) is "# code-review"
+# is the sighted code-review skill and runs with read-only tools; everything
+# else stays blind (no tools) — the blindness boundary is the whole point of
+# the audit/gate roles.
+if detect_code_review "$PACKET"; then
+  MODE="code-review"
+else
+  MODE="blind"
+fi
+
+# Build the full prompt: mode preamble + non-negotiables + the packet.
+# BLIND: the no-tools preamble is required — the templates say "Save to <path>"
+# which triggers tool-use attempts; with tools disabled + --max-turns 1 the
+# model burns its one turn on a denied tool call and never returns JSON. The
+# preamble + the extra turns give it a clear instruction and a recovery path.
+# CODE-REVIEW: tools are available, so the preamble instead pins the read-only
+# contract and that the FINAL message must be the JSON object (multi-turn tool
+# use otherwise tends to end on a prose summary).
+if [[ "$MODE" == "code-review" ]]; then
+  PROMPT="IMPORTANT: You have READ-ONLY repository access via the Read, Grep, Glob and Bash tools — use them to verify assumptions against the code and to run fast read-only checks (typecheck, tests). NEVER edit, write, commit, or run anything that mutates state; you are a findings-only reviewer. Return your JSON object as your FINAL message, with no markdown fences and no prose around it.
 
 "
+else
+  PROMPT="IMPORTANT: You have NO tools available. Do NOT attempt to use any tools (no file writes, no reads, no shell commands). Return your complete JSON response directly in your response text.
+
+"
+fi
 if [[ -n "$NON_NEG" ]]; then
   PROMPT+="$(cat "$NON_NEG")
 
@@ -56,19 +102,28 @@ if [[ -n "$NON_NEG" ]]; then
 fi
 PROMPT+="$(cat "$PACKET")"
 
-echo "→ dispatching $(basename "$PACKET") to $MODEL …" >&2
+echo "→ dispatching $(basename "$PACKET") to $MODEL ($MODE mode) …" >&2
 
-# Dispatch: tools DISABLED (--allowedTools "DISABLED" — a non-matching name;
-# the empty string "" is treated as "no filter" by the CLI). Single turn, JSON
-# envelope. The blind role must return JSON in its text response, not use tools
-# to write files — this preserves the blindness boundary (it cannot read the
-# driver's artifacts from the repo) and gives us the JSON on stdout to validate.
+# Dispatch flags by mode (JSON envelope in both):
+#   blind       — tools DISABLED (--allowedTools "DISABLED" — a non-matching
+#                 name; the empty string "" is treated as "no filter" by the
+#                 CLI). The blind role must return JSON in its text response,
+#                 not use tools to write files — this preserves the blindness
+#                 boundary (it cannot read the driver's artifacts from the
+#                 repo) and gives us the JSON on stdout to validate.
+#                 --max-turns 3 gives recovery room if a tool attempt slips
+#                 through.
+#   code-review — READ-ONLY tools (Read,Grep,Glob,Bash; Write/Edit excluded)
+#                 and --max-turns 12 so the reviewer can read callers and run
+#                 typecheck/tests before answering.
 # NOTE: --bare breaks OAuth/keychain auth, so we don't use it.
-RAW="$(printf '%s' "$PROMPT" | claude -p \
-  --model "$MODEL" \
-  --output-format json \
-  --max-turns 3 \
-  --allowedTools "DISABLED" \
+CLAUDE_ARGS=(--model "$MODEL" --output-format json)
+if [[ "$MODE" == "code-review" ]]; then
+  CLAUDE_ARGS+=(--max-turns 12 --allowedTools "Read,Grep,Glob,Bash")
+else
+  CLAUDE_ARGS+=(--max-turns 3 --allowedTools "DISABLED")
+fi
+RAW="$(printf '%s' "$PROMPT" | claude -p "${CLAUDE_ARGS[@]}" \
   2>/dev/null)" || true
 
 # Extract the model's text response from the CLI JSON envelope.

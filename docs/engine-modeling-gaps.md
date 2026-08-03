@@ -35,7 +35,7 @@
 | `bossElement` | 1 | eve |
 | `bossElementGate` | 6 | brid-silent-track, eve, helm-aquamarine, marciana-marine-study, phantom, rosanna |
 | `burstCasters` | 3 | ada, arcana, crown |
-| `burstCdr` | 19 | anis-star, arcana, blanc, d-killer-wife, dolla, dorothy, helm-aquamarine, liter, … |
+| `burstCdr` | 18 | anis-star, arcana, blanc, d-killer-wife, dolla, dorothy, helm-aquamarine, liter, … |
 | `burstEligibility` | 1 | rapi-red-hood |
 | `burstFirst` | 1 | prika |
 | `burstSnapshotsPreFb` | 1 | cinderella |
@@ -54,7 +54,7 @@
 | `escalating` | 8 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, mary-bay-goddess, volume |
 | `everyN` | 5 | mast-romantic-maid, neon-vision-eye, phantom, rouge, soda-twinkling-bunny |
 | `everyNOffset` | 2 | neon-vision-eye, phantom |
-| `excludeSelf` | 11 | arcana-fortune-mate, blanc, brid-silent-track, grave, label, liberalio, maiden-ice-rose, mast, … |
+| `excludeSelf` | 13 | arcana-fortune-mate, avistar, blanc, brid-silent-track, chime, grave, label, liberalio, … |
 | `fbGate` | 8 | eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, zwei |
 | `flatDamage` | 67 | 2b, a2, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
@@ -108,7 +108,7 @@
 | `targetMaxHpPct` | 7 | 2b, blanc, diesel, label, maiden-ice-rose, noise, rapunzel |
 | `targetStatus` | 11 | asuka-wille, d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, … |
 | `teamAmmo` | 3 | cinderella-crystal-wave, elegg-boom-and-shock, little-mermaid |
-| `teamHas` | 2 | eunhwa-tactical-upgrade, noir |
+| `teamHas` | 3 | blanc, eunhwa-tactical-upgrade, noir |
 | `trueNormals` | 5 | chisato, eunhwa-tactical-upgrade, frima, laplace, takina |
 | `unlimitedAmmo` | 5 | grave, modernia, moran, nayuta, red-hood |
 | `unswapped` | 2 | laplace, laplace-ultimate-hero |
@@ -448,6 +448,10 @@ self-buff on a focus unit: fires with a matching present ally (Water/Electric/B3
 inert when absent (Wind → 0%), correctly inert when only self would match (owner excluded → 0%).
 **No override opts in yet** — enacting arcana is deferred (MODEL_ONLY, no board data; owner currently
 grades her "mono-Electric comp only", and her separate Wheel-of-Fortune status gate is still unmodeled).
+**2026-08-02: the `sameSquad` facet landed** — "an ally from the same squad … on the battlefield"
+gates resolve squad membership from the curated map `src/data/squads.ts` (fail-closed; validator-
+guarded); blanc's S2 burst-CDR is the first enactment (see DECISIONS.md 2026-08-02). The remaining
+same-squad kit text (noir's `.slugs` spelling, anchor-innocent-maid, ram) is tracked in QUEUE.md.
 
 ### 5. Pierce gating — static `hasPierce` only — ~14 units (usually COLD)
 

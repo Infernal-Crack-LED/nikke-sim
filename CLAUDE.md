@@ -228,7 +228,7 @@ These paths are load-bearing for the sim's accuracy guarantees. **Never modify t
 
 - **CURRENT-STATE** — freely rewritten; stale content is DELETED (capture the fact in a changelog
   doc first, then delete). No history accumulates. Members: `docs/STATE.md`, `docs/data/*.md`,
-  `docs/CONVENTIONS.md`, `docs/modeling-priors.md`, `docs/engine-modeling-gaps.md`, `docs/VALIDATION-INDEX.md`, `CLAUDE.md`,
+  `docs/CONVENTIONS.md`, `docs/modeling-priors.md`, `docs/engine-modeling-gaps.md`, `docs/test-speed-gotchas.md`, `docs/VALIDATION-INDEX.md`, `CLAUDE.md`,
   open `docs/handoffs/*`, open-questions **UNANSWERED**, the backlog/ledger docs, **and the prose
   fields of every override — `src/skills/overrides/*.json` `note` / `caveats` / `unmodeled`.**
   - **⇒ OVERRIDE PROSE DESCRIBES THE UNIT AS IT IS MODELED TODAY — NOTHING ELSE (2026-07-22 owner

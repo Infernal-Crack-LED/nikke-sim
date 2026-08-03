@@ -24,12 +24,15 @@ import {
   loadBurstCdr,
   loadSustain,
   loadBufferChart,
+  loadB1B2Dps,
+  type B1B2DpsBoard,
 } from './rankBoardsData';
 import type {
   BurstGenArtifact,
   BurstCdrArtifact,
   SustainArtifact,
   BufferChartArtifact,
+  B1B2DpsArtifact,
 } from '../../src/ranks/types';
 import { barsForBoard } from './rankChartBars';
 import { buildRankChartCanvas } from './rankChartShare';
@@ -46,6 +49,10 @@ import {
   OL_PIECES,
   type OlLinesPreset,
 } from '../../src/infographics/core/tableData';
+import {
+  B1B2_CELL_LABEL,
+  B1B2_DPS_BOARDS,
+} from '../../src/infographics/core/rankTables';
 import {
   drawUnitCardVariant,
   unitCardSize,
@@ -103,6 +110,7 @@ const BOARDS: { key: BuilderBoard; label: string; title: string }[] = [
   { key: 'burstcdr', label: 'Burst CDR', title: 'Burst Cooldown Reduction' },
   { key: 'sustain', label: 'Sustain', title: 'Sustain' },
   { key: 'buffer', label: 'Team Buffs', title: 'Team Buffs' },
+  { key: 'b1b2dps', label: 'B1/B2 DPS', title: 'B1/B2 DPS' },
 ];
 
 // Unit-card shapes. `discord` is the 2:1 landscape card the bot embeds and the
@@ -125,6 +133,7 @@ const RANK_LOADERS = {
   burstcdr: loadBurstCdr,
   sustain: loadSustain,
   buffer: loadBufferChart,
+  b1b2dps: loadB1B2Dps,
 } as const;
 
 const cap = (el: string) => el[0].toUpperCase() + el.slice(1);
@@ -220,6 +229,7 @@ export function BuilderPage() {
     board: 'burstgen',
     bufferBoard: 'generic',
     burstGenBoard: 'unfocused',
+    b1b2DpsBoard: 'c100-eleadv',
     olLines: OL_DEFAULT_LINES,
     olTier: OL_DEFAULT_TIER,
     unitVariant: 'discord',
@@ -389,10 +399,12 @@ export function BuilderPage() {
           | BurstGenArtifact
           | BurstCdrArtifact
           | SustainArtifact
-          | BufferChartArtifact;
+          | BufferChartArtifact
+          | B1B2DpsArtifact;
         const allBars = barsForBoard(state.board, art, {
           bufferBoard: state.bufferBoard,
           burstGenBoard: state.burstGenBoard,
+          b1b2DpsBoard: state.b1b2DpsBoard,
         });
         const boardMeta = BOARDS.find((b) => b.key === state.board)!;
         const subMode =
@@ -400,10 +412,18 @@ export function BuilderPage() {
             ? state.bufferBoard
             : state.board === 'burstgen'
               ? state.burstGenBoard
+              : state.board === 'b1b2dps'
+                ? state.b1b2DpsBoard
+                : null;
+        const subModeLabel =
+          state.board === 'b1b2dps' && subMode
+            ? B1B2_CELL_LABEL[subMode as B1B2DpsBoard]
+            : subMode
+              ? cap(subMode)
               : null;
         const chartData: RankChartData = {
-          title: subMode
-            ? `${boardMeta.title} · ${cap(subMode)}`
+          title: subModeLabel
+            ? `${boardMeta.title} · ${subModeLabel}`
             : boardMeta.title,
           subtitle: `top 10 of ${allBars.length} · generated ${new Date(art.generatedAt).toLocaleDateString()}`,
           bars: allBars.slice(0, 10),
@@ -781,6 +801,24 @@ export function BuilderPage() {
                         }
                       >
                         {bg === 'unfocused' ? 'Unfocused' : 'Focused'}
+                      </button>
+                    ))}
+                  </PillGrid>
+                </div>
+              )}
+              {s.board === 'b1b2dps' && (
+                <div className="field">
+                  <label>Cell</label>
+                  <PillGrid>
+                    {B1B2_DPS_BOARDS.map((b) => (
+                      <button
+                        key={b}
+                        className={s.b1b2DpsBoard === b ? 'on' : ''}
+                        onClick={() =>
+                          setS((cur) => ({ ...cur, b1b2DpsBoard: b }))
+                        }
+                      >
+                        {B1B2_CELL_LABEL[b]}
                       </button>
                     ))}
                   </PillGrid>

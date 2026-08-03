@@ -4,6 +4,10 @@
 // instead of hand-rolling one — a hand-rolled config silently drifts from the basis
 // (e.g. copies:3 → core 0 instead of scope-lock core 7), which produced a bogus "ATK
 // confound" on 2026-07-15. The ONLY per-test variable is the boss ELEMENT.
+// (Sanctioned exception: generator integration tests may wrap this builder via
+// scripts/tests/lib/fast-cfg.ts, which pins durationSec 30 for assertions that are
+// fight-length-independent — legality/locks/counts/cache/parity. Everything else
+// stays on the 180 s basis.)
 //
 // The fixed basis (owner, 2026-07-15): sync 400 (level 400), Base-5 gear, 10/10/10
 // skills, no cube/doll, core 7 (copies 10 → grade 3 + core 7), boss DEF 140, boss core

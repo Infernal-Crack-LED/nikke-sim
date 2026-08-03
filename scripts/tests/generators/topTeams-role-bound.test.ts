@@ -15,7 +15,7 @@
 // eligibility filter (hypothesis B) must be dropping them.
 import { describe, expect, it } from 'vitest';
 import { makeCalc } from '../../../src/teamcalc.js';
-import { scopeLockCfg } from '../../lib/scope-lock.js';
+import { fastCfg } from '../lib/fast-cfg.js';
 import { deps, distinct5, generatorPool, mult } from '../lib/harness.js';
 
 const { genChars, chars, overrides } = generatorPool();
@@ -33,14 +33,14 @@ const calcForPool = (keep: Set<string>) =>
     chars: chars as any,
     mult,
     deps: { overrides, ...deps },
-    cfg: scopeLockCfg([], null) as any,
+    // Shorter fight for the role-bound tests: they assert the roster team-count
+    // bound, not absolute team quality or exact damage numbers.
+    cfg: fastCfg([], null) as any,
     loadout: {},
     blocked: Object.keys(chars).filter((s) => !keep.has(s)),
   });
 
-// Ample BII/BIII so Burst I is the only binding constraint. BII needs headroom
-// beyond one-per-team: the generator now explores double-B2 shapes (B1+B2+B2+
-// 2×B3), so a team can consume 2 B2 — 16 keeps BII non-binding for 5 teams.
+// Ample BII/BIII so Burst I is the only binding constraint for 5 teams.
 const AMPLE_B2 = B2.slice(0, 16);
 const AMPLE_B3 = B3.slice(0, 16);
 

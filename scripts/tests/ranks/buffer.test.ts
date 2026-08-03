@@ -274,10 +274,10 @@ describe('buffer board', () => {
     expect(typed.valuePct).toBeGreaterThan(10);
   });
 
-  it('blanc: w/ Bunny profile emits and shows the CDR difference vs plain', () => {
+  it('blanc: w/ Rouge profile emits and shows the CDR difference vs plain', () => {
     const memo = new Map<string, number>();
     const plain = bufferValueFor('blanc', 'generic', ctx, memo, null);
-    const bunny = bufferValueFor(
+    const withRouge = bufferValueFor(
       'blanc',
       'generic',
       ctx,
@@ -285,13 +285,17 @@ describe('buffer board', () => {
       DUO_BUFFER_PROFILES.blanc.id
     );
     expect(plain.profile).toBeNull();
-    expect(bunny.profile).toBe(DUO_BUFFER_PROFILES.blanc.id);
-    // Plain row suppresses the same-squad CDR; w/ Bunny keeps it active.
-    expect(bunny.testedBurstCasts).toBeGreaterThan(plain.testedBurstCasts);
-    expect(bunny.valuePct).toBeGreaterThan(plain.valuePct);
+    expect(withRouge.profile).toBe(DUO_BUFFER_PROFILES.blanc.id);
+    // The profiled row out-values the plain row. The delta is a mix of Blanc's
+    // same-squad CDR gate (teamHas.sameSquad) opening and the extra B1 gauge
+    // contribution from the Rouge partner; the precise gate isolation lives in
+    // scripts/tests/units/blanc.test.ts. This test is a liveness pin only — a
+    // dead gate would still pass on the gauge delta.
+    expect(withRouge.testedBurstCasts).toBeGreaterThan(plain.testedBurstCasts);
+    expect(withRouge.valuePct).toBeGreaterThan(plain.valuePct);
   });
 
-  it('rankBuffers dual-enters blanc with the w/ Bunny profile', () => {
+  it('rankBuffers dual-enters blanc with the w/ Rouge profile', () => {
     const ranked = rankBuffers(['blanc'], 'generic', ctx);
     const blancRows = ranked.filter((r) => r.slug === 'blanc');
     expect(blancRows.map((r) => r.profile).sort()).toEqual(
