@@ -89,9 +89,12 @@ audit strings — good tooltip material ("why did the carries change?").
    that must be one click away.
 6. **Wiring** — `router.ts` (Route union + ROUTES + PAGE_ROUTES), `main.tsx`
    switch, `SiteChrome.tsx` NAV. Styles under a `/* ---- rank boards ---- */`
-   section in `styles.css` with a `.ranks-*` prefix. Prerender:
-   `scripts/prerender.mjs` has a route list — add `/ranks` and check
-   `web/src/useDocumentHead.ts` for title/meta.
+   section in `styles.css` with a `.ranks-*` prefix. Check
+   `web/src/useDocumentHead.ts` for title/meta. **No prerender step** — a
+   prerender pass is explicitly rejected (`docs/seo-followups.md`, DECISIONS
+   2026-08-03); a route that needs a no-JS body gets one by request-time
+   injection instead (`scripts/build-content-pages.ts` →
+   `web/public/content-pages.json`, injected by both servers).
 7. **Smoke** — extend `scripts/web-smoke.mjs` (or add a sibling like
    `web-smoke-dpschart.mjs`) to fetch each artifact + the new route. `npm run
 web:build` must stay green.
