@@ -233,3 +233,84 @@ cost of one B2 slot; the delta is not "same team + partner" but "20s-B1 solo
 template → 40s-B1 partner template". 20s-B1 units without built-in burst CDR run
 slower rotations than 40s-B1 or B2 rows, so the standing is most comparable
 within the same template group.
+
+## What the B1/B2 board and the B3 DPS chart do and don't share
+
+The B1/B2 DPS board (`src/ranks/b1b2dps.ts`) and the Burst-3 DPS chart
+(`src/dpschart/matrix.ts`) are two separate code paths, and the question of
+whether a number from one can be read beside a number from the other keeps
+coming up. The headline:
+
+> **A B1/B2 DPS number is comparable only to a DPS chart cell on the Scope Lock
+> investment tier.** The B1/B2 board has no investment axis at all — every row on
+> it is Scope Lock. Putting a B1/B2 DPS next to a chart row at 8/12 or 12/12 is
+> comparing two different accounts, not two units.
+
+### The fight basis is identical
+
+Everything about the simulated fight that is not a deliberate axis of one of the
+two boards is set the same way on both sides:
+
+| Fight setting                  | B1/B2 DPS board            | Burst-3 DPS chart            |
+| ------------------------------ | -------------------------- | ---------------------------- |
+| Boss defence `bossDef` = 0     | `src/ranks/b1b2dps.ts:298` | `src/dpschart/matrix.ts:505` |
+| Level 400                      | `src/ranks/b1b2dps.ts:299` | `src/dpschart/matrix.ts:506` |
+| Limit-break copies = 0         | `src/ranks/b1b2dps.ts:300` | `src/dpschart/matrix.ts:507` |
+| No doll at team level          | `src/ranks/b1b2dps.ts:301` | `src/dpschart/matrix.ts:508` |
+| Range bonus on                 | `src/ranks/b1b2dps.ts:304` | `src/dpschart/matrix.ts:511` |
+| 180-second fight               | `src/ranks/b1b2dps.ts:305` | `src/dpschart/matrix.ts:512` |
+| Camera focus = the tested unit | `src/ranks/b1b2dps.ts:306` | `src/dpschart/matrix.ts:513` |
+
+Two details behind that table. The team-level "no doll" and "Base-5 gear" values
+are defaults that each unit's own loadout can override, and on the chart's
+invested tiers it does — those tiers hand every unit a doll and level-5 gear
+(`src/dpschart/matrix.ts:319`, `:329`), while the Scope Lock tier leaves them at
+Base-5 with no doll (`:316`), which is exactly what the B1/B2 board sets for
+every unit (`src/ranks/b1b2dps.ts:258-260`). And neither board passes a Monte
+Carlo seed, so both are deterministic expected-value runs rather than sampled
+ones.
+
+### The three real differences
+
+**1. No investment axis on the B1/B2 board.** It hardcodes Base-5 gear and gives
+no unit a cube, a doll or an overload line (`src/ranks/b1b2dps.ts:258`, `:302`;
+the only mention of a cube in `src/ranks/` is the comment recording that there
+isn't one). The chart carries three investment tiers — Scope Lock, 8/12 and
+12/12 (`src/dpschart/matrix.ts:128-132`, `:144`) — and the two invested tiers add
+the "Other" cube at level 10 and level 15 respectively
+(`src/dpschart/matrix.ts:261-265`), a doll, level-5 gear, and overload lines
+stamped at the project overload tier (`:309-332`). That is the reason for the
+headline above: only the chart's Scope Lock cells describe the same account the
+B1/B2 board describes.
+
+**2. Core exposure is a two-way switch, not a three-way one.** The B1/B2 board
+resolves its core axis as "Core 100 or nothing" — exposure 1 for the `c100`
+cells and 0 for everything else (`src/ranks/b1b2dps.ts:291`,
+`src/ranks/b1b2-cells.ts:17-25`). The chart carries three exposures, No Core /
+Core 50 / Core 100 (`src/dpschart/matrix.ts:119-126`, `:143`, `:510`). There is
+no Core 50 row on the B1/B2 board, so a chart Core 50 cell has no counterpart to
+be read against.
+
+**3. Different teams by construction.** The chart assembles one of five named
+frameworks (`assembleTeam`, `src/dpschart/matrix.ts:426`); the B1/B2 board builds
+its own control team and its own partner rows (`buildTeam`,
+`src/ranks/b1b2dps.ts:168`; the partner profiles at `:69-92`). The rotation
+support arrives by different means as well: the chart's Solo framework grants
+every unit in the team, including the tested carry, a flat 7-second burst
+cooldown reduction and gates the carry to bursting every other Full Burst
+(`src/dpschart/matrix.ts:465`, `:481`, `:487`), whereas on the B1/B2 board the
+same 7 seconds reaches the team only when the no-op Burst-1 control actually
+casts its burst (`src/skills/overrides/noop-b1-ar.json`), and the 20s-B1 rows
+have no such teammate at all. None of this is a defect — a Burst-1 or Burst-2
+unit cannot be ranked inside a framework designed around a Burst-3 carry — but it
+is why the two boards can never be merged into a single ordering, even at
+matching investment.
+
+### The overload tier does not reach this board
+
+The single project-wide overload tier and the helper that stamps it (`OL_TIER` /
+`atOlTier`, `src/dpschart/matrix.ts:292-301`) apply only to the chart's invested
+tiers; the chart's Scope Lock tier carries no overload lines
+(`src/dpschart/matrix.ts:316`). `src/ranks/` has no investment axis and no
+reference to either symbol, so B1/B2 numbers do not move when the overload tier
+changes. Worth knowing before a shift in the standings gets attributed to it.
