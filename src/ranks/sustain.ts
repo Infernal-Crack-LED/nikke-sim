@@ -106,18 +106,43 @@ function charFor(ctx: RanksCtx, slug: string) {
 // the stage) + no-op fillers for the other two stages, two no-op B3s so the
 // rotation cycles ~20s for B1/B2-tested comps. The tested unit always leads
 // its own stage's spare in slot order (see methodology note above).
+//
+// The "partner stands in for the spare" rule ONLY covers the tested unit's
+// stage if the partner shares it, and only seats one partner — both hold for
+// every SUSTAIN_PROFILES entry today (mint/mast-romantic-maid are burst II,
+// matching prika/anchor-innocent-maid, and neither profile has a second
+// partner), so this asserts it rather than silently mis-seating a future
+// profile that violates it (kimi-code/k3 review, 2026-08-03).
 export function sustainTeam(
   slug: string,
   burst: string,
+  ctx: RanksCtx,
   withProfile = true
 ): string[] {
   const partners = withProfile ? (SUSTAIN_PROFILES[slug]?.partners ?? []) : [];
+  if (partners.length > 1) {
+    throw new Error(
+      `${slug}: SUSTAIN_PROFILES lists ${partners.length} partners, but sustainTeam only seats ` +
+        `partners[0] as the own-stage spare — extend sustainTeam before adding a second partner`
+    );
+  }
+  const partner = partners[0];
+  if (partner !== undefined) {
+    const partnerBurst = ctx.characters[partner]?.burst;
+    if (partnerBurst !== burst) {
+      throw new Error(
+        `${slug}: profile partner ${partner} is burst ${partnerBurst ?? '?'}, not ${burst} — ` +
+          `sustainTeam seats partners[0] as the tested unit's OWN-stage spare, so a cross-stage ` +
+          `partner would leave that stage uncovered`
+      );
+    }
+  }
   if (burst === 'I') {
-    const spare = partners[0] ?? NOOP_B1;
+    const spare = partner ?? NOOP_B1;
     return [slug, spare, NOOP_B2, NOOP_B3, NOOP_B3];
   }
   if (burst === 'II') {
-    const spare = partners[0] ?? NOOP_B2;
+    const spare = partner ?? NOOP_B2;
     return [NOOP_B1, slug, spare, NOOP_B3, NOOP_B3];
   }
   return [NOOP_B1, NOOP_B2, slug, NOOP_B3]; // B3 already stage-covered: tested leads the alternate no-op B3
@@ -135,7 +160,7 @@ export function sustainFor(
   if (!char) {
     throw new Error(`${slug}: not in characters.json`);
   }
-  const slugs = sustainTeam(slug, char.burst, withProfile);
+  const slugs = sustainTeam(slug, char.burst, ctx, withProfile);
   const chars = slugs.map((s) => charFor(ctx, s));
   const profile = withProfile ? SUSTAIN_PROFILES[slug] : undefined;
   const unitOpts: UnitOptions[] = slugs.map((s) => ({
