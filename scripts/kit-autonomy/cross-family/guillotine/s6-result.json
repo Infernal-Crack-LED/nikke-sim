@@ -1,0 +1,228 @@
+{
+  "slug": "guillotine",
+  "leakDetected": null,
+  "override": {
+    "slug": "guillotine",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 30
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 9.28,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 150
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 14.69,
+            "durationSec": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 450
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 86.4,
+            "rampSec": 55
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 1237.5,
+            "crit": true
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 1237.5,
+            "crit": true,
+            "requiresPulls": 750
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "HP ▼ 2.01%."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ The whole HP-loss economy is derived, not simulated: v1 has no HP pool, so the S1 self-damage line is unmodeled as an effect and instead converted into landed-hit thresholds that stand in for the HP-gated S2 branch and the HP-gated burst branch.",
+      "⚑ skill2 block 2 ATK value (86.4) assumes HP-lost plateaus near 90% of Max HP; every point of that assumption is unmeasured.",
+      "⚑ skill2 block 2 gate (hitCount 450) and burst block 2 requiresPulls (750) both assume ~100% of normal attacks land and no ally healing restores HP; a healer in the comp pushes both gates later or shuts them off entirely.",
+      "⚑ Every hitCount threshold here is expressed in LANDED normal attacks; the wall-clock time to reach each one depends on the MG cadence tuple, which comes from a datamine-unreliable field.",
+      "⚑ Both burst hits are authored crit-eligible at the caster's sheet rate; the kit text does not state crit behaviour."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Electric MG Attacker, Burst III. S1: every 30 landed normal attacks, self Critical Rate ▲9.28% for 10s; the paired HP ▼2.01% self-cost has no representation (no HP pool at v1 scope) and is carried in `unmodeled`. S2 has two branches: every 150 landed normal attacks, self Critical Damage ▲14.69% for 5s; and an HP-gated ATK conversion (0.96% ATK per 1% Max HP lost) that opens once HP drops below 70%. That conversion is modeled as a self ATK buff opened by a landed-hit threshold, because HP loss in this kit is driven exclusively by S1: 30 landed hits cost 2.01% HP, so 30% HP lost = 15 S1 procs = 450 landed hits, and the buff then grows linearly with further hits — expressed as ⚑86.4% ATK (0.96 × an assumed ~90% Max-HP-lost floor) with a ⚑55s linear ramp from the gate. Burst is a single-target nuke on cast: 1237.5% of final ATK, plus a second 1237.5% hit that only lands once the caster's HP is under 50%, encoded as the same landed-hit proxy (50% lost = 25 S1 procs = 750 landed hits, hitsPerShot 1) via requiresPulls. Both burst hits are crit-eligible and take no core; burst-cast damage is full-burst-exempt by cast timing."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self. Activates after landing 30",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount count:30 (counts landed ROUNDS; MG hitsPerShot 1), target self"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Rate ▲ 9.28% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 9.28, durationSec 10 — unscoped crit (text does not scope it to normal attacks)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "HP ▼ 2.01%.",
+      "status": "SKIPPED",
+      "effectOrReason": "self current-HP cost; v1 models no HP pool and no negative-HP effect kind exists. NOT silently dropped: it is the sole driver of the S2 HP<70% gate and the burst HP<50% branch, both of which are re-expressed as landed-hit thresholds derived from this line (30 hits = 2.01% HP)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after landing 150 normal attack",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount count:150, target self"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Damage ▲ 14.69% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 14.69, durationSec 5 (partial uptime — 5s window on a ~150-hit cadence)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when HP falls below 70%.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "no HP primitive; gate re-expressed as trigger hitCount count:450 = 15 × (30 landed hits per 2.01% HP) ≈ 30% Max HP lost ⚑"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲0.96% per 1% of HP lost, cont.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct ⚑86.4 (0.96 × assumed ~90% HP-lost floor), rampSec ⚑55 to model the linear accrual of HP loss with landed hits; no durationSec (continuous), self"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects the enemy with highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single boss, so the highest-ATK selection is trivially the boss"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1237.5% of final ATK as Burst Sk",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 1237.5, crit true, on trigger burstCast (burst-cast damage lands pre-FB, so FB-exempt by engine timing; no core — text says no core strike)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects same target when HP below 50%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "no HP primitive; gate re-expressed as flatDamage.requiresPulls 750 = 25 × (30 landed hits per 2.01% HP) ≈ 50% Max HP lost ⚑"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1237.5% as additional damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "second flatDamage atkPct 1237.5, crit true, same burstCast trigger, gated by requiresPulls 750"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[1].effects[0].value",
+      "estimate": "86.4 (atkPct)",
+      "reasoning": "The kit gives the CONVERSION RATE (0.96% ATK per 1% Max HP lost) but not the terminal HP loss, which is outside the input domain: it depends on how far self-damage is allowed to drive HP down (a floor at ~1 HP vs a hard stop) and on whether the comp heals. Assuming an unhealed 180s fight where S1 fires often enough to bottom her out, ~90% Max HP lost × 0.96 = 86.4. Lower bound is 28.8 (the gate value, 30% lost); a mid-fight time-average is nearer 55–60.",
+      "recipe": "Record a solo/no-healer fight and read her HP bar at 30s / 60s / 120s / 180s to get the real HP-lost curve and its floor; multiply the plateau by 0.96 for the terminal ATK, and cross-check against a total-damage A/B with this buff toggled off. If any healer is present, re-derive per comp."
+    },
+    {
+      "field": "skill2[1].effects[0].rampSec",
+      "estimate": "55",
+      "reasoning": "HP loss is linear in landed hits (2.01% per 30), so the ATK conversion is a linear ramp, not an instant buff — the primitive matches the mechanic. 55s is the estimated time from the HP<70% gate to the assumed plateau at MG cadence with reloads. Both endpoints are ⚑, and the ramp starts from 0 rather than the true 28.8% gate value, so this under-credits just after the gate.",
+      "recipe": "Same HP-bar timeline as above: rampSec = (time at plateau) − (time HP first crosses 70%). Prefer replacing the whole construct with a real HP-lost pool if one is ever added to the engine."
+    },
+    {
+      "field": "skill2[1].trigger.count",
+      "estimate": "450 landed normal attacks",
+      "reasoning": "Proxy for 'HP falls below 70%'. Derived arithmetically from S1: 2.01% HP per 30 landed hits ⇒ 30% lost at 450 hits. Assumes every normal attack lands, no other HP source moves, and no ally healing.",
+      "recipe": "Frame-read the fight for the moment her HP bar crosses 70% and count her landed rounds to that frame (ammo counter × magazines). If a healer is in the comp the proxy is invalid — the gate may never open."
+    },
+    {
+      "field": "burst[1].effects[0].requiresPulls",
+      "estimate": "750 shots",
+      "reasoning": "Proxy for 'HP falls below 50%'. Same derivation: 25 S1 procs × 30 landed hits. hitsPerShot is 1, so landed hits ≈ shots fired, which is what requiresPulls counts. Assumes ~100% landing rate; any miss rate pushes the real gate later than this proxy.",
+      "recipe": "Read the burst popup on each rotation: the second 1237.5% hit appears as a distinct popup only after HP crosses 50%. Count her fired rounds up to the first rotation showing the doubled popup and pin requiresPulls to that number."
+    },
+    {
+      "field": "(cadence) data/characters.json rate_of_fire for guillotine",
+      "estimate": "MG effective cadence unstated in this packet; assumed high (~15–20 landed rounds/s after wind-up)",
+      "reasoning": "ALWAYS-⚑ #1 — the datamined cadence field is unreliable, and here it is load-bearing twice over: it sets how often the 30/150-hit triggers fire AND how fast every derived HP threshold (450 / 750) is reached. A wrong cadence shifts both the crit uptime and the entire ATK ramp timing.",
+      "recipe": "Ammo-counter method — count rounds consumed per second off footage (the instrument that measures shots/sec directly), including MG wind-up, rather than inferring from downstream damage or FB counts."
+    },
+    {
+      "field": "burst[0].effects[0].crit / burst[1].effects[0].crit",
+      "estimate": "true (crit-eligible at the caster's sheet rate)",
+      "reasoning": "The kit text says nothing about crit for either burst hit. Authored crit-eligible per the rider convention (riders crit at the caster's rate, take no core); the schema flag is opt-in, so it must be set explicitly to get that behaviour. If burst skill damage is in fact non-crit for this unit, both hits are over-credited by the crit contribution.",
+      "recipe": "Read popup colour on her burst frames — orange + crit icon vs plain white — across several rotations; a mixed set at roughly her sheet crit rate confirms crit-eligible."
+    },
+    {
+      "field": "unmodeled.skill1 — 'HP ▼ 2.01%.'",
+      "estimate": "no effect emitted",
+      "reasoning": "There is no primitive for current-HP loss, and encoding it as a negative maxHpPct would be a different mechanic (it would wrongly feed any Max-HP-scaling consumer). Left unmodeled as an effect, but its arithmetic is fully consumed by the two derived gates above so the kit line is not silently dropped.",
+      "recipe": "If an HP pool is ever added, delete both hit-count proxies and drive the S2 conversion and burst branch off real HP — that is the only encoding that survives a healer in the comp."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,106 @@
+{
+  "slug": "kurumi",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 36
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "targetStatus",
+          "name": "Hacked",
+          "durationSec": 5
+        },
+        {
+          "kind": "dot",
+          "atkPct": 52.24,
+          "durationSec": 5,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "targetStatus",
+          "name": "Hacked",
+          "durationSec": 5
+        },
+        {
+          "kind": "dot",
+          "atkPct": 52.24,
+          "durationSec": 5,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 36
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "fbGate": "inFb",
+      "requiresTargetStatus": "Hacked",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 86.17,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 18.06,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ hitCount:36 counts ROUNDS fired (engine convention), not trigger pulls — kurumi is AR hitsPerShot 1 so rounds == pulls; no divergence expected, but the 36-hit cadence in-fight is unmeasured.",
+    "⚑ Hacked status window (5 sec) is INFERRED from the sustained-damage duration — the kit text names the status but never states its own duration independently. If Hacked outlives the DoT, skill2's requiresTargetStatus gate opens wider than modeled.",
+    "⚑ The two skill1 branches each append an independent DoT instance (engine never dedups) — faithful to 'append-not-refresh', but overlapping 36-hit and burst-cast triggers stack concurrent 5s instances. Unverified against popup counts.",
+    "⚑ skill2 crit:true is the caster-rate default for function-damage riders; no core (text says 'additional damage', not 'core strike'). Full Burst by timing is left ON (default) — noFb NOT set, unmeasured.",
+    "⚑ skill2's hit counter is modeled as an INDEPENDENT 36-hit counter from skill1's; the kit does not state whether the two share one counter. If shared, skill2 would fire in lockstep with skill1 rather than on its own accrual.",
+    "⚑ Cadence tuple (ammo 60 / reloadFrames 81 / AR pulls-per-sec) is datamine-sourced and known-unreliable; it drives how often the 36-hit threshold is reached, so it directly gates both skill1 and skill2 proc counts."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. kurumi (AR/Iron/Supporter/Burst I) is a status-and-sustained-damage supporter: S1 applies a named 'Hacked' status + a 5s/1s-tick sustained DoT on two independent triggers (every 36 landed normal attacks, and on her own burst cast); S2 is an in-Full-Burst, Hacked-gated additional-damage rider on the same 36-hit cadence; her burst is a pure team-wide enemy debuff (Damage Taken ▲18.06% for 10s), which benefits the whole team and is NOT a self buff. The 'Hacked' targetStatus effect is the sole channel that opens S2's requiresTargetStatus gate; both S1 branches carry it so either path can enable the S2 rider. Both S1 blocks and the burst block are authored with target 'enemy' as the validator requires for targetStatus / boss-debuff channels."
+}

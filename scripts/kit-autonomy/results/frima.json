@@ -1,0 +1,121 @@
+{
+  "slug": "frima",
+  "kitDescription": "Frima (Treasure) is an Iron SR Supporter whose charged sniper shots stack a Sleepy debuff on the boss, shaving its DEF by 4% per stack up to five stacks. Once the boss is fully drowsy, six more full-charge hits flip Frima into Wake Up, a 10-second self state that makes her normal shots deal true damage and re-arms on a rolling cycle. While Wake Up is live, her full-charge attacks also hand the whole team a 28.16% True Damage buff, and her burst adds a much larger 49.97% True Damage buff on top. Her burst itself is a modest single nuke at 101.66% of her attack against the toughest enemies, plus a second 9.86% DEF shred. The remaining kit lines are party Max HP buffs that help survival but deal no damage.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "skill1a Sleepy x4 (boss-held DEF-down value 4 / maxStacks 5 / 10s window / re-application count / removal delta) — blind expected an ENCODED enemy debuff; driver ships it unmodeled-verbatim as an adjudicated DOCUMENTED_GAP (no live boss-DEF channel, sim.ts:1722; damageTakenPct is the S2b-named nearest-wrong). Divergence of disposition, not of fact.",
+      "skill2a Max HP x3 + burst-b Max HP x1 — same shape: blind encoded (S6 used an invalid StatKey targetMaxHpPct that fails validate-overrides); driver ships unmodeled-verbatim per the S2c-adjudicated inertness ruling the blind author's own GAP #3 concedes.",
+      "burst DEF 9.86 x1 — same adjudicated DEF-down gap as Sleepy.",
+      "True-flavor normals x3 + burst-damage x2 — blind artifact: filtered damage events on 'srcSlug'; the event field is 'slug', and true flavor is not an event field on ANY faithful encoding, so the detection method cannot work; the driver proves the flavor via the flavor-gated payoff delta instead (claims themselves green in the driver's 19-assertion spec).",
+      "durationShots x2 — blind artifact: schema emits durationShots:null, not undefined; the underlying 5s/10s timed windows are green in the driver spec.",
+      "Counterfactual patches x3 — blind artifact: ov.skill1.blocks throws (override slots are bare Block[] arrays).",
+      "Gate-strip counterfactual x1 — blind artifact: dropped guessed field requiresTargetStatus; the driver's gate is swapGate, proven swap-keyed by the driver's compound no-Wake-Up counterfactual.",
+      "4 SKIP — the blind author's own GAP blocks (stack trajectory unobservable; 10-target fan-out moot; Max HP inert; DEF composition unreadable)."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Sleepy: DEF ▼ 4%, stacks up to 5, 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled-verbatim: cfg.bossDef is a fixed config constant with no debuff channel (sim.ts:1722); max 20% of ~140 DEF ≈ 28 ATK ≈ 0.02% damage at scope; NOT damageTakenPct (viper/phantom/guilty/marciana precedent). The max-stack precondition for Wake Up is carried by the chargeCounter:6 construction.",
+        "blindSaid": "S6 encoded damageTakenPct 4 x5 — and its OWN caveat flags it as 'a magnitude approximation, not a faithful DEF model'; S5's tests for it assumed encoding. S2b's own fallback allowed GAP if no live boss-DEF term exists.",
+        "formulaCheck": "SSOT §1a: bossDef subtracts inside the base and is run at 0 at scope lock with measured boss DEF ≈140 — negligible (≤0.12% board shift). There is no debuff channel feeding it, so unenactable is the faithful disposition; damageTakenPct would sit in the Taken bucket and over-credit a ~20% team vuln — the exact nearest-wrong model S2b named.",
+        "fireRateOk": true,
+        "explanation": "Documented, formula-confirmed, precedent-backed. The blind's encoding is the spurious divergence here (self-flagged); driver position is correct."
+      },
+      {
+        "kitLine": "6 Full Charge on max Sleepy → Wake Up (true normals 10s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "chargeCounter {count:6, countInFb:6} → self weaponSwap {damagePct:65.95, trueNormals:true, durationSec:10} — swap shots deal exactly her normal FC damage (chargeMultiplier 250 preserved), only flavor changes; max-stack precondition satisfied by construction (5 FCs stack Sleepy, 10s stacks outlast the ~7.85s cycle); countInFb:6 explicitly defeats the engine's countInFb??1 SBS default; onset pinned on the 6th FC via the 28.16 gate proxy with a count:1 discriminating counterfactual; flavor pinned by the no-Wake-Up payoff delta.",
+        "blindSaid": "S6 converged on count 6 (hitCount:6 ≡ chargeCounter:6 for an SR hitsPerShot:1 unit) but left the true-normals line UNMODELED, wrongly claiming a flavor swap 'would fabricate a fire cadence, ammo count and charge time' — refuted by sim.ts (baseMult swap path, no ammo refill, inherits chargeFrames). S2b argued hit-11; S2c adjudicated KEEP 6 (datamine plain cumulative counter; NIKKE's status-gated phrasing convention; design coherence) with the residual flagged measurement-gated.",
+        "formulaCheck": "SSOT §2c/owner ruling 2026-07-25: true-flavored normals crit at caster rate — no conflict; weaponSwap trueNormals is the engine's sanctioned same-weapon flavor primitive (chisato/takina precedent).",
+        "fireRateOk": true,
+        "explanation": "Encoding matches prose (self, 10s, true normals, 6-FC entry). Two documented ⚑s ride along: the hit-6-vs-hit-11 interpretation residual (measurement recipe: popup-read FC-count-to-Wake-Up-icon) and the pre-existing engine bolt-recovery exemption on flavor swaps (see gotchas). Driver enacts the line the blind dropped — the blind under-counts her personal true damage."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Full Charge → allies Max HP ▲ 6.09% 4s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled-verbatim: timed maxHpPct has no engine reader; ally-granted Max HP excluded from atkOfMaxHpPct (sim.ts:1513, casterIdx===u.idx, e3 rule); blanc/moran precedent.",
+        "blindSaid": "S6 encoded it with targetMaxHpPct — NOT a valid StatKey (would fail validate-overrides); S2b wanted encode-with-inertness-pin but its own pin concedes zero damage delta; S2c adjudicated KEEP unmodeled.",
+        "formulaCheck": "SSOT §1a: '(Σ ATK-of-Max-HP %) × ownMaxHp' — ally grants do NOT feed the conversion (MEASURED, cinderella). Inertness confirmed.",
+        "fireRateOk": true,
+        "explanation": "Deliberate, adjudicated, formula-confirmed inert skip, recorded verbatim. Acceptable."
+      },
+      {
+        "kitLine": "Wake Up: allies True Damage ▲ 28.16% 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired + swapGate:'swapped' → allies trueDamagePct 28.16 / 5s. shotFired == full-charge attack for an SR (premise-pinned: all shots charged); swapGate is the Wake Up gate; allies includes self. Pinned: 300f expiry on every application, all 4 allies per frame, no apply before the 6th FC, ungated counterfactual red, self-only counterfactual red, consumers (frima+ada) move, non-true controls (crown/helm) byte-exact.",
+        "blindSaid": "S6 CONVERGED identically (28.16 / shotFired / allies / 5s); S5's green assertions on magnitude and gate timing agree; S5's red on this line are field-name artifacts.",
+        "formulaCheck": "SSOT §1e: True Damage ▲ lives in DamageUp, gated to true-flavored instances — flavor-gate behavior verified by the byte-exact negative controls.",
+        "fireRateOk": true,
+        "explanation": "Independent convergence plus full discrimination battery. Caster-gate reading of 'when in Wake Up status' is the only coherent one (only Frima holds Wake Up; S2b agreed)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 101.66% of final ATK as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage 101.66, plain flavor, x1 (10-highest-DEF targeting collapses to the single boss — documented in note). Pinned: exactly one burst-bucket hit per cast at atkPct 101.66, fbMajorApplied always false, true-flavored-nuke counterfactual rises (discriminates plain vs true), removal lowers her total.",
+        "blindSaid": "S6 CONVERGED (101.66 / burstCast / enemy; its noRange/noFb flags are redundant no-ops for a pre-FB instant rider); S5's burst-damage assertions red only via the srcSlug artifact.",
+        "formulaCheck": "SSOT §1b Full Burst timing rule (MEASURED, twice popup-verified): burst-cast damage lands before FB — no +50%, no entry auras. Engine noFb ordering matches.",
+        "fireRateOk": true,
+        "explanation": "Exact value, correct bucket/timing/flavor, converged by the blind override."
+      },
+      {
+        "kitLine": "DEF ▼ 9.86% for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled-verbatim, same DEF-channel reasoning as Sleepy (~14 ATK ≈ 0.01% at scope).",
+        "blindSaid": "S6 encoded damageTakenPct 9.86 with the same self-flagged approximation caveat.",
+        "formulaCheck": "Same as skill1 Sleepy — no live boss-DEF term; Taken-bucket encoding would be the nearest-wrong over-credit.",
+        "fireRateOk": true,
+        "explanation": "Documented inert/unenactable skip; driver correct per formula and precedent."
+      },
+      {
+        "kitLine": "Allies Max HP ▲ 30.26% for 4 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled-verbatim, same inertness reasoning as skill2a.",
+        "blindSaid": "S6 encoded with the same invalid StatKey; S2c adjudicated the unmodeled disposition.",
+        "formulaCheck": "e3 ally-grant exclusion (sim.ts:1513) — inert.",
+        "fireRateOk": true,
+        "explanation": "Documented, adjudicated, inert. Acceptable."
+      },
+      {
+        "kitLine": "In Wake Up: allies True Damage ▲ 49.97% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + swapGate:'swapped' → allies trueDamagePct 49.97 / 10s. Gate is LIVE in the fixture: first cast (~t4.9s) precedes Wake Up onset (~t7.9s) and is exactly the one blocked cast; applied-frame set equals the gated cast frames; 600f expiry; ungated counterfactual applies on all casts; compound (no Wake Up + ungated) proves the gate keys on the swap; consumers move, controls byte-exact.",
+        "blindSaid": "S6 CONVERGED identically (49.97 / burstCast / allies / 10s, gated); S5 green on distinctness and gate; S2b's own decisive discriminator (burst #1 emits no 49.97) holds and is green under both hit-6 and hit-11 readings.",
+        "formulaCheck": "SSOT §1e flavor gate + §8 burst-cast ordering: the buff applies at cast (pre-FB) but pays out on true-flavored hits landing in whatever window — consistent.",
+        "fireRateOk": true,
+        "explanation": "The chained gate topology (Wake Up → burst buff) is enacted and discriminated, with convergence from the independent blind override."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENGINE",
+      "slot": "skill1",
+      "summary": "Same-weapon trueNormals flavor swaps skip the SR bolt-recovery cycle (sim.ts:3566-3573, chisato/takina exemption), so Frima fires at 60f (1.0s) during Wake Up vs 82f (1.37s) outside it — her true window runs ~27% more shots than her real cadence.",
+      "evidence": "Kit prose implies Wake Up changes only the flavor of her normal attacks; driver caveat 2 documents the artifact with the engine-core recipe; pre-existing engine behavior shipped by takina/chisato/laplace, not an encoding choice.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Engine-core: extend the bolt-recovery rule to same-weapon flavor swaps, then re-grade frima (and re-check takina/chisato/laplace). Needs no per-unit fudge."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No undocumented divergence exists anywhere in the kit: 4 lines FAITHFUL (Wake Up, both True Damage buffs, the burst nuke) and 4 DOCUMENTED_GAP (both DEF-downs, both Max HP buffs), each gap carried verbatim with a formula-cited reason that matches the SSOT — boss DEF is a fixed config constant with no debuff channel and a negligible (~0.02%) ceiling, and ally Max HP grants have no engine reader per the e3 rule; routing either through damageTakenPct would have been the exact nearest-wrong over-credit S2b named, and the blind S6 fell into both traps while flagging them itself. The load-bearing encodings are independently converged (S6 matches the driver block-for-block on 28.16/49.97/101.66/count-6, and S5's greens agree on magnitude and gate timing), while every S5 red is classified as either the adjudicated unmodeled dispositions or blind-side artifacts (wrong event field, null-vs-undefined, invalid override shape, guessed gate field) — no red survives triage as a driver gotcha. Discrimination is real: the driver suite pairs every load-bearing assertion with a counterfactual that provably fails (count:1, ungated, self-only, compound no-Wake-Up, true-flavored nuke), including a live Wake Up gate in the fixture and byte-exact non-true negative controls. The one real residual is the pre-existing engine artifact that flavor swaps skip SR bolt recovery (~27% faster in-window cadence) — documented with an engine-core recipe, low severity, not ship-blocking; the hit-6-vs-hit-11 onset reading is adjudicated (datamine + phrasing convention + blind convergence on 6) with a measurement recipe flagged. Same-model residual for the owner to spot-check: the Wake Up onset count (popup-read FC-count-to-Wake-Up-icon) and the treasure-prose SSOT choice over the datamine base-kit tables, since every agent here read the same prose.",
+  "model": "kimi-code/k3"
+}

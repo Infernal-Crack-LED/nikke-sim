@@ -1,0 +1,75 @@
+{
+  "slug": "n102",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Max Ammunition Capacity ▲ 3 for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Weapon-state modifier (ammo capacity), not a damage stat — but it IS damage (taxonomy #6): +3 on a 6-round magazine = 50% fewer reloads for the holder, more shots fired. FLAT rounds ('▲ 3', no %) → maxAmmoFlat, not maxAmmoPct.",
+      "durationSemantics": "durationSec 10 (wall-clock 'for 10 sec'); refreshed on each of n102's full-charge shots (~every 2–2.5s given chargeFrames 90 + release latency + RL cycle), so effectively continuous uptime on the target after the first shot — but encoded as a refreshing 10s buff, NOT permanent.",
+      "triggerIdentity": "Owner-side trigger: 'Activates when performing a Full Charge attack' — fires on n102's own full-charge shot (shotFired for an always-full-charging RL; a fullCharge-scoped per-shot trigger). NOT passive, NOT lastBullet, NOT interval.",
+      "targetSet": "alliesTopAtk {count:1, byFinalAtk:true} — kit literally says 'highest final ATK', so live effectiveAtk ranking, self included in the pool (no 'except self' clause). In a control fixture the Attacker-class carry (118,027 static) wins.",
+      "nearestWrongModel": "maxAmmoPct 3 (percent misread — 3% of 6 rounds ≈ +0 rounds, silently inert) and/or trigger read as passive/always-on from t=0, and/or static-ATK ranking (byFinalAtk omitted).",
+      "distinguishingAssertion": "buffApply events with stat 'maxAmmoFlat', value 3, targetSlug === carry, first emitted only AFTER n102's first shot event (frame > 0, red under passive-at-t0); A/B via withPatchedOverride removing the effect → carry's reload-event count rises and carry totalDamage drops (red if encoded as maxAmmoPct 3, which moves neither).",
+      "inertness": "No buffApply targeting n102 herself or the three non-top-ATK allies; n102's own reload count and damage unmoved by this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Damage ▲ 10.34% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic Critical Damage (no 'of normal attacks' scoping clause) → unscoped critDamagePct; applies to all the target's crit-eligible hits.",
+      "durationSemantics": "durationSec 10, refreshed per full-charge shot — same near-continuous uptime as the ammo line.",
+      "triggerIdentity": "Same block as the ammo line: n102's own full-charge attack.",
+      "targetSet": "Same alliesTopAtk {count:1, byFinalAtk:true}.",
+      "nearestWrongModel": "critRatePct 10.34 (rate/damage confusion — changes crit FREQUENCY instead of crit magnitude), or targeting self instead of the top-ATK ally.",
+      "distinguishingAssertion": "buffApply with stat 'critDamagePct' (NOT 'critRatePct'), value 10.34, targetSlug === carry; damage events for the carry show unchanged crit RATE between patched/unpatched runs while crit-portion damage scales.",
+      "inertness": "Carry's crit rate unmoved; n102's own damage unmoved by this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Charge Damage ▲ 25.84% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Charge bucket ONLY — chargeDamagePct (additive percentage points in the charge bucket), NOT attackDamagePct and NOT chargeDamageMultPct. Fully inert on a target with no charge damage.",
+      "durationSemantics": "durationSec 5 — critically SHORTER than any plausible skill cooldown, so this is a PARTIAL-UPTIME pulse (~5/CD duty cycle), never always-on.",
+      "triggerIdentity": "The ■ header has NO activation clause ('Affects…' only) → interval trigger on the datamined skill cooldown, first fire at t=CD (no force-cast wording → not t=0). ⚑ the interval seconds are NOT in the kit text — must come from datamined skillCooldownsSec, flagged if absent.",
+      "targetSet": "alliesTopAtk {count:1, byFinalAtk:true} — same 'highest final ATK' literal.",
+      "nearestWrongModel": "Passive/always-on encoding (the highest-damage misread: 100% uptime instead of ~5/CD ≈ 25–50%, over-crediting the carry's charge bucket by 2–4×); second-nearest: attackDamagePct (leaks into non-charge damage).",
+      "distinguishingAssertion": "buffApply events with stat 'chargeDamagePct' value 25.84 recur with consecutive apply-frame spacing ≈ CD×60 (multiple applies over 180s, count ≈ 180/CD), each with expiresFrame ≈ applyFrame + 300; red under passive (single t=0 apply, no recurrence). Plus: patching the effect out moves ONLY the target's charge-bucket damage, not normal/skill buckets.",
+      "inertness": "Non-charge buckets of the target unmoved; zero effect if the top-final-ATK ally is a non-charge weapon; no self-application in a fixture where n102 is not the ATK leader.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 25.86% for 10 sec (all allies)",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK — atkPct scaling each TARGET'S OWN ATK (plain 'ATK ▲ x%'), NOT casterAtkPct (n102 is a Supporter with low static ATK; a caster-scaled flat add would materially under-credit the Attacker carry).",
+      "durationSemantics": "durationSec 10 — covers the full-burst window since the cast lands pre-FB (gauge-full→…→22f→FB chain).",
+      "triggerIdentity": "burstCast — fires ONLY on rotations n102 herself casts Burst I (cd 20s). NOT fullBurstEnter: with another B1 in the team (the fixture's liter), the two diverge on every rotation the other B1 takes.",
+      "targetSet": "allies, all-including-self ('Affects all allies', no except-self clause) — expect 5 buffApply events per cast.",
+      "nearestWrongModel": "fullBurstEnter keying — the buff fires on EVERY team Full Burst including rotations liter cast B1, over-crediting the whole team; or casterAtkPct (flat ≈ 0.2586 × 98,367 ≈ 25,438 emitted under 'casterAtkPct' instead of raw 25.86 under 'atkPct').",
+      "distinguishingAssertion": "Count of buffApply groups with stat 'atkPct' value 25.86 (raw percentage, 5 targets each) === count of burstCast events with n102's srcSlot, and each apply frame precedes the next fullBurstStart frame; red under fullBurstEnter (apply count === fullBurstStart count > n102's cast count when liter shares B1 duty, applies at/after FB start).",
+      "inertness": "Rotations where liter (or any other unit) casts B1: zero atkPct applies from n102; stat emitted is 'atkPct' with raw 25.86, never a flat-resolved casterAtkPct number.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:maxAmmoFlat+3-fullcharge",
+    "skill1:critDamagePct+10.34-fullcharge",
+    "skill2:chargeDamagePct+25.84-interval",
+    "burst:atkPct+25.86-burstCast-allAllies"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "FIXTURE HAZARD: n102 is Burst I, and controlComp() hard-slots liter into B1 — adding n102 creates a B1 contention where first-ready in-window selection decides who casts each rotation. Tests MUST verify n102 actually casts (assert ≥1 burstCast with her srcSlot) before asserting downstream buff counts, and the burstCast-vs-fullBurstEnter distinguisher only has teeth in exactly this two-B1 fixture — do not 'fix' the contention by removing liter, that removes the discriminating comp. Expected shared-prior misreads to check hardest: (1) skill2 encoded passive/always-on — the 5s-duration-with-no-activation-clause shape is the classic interval trap and the largest damage inflator here; (2) skill1's 'Max Ammunition Capacity ▲ 3' skipped as utility or encoded as maxAmmoPct — it is a flat +3 rounds on the ally and IS damage via shot economy; (3) burst keyed to fullBurstEnter; (4) 'highest final ATK' encoded with static ranking (byFinalAtk omitted) — the kit says FINAL, which is the owner-ruled literal trigger for byFinalAtk:true on all three targeted blocks; (5) skill1 trigger encoded passive-from-t0 instead of first-full-charge-shot onward. ⚑ open cadence: skill2's interval seconds are outside the kit text (datamined skillCooldownsSec needed; first fire t=CD per convention). All four magnitudes are kit-literal → DATAMINED; no line is UNMODELED — every primitive needed (maxAmmoFlat, critDamagePct, chargeDamagePct, atkPct, alliesTopAtk byFinalAtk, burstCast, interval) exists in the schema.",
+  "model": "claude-fable-5"
+}

@@ -1,0 +1,123 @@
+{
+  "slug": "mary-bay-goddess",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "heal",
+              "ticks": 5,
+              "intervalSec": 1
+            },
+            {
+              "kind": "heal",
+              "ticks": 5,
+              "intervalSec": 1
+            },
+            {
+              "kind": "heal",
+              "ticks": 5,
+              "intervalSec": 1
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Water"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "elemAdvantageDamagePct",
+              "value": 20.85,
+              "durationSec": 3
+            },
+            {
+              "kind": "buff",
+              "stat": "elemAdvantageDamagePct",
+              "value": 13.88,
+              "durationSec": 5
+            },
+            {
+              "kind": "buff",
+              "stat": "elemAdvantageDamagePct",
+              "value": 8.36,
+              "durationSec": 10
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Water"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 23.23,
+          "durationSec": 3
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 27.87,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill2 escalating tiers: the prose says each subsequent activation ALSO triggers every earlier effect, so from the 3rd burst cast onward three separate elemAdvantageDamagePct windows (20.85%/3s, 13.88%/5s, 8.36%/10s) should be live concurrently and sum additively in the Damage Up bucket. If the buff engine's same-caster-slot overwrite collapses same-stat grants from one caster, the modelled magnitude collapses toward the last-applied step instead — UNVERIFIED, pin with a buffApply-value assertion before trusting the magnitude.",
+    "⚑ elemAdvantageDamagePct is live only while the holder has elemental advantage over the boss. The whole skill2 payload is therefore inert on a non-advantaged boss element (Water allies need a Fire boss); it is not a generic attackDamagePct and must not be modelled as one.",
+    "skill1's heal is modelled as recovery EVENTS only (5 ticks, 1s apart, per escalating step) — the engine models no HP pool, so the 1.05%/3.69%/6.86%-of-caster-Max-HP magnitudes carry no damage of their own. The line is kept because on-recovery consumers (heal-synergy kits) key off these events, and dropping it would silently break a teammate's trigger.",
+    "The burst Max HP grant is ally-scoped; an ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion, and this unit carries no HP→ATK scaler of her own, so the grant is offensively inert at present scope. It is retained for kit completeness and for any future consumer.",
+    "This unit carries no damage effects at all (no flatDamage/dot/storedHit), so noFb, noRange, core and crit riders are moot — nothing here is a damage rider whose Full-Burst/range/core eligibility could be mis-set."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Mary: Bay Goddess (mary-bay-goddess) is modelled as a pure Water/Supporter Burst I enabler with zero damage effects. skill1 is a team-wide heal-over-time keyed to fullBurstEnter (fires on ANY team Full Burst, per the literal 'when entering Full Burst' clause), authored as an escalating effect whose Nth activation applies steps 1..N — each step a 5-tick, 1s-interval heal so on-recovery consumers stay refreshed. skill2 is keyed to burstCast (the literal 'when using Burst Skill' clause = this unit's own cast, so it only fires on rotations she bursts), targets Water Code allies including herself, and grants escalating Elemental Advantage Attack Damage windows of 20.85%/3s, 13.88%/5s, 8.36%/10s. The burst slot carries two separately-scoped blocks matching the two '■ Affects' headers: ATK ▲23.23% for 3s to Water Code allies (plain 'ATK ▲ x%' = target's own ATK, atkPct), and a caster-scaled Max HP grant of 27.87% of the skill user's final Max HP for 10s to all allies. All three slots are fully represented; unmodeled is empty for every slot."
+}

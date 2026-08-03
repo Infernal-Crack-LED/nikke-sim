@@ -1,0 +1,149 @@
+{
+  "slug": "k",
+  "kitDescription": "K is an Electric SMG Attacker who builds a crit-rate stacking buff called Tilted Scale every time she empties a magazine (+29 stacks of 0.75% crit per last bullet, capped at 100 stacks = +75% crit), and the stacks are wiped each time Full Burst ends, creating a build-dump sawtooth. While she holds Tilted Scale, her whole team carries a paired buff/debuff: +10.62% attack damage but -51.13% max ammo for 10s, which also shortens her own magazine and speeds her stacking loop. Every 4 critical pellet hits she procs a 23.9%-of-ATK hit on the boss. Her burst swaps her SMG for a slow 10-pellet weapon at 92.5% per pellet for 10s, plus large self ATK and attack-damage buffs for the window, so the burst window is her dominant damage phase.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S1a 'is continuously — no wall-clock expiry' (driver's critRatePct 75 carries durationSec 10)",
+      "S1a 'triggers per MAGAZINE (last bullet)' (driver keys the crit block to burstCast)",
+      "S1a 'the cap is load-bearing — UNCAPPED > BASE' (driver's non-stacking 75/10s is unaffected by the maxStacks patch)",
+      "S1b 'rider exists exactly once at 23.9%' (driver UNMODELED the rider)",
+      "S1b 'is a hit-counted rider' (no rider block to inspect)",
+      "S1b 'actually fires — removing it drops k damage' (vacuous under UNMODELED)",
+      "Burst 'swap at 92.5% of final ATK' (driver uses 925 via the 10-pellet EV-collapse — contradicted by the S6 blind, which also chose 925; spurious)",
+      "S2a 'durationShots toBeUndefined' (harness emits null, not undefined; the timed-window intent passes — test artifact)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "last bullet: Crit Rate 0.75%, +29 stks",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "No '+N stacks/trigger' primitive and no FB-end removal; encodes the load-bearing steady-state burst-window observable as burstCast self critRatePct 75 for 10s, ⚑ with recipe + tier",
+        "blindSaid": "S6: lastBullet critRatePct 18.75 maxStacks 4 (exact cap, wrong ramp, no wipe, flagged). S5: literal lastBullet/no-expiry assertions",
+        "formulaCheck": "critRatePct is the correct unscoped stat (kit says plain 'Critical Rate'); 100 x 0.75 = 75% cap arithmetic checks out; burst-window placement concentrates the buff on the dominant 925% swap hits, which are normal-bucket and do crit",
+        "fireRateOk": true,
+        "explanation": "The literal sawtooth is un-encodable (two missing primitives). The driver and S6 chose opposite approximations: driver = exact window magnitude, no pre-burst ramp (under-credit, conservative); S6 = exact cap and trigger, no wipe (over-credit post-FB). Both flagged. Driver's is documented with estimate/recipe/tier; acceptable. Note-level arithmetic slip: the ~33s-to-cap claim ignores the S2 ammo cut accelerating the loop (~5s magazines once live) — harmless, in the note only."
+      },
+      {
+        "kitLine": "pellets crit 4x: 23.9% add. dmg",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED — no crit-gated hit counter (hitCount counts all hits), and the pellet collapse distorts the per-pellet basis; ~5% of burst-window damage; recipe + tier given",
+        "blindSaid": "S6: hitCount:5 flatDamage 23.9 (crit->hit conversion at ~0.8 crit rate, flagged). S5: asserted a hitCount rider must exist",
+        "formulaCheck": "A plain hitCount:4 would over-fire 3-10x early (S2b's nearest-wrong); S6's hitCount:5 is a static ⚑ for a non-stationary cadence (crit rate ramps 15%->90%). Driver's honest drop is defensible per MEASURED>FUDGE; S6's estimate is equally defensible. No formula contradiction in either",
+        "fireRateOk": false,
+        "explanation": "Line never fires in the sim — a deliberate, documented drop of a ~5%-of-burst-damage rider behind a missing primitive, with a measurement recipe. Not a silent drop."
+      },
+      {
+        "kitLine": "FB ends: Removes Tilted Scale",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "No FB-end buff-removal primitive; folded into the burstCast-10s encoding (the buff expires with the window it was granted for)",
+        "blindSaid": "S6: verbatim in unmodeled, flagged as the largest known over-credit of its baseline. S5: it.skip GAP",
+        "formulaCheck": "Event-keyed removal is genuinely absent from the EffectDef union (engine fact (c)); a durationSec fudge would be unfaithful. Driver's window-scoped encoding makes the removal moot by construction",
+        "fireRateOk": true,
+        "explanation": "Both blind and driver agree the primitive is missing; the driver sidesteps rather than fudges. Documented."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "gain Tilted Scale: Max ammo -51.13%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "lastBullet / allies / maxAmmoPct -51.13 / 10s; 'gaining Tilted Scale' proxied by lastBullet is exact (stacks only gained on last bullet)",
+        "blindSaid": "S6 identical block; S2b: lastBullet is the faithful co-keyed trigger; S5 asserts sign, targets, non-stacking",
+        "formulaCheck": "Negative sign correct (debuff); allies scope correct (team-wide); non-stacking refresh matches 'Similar effects cannot be stacked'; the ammo cut feeding back into last-bullet cadence is the kit's real loop",
+        "fireRateOk": true,
+        "explanation": "Exact three-way convergence (driver = S6 = S2b spec). Driver test pins it firing at last-bullet cadence (>2x burst count) reaching all 3 allies for 10s."
+      },
+      {
+        "kitLine": "gain Tilted Scale: Atk dmg +10.62%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "attackDamagePct 10.62 / allies / 10s on the same lastBullet block",
+        "blindSaid": "S6 identical; S2b: Damage-Up bucket, non-stacking refresh",
+        "formulaCheck": "attackDamagePct is the correct Damage-Up-bucket stat; generic scope correct; stacks additively with the burst's separate 21.12 (different slot/scope) per §11",
+        "fireRateOk": true,
+        "explanation": "Faithful; near-continuous uptime emerges from the ~5s magazine cadence vs the 10s duration, as the prose implies."
+      },
+      {
+        "kitLine": "FB ends: Removes Fulfillment",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "No removal primitive; moot — the 10s duration self-expires within the FB window and re-applies on the next last bullet",
+        "blindSaid": "S6: same skip, bounded over-credit (<= tail of a live 10s window). S5: it.skip GAP",
+        "formulaCheck": "Over-credit is genuinely bounded by the 10s wall-clock duration; net direction ambiguous (removes both a team buff and an ammo tax)",
+        "fireRateOk": true,
+        "explanation": "Documented, bounded, low-impact residual behind the same missing primitive."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Weapon swap: 92.5%, 10 pellets",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "weaponSwap damagePct 925 / pullsPerSec 2 / durationSec 10 on burstCast — pellets collapsed because effectivePellets is SG-only AND swap-off; EV-exact under deterministic crit",
+        "blindSaid": "S6 chose 925/2/10 independently with the same reasoning (merge beats a 10x damage downgrade). S5 asserted 92.5 — the one spurious red",
+        "formulaCheck": "Engine fact (a) forbids a real 10-pellet swap on an SMG base; engine fact (f) proves 10x92.5 = 1x925 EV-identical; cadence 2 = 20.0/s (engine fact (e)) x 0.10 for 'AS -90%'. burstCast keying correct (own burst only). What the collapse loses — per-pellet core geometry and crit variance — is documented ⚑ and second-order",
+        "fireRateOk": true,
+        "explanation": "Strongest convergence in the kit: two independent derivations + the engine facts agree. The S5 92.5 assertion is the RECON_ERROR here. Split-vs-merge remains kit-silent ⚑ (owner popup read is the residual spot-check)."
+      },
+      {
+        "kitLine": "ATK +63.36% of skill user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 63.36 / self / 10s on burstCast",
+        "blindSaid": "S6 identical; S2b: must be the flat-add caster-scaled form, not atkPct",
+        "formulaCheck": "'of the skill user's ATK' = caster static-ATK flat add outside (1+ATK%) per §1a; engine resolves it flat at apply (S5's value>1000 assertion shape); self scope and 10s duration correct",
+        "fireRateOk": true,
+        "explanation": "Faithful; driver test pins one flat application per k burstCast, self-only, 600-frame window."
+      },
+      {
+        "kitLine": "Attack damage +21.12% for 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "attackDamagePct 21.12 / self / 10s on burstCast",
+        "blindSaid": "S6 identical; S2b: self-only, must not bleed onto allies (S2's 10.62 is the team line)",
+        "formulaCheck": "Correct bucket and scope; no scope bleed onto allies in either blind check",
+        "fireRateOk": true,
+        "explanation": "Faithful; three-way agreement."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENGINE",
+      "slot": "skill1",
+      "summary": "Tilted Scale's literal stack-ramp sawtooth (+29 stacks/last-bullet, cap 100, wiped at FB end) is un-encodable — no '+N stacks per application' primitive and no FB-end buff-removal primitive. Driver encodes only the steady-state burst-window observable (critRatePct 75/10s on burstCast), under-crediting the pre-burst SMG crit ramp and the first-burst build.",
+      "evidence": "Kit: 'Tilted Scale: Critical Rate 0.75% continuously, stacks up to 100 times / stacks 29 / Removes Tilted Scale' vs engine facts (b)+(c); driver caveat 4 (estimate + recipe + MEASUREMENT-GATED tier); S6 independently hit the same wall and chose the opposite approximation (exact cap/trigger, no wipe).",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Engine work, not a fudge: add a stacksPerApply field on buff effects and a removeBuff effect keyed to fullBurstEnd, then re-author as lastBullet critRatePct 0.75 stacksPerApply 29 maxStacks 100 + FB-end removal. Until then, the driver's caveat recipe (burst-window crit-popup read at ~90%) is the measurement gate."
+    },
+    {
+      "subkind": "ENGINE",
+      "slot": "skill1",
+      "summary": "The 23.9% rider is crit-COUNT-gated and no crit-gated hit counter exists; driver dropped it (documented ⚑, ~5% of burst damage) rather than fire a round-counted hitCount that would over-proc 3-10x early and miss the ramp.",
+      "evidence": "Kit: 'when pellets land a critical hit 4 time(s) / Deals 23.9% of final ATK' vs engine fact (d); S2b flagged the same missing primitive; S6's hitCount:5 is a static ⚑ for a cadence that accelerates with Tilted Scale.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Add a requiresCrit/countCrits variant of hitCount (engine work). Interim measurement recipe (driver's): count 23.9% rider popups per burst window in focus footage to set a crit-rate-weighted threshold — but only after the crit counter exists, since the cadence is non-stationary."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "The 10 pellets are merged into a single 925% hit per pull. EV-exact for damage under deterministic crit, but the collapse erases per-pellet core/landing geometry and the per-pellet crit count that feeds the (already unmodeled) rider; the swap keeps base SMG range/core profile with the changed weapon's class kit-silent.",
+      "evidence": "Kit: 'Pelletcount: 10 / Attack speed: 90%' vs engine fact (a) (effectivePellets is SG-only AND swap-off) and fact (f) (EV-identical collapse); driver caveats 1-3 ⚑; S6 independently chose the same merge.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Needs measurement, not a number: frame-read one burst window for popup count/values per pull (10 small vs 1 large) to confirm the split; if real pellets land fractionally, revisit swap pellet support in the engine rather than adjusting damagePct."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Every divergence the S5 blind run exposed is either (a) a documented engine-primitive gap both blind agents independently hit (no stacks-per-apply, no FB-end removal, no crit-gated counter — the Tilted Scale sawtooth and the crit-count rider are genuinely un-encodable today, and the driver's workarounds are flagged with estimate + recipe + tier rather than fudged), or (b) spurious: the S5 92.5-per-pellet assertion is refuted by the S6 blind's identical 925 choice plus engine facts (a) and (f), and the durationShots-null failure is a test artifact whose timed-window intent passes. The encodable 6 of 9 lines (all of skill2's live effects and the entire burst) show exact three-way convergence — driver, S6 blind override, and S2b spec agree on trigger, scope, stat, magnitude, and duration — and the driver's tests genuinely discriminate (no-swap zeroes the window, 92.5 cuts it ~10x, weakTilted reads 0.3675 vs 0.90). Residual same-model risk the owner should spot-check: (1) the pellet split-vs-merge read is kit-silent and both agents shared the same 'merge or the burst is a downgrade' prior — one burst-window popup read settles it; (2) the driver's burst-window-only Tilted Scale encoding is the conservative of the two blind approximations, but its '~33s to cap' note arithmetic ignores the ammo-cut acceleration. Neither blocks: the gotchas are documented, bounded (med/med/low), and the fix path is named engine work, not re-tuned numbers.",
+  "model": "kimi-code/k3"
+}

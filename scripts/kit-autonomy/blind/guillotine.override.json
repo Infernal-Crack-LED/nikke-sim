@@ -1,0 +1,111 @@
+{
+  "slug": "guillotine",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 9.28,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 150
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 14.69,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 450
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 86.4,
+          "rampSec": 55
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1237.5,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1237.5,
+          "crit": true,
+          "requiresPulls": 750
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "HP ▼ 2.01%."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ The whole HP-loss economy is derived, not simulated: v1 has no HP pool, so the S1 self-damage line is unmodeled as an effect and instead converted into landed-hit thresholds that stand in for the HP-gated S2 branch and the HP-gated burst branch.",
+    "⚑ skill2 block 2 ATK value (86.4) assumes HP-lost plateaus near 90% of Max HP; every point of that assumption is unmeasured.",
+    "⚑ skill2 block 2 gate (hitCount 450) and burst block 2 requiresPulls (750) both assume ~100% of normal attacks land and no ally healing restores HP; a healer in the comp pushes both gates later or shuts them off entirely.",
+    "⚑ Every hitCount threshold here is expressed in LANDED normal attacks; the wall-clock time to reach each one depends on the MG cadence tuple, which comes from a datamine-unreliable field.",
+    "⚑ Both burst hits are authored crit-eligible at the caster's sheet rate; the kit text does not state crit behaviour."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Electric MG Attacker, Burst III. S1: every 30 landed normal attacks, self Critical Rate ▲9.28% for 10s; the paired HP ▼2.01% self-cost has no representation (no HP pool at v1 scope) and is carried in `unmodeled`. S2 has two branches: every 150 landed normal attacks, self Critical Damage ▲14.69% for 5s; and an HP-gated ATK conversion (0.96% ATK per 1% Max HP lost) that opens once HP drops below 70%. That conversion is modeled as a self ATK buff opened by a landed-hit threshold, because HP loss in this kit is driven exclusively by S1: 30 landed hits cost 2.01% HP, so 30% HP lost = 15 S1 procs = 450 landed hits, and the buff then grows linearly with further hits — expressed as ⚑86.4% ATK (0.96 × an assumed ~90% Max-HP-lost floor) with a ⚑55s linear ramp from the gate. Burst is a single-target nuke on cast: 1237.5% of final ATK, plus a second 1237.5% hit that only lands once the caster's HP is under 50%, encoded as the same landed-hit proxy (50% lost = 25 S1 procs = 750 landed hits, hitsPerShot 1) via requiresPulls. Both burst hits are crit-eligible and take no core; burst-cast damage is full-burst-exempt by cast timing."
+}

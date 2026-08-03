@@ -1,0 +1,90 @@
+{
+  "slug": "neve",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Affects 1 enemy lowest HP; 145.45% dmg",
+      "disposition": "FAITHFUL",
+      "scope": "Standalone flat-damage rider (% of final ATK), not a stat buff; per methodology #9 it takes the +50% Full Burst by landing timing (noFb default OFF), crits at caster's sheet rate (RIDERCRIT), gets NO core (text never says core strike), and is range-excluded (noRange on riders).",
+      "durationSemantics": "Instant hit, no duration.",
+      "triggerIdentity": "The line has NO activation clause ('Affects…' + a damage sentence only) → per the taxonomy this is an INTERVAL trigger (internal cooldown). The interval seconds are NOT in the kit text — ALWAYS-⚑ field #2 (a damage line the text gives no trigger for): the cadence must be a flagged ⚑ estimate or a datamined skill CD, never a silent invention. First-fire phase (t=sec vs t=0) is itself a ⚑ convention.",
+      "targetSet": "Enemy ('1 enemy unit with the lowest remaining HP'). Single partless boss → the lowest-HP selection clause is inert; target resolves to the boss.",
+      "nearestWrongModel": "Two plausible misreads: (a) inventing a per-shot/hitCount or burstCast trigger instead of interval — cadence then scales with fire rate or burst rotation instead of wall clock; (b) misreading 'lowest remaining HP' as an ALLY target (schema has alliesLowestHp) and emitting an ally-targeted effect instead of enemy damage.",
+      "distinguishingAssertion": "runComp(controlComp('neve')) with cfg.onEvent: collect damage events from neve whose mult===145.45 (skill1 bucket). GREEN-faithful: count === floor(180/intervalSec) and inter-fire gaps are constant wall-clock, uncorrelated with shot events, burstCast events, or fullBurstStart events. RED-nearest-wrong: (a) count tracks neve's shot count or equals her ~4 own burst casts; (b) zero such damage events but a spurious buffApply with targetIdx pointing at an ally slot.",
+      "inertness": "Must emit NO buffApply (it is pure damage); must not move any teammate's total; count must not change when the comp's FB cadence changes (interval is wall-clock).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Entering Full Burst; ATK ▲124.8% 2 rd",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK buff (atkPct — scales own ATK; no 'of caster's ATK' phrasing so NOT casterAtkPct flat-add).",
+      "durationSemantics": "'for 2 round(s)' is a ROUND count → durationShots: 2 with NO durationSec. A round for this SG = one trigger pull (hitsPerShot 10 pellets ≠ 10 rounds). The window ends right after her 2nd pull post-FB-entry and would span a reload if she enters FB at ≤1 ammo.",
+      "triggerIdentity": "'Activates when entering Full Burst' — literally fullBurstEnter: fires on EVERY team Full Burst, including rotations where helm (the fixture's co-B3) bursts instead of neve. NOT burstCast.",
+      "targetSet": "Self only ('Affects self').",
+      "nearestWrongModel": "durationSec: 2 (seconds-for-rounds — the canonical duration misread; numerically similar for an SG so damage totals barely distinguish it) and/or keying to burstCast so the buff only fires on neve's own ~4 casts instead of all ~7 FBs (UNDER-credits in the dual-B3 control comp).",
+      "distinguishingAssertion": "Filter buffApply events with stat==='atkPct' && value===124.8 && targetIdx===casterIdx===neve's idx. GREEN-faithful: each event carries durationShots===2 (field is exposed on buffApply) and event count === count of fullBurstStart events. RED-nearest-wrong: durationShots undefined (seconds encoding), or count === neve's own burstCast count < FB count.",
+      "inertness": "targetIdx must never be an ally; no application outside FB entries; the buff must NOT be alive at t=0 (not passive).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Entering Full Burst; Pierce 2 round(s)",
+      "disposition": "GAP",
+      "scope": "Pierce tagging on her own attacks for the window (feeds Pierce Damage ▲ buckets; pierceDamagePct is parsed-but-inert in v1, so damage-neutral on a partless boss with no pierce-buff carrier).",
+      "durationSemantics": "'for 2 round(s)' — a ROUND count again. GAP: the gainPierce effect schema exposes only durationSec (no durationShots), so the round-count window is not literally expressible. Faithful fallback: gainPierce on the fullBurstEnter block with a ⚑ durationSec derived from her measured pull cadence (≈2 pulls), documented in the note — NEVER a top-level hasPierce.",
+      "triggerIdentity": "Same fullBurstEnter block as the ATK line.",
+      "targetSet": "Self.",
+      "nearestWrongModel": "Top-level hasPierce: true — whole-fight Pierce tagging for a 2-round FB-gated window (the boolean cannot step/time-gate; this is the exact ade-agent-bunny failure shape). Secondary misread: dropping the line silently with no unmodeled entry.",
+      "distinguishingAssertion": "Override-shape assertion: the committed override must have NO top-level hasPierce, and the fullBurstEnter block must carry a gainPierce effect (with a bounded ⚑ durationSec). Damage-inertness assertion: totals(runComp(controlComp('neve'))) must be IDENTICAL with the gainPierce effect stripped via withPatchedOverride('neve', o => remove gainPierce) — pierce moves zero damage in this comp (green under both encodings for damage, so the shape assertion is the discriminator).",
+      "inertness": "Zero damage movement on the control comp (no Pierce Damage ▲ carrier, partless boss); pierce must not be live at t=0 or outside the post-FB window.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Self; Critical Rate ▲31.95% 20 sec",
+      "disposition": "FAITHFUL",
+      "scope": "GENERIC crit (kit says 'Critical Rate', no 'of normal attacks' qualifier) → unscoped critRatePct, applying to normal pellets AND the skill1 rider's crit roll.",
+      "durationSemantics": "durationSec: 20 — genuine wall-clock seconds; outlives the ~10s FB window by ~10s, so it must persist after fullBurstEnd.",
+      "triggerIdentity": "Self-buff in her OWN burst block with no other activation clause → burstCast (fires ONLY on rotations neve herself bursts; ~40s cd → not every FB in the dual-B3 fixture). NOT fullBurstEnter.",
+      "targetSet": "Self only.",
+      "nearestWrongModel": "Keying to fullBurstEnter — in controlComp the co-B3 helm takes alternate rotations, so fullBurstEnter keying OVER-credits by applying the crit buff on FBs neve did not cast. Secondary: critRateNormalPct scoping (under-credits the skill1 rider's crit).",
+      "distinguishingAssertion": "Filter buffApply stat==='critRatePct' && value===31.95. GREEN-faithful: count === neve's own burstCast event count, each targetIdx===neve, expiresFrame−applyFrame≈1200 frames (20s). RED-nearest-wrong: count === fullBurstStart count (> her own casts), or the stat arrives as critRateNormalPct.",
+      "inertness": "No application on FBs cast by helm; no ally ever receives it; buff must remain past fullBurstEnd until the 20s lapse (do NOT assert a buffRemove — none is emitted on time expiry; read expiresFrame).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Self; Hit Rate ▲22.04% for 20 sec",
+      "disposition": "FAITHFUL",
+      "scope": "hitRatePct — the accuracy stat whose sim effect is the core-hit lift (hrCoreMult path, live by default). For an SG this tightens pellet landing/core exposure; it is NOT defensive and NOT skippable.",
+      "durationSemantics": "durationSec: 20, wall-clock, same window as the crit line.",
+      "triggerIdentity": "Same burstCast self-block as the crit line.",
+      "targetSet": "Self only.",
+      "nearestWrongModel": "Dropping the line as 'accuracy is defensive/inert' (weapon-state taxonomy trap #6 adjacent), or the same fullBurstEnter over-crediting as the crit line. The buff VALUE 22.04 is kit-literal, but the Hit-Rate→core conversion magnitude is ALWAYS-⚑ #7 (measured-only) — the test must not pin a specific core-rate delta, only that the stat is applied and the core channel responds.",
+      "distinguishingAssertion": "Filter buffApply stat==='hitRatePct' && value===22.04: count === neve's burstCast count, self-targeted, 20s expiry. Plus a movement assertion: totals for neve with the hitRatePct effect stripped via withPatchedOverride must be ≤ the shipped total (core-bucket damage drops when the lift is removed) — RED if identical, which is the 'dropped as inert' misread.",
+      "inertness": "Must not apply on helm-cast FBs; must not appear on allies; must not be encoded as a permanent passive.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:interval 145.45% enemy damage rider",
+    "skill2:fullBurstEnter ATK ▲124.8% durationShots 2 (self)",
+    "skill2:fullBurstEnter gainPierce 2-round window (shape: no top-level hasPierce)",
+    "burst:burstCast critRatePct 31.95 / 20s (self)",
+    "burst:burstCast hitRatePct 22.04 / 20s (self)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in order of likelihood: (1) skill2 'for 2 round(s)' encoded as durationSec — for this SG the damage delta is tiny, so the test MUST assert the buffApply's durationShots field directly, not totals; (2) skill2 keyed to burstCast instead of the literal fullBurstEnter (UNDER-credits in the dual-B3 controlComp — direction is opposite the usual over-credit trap, note it explicitly); (3) burst self-buffs keyed to fullBurstEnter instead of burstCast (OVER-credits via helm's rotations) — the two triggers diverge only because the fixture has a co-B3, which is exactly why controlComp's helm slot must stay in; (4) skill1's cadence: the kit gives NO interval — any concrete intervalSec is a ⚑ (or datamined skill-CD) and the test should assert cadence relative to the encoded interval, flagging the value's tier rather than treating it as kit truth; first-fire phase (t=interval vs t=0) is also convention-⚑; (5) the gainPierce schema has no durationShots — a round-count pierce window is inexpressible literally; reconcile whether the shipped encoding used a ⚑ durationSec on gainPierce (acceptable, damage-inert here) or a whole-fight hasPierce flag (wrong shape even though damage-identical on the control comp — assert the override shape, not damage). Also confirm the skill1 rider follows rider defaults: FB-major by landing timing, crit-eligible, no core, no range — none of these are stated in the prose and all come from the methodology's rider rules, so a divergent driver encoding (e.g. core:true) is a FIX. All four magnitudes (145.45/124.8/31.95/22.04) are kit-literal DATAMINED; nothing here is CALIBRATED except the skill1 cadence and any pierce-window durationSec approximation.",
+  "model": "claude-fable-5"
+}

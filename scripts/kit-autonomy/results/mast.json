@@ -1,0 +1,103 @@
+{
+  "slug": "mast",
+  "kitDescription": "Mast is an Electric SMG Supporter whose normal-attack critical hits stack a Sea Breeze debuff on the boss (up to 50 stacks of DEF reduction, refreshed on a 3-second timer). At battle start she grants herself and the two highest-final-ATK allies +23.56% Critical Rate for 30 seconds, and whenever her HP is below 70% she grants that same trio +50.94% Critical Damage continuously. Her Burst II gives the same three units a 7-second Max HP increase scaled off her own Max HP (without healing) plus +25.19% Critical Damage for 7 seconds. The burst also unleashes Storm on any Sea-Breeze-afflicted target: a 7-second, once-per-second damage effect whose per-tick magnitude mirrors the current Sea Breeze stack count. Her kit identity is the crit-driven Sea Breeze ramp feeding the Storm stack-mirror, layered with team crit support.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S5 burst-buff test 'Critical Damage +25.19% ... bounded 7 sec window' (expiresFrame < 10000) — fails ONLY because S5's own burstEligibility:3 fixture accommodation delays mast's casts late in the chain, so the final cast's 7s window ends ~frame 10293. The buff duration itself is exactly 420 frames (7s) in the shipped override (driver's per-cast expiresFrame-frame=420 assertion, plus sibling 3-target and caster-scaled-MaxHP assertions all PASS). Fixture artifact of the blind test's accommodation, classified RECON_ERROR — not a driver divergence."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Sea Breeze: DEF ▼ 1.9%, ≤50 stacks, 3s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "DEF▼ effect unmodeled (no dynamic enemy-DEF-reduction primitive; cfg.bossDef is fixed, damageTakenPct is a different bucket) — verbatim in unmodeled, magnitude ~0.16% team dmg; the Sea Breeze STATUS is modeled as a passive always-present targetStatus (999s) so Storm's gate is structurally real; accrual (2 normal crits) folded into a steady-state always-afflicted ⚑ (no crit-count trigger).",
+        "blindSaid": "S2b: track status + stack count, crit-gated accrual (hitCount ≈ 2/critRate ⚑); DEF value a recorded GAP. S6: hitCount:13 targetStatus 3s (crit-rate-derived ⚑); DEF unmodeled. S5: asserts NOT fudged into damageTakenPct (passes); GAP-skips the DEF payload and crit-gate.",
+        "formulaCheck": "SSOT: enemy DEF is a small flat subtractive term inside the base (~140 boss); no per-stack dynamic reduction channel exists in the engine — the gap is real and the ~0.16% estimate is consistent (81.7 flat DEF off ~50k effective ATK). The crit-gated trigger has no primitive (hitCount counts rounds) — confirmed.",
+        "fireRateOk": true,
+        "explanation": "All four roles agree the DEF payload is unmodelable and the status must exist to gate Storm; they differ only on status dynamics (always-on vs hitCount-refreshed), a documented ⚑. The driver's steady-state encoding keeps the gate structurally functional (M6 counterfactual: removing the status silences Storm). No silent drop."
+      },
+      {
+        "kitLine": "HP<70%: Crit Damage ▲ 50.94% continuously",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Passive always-on scoped grant (self + alliesTopAtk{2,excludeSelf,byFinalAtk}, no expiry — 'continuously'); ⚑ measurement-gated: v1 has no HP pool; a squishy Supporter sits <70% from boss damage whether or not she bursts; S2b's burstCast-7s self-trigger recorded as a rejected alternative in caveats.",
+        "blindSaid": "S5 independently derived passive always-on (converged with driver; its assertions pass). S2b proposed burstCast-7s (the un-restoring Max-HP grant drops her HP ratio to ~53.7% for the 7s window). S6 left it unmodeled (its largest flagged gap).",
+        "formulaCheck": "Kit wording is condition-gated ('when HP falls below 70%') with 'continuously' duration — no timed expiry in prose, so neither passive-from-t=0 nor burstCast-7s is literally provable in-sim; the engine has no HP pool. Real-game uptime is measurement-gated (needs a Mast-focus recording). Driver's concern with S2b's model is valid: it zeroes the buff in any comp where mast doesn't burst, contradicting the real-game reading.",
+        "fireRateOk": true,
+        "explanation": "A genuine cross-family divergence, but every position is documented and all agree it is measurement-gated. Driver's encoding matches the S5 blind re-derivation and the 'continuously' wording better than a 7s window; the over-credit risk is the pre-onset transient. Documented ⚑ with a stated recipe — DOCUMENTED_GAP, not a gotcha."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Crit Rate ▲ 23.56% for 30 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Fused passive from frame 0, durationSec 30 (expiresFrame-frame = 1800 exactly), self + alliesTopAtk{2,excludeSelf,byFinalAtk} — exactly 3 of 4 units.",
+        "blindSaid": "S2b: FAITHFUL disposition (30s one-shot, byFinalAtk, 3 targets). S5: identical assertions pass (3 targets incl. mast, expiry ~1800, exactly 3 applies). S6: byte-identical encoding.",
+        "formulaCheck": "Generic critRatePct (no 'of normal attacks' scoping) — correct stat; start-of-battle one-shot via passive+durationSec is the repo's chisato pattern; 30s wall-clock matches prose.",
+        "fireRateOk": true,
+        "explanation": "Four-way agreement, value/trigger/scope/duration all match prose. Driver's permanent-encoding counterfactual discriminates (drops the timed expiry → RED)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Max HP ▲ 86.2% of user's Max HP, 7s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "casterMaxHpPct 86.2 / durationSec 7 on burstCast, self + alliesTopAtk{2,excludeSelf,byFinalAtk}; resolves to a single flat maxHpFlat value shared by all 3 targets; offensively inert (e3 rule: ally-granted Max HP never feeds atkOfMaxHpPct) but encoded for completeness.",
+        "blindSaid": "S2b: FAITHFUL (keep-the-stat; keyed to burstCast not fullBurstEnter). S5: caster-scaled single flat value assertion passes. S6: identical encoding.",
+        "formulaCheck": "'of the skill user's Max HP' → caster-scaled flat grant is the correct routing (SSOT §1a caster-scaled grants convert at apply time); 'without restoring HP' trivially satisfied (no heal effect); burstCast keying correct — mast is B2 and fullBurstEnter would fire on other B2s' rotations.",
+        "fireRateOk": true,
+        "explanation": "Value/stat/trigger/scope/duration all match prose; driver's noMaxHp removal run proves the asserted inertness rather than assuming it."
+      },
+      {
+        "kitLine": "Critical Damage ▲ 25.19% for 7 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "critDamagePct 25.19 / durationSec 7 on burstCast, self + 2 byFinalAtk; applies exactly 3× per mast cast; expiresFrame-frame = 420 (7s) exactly.",
+        "blindSaid": "S2b: FAITHFUL (burstCast keying load-bearing vs fullBurstEnter). S5: per-cast cadence + 3-target assertions pass; the one RED (expiresFrame<10000) is the burstEligibility:3 fixture artifact, not this line's encoding. S6: identical.",
+        "formulaCheck": "Generic critDamagePct stacking additively in the Major bucket alongside S1's 50.94 — correct bucket and additive semantics per SSOT §1b.",
+        "fireRateOk": true,
+        "explanation": "Four-way agreement; fires at prose-implied cadence (≥8 casts/180s in the sole-B2 fixture). No finding."
+      },
+      {
+        "kitLine": "Storm: 4.52% ATK, mirrors stacks, 1s×7s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "burstCast DoT, atkPct 226 (= 4.52 × 50-stack cap), durationSec 7 / intervalSec 1, requiresTargetStatus 'Sea Breeze'; ⚑ cap-bind shared-refresh reading documented with a settle recipe (Mast-focus popup: stacks = tick% / 4.52). Live perResource mirror rejected as undrivable (no crit-count primitive for pool accrual).",
+        "blindSaid": "S2b: wanted a live perResource stack mirror. S5: gate + stack-sensitivity assertions PASS (zero Storm with skill1 dropped; slowed accrual reduces Storm — via the status/trigger mutation); reasoned ~14 stacks (per-stack 3s expiry). S6: 22.6 (~5 stacks, rotation-weighted). Magnitude spread ~10×, all three flagged measurement-gated.",
+        "formulaCheck": "Structure matches SSOT DoT rules: ticks at interval, crit-eligible (DOT_CRIT default ON), never cores, FB +50% by landing timing, burst-bucket attribution — all asserted GREEN in the driver test. Per rule F the 226-vs-63-vs-22.6 magnitude is owner/measurement-gated and does not contradict the prose's own number (4.52 × a 50-cap the prose itself prints); tagged ⚑ CALIBRATED.",
+        "fireRateOk": true,
+        "explanation": "The gate, cadence (7 ticks/cast verified per-cast), crit/core routing, and stack-sensitivity are all faithful and discriminating (unmirrored 4.52 counterfactual → RED; no-Sea-Breeze → zero ticks). The fixed-cap magnitude is the one documented ⚑; the stack-count reading (shared-refresh cap-bind vs per-stack expiry turnover) is the genuine open measurement the owner must settle."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "Storm stack mirror shipped at the 50-cap (226%/tick); blind re-derivations read 14 (S5) and ~5 (S6) stacks — a ~3.6–10× magnitude spread on mast's only damage line.",
+      "evidence": "Kit: 'Mirrors the stack count of Sea Breeze every 1 sec' + 'stacks up to 50 … lasts for 3 sec'. SSOT: no crit-count trigger primitive exists, so live stack accrual is undrivable; refresh-vs-per-stack-expiry semantics decide whether the cap binds. Driver encodes cap-bind shared-refresh (documented ⚑ + popup recipe); S5/S6 read turnover steady states.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Needs measurement, not a fudge: Mast-focus recording — read one Storm tick popup, stacks = tick% / 4.52%; confirm whether the 3s timer refreshes all stacks on re-application (cap reachable) or expires per stack (turnover steady state). Re-pin atkPct from the measured stack count."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "HP<70% Crit Damage 50.94% encoded passive always-on (real-game reading) vs S2b's in-sim burstCast-7s self-trigger (Max-HP grant drops HP ratio to ~53.7%); uptime is unproven either way.",
+      "evidence": "Kit: 'Activates when HP falls below 70% … Critical Damage ▲ 50.94% continuously.' Engine has no HP pool, so the gate cannot be evaluated literally. Driver + S5: always-on (boss damage keeps a Supporter <70% regardless of bursting). S2b: burstCast-7s (literal in-sim trip via the un-restoring Max-HP grant). S6: unmodeled. All flag it measurement-gated.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Needs measurement: Mast-focus recording in a real sustained fight — observe whether the 50.94 crit-damage buff icon/uptime is continuous from early boss damage or pulses with her burst window; settle passive vs condition-held (and latch-vs-release). Do not encode a number to hit a board total."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": 1.0,
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: every divergence from the literal prose is documented in the override's unmodeled/caveats with a ⚑ and a measurement recipe, and no kit line is silently dropped. Convergence is strong — the S5 blind suite passes 14/15 runnable assertions against the shipped override with the single RED proven to be S5's own burstEligibility:3 fixture artifact (the 25.19 buff is exactly 420 frames; the accommodation pushes the last cast's window past the assertion's arbitrary 10000-frame bound), and the S6 blind override is byte-identical on skill2, both burst buff blocks, the Storm gate/cadence, and the DEF▼ gap. The two real residuals are both measurement-gated and owner-owned: (1) Storm's stack-mirror magnitude — driver's 50-cap (226%/tick) vs S5's ~14 vs S6's ~5, a ~10× spread on mast's only damage line, hinging on refresh-vs-per-stack-expiry of Sea Breeze; (2) S1 50.94 uptime — passive always-on (driver+S5) vs burstCast-7s (S2b) vs unmodeled (S6). Both are documented FIDELITY-class ⚑s with concrete recording recipes, so they do not block GO. Same-model residual the owner should spot-check: every role is the same model family, so the shared-refresh cap-bind reading of 'stacks up to 50, lasts 3 sec' and the 'Supporter sits below 70% HP' intuition are exactly the kind of comfortable priors a Mast-focus recording should confirm before these numbers feed any board.",
+  "model": "kimi-code/k3"
+}
