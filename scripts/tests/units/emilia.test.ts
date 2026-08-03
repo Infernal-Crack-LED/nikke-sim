@@ -202,6 +202,43 @@ describe('emilia — kit spec', () => {
     });
   });
 
+  // ---- theme-21 canary ------------------------------------------------------------------------
+  describe('theme 21 — "buff my NEXT round" gap (CANARY: fails when the engine is fixed)', () => {
+    it('reproduces the counterfactual that docs/engine-modeling-gaps.md theme 21 cites', () => {
+      // This is the EVIDENCE for theme 21, executable at a named path rather than quoted from a
+      // session that no longer exists. It asserts the gap is STILL OPEN, so it goes red the moment
+      // someone fixes the decrement — which is the signal to un-skip the two GAP tests below and
+      // re-run emilia's board reading. It is NOT an endorsement of the behaviour.
+      //
+      // Shipped (durationShots 1, the faithful kit value): neither S1 buff reaches a round.
+      const bucketsNow = new Set(
+        shipped.parents.map((p) => p.mult.charge.toFixed(4))
+      );
+      expect(
+        bucketsNow.has((BASE_CHARGE + CD_STATIC / 100).toFixed(4)),
+        'theme 21 appears FIXED — the S1b charge buff now reaches a shot. Un-skip the two GAP tests in this file, re-check emilia on the board, and prune theme 21.'
+      ).toBe(false);
+
+      // Bumping ONLY durationShots 1 -> 2 makes both S1 buffs live: the charge bucket gains
+      // 2.6206, and the +13.01% Charge Speed lifts her shot count. That isolates the decrement as
+      // the cause — nothing else about the encoding changes.
+      const bumped = run(
+        withPatchedOverride(SLUG, (ov: any) => {
+          for (const e of ov.skill1[0].effects) {
+            e.durationShots = 2;
+          }
+        })
+      );
+      const bucketsBumped = new Set(
+        bumped.parents.map((p) => p.mult.charge.toFixed(4))
+      );
+      expect(
+        bucketsBumped.has((BASE_CHARGE + CD_STATIC / 100).toFixed(4))
+      ).toBe(true);
+      expect(bumped.unit.pulls).toBeGreaterThan(shipped.unit.pulls);
+    });
+  });
+
   // ---- S1b: full charge -> self Charge Damage ▲2.01%/ammo, 1 round --------------------------
   describe('S1b — Charge Damage ▲2.01% per unit of Max Ammo, for 1 round', () => {
     const cd = shipped.cast.filter(

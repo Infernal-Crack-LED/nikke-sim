@@ -698,7 +698,11 @@ Carriers (every override pairing a per-pull trigger with `durationShots`):
 | `phantom`                 | S1 Attack Damage ▲75.17%                          | 2        | 1         | half the window |
 | `vesti-tactical-upgrade`  | S1 Charge Speed ▲100% / Charge Damage ▲58.5%      | 3        | 2         | a third of the window |
 
-**Evidence (counterfactual, not inference).** On the `liter`/`crown`/`emilia`/`helm` control comp,
+**Evidence (counterfactual, not inference) — re-runnable at
+`scripts/tests/units/emilia.test.ts`, the "theme 21 … CANARY" block**, which executes the
+counterfactual below on every `verify.sh` and FAILS the moment the gap closes (its message says to
+un-skip that file's two GAP tests, re-read emilia on the board, and prune this section).
+On the `liter`/`crown`/`emilia`/`helm` control comp,
 bumping ONLY `durationShots` 1 → 2 on emilia's S1 block changes her charge bucket from
 `{2.5, 15.5053}` to `{2.5, 2.6206, 15.6259}` — the 12.06 appears for the first time — and lifts her
 shot count 116 → 128 as the +13.01% Charge Speed goes live. `durationShots: 2` is the DIAGNOSTIC,
