@@ -9,6 +9,42 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-03) `mint` Singing/Dancing gate ENACTED as a dynamic per-cast alternation (`resourceGate`),
+  superseding the 50%-uptime halving proxy — owner-confirmed parity (Dancing-first) + strict
+  alternation, zero graded-board impact.** Follows directly from the same-day mode-default ruling
+  entry below, which had left this as an open owner decision pending two facts: which state she
+  starts in, and whether the alternation is strict. Owner-confirmed both directly in conversation:
+  "she starts with nothing on, which means she goes dancing first" (matches the kit-literal Status
+  1/2 gate — "if NOT in Dancing [incl. no part yet] → gain Dancing" — already assumed Dancing-first)
+  and "the alternation is that clean/strict," then directed the fix: "we should actually alternate
+  her buffs and not apply them half all the time." Implementation exactly follows the recipe already
+  spec'd by the 2026-07-25 kit-autonomy gauntlet's binding judge (S7 opus, code-verified, independently
+  corroborated by the blind S2b/S5 reviewers) in the override note: a `singing` resource (0=Dancing,
+  1=Singing; declared `resources`, initial 0) driven by two `mode:'solo'` `burst` blocks on Mint's own
+  `burstCast` (`everyN:2`/`everyNOffset:1` → `delta:-1` on her odd casts, `everyNOffset:0` →
+  `delta:+1` on her even casts), and the S1 casterAtkPct + S2 stage-3 crit/projExpl/pierce blocks
+  gated `resourceGate:{name:'singing',min:1}` at the FULL kit-literal magnitude (45.02/19.94/50/32.72
+  — unchanged values, already independently pinned by `mint.test.ts`'s prior M4 duet assertions; only
+  the GATING changed). Not a scientific-method-gated change: no new numeric magnitude is introduced
+  (kit-literal, pre-certified), and the mechanism is a direct code-level implementation of
+  owner-stated facts about her own kit, not an inference from ambiguous footage — same class of
+  authority as the many other "owner-confirmed" kit-mechanism rulings in this log (e.g. the
+  `mint`/`prika` DUET ROTATION entry, 2026-07-23). Test-first: `scripts/tests/units/mint.test.ts` M1/M2
+  rewritten RED-then-GREEN — pins firing only in odd-cast-index windows (frame-correlated to her own
+  burst-cast sequence) at the full magnitude, discriminated against an ungated/raw-parser reading, a
+  REVERSED (Singing-first) parity, and the toggle removed entirely (stuck at initial Dancing); M4
+  updated to assert duet mode is unconditional (fires every rotation) vs solo's gated alternation, same
+  peak value in both. **Board impact: ZERO on the currently graded board** — checked directly, not
+  estimated: `mint`'s only graded comp (`PA MiKa`) pairs her with `prika`, which forces
+  `duet (w/ Prika)` mode (unconditional, untouched by this change); solo mode currently has no graded
+  real-fight anchor at all, so `scripts/regression.ts` + `scripts/control-regression.ts` are both
+  snapshot-stable (verified, not assumed) and `verify.sh` is green end-to-end. Solo-mode board effect
+  is real but currently unmeasured (validate-overrides solo-fixture total: 37.1M → 38.0M, ~+2.4%,
+  consistent with the note's prior "a few % board-level" estimate) — will surface once a solo-mint
+  comp is graded. — `src/skills/overrides/mint.json`, `scripts/tests/units/mint.test.ts`,
+  `docs/engine-modeling-gaps.md` (primitive census refresh: `everyN`/`everyNOffset`/`resourceGate` now
+  include `mint`)
+
 - **(2026-08-03) `trina` S1 fullBurstEnd HoT recovery cadence ENACTED (5-tick heal stream);
   Full-Charge threshold heals stay unmodeled.** Her 2026-07-24 kit-autonomy gauntlet had flagged the
   fix conditionally ("if a recovery-event primitive lands, the fullBurstEnd 4.06%/s×5s HoT becomes a
