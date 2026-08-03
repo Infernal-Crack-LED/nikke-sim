@@ -151,7 +151,15 @@ Two boards per unit:
   Sparkling Summer), element-typed targets set both carries' element, and
   boss-element-gated enemy debuffs (Brid: Silent Track's Wind Code, Helm:
   Aquamarine's Electric Code) set the carries to the advantaged element that
-  wakes the debuff.
+  wakes the debuff. A True Damage ▲ buff (Flora's burst) makes both carries'
+  normal attacks True-flavored, so the buff has real damage to multiply.
+  Distributed and Sustained Damage ▲ buffs (Crust, Rosanna: Chic Ocean, Delta:
+  Ninja Thief, the base Elegg — not Elegg: Boom and Shock — and Mast: Romantic
+  Maid) give each carry a small synthetic
+  hit every 10 seconds tagged that flavor — a clearly-labeled MOCK standing in
+  for the fact that a plain weapon-fire carry can never generate either flavor
+  on its own, sized to be a minor contributor so the buff registers without
+  dominating the carry's own damage.
 
 **Pair profiles** (`w/ Prika` / `w/ Mint` / `w/ Anchor`):
 **Mint**, **Prika**, and **Mast: Romantic Maid** are ranked with and without

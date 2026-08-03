@@ -238,6 +238,7 @@ current but not a contract.
 | Primitive                   | Meaning                                                | Users                                                                                                                                                                                                                  |
 | --------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `hasPierce` / `pierceModes` | Permanently Pierce-tagged / Pierce only in named modes | alice, red-hood, zwei / cinderella-crystal-wave, zwei                                                                                                                                                                  |
+| `hasTrueNormals`             | Permanently True-flavored normal attacks (STATIC, unlike the swap-scoped `weaponSwap.trueNormals` window chisato/takina/base laplace — slug `laplace`, RL/Iron, not laplace-ultimate-hero — use) | none on the roster today — the buffer board's typed-adaptation carries only (`src/ranks/buffer.ts` `deriveCarrySpec`, 2026-08-03) |
 | `burstSnapshotsPreFb`       | Burst damage resolves pre-FB/pre-stage                 | cinderella                                                                                                                                                                                                             |
 | `consolidation`             | Pellet-consolidation single-bullet mode                | dorothy-serendipity                                                                                                                                                                                                    |
 | `magDumpRof`                | Whole-magazine dump after a priming charge             | cinderella                                                                                                                                                                                                             |
@@ -361,7 +362,24 @@ Planned follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
   too.
 - **buffer** — 74 B1/B2 + B3-buffer units, added carry DPS vs a no-op baseline over two synthetic
   standard carries (`src/ranks/synthetics.ts`, class-modal MG+RL). Two arms: generic and typed
-  (carries auto-adapt to the kit: weapon swap / pierce / projectile-explosion / element).
+  (carries auto-adapt to the kit: weapon swap / pierce / projectile-explosion / element / True
+  Damage / Distributed+Sustained Damage — `CarrySpec` in `src/ranks/buffer.ts`).
+  **Flavor-gated typed adaptation (landed 2026-08-03):** an ally-facing `trueDamagePct` buff
+  (flora) grants both carries `hasTrueNormals` (a new static kit primitive, §5) so its True
+  Damage ▲ has a real True-flavored hit to multiply — until this, the buff read exactly 0 on
+  both boards (the carries have no skill/burst kit and normal fire is never True-flavored on its
+  own). An ally-facing `sustainedDamagePct`/`distributedDamagePct` buff (crust,
+  rosanna-chic-ocean, delta-ninja-thief, elegg, mast-romantic-maid) grants each carry a synthetic
+  `MOCK_TICK` rider instead — one instant `flatDamage` hit every 10s tagged the needed flavor,
+  sized off the carry's own weapon modal (`MODAL_WEAPON`). No engine primitive exists for a
+  STATIC sustained/distributed normal-attack tag (unlike True Damage/Pierce), and sustained (dot)
+  /distributed (flatDamage) instances are otherwise only ever produced by a caster's own
+  skill/burst line targeting the enemy — so this is a deliberately-labeled POLICY MOCK, not a
+  measured value, picked (owner-chosen Option 3 of the 2026-08-03 typed-board flavor audit) to be
+  a minority contributor (checked via `--explain <slug> --typed`) and independent of Full Burst
+  count/rotation. `sustained`/`distributed` are folded into the baseline-run memo key (unlike
+  `pierce`/`trueFlavor`, which are pure tags with no damage of their own) because the rider fires
+  regardless of any buff, changing the baseline's raw DPS by itself.
   **STANDARD TEAM (owner spec, landed 2026-08-03):** no-op B1 (20s, 7s CDR) + two no-op B2 (20s) +
   the two carries; the tested unit takes the second B2's slot and leads its own stage (behind the
   same-stage no-op it would lose every contest and stop bursting), and the baseline puts a
