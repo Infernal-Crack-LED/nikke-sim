@@ -44,6 +44,14 @@ lives. Newest first within each section.
   `chime` 126.3 → 142.7, `alice-wonderland-bunny` 0 → 15.5; `anis-star` 59.4 → 25.1 (rank 10→28).
   Negative rows 5 → 12 — expected under this model, since an enabler weaker than the standard 7s now
   reads below its baseline, and the leaderboard trims them.
+  **A formation gate makes 12 enablers, not 14 (cross-family review round 4, BLOCKER).** The
+  classifier counted any ally-facing `burstCdr`, ignoring the block's `formation` gate. The engine
+  activates such a block only when `(formation === 'hasB1') === teamHasB1` (`src/engine/sim.ts:737`),
+  and the standard team ALWAYS seats a B1 — so a `noB1` block is permanently inert here.
+  `anis-star` and `rapi-red-hood` carry their ONLY ally-facing reduction behind exactly that gate, so
+  the board stood the control down for them and fielded teams with NO enabler at all, the one thing
+  this ruling forbids. Both now keep the control: `anis-star` 25.1 → 43.0 (rank 29→15),
+  `rapi-red-hood` −2.7 → 0.0. No other unit moves.
   **Found by the cross-family review (kimi-code/k3, FIX-BEFORE-MERGE), not by me:** the comp-profile
   path replaced each no-op filler's ENTIRE override with the profile's synthetic kit, which was
   harmless only while this board loaded no control overrides at all. Once it loaded them, every

@@ -90,24 +90,30 @@ const population = Object.entries(data.characters as any)
 //
 // Every team fields exactly one (owner ruling 2026-08-03): the tested unit when
 // it is an ally-facing CDR carrier, the no-op B1 otherwise. Self-only reduction
-// does not qualify — prika, tia, mint, red-hood and blanc carry `burstCdr` but
-// only for themselves. This mode lists the classification so a mis-scan is
-// visible; the four ladder enablers (liter, volume, dolla, helm-aquamarine)
-// bury theirs inside an `escalating` effect's `steps`, which is exactly the
-// shape a shallow scan drops.
+// does not qualify — of the units this board actually ranks, mint, prika and
+// tia carry `burstCdr` for themselves only. This mode lists the classification
+// so a mis-scan is visible; the four ladder enablers (liter, volume, dolla,
+// helm-aquamarine) bury theirs inside an `escalating` effect's `steps`, which
+// is exactly the shape a shallow scan drops, and a `formation: 'noB1'` block is
+// inert on a board whose every row seats a B1.
 if (process.argv.includes('--cdr')) {
+  // mirror the board: a tested B3's burst slot is suppressed, so CDR living
+  // there cannot make it the enabler
+  const isB3 = (slug: string) =>
+    (data.characters as any)[slug]?.burst !== 'I' &&
+    (data.characters as any)[slug]?.burst !== 'II';
   const enablers = population.filter((slug) =>
-    suppliesTeamCdr(overrides[slug])
+    suppliesTeamCdr(overrides[slug], isB3(slug))
   );
   const selfOnly = population.filter(
     (slug) =>
-      !suppliesTeamCdr(overrides[slug]) &&
+      !suppliesTeamCdr(overrides[slug], isB3(slug)) &&
       JSON.stringify(overrides[slug] ?? {}).includes('burstCdr')
   );
   process.stdout.write(
     `TESTED UNIT IS THE ENABLER (no-op B1 stands down) — ${enablers.length}\n  ` +
       enablers.join(', ') +
-      `\n\nCARRIES burstCdr BUT SELF-ONLY (no-op B1 keeps the role) — ${selfOnly.length}\n  ` +
+      `\n\nCARRIES burstCdr BUT DOES NOT QUALIFY — self-only, or gated on a formation\nthis board never fields (no-op B1 keeps the role) — ${selfOnly.length}\n  ` +
       selfOnly.join(', ') +
       `\n\nevery other unit on the board runs with the no-op B1 as its enabler\n`
   );

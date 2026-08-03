@@ -223,6 +223,7 @@ export function suppliesTeamCdr(
       slot?: string;
       trigger?: any;
       target?: any;
+      formation?: string;
       effects?: unknown[];
     };
     if (
@@ -233,6 +234,15 @@ export function suppliesTeamCdr(
       String(block.target.kind).startsWith('allies') &&
       Array.isArray(block.effects) &&
       !(burstSuppressed && block.slot === 'burst') &&
+      // The standard team ALWAYS seats a B1 (the no-op B1 on every row, plus
+      // the tested unit on B1 rows), and the engine activates a formation-gated
+      // block only when `(formation === 'hasB1') === teamHasB1`
+      // (src/engine/sim.ts:737). A `noB1` block is therefore permanently inert
+      // here and cannot make anyone the team's enabler — anis-star and
+      // rapi-red-hood carry their ONLY ally-facing burstCdr behind exactly that
+      // gate, so counting it stood the control down and left those two teams
+      // with no enabler at all.
+      (!block.formation || block.formation === 'hasB1') &&
       hasCdr(block.effects)
     ) {
       found = true;
@@ -441,7 +451,7 @@ export interface BufferValue {
   baselineDps: number; // Σ carry DPS with the no-op baseline (internal context, not emitted)
   testedBurstCasts: number; // a tested B3's burst EFFECTS are suppressed (burstOffSlug); this counts rotation turns, which it can still take
   fullBursts: number; // the team's Full Bursts over the fight
-  baselineFullBursts: number; // ...and the standard team's, which it must match
+  baselineFullBursts: number; // ...and its baseline's. They legitimately differ (gauge, own CDR, a weaker enabler); the guarantee is only that neither depends on the tested unit's own cooldown
   profile: string | null; // comp profile id (with-healer/with-shielder/duo); null = plain
   rules: string[]; // typed-board adaptation audit trail ([] on generic)
   rank: number;
