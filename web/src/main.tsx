@@ -46,6 +46,9 @@ const CreditsPage = lazy(() =>
 const UnitPage = lazy(() =>
   import('./UnitPage').then((m) => ({ default: m.UnitPage }))
 );
+const CharactersPage = lazy(() =>
+  import('./CharactersPage').then((m) => ({ default: m.CharactersPage }))
+);
 
 // Feed the shared portrait-crop constant into CSS as `--portrait-crop-top` (a
 // percentage), so the `object-position` on portrait <img>s stays in lockstep with
@@ -112,6 +115,8 @@ function Root() {
           <RosterSyncPage user={user} onLogin={onLogin} />
         ) : route === 'credits' ? (
           <CreditsPage />
+        ) : route === 'characters' ? (
+          <CharactersPage />
         ) : (
           <App user={user} />
         )}

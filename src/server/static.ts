@@ -169,6 +169,11 @@ let TAB_META: Record<string, TabMeta> = {
     // pick) instead of the generic site screenshot.
     image: 'unit/maiden-ice-rose.discord',
   },
+  characters: {
+    title: 'NIKKE Characters — Every Nikke’s Kit, Overload Lines & DPS Rank',
+    label: 'Characters',
+    desc: 'Browse every NIKKE character. Filter by element, weapon, burst stage, class or kit role, then open a Nikke for her full kit, best overload lines, and solo-raid DPS ranking.',
+  },
   credits: {
     title: 'Credits — NIKKE Solo Raid Sim',
     label: 'Credits',

@@ -2386,6 +2386,176 @@ a.dpschart-name:hover {
 .unit-tools a:hover {
   text-decoration: underline;
 }
+.unit-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.unit-crumbs a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.unit-crumbs a:hover {
+  text-decoration: underline;
+}
+/* Kit-role archetype tags sit under the identity pills, visually quieter. */
+.unit-roletags {
+  margin-top: 6px;
+}
+.pill-role {
+  background: var(--panel2);
+  color: var(--muted);
+  cursor: help;
+}
+/* The prerendered 2:1 Nikke card — the same image as this page's og:image. */
+.unit-cardshot img {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.unit-ol-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+}
+.unit-ol-table th,
+.unit-ol-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.unit-ol-table th.r,
+.unit-ol-table td.r {
+  text-align: right;
+}
+.unit-ol-table thead th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 13px;
+}
+.unit-ol-table tbody tr.hl {
+  background: var(--panel2);
+}
+.unit-status-list,
+.unit-standings {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+.unit-status-list li,
+.unit-standings li {
+  margin-bottom: 4px;
+}
+.pill-tier {
+  font-weight: 500;
+}
+.tier-measured {
+  border-color: #3f7d4a;
+  color: #8fd6a0;
+}
+.tier-calibrated,
+.tier-validated {
+  border-color: #6b5a2c;
+  color: var(--warn);
+}
+.tier-model_only {
+  border-color: var(--border);
+  color: var(--muted);
+}
+.unit-unmodeled {
+  margin-top: 8px;
+}
+.unit-unmodeled summary {
+  cursor: pointer;
+}
+.unit-unmodeled ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+.unit-unmodeled li {
+  margin-bottom: 6px;
+}
+.unit-skill {
+  margin-bottom: 16px;
+}
+.unit-skill h3 {
+  font-size: 14px;
+  margin: 0 0 4px;
+  color: var(--muted);
+}
+.unit-skill-block {
+  margin: 0 0 6px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+  white-space: pre-line;
+}
+
+/* Characters index (web/src/CharactersPage.tsx) */
+.characters-page header {
+  margin-bottom: 20px;
+}
+.characters-page h1 {
+  margin: 0 0 8px;
+}
+/* In NAVIGATION mode the roster card is an <a>, not a <button> — restore the
+   button's box model so the two modes lay out identically. */
+a.teambuilder-card {
+  text-decoration: none;
+}
+/* BADGE mode wrapper: the profile link is a sibling of the card button (an <a>
+   inside a <button> is invalid), positioned over its top-right corner. */
+.teambuilder-card-wrap {
+  position: relative;
+  display: flex;
+}
+.teambuilder-card-wrap > .teambuilder-card {
+  width: 100%;
+}
+.teambuilder-card-profile {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1;
+  text-decoration: none;
+  color: var(--text);
+  background: rgba(16, 18, 22, 0.78);
+  border: 1px solid var(--border);
+  /* Touch has no hover, so the badge is always visible there; a pointer device
+     fades it in on hover/focus so it doesn't clutter a 196-card grid. */
+  opacity: 0.85;
+  transition:
+    opacity 0.12s,
+    border-color 0.12s;
+}
+.teambuilder-card-profile:hover,
+.teambuilder-card-profile:focus-visible {
+  opacity: 1;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .teambuilder-card-profile {
+    opacity: 0;
+  }
+  .teambuilder-card-wrap:hover .teambuilder-card-profile,
+  .teambuilder-card-profile:focus-visible {
+    opacity: 1;
+  }
+}
 
 /* Overload Calc rows: label the OL-line mix (may wrap), stack damage + % gain */
 .ol-row {

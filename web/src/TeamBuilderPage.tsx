@@ -599,6 +599,7 @@ export function TeamBuilderPage({
         onToggle={toggleTeamSlot}
         dragProps={slotDrop.dragProps}
         draggingSlug={slotDrop.dragPayload}
+        profileHref={(slug) => `/unit/${slug}`}
       />
     </section>
   );

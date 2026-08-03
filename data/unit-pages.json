@@ -1,0 +1,4672 @@
+{
+  "_comment": "Per-unit data for the /unit/<slug> landing pages, built by scripts/build-unit-pages.ts. units.<slug>.ol = the exhaustive ranked free-line overload table (the four lines beyond the 4 elem + 4 atk floor) in the Solo framework at T11, the same basis as data/ol-optimal.json; gainPct is over the 8/12 floor (four free lines empty). units.<slug>.status = the slim public projection of data/kit-status.json (tier/tuned/graded/unmodeled only — the evidence/residual/findings prose is AI-facing and deliberately excluded). Regenerate when kits/overrides/engine change.",
+  "framework": "solo",
+  "tier": 11,
+  "topN": 10,
+  "units": {
+    "2b": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      }
+    },
+    "a2": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": ["Explosion Radius ▲ 100.74% for 15 sec."],
+          "burst": [
+            "Effect 1: Current HP ▼ 3.99% every 1 sec.",
+            "If own HP dips below 40%, Mode B is removed."
+          ]
+        }
+      }
+    },
+    "ada": {
+      "status": {
+        "tier": "VALIDATED",
+        "tuned": true,
+        "graded": {
+          "teams": 1,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill1": [
+            "Recovers 10% of the damage dealt as HP for 10 sec. (skipped: lifesteal — no HP pool consumer modeled; see findings F1/F2: targets bursted Burst-3 allies, would fire their 'recovery' triggers if a B3 recovery-consumer comp appears)"
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 9.11
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 8.89
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 8.26
+        },
+        {
+          "label": "2× Crit Rate + 2× Crit DMG",
+          "gainPct": 7.94
+        },
+        {
+          "label": "1× Max Ammo + 1× Crit Rate + 1× Crit DMG + 1× Charge DMG",
+          "gainPct": 7.87
+        },
+        {
+          "label": "1× Max Ammo + 1× Crit Rate + 1× Crit DMG + 1× Charge Speed",
+          "gainPct": 7.66
+        },
+        {
+          "label": "3× Crit Rate + 1× Crit DMG",
+          "gainPct": 7.64
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 7.6
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 7.56
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 7.35
+        }
+      ]
+    },
+    "ade-agent-bunny": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "graded": {
+          "teams": 1,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill1": [
+            "Spy Lens: Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec."
+          ],
+          "burst": ["Minimum Effective Range ▲ 55.56% for 10 sec."]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 18.1
+        },
+        {
+          "label": "3× Charge DMG + 1× Max Ammo",
+          "gainPct": 17.31
+        },
+        {
+          "label": "4× Charge DMG",
+          "gainPct": 17.26
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 16.41
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 16.35
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 16.35
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 15.68
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 15.63
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 15.23
+        },
+        {
+          "label": "3× Charge Speed + 1× Charge DMG",
+          "gainPct": 15.17
+        }
+      ]
+    },
+    "alice": {
+      "status": {
+        "tier": "MEASURED",
+        "tuned": true,
+        "graded": {
+          "teams": 1,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill2": [
+            "■ Affects self. Activates when above 80% HP. Gain continuous Pierce.",
+            "■ Affects self. Activates when HP falls below 80%. Continuously recover HP by 8.12% of attack damage."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 37.48
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 36.23
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 31.99
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 29.5
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 29.31
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge Speed",
+          "gainPct": 28.84
+        },
+        {
+          "label": "4× Charge Speed",
+          "gainPct": 28.53
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 27.02
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 26.63
+        },
+        {
+          "label": "3× Charge Speed + 1× Charge DMG",
+          "gainPct": 24.97
+        }
+      ]
+    },
+    "alice-wonderland-bunny": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "■ Activates after 90 normal attack(s). Affects all Water Code allies.\nStack count of buffs ▲ 1. (a stack-CAP raise, not a +1 stack grant — no engine primitive raises a buff's stack cap; the only stackable buff in play, Carrot Party, is damage-inert in v1: double inert)"
+          ],
+          "burst": [
+            "■ Activates when Carrot Party is at max stacks. Affects all allies.\nIncoming healing ▲ 150% for 15 sec. (no healing-received channel — no HP pool at scope; the activation gate references the inert Carrot Party stack count)"
+          ]
+        }
+      }
+    },
+    "anchor-innocent-maid": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Once: Potency of HP ▲ 30.96% for 5 sec.",
+            "Three times: Stack count of debuffs ▼ 1.",
+            "■ Activates when entering Full Burst while an ally from the same squad is on the battlefield. Affects all allies."
+          ],
+          "burst": [
+            "Storage: Stores excess healing received by the skill user, up to 60.19% of their Max HP. Lasts for 25 sec."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Charge DMG + 1× Max Ammo",
+          "gainPct": 22.7
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 22.51
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 22.51
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 22.3
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 22.3
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 21.36
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 20.95
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 19.97
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 19.57
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 19.36
+        }
+      ]
+    },
+    "anis-sparkling-summer": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      },
+      "ol": [
+        {
+          "label": "2× Crit Rate + 2× Crit DMG",
+          "gainPct": 9.51
+        },
+        {
+          "label": "3× Crit Rate + 1× Crit DMG",
+          "gainPct": 9.14
+        },
+        {
+          "label": "3× Crit DMG + 1× Crit Rate",
+          "gainPct": 8.63
+        },
+        {
+          "label": "4× Crit Rate",
+          "gainPct": 7.54
+        },
+        {
+          "label": "4× Crit DMG",
+          "gainPct": 6.51
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 1.38
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 1.13
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 0.44
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": -0.29
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": -1.45
+        }
+      ]
+    },
+    "anis-star": {
+      "status": {
+        "tier": "MEASURED",
+        "tuned": true,
+        "graded": {
+          "teams": 10,
+          "within3pct": 6
+        },
+        "unmodeled": {
+          "skill1": [
+            "If there are no other Burst 1 allies: Effect 1: Affects self. Cancels Everyone's Star.",
+            "If there are any other Burst 1 allies: Effect 1: Affects self. Cancels My Own Star."
+          ],
+          "skill2": [
+            "■ Activates when performing a Full Charge attack while in Everyone's Star status. Affects all allies.\nRestores 1.26% of the skill user's final Max HP as HP."
+          ],
+          "burst": [
+            "Explosion Radius ▲ 100% for 10 sec.",
+            "DEF ▲ 55.01% for 10 sec."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 29.1
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 28.88
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge Speed",
+          "gainPct": 28.44
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 28.36
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 27.44
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 27.42
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge Speed",
+          "gainPct": 27.19
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 27.17
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge Speed",
+          "gainPct": 26.92
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 26.9
+        }
+      ]
+    },
+    "arcana": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": ["The Magician: Cooldown of Skill 2 ▼ 75% for 15 sec."]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 25.69
+        },
+        {
+          "label": "3× Charge DMG + 1× Max Ammo",
+          "gainPct": 25.09
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 24.22
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 24.16
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 23.03
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 22.71
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge Speed",
+          "gainPct": 22.42
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge DMG",
+          "gainPct": 22.3
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge DMG",
+          "gainPct": 22.08
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 22.01
+        }
+      ]
+    },
+    "arcana-fortune-mate": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "graded": {
+          "teams": 1,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill1": [
+            "Full Burst ends: self removes Making Memories + Snapshots of Youth."
+          ],
+          "skill2": [
+            "Normal attacks in Making Memories (one at a time, resets on MM removal): 2 time(s): Reload 6 rounds."
+          ],
+          "burst": ["Making Memories: Reload 2 rounds."]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 29.94
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 29.58
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 29.39
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 25.89
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 25.4
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 24.72
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 21.99
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 21.66
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 20.75
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 19.79
+        }
+      ]
+    },
+    "ark-ranger-black": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Charges battery by 50% continuously, up to 100%. This effect cannot be removed. (part-destroy trigger — no destructible parts on the partless scope-lock boss; never fires in scope-lock)"
+          ],
+          "burst": [
+            "Activates while in Transformation status: Battery ▲ 50%. (never fires in scope-lock — burst CD 40s > Transformation duration 10s; the burst always fires outside Transformation)"
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Crit Rate + 2× Crit DMG",
+          "gainPct": 9
+        },
+        {
+          "label": "3× Crit Rate + 1× Crit DMG",
+          "gainPct": 8.65
+        },
+        {
+          "label": "3× Crit DMG + 1× Crit Rate",
+          "gainPct": 8.17
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 7.93
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 7.69
+        },
+        {
+          "label": "4× Crit Rate",
+          "gainPct": 7.14
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 6.99
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 6.99
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 6.64
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 6.25
+        }
+      ]
+    },
+    "asuka": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": ["Damage dealt to Shield ▲ 601.01% continuously."]
+        }
+      },
+      "ol": [
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 61.36
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 52.74
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 52.51
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 41.18
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 40.88
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 40.46
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 30.48
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 30.29
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 29.75
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 29.17
+        }
+      ]
+    },
+    "asuka-wille": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill2": ["Effect 1: MG heating up speed ▼ 100% for 3 sec."]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 57.91
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 57.56
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 55.18
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 54.69
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 54
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 31.84
+        },
+        {
+          "label": "2× Crit Rate + 2× Crit DMG",
+          "gainPct": 8.66
+        },
+        {
+          "label": "3× Crit Rate + 1× Crit DMG",
+          "gainPct": 8.33
+        },
+        {
+          "label": "3× Crit DMG + 1× Crit Rate",
+          "gainPct": 7.86
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 7.51
+        }
+      ]
+    },
+    "avistar": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill2": [
+            "■ Activates when entering Full Burst while in Stargazer status with over 25% HP. Affects self. Current HP ▼ 20% — UNMODELED: v1 has no HP pool, so the self HP drain (and its >25% HP gate) move no damage and feed no mechanic; Avistar has no low-HP offensive gate."
+          ]
+        }
+      }
+    },
+    "biscuit": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill2": [
+            "Invincible for 5 sec. Activates 2 time(s) per battle. — UNMODELED (inert): defensive invincibility on a Defender ally whose HP falls below 50%; v1 has no damage-taken / HP-threshold model (immortal boss), so the trigger is indeterminate and can never legitimately fire. No invincibility primitive exists in the schema.",
+            "Recovers 23.26% of the skill user's final Max HP. Activates 2 time(s) per battle. — UNMODELED (inert): a genuine unit heal, BUT it shares skill2's un-fireable HP-below-50% trigger (no HP pool in v1), so it can never legitimately fire either. NOT encoded on an invented proxy trigger — doing so would spuriously drive a Defender ally's on-recovery kit (Crown-class over-credit); the faithful disposition is UNMODELED + verbatim record."
+          ],
+          "burst": [
+            "Affects 2 random ally unit(s) whose cover has been destroyed. Rebuild Cover with 93.6% HP. — UNMODELED (inert): restores COVER HP, not a unit's HP; no sim cover-HP representation (same NO-OP class as liter S2, owner ruling 2026-07-21). Emits no unit-recovery event, so it must not trigger recovery-consumer teammates."
+          ]
+        }
+      }
+    },
+    "blanc": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "burst": ["Gain Indomitability for 10 sec."]
+        }
+      }
+    },
+    "bready": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Activates when gaining a buff that increases sustained damage. Affects self.",
+            "Cancels Recommended Taste.",
+            "Activates when gaining a buff that increases distributed damage while not in a state of increased sustained damage. Affects self.",
+            "Cancels Lingering Taste."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 30.23
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 27.53
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 26.45
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 26.35
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 26.08
+        },
+        {
+          "label": "3× Charge Speed + 1× Charge DMG",
+          "gainPct": 25.79
+        },
+        {
+          "label": "3× Charge Speed + 1× Crit Rate",
+          "gainPct": 25.79
+        },
+        {
+          "label": "3× Charge Speed + 1× Crit DMG",
+          "gainPct": 25.52
+        },
+        {
+          "label": "1× Max Ammo + 1× Crit Rate + 1× Crit DMG + 1× Charge Speed",
+          "gainPct": 23.1
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 22.9
+        }
+      ]
+    },
+    "brid-silent-track": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      },
+      "ol": [
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 21.97
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 21.01
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 20.55
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 19.88
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 18.36
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 18.02
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 17.77
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 17.45
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 16.55
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 15.6
+        }
+      ]
+    },
+    "chime": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      }
+    },
+    "chisato": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "graded": {
+          "teams": 2,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill1": [
+            "Activates at the start of battle. Affects self. Charges Extrasensory to 100%, up to 100%. This effect is continuous and cannot be removed.",
+            "Only when at 100%: Dodging Bullets: Invulnerable for 2 sec.",
+            "Affects self every 2 sec. Extrasensory ▼ 1%."
+          ],
+          "burst": ["Charges Extrasensory to 100%."]
+        }
+      },
+      "ol": [
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 18.13
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 18.12
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 17.72
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 17.16
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 16.33
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 16.31
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 16.04
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 16.04
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 15.26
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 14.44
+        }
+      ]
+    },
+    "cinderella": {
+      "status": {
+        "tier": "MEASURED",
+        "tuned": true,
+        "graded": {
+          "teams": 5,
+          "within3pct": 2
+        },
+        "unmodeled": {
+          "skill2": [
+            "■ Activates at the start of battle. Affects self.\nDecoy: Creates an avatar with 96% of the skill user's final Max HP. This effect is continuous.",
+            "■ Activates when entering Burst Skill Stage 3. Affects self.\nDecoy: Creates an avatar with 96% of the skill user's final Max HP. This effect is continuous."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 17.93
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 17.49
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge DMG",
+          "gainPct": 17
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 16.86
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge DMG",
+          "gainPct": 16.68
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 16.47
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 16.14
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 15.91
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 15.82
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 15.63
+        }
+      ]
+    },
+    "cinderella-crystal-wave": {
+      "status": {
+        "tier": "CALIBRATED",
+        "tuned": true,
+        "graded": {
+          "teams": 2,
+          "within3pct": 2
+        },
+        "unmodeled": {
+          "skill1": [
+            "Activates when reloading to max ammunition capacity. Affects self. Preparation for Change: Reloading Time changes to fixed 3 sec for 6 sec. (Removed when the last bullet is fired.)"
+          ],
+          "skill2": [
+            "Activates at the start of battle and when using Burst Skill. Affects self. Creates a Decoy avatar with 70.34% of the caster's Max HP, continuously."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 20.71
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 19.67
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 19.41
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 14.11
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 14.08
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 13.83
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 13.76
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 13.25
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 13.14
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 12.39
+        }
+      ]
+    },
+    "crown": {
+      "status": {
+        "tier": "MEASURED",
+        "tuned": true,
+        "graded": {
+          "teams": 10,
+          "within3pct": 3
+        },
+        "unmodeled": {
+          "skill2": [
+            "Relax: Incoming healing ▲ 4.06% continuously. Stacks up to 20 times.",
+            "Invulnerable for 5 sec.",
+            "Attract: Taunts all enemies for 5 sec."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 60.88
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 54.22
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 53.95
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 33.17
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 32.85
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 32.39
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 29.23
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 29.01
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 28.39
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 27.73
+        }
+      ]
+    },
+    "crust": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Activates when attacking with Full Charge and self is in Maillard status. Affects all allies.",
+            "Maillard Duration ▲ 2.5 sec.",
+            "Activates when attacking with Full Charge and self is in Blanching status. Affects all allies.",
+            "Blanching Duration ▲ 2.5 sec.",
+            "Removes Blanching.",
+            "Removes Maillard."
+          ],
+          "skill2": [
+            "Affects all allies not in Reliable Cooking status.",
+            "Removes 1 debuff."
+          ]
+        }
+      }
+    },
+    "d-killer-wife": {
+      "status": {
+        "tier": "VALIDATED",
+        "tuned": true,
+        "graded": {
+          "teams": 3,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill1": [
+            "■ Activates when attacking with Full Charge for 3 time(s). Affects self.",
+            "Gain Pierce for 1 shot."
+          ],
+          "burst": [
+            "Buff takes effect depending on the area hit — the PARTS branch ('Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s') is unmodeled (TODO: needs destructible-part modeling; core-only proxy for now — see caveats)."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Charge DMG + 1× Max Ammo",
+          "gainPct": 22.25
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 19.66
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 19.13
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 18.95
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 18.93
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 17.76
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 17.71
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 17.4
+        },
+        {
+          "label": "4× Charge DMG",
+          "gainPct": 17.05
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 16.34
+        }
+      ]
+    },
+    "delta-ninja-thief": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill2": [
+            "Effect 2: Attract: Taunt all enemies continuously.",
+            "Effect 1: Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.",
+            "Ninjutsu IFAK lasts for 4 sec.",
+            "Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK."
+          ],
+          "burst": [
+            "Next shield's HP ▲ 20.13% for 10 sec.",
+            "Maximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec."
+          ]
+        }
+      }
+    },
+    "diesel": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Activates when attacked in Attract status. Affects self.",
+            "Recovers 12.96% of the skill user's final Max HP as HP.",
+            "Activates after landing 150 normal attack(s) in Attract status. Affects self.",
+            "Stack count of buffs ▲ 1."
+          ],
+          "burst": ["Attract: Taunt all enemies for 10 sec."]
+        }
+      }
+    },
+    "diesel-winter-sweets": {
+      "status": {
+        "tier": "VALIDATED",
+        "tuned": true,
+        "graded": {
+          "teams": 1,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill2": [
+            "Activates when an ally or self destroys an enemy's part. Affects all allies (except self).",
+            "Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.",
+            "Activates when an ally or self destroys an enemy's part. Affects self.",
+            "Sustained Damage ▲ 68.04% for 15 sec."
+          ],
+          "burst": [
+            "Activates while the skill user is in Highlight status. Affects all allies (except self).",
+            "Noise Pollution: Hit Rate ▼ 100% for 1 sec.",
+            "Affects all allies if the skill user is in Highlight status.",
+            "Mute stacks ▼ 1."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 14.88
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 14.83
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 14.49
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 14.48
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 13.82
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 13.77
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 13.56
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge DMG",
+          "gainPct": 13.16
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 13.08
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 12.92
+        }
+      ]
+    },
+    "dolla": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      }
+    },
+    "dorothy": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "burst": [
+            "Manifestation: Cooldown of Skill 2 ▼ 18 sec, lasts for 10 sec. [⚑ skill2-CDR; no primitive to dynamically shorten the interval:20 S2 timer for the 10s window, and no clean phase-independent reduction (extra-cast count depends on burst timing within the S2 cycle). Estimate: S2 20s->~2s for 10s = ~5 extra 216% distributed nukes ≈ +1080% final ATK distributed per burst. Recipe: add a skill2CooldownReductionSec buff stat read by the interval-trigger scheduler to shorten its period while active. Tier 2 (scoped-buff).]"
+          ]
+        }
+      }
+    },
+    "dorothy-serendipity": {
+      "status": {
+        "tier": "CALIBRATED",
+        "tuned": true,
+        "graded": {
+          "teams": 2,
+          "within3pct": 1
+        },
+        "unmodeled": {
+          "skill1": [
+            "Hit 160 pellets: Expands Pierce range 200% 3 rounds",
+            "Hit Rate ▲ 98.18% 3 rounds"
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 33.12
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 30.19
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 29.93
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 26.47
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 26.12
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 25.62
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 18.61
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 18.38
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 17.73
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 17.04
+        }
+      ]
+    },
+    "drake": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      },
+      "ol": [
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 13.31
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 13.03
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 12.85
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 12.45
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 11.88
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 11.05
+        },
+        {
+          "label": "2× Crit Rate + 2× Crit DMG",
+          "gainPct": 9.74
+        },
+        {
+          "label": "3× Crit Rate + 1× Crit DMG",
+          "gainPct": 9.37
+        },
+        {
+          "label": "3× Crit DMG + 1× Crit Rate",
+          "gainPct": 8.84
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 8.38
+        }
+      ]
+    },
+    "e-h": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill2": [
+            "Effect 2: Activates when an ally or self destroys a destructible projectile. Scraps ▲ 1 continuously, up to a maximum of 10.",
+            "Effect 3: Activates when an ally or self destroys an enemy's part. Scraps ▲ 5 continuously, up to a maximum of 10.",
+            "Effect 4: Activates when an enemy is neutralized. Scraps ▲ 2 continuously, up to a maximum of 10."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 21.7
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 21.44
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 20.64
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 20.46
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 20.27
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 20.21
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 19.94
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 19.75
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 19.49
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 18.73
+        }
+      ]
+    },
+    "ein": {
+      "status": {
+        "tier": "VALIDATED",
+        "tuned": true,
+        "graded": {
+          "teams": 2,
+          "within3pct": 1
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Max Ammo + 1× Charge Speed",
+          "gainPct": 14.5
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 14.38
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 13.3
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 12.64
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 12.04
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 11.81
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 11.62
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 11.58
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 11.54
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 11.11
+        }
+      ]
+    },
+    "elegg-boom-and-shock": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "graded": {
+          "teams": 1,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill1": [
+            "Activates at the start of battle. Affects 1 random enemy.",
+            "Possession lasts for 6 sec.",
+            "Ability: Find and capture ghosts possessing the enemy.",
+            "Required hit count: 100 time(s) in total, cumulative across all allies."
+          ],
+          "burst": ["Affects random enemy units", "Maintains at least 1 ghost."]
+        }
+      },
+      "ol": [
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 35.15
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 28.97
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 28.69
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 27.92
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 27.54
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 27.01
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 19.97
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 19.72
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 19.01
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 18.25
+        }
+      ]
+    },
+    "emma-tactical-upgrade": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Exposure (Cannot be removed) — Effect: Attract: Taunt all enemies continuously."
+          ],
+          "skill2": [
+            "Bonus effects when applying AS Formation to self — Effect 3: Affects self. Exposure activation disabled continuously."
+          ],
+          "burst": [
+            "Enhanced Environment Setup — Effect 2: Incoming healing ▲ 29.04%. Effect 2 Target(s): All allies"
+          ]
+        }
+      }
+    },
+    "eunhwa-tactical-upgrade": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Camouflage: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit. (Activates when using Burst Skill. Affects self.)",
+            "Camouflage: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit. (Activates when attacking with Full Charge during Full Burst. Affects self.)",
+            "Activates only when in Camouflage status. Affects self. Normal attacks deal true damage continuously. (the FLAVOR-CHANGE half of S1-L3; the 'True Damage ▲ 42.24% continuously' half IS modeled as self trueDamagePct 42.24 — see caveats)"
+          ],
+          "burst": [
+            "Special note: Fires an Exploding Bullet dealing area-of-effect damage. (splash radius inert vs the single partless boss; the cannon HIT itself is modeled as the weaponSwap shot)"
+          ]
+        }
+      }
+    },
+    "eve": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      },
+      "ol": [
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 31.68
+        },
+        {
+          "label": "4× Crit DMG",
+          "gainPct": 28.72
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 26.92
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 26.91
+        },
+        {
+          "label": "3× Crit DMG + 1× Crit Rate",
+          "gainPct": 24.85
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 21.46
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 21.45
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 20.99
+        },
+        {
+          "label": "2× Crit Rate + 2× Crit DMG",
+          "gainPct": 19.87
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 15.26
+        }
+      ]
+    },
+    "exia": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "■ Activates when the last bullet hits the target. Affects the target if the skill user is in Collect Hacking Code. ATK ▼ 13.77% for 5 sec. — no sim channel: the enemy-buff path admits only damageTakenPct/distributedDamagePct and the boss deals no damage, so an enemy ATK▼ moves nothing (sim.ts, DEF=0 basis)",
+            "DEF ▼ 13.77% for 5 sec. — no sim channel: enemy DEF▼ is dropped at dispatch on the DEF=0 basis (sim.ts 'other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0')"
+          ],
+          "burst": [
+            "DEF ▼ 2.71% for 5 sec. — no sim channel: enemy DEF▼ is dropped at dispatch on the DEF=0 basis (same as the skill1 DEF▼ line)"
+          ]
+        }
+      }
+    },
+    "flora": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Incoming Healing ▲ 4% continuously. Stacks up to 5 times. — no incomingHealingPct stat exists and v1 models no HP pool, so healing-received scaling is doubly inert (damage-neutral).",
+            "■ Activates after landing 100 normal attacks. Affects all Electric Code allies. Increases the stack count of stackable buffs by 1. — trigger (hitCount:100) + target (alliesOfElement Electric) expressible, but the EFFECT (increment every active stackable buff's stack count by 1) has no engine primitive. ⚑ engine-core (see caveats).",
+            "■ Activates when entering Burst Stage 2. Affects all allies in the Peace of Mind state. Max HP ▲ 15.01% of the skill user's max HP (without restoring HP) for 2 sec. — offensively inert (ally-granted Max HP does not feed a teammate's atkOfMaxHpPct, e3 video rule; 'without restoring HP' so no recovery event) and the 'Peace of Mind state' target gate has no expression."
+          ],
+          "skill2": [
+            "■ Activates when the HP of an adjacent ally drops to 90% or below while the ally is still alive. Affects all allies. Creates a shield with 10.22% of the skill user's final max HP that lasts for 10 sec. — HP-threshold trigger; v1 has no HP pool and the boss deals no damage, so no ally ever drops below 100% HP and this never fires. ⚑ engine-core (see caveats).",
+            "■ Activates when either adjacent ally reaches max HP. Affects all allies. True Damage ▲ 30.97% for 10 sec. — 'reaches max HP' is an HP-transition trigger that needs an HP pool the sim does not model. ⚑ engine-core.",
+            "■ Activates when a shield is placed in front of this unit. Affects all allies in the Peace of Mind state. ATK ▲ 45.12% of the skill user's ATK for 10 sec. — the `shielded` trigger EXISTS, but its only shield source is the S2 line above (HP-gated), so the chain is dead in the no-damage sim; the 'Peace of Mind state' target gate is also unexpressible. ⚑ engine-core."
+          ]
+        }
+      }
+    },
+    "grave": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "graded": {
+          "teams": 2,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill1": [
+            "Activates when Prediction status ends. Affects self. Removes 100% of ammo.",
+            "Removes Heat Emission under certain conditions.",
+            "Activates only when in Heat Emission status. Affects self. Recovers 2% Max HP/1s continuously."
+          ],
+          "skill2": ["Removed upon reloading to max ammunition."],
+          "burst": [
+            "Prediction:",
+            "Current HP ▼ 1% every 1 sec, lasts for 10 sec."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 58.76
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 57.27
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 54.39
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 50.12
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 41.06
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 38.8
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 38.45
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 34.03
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 33.56
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 32.89
+        }
+      ]
+    },
+    "guillotine-winter-slayer": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "graded": {
+          "teams": 1,
+          "within3pct": 0
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 14.3
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 13.93
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 13.84
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 13.57
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 13.51
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 13.4
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 13.25
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 13.25
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 12.53
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 11.76
+        }
+      ]
+    },
+    "guilty": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill2": ["Increases stack count of stackable buffs by 1."]
+        }
+      }
+    },
+    "helm": {
+      "status": {
+        "tier": "MEASURED",
+        "tuned": true,
+        "graded": {
+          "teams": 4,
+          "within3pct": 0
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 19.45
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 19.27
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 19.24
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 17.27
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge Speed",
+          "gainPct": 14.21
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge Speed",
+          "gainPct": 13.99
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 13.97
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 13.04
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 12.63
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge DMG",
+          "gainPct": 12.4
+        }
+      ]
+    },
+    "helm-aquamarine": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 18.24
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 18.19
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 17.88
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 17.81
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 17.19
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 17.02
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 15.83
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 15.54
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 14.71
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 13.83
+        }
+      ]
+    },
+    "isabel": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      },
+      "ol": [
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 25.66
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 25.47
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 20.23
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 20.07
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 19.55
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 18.98
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 18.5
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 17.72
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 17.17
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 16.84
+        }
+      ]
+    },
+    "jill": {
+      "status": {
+        "tier": "MEASURED",
+        "tuned": true,
+        "graded": {
+          "teams": 2,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "burst": [
+            "Reload speed is fixed at a 99.96% increase for 10 sec.",
+            "Normal attacks deal True Damage for 10 sec."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 14.46
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 14.22
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 14.14
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 13.79
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 13.42
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 13.31
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 9.91
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 9.68
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 9.01
+        },
+        {
+          "label": "2× Crit Rate + 2× Crit DMG",
+          "gainPct": 8.33
+        }
+      ]
+    },
+    "julia": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      }
+    },
+    "label": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Activates when Delusion status ends. Affects self. Delusion Shattered: Activates up to 2 time(s). This effect is continuous.",
+            "Effect 1: Imagined Heartbreak: Prevents being targeted by single-target attacks for 1 sec x Delusion Shattered count. This effect is removed upon taking a direct hit.",
+            "Effect 2: Stuns for 1 sec per Delusion Shattered stack.",
+            "Activates when performing a normal attack while not in Delusion status. Affects self. Delusion: Creates a Shield equal to 30.15% of the skill user's final Max HP. This effect is continuous.",
+            "Activates when using Burst Skill while not in Delusion status. Affects self. Delusion: Creates a Shield equal to 30.15% of the skill user's final Max HP. This effect is continuous."
+          ],
+          "skill2": [
+            "Activates at the start of battle. Affects all allies (except self). Damage taken from Electric Code enemies ▼ 70.4% for 5 sec. Activates 1 time(s) per battle.",
+            "Damage taken from Electric Code enemies ▼ 70.4% continuously."
+          ],
+          "burst": [
+            "Shared Delusion: The Shield created by Label becomes invulnerable for 10 sec."
+          ]
+        }
+      }
+    },
+    "laplace": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Activates when attacking with Full Charge. Affects self. Hero Vision: Explosion Radius ▲ 3.57%, stacks up to 5, 15s."
+          ],
+          "skill2": [
+            "Activates when hitting the target's Parts. Affects the target's body. Deals 14.78% of final ATK as additional damage."
+          ],
+          "burst": ["(Note: Unable to take cover.)"]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Charge DMG + 1× Charge Speed",
+          "gainPct": 12.47
+        },
+        {
+          "label": "4× Charge DMG",
+          "gainPct": 12.16
+        },
+        {
+          "label": "2× Charge Speed + 2× Charge DMG",
+          "gainPct": 11.62
+        },
+        {
+          "label": "2× Charge DMG + 1× Crit Rate + 1× Charge Speed",
+          "gainPct": 11.01
+        },
+        {
+          "label": "3× Charge Speed + 1× Charge DMG",
+          "gainPct": 10.8
+        },
+        {
+          "label": "2× Charge DMG + 1× Crit DMG + 1× Charge Speed",
+          "gainPct": 10.78
+        },
+        {
+          "label": "3× Charge DMG + 1× Crit Rate",
+          "gainPct": 10.77
+        },
+        {
+          "label": "3× Charge DMG + 1× Crit DMG",
+          "gainPct": 10.55
+        },
+        {
+          "label": "4× Charge Speed",
+          "gainPct": 10.28
+        },
+        {
+          "label": "2× Charge Speed + 1× Crit Rate + 1× Charge DMG",
+          "gainPct": 10.09
+        }
+      ]
+    },
+    "laplace-ultimate-hero": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Activates when performing a Full Charge attack. Affects self. Warm Up: Charge Speed ▲ 10% continuously. Stacks up to 5 times.",
+            "Activates when Electric Power, Fully Full Charge ends. Affects self. Removes 100% of ammo."
+          ],
+          "skill2": [
+            "Activates after performing 12 normal attacks while in the Electric Power, Fully Full Charge state. Affects self. Over Energy ▲ 5% continuously, up to 100%.",
+            "Activates when Over Energy reaches 100%. Resets Over Energy and affects self. Advances to the next Over Energy stage. Effects vary for each stage of Over Energy. Each subsequent effect triggers all effects before it: Stage 1: Max HP ▲ 2% continuously. Stage 2: Max HP ▲ 3% continuously. Stage 3: Max HP ▲ 7% continuously. Stage 4: Max HP ▲ 10.5% continuously."
+          ]
+        }
+      }
+    },
+    "leona": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "■ Activates after 15 normal attack(s). Affects all allies with a Shotgun.",
+            "Maximum Effective Range ▲ 20% for 10 sec."
+          ]
+        }
+      }
+    },
+    "liberalio": {
+      "status": {
+        "tier": "MEASURED",
+        "tuned": true,
+        "graded": {
+          "teams": 4,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill2": [
+            "Activates when landing a Full Charge attack against a Rapture that is not the stage target. Affects self. Gentle Current: Fixes charge time at 1 sec continuously. Removes Raging Current.",
+            "Activates at battle start. Affects self. Immunity to Increase/Decrease Charge Speed effects, continuous."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 21.73
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 17.76
+        },
+        {
+          "label": "4× Charge Speed",
+          "gainPct": 17.51
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge Speed",
+          "gainPct": 16.64
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge Speed",
+          "gainPct": 16.4
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 16.1
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 15.82
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge Speed",
+          "gainPct": 15.66
+        },
+        {
+          "label": "1× Max Ammo + 1× Crit Rate + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 15.03
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 14.98
+        }
+      ]
+    },
+    "liter": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill2": [
+            "■ Affects 2 ally unit(s) with the lowest remaining cover HP. Restores 52.5% of Cover HP. — NO-OP (owner ruling 2026-07-21): restores COVER HP, not a unit's HP; emits NO unit-recovery event, so it must not trigger recovery-consumer teammates (was spuriously firing Crown's +20.99% team Attack Damage every FB). No sim HP-pool representation."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 23.7
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 23.64
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 23.3
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 23.27
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 22.49
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 21.86
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 18.53
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 18.18
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 17.44
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 16.38
+        }
+      ]
+    },
+    "little-mermaid": {
+      "status": {
+        "tier": "VALIDATED",
+        "tuned": true,
+        "graded": {
+          "teams": 4,
+          "within3pct": 2
+        },
+        "unmodeled": {
+          "skill1": [
+            "■ Activates only when in Focusing status. Affects all allies.",
+            "Focuses fire continuously."
+          ],
+          "skill2": [
+            "■ Activates after landing 50 normal attacks. Affects the target if the target is in Bubble status.",
+            "Explosive Bubble: Damage Taken ▲ 5.05% continuously. Stuns for 3 sec. Removes Bubble."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 17.48
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 17.18
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 16.9
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 16.6
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 16.36
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 15.48
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 14.79
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 14.77
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 14.36
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 13.77
+        }
+      ]
+    },
+    "ludmilla-winter-owner": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      },
+      "ol": [
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 45.19
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 44.46
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 42.41
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 40.72
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 40.66
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 39.31
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 27.44
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 26.87
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 26.86
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 25.14
+        }
+      ]
+    },
+    "maiden-ice-rose": {
+      "status": {
+        "tier": "MEASURED",
+        "tuned": true,
+        "graded": {
+          "teams": 3,
+          "within3pct": 1
+        },
+        "unmodeled": {
+          "skill1": [
+            "Activates when entering Burst Stage 1 with MP at 0. MP recovers by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.",
+            "Activates when entering Full Burst with MP above 1. MP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 24.51
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 22.27
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge Speed",
+          "gainPct": 21.2
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge Speed",
+          "gainPct": 20.92
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge Speed",
+          "gainPct": 20.67
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 20.62
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 20.39
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 20.06
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge DMG",
+          "gainPct": 19.8
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 19.58
+        }
+      ]
+    },
+    "mana": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Activates if the skill user is in Metal γ status when an ally is out of action. Affects 1 incapacitated ally unit(s) with the highest final ATK (except the skill user).",
+            "Resurrect with 96% HP.",
+            "Activates when an ally is out of action. Affects self.",
+            "Removes Metal γ."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 12.95
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 12.64
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 12.58
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 12.38
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 12.23
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 12.06
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 11.98
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 11.26
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 11.26
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 10.5
+        }
+      ]
+    },
+    "marciana": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Activates when the last bullet hits the target. Affects 2 ally unit(s) with the highest final ATK. Incoming healing ▲ 26.98% for 3 sec."
+          ],
+          "burst": [
+            "Storage: Stores excess healing received by the skill user, up to 27.87% of their Max HP. Lasts for 10 sec."
+          ]
+        }
+      }
+    },
+    "marciana-marine-study": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "■ Activates when an enemy is neutralized if the target is in the Flagged Target state. Affects 1 random enemy unit(s). Flagged Target Designation Effect 1: Deals 3789.25% of final ATK as additional damage. Effect 2: Activates when the target is alive. Flagged Target: ATK ▼ 10.56% for 10 sec. — UNMODELED: no enemyNeutralized trigger in the engine; inert in the sim (the boss never dies). The Flagged Target status IS modeled (targetStatus) as the gate for this block, but the block itself never fires."
+          ],
+          "skill2": [
+            "■ Activates every time there are 6 or more Raptures present for a period of 1 sec. Penguin Emergency Dispatch Function: Expends Whistle stacks to attack Raptures when there are 6 or more present. Effect 1: Affects all enemies. Deals 214.36% of final ATK as additional damage. Effect 2: Affects self. Whistle stacks ▼ 1. — UNMODELED: no enemy-count trigger in the engine; inert in the sim (never ≥6 enemies in solo raid)."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 12
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 11.63
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 11.39
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 11.13
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 11.13
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 11.1
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 10.86
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 10.4
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 10.08
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 9.63
+        }
+      ]
+    },
+    "mari": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Activates when landing a Full Charge attack. Affects all allies.",
+            "Damage dealt to Shield ▲ 100.09% for 3 sec."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 17.93
+        },
+        {
+          "label": "4× Charge DMG",
+          "gainPct": 17.26
+        },
+        {
+          "label": "3× Charge DMG + 1× Max Ammo",
+          "gainPct": 17.23
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 16.27
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 16.13
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 16.04
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 15.47
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 15.43
+        },
+        {
+          "label": "3× Charge Speed + 1× Charge DMG",
+          "gainPct": 15.12
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 14.95
+        }
+      ]
+    },
+    "mast-romantic-maid": {
+      "status": {
+        "tier": "VALIDATED",
+        "tuned": true,
+        "graded": {
+          "teams": 2,
+          "within3pct": 2
+        }
+      },
+      "ol": [
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 48.46
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 45.54
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 43.75
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 35.24
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 34.14
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 31.99
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 27.35
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 26.82
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 25.32
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 22.85
+        }
+      ]
+    },
+    "maxwell": {
+      "status": {
+        "tier": "CALIBRATED",
+        "tuned": true,
+        "graded": {
+          "teams": 2,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill2": [
+            "Activates when there are above 5 enemy units, excluding Nikkes. Affects self. Critical Rate ▲ 4.83%. Critical Damage ▲ 13.91%."
+          ],
+          "burst": [
+            "Change the weapon in use: Charge Time 2 sec",
+            "Full Charge Damage 300% of damage",
+            "Max Ammunition Capacity 1 round",
+            "Additional Effect: Pierce"
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 17.54
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 17.23
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 17.16
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 16.82
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 16.78
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 16.7
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 16.66
+        },
+        {
+          "label": "3× Charge DMG + 1× Max Ammo",
+          "gainPct": 16.39
+        },
+        {
+          "label": "4× Charge DMG",
+          "gainPct": 15.81
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge Speed",
+          "gainPct": 15.41
+        }
+      ]
+    },
+    "maxwell-ordinary-mechanic": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      }
+    },
+    "mica-snow-buddy": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "burst": ["Affects all allies. Removes 1 debuff(s)."]
+        }
+      }
+    },
+    "mihara-bonding-chain": {
+      "status": {
+        "tier": "CALIBRATED",
+        "tuned": true,
+        "graded": {
+          "teams": 2,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill2": [
+            "Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.",
+            "Ensnaring Chains stacks ▲ 20.",
+            "Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.",
+            "Restraint Chain ▲ 1, up to 10."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 15.82
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 13.67
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 13.41
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 13.34
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 12.98
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 12.47
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 11.98
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 11.73
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 11.02
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 10.26
+        }
+      ]
+    },
+    "milk-blooming-bunny": {
+      "status": {
+        "tier": "VALIDATED",
+        "tuned": true,
+        "graded": {
+          "teams": 1,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill2": [
+            "■ Activates only when in Embarrassment status. Affects self.",
+            "Pierce Damage ▲ 64.7% continuously."
+          ],
+          "burst": [
+            "Overconfident, Huh?!:",
+            "Gains Immunity to Embarrassment for 10 sec."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 15.06
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 14.02
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 13.63
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 13.46
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 13.45
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 13.42
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 12.3
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 12.06
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 11.85
+        },
+        {
+          "label": "2× Charge Speed + 2× Charge DMG",
+          "gainPct": 11.33
+        }
+      ]
+    },
+    "mint": {
+      "status": {
+        "tier": "VALIDATED",
+        "tuned": true,
+        "graded": {
+          "teams": 1,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill1": [
+            "Full Charge in Assigned Part: Dancing: all allies recover 1.8% of caster's Max HP every 1 sec, lasts 3 sec."
+          ],
+          "skill2": [
+            "Activates when entering Burst Stage 3 while not in Sing Along status: Cancels Singing and Dancing."
+          ],
+          "burst": [
+            "Only one Assigned Part is applied according to Mint's current status.",
+            "Status 1: If in the Assigned Part: Dancing status, Mint gains Assigned Part: Singing. This effect is continuous and cannot be removed.",
+            "Status 2: If not in the Assigned Part: Dancing status, Mint gains Assigned Part: Dancing. This effect is continuous and cannot be removed."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 26.84
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 26.02
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 24.97
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 24.85
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 24.38
+        },
+        {
+          "label": "1× Max Ammo + 1× Crit DMG + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 23.48
+        },
+        {
+          "label": "1× Max Ammo + 1× Crit Rate + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 23.36
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 23.34
+        },
+        {
+          "label": "3× Charge DMG + 1× Max Ammo",
+          "gainPct": 23.14
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 22.76
+        }
+      ]
+    },
+    "miranda": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 23.03
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 22.83
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 21.94
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 21.93
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 21.7
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 21.48
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 21.44
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 21.01
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 20.63
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 19.32
+        }
+      ]
+    },
+    "modernia": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "graded": {
+          "teams": 1,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "burst": [
+            "Destroy Mode: Extends her line of sight and auto-aims at all enemies within range. The stage target is treated as a single enemy regardless of whether it has parts (including interruption parts)."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 32.61
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 32.27
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 30.61
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 30.37
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 29.9
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 28.55
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 27.74
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 27.44
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 26.09
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 22.51
+        }
+      ]
+    },
+    "moran": {
+      "status": {
+        "tier": "MEASURED",
+        "tuned": true,
+        "graded": {
+          "teams": 2,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill1": [
+            "Activates at the start of battle. Affects self. DEF ▲ 3.51% continuously for every 1% of HP lost."
+          ],
+          "skill2": [
+            "Activates when firing the final bullet. Affects the 3 enemy unit(s) with the highest final ATK. Taunts for 4 sec.",
+            "Activates when HP falls below 20%. Affects self. Effects vary according to the number of uses. Perseverance: Only one effect is triggered at a time.",
+            "Once: Max HP ▲ 91% for 3 sec. Activates once per battle.",
+            "Twice: Max HP ▲ 69.84% for 3 sec. Activates once per battle.",
+            "Three Times: Max HP ▲ 51.09% for 3 sec. Activates once per battle."
+          ],
+          "burst": [
+            "Additional Effect(s):",
+            "Recovers 36.14% of attack damage as HP over 10 sec.",
+            "Attract: Taunts all enemies for 10 sec.",
+            "Note: Unable to take cover while using Burst Skill.",
+            "DEF ▲ 14.85% of the skill user's DEF for 10 sec."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 14.29
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 14
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 13.6
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 13.42
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 13.3
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 13.2
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 13
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 12.98
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 12.42
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 12.35
+        }
+      ]
+    },
+    "naga": {
+      "status": {
+        "tier": "CALIBRATED",
+        "tuned": true,
+        "graded": {
+          "teams": 1,
+          "within3pct": 1
+        },
+        "unmodeled": {
+          "skill1": [
+            "Activates after landing 12 normal attack(s). Affects all allies. Restores 14.57% of Cover's Max HP."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 22.24
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 21.78
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 21.56
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 21.13
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 20.71
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 20.38
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 19.06
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 18.75
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 17.88
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 16.95
+        }
+      ]
+    },
+    "nayuta": {
+      "status": {
+        "tier": "VALIDATED",
+        "tuned": true,
+        "graded": {
+          "teams": 1,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill1": [
+            "Unchanging Heart: Gain Indomitability for 9 sec. Activates 1 time(s) during battle.",
+            "Equally shares HP recovery for 5 sec.",
+            "Recovers 25% of the skill user's final Max HP as HP."
+          ],
+          "skill2": [
+            "Memory Absorption: Hit Rate ▲ 1.4%, stacks up to 30 time(s) and immune to stack count increase or decrease effects continuously. This effect cannot be removed."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 21.9
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 21.52
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 21.48
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 20.88
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 20.68
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 20.37
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 19.31
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 19.02
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 18.21
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 17.35
+        }
+      ]
+    },
+    "neon-vision-eye": {
+      "status": {
+        "tier": "MEASURED",
+        "tuned": true,
+        "graded": {
+          "teams": 2,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill1": [
+            "When attacked while not in Healthy Body: Invulnerability for 3 sec (5 times per battle) and debuff immunity; Healthy Body: incoming healing ▲10.26% for 20 sec (defensive — invuln/immunity/received-heal amp; emits no heal event, no cross-unit consumer wiring needed)"
+          ],
+          "skill2": [
+            "Firepower Gauge bookkeeping: gains 100 Firepower Gauge at battle start; +2 per normal attack during Firepower Charge; +45 when Firepower Charge ends (NOT a block — the steady-state consequence is ABSORBED into the skill1 Super block's everyN 3 / everyNOffset 1: start at 100 → Super on her burst casts 1, 4, 7…; video-confirmed cast-by-cast, Run B)",
+            "When Full Burst ends: charges own burst gauge in proportion to the current Firepower Gauge (gauge→burst-gauge conversion; burst-generation only, unmodeled; empirically does not consume the Firepower cycle — every-3rd-Super held on video)"
+          ],
+          "burst": [
+            "Firepower Gauge below 100: activates Firepower Charge, charging the gauge for 10 sec (bookkeeping — ABSORBED into the everyN 3 alternation)",
+            "Firepower Gauge at 100: consumes 100 Firepower Gauge on activating Super Firepower (bookkeeping — ABSORBED into the everyN 3 alternation)",
+            "Explosion Radius ▲200% for 10 sec (inert — single partless boss, no AoE surface)"
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Max Ammo + 1× Charge Speed",
+          "gainPct": 17.84
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 17.81
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 17.45
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge DMG",
+          "gainPct": 17.29
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge Speed",
+          "gainPct": 17.13
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 17.09
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge DMG",
+          "gainPct": 17.03
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 16.93
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 16.93
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge Speed",
+          "gainPct": 16.86
+        }
+      ]
+    },
+    "noir": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "graded": {
+          "teams": 1,
+          "within3pct": 0
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 10.11
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 9.85
+        },
+        {
+          "label": "2× Crit Rate + 2× Crit DMG",
+          "gainPct": 9.56
+        },
+        {
+          "label": "3× Crit Rate + 1× Crit DMG",
+          "gainPct": 9.2
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 9.09
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 8.69
+        },
+        {
+          "label": "3× Crit DMG + 1× Crit Rate",
+          "gainPct": 8.68
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 8.52
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 8.48
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 8.3
+        }
+      ]
+    },
+    "noise": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "■ Activates when attacked 20 time(s). Affects all allies. Damage Taken ▼ 10.66% for 20 sec. — ally received-damage mitigation; v1 models no incoming ally damage and no ally HP pool, so the 'attacked 20×' trigger never accrues and 'allies take less damage' has no effect. The only damageTakenPct primitive is a BOSS debuff (positive = boss takes MORE) — the wrong direction/target, so it is NOT used (encoding it would manufacture a phantom team damage gain). ⚑ engine-core / out-of-domain (see caveats)."
+          ],
+          "skill2": [
+            "■ Activates when hitting a target with a Full Charge attack. Affects the target. Taunts for 2 sec. — aggro/targeting control; the sim is single-target with a fixed boss script and no taunt/aggro primitive, so hit location never changes damage. ⚑ inert / out-of-domain (see caveats)."
+          ]
+        }
+      }
+    },
+    "phantom": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Calling Card: DEF ▼ 32.19% for 5 sec. — the DEF▼ MAGNITUDE is inert (enemy DEF is a negligible flat subtractive term at scope-lock ATK, docs/data/damage-calculation.md; the engine drops enemy DEF debuffs, sim.ts:1782). The Calling Card status WINDOW itself IS modeled (targetStatus) as the gate for S1's Attack Damage line and S2's max-stacks consume."
+          ],
+          "skill2": [
+            "Removes Calling Card. — the engine has no consume-target-status primitive; the window lapses naturally 5s after application, which under steady fire pre-empts the next magazine-start reapplication (moot). The 84.33% additional damage and the Thief's Dagger stack drain of the same max-stacks event ARE modeled."
+          ]
+        }
+      }
+    },
+    "prika": {
+      "status": {
+        "tier": "CALIBRATED",
+        "tuned": true,
+        "graded": {
+          "teams": 1,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill1": [
+            "Outgoing healing ▲ 49.92% continuously.",
+            "Gains Pierce. This effect is continuous."
+          ],
+          "skill2": [
+            "Max HP ▲ 19.98% for 10 sec.",
+            "Effect 1: Affects the member who initiated Sing Along. Assigned Part: Singing. This effect is continuous and cannot be removed.",
+            "Effect 2: Affects all allies. Performance duration ▲ 21 sec."
+          ],
+          "burst": [
+            "Effect 1 HP MAGNITUDE: Restores 3.04% of the skill user's final max HP as HP — the recovery CADENCE (every 1 sec for 25 sec = 25 ticks) IS modeled (heal ticks:25 intervalSec:1, driving on-recovery consumers); only the HP amount is not (the engine's heal effect carries no HP value). This effect cannot be removed."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "4× Charge DMG",
+          "gainPct": 17.26
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 16.81
+        },
+        {
+          "label": "3× Charge DMG + 1× Max Ammo",
+          "gainPct": 16.38
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 15.58
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 14.96
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 14.95
+        },
+        {
+          "label": "3× Charge DMG + 1× Crit Rate",
+          "gainPct": 14.34
+        },
+        {
+          "label": "3× Charge DMG + 1× Crit DMG",
+          "gainPct": 14.15
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 13.89
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 13.75
+        }
+      ]
+    },
+    "privaty": {
+      "status": {
+        "tier": "MEASURED",
+        "tuned": true,
+        "graded": {
+          "teams": 2,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "burst": [
+            "Stuns for 3 sec.",
+            "Designated Target: ATK ▼ 5.02% for 10 sec. (the STATUS is modeled via targetStatus; its ATK-down content is inert in v1 — the boss never attacks)"
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Crit Rate + 2× Crit DMG",
+          "gainPct": 9.32
+        },
+        {
+          "label": "3× Crit Rate + 1× Crit DMG",
+          "gainPct": 8.96
+        },
+        {
+          "label": "3× Crit DMG + 1× Crit Rate",
+          "gainPct": 8.46
+        },
+        {
+          "label": "4× Crit Rate",
+          "gainPct": 7.39
+        },
+        {
+          "label": "4× Crit DMG",
+          "gainPct": 6.39
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": -19.19
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": -19.38
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": -19.93
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": -20.5
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": -35.56
+        }
+      ]
+    },
+    "privaty-unkind-maid": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      }
+    },
+    "quency-escape-queen": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "graded": {
+          "teams": 2,
+          "within3pct": 0
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 20.3
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 19.6
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 18.71
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 18.64
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 18.48
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 17.83
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 17.45
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 17.28
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 17.19
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 15.04
+        }
+      ]
+    },
+    "rapi-red-hood": {
+      "status": {
+        "tier": "MEASURED",
+        "tuned": true,
+        "graded": {
+          "teams": 5,
+          "within3pct": 1
+        },
+        "unmodeled": {
+          "skill1": [
+            "Damage to Interruption Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)"
+          ],
+          "skill2": ["Attachable Projectile — Max Ammo: 1"],
+          "burst": [
+            "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)",
+            "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 3 — a second, separate kit line from the Stage 1 instance; inert on the partless boss)",
+            "Projectile Attachment Damage ▲421.2% for 10 sec (self; Burst Stage 3 — MEASURED-INERT on every visible class, 0.13% precision across 3 comps, 2026-07-14; removed as dead datamine entry 101631006, see note)"
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 47.78
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 38.95
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 38.57
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 38.03
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 37.81
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 37.54
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 25.27
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 25.03
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 24.35
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 23.63
+        }
+      ]
+    },
+    "rapunzel": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill2": ["Incoming healing ▲ 13.65% for 15 sec."],
+          "burst": [
+            "■ Affects 1 incapacitated ally unit(s) with the highest final ATK.\nResurrect with 81.67% HP.",
+            "■ Activates when HP falls below 30%. Affects all enemies.\nStun for 1 sec."
+          ]
+        }
+      }
+    },
+    "raven": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill2": [
+            "Activates when an ally or self destroys an enemy's part. Affects self if self is not in A.N. Mode status.",
+            "Single Point Attack: Sustained damage ▲ 47.32% for 15 sec.",
+            "Removes Vital Attack."
+          ],
+          "burst": ["A.N. Mode:", "Effect 1: Removes Single Point Attack."]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 26.49
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 26.18
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 24.65
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 24.2
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge Speed",
+          "gainPct": 23.81
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 23.2
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 21.2
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge Speed",
+          "gainPct": 18.84
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge Speed",
+          "gainPct": 18.54
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 18.08
+        }
+      ]
+    },
+    "red-hood": {
+      "status": {
+        "tier": "CALIBRATED",
+        "tuned": true,
+        "graded": {
+          "teams": 2,
+          "within3pct": 1
+        },
+        "unmodeled": {
+          "skill2": [
+            "■ Activates during Beast Cage. Affects all allies. DEF ▲ 50.68% of the skill user's DEF for 10 sec.",
+            "■ Activates during The Last Howl. Affects self. Recovers 23.04% of attack damage as HP over 10 sec."
+          ],
+          "burst": [
+            "Step 2 (The Last Howl): Attract: Taunts all enemies for 10 sec.",
+            "Step 2 (The Last Howl): Incoming healing ▲ 74.88% for 10 sec.",
+            "Step 3 (Red Wolf): Expand Pierce range by 100% for 10 sec."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Charge DMG + 1× Max Ammo",
+          "gainPct": 15.03
+        },
+        {
+          "label": "3× Charge DMG + 1× Charge Speed",
+          "gainPct": 14.21
+        },
+        {
+          "label": "4× Charge DMG",
+          "gainPct": 14.05
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 12.6
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 12.43
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 12.19
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 11.95
+        },
+        {
+          "label": "2× Charge DMG + 1× Crit Rate + 1× Charge Speed",
+          "gainPct": 11.82
+        },
+        {
+          "label": "3× Charge DMG + 1× Crit Rate",
+          "gainPct": 11.76
+        },
+        {
+          "label": "2× Charge DMG + 1× Crit DMG + 1× Charge Speed",
+          "gainPct": 11.65
+        }
+      ]
+    },
+    "rei-ayanami": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill2": [
+            "Damage dealt to Shield ▲ 700.5% continuously — no shield-damage StatKey in the schema; inert vs the partless scope-lock boss (no shield)."
+          ]
+        }
+      }
+    },
+    "rei-ayanami-tentative-name": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Anti A.T. Field stacks ▲ 10.",
+            "■ Activates when entering Full Burst. Affects all allies in Annihilation State status.",
+            "Units affected by Annihilation State's additional effect ▲ 1 for 9 sec.",
+            "Attack range of Annihilation State's additional effect ▲ 500% for 9 sec.",
+            "ATK ▲ 17.6% of the skill user's ATK for 9 sec."
+          ],
+          "skill2": [
+            "■ Activates when entering Full Burst. Affects all allies with machine guns who have used their Burst Skills.",
+            "Machine Gun Ramp-Up Speed ▲ 100% for 13 sec."
+          ]
+        }
+      }
+    },
+    "rem": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "■ Activates when using Burst Skill. Affects all allies. Equally shares HP recovery for 10 sec."
+          ],
+          "skill2": [
+            "■ Activates at the start of battle. Affects self. Recovers 42.24% of attack damage as HP continuously.",
+            "■ Activates at the start of battle. Affects self and 2 Rocket Launcher-wielding ally unit(s) with the highest final ATK. Equally shares HP recovery continuously."
+          ]
+        }
+      }
+    },
+    "rosanna": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Concealment: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.",
+            "■ Activates after performing 10 normal attacks. Affects the 2 enemy unit(s) with the highest final ATK. Removes 5 buff(s). Activates once per battle."
+          ],
+          "skill2": [
+            "■ Activates at the start of battle. Affects self. Concealment: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit.",
+            "■ Activates when a Nikke is incapacitated. Affects self. Frenzy: ATK ▲ 22.61%. Stacks up to 10 times and lasts for 30 sec. Fills Burst Gauge by 36.54%.",
+            "■ Activates when a Nikke is incapacitated. Prioritizes Attacker-type enemies. Affects 1 unit(s). Deals 400% of final ATK as damage."
+          ],
+          "burst": [
+            "■ Activates when the skill user is in the Concealment state. Affects the target(s) hit by Assalto. Deals 561.6% of final ATK as additional damage."
+          ]
+        }
+      }
+    },
+    "rosanna-chic-ocean": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "■ Activates when an ally or self destroys an enemy's part. Affects all allies. ATK ▲ 3% of the skill user's ATK, stacks up to 5 time(s) and lasts for 30 sec."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 17.12
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 16.7
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 16.38
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 16.34
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 16.1
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 16.03
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 14.78
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 14.49
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 13.68
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 12.83
+        }
+      ]
+    },
+    "rouge": {
+      "status": {
+        "tier": "CALIBRATED",
+        "tuned": true,
+        "graded": {
+          "teams": 2,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill2": [
+            "Coin-state progression itself (Sword Coin → Shield Coin at 30 Full Charges → Double Sword Coin at 5 own bursts in Shield Coin) is not tracked as engine state; the coin-gated lines are encoded on their nearest trigger with the gate approximated (all inert — see note flag 3)"
+          ],
+          "burst": [
+            "Activates when in Sword Coin status. Affects all allies. Max HP ▲ 10.15% of the skill user's Max HP without restoring HP, lasts for 10 sec (casterMaxHpPct ALLY grant; offensively inert AND coin-state-gated — the engine tracks no coin state, so the per-tier burst rider cannot be gated precisely; documented rather than fired every cast, which would over-credit the cadence)",
+            "Activates when in Shield Coin status. Affects all allies. Max HP ▲ 20.1% of the skill user's Max HP for 10 sec (casterMaxHpPct ALLY grant, offensively inert, coin-state-gated; HEAL ASYMMETRY ⚑ — this rider ALONE omits 'without restoring HP', so literally it also restores HP and could arm on-recovery consumers, but it is Shield-Coin-gated which the engine cannot track and the marginal recovery-consumer impact is small — see note flag 2)",
+            "Activates when in Double Sword Coin status. Affects all allies. Max HP ▲ 30.02% of the skill user's Max HP without restoring HP, lasts for 10 sec (casterMaxHpPct ALLY grant; offensively inert, coin-state-gated)"
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 22.42
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 22.22
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge Speed",
+          "gainPct": 20.86
+        },
+        {
+          "label": "3× Charge DMG + 1× Max Ammo",
+          "gainPct": 20.28
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 19.97
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 19.9
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 19.23
+        },
+        {
+          "label": "1× Max Ammo + 1× Crit Rate + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 18.99
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge DMG",
+          "gainPct": 18.81
+        },
+        {
+          "label": "1× Max Ammo + 1× Crit DMG + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 18.79
+        }
+      ]
+    },
+    "sakura": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill2": [
+            "When attacking an enemy projectile, damage to that projectile ▲ 7.74% continuously."
+          ],
+          "burst": [
+            "Damage dealt by Wind Code enemies ▼ 90.72% for 30 sec. Activates 1 time(s) per battle.",
+            "Activates when Cherry Blossom Tea is at max stacks. Affects all allies.",
+            "Damage to Interruption Parts ▲ 23.54% for 30 sec."
+          ]
+        }
+      }
+    },
+    "sakura-bloom-in-summer": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Activates when an ally or self destroys an enemy's part. Affects self.",
+            "Sustained Damage ▲ 5.1% for 30 sec.",
+            "Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.",
+            "Dancing Flower Duration ▲ 10.02 sec.",
+            "Activates when an ally or self destroys an enemy's part. Affects all enemies who are in Sakura Petals status.",
+            "Sakura Petals Duration ▲ 10.02 sec."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Crit Rate + 2× Crit DMG",
+          "gainPct": 10.32
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 9.94
+        },
+        {
+          "label": "3× Crit Rate + 1× Crit DMG",
+          "gainPct": 9.93
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 9.65
+        },
+        {
+          "label": "3× Crit DMG + 1× Crit Rate",
+          "gainPct": 9.37
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 9.02
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 8.84
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 8.61
+        },
+        {
+          "label": "4× Crit Rate",
+          "gainPct": 8.19
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 8.03
+        }
+      ]
+    },
+    "scarlet": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": ["Current HP ▼ 4.01%."],
+          "skill2": [
+            "There is a 30% chance of activating when attacked.",
+            "Deals 138.24% of final ATK as additional damage."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 75.09
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 67.86
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 67.44
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 59.7
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 59.22
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 58.43
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 41.71
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 41.33
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 40.57
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 39.42
+        }
+      ]
+    },
+    "scarlet-black-shadow": {
+      "status": {
+        "tier": "CALIBRATED",
+        "tuned": true,
+        "graded": {
+          "teams": 2,
+          "within3pct": 0
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 14.05
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 13.79
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge DMG",
+          "gainPct": 13.77
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge DMG",
+          "gainPct": 13.52
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 13.44
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 12.97
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 12.95
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge Speed",
+          "gainPct": 12.71
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 12.32
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 12.01
+        }
+      ]
+    },
+    "snow-white": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false
+      },
+      "ol": [
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 16.43
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 15.98
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 15.91
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 14.9
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 14.34
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 14.28
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 12.69
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 12.66
+        },
+        {
+          "label": "3× Crit DMG + 1× Crit Rate",
+          "gainPct": 12.39
+        },
+        {
+          "label": "4× Crit DMG",
+          "gainPct": 12.37
+        }
+      ]
+    },
+    "snow-white-heavy-arms": {
+      "status": {
+        "tier": "MEASURED",
+        "tuned": true,
+        "graded": {
+          "teams": 3,
+          "within3pct": 1
+        },
+        "unmodeled": {
+          "skill1": [
+            "Lock-On — Function: Designates the enemy as a target of Seven Dwarves. Max Lock-On targets: 5. Deactivation condition: Performing a normal attack or taking cover.",
+            "Auto Fire Ready — Effect: DEF ▲ 42.24% continuously.",
+            "Auto Fire Ready — Function: Loads Seven Dwarves with ammo. Max ammo loaded by Auto Fire Ready: 5. Deactivation condition: Performing a normal attack.",
+            "■ Activates when performing a normal attack while not in Full Burst. Affects self. Removes Seven Dwarves Fully Active."
+          ],
+          "skill2": [
+            "Gains Pierce for 5 sec.",
+            "Activates at the start of battle. Affects self. Fixes charge time at 1.2 sec continuously."
+          ],
+          "burst": [
+            "Seven Dwarves Fully Active — Function: Increases max number of Lock-On targets and max ammo loaded by Auto Fire Ready, but also increases Charge Time.",
+            "Effect 2: Max Lock-On targets ▲ 10 continuously.",
+            "■ Affects all destructible projectiles. Deals 41.9% of final ATK as damage."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Charge Speed + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 9.47
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge Speed",
+          "gainPct": 9.22
+        },
+        {
+          "label": "2× Crit Rate + 2× Charge Speed",
+          "gainPct": 9.13
+        },
+        {
+          "label": "4× Charge Speed",
+          "gainPct": 9.03
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge Speed",
+          "gainPct": 8.97
+        },
+        {
+          "label": "2× Crit DMG + 2× Charge Speed",
+          "gainPct": 8.65
+        },
+        {
+          "label": "2× Crit Rate + 2× Crit DMG",
+          "gainPct": 8.43
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 8.34
+        },
+        {
+          "label": "2× Charge Speed + 1× Crit Rate + 1× Charge DMG",
+          "gainPct": 8.27
+        },
+        {
+          "label": "3× Crit Rate + 1× Crit DMG",
+          "gainPct": 8.11
+        }
+      ]
+    },
+    "soda-twinkling-bunny": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "graded": {
+          "teams": 1,
+          "within3pct": 1
+        }
+      },
+      "ol": [
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 44.97
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 41.36
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 39.88
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 39.31
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 37.06
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 36.89
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 36.04
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 35.47
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 33.48
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 30.07
+        }
+      ]
+    },
+    "soline-frost-ticket": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": ["Removes First Train Discount."],
+          "skill2": [
+            "■ Activates when the HP of anyone in the squad is lower than 15%. Affects the target if the target has any tickets.",
+            "Recovers 12.27% of the skill user's final Max HP as HP.",
+            "Ticket count ▼ 1.",
+            "■ Activates at the start of battle. Affects all allies.",
+            "First Train Discount for 6 sec.",
+            "Function: The effects of I'll Help You Board the Train! will not consume tickets."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 23.71
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 23.37
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 22.46
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 20.53
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 20.07
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 19.71
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 19.41
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 19.4
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 18.51
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 17.57
+        }
+      ]
+    },
+    "sugar": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Activates when cover is attacked (20% chance). Affects self. Critical Damage ▲ 16.39% for 10 sec. (no cover-attacked trigger primitive; the v1 boss never attacks so cover is never hit)",
+            "Activates when cover is attacked (20% chance). Affects self. Reload Speed ▲ 12.12% for 10 sec. (no cover-attacked trigger primitive)",
+            "Activates when cover is attacked. Restores Cover HP an amount equal to 1.5% of the skill user's final Max HP. (defensive; offensively inert on the immortal-boss basis)"
+          ]
+        }
+      }
+    },
+    "takina": {
+      "status": {
+        "tier": "MEASURED",
+        "tuned": true,
+        "graded": {
+          "teams": 1,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill1": [
+            "Activates at the start of battle: ATK ▲ 80.04% for 5 sec (the battle-start activation only; the Full-Burst-end activation of the same line IS modeled as the fullBurstEnd block — engine has no battleStart trigger and passive-trigger buffs ignore durationSec, sim.ts:983-993, so this instance is not override-expressible today)"
+          ],
+          "skill2": [
+            "Deals Stun to all enemies for 2 sec (boss-inert: the sim's boss does not fire/charge/reload, so a stun on it changes nothing; genuinely-skippable class)"
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Charge Speed + 1× Charge DMG",
+          "gainPct": 43.82
+        },
+        {
+          "label": "3× Charge Speed + 1× Crit Rate",
+          "gainPct": 39.65
+        },
+        {
+          "label": "3× Charge Speed + 1× Crit DMG",
+          "gainPct": 39.41
+        },
+        {
+          "label": "4× Charge DMG",
+          "gainPct": 17.26
+        },
+        {
+          "label": "3× Charge DMG + 1× Max Ammo",
+          "gainPct": 15.82
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 15.28
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 14.99
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 14.77
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 14.74
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 14.61
+        }
+      ]
+    },
+    "tia": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "stacks up to 2 time(s) and lasts for 12 sec (the second CDR stack + 12s stack window need a passive cover-regen proc — environmental: requires boss damage on cover + cover HP regeneration, unmodelable at the v1 damage-only scope; COLD: sim grants one −13s stack per burst, effective CD 27s vs the observed in-game ~20s)"
+          ],
+          "skill2": [
+            "■ Activates after landing 5 normal attack(s). Affects self.\nMax HP of Cover ▲ 32.75% of the skill user's Max HP for 5 sec.\nAttract: Taunts all enemies for 5 sec.",
+            "Restores Cover HP by 21.41% of the skill user's final Max HP (the restore AMOUNT — no Cover HP pool at scope; the line's trigger-anchor role for skill1 IS enacted via the burstCast proxy)",
+            "Recovers 21.96% of attack damage as HP over 10 sec."
+          ]
+        }
+      }
+    },
+    "tove": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "■ Activates after 10 normal attack(s). Affects self. Emergency-Crafted Bullets: Reload 5.31% of the magazine."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 19.06
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 19.03
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 18.46
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 17.76
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 17.68
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 17.5
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 17.23
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 16.87
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 16.83
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 14.87
+        }
+      ]
+    },
+    "trina": {
+      "status": {
+        "tier": "CALIBRATED",
+        "tuned": true,
+        "graded": {
+          "teams": 3,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill1": [
+            "Continuously recovers 4.06% of the skill user's final Max HP every 1 sec for 5 sec.",
+            "Recovers 2.03% of the skill user's final Max HP as HP.",
+            "Recovers 1.57% of the skill user's final Max HP as HP."
+          ],
+          "skill2": ["Invulnerable for 2 sec."],
+          "burst": [
+            " Spread Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 435.6% for 5 sec.",
+            "Changes Spread Roots to Wilted Roots.",
+            "Wilted Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 64.46% for 5 sec.",
+            "Hit Rate ▲ 45.3% for 10 sec."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 28.18
+        },
+        {
+          "label": "3× Charge DMG + 1× Max Ammo",
+          "gainPct": 26.18
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 25.64
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge DMG",
+          "gainPct": 24.74
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 24.61
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge DMG",
+          "gainPct": 24.51
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 23.94
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 23.68
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge Speed",
+          "gainPct": 23.68
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 23.53
+        }
+      ]
+    },
+    "velvet": {
+      "status": {
+        "tier": "VALIDATED",
+        "tuned": true,
+        "graded": {
+          "teams": 1,
+          "within3pct": 0
+        },
+        "unmodeled": {
+          "skill1": [
+            "Bullet Snatch (battle start + Burst Stage 2): removes 5% ammo from all enemies; fills own ammo pouch to 6,000 rounds.",
+            "Full Charge attack while not in Full Burst: expends 100 ammo from the ammo pouch."
+          ],
+          "skill2": [
+            "Full Charge attack during Full Burst: expends 300 ammo from the ammo pouch.",
+            "Landing 50 normal attacks during Full Burst: expends 300 ammo from the ammo pouch."
+          ],
+          "burst": [
+            "Additional Effect (weapon-change spec — VERBATIM TEXT NOT AVAILABLE to this audit; fetch from blablalink: likely carries the swap weapon's charge time / ammo / Full Charge Damage spec that pins the swap shot economy)"
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 16.48
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 15.58
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 15.51
+        },
+        {
+          "label": "4× Charge DMG",
+          "gainPct": 15.45
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 15.11
+        },
+        {
+          "label": "3× Charge DMG + 1× Max Ammo",
+          "gainPct": 15.01
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge Speed",
+          "gainPct": 14.99
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 14.89
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 14.63
+        },
+        {
+          "label": "3× Charge DMG + 1× Charge Speed",
+          "gainPct": 14.22
+        }
+      ]
+    },
+    "vesti-tactical-upgrade": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill2": [
+            "■ Activates when landing Full Charge attacks if self is in Battle Formation status. Affects self. ATK ▲ 20% for 3 sec."
+          ],
+          "burst": ["■ Affects self. Explosion Radius ▲ 100% for 10 sec."]
+        }
+      }
+    },
+    "viper": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill2": [
+            "Activates when entering Full Burst. Affects self. Vamp: Prevents being targeted by single-target attacks continuously. This effect is removed upon taking a direct hit. Invulnerable for 1 sec. — DEFENSIVE: no HP pool / targeting model / boss damage in v1, so prevents-targeting + invulnerable move nothing; only the offensive Vamp GATE for skill1's stacks is modeled (via the Full-Burst window, fbGate:'inFb')."
+          ],
+          "burst": [
+            "Affects the enemy if the enemy is the stage target. DEF ▼ 19.83% for 10 sec. — INERT and UNENACTABLE: boss DEF enters the formula only as the fixed config constant cfg.bossDef (sim.ts:1719 baseAtk = max(0, effectiveAtk − cfg.bossDef)); no buff/debuff channel feeds it, so the engine cannot apply an enemy DEF reduction at all, and the magnitude is negligible regardless (measured boss DEF ≈140 → ~0.01% damage at scope-lock ATK, docs/data/damage-calculation.md). NOT modeled as damageTakenPct (a different bucket/math that would over-credit a ~19.83% team vuln the kit does not deliver) — phantom/guilty/marciana precedent. The stage-target sustained-damage line that shares this header IS modeled (the dot block)."
+          ]
+        }
+      }
+    },
+    "volume": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Affects self when killing an enemy.",
+            "ATK ▲ 12.6% for 5 sec."
+          ]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 23.28
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 22.65
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 22.55
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 22.52
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 21.9
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 21.85
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 21.8
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 21.75
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 20.5
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 20.37
+        }
+      ]
+    },
+    "yulha": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Activates when attacked 30 time(s). Affects self.",
+            "Calm: Critical Rate ▲ 24.53% for 20 sec."
+          ],
+          "skill2": ["Equally shares damage taken for 10 sec."],
+          "burst": [
+            "Affects the same target(s) when in Calm status.",
+            "Deals 457.87% of final ATK as additional damage."
+          ]
+        }
+      }
+    },
+    "zwei": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": ["【Phase 3】Items ×110"],
+          "skill2": ["【Phase 2】Items ×50", "Restores 7.52% of Cover HP."],
+          "burst": ["【Phase 1】", "Cooldown: 20 s"]
+        }
+      },
+      "ol": [
+        {
+          "label": "2× Max Ammo + 2× Crit DMG",
+          "gainPct": 25.14
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 24.67
+        },
+        {
+          "label": "2× Max Ammo + 2× Crit Rate",
+          "gainPct": 22.7
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit DMG",
+          "gainPct": 22.03
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 20.81
+        },
+        {
+          "label": "2× Crit DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 18.07
+        },
+        {
+          "label": "4× Max Ammo",
+          "gainPct": 17.75
+        },
+        {
+          "label": "3× Crit DMG + 1× Max Ammo",
+          "gainPct": 17.73
+        },
+        {
+          "label": "2× Crit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 16.99
+        },
+        {
+          "label": "3× Crit Rate + 1× Max Ammo",
+          "gainPct": 14.51
+        }
+      ]
+    }
+  }
+}

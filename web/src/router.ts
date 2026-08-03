@@ -19,6 +19,7 @@ export type Route =
   | 'testing-requests'
   | 'roster-sync'
   | 'credits'
+  | 'characters'
   | 'unit';
 
 // Flat list of nav/analytics routes. Parameterized routes (e.g. /unit/:slug)
@@ -36,6 +37,7 @@ export const ROUTES: Route[] = [
   'testing-requests',
   'roster-sync',
   'credits',
+  'characters',
 ];
 
 // Top-level PAGE routes. The sim app owns "/" plus its sub-tab paths
@@ -49,6 +51,7 @@ const PAGE_ROUTES: Route[] = [
   'testing-requests',
   'roster-sync',
   'credits',
+  'characters',
 ];
 // The App hosts four tool SECTIONS — Sim, Rankings, Overload, Tools. Each sub-tab
 // is still served by the App at its own path; these maps group the paths under

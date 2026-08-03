@@ -147,6 +147,7 @@ export function BrowseNikkesModal({
         exclude={new Set(stagedUrls)}
         onToggle={place}
         restrict={restrict}
+        profileHref={(slug) => `/unit/${slug}`}
       />
     </PickerShell>
   );
@@ -280,7 +281,11 @@ export function BrowseRosterNikkesModal({
         </div>
       }
     >
-      <CharacterGrid exclude={new Set(stagedUrls)} onToggle={place} />
+      <CharacterGrid
+        exclude={new Set(stagedUrls)}
+        onToggle={place}
+        profileHref={(slug) => `/unit/${slug}`}
+      />
     </PickerShell>
   );
 }
@@ -364,6 +369,7 @@ export function BrowseExcludeModal({
         exclude={new Set(staged)}
         onToggle={add}
         restrict={restrict}
+        profileHref={(slug) => `/unit/${slug}`}
       />
     </PickerShell>
   );
@@ -563,6 +569,7 @@ export function BrowseRosterGenModal({
         exclude={new Set(stagedUrls)}
         onToggle={place}
         restrict={restrict}
+        profileHref={(slug) => `/unit/${slug}`}
       />
     </PickerShell>
   );
