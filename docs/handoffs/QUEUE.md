@@ -84,14 +84,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   ⚠ Two traps when measuring the drift: the live artifact is gitignored, so compare only after
   `npm run ranks:buffer`; and its cells are TUPLES (`[slug, value, tags, profile]`), not objects — read
   them as `c.slug` / `c.value` and every comparison silently comes back "0 differing".
-- **⇒ Three closed handoffs are still git-TRACKED, against the convention — leave or untrack?
-  (2026-08-03, findings-only).** Archiving a doc untracks it (procedure: `docs/CONVENTIONS.md` →
-  Doc hygiene), and 69 of the 72 files in `docs/handoffs/closed/` follow that. The three that do not —
-  `2026-07-27-focus-charge-gauge-per-unit.md`, `2026-07-29-alice-focus-gauge-implement.md`,
-  `2026-07-29-cinderella-focus-gauge-owner-override.md` — are each cited by NAME from
-  `docs/DECISIONS.md` or `docs/handoffs/scientific-method-harness.md`, so untracking them turns
-  live citations in the immutable provenance trail into dangling pointers for anyone who clones.
-  Not enacted for that reason. If they should go, the citations want rewording first.
 - **⇒ Pellet-reader: cherry-pick the `+62.5` crosshair-offset fix (`b69b5c6`)** — verified NOT an
   ancestor of `main`; `scripts/probe/read-pellets.ts:66` still defaults `-62.5`, latent, and poisons the
   next run. (It did **not** cause the 2026-07-29 REJECT: artifacts 12:19–13:33, commit 15:17.)
