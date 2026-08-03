@@ -31,6 +31,18 @@ lives. Newest first within each section.
   unchanged. **Tier:** owner ruling + deterministic sim measurement, no game footage involved (a
   board-population policy, not a damage-model value).
 
+- **(2026-08-03) The B1/B2 DPS board's core exposure stays a TWO-WAY switch — no Core 50 row.** The
+  Burst-3 DPS chart carries three exposures (No Core / Core 50 / Core 100, `CORES[].exposure`,
+  `src/dpschart/matrix.ts:510`); the B1/B2 board resolves its core axis as Core 100 or nothing
+  (`coreStr === 'c100' ? 1 : 0`, `src/ranks/b1b2dps.ts:291`), so a chart Core 50 cell has no
+  counterpart to be read against. Adding one is cheap — a ternary plus a cell id — and was
+  considered for symmetry. **Owner ruling: not wanted; the two-way switch is deliberate.** The
+  asymmetry is documented as a fact of the board in `docs/data/rank-boards.md` ("What the B1/B2
+  board and the B3 DPS chart do and don't share") rather than treated as a gap. The related and
+  larger question — an investment axis on the B1/B2 board — stays declined for the same reason: the
+  board is Scope-Lock-only by design, and the comparability rule that follows from it (a B1/B2
+  number is comparable only to a DPS-chart Scope Lock cell) is documented instead of engineered away.
+
 - **(2026-08-03) OVERLOAD LINES: ONE BASIS EVERYWHERE — EXHAUSTIVE RANKING AT T11. Greedy
   search and the max-roll basis are both DELETED.** Three separate searches used to pick a unit's
   four free overload lines (the lines beyond the 4× Elemental DMG + 4× ATK floor), on two different
@@ -3283,14 +3295,3 @@ skills/overrides/cinderella-crystal-wave.json` also carries a `fillGauge` block 
   worktrees that have neither a browser nor the art CDN, and the deploy now self-heals anyway. —
   `scripts/lib/portrait-thumbs.ts`, `scripts/build-infographics.ts` `fillMissingPortraits`,
   `scripts/tests/share/portrait-thumbs.test.ts`
-- **(2026-08-03) The B1/B2 DPS board's core exposure stays a TWO-WAY switch — no Core 50 row.** The
-  Burst-3 DPS chart carries three exposures (No Core / Core 50 / Core 100, `CORES[].exposure`,
-  `src/dpschart/matrix.ts:510`); the B1/B2 board resolves its core axis as Core 100 or nothing
-  (`coreStr === 'c100' ? 1 : 0`, `src/ranks/b1b2dps.ts:291`), so a chart Core 50 cell has no
-  counterpart to be read against. Adding one is cheap — a ternary plus a cell id — and was
-  considered for symmetry. **Owner ruling: not wanted; the two-way switch is deliberate.** The
-  asymmetry is documented as a fact of the board in `docs/data/rank-boards.md` ("What the B1/B2
-  board and the B3 DPS chart do and don't share") rather than treated as a gap. The related and
-  larger question — an investment axis on the B1/B2 board — stays declined for the same reason: the
-  board is Scope-Lock-only by design, and the comparability rule that follows from it (a B1/B2
-  number is comparable only to a DPS-chart Scope Lock cell) is documented instead of engineered away.

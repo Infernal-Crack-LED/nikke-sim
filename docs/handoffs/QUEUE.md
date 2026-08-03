@@ -72,6 +72,20 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   3. **The browser icon loader still probes extensions and eats 404s** — `web/src/unitCardShare.ts:58`
      `ICON_EXT = ['svg','png','webp']` per icon via onload/onerror. The icon set is static and tracked,
      so the extension is knowable at build time; carry it in the `iconNames` mapping (`{ name, ext }`).
+- **⇒ `scripts/tests/fixtures/unit-card-sources.json` is BADLY STALE — owner call, findings-only
+  (2026-08-03).** It is a deliberately FROZEN join input, so the crown-card golden stays a pure
+  function of the renderer rather than of board data — that design is sound and is not the issue.
+  The issue is how far it has drifted: frozen 2026-08-02 at 76 rows / 71 units against a live 91 / 85
+  (re-verified post-merge), with **64 generic and 70 typed shared rows differing in value**, some
+  hugely (`anis-star` generic 59.4 → 33.4 and typed 99.7 → 61.4; `arcana` typed 93.9 → 169.1;
+  `mast-romantic-maid` 61 → 77.2). Note the artifact is gitignored, so compare only after
+  `npm run ranks:buffer` — and its cells are TUPLES (`[slug, value, tags, profile]`), not objects,
+  which silently yields "0 differing" if you read them as `c.slug` / `c.value`.
+  All of that already landed on `main` and is invisible to the golden. Nothing is broken and the gate
+  is green, so this is not urgent — but a refresh should be its own deliberate pass (new golden PNGs,
+  reviewed for renderer-visible change) rather than something that rides along with an unrelated
+  board edit, which is exactly the "data churn wearing renderer drift's clothes" the fixture's own
+  header warns about. Found while un-excluding `blanc`; deliberately NOT regenerated there.
 - **⇒ Three closed handoffs are still git-TRACKED, against the convention — leave or untrack?
   (2026-08-03, findings-only).** Closing a handoff means it stops being tracked: `git rm --cached`
   then move the file into `docs/handoffs/closed/`, which is gitignored, so it survives on disk and
@@ -116,24 +130,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      registration side effect" path does not exist to be tested — and any test reading
      `DUO_BUFFER_PROFILES` must import `buffer.ts`, firing the very side effect it would check for.
      So registering from the ranks layer relocates the violation into a hazard no test can catch.
-  3. **The blast radius is ZERO shipped rows, not one.** `blanc` is in `EXCLUDED_BUFFER_SLUGS`
-     (`src/ranks/buffer.ts:173`) and `scripts/build-bufferchart.ts:73` skips excluded slugs before the
-     population is built, so `w/ Rouge` ships as an orphaned profile description with no row.
-     Carrying squad membership on the prepared unit is the only option that really fixes the layering,
-     but it touches the engine's block filter (protected) to serve zero shipped rows.
+  3. **The blast radius is ONE SHIPPED ROW.** `blanc` was un-excluded on 2026-08-03 (owner ruling,
+     DECISIONS), so the `w/ Rouge` row is published — it is no longer the orphaned profile
+     description it was when the "leave it" recommendation was first written, and the synthetic is
+     now load-bearing for a real board row worth +20.9% against her +7.9% plain. That weakens the
+     case for leaving it, without making Option A any safer: the import-order hazard in (2) is
+     structural and does not depend on how many rows ship.
      ⚠ Whichever option is chosen, `src/skills/overrides/noir.json` (`note`, `caveats`) also references
      the synthetic and is CURRENT-STATE prose — update it or it ships a stale claim.
   - Cheap improvement available regardless: a reciprocal pointer in `src/ranks/buffer.ts` near `:164`
     noting that registration lives in `src/data/squads.ts`, so the coupling is discoverable both ways.
-- **⇒ Is `blanc`'s buffer-board exclusion rationale STALE? — new, findings-only (2026-08-03).**
-  `EXCLUDED_BUFFER_SLUGS` justifies excluding her on the grounds that her kit reduces team damage and
-  reads "misleadingly negative" (`src/ranks/buffer.ts:171-172`, `scripts/build-bufferchart.ts:65-70`).
-  On current `main` her plain buffer value measures **+7.88%** (9 Full Bursts v 9 baseline) — positive.
-  Re-run: `npx tsx scripts/probe/buffer-rotation-audit.ts --excluded`, which prints every
-  `EXCLUDED_BUFFER_SLUGS` entry's current value against its stated rationale. It read −3.44% before the
-  buffer-board comp reshape (`bede1524` / `11c047aa`), so that merge appears to have flipped it. If the
-  exclusion is lifted, the `w/ Rouge` row starts shipping and the squad-layering item above changes
-  from zero shipped rows to one. Not enacted; a sim-only read of one board, no ruling.
 - **⇒ BUFFER BOARD: the no-op B1's 7s team CDR is NOT LOADED on this board — owner decision, findings
   only (2026-08-03).** `scripts/build-bufferchart.ts:51` loads overrides for roster slugs only, and
   the synthetic controls are not roster entries, so `src/skills/overrides/noop-b1-ar.json` is never
