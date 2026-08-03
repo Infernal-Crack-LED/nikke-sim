@@ -162,6 +162,9 @@ export const DUO_BUFFER_PROFILES: Record<
     note: 'paired with Anchor: Innocent Maid as the second B2',
   },
   blanc: {
+    // NOOP_ROUGE_B1's squad membership (satisfying the sameSquad gate) is registered in
+    // src/data/squads.ts, not here — see that file's comment for why it lives there
+    // (DECISIONS.md 2026-08-03 `noop-rouge-b1` ruling).
     partner: NOOP_ROUGE_B1,
     id: 'w/ Rouge',
     note: 'synthetic Rouge squadmate keeps the same-squad CDR gate active',

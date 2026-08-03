@@ -152,32 +152,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   simply supersedes it. Note `noop-b1-ar.json`'s trigger change moves burstgen (4 of 244 rows, ≤3.9%)
   and b1b2dps (12 of 272, ≤11.3%); burstcdr and sustain are byte-identical.
 
-- **⇒ `noop-rouge-b1` squad layering — owner call (2026-08-03).**
-  `src/data/squads.ts:26` carries one synthetic (`'noop-rouge-b1': 'Blanc Noir Rouge'`) so the buffer
-  board's `w/ Rouge` duo profile satisfies `blanc`'s same-squad burst-CDR gate — a ranks-layer concern
-  written into a game-truth file. Three findings frame the cost/benefit:
-  1. **The existing guard BITES, verified empirically.** Commenting the entry out fails
-     `scripts/tests/ranks/buffer.test.ts:427` (`expected 3 to be greater than 3`); the gate closing
-     costs `blanc` 5 burst casts and ~23 percentage points (registered: 8 casts / +20.93%;
-     unregistered: 3 casts / −2.02%). A migration that leaves the synthetic unregistered cannot pass.
-  2. **The import-order hazard is not test-coverable, in principle.** `buffer.ts` is the only module
-     that ever puts the synthetic on a team and it imports `noop.ts`, so the "sims blanc without the
-     registration side effect" path does not exist to be tested — and any test reading
-     `DUO_BUFFER_PROFILES` must import `buffer.ts`, firing the very side effect it would check for.
-     So registering from the ranks layer relocates the violation into a hazard no test can catch.
-  3. **The blast radius is ONE SHIPPED ROW.** The `w/ Rouge` row is published (+20.9% against her
-     +7.9% plain), so the synthetic is load-bearing for a real board row, not decoration.
-  - **Where that leaves the three options.** Leaving it alone stays defensible — the guard in (1) is
-    strong and the entry already carries an explanatory comment. Registering from the ranks layer is
-    still the trap, and (2) is structural: it does not get safer as the board grows. Carrying squad
-    membership on the prepared unit is the only option that actually fixes the layering, and it has
-    the better case now that the row ships — but it touches the engine's block filter, a protected
-    path, so it needs an explicit owner go-ahead before anyone builds it.
-    ⚠ Whichever option is chosen, `src/skills/overrides/noir.json` (`note`, `caveats`) also references
-    the synthetic and is CURRENT-STATE prose — update it or it ships a stale claim.
-  - Cheap improvement available regardless: a reciprocal pointer in `src/ranks/buffer.ts` near `:164`
-    noting that registration lives in `src/data/squads.ts`, so the coupling is discoverable both ways.
-
 - **⇒ ENGINE REGRESSION FULL-BURST COUNT FAILURES — four comps disabled in `scripts/regression.ts`**
   (`:106`, `:131`, `:158`, `:236`): `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`,
   `N3 scarlet/liberalio iron` each read 1–3 Full Bursts short of their video-measured counts on clean

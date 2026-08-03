@@ -2066,6 +2066,21 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 ## Engine/data-architecture decisions
 
+- **(2026-08-03) `noop-rouge-b1` STAYS IN `src/data/squads.ts` — OPTION C, OWNER-CONFIRMED.** Closes
+  the `docs/handoffs/closed/2026-08-03-b1b2-comparability-and-squad-layering.md` open call: the
+  ranks-layer synthetic (a presence-only no-op Rouge B1 that satisfies `blanc`'s same-squad burst-CDR
+  gate for the buffer board's `w/ Rouge` duo profile) stays put rather than moving behind a
+  registration mechanism. Option A (`registerSquad()` called from the ranks layer at module load) was
+  already ruled out as a trap in that handoff — it makes the engine's `sameSquad` gate depend on
+  import order, and the failure mode is untestable in principle (any test importing `buffer.ts` to
+  check the registration also fires the very side effect it would need to catch absent). Option B
+  (carry squad membership on the prepared unit instead of a global lookup) is the one that actually
+  fixes the layering, but touches `sim.ts`'s block filter, a protected path — not built without a
+  separate go-ahead. Cost of C is conceptual purity only: one synthetic in a curated GAME-TRUTH map,
+  already carrying an explanatory comment (`src/data/squads.ts:23-26`), documented again in
+  `noir.json`'s prose. Not revisited unless a second synthetic-partner pattern makes the layering
+  concern compound.
+
 - **(2026-08-03) A TREASURE UNIT'S `releaseDate` IS ITS TREASURE'S RELEASE DATE — and the "sugar
   data bug" was never a bug, it was the column silently disagreeing with itself.** `releaseDate`
   is display-only (the unit card's "Released &lt;date&gt;" line; the engine never reads it) and
