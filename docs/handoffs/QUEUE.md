@@ -118,6 +118,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Engine / model threads (measurement- or owner-gated)
 
+- **⇒ `suppliesTeamCdr` does not check mode gating (deferred NOTE from the kimi-code/k3 review,
+  2026-08-03).** `src/ranks/buffer.ts` classifies a unit as the team's cooldown enabler by walking its
+  override for an ally-facing `burstCdr`. It does not skip blocks nested under a non-default `modes`
+  entry, so a unit whose ally CDR lives ONLY in a non-default mode would stand the no-op B1 down on
+  rows where that mode is inactive, leaving the team with no enabler at all. No unit does this today
+  (verified end-to-end: exactly the 14 documented enablers, `--cdr` mode of
+  `scripts/probe/buffer-rotation-audit.ts`). Harden when a mode-gated CDR kit first lands.
 - **⇒ BUFFER-BOARD METHODOLOGY CHAIN IS ON A PR BRANCH, NOT MAIN (`buffer-board-methodology`,
   2026-08-03).** Standard team + spare no-op, camera focus on the no-op B2 (SR), tested-B3 burst
   suppression, and the one-CDR-enabler rule with the control's reduction moved to `fullBurstEnter`.
