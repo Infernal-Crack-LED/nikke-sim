@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-08-03",
+    "title": "Favorite items on the Characters page",
+    "notes": [
+      "A Nikke with a Treasure now shows the date her Treasure released, rather than the date the base character first launched. Most of them were showing the original character's date and a few were already showing the Treasure's — all 21 now read the same way.",
+      "The Characters tab has a new New Favorite Items row listing every Treasure released in the last 30 days. Right now that's Flora (Treasure), Phantom (Treasure), Rosanna (Treasure) and Sugar (Treasure). The row disappears once a batch is more than 30 days old, so it's only there when there's something new to see."
+    ]
+  },
+  {
+    "date": "2026-08-03",
     "title": "New: a page for every NIKKE",
     "notes": [
       "Every NIKKE now has her own page — her full kit with skill cooldowns, her best overload lines, charge speed and max ammo breakpoints, where she lands on the DPS boards, and her info card. Open one from the new Characters tab, or from the ⓘ button on any portrait in the Team Builder.",
