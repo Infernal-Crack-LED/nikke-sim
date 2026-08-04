@@ -1570,15 +1570,17 @@ export function runSim(
     (BEATS[u.char.element] === cfg.bossElement ||
       u.advantageVs.has(cfg.bossElement));
 
-  function effectiveAtk(u: UnitState, frame: number): number {
-    // casterMaxHpPct buffs arrive as flat Max HP (converted at apply time)
-    // VIDEO-MEASURED (cindy e3, 2026-07-13): "ATK = % of final Max HP" conversions count
-    // the unit's OWN Max HP (incl. own-kit stacks) but NOT ally-granted Max HP buffs —
-    // FB proc popups match own-HP math within 2% early AND late, and would be ~28% higher
-    // if rouge's grants fed the conversion. So live Max HP = static base + OWN-kit maxHpFlat
-    // buffs only (casterIdx === u.idx); ally-granted maxHpFlat (casterIdx !== u.idx) is excluded.
-    // Honors rampFrames (cinderella's Beautiful +1.6%×12 ramping over ~36s reproduces the
-    // measured early/late FB-proc growth 633.7k→667.0k).
+  // Live Max HP = static base + OWN-kit maxHpFlat buffs only (casterIdx === u.idx);
+  // ally-granted maxHpFlat (casterIdx !== u.idx) is EXCLUDED.
+  // VIDEO-MEASURED (cindy e3, 2026-07-13): "ATK = % of final Max HP" conversions count
+  // the unit's OWN Max HP (incl. own-kit stacks) but NOT ally-granted Max HP buffs —
+  // FB proc popups match own-HP math within 2% early AND late, and would be ~28% higher
+  // if rouge's grants fed the conversion. This is THE single reader for every Max-HP-scaled
+  // term (effectiveAtk's atkOfMaxHpPct conversion, stackedNuke's hpPct term) — casterMaxHpPct/
+  // targetMaxHpPct grants arrive as flat Max HP buffs (converted at apply time). Honors
+  // rampFrames (cinderella's Beautiful +1.6%×12 ramping over ~36s reproduces the measured
+  // early/late FB-proc growth 633.7k→667.0k).
+  function liveMaxHp(u: UnitState, frame: number): number {
     let ownMaxHpFlat = 0;
     for (const b of u.buffs) {
       if (b.stat !== 'maxHpFlat' || b.casterIdx !== u.idx) {
@@ -1593,11 +1595,14 @@ export function runSim(
       }
       ownMaxHpFlat += c;
     }
-    const liveMaxHp = u.maxHp + ownMaxHpFlat;
+    return u.maxHp + ownMaxHpFlat;
+  }
+
+  function effectiveAtk(u: UnitState, frame: number): number {
     return (
       u.staticAtk * (1 + stat(u, 'atkPct', frame) / 100) +
       stat(u, 'casterAtkPct', frame) +
-      (stat(u, 'atkOfMaxHpPct', frame) / 100) * liveMaxHp
+      (stat(u, 'atkOfMaxHpPct', frame) / 100) * liveMaxHp(u, frame)
     );
   }
 
