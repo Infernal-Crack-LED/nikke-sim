@@ -9,6 +9,38 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-04) SECOND CLEAN-WEAPON OVERRIDE LANDED: `snow-crane` (the SR basis cell) carries a
+  proven-damage-neutral gauntlet override under the CW1 option-2 invariant (2026-08-01).** The
+  kit-autonomy gauntlet landed `snow-crane` at GO faithfulness 1.0, cross-family corroborated
+  (S2b claude-fable-5 / S5+S6 claude-opus-5 / S7 kimi-code/k3 binding judge, zero gotchas). Her
+  override is recovery-event emitters (every-3rd-full-charge team heal, burst team heal), a
+  full-burst-enter team shield (9.5% caster Max HP / 10s), an inert `casterMaxHpPct` aura, and a
+  timed self `gainPierce` 10s window — no damage line and no weapon-state modifier, so it is
+  **byte-identical to the bare weapon on damage**. She is the delicate one of the six (CW1's prose
+  pin names it): her BURST grants Pierce, so "never burst" is load-bearing — the basis runs
+  `disableBursts: true`, so the window never opens there, and even bursts-ON the window is inert
+  in v1 (gainPierce pays out only through a `pierceDamagePct` buff, which no shipped unit carries,
+  and PIERCE_CORE_DOUBLE is off / keyed to the static hasPierce flag). The unit test additionally
+  proves the window is real and time-bounded through an in-memory probe (never committed):
+  no-pierce ≡ base < 10s window < permanent pierce. Two encoding notes of record: (1) the
+  chargeCounter carries `countInFb: 3` EXPLICITLY — the primitive defaults `countInFb ?? 1` in the
+  10s post-own-burst window (SBS-baked semantics), which would heal every full charge after each
+  of her casts; the blind override-writer omitted it and the judge ruled that a blind-side error.
+  (2) The Proof-of-Violation → Terminated-Contract cascade (S1b/S2c) stays VERBATIM UNMODELED: the
+  `recovery` trigger has no source filter, her own heals target herself, so any expressible
+  counter self-stacks and flips the cascade in every comp (the nearest-wrong model); the blind
+  alternative (always-on 1 Hz regen) was ruled spurious-and-worse — it fabricates a
+  tandem-bearing recovery stream the real kit never emits in healer-less comps. CW2–CW5 baselines
+  unchanged (they sim via `bareWeaponComp`, which never reads the committed encoding).
+  **Evidence:** `scripts/tests/units/clean-weapons.test.ts` 27/27 green (CW1 damage-neutrality vs
+  the on-disk override); `scripts/tests/units/snow-crane.test.ts` 26/26 green;
+  `scripts/kit-autonomy/results/snow-crane.json` (GO 1.0);
+  `scripts/kit-autonomy/manual-review/snow-crane.md`; `docs/data/clean-weapons.md` (team A row +
+  Fixture note). Residual (judge-named, ⚑ with recipe): the countInFb engine-default reading, the
+  burstCast-vs-fullBurstEnter trigger-identity split, and heal-magnitude inertness — all inert on
+  damage today; the cascade recipe (a `recoveryFromOther` trigger + PoV resource pool) awaits
+  HP-pool work.
+
 - **(2026-08-03) `vesti-tactical-upgrade` Missile Guide duty cycle FIXED — new engine primitive
   `noRetriggerWhileActive`, owner-confirmed gameplay pattern (n=1, not footage-measured).**
   Investigation trigger: `vesti-tactical-upgrade` (and separately `k`) were ranking unexpectedly

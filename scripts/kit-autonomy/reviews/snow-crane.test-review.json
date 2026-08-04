@@ -1,0 +1,122 @@
+{
+  "slug": "snow-crane",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ not in Terminated Contract / Max HP ▲ 10%",
+      "disposition": "FAITHFUL",
+      "scope": "Stat grant (Max HP), not attack-scoped; magnitude is 10% of the SKILL USER's Max HP, not the target's",
+      "durationSemantics": "'continuously' = permanent while the gate holds; NOT a timed buff — but conditionally DEACTIVATED once self enters Terminated Contract status (see skill2 line 3)",
+      "triggerIdentity": "passive, gated on self NOT being in Terminated Contract (self-status gate — engine has no ally/self-status gate primitive; approximate via a resourceGate on a Proof-of-Violation pool, max: 2)",
+      "targetSet": "all allies including self; also carries the 'Exclusive Recovery Agreement' STATUS that skill2 line 1's target set reads",
+      "nearestWrongModel": "targetMaxHpPct 10 (each ally gains 10% of their OWN Max HP) instead of casterMaxHpPct 10; and/or dropping the not-in-Terminated-Contract gate so the buff (and the Exclusive Recovery Agreement status) persists after Terminated Contract triggers",
+      "distinguishingAssertion": "buffApply events at t=0: five events under stat 'maxHpFlat' whose flat values are ALL EQUAL (caster-Max-HP-scaled) — under targetMaxHpPct the values vary per target's own HP. Gate half: in a comp WITH an external healer, after the 3rd external recovery event the grant/status must lapse (observable as skill2-line-1 heals ceasing, below)",
+      "inertness": "Offensively inert in isolation: ally-granted Max HP does not feed any teammate's atkOfMaxHpPct (e3 rule), and snow-crane has no HP→ATK scaler — carry damage must NOT move from this buff alone. Its load-bearing role is purely the status gate.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ recovery not from this unit / Proof of Violation",
+      "disposition": "GAP",
+      "scope": "Stack counter + a healing-output stat; 'Outgoing healing ▼ 10%' has NO engine StatKey (heals carry no amount) so the magnitude is inert — the STACK COUNT is the live payload",
+      "durationSemantics": "'continuously, up to 3 time(s)' = permanent stacks, cap 3; never wall-clock",
+      "triggerIdentity": "recovery trigger with a SOURCE gate: only heals NOT cast by snow-crane count. Her own skill2/burst/HoT heals that land on herself must NOT increment the counter. Engine 'recovery' trigger has no source filter — model the counter as a resource incremented only by a mechanism excluding self-cast heals, or document the approximation",
+      "targetSet": "self only",
+      "nearestWrongModel": "Counting ALL recovery events including self-originated heals — her own every-3-charges heal and burst heal would self-stack Proof of Violation to max and flip Terminated Contract in every comp, even healer-less ones",
+      "distinguishingAssertion": "In a comp with NO external heal source, Terminated Contract must NEVER trigger: skill2-line-1 recovery events to allies continue for the whole fight and no Terminated-Contract self-HoT ticks appear. Under the nearest-wrong (self-heals count), the cascade fires within the first ~3 heal procs.",
+      "inertness": "The ▼10% outgoing-healing magnitude must move nothing (no heal amounts in engine); zero damage delta from this line in healer-less comps",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ after 3 Full Charge attack(s) / Recovers 1.32%",
+      "disposition": "FAITHFUL",
+      "scope": "Heal proc paced by the owner's FULL CHARGE attacks specifically (SR, chargeFrames 60 — every natural shot is a full charge only if she always fully charges; partial charges must not count)",
+      "durationSemantics": "instant heal per activation; no duration",
+      "triggerIdentity": "chargeCounter count:3 (full-charge-paced), NOT interval and NOT hitCount (hitCount counts rounds, which would include non-full-charge rounds)",
+      "targetSet": "all allies IN Exclusive Recovery Agreement status — i.e. everyone pre-Terminated-Contract, NOBODY after (Terminated Contract switches skill1 line 1 off, removing the status from all allies)",
+      "nearestWrongModel": "Ungated 'all allies' target (dropping the Exclusive-Recovery-Agreement condition) — post-Terminated-Contract the heal would keep firing and keep driving teammates' on-recovery consumers (crown) that the real kit has switched off",
+      "distinguishingAssertion": "TANDEM assertion via crown (in controlComp): crown's recovery-triggered buffApply events sourced from this proc occur every 3rd snow-crane full charge; in an external-healer comp, AFTER Terminated Contract triggers these events must CEASE entirely. Under the ungated misread they continue to fight end.",
+      "inertness": "Heal amount (1.32%) moves nothing — heals carry no HP amount; only the recovery EVENTS (crown's trigger) may move damage",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ when entering Full Burst / Shield 9.5%, 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Shield event; maxHpPct 9.5 (of CASTER's final Max HP), durationSec 10",
+      "durationSemantics": "10 s timed window per application",
+      "triggerIdentity": "fullBurstEnter — fires on ANY team Full Burst, not only rotations snow-crane bursts",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "burstCast keying — snow-crane is Burst II and competes with crown for the B2 slot under first-ready selection, so under the misread the shield fires on few/zero rotations instead of every Full Burst (UNDER-credits shielded-gated consumers)",
+      "distinguishingAssertion": "Count shield/shielded events per fight: must equal the fullBurstStart count × 5 targets, independent of snow-crane's own burstCast count. Under burstCast keying the counts diverge whenever crown wins the B2 slot.",
+      "inertness": "No shielded-gated consumer in controlComp → zero damage delta there; the assertion is event-count-based, and shield must never grant Max HP or feed HP scalers",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Proof of Violation max stacks / Terminated Contract",
+      "disposition": "GAP",
+      "scope": "Self status flip + continuous self heal-over-time (0.24%/1s); heal amounts inert, EVENTS and the status CASCADE are the payload",
+      "durationSemantics": "'continuously' twice = permanent status, permanent 1s-tick HoT to fight end (heal ticks:N with interval 1 s spanning the whole fight — NOT a finite durationSec)",
+      "triggerIdentity": "fires once when the Proof-of-Violation counter reaches 3 (resource threshold), then: immunity = counter frozen; skill1 line 1's gate goes false (Exclusive Recovery Agreement drops team-wide)",
+      "targetSet": "self only (the HoT must NOT tick on allies)",
+      "nearestWrongModel": "Modeling Terminated Contract as unreachable/omitted (no Proof-of-Violation tracking at all) — misses the mid-fight cascade in any comp with an external healer: Max-HP grant drops, Exclusive Recovery Agreement vanishes, the every-3-charges heal goes dead, crown's recovery procs from snow-crane stop",
+      "distinguishingAssertion": "External-healer comp: after the 3rd non-self recovery event lands on snow-crane, assert (a) self-targeted recovery events at 1 s cadence to fight end, (b) skill2-line-1 heals to allies STOP, (c) the 1 s self-heals never increment Proof of Violation further (no re-trigger). Omitted-model shows none of (a)–(c).",
+      "inertness": "In healer-less comps this entire line is dormant — zero events, zero damage delta",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ all allies / Recovers 44.68%",
+      "disposition": "FAITHFUL",
+      "scope": "Instant heal event, all allies",
+      "durationSemantics": "instant, per burst cast",
+      "triggerIdentity": "burstCast (her OWN Burst II cast) — NOT fullBurstEnter; she may not cast every rotation with crown sharing the B2 tier",
+      "targetSet": "all allies including self; note this heal IS 'coming from this unit' → must not stack Proof of Violation on herself",
+      "nearestWrongModel": "fullBurstEnter keying — heal (and crown's recovery proc) fires on EVERY Full Burst even on rotations crown took the B2 slot, over-crediting crown's on-recovery buff cadence",
+      "distinguishingAssertion": "recovery-event bursts of 5 targets occur exactly at snow-crane's burstCast frames; total count == her burstCast count, which in a crown-sharing comp is strictly < fullBurstStart count. Equality with FB count is the red flag.",
+      "inertness": "Heal magnitude (44.68%) inert; only event timing/count matters",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects self / Gains Pierce for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Timed pierce TAG on self attacks (SR) — makes Pierce Damage ▲ buffs live for those hits; partless scope-lock boss means the tag alone adds no damage",
+      "durationSemantics": "10 s window per cast — a gainPierce effect with durationSec 10, NOT the top-level hasPierce boolean (whole-fight tagging)",
+      "triggerIdentity": "burstCast (own-burst block), so windows exist only on rotations she actually casts",
+      "targetSet": "self only",
+      "nearestWrongModel": "hasPierce: true top-level flag — whole-fight pierce tagging, over-crediting any pierceDamagePct source for the ~entire fight instead of ≤10 s per cast",
+      "distinguishingAssertion": "withPatchedOverride injecting a passive self pierceDamagePct buff: the carry's damage delta vs baseline must be confined to 10 s windows starting at her burstCast frames (and be ZERO on rotations she did not cast). Under hasPierce:true the delta applies to every shot all fight.",
+      "inertness": "With no pierceDamagePct source active, this line must move zero damage on the graded/partless boss",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Exclusive Recovery Agreement Max HP grant + status",
+    "skill1:Proof of Violation external-heal stack counter",
+    "skill2:every-3-full-charges heal (crown recovery tandem)",
+    "skill2:FB-enter shield 9.5%/10s",
+    "skill2:Terminated Contract cascade + 1s self HoT",
+    "burst:burst-cast ally heal (crown recovery tandem)",
+    "burst:gainPierce 10s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Outgoing healing ▼ 10% (magnitude — engine heals carry no amount; the stack COUNT is modeled)"
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Three expected shared-prior misreads. (1) DEFENSIVE-KIT-INERT prior: every line here is heal/shield/HP, and the lazy model skips them all as 'no damage' — but taxonomy #4 applies with force: controlComp contains CROWN, whose on-recovery trigger is driven by snow-crane's every-3-charges heal and burst heal, so heal EVENT cadence is directly damage-bearing; the tests must be tandem tests through crown's buffApply log, not totals-only. (2) The Proof-of-Violation → Terminated Contract state machine is a real mid-fight CASCADE (external heals → 3 stacks → S1 grant + Exclusive Recovery Agreement drop team-wide → S2a heal goes dead → crown procs stop), and the source gate ('recovery NOT from this unit') is load-bearing: counting self-heals flips the cascade in every comp; a correct model keeps it dormant in healer-less comps. controlComp's liter and helm both emit heals, so the cascade is live in the standard fixture — the driver needs BOTH an external-healer assertion and a no-external-healer control. (3) FIXTURE HAZARD: snow-crane is Burst II — controlComp(carry) seats the carry at B3 with crown fixed at B2, so as authored she'd compete with crown under first-ready selection (or never cast if crown wins). The burstCast-keyed lines (burst heal, gainPierce) and their vs-fullBurstEnter distinguishers depend on her actually casting some but not necessarily all rotations — the test fixture must establish her real cast pattern (or patch the comp) before asserting counts. Also verify the shield line stays fullBurstEnter (fires every FB) while the burst heal stays burstCast — the kit deliberately splits these two trigger identities and a uniform keying either way is wrong on exactly one of them. Engine-primitive note: ally-side statuses (Exclusive Recovery Agreement / Terminated Contract / Proof of Violation) have no first-class channel (targetStatus is enemy-only) — expect a resource-pool approximation; the review should accept any encoding that reproduces the event-log behavior asserted above and reject encodings that hardcode the cascade as never/always-on.",
+  "model": "claude-fable-5"
+}

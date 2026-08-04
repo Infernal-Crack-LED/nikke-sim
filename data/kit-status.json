@@ -5986,6 +5986,47 @@
         "temp": "COLD ▼"
       }
     },
+    "snow-crane": {
+      "name": "Snow Crane",
+      "burst": "II",
+      "weapon": "SR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (7/7 kit lines: 5 FAITHFUL — S1a grant, S2a charge-heal, S2b FB-entry shield, burst heal, burst Pierce — and 2 DOCUMENTED_GAP — Proof of Violation, Terminated Contract — both verbatim in unmodeled with reasons and a recipe; the two partial-clause elisions, S1a's Terminated-Contract off-gate and S2a's ERA-membership target filter, are documented in caveats and offensively inert) (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/snow-crane.json + scripts/kit-autonomy/manual-review/snow-crane.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "date": "2026-08-04",
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged | kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; clean-weapon basis — CW1 damage-neutrality proven (bursts-off basis + in-team bare equality); countInFb:3 authored around the chargeCounter SBS-default trap",
+      "residual": "countInFb engine-default semantics (firePull); burstCast-vs-fullBurstEnter trigger-identity split; heal-magnitude inertness (v1 has no HP pool) | countInFb engine-default semantics (firePull); burstCast-vs-fullBurstEnter trigger-identity split; heal-magnitude inertness (v1 has no HP pool)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when recovery takes effect if the recovery is not coming from this unit. Affects self. Proof of Violation: Outgoing healing ▼ 10% continuously, up to 3 time(s)."
+        ],
+        "skill2": [
+          "■ Activates when Proof of Violation reaches max stacks. Affects self. Terminated Contract: Gains immunity to Proof of Violation continuously. Recovers 0.24% of the skill user's final Max HP as HP every 1 sec continuously."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "⚑ S1a's activation clause 'Activates only while not in Terminated Contract status' is NOT gated: there is no negative self-status primitive, and Terminated Contract is unreachable without the unmodeled Proof-of-Violation stack counter below — so the ERA aura reads unconditional. Offensively inert either way (ally-granted Max HP feeds no damage path; the atkOfMaxHpPct conversion is self-only, and snow-crane carries no HP→ATK scaler).",
+        "⚑ S2a's target filter 'allies in Exclusive Recovery Agreement status' is elided to all allies: S1a grants ERA to every ally continuously (pre-Terminated-Contract), so at scope the two sets are coextensive; the filter can only bite post-Terminated-Contract, which is the unmodeled state below.",
+        "⚑ chargeCounter carries countInFb:3 EXPLICITLY: the engine's chargeCounter defaults countInFb to 1 inside the 10s window after the owner's OWN burst cast (SBS-specific semantics baked into the primitive). snow-crane's kit has no such in-burst modification — omitting countInFb would fire the heal on EVERY full charge for 10s after each of her casts. countInFb:3 keeps the threshold at 3 everywhere.",
+        "Heal MAGNITUDES (S2a 1.32% / burst 44.68% of the skill user's final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount (v1 has no HP pool). Both lines are implemented for their TANDEM value only — they fire allies' 'recovery' triggers.",
+        "⚑ The Proof-of-Violation → Terminated-Contract cascade (S1b + S2c) is UNMODELED whole: (1) the engine's 'recovery' trigger has no SOURCE filter — the kit's 'recovery not coming from this unit' clause is inexpressible, and since her own S2a/burst heals target all allies INCLUDING herself, counting all recoveries would self-stack Proof of Violation and flip Terminated Contract in EVERY comp (the nearest-wrong model, which is worse than none); (2) there is no self-status channel for ERA / Terminated Contract membership; (3) S2c's regen is unbounded ('continuously') and heal ticks are finite. The payload is sustain-only and damage-inert. Recipe: needs a recoveryFromOther trigger (or HP-pool modeling), then a PoV resource pool (0..3) + resourceGate-gated ERA/S2a + a bounded regen.",
+        "burst Pierce line is a REAL timed window but damage-inert in v1: gainPierce only matters through a pierceDamagePct buff (no shipped unit carries one) and PIERCE_CORE_DOUBLE is off (and keyed to the static hasPierce flag, never a timed pierceUntilFrame window). The unit test probes the window through an in-memory pierceDamagePct buff. The clean-weapon basis additionally runs disableBursts:true, so she never casts there at all.",
+        "Zero damage lines and zero weapon-state modifiers in the whole kit — snow-crane is the SR clean-weapon basis cell: her override must sim byte-identical to the empty kit (CW1 damage-neutrality, owner ruling 2026-08-01). Her entire board footprint is cross-unit: recovery events (2 channels), a full-burst shield, an inert Max HP aura, and a v1-inert timed Pierce window."
+      ]
+    },
     "snow-white": {
       "name": "Snow White",
       "burst": "III",
