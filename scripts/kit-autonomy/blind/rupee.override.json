@@ -1,0 +1,110 @@
+{
+  "slug": "rupee",
+  "resources": [
+    {
+      "name": "mileage",
+      "initial": 0,
+      "min": 0,
+      "max": 5
+    }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 100
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Iron"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 2.24,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 13.8,
+          "durationSec": 15,
+          "maxStacks": 5
+        },
+        {
+          "kind": "resource",
+          "name": "mileage",
+          "delta": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 274.28
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "resourceGate": {
+        "name": "mileage",
+        "min": 5
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 19.8,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill1 stack cap is kit-silent ('Increases stack count of buffs by 1' with no 'Stacks up to N'). Modeled as a single refreshing instance (no maxStacks): at the datamined AR cadence one activation costs ~9.7s (100 rounds incl. one 81f reload out of a 60 belt) against a 10s duration, so 2 stacks could only ever co-exist for ~0.3s. Any cap choice is damage-inert at this cadence.",
+    "⚑ The burst's 'when Mileage is at max stacks' gate is modeled with a monotonic named resource pool ('mileage', cap 5) incremented by the same 30-hit trigger that grants the Mileage ATK buff. The real stack lapses 15s after the last gain; the trigger recurs every ~2.6s while firing, so the pool only diverges from the buff if the unit stops firing for 15s (does not happen at scope lock). The gate is NOT vacuous: max Mileage needs 150 landed rounds ≈ 15s incl. two reloads, so an early first burst can legitimately miss it.",
+    "⚑ Every hit-count trigger here (100 / 30) converts to wall-clock through the datamine-unreliable cadence tuple (pullsPerSec, ammo 60, reloadFrames 81). The buff-uptime and the burst gate's satisfaction time move directly with that tuple; a cadence error is a model error even though the thresholds themselves are kit-exact.",
+    "noFb is NOT set on the 274.28% burst hit — the engine's FB-by-timing default is left ON and a burst cast resolves before the Full Burst window opens, so the exemption should fall out of timing rather than a per-kit flag. Unmeasured for this unit.",
+    "crit is left unset on the burst hit (engine-global rider-crit policy governs); noRange is deliberately not set (engine-automatic).",
+    "Alternate parse of skill1 line 2 not taken: 'Increases stack count of buffs by 1' could conceivably mean it raises the stack CAP of other buffs rather than describing its own stacking. Nothing else in this kit consumes such a mechanic, so the self-referential reading is used."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rupee (AR/Iron/Attacker/Burst II) is a two-lever unit: a team-wide Iron-Code crit trickle on a 100-hit counter (skill1) and a self ATK stack ladder 'Mileage' on a 30-hit counter capping at 5x13.8% (skill2), with the burst paying a 274.28%-of-final-ATK instant hit plus a 5s team ATK 19.8% aura that only fires while Mileage sits at max. Every magnitude, duration, stack cap and threshold in skill2/burst is verbatim kit-stated; the only authored (non-kit) structure is the 'mileage' resource pool used to express the burst's max-stack gate, since a stack COUNT is not otherwise readable by a block gate. All three slots are fully modeled — no line is dropped, so `unmodeled` is empty by construction, not by omission."
+}

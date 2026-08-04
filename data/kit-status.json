@@ -5688,6 +5688,44 @@
         "burst: the Damage Taken ▼ 20.06% grant is SELF-held damageTakenPct -20.06 — the engine's live damageTakenPct read is the boss-debuff channel (positive = boss takes more), so this self-grant is consumed by NOTHING in v1 (inert observable). Pinned self-held (targetIdx never null) and never boss-flipped."
       ]
     },
+    "rupee": {
+      "name": "Rupee",
+      "burst": "II",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/rupee.json + scripts/kit-autonomy/manual-review/rupee.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Increases stack count of buffs by 1. (PARTIALLY MODELED — the SELF slice is folded as +1 to the mileage pool on the same hitCount:100 trigger (skill1[1]); the CROSS-ALLY slice (teammates' stackable buffs) is out-of-domain ⚑3 and the mileage ATK-buff component of the self stack is unrepresentable ⚑2 — the line stays here verbatim as the audit trail)"
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "⚑ CADENCE TUPLE (ALWAYS-⚑): AR rate_of_fire 720 = 12 rounds/s nominal + reloadFrames 81 + ammo 60, all datamine (single-chunk reload, reload_bullet 10000) — drives the S1/S2 proc cadence (every 100 / 30 shots), the Mileage ramp timing and hence the burst-gate opening. Recipe: rounds/min + reload gap from any rupee-focus video.",
+        "⚑ MEASUREMENT-GATED (interpretation): the S1 'Increases stack count of buffs by 1' SELF slice is encoded as +1 to the mileage POOL ONLY — the stack's ATK-buff component (13.8%) is NOT granted because buff instances key on caster+slot+stat+value (sim.ts KR stacking rule), so a skill1-slot Mileage buff would be a parallel second instance (double-counted stacks), not a merge into S2's Mileage. ESTIMATE: ≤13.8% of rupee's OWN ATK under-credited during the opening ramp only (the pool reaches 5 at shot ~120; from then on S2 procs alone keep the real buff at 5 stacks, so the missing component exists only while stacks accrue, ≈ first 11s). RECIPE: popup-read rupee's ATK buff icon after an S1 proc in a rupee focus recording — does Mileage show +1 stack carrying the 13.8% value? TIER: override-only (an engine cross-slot stack-merge primitive would remove the divergence).",
+        "⚑ OUT-OF-DOMAIN (engine-core): the CROSS-ALLY slice of S1 'Increases stack count of buffs by 1' — +1 stack to each Iron ally's OWN stackable buffs (the soda-type team amplifier). ESTIMATE: zero in any encoding the sim can field today (purely a function of which stacking Iron comps are fielded; in the scope-lock fixture the only stackable buff any Iron ally holds is rupee's own Mileage, already folded as the self slice). RECIPE: an engine primitive 'bump each target's stackable buffs by N' reading each holder's live maxStacks buffs (does not exist; mica-snow-buddy ⚑M5 / pepper ⚑4 precedent). TIER: out-of-domain (engine-core); the self-slice is the honest in-scope model.",
+        "⚑ MEASUREMENT-GATED (no-lapse approximation, power/pepper precedent): the mileage POOL never decays (no timer-decay primitive) while the Mileage BUFF lapses 15s after its last refresh. At her sustained scope-lock cadence (S2 procs ≈ every 3.2s; S1 adds one ≈ every 10.6s) applications beat the 15s expiry by ~5×, so stacks never lapse while she keeps firing and the pool and the buff never disagree inside a sim fight — diverges only if she stops firing for >15s. RECIPE: read the Mileage stack icon across a long fire-pause in a rupee focus recording. TIER: override-only.",
+        "⚑ INTERPRETATION (awb/diesel dissent on record): alice-wonderland-bunny's gauntlet read the identical sentence as a stack-CAP raise and left it fully unmodeled, warning that a +1-grant reading 'spuriously accelerates the max-stacks gate'; diesel left it unmodeled as ambiguous. This encoding follows the NEWER mica-snow-buddy + pepper majority (self stackable resource folded as +1, cross-ally out-of-domain) because rupee's own stackable buff IS the gate read by her burst, exactly the mica/pepper shape. If a rupee focus recording shows S1 NOT feeding Mileage, drop skill1[1] (the pool block) and the gate simply opens one S2 proc later (shot 150 instead of 120) — the encoding is one block away from the conservative reading."
+      ],
+      "board": null,
+      "date": "2026-08-04",
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "S1 'Increases stack count of buffs by 1' interpretation (+1-grant majority vs awb/diesel stack-cap dissent; gate opens shot 120 vs 150 — inert in all legal fixtures; one rupee-focus recording of the Mileage icon settles it); no-decay mileage-pool approximation; cadence tuple (datamine)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "sakura": {
       "name": "Sakura",
       "burst": "I",

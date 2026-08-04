@@ -1,0 +1,91 @@
+{
+  "slug": "rupee",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ after landing 100 normal attack(s)",
+      "disposition": "GAP",
+      "scope": "Buff-stack manipulation: adds +1 stack to stackable buffs held by Iron Code allies (including self — self is Iron, so it accelerates her own Mileage ramp; on teammates it boosts whatever stackable buffs they hold).",
+      "durationSemantics": "Instant stack increment on proc; no duration of its own — inherits the boosted buff's remaining duration.",
+      "triggerIdentity": "hitCount count:100 (counts ROUNDS; AR hitsPerShot 1, so 100 trigger pulls). 'after landing 100 normal attack(s)' = recurring every 100, not once. NOT interval, NOT shotFired.",
+      "targetSet": "alliesOfElement Iron, including self ('all Iron Code allies' — no except-self clause).",
+      "nearestWrongModel": "Dropping the line silently as 'unmodelable', OR encoding it as a generic buff to all allies regardless of element, OR treating it as once-per-battle. The self-relevant slice (extra Mileage stack per 100 rounds) is expressible by re-applying the same-keyed Mileage buff from a hitCount:100 self block; the cross-unit generic 'increment any stackable buff' has no engine primitive.",
+      "distinguishingAssertion": "If the self-slice is modeled: buffApply events for the Mileage key show a stacks increment occurring at the ~100-round boundary in addition to the every-30 cadence (stack count reaches maxStacks ~1 proc earlier than the 30-attack cadence alone predicts). If declared GAP: the line MUST appear verbatim in unmodeled.skill1 and totals must be identical with/without any placeholder encoding.",
+      "inertness": "Must not be encoded as a flat stat buff (no critRatePct/atkPct buffApply from this line); must not fire on non-Iron allies in a mixed comp.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Rate ▲ 2.24% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "GENERIC Critical Rate (critRatePct) — the prose says plain 'Critical Rate', with NO 'of normal attacks' qualifier, so critRateNormalPct would be an over-narrowing misread here (inverse of the usual trap).",
+      "durationSemantics": "durationSec 10 — wall-clock seconds, stated literally. Not rounds, not stacks.",
+      "triggerIdentity": "Same hitCount count:100 block as the header (■ trigger governs both following sentences). Recurring every 100 landed rounds. At AR cadence (~12 rounds/s effective, 60-round magazine, 81-frame reload) 100 rounds ≈ 8.3s firing + one reload gap ≈ 9.7s per cycle, so the 10s buff is near-permanent with brief possible lapses — the test should tolerate high-but-not-100% uptime, not assert passive.",
+      "targetSet": "alliesOfElement Iron including self. In the controlComp fixture, check which allies are Iron and assert buffApply targetSlug covers exactly those and no others.",
+      "nearestWrongModel": "Target 'allies' (all five regardless of element) — over-credits non-Iron teammates' crit; OR trigger read as fullBurstEnter/interval; OR scoped critRateNormalPct (under-credits skill/burst crit).",
+      "distinguishingAssertion": "buffApply events with stat critRatePct value 2.24 appear (i) only on Iron-element units in the comp — a non-Iron ally must receive ZERO such applies — and (ii) at a landed-round-count cadence (~every 100 rounds fired by rupee), not at FB entry and not at t=0.",
+      "inertness": "A non-Iron teammate's crit rate must not move; the buff must lapse if rupee stops firing >10s past a proc (e.g. during a stun window) rather than persist as passive.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Activates after 30 attacks. Affects self",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK on self (atkPct — plain 'ATK ▲', scales her own ATK; NOT casterAtkPct flat-add, NOT charge/normal-scoped).",
+      "durationSemantics": "STACKING buff: maxStacks 5, each proc adds 1 stack and refreshes a 15-second wall-clock duration ('lasts for 15 sec'). Cap value 5 × 13.8% = 69% ATK. Critically NOT instant-at-max: stacks accrue one per 30 rounds (~2.9s of firing each incl. amortized reload), reaching cap around ~13–15s, then held permanently because the 30-round cadence (≈3s) is far inside the 15s window.",
+      "triggerIdentity": "hitCount count:30 (rounds fired by rupee; AR hitsPerShot 1). Recurring — every 30 attacks adds/refreshes. Not interval, not lastBullet.",
+      "targetSet": "self only. No teammate may receive Mileage.",
+      "nearestWrongModel": "Authoring it as a passive self-buff at the full 69% from t=0 (skips the ~15s ramp and over-credits the opening — exactly the stack-ramp trap the taxonomy names), OR maxStacks omitted so procs refresh at 13.8% flat, OR each stack expiring independently instead of the whole buff refreshing.",
+      "distinguishingAssertion": "The sequence of buffApply events for the Mileage key on rupee shows stacks climbing 1→2→3→4→5 across the opening ~15s of the fight (first apply at ~30 rounds, NOT at frame 0), then holding at stacks=5 with refresh=true thereafter. A passive-at-max encoding emits stacks=5 (or a single 69% value) at t=0 — RED.",
+      "inertness": "No buffApply for this key on any other slot; no contribution before her 30th round fires.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 274.28% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "Instant burst-cast hit on the enemy: flatDamage atkPct 274.28, landing in the burst bucket.",
+      "durationSemantics": "Instant, one hit per burst cast. Not a DoT, no duration.",
+      "triggerIdentity": "burstCast (rupee's OWN burst, 20s CD, Burst II) — fires ONLY on rotations rupee herself casts. Burst-cast damage lands BEFORE the Full Burst window opens, so it is FB-exempt (no +50% major) and takes no FB-entry auras.",
+      "targetSet": "enemy.",
+      "nearestWrongModel": "Letting the hit take the +50% Full Burst major (fbMajorApplied true) — burst-cast/instant damage is always FB-exempt because the cast lands pre-window; secondarily, keying it to fullBurstEnter so it fires on rotations rupee did not burst.",
+      "distinguishingAssertion": "Every damage event with srcSlot 'burst' from rupee has fbMajorApplied === false (and occurs at her burstCast frames only). Count of such events === count of rupee burstCast events, NOT count of fullBurstStart events.",
+      "inertness": "Zero burst-bucket damage from rupee on rotations where another Burst II (e.g. crown in the control fixture) takes the stage-2 slot instead of her.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Activates when Mileage is at max stacks",
+      "disposition": "FIX",
+      "scope": "Generic ATK (atkPct 19.8) — plain 'ATK ▲', scales each recipient's own ATK.",
+      "durationSemantics": "durationSec 5 — short wall-clock window; expires mid-Full-Burst (FB window ≈10s), so it must NOT be modeled as lasting the whole FB.",
+      "triggerIdentity": "burstCast GATED on Mileage at max stacks (5) at cast time. This is a conditional rider inside her OWN burst block — 'Activates when Mileage is at max stacks' composes with the burst cast, it is not a standalone passive that fires whenever stacks hit 5, and it is NOT fullBurstEnter. The gate reads the PRE-cast stack state: her first burst (~t=20s at CD 20) should already have 5 stacks if she fired continuously (cap ~15s), but a test variant that suppresses her ramp (e.g. patch skill2 out) must show the rider NOT firing while the 274.28% hit still lands. Encoding likely needs Mileage mirrored as a resource pool (resourceGate {name, min:5}) or an equivalent stack-state gate — a plain ungated burst block is the FIX target.",
+      "targetSet": "all allies — team-wide including self ('all allies', no except-self clause).",
+      "nearestWrongModel": "Two near-misses: (a) UNGATED — the 19.8% applies on every rupee burst regardless of Mileage state (over-credits any scenario where stacks are below cap at cast, and makes the gate untestable); (b) keyed to fullBurstEnter — fires on ANY team Full Burst including rotations rupee never burst, the classic burst-cast vs FB-enter over-credit whenever another Burst II is present (the control fixture HAS one: crown).",
+      "distinguishingAssertion": "buffApply stat atkPct value 19.8 with casterIdx === rupee's index appears (i) only at rupee's burstCast frames, never at fullBurstStart frames of rotations she sat out, and (ii) NOT when her Mileage stack state is below 5 at cast (assert via a withPatchedOverride variant that removes/weakens skill2 so stacks can't cap → zero 19.8 applies, while the 274.28% burst damage event still occurs). All five units receive it when it does fire.",
+      "inertness": "Must not fire on crown's stage-2 casts; must contribute nothing in the skill2-suppressed variant; must lapse after 5s (expiresFrame ≈ cast+300f), not persist through the FB window.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Critical Rate ▲ 2.24% for 10 sec (Iron allies, every 100 rounds)",
+    "skill2:Mileage ATK ▲ 13.8% ×5 stacks, 15 sec, every 30 rounds",
+    "burst:274.28% final ATK instant hit (FB-exempt)",
+    "burst:ATK ▲ 19.8% 5 sec, all allies, Mileage-max-gated"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Increases stack count of buffs by 1."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "FIXTURE TRAP FIRST: rupee is Burst II, but controlComp(carry) seats the carry in the B3 slot beside crown (B2) and helm (B3). She can never legally burst from a B3 slot expectation — the tests MUST confirm she actually emits burstCast events in whatever fixture is used (first-ready in-window selection between her and crown at stage 2), or build a comp where she is the sole B2; otherwise every burst-slot assertion (the 274.28% hit AND the Mileage-gated 19.8%) vacuously passes or silently never exercises. EXPECTED SHARED-PRIOR MISREADS to reconcile: (1) the burst rider keyed to fullBurstEnter instead of Mileage-gated burstCast — diverges on every rotation crown takes stage 2, an over-credit the control fixture will actively exercise; (2) Mileage authored passive-at-max (69% from t=0) skipping the ~15s ramp; (3) skill1's crit target widened from Iron-only to all allies (check the fixture's element mix — if all four teammates happen to be Iron the distinction is untestable there and needs a mixed-element variant); (4) skill1's stack-count line silently dropped without an unmodeled entry — it is a GAP (no generic cross-unit stack-increment primitive) but its self-slice marginally accelerates her own Mileage ramp (~1 proc earlier to cap), worth a note either way; (5) generic critRatePct vs critRateNormalPct — HERE the prose is unscoped, so the scoped encoding would be the error. Cadence context for assertions: AR, 60-round magazine, 81-frame reload, hitsPerShot 1 — hitCount thresholds 30 and 100 count rounds, and the 100-round cycle (~9.7s incl. reload) sits just inside the 10s crit duration, so assert high cyclic uptime, not permanence. All magnitudes (2.24, 13.8, ×5, 19.8, 274.28, durations) are literal kit text = DATAMINED; the only ⚑ is the fire-cadence tuple itself if restated.",
+  "model": "claude-fable-5"
+}
