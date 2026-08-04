@@ -1196,6 +1196,233 @@ def gate_against_owner_groundtruth(slots, gt_path=None):
     }
 
 
+HAND_COUNT_FIXTURE = "scripts/tests/fixtures/pellets/hand-count-slice.json"
+
+
+def reload_extra_onsets(events, spurious, slack):
+    """Split the in-reload SPURIOUS onsets into the magazine-emptying shot and the EXTRAS.
+
+    A reload window can host at most ONE real weapon shot -- the round that emptied the magazine,
+    fired immediately before the counter goes blank. That shot is invisible to the ammo arbiter
+    (`reload_headroom`), which is why it lands in SPURIOUS rather than in a slot. But a SECOND
+    detected onset inside the same reload window cannot be a weapon shot at all: the magazine is
+    empty and the counter has not come back yet.
+
+    So the extras are a mechanically-derived count of NON-AMMO damage events the shot detector
+    fired on -- no pellet-count threshold and no timing prior involved. Returned per reload so the
+    attribution is auditable, since this is the only arm that can see a channel the ammo cannot.
+    """
+    reloads = [e for e in events if e["kind"] == "reload"]
+    rows, extras = [], []
+    for e in reloads:
+        inside = sorted(t for t in spurious if e["lo"] - slack <= t <= e["hi"] + slack)
+        rows.append({"reload_window": [e["lo"], e["hi"]], "headroom": e.get("headroom"),
+                     "onsets": inside,
+                     "mag_empty": inside[0] if inside else None,
+                     "extras": inside[1:]})
+        extras.extend(inside[1:])
+    return rows, sorted(extras)
+
+
+def hand_count_report(ammo, tracks, fps, slack, confirm, ammo_max, window, hand, at=0.0):
+    """Score ONE dump against an owner HAND SHOT-COUNT over a video-time window.
+
+    This is the arm the ammo arbiter cannot supply for itself. `shots_from_ammo` counts DECREMENTS,
+    so it is structurally blind to the round that empties each magazine, and its MISSED% is a rate
+    against that already-incomplete denominator. A hand count is the true shot total, so it fixes
+    the denominator AND supplies an external check on the reconstruction inside the window.
+
+    `window` is [lo_sec, hi_sec] in the VIDEO's timebase (the owner reads timestamps off the player,
+    not off the fight clock); `at` is the dump's own extraction offset so frame = (t - at) * fps.
+    `hand` carries the owner's counts: {"shots", "magazines", "nonammo_events"}.
+
+    The ammo series is reconstructed over the FULL clip and only then sliced to the window, so the
+    levels either side of the boundary are established and no edge event is manufactured.
+    """
+    cp = _count_pellets_module()
+    reads = ammo["reads"]
+    lo_s, hi_s = window
+    f_lo, f_hi = round((lo_s - at) * fps), round((hi_s - at) * fps)
+    levels, dropped = reconstruct_ammo(reads, confirm, ammo_max)
+    events_all = ammo_shot_events(levels)
+    # An event belongs to the window when the transition itself happened inside it.
+    events = [e for e in events_all if f_lo <= e["hi"] <= f_hi]
+    fc = tracks.get("frame_counts") or []
+    detected, _summary = cp.debounce_shots(fc, fps) if fc else ([], {})
+    detected_all = [s["start"] for s in detected]
+    detected_t0 = [t for t in detected_all if f_lo <= t <= f_hi]
+    slots, spurious = match_shots(events, detected_t0, slack)
+    by_cause = classify_spurious(spurious, levels, events_all, slack)
+    reload_rows, extras = reload_extra_onsets(events_all, spurious, slack)
+    reload_rows = [r for r in reload_rows if f_lo <= r["reload_window"][1] <= f_hi]
+    extras = [t for t in extras if f_lo <= t <= f_hi]
+
+    cad = measure_cadence(events_all)
+    bad = flag_inadmissible_decrements(events_all, cad.get("p10") or 0)
+    bad_in_window = [e for e in bad if f_lo <= e["hi"] <= f_hi]
+
+    dec_shots = sum(e["shots"] for e in events if e["kind"] == "decrement")
+    n_reloads = sum(1 for e in events if e["kind"] == "reload")
+    missed = [s for s in slots if s["t0"] is None]
+    n_hand = hand.get("shots")
+    # Detections attributable to the WEAPON: everything the ammo matched, plus one magazine-emptying
+    # shot per reload, i.e. total detections minus the extras that cannot be weapon shots.
+    det_weapon = len(detected_t0) - len(extras)
+    miss_vs_hand = (n_hand - det_weapon) if n_hand is not None else None
+    miss_naive = (n_hand - len(detected_t0)) if n_hand is not None else None
+
+    # The whole-clip extras scan: the same rule outside the hand-counted window, with the spacing
+    # between consecutive extras, so a periodic non-ammo source is visible as a period rather than
+    # asserted from one pair.
+    slots_all, spurious_all = match_shots(events_all, detected_all, slack)
+    _rows_all, extras_all = reload_extra_onsets(events_all, spurious_all, slack)
+    gaps = [round((b - a) / fps, 2) for a, b in zip(extras_all, extras_all[1:])]
+
+    return {
+        "dump": "/".join(Path(ammo["tracks"]).parts[-2:]), "fps": fps, "slack": slack,
+        "at": at, "window_sec": [lo_s, hi_s], "window_frames": [f_lo, f_hi],
+        "hand": dict(hand),
+        "ammo": {
+            "decrement_shots": dec_shots, "n_reloads": n_reloads,
+            "implied_total": dec_shots + n_reloads,
+            "read_pct": round(100 * sum(1 for r in reads
+                                        if f_lo <= r["i"] <= f_hi and r.get("ammo") is not None)
+                              / max(1, sum(1 for r in reads if f_lo <= r["i"] <= f_hi)), 1),
+            "dropped": dropped,
+            "inadmissible_decrements_in_window": [
+                {"lo": e["lo"], "hi": e["hi"], "from": e["from"], "to": e["to"]}
+                for e in bad_in_window],
+            "n_inadmissible_whole_clip": len(bad),
+        },
+        "detected": {"n_in_window": len(detected_t0), "t0": detected_t0,
+                     "n_whole_clip": len(detected_all)},
+        "match": {"matched": len(slots) - len(missed), "MISSED": len(missed),
+                  "SPURIOUS": len(spurious), "by_cause": by_cause,
+                  "missed_windows": [{"lo": s["lo"], "hi": s["hi"],
+                                      "from": s["from"], "to": s["to"]} for s in missed]},
+        "nonammo": {"per_reload": reload_rows, "extras_in_window": extras,
+                    "n_extras_in_window": len(extras),
+                    "extras_whole_clip": extras_all, "n_extras_whole_clip": len(extras_all),
+                    "gap_sec_between_extras": gaps,
+                    "median_gap_sec": round(st.median(gaps), 2) if gaps else None},
+        "score_vs_hand": {
+            "hand_shots": n_hand,
+            "hand_magazines": hand.get("magazines"),
+            "hand_nonammo_events": hand.get("nonammo_events"),
+            "ammo_visible_shots": dec_shots,
+            "ammo_implied_total": dec_shots + n_reloads,
+            "ammo_total_matches_hand": (dec_shots + n_reloads) == n_hand,
+            "detected_in_window": len(detected_t0),
+            "detected_weapon_attributable": det_weapon,
+            "MISSED_vs_hand": miss_vs_hand,
+            "MISSED_pct_vs_hand": round(100 * miss_vs_hand / n_hand, 1) if n_hand else None,
+            "MISSED_vs_hand_if_every_detection_is_a_shot": miss_naive,
+            "MISSED_pct_naive": round(100 * miss_naive / n_hand, 1) if n_hand else None,
+            "MISSED_pct_arbiter_basis": round(100 * len(missed) / dec_shots, 1) if dec_shots else None,
+        },
+    }
+
+
+def audit_hand_count(ammo_paths, fps, slack, confirm, ammo_max, window, hand, at,
+                     save_fixture=None):
+    reports = []
+    for p in ammo_paths:
+        with open(p) as fh:
+            ammo = json.load(fh)
+        if ammo.get("refused"):
+            print(f"REFUSED {p}: {ammo['refused']}")
+            continue
+        with open(ammo["tracks"]) as fh:
+            tracks = json.load(fh)
+        reports.append(hand_count_report(ammo, tracks, fps, slack, confirm, ammo_max,
+                                         window, hand, at))
+    print(json.dumps({"dumps": reports}, indent=2))
+    for r in reports:
+        s = r["score_vs_hand"]
+        print(f"\nHAND-COUNT SCORE — {r['dump']}  window {r['window_sec']}s "
+              f"(frames {r['window_frames']})")
+        print(f"  owner hand count      : {s['hand_shots']} shots / "
+              f"{s['hand_magazines']} magazines / {s['hand_nonammo_events']} non-ammo events")
+        print(f"  ammo arbiter          : {s['ammo_visible_shots']} decrements + "
+              f"{r['ammo']['n_reloads']} mag-empty = {s['ammo_implied_total']} "
+              f"({'MATCHES' if s['ammo_total_matches_hand'] else 'DIFFERS FROM'} the hand count)")
+        print(f"  detector              : {s['detected_in_window']} onsets, "
+              f"{r['nonammo']['n_extras_in_window']} of them non-ammo -> "
+              f"{s['detected_weapon_attributable']} weapon shots")
+        print(f"  MISSED vs hand        : {s['MISSED_vs_hand']} ({s['MISSED_pct_vs_hand']}%)"
+              f"   [naive, counting every onset as a shot: "
+              f"{s['MISSED_vs_hand_if_every_detection_is_a_shot']} ({s['MISSED_pct_naive']}%)]")
+        print(f"  MISSED, arbiter basis : {r['match']['MISSED']} "
+              f"({s['MISSED_pct_arbiter_basis']}% of decrements)")
+        print(f"  inadmissible flips in window: "
+              f"{len(r['ammo']['inadmissible_decrements_in_window'])} "
+              f"(whole clip {r['ammo']['n_inadmissible_whole_clip']})")
+        print(f"  non-ammo extras, whole clip: {r['nonammo']['n_extras_whole_clip']}, "
+              f"median gap {r['nonammo']['median_gap_sec']}s")
+    if save_fixture:
+        slims = []
+        for p, r in zip(ammo_paths, reports):
+            with open(p) as fh:
+                ammo = json.load(fh)
+            with open(ammo["tracks"]) as fh:
+                tracks = json.load(fh)
+            slims.append({
+                "tracks": "/".join(Path(ammo["tracks"]).parts[-2:]),
+                "range": ammo.get("range", [0, len(ammo["reads"])]),
+                "reads": [{"i": x["i"], "ammo": x.get("ammo")} for x in ammo["reads"]],
+                "frame_counts": tracks.get("frame_counts", []),
+            })
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("count-pellets.py --ammo-series reads + the frame_counts they were "
+                            "scored against, for the `isabel` full-fight dump "
+                            "(docs/probes/ar-sg-smg/isabel solo sg.MP4, fps 30, at 0). Pins the "
+                            "owner hand-count arm of the missing-shot channel. Constraint 9 "
+                            "self-validation, same precedent as missing-shots-slice.json."),
+                "_note": ("Replays hand_count_report with no images and no subprocess. Regenerate "
+                          "with analyze-pellet-tracks.py --hand-count <ammo-series.json> "
+                          "--hand-count-window ... --save-hand-count-fixture."),
+                "params": {"fps": fps, "slack": slack, "confirm": confirm, "ammo_max": ammo_max,
+                           "window": list(window), "at": at, "hand": dict(hand)},
+                "dumps": slims,
+                "_expected": [_hand_count_expected(r) for r in reports],
+            }, fh)
+        print(f"\nwrote hand-count slice fixture -> {save_fixture}")
+    return reports
+
+
+def _hand_count_expected(r):
+    s = r["score_vs_hand"]
+    return {
+        "dump": r["dump"],
+        "score_vs_hand": s,
+        "detected_t0": r["detected"]["t0"],
+        "MISSED": r["match"]["MISSED"],
+        "SPURIOUS": r["match"]["SPURIOUS"],
+        "extras_in_window": r["nonammo"]["extras_in_window"],
+        "n_extras_whole_clip": r["nonammo"]["n_extras_whole_clip"],
+        "median_gap_sec": r["nonammo"]["median_gap_sec"],
+    }
+
+
+def hand_count_selftest():
+    """Constraint 9 self-validation: replay the hand-count arm over the committed slice."""
+    with open(HAND_COUNT_FIXTURE) as fh:
+        fx = json.load(fh)
+    p = fx["params"]
+    got = []
+    for d in fx["dumps"]:
+        ammo = {"tracks": d["tracks"], "range": d["range"], "reads": d["reads"]}
+        got.append(_hand_count_expected(hand_count_report(
+            ammo, d, p["fps"], p["slack"], p["confirm"], p["ammo_max"],
+            p["window"], p["hand"], p["at"])))
+    ok = got == fx["_expected"]
+    print(f"expected: {json.dumps(fx['_expected'], sort_keys=True)}")
+    print(f"got     : {json.dumps(got, sort_keys=True)}")
+    print("SELFTEST PASS" if ok else "SELFTEST FAIL")
+    return 0 if ok else 1
+
+
 def missing_shots_report(ammo, tracks, fps, slack, confirm, ammo_max, gate=False):
     """One dump's missing-shot measurement. `ammo` is a count-pellets.py --ammo-series payload."""
     cp = _count_pellets_module()
@@ -1543,6 +1770,38 @@ def main():
                           "`marciana` (SG/Iron) groundtruth clip (at=15 dur=30 fps=60 zoom=2)")
     ap.add_argument("--missing-shots-selftest", action="store_true",
                      help=f"replay --missing-shots against {MISSING_SHOTS_FIXTURE} and exit")
+    ap.add_argument("--hand-count", nargs="+", metavar="AMMO_SERIES_JSON",
+                     help="THE HAND-COUNT ARM: score a count-pellets.py --ammo-series dump against "
+                          "an OWNER HAND SHOT-COUNT over a video-time window. The ammo arbiter "
+                          "counts DECREMENTS, so it is structurally blind to the round that empties "
+                          "each magazine; a hand count supplies the true denominator and an external "
+                          "check on the reconstruction. Reports MISSED against the hand count, "
+                          "against the naive every-onset-is-a-shot reading, and on the arbiter's own "
+                          "basis, plus the per-reload non-ammo extra onsets")
+    ap.add_argument("--hand-count-window", nargs=2, type=float, metavar=("LO_SEC", "HI_SEC"),
+                     help="the VIDEO-time window the owner hand-counted (seconds; the owner reads "
+                          "timestamps off the player, not off the fight clock)")
+    ap.add_argument("--hand-count-at", type=float, default=0.0,
+                     help="the dump's own --at extraction offset, so frame = (t - at) * fps "
+                          "(default 0)")
+    ap.add_argument("--hand-count-fps", type=float, default=30.0,
+                     help="sampling fps of the dump being scored (default 30; the full-fight h4/g2 "
+                          "dumps are 30) -- handed to debounce_shots for its gap tolerance")
+    ap.add_argument("--hand-count-slack", type=int, default=8,
+                     help="frames of tolerance when matching a detected shot onset to an ammo "
+                          "decrement window (default 8). The detector's t0 is the EVENT_MIN rising "
+                          "edge, which sits AT or AFTER the shot frame")
+    ap.add_argument("--hand-count-shots", type=int,
+                     help="the owner's hand-counted number of shots fired in the window")
+    ap.add_argument("--hand-count-magazines", type=int,
+                     help="the owner's hand-counted number of full magazines emptied in the window")
+    ap.add_argument("--hand-count-nonammo", type=int,
+                     help="owner-reported non-ammo skill damage events in the window (projectiles "
+                          "that cost no ammo and leave no shotgun pellet markers)")
+    ap.add_argument("--save-hand-count-fixture", metavar="PATH",
+                     help=f"write the selftest slice fixture (default path {HAND_COUNT_FIXTURE})")
+    ap.add_argument("--hand-count-selftest", action="store_true",
+                     help=f"replay --hand-count against {HAND_COUNT_FIXTURE} and exit")
     ap.add_argument("--gt-score-json", metavar="PATH",
                      help="score-pellets.py --real-fixture stdout JSON (carries each shot's owner "
                           "count, the shipped estimator's error and its per-offset counts)")
@@ -1552,6 +1811,18 @@ def main():
         raise SystemExit(stale_counting_selftest())
     if args.missing_shots_selftest:
         raise SystemExit(missing_shots_selftest())
+    if args.hand_count_selftest:
+        raise SystemExit(hand_count_selftest())
+    if args.hand_count:
+        if not args.hand_count_window:
+            ap.error("--hand-count requires --hand-count-window LO_SEC HI_SEC")
+        audit_hand_count(args.hand_count, args.hand_count_fps, args.hand_count_slack,
+                         AMMO_CONFIRM, AMMO_MAX, args.hand_count_window,
+                         {"shots": args.hand_count_shots,
+                          "magazines": args.hand_count_magazines,
+                          "nonammo_events": args.hand_count_nonammo},
+                         args.hand_count_at, args.save_hand_count_fixture)
+        return
     if args.missing_shots:
         audit_missing_shots(args.missing_shots, args.missing_shots_fps, args.missing_shots_slack,
                             args.missing_shots_confirm, args.missing_shots_ammo_max,
