@@ -1395,6 +1395,50 @@
       ],
       "board": null
     },
+    "cocoa": {
+      "name": "Cocoa",
+      "burst": "I",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/cocoa.json + scripts/kit-autonomy/manual-review/cocoa.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Affects all allies. Restores 17.76% of Cover HP.",
+          "Affects 2 random ally unit(s) with debuffs. Removes 1 debuff(s)."
+        ],
+        "skill2": [
+          "Activates when attacking with Full Charge. Affects self. Professional Tomato Sauce: Damage Taken ▼ 4.37%, stacks up to 15 time(s) and lasts for 5 sec."
+        ],
+        "burst": [
+          "Affects all allies. Removes 1 debuff(s).",
+          "Activates when Professional Tomato Sauce is at max stacks. Affects all enemies. ATK ▼ 13.59% for 10 sec."
+        ]
+      },
+      "caveats": [
+        "⚑ Cover-HP restore (17.76% of Cover HP, all allies, skill1 cd 15s) is UNMODELED, tier out-of-domain (no cover/HP pool in v1). It is NOT encoded as a `heal` effect on purpose: cover repair is not HP recovery in the kit's own terms, and a heal would emit recovery events that fire teammates' on-recovery consumers (e.g. crown's 'when recovery takes effect') — a synergy cocoa does not have. Whether in-game cover repair fires on-recovery triggers is UNMEASURED; the default is no-emit, and flipping that default needs a measurement, not a prior. Recipe if a cover pool is ever modeled: emit a cover-restore event on skill1's 15s clock, no recovery trigger.",
+        "⚑ Debuff removal (skill1: 1 debuff from 2 random debuffed allies; burst: 1 debuff from all allies) is UNMODELED, tier out-of-domain: v1 models no ally debuffs (the boss deals no damage and applies none), so there is nothing to cleanse. Recipe if ally debuffs are ever modeled: cleanse 1 on skill1's 15s clock (2 random debuffed holders) and 1 on cocoa's OWN burstCast (all allies — burstCast, not fullBurstEnter).",
+        "⚑ Self Damage Taken ▼4.37% per full-charge attack (15 stacks, 5 sec) is UNMODELED, tier out-of-domain: v1 models no incoming damage, so a damage-taken modifier has no consumer. Estimate if it ever mattered: with SR cadence (60-frame charge, 6 ammo, 141 reload) stacks would saturate ~25-30s into the fight and stay up (UNMEASURED derivation). Its only consumer is the burst's max-stacks gate — both are unmodeled together. Nearest-wrong encoding to avoid: the schema's damageTakenPct is a BOSS debuff (positive = boss takes MORE damage); writing this self ▼ line onto the boss would swing team damage up to 15×4.37% ≈ 65.55%.",
+        "⚑ Enemy ATK ▼13.59% for 10 sec, gated on Tomato Sauce at max stacks at cast time, is UNMODELED, tier out-of-domain: the engine explicitly drops enemy ATK▼/DEF▼ debuffs (src/engine/sim.ts — they cannot affect damage dealt at DEF=0; the boss never attacks into our numbers). It is NOT damageTakenPct (that is 'boss takes more damage' — a different mechanic). Recipe if boss attacks are ever modeled: 10s ATK-down on all enemies, applied only when the caster holds 15 Tomato stacks at her own burstCast.",
+        "Zero damage lines, zero weapon-state modifiers, zero gauge modifiers in the whole kit — cocoa cannot move her own or any teammate's damage. Her committed override is byte-identical in effect to the bare weapon: the board value is entirely defensive and lives outside v1's domain. Any future edit that adds an effect to this file is an over-encoding unless it cites a new primitive + measurement."
+      ],
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "cover-repair-fires-recovery: whether in-game Cover HP restoration fires ally on-recovery triggers (crown/helm-style synergy) is unmeasured — all agents defaulted no-emit, recipe in override caveats; burst max-stacks gate rides the same unmeasured 15-stack pool (refresh-semantics read: ~25-30s to saturate)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "crown": {
       "name": "Crown",
       "burst": "II",
@@ -5804,6 +5848,47 @@
         "cadence: datamined 12 pulls/s + 81-frame reload are unverified estimates ⚑"
       ],
       "board": null
+    },
+    "sakura-suzuhara": {
+      "name": "Sakura Suzuhara",
+      "burst": "I",
+      "weapon": "SMG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/sakura-suzuhara.json + scripts/kit-autonomy/manual-review/sakura-suzuhara.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "■ Activates after landing 60 normal attacks. Affects the 2 ally unit(s) with the lowest HP percentage.\nIncoming healing ▲ 15.18% for 10 sec.",
+          "■ Activates after landing 120 normal attacks. Affects the 2 ally unit(s) with the lowest HP percentage.\nDamage Taken ▼ 14.97% for 10 sec."
+        ],
+        "burst": []
+      },
+      "board": null,
+      "date": "2026-08-04",
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; S6 blind override line-for-line identical; S5 blind suite green vs driver override (documented heal-isolation adaptation); kimi judge gotchas [] discrimination ok",
+      "residual": "hitCount fired-vs-landed semantics (engine counts fired rounds; prose says landed — flagged, estimate+recipe in caveats); SMG cadence tuple always-flag; alliesLowestHp leftmost-2 stand-in for 2-lowest-HP targeting",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "caveats": [
+        "skill1: 'Damage Taken ▲ 17.18%' on the target is the boss-facing damageTakenPct debuff (positive = boss takes MORE — the channel's documented polarity), NOT an ally attack buff and NOT the mirror of skill2's 'Damage Taken ▼'. KR stacking rule: same caster slot/stat/value OVERWRITES/refreshes across procs — one debuff instance, re-applied every 120th landed round (her full magazine), 5s duration vs ~6.35s mag cycle ≈ 79% uptime with a ~1.35s gap per cycle.",
+        "skill2 (Incoming healing ▲ 15.18% / 10s): UNMODELED verbatim — v1's heal effects carry no HP amount and the schema has no healing-received stat (validate-overrides STATS), so the amplifier multiplies nothing; damage-neutral. Nearest-wrong rejected: encoding it as a 'heal' effect every 60 hits would spuriously emit recovery events at SMG cadence and feed on-recovery consumers (crown-class kits) — a massive over-credit. It is a stat buff on the recipients, not a heal; pinned silent by the spec's negative assertions.",
+        "skill2 (Damage Taken ▼ 14.97% / 10s) ⚑ engine-core / out-of-domain: ally received-damage mitigation; v1 models no ally HP pool and no incoming boss damage, so it can never move anything here. ESTIMATE: in a real fight this is a meaningful survivability window on the 2 lowest-HP allies once per mag dump (~15% less damage taken for 10s) — damage-neutral in this sim. The boss-facing damageTakenPct channel is the WRONG direction/target — encoding it (as +14.97 or −14.97 on the boss) would manufacture a phantom team damage change on the exact same 120-hit frame as skill1, so it is NOT used (noise precedent). RECIPE: add an engine ally-HP-pool + incoming-boss-damage model and an ally received-damage-reduction stat (distinct from the boss-facing damageTakenPct debuff), then encode on hitCount:120 to alliesLowestHp count:2. TIER: engine-core (new primitive), out-of-domain for the no-incoming-damage v1 sim.",
+        "burst: the heal is recovery-EVENT cadence only — the 10.03%-of-caster-final-Max-HP magnitude is inherently unmodeled (no HP pool); only the window shape is kit-literal ('every 1 sec for 10 sec' → ticks:10 intervalSec:1, the type comment's documented HoT shape; helm precedent). The burst has NO damage component (datamined ulti skill_type SetBuff, no hurt values) and is damage-inert; its observable is the recovery stream driving teammate 'recovery' triggers.",
+        "burst: target alliesLowestHp count:2 resolves to the LEFTMOST-2 allies (documented v1 stand-in — no HP pool, 'lowest HP percentage' is indeterminate; types.ts). ⚑ in a real fight the heal lands on whoever is actually lowest; an on-recovery consumer only stays refreshed if it is among the real 2 targets. ESTIMATE: bounded by the consumer's buff value × the 10s window per cast; zero consequence in a comp with no recovery consumer. RECIPE: any sakura-suzuhara focus recording — read which 2 units the heal popups land on vs their HP bars. TIER: low (only moves comps that stack a recovery consumer).",
+        "skill1 ⚑ hit-count semantics (cross-family S6 flag, reconciled): the engine's hitCount accrues FIRED rounds × hitsPerShot (sim.ts hitCounters), the repo convention for 'after landing N normal attacks'; in-game SMG spread means landed ≤ fired, so the real activation can lag the sim's and the debuff duty cycle is slightly over-credited. ESTIMATE: bounded by the miss fraction over 120 rounds vs the immobile scope-lock-style boss (high hit rate; the lag is a fraction of one mag cycle, not a re-phase). RECIPE (S6): focus-record her in a graded comp and measure the interval between consecutive Damage Taken ▲ applications on the boss vs the magazine boundaries off the ammo counter — at the reload = fired-count correct; lagging into the next mag = raise count by the observed landing fraction. TIER: medium — her entire team contribution is this debuff's uptime, so a cadence error scales it 1:1.",
+        "cadence tuple ⚑ (always-⚑): pullsPerSec is the engine-default SMG cadence (datamined rate_of_fire 1440 fired on 60fps frame boundaries), reloadFrames 81, ammo 120 — unmodified by this override. Both live and unmodeled triggers are hit-count-keyed, so any cadence error propagates 1:1 into the S1 debuff duty cycle. RECIPE: read shots/sec + reload gap from any focus recording. TIER: standard."
+      ]
     },
     "scarlet": {
       "name": "Scarlet",

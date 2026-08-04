@@ -25,7 +25,7 @@
 | --- | --- | --- |
 | `advantageVs` | 2 | rapi-red-hood, sugar |
 | `alliesLowestAtk` | 1 | liberalio |
-| `alliesLowestHp` | 5 | blanc, naga, pepper, poli, rapunzel |
+| `alliesLowestHp` | 6 | blanc, naga, pepper, poli, rapunzel, sakura-suzuhara |
 | `alliesOfClass` | 2 | biscuit, d |
 | `alliesOfElement` | 11 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, exia, guillotine-winter-slayer, guilty, maiden-ice-rose, … |
 | `alliesOfElementWeapon` | 3 | ark-ranger-black, sugar, trina |
@@ -64,7 +64,7 @@
 | `hasPierce` | 6 | alice, laplace, laplace-ultimate-hero, maxwell-ordinary-mechanic, red-hood, zwei |
 | `hasTrueNormals` | 0 | _none_ |
 | `highestAllyAtkPct` | 1 | guilty |
-| `hitCount` | 58 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, … |
+| `hitCount` | 59 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, … |
 | `hitRatePct` | 17 | anchor-innocent-maid, aria, asuka, chisato, dorothy-serendipity, drake, jill, leona, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
 | `inFb` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |
