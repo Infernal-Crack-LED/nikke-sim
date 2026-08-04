@@ -1,0 +1,47 @@
+{
+  "slug": "noah",
+  "skill1": [],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 133.48,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "There is a 10% chance of activating when attacked. Affects all allies. Damage Taken ▼ 8% for 10 sec."
+    ],
+    "skill2": [
+      "Activates when hitting a target with a Full Charge attack. Affects the target. Taunt for 2 sec. ATK ▼ 13.25% for 5 sec."
+    ],
+    "burst": [
+      "Affects self. Attract: Taunt all enemies for 10 sec.",
+      "Affects all allies. Invulnerable for 3 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ CADENCE TUPLE (ALWAYS-⚑): RL charge cycle — chargeFrames 60 / ammo 6 / reloadFrames 171 / hitsPerShot 2 / rate_of_fire 60 — shipped from datamine; affects her OWN shots only (weapon damage + burst-gauge feed). She has NO datamined row in data/gauge-per-shot.json, so her gauge accrual uses the RL modal fallback (280/trigger × the RL-charge focus multiplier) — the cadence of her burstCast keying (and therefore of the defPct channel below) inherits that estimate. No kit line keys off her shots (S2's full-charge-hit clause is UNMODELED), so a wrong cadence rescales nothing kit-side — only the channel's firing count.",
+    "Burst DEF line ('DEF ▲ 133.48% for 10 sec', all allies) is encoded as defPct — the LITERAL form this time: the kit grants each ally a percentage of their OWN DEF, which is exactly what defPct scales (contrast marciana's burst DEF line, which is caster-DEF-scaled and therefore only a semantic approximation). defPct is deliberately INERT in v1: self DEF never enters damage dealt and there is no incoming damage, so the grant moves no unit's total — kept for kit completeness (marciana's inert-defPct convention) and for any future DEF consumer/scaler.",
+    "burstCast keying (own-cast prior, marciana/folkwang convention): the DEF grant is noah's OWN Burst II block — keying it to fullBurstEnter would over-fire the channel on every Full Burst a competing Burst II opens (noah.test.ts N3 discriminates this behaviorally against the fixture's CD-20 B2 naga, whose chains complete without noah casting).",
+    "S1 'Damage Taken ▼ 8%' UNMODELED: the clause is a DEFENSIVE ally-side damage-taken reduction (▼ direction, all-ally target) — the schema's only damage-taken stat is damageTakenPct, a BOSS debuff where positive = boss takes MORE, so it cannot express this line without inverting both target and direction (the nearest-wrong model the S2b reviewer independently flagged: a boss-held -8% would drag the whole board down 8%). The 10%-when-attacked activation also has no trigger primitive (no attacked-trigger, no RNG gate) and the v1 boss attacks nobody.",
+    "S2 'Taunt for 2 sec' + 'ATK ▼ 13.25% for 5 sec' UNMODELED: v1 models no aggro/targeting and no enemy stats (the boss deals no damage, so an enemy ATK ▼ has no consumer). NOT encoded as a targetStatus (that channel is for kit-NAMED gateable statuses such as d-killer-wife's Wipe Out; fabricating a 'Taunt' status would invent a gate no kit line asks for — folkwang precedent), NOT as a negative atkPct on self/allies (the ▼ is on THE TARGET — the enemy). The full-charge-hit activation clause has no trigger primitive either.",
+    "Burst 'Attract: Taunt all enemies for 10 sec' UNMODELED: same no-aggro ruling as S2's taunt.",
+    "Burst 'Invulnerable for 3 sec' UNMODELED: v1 models no HP pool / death / incoming damage. Deliberately NOT encoded as a `shield` effect (the nearest-primitive trap, S2b-flagged): a shield encoding would open the targets' shieldedUntilFrame windows and fire teammates' 'shielded' triggers / requiresShielded gates — fabricating a synergy surface the kit never grants. Invulnerability is a distinct named mechanic from Shield in kit vocabulary (marciana's Storage precedent).",
+    "Zero damage lines and zero weapon-state modifiers in the whole kit: noah's entire board footprint is ONE inert defPct channel on her own burst casts. Her personal damage is weapon-only (RL charge, hitsPerShot 2). She is damage-neutral by the same proof as the six clean-weapon basis units (noah.test.ts N1: own AND team totals byte-identical vs the empty kit, solo and in-comp), though she is NOT one of the six basis cells (the harness list is owner-fixed)."
+  ],
+  "note": "noah (Noah) — RL / Defender / Wind / Burst II, Pilgrim, cd 40s, ammo 6, reloadFrames 171, chargeFrames 60, hitsPerShot 2, normalMult 64.04 / core 200 / charge 250. A PURE TANK kit — taunt / damage-taken reduction / invulnerability / DEF, and nothing else. ZERO damage lines and ZERO weapon-state modifiers in the whole kit: this unit cannot move her own damage or any teammate's. Her only board footprint is the burst all-ally DEF grant; her in-game value (threat control + team survivability) is entirely outside the damage sim's scope. || MODELED TODAY: (1) Burst 'U Mad Bro?' line 'Affects all allies. DEF ▲ 133.48% for 10 sec.' → burstCast-keyed (her OWN cast — she is Burst II; fullBurstEnter would over-fire on the chains a competing B2 opens, pinned BEHAVIORALLY in noah.test.ts N3 against naga's CD-20 chains), target allies, buff defPct 133.48 durationSec:10. The LITERAL form of the marciana convention: a plain self-DEF percentage (no caster-scaling approximation), deliberately inert in v1 — kept for kit completeness and any future DEF consumer. || DELIBERATELY UNMODELED (verbatim in `unmodeled`, never an `ignored` drop): S1 'There is a 10% chance of activating when attacked. Affects all allies. Damage Taken ▼ 8% for 10 sec.' (no attacked-trigger / RNG gate; no ally damage-taken stat — damageTakenPct is the boss debuff with inverted target+direction; measurement-gated on v1 ever modeling incoming damage); S2 'Activates when hitting a target with a Full Charge attack. Affects the target. Taunt for 2 sec. ATK ▼ 13.25% for 5 sec.' (no full-charge-hit trigger, no aggro model, no enemy stats); burst 'Affects self. Attract: Taunt all enemies for 10 sec.' (no aggro model) and 'Affects all allies. Invulnerable for 3 sec.' (no HP/death model; NOT shield-encoded — that would fabricate shieldedUntilFrame windows and fire teammates' shield-gated consumers). || EVIDENCE TIER: all live values are kit-text-literal (133.48 DEF, 10s window; 8 / 13.25 / 10% magnitudes recorded verbatim in unmodeled); the 40s burst CD is datamine-literal; the estimated quantities are the RL cadence tuple (datamine-shipped, ALWAYS-⚑) and her gauge accrual (no datamined gauge-per-shot row — RL modal fallback). || TIER 1 (zero damage lines, zero weapon-state modifiers; the single modeled line is an inert stat buff with no scoped buffs, no round counts, no status gates; the burstCast-vs-fullBurstEnter pin is behaviorally discriminated, not just structural). Faithful>fit; measured>fudge. || Kit-autonomy gauntlet 2026-08-03."
+}

@@ -1,0 +1,82 @@
+{
+  "slug": "noah",
+  "kitDescription": "Noah is a Pilgrim Defender who fights with a charge rocket launcher. Her first skill gives the whole team a small damage-taken reduction, with a 10% chance to trigger each time she is attacked. Her second skill taunts an enemy she hits with a full-charge shot for 2 seconds and lowers that enemy's ATK for 5 seconds. Her burst, 'U Mad Bro?', taunts every enemy for 10 seconds, makes all allies invulnerable for 3 seconds, and raises all allies' DEF by 133.48% for 10 seconds. She is a pure tank whose entire in-game value is drawing enemy fire and keeping the team alive rather than dealing damage. Because the sim models no incoming damage, HP, or enemy targeting, only the DEF buff is even representable — and it moves no damage today.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "10% chance when attacked -> Dmg Taken -8%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim; no attacked-trigger/RNG gate, no ally damage-taken stat (damageTakenPct is the boss debuff with inverted target+direction); explicitly refuses the boss-held -8% fabrication.",
+        "blindSaid": "S2b: UNMODELED, nearest-wrong = boss damageTakenPct misroute. S6: same skip, but added an interval:10 -> defPct 0 placeholder with a self-flagged INVENTED trigger. S5: GAP it.skip lines.",
+        "formulaCheck": "No bucket or primitive expresses ally-side mitigation; the only damage-taken channel (Taken bucket, boss-side) would invert the line's meaning. Out-of-domain confirmed.",
+        "fireRateOk": true,
+        "explanation": "Driver's unmodeled-verbatim is the faithful encoding (marciana/folkwang convention). S6's placeholder is ruled non-preferred: the interval:10 trigger is invented (violates MEASURED>FUDGE even at value 0) and a noah-originated defPct channel — even zero-valued — recreates exactly the provenance hazard empirically demonstrated this run, where crown's unrelated defPct 37.44 grant broke the S5 blind fixture's data-driven selection. S6's own recipe says the line belongs in unmodeled until an incoming-attack trigger exists."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Full Charge hit -> Taunt 2 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim; no aggro/targeting model; explicitly refuses a fabricated targetStatus (folkwang precedent — targetStatus is for kit-named gateable statuses only).",
+        "blindSaid": "S2b: UNMODELED, nearest-wrong = phantom targetStatus. S6: skipped the effect but added an effect-free shotFired->enemy block 'recording the real trigger'. S5: GAP it.skip.",
+        "formulaCheck": "No taunt/aggro primitive exists; boss targeting is not simulated; zero damage consequence. Confirmed out-of-domain.",
+        "fireRateOk": true,
+        "explanation": "Driver's verbatim drop is faithful. S6's empty-effects block is numerically harmless but still encodes an approximation (shotFired != full-charge-hit — S6 itself flags over-fire risk if uncharged taps exist) for no consumer; the unmodeled record preserves the same information without asserting an unproven mechanic. Not a driver finding — a blind-side style divergence ruled in the driver's favor."
+      },
+      {
+        "kitLine": "ATK -13.25% for 5 sec (target)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim; no enemy stats (boss deals no damage), the debuff is on THE TARGET not self/allies; refuses the negative-atkPct-on-allies misread.",
+        "blindSaid": "S2b: UNMODELED, nearest-wrong = target-set misread onto allies (-13.25% carry ATK refreshed per shot). S6: skipped (resolveTargets(enemy) returns no entities). S5: ATK_RUN non-vacuity probe proves an ally atkPct channel would move totals.",
+        "formulaCheck": "Enemy ATK is an input to no damage-formula bucket (bossDef is the only enemy stat, flat ~140, run at 0). Inert by construction; encoding it ally-side would be a fabricated damage loss. Confirmed.",
+        "fireRateOk": true,
+        "explanation": "All four agents agree the line is unmodelable at scope and must never surface as atkPct on any target. Driver's N4 pins (no 13.25 value from noah, no non-defPct stat from noah) lock the refusal behaviorally, not just structurally."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Attract: Taunt all enemies 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim (scope header 'Affects self' preserved with the line); no aggro model.",
+        "blindSaid": "S2b: UNMODELED, phantom-status nearest-wrong. S6: skipped, verbatim (dropped the scope headers — entry-splitting difference only). S5: GAP it.skip.",
+        "formulaCheck": "No aggro/targeting primitive; the sim's boss attacks nobody. Out-of-domain confirmed.",
+        "fireRateOk": true,
+        "explanation": "Full convergence. Driver's retention of the 'Affects self.' scope header in unmodeled is if anything more verbatim-complete than S6's split. No finding."
+      },
+      {
+        "kitLine": "Invulnerable for 3 sec (all allies)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim; explicitly refuses the kind:'shield' nearest-primitive substitution because it would open shieldedUntilFrame windows and falsely fire teammates' shielded triggers / requiresShielded gates (marciana Storage precedent).",
+        "blindSaid": "S2b: UNMODELED with exactly the shield-trap warning. S6: skipped (no invulnerability primitive). S5: GAP it.skip.",
+        "formulaCheck": "No HP pool, no incoming damage, no invulnerability primitive; the shield channel is load-bearing for other units' gates, so the substitution would fabricate a synergy surface. Confirmed.",
+        "fireRateOk": true,
+        "explanation": "Driver and S2b independently named the identical trap and the identical reason to refuse it; the driver's N4 'only defPct from noah' event-log pin enforces it. No finding."
+      },
+      {
+        "kitLine": "DEF +133.48% for 10 sec (allies)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "One block: trigger burstCast (own cast), target allies (no excludeSelf), buff defPct 133.48 durationSec 10; literal self-DEF-percentage form (no caster-scaling approximation); inert in v1, kept per marciana convention.",
+        "blindSaid": "S2b: FAITHFUL, load-bearing, same encoding demanded with burstCast-vs-fullBurstEnter and stat-confusion discrimination. S6: byte-identical burst block. S5: asserts value 133.48, whole-ally-set coverage, 600-frame expiry, cast-before-FB ordering, per-cast-per-ally cadence — all green vs the driver override.",
+        "formulaCheck": "Value 133.48 and 10s are kit-text-literal (SL10 table). defPct enters no v1 damage bucket (ally DEF never feeds damage dealt; enemy DEF is the flat subtractive term) — inertness confirmed, so the encoding's correctness rests on shape/trigger/target, all matching prose. burstCast keying matches the burst-cast timing rules (buff from own cast, applies before FB opens).",
+        "fireRateOk": true,
+        "explanation": "Four-way convergence, byte-equivalent. Driver proves the channel FIRES at the prose cadence (landings = noahBursts x 5, both B2s cast, every chain completes) and discriminates behaviorally: naga's CD-20 chains complete without noah, so a fullBurstEnter encoding over-fires by exactly those chains; a self-only target narrows to 1 landing/cast; a defPct->attackDamagePct swap moves team totals, proving the shipped inertness is live rather than vacuous. This is the gauntlet's strongest possible outcome for an inert-stat line."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": 1.0,
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: all eight kit lines are FAITHFUL (the one in-domain burst DEF line) or DOCUMENTED_GAP (seven out-of-domain defensive lines, verbatim in unmodeled with reasons, never fabricated as damageTakenPct/atkPct/shield/targetStatus). The blind re-derivations converged completely on the load-bearing line — S6's burst block is byte-equivalent to the driver's, S2b's spec demands exactly what shipped, and the S5 blind test passes 12/0/6-skip against the shipped override once its own fixture-premise bug is corrected. The six pristine S5 reds are classified RECON_ERROR on the blind side, not driver divergence: the blind author assumed defPct events originate only from noah, but crown (the control comp's fixed B2) emits her own documented defPct 37.44 at every Full Burst, so the data-driven fixture selection picked a candidate where noah never cast and every channel assertion read crown's events; the three documented premise fixes preserve assertion intent and the corrected copy is fully green. The one substantive divergence — S6's two damage-inert placeholder blocks (invented interval:10 with zero-value defPct; effect-free shotFired) versus the driver's unmodeled-verbatim — is ruled in the driver's favor: the invented trigger violates MEASURED>FUDGE, and a phantom noah-originated defPct channel (even at value 0) recreates precisely the provenance hazard the crown incident just demonstrated, while the marciana/folkwang convention records such lines verbatim with no blocks; S6's own flags concede the lines belong in unmodeled. Discrimination is verified behaviorally, not just structurally: the competing CD-20 B2 (naga) makes burstCast-vs-fullBurstEnter observable, the self-only and damage-stat counterfactuals each fail as required, and the injected damageTakenPct/atkPct probes prove the inertness pins are non-vacuous. Nothing must change for GO. Same-model residual for the owner to spot-check: because defPct is engine-inert, no totals assertion can ever catch a future wrong defPct consumer, and the channel's cast cadence rides the RL modal gauge fallback (noah has no datamined gauge-per-shot row) — a wrong fallback would shift her cast count, though never the encoding; also the driver fixture's behavioral discrimination depends on naga's chains completing as designed, which the fixture sanity pins assert but a future naga override change could silently void.",
+  "model": "kimi-code/k3"
+}

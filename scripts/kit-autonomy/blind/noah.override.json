@@ -1,0 +1,81 @@
+{
+  "slug": "noah",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 10
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 0,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": []
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 133.48,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "There is a 10% chance of activating when attacked. Affects all allies.",
+      "Damage Taken \u25bc 8% for 10 sec."
+    ],
+    "skill2": [
+      "Activates when hitting a target with a Full Charge attack. Affects the target.",
+      "Taunt for 2 sec.",
+      "ATK \u25bc 13.25% for 5 sec."
+    ],
+    "burst": [
+      "Attract: Taunt all enemies for 10 sec.",
+      "Invulnerable for 3 sec."
+    ]
+  },
+  "caveats": [
+    "\u2691 Every value below is UNMEASURED. Noah is a pure-defensive Defender: her entire kit is damage-taken reduction, taunt, invulnerability and DEF. At scope lock (immortal boss, nobody takes damage) NONE of it moves damage \u2014 the modeled blocks exist for kit completeness and for a future DEF/HP consumer, not because they contribute output.",
+    "\u2691 skill1 trigger is INVENTED: the kit says '10% chance of activating when attacked' \u2014 the sim has no incoming-damage channel, so there is no 'attacked' trigger in the schema. Encoded as a placeholder interval:10s with a ZERO-valued defPct so it can never move a number; the real gating (10% \u00d7 boss attack cadence) is unmodelable at scope. Recipe: if an incoming-attack trigger is ever added, re-key this block and set the real rate.",
+    "\u2691 skill1 'Damage Taken \u25bc 8%' is a SELF/ALLY mitigation, NOT the offensive damageTakenPct debuff (which is a BOSS debuff where positive = boss takes more). Do NOT encode it as damageTakenPct on the enemy \u2014 that would be a large fabricated team-wide damage buff. Left unmodeled; the block carries a zero-valued stat only as a marker.",
+    "\u2691 skill2 'ATK \u25bc 13.25%' is an ENEMY ATK debuff. The sim has no enemy ATK (the boss's damage output is unmodeled), so it is inert. Kept as an effect-free enemy-targeted block recording the real trigger (full-charge hit) for future consumers.",
+    "\u2691 skill2 trigger fidelity: 'when hitting a target with a Full Charge attack' is a per-full-charge-shot trigger. The schema has no full-charge-hit trigger kind; shotFired is the nearest (Noah is RL/charge, so every shot is a charge shot at scope). Recipe: confirm from footage whether uncharged taps exist; if so the trigger over-fires \u2014 but with zero effects it is damage-neutral either way.",
+    "\u2691 burst 'Invulnerable 3 sec' and both Taunt lines have no schema representation and no damage consequence at scope lock (boss is immortal, allies take no modeled damage, and taunt cannot redirect what is never dealt). Recorded verbatim in unmodeled.",
+    "\u2691 cadence tuple (ammo 6 / reloadFrames 171 / chargeFrames 60 / hitsPerShot 2) is datamined and known-unreliable; it drives her own shot economy. Recipe: count rounds + reload gaps in a real fight recording.",
+    "\u2691 noFb not set (default FB-by-timing ON) \u2014 Noah has no function-damage riders at all, so the field is moot here."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Noah (RL/Wind/Defender/Burst II) is an entirely defensive kit \u2014 there is not one offensive line in any of the three slots. S1: 10%-on-being-attacked team Damage Taken \u25bc8%/10s. S2: on a Full Charge hit, Taunt 2s + enemy ATK \u25bc13.25%/5s. Burst: self Taunt-all 10s, team Invulnerable 3s, team DEF \u25b2133.48%/10s. Only the burst DEF line maps to a real StatKey (defPct \u2014 documented inert in v1: self DEF does not affect own damage), and it is modeled for completeness/future consumers. Damage Taken \u25bc is ALLY MITIGATION and is deliberately NOT encoded as damageTakenPct (that stat is a boss debuff where positive = boss takes MORE \u2014 encoding it would fabricate a team-wide +8% damage buff out of a defensive line). Taunt and Invulnerable have no schema primitive and no damage consequence against an immortal, non-damaging scope-lock boss. Enemy ATK \u25bc is inert (no enemy ATK modeled). Expected sim contribution: her own weapon damage only.",
+  "hasPierce": false
+}
