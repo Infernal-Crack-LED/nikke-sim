@@ -5324,3 +5324,87 @@ scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py \
 
 **RECORDS a measurement + an owner adjudication.** No constant, guard, threshold or default changed;
 the 8.40 reference is CONFIRMED, not altered.
+
+#### §19 THE LANDED `band_hi = 20` ON THE PRODUCTION PATH — +0.60 pellets/shot, and it reconciles EXACTLY with §9B
+
+The first measurement of the §16 landing through the **production** code path
+(`_frame_pellet_counts` → `debounce_shots`, not the audit arm's reconstruction), scored against the
+reference §18 just confirmed. No video re-extraction: the labelled clip's own dump supplies the
+localization, so **only `band_hi` varies** and the A/B isolates it.
+
+##### §19A — Per-shot, against the owner labels
+
+`groundtruth-f811-v4` (`marciana` SG/Iron — **not** `marciana-marine-study`, AR/Iron), 60 fps,
+1801 frames, the 5 owner-labelled shots:
+
+| shot     | owner    | BEFORE | AFTER  | before err | after err |
+| -------- | -------- | ------ | ------ | ---------- | --------- |
+| 1        | 7        | 5      | 5      | −2         | −2        |
+| 2        | 10       | 8      | **10** | −2         | **0**     |
+| 3        | 8        | 7      | **8**  | −1         | **0**     |
+| 4        | 9        | 4      | 4      | −5         | −5        |
+| 5        | 8        | 8      | 8      | 0          | 0         |
+| **mean** | **8.40** |        |        | **−2.00**  | **−1.40** |
+
+**`totalShots` 37 → 37 — segmentation did not move**, confirming in production what §16B established
+by construction.
+
+##### §19B — ⚑ IT IS NOT CANCELLATION, and the arithmetic proves it
+
+§9B's headline was that the pre-landing agreement was **cancellation** — a large under-count against
+a large over-count (only 12 of 35 reported pellets were owner pellets). Any new "improvement" has to
+clear that bar before it can be believed.
+
+§9B's decomposition, **recorded before the cap hypothesis existed**, predicts exactly which pellets a
+band widening can recover: the lifetime-gate rejections, but only where the radius gate does not also
+reject them.
+
+| shot | lifetime-rejected | radius-rejected | recoverable                  |
+| ---- | ----------------- | --------------- | ---------------------------- |
+| 1    | 0                 | 1               | 0                            |
+| 2    | **2**             | 0               | **2**                        |
+| 3    | **1**             | 0               | **1**                        |
+| 4    | 2                 | 7 (mislock)     | 0 — blocked                  |
+| 5    | 0                 | 0               | 0                            |
+|      |                   |                 | **3 / 5 shots = +0.60/shot** |
+
+**Predicted +0.60/shot. Measured +0.60/shot.** The gain lands on shots 2 and 3 and nowhere else,
+which is precisely where the prediction puts it. ⇒ **the recovered pellets are the OWNER pellets the
+cap was discarding — not a coincidental total.**
+
+##### §19C — What the residual is made of
+
+The remaining **−1.40/shot** is two shots, and neither is a band problem:
+
+- **shot 4: −5**, the documented structural-crosshair **mislock** (§9B: 7 radius-rejected, 0
+  countable). Its 2 lifetime-rejected pellets are unrecoverable while the lock is wrong.
+- **shot 1: −2**, against 6 countable owner pellets — 1 genuine radius rejection (the track whose
+  closest approach is 161.4 px against a 160 px gate) plus 1 the representative frame does not see.
+
+⇒ **The radius gate and the mislock now carry the entire residual on this clip**, exactly as §18C
+predicted once the reference was confirmed. Nothing here is attributable to the lifetime band.
+
+##### §19D — n, scope, and the IN-SAMPLE caveat that must ride with this
+
+5 shots, ONE clip, ONE unit. ⚑ **This measurement is IN-SAMPLE**: the 3 recovered pellets are among
+the 5 that generated the cap hypothesis in the first place, so "the fix recovers them" is close to
+tautological on this footage and **is not evidence that the fix generalizes.** The out-of-sample
+evidence remains §14's ceiling (3.1% vs a 6.2% reject line) and corridor (0.64–0.84/event vs 2.00)
+checks, on 852 events across 4 units.
+
+What this pass _does_ add, which §14 could not: it runs the **production** path rather than the audit
+reconstruction, it scores per-SHOT against the confirmed 8.40 reference rather than per-EVENT pooled
+(the two are different bases — do not mix them), and it **rules out cancellation** by exact
+reconciliation with a decomposition recorded before the hypothesis existed.
+
+⛔ **The cold bias is NOT closed.** It moved from −2.00 to −1.40 per shot on this clip; the remainder
+is a localization defect and a radius gate, both open.
+
+##### §19E — Reproduction
+
+The A/B varies `band_hi` alone against the dump's own `cross_positions` and track list, driving
+`count-pellets.py`'s real `_frame_pellet_counts` + `debounce_shots`; `t0` values are
+`policy-score-slice.json`'s `_expected.rows`, owner labels are `groundtruth-f8-11.json`, and the
+recoverability prediction is `representative-audit-slice.json`'s `_expected.decomposition`.
+
+**RECORDS a measurement.** No constant, guard, threshold or default changed.
