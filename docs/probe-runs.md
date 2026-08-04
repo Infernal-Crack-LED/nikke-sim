@@ -5503,3 +5503,68 @@ The selftest was shown to fail when an expected classification is perturbed.
 
 **RECORDS a measurement.** No constant, guard (including the 150 px jump guard), threshold or default
 changed; `debounce_shots` and both readers untouched; no verdict stamped on the cold bias.
+
+#### §21 THE MISLOCK COST — ⛔ VOID: the pre-committed falsification control FAILED
+
+Executes `docs/handoffs/2026-08-04-mislock-cost-PRECOMMIT.md` (rule committed at `115f01c7`, before
+any number existed). **The result is VOID by that document's own §3.1, and no cost figure from this
+pass may be quoted.** Recorded because a void result is a real result: it kills a method.
+
+##### §21A — The control, and why it voids the pass
+
+§3.1 pre-committed: on **NOT-mislocked** shots the two locks should count nearly the same thing, and
+**if `mean |Δcount|` there reaches 0.5 pellets the A/B is confounded and the whole result is void.**
+
+| quantity                                     | measured   | pre-committed bar |
+| -------------------------------------------- | ---------- | ----------------- |
+| `mean \|Δcount\|` on **not-mislocked** shots | **0.706**  | VOID at ≥ 0.50    |
+| `mean Δcount` on not-mislocked shots         | **−0.170** | —                 |
+
+n = 806 scored shots (137 mislocked, 669 not), 4 dumps, 4 units.
+
+⇒ **Counting is sensitive to lock differences far below the 160 px mislock threshold.** A 30–100 px
+shift of a 160 px-radius window already changes which tracks fall inside it. So `Δcount` measures
+_"sensitivity of the count to any lock difference"_, **not** _"what a mislock costs"_ — the
+threshold does not separate a no-effect population from an effect population, which is precisely
+what §3.1 was written to detect.
+
+##### §21B — ⚑ The pre-registered bias appears to have materialized
+
+§4.2 registered a **known one-sided bias** before the run: `center_exclude` is crosshair-relative
+(`count-pellets.py:97`), so the fixed track set was detected under the **structural** lock and
+components suppressed by structural's 36 px exclusion zone are absent from **both** arms — biasing
+**against** the template arm.
+
+The measured `mean Δcount` on not-mislocked shots is **−0.170** — template counting systematically
+_less_, in exactly the predicted direction. That is consistent with the registered bias driving part
+of both the offset and the control failure. **Consistent with, not proven** — no experiment here
+isolates it.
+
+##### §21C — What may and may not be carried forward
+
+⛔ **May NOT be quoted:** any cost figure, any severity figure, and the sign split — all rest on the
+voided A/B.
+
+✅ **Survives, because it does not depend on this pass:** §20's **16.9% rate**. That measurement is
+of crosshair disagreement itself, validated against the known shot-4 case and reproduced on three
+independent bases. Nothing here touches it.
+
+⚑ **What this pass DOES establish, and it is useful:** **severity is not derivable from the two
+locks alone.** The A/B can show the two windows count differently; it cannot show **which is
+right**, and §3.1 proves the difference is not confined to the mislocked population. ⇒ **Measuring
+what a mislock costs requires ground truth on mislocked PRODUCTION shots** — the first genuine
+owner-label requirement since §18.
+
+⚑ Also worth carrying: §20D's **0.85 pellets/shot** estimate is **still unverified — neither
+confirmed nor refuted.** This pass was built to test it and did not.
+
+##### §21D — Method note
+
+The pre-commit did its job. Without §3.1's control the run would have reported a tidy
+`cost ≈ −0.21 pellets/shot`, landed it in the "< 0.20 ⇒ §20D refuted" band, and been wrong — a
+confounded measurement dressed as a refutation. **The control was written before the number existed
+and it fired.** That is the fifth time in this thread a pre-committed rule has caught a result that
+would otherwise have been believed.
+
+**RECORDS a void measurement.** Nothing enacted; no constant, guard, threshold or default changed;
+no cold-bias verdict stamped.

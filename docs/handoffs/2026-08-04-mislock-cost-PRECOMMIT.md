@@ -93,4 +93,17 @@ a localizer change.
 
 ## 6. Result
 
-_(Written only after the measurement runs.)_
+**2026-08-04 — ⛔ VOID. §3.1's falsification control FAILED. Full narrative: `docs/probe-runs.md` §21.**
+
+`mean |Δcount|` on NOT-mislocked shots is **0.706**, against this document's own void bar of 0.50
+(n = 806 shots: 137 mislocked, 669 not). Counting is sensitive to lock differences far below the
+160 px threshold, so `Δcount` measures sensitivity to _any_ lock difference rather than the cost of
+a mislock. **No cost, severity or sign figure from this pass may be quoted.**
+
+⚑ §4.2's pre-registered one-sided bias appears to have materialized: `mean Δcount` on not-mislocked
+shots is **−0.170**, template counting systematically less, in exactly the predicted direction.
+
+⇒ **Severity is NOT derivable from the two locks alone**, which is itself the useful finding: it
+establishes that measuring the mislock cost requires **ground truth on mislocked production shots**.
+§20's 16.9% rate is untouched — it does not depend on this pass. §20D's 0.85 pellets/shot estimate
+remains **unverified, neither confirmed nor refuted**.
