@@ -42,7 +42,7 @@
 | `burstSnapshotsPreFb` | 1 | cinderella |
 | `byFinalAtk` | 11 | alice, claire, folkwang, liberalio, mast, milk, miranda, n102, … |
 | `cast` | 6 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |
-| `casterMaxHpPct` | 12 | ade, anis-star, avistar, cinderella, mary-bay-goddess, mast, maxwell-ordinary-mechanic, quency, … |
+| `casterMaxHpPct` | 11 | ade, anis-star, avistar, cinderella, mary-bay-goddess, mast, maxwell-ordinary-mechanic, rouge, … |
 | `charge` | 1 | snow-white |
 | `chargeCounter` | 9 | bay, claire, frima, milk, noise, power, rumani, scarlet-black-shadow, … |
 | `chargeMultPct` | 9 | ada, cinderella-crystal-wave, e-h, eunhwa-tactical-upgrade, maxwell-ordinary-mechanic, nayuta, red-hood, snow-white, … |
@@ -53,7 +53,7 @@
 | `delaySec` | 5 | asuka-wille, dorothy, flora, rapi-red-hood, snow-white |
 | `durationShots` | 8 | emilia, helm, miranda, neve, phantom, snow-white-heavy-arms, vesti-tactical-upgrade, zwei |
 | `escalating` | 8 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, mary-bay-goddess, volume |
-| `everyN` | 8 | clay, mast-romantic-maid, mint, neon-vision-eye, phantom, power, rouge, soda-twinkling-bunny |
+| `everyN` | 7 | clay, mast-romantic-maid, mint, neon-vision-eye, phantom, power, soda-twinkling-bunny |
 | `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
 | `excludeSelf` | 15 | arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, label, … |
 | `fbGate` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |
@@ -65,6 +65,7 @@
 | `hasPierce` | 6 | alice, laplace, laplace-ultimate-hero, maxwell-ordinary-mechanic, red-hood, zwei |
 | `hasTrueNormals` | 0 | _none_ |
 | `highestAllyAtkPct` | 1 | guilty |
+| `highestAllyMaxHpPct` | 1 | quency |
 | `hitCount` | 59 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, … |
 | `hitRatePct` | 17 | anchor-innocent-maid, aria, asuka, chisato, dorothy-serendipity, drake, jill, leona, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
@@ -97,7 +98,7 @@
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 3 | asuka, naga, rapunzel-pure-grace |
 | `requiresTargetStatus` | 12 | asuka-wille, d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, … |
-| `resourceGate` | 19 | d, e-h, elegg-boom-and-shock, exia, guillotine, guillotine-winter-slayer, julia, laplace-ultimate-hero, … |
+| `resourceGate` | 20 | d, e-h, elegg-boom-and-shock, exia, guillotine, guillotine-winter-slayer, julia, laplace-ultimate-hero, … |
 | `selfAndAdjacent` | 2 | flora, rouge |
 | `sequentialMultPct` | 1 | eve |
 | `shielded` | 2 | flora, naga |
@@ -108,7 +109,7 @@
 | `stun` | 1 | mast-romantic-maid |
 | `swapGate` | 8 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
 | `swapped` | 8 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
-| `targetMaxHpPct` | 11 | 2b, blanc, diesel, folkwang, label, maiden-ice-rose, noise, quency, … |
+| `targetMaxHpPct` | 12 | 2b, blanc, diesel, folkwang, label, laplace-ultimate-hero, maiden-ice-rose, noise, … |
 | `targetStatus` | 11 | asuka-wille, d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, … |
 | `teamAmmo` | 3 | cinderella-crystal-wave, elegg-boom-and-shock, little-mermaid |
 | `teamHas` | 3 | blanc, eunhwa-tactical-upgrade, noir |
@@ -602,6 +603,14 @@ burst 20.14% all-allies), blanc (burst 31.68% lowest-HP ally) — all ally-facin
 (e3), modeled for kit-SSOT completeness (proven 0.000% board delta on all teammates incl. cinderella).
 rouge already had casterMaxHpPct grants. moran's Max-HP lines are HP<20%-gated (theme 18, never fire) —
 intentionally left as skips. See DECISIONS 2026-07-17.
+
+**2026-08-04 follow-ups (branch `worktree-max-hp-scaling`, PR #84):** the THIRD grant basis
+landed as `highestAllyMaxHpPct` ("% of the highest-Max-HP unit's Max HP" — quency S1, the
+highestAllyAtkPct HP analog; next expected carrier sin); laplace-ultimate-hero's stage Max-HP
+lines (2/3/7/10.5% cumulative) enacted as resourceGate-gated riders on her modeled oeStage
+advance, feeding her own atkOfMaxHpPct conversion; rouge's coin-state machine tracked
+(resources coin/shieldBursts) and her coin-tier burst riders (10.15/20.1/30.02) modeled +
+coin-gated (still e3-inert). DECISIONS 2026-08-04 carries the rulings.
 
 ### 14. Flat-rounds Max-Ammo inexpressible (percent-only schema) — ~5 units — ✅ CAPABILITY LANDED 2026-07-17
 

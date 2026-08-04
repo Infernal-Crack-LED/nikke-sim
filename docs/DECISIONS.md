@@ -9,6 +9,40 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-04) MAX-HP FOLLOW-UPS (owner-directed, same branch as the entry below): three
+  disclosed HP residuals closed — a third grant basis, a stage feed, and rouge's coin state.**
+  1. **quency S1 basis made exact — new StatKey `highestAllyMaxHpPct`** (commit f270dd2c):
+     "Duplicates 12.42% of the Max HP of the Nikke with the highest Max HP" is the THIRD grant
+     basis (after casterMaxHpPct / targetMaxHpPct). The new key resolves at apply time to a flat
+     Max HP grant of (value/100) × max(all units' static maxHp) — the highestAllyAtkPct
+     precedent (static basis; the kit says plain "highest", not "final" — literal-word rule).
+     Closes the gauntlet's ⚑ BASIS (the casterMaxHpPct stand-in was exact only when quency held
+     the team's highest Max HP); still damage-inert (no consumer). Discriminated in her spec's
+     crown-contention arm (crown strictly out-HPs quency there). Next expected carrier: sin.
+  2. **laplace-ultimate-hero stage Max-HP lines enacted** (commit 15ad83a5): her S2b "Stage
+     1/2/3/4: Max HP ▲ 2/3/7/10.5% continuously" (cumulative) was the disclosed ⚑ "estimated,
+     not enacted" second-order feed into her own atkOfMaxHpPct 4.05 conversion. The stage
+     advance was ALREADY modeled (oeStage, hitCount:240 swap-gated — what her burst additional
+     riders ride), so the HP lines take the identical encoding: four targetMaxHpPct self-grants
+     resourceGate'd at oeStage min 1/2/3/4, dispatched AFTER the delta block (each advance
+     grants its own line and refreshes all earlier ones — the kit's cumulative clause, pinned to
+     one frame). Own-kit self-grants → feed liveMaxHp → feed the conversion (e3-admitted). Same
+     ⚑ stage-timing as the riders; magnitudes kit-exact. Her board number moves up slightly —
+     the direction of her documented under-model; she is in no regression comp.
+  3. **rouge coin-state machine tracked; coin-tier riders modeled + coin-gated** (commit
+     f6b9ebe6): resources coin (0=Sword/1=Shield/2=Double Sword) + shieldBursts (cap 5).
+     Progression: hitCount:30 + gate{coin≤0} flips Sword→Shield (applying the Damage-Taken
+     ▼15.2% line on the same fire); burstCast under gate{coin==1} counts shield-era bursts;
+     gate{shieldBursts≥5} flips Shield→Double Sword — post-increment convention (maxwell
+     precedent): the 5th shield-era burst IS the first Double Sword cast. The three per-tier
+     burst riders (10.15/20.1/30.02, previously unmodeled) and the 15.08 continuous line
+     (previously an everyN:5 approximation) are resourceGate'd on coin — exact gating. All
+     offensively INERT per e3 (the spec's byte-identical proof covers them); no board/regression
+     movement. Flag 3 (coin-tier gating) resolved; flags 1-2 (exclusivity, Shield-rider heal
+     asymmetry) remain measurement-gated.
+  All three landed test-first (RED→GREEN spec pins); no damage-bearing path moves except
+  laplace's own total (up, toward her measured board value).
+
 - **(2026-08-04) MAX-HP-SCALING PRIMITIVES: maxwell-ordinary-mechanic S2 is CASTER-basis (owner
   ruling — the target-own encoding was a misread), and every "% of Max HP" engine term now reads
   live Max HP through one reader.** Three landings on branch `worktree-max-hp-scaling`, all
