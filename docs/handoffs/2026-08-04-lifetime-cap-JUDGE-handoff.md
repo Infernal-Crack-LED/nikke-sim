@@ -232,6 +232,21 @@ COST question opened and was partly answered (§22). Current top item is **the u
    wrong are excluded from the severity measurement by construction and are probably the worst, so
    the true cost is ≥ what was measured. **Sizing that population is the next real question.**
 
+✅ **LANDED THIS SESSION — kept here because the next session needs its scope limits, not because
+it is open.** `band_hi = 20`, the decoupled lifetime-band ceiling (`docs/probe-runs.md` §16, plan
+`2026-08-04-band-hi-LANDING-PLAN.md`). All five pre-stated criteria met; declared blast radius held
+exactly (zero fixtures, zero pins); cross-family post-op `ACCEPT`. Production-path effect measured in
+§19: **+0.60 pellets/shot**, reconciling exactly with §9B's independently-recorded decomposition, so
+it is a real owner-pellet recovery and not cancellation. Two limits ride with it:
+
+- (a) ~~`--dump-tracks` never carries the `band` series~~ — ✅ **FIXED** (`§23`, plan
+  `2026-08-04-dump-band-LANDING-PLAN.md`, landing `bde7a37f`). Blast radius held again. ⚑ The plan
+  named 2 hard 3-unpack readers; the tree had **11**, of which **6** were genuinely reachable — all
+  widened via a shared expander.
+- (b) ⚑ **BOTH landings reach NEW EXTRACTIONS ONLY.** Every dump already on disk keeps the values it
+  was extracted with, and still replays the OLD pre-hybrid rule. **Nothing on the board moves, and no
+  re-derived measurement is current, until footage is re-extracted.**
+
 1. ~~**IS THE TARGET ITSELF RIGHT?**~~ — ✅ **CLOSED 2026-08-04, OWNER-CONFIRMED**
    (`docs/probe-runs.md` §18). **NO marker lands and fully fades before `t0+8`** — the f8–11 window
    count IS the landed total and **8.40 is CONFIRMED as the reference.** Of 140 screened tracks only
