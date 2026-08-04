@@ -1,0 +1,146 @@
+{
+  "slug": "sora",
+  "leakDetected": null,
+  "override": {
+    "slug": "sora",
+    "skill1": [],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "unsupported",
+          "raw": "Activates when an ally or self destroys an enemy's part"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 23.74,
+            "durationSec": 15
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Outgoing healing ▲ 35.2% continuously."
+      ],
+      "skill2": [
+        "Storage: Stores excess healing received by the skill user, up to 5.36% of their Max HP. Stacks up to 5 time(s) and lasts for 15 sec."
+      ],
+      "burst": [
+        "Removes 1 debuff(s)."
+      ]
+    },
+    "caveats": [
+      "⛑ skill2's ATK ▲ 23.74% (casterAtkPct, all allies, 15s) is her ONLY damage-relevant line and its literal activation clause is 'an ally or self destroys an enemy's part'. The scope-lock boss is PARTLESS, so on the graded fight this trigger never fires and the buff is INERT — authored as an `unsupported` trigger rather than re-keyed to a firing trigger, because re-keying would fabricate uptime the kit does not grant. If a real fight shows the buff live, re-key per the recipe in flags.",
+      "⛑ skill1 Outgoing healing ▲ 35.2% has no StatKey and no consumer (heals carry no HP amount in v1); it is a magnitude scaler on an unmodeled quantity, so it is unmodeled rather than inert-but-present.",
+      "⛑ The burst heal amount (52.27% of caster final Max HP) is recorded in prose only — the `heal` effect models the RECOVERY EVENT, not an HP amount, which is what teammates' `recovery` triggers consume. Tandem value is entirely via those consumers.",
+      "⛑ Burst trigger keyed `burstCast` (this is her OWN burst block, Burst I, cd 40s) — the heal lands at cast, pre-Full-Burst, per the burst-cast timing rule."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Sora (RL/Wind/Supporter/Burst I) is a HEAL-SIDE support: S1 scales her own outgoing healing, S2 converts a part-destruction event into a team ATK ▲ 23.74% of her ATK for 15s plus an excess-healing storage pool, and her burst is a full-team heal + 1 debuff cleanse. Modeled today: the S2 team ATK grant (casterAtkPct, all allies, 15s) and the burst team heal as a recovery-event emitter that fires allies' `recovery` triggers. The S2 grant's kit trigger is part-destruction, which has no engine primitive and cannot fire on the partless scope-lock boss, so the block carries an `unsupported` trigger and is inert at scope — faithful to the kit rather than re-keyed to make it live. Deliberately unmodeled: outgoing-healing magnitude (no consumer for a heal amount), the excess-healing Storage pool (no HP pool), and debuff removal (no ally debuff pool)."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at start of battle. Self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger/target classification only: passive + self. Carries no surviving effect (see next row), so no block is emitted — skill1 is a genuinely effect-free slot at v1 scope."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Outgoing healing ▲ 35.2% cont.",
+      "status": "SKIPPED",
+      "effectOrReason": "No `outgoingHealingPct` StatKey in types.ts, and the `heal` effect models no HP amount (v1 has no HP pool / immortal boss), so there is nothing for a healing-magnitude multiplier to scale. Not a heal/shield/DEF/HP/lifesteal SKIP-on-isolation violation: the underlying HEAL lines ARE modeled (burst) — only the unrepresentable MAGNITUDE scaler is dropped. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when ally/self destroys a part",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger encoded `{kind:'unsupported', raw:...}` — no part-destruction TriggerDef exists and the scope-lock boss is partless, so the activation clause is unfirable at v1. Read LITERALLY per HARD RULE 3 rather than re-keyed to fullBurstEnter/burstCast, which would over-credit uptime the kit never grants. ⛑ flagged with a re-key recipe."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Storage: excess healing, 5.36% MaxHP",
+      "status": "SKIPPED",
+      "effectOrReason": "An excess-healing accumulator (5 stacks, 15s) storing a fraction of Max HP. No primitive represents stored healing, and with no HP pool there is no 'excess' to capture; a `resource` pool would have no consumer since the kit states no conversion from Storage to damage. Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 23.74% of skill user's ATK 15s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 23.74, durationSec 15, target allies (kit says 'Affects all allies' — includes self, so no excludeSelf). 'of the skill user's ATK' is the literal casterAtkPct signature (flat add off HER ATK), NOT atkPct. Gated behind the unfirable part-destruction trigger above."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 52.27% of user's final MaxHP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal (ticks 1 — one instant recovery, not a HoT: no 'every 1 sec' clause), trigger burstCast, target allies. Per HARD RULE 4 (tandem/cross-unit) heals are NEVER skipped on isolation: this fires teammates' `recovery` triggers (Crown-style on-recovery damage buffs). The 52.27% magnitude is unrepresentable (no HP pool) and is recorded in caveats."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Removes 1 debuff(s).",
+      "status": "SKIPPED",
+      "effectOrReason": "No ally debuff pool in v1 (the boss deals no damage and applies no ally debuffs at scope lock), so cleansing has no target state to act on. Verbatim in unmodeled.burst."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[0].trigger",
+      "estimate": "{kind:'unsupported', raw:\"Activates when an ally or self destroys an enemy's part\"} — INERT at scope lock. Next-most-likely firing alternative if a real fight shows the buff live: {kind:'fullBurstEnter'} (broad, over-credits) or {kind:'burstCast'} (narrow, own-burst only).",
+      "reasoning": "The kit gives a literal activation clause with no engine primitive: there is no part-destruction TriggerDef, and the scope-lock boss is verified PARTLESS, so on the graded fight the condition is never satisfied by ANY ally. This makes the unit's sole damage-relevant line inert. Encoding it as `unsupported` is the faithful read (measured > fudge): choosing a firing trigger instead would invent uptime and inflate every teammate's ATK for a window the kit never opens. Because Sora is Burst I with cd 40s, a burstCast re-key would give roughly one 15s window per ~40s rotation (~37% uptime) while fullBurstEnter would fire on every team Full Burst regardless of whether she cast — these differ by a large factor, so guessing between them unmeasured would be a precise-guess error.",
+      "recipe": "Record a scope-lock fight with Sora slotted alongside a teammate whose damage is well-pinned, and read that teammate's popup values for a flat ATK step of 23.74% × Sora's static ATK. If NO step appears, the inert model is confirmed — leave the `unsupported` trigger in place. If a step DOES appear, time its onsets against the rotation log: onsets only on rotations Sora bursts → re-key `burstCast`; onsets on every Full Burst → `fullBurstEnter`; onsets on neither cadence → an interval/internal-CD trigger, fit sec from the onset spacing. Separately, on a boss WITH destructible parts, confirm whether the buff tracks part-destruction events."
+    },
+    {
+      "field": "skill2[0].target",
+      "estimate": "{kind:'allies'} (includes self)",
+      "reasoning": "Kit says 'Affects all allies' with no '(except self)' clause, so excludeSelf is omitted per the schema's stated convention. Low uncertainty — flagged only because the buff's own liveness is unresolved, which makes the target set untestable at scope lock.",
+      "recipe": "Falls out of the same recording as the trigger flag: if a step appears, check whether Sora's OWN popups also step by 23.74% × her ATK."
+    },
+    {
+      "field": "burst[0].effects[0] (heal)",
+      "estimate": "{kind:'heal', ticks:1} — one instant recovery event per burst cast, no HP amount.",
+      "reasoning": "The line has no 'every 1 sec for N sec' wording, so it is a single instant recovery, not a HoT (ticks>1 would emit repeated recovery events and over-refresh an on-recovery consumer). The 52.27%-of-final-Max-HP magnitude is unmodelable — the engine's `heal` carries no amount by design — so Sora's entire tandem value routes through teammates' `recovery` triggers, where only the EVENT COUNT matters. Her damage contribution is therefore fully determined by (a) how many recovery events she emits and (b) whether a heal-consumer teammate is present.",
+      "recipe": "Run a comp pairing Sora with an on-recovery consumer and count that consumer's proc popups against Sora's burst casts in the rotation log — 1:1 confirms ticks:1; a burst of several procs per cast indicates a HoT and sets ticks from the proc count."
+    },
+    {
+      "field": "burst[0].trigger",
+      "estimate": "{kind:'burstCast'}",
+      "reasoning": "This is her own burst block (Burst I, cd 40s) with no separate activation clause, so it resolves at her cast. Per the trigger-identity rule a burst cast lands BEFORE the Full Burst window opens — relevant because a `recovery` consumer buffed at cast time then has its window running through the FB, rather than starting at FB entry.",
+      "recipe": "Rotation log: confirm the recovery event's frame precedes the fullBurstStart event on the same rotation."
+    },
+    {
+      "field": "skill1 (empty slot)",
+      "estimate": "[] — genuinely effect-free at v1 scope.",
+      "reasoning": "Her only S1 line is a healing-magnitude scaler with no representable consumer. Emitting an empty array is correct per the authoring rule (empty only for a genuinely effect-free slot) rather than inventing a placeholder buff. If a future engine models heal AMOUNTS (an HP pool, or an ally scaler keyed off healing received), this line becomes live and should be revisited together with the skill2 Storage pool — both depend on the same missing subsystem.",
+      "recipe": "No fight measurement can resolve this at v1 — it is engine-capability-gated, not measurement-gated. Revisit if/when heal magnitudes are modeled."
+    },
+    {
+      "field": "(unit-level) noFb / cadence",
+      "estimate": "noFb NOT set (default OFF, FB-by-timing ON). No cadence tuple authored — base RL stats (ammo 6, reloadFrames 141, chargeFrames 60) left to the datamine.",
+      "reasoning": "Sora carries no function-damage effects at all (no flatDamage/dot/hitRepeat/storedHit), so noFb has nothing to apply to and must not be set unmeasured. Likewise no kit line modifies her weapon state (no reload/ammo/fire-rate/charge-speed/swap line), so there is no cadence override to author — the datamined RL values stand as-is. Flagged for completeness per the ALWAYS-⛑ taxonomy: reloadFrames/chargeFrames come from a known-unreliable datamine field, so her own chip damage carries that uncertainty even though no override value depends on it.",
+      "recipe": "Her personal damage is a pure base-weapon read: a solo-ish scope-lock recording scored against sim total damage would validate the RL cadence, but nothing in this override depends on it."
+    }
+  ],
+  "model": "claude-opus-5"
+}
