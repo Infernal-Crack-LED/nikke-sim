@@ -120,28 +120,40 @@ Full measurement: `docs/probe-runs.md` §10. Instrument:
 reproduction of reads 6/8/9/4/8 / `rep_offset` 2/2/−3/3/7 / `above_ceiling_pct` 6.2%, and the plateau
 implementation's exact reproduction of shipped = 2/5 (IN on 1 and 5, OUT on 2/3/4).
 
-| rule                    | §1.1 categorical        | §1.2 ceiling (852 events) | verdict                                                        |
-| ----------------------- | ----------------------- | ------------------------- | -------------------------------------------------------------- |
-| `shipped_median`        | 2/5 (control)           | 6.2%                      | reproduces §9C; not a candidate                                |
-| `lifetime_gated_median` | 4/5 (IN 1,2,3,5; OUT 4) | 0.7%                      | **RECORD ONLY** — not promotable this pass                     |
-| `plateau_median`        | 4/5 (IN 1,2,3,5; OUT 4) | 1.1%                      | **RECORD ONLY** — not promotable this pass                     |
-| `lifetime_band_count`   | exempt (§1.4)           | 5.5%                      | undercounts the plateau's own size on every non-mislocked shot |
+⚑ **A first pass scored 4/5 on both non-control frame rules, and was wrong.** It built shot 4's
+radius gate (feeding `lifetime_gated_median`/`plateau_median`/`lifetime_band_count`) from the SHIPPED
+STRUCTURAL crosshair, then checked the result against shot 4's RELOCK plateau — two different crops
+(trap 9). §1.1 above says shot 4's ground truth is the relock series but does not say which crop the
+radius gate runs on; that gap is resolved in `docs/probe-runs.md` §10B, not here, and §1–§3 above are
+unedited. The resolution — score shot 4's radius gate on `cross_tmpl`, matching the crop its own
+`locate` field already names, everything else unchanged — is verified, not asserted, by two hard
+controls run at scoring time: (1) `shipped_median` must stay `rep_offset` 3, OUT on shot 4 (it reads
+raw crosshair-independent totals, so if the crop swap moved it too the fix would be leaking into the
+control) — **held**; (2) both band rules must report `total` = 7 on shot 4, matching §9B's
+independently-recorded "template lock: 0 radius-rejected, 7 countable" — **held**. Full narrative:
+`docs/probe-runs.md` §10B.
 
-**No rule reaches 5/5. Nothing here is promotable to a proposal.** Both non-control frame rules miss
-the same shot (4) the same way — they select no representative frame at all, because under the
-SHIPPED structural crosshair every candidate deliberately scores against, shot 4 has zero owner
-pellets ever in radius (the pre-existing, already-documented mislock, §9B) — not because the
-representative-frame policy itself is wrong on that shot. This is recorded as an observation in
-`docs/probe-runs.md` §10B; it does not change the 4/5 score the pre-committed rule assigns, and it is
-not treated as grounds to rescore or exclude shot 4.
+| rule                    | §1.1 categorical       | §1.2 ceiling (852 events)  | verdict                                          |
+| ----------------------- | ---------------------- | -------------------------- | ------------------------------------------------ |
+| `shipped_median`        | 2/5 (control)          | 6.2%                       | reproduces §9C; not a candidate                  |
+| `lifetime_gated_median` | **5/5** (IN 1,2,3,4,5) | 0.7% (over n_scored = 740) | **PROMOTABLE TO PROPOSAL**                       |
+| `plateau_median`        | **5/5** (IN 1,2,3,4,5) | 1.1% (over n_scored = 740) | **PROMOTABLE TO PROPOSAL**                       |
+| `lifetime_band_count`   | exempt (§1.4)          | 5.5%                       | undercounts the plateau's own size on every shot |
+
+**Both `lifetime_gated_median` and `plateau_median` reach 5/5 and are PROMOTABLE TO PROPOSAL** — a
+proposal only (§3 above; nothing here enacts).
 
 Tertiary (§1.3, reported only): `avgTotal` 7.0669 / 6.2068 / 6.2811 / 6.4425 for the four rules in
 table order — none near 8.40, and per §1.3 that would not matter if one were.
 
-⚑ 112 of the 852 pooled events (13.1%) have no track at all whose lifetime falls in the band and is
-ever in radius during the event; `lifetime_gated_median` and `plateau_median` abstain on those rather
-than reporting 0, which is part of why their ceiling percentages read so far below shipped's.
-Recorded in `docs/probe-runs.md` §10C as a caveat; not resolved here.
+⚑ **Abstention risk — top open item for any enactment pass, not resolved here.** 112 of the 852
+pooled events (13.1%) have no track at all whose lifetime falls in the band and is ever in radius
+during the event; `lifetime_gated_median` and `plateau_median` abstain on those rather than reporting
+0, so their `above_ceiling_pct` above is computed over `n_scored` = 740, NOT the 852 `shipped_median`
+uses. An abstention cannot over-count, so excluding it is defensible for the ceiling question
+specifically — but a rule that silently drops 13.1% of events is a candidate NEW missing-shot channel
+this pass does not measure, explain, or resolve. Full narrative: `docs/probe-runs.md` §10E.
 
 **Nothing here enacted anything**: `debounce_shots` is untouched in both implementations, no
-constant/guard/gate/threshold changed, no `DECISIONS.md` entry edited.
+constant/guard/gate/threshold changed, no `DECISIONS.md` entry edited. No pre-existing fixture's
+`_expected` moved.
