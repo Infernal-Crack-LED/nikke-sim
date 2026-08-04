@@ -3743,3 +3743,48 @@ build:deploy` **only**. But `railway.json`'s `buildCommand` is `bash scripts/ver
   generator) plus served-byte assertions in **both** serve suites — `serve-headers` (serve.mjs) and
   `serve-api` (the `static.ts` port production runs); none of them can skip. — `scripts/build-content-pages.ts`,
   `src/server/static.ts`, `scripts/serve.mjs`, `scripts/verify.sh`
+
+- **(2026-08-03) K's burst weapon: `damagePct` 925 → 92.5, real SG pellet-landing routing, cadence 2 → 2.4.**
+  K's burst kit reads "Damage: 92.5% of the final ATK / Pelletcount: 10 / Attack speed ▼90%". The
+  2026-08-02 kit-autonomy gauntlet encoded this as `damagePct: 925` — reading 92.5 as a PER-PELLET
+  value and collapsing 10 pellets into one 925%-of-ATK hit per pull — and signed it off in-session as
+  "no bug / EV-exact"; that sign-off left no `DECISIONS` entry of its own, so this entry supersedes it
+  by name. **Finding:** "Damage X% / Pelletcount N" is the FULL-SHOT total, each pellet carrying X/N —
+  the same convention `normalAttackMultiplier` uses for every SG-class unit in this engine. Evidence
+  (MEASURED, not a new K reading): `dorothy-serendipity`'s kit ("Damage 201.5%, Pelletcount 10", raw
+  `shot_detail.damage: 20150`) matches her MEASURED one-full-shot popup total
+  (`docs/probe-data/dorothy-solo-reanalysis.json`) ≈243,000 vs 118,027 × 201.5% = 237,824 (+2%; a
+  per-pellet reading predicts 2,378,240, refuted 10×); cross-checked against `drake`'s measured white
+  pellet in `docs/probe-data/coreband-drake-sg.json`. **Changed:** override `damagePct: 92.5`,
+  `pelletCount: 10`, `weapon: "SG"` (routes the swap through the SAME accuracy-circle pellet-landing
+  model and near-band-only range eligibility every genuine SG unit already takes — no weapon-swap in
+  the engine could reach that model before this, gated `u.char.weapon==='SG' && !u.swap`, unconditionally
+  false during any swap). Engine gains an optional `pelletCount` field on the `weaponSwap` effect kind;
+  the two SG-landing gates broaden to `u.swap?.weapon==='SG'`. Provably inert elsewhere: full regression
+  diff byte-identical, K in no graded comp or snapshot cell, and only `nayuta` (`weapon:'SR'`)
+  otherwise sets a swap `weapon`. **Same-day addendum:** `pullsPerSec` corrected 2 → 2.4 — the kit's
+  "Attack speed ▼90%" applies to the swap weapon's own NOMINAL rate (base SMG's datamined
+  `rate_of_fire` 1440 RPM × 0.10 = 144 RPM), not to the already frame-quantized 20.0/s effective SMG
+  rate the original derivation had scaled instead; run through the engine's existing
+  `quantizeToFrames` (sim.ts:224, already MEASURED/validated 2026-07-23 for the general mechanism —
+  144 RPM lands on an exact 25-frame interval, no rounding). **Tier:** MEASURED, via existing
+  Dorothy/Drake probe data + datamined field-schema match — NOT a new K measurement; K remains
+  MODEL-ONLY, unvalidated against real footage. **Process note:** both the driver and a BLIND Fable
+  post-op judge independently ACCEPTed the core fix (`/scientific-method`, full pipeline —
+  `docs/handoffs/scientific-method-harness.md` 2026-08-03 entry) but capped confidence at MEDIUM, one
+  bounded item short of the HIGH+HIGH bar this harness requires to auto-IMPLEMENT: K's swap weapon
+  (`shot_id 1004102`) has no `shot_detail` record anywhere in the datamine, so a hidden `muzzle_count`
+  multiplier (the same KIND that already invisibly doubles her own base SMG, `damage:455 × muzzle_count:2
+→ normalAttackMultiplier 9.1`) can't be ruled in or out — the harness therefore LOGGED this as an
+  owner action item rather than auto-landing it. **The owner reviewed the LOG and chose to merge as-is**,
+  accepting the MEDIUM-confidence risk: even in the worst case (a hidden ×2 muzzle multiplier), the
+  corrected reading is a strict improvement over the certainly-10×-wrong 925 value. **Open:** (a) the
+  muzzle-count question — a scope-lock focus recording of a K team would resolve it in the same pass as
+  graduating her off MODEL-ONLY (popup-read her burst-window white-pellet base value: ~10,918
+  ATK-equivalent under the accepted no-muzzle reading vs ~~21,836 under a hidden ×2); (b) with the
+  corrected cadence her burst weapon nets a real but MODEST advantage over just continuing her own
+  buffed SMG fire (~~+11% total damage on the `scripts/tests/units/k.test.ts` fixture, not the ~10× the
+  pre-fix 925 misread implied) — an atypically thin margin for a Burst III's signature weapon, though
+  not disqualifying (her S2 grants the whole team +10.62% Attack Damage, which may be the kit's real
+  value driver). — `src/skills/types.ts`, `src/engine/sim.ts` (`effectivePellets`, `firePull`'s `bandSg`
+  gate, `WeaponSwap` interface), `src/skills/overrides/k.json`, `scripts/tests/units/k.test.ts`
