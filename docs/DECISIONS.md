@@ -9,6 +9,38 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-04) ATTACHMENT REWORK — three owner overrides restore the attachment class as Rapi:
+  Red Hood's damage carrier: the +421.2% Stage-3 buff is LIVE again, the attachment CORES, and
+  the ▼60 meter threshold is scoped to her own B3 window. She flips COLD → HOT (control 0.898 →
+  1.091); the overshoot stays exposed, no re-fit.** Owner direct re-read of the control+carry
+  footage (`docs/probes/control + carry/rrh control.MP4`): the explosion body during her B3 is
+  1,195,658 — at the floor of the sim's in-FB explosion bodies, so the explosion was never the
+  under-modeled carrier; the ATTACHMENT is the main damage and gets a massive amp during her B3.
+  (1) +421.2% Projectile Attachment Damage (Burst Stage 3, self, 10s) RESTORED — overturns the
+  2026-07-14 "MEASURED-INERT" verdict: the amplified attachment bodies that read could not
+  attribute were mis-sorted into the explosion class (same flavor family, overlapping popup
+  columns). The "dominant white body" 4,414,404 of the 2026-07-16 record is a +421.2% AMPLIFIED
+  ATTACHMENT — an in-window attach at the sim's own buff state reproduces it within ~1%
+  (projFactor 6.7192), its ×1.5 crit twin matching the measured orange 6,621,606; the red
+  "CORE HIT" labels on the 7-digit bodies were attachment cores. (2) The ATTACHMENT CORES —
+  launchWeapon delivery at the band-table rate (`core:true` on the flatDamage); the 2026-07-14
+  "stickies never core" verdict is OVERTURNED for the attach. The explosion stays core-INELIGIBLE
+  (skill damage — the same-day CORE OVERTURN below STANDS). (3) The ▼60 meter threshold applies
+  ONLY inside the 10s window of her OWN Stage-3 cast — new opt-in `countInFbStage` on the
+  hitCount trigger (engine tracks `lastBurstCastStage`); the any-FB-state default stands for the
+  other carrier (SWID), whose same-shaped line is flagged for its own review. Max Ammo: 1
+  reclassified COSMETIC (owner: one rocket "loaded" at meter-full fires alongside the bullet; not
+  reflected in game, no damage effect). Test-first kept: RRH4 flipped (attach cores), RRH7/RRH8
+  added RED→GREEN (25/25); SWID + hit-count engine pins byte-green. Reads (owner directed: no
+  pre-registration): control 807.6M → 981.1M = **1.091** vs 899.6M real (FB count invariant
+  12.0); graded T7 +21.9%, N1 +21.5% (those comps buff the new core term), T7 teammates within
+  ±0.03% gauge-coupling. The +9.1% overshoot is the new exposed residual — attribution candidates
+  for the owner's footage pass: the band-table attachment CORE RATE (may over-credit vs in-game)
+  and the 421.2% effective UPTIME. PROCESS: full gate skipped by owner ruling (owner overrides);
+  SUPERSEDES the 2026-07-14 inert + sticky verdicts and re-narrows the launchWeapon bullet.
+  **Evidence:** owner control+carry re-read 2026-08-04; `scripts/tests/units/rapi-red-hood.test.ts`
+  RRH3/RRH4/RRH7/RRH8; `scripts/regression-snapshot.json` regen; `scripts/battery/rrh-control-probe.ts`.
+
 - **(2026-08-04) Rapi: Red Hood's rocket EXPLOSION does NOT core — owner footage ruling overturns
   the 2026-07-16 core-⅓ landing; `storedHit.core` removed, she is deliberately COLDER.** Owner
   direct re-read of `docs/probes/probe u7/rapi focus vid.MP4` (the same recording behind
@@ -30,7 +62,9 @@ lives. Newest first within each section.
   read predates the current probe tooling and the owner re-measured it directly; pre-registration +
   test-first anti-fit hygiene kept. Consequences: (1) the SSOT launchWeapon exception bullet is
   narrowed (RRH's rocket class is OUT — attach no-core by its own measured ruling, explosion
-  no-core by this one; Anis: Star's stars still core); (2) the U15 ×1.80 core+crit anomaly is now
+  no-core by this one; Anis: Star's stars still core) — RE-NARROWED again later the same day: the
+  attach CORES again under the ATTACHMENT REWORK (top entry), only the explosion stays out;
+  (2) the U15 ×1.80 core+crit anomaly is now
   popup mis-association, full stop; (3) the residual stays exposed and is NOT to be re-fit — and
   the clean-weapon basis (emma MG 0.977 OK, 2026-07-23) no longer supports the older "generic
   MG-cold" attribution, so the COLD remainder is the deliberately-open Invisible-X gap, no
@@ -2043,7 +2077,8 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
   removed — partially closing the "invisible X". CORE PORTION SUPERSEDED (2026-08-04, see the top
   entry): owner footage re-read rules the explosion SKILL damage — core-INELIGIBLE; `storedHit.core`
   removed. Everything ELSE here stands (the derived rocket cadence, instantInFb, placeholder removal,
-  the CRIT follow-up).** Reopens the 2026-07-14 invisible-X entry below with new
+  the CRIT follow-up). The "stickies never core" ruling cited below is OVERTURNED for the attach by
+  the same-day ATTACHMENT REWORK (top entry) — the CORE-HIT labels were attachment cores.** Reopens the 2026-07-14 invisible-X entry below with new
   same-tier evidence (video re-read of `probe u7/rapi focus vid.MP4`, `docs/probe-data/rrh-explosion-core.json`).
   MEASURED: explosion core fraction **~1/3** (0.30–0.45, N=9; the plain WHITE non-core body dominates every
   burst, red "CORE HIT" bodies are the clear minority — explicitly NOT near-full coring, correcting an earlier
@@ -2975,7 +3010,9 @@ visually-counted-white-popups`; the whites were under-counted (~6 vs true ~9–1
   cadence/instant-detonation are DERIVED from the real meter mechanic; the residual is narrowed and left
   exposed (part MG-cold, part unmodeled explosion crit). **The 2026-07-16 core explanation was itself
   OVERTURNED 2026-08-04 (explosion = skill damage, core-INELIGIBLE — see the top entry); the
-  cadence/instant-detonation derivation still stands.**
+  cadence/instant-detonation derivation still stands. The +421.2% "MEASURED-INERT" verdict in THIS
+  entry was ALSO OVERTURNED 2026-08-04 (ATTACHMENT REWORK, top entry): the amplified attachment
+  bodies were mis-sorted into the explosion class; the buff is RESTORED and the attachment CORES.**
 
 - **(2026-07-14) Liberalio's 202.5% full-charge proc receives the +50% Full Burst term by its
   landing timing** — the legacy no-Full-Burst flag was a calibration-era relic contradicting

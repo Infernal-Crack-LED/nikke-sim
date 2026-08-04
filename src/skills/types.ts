@@ -65,7 +65,12 @@ export type TriggerDef =
   | { kind: 'burstCast'; stage?: 1 | 2 | 3 } // when the owner casts their burst (optionally only at that stage — Λ kits)
   | { kind: 'fullBurstEnter' } // when full burst begins
   | { kind: 'fullBurstEnd' }
-  | { kind: 'hitCount'; count: number; countInFb?: number } // fires every `count` cumulative hits; `countInFb` overrides the threshold DURING Full Burst (RRH rocket meter: 120 out of burst → 60 in her FB)
+  | {
+      kind: 'hitCount';
+      count: number;
+      countInFb?: number;
+      countInFbStage?: number;
+    } // fires every `count` cumulative hits; `countInFb` overrides the threshold DURING Full Burst (RRH rocket meter: 120 out of burst → 60 in her FB). `countInFbStage` SCOPES that override: it then applies ONLY during the 10s window after the owner's OWN burst cast at that stage (prose "▼N for 10 sec" granted by that cast — RRH's ▼60 is a Stage-3 line, owner ruling 2026-08-04), NOT any team FB window; without it the any-FB-state convention stays (SWID)
   | {
       kind: 'chargeCounter';
       count: number | number[];

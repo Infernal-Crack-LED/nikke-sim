@@ -520,11 +520,11 @@
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.9694
+            "ratio": 0.966
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9691
+            "ratio": 0.9697
           },
           {
             "comp": "PA MiKa (boss Iron)",
@@ -548,8 +548,8 @@
           }
         ],
         "n": 12,
-        "mean": 0.9467,
-        "mad": 0.0669,
+        "mean": 0.9464,
+        "mad": 0.0672,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -1194,7 +1194,7 @@
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.8418
+            "ratio": 0.851
           },
           {
             "comp": "PB elec battery (boss Water)",
@@ -1218,8 +1218,8 @@
           }
         ],
         "n": 7,
-        "mean": 0.8806,
-        "mad": 0.1232,
+        "mean": 0.882,
+        "mad": 0.1219,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -1265,12 +1265,12 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9737
+            "ratio": 0.9713
           }
         ],
         "n": 2,
-        "mean": 0.9324,
-        "mad": 0.0676,
+        "mean": 0.9313,
+        "mad": 0.0687,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -1440,7 +1440,7 @@
           },
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9506
+            "ratio": 0.9565
           },
           {
             "comp": "T4 water-weak (boss Fire)",
@@ -1456,15 +1456,15 @@
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.9781
+            "ratio": 0.98
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.8976
+            "ratio": 0.9001
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9565
+            "ratio": 0.9572
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
@@ -1504,8 +1504,8 @@
           }
         ],
         "n": 17,
-        "mean": 0.9943,
-        "mad": 0.0526,
+        "mean": 0.9949,
+        "mad": 0.052,
         "band": "±8%",
         "temp": "OK  ·"
       }
@@ -1641,7 +1641,7 @@
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.8962
+            "ratio": 0.897
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
@@ -1649,8 +1649,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.9399,
-        "mad": 0.0601,
+        "mean": 0.9402,
+        "mad": 0.0598,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -2585,12 +2585,12 @@
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.0938
+            "ratio": 1.0961
           }
         ],
         "n": 3,
-        "mean": 1.1039,
-        "mad": 0.1039,
+        "mean": 1.1047,
+        "mad": 0.1047,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -2757,7 +2757,7 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 1.017
+            "ratio": 1.0148
           },
           {
             "comp": "T4 water-weak (boss Fire)",
@@ -2769,11 +2769,11 @@
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.9872
+            "ratio": 0.9881
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9934
+            "ratio": 0.9864
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
@@ -2797,8 +2797,8 @@
           }
         ],
         "n": 10,
-        "mean": 0.9696,
-        "mad": 0.0338,
+        "mean": 0.9687,
+        "mad": 0.0342,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -2925,13 +2925,13 @@
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.9295
+            "ratio": 0.9312
           }
         ],
         "n": 3,
-        "mean": 0.92,
-        "mad": 0.08,
-        "band": "±15%",
+        "mean": 0.9205,
+        "mad": 0.0795,
+        "band": "±8%",
         "temp": "COLD ▼"
       }
     },
@@ -3364,11 +3364,11 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9733
+            "ratio": 0.9766
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.9477
+            "ratio": 0.9456
           },
           {
             "comp": "PH water B3s (boss Fire)",
@@ -3400,8 +3400,8 @@
           }
         ],
         "n": 9,
-        "mean": 0.9666,
-        "mad": 0.0343,
+        "mean": 0.9667,
+        "mad": 0.0342,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -3824,12 +3824,12 @@
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 1.0089
+            "ratio": 1.0105
           }
         ],
         "n": 2,
-        "mean": 0.9499,
-        "mad": 0.059,
+        "mean": 0.9508,
+        "mad": 0.0598,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -4002,7 +4002,7 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9691
+            "ratio": 0.9736
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
@@ -4010,8 +4010,8 @@
           }
         ],
         "n": 2,
-        "mean": 1.0244,
-        "mad": 0.0553,
+        "mean": 1.0267,
+        "mad": 0.0531,
         "band": "±8%",
         "temp": "OK  ·"
       }
@@ -5117,12 +5117,12 @@
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.0427
+            "ratio": 1.043
           }
         ],
         "n": 2,
-        "mean": 1.0531,
-        "mad": 0.0531,
+        "mean": 1.0532,
+        "mad": 0.0532,
         "band": "±8%",
         "temp": "HOT ▲"
       }
@@ -5149,53 +5149,54 @@
       "tier": "MEASURED",
       "tuned": true,
       "control": false,
-      "evidence": "THREE focus recordings — burst-nuke recipe fit to measured constants, +421% buff measured-inert removed | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0 (13 FAITHFUL/6 DOCUMENTED_GAP); cross-family S2b(fable)/S5/S6/S7(opus) converged; binding judge discriminationOk true | 2026-08-04 owner footage ruling: rocket explosion is SKILL damage — core-INELIGIBLE (storedHit.core removed, overturns the 2026-07-16 ~1/3 read; deliberately colder: control 0.918→0.898, graded T7 −4.32% / N1 −3.33%)",
+      "evidence": "THREE focus recordings — burst-nuke recipe fit to measured constants, +421% buff measured-inert removed | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0 (13 FAITHFUL/6 DOCUMENTED_GAP); cross-family S2b(fable)/S5/S6/S7(opus) converged; binding judge discriminationOk true | 2026-08-04 owner footage ruling: rocket explosion is SKILL damage — core-INELIGIBLE (storedHit.core removed, overturns the 2026-07-16 ~1/3 read) | 2026-08-04 ATTACHMENT REWORK (owner control+carry re-read): +421.2% Stage-3 attachment buff RESTORED (2026-07-14 inert verdict overturned), attachment CORES (band table; 2026-07-14 sticky verdict overturned), ▼60 meter scoped to her OWN Stage-3 window (countInFbStage) — she flips cold→HOT: control 0.898→1.091, graded T7 +21.9% / N1 +21.5%; overshoot exposed, not re-fit",
       "date": "2026-07-14",
       "graded": {
         "teams": 5,
         "within3pct": 1
       },
       "reference": false,
-      "residual": "Invisible-X residual (44-52% of her damage) deliberately left open | Spot-check cluster: flighted-nuke FB timing (delaySec 0.4, fbMajor true), +421.2% measured-inert removal, batch-accumulation vs prose Max Ammo:1, countInFb 60 FB-state vs Stage-3+10s (all measurement-gated) | explosion core RESOLVED 2026-08-04 — NO core (skill damage, owner footage ruling; storedHit.core removed — colder by design: control 0.918→0.898, T7 −4.32%, N1 −3.33%; explosion crit STANDS). COLD remainder = deliberately-open Invisible-X gap; the older generic-MG-cold attribution is unsupported by the clean-weapon basis (emma MG 0.977 OK, 2026-07-23).",
+      "residual": "ATTACHMENT REWORK 2026-08-04 (owner overrides): +421.2% restored, attach cores (band table), ▼60 own-B3-window scoped, Max Ammo:1 cosmetic — she flips COLD→HOT: control 0.898→1.091 vs 899.6M real (FB count invariant 12.0), graded T7 +21.9% / N1 +21.5% (core-buffed comps amplify the new attach-core term). The +9.1% overshoot is the new EXPOSED residual — not re-fit; owner footage-pass candidates: the band-table attachment CORE RATE (may over-credit) and the 421.2% effective UPTIME. Explosion RESOLVED: skill damage, no core, body 1,195,658 during B3 = floor of sim bodies (never the carrier); the 2026-07-16 '4.41M explosion body' was a +421.2% amplified attach. Closed items: batch-accumulation vs Max Ammo:1 (cosmetic), countInFb scope (own Stage-3 window), explosion core (none), +421.2% (live). Still measurement-gated: flighted-nuke FB timing (delaySec 0.4, fbMajor true). Invisible-X history retained in DECISIONS; generic-MG-cold attribution unsupported (emma MG 0.977 OK, 2026-07-23).",
       "unmodeled": {
         "skill1": [
           "Damage to Interruption Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)"
         ],
-        "skill2": ["Attachable Projectile — Max Ammo: 1"],
+        "skill2": [
+          "Attachable Projectile — Max Ammo: 1 (COSMETIC per owner ruling 2026-08-04: one rocket 'loaded' at meter-full fires alongside the bullet on the first frame after 100%; not reflected in game, no damage effect — nothing to model)"
+        ],
         "burst": [
           "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)",
-          "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 3 — a second, separate kit line from the Stage 1 instance; inert on the partless boss)",
-          "Projectile Attachment Damage ▲421.2% for 10 sec (self; Burst Stage 3 — MEASURED-INERT on every visible class, 0.13% precision across 3 comps, 2026-07-14; removed as dead datamine entry 101631006, see note)"
+          "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 3 — a second, separate kit line from the Stage 1 instance; inert on the partless boss)"
         ]
       },
       "board": {
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9508
+            "ratio": 1.1474
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.9583
+            "ratio": 1.1409
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.8548
+            "ratio": 1.005
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9561
+            "ratio": 1.1004
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.9265
+            "ratio": 1.0931
           }
         ],
         "n": 5,
-        "mean": 0.9293,
-        "mad": 0.0707,
-        "band": "±8%",
-        "temp": "COLD ▼"
+        "mean": 1.0973,
+        "mad": 0.0973,
+        "band": "±15%",
+        "temp": "HOT ▲"
       }
     },
     "rapunzel": {
@@ -6105,7 +6106,7 @@
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.983
+            "ratio": 0.9873
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
@@ -6113,8 +6114,8 @@
           }
         ],
         "n": 4,
-        "mean": 0.9422,
-        "mad": 0.0578,
+        "mean": 0.9433,
+        "mad": 0.0567,
         "band": "±8%",
         "temp": "COLD ▼"
       }

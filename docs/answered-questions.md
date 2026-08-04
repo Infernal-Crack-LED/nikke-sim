@@ -1249,10 +1249,18 @@ residual is closed; CCW grades ~1.0.
 
 **ADDENDUM 2026-08-04 (owner footage ruling):** the explosion-core answer is OVERTURNED — her
 rocket explosions are SKILL damage and do NOT core (`storedHit.core` removed; DECISIONS 2026-08-04
-top entry). She is deliberately colder (control 0.918 → 0.898; graded T7 −4.32%, N1 −3.33%). The
+top entry). The
 "residual remainder is generic MG-cold" line above is also no longer supported: the clean-weapon
-basis reads the MG cell at 0.977 OK (emma, 2026-07-23), so the bare MG weapon is not cold; the
-remaining deficit is the deliberately-open Invisible-X gap, no explosion-core credit.
+basis reads the MG cell at 0.977 OK (emma, 2026-07-23), so the bare MG weapon is not cold.
+**ADDENDUM 2026-08-04 (same day, ATTACHMENT REWORK — owner control+carry re-read):** the deficit
+attribution flips entirely — the explosion is NOT the carrier (owner read: explosion body
+1,195,658 during her B3, floor of the sim bodies); the ATTACHMENT is. Three owner overrides: the
++421.2% Stage-3 attachment buff is RESTORED (the 2026-07-14 inert verdict overturned — amplified
+attaches were mis-sorted as explosions; the old 4,414,404 "white body" is a +421.2% attach), the
+attachment CORES (band table; the 2026-07-14 sticky no-core verdict overturned), and the ▼60
+meter threshold is scoped to her OWN Stage-3 window (not any FB). She flips cold→HOT: control
+0.898 → **1.091**, graded T7 +21.9% / N1 +21.5%. The +9.1% overshoot stays exposed (no re-fit);
+footage-pass candidates: the band-table attachment core RATE and the 421.2% effective uptime.
 
 **Original question + evidence trail retained below.**
 

@@ -180,9 +180,13 @@ INSTANTLY (`storedHit.instantInFb` → the in-FB per-frame release path). The ex
 aim/range-independent, does NOT core (skill damage — owner footage ruling 2026-08-04 overturning the
 2026-07-16 ~1/3 read), and crits at the caster's sheet rate
 (`storedHit.crit` — removes the stored-hit path's default crit-OFF exemption so the release crits like
-every other hit; consistency, DECISIONS 2026-07-16). The rocket ATTACH is a skill-damage
-hit and generates burst gauge like any skill hit — so the in-FB cadence subtly shifts Full Burst
-timing (a second-order coupling, DECISIONS 2026-07-16).
+every other hit; consistency, DECISIONS 2026-07-16). The rocket ATTACH is launchWeapon delivery:
+it CORES at the band-table rate, crits, and generates burst gauge like any skill hit — so the
+in-FB cadence subtly shifts Full Burst timing (a second-order coupling, DECISIONS 2026-07-16).
+Two 2026-08-04 owner rulings: the ▼60 in-window threshold is scoped to the 10s window of her OWN
+Stage-3 cast (`countInFbStage`, not any FB window), and her Stage-3 cast self-buffs Projectile
+Attachment Damage ▲421.2% for 10s (restored — the 2026-07-14 measured-inert verdict overturned;
+DECISIONS ATTACHMENT REWORK).
 
 **Flighted damage (2026-07-14):** some burst skills are projectiles with real flight time —
 Rapi: Red Hood's 2808% nuke lands ~0.4 seconds AFTER her banner, inside her own window, and

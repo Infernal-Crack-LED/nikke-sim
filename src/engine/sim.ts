@@ -573,6 +573,7 @@ interface UnitState {
   resourceCfg: { name: string; initial: number; min?: number; max?: number }[];
   burstCdFrames: number;
   lastBurstCastFrame: number;
+  lastBurstCastStage: number; // the stage that cast filled (hitCount countInFbStage scoping)
   // The PRIMARY weapon-fire damage instance of this unit's most recent trigger pull, and the
   // frame it landed on. Written by firePull immediately after that instance resolves, i.e.
   // BEFORE the pull's shotFired/hitCount/chargeCounter blocks dispatch — which is what lets a
@@ -894,6 +895,7 @@ export function runSim(
       resourceCfg: skills.resources ?? [],
       burstCdFrames: 0,
       lastBurstCastFrame: -1,
+      lastBurstCastStage: -1,
       lastHitDamage: 0,
       lastHitFrame: -1,
       damage: { normal: 0, skill: 0, burst: 0 },
@@ -2871,7 +2873,9 @@ export function runSim(
     }
     units.forEach((u) => fireTriggered(u, 'fullBurstEnter', atFrame));
     // release stored hits (e.g. Rapi:RH's attached projectiles exploding) AFTER enter-buffs so FB
-    // auras apply to them; charges added this frame (from the stage-3 cast itself) wait for next FB
+    // auras apply to them; charges added this frame (from the stage-3 cast itself) wait for next FB.
+    // NO skillGauge here: releases only ever happen DURING Full Burst, and burst gauge cannot be
+    // generated during FB (owner ruling 2026-08-04) — the asymmetry with the attach hit is correct.
     for (const u of units) {
       for (const entry of u.storedHits.values()) {
         if (entry.freshFrame < atFrame) {
@@ -3115,6 +3119,7 @@ export function runSim(
         cand.burstFirstPending = false;
         cand.burstCasts++;
         cand.lastBurstCastFrame = frame;
+        cand.lastBurstCastStage = stage;
         cand.burstCdFrames = Math.round(cand.char.burstCooldownSec * FPS);
         rotationCasters.push(cand.idx);
         rotationLog.push(
@@ -3478,7 +3483,8 @@ export function runSim(
     // ---- in-FB instant stored-hit release: a rocket that ATTACHES during Full Burst
     // detonates immediately in the same window (RRH), instead of only batch-releasing at the
     // next FB start. Per-entry `instantInFb` (RRH S2 explosion) drives it permanently;
-    // ENV.XINSTEXPL forces it on for experiments. Same core/flavor treatment as the FB-start batch. ----
+    // ENV.XINSTEXPL forces it on for experiments. Same core/flavor treatment as the FB-start batch;
+    // same NO-skillGauge rule (in-FB releases cannot generate burst gauge, owner ruling 2026-08-04). ----
     if (fbEndFrame > frame) {
       for (const u of units) {
         const envForce = XINSTEXPL.has(u.char.slug);
@@ -3815,13 +3821,21 @@ export function runSim(
         applyBlock(u.idx, b, bi, frame);
       } else if (b.trigger.kind === 'hitCount') {
         const key = `hc:${bi}`;
-        // RRH rocket meter fills 2× faster in her Full Burst: threshold 120 → countInFb (60)
-        // while in FB. The counter carries over across the boundary (no reset) — the faster
-        // threshold just consumes the accrued fill, so a near-full meter fires on FB entry.
-        const threshold =
-          fbEndFrame > frame && b.trigger.countInFb != null
-            ? b.trigger.countInFb
-            : b.trigger.count;
+        // Threshold-lowering scope: DEFAULT = any team Full Burst state (SWID convention,
+        // pinned by hit-count-trigger.test.ts). `countInFbStage` SCOPES the lowered
+        // threshold to the 10s window after the owner's OWN burst cast at that stage —
+        // RRH's "▼ 60 for 10 sec" is a Stage-3 self-buff line (owner ruling 2026-08-04:
+        // teammate-opened FBs and her own noB1 stage-1 casts run the full threshold). The
+        // counter carries over across any boundary (no reset) — the lower threshold just
+        // consumes the accrued fill, so a near-full meter fires at the window's start.
+        const lowered =
+          b.trigger.countInFb != null &&
+          (b.trigger.countInFbStage != null
+            ? u.lastBurstCastFrame >= 0 &&
+              u.lastBurstCastStage === b.trigger.countInFbStage &&
+              frame - u.lastBurstCastFrame < 10 * FPS
+            : fbEndFrame > frame);
+        const threshold = lowered ? b.trigger.countInFb! : b.trigger.count;
         let c = (u.hitCounters.get(key) ?? 0) + u.char.hitsPerShot;
         while (c >= threshold) {
           c -= threshold;
