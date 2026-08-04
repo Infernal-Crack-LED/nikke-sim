@@ -421,6 +421,45 @@
       ],
       "board": null
     },
+    "anis": {
+      "name": "Anis",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/anis.json + scripts/kit-autonomy/manual-review/anis.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "board": null,
+      "date": "2026-08-04",
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "judge spot-checks: (a) the no-activation-clause interval-at-skill-CD convention (first fire t=30) is an unmeasured phase convention; (b) burst DEF-lower 32% stays honestly unmodeled (no boss-DEF primitive; ~0.04%/hit) — the one line a future boss-DEF primitive would change on her board reading",
+      "unmodeled": {
+        "skill1": [
+          "Activates when attacked 40 time(s). Affects self.",
+          "DEF ▲ 120% for 10 sec."
+        ],
+        "skill2": ["Equally shares damage taken for 10 sec."],
+        "burst": ["DEF ▼ 32% for 5 sec."]
+      },
+      "caveats": [
+        "skill1: the entire attacked-40 cluster (self DEF ▲120%/10s) is UNMODELED — no incoming-damage model, no attacked-N trigger primitive; the boss never acts. Nearest-wrong (hitCount 40 on hits she DEALS) is pinned in the spec test and provably fails",
+        "skill2: 'Equally shares damage taken for 10 sec' is UNMODELED — no redistribution primitive and no incoming damage to share (its 10s duration is distinct from the co-targeted DEF line's 5s)",
+        "burst: 'DEF ▼ 32% for 5 sec' is UNMODELED — boss DEF is the fixed cfg.bossDef subtraction with no debuff channel; magnitude ~0.04%/hit; NOT damageTakenPct (that would over-credit the whole team ~32% in-window — pinned as a counterfactual in the spec test)",
+        "skill2: the 30s interval cadence is the datamined skillCooldownsSec.skill2 (the kit prose carries no number) — ⚑ cadence tuple",
+        "weapon: RL cadence tuple (rate_of_fire 60 / chargeFrames 60 / reloadFrames 142 / ammo 6) is an unmeasured datamine estimate"
+      ]
+    },
     "anis-sparkling-summer": {
       "name": "Anis: Sparkling Summer",
       "burst": "III",

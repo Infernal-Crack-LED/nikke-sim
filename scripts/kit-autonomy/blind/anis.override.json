@@ -1,0 +1,85 @@
+{
+  "slug": "anis",
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 80,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "excludeSelf": true,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 80,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 156.73,
+          "noFb": true,
+          "noRange": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates when attacked 40 time(s). Affects self.",
+      "DEF ▲ 120% for 10 sec."
+    ],
+    "skill2": [
+      "Equally shares damage taken for 10 sec."
+    ],
+    "burst": [
+      "DEF ▼ 32% for 5 sec."
+    ]
+  },
+  "caveats": [
+    "⛑ skill2 trigger is KIT-SILENT (no activation clause) — modeled as interval at the datamined 20s skill cooldown, first fire t=20s. Both the cadence and the first-fire phase are unmeasured conventions.",
+    "⛑ skill1 is entirely unmodeled: 'attacked 40 time(s)' is an INCOMING-hit counter and the v1 boss deals no damage to units, so the trigger can never be satisfied; there is also no TriggerDef for incoming hits (hitCount counts the OWNER'S OUTGOING rounds — a different mechanic). Its payload is defPct, documented inert in v1, so the omission is damage-neutral today.",
+    "⛑ burst DEF ▼ 32% has no engine channel. Boss DEF reduction acts inside the (ATK − DEF) term and is NOT the same mechanic as damageTakenPct (Damage Up bucket); substituting damageTakenPct would mis-credit the whole team by an unknown factor that depends on the boss DEF constant. Left unmodeled pending a boss-DEF-reduction primitive — this is the single largest offensive omission in this kit.",
+    "⛑ skill2's DEF ▲ 80% is modeled as TWO blocks (self + 2 top-ATK allies) because excludeSelf removes the owner from the alliesTopAtk pool; the kit's 'Affects self and 2 allies ... (except the skill user)' reads as self PLUS 2 others, i.e. 3 recipients.",
+    "defPct is documented inert in v1 (self DEF does not affect own damage), so every DEF ▲ block here is offensively zero-damage; they are authored for kit completeness and for any future consumer/scaler."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Anis (RL/Iron/Defender/Burst II) is a near-pure defensive kit: the ONLY damage line in the whole kit is the burst's 156.73% of final ATK. S1 (DEF ▲ 120% on an incoming-attack counter) and S2's DEF ▲ 80% are inert at scope (defPct does not feed own damage); S2's damage-share and the burst's DEF ▼ 32% have no engine channel. Burst damage is authored FB-exempt (noFb) and range-exempt per the burst-cast convention — a burst cast resolves before the Full Burst window opens. Expect this unit's simulated damage to be dominated by her base RL normal attacks (charge weapon, 60 charge frames, ammo 6) rather than by kit effects.",
+  "hasPierce": false
+}
