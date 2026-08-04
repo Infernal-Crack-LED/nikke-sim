@@ -5,6 +5,10 @@
 > [`2026-08-01-pellet-cascade-JUDGE-handoff.md`](2026-08-01-pellet-cascade-JUDGE-handoff.md), whose
 > §1 pre-commitment and §3 graveyard are still live and still binding. **Read that one too.**
 >
+> **CONTINUED BY
+> [`2026-08-03-pellet-reader-JUDGE-handoff.md`](2026-08-03-pellet-reader-JUDGE-handoff.md) — read that
+> one first; this file stays live for its ledger, graveyard and traps.**
+>
 > **Slugs:** `marciana` (SG/Iron — `docs/probes/clean-weapons/marciana-solo.MP4`; **not**
 > `marciana-marine-study`, AR/Iron), `noir`, `guilty`, `isabel`. All SG, `ammo: 9`.
 
