@@ -332,8 +332,16 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
        of break opens a new magazine. **Blast radius:** `reconstruct_ammo` also produces the
        whole-fight numbers recorded in `docs/probe-runs.md` §3b AND is pinned by
        `scripts/tests/fixtures/pellets/missing-shots-slice.json`, so both move; do not fold this into
-       another change. Only the `--hand-count` arm's reporting was corrected (admissible-basis fields
-       added alongside the raw ones); the reconstruction itself is untouched.
+       another change. **Already fixed here, so do NOT re-do it:** the `--hand-count` arm's own
+       reporting — admissible-basis fields beside the raw ones, flagged decrements capped at what
+       their window holds, reload window-membership by `lo` instead of `hi`, and phantom reloads
+       (an up immediately after a flagged decrement) dropped from the admissible basis. That arm now
+       reads 32 + 4 = 36 for the right reasons. **Still riding on this pass:** `reconstruct_ammo`
+       itself is untouched, so the phantom levels are still produced and merely compensated for
+       downstream — every `--missing-shots` number, the §3b table, and the `MISSED`/`SPURIOUS`
+       columns of the hand-count arm (11 MISSED at slack 8, 8 of them phantom) still carry them.
+       ⚑ Note when fixing: the arm's cap rule is calibrated on the `9 → 0` case only — for a
+       zero-width `8 → 6` flip it credits 1 shot where the truth may be 0.
     2. **The compensating-errors finding (probe-runs §4.5) — needs a second hand-counted window.**
        In the counted window the reader's aggregate looks like a 5.6% under-read (34 detections vs 36
        shots) but per event it misses 6 real shots AND invents 4 non-shots — a true miss rate of

@@ -2520,9 +2520,11 @@ bias, not all of it — is unchanged by this measurement.
 `reconstruct_ammo` has no magazine-consistency check. The 3-frame `0` at f1602–1604, sitting between
 a confirmed 9 and a confirmed 8, is therefore scored as a `9 → 0` decrement — **minting 9 phantom
 shots** — plus a phantom `0 → 8` reload. Inside the window that inflated the raw reading to **40
-decrements / 44 implied total / MISSED 11** (of which **8 are phantom**, all inside that one
-decrement) against the true **32 / 36**. `flag_inadmissible_decrements` REPORTS these events, but the
-raw MISSED figure does not exclude them — which is precisely the raw-versus-admissible split.
+decrements / MISSED 11** (of which **8 are phantom**, all inside that one decrement) against the true
+**32**. `flag_inadmissible_decrements` REPORTS these events, but the raw MISSED figure does not
+exclude them — which is precisely the raw-versus-admissible split. (The implied-total figure that
+originally accompanied this — 44 — was computed before the reload-accounting correction below; the
+corrected instrument reports a raw implied total of **45**.)
 
 Whole-clip, five decrements are flagged inadmissible:
 
@@ -2538,11 +2540,48 @@ Whole-clip, five decrements are flagged inadmissible:
 numbers already recorded in §3b above and pinned in
 `scripts/tests/fixtures/pellets/missing-shots-slice.json`, so changing it has whole-fight blast radius
 and needs its own deliberate pass. What DID land is reporting-only: the `--hand-count` arm now emits
-admissible-basis fields (`decrement_shots_admissible`, `implied_total_admissible`,
-`ammo_implied_total_admissible`, `ammo_total_admissible_matches_hand`) **alongside** the raw ones,
-never instead of them, capping each flagged decrement at what its window can physically hold at the
-measured cadence — the exact inverse of the flag's own predicate. On this window that reads **32
-decrements + 4 magazine-empty = 36, MATCHES the hand count**, where the raw headline read 40 / 44.
+admissible-basis fields (`decrement_shots_admissible`, `n_reloads_admissible`,
+`implied_total_admissible`, `ammo_implied_total_admissible`, `ammo_total_admissible_matches_hand`)
+**alongside** the raw ones, never instead of them, capping each flagged decrement at what its window
+can physically hold at the measured cadence — the exact inverse of the flag's own predicate. On this
+window that reads **32 decrements + 4 magazine-empty = 36, MATCHES the hand count**, where the raw
+headline reads 40 / 45.
+
+⚑ **The cap rule is calibrated on the `9 → 0` case only and does NOT generalise.** It assumes a
+flagged window still holds ONE real shot, which is right when the misread interrupts a genuine
+decrement (f1596–1602 sits between a confirmed 9 and a confirmed 8, so exactly one round was fired).
+For a ZERO-WIDTH flip — the `8 → 6` events at f686 and f1833 — it credits 1 shot, but if the `6` was a
+pure glyph misread and the level never left 8 the truth is **0**. Those two events are outside the
+counted window, so nothing here rests on them.
+
+###### The reload-accounting correction — the first route to 36 was a coincidence
+
+**Recorded because the answer was right for the wrong reason, and it had already been pinned in a
+committed fixture.** As first written, the arm reached `32 + 4 = 36` only because two errors
+cancelled:
+
+- it counted the **phantom** `0 → 8` reload at f1605 (**+1**), which no magazine performed; and
+- it excluded the window's **fourth** magazine's **real** reload, whose `lo` is f1756 but whose `hi` is f1817 — 11 frames
+  past the window's end — because reload events were scored by `hi` (**−1**).
+
+The total was sound; the instrument's route to it was not. Two corrections, both in
+`hand_count_report` only:
+
+1. **Reload events take window membership from `lo`, not `hi`.** A reload's `lo` is the frame the
+   counter goes blank — essentially the magazine-emptying shot's own frame — while its `hi` is when
+   the next magazine's count appears, which can fall outside a window whose emptying shot was inside
+   it. Decrement events still use `hi`, the transition frame.
+2. **A reload immediately following an inadmissible decrement is dropped from the admissible basis**
+   as the counter recovering from the same glyph misread, not a magazine change.
+
+After the fix the in-window reload `lo` values are **1070, 1302, 1529, 1756** — four REAL
+magazine-emptying rounds, phantom f1605 excluded — so **32 + 4 = 36 for the right reasons**. The raw
+basis keeps the phantom and gains the f1756 reload the `hi` rule had been dropping, moving from 4
+reloads to **5** and its implied total from 44 to **45**; both readings still print.
+
+**Knob-stable.** The admissible **32 + 4 = 36** holds identically at slack 3 / 6 / 8 / 10 / 12, as
+does the raw 40 + 5 = 45 — the ammo reconstruction does not depend on the matcher's slack at all,
+which is the same reason §4.7's `detected_in_window` is flat across the sweep.
 
 ##### §4.4 — The in-reload extras are NOT the rockets — REFUTED
 
