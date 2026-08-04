@@ -313,6 +313,14 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
     all 6 survivors adjudicated **not pellets** (HUD ammo-bar segments at a fixed `dy ≈ −40`, and
     rising damage numbers). ⇒ **the ~1.08 cold bias is real reader behaviour, not a bad target**,
     and the old "no bias verdict is possible until this is settled" block is **LIFTED**.
+  - ✅ **PRODUCTION MISLOCK RATE MEASURED 2026-08-04: 16.9%** (`docs/probe-runs.md` §20; rule
+    pre-committed at `9bc829dd`). 137 of 811 shots, 4 dumps, 4 units. ⇒ the pre-committed
+    **"> 10% ⇒ mislocks are the DOMINANT undercount channel"** band. The detector flags the known
+    shot-4 mislock and none of the four known-good labelled shots, the 160 px threshold sits in a
+    real empty band (nothing 127–242 px), and the rate reproduces on independent footage
+    (16.2% labelled clip, 20% on §9B's set). **⇒ NEXT: measure what the channel COSTS** — the
+    0.85 pellets/shot figure is DERIVED from one shot's severity (n=1) and carries the refuted
+    `center_exclude` arithmetic shape; it sizes the channel, it does not close anything.
   - **⚑ The cold bias is still NOT closed** — the target being right says what the bias _isn't_.
     `avgTotal` may not be cited as evidence it is closed: it is a per-EVENT pooled figure, a
     different basis from the per-SHOT ~1.08 deficit. The remaining channels (radius gate,
