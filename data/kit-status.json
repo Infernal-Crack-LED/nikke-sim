@@ -2128,6 +2128,36 @@
         "temp": "COLD ▼"
       }
     },
+    "emilia": {
+      "name": "Emilia",
+      "burst": "III",
+      "weapon": "RL",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "authored",
+        "provenance": "hand-authored",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-tdd test-first build 2026-08-03 (NOT a gauntlet run): all 7 kit lines dispositioned, spec at scripts/tests/units/emilia.test.ts (19 green / 3 skipped GAPs). Required a new engine primitive, hitRepeat (%-of-hit repeat), for S2's 'Fixed Damage equal to 58.99% of the damage dealt by self' — the line that made her NO-GO(engine-core) on 2026-08-02. Two GAPs remain skipped: the burst's Charge Speed 300% downside, and both S1 round-count buffs being consumed by their own triggering pull (docs/engine-modeling-gaps.md theme 21, 4 carriers). No recorded fight exists, so nothing here is board-validated."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": ["Explosion Range ▲ 101.24% for 10 sec."]
+      },
+      "caveats": [
+        "⚑ BOTH S1 EFFECTS ARE CURRENTLY INERT — engine gap, not an encoding choice (docs/engine-modeling-gaps.md theme 21). 'Activates when attacking with Full Charge ... for 1 round(s)' means 'buff my NEXT round', which the engine cannot express: firePull dispatches a pull's shotFired blocks and then, later in the SAME pull, decrements every round-scoped buff the unit holds — including the one that pull just applied. A shotFired + durationShots:1 buff therefore reaches zero rounds. Proven by counterfactual on the control comp: with durationShots 1 her charge bucket only ever reads {2.5, 15.5053} and she fires 116 shots; bumping ONLY durationShots to 2 yields {2.5, 2.6206, 15.6259} and 128 shots. That counterfactual is re-runnable — scripts/tests/units/emilia.test.ts, the 'theme 21 ... CANARY' block, which also fails the moment the gap closes so this caveat cannot go stale unnoticed. The encoding here is the faithful one and matches the roster's prior art (zwei, phantom and vesti-tactical-upgrade all pair shotFired with the literal kit round count and lose the same round); durationShots:2 would be a fudge meaning 'the next TWO rounds'. ESTIMATE while it stands: she is COLD by roughly the whole S1 contribution — ~10% fewer shots (116 vs 128) and a charge bucket of 2.5 instead of 2.6206 on ordinary shots (-4.6%), so on the order of -12% to -15% of her total. RECIPE: skip the round-count decrement for buffs applied on the frame being decremented (e.g. record an appliedFrame on the buff entry); it moves four units, so it is a batched engine change with its own board A/B, not an override edit.",
+        "⚑ S1 Charge Damage is encoded STATIC at 12.06 (= 2.01 x her base Max Ammunition Capacity of 6). The kit scales by LIVE 'final Max Ammunition Capacity', which is 9 while S2's +3 window is up, so the faithful value inside a Full Burst is 18.09 — a +6.03pp charge-bucket shortfall there. No primitive scales a buff by the computed maxAmmo(): `perResource` reads named resource pools, not a derived stat. ESTIMATE: the charge bucket reads 2.6206 instead of 2.6809 on shots inside the 10s window (-2.25% on those hits); the window covers roughly a quarter of a 180s fight, so whole-fight ~-0.5%. RECIPE: a `perMaxAmmo: { mult }` buff source read live in sim.ts stat(), or a resource pool mirroring maxAmmo(). The encoding is ALSO basis-specific — it assumes base ammo 6 with no cube/overload ammo lines, which is the scope-lock basis but not the web app's OL configurations; scripts/tests/units/emilia.test.ts pins the arithmetic against characters.json so it cannot drift unnoticed.",
+        "The burst's 'Charge Speed ▼ 300%' is MODELED, as chargeSpeedPct -300 with durationShots 1 alongside the +1300.53 Charge Damage in the same burstCast block — the kit pairs them as one Function ('Decreases Charge Speed and increases Charge Damage for 1 shot(s)'). Charge Speed is subtractive on charge TIME in this engine, so -300 means the nuke's charge takes 60 x (1 - (-300)/100) = 240 frames instead of 60: a real downside, correctly costed, not an approximation.",
+        "⚑ The S2 rider generates one skill-damage impact of burst gauge, the engine-wide treatment of function damage (flatDamage procs and DoT ticks; MEASURED for maiden-ice-rose's per-shot rider). Whether a %-of-hit repeat specifically generates energy is UNMEASURED. ESTIMATE: it roughly doubles her per-shot gauge contribution, so a wrong call here moves full-burst timing rather than her damage. RECIPE: a focus recording of emilia — count full bursts over the fixed 180s, or read the gauge-bar slope, against the same cadence.",
+        "⚑ CADENCE TUPLE (ALWAYS-⚑): chargeFrames 60 / reloadFrames 141 / ammo 6 shipped from the datamine, plus the engine-wide 22-frame release latency (her weapon's input_type is 'UP', so she is not an autofire-charge unit). RECIPE: rounds-per-minute plus the reload gap off any focus video.",
+        "The burst's Explosion Range ▲101.24% is splash RADIUS, for which there is no primitive, and it is inert against the single partless scope-lock boss (nothing to splash onto). Recorded verbatim in `unmodeled` rather than approximated with a damage stat."
+      ],
+      "board": null
+    },
     "emma-tactical-upgrade": {
       "name": "Emma: Tactical Upgrade",
       "burst": "I",
@@ -2337,7 +2367,7 @@
       "class": "Supporter",
       "kitParse": {
         "status": "unit-tested",
-        "provenance": "gauntlet",
+        "provenance": "hand-authored",
         "date": "2026-07-26",
         "findings": [
           "kit-autonomy gauntlet 2026-07-26: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/flora.json + scripts/kit-autonomy/manual-review/flora.md."
@@ -2356,20 +2386,17 @@
         "skill1": [
           "Incoming Healing ▲ 4% continuously. Stacks up to 5 times. — no incomingHealingPct stat exists and v1 models no HP pool, so healing-received scaling is doubly inert (damage-neutral).",
           "■ Activates after landing 100 normal attacks. Affects all Electric Code allies. Increases the stack count of stackable buffs by 1. — trigger (hitCount:100) + target (alliesOfElement Electric) expressible, but the EFFECT (increment every active stackable buff's stack count by 1) has no engine primitive. ⚑ engine-core (see caveats).",
-          "■ Activates when entering Burst Stage 2. Affects all allies in the Peace of Mind state. Max HP ▲ 15.01% of the skill user's max HP (without restoring HP) for 2 sec. — offensively inert (ally-granted Max HP does not feed a teammate's atkOfMaxHpPct, e3 video rule; 'without restoring HP' so no recovery event) and the 'Peace of Mind state' target gate has no expression."
+          "■ Activates when entering Burst Stage 2. Affects all allies in the Peace of Mind state. Max HP ▲ 15.01% of the skill user's max HP (without restoring HP) for 2 sec. — the Max HP STAT is not granted (ally-granted Max HP does not feed a teammate's atkOfMaxHpPct, e3 video rule; 'without restoring HP' so no recovery event). Its CONSEQUENCE is modeled: the 86.95% HP fraction it forces, and the return to max HP 2 sec later, are what the skill2 blocks' `stageEnter{stage:2}` (+ `delaySec: 2`) triggers stand in for."
         ],
-        "skill2": [
-          "■ Activates when the HP of an adjacent ally drops to 90% or below while the ally is still alive. Affects all allies. Creates a shield with 10.22% of the skill user's final max HP that lasts for 10 sec. — HP-threshold trigger; v1 has no HP pool and the boss deals no damage, so no ally ever drops below 100% HP and this never fires. ⚑ engine-core (see caveats).",
-          "■ Activates when either adjacent ally reaches max HP. Affects all allies. True Damage ▲ 30.97% for 10 sec. — 'reaches max HP' is an HP-transition trigger that needs an HP pool the sim does not model. ⚑ engine-core.",
-          "■ Activates when a shield is placed in front of this unit. Affects all allies in the Peace of Mind state. ATK ▲ 45.12% of the skill user's ATK for 10 sec. — the `shielded` trigger EXISTS, but its only shield source is the S2 line above (HP-gated), so the chain is dead in the no-damage sim; the 'Peace of Mind state' target gate is also unexpressible. ⚑ engine-core."
-        ],
+        "skill2": [],
         "burst": []
       },
       "caveats": [
-        "skill2 (WHOLE SLOT) ⚑ engine-core: all three S2 lines (shield 10.22% / True Damage ▲ 30.97% / ATK ▲ 45.12% of caster ATK) are gated on HP dynamics v1 does not model. ESTIMATE: in a real fight Flora's S1 HoT (1%/s) + burst heal (10.45%) keep adjacent allies near max HP, so the 'HP <= 90%' shield and 'reaches max HP' True Damage triggers fire on boss-damage cadence -> high uptime on the 45.12% caster-ATK + 30.97% True Damage team buffs; this is a meaningful, unmodeled fraction of her real team contribution (the sim under-represents Flora until an HP pool exists). RECIPE: add an engine HP-pool + HP-threshold-trigger primitive (model ally HP, boss damage taken, and 'HP <= X%' / 'reaches max HP' triggers), then encode S2-1 `shield` maxHpPct:10.22 on the HP-threshold trigger, S2-3 casterAtkPct:45.12 on `shielded`, S2-2 trueDamagePct:30.97 on a max-HP-reached trigger. TIER: engine-core (new primitive), out-of-domain for the no-damage v1 sim — same precedent as liter's cover-HP NO-OP (owner 2026-07-21) and the alliesLowestHp 'no HP pool' stand-in.",
+        "skill2 (trigger form) ⚑ derived-deterministic: the three S2 lines are worded as HP triggers ('HP drops to 90% or below', 'reaches max HP', 'a shield is placed in front of this unit'), and v1 models no HP pool. They are keyed to Burst Stage 2 entry instead, because Flora's own S1 forces exactly those HP transitions there: the 2-sec Max HP ▲ 15.01% grant (without restoring HP) drops Peace-of-Mind allies to 86.95% HP at stage-2 entry, and returns them to max HP 2 sec later. The proxy is exact for the self-procced chain; what it does NOT represent is any ADDITIONAL firing driven by real boss damage (a raid boss that damages allies would re-open the 'HP ≤ 90%' trigger between rotations), so this is a floor on the line's real uptime, not a ceiling.",
+        "skill2 (True Damage duration) ⚑ kit-text conflict: modeled at 10 sec per the blablalink prose SSOT; the datamined skill2 table gives 5 sec for the same line. That datamined capture is partial for this unit (it is missing three kit lines outright), which is why prose wins here. ESTIMATE: halving the window would cut this line's Full-Burst overlap roughly in half. RECIPE: a fresh datamine of skill group 24112, or a footage read of the buff icon's lifetime. TIER: open magnitude question.",
         "skill1 (stack bump) ⚑ engine-core: 'after 100 normal attacks, all Electric Code allies: Increases the stack count of stackable buffs by 1'. ESTIMATE: adds 1 stack to each Electric ally's active stackable buffs once per 100 Flora normal hits; magnitude depends entirely on which stack-ramp buffs are active on those allies (could be large if a stack-ramp buff is present, zero otherwise). RECIPE: an engine 'addStack' effect that increments existing buff stacks by N on a trigger (none exists). TIER: engine-core (new primitive).",
         "skill1 (Incoming Healing) ⚑ inert: 'Incoming Healing ▲ 4% continuously, stacks 5x' — no incomingHealingPct stat and no HP pool, so it scales only heals received (unmodeled). ESTIMATE: damage-neutral. RECIPE: none for DPS (would need an HP pool + incomingHealingPct stat). TIER: inert/out-of-domain.",
-        "skill1 (Max HP grant) ⚑ inert: 'entering Burst Stage 2 -> Peace-of-Mind allies Max HP ▲ 15.01% of caster Max HP for 2 sec (without restoring HP)' — ally-granted Max HP is offensively inert (e3 video rule: does not feed a teammate's atkOfMaxHpPct) and emits no recovery ('without restoring HP'); the 'Peace of Mind state' target gate is also unexpressible. ESTIMATE: damage-neutral. RECIPE: none for DPS. TIER: inert.",
+        "skill1 (Max HP grant) ⚑ modeled by consequence: 'entering Burst Stage 2 -> Peace-of-Mind allies Max HP ▲ 15.01% of caster Max HP for 2 sec (without restoring HP)'. The Max HP stat itself is not granted (offensively inert — ally-granted Max HP does not feed a teammate's atkOfMaxHpPct, e3 video rule — and it emits no recovery event). It is not damage-neutral, though: it is the mechanism that drives the whole S2 chain, which is modeled on `stageEnter{stage:2}` and `stageEnter{stage:2}` + `delaySec: 2` in the skill2 blocks.",
         "burst/skill1 heals: the HP MAGNITUDES (burst 10.45%, HoT 1%/s) are not modeled (no HP pool) — only the recovery EVENT cadence is, which is what recovery-consumer teammates key off. The interval:1 HoT phase starts at t=1s (engine interval convention 'first at t=sec'); a t=0 first tick would add one extra early recovery event, immaterial to steady-state consumer uptime."
       ],
       "board": null
@@ -4555,7 +4582,7 @@
       "caveats": [
         "skill2: Max Ammo +5 rounds now modeled kit-literal (maxAmmoFlat 5, ALL allies, 10s — enacted 2026-07-20; a focused-SG-teammate mag-length read remains the nice-to-have confirmation ⚑)",
         "burst: Hit Rate ▲ (13.93% SG-allies /10s, 11.61% allies /30s) modeled as hitRatePct — LIVE since CONE_DELTA (2026-07-19): feeds acrForHR core-hit fraction for AR/SMG/SG recipients (MG/SR/RL keep the flat table); in-game magnitude unmeasured (⚑)",
-        "burst: the 11.61%/19.36% block is gated on a same-squad ally in the team (blanc or rouge — owner-ruled 2026-07-20, teamHas slug gate); inert in comps without one"
+        "burst: the 11.61%/19.36% block is gated on a same-squad ally in the team (teamHas.sameSquad — noir's curated squad in src/data/squads.ts holds blanc + rouge, plus the ranks-layer synthetic noop-rouge-b1 which never shares a team with her); inert in comps without one"
       ],
       "board": {
         "records": [
@@ -6102,7 +6129,7 @@
       "residual": "owner spot-check: burst Hit Rate 45.3 measurement-gated (HR->core magnitude); S1 heal/recovery-event primitive gap; Spread Roots/Wilted Roots burst-skill-dmg-amp primitive gap (teammate-COLD lever); burstCast-vs-fullBurstEnter trigger identity in multi-B2 comps - see scripts/kit-autonomy/manual-review/trina.md",
       "unmodeled": {
         "skill1": [
-          "Continuously recovers 4.06% of the skill user's final Max HP every 1 sec for 5 sec.",
+          "HP MAGNITUDE: Continuously recovers 4.06% of the skill user's final Max HP every 1 sec for 5 sec — the recovery CADENCE (every 1 sec for 5 sec = 5 ticks) IS modeled (heal ticks:5 intervalSec:1 on fullBurstEnd, driving on-recovery consumers); only the HP amount is not (the engine's heal effect carries no HP value).",
           "Recovers 2.03% of the skill user's final Max HP as HP.",
           "Recovers 1.57% of the skill user's final Max HP as HP."
         ],
@@ -6117,7 +6144,7 @@
       "caveats": [
         "burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).",
         "burst: Max Ammunition +20 rounds is encoded kit-literal as maxAmmoFlat 20 (flat rounds — exact for every Electric AR ally regardless of magazine size; upgraded 2026-07-24 gauntlet from the prior maxAmmoPct 33.3 proxy, which assumed a 60-round AR base magazine and under-buffed smaller magazines, e.g. a 20-round ally got +6.66 vs the kit-literal +20).",
-        "skill1: heals are unmodeled — recovery-trigger consumers (e.g. Crown's 'when recovery takes effect') get no events from Trina.",
+        "skill1: the fullBurstEnd HoT's recovery CADENCE (4.06% of caster final Max HP, every 1s for 5s = 5 ticks) IS emitted as recovery events (heal ticks:5 intervalSec:1 on fullBurstEnd) — 'when recovery takes effect' consumer kits (Crown-type) now proc off Trina across the full 5s window after each Full Burst. Only the heal's HP MAGNITUDE (4.06%) is unmodeled (the engine's heal effect carries no HP amount). The two Full-Charge threshold heals (2.03%/1.57%, gated on ally HP% <30/<50) stay wholly unmodeled — v1 has no HP pool to evaluate the gate against.",
         "[2026-07-17 THEME-13] Her two 'Max HP ▲ X% of the skill user's Max HP' grants are now modeled as casterMaxHpPct (S2 44.98% → all Electric-AR allies, passive/constant; burst 20.14% → all allies, 10s). Offensively INERT: ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion (e3 rule) — no board damage moves. Kit-SSOT completeness only."
       ],
       "board": {

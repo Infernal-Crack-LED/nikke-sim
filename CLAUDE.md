@@ -49,12 +49,18 @@ rotation (full-burst counts) measured-exact on all graded comps.
 8. **Engine (and other high-contention protected-content) edits happen on an ISOLATED worktree, not the
    shared main tree.** For any change to `src/engine/**` — and generally any `data/**` / `src/skills/
 overrides/**` edit while other sessions may be active — do the work in a dedicated git worktree/branch,
-   verify it there (`scripts/verify.sh`), then bring it back by commit/merge/cherry-pick. Create it via the
-   Agent tool's `isolation: "worktree"`, or `git worktree add ../nikke-sim-wt-<topic> -b <topic>` (public
-   `.git`), and remove it when done. The shared main directory is for reads and for landing already-isolated,
-   verified changes — never make the engine edit directly there mid-session, since a concurrent writer or a
-   later tree-reset will collide with it (root cause of the 2026-07-21 clobber). This isolates the whole
-   edit→verify→A/B loop from concurrent work instead of racing on one tree.
+   verify it there (`scripts/verify.sh`), then bring it back by **pushing the branch and opening a PR —
+   never by merging or fast-forwarding it into local `main`,** even after it verifies green. Create it via
+   the Agent tool's `isolation: "worktree"`, or `git worktree add ../nikke-sim-wt-<topic> -b <topic>`
+   (public `.git`), and remove it once its PR merges. The shared main directory is for reads and for
+   pulling already-merged upstream changes — never make the engine edit directly there mid-session (a
+   concurrent writer or a later tree-reset will collide with it, root cause of the 2026-07-21 clobber),
+   and never land a worktree branch onto local `main` directly (root cause of a 2026-08-03 push rejection:
+   local `main` had silently diverged from `origin/main` — three other sessions' PRs had landed there
+   during the isolated work — so the "verify it there, bring it back by merge" reading of this rule turned
+   a clean isolated change into a same-tree conflict the PR flow exists to avoid). This isolates the whole
+   edit→verify→A/B loop from concurrent work instead of racing on one tree, and isolates the LANDING too —
+   only `origin/main`'s merge commit, never a local one, decides what main actually contains.
 9. **NEW TOOLING IS ALWAYS COMMITTED — never left as a `/tmp` one-off (2026-07-29 owner ruling).** Any
    script, reader, instrument, probe driver, or fixture built during a session gets committed as part of
    the work it supported. **An instrument cited as evidence MUST be in the tree at a named path, and the
@@ -215,7 +221,10 @@ These paths are load-bearing for the sim's accuracy guarantees. **Never modify t
   test-first session that is now the PRIMARY kit build path (TDD transition step 3), demoting
   `/audit-kit` + `/kit-parse` to post-validation sampling / untuned-unit baselines;
   processing a recording → `/probe-processing`; engine/data changed →
-  `/mechanics-doc-upkeep`; after any non-trivial change → `/skill-maintenance`; before a PR/push
+  `/mechanics-doc-upkeep`; after any non-trivial change → `/skill-maintenance`; **doc state stale,
+  a handoff finished, or unsure which doc owns a fact → `/doc-maintenance`** (routing, QUEUE.md
+  pruning, closing/untracking a done handoff, stale-narration deletion; a PreToolUse hook nudges it
+  together with `/skill-maintenance` at push/PR time); before a PR/push
   to `main` → `/patch-notes` (drafts player-facing patch notes from DECISIONS for the web Dev
   page; a PreToolUse hook nudges on `git push` / `gh pr create`); full-roster sim-only batteries
   - blast-radius diffing → `/sim-battery` (scripts/battery/); top-ranker team/roster snapshots

@@ -76,7 +76,6 @@ const SLUGS = ['liter', 'ade', 'ada', 'helm'] as const;
 const ADE = 1;
 const N_ALLIES = 4;
 
-type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 type Shot = Extract<SimEvent, { kind: 'shot' }>;
@@ -132,9 +131,7 @@ const dur = (b: BuffApply) =>
 const s1Atk = (evs: SimEvent[], caster: number = ADE) =>
   buffs(evs).filter(
     (b) =>
-      b.stat === 'casterAtkPct' &&
-      b.casterIdx === caster &&
-      dur(b) === 5 * FPS
+      b.stat === 'casterAtkPct' && b.casterIdx === caster && dur(b) === 5 * FPS
   );
 /** L4 — the S2 every-120-NA Max HP grants (5s windows). */
 const s2MaxHp = (evs: SimEvent[], caster: number = ADE) =>
@@ -152,9 +149,7 @@ const burstMaxHp = (evs: SimEvent[], caster: number = ADE) =>
 const burstAtk = (evs: SimEvent[], caster: number = ADE) =>
   buffs(evs).filter(
     (b) =>
-      b.stat === 'casterAtkPct' &&
-      b.casterIdx === caster &&
-      dur(b) === 10 * FPS
+      b.stat === 'casterAtkPct' && b.casterIdx === caster && dur(b) === 10 * FPS
   );
 
 const holdersOf = (applies: BuffApply[], frame: number) =>
@@ -173,7 +168,9 @@ const s1OwnPct = withPatchedOverride('ade', (ov) => {
     }
   }
   if (!n) {
-    throw new Error('ade S1 casterAtkPct 5.19 effect missing — fixture is stale');
+    throw new Error(
+      'ade S1 casterAtkPct 5.19 effect missing — fixture is stale'
+    );
   }
 });
 /** L2 counterfactual: 'Affects all allies' read as allies EXCEPT the skill user. */
@@ -247,7 +244,9 @@ const burstMaxHp5s = withPatchedOverride('ade', (ov) => {
     }
   }
   if (!n) {
-    throw new Error('ade burst casterMaxHpPct effect missing — fixture is stale');
+    throw new Error(
+      'ade burst casterMaxHpPct effect missing — fixture is stale'
+    );
   }
   ov.skill2 = [];
 });
@@ -263,7 +262,9 @@ const burstOwnPct = withPatchedOverride('ade', (ov) => {
     }
   }
   if (!n) {
-    throw new Error('ade burst casterAtkPct 10.15 effect missing — fixture is stale');
+    throw new Error(
+      'ade burst casterAtkPct 10.15 effect missing — fixture is stale'
+    );
   }
 });
 /** L6 isolation: the burst ATK line removed entirely. */
@@ -325,7 +326,10 @@ describe('ade — kit spec', () => {
       const s1Val = applies[0].value;
       const burstVal = burstAtk(base.events)[0]?.value;
       expect(s1Val).toBeGreaterThan(0);
-      expect(burstVal, 'burst ATK line must exist to compare the basis').toBeGreaterThan(0);
+      expect(
+        burstVal,
+        'burst ATK line must exist to compare the basis'
+      ).toBeGreaterThan(0);
       // same caster basis ⇒ flat ratio == kit-% ratio, exact
       expect(burstVal / s1Val).toBeCloseTo(10.15 / 5.19, 9);
     });
@@ -350,7 +354,10 @@ describe('ade — kit spec', () => {
       const cfApplies = buffs(ownPct.events).filter(
         (b) => b.stat === 'atkPct' && b.value === 5.19 && b.casterIdx === ADE
       );
-      expect(cfApplies.length, 'the misread emits raw atkPct 5.19 instead of a flat').toBeGreaterThan(0);
+      expect(
+        cfApplies.length,
+        'the misread emits raw atkPct 5.19 instead of a flat'
+      ).toBeGreaterThan(0);
       expect(s1Atk(ownPct.events).length).toBe(0);
     });
 
@@ -397,7 +404,8 @@ describe('ade — kit spec', () => {
 
     it('DISCRIMINATING: a per-holder own-Max-HP% basis (targetMaxHpPct) scatters the values', () => {
       const cf = buffs(targetBasis.events).filter(
-        (b) => b.stat === 'maxHpFlat' && b.casterIdx === ADE && b.refresh === false
+        (b) =>
+          b.stat === 'maxHpFlat' && b.casterIdx === ADE && b.refresh === false
       );
       expect(cf.length).toBeGreaterThan(0);
       expect(
@@ -432,7 +440,10 @@ describe('ade — kit spec', () => {
         expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
       }
       const s2Val = s2MaxHp(base.events)[0]?.value;
-      expect(s2Val, 'S2 maxHp grant must exist to compare the basis').toBeGreaterThan(0);
+      expect(
+        s2Val,
+        'S2 maxHp grant must exist to compare the basis'
+      ).toBeGreaterThan(0);
       // same caster basis ⇒ flat ratio == kit-% ratio, exact
       expect(applies[0].value / s2Val).toBeCloseTo(25.15 / 15.62, 9);
     });
@@ -499,7 +510,10 @@ describe('ade — kit spec', () => {
       const cfApplies = buffs(burstOwn.events).filter(
         (b) => b.stat === 'atkPct' && b.value === 10.15 && b.casterIdx === ADE
       );
-      expect(cfApplies.length, 'the misread emits raw atkPct 10.15 instead of a flat').toBeGreaterThan(0);
+      expect(
+        cfApplies.length,
+        'the misread emits raw atkPct 10.15 instead of a flat'
+      ).toBeGreaterThan(0);
       expect(burstAtk(burstOwn.events).length).toBe(0);
     });
   });
@@ -546,9 +560,7 @@ describe('ade — kit spec', () => {
         overrides: { ade: cf },
         cfg: { onEvent: (e) => evs.push(e) },
       });
-      const cfAtk = new Set(
-        burstAtk(evs, CO_B2_ADE).map((b) => b.frame)
-      );
+      const cfAtk = new Set(burstAtk(evs, CO_B2_ADE).map((b) => b.frame));
       expect(cfAtk.size).toBeGreaterThanOrEqual(fbStarts.length);
       expect(cfAtk.size).toBeGreaterThan(casts.length);
     });

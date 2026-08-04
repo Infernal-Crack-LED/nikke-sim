@@ -9,7 +9,492 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-02, latest) THE SYNTHETIC NO-OP CONTROLS USE LOW BASE ATK (100), AND IT IS THE SHARED
+- **(2026-08-03) `mint` Singing/Dancing gate ENACTED as a dynamic per-cast alternation (`resourceGate`),
+  superseding the 50%-uptime halving proxy — owner-confirmed parity (Dancing-first) + strict
+  alternation, zero graded-board impact.** Follows directly from the same-day mode-default ruling
+  entry below, which had left this as an open owner decision pending two facts: which state she
+  starts in, and whether the alternation is strict, and which explicitly named a confirming
+  RECORDING as the route to those two facts — that recording requirement is DISCHARGED here by the
+  owner's direct conversational confirmation of both facts instead, not by footage; the entry below
+  is left as originally written (append-only) rather than edited to match. Owner-confirmed both directly in conversation:
+  "she starts with nothing on, which means she goes dancing first" (matches the kit-literal Status
+  1/2 gate — "if NOT in Dancing [incl. no part yet] → gain Dancing" — already assumed Dancing-first)
+  and "the alternation is that clean/strict," then directed the fix: "we should actually alternate
+  her buffs and not apply them half all the time." Implementation exactly follows the recipe already
+  spec'd by the 2026-07-25 kit-autonomy gauntlet's binding judge (S7 opus, code-verified, independently
+  corroborated by the blind S2b/S5 reviewers) in the override note: a `singing` resource (0=Dancing,
+  1=Singing; declared `resources`, initial 0) driven by two `mode:'solo'` `burst` blocks on Mint's own
+  `burstCast` (`everyN:2`/`everyNOffset:1` → `delta:-1` on her odd casts, `everyNOffset:0` →
+  `delta:+1` on her even casts), and the S1 casterAtkPct + S2 stage-3 crit/projExpl/pierce blocks
+  gated `resourceGate:{name:'singing',min:1}` at the FULL kit-literal magnitude (45.02/19.94/50/32.72
+  — unchanged values, already independently pinned by `mint.test.ts`'s prior M4 duet assertions; only
+  the GATING changed). Not a scientific-method-gated change: no new numeric magnitude is introduced
+  (kit-literal, pre-certified), and the mechanism is a direct code-level implementation of
+  owner-stated facts about her own kit, not an inference from ambiguous footage — same class of
+  authority as the many other "owner-confirmed" kit-mechanism rulings in this log (e.g. the
+  `mint`/`prika` DUET ROTATION entry, 2026-07-23). Test-first: `scripts/tests/units/mint.test.ts` M1/M2
+  rewritten RED-then-GREEN — pins firing only in odd-cast-index windows (frame-correlated to her own
+  burst-cast sequence) at the full magnitude, discriminated against an ungated/raw-parser reading, a
+  REVERSED (Singing-first) parity, and the toggle removed entirely (stuck at initial Dancing); M4
+  updated to assert duet mode is unconditional (fires every rotation) vs solo's gated alternation, same
+  peak value in both. **Board impact: ZERO on the currently graded board** — checked directly, not
+  estimated: `mint`'s only graded comp (`PA MiKa`) pairs her with `prika`, which forces
+  `duet (w/ Prika)` mode (unconditional, untouched by this change); solo mode currently has no graded
+  real-fight anchor at all, so `scripts/regression.ts` + `scripts/control-regression.ts` are both
+  snapshot-stable (verified, not assumed) and `verify.sh` is green end-to-end. Solo-mode board effect
+  is real but currently unmeasured (validate-overrides solo-fixture total: 37.1M → 38.0M, ~+2.4%,
+  consistent with the note's prior "a few % board-level" estimate) — will surface once a solo-mint
+  comp is graded. — `src/skills/overrides/mint.json`, `scripts/tests/units/mint.test.ts`,
+  `docs/engine-modeling-gaps.md` (primitive census refresh: `everyN`/`everyNOffset`/`resourceGate` now
+  include `mint`)
+
+- **(2026-08-03) `trina` S1 fullBurstEnd HoT recovery cadence ENACTED (5-tick heal stream);
+  Full-Charge threshold heals stay unmodeled.** Her 2026-07-24 kit-autonomy gauntlet had flagged the
+  fix conditionally ("if a recovery-event primitive lands, the fullBurstEnd 4.06%/s×5s HoT becomes a
+  recovery emitter" — `scripts/kit-autonomy/manual-review/trina.md`); the `heal`/recovery-emitter
+  primitive landed for `prika`'s own burst HoT (2026-07-25 gauntlet fix, `heal ticks:25
+intervalSec:1`). This pass applies the same shape to `trina`: `skill1` now carries `fullBurstEnd` →
+  `allies` → `heal ticks:5 intervalSec:1`. Structural/magnitude-free (both cadence numbers — "every 1
+  sec for 5 sec" — are printed verbatim in kit prose; nothing about the cadence is measurable, only
+  the HP amount is, and the engine's heal effect carries none), so no scientific-method pipeline
+  applies (kit-completeness fix on an already-gauntlet-certified unit, not a new empirical claim on
+  the damage model — the heal itself deals zero damage and sets no buff on Trina). Regression-neutral:
+  neither of Trina's two snapshot comps (`elec battery`, `N3`) fields an on-recovery consumer
+  (Crown-type), so board impact today is zero; pinned end-to-end on a dedicated
+  liter/trina/crown/ada fixture in `scripts/tests/units/trina.test.ts` (T1b) proving the stream keeps
+  Crown's "when recovery takes effect" consumer refreshed across the 5s window, discriminated against
+  a collapsed `ticks:1` counterfactual and the heal removed entirely. The two Full-Charge
+  threshold heals (2.03%/1.57%, gated on ally HP%<30/<50) remain wholly unmodeled — v1 has no HP pool
+  to evaluate the gate. — `src/skills/overrides/trina.json`, `scripts/tests/units/trina.test.ts`
+
+- **(2026-08-03) Mode-default owner ruling: `cinderella-crystal-wave` MG, `mint` solo — both already
+  the shipped default, no code change; `mint`'s Singing/Dancing `resourceGate` is a SEPARATE,
+  still-unbuilt mechanism from the already-landed `mint`/`prika` duet burst-order fix.** Closes the
+  "modes owner-review" item from `docs/handoffs/closed/kit-parse-reconciliation-backlog.md`.
+  `cinderella-crystal-wave`'s `modes` array is `["MG", "Snipe"]` and `mint`'s is `["solo", "duet (w/
+Prika)"]` — the engine's mode-selection (`sim.ts` `selectedMode = prepared?.[idx]?.mode ??
+skills.modes?.[0]`) already defaults to array-index 0 in both cases, and no graded comp
+  (`scripts/regression.ts`/`scripts/experiment.ts`) overrides either default, so this ruling
+  CONFIRMS the shipped behavior rather than changing it; `cinderella-crystal-wave`'s override note
+  already documented the MG rationale ("matches the user's validated real solo-raid sample at core
+  100%"), `mint`'s note now states the ruling explicitly too. Separately investigated the owner's
+  hypothesis that `mint`'s dynamic Singing/Dancing `resourceGate` (spec'd but not built — see her
+  override note's residual (1)) might already be solved by the landed `mint`/`prika` duet
+  burst-order mechanism (`burstFirst` + `burstCdr -9999`, owner-confirmed 2026-07-23) — checked
+  directly against both code paths, not by measurement: the duet mechanism answers "who wins the B2
+  cast in a two-B2 team," a different question from "is mint in Singing or Dancing status on a given
+  SOLO cast" (in duet mode she is forced into permanent Singing by prika's kit, so the toggle
+  question doesn't even arise there) — the hypothesis does not hold. The dynamic
+  `resourceGate` remains unbuilt, stays an owner decision (board-moving on her graded 1.015 comp),
+  and needs a confirming recording on the even/odd cast-parity assumption before it can land. —
+  `src/skills/overrides/mint.json`, `docs/handoffs/closed/kit-parse-reconciliation-backlog.md`
+
+- **(2026-08-03, latest) B3 DPS CHART LOADS THE NEVER-LOADED B1 CONTROL — the fourth instance of the
+  same defect.** Owner ruling: fix it, matching `build-bufferchart.ts` / `build-sustain.ts` /
+  `build-b1b2dps.ts`. `scripts/build-dpschart.ts:148` loaded only `noop-b3-mg`'s override; the Solo
+  framework's synthetic B1 control (`NOOP_B1`, `noop-b1-ar`) is not a roster entry, so its
+  `fullBurstEnter → allies: burstCdr 7s` block was never read. Silent, not a crash: `NOOP_B1`'s
+  character data ships empty skill prose by design (`skills: {skill1:'',skill2:'',burst:''}`), so
+  `resolveSkills()` (`src/skills/index.ts:82-91`) takes its "genuinely empty kit, no override needed"
+  fallback and returns zero blocks rather than erroring — the control silently ran with no CDR at
+  all instead of failing loudly. Every Solo-framework cell (`matrix.ts:436`,
+  `variant.solo ? [NOOP_B1, NOOP_B2, tested.slug, NOOP_B3] : ...`) was affected; every other named
+  framework (standard/anis/anis-hc) seats a real B1 and was untouched. `scripts/regression.ts`'s own
+  "Solo framework" check (§5) never caught this because it builds its overrides independently
+  (loads every `team.slugs` member, including `noop-b1-ar`), so it was validating a configuration
+  the shipped board did not run — the same blind spot the buffer-board ruling above already named
+  for `scripts/tests/ranks/buffer.test.ts`.
+  **Fix:** `scripts/build-dpschart.ts` now loads every `NOOP_CHARACTERS` override in a loop, the same
+  pattern the three sibling boards use.
+  **Blast radius, measured (before/after full `--force` rebuild, rows keyed on cellId + slug +
+  variant):** 135 of 1152 Solo-framework rows move (0 of 4608 non-Solo rows move — exactly the
+  Solo-only scope the code predicts). Mixed direction, not a uniform buff: `helm` (SR/Water, NOT
+  `helm-aquamarine`) +11.0% (scope) to +20.6% (8/12) — a cooldown-bound unit that gains the most
+  from an actually-firing 7s CDR;
+  `snow-white-heavy-arms` −1.5% to −2.0% — a unit that loses ground once the no-op B3 also bursts
+  more often and contests stage-3 casts harder. Most Solo rows (1017 of 1152) are byte-identical —
+  units whose own kit already saturates the rotation independent of the control's CDR.
+- **(2026-08-03) TYPED BUFFER BOARD: FLAVOR-GATED ALLY BUFFS NEED A CARRY THAT CAN ACTUALLY DEAL
+  THAT FLAVOR — `hasTrueNormals` PRIMITIVE (True Damage), MOCK_TICK RIDER (Distributed/Sustained
+  Damage), OWNER-PICKED OPTION 3.** Flora's burst grants allies "True Damage ▲ 42.39% for 10s"
+  (`trueDamagePct`), but the typed board's synthetic carries (`src/ranks/synthetics.ts`, empty
+  skill1/skill2/burst) never dealt True-flavored damage — confirmed on the pre-fix tree via
+  `--explain flora --typed`: shipped 23.62%, removing the buff moved it by exactly Δ0.00, the buff
+  was silently inert. Auditing the whole roster for the same shape (any ally-facing buff keyed to a
+  damage FLAVOR the carries structurally cannot produce) found four more stats with real users in
+  the buffer population: `sustainedDamagePct` (crust, rosanna-chic-ocean), `distributedDamagePct`
+  (crust, delta-ninja-thief, elegg, mast-romantic-maid) — all confirmed Δ0.00 the same way.
+  **True Damage fix:** added a static `hasTrueNormals` kit primitive (`CharacterSkills`, parallel to
+  the existing `hasPierce`) — `src/skills/types.ts` → `src/skills/index.ts` →
+  `src/engine/sim.ts` (`UnitState.hasTrueNormals`, OR'd into `trueFlavor` at both normal-attack
+  `dealDamage` call sites alongside the existing swap-scoped `u.swap?.trueNormals`).
+  `deriveCarrySpec` (`src/ranks/buffer.ts`) grants it to both typed-board carries whenever the
+  tested unit has an ally-facing `trueDamagePct` buff. Flora's typed value: 23.62% → 47.78%.
+  **Distributed/Sustained fix:** unlike True Damage, no new engine primitive was needed — both
+  flavors are already fully expressible via ordinary `flatDamage`/`dot` blocks (`flavor:
+'sustained'|'distributed'`), always targeting the enemy, always cast by the unit's OWN
+  skill/burst kit line (verified across the whole roster — every real sustained user is a `dot`,
+  every real distributed user a `flatDamage`; none is ally-facing). The gap is purely that the
+  kit-less carries never fire one. Presented four options to the owner (fixed passive tick sized
+  off the weapon modal; a burstCast-triggered rider matching the dominant real-kit shape but
+  coupling the registered value to Full Burst count/rotation; a fixed-interval tick decoupled from
+  rotation; or leave the gap undocumented-fixed and just caveat it, since the size is inherently an
+  invented policy constant with no measured anchor). **Owner picked Option 3** (rejected 2 for the
+  rotation-coupling, rejected 4 given the option to actually register the buff without a large
+  invented number): `deriveCarrySpec` grants each carry a synthetic `MOCK_TICK` rider — one instant
+  `flatDamage` hit every 10s tagged the needed flavor, sized at 5× the carry's own weapon's modal
+  per-shot multiplier (`MODAL_WEAPON`), clearly commented in `buffer.ts` as a POLICY mock, not a
+  measured value, chosen to be a minority contributor (~1–4 points out of each unit's 10–80% total,
+  checked via `--explain <slug> --typed`) — enough surface for the flavor gate to multiply, not a
+  claim about what a "generic carry" should deal. `sustained`/`distributed` are folded into
+  `carryDpsSum`'s baseline-run memo key (unlike `pierce`/`trueFlavor`, pure tags with no damage of
+  their own) because the rider is a real damage source that fires whether or not any buff
+  multiplies it, so two units sharing every other key component but differing here would otherwise
+  read each other's wrong baseline.
+  Evidence: `--explain <slug> --typed` before/after for all six units (flora/crust/
+  rosanna-chic-ocean/delta-ninja-thief/elegg/mast-romantic-maid); `scripts/tests/ranks/buffer.test.ts`
+  pins both derivations + typed>generic for all six; `verify.sh` green, every graded-comp
+  snapshot byte-identical — the change only ever fires on the typed board's synthetic carries.
+  Branch `flora-typed-board-true-damage`, PR #75.
+  **Follow-up (same day): the cross-family `/code-review` (kimi-code/k3) on this landing came back
+  FIX-BEFORE-MERGE with one real FIX, one confirmed-safe FOLLOW-UP, and two NOTEs, all resolved.**
+  (a) The roster sweep for `sustainedDamagePct`/`distributedDamagePct` was exhaustive, but the
+  `trueDamagePct` half rode on Flora being the unit that surfaced the bug and was never
+  independently re-swept — the reviewer's own roster walk found three more genuine, ungated,
+  ally-facing `trueDamagePct` carriers in the buffer population: `frima` (B1), `takina` (B2), `ada`
+  (B3 `buffer`, targets `burstCasters`). Verified each via `--explain <slug> --typed` (all show a
+  real nonzero Δ post-fix) and added to `scripts/tests/ranks/buffer.test.ts`. The reviewer also
+  flagged `emma-tactical-upgrade`/`eunhwa-tactical-upgrade` as apparently-affected — checked and
+  confirmed these are NOT: both units' `trueDamagePct` lines are gated behind a duo `mode`/`teamHas`
+  condition (`"AS Formation (w/ eunhwa-tactical-upgrade)"` / `teamHas.slugs: [emma-tactical-upgrade]`)
+  the standalone buffer-board comp never satisfies, so they read `Δ0.00` before AND after this fix —
+  an unrelated, pre-existing gap (their duo synergy is simply unmodeled on this board), not something
+  this change touches. (b) The reviewer flagged the QUEUE.md entry this landing deleted
+  ("BUFFER-BOARD METHODOLOGY CHAIN IS ON A PR BRANCH") as possibly dropping a live decision + a
+  blast-radius record — checked: the blast-radius numbers (`burstgen` 4/244, `b1b2dps` 12/272) are
+  already preserved verbatim in this file's own buffer-board-methodology entry above, and the
+  "rewind main vs let the PR supersede" question was already settled by the CLAUDE.md ruling
+  "worktree branches land via PR, never a local merge to main" — nothing was actually lost, the
+  deletion was correct. (c) `carryDpsSum`'s per-carry weapon lookup (`team.chars[ci]`) relied on an
+  unenforced parallel-array assumption between `carryIdxs` and `chars`; changed to read the weapon
+  directly off the slug (`syntheticFor(team.slugs[slugIdx])`), removing the fragile pairing. (d) a
+  stale exact test count in this entry was replaced with "green" (the count drifts with every
+  landing and buys nothing pinned to a date).
+
+- **(2026-08-03) SUSTAIN BOARD PORTS THE BUFFER BOARD'S STAGE-COVERAGE SHAPE, AND LOADS THE
+  NEVER-LOADED B1 CONTROL.** Owner ruling on the two linked findings queued after the buffer-board
+  methodology PR: (1) the tested unit should measure throughput in a team that covers its own burst
+  stage (a 40s/60s healer no longer holds up its team's rotation), not throughput at its bare natural
+  cadence; (2) the sustain board should load `noop-b1-ar` like its sibling boards, normalizing for the
+  standard 7s team-CDR enabler.
+  **(1) `src/ranks/sustain.ts` `sustainTeam()`** now seats a stage-matched spare behind the tested
+  unit for burst I/II comps (a same-stage profile partner stands in for the spare when one is seated —
+  prika/mint and anchor-innocent-maid/mast-romantic-maid are both same-stage pairs already, so those
+  rows are unaffected by this alone), mirroring `src/ranks/buffer.ts`'s lead-own-stage rule (a tested
+  unit placed behind the no-op of its own stage loses every contest for that stage and stops
+  bursting). B3-tested comps already had this shape (`slug, NOOP_B3`) and are untouched. **Isolated
+  from the control fix**, this reproduces the pre-landing probe exactly: `blanc` +59.9% (the clear
+  buffer-board-pattern case — her 60s B2 no longer gates the team), `tia` −29.9%, `soline-frost-ticket`
+  −16.7%, `prika` (plain row) −13.3%, `noise` −20.0%; `alice-wonderland-bunny`, `anchor-innocent-maid`,
+  `aria`, `bay`, `biscuit`, `delta-ninja-thief`, `flora`, `rapunzel` byte-identical, as the probe found.
+  Most movers are _negative_ — the spare competes for the stage cast and the tested unit bursts less —
+  so this is a real behavior change with mixed direction, not a uniform boost to long-cooldown units.
+  **(2) `scripts/build-sustain.ts`** now loads every `NOOP_CHARACTERS` override in a loop (the same
+  pattern `build-bufferchart.ts` / `build-b1b2dps.ts` use) instead of `noop-b3-mg` alone, so the no-op
+  B1's 7s team burst-cooldown reduction is applied — sustain values HP restored/shielded, not damage,
+  but a faster team rotation still changes burst-timed heal/shield windows.
+  **Combined blast radius** (both changes together, before/after by slug + profile identity, the 46
+  rows the board LISTS — nonzero `totalHp` — out of the 51-slug tag-driven candidate population):
+  17 of 46 byte-identical; largest movers `blanc` +79.3%, `quiry` +33.3%,
+  `snow-crane` +32.5%, `prika` (plain row) +30.7% — her `with-mint` row is unaffected (0.0%; the
+  permanent duet HoT/potency window does not depend on burst cadence); `tia` −28.6%,
+  `soline-frost-ticket` −16.7%, `mint` −5.6% the largest negative movers besides tia/soline.
+  `scripts/tests/ranks/sustain.test.ts`
+  (band-pinned, not exact game-truth) passed unchanged; `scripts/verify.sh` green — sustain is not
+  part of the graded-comp regression snapshot, so this carries no damage-model risk.
+  **Follow-up (same day): the cross-family `/code-review` (kimi-code/k3) on this landing came back
+  CLEAN with two real FOLLOW-UPs, both closed rather than queued.** (a) `sustainTeam()` now throws if
+  a seated profile partner's burst stage differs from the tested unit's, or if a profile ever lists
+  more than one partner — the `partners[0] ?? NOOP_Bn` fallback was previously correct only by
+  coincidence (both `SUSTAIN_PROFILES` entries happen to be same-stage, single-partner). (b)
+  `scripts/tests/ranks/sustain.test.ts` now loads every `NOOP_CHARACTERS` override, mirroring
+  `build-bufferchart.ts`/`build-sustain.ts` (previously it ran with NO no-op overrides at all, so the
+  `noop-b1-ar` CDR path this ruling added had zero test coverage). Loading the CDR override moved
+  `prika`'s plain-row band (51.3M/1709% pinned range <2000% → measured 66999130/2233.2%, matching the
+  combined-blast-radius figure above exactly); rebanded to <3000% rather than re-deriving a tighter
+  number, since the pin exists to catch regressions, not to re-litigate this ruling's own effect.
+
+- **(2026-08-03, latest) EVERY BUFFER-BOARD TEAM FIELDS EXACTLY ONE BURST-COOLDOWN ENABLER, AND THE
+  CONTROL'S REDUCTION FIRES ON `fullBurstEnter`.** Owner ruling: an optimal team always carries one
+  CDR unit and almost never two, so the board should model that case. The tested unit takes the
+  enabler role whenever its kit reduces ALLY cooldowns; the no-op B1 keeps it otherwise. The BASELINE
+  always keeps the control's — the tested unit is not in it, so standing the control down there would
+  field a team with no enabler at all and measure every CDR unit against a rotation nobody runs. A
+  cooldown enabler's number therefore reads as what it adds over the standard 7s enabler it replaces.
+  **Two things this exposed first.** (1) `scripts/build-bufferchart.ts` loaded overrides for roster
+  slugs only, and the synthetic controls are not roster entries, so this board had NEVER applied the
+  7s its own methodology doc described — `src/skills/overrides/noop-b1-ar.json` was simply never read.
+  Two siblings load it (`build-burstgen.ts:48`, `build-b1b2dps.ts:56`), added `c044fcbd` 2026-07-27,
+  the day after this board was written (`91f53ea9`), never backported. **`build-sustain.ts` does NOT
+  and never has** — `git log -S noop-b1-ar -- scripts/build-sustain.ts` returns nothing across all
+  history, and its `:46` loads the B3 control only — while `src/ranks/sustain.ts:111,113` seats
+  `NOOP_B1` in two of its three comp shapes. The sustain board is therefore a SECOND live instance of
+  this defect, not collateral of the fix here: it is why that board is byte-identical to the trigger
+  change below (a control it never loads cannot move), and it is queued for its own owner ruling
+  rather than fixed in passing.
+  `scripts/tests/ranks/buffer.test.ts` had the identical gap, so every ranks test was validating a
+  configuration the board does not run. (2) `suppliesTeamCdr` must walk ARBITRARY nesting: liter,
+  volume, dolla and helm-aquamarine bury their `burstCdr` inside an `escalating` effect's `steps`, so
+  a shallow "block.effects has a burstCdr" scan drops the board's most important enabler. Self-only
+  carriers (mint, prika, tia) do not qualify — the line the burst-CDR board already draws.
+  **THE CONTROL'S TRIGGER MOVED, and that is the load-bearing half.** Its 7s fired on its own
+  `burstCast`, so its contribution depended on WINNING the stage-1 cast — which a tested B1 shares.
+  Measured, isolated: `rapunzel` at her real 60s cooldown took 3 casts, left the control 8, and the
+  team reached **9** Full Bursts; forced to 20s she took 6, left the control 6, and the team reached
+  **8**. A unit bursting more often made its own team slower, inverting what the board measures. The
+  reduction now fires on `fullBurstEnter` from `skill1` — the shape every real enabler uses (liter,
+  sakura, soline-frost-ticket are all `fullBurstEnter` → `allies`) — so the control contributes the
+  same 7s per Full Burst whoever holds the stage. `scripts/probe/buffer-rotation-audit.ts` then
+  reports no unit whose Full Burst count depends on its own cooldown, the property pinned in
+  `scripts/tests/ranks/buffer.test.ts`.
+  **Blast radius, accepted by the owner in advance** (`noop-b1-ar.json` is shared; before/after
+  artifacts diffed on row identity = slug + profile + template): **burstgen** 4 of 244 rows move,
+  largest `rosanna` 3.9% (rank 90→102); **b1b2dps** 12 of 272, largest `red-hood` 11.3% (rank 38→31);
+  **burstcdr** and **sustain** byte-identical — sustain necessarily so, since it never loads the
+  control being changed (see above). Buffer board, cumulative with the standard-team and
+  focus rulings above: `prika` 17.4 → 45.9 (rank 32→14), `anchor-innocent-maid` 8.3 → 29.7,
+  `chime` 126.3 → 142.7, `alice-wonderland-bunny` 0 → 15.5; `anis-star` 59.4 → 25.1 (rank 10→28).
+  Negative rows 5 → 12 — expected under this model, since an enabler weaker than the standard 7s now
+  reads below its baseline, and the leaderboard trims them.
+  **A formation gate makes 12 enablers, not 14 (cross-family review round 4, BLOCKER).** The
+  classifier counted any ally-facing `burstCdr`, ignoring the block's `formation` gate. The engine
+  activates such a block only when `(formation === 'hasB1') === teamHasB1` (`src/engine/sim.ts:737`),
+  and the standard team ALWAYS seats a B1 — so a `noB1` block is permanently inert here.
+  `anis-star` and `rapi-red-hood` carry their ONLY ally-facing reduction behind exactly that gate, so
+  the board stood the control down for them and fielded teams with NO enabler at all, the one thing
+  this ruling forbids. Both now keep the control: `anis-star` 25.1 → 43.0 (rank 29→15),
+  `rapi-red-hood` −2.7 → 0.0. No other unit moves.
+  **Found by the cross-family review (kimi-code/k3, FIX-BEFORE-MERGE), not by me:** the comp-profile
+  path replaced each no-op filler's ENTIRE override with the profile's synthetic kit, which was
+  harmless only while this board loaded no control overrides at all. Once it loaded them, every
+  profiled row lost the team's only enabler — `crown` `with-healer` ran **9** Full Bursts beside its
+  own plain row at **10**, and `naga` `with-shielder` likewise — so the two profiled rows were ranked
+  beside plain rows measured on a faster rotation, and the one-enabler rule this entry states was
+  false for exactly those rows. The loop now MERGES: it keeps the filler's own override (the B1's
+  CDR, the B3's mock burst) and appends the profile's blocks, starting from any `extraOverrides`
+  entry already written so the enabler stand-down is not undone. `crown` `with-healer` 97.7 → 105.2,
+  `naga` `with-shielder` 22.0 → 25.5, both now 10 v 10.
+  **`blanc` re-measured on this methodology.** Her un-exclusion (entry below) shipped from a
+  PRE-standard-team snapshot, so the figures recorded there — +7.88% plain, +20.93% `w/ Rouge` —
+  were taken on a board with no control CDR loaded and no one-enabler rule. That entry stands as
+  written (this log is append-only); on the merged methodology she reads **+9.7% plain** and
+  **+25.2% `w/ Rouge`**, both at Full Burst parity with their baselines. Her duo row was the one
+  place the non-B2-partner shape could have bitten — it does not, because her self-CDR and the
+  control enabler carry the rotation.
+  **A caution for whoever reads a diff next:** two of my own before/after comparisons were wrong
+  before this one was right. Keying rows on `slug + last field` mispaired a unit that has both a
+  plain and a profiled row (it reported `anis-star` +311% on b1b2dps, a phantom), and keying on
+  everything after the value silently DROPPED changed rows as unmatched (it reported burstgen as
+  0-of-244). Row identity is slug + profile (+ template); everything else in the tuple is output.
+
+- **(2026-08-03) THE BUFFER BOARD'S CAMERA FOCUS IS THE SPARE NO-OP B2 (SR), AND A TESTED
+  B3'S BURST IS SUPPRESSED OUTRIGHT.** Focus grants a charge weapon ×2.5 burst gauge, so whoever
+  holds it sets the pace of the team's whole rotation. It sat on the second carry
+  (`carryDpsSum` `focusSlug: team.slugs[team.carryIdxs[1]]`) — whose WEAPON the typed board rewrites
+  per tested unit: `carry-rl` banks the ×2.5 (140 base + 250 full charge) while `carry-sg` cannot
+  take it at all (200, no full-charge bonus), so the team's gauge, and its Full Burst count, moved
+  with the kit under test. **Owner ruling 2026-08-03: focus the no-op B2 (SR) so burst generation is
+  standardized.** It is now the spare stage slot (`assemble` returns `focusSlot`), which is
+  `noop-b2-sr` on every plain row, generic and typed, tested side and baseline alike. On a duo row
+  the partner occupies that slot and holds focus — symmetric, since the duo baseline seats the
+  partner there too, but it is the one row shape where focus is not the standard SR.
+  **Consequence, and the second half of this ruling:** the standardized focus makes the team's
+  rotation faster, and that broke the "a tested B3 never bursts" rule — rightmost placement only wins
+  the stage-3 cast for the carries while either is off cooldown, and they are 40s units, so a fast
+  enough rotation reaches a stage 3 where only the tested unit is ready. `ada` took a cast. The
+  tested B3's burst slot is therefore emptied outright (`burstOffSlug`, applied through the
+  `extraOverrides` channel `carryDpsSum` already uses) rather than left to rotation luck —
+  byte-identical for the 16 B3 buffers that never cast one. **Pinned by injection, not tautology:**
+  giving `ada` a 500% team-ATK burst buff moves her value by exactly 0.000 points.
+  **Residual, disclosed:** a tested B3 can still OCCUPY one stage-3 turn it would not have taken
+  (`burstCasts` is a rotation counter, not an effect counter), displacing one carry burst. Removing
+  that needs a per-unit burst-suppression option in `src/engine/**`, a protected path — not taken
+  without a separate owner call. It costs nothing on the board as it stands: after the one-enabler
+  ruling below changed the rotation, all 17 tested B3 buffers read 0 burst casts, `ada` included.
+  **Measured effect, focus change only** (`npx tsx scripts/build-bufferchart.ts` before/after on the
+  same HEAD): 71 of 83 generic rows move, all modestly — chime +8.4, little-mermaid +7.7 (rank
+  28→23), mint +6.2, crown +5.1, liter +4.2; drops avistar −2.8, ada −1.3 (the suppression),
+  mint `w/ Prika` −1.2. Typed: arcana +9.6, tove +8.4, anis-star −7.8, mint −6.8. Negative rows
+  6 → 2 generic and 4 → 2 typed. No rank upheaval — the largest move is 5 places.
+  **Also landed here:** the long-cooldown pin was rewritten to ISOLATE its variable. It asserted "no
+  unit with a >20s cooldown lands below its baseline Full Burst count", which uses cooldown as a
+  proxy and fails on units this shape never claimed to fix — `rosanna` reads 7 v 8 at 40s and
+  reads 7 v 8, byte-identical, at a forced 20s, so her shortfall is gauge, not rotation. The pin is
+  now: forcing a unit's cooldown to the no-op's 20s must not change its Full Burst count. verify.sh
+  green.
+
+- **(2026-08-03) THE BUFFER BOARD'S STANDARD TEAM CARRIES A SPARE NO-OP OF THE TESTED
+  UNIT'S STAGE, SO A LONG BURST COOLDOWN NO LONGER COSTS THE TEAM FULL BURSTS.** The board was built
+  without the design requirement it was supposed to have: the tested unit displaced the only no-op of
+  its stage, so a 40s Burst-2 landed **5** Full Bursts against the baseline's **9** (3 for the 60s
+  blanc) and was docked for four Full Bursts before a single buff was counted — roughly 8% of team
+  damage. Worse, a >20s Burst-1 was "compensated" by swapping the no-op B2 for a second no-op B1,
+  which left the team with no Burst-2 at all: **0 Full Bursts, both sides, all 180s** for 8 units,
+  killing every Full-Burst-gated line (moran's `fullBurstEnter` trigger among them). Not a
+  regression — `assemble`'s Burst-2 branch was unchanged since the board's first commit
+  (`91f53ea9`); the pairing existed only on the B1/B2 DPS board (`B2_TEAM`, pinned at
+  `scripts/tests/ranks/b1b2dps.test.ts:104`) and was never carried over. **Owner spec 2026-08-03:**
+  the standard team is no-op B1 (20s, 7s CDR) + two no-op B2 (20s) + the two carries (B3/40s, MG and
+  RL), with the tested unit taking the second B2's slot.
+  **Two things the spec's slot numbering does not say, both settled by measurement:**
+  (1) _The tested unit must LEAD its own stage._ Burst-stage contests are won by slot order, so a
+  tested unit left sitting behind the same-stage no-op simply stops bursting — a tested B2 in the
+  literal slot 3 casts **1** burst in 180s instead of 5 (flora 24.05% → 4.51%, crown 71.58% →
+  41.81%) and a tested B1 behind the no-op B1 casts **none** (liter 26.53% → **1.13%**). Owner
+  confirmed the wording was not meant literally for team order. Same five units, spare behind.
+  (2) _The baseline must be STAGE-MATCHED, not one fixed team._ Standing every unit against the plain
+  standard team charges each Burst-1 for trading a no-op B2 away: measured at up to −2 Full Bursts
+  and −34 points (anis-star 59.4 → 25.7), i.e. the same rotation distortion aimed at a different
+  stage. The baseline therefore puts a no-op of the tested unit's own stage back in its slot.
+  **Measured effect** (`npx tsx scripts/probe/buffer-rotation-audit.ts`): 61 of 78 units now match
+  their baseline's Full Burst count exactly, and NO unit with a >20s cooldown lands below it. Board
+  movement, generic: prika 17.4 → 42.4 (rank 32→13), anchor-innocent-maid 8.3 → 26.2 (52→23),
+  mast-romantic-maid 61.0 → 77.3, alice-wonderland-bunny 0 → 13.8, arcana −0.4 → 13.0,
+  delta-ninja-thief 3.1 → 15.5, moran 13.9 → 25.1, flora 14.8 → 24.0 (37→26), liter 26.5 → 35.3,
+  biscuit −7.7 → +1.0. The largest drop is anis-star 59.4 → 30.6: she is an RL whose gauge over the
+  fight is below the AR no-op she now sits beside (7 Full Bursts vs the baseline's 8), which the
+  methodology counts on purpose — rotation value cuts both ways. Negative rows 5 → 6.
+  **Residual, accepted:** units still land above or below their baseline's Full Burst count for
+  their OWN cooldown reduction or gauge (little-mermaid +3, liter/moran +2, anis-star/frima/kurumi
+  −1). That is unit-attributable value and the board should count it; what is gone is the structural
+  toll for merely having a long cooldown. Pinned in `scripts/tests/ranks/buffer.test.ts` (team shape,
+  stage-matched baseline, and "no long-cooldown unit lands below its baseline" over the whole
+  population). verify.sh green.
+
+- **(2026-08-03) BUFFER BOARD: `blanc` UN-EXCLUDED — both her rows ship, and
+  `EXCLUDED_BUFFER_SLUGS` is now EMPTY.** Blanc was the set's sole member, excluded on the stated
+  grounds that her kit's net effect is to REDUCE team damage in the standard comp and so produce a
+  misleadingly negative % increase. **That rationale no longer describes her.** The buffer board's
+  comp reshape — the standard team with a spare no-op per stage (`bede1524`) plus camera focus moved
+  to the spare no-op B2 (`11c047aa`) — removed the rotation distortion the negative reading came
+  from: a tested unit's own burst cooldown no longer costs its team Full Bursts, because the spare
+  no-op covers its stage. Blanc now reads **+7.88% plain (9 Full Bursts v 9 baseline)** and **+20.93%
+  `w/ Rouge` (8 v 8)**, identical on the generic and typed boards (no line of her kit is weapon- or
+  element-typed). **Owner ruling: ship BOTH rows** — the plain row (her same-squad CDR gate shut, 3
+  burst casts in 180 s) and the `w/ Rouge` duo row (gate open via the synthetic no-op Rouge B1, 8
+  casts). **Landed:** `EXCLUDED_BUFFER_SLUGS = new Set<string>()` in `src/ranks/buffer.ts`. The
+  mechanism is deliberately KEPT, not deleted — it is the policy hook for a kit that genuinely reads
+  net-negative after some future comp change, and `scripts/build-bufferchart.ts` still filters through
+  it. The board population grows 84 → 85 units, 89 → 91 generic rows. **Evidence / how to re-check:**
+  `npx tsx scripts/probe/buffer-rotation-audit.ts --excluded` (committed; prints each entry's live
+  value against the criterion, and now reports the empty set); `scripts/tests/ranks/buffer.test.ts`
+  already pinned both Blanc rows through `bufferValueFor`/`rankBuffers` directly, so they were
+  computed and asserted the whole time the population filter was hiding them — those pins pass
+  unchanged. **Tier:** owner ruling + deterministic sim measurement, no game footage involved (a
+  board-population policy, not a damage-model value).
+
+- **(2026-08-03) The B1/B2 DPS board's core exposure stays a TWO-WAY switch — no Core 50 row.** The
+  Burst-3 DPS chart carries three exposures (No Core / Core 50 / Core 100, `CORES[].exposure`,
+  `src/dpschart/matrix.ts:510`); the B1/B2 board resolves its core axis as Core 100 or nothing
+  (`coreStr === 'c100' ? 1 : 0`, `src/ranks/b1b2dps.ts:291`), so a chart Core 50 cell has no
+  counterpart to be read against. Adding one is cheap — a ternary plus a cell id — and was
+  considered for symmetry. **Owner ruling: not wanted; the two-way switch is deliberate.** The
+  asymmetry is documented as a fact of the board in `docs/data/rank-boards.md` ("What the B1/B2
+  board and the B3 DPS chart do and don't share") rather than treated as a gap. The related and
+  larger question — an investment axis on the B1/B2 board — stays declined for the same reason: the
+  board is Scope-Lock-only by design, and the comparability rule that follows from it (a B1/B2
+  number is comparable only to a DPS-chart Scope Lock cell) is documented instead of engineered away.
+
+- **(2026-08-03) `flora`'s SKILL 2 IS NOT HP-GATED-DEAD — IT SELF-PROCS OFF HER OWN SKILL 1,
+  EVERY BURST ROTATION.** The shipped model carried `"skill2": []` and called all three S2 lines
+  out-of-domain ("gated on an HP threshold the sim cannot represent … never fires", ⚑ engine-core,
+  filed beside liter's cover-HP NO-OP). That premise is WRONG, and the mechanism is entirely inside
+  Flora's own kit — no HP pool, no boss damage and no second healer are involved:
+  1. On **entering Burst Stage 2**, S1 grants Peace-of-Mind allies `Max HP ▲ 15.01% of the skill
+user's max HP (WITHOUT restoring HP) for 2 sec`. Current HP does not rise with max HP, so each
+     affected ally's HP **fraction** drops that instant to 1/1.1501 = **86.95%**.
+  2. That clears S2-1's "when the HP of an adjacent ally drops to **90% or below**" by ~3 percentage
+     points ⇒ the 10.22%-max-HP shield lands **at Burst Stage 2 entry**.
+  3. The shield landing on Flora satisfies S2-3's "when a shield is placed in front of this unit" ⇒
+     ATK ▲45.12% of the skill user's ATK, **same frame**.
+  4. **2 sec later** the Max HP grant expires, the allies' max HP returns to normal and they are
+     therefore at max HP ⇒ S2-2's "when either adjacent ally reaches max HP" ⇒ True Damage ▲30.97%,
+     at **entry + 2 s**.
+     **Ruling: `stageEnter{stage:2}` is a DERIVED-DETERMINISTIC PROXY for the HP-threshold clause**, not
+     a re-keying to a different kit line. The HP transition it stands in for is _caused by Flora's own
+     S1 on exactly that frame_, in every team, every rotation — the trigger is deterministic in the
+     sim's own domain even though the clause is written in HP. It is a FLOOR on the real line's uptime,
+     not a ceiling: a boss that actually damages allies would re-open "HP ≤ 90%" between rotations, and
+     that additional firing is still unmodeled.
+     **Target clauses are NOT uniform across the slot** and were checked line by line against
+     `data/characters.json`: S2-1 and S2-2 say "all allies"; S2-3 says "all allies **in the Peace of
+     Mind state**" = S1's `selfAndAdjacent` set, so it does not reach the whole team.
+     **This forced a new engine primitive**, `Block.delaySec` — step 4 needs the effects of a block to
+     land a fixed time after its trigger, and the only delay in the schema was `flatDamage.delaySec`
+     (flight time on ONE damage effect). The offset is load-bearing, not cosmetic: Full Burst opens
+     ~0.87 s after Burst Stage 2 entry (30f B2→B3 + 22f B3→FB), so a 10-sec buff starting at +0 s vs
+     +2 s covers a materially different slice of the Full Burst window. Contract: gates and the `everyN`
+     counter evaluate at TRIGGER time, targets and values resolve at LANDING, absent/0 is a strict
+     no-op. Pinned by `scripts/tests/engine/block-delay.test.ts` (6 assertions, all bite-verified
+     against two deliberate engine breaks).
+     **Evidence tier: KIT-TEXT (blablalink prose SSOT) + owner ruling**, no measurement claimed. The
+     datamined `role.skillDetails` tables corroborate 90% / 10.22 / 30.97 / 10.45 / 42.39, but are a
+     PARTIAL capture for this unit — they omit S1's Burst-Stage-2 Max HP line, S2's shield→ATK line and
+     the burst's ATK ▲85.86% line outright, and give the S2 True Damage duration as **5 sec** where the
+     prose says 10 sec (open-questions U37).
+     **Board/regression impact: ZERO.** `flora` appears in no graded comp and no snapshot entry, so
+     `scripts/regression.ts` is stable on every entry (no measured-truth full-burst-count assert moved)
+     and `scripts/board-read.ts` is byte-identical before/after — median 0.93–0.99 across 45 units, 142
+     datapoints, unchanged. The change is a faithfulness landing with no fit evidence behind it; her
+     real contribution is now materially larger in-sim and that is unvalidated against footage.
+     Pinned by `scripts/tests/units/flora.test.ts` F5–F8 (every assertion bite-verified).
+
+- **(2026-08-03) OVERLOAD LINES: ONE BASIS EVERYWHERE — EXHAUSTIVE RANKING AT T11. Greedy
+  search and the max-roll basis are both DELETED.** Three separate searches used to pick a unit's
+  four free overload lines (the lines beyond the 4× Elemental DMG + 4× ATK floor), on two different
+  tiers, and they disagreed with each other on 28 of 73 units. Owner ruling: exhaustive, at T11, for
+  everything.
+  **The two defects, both measured** (`npx tsx scripts/ol-search-compare.ts`, committed):
+  1. **TIER** — `scripts/build-ol-optimal.ts` optimized at MAX ROLL while every consumer applies the
+     picks at T11, and `src/dpschart/matrix.ts` stamped no `value` at all, so the chart applied max
+     roll too. Not cosmetic: several candidates are THRESHOLD stats whose winner moves with the tier.
+  2. **SEARCH** — the greedy marginal-gain optimizer (`src/bestol.ts`) adds one best line at a time,
+     so it cannot see a stat whose FIRST line is worthless and whose third or fourth wins outright.
+     Charge Speed buys nothing until it crosses a frame boundary; Hit Rate's core-rate curve is
+     convex. At T11 it left a mean 1.35% / median 0.00% / **max 31.19%** of achievable gain unclaimed
+     across 73 units. `asuka-wille` is the clean case: one Max Ammo line gains 1.41% and LOSES step 1
+     to Crit Rate's 1.72%, so greedy took 2× Crit DMG + 2× Crit Rate (8.66%) over the exhaustive
+     winner 3× Max Ammo + 1× Crit Rate (57.91%) — row 7 of its own ranking. No threshold tweak
+     reaches this; the failure is structural. (The 1.41% is greedy's own first-step figure, taken
+     against the MAX-ROLL floor it searched on. Re-measured on the landed T11 basis the same line
+     reads **1.29%**, which is what `ol-search-compare.ts --only asuka-wille` reproduces today —
+     the ordering, and so the conclusion, is identical.)
+     **Landed:** `src/bestol.ts` DELETED (greedy) and `src/olcalc.ts` DELETED (a third greedy searcher,
+     unimported anywhere, still carrying the all-weapons Hit Rate exclusion `src/olconfigs.ts` fixed on
+     2026-08-02 — a known-wrong model parked beside its replacement). `src/dpschart/matrix.ts` gains
+     `OL_TIER = 11` + `atOlTier()`, the single knob every invested tier now stamps; `run.ts`,
+     `build-ol-optimal.ts`, `build-unit-pages.ts` and `src/cli.ts --best-ol` all call
+     `rankFreeLineConfigs`. Exhaustive is also CHEAPER: 15 sims per unit (MG/Pistol), 35 (AR/SMG/SG) or
+     70 (RL/SR) against greedy's
+     ~28, because the pool is only 3 candidate types.
+     **Result:** `data/ol-optimal.json` regenerated — 28/73 picks changed, and the artifact is now
+     optimal on **73/73** units (mean gap 0.00%, max 0.00%, against greedy's mean 1.35% / max 31.19%).
+     It is the same computation `build-unit-pages.ts` runs, so the two artifacts can no longer disagree.
+     **Accepted consequence — the DPS chart's invested tiers move, and substantially.** Applying T11
+     instead of max roll makes every invested cell weaker: per-unit DPS mean **−8.85%** at 8/12 (range
+     −15.81% … −1.71%) and **−11.41%** at 12/12 (−27.11% … **+20.39%**, the positives being units the
+     exhaustive search fixes), with **1108 of 1830** rank positions moving at 12/12 and 514 at 8/12.
+     The 8/12 tier has no optimizer, so its shift is the tier change alone — a clean decomposition of
+     the two effects. This is a basis change, not an accuracy fix: the chart previously claimed max-roll
+     numbers and now claims T11 numbers. Revert is one line (`OL_TIER = 15`) if the chart is ever meant
+     to be aspirational-max.
+     **NOT touched:** the `scope` investment tier carries no overload lines at all, so the scope-lock
+     validation basis is **byte-identical** (measured: 0.00% delta across all 30 scope cells, 0/1830
+     rank positions moved) and the regression gate — both cells `invest: 'scope'` — is unaffected.
+     `data/unit-pages.json` is likewise unchanged: its Solo cell's controls are the synthetic no-ops,
+     whose lines cannot reach the carry. verify.sh green, 2805 tests passing.
+
+- **(2026-08-02) THE SYNTHETIC NO-OP CONTROLS USE LOW BASE ATK (100), AND IT IS THE SHARED
   DEFAULT.** The controls in `src/dpschart/noop.ts` carried base ATK 30,000 while real units sit near
   400–500, so a control ALWAYS won an `alliesTopAtk` selector: a king-maker buff on the unit under
   test was spent on scaffolding that deals no damage and is never ranked. The B1/B2 DPS board had
@@ -78,10 +563,11 @@ lives. Newest first within each section.
   profile DEFINITION changes from the synthetic `w/ Bunny` B2 to `w/ Rouge` (`noop-rouge-b1`) — the
   old synthetic Bunny partner existed to hold the gate open under the same misread; the partner is
   now a presence-only no-op Rouge B1 (zeroed kit, rouge's cadence) whose curated squad membership
-  opens the gate faithfully. Blanc remains in `EXCLUDED_BUFFER_SLUGS` in
+  opens the gate faithfully. ~~Blanc remains in `EXCLUDED_BUFFER_SLUGS` in
   `src/ranks/buffer.ts`, so neither the plain row nor the `w/ Rouge` profile is emitted to the
   published buffer board; they are exercised only by `scripts/tests/ranks/buffer.test.ts` and the
-  Blanc unit tests. `scripts/tests/ranks/buffer.test.ts`'s pin (profiled casts/value > plain) holds
+  Blanc unit tests.~~ **SUPERSEDED (2026-08-03) — disregard this sentence; see the buffer-population
+  entry below. Both Blanc rows now ship.** `scripts/tests/ranks/buffer.test.ts`'s pin (profiled casts/value > plain) holds
   unchanged. **Evidence:** `scripts/tests/units/blanc.test.ts` B3 group (gate inert in the liter
   comp == CDR-removed schedule; active ≥5 casts with rouge; the ungated counterfactual over-fires —
   discriminates both nearest-wrongs); noir's N5 gate test passes unchanged;
@@ -1752,6 +2238,21 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 ## Engine/data-architecture decisions
 
+- **(2026-08-03) `noop-rouge-b1` STAYS IN `src/data/squads.ts` — OPTION C, OWNER-CONFIRMED.** Closes
+  the `docs/handoffs/closed/2026-08-03-b1b2-comparability-and-squad-layering.md` open call: the
+  ranks-layer synthetic (a presence-only no-op Rouge B1 that satisfies `blanc`'s same-squad burst-CDR
+  gate for the buffer board's `w/ Rouge` duo profile) stays put rather than moving behind a
+  registration mechanism. Option A (`registerSquad()` called from the ranks layer at module load) was
+  already ruled out as a trap in that handoff — it makes the engine's `sameSquad` gate depend on
+  import order, and the failure mode is untestable in principle (any test importing `buffer.ts` to
+  check the registration also fires the very side effect it would need to catch absent). Option B
+  (carry squad membership on the prepared unit instead of a global lookup) is the one that actually
+  fixes the layering, but touches `sim.ts`'s block filter, a protected path — not built without a
+  separate go-ahead. Cost of C is conceptual purity only: one synthetic in a curated GAME-TRUTH map,
+  already carrying an explanatory comment (`src/data/squads.ts:23-26`), documented again in
+  `noir.json`'s prose. Not revisited unless a second synthetic-partner pattern makes the layering
+  concern compound.
+
 - **(2026-08-03) A TREASURE UNIT'S `releaseDate` IS ITS TREASURE'S RELEASE DATE — and the "sugar
   data bug" was never a bug, it was the column silently disagreeing with itself.** `releaseDate`
   is display-only (the unit card's "Released &lt;date&gt;" line; the engine never reads it) and
@@ -3215,3 +3716,30 @@ skills/overrides/cinderella-crystal-wave.json` also carries a `fillGauge` block 
   worktrees that have neither a browser nor the art CDN, and the deploy now self-heals anyway. —
   `scripts/lib/portrait-thumbs.ts`, `scripts/build-infographics.ts` `fillMissingPortraits`,
   `scripts/tests/share/portrait-thumbs.test.ts`
+
+- **(2026-08-03) The `/mechanics` + `/howto` prerender pass is DELETED; both routes serve their prose
+  by request-time injection.** `scripts/prerender.ts` booted the server, rendered the two content
+  routes in Playwright and saved the DOM to `dist/<route>/index.html` — wired into `npm run
+build:deploy` **only**. But `railway.json`'s `buildCommand` is `bash scripts/verify.sh artifacts`,
+  a tier that never calls `build:deploy`, so the step **never executed on the deploy box** and both
+  routes shipped an empty `<div id="root"></div>` to every crawler that does not run JS — precisely
+  the population (GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, PerplexityBot, all allowlisted in
+  `web/public/robots.txt`) the pass existed to serve. Confirmed two independent ways: reading the
+  build config, and fetching production, where `/mechanics` and `/howto` returned **1 character** of
+  body text while `/unit/rapi` and `/characters` — which already used request-time injection —
+  returned full bodies, proving the deploy current and this step alone inert. The old
+  `web-smoke.mjs` check could not have caught it: `assertPrerendered()` **skipped** when the file was
+  missing, and it was always missing in that build — a green check asserting nothing. Ruling: delete
+  the pass and extend the injection functions instead, which is what the same-day `/unit/*`
+  prerender rejection already settled ("extend those functions — do not add a prerender pass"), and
+  which matches the portrait-gate entry above in avoiding any dependency on browser binaries being
+  present on the deploy box. `scripts/build-content-pages.ts` renders
+  `web/public/content-pages.json` from the SAME modules `MechanicsPage.tsx` / `HowToPage.tsx`
+  import, so the crawler-visible copy cannot drift from the rendered page (the guarantee
+  `data/unit-pages.json` gives the unit pages); both servers inject it into `#root`; the generator
+  runs in verify.sh's **`artifacts`** tier — the tier the deploy actually runs. Measured on the
+  production bundle: `/mechanics` 1 → **5,030**, `/howto` 1 → **10,128** characters of
+  crawler-visible body text. Pinned by `content-pages-drift.test.ts` (byte-for-byte vs the
+  generator) plus served-byte assertions in **both** serve suites — `serve-headers` (serve.mjs) and
+  `serve-api` (the `static.ts` port production runs); none of them can skip. — `scripts/build-content-pages.ts`,
+  `src/server/static.ts`, `scripts/serve.mjs`, `scripts/verify.sh`

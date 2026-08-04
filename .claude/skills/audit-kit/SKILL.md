@@ -1,6 +1,6 @@
 ---
 name: audit-kit
-description: Deep, two-way faithfulness audit of ONE unit's kit implementation. Triangulates a SIGHTED full-context review (what the override intends + documents), a BLIND Opus code-only rebuild (what the engine actually does), and a three-way reconciling judge (both vs the real kit text + the damage-formula SSOT). Use to answer "does the sim faithfully represent this unit's kit, and where does it silently diverge?" — before enacting an override/engine change, when a unit's board reading is unexplained, or to industrialize kit-faithfulness review across the roster. Findings-only; nothing here edits the tree.
+description: Deep, two-way faithfulness audit of ONE unit's kit implementation. Triangulates a SIGHTED full-context review (what the override intends + documents), a BLIND Opus code-only rebuild (what the engine actually does), and a three-way reconciling judge (both vs the real kit text + the damage-formula SSOT). Use to answer "does the sim faithfully represent this unit's kit, and where does it silently diverge?" — before enacting an override/engine change, when a unit's board reading is unexplained, or to industrialize kit-faithfulness review across the roster. Post-validation sampling layer over units that already carry spec tests (and triage for units that don't) — the primary path for per-unit kit work is /kit-tdd. Findings-only; nothing here edits the tree.
 ---
 
 # audit-kit — three-way kit faithfulness audit

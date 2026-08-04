@@ -128,9 +128,7 @@
       "Equally shares damage taken for 10 sec.",
       "Continuously recovers 5% of the skill user's final Max HP every 1 sec for 5 sec. (Police Badge end trigger — no status-end primitive; self-only, offensively inert)"
     ],
-    "burst": [
-      "Gains Indomitability for 5 sec. Removes Police Badge."
-    ]
+    "burst": ["Gains Indomitability for 5 sec. Removes Police Badge."]
   },
   "notes": "Three reconciliation points. (1) FIXTURE HAZARD — poli is Burst II, and controlComp fixes crown into the B2 slot: poli and crown COMPETE for the B2 cast under first-ready in-window selection (poli cd 40s vs crown's shorter cd). Any burst-line test must first assert poli actually emits burstCast events in the fixture before asserting the 44.55% buff; a silent zero-cast fixture makes every burst assertion vacuously green. If the driver's tests assert burst effects without confirming poli's burstCast count > 0, that is a defect. (2) Expected shared-prior misreads: (a) keying the burst team ATK to fullBurstEnter — with a second B2 in the fixture this OVER-credits on crown-cast rotations, and it is exactly the trap the taxonomy's burst-cast-vs-full-burst-enter item describes; (b) letting the 'when in Police Badge status' gate bleed onto the whole burst (it binds only the Indomitability block); (c) hitCount counting SG PELLETS (hitsPerShot 10) instead of trigger pulls for the 5-normal-attacks S1 — note both readings saturate the 10s duration so TOTAL damage barely moves; only a buffApply-cadence assertion distinguishes them. (3) TANDEM LANDMINE with the fixed fixture: crown carries an on-recovery trigger, so poli's badge-end self-heal MUST be self-scoped (or absent) — an ally-scoped heal encoding feeds crown's recovery-gated buffs and silently moves team damage; a withPatchedOverride delete-the-heal A/B pinning crown's buff economy is the cheapest guard. All magnitudes (5.46 / 100 / 23.51 / 5%/s / 40 / 44.55) are literal kit text → DATAMINED; the only ⚑ is the interval first-fire phase (t=20 vs t=0) on skill2, per the stated convention.",
   "model": "claude-fable-5"

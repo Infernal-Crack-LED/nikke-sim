@@ -101,9 +101,21 @@ describe('burst-gen board', () => {
   });
 
   it('no-op control overrides are loaded so framework effects apply (B1 CDR, B3 mock burst)', () => {
-    expect(
-      ctx.deps.overrides['noop-b1-ar']?.burst?.[0]?.effects?.[0]?.kind
-    ).toBe('burstCdr');
+    // The B1 control's 7s team CDR fires on fullBurstEnter, NOT on its own
+    // burst cast: a cast trigger made its contribution depend on winning the
+    // stage-1 cast, so a tested B1 sharing that stage suppressed the CDR it was
+    // being measured against (rapunzel, 60s: 3 casts / control 8 / 9 Full
+    // Bursts; forced to 20s: 6 / 6 / 8). Asserted by SHAPE, not by slot, so
+    // relocating it does not fail a test that never cared where it lived.
+    const b1 = ctx.deps.overrides['noop-b1-ar'];
+    const cdrBlock = [
+      ...(b1?.skill1 ?? []),
+      ...(b1?.skill2 ?? []),
+      ...(b1?.burst ?? []),
+    ].find((b) => b.effects?.some((e) => e.kind === 'burstCdr'));
+    expect(cdrBlock).toBeDefined();
+    expect(cdrBlock?.target?.kind).toBe('allies');
+    expect(cdrBlock?.trigger?.kind).not.toBe('burstCast');
     expect(
       ctx.deps.overrides['noop-b3-mg']?.burst?.[0]?.effects?.[0]?.kind
     ).toBe('buff');

@@ -91,12 +91,16 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- readers ----------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const shots = (evs: SimEvent[], slug: string) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === slug);
 const admiCasts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'admi');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'admi'
+  );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e): e is FbStart => e.kind === 'fullBurstStart');
 /** admi's burst-buff applications, by stat. */
@@ -137,7 +141,9 @@ const admiNoCritBuff = withPatchedOverride('admi', (ov) => {
     (e: any) => e.stat !== 'critDamagePct'
   );
   if (ov.burst[0].effects.length !== before - 1) {
-    throw new Error('admi burst critDamagePct effect missing — fixture is stale');
+    throw new Error(
+      'admi burst critDamagePct effect missing — fixture is stale'
+    );
   }
 });
 /** B1 isolation: ONLY the reloadSpeed line removed (crit KEPT). */
@@ -147,7 +153,9 @@ const admiNoReloadBuff = withPatchedOverride('admi', (ov) => {
     (e: any) => e.stat !== 'reloadSpeedPct'
   );
   if (ov.burst[0].effects.length !== before - 1) {
-    throw new Error('admi burst reloadSpeedPct effect missing — fixture is stale');
+    throw new Error(
+      'admi burst reloadSpeedPct effect missing — fixture is stale'
+    );
   }
 });
 /** Whole-burst isolation: both lines removed. */
@@ -256,7 +264,10 @@ describe('admi — kit spec', () => {
       const fbFrames = new Set(fbStarts(fbEnter.events).map((f) => f.frame));
       const castSet = new Set(castFrames(fbEnter.events));
       for (const b of moved) {
-        expect(fbFrames.has(b.frame), `application at ${b.frame} on an FB start`).toBe(true);
+        expect(
+          fbFrames.has(b.frame),
+          `application at ${b.frame} on an FB start`
+        ).toBe(true);
         expect(castSet.has(b.frame)).toBe(false);
       }
     });
@@ -303,7 +314,10 @@ describe('admi — kit spec', () => {
           ).toBeCloseTo(b[i].critRate * 0.2834, 6);
         } else {
           outN++;
-          expect(b[i].mult.major - c[i].mult.major, `out-of-window hit ${i}`).toBeCloseTo(0, 8);
+          expect(
+            b[i].mult.major - c[i].mult.major,
+            `out-of-window hit ${i}`
+          ).toBeCloseTo(0, 8);
         }
       }
       expect(inN, 'window coverage exists').toBeGreaterThan(0);
@@ -354,7 +368,10 @@ describe('admi — kit spec', () => {
       for (const s of SLUGS) {
         phantomGain += phantomS2.totals[s] - base.totals[s];
       }
-      expect(phantomGain, 'the direction trap inflates team damage').toBeGreaterThan(0);
+      expect(
+        phantomGain,
+        'the direction trap inflates team damage'
+      ).toBeGreaterThan(0);
     });
   });
 });

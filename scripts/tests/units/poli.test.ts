@@ -89,7 +89,9 @@ const buffs = (evs: SimEvent[]) =>
 const poliShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'poli');
 const poliCasts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'poli');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'poli'
+  );
 const stage3Casts = (evs: SimEvent[]) =>
   evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.stage === 3);
 
@@ -193,7 +195,9 @@ const poliNoSharedShield = withProbe(
       (b: any) => !b.effects.some((e: any) => e.kind === 'shield')
     );
     if (ov.burst.length !== before - 1) {
-      throw new Error('poli burst shared-shield block missing — fixture is stale');
+      throw new Error(
+        'poli burst shared-shield block missing — fixture is stale'
+      );
     }
   })
 );
@@ -204,7 +208,9 @@ const poliSharedShieldExcludeSelf = withProbe(
       x.effects.some((e: any) => e.kind === 'shield')
     );
     if (!b || b.target?.kind !== 'allies') {
-      throw new Error('poli burst shared-shield block missing — fixture is stale');
+      throw new Error(
+        'poli burst shared-shield block missing — fixture is stale'
+      );
     }
     b.target = { kind: 'allies', excludeSelf: true };
   })
@@ -278,8 +284,7 @@ describe('poli (Treasure) — kit spec', () => {
       const groups = new Map<number, Set<string>>();
       for (const b of applies) {
         (
-          groups.get(b.frame) ??
-          groups.set(b.frame, new Set()).get(b.frame)!
+          groups.get(b.frame) ?? groups.set(b.frame, new Set()).get(b.frame)!
         ).add(b.targetSlug!);
       }
       for (const [frame, holders] of groups) {
@@ -322,7 +327,10 @@ describe('poli (Treasure) — kit spec', () => {
     it('shields poli exactly once, at frame 0 (battle start)', () => {
       const probes = probesOf(probedBase.events, 'poli');
       const atZero = probes.filter((b) => b.frame === 0);
-      expect(atZero.length, 'badge fires the shielded trigger at battle start').toBe(1);
+      expect(
+        atZero.length,
+        'badge fires the shielded trigger at battle start'
+      ).toBe(1);
     });
 
     it('is the ONLY frame-0 shield: badge removed silences the frame-0 probe', () => {
@@ -336,11 +344,13 @@ describe('poli (Treasure) — kit spec', () => {
     });
 
     it('is damage-NEUTRAL (a shield, not a damage buff): removing it moves no total', () => {
-      const noBadge = run({ poli: withPatchedOverride('poli', (ov) => {
-        ov.skill1 = ov.skill1.filter(
-          (b: any) => !b.effects.some((e: any) => e.kind === 'shield')
-        );
-      }) });
+      const noBadge = run({
+        poli: withPatchedOverride('poli', (ov) => {
+          ov.skill1 = ov.skill1.filter(
+            (b: any) => !b.effects.some((e: any) => e.kind === 'shield')
+          );
+        }),
+      });
       expect(noBadge.totals).toEqual(base.totals);
     });
   });
@@ -357,25 +367,23 @@ describe('poli (Treasure) — kit spec', () => {
       for (let i = 1; i < frames.length; i++) {
         expect(frames[i] - frames[i - 1], '20s cadence').toBe(20 * FPS);
       }
-      expect([...new Set(applies.map((b) => b.expiresFrame! - b.frame))]).toEqual(
-        [10 * FPS]
-      );
+      expect([
+        ...new Set(applies.map((b) => b.expiresFrame! - b.frame)),
+      ]).toEqual([10 * FPS]);
     });
 
     it('targets poli + the deterministic 2-lowest-HP stand-in (leftmost non-self), 3 holders per firing', () => {
       const groups = new Map<number, Set<string>>();
       for (const b of applies) {
         (
-          groups.get(b.frame) ??
-          groups.set(b.frame, new Set()).get(b.frame)!
+          groups.get(b.frame) ?? groups.set(b.frame, new Set()).get(b.frame)!
         ).add(b.targetSlug!);
       }
       expect(groups.size).toBeGreaterThanOrEqual(8);
       for (const [frame, holders] of groups) {
-        expect(
-          holders,
-          `frame ${frame}: self + 2 allies, never all 4`
-        ).toEqual(new Set(['poli', 'liter', 'modernia']));
+        expect(holders, `frame ${frame}: self + 2 allies, never all 4`).toEqual(
+          new Set(['poli', 'liter', 'modernia'])
+        );
       }
     });
 
@@ -384,8 +392,7 @@ describe('poli (Treasure) — kit spec', () => {
       const groups = new Map<number, Set<string>>();
       for (const b of wrong) {
         (
-          groups.get(b.frame) ??
-          groups.set(b.frame, new Set()).get(b.frame)!
+          groups.get(b.frame) ?? groups.set(b.frame, new Set()).get(b.frame)!
         ).add(b.targetSlug!);
       }
       for (const holders of groups.values()) {

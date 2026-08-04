@@ -10,7 +10,9 @@
 > items below carry ONLY genuinely-open action items as short pointers into their handoff/plan docs
 > — no landed-work narration (landed state → `docs/STATE.md`; settled WHY → `docs/DECISIONS.md`).
 > When an item lands, DELETE it here (keep only its open follow-up clause); a done handoff →
-> `CLOSED (date)` marker + `mv` into `docs/handoffs/closed/`; a fully-landed top-level `docs/*.md`
+> `CLOSED (date)` marker + **`git rm --cached` then a plain `mv`** into `docs/handoffs/closed/`
+> (archiving UNTRACKS — the archives are gitignored; procedure and its failure modes in
+> `docs/CONVENTIONS.md` → Doc hygiene); a fully-landed top-level `docs/*.md`
 > (never a living log) → same into `docs/closed/`; a resolved question → close it in
 > `docs/open-questions.md` (single U-numbering — move it to `docs/answered-questions.md` with the
 > answer inline, no new A-number).
@@ -58,23 +60,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Code / tooling (unblocked, no footage or owner ruling needed)
 
-- **⇒ OL TOOLING — two remaining basis gaps, findings-only (Hit Rate half RESOLVED
-  2026-08-02).** The exhaustive free-line table now agrees with `data/ol-optimal.json`'s
-  greedy pick on 32/73 units (was 20). The Hit Rate cause is closed: owner ruled Hit Rate
-  counts for AR/SMG/SG and not RL/SR/MG, `src/olconfigs.ts`'s pool was updated to match the
-  engine's own `HR_CORE_CIRCLE` set, and `scripts/tests/engine/ol-hitrate-pool.test.ts` pins
-  the pool against measured engine behaviour. Still open, one batched decision:
-  1. **Tier basis (23 units)** — `build-ol-optimal` passes no tier values so it optimizes at
-     MAX ROLL, but the web applies its picks at T11. Pick one basis.
-  2. **Greedy local optima (18 units)** — `bestOl` finds a worse combo than the exhaustive
-     search at the same tier and pool. Decide whether `ol-optimal.json` should just use the
-     exhaustive ranking for the weapon-aware pool.
-
-- **⇒ B1/B2 DPS rank-board follow-up (1 of 3 left):** reconcile / document cross-board comparability
-  against the B3 DPS chart Solo cells (`bossDef`, `rangeBonus`, `durationSec`). Context:
-  `docs/handoffs/closed/2026-07-26-dps-ranks-b1b2.md`. (The "Core 100" half is settled — owner ruling
-  2026-08-02: the axis is core EXPOSURE, not hit rate; landed in `src/ranks/b1b2-cells.ts`,
-  `SimConfig.coreHitRate`, `CORES[].exposure` and `docs/data/rank-boards.md`.)
 - **⇒ Unit-card infographic follow-ups (3, code-verified still open 2026-08-02):**
   1. **No vector source for burst icons.** `web/public/nikke-icons/burst_*` is webp-only (~100px native)
      — fine at every size drawn today, but a surface wanting it large has nothing to rasterize from.
@@ -86,16 +71,19 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   3. **The browser icon loader still probes extensions and eats 404s** — `web/src/unitCardShare.ts:58`
      `ICON_EXT = ['svg','png','webp']` per icon via onload/onerror. The icon set is static and tracked,
      so the extension is knowable at build time; carry it in the `iconNames` mapping (`{ name, ext }`).
-- **⇒ Squad-primitive review follow-ups** (claude-fable-5 code-review NOTEs, 2026-08-02, verdict CLEAN;
-  the scratchpad gate packet is gone — findings restated here in full):
-  1. `scripts/validate-overrides.ts` should allowlist the keys INSIDE `teamHas`
-     (element/class/weapon/burst/slugs/sameSquad). A typo'd facet key (e.g. `samesquad`) is silently
-     ignored by engine + validator today, leaving the block always-active — one typo from the
-     dead-authoring failure the `sameSquad` guard (`:290`) prevents. Pre-existing gap for all facets.
-  2. Type `sameSquad?: true` instead of `?: boolean` in `src/skills/types.ts:365`, so the compiler
-     enforces the validator's literal-true contract.
-  3. Optional layering cleanup — keep `src/data/squads.ts` pure game truth and register the
-     `noop-rouge-b1` synthetic (`src/data/squads.ts:26`) from the ranks layer instead.
+- **⇒ `scripts/tests/fixtures/unit-card-sources.json` is BADLY STALE — owner call, findings-only
+  (2026-08-03).** It is a deliberately FROZEN join input, so the crown-card golden stays a pure
+  function of the renderer rather than of board data — that design is sound and is not the issue.
+  The issue is how far it has drifted: frozen 2026-08-02 at 76 rows / 71 units against a live 91 / 85,
+  with **64 generic and 70 typed shared rows differing in value**, some hugely (`anis-star` generic
+  59.4 → 33.4 and typed 99.7 → 61.4; `arcana` typed 93.9 → 169.1; `mast-romantic-maid` 61 → 77.2).
+  All of that is already on `main` and invisible to the golden. Nothing is broken and the gate is
+  green, so this is not urgent — but a refresh wants its own deliberate pass (new golden PNGs, reviewed
+  for renderer-visible change) rather than riding along with an unrelated board edit, which is exactly
+  the "data churn wearing renderer drift's clothes" the fixture's own header warns about.
+  ⚠ Two traps when measuring the drift: the live artifact is gitignored, so compare only after
+  `npm run ranks:buffer`; and its cells are TUPLES (`[slug, value, tags, profile]`), not objects — read
+  them as `c.slug` / `c.value` and every comparison silently comes back "0 differing".
 - **⇒ Pellet-reader: cherry-pick the `+62.5` crosshair-offset fix (`b69b5c6`)** — verified NOT an
   ancestor of `main`; `scripts/probe/read-pellets.ts:66` still defaults `-62.5`, latent, and poisons the
   next run. (It did **not** cause the 2026-07-29 REJECT: artifacts 12:19–13:33, commit 15:17.)
@@ -121,8 +109,23 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **⇒ ENGINE REGRESSION FULL-BURST COUNT FAILURES — four comps disabled in `scripts/regression.ts`**
   (`:106`, `:131`, `:158`, `:236`): `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`,
   `N3 scarlet/liberalio iron` each read 1–3 Full Bursts short of their video-measured counts on clean
-  `HEAD`, skipped via the `disabled` flag so `verify.sh` stays green. Same family as **U29**/**U31**;
-  re-enable once the shortfall is fixed.
+  `HEAD`, skipped via the `disabled` flag so `verify.sh` stays green.
+  **2026-08-03 /scientific-method pass (LOG, 2-of-2 ACCEPT both MEDIUM — full account:
+  `docs/handoffs/scientific-method-harness.md`): NOT the same family as U29/U31 (that framing was an
+  editing artifact, refuted at the premise gate) — root cause is `liberalio`'s 2026-07-26 gauge-datamine
+  fix (`c12fcf4e`, a legitimate correction) unmasking a pre-existing, GENERAL, board-wide charge-B3
+  gauge-fill-tempo gap — not liberalio-specific.** A pre-registered non-liberalio baseline
+  (`N6 mihara/maiden wind`, currently passing) shows the SAME-OR-LARGER gauge-fill excess per cycle as
+  these 4 comps, invisible there only because its own measured target has slack these 4 don't. Per
+  CLAUDE.md's blast-radius rule this is NOT a narrow per-comp fix — needs its own dedicated
+  `/scientific-method` pass scoped to the general charge-B3 gauge-generation rate (committed instrument:
+  `decomposeCycles()`/`DECOMP=1` in `scripts/experiment.ts`, pinned by
+  `scripts/tests/gauge-cycle-decomp.test.ts`). Confidence capped MEDIUM on one open question: does a
+  real fight hit the sim's own opening/first-FB time (raising to HIGH needs a direct frame-measurement
+  of the real FB-end→next-B1 gap on one disabled comp's footage). Leave `disabled: true` until then.
+  Separately logged (do NOT bundle in): a general (non-liberalio) `skillGauge`-fires-twice-per-shot
+  pattern on any `shotFired`-triggered `flatDamage` rider (`sim.ts:2393`) — its correction direction is
+  gauge-DOWN, which would worsen these 4 comps if "fixed" alone; needs its own pre-op pass.
 - **⇒ ENGINE-WORK ORDER (read FIRST before resuming per-kit retunes)** — remaining engine work ranked by
   BLAST RADIUS: items that change the shared math every override is calibrated against come before
   per-unit retunes (a retune done first has to be redone). Still open:
@@ -136,20 +139,30 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      in-flight duration mutation; `milk-blooming-bunny` a **reload-count-scoped stat CLAMP** (also the
      `docs/engine-modeling-gaps.md` §1b LOCK gap — NOT a timed window). Do not re-attempt them on the
      registry alone.
-  4. **`FBRULE=perkit` default flip** — `privaty` was the roster's LAST `noFb` carrier, so `perkit` is
-     now behaviourally identical to `timing` for every unit and the promised flip is provably a no-op.
-     NOT taken — engine default, owner-gated; queued.
-  5. **U28** — `extraHitDamagePct` vs `flatDamage` gauge + flavor asymmetry.
-- **⇒ EMILIA GAUNTLET NO-GO(engine-core) — owner decision: authorize a `hitRepeat` rider primitive.**
-  2026-08-02 batch gauntlet (branch `kit-autonomy-batch-2026-08-02`, commit `35f0f0f6`, merged via
-  PR #60): S2 "Fixed Damage to the main body = 58.99% of the damage dealt by self" is a %-of-hit repeat
-  (`docs/data/nikke-damage-formula.md` §3) — load-bearing (fires every full charge), in-domain, and no
-  `src/` primitive scales a rider off the parent hit's final damage; omitting is a forced weakening and
-  folding it into `chargeDamagePct` is a fudge (function damage never cores). The other six kit lines
-  are fully pre-encoded + the proposed primitive spec (pct-of-parent final damage, never-core function
-  damage inheriting parent crit/element/Damage-Up/FB; secondary: negative `chargeSpeedPct`,
-  live-`maxAmmo()`-scaled buff source) is in `scripts/kit-autonomy/manual-review/emilia.md` (on main).
-  `simSupported` stays false, no kit-status row; re-run the gauntlet after the primitive lands.
+  4. **U28** — `extraHitDamagePct` vs `flatDamage` gauge + flavor asymmetry.
+- **⇒ ENGINE PRIMITIVE GAP: `addStack`** — no effect increments an existing buff's stack count by N on
+  a trigger. Blocks `flora` S1 ("after 100 normal attacks, all Electric Code allies: increases the
+  stack count of stackable buffs by 1" — trigger `hitCount:100` and target `alliesOfElement` are both
+  expressible, only the EFFECT is missing) and is the same family as `k`'s Tilted Scale stack-ramp
+  (+29 stacks per last bullet, cap 100), which shipped as DOCUMENTED_GAP encoded as a flat
+  `burstCast critRatePct 75` steady-state — correct for the burst window, under-credits the pre-burst
+  ramp and the first burst's build. Magnitude for `flora` depends entirely on which stack-ramp buffs
+  are live on her Electric allies (could be large, could be zero), so it is correctly not estimated.
+  Two carriers is not yet a mandate; log a third before building. Not authorized.
+- **⇒ ENGINE PRIMITIVE GAP: HP pool + HP-threshold triggers** — v1 models no ally HP pool and the
+  scope-lock boss deals no damage, so "HP ≤ X%" / "reaches max HP" / "while shielded by damage" kit
+  lines are structurally out of domain (precedents: `liter` cover-HP NO-OP, owner 2026-07-21; the
+  `alliesLowestHp` "no HP pool" stand-in). ⚠ **This is NO LONGER a `flora` item** — her S2 turned out
+  to self-proc off S1 (entry above) and needs no HP pool. Before building this, census who actually
+  still needs it: the honest list is the `incomingHealingPct` / heal-magnitude family, not the
+  threshold triggers. Low priority, no authorized carrier. Not authorized.
+- **⇒ ENGINE PRIMITIVE GAPS (logged, no carrier pressure)** — surfaced by the 2026-08-02/03 gauntlet
+  sweep, all shipped as DOCUMENTED_GAP with the ⚑ triple, none blocking a GO: **FB-end buff removal**
+  (`k` S1/S2 both "Full Burst ends → remove <buff>"; moot today because the 10s durations self-expire
+  ≈ the FB window) · **empty-magazine effect + status-end trigger** (`grave` S1 "Removes 100% of ammo"
+  at Prediction-end — ~9–11 forgone 201f reloads/fight, an over-credit consistent with her board HOT;
+  tracked as **U19**) · **crit-gated hit counter** (`k` S1 "every 4 critical pellet hits" — `hitCount`
+  counts all hits, not crits; ~5% of her burst damage). Each is honest omission, not a fudge.
 - **⇒ SG LANDING — fix the WEAPON MODEL before any SG override re-tune.** SG units carry 12–24% landing
   calibration debt (board SG mean |ratio−1| 0.084→0.131 post-UNIGEO), but `marciana` (SG, **no override,
   zero damage kit**) reads **0.850 COLD at n=2** and `/probe-processing` localized it to the **landing
@@ -205,24 +218,31 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 #### Kit / override threads
 
 - **⇒ TDD TRANSITION (the kit workflow) → `docs/handoffs/2026-07-23-tdd-transition-plan.md`.** Steps
-  1a–1d and the step-2 primitive backfill are on `main` (`scripts/tests/engine/*`). Open:
-  1. **Two step-2 items deliberately deferred** — the trigger-kind matrix as its own cross-cutting suite
-     (`lastBullet`/`shotFired`/`interval` first-fire phase/`stageEnter`/`fullBurstEnter`/`End` — exercised
-     incidentally, never pinned), and gauge suppression during FB/chain. Use the same zeroed-kit-carrier
-     pattern (`blanc` + bare-weapon `crown`) the landed files establish.
-  2. **Step 3 — per-unit dedicated sessions, OWNER drives the spec line-by-line from kit text; run them
-     with `/kit-tdd`.** Fully unblocked. Rationale: the board gates FIT only; faithfulness errors of a
-     few % are absorbed by calibration and only unit tests can gate them.
-  3. **Step 4 — doc/skill reframe still open** (CONVENTIONS test-first note, audit-kit/kit-parse one-line
-     reframe as post-validation sampling, STATE.md pointer); pick up with `/skill-maintenance`.
-  4. Six `cfg.onEvent` payload follow-ups (weapon-swap events, perResource/ramp/swap-gate fields on
+  1a–1d and the step-2 primitive backfill are on `main` (`scripts/tests/engine/*`). **Steps 1, 2, and
+  4 are now all landed** (refreshed 2026-08-03) — step 2's two deferred items (trigger-kind matrix,
+  gauge suppression during FB/chain) landed 2026-08-03 in `03021eeb`; step 4 (doc/skill reframe) was
+  verified already done (`docs/STATE.md:291`, `docs/CONVENTIONS.md:81`, the `audit-kit`/`kit-parse`
+  SKILL.md descriptions). The plan doc's stale step-3 unit list (2 named vs 129 actual files) is
+  fixed — it now points to `data/kit-status.json` as the live source instead of hand-listing units,
+  and states the provenance split found while refreshing it: **127 of 129 specs are `/kit-autonomy`
+  gauntlet output, only 2 (`helm` SR/Water, `liter`) are hand-authored via a dedicated `/kit-tdd`
+  session** — not a problem (`STATE.md`/`CONVENTIONS.md` already license both paths), just a fact
+  the doc previously obscured. Open:
+  1. **Step 3 — per-unit dedicated sessions, OWNER drives the spec line-by-line from kit text; run them
+     with `/kit-tdd`.** Fully unblocked, ongoing by design (never "completes"). Rationale: the board
+     gates FIT only; faithfulness errors of a few % are absorbed by calibration and only unit tests
+     can gate them.
+  2. **The doc itself now meets its own closure bar (1–2, 4 landed) but is NOT archived** — it is an
+     active citation target, not just a reasoning trail: `.claude/skills/kit-tdd/SKILL.md` (its
+     `description` and `:211`) points here by name for `§1d event payloads` + the step-2 checklist,
+     and `docs/kit-autonomy-decisions.md:29` cites it as "today's plan-of-record". Archiving into the
+     gitignored `docs/handoffs/closed/` would dangle those pointers — same failure mode as the "three
+     closed handoffs still git-tracked" item below. Reword the citations (or migrate the cited
+     content into CONVENTIONS.md/the skill file) before closing.
+  3. Six `cfg.onEvent` payload follow-ups (weapon-swap events, perResource/ramp/swap-gate fields on
      `buffApply`, …) listed under §1d in the plan — build them as step-3 tests need them.
 - **⇒ SAME-SQUAD PRIMITIVE MIGRATIONS** (the primitive landed 2026-08-02; `teamHas.sameSquad` resolves
   from `src/data/squads.ts`, fail-closed). Remaining units with "same squad" kit text:
-  - `noir` (burst block 3) — still on the older `teamHas.slugs:['blanc','rouge']`
-    (`src/skills/overrides/noir.json:67`); drop-in migration to `sameSquad:true` (identical extension —
-    the curated squad is exactly blanc+rouge). Mechanical; noir's kit test discriminates either
-    spelling, so it pins the gate, not the facet.
   - `anchor-innocent-maid` (S1 block B heal gate) — modeled always-satisfied (override caveat). BLOCKED
     on an owner ruling for her squad membership (the maid costumes — `mast-romantic-maid`,
     `privaty-unkind-maid` — are candidates, NOT verified). Once ruled: add the squad to
@@ -235,7 +255,27 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **⇒ KIT-PARSE RECONCILIATION BACKLOG → `docs/handoffs/closed/kit-parse-reconciliation-backlog.md`**
   (archived but still carries a live per-unit tail) + **ENGINE MODELING-GAP THREAD MAP →
   `docs/engine-modeling-gaps.md`** (§A done / §B wired-not-enacted / §C unwired). Per-unit tier +
-  finding SSOT: `data/kit-status.json`.
+  finding SSOT: `data/kit-status.json`. Individually open threads not yet tracked elsewhere in this
+  file (full context at the cited theme):
+  - **Theme 3 `rampSec` backlog** — chisato, leona, guilty, mast-romantic-maid, mihara-bonding-chain,
+    `laplace` (base, RL/Iron — not laplace-ultimate-hero), soda-twinkling-bunny, red-hood, rouge,
+    sakura-bloom-in-summer still bake stack-ramp buffs to max instead of time-averaging;
+    measurement/Fable-gated per unit.
+  - **Theme 4 `arcana` (base, RL/Electric — not arcana-fortune-mate) `teamHas` mono-Electric
+    enactment** — capability landed, no override opts in yet (MODEL_ONLY, no board data; owner grades
+    her "mono-Electric comp only").
+  - **Theme 5 `prika` `gainPierce` hold** — held on an owner popup measurement (probe-runs 2026-07-14
+    inconclusive); the other 8 carriers are enacted.
+  - **Theme 17 mode-default owner ruling — `milk-blooming-bunny`'s no-Embarrassment default** — still
+    needs an owner ruling on which mode is graded-default (`cinderella-crystal-wave` and the
+    `mint`/`prika` duet pair were resolved 2026-08-03, see DECISIONS.md).
+  - **Theme 20 `gauge-per-shot.json` `fullChargeBonus` vs `characters.json.chargeMultiplier`
+    disagreement** — 6/44 SR/RL gauge rows are synthesized, 4 units have a value with no gauge row at
+    all, `raven` has a live one-field disagreement; suggested fix (source from `characters.json`,
+    gauge row as an override-only-when-it-disagrees) not yet built.
+  - **Theme 21 `durationShots`-eats-its-own-pull engine bug** — a per-pull `durationShots:1` buff
+    reaches zero rounds (confirmed via `emilia`'s self-clearing CANARY test, still `it.skip`ped);
+    affects emilia, zwei, phantom, vesti-tactical-upgrade COLD→warmer. Fix + board A/B not yet done.
 - **⇒ ROLE-AUDIT FOLLOW-UPS → `docs/handoffs/closed/2026-07-17-role-audit-followups.md`:** (1)
   custom-weaponry `role` sweep — mostly deflated; what's left = pierce-from-kit-text + the
   (data-blocked) weapon-swap secondary-weapon row; (2) **`anis-star` dot-gauge re-model**
@@ -279,11 +319,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   out of `topTeams` and parameterize per row. Hard constraint: **union must NEVER be sorted** (row _i_ is
   bound to boss _i_; `shareUnionRoster` zips by index). Cheap pre-check first: does union greedy leave a
   team on the table on a constrained pool the way solo did?
-- **⇒ SEO — parked, low-prio → `docs/handoffs/2026-07-30-seo-notes.md`.** GSC's "Page with redirect"
-  flag on the http:// variants is expected (Google confirming the 301→canonical works), not a defect —
-  no fix needed. The real item is whether to prerender/SSR the docs/FAQ content so non-Google AI
-  crawlers (GPTBot/PerplexityBot, which don't execute JS) can see it; the owner is unsure it's worth
-  doing. Revisit only if AI-citation/organic traffic to the docs pages becomes a priority.
+- **⇒ `/doll` FAQ is the last route with no crawler-visible body** (current no-JS surface:
+  `docs/STATE.md` §9). Blocked on a prerequisite, not on effort: `web/src/doll-faq-data.ts` is the
+  Discord bot's copy while `App.tsx` renders its own richer JSX version, so injecting from the data
+  module would serve crawlers text the page does not show — which the no-JS ruling forbids.
+  **Reconcile the two copies first**, then it is a one-line addition to
+  `scripts/build-content-pages.ts`.
+- **⇒ First deploy after PR #68: confirm `/mechanics` returns a real body.** The bug it fixes was a
+  build step that looked wired and never ran, and the deploy-box path is the one thing no test can
+  exercise — `curl -s https://nikkesim.app/mechanics | grep -c 'mech-page'` should be 1, not 0.
 - **⇒ Bakery-bot share-URL durability — one residual to tell the bot:** a `characters.json` change (e.g.
   a unit rename) moves pixels without moving the render cache key — `specCacheKey` covers renderer
   changes, not data changes. If that bites, add a data stamp to the key.

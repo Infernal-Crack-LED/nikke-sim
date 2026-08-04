@@ -58,7 +58,10 @@ function run(opts: ReturnType<typeof controlComp>) {
   const events: Ev[] = [];
   const res = runComp({
     ...opts,
-    cfg: { ...(opts.cfg ?? {}), onEvent: (ev: SimEvent) => events.push(ev as Ev) },
+    cfg: {
+      ...(opts.cfg ?? {}),
+      onEvent: (ev: SimEvent) => events.push(ev as Ev),
+    },
   });
   return { res, events };
 }
@@ -75,21 +78,23 @@ const BASE = run(base);
 const swSlot = (() => {
   unitOf(BASE.res, SLUG); // assert the unit is in the comp
   const ev = BASE.events.find(
-    (e) => e.kind === 'buffApply' && (e as { targetSlug?: string }).targetSlug === SLUG,
+    (e) =>
+      e.kind === 'buffApply' &&
+      (e as { targetSlug?: string }).targetSlug === SLUG
   ) as { targetIdx?: number | null } | undefined;
   return ev?.targetIdx ?? -1;
 })();
 
 const dmgOf = (events: Ev[]) =>
   events.filter(
-    (e) => e.kind === 'damage' && (e as { slug?: string }).slug === SLUG,
+    (e) => e.kind === 'damage' && (e as { slug?: string }).slug === SLUG
   );
 const buffsOf = (events: Ev[], stat: string) =>
   events.filter(
     (e) =>
       e.kind === 'buffApply' &&
       (e as { stat?: string }).stat === stat &&
-      (e as { targetSlug?: string }).targetSlug === SLUG,
+      (e as { targetSlug?: string }).targetSlug === SLUG
   );
 // FIXTURE-AWARENESS PATCH (driver, S5 reconciliation): the control comp's allies grant
 // SAME-STAT team buffs (liter escalating maxAmmoPct, crown attackDamagePct 20.99 on recovery,
@@ -98,7 +103,7 @@ const buffsOf = (events: Ev[], stat: string) =>
 // on it. Semantics of every assertion unchanged.
 const ownBuffsOf = (events: Ev[], stat: string) =>
   buffsOf(events, stat).filter(
-    (e) => (e as { casterIdx?: number | null }).casterIdx === swSlot,
+    (e) => (e as { casterIdx?: number | null }).casterIdx === swSlot
   );
 
 // Counterfactual A: skill1a ammo buff neutered (value 0) — isolates the shot economy.
@@ -108,7 +113,9 @@ const NO_AMMO = run({
     [SLUG]: withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.skill1 ?? []) {
         for (const e of b.effects) {
-          if (e.kind === 'buff' && e.stat === 'maxAmmoPct') {e.value = 0;}
+          if (e.kind === 'buff' && e.stat === 'maxAmmoPct') {
+            e.value = 0;
+          }
         }
       }
     }),
@@ -122,7 +129,9 @@ const BIG_STACKS = run({
     [SLUG]: withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.skill1 ?? []) {
         for (const e of b.effects) {
-          if (e.kind === 'buff' && e.stat === 'maxAmmoPct') {e.maxStacks = 50;}
+          if (e.kind === 'buff' && e.stat === 'maxAmmoPct') {
+            e.maxStacks = 50;
+          }
         }
       }
     }),
@@ -137,9 +146,11 @@ const FBENTER = run({
     [SLUG]: withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.skill2 ?? []) {
         const hasAtkDmg = b.effects.some(
-          (e) => e.kind === 'buff' && e.stat === 'attackDamagePct',
+          (e) => e.kind === 'buff' && e.stat === 'attackDamagePct'
         );
-        if (hasAtkDmg) {b.trigger = { kind: 'fullBurstEnter' };}
+        if (hasAtkDmg) {
+          b.trigger = { kind: 'fullBurstEnter' };
+        }
       }
     }),
   },
@@ -152,7 +163,7 @@ const NO_BURST_ATK = run({
     [SLUG]: withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.burst ?? []) {
         b.effects = b.effects.filter(
-          (e) => !(e.kind === 'buff' && e.stat === 'atkPct'),
+          (e) => !(e.kind === 'buff' && e.stat === 'atkPct')
         );
       }
     }),
@@ -178,7 +189,9 @@ const NO_S1_RIDER = run({
     [SLUG]: withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.skill1 ?? []) {
         for (const e of b.effects) {
-          if (e.kind === 'flatDamage') {e.atkPct = 0;}
+          if (e.kind === 'flatDamage') {
+            e.atkPct = 0;
+          }
         }
       }
     }),
@@ -192,7 +205,9 @@ const NO_S2_RIDER = run({
     [SLUG]: withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.skill2 ?? []) {
         for (const e of b.effects) {
-          if (e.kind === 'flatDamage') {e.atkPct = 0;}
+          if (e.kind === 'flatDamage') {
+            e.atkPct = 0;
+          }
         }
       }
     }),
@@ -205,7 +220,7 @@ describe('snow-white-innocent-days — fixture sanity', () => {
     const fbs = BASE.events.filter((e) => e.kind === 'fullBurstStart');
     expect(fbs.length).toBeGreaterThan(0);
     expect(
-      casts.filter((e) => (e as { slug?: string }).slug === SLUG).length,
+      casts.filter((e) => (e as { slug?: string }).slug === SLUG).length
     ).toBeGreaterThan(0);
     // non-vacuity for every "for 10 sec" window assertion below: there must be BOTH
     // in-window and out-of-window time in a 180s fight.
@@ -232,11 +247,11 @@ describe('skill1a — Max Ammunition Capacity +25.66%, 5 stacks, 5 sec, per 30 l
       expect((e as { targetSlug?: string }).targetSlug).toBe(SLUG);
       // self-scoped: caster is the target
       expect((e as { casterIdx?: number | null }).casterIdx).toBe(
-        (e as { targetIdx?: number | null }).targetIdx,
+        (e as { targetIdx?: number | null }).targetIdx
       );
     }
     const maxSeen = Math.max(
-      ...evs.map((e) => (e as { stacks?: number }).stacks ?? 1),
+      ...evs.map((e) => (e as { stacks?: number }).stacks ?? 1)
     );
     expect(maxSeen).toBeLessThanOrEqual(5);
     expect(maxSeen).toBe(5); // non-vacuity: the fixture really reaches the cap
@@ -280,7 +295,7 @@ describe('skill1b — 188.68% of final ATK to enemies in range, per 30 landed no
     // RED if the rider were keyed to a different threshold (e.g. 50) or to an interval.
     const ammoApplies = buffsOf(BASE.events, 'maxAmmoPct').length;
     const riderHits = dmgOf(BASE.events).filter(
-      (e) => (e as { bucket?: string }).bucket !== 'normal',
+      (e) => (e as { bucket?: string }).bucket !== 'normal'
     );
     expect(riderHits.length).toBeGreaterThan(0);
     expect(ammoApplies).toBeGreaterThan(0);
@@ -290,10 +305,10 @@ describe('skill1b — 188.68% of final ATK to enemies in range, per 30 landed no
 
   it('is a rider, not a normal attack: it does not inflate the normal-bucket shot count', () => {
     const shots = BASE.events.filter(
-      (e) => e.kind === 'shot' && (e as { slug?: string }).slug === SLUG,
+      (e) => e.kind === 'shot' && (e as { slug?: string }).slug === SLUG
     ).length;
     const noRider = NO_S1_RIDER.events.filter(
-      (e) => e.kind === 'shot' && (e as { slug?: string }).slug === SLUG,
+      (e) => e.kind === 'shot' && (e as { slug?: string }).slug === SLUG
     ).length;
     // zeroing rider damage must not change the weapon's firing economy
     expect(noRider).toBe(shots);
@@ -303,7 +318,9 @@ describe('skill1b — 188.68% of final ATK to enemies in range, per 30 landed no
     const b = totals(BASE.res);
     const n = totals(NO_S1_RIDER.res);
     for (const slug of Object.keys(b)) {
-      if (slug === SLUG) {continue;}
+      if (slug === SLUG) {
+        continue;
+      }
       expect(n[slug]).toBe(b[slug]);
     }
   });
@@ -340,7 +357,9 @@ describe('skill2a — 61.69% of final ATK to all enemies, per 50 landed normals'
     const b = totals(BASE.res);
     const n = totals(NO_S2_RIDER.res);
     for (const slug of Object.keys(b)) {
-      if (slug === SLUG) {continue;}
+      if (slug === SLUG) {
+        continue;
+      }
       expect(n[slug]).toBe(b[slug]);
     }
   });
@@ -362,9 +381,7 @@ describe('skill2b — "when using Burst Skill": Attack damage +21.12% for 10 sec
 
   it('the buff count equals this unit\u2019s OWN burst-cast count, not the team full-burst count', () => {
     const ownCasts = BASE.events.filter(
-      (e) =>
-        e.kind === 'burstCast' &&
-        (e as { slug?: string }).slug === SLUG,
+      (e) => e.kind === 'burstCast' && (e as { slug?: string }).slug === SLUG
     ).length;
     const applies = ownBuffsOf(BASE.events, 'attackDamagePct').length;
     expect(ownCasts).toBeGreaterThan(0);
@@ -378,11 +395,10 @@ describe('skill2b — "when using Burst Skill": Attack damage +21.12% for 10 sec
     // exercise the divergence and this test would prove nothing.
     expect(wrong).toBeGreaterThanOrEqual(faithful);
     expect(totals(FBENTER.res)[SLUG]).toBeGreaterThanOrEqual(
-      totals(BASE.res)[SLUG],
+      totals(BASE.res)[SLUG]
     );
     expect(
-      wrong > faithful ||
-        totals(FBENTER.res)[SLUG] > totals(BASE.res)[SLUG],
+      wrong > faithful || totals(FBENTER.res)[SLUG] > totals(BASE.res)[SLUG]
     ).toBe(true);
   });
 
@@ -394,24 +410,18 @@ describe('skill2b — "when using Burst Skill": Attack damage +21.12% for 10 sec
     const dmgUp = ownBuffsOf(BASE.events, 'attackDamagePct');
     expect(atk.length).toBeGreaterThan(0);
     expect(dmgUp.length).toBeGreaterThan(0);
-    expect(
-      atk.some((e) => (e as { value: number }).value > 90),
-    ).toBe(true); // the 97.2% burst line
-    expect(
-      dmgUp.every((e) => (e as { value: number }).value < 30),
-    ).toBe(true); // the 21.12% skill2 line
+    expect(atk.some((e) => (e as { value: number }).value > 90)).toBe(true); // the 97.2% burst line
+    expect(dmgUp.every((e) => (e as { value: number }).value < 30)).toBe(true); // the 21.12% skill2 line
   });
 });
 
 describe('burst — ATK +97.2% for 10 sec (self)', () => {
   it('emits atkPct 97.2 on self once per own burst cast', () => {
     const evs = buffsOf(BASE.events, 'atkPct').filter(
-      (e) => Math.abs((e as { value: number }).value - 97.2) < 1e-6,
+      (e) => Math.abs((e as { value: number }).value - 97.2) < 1e-6
     );
     const ownCasts = BASE.events.filter(
-      (e) =>
-        e.kind === 'burstCast' &&
-        (e as { slug?: string }).slug === SLUG,
+      (e) => e.kind === 'burstCast' && (e as { slug?: string }).slug === SLUG
     ).length;
     expect(evs.length).toBe(ownCasts);
     for (const e of evs) {
@@ -424,7 +434,9 @@ describe('burst — ATK +97.2% for 10 sec (self)', () => {
     const b = totals(BASE.res);
     const n = totals(NO_BURST_ATK.res);
     for (const slug of Object.keys(b)) {
-      if (slug === SLUG) {continue;}
+      if (slug === SLUG) {
+        continue;
+      }
       expect(n[slug]).toBe(b[slug]);
     }
   });
@@ -434,14 +446,12 @@ describe('burst — ATK +97.2% for 10 sec (self)', () => {
     // outside any 10s post-cast window. With 180s of fight and a 40s cooldown, most do.
     const casts = BASE.events
       .filter(
-        (e) =>
-          e.kind === 'burstCast' &&
-          (e as { slug?: string }).slug === SLUG,
+        (e) => e.kind === 'burstCast' && (e as { slug?: string }).slug === SLUG
       )
       .map((e) => (e as { frame: number }).frame);
     const hits = dmgOf(BASE.events).map((e) => (e as { frame: number }).frame);
     const inWindow = hits.filter((f) =>
-      casts.some((c) => f >= c && f < c + 10 * 60),
+      casts.some((c) => f >= c && f < c + 10 * 60)
     ).length;
     expect(inWindow).toBeGreaterThan(0);
     expect(inWindow).toBeLessThan(hits.length);
@@ -453,10 +463,10 @@ describe('burst — Unlimited ammunition for 10 sec (self)', () => {
   // cutting shots fired. Nearest-wrong: treating "unlimited ammo" as flavour/no-op.
   it('removing unlimitedAmmo reduces shots fired and total damage', () => {
     const shotsBase = BASE.events.filter(
-      (e) => e.kind === 'shot' && (e as { slug?: string }).slug === SLUG,
+      (e) => e.kind === 'shot' && (e as { slug?: string }).slug === SLUG
     ).length;
     const shotsNo = NO_UNLIMITED.events.filter(
-      (e) => e.kind === 'shot' && (e as { slug?: string }).slug === SLUG,
+      (e) => e.kind === 'shot' && (e as { slug?: string }).slug === SLUG
     ).length;
     expect(shotsNo).toBeLessThan(shotsBase);
     expect(totals(NO_UNLIMITED.res)[SLUG]).toBeLessThan(totals(BASE.res)[SLUG]);
@@ -464,12 +474,10 @@ describe('burst — Unlimited ammunition for 10 sec (self)', () => {
 
   it('reload events drop inside the burst window when ammo is unlimited', () => {
     const reloadsBase = BASE.events.filter(
-      (e) =>
-        e.kind === 'reload' && (e as { slug?: string }).slug === SLUG,
+      (e) => e.kind === 'reload' && (e as { slug?: string }).slug === SLUG
     ).length;
     const reloadsNo = NO_UNLIMITED.events.filter(
-      (e) =>
-        e.kind === 'reload' && (e as { slug?: string }).slug === SLUG,
+      (e) => e.kind === 'reload' && (e as { slug?: string }).slug === SLUG
     ).length;
     expect(reloadsBase).toBeLessThan(reloadsNo);
   });
@@ -481,11 +489,17 @@ describe('burst — Unlimited ammunition for 10 sec (self)', () => {
     // at the shot level instead: the unlimited flag appears ONLY on her shots, never on an
     // ally's.
     const allyUnlimited = NO_UNLIMITED.events.filter(
-      (e) => e.kind === 'shot' && (e as { slug?: string }).slug !== SLUG && (e as { unlimitedAmmo?: boolean }).unlimitedAmmo,
+      (e) =>
+        e.kind === 'shot' &&
+        (e as { slug?: string }).slug !== SLUG &&
+        (e as { unlimitedAmmo?: boolean }).unlimitedAmmo
     );
     expect(allyUnlimited.length).toBe(0);
     const ownUnlimited = BASE.events.filter(
-      (e) => e.kind === 'shot' && (e as { slug?: string }).slug === SLUG && (e as { unlimitedAmmo?: boolean }).unlimitedAmmo,
+      (e) =>
+        e.kind === 'shot' &&
+        (e as { slug?: string }).slug === SLUG &&
+        (e as { unlimitedAmmo?: boolean }).unlimitedAmmo
     );
     expect(ownUnlimited.length).toBeGreaterThan(0);
   });
@@ -523,7 +537,7 @@ describe('cross-cutting inertness', () => {
         e.kind === 'buffApply' &&
         (e as { casterIdx?: number | null }).casterIdx === null &&
         (e as { targetIdx?: number | null }).targetIdx === null &&
-        (e as { stat?: string }).stat === 'damageTakenPct',
+        (e as { stat?: string }).stat === 'damageTakenPct'
     );
     expect(bossHeld.length).toBe(0);
   });
@@ -532,7 +546,7 @@ describe('cross-cutting inertness', () => {
     const mine = BASE.events.filter(
       (e) =>
         e.kind === 'buffApply' &&
-        (e as { casterIdx?: number | null }).casterIdx === swSlot,
+        (e as { casterIdx?: number | null }).casterIdx === swSlot
     );
     expect(mine.length).toBeGreaterThan(0);
     for (const e of mine) {

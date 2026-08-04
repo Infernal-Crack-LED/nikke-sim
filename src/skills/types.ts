@@ -223,6 +223,42 @@ export type EffectDef =
       rampSec?: number;
     }
   | {
+      // "%-of-hit repeat" — kit text "Deals Fixed Damage ... equal to X% of the damage dealt
+      // by self". A first-class mechanic in the SSOT (docs/data/nikke-damage-formula.md §3:
+      // "%-of-hit repeats ('deals X% of the damage dealt') inherit everything from the parent
+      // hit implicitly"). When the owner's hit lands for final damage `parentDmg`, this deals an
+      // ADDITIONAL function-damage instance of `pct`% x parentDmg.
+      //
+      // DISTINCT PRIMITIVE FROM `flatDamage`, and not expressible as a field on it: flatDamage
+      // scales off the caster's FINAL ATK and then composes its own multiplier stack, whereas a
+      // hitRepeat scales off an ALREADY-COMPUTED damage number. Every bucket the parent took —
+      // crit expectation, core, the +30% range bonus, Full Burst, element, the charge
+      // multiplier, Damage Up, Damage Taken — is already inside that number, so the repeat
+      // applies NONE of them again (re-applying any is a double-count) and never cores / never
+      // takes range in its own right, exactly as §3's function-damage table requires. Its own
+      // multiplier decomposition is all 1s.
+      //
+      // Folding it into a damage bucket instead (e.g. `chargeDamagePct` = pct x baseCharge)
+      // reproduces the total on a body hit ONLY — charge-bucket damage cores and takes range,
+      // this does not, so the fold silently over-credits every core hit. That is the fudge this
+      // primitive exists to make unnecessary.
+      //
+      // AUTHORING: carried on a per-pull trigger (`shotFired` / `hitCount` / `chargeCounter`),
+      // which the engine dispatches immediately after the pull's own damage instance, and
+      // target `enemy` (validate-overrides enforces both). The engine additionally frame-locks
+      // it to a damage instance the owner landed on THAT frame, so it can never ride a stale
+      // hit. Lands in the owning slot's bucket (skill1/skill2 -> skill, burst -> burst).
+      //
+      // ⚑ BURST-GAUGE: generates one skill-damage impact of gauge, the same as `flatDamage` and
+      // a DoT tick (sim.ts skillGauge — MEASURED for maiden-ice-rose's per-shot rider). Whether
+      // a %-of-hit repeat specifically generates energy is UNMEASURED; the engine follows the
+      // function-damage precedent rather than inventing an exception. Recipe: a focus recording
+      // of a carrier — compare her gauge-bar slope against the same weapon cadence without the
+      // proc, or count full bursts over a fixed window.
+      kind: 'hitRepeat';
+      pct: number;
+    }
+  | {
       kind: 'dot'; // ticks every intervalSec (default 1); never core-boosted
       atkPct: number;
       durationSec: number;
@@ -347,9 +383,9 @@ export interface Block {
   // burst matches literally (a Λ unit does NOT satisfy burst:'III'). Omit = always
   // active (back-compatible). Burst codes 'I'|'II'|'III'|'Λ'; weapon AR/SMG/SG/SR/RL/MG.
   // `slugs`: the team contains one of these SPECIFIC units (matches some OTHER ally's exact slug) —
-  // for kit gates keyed to named squad-mates (noir's burst block 3 "an ally from the same squad":
-  // owner-ruled 2026-07-20 satisfied by blanc or rouge; predates `sameSquad` below — same extension,
-  // migration pending).
+  // for kit gates keyed to a NAMED partner rather than a squad (eunhwa-tactical-upgrade's S2, gated
+  // on emma-tactical-upgrade). For "an ally from the same squad" wording use `sameSquad` below, which
+  // states the condition instead of enumerating today's answer to it.
   // `sameSquad`: the team contains SOME OTHER ally from the OWNER's squad — the primitive for kit
   // gates worded "an ally from the same squad … on the battlefield" (blanc's S2 burst-CDR). Squad
   // membership is curated in src/data/squads.ts (characters.json has no squad axis); the "still on
@@ -362,7 +398,12 @@ export interface Block {
     weapon?: string;
     burst?: string;
     slugs?: string[];
-    sameSquad?: boolean;
+    // literal `true`, never `false`: the facet is opt-in and omitting it means "no
+    // squad gate", so `sameSquad: false` would read as an explicit negative gate the
+    // engine does not implement (sim.ts treats falsy as unconstrained). This is the
+    // contract validate-overrides.ts enforces at authoring time — typed so the
+    // compiler catches it first.
+    sameSquad?: true;
   };
   // mode gate: block active only when the unit's selected mode matches (the
   // override's top-level `modes` array declares the choices; first = default)
@@ -373,6 +414,20 @@ export interface Block {
   // phase for everyN: fire on activations ≡ offset (mod everyN), e.g. offset 1 + everyN 3
   // fires on the 1st, 4th, 7th… activation (Neon:VE starts at full Firepower Gauge)
   everyNOffset?: number;
+  // BLOCK-LEVEL DELAY: the block's EFFECTS apply delaySec seconds after its TRIGGER fires.
+  // Every gate above (fbGate / swapGate / requiresCore / requiresShielded / bossElementGate /
+  // ownBurstGate / resourceGate / teamHas / everyN) is evaluated at TRIGGER time — the state the
+  // kit line's activation clause actually reads — while targets and effect values resolve at
+  // LANDING. For kit lines whose activation condition is only satisfied a fixed time after the
+  // observable event that causes it, e.g. flora's S2-2 "when either adjacent ally reaches max HP":
+  // her S1's 2-second Max HP grant is what drops the allies below max, so they return to max
+  // exactly 2 sec after Burst Stage 2 entry (`stageEnter{stage:2}` + delaySec 2).
+  // A landing frame past the end of the fight simply never applies.
+  // Distinct from `flatDamage.delaySec`, which is FLIGHT time on ONE damage effect (a missile in
+  // the air, snapshotting buffs at impact) — this delays the WHOLE block, effects of any kind.
+  // Omit or 0 = applied inline on the trigger frame (strict no-op; pinned by
+  // scripts/tests/engine/block-delay.test.ts).
+  delaySec?: number;
   // core-hit gate: the block's in-game trigger needs a core hit, so it is
   // inert when the fight has no core exposure (e.g. Liberalio's 20.83% rider)
   requiresCore?: boolean;
@@ -439,6 +494,12 @@ export interface CharacterSkills {
   unmodeled?: UnmodeledText; // kit text deliberately not modeled (display/audit only)
   modes?: string[]; // user-selectable kit modes declared by the override (first = default)
   hasPierce?: boolean; // kit's attacks are Pierce-tagged → Pierce Damage ▲ feeds Damage Up
+  hasTrueNormals?: boolean; // kit's normal attacks are ALWAYS True-flavored (no swap gate) →
+  // ally True Damage ▲ buffs feed them. STATIC whole-fight, unlike weaponSwap.trueNormals
+  // (chisato's/takina's/base laplace's — slug `laplace`, RL/Iron — temporary swap-scoped flavor
+  // change). Set only on kit-confirmed carriers; today's sole user is the buffer-board's synthetic
+  // typed-carry adaptation (src/ranks/buffer.ts deriveCarrySpec), since no real roster unit's
+  // normals are true-flavored outside a swap window.
   burstSnapshotsPreFb?: boolean; // burst damage resolves pre-FB/pre-stage (per-unit cast timing)
   pierceModes?: string[]; // pierce only while in one of these kit modes (CCW: SR only)
   consolidation?: ConsolidationConfig; // pellet-consolidation mode (dorothy-S) — see OverrideFile / A26

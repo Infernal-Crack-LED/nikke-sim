@@ -76,7 +76,9 @@ function run(overrides?: Record<string, unknown>) {
   const opts = controlComp(SLUG, true) as unknown as Record<string, unknown>;
   const cfg = (opts.cfg ?? {}) as Record<string, unknown>;
   opts.cfg = { ...cfg, onEvent: (ev: SimEvent) => events.push(ev as Ev) };
-  if (overrides) opts.overrides = overrides;
+  if (overrides) {
+    opts.overrides = overrides;
+  }
   const res = runComp(opts as never);
   return { res, events };
 }
@@ -94,7 +96,7 @@ function ariaSlot(res: unknown): number {
 
 function appliesBy(events: Ev[], slot: number, stat: string) {
   return ev(events, 'buffApply').filter(
-    (e) => e.casterIdx === slot && e.stat === stat,
+    (e) => e.casterIdx === slot && e.stat === stat
   );
 }
 
@@ -104,12 +106,14 @@ const BASE_TOTALS = totals(base.res as never);
 const ARIA = ariaSlot(base.res);
 const COMP_SLUGS = Object.keys(BASE_TOTALS);
 
-const fbStarts = ev(base.events, 'fullBurstStart').map((e) => e.frame as number);
+const fbStarts = ev(base.events, 'fullBurstStart').map(
+  (e) => e.frame as number
+);
 const ariaBurstCasts = ev(base.events, 'burstCast')
   .filter((e) => (e.slot ?? e.srcSlot ?? e.casterIdx) === ARIA)
   .map((e) => e.frame as number);
 const ariaReloads = ev(base.events, 'reload').filter(
-  (e) => (e.slot ?? e.srcSlot ?? e.casterIdx) === ARIA,
+  (e) => (e.slot ?? e.srcSlot ?? e.casterIdx) === ARIA
 );
 
 describe('aria — fixture non-vacuity', () => {
@@ -136,7 +140,9 @@ describe('aria S1 — Crit Damage 26.99% / 10s / all allies / at Full Burst star
 
   it('emits critDamagePct at the kit magnitude (not a rounded or invented value)', () => {
     expect(applies.length).toBeGreaterThan(0);
-    for (const a of applies) expect(a.value).toBeCloseTo(26.99, 6);
+    for (const a of applies) {
+      expect(a.value).toBeCloseTo(26.99, 6);
+    }
   });
 
   it('SCOPE: the stat is generic Critical Damage — no crit-RATE and no normal-scoped variant carries the 26.99 value', () => {
@@ -144,7 +150,7 @@ describe('aria S1 — Crit Damage 26.99% / 10s / all allies / at Full Burst star
       (e) =>
         e.casterIdx === ARIA &&
         e.stat !== 'critDamagePct' &&
-        Math.abs(((e.value as number) ?? 0) - 26.99) < 1e-6,
+        Math.abs(((e.value as number) ?? 0) - 26.99) < 1e-6
     );
     expect(misScoped).toHaveLength(0);
   });
@@ -160,7 +166,9 @@ describe('aria S1 — Crit Damage 26.99% / 10s / all allies / at Full Burst star
     const perActivation = new Map<number, Set<string>>();
     for (const a of applies) {
       const f = a.frame as number;
-      if (!perActivation.has(f)) perActivation.set(f, new Set());
+      if (!perActivation.has(f)) {
+        perActivation.set(f, new Set());
+      }
       perActivation.get(f)!.add(a.targetSlug as string);
     }
     expect(perActivation.size).toBeGreaterThan(0);
@@ -171,10 +179,14 @@ describe('aria S1 — Crit Damage 26.99% / 10s / all allies / at Full Burst star
 
   it('TRIGGER IDENTITY: applies land on full-burst START frames, not on aria\u2019s burst-cast frames', () => {
     const applyFrames = [...new Set(applies.map((a) => a.frame as number))];
-    for (const f of applyFrames) expect(fbStarts).toContain(f);
+    for (const f of applyFrames) {
+      expect(fbStarts).toContain(f);
+    }
     // nearest-wrong #1: burstCast keying would put applies on cast frames. A burst cast
     // resolves BEFORE the FB window opens, so the two frame sets must be disjoint.
-    for (const f of applyFrames) expect(ariaBurstCasts).not.toContain(f);
+    for (const f of applyFrames) {
+      expect(ariaBurstCasts).not.toContain(f);
+    }
   });
 
   it('TRIGGER IDENTITY discriminator: re-keying S1 to burstCast changes the activation count/frames (RED under the nearest-wrong model)', () => {
@@ -182,12 +194,17 @@ describe('aria S1 — Crit Damage 26.99% / 10s / all allies / at Full Burst star
       for (const b of ov.skill1!.blocks ?? ov.skill1!) {
         const blk = b as Record<string, unknown>;
         const effs = (blk.effects ?? []) as Record<string, unknown>[];
-        if (effs.some((e) => e.stat === 'critDamagePct'))
+        if (effs.some((e) => e.stat === 'critDamagePct')) {
           blk.trigger = { kind: 'burstCast' };
+        }
       }
     });
     const alt = run({ [SLUG]: patched });
-    const altApplies = appliesBy(alt.events, ariaSlot(alt.res), 'critDamagePct');
+    const altApplies = appliesBy(
+      alt.events,
+      ariaSlot(alt.res),
+      'critDamagePct'
+    );
     const baseFrames = [...new Set(applies.map((a) => a.frame))].join(',');
     const altFrames = [...new Set(altApplies.map((a) => a.frame))].join(',');
     expect(altFrames).not.toBe(baseFrames);
@@ -198,8 +215,9 @@ describe('aria S1 — Crit Damage 26.99% / 10s / all allies / at Full Burst star
       for (const b of ov.skill1!.blocks ?? ov.skill1!) {
         const blk = b as Record<string, unknown>;
         const effs = (blk.effects ?? []) as Record<string, unknown>[];
-        if (effs.some((e) => e.stat === 'critDamagePct'))
+        if (effs.some((e) => e.stat === 'critDamagePct')) {
           blk.target = { kind: 'self' };
+        }
       }
     });
     const alt = totals(run({ [SLUG]: patched }).res as never);
@@ -216,7 +234,9 @@ describe('aria S2 — Crit Rate 7.03% / 5s / all allies / on last bullet', () =>
 
   it('emits critRatePct at the kit magnitude', () => {
     expect(applies.length).toBeGreaterThan(0);
-    for (const a of applies) expect(a.value).toBeCloseTo(7.03, 6);
+    for (const a of applies) {
+      expect(a.value).toBeCloseTo(7.03, 6);
+    }
   });
 
   it('SCOPE: unscoped Critical Rate — the normal-attack-scoped variant is NOT used', () => {
@@ -233,7 +253,9 @@ describe('aria S2 — Crit Rate 7.03% / 5s / all allies / on last bullet', () =>
   it('TARGET SET: all allies receive it', () => {
     const first = applies[0].frame as number;
     const tset = new Set(
-      applies.filter((a) => a.frame === first).map((a) => a.targetSlug as string),
+      applies
+        .filter((a) => a.frame === first)
+        .map((a) => a.targetSlug as string)
     );
     expect([...tset].sort()).toEqual([...COMP_SLUGS].sort());
   });
@@ -254,13 +276,16 @@ describe('aria S2 — Crit Rate 7.03% / 5s / all allies / on last bullet', () =>
       for (const b of ov.skill2!.blocks ?? ov.skill2!) {
         const blk = b as Record<string, unknown>;
         const effs = (blk.effects ?? []) as Record<string, unknown>[];
-        if (effs.some((e) => e.stat === 'critRatePct'))
+        if (effs.some((e) => e.stat === 'critRatePct')) {
           blk.trigger = { kind: 'shotFired' };
+        }
       }
     });
     const alt = run({ [SLUG]: patched });
     const altActivations = new Set(
-      appliesBy(alt.events, ariaSlot(alt.res), 'critRatePct').map((a) => a.frame),
+      appliesBy(alt.events, ariaSlot(alt.res), 'critRatePct').map(
+        (a) => a.frame
+      )
     ).size;
     const baseActivations = new Set(applies.map((a) => a.frame)).size;
     expect(altActivations).toBeGreaterThan(baseActivations * 3);
@@ -274,21 +299,25 @@ describe('aria S2 — Crit Rate 7.03% / 5s / all allies / on last bullet', () =>
 
 describe('aria burst — Shield 37.86% of caster final Max HP / 10s / all allies', () => {
   const shields = ev(base.events, 'shield').filter(
-    (e) => (e.casterIdx ?? e.srcSlot) === ARIA,
+    (e) => (e.casterIdx ?? e.srcSlot) === ARIA
   );
 
   it('TANDEM: a shield event reaches every ally on aria\u2019s burst (never skipped as \u201cdefensive\u201d \u2014 it fires teammates\u2019 shielded triggers)', () => {
     expect(shields.length).toBeGreaterThan(0);
     const first = shields[0].frame as number;
     const tset = new Set(
-      shields.filter((s) => s.frame === first).map((s) => s.targetSlug as string),
+      shields
+        .filter((s) => s.frame === first)
+        .map((s) => s.targetSlug as string)
     );
     expect([...tset].sort()).toEqual([...COMP_SLUGS].sort());
   });
 
   it('TRIGGER IDENTITY: shields are emitted on aria\u2019s own burst-cast frames, once per cast', () => {
     const frames = [...new Set(shields.map((s) => s.frame as number))];
-    for (const f of frames) expect(ariaBurstCasts).toContain(f);
+    for (const f of frames) {
+      expect(ariaBurstCasts).toContain(f);
+    }
     expect(frames.length).toBe(ariaBurstCasts.length);
   });
 
@@ -304,14 +333,16 @@ describe('aria burst — Shield 37.86% of caster final Max HP / 10s / all allies
       for (const b of ov.burst!.blocks ?? ov.burst!) {
         const blk = b as Record<string, unknown>;
         const effs = (blk.effects ?? []) as Record<string, unknown>[];
-        if (effs.some((e) => e.kind === 'shield')) blk.target = { kind: 'self' };
+        if (effs.some((e) => e.kind === 'shield')) {
+          blk.target = { kind: 'self' };
+        }
       }
     });
     const alt = run({ [SLUG]: patched });
     const altTargets = new Set(
       ev(alt.events, 'shield')
         .filter((e) => (e.casterIdx ?? e.srcSlot) === ariaSlot(alt.res))
-        .map((e) => e.targetSlug as string),
+        .map((e) => e.targetSlug as string)
     );
     expect([...altTargets]).toEqual([SLUG]);
   });
@@ -322,7 +353,9 @@ describe('aria burst — Hit Rate 30.37% / 15s / SELF ONLY', () => {
 
   it('emits hitRatePct at the kit magnitude', () => {
     expect(applies.length).toBeGreaterThan(0);
-    for (const a of applies) expect(a.value).toBeCloseTo(30.37, 6);
+    for (const a of applies) {
+      expect(a.value).toBeCloseTo(30.37, 6);
+    }
   });
 
   it('TARGET SET: SELF ONLY \u2014 no teammate ever receives it (the line above it is allies; this one is not)', () => {
@@ -340,7 +373,9 @@ describe('aria burst — Hit Rate 30.37% / 15s / SELF ONLY', () => {
   it('TRIGGER IDENTITY: keyed to aria\u2019s own burst cast, once per cast (not fullBurstEnter, which fires on any team FB)', () => {
     const frames = [...new Set(applies.map((a) => a.frame as number))];
     expect(frames.length).toBe(ariaBurstCasts.length);
-    for (const f of frames) expect(ariaBurstCasts).toContain(f);
+    for (const f of frames) {
+      expect(ariaBurstCasts).toContain(f);
+    }
   });
 
   it('DISCRIMINATOR: removing the Hit Rate buff changes aria\u2019s own damage and NOTHING else (core-lift is self-scoped)', () => {
@@ -348,7 +383,7 @@ describe('aria burst — Hit Rate 30.37% / 15s / SELF ONLY', () => {
       for (const b of ov.burst!.blocks ?? ov.burst!) {
         const blk = b as Record<string, unknown>;
         blk.effects = ((blk.effects ?? []) as Record<string, unknown>[]).filter(
-          (e) => e.stat !== 'hitRatePct',
+          (e) => e.stat !== 'hitRatePct'
         );
       }
     });
@@ -365,10 +400,16 @@ describe('aria — inertness / no-invention assertions', () => {
     const buckets = new Set(
       ev(base.events, 'damage')
         .filter((d) => (d.srcSlot ?? d.slot) === ARIA)
-        .map((d) => d.bucket as string),
+        .map((d) => d.bucket as string)
     );
     for (const b of buckets) {
-      expect(['dot', 'flat', 'flatDamage', 'sustained', 'distributed']).not.toContain(b);
+      expect([
+        'dot',
+        'flat',
+        'flatDamage',
+        'sustained',
+        'distributed',
+      ]).not.toContain(b);
     }
   });
 

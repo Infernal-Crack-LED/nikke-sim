@@ -1,11 +1,9 @@
 {
-  "note": "Synthetic no-op B1 (AR): provides the standard 7s team burst cooldown reduction that a real B1 enabler would contribute, so no-op control teams are normalized for CDR even though the no-op has no other skills.",
-  "skill1": [],
-  "skill2": [],
-  "burst": [
+  "note": "Synthetic no-op B1 (AR): provides the standard 7s team burst cooldown reduction that a real B1 enabler would contribute, so no-op control teams are normalized for CDR even though the no-op has no other skills. The reduction fires on fullBurstEnter, not on this unit's own burst cast, and sits in skill1 for that reason — the shape every real enabler uses (liter, sakura, soline-frost-ticket are all `fullBurstEnter` -> `allies`). A cast trigger made the control's contribution depend on WINNING the stage-1 cast, so a tested B1 sharing that stage suppressed the very CDR it was being measured against: rapunzel at her real 60s cooldown took 3 casts and left the control 8, reaching 9 Full Bursts, while at a forced 20s she took 6, left the control 6, and the team reached only 8. A unit bursting more often made its own team slower. Cast-independent, the control contributes the same 7s per Full Burst whoever holds the stage.",
+  "skill1": [
     {
-      "slot": "burst",
-      "trigger": { "kind": "burstCast" },
+      "slot": "skill1",
+      "trigger": { "kind": "fullBurstEnter" },
       "target": { "kind": "allies" },
       "effects": [
         {
@@ -14,5 +12,7 @@
         }
       ]
     }
-  ]
+  ],
+  "skill2": [],
+  "burst": []
 }

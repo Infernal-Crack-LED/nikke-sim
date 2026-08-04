@@ -164,8 +164,8 @@ current but not a contract.
 | `teamAmmo`               | Fires when total ally ammo consumed crosses N                        | cinderella-crystal-wave, little-mermaid                                                                                   |
 | `shotFired`              | Every owner trigger pull                                             | ~21 units (cinderella, soda-twinkling-bunny, prika, milk-blooming-bunny, …)                                               |
 | `lastBullet`             | On owner's last bullet / reload start                                | anis-sparkling-summer, helm, privaty                                                                                      |
-| `recovery` / `shielded`  | When owner receives a heal / shield event                            | asuka, crown / naga                                                                                                       |
-| `stageEnter`             | When a stage-N burst is cast by anyone                               | cinderella, ein, mast-romantic-maid, mint, mihara-bonding-chain, rei-ayanami, snow-white-heavy-arms, soda-twinkling-bunny |
+| `recovery` / `shielded`  | When owner receives a heal / shield event                            | asuka, crown / flora, naga                                                                                                |
+| `stageEnter`             | When a stage-N burst is cast by anyone                               | cinderella, ein, flora, mast-romantic-maid, mint, mihara-bonding-chain, rei-ayanami, snow-white-heavy-arms, soda-twinkling-bunny |
 | `bossElement`            | Permanent passive, active only if boss has this element              | eve                                                                                                                       |
 
 ### Block-level gates
@@ -184,6 +184,7 @@ current but not a contract.
 | `formation` (`noB1`/`hasB1`)       | Static squad-formation gate                                                                                                                                           | anis-star, rapi-red-hood                                                             |
 | `teamHas` (+`.slugs`/`.sameSquad`) | Static team-composition gate (element/class/weapon/burst/named slugs/same-squad). `.sameSquad` resolves membership from the curated squad map `src/data/squads.ts` and fails closed on unmapped owners | blanc (`.sameSquad`), eunhwa-tactical-upgrade, noir (`.slugs` — migration pending)   |
 | `mode` / `modes`                   | Block active only in the unit's selected kit mode                                                                                                                     | bready, cinderella-crystal-wave, delta-ninja-thief, mint, milk-blooming-bunny, prika |
+| `delaySec` (block-level)           | The block's EFFECTS apply `delaySec` seconds after its TRIGGER fires. Gates + the `everyN` counter evaluate at TRIGGER time; targets and values resolve at LANDING; a landing past the end of the fight never applies. Absent/0 = inline (strict no-op). NOT `flatDamage.delaySec`, which is flight time on one damage effect | flora (S2 True Damage, Burst Stage 2 entry + 2 s)                                    |
 
 ### Targeting selectors (`block.target`)
 
@@ -192,7 +193,7 @@ current but not a contract.
 | `burstCasters` / `nonBurstCasters`                                               | Allies who did / didn't burst this rotation                                           | ada, arcana, crown / crown                                                                                           |
 | `alliesTopAtk` / `alliesLowestAtk` / `alliesLowestHp`                            | N highest / lowest ATK / lowest HP allies                                             | alice, maxwell, miranda, naga, soda-twinkling-bunny / liberalio / blanc                                              |
 | `alliesOfElement` / `alliesOfClass` / `alliesOfWeapon` / `alliesOfElementWeapon` | All allies of an element / class / weapon / element+weapon                            | (element) 9 units; arcana-fortune-mate; (weapon) arcana-fortune-mate, d-killer-wife, drake, leona, noir, rem, tove; trina |
-| `selfAndAdjacent`                                                                | Self + N allies each side (positional)                                                | rouge                                                                                                                |
+| `selfAndAdjacent`                                                                | Self + N allies each side (positional). Whether `sides` counts per-side or in total is open — U38  | flora, rouge                                                                                                         |
 | `excludeSelf`                                                                    | Drops owner from the pool before slicing                                              | arcana-fortune-mate, blanc, brid-silent-track, grave, liberalio, maiden-ice-rose, miranda, soda-twinkling-bunny      |
 | `byFinalAtk`                                                                     | Rank by live buffed ATK instead of base staticAtk (keyed on the literal word "final") | alice, liberalio, miranda, soda-twinkling-bunny                                                                      |
 
@@ -238,6 +239,7 @@ current but not a contract.
 | Primitive                   | Meaning                                                | Users                                                                                                                                                                                                                  |
 | --------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `hasPierce` / `pierceModes` | Permanently Pierce-tagged / Pierce only in named modes | alice, red-hood, zwei / cinderella-crystal-wave, zwei                                                                                                                                                                  |
+| `hasTrueNormals`             | Permanently True-flavored normal attacks (STATIC, unlike the swap-scoped `weaponSwap.trueNormals` window chisato/takina/base laplace — slug `laplace`, RL/Iron, not laplace-ultimate-hero — use) | none on the roster today — the buffer board's typed-adaptation carries only (`src/ranks/buffer.ts` `deriveCarrySpec`, 2026-08-03) |
 | `burstSnapshotsPreFb`       | Burst damage resolves pre-FB/pre-stage                 | cinderella                                                                                                                                                                                                             |
 | `consolidation`             | Pellet-consolidation single-bullet mode                | dorothy-serendipity                                                                                                                                                                                                    |
 | `magDumpRof`                | Whole-magazine dump after a priming charge             | cinderella                                                                                                                                                                                                             |
@@ -282,6 +284,13 @@ noted.
   that overshoots (kept on purpose) isolates a compensating error — don't fudge it back.
 - **Prose-free runtime.** The engine never parses kit text at runtime; each override fully describes the
   kit (all 3 slots + `unmodeled`). Blablalink/DB prose is the objective SSOT. → DECISIONS 2026-07-16.
+- **Kit work is test-first.** A unit's kit lines are pinned as assertion groups in
+  `scripts/tests/units/<slug>.test.ts`, written RED against the shipped override before the override or
+  engine change lands; the board A/B is the outer accuracy loop. The tests gate FAITHFULNESS
+  (stat- and footage-independent), the board gates FIT. Engine primitives are pinned in
+  `scripts/tests/engine/`; everything under `scripts/tests/` runs as the one `npx vitest run` step in
+  `verify.sh`. Per-unit path: `/kit-tdd` (owner-driven spec) or `/kit-autonomy` (authorized autonomous
+  branch work); `/audit-kit` samples, `/kit-parse` seeds untuned units. → CONVENTIONS.md.
 - **Per-unit tier SSOT = `data/kit-status.json`** (via `scripts/kit-status.ts`). Every tuning change
   updates it. Evidence tiers (MEASURED > DATAMINED > COMMUNITY > CALIBRATED ⚑): → CONVENTIONS.md.
 - **Supported roster** = enikk top-100 audit list + all hand-tuned overrides; never remove a
@@ -345,13 +354,59 @@ Planned follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
 - **sustain** — 50 candidates (healer/shield tags + nayuta), team-total HP restored+shielded: thin
   analytic layer over one sim run (maxHp + `cfg.onEvent` timeline), curated lines in
   `src/ranks/sustain-table.ts`. Profiles: prika+mint duet, anchor-innocent-maid+mast-romantic-maid.
+  **Stage-covered comp (landed 2026-08-03, `src/ranks/sustain.ts` `sustainTeam()`):** ports the
+  buffer board's shape — a stage-matched spare (a same-stage profile partner stands in when one is
+  seated) covers the tested unit's own burst stage, with the tested unit leading it in slot order, so
+  a 40s/60s healer no longer holds up its own team's rotation. B3-tested comps already had this shape
+  (the alternating no-op B3). `scripts/build-sustain.ts` also loads every synthetic control override
+  (previously `noop-b3-mg` only), so the no-op B1's 7s team burst-cooldown reduction now applies here
+  too.
 - **buffer** — 74 B1/B2 + B3-buffer units, added carry DPS vs a no-op baseline over two synthetic
   standard carries (`src/ranks/synthetics.ts`, class-modal MG+RL). Two arms: generic and typed
-  (carries auto-adapt to the kit: weapon swap / pierce / projectile-explosion / element). The
-  leaderboard shows rows ≥ 0 only, minus `HIDDEN_BUFFER_SLUGS` (chime, avistar) — `rankedBufferRows`
-  (`src/ranks/buffer-rows.ts`) filters both the chart bars and the share/pre-render table card, so
-  ranks are numbered over one set; the artifact itself keeps every row for the unit card, and
-  `EXCLUDED_BUFFER_SLUGS` (blanc) never enters the population at all.
+  (carries auto-adapt to the kit: weapon swap / pierce / projectile-explosion / element / True
+  Damage / Distributed+Sustained Damage — `CarrySpec` in `src/ranks/buffer.ts`).
+  **Flavor-gated typed adaptation (landed 2026-08-03):** an ally-facing `trueDamagePct` buff
+  (flora, frima, takina, ada — a general rule, not a Flora-only patch; verified via a full roster
+  walk after a cross-family review caught the initial landing under-claiming its own scope)
+  grants both carries `hasTrueNormals` (a new static kit primitive, §5) so its True
+  Damage ▲ has a real True-flavored hit to multiply — until this, the buff read exactly 0 on
+  both boards (the carries have no skill/burst kit and normal fire is never True-flavored on its
+  own). `emma-tactical-upgrade`/`eunhwa-tactical-upgrade` also carry ally-facing `trueDamagePct`
+  lines but are unaffected — both are gated behind a duo `mode`/`teamHas` condition the standalone
+  comp never satisfies, an unrelated pre-existing gap. An ally-facing `sustainedDamagePct`/
+  `distributedDamagePct` buff (crust,
+  rosanna-chic-ocean, delta-ninja-thief, elegg, mast-romantic-maid) grants each carry a synthetic
+  `MOCK_TICK` rider instead — one instant `flatDamage` hit every 10s tagged the needed flavor,
+  sized off the carry's own weapon modal (`MODAL_WEAPON`). No engine primitive exists for a
+  STATIC sustained/distributed normal-attack tag (unlike True Damage/Pierce), and sustained (dot)
+  /distributed (flatDamage) instances are otherwise only ever produced by a caster's own
+  skill/burst line targeting the enemy — so this is a deliberately-labeled POLICY MOCK, not a
+  measured value, picked (owner-chosen Option 3 of the 2026-08-03 typed-board flavor audit) to be
+  a minority contributor (checked via `--explain <slug> --typed`) and independent of Full Burst
+  count/rotation. `sustained`/`distributed` are folded into the baseline-run memo key (unlike
+  `pierce`/`trueFlavor`, which are pure tags with no damage of their own) because the rider fires
+  regardless of any buff, changing the baseline's raw DPS by itself.
+  **STANDARD TEAM (owner spec, landed 2026-08-03):** no-op B1 (20s, 7s CDR) + two no-op B2 (20s) +
+  the two carries; the tested unit takes the second B2's slot and leads its own stage (behind the
+  same-stage no-op it would lose every contest and stop bursting), and the baseline puts a
+  stage-matched no-op back in that slot. The spare keeps every stage covered, so a 40s/60s cooldown
+  no longer costs the team Full Bursts — pinned by ISOLATION (forcing a unit's cooldown to 20s must
+  not change its FB count) in `scripts/tests/ranks/buffer.test.ts`, audited by
+  `scripts/probe/buffer-rotation-audit.ts`. **Camera focus is the spare no-op B2 (SR)**, never the
+  tested unit, so burst generation is identical in every run (it used to follow the second carry,
+  whose weapon the typed board rewrites per unit); on a duo row the partner holds it, symmetrically.
+  A tested B3's burst slot is suppressed outright (`burstOffSlug`) rather than relying on rightmost
+  placement to lose the stage-3 cast. **Exactly one burst-cooldown enabler per team** — the tested
+  unit when its kit reduces ALLY cooldowns (`suppliesTeamCdr`, 12 units; self-only carriers do not
+  qualify), else the no-op B1, which the baseline always keeps. The control's 7s fires on
+  `fullBurstEnter`, NOT its own cast, so it cannot be suppressed by a tested B1 sharing its stage;
+  `build-bufferchart.ts` now loads the synthetic control overrides at all, which it never did. The leaderboard shows rows ≥ 0 only, minus
+  `HIDDEN_BUFFER_SLUGS` (chime, avistar) — `rankedBufferRows` (`src/ranks/buffer-rows.ts`) filters
+  both the chart bars and the share/pre-render table card, so ranks are numbered over one set; the
+  artifact itself keeps every row for the unit card. `EXCLUDED_BUFFER_SLUGS` is a second, harder
+  screen at the population filter — a kit that outright REDUCES team damage in the standard comp
+  would report a misleadingly negative % and never enters the board — and it is currently **empty**;
+  `scripts/probe/buffer-rotation-audit.ts --excluded` checks each entry against that criterion.
 - **b1b2dps** — every sim-supported B1/B2 unit, ranked by own DPS in a Solo-style no-op control team.
   Four cells: Core 0 / Core 100 × neutral / elemental advantage. 40s-B1 and B2 templates include a
   no-op B1 with the standard 7 s team burst CDR; 20s-B1 rows rely on the tested unit's own CDR.
@@ -367,3 +422,34 @@ her own Relax self-heal), naga `with-shielder` (shield-gated core/ATK lines live
 via a synthetic heal/shield kit on the no-op fillers (`COMP_PROFILES` in `src/ranks/buffer.ts`).
 Frontend: `/ranks` (Rankings section home, `/ranks/support` boards + `/ranks/compare` comparator,
 pill-switched, profile badges — `web/src/App.tsx`, PR #31).
+
+---
+
+## 9. No-JS / crawler surface (what a client that runs no JavaScript receives)
+
+The site is a client-rendered SPA, so the served `dist/index.html` carries meta tags but an EMPTY
+`<div id="root">`. Routes that need indexable text get a body injected **at request time** by both
+servers — `src/server/static.ts` (the TypeScript port, which is what production runs via
+`npm run start:server` → `dist-server/index.js`) and its hand-mirror `scripts/serve.mjs`. React
+replaces the markup wholesale on load (`createRoot`, not hydration), so it must be valid and
+crawlable, not identical to React's output.
+
+| Route        | Body source                                                   | Emits                                                      |
+| ------------ | ------------------------------------------------------------- | ---------------------------------------------------------- |
+| `/unit/*`    | `unitStaticHtml` ← `data/characters.json` + `data/unit-pages.json` | identity row, tags, kit, ranked overload table, sim-status badge |
+| `/characters`| `charactersStaticHtml` ← `data/characters.json`                | an `<a>` to every character — the crawl hub                 |
+| `/mechanics` | `web/public/content-pages.json` ← `web/src/mechanics-data.ts`  | intro, tier legend, every section heading + bullets         |
+| `/howto`     | `web/public/content-pages.json` ← `web/src/howto-data.ts`      | intro, every section heading, bullets, glossary `<dl>`      |
+
+Every other route serves the empty-`#root` shell. **`/doll`'s FAQ is deliberately excluded** — its
+web copy is JSX in `App.tsx` while `web/src/doll-faq-data.ts` is the Discord bot's separate copy, so
+injecting from the data module would show crawlers text the page does not render.
+
+**Two standing rules.** (1) A no-JS body is generated from the SAME artifact the React page reads, so
+the two cannot recommend different things — serving text the page does not show is worse than serving
+none. (2) **No prerender pass**: build-time prerendering is rejected for every route
+(→ DECISIONS 2026-08-03, `docs/seo-followups.md`). A route that needs a body gets request-time
+injection. `web/public/content-pages.json` is committed AND regenerated by
+`scripts/build-content-pages.ts` in verify.sh's `artifacts` tier — the tier `railway.json` builds
+with; `content-pages-drift.test.ts` fails on drift, and both serve test suites assert the served
+bytes.

@@ -107,7 +107,6 @@ not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, 
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
 
-
 ---
 
 # MECHANICS SSOT (authoritative engine/formula docs)
@@ -563,7 +562,6 @@ uniform damage-side deficit under the corrected rotation model, per-unit kit-gen
 not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-EQ,
 guillotine-WS).
 
-
 ## docs/data/game-mechanics.md
 
 # NIKKE combat mechanics — single source of truth (2026-07-13)
@@ -980,444 +978,443 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   ([arca.live/b/nikketgv/79367873](https://arca.live/b/nikketgv/79367873),
   [dcinside 3902276](https://gall.dcinside.com/mgallery/board/view/?id=gov&no=3902276)).
 
-
 ---
 
 # GROUND TRUTH — kit prose + base stats (data/characters.json → characters.bay, verbatim)
 
 {
-  "slug": "bay",
-  "name": "Bay (Treasure)",
-  "imageUrl": "https://sg-tools-cdn.blablalink.com/nr-51/ih-98/dbf0f95b26f99563ebfeb3a95b1fb728.png",
-  "weapon": "RL",
-  "burst": "II",
-  "burstCooldownSec": 40,
-  "class": "Defender",
-  "element": "Fire",
-  "manufacturer": "Tetra",
-  "normalAttackMultiplier": 61.3,
-  "coreAttackMultiplier": 200,
-  "ammo": 6,
-  "reloadFrames": 141,
-  "chargeFrames": 60,
-  "chargeMultiplier": 250,
-  "hitsPerShot": 1,
-  "rl3": 16.8,
-  "releaseDate": "2024-04-11",
-  "burstGaugePerShot": 1.4,
-  "treasure": true,
-  "skills": {
-    "skill1": "■ Activates when using Burst Skill, only if self is alive. Affects all allies.\nProportionally shares damage taken continuously.\nDEF ▲ 10.13% of the skill user's DEF continuously.\n■ Activates when performing Full Charge attacks. Affects all allies (except self).\nRecovers 4% of the skill user's final Max HP.",
-    "skill2": "■ Activates when using Burst Skill, only if self is alive. Affects self's cover. \nProportionally shares damage taken continuously.\n■ Activates when Full Burst ends. Affects self.\nContinuously recovers Cover's HP equal to 2.88% of the skill user's final Max HP every 1 sec for 5 sec.\n■ Activates when entering Burst Stage 1 and self's cover has been destroyed. Affects self.\nRecovers 20% of the skill user's final Max HP.",
-    "burst": "■ Affects self if self's cover has been destroyed.\nRebuild Cover with 20% HP. Activates once per battle.\n■ Affects self.\nMax HP of Cover ▲ 18% of the skill user's Max HP for 20 sec.\n■ Affects all allies.\nDamage Taken ▼ 8.87% for 10 sec."
-  },
-  "skillCooldownsSec": {
-    "skill1": null,
-    "skill2": null,
-    "burst": 40
-  },
-  "role": {
-    "weapon": {
-      "shot_id": 1055001,
-      "shot_detail": {
-        "id": 1055001,
-        "damage": 6130,
-        "max_ammo": 6,
-        "shake_id": 2,
-        "ShakeType": "Fire_RL",
-        "fire_type": "HomingProjectile",
-        "zoom_rate": 0,
-        "input_type": "UP",
-        "shot_count": 1,
-        "ShakeWeight": 120,
-        "attack_type": "Metal",
-        "camera_work": "camera_work_01",
-        "charge_time": 100,
-        "penetration": 0,
-        "reload_time": 200,
-        "shot_timing": "Concurrence",
-        "spot_radius": 50,
-        "weapon_type": "RL",
-        "is_targeting": false,
-        "muzzle_count": 1,
-        "rate_of_fire": 60,
-        "homing_script": "lv1",
-        "name_localkey": "Rocket Launcher",
-        "prefer_target": "TargetGL",
-        "reload_bullet": 10000,
-        "counter_enermy": "Metal_Type",
-        "multi_aim_range": 0,
-        "spot_last_delay": 20,
-        "core_damage_rate": 20000,
-        "end_rate_of_fire": 60,
-        "spot_first_delay": 20,
-        "center_shot_count": 0,
-        "reload_start_ammo": 5,
-        "full_charge_damage": 25000,
-        "multi_target_count": 0,
-        "spot_radius_object": 2,
-        "uptype_fire_timing": 0,
-        "burst_energy_pershot": 14000,
-        "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
-        "maintain_fire_stance": 0,
-        "spot_explosion_range": 500,
-        "use_function_id_list": [
-          0
-        ],
-        "accuracy_change_speed": 0,
-        "hurt_function_id_list": [
-          0
-        ],
-        "spot_projectile_speed": 100,
-        "accuracy_change_pershot": 0,
-        "prefer_target_condition": "None",
-        "rate_of_fire_reset_time": 0,
-        "full_charge_burst_energy": 25000,
-        "end_accuracy_circle_scale": 10,
-        "auto_accuracy_change_speed": 0,
-        "rate_of_fire_change_pershot": 0,
-        "start_accuracy_circle_scale": 10,
-        "target_burst_energy_pershot": 28000,
-        "auto_accuracy_change_pershot": 0,
-        "auto_end_accuracy_circle_scale": 10,
-        "auto_start_accuracy_circle_scale": 10
-      },
-      "bonusrange_max": 0,
-      "bonusrange_min": 0
-    },
-    "burstMeta": {
-      "burst_duration": 1000,
-      "use_burst_skill": "Step2",
-      "burst_apply_delay": 1,
-      "change_burst_step": "Step3"
-    },
-    "skillDetails": {
-      "skill1_id": 2550101,
-      "skill2_id": 2550201,
-      "skill1_table": "StateEffect",
-      "skill2_table": "StateEffect",
-      "skill1_detail": {
-        "id": 2550101,
-        "icon": "icn_skill_damageshare_01",
-        "group_id": 25501,
-        "skill_level": 1,
-        "name_localkey": "You Can Do It",
-        "next_level_id": 2550102,
-        "level_up_cost_id": 10102,
-        "description_localkey": "■ Activates when using Burst Skill, only if self is alive. Affects all allies. \n<color=#00AEFF><word_group=10044>Proportionally shares damage taken</word_group> continuously.\nDEF ▲ {description_value_01}% of the skill user's DEF continuously.</color>",
-        "description_value_list": [
-          {
-            "description_value": [
-              "5.57",
-              "6.08",
-              "6.58",
-              "7.09",
-              "7.6",
-              "8.11",
-              "8.61",
-              "9.12",
-              "9.63",
-              "10.13"
-            ]
-          },
-          {},
-          {},
-          {},
-          {},
-          {},
-          {},
-          {},
-          {},
-          {},
-          {}
-        ],
-        "info_description_localkey": "Skill 1"
-      },
-      "skill2_detail": {
-        "id": 2550201,
-        "icon": "icn_skill_healcover_01",
-        "group_id": 25502,
-        "skill_level": 1,
-        "name_localkey": "Cheer Up Together",
-        "next_level_id": 2550202,
-        "level_up_cost_id": 10202,
-        "description_localkey": "■ Activates when using Burst Skill, only if self is alive. Affects all allies. \n<color=#00AEFF><word_group=10044>Proportionally shares damage taken</word_group> continuously.</color>\n■ Activates when Full Burst ends. Affects self.\n<color=#00AEFF><word_group=10043>Constantly recovers Cover's HP</word_group> by {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec for {description_value_02} sec.</color>",
-        "description_value_list": [
-          {
-            "description_value": [
-              "1.58",
-              "1.72",
-              "1.87",
-              "2.01",
-              "2.16",
-              "2.3",
-              "2.44",
-              "2.59",
-              "2.73",
-              "2.88"
-            ]
-          },
-          {
-            "description_value": [
-              "5",
-              "5",
-              "5",
-              "5",
-              "5",
-              "5",
-              "5",
-              "5",
-              "5",
-              "5"
-            ]
-          },
-          {},
-          {},
-          {},
-          {},
-          {},
-          {},
-          {},
-          {},
-          {}
-        ],
-        "info_description_localkey": "Skill 2"
-      },
-      "ulti_skill_id": 1550301,
-      "ulti_skill_detail": {
-        "id": 1550301,
-        "icon": "icn_skill_c550_ult",
-        "group_id": 15503,
-        "shake_id": 1,
-        "skill_type": "SetBuff",
-        "attack_type": "Fire",
-        "skill_level": 1,
-        "counter_type": "Metal_Type",
-        "duration_type": "None",
-        "name_localkey": "First Winner",
-        "next_level_id": 1550302,
-        "prefer_target": "HighAttackFirstSelf",
-        "resource_name": "c550_ulti",
-        "duration_value": 0,
-        "skill_cooltime": 4000,
-        "level_up_cost_id": 10302,
-        "skill_value_data": [
-          {
-            "skill_value": 0,
-            "skill_value_type": "Integer"
-          },
-          {
-            "skill_value": 5,
-            "skill_value_type": "Integer"
-          },
-          {
-            "skill_value": 10000,
-            "skill_value_type": "Integer"
-          },
-          {
-            "skill_value": 0,
-            "skill_value_type": "None"
-          },
-          {
-            "skill_value": 0,
-            "skill_value_type": "None"
-          }
-        ],
-        "skill_cooltime_list": [
-          4000,
-          4000,
-          4000,
-          4000,
-          4000,
-          4000,
-          4000,
-          4000,
-          4000,
-          4000
-        ],
-        "description_localkey": "■ Affects self.\n<color=#00AEFF><word_group=10033>Max HP of Cover</word_group> ▲ {description_value_01}% of the skill user's Max HP for {description_value_02} sec.</color>\n■ Affects all allies.\n<color=#00AEFF>Damage Taken ▼ {description_value_03}% for {description_value_04} sec.</color>",
-        "description_value_list": [
-          {
-            "description_value": [
-              "9.9",
-              "10.8",
-              "11.7",
-              "12.6",
-              "13.5",
-              "14.4",
-              "15.3",
-              "16.2",
-              "17.1",
-              "18"
-            ]
-          },
-          {
-            "description_value": [
-              "20",
-              "20",
-              "20",
-              "20",
-              "20",
-              "20",
-              "20",
-              "20",
-              "20",
-              "20"
-            ]
-          },
-          {
-            "description_value": [
-              "4.87",
-              "5.32",
-              "5.76",
-              "6.2",
-              "6.65",
-              "7.09",
-              "7.53",
-              "7.98",
-              "8.42",
-              "8.87"
-            ]
-          },
-          {
-            "description_value": [
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10"
-            ]
-          },
-          {},
-          {},
-          {},
-          {},
-          {},
-          {},
-          {}
-        ],
-        "prefer_target_condition": "None",
-        "info_description_localkey": "Burst Skill",
-        "after_use_function_id_list": [
-          155030103
-        ],
-        "after_hurt_function_id_list": [
-          155030101
-        ],
-        "before_use_function_id_list": [
-          0
-        ],
-        "before_hurt_function_id_list": [
-          0
-        ]
-      }
-    },
-    "statScaling": {
-      "grow_grade": 355002,
-      "grade_core_id": 1,
-      "stat_enhance_id": 5205,
-      "stat_enhance_detail": {
-        "id": 5205,
-        "core_hp": 200,
-        "grade_hp": 3000,
-        "core_attack": 200,
-        "grade_ratio": 200,
-        "core_defence": 200,
-        "grade_attack": 20,
-        "grade_defence": 100,
-        "core_bio_resist": 0,
-        "grade_bio_resist": 0,
-        "core_metal_resist": 0,
-        "core_energy_resist": 0,
-        "grade_metal_resist": 0,
-        "grade_energy_resist": 0
-      }
-    },
-    "element": {
-      "element_id": [
-        100001
-      ],
-      "element_details": [
-        {
-          "id": 100001,
-          "element": "Fire",
-          "group_id": 5000001,
-          "element_icon": "icn_element_fire",
-          "weak_element_id": 200001,
-          "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
-          "element_name_localekey": "Fire",
-          "element_code_name_localekey": "Code: H.S.T.A."
-        }
-      ]
-    },
-    "piece": {
-      "piece_id": 5100550,
-      "piece_detail": {
-        "id": 5100550,
-        "class": "Attacker",
-        "order": 55000,
-        "use_id": 0,
-        "use_type": "None",
-        "item_rare": "SSR",
-        "item_type": "Piece",
-        "stack_max": 9999999,
-        "use_value": 0,
-        "corporation": "TETRA",
-        "resource_id": 550,
-        "item_sub_type": "CharacterPiece",
-        "name_localkey": "Bay's Spare Body",
-        "use_limit_count": false,
-        "inventory_filter": [
-          "etc"
-        ],
-        "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
-      }
-    },
-    "meta": {
-      "id": 355001,
-      "class": "Defender",
-      "order": 10121,
-      "name_code": 5111,
-      "corporation": "TETRA",
-      "resource_id": 550,
-      "name_localkey": "Bay",
-      "original_rare": "SSR",
-      "critical_ratio": 1500,
-      "category_type_1": "None",
-      "category_type_2": "None",
-      "category_type_3": "None",
-      "critical_damage": 15000,
-      "eff_category_type": "Walk",
-      "eff_category_value": 0
-    }
-  },
-  "generatorSupported": false,
-  "simSupported": false,
-  "baseStats": {
-    "hp": 16500,
-    "atk": 400,
-    "def": 107,
-    "core": {
-      "hp": 200,
-      "atk": 200,
-      "def": 200
-    },
-    "grade": {
-      "hp": 3000,
-      "atk": 20,
-      "def": 100,
-      "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 550
-  }
+"slug": "bay",
+"name": "Bay (Treasure)",
+"imageUrl": "https://sg-tools-cdn.blablalink.com/nr-51/ih-98/dbf0f95b26f99563ebfeb3a95b1fb728.png",
+"weapon": "RL",
+"burst": "II",
+"burstCooldownSec": 40,
+"class": "Defender",
+"element": "Fire",
+"manufacturer": "Tetra",
+"normalAttackMultiplier": 61.3,
+"coreAttackMultiplier": 200,
+"ammo": 6,
+"reloadFrames": 141,
+"chargeFrames": 60,
+"chargeMultiplier": 250,
+"hitsPerShot": 1,
+"rl3": 16.8,
+"releaseDate": "2024-04-11",
+"burstGaugePerShot": 1.4,
+"treasure": true,
+"skills": {
+"skill1": "■ Activates when using Burst Skill, only if self is alive. Affects all allies.\nProportionally shares damage taken continuously.\nDEF ▲ 10.13% of the skill user's DEF continuously.\n■ Activates when performing Full Charge attacks. Affects all allies (except self).\nRecovers 4% of the skill user's final Max HP.",
+"skill2": "■ Activates when using Burst Skill, only if self is alive. Affects self's cover. \nProportionally shares damage taken continuously.\n■ Activates when Full Burst ends. Affects self.\nContinuously recovers Cover's HP equal to 2.88% of the skill user's final Max HP every 1 sec for 5 sec.\n■ Activates when entering Burst Stage 1 and self's cover has been destroyed. Affects self.\nRecovers 20% of the skill user's final Max HP.",
+"burst": "■ Affects self if self's cover has been destroyed.\nRebuild Cover with 20% HP. Activates once per battle.\n■ Affects self.\nMax HP of Cover ▲ 18% of the skill user's Max HP for 20 sec.\n■ Affects all allies.\nDamage Taken ▼ 8.87% for 10 sec."
+},
+"skillCooldownsSec": {
+"skill1": null,
+"skill2": null,
+"burst": 40
+},
+"role": {
+"weapon": {
+"shot_id": 1055001,
+"shot_detail": {
+"id": 1055001,
+"damage": 6130,
+"max_ammo": 6,
+"shake_id": 2,
+"ShakeType": "Fire_RL",
+"fire_type": "HomingProjectile",
+"zoom_rate": 0,
+"input_type": "UP",
+"shot_count": 1,
+"ShakeWeight": 120,
+"attack_type": "Metal",
+"camera_work": "camera_work_01",
+"charge_time": 100,
+"penetration": 0,
+"reload_time": 200,
+"shot_timing": "Concurrence",
+"spot_radius": 50,
+"weapon_type": "RL",
+"is_targeting": false,
+"muzzle_count": 1,
+"rate_of_fire": 60,
+"homing_script": "lv1",
+"name_localkey": "Rocket Launcher",
+"prefer_target": "TargetGL",
+"reload_bullet": 10000,
+"counter_enermy": "Metal_Type",
+"multi_aim_range": 0,
+"spot_last_delay": 20,
+"core_damage_rate": 20000,
+"end_rate_of_fire": 60,
+"spot_first_delay": 20,
+"center_shot_count": 0,
+"reload_start_ammo": 5,
+"full_charge_damage": 25000,
+"multi_target_count": 0,
+"spot_radius_object": 2,
+"uptype_fire_timing": 0,
+"burst_energy_pershot": 14000,
+"description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+"maintain_fire_stance": 0,
+"spot_explosion_range": 500,
+"use_function_id_list": [
+0
+],
+"accuracy_change_speed": 0,
+"hurt_function_id_list": [
+0
+],
+"spot_projectile_speed": 100,
+"accuracy_change_pershot": 0,
+"prefer_target_condition": "None",
+"rate_of_fire_reset_time": 0,
+"full_charge_burst_energy": 25000,
+"end_accuracy_circle_scale": 10,
+"auto_accuracy_change_speed": 0,
+"rate_of_fire_change_pershot": 0,
+"start_accuracy_circle_scale": 10,
+"target_burst_energy_pershot": 28000,
+"auto_accuracy_change_pershot": 0,
+"auto_end_accuracy_circle_scale": 10,
+"auto_start_accuracy_circle_scale": 10
+},
+"bonusrange_max": 0,
+"bonusrange_min": 0
+},
+"burstMeta": {
+"burst_duration": 1000,
+"use_burst_skill": "Step2",
+"burst_apply_delay": 1,
+"change_burst_step": "Step3"
+},
+"skillDetails": {
+"skill1_id": 2550101,
+"skill2_id": 2550201,
+"skill1_table": "StateEffect",
+"skill2_table": "StateEffect",
+"skill1_detail": {
+"id": 2550101,
+"icon": "icn_skill_damageshare_01",
+"group_id": 25501,
+"skill_level": 1,
+"name_localkey": "You Can Do It",
+"next_level_id": 2550102,
+"level_up_cost_id": 10102,
+"description_localkey": "■ Activates when using Burst Skill, only if self is alive. Affects all allies. \n<color=#00AEFF><word_group=10044>Proportionally shares damage taken</word_group> continuously.\nDEF ▲ {description_value_01}% of the skill user's DEF continuously.</color>",
+"description_value_list": [
+{
+"description_value": [
+"5.57",
+"6.08",
+"6.58",
+"7.09",
+"7.6",
+"8.11",
+"8.61",
+"9.12",
+"9.63",
+"10.13"
+]
+},
+{},
+{},
+{},
+{},
+{},
+{},
+{},
+{},
+{},
+{}
+],
+"info_description_localkey": "Skill 1"
+},
+"skill2_detail": {
+"id": 2550201,
+"icon": "icn_skill_healcover_01",
+"group_id": 25502,
+"skill_level": 1,
+"name_localkey": "Cheer Up Together",
+"next_level_id": 2550202,
+"level_up_cost_id": 10202,
+"description_localkey": "■ Activates when using Burst Skill, only if self is alive. Affects all allies. \n<color=#00AEFF><word_group=10044>Proportionally shares damage taken</word_group> continuously.</color>\n■ Activates when Full Burst ends. Affects self.\n<color=#00AEFF><word_group=10043>Constantly recovers Cover's HP</word_group> by {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec for {description_value_02} sec.</color>",
+"description_value_list": [
+{
+"description_value": [
+"1.58",
+"1.72",
+"1.87",
+"2.01",
+"2.16",
+"2.3",
+"2.44",
+"2.59",
+"2.73",
+"2.88"
+]
+},
+{
+"description_value": [
+"5",
+"5",
+"5",
+"5",
+"5",
+"5",
+"5",
+"5",
+"5",
+"5"
+]
+},
+{},
+{},
+{},
+{},
+{},
+{},
+{},
+{},
+{}
+],
+"info_description_localkey": "Skill 2"
+},
+"ulti_skill_id": 1550301,
+"ulti_skill_detail": {
+"id": 1550301,
+"icon": "icn_skill_c550_ult",
+"group_id": 15503,
+"shake_id": 1,
+"skill_type": "SetBuff",
+"attack_type": "Fire",
+"skill_level": 1,
+"counter_type": "Metal_Type",
+"duration_type": "None",
+"name_localkey": "First Winner",
+"next_level_id": 1550302,
+"prefer_target": "HighAttackFirstSelf",
+"resource_name": "c550_ulti",
+"duration_value": 0,
+"skill_cooltime": 4000,
+"level_up_cost_id": 10302,
+"skill_value_data": [
+{
+"skill_value": 0,
+"skill_value_type": "Integer"
+},
+{
+"skill_value": 5,
+"skill_value_type": "Integer"
+},
+{
+"skill_value": 10000,
+"skill_value_type": "Integer"
+},
+{
+"skill_value": 0,
+"skill_value_type": "None"
+},
+{
+"skill_value": 0,
+"skill_value_type": "None"
+}
+],
+"skill_cooltime_list": [
+4000,
+4000,
+4000,
+4000,
+4000,
+4000,
+4000,
+4000,
+4000,
+4000
+],
+"description_localkey": "■ Affects self.\n<color=#00AEFF><word_group=10033>Max HP of Cover</word_group> ▲ {description_value_01}% of the skill user's Max HP for {description_value_02} sec.</color>\n■ Affects all allies.\n<color=#00AEFF>Damage Taken ▼ {description_value_03}% for {description_value_04} sec.</color>",
+"description_value_list": [
+{
+"description_value": [
+"9.9",
+"10.8",
+"11.7",
+"12.6",
+"13.5",
+"14.4",
+"15.3",
+"16.2",
+"17.1",
+"18"
+]
+},
+{
+"description_value": [
+"20",
+"20",
+"20",
+"20",
+"20",
+"20",
+"20",
+"20",
+"20",
+"20"
+]
+},
+{
+"description_value": [
+"4.87",
+"5.32",
+"5.76",
+"6.2",
+"6.65",
+"7.09",
+"7.53",
+"7.98",
+"8.42",
+"8.87"
+]
+},
+{
+"description_value": [
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10"
+]
+},
+{},
+{},
+{},
+{},
+{},
+{},
+{}
+],
+"prefer_target_condition": "None",
+"info_description_localkey": "Burst Skill",
+"after_use_function_id_list": [
+155030103
+],
+"after_hurt_function_id_list": [
+155030101
+],
+"before_use_function_id_list": [
+0
+],
+"before_hurt_function_id_list": [
+0
+]
+}
+},
+"statScaling": {
+"grow_grade": 355002,
+"grade_core_id": 1,
+"stat_enhance_id": 5205,
+"stat_enhance_detail": {
+"id": 5205,
+"core_hp": 200,
+"grade_hp": 3000,
+"core_attack": 200,
+"grade_ratio": 200,
+"core_defence": 200,
+"grade_attack": 20,
+"grade_defence": 100,
+"core_bio_resist": 0,
+"grade_bio_resist": 0,
+"core_metal_resist": 0,
+"core_energy_resist": 0,
+"grade_metal_resist": 0,
+"grade_energy_resist": 0
+}
+},
+"element": {
+"element_id": [
+100001
+],
+"element_details": [
+{
+"id": 100001,
+"element": "Fire",
+"group_id": 5000001,
+"element_icon": "icn_element_fire",
+"weak_element_id": 200001,
+"element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+"element_name_localekey": "Fire",
+"element_code_name_localekey": "Code: H.S.T.A."
+}
+]
+},
+"piece": {
+"piece_id": 5100550,
+"piece_detail": {
+"id": 5100550,
+"class": "Attacker",
+"order": 55000,
+"use_id": 0,
+"use_type": "None",
+"item_rare": "SSR",
+"item_type": "Piece",
+"stack_max": 9999999,
+"use_value": 0,
+"corporation": "TETRA",
+"resource_id": 550,
+"item_sub_type": "CharacterPiece",
+"name_localkey": "Bay's Spare Body",
+"use_limit_count": false,
+"inventory_filter": [
+"etc"
+],
+"description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+}
+},
+"meta": {
+"id": 355001,
+"class": "Defender",
+"order": 10121,
+"name_code": 5111,
+"corporation": "TETRA",
+"resource_id": 550,
+"name_localkey": "Bay",
+"original_rare": "SSR",
+"critical_ratio": 1500,
+"category_type_1": "None",
+"category_type_2": "None",
+"category_type_3": "None",
+"critical_damage": 15000,
+"eff_category_type": "Walk",
+"eff_category_value": 0
+}
+},
+"generatorSupported": false,
+"simSupported": false,
+"baseStats": {
+"hp": 16500,
+"atk": 400,
+"def": 107,
+"core": {
+"hp": 200,
+"atk": 200,
+"def": 200
+},
+"grade": {
+"hp": 3000,
+"atk": 20,
+"def": 100,
+"ratio": 200
+},
+"critRate": 15,
+"maxLevel": 1200,
+"critDamage": 150,
+"resourceId": 550
+}
 }
 
 NOTE: `bay` is the `treasure: true` variant and the ONLY Bay entry in the data (no base-Bay entry exists). Skill levels shown in description_value_list are SL1..SL10; the sim runs SL10 (last value in each list).
@@ -1427,159 +1424,158 @@ NOTE: `bay` is the `treasure: true` variant and the ONLY Bay entry in the data (
 # S2b TEST-FAITHFULNESS REVIEW (claude-fable-5, blind)
 
 {
-  "slug": "bay",
-  "leakDetected": null,
-  "spec": [
-    {
-      "slot": "skill1",
-      "kitLine": "Proportionally shares damage taken",
-      "disposition": "UNMODELED",
-      "scope": "damage-taken redistribution across all allies; defensive only",
-      "durationSemantics": "'continuously' = persistent while active, no timed window",
-      "triggerIdentity": "burstCast (own Burst Skill use; Bay is B2) — NOT fullBurstEnter; 'only if self is alive' is scope-trivial (nobody dies at scope lock)",
-      "targetSet": "all allies (including self)",
-      "nearestWrongModel": "inventing an offensive proxy (e.g. a damage-share 'buff' with a stat key) or any block that emits damage-relevant buffApply events",
-      "distinguishingAssertion": "run with vs without this line via withPatchedOverride: totals(res) identical per slug; no buffApply from bay's burst cast carrying any damage-bucket stat traceable to this line",
-      "inertness": "must move ZERO damage for every unit; v1 has no incoming-damage model",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": false
-    },
-    {
-      "slot": "skill1",
-      "kitLine": "DEF ▲ 10.13% of the skill user's DEF",
-      "disposition": "GAP",
-      "scope": "generic DEF stat grant, caster-DEF-scaled flat add",
-      "durationSemantics": "'continuously' = no duration (persists after cast), not a 10s FB window",
-      "triggerIdentity": "burstCast (fires only on rotations Bay herself bursts), stage-unqualified",
-      "targetSet": "all allies (including self)",
-      "nearestWrongModel": "pattern-matching the caster-scaled phrasing 'X% of the skill user's Y' into the casterAtkPct habit (an ATK-family flat add) — that WOULD move damage; or encoding as target-own defPct 10.13 keyed to fullBurstEnter",
-      "distinguishingAssertion": "filter buffApply events with casterIdx === bay's slot: NONE carry stat 'casterAtkPct'/'atkPct'/'attackDamagePct'; totals identical with the line stripped via withPatchedOverride (DEF has no offensive consumer in v1)",
-      "inertness": "offensively inert — no unit's totalDamage may change; schema has no caster-DEF-scaled key (defPct is target-own and inert), so this is a schema GAP recorded, not silently dropped",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": false
-    },
-    {
-      "slot": "skill1",
-      "kitLine": "Recovers 4% of user's final Max HP",
-      "disposition": "FAITHFUL",
-      "scope": "heal rider on Full Charge attacks; Bay is RL (chargeFrames 60) so effectively every fired shot is a full-charge attack",
-      "durationSemantics": "instant per activation (ticks:1 default heal), one event per full-charge shot",
-      "triggerIdentity": "per full-charge shot (shotFired-shaped for an always-full-charging RL) — NOT burstCast-gated, NOT fbGate'd, NOT interval",
-      "targetSet": "allies excludeSelf ('all allies (except self)') — Bay herself must NOT receive the recovery event",
-      "nearestWrongModel": "keying the heal to fullBurstEnter/burstCast (heals only once per rotation instead of per shot), or targeting all-including-self (fires Bay's own recovery triggers)",
-      "distinguishingAssertion": "no heal/recovery kind exists in cfg.onEvent, so observe via a tandem consumer: comp Bay with crown (recovery-triggered kit); count crown's recovery-gated buffApply events — they must track Bay's shot-event cadence (one activation window per Bay shot, ammo 6 / reload 141f rhythm, throughout the fight, outside FB included), not cluster only at burst casts/FB entries; and no recovery-driven buffApply may target Bay's own slot",
-      "inertness": "the heal amount (4% Max HP) is inert (heal effects carry no HP pool); what matters is event count, cadence, and target set",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "shares damage taken — self's cover",
-      "disposition": "UNMODELED",
-      "scope": "cover damage-share; defensive, cover entity not modeled",
-      "durationSemantics": "'continuously' persistent",
-      "triggerIdentity": "burstCast (own burst use)",
-      "targetSet": "self's cover (not a unit)",
-      "nearestWrongModel": "encoding as any self-buff or shield effect (a 'shield' effect would wrongly fire shielded-trigger consumers)",
-      "distinguishingAssertion": "no shield effect / shielded-trigger activation attributable to bay anywhere in the run; totals unmoved",
-      "inertness": "zero damage movement; zero shield events",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": false
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "recovers Cover's HP 2.88%/1s for 5s",
-      "disposition": "UNMODELED",
-      "scope": "COVER HP heal-over-time, not unit HP",
-      "durationSemantics": "5 ticks, every 1 sec, at Full Burst end",
-      "triggerIdentity": "fullBurstEnd",
-      "targetSet": "self's cover — NOT self",
-      "nearestWrongModel": "encoding as a self heal (heal ticks:5) — that emits 5 recovery events to Bay at every FB end and wrongly feeds any recovery-trigger consumer chain",
-      "distinguishingAssertion": "at fullBurstEnd frames, NO recovery-driven consumer activation targeting or caused-by bay occurs (crown-style consumer's buffApply cadence shows no 5-tick burst clustered after fullBurstEnd events)",
-      "inertness": "must emit zero recovery events; cover HP is not modeled",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": false
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "Burst Stage 1 + cover destroyed: 20% HP",
-      "disposition": "UNMODELED",
-      "scope": "self heal gated on cover-destroyed state",
-      "durationSemantics": "instant, per qualifying Stage-1 entry",
-      "triggerIdentity": "stageEnter stage:1 AND cover-destroyed gate — the gate can never be satisfied at scope lock (boss deals no damage, cover never breaks)",
-      "targetSet": "self",
-      "nearestWrongModel": "modeling the heal UNGATED on stageEnter:1 — a self recovery event every rotation, feeding recovery-trigger consumers each B1 cast",
-      "distinguishingAssertion": "no recovery event to bay coincident with stage-1 burstCast events across the full run",
-      "inertness": "fires never at scope; zero recovery events from this line",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": false
-    },
-    {
-      "slot": "burst",
-      "kitLine": "Rebuild Cover with 20% HP, once",
-      "disposition": "UNMODELED",
-      "scope": "cover rebuild, once per battle, cover-destroyed gated",
-      "durationSemantics": "once per battle",
-      "triggerIdentity": "burstCast + cover-destroyed condition (never satisfied at scope)",
-      "targetSet": "self (cover)",
-      "nearestWrongModel": "any modeled stand-in (shield/heal) emitting events",
-      "distinguishingAssertion": "bay's burstCast emits no shield/heal event from this line",
-      "inertness": "fully inert; verbatim-recorded only",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": false
-    },
-    {
-      "slot": "burst",
-      "kitLine": "Max HP of Cover ▲ 18% for 20 sec",
-      "disposition": "UNMODELED",
-      "scope": "COVER Max HP, not unit Max HP",
-      "durationSemantics": "20 sec timed window from burst cast",
-      "triggerIdentity": "burstCast",
-      "targetSet": "self's cover",
-      "nearestWrongModel": "encoding as a self Max HP buff (maxHpFlat/targetMaxHpPct-shaped) — pollutes the event stream and, in principle, the HP→ATK conversion path (atkOfMaxHpPct feeds off self Max HP grants)",
-      "distinguishingAssertion": "no buffApply with stat 'maxHpFlat' or 'maxHpPct' from bay's burst cast",
-      "inertness": "must not touch unit Max HP; Bay has no atkOfMaxHpPct but the event must still be absent (kit-faithfulness, and her S1 heal scales off final Max HP)",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": false
-    },
-    {
-      "slot": "burst",
-      "kitLine": "Damage Taken ▼ 8.87% for 10 sec",
-      "disposition": "UNMODELED",
-      "scope": "DEFENSIVE mitigation on ALLIES (allies take 8.87% less damage) — NOT an offensive boss debuff",
-      "durationSemantics": "10 sec from burst cast",
-      "triggerIdentity": "burstCast",
-      "targetSet": "all allies — the direction (▼) plus ally target set makes this defensive; taxonomy item 4 covers the INVERSE ('Damage Taken ▲' on the ENEMY is the offensive debuff)",
-      "nearestWrongModel": "THE key shared-prior misread: encoding as damageTakenPct on the boss (the 'Damage Taken is always the damageTakenPct stat' reflex) — an 8.87% boss debuff for 10s per Bay burst would inflate EVERY unit's damage each rotation",
-      "distinguishingAssertion": "no buffApply with stat 'damageTakenPct' and value 8.87 anywhere in the run (boss-held debuffs have casterIdx===null — filter by stat+value); and totals(res) for all four teammates identical with Bay's burst block stripped via withPatchedOverride",
-      "inertness": "must move ZERO damage; v1 boss deals no damage so ally mitigation is inert by construction",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": false
-    }
-  ],
-  "loadBearingSet": [
-    "skill1:Recovers 4% of user's final Max HP on Full Charge attacks (allies except self)"
-  ],
-  "unmodeledVerbatim": {
-    "skill1": [
-      "Activates when using Burst Skill, only if self is alive. Affects all allies. Proportionally shares damage taken continuously.",
-      "DEF ▲ 10.13% of the skill user's DEF continuously."
-    ],
-    "skill2": [
-      "Activates when using Burst Skill, only if self is alive. Affects self's cover. Proportionally shares damage taken continuously.",
-      "Activates when Full Burst ends. Affects self. Continuously recovers Cover's HP equal to 2.88% of the skill user's final Max HP every 1 sec for 5 sec.",
-      "Activates when entering Burst Stage 1 and self's cover has been destroyed. Affects self. Recovers 20% of the skill user's final Max HP."
-    ],
-    "burst": [
-      "Affects self if self's cover has been destroyed. Rebuild Cover with 20% HP. Activates once per battle.",
-      "Affects self. Max HP of Cover ▲ 18% of the skill user's Max HP for 20 sec.",
-      "Affects all allies. Damage Taken ▼ 8.87% for 10 sec."
-    ]
-  },
-  "notes": "Reconcile these with the driver: (1) HIGHEST-RISK shared misread — burst 'Damage Taken ▼ 8.87%' targets ALLIES and is defensive mitigation, NOT the boss damageTakenPct debuff; a debuff encoding inflates the whole team's totals every rotation and the test suite MUST carry the negative assertion (no damageTakenPct buffApply with value 8.87; teammate totals invariant under stripping Bay's burst). (2) The ONLY damage-relevant line is the skill1 full-charge heal, and it's load-bearing solely through tandem recovery-trigger consumers (crown's 'when recovery takes effect'); since cfg.onEvent has no heal/recovery kind, the distinguishing observable is a recovery-consumer teammate's buffApply cadence tracking Bay's shot events — per-shot, all fight, excludeSelf. (3) FIXTURE TRAP: Bay is Burst II, and controlComp(carry) seats the carry in the B3 slot with crown already at B2 — Bay in that fixture never casts her burst (and a comp without any B3 makes ZERO full bursts). Tests for the burstCast-gated skill1/skill2/burst blocks need a custom runComp comp where Bay is the resolving B2 (or must assert those blocks fire only on rotations Bay actually bursts — burstCast ≠ fullBurstEnter, which diverges precisely because crown competes at the same tier). (4) 'X% of the skill user's DEF' invites the casterAtkPct pattern-match; assert no ATK-family buffApply from Bay's burst. (5) All cover lines (share, HoT, rebuild, cover Max HP) are unmodelable at scope (no cover entity, boss deals no damage, cover never destroyed) and belong verbatim in unmodeled — the fullBurstEnd cover HoT especially must NOT become a 5-tick self heal, which would pulse recovery consumers at every FB end.",
-  "model": "claude-fable-5"
+"slug": "bay",
+"leakDetected": null,
+"spec": [
+{
+"slot": "skill1",
+"kitLine": "Proportionally shares damage taken",
+"disposition": "UNMODELED",
+"scope": "damage-taken redistribution across all allies; defensive only",
+"durationSemantics": "'continuously' = persistent while active, no timed window",
+"triggerIdentity": "burstCast (own Burst Skill use; Bay is B2) — NOT fullBurstEnter; 'only if self is alive' is scope-trivial (nobody dies at scope lock)",
+"targetSet": "all allies (including self)",
+"nearestWrongModel": "inventing an offensive proxy (e.g. a damage-share 'buff' with a stat key) or any block that emits damage-relevant buffApply events",
+"distinguishingAssertion": "run with vs without this line via withPatchedOverride: totals(res) identical per slug; no buffApply from bay's burst cast carrying any damage-bucket stat traceable to this line",
+"inertness": "must move ZERO damage for every unit; v1 has no incoming-damage model",
+"evidenceTier": "DATAMINED",
+"loadBearing": false
+},
+{
+"slot": "skill1",
+"kitLine": "DEF ▲ 10.13% of the skill user's DEF",
+"disposition": "GAP",
+"scope": "generic DEF stat grant, caster-DEF-scaled flat add",
+"durationSemantics": "'continuously' = no duration (persists after cast), not a 10s FB window",
+"triggerIdentity": "burstCast (fires only on rotations Bay herself bursts), stage-unqualified",
+"targetSet": "all allies (including self)",
+"nearestWrongModel": "pattern-matching the caster-scaled phrasing 'X% of the skill user's Y' into the casterAtkPct habit (an ATK-family flat add) — that WOULD move damage; or encoding as target-own defPct 10.13 keyed to fullBurstEnter",
+"distinguishingAssertion": "filter buffApply events with casterIdx === bay's slot: NONE carry stat 'casterAtkPct'/'atkPct'/'attackDamagePct'; totals identical with the line stripped via withPatchedOverride (DEF has no offensive consumer in v1)",
+"inertness": "offensively inert — no unit's totalDamage may change; schema has no caster-DEF-scaled key (defPct is target-own and inert), so this is a schema GAP recorded, not silently dropped",
+"evidenceTier": "DATAMINED",
+"loadBearing": false
+},
+{
+"slot": "skill1",
+"kitLine": "Recovers 4% of user's final Max HP",
+"disposition": "FAITHFUL",
+"scope": "heal rider on Full Charge attacks; Bay is RL (chargeFrames 60) so effectively every fired shot is a full-charge attack",
+"durationSemantics": "instant per activation (ticks:1 default heal), one event per full-charge shot",
+"triggerIdentity": "per full-charge shot (shotFired-shaped for an always-full-charging RL) — NOT burstCast-gated, NOT fbGate'd, NOT interval",
+"targetSet": "allies excludeSelf ('all allies (except self)') — Bay herself must NOT receive the recovery event",
+"nearestWrongModel": "keying the heal to fullBurstEnter/burstCast (heals only once per rotation instead of per shot), or targeting all-including-self (fires Bay's own recovery triggers)",
+"distinguishingAssertion": "no heal/recovery kind exists in cfg.onEvent, so observe via a tandem consumer: comp Bay with crown (recovery-triggered kit); count crown's recovery-gated buffApply events — they must track Bay's shot-event cadence (one activation window per Bay shot, ammo 6 / reload 141f rhythm, throughout the fight, outside FB included), not cluster only at burst casts/FB entries; and no recovery-driven buffApply may target Bay's own slot",
+"inertness": "the heal amount (4% Max HP) is inert (heal effects carry no HP pool); what matters is event count, cadence, and target set",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "shares damage taken — self's cover",
+"disposition": "UNMODELED",
+"scope": "cover damage-share; defensive, cover entity not modeled",
+"durationSemantics": "'continuously' persistent",
+"triggerIdentity": "burstCast (own burst use)",
+"targetSet": "self's cover (not a unit)",
+"nearestWrongModel": "encoding as any self-buff or shield effect (a 'shield' effect would wrongly fire shielded-trigger consumers)",
+"distinguishingAssertion": "no shield effect / shielded-trigger activation attributable to bay anywhere in the run; totals unmoved",
+"inertness": "zero damage movement; zero shield events",
+"evidenceTier": "DATAMINED",
+"loadBearing": false
+},
+{
+"slot": "skill2",
+"kitLine": "recovers Cover's HP 2.88%/1s for 5s",
+"disposition": "UNMODELED",
+"scope": "COVER HP heal-over-time, not unit HP",
+"durationSemantics": "5 ticks, every 1 sec, at Full Burst end",
+"triggerIdentity": "fullBurstEnd",
+"targetSet": "self's cover — NOT self",
+"nearestWrongModel": "encoding as a self heal (heal ticks:5) — that emits 5 recovery events to Bay at every FB end and wrongly feeds any recovery-trigger consumer chain",
+"distinguishingAssertion": "at fullBurstEnd frames, NO recovery-driven consumer activation targeting or caused-by bay occurs (crown-style consumer's buffApply cadence shows no 5-tick burst clustered after fullBurstEnd events)",
+"inertness": "must emit zero recovery events; cover HP is not modeled",
+"evidenceTier": "DATAMINED",
+"loadBearing": false
+},
+{
+"slot": "skill2",
+"kitLine": "Burst Stage 1 + cover destroyed: 20% HP",
+"disposition": "UNMODELED",
+"scope": "self heal gated on cover-destroyed state",
+"durationSemantics": "instant, per qualifying Stage-1 entry",
+"triggerIdentity": "stageEnter stage:1 AND cover-destroyed gate — the gate can never be satisfied at scope lock (boss deals no damage, cover never breaks)",
+"targetSet": "self",
+"nearestWrongModel": "modeling the heal UNGATED on stageEnter:1 — a self recovery event every rotation, feeding recovery-trigger consumers each B1 cast",
+"distinguishingAssertion": "no recovery event to bay coincident with stage-1 burstCast events across the full run",
+"inertness": "fires never at scope; zero recovery events from this line",
+"evidenceTier": "DATAMINED",
+"loadBearing": false
+},
+{
+"slot": "burst",
+"kitLine": "Rebuild Cover with 20% HP, once",
+"disposition": "UNMODELED",
+"scope": "cover rebuild, once per battle, cover-destroyed gated",
+"durationSemantics": "once per battle",
+"triggerIdentity": "burstCast + cover-destroyed condition (never satisfied at scope)",
+"targetSet": "self (cover)",
+"nearestWrongModel": "any modeled stand-in (shield/heal) emitting events",
+"distinguishingAssertion": "bay's burstCast emits no shield/heal event from this line",
+"inertness": "fully inert; verbatim-recorded only",
+"evidenceTier": "DATAMINED",
+"loadBearing": false
+},
+{
+"slot": "burst",
+"kitLine": "Max HP of Cover ▲ 18% for 20 sec",
+"disposition": "UNMODELED",
+"scope": "COVER Max HP, not unit Max HP",
+"durationSemantics": "20 sec timed window from burst cast",
+"triggerIdentity": "burstCast",
+"targetSet": "self's cover",
+"nearestWrongModel": "encoding as a self Max HP buff (maxHpFlat/targetMaxHpPct-shaped) — pollutes the event stream and, in principle, the HP→ATK conversion path (atkOfMaxHpPct feeds off self Max HP grants)",
+"distinguishingAssertion": "no buffApply with stat 'maxHpFlat' or 'maxHpPct' from bay's burst cast",
+"inertness": "must not touch unit Max HP; Bay has no atkOfMaxHpPct but the event must still be absent (kit-faithfulness, and her S1 heal scales off final Max HP)",
+"evidenceTier": "DATAMINED",
+"loadBearing": false
+},
+{
+"slot": "burst",
+"kitLine": "Damage Taken ▼ 8.87% for 10 sec",
+"disposition": "UNMODELED",
+"scope": "DEFENSIVE mitigation on ALLIES (allies take 8.87% less damage) — NOT an offensive boss debuff",
+"durationSemantics": "10 sec from burst cast",
+"triggerIdentity": "burstCast",
+"targetSet": "all allies — the direction (▼) plus ally target set makes this defensive; taxonomy item 4 covers the INVERSE ('Damage Taken ▲' on the ENEMY is the offensive debuff)",
+"nearestWrongModel": "THE key shared-prior misread: encoding as damageTakenPct on the boss (the 'Damage Taken is always the damageTakenPct stat' reflex) — an 8.87% boss debuff for 10s per Bay burst would inflate EVERY unit's damage each rotation",
+"distinguishingAssertion": "no buffApply with stat 'damageTakenPct' and value 8.87 anywhere in the run (boss-held debuffs have casterIdx===null — filter by stat+value); and totals(res) for all four teammates identical with Bay's burst block stripped via withPatchedOverride",
+"inertness": "must move ZERO damage; v1 boss deals no damage so ally mitigation is inert by construction",
+"evidenceTier": "DATAMINED",
+"loadBearing": false
 }
-
+],
+"loadBearingSet": [
+"skill1:Recovers 4% of user's final Max HP on Full Charge attacks (allies except self)"
+],
+"unmodeledVerbatim": {
+"skill1": [
+"Activates when using Burst Skill, only if self is alive. Affects all allies. Proportionally shares damage taken continuously.",
+"DEF ▲ 10.13% of the skill user's DEF continuously."
+],
+"skill2": [
+"Activates when using Burst Skill, only if self is alive. Affects self's cover. Proportionally shares damage taken continuously.",
+"Activates when Full Burst ends. Affects self. Continuously recovers Cover's HP equal to 2.88% of the skill user's final Max HP every 1 sec for 5 sec.",
+"Activates when entering Burst Stage 1 and self's cover has been destroyed. Affects self. Recovers 20% of the skill user's final Max HP."
+],
+"burst": [
+"Affects self if self's cover has been destroyed. Rebuild Cover with 20% HP. Activates once per battle.",
+"Affects self. Max HP of Cover ▲ 18% of the skill user's Max HP for 20 sec.",
+"Affects all allies. Damage Taken ▼ 8.87% for 10 sec."
+]
+},
+"notes": "Reconcile these with the driver: (1) HIGHEST-RISK shared misread — burst 'Damage Taken ▼ 8.87%' targets ALLIES and is defensive mitigation, NOT the boss damageTakenPct debuff; a debuff encoding inflates the whole team's totals every rotation and the test suite MUST carry the negative assertion (no damageTakenPct buffApply with value 8.87; teammate totals invariant under stripping Bay's burst). (2) The ONLY damage-relevant line is the skill1 full-charge heal, and it's load-bearing solely through tandem recovery-trigger consumers (crown's 'when recovery takes effect'); since cfg.onEvent has no heal/recovery kind, the distinguishing observable is a recovery-consumer teammate's buffApply cadence tracking Bay's shot events — per-shot, all fight, excludeSelf. (3) FIXTURE TRAP: Bay is Burst II, and controlComp(carry) seats the carry in the B3 slot with crown already at B2 — Bay in that fixture never casts her burst (and a comp without any B3 makes ZERO full bursts). Tests for the burstCast-gated skill1/skill2/burst blocks need a custom runComp comp where Bay is the resolving B2 (or must assert those blocks fire only on rotations Bay actually bursts — burstCast ≠ fullBurstEnter, which diverges precisely because crown competes at the same tier). (4) 'X% of the skill user's DEF' invites the casterAtkPct pattern-match; assert no ATK-family buffApply from Bay's burst. (5) All cover lines (share, HoT, rebuild, cover Max HP) are unmodelable at scope (no cover entity, boss deals no damage, cover never destroyed) and belong verbatim in unmodeled — the fullBurstEnd cover HoT especially must NOT become a 5-tick self heal, which would pulse recovery consumers at every FB end.",
+"model": "claude-fable-5"
+}
 
 ---
 
@@ -1588,7 +1584,7 @@ NOTE: `bay` is the `treasure: true` variant and the ONLY Bay entry in the data (
 RESULT vs the DRIVER override (adapted copy — only the harness import path fixed, assertion intent untouched): **17 PASS / 1 FAIL / 5 SKIP (23 total)**.
 
 The SOLE FAILURE is structural, not behavioral:
-  skill1 b) 'is encoded as a per-shot heal to allies EXCEPT self' — expected trigger.kind 'shotFired', received 'chargeCounter' (count:1). For an RL unit every shot dispatches charged=true (sim.ts firePull: 'every dumped rocket is a full-charge shot'), so `shotFired` and `chargeCounter count:1` fire on EXACTLY the same frames — behaviorally identical encodings of 'when performing Full Charge attacks'. Every BEHAVIORAL assertion in the blind suite (per-shot cadence vs burstCast/lastBullet/fullBurstEnter counterfactuals, recovery reaching the crown consumer, excludeSelf inertness, defPct kit-complete-yet-inert, no damageTakenPct anywhere, no ally Max-HP grant, no cover-state gates) PASSED against the driver's chargeCounter encoding.
+skill1 b) 'is encoded as a per-shot heal to allies EXCEPT self' — expected trigger.kind 'shotFired', received 'chargeCounter' (count:1). For an RL unit every shot dispatches charged=true (sim.ts firePull: 'every dumped rocket is a full-charge shot'), so `shotFired` and `chargeCounter count:1` fire on EXACTLY the same frames — behaviorally identical encodings of 'when performing Full Charge attacks'. Every BEHAVIORAL assertion in the blind suite (per-shot cadence vs burstCast/lastBullet/fullBurstEnter counterfactuals, recovery reaching the crown consumer, excludeSelf inertness, defPct kit-complete-yet-inert, no damageTakenPct anywhere, no ally Max-HP grant, no cover-state gates) PASSED against the driver's chargeCounter encoding.
 
 ```typescript
 /**
@@ -1707,7 +1703,10 @@ const run = (opts: CompOptions) => {
   });
   return { events, t: totals(res) };
 };
-const withBay = (opts: CompOptions, ov: ReturnType<typeof withPatchedOverride>): CompOptions => ({
+const withBay = (
+  opts: CompOptions,
+  ov: ReturnType<typeof withPatchedOverride>
+): CompOptions => ({
   ...opts,
   overrides: { ...opts.overrides, bay: ov },
 });
@@ -1823,7 +1822,7 @@ describe('bay — fixture non-vacuity', () => {
     expect(R_CTL_BASE.t['crown']).toBeGreaterThan(0);
   });
 
-  it('FX_SOLE actually casts bay\'s burst (marker probe)', () => {
+  it("FX_SOLE actually casts bay's burst (marker probe)", () => {
     // Without this, every burst-slot assertion below would be vacuously green.
     expect(R_SOLE_MARKER.t['bay']).toBeGreaterThan(R_SOLE_BASE.t['bay']);
     expect(
@@ -1846,7 +1845,7 @@ describe('bay skill1 b) — full-charge ally heal (the only cross-unit channel)'
     expect(blk.target.excludeSelf).toBe(true);
   });
 
-  it('reaches the on-recovery consumer (crown) — removing it drops crown\'s buff applications', () => {
+  it("reaches the on-recovery consumer (crown) — removing it drops crown's buff applications", () => {
     // Discriminates against: heal absent, heal scoped to self, or heal emitting no recovery event.
     expect(crownApplies(R_CTL_BASE.events)).toBeGreaterThan(
       crownApplies(R_CTL_NO_HEAL.events)
@@ -1913,7 +1912,7 @@ describe('bay skill2 b) — Full-Burst-end COVER heal is NOT an ally heal', () =
     );
   });
 
-  it('no heal in bay\'s kit targets allies at Full Burst end', () => {
+  it("no heal in bay's kit targets allies at Full Burst end", () => {
     const fbEndAllyHeals = effectsOf(OV).filter(
       (x) =>
         x.e.kind === 'heal' &&
@@ -1946,9 +1945,7 @@ describe('bay burst c) — "Damage Taken ▼ 8.87%, all allies" is ALLY MITIGATI
         (b) => b.stat === 'damageTakenPct'
       ).length
     ).toBeGreaterThan(0);
-    expect(teamTotal(R_SOLE_DAMAGE_TAKEN.t)).not.toBe(
-      teamTotal(R_SOLE_BASE.t)
-    );
+    expect(teamTotal(R_SOLE_DAMAGE_TAKEN.t)).not.toBe(teamTotal(R_SOLE_BASE.t));
   });
 });
 
@@ -1970,7 +1967,7 @@ describe('bay burst b) — "Max HP of COVER ▲18%" is not a nikke Max-HP grant'
     ).toHaveLength(0);
   });
 
-  it('INERTNESS: even a self Max-HP reading cannot move bay\'s damage', () => {
+  it("INERTNESS: even a self Max-HP reading cannot move bay's damage", () => {
     // bay has no atkOfMaxHpPct conversion, so the cover-HP line is damage-inert either way —
     // recorded so no future calibration is hung on it.
     expect(R_SOLE_COVER_MAXHP.t['bay']).toBe(R_SOLE_BASE.t['bay']);
@@ -2028,7 +2025,6 @@ describe('bay — GAPS (no engine primitive)', () => {
   it.skip('skill2 c) Burst-Stage-1 20% heal gated on cover destroyed — cover destruction is unreachable (boss deals no damage)', () => {});
   it.skip('burst a) rebuild cover 20%, once per battle — same unreachable gate, plus no cover entity', () => {});
 });
-
 ```
 
 ---
@@ -2036,6 +2032,7 @@ describe('bay — GAPS (no engine primitive)', () => {
 # S6 BLIND OVERRIDE (claude-opus-5, written from kit prose alone)
 
 DIFF vs the driver override (src/skills/overrides/bay.json):
+
 1. skill1 heal TRIGGER: S6 uses `shotFired`; driver uses `chargeCounter count:1`. Behaviorally identical on an always-charged RL (see S5 sole-fail note). S6's own caveat claims 'the schema has no full-charge trigger' — but `chargeCounter` (a cycling per-FULL-CHARGE phase counter; sim.ts: 'only full charges advance it') exists and with count:1 fires exactly once per full charge; it is the more literal encoding of 'when performing Full Charge attacks'.
 2. skill2 COVER HoT (2.88%/1s × 5s at Full Burst end): S6 MODELS it as fullBurstEnd → self heal ticks:5 intervalSec:1 (with an explicit ⚑ caveat: 'cover-HP recovery may not count as recovery in game — do NOT widen its target without a measurement'). Driver leaves it VERBATIM UNMODELED: cover repair is not a Nikke recovery; a heal encoding emits 5 recovery events to bay at EVERY Full Burst end, which would falsely fire any future teammate on-recovery consumer keyed to bay (marciana Storage≠shield precedent: an unmodelable mechanic must not emit events it does not have). S2b (claude-fable-5) PRE-REGISTERED this exact trap: 'the fullBurstEnd cover HoT especially must NOT become a 5-tick self heal, which would pulse recovery consumers at every FB end'. RULE THIS DIVERGENCE.
 3. Everything else is FUNCTIONALLY IDENTICAL: skill1 defPct 10.13 / burstCast / allies (incl. self) / no durationSec, with the SAME casterDefPct-approximation caveat (schema has no caster-DEF stat; DEF is offensively inert in v1); EMPTY burst slot; the same unmodeled set (damage-share ×2, cover-destroyed heal, cover rebuild, Cover Max HP ▲ 18%, ally Damage Taken ▼ 8.87% — both sides explicitly NOT damageTakenPct, which is a boss-targeted amplifier); heal ticks:1 to allies excludeSelf.
@@ -2097,9 +2094,7 @@ DIFF vs the driver override (src/skills/overrides/bay.json):
   ],
   "burst": [],
   "unmodeled": {
-    "skill1": [
-      "Proportionally shares damage taken continuously."
-    ],
+    "skill1": ["Proportionally shares damage taken continuously."],
     "skill2": [
       "Proportionally shares damage taken continuously. (Affects self's cover.)",
       "Activates when entering Burst Stage 1 and self's cover has been destroyed. Affects self. Recovers 20% of the skill user's final Max HP."
@@ -2193,7 +2188,6 @@ DIFF vs the driver override (src/skills/overrides/bay.json):
   ],
   "note": "bay (Bay (Treasure)) — RL / Defender / Fire / Burst II, cd 40s, ammo 6, chargeFrames 60, reloadFrames 141, Tetra. treasure:true variant — the ONLY Bay entry in the data (no base-Bay entry exists; never conflated with mary-bay-goddess, the SR/Water BAY GODDESS variant of Mary). A PURE TANK whose kit is 100% survivability: damage-taken sharing, cover HP (share / heal / rebuild / Max HP), a continuous DEF grant, an ally damage-taken reduction, and two HP heals. ZERO damage lines and ZERO weapon-state modifiers in the whole kit — this unit cannot move her own damage or anyone else's; her board footprint is tandem (one per-shot recovery channel + one inert DEF buff). || MODELED TODAY (both lines in S1 'You Can Do It'): (1) 'DEF ▲ 10.13% of the skill user's DEF continuously' on 'using Burst Skill' → burstCast-keyed defPct 10.13 with NO duration ('continuously' = never expires; re-casts refresh), target all allies (self included). 'only if self is alive' is scope-trivial in v1 (nothing dies). SEMANTIC APPROXIMATION: the kit scales off the CASTER's DEF; the schema has no casterDefPct, so defPct (target-own) stands in — DEF being offensively inert in v1, the distinction has zero observable consequence (marciana precedent). (2) TREASURE line 'Activates when performing Full Charge attacks. Affects all allies (except self). Recovers 4% of the skill user's final Max HP' → chargeCounter count:1 (fires EVERY full charge; the phase counter resets each time) → heal ticks:1 to allies excludeSelf. An RL unit's every shot IS a full charge (sim.ts: all dumped rockets dispatch charged=true), so this emits ONE recovery event per bay shot to each of the other two allies — the load-bearing line, solely through teammates' on-recovery consumers (Crown/Asuka 'when recovery takes effect'). Heal MAGNITUDE is event-only (no HP pool in v1). || DELIBERATELY UNMODELED (all seven VERBATIM in `unmodeled`, never an `ignored` drop): S1 'Proportionally shares damage taken continuously' (allies — no incoming-damage model, no redistribution primitive); S2 'shares damage taken' onto SELF'S COVER (cover is not a sim entity); S2 cover-HP HoT 2.88%/1s x5s at Full Burst END (cover repair is NOT a Nikke recovery — a heal ticks:5 self-encoding would falsely pulse on-recovery consumers at every FB end); S2 Treasure 'entering Burst Stage 1 + cover destroyed → self 20% Max HP' (the cover-destroyed gate can never be satisfied at scope — boss deals no damage); burst Treasure 'Rebuild Cover with 20% HP once per battle' (cover + destroyed gate); burst 'Max HP of Cover ▲ 18% for 20s' (COVER Max HP, not unit Max HP — a targetMaxHpPct/maxHpFlat encoding would pollute the HP→ATK feed path); burst 'Damage Taken ▼ 8.87% for 10s' on ALL ALLIES (defensive mitigation — NOT the damageTakenPct stat, which is a boss-targeted amplifier with the wrong direction and target; v1 boss deals no damage so ally mitigation is inert by construction). || EVIDENCE TIER: both live values (10.13 DEF, per-full-charge recovery) are kit-text-literal; the only estimated quantities are the cadence tuple (her own shots only). || TIER 1 (clean-weapon-like: zero damage lines, zero weapon-state modifiers; the encoding is one recovery-event channel + one inert defPct; no scoped buffs, no round counts, no status gates among the modeled lines). Faithful>fit; measured>fudge. || Kit-autonomy gauntlet 2026-08-03."
 }
-
 ```
 
 ## Driver test — scripts/tests/units/bay.test.ts (19/19 GREEN vs the driver override; RED pre-override)
@@ -2358,7 +2352,8 @@ const recoveryFirings = (evs: SimEvent[]) =>
   buffs(evs).filter(
     (b) => b.casterIdx === ASUKA && b.stat === 'atkPct' && b.value === 96.98
   ).length;
-const bayBuffs = (evs: SimEvent[]) => buffs(evs).filter((b) => b.casterIdx === BAY);
+const bayBuffs = (evs: SimEvent[]) =>
+  buffs(evs).filter((b) => b.casterIdx === BAY);
 /** Every RL shot is a full charge (sim.ts: all dumped rockets dispatch charged=true). */
 const bayShots = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'shot' && e.slug === 'bay').length;
@@ -2529,7 +2524,7 @@ describe('B4/U — the seven unmodelable lines are documented, not dropped or fa
     const s2 = shipped.unmodeled.skill2.join(' ');
     expect(s2).toContain('shares damage taken continuously');
     expect(s2).toContain('2.88%');
-    expect(s2).toContain("cover has been destroyed");
+    expect(s2).toContain('cover has been destroyed');
     const bu = shipped.unmodeled.burst.join(' ');
     expect(bu).toContain('Rebuild Cover');
     expect(bu).toContain('18%');
@@ -2546,7 +2541,9 @@ describe('B4/U — the seven unmodelable lines are documented, not dropped or fa
     );
     expect(heals.length).toBe(1);
     expect(heals[0].slot).toBe('skill1');
-    const kinds = allBlocks.flatMap((b: any) => b.effects.map((e: any) => e.kind));
+    const kinds = allBlocks.flatMap((b: any) =>
+      b.effects.map((e: any) => e.kind)
+    );
     expect(kinds).not.toContain('shield');
   });
 });
@@ -2570,7 +2567,6 @@ describe('structural pins (S2b-pre-registered traps, adopted at S2c)', () => {
     expect(healBlock?.target).toEqual({ kind: 'allies', excludeSelf: true });
   });
 });
-
 ```
 
 ---

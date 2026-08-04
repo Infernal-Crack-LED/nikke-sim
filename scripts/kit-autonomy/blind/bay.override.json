@@ -54,9 +54,7 @@
   ],
   "burst": [],
   "unmodeled": {
-    "skill1": [
-      "Proportionally shares damage taken continuously."
-    ],
+    "skill1": ["Proportionally shares damage taken continuously."],
     "skill2": [
       "Proportionally shares damage taken continuously. (Affects self's cover.)",
       "Activates when entering Burst Stage 1 and self's cover has been destroyed. Affects self. Recovers 20% of the skill user's final Max HP."

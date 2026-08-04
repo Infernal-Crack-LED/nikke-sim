@@ -22,7 +22,11 @@
 //      events carry `slug`).
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { runComp, totals, withPatchedOverride } from '../../tests/lib/harness.js';
+import {
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../../tests/lib/harness.js';
 
 const FPS = 60;
 // B3 accommodation: ade must be the unit that casts stage 2 (sole B2).
@@ -56,7 +60,10 @@ const noBurstAtk = withPatchedOverride('ade', (ov) => {
   for (const b of ov.burst ?? []) {
     b.effects = b.effects.filter(
       (e: any) =>
-        !(e.kind === 'buff' && (e.stat === 'casterAtkPct' || e.stat === 'atkPct')),
+        !(
+          e.kind === 'buff' &&
+          (e.stat === 'casterAtkPct' || e.stat === 'atkPct')
+        )
     );
   }
 });
@@ -66,7 +73,9 @@ const withoutBurstAtk = run({ ade: noBurstAtk });
 const selfScaled = withPatchedOverride('ade', (ov) => {
   for (const b of ov.burst ?? []) {
     for (const e of b.effects) {
-      if (e.kind === 'buff' && e.stat === 'casterAtkPct') e.stat = 'atkPct';
+      if (e.kind === 'buff' && e.stat === 'casterAtkPct') {
+        e.stat = 'atkPct';
+      }
     }
   }
 });
@@ -76,7 +85,9 @@ const withSelfScaled = run({ ade: selfScaled });
 const shortWindow = withPatchedOverride('ade', (ov) => {
   for (const b of ov.burst ?? []) {
     for (const e of b.effects) {
-      if (e.kind === 'buff' && e.stat === 'casterAtkPct') e.durationSec = 5;
+      if (e.kind === 'buff' && e.stat === 'casterAtkPct') {
+        e.durationSec = 5;
+      }
     }
   }
 });
@@ -86,9 +97,11 @@ const withShortWindow = run({ ade: shortWindow });
 const selfOnly = withPatchedOverride('ade', (ov) => {
   for (const b of ov.burst ?? []) {
     const carriesAtk = b.effects.some(
-      (e: any) => e.kind === 'buff' && e.stat === 'casterAtkPct',
+      (e: any) => e.kind === 'buff' && e.stat === 'casterAtkPct'
     );
-    if (carriesAtk) b.target = { kind: 'self' };
+    if (carriesAtk) {
+      b.target = { kind: 'self' };
+    }
   }
 });
 const withSelfOnly = run({ ade: selfOnly });
@@ -104,8 +117,8 @@ const adeMaxHp = () => baseline.res.units[ADE].maxHp;
 const teamTotal = (t: Record<string, number>) =>
   Object.values(t).reduce((a, b) => a + b, 0);
 
-describe('ade — burst: ATK 10.15% of the skill user\'s ATK for 10 sec (allies)', () => {
-  it('emits a caster-scaled ATK buff, flat-resolved to 10.15% of ADE\'s static ATK', () => {
+describe("ade — burst: ATK 10.15% of the skill user's ATK for 10 sec (allies)", () => {
+  it("emits a caster-scaled ATK buff, flat-resolved to 10.15% of ADE's static ATK", () => {
     // Accommodation: isolate the burst line's 10s volley (skill1's HP-gate line emits a
     // 5s casterAtkPct window of its own under both the driver and S6 encodings).
     const atkBuffs = buffs(baseline.events).filter(
@@ -113,7 +126,7 @@ describe('ade — burst: ATK 10.15% of the skill user\'s ATK for 10 sec (allies)
         e.stat === 'casterAtkPct' &&
         e.casterIdx === ADE &&
         e.expiresFrame !== null &&
-        e.expiresFrame - e.frame === 10 * FPS,
+        e.expiresFrame - e.frame === 10 * FPS
     );
     expect(atkBuffs.length).toBeGreaterThan(0);
 
@@ -126,12 +139,14 @@ describe('ade — burst: ATK 10.15% of the skill user\'s ATK for 10 sec (allies)
 
   it('covers all allies of the fixture including self (not self-only, not exclude-self)', () => {
     const atkBuffs = buffs(baseline.events).filter(
-      (e) => e.stat === 'casterAtkPct' && e.casterIdx === ADE,
+      (e) => e.stat === 'casterAtkPct' && e.casterIdx === ADE
     );
     const perCast = new Map<number, Set<string>>();
     for (const b of atkBuffs) {
       const bucket = perCast.get(b.expiresFrame!) ?? new Set<string>();
-      if (b.targetSlug) bucket.add(b.targetSlug);
+      if (b.targetSlug) {
+        bucket.add(b.targetSlug);
+      }
       perCast.set(b.expiresFrame!, bucket);
     }
     for (const [, slugs] of perCast) {
@@ -150,7 +165,7 @@ describe('ade — burst: ATK 10.15% of the skill user\'s ATK for 10 sec (allies)
         e.stat === 'casterAtkPct' &&
         e.casterIdx === ADE &&
         e.expiresFrame !== null &&
-        e.expiresFrame - e.frame === 10 * FPS,
+        e.expiresFrame - e.frame === 10 * FPS
     );
     expect(atkBuffs.length).toBeGreaterThan(0);
     for (const b of atkBuffs) {
@@ -165,11 +180,13 @@ describe('ade — burst: ATK 10.15% of the skill user\'s ATK for 10 sec (allies)
 
   it('fires at BURST CAST, before the Full Burst window opens (not fullBurstEnter)', () => {
     const firstCast = baseline.events.find(
-      (e) => e.kind === 'burstCast' && e.slug === 'ade',
+      (e) => e.kind === 'burstCast' && e.slug === 'ade'
     );
-    const firstFbStart = baseline.events.find((e) => e.kind === 'fullBurstStart');
+    const firstFbStart = baseline.events.find(
+      (e) => e.kind === 'fullBurstStart'
+    );
     const firstAtk = buffs(baseline.events).find(
-      (e) => e.stat === 'casterAtkPct' && e.casterIdx === ADE,
+      (e) => e.stat === 'casterAtkPct' && e.casterIdx === ADE
     );
 
     expect(firstCast).toBeDefined();
@@ -179,13 +196,14 @@ describe('ade — burst: ATK 10.15% of the skill user\'s ATK for 10 sec (allies)
     expect(firstAtk!.frame).toBeLessThan(firstFbStart!.frame);
   });
 
-  it('is caster-scaled, NOT self-scaled — the Attacker carry gets ADE\'s number, not its own', () => {
+  it("is caster-scaled, NOT self-scaled — the Attacker carry gets ADE's number, not its own", () => {
     // B5 accommodation: ade's OWN total is identical under both bases by construction
     // (10.15% of ade's ATK applied to ade is the same flat); the divergence shows on the
     // Attacker carries, whose own ATK differs from ade's.
-    expect(totals(withSelfScaled.res)['ade']).toBe(totals(baseline.res)['ade']);
+    expect(totals(withSelfScaled.res).ade).toBe(totals(baseline.res).ade);
     const carryMoved = ['ada', 'helm'].filter(
-      (s) => Math.abs(totals(withSelfScaled.res)[s] - totals(baseline.res)[s]) > 1,
+      (s) =>
+        Math.abs(totals(withSelfScaled.res)[s] - totals(baseline.res)[s]) > 1
     );
     expect(carryMoved.length).toBeGreaterThanOrEqual(1);
   });
@@ -203,10 +221,10 @@ describe('ade — burst: ATK 10.15% of the skill user\'s ATK for 10 sec (allies)
   });
 });
 
-describe('ade — burst: Max HP 25.15% of the skill user\'s Max HP, 10 sec (allies)', () => {
-  it('emits maxHpFlat resolved to 25.15% of ADE\'s Max HP, to all allies of the fixture', () => {
+describe("ade — burst: Max HP 25.15% of the skill user's Max HP, 10 sec (allies)", () => {
+  it("emits maxHpFlat resolved to 25.15% of ADE's Max HP, to all allies of the fixture", () => {
     const hpBuffs = buffs(baseline.events).filter(
-      (e) => e.stat === 'maxHpFlat' && e.casterIdx === ADE,
+      (e) => e.stat === 'maxHpFlat' && e.casterIdx === ADE
     );
     const expected = (25.15 / 100) * adeMaxHp();
     const burstGrants = hpBuffs.filter((e) => Math.abs(e.value - expected) < 1);
@@ -225,7 +243,7 @@ describe('ade — burst: Max HP 25.15% of the skill user\'s Max HP, 10 sec (alli
               !(
                 e.kind === 'buff' &&
                 (e.stat === 'casterMaxHpPct' || e.stat === 'targetMaxHpPct')
-              ),
+              )
           );
         }
       }
@@ -238,22 +256,22 @@ describe('ade — burst: Max HP 25.15% of the skill user\'s Max HP, 10 sec (alli
 });
 
 describe('ade — skill2: Max HP 15.62% of skill user Max HP after 120 normal attacks (allies, 5s)', () => {
-  it('fires on ADE\'s OWN round count (hitCount 120), not on an interval and not on team ammo', () => {
+  it("fires on ADE's OWN round count (hitCount 120), not on an interval and not on team ammo", () => {
     const expected = (15.62 / 100) * adeMaxHp();
     const grants = buffs(baseline.events).filter(
       (e) =>
         e.stat === 'maxHpFlat' &&
         e.casterIdx === ADE &&
-        Math.abs(e.value - expected) < 1,
+        Math.abs(e.value - expected) < 1
     );
     expect(grants.length).toBeGreaterThan(0);
 
     // B5 accommodation: shot events carry `slug`.
     const adeShots = baseline.events.filter(
-      (e) => e.kind === 'shot' && (e as any).slug === 'ade',
+      (e) => e.kind === 'shot' && (e as any).slug === 'ade'
     );
     const grantFrames = [...new Set(grants.map((g) => g.frame))].sort(
-      (a, b) => a - b,
+      (a, b) => a - b
     );
     let prev = 0;
     for (const f of grantFrames) {
@@ -269,11 +287,11 @@ describe('ade — skill2: Max HP 15.62% of skill user Max HP after 120 normal at
       (e) =>
         e.stat === 'maxHpFlat' &&
         e.casterIdx === ADE &&
-        Math.abs(e.value - expected) < 1,
+        Math.abs(e.value - expected) < 1
     );
     const firstFrame = Math.min(...grants.map((g) => g.frame));
     const slugs = new Set(
-      grants.filter((g) => g.frame === firstFrame).map((g) => g.targetSlug),
+      grants.filter((g) => g.frame === firstFrame).map((g) => g.targetSlug)
     );
     expect(slugs.size).toBe(SLUGS.length);
     expect(slugs.has('ade')).toBe(true);
@@ -304,8 +322,8 @@ describe('ade — skill1: ATK 5.19% of skill user ATK when own HP < 90% (allies,
     const s1Blocks = ov.skill1 ?? [];
     const atkEffects = s1Blocks.flatMap((b: any) =>
       b.effects.filter(
-        (e: any) => e.kind === 'buff' && Math.abs((e.value ?? 0) - 5.19) < 0.01,
-      ),
+        (e: any) => e.kind === 'buff' && Math.abs((e.value ?? 0) - 5.19) < 0.01
+      )
     );
 
     if (atkEffects.length === 0) {
@@ -318,10 +336,13 @@ describe('ade — skill1: ATK 5.19% of skill user ATK when own HP < 90% (allies,
       }
       const carriers = s1Blocks.filter((b: any) =>
         b.effects.some(
-          (e: any) => e.kind === 'buff' && Math.abs((e.value ?? 0) - 5.19) < 0.01,
-        ),
+          (e: any) =>
+            e.kind === 'buff' && Math.abs((e.value ?? 0) - 5.19) < 0.01
+        )
       );
-      for (const b of carriers) expect(b.target.kind).toBe('allies');
+      for (const b of carriers) {
+        expect(b.target.kind).toBe('allies');
+      }
     }
   });
 });
@@ -338,7 +359,7 @@ describe('ade — inertness: nothing in this kit touches buckets it should not',
   it('deals no direct damage of its own — no skill/burst damage bucket is sourced from ade', () => {
     // B5 accommodation: damage events carry `slug`, not a numeric srcSlot.
     const adeDamage = baseline.events.filter(
-      (e): e is Damage => e.kind === 'damage' && (e as any).slug === 'ade',
+      (e): e is Damage => e.kind === 'damage' && (e as any).slug === 'ade'
     );
     expect(adeDamage.length).toBeGreaterThan(0);
     for (const d of adeDamage) {

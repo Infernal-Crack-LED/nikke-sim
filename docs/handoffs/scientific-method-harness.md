@@ -454,3 +454,50 @@ probes/burst tests/alice focused.MP4`, crown/liter/alice/red-hood, boss Water, a
   supplying it within 24 hours, closing the loop cleanly without needing a new pre-op/post-op round
   (no engine change was ever made, so there was nothing to re-judge — only a decision NOT to
   implement, informed by the evidence the original panel asked for).
+- **2026-08-03 — fb-count-regression investigation: LOG, general charge-B3 gauge-fill-tempo gap
+  (2-of-2 ACCEPT, both MEDIUM confidence).** Scope: the 4 comps disabled in `scripts/regression.ts`
+  (iron sweep run G, T5/T1 wind-weak, N3 scarlet/liberalio iron — all under-count measured full
+  bursts). Step-0 premise gate first REFUTED the QUEUE.md framing entirely: not "same family as
+  jill's N1/U29 shortfall" (unrelated mechanism, an editing artifact that dropped an original hedge);
+  root cause is commit `c12fcf4e` (2026-07-26) correctly fixing `liberalio`'s 6x-inflated burst-gauge
+  datamine, which unmasked a pre-existing shortfall her old value had papered over — she's the only
+  unit common to all 4 disabled comps. A first pre-op plan (burstCdr-proc-FB-window-phase theory) was
+  REJECTED by Fable: the `case 'burstCdr'` code applies unconditionally (no FB-gate exists), and the
+  DECISIONS.md 2026-07-21 entry it was misread from is a settled ruling that CDR DOES apply during FB
+  (from an abandoned, owner-refuted prototype of the opposite rule) — a premise-drift catch, not a
+  method failure. A cheap bounding A/B (strip `d-killer-wife`'s/`rouge`'s burstCdr effects, re-run)
+  confirmed the mechanism is real and net-positive (iron sweep run G: 11→9 fullBursts without it),
+  closing that hypothesis cleanly. Re-founded H1 on gauge-fill tempo: decomposed each cycle into a
+  MEASURED-constant floor (FB duration + 3s post-FB-chain-delay + measured chain span) vs observed
+  steady-state period; the residual "excess" is gauge-fill time beyond the cooldown/chain floor. A
+  pre-registered baseline (`N6 mihara/maiden wind` — currently PASSING, non-`liberalio`, two charge-B3
+  competitors) showed excess (2.24s/cycle, later reproduced at 2.17s by the committed instrument) AS
+  LARGE AS OR LARGER THAN all 4 disabled comps (1.27-1.94s), while the zero-charge-competition negative
+  control (`misc B3s`/PI2) read ~0. Every disabled comp's zero-excess ceiling (computed from measured
+  constants alone) exactly reproduces its measured FB target (or the certain low end of iron sweep run
+  G's genuinely ambiguous 13-14 video read). H0c (liberalio trigger-count semantics) was directly
+  tested via `DBG_GAUGE` and found 1:1 with her `hitsPerShot=1` datamine — refuted as the mechanism,
+  though it surfaced a SEPARATE, general (not liberalio-specific) `skillGauge`-fires-on-every-
+  `shotFired`-triggered-`flatDamage`-rider double-crediting pattern (`sim.ts:2393`), logged as its own
+  candidate needing an independent pre-op pass (direction is gauge-DOWN if "fixed", which would worsen
+  these 4 comps — do not bundle it in).
+  **VERDICT: general, board-wide charge-B3 gauge-fill-tempo gap — NOT liberalio-specific, NOT a narrow
+  fix.** Routes to LOG per CLAUDE.md's engine-blast-radius rule (shared math before per-unit fixes); no
+  engine/data/override file was touched this pass. Confidence capped at MEDIUM by one named assumption
+  (whether real fights can hit the sim's own opening/first-FB time) and by N6's own excess correctness
+  being untested (PASSES today only because it has 2 cycles of slack, not because 2.24s/cycle is
+  correct). **What would raise confidence to HIGH:** frame-measure the real FB-end→next-B1 gap on ONE
+  disabled comp's footage directly (the disputed segment itself, not a downstream proxy).
+  **Instrument, committed (constraint 9):** `decomposeCycles()` in `scripts/experiment.ts` (also
+  exported `run`), CLI via `DECOMP=1`; pinned by `scripts/tests/gauge-cycle-decomp.test.ts` (6 comps,
+  the H0b-band relationship between N6 and the disabled comps is the guarded invariant, not just raw
+  numbers). The work subagent's original scratch script was deleted before this citation — rebuilt as
+  this committed, fixture-pinned instrument per the post-op judge's reservation before landing.
+  QUEUE.md's characterization was rewritten to match (see docs/handoffs/QUEUE.md, engine threads).
+  HARNESS LESSON: a rejected pre-op plan is not wasted — the judge's specific counter-evidence (the
+  code citation + the "run the cheap A/B first" redirect) is what let the resubmission converge in one
+  more round instead of drifting to a second wrong theory; and the driver catching Fable's OWN
+  arithmetic error (an overly pessimistic cycle-floor estimate, refuted by a real comp already hitting
+  the higher FB count) shows the blind/adversarial roles run both directions — the judge checks the
+  driver, and re-deriving the judge's stated math against the actual rotation log is exactly the
+  "verify, don't trust" habit this harness is built on.

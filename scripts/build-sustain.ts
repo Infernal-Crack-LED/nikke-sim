@@ -8,6 +8,7 @@ import { dirname } from 'node:path';
 import type { DataFile, LevelMultiplier, Element } from '../src/types.js';
 import { loadOverride } from '../src/skills/overrides-node.js';
 import { unitElements } from '../src/elements.js';
+import { NOOP_CHARACTERS } from '../src/dpschart/noop.js';
 import type { OverrideFile } from '../src/skills/index.js';
 import type {
   CubesFile,
@@ -41,9 +42,15 @@ const overrides: Record<string, OverrideFile | undefined> = {};
 for (const slug of Object.keys(data.characters)) {
   overrides[slug] = loadOverride(slug);
 }
-// Synthetic no-op B3 (MG) is not in characters.json; load its mock-B3 override so
-// sustain sims (which use no-op teammates) apply its full-burst damage profile.
-overrides['noop-b3-mg'] = loadOverride('noop-b3-mg');
+// Synthetic controls are not roster entries, but their overrides carry the
+// framework effects: the no-op B1's 7s team burst-cooldown reduction and the
+// no-op B3's mock burst. Load every registered control so a future addition
+// cannot be forgotten — the same loop build-bufferchart.ts / build-b1b2dps.ts
+// use. Without it this board silently ran with the B1 control skill-less and
+// CDR-free (2026-08-03).
+for (const slug of Object.keys(NOOP_CHARACTERS)) {
+  overrides[slug] = loadOverride(slug);
+}
 
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
@@ -90,20 +97,22 @@ const artifact: SustainArtifact = {
     '0. Profiles: prika runs with mint (duet), anchor-innocent-maid with ' +
     'mast-romantic-maid (same-squad gate). Ranked by absolute HP.',
   units: Object.fromEntries(
-    population.filter((slug) => listed.has(slug)).map((slug) => {
-      const c = data.characters[slug];
-      return [
-        slug,
-        {
-          name: c.name,
-          element: c.element as Element,
-          elements: unitElements(c),
-          weapon: c.weapon,
-          burst: c.burst,
-          imageUrl: c.imageUrl ?? null,
-        },
-      ];
-    })
+    population
+      .filter((slug) => listed.has(slug))
+      .map((slug) => {
+        const c = data.characters[slug];
+        return [
+          slug,
+          {
+            name: c.name,
+            element: c.element as Element,
+            elements: unitElements(c),
+            weapon: c.weapon,
+            burst: c.burst,
+            imageUrl: c.imageUrl ?? null,
+          },
+        ];
+      })
   ),
   profiles: Object.fromEntries(
     Object.values(SUSTAIN_PROFILES).map((p) => [p.id, p.note])

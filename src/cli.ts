@@ -6,10 +6,13 @@ import { readFileSync } from 'node:fs';
 import type { DataFile, Element, LevelMultiplier, SimConfig } from './types.js';
 import { runSim } from './engine/sim.js';
 import { printReport } from './report.js';
-import { bestOl } from './bestol.js';
+import { rankFreeLineConfigs } from './olconfigs.js';
+import { OL_TIER, OL_TIER_VALUES } from './dpschart/matrix.js';
 import { loadOverride } from './skills/overrides-node.js';
 import {
   prepareTeam,
+  OL_MAX_PER_TYPE,
+  OL_MAX_TOTAL,
   type CubesFile,
   type OlLinesFile,
   type SkillLevelData,
@@ -46,7 +49,7 @@ loadout (per-slot lists are comma- or semicolon-separated in slot order; a singl
   --skill-levels <l1,..,l5>     skill levels per slot as n or s1/s2/burst, e.g. 10/4/10 (default 10)
   --lambda-as <1|2|3,...>       pin a Λ unit (Red Hood) to burst ONLY at that stage, per slot ('-' = auto)
   --mode <m1,..,m5>             kit mode per slot for mode-switch units, e.g. CCW snipe|mg ('-' = default)
-  --best-ol <1-5>               after the sim, greedy-search the best OL lines for that slot
+  --best-ol <1-5>               after the sim, exhaustively rank that slot's 4 free OL lines (T11)
 
   --list [filter]       list available slugs and exit
   --coverage            modeling coverage across the roster (caveats/unmodeled per override)`
@@ -352,6 +355,26 @@ perSlot(opts.lines as string, ';').forEach((spec, i) => {
         value: m[3] ? Number(m[3]) : undefined,
       };
     });
+  // prepareUnit enforces the same two caps and is the real guard (every caller passes
+  // through it); repeating them here only buys a clean `usage()` message instead of a
+  // stack trace for what is a typo in an argument.
+  const perType = new Map<string, number>();
+  for (const sel of unitOpts[i].lines ?? []) {
+    perType.set(sel.type, (perType.get(sel.type) ?? 0) + sel.count);
+  }
+  for (const [type, n] of perType) {
+    if (n > OL_MAX_PER_TYPE) {
+      usage(
+        `slot ${i + 1}: ${n}× "${type}" OL lines — max ${OL_MAX_PER_TYPE} of any one type (one per overload piece, 4 pieces)`
+      );
+    }
+  }
+  const total = [...perType.values()].reduce((a, b) => a + b, 0);
+  if (total > OL_MAX_TOTAL) {
+    usage(
+      `slot ${i + 1}: ${total} OL lines — max ${OL_MAX_TOTAL} (4 pieces × 3 lines)`
+    );
+  }
 });
 
 perSlot(opts['skill-levels'] as string, ',').forEach((spec, i) => {
@@ -383,25 +406,40 @@ if (opts['best-ol']) {
   if (!Number.isInteger(slot) || slot < 1 || slot > 5) {
     usage(`--best-ol needs a slot number 1-5`);
   }
+  // The project's one overload basis (owner ruling 2026-08-03): the 8/12 floor of 4×
+  // Elemental DMG + 4× ATK is held fixed and the remaining FOUR lines are ranked
+  // EXHAUSTIVELY at T11 — identical to the web's Optimize Overload tab, the unit pages
+  // and data/ol-optimal.json, so this flag can no longer disagree with them.
+  //
+  // It replaces a greedy search over all 8 lines at max roll. Both differences are
+  // deliberate: greedy cannot see a threshold stat whose first line is worthless and
+  // whose third wins outright, and max roll is a tier no consumer applies. Note the
+  // scope change — this now ranks the four FREE lines, not the whole loadout, and it
+  // ignores any `--lines` given for this slot (the floor is assumed).
   console.log(
-    `best OL lines for slot ${slot} (${chars[slot - 1].name}) — greedy, max-roll lines, cap 4/type:\n`
+    `best free OL lines for slot ${slot} (${chars[slot - 1].name}) — exhaustive, T${OL_TIER}, beyond the 4× Elemental DMG + 4× ATK floor:\n`
   );
-  const r = bestOl(chars, mult, cfg, prepared, slot - 1, olLinesData);
-  r.picks.forEach((p, i) =>
+  const { baselineDamage, results } = rankFreeLineConfigs({
+    chars,
+    mult,
+    cfg,
+    deps: {
+      overrides,
+      skillLevels: skillLevelData,
+      cubes: cubesData,
+      olLines: olLinesData,
+    },
+    baseOpts: unitOpts,
+    carryIdx: slot - 1,
+    topN: 5,
+    tierValues: OL_TIER_VALUES,
+  });
+  results.forEach((r, i) =>
     console.log(
-      `  ${i + 1}. ${p.name.padEnd(30)} +${p.unitGainPct.toFixed(2)}% unit dmg  (+${p.teamGainPct.toFixed(2)}% team)`
+      `  ${i + 1}. ${r.label.padEnd(40)} +${r.gainPct.toFixed(2)}% unit dmg`
     )
   );
-  if (!r.picks.length) {
-    console.log('  no line adds ≥0.05% damage');
-  }
-  const total = r.baselineDamage
-    ? ((r.finalDamage - r.baselineDamage) / r.baselineDamage) * 100
-    : 0;
   console.log(
-    `\n  total: +${total.toFixed(1)}% unit damage vs current loadout`
-  );
-  console.log(
-    `  single-line comparison: ${r.rejected.map((x) => `${x.type} +${x.gainPct.toFixed(2)}%`).join(', ')}`
+    `\n  baseline (floor only, free four empty): ${(baselineDamage / 1e6).toFixed(1)}M`
   );
 }

@@ -50,6 +50,52 @@ interface Comp {
   real: Record<string, number>;
 }
 
+// Per-cycle floor/observed/excess decomposition (2026-08-03 fb-count-regression investigation,
+// docs/handoffs/scientific-method-harness.md). floor = FB duration + measured 3s FB-end->B1
+// total (POST_FB_CHAIN_DELAY_FRAMES 2.5s + PRE_B1_GAP_FRAMES 0.5s, sim.ts) + the comp's own
+// median chain span (first-stage-cast -> FULL BURST). excess = observed steady-state FB-to-FB
+// period - floor, i.e. gauge-fill time beyond the cooldown/chain floor. DECOMP=1 (via `report`)
+// exposes this on the CLI; exported here so scripts/tests can pin it as a regression fixture.
+export function decomposeCycles(rotationLog: string[]) {
+  const fbLines = rotationLog.filter((l) => l.includes('FULL BURST'));
+  const stageStarts: number[] = [];
+  let cur: number | null = null;
+  for (const line of rotationLog) {
+    const t = parseFloat(line);
+    if (/\bB(I|II|III)\b/.test(line) && cur === null) {
+      cur = t;
+    }
+    if (line.includes('FULL BURST')) {
+      stageStarts.push(cur ?? t);
+      cur = null;
+    }
+  }
+  const fbStarts = fbLines.map((l) => parseFloat(l));
+  const fbDurs = fbLines.map((l) => {
+    const m = l.match(/until ([\d.]+)s/);
+    return m ? parseFloat(m[1]) - parseFloat(l) : NaN;
+  });
+  const chainSpans = fbStarts.map((fb, i) => fb - stageStarts[i]);
+  const median = (arr: number[]) => {
+    const s = [...arr].sort((a, b) => a - b);
+    return s[Math.floor(s.length / 2)];
+  };
+  const chain = median(chainSpans.filter((x) => !isNaN(x)));
+  const fbDur = median(fbDurs.filter((x) => !isNaN(x)));
+  const floor = fbDur + 3.0 + chain;
+  // steady-state period from the middle 60% of cycles (skip opening/closing edge effects)
+  const lo = Math.floor(fbStarts.length * 0.2);
+  const hi = Math.ceil(fbStarts.length * 0.8);
+  const periods: number[] = [];
+  for (let i = lo + 1; i < hi; i++) {
+    periods.push(fbStarts[i] - fbStarts[i - 1]);
+  }
+  const observed = periods.length
+    ? periods.reduce((a, b) => a + b, 0) / periods.length
+    : NaN;
+  return { fbDur, chain, floor, observed, excess: observed - floor };
+}
+
 export const COMPS: Comp[] = [
   {
     name: 'T1 wind-weak (boss Iron)',
@@ -560,7 +606,7 @@ export const COMPS: Comp[] = [
 // deep-clone an override and let the variant mutate it; return undefined = drop unit's override
 type Patch = Record<string, (o: OverrideFile) => OverrideFile>;
 
-function run(comp: Comp, patch: Patch = {}, seed?: number) {
+export function run(comp: Comp, patch: Patch = {}, seed?: number) {
   const chars = comp.slugs.map((s) => data.characters[s]);
   const overrides: Record<string, OverrideFile | undefined> = {};
   for (const s of comp.slugs) {
@@ -664,6 +710,14 @@ function report(comp: Comp, label: string, patch: Patch = {}) {
     for (const line of res.rotationLog) {
       console.log('  ' + line);
     }
+  }
+  // DECOMP=1: per-cycle floor/observed/excess decomposition (2026-08-03 fb-count-regression
+  // investigation, docs/handoffs/scientific-method-harness.md).
+  if (process.env.DECOMP) {
+    const d = decomposeCycles(res.rotationLog);
+    console.log(
+      `  [decomp] fbDur=${d.fbDur.toFixed(2)}s chain=${d.chain.toFixed(2)}s floor=${d.floor.toFixed(2)}s observed=${d.observed.toFixed(2)}s excess=${d.excess.toFixed(2)}s/cycle`
+    );
   }
   for (const u of res.units) {
     const real = comp.real[u.slug];

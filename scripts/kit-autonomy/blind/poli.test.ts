@@ -73,12 +73,18 @@ interface Ev {
 
 // The override FILE is slot-keyed; tolerate both `slot: Block[]` and `slot: { blocks: Block[] }`.
 function blocksOf(slot: unknown): Blk[] {
-  if (Array.isArray(slot)) return slot as Blk[];
+  if (Array.isArray(slot)) {
+    return slot as Blk[];
+  }
   const b = (slot as { blocks?: Blk[] } | undefined)?.blocks;
   return Array.isArray(b) ? b : [];
 }
 function allBlocks(ov: OvView): Blk[] {
-  return [...blocksOf(ov.skill1), ...blocksOf(ov.skill2), ...blocksOf(ov.burst)];
+  return [
+    ...blocksOf(ov.skill1),
+    ...blocksOf(ov.skill2),
+    ...blocksOf(ov.burst),
+  ];
 }
 function effectsOf(blocks: Blk[]): Eff[] {
   return blocks.flatMap((b) => b.effects ?? []);
@@ -106,7 +112,7 @@ const applies = (evs: Ev[], stat: string, value: number) =>
     (e) =>
       e.kind === 'buffApply' &&
       e.stat === stat &&
-      Math.abs((e.value ?? 0) - value) < 1e-6,
+      Math.abs((e.value ?? 0) - value) < 1e-6
   );
 const sumAll = (t: Record<string, number>) =>
   Object.values(t).reduce((a, b) => a + b, 0);
@@ -121,8 +127,9 @@ const BASE = run();
 const SELF_ONLY = run({
   poli: withPatchedOverride('poli', (ov) => {
     for (const b of blocksOf((ov as unknown as OvView).skill1)) {
-      if ((b.effects ?? []).some((e) => e.stat === 'atkPct'))
+      if ((b.effects ?? []).some((e) => e.stat === 'atkPct')) {
         b.target = { kind: 'self' };
+      }
     }
   }),
 });
@@ -131,8 +138,13 @@ const SELF_ONLY = run({
 // poli's SG magazine is 9 with a ~1.85s reload, so a 1s window cannot bridge a reload)
 const SHORT_WINDOW = run({
   poli: withPatchedOverride('poli', (ov) => {
-    for (const b of blocksOf((ov as unknown as OvView).skill1))
-      for (const e of b.effects ?? []) if (e.stat === 'atkPct') e.durationSec = 1;
+    for (const b of blocksOf((ov as unknown as OvView).skill1)) {
+      for (const e of b.effects ?? []) {
+        if (e.stat === 'atkPct') {
+          e.durationSec = 1;
+        }
+      }
+    }
   }),
 });
 
@@ -140,8 +152,11 @@ const SHORT_WINDOW = run({
 // trigger really is a count-based one — discriminates hitCount from interval/passive/burstCast)
 const FAST_TRIGGER = run({
   poli: withPatchedOverride('poli', (ov) => {
-    for (const b of blocksOf((ov as unknown as OvView).skill1))
-      if (b.trigger && typeof b.trigger.count === 'number') b.trigger.count = 1;
+    for (const b of blocksOf((ov as unknown as OvView).skill1)) {
+      if (b.trigger && typeof b.trigger.count === 'number') {
+        b.trigger.count = 1;
+      }
+    }
   }),
 });
 
@@ -149,17 +164,20 @@ const FAST_TRIGGER = run({
 // fire on ANY team Full Burst, and would land AFTER the FB opens instead of before poli's cast)
 const FB_ENTER = run({
   poli: withPatchedOverride('poli', (ov) => {
-    for (const b of blocksOf((ov as unknown as OvView).burst))
-      if ((b.effects ?? []).some((e) => e.stat === 'atkPct'))
+    for (const b of blocksOf((ov as unknown as OvView).burst)) {
+      if ((b.effects ?? []).some((e) => e.stat === 'atkPct')) {
         b.trigger = { kind: 'fullBurstEnter' };
+      }
+    }
   }),
 });
 
 // inertness probe: strip the DEF buff entirely
 const NO_DEF = run({
   poli: withPatchedOverride('poli', (ov) => {
-    for (const b of blocksOf((ov as unknown as OvView).skill2))
+    for (const b of blocksOf((ov as unknown as OvView).skill2)) {
       b.effects = (b.effects ?? []).filter((e) => e.stat !== 'defPct');
+    }
   }),
 });
 
@@ -168,7 +186,9 @@ describe('poli — fixture non-vacuity', () => {
     // If any of these fail, every downstream assertion is untrustworthy rather than wrong.
     expect(unitOf(BASE.res, 'poli').totalDamage).toBeGreaterThan(0);
     expect(Object.keys(totals(BASE.res)).length).toBe(5);
-    expect(BASE.events.filter((e) => e.kind === 'fullBurstStart').length).toBeGreaterThan(0);
+    expect(
+      BASE.events.filter((e) => e.kind === 'fullBurstStart').length
+    ).toBeGreaterThan(0);
   });
 });
 
@@ -188,7 +208,9 @@ describe('poli skill1a — "Activates after 5 normal attack(s)", ATK ▲5.46% / 
     const cf = applies(SELF_ONLY.events, 'atkPct', 5.46);
     expect(new Set(cf.map((e) => e.targetSlug)).size).toBe(1);
     // and the mis-scope is damage-visible: the team loses the buff it should be getting
-    expect(sumAll(totals(SELF_ONLY.res))).toBeLessThan(sumAll(totals(BASE.res)));
+    expect(sumAll(totals(SELF_ONLY.res))).toBeLessThan(
+      sumAll(totals(BASE.res))
+    );
   });
 
   it('is a COUNT-triggered line, not an interval/passive one', () => {
@@ -198,7 +220,7 @@ describe('poli skill1a — "Activates after 5 normal attack(s)", ATK ▲5.46% / 
     expect(fast.length).toBeGreaterThan(s1.length * 2);
   });
 
-  it('counts ROUNDS (trigger pulls), not the SG\'s 10 pellets per shot', () => {
+  it("counts ROUNDS (trigger pulls), not the SG's 10 pellets per shot", () => {
     // A pellet-counting mis-read would fire ~10x more often than a round-counting one. poli has
     // 9 ammo and a ~1.85s reload; over 180s a round-counting every-5 line fires on the order of
     // tens of times per ally, a pellet-counting one hundreds.
@@ -208,7 +230,9 @@ describe('poli skill1a — "Activates after 5 normal attack(s)", ATK ▲5.46% / 
   });
 
   it('the 10-second window is load-bearing (1s window loses uptime across reloads)', () => {
-    expect(sumAll(totals(SHORT_WINDOW.res))).toBeLessThan(sumAll(totals(BASE.res)));
+    expect(sumAll(totals(SHORT_WINDOW.res))).toBeLessThan(
+      sumAll(totals(BASE.res))
+    );
   });
 });
 
@@ -220,9 +244,12 @@ describe('poli skill1b — Police Badge: self shield = 100% final Max HP, 10s, a
     // missing/!=10s duration, or a silent drop.
     const s1 = blocksOf(OV.skill1);
     const badge = s1.find((b) =>
-      (b.effects ?? []).some((e) => e.kind === 'shield' && e.maxHpPct === 100),
+      (b.effects ?? []).some((e) => e.kind === 'shield' && e.maxHpPct === 100)
     );
-    expect(badge, 'skill1 must carry a 100%-maxHp shield (Police Badge)').toBeTruthy();
+    expect(
+      badge,
+      'skill1 must carry a 100%-maxHp shield (Police Badge)'
+    ).toBeTruthy();
     const eff = (badge?.effects ?? []).find((e) => e.kind === 'shield');
     expect(eff?.durationSec).toBe(10);
     expect(badge?.target?.kind).toBe('self');
@@ -255,7 +282,7 @@ describe('poli skill2a — DEF ▲23.51% / 10s to self + 2 lowest-HP allies, eve
 
   it('targets the lowest-HP ally set, not a positional/top-ATK stand-in', () => {
     const blk = blocksOf(OV.skill2).find((b) =>
-      (b.effects ?? []).some((e) => e.stat === 'defPct'),
+      (b.effects ?? []).some((e) => e.stat === 'defPct')
     );
     expect(blk?.target?.kind).toBe('alliesLowestHp');
     expect(blk?.target?.count).toBe(3); // self + 2 others
@@ -304,7 +331,10 @@ describe('poli burst — ATK ▲44.55% / 10s to all allies (the only damage-rele
     // stream therefore separates the two readings without depending on how often poli — a Burst
     // II unit sharing the tier with crown in this fixture — happens to cast.
     const firstBuff = BASE.events.findIndex(
-      (e) => e.kind === 'buffApply' && e.stat === 'atkPct' && Math.abs((e.value ?? 0) - 44.55) < 1e-6,
+      (e) =>
+        e.kind === 'buffApply' &&
+        e.stat === 'atkPct' &&
+        Math.abs((e.value ?? 0) - 44.55) < 1e-6
     );
     const firstFb = BASE.events.findIndex((e) => e.kind === 'fullBurstStart');
     expect(firstBuff).toBeGreaterThanOrEqual(0);
@@ -313,7 +343,10 @@ describe('poli burst — ATK ▲44.55% / 10s to all allies (the only damage-rele
 
     // Under the nearest-wrong (fullBurstEnter) the same buff lands AT/AFTER the FB opens.
     const cfBuff = FB_ENTER.events.findIndex(
-      (e) => e.kind === 'buffApply' && e.stat === 'atkPct' && Math.abs((e.value ?? 0) - 44.55) < 1e-6,
+      (e) =>
+        e.kind === 'buffApply' &&
+        e.stat === 'atkPct' &&
+        Math.abs((e.value ?? 0) - 44.55) < 1e-6
     );
     const cfFb = FB_ENTER.events.findIndex((e) => e.kind === 'fullBurstStart');
     expect(cfBuff).toBeGreaterThan(cfFb);
@@ -328,7 +361,7 @@ describe('poli burst — ATK ▲44.55% / 10s to all allies (the only damage-rele
 
   it('the shared 40%-maxHp / 10s ally shield is encoded (distinct from the 100% self badge)', () => {
     const shield = effectsOf(blocksOf(OV.burst)).find(
-      (e) => e.kind === 'shield' && e.maxHpPct === 40,
+      (e) => e.kind === 'shield' && e.maxHpPct === 40
     );
     expect(shield, 'burst must carry the 40%-maxHp shared shield').toBeTruthy();
     expect(shield?.durationSec).toBe(10);
@@ -344,20 +377,33 @@ describe('poli burst — ATK ▲44.55% / 10s to all allies (the only damage-rele
 describe('poli — no silent drops, no invented damage', () => {
   it('records the unmodellable lines in `unmodeled` rather than dropping them', () => {
     const um = OV.unmodeled ?? {};
-    expect((um.skill2 ?? []).length, 'damage-sharing line must be recorded').toBeGreaterThan(0);
-    const burstGated = blocksOf(OV.burst).some((b) => b.requiresShielded === true);
+    expect(
+      (um.skill2 ?? []).length,
+      'damage-sharing line must be recorded'
+    ).toBeGreaterThan(0);
+    const burstGated = blocksOf(OV.burst).some(
+      (b) => b.requiresShielded === true
+    );
     const burstRecorded = (um.burst ?? []).length > 0;
     expect(
       burstGated || burstRecorded,
-      'Indomitability / badge-removal must be gated or recorded as unmodeled',
+      'Indomitability / badge-removal must be gated or recorded as unmodeled'
     ).toBe(true);
   });
 
-  it('invents no damage: poli\'s kit carries no flat hits, DoTs, stored hits or weapon swaps', () => {
+  it("invents no damage: poli's kit carries no flat hits, DoTs, stored hits or weapon swaps", () => {
     // The whole kit is support/tank. Any damage effect here would be a fudge, not a kit line.
     const kinds = new Set(effectsOf(allBlocks(OV)).map((e) => e.kind));
-    for (const forbidden of ['flatDamage', 'dot', 'storedHit', 'stackedNuke', 'weaponSwap']) {
-      expect(kinds.has(forbidden), `unexpected ${forbidden} effect`).toBe(false);
+    for (const forbidden of [
+      'flatDamage',
+      'dot',
+      'storedHit',
+      'stackedNuke',
+      'weaponSwap',
+    ]) {
+      expect(kinds.has(forbidden), `unexpected ${forbidden} effect`).toBe(
+        false
+      );
     }
   });
 });

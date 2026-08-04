@@ -69,13 +69,16 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- readers ----------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const solineShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'soline');
 const solineCasts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'soline');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'soline'
+  );
 /** The S1 'On the Ball!' attack-speed applications (targetIdx = soline). */
 const onTheBall = (evs: SimEvent[]) =>
   buffs(evs).filter(
@@ -117,7 +120,9 @@ const solinePerHit = withPatchedOverride('soline', (ov) => {
 const solinePermanentS1 = withPatchedOverride('soline', (ov) => {
   const e = ov.skill1[0]?.effects?.[0];
   if (e?.stat !== 'attackSpeedPct' || e.durationSec !== 3) {
-    throw new Error('soline S1 attackSpeedPct/3s effect missing — fixture is stale');
+    throw new Error(
+      'soline S1 attackSpeedPct/3s effect missing — fixture is stale'
+    );
   }
   delete e.durationSec;
 });
@@ -152,7 +157,9 @@ const solineNoCritDmg = withPatchedOverride('soline', (ov) => {
     const before = b.effects.length;
     b.effects = b.effects.filter((e: any) => e.stat !== 'critDamagePct');
     if (b.effects.length === before) {
-      throw new Error('soline S2 critDamagePct effect missing — fixture is stale');
+      throw new Error(
+        'soline S2 critDamagePct effect missing — fixture is stale'
+      );
     }
   }
 });
@@ -262,7 +269,10 @@ describe('soline — kit spec', () => {
       expect([...new Set(cd.map((b) => b.value))]).toEqual([62.27]);
       for (const b of [...cr, ...cd]) {
         expect(b.frame, 'passive from battle start').toBe(0);
-        expect(b.expiresFrame, '"permanently" — no wall-clock expiry').toBeNull();
+        expect(
+          b.expiresFrame,
+          '"permanently" — no wall-clock expiry'
+        ).toBeNull();
         expect(b.targetIdx).toBe(SOLINE);
       }
     });

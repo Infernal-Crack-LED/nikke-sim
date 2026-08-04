@@ -78,10 +78,7 @@ const ARIA = 1; // aria's slot in COMP
 const STARVED = ['liter', 'crown', 'aria', 'helm'];
 const ARIA_STARVED = 2; // aria's slot in STARVED
 
-function runAt(
-  slugs: string[],
-  overrides: Record<string, any> = {}
-) {
+function runAt(slugs: string[], overrides: Record<string, any> = {}) {
   const events: SimEvent[] = [];
   const res = runComp({
     slugs,
@@ -261,10 +258,9 @@ describe('aria — kit spec', () => {
     it('aria is the sole B2 and casts her burst every rotation', () => {
       const cs = ariaCasts(base.events);
       expect(cs.length).toBeGreaterThanOrEqual(4);
-      expect(
-        [...new Set(cs.map((c) => c.stage))],
-        'aria is Burst II'
-      ).toEqual([2]);
+      expect([...new Set(cs.map((c) => c.stage))], 'aria is Burst II').toEqual([
+        2,
+      ]);
     });
 
     it('the comp opens Full Bursts for the whole fight', () => {
@@ -402,7 +398,8 @@ describe('aria — kit spec', () => {
       // liter (trigger shielded → self defPct 5, inert in v1) makes the emission observable.
       const sentinel = (evs: SimEvent[]) =>
         buffs(evs).filter(
-          (b) => b.stat === 'defPct' && b.value === 5 && b.targetSlug === 'liter'
+          (b) =>
+            b.stat === 'defPct' && b.value === 5 && b.targetSlug === 'liter'
         );
       expect(sentinel(shieldProbe.events).length).toBe(
         ariaCasts(shieldProbe.events).length
@@ -464,9 +461,7 @@ describe('aria — kit spec', () => {
     });
 
     it('A4 is SILENT: no Hit Rate applications on rotations she did not cast (burstCast, not fullBurstEnter)', () => {
-      expect(
-        ariaBuffs(starved.events, 'hitRatePct', ARIA_STARVED)
-      ).toEqual([]);
+      expect(ariaBuffs(starved.events, 'hitRatePct', ARIA_STARVED)).toEqual([]);
     });
 
     it('A3 is SILENT: the shielded-consumer never fires on rotations she did not cast', () => {
