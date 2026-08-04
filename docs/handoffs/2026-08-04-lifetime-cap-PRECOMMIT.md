@@ -73,7 +73,18 @@ segmentation-blast-radius measurement. **That question is deferred, not answered
 
 ## 2. The decision rule — do not adjust after seeing a result
 
-### 2.1 PRIMARY — the categorical check (in-sample, n = 42 owner pellets, ONE clip)
+### 2.1 IMPLEMENTATION CONSISTENCY CHECK — ⚑ CARRIES NO EVIDENTIAL WEIGHT
+
+⚑ **REVISED AFTER THE PRE-OP GATE (§8, risk flag 1), before any number existed.** This check was
+originally written as the PRIMARY criterion. **It is tautological and it cannot fail.** The corridor
+`[19, 21]` is _derived from_ `owner_max = 19` and the statics at 22/36 — the very pinned summary the
+check then re-reads. A candidate inside the corridor admits all 42 and excludes both statics **by
+arithmetic**, so a PASS here confirms only that the arm reads the right population.
+
+**It is retained as an implementation check and demoted out of the evidence chain. The proposal may
+NOT cite it as evidence.** All evidential weight sits on §2.3 and §2.4, both out-of-sample.
+
+_(Original criterion, unchanged in substance:)_ (in-sample, n = 42 owner pellets, ONE clip)
 
 Scored off `scripts/tests/fixtures/pellets/representative-audit-slice.json`, whose
 `_expected.lifetime_summary` pins the two populations **as already recorded** before this document:
@@ -97,30 +108,45 @@ representative-frame candidates, no `band_hi` in the corridor has a label-free m
 corridor's own edges (19, 22) come from the labels. **That is exactly why §2.3 exists and is
 mandatory**, and why a PASS here is _promotable to proposal only_, never landable on its own.
 
-### 2.2 ⚑ THE CANDIDATE SET — pre-committed, and the primary is forced by ARITHMETIC, not by fit
+### 2.2 THE CANDIDATE SET — pre-committed
+
+⚑ **CORRECTED AFTER THE PRE-OP GATE (§8, revision 1), before any number existed. The original text
+of this section stated a rounding fact that is FALSE, and disqualified 19 on it.** The correction is
+recorded here rather than silently overwritten, per §8 of the judge handoff ("if you have to do this,
+say so in the artifact — do not let it read as clean").
 
 The admissible corridor is `[19, 21]` at 60 fps: ≥ 19 to admit the longest owner pellet, ≤ 21 to
-exclude the life-22 static. Scaling by the shipped formula `round(x × fps / 60)` gives:
+exclude the life-22 static. Scaling by the shipped formula `round(x × fps / 60)`:
 
-| `band_hi` @60 | @30 fps  | status                                              |
-| ------------- | -------- | --------------------------------------------------- |
-| 13 (current)  | 7        | **CONTROL** — must reproduce §12/§13 exactly (§3.1) |
-| 19            | **9.5**  | sensitivity arm — ⚠ **.5 boundary**, see below      |
-| **20**        | **10.0** | **PRIMARY CANDIDATE**                               |
-| 21            | **10.5** | sensitivity arm — ⚠ **.5 boundary**, see below      |
+| `band_hi` @60 | @30 fps, Python `round()`   | @30 fps, JS `Math.round()` | status                                        |
+| ------------- | --------------------------- | -------------------------- | --------------------------------------------- |
+| 13 (current)  | **6**                       | **7**                      | **CONTROL** — ⚑ already divergent, see below  |
+| 19            | 10                          | 10                         | **lockstep-safe** — sensitivity arm           |
+| **20**        | **10 (exact, no rounding)** | **10 (exact)**             | **PRIMARY CANDIDATE**                         |
+| 21            | **10**                      | **11**                     | ⚠ **DESYNCS** — recorded only, NOT promotable |
 
-⚑ **Why 20 and not 19 or 21 — a NEW trap, and it is the tiebreaker.** The two implementations round
-half-integers **differently**: Python's `round()` is banker's (`round(10.5) == 10`), JavaScript's
-`Math.round()` is half-up (`Math.round(10.5) === 11`). `read-pellets.ts:787` computes the cap in JS
-and passes it to Python as a CLI argument, so today only one of them ever rounds — but the moment a
-band bound is computed on **both** sides, any value landing on a `.5` boundary at any supported fps
-makes the two readers **silently disagree by one frame**. Of the three admissible values, **only 20
-scales to a whole number at both 30 and 60 fps.**
+**The rounding hazard is real; the original example was wrong.** Python's `round()` is banker's
+(half-to-**even**) and JavaScript's `Math.round()` is half-up. These agree at `9.5 → 10` (10 is
+even), so **19 is lockstep-safe and the original text's disqualification of it was incorrect.** They
+diverge at `10.5`: Python **10**, JS **11** — so **only 21 desyncs.**
 
-⇒ **The primary candidate is selected by a lockstep-safety property that is independent of the
-labels.** 19 and 21 are scored anyway, as sensitivity arms, to show the verdict does not hinge on
-which value in the corridor is picked. **They are RECORDED ONLY and are not promotable in this pass**,
-both because of the rounding hazard and because promoting the corridor's edge would be fitting to it.
+⚑ **And the hazard is not hypothetical — it has ALREADY fired in this pipeline.** The current cap at
+30 fps is `round(13 × 30 / 60) = round(6.5)`, which is **6** in Python and **7** in JS. **The dumps
+store 7**, which proves `read-pellets.ts:787` (JS) is what computed it and that a Python-side
+recomputation of the same formula would silently disagree by one frame today. ⇒ §3.7 makes using the
+**stored** per-dump value mandatory.
+
+⇒ **Why 20 is the primary, stated honestly:** it is the only candidate that needs **no rounding at
+all** at either supported fps, and it leaves **one frame of margin** above the longest observed owner
+pellet (19) rather than sitting exactly on the sample maximum. **19 is equally lockstep-safe**, so
+the choice between 19 and 20 is a margin judgment, **not forced by arithmetic** — the original
+section claimed otherwise and was wrong. ⚑ Note 19 and 20 are **identical at 30 fps** (both → 10);
+they can differ only on the single 60 fps dump.
+
+**Pre-committed decision path if the primary fails (§8, revision 1):** if 20 fails §2.3 or §2.4 while
+19 passes, that result is **RECORDED and escalated to the owner as a finding**. It is **NOT** a
+silent swap to 19 — a candidate promoted because the pre-committed primary failed is fitted by
+definition, and this document forbids it in the same breath as it forbids mean-ranking.
 
 Further candidates may be added **only if written into this file, with their motivation, BEFORE they
 are scored.**
@@ -156,10 +182,38 @@ in-radius white tracks and state, **fps-scaled per dump**:
 - whether a gap exists above that corridor at all, or whether the dump's lifetime distribution is
   continuous there.
 
-| result                                                                    | verdict                                                                                                                 |
-| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| the corridor admits few tracks per event and a gap persists above it      | **CONFIRMS** — the in-sample separation generalizes                                                                     |
-| the corridor admits a large population, or the distribution is continuous | ⚑ **the in-sample gap is `marciana`-specific** — REPORT, and the proposal is DOWNGRADED to in-sample-only, not landable |
+⚑ **QUANTITATIVE THRESHOLD — pre-committed (§8, revision 5).** The original wording ("a large
+population… the distribution is continuous") was a **post-hoc judgment call of exactly the shape this
+document exists to eliminate**, and the gate was right to reject it. The decision rule is now a
+number, fixed before any of it is computed:
+
+**The metric is `corridor_admits_per_event`** = (tracks whose lifetime falls in
+`(max_pellet_frames, band_hi]` and which the radius gate counts at least once during any event)
+÷ (that dump's event count), computed **per dump, fps-scaled to that dump's own values**.
+
+**The in-sample rate is `5 / 5 = 1.00` per event** — the 5 recovered owner pellets over the 5
+labelled shots, and in-sample every corridor track is a real pellet.
+
+| per-dump `corridor_admits_per_event` | that dump                                              |
+| ------------------------------------ | ------------------------------------------------------ |
+| **≤ 2.00** (2× the in-sample rate)   | **CONFIRMS** — admission is consistent with pellets    |
+| **> 2.00**                           | **FAILS TO CONFIRM** — admitting an unknown population |
+
+The 4 out-of-sample dumps are the ones other than the labelled clip (`groundtruth-f811-v4`,
+`marciana` SG/Iron, 60 fps): **`h4-marciana`** — same unit, **different recording**, 30 fps — plus
+**`h4-isabel`**, **`h4-guilty`**, **`g2-noir`**, which are different units as well. ⚑ Report
+`h4-marciana` **separately** from the other three: it discriminates "specific to this recording"
+from "specific to this unit", and those are different failure modes.
+
+| out-of-sample dumps failing (of 4) | verdict                                                                                                         |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **0–1**                            | **CONFIRMS** — the in-sample separation generalizes                                                             |
+| **≥ 2**                            | ⚑ **the gap is footage- or unit-specific** — REPORT; the proposal is DOWNGRADED to in-sample-only, not landable |
+
+The **2×** multiplier is the thread's own precedent, taken verbatim from the representative-frame
+pre-commit's §1.2 ("a rule above 12.4% (2× shipped) is over-counting by construction"), not a
+number chosen for this pass. The per-dump lifetime histograms are still **reported in full** — but
+as narrative, never as the decision.
 
 This is a **different sample**, not merely a different observable — the distinction §3 of the judge
 handoff insists on. It is the check that separates this hypothesis from the dead `center_exclude` one.
@@ -192,6 +246,27 @@ never bias closure, and no bias-CLOSED verdict may be stamped in this pass under
    offset from `t0`.
 6. **State n and scope on every claim.** 42 labelled owner pellets, ONE clip, ONE unit for §2.1; 852
    unlabelled events / 5 dumps / 4 units for §2.3 and §2.4.
+7. ⚑ **USE THE STORED PER-DUMP `max_pellet_frames` — NEVER RECOMPUTE IT** (§8, revision 2). The
+   audit already does this (`d["max_pellet_frames"]`, `block["params"]["max_pellet_frames"]`) and it
+   must stay that way: recomputing `round(13 × 30/60)` in Python yields **6**, while the dumps store
+   **7** (the JS half-up value). A recomputation would silently shift the control by one frame and
+   void the validity gate. Assert the stored value equals 13 at 60 fps and 7 at 30 fps at load time.
+8. ⚑ **THE NEW FLAG MUST BE STRICTLY ADDITIVE** (§8, revision 7). `_ps_band` has **six** callers
+   besides its definition — `:4336` (labelled), `:4454` (`_ps_score_dump`), `:5190`/`:5252`
+   (`--hybrid-landing-audit`), `:5382`/`:5416` (the band-equivalence / TS-lockstep arm). Add
+   `band_hi=None` as an **optional third parameter defaulting to `max_pellet_frames`**, so all six
+   existing call sites are behaviourally unchanged. **Every other `pellet-selftest.sh` arm must stay
+   byte-identical** — the in-pass validity gate covers the new arm only, not the other twenty.
+9. **Assert the two fidelity premises the gate raised (§8, revisions 3 and 4) rather than assuming
+   them.** Both were verified by inspection when the gate raised them, and both HOLD:
+   `_rep_slim_dump` skips `t["is_red"]` at fixture-build time, so `radius_tracks` is **white-only**
+   (no colour term is needed in `_ps_band_totals`); and its runs come from `_rep_radius_runs`, which
+   emits **in-radius frames only**. ⚑ The control arm cannot catch a regression in either — corridor
+   tracks are invisible at `band_hi = max_pellet_frames` — so pin both as explicit assertions in the
+   new selftest, where a future fixture regeneration would trip them.
+10. **Assert `shot_red` is event-fixed** (§8, risk flag 3): the "`above_ceiling` can only rise"
+    monotonicity claim rests on the core-hit flag being read from stored counts, not re-derived per
+    candidate. One line in the selftest.
 
 ## 4. Evidence discipline — NOTHING HERE ENACTS
 
@@ -209,12 +284,45 @@ never bias closure, and no bias-CLOSED verdict may be stamped in this pass under
 
 ## 5. The landing shape this pass is scoring — SKETCH, NON-BINDING
 
-Recorded so the proposal has somewhere to land, explicitly **not** approved by this document:
-`count-pellets.py` grows `--band-hi`, **defaulting to `max_pellet_frames`** so every existing dump,
-fixture and replay is byte-identical; `read-pellets.ts:787` passes the new value explicitly. The band
-logic stays in one implementation (Python), so the TS side is one CLI argument and the lockstep
-surface does not grow. ⚑ The `.5`-rounding hazard of §2.2 becomes live the moment any band bound is
-computed on both sides — the default-to-`max_pellet_frames` shape avoids it by construction.
+Recorded so the proposal has somewhere to land, explicitly **not** approved by this document.
+
+⚑ **THE NAIVE LANDING EDIT IS A SILENT NO-OP, AND THE PROPOSAL MUST SAY SO (§8, revision 6).** In
+production, `band_ids` is built **as a subset of `pellet_ids`** (`count-pellets.py:517`,
+`{tid for tid in pellet_ids if …}`) and `_frame_pellet_counts` **skips any track not in `pellet_ids`
+before the band check ever runs** (`:483`). So simply replacing `args.max_pellet_frames` with a
+larger `band_hi` inside that comprehension **changes nothing** — a life-15 track is not in
+`pellet_ids`, so it can never reach the band. The landing must:
+
+1. build `band_ids` from **`tracks` directly**, not from `pellet_ids`;
+2. **hoist the band count out of the `pellet_ids` skip** in `_frame_pellet_counts`, keeping the
+   radius and non-red conditions;
+3. `count-pellets.py` grows `--band-hi` **defaulting to `max_pellet_frames`**, so every existing
+   dump, fixture and replay stays byte-identical; `read-pellets.ts:787` passes the value explicitly.
+   Band logic stays in **one** implementation (Python), so the TS side is one CLI argument and the
+   lockstep surface does not grow.
+
+⚑ **The audit arm in THIS pass models step 1–2's post-restructure behaviour, not today's code.**
+`_ps_band_totals` reads `radius_tracks` directly and never consults `pellet_ids`, which is why it can
+measure the candidate at all — but that means **the audit is a faithful model of the RESTRUCTURED
+production path, and of nothing that exists today.** State this in the proposal; it is the single
+easiest thing for a landing session to get wrong.
+
+⚑ **After the restructure, `band` is NO LONGER a subset of `white`** — a life-15 track counts in
+`band` and not in `white`, so `band > white` becomes possible on a frame. **Enumerating every
+consumer of that invariant is a PREREQUISITE of the landing pass**, not of this one. Known starting
+points: the `_frame_pellet_counts` docstring ("a strict subset of `white`"), the `band`-key docs in
+`read-pellets.ts:220`, and `--band-equivalence-audit`'s decomposition asserts.
+
+⚑ The `.5`-rounding hazard of §2.2 goes live the moment a band bound is computed on **both** sides;
+the default-to-`max_pellet_frames` shape avoids it by construction, and `band_hi = 20` needs no
+rounding at either fps regardless.
+
+**The landing pass's own success criterion (§8, risk flag 2), pre-stated so this pass is not
+open-ended:** the landing is judged on (a) the categorical recovery of the 5 known-lost owner
+pellets in the **production** path, (b) `totalShots` and every event onset provably unchanged across
+all 5 dumps, and (c) the pooled MISSED rate unchanged. ⛔ **It is NOT judged on the cold bias
+closing**, for the reason §2.5 gives. If the bias also closes, that is an observation for a separate
+pass that must first settle whether the 8.40 reference is itself right (judge handoff §7.6).
 
 ## 6. Sub-deliverable — the 112 abstentions (judge handoff item 3), REPORT ONLY
 
@@ -232,3 +340,36 @@ let any finding here influence §2's verdict** — it is a separate open item wi
 ## 7. Result
 
 _(Written only after the measurement runs. Full narrative: `docs/probe-runs.md` §14.)_
+
+## 8. PRE-OP GATE — `kimi-code/k3`, cross-family, `APPROVED-WITH-REVISIONS`
+
+Packet + verdict: `scratchpad/gates/2026-08-04-lifetime-cap/{preop-packet.md,preop-result.json}`.
+Driver is Claude, so the reviewer is Kimi per `/logic-gate`'s routing table — genuinely cross-family,
+not a same-family fallback. **All 7 revisions are mandatory and were executed BEFORE any number
+existed.** Recorded item-by-item so the post-op gate can check compliance:
+
+| #   | Revision                                                   | Disposition                                                                                                                                                   |
+| --- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | The rounding rationale disqualifying 19 is factually wrong | **UPHELD — verified, the gate is right.** `round(9.5)` is **10** in both languages. §2.2 rewritten, correction left visible, fallback path pre-committed      |
+| 2   | Explain the live 30 fps cap discrepancy                    | **UPHELD — verified.** `round(6.5)` = 6 (Python) vs 7 (JS); dumps store **7** ⇒ JS computed it. Folded into §2.2 + new §3.7 (stored value mandatory)          |
+| 3   | Colour-semantics gap in `_ps_band_totals`                  | **RESOLVED BY INSPECTION — premise HOLDS.** `_rep_slim_dump` skips `t["is_red"]`, so `radius_tracks` is white-only. Pinned as an assert (§3.9)                |
+| 4   | Radius semantics of `radius_tracks` runs                   | **RESOLVED BY INSPECTION — premise HOLDS.** Runs come from `_rep_radius_runs`, in-radius frames only. Pinned as an assert (§3.9)                              |
+| 5   | TERTIARY downgrade criterion is a post-hoc judgment call   | **UPHELD.** §2.4 now pre-commits a number: `corridor_admits_per_event` ≤ 2.00/dump, ≥ 2 of 4 dumps failing ⇒ downgrade                                        |
+| 6   | The naive landing edit is a silent no-op                   | **UPHELD — the sharpest finding.** §5 rewritten with the required production restructure and the "the audit models the RESTRUCTURE, not today's code" warning |
+| 7   | Enumerate `_ps_band` callers; keep the flag additive       | **UPHELD.** Six callers enumerated in §3.8; optional `band_hi=None` parameter mandated                                                                        |
+
+**Risk flags, dispositions:**
+
+- ⚑ **"PRIMARY is tautological and carries zero discriminative information"** — **UPHELD, and it is
+  the most valuable thing the gate said.** §2.1 demoted from PRIMARY to an implementation
+  consistency check that may not be cited as evidence.
+- **"State the landing pass's own success criterion"** — folded into §5.
+- **"Assert `shot_red` is event-fixed"** — folded into §3.10.
+- **"852-pool representativeness is uncharacterized"** — ACCEPTED AS A LIMIT, recorded here rather
+  than fixed: the pool is 5 dumps / 4 units, all SG `hitsPerShot: 10`. §2.4's per-dump reporting is
+  what exposes non-representativeness; a stronger characterization needs footage this thread does
+  not have.
+
+**Assumption flagged and answered:** the JS-side reader is `read-pellets.ts:787`, which computes
+`Math.max(4, Math.round((13 / 60) * fps))` and passes it to `count-pellets.py` as a CLI argument —
+so today only the JS side ever rounds, which is exactly why the stored 30 fps cap is 7 and not 6.
