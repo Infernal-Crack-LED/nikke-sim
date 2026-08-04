@@ -4215,26 +4215,54 @@ The proposal's §4.5 lockstep criterion is **safe to assert**, with one correcti
 measures this marker-channel difference rather than the `debounce_shots` algorithm. `debounce_shots`
 itself needs no reconciliation before the representative-frame change lands.
 
-##### §11H — Reproduction
+##### §11H — Instrument and reproduction
+
+`scripts/probe/analyze-pellet-tracks.py --backend-marker-audit`, self-validated against the committed
+FULL-CLIP fixture `scripts/tests/fixtures/pellets/backend-marker-audit-slice.json` (21 pinned checks,
+including the exact `h4-marciana-structural` numbers above and the frame-1565 backend readout) and
+registered in `scripts/probe/pellet-selftest.sh`. It replays `count-pellets.py`'s own `debounce_shots`
+in-process (imported, never re-implemented) over each dump's `tracks.json` `frame_counts`, diffs it
+event-for-event against the SHIPPED `read-pellets.ts` output already in that dump's `pellets.json`, does
+the full-clip white/red/marker channel census, and — for every marker-divergent frame — the
+backend-tie / opencv-only / dump-equals-opencv mechanism check.
 
 ```sh
-S=/Users/maxwellsutton/nikke-sim/scratchpad/pellets/h4-marciana-structural
-# 1. segmentation lockstep + the one differing event
-#    (replay count-pellets.py's debounce_shots over the dump's frame_counts at fps=30
-#     and diff event-for-event against pellets.json's `shots`)
-# 2. the channel census: compare tracks.json frame_counts[j] against pellets.json reads[j]
-#    for white / red / marker across all 5697 frames
-# 3. the mechanism: for each divergent frame, read pellets.json reads[j].backends
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --backend-marker-audit \
+  /Users/maxwellsutton/nikke-sim/scratchpad/pellets/h4-marciana-structural
+# replay the committed slice -- no scratchpad paths, no re-derivation:
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --backend-marker-audit-selftest
 ```
-
-⚑ **NOT YET A COMMITTED INSTRUMENT.** This entry was derived with an ad-hoc in-session probe, which
-`CLAUDE.md` constraint 9 does not permit for a citable measurement. **Before this is cited as
-evidence anywhere, it must be re-derived by a committed flag** — the natural home is a
-`--backend-marker-audit` arm on `scripts/probe/analyze-pellet-tracks.py` with a pinning fixture. The
-numbers above are reproducible from the two committed artifacts named in §11H, which is why they are
-recorded now rather than withheld.
 
 **NOTHING HERE ENACTS.** `read-pellets.ts` is UNCHANGED — the backend selector, `MARKER_MIN`, and both
 `debounce_shots` implementations are untouched. No constant, gate or default moved; no fixture was
 regenerated; no `DECISIONS.md` entry was edited. The defect is RECORDED, and fixing it changes counts,
 so it is owner-gated.
+
+##### §11I — Cross-dump generalization: the divergence is common, the FLIP is not
+
+Run across all 8 ammo-series dumps §8 already used (`h4-isabel`, `h4-guilty`, `h4-marciana`, `g2-noir`,
+`h1-marciana-treecode`, `i2-marciana-60fps`, `i3-noir-far-60fps`, `i3-noir-near-60fps`) — the same 8
+whose replay §8H says matches shipped exactly on 7 of 8:
+
+| dump                   | events | marker-divergent frames | events that FLIP validity |
+| ---------------------- | -----: | ----------------------: | ------------------------: |
+| h4-isabel-structural   |    203 |                     146 |                         0 |
+| h4-guilty-structural   |    180 |                     230 |                         0 |
+| h4-marciana-structural |    218 |                      82 |                         1 |
+| g2-noir-structural     |    214 |                     204 |                         0 |
+| h1-marciana-treecode   |     43 |                      44 |                         0 |
+| i2-marciana-60fps      |     10 |                       1 |                         0 |
+| i3-noir-far-60fps      |     11 |                       0 |                         0 |
+| i3-noir-near-60fps     |     11 |                      49 |                         0 |
+| **pooled**             |    890 |                     756 |                         1 |
+
+⇒ **The marker-channel divergence is NOT specific to `h4-marciana`** — it fires on 7 of 8 dumps (756
+frames pooled, from 0 on `i3-noir-far-60fps` to 230 on `h4-guilty-structural`), and on every one of those
+756 frames the same unanimous mechanism holds (all three backends tie on `white + red`; the marker was
+seen by opencv only; the dump's own marker equals opencv's). **But only ONE of those 756 frames ever
+flips an event across the `min_pellets = 5` valid-total boundary** — `h4-marciana`'s frame 1565, already
+detailed in §11C/§11E. §8H's "matches exactly on 7 of 8" is explained exactly by this: the divergence is
+common, but it is a silent, cosmetic disagreement on `marker` almost everywhere it occurs, and a
+count-changing one only where a `debounce_shots` event's total already sits one core-hit away from the
+valid boundary. This is a generalization of the mechanism, not a new count — the flip rate, the
+mechanism's unanimity, and which side is "correct" are exactly as open as §11F leaves them.
