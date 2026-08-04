@@ -1970,10 +1970,13 @@ being in the tree at `scripts/probe/count-pellets.py`, not by a raw JSON dump).
 `DIGIT_ROW_TOL`, reused as-is), scored by the mean brightness of the padded margin AROUND the row
 excluding the glyphs (the counter sits on a dark badge; a floating damage number of the same glyph
 shape does not). Selection (`locate_crosshair_structural`) prefers the candidate nearest the previous
-lock within `--max-template-disp` (continuity, same gate the template path uses); on loss it
-re-acquires from the darkest-surround candidate rather than carrying the stale position forward — per
-H1's finding that carrying forward through a multi-second gap while the aim point moves is wrong by
-construction. Enabled via `--locate structural` (`count-pellets.py`) / `--locate structural`
+lock within `--max-template-disp` (continuity, same gate the template path uses); whenever the frame
+yields ANY candidate it re-acquires from that frame's own pixels, the darkest-surround candidate
+winning outright if none is within `max_disp`. When candidate generation returns NOTHING it CARRIES
+THE PREVIOUS POSITION FORWARD, returning `(last_acc, None, True)` — the third element, `held`, is the
+explicit signal (per-frame `cross_held` in both dump formats, abstention reason `held-lock`). That
+case is measured as overwhelmingly RELOAD, where the badge is crisp but renders no digits, so relaxing
+the gate to "recover" it is strictly worse than holding — `docs/probe-runs.md` §6. Enabled via `--locate structural` (`count-pellets.py`) / `--locate structural`
 (`read-pellets.ts`, which also skips the now-unneeded per-video template extraction and VLM crosshair
 fallback). `--relock-conf-min 0.55` is untouched — this is a different code path, not a retuned
 threshold, and does not revisit §H5's finding that no confidence value can work for the template path.
