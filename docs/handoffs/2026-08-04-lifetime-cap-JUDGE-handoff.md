@@ -229,8 +229,13 @@ untouched. **Zero fixtures and zero pins moved across BOTH passes.**
    is now the cheapest thing standing between the project and a real answer on the cold bias.
 3. **⚑ PRODUCTION MISLOCK RATE — unquantified, and in-sample the LARGEST gate-loss channel** (7 of
    13 discarded owner pellets, more than the cap's 5). Sits upstream of every shot-conditioned
-   measurement. Entry point is item 8's re-extraction. Question: **what fraction of production shots
-   are mislocked?**
+   measurement. Question: **what fraction of production shots are mislocked?**
+   ⚑ **CORRECTION (2026-08-04): this does NOT hang off item 8.** `run21`/`run21b` are two far-band
+   worst-case windows, not the production corpus, and §17 showed they are unusable rather than
+   informative. The number that bears on production is **`h4-marciana-structural`'s 21.4% held**
+   — and **"held" is not "wrong"** (a held lock is correct whenever the crosshair did not move), so
+   this needs the **displacement** test, not the hold rate. That is the entry point now; item 8 is
+   closed and gates nothing.
 4. **The 112 → 96 abstentions, reframed.** ⚑ It is a **concurrency** gate, not an absence of tracks
    (§1.4) — the old framing is dead. Open: what the 81 `in_band_no_concurrency` events are, and what
    the 16 that become banded at `band_hi = 20` have in common. Cheap; answerable from committed
@@ -246,8 +251,16 @@ untouched. **Zero fixtures and zero pins moved across BOTH passes.**
    comparison never inspects. The blocking question ("is the f1565 marker real?") is answered **no**
    at n=1. Measured blast radius: ONE event across 8 dumps. ⚑ Ready for an owner decision; do not
    self-authorize it on an n=1 read.
-8. **60 fps localization instability** — `run21`/`run21b` are template-mode with `cross_positions`
-   None on 100% of frames; **never re-extracted under `--locate structural`.** Item 3 hangs off this.
+8. ~~**60 fps localization instability**~~ — ✅ **ANSWERED 2026-08-04, in the NEGATIVE**
+   (`docs/probe-runs.md` §17). Re-localized both windows under `--locate structural`: lock rate goes
+   **0% → 100% / 99.4%**, but **~81% of those locks are HELD** (`conf is None`) against 8.1% on
+   `i3-noir-far-60fps` and 21.4% on `h4-marciana-structural`. Stale run-displacement median **202.6 px**
+   vs a 160 px `pellet_radius`, and 29 of 30 shots carry a stale counting frame. ⚑ **Structural
+   converts a LOUD failure into a SILENT one** — 100% positions, most of them fabricated by hold.
+   `run21`/`run21b` stay **UNUSABLE**. ⚑ The item's framing was also wrong: 4 of 6 60 fps dumps
+   already lock 100%, including a far-band one, so neither 60 fps nor the far band is the
+   discriminator. **Why these two windows fail is UNEXPLAINED** (§17E) — and item 3 does **not** hang
+   off this after all (see §7.3).
 9. **`debounce_shots` SEGMENTATION — still ⛔ OWNER-GATED, untouched.** `cap_cadence` (~3 LOC) and
    `resplit` (~10 LOC) cut pooled MISSED **7.0% → 4.2%/4.5%**. ⚑ `cap_cadence = 35` is NOT
    reproducible. ⛔ `candA` is REFUTED — do not re-propose.
