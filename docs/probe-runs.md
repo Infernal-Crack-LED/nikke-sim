@@ -3671,6 +3671,9 @@ measurement, and it is stated as one.
 label and `real-fidelity-slice.json` live only in f8–11, so such a pellet is invisible to both, and
 the "never detected = 0" row in §9B is conditional on that window. Settling it needs owner labels at
 the plateau frame — **owner time**. Tier: OPEN.
+⚑ **ANSWERED (2026-08-04) — see §18: NO. Nothing lands and fades before `t0+8`; the f8–11 window
+count IS the landed total and 8.40 is CONFIRMED as the reference.** It took 6 owner adjudications,
+not a re-labelling pass. This paragraph is left as written (append-only log); §18 is the resolution.
 
 ##### §9B — THE DECOMPOSITION: of the 35 pellets the reader reports, 12 are owner pellets
 
@@ -5230,3 +5233,96 @@ the existing `stale-counting-slice.json`.
 
 **RECORDS a measurement only.** No constant, guard, threshold, default or `DECISIONS.md` entry was
 changed, and nothing was enacted.
+
+#### §18 THE 8.40 REFERENCE IS CONFIRMED — nothing lands and fades before the owner's window; the cold bias is NOT a mis-specified target
+
+Closes §9A's **"COULD NOT DETERMINE: whether any marker appears and fully fades before t0+8"**, which
+was the last thing gating any verdict on the cold bias. **Tier: OWNER-CONFIRMED** — the owner is the
+labeller of record for this ground truth, and adjudicated the residual candidates directly.
+
+##### §18A — The screen: only 11 objects were ever candidates, and arithmetic killed 5
+
+Instrument `analyze-pellet-tracks.py --fade-screen` (fixture
+`scripts/tests/fixtures/pellets/fade-screen-slice.json`, selftest wired into `pellet-selftest.sh`),
+reading the committed `representative-audit-slice.json` labelled block — no video, no new labelling
+pass, no re-extraction.
+
+Every in-radius non-red track that dies before its shot's own `t0+8`, pooled over the 5 labelled
+shots of `marciana` (SG/Iron — **not** `marciana-marine-study`, AR/Iron):
+
+| lifetime | n      | reading                                        |
+| -------- | ------ | ---------------------------------------------- |
+| 1        | 69     | flash phase (§9C: flash blobs live 1–3 frames) |
+| 2        | 50     | flash phase                                    |
+| 3        | 9      | flash phase                                    |
+| **4**    | **10** | **ambiguous**                                  |
+| **5**    | **1**  | **ambiguous**                                  |
+| 22       | 1      | the known static (§9G)                         |
+
+⚑ **A hard gap separates this population from the owner-pellet band.** Owner pellets measure life
+**8–19** (minimum 8); nothing dying before `t0+8` exceeds life 5.
+
+`hitsPerShot` is **10** and **shot 2's owner label is already 10 — at ceiling**, so no additional
+pellet is physically possible there and its 5 ambiguous objects were excluded by arithmetic alone:
+
+| shot | t0   | owner | headroom | ambiguous | adjudicable |
+| ---- | ---- | ----- | -------- | --------- | ----------- |
+| 1    | 1060 | 7     | 3        | 0         | 0           |
+| 2    | 1096 | 10    | **0**    | 5         | **0**       |
+| 3    | 1140 | 8     | 2        | 1         | 1           |
+| 4    | 1289 | 9     | 1        | 3         | 1           |
+| 5    | 1369 | 8     | 2        | 2         | 2           |
+
+⇒ upper bound on the reference shift **before** adjudication: 4 pellets / 5 shots = **0.8/shot**.
+
+##### §18B — All six adjudicated: NONE is a pellet
+
+| track  | shot | span        | verdict          | basis                                                                                                                                  |
+| ------ | ---- | ----------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `8589` | 5    | t0−4 … t0−1 | **not a pellet** | Ammo-bar segment, **and its whole span precedes the shot onset** — a pellet cannot land before the shot fires (arithmetic, not visual) |
+| `8095` | 4    | t0+1 … t0+4 | **not a pellet** | Ammo-bar segment; `dy` constant at −40/−41, the bar row                                                                                |
+| `8112` | 4    | t0+2 … t0+5 | **not a pellet** | Inside a stack of floating damage-number glyphs; `dy` drift −133 → −206 is those numbers rising                                        |
+| `8135` | 4    | t0+3 … t0+6 | **not a pellet** | Ammo-bar segment; dies at t0+6 exactly as the bar shifts                                                                               |
+| `7118` | 3    | t0+0 … t0+3 | **not a pellet** | **OWNER-ADJUDICATED** from the filmstrip crop                                                                                          |
+| `8659` | 5    | t0+4 … t0+7 | **not a pellet** | **OWNER-ADJUDICATED** from the filmstrip crop                                                                                          |
+
+⚑ **The mechanism is HUD furniture, not short-lived pellets.** The ammo-bar segment ticks sit at a
+fixed `dy ≈ −40` from the crosshair — just outside the 36 px `center_exclude` — so the tracker picks
+them up and hops between adjacent segments, which is also why they cluster at life 4–5. Rising
+damage numbers account for the rest.
+
+##### §18C — VERDICT and what it unblocks
+
+**No marker appears and fully fades before `t0+8`. The owner's f8–11 window count IS the landed
+total, and 8.40 stands as the reference.**
+
+⇒ **The ~1.08 per-shot cold bias is NOT explained by a mis-specified target — it is real reader
+behaviour**, and the remaining channels (the radius gate, the missing-shot channel, track
+fragmentation) carry all of it.
+
+⇒ ⚑ **This removes the block on bias verdicts.** §9A's open question was the reason no bias-CLOSED
+verdict was possible whatever else landed; that constraint is lifted. A re-extraction under the
+landed `band_hi = 20` (§16) now yields a **clean before/after on the actual bias**, measured against
+a confirmed reference.
+
+##### §18D — n, scope, and honesty about who decided what
+
+5 labelled shots, ONE clip, ONE unit (`marciana`, SG/Iron), 140 screened tracks, 11 candidates,
+6 adjudicated. **Four of the six were eliminated by the driver** (one on pre-onset timing, which is
+arithmetic; three on HUD identification from crops, corroborated by the constant-`dy` geometry) —
+that is a single-observer read. **Two were adjudicated by the owner**, the labeller of record.
+⚑ The ceiling argument leans on `hitsPerShot = 10` being the hard per-shot maximum and on the owner's
+f8–11 labels having captured every pellet visible in that window.
+
+##### §18E — Instrument and reproduction
+
+```sh
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --fade-screen
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --fade-screen-selftest
+# regenerate the adjudication filmstrips:
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py \
+  --fade-screen-crops <scratchpad>/pellets/groundtruth-f811-v4/frames
+```
+
+**RECORDS a measurement + an owner adjudication.** No constant, guard, threshold or default changed;
+the 8.40 reference is CONFIRMED, not altered.
