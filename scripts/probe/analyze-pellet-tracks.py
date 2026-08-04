@@ -6645,6 +6645,276 @@ def marker_geometry_selftest():
     return 0 if all_ok else 1
 
 
+# ============================================================
+# MISLOCK RATE -- docs/handoffs/2026-08-04-mislock-rate-PRECOMMIT.md
+#
+# What fraction of PRODUCTION shots have a mislocked crosshair? The detector is
+# structural-vs-template DISAGREEMENT at each shot's counting frames t0+8..t0+11 (t0 =
+# debounce_shots' own event `start` -- its docstring: "a consumer with no owner shot times can
+# index counting frames off the SAME event grouping the shipped estimator uses instead of
+# re-deriving onsets from a private copy"). Per the pre-commit's §3, a shot is MISLOCKED iff its
+# median displacement over those 4 frames exceeds the dump's OWN `params.pellet_radius` (160 for
+# every dump this arm has seen). Per §4.1, a dump whose template arm locks < 90% of counting
+# frames is EXCLUDED -- disagreement is meaningless when one side is absent.
+#
+# READ-ONLY BY CONSTRUCTION: this never touches read-pellets.ts, count-pellets.py's
+# debounce_shots/MARKER_MIN, or any constant/guard/threshold. It reports a RATE; it does not
+# retune the localizer or stamp a verdict on the cold bias (pre-commit §5).
+MISLOCK_RATE_FIXTURE = "scripts/tests/fixtures/pellets/mislock-rate-slice.json"
+MISLOCK_COUNTING_OFFSETS = (8, 9, 10, 11)  # pre-commit §1/§3
+MISLOCK_LOCK_GATE = 0.90                   # pre-commit §4.1
+
+
+def _mlr_score(name, shots, n, struct_cross, tmpl_cross, pellet_radius, fps,
+               offsets=MISLOCK_COUNTING_OFFSETS):
+    """Score one dump's ALREADY-SEGMENTED `shots` (count-pellets.py debounce_shots' own event
+    list -- every event, not just the [min_pellets,max_pellets]-valid subset, matching how this
+    dump's own `totalShots` is reported elsewhere, e.g. docs/probe-runs.md's 218/203/180/214)
+    against structural-vs-template crosshair disagreement. `struct_cross`/`tmpl_cross` need only
+    support `[frame_index]` -- a live run passes the dumps' own `cross_positions` lists, the
+    selftest passes a sparse dict slice of just the frames actually used, both work identically."""
+    shot_reports = []
+    total_counting = 0
+    locked_counting = 0
+    for s in shots:
+        t0 = s["start"]
+        frames = [t0 + o for o in offsets if 0 <= t0 + o < n]
+        disps = []
+        n_locked = 0
+        per_frame = []
+        for f in frames:
+            sc = struct_cross[f]
+            tc = tmpl_cross[f]
+            if tc is not None:
+                n_locked += 1
+            d = None
+            if sc is not None and tc is not None:
+                d = math.hypot(sc[0] - tc[0], sc[1] - tc[1])
+                disps.append(d)
+            per_frame.append({"frame": f, "struct": sc, "tmpl": tc,
+                              "disp": round(d, 2) if d is not None else None})
+        total_counting += len(frames)
+        locked_counting += n_locked
+        median_disp = round(st.median(disps), 2) if disps else None
+        shot_reports.append({
+            "shot_frame": s["frame"], "t0": t0, "n_counting_frames": len(frames),
+            "n_locked": n_locked, "n_both": len(disps), "median_disp": median_disp,
+            # §4.3: disagreement never identifies WHICH arm is wrong, only THAT they disagree --
+            # this key names the CONDITION, never attributes fault to "structural".
+            "mislocked": median_disp is not None and median_disp > pellet_radius,
+            "frames": per_frame,
+        })
+    lock_rate = round(locked_counting / total_counting, 4) if total_counting else None
+    scored = [s for s in shot_reports if s["median_disp"] is not None]
+    mislocked = [s for s in scored if s["mislocked"]]
+    disps_pooled = [s["median_disp"] for s in scored]
+    return {
+        "dump": name, "pellet_radius": pellet_radius, "fps": fps, "n_frames": n,
+        "n_shots": len(shot_reports),
+        "n_counting_frames": total_counting, "n_locked_counting_frames": locked_counting,
+        "template_lock_rate": lock_rate,
+        "excluded": lock_rate is None or lock_rate < MISLOCK_LOCK_GATE,
+        "n_shots_scored": len(scored), "n_shots_no_overlap": len(shot_reports) - len(scored),
+        "n_mislocked": len(mislocked),
+        "mislock_rate": round(len(mislocked) / len(scored), 4) if scored else None,
+        "displacement_median": round(st.median(disps_pooled), 2) if disps_pooled else None,
+        "displacement_p90": round(_pct(disps_pooled, 90), 2) if disps_pooled else None,
+        "displacement_max": round(max(disps_pooled), 2) if disps_pooled else None,
+        "shots": shot_reports,
+    }
+
+
+def _mlr_band(rate):
+    """Pre-commit §3's three bands, pre-committed before any production number existed."""
+    if rate < 0.02:
+        return "< 2%: mislocks are RARE -- the shot-4 case is unrepresentative, item 3 closes as minor"
+    if rate <= 0.10:
+        return "2-10%: RECORD the rate -- a real channel, comparable to the lifetime cap's, worth its own pass"
+    return "> 10%: mislocks are the DOMINANT undercount channel and outrank every other open item"
+
+
+def _mlr_pool(reports):
+    """Pool across dumps that PASS the §4.1 gate only -- an excluded dump contributes nothing (its
+    disagreement is meaningless with one arm absent, not zero)."""
+    included = [r for r in reports if not r["excluded"]]
+    scored = [s for r in included for s in r["shots"] if s["median_disp"] is not None]
+    mislocked = [s for s in scored if s["mislocked"]]
+    disps = [s["median_disp"] for s in scored]
+    rate = len(mislocked) / len(scored) if scored else None
+    return {
+        "n_dumps_included": len(included), "n_dumps_excluded": len(reports) - len(included),
+        "excluded_dumps": [r["dump"] for r in reports if r["excluded"]],
+        "n_shots_scored": len(scored), "n_mislocked": len(mislocked),
+        "mislock_rate": round(rate, 4) if rate is not None else None,
+        "displacement_median": round(st.median(disps), 2) if disps else None,
+        "displacement_p90": round(_pct(disps, 90), 2) if disps else None,
+        "displacement_max": round(max(disps), 2) if disps else None,
+        "band": _mlr_band(rate) if rate is not None else None,
+    }
+
+
+def _print_mislock_rate(reports, pooled):
+    print("\nMISLOCK RATE -- docs/handoffs/2026-08-04-mislock-rate-PRECOMMIT.md")
+    for r in reports:
+        tag = "EXCLUDED (template lock < 90%, pre-commit §4.1)" if r["excluded"] else "included"
+        print(f"\n{r['dump']}  [{tag}]")
+        print(f"  frames={r['n_frames']} shots={r['n_shots']} pellet_radius={r['pellet_radius']} "
+             f"fps={r['fps']}")
+        lr = f"{r['template_lock_rate'] * 100:.1f}%" if r["template_lock_rate"] is not None else "n/a"
+        print(f"  counting frames: {r['n_locked_counting_frames']}/{r['n_counting_frames']} "
+             f"template-locked ({lr})")
+        if not r["excluded"]:
+            print(f"  scored shots={r['n_shots_scored']} (no-overlap={r['n_shots_no_overlap']})  "
+                 f"mislocked={r['n_mislocked']}  rate={r['mislock_rate']}")
+            print(f"  displacement median={r['displacement_median']} p90={r['displacement_p90']} "
+                 f"max={r['displacement_max']}")
+    excl = f": {', '.join(pooled['excluded_dumps'])}" if pooled["excluded_dumps"] else ""
+    print(f"\nPOOLED ({pooled['n_dumps_included']} dumps included, "
+         f"{pooled['n_dumps_excluded']} excluded{excl})")
+    print(f"  n shots scored={pooled['n_shots_scored']}  mislocked={pooled['n_mislocked']}  "
+         f"rate={pooled['mislock_rate']}")
+    print(f"  displacement median={pooled['displacement_median']} p90={pooled['displacement_p90']} "
+         f"max={pooled['displacement_max']}")
+    print(f"  band: {pooled['band']}")
+
+
+def _mlr_needed_frames(shots, n, offsets=MISLOCK_COUNTING_OFFSETS):
+    need = set()
+    for s in shots:
+        t0 = s["start"]
+        for o in offsets:
+            f = t0 + o
+            if 0 <= f < n:
+                need.add(f)
+    return need
+
+
+def _mlr_slim(name, shots, n, struct_cross, tmpl_cross, pellet_radius, fps):
+    """Reduce a full (structural, template) dump pair to exactly what --mislock-rate-selftest
+    needs to reproduce the score: debounce_shots' own event list (just `frame`/`start` -- the
+    other keys `_mlr_score` never reads), and both arms' crosshair positions ONLY at the frames
+    some shot's counting window actually touches. Mirrors `_mg_slim`'s precedent."""
+    need = sorted(_mlr_needed_frames(shots, n))
+    return {
+        "name": name, "n": n, "pellet_radius": pellet_radius, "fps": fps,
+        "shots": [{"frame": s["frame"], "start": s["start"]} for s in shots],
+        "struct_cross": {str(f): struct_cross[f] for f in need},
+        "tmpl_cross": {str(f): tmpl_cross[f] for f in need},
+    }
+
+
+def _mlr_expand(d):
+    """Compact fixture slice -> the (name, shots, n, struct_cross, tmpl_cross, pellet_radius, fps)
+    tuple `_mlr_score` reads. The cross dicts are keyed by exactly the frames `_mlr_score` will
+    ever index for this `shots`/`n` (see `_mlr_needed_frames`), so plain dict `[frame]` indexing
+    works identically to the live list-indexed `cross_positions` it stands in for."""
+    struct_cross = {int(k): v for k, v in d["struct_cross"].items()}
+    tmpl_cross = {int(k): v for k, v in d["tmpl_cross"].items()}
+    return (d["name"], d["shots"], d["n"], struct_cross, tmpl_cross, d["pellet_radius"], d["fps"])
+
+
+def _mlr_strip(report):
+    """Drop the per-frame `frames` detail (struct/tmpl xy + disp per counting frame) from a shot
+    report -- decisive for a human reading the printed table, not for the pinned `_expected` dict,
+    which only needs to catch a regression in the SCORE, not in every intermediate coordinate."""
+    out = dict(report)
+    out["shots"] = [{k: v for k, v in s.items() if k != "frames"} for s in report["shots"]]
+    return out
+
+
+def _mlr_expected(reports, pooled):
+    return {"dumps": [_mlr_strip(r) for r in reports], "pooled": pooled}
+
+
+def audit_mislock_rate(struct_paths, tmpl_paths, fps_list, save_fixture=None):
+    if len(struct_paths) != len(tmpl_paths):
+        raise SystemExit(f"--mislock-rate: {len(struct_paths)} structural path(s) vs "
+                         f"{len(tmpl_paths)} --mislock-rate-template path(s) -- must pair 1:1, "
+                         "same order")
+    if len(fps_list) not in (1, len(struct_paths)):
+        raise SystemExit("--mislock-rate-fps takes 1 value or one per dump "
+                         f"({len(struct_paths)} given), got {len(fps_list)}")
+    cp = _count_pellets_module()
+    reports, slims = [], []
+    for i, (sp, tp) in enumerate(zip(struct_paths, tmpl_paths)):
+        fps = fps_list[0] if len(fps_list) == 1 else fps_list[i]
+        with open(sp) as fh:
+            sd = json.load(fh)
+        with open(tp) as fh:
+            td = json.load(fh)
+        struct_cross, tmpl_cross = sd["cross_positions"], td["cross_positions"]
+        frame_counts = sd["frame_counts"]
+        n = len(frame_counts)
+        if len(struct_cross) != n or len(tmpl_cross) != n:
+            raise SystemExit(f"--mislock-rate: {sp} ({len(struct_cross)} frames) vs {tp} "
+                             f"({len(tmpl_cross)} frames) vs its own frame_counts ({n}) -- length "
+                             "mismatch. Wrong template, a partial run, or a mismatched frame "
+                             "source; refusing to score misaligned frame indices.")
+        pellet_radius = sd["params"]["pellet_radius"]
+        shots, _summary = cp.debounce_shots(frame_counts, fps)
+        name = Path(sp).resolve().parent.name
+        rep = _mlr_score(name, shots, n, struct_cross, tmpl_cross, pellet_radius, fps)
+        reports.append(rep)
+        if save_fixture:
+            slims.append(_mlr_slim(name, shots, n, struct_cross, tmpl_cross, pellet_radius, fps))
+    pooled = _mlr_pool(reports)
+    if save_fixture:
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("count-pellets.py --dump-tracks structural + template pairs (see "
+                           "docs/handoffs/2026-08-04-mislock-rate-PRECOMMIT.md), sliced to just "
+                           "the counting-frame crosshair positions --mislock-rate consumes."),
+                "_note": ("A SLICE per dump, not the full dumps: `shots` is debounce_shots' own "
+                         "event list reduced to `frame`/`start`, and `struct_cross`/`tmpl_cross` "
+                         "cover only the frames inside some shot's t0+{8,9,10,11} window (t0 = "
+                         "the shot's own `start`). Regenerate with analyze-pellet-tracks.py "
+                         "--mislock-rate <structural.json...> --mislock-rate-template "
+                         "<template.json...> [--mislock-rate-fps <fps...>] "
+                         "--save-mislock-rate-fixture <path>."),
+                "dumps": slims,
+                "_expected": _mlr_expected(reports, pooled),
+            }, fh, indent=2)
+        print(f"wrote mislock-rate fixture -> {save_fixture}")
+    _print_mislock_rate(reports, pooled)
+    return reports, pooled
+
+
+def mislock_rate_selftest():
+    """Constraint 9 self-validation: replay --mislock-rate over the committed slice (no scratchpad
+    access) and assert both the pinned `_expected` dict AND the pre-commit §2 calibration's
+    decisive claim explicitly, so a fixture edit that moved either cannot hide behind a coarse
+    dict-equality pass -- the one KNOWN structural mislock (shot t0=1289, `marciana` SG/Iron
+    groundtruth clip: structural locked onto a floating damage-number stack across its whole
+    f8-11 window) must classify MISLOCKED, and every other KNOWN-good shot in the fixture must
+    classify NOT mislocked. This is the detector DISCRIMINATING, not merely running."""
+    with open(MISLOCK_RATE_FIXTURE) as fh:
+        fx = json.load(fh)
+    reports = []
+    for d in fx["dumps"]:
+        name, shots, n, struct_cross, tmpl_cross, pellet_radius, fps = _mlr_expand(d)
+        reports.append(_mlr_score(name, shots, n, struct_cross, tmpl_cross, pellet_radius, fps))
+    pooled = _mlr_pool(reports)
+    got = _mlr_expected(reports, pooled)
+    ok = got == fx["_expected"]
+    if not ok:
+        print(f"  DIFF:\n    expected {json.dumps(fx['_expected'])}\n    got      {json.dumps(got)}")
+
+    checks = []
+    if reports:
+        by_t0 = {s["t0"]: s for s in reports[0]["shots"]}
+        checks.append(("shot t0=1289 (known structural mislock) classified MISLOCKED",
+                       by_t0.get(1289, {}).get("mislocked") is True))
+        for t0 in (1056, 1096, 1136, 1369):
+            checks.append((f"shot t0={t0} (known-good) classified NOT mislocked",
+                           by_t0.get(t0, {}).get("mislocked") is False))
+    all_ok = ok and all(v for _, v in checks)
+    for label, v in checks:
+        print(f"  {'PASS' if v else 'FAIL'}  {label}")
+    _print_mislock_rate(reports, pooled)
+    print("SELFTEST PASS" if all_ok else "SELFTEST FAIL")
+    return 0 if all_ok else 1
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--tracks", help="tracks.json from count-pellets.py --dump-tracks")
@@ -6990,6 +7260,28 @@ def main():
                           "runs under --selftest / pellet-selftest.sh; decides nothing."))
     ap.add_argument("--fade-screen-crops-out", metavar="DIR", default="/tmp/fade-adjudication",
                     help="output directory for --fade-screen-crops (default /tmp/fade-adjudication)")
+    ap.add_argument("--mislock-rate", nargs="+", metavar="STRUCT_TRACKS_JSON",
+                    help=("MISLOCK RATE (docs/handoffs/2026-08-04-mislock-rate-PRECOMMIT.md): what "
+                          "fraction of PRODUCTION shots have a mislocked crosshair, by "
+                          "structural-vs-template disagreement at each shot's counting frames "
+                          "t0+8..t0+11 (t0 = debounce_shots' own event `start`). A shot is "
+                          "MISLOCKED iff its median displacement over those 4 frames exceeds the "
+                          "dump's own params.pellet_radius (pre-commit §3); a dump whose template "
+                          "arm locks < 90%% of counting frames is EXCLUDED (§4.1). One or more "
+                          "structural tracks.json paths; pair 1:1, same order, with "
+                          "--mislock-rate-template. READ-ONLY: never touches read-pellets.ts, "
+                          "count-pellets.py's debounce_shots/MARKER_MIN, or any constant/guard/"
+                          "threshold -- reports a RATE only."))
+    ap.add_argument("--mislock-rate-template", nargs="+", metavar="TEMPLATE_TRACKS_JSON",
+                    help="template-mode tracks.json paths, one per --mislock-rate entry, same order "
+                         "(same frames, --locate template instead of structural)")
+    ap.add_argument("--mislock-rate-fps", type=float, nargs="+", default=[30.0], metavar="FPS",
+                    help="sampling fps, 1 value or one per --mislock-rate dump (default 30, matching "
+                         "every production dump; the labelled calibration clip is 60)")
+    ap.add_argument("--save-mislock-rate-fixture", metavar="PATH",
+                    help=f"write the committed replay slice (see {MISLOCK_RATE_FIXTURE})")
+    ap.add_argument("--mislock-rate-selftest", action="store_true",
+                    help=f"replay {MISLOCK_RATE_FIXTURE} and exit")
     args = ap.parse_args()
 
     if args.stale_counting_selftest:
@@ -7030,6 +7322,14 @@ def main():
         audit_marker_geometry(args.marker_geometry, args.marker_geometry_frames,
                               args.marker_geometry_radius, args.marker_geometry_window,
                               args.save_marker_geometry_fixture)
+        return 0
+    if args.mislock_rate_selftest:
+        raise SystemExit(mislock_rate_selftest())
+    if args.mislock_rate:
+        if not args.mislock_rate_template:
+            ap.error("--mislock-rate requires --mislock-rate-template")
+        audit_mislock_rate(args.mislock_rate, args.mislock_rate_template, args.mislock_rate_fps,
+                           args.save_mislock_rate_fixture)
         return 0
     if args.hybrid_landing_audit_selftest:
         raise SystemExit(hybrid_landing_audit_selftest())
