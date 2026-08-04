@@ -1,0 +1,311 @@
+{
+  "_source": "Scored entirely off the already-committed scripts/tests/fixtures/pellets/representative-audit-slice.json -- no new raw tracks.json, no re-derivation (CLAUDE.md reuse-before-derive). docs/handoffs/2026-08-04-representative-frame-PRECOMMIT.md is the decision rule this arm's numbers are scored against.",
+  "_note": "Deliberately carries NO raw track data of its own -- `policy_score`/`policy_score_selftest` both read scripts/tests/fixtures/pellets/representative-audit-slice.json directly, so this fixture only pins the SCORE (`_expected`), not a second copy of the labelled/dumps blocks. Regenerate with analyze-pellet-tracks.py --policy-score --save-policy-score-fixture <path>.",
+  "_expected": {
+    "band_labelled": [8, 13],
+    "rows": [
+      {
+        "shot": 1,
+        "t0": 1060,
+        "plateau_offsets": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "plateau_size": 10,
+        "shipped_median": {
+          "rep_offset": 2,
+          "total": 6,
+          "in_plateau": true
+        },
+        "lifetime_gated_median": {
+          "rep_offset": 2,
+          "total": 5,
+          "in_plateau": true
+        },
+        "plateau_median": {
+          "rep_offset": 5,
+          "total": 5,
+          "in_plateau": true
+        },
+        "lifetime_band_count": {
+          "count": 6
+        }
+      },
+      {
+        "shot": 2,
+        "t0": 1096,
+        "plateau_offsets": [5, 6, 7, 8, 9, 10, 11, 12, 13],
+        "plateau_size": 9,
+        "shipped_median": {
+          "rep_offset": 2,
+          "total": 8,
+          "in_plateau": false
+        },
+        "lifetime_gated_median": {
+          "rep_offset": 5,
+          "total": 7,
+          "in_plateau": true
+        },
+        "plateau_median": {
+          "rep_offset": 10,
+          "total": 8,
+          "in_plateau": true
+        },
+        "lifetime_band_count": {
+          "count": 8
+        }
+      },
+      {
+        "shot": 3,
+        "t0": 1140,
+        "plateau_offsets": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "plateau_size": 10,
+        "shipped_median": {
+          "rep_offset": -3,
+          "total": 9,
+          "in_plateau": false
+        },
+        "lifetime_gated_median": {
+          "rep_offset": 1,
+          "total": 7,
+          "in_plateau": true
+        },
+        "plateau_median": {
+          "rep_offset": 6,
+          "total": 7,
+          "in_plateau": true
+        },
+        "lifetime_band_count": {
+          "count": 7
+        }
+      },
+      {
+        "shot": 4,
+        "t0": 1289,
+        "plateau_offsets": [5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+        "plateau_size": 10,
+        "shipped_median": {
+          "rep_offset": 3,
+          "total": 4,
+          "in_plateau": false
+        },
+        "lifetime_gated_median": {
+          "rep_offset": null,
+          "total": null,
+          "in_plateau": false
+        },
+        "plateau_median": {
+          "rep_offset": null,
+          "total": null,
+          "in_plateau": false
+        },
+        "lifetime_band_count": {
+          "count": 0
+        }
+      },
+      {
+        "shot": 5,
+        "t0": 1369,
+        "plateau_offsets": [5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+        "plateau_size": 10,
+        "shipped_median": {
+          "rep_offset": 7,
+          "total": 8,
+          "in_plateau": true
+        },
+        "lifetime_gated_median": {
+          "rep_offset": 8,
+          "total": 8,
+          "in_plateau": true
+        },
+        "plateau_median": {
+          "rep_offset": 10,
+          "total": 8,
+          "in_plateau": true
+        },
+        "lifetime_band_count": {
+          "count": 8
+        }
+      }
+    ],
+    "categorical_scores": {
+      "shipped_median": 2,
+      "lifetime_gated_median": 4,
+      "plateau_median": 4
+    },
+    "per_dump": [
+      {
+        "dump": "groundtruth-f811-v4/tracks.json",
+        "fps": 60.0,
+        "n_events": 37,
+        "shipped_median": {
+          "n_scored": 37,
+          "no_rep": 0,
+          "sum_total": 253,
+          "above_ceiling": 0
+        },
+        "lifetime_gated_median": {
+          "n_scored": 30,
+          "no_rep": 7,
+          "sum_total": 177,
+          "above_ceiling": 0
+        },
+        "plateau_median": {
+          "n_scored": 30,
+          "no_rep": 7,
+          "sum_total": 180,
+          "above_ceiling": 0
+        },
+        "lifetime_band_count": {
+          "n_scored": 37,
+          "no_rep": 0,
+          "sum_total": 208,
+          "above_ceiling": 1
+        }
+      },
+      {
+        "dump": "h4-marciana-structural/tracks.json",
+        "fps": 30.0,
+        "n_events": 218,
+        "shipped_median": {
+          "n_scored": 218,
+          "no_rep": 0,
+          "sum_total": 1542,
+          "above_ceiling": 15
+        },
+        "lifetime_gated_median": {
+          "n_scored": 192,
+          "no_rep": 26,
+          "sum_total": 1192,
+          "above_ceiling": 0
+        },
+        "plateau_median": {
+          "n_scored": 192,
+          "no_rep": 26,
+          "sum_total": 1205,
+          "above_ceiling": 1
+        },
+        "lifetime_band_count": {
+          "n_scored": 218,
+          "no_rep": 0,
+          "sum_total": 1388,
+          "above_ceiling": 7
+        }
+      },
+      {
+        "dump": "h4-isabel-structural/tracks.json",
+        "fps": 30.0,
+        "n_events": 203,
+        "shipped_median": {
+          "n_scored": 203,
+          "no_rep": 0,
+          "sum_total": 1451,
+          "above_ceiling": 17
+        },
+        "lifetime_gated_median": {
+          "n_scored": 174,
+          "no_rep": 29,
+          "sum_total": 1086,
+          "above_ceiling": 2
+        },
+        "plateau_median": {
+          "n_scored": 174,
+          "no_rep": 29,
+          "sum_total": 1097,
+          "above_ceiling": 2
+        },
+        "lifetime_band_count": {
+          "n_scored": 203,
+          "no_rep": 0,
+          "sum_total": 1311,
+          "above_ceiling": 13
+        }
+      },
+      {
+        "dump": "h4-guilty-structural/tracks.json",
+        "fps": 30.0,
+        "n_events": 180,
+        "shipped_median": {
+          "n_scored": 180,
+          "no_rep": 0,
+          "sum_total": 1239,
+          "above_ceiling": 7
+        },
+        "lifetime_gated_median": {
+          "n_scored": 155,
+          "no_rep": 25,
+          "sum_total": 947,
+          "above_ceiling": 1
+        },
+        "plateau_median": {
+          "n_scored": 155,
+          "no_rep": 25,
+          "sum_total": 960,
+          "above_ceiling": 1
+        },
+        "lifetime_band_count": {
+          "n_scored": 180,
+          "no_rep": 0,
+          "sum_total": 1116,
+          "above_ceiling": 8
+        }
+      },
+      {
+        "dump": "g2-noir-structural/tracks.json",
+        "fps": 30.0,
+        "n_events": 214,
+        "shipped_median": {
+          "n_scored": 214,
+          "no_rep": 0,
+          "sum_total": 1536,
+          "above_ceiling": 14
+        },
+        "lifetime_gated_median": {
+          "n_scored": 189,
+          "no_rep": 25,
+          "sum_total": 1191,
+          "above_ceiling": 2
+        },
+        "plateau_median": {
+          "n_scored": 189,
+          "no_rep": 25,
+          "sum_total": 1206,
+          "above_ceiling": 4
+        },
+        "lifetime_band_count": {
+          "n_scored": 214,
+          "no_rep": 0,
+          "sum_total": 1466,
+          "above_ceiling": 18
+        }
+      }
+    ],
+    "pooled": {
+      "shipped_median": {
+        "n_events": 852,
+        "n_scored": 852,
+        "no_rep": 0,
+        "avgTotal": 7.0669,
+        "above_ceiling_pct": 6.2
+      },
+      "lifetime_gated_median": {
+        "n_events": 852,
+        "n_scored": 740,
+        "no_rep": 112,
+        "avgTotal": 6.2068,
+        "above_ceiling_pct": 0.7
+      },
+      "plateau_median": {
+        "n_events": 852,
+        "n_scored": 740,
+        "no_rep": 112,
+        "avgTotal": 6.2811,
+        "above_ceiling_pct": 1.1
+      },
+      "lifetime_band_count": {
+        "n_events": 852,
+        "n_scored": 852,
+        "no_rep": 0,
+        "avgTotal": 6.4425,
+        "above_ceiling_pct": 5.5
+      }
+    }
+  }
+}
