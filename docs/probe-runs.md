@@ -3922,3 +3922,150 @@ scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --represen
 snapped window and all five dumps' full-clip `frame_counts`; the **1786 / 1801**
 reconstruction figure in §9I is **live-run only** (printed as `FULL-CLIP CONTROL`), because the
 fixture cannot carry 11k tracks. Same split the merge audit uses.
+
+#### §10 THE REPRESENTATIVE-FRAME POLICY SCORE — none of the four candidates reach 5/5; two reach 4/5
+
+The miss on the two that reach 4/5 is a pre-existing, unrelated bug (§10B).
+
+Executes the measurement specified in
+[`docs/handoffs/2026-08-04-representative-frame-PRECOMMIT.md`](handoffs/2026-08-04-representative-frame-PRECOMMIT.md)
+(committed `ac822e36`, §1–§3 unedited by this entry). Settles §9's own open question ("is there a
+representative rule that lands in the pellet cohort instead?") by scoring the four pre-committed
+candidates — `shipped_median` (control), `lifetime_gated_median`, `plateau_median`,
+`lifetime_band_count` — against the categorical PLATEAU check and the free ceiling check, both
+defined in the pre-commit doc's §1. **This entry computes numbers; it does not re-litigate the
+decision rule.**
+
+Instrument: `scripts/probe/analyze-pellet-tracks.py --policy-score`, reading
+`scripts/tests/fixtures/pellets/representative-audit-slice.json` directly — no new raw data, no
+re-derivation (CLAUDE.md reuse-before-derive: that fixture's `labelled.tracks_raw` /
+`dumps[].radius_tracks` / `_expected.counted_owner_series*` already carry everything this arm needs).
+
+##### §10A — Validity checks (per the pre-commit doc's §2; all three PASS)
+
+1. **Shipped-identity control: PASS on all 5 dumps** — the local span rebuild reproduces
+   `count-pellets.py`'s own `debounce_shots` event-for-event before any row is scored.
+2. **`shipped_median` reproduces reads 6 / 8 / 9 / 4 / 8, `rep_offset` 2 / 2 / −3 / 3 / 7, and
+   `above_ceiling_pct` 6.2%** — exact match to the pinned §9C/§9K baseline.
+3. **The plateau implementation reproduces shipped = 2/5, IN on shots 1 and 5, OUT on 2/3/4** —
+   exact match to §9C's pinned anchor.
+
+All three PASS. Every number below is live, not void.
+
+##### §10B — PRIMARY: the categorical check
+
+| shot      | plateau offsets (size)      | `shipped_median`  | `lifetime_gated_median` | `plateau_median`   |
+| --------- | --------------------------- | ----------------- | ----------------------- | ------------------ |
+| 1         | [1..10] (10)                | +2 **IN** (tot 6) | +2 **IN** (tot 5)       | +5 **IN** (tot 5)  |
+| 2         | [5..13] (9)                 | +2 OUT (tot 8)    | +5 **IN** (tot 7)       | +10 **IN** (tot 8) |
+| 3         | [1..10] (10)                | −3 OUT (tot 9)    | +1 **IN** (tot 7)       | +6 **IN** (tot 7)  |
+| 4         | [5..14] (10, RELOCK series) | +3 OUT (tot 4)    | **None** OUT            | **None** OUT       |
+| 5         | [5..14] (10)                | +7 **IN** (tot 8) | +8 **IN** (tot 8)       | +10 **IN** (tot 8) |
+| **score** |                             | **2/5**           | **4/5**                 | **4/5**            |
+
+Per §1.1's table: `shipped_median` reproduces §9C exactly (2/5, control, not a candidate).
+**`lifetime_gated_median` and `plateau_median` both score 4/5 — RECORD ONLY.** Neither reaches 5/5,
+so neither is promotable in this pass.
+
+⚑ **Both non-shipped rules miss shot 4 the same way: no representative frame at all (`None`), not a
+wrong one.** Under the SHIPPED structural crosshair — the one every candidate here deliberately
+scores against, since that is what the reader actually sees in production — shot 4 has, per §9B/§9C,
+**zero owner pellets ever in radius at all**; the entire residual on that shot is the documented
+structural mislock, not a counting error. No track with a lifetime in the band is ever in radius on
+that shot under that crosshair, so `lifetime_gated_median`/`plateau_median` have nothing to select
+from. This is a pre-existing, orthogonal bug (§9B), not something a representative-frame rule could
+ever fix. **Observation, not a rescored verdict** (the pre-committed rule scores all 5 shots, no
+exceptions, and 4/5 is the number that stands): if shot 4 were excluded as known-mislocked, both
+rules would read 4/4 on the remaining shots — recorded here so a future session does not re-derive
+this, but it changes nothing about the 4/5 this pass reports.
+
+##### §10C — SECONDARY: the ceiling check (free)
+
+Pooled over the same 852 events across 5 dumps and 4 units §9G/§9K establish.
+
+| policy                  | n_scored | no_rep | avgTotal | above_ceiling_pct |
+| ----------------------- | -------- | ------ | -------- | ----------------- |
+| `shipped_median`        | 852      | 0      | 7.0669   | 6.2%              |
+| `lifetime_gated_median` | 740      | 112    | 6.2068   | 0.7%              |
+| `plateau_median`        | 740      | 112    | 6.2811   | 1.1%              |
+| `lifetime_band_count`   | 852      | 0      | 6.4425   | 5.5%              |
+
+**All four are far under the 12.4% reject threshold — none is rejected on this axis.** The two
+lifetime-gated frame rules read dramatically lower than shipped (0.7% / 1.1% vs 6.2%), consistent
+with §9G's mechanism: the flash population is exactly what a lifetime gate excludes, and the flash is
+what pushes shipped's ceiling violations.
+
+⚑ **112 / 852 (13.1%) of pooled events have NO track at all whose lifetime falls in the band AND is
+ever in radius during the event — `lifetime_gated_median` and `plateau_median` report NOTHING on
+those (excluded from `n_scored`, not scored as 0).** `shipped_median` and `lifetime_band_count` never
+abstain (`no_rep` 0 on both). A rule that abstains on ~13% of events cannot be read as strictly
+cleaner on the ceiling axis than one that never abstains without noting the abstention rate — recorded
+as a caveat, not resolved here; no ranking decision rests on it in this pass.
+
+##### §10D — TERTIARY (§1.3: reported only, never a ranking criterion)
+
+`avgTotal`: `shipped_median` 7.0669, `lifetime_gated_median` 6.2068, `plateau_median` 6.2811,
+`lifetime_band_count` 6.4425. None sits near 8.40, and per §1.3 it would not matter if one did —
+recorded only so no future session reads a mean as a selection criterion.
+
+##### §10E — `lifetime_band_count` (exempt from §1.1)
+
+| shot | count | plateau size                               |
+| ---- | ----- | ------------------------------------------ |
+| 1    | 6     | 10                                         |
+| 2    | 8     | 9                                          |
+| 3    | 7     | 10                                         |
+| 4    | 0     | 10 (mislock — no radius-gate track at all) |
+| 5    | 8     | 10                                         |
+
+Undercounts the ground-truth plateau's own size on every non-mislocked shot — consistent with §9B's
+5-of-42 owner pellets rejected by the lifetime gate alone. Ceiling 5.5% pooled, clear of 12.4%.
+
+##### §10F — VERDICT per rule, under the pre-committed §1.1/§1.2 rule
+
+- **`shipped_median`** — control; reproduces §9C exactly (2/5). Not a candidate.
+- **`lifetime_gated_median`** — 4/5 categorical → **RECORD ONLY**. Ceiling 0.7%, well clear of
+  reject. Not promotable this pass.
+- **`plateau_median`** — 4/5 categorical → **RECORD ONLY**. Ceiling 1.1%, well clear of reject. Not
+  promotable this pass.
+- **`lifetime_band_count`** — exempt from §1.1; ceiling 5.5%, clear of reject; undercounts the true
+  plateau size on every non-mislocked shot.
+
+**No rule reaches 5/5 in this pass. No rule is REJECTED on the ceiling axis. Nothing here is
+PROMOTABLE per the pre-committed rule.**
+
+##### §10G — Controls
+
+- **Shipped-identity**: PASS on all 5 dumps (validity check 1).
+- **`_expected` provenance**: `policy_score` (the fixture writer) and `policy_score_selftest` both
+  call the same `_ps_score_labelled` / `_ps_score_dump` / `_ps_pool_dumps` path, so `_expected` can
+  only ever be the source fixture's own numbers.
+- **No new raw data**: every number in this entry derives from
+  `representative-audit-slice.json`, whose own controls (§9I: white reconstruction 369/369, filter
+  fidelity, shipped-identity) are unchanged and unre-derived here.
+
+##### §10H — n and scope
+
+5 labelled shots on one clip, one unit (`marciana`, SG/Iron), for the categorical half; 852
+unlabelled events across 5 dumps and 4 units (`marciana` SG/Iron, `isabel`, `guilty`, `noir`) for the
+ceiling half — the same scope §9 established.
+
+**NOTHING HERE ENACTS A CHANGE.** `debounce_shots` and segmentation are UNTOUCHED in both
+`count-pellets.py` and `read-pellets.ts`; every rule in this entry is a local scoring variant read off
+an already-committed fixture. No guard, gate, threshold or constant was changed; no `DECISIONS.md`
+entry was edited; no verdict was stamped on anything outside this measurement log and §4 of the
+pre-commit doc it settles. A 5/5 result would have produced a PROPOSAL, not a landing — moot here,
+since no rule reached 5/5.
+
+##### §10I — Instrument and reproduction
+
+`scripts/probe/analyze-pellet-tracks.py --policy-score`, self-validated against the committed slice
+`scripts/tests/fixtures/pellets/policy-score-slice.json` and registered in
+`scripts/probe/pellet-selftest.sh`. Reads `representative-audit-slice.json` directly; takes no
+`tracks.json` arguments of its own.
+
+```sh
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --policy-score
+# replay the committed slice -- no images, no subprocess, no tracks.json:
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --policy-score-selftest
+```

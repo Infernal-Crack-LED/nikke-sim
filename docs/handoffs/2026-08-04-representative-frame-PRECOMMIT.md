@@ -112,4 +112,36 @@ promoted in this pass**.
 
 ## 4. Result
 
-_Left empty deliberately. The outcome is recorded below, and §1 above is not edited._
+Full measurement: `docs/probe-runs.md` §10. Instrument:
+`scripts/probe/analyze-pellet-tracks.py --policy-score` (selftest `--policy-score-selftest` against
+`scripts/tests/fixtures/pellets/policy-score-slice.json`, wired into `scripts/probe/pellet-selftest.sh`).
+
+**All three §2 validity checks PASS** — the shipped-identity control, `shipped_median`'s exact
+reproduction of reads 6/8/9/4/8 / `rep_offset` 2/2/−3/3/7 / `above_ceiling_pct` 6.2%, and the plateau
+implementation's exact reproduction of shipped = 2/5 (IN on 1 and 5, OUT on 2/3/4).
+
+| rule                    | §1.1 categorical        | §1.2 ceiling (852 events) | verdict                                                        |
+| ----------------------- | ----------------------- | ------------------------- | -------------------------------------------------------------- |
+| `shipped_median`        | 2/5 (control)           | 6.2%                      | reproduces §9C; not a candidate                                |
+| `lifetime_gated_median` | 4/5 (IN 1,2,3,5; OUT 4) | 0.7%                      | **RECORD ONLY** — not promotable this pass                     |
+| `plateau_median`        | 4/5 (IN 1,2,3,5; OUT 4) | 1.1%                      | **RECORD ONLY** — not promotable this pass                     |
+| `lifetime_band_count`   | exempt (§1.4)           | 5.5%                      | undercounts the plateau's own size on every non-mislocked shot |
+
+**No rule reaches 5/5. Nothing here is promotable to a proposal.** Both non-control frame rules miss
+the same shot (4) the same way — they select no representative frame at all, because under the
+SHIPPED structural crosshair every candidate deliberately scores against, shot 4 has zero owner
+pellets ever in radius (the pre-existing, already-documented mislock, §9B) — not because the
+representative-frame policy itself is wrong on that shot. This is recorded as an observation in
+`docs/probe-runs.md` §10B; it does not change the 4/5 score the pre-committed rule assigns, and it is
+not treated as grounds to rescore or exclude shot 4.
+
+Tertiary (§1.3, reported only): `avgTotal` 7.0669 / 6.2068 / 6.2811 / 6.4425 for the four rules in
+table order — none near 8.40, and per §1.3 that would not matter if one were.
+
+⚑ 112 of the 852 pooled events (13.1%) have no track at all whose lifetime falls in the band and is
+ever in radius during the event; `lifetime_gated_median` and `plateau_median` abstain on those rather
+than reporting 0, which is part of why their ceiling percentages read so far below shipped's.
+Recorded in `docs/probe-runs.md` §10C as a caveat; not resolved here.
+
+**Nothing here enacted anything**: `debounce_shots` is untouched in both implementations, no
+constant/guard/gate/threshold changed, no `DECISIONS.md` entry edited.
