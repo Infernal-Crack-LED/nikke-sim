@@ -9,6 +9,37 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-03) `vesti-tactical-upgrade` Missile Guide duty cycle FIXED — new engine primitive
+  `noRetriggerWhileActive`, owner-confirmed gameplay pattern (n=1, not footage-measured).**
+  Investigation trigger: `vesti-tactical-upgrade` (and separately `k`) were ranking unexpectedly
+  high on the DPS chart for units the owner rates low-tier; checked for an implementation bug
+  before assuming the modeling was simply aggressive. `k`'s numbers traced back correctly to her
+  kit text (no bug). `vesti-tactical-upgrade`'s Missile Guide ("Charge Speed ▲100%... for 3
+  round(s)... while not in Missile Guide status") had no way to express the "while not in [own
+  status]" re-trigger gate — the engine's only round-count primitive (`durationShots`) always
+  refills on a refresh, so a `shotFired` trigger that both grants and is gated on its own buff
+  re-armed the window on every full charge, producing near-permanent uptime instead of a duty
+  cycle (already self-documented as caveat ⚑5 at kit-autonomy-gauntlet time, 2026-08-01). Owner
+  confirmed the real pattern directly: one full (slow) charge, then 3 near-instant follow-up
+  rockets, repeating. Two paired engine changes land this: (1) `noRetriggerWhileActive` on a buff
+  effect skips any re-application while a same-key instance is still active on the target: (2) the
+  `durationShots` round-count decrement now exempts the shot that just (re-)granted a
+  `noRetriggerWhileActive` buff (its own charge predates the buff, so it cannot have benefited and
+  must not spend one of the buff's own N rounds — without this, "for 3 round(s)" yields only 2
+  rapid follow-ups, not the observed 3). Both are opt-in and proven inert for the rest of the
+  roster (dedicated primitive test + the full control/engine regression suite unchanged for every
+  other carrier). Datamined magnitudes (`chargeSpeedPct` 100, `chargeDamagePct` 58.5,
+  `durationShots` 3) are UNCHANGED — only the trigger-gating mechanism moved. Impact: control-comp
+  total damage 887.4M → 436.0M (**-51%**). **This lands the `vesti-tactical-upgrade` slice of the
+  already-tracked "Theme 21" `durationShots`-eats-its-own-pull engine bug** (QUEUE.md,
+  `docs/engine-modeling-gaps.md`); `emilia`/`zwei`/`phantom` are the theme's other three carriers
+  and are deliberately UNTOUCHED by this change (the exemption is gated behind
+  `noRetriggerWhileActive`, not made the `durationShots` default) pending their own board A/B and
+  an owner call on whether to reuse this flag or make the exemption unconditional. — `src/engine/sim.ts`
+  (`applyBuff`, the buff-apply call site, the ROUND-COUNT decrement loop), `src/skills/types.ts`,
+  `src/skills/overrides/vesti-tactical-upgrade.json`, `scripts/tests/engine/no-retrigger-while-active.test.ts`,
+  `scripts/tests/units/vesti-tactical-upgrade.test.ts`
+
 - **(2026-08-03) `mint` Singing/Dancing gate ENACTED as a dynamic per-cast alternation (`resourceGate`),
   superseding the 50%-uptime halving proxy — owner-confirmed parity (Dancing-first) + strict
   alternation, zero graded-board impact.** Follows directly from the same-day mode-default ruling
