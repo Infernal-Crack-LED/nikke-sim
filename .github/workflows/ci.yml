@@ -90,8 +90,18 @@ jobs:
       # superset of the two it replaced. Keep it as one step, not a flattened list:
       # verify.sh is the canonical gate (CLAUDE.md constraint 5) and a new check added
       # there must reach CI by existing, exactly as vitest's glob wires in test files.
+      #
+      # BOARDS_FETCHED=1 tells board-hash-parity.test.ts the boards were FETCHED
+      # (above), not built: a hash mismatch there means the published set is stale
+      # w.r.t. the branch, which decision 1 of the artifact-decoupling plan rules
+      # ADVISORY (the deploy path rebuilds) — so the test skips it instead of
+      # failing the PR. check-board-freshness.ts carries the advisory. deploy.yml
+      # does NOT set this: it builds the boards before the gate, where a mismatch
+      # is a real defect and fails hard.
       - name: Verify (typecheck · validations · regressions · unit tests · web smoke)
         run: bash scripts/verify.sh full
+        env:
+          BOARDS_FETCHED: 1
 
       # The tier the deploy box runs (railway.json buildCommand). Kept as its own step
       # so a red artifact smoke is legible as such instead of hiding inside the gate.
