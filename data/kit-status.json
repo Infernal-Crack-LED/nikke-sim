@@ -5650,6 +5650,44 @@
         "temp": "OK  ·"
       }
     },
+    "rumani": {
+      "name": "Rumani",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/rumani.json + scripts/kit-autonomy/manual-review/rumani.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "date": "2026-08-04",
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; fresh build — stack gate via muscleUp resource proxy (power precedent); fixture delivers a real gate-closed first cast (8 gated applies of 9 casts); burstCast-vs-fullBurstEnter pinned by a B1-contention arm against liter; the only load-bearing line (burst all-ally normalAttackPct 10.05) converged byte-identically across blind derivations; no recorded comp yet",
+      "residual": "spot-check: muscleUp pool never lapses vs the real 2s stack expiry — rumani's ~2.15s reload gap EXCEEDS the 2s expiry (unlike power's 8-frame margin), so the gate can read open just after a reload boundary; zero damage consequence today (v1 consumes no self damageTakenPct) but it will silently govern any future HP-scaler/mitigation consumer; parts-trigger proxy counts every hit as a parts hit — honest only while partsDamagePct stays inert (helm-H4 precedent)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when landing a Full Charge attack during Full Burst. Affects the target.\nTaunts for 5 sec."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the taunt line ('landing a Full Charge attack during Full Burst → Taunts for 5 sec') is UNMODELED verbatim — the sim has no targeting/aggro model and v1 models no damage taken by allies, so a taunt moves nothing observable. Nearest-wrong encoding rejected: targetStatus is the ENEMY-status channel (a boss status) — a taunt is self-aggro, not a boss status; forcing it through that channel would be a fake model.",
+        "skill1: every rumani pull is a FULL CHARGE (RL charge 60f, no dump mode), so chargeCounter count:1 fires once per pull — the power precedent for per-full-charge triggers on this weapon.",
+        "skill1: the muscleUp resource pool (L6's gate source) does NOT expire; the real Muscle Up stacks lapse 2 sec after the last full charge. ⚑ EXPIRY DIVERGENCE: rumani's reload gap (~2.15s + charge) EXCEEDS the 2s expiry, so after a reload boundary the pool can overstate stacks (gate open where the real kit reads closed). estimate: zero damage divergence (the gated line is a defensive observable in v1); worst case one extra gated buffApply per post-reload cast. recipe: focused rumani recording across a >2s fire pause — Muscle Up icon expiry vs next burst's damage-taken grant. tier: low (defensive-only consequence).",
+        "skill2: 'hitting a target's Parts for 5 time(s)' is encoded as hitCount 5 — the sim has no parts axis, so every hit counts as a parts hit and partsDamagePct is inert vs the partless scope-lock boss. Both divergences cancel to zero damage; the line stays observable (22 four-ally firings / 180s).",
+        "burst: the Max HP ▲ 15.13% line is modeled (targetMaxHpPct self, dur 10) but DAMAGE-INERT — no atkOfMaxHpPct consumer, v1 models no damage-taken. Pinned by cast cadence, self scope, and the exact 15.13/3.04 flat-value ratio vs the S1 grant (both scale off her own static Max HP).",
+        "burst: the Damage Taken ▼ 20.06% grant is SELF-held damageTakenPct -20.06 — the engine's live damageTakenPct read is the boss-debuff channel (positive = boss takes more), so this self-grant is consumed by NOTHING in v1 (inert observable). Pinned self-held (targetIdx never null) and never boss-flipped."
+      ]
+    },
     "sakura": {
       "name": "Sakura",
       "burst": "I",
