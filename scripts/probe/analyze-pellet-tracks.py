@@ -38,6 +38,7 @@ from scipy import ndimage
 
 HERE = Path(__file__).resolve().parent
 _CP_MODULE = None
+_SP_MODULE = None
 
 
 def _count_pellets_module():
@@ -2788,12 +2789,18 @@ def _merge_spans(totals, fps, rule="shipped", cadence=None):
     return spans
 
 
-def _merge_events(frame_counts, totals, spans):
+def _merge_events(frame_counts, totals, spans, policy="median"):
     """`debounce_shots`'s emission step, verbatim in behaviour: the event's count is copied from ONE
     REPRESENTATIVE FRAME -- the active frame whose total is nearest the MEDIAN of the event's active
     frames (count-pellets.py:514-536). NOTHING IS SUMMED. That is why a merge reads COLD rather than
     hot: it roughly doubles the active-frame set with the first blast's decay tail and the
-    inter-shot trough, and the median falls (§8D)."""
+    inter-shot trough, and the median falls (§8D).
+
+    `policy` selects WHICH active frame is copied. "median" is the shipped rule and is the default,
+    so every merge-audit caller is byte-identical to the pre-policy version; "p75" and "max" exist
+    only for the representative-frame audit's scorecard (§9) and are never reachable from the
+    shipped reader. The representative frame is RECORDED on each event, because §9's finding is
+    about WHICH frame gets picked, not about the count that frame happens to carry."""
     out = []
     for a, b in spans:
         if b - a < 2:
@@ -2803,15 +2810,22 @@ def _merge_events(frame_counts, totals, spans):
             continue
         srt = sorted(totals[j] for j in active)
         m = len(srt)
-        med = (srt[(m - 1) // 2] + srt[m // 2]) / 2
-        rep, best = active[0], float("inf")
-        for j in active:
-            d = abs(totals[j] - med)
-            if d < best:
-                best, rep = d, j
+        if policy == "max":
+            rep = max(active, key=lambda j: (totals[j], -j))
+        else:
+            if policy == "p75":
+                target = srt[min(m - 1, int(math.ceil(0.75 * m)) - 1)]
+            else:
+                target = (srt[(m - 1) // 2] + srt[m // 2]) / 2
+            rep, best = active[0], float("inf")
+            for j in active:
+                off = abs(totals[j] - target)
+                if off < best:
+                    best, rep = off, j
         red = 1 if any(frame_counts[j].get("marker", 0) >= MERGE_MARKER_MIN
                        for j in range(a, b)) else 0
-        out.append({"start": a, "end": b, "frames": b - a, "white": frame_counts[rep]["white"],
+        out.append({"start": a, "end": b, "frames": b - a, "rep": rep,
+                    "white": frame_counts[rep]["white"],
                     "red": red, "total": frame_counts[rep]["white"] + red})
     return out
 
@@ -3110,6 +3124,943 @@ def merge_audit_selftest():
     return 0 if ok and ident else 1
 
 
+# ============================================================
+# THE REPRESENTATIVE-FRAME AUDIT -- WHICH FRAME does `debounce_shots` copy its count from, and is
+# that frame the pellet cohort or the muzzle flash in front of it? (docs/probe-runs.md §9)
+#
+# READ-ONLY BY CONSTRUCTION, same contract as the merge audit above: every policy here is a LOCAL
+# scoring variant routed through `_merge_events(..., policy=...)`, whose "median" arm is the shipped
+# rule and is asserted event-for-event against count-pellets.py's own `debounce_shots` by
+# `_merge_shipped_identity` before any row is scored. `count-pellets.py` and `read-pellets.ts` are
+# not touched and not reachable from here.
+#
+# The arm has two halves, deliberately, because they fail differently:
+#   LABELLED   (n=5, the owner's f8-11 hand count) -- decomposes each shot's owner pellets into
+#              never-detected / filter-rejected / lifetime-gated / radius-gated / countable, then
+#              asks how many of the reader's reported pellets at the REPRESENTATIVE frame are owner
+#              pellets at all. Small n; its value is that it is CATEGORICAL (which frame), not a
+#              mean.
+#   NO-LABELS  (n=852 events over 5 dumps) -- the in-event track-LIFETIME histogram, which is
+#              bimodal without any hand count, plus the per-policy `avgTotal` and `valid`-clamp
+#              table. This is what makes the finding STRONG MECHANISTIC rather than n=5.
+# ============================================================
+REP_AUDIT_FIXTURE = "scripts/tests/fixtures/pellets/representative-audit-slice.json"
+# The owner's hand count and the owner-drawn centroids for the same crops. Both are already
+# committed and were labelled independently of anything here -- they are the audit's ground truth,
+# and re-deriving them was never on the table (CLAUDE.md reuse-before-derive).
+REP_LABEL_COUNTS = "scripts/tests/fixtures/pellets/groundtruth-f8-11.json"
+REP_LABEL_POSITIONS = "scripts/tests/fixtures/pellets/groundtruth-f8-11-positions.json"
+# score-pellets.py's committed detector-fidelity slice: does a pellet the owner labelled survive
+# min_area / min_circ at all? Reused here instead of re-measuring the filters (§9E).
+REP_FIDELITY_FIXTURE = "scripts/tests/fixtures/pellets/real-fidelity-slice.json"
+
+REP_POLICIES = ("median", "p75", "max")
+# The kit ceiling. `hitsPerShot` is 10 for marciana (SG/Iron -- NOT marciana-marine-study, AR/Iron,
+# which is 1), isabel, guilty and noir in data/characters.json, so any event reading above 10 is
+# over-counting by construction, whatever produced it.
+REP_HITS_PER_SHOT = 10
+# The offsets score-pellets.py measures at 100% raw-found AND 100% both-pass, i.e. the frames where
+# a missing link is a LINKING failure and cannot be a detection failure. f11 is excluded: the same
+# fixture puts it at 88%/79% (the fade has started).
+REP_LINK_OFFSETS = (8, 9, 10)
+REP_LINK_TOL = 8.0          # px, owner centroid -> track centroid; the residuals land well inside
+REP_CROP_HALF = 184         # count-pellets.py crop_disc half-width; crop (x,y) -> full (x0+x, y0+y)
+# A pellet cohort's track lifetime at 60 fps. Scaled by fps/60 for the 30 fps dumps -- the point of
+# ⚑ NOT-fps-scaled below is precisely that a raw frame count is not comparable across dumps.
+REP_OWNER_LIFE_LO_60FPS = 8
+REP_WINDOW_PAD = 32         # frames of margin around the labelled t0 span before quiet-snapping
+
+
+def _rep_xy(track, fi):
+    k = fi - track["first"]
+    return track["xs"][k], track["ys"][k]
+
+
+def _rep_alive(track, fi):
+    return track["first"] <= fi <= track["last"]
+
+
+def _rep_in_radius(track, fi, cross, radius, offset=0):
+    """The SHIPPED counting gate (count-pellets.py's results loop): a non-red pellet track is
+    counted on a frame when its centroid is within `pellet_radius` of THAT FRAME's crosshair."""
+    if not _rep_alive(track, fi):
+        return False
+    k = fi - offset
+    if not 0 <= k < len(cross):
+        return False
+    cp = cross[k]
+    if cp is None:
+        return False
+    x, y = _rep_xy(track, fi)
+    return math.hypot(x - cp[0], y - cp[1]) <= radius
+
+
+def _rep_ever_in_radius(track, cross, radius, offset=0):
+    return any(_rep_in_radius(track, fi, cross, radius, offset)
+               for fi in range(track["first"], track["last"] + 1))
+
+
+def _rep_by_frame(tracks):
+    out = {}
+    for t in tracks:
+        for fi in range(t["first"], t["last"] + 1):
+            out.setdefault(fi, []).append(t)
+    return out
+
+
+def _rep_quiet_window(totals, t0s, fps, pad=REP_WINDOW_PAD):
+    """A slice whose HEAD and TAIL both sit inside a quiet run at least `max_gap + 1` frames long.
+    That is the condition under which `debounce_shots` segments the slice exactly as it segments the
+    full clip around every labelled shot -- without it, a slice boundary can cut an event in half
+    and the fixture would pin an artefact of the slicing."""
+    max_gap = max(3, round(fps * 0.13))
+    need = max_gap + 1
+    n = len(totals)
+
+    def quiet(a, b):
+        return all(totals[j] < MERGE_EVENT_MIN for j in range(max(0, a), min(n, b)))
+
+    lo = max(0, min(t0s) - pad)
+    while lo > 0 and not quiet(lo, lo + need):
+        lo += 1
+    hi = min(n, max(t0s) + pad)
+    while hi < n and not quiet(hi - need, hi):
+        hi += 1
+    return lo, hi
+
+
+def _rep_load_labels():
+    with open(REP_LABEL_COUNTS) as fh:
+        counts = json.load(fh)
+    with open(REP_LABEL_POSITIONS) as fh:
+        positions = json.load(fh)
+    pos_by_shot = {s["shot"]: s for s in positions["shots"]}
+    shots = []
+    for s in counts["shots"]:
+        if s.get("t0") is None:
+            continue        # shot 0 is the owner-confirmed false positive: no blast onset at all
+        shots.append({"shot": s["shot"], "t0": s["t0"], "owner": s["white"],
+                      "locate": s["locate"], "frames": pos_by_shot[s["shot"]]["frames"]})
+    return shots
+
+
+def _rep_label_window_counts(shots):
+    """⚑ THE PREMISE CORRECTION, computed rather than asserted (§9A). The owner's number is a hand
+    count of the markers visible in the f8-11 window, and the positions file carries the SAME count
+    on all four of those frames. It is therefore a WINDOW-CONDITIONAL observation, not a per-shot
+    landed total -- owner and reader are both single-window observers who differ in WHICH window."""
+    out = []
+    for s in shots:
+        per_frame = [f["n_shapes"] for f in s["frames"]]
+        out.append({"shot": s["shot"], "owner": s["owner"], "per_frame": per_frame,
+                    "flat": len(set(per_frame)) == 1 and per_frame[0] == s["owner"]})
+    return out
+
+
+def _score_pellets_module():
+    """Import score-pellets.py in-process for the SAME reason count-pellets.py is imported above:
+    its fidelity cascade is the shipped scorer, and a second copy here would be a second place to
+    drift. Nothing at its module scope runs anything."""
+    global _SP_MODULE
+    if _SP_MODULE is None:
+        spec = importlib.util.spec_from_file_location("score_pellets", HERE / "score-pellets.py")
+        _SP_MODULE = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(_SP_MODULE)
+    return _SP_MODULE
+
+
+def _rep_filter_fidelity():
+    """§9E: of the owner-labelled pellet instances, what fraction is found raw, and what fraction
+    survives min_area AND min_circ, at each offset? Scored by score-pellets.py's OWN cascade over
+    its OWN committed slice -- reused, not re-measured (CLAUDE.md reuse-before-derive: an existing
+    labelled artifact IS the independent method).
+
+    ⚑ That fixture holds ONLY f8-11 crops -- no peak frame, no plateau, no full event -- so it can
+    speak to detection and to the two filters and to NOTHING ELSE in this arm. In particular it
+    cannot say whether a marker appeared and faded before f08."""
+    try:
+        with open(REP_FIDELITY_FIXTURE) as fh:
+            fx = json.load(fh)
+    except FileNotFoundError:
+        return None
+    report = _score_pellets_module().compute_real_fidelity_cascade(fx["sequences"])
+    keep = ("n_labeled_pellet_frame_instances", "raw_found", "raw_found_pct", "passes_both",
+            "passes_both_pct")
+    return {
+        "per_instance": {k: report["per_instance"][k] for k in keep},
+        "n_distinct_pellets": report["per_distinct_pellet"]["n_distinct_pellets"],
+        "per_offset": [{"offset": row["offset"], **{k: row[k] for k in keep}}
+                       for row in report["per_offset"]],
+    }
+
+
+def _rep_owner_links(shot, by_frame, cross_crop, offset):
+    """Owner centroid -> track, by consensus over the 100%-detection offsets.
+
+    `cross_crop` is the crosshair track the shot's CROPS WERE CUT WITH (the label file's own
+    `locate` field decides: structural for shots 1/2/3/5, template for shot 4). That is a different
+    question from which crosshair the READER counts against, and conflating the two is exactly the
+    shot-4 mislock this arm has to keep separable."""
+    votes, residuals = {}, {}
+    for f in shot["frames"]:
+        name = f["frame"]
+        if not (name.startswith("f") and name[1:3].isdigit()):
+            continue
+        if int(name[1:3]) not in REP_LINK_OFFSETS:
+            continue
+        fi = int(name.split("idx")[1].split(".")[0])
+        k = fi - offset
+        if not 0 <= k < len(cross_crop) or cross_crop[k] is None:
+            continue
+        cx, cy = cross_crop[k]
+        x0, y0 = max(int(cx) - REP_CROP_HALF, 0), max(int(cy) - REP_CROP_HALF, 0)
+        cands = by_frame.get(fi, [])
+        for pi, (px, py) in enumerate(f["positions"]):
+            fx, fy = x0 + px, y0 + py
+            best, bd = None, float("inf")
+            for t in cands:
+                tx, ty = _rep_xy(t, fi)
+                dist = math.hypot(tx - fx, ty - fy)
+                if dist < bd:
+                    bd, best = dist, t
+            if best is not None and bd <= REP_LINK_TOL:
+                votes.setdefault(pi, []).append(best["id"])
+                residuals[pi] = max(residuals.get(pi, 0.0), bd)
+    links = {pi: max(set(v), key=v.count) for pi, v in votes.items()}
+    return links, residuals
+
+
+def _rep_decompose(shot, links, tracks_by_id, event, cross_count, radius, offset, reader_white):
+    """Where does each owner pellet go, and what is the reader actually reporting in its place?
+
+    `cross_count` is the SHIPPED structural crosshair for every shot including 4 -- because that is
+    what the reader counts against no matter which geometry the crops were cut with. The shot-4
+    re-run under the template crosshair is a separate call (§9C)."""
+    ids = sorted(set(links.values()))
+    tracks = [tracks_by_id[i] for i in ids]
+    life_rej = [t for t in tracks if not t["is_pellet"]]
+    passed = [t for t in tracks if t["is_pellet"]]
+    countable = [t for t in passed if _rep_ever_in_radius(t, cross_count, radius, offset)]
+    rad_rej = [t for t in passed if t not in countable]
+
+    best_n, best_f = 0, None
+    for fi in range(event["start"] - 6, event["end"] + 6):
+        c = sum(1 for t in countable if _rep_in_radius(t, fi, cross_count, radius, offset))
+        if c > best_n:
+            best_n, best_f = c, fi
+    rep = event["rep"]
+    rep_owner = sum(1 for t in countable if _rep_in_radius(t, rep, cross_count, radius, offset))
+    return {
+        "shot": shot["shot"], "t0": shot["t0"], "owner": shot["owner"],
+        "linked": len(links), "distinct_tracks": len(ids),
+        "never_detected": shot["owner"] - len(links),
+        "life_gate_rejected": len(life_rej), "radius_gate_rejected": len(rad_rej),
+        "countable": len(countable),
+        "max_coexisting_countable": best_n, "max_coexisting_frame": best_f,
+        "rep_frame": rep, "rep_offset": rep - shot["t0"],
+        "rep_owner": rep_owner, "rep_non_owner": reader_white - rep_owner,
+        "reader_white": reader_white,
+    }
+
+
+def _rep_peak(shot, links, tracks_by_id, event, totals, frame_counts,
+              cross_count, radius, offset):
+    """Is the PEAK frame the cohort or the flash? Scored by how much of the peak's white count links
+    to an owner pellet -- the check that refutes `max` and, with it, p75 (§9D)."""
+    active = [j for j in range(event["start"], event["end"]) if totals[j] >= MERGE_EVENT_MIN]
+    peak = max(active, key=lambda j: (totals[j], -j))
+    ids = sorted(set(links.values()))
+    matched = sum(1 for i in ids
+                  if tracks_by_id[i]["is_pellet"]
+                  and _rep_in_radius(tracks_by_id[i], peak, cross_count, radius, offset))
+    white = frame_counts[peak - offset]["white"]
+    return {"shot": shot["shot"], "peak_frame": peak, "peak_offset": peak - shot["t0"],
+            "peak_white": white, "owner_matched": matched, "unmatched": white - matched}
+
+
+def _rep_trajectory(shot, links, tracks_by_id, event, frame_counts, cross_count, radius, offset):
+    """The per-frame anatomy of one event: the two-phase structure, with the representative frame
+    marked. This is the row that shows the rule sampling a mixture."""
+    ids = sorted(set(links.values()))
+    tracks = [tracks_by_id[i] for i in ids]
+    t0 = shot["t0"]
+    lo = min(event["start"], t0 - 4)
+    hi = max(event["end"] + 3, t0 + 15)
+    rows = []
+    for fi in range(lo, hi):
+        k = fi - offset
+        if not 0 <= k < len(frame_counts):
+            continue
+        alive = [t for t in tracks if _rep_alive(t, fi)]
+        pellets = [t for t in alive if t["is_pellet"]]
+        inr = [t for t in pellets if _rep_in_radius(t, fi, cross_count, radius, offset)]
+        white = frame_counts[k]["white"]
+        rows.append({"frame": fi, "offset": fi - t0, "dumped_white": white,
+                     "owner_alive": len(alive), "owner_pellet_alive": len(pellets),
+                     "owner_counted": len(inr), "other_white": white - len(inr),
+                     "is_rep": fi == event["rep"], "is_t0": fi == t0,
+                     "in_f8_11": 8 <= fi - t0 <= 11})
+    return {"shot": shot["shot"], "rows": rows}
+
+
+def _rep_lifetimes(shot, links, tracks, event, cross_phys, radius, offset):
+    """THE DISCRIMINATOR. Owner-pellet track lifetimes vs the lifetimes of every OTHER non-red track
+    the reader would count inside the same event.
+
+    `cross_phys` is the crosshair that describes where the pellets PHYSICALLY were (template for
+    shot 4), because this half is about the population, not about what the reader did with it."""
+    owner_ids = set(links.values())
+    non = []
+    for t in tracks:
+        if t["id"] in owner_ids:
+            continue
+        if t["last"] < event["start"] or t["first"] >= event["end"]:
+            continue
+        if any(_rep_in_radius(t, fi, cross_phys, radius, offset)
+               for fi in range(max(t["first"], event["start"]),
+                               min(t["last"] + 1, event["end"]))):
+            non.append(t["life"])
+    # An owner track is owner because it was LINKED to an owner-drawn centroid, not because it was
+    # in radius on some frame -- otherwise shot 4's radius mislock would empty the owner column of
+    # the very cohort whose lifetimes are the point.
+    own = [t["life"] for t in tracks if t["id"] in owner_ids]
+    return {"shot": shot["shot"], "owner_lives": sorted(own), "non_owner_lives": sorted(non)}
+
+
+def _rep_white_reconstruction(tracks, frame_counts, cross, radius, offset, window):
+    """Control: recompute each frame's WHITE count from the tracks alone and compare it to the count
+    the dump recorded. If this does not reproduce, every row above is built on a track model that
+    does not match the counter, and the arm measures nothing.
+
+    Scored over `window` only -- the range every non-red track overlapping it is carried in FULL
+    for. Outside it the slice keeps coordinates but not the complete track set, so a mismatch there
+    would be an artefact of the slicing rather than a property of the counter."""
+    lo, hi = window
+    by_frame = _rep_by_frame([t for t in tracks if t["is_pellet"]])
+    checked = mismatched = 0
+    detail = []
+    for fi in range(lo, hi):
+        got = sum(1 for t in by_frame.get(fi, [])
+                  if _rep_in_radius(t, fi, cross, radius, offset))
+        checked += 1
+        if got != frame_counts[fi - offset]["white"]:
+            mismatched += 1
+            detail.append([fi, got, frame_counts[fi - offset]["white"]])
+    return {"frames_checked": checked, "mismatched": mismatched, "detail": detail[:40]}
+
+
+def _rep_policy_table(frame_counts, fps):
+    """Per-policy `avgTotal`, raw and under the shipped 5..10 `valid` clamp. The clamp is the reason
+    the median policy's headline number reads WARMER than what it actually counts (§9F)."""
+    totals = [r["white"] + r["red"] for r in frame_counts]
+    spans = _merge_spans(totals, fps, "shipped")
+    out = {}
+    for policy in REP_POLICIES:
+        ev = _merge_events(frame_counts, totals, spans, policy)
+        tot = [e["total"] for e in ev]
+        valid = [x for x in tot if MERGE_MIN_PELLETS <= x <= MERGE_MAX_PELLETS]
+        out[policy] = {"n_events": len(tot), "sum_raw": sum(tot),
+                       "below_min": sum(1 for x in tot if x < MERGE_MIN_PELLETS),
+                       "above_ceiling": sum(1 for x in tot if x > REP_HITS_PER_SHOT),
+                       "n_valid": len(valid), "sum_valid": sum(valid)}
+    return out
+
+
+def _rep_lifetime_census(radius_tracks, frame_counts, fps, max_pellet_frames):
+    """THE NO-LABELS ARM. For every shipped event in a dump, the lifetime histogram of the non-red
+    tracks the reader would count inside it, plus how many of them fall in the owner-pellet lifetime
+    band. Needs no hand count and no owner time -- which is what lets it run on 852 events."""
+    totals = [r["white"] + r["red"] for r in frame_counts]
+    events = _merge_events(frame_counts, totals, _merge_spans(totals, fps, "shipped"))
+    lo = max(1, round(REP_OWNER_LIFE_LO_60FPS * fps / 60.0))
+    hist = collections.Counter()
+    counts = []
+    for e in events:
+        n = 0
+        for life, runs in radius_tracks:
+            # counted INSIDE the event = at least one COUNTED frame lands in [start, end)
+            if not any(s < e["end"] and s + ln > e["start"] for s, ln in runs):
+                continue
+            hist[life] += 1
+            if lo <= life <= max_pellet_frames:
+                n += 1
+        counts.append(n)
+    ordered = sorted(counts)
+    # Is either `valid`-clamp bound MOTIVATED? Split the band count by which side of the clamp the
+    # event's shipped total falls on: a `>10` event carrying ~6-9 long-lived tracks is over-counting
+    # and the upper bound is doing real work; a `<5` event carrying ~3-4 of them is a genuine low
+    # reading being thrown away, and the lower bound is not (§9F).
+    buckets = {}
+    for label, keep in (("below_min", lambda x: x < MERGE_MIN_PELLETS),
+                        ("valid", lambda x: MERGE_MIN_PELLETS <= x <= MERGE_MAX_PELLETS),
+                        ("above_ceiling", lambda x: x > REP_HITS_PER_SHOT)):
+        rows = [(e["total"], n) for e, n in zip(events, counts) if keep(e["total"])]
+        buckets[label] = {
+            "n_events": len(rows),
+            "mean_rep_total": round(sum(r[0] for r in rows) / len(rows), 2) if rows else None,
+            "mean_band_tracks": round(sum(r[1] for r in rows) / len(rows), 2) if rows else None,
+        }
+    return {
+        "n_events": len(counts), "life_band": [lo, max_pellet_frames],
+        "sum_band": sum(counts), "median_band": ordered[len(ordered) // 2] if ordered else None,
+        "above_ceiling": sum(1 for x in counts if x > REP_HITS_PER_SHOT),
+        "zero": sum(1 for x in counts if x == 0),
+        "clamp_buckets": buckets,
+        "histogram": {str(k): v for k, v in sorted(hist.items())},
+    }
+
+
+def _rep_radius_runs(track, cross, radius, offset=0):
+    """A track reduced to the RUNS of frames on which the shipped radius gate counts it. This is the
+    only pre-applied reduction in the fixture: the raw `xs`/`ys` of 33k tracks per 5700-frame dump
+    do not fit the fixture budget, whereas the runs do. The LABELLED block keeps the raw
+    coordinates, so the gate itself stays auditable from the fixture alone."""
+    runs = []
+    for fi in range(track["first"], track["last"] + 1):
+        if _rep_in_radius(track, fi, cross, radius, offset):
+            if runs and runs[-1][0] + runs[-1][1] == fi:
+                runs[-1][1] += 1
+            else:
+                runs.append([fi, 1])
+        # a gap simply starts a new run on the next hit
+    return runs
+
+
+# ---------------------------------------------------------------- the two halves, assembled
+
+def _rep_labelled_report(block, shots, fidelity):
+    """The n=5 half. Everything here is computed from the block's RAW track coordinates, so the
+    radius gate, the linking and the reconstruction control are all auditable from the fixture."""
+    params = block["params"]
+    radius = params["pellet_radius"]
+    offset = block["offset"]
+    fps = block["fps"]
+    cross = [tuple(c) if c else None for c in block["cross"]]
+    cross_tmpl = [tuple(c) if c else None for c in block["cross_tmpl"]]
+    frame_counts = [{"white": w, "red": r, "marker": m} for w, r, m in block["frame_counts"]]
+    tracks = [{"id": tid, "first": first, "last": first + len(xs) - 1, "life": len(xs),
+               "is_pellet": bool(isp), "xs": xs, "ys": ys}
+              for tid, first, isp, xs, ys in block["tracks_raw"]]
+    tracks_by_id = {t["id"]: t for t in tracks}
+    by_frame = _rep_by_frame(tracks)
+
+    # Everything below is in ABSOLUTE clip frame indices, because the owner labels are (`idx1068`)
+    # and so are the track spans. Only the segmentation runs in slice coordinates, and its events
+    # are shifted back up immediately. It runs over `event_window`, whose head and tail are quiet --
+    # NOT over the whole stored range, which is widened to carry every overlapping track in full.
+    ev_lo, ev_hi = block["event_window"]
+    window_counts = frame_counts[ev_lo - offset:ev_hi - offset]
+    totals_slice = [r["white"] + r["red"] for r in window_counts]
+    events = _merge_events(window_counts, totals_slice,
+                           _merge_spans(totals_slice, fps, "shipped"))
+    events = [{**e, "start": e["start"] + ev_lo, "end": e["end"] + ev_lo,
+               "rep": e["rep"] + ev_lo} for e in events]
+    totals = {k + offset: r["white"] + r["red"] for k, r in enumerate(frame_counts)}
+
+    premise = _rep_label_window_counts(shots)
+    decomp, peaks, lifes, traj, links_by_shot = [], [], [], [], {}
+    for s in shots:
+        ev = next((e for e in events if e["start"] <= s["t0"] < e["end"]), None)
+        if ev is None:
+            raise SystemExit(f"--representative-audit: labelled shot {s['shot']} (t0={s['t0']}) "
+                             "falls in no shipped event; the slice boundary cut it.")
+        crop_cross = cross_tmpl if s["locate"] == "template" else cross
+        links, resid = _rep_owner_links(s, by_frame, crop_cross, offset)
+        links_by_shot[s["shot"]] = links
+        decomp.append({**_rep_decompose(s, links, tracks_by_id, ev, cross, radius, offset,
+                                        ev["white"]),
+                       "max_link_residual_px": round(max(resid.values()), 2) if resid else None,
+                       "one_to_one": len(set(links.values())) == len(links) == s["owner"]})
+        peaks.append(_rep_peak(s, links, tracks_by_id, ev, totals, frame_counts, cross,
+                               radius, offset))
+        # the PHYSICAL geometry for the population question; the SHIPPED one for what the reader did
+        lifes.append(_rep_lifetimes(s, links, tracks, ev, crop_cross, radius, offset))
+        traj.append(_rep_trajectory(s, links, tracks_by_id, ev, frame_counts, cross, radius,
+                                    offset))
+
+    # ⚑ The shot the label file itself marks `locate: "template"` re-scored under the crosshair its
+    # crops were actually cut with. The whole radius-gate residual on it is that mislock, and this
+    # is the row that proves it rather than asserting it.
+    tmpl, tmpl_traj = [], []
+    for s in shots:
+        if s["locate"] != "template":
+            continue
+        ev = next(e for e in events if e["start"] <= s["t0"] < e["end"])
+        tmpl.append(_rep_decompose(s, links_by_shot[s["shot"]], tracks_by_id, ev, cross_tmpl,
+                                   radius, offset, ev["white"]))
+        tmpl_traj.append(_rep_trajectory(s, links_by_shot[s["shot"]], tracks_by_id, ev,
+                                         frame_counts, cross_tmpl, radius, offset))
+
+    owner_lives = sorted(x for row in lifes for x in row["owner_lives"])
+    non_lives = sorted(x for row in lifes for x in row["non_owner_lives"])
+    band_lo = max(1, round(REP_OWNER_LIFE_LO_60FPS * fps / 60.0))
+    tot = {k: sum(row[k] for row in decomp) for k in
+           ("owner", "linked", "never_detected", "life_gate_rejected", "radius_gate_rejected",
+            "countable", "max_coexisting_countable", "rep_owner", "rep_non_owner", "reader_white")}
+    return {
+        "premise_window_counts": premise,
+        "decomposition": decomp,
+        "decomposition_total": tot,
+        "coexistence_equals_countable": all(
+            row["max_coexisting_countable"] == row["countable"] for row in decomp),
+        "template_relock": tmpl,
+        "corrected_countable_total": sum(
+            (next((r["countable"] for r in tmpl if r["shot"] == row["shot"]), row["countable"]))
+            for row in decomp),
+        "peaks": peaks,
+        "peak_total": {"peak_white": sum(p["peak_white"] for p in peaks),
+                       "owner_matched": sum(p["owner_matched"] for p in peaks),
+                       "unmatched": sum(p["unmatched"] for p in peaks),
+                       "shots_zero_matched": sum(1 for p in peaks if p["owner_matched"] == 0)},
+        "lifetimes": lifes,
+        "lifetime_summary": {
+            "band_lo": band_lo,
+            "owner_n": len(owner_lives), "owner_min": min(owner_lives) if owner_lives else None,
+            "owner_max": max(owner_lives) if owner_lives else None,
+            "owner_histogram": {str(k): v for k, v in
+                                sorted(collections.Counter(owner_lives).items())},
+            "non_owner_n": len(non_lives),
+            "non_owner_below_band": sum(1 for x in non_lives if x < band_lo),
+            "non_owner_at_or_above_band": sorted(x for x in non_lives if x >= band_lo),
+            "non_owner_histogram": {str(k): v for k, v in
+                                    sorted(collections.Counter(non_lives).items())},
+        },
+        "trajectories": traj,
+        "trajectories_relock": tmpl_traj,
+        "white_reconstruction": _rep_white_reconstruction(tracks, frame_counts, cross, radius,
+                                                          offset, (ev_lo, ev_hi)),
+        "filter_fidelity": fidelity,
+        "params": params, "fps": fps, "slice": [offset, offset + len(frame_counts)],
+        "event_window": [ev_lo, ev_hi],
+    }
+
+
+def _rep_dump_report(name, frame_counts, radius_tracks, fps, max_pellet_frames):
+    return {"dump": name, "fps": fps, "max_pellet_frames": max_pellet_frames,
+            "policies": _rep_policy_table(frame_counts, fps),
+            "lifetimes": _rep_lifetime_census(radius_tracks, frame_counts, fps,
+                                              max_pellet_frames)}
+
+
+_REP_POLICY_KEYS = ("n_events", "sum_raw", "below_min", "above_ceiling", "n_valid", "sum_valid")
+
+
+def _rep_pool_policies(reports):
+    return {policy: {k: sum(r["policies"][policy][k] for r in reports) for k in _REP_POLICY_KEYS}
+            for policy in REP_POLICIES}
+
+
+def _rep_policy_view(row):
+    raw = round(row["sum_raw"] / row["n_events"], 4) if row["n_events"] else None
+    clamped = round(row["sum_valid"] / row["n_valid"], 4) if row["n_valid"] else None
+    return {"avgTotal_raw": raw, "avgTotal_clamped": clamped,
+            "clamp_effect": round(clamped - raw, 4) if raw is not None
+            and clamped is not None else None,
+            "above_ceiling_pct": round(100 * row["above_ceiling"] / row["n_events"], 1)
+            if row["n_events"] else None}
+
+
+def _rep_expand_dump(d):
+    fc = [{"white": w, "red": r, "marker": m} for w, r, m in d["frame_counts"]]
+    tracks = [(life, [(flat[i], flat[i + 1]) for i in range(0, len(flat), 2)])
+              for life, flat in d["radius_tracks"]]
+    return fc, tracks
+
+
+def _replay_representative_audit(fx):
+    """Run the whole arm over the committed slice -- no images, no subprocess, no tracks.json.
+    Shared by the fixture WRITER and the selftest, so `_expected` can only ever be the slice's own
+    numbers."""
+    shots = _rep_load_labels()
+    labelled = _rep_labelled_report(fx["labelled"], shots, _rep_filter_fidelity())
+    reports = []
+    for d in fx["dumps"]:
+        fc, tracks = _rep_expand_dump(d)
+        reports.append(_rep_dump_report(d["tracks"], fc, tracks, d["fps"],
+                                        d["max_pellet_frames"]))
+    pooled = _rep_pool_policies(reports)
+    return labelled, reports, pooled
+
+
+def _rep_series(traj):
+    """One event's per-frame counted-owner series, pinned as a list. This is the CATEGORICAL form of
+    §9's finding -- where in the series the representative frame lands -- and it is what a candidate
+    rule should be scored against, because it has an unambiguous right answer per shot."""
+    return {"shot": traj["shot"], "first_offset": traj["rows"][0]["offset"],
+            "rep_offset": next(r["offset"] for r in traj["rows"] if r["is_rep"]),
+            "series": [r["owner_counted"] for r in traj["rows"]]}
+
+
+def _rep_expected(labelled, reports, pooled):
+    """The pinned summary. Deliberately the CATEGORICAL rows first -- which frame the rule picks,
+    how much of the peak is unmatched, where the lifetime bands sit -- because those are what §9
+    rests on; the means come last and are the weakest column."""
+    dec_keys = ("shot", "owner", "linked", "never_detected", "life_gate_rejected",
+                "radius_gate_rejected", "countable", "max_coexisting_countable", "rep_offset",
+                "rep_owner", "rep_non_owner", "reader_white")
+    ls = labelled["lifetime_summary"]
+    return {
+        "premise": [{"shot": p["shot"], "owner": p["owner"], "per_frame": p["per_frame"],
+                     "flat": p["flat"]} for p in labelled["premise_window_counts"]],
+        "decomposition": [{**{k: row[k] for k in dec_keys}, "one_to_one": row["one_to_one"]}
+                          for row in labelled["decomposition"]],
+        "decomposition_total": labelled["decomposition_total"],
+        "coexistence_equals_countable": labelled["coexistence_equals_countable"],
+        "template_relock": [{k: row[k] for k in dec_keys} for row in labelled["template_relock"]],
+        "corrected_countable_total": labelled["corrected_countable_total"],
+        "peaks": [{k: p[k] for k in ("shot", "peak_offset", "peak_white", "owner_matched",
+                                     "unmatched")} for p in labelled["peaks"]],
+        "peak_total": labelled["peak_total"],
+        "lifetime_summary": {k: ls[k] for k in
+                             ("band_lo", "owner_n", "owner_min", "owner_max", "owner_histogram",
+                              "non_owner_n", "non_owner_below_band", "non_owner_at_or_above_band",
+                              "non_owner_histogram")},
+        "counted_owner_series": [_rep_series(t) for t in labelled["trajectories"]],
+        "counted_owner_series_relock": [_rep_series(t)
+                                        for t in labelled["trajectories_relock"]],
+        "white_reconstruction": {k: labelled["white_reconstruction"][k]
+                                 for k in ("frames_checked", "mismatched")},
+        "filter_fidelity": labelled["filter_fidelity"],
+        "per_dump": [{"dump": r["dump"], "fps": r["fps"],
+                      "max_pellet_frames": r["max_pellet_frames"],
+                      "policies": r["policies"], "lifetimes": r["lifetimes"]} for r in reports],
+        "pooled_policies": pooled,
+        "pooled_policy_view": {p: _rep_policy_view(pooled[p]) for p in REP_POLICIES},
+    }
+
+
+def _print_representative_audit(labelled, reports, pooled):
+    print("\n⚑ PREMISE -- the owner's label is a WINDOW count, not a per-shot landed total")
+    print(f"{'shot':>5s} {'owner':>6s} {'f08 f09 f10 f11':>17s}  identical on all four?")
+    for p in labelled["premise_window_counts"]:
+        print(f"{p['shot']:5d} {p['owner']:6d} {str(p['per_frame']):>17s}  {p['flat']}")
+    print("  ⇒ owner and reader are BOTH single-window observers; they differ in WHICH window. Any\n"
+          "  'landed pellets per shot' figure derived from this label is window-conditional.")
+
+    print("\nPER-SHOT DECOMPOSITION -- where each owner pellet goes, and what the reader reports "
+          "instead")
+    print(f"{'shot':>4s} {'owner':>5s} {'nodet':>5s} {'filt':>4s} {'life':>4s} {'rad':>4s} "
+          f"{'cntbl':>5s} {'coex':>4s} {'rep@':>5s} {'rep_own':>7s} {'rep_non':>7s} "
+          f"{'reader':>6s} {'link_px':>7s}")
+    for row in labelled["decomposition"]:
+        print(f"{row['shot']:4d} {row['owner']:5d} {row['never_detected']:5d} {0:4d} "
+              f"{row['life_gate_rejected']:4d} {row['radius_gate_rejected']:4d} "
+              f"{row['countable']:5d} {row['max_coexisting_countable']:4d} "
+              f"{row['rep_offset']:+5d} {row['rep_owner']:7d} {row['rep_non_owner']:7d} "
+              f"{row['reader_white']:6d} {str(row['max_link_residual_px']):>7s}")
+    tot = labelled["decomposition_total"]
+    print(f"{'TOT':>4s} {tot['owner']:5d} {tot['never_detected']:5d} {0:4d} "
+          f"{tot['life_gate_rejected']:4d} {tot['radius_gate_rejected']:4d} {tot['countable']:5d} "
+          f"{tot['max_coexisting_countable']:4d} {'':5s} {tot['rep_owner']:7d} "
+          f"{tot['rep_non_owner']:7d} {tot['reader_white']:6d}")
+    print(f"  sums: owner {tot['owner']} = {tot['never_detected']} + 0 + "
+          f"{tot['life_gate_rejected']} + {tot['radius_gate_rejected']} + {tot['countable']}   |   "
+          f"reader {tot['reader_white']} = {tot['rep_owner']} owner + {tot['rep_non_owner']} "
+          f"non-owner")
+    print(f"  ⇒ OF THE {tot['reader_white']} PELLETS THE READER REPORTS, {tot['rep_owner']} ARE "
+          f"OWNER PELLETS. The mean agreement is\n  a large under-count cancelling a large "
+          f"over-count, not a measurement of the right quantity.")
+    print(f"  `filt` (min_area/min_circ) is 0 by construction here -- every owner pellet linked to "
+          f"a track,\n  and score-pellets.py's own fidelity slice puts the two filters at 100% "
+          f"pass on f08/f09/f10.")
+    print(f"  coexistence: max SIMULTANEOUSLY-visible countable == total countable on every shot: "
+          f"{labelled['coexistence_equals_countable']}\n  ⇒ the cohort does NOT fade "
+          f"asynchronously, so a single plateau frame can see all of it at once.")
+
+    for row in labelled["template_relock"]:
+        print(f"\n  ⚑ shot {row['shot']} re-scored under the TEMPLATE crosshair its crops were cut "
+              f"with: radius-rejected\n  {row['radius_gate_rejected']}, countable "
+              f"{row['countable']}, coexisting {row['max_coexisting_countable']} -- the whole "
+              f"residual on that shot is the documented mislock.")
+    print(f"  corrected countable across all shots: {labelled['corrected_countable_total']} vs "
+          f"owner {tot['owner']}")
+
+    print("\nIS THE PEAK FRAME SIGNAL? -- how much of the peak's white links to an owner pellet")
+    print(f"{'shot':>4s} {'peak@':>6s} {'white':>6s} {'matched':>8s} {'unmatched':>10s}")
+    for p in labelled["peaks"]:
+        print(f"{p['shot']:4d} {p['peak_offset']:+6d} {p['peak_white']:6d} {p['owner_matched']:8d} "
+              f"{p['unmatched']:10d}")
+    pt = labelled["peak_total"]
+    print(f"{'TOT':>4s} {'':6s} {pt['peak_white']:6d} {pt['owner_matched']:8d} "
+          f"{pt['unmatched']:10d}  ({pt['shots_zero_matched']} of "
+          f"{len(labelled['peaks'])} peaks are 100% unmatched)")
+    print("  ⇒ the PEAK is the muzzle flash. `max` -- and p75, which leans on it -- is refuted; the "
+          "median's\n  RATIONALE (avoid the peak) survives. What fails is WHICH frame the median "
+          "lands on.")
+
+    print("\nPER-FRAME ANATOMY -- countable owner pellets in radius, per frame (`R` = the "
+          "representative frame)")
+    for t in labelled["trajectories"]:
+        cells = []
+        for r in t["rows"]:
+            mark = "R" if r["is_rep"] else ("|" if r["is_t0"] else " ")
+            cells.append(f"{r['owner_counted']}{mark}")
+        first = t["rows"][0]["offset"]
+        print(f"  shot {t['shot']} (t0{first:+d} ->): " + " ".join(cells))
+    for t in labelled["trajectories_relock"]:
+        cells = []
+        for r in t["rows"]:
+            mark = "R" if r["is_rep"] else ("|" if r["is_t0"] else " ")
+            cells.append(f"{r['owner_counted']}{mark}")
+        print(f"  shot {t['shot']} RELOCKED (t0{t['rows'][0]['offset']:+d} ->): " + " ".join(cells))
+    print("  a run of 0s then a flat plateau = the two-phase event: blast/flash first, cohort "
+          "second.\n  An `R` inside the leading 0s is the rule sampling the flash. The RELOCKED row "
+          "is the same shot\n  under the crosshair its crops were cut with -- its plateau is real, "
+          "the shipped row's zeros are the\n  mislock.")
+
+    print("\nTHE DISCRIMINATOR -- track LIFETIME, not frame magnitude")
+    ls = labelled["lifetime_summary"]
+    print(f"  owner pellets      n={ls['owner_n']:4d}  min={ls['owner_min']} max={ls['owner_max']}"
+          f"  histogram {ls['owner_histogram']}")
+    print(f"  non-owner in-event n={ls['non_owner_n']:4d}  below band(<{ls['band_lo']}): "
+          f"{ls['non_owner_below_band']}  at/above band: {ls['non_owner_at_or_above_band']}")
+    print(f"                     histogram {ls['non_owner_histogram']}")
+    print("  ⇒ the two populations do not overlap in the band. This is the property the no-labels "
+          "arm below\n  replicates without any hand count.")
+
+    wr = labelled["white_reconstruction"]
+    print(f"\nCONTROL -- white recomputed from tracks == the dump's own count on "
+          f"{wr['frames_checked'] - wr['mismatched']}/{wr['frames_checked']} frames")
+    if wr["detail"]:
+        print(f"  mismatches (frame, recomputed, dumped): {wr['detail']}")
+    fid = labelled["filter_fidelity"]
+    if fid:
+        print(f"\nDETECTION + FILTERS COST ZERO (score-pellets.py's own slice, "
+              f"{fid['per_instance']['n_labeled_pellet_frame_instances']} instances / "
+              f"{fid['n_distinct_pellets']} pellets)")
+        for row in fid["per_offset"]:
+            print(f"  f{row['offset']:02d}  raw_found {100 * row['raw_found_pct']:5.1f}%  "
+                  f"both_pass {100 * row['passes_both_pct']:5.1f}%")
+        print("  ⚑ f8-11 ONLY -- no peak, no plateau, no full event. It cannot say whether a marker "
+              "appeared\n  and faded before f08; settling that needs owner labels at the plateau "
+              "frame.")
+
+    print("\nTHE NO-LABELS ARM -- in-event track-lifetime census, 0 hand counts, 0 owner time")
+    print(f"{'dump':34s} {'fps':>5s} {'events':>7s} {'band':>8s} {'mean':>6s} {'median':>6s} "
+          f"{'>ceil':>6s} {'%':>6s} {'zero':>5s}")
+    for r in reports:
+        lf = r["lifetimes"]
+        mean = lf["sum_band"] / lf["n_events"] if lf["n_events"] else float("nan")
+        pct = 100 * lf["above_ceiling"] / lf["n_events"] if lf["n_events"] else float("nan")
+        print(f"{r['dump'][:34]:34s} {r['fps']:5.0f} {lf['n_events']:7d} "
+              f"{str(lf['life_band']):>8s} {mean:6.2f} {str(lf['median_band']):>6s} "
+              f"{lf['above_ceiling']:6d} {pct:5.1f}% {lf['zero']:5d}")
+    for r in reports:
+        print(f"  {r['dump'][:34]:34s} lifetime histogram {r['lifetimes']['histogram']}")
+    print(f"  every histogram is BIMODAL: a 1-2 frame VFX mode and a separate mode at the "
+          f"owner-pellet lifetime\n  (10-11 at 60 fps, 5-6 at 30 fps -- the correct half). "
+          f"Counting only the band keeps >{REP_HITS_PER_SHOT}\n  to a few percent.")
+
+    print(f"\nPOLICY + `valid` CLAMP -- pooled over {pooled['median']['n_events']} events")
+    print(f"{'policy':8s} {'raw avgTotal':>13s} {'<5':>5s} {'>10':>5s} {'clamped n':>10s} "
+          f"{'clamped avgTotal':>17s} {'clamp effect':>13s}")
+    for policy in REP_POLICIES:
+        row, view = pooled[policy], _rep_policy_view(pooled[policy])
+        print(f"{policy:8s} {view['avgTotal_raw']:13.4f} {row['below_min']:5d} "
+              f"{row['above_ceiling']:5d} {row['n_valid']:10d} {view['avgTotal_clamped']:17.4f} "
+              f"{view['clamp_effect']:+13.4f}")
+    over = pooled["max"]["above_ceiling"]
+    print(f"  `max` puts {over}/{pooled['max']['n_events']} events above the kit ceiling of "
+          f"{REP_HITS_PER_SHOT} -- physically impossible.")
+    print("\nIS EITHER CLAMP BOUND MOTIVATED? -- band tracks actually present, by clamp bucket")
+    print(f"{'dump':34s} {'bucket':14s} {'events':>7s} {'mean rep total':>15s} "
+          f"{'mean band tracks':>17s}")
+    for r in reports:
+        for label, row in r["lifetimes"]["clamp_buckets"].items():
+            print(f"{r['dump'][:34]:34s} {label:14s} {row['n_events']:7d} "
+                  f"{str(row['mean_rep_total']):>15s} {str(row['mean_band_tracks']):>17s}")
+    print("  UPPER bound MOTIVATED: `>10` events carry far fewer long-lived tracks than they report."
+          "\n  LOWER bound NOT motivated: `<5` events carry a genuinely small number of them, so "
+          "clamping\n  them out of `avgTotal` biases the shipped median WARM.")
+
+
+def _rep_slim_labelled(tracks_path, tmpl_path, fps, shots):
+    """The labelled clip reduced to one contiguous window holding all five labelled events, with
+    RAW `xs`/`ys` retained.
+
+    TWO ranges, and the distinction matters. `event_window` is the quiet-snapped range the
+    segmentation runs over; the STORED range is that window widened to cover every kept track in
+    full, so no track's `life` is ever truncated by the slicing and the white-reconstruction control
+    over `event_window` is exact. Red tracks are dropped outright: count-pellets.py routes them to
+    the red/marker channels and they can never enter a WHITE count."""
+    with open(tracks_path) as fh:
+        dump = json.load(fh)
+    with open(tmpl_path) as fh:
+        tmpl = json.load(fh)
+    frame_counts, cross = dump["frame_counts"], dump["cross_positions"]
+    totals = [r["white"] + r["red"] for r in frame_counts]
+    lo, hi = _rep_quiet_window(totals, [s["t0"] for s in shots], fps)
+    kept = [t for t in dump["tracks"]
+            if not t["is_red"] and t["last"] >= lo and t["first"] < hi]
+    cov_lo = min([lo] + [t["first"] for t in kept])
+    cov_hi = max([hi] + [t["last"] + 1 for t in kept])
+    return {
+        "tracks": "/".join(Path(tracks_path).parts[-2:]),
+        "tracks_tmpl": "/".join(Path(tmpl_path).parts[-2:]),
+        "fps": fps, "offset": cov_lo, "slice": [cov_lo, cov_hi], "event_window": [lo, hi],
+        "n_frames_full_clip": len(frame_counts),
+        "params": {k: dump["params"][k] for k in
+                   ("pellet_radius", "center_exclude", "min_area", "max_area", "min_circ",
+                    "max_pellet_frames") if k in dump["params"]},
+        "cross": cross[cov_lo:cov_hi],
+        "cross_tmpl": tmpl["cross_positions"][cov_lo:cov_hi],
+        "frame_counts": [[c["white"], c["red"], c.get("marker", 0)]
+                         for c in frame_counts[cov_lo:cov_hi]],
+        "tracks_raw": [[t["id"], t["first"], 1 if t["is_pellet"] else 0, t["xs"], t["ys"]]
+                       for t in kept],
+    }
+
+
+def _rep_slim_dump(name, dump, fps):
+    """One dump reduced to what the no-labels arm reads: the full `frame_counts` (the events must be
+    the WHOLE clip's, or the pooled figures would be a slice artefact) plus, per non-red track that
+    the shipped radius gate ever counts, its lifetime and the RUNS of frames it is counted on."""
+    frame_counts, cross = dump["frame_counts"], dump["cross_positions"]
+    radius = dump["params"]["pellet_radius"]
+    out = []
+    for t in dump["tracks"]:
+        if t["is_red"]:
+            continue
+        track = {"first": t["first"], "last": t["last"], "xs": t["xs"], "ys": t["ys"]}
+        runs = _rep_radius_runs(track, cross, radius)
+        if runs:
+            out.append([t["life"], [v for run in runs for v in run]])
+    return {"tracks": name, "fps": fps,
+            "max_pellet_frames": dump["params"]["max_pellet_frames"],
+            "frame_counts": [[c["white"], c["red"], c.get("marker", 0)] for c in frame_counts],
+            "radius_tracks": out}
+
+
+def _rep_full_clip_reconstruction(dump):
+    """The SAME control as `_rep_white_reconstruction`, run over the WHOLE live clip rather than the
+    committed window. Live-run only: the fixture cannot carry 11k tracks, so `_expected` pins the
+    window figure and this is the number the full-clip citation in §9 comes from -- exactly the
+    split the merge audit uses between its slice and its full-clip figures."""
+    tracks = [{"id": t["id"], "first": t["first"], "last": t["last"], "life": t["life"],
+               "is_pellet": t["is_pellet"], "xs": t["xs"], "ys": t["ys"]}
+              for t in dump["tracks"] if not t["is_red"]]
+    frame_counts = dump["frame_counts"]
+    return _rep_white_reconstruction(tracks, frame_counts, dump["cross_positions"],
+                                     dump["params"]["pellet_radius"], 0,
+                                     (0, len(frame_counts)))
+
+
+def audit_representative(tracks_paths, fps_list, labelled_path, labelled_tmpl_path, labelled_fps,
+                         save_fixture=None):
+    fixture = {"labelled": None, "dumps": []}
+    shots = _rep_load_labels()
+    for k, p in enumerate(tracks_paths):
+        with open(p) as fh:
+            dump = json.load(fh)
+        if not dump.get("frame_counts"):
+            print(f"SKIPPED {p}: no `frame_counts` (re-dump with count-pellets.py --dump-tracks)")
+            continue
+        fps = fps_list[k] if len(fps_list) > 1 else fps_list[0]
+        if not _merge_shipped_identity(dump["frame_counts"], fps):
+            raise SystemExit(f"--representative-audit: the shipped-identity control FAILED on {p}. "
+                             "The local span rebuild no longer reproduces debounce_shots, so no "
+                             "row below would be a difference from the real baseline.")
+        fixture["dumps"].append(_rep_slim_dump("/".join(Path(p).parts[-2:]), dump, fps))
+    full_clip = None
+    if labelled_path:
+        fixture["labelled"] = _rep_slim_labelled(labelled_path, labelled_tmpl_path, labelled_fps,
+                                                 shots)
+        with open(labelled_path) as fh:
+            full_clip = _rep_full_clip_reconstruction(json.load(fh))
+    if not fixture["dumps"] or fixture["labelled"] is None:
+        print("--representative-audit needs at least one dump AND --representative-audit-labelled")
+        return None
+    labelled, reports, pooled = _replay_representative_audit(fixture)
+    if save_fixture:
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("count-pellets.py --dump-tracks output for the 2026-08-04 "
+                            "representative-frame audit: the 60 fps marciana (SG/Iron -- NOT "
+                            "marciana-marine-study, AR/Iron) ground-truth clip that the owner's "
+                            "f8-11 hand count was drawn on, plus the four structural dumps "
+                            "(marciana (SG/Iron) / isabel / guilty / noir) the no-labels arm pools. "
+                            "Constraint 9 self-validation, same precedent as merge-audit-slice.json."),
+                "_note": ("TWO BLOCKS, sliced differently ON PURPOSE. `labelled` is a contiguous "
+                          "window of the ground-truth clip whose head and tail both sit inside a "
+                          "quiet run, so debounce_shots segments it exactly as it segments the full "
+                          "clip around every labelled shot; it keeps RAW xs/ys so the radius gate, "
+                          "the owner linking and the white-reconstruction control stay auditable, "
+                          "and drops red tracks (they can never enter a WHITE count) and any track "
+                          "straddling an edge (`_dropped_at_edge`). `dumps` are FULL-CLIP "
+                          "frame_counts -- the pooled event figures would be a slicing artefact "
+                          "otherwise -- with each non-red track reduced to [life, [start, len, "
+                          "...]] runs of frames the shipped radius gate counts it on, because the "
+                          "raw coordinates of 30k+ tracks per dump do not fit the fixture budget. "
+                          "The owner labels themselves are NOT copied here: they stay in "
+                          "groundtruth-f8-11.json / -positions.json and are read from there. "
+                          "Regenerate with analyze-pellet-tracks.py --representative-audit "
+                          "<tracks.json...> --representative-audit-labelled <tracks.json> "
+                          "--representative-audit-labelled-tmpl <tracks.json> "
+                          "--save-representative-audit-fixture <path>."),
+                "labelled": fixture["labelled"], "dumps": fixture["dumps"],
+                "_expected": _rep_expected(labelled, reports, pooled),
+            }, fh)
+        print(f"wrote representative-audit fixture -> {save_fixture} (`_expected` pins the SLICE; "
+              "the full-clip reconstruction figure below is live-run only)")
+    _print_representative_audit(labelled, reports, pooled)
+    if full_clip:
+        lw = labelled["event_window"]
+        print(f"\nFULL-CLIP CONTROL (live only) -- white recomputed from tracks matches the dump on "
+              f"{full_clip['frames_checked'] - full_clip['mismatched']}/"
+              f"{full_clip['frames_checked']} frames")
+        inside = [row for row in full_clip["detail"] if lw[0] <= row[0] < lw[1]]
+        print(f"  mismatched frames: {[row[0] for row in full_clip['detail']]}\n"
+              f"  of which inside the labelled window {lw}: {len(inside)}")
+    return {"labelled": labelled, "dumps": reports, "pooled": pooled, "full_clip": full_clip}
+
+
+def representative_audit_selftest():
+    """Constraint 9 self-validation: replay the whole arm over the committed slice, and assert the
+    shipped-identity control on every dump in it."""
+    with open(REP_AUDIT_FIXTURE) as fh:
+        fx = json.load(fh)
+    labelled, reports, pooled = _replay_representative_audit(fx)
+    got = _rep_expected(labelled, reports, pooled)
+    ok = got == fx["_expected"]
+    ident = all(_merge_shipped_identity(
+        [{"white": w, "red": r, "marker": m} for w, r, m in d["frame_counts"]], d["fps"])
+        for d in fx["dumps"])
+    # A compact digest rather than the merge audit's full expected/got dump: this arm's `_expected`
+    # runs to tens of kilobytes and would drown pellet-selftest.sh's output. On FAILURE the
+    # per-key diff below prints the full expected and got for whichever keys moved, which is the
+    # part that is actually diagnostic.
+    if not ok:
+        for key in sorted(set(got) | set(fx["_expected"])):
+            if got.get(key) != fx["_expected"].get(key):
+                print(f"  DIFF {key}:\n    expected {json.dumps(fx['_expected'].get(key))}"
+                      f"\n    got      {json.dumps(got.get(key))}")
+    tot, pt = got["decomposition_total"], got["peak_total"]
+    ls, pv = got["lifetime_summary"], got["pooled_policy_view"]
+    print(f"decomposition: owner {tot['owner']} = {tot['never_detected']} never-detected + 0 "
+          f"filter + {tot['life_gate_rejected']} lifetime + {tot['radius_gate_rejected']} radius + "
+          f"{tot['countable']} countable")
+    print(f"reader {tot['reader_white']} = {tot['rep_owner']} owner + {tot['rep_non_owner']} "
+          f"non-owner   |   coexistence == countable on every shot: "
+          f"{got['coexistence_equals_countable']}")
+    print(f"peak: {pt['owner_matched']}/{pt['peak_white']} white owner-matched, "
+          f"{pt['shots_zero_matched']} of {len(got['peaks'])} peaks 100% unmatched")
+    print(f"lifetime: owner n={ls['owner_n']} min={ls['owner_min']}; non-owner n={ls['non_owner_n']}"
+          f" with {ls['non_owner_below_band']} below the band and "
+          f"{ls['non_owner_at_or_above_band']} at/above")
+    print(f"policies over {got['pooled_policies']['median']['n_events']} events: "
+          + "  ".join(f"{p} raw {pv[p]['avgTotal_raw']} clamped {pv[p]['avgTotal_clamped']} "
+                      f"(>{REP_HITS_PER_SHOT} on {pv[p]['above_ceiling_pct']}%)"
+                      for p in REP_POLICIES))
+    print(f"white reconstruction: "
+          f"{got['white_reconstruction']['frames_checked'] - got['white_reconstruction']['mismatched']}"
+          f"/{got['white_reconstruction']['frames_checked']} frames")
+    print(f"shipped-identity control: {'PASS' if ident else 'FAIL'} "
+          f"(local span rebuild == count-pellets.py debounce_shots on all "
+          f"{len(fx['dumps'])} dumps)")
+    print("SELFTEST PASS" if ok and ident else "SELFTEST FAIL")
+    return 0 if ok and ident else 1
+
+
 FIXTURE = "scripts/tests/fixtures/pellets/run16-tracks-slice.json"
 
 # Pinned from the committed fixture (a 400-frame slice of the run16 dump). These reproduce the
@@ -3333,6 +4284,36 @@ def main():
                     help=f"write the committed replay slice (see {MERGE_AUDIT_FIXTURE})")
     ap.add_argument("--merge-audit-selftest", action="store_true",
                     help=f"replay {MERGE_AUDIT_FIXTURE} and exit")
+    ap.add_argument("--representative-audit", nargs="+", metavar="TRACKS_JSON",
+                    help=("THE REPRESENTATIVE-FRAME AUDIT (docs/probe-runs.md §9): which frame does "
+                          "debounce_shots copy its count from -- the pellet cohort, or the muzzle "
+                          "flash in front of it? Decomposes the owner's 5 labelled shots into "
+                          "never-detected / filter-rejected / lifetime-gated / radius-gated / "
+                          "countable, marks the representative frame on each event's per-frame "
+                          "anatomy, scores the peak frame's white as owner-matched vs artefact, "
+                          "contrasts owner-pellet against non-owner track LIFETIMES, and then "
+                          "replicates that lifetime split WITHOUT labels over every event in every "
+                          "dump given, alongside the per-policy avgTotal and `valid`-clamp table. "
+                          "READ-ONLY: every policy is a local scoring variant and the shipped one "
+                          "is asserted against count-pellets.py's own debounce_shots first."))
+    ap.add_argument("--representative-audit-fps", type=float, nargs="+", default=[30.0],
+                    metavar="FPS",
+                    help=("sampling fps per --representative-audit dump (one value, or one per "
+                          "dump). Default 30"))
+    ap.add_argument("--representative-audit-labelled", metavar="TRACKS_JSON",
+                    help=(f"the --dump-tracks dump of the clip {REP_LABEL_COUNTS} was hand-counted "
+                          "on, located the SHIPPED way (structural). Required: it carries the n=5 "
+                          "half"))
+    ap.add_argument("--representative-audit-labelled-tmpl", metavar="TRACKS_JSON",
+                    help=("the TEMPLATE-crosshair re-dump of the same clip. The label file's own "
+                          "`locate` field says which shots' crops were cut with it, and the "
+                          "shot-4 relock row needs it"))
+    ap.add_argument("--representative-audit-labelled-fps", type=float, default=60.0,
+                    help="sampling fps of the labelled clip (default 60)")
+    ap.add_argument("--save-representative-audit-fixture", metavar="PATH",
+                    help=f"write the committed replay fixture (see {REP_AUDIT_FIXTURE})")
+    ap.add_argument("--representative-audit-selftest", action="store_true",
+                    help=f"replay {REP_AUDIT_FIXTURE} and exit")
     ap.add_argument("--gt-score-json", metavar="PATH",
                      help="score-pellets.py --real-fixture stdout JSON (carries each shot's owner "
                           "count, the shipped estimator's error and its per-offset counts)")
@@ -3348,6 +4329,19 @@ def main():
         raise SystemExit(ammo_abstention_selftest())
     if args.ammo_oracle_ceiling_selftest:
         raise SystemExit(oracle_ceiling_selftest())
+    if args.representative_audit_selftest:
+        raise SystemExit(representative_audit_selftest())
+    if args.representative_audit:
+        fps_list = args.representative_audit_fps
+        if len(fps_list) not in (1, len(args.representative_audit)):
+            ap.error("--representative-audit-fps takes 1 value or one per dump "
+                     f"({len(args.representative_audit)} given), got {len(fps_list)}")
+        audit_representative(args.representative_audit, fps_list,
+                             args.representative_audit_labelled,
+                             args.representative_audit_labelled_tmpl,
+                             args.representative_audit_labelled_fps,
+                             args.save_representative_audit_fixture)
+        return 0
     if args.merge_audit_selftest:
         raise SystemExit(merge_audit_selftest())
     if args.merge_audit:
