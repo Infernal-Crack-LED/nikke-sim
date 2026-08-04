@@ -1,0 +1,59 @@
+{
+  "slug": "sora",
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "unsupported",
+        "raw": "Activates when an ally or self destroys an enemy's part"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 23.74,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Outgoing healing \u25b2 35.2% continuously."
+    ],
+    "skill2": [
+      "Storage: Stores excess healing received by the skill user, up to 5.36% of their Max HP. Stacks up to 5 time(s) and lasts for 15 sec."
+    ],
+    "burst": [
+      "Removes 1 debuff(s)."
+    ]
+  },
+  "caveats": [
+    "\u26d1 skill2's ATK \u25b2 23.74% (casterAtkPct, all allies, 15s) is her ONLY damage-relevant line and its literal activation clause is 'an ally or self destroys an enemy's part'. The scope-lock boss is PARTLESS, so on the graded fight this trigger never fires and the buff is INERT \u2014 authored as an `unsupported` trigger rather than re-keyed to a firing trigger, because re-keying would fabricate uptime the kit does not grant. If a real fight shows the buff live, re-key per the recipe in flags.",
+    "\u26d1 skill1 Outgoing healing \u25b2 35.2% has no StatKey and no consumer (heals carry no HP amount in v1); it is a magnitude scaler on an unmodeled quantity, so it is unmodeled rather than inert-but-present.",
+    "\u26d1 The burst heal amount (52.27% of caster final Max HP) is recorded in prose only \u2014 the `heal` effect models the RECOVERY EVENT, not an HP amount, which is what teammates' `recovery` triggers consume. Tandem value is entirely via those consumers.",
+    "\u26d1 Burst trigger keyed `burstCast` (this is her OWN burst block, Burst I, cd 40s) \u2014 the heal lands at cast, pre-Full-Burst, per the burst-cast timing rule."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u26d1 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Sora (RL/Wind/Supporter/Burst I) is a HEAL-SIDE support: S1 scales her own outgoing healing, S2 converts a part-destruction event into a team ATK \u25b2 23.74% of her ATK for 15s plus an excess-healing storage pool, and her burst is a full-team heal + 1 debuff cleanse. Modeled today: the S2 team ATK grant (casterAtkPct, all allies, 15s) and the burst team heal as a recovery-event emitter that fires allies' `recovery` triggers. The S2 grant's kit trigger is part-destruction, which has no engine primitive and cannot fire on the partless scope-lock boss, so the block carries an `unsupported` trigger and is inert at scope \u2014 faithful to the kit rather than re-keyed to make it live. Deliberately unmodeled: outgoing-healing magnitude (no consumer for a heal amount), the excess-healing Storage pool (no HP pool), and debuff removal (no ally debuff pool)."
+}

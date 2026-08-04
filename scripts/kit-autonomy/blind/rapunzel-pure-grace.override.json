@@ -1,0 +1,122 @@
+{
+  "slug": "rapunzel-pure-grace",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 20.59
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 20.59
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 1
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "requiresShielded": true,
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 10.41
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 10.13,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 15.24,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Current HP \u25bc 2% every 1 sec continuously.",
+      "Restores Shield HP equal to 3.16% of the skill user's final Max HP every 1 sec continuously."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 skill1 team Attack Damage 10.41%: uptime assumed 100% from t=1s. The kit gates it on 'Full Charge maintained for more than 1 sec', which has NO engine analogue (no charge-hold state on a charge weapon \u2014 the sim charges and releases). Real uptime is bounded by how much of the fight she actually holds a completed charge; reload (141f datamined) and release windows break the hold. This is the OPTIMISTIC bound, not a measured value.",
+    "Both shield lines are authored target `self`, following the literal 'Affects self' clause, even though the prose says the shield is shared and protects all allies. Self-targeting satisfies this kit's own requiresShielded gate; if the shared shield also fires ALLY `shielded` triggers in game, the target must widen to `allies`. Widening is the over-crediting direction, so the conservative read is shipped.",
+    "'Current HP \u25bc 2% every 1 sec' and 'Restores Shield HP \u2026 every 1 sec' are unmodeled: v1 models no HP pool and no shield HP pool, and the boss deals no damage, so both are no-ops at scope. The shield restore is deliberately NOT re-emitted as a per-second `shield` effect \u2014 that would fire `shielded` triggers ~180\u00d7 over a fight and over-credit any shield-synergy consumer.",
+    "This kit carries NO damage effects. Her contribution is her own weapon damage plus the two team Attack Damage buffs (10.41% continuous + 15.24% for 10s on her own burst), both additive in the Damage Up bucket and therefore diluted by other support buffs.",
+    "Burst self Max HP \u25b2 10.13% is kept for kit completeness; it is offensively inert unless a Max-HP\u2192ATK conversion is present, and ally-granted Max HP does not feed a teammate's atkOfMaxHpPct."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. SR/Iron/Defender/Burst I charge weapon (ammo 6, chargeFrames 60, reloadFrames 141, hitsPerShot 1 \u2014 all datamined \u2691, cadence fields are the known-unreliable class). Offensive content is exactly two team Attack-Damage buffs: a continuous 10.41% (skill1, gated on the owner carrying a shield \u2014 self-supplied at battle start and re-supplied on her own burst cast) and a 15.24% burst-cast buff for 10 sec. Both shield lines are authored as `shield` effects with maxHpPct recorded for kit completeness (no shield HP pool at scope); they are load-bearing because they satisfy this kit's own requiresShielded gate and can drive shield-synergy consumers. The full-charge self-heal is emitted as a recovery event (no HP amount modeled) so on-recovery consumers (e.g. heal-gated ally buffs) fire per shot. \u2691 The 'Full Charge maintained for more than 1 sec' activation is modeled as an interval-1s permanent grant with 100% uptime after t=1s \u2014 see caveats; the true duty cycle is unmeasured. Trigger fidelity: 'when using Burst Skill' is keyed to burstCast (this unit's OWN cast), not fullBurstEnter."
+}

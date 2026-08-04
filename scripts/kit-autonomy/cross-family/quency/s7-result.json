@@ -1,0 +1,72 @@
+{
+  "slug": "quency",
+  "kitDescription": "Quency is an Electric SMG Supporter with a Burst II skill, and her kit contains no damage-dealing lines at all — her entire contribution is buffs to teammates. Her Skill 1 fires after she lands 60 normal attacks and grants herself a temporary Max HP buffer equal to 12.42% of the Max HP of whichever Nikke has the highest Max HP, lasting 10 seconds. Her Skill 2 periodically (no printed activation condition; on her skill cooldown) raises the ATK of the 2 allies with the highest final ATK by 16.11% for 5 seconds. Her Burst grants those same 2 highest-ATK allies +43.87% Max HP for 5 seconds and +29.9% Critical Damage for 10 seconds when she casts it. In practice her value is the ATK buff uptime plus the crit-damage rider landing on the team's two carries each time she takes the Burst II slot.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates after 60 normal attacks",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger hitCount count:60, target self; re-fires on the counter (>=3 self maxHpFlat applies over 180s); count-120 counterfactual halves activations",
+        "blindSaid": "S5 asserts hitCount:60 self (passes as-written); S6 byte-identical; S5 it.skip FLAGs the hits-vs-pulls reading; fable S2b wrongly claimed hitCount counts rounds — driver verified engine counts HITS (hitsPerShot per pull, sim.ts:3782), so 60 hits = 30 pulls, flagged inert",
+        "formulaCheck": "Engine hitCount increments by hitsPerShot per pull; for hitsPerShot 2 count 60 = 30 trigger pulls. Game-side '60 normal attacks' (hits vs pulls) is genuinely ambiguous and documented as ⚑; either reading is damage-inert for this kit.",
+        "fireRateOk": true,
+        "explanation": "Trigger kind, count, and self targeting match the prose; the only residual is the hits-vs-pulls game-side reading, flagged by both sides and inert."
+      },
+      {
+        "kitLine": "Duplicates 12.42% of the Max HP o",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "buff casterMaxHpPct 12.42 durationSec 10 on self, with explicit ⚑: kit source is the HIGHEST-Max-HP ally, no StatKey expresses an ally-scaled HP source (highestAllyAtkPct has no HP analog), so it resolves to % of quency's OWN Max HP — exact only when she holds the team's highest Max HP; damage-inert either way; shield reading considered and set aside",
+        "blindSaid": "S5 + S6 both independently derived the same self Max-HP-buff encoding (converged); S5 it.skip GAP names the missing highest-ally-HP primitive; fable S2b dispositioned the whole line GAP/unmodeled for the same missing primitive",
+        "formulaCheck": "SSOT §1a: HP→ATK conversions use the unit's OWN Max HP and ally-granted Max HP buffs do not feed conversions; quency carries no atkOfMaxHpPct consumer, so the basis error moves zero damage — verified by the strip-S1 inertness pin (totals byte-identical).",
+        "fireRateOk": true,
+        "explanation": "The magnitude, duration, target, and cadence are faithful; the scaling basis is an approximation forced by a missing primitive, flagged with reason and tier, and provably damage-inert. Recorded decision, not a silent drop."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "ATK ▲ 16.11% for 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval sec:8 (datamined skillCooldownsSec.skill2=8, flagged ⚑ as not-from-prose), target alliesTopAtk count:2 byFinalAtk:true self-inclusive, atkPct 16.11 durationSec 5; test pins 8s inter-application spacing, 300f windows, exactly 2 targets, and a live damage drop when removed",
+        "blindSaid": "S5 asserts byFinalAtk count:2, 5s duration, atkPct-not-casterAtkPct (all pass); it.skip FLAGs the clause-less cadence as measurement/datamine-gated. S6 diverged with interval sec:20 (mis-sourced the burst cooldown) — blind-side error, driver keeps datamined 8s corroborated by fable S2b",
+        "formulaCheck": "atkPct is the correct bucket for plain 'ATK ▲ x%' (dilutes into the (1+ΣATK%) term, not a caster-scaled flat grant — prose has no 'of the skill user's ATK' wording). Interval trigger for a clause-less skill line is the repo's sanctioned convention (damage-calculation §2b internal-cooldown skills).",
+        "fireRateOk": true,
+        "explanation": "Encoding matches prose on stat, magnitude, duration, and target set; trigger cadence is datamined and flagged. The lone divergence (S6's 20s) is a blind-author sourcing error, not a driver defect."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Max HP ▲ 43.87% for 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "targetMaxHpPct 43.87 durationSec 5 on the shared burstCast block; pinned as present (ally maxHpFlat applies with 300f windows) and as damage-INERT via the discriminator: stripping the whole burst == stripping only the crit line",
+        "blindSaid": "S6 byte-identical; S5 asserts stat===targetMaxHpPct, value 43.87, duration 5, same 2 targets as the crit rider, and totals-identical when removed — all pass",
+        "formulaCheck": "SSOT §1a: 'Max HP ▲ x%' on allies is a target-own-HP grant (targetMaxHpPct, not casterMaxHpPct — no 'of the skill user's' wording); ally-granted Max HP feeds no HP→ATK conversion, so inertness is the predicted behavior, not a defect.",
+        "fireRateOk": true,
+        "explanation": "Correct stat, magnitude, 5s window (distinct from the crit rider's 10s — the 300f expiresFrame split is directly pinned), and correct target set; inertness confirmed by two independent pins."
+      },
+      {
+        "kitLine": "Critical Damage ▲ 29.9% for 10",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "critDamagePct 29.9 durationSec 10 on trigger burstCast (own B2), alliesTopAtk count:2 byFinalAtk; trigger identity discriminated by a crown-contention arm — quency casts zero while Full Bursts occur, shipped fires 0 crit applies, fullBurstEnter counterfactual fires >0 (GREEN vs RED pinned)",
+        "blindSaid": "S6 byte-identical; S5 asserts burstCast trigger structurally, 2 targets per cast, 600f windows, +300f shift under a 15s patch, and a live damage drop when stripped — all pass. Fable S2b named fullBurstEnter the nearest-wrong and the crown-contention fixture as the required discriminator; driver enacted exactly that",
+        "formulaCheck": "critDamagePct correctly adds percentage points inside the critBonus term of the Major bucket (SSOT §1b); unscoped (no 'of normal attacks' wording) so it lifts all crit-able instances of the recipients. Burst-cast timing rule is irrelevant here — this is a buff, not cast damage.",
+        "fireRateOk": true,
+        "explanation": "The kit's only damage-moving burst line is encoded with the right stat, value, duration, target set, and — the load-bearing bit — the right trigger, proven against its nearest-wrong model in a fixture designed to separate them."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Convergence is real and mechanical: the blind S5 suite, once its own fixture error is corrected (controlComp fields crown as a competing Burst II who out-prioritizes quency, starving every burst assertion — a blind-author RECON_ERROR, not an encoding divergence), runs 23 passed / 3 self-declared it.skip GAP-FLAGs against the shipped override, and the blind S6 override is byte-identical on skill1 and burst. All three load-bearing lines (S2 ATK buff, burst Max HP, burst Critical Damage) are FAITHFUL: correct stats, prose-literal magnitudes, the 5s/10s split pinned at the expiresFrame level, byFinalAtk targeting per the literal 'highest final ATK' wording, and the one genuinely contestable identity — burstCast vs fullBurstEnter — is discriminated by a dedicated crown-contention arm that is GREEN on the shipped encoding and RED on the counterfactual. The remaining non-faithful element is the skill1 scaling basis (highest-Max-HP ally vs quency's own HP), which is a missing-primitive DOCUMENTED_GAP: flagged ⚑ with the reason and the exactness condition by driver and both blinds, and proven damage-inert by the strip-S1 byte-identical-totals pin plus the SSOT's own-HP conversion rule. Blind-side errors were correctly NOT propagated: S6's interval sec:20 (mis-sourced burst cooldown) rejected in favor of the datamined 8s, fable's hitCount-counts-rounds contract claim refuted against sim.ts:3782. Residual same-model risk for the owner to spot-check: (a) the game-side reading of '60 normal attacks' as hits vs trigger pulls (count 60 vs 120) — flagged by all parties and inert; (b) the S1 self-HP-buff vs shield interpretation, where three same-family passes converged on the same reading precisely because the sim can consume neither alternative — convergence here proves stability, not correctness, but the line moves no damage either way; (c) the 8s S2 cadence rests on the datamine, not prose, and is the one number a frame-read of a real quency fight could still overturn.",
+  "model": "kimi-code/k3"
+}

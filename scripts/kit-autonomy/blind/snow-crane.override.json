@@ -1,0 +1,125 @@
+{
+  "slug": "snow-crane",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 3
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 9.5,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 180,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates only while not in Terminated Contract status. \u2014 Exclusive Recovery Agreement gate: the Max HP grant is modeled as unconditional; the Terminated Contract state is entered mid-fight (skill2) and would suppress it, but the sim has no HP pool so ally-granted Max HP is offensively inert either way (e3 rule).",
+      "Affects all allies in Exclusive Recovery Agreement status. \u2014 status-membership scoping of the skill2 heal: modeled as plain `allies` (every ally holds the S1 grant at scope lock, so the sets coincide unless Terminated Contract has been entered).",
+      "Proof of Violation: Outgoing healing \u25bc 10% continuously, up to 3 time(s). \u2014 no outgoing-healing-magnitude stat exists in the schema (heals are modeled as recovery EVENTS with no HP amount), so the debuff itself has no representable effect; only its 3-stack threshold matters, and that is folded into the always-on Terminated Contract regen below.",
+      "Activates when recovery takes effect if the recovery is not coming from this unit. \u2014 the Proof of Violation accrual trigger (`recovery`, self-targeted, external-heal-only). The engine's `recovery` trigger does not distinguish heal SOURCE, so an external-only filter is not expressible; block omitted rather than modeled over-firing."
+    ],
+    "skill2": [
+      "Activates when Proof of Violation reaches max stacks. \u2014 the 3-stack gate on Terminated Contract. Not representable (no stack counter for an unmodeled debuff), so the regen is authored as an always-on passive; \u2691 this over-credits the pre-threshold window, which is recovery-event timing only and carries no damage.",
+      "Terminated Contract: Gains immunity to Proof of Violation continuously. \u2014 self-status immunity to an already-unmodeled debuff; no mechanical consequence."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 Every heal effect is amount-free by schema: the engine models recovery as an EVENT (fires teammates' `recovery` triggers) and models no HP pool, so 1.32% / 0.24% / 44.68% of final Max HP are recorded here for kit completeness but move no damage directly. This unit's entire offensive contribution is TANDEM \u2014 she is a recovery/shield ENGINE for on-recovery and on-shield consumers (`recovery` / `shielded` triggers, `requiresShielded` gates). Judge her model by recovery/shield EVENT CADENCE, not by her own damage.",
+    "\u2691 skill2-a cadence: `chargeCounter {count:3}` on a 60-frame (1.0s) charge weapon with 6 ammo and 141 reload frames. Emission rate therefore depends on the datamine-unreliable charge/reload frames; a consumer keyed to her heals inherits that error.",
+    "\u2691 skill2-c regen authored as ticks:180 (fight length) \u2014 an always-on 1 Hz recovery emitter. Real onset is gated behind 3 external-heal events, so early-fight recovery events are over-emitted.",
+    "\u2691 Burst Pierce is a self 10s `gainPierce`, NOT the whole-fight `hasPierce` flag \u2014 it is timed and only live in her own burst window.",
+    "\u2691 Burst heal + Pierce keyed to `burstCast` (her own burst block, no separate activation clause), so they fire only on rotations she actually casts. FB-exempt by construction (a burst cast lands before the FB window opens).",
+    "\u2691 Proof of Violation / Terminated Contract is a real STATE MACHINE (external heal \u00d73 \u2192 immunity + self-regen, and the S1 team Max HP grant switches OFF on entry). It is collapsed here into 'grant always on, regen always on' because outgoing-healing magnitude is not a modeled stat. If a teammate consumer is ever found keyed to her Max HP grant, this collapse must be revisited."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Snow Crane (snow-crane, SR/Water/Defender/Burst II) is a pure sustain unit: NO damage effect appears anywhere in her kit \u2014 no flatDamage, no DoT, no weaponSwap, no ATK/crit/core/Damage-Up buff. Her sim-visible output is (a) recovery events (skill2 per-3-full-charges, skill2 Terminated Contract 1 Hz, burst all-ally), (b) a full-burst-enter team shield (9.5% caster Max HP, 10s), (c) a team Max HP grant of 10% of her OWN Max HP (casterMaxHpPct \u2014 caster-scaled, so it does NOT feed a teammate's atkOfMaxHpPct per the e3 ally-grant rule; kept for kit completeness and future consumers), and (d) a self 10s Pierce window on her burst. Per the tandem/cross-unit HARD RULE these heal/shield/HP lines are NOT skippable on isolation \u2014 they are the input to teammates' `recovery`/`shielded` triggers and `requiresShielded` gates. Her Proof of Violation \u2192 Terminated Contract state machine is deliberately collapsed (see caveats): outgoing-healing magnitude has no StatKey, so the debuff is unrepresentable and its 3-stack threshold cannot gate the regen; the regen is therefore authored always-on and the S1 Max HP grant authored unconditional. Charge cadence (60 chargeFrames / 141 reloadFrames / 6 ammo) is datamine-sourced and drives the per-3-full-charges heal rate \u2014 \u2691 unreliable."
+}

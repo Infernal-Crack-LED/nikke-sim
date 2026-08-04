@@ -1,0 +1,102 @@
+{
+  "slug": "pepper",
+  "kitDescription": "Pepper is a Wind shotgun Supporter with a Burst I skill on a 20-second cooldown. Each time she fires the last bullet of her magazine, she heals the ally with the lowest HP percentage and applies Refresh Heart to the whole team, a stackable incoming-healing buff that builds to 5 stacks. Her skill 2 periodically damages the enemy with the highest attack and lowers that enemy's attack for 5 seconds. Her burst deals heavy damage to the highest-attack enemy, adds one stack to every stackable buff her allies hold, and — once Refresh Heart is fully stacked — heals the entire team. In game terms she is a magazine-cycling healer whose burst becomes a full-team heal once her passive has ramped up.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "last bullet hits → heal lowest-HP ally 4.45%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "lastBullet → alliesLowestHp(1) → heal; recovery-event channel only (no HP pool), leftmost-stand-in target documented",
+        "blindSaid": "S5: asserted lastBullet/alliesLowestHp/count 1 structurally (GREEN); S6: identical encoding",
+        "formulaCheck": "heal carries no damage; recovery channel is the only v1 observable — consistent with engine heal convention (helm/crown precedent)",
+        "fireRateOk": true,
+        "explanation": "Trigger, target set, and effect kind match prose exactly; magnitude unmodeled by engine-wide no-HP-pool convention and recorded. Driver pinned cadence at mag-dump rate via crown's isolated recovery consumer, with removal-of-S1 as the RED side."
+      },
+      {
+        "kitLine": "Refresh Heart: incoming healing ▲6.53%, 5 stk",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "stack COUNT modeled as refreshHeart resource pool (max 5, +1/lastBullet); 6.53% magnitude verbatim in unmodeled (no StatKey)",
+        "blindSaid": "S2b: magnitude GAP, stack machinery load-bearing; S6: fully unmodeled (empty-effects block, under-model)",
+        "formulaCheck": "no incoming-healing StatKey exists, so magnitude is genuinely unrepresentable; stack count is the burst-gate currency and the resource/resourceGate primitive has repo precedent (soda-twinkling-bunny)",
+        "fireRateOk": true,
+        "explanation": "Driver exceeds both blinds by modeling the load-bearing stack count. No-lapse approximation (15s duration vs ~8.4s mag cadence, refresh-on-reapply) is documented ⚑3 and behavior-identical in scope; S5 verified ≥5 reloads with all gaps <15s."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Deals 160% of final ATK as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval:10 (datamined skillCooldownsSec.skill2) → flatDamage 160, first fire t=10 ⇒ 17 hits/180s, skill bucket, crit-eligible",
+        "blindSaid": "S2b: interval with cadence pinned from datamined CD; S6: interval:20 (self-flagged ⛑ guess); S5: steady-cadence/not-lastBullet assertions GREEN",
+        "formulaCheck": "function damage: no core, no range, FB by timing, crit at caster rate — driver relies on engine flatDamage defaults, S5 confirmed rangeApplied=false/core=0",
+        "fireRateOk": true,
+        "explanation": "Driver's 10s matches the datamined ground truth (section IV); S6's 20s is a spurious blind under-estimate, not a driver divergence. 17-hit count and 20s→8 counterfactual both pinned."
+      },
+      {
+        "kitLine": "ATK ▼ 3.55% for 5 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — no enemy-ATK debuff primitive; boss ATK feeds nothing in v1; damageTakenPct is a different mechanic",
+        "blindSaid": "S2b/S5/S6 all concur: inert defensive line, must never surface as damageTakenPct",
+        "formulaCheck": "boss deals no modeled damage, so the debuff is inert by construction; the damageTakenPct mis-encoding would be a whole-board over-credit",
+        "fireRateOk": true,
+        "explanation": "Correctly skipped and documented; driver pinned by absence plus a sensitivity counterfactual proving the pin catches the damageTakenPct reflex."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 1237.5% … as Burst Skill damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → flatDamage 1237.5, burst bucket, pre-FB (fbMajorApplied false), crit-eligible, count == cast count",
+        "blindSaid": "S5: FB-exemption/range/core assertions GREEN; S6: identical encoding with explicit noFb/noRange (behavior-identical to driver defaults)",
+        "formulaCheck": "matches the measured 2026-07-13 burst-cast boundary rule: cast damage lands before Full Burst opens, no +0.5 major, no range/core on burst damage",
+        "fireRateOk": true,
+        "explanation": "Magnitude 1237.5 matches the prose's own lv10 number; the lv1 731.25 stale-parse counterfactual is pinned RED. Single boss makes the highest-final-ATK targeting trivial."
+      },
+      {
+        "kitLine": "Increases stack count of stackable buffs +1",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "generic cross-unit clause unmodeled verbatim (no engine primitive); self-slice modeled: +1 refreshHeart at cast, ordered before the gate",
+        "blindSaid": "S2b: exactly this split recommended; S6: fully unmodeled (under-model, self-flagged)",
+        "formulaCheck": "no EffectDef mutates another buff's stacks — out-of-domain engine-core gap, flagged ⚑4 with recipe; the self-slice is the honest in-scope model",
+        "fireRateOk": true,
+        "explanation": "The modeled self-slice feeds pepper's own gate in kit ■ order; the 4-mag-cast discrimination (heals shipped / waits one reload with increment removed) is pinned both ways. Generic clause is a documented gap, not a silent drop."
+      },
+      {
+        "kitLine": "Refresh Heart at max stacks → heal 27.22%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + resourceGate{refreshHeart ≥ 5} → allies heal (recovery channel); amount unmodeled by convention",
+        "blindSaid": "S2b: gated model with ordering pin recommended; S6: unconditional heal with ⛑ caveat claiming the gate inexpressible (spurious — resourceGate exists); S5: skipped as GAP on observability",
+        "formulaCheck": "heal magnitude unmodeled per no-HP-pool scope; gate timing is the load-bearing observable and matches prose ('at max stacks')",
+        "fireRateOk": true,
+        "explanation": "Silent-then-firing transition pinned at pool 5 including the same-cast increment; ungated and removed counterfactuals both RED. S6's divergence is a blind under-model, not a driver error."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENCODING",
+      "slot": "data (not a kit line)",
+      "summary": "pepper has no row in data/gauge-per-shot.json: engine falls back to SG modal 400 while her datamined shot_detail carries 4500/9000 (≈900/shot, drake profile) — burst-gauge generation undervalued ~2.2×, affecting her burst cadence, nuke count, and gate timing",
+      "evidence": "section IV shotDetail_gauge (burst_energy_pershot 4500 / target 9000) vs driver note ⚑5; not a prose line — datamine transcription gap, flagged not enacted",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Backfill the datamined 4500/9000 row for pepper into data/gauge-per-shot.json (transcription of shot_detail, same profile as drake) — a data entry, not a fudge"
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1",
+  "verdict": "GO",
+  "verdictRationale": "No undocumented gotcha exists: all seven kit lines are FAITHFUL or DOCUMENTED_GAP, and every FAITHFUL line fires at its prose-implied cadence with a RED counterfactual pin (17/17 driver verify GREEN; S5 blind suite 13-pass/3-legit-skip/0-fail GREEN unmodified against the shipped override). The blinds' divergences are blind-side under-models, not driver errors: S6 guessed interval:20 where the datamined skillCooldownsSec gives 10s, and S6 shipped an unconditional burst heal claiming the max-stack gate inexpressible where the driver's resourceGate{refreshHeart≥5} matches the prose and has repo precedent; S2b independently derived the same dispositions the driver landed, including the load-bearing stack machinery. The one substantive residual is the documented gauge-per-shot data gap (pepper missing her datamined 4500/9000 row, ~2.2× gauge undervaluation) — a data backfill for the owner, not a kit-encoding fault and out of magnitude-gated scope. Same-model residual for owner spot-check: the Refresh Heart no-lapse approximation (⚑3), the interval first-fire phase convention t=10 (⚑2, worth exactly one proc), and the kit-■-order interpretation that the burst's +1 increment lands before the gate reads the pool (pinned at the 4-mag cast but an ordering reading, not a measured fact). Nothing here blocks GO.",
+  "model": "kimi-code/k3"
+}

@@ -1,0 +1,184 @@
+{
+  "slug": "rumani",
+  "leakDetected": null,
+  "override": {
+    "slug": "rumani",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 3.04,
+            "durationSec": 2,
+            "maxStacks": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 15.13,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "normalAttackPct",
+            "value": 10.05,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "■ Activates when landing a Full Charge attack during Full Burst. Affects the target. Taunts for 5 sec."
+      ],
+      "skill2": [
+        "■ Activates when hitting a target's Parts for 5 time(s). Affects all allies. Damage to Parts ▲ 10.05% for 5 sec."
+      ],
+      "burst": [
+        "■ Activates when Muscle Up is at max stacks. Affects self. Damage Taken ▼ 20.06% for 10 sec."
+      ]
+    },
+    "caveats": [
+      "⚑ CADENCE (mandatory for a charge weapon): pullsPerSec / reloadFrames 129 / chargeFrames 60 are datamined-unreliable, and whether this RL AUTOFIRES (noBoltRecovery) vs takes the measured 22-frame bolt gap is a ~15-20% shot-count swing not derivable from kit text. Engine default (bolt gap ON) shipped unmeasured; do not set noBoltRecovery without footage.",
+      "⚑ MUSCLE UP STEADY STATE: 3.04% Max HP per full charge, cap 5, 2 sec duration. At the RL charge cycle implied by chargeFrames 60 + bolt gap + a 6-round magazine (~1.3-1.5 s/shot), only ~1-2 stacks are ever concurrently live, so the cap is effectively unreachable outside a charge-speed buff. Offensively inert today (this kit carries no atkOfMaxHpPct consumer); kept for a future HP scaler and because the burst's max-stack clause reads it.",
+      "⚑ SKILL1 TRIGGER MAPPING: 'performing a Full Charge attack' is authored as shotFired, which assumes every RL trigger pull resolves as a full charge. If partial-charge pulls exist, the stack rate is overstated (damage-neutral while the granted stat is inert).",
+      "SKILL2 SKIPPED, NOT DROPPED: the Damage-to-Parts buff is doubly inert at scope lock — partsDamagePct is inert in v1 and the boss is partless, so the parts-hit trigger never fires. Modeling it on a hitCount:5 proxy would make it fire when the real condition cannot, a trigger-identity error; the line is recorded verbatim in unmodeled instead. Magnitude if it is ever wired: 10.05% partsDamagePct to all allies, 5 sec, on 5 parts hits.",
+      "The burst's Damage Taken ▼ 20.06% is a SELF damage-reduction, not the enemy-facing damageTakenPct debuff. No HP pool is modeled at scope lock, so it has no channel; it is not the team-benefiting 'Damage Taken ▲' shape."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rumani (rumani) is an RL/Fire/Defender/Burst I whose ONLY offensive channel in this kit is the burst's team-wide Normal Attack Damage Multiplier ▲ 10.05% for 10 sec — everything else is Max HP, taunt, parts, or self damage-reduction. Burst lines carry no activation clause and grant a self mode plus a team buff, so they are keyed burstCast (fires only on rotations this unit bursts), not fullBurstEnter. The two Max HP grants use targetMaxHpPct ('Max HP ▲ X%' = % of the target's own Max HP) and are offensively inert for this unit — no atkOfMaxHpPct consumer in kit — but are kept per the never-skip-HP rule as a future scaler feed. No function-damage riders, DoTs, weapon swaps, or shot-count modifiers appear anywhere in the kit, so there is no noFb decision to make and no reload/ammo/fire-rate line to audit."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when performing a Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger shotFired (full-charge proxy for an RL) — the block gate itself; no separate effect."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Muscle Up: Max HP ▲ 3.04%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff targetMaxHpPct 3.04, self ('Max HP ▲ X%' = % of the target's own Max HP)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Stacks up to 5 times, lasts for 2 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "maxStacks 5 + durationSec 2 on the same buff; per-shot trigger + short duration models the decay natively (no ramp haircut needed)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when landing Full Charge in FB",
+      "status": "SKIPPED",
+      "effectOrReason": "Trigger clause of the taunt line only; no schema primitive for taunt, so the whole line is unmodeled verbatim."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects the target. Taunts for 5 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Aggro/threat redirection. No taunt primitive in EffectDef; the boss's targeting is not modeled and it deals no damage at scope lock, so there is no channel — offensively inert. Recorded in unmodeled.skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "when hitting a target's Parts 5 time(s)",
+      "status": "SKIPPED",
+      "effectOrReason": "The scope-lock boss is partless, so this trigger can never fire in-game. No parts-hit trigger exists in TriggerDef; a hitCount:5 proxy would fire when the real condition cannot (trigger-identity error). Recorded in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "all allies: Damage to Parts ▲ 10.05%/5s",
+      "status": "SKIPPED",
+      "effectOrReason": "partsDamagePct is parsed-but-inert in v1 (no parts on the boss), and its trigger is unrepresentable — doubly inert. Magnitude/target/duration preserved in caveats so nothing is lost if parts modeling lands."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self. Max HP ▲ 15.13% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast + self, buff targetMaxHpPct 15.13 durationSec 10. Inert offensively (no atkOfMaxHpPct consumer) but kept per the never-skip-HP rule."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "all allies: Normal Attack Dmg Mult ▲10.05%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast + allies (self included), buff normalAttackPct 10.05 durationSec 10. THE kit's only damage contribution."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Activates when Muscle Up is at max stacks",
+      "status": "SKIPPED",
+      "effectOrReason": "Gate clause of the Damage Taken ▼ line only. Would need a resourceGate on a Muscle-Up pool; not built because the gated effect itself has no channel."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "self: Damage Taken ▼ 20.06% for 10 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "SELF damage-reduction, not the enemy-facing damageTakenPct debuff (which is positive = boss takes more and benefits the team). No HP pool / no incoming damage at scope lock, so no offensive channel. Recorded in unmodeled.burst."
+    }
+  ],
+  "flags": [
+    {
+      "field": "cadence tuple (base weapon: pullsPerSec / reloadFrames 129 / chargeFrames 60 / bolt recovery)",
+      "estimate": "Ship the datamined tuple with the engine-default 22-frame bolt-recovery gap ON (RL default). Implied charge cycle ~1.3-1.5 s/shot, 6-round magazine, ~2.15 s reload.",
+      "reasoning": "Datamined rate_of_fire and reloadFrames are known-unreliable fields, and the autofire-vs-bolt-gap question is a documented ~15-20% shot-count swing (Liberalio root case) that is NOT visible in kit text. Setting noBoltRecovery unmeasured would be fudge-over-measured. RL rates are frame-exact per the 2026-07-23 quantization census (60/90/120/180/300 rpm all divide 60 cleanly), so quantization is not the risk here — autofire is.",
+      "recipe": "Focus recording of rumani: two frames 0.5 s apart in a no-reload window, read the ammo counter to get pulls/s directly; repeat in a second range band to confirm it is the weapon's rate and not an artifact. Separately time a reload (last shot to full counter) against the datamined 129 frames. If the counter shows no inter-shot recovery gap, set charFixes.noBoltRecovery:true."
+    },
+    {
+      "field": "override.skill1[0].effects[0] — Muscle Up steady-state stack level",
+      "estimate": "~1-2 concurrent stacks (~3-6% Max HP), not the 5-stack cap.",
+      "reasoning": "Stack/currency steady-state is an ALWAYS-⚑ field. Here the trajectory is partially derivable: 2 sec duration against a full-charge cycle of ~1.3-1.5 s admits only ~1-2 live stacks, so the cap is unreachable without external charge-speed support. Encoded faithfully (per-shot trigger + maxStacks 5 + durationSec 2) rather than as a fixed average, so the engine derives the real level from the actual cadence — which makes this flag DOWNSTREAM of the cadence ⚑ above. Damage impact today is zero (targetMaxHpPct has no consumer in this kit).",
+      "recipe": "Resolve the cadence ⚑ first; the stack level then falls out of the shot interval. To verify directly, DBG_BUFFS on a solo run and count concurrent Muscle Up stacks. In-game confirmation would be the stack pip count on her buff icon during sustained fire, and again inside a charge-speed buff window."
+    },
+    {
+      "field": "override.skill1[0].trigger",
+      "estimate": "shotFired (every trigger pull treated as a Full Charge attack).",
+      "reasoning": "The kit says 'performing a Full Charge attack' but TriggerDef has no full-charge trigger; chargeCounter is a cycling PHASE counter (effects[P] per phase), which mis-fits a single unconditional per-charge effect. For an RL with chargeFrames 60 the engine's pulls are full-charge shots, so shotFired is the faithful mapping. If partial-charge pulls are possible the stack rate is overstated.",
+      "recipe": "Footage check: does rumani ever fire before the charge bar fills? If yes, the trigger needs a full-charge gate and shotFired over-counts. Zero damage consequence while targetMaxHpPct stays inert — re-check before any HP-scaling consumer is added to her kit."
+    },
+    {
+      "field": "override.burst[1].effects[0] — normalAttackPct 10.05",
+      "estimate": "value 10.05 read as a multiplicative scale on the normal-attack multiplier (x1.1005), team-wide, 10 sec from burst cast.",
+      "reasoning": "'Normal Attack Damage Multiplier ▲' maps to normalAttackPct ('scales the normal attack multiplier'), which is the multiplier-scaling stat rather than an additive Damage-Up entry. This is the entire offensive output of the kit, so the bucket choice is load-bearing: if the line actually belongs in the additive Damage Up bucket (attackDamagePct) it would be diluted by other support buffs instead of scaling cleanly, and the team delta would differ.",
+      "recipe": "Popup A/B on a teammate with a clean normal-attack value: record one magazine outside rumani's burst window and one inside, same range band and no other buff changing state. A clean x1.1005 on the normal-attack popups confirms the multiplier reading; a smaller-than-10.05% lift in a buff-heavy team indicates additive-bucket dilution instead."
+    },
+    {
+      "field": "override.unmodeled.skill2 — Damage to Parts ▲ 10.05% (all allies, 5 sec, on 5 parts hits)",
+      "estimate": "Zero contribution at scope lock; if parts modeling ever lands, author as allies + partsDamagePct 10.05 + durationSec 5 behind a real parts-hit trigger.",
+      "reasoning": "Both halves are inert on a partless boss: partsDamagePct is documented parsed-but-inert in v1, and the parts-hit trigger has no representation. Skipping is strictly safer than a hitCount:5 proxy, which would latently over-credit the moment partsDamagePct is wired live. Recorded verbatim rather than dropped.",
+      "recipe": "No measurement can settle this at scope lock — the boss has no parts. Revisit only if the sim gains destructible-part modeling and a multi-part boss; at that point the trigger needs a parts-hit primitive in TriggerDef, not a hit-count approximation."
+    }
+  ],
+  "model": "claude-opus-5"
+}

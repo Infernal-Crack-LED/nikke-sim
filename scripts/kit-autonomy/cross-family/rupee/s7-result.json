@@ -1,0 +1,72 @@
+{
+  "slug": "rupee",
+  "kitDescription": "Rupee is an Iron-code AR attacker whose own damage is her rifle spray plus a modest single-hit burst nuke (274.28% of final ATK) on a 20-second Burst II. Every 30 shots she grants herself a stacking 13.8% ATK buff called Mileage, climbing to five stacks (69% total) and refreshing its 15-second timer with each proc, so under sustained fire it ramps over the first ~13-15 seconds and then stays maxed. Every 100 shots she hands all Iron-element allies (including herself) a small 2.24% critical-rate buff lasting 10 seconds, and that same trigger also bumps the stack count of buffs her Iron allies hold. Her burst has a rider: if Mileage is at maximum stacks when she casts, the whole team gets 19.8% ATK for 5 seconds — so her very first burst of a fight typically fires without the team buff, and every later one carries it.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Critical Rate ▲ 2.24% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:100 → alliesOfElement Iron → critRatePct 2.24 / 10s; unscoped crit per the inverse-helm rule (no 'of normal attacks' in prose); self included as Iron",
+        "blindSaid": "S5 asserts identical trigger/target/stat/value/duration; S6 encodes byte-identically",
+        "formulaCheck": "critRatePct joins the unscoped critRate term in the Major bracket (§1b) — lifts normals AND skill/burst instances, which the unqualified prose supports; critRateNormalPct would be the over-narrowing misread",
+        "fireRateOk": true,
+        "explanation": "Fires floor(1644/100)=16 times in the 180s fixture on a ~9.7s cycle vs the 10s window (high cyclic uptime, not passive — matches S2b's cadence warning). Driver's live-effect read shows both liter's and rupee's normal crit rate lifting by exactly 0.0224 and ada (Water) never receiving an apply; counterfactuals (all-allies reaches ada; self-only drops liter) both diverge as required."
+      },
+      {
+        "kitLine": "Increases stack count of buffs by 1.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "SPLIT: self slice folded as +1 to the mileage resource pool on the same hitCount:100 trigger (mica-snow-buddy/pepper precedent); cross-ally slice out-of-domain (no primitive) and the stack's ATK-buff component unrepresentable without double-counting — both ⚑-documented in caveats 2/3, line verbatim in unmodeled.skill1, awb/diesel dissent acknowledged in caveat 5 with a kill-switch recipe",
+        "blindSaid": "S6 reads it as unmodelable and omits it entirely — including from unmodeled, a documentation lapse on the BLIND side (the driver's audit trail is the correct artifact); S2b called it a GAP with the self slice optionally expressible, matching the driver",
+        "formulaCheck": "No formula implication (stack manipulation, not a damage bucket). The one behavioral consequence — gate opening at shot 120 (driver) vs shot 150 (blind/conservative) — spans a ~4s window into which no legal-fixture cast falls (casts ≥20s apart), so both encodings are byte-identical in output today; the divergence is real but inert and fully recorded",
+        "fireRateOk": true,
+        "explanation": "The most valuable cross-check output: the sole S6-vs-driver structural divergence is formula-and-fixture-confirmed inert, documented by the driver with estimate + recipe + tier, and the blind's silence in unmodeled is the recon-side lapse, not the driver's. Classified DOCUMENTED_GAP, not a gotcha — the decision and its dissent are on the record."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Mileage: ATK ▲ 13.8%. Stacks up to 5...15 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:30 → self → atkPct 13.8, maxStacks 5, durationSec 15; refresh-on-reapply climbs 1→5 over the opening ~13s then holds; a parallel resource-pool block mirrors the stacks for the burst gate (power/pepper construction, no buff-stack gate primitive exists)",
+        "blindSaid": "S5 asserts self-only targeting, maxStacks 5 reached with a visible ramp, 15s expiry, and 30-count cadence outnumbering S1's 100-count; S6 encodes identically (merged single block vs driver's split — equivalent)",
+        "formulaCheck": "atkPct sums inside the (1+ΣATK%) multiplier on her own staticAtk (§1a) — plain 'ATK ▲' is correct, not casterAtkPct; the ramp-then-hold shape follows from proc cadence (~3.2s incl. reload) beating the 15s expiry by ~5×",
+        "fireRateOk": true,
+        "explanation": "Applies floor(1644/30)=54 times, stacks reach 5 and every post-cap apply carries refresh=true. The flat +69%-at-t=0 nearest-wrong counterfactual strictly out-damages the shipped ramp (discriminating). The pool/buff no-lapse approximation is ⚑4-documented and cannot diverge inside a scope-lock fight."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 274.28% of final ATK as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy → flatDamage 274.28; lv10 kit value (not the lv1 150.85); FB-exempt by cast timing, verified via fbMajorApplied === false on all 9 nukes",
+        "blindSaid": "S5 asserts one burst-bucket hit per rupee cast with fbMajorApplied falsy and the magnitude load-bearing (halving it lowers her total); S6 byte-identical",
+        "formulaCheck": "'% of final ATK' is exactly flatDamage's live-buffed-ATK scaling (§1a); burst-cast damage resolves before the FB window opens (boundary rule, popup-verified 2026-07-13), so noFb falls out of timing — crit-eligible, no core/range, correct per the burst-nuke row of the applicability table",
+        "fireRateOk": true,
+        "explanation": "9 casts → 9 nukes at exactly 274.28 in the burst bucket, none carrying the +50%. The 150.85 stale-level counterfactual confirms the shipped magnitude."
+      },
+      {
+        "kitLine": "■ when Mileage at max stacks → ATK ▲ 19.8% 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + resourceGate{mileage≥5} → allies → atkPct 19.8 / 5s; gate proven load-bearing: cast 1 (frame 570) precedes the earliest possible pool-max (shot 120 = frame 699, provable from the shot log alone) and is silent, casts 2-9 fire; keyed to HER casts, not fullBurstEnter (5 FB windows vs 9 casts in-fixture makes the keying observable without a competing B2)",
+        "blindSaid": "S5 asserts the gate both ways (ungated counterfactual strictly increases applications; first cast precedes first grant) and all-ally reach including self; S6 encodes the identical gate via the identical resourceGate construction — independent convergence on the same mirror pattern",
+        "formulaCheck": "atkPct scales each recipient's own ATK (plain 'ATK ▲', not casterAtkPct — correct per §1a/§11); 5s window expires mid-FB as the prose states; gating on the pre-cast stack state matches the 'Activates when' conditional-rider reading",
+        "fireRateOk": true,
+        "explanation": "All four S2b-named near-misses are excluded by discriminating counterfactuals: ungated fires on cast 1, no-pool never fires (while the 274.28% hit and the 13.8% ramp stay intact — gate isolated from both), fullBurstEnter-keyed fires fewer times on windows instead of casts, and the rider reaches all three allies (ada included — not Iron-scoped). The strongest line in the implementation."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No undocumented divergences exist: every kit line is either faithfully encoded with a firing, discriminating test (S1 crit, S2 Mileage, both burst lines) or a documented partial/GAP with estimate, recipe, and tier (the S1 stack-amplifier sentence). The two blind re-derivations converged hard — S5's adapted suite runs 20-pass/1-skip/0-fail against the shipped override, and S6 independently produced the same architecture down to the resourceGate mirror, with the sole structural divergence (S1 not feeding the mileage pool, gate at shot 150 vs 120) proven byte-identical in output across every legal fixture and honestly recorded on the driver's side; the blind's failure to carry the line in its own unmodeled block is a recon-side note, not a driver finding. Discrimination holds on every load-bearing assertion — each named nearest-wrong model (all-allies crit, self-only crit, flat +69% passive, ungated rider, no-pool, fullBurstEnter keying, lv1 magnitude) provably changes behavior. The same-model residual the owner should spot-check is the interpretation of 'Increases stack count of buffs by 1': the driver followed the mica-snow-buddy/pepper +1-grant majority over the alice-wonderland-bunny/diesel stack-cap-raise dissent, and while the choice is inert in today's fixtures (no cast falls in the shot-120–150 window), it would shift gate timing if rotation fixtures change — one rupee-focus recording showing whether S1 visibly feeds the Mileage stack icon settles it, and the override is one block away from the conservative reading. Secondary residuals, both documented: the no-decay pool approximation and the always-⚑ cadence tuple. Ship it.",
+  "model": "kimi-code/k3"
+}

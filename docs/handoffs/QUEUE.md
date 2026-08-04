@@ -149,6 +149,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   ramp and the first burst's build. Magnitude for `flora` depends entirely on which stack-ramp buffs
   are live on her Electric allies (could be large, could be zero), so it is correctly not estimated.
   Two carriers is not yet a mandate; log a third before building. Not authorized.
+- **⇒ ENGINE PRIMITIVE GAP: windowed damage accumulator** — `trony` S1 "T.Rony Bomber" Cumulative
+  Damage Skill (plant on full-charge hit: 5s window, accumulates 50% of her dealt damage, cap 1536%
+  of final ATK, explodes as Distributed Damage; burst adds +62.83pp to the collection rate) has no
+  expression — `storedHit` accumulates CHARGES not damage, `hitRepeat` mirrors %-of-hit instantly,
+  and the dorothy-Brand at-cap `flatDamage+delaySec` idiom does NOT apply because trony's cap is
+  knife-edge (binds only in her burst-enhanced windows). Blocks `trony` — NO-GO(engine-core)
+  gauntlet 2026-08-04; sole roster carrier. Primitive spec + three open semantics (release pipeline
+  raw-vs-re-run, sub-cap expiry, collection scope) in
+  `scripts/kit-autonomy/manual-review/trony.md`; threading point = hitRepeat's `dealDamage` landing
+  path. Not authorized.
 - **⇒ ENGINE PRIMITIVE GAP: HP pool + HP-threshold triggers** — v1 models no ally HP pool and the
   scope-lock boss deals no damage, so "HP ≤ X%" / "reaches max HP" / "while shielded by damage" kit
   lines are structurally out of domain (precedents: `liter` cover-HP NO-OP, owner 2026-07-21; the

@@ -1,0 +1,130 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/ka-batch-2026-08-03-3[39m
+
+ [31m❯[39m scripts/tests/units/sora.test.ts [2m([22m[2m12 tests[22m[2m | [22m[31m6 failed[39m[2m)[22m[32m 11[2mms[22m[39m
+       [32m✓[39m fixture sanity: sora casts her Burst I ≥4 times and every chain completes[32m 2[2mms[22m[39m
+[31m       [31m×[31m fires exactly one recovery landing on asuka per sora cast, on the CAST frame[39m[32m 3[2mms[22m[39m
+[31m       [31m×[31m is live, not vacuous: removing the heal zeros the consumer[39m[32m 0[2mms[22m[39m
+       [32m✓[39m targets ALL allies: a self-only heal never reaches asuka[32m 1[2mms[22m[39m
+[31m       [31m×[31m is keyed to burstCast, not fullBurstEnter (the cast precedes the FB window)[39m[32m 1[2mms[22m[39m
+       [32m✓[39m sora's own total is byte-identical with her kit zeroed (bare weapon)[32m 0[2mms[22m[39m
+[31m       [31m×[31m the heal MOVES the consumer's total (asuka's recovery self-buff)[39m[32m 0[2mms[22m[39m
+       [32m✓[39m sora originates ZERO buffApply events in the base fight[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING: materializing S2 ATK as a passive emits buffs and moves totals[32m 0[2mms[22m[39m
+[31m       [31m×[31m skill1/skill2 are empty by construction; burst is one heal block[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m every unmodeled entry is VERBATIM prose of its own slot[39m[32m 0[2mms[22m[39m
+       [32m✓[39m no `ignored` block anywhere; no heal magnitude fabricated[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 6 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/sora.test.ts[2m > [22msora — kit spec[2m > [22mK3 — the burst heals all allies (modeled as a recovery event)[2m > [22mfires exactly one recovery landing on asuka per sora cast, on the CAST frame
+[31m[1mAssertionError[22m: expected +0 to be 5 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 5[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/sora.test.ts:[2m206:31[22m[39m
+    [90m204|[39m       [35mconst[39m casts [33m=[39m [34msoraCasts[39m(base[33m.[39mevents)[33m;[39m
+    [90m205|[39m       [35mconst[39m landings [33m=[39m [34mrecoveryLandings[39m(base[33m.[39mevents)[33m;[39m
+    [90m206|[39m       [34mexpect[39m(landings[33m.[39mlength)[33m.[39m[34mtoBe[39m(casts[33m.[39mlength)[33m;[39m
+    [90m   |[39m                               [31m^[39m
+    [90m207|[39m       [34mexpect[39m(landings)[33m.[39m[34mtoEqual[39m(casts)[33m;[39m
+    [90m208|[39m     })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/sora.test.ts[2m > [22msora — kit spec[2m > [22mK3 — the burst heals all allies (modeled as a recovery event)[2m > [22mis live, not vacuous: removing the heal zeros the consumer
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/tests/units/sora.test.ts:[2m211:52[22m[39m
+    [90m209|[39m
+    [90m210|[39m     it('is live, not vacuous: removing the heal zeros the consumer', (…
+    [90m211|[39m       [34mexpect[39m([34mrecoveryLandings[39m(base[33m.[39mevents)[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                                                    [31m^[39m
+    [90m212|[39m       [34mexpect[39m([34mrecoveryLandings[39m(noHeal[33m.[39mevents))[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m213|[39m     })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/sora.test.ts[2m > [22msora — kit spec[2m > [22mK3 — the burst heals all allies (modeled as a recovery event)[2m > [22mis keyed to burstCast, not fullBurstEnter (the cast precedes the FB window)
+[31m[1mAssertionError[22m: expected +0 to be 5 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 5[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/sora.test.ts:[2m222:34[22m[39m
+    [90m220|[39m       [35mconst[39m casts [33m=[39m [34msoraCasts[39m(base[33m.[39mevents)[33m;[39m
+    [90m221|[39m       [35mconst[39m fbeLandings [33m=[39m [34mrecoveryLandings[39m(fbeHeal[33m.[39mevents)[33m;[39m
+    [90m222|[39m       [34mexpect[39m(fbeLandings[33m.[39mlength)[33m.[39m[34mtoBe[39m(casts[33m.[39mlength)[33m;[39m
+    [90m   |[39m                                  [31m^[39m
+    [90m223|[39m       [34mexpect[39m(fbeLandings)[33m.[39mnot[33m.[39m[34mtoEqual[39m(casts)[33m;[39m
+    [90m224|[39m       [34mexpect[39m(fbeLandings)[33m.[39m[34mtoEqual[39m([34mfbStarts[39m(fbeHeal[33m.[39mevents))[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/sora.test.ts[2m > [22msora — kit spec[2m > [22mK3b — the kit is self-damage-neutral AND live on the consumer[2m > [22mthe heal MOVES the consumer's total (asuka's recovery self-buff)
+[31m[1mAssertionError[22m: expected 78008046.05140957 to be greater than 78008046.05140957[39m
+[36m [2m❯[22m scripts/tests/units/sora.test.ts:[2m234:33[22m[39m
+    [90m232|[39m
+    [90m233|[39m     it("the heal MOVES the consumer's total (asuka's recovery self-buf…
+    [90m234|[39m       [34mexpect[39m(base[33m.[39mtotals[33m.[39masuka)[33m.[39m[34mtoBeGreaterThan[39m(noHeal[33m.[39mtotals[33m.[39masuka)[33m;[39m
+    [90m   |[39m                                 [31m^[39m
+    [90m235|[39m     })[33m;[39m
+    [90m236|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/sora.test.ts[2m > [22msora — kit spec[2m > [22mK3d — structure + verbatim documentation[2m > [22mskill1/skill2 are empty by construction; burst is one heal block
+[31m[1mAssertionError[22m: expected [] to have a length of 1 but got +0[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/sora.test.ts:[2m259:24[22m[39m
+    [90m257|[39m       [34mexpect[39m(ov[33m.[39mskill1)[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m258|[39m       [34mexpect[39m(ov[33m.[39mskill2)[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m259|[39m       [34mexpect[39m(ov[33m.[39mburst)[33m.[39m[34mtoHaveLength[39m([34m1[39m)[33m;[39m
+    [90m   |[39m                        [31m^[39m
+    [90m260|[39m       [35mconst[39m b[33m:[39m any [33m=[39m ov[33m.[39mburst[[34m0[39m][33m;[39m
+    [90m261|[39m       [34mexpect[39m(b[33m.[39mtrigger)[33m.[39m[34mtoEqual[39m({ kind[33m:[39m [32m'burstCast'[39m })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/sora.test.ts[2m > [22msora — kit spec[2m > [22mK3d — structure + verbatim documentation[2m > [22mevery unmodeled entry is VERBATIM prose of its own slot
+[31m[1mAssertionError[22m: expected 0 to be greater than or equal to 1[39m
+[36m [2m❯[22m scripts/tests/units/sora.test.ts:[2m268:32[22m[39m
+    [90m266|[39m     it('every unmodeled entry is VERBATIM prose of its own slot', () =…
+    [90m267|[39m       [35mconst[39m un [33m=[39m (ov [35mas[39m any)[33m.[39munmodeled [35mas[39m [33mRecord[39m[33m<[39mstring[33m,[39m string[][33m>[39m[33m;[39m
+    [90m268|[39m       [34mexpect[39m(un[33m.[39mskill1[33m.[39mlength)[33m.[39m[34mtoBeGreaterThanOrEqual[39m([34m1[39m)[33m;[39m
+    [90m   |[39m                                [31m^[39m
+    [90m269|[39m       [34mexpect[39m(un[33m.[39mskill2[33m.[39mlength)[33m.[39m[34mtoBeGreaterThanOrEqual[39m([34m1[39m)[33m;[39m
+    [90m270|[39m       [34mexpect[39m(un[33m.[39mburst[33m.[39mlength)[33m.[39m[34mtoBeGreaterThanOrEqual[39m([34m1[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m6 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (12)[39m
+[2m   Start at [22m 11:34:04
+[2m   Duration [22m 242ms[2m (transform 75ms, setup 0ms, import 177ms, tests 11ms, environment 0ms)[22m
+
+
+=== POST-S3 GREEN RUN (2026-08-04) ===
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/ka-batch-2026-08-03-3[39m
+
+ [32m✓[39m scripts/tests/units/sora.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m12 passed[39m[22m[90m (12)[39m
+[2m   Start at [22m 11:36:47
+[2m   Duration [22m 231ms[2m (transform 77ms, setup 0ms, import 178ms, tests 5ms, environment 0ms)[22m
+

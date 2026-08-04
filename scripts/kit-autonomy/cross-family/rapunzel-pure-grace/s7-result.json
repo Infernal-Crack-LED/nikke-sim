@@ -1,0 +1,92 @@
+{
+  "slug": "rapunzel-pure-grace",
+  "kitDescription": "Rapunzel: Pure Grace is an SR Defender whose whole kit hangs off a shared shield she supplies herself: she puts up a team-wide shield at battle start and re-creates it every time she uses her own Burst. While she is shielded and holding a full charge, the whole team gains a permanent 10.41% Attack Damage buff, and each of her full-charge shots heals her for a small amount of her Max HP (at the cost of a small HP drain that also slowly restores the shield). Her Burst temporarily raises her own Max HP and gives all allies 15.24% Attack Damage for 10 seconds. She deals no skill or burst damage of her own — her offensive contribution is her sniper fire plus those two team Attack Damage buffs. In a no-incoming-damage DPS sim, the shield itself, the heal, and the HP drain move no damage directly; only the two Attack Damage lines affect the board.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "start of battle: shared Shield 20.59%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive → allies → shield maxHpPct 20.59, permanent; 'Affects self' header is the header-echo trap, shared shield must reach all allies",
+        "blindSaid": "S6: same block but target self (literal header), self-flagged as the conservative branch; S5: structural pins pass (2 shield blocks, passive+burstCast, continuous)",
+        "formulaCheck": "shield is event/state only — no damage bucket; target-allies reading corroborated independently by S2b and proven behaviorally by the driver's naga 'shielded' consumer firing at frame 0",
+        "fireRateOk": true,
+        "explanation": "Battle-start shield present, correct magnitude, correct permanent semantics, correct allies scope. The blind self-target divergence is the conservative misread S2b predicted; not a driver finding."
+      },
+      {
+        "kitLine": "when using Burst Skill: shared Shield",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → shield maxHpPct 20.59; keyed to HER cast, never fullBurstEnter",
+        "blindSaid": "S6: identical block (burstCast, shield 20.59); S5 trigger-kind pin (passive+burstCast, not fullBurstEnter) green",
+        "formulaCheck": "skill-slot block triggered by burst cast resolves after window open per engine ordering — no damage effect, so no bucket implications; keying vs liter-decoy pinned in driver fixture",
+        "fireRateOk": true,
+        "explanation": "Re-shield keyed to her own burstCast and proven to re-fire the consumer exactly on her cast frames, never on liter's. Faithful."
+      },
+      {
+        "kitLine": "Full Charge >1 sec + Shield: Atk Dmg 10.41%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "passive + requiresShielded → allies → attackDamagePct 10.41, permanent; ⚑ CALIBRATED uptime ~100% (upper bound), charge-hold half has no engine primitive; recipe = focus-recording buff-icon uptime; Tier-2 state gate",
+        "blindSaid": "S6: interval{1s} + requiresShielded, permanent — behaviorally identical at scope, same ⚑ (est ~99% duty cycle, 'could be materially lower'); S5: gate-counterfactual (strip shields → buff dies) green",
+        "formulaCheck": "attackDamagePct lands in the DamageUp bucket, correct; value 10.41 kit-literal; shield gate is real and self-supplied (requiresShielded, live per driver G2); the >1s-hold half is genuinely unmodelable — her SR hits full charge at exactly 1s and fires, so the literal in-engine uptime is ~0% while real hold-to-aim play is ~100%; driver shipped the upper bound WITH the flag, exactly the S2b acceptability condition",
+        "fireRateOk": true,
+        "explanation": "Correct stat, value, target, continuity, and a live self-supplied shield gate. The unmodelable charge-hold half is documented with estimate + recipe + tier rather than silently assumed — the flagged-estimate branch, not the silent over-credit branch."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "attacking with Full Charge: recover 2% HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired → self → heal (event-only, no amount — engine heal carries no HP pool); self-target pinned via crown's recovery consumer firing identically with/without the block",
+        "blindSaid": "S6: identical (shotFired → self → heal); S5: heal-block structural pin green, amount it.skip'd as an honest unobservable GAP",
+        "formulaCheck": "SR = one full charge per pull (helm/liberalio precedent), so shotFired ≡ 'attacking with Full Charge'; no damage bucket involvement; self-targeting correct — ally-targeting would wrongly fire ally recovery consumers",
+        "fireRateOk": true,
+        "explanation": "Trigger, target, and per-shot cadence all faithful; the 2% magnitude is an engine-level no-op (no HP pool) and is documented as such in both the driver's caveats and S5's skip."
+      },
+      {
+        "kitLine": "gated: HP drain 2%/s + Shield HP 3.16%/s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim; needs HP pool + shield-HP pool; ⚑ zero damage impact; deliberately NOT a 1 Hz repeating shield effect (would spam ally shielded triggers)",
+        "blindSaid": "S6: identical verbatim drop with the same 1 Hz-shield-effect warning; S5: asserts no dot/flatDamage/hitRepeat/storedHit kinds in skill2 — green",
+        "formulaCheck": "no damage routing exists to check — correctly NOT encoded as boss damage (the DoT misread) or repeating shield events (the trigger-spam misread); both nearest-wrong models excluded",
+        "fireRateOk": true,
+        "explanation": "Correctly unmodeled with the decision recorded verbatim and both trap-encodings explicitly avoided. The S2b-predicted misreads are absent."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "self: Max HP ▲10.13% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self → targetMaxHpPct 10.13 durationSec 10, resolves to maxHpFlat = 0.1013 × her maxHp; proven inert (B4 totals equality)",
+        "blindSaid": "S6: identical block; S5: maxHpFlat self-grant, finite expiry, totals-neutral — green",
+        "formulaCheck": "she has no atkOfMaxHpPct conversion, so the line is offensively inert — kept for kit completeness per the taxonomy-#7 rule; magnitude kit-literal",
+        "fireRateOk": true,
+        "explanation": "Right stat, target, duration, and keying (her cast only); the emitted maxHpFlat value and 600-frame window are pinned. Faithful."
+      },
+      {
+        "kitLine": "all allies: Atk Dmg ▲15.24% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → attackDamagePct 15.24 durationSec 10; two-B1 fixture with liter decoy pins burstCast vs fullBurstEnter; 5 holders × 600 frames per cast",
+        "blindSaid": "S6: identical block; S5 (burstFirst fixture): coverage + finite expiry + load-bearing removal drop — green",
+        "formulaCheck": "DamageUp bucket, additive with her own 10.41 line (dilution correct by construction); value kit-literal; burstCast keying is the LIVE distinction since liter contends stage 1",
+        "fireRateOk": true,
+        "explanation": "Her one load-bearing damage line is encoded correctly on every axis and proven to fire only on her own casts. Faithful."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: all seven kit lines are either FAITHFUL (5) or DOCUMENTED_GAP (2 — the unmodelable charge-hold uptime half of S1-c, shipped gated + permanent as a flagged upper-bound ⚑ with estimate/recipe/tier, and the verbatim-unmodeled S2 HP-drain/shield-restore line). The blind re-derivations converged on 4 of 6 blocks identically; the two divergences are spurious, not findings — S6's self-targeted shield is the conservative header-echo branch that S2b independently ruled against and that the driver's naga-consumer tests behaviorally exclude, and S6's interval-vs-passive L3 trigger is behaviorally identical at scope behind the same self-supplied shield gate. Convergence is real: S5's unmodified assertions (adapted only for harness import paths and a slot-index→slug read) pass 16/0-fail against the shipped override, including the counterfactual gate test (strip shields → 10.41 buff dies) and the burstCast-vs-fullBurstEnter discriminations, which the driver's own two-B1 liter-decoy fixture also pins. Discrimination holds on every load-bearing line in the S2b set. The same-model residual the owner should spot-check, ranked: (1) the S1-c ~100%-uptime ⚑ — the always-on encoding is the over-credit direction by up to the diluted 10.41% Damage-Up share for the whole team and rests on a play-behavior argument (hold-to-aim between shots), not a measurement; the recorded recipe (focus-recording buff-icon uptime vs the shield icon) is the resolution; (2) the allies-target shared shield — corroborated by two independent agents plus the naga-consumer mechanics, but whether the real shared shield fires ALLY 'shielded' triggers is a structural inference, verifiable with one naga+rapunzel-pure-grace recording. Neither blocks GO: both are documented, flagged, and have concrete measurement recipes.",
+  "model": "kimi-code/k3"
+}
