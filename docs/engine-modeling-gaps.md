@@ -31,7 +31,8 @@
 | `alliesOfElementWeapon` | 3 | ark-ranger-black, sugar, trina |
 | `alliesOfWeapon` | 9 | arcana-fortune-mate, d-killer-wife, drake, leona, miranda, noir, rem, sugar, … |
 | `alliesTopAtk` | 14 | alice, avistar, chime, claire, folkwang, mast, maxwell, milk, … |
-| `atkOfMaxHpPct` | 5 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose, maxwell-ordinary-mechanic |
+| `atkOfCasterMaxHpPct` | 1 | maxwell-ordinary-mechanic |
+| `atkOfMaxHpPct` | 4 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose |
 | `bossElement` | 1 | eve |
 | `bossElementGate` | 6 | brid-silent-track, eve, helm-aquamarine, marciana-marine-study, phantom, rosanna |
 | `burstCasters` | 3 | ada, arcana, crown |

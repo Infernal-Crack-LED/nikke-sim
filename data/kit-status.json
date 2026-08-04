@@ -3909,7 +3909,7 @@
         "teams": 0,
         "within3pct": 0
       },
-      "residual": "owner spot-check vs a recording: (1) post-increment order-of-operations read (cast N Overcurrent stack feeds cast N ladder; kit-ambiguous, documented); (2) flag-1 S2a caster-vs-own Max HP basis on ally grants (atkOfMaxHpPct resolves vs target own HP); (3) 10s swap-duration flag + ammo-1 reload shot economy",
+      "residual": "owner spot-check vs a recording: (1) post-increment order-of-operations read (cast N Overcurrent stack feeds cast N ladder; kit-ambiguous, documented); (2) 10s swap-duration flag + ammo-1 reload shot economy. (The former flag-1 — S2a caster-vs-own Max HP basis — was settled 2026-08-04: the kit is caster-scaled, owner ruling; S2-A is now atkOfCasterMaxHpPct, a flat add of her live Max HP at cast. See DECISIONS.)",
       "unmodeled": {
         "skill1": [],
         "skill2": [],

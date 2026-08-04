@@ -8,6 +8,13 @@ export type StatKey =
   | 'casterAtkPct' // ATK ▲ x% of caster's ATK (flat add)
   | 'highestAllyAtkPct' // ATK ▲ x% of the HIGHEST ally's ATK (flat add — guilty "Mind If I Borrow This?"). Resolves to (value/100)×max(all units' staticAtk) at apply time; feeds the same flat-ATK path as casterAtkPct. Solo (self is the max) == casterAtkPct.
   | 'atkOfMaxHpPct' // ATK ▲ x% of the unit's own final Max HP (flat add — Cinderella, Maiden:IR)
+  | 'atkOfCasterMaxHpPct' // ATK ▲ x% of the SKILL USER'S final Max HP, granted to the target
+  //                    (maxwell-ordinary-mechanic S2). Resolved at APPLY time to a FLAT ATK add
+  //                    ((value/100) × the caster's liveMaxHp) and routed to the casterAtkPct
+  //                    consumer — uniform across all targets, snapshotted per application. The
+  //                    caster's live Max HP follows the e3 scope: own-kit maxHpFlat feeds (the
+  //                    caster's own S-stacks count), ally-granted Max HP does not. DISTINCT from
+  //                    atkOfMaxHpPct, which re-reads each TARGET'S own live Max HP every frame.
   | 'critRatePct'
   | 'critRateNormalPct' // "Critical Rate of normal attacks ▲x%" — Critical Rate that applies ONLY to
   //                       normal-attack hits, never to skill procs or burst damage. Distinct mechanic
