@@ -2073,7 +2073,11 @@ anything between ⇒ report as-is, do not force it into a bucket.
 **Two gates ran before any number was read.** (1) STALENESS RULE, per mode, because the two hold
 mechanisms are different and neither mode's rule is valid on the other's dump. Structural:
 `locate_crosshair_structural` returns `(last_acc, None)` when a frame yields no digit-row candidate,
-so STALE ⇔ `conf is None` with a position present. Template: the consistency gate's
+so STALE ⇔ `conf is None` with a position present. **SUPERSEDED (2026-08-03) — disregard the signature
+in that sentence only:** since `8ecad5a7` the function returns the 3-tuple `(center, score, held)` and
+`stale_mask()` prefers the explicit `cross_held` array, falling back to this inferred rule when a dump
+predates it — so the staleness classification of this entry is unchanged and every number below still
+stands (§6). Template: the consistency gate's
 `elif last_acc is not None` branch carries the position forward while still recording the FAILING
 numeric confidence, so `conf is None` never fires — but the accepted position stops being derived
 from that frame's own raw match, so `cross_positions[i] − cross_rawloc[i]` departs from the dump's
@@ -2828,7 +2832,7 @@ by `reconstruct_ammo`'s `> ammo_max` filter, **but nothing catches one that happ
 
 | lever                          | coverage gain            | cost                                       | caveat                                                                                                                                                    |
 | ------------------------------ | ------------------------ | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Fix stale-lock localization    | **+14.3 to +17.1 pp**    | days                                       | **The largest available gain.** Same root cause as the already-open 60 fps localization instability                                                       |
+| Fix stale-lock localization    | ~~**+14.3 to +17.1 pp**~~ | days                                      | **SUPERSEDED (2026-08-03) — disregard this row.** Measured with an oracle localizer in §6: the real gain is **+0.18 pp demonstrated / +1.33 pp optimistic bound**, because 70.2% of stale frames render no digits at all. REFUTED, not deferred |
 | Safe temporal interpolation    | **+4.7 pp measured** (1,149 frames) | 2–4 h, pure post-processing on existing JSON | Fills abstention runs ≤ 5 frames whose bracketing levels differ by ≤ 1. **It NARROWS decrement windows; it does not recover shots hidden in long gaps** — 58–91% of abstained frames sit in runs > 10 frames, max 226 frames = 7.5 s, longer than a full magazine cycle |
 | Bright-surround gate           | ~0 pp (accuracy, not coverage) | 0.5–1 day + a threshold study        | Removes most confidently-wrong reads, but 7,825 good/bright frames DO read correctly, so a naive cut costs real reads                                     |
 | Relax the 3-cell gate          | up to **+10.1 pp** nominal | needs a positional rule                  | Place value becomes ambiguous — dropping the last glyph of `004` reads `0`, not `4`                                                                       |
@@ -2849,8 +2853,10 @@ by `reconstruct_ammo`'s `> ammo_max` filter, **but nothing catches one that happ
   full-fight dumps and are pooled here only in the whole-frame totals, consistent with §3b.
 
 ⚑ **Open, could not be determined from these files:** (1) whether the 682 `no-lock` frames are
-recoverable at all; (2) whether the confidently-wrong reads of §5.8 propagate into the
-`--missing-shots` arithmetic already recorded in §3b above.
+recoverable at all — **item (1) is ANSWERED (2026-08-03, §6.2): NO.** All 682 are contiguous from
+index 0, before the first acquisition, so there is nothing to carry forward; (2) whether the
+confidently-wrong reads of §5.8 propagate into the `--missing-shots` arithmetic already recorded in
+§3b above.
 
 RECORDS a measurement, plus a reporting-only instrument. No guard, gate, threshold or constant was
 changed; no `DECISIONS.md` entry was edited. The one enactment is a **decline**: the per-video
@@ -2866,4 +2872,233 @@ python3 scripts/probe/analyze-pellet-tracks.py --ammo-abstention \
 # columns report `n/a` rather than guessing.
 # replay the committed slice -- no images, no subprocess:
 python3 scripts/probe/analyze-pellet-tracks.py --ammo-abstention-selftest
+```
+
+#### §6 STALE LOCKS ARE NOT RECOVERABLE — the +14.3 to +17.1 pp localization estimate, refuted
+
+Answers §5's own top open lever and its ⚑ open item (1), "whether the 682 `no-lock` frames are
+recoverable at all". **They are not, and neither are the 4,707 stale ones — for a reason that makes
+the whole lever void rather than merely expensive.**
+
+**THE REFUTATION, first.** §5.9 costed "fix stale-lock localization" at **+14.3 to +17.1 percentage
+points** of read rate, by assuming stale frames would read at the good-lock **74.9%** rate once the
+crop was pointed at the ammo box. That assumption is FALSE. **70.2% of stale frames have no number
+rendered in the badge at all** — they are RELOAD frames, where the widget is present, crisp and
+perfectly localizable but its three digit cells are empty. A perfect localizer hands the segmenter a
+correctly-cropped picture of an empty counter. Measured directly with an oracle localizer, the
+demonstrated gain is **+0.18 pp** pooled, and the optimistic bound — itself contradicted by frame
+inspection — is **+1.33 pp**. The lever is **REFUTED, not deferred.** The estimate was never
+measured; §6.7's oracle is the measurement it lacked.
+
+**Instruments (committed, re-runnable).** `scripts/probe/analyze-pellet-tracks.py
+--ammo-oracle-ceiling`, pinned by `scripts/tests/fixtures/pellets/ammo-oracle-ceiling-slice.json` and
+replayed with no images, no atlas and no subprocess by `--ammo-oracle-ceiling-selftest`, registered in
+`scripts/probe/pellet-selftest.sh` (**15 arms**). The prior arms `--ammo-abstention` (§5) and
+`--stale-counting` (2026-08-01) carry the abstention and downstream-impact numbers below.
+
+**Scope.** The same 7 committed dumps as §5 — 4 units (`isabel`, `guilty`, `marciana` — SG/Iron,
+**not** `marciana-marine-study`, AR/Iron — and `noir`), four full-fight 30 fps dumps plus three 60 fps
+window re-extractions of ranges already inside two of them.
+
+##### §6.1 — The mechanism, confirmed three ways
+
+**Stale ⟺ `locate_ammo_structural` returned ZERO candidates for that frame.** Not "the locator chose
+badly"; there was nothing to choose from.
+
+1. **Code.** The confidence slot is `None` on exactly one path — `locate_crosshair_structural`'s
+   `if not cands:` branch, which carries `last_acc` forward.
+2. **Data.** `count(conf is None) == count(stale) + count(no-lock)` **exactly**, in all 7 dumps:
+   `isabel` 1469 = 1349 + 120; `guilty` 1905 = 1781 + 124; `marciana` (SG/Iron) 1218 = 994 + 224;
+   `noir` 667 = 453 + 214; the three 60 fps clips 66 / 39 / 25, each + 0.
+3. **Direct.** The shipped locator was re-run on **730 sampled stale frames** and returned **zero
+   candidates on all 730**.
+
+##### §6.2 — `no-lock` and stale are DISJOINT, and together they partition "zero candidates"
+
+Overlap is **0 in every dump**. All **682** `no-lock` frames are **contiguous from index 0** — 120 /
+124 / 224 / 214 leading frames on the four 30 fps dumps, **0** on the 60 fps clips. They are
+pre-first-acquisition: `last_acc is None`, so there is nothing to carry forward. That is what a
+`no-lock` frame IS, and it disposes of §5's open item (1) — there is no recovery to perform on a
+frame that precedes the first lock.
+
+##### §6.3 — What the 4,707 stale frames actually are
+
+| category                    | frames    | share     |
+| --------------------------- | --------- | --------- |
+| **RELOAD, counter blank**   | **3,305** | **70.2%** |
+| END-OF-FIGHT, HUD gone      | 681       | 14.5%     |
+| OTHER, 1–2 frame transients | 688       | 14.6%     |
+| INTRO / pre-fight           | 33        | 0.7%      |
+
+The OTHER bucket is visual-effect / particle occlusion and popup swamp. **During reload the badge is
+present, crisp and perfectly localizable, but its three digit cells carry no glyph** — frame *i* shows
+the empty widget, frame *i+1* shows `009`.
+
+**Four independent confirmations that the 70.2% bucket is the reload:**
+
+- The on-screen `RELOADING…` bar is up across those frames.
+- Ammo goes 0/1 → full across the run, every run.
+- Run length is a **per-unit constant**: `marciana` (SG/Iron) **31 frames = 1.03 s** with **10 of 21
+  runs exactly 31**; `isabel` **41 frames = 1.37 s**; `guilty` **63 frames = 2.10 s**.
+- Staleness rises steeply with time since the last shot — **4.3–4.7%** at `t0+8…t0+11` versus
+  **18.9%** at `t0+20`, **25.6%** at `t0+40`, **29.9%** at `t0+60`. Deep into a magazine cycle is
+  exactly where a reload sits.
+
+##### §6.4 — Which stage fails (730 sampled stale frames)
+
+| stage                                                    | share    | note                                   |
+| -------------------------------------------------------- | -------- | -------------------------------------- |
+| **A** — `_digit_glyph_mask` finds no digit-shaped blob    | **~19%** | 15–35% on 30 fps, 3–8% on 60 fps       |
+| **B** — groups exist, none of size 2–3                    | **~81%** | the dominant stage                      |
+| **C** — `bg.size == 0`                                    | **0**    | never fires                             |
+
+`templ_h` is **not implicated**: the control arm of §6.5 decodes **99.2%** at the same `templ_h = 74`.
+The group-size histogram is dominated by **size 1** (isolated fragments) with a tail at **4–8**
+(damage popups) and **never 2–3** — so relaxing `STRUCT_ROW_SIZES` to admit 4–5 admits damage popups
+specifically. That is not a tuning trade-off; it is the one thing the row-size gate exists to reject.
+
+##### §6.5 — The oracle ceiling — a perfect-lock proxy, with a control arm
+
+Give each stale frame the digit-row centre of a read-confirmed good lock within **±2 frames** and
+re-decode. The ROI is **214×124**, so a neighbour's centre is a faithful stand-in for a perfect lock.
+
+**CONTROL arm — the same oracle on frames that ALREADY read.** **2,216 / 2,234 = 99.2%** still decode
+at the borrowed centre, and **2,215 of 2,216 return the identical value**. The single mismatch is
+`i=2204` — `304` at the borrowed centre versus `4` at its own — and that is the oracle's measured
+error floor, listed rather than merely counted. **Only with this arm does the stale arm mean
+anything**: without it, silence in the stale arm could be the oracle's own failure.
+
+**STALE arm.** Only **519 of 4,707** stale frames even have such an oracle. Of those, **43 (8.3%)**
+decode.
+
+| outcome                | frames  |
+| ---------------------- | ------- |
+| decoded                | **43**  |
+| `no-digits`, cells = 0 | 231     |
+| `cell-count`, cells = 1| 178     |
+| cells 4–6 (31/20/2)    | 53      |
+| cells = 2              | 8       |
+| `low-score`            | 6       |
+
+231 + 178 + 53 + 8 + 6 = **476** failures, + 43 decodes = **519**. The ledger balances. All 43 decodes
+are consistent with the bracketing ammo level — **33 identical, 10 off by exactly 1** — and there are
+**zero impossible values**, so the oracle is not manufacturing reads.
+
+##### §6.6 — The honest ceiling
+
+- **DEMONSTRATED: +0.18 pp** pooled — the 43 frames that actually decoded under a perfect lock.
+- **OPTIMISTIC BOUND: +1.33 pp** — extrapolating each dump's 8.3% oracle rate to all of its stale
+  frames. Per dump: `isabel` +1.35, `guilty` +2.05, `marciana` (SG/Iron) +0.89, `noir` +1.22,
+  `i2-marciana-60fps` +0.00, `i3-noir-far-60fps` +0.74, `i3-noir-near-60fps` +1.04.
+- ⚑ **The bound is itself contradicted by the frame inspection of §6.3**: the frames that lack a
+  ±2-frame oracle are the ones DEEP inside a stale run, and those are precisely the blank-counter
+  reload frames. Extrapolating the edge-of-run rate into the middle of the run assumes the opposite of
+  what §6.3 measured. Treat +1.33 pp as an upper bound that will not be reached.
+
+**⇒ against §5.9's +14.3 to +17.1 pp, the measured range is +0.18 to +1.33 pp — one to two orders of
+magnitude smaller, and for frames whose semantic content is "reloading", not a magazine level.**
+
+##### §6.7 — Relaxation is STRICTLY WORSE than holding, and both free precision checks fail as filters
+
+Whole-run simulation under the shipped continuity rule (`max_disp = 150`), seeded from a
+read-confirmed good lock and judged at the far end against another, **n = 331** bracketed runs:
+
+| policy                       | end-of-run error, median | within 40 px |
+| ---------------------------- | ------------------------ | ------------ |
+| **HOLD** (ships today)       | **27.8 px**              | **61.3%**    |
+| `localcontrast20`            | 254.9 px                 | 25.7%        |
+| `darkbadge`                  | 0–4% candidate rate — unusable |         |
+
+And the two free precision checks cannot rescue a relaxed candidate set: **92–97% of the wrong
+recoveries fall INSIDE the good-lock envelope**, because the box legitimately traverses almost the
+whole screen (x **353–2582**, y **22–762**). There is no cheap geometric filter to add.
+
+##### §6.8 — ONE lock, not two — proven twice
+
+`cross_pos = center + (struct_offset_x, struct_offset_y)` in code, and empirically
+`cross_positions − cross_rawloc` = **(162, −12) or (162, −13)** = (81·zoom, −6.25·zoom) in **100% of
+frames in all 7 dumps**. The pellet crosshair IS the ammo digit-row centre plus a constant. They go
+stale together, always — so "fix the ammo localization" and "fix the crosshair localization" were
+never two workstreams, and neither is available here.
+
+##### §6.9 — Downstream impact on the counter is small, and the WRONG SIGN
+
+Via the committed `analyze-pellet-tracks.py --stale-counting` arm, 30 fps dumps, rate-equivalent
+window `t0+4…t0+6`: all-frames stale **20.01%** versus counting-frame **6.05%** — enrichment
+**0.303×**, i.e. stale is strongly **depleted** exactly where pellets are counted. **91 of 815** shots
+carry ≥1 stale counting frame. The exclude−include A/B over the 77 affected shots: median **+0.000**,
+mean **−0.223**, diluted **−0.0211 pellets/shot = −0.21 pellets/10**.
+
+⇒ Against the **0.8–1.6 pellets/10** cold bias, stale locks bound at ~**0.2 pellets/10 (13–26%) and
+with the WRONG SIGN** — excluding stale frames makes the counts COLDER, not warmer. ⚑ The
+2026-08-01 circularity caveat still stands unchanged: shot detection is downstream of the lock, so the
+low counting-frame rate is partly selection.
+
+##### §6.10 — The missing-shot channel barely moves either
+
+Ammo change across bracketed stale runs: **drop-0 (71), drop-1 (99), drop-2 (3), drop-9 (2), refill
+(9)**. Only **5 runs pooled across all 7 videos** show a drop greater than 1 that a stale window could
+be hiding. Recovering stale frames would surface **≲5 extra shot events out of 815** — the `MISSED`
+floor barely moves.
+
+##### §6.11 — LANDED: held-lock signalling (commit `8ecad5a7`) — detection UNCHANGED
+
+The half of the work that survives the refutation is the SIGNAL, not a recovery.
+`locate_crosshair_structural` now returns **`(center, score, held)`**; `--dump-tracks` /
+`--dump-detections` gain a per-frame **`cross_held`** array (the template path's own carry-forward
+branch records it too); `ammo_series_from_dump` labels an abstention on a held lock **`held-lock`**,
+preserving the segmentation reason as `seg_reason`, and `held-lock` joins `ABSTENTION_CLASS` as **its
+own class** rather than being folded into SEGMENTATION — attributing a localization state to
+segmentation was the defect, not the fix. The docstring, which previously claimed "no carry-forward"
+while the code carried forward, now states what the function does.
+
+**`stale_mask()` PREFERS `cross_held` when present and falls back to the pre-existing per-mode
+inferred rule when absent, so every committed dump and fixture scores exactly as before — nothing
+needed regeneration.** No detection number moves.
+
+##### §6.12 — Cost of the detection fix that was NOT done
+
+⚑ ESTIMATE. A `locate_badge_structural` second tier is buildable — during reload the dark rounded
+badge and its three empty slot rectangles are crisp and geometrically fixed. ~**150 LOC** for the
+tier, ~**40 LOC** for second-tier wiring and tier signalling, ~**80 LOC** plus JSON for a committed
+fixture, plus **2–4 h wall-clock re-extraction** ⇒ ~**270 LOC and a 4–6 h session**, buying **≤+1.6 pp**
+read rate on frames whose semantic value is "reloading" rather than a magazine level, with the
+popup-capture risk of §6.4 already measured. **Not done, and NOT RECOMMENDED on these numbers.**
+
+##### Confounds, each with a verdict
+
+- **"The stale frames are mislocalized, not blank" — REFUTED three ways (§6.1).** Stale is exactly
+  "zero candidates", by code path, by an exact per-dump count identity, and by re-running the shipped
+  locator on 730 sampled frames.
+- **"The oracle's own error floor could be hiding real reads" — CONTROLLED (§6.5).** The control arm
+  decodes 99.2% of already-reading frames at a borrowed centre, 2,215 of 2,216 to the identical value.
+  The stale arm's 8.3% is measured against that floor, not against an assumption.
+- **"`templ_h` is mis-set for these frames" — REFUTED.** The control arm decodes 99.2% at the same
+  `templ_h = 74`.
+- **"Relax the row-size gate and the candidates come back" — MEASURED WORSE (§6.7).** The group-size
+  tail is at 4–8 and those are damage popups; the relaxed policies land 254.9 px out at the far end of
+  a run against HOLD's 27.8 px, and no free precision check separates them.
+- **"The extrapolated +1.33 pp is the real number" — ⚑ STATED AS AN UPPER BOUND, and contradicted by
+  §6.3.** Frames without a ±2-frame oracle are the deep-run frames, which are the blank ones.
+- **"`no-lock` frames are a separate recoverable pool" — REFUTED (§6.2).** All 682 are contiguous from
+  index 0, before the first acquisition.
+- **n and scope — the same 7 series / 4 units as §5**, three of which are 60 fps re-extractions of
+  windows inside the others; per-dump figures are given wherever pooling could mislead.
+
+RECORDS a measurement plus a signalling change that moves no detection number. No constant, guard
+threshold, gate definition, counting rule or `DECISIONS.md` entry was changed. The one enactment is a
+**decline**: stale-lock localization recovery is refuted and struck from the live handoff docs.
+
+**Reproduce:**
+
+```sh
+DUMPS=/Users/maxwellsutton/nikke-sim/scratchpad/pellets/_missingshot_tmp
+python3 scripts/probe/analyze-pellet-tracks.py --ammo-oracle-ceiling \
+  $DUMPS/{h4-isabel,h4-guilty,h4-marciana,g2-noir,i2-marciana-60fps,i3-noir-far-60fps,i3-noir-near-60fps}-ammo.json
+# both arms always print; the CONTROL arm is what makes the STALE arm interpretable.
+# the full run needs the frame PNGs each series records in its own `frames_dir`.
+# replay the committed slice -- no images, no atlas, no subprocess:
+python3 scripts/probe/analyze-pellet-tracks.py --ammo-oracle-ceiling-selftest
+# all 15 arms:
+bash scripts/probe/pellet-selftest.sh
 ```
