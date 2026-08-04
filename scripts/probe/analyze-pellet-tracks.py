@@ -31,6 +31,7 @@ import inspect
 import json
 import math
 import os
+import random
 import statistics as st
 import subprocess
 import tempfile
@@ -6915,6 +6916,363 @@ def mislock_rate_selftest():
     return 0 if all_ok else 1
 
 
+# ============================================================
+# LOCK ADJUDICATION -- docs/handoffs/2026-08-04-mislock-cost-PRECOMMIT.md's own §21C conclusion:
+# "measuring what a mislock costs requires ground truth on mislocked PRODUCTION shots." §21 (the
+# swapped-window Δcount A/B) is VOID and stays void -- this does not retry it. It generates the
+# ground-truth ASK instead: one BLINDED PNG per sampled shot, showing BOTH candidate crosshair
+# positions (structural, template) marked A/B with the letter assignment randomized+seeded and the
+# case order shuffled+seeded, so nothing in the image, filename, or index reveals which lock is
+# which or whether the shot is mislocked. The owner answers one question per image -- "which
+# position, A or B, is the actual crosshair?" -- landing the ground truth §21C said was missing.
+#
+# READ-ONLY BY CONSTRUCTION: reuses §20's OWN detector (`_mlr_score`) for classification -- never
+# redefines "mislocked" -- and each arm's own shipped `debounce_shots` output for the answer key's
+# "total" figures (an independent re-segmentation per arm, NOT the swapped-window Δcount §21 tried
+# and voided). Never touches read-pellets.ts, count-pellets.py's debounce_shots/thresholds, or any
+# constant/guard/default. It generates an ADJUDICATION ASK; it does not itself adjudicate, score,
+# or draw any cost/severity conclusion.
+# ============================================================
+LOCK_ADJUDICATION_FIXTURE = "scripts/tests/fixtures/pellets/lock-adjudication-slice.json"
+LOCK_ADJUDICATION_SEED = 20260804           # fixed + recorded -- the whole 24-case set regenerates
+                                             # byte-identical from this seed alone
+LOCK_ADJUDICATION_OFFSET = 9                # t0+9, a counting frame (pre-commit §1/§3: t0+8..t0+11)
+LOCK_ADJUDICATION_N_MISLOCKED = 20
+LOCK_ADJUDICATION_N_CONTROL = 4
+LOCK_ADJUDICATION_MATCH_TOL = 15            # frames -- nearest-start tolerance for the template
+                                             # arm's OWN independent shot segmentation when reporting
+                                             # its "total" in the answer key (informational only)
+LOCK_ADJUDICATION_CONTEXT_WIDTH = 1200      # px, downscaled context-panel target width
+LOCK_ADJUDICATION_CROP_HALF = 150           # -> 300x300 source-px crop (the ask's own number)
+LOCK_ADJUDICATION_CROP_SCALE = 2            # nearest-neighbour upscale factor
+LOCK_ADJUDICATION_RING_RADIUS = 22          # px, upscaled-crop space -- clear of crop centre
+LOCK_ADJUDICATION_RING_RADIUS_CTX = 10      # px, in the DOWNSCALED context panel
+LOCK_ADJUDICATION_LABEL_H = 44              # px, per-crop label strip height (upscaled space)
+LOCK_ADJUDICATION_FIXTURE_KEEP_MIS = 8      # per dump, real candidates kept in the committed slice
+LOCK_ADJUDICATION_FIXTURE_KEEP_CTL = 3      # -- more than the 5/1 --lock-adjudication draws, so the
+                                             # selftest exercises a REAL subset-of-a-pool sample, not
+                                             # "the whole pool, in order"
+
+
+def _la_match_tmpl_total(t0, tmpl_starts, tmpl_by_start, tol=LOCK_ADJUDICATION_MATCH_TOL):
+    """The template arm's OWN independent shot -- its own onset detection over its own
+    `frame_counts`, its own `total` -- nearest to the structural shot's `t0`. Reported for context
+    only (the answer key's `total_tmpl`); a miss (no template event within `tol` frames) is
+    reported as `None`, never guessed. This is NOT §21's swapped-window Δcount (which held the
+    structural TRACKS fixed and varied only the window) -- it is each arm's own already-shipped,
+    already-computed count, matched by nearest onset."""
+    if not tmpl_starts:
+        return None, None
+    best = min(tmpl_starts, key=lambda x: abs(x - t0))
+    if abs(best - t0) > tol:
+        return None, None
+    return tmpl_by_start[best]["total"], best
+
+
+def _la_candidates(name, sd, td, fps):
+    """Every shot in one dump `_mlr_score` can classify (has a `median_disp`, i.e. both arms locked
+    on at least one of the t0+8..t0+11 counting frames), reduced to exactly what lock-adjudication
+    needs: `mislocked` (§20's own classification, never redefined here), the two candidate
+    positions AT t0+9 (a counting frame), and each arm's own shipped `total`. A candidate is
+    dropped only when the t0+9 frame itself has no position from one or both arms -- it can still
+    be `mislocked` by the OTHER 3 counting frames' median, but this tool needs a markable position
+    at the specific frame it renders."""
+    cp = _count_pellets_module()
+    pellet_radius = sd["params"]["pellet_radius"]
+    frame_counts = sd["frame_counts"]
+    n = len(frame_counts)
+    if (len(td["frame_counts"]) != n or len(sd["cross_positions"]) != n
+            or len(td["cross_positions"]) != n):
+        raise SystemExit(f"--lock-adjudication: {name}: structural/template frame_counts/"
+                         "cross_positions length mismatch -- refusing to score misaligned frame "
+                         "indices.")
+    struct_shots, _ = cp.debounce_shots(frame_counts, fps)
+    tmpl_shots, _ = cp.debounce_shots(td["frame_counts"], fps)
+    struct_by_start = {s["start"]: s for s in struct_shots}
+    tmpl_by_start = {s["start"]: s for s in tmpl_shots}
+    tmpl_starts = sorted(tmpl_by_start)
+    mlr = _mlr_score(name, struct_shots, n, sd["cross_positions"], td["cross_positions"],
+                     pellet_radius, fps)
+    out = []
+    for s in mlr["shots"]:
+        if s["median_disp"] is None:
+            continue
+        t0 = s["t0"]
+        f9 = t0 + LOCK_ADJUDICATION_OFFSET
+        if not 0 <= f9 < n:
+            continue
+        struct_pos = sd["cross_positions"][f9]
+        tmpl_pos = td["cross_positions"][f9]
+        if struct_pos is None or tmpl_pos is None:
+            continue
+        total_tmpl, tmpl_t0_matched = _la_match_tmpl_total(t0, tmpl_starts, tmpl_by_start)
+        out.append({
+            "dump": name, "t0": t0, "frame9": f9, "mislocked": s["mislocked"],
+            "median_disp": s["median_disp"], "struct_pos": list(struct_pos),
+            "tmpl_pos": list(tmpl_pos), "total_struct": struct_by_start[t0]["total"],
+            "total_tmpl": total_tmpl, "tmpl_t0_matched": tmpl_t0_matched,
+        })
+    return out
+
+
+def _la_select(pools, dump_order, seed=LOCK_ADJUDICATION_SEED,
+               n_mislocked=LOCK_ADJUDICATION_N_MISLOCKED, n_control=LOCK_ADJUDICATION_N_CONTROL):
+    """Deterministic stratified sample + BLINDED A/B assignment + shuffle, from `pools` (dump name
+    -> candidate list, see `_la_candidates`) -- PURE DATA, no images, no scratchpad, so this is
+    exactly what --lock-adjudication-selftest replays.
+
+    Fixed draw order (for reproducibility only, not otherwise meaningful): all dumps' mislocked
+    picks in `dump_order`, then all dumps' control picks in `dump_order`; then one A/B letter draw
+    per case in that same combined order (independent per image, per the ask); then one final
+    shuffle of the whole 24-case list. Every draw comes from the ONE seeded `rng`, in that fixed
+    sequence, so the entire set regenerates byte-identical from `seed` alone. `rng.sample` reads
+    the FULL population it draws from, so reproducing a specific real selection needs the FULL real
+    pool, not a reduced slice -- see `_la_slim_pools` for what a reduced fixture slice validates
+    instead (the selection LOGIC's determinism, not byte-identity with one historical live run)."""
+    rng = random.Random(seed)
+    n_dumps = len(dump_order)
+
+    def targets(total):
+        base, rem = divmod(total, n_dumps)
+        return [base + (1 if i < rem else 0) for i in range(n_dumps)]
+
+    def draw(want_mislocked, want):
+        picks = []
+        for dump_name, want_n in zip(dump_order, want):
+            pool = sorted((c for c in pools[dump_name] if c["mislocked"] == want_mislocked),
+                         key=lambda c: c["t0"])
+            if len(pool) < want_n:
+                raise SystemExit(f"--lock-adjudication: {dump_name} has only {len(pool)} "
+                                 f"{'mislocked' if want_mislocked else 'not-mislocked'} candidates, "
+                                 f"need {want_n}.")
+            picks.extend(dict(c) for c in rng.sample(pool, want_n))
+        return picks
+
+    cases = draw(True, targets(n_mislocked)) + draw(False, targets(n_control))
+    for c in cases:
+        struct_is_a = rng.random() < 0.5
+        c["letter_struct"] = "A" if struct_is_a else "B"
+        c["letter_tmpl"] = "B" if struct_is_a else "A"
+    order = list(range(len(cases)))
+    rng.shuffle(order)
+    shuffled = [cases[i] for i in order]
+    for idx, c in enumerate(shuffled, start=1):
+        c["case_id"] = f"case_{idx:02d}"
+    return shuffled
+
+
+def _la_slim_pools(pools, dump_order, keep_mis=LOCK_ADJUDICATION_FIXTURE_KEEP_MIS,
+                   keep_ctl=LOCK_ADJUDICATION_FIXTURE_KEEP_CTL):
+    """Reduce the full real per-dump candidate pools to exactly what --lock-adjudication-selftest
+    needs: the first `keep_mis` mislocked + `keep_ctl` not-mislocked candidates per dump, by `t0` --
+    a DETERMINISTIC cut (not a random one), so regenerating the committed fixture from a live run is
+    itself reproducible. Mirrors `_mlr_slim`'s precedent: a SLICE of real data, not synthetic
+    fabrication -- and, per `_la_select`'s docstring, NOT the byte-identical live 24-case selection
+    (that needs the full pool)."""
+    out = {}
+    for name in dump_order:
+        mis = sorted((c for c in pools[name] if c["mislocked"]), key=lambda c: c["t0"])[:keep_mis]
+        ctl = sorted((c for c in pools[name] if not c["mislocked"]),
+                     key=lambda c: c["t0"])[:keep_ctl]
+        out[name] = mis + ctl
+    return out
+
+
+def _la_expected(cases):
+    """The exact fields `_la_select` computes (case order, dump/t0/mislocked carried through
+    unchanged, plus the letters it assigns) -- everything --lock-adjudication-selftest needs to
+    prove the sampling and A/B assignment are reproducible from the seed."""
+    return [{"case_id": c["case_id"], "dump": c["dump"], "t0": c["t0"], "mislocked": c["mislocked"],
+            "letter_struct": c["letter_struct"], "letter_tmpl": c["letter_tmpl"]}
+           for c in cases]
+
+
+def _la_frame_path(struct_dir, frame9):
+    return Path(struct_dir) / "frames-pellet" / f"f_{frame9 + 1:05d}.png"
+
+
+def _la_context_panel(frame_path, struct_pos, tmpl_pos, letter_struct, letter_tmpl,
+                      width=LOCK_ADJUDICATION_CONTEXT_WIDTH):
+    """The whole frame, downscaled, with BOTH candidate positions marked -- same ring style/colour/
+    size for both, beside (never over) the position -- and labelled A/B per the case's (already
+    randomized) letter assignment."""
+    img = cv2.imread(str(frame_path))
+    if img is None:
+        raise SystemExit(f"--lock-adjudication: could not read frame {frame_path}")
+    h, w = img.shape[:2]
+    scale = width / w
+    small = cv2.resize(img, (width, max(1, int(round(h * scale)))), interpolation=cv2.INTER_AREA)
+    for pos, letter in ((struct_pos, letter_struct), (tmpl_pos, letter_tmpl)):
+        x, y = int(round(pos[0] * scale)), int(round(pos[1] * scale))
+        r = LOCK_ADJUDICATION_RING_RADIUS_CTX
+        cv2.circle(small, (x, y), r, (0, 0, 0), 3, cv2.LINE_AA)
+        cv2.circle(small, (x, y), r, (255, 255, 0), 2, cv2.LINE_AA)
+        cv2.putText(small, letter, (x + r + 4, y - r), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
+                   (0, 0, 0), 4, cv2.LINE_AA)
+        cv2.putText(small, letter, (x + r + 4, y - r), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
+                   (255, 255, 0), 2, cv2.LINE_AA)
+    return small
+
+
+def _la_crop_panel(frame_path, cx, cy, label, half=LOCK_ADJUDICATION_CROP_HALF,
+                   scale=LOCK_ADJUDICATION_CROP_SCALE):
+    """One ~300x300 source-px crop centred on (cx, cy) (shifted, not shrunk, at frame edges --
+    mirrors `_fsc_crop`), upscaled nearest-neighbour, with a high-contrast ring drawn AROUND (never
+    over) the position and a label strip carrying ONLY `A` or `B`."""
+    img = cv2.imread(str(frame_path))
+    if img is None:
+        raise SystemExit(f"--lock-adjudication: could not read frame {frame_path}")
+    h, w = img.shape[:2]
+    x0 = max(0, min(int(round(cx)) - half, w - 2 * half))
+    y0 = max(0, min(int(round(cy)) - half, h - 2 * half))
+    crop = img[y0:y0 + 2 * half, x0:x0 + 2 * half]
+    up = cv2.resize(crop, None, fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
+    px, py = int(round((cx - x0) * scale)), int(round((cy - y0) * scale))
+    cv2.circle(up, (px, py), LOCK_ADJUDICATION_RING_RADIUS, (0, 0, 0), 4, cv2.LINE_AA)
+    cv2.circle(up, (px, py), LOCK_ADJUDICATION_RING_RADIUS, (255, 255, 0), 2, cv2.LINE_AA)
+    strip = np.zeros((LOCK_ADJUDICATION_LABEL_H, up.shape[1], 3), dtype=np.uint8)
+    cv2.putText(strip, label, (8, LOCK_ADJUDICATION_LABEL_H - 12), cv2.FONT_HERSHEY_SIMPLEX, 0.85,
+               (255, 255, 255), 2, cv2.LINE_AA)
+    return np.vstack([strip, up])
+
+
+def _la_render(frame_path, case):
+    """Context panel (top) + the two A/B crops side by side (bottom), one composite PNG per case."""
+    ctx = _la_context_panel(frame_path, case["struct_pos"], case["tmpl_pos"],
+                            case["letter_struct"], case["letter_tmpl"])
+    a_pos = case["struct_pos"] if case["letter_struct"] == "A" else case["tmpl_pos"]
+    b_pos = case["struct_pos"] if case["letter_struct"] == "B" else case["tmpl_pos"]
+    crop_a = _la_crop_panel(frame_path, a_pos[0], a_pos[1], "A")
+    crop_b = _la_crop_panel(frame_path, b_pos[0], b_pos[1], "B")
+    gap = np.full((crop_a.shape[0], 8, 3), 128, dtype=np.uint8)
+    crops_row = np.hstack([crop_a, gap, crop_b])
+    cw, ctxw = crops_row.shape[1], ctx.shape[1]
+    if cw < ctxw:
+        crops_row = np.hstack([crops_row, np.zeros((crops_row.shape[0], ctxw - cw, 3), dtype=np.uint8)])
+    elif ctxw < cw:
+        ctx = np.hstack([ctx, np.zeros((ctx.shape[0], cw - ctxw, 3), dtype=np.uint8)])
+    return np.vstack([ctx, crops_row])
+
+
+def lock_adjudication(struct_paths, tmpl_paths, fps_list, out_dir, seed=LOCK_ADJUDICATION_SEED,
+                      save_fixture=None):
+    if len(struct_paths) != len(tmpl_paths):
+        raise SystemExit(f"--lock-adjudication: {len(struct_paths)} structural path(s) vs "
+                         f"{len(tmpl_paths)} --lock-adjudication-template path(s) -- must pair "
+                         "1:1, same order")
+    if len(fps_list) not in (1, len(struct_paths)):
+        raise SystemExit("--lock-adjudication-fps takes 1 value or one per dump "
+                         f"({len(struct_paths)} given), got {len(fps_list)}")
+    pools, dump_order, struct_dirs = {}, [], {}
+    for i, (sp, tp) in enumerate(zip(struct_paths, tmpl_paths)):
+        fps = fps_list[0] if len(fps_list) == 1 else fps_list[i]
+        with open(sp) as fh:
+            sd = json.load(fh)
+        with open(tp) as fh:
+            td = json.load(fh)
+        name = Path(sp).resolve().parent.name
+        dump_order.append(name)
+        struct_dirs[name] = Path(sp).resolve().parent
+        pools[name] = _la_candidates(name, sd, td, fps)
+    cases = _la_select(pools, dump_order, seed)
+
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    index_lines = [
+        "# Lock adjudication", "",
+        "For each image, decide which marked position -- `A` or `B` -- is the ACTUAL crosshair. "
+        "Answer `A`, `B`, or `?` (genuinely undecidable) per case.", "",
+    ]
+    answer_key = []
+    for c in cases:
+        frame_path = _la_frame_path(struct_dirs[c["dump"]], c["frame9"])
+        img = _la_render(frame_path, c)
+        fname = f"{c['case_id']}.png"
+        cv2.imwrite(str(out_dir / fname), img)
+        index_lines.append(f"- `{fname}`")
+        answer_key.append({
+            "case": c["case_id"], "dump": c["dump"], "t0": c["t0"], "frame": c["frame9"],
+            "mislocked": c["mislocked"], "median_disp": c["median_disp"],
+            "letter_struct": c["letter_struct"], "letter_tmpl": c["letter_tmpl"],
+            "struct_pos": c["struct_pos"], "tmpl_pos": c["tmpl_pos"],
+            "total_struct": c["total_struct"], "total_tmpl": c["total_tmpl"],
+            "tmpl_t0_matched": c["tmpl_t0_matched"],
+        })
+        print(f"wrote {out_dir / fname}")
+    (out_dir / "INDEX.md").write_text("\n".join(index_lines) + "\n")
+    print(f"wrote {out_dir / 'INDEX.md'}")
+    with open(out_dir / "ANSWER-KEY.json", "w") as fh:
+        json.dump({"seed": seed, "cases": answer_key}, fh, indent=2)
+    print(f"wrote {out_dir / 'ANSWER-KEY.json'}")
+
+    if save_fixture:
+        slim_pools = _la_slim_pools(pools, dump_order)
+        fixture_cases = _la_select(slim_pools, dump_order, seed)
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("count-pellets.py --dump-tracks structural + template pairs (see "
+                           "docs/handoffs/2026-08-04-mislock-cost-PRECOMMIT.md's §21C ask), through "
+                           "_la_candidates for all 4 production dumps."),
+                "_note": ("A reduced SLICE, not the full real pools -- pools[name] here is "
+                         f"`_la_slim_pools`' first {LOCK_ADJUDICATION_FIXTURE_KEEP_MIS} mislocked + "
+                         f"{LOCK_ADJUDICATION_FIXTURE_KEEP_CTL} not-mislocked candidates per dump, "
+                         "by t0. This is NOT the byte-identical live 24-case selection (`rng.sample` "
+                         "reads the FULL population, see _la_select's docstring) -- it validates "
+                         "that --lock-adjudication-selftest's OWN selection is reproducible from its "
+                         "seed, not that it matches this specific live run's real 24 cases. "
+                         "Regenerate with analyze-pellet-tracks.py --lock-adjudication "
+                         "<structural.json...> --lock-adjudication-template <template.json...> "
+                         "--save-lock-adjudication-fixture <path> (also renders the real images to "
+                         "--lock-adjudication-out in the same run)."),
+                "seed": seed, "dump_order": dump_order, "pools": slim_pools,
+                "_expected": _la_expected(fixture_cases),
+            }, fh, indent=2)
+        print(f"wrote lock-adjudication fixture -> {save_fixture}")
+    return cases
+
+
+def lock_adjudication_selftest():
+    """Constraint 9 self-validation: replay `_la_select` over the committed slice -- NO scratchpad
+    or frame access, selection is pure data -- and assert the pinned 24-case `_expected` list
+    matches byte-for-byte, PLUS the decisive claims a coarse dict-equality pass could hide behind:
+    the 20/4 mislocked/control split really is stratified 5-per-dump / 1-per-dump, the A/B letters
+    actually vary (the randomization is live, not defaulting to always-A-is-structural), the same
+    seed reproduces the identical selection, and a different seed changes it."""
+    with open(LOCK_ADJUDICATION_FIXTURE) as fh:
+        fx = json.load(fh)
+    cases = _la_select(fx["pools"], fx["dump_order"], fx["seed"])
+    got = _la_expected(cases)
+    ok = got == fx["_expected"]
+    if not ok:
+        print(f"  DIFF:\n    expected {json.dumps(fx['_expected'])}\n    got      {json.dumps(got)}")
+
+    replay = _la_expected(_la_select(fx["pools"], fx["dump_order"], fx["seed"]))
+    different_seed = _la_expected(_la_select(fx["pools"], fx["dump_order"], fx["seed"] + 1))
+    n_mis = sum(1 for c in cases if c["mislocked"])
+    n_ctl = len(cases) - n_mis
+    per_dump_mis = collections.Counter(c["dump"] for c in cases if c["mislocked"])
+    per_dump_ctl = collections.Counter(c["dump"] for c in cases if not c["mislocked"])
+    letters_a = sum(1 for c in cases if c["letter_struct"] == "A")
+    checks = [
+        ("24 cases total", len(cases) == 24),
+        ("20 mislocked, 4 control", n_mis == 20 and n_ctl == 4),
+        ("mislocked stratified 5/dump across all 4 dumps",
+         len(per_dump_mis) == 4 and all(v == 5 for v in per_dump_mis.values())),
+        ("control stratified 1/dump across all 4 dumps",
+         len(per_dump_ctl) == 4 and all(v == 1 for v in per_dump_ctl.values())),
+        ("A/B letters vary across cases (randomization live)", 0 < letters_a < 24),
+        ("case ids are exactly case_01..case_24, no gaps",
+         sorted(c["case_id"] for c in cases) == [f"case_{i:02d}" for i in range(1, 25)]),
+        ("same seed reproduces the identical 24-case selection", replay == got),
+        ("a different seed changes the selection", different_seed != got),
+    ]
+    all_ok = ok and all(v for _, v in checks)
+    for label, v in checks:
+        print(f"  {'PASS' if v else 'FAIL'}  {label}")
+    print("SELFTEST PASS" if all_ok else "SELFTEST FAIL")
+    return 0 if all_ok else 1
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--tracks", help="tracks.json from count-pellets.py --dump-tracks")
@@ -7282,6 +7640,33 @@ def main():
                     help=f"write the committed replay slice (see {MISLOCK_RATE_FIXTURE})")
     ap.add_argument("--mislock-rate-selftest", action="store_true",
                     help=f"replay {MISLOCK_RATE_FIXTURE} and exit")
+    ap.add_argument("--lock-adjudication", nargs="+", metavar="STRUCT_TRACKS_JSON",
+                    help=("LOCK ADJUDICATION (docs/handoffs/2026-08-04-mislock-cost-PRECOMMIT.md's "
+                          "§21C ask): render a BLINDED image set for the owner to answer, per shot, "
+                          "which marked position -- A or B -- is the actual crosshair. 20 "
+                          "MISLOCKED + 4 not-mislocked control shots stratified across dumps, "
+                          "seeded selection + seeded A/B assignment + seeded case-order shuffle "
+                          "(see --lock-adjudication-seed). Structural dump paths; pair with "
+                          "--lock-adjudication-template. READ-ONLY: shares §20's --mislock-rate "
+                          "detector, never redefines it; never touches read-pellets.ts or "
+                          "count-pellets.py's debounce_shots/thresholds/defaults."))
+    ap.add_argument("--lock-adjudication-template", nargs="+", metavar="TEMPLATE_TRACKS_JSON",
+                    help="template-mode tracks.json paths, one per --lock-adjudication entry, same "
+                         "order")
+    ap.add_argument("--lock-adjudication-fps", type=float, nargs="+", default=[30.0],
+                    metavar="FPS",
+                    help="sampling fps, 1 value or one per --lock-adjudication dump (default 30, "
+                         "matching every production dump)")
+    ap.add_argument("--lock-adjudication-seed", type=int, default=LOCK_ADJUDICATION_SEED,
+                    help=f"RNG seed for sampling + A/B assignment + shuffle (default "
+                         f"{LOCK_ADJUDICATION_SEED})")
+    ap.add_argument("--lock-adjudication-out", metavar="DIR", default="/tmp/lock-adjudication",
+                    help="output directory for images + INDEX.md + ANSWER-KEY.json (default "
+                         "/tmp/lock-adjudication)")
+    ap.add_argument("--save-lock-adjudication-fixture", metavar="PATH",
+                    help=f"write the committed replay slice (see {LOCK_ADJUDICATION_FIXTURE})")
+    ap.add_argument("--lock-adjudication-selftest", action="store_true",
+                    help=f"replay {LOCK_ADJUDICATION_FIXTURE} and exit")
     args = ap.parse_args()
 
     if args.stale_counting_selftest:
@@ -7330,6 +7715,15 @@ def main():
             ap.error("--mislock-rate requires --mislock-rate-template")
         audit_mislock_rate(args.mislock_rate, args.mislock_rate_template, args.mislock_rate_fps,
                            args.save_mislock_rate_fixture)
+        return 0
+    if args.lock_adjudication_selftest:
+        raise SystemExit(lock_adjudication_selftest())
+    if args.lock_adjudication:
+        if not args.lock_adjudication_template:
+            ap.error("--lock-adjudication requires --lock-adjudication-template")
+        lock_adjudication(args.lock_adjudication, args.lock_adjudication_template,
+                          args.lock_adjudication_fps, args.lock_adjudication_out,
+                          args.lock_adjudication_seed, args.save_lock_adjudication_fixture)
         return 0
     if args.hybrid_landing_audit_selftest:
         raise SystemExit(hybrid_landing_audit_selftest())
