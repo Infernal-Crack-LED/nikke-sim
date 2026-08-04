@@ -37,7 +37,9 @@ lives. Newest first within each section.
      maiden comp +3.88% (477.0M → 495.5M vs real 559.0M — 0.853 → 0.886, correct direction on
      the documented conservative lower bound; r1/r3 residuals remain).
   Scope + remaining non-goals (reporting-layer maxHp, grant re-derivation, ally-grant opt-in,
-  HP-pool adjacency): `docs/handoffs/2026-08-04-max-hp-scaling-primitives.md`.
+  HP-pool adjacency): the scope handoff was CLOSED + archived on landing (owner: completed work
+  in an open PR does not stay in the docs) — design record lives in PR #84's history
+  (`docs/handoffs/2026-08-04-max-hp-scaling-primitives.md`, commit 27d49110).
 
 - **(2026-08-04) SECOND CLEAN-WEAPON OVERRIDE LANDED: `snow-crane` (the SR basis cell) carries a
   proven-damage-neutral gauntlet override under the CW1 option-2 invariant (2026-08-01).** The

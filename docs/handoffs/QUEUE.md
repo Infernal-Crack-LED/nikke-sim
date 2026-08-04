@@ -166,15 +166,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   to self-proc off S1 (entry above) and needs no HP pool. Before building this, census who actually
   still needs it: the honest list is the `incomingHealingPct` / heal-magnitude family, not the
   threshold triggers. Low priority, no authorized carrier. Not authorized.
-- **⇒ Max-HP-scaling primitives LANDED on branch `worktree-max-hp-scaling` (2026-08-04,
-  owner-directed) — PR pending.** `liveMaxHp` is now the single engine reader for every
-  Max-HP-scaled term (effectiveAtk + stackedNuke's hpPct — maiden-ice-rose residual r2 closed,
-  kit-literal "final Max HP"), and `atkOfCasterMaxHpPct` is the new caster-basis HP→ATK grant
-  (owner ruling: maxwell-ordinary-mechanic S2-A — the target-own reading was a misread of the
-  caster-scaled kit text). DECISIONS 2026-08-04 + full scope doc
-  `docs/handoffs/2026-08-04-max-hp-scaling-primitives.md` (open non-goals there:
-  reporting-layer `UnitResult.maxHp` basis, grant re-derivation, cinderella G1 owner popup
-  re-read). Delete this entry once the PR merges.
 - **⇒ ENGINE PRIMITIVE GAPS (logged, no carrier pressure)** — surfaced by the 2026-08-02/03 gauntlet
   sweep, all shipped as DOCUMENTED_GAP with the ⚑ triple, none blocking a GO: **FB-end buff removal**
   (`k` S1/S2 both "Full Burst ends → remove <buff>"; moot today because the 10s durations self-expire
