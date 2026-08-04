@@ -98,8 +98,10 @@ artifact IS before reasoning from its contents.
 
 ## 6. Landed state
 
-**Branch `fix/pellet-reader`: `origin` at `8d75008`, HEAD at `eaf0712e`, NINETEEN commits unpushed.**
-The last owner-authorised push was `8d75008`; everything after is local-only. `main` carries `eb1fde5`
+**Branch `fix/pellet-reader`: `origin` at `8d75008`; everything after it is local-only and UNPUSHED.**
+Do not trust a commit count written into this file — any number here is stale the moment the
+sentence itself is committed. Read it live: `git rev-list --count origin/fix/pellet-reader..HEAD`
+(20 as of 2026-08-03). The last owner-authorised push was `8d75008`. `main` carries `eb1fde5`
 (the sg-calc spec correction), which is NOT on this branch.
 
 `bash scripts/verify.sh` → true exit 0. `bash scripts/probe/pellet-selftest.sh` → true exit 0, 14
