@@ -2660,6 +2660,456 @@ def oracle_ceiling_selftest():
     return 0 if ok and ctrl_ok else 1
 
 
+# ============================================================
+# THE MERGE AUDIT -- how often does `debounce_shots` fuse two shots into ONE event, how many shots
+# does that actually cost, and does fixing it move `avgTotal`? (docs/probe-runs.md §8)
+#
+# READ-ONLY BY CONSTRUCTION. Every candidate rule below is a LOCAL scoring variant that rebuilds the
+# span list inside this arm; `count-pellets.py`'s `debounce_shots` and `read-pellets.ts`'s debounce
+# block are NOT touched and NOT reachable from here except through the shipped-identity assert in
+# `merge_audit_selftest`, which is the arm's own control: it proves `_merge_spans(..., "shipped")`
+# reproduces the shipped estimator event-for-event, so any candidate row is a difference from the
+# real baseline rather than from a private re-implementation of it.
+# ============================================================
+MERGE_AUDIT_FIXTURE = "scripts/tests/fixtures/pellets/merge-audit-slice.json"
+
+# Mirrors the constants `debounce_shots` hardcodes (count-pellets.py:489). Named here so the
+# candidate rules can be stated against them instead of re-hardcoding the same magic numbers.
+MERGE_EVENT_MIN = 3          # a frame is ACTIVE at white+red >= 3; the event opens on the first one
+MERGE_MARKER_MIN = 2         # core-hit flag only; it never enters a count
+MERGE_MIN_PELLETS = 5        # the post-hoc `valid` clamp `avgTotal` averages over -- NOT segmentation
+MERGE_MAX_PELLETS = 10
+
+# --- the candidate rules, none of them adopted -----------------------------------------------
+# cap_cadence: force-close a running event once it has spanned this fraction of the MEASURED cadence
+#              period and reopen at the same frame. ~3 LOC against the shipped loop.
+MERGE_CAP_CADENCE_MULT = 0.9
+# resplit    : post-pass over OVER-SPAN events only; cut at an internal rising edge of at least
+#              MERGE_RESPLIT_RISE pellets over the previous frame, no two cuts closer than
+#              MERGE_RESPLIT_SEP_MULT of a cadence period. The rise floor sits ABOVE the 3-pellet
+#              event floor so a decay-tail wobble cannot trip it. ~10 LOC.
+MERGE_RESPLIT_RISE = 5
+MERGE_RESPLIT_SEP_MULT = 0.6
+# candA      : the peak detector -- T[i] >= 5, T[i] - max(T[i-4..i-1]) >= 4, T[i] > T[i+1], and a
+#              12-frame refractory. REFUTED (§8E); kept scoreable so it is not re-proposed.
+MERGE_CANDA_MIN = 5
+MERGE_CANDA_RISE = 4
+MERGE_CANDA_LOOKBACK = 4
+MERGE_CANDA_REFRACTORY = 12
+# gap1/gap2  : tighten `debounce_shots`'s own gap tolerance to 1 / 2 frames.
+MERGE_RULES = ("shipped", "cap_cadence", "resplit", "gap2", "gap1", "candA")
+
+MERGE_AUDIT_SLICE = 1200
+
+
+def _merge_max_pellet_frames(fps):
+    """read-pellets.ts:505's `Math.max(4, Math.round((13 / 60) * fps))`.
+
+    ⚑ THIS IS A PER-BLOB TRACK-LIFETIME CAP, NOT AN EVENT-SPAN BUDGET. It is passed to
+    count-pellets.py as `--max-pellet-frames` and read at count-pellets.py:380 (`temporal_filter`)
+    and :450 (`build_tracks_and_counts`) to decide which TRACKS are pellets at all;
+    `debounce_shots` never reads it, and a shot EVENT's `frames` is a different quantity in a
+    different unit. It is computed here only so the census can put the two side by side and show
+    the category error rather than repeat it (§8A).
+
+    JS `Math.round` is half-UP where Python's `round` is half-to-EVEN, and (13/60)*30 = 6.5 lands
+    exactly on the tie -- 7 in the shipped pipeline, 6 from a naive Python port. Reproduced
+    explicitly, because the 31.3% figure this arm corrects is the `frames > 7` census."""
+    return max(4, math.floor((13 / 60) * fps + 0.5))
+
+
+def _merge_resplit(totals, spans, cadence):
+    """Post-pass: cut an OVER-SPAN event at its internal rising edges. Untouched spans pass through."""
+    sep = max(2, round(MERGE_RESPLIT_SEP_MULT * cadence))
+    out = []
+    for a, b in spans:
+        if (b - a) <= cadence:
+            out.append((a, b))
+            continue
+        cuts = [a]
+        for j in range(a + 1, b):
+            if totals[j] - totals[j - 1] >= MERGE_RESPLIT_RISE and (j - cuts[-1]) >= sep:
+                cuts.append(j)
+        cuts.append(b)
+        out.extend(zip(cuts, cuts[1:]))
+    return out
+
+
+def _merge_candA_peaks(totals):
+    """candA's onsets. A pure peak rule with NO minimum-duration guard -- which is its defect: a
+    single-frame VFX spike is a shot to it, and the refractory then suppresses the real round
+    behind it (§8E, the `guilty` f1276 case)."""
+    n, peaks, last = len(totals), [], -MERGE_CANDA_REFRACTORY - 1
+    for i in range(n):
+        if totals[i] < MERGE_CANDA_MIN:
+            continue
+        prev = max(totals[max(0, i - MERGE_CANDA_LOOKBACK):i], default=0)
+        if totals[i] - prev < MERGE_CANDA_RISE:
+            continue
+        if not (i + 1 < n and totals[i] > totals[i + 1]):
+            continue
+        if i - last < MERGE_CANDA_REFRACTORY:
+            continue
+        last = i
+        peaks.append(i)
+    return peaks
+
+
+def _merge_spans(totals, fps, rule="shipped", cadence=None):
+    """Half-open ACTIVE spans under one rule. `rule="shipped"` is a port of `debounce_shots`'s own
+    grouping loop and is asserted event-for-event against it in the selftest."""
+    n = len(totals)
+    if rule == "candA":
+        # candA detects ONSETS, not spans. Each peak carries the window up to the NEXT peak so the
+        # scorecard's `avgTotal` column stays comparable: every rule's count then comes from the
+        # SAME median-representative policy, and only the segmentation differs.
+        peaks = _merge_candA_peaks(totals)
+        return list(zip(peaks, peaks[1:] + [n]))
+    max_gap = {"gap1": 1, "gap2": 2}.get(rule, max(3, round(fps * 0.13)))
+    cap = round(MERGE_CAP_CADENCE_MULT * cadence) if rule == "cap_cadence" and cadence else None
+    spans, event_start, zero_run = [], -1, 0
+    for i in range(n + 1):
+        if i < n and totals[i] >= MERGE_EVENT_MIN:
+            if event_start < 0:
+                event_start = i
+            zero_run = 0
+            if cap and (i - event_start) >= cap:
+                spans.append((event_start, i))
+                event_start = i
+            continue
+        if event_start >= 0:
+            zero_run += 1
+            if zero_run <= max_gap and i < n:
+                continue
+            spans.append((event_start, i - zero_run))
+            event_start, zero_run = -1, 0
+    if rule == "resplit" and cadence:
+        spans = _merge_resplit(totals, spans, cadence)
+    return spans
+
+
+def _merge_events(frame_counts, totals, spans):
+    """`debounce_shots`'s emission step, verbatim in behaviour: the event's count is copied from ONE
+    REPRESENTATIVE FRAME -- the active frame whose total is nearest the MEDIAN of the event's active
+    frames (count-pellets.py:514-536). NOTHING IS SUMMED. That is why a merge reads COLD rather than
+    hot: it roughly doubles the active-frame set with the first blast's decay tail and the
+    inter-shot trough, and the median falls (§8D)."""
+    out = []
+    for a, b in spans:
+        if b - a < 2:
+            continue
+        active = [j for j in range(a, b) if totals[j] >= MERGE_EVENT_MIN]
+        if not active:
+            continue
+        srt = sorted(totals[j] for j in active)
+        m = len(srt)
+        med = (srt[(m - 1) // 2] + srt[m // 2]) / 2
+        rep, best = active[0], float("inf")
+        for j in active:
+            d = abs(totals[j] - med)
+            if d < best:
+                best, rep = d, j
+        red = 1 if any(frame_counts[j].get("marker", 0) >= MERGE_MARKER_MIN
+                       for j in range(a, b)) else 0
+        out.append({"start": a, "end": b, "frames": b - a, "white": frame_counts[rep]["white"],
+                    "red": red, "total": frame_counts[rep]["white"] + red})
+    return out
+
+
+def merge_audit_raw(name, ammo, frame_counts, fps, slack):
+    """One dump's RAW counts: the over-span census against BOTH denominators, the ammo-arbiter
+    excess-lost count, and every candidate's scorecard. Percentages are derived separately so a
+    pooled figure is a sum of counts, never an average of rounded rates."""
+    totals = [r["white"] + r["red"] for r in frame_counts]
+    lo, hi = ammo.get("range", [0, len(ammo["reads"])])
+    levels, _dropped = reconstruct_ammo(ammo["reads"])
+    events = ammo_shot_events(levels)
+    cad = measure_cadence(events)
+    cadence = cad["mode"] or cad["median"]
+    mpf = _merge_max_pellet_frames(fps)
+
+    shipped = [e for e in _merge_events(frame_counts, totals, _merge_spans(totals, fps, "shipped"))
+               if lo <= e["start"] < hi]
+    over = [e for e in shipped if cadence and e["frames"] > cadence]
+
+    # THE ARBITER. Expand every decrement into one slot per round, then ask how many slots fall
+    # inside each over-span event. A slot is INSIDE when the window its decrement happened in ENDS
+    # inside the event (widened by the matcher's own slack) -- the same direction `match_shots`
+    # assigns in, so the two arms cannot disagree about which shot sits where. Excess = slots - 1:
+    # one slot is the event's own shot and is not lost.
+    slots_all = [(e["lo"], e["hi"]) for e in events if e["kind"] == "decrement"
+                 for _ in range(e["shots"])]
+    inside = excess = 0
+    over_detail = []
+    for e in over:
+        c = sum(1 for (l, h) in slots_all if e["start"] - slack <= h <= e["end"] + slack)
+        inside += c
+        excess += max(0, c - 1)
+        over_detail.append({"start": e["start"], "frames": e["frames"], "total": e["total"],
+                            "ammo_shots_inside": c})
+
+    cands = {}
+    for rule in MERGE_RULES:
+        ev = [x for x in _merge_events(frame_counts, totals,
+                                       _merge_spans(totals, fps, rule, cadence))
+              if lo <= x["start"] < hi]
+        slots, spurious = match_shots(events, [x["start"] for x in ev], slack)
+        valid = [x["total"] for x in ev if MERGE_MIN_PELLETS <= x["total"] <= MERGE_MAX_PELLETS]
+        cands[rule] = {
+            "n_detected": len(ev), "n_ammo_shots": len(slots),
+            "MISSED": sum(1 for s in slots if s["t0"] is None), "SPURIOUS": len(spurious),
+            "spurious_unexplained": len(
+                classify_spurious(spurious, levels, events, slack).get("unexplained", [])),
+            "n_valid": len(valid), "sum_valid_total": sum(valid),
+        }
+    return {
+        "dump": name, "fps": fps, "slack": slack, "cadence_frames": cadence,
+        "max_pellet_frames": mpf,
+        "n_events": len(shipped),
+        "n_over_max_pellet_frames": sum(1 for e in shipped if e["frames"] > mpf),
+        "n_over_cadence": len(over),
+        "max_span": max((e["frames"] for e in shipped), default=0),
+        "n_ammo_shots": len(slots_all),
+        "arbiter_ammo_shots_inside": inside, "arbiter_excess_lost": excess,
+        "over_span_shipped_total": sum(e["total"] for e in over),
+        "over_span_detail": over_detail,
+        "candidates": cands,
+    }
+
+
+def _pool_merge_raw(raws):
+    ints = ("n_events", "n_over_max_pellet_frames", "n_over_cadence", "n_ammo_shots",
+            "arbiter_ammo_shots_inside", "arbiter_excess_lost", "over_span_shipped_total")
+    out = {k: sum(r[k] for r in raws) for k in ints}
+    out.update({"dump": "POOLED", "fps": None, "slack": None, "cadence_frames": None,
+                "max_pellet_frames": None,
+                "max_span": max((r["max_span"] for r in raws), default=0),
+                "over_span_detail": [d for r in raws for d in r["over_span_detail"]]})
+    ck = ("n_detected", "n_ammo_shots", "MISSED", "SPURIOUS", "spurious_unexplained", "n_valid",
+          "sum_valid_total")
+    out["candidates"] = {rule: {k: sum(r["candidates"][rule][k] for r in raws) for k in ck}
+                         for rule in MERGE_RULES}
+    return out
+
+
+def _merge_view(raw):
+    """Derived rates. The two census columns are reported SIDE BY SIDE on purpose: the
+    `max_pellet_frames` one is the apples-to-oranges comparison, kept visible so it is not made a
+    second time."""
+    n = max(1, raw["n_events"])
+    cands = {}
+    for rule, c in raw["candidates"].items():
+        cands[rule] = {
+            "MISSED_pct": round(100 * c["MISSED"] / max(1, c["n_ammo_shots"]), 1),
+            "avgTotal": round(c["sum_valid_total"] / c["n_valid"], 4) if c["n_valid"] else None,
+        }
+    shipped_avg = cands["shipped"]["avgTotal"]
+    for rule, c in cands.items():
+        c["avgTotal_change"] = (round(c["avgTotal"] - shipped_avg, 4)
+                                if c["avgTotal"] is not None and shipped_avg is not None else None)
+    return {
+        "over_cadence_pct": round(100 * raw["n_over_cadence"] / n, 1),
+        "over_max_pellet_frames_pct": round(100 * raw["n_over_max_pellet_frames"] / n, 1),
+        "over_span_shipped_mean_total": (
+            round(raw["over_span_shipped_total"] / raw["n_over_cadence"], 4)
+            if raw["n_over_cadence"] else None),
+        "excess_lost_pct_of_ammo": round(
+            100 * raw["arbiter_excess_lost"] / max(1, raw["n_ammo_shots"]), 1),
+        "candidates": cands,
+    }
+
+
+def merge_audit_report(name, ammo, frame_counts, fps, slack):
+    raw = merge_audit_raw(name, ammo, frame_counts, fps, slack)
+    return {"dump": name, "raw": raw, **_merge_view(raw)}
+
+
+def _merge_audit_expected(reports, pooled):
+    """The pinned summary: the census + arbiter counts per dump, plus every candidate's scorecard."""
+    keys = ("n_events", "n_over_max_pellet_frames", "n_over_cadence", "max_span", "cadence_frames",
+            "max_pellet_frames", "n_ammo_shots", "arbiter_ammo_shots_inside",
+            "arbiter_excess_lost", "over_span_shipped_total")
+    ck = ("MISSED", "SPURIOUS", "spurious_unexplained", "n_detected", "n_valid", "sum_valid_total")
+    def block(r):
+        return {**{k: r["raw"][k] for k in keys},
+                "candidates": {rule: {k: r["raw"]["candidates"][rule][k] for k in ck}
+                               for rule in MERGE_RULES}}
+    return {"per_dump": [{"dump": r["dump"], **block(r)} for r in reports],
+            "pooled": {**block(pooled), "over_cadence_pct": pooled["over_cadence_pct"],
+                       "over_max_pellet_frames_pct": pooled["over_max_pellet_frames_pct"],
+                       "over_span_shipped_mean_total": pooled["over_span_shipped_mean_total"],
+                       "excess_lost_pct_of_ammo": pooled["excess_lost_pct_of_ammo"],
+                       "candidate_view": pooled["candidates"]}}
+
+
+def _print_merge_audit(reports, pooled):
+    print("\nOVER-SPAN CENSUS -- one event that spans more than a whole cadence period had two "
+          "shots' room")
+    print(f"{'dump':22s} {'events':>7s} {'cad':>4s} {'>cadence':>9s} {'%':>6s} "
+          f"{'mpf':>4s} {'>mpf':>6s} {'%':>6s} {'maxspan':>8s}")
+    for r in list(reports) + [pooled]:
+        w = r["raw"]
+        print(f"{r['dump'][:22]:22s} {w['n_events']:7d} {str(w['cadence_frames']):>4s} "
+              f"{w['n_over_cadence']:9d} {r['over_cadence_pct']:5.1f}% "
+              f"{str(w['max_pellet_frames']):>4s} {w['n_over_max_pellet_frames']:6d} "
+              f"{r['over_max_pellet_frames_pct']:5.1f}% {w['max_span']:8d}")
+    print("⚑ `>mpf` IS THE CATEGORY ERROR, PRINTED SO IT IS NOT MADE AGAIN: max_pellet_frames is a "
+          "PER-BLOB\n  TRACK-LIFETIME cap (count-pellets.py:380/:450) that debounce_shots never "
+          "reads, and `frames` is a\n  PER-EVENT span. `>cadence` is the comparison that means "
+          "something.")
+    pr = pooled["raw"]
+    print(f"\nAMMO ARBITER -- shots actually lost to merging: {pr['arbiter_excess_lost']} of "
+          f"{pr['n_ammo_shots']} ({pooled['excess_lost_pct_of_ammo']}%), from "
+          f"{pr['arbiter_ammo_shots_inside']} ammo shots inside {pr['n_over_cadence']} over-span "
+          f"events")
+    print("  ⚑ FLOOR, not a total: the arbiter is blind to a magazine-emptying round (the counter "
+          "is blank\n  through the reload animation), so a merge that swallows one is invisible to "
+          "it.")
+    print(f"\nCANDIDATE SCORECARD -- shipped `avgTotal` {pooled['candidates']['shipped']['avgTotal']}"
+          f", over-span shipped mean total {pooled['over_span_shipped_mean_total']}")
+    print(f"{'rule':14s} {'MISSED':>7s} {'%':>6s} {'SPUR?':>6s} {'detected':>9s} {'valid':>6s} "
+          f"{'avgTotal':>9s} {'change':>8s}")
+    for rule in MERGE_RULES:
+        c, v = pr["candidates"][rule], pooled["candidates"][rule]
+        print(f"{rule:14s} {c['MISSED']:7d} {v['MISSED_pct']:5.1f}% {c['spurious_unexplained']:6d} "
+              f"{c['n_detected']:9d} {c['n_valid']:6d} {str(v['avgTotal']):>9s} "
+              f"{str(v['avgTotal_change']):>8s}")
+    print("SPUR? is the unexplained spurious count -- the only over-detection column; the rest of "
+          "SPURIOUS is\nthe arbiter's own blind spot. `avgTotal` is over the 5..10 `valid` clamp, "
+          "so a rule that splits an\nevent into two sub-5 pieces removes it from the average "
+          "entirely.")
+
+
+def _merge_slim(ammo, frame_counts, fps, slack, over_idx, keep=MERGE_AUDIT_SLICE):
+    """One dump reduced to the contiguous `keep`-frame window holding the most OVER-SPAN events,
+    re-indexed to 0. `frame_counts` and `reads` are stored as compact tuples: an object per frame
+    costs ~10x as much once the pre-commit prettier pass expands it, and the fixture budget is the
+    binding constraint on how many dumps this can cover."""
+    n_dump = len(frame_counts)
+    lo, hi = _oracle_slice_bounds(n_dump, min(keep, n_dump), over_idx)
+    return {
+        "tracks": "/".join(Path(ammo["tracks"]).parts[-2:]),
+        "fps": fps, "slack": slack, "slice": [lo, hi], "n_frames_full_clip": n_dump,
+        "range": [0, hi - lo],
+        "reads": [[r["i"] - lo, r.get("ammo")] for r in ammo["reads"] if lo <= r["i"] < hi],
+        "frame_counts": [[c["white"], c["red"], c.get("marker", 0)] for c in frame_counts[lo:hi]],
+    }
+
+
+def _merge_expand(d):
+    """Compact fixture tuples -> the dict shapes the report reads."""
+    fc = [{"white": w, "red": r, "marker": m} for w, r, m in d["frame_counts"]]
+    ammo = {"tracks": d["tracks"], "range": d["range"],
+            "reads": [{"i": i, "ammo": a} for i, a in d["reads"]]}
+    return ammo, fc
+
+
+def _replay_merge_audit(dumps):
+    """Run the whole arm over slim dumps -- no images, no subprocess, no tracks.json. Shared by the
+    fixture WRITER and the selftest, so `_expected` can only ever be the slice's own numbers."""
+    reports = []
+    for d in dumps:
+        ammo, fc = _merge_expand(d)
+        reports.append(merge_audit_report(d["tracks"], ammo, fc, d["fps"], d["slack"]))
+    pooled_raw = _pool_merge_raw([r["raw"] for r in reports])
+    return reports, {"dump": "POOLED", "raw": pooled_raw, **_merge_view(pooled_raw)}
+
+
+def _merge_shipped_identity(frame_counts, fps):
+    """THE CONTROL: `_merge_spans(..., "shipped")` + `_merge_events` must reproduce the SHIPPED
+    `debounce_shots` event for event. If it does not, every candidate row below is a difference
+    from a private re-implementation instead of from the real baseline, and the arm measures
+    nothing."""
+    cp = _count_pellets_module()
+    shipped, _summary = cp.debounce_shots(frame_counts, fps)
+    totals = [r["white"] + r["red"] for r in frame_counts]
+    mine = _merge_events(frame_counts, totals, _merge_spans(totals, fps, "shipped"))
+    keys = ("start", "frames", "white", "red", "total")
+    return ([{k: s[k] for k in keys} for s in shipped] == [{k: s[k] for k in keys} for s in mine])
+
+
+def audit_merge(ammo_paths, fps_list, slack_list, save_fixture=None):
+    reports, raws, slims = [], [], []
+    for k, p in enumerate(ammo_paths):
+        with open(p) as fh:
+            ammo = json.load(fh)
+        if ammo.get("refused"):
+            print(f"REFUSED {p}: {ammo['refused']}")
+            continue
+        with open(ammo["tracks"]) as fh:
+            tracks = json.load(fh)
+        frame_counts = tracks.get("frame_counts") or []
+        if not frame_counts:
+            print(f"SKIPPED {p}: its tracks.json carries no `frame_counts` "
+                  "(re-dump with count-pellets.py --dump-tracks)")
+            continue
+        fps = fps_list[k] if len(fps_list) > 1 else fps_list[0]
+        slack = slack_list[k] if len(slack_list) > 1 else slack_list[0]
+        if not _merge_shipped_identity(frame_counts, fps):
+            raise SystemExit(f"--merge-audit: the shipped-identity control FAILED on {p}. The "
+                             "local span rebuild no longer reproduces debounce_shots, so no "
+                             "candidate row would be a difference from the real baseline.")
+        rep = merge_audit_report("/".join(Path(p).parts[-1:]), ammo, frame_counts, fps, slack)
+        reports.append(rep)
+        raws.append(rep["raw"])
+        if save_fixture:
+            slims.append(_merge_slim(ammo, frame_counts, fps, slack,
+                                     [d["start"] for d in rep["raw"]["over_span_detail"]]))
+    if not reports:
+        print("no readable series given")
+        return None
+    pooled_raw = _pool_merge_raw(raws)
+    pooled = {"dump": "POOLED", "raw": pooled_raw, **_merge_view(pooled_raw)}
+    out = {"params": {"fps": fps_list, "slack": slack_list, "rules": list(MERGE_RULES)},
+           "dumps": reports, "pooled": pooled}
+    if save_fixture:
+        sl_reports, sl_pooled = _replay_merge_audit(slims)
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("count-pellets.py --ammo-series reads + the `frame_counts` of the "
+                            "--dump-tracks dump they were scored against, for the 2026-08-04 "
+                            "merge audit (isabel / guilty / marciana (SG/Iron -- NOT "
+                            "marciana-marine-study, AR/Iron) / noir). Constraint 9 "
+                            "self-validation, same precedent as ammo-oracle-ceiling-slice.json."),
+                "_note": ("SLICED, not full-clip: each dump is the contiguous "
+                          f"{MERGE_AUDIT_SLICE}-frame window holding the most OVER-SPAN events (or "
+                          "the whole clip if shorter), re-indexed to 0, and `_expected` pins THAT "
+                          "SLICE's numbers -- they are NOT the full-clip figures docs/probe-runs.md "
+                          "§8 cites. `slice` records the source range. `reads` are [i, ammo] and "
+                          "`frame_counts` are [white, red, marker] tuples to survive the prettier "
+                          "pass at this many frames. Regenerate with analyze-pellet-tracks.py "
+                          "--merge-audit <ammo-series.json...> --save-merge-audit-fixture <path>."),
+                "params": out["params"], "dumps": slims,
+                "_expected": _merge_audit_expected(sl_reports, sl_pooled),
+            }, fh)
+        pc = sl_pooled["raw"]["candidates"]
+        print(f"wrote merge-audit slice fixture -> {save_fixture} (`_expected` pins the SLICE: "
+              f"{sl_pooled['raw']['n_over_cadence']}/{sl_pooled['raw']['n_events']} over-span, "
+              f"excess {sl_pooled['raw']['arbiter_excess_lost']}, shipped MISSED "
+              f"{pc['shipped']['MISSED']}, NOT the full-clip figures below)")
+    print(json.dumps(out, indent=2))
+    _print_merge_audit(reports, pooled)
+    return out
+
+
+def merge_audit_selftest():
+    """Constraint 9 self-validation: replay the whole arm over the committed slice, and assert the
+    shipped-identity control on every dump in it."""
+    with open(MERGE_AUDIT_FIXTURE) as fh:
+        fx = json.load(fh)
+    reports, pooled = _replay_merge_audit(fx["dumps"])
+    got = _merge_audit_expected(reports, pooled)
+    ok = got == fx["_expected"]
+    ident = all(_merge_shipped_identity(_merge_expand(d)[1], d["fps"]) for d in fx["dumps"])
+    print(f"expected: {json.dumps(fx['_expected'], sort_keys=True)}")
+    print(f"got     : {json.dumps(got, sort_keys=True)}")
+    print(f"shipped-identity control: {'PASS' if ident else 'FAIL'} "
+          f"(local span rebuild == count-pellets.py debounce_shots on all "
+          f"{len(fx['dumps'])} slices)")
+    print("SELFTEST PASS" if ok and ident else "SELFTEST FAIL")
+    return 0 if ok and ident else 1
+
+
 FIXTURE = "scripts/tests/fixtures/pellets/run16-tracks-slice.json"
 
 # Pinned from the committed fixture (a 400-frame slice of the run16 dump). These reproduce the
@@ -2864,6 +3314,25 @@ def main():
                      help=f"write the selftest slice fixture (default path {ORACLE_CEILING_FIXTURE})")
     ap.add_argument("--ammo-oracle-ceiling-selftest", action="store_true",
                      help=f"replay --ammo-oracle-ceiling against {ORACLE_CEILING_FIXTURE} and exit")
+    ap.add_argument("--merge-audit", nargs="+", metavar="AMMO_SERIES_JSON",
+                    help="MERGE AUDIT (docs/probe-runs.md §8): how often debounce_shots fuses two "
+                         "shots into one event, how many shots the ammo arbiter says that actually "
+                         "costs, and how six candidate segmentation rules score on MISSED / "
+                         "unexplained-SPURIOUS / avgTotal. Reads each series' tracks.json "
+                         "`frame_counts`; changes NO segmentation behaviour (every candidate is a "
+                         "local scoring variant, and a control asserts the shipped rule reproduces "
+                         "count-pellets.py's debounce_shots event for event).")
+    ap.add_argument("--merge-audit-fps", type=float, nargs="+", default=[30.0], metavar="FPS",
+                    help="sampling fps: one value for all series, or one per series (default 30). "
+                         "It sets both the gap tolerance and max_pellet_frames, so a 60 fps dump "
+                         "passed as 30 is scored against the wrong cadence.")
+    ap.add_argument("--merge-audit-slack", type=int, nargs="+", default=[8], metavar="N",
+                    help="matcher slack in frames: one value for all series, or one per series "
+                         "(default 8, the §3b convention; the 60 fps series were scored at 6)")
+    ap.add_argument("--save-merge-audit-fixture", metavar="PATH",
+                    help=f"write the committed replay slice (see {MERGE_AUDIT_FIXTURE})")
+    ap.add_argument("--merge-audit-selftest", action="store_true",
+                    help=f"replay {MERGE_AUDIT_FIXTURE} and exit")
     ap.add_argument("--gt-score-json", metavar="PATH",
                      help="score-pellets.py --real-fixture stdout JSON (carries each shot's owner "
                           "count, the shipped estimator's error and its per-offset counts)")
@@ -2879,6 +3348,17 @@ def main():
         raise SystemExit(ammo_abstention_selftest())
     if args.ammo_oracle_ceiling_selftest:
         raise SystemExit(oracle_ceiling_selftest())
+    if args.merge_audit_selftest:
+        raise SystemExit(merge_audit_selftest())
+    if args.merge_audit:
+        for name, vals in (("--merge-audit-fps", args.merge_audit_fps),
+                           ("--merge-audit-slack", args.merge_audit_slack)):
+            if len(vals) not in (1, len(args.merge_audit)):
+                ap.error(f"{name} takes 1 value or one per series "
+                         f"({len(args.merge_audit)} given), got {len(vals)}")
+        audit_merge(args.merge_audit, args.merge_audit_fps, args.merge_audit_slack,
+                    args.save_merge_audit_fixture)
+        return
     if args.ammo_oracle_ceiling:
         audit_oracle_ceiling(args.ammo_oracle_ceiling, args.ammo_oracle_gap,
                              args.ammo_oracle_control, args.ammo_oracle_atlas,
