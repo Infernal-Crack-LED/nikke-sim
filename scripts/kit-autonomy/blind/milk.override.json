@@ -1,0 +1,131 @@
+{
+  "slug": "milk",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 3,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 31.83,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 20,
+          "oncePerBattle": true
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 11.13
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 10
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 2.83
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 367.34,
+          "crit": true,
+          "noRange": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Activates when above 80% HP. (HP-threshold gate — no HP pool at scope lock; nobody takes damage, so the gate is permanently satisfied and modeled as an unconditional passive.)"
+    ],
+    "burst": [
+      "Recovers 16.16% of attack damage as HP over 10 sec. (HP amount unmodeled — emitted as 10 recovery events so on-recovery consumers fire; no HP pool exists in v1.)",
+      "Incoming healing ▲ 75.5% for 10 sec. (Healing-magnitude scaler — no HP pool is modeled, so it has no consumer; no StatKey exists for incoming-healing.)"
+    ]
+  },
+  "caveats": [
+    "⚑ skill1 block 1 trigger phase: kit says \"Activates every 20 sec\" with no stated first-fire; modeled as interval sec:20 (first fire t=20s). If it actually fires at t=0 the 10s ATK window shifts a full cycle — pin from footage (buff-icon appearance vs the 3:00 anchor).",
+    "⚑ skill2 block 2 trigger identity: \"attacking with Full Charge for 10 time(s)\" modeled as chargeCounter count:10. Whether the counter is per-battle-cumulative-recurring (assumed) vs once-only is not stated in the prose.",
+    "⚑ burst CDR target set: \"Affects all allies\" on the 2.83s burst-CDR is taken literally (team-wide). If in-game it only reduces the owner's own burst cooldown the rotation effect is much smaller.",
+    "⚑ cadence tuple (chargeFrames 60, reloadFrames 141, ammo 6) comes from the datamine, which is unreliable for rate_of_fire/reloadFrames; the 10-full-charge threshold's real-time cadence rests on it directly.",
+    "⚑ skill1 block 2 \"continuously\" burst-CDR: modeled as a one-shot 20s reduction at battle start (oncePerBattle). If \"continuously\" instead means a permanent cooldown REDUCTION applied to every burst cycle (40s → 20s each time), the rotation impact is far larger. Highest-leverage unknown in this kit.",
+    "Burst damage (367.34%) targets \"1 enemy unit with the highest final DEF\" — single-target selection is trivial against the single scope-lock boss; the target-ranking clause carries no information here.",
+    "PARSER BASELINE — no ⚑ value below has been measured against a real fight."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Milk (Treasure) `milk` — SR/Water/Attacker/Burst I charge weapon (ammo 6, chargeFrames 60). Modeled: S1 a 20s-interval ATK ▲31.83%/10s on the 3 highest-final-ATK allies (target ranked byFinalAtk per the literal \"highest final ATK\" wording); S1 a battle-start self burst-CDR of 20s; S2 an always-on team Critical Damage ▲11.13% (the >80% HP gate is permanently satisfied at scope lock — the boss deals no damage); S2 a team burst-CDR of 2.83s every 10 full charges; burst a 367.34% single-target hit plus a 10-tick heal-over-time to all allies. Deliberately unmodeled: the healing MAGNITUDE (16.16% of attack damage) and Incoming Healing ▲75.5%, because v1 models no HP pool — the heal is still emitted as recovery EVENTS so heal-synergy consumers (on-recovery triggers) fire correctly, which is its only offensive channel. The two burst-CDR values and the interval first-fire phase are the load-bearing rotation unknowns; a Burst I unit's CDR feeds the full-burst chain directly, so a wrong reading here changes FB counts, not just magnitude.",
+  "hasPierce": false
+}

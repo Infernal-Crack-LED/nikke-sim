@@ -1,0 +1,278 @@
+{
+  "slug": "milk",
+  "leakDetected": null,
+  "override": {
+    "slug": "milk",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 20
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 3,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 31.83,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "burstCdr",
+            "seconds": 20,
+            "oncePerBattle": true
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 11.13
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "chargeCounter",
+          "count": 10
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "burstCdr",
+            "seconds": 2.83
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 367.34,
+            "crit": true,
+            "noRange": true
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 10,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Activates when above 80% HP. (HP-threshold gate — no HP pool at scope lock; nobody takes damage, so the gate is permanently satisfied and modeled as an unconditional passive.)"
+      ],
+      "burst": [
+        "Recovers 16.16% of attack damage as HP over 10 sec. (HP amount unmodeled — emitted as 10 recovery events so on-recovery consumers fire; no HP pool exists in v1.)",
+        "Incoming healing ▲ 75.5% for 10 sec. (Healing-magnitude scaler — no HP pool is modeled, so it has no consumer; no StatKey exists for incoming-healing.)"
+      ]
+    },
+    "caveats": [
+      "⚑ skill1 block 1 trigger phase: kit says \"Activates every 20 sec\" with no stated first-fire; modeled as interval sec:20 (first fire t=20s). If it actually fires at t=0 the 10s ATK window shifts a full cycle — pin from footage (buff-icon appearance vs the 3:00 anchor).",
+      "⚑ skill2 block 2 trigger identity: \"attacking with Full Charge for 10 time(s)\" modeled as chargeCounter count:10. Whether the counter is per-battle-cumulative-recurring (assumed) vs once-only is not stated in the prose.",
+      "⚑ burst CDR target set: \"Affects all allies\" on the 2.83s burst-CDR is taken literally (team-wide). If in-game it only reduces the owner's own burst cooldown the rotation effect is much smaller.",
+      "⚑ cadence tuple (chargeFrames 60, reloadFrames 141, ammo 6) comes from the datamine, which is unreliable for rate_of_fire/reloadFrames; the 10-full-charge threshold's real-time cadence rests on it directly.",
+      "⚑ skill1 block 2 \"continuously\" burst-CDR: modeled as a one-shot 20s reduction at battle start (oncePerBattle). If \"continuously\" instead means a permanent cooldown REDUCTION applied to every burst cycle (40s → 20s each time), the rotation impact is far larger. Highest-leverage unknown in this kit.",
+      "Burst damage (367.34%) targets \"1 enemy unit with the highest final DEF\" — single-target selection is trivial against the single scope-lock boss; the target-ranking clause carries no information here.",
+      "PARSER BASELINE — no ⚑ value below has been measured against a real fight."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Milk (Treasure) `milk` — SR/Water/Attacker/Burst I charge weapon (ammo 6, chargeFrames 60). Modeled: S1 a 20s-interval ATK ▲31.83%/10s on the 3 highest-final-ATK allies (target ranked byFinalAtk per the literal \"highest final ATK\" wording); S1 a battle-start self burst-CDR of 20s; S2 an always-on team Critical Damage ▲11.13% (the >80% HP gate is permanently satisfied at scope lock — the boss deals no damage); S2 a team burst-CDR of 2.83s every 10 full charges; burst a 367.34% single-target hit plus a 10-tick heal-over-time to all allies. Deliberately unmodeled: the healing MAGNITUDE (16.16% of attack damage) and Incoming Healing ▲75.5%, because v1 models no HP pool — the heal is still emitted as recovery EVENTS so heal-synergy consumers (on-recovery triggers) fire correctly, which is its only offensive channel. The two burst-CDR values and the interval first-fire phase are the load-bearing rotation unknowns; a Burst I unit's CDR feeds the full-burst chain directly, so a wrong reading here changes FB counts, not just magnitude.",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates every 20 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger interval sec:20 — no activation-condition clause, a pure internal-cooldown line. ⚑ first-fire phase (t=20 convention)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects 3 ally with highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target alliesTopAtk count:3, byFinalAtk:true — kit says literally \"final ATK\", which is the byFinalAtk (live effectiveAtk) ranking per the A3 literal-word rule. excludeSelf NOT set (no \"except the skill user\" clause), so Milk herself is eligible."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 31.83% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 31.83, durationSec 10. Plain \"ATK ▲ x%\" with no \"of the skill user's ATK\" wording → target-scaled atkPct, NOT casterAtkPct/highestAllyAtkPct."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at the start of battle.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger passive (fires frame 0) — the canonical battle-start encoding."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target self."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Cooldown of Burst Skill ▼ 20 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCdr seconds:20, oncePerBattle:true. Rotation-relevant, NOT skippable — Milk is Burst I, so her CD gates the chain opener. ⚑ \"continuously\" is ambiguous between a one-shot start-of-battle reduction (modeled) and a permanent per-cycle CD reduction (40s→20s every cycle); see caveats."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when above 80% HP.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Gate permanently TRUE at scope lock (v1 boss deals no damage; no unit ever drops below max HP), so encoded as an unconditional passive. The gate text itself is recorded verbatim in unmodeled.skill2 as the auditable record that it was read and deliberately collapsed, not dropped."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies (excludeSelf NOT set — \"all allies\" includes the caster)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Damage ▲ 11.13% continuously",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 11.13, no durationSec (\"continuously\" = permanent while the gate holds). UNSCOPED crit damage — the line carries no \"of normal attacks\" qualifier, so it is generic critDamagePct, not a scoped variant."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "attacking with Full Charge 10 time(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger chargeCounter count:10 — a per-full-charge counter, the schema's dedicated primitive. NOT hitCount (which counts rounds, and would over-fire since not every round is a full charge) and NOT shotFired."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies — the CDR is team-wide per the literal text. ⚑ see caveats (if the game applies it self-only, rotation impact drops sharply)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Cooldown of Burst Skill ▼ 2.83 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCdr seconds:2.83, recurring (no oncePerBattle) — fires on every 10th full charge. Rotation-relevant, never skippable."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 1 enemy with highest final DEF",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy — single-target selection is degenerate against the partless single-boss scope-lock fixture; the \"highest final DEF\" ranking clause is informationally inert here."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 367.34% of final ATK as Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 367.34, crit:true, noRange:true. Burst-cast instant damage: lands BEFORE the Full Burst window opens (verified-fact: no +50% FB major, no entry auras) — the engine's burst-cast path handles the FB exemption, so noFb is NOT set manually. core NOT set (the text says no \"core strike\")."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies for the heal block."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 16.16% of atk dmg as HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal ticks:10, intervalSec:1 — \"over 10 sec\" is a heal-over-time, so it emits 10 recovery events, keeping teammates' on-recovery triggers (e.g. Crown-style consumers) refreshed across the window rather than firing once. The HP AMOUNT (16.16% of attack damage) is unmodeled — v1 models no HP pool — and is recorded verbatim in unmodeled.burst. Per the tandem/cross-unit HARD RULE, the line is NOT skipped on isolation."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Incoming healing ▲ 75.5% for 10 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "No StatKey exists for incoming-healing and no HP pool is modeled, so this scaler has no consumer — it can only change HP restored, never damage or recovery-event COUNT (which is what heal-synergy triggers read). Recorded verbatim in unmodeled.burst."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[1].effects[0] (burstCdr seconds:20, oncePerBattle:true)",
+      "estimate": "One-shot 20s reduction applied at battle start (so Milk's first burst is castable ~20s early against her 40s CD)",
+      "reasoning": "\"Activates at the start of battle … Cooldown of Burst Skill ▼ 20 sec continuously\" is genuinely ambiguous. Reading A (modeled): a single start-of-battle CDR — \"continuously\" describes the buff never expiring rather than re-firing. Reading B: a standing 50% cooldown reduction, so EVERY Milk burst cycle costs 20s instead of 40s. The two diverge enormously for a Burst I unit whose cooldown gates the whole chain opener: Reading B roughly doubles her availability across a 180s fight. The conservative reading is modeled because oncePerBattle cannot over-credit, whereas a recurring encoding compounds error every cycle. This is the single highest-leverage unknown in the kit.",
+      "recipe": "Run the graded fixture both ways (oncePerBattle:true vs false/recurring) and compare MEASURED full-burst COUNT against footage — a rotation change is judged by FB-count preservation, not by aggregate ratio. Independently: on a real recording, timestamp Milk's 1st and 2nd burst casts against the 3:00→2:59 anchor. A ~40s inter-burst gap confirms Reading A; ~20s confirms Reading B. The 2nd-cast timing discriminates cleanly and needs no damage read at all."
+    },
+    {
+      "field": "override.skill1[0].trigger (interval sec:20 — first-fire phase)",
+      "estimate": "First fire at t=20s (the engine's interval convention), then every 20s: windows ≈ 20–30s, 40–50s, 60–70s …",
+      "reasoning": "\"Activates every 20 sec\" states a period but no phase. The engine's `interval` trigger first-fires at t=sec by convention, but many battle-start kit lines fire at t=0 instead. With a 10s buff on a 20s period the skill has a 50% uptime, so the phase choice determines WHICH half of each 20s block is buffed — and whether the buff is live during the opening full-burst window, where it is worth the most. Off-by-one-cycle here is a real magnitude error on the 3 buffed allies, not a rounding artifact.",
+      "recipe": "Frame-read a recording for the ATK ▲ buff icon's first appearance on the affected allies, anchored to the exact 3:00→02:59 frame (game t0 — never the load screen). Icon at ~00:20 confirms t=sec; at ~00:00 confirms t=0. One recording answers it; no damage arithmetic required."
+    },
+    {
+      "field": "override.skill2[1].trigger (chargeCounter count:10) + cadence tuple",
+      "estimate": "10 full charges ≈ one 6-round magazine + reload + 4 more charges; at chargeFrames 60 (1.0s) + release latency + reloadFrames 141 (~2.35s), roughly 15–20s per activation → ~9–12 activations across a 180s fight, i.e. ~25–34s of cumulative team burst-CDR",
+      "reasoning": "Two stacked uncertainties. (a) chargeFrames/reloadFrames are datamined and the ALWAYS-⚑ taxonomy marks the cadence tuple unreliable; the real per-charge cycle also includes the measured 22-frame release latency and any aim/re-target time not in the datamine. (b) The prose does not say whether the 10-charge counter is cumulative-and-recurring (assumed) or a once-per-battle threshold. Because the payload is burst-CDR on a Burst I unit, an error compounds into full-burst COUNT, which is the sim's measured-exact rotation invariant — so this is not a magnitude-only risk.",
+      "recipe": "Count Milk's full-charge shots between consecutive burst-CDR procs on a recording (the CD-reduction is visible as a burst-gauge/cooldown jump), and separately time her charge→fire→reload cycle from the ammo counter — the ammo counter measures shots/sec DIRECTLY, rather than inferring it downstream of FB counts. Then assert the resulting activation count in scripts/tests/units/milk.test.ts via a burstCast/buffApply event count, so the cadence is pinned by a committed fixture."
+    },
+    {
+      "field": "override.skill2[1].target (allies — burst-CDR scope)",
+      "estimate": "Team-wide (all 5 allies receive the 2.83s CDR), per the literal \"Affects all allies\" header",
+      "reasoning": "The structural header says all allies, and the literal-word rule governs. But burst-CDR distributed team-wide is a substantially stronger rotation effect than a self-only CDR, and Burst-I kits sometimes word a self-cooldown line loosely. Modeled literally because the prose is the ground truth here; flagged because the rotation consequence is large enough that a misread changes FB counts.",
+      "recipe": "Same discriminator as the first flag: FB-count preservation on the graded comps, plus checking whether OTHER units' burst cooldowns visibly jump when the proc lands. Note the whole-picture check — this flag and the skill1 CDR flag interact; if both are over-modeled the rotation over-generates full bursts, and a rotation over-generation is usually a mis-sourced constant rather than a selection-rule error. Resolve them TOGETHER against one recording's full timeline, not independently, since compensating errors can make a wrong pair look right."
+    },
+    {
+      "field": "override.burst[0] (flatDamage crit:true)",
+      "estimate": "Burst damage crits at Milk's sheet rate (crit:true), takes no core, no range bonus, and no +50% Full Burst major",
+      "reasoning": "The FB exemption is a verified project fact (burst-cast damage lands before Full Burst begins), so it is not itself in doubt. What is a convention rather than a measurement is crit-eligibility on the burst hit: the schema treats crit as opt-in per effect. Team-wide crit-damage from her own S2 (+11.13%) rides on this, so the crit flag is not cosmetic for a burst this size (367.34%).",
+      "recipe": "Read the burst popup colour on a recording — orange + crit icon confirms crit-eligible, plain white confirms not (per the popup-colour convention). n=1 is enough to confirm crit-CAPABILITY (a single orange popup proves the channel exists); establishing the RATE would need the sheet rate, which is already known. Do not infer this from damage magnitude — that is confounded by the unknown ATK."
+    },
+    {
+      "field": "override.burst[1] (heal ticks:10, intervalSec:1)",
+      "estimate": "10 recovery events at 1s intervals across the 10s window",
+      "reasoning": "\"Recovers … as HP over 10 sec\" is a heal-over-time, but the prose does not state the tick interval — 1s is the schema default and the game's usual HoT cadence. The tick COUNT is the only thing that matters offensively at scope lock: it sets how many times a teammate's on-recovery trigger (a real damage channel on heal-synergy kits) fires. A single-event encoding would under-credit such a teammate by 10×; a wrong interval mis-times the refreshes.",
+      "recipe": "Confirm by counting green heal popups in the 10s window after Milk's burst on any recording that includes her (green = heal, per the popup-colour convention). Independently, if any teammate with an on-recovery trigger is in the comp, that unit's proc count across the window is a second, damage-side read of the same quantity."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -3944,6 +3944,38 @@
         "temp": "OK  ·"
       }
     },
+    "milk": {
+      "name": "Milk (Treasure)",
+      "burst": "I",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/milk.json + scripts/kit-autonomy/manual-review/milk.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Incoming healing ▲ 75.5% for 10 sec.",
+          "Recovers 16.16% of attack damage as HP — magnitude only: the engine `heal` carries no HP amount by design (no HP pool); the 10-second recovery-event WINDOW is modeled (burst heal ticks:10 intervalSec:1)."
+        ]
+      },
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "owner spot-check cluster: (1) K2 permanent-CD reading rests on grammar+S2b+engine-channel convergence — one in-game cast-cadence check (~20s cycles) closes it; (2) chargeCounter-vs-hitCount identity indistinguishable on this pure-full-charge SR (encoding-pinned); (3) interval first-fire t=20 convention",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "milk-blooming-bunny": {
       "name": "Milk: Blooming Bunny",
       "burst": "III",

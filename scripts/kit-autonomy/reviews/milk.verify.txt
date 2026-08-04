@@ -1,0 +1,39 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-08-03-2[39m
+
+ [31m❯[39m scripts/tests/units/milk.test.ts [2m([22m[2m0 test[22m[2m)[22m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/milk.test.ts[2m [ scripts/tests/units/milk.test.ts ][22m
+[31m[1mError[22m: milk charFixes.burstCooldownSec missing — fixture is stale[39m
+[36m [2m❯[22m scripts/tests/units/milk.test.ts:[2m104:11[22m[39m
+    [90m102|[39m [35mconst[39m milkNoCdr [33m=[39m [34mwithPatchedOverride[39m([32m'milk'[39m[33m,[39m (ov) [33m=>[39m {
+    [90m103|[39m   [35mif[39m ([33m![39mov[33m.[39mcharFixes[33m?.[39mburstCooldownSec) {
+    [90m104|[39m     throw new Error('milk charFixes.burstCooldownSec missing — fixture…
+    [90m   |[39m           [31m^[39m
+    [90m105|[39m   }
+    [90m106|[39m   [35mdelete[39m ov[33m.[39mcharFixes[33m.[39mburstCooldownSec[33m;[39m
+[90m [2m❯[22m withPatchedOverride scripts/tests/lib/harness.ts:[2m74:3[22m[39m
+[90m [2m❯[22m scripts/tests/units/milk.test.ts:[2m102:19[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [2mno tests[22m
+[2m   Start at [22m 16:30:22
+[2m   Duration [22m 155ms[2m (transform 81ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)[22m
+
+
+=== S3 GREEN PHASE (post-override) ===
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-08-03-2[39m
+
+ [32m✓[39m scripts/tests/units/milk.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+[2m   Start at [22m 16:32:05
+[2m   Duration [22m 438ms[2m (transform 81ms, setup 0ms, import 375ms, tests 14ms, environment 0ms)[22m
+

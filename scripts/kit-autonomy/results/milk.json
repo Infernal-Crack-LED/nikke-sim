@@ -1,0 +1,95 @@
+{
+  "slug": "milk",
+  "kitDescription": "Milk (Treasure) is a Water SR Burst-I Attacker whose treasure rework makes her a fast-cycling team buffer. Every 20 seconds she grants the three highest-final-ATK allies (herself eligible) +31.83% ATK for 10 seconds, and her own Burst cooldown is permanently shortened from 40s to 20s, letting her cast every rotation. While she stays above 80% HP the whole team gets +11.13% Critical Damage, and every 10th full-charge shot refunds 2.83 seconds of Burst cooldown for all allies, accelerating the team's Full Burst cycle. Her Burst deals 367.34% of final ATK to the highest-DEF enemy and heals all allies over 10 seconds (with +75.5% incoming healing, unmodelable in the sim). She is a 20-second-cadence Burst I whose main value is rotation acceleration plus team ATK/crit support.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "skill1 b 'buys milk more casts' + 'extra casts show in milk damage' — blind NO_S1_CDR patch drops a hypothesized burstCdr BLOCK, but the driver encodes the permanent self-CDR via charFixes.burstCooldownSec (the engine's only permanent-CD channel), so the blind patch is a no-op and base==counterfactual (blind-side structural artifact, not a faithfulness gap)",
+      "burst a burstHits group — blind reader filters row.events, but SimResult unit rows expose no per-unit event array; returns [] for ANY override (mechanical RECON_ERROR)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "every 20s: ATK ▲31.83%/10s, 3 highest final ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval:20 (first t=20) → alliesTopAtk{count:3, byFinalAtk:true} → atkPct 31.83/10s; treasure 3 not stale-table 2; self eligible",
+        "blindSaid": "S6 block IDENTICAL; S2b concurred on byFinalAtk, t=20 phase, count 3, self-eligible",
+        "formulaCheck": "atkPct is the correct bucket (plain ATK% inside (1+ΣATK%), not caster-flat); interval convention first-at-t=sec matches SSOT",
+        "fireRateOk": true,
+        "explanation": "8 firings pinned at t=20..160 over the 180s fight (t=180 lands at/past fight end), exactly 3 targets per firing, 600-frame expiry, live ranking shown to re-order mid-fight and diverge from the static-rank counterfactual. Converged across all three agents."
+      },
+      {
+        "kitLine": "start of battle, self: Burst CD ▼20s continuously",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "charFixes.burstCooldownSec 20 — permanent: every 40s cycle is 20s shorter; a passive burstCdr block fires once at frame 0 and cannot express 'continuously'; prepare.ts itself subtracts CDR from the charFixes CD",
+        "blindSaid": "S6 encoded burstCdr 20 oncePerBattle:true (one-shot), but disclosed it as a ⚑ risk-posture choice ('conservative'), not a derivation; S2b (independent) ruled the PERMANENT reading correct and named oncePerBattle the nearest-wrong model",
+        "formulaCheck": "Intra-kit grammar settles it: K2 says '▼20 sec continuously' (permanent-duration keyword, same grammar as K3's 'continuously' which S6 itself encoded permanent) vs K4's bare '▼2.83 sec' (instant refund). Engine mechanics confirm charFixes is the only permanent channel.",
+        "fireRateOk": true,
+        "explanation": "Driver's reading is corroborated by the kit's own grammar contrast, S2b's independent ruling, and engine capability. Observable cadence verified: 11 casts vs 8 un-treasured, every inter-cast gap <20s vs all gaps >20s. S6's divergence is a disclosed blind-side misread (recon error on S6), not a driver gotcha."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "above 80% HP: Crit Damage ▲11.13% continuously",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive → allies → critDamagePct 11.13, no durationSec; HP gate trivially always-true at scope lock (no HP pool, boss deals no damage)",
+        "blindSaid": "S6 identical block; S2b concurred; S5 asserted critDamagePct (not critRate), all allies incl. self, no expiry",
+        "formulaCheck": "Generic critDamagePct feeds critBonus in the Major bracket on all crit-eligible instances — correct scope (unscoped crit damage, not normal-only rate)",
+        "fireRateOk": true,
+        "explanation": "Applied frame 0 to all 4 units with expiresFrame null; self-only counterfactual reaches only milk. The always-true HP gate is a documented simplification (mast precedent), not a drop."
+      },
+      {
+        "kitLine": "Full Charge ×10: Burst CD ▼2.83s, all allies",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "chargeCounter:10 → allies → burstCdr 2.83, cycling every 10 full charges; honestly notes SR auto-play makes hitCount observationally identical today, so the identity is pinned by encoding not a discriminating fixture",
+        "blindSaid": "S6 identical block (chargeCounter:10 → allies → burstCdr 2.83); S2b concurred, flagged hitCount as nearest-wrong",
+        "formulaCheck": "burstCdr is an instant refund of remaining CD, no duration semantics needed; team-wide target matches 'Affects all allies' (self included)",
+        "fireRateOk": true,
+        "explanation": "Removing the block measurably delays both milk's own casts and teammate cast frames, proving recurring procs across the fight. The trigger-identity residual (chargeCounter vs hitCount indistinguishable on a pure-full-charge SR) is an engine-level limitation documented by the driver, not a faithfulness gap — the faithful reading of 'with Full Charge' is chargeCounter."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "367.34% final ATK as Burst dmg, highest-DEF enemy",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy → flatDamage 367.34; FB-exempt by cast timing (fbMajorApplied never true); once per cast; highest-DEF trivial on the solo boss",
+        "blindSaid": "S6 same block (adds redundant crit:true/noRange:true flags — burst-bucket hits are already crit-eligible and range-exempt); S2b concurred on FB-exemption as the load-bearing semantic",
+        "formulaCheck": "Per the measured boundary rule, burst-cast direct damage lands before FB opens (no +0.5 major, no entry auras); burst nuke: crit ✓, core ✗, range ✗ per the formula table — omitting noRange matches helm/epinel convention and the engine's skill-damage defaults",
+        "fireRateOk": true,
+        "explanation": "One burst-bucket hit per cast at atkPct 367.34, recurring every rotation (11 casts), no fbMajorApplied on any hit; fullBurstEnter counterfactual demonstrably takes the major. Discrimination by timing (flag), not count, correctly handles the sole-B1 fixture where both triggers fire equal counts."
+      },
+      {
+        "kitLine": "Recovers 16.16% of atk dmg as HP over 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → heal ticks:10 intervalSec:1 — the 10s recovery-event window; the 16.16% magnitude is verbatim in unmodeled (engine heal carries no HP amount by design), not fudged",
+        "blindSaid": "S6 identical block; S2b named the tandem trap (dropping this line kills crown's recovery consumer) as a top misread to check — driver avoided it",
+        "formulaCheck": "Recovery events are the only offensive channel (on-recovery consumers); heal magnitude is offensively inert at scope. 10-tick HoT matches 'over 10 sec' duration semantics.",
+        "fireRateOk": true,
+        "explanation": "Isolation fixture (crown self-heal + helm heals patched out) attributes every crown recovery-consumer firing to milk's burst heal: ≥8 firings spanning ≥8s per post-cast window, zero with the heal removed, exactly ≤1 under the instant-heal counterfactual. Clean, discriminating, helm-H8 precedent."
+      },
+      {
+        "kitLine": "Incoming healing ▲75.5% for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED, verbatim in unmodeled.burst — no incoming-healing StatKey exists and heals carry no HP amount, so the buff could only multiply event-less nothing; provably inert in v1",
+        "blindSaid": "S6 and S2b independently reached the identical UNMODELED disposition with the same reasoning",
+        "formulaCheck": "No damage-formula bucket consumes incoming healing; offensively inert at scope lock",
+        "fireRateOk": true,
+        "explanation": "Triply-converged documented gap; the verbatim line is preserved for a future HP-pool engine. No assertion possible or needed."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": 1.0,
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. All six modeled lines are FAITHFUL and the seventh (incoming healing) is a triply-converged DOCUMENTED_GAP; every encoding was independently re-derived block-for-block by S6 and disposition-matched by S2b, with the sole substantive divergence — S6's one-shot burstCdr for the 'continuously' self-CDR — being a disclosed blind-side risk-posture misread that the kit's own grammar contrast (K2 '▼20s continuously' vs K4's bare '▼2.83s'), S2b's independent ruling, and the engine's channel mechanics all resolve in the driver's favor. The pristine S5 run shows 3 RED assertions, but both failure classes are blind-side mechanical artifacts (a no-op counterfactual patch against the charFixes channel; a reader filtering a non-existent per-unit event array), and the intent-preserved adapted copy is 23/0/4 GREEN — the driver's own spec independently proves the same semantics (11 vs 8 casts, gap-sign split at 20s). Discrimination is real throughout: treasure 3-vs-2 scope, static-vs-final-ATK ranking, self-vs-team crit damage, K4 removal moving the whole rotation, burstCast-vs-fullBurstEnter via the FB-major flag, and instant-vs-10-tick heal under a clean isolation fixture. Same-model residual for the owner to spot-check: (1) the K2 permanent-CD reading rests on grammar convergence among same-family agents — a single in-game cast-cadence check (milk bursting on ~20s cycles) would close it from independent evidence; (2) the chargeCounter-vs-hitCount identity is unprovable on this unit under current SR auto-play and is pinned by encoding alone; (3) the interval first-fire phase (t=20 vs t=0) is the standing ⚑ convention. None of these block GO.",
+  "model": "kimi-code/k3"
+}
