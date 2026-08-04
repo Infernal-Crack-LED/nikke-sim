@@ -37,6 +37,7 @@ run "$HERE/analyze-pellet-tracks.py" --policy-score-selftest
 run "$HERE/analyze-pellet-tracks.py" --backend-marker-audit-selftest
 run "$HERE/analyze-pellet-tracks.py" --marker-geometry-selftest
 run "$HERE/analyze-pellet-tracks.py" --fade-screen-selftest
+run "$HERE/analyze-pellet-tracks.py" --mislock-rate-selftest
 run "$HERE/analyze-pellet-tracks.py" --hybrid-landing-audit-selftest
 run "$HERE/analyze-pellet-tracks.py" --cap-score-selftest
 run "$HERE/temporal-count-regression.py"
