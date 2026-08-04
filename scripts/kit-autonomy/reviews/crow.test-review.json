@@ -1,0 +1,76 @@
+{
+  "slug": "crow",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "All enemies: ATK ▼ 19.93% for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "Enemy stat debuff (boss ATK down) — purely defensive; the sim's boss deals no damage and no StatKey expresses enemy ATK, so it cannot move any team damage.",
+      "durationSemantics": "durationSec 10 — genuine wall-clock seconds ('for 10 sec'), not rounds.",
+      "triggerIdentity": "fullBurstEnter — 'Activates when entering Full Burst' fires on ANY team Full Burst, not only rotations crow bursts (no burstCast gating in the text).",
+      "targetSet": "enemy (all enemies = the single boss at scope lock).",
+      "nearestWrongModel": "Mis-encoding the enemy ATK ▼ as a team-benefiting boss debuff — i.e. damageTakenPct +19.93 on the boss for 10s per FB — which would inflate the WHOLE team's damage every Full Burst. The text is ATK ▼ (what the boss deals), not 'Damage Taken ▲' (what the boss receives).",
+      "distinguishingAssertion": "Run controlComp(crow) twice: shipped override vs withPatchedOverride stripping every skill1 block. totals() must be IDENTICAL for all 5 slugs, and the event log must contain NO buffApply with stat 'damageTakenPct' sourced from crow's skill1. A damageTakenPct buffApply with value ≈19.93, or any totals delta, is RED (the nearest-wrong encoding).",
+      "inertness": "Must move zero damage for every unit in the comp; must not emit damageTakenPct. Belongs verbatim in the override's unmodeled.skill1.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Last bullet hits: 89.09% ATK add'l dmg",
+      "disposition": "FAITHFUL",
+      "scope": "A flat-damage function rider — scales off crow's final ATK; per the function-damage rules it takes FB by timing (noFb default OFF/absent), is force-excluded from the +30% range bonus (noRange), crits at caster sheet rate, and gets NO core (text does not say core strike).",
+      "durationSemantics": "Instant per activation — no duration.",
+      "triggerIdentity": "lastBullet — 'Activates when the last bullet hits the target' is the per-magazine trigger (fires once per 120-round magazine cycle, i.e. once per reload-start), NOT per shot and NOT per hit.",
+      "targetSet": "enemy ('Affects the target').",
+      "nearestWrongModel": "Keying the rider to shotFired or hitCount (every pull / every N hits) instead of lastBullet — with ammo 120 at SMG cadence that over-fires the proc by roughly two orders of magnitude (≈120 procs per magazine instead of 1). Secondary misread: interval trigger, or marking the hit core:true.",
+      "distinguishingAssertion": "In controlComp(crow), count crow-sourced 'damage' events in the skill bucket carrying mult ≈ 0.8909 (or filter by the rider's atkPct). The count must EQUAL the number of crow 'reload' events (± the final partial magazine, since the rider fires at magazine exhaustion which coincides with reload-start) — roughly the 180s fight divided by (magazine time + ~2s reload), on the order of ~20, NOT on the order of thousands (shotFired misread). Each such event must have core rate 0 and rangeApplied false; inFullBurst may be true when the last bullet lands inside FB (FB-by-timing is correct).",
+      "inertness": "Must not scale with hit count within a magazine; must contribute zero core-bucket damage; must not fire during a reload-locked window.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Last bullet hits: self DEF ▲ 12.72% 5s",
+      "disposition": "FAITHFUL",
+      "scope": "Self DEF stat buff — defPct exists in the StatKey schema and is deliberately inert in v1 (self DEF never feeds own damage). Keep the buff for kit completeness / future consumers rather than dropping it (taxonomy: never skip DEF/HP lines on isolation — a teammate 'when DEF up' consumer could exist).",
+      "durationSemantics": "durationSec 5 — wall-clock seconds, refreshed each magazine's last bullet.",
+      "triggerIdentity": "lastBullet, same activation as the damage rider — one block or two blocks on the same trigger; NOT interval, NOT reload-completion.",
+      "targetSet": "self ('Affects self') — caster-slot overwrite on refresh.",
+      "nearestWrongModel": "Either dropping the line silently (no buffApply, nothing in unmodeled — a silent drop), or mis-targeting it to allies, or — worst — mis-encoding DEF ▲ as a damage-relevant stat (e.g. atkPct 12.72 self), which would add a real ~13% ATK uptime buff the kit does not grant.",
+      "distinguishingAssertion": "Event log must show a buffApply with stat 'defPct', value 12.72, targetSlug 'crow', casterIdx === targetIdx (self), following each crow reload cycle. RED if the buffApply carries stat 'atkPct' (damage-moving misread) or targets allies. Inertness leg: withPatchedOverride removing ONLY this buff must leave totals() bitwise identical for all units (defPct is engine-inert).",
+      "inertness": "Zero damage movement for crow and all teammates — a totals() delta from this line means it was encoded as a damage stat.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Highest final ATK enemy: 915.75% Burst",
+      "disposition": "FAITHFUL",
+      "scope": "Burst Skill damage — lands in the burst bucket. Per the measured convention, burst-cast instant damage lands BEFORE the Full Burst window opens: no +50% FB major, no entry auras (FB-exempt always). Crits at caster rate; no core (text says nothing about core strike); no range bonus on the instant-damage path.",
+      "durationSemantics": "Instant, once per crow burst cast (cd 40s).",
+      "triggerIdentity": "burstCast — crow's OWN burst cast, never fullBurstEnter. These diverge exactly when another Burst III unit shares the team (the control fixture includes helm as the fixed co-B3): fullBurstEnter would fire crow's 915.75% nuke on rotations helm bursts, over-crediting every alternating rotation.",
+      "targetSet": "enemy — 'the enemy with the highest final ATK' collapses to the single boss at scope lock (target-selection clause is scope-trivial).",
+      "nearestWrongModel": "Keying the nuke to fullBurstEnter (fires on EVERY team FB including helm's rotations — roughly doubles burst-slot damage in the control comp), and/or letting it take the +50% Full Burst bonus (fbMajorApplied true), which the burst-lands-pre-FB rule forbids.",
+      "distinguishingAssertion": "In controlComp(crow) with the fixed helm co-B3: (a) the count of crow-sourced 'damage' events in the burst bucket must EQUAL the count of crow 'burstCast' events and be STRICTLY LESS than the count of 'fullBurstStart' events (helm takes some rotations); (b) every such event must have fbMajorApplied === false and inFullBurst === false (cast resolves pre-FB). RED under fullBurstEnter keying (counts equal FB count) or under FB-major application.",
+      "inertness": "Must NOT fire on Full Bursts chained by helm's burst; must NOT receive the +50% FB major or entry auras; must not core.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill2:lastBullet-89.09%-flatDamage-rider",
+    "skill2:lastBullet-self-defPct-12.72-5s",
+    "burst:burstCast-915.75%-burst-nuke"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "■ Affects all enemies. Activates when entering Full Burst. ATK ▼ 19.93% for 10 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to reconcile: (1) skill1 enemy ATK ▼ silently 'upgraded' to a damageTakenPct boss debuff so the line 'does something' — it is a defensive debuff and must stay unmodeled/inert; assert zero totals movement. (2) skill2 rider cadence: lastBullet fires once per 120-round magazine (~20 procs/fight), so any encoding whose proc count scales with shots-per-magazine is the nearest-wrong; also note SMG hitsPerShot 2 is irrelevant to lastBullet (magazine-keyed, not hit-keyed) — a hitCount misread would additionally double-count via the 2-hit shots. (3) burst nuke keyed to fullBurstEnter or given the +50% FB major — the control fixture's fixed helm B3 slot makes this divergence directly observable (crow burst-bucket event count vs fullBurstStart count). (4) All four magnitudes (19.93 / 89.09 / 12.72 / 915.75) are kit-literal → DATAMINED; the only ⚑-class quantity in this kit is the SMG cadence tuple itself (owned by base stats, not by any kit line). No stacks, rounds, swaps, or resource pools anywhere in the kit — duration semantics are all plain seconds.",
+  "model": "claude-fable-5"
+}

@@ -56,7 +56,7 @@
 | `everyNOffset` | 3 | mint, neon-vision-eye, phantom |
 | `excludeSelf` | 16 | anis, arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, … |
 | `fbGate` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |
-| `flatDamage` | 75 | 2b, a2, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, … |
+| `flatDamage` | 76 | 2b, a2, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 4 | d, isabel, modernia, soda-twinkling-bunny |
 | `gainPierce` | 8 | ade-agent-bunny, asuka, dorothy, grave, mari, milk-blooming-bunny, naga, neve |
@@ -71,7 +71,7 @@
 | `instantInFb` | 1 | rapi-red-hood |
 | `instantReload` | 10 | alice-wonderland-bunny, asuka-wille, diesel, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, … |
 | `interval` | 26 | ade, anis, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, elegg-boom-and-shock, … |
-| `lastBullet` | 9 | anis-sparkling-summer, aria, dorothy, epinel, exia, helm, k, marciana, … |
+| `lastBullet` | 10 | anis-sparkling-summer, aria, crow, dorothy, epinel, exia, helm, k, … |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 7 | emilia, grave, n102, noir, rem, tove, trina |
 | `maxShots` | 3 | e-h, laplace-ultimate-hero, snow-white-heavy-arms |

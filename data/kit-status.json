@@ -1434,6 +1434,41 @@
       ],
       "board": null
     },
+    "crow": {
+      "name": "Crow",
+      "burst": "III",
+      "weapon": "SMG",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/crow.json + scripts/kit-autonomy/manual-review/crow.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "date": "2026-08-04",
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-checks: (a) S1 enemy-ATK-debuff UNMODELED ruling is load-bearing on the no-boss-offense basis — revisit if a boss-damage model is ever added; (b) rider per-fight count rides the contested SMG 20/s quantized cadence (base-stats-owned, not a kit line)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "■ Affects all enemies. Activates when entering Full Burst.\nATK ▼ 19.93% for 10 sec. — no sim channel: the enemy-buff path admits only damageTakenPct/distributedDamagePct > 0; enemy ATK▼ is dropped at dispatch (sim.ts:2295) and the immortal DEF=0 boss deals no damage, so the debuff moves nothing observable (exia precedent)"
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the enemy ATK▼ line is game-real but unenactable in the DPS sim — dropped at dispatch on the DEF=0 basis (boss deals no damage); recorded verbatim in unmodeled and proven damage-neutral by the unit spec (C4)",
+        "burst: 'the enemy with the highest final ATK' collapses to the single scope-lock boss — target selection is scope-trivial in the single-target sim (exia/novel precedent)",
+        "skill2: the DEF▲ line is faithfully encoded but damage-inert in v1 (self DEF never feeds own damage); kept for kit completeness, pinned inert by the unit spec (C2)"
+      ]
+    },
     "crown": {
       "name": "Crown",
       "burst": "II",
