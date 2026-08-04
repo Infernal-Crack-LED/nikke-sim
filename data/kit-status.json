@@ -3508,7 +3508,7 @@
         "within3pct": 1
       },
       "reference": false,
-      "residual": "Burst Max-HP scaling is a deliberate conservative lower-bound | engine-core r1-r6: MP init +1 dropped (first burst 0 stacks), stackedNuke hpPct reads base not live Max HP, stackedNuke forced non-crit, MP-replenish trigger fold, cast-frame ordering, MP-above-1 threshold; spot-check = burst repeat-hits per cast in footage",
+      "residual": "Burst Max-HP scaling is a deliberate conservative lower-bound | engine-core r1/r3-r6: MP init +1 dropped (first burst 0 stacks), stackedNuke forced non-crit, MP-replenish trigger fold, cast-frame ordering, MP-above-1 threshold; spot-check = burst repeat-hits per cast in footage. (The hpPct base-vs-live residual landed 2026-08-04: the burst HP term reads live Max HP at cast per the kit's 'final Max HP' — see DECISIONS.)",
       "unmodeled": {
         "skill1": [
           "Activates when entering Burst Stage 1 with MP at 0. MP recovers by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.",

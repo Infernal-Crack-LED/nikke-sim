@@ -1,11 +1,20 @@
 # Max-HP-scaling engine primitives — scope (handoff)
 
-**Status: SCOPED, NOT AUTHORIZED.** Findings + primitive spec only; nothing here edits the
-engine. 2026-08-04, owner request: "scope an engine primitive for Max HP scaling … units like
-Rouge, Cinderella, Maiden: Ice Rose, Maxwell: Ordinary Mechanic — one to track Max HP buffs and
-one to gain something (usually ATK) based on Max HP."
-Branch `worktree-max-hp-scaling` (worktree `.qwen/worktrees/max-hp-scaling`, based on
-`origin/main` @ 85d22560).
+**Status: LANDED on the branch (owner-directed 2026-08-04), PR pending.** 2026-08-04, owner
+request: "scope an engine primitive for Max HP scaling … units like Rouge, Cinderella, Maiden:
+Ice Rose, Maxwell: Ordinary Mechanic — one to track Max HP buffs and one to gain something
+(usually ATK) based on Max HP." Same session, owner ruled the one open kit question — maxwell
+S2-A is CASTER-basis ("maxwell doesn't actually use the target's HP, that was a misread") — and
+directed the fix + P1. Branch `worktree-max-hp-scaling` (worktree `.qwen/worktrees/max-hp-scaling`,
+based on `origin/main` @ 85d22560).
+
+**OUTCOME (2026-08-04):** P1a (`liveMaxHp` extraction, byte-identical — commit f8055b46), P2
+(`atkOfCasterMaxHpPct` + maxwell override fix, commit 9afac614) and P1b (`stackedNuke.hpPct`
+live read, maiden r2 closed — this commit) all landed test-first on this branch. DECISIONS 2026-08-04
+carries the ruling + blast radius. The scope text below is preserved as the design record;
+resolved questions are marked inline. Still OPEN (non-goals by design, §4 out-list + §8): the
+reporting-layer `UnitResult.maxHp` basis, grant re-derivation semantics, the cinderella G1
+owner popup re-read (M3), and the branch's PR itself.
 
 **Headline:** both primitive families ALREADY EXIST and are partly wired (theme-13 landing
 2026-07-17, `docs/engine-modeling-gaps.md:586`; cinderella wiring 2026-07-17). The real scope is
@@ -134,46 +143,41 @@ build DEF/other-stat variants without a carrier (two-carriers-is-not-a-mandate p
 SKILL USER'S final Max HP" granted to others, resolved to a FLAT add at apply time, the same
 pattern as `casterAtkPct` (`(v/100)×owner.staticAtk`, `sim.ts:2299`) — i.e.
 `(v/100)×<caster Max HP>` as a flat `casterAtkPct`-routed buff. Carrier: maxwell-ordinary-mechanic
-S2-A (sole). Open semantics, in dependency order:
+S2-A (sole). Open semantics, in dependency order (ALL RESOLVED 2026-08-04, owner-directed):
 
-- **Q1 — whose HP?** Kit says skill user's; engine ships target-own. Settled by M1 popup read.
-  If the read says "target's own", flag-1 closes as documented-as-shipped and no primitive is
-  built (one unvalidated finding is not a mandate).
-- **Q2 — static vs live caster Max HP at grant time.** The `casterAtkPct` precedent is STATIC
-  at apply. But maxwell's self-case today tracks her live (S1-stacked) HP per frame — the
-  enactment must decide and PIN the chosen behavior in her spec test either way.
-- **Q3 — does e3 generalize?** If the basis is "the caster's Max HP", do the CASTER'S own-kit
-  Max HP buffs amplify the grant to allies? The e3 measurement covers only the consumer's-own-HP
-  conversion; this arm is unmeasured. Default: static (no feed) until measured.
+- **Q1 — whose HP? RESOLVED (owner ruling):** the kit says "the skill user's final max HP" —
+  caster-basis. The shipped target-own resolution was a misread; the primitive was built.
+- **Q2 — static vs live caster Max HP at grant time. RESOLVED:** LIVE at apply time — "final"
+  is kit-literal for buffed; her own S1 stacks feed the basis (snapshot per cast, pinned by the
+  spec's per-cast value + growth assertions).
+- **Q3 — does e3 generalize? RESOLVED:** yes, same scope — the caster's OWN-kit Max HP buffs
+  feed the basis; ally-granted Max HP on the caster does not (liveMaxHp reader, no new rule).
 
 **Not a P2 item:** the `stackedNuke` hp-term live-read belongs to P1 (it is a tracking read, not
 a grant); maiden r3's forced non-crit is a separate stackedNuke semantics question.
 
 ## 6. Measurement + authorization checklist
 
-| # | Question | Blocks | Recipe | Estimate |
-| --- | --- | --- | --- | --- |
-| M1 | maxwell S2-A caster- vs own-HP basis (Q1) | P2 build/no-build | focus popup-read an ally's ATK-buff magnitude next to Maxwell's Max HP in a recorded comp | per-ally ATK error 1%×ΔMaxHP; maxwell own damage unaffected |
-| M2 | maiden burst "final Max HP" = live? (r2) | P1 step 2 | read one burst repeat-hit popup vs her S1-stacked Max HP state | ≤1% of her burst damage |
-| M3 | cinderella G1 same-cast snapshot | orthogonal (owner read) | re-read ONE e3 nuke popup (kit-status `residual` has the recipe) | ~20-25% of her nuke if historical read holds |
+| # | Question | Status |
+| --- | --- | --- |
+| M1 | maxwell S2-A caster- vs own-HP basis (Q1) | RESOLVED — owner ruling 2026-08-04 (misread; caster-basis). No popup needed |
+| M2 | maiden burst "final Max HP" = live? (r2) | RESOLVED — kit text literally says "final Max HP"; enacted kit-literal, pinned by the spec's doubling discriminator. Landed N6 +5.52% / CTRL +3.88%, FB counts unchanged |
+| M3 | cinderella G1 same-cast snapshot | STILL OPEN (orthogonal, owner popup re-read; kit-status `residual` has the recipe) |
 
-**Authorization status: NOT AUTHORIZED** (pattern of the other ENGINE PRIMITIVE GAP queue
-entries). Enactment requires: owner green light → `/scientific-method` pass for M1/M2 (they are
-damage-model semantics on tuned units) → work happens in THIS isolated worktree, lands via PR to
-`origin/main` (CLAUDE.md constraint 8 — never onto local `main`) → per-unit spec tests exist for
-all four carriers (`scripts/tests/units/{rouge,cinderella,maiden-ice-rose,maxwell-ordinary-mechanic}.test.ts`)
-→ regression snapshot + board A/B with any landing.
+**Authorization status: owner-directed 2026-08-04** (ruling + "make the fix, then proceed with
+p1"). Landed test-first in this isolated worktree per CLAUDE.md constraint 8; the branch goes to
+`origin/main` via PR (owner-gated), never onto local `main`. All four carriers' spec tests pin
+the new behavior; regression snapshots re-simmed with the change.
 
-## 7. Landing checklist (for the future enactment session)
+## 7. Landing checklist — DONE (2026-08-04)
 
-1. P1 step 1 (extract `liveMaxHp`) lands FIRST, alone, with the byte-identical contract
-   (regression snapshot unchanged; battery optional).
-2. P1 step 2 + P2 each land as separate gated slices with their measurement attached.
-3. Update on landing: `docs/data/damage-calculation.md` §1 Max-HP bullets (e3 rule section),
-   `docs/STATE.md:236` primitive row, `docs/engine-modeling-gaps.md` theme 13 + census tables,
-   the carrier overrides' `note`/`caveats` (CURRENT-state prose only — no history), QUEUE.md
-   item deletion (keep only open follow-ups).
-4. `/mechanics-doc-upkeep` after any `sim.ts` change; `/skill-maintenance` after landing.
+1. ✅ P1 step 1 (extract `liveMaxHp`) landed FIRST, alone, byte-identical (f8055b46).
+2. ✅ P2 (`atkOfCasterMaxHpPct` + maxwell override/spec, 9afac614) and P1 step 2 (stackedNuke
+   live read + maiden spec/snapshots, this commit) landed as separate slices, each RED→GREEN.
+3. ✅ Updated on landing: `docs/data/damage-calculation.md` §1 Max-HP bullets, `docs/STATE.md`
+   §5 primitive row, the `engine-modeling-gaps.md` census (doc-drift --update), both carrier
+   overrides' notes, both kit-status residuals, DECISIONS 2026-08-04, QUEUE pointer.
+4. ✅ Mechanics docs synced with the `sim.ts` changes (same commit).
 
 ## 8. Adjacent-but-distinct (do not fold in)
 

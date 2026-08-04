@@ -2741,8 +2741,10 @@ export function runSim(
           const stacks = Math.min(owner.fbMissedSinceBurst, e.maxStacks ?? 12);
           if (stacks > 0) {
             const eff = Math.max(1, effectiveAtk(owner, frame));
+            // Kit: "% of the skill user's FINAL Max HP" — liveMaxHp (own-kit Max-HP buffs
+            // feed, e3 scope), the same reader as effectiveAtk's atkOfMaxHpPct conversion.
             const hpEquivPct = e.hpPct
-              ? ((e.hpPct / 100) * owner.maxHp * 100) / eff
+              ? ((e.hpPct / 100) * liveMaxHp(owner, frame) * 100) / eff
               : 0;
             dealDamage(owner, (e.atkPct + hpEquivPct) * stacks, frame, {
               crit: false,

@@ -9,6 +9,36 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-04) MAX-HP-SCALING PRIMITIVES: maxwell-ordinary-mechanic S2 is CASTER-basis (owner
+  ruling — the target-own encoding was a misread), and every "% of Max HP" engine term now reads
+  live Max HP through one reader.** Three landings on branch `worktree-max-hp-scaling`, all
+  test-first (RED→GREEN) with the spec pins named below:
+  1. **`liveMaxHp(u, frame)` extracted from `effectiveAtk`** (byte-identical refactor, commit
+     f8055b46) — base + OWN-kit maxHpFlat buffs (e3 scope unchanged), now the single reader for
+     every Max-HP-scaled term.
+  2. **New StatKey `atkOfCasterMaxHpPct`** (commit 9afac614): "ATK ▲ X% of the skill user's
+     final Max HP" granted to others resolves at apply time to a FLAT add of the caster's
+     liveMaxHp, routed to the casterAtkPct consumer — uniform across targets, one snapshot per
+     cast; the caster's own-kit Max HP stacks feed the basis (self-grants are the one case e3
+     admits), ally grants do not. Owner ruling: maxwell's kit reads "the skill user's final max
+     HP" — the shipped per-target-own resolution was a misread of the caster-scaled text (the
+     gauntlet spec's OWN kit quote already said "skill user's", confirmed against
+     data/characters.json). Maxwell's spec M3 rewritten around the flat add (exact per-cast
+     value = 1% × her live Max HP, uniform across allies, growing with her S1 stacks, old-model
+     counterfactual); she is in no regression comp (MODEL_ONLY), snapshot untouched.
+  3. **stackedNuke hpPct reads live Max HP** (maiden-ice-rose residual r2 closed): her burst is
+     "1372.8% of the sum of 10% of the skill user's FINAL Max HP and … ATK" — kit-literal
+     "final" = live (own-kit feed), the base read was the residual. Spec M5 pins it via a
+     battle-start Max-HP doubling: the per-stack HP portion (shipped-vs-ATK-only-twin amount
+     difference, eff-invariant) must scale ~2× with her Max HP (base read gives ratio 1.0002 —
+     proven RED before the change). Blast radius: her two regression comps — T2 snapshot
+     unchanged (no live S1 stacks at her cast frames under that timing), N6 her total +5.52%
+     (FB counts unchanged: 12/12 T2, 11/11 N6, both vs measured); control-regression CTRL
+     maiden comp +3.88% (477.0M → 495.5M vs real 559.0M — 0.853 → 0.886, correct direction on
+     the documented conservative lower bound; r1/r3 residuals remain).
+  Scope + remaining non-goals (reporting-layer maxHp, grant re-derivation, ally-grant opt-in,
+  HP-pool adjacency): `docs/handoffs/2026-08-04-max-hp-scaling-primitives.md`.
+
 - **(2026-08-04) SECOND CLEAN-WEAPON OVERRIDE LANDED: `snow-crane` (the SR basis cell) carries a
   proven-damage-neutral gauntlet override under the CW1 option-2 invariant (2026-08-01).** The
   kit-autonomy gauntlet landed `snow-crane` at GO faithfulness 1.0, cross-family corroborated
