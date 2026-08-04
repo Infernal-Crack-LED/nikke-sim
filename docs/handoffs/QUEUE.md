@@ -318,6 +318,37 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
   - **⚠ Reproducibility gap:** the 07-30 numbers came from `scratchpad/pellets/run16/` — untracked.
     `scripts/probe/analyze-pellet-tracks.py` is committed but its input is not; distill a fixture
     before leaning on them further (constraint 9).
+  - **⇒ 2026-08-03 OWNER HAND SHOT-COUNT LANDED — three items it opened.** The ask
+    (`docs/handoffs/2026-08-01-OWNER-ASK-shot-count.md`) is ANSWERED: 36 shots / 4 magazines over
+    00:30.205–1:00.205 of `docs/probes/ar-sg-smg/isabel solo sg.MP4`; the ammo arbiter reproduces it
+    exactly (32 decrements + 4 magazine-empty), so the admissible reading stands and the raw 14.7% is
+    an artifact. Full record: `docs/probe-runs.md` §4. Three things it opened, none enacted:
+    1. **`reconstruct_ammo` magazine-consistency defect (probe-runs §4.3) — needs its own pass.**
+       It accepts a level that no magazine could hold, so a 3-frame glyph misread of `0` between a
+       confirmed 9 and a confirmed 8 is scored as a 9-shot `9 → 0` decrement plus a phantom `0 → 8`
+       reload — 8 phantom shots inside one event, and that is the entire raw-versus-admissible swing.
+       5 such decrements whole-clip on `isabel`. **The fix:** the independent arm's rule — within a
+       magazine the value must be the current level or current − 1, and a run of `9` after ≥ 25 frames
+       of break opens a new magazine. **Blast radius:** `reconstruct_ammo` also produces the
+       whole-fight numbers recorded in `docs/probe-runs.md` §3b AND is pinned by
+       `scripts/tests/fixtures/pellets/missing-shots-slice.json`, so both move; do not fold this into
+       another change. Only the `--hand-count` arm's reporting was corrected (admissible-basis fields
+       added alongside the raw ones); the reconstruction itself is untouched.
+    2. **The compensating-errors finding (probe-runs §4.5) — needs a second hand-counted window.**
+       In the counted window the reader's aggregate looks like a 5.6% under-read (34 detections vs 36
+       shots) but per event it misses 6 real shots AND invents 4 non-shots — a true miss rate of
+       16.7%, roughly **3× its aggregate figure**, and at or above the 8% bar. ⚑ n=1, HYPOTHESIS-
+       strength: it does not overturn the whole-fight 4.4%/14.7% headline. Before this can be treated
+       as a rate it needs a second hand-counted window on a **different unit or clip** — `guilty` or
+       `noir`, whose arbiter is still only internally-consistent.
+    3. **The reload phase-locked echo (probe-runs §4.4) — identify what it actually is.** REFUTED as
+       `isabel`'s S2 rockets (6 events over 190.7 s, spacings 30.4/22.7/49.5/8.8/6.4 s — not
+       periodic). 6 of 7 sit +16 to +18 frames after their own magazine's emptying round, a spread
+       under 0.07 s across four minutes. Open: is it a delayed projectile impact, a reload
+       visual-effect artifact of the reader, or a late pellet-marker render? It is currently counted
+       as a detected shot carrying ~0 pellets, so it inflates detections and deflates the per-shot
+       pellet average at the same time. Do NOT cite the arm's "median gap 14.48 s" as a ~15 s period —
+       that set includes 0.67 s and 39.63 s gaps and the resemblance to S2's cadence is accidental.
   - **⚠ Phase 2A gate-2 blind spot (filed 2026-07-31, from the §1.2 step-0 pass).** shot4's
     structural crosshair localization mislocked for ~10 frames spanning its OWN f8–11 window
     (jumped onto a floating damage-number stack, recovered via template-mode fallback — see the
