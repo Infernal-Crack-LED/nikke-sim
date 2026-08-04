@@ -218,17 +218,21 @@ untouched. **Zero fixtures and zero pins moved across BOTH passes.**
 
 ## 7. Open, in priority order
 
-1. ~~**LAND `band_hi = 20`**~~ — ✅ **LANDED 2026-08-04, owner-approved.** Plan
-   `2026-08-04-band-hi-LANDING-PLAN.md`, record `docs/probe-runs.md` §16. All five pre-stated
-   criteria met; the declared blast radius held exactly (**zero fixtures, zero pins**); cross-family
-   post-op `ACCEPT`. ⚑ **Two follow-ups it left open, both recorded in §16E:**
-   (a) **`--dump-tracks` never carries the `band` series**, so any dump replays as pre-hybrid and
-   cannot exercise the landing — a future re-extraction for audit purposes produces band-less dumps.
-   Pre-existing, does not affect the production reader (which parses `--temporal` stdout). Fixing it
-   changes the dump format ⇒ its own blast-radius pass.
-   (b) The improvement reaches **new extractions only** — the committed dumps keep the band values
-   they were extracted with, by design. **Nothing on the board moves until something is re-extracted.**
-2. ~~**IS THE TARGET ITSELF RIGHT?**~~ — ✅ **CLOSED 2026-08-04, OWNER-CONFIRMED**
+⚑ **BOARD UPDATE 2026-08-04 (late):** items 1, 2, 3 and 8 all CLOSED this session; the mislock
+COST question opened and was partly answered (§22). Current top item is **the unexplained residual**
+— see item 0.
+
+0. **⚑ THE COLD BIAS IS STILL OPEN AND ITS CAUSE IS NOW LESS CLEAR, NOT MORE.** §19 left −1.40
+   pellets/shot on the labelled clip after the `band_hi` landing, and attributed it to localization.
+   §20 then measured a **16.9%** mislock rate and §22 established (OWNER-ADJUDICATED) that the
+   production lock is genuinely bad on **~11.8% of all shots** — but §22C measured the _severity_ of
+   a bad lock at **−0.30 ± 0.76 pellets/shot, indistinguishable from zero.** ⇒ **A bad lock does not
+   systematically cost pellets**, so the largest identified defect does not explain the residual.
+   ⚑ §22D is the caveat that keeps this open: the 20% of flagged shots where **both** locks are
+   wrong are excluded from the severity measurement by construction and are probably the worst, so
+   the true cost is ≥ what was measured. **Sizing that population is the next real question.**
+
+1. ~~**IS THE TARGET ITSELF RIGHT?**~~ — ✅ **CLOSED 2026-08-04, OWNER-CONFIRMED**
    (`docs/probe-runs.md` §18). **NO marker lands and fully fades before `t0+8`** — the f8–11 window
    count IS the landed total and **8.40 is CONFIRMED as the reference.** Of 140 screened tracks only
    11 were ever candidates (nothing dying before `t0+8` exceeds life 5, against an owner-pellet
@@ -239,7 +243,7 @@ untouched. **Zero fixtures and zero pins moved across BOTH passes.**
    ⚑ **This LIFTS the block on bias verdicts** — §5.4's "no bias-CLOSED verdict is possible" no
    longer binds, and a re-extraction under the landed `band_hi = 20` now gives a clean before/after
    against a confirmed reference.
-3. ~~**PRODUCTION MISLOCK RATE**~~ — ✅ **MEASURED 2026-08-04: 16.9%** (`docs/probe-runs.md` §20,
+2. ~~**PRODUCTION MISLOCK RATE**~~ — ✅ **MEASURED 2026-08-04: 16.9%** (`docs/probe-runs.md` §20,
    rule pre-committed at `9bc829dd`). 137 of 811 shots across 4 dumps / 4 units; all four cleared
    the 90% template-lock gate. ⇒ the pre-committed **"> 10% ⇒ mislocks are the DOMINANT undercount
    channel and outrank every other open item"** band. Validated three ways: the known shot-4 mislock
@@ -251,22 +255,22 @@ untouched. **Zero fixtures and zero pins moved across BOTH passes.**
    invisible — shot 1's 78 px mislock is not flagged). ⚑ **Sizing is DERIVED, not measured:** at
    16.9% × shot 4's −5 severity ≈ 0.85 pellets/shot, n=1 for the severity term and carrying the
    refuted `center_exclude` arithmetic shape — **measuring the channel's cost is the next pass.**
-4. **The 112 → 96 abstentions, reframed.** ⚑ It is a **concurrency** gate, not an absence of tracks
+3. **The 112 → 96 abstentions, reframed.** ⚑ It is a **concurrency** gate, not an absence of tracks
    (§1.4) — the old framing is dead. Open: what the 81 `in_band_no_concurrency` events are, and what
    the 16 that become banded at `band_hi = 20` have in common. Cheap; answerable from committed
    fixtures.
-5. **Track fragmentation** — 70% of tracks end by frame 2 at 30 fps, 64.3% at 60 fps. Flagged since
+4. **Track fragmentation** — 70% of tracks end by frame 2 at 30 fps, 64.3% at 60 fps. Flagged since
    08-01 as larger than the raw percentages suggest. Plausibly the same root as item 4 — treat
    together.
-6. **The missing-shot channel — which BASIS carries the bias was never decided.** Aggregate 3.9–6.8%
+5. **The missing-shot channel — which BASIS carries the bias was never decided.** Aggregate 3.9–6.8%
    vs per-event 16.7%/17.4%. The `guilty` **f1787** miss is still mechanistically unexplained (n=1 —
    do not manufacture a cause).
-7. **§11's backend-selector defect — the PREREQUISITE IS NOW ANSWERED (§1.5); the FIX is still
+6. **§11's backend-selector defect — the PREREQUISITE IS NOW ANSWERED (§1.5); the FIX is still
    OWNER-GATED.** `read-pellets.ts:882` resolves backend ties by array order on a channel the
    comparison never inspects. The blocking question ("is the f1565 marker real?") is answered **no**
    at n=1. Measured blast radius: ONE event across 8 dumps. ⚑ Ready for an owner decision; do not
    self-authorize it on an n=1 read.
-8. ~~**60 fps localization instability**~~ — ✅ **ANSWERED 2026-08-04, in the NEGATIVE**
+7. ~~**60 fps localization instability**~~ — ✅ **ANSWERED 2026-08-04, in the NEGATIVE**
    (`docs/probe-runs.md` §17). Re-localized both windows under `--locate structural`: lock rate goes
    **0% → 100% / 99.4%**, but **~81% of those locks are HELD** (`conf is None`) against 8.1% on
    `i3-noir-far-60fps` and 21.4% on `h4-marciana-structural`. Stale run-displacement median **202.6 px**
@@ -276,12 +280,12 @@ untouched. **Zero fixtures and zero pins moved across BOTH passes.**
    already lock 100%, including a far-band one, so neither 60 fps nor the far band is the
    discriminator. **Why these two windows fail is UNEXPLAINED** (§17E) — and item 3 does **not** hang
    off this after all (see §7.3).
-9. **`debounce_shots` SEGMENTATION — still ⛔ OWNER-GATED, untouched.** `cap_cadence` (~3 LOC) and
+8. **`debounce_shots` SEGMENTATION — still ⛔ OWNER-GATED, untouched.** `cap_cadence` (~3 LOC) and
    `resplit` (~10 LOC) cut pooled MISSED **7.0% → 4.2%/4.5%**. ⚑ `cap_cadence = 35` is NOT
    reproducible. ⛔ `candA` is REFUTED — do not re-propose.
-10. **The generator's radial envelope; Phase 2 steps 4–6** — blocked on the owner's Decision 1 and
-    the outstanding `/logic-gate` pre-op revisions.
-11. **Doc hygiene owed:** `/patch-notes` before `main`. QUEUE.md now points here (updated this
+9. **The generator's radial envelope; Phase 2 steps 4–6** — blocked on the owner's Decision 1 and
+   the outstanding `/logic-gate` pre-op revisions.
+10. **Doc hygiene owed:** `/patch-notes` before `main`. QUEUE.md now points here (updated this
     session); items 1–4 and 7 above are the live ones.
 
 ## 8. Method note for the next judge

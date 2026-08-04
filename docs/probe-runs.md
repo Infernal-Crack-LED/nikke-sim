@@ -5570,3 +5570,93 @@ would otherwise have been believed.
 
 **RECORDS a void measurement.** Nothing enacted; no constant, guard, threshold or default changed;
 no cold-bias verdict stamped.
+
+#### §22 THE MISLOCK COST, OWNER-ADJUDICATED — the production lock is bad on ~11.8% of shots, but a bad lock does NOT systematically change the count
+
+Resolves what §21 proved underivable: which lock is right. **Tier: OWNER-ADJUDICATED**, blinded.
+Instrument `analyze-pellet-tracks.py --lock-adjudication` (seed `20260804`, commit `dff2c05d`).
+
+##### §22A — The blinded set, and the controls that validate it
+
+24 cases: **20 detector-mislocked + 4 not-mislocked controls**, stratified across all 4 production
+dumps, shuffled, with the structural/template → A/B assignment randomized per case. The owner saw
+only "which marked position is the actual crosshair?" — no dump names, no flags, no ordering signal.
+The driver did not read the answer key before the answers arrived.
+
+⚑ **The controls behaved exactly as they must.** The owner volunteered a fifth answer the format did
+not offer — **"both"** — on 3 of the 4 controls, and those 3 are precisely the **3 smallest
+disagreements in the whole set (1, 4, 8 px)**: where the two locks nearly coincide, both markers sit
+on the same reticle. The remaining control (98 px, distinguishable) was answered, and correctly
+identified structural. **Blinding and detector both hold.**
+
+##### §22B — Which lock is wrong, on detected-mislocked shots (n = 20)
+
+| owner verdict                     | n     | share   | meaning                                           |
+| --------------------------------- | ----- | ------- | ------------------------------------------------- |
+| **STRUCTURAL right**              | 6     | 30%     | production lock was FINE despite the disagreement |
+| **TEMPLATE right**                | 10    | 50%     | **production lock WRONG**                         |
+| ⚑ **NEITHER** (owner-volunteered) | **4** | **20%** | **BOTH locks wrong**                              |
+
+⇒ **The production lock is bad on 14 of 20 = 70% of detected-mislocked shots.** Combined with §20's
+16.9% rate: **≈ 11.8% of ALL production shots carry a bad structural lock.**
+
+⚑ This **confirms §20E's limit quantitatively**: 16.9% was an _upper bound_ on structural-specific
+mislocks, and the true figure is 70% of it. ⚑ It also shows the detector's premise is incomplete —
+**a fifth of flagged shots have BOTH locks wrong**, a category no two-mode comparison can name.
+
+##### §22C — ⚑ THE SURPRISE: a wrong lock does NOT systematically cost pellets
+
+On the 10 cases where the owner establishes template as the correct reference, the count under the
+(wrong) structural lock minus the count under the (right) template lock:
+
+`−1, −7, +2, 0, 0, 0, 0, +1, 0, +2`
+
+| statistic       | value                                          |
+| --------------- | ---------------------------------------------- |
+| mean loss       | **−0.30 pellets/shot**                         |
+| sd              | 2.41                                           |
+| **SE (sd/√n)**  | **0.76**                                       |
+| **⇒ mean ± SE** | **−0.30 ± 0.76 — INDISTINGUISHABLE FROM ZERO** |
+
+**Five of ten are exactly zero, and three are POSITIVE** (structural counted _more_). The channel is
+**noise, not systematic loss**: one −7 (structural counted 0 against template's 7) is offset by
++2/+1/+2 elsewhere.
+
+⇒ **§20D's ≈ 0.85 pellets/shot estimate is NOT SUPPORTED.** It was `rate × one shot's severity`;
+measured across ten, severity is consistent with zero.
+
+⚑ Note case 20: the wrong structural lock reported **11**, above the `hitsPerShot = 10` physical
+ceiling. A bad lock can over-count as well as under-count — which is exactly why the mean is ~0.
+
+##### §22D — ⛔ The limit that most constrains this, stated plainly
+
+**The 4 NEITHER cases (20%) are excluded from §22C by construction, and they are probably the
+worst.** Where both locks are wrong, template is not a valid reference, so the loss is unmeasurable —
+and if both windows are off-target, both undercount, which would read as "no difference" even while
+both lose pellets. **The severity estimate is therefore biased TOWARD zero, and the true cost of the
+bad-lock channel is ≥ what §22C measures.**
+
+Other limits: `total_tmpl` comes from template's own independent segmentation, matched by nearest
+onset (±15 frames), which adds pairing noise on top of §21's measured 0.706 count noise. n = 10 for
+severity, 20 for the verdict split, 4 for the controls.
+
+##### §22E — What is settled, and what is not
+
+✅ **SETTLED:** the production lock is wrong on ~70% of detected-mislocked shots ⇒ **~11.8% of all
+production shots**; and **20% of flagged shots have both locks wrong**.
+✅ **SETTLED:** §20's 16.9% is confirmed as an upper bound, with the correction factor now measured.
+⛔ **NOT SETTLED:** what the bad-lock channel costs. §22C measures ~0 on the subset where it is
+measurable, but §22D shows that subset excludes the worst cases. **The cold bias is NOT closed and
+mislocks are NOT established as its cause.**
+⚑ **§20D's 0.85 pellets/shot is now REFUTED as stated** (it assumed shot 4's −5 severity is typical;
+it is not — the median measured severity is 0).
+
+##### §22F — A generation defect worth fixing before any re-run
+
+The owner flagged case 9: _"b shows the right half of the crosshair, the left bound of the image
+bisects the crosshair."_ The tight crop was **clipped at the frame boundary** when a candidate sits
+near an edge. It did not prevent an answer here, but a future adjudication set must pad or shift
+edge-adjacent crops rather than clipping them.
+
+**RECORDS a measurement + an owner adjudication.** Nothing enacted; no constant, guard, threshold or
+default changed; no localizer re-tune; no cold-bias verdict.
