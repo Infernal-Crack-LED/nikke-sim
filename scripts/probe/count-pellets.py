@@ -389,22 +389,40 @@ def temporal_filter(all_comps, max_pellet_frames=8, match_dist=30):
 
 
 # ============================================================
+# The fps-scaled owner-pellet lifetime band's LOWER bound (docs/handoffs/
+# 2026-08-04-representative-frame-PROPOSAL.md §2/§4, docs/probe-runs.md §9G/§13). Duplicated from
+# analyze-pellet-tracks.py's `REP_OWNER_LIFE_LO_60FPS` (same name, same value, same formula at its
+# own `_ps_band`) rather than imported — this module has no dependency on analyze-pellet-tracks.py
+# (the import runs the other way, in-process, see that file's `_count_pellets_module`) and stays
+# standalone. Kept in lockstep by convention, not by sharing code, same as `debounce_shots` itself.
+# ============================================================
+REP_OWNER_LIFE_LO_60FPS = 8
+
+
+def _band_lo(fps):
+    return max(1, round(REP_OWNER_LIFE_LO_60FPS * fps / 60.0))
+
+
+# ============================================================
 # Cross-frame tracking + per-frame result assembly (Phase 1 §1.1) — factored out of main()'s
 # `--temporal` loop so it can run BOTH against a live per-frame detection pass and against a
 # `--load-detections` cache's filtered component lists. Match-distance (30 zoomed px) and the
 # pellet-lifetime cutoff (`--max-pellet-frames`) are the two things a filter/tracker sweep varies
 # here; both are cheap (O(components), not O(pixels)) so many combinations run in seconds once
 # `all_comps` is available, whether freshly detected or filtered from a cache.
+#
+# Split into `_track_components` (the nearest-neighbor tracker) and `_frame_pellet_counts` (the
+# per-frame radius/lifetime window) so the counting half can be re-run standalone against a
+# RECONSTRUCTED `frame_tracks` (e.g. from a committed dump's own track list) without re-deriving
+# track identity from raw components a second time — see analyze-pellet-tracks.py's
+# `--band-equivalence-audit`, which needs exactly that to check the `band` channel below against
+# an independently-computed one without the two runs disagreeing over which components matched
+# which track on a near-miss.
 # ============================================================
-def build_tracks_and_counts(all_comps, cross_positions, args):
-    """Track components across frames, classify by lifetime, and window by crosshair radius.
-
-    `all_comps`: per-frame list of (cx, cy, is_red, area, circ) — either detect_components_with_
-    pos(img, args) output (live) or _filter_components(raw, args, w, h) output (cached replay).
-    Returns (results, tracks, track_life, pellet_ids, frame_tracks) — `results` is the per-frame
-    {"white", "red", "marker"} dict list `--temporal` has always emitted; the rest are what
-    `--dump-tracks` reports.
-    """
+def _track_components(all_comps):
+    """The nearest-neighbor tracker. `all_comps`: per-frame list of (cx, cy, is_red, area, circ).
+    Returns (tracks, frame_tracks) — `frame_tracks[fi]` is a per-frame list of
+    (track_id, x, y, is_red)."""
     tracks = []
     next_id = 0
     frame_tracks = []  # per-frame list of (track_id, x, y, is_red)
@@ -445,14 +463,21 @@ def build_tracks_and_counts(all_comps, cross_positions, args):
                 frame_active.append((next_id, cx, cy, is_red))
                 next_id += 1
         frame_tracks.append(frame_active)
+    return tracks, frame_tracks
 
-    track_life = {t['id']: t['last_frame'] - t['first_frame'] + 1 for t in tracks}
-    pellet_ids = {t['id'] for t in tracks if track_life[t['id']] <= args.max_pellet_frames}
 
+def _frame_pellet_counts(frame_tracks, cross_positions, pellet_ids, band_ids, args):
+    """Per-frame {"white", "red", "marker", "band"} counts, windowed by crosshair radius.
+
+    `band` (docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md §2) is the number of WHITE
+    (non-red) in-radius tracks on that frame whose OVERALL lifetime also falls in the fps-scaled
+    owner-pellet band `[_band_lo(fps), args.max_pellet_frames]` — a strict subset of `white`, which
+    only requires lifetime `<= args.max_pellet_frames` (the `pellet_ids` gate). `band_ids` is that
+    subset of `pellet_ids`, precomputed by the caller once from `track_life`."""
     results = []
-    for fi in range(len(all_comps)):
+    for fi in range(len(frame_tracks)):
         cp = cross_positions[fi] if fi < len(cross_positions) else None
-        white, red, marker = 0, 0, 0
+        white, red, marker, band = 0, 0, 0, 0
         if cp:
             for tid, x, y, is_red in frame_tracks[fi]:
                 if tid not in pellet_ids:
@@ -469,7 +494,29 @@ def build_tracks_and_counts(all_comps, cross_positions, args):
                         red += 1
                 else:
                     white += 1
-        results.append({"white": white, "red": red, "marker": marker})
+                    if tid in band_ids:
+                        band += 1
+        results.append({"white": white, "red": red, "marker": marker, "band": band})
+    return results
+
+
+def build_tracks_and_counts(all_comps, cross_positions, args):
+    """Track components across frames, classify by lifetime, and window by crosshair radius.
+
+    `all_comps`: per-frame list of (cx, cy, is_red, area, circ) — either detect_components_with_
+    pos(img, args) output (live) or _filter_components(raw, args, w, h) output (cached replay).
+    Returns (results, tracks, track_life, pellet_ids, frame_tracks) — `results` is the per-frame
+    {"white", "red", "marker", "band"} dict list `--temporal` has always emitted (`band` added
+    2026-08-04); the rest are what `--dump-tracks` reports.
+    """
+    tracks, frame_tracks = _track_components(all_comps)
+    track_life = {t['id']: t['last_frame'] - t['first_frame'] + 1 for t in tracks}
+    pellet_ids = {t['id'] for t in tracks if track_life[t['id']] <= args.max_pellet_frames}
+    fps = getattr(args, 'fps', 30.0) or 30.0
+    band_lo = _band_lo(fps)
+    band_ids = {tid for tid in pellet_ids if band_lo <= track_life[tid] <= args.max_pellet_frames}
+
+    results = _frame_pellet_counts(frame_tracks, cross_positions, pellet_ids, band_ids, args)
     return results, tracks, track_life, pellet_ids, frame_tracks
 
 
@@ -486,12 +533,69 @@ def build_tracks_and_counts(all_comps, cross_positions, args):
 # temporal-count-regression.py's sibling check / the H1 tree-code run's committed pellets.json)
 # rather than assumed — see `--shots` below.
 # ============================================================
+def _longest_modal_run(totals, a, b, event_min):
+    """The longest contiguous run of ACTIVE frames (>= `event_min`) in `[a, b)` whose values all
+    fall within +-1 of the run's own mode. `totals` is a {frame_index: count} mapping (absent keys
+    read as 0). This is `plateau_median`'s frame-selection rule (docs/handoffs/
+    2026-08-04-representative-frame-PROPOSAL.md §2), ported verbatim from
+    analyze-pellet-tracks.py's `_ps_longest_modal_run` (the `--policy-score` arm's
+    `hybrid_plateau_median` reference) — kept in lockstep by convention, not a shared module, same
+    as the rest of this function."""
+    frames = [j for j in range(a, b) if totals.get(j, 0) >= event_min]
+    if not frames:
+        return []
+    blocks, cur = [], [frames[0]]
+    for f in frames[1:]:
+        if f == cur[-1] + 1:
+            cur.append(f)
+        else:
+            blocks.append(cur)
+            cur = [f]
+    blocks.append(cur)
+
+    best = []
+    for block in blocks:
+        n = len(block)
+        if n <= len(best):
+            continue
+        for length in range(n, len(best), -1):
+            found = None
+            for start in range(0, n - length + 1):
+                sub = block[start:start + length]
+                vals = [totals[f] for f in sub]
+                mode = collections.Counter(vals).most_common(1)[0][0]
+                if all(abs(v - mode) <= 1 for v in vals):
+                    found = sub
+                    break
+            if found is not None:
+                best = found
+                break
+    return best
+
+
+def _plateau_rep(totals, a, b, event_min):
+    run = _longest_modal_run(totals, a, b, event_min)
+    return run[len(run) // 2] if run else None
+
+
 def debounce_shots(frame_counts, fps, marker_min=2, min_pellets=5, max_pellets=10):
     """frame_counts: per-frame {"white", "red", "marker"} dicts (build_tracks_and_counts output,
     or any source of the same shape). Returns (shots, summary) mirroring read-pellets.ts's
-    `shots`/`summary.{totalShots,validShots,avgTotal,avgRed}`."""
+    `shots`/`summary.{totalShots,validShots,avgTotal,avgRed}`.
+
+    FALLBACK HYBRID representative-frame rule (docs/handoffs/2026-08-04-representative-frame-
+    PROPOSAL.md §2/§4, landed docs/probe-runs.md §13): if any frame in the event carries a `band`
+    key (docs/probe-runs.md §9G's lifetime-gated series — a strict subset of `white`, restricted to
+    tracks whose overall lifetime falls in the fps-scaled owner-pellet band), select the
+    representative by `plateau_median` over that band series instead of the shipped median-of-
+    `white+red`. ⚑ BACKWARD COMPAT: when NO frame in `frame_counts` carries a `band` key (every
+    dump before 2026-08-04, and every fixture committed before this rule), this function is
+    BYTE-IDENTICAL to the pre-hybrid shipped behaviour below — the `has_band` check is computed
+    once, up front, so an absent key can never silently fall through to a `.get(..., 0)` default
+    and change an old dump's answer."""
     max_gap = max(3, round(fps * 0.13))
     event_min = 3
+    has_band = any('band' in r for r in frame_counts)
     totals = [r['white'] + r['red'] for r in frame_counts]
     n = len(frame_counts)
     shots = []
@@ -529,19 +633,32 @@ def debounce_shots(frame_counts, fps, marker_min=2, min_pellets=5, max_pellets=1
                 )
                 shot_red = 1 if core_hit else 0
                 rep = frame_counts[rep_idx]
+                white, total = rep['white'], rep['white'] + shot_red
+                # The hybrid override: only ever REPLACES `rep_idx`/`white`/`total` above, never
+                # `shot_red`/`core_hit`/`event_frames`/`start`/`end` -- those are unchanged by the
+                # representative-frame rule regardless of which policy picked the frame.
+                if has_band:
+                    band_totals = {j: frame_counts[j].get('band', 0)
+                                    for j in range(event_start, event_end)}
+                    band_rep = _plateau_rep(band_totals, event_start, event_end, event_min)
+                    if band_rep is not None:
+                        rep_idx = band_rep
+                        white = band_totals[band_rep]
+                        total = white + shot_red
                 shots.append({
-                    'frame': rep_idx, 'white': rep['white'], 'red': shot_red,
-                    'total': rep['white'] + shot_red, 'frames': event_frames, 'core': core_hit,
+                    'frame': rep_idx, 'white': white, 'red': shot_red,
+                    'total': total, 'frames': event_frames, 'core': core_hit,
                     # DIAGNOSTIC-ONLY, additive (2026-08-01): the event's own frame bounds.
-                    # `frame` is the REPRESENTATIVE (median-total) frame, which is not the blast
-                    # onset -- but every offset-indexed counting rule in this pipeline (f8-11) is
-                    # defined relative to the ONSET t0, and make-groundtruth-f811.py's find_t0
-                    # can only be used where an owner-supplied approximate shot index exists.
-                    # `start` is the rising edge this event was opened on, so a consumer with no
-                    # owner shot times can index counting frames off the SAME event grouping the
-                    # shipped estimator uses instead of re-deriving onsets from a private copy.
-                    # Nothing in the returned counts/summary depends on these two keys, so
-                    # read-pellets.ts's debounce block stays in lockstep unchanged.
+                    # `frame` is the REPRESENTATIVE (median-total, or hybrid-plateau where a band
+                    # exists) frame, which is not the blast onset -- but every offset-indexed
+                    # counting rule in this pipeline (f8-11) is defined relative to the ONSET t0,
+                    # and make-groundtruth-f811.py's find_t0 can only be used where an owner-
+                    # supplied approximate shot index exists. `start` is the rising edge this event
+                    # was opened on, so a consumer with no owner shot times can index counting
+                    # frames off the SAME event grouping the shipped estimator uses instead of
+                    # re-deriving onsets from a private copy. Nothing in the returned counts/
+                    # summary depends on these two keys, so read-pellets.ts's debounce block stays
+                    # in lockstep unchanged.
                     'start': event_start, 'end': event_end,
                 })
             event_start = -1
@@ -1221,7 +1338,20 @@ CACHE_SELFTEST_COMBO = [{"min_area": 25, "max_area": 750, "min_circ": 0.55}]
 # Independently cross-checked against scratchpad/pellets/h1-cache-test/live200-shots.log (an
 # uncommitted scratch run over the same 200 frames with the full filter/tracker arg set passed
 # explicitly) before being pinned here — that agreement IS the fixture's validation.
-CACHE_SELFTEST_EXPECT = {"totalShots": 9, "validShots": 7, "avgTotal": 7.1, "avgRed": 0.0}
+#
+# ⚑ MOVED 2026-08-04 (validShots 7->6, avgTotal 7.1->6.7) by the fallback-hybrid representative-
+# frame rule (docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md, landed docs/probe-runs.md
+# §13) — this is a REAL 200-frame slice fed through the full `--temporal --sweep` pipeline, so
+# `build_tracks_and_counts` now always emits a `band` channel and `debounce_shots` always attempts
+# the hybrid. 7 of this slice's 9 events move to a LOWER-total plateau frame instead of the
+# shipped flash-phase frame (consistent with §9D: the shipped median samples the muzzle flash,
+# which reads high); one of them (event index 4, span [78,85)) crosses the `min_pellets=5` floor
+# going from total=5 (valid) to total=4 (invalid), which is the entire validShots/avgTotal delta.
+# Reproduced directly: `debounce_shots` on this slice's own `build_tracks_and_counts` output vs the
+# same output with `band` stripped (the pre-hybrid answer) diverges on exactly events
+# {0, 2, 3, 4, 6} (0-indexed) and agrees on {1, 5, 7, 8} — event 4 is the only one that also flips
+# validity. This is the change working as designed, not a bug.
+CACHE_SELFTEST_EXPECT = {"totalShots": 9, "validShots": 6, "avgTotal": 6.7, "avgRed": 0.0}
 CACHE_SELFTEST_OVERRIDE_EXPECT = {"totalShots": 3, "validShots": 1, "avgTotal": 5.0, "avgRed": 0.0}
 
 
@@ -1672,7 +1802,10 @@ def main():
             fr = frame_results[fi]
             entry = {"file": fname}
             for name in backends:
-                entry[name] = dict(fr) if name in active else {"white": 0, "red": 0, "marker": 0}
+                entry[name] = (
+                    dict(fr) if name in active
+                    else {"white": 0, "red": 0, "marker": 0, "band": 0}
+                )
             results.append(entry)
 
         # Optional diagnostic dump: every track with full stats + per-frame crosshair data

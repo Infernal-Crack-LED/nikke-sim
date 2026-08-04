@@ -41,19 +41,52 @@ import {
 import { fileURLToPath } from 'node:url';
 
 const argv = process.argv.slice(2);
-const video = argv[0];
 const flags: Record<string, string> = {};
-for (let i = 1; i < argv.length; i++) {
+// The video is the first NON-FLAG positional token, wherever it falls — not always argv[0].
+// `--debounce-json <path> [--fps N]` has no video argument at all (its early-exit branch below
+// runs before `video` is ever checked), so scanning from i=1 and assuming argv[0] is the video
+// would silently swallow `--debounce-json` itself as `video` and never parse it into `flags`.
+let video = '';
+for (let i = 0; i < argv.length; i++) {
   if (argv[i].startsWith('--')) {
     flags[argv[i].slice(2)] =
       argv[i + 1]?.startsWith('--') || argv[i + 1] === undefined
         ? 'true'
         : argv[++i];
+  } else if (!video) {
+    video = argv[i];
   }
 }
+const MIN_PELLETS = 5;
+const MAX_PELLETS = 10;
+
+// ---- --debounce-json: pure JSON-in/JSON-out harness for the debounce block, no video/ffmpeg/VLM
+// needed. Mirrors count-pellets.py's standalone `debounce_shots(frame_counts, fps, ...)` exactly —
+// same input shape ({white,red,marker,band} per frame), same output shape ({shots, summary}) — so
+// the two implementations can be fed the SAME frame_counts array and diffed on a COMMON input
+// (docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md §4 criterion 5, the lockstep
+// requirement; see also §11G on why "common input" matters). `debounceShots` is a hoisted function
+// declaration, so calling it here (before its textual definition further down) is safe. This
+// branch runs BEFORE the video-required check below, so no video argument is needed.
+if (flags['debounce-json']) {
+  const djFrames = JSON.parse(readFileSync(flags['debounce-json'], 'utf8')) as {
+    white: number;
+    red: number;
+    marker?: number;
+    band?: number;
+  }[];
+  const djFps = Number(flags.fps ?? 30);
+  const djMarkerMin = Number(flags['marker-min'] ?? 2);
+  const djMin = Number(flags['min-pellets'] ?? MIN_PELLETS);
+  const djMax = Number(flags['max-pellets'] ?? MAX_PELLETS);
+  const djResult = debounceShots(djFrames, djFps, djMarkerMin, djMin, djMax);
+  console.log(JSON.stringify(djResult));
+  process.exit(0);
+}
+
 if (!video || !existsSync(video)) {
   console.error(
-    'usage: read-pellets.ts <video> [--fps 30] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--pellet-crop "..."] [--timer-crop "..."] [--zoom 2] [--core-rate 0.05] [--center-exclude N] [--pellet-radius N] [--ammo-offset-x X] [--ammo-offset-y Y] [--mock] [--out DIR]'
+    'usage: read-pellets.ts <video> [--fps 30] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--pellet-crop "..."] [--timer-crop "..."] [--zoom 2] [--core-rate 0.05] [--center-exclude N] [--pellet-radius N] [--ammo-offset-x X] [--ammo-offset-y Y] [--mock] [--out DIR]\n       read-pellets.ts --debounce-json <frame_counts.json> [--fps 30] [--marker-min 2] [--min-pellets 5] [--max-pellets 10]'
   );
   process.exit(1);
 }
@@ -86,8 +119,6 @@ const counterScript = `${scriptDir}count-pellets.py`;
 const ammoTemplatePath = `${scriptDir}ammo-box-template.png`;
 const forceVlmCrosshair = flags['no-ammo-template'] === 'true';
 
-const MIN_PELLETS = 5;
-const MAX_PELLETS = 10;
 const TIMER_FPS = 1; // sparse timer sampling — VLM is the bottleneck, not the counter
 
 // PNG width/height live at a fixed offset in the IHDR chunk (8-byte signature, then a 4-byte
@@ -186,6 +217,9 @@ interface PelletCount {
   white: number;
   red: number;
   marker?: number; // core-hit hit-markers (red triangles tight to the crosshair)
+  band?: number; // lifetime-gated white-pellet count (docs/probe-runs.md §9G/§13) — a strict
+  // subset of `white`, restricted to tracks whose overall lifetime falls in the fps-scaled
+  // owner-pellet band. Feeds the fallback-hybrid representative-frame rule in `debounceShots`.
 }
 interface FrameCounts {
   file: string;
@@ -195,6 +229,254 @@ interface FrameCounts {
 }
 let frameCounts: FrameCounts[] = [];
 // Counter runs AFTER crosshair reads (needs the crosshair file) — see below
+
+// ============================================================
+// debounce: gap-tolerant event grouping, plus the FALLBACK HYBRID representative-frame rule
+// (docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md §2/§4, landed docs/probe-runs.md
+// §13). A `function` declaration (hoisted) so `--debounce-json` can call it before this point in
+// the file. KEEP THIS IN LOCKSTEP WITH count-pellets.py's `debounce_shots` — a second
+// implementation of the same algorithm, not a shared module (same precedent as the rest of this
+// file's relationship to count-pellets.py).
+// ============================================================
+interface DebounceFrame {
+  white: number;
+  red: number;
+  marker?: number;
+  band?: number;
+}
+interface DebounceShot {
+  frame: number;
+  white: number;
+  red: number;
+  total: number;
+  frames: number;
+  core: boolean;
+  start: number;
+  end: number;
+}
+interface DebounceSummary {
+  totalShots: number;
+  validShots: number;
+  avgTotal: number | null;
+  avgRed: number | null;
+}
+
+// `plateau_median`'s frame-selection rule (docs/handoffs/2026-08-04-representative-frame-
+// PROPOSAL.md §2): the longest contiguous run of ACTIVE frames (>= eventMin) in [a, b) whose
+// values all fall within +-1 of the run's own mode. `totals` is a Map (absent keys read as 0).
+// Ported verbatim from analyze-pellet-tracks.py's `_ps_longest_modal_run` / count-pellets.py's
+// `_longest_modal_run` (the `--policy-score` arm's `hybrid_plateau_median` reference).
+function longestModalRun(
+  totals: Map<number, number>,
+  a: number,
+  b: number,
+  eventMin: number
+): number[] {
+  const frames: number[] = [];
+  for (let j = a; j < b; j++) {
+    if ((totals.get(j) ?? 0) >= eventMin) {
+      frames.push(j);
+    }
+  }
+  if (!frames.length) {
+    return [];
+  }
+  const blocks: number[][] = [];
+  let cur = [frames[0]];
+  for (let k = 1; k < frames.length; k++) {
+    if (frames[k] === cur[cur.length - 1] + 1) {
+      cur.push(frames[k]);
+    } else {
+      blocks.push(cur);
+      cur = [frames[k]];
+    }
+  }
+  blocks.push(cur);
+
+  let best: number[] = [];
+  for (const block of blocks) {
+    const n = block.length;
+    if (n <= best.length) {
+      continue;
+    }
+    for (let length = n; length > best.length; length--) {
+      let found: number[] | null = null;
+      for (let start = 0; start <= n - length; start++) {
+        const sub = block.slice(start, start + length);
+        const vals = sub.map((f) => totals.get(f) ?? 0);
+        const counts = new Map<number, number>();
+        for (const v of vals) {
+          counts.set(v, (counts.get(v) ?? 0) + 1);
+        }
+        let mode = vals[0];
+        let modeCount = 0;
+        for (const [v, c] of counts) {
+          if (c > modeCount) {
+            modeCount = c;
+            mode = v;
+          }
+        }
+        if (vals.every((v) => Math.abs(v - mode) <= 1)) {
+          found = sub;
+          break;
+        }
+      }
+      if (found !== null) {
+        best = found;
+        break;
+      }
+    }
+  }
+  return best;
+}
+
+function plateauRep(
+  totals: Map<number, number>,
+  a: number,
+  b: number,
+  eventMin: number
+): number | null {
+  const run = longestModalRun(totals, a, b, eventMin);
+  return run.length ? run[Math.floor(run.length / 2)] : null;
+}
+
+// Pellet markers last ~13 game-frames (0.217s). At 30fps we catch ~6 frames per blast, but
+// threshold sensitivity creates zero-frame gaps within a single blast. Bridge gaps of <= maxGap
+// frames where total < eventMin; separate blasts are 0.667s apart.
+function debounceShots(
+  frameCountsIn: DebounceFrame[],
+  fps: number,
+  markerMin: number,
+  minPellets: number,
+  maxPellets: number
+): { shots: DebounceShot[]; summary: DebounceSummary } {
+  const maxGap = Math.max(3, Math.round(fps * 0.13));
+  const eventMin = 3;
+  const hasBand = frameCountsIn.some((r) => r.band !== undefined);
+  const totals = frameCountsIn.map((r) => r.white + r.red);
+  const n = frameCountsIn.length;
+  const shots: DebounceShot[] = [];
+  let eventStart = -1;
+  let zeroRun = 0;
+  for (let i = 0; i <= n; i++) {
+    const inEvent = i < n && totals[i] >= eventMin;
+    if (inEvent) {
+      if (eventStart < 0) {
+        eventStart = i;
+      }
+      zeroRun = 0;
+      continue;
+    }
+    if (eventStart >= 0) {
+      zeroRun++;
+      if (zeroRun <= maxGap && i < n) {
+        continue;
+      } // bridge the gap
+      // Flush event (exclude trailing zero frames)
+      const eventEnd = i - zeroRun;
+      const eventFrames = eventEnd - eventStart;
+      if (eventFrames >= 2) {
+        // Robust shot count: report the active frame (total >= eventMin) closest to the
+        // event's median total. A single frame frequently spikes 2-7 above the true count
+        // from transient VFX that passes every per-component filter; the old max-of-event
+        // reported that spike as the shot count. The median-level frame rejects it while
+        // still returning a real observed frame (so white + red === total).
+        const activeIdx: number[] = [];
+        for (let j = eventStart; j < eventEnd; j++) {
+          if (totals[j] >= eventMin) {
+            activeIdx.push(j);
+          }
+        }
+        const sortedTotals = activeIdx
+          .map((j) => totals[j])
+          .sort((a, b) => a - b);
+        const medianTotal = sortedTotals.length
+          ? (sortedTotals[(sortedTotals.length - 1) >> 1] +
+              sortedTotals[sortedTotals.length >> 1]) /
+            2
+          : 0;
+        let repIdx = activeIdx[0] ?? eventStart;
+        let bestD = Infinity;
+        for (const j of activeIdx) {
+          const d = Math.abs(totals[j] - medianTotal);
+          if (d < bestD) {
+            bestD = d;
+            repIdx = j;
+          }
+        }
+        // Core-hit fallback: the red core pellet itself isn't caught by the threshold, but the
+        // triangular hit-markers that flash on a core hit are. If any frame in the event has
+        // >= markerMin markers, a core hit landed → report exactly 1 red (a lower bound; the
+        // "rare 2" needs real red-pellet detection — see HANDOFF). Outer-zone red is VFX noise
+        // (area ~43px², not pellet-sized) and is deliberately NOT counted here.
+        let coreHit = false;
+        for (let j = eventStart; j < eventEnd; j++) {
+          if ((frameCountsIn[j].marker ?? 0) >= markerMin) {
+            coreHit = true;
+          }
+        }
+        const shotRed = coreHit ? 1 : 0;
+        let repFrame = repIdx;
+        let white = frameCountsIn[repIdx].white;
+        let total = white + shotRed;
+        // The FALLBACK HYBRID: only ever REPLACES repFrame/white/total above, never
+        // shotRed/coreHit/eventFrames/eventStart/eventEnd — those are unchanged by the
+        // representative-frame rule regardless of which policy picked the frame.
+        // BACKWARD COMPAT: `hasBand` is computed once, up front, from the WHOLE input — if no
+        // frame anywhere carries a `band` key, this block never runs and the shot below is
+        // byte-identical to the pre-hybrid shipped behaviour.
+        if (hasBand) {
+          const bandTotals = new Map<number, number>();
+          for (let j = eventStart; j < eventEnd; j++) {
+            bandTotals.set(j, frameCountsIn[j].band ?? 0);
+          }
+          const bandRep = plateauRep(
+            bandTotals,
+            eventStart,
+            eventEnd,
+            eventMin
+          );
+          if (bandRep !== null) {
+            repFrame = bandRep;
+            white = bandTotals.get(bandRep) ?? 0;
+            total = white + shotRed;
+          }
+        }
+        shots.push({
+          frame: repFrame,
+          white,
+          red: shotRed,
+          total,
+          frames: eventFrames,
+          core: coreHit,
+          start: eventStart,
+          end: eventEnd,
+        });
+      }
+      eventStart = -1;
+      zeroRun = 0;
+    }
+  }
+
+  const valid = shots.filter(
+    (s) => s.total >= minPellets && s.total <= maxPellets
+  );
+  const summary: DebounceSummary = {
+    totalShots: shots.length,
+    validShots: valid.length,
+    avgTotal: valid.length
+      ? Math.round(
+          (valid.reduce((a, s) => a + s.total, 0) / valid.length) * 10
+        ) / 10
+      : null,
+    avgRed: valid.length
+      ? Math.round(
+          (valid.reduce((a, s) => a + s.red, 0) / valid.length) * 100
+        ) / 100
+      : null,
+  };
+  return { shots, summary };
+}
 
 // ---- VLM timer reads (sparse — 1fps) ----
 const TIMER_PROMPT = `You are reading a CROPPED region from a NIKKE boss fight HUD showing ONLY the
@@ -568,6 +850,7 @@ interface Read {
   white: number;
   red: number;
   marker: number;
+  band: number;
   total: number;
   valid: boolean;
 }
@@ -577,14 +860,14 @@ for (let i = 0; i < pelletFiles.length; i++) {
   const videoT = at + (idx - 1) / fps;
   const fc = mock
     ? {
-        numpy: { white: 7, red: 0, marker: 0 },
-        pil: { white: 7, red: 0, marker: 0 },
-        opencv: { white: 8, red: 0, marker: 0 },
+        numpy: { white: 7, red: 0, marker: 0, band: 0 },
+        pil: { white: 7, red: 0, marker: 0, band: 0 },
+        opencv: { white: 8, red: 0, marker: 0, band: 0 },
       }
     : (frameCounts[i] ?? {
-        numpy: { white: 0, red: 0, marker: 0 },
-        pil: { white: 0, red: 0, marker: 0 },
-        opencv: { white: 0, red: 0, marker: 0 },
+        numpy: { white: 0, red: 0, marker: 0, band: 0 },
+        pil: { white: 0, red: 0, marker: 0, band: 0 },
+        opencv: { white: 0, red: 0, marker: 0, band: 0 },
       });
 
   // Consensus: median of active backends (single-backend mode fills others with 0)
@@ -617,6 +900,7 @@ for (let i = 0; i < pelletFiles.length; i++) {
     white: best.white,
     red: best.red,
     marker: best.marker ?? 0,
+    band: best.band ?? 0,
     total,
     valid,
   });
@@ -624,12 +908,6 @@ for (let i = 0; i < pelletFiles.length; i++) {
 const nonZero = reads.filter((r) => r.total > 0).length;
 console.log(`  ${reads.length} pellet reads, ${nonZero} non-zero`);
 
-// ---- debounce: gap-tolerant event grouping ----
-// Pellet markers last ~13 game-frames (0.217s). At 30fps we catch ~6 frames per blast,
-// but threshold sensitivity creates zero-frame gaps within a single blast. Bridge gaps
-// of ≤MAX_GAP frames where total < EVENT_MIN; separate blasts are 0.667s apart.
-const MAX_GAP = Math.max(3, Math.round(fps * 0.13)); // ~0.13s gap tolerance
-const EVENT_MIN = 3; // ignore T=1-2 as background noise
 // Core-hit fallback: if a shot event contains a frame with >= markerMin red hit-markers
 // (the triangles that flash on a core hit), report at least 1 red even though the red core
 // pellet itself isn't detected by the threshold. Precision over recall — see HANDOFF.
@@ -645,90 +923,39 @@ interface Shot {
   core: boolean;
   backendAgreement: string;
 }
-const shots: Shot[] = [];
-let eventStart = -1;
-let zeroRun = 0;
-for (let i = 0; i <= reads.length; i++) {
-  const inEvent = i < reads.length && reads[i].total >= EVENT_MIN;
-  if (inEvent) {
-    if (eventStart < 0) {
-      eventStart = i;
-    }
-    zeroRun = 0;
-    continue;
-  }
-  if (eventStart >= 0) {
-    zeroRun++;
-    if (zeroRun <= MAX_GAP && i < reads.length) {
-      continue;
-    } // bridge the gap
-    // Flush event (exclude trailing zero frames)
-    const eventEnd = i - zeroRun;
-    const eventFrames = eventEnd - eventStart;
-    if (eventFrames >= 2) {
-      // Robust shot count: report the active frame (total >= EVENT_MIN) closest to the
-      // event's median total. A single frame frequently spikes 2-7 above the true count
-      // from transient VFX that passes every per-component filter; the old max-of-event
-      // reported that spike as the shot count. The median-level frame rejects it while
-      // still returning a real observed frame (so white + red === total).
-      const activeIdx: number[] = [];
-      for (let j = eventStart; j < eventEnd; j++) {
-        if (reads[j].total >= EVENT_MIN) {
-          activeIdx.push(j);
-        }
-      }
-      const sortedTotals = activeIdx
-        .map((j) => reads[j].total)
-        .sort((a, b) => a - b);
-      const medianTotal = sortedTotals.length
-        ? (sortedTotals[(sortedTotals.length - 1) >> 1] +
-            sortedTotals[sortedTotals.length >> 1]) /
-          2
-        : 0;
-      let repIdx = activeIdx[0] ?? eventStart;
-      let bestD = Infinity;
-      for (const j of activeIdx) {
-        const d = Math.abs(reads[j].total - medianTotal);
-        if (d < bestD) {
-          bestD = d;
-          repIdx = j;
-        }
-      }
-      const rep = reads[repIdx];
-      // Core-hit fallback: the red core pellet itself isn't caught by the threshold, but the
-      // triangular hit-markers that flash on a core hit are. If any frame in the event has
-      // >= MARKER_MIN markers, a core hit landed → report exactly 1 red (a lower bound; the
-      // "rare 2" needs real red-pellet detection — see HANDOFF). Outer-zone red is VFX noise
-      // (area ~43px², not pellet-sized) and is deliberately NOT counted here.
-      let coreHit = false;
-      for (let j = eventStart; j < eventEnd; j++) {
-        if (reads[j].marker >= MARKER_MIN) {
-          coreHit = true;
-        }
-      }
-      const shotRed = coreHit ? 1 : 0;
-      const agreement = ['numpy', 'pil', 'opencv']
-        .map((b) => {
-          const c = (rep.counts as Record<string, PelletCount>)[b];
-          return `${b}:${c.white + c.red}`;
-        })
-        .join(' ');
-      shots.push({
-        videoT: rep.videoT,
-        fightT: rep.fightT,
-        timerSec: rep.timerSec,
-        white: rep.white,
-        red: shotRed,
-        total: rep.white + shotRed,
-        frames: eventFrames,
-        core: coreHit,
-        backendAgreement: agreement,
-      });
-    }
-    eventStart = -1;
-    zeroRun = 0;
-  }
-}
+const perFrameForDebounce = reads.map((r) => ({
+  white: r.white,
+  red: r.red,
+  marker: r.marker,
+  band: r.band,
+}));
+const { shots: debouncedShots } = debounceShots(
+  perFrameForDebounce,
+  fps,
+  MARKER_MIN,
+  MIN_PELLETS,
+  MAX_PELLETS
+);
+const shots: Shot[] = debouncedShots.map((s) => {
+  const rep = reads[s.frame];
+  const agreement = ['numpy', 'pil', 'opencv']
+    .map((b) => {
+      const c = (rep.counts as Record<string, PelletCount>)[b];
+      return `${b}:${c.white + c.red}`;
+    })
+    .join(' ');
+  return {
+    videoT: rep.videoT,
+    fightT: rep.fightT,
+    timerSec: rep.timerSec,
+    white: s.white,
+    red: s.red,
+    total: s.total,
+    frames: s.frames,
+    core: s.core,
+    backendAgreement: agreement,
+  };
+});
 
 // ---- output ----
 const validShots = shots.filter(
