@@ -4758,6 +4758,21 @@ All three non-control candidates clear the 6.2% ceiling with room (3.1% vs 6.2%)
 numerically identical here; 21 differs by 0.0012 in `avgTotal` only (one additional life-21 track on
 the 60 fps `groundtruth-f811-v4` dump — see §14G).
 
+⚑ **THE SENSITIVITY ARMS ARE VACUOUS OUT-OF-SAMPLE, and the record must not claim otherwise**
+(raised by the cross-family post-op review, §14J). The pre-commit's §2.2 scored 19 and 21 as
+sensitivity arms "to show the verdict does not hinge on which value in the corridor is picked."
+**At 30 fps all three candidates fps-scale to the same `band_hi = 10`** (Python `round()`:
+`round(9.5) = 10`, `round(10.0) = 10`, `round(10.5) = 10`), so on **all four out-of-sample dumps
+19, 20 and 21 are the same measurement, not three.** They differentiate only on the 60 fps
+`groundtruth-f811-v4` dump, which §2.4 excludes as in-sample.
+
+⇒ **The out-of-sample evidence supports WIDENING the band (7 → 10 at 30 fps); it does not
+discriminate between 19, 20 and 21.** That is not a defect in the result — 20 is promotable on the
+lockstep-safety grounds §2.2 pre-committed, independently of sensitivity — but no claim of
+"independent out-of-sample sensitivity evidence" may be made for 19 or 21. ⚑ Note also the scored
+21 row does **not** represent what the JS reader would compute at 30 fps (`Math.round(10.5) = 11`),
+which is precisely why §2.2 pre-committed 21 as non-promotable.
+
 ##### §14D — §2.4 CORRIDOR (out-of-sample, 4 dumps: `h4-isabel`, `h4-guilty`, `g2-noir` + `h4-marciana` reported separately) — MANDATORY
 
 `corridor_admits_per_event` = distinct in-radius white tracks with lifetime in
@@ -4909,3 +4924,39 @@ scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --cap-scor
 bash scripts/probe/pellet-selftest.sh; echo $?
 bash scripts/verify.sh; echo $?
 ```
+
+##### §14J — Cross-family reviews (both gates, `kimi-code/k3`)
+
+Driver was Claude, so `/logic-gate`'s routing sends both gates to Kimi — genuinely cross-family, not
+a same-family fallback. Packets and verdicts: `scratchpad/gates/2026-08-04-lifetime-cap/`.
+
+**PRE-OP (on the plan, before any code): `APPROVED-WITH-REVISIONS`, 7 mandatory revisions**, all
+executed before any number existed; logged item-by-item in the pre-commit's §8. Three changed the
+science rather than the code: a **factually wrong rounding claim** in §2.2 that had disqualified
+`band_hi = 19` (corrected in place, visibly); the **demotion of §2.1** from PRIMARY to a
+no-evidential-weight consistency check (it is tautological — the corridor is derived from the same
+pinned population the check re-reads); and the finding that **the naive landing edit is a silent
+no-op**, which rewrote §5's landing sketch (see §14 header and pre-commit §5).
+
+**POST-OP (blind, on the implementation diff): `ACCEPT`**, no blocking findings, all 7 revisions
+confirmed executed at the code level. It independently re-derived the corridor arithmetic
+(167 admits / 218 events ≈ 0.7661) and confirmed the control-reproduction assert fails loudly rather
+than silently passing. ⚑ It also flagged the packet as **CONTAMINATED** — the orchestrator included
+its own revision-disposition table — and compensated by treating every disposition claim as
+unverified until confirmed in the code. Recorded rather than hidden: that was an orchestrator error,
+and the blindness contract caught it.
+
+Five NOTE-level findings; three acted on, two not:
+
+| finding                                                                      | disposition                                                                                                                                  |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `startswith` prefix match could silently drop a future dump from §2.4        | **FIXED** — `_cs_assert_out_of_sample_coverage` asserts set equality both ways                                                               |
+| the §3.9 fidelity "asserts" are source-text tripwires, weaker than they read | **FIXED** — a behavioural pin now runs `_rep_slim_dump` on synthetic red / out-of-radius / in-radius tracks, alongside the retained tripwire |
+| the record should not call 19/21 out-of-sample sensitivity evidence          | **FIXED** — §14C now states the arms are vacuous out-of-sample                                                                               |
+| §6 is scope the approved plan text did not enumerate                         | no action — it is in the pre-commit's §6 and is strictly report-only                                                                         |
+| module-level `inspect` import couples the selftest to source availability    | no action — irrelevant to this repo's usage                                                                                                  |
+
+Both fixes were shown to FIRE when their condition is violated (prefix removed / bogus prefix added /
+synthetic red track flipped white / in-radius track moved out), then reverted with the Edit tool —
+a check that cannot be shown to fail is not a check. `pellet-selftest.sh` 21 arms and `verify.sh`
+both re-run at TRUE exit 0 afterwards, and `cap-score-slice.json` never moved.
