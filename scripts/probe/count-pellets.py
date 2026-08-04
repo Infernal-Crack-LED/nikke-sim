@@ -1169,8 +1169,19 @@ def selftest_structural():
 CACHEABLE_PARAMS = [
     'center_exclude', 'min_area', 'max_area', 'min_circ', 'pellet_radius', 'marker_radius',
     'max_pellet_frames', 'pellet_unit_area', 'peanut_circ_lo', 'peanut_aspect', 'peanut_max_mult',
-    'fps', 'marker_min', 'bounds',
+    'fps', 'marker_min', 'bounds', 'band_hi',
 ]
+# `band_hi` (added 2026-08-04, docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md) changes the
+# `band` series the same way every other entry above changes its own output, so a
+# --load-detections replay must re-apply it exactly like the rest of CACHEABLE_PARAMS. It gets
+# ONE exception, though: its own argparse default (None) already IS the historically-correct
+# fallback — build_tracks_and_counts resolves a None band_hi to args.max_pellet_frames, which is
+# exactly what every cache dumped before this param existed already computed. So unlike every
+# other entry, a cache whose `filter_params` predates `band_hi` (the common case for every cache
+# on disk today) is not an error to refuse on — it replays byte-identically to before with no
+# override needed. This set carves that one param out of the refuse-loudly path in
+# _resolve_cache_params below.
+CACHEABLE_PARAMS_OPTIONAL = {'band_hi'}
 
 
 def _explicit_cacheable_params(argv):
@@ -1200,6 +1211,7 @@ def _explicit_cacheable_params(argv):
     p.add_argument('--fps', type=float, default=argparse.SUPPRESS)
     p.add_argument('--marker-min', type=int, default=argparse.SUPPRESS)
     p.add_argument('--bounds', default=argparse.SUPPRESS)
+    p.add_argument('--band-hi', type=int, default=argparse.SUPPRESS)
     ns, _ = p.parse_known_args(argv)
     return set(vars(ns).keys())
 
@@ -1212,9 +1224,15 @@ def _resolve_cache_params(args, loaded, explicit, load_path):
     filter_params AND the caller didn't explicitly supply every one of CACHEABLE_PARAMS itself —
     the exact silent-wrong-answer shape this function exists to eliminate (see
     analyze-pellet-tracks.py's "CROSSHAIR TRACK LOOKS BROKEN" for the precedent this follows).
+
+    CACHEABLE_PARAMS_OPTIONAL entries (currently just `band_hi`) are exempt from that refusal: a
+    cache missing one of them isn't a wrong-answer risk, because that param's own argparse default
+    already reproduces the pre-existing behavior (see the comment on CACHEABLE_PARAMS_OPTIONAL
+    above). They're still merged from the cache when present, same as everything else.
     """
     cached = loaded.get('filter_params', {})
-    missing = [p for p in CACHEABLE_PARAMS if p not in explicit and p not in cached]
+    missing = [p for p in CACHEABLE_PARAMS
+               if p not in explicit and p not in cached and p not in CACHEABLE_PARAMS_OPTIONAL]
     if missing:
         print('=' * 78, file=sys.stderr)
         print('!! --load-detections CACHE HAS NO filter_params FOR THESE ARGS — REFUSING !!', file=sys.stderr)
@@ -1234,7 +1252,11 @@ def _resolve_cache_params(args, loaded, explicit, load_path):
         print('=' * 78, file=sys.stderr)
         sys.exit(1)
     for p in CACHEABLE_PARAMS:
-        if p not in explicit:
+        # Non-optional params are guaranteed present in `cached` here (else the refusal above
+        # would already have fired). An optional param (band_hi) may legitimately be absent from
+        # an old cache — leave `args` at whatever the CLI/argparse default already resolved to,
+        # which is exactly the pre-band_hi behavior this exemption exists to preserve.
+        if p not in explicit and p in cached:
             setattr(args, p, cached[p])
 
 
@@ -1465,14 +1487,14 @@ def main():
     parser.add_argument('--band-hi', type=int, default=None, help='upper lifetime bound (frames) for the `band` series (docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md), decoupled from --max-pellet-frames/pellet_ids. Defaults to --max-pellet-frames when omitted, which reproduces the pre-existing band ⊆ pellet_ids behaviour exactly (byte-identical output for every caller that does not pass this flag). Raising it admits longer-lived tracks into `band` WITHOUT admitting them into `pellet_ids`/`white` — band may then exceed white.')
     parser.add_argument('--dump-tracks', help='(temporal) write full per-track diagnostics JSON to this path')
     parser.add_argument('--dump-detections', help='(temporal) write the RAW pre-filter per-frame component list + crosshair track to this path — the cache half of cache-then-sweep (Phase 1 §1.1, docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md). Detection (mask+CC+contour stats) runs once and is cached; a later --load-detections run replays filtering/tracking against it in seconds instead of minutes.')
-    parser.add_argument('--load-detections', help='(temporal) replay filtering + tracking from a --dump-detections cache instead of re-detecting from frame images. The positional `input` arg is ignored in this mode (frame identity comes from the cache). Combine with --min-area/--max-area/--min-circ/--center-exclude/--pellet-radius/--max-pellet-frames/--peanut-* to sweep those cheaply; the crosshair track and raw components are frozen at dump time (re-dump to change --locate or the WHITE_LO/RED_LO color thresholds).')
+    parser.add_argument('--load-detections', help='(temporal) replay filtering + tracking from a --dump-detections cache instead of re-detecting from frame images. The positional `input` arg is ignored in this mode (frame identity comes from the cache). Combine with --min-area/--max-area/--min-circ/--center-exclude/--pellet-radius/--max-pellet-frames/--band-hi/--peanut-* to sweep those cheaply; the crosshair track and raw components are frozen at dump time (re-dump to change --locate or the WHITE_LO/RED_LO color thresholds).')
     parser.add_argument('--detect-min-area', type=int, default=DETECT_MIN_AREA, help=f'(--dump-detections) raw component area floor BEFORE filtering — generous headroom for a future --min-area sweep, not the tunable pellet-shape filter itself (default {DETECT_MIN_AREA})')
     parser.add_argument('--detect-max-area', type=int, default=DETECT_MAX_AREA, help=f'(--dump-detections) raw component area ceiling BEFORE filtering, same rationale as --detect-min-area (default {DETECT_MAX_AREA})')
     parser.add_argument('--fps', type=float, default=30.0, help='sampling fps of the frame source — only used by --shots/--sweep for the debounce gap-tolerance constant (read-pellets.ts computes the same thing from its own --fps; default 30 matches every reference run)')
     parser.add_argument('--shots', action='store_true', help='(temporal) also run the shot-level debouncer (a Python port of read-pellets.ts\'s event-grouping estimator — see debounce_shots) over the frame counts and print shots + summary to stderr, instead of needing the TS orchestrator for a quick sweep read')
     parser.add_argument('--marker-min', type=int, default=2, help='(--shots) min red hit-markers in an event to call it a core hit (default 2, matches read-pellets.ts)')
     parser.add_argument('--bounds', default='5,10', help='(--shots) MIN,MAX total pellets for a shot to count as "valid" (default 5,10, matches read-pellets.ts)')
-    parser.add_argument('--sweep', help='(temporal, needs --load-detections) JSON file: a list of param-override objects (any of min_area/max_area/min_circ/center_exclude/pellet_radius/marker_radius/max_pellet_frames/peanut_circ_lo/peanut_aspect/peanut_max_mult/pellet_unit_area). Runs filter+track+debounce for each combo against the SAME cached detections and prints one JSON summary line per combo to stdout — the "seconds not minutes" sweep this phase exists for.')
+    parser.add_argument('--sweep', help='(temporal, needs --load-detections) JSON file: a list of param-override objects (any of min_area/max_area/min_circ/center_exclude/pellet_radius/marker_radius/max_pellet_frames/band_hi/peanut_circ_lo/peanut_aspect/peanut_max_mult/pellet_unit_area). Runs filter+track+debounce for each combo against the SAME cached detections and prints one JSON summary line per combo to stdout — the "seconds not minutes" sweep this phase exists for.')
     parser.add_argument('--ammo-digits', action='store_true', help='read the AMMO COUNTER digits inside the located box (needs --ammo-template + --ammo-atlas)')
     parser.add_argument('--ammo-atlas', help='directory of digit glyph PNGs named <digit>_<tag>.png')
     parser.add_argument('--build-atlas', action='store_true', help='(with --ammo-digits --ammo-atlas --labels) harvest labelled glyphs instead of reading')
