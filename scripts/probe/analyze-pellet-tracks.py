@@ -1702,6 +1702,501 @@ def missing_shots_selftest():
     return 0 if ok else 1
 
 
+AMMO_ABSTENTION_FIXTURE = "scripts/tests/fixtures/pellets/ammo-abstention-slice.json"
+
+# WHICH SUBSYSTEM produced an abstention. Every entry was traced to its emission site in
+# count-pellets.py and re-verified against the source on 2026-08-03 -- NOT inferred from the reason
+# string, which is reused across two readers whose failures do not mean the same thing.
+#
+#   --ammo-series path (the mode every dump audited here was produced by):
+#     'no-lock'    count-pellets.py:902 (ammo_series_from_dump) -- cross_rawloc[i] is None: the dump
+#                  carries no digit-row centre for this frame, so no crop is even attempted.
+#     'no-digits'  count-pellets.py:867 (read_ammo_at_center) -- segment_ammo_digits returned [].
+#     'cell-count' count-pellets.py:867 -- SAME line: it segmented some cells but not exactly
+#                  AMMO_DIGIT_CELLS (3), so the place values cannot be trusted.
+#     'low-score'  count-pellets.py:877 -- all 3 cells segmented AND matched, but
+#                  min(scores) < digit_score_min (0.60) (or a cell matched no glyph at all).
+#   --ammo-digits (template) path, mapped so a template-produced series is never left unclassified:
+#     'no-box'         count-pellets.py:794 -- no template box accepted -> LOCALIZATION.
+#     'too-many-cells' count-pellets.py:800 -- >3 cells segmented   -> SEGMENTATION.
+#     (that path's 'low-score' twin of :877 lives at count-pellets.py:1470.)
+#
+# Only GLYPH-MATCH is reachable by a better/bigger digit atlas: it is the sole class where the
+# reader got three clean cells and then failed to NAME them. LOCALIZATION and SEGMENTATION frames
+# never reach the atlas at all, so no amount of glyph harvesting can convert them.
+ABSTENTION_CLASS = {
+    "no-lock": "LOCALIZATION",
+    "no-box": "LOCALIZATION",
+    "no-digits": "SEGMENTATION",
+    "cell-count": "SEGMENTATION",
+    "too-many-cells": "SEGMENTATION",
+    "low-score": "GLYPH-MATCH",
+}
+ATLAS_FIXABLE_CLASS = "GLYPH-MATCH"
+
+# The structural locator stores an UNNORMALISED SURROUND BRIGHTNESS in `cross_confs` (that is the
+# discriminator detect_locate_mode uses). Low = the digit row sits on the dark semi-transparent
+# ammo badge, i.e. the reader is on the real counter; high = it is reading a bright scene region
+# the badge is not covering. 60 is a PROXY split, NOT a calibrated boundary -- it was chosen off the
+# bimodal shape of the conf distribution and nothing downstream of it may be reported as measured.
+AMMO_SURROUND_DARK_MAX = 60.0
+
+# Mirrors the inline predicate segment_ammo_digits builds its mask from (count-pellets.py:713-714):
+# the low-ammo counter renders its glyphs RED and every other state WHITE, and the two are SEPARATE
+# pixel predicates, so a red crop is a different segmentation population, not just a recolour. The
+# committed atlas already holds both (`<digit>_f*.png` and `<digit>_red*.png`, harvested via
+# --atlas-tag), which is exactly why the red share of the GLYPH-MATCH bucket is the number that
+# decides whether a further harvest has anything to harvest. Duplicated rather than imported
+# because count-pellets.py keeps them inline; if that predicate moves, this must follow it.
+AMMO_GLYPH_WHITE = (190, 190, 190)   # r,g,b all strictly above
+AMMO_GLYPH_RED = (150, 90, 90)       # r above, g and b strictly below
+
+# Frames kept per dump in the committed fixture: a CONTIGUOUS middle slice of each clip. The full
+# 7-dump payload is ~1.9 MB of reads + lock arrays before the pre-commit prettier pass expands it
+# (~2.7 MB after), over the fixture budget; slicing keeps every field the report reads instead of
+# dropping fields it needs. 1500 x 4 + the three 480-frame clips = 7441 frames, 1.1 MB committed.
+AMMO_ABSTENTION_SLICE = 1500
+
+
+def _sum_counts(dicts):
+    out = collections.Counter()
+    for d in dicts:
+        out.update(d or {})
+    return dict(out)
+
+
+def _ammo_lowscore_colours(ammo, tracks):
+    """RED vs WHITE for every GLYPH-MATCH frame, read from the FRAMES the series was scored on.
+
+    This needs pixels: the series JSON records the match scores but not the COLOUR of the glyphs
+    that scored badly, and red-vs-white is the whole question for a digit-atlas harvest (the atlas
+    holds white glyphs only, so a red frame is a genuinely unrepresented glyph while a white one is
+    the atlas failing on a shape it already covers)."""
+    cp = _count_pellets_module()
+    frames_dir = ammo.get("frames_dir")
+    if not frames_dir:
+        return None
+    raw = tracks["cross_rawloc"]
+    templ_h = ammo.get("templ_h", 74.0)
+    wr, wg, wb = AMMO_GLYPH_WHITE
+    rr_, rg, rb = AMMO_GLYPH_RED
+    out = {}
+    for r in ammo["reads"]:
+        if ABSTENTION_CLASS.get(r.get("reason")) != ATLAS_FIXABLE_CLASS:
+            continue
+        i = r["i"]
+        center = raw[i] if i < len(raw) else None
+        if center is None:
+            out[i] = "NO-LOCK"
+            continue
+        img = cp.load_rgb(str(Path(frames_dir) / r["file"]))
+        roi = cp._ammo_roi_centered(img, center, templ_h)
+        red, grn, blu = roi[..., 0].astype(int), roi[..., 1].astype(int), roi[..., 2].astype(int)
+        n_white = int(((red > wr) & (grn > wg) & (blu > wb)).sum())
+        n_red = int(((red > rr_) & (grn < rg) & (blu < rb)).sum())
+        out[i] = "RED" if n_red > n_white else ("WHITE" if n_white > 0 else "NEITHER")
+    return out
+
+
+def ammo_abstention_raw(ammo, tracks, dark_max=AMMO_SURROUND_DARK_MAX, colours=None):
+    """RAW per-dump counts for the abstention audit. Percentages are derived separately so the
+    pooled figures are a sum of counts, never an average of rounded rates."""
+    reads = ammo["reads"]
+    mode, _ev = detect_locate_mode(tracks)
+    mask, _ = stale_mask(tracks, mode)
+    if colours is not None:
+        colours = {int(k): v for k, v in colours.items()}
+
+    reasons = collections.Counter()
+    pops = {"dark": collections.Counter(), "bright": collections.Counter(),
+            "no_conf": collections.Counter()}
+    n_read = n_read_good = n_read_stale = n_good = n_stale = 0
+    no_digits_on_stale = 0
+    glyph_dark = glyph_dark_red = 0
+    colour_counts = collections.Counter() if colours is not None else None
+
+    for r in reads:
+        i = r["i"]
+        st = bool(mask[i]) if i < len(mask) else False
+        got = r.get("ammo") is not None
+        reason = r.get("reason")
+        conf = r.get("conf")
+        dark = conf is not None and conf < dark_max
+        if got:
+            n_read += 1
+        else:
+            reasons[reason] += 1
+            if reason == "no-digits" and st:
+                no_digits_on_stale += 1
+            if ABSTENTION_CLASS.get(reason) == ATLAS_FIXABLE_CLASS:
+                if dark:
+                    glyph_dark += 1
+                if colours is not None:
+                    lab = colours.get(i, "UNKNOWN")
+                    colour_counts[lab] += 1
+                    if dark and lab == "RED":
+                        glyph_dark_red += 1
+        if st:
+            n_stale += 1
+            n_read_stale += got
+        else:
+            n_good += 1
+            n_read_good += got
+            key = "no_conf" if conf is None else ("dark" if dark else "bright")
+            pops[key]["READ" if got else reason] += 1
+
+    return {
+        "stale_mode": mode,
+        "n_frames": len(reads),
+        # BOTH read counts are reported because they differ and the difference is the whole
+        # stale-lock story: n_read_any_lock counts every frame that produced a value (a frame whose
+        # ammo is non-null has ALREADY cleared the 0.60 score gate -- that is what makes it
+        # non-null), while n_read_good_lock excludes the handful that landed on a HELD, stale lock.
+        "n_read_any_lock": n_read,
+        "n_read_good_lock": n_read_good,
+        "n_read_stale_lock": n_read_stale,
+        "n_good_lock": n_good,
+        "n_stale_lock": n_stale,
+        "reasons": dict(reasons),
+        "no_digits_on_stale": no_digits_on_stale,
+        "good_lock_by_surround": {k: dict(v) for k, v in pops.items()},
+        "glyph_match_dark_badge": glyph_dark,
+        "glyph_match_dark_badge_red": glyph_dark_red if colours is not None else None,
+        "glyph_match_colour": dict(colour_counts) if colours is not None else None,
+    }
+
+
+def _pool_ammo_abstention_raw(raws):
+    modes = {r["stale_mode"] for r in raws}
+    have_colour = all(r["glyph_match_colour"] is not None for r in raws) and bool(raws)
+    return {
+        "stale_mode": modes.pop() if len(modes) == 1 else "mixed",
+        "n_frames": sum(r["n_frames"] for r in raws),
+        "n_read_any_lock": sum(r["n_read_any_lock"] for r in raws),
+        "n_read_good_lock": sum(r["n_read_good_lock"] for r in raws),
+        "n_read_stale_lock": sum(r["n_read_stale_lock"] for r in raws),
+        "n_good_lock": sum(r["n_good_lock"] for r in raws),
+        "n_stale_lock": sum(r["n_stale_lock"] for r in raws),
+        "reasons": _sum_counts([r["reasons"] for r in raws]),
+        "no_digits_on_stale": sum(r["no_digits_on_stale"] for r in raws),
+        "good_lock_by_surround": {
+            k: _sum_counts([r["good_lock_by_surround"].get(k, {}) for r in raws])
+            for k in ("dark", "bright", "no_conf")},
+        "glyph_match_dark_badge": sum(r["glyph_match_dark_badge"] for r in raws),
+        "glyph_match_dark_badge_red": (sum(r["glyph_match_dark_badge_red"] for r in raws)
+                                       if have_colour else None),
+        "glyph_match_colour": (_sum_counts([r["glyph_match_colour"] for r in raws])
+                               if have_colour else None),
+    }
+
+
+def _ammo_abstention_view(raw):
+    """Derived percentages for one raw count block (a dump, or the pooled sum)."""
+    n = max(1, raw["n_frames"])
+    reasons = raw["reasons"]
+    abst = max(1, sum(reasons.values()))
+    by_class = collections.Counter()
+    for k, v in reasons.items():
+        by_class[ABSTENTION_CLASS.get(k, "UNCLASSIFIED")] += v
+    glyph = by_class.get(ATLAS_FIXABLE_CLASS, 0)
+    read = raw["n_read_any_lock"]
+
+    surround = {}
+    for k, counts in raw["good_lock_by_surround"].items():
+        tot = sum(counts.values())
+        rd = counts.get("READ", 0)
+        surround[k] = {
+            "n": tot, "n_read": rd, "read_pct": round(100 * rd / max(1, tot), 1),
+            "abstentions": {kk: {"n": vv, "pct": round(100 * vv / max(1, tot), 1)}
+                            for kk, vv in sorted(counts.items(), key=lambda kv: -kv[1])
+                            if kk != "READ"},
+        }
+
+    view = {
+        "n_frames": raw["n_frames"],
+        "n_read_any_lock": read,
+        "read_pct_any_lock": round(100 * read / n, 1),
+        "n_read_good_lock": raw["n_read_good_lock"],
+        "n_read_stale_lock": raw["n_read_stale_lock"],
+        "n_abstain": sum(reasons.values()),
+        "reasons": {k: {"n": v, "class": ABSTENTION_CLASS.get(k, "UNCLASSIFIED"),
+                        "pct_of_frames": round(100 * v / n, 1),
+                        "pct_of_abstentions": round(100 * v / abst, 1)}
+                    for k, v in sorted(reasons.items(), key=lambda kv: -kv[1])},
+        "by_class": {k: {"n": v, "pct_of_frames": round(100 * v / n, 1),
+                         "pct_of_abstentions": round(100 * v / abst, 1)}
+                     for k, v in by_class.most_common()},
+        "nominal_ceiling": {
+            "what": ("read% if the ENTIRE GLYPH-MATCH class became perfect reads and nothing else "
+                     "changed -- the whole headroom a digit-atlas harvest could ever address"),
+            "glyph_match_frames": glyph,
+            "read_pct": round(100 * read / n, 1),
+            "ceiling_pct": round(100 * (read + glyph) / n, 1),
+            "delta_pp": round(100 * glyph / n, 1),
+        },
+        "stale": {
+            "stale_mode": raw["stale_mode"],
+            "n_stale_lock": raw["n_stale_lock"], "n_good_lock": raw["n_good_lock"],
+            "pct_stale": round(100 * raw["n_stale_lock"] / n, 1),
+            "read_pct_good_lock": round(
+                100 * raw["n_read_good_lock"] / max(1, raw["n_good_lock"]), 1),
+            "read_pct_stale_lock": round(
+                100 * raw["n_read_stale_lock"] / max(1, raw["n_stale_lock"]), 1),
+            "no_digits_total": reasons.get("no-digits", 0),
+            "no_digits_on_stale": raw["no_digits_on_stale"],
+            "no_digits_on_stale_pct": round(
+                100 * raw["no_digits_on_stale"] / max(1, reasons.get("no-digits", 0)), 1),
+        },
+        "good_lock_by_surround": surround,
+        "surround_dark_max": AMMO_SURROUND_DARK_MAX,
+    }
+
+    col = raw["glyph_match_colour"]
+    if col is None:
+        view["glyph_match_colour"] = None
+        view["honest_ceiling"] = {
+            "unavailable": ("needs the frame PNGs -- rerun with --ammo-abstention-frames (the "
+                            "series JSON records match scores, not glyph colour)"),
+            "dark_badge_glyph_match": raw["glyph_match_dark_badge"],
+        }
+    else:
+        red = col.get("RED", 0)
+        dark_red = raw["glyph_match_dark_badge_red"] or 0
+        view["glyph_match_colour"] = dict(
+            sorted(col.items(), key=lambda kv: -kv[1]),
+            red_pct_of_glyph_match=round(100 * red / max(1, glyph), 1))
+        view["honest_ceiling"] = {
+            "what": ("GLYPH-MATCH frames that are BOTH on the dark badge AND red-dominant -- the "
+                     "only population a digit-atlas harvest could operate on honestly"),
+            "dark_badge_glyph_match": raw["glyph_match_dark_badge"],
+            "dark_badge_red_glyph_match": dark_red,
+            "pct_of_glyph_match": round(100 * dark_red / max(1, glyph), 1),
+            "pct_of_all_frames": round(100 * dark_red / n, 2),
+            "ceiling_pct": round(100 * (read + dark_red) / n, 1),
+            "delta_pp": round(100 * dark_red / n, 2),
+        }
+    return view
+
+
+def ammo_abstention_report(ammo, tracks, dark_max=AMMO_SURROUND_DARK_MAX, colours=None):
+    """One dump's abstention audit: why the ammo reader declined each frame it declined."""
+    raw = ammo_abstention_raw(ammo, tracks, dark_max, colours)
+    return {"dump": "/".join(Path(ammo["tracks"]).parts[-2:]),
+            "range": ammo.get("range", [0, len(ammo["reads"])]),
+            "raw": raw, **_ammo_abstention_view(raw)}
+
+
+def _ammo_abstention_expected(reports, pooled):
+    """The slim pinned view -- counts and the headline rates, no float soup."""
+    out = []
+    for r in reports + [pooled]:
+        raw = r["raw"]
+        row = {
+            "dump": r["dump"],
+            "n_frames": raw["n_frames"],
+            "n_read_any_lock": raw["n_read_any_lock"],
+            "n_read_good_lock": raw["n_read_good_lock"],
+            "n_read_stale_lock": raw["n_read_stale_lock"],
+            "reasons": dict(sorted(raw["reasons"].items())),
+            "by_class": {k: v["n"] for k, v in sorted(r["by_class"].items())},
+            "read_pct_any_lock": r["read_pct_any_lock"],
+            "nominal_ceiling_pct": r["nominal_ceiling"]["ceiling_pct"],
+            "nominal_delta_pp": r["nominal_ceiling"]["delta_pp"],
+            "pct_stale": r["stale"]["pct_stale"],
+            "read_pct_good_lock": r["stale"]["read_pct_good_lock"],
+            "read_pct_stale_lock": r["stale"]["read_pct_stale_lock"],
+            "no_digits_on_stale": raw["no_digits_on_stale"],
+            "dark_n": r["good_lock_by_surround"]["dark"]["n"],
+            "dark_read_pct": r["good_lock_by_surround"]["dark"]["read_pct"],
+            "bright_read_pct": r["good_lock_by_surround"]["bright"]["read_pct"],
+            "glyph_match_dark_badge": raw["glyph_match_dark_badge"],
+            "glyph_match_colour": (dict(sorted(raw["glyph_match_colour"].items()))
+                                   if raw["glyph_match_colour"] else None),
+            "glyph_match_dark_badge_red": raw["glyph_match_dark_badge_red"],
+        }
+        out.append(row)
+    return out
+
+
+def _print_ammo_abstention(reports, pooled):
+    rows = reports + [pooled]
+    seen = []
+    for r in rows:
+        for k in r["reasons"]:
+            if k not in seen:
+                seen.append(k)
+    print("\nAMMO-COUNTER ABSTENTION AUDIT (why the reader declines the frames it declines)")
+    print(f"{'dump':>34} {'frames':>7} {'read':>6} {'read%':>6} " +
+          " ".join(f"{k:>11}" for k in seen))
+    for r in rows:
+        print(f"{r['dump'][-34:]:>34} {r['n_frames']:7d} {r['n_read_any_lock']:6d} "
+              f"{r['read_pct_any_lock']:5.1f}% " +
+              " ".join(f"{r['reasons'].get(k, {}).get('n', 0):11d}" for k in seen))
+    print("\nCLASS (traced to the count-pellets.py emission site, not the reason string) "
+          "-- n / %frames / %abstentions")
+    classes = [c for c in ("SEGMENTATION", "GLYPH-MATCH", "LOCALIZATION", "UNCLASSIFIED")
+               if any(c in r["by_class"] for r in rows)]
+    print(f"{'dump':>34} " + " ".join(f"{c:>24}" for c in classes))
+    for r in rows:
+        cells = []
+        for c in classes:
+            d = r["by_class"].get(c, {"n": 0, "pct_of_frames": 0.0, "pct_of_abstentions": 0.0})
+            cells.append(f"{d['n']:6d} {d['pct_of_frames']:5.1f}% {d['pct_of_abstentions']:5.1f}%")
+        print(f"{r['dump'][-34:]:>34} " + " ".join(f"{c:>24}" for c in cells))
+    print("\nNOMINAL CEILING (every GLYPH-MATCH frame becomes a perfect read, nothing else changes)")
+    print(f"{'dump':>34} {'glyph':>6} {'read%':>7} {'ceiling%':>9} {'delta_pp':>9}")
+    for r in rows:
+        nc = r["nominal_ceiling"]
+        print(f"{r['dump'][-34:]:>34} {nc['glyph_match_frames']:6d} {nc['read_pct']:6.1f}% "
+              f"{nc['ceiling_pct']:8.1f}% {nc['delta_pp']:+9.1f}")
+    print("\nSTALE-LOCK CROSS-TAB (stale = the crosshair position is a HELD carry-forward)")
+    print(f"{'dump':>34} {'stale%':>7} {'read|good':>10} {'read%|good':>11} {'read|stale':>11} "
+          f"{'read%|stale':>12} {'no-digits':>10} {'on stale':>9} {'share':>7}")
+    for r in rows:
+        s = r["stale"]
+        print(f"{r['dump'][-34:]:>34} {s['pct_stale']:6.1f}% {r['n_read_good_lock']:10d} "
+              f"{s['read_pct_good_lock']:10.1f}% {r['n_read_stale_lock']:11d} "
+              f"{s['read_pct_stale_lock']:11.1f}% {s['no_digits_total']:10d} "
+              f"{s['no_digits_on_stale']:9d} {s['no_digits_on_stale_pct']:6.1f}%")
+    print(f"\nGOOD-LOCK SUB-POPULATIONS by surround brightness (conf < {AMMO_SURROUND_DARK_MAX} = "
+          "dark = on the semi-transparent ammo badge). The split is a PROXY, not a calibration.")
+    print(f"{'dump':>34} {'dark n':>7} {'dark read%':>11} {'dark low-score%':>16} "
+          f"{'bright n':>9} {'bright read%':>13} {'bright low-score%':>18}")
+    for r in rows:
+        d = r["good_lock_by_surround"]["dark"]
+        b = r["good_lock_by_surround"]["bright"]
+        dls = d["abstentions"].get("low-score", {"pct": 0.0})["pct"]
+        bls = b["abstentions"].get("low-score", {"pct": 0.0})["pct"]
+        print(f"{r['dump'][-34:]:>34} {d['n']:7d} {d['read_pct']:10.1f}% {dls:15.1f}% "
+              f"{b['n']:9d} {b['read_pct']:12.1f}% {bls:17.1f}%")
+    print("\nGLYPH-MATCH COLOUR + HONEST CEILING (dark-badge AND red -- the only glyphs a harvest "
+          "could honestly add)")
+    print(f"{'dump':>34} {'glyph':>6} {'RED':>6} {'RED%':>7} {'dark':>6} {'dark&RED':>9} "
+          f"{'ceiling%':>9}")
+    for r in rows:
+        col = r["glyph_match_colour"]
+        hc = r["honest_ceiling"]
+        if col is None:
+            print(f"{r['dump'][-34:]:>34} {r['nominal_ceiling']['glyph_match_frames']:6d} "
+                  f"{'n/a':>6} {'n/a':>7} {hc['dark_badge_glyph_match']:6d} {'n/a':>9} {'n/a':>9}")
+            continue
+        print(f"{r['dump'][-34:]:>34} {r['nominal_ceiling']['glyph_match_frames']:6d} "
+              f"{col.get('RED', 0):6d} {col['red_pct_of_glyph_match']:6.1f}% "
+              f"{hc['dark_badge_glyph_match']:6d} {hc['dark_badge_red_glyph_match']:9d} "
+              f"{hc['ceiling_pct']:8.1f}%")
+    if rows and rows[0]["glyph_match_colour"] is None:
+        print("colour columns are n/a: rerun with --ammo-abstention-frames to read the crops.")
+    print("\nn_read_any_lock counts every frame that produced a value; n_read_good_lock excludes "
+          "the ones that landed on a HELD stale lock. A non-null ammo has ALREADY cleared the 0.60 "
+          "score gate by construction (count-pellets.py:877), so neither figure is a "
+          "'before/after thresholding' pair -- the difference is stale locks and nothing else.")
+
+
+def _ammo_abstention_slim(ammo, tracks, colours):
+    """A contiguous middle slice of one dump, re-indexed to 0, carrying only the fields the report
+    reads. Re-indexing is exact here: the structural stale mask is elementwise, so a slice of the
+    arrays gives the slice's own mask."""
+    n_dump = len(tracks["cross_confs"])
+    keep = min(AMMO_ABSTENTION_SLICE, n_dump)
+    lo = (n_dump - keep) // 2
+    hi = lo + keep
+    reads = [{"i": r["i"] - lo, "ammo": r.get("ammo"), "reason": r.get("reason"),
+              "conf": r.get("conf")}
+             for r in ammo["reads"] if lo <= r["i"] < hi]
+    slim = {
+        "tracks": "/".join(Path(ammo["tracks"]).parts[-2:]),
+        "slice": [lo, hi], "n_frames_full_clip": n_dump,
+        "range": [0, hi - lo],
+        "reads": reads,
+        "cross_positions": tracks["cross_positions"][lo:hi],
+        "cross_confs": tracks["cross_confs"][lo:hi],
+        "cross_rawloc": tracks["cross_rawloc"][lo:hi],
+    }
+    if colours is not None:
+        slim["glyph_match_colours"] = {str(i - lo): v for i, v in colours.items() if lo <= i < hi}
+    return slim
+
+
+def _replay_ammo_abstention(slims, dark_max):
+    """Run the report over slim/sliced dumps -- no images, no subprocess. Shared by the fixture
+    WRITER and the selftest, so `_expected` can only ever be the slice's own numbers."""
+    reports = []
+    for d in slims:
+        ammo = {"tracks": d["tracks"], "range": d["range"], "reads": d["reads"]}
+        reports.append(ammo_abstention_report(ammo, d, dark_max, d.get("glyph_match_colours")))
+    pooled_raw = _pool_ammo_abstention_raw([r["raw"] for r in reports])
+    pooled = {"dump": "POOLED", "range": None, "raw": pooled_raw,
+              **_ammo_abstention_view(pooled_raw)}
+    return reports, pooled
+
+
+def audit_ammo_abstention(ammo_paths, use_frames=False, dark_max=AMMO_SURROUND_DARK_MAX,
+                          save_fixture=None):
+    reports, raws, slims = [], [], []
+    for p in ammo_paths:
+        with open(p) as fh:
+            ammo = json.load(fh)
+        if ammo.get("refused"):
+            print(f"REFUSED {p}: {ammo['refused']}")
+            continue
+        with open(ammo["tracks"]) as fh:
+            tracks = json.load(fh)
+        colours = _ammo_lowscore_colours(ammo, tracks) if use_frames else None
+        rep = ammo_abstention_report(ammo, tracks, dark_max, colours)
+        reports.append(rep)
+        raws.append(rep["raw"])
+        slims.append(_ammo_abstention_slim(ammo, tracks, colours))
+    if not reports:
+        print("no readable series given")
+        return None
+    pooled_raw = _pool_ammo_abstention_raw(raws)
+    pooled = {"dump": "POOLED", "range": None, "raw": pooled_raw,
+              **_ammo_abstention_view(pooled_raw)}
+    out = {"params": {"dark_max": dark_max, "with_frames": bool(use_frames)},
+           "dumps": reports, "pooled": pooled}
+    if save_fixture:
+        sl_reports, sl_pooled = _replay_ammo_abstention(slims, dark_max)
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("count-pellets.py --ammo-series reads + the --dump-tracks lock arrays "
+                            "they were scored against, for the 7 dumps of the 2026-08-03 ammo-OCR "
+                            "abstention scoping (isabel / guilty / marciana (SG/Iron -- NOT "
+                            "marciana-marine-study, AR/Iron) / noir). Constraint 9 "
+                            "self-validation, same precedent as missing-shots-slice.json."),
+                "_note": ("SLICED, not full-clip: each dump is a contiguous MIDDLE slice of "
+                          f"{AMMO_ABSTENTION_SLICE} frames (or the whole clip if shorter), "
+                          "re-indexed to 0, and `_expected` pins THAT SLICE's numbers -- they are "
+                          "NOT the full-clip figures the docs cite. `slice` records the source "
+                          "range. Replays the whole report with no images and no subprocess: the "
+                          "GLYPH-MATCH colour labels are precomputed here, so the honest ceiling "
+                          "is pinned too. Regenerate with analyze-pellet-tracks.py "
+                          "--ammo-abstention <ammo-series.json...> --ammo-abstention-frames "
+                          "--save-ammo-abstention-fixture <path>."),
+                "params": out["params"], "dumps": slims,
+                "_expected": _ammo_abstention_expected(sl_reports, sl_pooled),
+            }, fh)
+        print(f"wrote ammo-abstention slice fixture -> {save_fixture} "
+              f"({sl_pooled['n_frames']} of {pooled['n_frames']} frames; `_expected` pins the "
+              f"SLICE: pooled read {sl_pooled['n_read_any_lock']} "
+              f"({sl_pooled['read_pct_any_lock']}%), NOT the full-clip figures above)")
+    print(json.dumps(out, indent=2))
+    _print_ammo_abstention(reports, pooled)
+    return out
+
+
+def ammo_abstention_selftest():
+    """Constraint 9 self-validation: replay the whole abstention audit over the committed slice."""
+    with open(AMMO_ABSTENTION_FIXTURE) as fh:
+        fx = json.load(fh)
+    reports, pooled = _replay_ammo_abstention(fx["dumps"], fx["params"]["dark_max"])
+    got = _ammo_abstention_expected(reports, pooled)
+    ok = got == fx["_expected"]
+    print(f"expected: {json.dumps(fx['_expected'], sort_keys=True)}")
+    print(f"got     : {json.dumps(got, sort_keys=True)}")
+    print("SELFTEST PASS" if ok else "SELFTEST FAIL")
+    return 0 if ok else 1
+
+
 FIXTURE = "scripts/tests/fixtures/pellets/run16-tracks-slice.json"
 
 # Pinned from the committed fixture (a 400-frame slice of the run16 dump). These reproduce the
@@ -1864,6 +2359,26 @@ def main():
                      help=f"write the selftest slice fixture (default path {HAND_COUNT_FIXTURE})")
     ap.add_argument("--hand-count-selftest", action="store_true",
                      help=f"replay --hand-count against {HAND_COUNT_FIXTURE} and exit")
+    ap.add_argument("--ammo-abstention", nargs="+", metavar="AMMO_SERIES_JSON",
+                     help="one or more count-pellets.py --ammo-series payloads: report WHY the "
+                          "ammo-counter OCR abstains -- per-frame read rate, the reason breakdown, "
+                          "each reason resolved to the SUBSYSTEM that emitted it "
+                          "(LOCALIZATION/SEGMENTATION/GLYPH-MATCH), the NOMINAL ceiling a perfect "
+                          "digit atlas could reach, the stale-lock cross-tab and the dark-badge vs "
+                          "bright good-lock sub-populations. Per series and pooled")
+    ap.add_argument("--ammo-abstention-frames", action="store_true",
+                     help="(--ammo-abstention) ALSO read the frame PNGs each series records in its "
+                          "`frames_dir` to classify every GLYPH-MATCH crop as red- or "
+                          "white-dominant, which is what the HONEST ceiling (dark-badge AND red) "
+                          "needs. Without it those columns report unavailable rather than guess")
+    ap.add_argument("--ammo-abstention-dark-max", type=float, default=AMMO_SURROUND_DARK_MAX,
+                     help=f"(--ammo-abstention) surround-brightness split below which a good-lock "
+                          f"frame counts as sitting on the dark ammo badge (default "
+                          f"{AMMO_SURROUND_DARK_MAX}; a PROXY, not a calibrated boundary)")
+    ap.add_argument("--save-ammo-abstention-fixture", metavar="PATH",
+                     help=f"write the selftest slice fixture (default path {AMMO_ABSTENTION_FIXTURE})")
+    ap.add_argument("--ammo-abstention-selftest", action="store_true",
+                     help=f"replay --ammo-abstention against {AMMO_ABSTENTION_FIXTURE} and exit")
     ap.add_argument("--gt-score-json", metavar="PATH",
                      help="score-pellets.py --real-fixture stdout JSON (carries each shot's owner "
                           "count, the shipped estimator's error and its per-offset counts)")
@@ -1875,6 +2390,12 @@ def main():
         raise SystemExit(missing_shots_selftest())
     if args.hand_count_selftest:
         raise SystemExit(hand_count_selftest())
+    if args.ammo_abstention_selftest:
+        raise SystemExit(ammo_abstention_selftest())
+    if args.ammo_abstention:
+        audit_ammo_abstention(args.ammo_abstention, args.ammo_abstention_frames,
+                              args.ammo_abstention_dark_max, args.save_ammo_abstention_fixture)
+        return
     if args.hand_count:
         if not args.hand_count_window:
             ap.error("--hand-count requires --hand-count-window LO_SEC HI_SEC")
