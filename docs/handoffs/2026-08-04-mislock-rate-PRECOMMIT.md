@@ -78,4 +78,27 @@ instrument extends an existing committed script and carries a pinned fixture (co
 
 ## 6. Result
 
-_(Written only after the measurement runs.)_
+**2026-08-04 — MEASURED. Full narrative: `docs/probe-runs.md` §20.**
+
+**Pooled production mislock rate: 16.9%** (137 of 811 shots, 4 dumps, 4 units). All four dumps
+cleared §4.1's 90% template-lock gate (98.3 / 100 / 100 / 99.5%), so none was excluded.
+⇒ **§3 band: > 10% — mislocks are the DOMINANT undercount channel and outrank every other open
+item.** That band was pre-committed here before any production number existed.
+
+Three independent checks (§20C): the detector flags the known shot-4 mislock (316 px) and **none**
+of the four known-good labelled shots; the 160 px threshold falls inside a real empty band in the
+distribution (nothing between 127 and 242 px), so no re-derivation moves a shot across it; and the
+rate reproduces on independent footage — 6/37 = 16.2% on the labelled clip, 1/5 = 20% on §9B's
+labelled set. **The shot-4 mislock was never unrepresentative; it is typical.**
+
+⚑ §4's three limits all bind and are restated in §20E: this is an **upper bound** on
+structural-specific mislocks (disagreement never says which mode is wrong), a **floor** on total
+localization error (both-wrong cases are invisible — shot 1's documented 78 px mislock is not
+flagged), and the production figures are **not pinned in a fixture** (scratchpad only; the committed
+slice carries the labelled clip's 37 shots).
+
+⚑ §20F records a reuse-before-derive miss: the calibration arm was re-derived although the committed
+`representative-audit-slice.json` already carries `cross_tmpl`. Classification is identical either
+way, so no verdict depends on it.
+
+⛔ Per §3, nothing was enacted: no localizer re-tune, no guard change, no cold-bias verdict.

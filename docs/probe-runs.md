@@ -5410,3 +5410,98 @@ The A/B varies `band_hi` alone against the dump's own `cross_positions` and trac
 recoverability prediction is `representative-audit-slice.json`'s `_expected.decomposition`.
 
 **RECORDS a measurement.** No constant, guard, threshold or default changed.
+
+#### §20 THE PRODUCTION MISLOCK RATE — 16.9%, and mislocks are the DOMINANT remaining undercount channel
+
+Executes `docs/handoffs/2026-08-04-mislock-rate-PRECOMMIT.md`, whose §3 decision rule (160 px
+threshold, three rate bands) was committed at `9bc829dd` **before any production number existed**.
+Answers the item open since 08-01: **what fraction of production shots are mislocked?**
+
+##### §20A — Detector and its validity gates (§4; all pass)
+
+Structural-vs-template crosshair disagreement, median over each shot's counting frames
+`t0+8…t0+11`, mislocked iff **> `pellet_radius` = 160 px**.
+
+**§4.1 template-lock gate — no dump excluded:** counting-frame template lock rates
+`h4-marciana-structural` 98.3%, `h4-isabel-structural` 100%, `h4-guilty-structural` 100%,
+`g2-noir-structural` 99.5% — all clear the 90% bar. (`run21` locked 0% in template mode, §17, so
+this gate was a live risk, not a formality.) Shot counts 218/203/180/214 reproduce the totals §9G
+already records — an alignment check on the merged template arms.
+
+##### §20B — The rate
+
+| dump                     | shots scored | mislocked | rate      | disp median / p90 / max (px) |
+| ------------------------ | ------------ | --------- | --------- | ---------------------------- |
+| `h4-marciana-structural` | 215          | 33        | 15.4%     | 7.4 / 299.3 / 783.9          |
+| `h4-isabel-structural`   | 203          | 41        | 20.2%     | 33.5 / 384.7 / 1238.2        |
+| `h4-guilty-structural`   | 180          | 32        | 17.8%     | 17.4 / 311.2 / 803.0         |
+| `g2-noir-structural`     | 213          | 31        | 14.6%     | 13.5 / 296.8 / 579.0         |
+| **pooled**               | **811**      | **137**   | **16.9%** | **18.7 / 325.9 / 1238.2**    |
+
+⇒ **§3 band: > 10% — "mislocks are the DOMINANT undercount channel and outrank every other open
+item."** That verdict was pre-committed, not chosen after seeing 16.9%.
+
+##### §20C — Three independent checks that this is real
+
+1. ⚑ **The known case is caught and the known-good are not.** On the labelled clip the detector
+   flags `t0 = 1289` — **shot 4, the documented structural mislock** — at 316 px, and flags **none**
+   of the other four labelled shots (`t0` 1056 / 1096 / 1136 / 1369). Zero false positives on the
+   only shots where truth is known.
+2. ⚑ **The threshold sits in a genuine GAP, not a continuum.** The labelled clip's 37 per-shot
+   disagreements sorted: 19 under 20 px, then 20–127 px, then **nothing between 127 and 242 px**,
+   then 6 at 242–453 px. The 160 px line falls inside that empty band, so no plausible
+   re-derivation of the threshold moves a single shot across it.
+3. ⚑ **An independent footage set reproduces the rate.** The labelled clip alone gives **6 of 37 =
+   16.2%**, against production's 16.9% on four different videos — and §9B's own labelled set gives
+   **1 of 5 = 20%**. Three separate bases, same magnitude. **The shot-4 mislock was never
+   unrepresentative; it is typical.**
+
+##### §20D — What it costs, DERIVED not measured
+
+A mislocked shot loses most of its owner pellets: on shot 4 the wrong lock radius-rejected **7 of 9**
+(§9B), and the reader read 4 against an owner label of 9 — an error of **−5**. At a 16.9% rate that
+is ≈ **0.85 pellets/shot** averaged over all shots.
+
+⚑ **This is an ARITHMETIC ESTIMATE from one mislocked shot's severity, not a measurement of the
+channel's cost** — n=1 for the severity term, and it carries the exact seductive shape the refuted
+`center_exclude` hypothesis had (§3 of the 08-04 judge handoff). It is recorded to size the channel,
+**not** to close anything. Measuring the cost needs its own pass.
+
+For scale only: §19 measured the post-`band_hi` residual at **−1.40 pellets/shot** on the labelled
+clip, of which shot 4's mislock contributes −1.00 directly.
+
+##### §20E — n, scope, and THREE limits that must ride with the number
+
+811 shots, 4 dumps, 4 units (`marciana` SG/Iron — **not** `marciana-marine-study`, AR/Iron —
+`isabel`, `guilty`, `noir`), 30 fps; plus 37 shots on the 60 fps labelled clip.
+
+1. **Disagreement says ONE mode is wrong, never WHICH.** 16.9% is an **upper bound on
+   structural-specific** mislocks. It may not be described as "structural was wrong on 16.9% of
+   shots".
+2. ⚑ **It cannot see BOTH-wrong cases**, so it is simultaneously a **FLOOR on total localization
+   error**. Shot 1 carries a documented 78 px mislock (08-01 centering entry) and is **not** flagged
+   here — the two modes agree and are both off.
+3. ⚑ **The production numbers are NOT pinned in a fixture.** The committed
+   `mislock-rate-slice.json` carries the **labelled clip only** (37 shots) — the four production
+   dumps live in the gitignored scratchpad and do not fit. The 811-shot figures are reproducible
+   only while that scratchpad survives.
+
+##### §20F — A methodology miss, recorded rather than smoothed over
+
+The production dumps genuinely have no template arm, so re-deriving one there was required. **But
+the CALIBRATION did not need re-deriving** — `representative-audit-slice.json`'s labelled block
+already carries a committed `cross_tmpl` (446 frames), and that is the sanctioned arm §9B/§10B used
+to establish shot 4's truth. It was re-derived anyway, which is why the pre-commit's §2 table
+(0/34/0/348/34 px, from the committed arm) does not match the run's own calibration (20–90 px good,
+316 px mislock). **Classification is identical under both** — shot 4 mislocked, the other four not —
+so no verdict depends on it, and production necessarily uses the fresh arm end-to-end, which is
+internally consistent. Recorded as a reuse-before-derive miss.
+
+##### §20G — Instrument
+
+`analyze-pellet-tracks.py --mislock-rate` / `--mislock-rate-selftest`, fixture
+`scripts/tests/fixtures/pellets/mislock-rate-slice.json`, wired into `pellet-selftest.sh` (24 arms).
+The selftest was shown to fail when an expected classification is perturbed.
+
+**RECORDS a measurement.** No constant, guard (including the 150 px jump guard), threshold or default
+changed; `debounce_shots` and both readers untouched; no verdict stamped on the cold bias.

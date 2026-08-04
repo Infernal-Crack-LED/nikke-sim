@@ -239,15 +239,18 @@ untouched. **Zero fixtures and zero pins moved across BOTH passes.**
    ⚑ **This LIFTS the block on bias verdicts** — §5.4's "no bias-CLOSED verdict is possible" no
    longer binds, and a re-extraction under the landed `band_hi = 20` now gives a clean before/after
    against a confirmed reference.
-3. **⚑ PRODUCTION MISLOCK RATE — unquantified, and in-sample the LARGEST gate-loss channel** (7 of
-   13 discarded owner pellets, more than the cap's 5). Sits upstream of every shot-conditioned
-   measurement. Question: **what fraction of production shots are mislocked?**
-   ⚑ **CORRECTION (2026-08-04): this does NOT hang off item 8.** `run21`/`run21b` are two far-band
-   worst-case windows, not the production corpus, and §17 showed they are unusable rather than
-   informative. The number that bears on production is **`h4-marciana-structural`'s 21.4% held**
-   — and **"held" is not "wrong"** (a held lock is correct whenever the crosshair did not move), so
-   this needs the **displacement** test, not the hold rate. That is the entry point now; item 8 is
-   closed and gates nothing.
+3. ~~**PRODUCTION MISLOCK RATE**~~ — ✅ **MEASURED 2026-08-04: 16.9%** (`docs/probe-runs.md` §20,
+   rule pre-committed at `9bc829dd`). 137 of 811 shots across 4 dumps / 4 units; all four cleared
+   the 90% template-lock gate. ⇒ the pre-committed **"> 10% ⇒ mislocks are the DOMINANT undercount
+   channel and outrank every other open item"** band. Validated three ways: the known shot-4 mislock
+   is flagged and the four known-good labelled shots are not; the 160 px threshold sits in a real
+   empty band (nothing between 127 and 242 px); and the rate reproduces on independent footage
+   (6/37 = 16.2% labelled clip, 1/5 = 20% on §9B's set). **The shot-4 mislock is typical, not an
+   outlier.** ⚑ Limits: an UPPER bound on structural-specific mislocks (disagreement never says
+   which mode is wrong) and simultaneously a FLOOR on total localization error (both-wrong cases
+   invisible — shot 1's 78 px mislock is not flagged). ⚑ **Sizing is DERIVED, not measured:** at
+   16.9% × shot 4's −5 severity ≈ 0.85 pellets/shot, n=1 for the severity term and carrying the
+   refuted `center_exclude` arithmetic shape — **measuring the channel's cost is the next pass.**
 4. **The 112 → 96 abstentions, reframed.** ⚑ It is a **concurrency** gate, not an absence of tracks
    (§1.4) — the old framing is dead. Open: what the 81 `in_band_no_concurrency` events are, and what
    the 16 that become banded at `band_hi = 20` have in common. Cheap; answerable from committed
