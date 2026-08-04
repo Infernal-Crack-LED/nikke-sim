@@ -5660,3 +5660,76 @@ edge-adjacent crops rather than clipping them.
 
 **RECORDS a measurement + an owner adjudication.** Nothing enacted; no constant, guard, threshold or
 default changed; no localizer re-tune; no cold-bias verdict.
+
+#### §23 `--dump-tracks` NOW CARRIES THE `band` CHANNEL — the silent production/analysis divergence is closed
+
+Fixes the defect recorded at §16E. Plan with blast radius **declared before any production file was
+touched**: `docs/handoffs/2026-08-04-dump-band-LANDING-PLAN.md` (committed `235f573a`); landing
+`bde7a37f`. Owner-approved on the principle that **tooling faithfulness is a win regardless of the
+cold-SG question**.
+
+##### §23A — The defect
+
+`count-pellets.py:1865` wrote a dump's `frame_counts` as `{white, red, marker}`, **dropping `band`**
+although the value was already present at the write site. Since `debounce_shots` falls back to
+pre-hybrid behaviour when no frame carries a `band` key (`:598`, `has_band`), **every dump produced
+by `--dump-tracks` replayed as if the 2026-08-04 hybrid landing had never happened** — any audit
+against fresh footage would silently score the OLD representative-frame rule while appearing to test
+production. The production reader was never affected (`read-pellets.ts` parses `--temporal` stdout,
+`:1935`, which does carry `band`).
+
+##### §23B — ⚑ The semantic the whole backward-compat mechanism rests on
+
+**A 3-wide row means `band` is UNKNOWN and the key is OMITTED — never defaulted to 0.** `has_band`
+tests key _presence_, so a fabricated `band: 0` would flip a pre-hybrid replay onto the hybrid path
+with an all-zero band series. Verified behaviourally, not just by inspection:
+
+| input row   | expanded dict                        | `band` key |
+| ----------- | ------------------------------------ | ---------- |
+| `[5,1,0]`   | `{white:5, red:1, marker:0}`         | **absent** |
+| `[5,1,0,0]` | `{white:5, red:1, marker:0, band:0}` | present    |
+| `[5,1,0,7]` | `{white:5, red:1, marker:0, band:7}` | present    |
+
+⇒ a genuine `band = 0` is preserved and remains **distinguishable from "unknown"**.
+
+##### §23C — ⚑ The plan's reader list was NOT exhaustive, and the enumeration was re-run
+
+The plan named two hard 3-unpack readers (`for w, r, m in …`). An independent enumeration found
+**eleven** such sites, classified by data provenance:
+
+- **6 reachable** — fed by `_rep_slim_dump`'s own persisted output, so they could receive a 4-wide
+  row after a future fixture regeneration. All widened via a shared `_expand_frame_counts_row`
+  helper. Four of these six were **not** in the plan.
+- **5 unreachable** — fed by other builders (`_merge_slim`, the labelled-window builder, `_bma_slim`)
+  that can never emit `band`. Left untouched and reported rather than changed.
+
+Recorded because "the plan named two, the tree had six" is exactly the latent-crash class this
+landing exists to prevent.
+
+##### §23D — The five pre-stated criteria, all MET
+
+| #   | Criterion                                            | Evidence                                                                                                                                                          |
+| --- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Fresh dump carries `band`, matching stdout           | 60-frame subset of `groundtruth-f811-v4/frames`, structural locate: all 60 entries carry `band`, **0/60 mismatches** vs the same run's `--temporal` `opencv.band` |
+| 2   | Fresh dump takes the **hybrid** path                 | `has_band = True`; representative frame **39** (band plateau 35–42 all = 7) vs **31** on the same dump with `band` stripped — a real behavioural divergence       |
+| 3   | Existing band-less dump replays **byte-identically** | Pre-op module (`git show 235f573a:…`) vs current, same input: identical `shots`/`summary`, sha256 `f95980bf…50ab1` on both sides                                  |
+| 4   | `_rep_slim_dump` round-trips / omits correctly       | With-band → 4-wide, values preserved; without-band → 3-wide, key never fabricated (§23B)                                                                          |
+| 5   | Both gates                                           | `pellet-selftest.sh` **25 arms TRUE exit 0**; `verify.sh` **TRUE exit 0**                                                                                         |
+
+##### §23E — Blast radius: the prediction HELD
+
+§3 predicted **zero fixtures move, zero pins move**. Outcome: only `count-pellets.py` and
+`analyze-pellet-tracks.py` are touched; `git diff` over `scripts/tests/` and
+`scripts/regression-snapshot*.json` is **empty**; `CACHE_SELFTEST_EXPECT` unmoved. Existing dumps are
+not rewritten and keep replaying identically — the key-absence mechanism preserved them exactly as
+the hybrid landing's own backward compatibility does.
+
+##### §23F — Scope and what this does NOT do
+
+⚑ **Only NEWLY-written dumps gain the field.** Every dump already on disk is still band-less and
+still replays pre-hybrid — so **any measurement re-derived from an existing dump is still scoring the
+old rule.** Realizing the benefit requires re-running `--dump-tracks`. That is the same
+"new extractions only" property §16C recorded for the `band_hi` landing itself.
+
+⛔ Nothing here touches the cold bias, and no verdict is stamped on it. This is a
+tooling-faithfulness landing: it makes the analysis path agree with the production path, nothing more.
