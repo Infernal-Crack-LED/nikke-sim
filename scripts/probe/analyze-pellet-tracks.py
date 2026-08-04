@@ -3016,9 +3016,23 @@ def _merge_slim(ammo, frame_counts, fps, slack, over_idx, keep=MERGE_AUDIT_SLICE
     }
 
 
+def _expand_frame_counts_row(row):
+    """A compact `frame_counts` fixture/dump row is `[white, red, marker]`, or, once the source
+    dump carries the `band` channel (docs/handoffs/2026-08-04-dump-band-LANDING-PLAN.md), `[white,
+    red, marker, band]`. A 3-wide row means `band` is UNKNOWN and the key is OMITTED from the
+    returned dict -- NEVER defaulted to 0 -- because `has_band` (count-pellets.py:598) tests key
+    PRESENCE, not truthiness: a fabricated `band: 0` would flip a pre-hybrid replay onto the
+    hybrid path with an all-zero band series."""
+    w, r, m, *rest = row
+    d = {"white": w, "red": r, "marker": m}
+    if rest:
+        d["band"] = rest[0]
+    return d
+
+
 def _merge_expand(d):
     """Compact fixture tuples -> the dict shapes the report reads."""
-    fc = [{"white": w, "red": r, "marker": m} for w, r, m in d["frame_counts"]]
+    fc = [_expand_frame_counts_row(row) for row in d["frame_counts"]]
     ammo = {"tracks": d["tracks"], "range": d["range"],
             "reads": [{"i": i, "ammo": a} for i, a in d["reads"]]}
     return ammo, fc
@@ -3543,7 +3557,7 @@ def _rep_labelled_report(block, shots, fidelity):
     fps = block["fps"]
     cross = [tuple(c) if c else None for c in block["cross"]]
     cross_tmpl = [tuple(c) if c else None for c in block["cross_tmpl"]]
-    frame_counts = [{"white": w, "red": r, "marker": m} for w, r, m in block["frame_counts"]]
+    frame_counts = [_expand_frame_counts_row(row) for row in block["frame_counts"]]
     tracks = [{"id": tid, "first": first, "last": first + len(xs) - 1, "life": len(xs),
                "is_pellet": bool(isp), "xs": xs, "ys": ys}
               for tid, first, isp, xs, ys in block["tracks_raw"]]
@@ -3667,7 +3681,7 @@ def _rep_policy_view(row):
 
 
 def _rep_expand_dump(d):
-    fc = [{"white": w, "red": r, "marker": m} for w, r, m in d["frame_counts"]]
+    fc = [_expand_frame_counts_row(row) for row in d["frame_counts"]]
     tracks = [(life, [(flat[i], flat[i + 1]) for i in range(0, len(flat), 2)])
               for life, flat in d["radius_tracks"]]
     return fc, tracks
@@ -3933,7 +3947,11 @@ def _rep_slim_dump(name, dump, fps):
             out.append([t["life"], [v for run in runs for v in run]])
     return {"tracks": name, "fps": fps,
             "max_pellet_frames": dump["params"]["max_pellet_frames"],
-            "frame_counts": [[c["white"], c["red"], c.get("marker", 0)] for c in frame_counts],
+            # 3-wide [white, red, marker] when the source dump carries no `band` key (band
+            # UNKNOWN), 4-wide [white, red, marker, band] when it does -- never a fabricated
+            # `band: 0` (docs/handoffs/2026-08-04-dump-band-LANDING-PLAN.md §2).
+            "frame_counts": [[c["white"], c["red"], c.get("marker", 0)] + (
+                [c["band"]] if "band" in c else []) for c in frame_counts],
             "radius_tracks": out}
 
 
@@ -4029,7 +4047,7 @@ def representative_audit_selftest():
     got = _rep_expected(labelled, reports, pooled)
     ok = got == fx["_expected"]
     ident = all(_merge_shipped_identity(
-        [{"white": w, "red": r, "marker": m} for w, r, m in d["frame_counts"]], d["fps"])
+        [_expand_frame_counts_row(row) for row in d["frame_counts"]], d["fps"])
         for d in fx["dumps"])
     # A compact digest rather than the merge audit's full expected/got dump: this arm's `_expected`
     # runs to tens of kilobytes and would drown pellet-selftest.sh's output. On FAILURE the
@@ -4585,7 +4603,7 @@ def policy_score(save_fixture=None):
     with open(REP_AUDIT_FIXTURE) as fh:
         fx = json.load(fh)
     for d in fx["dumps"]:
-        fc = [{"white": w, "red": r, "marker": m} for w, r, m in d["frame_counts"]]
+        fc = [_expand_frame_counts_row(row) for row in d["frame_counts"]]
         if not _merge_shipped_identity(fc, d["fps"]):
             raise SystemExit(f"--policy-score: the shipped-identity control FAILED on {d['tracks']}. "
                              "The local span rebuild no longer reproduces debounce_shots, so no row "
@@ -4623,7 +4641,7 @@ def policy_score_selftest():
     with open(REP_AUDIT_FIXTURE) as fh:
         src = json.load(fh)
     ident = all(_merge_shipped_identity(
-        [{"white": w, "red": r, "marker": m} for w, r, m in d["frame_counts"]], d["fps"])
+        [_expand_frame_counts_row(row) for row in d["frame_counts"]], d["fps"])
         for d in src["dumps"])
     labelled = _ps_score_labelled(src)
     dumps = [_ps_score_dump(d) for d in src["dumps"]]
