@@ -29,8 +29,12 @@ import collections
 import importlib.util
 import json
 import math
+import os
 import statistics as st
+import subprocess
+import tempfile
 from pathlib import Path
+from types import SimpleNamespace
 
 import cv2
 import numpy as np
@@ -5033,6 +5037,424 @@ def selftest():
     return 0 if ok else 1
 
 
+# ============================================================
+# THE HYBRID-LANDING AUDIT (docs/probe-runs.md §13; docs/handoffs/
+# 2026-08-04-representative-frame-PROPOSAL.md). §9-§12 measured the fallback hybrid as a scoring
+# VARIANT inside this file's `--policy-score` arm (`hybrid_plateau_median` in `_ps_score_event`).
+# This arm checks the rule as it now actually SHIPS -- count-pellets.py's `band` channel
+# (`_frame_pellet_counts`) and its hybrid branch inside `debounce_shots` (§13) -- against the four
+# mandatory landing criteria, calling the SHIPPED functions directly rather than re-deriving a
+# THIRD implementation of the same algorithm here.
+#
+# REUSE, NOT RE-DERIVE (CLAUDE.md constraint / the sufficiency rule): everything the AUDIT side
+# needs -- the ground-truth plateau series, the labelled block's raw tracks, each of the 5 dumps'
+# reduced `radius_tracks` -- already lives in the committed REP_AUDIT_FIXTURE
+# (representative-audit-slice.json), produced independently by §9/§10's own arm. This audit reads
+# it rather than re-deriving any of that. The ONE thing it cannot supply is production's OWN band
+# COMPUTATION on the 5 full-clip dumps (the fixture's `radius_tracks` are ALREADY radius-gated --
+# reusing them for the equivalence check would just be re-running the audit side against itself),
+# so that piece alone needs each dump's LIVE tracks.json (full track list, not reduced) -- the
+# same scratchpad dumps `--representative-audit`/`--backend-marker-audit` already read live.
+# ============================================================
+HYBRID_LANDING_FIXTURE = "scripts/tests/fixtures/pellets/hybrid-landing-audit-slice.json"
+
+
+def _hla_reconstruct_frame_tracks(tracks, n_frames, offset=0):
+    """Rebuild `build_tracks_and_counts`'s per-frame `frame_tracks` shape -- a per-frame list of
+    (track_id, x, y, is_red) -- directly from a committed/live track list (dicts carrying `id`,
+    `is_red`, `first`, `xs`, `ys`), with NO re-tracking. Re-running the nearest-neighbor tracker
+    over these same points would risk a different crossing-track assignment than the ORIGINAL live
+    run made (a real, if rare, source of drift this reconstruction avoids by construction: it
+    reuses the track IDENTITY the original tracker already committed to, and only re-derives which
+    FRAMES that identity was in-radius on). `offset` shifts ABSOLUTE track frame indices down to
+    the local `0..n_frames-1` array this function returns, matching how `cross_positions` is
+    indexed by every caller here."""
+    frame_tracks = [[] for _ in range(n_frames)]
+    track_life = {}
+    for t in tracks:
+        tid, is_red, first, xs, ys = t["id"], t["is_red"], t["first"], t["xs"], t["ys"]
+        life = len(xs)
+        track_life[tid] = life
+        for k in range(life):
+            fi = first + k - offset
+            if 0 <= fi < n_frames:
+                frame_tracks[fi].append((tid, xs[k], ys[k], is_red))
+    return frame_tracks, track_life
+
+
+def _hla_production_band(tracks, cross_positions, params, fps, offset=0):
+    """PRODUCTION's OWN `band` channel: count-pellets.py's real `_frame_pellet_counts`, called on
+    `frame_tracks` reconstructed from `tracks` (see `_hla_reconstruct_frame_tracks`) -- the same
+    function `build_tracks_and_counts` calls in the shipped `--temporal` pipeline, imported
+    in-process rather than re-implemented. Returns a plain per-frame list, local-indexed like
+    `cross_positions`."""
+    cp = _count_pellets_module()
+    n = len(cross_positions)
+    frame_tracks, track_life = _hla_reconstruct_frame_tracks(tracks, n, offset)
+    max_pf = params["max_pellet_frames"]
+    pellet_ids = {tid for tid, life in track_life.items() if life <= max_pf}
+    band_lo = cp._band_lo(fps)
+    band_ids = {tid for tid in pellet_ids if band_lo <= track_life[tid] <= max_pf}
+    args_ns = SimpleNamespace(pellet_radius=params["pellet_radius"], marker_radius=65)
+    prod = cp._frame_pellet_counts(frame_tracks, cross_positions, pellet_ids, band_ids, args_ns)
+    return [r["band"] for r in prod]
+
+
+def _hla_equivalence(prod_band, audit_totals, offset, n):
+    """MANDATORY CHECK 1: per-frame diff between PRODUCTION's `band` (`prod_band`, local-indexed)
+    and this file's INDEPENDENT `_ps_band_totals` (`audit_totals`, an absolute-indexed Counter --
+    a different aggregation path over the SAME underlying per-track radius/lifetime facts: audit
+    walks track-then-frame over already radius-gated runs; production walks frame-then-track
+    inside the same pass that applies the radius/lifetime gates in the first place)."""
+    diffs = [k for k in range(n) if prod_band[k] != audit_totals.get(k + offset, 0)]
+    return {"n_frames": n, "n_mismatch": len(diffs), "diff_frames": diffs[:20]}
+
+
+def _hla_score(frame_counts, band, fps, marker_min=2, min_pellets=5, max_pellets=10):
+    """PRODUCTION's real `debounce_shots`, fed a band-augmented `frame_counts` array built from
+    `frame_counts` (white/red/marker dicts) + `band` (a same-length list of ints). Every check in
+    this arm that needs a `debounce_shots` answer routes through this one call, so `_expected` can
+    only ever be this function's own numbers (same discipline as `_ps_score_labelled`/
+    `_ps_score_dump`)."""
+    cp = _count_pellets_module()
+    frames = [dict(fc, band=b) for fc, b in zip(frame_counts, band)]
+    return cp.debounce_shots(frames, fps, marker_min, min_pellets, max_pellets)
+
+
+def _hla_falsification(frame_counts, band, shots_hybrid, fps, marker_min=2, min_pellets=5,
+                       max_pellets=10):
+    """MANDATORY CHECK 3: on every event where NO frame in its own span carries `band > 0`, the
+    hybrid shot must be BIT-IDENTICAL to the shipped (band-stripped) answer -- same representative
+    frame, same white/red/total. Segmentation is untouched by the hybrid rule (docs/probe-runs.md
+    §12C), so `shots_hybrid` and the band-stripped replay below share the same event count/order by
+    construction; this only asserts the PER-EVENT falsification control, not segmentation again."""
+    cp = _count_pellets_module()
+    shots_shipped, _ = cp.debounce_shots(frame_counts, fps, marker_min, min_pellets, max_pellets)
+    n = min(len(shots_hybrid), len(shots_shipped))
+    bad = []
+    for i in range(n):
+        h, s = shots_hybrid[i], shots_shipped[i]
+        no_band = not any(band[j] > 0 for j in range(h["start"], h["end"]))
+        if no_band and (h["frame"], h["white"], h["red"], h["total"]) != (
+                s["frame"], s["white"], s["red"], s["total"]):
+            bad.append(i)
+    return {"n_events": n, "n_bad": len(bad), "bad_events": bad}
+
+
+def _hla_ts_lockstep(frame_counts, band, fps, marker_min=2, min_pellets=5, max_pellets=10):
+    """MANDATORY CHECK 4, LIVE ONLY (needs `npx tsx`; not replayed by the selftest, same
+    live/replay split as `audit_representative`'s "FULL-CLIP CONTROL"): feed count-pellets.py's
+    `debounce_shots` AND read-pellets.ts's `debounceShots` (via its `--debounce-json` harness) the
+    SAME frame_counts-with-band array and diff the results event-for-event."""
+    cp = _count_pellets_module()
+    frames = [dict(fc, band=b) for fc, b in zip(frame_counts, band)]
+    py_shots, _ = cp.debounce_shots(frames, fps, marker_min, min_pellets, max_pellets)
+    tf = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
+    try:
+        json.dump(frames, tf)
+        tf.close()
+        proc = subprocess.run(
+            ["npx", "tsx", str(HERE / "read-pellets.ts"), "--debounce-json", tf.name,
+             "--fps", str(fps), "--marker-min", str(marker_min),
+             "--min-pellets", str(min_pellets), "--max-pellets", str(max_pellets)],
+            capture_output=True, text=True, cwd=str(HERE.parent.parent))
+    finally:
+        os.unlink(tf.name)
+    if proc.returncode != 0:
+        return {"ok": False, "error": proc.stderr[-2000:]}
+    ts_out = json.loads(proc.stdout.strip().splitlines()[-1])
+    ts_shots = ts_out["shots"]
+    keys = ("frame", "white", "red", "total", "frames", "core")
+    n = min(len(py_shots), len(ts_shots))
+    diff = [i for i in range(n)
+           if tuple(py_shots[i][k] for k in keys) != tuple(ts_shots[i][k] for k in keys)]
+    return {"ok": not diff and len(py_shots) == len(ts_shots), "n_py": len(py_shots),
+           "n_ts": len(ts_shots), "n_diff": len(diff), "diff_events": diff[:20]}
+
+
+def audit_hybrid_landing(dump_dirs, save_fixture=None, ts_lockstep=False):
+    with open(REP_AUDIT_FIXTURE) as fh:
+        fx_rep = json.load(fh)
+    name_fps = {d["tracks"]: d["fps"] for d in fx_rep["dumps"]}
+
+    fixture = {"labelled": {}, "dumps": []}
+    report = {"labelled": {}, "dumps": [], "lockstep": []}
+
+    # ---- labelled block (n=5 categorical half), both crops ----
+    block = fx_rep["labelled"]
+    fps = block["fps"]
+    offset = block["offset"]
+    n = len(block["frame_counts"])
+    frame_counts_base = [{"white": w, "red": r, "marker": m} for w, r, m in block["frame_counts"]]
+    max_pf = block["params"]["max_pellet_frames"]
+    band_range = _ps_band(fps, max_pf)
+    tracks_dicts = [{"id": tid, "is_red": False, "first": first, "xs": xs, "ys": ys}
+                    for tid, first, _isp, xs, ys in block["tracks_raw"]]
+    truth = _ps_ground_truth_series(fx_rep)
+
+    per_crop = {}
+    for crop_key, cross_key in (("structural", "cross"), ("template", "cross_tmpl")):
+        cross = [tuple(c) if c else None for c in block[cross_key]]
+        prod_band = _hla_production_band(tracks_dicts, cross, block["params"], fps, offset)
+        rtracks = _ps_labelled_radius_tracks(block, cross_key)
+        audit_totals = _ps_band_totals(rtracks, band_range)
+        equiv = _hla_equivalence(prod_band, audit_totals, offset, n)
+        if equiv["n_mismatch"]:
+            raise SystemExit(f"--hybrid-landing-audit: EQUIVALENCE FAILED on labelled/{crop_key}: "
+                             f"{equiv['n_mismatch']}/{equiv['n_frames']} frames disagree "
+                             f"{equiv['diff_frames']}")
+        shots, summary = _hla_score(frame_counts_base, prod_band, fps)
+        per_crop[crop_key] = {"band": prod_band, "shots": shots, "summary": summary,
+                              "equivalence": equiv}
+
+    cat_rows = []
+    for s in _rep_load_labels():
+        t0 = s["t0"]
+        crop = "template" if s["locate"] == "template" else "structural"
+        shots = per_crop[crop]["shots"]
+        ev = next((sh for sh in shots if sh["start"] + offset <= t0 < sh["end"] + offset), None)
+        if ev is None:
+            raise SystemExit(f"--hybrid-landing-audit: labelled shot {s['shot']} (t0={t0}) falls "
+                             "in no production event")
+        rep_offset = (ev["frame"] + offset) - t0
+        plateau = _ps_plateau(truth[s["shot"]])
+        cat_rows.append({"shot": s["shot"], "crop": crop, "rep_offset": rep_offset,
+                         "total": ev["total"], "in_plateau": rep_offset in plateau})
+    cat_score = sum(1 for r in cat_rows if r["in_plateau"])
+    fixture["labelled"] = {crop: {"band": v["band"]} for crop, v in per_crop.items()}
+    report["labelled"] = {"categorical": cat_rows, "categorical_score": cat_score,
+                          "equivalence": {crop: v["equivalence"] for crop, v in per_crop.items()},
+                          "summary": {crop: v["summary"] for crop, v in per_crop.items()}}
+    if ts_lockstep:
+        report["lockstep"].append({"dump": "labelled/structural",
+                                   **_hla_ts_lockstep(frame_counts_base, per_crop["structural"]["band"], fps)})
+
+    # ---- the 5 full-clip dumps (ceiling/n_scored/falsification half) ----
+    pooled_n = pooled_above = pooled_valid_n = 0
+    pooled_valid_total = pooled_all_total = 0
+    for d in dump_dirs:
+        with open(Path(d) / "tracks.json") as fh:
+            dump = json.load(fh)
+        name = f"{Path(d).name}/tracks.json"
+        if name not in name_fps:
+            raise SystemExit(f"--hybrid-landing-audit: {name} is not one of REP_AUDIT_FIXTURE's "
+                             f"5 dumps ({sorted(name_fps)})")
+        dfps = name_fps[name]
+        n_d = len(dump["frame_counts"])
+        cross = [tuple(c) if c else None for c in dump["cross_positions"]]
+        prod_band = _hla_production_band(dump["tracks"], cross, dump["params"], dfps, offset=0)
+        radius = dump["params"]["pellet_radius"]
+        rtracks = [(t["life"], _rep_radius_runs(
+                       {"first": t["first"], "last": t["last"], "xs": t["xs"], "ys": t["ys"]},
+                       cross, radius))
+                   for t in dump["tracks"] if not t["is_red"]]
+        rtracks = [(life, runs) for life, runs in rtracks if runs]
+        band_range_d = _ps_band(dfps, dump["params"]["max_pellet_frames"])
+        audit_totals = _ps_band_totals(rtracks, band_range_d)
+        equiv = _hla_equivalence(prod_band, audit_totals, 0, n_d)
+        if equiv["n_mismatch"]:
+            raise SystemExit(f"--hybrid-landing-audit: EQUIVALENCE FAILED on {name}: "
+                             f"{equiv['n_mismatch']}/{equiv['n_frames']} frames disagree "
+                             f"{equiv['diff_frames']}")
+        frame_counts_d = [{"white": c["white"], "red": c["red"], "marker": c.get("marker", 0)}
+                          for c in dump["frame_counts"]]
+        shots_hybrid, summary_hybrid = _hla_score(frame_counts_d, prod_band, dfps)
+        fals = _hla_falsification(frame_counts_d, prod_band, shots_hybrid, dfps)
+        if fals["n_bad"]:
+            raise SystemExit(f"--hybrid-landing-audit: FALSIFICATION CONTROL FAILED on {name}: "
+                             f"{fals['n_bad']}/{fals['n_events']} no-band events differ from "
+                             f"shipped {fals['bad_events']}")
+        for sh in shots_hybrid:
+            pooled_n += 1
+            pooled_all_total += sh["total"]
+            if sh["total"] > REP_HITS_PER_SHOT:
+                pooled_above += 1
+            if MERGE_MIN_PELLETS <= sh["total"] <= MERGE_MAX_PELLETS:
+                pooled_valid_n += 1
+                pooled_valid_total += sh["total"]
+        fixture["dumps"].append({"name": name, "fps": dfps, "band": prod_band})
+        report["dumps"].append({"name": name, "fps": dfps, "n_events": len(shots_hybrid),
+                                "summary": summary_hybrid, "equivalence": equiv,
+                                "falsification": fals})
+        if ts_lockstep:
+            report["lockstep"].append({"dump": name,
+                                       **_hla_ts_lockstep(frame_counts_d, prod_band, dfps)})
+
+    report["pooled"] = {
+        "n_scored": pooled_n, "no_rep": 0,  # production has no abstain path (PROPOSAL §2)
+        "above_ceiling_pct": round(100 * pooled_above / pooled_n, 1) if pooled_n else None,
+        # TWO DIFFERENT avgTotal DEFINITIONS, both reported-only (PROPOSAL §4 criterion 6 / never a
+        # ranking criterion): `avgTotal_validShots` is what a REAL run's own `summary.avgTotal`
+        # would show (the 5..10 valid-total clamp `debounce_shots` itself applies);
+        # `avgTotal_unclamped` is the audit arm's OWN convention (§9F/§10D/§12A: mean over every
+        # SCORED event, no clamp) -- directly comparable to those sections' cited figures. Do not
+        # conflate the two or read a delta between them as a finding.
+        "avgTotal_validShots": round(pooled_valid_total / pooled_valid_n, 4) if pooled_valid_n else None,
+        "avgTotal_unclamped": round(pooled_all_total / pooled_n, 4) if pooled_n else None,
+    }
+
+    if save_fixture:
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("REP_AUDIT_FIXTURE (representative-audit-slice.json) for everything "
+                            "the AUDIT side needs (ground-truth plateau, labelled tracks_raw, "
+                            "each dump's radius_tracks) + each dump's LIVE tracks.json (production "
+                            "band reconstruction only, which the reduced radius_tracks cannot "
+                            "supply) for the 2026-08-04 hybrid-landing audit (docs/probe-runs.md "
+                            "§13). Constraint 9 self-validation, same precedent as the other "
+                            "pellets/*-audit-slice.json fixtures."),
+                "_note": ("`labelled` carries production's per-frame `band` series for both crops "
+                          "(structural/template) over the SAME window REP_AUDIT_FIXTURE's labelled "
+                          "block covers. `dumps` carries production's `band` series for each of "
+                          "the 5 full-clip dumps, full length, local-indexed 0..n-1 (offset 0 -- "
+                          "these are un-sliced). Regenerate with analyze-pellet-tracks.py "
+                          "--hybrid-landing-audit <dump-dir...> --save-hybrid-landing-audit-fixture "
+                          "<path> [--hybrid-landing-audit-ts-lockstep] (the TS lockstep needs `npx "
+                          "tsx` and is NOT replayed by the selftest, same live-only convention as "
+                          "audit_representative's FULL-CLIP CONTROL)."),
+                "labelled": fixture["labelled"], "dumps": fixture["dumps"],
+                "_expected": _hla_expected(report),
+            }, fh)
+        print(f"wrote hybrid-landing-audit fixture -> {save_fixture}")
+    _print_hybrid_landing_audit(report)
+    return report
+
+
+def _hla_expected(report):
+    return {
+        "labelled_categorical": report["labelled"]["categorical"],
+        "labelled_categorical_score": report["labelled"]["categorical_score"],
+        "labelled_equivalence": {k: {kk: vv for kk, vv in v.items() if kk != "diff_frames"}
+                                 for k, v in report["labelled"]["equivalence"].items()},
+        "labelled_summary": report["labelled"]["summary"],
+        "dumps": [{"name": d["name"], "fps": d["fps"], "n_events": d["n_events"],
+                  "summary": d["summary"],
+                  "equivalence": {k: v for k, v in d["equivalence"].items() if k != "diff_frames"},
+                  "falsification": d["falsification"]}
+                 for d in report["dumps"]],
+        "pooled": report["pooled"],
+    }
+
+
+def _print_hybrid_landing_audit(report):
+    lab = report["labelled"]
+    print(f"\nLABELLED CATEGORICAL: {lab['categorical_score']}/5")
+    for r in lab["categorical"]:
+        print(f"  shot {r['shot']} crop={r['crop']:10s} rep_offset={r['rep_offset']:+d} "
+              f"total={r['total']} in_plateau={r['in_plateau']}")
+    for crop, e in lab["equivalence"].items():
+        print(f"  equivalence[{crop}]: {e['n_mismatch']}/{e['n_frames']} mismatched")
+    print("\nDUMPS:")
+    for d in report["dumps"]:
+        print(f"  {d['name']:32s} fps={d['fps']:5.1f} events={d['n_events']:4d} "
+              f"equiv_mismatch={d['equivalence']['n_mismatch']:3d} "
+              f"falsification_bad={d['falsification']['n_bad']:3d} "
+              f"validShots={d['summary']['validShots']} avgTotal={d['summary']['avgTotal']}")
+    p = report["pooled"]
+    print(f"\nPOOLED: n_scored={p['n_scored']} no_rep={p['no_rep']} "
+          f"above_ceiling_pct={p['above_ceiling_pct']}% "
+          f"avgTotal_validShots={p['avgTotal_validShots']} "
+          f"avgTotal_unclamped={p['avgTotal_unclamped']}")
+    if report["lockstep"]:
+        print("\nLOCKSTEP (live, npx tsx read-pellets.ts --debounce-json):")
+        for r in report["lockstep"]:
+            print(f"  {r['dump']:24s} ok={r.get('ok')} py={r.get('n_py')} ts={r.get('n_ts')} "
+                  f"n_diff={r.get('n_diff')} {r.get('error', '')[:200]}")
+
+
+def hybrid_landing_audit_selftest():
+    """Constraint 9 self-validation: replay the whole arm's PYTHON-SIDE checks (equivalence,
+    categorical, ceiling/n_scored, falsification) over the committed slice, cross-checked against
+    REP_AUDIT_FIXTURE (representative-audit-slice.json) for everything the audit side needs. The TS
+    lockstep is LIVE-only (needs `npx tsx`) and is not part of this replay -- same split as
+    `representative_audit_selftest`'s full-clip control."""
+    with open(HYBRID_LANDING_FIXTURE) as fh:
+        fx = json.load(fh)
+    with open(REP_AUDIT_FIXTURE) as fh:
+        fx_rep = json.load(fh)
+
+    block = fx_rep["labelled"]
+    fps = block["fps"]
+    offset = block["offset"]
+    n = len(block["frame_counts"])
+    frame_counts_base = [{"white": w, "red": r, "marker": m} for w, r, m in block["frame_counts"]]
+    max_pf = block["params"]["max_pellet_frames"]
+    band_range = _ps_band(fps, max_pf)
+    truth = _ps_ground_truth_series(fx_rep)
+
+    per_crop = {}
+    for crop_key, cross_key in (("structural", "cross"), ("template", "cross_tmpl")):
+        prod_band = fx["labelled"][crop_key]["band"]
+        rtracks = _ps_labelled_radius_tracks(block, cross_key)
+        audit_totals = _ps_band_totals(rtracks, band_range)
+        equiv = _hla_equivalence(prod_band, audit_totals, offset, n)
+        shots, summary = _hla_score(frame_counts_base, prod_band, fps)
+        per_crop[crop_key] = {"shots": shots, "summary": summary, "equivalence": equiv}
+
+    cat_rows = []
+    for s in _rep_load_labels():
+        t0 = s["t0"]
+        crop = "template" if s["locate"] == "template" else "structural"
+        shots = per_crop[crop]["shots"]
+        ev = next((sh for sh in shots if sh["start"] + offset <= t0 < sh["end"] + offset), None)
+        rep_offset = (ev["frame"] + offset) - t0 if ev else None
+        plateau = _ps_plateau(truth[s["shot"]])
+        cat_rows.append({"shot": s["shot"], "crop": crop, "rep_offset": rep_offset,
+                         "total": ev["total"] if ev else None,
+                         "in_plateau": rep_offset in plateau if rep_offset is not None else False})
+    cat_score = sum(1 for r in cat_rows if r["in_plateau"])
+
+    pooled_n = pooled_above = pooled_valid_n = 0
+    pooled_valid_total = pooled_all_total = 0
+    dump_reports = []
+    rep_dumps_by_name = {d["tracks"]: d for d in fx_rep["dumps"]}
+    for d in fx["dumps"]:
+        name = d["name"]
+        rd = rep_dumps_by_name[name]
+        frame_counts_d, rtracks = _rep_expand_dump(rd)
+        dfps = rd["fps"]
+        band_range_d = _ps_band(dfps, rd["max_pellet_frames"])
+        audit_totals = _ps_band_totals(rtracks, band_range_d)
+        equiv = _hla_equivalence(d["band"], audit_totals, 0, len(frame_counts_d))
+        shots_hybrid, summary_hybrid = _hla_score(frame_counts_d, d["band"], dfps)
+        fals = _hla_falsification(frame_counts_d, d["band"], shots_hybrid, dfps)
+        for sh in shots_hybrid:
+            pooled_n += 1
+            pooled_all_total += sh["total"]
+            if sh["total"] > REP_HITS_PER_SHOT:
+                pooled_above += 1
+            if MERGE_MIN_PELLETS <= sh["total"] <= MERGE_MAX_PELLETS:
+                pooled_valid_n += 1
+                pooled_valid_total += sh["total"]
+        dump_reports.append({"name": name, "fps": dfps, "n_events": len(shots_hybrid),
+                             "summary": summary_hybrid, "equivalence": equiv,
+                             "falsification": fals})
+
+    report = {
+        "labelled": {"categorical": cat_rows, "categorical_score": cat_score,
+                    "equivalence": {k: v["equivalence"] for k, v in per_crop.items()},
+                    "summary": {k: v["summary"] for k, v in per_crop.items()}},
+        "dumps": dump_reports,
+        "pooled": {
+            "n_scored": pooled_n, "no_rep": 0,
+            "above_ceiling_pct": round(100 * pooled_above / pooled_n, 1) if pooled_n else None,
+            "avgTotal_validShots": round(pooled_valid_total / pooled_valid_n, 4) if pooled_valid_n else None,
+            "avgTotal_unclamped": round(pooled_all_total / pooled_n, 4) if pooled_n else None,
+        },
+        "lockstep": [],
+    }
+    got = _hla_expected(report)
+    ok = got == fx["_expected"]
+    if not ok:
+        for key in sorted(set(got) | set(fx["_expected"])):
+            if got.get(key) != fx["_expected"].get(key):
+                print(f"  DIFF {key}:\n    expected {json.dumps(fx['_expected'].get(key))}"
+                      f"\n    got      {json.dumps(got.get(key))}")
+    _print_hybrid_landing_audit(report)
+    print("SELFTEST PASS" if ok else "SELFTEST FAIL")
+    return 0 if ok else 1
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--tracks", help="tracks.json from count-pellets.py --dump-tracks")
@@ -5294,6 +5716,27 @@ def main():
                     help=f"write the committed replay fixture (see {BACKEND_MARKER_AUDIT_FIXTURE})")
     ap.add_argument("--backend-marker-audit-selftest", action="store_true",
                     help=f"replay {BACKEND_MARKER_AUDIT_FIXTURE} and exit")
+    ap.add_argument("--hybrid-landing-audit", nargs="+", metavar="DUMP_DIR",
+                    help=("THE HYBRID-LANDING AUDIT (docs/probe-runs.md §13): checks the "
+                          "fallback-hybrid representative-frame rule AS SHIPPED (count-pellets.py's "
+                          "`band` channel + its hybrid branch inside `debounce_shots`, and "
+                          "read-pellets.ts's mirror) against the four mandatory landing criteria -- "
+                          "EQUIVALENCE (production's own `band` vs this file's independent "
+                          "`_ps_band_totals`), criteria re-measured against PRODUCTION "
+                          "`debounce_shots` itself (categorical 5/5, ceiling/n_scored/no_rep), the "
+                          "FALSIFICATION control (bit-identical to shipped on no-band events), and "
+                          "(with --hybrid-landing-audit-ts-lockstep) LOCKSTEP against "
+                          "read-pellets.ts on a common input. Each DUMP_DIR is a live "
+                          "count-pellets.py --dump-tracks directory (tracks.json) for one of "
+                          "REP_AUDIT_FIXTURE's 5 dumps -- everything the AUDIT side needs is reused "
+                          "from that already-committed fixture, never re-derived."))
+    ap.add_argument("--hybrid-landing-audit-ts-lockstep", action="store_true",
+                    help="also run the LIVE TS lockstep check (needs `npx tsx`); not part of the "
+                         "selftest replay")
+    ap.add_argument("--save-hybrid-landing-audit-fixture", metavar="PATH",
+                    help=f"write the committed replay fixture (see {HYBRID_LANDING_FIXTURE})")
+    ap.add_argument("--hybrid-landing-audit-selftest", action="store_true",
+                    help=f"replay {HYBRID_LANDING_FIXTURE} (python side only) and exit")
     args = ap.parse_args()
 
     if args.stale_counting_selftest:
@@ -5312,6 +5755,12 @@ def main():
         raise SystemExit(backend_marker_audit_selftest())
     if args.backend_marker_audit:
         audit_backend_marker(args.backend_marker_audit, args.save_backend_marker_audit_fixture)
+        return 0
+    if args.hybrid_landing_audit_selftest:
+        raise SystemExit(hybrid_landing_audit_selftest())
+    if args.hybrid_landing_audit:
+        audit_hybrid_landing(args.hybrid_landing_audit, args.save_hybrid_landing_audit_fixture,
+                             args.hybrid_landing_audit_ts_lockstep)
         return 0
     if args.policy_score_selftest:
         raise SystemExit(policy_score_selftest())
