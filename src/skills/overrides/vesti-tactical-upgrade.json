@@ -1,5 +1,5 @@
 {
-  "note": "Vesti: Tactical Upgrade (slug vesti-tactical-upgrade, aka vtu/vestitu — variant of base vesti; never the bare base name, P0 disambiguation) — Elysion Fire RL Attacker, Burst III, 40s CD, ammo 8, reloadFrames 142, chargeFrames 120, chargeMultiplier 200, normalMult 22.44 / coreMult 200, critRate 15 / critDamage 150. FROM-SCRATCH kit-autonomy build 2026-08-01 (no prior override; baseline was bare weapon, simSupported:false). A full-charge RL carry whose damage lives in the 'Missile Guide' charge window and her true-damage riders/nuke. EVERY modelable line keys off landing Full Charge attacks = trigger shotFired (the per-trigger-pull trigger, routed through applyBlock so block gates are enforced). shotFired == 'when landing Full Charge attacks' for this unit because RL shots are ALWAYS charged (isCharge = RL && !swap), so every rocket she lands is a full charge. shotFired is chosen over the per-full-charge chargeCounter trigger deliberately: chargeCounter applies its effect via applyEffect DIRECTLY and therefore BYPASSES block-level gates (fbGate / requiresTargetStatus, checked only in applyBlock) — which the S2 'Battle Formation' (fbGate:'inFb') and 'Explosive Round' (requiresTargetStatus) lines REQUIRE (verified: a chargeCounter encoding fired those two lines ungated — 384 spurious projectileExplosionPct applications + out-of-FB ATK applications). Multi-effect lines are split into separate single-effect blocks. S1 MISSILE GUIDE ('when performing a Full Charge attack while not in Missile Guide status', self): two self buffs, each its own shotFired block — (S1a) Charge Speed ▲100% = chargeSpeedPct 100, (S1b) Charge Damage ▲58.5% = chargeDamagePct 58.5 — BOTH durationShots:3 ('for 3 round(s)' = round-count, holder-scoped, no wall-clock expiry; helm-burst durationShots precedent) + removeOnReload:true ('Removes Missile Guide upon reloading to max ammunition' — cinderella S1 toggle precedent; the buff ends at the EARLIER of 3 rounds fired OR a reload-to-max). The 'while not in Missile Guide status' re-trigger gate is NOT separately encoded (the engine has no 'not-currently-buffed' self gate) — and this is NOT damage-neutral: shotFired refreshes the 3-round window on every full charge, so the sim runs Missile Guide at near-permanent uptime while firing, whereas the true kit lapses MG after 3 rounds and re-grants only on the NEXT (un-buffed, full 120f) charge — a duty cycle the encoding over-credits (see ⚑5 / caveat 1). The durationShots:3 + removeOnReload structure is faithful; only the missing gate inflates uptime. S2 MONSTER STAGE ('when landing Full Charge attacks'): (S2a) every full charge → the target 266.6% of final ATK as TRUE damage = shotFired → enemy flatDamage 266.6 flavor 'true' (crit-eligible by the flatDamage default e.crit!==false, noRange rider convention; true damage CAN crit — owner ruling 2026-07-25); (S2b) 'if self is in Battle Formation status → self ATK ▲20% for 3 sec' is UNMODELED (verbatim in unmodeled.skill2) — 'Battle Formation' is a self-status NOTHING in this kit grants and the schema has no self-status gate (requiresTargetStatus is boss-scoped, requiresShielded is shields); the driver initially read it as fbGate:'inFb' (Battle Formation == Full Burst) but ADOPTED the blind consensus (S2b claude-fable-5 + S5 AND S6 claude-opus-5 ALL independently re-derived INERT/unmodeled): with no carrier the line never fires, and encoding it ungated would grant a near-permanent +20% ATK over-credit (see ⚑6); (S2c) 'if target is in Explosive Round status → self Projectile Explosion Damage ▲20% for 3 sec' = shotFired + requiresTargetStatus:'Explosive Round' → self projectileExplosionPct 20 / 3s. 'Explosive Round' is eunhwa-tactical-upgrade's burst-cannon status (the only other unit referencing it — a Tactical-Upgrade-sisters synergy); ETU currently models her Explosive Round as a boss damageTaken rider, NOT a named targetStatus, so NO in-scope unit opens a targetStatus:'Explosive Round' and this gate is INERT in current board comps (marciana/privaty/rem named-status-gate pattern — faithful structure, inert until a source opens the named status; caveat 2). BURST 'Missile Container Online' (burstCast): (BUa) self True Damage ▲60% for 10s = trueDamagePct 60 / 10s (Damage-Up bucket that pays off ONLY on true-flavored hits — her S2a 266.6% riders and the BUb nuke; ~5-10 full charges land in the 10s post-burst window with the charge instant under Missile Guide); (BUb) 'all enemies (incl. parts) 492.3% of final ATK as Burst Skill true damage' = burstCast → enemy flatDamage 492.3 flavor 'true' (single boss; burst bucket; noFb — a burstCast nuke lands BEFORE the Full Burst window opens so it never takes the +50% major, helm-H7/U10 convention). UNMODELED: burst 'Explosion Radius ▲100% for 10s' — inert vs the single partless scope-lock boss (splash radius moves no damage) and there is no explosion-radius stat; recorded verbatim. RESIDUAL ⚑ flags: ⚑1 Charge Speed ▲100% is encoded chargeSpeedPct 100, which the engine's SUBTRACTIVE-time convention (sim.ts needed = chargeFrames × (1 − cs/100)) reads as an INSTANT charge (cs=100 → 0 frames) rather than a literal ×2-speed/÷2-time; the kit magnitude (100) is pinned faithfully, the engine's interpretation of 100 is a global convention shared by every chargeSpeedPct carrier (red-hood/maxwell/mana), not a per-unit fudge. Estimate: if the true in-game cap is ÷2-time, her Missile-Guide fire cadence is over-credited; recipe: focus-video her charge period inside vs outside Missile Guide. ⚑2 the 'Explosive Round' gate (S2c) is inert until a unit opens targetStatus:'Explosive Round' (ETU models hers as damageTaken, not a named status); recipe: when ETU is reworked, emit a targetStatus:'Explosive Round' from her cannon so this gate goes live; Tier 2. ⚑3 the engine pre-pins vesti-tu's burst-gauge generation to FOCUS_CHARGE_GEN when focused (sim.ts PENDING_TEAM_ISOLATION) because her datamined fullChargeBonus 200 is unmeasured and the only 200-column measurement (cinderella) contradicts 2.0x — this is ENGINE-owned gauge cadence (not an override line), affects how fast she bursts, not her per-hit damage; recipe: a focused solo recording to pin her real charge-gen multiplier. ⚑4 RL cadence tuple (chargeFrames 120 / reloadFrames 142 / ammo 8) is datamined, not focus-verified for this unit; read rounds/min + reload gap from any focus video. ⚑5 the 'while not in Missile Guide' re-trigger gate is unexpressible (no 'not-currently-buffed' self gate); shotFired refreshes the durationShots:3 window every full charge → near-permanent MG uptime, OVER-crediting shot count vs the true duty cycle (periodic un-buffed 120f charges every ~4th); durationShots+removeOnReload structure faithful, only uptime inflated; recipe: focus-video the slow-charge recurrence; Tier 2. ⚑6 'Battle Formation' (S2b ATK ▲20% gate) is UNMODELED, adopting the blind consensus (S2b fable + S5/S6 opus all re-derived INERT): the gating self-status is granted nowhere in this kit and the schema has no self-status gate, so the line never fires in-scope. The driver's alternative reading — fbGate:'inFb' (Battle Formation == the Full Burst state; no roster granter references the name, consistent with a global state) — is retained as the measurement-gated alternative; if footage shows the ATK ▲20% proc tracking Full Burst windows, restore a shotFired + fbGate:'inFb' atkPct 20 / 3s block. Estimate: modeling it would add the FB-window ATK ▲20% (~few % of damage); recipe: focus-video whether the ATK ▲20% buff icon appears during Full Burst; Tier 2. NUKE ORDERING (verified): the BUb 492.3% nuke lands UNDER its own same-cast BUa trueDamagePct 60 (buff block precedes nuke block at burstCast; nuke mult.dmgUp 1.962 with the buff vs 1.362 without — the +0.60 is ADDITIVE in the Damage-Up bucket, not a ×1.60 multiplicative step). Tier 2 (round-count durationShots, status-gate requiresTargetStatus + fbGate, burstCast-vs-rider timing, true-flavor scoping). Kit-autonomy gauntlet 2026-08-01.",
+  "note": "Vesti: Tactical Upgrade (slug vesti-tactical-upgrade, aka vtu/vestitu — variant of base vesti; never the bare base name, P0 disambiguation) — Elysion Fire RL Attacker, Burst III, 40s CD, ammo 8, reloadFrames 142, chargeFrames 120, chargeMultiplier 200, normalMult 22.44 / coreMult 200, critRate 15 / critDamage 150. FROM-SCRATCH kit-autonomy build 2026-08-01 (no prior override; baseline was bare weapon, simSupported:false). A full-charge RL carry whose damage lives in the 'Missile Guide' charge window and her true-damage riders/nuke. EVERY modelable line keys off landing Full Charge attacks = trigger shotFired (the per-trigger-pull trigger, routed through applyBlock so block gates are enforced). shotFired == 'when landing Full Charge attacks' for this unit because RL shots are ALWAYS charged (isCharge = RL && !swap), so every rocket she lands is a full charge. shotFired is chosen over the per-full-charge chargeCounter trigger deliberately: chargeCounter applies its effect via applyEffect DIRECTLY and therefore BYPASSES block-level gates (fbGate / requiresTargetStatus, checked only in applyBlock) — which the S2 'Battle Formation' (fbGate:'inFb') and 'Explosive Round' (requiresTargetStatus) lines REQUIRE (verified: a chargeCounter encoding fired those two lines ungated — 384 spurious projectileExplosionPct applications + out-of-FB ATK applications). Multi-effect lines are split into separate single-effect blocks. S1 MISSILE GUIDE ('when performing a Full Charge attack while not in Missile Guide status', self): two self buffs, each its own shotFired block — (S1a) Charge Speed ▲100% = chargeSpeedPct 100, (S1b) Charge Damage ▲58.5% = chargeDamagePct 58.5 — BOTH durationShots:3 ('for 3 round(s)' = round-count, holder-scoped, no wall-clock expiry; helm-burst durationShots precedent) + removeOnReload:true ('Removes Missile Guide upon reloading to max ammunition' — cinderella S1 toggle precedent; the buff ends at the EARLIER of 3 rounds fired OR a reload-to-max). MECHANICAL FIX 2026-08-03 (owner ruling, precedent: cinderella MAG-DUMP REBUILD — owner-confirmed gameplay pattern: one full charge, then 3 near-instant rockets, for 4 rockets per cycle; n=1 owner observation, NOT footage-measured, datamined magnitudes chargeSpeedPct 100 / chargeDamagePct 58.5 / durationShots 3 UNCHANGED — only the trigger-gating MECHANISM is corrected to match the kit text it was already authored from): the 'while not in Missile Guide status' re-trigger gate is now encoded via the general engine primitive `noRetriggerWhileActive` (both S1a/S1b blocks) — a buff carrying the flag skips any re-application while a same-key instance is still active on the target, so shotFired firing WHILE Missile Guide is already live no longer refreshes/re-arms its own durationShots:3 window. Paired fix: the round-count decrement (sim.ts, \"ROUND-COUNT buff expiry\") now skips the shot that just (re-)granted a noRetriggerWhileActive buff (its own charge predates the buff's existence, so it cannot have benefited and must not spend one of the buff's own N rounds) — without this, \"for 3 round(s)\" would consume 1 of its 3 rounds on the granting shot itself, yielding only 2 rapid follow-ups instead of the observed 3. Net cycle: 1 slow (120f) charge + 3 near-instant (chargeSpeedPct 100 = 1-frame, see ⚑1) follow-ups = 4 shots, then MG lapses and the next full charge is slow again. Previously (near-permanent uptime bug): control-comp total damage 887.4M; fixed: 436.0M (-51%). Prior text (SUPERSEDED, kept for the reasoning trail): \"The 'while not in Missile Guide status' re-trigger gate is NOT separately encoded (the engine has no 'not-currently-buffed' self gate) — and this is NOT damage-neutral: shotFired refreshes the 3-round window on every full charge, so the sim runs Missile Guide at near-permanent uptime while firing, whereas the true kit lapses MG after 3 rounds and re-grants only on the NEXT (un-buffed, full 120f) charge — a duty cycle the encoding over-credits.\"S2 MONSTER STAGE ('when landing Full Charge attacks'): (S2a) every full charge → the target 266.6% of final ATK as TRUE damage = shotFired → enemy flatDamage 266.6 flavor 'true' (crit-eligible by the flatDamage default e.crit!==false, noRange rider convention; true damage CAN crit — owner ruling 2026-07-25); (S2b) 'if self is in Battle Formation status → self ATK ▲20% for 3 sec' is UNMODELED (verbatim in unmodeled.skill2) — 'Battle Formation' is a self-status NOTHING in this kit grants and the schema has no self-status gate (requiresTargetStatus is boss-scoped, requiresShielded is shields); the driver initially read it as fbGate:'inFb' (Battle Formation == Full Burst) but ADOPTED the blind consensus (S2b claude-fable-5 + S5 AND S6 claude-opus-5 ALL independently re-derived INERT/unmodeled): with no carrier the line never fires, and encoding it ungated would grant a near-permanent +20% ATK over-credit (see ⚑6); (S2c) 'if target is in Explosive Round status → self Projectile Explosion Damage ▲20% for 3 sec' = shotFired + requiresTargetStatus:'Explosive Round' → self projectileExplosionPct 20 / 3s. 'Explosive Round' is eunhwa-tactical-upgrade's burst-cannon status (the only other unit referencing it — a Tactical-Upgrade-sisters synergy); ETU currently models her Explosive Round as a boss damageTaken rider, NOT a named targetStatus, so NO in-scope unit opens a targetStatus:'Explosive Round' and this gate is INERT in current board comps (marciana/privaty/rem named-status-gate pattern — faithful structure, inert until a source opens the named status; caveat 2). BURST 'Missile Container Online' (burstCast): (BUa) self True Damage ▲60% for 10s = trueDamagePct 60 / 10s (Damage-Up bucket that pays off ONLY on true-flavored hits — her S2a 266.6% riders and the BUb nuke; ~5-10 full charges land in the 10s post-burst window with the charge instant under Missile Guide); (BUb) 'all enemies (incl. parts) 492.3% of final ATK as Burst Skill true damage' = burstCast → enemy flatDamage 492.3 flavor 'true' (single boss; burst bucket; noFb — a burstCast nuke lands BEFORE the Full Burst window opens so it never takes the +50% major, helm-H7/U10 convention). UNMODELED: burst 'Explosion Radius ▲100% for 10s' — inert vs the single partless scope-lock boss (splash radius moves no damage) and there is no explosion-radius stat; recorded verbatim. RESIDUAL ⚑ flags: ⚑1 Charge Speed ▲100% is encoded chargeSpeedPct 100, which the engine's SUBTRACTIVE-time convention (sim.ts needed = chargeFrames × (1 − cs/100)) reads as an INSTANT charge (cs=100 → 0 frames) rather than a literal ×2-speed/÷2-time; the kit magnitude (100) is pinned faithfully, the engine's interpretation of 100 is a global convention shared by every chargeSpeedPct carrier (red-hood/maxwell/mana), not a per-unit fudge. Estimate: if the true in-game cap is ÷2-time, her Missile-Guide fire cadence is over-credited; recipe: focus-video her charge period inside vs outside Missile Guide. ⚑2 the 'Explosive Round' gate (S2c) is inert until a unit opens targetStatus:'Explosive Round' (ETU models hers as damageTaken, not a named status); recipe: when ETU is reworked, emit a targetStatus:'Explosive Round' from her cannon so this gate goes live; Tier 2. ⚑3 the engine pre-pins vesti-tu's burst-gauge generation to FOCUS_CHARGE_GEN when focused (sim.ts PENDING_TEAM_ISOLATION) because her datamined fullChargeBonus 200 is unmeasured and the only 200-column measurement (cinderella) contradicts 2.0x — this is ENGINE-owned gauge cadence (not an override line), affects how fast she bursts, not her per-hit damage; recipe: a focused solo recording to pin her real charge-gen multiplier. ⚑4 RL cadence tuple (chargeFrames 120 / reloadFrames 142 / ammo 8) is datamined, not focus-verified for this unit; read rounds/min + reload gap from any focus video. ⚑5 the 'while not in Missile Guide' re-trigger gate is unexpressible (no 'not-currently-buffed' self gate); shotFired refreshes the durationShots:3 window every full charge → near-permanent MG uptime, OVER-crediting shot count vs the true duty cycle (periodic un-buffed 120f charges every ~4th); durationShots+removeOnReload structure faithful, only uptime inflated; recipe: focus-video the slow-charge recurrence; Tier 2. ⚑6 'Battle Formation' (S2b ATK ▲20% gate) is UNMODELED, adopting the blind consensus (S2b fable + S5/S6 opus all re-derived INERT): the gating self-status is granted nowhere in this kit and the schema has no self-status gate, so the line never fires in-scope. The driver's alternative reading — fbGate:'inFb' (Battle Formation == the Full Burst state; no roster granter references the name, consistent with a global state) — is retained as the measurement-gated alternative; if footage shows the ATK ▲20% proc tracking Full Burst windows, restore a shotFired + fbGate:'inFb' atkPct 20 / 3s block. Estimate: modeling it would add the FB-window ATK ▲20% (~few % of damage); recipe: focus-video whether the ATK ▲20% buff icon appears during Full Burst; Tier 2. NUKE ORDERING (verified): the BUb 492.3% nuke lands UNDER its own same-cast BUa trueDamagePct 60 (buff block precedes nuke block at burstCast; nuke mult.dmgUp 1.962 with the buff vs 1.362 without — the +0.60 is ADDITIVE in the Damage-Up bucket, not a ×1.60 multiplicative step). Tier 2 (round-count durationShots, status-gate requiresTargetStatus + fbGate, burstCast-vs-rider timing, true-flavor scoping). Kit-autonomy gauntlet 2026-08-01.",
   "unmodeled": {
     "skill1": [],
     "skill2": [
@@ -8,7 +8,7 @@
     "burst": ["■ Affects self. Explosion Radius ▲ 100% for 10 sec."]
   },
   "caveats": [
-    "skill1: the 'while not in Missile Guide status' re-trigger gate is NOT encoded (the engine has no 'not-currently-buffed' self-status gate). This is NOT damage-neutral: shotFired refreshes the durationShots:3 window on EVERY full charge, so the sim models Missile Guide at near-permanent uptime while firing, whereas the true kit has a DUTY CYCLE — MG is granted on a full charge performed WHILE NOT in MG, lasts 3 rounds, then LAPSES, so every ~4th charge is an un-buffed (full 120-frame) charge before MG re-applies. The encoding therefore OVER-credits her charge-speed-gated shot count (and every per-shot line that rides it). The durationShots:3 + removeOnReload structure IS faithful (round-count + reload strip); only the missing re-trigger gate inflates uptime (⚑5). Estimate: ~1-in-4 charges should be slow; recipe: focus-video her charge cadence inside Missile Guide and count the slow-charge recurrence",
+    "skill1: MECHANICAL FIX 2026-08-03 (owner ruling, n=1 owner-observed gameplay pattern, NOT footage-measured) — the 'while not in Missile Guide status' re-trigger gate is now encoded via the noRetriggerWhileActive buff primitive (both S1a chargeSpeedPct and S1b chargeDamagePct blocks), paired with an engine fix so the granting shot does not spend one of its own durationShots:3 rounds (sim.ts ROUND-COUNT buff expiry). Cycle: 1 slow (120f) charge, then 3 near-instant follow-ups (chargeSpeedPct 100 = 1-frame charge, see caveat below/⚑1), then MG lapses and the next full charge is slow again — matches the owner-confirmed 'one charge for 4 rockets' pattern. Control-comp total damage: 887.4M (prior, near-permanent-uptime bug) -> 436.0M (fixed), -51%. durationShots:3 + removeOnReload were already faithful; the fix is purely mechanism (WHEN the buff re-arms), no datamined magnitude changed. Prior text (SUPERSEDED, reasoning trail): the gate was NOT encoded (no 'not-currently-buffed' self-status gate existed), so shotFired refreshed the durationShots:3 window on EVERY full charge, modeling near-permanent Missile Guide uptime instead of the true duty cycle; estimated OVER-crediting her charge-speed-gated shot count.",
     "skill2: 'Battle Formation' (S2b ATK ▲20% gate) is UNMODELED — the driver ADOPTED the blind consensus (S2b claude-fable-5 + S5/S6 claude-opus-5 all independently re-derived INERT). 'Battle Formation' is a self-status granted nowhere in this kit and the schema has no self-status gate, so the line never fires in-scope; encoding it ungated (or even fbGate-gated) would credit an unprovable +20% ATK. The driver's fbGate:'inFb' reading (Battle Formation == Full Burst) is retained as the measurement-gated ALTERNATIVE (⚑6): restore a shotFired + fbGate:'inFb' atkPct 20 / 3s block if footage shows the proc tracking Full Burst windows",
     "skill2: 'Explosive Round' (S2c projectileExplosionPct 20 gate) is a cross-unit synergy with eunhwa-tactical-upgrade's burst cannon; ETU models her Explosive Round as a boss damageTaken rider, not a named targetStatus, so this requiresTargetStatus gate is INERT in current board comps (no in-scope source opens targetStatus:'Explosive Round'). Faithful structure; goes live when a unit emits the named status (⚑2)",
     "skill1: Charge Speed ▲100% = chargeSpeedPct 100, which the engine's subtractive-time convention reads as an instant charge (⚑1); the kit magnitude is pinned, the 100→instant interpretation is a global engine convention",
@@ -18,29 +18,39 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "shotFired" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "buff",
           "stat": "chargeSpeedPct",
           "value": 100,
           "durationShots": 3,
-          "removeOnReload": true
+          "removeOnReload": true,
+          "noRetriggerWhileActive": true
         }
       ]
     },
     {
       "slot": "skill1",
-      "trigger": { "kind": "shotFired" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "buff",
           "stat": "chargeDamagePct",
           "value": 58.5,
           "durationShots": 3,
-          "removeOnReload": true
+          "removeOnReload": true,
+          "noRetriggerWhileActive": true
         }
       ]
     }
@@ -48,8 +58,12 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "shotFired" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
         {
           "kind": "flatDamage",
@@ -60,9 +74,13 @@
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "shotFired" },
+      "trigger": {
+        "kind": "shotFired"
+      },
       "requiresTargetStatus": "Explosive Round",
-      "target": { "kind": "self" },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -76,8 +94,12 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -89,8 +111,12 @@
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
         {
           "kind": "flatDamage",
