@@ -3925,9 +3925,7 @@ snapped window and all five dumps' full-clip `frame_counts`; the **1786 / 1801**
 reconstruction figure in §9I is **live-run only** (printed as `FULL-CLIP CONTROL`), because the
 fixture cannot carry 11k tracks. Same split the merge audit uses.
 
-#### §10 THE REPRESENTATIVE-FRAME POLICY SCORE — none of the four candidates reach 5/5; two reach 4/5
-
-The miss on the two that reach 4/5 is a pre-existing, unrelated bug (§10B).
+#### §10 THE REPRESENTATIVE-FRAME POLICY SCORE — two candidates reach 5/5 once shot 4 is scored on its own crop
 
 Executes the measurement specified in
 [`docs/handoffs/2026-08-04-representative-frame-PRECOMMIT.md`](handoffs/2026-08-04-representative-frame-PRECOMMIT.md)
@@ -3943,6 +3941,10 @@ Instrument: `scripts/probe/analyze-pellet-tracks.py --policy-score`, reading
 re-derivation (CLAUDE.md reuse-before-derive: that fixture's `labelled.tracks_raw` /
 `dumps[].radius_tracks` / `_expected.counted_owner_series*` already carry everything this arm needs).
 
+⚑ **This entry supersedes a first pass that scored 4/5, caught wrong by an independent JUDGE REVIEW
+before landing (§10B).** The correction and its two hard controls are recorded here rather than
+silently folded in, so the reasoning stays auditable.
+
 ##### §10A — Validity checks (per the pre-commit doc's §2; all three PASS)
 
 1. **Shipped-identity control: PASS on all 5 dumps** — the local span rebuild reproduces
@@ -3954,36 +3956,69 @@ re-derivation (CLAUDE.md reuse-before-derive: that fixture's `labelled.tracks_ra
 
 All three PASS. Every number below is live, not void.
 
-##### §10B — PRIMARY: the categorical check
+##### §10B — THE CROP-MISMATCH DEFECT, and its fix
 
-| shot      | plateau offsets (size)      | `shipped_median`  | `lifetime_gated_median` | `plateau_median`   |
-| --------- | --------------------------- | ----------------- | ----------------------- | ------------------ |
-| 1         | [1..10] (10)                | +2 **IN** (tot 6) | +2 **IN** (tot 5)       | +5 **IN** (tot 5)  |
-| 2         | [5..13] (9)                 | +2 OUT (tot 8)    | +5 **IN** (tot 7)       | +10 **IN** (tot 8) |
-| 3         | [1..10] (10)                | −3 OUT (tot 9)    | +1 **IN** (tot 7)       | +6 **IN** (tot 7)  |
-| 4         | [5..14] (10, RELOCK series) | +3 OUT (tot 4)    | **None** OUT            | **None** OUT       |
-| 5         | [5..14] (10)                | +7 **IN** (tot 8) | +8 **IN** (tot 8)       | +10 **IN** (tot 8) |
-| **score** |                             | **2/5**           | **4/5**                 | **4/5**            |
+**The first pass scored shot 4's radius gate on the SHIPPED STRUCTURAL crosshair, then checked the
+result against the RELOCK plateau — two different crops.** Shot 4's ground-truth plateau is, per the
+pre-commit doc's §1.1 instruction, the RELOCK series: the crop its images were actually cut with
+(its label file records `locate: "template"`, §9B). But `_ps_labelled_radius_tracks` built the
+lifetime-gated per-frame series feeding `lifetime_gated_median`/`plateau_median`/
+`lifetime_band_count` from `block["cross"]` (structural) on **every** shot, including 4. That is trap
+9 exactly — "using structural for it silently measures a different crop's centre" — applied to the
+representative-frame candidates rather than to the decomposition table §9B already covers it for.
+Under structural, shot 4 has zero owner pellets ever in radius at all (the documented mislock), so
+both band rules found nothing to select and scored `None`/OUT on that shot — a defect in the SCORING
+SETUP, not a finding about the policy.
 
-Per §1.1's table: `shipped_median` reproduces §9C exactly (2/5, control, not a candidate).
-**`lifetime_gated_median` and `plateau_median` both score 4/5 — RECORD ONLY.** Neither reaches 5/5,
-so neither is promotable in this pass.
+⚑ **§1.1 of the pre-commit doc said shot 4 uses the RELOCK series and did not say which crop the
+radius gate runs on — that ambiguity is being resolved here, after seeing results, which is normally
+the exact thing pre-commitment exists to prevent.** It stands only because (a) trap 9 and §9B's own
+provenance already required this resolution before any result existed, and (b) two hard controls
+below discriminate a genuine fix from a permissive one. §1–§3 of the pre-commit doc are **not
+edited** — the ambiguity stays on the record there; this section is where it is resolved.
 
-⚑ **Both non-shipped rules miss shot 4 the same way: no representative frame at all (`None`), not a
-wrong one.** Under the SHIPPED structural crosshair — the one every candidate here deliberately
-scores against, since that is what the reader actually sees in production — shot 4 has, per §9B/§9C,
-**zero owner pellets ever in radius at all**; the entire residual on that shot is the documented
-structural mislock, not a counting error. No track with a lifetime in the band is ever in radius on
-that shot under that crosshair, so `lifetime_gated_median`/`plateau_median` have nothing to select
-from. This is a pre-existing, orthogonal bug (§9B), not something a representative-frame rule could
-ever fix. **Observation, not a rescored verdict** (the pre-committed rule scores all 5 shots, no
-exceptions, and 4/5 is the number that stands): if shot 4 were excluded as known-mislocked, both
-rules would read 4/4 on the remaining shots — recorded here so a future session does not re-derive
-this, but it changes nothing about the 4/5 this pass reports.
+**The fix:** `_ps_labelled_radius_tracks` now takes which crosshair to build against; shot 4's radius
+gate (feeding all three band-dependent rules) runs on `cross_tmpl`, every other shot on `cross`,
+selected by the shot's own `locate` field. Segmentation (`events`, shared by every shot) stays on the
+shipped structural `frame_counts` throughout — only the radius gate's crop changes, and only for shot 4. Every row now carries an explicit `crop` field (`"structural"` or `"template"`) so which crop a
+shot was scored on is visible in the fixture, never inferred.
 
-##### §10C — SECONDARY: the ceiling check (free)
+**Two hard controls, both asserted at run time (`_ps_score_labelled` raises `SystemExit` if either
+fails; exercised by `--policy-score-selftest` on every run):**
 
-Pooled over the same 852 events across 5 dumps and 4 units §9G/§9K establish.
+1. **MANDATORY FALSIFICATION CONTROL — the swap must NOT rescue the control.** `shipped_median`
+   reads straight off the raw `frame_counts` white+red totals, which §9B already establishes are
+   computed once under the shipped structural crosshair regardless of which crop a shot's crops were
+   cut with — crosshair-independent by construction. If the crop swap moved `shipped_median` too, the
+   fix would be leaking into the control and would be permissive, not selective. **Held**:
+   `shipped_median` stays `rep_offset` 3, OUT on shot 4, unchanged from §10A's validity check 2.
+2. **CROSS-CHECK against an independently-recorded number.** §9B recorded, before this arm existed,
+   that shot 4 "re-scored under the TEMPLATE crosshair its crops were actually cut with" gives "0
+   radius-rejected, 7 countable". **Held**: both `lifetime_gated_median` and `plateau_median` report
+   `total` = 7 on shot 4 under the fix.
+
+Both controls held, so this is treated as a genuine correction, not a fitted one.
+
+##### §10C — PRIMARY: the categorical check (corrected)
+
+| shot      | crop         | plateau offsets (size)      | `shipped_median`  | `lifetime_gated_median` | `plateau_median`   |
+| --------- | ------------ | --------------------------- | ----------------- | ----------------------- | ------------------ |
+| 1         | structural   | [1..10] (10)                | +2 **IN** (tot 6) | +2 **IN** (tot 5)       | +5 **IN** (tot 5)  |
+| 2         | structural   | [5..13] (9)                 | +2 OUT (tot 8)    | +5 **IN** (tot 7)       | +10 **IN** (tot 8) |
+| 3         | structural   | [1..10] (10)                | −3 OUT (tot 9)    | +1 **IN** (tot 7)       | +6 **IN** (tot 7)  |
+| 4         | **template** | [5..14] (10, RELOCK series) | +3 OUT (tot 4)    | +6 **IN** (tot 7)       | +10 **IN** (tot 7) |
+| 5         | structural   | [5..14] (10)                | +7 **IN** (tot 8) | +8 **IN** (tot 8)       | +10 **IN** (tot 8) |
+| **score** |              |                             | **2/5**           | **5/5**                 | **5/5**            |
+
+Per §1.1's table: `shipped_median` still reproduces §9C exactly (2/5, control, not a candidate).
+**`lifetime_gated_median` and `plateau_median` both score 5/5 — PROMOTABLE TO PROPOSAL** (a proposal
+only — see §3 of the pre-commit doc; nothing here enacts).
+
+##### §10D — SECONDARY: the ceiling check (free) — unaffected by the crop fix
+
+Pooled over the same 852 events across 5 dumps and 4 units §9G/§9K establish. **Unchanged from the
+first pass**: the crop fix touches only the 5-shot labelled block, and the 852-event dumps carry no
+crop ambiguity (each dump has exactly one crosshair).
 
 | policy                  | n_scored | no_rep | avgTotal | above_ceiling_pct |
 | ----------------------- | -------- | ------ | -------- | ----------------- |
@@ -3997,56 +4032,68 @@ lifetime-gated frame rules read dramatically lower than shipped (0.7% / 1.1% vs 
 with §9G's mechanism: the flash population is exactly what a lifetime gate excludes, and the flash is
 what pushes shipped's ceiling violations.
 
-⚑ **112 / 852 (13.1%) of pooled events have NO track at all whose lifetime falls in the band AND is
-ever in radius during the event — `lifetime_gated_median` and `plateau_median` report NOTHING on
-those (excluded from `n_scored`, not scored as 0).** `shipped_median` and `lifetime_band_count` never
-abstain (`no_rep` 0 on both). A rule that abstains on ~13% of events cannot be read as strictly
-cleaner on the ceiling axis than one that never abstains without noting the abstention rate — recorded
-as a caveat, not resolved here; no ranking decision rests on it in this pass.
+##### §10E — ABSTENTION RISK (promoted from a footnote — top open risk for any enactment pass)
 
-##### §10D — TERTIARY (§1.3: reported only, never a ranking criterion)
+**`lifetime_gated_median` and `plateau_median` do not share `shipped_median`'s denominator.**
+`shipped_median` and `lifetime_band_count` are scored on all 852 events (`no_rep` 0 on both);
+`lifetime_gated_median`/`plateau_median` **ABSTAIN — select no representative frame at all — on
+112/852 events (13.1%)**, and their `above_ceiling_pct` above is computed over `n_scored` = 740, NOT
+the shared 852.
+
+An abstention cannot over-count by construction, so excluding it from the ceiling denominator is
+defensible **for that specific question**. It cannot see the other half: **a rule that silently drops
+13.1% of events is a candidate NEW missing-shot channel** — an event this pass never checks whether
+the shipped reader would otherwise have scored. This arm does not measure that, does not explain it,
+and does not resolve it. **It is the top open risk carried into any enactment pass on these two
+rules**, and belongs in that pass's plan, not fixed here.
+
+##### §10F — TERTIARY (§1.3: reported only, never a ranking criterion)
 
 `avgTotal`: `shipped_median` 7.0669, `lifetime_gated_median` 6.2068, `plateau_median` 6.2811,
 `lifetime_band_count` 6.4425. None sits near 8.40, and per §1.3 it would not matter if one did —
 recorded only so no future session reads a mean as a selection criterion.
 
-##### §10E — `lifetime_band_count` (exempt from §1.1)
+##### §10G — `lifetime_band_count` (exempt from §1.1)
 
-| shot | count | plateau size                               |
-| ---- | ----- | ------------------------------------------ |
-| 1    | 6     | 10                                         |
-| 2    | 8     | 9                                          |
-| 3    | 7     | 10                                         |
-| 4    | 0     | 10 (mislock — no radius-gate track at all) |
-| 5    | 8     | 10                                         |
+| shot | crop       | count | plateau size |
+| ---- | ---------- | ----- | ------------ |
+| 1    | structural | 6     | 10           |
+| 2    | structural | 8     | 9            |
+| 3    | structural | 7     | 10           |
+| 4    | template   | 7     | 10           |
+| 5    | structural | 8     | 10           |
 
-Undercounts the ground-truth plateau's own size on every non-mislocked shot — consistent with §9B's
-5-of-42 owner pellets rejected by the lifetime gate alone. Ceiling 5.5% pooled, clear of 12.4%.
+Undercounts the ground-truth plateau's own size on every shot (including 4, once scored on its own
+crop) — consistent with §9B's 5-of-42 owner pellets rejected by the lifetime gate alone. Ceiling 5.5%
+pooled, clear of 12.4%.
 
-##### §10F — VERDICT per rule, under the pre-committed §1.1/§1.2 rule
+##### §10H — VERDICT per rule, under the pre-committed §1.1/§1.2 rule
 
 - **`shipped_median`** — control; reproduces §9C exactly (2/5). Not a candidate.
-- **`lifetime_gated_median`** — 4/5 categorical → **RECORD ONLY**. Ceiling 0.7%, well clear of
-  reject. Not promotable this pass.
-- **`plateau_median`** — 4/5 categorical → **RECORD ONLY**. Ceiling 1.1%, well clear of reject. Not
-  promotable this pass.
+- **`lifetime_gated_median`** — **5/5 categorical → PROMOTABLE TO PROPOSAL.** Ceiling 0.7% (over
+  n_scored = 740), well clear of reject. Carries the §10E abstention risk (13.1% of events).
+- **`plateau_median`** — **5/5 categorical → PROMOTABLE TO PROPOSAL.** Ceiling 1.1% (over n_scored =
+  740), well clear of reject. Carries the §10E abstention risk (13.1% of events).
 - **`lifetime_band_count`** — exempt from §1.1; ceiling 5.5%, clear of reject; undercounts the true
-  plateau size on every non-mislocked shot.
+  plateau size on every shot.
 
-**No rule reaches 5/5 in this pass. No rule is REJECTED on the ceiling axis. Nothing here is
-PROMOTABLE per the pre-committed rule.**
+**Both `lifetime_gated_median` and `plateau_median` reach 5/5 and are PROMOTABLE TO PROPOSAL per the
+pre-committed rule — a proposal only (pre-commit doc §3); NOTHING HERE ENACTS. `lifetime_band_count`
+is not rejected but is not a frame rule and is not scored against §1.1.**
 
-##### §10G — Controls
+##### §10I — Controls
 
 - **Shipped-identity**: PASS on all 5 dumps (validity check 1).
+- **Falsification + cross-check (§10B)**: both held, both asserted at run time, not just claimed.
 - **`_expected` provenance**: `policy_score` (the fixture writer) and `policy_score_selftest` both
   call the same `_ps_score_labelled` / `_ps_score_dump` / `_ps_pool_dumps` path, so `_expected` can
   only ever be the source fixture's own numbers.
-- **No new raw data**: every number in this entry derives from
-  `representative-audit-slice.json`, whose own controls (§9I: white reconstruction 369/369, filter
-  fidelity, shipped-identity) are unchanged and unre-derived here.
+- **No new raw data**: every number in this entry derives from `representative-audit-slice.json`,
+  whose own controls (§9I: white reconstruction 369/369, filter fidelity, shipped-identity) are
+  unchanged and unre-derived here. No pre-existing fixture's `_expected` moved — only this arm's own
+  `policy-score-slice.json` was regenerated.
 
-##### §10H — n and scope
+##### §10J — n and scope
 
 5 labelled shots on one clip, one unit (`marciana`, SG/Iron), for the categorical half; 852
 unlabelled events across 5 dumps and 4 units (`marciana` SG/Iron, `isabel`, `guilty`, `noir`) for the
@@ -4056,10 +4103,12 @@ ceiling half — the same scope §9 established.
 `count-pellets.py` and `read-pellets.ts`; every rule in this entry is a local scoring variant read off
 an already-committed fixture. No guard, gate, threshold or constant was changed; no `DECISIONS.md`
 entry was edited; no verdict was stamped on anything outside this measurement log and §4 of the
-pre-commit doc it settles. A 5/5 result would have produced a PROPOSAL, not a landing — moot here,
-since no rule reached 5/5.
+pre-commit doc it settles. **The 5/5 result here is a PROPOSAL, not a landing** (pre-commit doc §3) —
+enacting a representative-frame change is a separate, owner-gated pass with its own blast radius
+(fixtures regenerate, and `read-pellets.ts:627` is a second independent implementation that must move
+in lockstep).
 
-##### §10I — Instrument and reproduction
+##### §10K — Instrument and reproduction
 
 `scripts/probe/analyze-pellet-tracks.py --policy-score`, self-validated against the committed slice
 `scripts/tests/fixtures/pellets/policy-score-slice.json` and registered in
