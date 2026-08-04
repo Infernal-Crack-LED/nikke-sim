@@ -2389,6 +2389,10 @@ The gate validated this arbiter on `marciana` only, and `isabel` is where it mat
 admissible figures differ 3.4×. (b) Lifting the read rate above 52–71%: abstention is 96.2–99.6% on
 stale-lock frames, so the arbiter is blind exactly where the detector is, and the unrecoverable hole
 (`reload_headroom` 23–51 per fight) is the direct cost. A per-video atlas harvest is the cheap route.
+[SUPERSEDED (2026-08-03) — disregard the last sentence only. The harvest route is REFUTED by
+measurement: the read rate is segmentation/localization-limited, not atlas-limited, and a perfect
+atlas is worth +0.21 pp honest / +4.8 pp nominal. See §5 below. Everything else in this paragraph
+stands.]
 
 #### Two arithmetic corrections to the arbiter, both found without ground truth
 
@@ -2682,4 +2686,182 @@ scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py \
   --hand-count-shots 36 --hand-count-magazines 4 --hand-count-nonammo 2
 # replay the committed slice -- no images, no subprocess:
 scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --hand-count-selftest
+```
+
+#### §5 THE AMMO READ RATE IS NOT AN ATLAS PROBLEM — the red-digit harvest, refuted before it was built
+
+Answers §3b's "what would decide it" item (b) — "lifting the read rate above 52–71%" — and the second
+item of `docs/handoffs/2026-08-01-OWNER-ASK-shot-count.md`, which asked the owner for a nod on a
+per-video red-digit atlas harvest. **The nod is not needed: the harvest is REFUTED on measurement.**
+The ammo OCR's abstentions are overwhelmingly SEGMENTATION and LOCALIZATION failures, which no digit
+template can fix. **This is a measurement, not a judgement call — it does not need re-testing before
+someone declines the work again.**
+
+**Instrument (committed, re-runnable).** `scripts/probe/analyze-pellet-tracks.py --ammo-abstention`,
+pinned by `scripts/tests/fixtures/pellets/ammo-abstention-slice.json` and replayed with no images and
+no subprocess by `--ammo-abstention-selftest`, which is registered in
+`scripts/probe/pellet-selftest.sh`.
+
+**Scope.** 7 read series, 4 units (`isabel`, `guilty`, `marciana` — SG/Iron, **not**
+`marciana-marine-study`, AR/Iron — and `noir`), **24,319 frames**.
+
+##### §5.1 — ⚑ THE PREMISE CORRECTION: the atlas is NOT white-only, and "per-video" has no support
+
+The standing claim that the atlas "was harvested white-only" is **FALSE.**
+`scripts/probe/ammo-atlas/` holds **141 glyphs: 69 white (`_f*`) + 72 red (`_red*`)**. Red is already
+represented, and red counters already read successfully **33–52%** of the time on every video.
+
+Further, the "per-video" framing has no support either — the red threshold and the glyph set are
+identical across units:
+
+- All four units render red **identically**, at **ammo ≤ 4**.
+- Every unit's magazine is **9**, so the counter only ever displays `001`–`009`.
+- ⇒ The digits that can ever appear in red are **0–4 only** — exactly the set the existing 72 red
+  glyphs cover. Digits 5–9 have no red exemplar because they never render red.
+
+##### §5.2 — Read rate, and the three fields that must never be conflated
+
+14,731 of 24,319 frames produced a value: **60.6%**.
+
+| field                | value      | meaning                                                        |
+| -------------------- | ---------- | -------------------------------------------------------------- |
+| `n_read_any_lock`    | **14,731** | every frame that produced a value                              |
+| `n_read_good_lock`   | **14,694** | of those, on a frame whose crosshair lock was fresh            |
+| `n_read_stale_lock`  | **37**     | of those, on a frame whose lock was stale                      |
+
+14,694 + 37 = 14,731. A non-null read has **already cleared the 0.60 score gate by construction**, so
+"reads above threshold" is not a separate population and must not be reported as one.
+
+Per video:
+
+| series                | frames     | read       | rate      |
+| --------------------- | ---------- | ---------- | --------- |
+| `isabel` (h4)         | 5721       | 3163       | **55.3%** |
+| `guilty` (h4)         | 5738       | 2998       | **52.2%** |
+| `marciana` (h4)       | 5697       | 3564       | **62.6%** |
+| `noir` (g2)           | 5722       | 4043       | **70.7%** |
+| `i2-marciana-60fps`   | 480        | 287        | **59.8%** |
+| `i3-noir-far-60fps`   | 480        | 343        | **71.5%** |
+| `i3-noir-near-60fps`  | 481        | 333        | **69.2%** |
+
+##### §5.3 — Abstention reasons, and the four-way classification
+
+Pooled over all 24,319 frames:
+
+| reason       | frames    | % of frames | class            |
+| ------------ | --------- | ----------- | ---------------- |
+| `cell-count` | **4,092** | 16.8%       | SEGMENTATION     |
+| `no-digits`  | **3,643** | 15.0%       | SEGMENTATION     |
+| `low-score`  | **1,171** | 4.8%        | **GLYPH-MATCH**  |
+| `no-lock`    | **682**   | 2.8%        | LOCALIZATION     |
+
+The classification is not a guess — the emission sites were traced in `scripts/probe/count-pellets.py`
+(all line references verified un-drifted) and are encoded as `ABSTENTION_CLASS` at
+`analyze-pellet-tracks.py:1727`: `no-lock` is emitted at `count-pellets.py:902` (LOCALIZATION);
+`no-digits` and `cell-count` both at `count-pellets.py:867` (SEGMENTATION); `low-score` at
+`count-pellets.py:877` (GLYPH-MATCH). **GLYPH-MATCH is the only atlas-fixable class.**
+
+| class            | abstentions | share of abstentions |
+| ---------------- | ----------- | -------------------- |
+| SEGMENTATION     | **7,735**   | **80.7%**            |
+| GLYPH-MATCH      | **1,171**   | **12.2%**            |
+| LOCALIZATION     | **682**     | **7.1%**             |
+
+##### §5.4 — Both ceilings on a perfect atlas
+
+- **NOMINAL** — the whole GLYPH-MATCH class becomes perfect reads and nothing else changes:
+  **60.6% → 65.4%, +4.8 percentage points** pooled; per video **+4.0** (`marciana`, SG/Iron) to
+  **+8.8** (the `i2-marciana-60fps` series — same unit, a 60 fps window re-extraction).
+- **HONEST** — the sub-population a harvest could actually operate on: **+0.21 percentage points.**
+
+##### §5.5 — The stale-lock confound, which is the real limiter
+
+Pooled, **19.4%** of frames carry a stale lock. Read rate is **74.9% on good-lock frames** versus
+**0.8% on stale-lock frames**. And **97.0% of `no-digits` abstentions (3,534 of 3,643) fall on
+stale-lock frames** — per-video share 93.8–100%.
+
+Mechanism, and it is the same one §3b/§2 already established: the ammo read reuses the dump's OWN
+crosshair localization, so when the lock is stale the crop handed to the segmenter **is not the ammo
+box at all**. No digit template can help a crop that does not contain the counter.
+
+Good-lock sub-populations, split on the series' own `conf` at a threshold of 60 — ⚑ a **PROXY** for
+"the reader is on the semi-transparent ammo badge", not a calibrated boundary:
+
+| sub-population  | n          | read rate | `low-score` rate |
+| --------------- | ---------- | --------- | ---------------- |
+| dark-badge      | **7,693**  | **89.3%** | **0.9%**         |
+| bright-surround | **11,237** | **69.6%** | **9.5%**         |
+
+##### §5.6 — What the GLYPH-MATCH frames actually are — occlusion and popups, not missing exemplars
+
+Of the 1,171 GLYPH-MATCH frames, **58 (5.0%) are red-dominant and 1,113 (95%) are white**.
+
+- **The white ones are not the counter.** They are floating battle-damage popups that the structural
+  locator mistook for it — rendered crops read `36353`, `27964`, `41088`, `20115`. A digit atlas is
+  the wrong tool for a frame that is looking at the wrong thing.
+- **Dark-badge GLYPH-MATCH is 69 frames, of which dark ∧ red = 52** — 4.4% of GLYPH-MATCH, **0.21% of
+  all frames**, which is where the HONEST ceiling of §5.4 comes from. (69 = 52 red + 17 white
+  confirms the intersection independently.)
+- **Every rendered dark-badge case is a legible red `001`–`004` with a bright circular muzzle-flash
+  blob occluding a glyph.** That is **occlusion, not a missing exemplar** — harvesting them would
+  teach the matcher to accept corrupted digits.
+
+##### §5.7 — Cost of the refuted harvest, and why self-training does not rescue it
+
+⚑ ESTIMATE: ~**7.7 h** of hand labelling (7 videos × ~1.1 h), plus a permanent **~7× increase in
+per-frame digit-match cost**, to buy +0.21 pp.
+
+A self-training route can bootstrap labels from the 14,694 confident reads, but it is **circular by
+construction**: it can only harvest glyphs the current atlas already matches above threshold, so it
+cannot reach the out-of-distribution failures that are the entire point of the exercise.
+
+##### §5.8 — Data quality: a bigger atlas would make it WORSE, not better
+
+~**30–40 confidently wrong reads per fight** already exist — damage numbers read as ammo: `isabel`
+`209`×11 / `309`×17 / `300`×6; `guilty` `932`×4; `noir` `908`×5 / `608`×4. Most are caught downstream
+by `reconstruct_ammo`'s `> ammo_max` filter, **but nothing catches one that happens to land inside
+0–9.** A larger atlas would convert abstentions in this same population into MORE such reads.
+
+##### §5.9 — Costed alternatives (⚑ ESTIMATES, not recommendations)
+
+| lever                          | coverage gain            | cost                                       | caveat                                                                                                                                                    |
+| ------------------------------ | ------------------------ | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fix stale-lock localization    | **+14.3 to +17.1 pp**    | days                                       | **The largest available gain.** Same root cause as the already-open 60 fps localization instability                                                       |
+| Safe temporal interpolation    | **+4.7 pp measured** (1,149 frames) | 2–4 h, pure post-processing on existing JSON | Fills abstention runs ≤ 5 frames whose bracketing levels differ by ≤ 1. **It NARROWS decrement windows; it does not recover shots hidden in long gaps** — 58–91% of abstained frames sit in runs > 10 frames, max 226 frames = 7.5 s, longer than a full magazine cycle |
+| Bright-surround gate           | ~0 pp (accuracy, not coverage) | 0.5–1 day + a threshold study        | Removes most confidently-wrong reads, but 7,825 good/bright frames DO read correctly, so a naive cut costs real reads                                     |
+| Relax the 3-cell gate          | up to **+10.1 pp** nominal | needs a positional rule                  | Place value becomes ambiguous — dropping the last glyph of `004` reads `0`, not `4`                                                                       |
+
+##### Confounds, each with a verdict
+
+- **"Maybe the atlas is white-only after all" — REFUTED by direct inspection.** 141 files in
+  `scripts/probe/ammo-atlas/`, 69 white + 72 red, and the red set covers digits 0–4, which is the
+  complete set of digits that can render red at magazine size 9.
+- **"Maybe the classification mislabels the buckets" — CONTROLLED.** Each reason string was traced to
+  its single emission site in `count-pellets.py` (lines 867 / 877 / 902), not inferred from its name.
+- **Stale lock as a confound on the ceiling — CONFIRMED and quantified (§5.5).** 97.0% of the largest
+  abstention bucket is stale-lock, which is why the NOMINAL and HONEST ceilings differ by 23×.
+- **The `conf` 60 split — ⚑ PROXY, stated as one.** It stands in for "on the dark ammo badge" and is
+  not a calibrated boundary; the sub-population rates in §5.5 inherit that caveat.
+- **n and scope — 24,319 frames, 7 series, 4 units, one full-fight dump each plus three 60 fps
+  window re-extractions.** The three small clips are re-extractions of windows already inside the
+  full-fight dumps and are pooled here only in the whole-frame totals, consistent with §3b.
+
+⚑ **Open, could not be determined from these files:** (1) whether the 682 `no-lock` frames are
+recoverable at all; (2) whether the confidently-wrong reads of §5.8 propagate into the
+`--missing-shots` arithmetic already recorded in §3b above.
+
+RECORDS a measurement, plus a reporting-only instrument. No guard, gate, threshold or constant was
+changed; no `DECISIONS.md` entry was edited. The one enactment is a **decline**: the per-video
+red-digit atlas harvest is refuted and struck from the live handoff docs.
+
+**Reproduce:**
+
+```sh
+python3 scripts/probe/analyze-pellet-tracks.py --ammo-abstention \
+  /Users/maxwellsutton/nikke-sim/scratchpad/pellets/_missingshot_tmp/{h4-isabel,h4-guilty,h4-marciana,g2-noir,i2-marciana-60fps,i3-noir-far-60fps,i3-noir-near-60fps}-ammo.json \
+  --ammo-abstention-frames
+# --ammo-abstention-frames enables the colour classification; without it the colour
+# columns report `n/a` rather than guessing.
+# replay the committed slice -- no images, no subprocess:
+python3 scripts/probe/analyze-pellet-tracks.py --ammo-abstention-selftest
 ```

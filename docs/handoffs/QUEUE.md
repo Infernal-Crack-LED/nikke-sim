@@ -357,6 +357,36 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
        as a detected shot carrying ~0 pellets, so it inflates detections and deflates the per-shot
        pellet average at the same time. Do NOT cite the arm's "median gap 14.48 s" as a ~15 s period —
        that set includes 0.67 s and 39.63 s gaps and the resemblance to S2's cadence is accidental.
+  - **⇒ 2026-08-03 AMMO READ-RATE CEILING MEASURED (probe-runs §5) — the atlas route is REFUTED, and
+    the leftover levers are these.** 24,319 frames / 7 series / 4 units via the committed
+    `analyze-pellet-tracks.py --ammo-abstention` (fixture
+    `scripts/tests/fixtures/pellets/ammo-abstention-slice.json`). Pooled read rate **60.6%**;
+    **80.7% of abstentions are SEGMENTATION, 7.1% LOCALIZATION, only 12.2% GLYPH-MATCH.** A perfect
+    digit atlas is worth **+0.21 pp honest / +4.8 pp nominal**, so the once-proposed per-video
+    red-digit harvest is **REFUTED, not deferred** — do not re-propose it; the atlas already holds
+    141 glyphs (69 white + 72 red) and red is complete at digits 0–4. What remains open:
+    1. **STALE-LOCK LOCALIZATION — the top read-rate lever. +14.3 to +17.1 pp.** Read rate is
+       **74.9% on good-lock frames vs 0.8% on stale-lock** ones, and **97.0% of `no-digits`
+       abstentions (3,534 of 3,643) fall on stale-lock frames** — the ammo read reuses the dump's own
+       crosshair localization, so a stale lock hands the segmenter a crop that is not the ammo box.
+       **Same root cause as the 60 fps localization instability** already filed below (run21/run21b
+       lock zero frames), so the two are ONE workstream, not two. ⚑ Cost: days, not hours. It also
+       lifts the DETECTOR, which stale locks suppress independently (`docs/probe-runs.md` §3).
+    2. **Safe temporal interpolation — optional, costed, +4.7 pp measured (1,149 frames), 2–4 h.**
+       Pure post-processing on existing JSON: fill abstention runs ≤ 5 frames whose bracketing levels
+       differ by ≤ 1. ⚠ **CAVEAT that decides whether it is worth it:** it NARROWS decrement windows,
+       it does **not** recover shots hidden in long gaps — 58–91% of abstained frames sit in runs
+       > 10 frames, max 226 frames = 7.5 s, longer than a full magazine cycle. So it sharpens timing,
+       not coverage of the missing-shot channel.
+    3. **Bright-surround gate — an ACCURACY item, not a coverage one. ⚑ 0.5–1 day + a threshold
+       study.** ~**30–40 confidently wrong reads per fight** exist today (damage numbers read as
+       ammo: `isabel` `209`×11 / `309`×17 / `300`×6; `guilty` `932`×4; `noir` `908`×5 / `608`×4);
+       `reconstruct_ammo`'s `> ammo_max` filter catches most, but nothing catches one landing inside
+       0–9. A gate would remove most of them at ~0 pp coverage gain — but **7,825 good/bright frames
+       DO read correctly**, so a naive cut costs real reads and the threshold needs its own study.
+    4. ⚑ **Undetermined from these files:** whether the 682 `no-lock` frames are recoverable at all,
+       and whether the confidently-wrong reads propagate into the `--missing-shots` arithmetic in
+       `docs/probe-runs.md` §3b.
   - **⚠ Phase 2A gate-2 blind spot (filed 2026-07-31, from the §1.2 step-0 pass).** shot4's
     structural crosshair localization mislocked for ~10 frames spanning its OWN f8–11 window
     (jumped onto a floating damage-number stack, recovered via template-mode fallback — see the

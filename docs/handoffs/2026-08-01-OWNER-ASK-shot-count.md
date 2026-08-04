@@ -13,6 +13,14 @@
 > **admissible reading (~4.4%) stands, the raw 14.7% is an artifact, and the arbiter is now
 > ground-truth-validated on `isabel`** — not only on `marciana` (SG/Iron). Full record, including the
 > three findings this opened: `docs/probe-runs.md` §4.
+>
+> **The second item — DECLINED on measurement, 2026-08-03.** The red-digit atlas harvest asked for
+> below is **not worth doing**: the read rate is limited by segmentation and localization, not by the
+> digit atlas (80.7% of abstentions are segmentation failures, and a perfect atlas buys +0.21
+> percentage points). Full record: `docs/probe-runs.md` §5. **A factual correction to the body
+> below:** its claim that the atlas "was harvested white-only" is measured FALSE — the atlas holds
+> 141 glyphs, 69 white and 72 red, and red is a complete set because the counter only ever renders
+> digits 0–4 in red. That sentence has been corrected in place.
 
 > **For the owner to review, not an AI-facing doc.** Written 2026-08-01. One ask, ~5–10 minutes of
 > your time, plus one piece of work I can do without you. Nothing here is urgent — the branch is in a
@@ -71,10 +79,10 @@ since I need the total, not per-shot timing.
 
 ## The second item — no time from you, just a nod
 
-The ammo reader currently decodes only **52–71%** of frames, because its digit atlas was harvested
-white-only and `isabel`'s counter turns **red** at low ammo. I harvested 72 red glyphs to get this far,
-but a proper **per-video red-digit atlas** would lift the read rate materially and tighten every number
-above. That is a few hours of my work, no owner time, and it is worth doing before any fix lands —
+The ammo reader currently decodes only **52–71%** of frames. `isabel`'s counter turns **red** at low
+ammo, and the atlas holds 72 red glyphs alongside its 69 white ones to cover that. My belief when I
+wrote this was that a proper **per-video red-digit atlas** would lift the read rate materially and
+tighten every number above. That is a few hours of my work, no owner time, and it is worth doing before any fix lands —
 a higher read rate narrows the lower bound the whole measurement rests on.
 
 Say the word and I will queue it.
