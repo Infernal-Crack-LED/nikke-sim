@@ -339,7 +339,42 @@ let any finding here influence §2's verdict** — it is a separate open item wi
 
 ## 7. Result
 
-_(Written only after the measurement runs. Full narrative: `docs/probe-runs.md` §14.)_
+**2026-08-04. Full narrative: `docs/probe-runs.md` §14.**
+
+All six §3 validity checks PASS, including the control reproduction (exact match to the landed
+740/112/1.8%/6.1561/852/0 figures — asserted via `SystemExit`, not just reported).
+
+- **§2.1 (in-sample, no evidential weight):** control FAILS (37/42, the pinned 5-pellet gap
+  reproduced exactly); 19, 20 and 21 all PASS (42/42 recovered, neither static admitted).
+- **§2.3 (out-of-sample ceiling, mandatory):** 19, 20 and 21 all **PASS** — pooled
+  `above_ceiling_pct` 3.1% at each, well under the 6.2% reject line. 19 and 20 are numerically
+  identical (`avgTotal` 6.6631); 21 differs by 0.0012 (one additional life-21 track on the 60 fps
+  in-sample dump).
+- **§2.4 (out-of-sample corridor, mandatory):** 19, 20 and 21 all **CONFIRM** on all 4 out-of-sample
+  dumps (0 of 4 failing at any candidate) — `corridor_admits_per_event` ranges 0.64–0.84, well under
+  the 2.00 ceiling. `h4-marciana` (same unit, different recording) reported separately per §2.4:
+  0.77, no different in kind from the other three. 19, 20 and 21 are numerically IDENTICAL on every
+  out-of-sample dump (all three fps-scale to `band_hi=10` at 30 fps under this instrument's own
+  Python `round()` — §2.2's own table already predicted this tie) — they diverge only on the 60 fps
+  in-sample dump, which §2.4 excludes.
+- **§2.5 (reported only):** not used to rank; recorded in full in §14E.
+- **§6 (report only):** the 112 CONTROL fallback events break down as 81 `in_band_no_concurrency`,
+  18 `all_below_band_lo`, 9 `mixed_outside_band`, 3 `none_in_radius`, 1 `all_above_cap` — a
+  refinement of the task's three-bucket framing into five mutually-exclusive categories once the
+  data was inspected (§14F). 16 of the 112 become banded at each of 19/20/21. Did not influence any
+  §2 verdict.
+
+**Both mandatory out-of-sample gates (§2.3, §2.4) PASS for all three non-control candidates (19, 20,
+21).** 21 passes the same measurements as 19 and 20 but is not lockstep-safe (§2.2: JS `Math.round`
+diverges from Python's `round` at the `.5` boundary the 30 fps scaling hits) and was pre-committed
+as "recorded only, NOT promotable" regardless of outcome. **19 and 20 are indistinguishable on every
+out-of-sample dump measured here** (§2.2 already noted they are identical at 30 fps; this pass adds
+that their out-of-sample ceiling and corridor figures also tie) and differ only marginally on the
+60 fps in-sample dump, which carries no evidential weight (§2.1).
+
+**Per §4: this is a PROPOSAL, not a landing.** Nothing in `debounce_shots`,
+`count-pellets.py:514`/`:517`, or `read-pellets.ts:787` was touched. A landing pass is a separate,
+owner-gated decision against the §5 sketch's own success criteria — not decided by this document.
 
 ## 8. PRE-OP GATE — `kimi-code/k3`, cross-family, `APPROVED-WITH-REVISIONS`
 
