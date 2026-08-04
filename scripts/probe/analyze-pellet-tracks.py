@@ -4061,6 +4061,423 @@ def representative_audit_selftest():
     return 0 if ok and ident else 1
 
 
+# ============================================================
+# THE REPRESENTATIVE-FRAME POLICY SCORE (docs/handoffs/2026-08-04-representative-frame-PRECOMMIT.md)
+# -- of the four pre-committed candidates, does ANY land its representative frame inside the
+# pellet-cohort PLATEAU instead of the pre-cohort muzzle flash §9C found the shipped median sampling
+# on 3 of 5 labelled shots?
+#
+# READ-ONLY BY CONSTRUCTION: every rule here is a LOCAL scoring variant read off the
+# ALREADY-COMMITTED representative-audit-slice.json -- no new raw data, no re-derivation
+# (CLAUDE.md reuse-before-derive: an existing labelled fixture IS an independent method, and that
+# fixture's `labelled.tracks_raw` / `dumps[].radius_tracks` / `_expected.counted_owner_series*` /
+# `_expected.pooled_policy_view` already carry everything this arm needs). `debounce_shots` in both
+# count-pellets.py and read-pellets.ts is untouched and not reachable from here; segmentation (which
+# frames belong to which event) is untouched too -- reused verbatim via `_merge_spans`/`_merge_events`
+# with policy="median", whose "median" arm is asserted event-for-event against count-pellets.py's own
+# debounce_shots by `_merge_shipped_identity` before any row is scored. Only WHICH FRAME (or, for
+# `lifetime_band_count`, what COUNT with no frame at all) each candidate reports differs.
+#
+# The decision rule itself (the categorical PLATEAU check, the ceiling check, the mean-matching
+# disqualification) lives in the pre-commit doc, not here -- this arm computes the numbers the doc's
+# rule is applied to, and nothing here stamps a verdict.
+# ============================================================
+POLICY_SCORE_FIXTURE = "scripts/tests/fixtures/pellets/policy-score-slice.json"
+# §1.4's four mandatory candidates. The three FRAME rules report a `total` of (band-count at the
+# chosen frame) + the SAME core-hit `red` flag `_merge_events` folds into "total"
+# (count-pellets.py:489's own convention) so the ceiling check compares like with like and isolates
+# the frame-selection difference, not also a change to what "total" means. `lifetime_band_count` is
+# NOT a frame rule (§1.4) and carries no red flag -- it is §9G's own per-event band-track count,
+# verbatim.
+POLICY_RULES = ("shipped_median", "lifetime_gated_median", "plateau_median", "lifetime_band_count")
+_POLICY_FRAME_RULES = ("shipped_median", "lifetime_gated_median", "plateau_median")
+
+
+def _ps_band(fps, max_pellet_frames):
+    """The fps-scaled owner-pellet lifetime band [lo, max_pellet_frames] -- the same `lo` §9G's
+    lifetime census uses (8 frames at 60 fps, scaled down at 30; `max_pellet_frames` is each dump's
+    OWN value, never hardcoded -- trap 4)."""
+    lo = max(1, round(REP_OWNER_LIFE_LO_60FPS * fps / 60.0))
+    return lo, max_pellet_frames
+
+
+def _ps_band_totals(radius_tracks, band):
+    """Per-frame count of tracks the shipped radius gate counts on that frame, restricted to tracks
+    whose OVERALL lifetime falls in `band`. This is the lifetime-gated per-frame series
+    `lifetime_gated_median` and `plateau_median` both select a representative frame from -- §9G's
+    discriminator (track lifetime, not frame magnitude) applied per-frame instead of per-event."""
+    totals = collections.Counter()
+    for life, runs in radius_tracks:
+        if not (band[0] <= life <= band[1]):
+            continue
+        for s, ln in runs:
+            for f in range(s, s + ln):
+                totals[f] += 1
+    return totals
+
+
+def _ps_band_count(radius_tracks, band, a, b):
+    """`lifetime_band_count`'s own definition (§9G's basis, verbatim): the number of DISTINCT tracks
+    whose overall lifetime falls in `band` and which the shipped radius gate counts at least once
+    inside [a, b). Not a frame rule -- no representative frame is chosen (§1.4: exempt from §1.1)."""
+    lo, hi = band
+    n = 0
+    for life, runs in radius_tracks:
+        if not (lo <= life <= hi):
+            continue
+        if any(s < b and s + ln > a for s, ln in runs):
+            n += 1
+    return n
+
+
+def _ps_labelled_radius_tracks(block):
+    """The labelled block's tracks reduced to the same [life, runs] shape `dumps[].radius_tracks`
+    already carries -- built at replay time from the RAW xs/ys the labelled block keeps (unlike the
+    dumps, which are pre-reduced at fixture-write time because 30k+ tracks/dump do not fit the
+    budget; the labelled block is small enough to reduce on the fly). Uses the SHIPPED structural
+    crosshair uniformly across all 5 shots -- including shot 4 -- because every candidate rule scores
+    what the reader actually sees; only the GROUND-TRUTH plateau it is checked against substitutes
+    the relock series for shot 4 (trap 9)."""
+    cross = [tuple(c) if c else None for c in block["cross"]]
+    radius = block["params"]["pellet_radius"]
+    offset = block["offset"]
+    out = []
+    for _tid, first, _is_pellet, xs, ys in block["tracks_raw"]:
+        track = {"first": first, "last": first + len(xs) - 1, "xs": xs, "ys": ys}
+        runs = _rep_radius_runs(track, cross, radius, offset)
+        if runs:
+            out.append((len(xs), runs))
+    return out
+
+
+def _ps_events(frame_counts, fps):
+    """Event span boundaries, reused VERBATIM from the shipped segmentation
+    (`_merge_spans(..., "shipped")` -> `_merge_events(..., "median")`) -- segmentation is untouched by
+    every candidate here; only which frame each rule copies its count from differs. The "median"
+    policy's own `rep`/`white`/`red`/`total` fields double as the `shipped_median` rule's answer, so
+    no separate computation is needed for the control."""
+    totals = [r["white"] + r["red"] for r in frame_counts]
+    spans = _merge_spans(totals, fps, "shipped")
+    return _merge_events(frame_counts, totals, spans, "median")
+
+
+def _ps_median_rep(totals, a, b):
+    """The shipped median-of-active selection (count-pellets.py:514-536 / `_merge_events`'s "median"
+    branch), generalized to an arbitrary per-frame totals mapping instead of the shipped white+red
+    total -- so `lifetime_gated_median` can reuse the exact same SELECTION LOGIC over a DIFFERENT
+    series (the band-gated one)."""
+    active = [j for j in range(a, b) if totals.get(j, 0) >= MERGE_EVENT_MIN]
+    if not active:
+        return None
+    srt = sorted(totals[j] for j in active)
+    m = len(srt)
+    target = (srt[(m - 1) // 2] + srt[m // 2]) / 2
+    rep, best = active[0], float("inf")
+    for j in active:
+        off = abs(totals[j] - target)
+        if off < best:
+            best, rep = off, j
+    return rep
+
+
+def _ps_longest_modal_run(totals, a, b):
+    """`plateau_median`'s own frame-selection rule (§1.4): the longest contiguous run of ACTIVE
+    frames (>= MERGE_EVENT_MIN, the same floor the median selection uses -- without it a long run of
+    genuine zero-frames outside the cohort would qualify as its own degenerate "plateau") whose
+    values all fall within +-1 of the run's own mode. Returns the run as a list of frame indices, or
+    [] if there are no active frames in [a, b)."""
+    frames = [j for j in range(a, b) if totals.get(j, 0) >= MERGE_EVENT_MIN]
+    if not frames:
+        return []
+    blocks, cur = [], [frames[0]]
+    for f in frames[1:]:
+        if f == cur[-1] + 1:
+            cur.append(f)
+        else:
+            blocks.append(cur)
+            cur = [f]
+    blocks.append(cur)
+
+    best = []
+    for block in blocks:
+        n = len(block)
+        if n <= len(best):
+            continue
+        for length in range(n, len(best), -1):
+            found = None
+            for start in range(0, n - length + 1):
+                sub = block[start:start + length]
+                vals = [totals[f] for f in sub]
+                mode = collections.Counter(vals).most_common(1)[0][0]
+                if all(abs(v - mode) <= 1 for v in vals):
+                    found = sub
+                    break
+            if found is not None:
+                best = found
+                break
+    return best
+
+
+def _ps_plateau_rep(totals, a, b):
+    run = _ps_longest_modal_run(totals, a, b)
+    return run[len(run) // 2] if run else None
+
+
+def _ps_red_flag(frame_counts, offset, a, b):
+    """The same core-hit-marker-present-in-span flag `_merge_events` folds into "total"
+    (count-pellets.py:489), applied to whichever frame the candidate rule picked instead of the
+    shipped one -- so `total` means the same thing across every frame rule."""
+    return 1 if any(frame_counts[j - offset].get("marker", 0) >= MERGE_MARKER_MIN
+                    for j in range(a, b)) else 0
+
+
+def _ps_score_event(policy, ev, frame_counts, offset, band_totals):
+    """One event, one FRAME rule: `rep` (absolute frame index, or None if the rule found nothing to
+    select) and `total` (the count it would report, comparable to shipped's `total`)."""
+    if policy == "shipped_median":
+        return {"rep": ev["rep"], "total": ev["total"]}
+    a, b = ev["start"], ev["end"]
+    if policy == "lifetime_gated_median":
+        rep = _ps_median_rep(band_totals, a, b)
+    elif policy == "plateau_median":
+        rep = _ps_plateau_rep(band_totals, a, b)
+    else:
+        raise ValueError(f"_ps_score_event: not a frame rule: {policy}")
+    if rep is None:
+        return {"rep": None, "total": None}
+    return {"rep": rep, "total": band_totals.get(rep, 0) + _ps_red_flag(frame_counts, offset, a, b)}
+
+
+def _ps_plateau(series_row):
+    """§1.1's PLATEAU, computed from the pinned ground-truth series: the longest contiguous run of
+    frames with value >= max-1, length >= 3. Validity check #3: this must reproduce shipped = 2/5, IN
+    on shots 1 and 5, OUT on 2/3/4."""
+    series = series_row["series"]
+    first = series_row["first_offset"]
+    best, cur = [], []
+    for i, v in enumerate(series):
+        if v >= max(series) - 1:
+            cur.append(i)
+        else:
+            if len(cur) > len(best):
+                best = cur
+            cur = []
+    if len(cur) > len(best):
+        best = cur
+    if len(best) < 3:
+        best = []
+    return [first + i for i in best]
+
+
+def _ps_ground_truth_series(fx):
+    """Per shot: the pinned countable-owner-pellet series, shot 4 replaced by its RELOCK series (trap
+    9 -- its shipped structural read is the documented mislock, not something a representative-frame
+    rule could ever fix, so the PLATEAU it is scored against is the physically-correct one)."""
+    by_shot = {r["shot"]: r for r in fx["_expected"]["counted_owner_series"]}
+    for r in fx["_expected"]["counted_owner_series_relock"]:
+        by_shot[r["shot"]] = r
+    return by_shot
+
+
+def _ps_score_labelled(fx):
+    """THE CATEGORICAL HALF (n=5). For each labelled shot: where each frame rule's representative
+    frame lands, relative to the ground-truth PLATEAU, plus `lifetime_band_count`'s own count against
+    the plateau's size."""
+    block = fx["labelled"]
+    shots = _rep_load_labels()
+    fps = block["fps"]
+    offset = block["offset"]
+    frame_counts = [{"white": w, "red": r, "marker": m} for w, r, m in block["frame_counts"]]
+    # `_ps_events` runs on the slice-local (0-based) `frame_counts` array; shift back to ABSOLUTE
+    # clip frame indices before comparing to `t0` or indexing `band_totals` (keyed by absolute frame,
+    # since `tracks_raw`'s own `first`/`xs`/`ys` are absolute) -- same shift `_rep_labelled_report`
+    # applies to its own `events`.
+    events = [{**e, "start": e["start"] + offset, "end": e["end"] + offset, "rep": e["rep"] + offset}
+              for e in _ps_events(frame_counts, fps)]
+    band = _ps_band(fps, block["params"]["max_pellet_frames"])
+    rtracks = _ps_labelled_radius_tracks(block)
+    band_totals = _ps_band_totals(rtracks, band)
+    truth = _ps_ground_truth_series(fx)
+
+    rows = []
+    for s in shots:
+        t0 = s["t0"]
+        ev = next((e for e in events if e["start"] <= t0 < e["end"]), None)
+        if ev is None:
+            raise SystemExit(f"--policy-score: labelled shot {s['shot']} (t0={t0}) falls in no "
+                             "shipped event; the slice boundary cut it.")
+        plateau = _ps_plateau(truth[s["shot"]])
+        row = {"shot": s["shot"], "t0": t0, "plateau_offsets": plateau,
+              "plateau_size": len(plateau)}
+        for policy in _POLICY_FRAME_RULES:
+            r = _ps_score_event(policy, ev, frame_counts, offset, band_totals)
+            rep_offset = (r["rep"] - t0) if r["rep"] is not None else None
+            row[policy] = {"rep_offset": rep_offset, "total": r["total"],
+                          "in_plateau": rep_offset in plateau if rep_offset is not None else False}
+        row["lifetime_band_count"] = {"count": _ps_band_count(rtracks, band, ev["start"], ev["end"])}
+        rows.append(row)
+    scores = {policy: sum(1 for row in rows if row[policy]["in_plateau"])
+              for policy in _POLICY_FRAME_RULES}
+    return {"band": list(band), "rows": rows, "categorical_scores": scores}
+
+
+def _ps_score_dump(d):
+    """THE CEILING HALF, one dump: for every shipped event, what each rule would report, pooled by
+    the caller across all dumps to the 852-event denominator §1.2 scores against."""
+    fps = d["fps"]
+    # `radius_tracks` is stored FLATTENED ([start, len, start, len, ...] per track) to fit the
+    # fixture budget -- `_rep_expand_dump` is the shipped un-flattener, reused here rather than
+    # re-implementing it a second time.
+    frame_counts, radius_tracks = _rep_expand_dump(d)
+    events = _ps_events(frame_counts, fps)
+    band = _ps_band(fps, d["max_pellet_frames"])
+    band_totals = _ps_band_totals(radius_tracks, band)
+    out = {"dump": d["tracks"], "fps": fps, "n_events": len(events)}
+    for policy in _POLICY_FRAME_RULES:
+        totals, above, no_rep = [], 0, 0
+        for ev in events:
+            r = _ps_score_event(policy, ev, frame_counts, 0, band_totals)
+            if r["total"] is None:
+                no_rep += 1
+                continue
+            totals.append(r["total"])
+            if r["total"] > REP_HITS_PER_SHOT:
+                above += 1
+        out[policy] = {"n_scored": len(totals), "no_rep": no_rep, "sum_total": sum(totals),
+                      "above_ceiling": above}
+    counts = [_ps_band_count(radius_tracks, band, e["start"], e["end"]) for e in events]
+    out["lifetime_band_count"] = {"n_scored": len(counts), "no_rep": 0, "sum_total": sum(counts),
+                                  "above_ceiling": sum(1 for c in counts if c > REP_HITS_PER_SHOT)}
+    return out
+
+
+def _ps_pool_dumps(dumps):
+    """Pooled `avgTotal` / `above_ceiling_pct` per rule over every dump event -- the 852-event
+    denominator §1.2 scores against (5 dumps, 4 units; §9G already established 852 = the sum)."""
+    pooled = {}
+    for policy in POLICY_RULES:
+        n_events = sum(r["n_events"] for r in dumps)
+        n_scored = sum(r[policy]["n_scored"] for r in dumps)
+        no_rep = sum(r[policy]["no_rep"] for r in dumps)
+        above = sum(r[policy]["above_ceiling"] for r in dumps)
+        sm = sum(r[policy]["sum_total"] for r in dumps)
+        pooled[policy] = {
+            "n_events": n_events, "n_scored": n_scored, "no_rep": no_rep,
+            "avgTotal": round(sm / n_scored, 4) if n_scored else None,
+            "above_ceiling_pct": round(100 * above / n_scored, 1) if n_scored else None,
+        }
+    return pooled
+
+
+def _ps_expected(labelled, dumps, pooled):
+    return {
+        "band_labelled": labelled["band"],
+        "rows": labelled["rows"],
+        "categorical_scores": labelled["categorical_scores"],
+        "per_dump": [{"dump": d["dump"], "fps": d["fps"], "n_events": d["n_events"],
+                     **{p: d[p] for p in POLICY_RULES}} for d in dumps],
+        "pooled": pooled,
+    }
+
+
+def _print_policy_score(labelled, dumps, pooled):
+    print("\nCATEGORICAL -- does the rule's representative frame land inside the ground-truth "
+          "PLATEAU? (shot 4 scored against its RELOCK series, trap 9)")
+    for row in labelled["rows"]:
+        print(f"  shot {row['shot']}  t0={row['t0']}  plateau_offsets={row['plateau_offsets']}")
+        for p in _POLICY_FRAME_RULES:
+            r = row[p]
+            mark = "IN " if r["in_plateau"] else "OUT"
+            print(f"    {p:24s} rep_offset={str(r['rep_offset']):>5s}  {mark}  "
+                  f"total={r['total']}")
+    cs = labelled["categorical_scores"]
+    print("\nCATEGORICAL SCORE (of 5, §1.1: 5/5 promotable, 3-4/5 record only, <=2/5 reject)")
+    for p in _POLICY_FRAME_RULES:
+        print(f"  {p:24s} {cs[p]}/5")
+
+    print("\nlifetime_band_count -- exempt from §1.1; count vs the ground-truth plateau's own SIZE")
+    for row in labelled["rows"]:
+        print(f"  shot {row['shot']}: count={row['lifetime_band_count']['count']}  "
+              f"plateau_size={row['plateau_size']}")
+
+    print(f"\nCEILING (§1.2, free) -- pooled over {pooled['shipped_median']['n_events']} events "
+          f"across {len(dumps)} dumps; reject above 12.4% (2x shipped)")
+    print(f"{'policy':24s} {'n_scored':>8s} {'no_rep':>7s} {'avgTotal':>9s} {'>ceil %':>8s}")
+    for p in POLICY_RULES:
+        row = pooled[p]
+        print(f"{p:24s} {row['n_scored']:8d} {row['no_rep']:7d} "
+              f"{str(row['avgTotal']):>9s} {str(row['above_ceiling_pct']):>8s}")
+    print("\nTERTIARY (§1.3, REPORTED ONLY -- never a ranking criterion; mean-matching near 8.40 "
+          "DISQUALIFIES a rule)")
+    for p in POLICY_RULES:
+        print(f"  {p:24s} avgTotal={pooled[p]['avgTotal']}")
+
+
+def policy_score(save_fixture=None):
+    with open(REP_AUDIT_FIXTURE) as fh:
+        fx = json.load(fh)
+    for d in fx["dumps"]:
+        fc = [{"white": w, "red": r, "marker": m} for w, r, m in d["frame_counts"]]
+        if not _merge_shipped_identity(fc, d["fps"]):
+            raise SystemExit(f"--policy-score: the shipped-identity control FAILED on {d['tracks']}. "
+                             "The local span rebuild no longer reproduces debounce_shots, so no row "
+                             "below would be a difference from the real baseline.")
+    labelled = _ps_score_labelled(fx)
+    dumps = [_ps_score_dump(d) for d in fx["dumps"]]
+    pooled = _ps_pool_dumps(dumps)
+    if save_fixture:
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("Scored entirely off the already-committed "
+                            f"{REP_AUDIT_FIXTURE} -- no new raw tracks.json, no re-derivation "
+                            "(CLAUDE.md reuse-before-derive). docs/handoffs/"
+                            "2026-08-04-representative-frame-PRECOMMIT.md is the decision rule this "
+                            "arm's numbers are scored against."),
+                "_note": ("Deliberately carries NO raw track data of its own -- `policy_score`/"
+                          "`policy_score_selftest` both read "
+                          f"{REP_AUDIT_FIXTURE} directly, so this "
+                          "fixture only pins the SCORE (`_expected`), not a second copy of the "
+                          "labelled/dumps blocks. Regenerate with analyze-pellet-tracks.py "
+                          "--policy-score --save-policy-score-fixture <path>."),
+                "_expected": _ps_expected(labelled, dumps, pooled),
+            }, fh, indent=2)
+        print(f"wrote policy-score fixture -> {save_fixture}")
+    _print_policy_score(labelled, dumps, pooled)
+    return {"labelled": labelled, "dumps": dumps, "pooled": pooled}
+
+
+def policy_score_selftest():
+    """Constraint 9 self-validation: replay the whole arm off the already-committed
+    representative-audit-slice.json and assert the result against the committed score fixture."""
+    with open(POLICY_SCORE_FIXTURE) as fh:
+        fx = json.load(fh)
+    with open(REP_AUDIT_FIXTURE) as fh:
+        src = json.load(fh)
+    ident = all(_merge_shipped_identity(
+        [{"white": w, "red": r, "marker": m} for w, r, m in d["frame_counts"]], d["fps"])
+        for d in src["dumps"])
+    labelled = _ps_score_labelled(src)
+    dumps = [_ps_score_dump(d) for d in src["dumps"]]
+    pooled = _ps_pool_dumps(dumps)
+    got = _ps_expected(labelled, dumps, pooled)
+    ok = got == fx["_expected"]
+    if not ok:
+        for key in sorted(set(got) | set(fx["_expected"])):
+            if got.get(key) != fx["_expected"].get(key):
+                print(f"  DIFF {key}:\n    expected {json.dumps(fx['_expected'].get(key))}"
+                      f"\n    got      {json.dumps(got.get(key))}")
+    cs = got["categorical_scores"]
+    print("categorical (of 5): " + "  ".join(f"{p}={cs[p]}" for p in _POLICY_FRAME_RULES))
+    pv = got["pooled"]
+    print(f"pooled over {pv['shipped_median']['n_events']} events: " +
+          "  ".join(f"{p} avgTotal={pv[p]['avgTotal']} above_ceiling%={pv[p]['above_ceiling_pct']}"
+                    for p in POLICY_RULES))
+    print(f"shipped-identity control: {'PASS' if ident else 'FAIL'} "
+          f"(local span rebuild == count-pellets.py debounce_shots on all {len(src['dumps'])} dumps)")
+    print("SELFTEST PASS" if ok and ident else "SELFTEST FAIL")
+    return 0 if ok and ident else 1
+
+
 FIXTURE = "scripts/tests/fixtures/pellets/run16-tracks-slice.json"
 
 # Pinned from the committed fixture (a 400-frame slice of the run16 dump). These reproduce the
@@ -4314,6 +4731,17 @@ def main():
                     help=f"write the committed replay fixture (see {REP_AUDIT_FIXTURE})")
     ap.add_argument("--representative-audit-selftest", action="store_true",
                     help=f"replay {REP_AUDIT_FIXTURE} and exit")
+    ap.add_argument("--policy-score", action="store_true",
+                    help=("THE REPRESENTATIVE-FRAME POLICY SCORE (docs/handoffs/"
+                          "2026-08-04-representative-frame-PRECOMMIT.md): scores the pre-committed "
+                          "shipped_median / lifetime_gated_median / plateau_median / "
+                          "lifetime_band_count candidates against the categorical PLATEAU check "
+                          f"(n=5) and the free ceiling check (n=852), reading {REP_AUDIT_FIXTURE} "
+                          "directly -- no new raw data, no tracks.json arguments needed."))
+    ap.add_argument("--save-policy-score-fixture", metavar="PATH",
+                    help=f"write the committed score fixture (see {POLICY_SCORE_FIXTURE})")
+    ap.add_argument("--policy-score-selftest", action="store_true",
+                    help=f"replay --policy-score against {POLICY_SCORE_FIXTURE} and exit")
     ap.add_argument("--gt-score-json", metavar="PATH",
                      help="score-pellets.py --real-fixture stdout JSON (carries each shot's owner "
                           "count, the shipped estimator's error and its per-offset counts)")
@@ -4331,6 +4759,11 @@ def main():
         raise SystemExit(oracle_ceiling_selftest())
     if args.representative_audit_selftest:
         raise SystemExit(representative_audit_selftest())
+    if args.policy_score_selftest:
+        raise SystemExit(policy_score_selftest())
+    if args.policy_score:
+        policy_score(args.save_policy_score_fixture)
+        return 0
     if args.representative_audit:
         fps_list = args.representative_audit_fps
         if len(fps_list) not in (1, len(args.representative_audit)):
