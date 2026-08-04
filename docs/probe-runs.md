@@ -4837,6 +4837,26 @@ SAME events (not re-selected):
 | 20        | 16                      |
 | 21        | 16                      |
 
+⚑ **A FACTUAL CORRECTION FALLS OUT OF THIS TABLE, and it is recorded because it is a measurement,
+not an interpretation.** Two prior documents characterize this population as events with **no
+band-eligible track in radius at all**:
+
+- `docs/handoffs/2026-08-04-representative-frame-PRECOMMIT.md:150` — "112 of the 852 pooled events
+  (13.1%) have **no track at all** whose lifetime falls in the band and is ever in radius during the
+  event";
+- `docs/handoffs/2026-08-04-pellet-reader-JUDGE-handoff.md:221` (open item 3) — "**No lifetime-band
+  track in radius** at all".
+
+**That description is true of only 3 of the 112** (`none_in_radius`). For **81 of 112 (72%)** a
+band-eligible track IS present and IS in radius; the event abstains because the band series never
+reaches `MERGE_EVENT_MIN` (3) **concurrently** — `_ps_longest_modal_run` filters
+`totals.get(j, 0) >= MERGE_EVENT_MIN` before looking for a plateau, so a lone in-band track can
+never form one. The abstention is a **concurrency** threshold, not an absence of band tracks.
+
+⛔ Per the pre-commit's §6 this correction is recorded and goes no further: **what** the 81 are is
+not theorized here, no fix is proposed, and nothing in §14F influenced any verdict in §14B–§14D.
+Open item 3 keeps its own evidence bar and its own pass.
+
 **No theorizing about what the 112 or the 16 mean, and this sub-deliverable did not influence any
 verdict in §14B–§14D**, per the pre-commit's §6.
 
