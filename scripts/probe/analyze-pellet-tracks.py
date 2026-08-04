@@ -1072,6 +1072,14 @@ def admissible_shots(event, cadence_lo):
     window of w frames admits at most w // cadence_lo + 1 shots. For a decrement that rule did not
     flag this is already >= its own `shots`, so the min() leaves it untouched -- only a flagged
     (physically impossible) drop is capped, which is exactly the phantom-shot inflation.
+
+    ⚑ CALIBRATED ON THE `9 -> 0` CASE ONLY -- NOT GENERAL. It assumes a flagged window still holds
+    ONE real shot, which is right when the misread interrupts a genuine decrement (`isabel`'s
+    f1596-1602 `9 -> 0` sits between a confirmed 9 and a confirmed 8, so exactly one round was
+    fired). It is WRONG for a ZERO-WIDTH flip such as the whole-clip `8 -> 6` events at f686 and
+    f1833: the cap credits 0 // cadence_lo + 1 = 1 shot, but if the `6` was a pure glyph misread and
+    the level truly never left 8, the truth is 0. Do not assume this rule generalises to the flips
+    it has not been calibrated against.
     """
     if not cadence_lo:
         return event["shots"]
@@ -1258,8 +1266,14 @@ def hand_count_report(ammo, tracks, fps, slack, confirm, ammo_max, window, hand,
     f_lo, f_hi = round((lo_s - at) * fps), round((hi_s - at) * fps)
     levels, dropped = reconstruct_ammo(reads, confirm, ammo_max)
     events_all = ammo_shot_events(levels)
-    # An event belongs to the window when the transition itself happened inside it.
-    events = [e for e in events_all if f_lo <= e["hi"] <= f_hi]
+    # An event belongs to the window when the ROUND IT REPRESENTS WAS FIRED inside it. For a
+    # decrement that is the transition frame `hi`. For a RELOAD it is `lo` -- the frame the counter
+    # goes blank, i.e. essentially the magazine-emptying shot's own frame -- because a reload's `hi`
+    # is when the NEXT magazine's count appears, which can fall outside a window whose emptying shot
+    # was inside it. Measured on `isabel`: the f1756 reload's `hi` is f1817, 11 frames past this
+    # window's end, so scoring reloads by `hi` silently dropped a real magazine-emptying round.
+    events = [e for e in events_all
+              if f_lo <= (e["lo"] if e["kind"] == "reload" else e["hi"]) <= f_hi]
     fc = tracks.get("frame_counts") or []
     detected, _summary = cp.debounce_shots(fc, fps) if fc else ([], {})
     detected_all = [s["start"] for s in detected]
@@ -1274,22 +1288,32 @@ def hand_count_report(ammo, tracks, fps, slack, confirm, ammo_max, window, hand,
     cad_lo = cad.get("p10") or 0
     bad = flag_inadmissible_decrements(events_all, cad_lo)
     bad_in_window = [e for e in bad if f_lo <= e["hi"] <= f_hi]
+    bad_ids = {id(e) for e in bad}
+    # A reload IMMEDIATELY FOLLOWING an inadmissible decrement is not a magazine change -- it is the
+    # counter recovering from the same glyph misread. `isabel`'s flagged `9 -> 0` at f1596-1602 is
+    # followed by a `0 -> 8` up at f1605 that no magazine performed. Phantom on the ADMISSIBLE basis
+    # only; the raw count keeps it, like every other raw/admissible pair here.
+    phantom_reload_ids = {id(e) for k, e in enumerate(events_all)
+                          if e["kind"] == "reload" and k
+                          and events_all[k - 1]["kind"] == "decrement"
+                          and id(events_all[k - 1]) in bad_ids}
 
     dec_shots = sum(e["shots"] for e in events if e["kind"] == "decrement")
     # ADMISSIBLE basis, reported ALONGSIDE the raw one and never instead of it (the
     # missing_shots_report precedent). reconstruct_ammo has no magazine-consistency check, so a
     # glyph misread that survives `confirm` MINTS shots: measured on `isabel`, the 3-frame `0` at
     # f1602-1604 sitting between a confirmed 9 and a confirmed 8 scores as a 9-shot `9 -> 0`
-    # decrement, inflating this window's headline to 40 decrements / 44 implied against a hand
-    # count of 32 / 36. Capping each FLAGGED decrement at what its window can hold removes exactly
-    # that inflation. n_reloads is deliberately NOT adjusted -- the flag rule speaks to decrements
-    # only, and the reload count is the proxy for the magazine-emptying rounds the arbiter cannot
-    # see. The underlying reconstruct_ammo defect is NOT fixed here (whole-fight blast radius).
-    bad_keys = {(e["lo"], e["hi"]) for e in bad_in_window}
+    # decrement, inflating this window's decrement headline to 40 against a hand count of 32.
+    # Capping each FLAGGED decrement at what its window can hold removes exactly that inflation.
+    # The reload count -- the proxy for the magazine-emptying rounds the arbiter cannot see -- gets
+    # the matching correction: phantom reloads are dropped on the admissible basis. The underlying
+    # reconstruct_ammo defect is NOT fixed here (whole-fight blast radius).
     dec_shots_adm = sum(
-        admissible_shots(e, cad_lo) if (e["lo"], e["hi"]) in bad_keys else e["shots"]
+        admissible_shots(e, cad_lo) if id(e) in bad_ids else e["shots"]
         for e in events if e["kind"] == "decrement")
     n_reloads = sum(1 for e in events if e["kind"] == "reload")
+    n_reloads_adm = sum(1 for e in events
+                        if e["kind"] == "reload" and id(e) not in phantom_reload_ids)
     missed = [s for s in slots if s["t0"] is None]
     n_hand = hand.get("shots")
     # Detections attributable to the WEAPON: everything the ammo matched, plus one magazine-emptying
@@ -1313,7 +1337,8 @@ def hand_count_report(ammo, tracks, fps, slack, confirm, ammo_max, window, hand,
             "decrement_shots": dec_shots, "n_reloads": n_reloads,
             "implied_total": dec_shots + n_reloads,
             "decrement_shots_admissible": dec_shots_adm,
-            "implied_total_admissible": dec_shots_adm + n_reloads,
+            "n_reloads_admissible": n_reloads_adm,
+            "implied_total_admissible": dec_shots_adm + n_reloads_adm,
             "read_pct": round(100 * sum(1 for r in reads
                                         if f_lo <= r["i"] <= f_hi and r.get("ammo") is not None)
                               / max(1, sum(1 for r in reads if f_lo <= r["i"] <= f_hi)), 1),
@@ -1342,8 +1367,9 @@ def hand_count_report(ammo, tracks, fps, slack, confirm, ammo_max, window, hand,
             "ammo_implied_total": dec_shots + n_reloads,
             "ammo_total_matches_hand": (dec_shots + n_reloads) == n_hand,
             "ammo_visible_shots_admissible": dec_shots_adm,
-            "ammo_implied_total_admissible": dec_shots_adm + n_reloads,
-            "ammo_total_admissible_matches_hand": (dec_shots_adm + n_reloads) == n_hand,
+            "ammo_reloads_admissible": n_reloads_adm,
+            "ammo_implied_total_admissible": dec_shots_adm + n_reloads_adm,
+            "ammo_total_admissible_matches_hand": (dec_shots_adm + n_reloads_adm) == n_hand,
             "detected_in_window": len(detected_t0),
             "detected_weapon_attributable": det_weapon,
             "MISSED_vs_hand": miss_vs_hand,
@@ -1379,7 +1405,7 @@ def audit_hand_count(ammo_paths, fps, slack, confirm, ammo_max, window, hand, at
               f"{r['ammo']['n_reloads']} mag-empty = {s['ammo_implied_total']} "
               f"({'MATCHES' if s['ammo_total_matches_hand'] else 'DIFFERS FROM'} the hand count)")
         print(f"  ammo arbiter, ADMISS. : {s['ammo_visible_shots_admissible']} decrements + "
-              f"{r['ammo']['n_reloads']} mag-empty = {s['ammo_implied_total_admissible']} "
+              f"{s['ammo_reloads_admissible']} mag-empty = {s['ammo_implied_total_admissible']} "
               f"({'MATCHES' if s['ammo_total_admissible_matches_hand'] else 'DIFFERS FROM'} "
               f"the hand count)   [flagged decrements capped at what their window can hold]")
         print(f"  detector              : {s['detected_in_window']} onsets, "
