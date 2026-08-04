@@ -292,7 +292,14 @@ export type EffectDef =
       pullsPerSec?: number;
       // The swap weapon's CLASS, when it differs from the base weapon — drives range-band
       // eligibility + auto-core rate for swap shots (nayuta: SMG base → SR "Memory Incineration" mode).
+      // weapon:'SG' additionally routes the swap through the SG pellet-landing model (accuracy-circle
+      // miss loss by range band) instead of guaranteed 100% landing (K: literal shotgun swap).
       weapon?: string;
+      // Swap weapon's own pellet count, read only when weapon:'SG' — the SG landing/gauge path's
+      // pellet base while swapped (falls back to the base char's hitsPerShot if omitted).
+      // damagePct is the FULL-SHOT total (all pellets landing), same convention as a real SG
+      // unit's normalAttackMultiplier — NOT a per-pellet value.
+      pelletCount?: number;
       trueNormals?: boolean; // swap shots are true-flavored (Takina: "Normal attacks deal true damage")
       hasPierce?: boolean; // swap shots are Pierce-tagged ("Additional Effect: Pierce" scoped to the
       // swapped weapon, snow-white's cannon — owner-ruled 2026-07-20). Feeds the
