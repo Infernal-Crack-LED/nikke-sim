@@ -235,8 +235,8 @@ otherwise surface only at the next manual refresh. Fix (owner decision): a post-
 after every merged PR): a forced from-scratch rebuild, `build-dpschart.ts --force --out
 $RUNNER_TEMP/...` (output discarded — health check, not a publish path) plus `npm run ranks:all`.
 `--force` is load-bearing: right after a deploy the live-site carry-over candidate matches the
-merged inputs, so without it every row carries over (`build-dpschart.ts:617` gates the whole
-candidate search on `!FORCE`) and the run proves nothing. Infographics are exempt — PR CI keeps
+merged inputs, so without it every row carries over (`build-dpschart.ts` gates the whole candidate
+search on `!FORCE`) and the run proves nothing. Infographics are exempt — PR CI keeps
 building them via the `artifacts` tier. Cost ~8 min, off the deploy critical path. Landed on branch
 `worktree-artifact-decoupling-review` ahead of Step 0: redundant with the deploy path's own builder
 run until then; the redundancy is what lets Step 0 delete that run safely.
@@ -267,6 +267,15 @@ built/committed artifacts, skip-stale under `BOARDS_FETCHED=1` (ci.yml's fetch p
 exact refresh command on failure. Verified before commit: rebuild determinism, recomputed ==
 embedded for every bucket, full PR-CI simulation green. Steps 2–4 remain deferred options per the
 2026-08-04 review ruling.
+
+**Cross-family code review (kimi-k3, 2026-08-04) BLOCKED the first cut — one BLOCKER**:
+`src/stats.ts` (characterStat — every simulated unit's ATK/DEF/HP) and `src/data/squads.ts`
+(squadOf — same-squad block gates) were in NO hash bucket, the false-FRESH failure mode. The gap
+pre-existed in `b71af726`'s original dpschart bucket (the Step-0 extraction carried it verbatim)
+and the first ranks cut repeated it (direct-imports-only scan). `1252c6da` fixes both lists, plus
+the review's FOLLOW-UP (infographics bucket was missing `web/public/nikke-icons/` and
+`src/dpschart/matrix.ts`) and both NOTEs; the parity test correctly caught the intermediate
+ol-default drift during the fix. Re-review of the corrected diff dispatched 2026-08-04.
 
 **Step 1** — extract + generalize input hashing to all 6 boards + infographics (§5).
 
