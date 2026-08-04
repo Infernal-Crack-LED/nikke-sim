@@ -7,6 +7,11 @@
 > [`2026-08-01-pellet-cascade-JUDGE-handoff.md`](2026-08-01-pellet-cascade-JUDGE-handoff.md). **The
 > graveyards in all three are live and binding. Read them before proposing anything.**
 >
+> **CONTINUED BY
+> [`2026-08-04-pellet-reader-JUDGE-handoff.md`](2026-08-04-pellet-reader-JUDGE-handoff.md) — read that
+> one first; this file stays live for its ledger, graveyard and traps.** ⚑ Its §7 item 1 (the
+> representative-frame policy) is **DONE** — landed 2026-08-04, `docs/probe-runs.md` §13.
+>
 > **Slugs:** `marciana` (SG/Iron — `docs/probes/clean-weapons/marciana-solo.MP4`; **not**
 > `marciana-marine-study`, AR/Iron), `noir`, `guilty`, `isabel`. All SG, `ammo: 9`.
 
