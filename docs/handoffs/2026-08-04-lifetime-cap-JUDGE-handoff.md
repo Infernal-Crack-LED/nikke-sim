@@ -22,9 +22,13 @@ line, and admits only **0.64–0.84 tracks/event** on four out-of-sample dumps a
 2.00 ceiling. Both cross-family gates ran (`kimi-code/k3`): pre-op `APPROVED-WITH-REVISIONS` (7
 mandatory, all executed before any number existed), post-op `ACCEPT` with no blockers.
 
-⚑ **And the top open item is no longer "measure it" — it is that THE LANDING IS A RESTRUCTURE, NOT A
-CONSTANT CHANGE.** The naive edit is a provable silent no-op (§3). ⚑ **The cold bias is NOT closed
-and must not be described as closed** (§2, §5.4).
+⚑ **UPDATE — THE LANDING WENT IN THE SAME DAY, owner-approved** (`docs/probe-runs.md` §16, plan
+`2026-08-04-band-hi-LANDING-PLAN.md`). All five pre-stated criteria met, the declared blast radius
+held exactly (**zero fixtures, zero pins**), cross-family post-op `ACCEPT`. §3 below is retained
+because it is _why_ the landing is shaped the way it is, and because the restructure it describes is
+now live code. ⚑ **The cold bias is NOT closed and must not be described as closed** (§2, §5.4), and
+⚑ **nothing on the board moves until footage is RE-EXTRACTED** — the improvement reaches new
+extractions only (§7.1).
 
 Separately, item 7's cheap prerequisite is **ANSWERED** (§1.5) and item 3's population is
 **mis-described in two prior documents** (§1.4).
@@ -190,18 +194,32 @@ untouched, so that was a pass/fail criterion, not a prediction.
 `--marker-geometry`, both on `scripts/probe/analyze-pellet-tracks.py`, both wired into
 `pellet-selftest.sh`. Both selftests were shown to **FIRE when their expectations are violated**.
 
-**Behaviour-touching changes: ZERO.** `debounce_shots`, `count-pellets.py:514`/`:517` and
-`read-pellets.ts:787` are untouched.
+⚑ **THEN THE LANDING WENT IN** (owner-approved, same day — `docs/probe-runs.md` §16):
+
+| SHA        | What                                                                     |
+| ---------- | ------------------------------------------------------------------------ |
+| `a470a7be` | the landing plan, **blast radius declared BEFORE the edit**              |
+| `77dcf930` | **the restructure** — `band_ids` off `tracks`, band hoisted, `--band-hi` |
+| `44069380` | `read-pellets.ts` passes `--band-hi`; docstring corrected                |
+| `f67be274` | `band_hi` registered with the `--load-detections` cache system           |
+
+**Behaviour-touching changes: the measurement pass had ZERO; the landing has ONE** — the decoupled
+band ceiling, in `count-pellets.py` + `read-pellets.ts`. `debounce_shots`' selection logic,
+`_band_lo`, `max_pellet_frames`, `MERGE_EVENT_MIN`, `marker_min` and `pellet_radius` are all still
+untouched. **Zero fixtures and zero pins moved across BOTH passes.**
 
 ## 7. Open, in priority order
 
-1. **⚑ LAND `band_hi = 20` — OWNER-GATED, and it is a RESTRUCTURE (§3).** Both mandatory
-   out-of-sample gates passed, so the evidence bar the pre-commit set is **MET** — the instruction
-   is to take it to the owner as a proposal, not to seek more evidence. ⚑ **Read §3 first**: the
-   naive edit is a silent no-op, `band ⊄ white` afterwards, and consumer enumeration is a
-   prerequisite. Success criteria are pre-stated (pre-commit §5): categorical recovery in the
-   **production** path, `totalShots` + every onset unchanged on all 5 dumps, MISSED unchanged.
-   ⛔ **NOT judged on the cold bias closing.**
+1. ~~**LAND `band_hi = 20`**~~ — ✅ **LANDED 2026-08-04, owner-approved.** Plan
+   `2026-08-04-band-hi-LANDING-PLAN.md`, record `docs/probe-runs.md` §16. All five pre-stated
+   criteria met; the declared blast radius held exactly (**zero fixtures, zero pins**); cross-family
+   post-op `ACCEPT`. ⚑ **Two follow-ups it left open, both recorded in §16E:**
+   (a) **`--dump-tracks` never carries the `band` series**, so any dump replays as pre-hybrid and
+   cannot exercise the landing — a future re-extraction for audit purposes produces band-less dumps.
+   Pre-existing, does not affect the production reader (which parses `--temporal` stdout). Fixing it
+   changes the dump format ⇒ its own blast-radius pass.
+   (b) The improvement reaches **new extractions only** — the committed dumps keep the band values
+   they were extracted with, by design. **Nothing on the board moves until something is re-extracted.**
 2. **⚑ IS THE TARGET ITSELF RIGHT? — promoted, and it now GATES the bias question.** §9A made 8.40
    an f8–11 **window** count. Until "does any marker fade before t0+8?" is settled with owner labels
    at the plateau frame, **no bias-CLOSED verdict is possible whatever the cap does** (§5.4). This

@@ -112,4 +112,29 @@ via **PR**, never a local merge.
 
 ## 7. Result
 
-_(Written only after the landing verifies.)_
+**2026-08-04 — LANDED. Full narrative: `docs/probe-runs.md` §16.**
+
+**All five §3 success criteria MET.** ⚑ **The §2 blast-radius prediction HELD exactly: ZERO fixtures
+moved, ZERO pins moved**, `CACHE_SELFTEST_EXPECT` unchanged at `{9, 6, 6.7, 0.0}`. No §4 hard stop
+fired. Cross-family post-op (`kimi-code/k3`, blind): **`ACCEPT`**, no blockers, contamination check
+clean.
+
+Criterion 2 turned out to be **guaranteed by construction**, not merely observed: the diff never
+touches how `white`/`red`/`marker` are computed, so `totals` and therefore segmentation cannot move.
+The new state is genuinely reachable — `band` differs on 979 frames of `h4-marciana-structural`, with
+`band > white` on 442.
+
+Three things this pass surfaced that the plan did not anticipate:
+
+1. ⚑ **`band_hi` was not registered in `CACHEABLE_PARAMS`** — a knob that changes a
+   `--load-detections` replay's answer, which is exactly the silent-wrong-answer failure that list
+   exists to prevent. Fixed in `f67be274` with an optional-key path so pre-`band_hi` caches replay
+   byte-identically. The post-op review classified this as cosmetic; it was not (§16D).
+2. ⚑ **`--dump-tracks` never carries the `band` series**, so such a dump replays as pre-hybrid and
+   cannot exercise this landing. Pre-existing; does **not** affect the production reader, which
+   parses `--temporal` stdout. Recorded, not fixed — outside the declared blast radius (§16E).
+3. **§5's consumer list was right on substance** — nothing _asserts_ the subset relation, only three
+   docstrings claimed it, all corrected — but the plan's shot-4 note undercounted: **two** of the
+   five pinned owner tracks belong to shot 4, not one (§16E).
+
+⛔ **No bias-closure claim is made or licensed by this landing** (§3, pre-commit §2.5).

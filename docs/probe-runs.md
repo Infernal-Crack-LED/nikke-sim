@@ -5037,3 +5037,93 @@ scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --marker-g
 **NOTHING HERE ENACTS.** `read-pellets.ts`, `count-pellets.py`'s `debounce_shots` and `MARKER_MIN` are
 UNCHANGED. No constant, gate or default moved; no existing fixture was touched; no `DECISIONS.md`
 entry was written. The backend-selector defect (§11) stays owner-gated.
+
+#### §16 THE `band_hi = 20` LANDING — the decoupled band ceiling is IN PRODUCTION; every pre-stated criterion met and ZERO fixtures moved
+
+Owner-approved 2026-08-04 against the proposal in §14. Plan, with its blast radius **declared before
+any production file was touched**: `docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md` (committed at
+`a470a7be`, ahead of the first edit, specifically so the prediction was falsifiable).
+
+##### §16A — What changed
+
+Four edits, in `count-pellets.py` and `read-pellets.ts` only:
+
+1. `--band-hi`, resolved per-call, defaulting to `args.max_pellet_frames`;
+2. `band_ids` built from **`tracks` directly**, no longer as a subset of `pellet_ids`;
+3. the `band` count **hoisted out of the `pellet_ids` skip** in `_frame_pellet_counts`, keeping the
+   radius and non-red conditions;
+4. `read-pellets.ts:787` passes `--band-hi Math.max(4, Math.round((20/60) × fps))` — **20** at
+   60 fps, **10** at 30 fps, exact at both.
+
+⚑ Edits 2 and 3 are the RESTRUCTURE. Without them edit 4 is a **silent no-op** (a life-15 track is
+not in `pellet_ids`, so it could never reach the band). ⚑ **Plan-vs-code divergence, recorded so the
+two do not drift:** the plan specified the argparse default literally as `args.max_pellet_frames`;
+the code uses a `None` sentinel resolved per-call instead, so a `--sweep` combo that overrides
+`max_pellet_frames` without `band_hi` still gets the correctly-rescaled default. Behaviour at the
+default is identical.
+
+##### §16B — The five pre-stated success criteria (plan §3), all MET
+
+| #   | Criterion                                       | Result                                                                                                                                                                                                                                                                                    |
+| --- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Categorical recovery in the **production** path | **MET.** All 5 pinned owner tracks (`6854`/17, `6860`/15, `7071`/16, `8085`/15, `8168`/19) are `in_band_ids` **False at the default, True at 20**; **neither static (life 22, 36) is admitted** under either crosshair or either bound                                                    |
+| 2   | `totalShots` + every event onset UNCHANGED      | **MET, and guaranteed BY CONSTRUCTION** — the diff never alters how `white`/`red`/`marker` are computed, so `totals = white + red` and therefore segmentation cannot move. Corroborated on `h4-marciana-structural`: white/red/marker identical, **totalShots 218/218, onsets identical** |
+| 3   | Pooled MISSED unchanged                         | **MET** — `--missing-shots-selftest` PASS, `MISSED: 1 / MISSED_admissible: 1`, unchanged                                                                                                                                                                                                  |
+| 4   | Default-path byte-identity (the §2(a) proof)    | **MET, empirically.** `count-pellets.py` at `a470a7be` vs post-landing, same input, no `--band-hi`: stdout sha256 `118eac67…` **identical**, stderr identical                                                                                                                             |
+| 5   | Both gates                                      | **MET** — `pellet-selftest.sh` 22 arms TRUE exit 0; `verify.sh` TRUE exit 0                                                                                                                                                                                                               |
+
+##### §16C — The blast-radius prediction HELD: zero fixtures, zero pins
+
+The plan predicted **ZERO** fixture and pin movement and made any mover a HARD STOP. Outcome:
+`git diff --name-only` over `scripts/tests/` and `scripts/regression-snapshot*.json` is **empty**;
+`CACHE_SELFTEST_EXPECT` is unmoved at `{9, 6, 6.7, 0.0}`. ⇒ **This landing changes the reader going
+forward, not the committed record** — existing dumps keep the `band` values they were extracted
+with, by design (plan §2).
+
+The new state is genuinely reachable, not merely permitted: on `h4-marciana-structural`, `band`
+differs on **979 frames** and **`band > white` on 442 frames**.
+
+##### §16D — A defect the post-op review's tail led to, found and fixed
+
+`band_hi` changes a `--load-detections` replay's answer but was **not** in `CACHEABLE_PARAMS` —
+precisely the failure that list exists to prevent (its own header records the Phase H finding: an
+unpersisted knob makes a replay "fall back to argparse defaults… and [return] a plausible-looking
+WRONG answer with no warning"). Fixed in `f67be274`: `band_hi` registered, with
+`CACHEABLE_PARAMS_OPTIONAL` so a pre-`band_hi` cache with no such key still resolves to its own
+`max_pellet_frames` and replays byte-identically (verified against `h1-cache-slice.json`, which is
+exactly that old-cache case). ⚑ The cross-family review classified this as **cosmetic
+discoverability**; it was not.
+
+##### §16E — Known limitations, recorded not fixed
+
+- ⚑ **`--dump-tracks` output never carries the `band` series** — it copies only `white`/`red`/`marker`
+  into the dump's `frame_counts`. Since `debounce_shots` falls back to pre-hybrid behaviour when no
+  frame carries a `band` key, **a `--dump-tracks` dump replays as pre-hybrid and cannot exercise
+  this landing.** Pre-existing (it predates `band_hi`), and it does NOT affect the production reader:
+  `read-pellets.ts` parses `--temporal`'s stdout (`count-pellets.py:1935`), which does carry `band`.
+  ⇒ **A future re-extraction for audit purposes will produce band-less dumps.** Not fixed here —
+  changing the dump format is outside this landing's declared blast radius.
+- **Shot 4's crosshair caveat, corrected:** **two** of the five pinned owner tracks belong to shot 4
+  (`8168`/life 19 and `8085`/life 15), not one. Under the shipped **structural** crosshair `8168` is
+  admitted on 0/19 frames and `8085` on 1/15; under the **template** crosshair its label file
+  actually records (`locate: "template"`) they are 19/19 and 15/15. This is the documented
+  pre-existing shot-4 mislock (trap 9, §9B: 7 radius-rejected / 0 countable for that shot under
+  structural) — **not a regression from this landing.**
+
+##### §16F — Cross-family post-op review
+
+`kimi-code/k3`, blind, on the diff (`scratchpad/gates/2026-08-04-band-hi-landing/`): **`ACCEPT`**, no
+blocking findings, contamination check **clean** this time (the §14J packet error was not repeated).
+It confirmed onset invariance is guaranteed **by construction** rather than by the single-dump probe,
+and that the `None`-sentinel default is a defensible deviation. Its three NOTEs: record the
+plan-vs-code default divergence (§16A), attach the criterion-1/4 evidence (§16B — both since run),
+and the `--load-detections` help-text gap (which turned out to be §16D's real defect).
+
+##### §16G — n, scope, and what this does NOT establish
+
+Criterion 1: 42 labelled owner pellets, ONE clip, ONE unit (`marciana` SG/Iron). Criteria 2–4:
+5 dumps / 4 units / 852 events. ⛔ **THIS DOES NOT CLOSE THE COLD BIAS AND NO BIAS-CLOSED VERDICT IS
+STAMPED** (pre-commit §2.5, plan §3). The landing was judged on categorical pellet recovery and
+invariant preservation only. The ~1.08 per-shot deficit is measured against an f8–11 **window**
+reference (§9A) whose correctness is itself unsettled — that question gates any bias claim, and it
+is untouched here.

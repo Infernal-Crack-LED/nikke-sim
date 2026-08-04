@@ -299,13 +299,14 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
   branch `fix/pellet-reader`, UNPUSHED — read the count live with
   `git rev-list --count origin/fix/pellet-reader..HEAD`, never from a written number.
   `/patch-notes` is owed before anything reaches `main`.
-  - **⚑ TOP ITEM (owner-gated): land `band_hi = 20`, the decoupled lifetime-band ceiling.** Both
-    mandatory out-of-sample gates PASSED (`docs/probe-runs.md` §14; ceiling 3.1% vs a 6.2% reject
-    line, corridor 0.64–0.84/event vs a 2.00 ceiling, 0 of 4 dumps failing). The pre-commit's
-    evidence bar is **MET** — this needs an owner decision, not more measurement.
-    ⚑ **It is a RESTRUCTURE, not a constant change: the naive edit is a provable silent no-op**
-    (`band_ids` is built as a subset of `pellet_ids`, which `_frame_pellet_counts` skips before the
-    band check). Read the handoff's §3 before touching it.
+  - ✅ **`band_hi = 20` LANDED 2026-08-04** (owner-approved; `docs/probe-runs.md` §16, plan
+    `docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md`). All five pre-stated criteria met, the
+    blast radius declared before the edit **held exactly — zero fixtures, zero pins**, cross-family
+    post-op `ACCEPT`. ⚑ **The improvement reaches NEW EXTRACTIONS ONLY** — committed dumps keep the
+    band values they were extracted with, so **nothing on the board moves until footage is
+    re-extracted**. ⚑ Also open from it: `--dump-tracks` never carries the `band` series, so any
+    such dump replays as pre-hybrid and cannot exercise the landing (§16E; production reader is
+    unaffected — it parses `--temporal` stdout).
   - **⚑ The cold bias is NOT closed** and `avgTotal` may not be cited as evidence that it is — it is
     a per-EVENT pooled figure, a different basis from the per-SHOT ~1.08 deficit. Settling the bias
     now gates on whether the 8.40 f8–11 **window** reference is itself right (handoff item 2).
