@@ -24,15 +24,25 @@ Both hand counts also validated the arbiter itself: it reproduces 36 and 23 exac
 3.4× raw-vs-admissible swing is **resolved in favour of the admissible reading (~4.4%)** and the raw
 14.7% is an artifact.
 
-**There is now a LIVE CANDIDATE for the remainder: cluster-merge in `debounce_shots`.** The debouncer
-merges adjacent shots into one event when its gap tolerance is exceeded — **255 of 815 detections
-(31.3%) across all four dumps span more frames than `max_pellet_frames = 7`**, max span 50 frames =
-2.5 cadence periods, and three of the four `guilty` misses are traced to specific merged entries whose
-swallowed shots peak at T = 11–13, i.e. **merge failures, not sensitivity failures**. This is MEASURED
-at the code level on 4 dumps, not conjectured — the distinction that §4's graveyard exists to enforce.
-⚑ What is still UNTESTED is the link to the cold bias itself: a merged event drops a shot from the
-count AND its pellets from the total, so the net sign on pellets-per-shot must be measured, never
-guessed. A separate investigation is running.
+**Cluster-merge in `debounce_shots` is REAL, SMALL, and REFUTED as an explanation of the cold bias**
+(`docs/probe-runs.md` §8). The debouncer does merge adjacent shots into one event when its gap
+tolerance is exceeded, and three of the four `guilty` misses are traced to specific merged entries
+whose swallowed shots peak at T = 11–13 — **merge failures, not sensitivity failures**. But the size
+is **31 of 815 events (3.8%)** against the cadence period, ~**20 shots pooled = 2.6%** of ammo shots
+by the arbiter, which is **roughly one third of the arbiter-visible missing-shot channel** and about
+**one eighth** of what the earlier `frames > max_pellet_frames` framing suggested. And it is **not
+the cold bias**: both minimal fixes read **bit-identical to shipped on all 5 owner-labelled
+`marciana` (SG/Iron) shots**, and every merge fix moves pooled `avgTotal` by ≤ 0.007 against a
+**1.08 pellets/shot** deficit — some of them in the wrong direction.
+
+⚑ **Status of the remainder, honestly:** it is **OPEN again**. The missing-shot channel is real but
+partial, and merging is only part of it; the ~1.08 pellets/shot gap now has **no measured
+explanation**. The newly-identified lead is the **REPRESENTATIVE-FRAME POLICY** — `debounce_shots`
+copies each event's count from ONE frame, the active frame nearest the **median**, and on the 5
+owner-labelled shots median reads **−1.40 COLD** while max-of-event reads **+4.20 HOT**. That is
+**HYPOTHESIS strength, n=5, post-hoc** — no policy is proposed — but it has a **REUSE path needing no
+new labels and no owner footage**: score representative policies against `real-fidelity-slice.json`
+and the `groundtruth-f8-11` crops (`docs/probe-runs.md` §8G, and the `QUEUE.md` item).
 
 ## 1. What was settled 2026-08-01 — all recorded in `docs/probe-runs.md`
 
@@ -119,6 +129,21 @@ artifact IS before reasoning from its contents.
 7. **Prefer SYNCHRONOUS subagents and commit per item.** Three background subagents lost completion
    records to process exits on 2026-07-31; committed work survived every time.
 8. **Headless sessions: never background a shell command** — foreground with an explicit timeout.
+9. **`max_pellet_frames` is a PER-BLOB TRACK-LIFETIME cap, NOT an event-span budget — never compare
+   it to an event's `frames`.** It is passed to `count-pellets.py` as `--max-pellet-frames` and read
+   at `count-pellets.py:380` / `:450` to decide which TRACKS count as pellets; **`debounce_shots`
+   never reads it.** This trap cost a whole framing: it produced the "31.3% of detections are merged"
+   headline, which is **~8× too large** — the meaningful denominator is the **cadence period**, and
+   the real figure is 3.8% (`docs/probe-runs.md` §8A). ⚑ It also has a rounding trap: the shipped
+   value comes from JS `Math.round((13/60) × fps)`, which is half-UP, so at 30 fps it is **7**, where
+   a naive Python `round(6.5)` gives 6 (banker's rounding).
+10. **`debounce_shots` exists TWICE — `count-pellets.py:489` and `read-pellets.ts:627` — as two
+    independent implementations, not a shared module.** Any segmentation change must land in both.
+    ⚑ And they may **already be one event apart**: the Python replay reproduces the shipped
+    `pellets.json` summaries exactly on 7 of 8 dumps, but on `h4-marciana` (`marciana`, SG/Iron) reads
+    `validShots` 177 / `avgTotal` 7.2 / `avgRed` 0.15 against the shipped 176 / 7.3 / 0.14 — one extra
+    core-flagged valid event, probably a median tie-break (a strict `<` against `<=` on the distance-to-median comparison). NOT chased
+    (`docs/probe-runs.md` §8H). Do not assume lockstep; verify it on the dump you are using.
 
 ## 6. Landed state
 
@@ -128,7 +153,7 @@ sentence itself is committed. Read it live: `git rev-list --count origin/fix/pel
 The last owner-authorised push was `8d75008`. `main` carries `eb1fde5`
 (the sg-calc spec correction), which is NOT on this branch.
 
-`bash scripts/verify.sh` → true exit 0. `bash scripts/probe/pellet-selftest.sh` → true exit 0, 15
+`bash scripts/verify.sh` → true exit 0. `bash scripts/probe/pellet-selftest.sh` → true exit 0, 16
 arms. **`/patch-notes` is owed before anything reaches `main`, which is still deliberately held.**
 
 Instruments landed today, all committed at named paths with pinning fixtures:
@@ -165,6 +190,17 @@ python3 scripts/probe/analyze-pellet-tracks.py --hand-count \
 magazine segments (9/9/5) separated by two reloads. The field is a **pure passthrough entering no
 arithmetic**, so nothing in the reading depends on it.
 
+Landed 2026-08-04: **`analyze-pellet-tracks.py --merge-audit`** (fixture `merge-audit-slice.json`,
+`--merge-audit-selftest`, wired into `pellet-selftest.sh` as its 16th arm) — the instrument behind
+`docs/probe-runs.md` §8. It scores the over-span census against **both** denominators side by side
+(so the `max_pellet_frames` category error is visible rather than repeated), the ammo-arbiter
+excess-lost count, and six candidate segmentation rules on MISSED / unexplained-SPURIOUS /
+`avgTotal`. **`debounce_shots` is UNTOUCHED in both implementations**: every candidate is a local
+scoring variant inside the audit, and a **shipped-identity control** asserts the local span rebuild
+reproduces `count-pellets.py`'s `debounce_shots` event for event before anything is scored — it runs
+in the selftest and again before every live run. No pre-existing fixture's `_expected` moved.
+Re-run verbatim: `docs/probe-runs.md` §8J (⚑ two invocations, pooling different sets on purpose).
+
 ## 7. Open, in priority order
 
 **The top item is now #1, the science — because the instrument's biggest advertised lever turned out
@@ -172,25 +208,27 @@ not to exist.** Localization was item 1 one commit ago on a +14.3 to +17.1 pp es
 is REFUTED (`docs/probe-runs.md` §6) and what remains of it is a small, explicitly not-recommended
 build, so it drops to the bottom of the instrument items.
 
-1. **The remainder of the cold bias — still the headline question, and it now HAS a live candidate:
-   cluster-merge in `debounce_shots`.** After the partial missing-shot channel, roughly half to
-   three-quarters of the 0.8–1.6 pellets/10 was unaccounted for. The candidate is that the debouncer
-   merges adjacent shots into one event: **255 of 815 detections (31.3%) across all four dumps span
-   more frames than `max_pellet_frames = 7`** (`isabel` 62/203, max span 50; `guilty` 43/180, max 28;
-   `marciana` (SG/Iron) 67/218, max 29; `noir` 83/214, max 49), and three of the four `guilty`
-   hand-count misses are traced to **specific merged entries** — f1307 (`frames` 27) swallowing f1326,
-   f1427 (24) swallowing f1446, f1618 (28) swallowing f1637 — whose swallowed shots peak at T = 11–13,
-   far above threshold. Merge failures, not sensitivity failures. Full record: `docs/probe-runs.md` §7.
+1. **The remainder of the cold bias — still the headline question, and it is OPEN with NO measured
+   explanation.** Cluster-merge in `debounce_shots` was the live candidate; it is now **measured,
+   small, and missing-shot-channel only** (`docs/probe-runs.md` §8). Against the cadence period the
+   prevalence is **31 of 815 events (3.8%)**, not the 31.3% the `frames > max_pellet_frames` framing
+   gave — `max_pellet_frames` is a **per-blob track-lifetime cap** and the comparison was a category
+   error. By the ammo arbiter the merge costs ~**20 shots pooled = 2.6%**, roughly **one third** of
+   the arbiter-visible missing-shot channel. The three named `guilty` entries and their swallowed
+   shots stand exactly as recorded; only the size changed.
 
-   **The §4 discipline still applies, and this candidate is on the right side of it.** §4's graveyard
-   is what happens when a candidate is MANUFACTURED — reasoned out of a stale spec header or a
-   hand-picked fixture without checking what the artifact was. This one is **MEASURED at the code
-   level across 4 dumps**, with three named entries and their swallowed shots. Do not let that
-   licence a fourth graveyard entry: ⚑ **the link from cluster-merge to the cold bias is UNTESTED.**
-   A merged event drops a shot from the count AND its pellets from the total, so the net sign on
-   pellets-per-shot must be measured, not guessed. ⚑ And **the fourth `guilty` miss (f1787) is NOT
-   explained by it** — peak T = 8, on a fully-measured lock, at post-reload crosshair re-acquisition;
-   mechanism unknown.
+   ⚑ **REFUTED as the cold bias.** Both minimal fixes read **bit-identical to shipped on all 5
+   owner-labelled `marciana` (SG/Iron) shots** in `groundtruth-f8-11.json`, and every merge fix moves
+   pooled `avgTotal` by ≤ 0.007 against a **1.08 pellets/shot** deficit — two of the variants in the
+   wrong direction. ⚑ And **the fourth `guilty` miss (f1787) is still NOT explained** — peak T = 8, on
+   a fully-measured lock, at post-reload crosshair re-acquisition; mechanism unknown.
+
+   **The new lead is the REPRESENTATIVE-FRAME POLICY**, which is upstream of segmentation and
+   unaffected by it: `debounce_shots` copies each event's count from ONE frame, the active frame
+   nearest the **median** of the event's active frames, and sums nothing. On the 5 owner-labelled
+   shots median reads **−1.40 COLD**, max-of-event **+4.20 HOT**. ⚑ **HYPOTHESIS, n = 5, post-hoc — no
+   policy is proposed.** The way to settle it is a **REUSE path needing no new labels**:
+   `real-fidelity-slice.json` + the `groundtruth-f8-11` crops (`docs/probe-runs.md` §8G).
 
    ⚑ Note that §6 CLOSED two would-be candidates rather than opening any: stale locks bound at ~0.2
    pellets/10 **with the wrong sign** (excluding them makes counts colder), and recovering them would
@@ -198,9 +236,14 @@ build, so it drops to the bottom of the instrument items.
    the miss mechanism: **3 of its 4 missed shots sit on FULLY-MEASURED locks**, and stale share during
    the three firing spans is 1.4% (6/420) against 24.5% window-wide.
 
-   **⚠ Blast radius, and why this is OWNER-GATED.** Changing `debounce_shots` moves every detected
-   shot in every dump and therefore **every number in `docs/probe-runs.md` §3b onward**, plus the
-   committed fixtures pinning them. It is not a change for the session that discovers it.
+   **⚠ Blast radius, and why a `debounce_shots` change stays OWNER-GATED.** Two minimal fixes are
+   costed in §8F — `cap_cadence` (~3 LOC) and `resplit` (~10 LOC) — and both cut pooled MISSED from
+   **7.0% to 4.2–4.5%** while beating shipped on the `guilty` hand window. But changing
+   `debounce_shots` moves every detected shot in every dump: **3 committed fixtures FAIL and need
+   regeneration** (`missing-shots-slice.json`, `hand-count-slice.json`, `stale-counting-slice.json`;
+   5 pass unaffected), and **`read-pellets.ts:627` is a second implementation that must change in
+   lockstep**. It is not a change for the session that discovers it — and it buys a missing-shot
+   improvement, **not** a cold-bias fix.
 
 2. **The generator's radial envelope — now the top INSTRUMENT item.** It places every label strictly
    inside the counting window (884 labels, r=42.0–157.1) while ~10% of real marks fall outside. **No
