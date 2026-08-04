@@ -3153,6 +3153,14 @@ the four `guilty` misses are traced to specific entries:**
 The swallowed shots peak at **T = 11 and T = 13**, well above threshold. **These are merge failures,
 not sensitivity failures** — the pellets were seen; the event boundary was not drawn.
 
+**SUPERSEDED (2026-08-04) — disregard the whole of this prevalence block, headline and table, see
+§8A.** `max_pellet_frames` is a **per-blob track-lifetime cap** (`count-pellets.py:380` / `:450`);
+`debounce_shots` never reads it, and an event's `frames` is a **per-event span**. Comparing the two
+is a category error. Measured against the **cadence period** instead, the prevalence is **31 of 815
+(3.8%)**, not 255 of 815 (31.3%) — the merge channel is **~8× smaller** than the block below
+records. The per-dump over-spanning counts and max spans below are arithmetically correct for the
+`frames > 7` predicate; it is the predicate that is wrong.
+
 **Cross-dump prevalence — 255 of 815 detections (31.3%) span more frames than `max_pellet_frames = 7`:**
 
 | dump                                           | over-spanning | share     | max span |
@@ -3290,6 +3298,12 @@ agreement as corroboration).
 - **Whether the merge explains the cold-bias remainder is UNTESTED.** A merged event drops a shot from
   the count AND its pellets from the total, so **the net sign on pellets-per-shot is not obvious and
   must not be guessed.** An investigation is running separately.
+  **SUPERSEDED (2026-08-04) — disregard: that investigation ran and the answer is NO (§8D).** The
+  sign is COLD (a merged event's median-representative frame falls), but the magnitude is
+  negligible — and both merge fixes read **bit-identical to shipped on all five owner-labelled
+  `marciana` (SG/Iron) shots**. The premise in this bullet is also wrong on its own terms: a merged
+  event does **not** drop its pellets from the total, because `debounce_shots` copies the count from
+  **one representative frame** and sums nothing (`count-pellets.py:514-536`).
 
 ##### §7.11 — Evidence tiers, stated so nothing here is over-read later
 
@@ -3299,6 +3313,12 @@ agreement as corroboration).
 | It causes specific missed shots                      | **DEMONSTRATED** for 3 named entries on `guilty`           |
 | The ~17% per-event miss rate                         | **n=2 windows, MEDIUM** — replicated, small n, below n ≥ 5 |
 | The cold-bias link                                   | **HYPOTHESIS, untested**                                   |
+
+**SUPERSEDED (2026-08-04) — two rows of the table above, see §8.** Row 1's **31.3% is the category
+error** (§8A): merge prevalence against the cadence period is **31 of 815 = 3.8%**, and the
+arbiter-visible cost is **~20 shots pooled = 2.6%**. Existence and the code-level mechanism stand;
+only the size was wrong. Row 4's cold-bias link is no longer a hypothesis — it is **REFUTED**
+(§8D). Rows 2 and 3 stand unchanged.
 
 ##### Confounds, each with a verdict
 
@@ -3342,3 +3362,234 @@ python3 scripts/probe/analyze-pellet-tracks.py --hand-count-selftest
 here, not a magazine count — the window holds three magazine segments (9/9/5) separated by two
 reloads. The field is a **pure passthrough that enters no arithmetic**, so the reading is unaffected;
 it is recorded so the numbers above can be reproduced verbatim.
+
+#### §8 THE MERGE AUDIT — the cluster-merge is REAL but ~8× SMALLER, and it does NOT explain the cold bias
+
+Closes the investigation §7.10 said was "running separately". It corrects §7.2's sizing, refutes
+§7.11's cold-bias row, and costs the two minimal fixes that do help — without enacting any of them.
+
+##### §8A — THE 31.3% FIGURE IS A CATEGORY ERROR (this is the important correction)
+
+`max_pellet_frames` is a **per-blob TRACK-LIFETIME cap**. It is used at `count-pellets.py:380`
+(`temporal_filter`) and `:450` (`build_tracks_and_counts`) to decide which tracks count as pellets at
+all, and **`debounce_shots` never reads it.** `read-pellets.ts:505` sets it as
+`max(4, round((13/60) × fps))` = **7 at 30 fps**, from the owner spec's "pellet markers last ~13 game
+frames". A shot event's `frames` field is a **per-event span**. Comparing a per-blob budget to a
+per-event span is apples to oranges, and §7.2 built its headline on that comparison.
+
+Measured against the **cadence period** instead — 20 frames at 30 fps, the measured mode on every
+dump, and the only span above which an event demonstrably had room for two shots:
+
+| dump                                | events  | `frames > 7` | **`frames > cadence`** | max span |
+| ----------------------------------- | ------- | ------------ | ---------------------- | -------- |
+| `h4-isabel`                         | 203     | 62           | **7**                  | 50       |
+| `h4-guilty`                         | 180     | 43           | **5**                  | 28       |
+| `h4-marciana` (`marciana`, SG/Iron) | 218     | 67           | **4**                  | 29       |
+| `g2-noir`                           | 214     | 83           | **15**                 | 49       |
+| **pooled**                          | **815** | 255 (31.3%)  | **31 (3.8%)**          |          |
+
+**The merge channel is ~8× smaller than §7.2 records.**
+
+##### §8B — The exact segmentation rule, read off the code
+
+`debounce_shots` (`count-pellets.py:489`) works on `T[i] = white[i] + red[i]`. It **starts** an event
+at the first frame with `T ≥ event_min` (3, a hardcoded local); **continues** while `T ≥ 3`,
+**bridging** any sub-threshold run of length `≤ max_gap`; **ends** when that run exceeds `max_gap`;
+and emits only if `event_frames ≥ 2`. `max_gap = max(3, round(fps × 0.13))` = **4 at 30 fps, 8 at
+60 fps**. `min_pellets` / `max_pellets` (5 / 10) are **not segmentation** — they are the post-hoc
+`valid` clamp that `avgTotal` averages over. `marker_min = 2` only sets the core flag.
+
+##### §8C — Shots actually lost to merging: ~20, a 2.6% floor
+
+Ammo-arbiter method: expand every decrement into one slot per round, count the slots falling inside
+each over-span event, excess = slots − 1 (one slot is the event's own shot and is not lost).
+
+| dump                                | over-span events | ammo shots inside | **excess lost**     |
+| ----------------------------------- | ---------------- | ----------------- | ------------------- |
+| `h4-isabel`                         | 7                | 11                | **5**               |
+| `h4-guilty`                         | 5                | 7                 | **3**               |
+| `h4-marciana` (`marciana`, SG/Iron) | 4                | 3                 | **1**               |
+| `g2-noir`                           | 15               | 24                | **11**              |
+| `i3-noir-near-60`                   | 2                | 4                 | 2                   |
+| `gt-marciana-60`                    | 1                | 2                 | 1                   |
+| **pooled, 4 full fights**           | **31**           | **45**            | **20 / 770 = 2.6%** |
+
+**Cross-check passed.** On the `guilty` hand window the replay names exactly the three known merges
+(`start` 1306 swallowing 1326, 1426 swallowing 1446, 1617 swallowing 1637), independently finds the
+fourth miss (**1787**, covered by no event at all — a sensitivity / lock miss, **not** a merge) and
+the one false positive (1456), reproducing §7.5 exactly.
+
+⚑ **This is a FLOOR, not a total.** The arbiter is blind to magazine-emptying rounds (the counter is
+blank through the reload animation) and recovered only 2 of the 3 hand-confirmed window merges. At
+that recall the true pooled loss is ≈30 shots ≈3.7% — but **that scaling is n=1 and NOT measured**.
+
+##### §8D — ⚑ THE MERGE DOES NOT EXPLAIN THE COLD BIAS — the candidacy is REFUTED
+
+**How a merged event reports its count** (`count-pellets.py:514-536`): the event's `white` is copied
+from a **single representative frame** — the active frame whose `total` is closest to the **median**
+of all active frames. `red` is a 0/1 core flag; `total = rep.white + red`. **Nothing is summed.**
+`read-pellets.ts:663` documents the rationale (the median rejects transient VFX spikes that the old
+max-of-event policy reported). So merging roughly doubles the active-frame set — folding in the
+first blast's decay tail and the inter-shot trough — and the median falls. **The merge IS cold**,
+via median-over-a-longer-window. On the 31 over-span events: shipped mean **5.81**, re-split mean
+**6.55**.
+
+**But the magnitude is negligible.** Recomputed pooled `avgTotal` over the four full fights: shipped
+**7.3242**; `cap_cadence` 7.3214 (**−0.003**); `resplit` 7.3170 (**−0.007**); `gap2` 7.3492
+(+0.025); `gap1` 7.3967 (+0.072); `candA` 7.1767 (−0.148). The deficit to close is
+**8.4 − 7.32 = 1.08 pellets/shot**. The merge fix delivers **0.3%–6.7%** of it, and **the two
+best-scoring variants deliver the WRONG SIGN.**
+
+**The decisive check — an existing labelled fixture, not a new derivation.** The 5 owner-labelled
+`marciana` (SG/Iron) shots in `groundtruth-f8-11.json` (mean 8.40):
+
+| t0       | owner    | shipped  | `cap_cadence` | `resplit` |
+| -------- | -------- | -------- | ------------- | --------- |
+| 1060     | 7        | 6        | 6             | 6         |
+| 1096     | 10       | 8        | 8             | 8         |
+| 1140     | 8        | 9        | 9             | 9         |
+| 1289     | 9        | **4**    | **4**         | **4**     |
+| 1369     | 8        | 8        | 8             | 8         |
+| **mean** | **8.40** | **7.00** | **7.00**      | **7.00**  |
+
+**Bit-identical on all five. The merge fixes cannot be the cold bias.** (⚑ Shot 4 at `t0` 1289
+carries a −5 residual on its own and is the fixture's documented structural-mislock shot,
+`locate: "template"`; excluding it, shipped reads 7.75 against the owner's 8.25.)
+
+##### §8E — `candA` OVERFITS — REFUTED, do not re-propose
+
+The peak-detector rule (`T[i] ≥ 5` ∧ `T[i] − max(T[i−4…i−1]) ≥ 4` ∧ `T[i] > T[i+1]` ∧ a 12-frame
+refractory), scored against the ammo arbiter on 8 series / 830 ammo shots: **pooled MISSED
+7.0% → 14.5%.** It **doubles the very quantity this thread exists to reduce**, and is worse than
+shipped on **7 of 8 series** (`marciana` (SG/Iron) MISSED 16 vs 1; `noir` 24 vs 13; `isabel` 38 vs
+30). On the `isabel` hand window it detects **32 against a hand count of 36 — worse than shipped's 34.** Its `guilty` win (precision 1.000 / recall 0.957) is the one window it was tuned on.
+
+Its single `guilty` miss is diagnostic: it fires on **f1276**, an isolated **one-frame** `T = 7` VFX
+spike inside a reload window, and its refractory then suppresses the real first round — **it has no
+minimum-duration guard at all**, where shipped enforces `event_frames ≥ 2`.
+
+##### §8F — Two minimal fixes DO beat shipped everywhere — COSTED, NOT ADOPTED
+
+Same arbiter basis (8 series, 830 ammo shots), plus the `guilty` hand window (23 true onsets,
+tolerance 8):
+
+| rule                                                                  | pooled MISSED   | pooled spurious _unexplained_ | `guilty` precision | `guilty` recall | `avgTotal` change |
+| --------------------------------------------------------------------- | --------------- | ----------------------------- | ------------------ | --------------- | ----------------- |
+| shipped                                                               | 58 (7.0%)       | 5                             | 0.950              | 0.826           | —                 |
+| **`cap_cadence`** (force-close at 0.9× cadence, reopen; **~3 LOC**)   | **35 (4.2%)**   | 9                             | **0.957**          | **0.957**       | −0.003            |
+| **`resplit`** (post-pass split at internal rising edges; **~10 LOC**) | **37 (4.5%)**   | **7**                         | **0.957**          | **0.957**       | −0.007            |
+| `gap2` / `gap1` (tighten `max_gap`)                                   | 43 / 45         | **28 / 48**                   | 0.840              | 0.913           | +0.025 / +0.072   |
+| `candA`                                                               | **120 (14.5%)** | 0                             | 1.000              | 0.957           | −0.148            |
+
+`gap1` / `gap2` are the only variants that move `avgTotal` warm, and they buy it by fragmenting
+single blasts — unexplained spurious 5 → 28 / 48. **They trade a real channel for a fake one.**
+
+**Blast radius, measured empirically** by patching a scratch copy and running every selftest:
+**3 fixtures FAIL and would need regeneration** — `missing-shots-slice.json`
+(`shots_detected_total` 37 → 38, `MISSED` 1 → 0), `hand-count-slice.json` (`detected_t0` gains
+1390 / 1657 / 1727 / 1745, `MISSED` 11 → 9, `SPURIOUS` 5 → 7, `MISSED_vs_hand` 4 → 0),
+`stale-counting-slice.json` (`n_counting_frames` 43 → 51, `counting_stale_pct` 9.3 → 7.84). **5 PASS
+unaffected.** **`read-pellets.ts:627` is a SECOND implementation of the same algorithm and must
+change in lockstep — it is not a shared module.** ⚑ ESTIMATE, re-extraction compute: **essentially
+zero** (entirely downstream of the cached `frame_counts`; re-segmenting all 8 dumps took < 0.01 s);
+fixture regeneration ~1–2 min. A full rebuild through `read-pellets.ts` would be ~430 s/video ≈ 30
+min for 4 videos.
+
+##### §8G — The real lever: the REPRESENTATIVE-FRAME policy — ⚑ HYPOTHESIS, n=5, post-hoc, NOT ENACTABLE
+
+The representative-frame policy is **upstream of segmentation and unaffected by it**. Holding
+segmentation at shipped and varying only the representative:
+
+| policy               | pooled `avgTotal` | the 5 owner shots read | mean vs owner 8.40    |
+| -------------------- | ----------------- | ---------------------- | --------------------- |
+| **median (shipped)** | 7.32              | 6 / 8 / 9 / 4 / 8      | **7.00 (−1.40 COLD)** |
+| 75th percentile      | 8.11              | 7 / 10 / 9 / 5 / 9     | 8.00 (−0.40)          |
+| max of event         | 8.64              | 10 / 14 / 11 / 15 / 13 | 12.60 (+4.20 HOT)     |
+
+Median is cold, max is hot, truth is between — exactly the trade the `read-pellets.ts` comment says
+the median was chosen to make. **⚑ The 75th percentile was picked AFTER seeing the other two, on n=5
+from one clip. It is a fitted number, not a measurement, and it is NOT proposed.**
+
+**What would settle it is a REUSE path needing NO new labels and no owner footage:** score
+representative policies against `real-fidelity-slice.json` (the xy-matched real-pellet set) and the
+`groundtruth-f8-11` crops on more than 5 labelled shots — that decides whether the high frames are
+VFX spikes (median right) or real pellets (median wrong). ⚑ **Confound: the `valid` clamp** — the
+75th percentile pushes 118 more events past `max_pellets = 10` and out of the average entirely.
+
+##### §8H — ⚑ A pre-existing Python / TypeScript divergence, found in passing and NOT chased
+
+The replay reproduces the shipped `pellets.json` summaries **exactly on 7 of 8 dumps**, but on
+`h4-marciana` (`marciana`, SG/Iron) reads `validShots` 177 / `avgTotal` 7.2 / `avgRed` 0.15 against
+the shipped 176 / 7.3 / 0.14 — **one extra core-flagged valid event**, probably a median tie-break
+(a strict `<` against `<=` on the distance-to-median comparison) or a marker difference. **The standing "keep `count-pellets.py` and
+`read-pellets.ts` in lockstep" invariant may ALREADY be one event off on that dump.**
+
+##### §8I — ⚑ ONE ROW OF §8F DID NOT REPRODUCE FROM ITS OWN DESCRIPTION
+
+The committed instrument (§8J) reproduces every figure above bit-exactly **except `cap_cadence`'s
+row**. Implementing that row's stated rule literally — force-close a running event once it has
+spanned `round(0.9 × cadence)` frames and reopen at the same frame — the instrument measures
+**MISSED 37 (4.5%)**, unexplained 11, `avgTotal` change −0.019, not the 35 / 9 / −0.003 tabled above.
+Every neighbouring semantic (close-and-reopen one frame later, cap on active-frame count rather than
+span, cap at the trough, a post-pass restricted to over-span events, and multipliers 0.85 → 1.15)
+was tried; the 0.9× family robustly lands on **37**, and only a **1.0×** cadence cap reaches 35.
+**The exact parameterisation behind the tabled `cap_cadence` row was not carried over with the
+finding, so the row is not independently reproducible.** `resplit`'s MISSED (37) and unexplained (7)
+both reproduce exactly.
+
+**This changes nothing that matters.** Both minimal fixes still cut pooled MISSED from 7.0% to
+4.2–4.5%, both still move `avgTotal` COLD by less than 0.02, and neither is adopted. It is recorded
+so a later session does not read `cap_cadence = 35` as a re-runnable measurement.
+
+##### Confounds, each with a verdict
+
+- **"31.3% of detections are merged" — REFUTED as a category error (§8A).** The denominator was a
+  per-blob track-lifetime cap; against the cadence period the figure is 3.8%.
+- **"A merged event drops its pellets from the total" — REFUTED (§8D).** `debounce_shots` copies one
+  representative frame's count and sums nothing.
+- **"The merge is the cold bias" — REFUTED on an existing labelled fixture (§8D).** Both fixes read
+  bit-identical to shipped on all 5 owner-labelled shots.
+- **Fixing the merge could be a net loss — CHECKED (§8F).** `gap1` / `gap2` cut MISSED but multiply
+  unexplained spurious 5 → 28 / 48; `candA` doubles MISSED. Only `cap_cadence` and `resplit` improve
+  both columns at once.
+- **The arbiter's own blind spot — STATED, NOT NETTED (§8C).** Magazine-emptying rounds are invisible
+  to the ammo counter, so 20 shots is a floor; the ≈30 extrapolation is n=1 and not measured.
+- **Representative-policy fitting — DECLARED (§8G).** The 75th percentile was chosen after seeing the
+  alternatives, on n=5 from one clip. HYPOTHESIS only, with a named reuse path to settle it.
+- **n and scope.** 8 ammo series, 4 of them full fights; 815 shipped events and 830 ammo shots on the
+  scorecard basis. The cold-bias refutation rests on **5 owner-labelled shots** — small, but they are
+  the only owner-labelled per-shot pellet counts that exist, and the result is a bit-identical
+  match rather than a close one.
+
+**NOTHING HERE ENACTS A CHANGE.** `debounce_shots` is UNTOUCHED, in both `count-pellets.py` and
+`read-pellets.ts`; every candidate rule lives inside the audit as a local scoring variant, and the
+instrument asserts a shipped-identity control before it scores anything. No guard, gate, threshold or
+constant was changed; no `DECISIONS.md` entry was edited.
+
+##### §8J — Instrument and reproduction
+
+`scripts/probe/analyze-pellet-tracks.py --merge-audit`, self-validated against the committed slice
+`scripts/tests/fixtures/pellets/merge-audit-slice.json` and registered in
+`scripts/probe/pellet-selftest.sh`.
+
+```sh
+# <dump>-ammo.json comes from count-pellets.py --ammo-series exactly as in §3b.
+B=/Users/maxwellsutton/nikke-sim/scratchpad/pellets/_missingshot_tmp
+# the SCORECARD basis -- 8 series, 830 ammo shots (§8E, §8F):
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --merge-audit \
+  $B/h4-isabel-ammo.json $B/h4-guilty-ammo.json $B/h4-marciana-ammo.json $B/g2-noir-ammo.json \
+  $B/gt-ammo-series.json $B/i2-marciana-60fps-ammo.json $B/i3-noir-far-60fps-ammo.json \
+  $B/i3-noir-near-60fps-ammo.json \
+  --merge-audit-fps 30 30 30 30 60 60 60 60 --merge-audit-slack 8 8 8 8 6 6 6 6
+# the CENSUS / ARBITER / avgTotal basis -- the 4 full fights (§8A, §8C, §8D):
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --merge-audit \
+  $B/h4-isabel-ammo.json $B/h4-guilty-ammo.json $B/h4-marciana-ammo.json $B/g2-noir-ammo.json \
+  --merge-audit-fps 30 --merge-audit-slack 8
+# replay the committed slice -- no images, no subprocess, no tracks.json:
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --merge-audit-selftest
+```
+
+⚑ **The two invocations pool different sets on purpose** and the §8 tables say which is which: MISSED
+is pooled over all 8 series (830 ammo shots), while the over-span census, the arbiter and every
+`avgTotal` are pooled over the 4 full fights (815 events, 770 ammo shots). Passing one set and
+reading the other's figure is the easiest way to misquote this entry.
