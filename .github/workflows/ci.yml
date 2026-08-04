@@ -3,15 +3,17 @@ name: CI
 # Runs the safety checks on every PR into main and on pushes to main.
 # Make these checks "required" in the branch ruleset so nothing merges red.
 #
-# Two tiers run here, and together they are what the deploy box does:
+# Two tiers run here:
 #   `verify.sh full`      — THE correctness gate (typecheck, validations, regressions,
 #                           vitest, web build + client smoke).
-#   `verify.sh artifacts` — the BUILD-OUTPUT tier, byte-identical to railway.json's
-#                           buildCommand: rebuilds the boards, then the DPS-chart and
-#                           rank-board SMOKES, infographics pre-generation and the
-#                           server bundle.
-# deploy.yml runs the same pair before `railway up`, so a PR fails on exactly the step
-# a deploy would.
+#   `verify.sh artifacts` — the BUILD-OUTPUT tier: the DPS-chart and rank-board
+#                           SMOKES, infographics pre-generation and the server bundle.
+#                           On the deploy box (railway.json buildCommand) it also
+#                           BUILDS the boards; PR CI sets SKIP_BOARD_BUILD and smokes
+#                           the FETCHED boards instead (Step 0 of the artifact-
+#                           decoupling plan — see the fetch step below).
+# deploy.yml runs the same pair before `railway up` (there WITH the board build,
+# as the hard pre-deploy gate), so a PR fails on exactly the step a deploy would.
 #
 # The artifacts tier was added to CI on 2026-08-02, after two failures reached a deploy
 # that CI was green on. `verify.sh full` does not run web-smoke-ranks.mjs /
@@ -56,21 +58,32 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Build the rank boards BEFORE the gate, so vitest sees them (2026-08-01).
-      # web/public/{dpschart,burstgen,bufferchart,sustain,burstcdr}.json are
-      # gitignored build outputs, and the tests that join against them SKIP when
-      # they're absent — measured, unit-card-data.test.ts is 25/25 with the boards
-      # and 10 pass + 15 SKIP without (whole suite: 8 skipped vs 23). Nothing
-      # automated built them, so the live board join had no CI coverage at all.
+      # Supply the rank boards BEFORE the gate, so vitest sees them (2026-08-01) —
+      # since 2026-08-04 by FETCHING the published set instead of building it
+      # (Step 0 of docs/handoffs/2026-08-03-artifact-store-decoupling-plan.md).
+      # The build this replaced cost 472s on an engine PR (434s dpschart full
+      # rebuild + ranks:all): the incremental skip gate cannot prove an engine
+      # edit moved no unit's damage, so it correctly declines to fire there —
+      # the rebuild WAS the step. Fetching turns it into ~1s.
       #
-      # Deliberately a WORKFLOW STEP and not part of the `full` tier: a fresh
-      # isolated engine worktree (CLAUDE.md constraint 8) must still be able to run
-      # `verify.sh full` without a board build, which is exactly why they were
-      # excluded from it. Affordable only since `npm run dpschart` went 245s -> 16s
-      # worst case; in practice it's seconds, because the skip gate carries over
-      # every unit whose inputs match the live artifact.
-      - name: Build rank-board artifacts (un-skips the board-join tests)
-        run: npm run dpschart && npm run ranks:all
+      # The board-join tests un-skip against the fetched set exactly as they did
+      # against the built one: they are shape/join checks (slugs ⊆ roster, fixed
+      # card geometry, rank/index consistency), not engine-vs-artifact value
+      # parity, so a published artifact that is STALE w.r.t. the branch still
+      # exercises them meaningfully. Staleness is self-healing: deploy.yml still
+      # BUILDS the boards pre-deploy (the hard gate) and the Railway build
+      # regenerates them from the merged branch, so a stale artifact is rebuilt
+      # AT deploy time. Still a workflow step and not part of the `full` tier: a
+      # fresh isolated engine worktree (CLAUDE.md constraint 8) must still be
+      # able to run `verify.sh full` without boards present.
+      - name: Fetch published board artifacts (Step 0 — no board build on PR CI)
+        run: npx tsx scripts/fetch-published-boards.ts
+      # Recomputes this branch's dpschart input hash (scripts/artifact-input-hash.ts,
+      # the SSOT the builder shares) and compares it against the fetched artifact.
+      # ADVISORY — never fails CI (owner decision 2026-08-04, plan §5/§8): it
+      # names the drift and the refresh command, and the deploy path rebuilds.
+      - name: Board freshness vs this branch (advisory)
+        run: npx tsx scripts/check-board-freshness.ts
 
       # verify.sh runs `npm run typecheck` as its FIRST step and `npm run web:build`
       # + the client smoke (i.e. `npm test`) as its last, so this one step is a strict
@@ -82,9 +95,12 @@ jobs:
 
       # The tier the deploy box runs (railway.json buildCommand). Kept as its own step
       # so a red artifact smoke is legible as such instead of hiding inside the gate.
-      # It rebuilds the boards the step above already built — cheap, because both
-      # builders skip every unit whose inputs match the live artifact — and that
-      # redundancy is deliberate: this step stays a faithful stand-in for the deploy
-      # box rather than depending on earlier steps having primed it.
+      # Step-0 difference: SKIP_BOARD_BUILD=1 skips the board builders inside the tier
+      # — the boards were FETCHED above, not built. Everything else stays identical to
+      # the deploy box, so a red smoke here still predicts a red Railway build. The
+      # deploy path itself (deploy.yml + Railway) keeps BUILDING the boards: that
+      # build is the hard freshness gate this fetch relies on.
       - name: Verify artifacts (board smokes · infographics · server bundle)
         run: bash scripts/verify.sh artifacts
+        env:
+          SKIP_BOARD_BUILD: 1
