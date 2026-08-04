@@ -4130,15 +4130,20 @@ def _ps_band_count(radius_tracks, band, a, b):
     return n
 
 
-def _ps_labelled_radius_tracks(block):
+def _ps_labelled_radius_tracks(block, cross_key="cross"):
     """The labelled block's tracks reduced to the same [life, runs] shape `dumps[].radius_tracks`
     already carries -- built at replay time from the RAW xs/ys the labelled block keeps (unlike the
     dumps, which are pre-reduced at fixture-write time because 30k+ tracks/dump do not fit the
-    budget; the labelled block is small enough to reduce on the fly). Uses the SHIPPED structural
-    crosshair uniformly across all 5 shots -- including shot 4 -- because every candidate rule scores
-    what the reader actually sees; only the GROUND-TRUTH plateau it is checked against substitutes
-    the relock series for shot 4 (trap 9)."""
-    cross = [tuple(c) if c else None for c in block["cross"]]
+    budget; the labelled block is small enough to reduce on the fly).
+
+    `cross_key` selects WHICH crosshair the radius gate runs against: `"cross"` (shipped structural,
+    every shot except 4) or `"cross_tmpl"` (the crop shot 4's images were actually cut with -- its
+    label file records `locate: "template"`, and its GROUND-TRUTH plateau is the relock series, so
+    the frame-selection input must be scored on the SAME crop or a candidate is picking a frame in
+    one crop and being checked against a plateau defined in a different one -- trap 9, JUDGE REVIEW
+    2026-08-04: `_ps_score_labelled` selects `cross_key` per shot via its `locate` field; this
+    function itself has no opinion on which shot needs which."""
+    cross = [tuple(c) if c else None for c in block[cross_key]]
     radius = block["params"]["pellet_radius"]
     offset = block["offset"]
     out = []
@@ -4282,7 +4287,16 @@ def _ps_ground_truth_series(fx):
 def _ps_score_labelled(fx):
     """THE CATEGORICAL HALF (n=5). For each labelled shot: where each frame rule's representative
     frame lands, relative to the ground-truth PLATEAU, plus `lifetime_band_count`'s own count against
-    the plateau's size."""
+    the plateau's size.
+
+    ⚑ JUDGE REVIEW 2026-08-04 caught a crop mismatch on shot 4: its GROUND-TRUTH plateau is the
+    RELOCK series (the crop its images were actually cut with, `locate: "template"`), so every
+    band-dependent computation (the radius gate feeding `lifetime_gated_median`/`plateau_median`/
+    `lifetime_band_count`) must run on `cross_tmpl` for that shot too -- scoring a frame picked in the
+    structural crop against a plateau defined in the template crop is trap 9 exactly (picking a frame
+    in crop A, checking it against crop B). Shots 1/2/3/5 stay on `cross` (structural); segmentation
+    (`events`, shared by every shot) stays on the shipped structural `frame_counts` throughout --
+    only the RADIUS GATE swaps crop, and only for shot 4."""
     block = fx["labelled"]
     shots = _rep_load_labels()
     fps = block["fps"]
@@ -4295,8 +4309,12 @@ def _ps_score_labelled(fx):
     events = [{**e, "start": e["start"] + offset, "end": e["end"] + offset, "rep": e["rep"] + offset}
               for e in _ps_events(frame_counts, fps)]
     band = _ps_band(fps, block["params"]["max_pellet_frames"])
-    rtracks = _ps_labelled_radius_tracks(block)
-    band_totals = _ps_band_totals(rtracks, band)
+    rtracks_structural = _ps_labelled_radius_tracks(block, "cross")
+    rtracks_template = _ps_labelled_radius_tracks(block, "cross_tmpl")
+    by_crop = {
+        "structural": (rtracks_structural, _ps_band_totals(rtracks_structural, band)),
+        "template": (rtracks_template, _ps_band_totals(rtracks_template, band)),
+    }
     truth = _ps_ground_truth_series(fx)
 
     rows = []
@@ -4306,8 +4324,10 @@ def _ps_score_labelled(fx):
         if ev is None:
             raise SystemExit(f"--policy-score: labelled shot {s['shot']} (t0={t0}) falls in no "
                              "shipped event; the slice boundary cut it.")
+        crop = "template" if s["locate"] == "template" else "structural"
+        rtracks, band_totals = by_crop[crop]
         plateau = _ps_plateau(truth[s["shot"]])
-        row = {"shot": s["shot"], "t0": t0, "plateau_offsets": plateau,
+        row = {"shot": s["shot"], "t0": t0, "crop": crop, "plateau_offsets": plateau,
               "plateau_size": len(plateau)}
         for policy in _POLICY_FRAME_RULES:
             r = _ps_score_event(policy, ev, frame_counts, offset, band_totals)
@@ -4316,6 +4336,30 @@ def _ps_score_labelled(fx):
                           "in_plateau": rep_offset in plateau if rep_offset is not None else False}
         row["lifetime_band_count"] = {"count": _ps_band_count(rtracks, band, ev["start"], ev["end"])}
         rows.append(row)
+
+    # MANDATORY FALSIFICATION CONTROL (JUDGE REVIEW 2026-08-04): the crop swap touches ONLY the
+    # radius gate feeding the band-dependent rules. `shipped_median` reads straight off the raw
+    # `frame_counts` white+red totals, which are crosshair-independent (§9B: those counts are
+    # computed once, under the shipped structural crosshair, "regardless of which crosshair the crops
+    # were cut with"). If the swap moved `shipped_median` too, the crop selection would be leaking
+    # into the control -- i.e. permissive -- and the fix would be wrong, not just the finding.
+    shot4 = next(r for r in rows if r["shot"] == 4)
+    sm4 = shot4["shipped_median"]
+    if not (sm4["rep_offset"] == 3 and sm4["in_plateau"] is False):
+        raise SystemExit("--policy-score: MANDATORY FALSIFICATION CONTROL FAILED -- scoring shot "
+                         "4's radius gate on cross_tmpl moved shipped_median (expected rep_offset=3, "
+                         f"OUT; got rep_offset={sm4['rep_offset']}, "
+                         f"{'IN' if sm4['in_plateau'] else 'OUT'}). The control must be crop-blind; "
+                         "if this fires, the per-shot crop selection is permissive and must be "
+                         "reverted, not kept.")
+    # CROSS-CHECK (§9B, independently derived before this arm existed): "under the template lock, 0
+    # radius-rejected, 7 countable". Both band rules should land on that same total on shot 4.
+    for p in ("lifetime_gated_median", "plateau_median"):
+        if shot4[p]["total"] != 7:
+            raise SystemExit(f"--policy-score: cross-check FAILED -- shot 4's {p} total is "
+                             f"{shot4[p]['total']}, expected 7 (§9B: template lock gives 0 "
+                             "radius-rejected, 7 countable).")
+
     scores = {policy: sum(1 for row in rows if row[policy]["in_plateau"])
               for policy in _POLICY_FRAME_RULES}
     return {"band": list(band), "rows": rows, "categorical_scores": scores}
@@ -4382,9 +4426,11 @@ def _ps_expected(labelled, dumps, pooled):
 
 def _print_policy_score(labelled, dumps, pooled):
     print("\nCATEGORICAL -- does the rule's representative frame land inside the ground-truth "
-          "PLATEAU? (shot 4 scored against its RELOCK series, trap 9)")
+          "PLATEAU? (shot 4's radius gate + plateau both run on the TEMPLATE crop -- its own "
+          "`locate`; every other shot on structural. `crop` is printed, never inferred.)")
     for row in labelled["rows"]:
-        print(f"  shot {row['shot']}  t0={row['t0']}  plateau_offsets={row['plateau_offsets']}")
+        print(f"  shot {row['shot']}  t0={row['t0']}  crop={row['crop']}  "
+              f"plateau_offsets={row['plateau_offsets']}")
         for p in _POLICY_FRAME_RULES:
             r = row[p]
             mark = "IN " if r["in_plateau"] else "OUT"
@@ -4394,11 +4440,16 @@ def _print_policy_score(labelled, dumps, pooled):
     print("\nCATEGORICAL SCORE (of 5, §1.1: 5/5 promotable, 3-4/5 record only, <=2/5 reject)")
     for p in _POLICY_FRAME_RULES:
         print(f"  {p:24s} {cs[p]}/5")
+    print("  MANDATORY FALSIFICATION CONTROL held: shipped_median stayed rep_offset=3, OUT on shot "
+          "4 (the crop swap only reaches the band-dependent rules) -- checked above, would have "
+          "raised SystemExit otherwise.")
+    print("  CROSS-CHECK held: lifetime_gated_median and plateau_median both report total=7 on shot "
+          "4 (§9B: template lock gives 0 radius-rejected, 7 countable) -- checked above.")
 
     print("\nlifetime_band_count -- exempt from §1.1; count vs the ground-truth plateau's own SIZE")
     for row in labelled["rows"]:
-        print(f"  shot {row['shot']}: count={row['lifetime_band_count']['count']}  "
-              f"plateau_size={row['plateau_size']}")
+        print(f"  shot {row['shot']} (crop={row['crop']}): "
+              f"count={row['lifetime_band_count']['count']}  plateau_size={row['plateau_size']}")
 
     print(f"\nCEILING (§1.2, free) -- pooled over {pooled['shipped_median']['n_events']} events "
           f"across {len(dumps)} dumps; reject above 12.4% (2x shipped)")
@@ -4407,6 +4458,20 @@ def _print_policy_score(labelled, dumps, pooled):
         row = pooled[p]
         print(f"{p:24s} {row['n_scored']:8d} {row['no_rep']:7d} "
               f"{str(row['avgTotal']):>9s} {str(row['above_ceiling_pct']):>8s}")
+
+    print("\nABSTENTION RISK -- band rules do not share shipped_median's denominator")
+    gm, pm = pooled["lifetime_gated_median"], pooled["plateau_median"]
+    print(f"  shipped_median / lifetime_band_count are scored on all {pooled['shipped_median']['n_events']} "
+          f"events (no_rep 0 on both).")
+    print(f"  lifetime_gated_median / plateau_median ABSTAIN (no representative frame at all) on "
+          f"{gm['no_rep']}/{pooled['shipped_median']['n_events']} events "
+          f"({100 * gm['no_rep'] / pooled['shipped_median']['n_events']:.1f}%) -- their "
+          f"above_ceiling_pct is computed over n_scored={gm['n_scored']}, NOT the common 852. An "
+          "abstention cannot over-count, so excluding it is defensible for THIS check specifically -- "
+          "but a rule that silently drops 13% of events is a candidate NEW missing-shot channel, "
+          "which this arm does not measure and does not resolve. Top open risk for any enactment "
+          "pass on these rules.")
+
     print("\nTERTIARY (§1.3, REPORTED ONLY -- never a ranking criterion; mean-matching near 8.40 "
           "DISQUALIFIES a rule)")
     for p in POLICY_RULES:

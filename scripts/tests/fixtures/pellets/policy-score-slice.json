@@ -7,6 +7,7 @@
       {
         "shot": 1,
         "t0": 1060,
+        "crop": "structural",
         "plateau_offsets": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         "plateau_size": 10,
         "shipped_median": {
@@ -31,6 +32,7 @@
       {
         "shot": 2,
         "t0": 1096,
+        "crop": "structural",
         "plateau_offsets": [5, 6, 7, 8, 9, 10, 11, 12, 13],
         "plateau_size": 9,
         "shipped_median": {
@@ -55,6 +57,7 @@
       {
         "shot": 3,
         "t0": 1140,
+        "crop": "structural",
         "plateau_offsets": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         "plateau_size": 10,
         "shipped_median": {
@@ -79,6 +82,7 @@
       {
         "shot": 4,
         "t0": 1289,
+        "crop": "template",
         "plateau_offsets": [5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
         "plateau_size": 10,
         "shipped_median": {
@@ -87,22 +91,23 @@
           "in_plateau": false
         },
         "lifetime_gated_median": {
-          "rep_offset": null,
-          "total": null,
-          "in_plateau": false
+          "rep_offset": 6,
+          "total": 7,
+          "in_plateau": true
         },
         "plateau_median": {
-          "rep_offset": null,
-          "total": null,
-          "in_plateau": false
+          "rep_offset": 10,
+          "total": 7,
+          "in_plateau": true
         },
         "lifetime_band_count": {
-          "count": 0
+          "count": 7
         }
       },
       {
         "shot": 5,
         "t0": 1369,
+        "crop": "structural",
         "plateau_offsets": [5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
         "plateau_size": 10,
         "shipped_median": {
@@ -127,8 +132,8 @@
     ],
     "categorical_scores": {
       "shipped_median": 2,
-      "lifetime_gated_median": 4,
-      "plateau_median": 4
+      "lifetime_gated_median": 5,
+      "plateau_median": 5
     },
     "per_dump": [
       {
