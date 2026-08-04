@@ -1,8 +1,9 @@
 # Decoupling the generated artifacts from the deploy path — scoping doc (2026-08-03)
 
-Status: **SCOPE ONLY — Steps 0–4 unimplemented, two owner decisions open (see §8). Owner decision
-2026-08-04: Step 0 ships WITH a post-deploy builder canary (§8) — that canary is committed on
-branch `worktree-artifact-decoupling-review`.**
+Status: **SCOPE ONLY — Steps 1–4 unimplemented; Step 0 + the builder canary are IMPLEMENTED on
+branch `worktree-artifact-decoupling-review` (2026-08-04; verified: `verify.sh full` and the
+simulated PR-CI artifacts tier green locally). Decision §8.1 applied as recommended (advisory on
+PRs; the deploy path is the hard gate); decision §8.2 still open.**
 
 Origin: owner asked why the CI `Build rank-board artifacts` step took ~8 min on PR #82 when the
 `b71af726` incremental-rebuild work should have cut it, then asked to scope moving the pre-built
@@ -239,6 +240,18 @@ building them via the `artifacts` tier. Cost ~8 min, off the deploy critical pat
 `worktree-artifact-decoupling-review` ahead of Step 0: redundant with the deploy path's own builder
 run until then; the redundancy is what lets Step 0 delete that run safely.
 
+**Step 0 landed 2026-08-04 on `worktree-artifact-decoupling-review`** (canary `69dfcf27`; Step 0
+commits `7f5ba808` / `afb66b52` / `665e3590`): the §5-item-1 hash extraction (for dpschart) into
+`scripts/artifact-input-hash.ts`; `scripts/fetch-published-boards.ts` (the six curls, with retries,
+hard-fail on a missing/invalid published artifact — no silent fallback-to-build, which would
+restore the exact cost being removed); `scripts/check-board-freshness.ts` (advisory — never fails
+CI; the deploy.yml pre-deploy build + the Railway rebuild are the hard gate, so staleness
+self-heals at deploy time); and `verify.sh`'s `SKIP_BOARD_BUILD` gate so PR CI smokes the fetched
+set while the deploy box keeps building. The b1b2dps `MUTABLE_PATHS` fix (§7) landed alongside.
+One-time cost: the extraction adds the new module to `GLOBAL_FILES`, moving every hash once (one
+full rebuild on the next deploy). Verified before commit: 65/65 per-unit hashes byte-identical to
+the live artifact, `verify.sh full` green, `SKIP_BOARD_BUILD=1 verify.sh artifacts` green.
+
 **Step 1** — extract + generalize input hashing to all 6 boards + infographics (§5).
 
 **Step 2** — DB table + publish/read path for the JSON boards; pull the builders out of
@@ -251,8 +264,10 @@ warrant its own plan doc.
 
 ### Open owner decisions (blocking Steps 1 and 4 respectively)
 
-1. **Staleness test: hard-fail or advisory on PRs?** (§5) — recommendation: advisory on PR, hard on
-   `main`/pre-deploy, with `npm run artifacts:refresh`.
+1. **Staleness test: hard-fail or advisory on PRs?** (§5) — APPLIED 2026-08-04 as recommended:
+   advisory on PRs; the deploy path (deploy.yml pre-deploy build + Railway rebuild) is the hard
+   gate, with `npm run dpschart && npm run ranks:all` as the local refresh. (Owner proceeded with
+   Step 0 without overriding the recommendation.)
 2. **What does the nightly sync do when it finds roster drift?** (§6) — recommendation: refuse to
    publish, open a PR / webhook the owner.
 
