@@ -1862,7 +1862,7 @@ def main():
                 "cross_positions": cross_positions,
                 "cross_confs": cross_confs,
                 "cross_rawloc": cross_rawloc,
-                "frame_counts": [{"white": r["opencv"]["white"], "red": r["opencv"]["red"], "marker": r["opencv"]["marker"]} for r in results],
+                "frame_counts": [{"white": r["opencv"]["white"], "red": r["opencv"]["red"], "marker": r["opencv"]["marker"], "band": r["opencv"]["band"]} for r in results],
                 "tracks": [{
                     "id": t['id'], "is_red": t['is_red'],
                     "first": t['first_frame'], "last": t['last_frame'],
