@@ -501,3 +501,82 @@ probes/burst tests/alice focused.MP4`, crown/liter/alice/red-hood, boss Water, a
   the higher FB count) shows the blind/adversarial roles run both directions — the judge checks the
   driver, and re-deriving the judge's stated math against the actual rotation log is exactly the
   "verify, don't trust" habit this harness is built on.
+- **2026-08-03 — K's burst weapon: `damagePct` 10x misread + no SG-swap landing routing: LOG, 2-of-2
+  ACCEPT, both MEDIUM confidence.** K's burst (`weaponSwap`, kit line "Damage: 92.5% of the final ATK /
+  Pelletcount: 10") was modeled as `damagePct: 925` (10 pellets × 92.5%, collapsed to one hit) by the
+  2026-08-02 kit-autonomy gauntlet, signed off in-session as "EV-exact / no bug" — that sign-off left no
+  DECISIONS entry of its own. Step-0 premise gate (3 parallel premise-verifiers, blind) CONFIRMED: (1)
+  "Damage X% / Pelletcount N" is the kit-text convention's FULL-SHOT total, not per-pellet — proven via
+  MEASURED data on two already-graded real SG units, not K herself (`docs/probe-data/dorothy-solo-
+reanalysis.json`: one full 10-pellet shot ≈243,000 vs 118,027×201.5%=237,824, TOTAL reading, +2%; a
+  per-pellet reading predicts 2,378,240, refuted 10x; cross-checked against `docs/probe-data/coreband-
+drake-sg.json`); (2) K is in no graded/pinned comp anywhere (scripts/regression.ts, experiment.ts's
+  COMPS, the snapshot) — no measured-FB baseline at risk; (3) no other unit's `weaponSwap` sets
+  `weapon:'SG'` (only nayuta sets `weapon:'SR'`) and the engine's SG pellet-landing model is gated
+  `u.char.weapon==='SG' && !u.swap` — unconditionally unreachable during ANY weapon swap today,
+  regardless of the swap's declared class. Pre-op (Fable) APPROVED-WITH-REVISIONS (positive-activation
+  check with a named instrument; paste premise evidence into the work packet, not "on request"; record
+  the open muzzle-count gap as a current-state caveat; split the decision rule into
+  IMPLEMENT/IMPLEMENTATION-DEFECT/H1-SCOPE-FALSIFIED/INCONCLUSIVE arms; name the superseded 2026-08-02
+  sign-off explicitly). Work landed on isolated worktree `nikke-sim-wt-k-fix`
+  (`k-burst-sg-swap-fix-2026-08-03`, commit `5a736ff5`): `damagePct` 925→92.5, added `pelletCount:10` +
+  `weapon:"SG"`; engine gains a gated `pelletCount` field on `weaponSwap` + broadens the two SG-landing
+  gates to `u.swap?.weapon==='SG'` (byte-identical elsewhere — full regression diff empty, K in no
+  snapshot cell, non-burst K damage unchanged 24,117,748→24,117,748). Positive-activation check showed
+  the discriminating signature cleanly: burst atkPct = (old÷10)×band-landing-fraction exactly in all 4
+  range bands, AND her range-bonus band flipped mid(SMG, −0.3)→near(SG, +0.3) as `RANGE_ELIGIBLE`
+  predicts — proof the new gate actually fires for K, not a silent no-op.
+  **Both judges independently ACCEPTed** (driver + blind Fable post-op, verdicts scored before either
+  saw the other's) but both capped at MEDIUM, not HIGH, on the SAME open item (Q2): K's swap weapon
+  (shot_id `1004102`) has no `shot_detail` record anywhere in the datamine, so a hidden `muzzle_count`
+  multiplier — the same KIND of invisible-in-kit-text factor that already doubles her OWN base SMG
+  (raw `damage:455`→`normalAttackMultiplier:9.1` via `muzzle_count:2`) — cannot be ruled in or out from
+  available data. Anomaly surfaced by the work agent and independently reconfirmed by the driver: under
+  the corrected reading K's burst weapon deals LESS than her own sustained SMG rate (0.62-0.83x, team
+  total -0.75% with the swap vs without) — atypical for a Burst III's signature weapon, though not
+  disqualifying (her Skill 2 grants the whole team +10.62% Attack Damage; the kit may lean on buff value
+  over personal nuke). Both judges independently agreed this does NOT undermine H1 (the 925→92.5
+  correction is certain either way — even a hidden ×2 muzzle factor gives 185, nowhere near 925) and is
+  correctly handled as an honest ⚑ flag, not fudged to "fix" the anomaly (measured>fudge held). `bash
+scripts/verify.sh` is RED on 3 asserts in `scripts/tests/units/k.test.ts` — the SAME 2026-08-02
+  gauntlet's test, pinning the disproven 925 model (its own comments label the correct reading "the
+  naive counterfactual") — both judges agree this is understood, not an ununderstood failure, and must
+  be updated to pin the new model in the SAME change before it ships (constraint 5), not treated as a
+  fresh defect.
+  **DECISION: per the confidence rubric (HIGH+HIGH → Implement; anything less → Log), 2-of-2 ACCEPT at
+  MEDIUM does not clear the bar — LOG, not IMPLEMENT. The isolated worktree/branch is preserved,
+  UNMERGED; no engine/override file on the shared main tree was touched by this session.** Owner action
+  item: land the worktree's diff (types.ts/sim.ts/k.json + the K1 spec-test rewrite + the drafted
+  DECISIONS.md entry) as a PR if the owner accepts the MEDIUM-confidence risk as-is, OR gate it behind a
+  focus recording of a K team first — the override's own MEASUREMENT-GATED caveat already names the
+  discriminating recipe (popup-read her burst-window white-pellet base value: ~10,918 ATK-equivalent at
+  scope-lock Attacker ATK under the accepted no-muzzle-multiplier reading vs ~21,836 under a hidden ×2 —
+  directly distinguishable from footage, and resolves Anomaly A in the same pass as graduating K off
+  MODEL-ONLY).
+  HARNESS LESSON: the confidence cap did its job here — a clean, well-evidenced fix with zero board risk
+  and a robust 10x-error refutation still got held at LOG because ONE bounded, honestly-named assumption
+  (an unrecoverable datamine gap, not a modeling shortcut) survived both an adversarial pre-op plan
+  review AND a blind post-op read. Two independent ACCEPTs are not sufficient on their own — the rubric's
+  HIGH-only bar for IMPLEMENT is what kept an engine change with real residual uncertainty off the shared
+  tree pending an owner call, exactly as designed.
+  **ADDENDUM (same day) — pullsPerSec corrected 2 → 2.4, still LOG, no new panel run.** Owner-confirmed:
+  the kit's "Attack speed ▼90%" applies to the swap weapon's own NOMINAL rate (base SMG's datamined
+  `rate_of_fire` 1440 RPM × 0.10 = 144 RPM), not to the already-frame-quantized 20.0/s effective SMG
+  rate the override had scaled instead (`20.0 × 0.10 = 2`, the derivation this file's main entry
+  originally logged). Run through the engine's own `quantizeToFrames` (sim.ts:224, MEASURED/validated
+  2026-07-23 against real ammo-counter footage for the general mechanism — the identical formula every
+  weapon's nominal→effective cadence already uses, and independently pinned by
+  `scripts/tests/engine/weapon-swap.test.ts`/`hits-per-shot.test.ts` for the SMG case): 144 RPM = 2.4
+  pulls/s nominal, and 60/2.4 = 25 is an EXACT frame count, so quantization is a no-op here — unlike the
+  base SMG's own non-integral 1440 RPM, which needs the ceiling rule to reach 20.0/s. Landed directly
+  (no fresh premise-verifier/pre-op/post-op round) because: (a) it touches only the override's
+  `pullsPerSec` field, no `src/engine/**` code; (b) the quantization mechanism itself is an
+  already-measured, already-fixture-pinned engine primitive, not a new claim; (c) the specific input has
+  zero free/fitted parameters (a datamined RPM × a kit-stated percentage, landing on an exact frame
+  count with no rounding judgment call). Verified: full regression still byte-identical (K in no graded
+  comp/snapshot cell, as before); `validate-overrides.ts k` still green (her share of a synthetic-team
+  total moved 24.9%→27.2%, consistent with the +20% cadence). Does NOT change the LOG-not-IMPLEMENT
+  status — Anomaly A (the muzzle-count gap) is untouched by this correction and remains the blocking
+  open item; the corrected cadence narrows but does not close her burst-vs-sustained-SMG ratio (roughly
+  0.74–0.99x now, up from 0.62–0.83x, still not clearly a nuke). Committed on the same worktree/branch
+  (`nikke-sim-wt-k-fix`, `k-burst-sg-swap-fix-2026-08-03`, commit `b00826c2`).

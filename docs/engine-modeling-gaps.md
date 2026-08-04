@@ -114,7 +114,7 @@
 | `trueNormals` | 6 | chisato, clay, eunhwa-tactical-upgrade, frima, laplace, takina |
 | `unlimitedAmmo` | 6 | grave, modernia, moran, nayuta, red-hood, snow-white-innocent-days |
 | `unswapped` | 2 | laplace, laplace-ultimate-hero |
-| `weapon` | 12 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, leona, miranda, nayuta, noir, … |
+| `weapon` | 13 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, k, leona, miranda, nayuta, … |
 | `weaponSwap` | 18 | ada, chisato, cinderella-crystal-wave, clay, e-h, eunhwa-tactical-upgrade, frima, k, … |
 | `whileSwapped` | 0 | _none_ |
 

@@ -472,6 +472,10 @@ interface WeaponSwap {
   maxAmmo?: number;
   pullsPerSec?: number; // swap weapon's own fire cadence (moran: 24/s vs base AR 12/s)
   weapon?: string; // swap weapon's class override (nayuta: SR mode) → range/core banding
+  // swap weapon's own pellet count — read ONLY when weapon === 'SG' (k: burst swaps to a literal
+  // 10-pellet shotgun). Falls back to the base char's hitsPerShot when omitted. damagePct for an
+  // SG swap is the FULL-SHOT total (all pellets landing), same convention as normalAttackMultiplier.
+  pelletCount?: number;
   trueNormals?: boolean;
   hasPierce?: boolean; // swap shots are Pierce-tagged (swap-scoped "Additional Effect: Pierce",
   // snow-white's cannon) — feeds the per-shot pierceActive tag only
@@ -1432,9 +1436,18 @@ export function runSim(
   // queryable pellet-count change — each pellet carries 1/base of the shot — instead of a
   // normalAttackPct proxy. `stat()` sums pelletCountFlat buffs (0 for every non-carrier ⇒ eff = base
   // ⇒ byte-identical). May be fractional while a pelletCountFlat buff ramps (rampSec).
+  // A swap that declares weapon:'SG' (k's burst shotgun) is a REAL shotgun for this path: it uses the
+  // swap's own `pelletCount` as the base (falling back to the char's hitsPerShot). Any swap that is
+  // absent or non-SG keeps the base char's hitsPerShot exactly as before — byte-identical.
+  const sgPelletBase = (u: UnitState): number =>
+    u.swap?.weapon === 'SG'
+      ? (u.swap.pelletCount ?? u.char.hitsPerShot)
+      : u.char.hitsPerShot;
+  const isSgSpray = (u: UnitState): boolean =>
+    (u.char.weapon === 'SG' && !u.swap) || u.swap?.weapon === 'SG';
   const effectivePellets = (u: UnitState, frame: number): number =>
-    u.char.weapon === 'SG' && !u.swap
-      ? u.char.hitsPerShot + stat(u, 'pelletCountFlat', frame)
+    isSgSpray(u)
+      ? sgPelletBase(u) + stat(u, 'pelletCountFlat', frame)
       : u.char.hitsPerShot;
   // one skill-damage impact (flatDamage proc, dot tick) = one target-base hit of gen
   // (maiden's rider measured exactly her target per-shot value, 364, no focus bonus)
@@ -2508,6 +2521,7 @@ export function runSim(
             maxAmmo: e.maxAmmo,
             pullsPerSec: e.pullsPerSec,
             weapon: e.weapon,
+            pelletCount: e.pelletCount,
             trueNormals: e.trueNormals,
             hasPierce: e.hasPierce,
             maxShots: e.maxShots,
@@ -3580,7 +3594,9 @@ export function runSim(
     // byte-identical when eff===base (every non-carrier). GAUGE is capped at base pellets: a "+N pellets"
     // buff does NOT pump per-trigger burst energy (datamine is per-trigger; preserves measured-exact FB
     // counts). See docs/handoffs/2026-07-21-a4-pellet-count-prereg.md.
-    const sgBase = u.char.hitsPerShot;
+    // For a weapon:'SG' swap the base is the SWAP weapon's own pellet count (k: 10); for every other
+    // case (no swap, or a non-SG swap) this is the char's hitsPerShot exactly as before.
+    const sgBase = sgPelletBase(u);
     const sgEff = effectivePellets(u, frame);
     // per-pellet landing mean → { dmg: landed/base over `sgEff` pellets, gauge: base-capped landed/base }.
     // For sgEff===sgBase this draws exactly `sgBase` Bernoulli(mean) — identical rng sequence & return
@@ -3606,42 +3622,56 @@ export function runSim(
       } // fractional extra pellet (ramp); never counts toward gauge
       return { dmg: k / sgBase, gauge: Math.min(kBase, sgBase) / sgBase };
     };
-    const bandSg: { dmg: number; gauge: number } =
-      u.char.weapon === 'SG' && !u.swap
-        ? UNIGEO !== 'off' && (cfg.bossPelletProfile ?? 'small') === 'small'
-          ? // UNIGEO SG landing: ε × silhouette coverage of the HR-state aim circle (adds the
-            // Hit-Rate landing term the live table lacks). Bernoulli per pellet under a seed.
-            // UNIGEO_GAUGE=legacy (isolation knob, worktree A/B only): DAMAGE keeps the UNIGEO
-            // landing, but the burst-gauge feed reverts to the LIVE engine's landing value (the
-            // cone-path mean under the default CONE_DELTA; the deep-fallback table otherwise) so
-            // gauge generation — and therefore rotation — behaves exactly as the UNIGEO=off
-            // baseline. Localizes rotation drift to the landing→gauge coupling. Under a seed the
-            // legacy gauge uses the expected mean directly (no extra rng draws).
+    const bandSg: { dmg: number; gauge: number } = isSgSpray(u)
+      ? UNIGEO !== 'off' && (cfg.bossPelletProfile ?? 'small') === 'small'
+        ? // UNIGEO SG landing: ε × silhouette coverage of the HR-state aim circle (adds the
+          // Hit-Rate landing term the live table lacks). Bernoulli per pellet under a seed.
+          // UNIGEO_GAUGE=legacy (isolation knob, worktree A/B only): DAMAGE keeps the UNIGEO
+          // landing, but the burst-gauge feed reverts to the LIVE engine's landing value (the
+          // cone-path mean under the default CONE_DELTA; the deep-fallback table otherwise) so
+          // gauge generation — and therefore rotation — behaves exactly as the UNIGEO=off
+          // baseline. Localizes rotation drift to the landing→gauge coupling. Under a seed the
+          // legacy gauge uses the expected mean directly (no extra rng draws).
+          (() => {
+            const hr = stat(u, 'hitRatePct', frame);
+            const r = sgLandFromMean(unigeoSgLanding(band, hr));
+            if (ENV.UNIGEO_GAUGE === 'legacy') {
+              const sig = coneSigmaFor('SG', hr);
+              const prof =
+                cfg.bossPelletProfile === 'large'
+                  ? 8
+                  : cfg.bossPelletProfile === 'medium'
+                    ? 1.3
+                    : 1;
+              const liveMean =
+                CONE_DELTA && sig !== null
+                  ? pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof)
+                  : SG_LANDING_BY_BAND[band];
+              return { dmg: r.dmg, gauge: liveMean };
+            }
+            return r;
+          })()
+        : CONE_DELTA
+          ? // δ-cone landing (implementation-plan §1.5): the SAME σ(hr) as the core path drives SG
+            // landing — a centred Rayleigh overlap of the σ-cone with the boss body (δ negligible vs
+            // the body radius, so landing stays centre-aimed). Bernoulli per pellet under a seed.
             (() => {
-              const hr = stat(u, 'hitRatePct', frame);
-              const r = sgLandFromMean(unigeoSgLanding(band, hr));
-              if (ENV.UNIGEO_GAUGE === 'legacy') {
-                const sig = coneSigmaFor('SG', hr);
-                const prof =
-                  cfg.bossPelletProfile === 'large'
-                    ? 8
-                    : cfg.bossPelletProfile === 'medium'
-                      ? 1.3
-                      : 1;
-                const liveMean =
-                  CONE_DELTA && sig !== null
-                    ? pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof)
-                    : SG_LANDING_BY_BAND[band];
-                return { dmg: r.dmg, gauge: liveMean };
-              }
-              return r;
+              const sig = coneSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
+              const prof =
+                cfg.bossPelletProfile === 'large'
+                  ? 8
+                  : cfg.bossPelletProfile === 'medium'
+                    ? 1.3
+                    : 1;
+              return sgLandFromMean(
+                pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof)
+              );
             })()
-          : CONE_DELTA
-            ? // δ-cone landing (implementation-plan §1.5): the SAME σ(hr) as the core path drives SG
-              // landing — a centred Rayleigh overlap of the σ-cone with the boss body (δ negligible vs
-              // the body radius, so landing stays centre-aimed). Bernoulli per pellet under a seed.
+          : PELLET_GAUSS
+            ? // ⚑ center-weighted Gaussian cone (spec §2): landing = Rayleigh overlap of the σ-cone with
+              // the boss body; each pellet lands ~Bernoulli(mean) under a seed, else the expected mean.
               (() => {
-                const sig = coneSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
+                const sig = pelletSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
                 const prof =
                   cfg.bossPelletProfile === 'large'
                     ? 8
@@ -3652,43 +3682,25 @@ export function runSim(
                   pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof)
                 );
               })()
-            : PELLET_GAUSS
-              ? // ⚑ center-weighted Gaussian cone (spec §2): landing = Rayleigh overlap of the σ-cone with
-                // the boss body; each pellet lands ~Bernoulli(mean) under a seed, else the expected mean.
+            : rng
+              ? // legacy jitter fallback (non-cone A/B): scale the drawn landed count by eff, gauge base-capped
                 (() => {
-                  const sig = pelletSigmaFor(
-                    'SG',
-                    stat(u, 'hitRatePct', frame)
-                  )!;
-                  const prof =
-                    cfg.bossPelletProfile === 'large'
-                      ? 8
-                      : cfg.bossPelletProfile === 'medium'
-                        ? 1.3
-                        : 1;
-                  return sgLandFromMean(
-                    pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof)
+                  const landed = sgLandedPellets(
+                    band,
+                    Math.round(sgEff),
+                    rng,
+                    cfg.bossPelletProfile
                   );
+                  return {
+                    dmg: landed / sgBase,
+                    gauge: Math.min(landed, sgBase) / sgBase,
+                  };
                 })()
-              : rng
-                ? // legacy jitter fallback (non-cone A/B): scale the drawn landed count by eff, gauge base-capped
-                  (() => {
-                    const landed = sgLandedPellets(
-                      band,
-                      Math.round(sgEff),
-                      rng,
-                      cfg.bossPelletProfile
-                    );
-                    return {
-                      dmg: landed / sgBase,
-                      gauge: Math.min(landed, sgBase) / sgBase,
-                    };
-                  })()
-                : {
-                    dmg: (SG_LANDING_BY_BAND[band] * sgEff) / sgBase,
-                    gauge: SG_LANDING_BY_BAND[band],
-                  }
-        : { dmg: 1, gauge: 1 };
+              : {
+                  dmg: (SG_LANDING_BY_BAND[band] * sgEff) / sgBase,
+                  gauge: SG_LANDING_BY_BAND[band],
+                }
+      : { dmg: 1, gauge: 1 };
     // Pellet-consolidation mode (dorothy-S, open-questions A26): "after hitting the target with 80
     // pellets, for 3 rounds pellet count is fixed at 1" + Pierce + 98% hit + Attack-dmg. MEASURED
     // (exact-counter re-read, dorothy-solo-reanalysis.json + owner): "3 rounds" = 3 SHOTS/episode (the
