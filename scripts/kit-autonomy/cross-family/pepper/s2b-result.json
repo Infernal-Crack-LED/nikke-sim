@@ -1,0 +1,125 @@
+{
+  "slug": "pepper",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "when the last bullet hits … Restores HP 4.45%",
+      "disposition": "FAITHFUL",
+      "scope": "Heal proc on the owner's magazine cycle; no attack-type scoping. Magnitude scales caster's OWN final Max HP (casterMaxHpPct semantics per rule 7 — ally HP grants never feed it).",
+      "durationSemantics": "Instant one-shot heal per activation; no duration.",
+      "triggerIdentity": "lastBullet (per-magazine, fires at last-bullet/reload start — ammo 9, so cadence ≈ mag-empty time + 142-frame reload, roughly every 8–9 s). NOT shotFired, NOT interval.",
+      "targetSet": "alliesLowestHp count:1 ('lowest HP percentage'). v1 has no HP pool, so the engine resolves this deterministically to the leftmost ally as the documented stand-in — the test must assert exactly ONE ally receives it, not all allies.",
+      "nearestWrongModel": "Dropped as 'defensive heal, no damage' (UNMODELED). Second-nearest: heal target read as all allies (conflating this ■ block with the next one).",
+      "distinguishingAssertion": "Heals emit recovery events, not a damage/heal event kind — instrument via a consumer: withPatchedOverride the leftmost ally to carry a {kind:'recovery'}-triggered marker buff, run the comp, and assert marker buffApply count ≈ pepper's reload-event count (one per magazine). Faithful: markers track pepper reloads. Nearest-wrong (skipped): zero markers. Nearest-wrong (all-allies): a non-leftmost patched ally also markers.",
+      "inertness": "Must add zero damage of its own (heal effects carry no damage); pepper's own totals identical with the line removed. It must NOT emit recovery to more than 1 ally per proc.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Refresh Heart: Incoming healing ▲ 6.53%, 5 stacks",
+      "disposition": "GAP",
+      "scope": "Named stackable team buff. The stat itself (incoming healing ▲) has NO StatKey in the schema and no HP pool to act on — the MAGNITUDE is inert/unrepresentable. But the STACK STATE is load-bearing: burst line 3 gates on 'Refresh Heart at max stacks'.",
+      "durationSemantics": "durationSec 15 (wall-clock 'lasts for 15 sec'), maxStacks 5, refresh-on-reapply. Last-bullet cadence (~8–9 s) < 15 s, so stacks accumulate monotonically to cap in ~5 magazines (~40–45 s); they never lapse mid-fight while pepper keeps firing.",
+      "triggerIdentity": "lastBullet (same ■ header as line 1 — one trigger, second effect block), +1 stack per activation. Natural encoding: a resource pool {name≈'refreshHeart', max 5} incremented on lastBullet, read by a resourceGate on the burst heal — since no StatKey exists for the buff itself.",
+      "targetSet": "allies (all, including self — 'Affects all allies').",
+      "nearestWrongModel": "Stack machinery dropped entirely because the stat is inert ('no HP pool, skip') — which silently kills the burst-line-3 gate. Second-nearest: instant-to-max (maxStacks ignored), opening the burst heal gate from t=0.",
+      "distinguishingAssertion": "Gate-timing probe via burst line 3: pepper's FIRST burst cast (t < ~10 s, stacks < 5) must produce NO all-ally recovery events (patched marker buffs on teammates stay silent at that cast), while a burst cast after ≥5 pepper reloads DOES fire them. Faithful: first burst silent, later burst heals. Nearest-wrong (dropped stacks): no burst ever heals. Nearest-wrong (instant max): first burst already heals.",
+      "inertness": "The 6.53% incoming-healing magnitude must move ZERO damage for every unit (no consumer exists) — totals identical if the value were changed. Only the stack COUNT may have observable effect, and only through the burst gate.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 160% of final ATK as damage",
+      "disposition": "FIX",
+      "scope": "Skill-bucket function damage vs the boss (highest-final-ATK enemy = the sole boss; target resolution trivial). Rider defaults per rule 9: takes +50% FB by timing (noFb default OFF), NO core, NO range bonus, crits only if measured — default non-crit.",
+      "durationSemantics": "Instant hit per activation; no duration.",
+      "triggerIdentity": "⚑ INVENTED — the ■ header has NO activation clause, so per the taxonomy this is an interval trigger with a cadence NOT in the kit text (ALWAYS-⚑ field 2). Recipe: pin from the datamined skillCooldownsSec (interval-class → first fire at t=CD, not t=0); until pinned it is CALIBRATED ⚑. It is definitively NOT lastBullet and NOT shotFired.",
+      "targetSet": "enemy (1 unit, highest final ATK — the boss).",
+      "nearestWrongModel": "Trigger contaminated from skill1's headers: lastBullet (~20+ fires/fight at ~8.5 s magazine cadence) instead of interval-CD (e.g. ~9 fires at a 20 s-class CD) — a >2× over-credit of pepper's only skill damage. Second-nearest: first-fire at t=0 instead of t=CD (one extra proc).",
+      "distinguishingAssertion": "Count pepper's skill-bucket damage events with mult≈160 over the 180 s fight: faithful = floor(180/CD) with first fire at t=CD (assert both count and first-event frame ≈ CD); nearest-wrong (lastBullet-keyed) = count tracking pepper's reload count instead — the two counts differ by ~2× and cannot both pass. Also assert the events carry rangeApplied=false and no core contribution.",
+      "inertness": "Cadence must NOT change with pepper's reload/ammo economy (an ammo-capacity buff must not move this count).",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▼ 3.55% for 5 sec",
+      "disposition": "UNMODELED",
+      "scope": "Enemy ATK debuff — DEFENSIVE. The boss's ATK feeds nothing in v1 (boss deals no modeled damage), so this is inert by construction. Record in unmodeled (or as an inert boss-held buffApply), never as a damage-side stat.",
+      "durationSemantics": "5 s wall-clock, refreshed each proc.",
+      "triggerIdentity": "Rides the same (⚑ interval) activation as the 160% hit — same block.",
+      "targetSet": "enemy (boss). If emitted, buffApply carries casterIdx===null/targetIdx===null (boss-held debuff convention).",
+      "nearestWrongModel": "The killer misread: encoding 'ATK ▼' on the enemy as a TEAM-BENEFIT debuff — damageTakenPct +3.55 (taxonomy 4 in reverse) — which would buff ALL five units' damage by ~3.55% in the Damage-Taken bucket. That is a whole-board over-credit, not a pepper-local one.",
+      "distinguishingAssertion": "A/B via withPatchedOverride stripping this effect: totals(res) for EVERY slug must be bit-identical with and without the line. Faithful (inert) = zero delta anywhere. Nearest-wrong (damageTakenPct) = every unit's total rises. Additionally assert NO buffApply with stat 'damageTakenPct' sourced from pepper exists.",
+      "inertness": "Must move zero damage for all 5 units — the whole point of the line's disposition.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1237.5% … as Burst Skill damage",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-bucket nuke on the boss. Burst-cast damage lands BEFORE the Full Burst window opens (measured project-wide fact): no +50% FB major, no FB-entry auras in its snapshot. Crits at caster rate only if the roster convention says so — default per burst-cast instant damage: FB-exempt, no core, no range.",
+      "durationSemantics": "Instant, once per pepper burst cast (~every rotation her 20 s CD and the chain allow).",
+      "triggerIdentity": "burstCast (pepper's OWN cast) — emphatically NOT fullBurstEnter. Divergence matters in any comp with another Burst-I unit competing for the B1 slot cast.",
+      "targetSet": "enemy (highest final ATK = boss).",
+      "nearestWrongModel": "The nuke taking the +50% Full-Burst major (keyed to FB state instead of pre-FB cast timing) — a flat +50% over-credit on 1237.5% every rotation. Second-nearest: keyed fullBurstEnter so it fires on rotations pepper did NOT cast.",
+      "distinguishingAssertion": "Filter damage events (srcSlot burst, mult≈1237.5): each must have inFullBurst===false AND fbMajorApplied===false, and event count must equal pepper's burstCast event count exactly. Faithful: pre-FB, count==casts. Nearest-wrong: fbMajorApplied true (or count follows fullBurstStart count when pepper sat a rotation out).",
+      "inertness": "Zero of these events on a rotation where pepper did not cast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Increases stack count of stackable buffs by 1",
+      "disposition": "GAP",
+      "scope": "Generic +1 stack to every stackable buff each ally holds — the effect schema has NO primitive for cross-kit stack increment (no EffectDef mutates another buff's stack count). The honest model: (a) narrowly apply the +1 to pepper's OWN Refresh Heart pool (resource delta:+1, clamped at 5) since that self-interaction feeds her burst gate, and (b) record the generic cross-unit clause verbatim in unmodeled.",
+      "durationSemantics": "Instant increment at cast; clamped at each buff's maxStacks.",
+      "triggerIdentity": "burstCast (pepper's own burst), on-cast.",
+      "targetSet": "allies (all).",
+      "nearestWrongModel": "Silently dropped with NO unmodeled record (invisible under-credit in comps carrying stacked ally buffs, e.g. an escalating B1 or a stacking crit buff). Second-nearest over-model: refreshing DURATIONS of all buffs instead of incrementing stacks.",
+      "distinguishingAssertion": "For the modelable slice: seed pepper to 4 Refresh Heart stacks (4 reloads elapsed), cast burst — the burst-line-3 gate must open on THIS cast (the +1 completes 5) rather than one reload later. Faithful: heal fires at 4-reloads+cast. Dropped-increment: heal waits for the 5th reload. For the generic clause: assert the override's unmodeled.burst[] contains the verbatim line (no silent drop).",
+      "inertness": "Must not refresh/extend any buff's expiresFrame, and must not push any pool past its maxStacks clamp.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "when Refresh Heart is at max stacks … 27.22%",
+      "disposition": "FAITHFUL",
+      "scope": "Conditional all-ally heal, 27.22% of the CASTER's own final Max HP each. No damage of its own — but it is the kit's big TANDEM lever: it emits recovery events to all five allies, firing every 'recovery'-triggered consumer on the team (a crown-style on-recovery kit) once per qualifying burst.",
+      "durationSemantics": "Instant one-shot per qualifying cast.",
+      "triggerIdentity": "burstCast + a stack-threshold gate: fires only when Refresh Heart is at max (5) at cast time — resourceGate {min:5} on the pool from skill1-line-2, evaluated on the pool INCLUDING this same cast's +1 increment ordering (effect order within the slot decides pre- vs post-increment; the kit reads as checked at activation, so pin the ordering deliberately and assert it). NOT fullBurstEnter, NOT unconditional.",
+      "targetSet": "allies (all, including self).",
+      "nearestWrongModel": "Gate dropped — heals on EVERY burst cast from t≈0, over-firing every on-recovery consumer roughly 1–2 extra times early-fight (before 5 stacks exist). Second-nearest: keyed fullBurstEnter (fires on team FBs pepper didn't cast — divergent in dual-B1 comps).",
+      "distinguishingAssertion": "With recovery-marker patches on ≥2 teammates: pepper's first burst (stacks<5) emits ZERO all-ally markers; the first burst after the pool hits 5 emits exactly one marker per ally. Faithful: silent-then-firing pattern with the transition at the 5-stack frame. Ungated: markers on burst #1. fullBurstEnter-keyed: markers on an FB in a variant comp where pepper's cast is withheld.",
+      "inertness": "Adds zero direct damage; in a comp with NO on-recovery consumer, removing the line changes no unit's total.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:lastBullet-heal-4.45",
+    "skill1:refresh-heart-stack-machinery",
+    "skill2:interval-160pct-damage",
+    "burst:1237.5-nuke",
+    "burst:stack-increment-refresh-heart-slice",
+    "burst:maxstack-gated-27.22-heal"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Incoming healing ▲ 6.53% (the stat magnitude — no incoming-healing StatKey and no HP pool; only the stack COUNT is modeled, as the burst-gate currency)"
+    ],
+    "skill2": [
+      "ATK ▼ 3.55% for 5 sec (enemy ATK debuff — defensive, boss deals no modeled damage)"
+    ],
+    "burst": [
+      "Increases stack count of stackable buffs by 1 (generic cross-unit stack increment — no engine primitive; only the self Refresh Heart +1 slice is modeled)"
+    ]
+  },
+  "notes": "Three things the driver must reconcile. (1) FIXTURE SHAPE: pepper is Burst I — controlComp(carry) seats the carry at B3 with liter fixed at B1, so pepper-as-carry would cast ZERO bursts and every burst-slot assertion would vacuously pass. The tests need a comp where pepper actually occupies/wins the B1 cast (replace liter, or assert her cast count > 0 as a fixture guard). This is the single most likely silent hole in a driver-authored suite. (2) OBSERVABILITY: cfg.onEvent has NO heal/recovery event kind — every heal assertion must go through a consumer instrument (withPatchedOverride a teammate with a {kind:'recovery'}-triggered marker buff and count its buffApply events). A suite that 'asserts heals' any other way is asserting nothing. (3) EXPECTED SHARED-PRIOR MISREADS: skill2's damage line has no activation clause — the taxonomy makes it an interval trigger with ⚑ cadence, and the tempting misread (inheriting skill1's lastBullet header) roughly doubles her skill damage, so the cadence-count assertion is mandatory, not optional; and skill2's ATK▼ must be pinned INERT by a whole-team A/B because the damageTakenPct misencoding is a plausible reflex that would silently buff all five units. Ordering subtlety worth an explicit test: whether burst-line-3's max-stack gate reads the pool before or after burst-line-2's +1 (a 4-stack cast is the discriminating state).",
+  "model": "claude-fable-5"
+}

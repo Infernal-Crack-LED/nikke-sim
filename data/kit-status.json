@@ -4722,6 +4722,40 @@
       ],
       "board": null
     },
+    "pepper": {
+      "name": "Pepper",
+      "burst": "I",
+      "weapon": "SG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/pepper.json + scripts/kit-autonomy/manual-review/pepper.md.",
+          "low ENCODING (data (not a kit line)): pepper has no row in data/gauge-per-shot.json: engine falls back to SG modal 400 while her datamined shot_detail carries 4500/9000 (≈900/shot, drake profile) — burst-gauge generation undervalued ~2.2×, affecting her burst cadence, nuke count, and gate timing"
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when the last bullet hits the target. Affects all allies.\nRefresh Heart: Incoming healing ▲ 6.53%, stacks up to 5 time(s) and lasts for 15 sec."
+        ],
+        "skill2": ["ATK ▼ 3.55% for 5 sec."],
+        "burst": [
+          "■ Affects all allies.\nIncreases stack count of stackable buffs by 1."
+        ]
+      },
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check: Refresh Heart no-lapse approximation (⚑3), skill2 first-fire phase t=10 convention (⚑2), kit-■-order increment-before-gate reading (4-mag-cast pin), gauge-per-shot row missing (owner data backfill)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "phantom": {
       "name": "Phantom (Treasure)",
       "burst": "III",

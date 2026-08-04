@@ -1,0 +1,56 @@
+{
+  "note": "Kit-autonomy gauntlet 2026-08-03 (first encoding — no prior override existed; simSupported flipped with this landing). pepper (Pepper) — SG / Supporter / Wind / Burst I (cd 20s), Missilis; ammo 9, hitsPerShot 10, reloadFrames 142, skill2 CD 10s. Healer/burst-I utility: her damage is the 10s-CD skill2 hit + the burst nuke; her healing is the recovery-EVENT channel only (v1 has no HP pool — heal amounts are never numbers here, by engine convention). || FULL-KIT AUDIT (every line accounted for): S1 'Refresh Heart' is a StateEffect, BOTH ■ lines trigger 'when the last bullet hits the target'. (S1a) heal the 1 ally with the lowest HP% for 4.45% of the caster's final Max HP = IMPLEMENTED lastBullet → alliesLowestHp(1) → heal. No HP pool: the heal primitive emits the recovery event channel only (the amount is unmodeled by construction, same convention as helm/crown); 'lowest HP%' resolves to the LEFTMOST ally (documented v1 stand-in, types.ts alliesLowestHp — indeterminate without an HP pool). Observable exclusively through on-recovery consumers (crown's 'when recovery takes effect'). (S1b) 'Refresh Heart: Incoming healing ▲ 6.53%, stacks up to 5, lasts 15 sec' = SPLIT: the stack COUNT is load-bearing — the burst's conditional heal gates on 'Refresh Heart at max stacks' — so the stacks are IMPLEMENTED as the `refreshHeart` resource pool (initial 0, max 5, +1 per lastBullet). The 6.53% incoming-healing MAGNITUDE has no StatKey and no HP pool to act on — genuinely unrepresentable, verbatim in unmodeled. The kit's 15s stack duration is approximated as no-lapse: at her ~8.4s SG mag-dump cadence the applications beat the window, so under refresh-on-reapply semantics the stacks ramp to 5 by the 5th magazine and never lapse while she keeps firing — behavior-identical in scope; diverges only if she stops firing for >15s (⚑3). (S2) 'Vitamin Power' has NO activation clause in the ■ header → pure internal timer: the datamined skillCooldownsSec.skill2 = 10s is the firing cadence → interval:10 → flatDamage 160 vs the enemy (single boss = trivially the highest-final-ATK enemy), first fire t=10 (the 2026-07-20 skill-cooldown convention; helm-aquamarine precedent) ⇒ 17 hits/180s. 'ATK ▼ 3.55% for 5 sec' on that enemy = UNMODELED — no enemy-ATK debuff primitive exists (damageTakenPct is a DIFFERENT mechanic: boss-takes-more, not boss-ATK-down) and the boss's ATK feeds nothing in v1 (the boss deals no modeled damage); purely defensive. (Ba) 1237.5% of final ATK as Burst Skill damage to the highest-final-ATK enemy = IMPLEMENTED burstCast → flatDamage 1237.5 (burst-cast auto FB-exempt: the cast lands BEFORE the Full Burst window opens — verified fact 2026-07-13; snapshots pre-FB; crit-eligible at the sheet rate by the flatDamage default; single boss takes the full value). (Bb) 'all allies: increases stack count of stackable buffs by 1' = SPLIT: the SELF slice IS modeled — Refresh Heart is herself a stackable buff and her burst gate reads it, so the burst grants +1 to the `refreshHeart` pool (clamped at 5) ordered BEFORE the gated heal block (the kit's ■ bullets resolve in listed order; blocks dispatch sequentially per frame, so a cast at 4 stacks completes 5 and heals on THAT cast — pinned by the spec). The GENERIC cross-unit clause (every stackable buff on every ally) = UNMODELED ⚑4: no engine primitive mutates another buff's stack count. (Bc) 'when Refresh Heart is at max stacks → all allies: heal 27.22% of the caster's final Max HP' = IMPLEMENTED burstCast + resourceGate{refreshHeart ≥ 5} → allies heal (recovery channel; amount unmodeled like all heal amounts). Fires on every pepper burst from the cast that completes 5 stacks (~4th–5th magazine onward); earlier casts stay silent — the gate is load-bearing, an ungated model over-fires every on-recovery consumer early. || ⚑ FLAGS (all unmeasured): (1) CADENCE TUPLE — ALWAYS-⚑: SG pullsPerSec class default 1.5 + reloadFrames 142 + ammo 9, all datamine; a ~15–20% mag-dump-cadence swing moves the P1 heal cadence, the stack ramp timing and hence the burst-gate transition. Recipe: read shot cadence + reload gap from any pepper-focus video. (2) S2 first-fire phase (t=10 vs t=0) — the interval convention, unpinned by footage; worth exactly 1 proc (17 vs 18 hits). Recipe: time the first 160% popup in a pepper-focus solo. (3) Refresh Heart no-lapse approximation (see S1b above). (4) OUT-OF-DOMAIN: the generic cross-unit stack increment (Bb) — estimate: +1 stack to EVERY stackable buff EVERY ally holds, per pepper burst (a real rotation lever in comps running stacking buffs); recipe: needs an engine primitive 'bump each target's stackable buffs by N' reading each holder's live maxStacks buffs; tier: out-of-domain (engine-core — no such primitive exists; the self-slice is the honest in-scope model). (5) DATA GAP (not a kit line): pepper has NO row in data/gauge-per-shot.json — the engine falls back to the SG modal 400 (4%/shot) while her datamined shot_detail carries burst_energy_pershot 4500 / target 9000 (⇒ a 900 row, the same profile as drake, which HAS one). Her burst cadence — hence nuke count and gate timing — is undervalued ~2.2× pending the row; flagged for a data backfill, not enacted here (gauge rows are datamine transcriptions, not kit encoding). || KIT-SCOPE INVARIANTS pinned by scripts/tests/units/pepper.test.ts (all 7 lines GREEN vs shipped, RED vs nearest-wrong counterfactuals): S1 heal at mag-dump cadence via the leftmost-stand-in target; zero buffs from pepper (stacks are a resource, not a buff); S2 17×160% on interval:10 (not lastBullet-contaminated, not wrong-period); NO boss debuff from pepper (the damageTakenPct reflex is caught); burst nuke 1237.5×casts, pre-FB, no +50% major; gated burst heal silent-then-firing at pool 5 WITH the cast increment included (a 4-mag cast heals shipped, waits one reload with the increment removed). Fixture: sole-B1 [crown/pepper/ada] boss Iron, focus ada — controlComp seats liter at B1, where pepper would cast zero bursts. || Kit-autonomy gauntlet 2026-08-03: test-first re-derivation converged cross-family — S2b claude-fable-5 independently derived the same dispositions, including the load-bearing Refresh Heart stack machinery the driver initially misjudged unreachable (driver assumed per-stack expiry; the engine's refresh-on-reapply semantics make the ramp monotone at her cadence).",
+  "resources": [{ "name": "refreshHeart", "initial": 0, "min": 0, "max": 5 }],
+  "unmodeled": {
+    "skill1": [
+      "■ Activates when the last bullet hits the target. Affects all allies.\nRefresh Heart: Incoming healing ▲ 6.53%, stacks up to 5 time(s) and lasts for 15 sec."
+    ],
+    "skill2": ["ATK ▼ 3.55% for 5 sec."],
+    "burst": [
+      "■ Affects all allies.\nIncreases stack count of stackable buffs by 1."
+    ]
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "lastBullet" },
+      "target": { "kind": "alliesLowestHp", "count": 1 },
+      "effects": [{ "kind": "heal" }]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "lastBullet" },
+      "target": { "kind": "self" },
+      "effects": [{ "kind": "resource", "name": "refreshHeart", "delta": 1 }]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "interval", "sec": 10 },
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "flatDamage", "atkPct": 160 }]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "flatDamage", "atkPct": 1237.5 }]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [{ "kind": "resource", "name": "refreshHeart", "delta": 1 }]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [{ "kind": "heal" }],
+      "resourceGate": { "name": "refreshHeart", "min": 5 }
+    }
+  ]
+}
