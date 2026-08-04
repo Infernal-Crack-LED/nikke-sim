@@ -1,14 +1,15 @@
 // Input-hash SSOT for the generated board artifacts — extracted VERBATIM from
 // build-dpschart.ts by Step 0 of the artifact-decoupling plan
-// (docs/handoffs/2026-08-03-artifact-store-decoupling-plan.md §5/§8). Two
-// consumers, one implementation:
+// (docs/handoffs/2026-08-03-artifact-store-decoupling-plan.md §5/§8), then
+// generalized to the other builders by Step 1. Consumers, one implementation:
 //
 //   - scripts/build-dpschart.ts — the two-level skip/carry-over gate.
+//   - the five rank-board builders + build-ol-default.ts + build-infographics.ts
+//     — embed their bucket's hash into the artifact they write.
 //   - scripts/check-board-freshness.ts — PR CI's ADVISORY staleness check of the
-//     published artifact against the committed inputs.
-//
-// Step 1 of the plan generalizes this module to the other five boards +
-// infographics (they have no input hashing today).
+//     published artifacts against the committed inputs.
+//   - scripts/tests/share/board-hash-parity.test.ts — the HARD gate on locally
+//     built / committed artifacts (skip-stale when CI fetched them instead).
 //
 // Bucket semantics:
 //   GLOBAL   — the engine, the matrix/run code, the shared data tables, and the CONTROL
@@ -262,4 +263,173 @@ export function computeDpsChartInputHashes(): DpsChartInputHashes {
     all.update(unitHashes[slug]);
   }
   return { globalHash, unitHashes, inputsHash: all.digest('hex') };
+}
+
+// ---- rank boards (Step 1) ----------------------------------------------------------
+
+// The five rank boards (burstgen/burstcdr/sustain/bufferchart/b1b2dps) share ONE
+// global bucket. Plan §5 sketched a bucket per builder, but the refresh unit is
+// `npm run ranks:all` — all five rebuild unconditionally, there is no per-board
+// carry-over to key a finer granularity to — so a single bucket over all five can
+// never mislead a decision the hash drives, and over-enumerating kills the
+// dangerous failure mode (a missed input reading FRESH). Every input any board
+// reads is in here: src/ranks imports only engine/sim, prepare, elements, types,
+// skills/index and dpschart/noop (verified 2026-08-04), plus the data tables the
+// builders load and the static JSON imports of that dep tree (gauge-per-shot via
+// sim.ts, relationship-bonus via relationship.ts).
+export const RANKS_GLOBAL_DIRS = [
+  'src/engine', // sim.ts — every board simulates
+  'src/ranks', // board logic + curated tables + artifact types
+];
+
+export const RANKS_GLOBAL_FILES = [
+  'scripts/build-burstgen.ts',
+  'scripts/build-burstcdr.ts',
+  'scripts/build-sustain.ts',
+  'scripts/build-bufferchart.ts',
+  'scripts/build-b1b2dps.ts',
+  'scripts/artifact-input-hash.ts', // this module — the hash inputs live here
+  'src/prepare.ts',
+  'src/olconfigs.ts',
+  'src/relationship.ts',
+  'src/elements.ts',
+  'src/types.ts',
+  'src/skills/index.ts',
+  'src/skills/overrides-node.ts',
+  'src/skills/scale.ts',
+  'src/skills/types.ts',
+  'src/dpschart/noop.ts', // the synthetic no-op controls' registry
+  'data/characters.json', // population + unit metadata, wholesale (no per-unit split here)
+  'data/archetype-tags.json', // burstcdr/sustain/bufferchart populations are tag-driven
+  'data/bossing-tiers.json',
+  'data/level-multiplier.json',
+  'data/cubes.json',
+  'data/ol-lines.json',
+  'data/ol-tiers.json',
+  'data/skill-levels.json', // optional at load — hashPaths skips missing paths
+  'data/gauge-per-shot.json', // static `with { type: 'json' }` import in sim.ts
+  'data/relationship-bonus.json', // static import in relationship.ts
+];
+
+// Every board loads overrides for every simSupported character (plus the NOOP
+// controls), so the whole directory is one input — per-unit decomposition would
+// buy nothing at the ranks:all refresh unit.
+export function computeRanksInputHash(): string {
+  const h = createHash('sha256');
+  const abs: string[] = [];
+  for (const d of RANKS_GLOBAL_DIRS) {
+    abs.push(...walkFiles(join(REPO_ROOT, d)));
+  }
+  for (const f of RANKS_GLOBAL_FILES) {
+    abs.push(join(REPO_ROOT, f));
+  }
+  abs.push(...walkFiles(join(REPO_ROOT, 'src/skills/overrides')));
+  hashPaths(h, abs);
+  return h.digest('hex');
+}
+
+// ---- ol-default (Step 1) -------------------------------------------------------------
+
+// ol-default.json is COMMITTED (not gitignored like the boards), built by the
+// seeded Monte-Carlo in build-ol-default.ts — so its parity gate is hard
+// everywhere: a drift is always locally fixable (rebuild + commit).
+export const OL_DEFAULT_GLOBAL_DIRS = ['src/overload'];
+
+export const OL_DEFAULT_GLOBAL_FILES = [
+  'scripts/build-ol-default.ts',
+  'scripts/artifact-input-hash.ts', // this module — the hash inputs live here
+  'data/ol-probabilities.json',
+];
+
+export function computeOlDefaultInputHash(): string {
+  const h = createHash('sha256');
+  const abs: string[] = [];
+  for (const d of OL_DEFAULT_GLOBAL_DIRS) {
+    abs.push(...walkFiles(join(REPO_ROOT, d)));
+  }
+  for (const f of OL_DEFAULT_GLOBAL_FILES) {
+    abs.push(join(REPO_ROOT, f));
+  }
+  hashPaths(h, abs);
+  return h.digest('hex');
+}
+
+// ---- infographics (Step 1) -----------------------------------------------------------
+
+// The infographic set renders the boards + characters + committed art, so its
+// inputs are the renderer code, those committed dirs, and the SEVEN artifacts'
+// CONTENT (hashed stripped, below). The hash embeds in dist/img/manifest.json.
+export const INFOGRAPHICS_GLOBAL_DIRS = [
+  'src/infographics', // core/unitCardData.ts + node/render.ts + table data
+  'web/public/img/portraits', // committed thumbs — every unit card embeds one
+  'web/public/fonts', // self-hosted Roboto subsets — the text-layout input
+];
+
+export const INFOGRAPHICS_GLOBAL_FILES = [
+  'scripts/build-infographics.ts',
+  'scripts/lib/unit-card-sources.ts',
+  'scripts/lib/portrait-thumbs.ts',
+  'scripts/artifact-input-hash.ts', // this module — the hash inputs live here
+  'data/characters.json',
+];
+
+const INFOGRAPHICS_ARTIFACT_INPUTS = [
+  'web/public/dpschart.json',
+  'web/public/burstgen.json',
+  'web/public/burstcdr.json',
+  'web/public/sustain.json',
+  'web/public/bufferchart.json',
+  'web/public/b1b2dps.json',
+  'web/public/ol-default.json',
+];
+
+// Fields that change on every rebuild without changing what downstream consumers
+// render — they must not leak into an artifact-as-INPUT hash, or rebuilding an
+// otherwise-identical board would move the infographics hash.
+const VOLATILE_ARTIFACT_KEYS = new Set([
+  'generatedAt',
+  'inputsHash',
+  'globalHash',
+  'unitHashes',
+]);
+
+function hashStrippedArtifact(h: ReturnType<typeof createHash>, abs: string): void {
+  const parsed = JSON.parse(readFileSync(abs, 'utf8')) as Record<
+    string,
+    unknown
+  >;
+  const stable: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(parsed)) {
+    if (!VOLATILE_ARTIFACT_KEYS.has(k)) {
+      stable[k] = v;
+    }
+  }
+  // JSON.stringify over the parse result keeps the builder's key order — stable
+  // because the builders write fixed object shapes.
+  h.update(JSON.stringify(stable));
+}
+
+// null = the boards are not built (--limit test mode / fresh worktree) — the
+// builder then omits inputsHash from the manifest instead of embedding a lie.
+export function computeInfographicsInputHash(): string | null {
+  for (const rel of INFOGRAPHICS_ARTIFACT_INPUTS) {
+    if (!existsSync(join(REPO_ROOT, rel))) {
+      return null;
+    }
+  }
+  const h = createHash('sha256');
+  const abs: string[] = [];
+  for (const d of INFOGRAPHICS_GLOBAL_DIRS) {
+    abs.push(...walkFiles(join(REPO_ROOT, d)));
+  }
+  for (const f of INFOGRAPHICS_GLOBAL_FILES) {
+    abs.push(join(REPO_ROOT, f));
+  }
+  hashPaths(h, abs);
+  for (const rel of INFOGRAPHICS_ARTIFACT_INPUTS) {
+    h.update(rel);
+    h.update('\0');
+    hashStrippedArtifact(h, join(REPO_ROOT, rel));
+  }
+  return h.digest('hex');
 }
