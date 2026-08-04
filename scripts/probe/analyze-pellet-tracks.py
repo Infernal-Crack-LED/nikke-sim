@@ -4543,6 +4543,375 @@ def policy_score_selftest():
     return 0 if ok and ident else 1
 
 
+# ============================================================
+# THE BACKEND/MARKER-CHANNEL AUDIT (docs/probe-runs.md §11) -- the `h4-marciana` 177-vs-176
+# divergence found in passing by the merge audit (§8H). Replays count-pellets.py's OWN
+# `debounce_shots` in-process over a dump's tracks.json `frame_counts` -- no re-implementation, no
+# local scoring variant, unlike the merge/representative-frame audits above -- and diffs it
+# event-for-event against the SHIPPED `read-pellets.ts` output already sitting in that dump's
+# pellets.json. Three questions, in order:
+#   1. SEGMENTATION LOCKSTEP -- does the Python replay's grouping/count agree with the shipped
+#      TypeScript's, event for event?
+#   2. CHANNEL CENSUS -- over every frame, do tracks.json's frame_counts and pellets.json's reads
+#      agree on white / red / marker?
+#   3. MECHANISM -- on a marker-divergent frame, do the three detector backends tie on white+red
+#      (the only channel the shipped selector ranks on), which backend(s) saw a marker, and does the
+#      dump's own marker equal opencv's?
+#
+# READ-ONLY BY CONSTRUCTION: read-pellets.ts, count-pellets.py's debounce_shots and MARKER_MIN are
+# never touched or reachable from here.
+# ============================================================
+BACKEND_MARKER_AUDIT_FIXTURE = "scripts/tests/fixtures/pellets/backend-marker-audit-slice.json"
+
+
+def _bma_valid(total, bounds):
+    return bounds[0] <= total <= bounds[1]
+
+
+def _bma_segmentation(frame_counts, fps, shipped_shots, shipped_summary, bounds):
+    """Replay count-pellets.py's OWN `debounce_shots` (imported in-process by
+    `_count_pellets_module`, same precedent as `_merge_shipped_identity`) and diff it
+    event-for-event against pellets.json's already-computed `shots`. `bounds` is the dump's OWN
+    `pellets.json["bounds"]` (min/max valid total), never hardcoded -- it is what the shipped
+    `validShots`/`avgTotal`/`avgRed` clamp was computed against."""
+    cp = _count_pellets_module()
+    py_shots, py_summary = cp.debounce_shots(frame_counts, fps,
+                                              min_pellets=bounds[0], max_pellets=bounds[1])
+    keys = ("white", "red", "total", "core", "frames")
+    n = min(len(py_shots), len(shipped_shots))
+    diff = [i for i in range(n)
+            if tuple(py_shots[i][k] for k in keys) != tuple(shipped_shots[i][k] for k in keys)]
+    flips = [i for i in diff if _bma_valid(py_shots[i]["total"], bounds)
+             != _bma_valid(shipped_shots[i]["total"], bounds)]
+    detail = [{"index": i, "start": py_shots[i]["start"], "end": py_shots[i]["end"],
+              "frames": py_shots[i]["frames"],
+              "py": {k: py_shots[i][k] for k in keys},
+              "shipped": {k: shipped_shots[i][k] for k in keys}}
+              for i in diff]
+    return {
+        "py_totalShots": len(py_shots), "shipped_totalShots": len(shipped_shots),
+        "len_mismatch": len(py_shots) != len(shipped_shots),
+        "n_events_compared": n, "n_diff_events": len(diff), "diff_events": diff,
+        "n_flip_validity": len(flips), "flip_events": flips, "diff_detail": detail,
+        "py_summary": py_summary, "shipped_summary": shipped_summary,
+    }
+
+
+def _bma_census(frame_counts, reads):
+    """Per-frame comparison of tracks.json's own `frame_counts` against pellets.json's `reads`, on
+    the three channels debounce_shots and the backend selector consume: `white`/`red` feed
+    debounce_shots's `totals` (both sides), `marker` never does -- it only feeds MARKER_MIN's
+    core-hit flag (§11E). Histogram keys are stringified up front so a freshly-computed report and
+    one round-tripped through JSON (the fixture replay) compare equal."""
+    n = min(len(frame_counts), len(reads))
+    white_diff = red_diff = 0
+    marker_diff = []
+    hist = collections.Counter()
+    for j in range(n):
+        a, b = frame_counts[j], reads[j]
+        if a["white"] != b["white"]:
+            white_diff += 1
+        if a["red"] != b["red"]:
+            red_diff += 1
+        am, bm = a.get("marker", 0), b.get("marker", 0)
+        if am != bm:
+            marker_diff.append(j)
+            hist[str(am - bm)] += 1
+    return {"n_frames": n, "white_diff_frames": white_diff, "red_diff_frames": red_diff,
+            "marker_diff_frames": marker_diff, "n_marker_diff": len(marker_diff),
+            "marker_diff_hist": dict(sorted(hist.items(), key=lambda kv: int(kv[0])))}
+
+
+def _bma_mechanism(marker_diff, frame_counts, backends_of):
+    """For every marker-divergent frame: do all three backends TIE on white+red (the only channel
+    the shipped selector ranks on, §11E), was a marker seen by opencv ONLY, and does the dump's own
+    marker equal opencv's -- the three unanimous checks §11's mechanism claim rests on."""
+    tie = opencv_only = dump_eq_opencv = 0
+    detail = []
+    for j in marker_diff:
+        be = backends_of(j)
+        wr = {k: be[k]["white"] + be[k]["red"] for k in be}
+        is_tie = len(set(wr.values())) == 1
+        saw = {k: be[k].get("marker", 0) > 0 for k in be}
+        is_opencv_only = saw.get("opencv", False) and not any(
+            v for k, v in saw.items() if k != "opencv")
+        is_dump_eq = frame_counts[j].get("marker", 0) == be.get("opencv", {}).get("marker", 0)
+        tie += is_tie
+        opencv_only += is_opencv_only
+        dump_eq_opencv += is_dump_eq
+        detail.append({"frame": j, "tie": is_tie, "opencv_only": is_opencv_only,
+                       "dump_eq_opencv": is_dump_eq})
+    return {"n": len(marker_diff), "backends_tie_white_red": tie,
+            "opencv_only_saw_marker": opencv_only, "dump_marker_eq_opencv": dump_eq_opencv,
+            "detail": detail}
+
+
+def _bma_dump_report(name, fps, frame_counts, reads, backends_of, shipped_shots, shipped_summary,
+                     bounds):
+    seg = _bma_segmentation(frame_counts, fps, shipped_shots, shipped_summary, bounds)
+    census = _bma_census(frame_counts, reads)
+    mech = _bma_mechanism(census["marker_diff_frames"], frame_counts, backends_of)
+    return {"dump": name, "fps": fps, "bounds": list(bounds),
+            "segmentation": seg, "census": census, "mechanism": mech}
+
+
+def _bma_pool(reports):
+    return {
+        "n_dumps": len(reports),
+        "n_events": sum(r["segmentation"]["n_events_compared"] for r in reports),
+        "n_diff_events": sum(r["segmentation"]["n_diff_events"] for r in reports),
+        "n_flip_validity": sum(r["segmentation"]["n_flip_validity"] for r in reports),
+        "n_frames": sum(r["census"]["n_frames"] for r in reports),
+        "n_marker_diff": sum(r["census"]["n_marker_diff"] for r in reports),
+        "white_diff_frames": sum(r["census"]["white_diff_frames"] for r in reports),
+        "red_diff_frames": sum(r["census"]["red_diff_frames"] for r in reports),
+    }
+
+
+def _bma_expected(reports):
+    """The pinned summary: per dump, the segmentation lockstep + diff detail, the channel census,
+    and the mechanism counts -- everything docs/probe-runs.md §11's numbers are read off."""
+    def block(r):
+        seg, census, mech = r["segmentation"], r["census"], r["mechanism"]
+        return {
+            "fps": r["fps"], "bounds": r["bounds"],
+            "py_totalShots": seg["py_totalShots"], "shipped_totalShots": seg["shipped_totalShots"],
+            "n_events_compared": seg["n_events_compared"], "n_diff_events": seg["n_diff_events"],
+            "diff_events": seg["diff_events"], "n_flip_validity": seg["n_flip_validity"],
+            "flip_events": seg["flip_events"], "diff_detail": seg["diff_detail"],
+            "py_summary": seg["py_summary"], "shipped_summary": seg["shipped_summary"],
+            "n_frames": census["n_frames"], "white_diff_frames": census["white_diff_frames"],
+            "red_diff_frames": census["red_diff_frames"], "n_marker_diff": census["n_marker_diff"],
+            "marker_diff_hist": census["marker_diff_hist"],
+            "mech_n": mech["n"], "backends_tie_white_red": mech["backends_tie_white_red"],
+            "opencv_only_saw_marker": mech["opencv_only_saw_marker"],
+            "dump_marker_eq_opencv": mech["dump_marker_eq_opencv"],
+            "mech_detail": mech["detail"],
+        }
+    return {"per_dump": [{"dump": r["dump"], **block(r)} for r in reports]}
+
+
+def _print_backend_marker_audit(reports, pooled):
+    print("\nSEGMENTATION LOCKSTEP -- count-pellets.py's own debounce_shots, replayed over each "
+          "dump's tracks.json frame_counts, diffed event-for-event against pellets.json's shots")
+    print(f"{'dump':26s} {'py.tot':>7s} {'sh.tot':>7s} {'ndiff':>6s} {'nflip':>6s}")
+    for r in reports:
+        seg = r["segmentation"]
+        print(f"{r['dump'][:26]:26s} {seg['py_totalShots']:7d} {seg['shipped_totalShots']:7d} "
+              f"{seg['n_diff_events']:6d} {seg['n_flip_validity']:6d}")
+    for r in reports:
+        for d in r["segmentation"]["diff_detail"]:
+            print(f"  {r['dump']} event #{d['index']} span=[{d['start']}, {d['end']}) "
+                  f"frames={d['frames']}  py={d['py']}  shipped={d['shipped']}")
+
+    print("\nCHANNEL CENSUS -- tracks.json frame_counts[j] vs pellets.json reads[j], every frame")
+    print(f"{'dump':26s} {'frames':>7s} {'white':>6s} {'red':>6s} {'marker':>7s}  hist(dump-reads)")
+    for r in reports:
+        c = r["census"]
+        print(f"{r['dump'][:26]:26s} {c['n_frames']:7d} {c['white_diff_frames']:6d} "
+              f"{c['red_diff_frames']:6d} {c['n_marker_diff']:7d}  {c['marker_diff_hist']}")
+
+    print("\nMECHANISM -- on every marker-divergent frame: do all 3 backends tie on white+red, "
+          "which saw a marker, does the dump's marker == opencv's")
+    print(f"{'dump':26s} {'n':>5s} {'tie':>5s} {'opencvOnly':>10s} {'dumpEqOpencv':>12s}")
+    for r in reports:
+        m = r["mechanism"]
+        print(f"{r['dump'][:26]:26s} {m['n']:5d} {m['backends_tie_white_red']:5d} "
+              f"{m['opencv_only_saw_marker']:10d} {m['dump_marker_eq_opencv']:12d}")
+
+    print(f"\nPOOLED over {pooled['n_dumps']} dumps: {pooled['n_events']} events compared, "
+          f"{pooled['n_diff_events']} differ, {pooled['n_flip_validity']} flip validity; "
+          f"{pooled['n_frames']} frames, {pooled['n_marker_diff']} marker-divergent "
+          f"(white diff {pooled['white_diff_frames']}, red diff {pooled['red_diff_frames']})")
+
+
+def _bma_load_dump(path):
+    """Load one --backend-marker-audit DUMP_DIR: its tracks.json (for `frame_counts`) and
+    pellets.json (for `reads`/`shots`/`summary`/`bounds`/`fps` -- the SHIPPED read-pellets.ts
+    output, read as-is, never re-derived)."""
+    d = Path(path)
+    with open(d / "tracks.json") as fh:
+        tracks = json.load(fh)
+    with open(d / "pellets.json") as fh:
+        pel = json.load(fh)
+    frame_counts = tracks.get("frame_counts") or []
+    if not frame_counts:
+        raise SystemExit(f"--backend-marker-audit: {d}/tracks.json carries no `frame_counts` "
+                         "(re-dump with count-pellets.py --dump-tracks)")
+    reads = pel["reads"]
+    shipped_shots = pel["shots"]
+    shipped_summary = {k: pel["summary"][k]
+                       for k in ("totalShots", "validShots", "avgTotal", "avgRed")}
+    bounds = (pel["bounds"]["min"], pel["bounds"]["max"])
+    return d.name, pel["fps"], frame_counts, reads, shipped_shots, shipped_summary, bounds
+
+
+def _bma_slim(name, fps, frame_counts, reads, shipped_shots, shipped_summary, bounds, marker_diff):
+    """One dump reduced to compact tuples for the fixture. FULL frame_counts/reads/shots -- NOT
+    sliced to a window like `_merge_slim`/`_rep_slim` -- because §11's pinned numbers (totalShots,
+    which event differs) are FULL-CLIP totals; a window slice would change `totalShots` and stop
+    being the number docs/probe-runs.md cites. `backends_divergent` carries the per-backend
+    white/red/marker triple ONLY for the marker-divergent frames -- the only ones the mechanism
+    check ever reads; storing all ~5700 frames' 9-int backend triples would be a large size increase
+    for data that agrees on every other frame."""
+    return {
+        "dump": name, "fps": fps, "bounds": list(bounds),
+        "frame_counts": [[c["white"], c["red"], c.get("marker", 0)] for c in frame_counts],
+        "reads": [[r["white"], r["red"], r.get("marker", 0), r["total"], int(bool(r["valid"]))]
+                  for r in reads],
+        "shots": [[s["white"], s["red"], s["total"], s["frames"], int(bool(s["core"]))]
+                  for s in shipped_shots],
+        "summary": shipped_summary,
+        "backends_divergent": [
+            [j] + [reads[j]["backends"][be].get(field, 0)
+                   for be in ("numpy", "pil", "opencv") for field in ("white", "red", "marker")]
+            for j in marker_diff
+        ],
+    }
+
+
+def _bma_expand(d):
+    """Compact fixture tuples -> the dict/callable shapes `_bma_dump_report` reads. Mirrors
+    `_merge_expand`/`_rep_expand_dump`."""
+    frame_counts = [{"white": w, "red": r, "marker": m} for w, r, m in d["frame_counts"]]
+    reads = [{"white": w, "red": r, "marker": m, "total": t, "valid": bool(v)}
+             for w, r, m, t, v in d["reads"]]
+    shipped_shots = [{"white": w, "red": r, "total": t, "frames": f, "core": bool(c)}
+                     for w, r, t, f, c in d["shots"]]
+    backends_map = {}
+    for row in d["backends_divergent"]:
+        j, nw, nr, nm, pw, pr, pm, ow, orr, om = row
+        backends_map[j] = {"numpy": {"white": nw, "red": nr, "marker": nm},
+                           "pil": {"white": pw, "red": pr, "marker": pm},
+                           "opencv": {"white": ow, "red": orr, "marker": om}}
+
+    def backends_of(j):
+        return backends_map[j]
+    return (d["dump"], d["fps"], frame_counts, reads, backends_of, shipped_shots, d["summary"],
+            tuple(d["bounds"]))
+
+
+def audit_backend_marker(dump_dirs, save_fixture=None):
+    reports, slims = [], []
+    for path in dump_dirs:
+        name, fps, frame_counts, reads, shipped_shots, shipped_summary, bounds = _bma_load_dump(path)
+
+        def backends_of(j, reads=reads):
+            return reads[j]["backends"]
+        rep = _bma_dump_report(name, fps, frame_counts, reads, backends_of, shipped_shots,
+                               shipped_summary, bounds)
+        reports.append(rep)
+        if save_fixture:
+            slims.append(_bma_slim(name, fps, frame_counts, reads, shipped_shots, shipped_summary,
+                                   bounds, rep["census"]["marker_diff_frames"]))
+    if not reports:
+        print("no readable dumps given")
+        return None
+    pooled = _bma_pool(reports)
+    if save_fixture:
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("Each dump's committed tracks.json (count-pellets.py --dump-tracks) + "
+                            "pellets.json (the shipped read-pellets.ts output), for the "
+                            "2026-08-04 backend/marker-channel audit (docs/probe-runs.md §11). "
+                            "Constraint 9 self-validation, same precedent as merge-audit-slice.json."),
+                "_note": ("FULL-CLIP per dump, not a window slice (see _bma_slim's docstring): "
+                          "`frame_counts` are [white, red, marker] tuples, `reads` are "
+                          "[white, red, marker, total, valid01] tuples, `shots` are "
+                          "[white, red, total, frames, core01] tuples, and "
+                          "`backends_divergent` is [frame, numpy.white, numpy.red, numpy.marker, "
+                          "pil.white, pil.red, pil.marker, opencv.white, opencv.red, "
+                          "opencv.marker] for every marker-divergent frame only. Regenerate with "
+                          "analyze-pellet-tracks.py --backend-marker-audit <dump-dir...> "
+                          "--save-backend-marker-audit-fixture <path>."),
+                "dumps": slims,
+                "_expected": _bma_expected(reports),
+            }, fh)
+        print(f"wrote backend-marker-audit fixture -> {save_fixture}")
+    _print_backend_marker_audit(reports, pooled)
+    return {"dumps": reports, "pooled": pooled}
+
+
+def backend_marker_audit_selftest():
+    """Constraint 9 self-validation: replay the whole arm over the committed FULL-CLIP dumps and
+    assert both the general `_expected` dict AND the §11 pinned h4-marciana-structural numbers
+    explicitly, so a fixture edit that moved one of them cannot hide behind a coarse dict-equality
+    pass."""
+    with open(BACKEND_MARKER_AUDIT_FIXTURE) as fh:
+        fx = json.load(fh)
+    reports = []
+    expanded_by_name = {}
+    for d in fx["dumps"]:
+        name, fps, frame_counts, reads, backends_of, shipped_shots, shipped_summary, bounds = \
+            _bma_expand(d)
+        expanded_by_name[name] = (frame_counts, backends_of)
+        reports.append(_bma_dump_report(name, fps, frame_counts, reads, backends_of, shipped_shots,
+                                        shipped_summary, bounds))
+    pooled = _bma_pool(reports)
+    got = _bma_expected(reports)
+    ok = got == fx["_expected"]
+    if not ok:
+        for g, e in zip(got["per_dump"], fx["_expected"]["per_dump"]):
+            if g != e:
+                print(f"  DIFF dump {g.get('dump')}:\n    expected {json.dumps(e)}"
+                      f"\n    got      {json.dumps(g)}")
+
+    anchor = next((r for r in reports if r["dump"] == "h4-marciana-structural"), None)
+    checks = []
+    if anchor is None:
+        checks.append(("h4-marciana-structural present", False))
+    else:
+        seg, census, mech = anchor["segmentation"], anchor["census"], anchor["mechanism"]
+        ps, ss = seg["py_summary"], seg["shipped_summary"]
+        e56 = next((d for d in seg["diff_detail"] if d["index"] == 56), None)
+        checks += [
+            ("py_totalShots == 218", seg["py_totalShots"] == 218),
+            ("shipped_totalShots == 218", seg["shipped_totalShots"] == 218),
+            ("n_diff_events == 1", seg["n_diff_events"] == 1),
+            ("diff_events == [56]", seg["diff_events"] == [56]),
+            ("n_flip_validity == 1", seg["n_flip_validity"] == 1),
+            ("event 56 exists", e56 is not None),
+            ("event 56 span == [1555, 1569)", e56 is not None and (e56["start"], e56["end"])
+             == (1555, 1569)),
+            ("event 56 frames == 14", e56 is not None and e56["frames"] == 14),
+            ("event 56 py white/red/total/core == 4/1/5/True", e56 is not None
+             and (e56["py"]["white"], e56["py"]["red"], e56["py"]["total"], e56["py"]["core"])
+             == (4, 1, 5, True)),
+            ("event 56 shipped white/red/total/core == 4/0/4/False", e56 is not None
+             and (e56["shipped"]["white"], e56["shipped"]["red"], e56["shipped"]["total"],
+                  e56["shipped"]["core"]) == (4, 0, 4, False)),
+            ("py validShots/avgTotal/avgRed == 177/7.2/0.15",
+             (ps["validShots"], ps["avgTotal"], ps["avgRed"]) == (177, 7.2, 0.15)),
+            ("shipped validShots/avgTotal/avgRed == 176/7.3/0.14",
+             (ss["validShots"], ss["avgTotal"], ss["avgRed"]) == (176, 7.3, 0.14)),
+            ("white_diff_frames == 0", census["white_diff_frames"] == 0),
+            ("red_diff_frames == 0", census["red_diff_frames"] == 0),
+            ("n_marker_diff == 82", census["n_marker_diff"] == 82),
+            ("marker_diff_hist == {1:76, 2:4, 3:2}",
+             census["marker_diff_hist"] == {"1": 76, "2": 4, "3": 2}),
+            ("mechanism n == 82", mech["n"] == 82),
+            ("backends_tie_white_red == 82/82", mech["backends_tie_white_red"] == 82),
+            ("opencv_only_saw_marker == 82/82", mech["opencv_only_saw_marker"] == 82),
+            ("dump_marker_eq_opencv == 82/82", mech["dump_marker_eq_opencv"] == 82),
+        ]
+        frame_counts, backends_of = expanded_by_name["h4-marciana-structural"]
+        be1565 = backends_of(1565)
+        checks.append(("frame 1565 backends numpy/pil/opencv == "
+                       "{0,0,0}/{0,0,0}/{white 0, red 0, marker 3}",
+                       be1565["numpy"] == {"white": 0, "red": 0, "marker": 0}
+                       and be1565["pil"] == {"white": 0, "red": 0, "marker": 0}
+                       and be1565["opencv"] == {"white": 0, "red": 0, "marker": 3}))
+
+    all_ok = ok and all(v for _, v in checks)
+    for label, v in checks:
+        print(f"  {'PASS' if v else 'FAIL'}  {label}")
+    print(f"pooled over {pooled['n_dumps']} dumps: {pooled['n_events']} events, "
+          f"{pooled['n_diff_events']} differ, {pooled['n_flip_validity']} flip validity, "
+          f"{pooled['n_marker_diff']}/{pooled['n_frames']} frames marker-divergent")
+    print("SELFTEST PASS" if all_ok else "SELFTEST FAIL")
+    return 0 if all_ok else 1
+
+
 FIXTURE = "scripts/tests/fixtures/pellets/run16-tracks-slice.json"
 
 # Pinned from the committed fixture (a 400-frame slice of the run16 dump). These reproduce the
@@ -4810,6 +5179,26 @@ def main():
     ap.add_argument("--gt-score-json", metavar="PATH",
                      help="score-pellets.py --real-fixture stdout JSON (carries each shot's owner "
                           "count, the shipped estimator's error and its per-offset counts)")
+    ap.add_argument("--backend-marker-audit", nargs="+", metavar="DUMP_DIR",
+                    help=("THE BACKEND/MARKER-CHANNEL AUDIT (docs/probe-runs.md §11): replays "
+                          "count-pellets.py's OWN debounce_shots in-process over each dump's "
+                          "tracks.json `frame_counts` and diffs it event-for-event against the "
+                          "SHIPPED read-pellets.ts output already sitting in that dump's "
+                          "pellets.json -- no segmentation logic is re-implemented here. Reports, "
+                          "per dump: the segmentation lockstep (totalShots both sides, which "
+                          "events differ and on which fields, which flip the 5..10 valid-total "
+                          "clamp), a full-clip channel census (white/red/marker) between "
+                          "tracks.json's frame_counts and pellets.json's reads, and, for every "
+                          "marker-divergent frame, the backend-selector mechanism (does the "
+                          "winning backend tie on white+red with the others, which backend(s) saw "
+                          "a marker, does the dump's own marker equal opencv's). Each DUMP_DIR "
+                          "must contain both tracks.json and pellets.json. read-pellets.ts, "
+                          "count-pellets.py's debounce_shots and MARKER_MIN are UNCHANGED by this "
+                          "arm."))
+    ap.add_argument("--save-backend-marker-audit-fixture", metavar="PATH",
+                    help=f"write the committed replay fixture (see {BACKEND_MARKER_AUDIT_FIXTURE})")
+    ap.add_argument("--backend-marker-audit-selftest", action="store_true",
+                    help=f"replay {BACKEND_MARKER_AUDIT_FIXTURE} and exit")
     args = ap.parse_args()
 
     if args.stale_counting_selftest:
@@ -4824,6 +5213,11 @@ def main():
         raise SystemExit(oracle_ceiling_selftest())
     if args.representative_audit_selftest:
         raise SystemExit(representative_audit_selftest())
+    if args.backend_marker_audit_selftest:
+        raise SystemExit(backend_marker_audit_selftest())
+    if args.backend_marker_audit:
+        audit_backend_marker(args.backend_marker_audit, args.save_backend_marker_audit_fixture)
+        return 0
     if args.policy_score_selftest:
         raise SystemExit(policy_score_selftest())
     if args.policy_score:
