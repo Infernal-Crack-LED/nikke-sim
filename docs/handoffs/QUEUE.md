@@ -307,9 +307,16 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
     re-extracted**. ⚑ Also open from it: `--dump-tracks` never carries the `band` series, so any
     such dump replays as pre-hybrid and cannot exercise the landing (§16E; production reader is
     unaffected — it parses `--temporal` stdout).
-  - **⚑ The cold bias is NOT closed** and `avgTotal` may not be cited as evidence that it is — it is
-    a per-EVENT pooled figure, a different basis from the per-SHOT ~1.08 deficit. Settling the bias
-    now gates on whether the 8.40 f8–11 **window** reference is itself right (handoff item 2).
+  - ✅ **THE 8.40 REFERENCE IS CONFIRMED, 2026-08-04, OWNER-CONFIRMED** (`docs/probe-runs.md` §18).
+    Nothing lands and fades before `t0+8`, so the f8–11 window count IS the landed total. Of 140
+    screened tracks, 11 were candidates, shot 2's `hitsPerShot` ceiling killed 5 by arithmetic, and
+    all 6 survivors adjudicated **not pellets** (HUD ammo-bar segments at a fixed `dy ≈ −40`, and
+    rising damage numbers). ⇒ **the ~1.08 cold bias is real reader behaviour, not a bad target**,
+    and the old "no bias verdict is possible until this is settled" block is **LIFTED**.
+  - **⚑ The cold bias is still NOT closed** — the target being right says what the bias _isn't_.
+    `avgTotal` may not be cited as evidence it is closed: it is a per-EVENT pooled figure, a
+    different basis from the per-SHOT ~1.08 deficit. The remaining channels (radius gate,
+    missing-shot channel, fragmentation) now carry all of it.
   - Item 7's prerequisite (is opencv's `marker = 3` at frame 1565 a true core hit?) is **ANSWERED —
     no**, at n=1 (`docs/probe-runs.md` §15). The `read-pellets.ts:882` selector fix stays
     owner-gated; do not self-authorize it on an n=1 read.

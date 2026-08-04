@@ -25,10 +25,15 @@ before the edit held exactly (zero fixtures, zero pins)**. Three cross-family ga
 (`kimi-code/k3`): pre-op `APPROVED-WITH-REVISIONS` (7 mandatory, all executed before any number
 existed), and two post-op `ACCEPT`s.
 
-⚑ **Two things that must not be misread.** **The cold bias is NOT closed and must not be described
-as closed** (§2, §5.4). And **nothing on the board moves until footage is RE-EXTRACTED** — the
-improvement reaches new extractions only; every committed dump keeps the band values it was
-extracted with (§7.1).
+⚑ **Then the REFERENCE was confirmed** (`docs/probe-runs.md` §18, OWNER-CONFIRMED): **nothing lands
+and fades before `t0+8`**, so the f8–11 window count IS the landed total and **8.40 stands**. ⇒ the
+~1.08 cold bias is **real reader behaviour, not a mis-specified target**, and the block on ever
+stamping a bias verdict is **lifted** (§7.2).
+
+⚑ **Two things that must not be misread.** **The cold bias is still NOT closed** — confirming the
+target says what the bias _isn't_, not that it is fixed (§2, §5.4). And **nothing on the board moves
+until footage is RE-EXTRACTED** — the `band_hi` improvement reaches new extractions only; every
+committed dump keeps the band values it was extracted with (§7.1).
 
 §3 below is retained because it is _why_ the landing is shaped the way it is, and because the
 restructure it describes is now live code.
@@ -223,10 +228,17 @@ untouched. **Zero fixtures and zero pins moved across BOTH passes.**
    changes the dump format ⇒ its own blast-radius pass.
    (b) The improvement reaches **new extractions only** — the committed dumps keep the band values
    they were extracted with, by design. **Nothing on the board moves until something is re-extracted.**
-2. **⚑ IS THE TARGET ITSELF RIGHT? — promoted, and it now GATES the bias question.** §9A made 8.40
-   an f8–11 **window** count. Until "does any marker fade before t0+8?" is settled with owner labels
-   at the plateau frame, **no bias-CLOSED verdict is possible whatever the cap does** (§5.4). This
-   is now the cheapest thing standing between the project and a real answer on the cold bias.
+2. ~~**IS THE TARGET ITSELF RIGHT?**~~ — ✅ **CLOSED 2026-08-04, OWNER-CONFIRMED**
+   (`docs/probe-runs.md` §18). **NO marker lands and fully fades before `t0+8`** — the f8–11 window
+   count IS the landed total and **8.40 is CONFIRMED as the reference.** Of 140 screened tracks only
+   11 were ever candidates (nothing dying before `t0+8` exceeds life 5, against an owner-pellet
+   minimum of 8); shot 2 being at the `hitsPerShot = 10` ceiling killed 5 by arithmetic; all 6
+   survivors were adjudicated **not pellets** — HUD ammo-bar segments at a fixed `dy ≈ −40` and
+   rising damage numbers. ⇒ **The ~1.08 cold bias is NOT a mis-specified target; it is real reader
+   behaviour**, and the radius gate / missing-shot channel / fragmentation carry all of it.
+   ⚑ **This LIFTS the block on bias verdicts** — §5.4's "no bias-CLOSED verdict is possible" no
+   longer binds, and a re-extraction under the landed `band_hi = 20` now gives a clean before/after
+   against a confirmed reference.
 3. **⚑ PRODUCTION MISLOCK RATE — unquantified, and in-sample the LARGEST gate-loss channel** (7 of
    13 discarded owner pellets, more than the cap's 5). Sits upstream of every shot-conditioned
    measurement. Question: **what fraction of production shots are mislocked?**
