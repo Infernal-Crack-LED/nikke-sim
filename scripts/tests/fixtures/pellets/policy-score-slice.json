@@ -25,6 +25,11 @@
           "total": 5,
           "in_plateau": true
         },
+        "hybrid_plateau_median": {
+          "rep_offset": 5,
+          "total": 5,
+          "in_plateau": true
+        },
         "lifetime_band_count": {
           "count": 6
         }
@@ -46,6 +51,11 @@
           "in_plateau": true
         },
         "plateau_median": {
+          "rep_offset": 10,
+          "total": 8,
+          "in_plateau": true
+        },
+        "hybrid_plateau_median": {
           "rep_offset": 10,
           "total": 8,
           "in_plateau": true
@@ -75,6 +85,11 @@
           "total": 7,
           "in_plateau": true
         },
+        "hybrid_plateau_median": {
+          "rep_offset": 6,
+          "total": 7,
+          "in_plateau": true
+        },
         "lifetime_band_count": {
           "count": 7
         }
@@ -96,6 +111,11 @@
           "in_plateau": true
         },
         "plateau_median": {
+          "rep_offset": 10,
+          "total": 7,
+          "in_plateau": true
+        },
+        "hybrid_plateau_median": {
           "rep_offset": 10,
           "total": 7,
           "in_plateau": true
@@ -125,6 +145,11 @@
           "total": 8,
           "in_plateau": true
         },
+        "hybrid_plateau_median": {
+          "rep_offset": 10,
+          "total": 8,
+          "in_plateau": true
+        },
         "lifetime_band_count": {
           "count": 8
         }
@@ -133,13 +158,18 @@
     "categorical_scores": {
       "shipped_median": 2,
       "lifetime_gated_median": 5,
-      "plateau_median": 5
+      "plateau_median": 5,
+      "hybrid_plateau_median": 5
     },
     "per_dump": [
       {
         "dump": "groundtruth-f811-v4/tracks.json",
         "fps": 60.0,
         "n_events": 37,
+        "hybrid_decomposition": {
+          "n_banded": 30,
+          "n_fallback": 7
+        },
         "shipped_median": {
           "n_scored": 37,
           "no_rep": 0,
@@ -163,12 +193,22 @@
           "no_rep": 0,
           "sum_total": 208,
           "above_ceiling": 1
+        },
+        "hybrid_plateau_median": {
+          "n_scored": 37,
+          "no_rep": 0,
+          "sum_total": 218,
+          "above_ceiling": 0
         }
       },
       {
         "dump": "h4-marciana-structural/tracks.json",
         "fps": 30.0,
         "n_events": 218,
+        "hybrid_decomposition": {
+          "n_banded": 192,
+          "n_fallback": 26
+        },
         "shipped_median": {
           "n_scored": 218,
           "no_rep": 0,
@@ -192,12 +232,22 @@
           "no_rep": 0,
           "sum_total": 1388,
           "above_ceiling": 7
+        },
+        "hybrid_plateau_median": {
+          "n_scored": 218,
+          "no_rep": 0,
+          "sum_total": 1335,
+          "above_ceiling": 1
         }
       },
       {
         "dump": "h4-isabel-structural/tracks.json",
         "fps": 30.0,
         "n_events": 203,
+        "hybrid_decomposition": {
+          "n_banded": 174,
+          "n_fallback": 29
+        },
         "shipped_median": {
           "n_scored": 203,
           "no_rep": 0,
@@ -221,12 +271,22 @@
           "no_rep": 0,
           "sum_total": 1311,
           "above_ceiling": 13
+        },
+        "hybrid_plateau_median": {
+          "n_scored": 203,
+          "no_rep": 0,
+          "sum_total": 1250,
+          "above_ceiling": 5
         }
       },
       {
         "dump": "h4-guilty-structural/tracks.json",
         "fps": 30.0,
         "n_events": 180,
+        "hybrid_decomposition": {
+          "n_banded": 155,
+          "n_fallback": 25
+        },
         "shipped_median": {
           "n_scored": 180,
           "no_rep": 0,
@@ -250,12 +310,22 @@
           "no_rep": 0,
           "sum_total": 1116,
           "above_ceiling": 8
+        },
+        "hybrid_plateau_median": {
+          "n_scored": 180,
+          "no_rep": 0,
+          "sum_total": 1094,
+          "above_ceiling": 1
         }
       },
       {
         "dump": "g2-noir-structural/tracks.json",
         "fps": 30.0,
         "n_events": 214,
+        "hybrid_decomposition": {
+          "n_banded": 189,
+          "n_fallback": 25
+        },
         "shipped_median": {
           "n_scored": 214,
           "no_rep": 0,
@@ -279,6 +349,12 @@
           "no_rep": 0,
           "sum_total": 1466,
           "above_ceiling": 18
+        },
+        "hybrid_plateau_median": {
+          "n_scored": 214,
+          "no_rep": 0,
+          "sum_total": 1348,
+          "above_ceiling": 8
         }
       }
     ],
@@ -310,7 +386,18 @@
         "no_rep": 0,
         "avgTotal": 6.4425,
         "above_ceiling_pct": 5.5
+      },
+      "hybrid_plateau_median": {
+        "n_events": 852,
+        "n_scored": 852,
+        "no_rep": 0,
+        "avgTotal": 6.1561,
+        "above_ceiling_pct": 1.8
       }
+    },
+    "hybrid_decomposition_pooled": {
+      "n_banded": 740,
+      "n_fallback": 112
     }
   }
 }
