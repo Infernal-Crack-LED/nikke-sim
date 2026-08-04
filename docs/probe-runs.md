@@ -5127,3 +5127,104 @@ STAMPED** (pre-commit §2.5, plan §3). The landing was judged on categorical pe
 invariant preservation only. The ~1.08 per-shot deficit is measured against an f8–11 **window**
 reference (§9A) whose correctness is itself unsettled — that question gates any bias claim, and it
 is untouched here.
+
+#### §17 THE `run21` / `run21b` FAR-BAND RE-LOCALIZATION — structural fixes the lock RATE and NOT the lock QUALITY; these windows stay unusable
+
+Settles the "60 fps localization instability" open item, which instructed: "never re-extracted under
+`--locate structural` — re-extract before designing any fix." Re-localized. **The answer is not the
+one the item anticipated.**
+
+##### §17A — The framing in the open item was wrong
+
+"60 fps localization instability" is not supported as a general claim. Of the six 60 fps dumps,
+**four lock 100% of frames already** — `i3-noir-far-60fps`, `i3-noir-near-60fps`,
+`i2-marciana-60fps`, `run20-60fps-premise`. ⚑ **`i3-noir-far-60fps` is the same far-band condition**
+that `run21` fails in, and `run20-60fps-premise` is the same 901-frame length under the same params
+on different footage. Neither 60 fps nor the far band is the discriminator.
+
+##### §17B — Re-localization: the lock RATE is fixed
+
+Frames were already on disk, so this is a re-**localization**, not a re-extraction from video (no
+ffmpeg, no owner time). 1622 frames, **87 s wall-clock total**.
+
+| dump     | template (old) | structural (new)      | unlocked frames               |
+| -------- | -------------- | --------------------- | ----------------------------- |
+| `run21`  | 0 / 901 (0.0%) | **901 / 901 (100%)**  | none                          |
+| `run21b` | 0 / 721 (0.0%) | **717 / 721 (99.4%)** | 4, all at index 0–3 (warm-up) |
+
+##### §17C — ⚑ AND THE LOCK QUALITY IS THE WHOLE STORY: ~81% of those locks are HELD
+
+In structural mode a **held (stale) lock is recorded as `cross_confs = None`** while
+`cross_positions` still carries the last accepted value — so a held lock is indistinguishable from a
+fresh one if you only count positions.
+
+| dump                              | positions | **held (`conf is None`)** |
+| --------------------------------- | --------- | ------------------------- |
+| `run21-60fps-farband-structural`  | 100%      | **82.4%**                 |
+| `run21b-60fps-farband-structural` | 99.4%     | **80.4%**                 |
+| `i3-noir-far-60fps` (far band)    | 100%      | 8.1%                      |
+| `h4-marciana-structural`          | 96.1%     | 21.4%                     |
+
+⇒ **The structural localizer finds the ammo digit row on only ~18–20% of frames in these windows;
+the rest is carried forward.** That is 4–10× the held rate of every comparable dump.
+
+`--stale-counting` over both, at counting frames (`t0+8…t0+11` of every debounced shot):
+
+- all-frames stale **81.26%**, counting-frame **73.33%** (enrichment 0.90×, n = 120 counting frames);
+- **29 of 30 shots carry ≥ 1 stale counting frame**;
+- pooled run-displacement (upper bound) median **202.6 px**, p90 **401.9 px**, max **478.0 px** —
+  against `pellet_radius` **160 px**, so the counting window is routinely pointed **completely off**
+  the pellet cloud. The interpolated per-frame estimate is median 71.5 px, p90 270.4 px, with 21 of
+  88 runs still over 160 px;
+- A/B (exclude − include) over 18 affected shots: median −0.167, mean +0.245, sd 1.983,
+  **+0.1472 pellets/shot** diluted over all scored shots.
+
+##### §17D — VERDICT
+
+**Structural is not a fix for these two windows.** It converts a **loud** failure (0% positions,
+obviously unusable) into a **silent** one (100% positions, ~81% of them fabricated by hold). ⚑ For
+any consumer that checks lock _rate_ rather than lock _provenance_, the re-localized dumps are more
+dangerous than the originals, not less.
+
+⇒ **`run21` / `run21b` remain UNUSABLE for pellet counting**, now for a measured reason rather than
+an unexamined one. The open item is ANSWERED — and answered in the negative.
+
+##### §17E — n, scope, and what this does NOT establish
+
+Two 15-second far-band windows, 1622 frames, 30 debounced shots, ONE unit. ⚑ **The unit and source
+video for `run21`/`run21b` were never identified** in this pass — relevant because the default
+`--struct-offset-x` is calibrated against the template-derived crosshair on `marciana` (SG/Iron).
+HUD geometry should be unit-independent, but that is an assumption, not a measurement.
+
+⛔ **This does NOT answer the production mislock rate.** These are the worst-case probe, not the
+production corpus — `h4-marciana-structural`'s **21.4% held** is the number that bears on production,
+and "held" is not the same as "wrong" (a held lock is correct whenever the crosshair did not move).
+Quantifying that remains open and needs the displacement test, not the hold rate.
+
+⚑ **Why these windows fail is UNEXPLAINED.** One hypothesis was inspected and NOT confirmed: the
+`run21` HUD cluster appears smaller than `run20`'s, which would defeat a fixed-scale template match
+(observed template confidences 0.357–0.467 against a 0.6 gate) — but a red-pixel bounding-box
+measurement picked up damage numbers and health bars too and could not separate the HUD. Recorded as
+an unverified impression, not a finding.
+
+##### §17F — Instrument and reproduction
+
+```sh
+# re-localize (frames already on disk; ~87s for both):
+scripts/probe/.venv/bin/python scripts/probe/count-pellets.py \
+  <scratchpad>/pellets/run21-60fps-farband/frames-pellet \
+  --locate structural --temporal --fps 60 --max-pellet-frames 13 \
+  --min-area 25 --max-area 750 --min-circ 0.55 --center-exclude 36.0 --pellet-radius 160 \
+  --dump-tracks <scratchpad>/pellets/run21-60fps-farband-structural/tracks.json
+# lock-quality check:
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --stale-counting \
+  <scratchpad>/pellets/run21{,b}-60fps-farband-structural/tracks.json --stale-counting-fps 60
+```
+
+⚠ Both instruments are committed; the dumps and frames are in the **gitignored** scratchpad, so these
+numbers are reproducible only while that scratchpad survives. No fixture was pinned for them
+deliberately — this is a NEGATIVE result about two unusable windows, and pinning it would have moved
+the existing `stale-counting-slice.json`.
+
+**RECORDS a measurement only.** No constant, guard, threshold, default or `DECISIONS.md` entry was
+changed, and nothing was enacted.

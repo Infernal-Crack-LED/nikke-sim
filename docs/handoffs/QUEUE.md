@@ -370,11 +370,17 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
        RE-PROPOSE**: pooled MISSED 7.0% → **14.5%**, worse on 7 of 8 series, 32 vs a hand count of
        36 on `isabel`; root defect is **no minimum-duration guard** (fires on a one-frame VFX spike,
        then refracts over the real shot).
-    3. **60 fps LOCALIZATION INSTABILITY — a DIFFERENT fault from stale locks, still OPEN.**
-       `run21`/`run21b` are **template-mode** dumps: `cross_confs` populated on 100% of frames
-       (0.357–0.467), `cross_positions` **None on 100%**; the held-lock mechanism requires
-       `conf is None`, which never occurs there. **These far-band windows have never been
-       re-extracted under `--locate structural`** — re-extract before designing any fix.
+    3. ✅ **60 fps LOCALIZATION INSTABILITY — CLOSED 2026-08-04, answered in the NEGATIVE**
+       (`docs/probe-runs.md` §17). Re-localized `run21`/`run21b` under `--locate structural`: lock
+       rate **0% → 100% / 99.4%**, but **~81% of those locks are HELD** (vs 8.1% on the working
+       far-band dump `i3-noir-far-60fps`, 21.4% on `h4-marciana-structural`), stale displacement
+       median **202.6 px** against a 160 px `pellet_radius`, 29 of 30 shots carrying a stale
+       counting frame. ⚑ **Structural turns a LOUD failure into a SILENT one** — these two windows
+       stay UNUSABLE, and the re-localized dumps are more dangerous to a consumer that checks lock
+       RATE rather than lock PROVENANCE. ⚑ The item's framing was wrong too: 4 of 6 60 fps dumps
+       already lock 100%, one of them far-band, so neither 60 fps nor the far band is the
+       discriminator. **Why these two windows fail is UNEXPLAINED** (§17E), and this gates nothing —
+       the production mislock question needs a displacement test on the production dumps instead.
     4. **THE WORKTREE HOOK GAP.** `core.hooksPath=.husky/_`, but `.husky/_` is husky's **gitignored
        generated** directory, created by `npm install` in the main repo and **never present in a git
        worktree** — so **every commit in any `nikke-sim-wt-*` worktree silently bypasses lint-staged
