@@ -1,0 +1,92 @@
+{
+  "slug": "cocoa",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Restores 17.76% of Cover HP",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "Cover-HP restoration, all allies — not unit-HP healing, not damage",
+      "durationSemantics": "Instant effect per activation; no duration",
+      "triggerIdentity": "No activation clause in prose → interval trigger on the datamined skill cooldown (kit header shows cd 20s; ⚑ confirm which CD field is skill1's). First-fire t=CD per convention (no 'Forcefully uses' clause).",
+      "targetSet": "allies (all) — each ally's cover, not the unit",
+      "nearestWrongModel": "Encoding this as a `heal` effect to all allies, which emits 'recovery' events every interval and pumps any on-recovery consumer — and crown (an on-recovery kit) sits in the control comp, so this misread silently activates a teammate engine. The opposite misread (dropping the line with no unmodeled record) is the lesser trap.",
+      "distinguishingAssertion": "Run controlComp with cocoa vs the same comp with cocoa's skill1 patched empty via withPatchedOverride: totals(res) must be identical for EVERY slug (esp. crown), and no periodic recovery-driven buffApply attributable to cocoa's interval should appear — GREEN under the default no-emit model, RED if a heal effect was authored. Whether in-game cover repair fires ally on-recovery triggers is unmeasured; if the driver emits recovery events, that choice needs a measurement citation, not a guess.",
+      "inertness": "Must not change any unit's totalDamage; must not fire teammates' recovery triggers under the default model",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "2 random ally … Removes 1 debuff(s)",
+      "disposition": "UNMODELED",
+      "scope": "Debuff cleanse only; no stat, no damage",
+      "durationSemantics": "Instant; none",
+      "triggerIdentity": "Same interval activation as the sibling skill1 line (one skill, two ■ blocks)",
+      "targetSet": "2 random allies with debuffs — random targeting is unsupported and vacuous (scope-lock boss applies no ally debuffs)",
+      "nearestWrongModel": "Inventing any stat effect for 'removes debuffs' (e.g. a cleanse-as-buff), or modeling random targeting machinery for a line that can never fire at scope",
+      "distinguishingAssertion": "Event log contains zero buffApply/buffRemove events sourced from this line; totals identical with the line present vs absent. Line text appears verbatim in unmodeled.skill1.",
+      "inertness": "Everything — the line is fully inert at scope lock",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Tomato Sauce: Damage Taken ▼ 4.37%",
+      "disposition": "UNMODELED",
+      "scope": "SELF-defensive damage-taken reduction — NOT a boss debuff, NOT team damage",
+      "durationSemantics": "Stacking buff: up to 15 stacks, each application lasting/refreshing 5 sec. Wall-clock seconds, not rounds. With SR cadence (chargeFrames 60 + release latency per shot, ammo 6, reloadFrames 141 ≈ 2.35s < 5s), stacks plausibly never lapse once firing starts and reach 15 after ~15 full-charge shots (~25-30s ⚑ derived).",
+      "triggerIdentity": "'Activates when attacking with Full Charge' → per full-charge shot by the owner. For an SR the sim's charge model makes every pull a full charge, so shotFired is the equivalent trigger at scope; the gate is per-shot, NOT fullBurstEnter and NOT interval.",
+      "targetSet": "self",
+      "nearestWrongModel": "THE trap for this unit: the schema's only 'damage taken' StatKey is damageTakenPct, documented as a BOSS debuff (positive = boss takes more). Mis-encoding this self ▼4.37% line onto the enemy via damageTakenPct — sign/target flip — stacks to a ±65.55% swing on the ENTIRE TEAM's damage at 15 stacks. Secondary misread: durationSec 5 without stacking/refresh (stacks reset instead of accruing).",
+      "distinguishingAssertion": "Assert the run contains NO buffApply with stat 'damageTakenPct' from any cocoa-cast block (boss-held debuffs have casterIdx===null — assert none exist at all in a cocoa comp), AND totals for every slug are identical with skill2 patched empty. If the driver does track stacks for the burst gate, any tracking encoding must still satisfy both assertions.",
+      "inertness": "Team damage must not move by any amount, let alone a stacking one; no boss-held debuff events",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies. Removes 1 debuff(s)",
+      "disposition": "UNMODELED",
+      "scope": "Cleanse only, no stat",
+      "durationSemantics": "Instant; none",
+      "triggerIdentity": "burstCast (her OWN Burst I cast, 20s cd) — not fullBurstEnter",
+      "targetSet": "all allies",
+      "nearestWrongModel": "Attaching any stat/heal payload to the cleanse, or keying anything in the burst to fullBurstEnter (fires on every team FB) instead of burstCast (only rotations cocoa herself bursts — she competes with liter for the B1 slot in the control fixture)",
+      "distinguishingAssertion": "burstCast events for cocoa's slot exist in the fixture (else every burst-line test is vacuous), and no buffApply is emitted from this line; totals unchanged with the line removed. Verbatim text in unmodeled.burst.",
+      "inertness": "Everything",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "when … max stacks … ATK ▼ 13.59% 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "Enemy ATK reduction — defensive only. Boss ATK feeds damage dealt TO allies, which the v1 sim does not model (immortal partless boss, nobody takes damage). Offensively inert.",
+      "durationSemantics": "10 sec wall-clock debuff window per qualifying cast",
+      "triggerIdentity": "burstCast (own Burst I) + a condition gate 'Professional Tomato Sauce at max stacks' (skill2 pile at 15). If encoded live, that is a resource/stack gate read at cast time; since the gated payload is defensive, the whole gate chain can be honestly unmodeled instead — but the conditionality must then be recorded in unmodeled text, not silently flattened.",
+      "targetSet": "all enemies (boss)",
+      "nearestWrongModel": "Two: (a) encoding 'ATK ▼' on the boss as damageTakenPct ▲13.59% (the only boss-debuff StatKey), which would BUFF all team damage 13.59% for 10s per cast — a defensive line becoming the team's biggest offensive contribution; (b) dropping the max-stacks gate and firing it on every burst or on fullBurstEnter (moot while unmodeled, wrong if ever made live).",
+      "distinguishingAssertion": "Assert zero buffApply events with casterIdx===null && targetIdx===null (boss-held debuffs) anywhere in a cocoa comp run, and per-slug totals identical with cocoa's burst patched empty — GREEN under faithful (inert), RED under the damageTakenPct mis-encode.",
+      "inertness": "All five units' totals; the FB count and rotation shape of the fixture",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Restores 17.76% of Cover HP.",
+      "Affects 2 random ally unit(s) with debuffs. Removes 1 debuff(s)."
+    ],
+    "skill2": [
+      "Professional Tomato Sauce: Damage Taken ▼ 4.37%, stacks up to 15 time(s) and lasts for 5 sec."
+    ],
+    "burst": [
+      "Affects all allies. Removes 1 debuff(s).",
+      "Activates when Professional Tomato Sauce is at max stacks. Affects all enemies. ATK ▼ 13.59% for 10 sec."
+    ]
+  },
+  "notes": "cocoa's entire kit is damage-inert at scope lock — every line is defensive (cover repair, cleanse, self damage-taken reduction, enemy ATK down). The correct test suite is therefore an INERTNESS suite plus a fixture-validity check, and the load-bearing set is empty. Three things the driver must reconcile: (1) MASTER INERTNESS ASSERT — one test comparing per-slug totals(runComp(...)) between the committed override and withPatchedOverride('cocoa', o => { o.skill1=[]; o.skill2=[]; o.burst=[]; }): any delta on ANY unit means a defensive line was mis-encoded as offensive. The two specific traps are damageTakenPct (skill2 self ▼ and burst enemy ATK ▼ both tempt sign/target flips onto the boss — worth explicit no-boss-debuff-event asserts since damageTakenPct stacked 15× would swing team damage ~65%). (2) FIXTURE — cocoa is Burst I; controlComp(carry) seats the carry in the B3 slot with liter already at B1. A cocoa-as-carry fixture leaves helm as sole B3 (fine) but makes cocoa COMPETE with liter for stage-1 casts — any test of her burst lines must first assert burstCast events for cocoa's slot actually exist, or the test is vacuous (the lone-B3-zero-FB failure mode's stage-1 cousin). (3) SHARED-PRIOR RISK — the skill1 cover-heal line: if the driver encoded it as a `heal` effect it emits 'recovery' events on an interval, and crown (an on-recovery kit) is IN the control comp, so the choice is board-visible. Whether in-game cover repair fires ally on-recovery triggers is unmeasured; the default must be no-emit with the line in unmodeled, and any emit choice needs a measurement, not a prior. All magnitudes are DATAMINED (blablalink prose); the ~25-30s time-to-max-stacks figure I derived is ⚑ and only matters if the max-stacks gate is ever made live.",
+  "model": "claude-fable-5"
+}

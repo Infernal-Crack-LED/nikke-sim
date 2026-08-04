@@ -1,0 +1,151 @@
+{
+  "slug": "d",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ entering Full Burst → Elem Adv ▲46.93%",
+      "disposition": "FAITHFUL",
+      "scope": "Elemental-advantage-only damage bucket (elemAdvantageDamagePct) — NOT generic Attack Damage; active only when the unit has elemental advantage over the boss. Unit is Wind; the controlComp boss is Fire (Fire beats Wind), so this buff is INERT in the fixture — it moves damage only vs an Iron boss.",
+      "durationSemantics": "durationSec 15 (wall-clock seconds; refreshes on each Full Burst entry). No round-count language anywhere in this kit.",
+      "triggerIdentity": "fullBurstEnter — 'Activates when entering Full Burst' fires on ANY team Full Burst, not only rotations this unit bursts (co-B3 helm is in controlComp, so burstCast vs fullBurstEnter genuinely diverge here).",
+      "targetSet": "self",
+      "nearestWrongModel": "Encoding as generic attackDamagePct (over-credits ~47% Damage-Up vs the Fire fixture boss where Wind has NO advantage), or keying to burstCast so it skips helm-cast Full Bursts.",
+      "distinguishingAssertion": "onEvent buffApply: stat 'elemAdvantageDamagePct', value 46.93, caster=d, target=d appears at EVERY fullBurstStart (including Full Bursts where the burstCast srcSlot was helm, proving fullBurstEnter keying). AND totals(res)['d'] vs the Fire boss is UNCHANGED when this buff is zeroed via withPatchedOverride — red if mis-encoded as attackDamagePct (damage would move).",
+      "inertness": "Must move ZERO damage vs the Fire controlComp boss (no elemental advantage); must not appear as attackDamagePct in any buffApply.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 3.52% of attack damage as HP 15s",
+      "disposition": "UNMODELED",
+      "scope": "Lifesteal (HP recovery from own attack damage) over a 15s window. No HP pool in v1; offensively inert.",
+      "durationSemantics": "durationSec 15 window from Full Burst entry.",
+      "triggerIdentity": "Rides the same fullBurstEnter block header.",
+      "targetSet": "self — CRITICAL: if encoded as a 'heal' effect, it must target self ONLY. Crown (B2, in controlComp) carries an on-recovery trigger; a mis-scope to allies would fire Crown's recovery consumer and move team damage.",
+      "nearestWrongModel": "Encoding as kind:'heal' with target allies/all — spuriously fires Crown's 'recovery' trigger every Full Burst and inflates Crown-buffed damage.",
+      "distinguishingAssertion": "If encoded: every recovery/heal event sourced from d has target=d only — assert NO heal effect from d ever targets crown. If unmodeled: line appears verbatim in override.unmodeled.skill1.",
+      "inertness": "Team totals must be identical with this line present vs absent (self-heal has no consumer — d has no recovery trigger).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ first activated → +16.5% ATK dmg as HP",
+      "disposition": "UNMODELED",
+      "scope": "Additional lifesteal, FIRST Full Burst entry only ('when first activated').",
+      "durationSemantics": "durationSec 15, once per battle.",
+      "triggerIdentity": "fullBurstEnter gated to the first activation (everyN-style once semantics if encoded).",
+      "targetSet": "self (same Crown mis-scope trap as the 3.52% line).",
+      "nearestWrongModel": "Firing on every Full Burst entry instead of only the first; or ally mis-scope feeding Crown's recovery trigger.",
+      "distinguishingAssertion": "If encoded: at most ONE application across the fight, at the first fullBurstStart. If unmodeled: verbatim in unmodeled.skill1.",
+      "inertness": "Zero damage movement in all cases (self-targeted heal, no consumer in own kit).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ stage target appears → gauge +98.56% 1x",
+      "disposition": "FAITHFUL",
+      "scope": "Instant burst-gauge fill (fillGauge 98.56), team gauge — the single biggest damage lever in this kit: it drags the FIRST Full Burst to near battle start.",
+      "durationSemantics": "Instant, explicitly 'Activates 1 time(s) per battle' — exactly one application, at battle start (the stage target appears at t≈0 for the scope-lock single-boss fight).",
+      "triggerIdentity": "Battle-start one-shot ('when the stage target appears' — no visible cooldown clause; the once-per-battle limiter is kit-stated). NOT interval, NOT repeating on boss transitions.",
+      "targetSet": "all allies (team gauge fill).",
+      "nearestWrongModel": "Modeling as a burstGenPct rate buff instead of an instant fill (first FB arrives at nearly normal time), or letting it re-fire on later stage/transition events (extra phantom fills).",
+      "distinguishingAssertion": "First fullBurstStart event in runComp(controlComp('d')) occurs several seconds earlier than with the fillGauge effect zeroed via withPatchedOverride — the ~1.44% residual + the measured gauge-full→30f→B1→30f→B2→30f→B3→22f chain puts FB1 in the opening seconds; with the fill removed FB1 slips far later. AND the gauge spike happens exactly once (no second discontinuous fill later in the event stream).",
+      "inertness": "Must NOT add a persistent burst-generation multiplier — steady-state gauge accrual rate between Full Bursts is unchanged vs the patched-out run.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Immunity to Stun for 36.95 sec (allies)",
+      "disposition": "FAITHFUL",
+      "scope": "Status grant, defensively inert at scope (boss doesn't stun) — BUT it is the GATE FEED for the burst's 'Full Burst Duration ▲5.04s if the skill user has immunity to Stun'. Dropping it as 'defensive, no damage' breaks the burst gate. It defines a t≈0→36.95s window on the caster.",
+      "durationSemantics": "durationSec 36.95 from battle start, one application.",
+      "triggerIdentity": "Same battle-start 'stage target appears' block. The window is expressible (e.g. a resource initialized at 1 with a one-shot decrement, or an equivalent timed-status encoding) — the semantics that matter: d 'has immunity' exactly during t∈[0, 36.95s].",
+      "targetSet": "all allies (includes self — self-coverage is what satisfies her own burst gate).",
+      "nearestWrongModel": "Silently skipping the line as defensive-only, which forces the burst FB-extension to be either permanently ungated (over-credit on every rotation) or permanently dead (under-credit on the first).",
+      "distinguishingAssertion": "The Full Burst following a d burstCast at t < 36.95s runs ~15.04s (fullBurstEnd − fullBurstStart ≈ base 10s + 5.04s); the Full Burst following a d burstCast at t > 36.95s runs the base ~10s. Green only when the immunity window exists and expires.",
+      "inertness": "The immunity itself must move zero damage directly (no stat buff, no bucket).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ stage target appears → Elem Adv ▲91.09%",
+      "disposition": "FAITHFUL",
+      "scope": "elemAdvantageDamagePct, self, opening window only — same advantage-gated bucket as skill1's line; INERT vs the Fire fixture boss (Wind is not advantaged vs Fire).",
+      "durationSemantics": "durationSec 15, one application at battle start (stage target appears once at scope). NOT refreshing.",
+      "triggerIdentity": "Battle-start one-shot; nearest confusion is an interval or fullBurstEnter re-fire.",
+      "targetSet": "self (this ■ header says 'Affects self', unlike the block above it).",
+      "nearestWrongModel": "Generic attackDamagePct for the opening 15s (over-credits the opening vs any boss), or ally-wide scope copying the previous header's target set.",
+      "distinguishingAssertion": "Exactly ONE buffApply with stat 'elemAdvantageDamagePct', value 91.09, target=d, in the opening frames — never re-applied later, never applied to liter/crown/helm. Totals vs the Fire boss unchanged when it is zeroed.",
+      "inertness": "Zero damage vs the Fire controlComp boss; no application to any ally.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ all enemies → 426.24% Burst Skill dmg",
+      "disposition": "FAITHFUL",
+      "scope": "Instant burst-cast nuke, 426.24% of final ATK, burst bucket, single boss target.",
+      "durationSemantics": "Instant hit per burst cast.",
+      "triggerIdentity": "burstCast (d's OWN burst) — fires only on rotations d actually bursts; with helm co-B3 in controlComp, d does NOT nuke on helm's rotations.",
+      "targetSet": "enemy.",
+      "nearestWrongModel": "Letting the nuke take the +50% Full Burst major (burst-cast damage lands BEFORE the FB window opens — verified engine fact), or keying it to fullBurstEnter so it also fires on helm's rotations.",
+      "distinguishingAssertion": "Each damage event with mult 426.24 from d has inFullBurst=false / fbMajorApplied=false, and the count of such events equals the count of d's own burstCast events (strictly fewer than total fullBurstStart events, since helm takes some B3 rotations).",
+      "inertness": "Must NOT receive the +50% FB major nor FB-entry auras; count must not track team FB count.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Attacker allies → Parts Dmg ▲42.38% 15s",
+      "disposition": "FAITHFUL",
+      "scope": "partsDamagePct — parsed but INERT in v1 (the scope-lock boss is partless; hit location never changes damage). Must be encoded as the parts stat, not laundered into a live bucket.",
+      "durationSemantics": "durationSec 15 per d burst cast.",
+      "triggerIdentity": "burstCast (own burst block).",
+      "targetSet": "alliesOfClass Attacker, including self (d is an Attacker; helm also qualifies in controlComp; liter/crown do not).",
+      "nearestWrongModel": "Encoding as attackDamagePct/damageTakenPct 'because parts are inert anyway' — moves real damage on a partless boss; or scoping it to all allies.",
+      "distinguishingAssertion": "buffApply with stat 'partsDamagePct', value 42.38 lands on exactly the Attacker units (d, helm) at each d burstCast — AND totals for every unit are bit-identical when the line is removed via withPatchedOverride (true inertness on the partless boss).",
+      "inertness": "Zero damage movement for all five units; zero applications to non-Attacker allies.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ if user immune to Stun → FB Dur ▲5.04s",
+      "disposition": "FAITHFUL",
+      "scope": "fullBurstExtend 5.04s, conditional on the CASTER currently holding Stun immunity (sourced only from her own skill2, t∈[0,36.95s]). Net effect at scope: effectively only the FIRST Full Burst d bursts (burst cd 40s + the near-instant skill2 prefill means her second burst lands after immunity lapses).",
+      "durationSemantics": "One-shot +5.04s extension of the Full Burst that follows this cast; the GATE window is the 36.95s immunity, not a buff duration.",
+      "triggerIdentity": "burstCast (own burst) + a self-status gate evaluated at cast time. NOT fullBurstEnter (would extend helm-cast Full Bursts) and NOT ungated.",
+      "targetSet": "all allies (Full Burst duration is team state; the target clause is effectively global).",
+      "nearestWrongModel": "Ungated fullBurstExtend on every d burst (+5s FB uptime every ~40s — a large recurring over-credit), or dropping the gate's feed (skill2 immunity) so it never fires, or keying to fullBurstEnter.",
+      "distinguishingAssertion": "With the kit as shipped: (fullBurstEnd − fullBurstStart) ≈ 15.04s for the FB following d's burstCast inside t<36.95s, and ≈10.0s for every FB following a d burstCast after 36.95s AND for every helm-cast FB. Red under the ungated model (all d-FBs 15.04s) and under fullBurstEnter keying (helm FBs also 15.04s).",
+      "inertness": "Full Bursts cast by helm, and d's late bursts, keep the base FB duration exactly.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:fullBurstEnter elemAdvantageDamagePct 46.93 self 15s",
+    "skill2:battle-start fillGauge 98.56 once-per-battle",
+    "skill2:battle-start stun-immunity window 36.95s (gate feed for burst FB-extend)",
+    "skill2:battle-start elemAdvantageDamagePct 91.09 self 15s",
+    "burst:burstCast flatDamage 426.24 burst-bucket noFb enemy",
+    "burst:burstCast partsDamagePct 42.38 alliesOfClass Attacker 15s (inert-encoded)",
+    "burst:burstCast fullBurstExtend 5.04 gated-on-caster-stun-immunity"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Recovers 3.52% of attack damage as HP, lasts for 15 sec.",
+      "Additionally recovers 16.5% of ATK damage as HP, lasts for 15 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to reconcile hardest: (1) THE STUN-IMMUNITY GATE — the classic trap is dropping 'Gains immunity to Stun' as defensive/no-damage; here it is the load-bearing gate window for the burst's Full Burst Duration ▲5.04s, and the interplay with the 98.56% gauge prefill means exactly the FIRST Full Burst gets extended (first burst lands in the opening seconds, well inside 36.95s; the second, ≥40s cd later, lands outside it). An ungated fullBurstExtend over-credits ~5s of FB uptime on every rotation; a dropped one under-credits the first. The gate is expressible in the schema (e.g. a resource window: init 1 at start, one-shot decrement at ~36.95s via interval, resourceGate min 1 on the burst block) — GAP is not an acceptable disposition. (2) Both Elemental Advantage Attack Damage lines are elemAdvantageDamagePct, never generic attackDamagePct — d is Wind and the controlComp boss is Fire (Fire beats Wind), so the faithful encoding is provably INERT in the fixture; assert via buffApply events plus a zeroed-buff totals-identity check, and if CompOptions permits a boss-element override, add one damage-delta run vs an Iron boss (Wind-advantaged) to pin the bucket live. (3) Burst-cast semantics: the 426.24% nuke and the FB extension key to d's OWN burstCast; helm is a co-B3 in controlComp, so burstCast vs fullBurstEnter genuinely diverge — tests must count d's burstCast events separately from fullBurstStart events. The nuke is FB-exempt (lands pre-window; fbMajorApplied false). (4) The gauge fill is an instant once-per-battle fillGauge, not a burstGenPct rate buff — assert first-FB timing shift plus exactly-one application. (5) Damage to Parts stays partsDamagePct (inert on the partless boss) with alliesOfClass Attacker targeting — verify bit-identical totals with the line removed. (6) The two self-lifesteal lines are honestly UNMODELED (no HP pool, self-targeted); but if the driver encoded them as 'heal' effects, the target MUST be self only — crown sits in the fixture with an on-recovery consumer, and an ally mis-scope would spuriously pump her recovery-triggered buffs every Full Burst.",
+  "model": "claude-fable-5"
+}

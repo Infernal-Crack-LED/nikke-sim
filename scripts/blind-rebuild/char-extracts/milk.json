@@ -1,7 +1,7 @@
 {
   "milk": {
     "slug": "milk",
-    "name": "Milk",
+    "name": "Milk (Treasure)",
     "imageUrl": "https://sg-tools-cdn.blablalink.com/ge-61/ca-69/baa734e6d1a5c3425b66ba9d9ab96480.png",
     "weapon": "SR",
     "burst": "I",
@@ -17,12 +17,18 @@
     "chargeMultiplier": 250,
     "hitsPerShot": 1,
     "rl3": 8.4,
+    "releaseDate": "2025-01-16",
     "burstGaugePerShot": 2.8,
     "treasure": true,
     "skills": {
       "skill1": "■ Activates every 20 sec. Affects 3 ally unit(s) with the highest final ATK.\nATK ▲ 31.83% for 10 sec.\n■ Activates at the start of battle. Affects self.\nCooldown of Burst Skill ▼ 20 sec continuously.",
       "skill2": "■ Activates when above 80% HP. Affects all allies.\nCritical Damage ▲ 11.13% continuously.\n■ Activates when attacking with Full Charge for 10 time(s). Affects all allies.\nCooldown of Burst Skill ▼ 2.83 sec.",
       "burst": "■ Affects 1 enemy unit(s) with the highest final DEF. \nDeals 367.34% of final ATK as Burst Skill damage.\n■ Affects all allies. \nRecovers 16.16% of attack damage as HP over 10 sec.\nIncoming healing ▲ 75.5% for 10 sec."
+    },
+    "skillCooldownsSec": {
+      "skill1": 20,
+      "skill2": null,
+      "burst": 40
     },
     "role": {
       "weapon": {

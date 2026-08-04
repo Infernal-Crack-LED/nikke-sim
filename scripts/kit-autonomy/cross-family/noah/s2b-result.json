@@ -1,0 +1,103 @@
+{
+  "slug": "noah",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "10% chance when attacked → Damage Taken ▼ 8%",
+      "disposition": "UNMODELED",
+      "scope": "Defensive damage-taken reduction on ALLIES (incoming damage), not any offensive bucket; RNG-gated (10% proc).",
+      "durationSemantics": "10 sec wall-clock (durationSec) — but moot, line is unmodeled.",
+      "triggerIdentity": "On-attacked proc — NO such trigger exists in TriggerDef, and the v1 boss deals no damage so 'when attacked' never occurs. Not interval, not shotFired.",
+      "targetSet": "All allies (including self).",
+      "nearestWrongModel": "Pattern-matching the 'Damage Taken' keyword to the boss-debuff stat damageTakenPct and encoding it as a boss-held -8% debuff (the taxonomy primes 'Damage Taken ▲ = boss debuff'; here the ▼ direction + ally target invert that). That misread makes the boss take 8% LESS damage and drags the whole team's totals down 8%.",
+      "distinguishingAssertion": "Collect cfg.onEvent buffApply events for a full run: expect ZERO events with stat==='damageTakenPct' sourced from noah's kit (including the boss-held casterIdx===null/targetIdx===null form). And totals(runComp(comp)) per-slug must be IDENTICAL between the shipped override and withPatchedOverride('noah', o => { o.skill1 = [] }).",
+      "inertness": "The entire skill1 must move zero damage for every unit in the comp.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge hit → Taunt for 2 sec",
+      "disposition": "UNMODELED",
+      "scope": "Aggro control on the enemy; no taunt/aggro primitive exists in EffectDef and boss targeting is not simulated.",
+      "durationSemantics": "2 sec wall-clock — moot.",
+      "triggerIdentity": "On-HIT with a Full Charge attack — noah is RL (chargeFrames 60), so every full-charge shot would fire this; if it were modeled the trigger is shotFired (per pull), NOT lastBullet and NOT chargeCounter. No fbGate.",
+      "targetSet": "The target (enemy).",
+      "nearestWrongModel": "Inventing a targetStatus effect (e.g. name:'Taunt') on the boss — harmless alone but creates a phantom status window that could someday satisfy an unrelated requiresTargetStatus gate; or worse, treating 'Taunt' as a damage rider.",
+      "distinguishingAssertion": "No buffApply and no damage events attributable to skill2; a run with withPatchedOverride('noah', o => { o.skill2 = [] }) yields identical totals for every slug. The line must appear verbatim in unmodeled.skill2, not as a block.",
+      "inertness": "Zero damage movement; no boss-status window opened.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▼ 13.25% for 5 sec (the target)",
+      "disposition": "UNMODELED",
+      "scope": "Debuff on the BOSS's ATK stat. Boss ATK is not an input to any team-damage formula (boss deals no damage in v1); the only live enemy channels are damageTakenPct and targetStatus, neither of which expresses enemy ATK.",
+      "durationSemantics": "5 sec wall-clock — moot.",
+      "triggerIdentity": "Same on-full-charge-hit trigger as the taunt line (shotFired if modeled).",
+      "targetSet": "Enemy (the hit target). NOT self, NOT allies.",
+      "nearestWrongModel": "Target-set misread: applying atkPct -13.25 to SELF or ALLIES (reading 'Affects the target' as the buff-recipient ally in some parser path) — that would cut the carry's ATK by 13.25% for 5s per shot, a large spurious damage LOSS refreshed continuously by RL fire.",
+      "distinguishingAssertion": "Filter buffApply events: expect ZERO events with stat==='atkPct' && value < 0 on ANY targetIdx (ally-side or boss-held). Totals identical with skill2 stripped.",
+      "inertness": "Zero damage movement for the whole comp.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attract: Taunt all enemies for 10 sec (self)",
+      "disposition": "UNMODELED",
+      "scope": "Aggro control; no primitive.",
+      "durationSemantics": "10 sec — moot.",
+      "triggerIdentity": "burstCast (noah's OWN Burst II cast) — NOT fullBurstEnter. Moot for a taunt, but the header's trigger identity matters for the sibling DEF line below.",
+      "targetSet": "Self (the '■ Affects self' header; the taunt lands on all enemies).",
+      "nearestWrongModel": "Encoding a targetStatus('Attract'/'Taunt') boss window — phantom status risk as with skill2's taunt.",
+      "distinguishingAssertion": "No boss-status buffApply, no damage events from this line; verbatim entry in unmodeled.burst; totals unchanged when stripped.",
+      "inertness": "Zero damage movement; no status window.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Invulnerable for 3 sec (all allies)",
+      "disposition": "UNMODELED",
+      "scope": "Defensive; no HP/damage-intake model at scope lock, no invulnerability primitive. NOT a 'shield' effect — encoding it as kind:'shield' would spuriously fire teammates' 'shielded' triggers and requiresShielded gates (e.g. a naga-style shield-gated rider would go live off it).",
+      "durationSemantics": "3 sec — moot.",
+      "triggerIdentity": "burstCast (own burst).",
+      "targetSet": "All allies.",
+      "nearestWrongModel": "kind:'shield' with durationSec:3 — the plausible 'closest primitive' substitution. It is WRONG: invulnerability is not a Shield in kit vocabulary, and the shield event channel is load-bearing for shield-synergy teammates.",
+      "distinguishingAssertion": "Collect events: expect ZERO shield-effect emissions from noah (no teammate 'shielded' trigger fires attributable to her burst). In a comp containing a shield-gated consumer, that consumer's gated blocks must not activate off noah's burst.",
+      "inertness": "Zero damage movement; zero shielded-trigger emissions.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▲ 133.48% for 10 sec (all allies)",
+      "disposition": "FAITHFUL",
+      "scope": "Generic DEF stat buff — defPct exists as a StatKey and is deliberately engine-inert in v1 (self DEF never feeds own damage). Per the keep-the-stat-buff rule (future consumer/scaler), it should be ENCODED, not dropped to unmodeled.",
+      "durationSemantics": "10 sec wall-clock → durationSec: 10 (a plain seconds line, no round-count wording).",
+      "triggerIdentity": "burstCast — this is noah's OWN burst block ('Affects all allies' under her burst), so it fires ONLY on rotations noah herself casts Burst II. NOT fullBurstEnter. With another B2 in the comp (controlComp fixes crown at B2), the two triggers diverge every rotation crown takes.",
+      "targetSet": "All allies including self (target kind 'allies', no excludeSelf), same-caster-slot overwrite semantics on refresh.",
+      "nearestWrongModel": "Two-headed: (a) stat confusion — emitting atkPct 133.48 instead of defPct (a catastrophic +133% team ATK over-credit); (b) trigger confusion — fullBurstEnter, which would emit the buffApply on EVERY full burst including crown-led ones instead of only noah-cast rotations.",
+      "distinguishingAssertion": "In a comp where noah demonstrably casts (assert ≥1 burstCast event from noah's slot first): every full burst PRECEDED by a noah burstCast has a buffApply with stat==='defPct' && value===133.48 on all 5 targetIdx, expiresFrame ≈ castFrame + 600; full bursts where crown cast instead have NO such buffApply. Assert ZERO buffApply with stat==='atkPct' && value===133.48 anywhere. Inertness leg: totals per-slug identical when the defPct effect is deleted via withPatchedOverride.",
+      "inertness": "defPct must move ZERO damage in v1 — its assertion is existence + shape, plus a totals-identical check with it removed.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": ["burst:DEF ▲ 133.48% for 10 sec"],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "There is a 10% chance of activating when attacked. Affects all allies. Damage Taken ▼ 8% for 10 sec."
+    ],
+    "skill2": ["Taunt for 2 sec.", "ATK ▼ 13.25% for 5 sec."],
+    "burst": [
+      "Attract: Taunt all enemies for 10 sec.",
+      "Invulnerable for 3 sec."
+    ]
+  },
+  "notes": "noah is a PURE DEFENSIVE Burst II — the primary payload of her test file is whole-kit inertness: her override must move ZERO damage for herself and every teammate versus a fully stripped override; her only sim contributions are her RL fire cycle (chargeFrames 60, ammo 6, hitsPerShot 2, mult 64.04/core 200 — cadence tuple is ALWAYS-⚑), burst-gauge generation, and B2 rotation enablement. Expected shared-prior misreads to check hardest: (1) skill1's 'Damage Taken ▼' keyword being routed to the boss-debuff damageTakenPct channel — the methodology explicitly primes 'Damage Taken = boss debuff', but here the ▼ direction and ALLY target make it a defensive ally buff, and the misread costs the whole board -8%; (2) skill2's 'Affects the target' ATK ▼ landing on self/allies as a negative atkPct; (3) 'Invulnerable' being substituted with the nearest primitive kind:'shield', which spuriously feeds shielded-trigger/requiresShielded consumers; (4) the burst DEF buff keyed to fullBurstEnter instead of burstCast. FIXTURE WARNING the driver must reconcile: controlComp fixes crown at Burst II and puts the carry in the B3 slot — noah is B2, so a controlComp(noah) fixture is mis-slotted and she may NEVER cast (voiding every burstCast assertion). The test must either build a custom CompOptions where noah is the sole/first-ready B2, or gate every burst assertion on an observed burstCast event from her slot; her 40s burst cd (vs a standard 20s B2) also means she may cast only on alternating rotations even when selected — assert from the event log, never from an assumed once-per-rotation cadence. Also assert noah emits NO damage events beyond her weapon buckets (no flatDamage/dot riders — the kit gives none).",
+  "model": "claude-fable-5"
+}

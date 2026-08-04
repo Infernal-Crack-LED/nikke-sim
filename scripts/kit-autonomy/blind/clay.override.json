@@ -1,0 +1,110 @@
+{
+  "slug": "clay",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 60
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "fbGate": "inFb",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "trueDamagePct",
+          "value": 6.45,
+          "durationSec": 6,
+          "maxStacks": 3
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 1
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": []
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 60
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "fbGate": "inFb",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 20.07,
+          "durationSec": 6
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "trueDamagePct",
+          "value": 12.56,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 100,
+          "trueNormals": true,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "When attacking an enemy projectile, damage to that projectile \u25b2 45.05% for 6 sec."
+    ],
+    "skill2": ["Gains debuff immunity to 1 debuff(s) for 10 sec."],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 skill1 hitCount:60 \u2014 the kit says '60 normal attacks during Full Burst'. Modeled as a hitCount trigger with fbGate:'inFb'. UNVERIFIED whether the engine's hitCount counter resets between Full Bursts or accumulates across the fight; a non-resetting counter over-fires late-fight (the 60-attack tally likely restarts each FB in-game). Also UNVERIFIED whether 'landing 60 normal attacks' counts the CASTER's rounds only (assumed) vs all-ally attacks.",
+    "\u2691 skill2b ('only while in Victorious Battle Cry status') is modeled as a mirror block keyed to the SAME hitCount:60 in-FB trigger with the same 6s window, so the ATK grant is live exactly while the S1 status is live. This is a STRUCTURAL proxy \u2014 the engine has no status-presence gate for a self-authored buff, so the two blocks can drift if the S1 stack window is refreshed by a trigger this block does not see.",
+    "\u2691 skill2b 'ATK \u25b2 20.07% of the skill user's ATK continuously' is encoded as casterAtkPct (flat add scaled by clay's own staticAtk). 'Continuously' is read as 'for as long as the status holds', NOT as a permanent from-t=0 buff \u2014 the leading '\u25a0 Activates only while in Victorious Battle Cry status' clause gates it.",
+    "\u2691 skill2b is NOT stacked (single application at 20.07%). The kit attaches the multiplier to the STATUS, not to each stack of it; a per-stack reading would be 3\u00d7 at cap. Unverified either way from the prose alone.",
+    "\u2691 burst 'Normal attacks deal true damage for 10 sec' (self) is encoded as a weaponSwap with damagePct:100 + trueNormals:true and no ammo/cadence override \u2014 the ONLY schema channel for true-flavored normals. This re-uses the swap machinery for a non-swap kit line; it must not change shot economy (damagePct 100 = same per-shot multiplier, no maxAmmo/pullsPerSec override), but a swap also suppresses nothing else clay depends on. Verify against a run that the swap window changes ONLY the flavor of her normals.",
+    "\u2691 Cadence tuple (SMG ammo 120 / reloadFrames 81 / rate) is datamine-sourced and known-unreliable; it drives the 60-normal-attack accrual rate directly, so a wrong pulls/sec moves how many times skill1 fires per FB.",
+    "The skill2 debuff-immunity block is authored with an EMPTY effects array purely as an audit anchor for the stageEnter trigger; it applies nothing. If the validator rejects empty-effect blocks, drop the block and keep the line in unmodeled only."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Clay (SMG/Electric/Supporter/Burst II) is a pure team true-damage amplifier: S1 stacks a 6.45%\u00d73 team True Damage buff off a 60-normal-attack-in-Full-Burst counter (6s window), S2 rides that same status to grant all allies a flat ATK add worth 20.07% of clay's own ATK, and her burst adds a 10s team True Damage \u25b212.56% plus a self window where her own normals are true-flavored. Modeled: the S1 stacking trueDamagePct buff, the S2 status-gated casterAtkPct grant, the burst team buff, and the burst self true-normals window. Deliberately unmodeled: the projectile-damage rider (no enemy projectiles at scope lock) and the 1-debuff immunity (defensive, boss inflicts nothing modeled). The load-bearing uncertainty is the S1 trigger: 'landing 60 normal attacks during Full Burst' has no engine primitive that both resets per-FB and gates on FB, so the hitCount+fbGate pair is a proxy whose fire count per fight is the first thing to pin against footage."
+}

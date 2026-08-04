@@ -22,12 +22,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 
 ## Method
 
-**A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
+> Section headings use roman numerals since 2026-08-03 — the old letter labels collided with a one-letter unit slug under the packet leak-check word-boundary regex.
+
+**I. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
-**B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+**II. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
 
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
@@ -39,18 +41,18 @@ evidence (every agent is the same model — convergence proves stability, not co
   (wrong value/stat/trigger/target/scope/duration vs the prose).
 - `RECON_ERROR` — a blind agent misread clear code/prose (the driver + formula agree); note it, not a finding.
 
-**C. Fire-rate / "modeled≠working" check:** each FAITHFUL block must FIRE at the prose-implied cadence over
+**III. Fire-rate / "modeled≠working" check:** each FAITHFUL block must FIRE at the prose-implied cadence over
 the 180s fight (the DBG side-effect check), not merely be present. A modeled line that doesn't activate is a
 REAL-GOTCHA. (A block whose only observable is a consumer's reaction needs a fixture that strips the unit's
 other sources of that signal — note if the driver's fixture fails to isolate.)
 
-**D. Discrimination check:** each load-bearing test must FAIL under its named nearest-wrong model (per the
+**IV. Discrimination check:** each load-bearing test must FAIL under its named nearest-wrong model (per the
 S2d matrix / S2b). A test green under both shipped and counterfactual asserts nothing → REAL-GOTCHA.
 
-**E. Cross-check the blind agents:** for each S5/S6 divergence from the driver, is it corroborated by the
+**V. Cross-check the blind agents:** for each S5/S6 divergence from the driver, is it corroborated by the
 prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = the most valuable output.
 
-**F. Magnitude scope:** magnitudes are owner/measurement-gated and OUT OF SCOPE — do NOT flag a magnitude as
+**VI. Magnitude scope:** magnitudes are owner/measurement-gated and OUT OF SCOPE — do NOT flag a magnitude as
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`

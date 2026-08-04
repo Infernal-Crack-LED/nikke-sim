@@ -1,0 +1,207 @@
+{
+  "slug": "folkwang",
+  "leakDetected": null,
+  "override": {
+    "slug": "folkwang",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 40
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 2,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 13.71,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 40
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "maxHpPct",
+            "value": 44.96,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 2,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 32.9,
+            "durationSec": 10
+          },
+          {
+            "kind": "heal",
+            "ticks": 10,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": ["Incoming healing ▲ 45.7% for 10 sec."],
+      "skill2": ["Taunt for 5 sec."],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1/skill2 trigger identity is KIT-SILENT — neither block carries an activation clause, so both are modeled as interval-fired on the datamined skill cooldown (⚑ 40s placeholder taken from the unit's burst cooldown field, NOT a datamined per-skill cooldown). Cadence drives how often the shield/heal events fire, which is the ONLY damage-relevant output of this kit (tandem consumers: on-shielded / on-recovery kits).",
+      "⚑ Shield/heal magnitudes (13.71% / 32.9% of caster Max HP, 65.81% lifesteal) are recorded for kit completeness only — the sim models no HP pool, so their NUMERIC values move no damage. What matters is that the shield/recovery EVENTS fire, and their target set + cadence.",
+      "⚑ 'Affects 2 allies with the highest final ATK' is modeled with byFinalAtk:true (literal 'final ATK' wording) and WITHOUT excludeSelf (the kit does not say 'except the skill user') — folkwang is a Defender, so she is unlikely to be in her own top-2 by ATK, making excludeSelf near-inert either way.",
+      "Taunt is SKIPPED: the v1 boss is scripted and has no aggro model, so a taunt changes nothing in the sim. It is NOT a damage-adjacent line (no shots/weapon-state effect).",
+      "'Incoming healing ▲' is SKIPPED: the sim models no HP amounts, so a healing-received multiplier has no consumer. It does not gate any recovery EVENT (heal events still fire), so no on-recovery tandem synergy is lost.",
+      "maxHpPct self-buff is retained despite being offensively inert for folkwang herself (no atkOfMaxHpPct in her kit) — it is kept per the HP/DEF-scaler prior as a future consumer, and because it self-scales her own shield output (shields are % of HER final Max HP)."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. folkwang (AR/Water/Defender/Burst II) is a pure sustain kit: every line is shield / heal / taunt / self-Max-HP. She contributes ZERO direct damage effects. Her only damage-relevant channel is TANDEM: the shield events (skill1 + burst, 2 highest-final-ATK allies) fire teammates' `shielded` triggers, and the burst's over-time recovery fires their `recovery` triggers — per the hard rule that heal/shield/DEF/HP/lifesteal lines are never skipped on isolation. The burst lifesteal (65.81% of attack damage as HP over 10 sec) is modeled as a 10-tick heal (1s interval) so on-recovery consumers stay refreshed across the window rather than seeing a single instant event. Both non-burst skills are ⚑ interval-triggered at an ESTIMATED cadence — the kit prose gives no activation clause for either, which is the single largest uncertainty in this baseline.",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Affects 2 allies w/ highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target alliesTopAtk count:2 byFinalAtk:true (literal 'final ATK' wording → live effectiveAtk ranking); no excludeSelf (kit omits 'except the skill user')"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Shield = 13.71% of user Max HP 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "shield {maxHpPct:13.71, durationSec:10} — emits shield events to the 2 targets, firing their `shielded` triggers (tandem channel); maxHpPct recorded for completeness (no HP pool in v1)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Incoming healing ▲ 45.7% for 10 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "No StatKey for healing-received and no HP amounts are modeled, so the multiplier has no consumer; it does not suppress any recovery EVENT, so no on-recovery synergy is lost. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "(trigger — none stated)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "⚑ INVENTED trigger: interval sec:40. Kit gives no activation clause → interval per the trigger-identity rule; 40s is a placeholder from the unit's burst cooldown field, NOT a datamined per-skill cooldown."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects enemy w/ highest final ATK",
+      "status": "SKIPPED",
+      "effectOrReason": "Enemy-targeted; resolveTargets({kind:'enemy'}) returns [] and the scope-lock fight has a single boss, so the ranking clause is degenerate. Its payload (taunt) is itself unmodeled."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Taunt for 5 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "No aggro/threat model — the v1 boss follows a fixed script and deals no modeled damage, so a taunt changes no shot, no weapon state and no damage. Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target self"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP ▲ 44.96% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff {stat:'maxHpPct', value:44.96, durationSec:10} — self Max HP ▲, kept per the HP/DEF-scaler prior (retain even when engine-inert); folkwang has no atkOfMaxHpPct so it adds no ATK, but it self-scales her shield output"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "(trigger — none stated)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "⚑ INVENTED trigger: interval sec:40, same reasoning + same placeholder as skill1."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 2 allies w/ highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target alliesTopAtk count:2 byFinalAtk:true, same reading as skill1"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Shield = 32.9% of user Max HP 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "shield {maxHpPct:32.9, durationSec:10} on trigger burstCast (self mode in the unit's OWN burst block → burst-cast, fires only on rotations folkwang bursts)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 65.81% of atk dmg as HP 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal {ticks:10, intervalSec:1} — a 10s over-time recovery modeled as 10 recovery events so on-recovery consumers (e.g. crown-style 'when recovery takes effect') stay refreshed across the whole window instead of seeing one instant event. No HP amount modeled."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "(burst trigger)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast — Burst II, cd 40s; effects land at cast (pre-Full-Burst), which is correct for a shield/heal that has no damage component"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "{kind:'interval', sec:40} — ⚑ placeholder cadence",
+      "reasoning": "ALWAYS-⚑ #2: the kit gives skill1 NO activation clause, so both the trigger KIND and its cadence are invented. Per the trigger-identity rule a clause-free line is `interval`. The 40s value is borrowed from the unit's burst cooldown field because no per-skill cooldown was supplied in the packet — it is NOT a datamined skill cooldown and could easily be 15–30s. Cadence is load-bearing here: it sets how OFTEN teammates' `shielded` triggers fire, which is folkwang's only damage-relevant output. Also ⚑ the first-fire phase (t=sec vs t=0) — the interval convention first-fires at t=sec; a force-cast-style first-fire at t=0 would add one extra shield window over a 180s fight.",
+      "recipe": "Read data/skillCooldownsSec (or the datamined skill table) for folkwang's skill1 cooldown and substitute it. To confirm empirically: run a comp with a shield-gated consumer (a `shielded`-trigger or `requiresShielded` unit) alongside folkwang, log buffApply/shield events with cfg.onEvent, and count shield applications over 180s — N applications ⇒ cadence ≈ 180/N, and whether the first lands at t≈0 or t≈cadence pins the phase."
+    },
+    {
+      "field": "skill2[0].trigger",
+      "estimate": "{kind:'interval', sec:40} — ⚑ placeholder cadence",
+      "reasoning": "Same ALWAYS-⚑ #2 as skill1: no activation clause on the taunt/Max-HP block. Lower stakes than skill1 — the only modeled payload is a self maxHpPct buff with no consumer in folkwang's own kit, so the cadence moves zero damage today. Flagged because a future atkOfMaxHpPct-style consumer or an HP-scaled shield readout would make it live.",
+      "recipe": "Same as skill1 — datamined per-skill cooldown lookup; no empirical measurement is worth spending until the buff has a consumer."
+    },
+    {
+      "field": "skill1[0].target / burst[0].target (byFinalAtk)",
+      "estimate": "byFinalAtk:true, excludeSelf omitted",
+      "reasoning": "The kit says 'highest FINAL ATK' literally, which per the target-schema rule selects live effectiveAtk ranking rather than static ranking. `excludeSelf` is omitted because the kit does not carry the 'except the skill user' clause — but note folkwang is a Defender (base class ATK 78,707 at scope lock), so she is essentially never in her own top-2 and the choice is near-inert on any real comp. Flagged rather than asserted because byFinalAtk ranking is order-dependent under live buffs and can flip the shield's recipients mid-fight.",
+      "recipe": "Log buffApply/shield events and read targetSlug per application across a comp where two allies are close in ATK; confirm the recipients track the LIVE (buffed) ranking rather than the static one."
+    },
+    {
+      "field": "burst[0].effects[1] (heal ticks)",
+      "estimate": "ticks:10, intervalSec:1 (10 recovery events over the 10s window)",
+      "reasoning": "The kit says 'over 10 sec' but does NOT state a tick interval, so the 1s/10-tick decomposition is an invented cadence. It matters only for on-recovery consumers: 10 events keep a `recovery`-triggered buff refreshed for the full window, whereas 1 instant event would let such a buff lapse. Chose the refresh-preserving reading because a continuous lifesteal is genuinely continuous in game; the alternative (single event) would UNDER-credit a tandem partner. Erring the other way (e.g. 30 ticks) would OVER-fire a per-event consumer.",
+      "recipe": "Pair folkwang with an on-recovery consumer (crown-style 'when recovery takes effect' buff) in a test comp and count that consumer's buffApply events during folkwang's burst window; the real refresh count pins ticks. Alternatively read popup/heal-number cadence off a recording of her burst."
+    },
+    {
+      "field": "unmodeled — 'Incoming healing ▲ 45.7%'",
+      "estimate": "SKIPPED (no consumer)",
+      "reasoning": "Not an ALWAYS-⚑ field, but flagged for visibility because the hard rule forbids auto-skipping heal/shield/HP lines. This one is skipped on a different ground than 'defensive': there is no StatKey for healing-received and no HP amounts exist in the model, so it has literally nothing to scale. Critically, it does NOT gate recovery EVENTS — the tandem channel that actually matters is preserved.",
+      "recipe": "No measurement needed at v1 scope. Revisit only if the engine ever models an HP pool or a kit appears whose damage scales off healing RECEIVED."
+    },
+    {
+      "field": "override.note / whole-kit",
+      "estimate": "ZERO direct damage effects — folkwang is damage-inert in isolation",
+      "reasoning": "Whole-picture check: every one of the six kit lines is shield / heal / taunt / self-Max-HP. There is no flatDamage, no dot, no ATK/crit/core/damage-taken buff, no weapon-state modifier (no reload/ammo/fire-rate/charge/swap line), so nothing changes shots fired or damage per shot. A solo folkwang run should therefore be indistinguishable from her raw weapon output — if a board reading shows otherwise, the model, not this baseline, is wrong.",
+      "recipe": "Run folkwang in a controlComp and diff her damage against the same comp with all three slots emptied — the delta should be exactly 0 for her own damage. Any non-zero delta on a TEAMMATE is the legitimate tandem channel (their shielded/recovery triggers) and confirms the shield/heal events are firing."
+    }
+  ],
+  "model": "claude-opus-5"
+}

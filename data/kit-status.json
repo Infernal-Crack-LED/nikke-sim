@@ -14,11 +14,11 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 128,
-      "authored": 1
+      "unit-tested": 129,
+      "pending": 1
     },
     "tier": {
-      "MODEL_ONLY": 95,
+      "MODEL_ONLY": 96,
       "VALIDATED": 10,
       "MEASURED": 14,
       "CALIBRATED": 10
@@ -1275,6 +1275,82 @@
         "temp": "COLD ▼"
       }
     },
+    "claire": {
+      "name": "Claire",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/claire.json + scripts/kit-autonomy/manual-review/claire.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "date": "2026-08-03",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "judge-named spot-checks: (a) sim.ts all dumped RL rockets dispatch charged=true (shot-count/3 == full-charge procs), (b) chargeCounter defaults in-window threshold countInFb??1 post-own-cast (claire pins countInFb:3 against it); plus the always-flagged RL cadence tuple (datamine)",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": ["Removes 1 debuff(s)."]
+      },
+      "caveats": [
+        "⚑ CADENCE TUPLE (ALWAYS-⚑): pullsPerSec / reloadFrames 141 / chargeFrames 60 shipped from datamine (ammo 6); RL charge cycle ≈ 1 shot/s + 141f reload gap every 6 rounds — plausible, NOT escalated. Affects her OWN shots only, and therefore the cadence of the S1 3rd-full-charge recovery channel (a wrong cadence rescales that channel's feed into teammates' on-recovery consumers); recipe: rounds/min + reload gap from any focus video.",
+        "⚑ AUTOFIRE vs CHARGE-GAP (ALWAYS-⚑, charge weapon): engine default shipped; affects her OWN shots/burst-gauge only (pure sustain unit — small board impact); recipe: focus video, does she re-charge immediately with no dead gap.",
+        "Heal MAGNITUDES (skill1 2.86% of caster final Max HP; burst 34.35% of caster final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount (v1 has no HP pool). Both lines are implemented for their TANDEM value only — they fire allies' 'recovery' triggers (asuka/crown 'when recovery takes effect').",
+        "Shield MAGNITUDE (skill2 10.13% of caster final Max HP) is recorded on the shield effect as maxHpPct but not consumed: v1 models no shield HP pool (the boss deals no damage). The shield effect's durationSec:10 opens each target's shieldedUntilFrame window and fires their 'shielded' triggers (naga-style shield-gated kits) — that event/window channel is the line's entire in-domain surface.",
+        "'2 ally unit(s) with the highest FINAL ATK' resolves by live effectiveAtk at proc time (byFinalAtk:true per the A3 literal-word ruling); the pool is self-inclusive, but as a Supporter claire will rarely rank top-2 herself.",
+        "countInFb:3 is EXPLICIT, not a copy of count: the engine's chargeCounter defaults the in-window threshold to countInFb ?? 1 during the 10s after the owner's OWN burst cast (scarlet-black-shadow's burst-lowered-thresholds mechanic). claire's kit has NO such threshold change, so the faithful encoding pins the same threshold (3) in-window; omitting countInFb would silently accelerate her S1 channel to per-shot for 10s after every cast of her own.",
+        "Zero damage lines and zero weapon-state modifiers in the whole kit — claire is a clean-weapon BASIS unit (RL cell, CLEAN_WEAPON_TEAMS.b): clean-weapons.test.ts CW1 additionally pins this committed override byte-identical to the bare empty kit. Her board footprint is tandem only: one 3rd-full-charge recovery channel (top-2 allies), one burst-keyed all-ally shield event, one burst-keyed all-ally recovery event."
+      ],
+      "board": null
+    },
+    "clay": {
+      "name": "Clay",
+      "burst": "II",
+      "weapon": "SMG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/clay.json + scripts/kit-autonomy/manual-review/clay.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "When attacking an enemy projectile, damage to that projectile ▲ 45.05% for 6 sec."
+        ],
+        "skill2": [
+          "■ Activates when entering Burst Stage 1. Affects all allies.\nGains debuff immunity to 1 debuff(s) for 10 sec."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "⚑ CADENCE TUPLE (ALWAYS-⚑): nominal 24 pulls/s = the SMG class rate (datamine rate_of_fire 1440 ÷ 60), frame-quantized by the engine to the MEASURED 20.0 rounds/s effective cadence (DECISIONS 2026-07-23, idoll-ocean ammo-counter evidence — sim.ts FRAME QUANTIZATION) + reloadFrames 81 datamine (single-chunk reload, datamine reload_bullet 10000; ammo 120 → 5s mag). Plausible, NOT escalated (no <1s-mag tell). Affects her OWN SMG damage AND the Battle Cry cadence (~3.0s per 60-shot proc inside Full Burst at the 20/s effective cadence) — both her own shots only, so the cadence uncertainty does not propagate into teammates' damage, only into how fast her team buffs reach max stacks.",
+        "⚑ MEASUREMENT-GATED (fable-S2b-adopted): the 60-hit counter's behaviour at the Full-Burst BOUNDARY — the kit text ('after landing 60 normal attacks during Full Burst') specifies WHICH hits count (in-FB only) but is silent on whether the accrued count resets when Full Burst ends. Encoded CARRYOVER (the everyN activation counter is cumulative across windows) — the literal reading restricts the counting, not the counter's lifetime. ESTIMATE: ≤1 marginal proc per fight (a full 10s FB window accrues ~3 procs on its own at the 20/s effective cadence, so cross-boundary remainder rarely changes a proc count). RECIPE: popup-read the Victorious Battle Cry stack icon across an FB boundary in a clay focus recording (do stacks/proc timing show carried count?). TIER: override-only (measurement-gated).",
+        "⚑ OUT-OF-DOMAIN: S1 'When attacking an enemy projectile, damage to that projectile ▲45.05% for 6 sec.' — ESTIMATE: zero damage impact in any comp the sim can field: v1's scope-lock boss is partless, launches NO projectiles and has no interception model, so the line has no target object to act on (it is an anti-projectile/interception mechanic, defensive-side of the fight). RECIPE: an enemy-projectile entity + interception-damage channel in the engine (does not exist); popup-read projectile-hit numbers in a boss-with-missiles recording on enactment. TIER: out-of-domain (no override or engine path exists today; carried VERBATIM in unmodeled.skill1, nothing fabricated in its place)."
+      ],
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check cluster: 60-hit counter carryover across FB boundaries (kit-silent; <=1 marginal proc/fight); SMG cadence datamine-derived (nominal 24, effective measured 20.0/s); projectile + immunity lines out-of-domain (verbatim unmodeled)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "crown": {
       "name": "Crown",
       "burst": "II",
@@ -1434,6 +1510,43 @@
         "burst: the Distributed Damage ▲60% (Maillard) and Sustained Damage ▲10% (Blanching) buffs are granted to all allies but only affect distributed-/sustained-flavor hits — inert in a comp without such hits"
       ],
       "board": null
+    },
+    "d": {
+      "name": "D",
+      "burst": "III",
+      "weapon": "SMG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/d.json + scripts/kit-autonomy/manual-review/d.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Recovers 3.52% of attack damage as HP, lasts for 15 sec.",
+          "Additionally recovers 16.5% of ATK damage as HP, lasts for 15 sec."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill2: 'Gains immunity to Stun for 36.95 sec' is defensively INERT in v1 (no CC model; the boss never stuns) — it is carried as the `stunImmune` resource window (seed +1 at frame 0, decrement at t=36.95s via interval) ONLY because her burst's Full Burst Duration extension gates on it; the all-ally scope of the immunity itself contributes nothing at scope",
+        "skill1: both lifesteal lines are UNMODELED verbatim — self-targeted HP recovery with no HP pool modeled and no consumer reachable (recovery triggers fire only when their OWNER receives a heal)",
+        "burst: the Full Burst Duration ▲5.04s extension fires at most once per battle — her burst CD (40s) exceeds the immunity window (36.95s), so only a cast inside the window is extended (in practice her first)"
+      ],
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check cluster: (1) ⚑2 stun-gate window-vs-first-cast — verify in-game d's SECOND burst (t>36.95s) does NOT extend Full Burst while her first does; (2) ⚑1 SMG cadence/reload tuple (pullsPerSec / reloadFrames 111) vs a d focus video; (3) ⚑3 elem-adv magnitudes live only vs Iron boss — confirm boss element when grading; (4) ⚑4 passive-as-stage-appear exact at single-boss scope only",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     },
     "d-killer-wife": {
       "name": "D: Killer Wife",
@@ -2080,6 +2193,44 @@
       },
       "board": null
     },
+    "epinel": {
+      "name": "Epinel",
+      "burst": "III",
+      "weapon": "SMG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/epinel.json + scripts/kit-autonomy/manual-review/epinel.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Activates when killing an enemy. Affects self. Total Noob: ATK ▲ 13.86%, stacks up to 5 time(s) and lasts for 15 sec."
+        ],
+        "skill2": [],
+        "burst": [
+          "Activates when Total Noob is at max stacks. Affects the same targets. Deals 457.87% of final ATK as additional damage."
+        ]
+      },
+      "caveats": [
+        "skill1: 'Total Noob' (ATK ▲13.86% ×5 stacks on killing an enemy, 15s) is UNMODELED — the engine has no kill event and the scope-lock boss is immortal with no adds, so the stacks can never accrue; provably zero contribution in every sim run (⚑1)",
+        "burst: the 'Total Noob at max stacks' conditional (457.87% additional damage) is UNMODELED with the pool that feeds its gate — zero contribution at scope; in real multi-add content the gate is effectively always open (⚑2)",
+        "skill2: the crit-window uptime (~65–80%) rides the datamine cadence tuple (ammo 120 / reloadFrames 81 / RoF 1440) — unverified for this unit (⚑3)"
+      ],
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check cluster: (a) burst nuke crit flag — text-silent default vs S6's crit:true (~1.6% of total; popup-colour read over ≥5 casts settles it); (b) cadence tuple ammo 120 / reloadFrames 81 / RoF 1440 datamine — sets the S2 crit-window uptime (~65–80%); (c) same-model lastBullet-archetype prior shared by all agents",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "eunhwa-tactical-upgrade": {
       "name": "Eunhwa: Tactical Upgrade",
       "burst": "II",
@@ -2249,6 +2400,48 @@
         "burst/skill1 heals: the HP MAGNITUDES (burst 10.45%, HoT 1%/s) are not modeled (no HP pool) — only the recovery EVENT cadence is, which is what recovery-consumer teammates key off. The interval:1 HoT phase starts at t=1s (engine interval convention 'first at t=sec'); a t=0 first tick would add one extra early recovery event, immaterial to steady-state consumer uptime."
       ],
       "board": null
+    },
+    "folkwang": {
+      "name": "Folkwang",
+      "burst": "II",
+      "weapon": "AR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/folkwang.json + scripts/kit-autonomy/manual-review/folkwang.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": ["Incoming healing ▲ 45.7% for 10 sec."],
+        "skill2": [
+          "Affects the enemy with the highest final ATK. Taunt for 5 sec."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "⚑ INTERVAL FIRST-FIRE PHASE (both passives): neither S1 nor S2 carries an activation clause, so both are `interval` triggers on their datamined cooldowns (30s / 20s); the engine convention fires first at t=sec (t=30 / t=20), NOT t=0. The in-game first-fire phase of a cooldown passive is unmeasured for folkwang; recipe: any focus video — does Starting Whistle's shield appear in the opening seconds or only after ~30s? A wrong phase shifts every shielded-trigger consumer's cadence by up to one period.",
+        "⚑ CADENCE TUPLE (ALWAYS-⚑): AR rate_of_fire 720 / reloadFrames 99 / ammo 60 shipped from datamine; affects her OWN shots only (burst-gauge feed + weapon damage). No kit line keys off her shots, so a wrong cadence rescales nothing kit-side — not escalated.",
+        "Shield MAGNITUDES (S1 13.71% / burst 32.9% of caster final Max HP) are recorded on the shield effects as maxHpPct but not consumed: v1 models no shield HP pool (the boss deals no damage). Each shield effect's durationSec:10 opens the recipients' shieldedUntilFrame windows and fires their 'shielded' triggers (naga-style shield-gated kits) — that event/window channel is both lines' entire in-domain surface.",
+        "S2 Max HP line is encoded as targetMaxHpPct — the schema's stat for 'Max HP ▲ X%' kit lines (blanc/maiden convention) — NOT the raw maxHpPct key: only the CUBE/OL-extra path converts maxHpPct→maxHpFlat (sim.ts:887); an override buff authored with the raw stat is applied as a stat nothing reads and would silently do nothing (driver-derived; independently re-derived by the S2b blind reviewer claude-fable-5). Self-targeted, so the e3 rule lets it feed her OWN atkOfMaxHpPct — she carries no such line, making the grant offensively INERT in v1; kept for kit completeness (marciana's inert-defPct convention), 10s duration with real downtime between the 20s firings.",
+        "⚑ HoT TICK COUNT (burst lifesteal): 'Recovers 65.81% of attack damage as HP over 10 sec.' is MODELED as a heal HoT — ticks:10 intervalSec:1 — on the SAME top-2 final-ATK target set as the burst shield, per the marciana convention: marciana's S1 carries the identical construction ('Recovers 10.95% of attack damage as HP over 3 sec.') and her owner-landed gauntlet override encodes it as heal ticks:3/intervalSec:1 with a ⚑-estimated tick count. The tick count (one per second across the 'over 10 sec' window) is the ESTIMATE — in game the recovery is damage-linked and continuous, not clock-ticked; the events exist for their TANDEM value only (they fire the recipients' 'recovery' triggers, crown-type 'when recovery takes effect'). The 65.81% MAGNITUDE is recorded here and NOT modeled — the heal effect carries no HP amount (v1 has no HP pool). Driver initially ruled this line UNMODELED on ada/tia lifesteal-skip precedent; revised to MODEL on 2026-08-03 when the S2b (claude-fable-5), S5 and S6 (claude-opus-5) blind reviewers all converged on the HoT encoding and the marciana precedent was confirmed as the nearest intra-repo analog (ada's skip is pre-gauntlet and residual-flagged in her own gauntlet; alice's lifesteal carries an unmodelable <80%-HP gate that folkwang's line does not have).",
+        "S1 'Incoming healing ▲ 45.7%' UNMODELED: there is no incoming-healing StatKey and no HP pool for it to amplify — and 'recovery' triggers fire per heal EVENT regardless of amount, so the amplifier cannot change any consumer in v1 (S2b observation).",
+        "S2 'Taunt' UNMODELED: v1 models no aggro/targeting — resolveTargets({kind:'enemy'}) returns [] (the boss deals no damage to anyone, so nothing chooses a target). NOT encoded as a targetStatus (that channel exists for kit-NAMED gateable statuses such as d-killer-wife's Wipe Out; fabricating a 'Taunt' status would invent a gate no kit line asks for) and NOT as a damageTakenPct debuff (taunt is not a damage-taken modifier).",
+        "'2 allies with the highest FINAL ATK' resolves by live effectiveAtk at proc time (byFinalAtk:true per the A3 literal-word ruling); the pool is self-inclusive, but as a Defender folkwang will rarely rank top-2 herself.",
+        "Zero damage lines and zero weapon-state modifiers in the whole kit — folkwang is a clean-weapon BASIS unit (AR cell, team A): clean-weapons.test.ts CW1 additionally pins this committed override byte-identical to the bare empty kit (owner ruling 2026-08-01 option-2: damage-neutrality, not file-absence). Her board footprint is tandem only: two shield channels (one interval, one burst-keyed), one burst-keyed recovery stream (top-2 allies), and one offensively-inert self Max HP grant."
+      ],
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; rider HoT resolved via marciana precedent + triple blind convergence",
+      "residual": "interval first-fire phase t=CD convention (unmeasured in-game); burst HoT ticks:10 estimate (marciana convention — in game the recovery is damage-linked, not clock-ticked)"
     },
     "frima": {
       "name": "Frima (Treasure)",
@@ -3205,6 +3398,48 @@
       ],
       "board": null
     },
+    "maiden": {
+      "name": "Maiden",
+      "burst": "III",
+      "weapon": "SG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/maiden.json + scripts/kit-autonomy/manual-review/maiden.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "Revenge-omission posture (board reads ~half theoretical burst); interval:30 S2 cadence datamine-sourced; SG cadence tuple (rof 90 / reloadFrames 142 / 10 pellets) unmeasured",
+      "unmodeled": {
+        "skill1": [
+          "Activates when attacked 20 time(s). Affects self.",
+          "Revenge: ATK ▲ 26.66% for 20 sec."
+        ],
+        "skill2": ["Affects all enemies.", "Taunt for 10 sec."],
+        "burst": [
+          "Affects the same target(s) when in Revenge status.",
+          "Deals 457.87% of final ATK as additional damage."
+        ]
+      },
+      "caveats": [
+        "skill1: the entire Revenge mechanic (attacked 20× → Revenge: self ATK ▲26.66%/20s) is UNMODELED — the sim has no incoming-damage model, no 'attacked N times' trigger, and no self-status gate; the boss never acts",
+        "burst: the 'when in Revenge status → 457.87% additional damage' rider is UNMODELED — it is gated on the untriggerable Revenge self-status, so the burst fires at half its theoretical (Revenge-active) magnitude",
+        "skill2: 'Affects all enemies. Taunt for 10 sec.' is UNMODELED — no taunt/aggro primitive; the single partless boss already takes everyone's attacks; its in-game role is feeding the attacked-counter (⚑1)",
+        "skill2: the 30s interval cadence is the datamined skillCooldownsSec.skill2 (the kit prose carries no number) — ⚑ cadence tuple",
+        "skill1/skill2/burst: SG cadence tuple (rate_of_fire 90 / reloadFrames 142 / 10 pellets) is an unmeasured datamine estimate"
+      ]
+    },
     "maiden-ice-rose": {
       "name": "Maiden: Ice Rose",
       "burst": "III",
@@ -3736,6 +3971,38 @@
         "temp": "OK  ·"
       }
     },
+    "milk": {
+      "name": "Milk (Treasure)",
+      "burst": "I",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/milk.json + scripts/kit-autonomy/manual-review/milk.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Incoming healing ▲ 75.5% for 10 sec.",
+          "Recovers 16.16% of attack damage as HP — magnitude only: the engine `heal` carries no HP amount by design (no HP pool); the 10-second recovery-event WINDOW is modeled (burst heal ticks:10 intervalSec:1)."
+        ]
+      },
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "owner spot-check cluster: (1) K2 permanent-CD reading rests on grammar+S2b+engine-channel convergence — one in-game cast-cadence check (~20s cycles) closes it; (2) chargeCounter-vs-hitCount identity indistinguishable on this pure-full-charge SR (encoding-pinned); (3) interval first-fire t=20 convention",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "milk-blooming-bunny": {
       "name": "Milk: Blooming Bunny",
       "burst": "III",
@@ -4237,6 +4504,52 @@
         "burst: Hit Rate ▲22.04% feeds the sim's derived Hit-Rate→core-hit lift (hrCoreMult, live by default); the conversion magnitude is a measured-only ⚑, so the test pins the stat application, not a specific core-rate delta"
       ],
       "board": null
+    },
+    "noah": {
+      "name": "Noah",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/noah.json + scripts/kit-autonomy/manual-review/noah.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "There is a 10% chance of activating when attacked. Affects all allies. Damage Taken ▼ 8% for 10 sec."
+        ],
+        "skill2": [
+          "Activates when hitting a target with a Full Charge attack. Affects the target. Taunt for 2 sec. ATK ▼ 13.25% for 5 sec."
+        ],
+        "burst": [
+          "Affects self. Attract: Taunt all enemies for 10 sec.",
+          "Affects all allies. Invulnerable for 3 sec."
+        ]
+      },
+      "caveats": [
+        "⚑ CADENCE TUPLE (ALWAYS-⚑): RL charge cycle — chargeFrames 60 / ammo 6 / reloadFrames 171 / hitsPerShot 2 / rate_of_fire 60 — shipped from datamine; affects her OWN shots only (weapon damage + burst-gauge feed). She has NO datamined row in data/gauge-per-shot.json, so her gauge accrual uses the RL modal fallback (280/trigger × the RL-charge focus multiplier) — the cadence of her burstCast keying (and therefore of the defPct channel below) inherits that estimate. No kit line keys off her shots (S2's full-charge-hit clause is UNMODELED), so a wrong cadence rescales nothing kit-side — only the channel's firing count.",
+        "Burst DEF line ('DEF ▲ 133.48% for 10 sec', all allies) is encoded as defPct — the LITERAL form this time: the kit grants each ally a percentage of their OWN DEF, which is exactly what defPct scales (contrast marciana's burst DEF line, which is caster-DEF-scaled and therefore only a semantic approximation). defPct is deliberately INERT in v1: self DEF never enters damage dealt and there is no incoming damage, so the grant moves no unit's total — kept for kit completeness (marciana's inert-defPct convention) and for any future DEF consumer/scaler.",
+        "burstCast keying (own-cast prior, marciana/folkwang convention): the DEF grant is noah's OWN Burst II block — keying it to fullBurstEnter would over-fire the channel on every Full Burst a competing Burst II opens (noah.test.ts N3 discriminates this behaviorally against the fixture's CD-20 B2 naga, whose chains complete without noah casting).",
+        "S1 'Damage Taken ▼ 8%' UNMODELED: the clause is a DEFENSIVE ally-side damage-taken reduction (▼ direction, all-ally target) — the schema's only damage-taken stat is damageTakenPct, a BOSS debuff where positive = boss takes MORE, so it cannot express this line without inverting both target and direction (the nearest-wrong model the S2b reviewer independently flagged: a boss-held -8% would drag the whole board down 8%). The 10%-when-attacked activation also has no trigger primitive (no attacked-trigger, no RNG gate) and the v1 boss attacks nobody.",
+        "S2 'Taunt for 2 sec' + 'ATK ▼ 13.25% for 5 sec' UNMODELED: v1 models no aggro/targeting and no enemy stats (the boss deals no damage, so an enemy ATK ▼ has no consumer). NOT encoded as a targetStatus (that channel is for kit-NAMED gateable statuses such as d-killer-wife's Wipe Out; fabricating a 'Taunt' status would invent a gate no kit line asks for — folkwang precedent), NOT as a negative atkPct on self/allies (the ▼ is on THE TARGET — the enemy). The full-charge-hit activation clause has no trigger primitive either.",
+        "Burst 'Attract: Taunt all enemies for 10 sec' UNMODELED: same no-aggro ruling as S2's taunt.",
+        "Burst 'Invulnerable for 3 sec' UNMODELED: v1 models no HP pool / death / incoming damage. Deliberately NOT encoded as a `shield` effect (the nearest-primitive trap, S2b-flagged): a shield encoding would open the targets' shieldedUntilFrame windows and fire teammates' 'shielded' triggers / requiresShielded gates — fabricating a synergy surface the kit never grants. Invulnerability is a distinct named mechanic from Shield in kit vocabulary (marciana's Storage precedent).",
+        "Zero damage lines and zero weapon-state modifiers in the whole kit: noah's entire board footprint is ONE inert defPct channel on her own burst casts. Her personal damage is weapon-only (RL charge, hitsPerShot 2). She is damage-neutral by the same proof as the six clean-weapon basis units (noah.test.ts N1: own AND team totals byte-identical vs the empty kit, solo and in-comp), though she is NOT one of the six basis cells (the harness list is owner-fixed)."
+      ],
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "inert-defPct future-consumer blindness (no totals assertion can catch a wrong defPct consumer); cast cadence rides the RL modal gauge fallback (noah has no datamined gauge-per-shot row); driver fixture DIV depends on naga's chains completing",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     },
     "noir": {
       "name": "Noir",
@@ -6114,6 +6427,50 @@
         "burst: swap weapon range-band/core eligibility (charge cannon on an SG base) is an SR-like guess ⚑; base SG cadence tuple is datamine-unreliable ⚑"
       ],
       "board": null
+    },
+    "cocoa": {
+      "name": "Cocoa",
+      "burst": "I",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/cocoa.json + scripts/kit-autonomy/manual-review/cocoa.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Affects all allies. Restores 17.76% of Cover HP.",
+          "Affects 2 random ally unit(s) with debuffs. Removes 1 debuff(s)."
+        ],
+        "skill2": [
+          "Activates when attacking with Full Charge. Affects self. Professional Tomato Sauce: Damage Taken ▼ 4.37%, stacks up to 15 time(s) and lasts for 5 sec."
+        ],
+        "burst": [
+          "Affects all allies. Removes 1 debuff(s).",
+          "Activates when Professional Tomato Sauce is at max stacks. Affects all enemies. ATK ▼ 13.59% for 10 sec."
+        ]
+      },
+      "caveats": [
+        "⚑ Cover-HP restore (17.76% of Cover HP, all allies, skill1 cd 15s) is UNMODELED, tier out-of-domain (no cover/HP pool in v1). It is NOT encoded as a `heal` effect on purpose: cover repair is not HP recovery in the kit's own terms, and a heal would emit recovery events that fire teammates' on-recovery consumers (e.g. crown's 'when recovery takes effect') — a synergy cocoa does not have. Whether in-game cover repair fires on-recovery triggers is UNMEASURED; the default is no-emit, and flipping that default needs a measurement, not a prior. Recipe if a cover pool is ever modeled: emit a cover-restore event on skill1's 15s clock, no recovery trigger.",
+        "⚑ Debuff removal (skill1: 1 debuff from 2 random debuffed allies; burst: 1 debuff from all allies) is UNMODELED, tier out-of-domain: v1 models no ally debuffs (the boss deals no damage and applies none), so there is nothing to cleanse. Recipe if ally debuffs are ever modeled: cleanse 1 on skill1's 15s clock (2 random debuffed holders) and 1 on cocoa's OWN burstCast (all allies — burstCast, not fullBurstEnter).",
+        "⚑ Self Damage Taken ▼4.37% per full-charge attack (15 stacks, 5 sec) is UNMODELED, tier out-of-domain: v1 models no incoming damage, so a damage-taken modifier has no consumer. Estimate if it ever mattered: with SR cadence (60-frame charge, 6 ammo, 141 reload) stacks would saturate ~25-30s into the fight and stay up (UNMEASURED derivation). Its only consumer is the burst's max-stacks gate — both are unmodeled together. Nearest-wrong encoding to avoid: the schema's damageTakenPct is a BOSS debuff (positive = boss takes MORE damage); writing this self ▼ line onto the boss would swing team damage up to 15×4.37% ≈ 65.55%.",
+        "⚑ Enemy ATK ▼13.59% for 10 sec, gated on Tomato Sauce at max stacks at cast time, is UNMODELED, tier out-of-domain: the engine explicitly drops enemy ATK▼/DEF▼ debuffs (src/engine/sim.ts — they cannot affect damage dealt at DEF=0; the boss never attacks into our numbers). It is NOT damageTakenPct (that is 'boss takes more damage' — a different mechanic). Recipe if boss attacks are ever modeled: 10s ATK-down on all enemies, applied only when the caster holds 15 Tomato stacks at her own burstCast.",
+        "Zero damage lines, zero weapon-state modifiers, zero gauge modifiers in the whole kit — cocoa cannot move her own or any teammate's damage. Her committed override is byte-identical in effect to the bare weapon: the board value is entirely defensive and lives outside v1's domain. Any future edit that adds an effect to this file is an over-encoding unless it cites a new primitive + measurement."
+      ],
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "cover-repair-fires-recovery: whether in-game Cover HP restoration fires ally on-recovery triggers (crown/helm-style synergy) is unmeasured — all agents defaulted no-emit, recipe in override caveats; burst max-stacks gate rides the same unmeasured 15-stack pool (refresh-semantics read: ~25-30s to saturate)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     }
   }
 }

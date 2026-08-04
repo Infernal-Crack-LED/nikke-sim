@@ -98,7 +98,7 @@ Shape cheat-sheet (verified against `harness.ts` / `types.ts` — the shapes bli
     }
   ],
   "fixtures": "<which comp(s) used and why>",
-  "gaps": ["<it.skip'd lines + reason>"]
+  "gaps": ["<it.skip lines + reason>"]
 }
 ```
 

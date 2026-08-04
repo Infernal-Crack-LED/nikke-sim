@@ -1,0 +1,122 @@
+{
+  "slug": "milk",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "every 20 sec: ATK ▲ 31.83% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK buff (atkPct — scales each target's own ATK); not normal-attack-scoped, not caster-ATK-flat.",
+      "durationSemantics": "durationSec: 10 (wall-clock seconds, literal 'for 10 sec'); re-applied each 20s interval → ~50% uptime steady-state.",
+      "triggerIdentity": "interval sec:20, first fire at t=20s (frame 1200) per the interval convention (first at t=sec, not t=0).",
+      "targetSet": "alliesTopAtk count:3, byFinalAtk:true — kit literally says 'highest final ATK', which per the A3 rule mandates live effectiveAtk ranking, not staticAtk. Self is in the candidate pool (no 'except self' clause); milk is an Attacker (top static tier) so she plausibly self-buffs.",
+      "nearestWrongModel": "Static-ATK ranking (byFinalAtk omitted — the plain-'highest ATK' default wrongly applied to a 'final ATK' line), and/or first fire at t=0 instead of t=20.",
+      "distinguishingAssertion": "Filter buffApply events stat==='atkPct' && value===31.83: first application frame is 1200 (not 0), exactly 3 target events per activation, expiresFrame===applyFrame+600; in a comp where a live buff lifts a lower-static unit into the top 3 at an apply tick, the targetIdx set matches effectiveAtk ranking (red under static ranking).",
+      "inertness": "Must NOT apply to more than 3 units, must NOT be active during t=0–20s, and must NOT persist past 10s per application (no permanent uptime).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "start of battle: Burst CD ▼ 20 sec cont.",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-cooldown modifier, self only — not a stat buff, not team CDR.",
+      "durationSemantics": "'continuously' = permanent: EVERY burst cooldown cycle is 20s shorter (40s base → effective 20s CD), not a one-shot head-start.",
+      "triggerIdentity": "Battle-start/passive application; the load-bearing semantics are that the reduction applies to every cycle (burstCdr WITHOUT oncePerBattle, or an equivalent permanent CD modifier).",
+      "targetSet": "self only ('Affects self') — must NOT reduce teammates' burst cooldowns.",
+      "nearestWrongModel": "oncePerBattle:true — a single 20s reduction that accelerates only her FIRST burst, leaving subsequent cycles at 40s. Second nearest: applying the CDR to all allies.",
+      "distinguishingAssertion": "In a comp where milk actually casts B1 each rotation, collect her burstCast frames: gaps between consecutive milk burstCast events are consistent with a ~20s CD (she casts on ~every FB rotation, ≥2× the cast count of a 40s-CD baseline over 180s). Red under oncePerBattle (first gap short, later gaps ~40s). Also assert liter's burst CD in the same comp is unchanged vs a milk-block-removed patch (self-only).",
+      "inertness": "Teammates' burst cooldowns must NOT move from this line; FB count of the comp must not change via any channel other than milk's own cast availability.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "above 80% HP: Crit Damage ▲ 11.13% cont.",
+      "disposition": "FAITHFUL",
+      "scope": "Generic critDamagePct — applies to all crit damage (weapon, riders that crit), not crit-rate, not normal-attack-scoped.",
+      "durationSemantics": "'continuously' while HP-gated; at scope lock the boss deals no damage so >80% HP always holds → permanent passive (documented simplification, not a drop).",
+      "triggerIdentity": "passive (the HP condition is scope-trivially always true; no activation event to key).",
+      "targetSet": "allies (all, including self).",
+      "nearestWrongModel": "Dropping the line because the HP gate 'isn't modeled' (v1 has no HP pool), or encoding critRatePct instead of critDamagePct.",
+      "distinguishingAssertion": "buffApply events stat==='critDamagePct' && value===11.13 exist at frame 0 for all 5 units with no expiry (no expiresFrame lapse); red if absent (dropped-gate misread) or if stat==='critRatePct'.",
+      "inertness": "Crit RATE must not move; the buff must not toggle off at any point in the 180s fight.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge ×10: Burst CD ▼ 2.83 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Instant burst-cooldown reduction event (no duration, no stat buff).",
+      "durationSemantics": "Instantaneous CDR per proc; repeating — fires on EVERY 10th full-charge attack, not once per battle.",
+      "triggerIdentity": "Full-charge counter (chargeCounter count:10, single phase) — counts only milk's OWN full-charge shots. NOT hitCount (which counts rounds regardless of charge state — diverges whenever she fires uncharged, e.g. inside FB windows or under charge-speed effects) and NOT interval.",
+      "targetSet": "allies — ALL allies' burst cooldowns, including her own ('Affects all allies').",
+      "nearestWrongModel": "Self-only CDR (missing that a B1 support hands the CDR to the whole team), or hitCount:10 (round-count trigger inflating proc rate if any non-full-charge shots fire), or one-time-only.",
+      "distinguishingAssertion": "A/B via withPatchedOverride('milk', strip this block): with the block live, teammates' (liter/crown/carry) burstCast frames come EARLIER and/or the comp's fullBurstStart count over 180s rises vs the stripped baseline — red under self-only (teammate cast frames identical). Proc cadence check: with ammo 6 / 60-frame charge / 141-frame reload, count milk's full-charge shots; the CDR event count equals floor(shots/10), repeating across the whole fight.",
+      "inertness": "Must NOT proc off teammates' charges or milk's burst cast; zero procs before her 10th full-charge shot.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 367.34% final ATK as Burst dmg",
+      "disposition": "FAITHFUL",
+      "scope": "One instant hit, burst bucket, 367.34% of caster final ATK, single enemy (highest final DEF — trivial on the partless single boss).",
+      "durationSemantics": "Instant on cast; snapshots buffs at cast time.",
+      "triggerIdentity": "burstCast (her OWN Burst I cast) — never fullBurstEnter; per the measured timing rule, burst-cast damage lands BEFORE the FB window opens, so it is FB-exempt.",
+      "targetSet": "enemy (the boss).",
+      "nearestWrongModel": "Applying the +50% Full-Burst major (and/or FB-entry auras) to the burst hit — keying it at/inside the FB window instead of pre-FB cast timing.",
+      "distinguishingAssertion": "The damage event for this hit has bucket 'burst', mult 367.34, srcSlot 'burst', and fbMajorApplied===false / inFullBurst===false on every occurrence — red under the FB-credited misread. With her ~20s effective CD, the hit recurs on each rotation she casts (assert count > 1 over 180s).",
+      "inertness": "Must NOT receive the +30% range bonus rules applicable to weapon shots beyond its own path defaults, and must NOT appear when milk never casts (e.g. seated as a lone/never-selected burster).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 16.16% of atk dmg as HP over 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Heal-over-time to all allies; no HP amount modeled at scope (immortal units) — the modeled substance is the recovery EVENTS it emits (tandem channel).",
+      "durationSemantics": "'over 10 sec' → heal with ticks:10, intervalSec:1 (repeated recovery events across the window), NOT a single instant event.",
+      "triggerIdentity": "burstCast — fires only on rotations milk herself bursts.",
+      "targetSet": "allies (all, including self).",
+      "nearestWrongModel": "Skipping the line as 'defensive, no damage' — the taxonomy's tandem trap: this heal drives any teammate's 'when recovery takes effect' consumer (crown is IN the control fixture). Second nearest: ticks:1 (one instant recovery event), which starves a recovery-triggered consumer's uptime across the 10s window.",
+      "distinguishingAssertion": "After each milk burstCast frame, each ally receives ~10 recovery-typed events spaced ~1s apart across the following 10s (observable via crown's recovery-trigger buffApply events re-firing throughout the window in controlComp-style comps) — red under both the skip and the single-tick misreads.",
+      "inertness": "Milk's own damage total must not change from this line in a comp with no recovery consumer; no recovery events outside the 10s post-cast window.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Incoming healing ▲ 75.5% for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "Received-healing amplifier — no HP pool and no StatKey exists for it; offensively inert at scope (recovery TRIGGERS fire on the event, not the amount).",
+      "durationSemantics": "durationSec 10 (would-be), moot while unmodeled.",
+      "triggerIdentity": "burstCast (would-be).",
+      "targetSet": "allies (would-be).",
+      "nearestWrongModel": "Force-fitting it into an existing stat (e.g. a generic damage or heal-magnitude buff) instead of recording it verbatim in `unmodeled`.",
+      "distinguishingAssertion": "No buffApply event exists attributing any stat to this line; the verbatim text appears in the override's unmodeled.burst array.",
+      "inertness": "Zero damage/timing movement anywhere.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:interval-20s ATK ▲ 31.83% top-3-final-ATK",
+    "skill1:continuous self Burst CD ▼ 20s",
+    "skill2:passive all-ally Critical Damage ▲ 11.13%",
+    "skill2:full-charge-×10 all-ally Burst CD ▼ 2.83s",
+    "burst:367.34% burst-bucket nuke (FB-exempt)",
+    "burst:heal-over-10s recovery-event emitter (tandem)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Incoming healing ▲ 75.5% for 10 sec.",
+      "(magnitude only) Recovers 16.16% of attack damage as HP — the recovery EVENTS are modeled via heal ticks; the HP amount is not (no HP pool at scope)."
+    ]
+  },
+  "notes": "FIXTURE TRAP (highest-leverage reconciliation item): milk is Burst I. controlComp(milk) seats the carry in the fixed B3 slot, where a Burst I unit casts ZERO bursts — every burst-slot line (nuke, heal/recovery tandem) and the self-CDR line would be silently untested green. Tests MUST use a comp where milk actually occupies/wins the B1 cast (e.g. replace liter, or assert first-ready selection explicitly: with her effective 20s CD milk out-readies a longer-CD co-B1 on later rotations — pin WHO casts B1 per rotation via burstCast events before asserting anything downstream). Expected shared-prior misreads to check the driver against: (1) skill1 interval first-fire at t=0 instead of t=20 (convention: first at t=sec); (2) 'continuously' on the 20s burst-CDR collapsed to a one-time reduction — this single bit roughly doubles or halves her burst cast count and is the biggest damage/rotation lever in the kit; (3) skill2's full-charge counter encoded as hitCount (round-count) — coincides on a pure full-charge SR firing pattern and silently diverges the moment any uncharged/partial shot fires, so assert the trigger identity, not just the proc count under ideal cadence; (4) skill2 CDR mis-scoped to self when the text says all allies — the team-rotation acceleration is the line's entire value; (5) burst heal dropped as defensive, killing the crown recovery tandem present in the standard fixture. All magnitudes are literal kit text (DATAMINED); no ⚑ estimates required — cadence inputs (chargeFrames 60, reloadFrames 141, ammo 6) were supplied as base stats, and the burst nuke needs no invented trigger (burstCast is explicit).",
+  "model": "claude-fable-5"
+}

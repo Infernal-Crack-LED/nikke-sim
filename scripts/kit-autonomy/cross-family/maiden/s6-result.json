@@ -1,0 +1,179 @@
+{
+  "slug": "maiden",
+  "leakDetected": null,
+  "override": {
+    "slug": "maiden",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 20
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 26.66,
+            "durationSec": 20
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 30
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 152.84,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 457.87,
+            "crit": true
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 457.87,
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": ["Taunt for 10 sec."],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ S1 trigger substituted: the kit fires Revenge on 'attacked 20 time(s)'. The sim models no incoming boss damage, so the activation is unobservable and is encoded as interval 20 s (first fire t=20 s). Revenge is therefore continuously up from t=20 s and absent before it — a pure modeling convention, not a measurement.",
+      "⚑ Burst rider is UNGATED: the kit gates the second 457.87% hit on 'Revenge status', and the effect schema has no self-status gate (requiresTargetStatus is an enemy-status channel). Modeled at an assumed ~100% Revenge uptime, which OVER-CREDITS any burst cast before Revenge first procs.",
+      "⚑ S2 cadence invented: the kit prose carries no activation clause and no cooldown, so both S2 sub-lines are keyed to one interval (30 s estimate) with the stated 10 s durations.",
+      "Taunt (all enemies, 10 s) is unmodeled — there is no aggro model and the v1 boss deals no damage — but it is the real-game driver of S1's hit count, so the ⚑ Revenge cadence above stands on an unmodeled line.",
+      "Burst-cast damage is FB-exempt by TIMING (the cast lands before the Full Burst window opens); noFb is deliberately NOT set on either hit (measured-only field, default OFF).",
+      "Both burst hits are crit-eligible at the caster's sheet rate and carry NO core (the kit text does not say 'core strike damage'). This matters more than usual here because S2 grants +152.84% Critical Damage to self.",
+      "⚑ Base weapon economy (9 ammo, reloadFrames 142, 10 pellets/shot, SG cadence) comes from the datamine, which is unreliable for rate_of_fire/reloadFrames; shots fired — and therefore total normal-attack damage — inherit that uncertainty."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Maiden — SG/Electric/Attacker/Burst III, 9 ammo, 10 hits/shot, normal 231.6% / core 200%. S1 Revenge = self ATK ▲26.66% for 20 s; the kit trigger is 'attacked 20 time(s)', which the engine cannot observe (no incoming boss damage is modeled), so it is encoded as ⚑ interval 20 s — first fire t=20 s, then continuously refreshed. S2 has two sub-lines under one activation: an all-enemy Taunt (10 s), unmodeled (no aggro model, boss deals no damage), and a self Critical Damage ▲152.84% for 10 s, keyed to a ⚑ interval 30 s because the kit prose states no cooldown. Burst = two separate 457.87%-of-final-ATK hits at burst-cast; the second is kit-gated on Revenge status, and since the schema has no self-status gate it is modeled UNGATED under an assumed ~100% Revenge uptime (⚑) — this over-credits any burst that fires before Revenge first procs. Both burst hits crit at the caster's sheet rate, take no core, and are Full-Burst-exempt by cast timing (noFb is not set)."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when attacked 20 time(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger SUBSTITUTED (⚑): incoming boss attacks are not modeled, so the hit-count activation is unobservable. Encoded as trigger {kind:'interval', sec:20} (first fire t=20 s) rather than dropped, because the burst's second 457.87% hit depends on Revenge status."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Revenge: ATK ▲ 26.66% for 20 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat 'atkPct' value 26.66, durationSec 20, target self. Wall-clock seconds (not rounds); self-scoped per 'Affects self.'"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Taunt for 10 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "No aggro/threat model in the sim and the v1 boss deals no damage, so a taunt moves nothing. NOT skipped as 'defensive' on principle — it is the real-game driver of S1's 20-hit count, which is why S1's cadence is a ⚑ estimate. Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Damage ▲ 152.84% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat 'critDamagePct' value 152.84, durationSec 10, target self, on the same ⚑ interval-30 s activation as the taunt. Unscoped Critical Damage (the text names no normal-attack/charge scope), so it feeds normal hits and the crit-eligible burst riders alike."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 457.87% as Burst Skill damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 457.87, crit true, target enemy, trigger burstCast. No core (text says no core strike); noRange left to the engine; noFb NOT set — burst-cast damage is FB-exempt by landing before the FB window."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "when in Revenge status",
+      "status": "SKIPPED",
+      "effectOrReason": "Gate NOT enforced: the schema's only status gate (requiresTargetStatus) is an ENEMY-status channel opened by a targetStatus effect; Revenge is a self status with no primitive. Modeled as ~100% uptime (⚑, see caveats) instead of inventing a monotonic resource pool that could never express a lapse. This is a GATE on an implemented line, so it is recorded in caveats rather than unmodeled."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 457.87% as additional damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Second flatDamage atkPct 457.87, crit true, target enemy, trigger burstCast — authored as its OWN block (mirrors the second ■ header) so the Revenge gate can be attached later without touching the base hit."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "{kind:'interval', sec:20} — Revenge live continuously from t=20 s",
+      "reasoning": "ALWAYS-⚑ class (2): a kit-stated activation the engine has no channel for. 'Attacked 20 time(s)' requires an incoming-damage model the sim does not have. S2's Taunt exists precisely to pull boss attacks onto Maiden, and Revenge lasts 20 s, so near-permanent uptime after an opening ramp is the realistic shape — but the RAMP LENGTH (how long 20 boss hits actually takes at scope lock, with and without the taunt window) is pure guesswork. A shorter true ramp under-credits the opening; a longer one over-credits it.",
+      "recipe": "From a scope-lock recording: timestamp the frame Maiden's Revenge buff icon first appears (and each re-application) relative to the 03:00→02:59 game-t0 frame; that first-appearance time IS the interval, and the gap between re-applications tests whether it holds continuously. Cross-check by counting boss attack instances (multi-hit attacks count per hit) to 20."
+    },
+    {
+      "field": "burst[1] (Revenge-gated 457.87% rider)",
+      "estimate": "Ungated — fires on every burst cast (assumed ~100% Revenge uptime)",
+      "reasoning": "The kit conditions the rider on Revenge status; no self-status gate exists in the schema. Under the ⚑ interval-20 s model above, Revenge is down only before t=20 s, so the only exposure is a burst cast inside the opening window — worth up to 457.87% of final ATK, i.e. HALF her burst, on that one cast. Encoding it via a never-decaying `resource` pool was rejected: it would fake precision it cannot back (no lapse semantics) and adds machinery the prose does not support.",
+      "recipe": "Read the burst popups on a recording: a Revenge-active burst should show TWO equal ~457.87%-scaled numbers, a Revenge-inactive burst ONE. If any real burst lands with Revenge down, add the gate (needs a self-status primitive, or condition the rider on the same trigger that lands Revenge)."
+    },
+    {
+      "field": "skill2[0].trigger.sec",
+      "estimate": "30 s (uptime 10/30 ≈ 33% for the +152.84% Critical Damage)",
+      "reasoning": "ALWAYS-⚑ class (2): the kit prose carries no activation clause and no cooldown, so per the no-'Activates when' convention it becomes an interval, first fire at t=CD. 30 s is a midpoint guess for a 10 s-window skill; the plausible range is 20–40 s and the choice swings the crit-damage uptime by ~2×, which lands directly on both burst riders and every normal shot.",
+      "recipe": "Read maiden's datamined skillCooldownsSec (data/) — that is a direct answer and outranks any estimate. Failing that, timestamp successive appearances of the Critical Damage buff icon / the taunt animation on a recording; the gap IS the cooldown."
+    },
+    {
+      "field": "base cadence tuple (pullsPerSec / reloadFrames 142 / ammo 9)",
+      "estimate": "As datamined — 9 rounds, 142-frame reload, SG default cadence",
+      "reasoning": "ALWAYS-⚑ class (1): rate_of_fire and reloadFrames are known-unreliable datamine fields (a nominal rate is quantised to 60 fps frame boundaries, so effective ≠ nominal). Maiden carries no ammo/reload/fire-rate modifier of her own, so every one of her normal-attack shots rides directly on these three numbers.",
+      "recipe": "Count shots from the on-screen ammo counter over a fixed window on a scope-lock recording (the counter measures shots/sec directly), and time reload-start → first-shot for the reload figure; do NOT infer either from full-burst counts, which sit downstream of gauge."
+    },
+    {
+      "field": "SG pellet handling (hitsPerShot 10) — engine-level, not an override field",
+      "estimate": "Engine default SG landing/consolidation; no override-side pellet config",
+      "reasoning": "ALWAYS-⚑ class (5): split-vs-merge for a 10-pellet shot is kit-silent. Nothing in Maiden's prose modifies pellet count or consolidates pellets, so no `pelletCountFlat` or `consolidation` is authored — but her per-shot damage is fully exposed to whatever landing fraction / core rate the engine's SG geometry applies.",
+      "recipe": "Read damage popups on a Maiden recording: count distinct numbers per trigger pull (10 small vs fewer merged) and check the core/non-core split against the accuracy-circle geometry already in docs/data/sg-calc/. This is engine-side, not an override change."
+    },
+    {
+      "field": "burst[0].noFb / burst[1].noFb",
+      "estimate": "Not set (default OFF) — Full Burst applies by landing timing",
+      "reasoning": "ALWAYS-⚑ class (6): noFb is measured-only and must never be set unmeasured. Maiden's burst damage is burst-cast damage, which by the established timing model lands BEFORE the Full Burst window opens and so takes no +50% anyway — the timing path, not a per-kit exemption flag, is what should produce that.",
+      "recipe": "If a recording ever shows a burst popup carrying the +50% Full Burst major, the timing model — not this override — is the thing to revisit; leave noFb unset until a measurement says otherwise."
+    }
+  ],
+  "model": "claude-opus-5"
+}

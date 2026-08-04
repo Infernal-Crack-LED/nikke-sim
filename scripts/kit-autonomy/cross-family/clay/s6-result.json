@@ -1,0 +1,245 @@
+{
+  "slug": "clay",
+  "leakDetected": null,
+  "override": {
+    "slug": "clay",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 60
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "fbGate": "inFb",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "trueDamagePct",
+            "value": 6.45,
+            "durationSec": 6,
+            "maxStacks": 3
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "stageEnter",
+          "stage": 1
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": []
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 60
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "fbGate": "inFb",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 20.07,
+            "durationSec": 6
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "trueDamagePct",
+            "value": 12.56,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "weaponSwap",
+            "damagePct": 100,
+            "trueNormals": true,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "When attacking an enemy projectile, damage to that projectile ▲ 45.05% for 6 sec."
+      ],
+      "skill2": ["Gains debuff immunity to 1 debuff(s) for 10 sec."],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1 hitCount:60 — the kit says '60 normal attacks during Full Burst'. Modeled as a hitCount trigger with fbGate:'inFb'. UNVERIFIED whether the engine's hitCount counter resets between Full Bursts or accumulates across the fight; a non-resetting counter over-fires late-fight (the 60-attack tally likely restarts each FB in-game). Also UNVERIFIED whether 'landing 60 normal attacks' counts the CASTER's rounds only (assumed) vs all-ally attacks.",
+      "⚑ skill2b ('only while in Victorious Battle Cry status') is modeled as a mirror block keyed to the SAME hitCount:60 in-FB trigger with the same 6s window, so the ATK grant is live exactly while the S1 status is live. This is a STRUCTURAL proxy — the engine has no status-presence gate for a self-authored buff, so the two blocks can drift if the S1 stack window is refreshed by a trigger this block does not see.",
+      "⚑ skill2b 'ATK ▲ 20.07% of the skill user's ATK continuously' is encoded as casterAtkPct (flat add scaled by clay's own staticAtk). 'Continuously' is read as 'for as long as the status holds', NOT as a permanent from-t=0 buff — the leading '■ Activates only while in Victorious Battle Cry status' clause gates it.",
+      "⚑ skill2b is NOT stacked (single application at 20.07%). The kit attaches the multiplier to the STATUS, not to each stack of it; a per-stack reading would be 3× at cap. Unverified either way from the prose alone.",
+      "⚑ burst 'Normal attacks deal true damage for 10 sec' (self) is encoded as a weaponSwap with damagePct:100 + trueNormals:true and no ammo/cadence override — the ONLY schema channel for true-flavored normals. This re-uses the swap machinery for a non-swap kit line; it must not change shot economy (damagePct 100 = same per-shot multiplier, no maxAmmo/pullsPerSec override), but a swap also suppresses nothing else clay depends on. Verify against a run that the swap window changes ONLY the flavor of her normals.",
+      "⚑ Cadence tuple (SMG ammo 120 / reloadFrames 81 / rate) is datamine-sourced and known-unreliable; it drives the 60-normal-attack accrual rate directly, so a wrong pulls/sec moves how many times skill1 fires per FB.",
+      "The skill2 debuff-immunity block is authored with an EMPTY effects array purely as an audit anchor for the stageEnter trigger; it applies nothing. If the validator rejects empty-effect blocks, drop the block and keep the line in unmodeled only."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Clay (SMG/Electric/Supporter/Burst II) is a pure team true-damage amplifier: S1 stacks a 6.45%×3 team True Damage buff off a 60-normal-attack-in-Full-Burst counter (6s window), S2 rides that same status to grant all allies a flat ATK add worth 20.07% of clay's own ATK, and her burst adds a 10s team True Damage ▲12.56% plus a self window where her own normals are true-flavored. Modeled: the S1 stacking trueDamagePct buff, the S2 status-gated casterAtkPct grant, the burst team buff, and the burst self true-normals window. Deliberately unmodeled: the projectile-damage rider (no enemy projectiles at scope lock) and the 1-debuff immunity (defensive, boss inflicts nothing modeled). The load-bearing uncertainty is the S1 trigger: 'landing 60 normal attacks during Full Burst' has no engine primitive that both resets per-FB and gates on FB, so the hitCount+fbGate pair is a proxy whose fire count per fight is the first thing to pin against footage."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after landing 60 normal",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount{count:60} + fbGate:'inFb' — 'during Full Burst' is a state gate on the counting window, not a separate trigger. ⚑ per-FB reset semantics unverified."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} — no excludeSelf clause, so clay is included."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "True Damage ▲ 6.45%. Stacks 3",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff{stat:'trueDamagePct', value:6.45, durationSec:6, maxStacks:3} — Damage Up bucket per the trueDamagePct StatKey."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "lasts for 6 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "durationSec:6 — wall-clock seconds, explicitly stated (not a round count)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "enemy projectile, damage ▲45.05%",
+      "status": "SKIPPED",
+      "effectOrReason": "Scope-lock boss projectiles are not modeled targets — no damage-to-projectile channel exists in the schema and the raid boss carries no projectile HP pool. Recorded verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when entering Burst Stage 1",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger stageEnter{stage:1} on an audit-anchor block; the effect it carries is unmodeled (see next row), so the block ships with an empty effects array."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "debuff immunity to 1 debuff 10s",
+      "status": "SKIPPED",
+      "effectOrReason": "Purely defensive — the sim models no incoming debuffs from the scope-lock boss, so immunity has zero damage consequence. NOT a heal/shield/DEF line (which are never auto-skipped); it is a status-resistance line with no consumer. Recorded verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "only while in Victorious Battle Cry",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Proxied as a mirror block on the SAME hitCount:60 + fbGate:'inFb' trigger with durationSec:6, so it is live exactly when the S1 status is. ⚑ no true status-presence gate exists in the schema."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲20.07% of skill user's ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff{stat:'casterAtkPct', value:20.07, durationSec:6} to allies — 'of the skill user's ATK' is the literal casterAtkPct definition (flat add scaled by clay's staticAtk), NOT atkPct."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "continuously",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Read as 'for the duration of the gating status' — the 6s status window, refreshed on each S1 fire. Not modeled as a from-t=0 passive, because the '■ Activates only while in <status>' header gates it."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} on the burst-cast block."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "True Damage ▲12.56% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff{stat:'trueDamagePct', value:12.56, durationSec:10} on trigger burstCast — a buff in the unit's OWN burst block fires only on rotations clay actually bursts."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'} on the second burst block."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Normal attacks deal true damage 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap{damagePct:100, trueNormals:true, durationSec:10} — trueNormals is the schema's only true-flavored-normals channel and it lives on weaponSwap; damagePct:100 with no ammo/cadence field keeps shot economy unchanged. ⚑ verify the swap is otherwise inert."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger (hitCount count:60 + fbGate:'inFb')",
+      "estimate": "hitCount{count:60}, fbGate:'inFb'; expect ~0–2 fires per Full Burst window at SMG cadence",
+      "reasoning": "The kit says 'after landing 60 normal attacks during Full Burst' — one clause supplying BOTH a count and a state restriction. The schema has hitCount (cumulative, counts rounds) and fbGate (state check at trigger time) but no primitive that resets a counter at Full-Burst entry. If the engine's hitCount tally is cumulative across the fight, then after the first 60 rounds the block fires every 60 rounds thereafter and the fbGate only suppresses out-of-FB fires — which means late-FB windows fire almost immediately on entry, over-crediting uptime versus an in-game counter that plausibly restarts each FB. This is the single largest structural uncertainty in the override and it drives BOTH the S1 stack count and the S2 ATK grant.",
+      "recipe": "Record one fight with clay in a B1+B2+B3 comp. Count the Victorious Battle Cry buff-icon appearances per Full Burst window from footage and note whether the first appearance in FB #2 and #3 comes at the same elapsed offset into the window as in FB #1 (⇒ per-FB reset) or noticeably earlier (⇒ cumulative). Cross-check in-sim with a cfg.onEvent buffApply filter on stat 'trueDamagePct' value 6.45, logging the frame of every apply, and compare the per-FB apply timings to the footage."
+    },
+    {
+      "field": "skill1[0] — whether '60 normal attacks' counts clay's rounds only or all allies'",
+      "estimate": "clay's own rounds (self-counted); modeled that way",
+      "reasoning": "The kit line gives no subject for 'landing', and NIKKE kits usually count the skill owner's own attacks unless they say 'allies'. But an SMG supporter gating a team buff on 60 of her OWN rounds is a fast threshold, while a team-wide tally would be faster still — the two readings differ by roughly the team-size factor in fire rate and therefore in how many times the buff refreshes per FB.",
+      "recipe": "Same footage pass as above: compare the observed time-to-first-proc inside a Full Burst against clay's measured rounds-per-second (ammo counter delta). If the proc lands at ~60/clay-rps seconds it is self-counted; materially sooner implies a team tally."
+    },
+    {
+      "field": "skill2[1] — status-presence gate proxied by a duplicate trigger",
+      "estimate": "mirror block on hitCount:60 + fbGate:'inFb', durationSec:6 (identical window to skill1)",
+      "reasoning": "'Activates only while in Victorious Battle Cry status' is a presence gate on a status this same unit authors. The schema's requiresTargetStatus gates on a BOSS status only; there is no ally-status gate. Mirroring the trigger reproduces the correct window under the assumption that the status is exactly the S1 buff and nothing else applies or refreshes it. If any other source refreshes Victorious Battle Cry, the mirror under-credits.",
+      "recipe": "Log both buffApply streams (stat 'trueDamagePct' value 6.45 and stat 'casterAtkPct' from clay) via cfg.onEvent and assert their apply frames are pairwise identical across a full 180s run — that pins the proxy as exact under the current model. Then check footage for any Victorious Battle Cry icon appearing without a concurrent S1 proc."
+    },
+    {
+      "field": "skill2[1].effects[0].maxStacks (absent — single application)",
+      "estimate": "no stacking; flat 20.07% of clay's ATK while the status holds",
+      "reasoning": "S1 stacks up to 3; S2 keys off the STATUS, not off stack count. Kits that scale with stacks normally say 'per stack'. Absent that wording the single-application reading is the literal one, but the 3× reading is a live alternative and would triple a team-wide flat ATK add — a large board move.",
+      "recipe": "From footage, read an ally's ATK stat between the first and third S1 proc inside one Full Burst window; a step at each proc means per-stack, a single step means status-only. Alternatively pin from a datamine of the S2 effect's stack field if one becomes available."
+    },
+    {
+      "field": "burst[1].effects[0] (weaponSwap carrying trueNormals)",
+      "estimate": "weaponSwap{damagePct:100, trueNormals:true, durationSec:10} — economy-neutral",
+      "reasoning": "The schema exposes trueNormals ONLY on weaponSwap, so a 'normal attacks deal true damage' line with no weapon change must borrow the swap primitive. damagePct:100 and omitted maxAmmo/pullsPerSec/weapon are intended to leave shot count, cadence and range band untouched, but the swap path also sets swap state, which any swapGate-bearing block would see, and the engine may apply swap-specific range/core handling.",
+      "recipe": "A/B one run with the burst block present vs absent (harness withPatchedOverride on clay, controlComp(carry) with clay in the team) and diff totals(res)['clay'] plus the shot-event count from cfg.onEvent kind:'shot'. Shot counts must be IDENTICAL; only the damage flavor should differ. Any shot-count delta means the swap is not economy-neutral and the line needs a different encoding."
+    },
+    {
+      "field": "cadence tuple (SMG, ammo 120, reloadFrames 81, rate_of_fire)",
+      "estimate": "datamined values as given; effective pulls/sec = 60/ceil(60/nominal)",
+      "reasoning": "rate_of_fire and reloadFrames are the known-unreliable datamine fields, and here they are not merely a damage scalar — they set how fast the 60-attack counter fills, hence how many times S1 and S2 fire per Full Burst. A cadence error compounds into the buff-uptime model.",
+      "recipe": "Read clay's ammo counter across one uninterrupted magazine from footage (rounds spent / elapsed seconds) and compare to the effective-rate derivation; pin reload duration from the same clip's reload animation boundaries."
+    },
+    {
+      "field": "noFb on the buffs (not set — FB-by-timing default ON)",
+      "estimate": "left unset per the default",
+      "reasoning": "These are stat buffs, not function-damage riders, so the +50% Full Burst major does not attach to them at all; noFb is a rider-only concern. Flagged here only to record that it was considered and deliberately not set, per the ALWAYS-⚑ taxonomy item (6): noFb is measured-only and must never be set unmeasured.",
+      "recipe": "No action — revisit only if a future measurement shows clay's buffs behaving asymmetrically inside vs outside Full Burst."
+    }
+  ],
+  "model": "claude-opus-5"
+}

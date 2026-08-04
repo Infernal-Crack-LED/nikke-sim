@@ -1,0 +1,88 @@
+{
+  "slug": "folkwang",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 30
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 13.71,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 44.96,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 32.9,
+          "durationSec": 10
+        },
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": ["Incoming healing ▲ 45.7% for 10 sec."],
+    "skill2": [
+      "Affects the enemy with the highest final ATK. Taunt for 5 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ INTERVAL FIRST-FIRE PHASE (both passives): neither S1 nor S2 carries an activation clause, so both are `interval` triggers on their datamined cooldowns (30s / 20s); the engine convention fires first at t=sec (t=30 / t=20), NOT t=0. The in-game first-fire phase of a cooldown passive is unmeasured for folkwang; recipe: any focus video — does Starting Whistle's shield appear in the opening seconds or only after ~30s? A wrong phase shifts every shielded-trigger consumer's cadence by up to one period.",
+    "⚑ CADENCE TUPLE (ALWAYS-⚑): AR rate_of_fire 720 / reloadFrames 99 / ammo 60 shipped from datamine; affects her OWN shots only (burst-gauge feed + weapon damage). No kit line keys off her shots, so a wrong cadence rescales nothing kit-side — not escalated.",
+    "Shield MAGNITUDES (S1 13.71% / burst 32.9% of caster final Max HP) are recorded on the shield effects as maxHpPct but not consumed: v1 models no shield HP pool (the boss deals no damage). Each shield effect's durationSec:10 opens the recipients' shieldedUntilFrame windows and fires their 'shielded' triggers (naga-style shield-gated kits) — that event/window channel is both lines' entire in-domain surface.",
+    "S2 Max HP line is encoded as targetMaxHpPct — the schema's stat for 'Max HP ▲ X%' kit lines (blanc/maiden convention) — NOT the raw maxHpPct key: only the CUBE/OL-extra path converts maxHpPct→maxHpFlat (sim.ts:887); an override buff authored with the raw stat is applied as a stat nothing reads and would silently do nothing (driver-derived; independently re-derived by the S2b blind reviewer claude-fable-5). Self-targeted, so the e3 rule lets it feed her OWN atkOfMaxHpPct — she carries no such line, making the grant offensively INERT in v1; kept for kit completeness (marciana's inert-defPct convention), 10s duration with real downtime between the 20s firings.",
+    "⚑ HoT TICK COUNT (burst lifesteal): 'Recovers 65.81% of attack damage as HP over 10 sec.' is MODELED as a heal HoT — ticks:10 intervalSec:1 — on the SAME top-2 final-ATK target set as the burst shield, per the marciana convention: marciana's S1 carries the identical construction ('Recovers 10.95% of attack damage as HP over 3 sec.') and her owner-landed gauntlet override encodes it as heal ticks:3/intervalSec:1 with a ⚑-estimated tick count. The tick count (one per second across the 'over 10 sec' window) is the ESTIMATE — in game the recovery is damage-linked and continuous, not clock-ticked; the events exist for their TANDEM value only (they fire the recipients' 'recovery' triggers, crown-type 'when recovery takes effect'). The 65.81% MAGNITUDE is recorded here and NOT modeled — the heal effect carries no HP amount (v1 has no HP pool). Driver initially ruled this line UNMODELED on ada/tia lifesteal-skip precedent; revised to MODEL on 2026-08-03 when the S2b (claude-fable-5), S5 and S6 (claude-opus-5) blind reviewers all converged on the HoT encoding and the marciana precedent was confirmed as the nearest intra-repo analog (ada's skip is pre-gauntlet and residual-flagged in her own gauntlet; alice's lifesteal carries an unmodelable <80%-HP gate that folkwang's line does not have).",
+    "S1 'Incoming healing ▲ 45.7%' UNMODELED: there is no incoming-healing StatKey and no HP pool for it to amplify — and 'recovery' triggers fire per heal EVENT regardless of amount, so the amplifier cannot change any consumer in v1 (S2b observation).",
+    "S2 'Taunt' UNMODELED: v1 models no aggro/targeting — resolveTargets({kind:'enemy'}) returns [] (the boss deals no damage to anyone, so nothing chooses a target). NOT encoded as a targetStatus (that channel exists for kit-NAMED gateable statuses such as d-killer-wife's Wipe Out; fabricating a 'Taunt' status would invent a gate no kit line asks for) and NOT as a damageTakenPct debuff (taunt is not a damage-taken modifier).",
+    "'2 allies with the highest FINAL ATK' resolves by live effectiveAtk at proc time (byFinalAtk:true per the A3 literal-word ruling); the pool is self-inclusive, but as a Defender folkwang will rarely rank top-2 herself.",
+    "Zero damage lines and zero weapon-state modifiers in the whole kit — folkwang is a clean-weapon BASIS unit (AR cell, team A): clean-weapons.test.ts CW1 additionally pins this committed override byte-identical to the bare empty kit (owner ruling 2026-08-01 option-2: damage-neutrality, not file-absence). Her board footprint is tandem only: two shield channels (one interval, one burst-keyed), one burst-keyed recovery stream (top-2 allies), and one offensively-inert self Max HP grant."
+  ],
+  "note": "folkwang (Folkwang) — AR / Defender / Water / Burst II, cd 40s, ammo 60, reloadFrames 99, chargeFrames 0, hitsPerShot 1, normalMult 14.29. One of the six clean-weapon BASIS units (AR cell — team A) and the owner-confirmed 'only AR with zero damage-touching lines including her burst' (clean-weapons.test.ts P1 note, owner ruling 2026-07-23; kurumi was rejected for a normal-attack-counter rider). A PURE TANK/SUSTAIN kit: two activation-clause-less timer passives (S1 30s CD, S2 20s CD) and a burst, all shields / Max HP / taunt / recovery. ZERO damage lines and ZERO weapon-state modifiers in the whole kit — this unit cannot move her own damage; her board value is tandem (shield consumers such as naga). || MODELED TODAY: (1) S1 Starting Whistle 'Affects 2 allies with the highest final ATK. Creates a Shield equal to 13.71% of the skill user's final Max HP for 10 sec.' → interval 30 (no activation clause = internal-cooldown passive; first fire t=30 per the engine phase convention ⚑), target alliesTopAtk count:2 byFinalAtk:true ('highest FINAL ATK' per the A3 literal-word ruling), shield maxHpPct:13.71 durationSec:10. The kit text literally says SHIELD — the event + 10s shieldedUntilFrame window fire the recipients' 'shielded' triggers / requiresShielded gates; the HP magnitude is recorded, not consumed (no shield pool). (2) S2 Harder, Better, Faster 'Affects self. Max HP ▲ 44.96% for 10 sec.' → interval 20, target self, buff targetMaxHpPct 44.96 durationSec:10 — the schema's 'Max HP ▲ X%' stat (NOT the raw maxHpPct cube key, which an override buff cannot convert); self-targeted so the e3 rule permits the feed into her OWN atkOfMaxHpPct, which she does not carry → offensively inert in v1, modeled for kit completeness with real 10s-uptime/20s-cadence downtime. (3) Burst Sprint 'Affects 2 allies with the highest final ATK. Creates a Shield equal to 32.9% of the skill user's final Max HP for 10 sec.' → burstCast-keyed (her OWN cast — she is Burst II; fullBurstEnter would over-fire every shielded trigger on the chains a competing B2 carries, pinned behaviorally in folkwang.test.ts C4/DIV against the naga-competed chains), same top-2 byFinalAtk target, shield maxHpPct:32.9 durationSec:10. (4) Burst rider 'Recovers 65.81% of attack damage as HP over 10 sec.' → heal HoT ticks:10 intervalSec:1 on the same top-2 target — the marciana convention for the identical 'Recovers X% of attack damage as HP over N sec' construction (her owner-landed override models 'over 3 sec' as ticks:3): event-only TANDEM value (fires the recipients' 'recovery' triggers), magnitude unmodeled (no HP pool), tick count the ⚑ estimate (in game the recovery is damage-linked and continuous, not clock-ticked). || DELIBERATELY UNMODELED (verbatim in `unmodeled`, never an `ignored` drop): S1 'Incoming healing ▲ 45.7% for 10 sec.' (no incoming-healing stat, no HP pool; recovery triggers are amount-blind) and S2 'Taunt for 5 sec' (no aggro model; not a targetStatus, not a damageTaken debuff). || EVIDENCE TIER: all live values are kit-text-literal (13.71/32.9 shield magnitudes recorded, 44.96 Max HP, 10s windows, 65.81 magnitude recorded); the datamined 30s/20s passive CDs are datamine-literal; the estimated quantities are the interval first-fire phase and the burst HoT tick count (both ⚑). || TIER 1 (clean-weapon-like: zero damage lines, zero weapon-state modifiers; the encoding is event channels + one inert self-stat — no scoped buffs, no round counts, no status gates among the modeled lines; the burstCast-vs-fullBurstEnter pin is the default own-cast prior, DIV-behaviorally confirmed). Faithful>fit; measured>fudge. || Kit-autonomy gauntlet 2026-08-03."
+}

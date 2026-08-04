@@ -1,0 +1,15 @@
+--- S2d RED (pre-override): npx vitest run scripts/tests/units/epinel.test.ts
+
+ FAIL  scripts/tests/units/epinel.test.ts [ scripts/tests/units/epinel.test.ts ]
+Error: epinel: no override on disk — fixture is stale
+ ❯ withPatchedOverride scripts/tests/lib/harness.ts:71:11
+ ❯ scripts/tests/units/epinel.test.ts:81:20
+
+ Test Files  1 failed (1)
+      Tests  no tests
+
+--- S2d RED (pre-override): withPatchedOverride threw "epinel: no override on disk — fixture is stale" — correct RED for a from-scratch unit (no prior override existed; simSupported:false). Flips GREEN in S3.
+
+--- S2c reconciliation (driver vs claude-fable-5 test-review): zero divergences. All 5 lines converged (3 FAITHFUL encodings: lastBullet critRate 5.05 + critDamage 6.4 /5s self, burstCast 457.87 nuke; 2 UNMODELED: kill-fed Total Noob stacks, max-stacks conditional rider). All three nearest-wrong counterfactuals independently identical (passive atkPct 69.3; shotFired/permanent-uptime; ungated 915.74 double-hit). Driver adopted the reviewer's cadence refinement: lastBullet uptime asserted STRUCTURALLY (per-reload-cycle applications, bounded away from shot count and cast count), estimate recorded as ~65-80% (datamine RoF 1440/min = 24/s vs ~20/s effective), never a pinned percentage. Verbatim unmodeled entries strip the ■ marker per repo convention (d/cocoa precedent); test compares against a kitLines() builder that strips it the same way.
+
+--- S3 GREEN (post-override): 21/21 tests pass (sanity + E1-E5 incl. all 5 counterfactual discriminations); validate-overrides: epinel valid, dmg 112.2M (burst 21.7%), 3 caveats surfaced

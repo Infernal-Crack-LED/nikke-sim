@@ -1,0 +1,92 @@
+{
+  "slug": "epinel",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when killing an enemy",
+      "disposition": "UNMODELED",
+      "scope": "Generic ATK stat buff (no normal/charge/crit scoping) — Total Noob: ATK ▲ 13.86%, max 5 stacks, 15 sec.",
+      "durationSemantics": "Wall-clock seconds (15 sec) with a stack cap of 5 — but the duration is moot because the trigger can never fire at scope.",
+      "triggerIdentity": "On-kill trigger. The TriggerDef schema has NO kill primitive, and the scope-lock fight is a single immortal partless boss with no adds — nothing ever dies, so the trigger fires ZERO times. The only faithful encodings are (a) record verbatim in `unmodeled`, or (b) an inert resource pool with no earn path; either way stacks stay 0 all fight.",
+      "targetSet": "self",
+      "nearestWrongModel": "Encoding Total Noob as a passive always-on self buff at max stacks (atkPct 69.3, i.e. 13.86×5) — 'stacks up to 5' read as steady-state instead of kill-gated. Over-credits epinel's entire damage by ~+69% ATK AND silently satisfies the burst's max-stack gate.",
+      "distinguishingAssertion": "Run controlComp('epinel') and collect buffApply events with targetSlug 'epinel' and stat 'atkPct': there must be ZERO such events sourced from skill1 (no value-13.86 and no value-69.3 applies). Additionally totals(runComp(...))['epinel'] must be bit-identical when skill1 is emptied via withPatchedOverride('epinel', o => { o.skill1 = []; }). Green under faithful (inert), red under the passive misread.",
+      "inertness": "Skill1 must move NOTHING at scope: no buffApply, no totals delta, and it must NOT open the burst's max-stack gate.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "when the last bullet hits the target",
+      "disposition": "FAITHFUL",
+      "scope": "UNSCOPED Critical Rate ▲ 5.05% — the prose says 'Critical Rate', not 'Critical Rate of normal attacks', so plain critRatePct (not critRateNormalPct) is correct.",
+      "durationSemantics": "Wall-clock 5 sec (durationSec: 5). NOT rounds — no 'round(s)' wording. With ammo 120 at SMG cadence (~20/s effective, ⚑ cadence is a datamine-unreliable tuple) a magazine is ~6.0s + 81f (1.35s) reload, so the buff is CYCLICAL: applied at each last bullet, covering the reload plus ~3.65s of the next magazine (~65–70% uptime), then lapsing until the next magazine end.",
+      "triggerIdentity": "{ kind: 'lastBullet' } — per-magazine, on the owner's last bullet. No FB gate, no everyN, no status gate.",
+      "targetSet": "self",
+      "nearestWrongModel": "Passive/always-on crit buffs (100% uptime instead of ~65–70%), OR keying to 'shotFired' (refresh every pull → effectively permanent). Both over-credit crit uptime; the gap between the misreads and faithful is the reload-cycle lapse window.",
+      "distinguishingAssertion": "Collect buffApply events with stat 'critRatePct' && value 5.05 && targetSlug 'epinel': count must be ≥ 2 and equal epinel's reload-cycle count (≈ one per magazine, ~20+ over 180s), with each expiresFrame ≈ applyFrame + 300 (5s×60fps). Under the passive misread there is exactly 1 apply at frame 0 (or a durationSec-free apply); under shotFired there are thousands. Also assert the buff LAPSES: there must exist frames between consecutive applies later than expiresFrame of the previous apply.",
+      "inertness": "Must not apply to allies (no buffApply with this stat/value targeting liter/crown/helm) and must not fire on burst casts or FB entry.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Damage ▲ 6.4% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Unscoped Critical Damage ▲ 6.4% — plain critDamagePct.",
+      "durationSemantics": "Wall-clock 5 sec, same cyclical last-bullet cadence as the crit-rate line (same block, second effect).",
+      "triggerIdentity": "{ kind: 'lastBullet' } — same trigger as the crit-rate effect; the two effects ride one block.",
+      "targetSet": "self",
+      "nearestWrongModel": "Same as the sibling line: passive always-on, or de-synchronized from the crit-rate effect (e.g. put on a different trigger so their windows drift apart).",
+      "distinguishingAssertion": "buffApply events with stat 'critDamagePct' && value 6.4 must be frame-coincident 1:1 with the critRatePct-5.05 applies (same applyFrame, same count). Red if counts differ, if only one exists, or if either is applied exactly once at t=0.",
+      "inertness": "Self-only; no ally targets; no effect outside the 5s windows.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "457.87% of final ATK as Burst Skill dmg",
+      "disposition": "FAITHFUL",
+      "scope": "One instant burst-bucket hit, 457.87% of final ATK. No crit/core wording → default rider crit handling per engine convention, no core.",
+      "durationSemantics": "Instantaneous single hit per cast (cd 40s → ~4–5 casts in 180s depending on rotation share).",
+      "triggerIdentity": "{ kind: 'burstCast' } — epinel's OWN burst cast. Burst-cast damage lands BEFORE the Full Burst window opens, so it takes NO +50% FB major and no FB-entry auras (FB-exempt by timing, methodology §9).",
+      "targetSet": "enemy (all enemies = the one boss)",
+      "nearestWrongModel": "Keying to { kind: 'fullBurstEnter' } — in controlComp the fixture carries TWO Burst-III units (carry + helm), so team Full Bursts can occur on rotations epinel did not burst; fullBurstEnter fires the nuke on helm's rotations too, over-crediting. Secondary misread: letting the hit take the +50% FB major (fbMajorApplied true).",
+      "distinguishingAssertion": "Collect damage events with srcSlot === epinel's slot && bucket 'burst': the count must equal the number of burstCast events cast BY epinel (not the number of fullBurstStart events), each with mult 457.87 and fbMajorApplied === false / inFullBurst === false. In a two-B3 comp where fullBurstStart count > epinel's burstCast count, the fullBurstEnter misread produces MORE hits — red.",
+      "inertness": "No hits on rotations where helm (the other B3) bursts; no +50% FB scaling on the hit.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "when Total Noob is at max stacks",
+      "disposition": "UNMODELED",
+      "scope": "A second 457.87% additional-damage hit on the same targets, GATED on Total Noob (skill1's kill-stack buff) being at 5 stacks.",
+      "durationSemantics": "Instantaneous conditional rider per cast.",
+      "triggerIdentity": "burstCast + a max-stack gate on the skill1 resource. Because Total Noob only stacks on KILLS and nothing dies at scope, the gate is satisfied ZERO times — the rider deals zero damage all fight. Faithful encodings: unmodeled-verbatim, or a resourceGate {name:'totalNoob', min:5} over a pool with no earn events; both are inert.",
+      "targetSet": "enemy (same targets as the base burst hit)",
+      "nearestWrongModel": "THE key misread for this unit: dropping the gate and dealing 915.74% (457.87 × 2) per cast, or authoring the rider ungated 'because the stacks would be up in general content'. This near-doubles epinel's burst-bucket damage. Compounds with the skill1 passive misread (which would make the gate 'legitimately' pass).",
+      "distinguishingAssertion": "Per epinel burstCast, damage events with srcSlot epinel && bucket 'burst' must number EXACTLY 1 with mult 457.87 — never 2 hits, never a 915.74 mult. Equivalent totals form: unitOf(res,'epinel') burst-bucket contribution per cast === 457.87% × final ATK, and patching the rider block out via withPatchedOverride changes totals by exactly 0.",
+      "inertness": "The rider must contribute ZERO damage at scope; removing it must be a no-op on totals.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill2:lastBullet Critical Rate ▲ 5.05% / 5s",
+    "skill2:lastBullet Critical Damage ▲ 6.4% / 5s",
+    "burst:burstCast 457.87% burst-bucket hit (FB-exempt, own-cast-only)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "■ Activates when killing an enemy. Affects self. Total Noob: ATK ▲ 13.86%, stacks up to 5 time(s) and lasts for 15 sec."
+    ],
+    "skill2": [],
+    "burst": [
+      "■ Activates when Total Noob is at max stacks. Affects the same targets. Deals 457.87% of final ATK as additional damage."
+    ]
+  },
+  "notes": "Expected shared-prior misreads to reconcile hardest: (1) the burst's max-stack rider shipped UNGATED (doubling burst-bucket damage to 915.74%/cast) — the per-cast exactly-one-457.87-hit assertion is the discriminator; (2) Total Noob encoded as a steady-state passive (+69.3% ATK) because 'stacks up to 5' pattern-matches to ramp-to-cap kits — but the trigger is ON-KILL and the scope-lock boss is immortal with no adds, so both skill1 and the burst rider are provably inert at scope (zero-buffApply + patched-out-no-op assertions must be in the suite, not just omitted lines); (3) skill2 given 100% uptime — the faithful model is cyclical last-bullet applications with ~65–70% uptime given ammo 120, ~20/s effective SMG cadence (the cadence tuple itself is an ALWAYS-⚑ datamine-unreliable value; the uptime assertion should be structural — apply-per-reload-cycle + lapse-before-next-apply — not pinned to an exact uptime percentage). Burst nearest-wrong fullBurstEnter-vs-burstCast genuinely diverges here because the control fixture contains a second Burst III (helm), so the assertion has real discriminating power in-fixture. All magnitudes (13.86, 5.05, 6.4, 457.87) are kit-literal → DATAMINED; no CALIBRATED ⚑ values are needed anywhere in this kit.",
+  "model": "claude-fable-5"
+}

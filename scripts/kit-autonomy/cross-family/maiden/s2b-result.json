@@ -1,0 +1,89 @@
+{
+  "slug": "maiden",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ when attacked 20 time(s) → Revenge",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "Generic ATK ▲ 26.66% on self — no normal/charge/crit scoping in the text; plain atkPct (scales her own ATK), NOT casterAtkPct flat-add.",
+      "durationSemantics": "20 sec wall-clock (text says 'sec', not 'round(s)') → durationSec:20. Re-triggers refresh; steady-state uptime depends on being-attacked cadence.",
+      "triggerIdentity": "'Activates when attacked 20 time(s)' — a BEING-ATTACKED counter. The TriggerDef vocabulary has NO 'attacked' kind and the v1 sim models no boss attacks (boss deals no damage at scope). The trigger cadence is therefore outside the input domain: it must be an approximation (e.g. interval with sec = est. boss-attacks-per-sec × 20, taunt-informed) and is an ALWAYS-⚑ field — the prose gives no attack rate.",
+      "targetSet": "self",
+      "nearestWrongModel": "Model it as a plain passive (always-on ATK +26.66% from t=0, 100% uptime) — or, symmetrically, drop it entirely because the sim has no attacked event. Both are wrong: passive over-credits t=0 and every gap; dropping it under-credits AND silently kills the burst's Revenge-gated second hit (line burst:2 keys on this status existing).",
+      "distinguishingAssertion": "cfg.onEvent: collect buffApply with stat==='atkPct' && value===26.66 && targetSlug==='maiden'. FAITHFUL: first apply occurs at t>0 (not frame 0 — a threshold of 20 attacks cannot be pre-satisfied), each apply's expiresFrame ≈ applyFrame + 20*60, and applies recur (a cadence exists, ⚑-tunable). NEAREST-WRONG (passive): a frame-0 apply with no expiry/no recurrence — RED. NEAREST-WRONG (dropped): zero atkPct:26.66 applies for the whole fight — RED. Additionally assert the Revenge STATUS carrier (however encoded) is queryable at burst-cast frames, since burst line 2 gates on it.",
+      "inertness": "Must NOT move any teammate's buff state (self-only — no allies receive atkPct 26.66); must not fire as fullBurstEnter/burstCast (its trigger is unrelated to burst state).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Affects all enemies. Taunt for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "Enemy-targeted aggro control; carries no stat, no damage, no boss debuff (Taunt is not 'Damage Taken ▲').",
+      "durationSemantics": "10 sec wall-clock window per activation.",
+      "triggerIdentity": "No 'Activates when' clause → interval convention (datamined skillCooldownsSec, first fire t=CD). Same trigger instance as the skill2 self crit-damage line below (one ■-pair activation applies both).",
+      "targetSet": "enemy (all enemies)",
+      "nearestWrongModel": "Two misreads: (a) silently dropping it WITHOUT recording that Taunt is the mechanism that pumps skill1's being-attacked counter — the taunt is offensively inert as an effect but is an INPUT to the Revenge-uptime ⚑ estimate; (b) encoding it as a boss damageTakenPct debuff because it 'affects all enemies'.",
+      "distinguishingAssertion": "Assert NO damage-side effect is attributed to this line: no boss-held buffApply (casterIdx===null) with any damage-relevant stat originating from maiden's skill2 taunt half; totals(res)['maiden'] unchanged when the taunt line's encoding (if any) is stripped via withPatchedOverride. Its verbatim text must appear in unmodeled.skill2. The Revenge-cadence ⚑ note should reference taunt uptime.",
+      "inertness": "Must move zero damage for every unit in the comp; must not appear as damageTakenPct or any boss debuff.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Affects self. Critical Damage ▲ 152.84%",
+      "disposition": "FAITHFUL",
+      "scope": "Critical Damage, UNSCOPED (no 'of normal attacks' clause) → critDamagePct generic. It boosts crit hits of normals AND any crit-eligible skill/burst damage; do not narrow it.",
+      "durationSemantics": "10 sec wall-clock per activation → durationSec:10. Windowed uptime = 10/CD; NOT permanent unless CD ≤ 10s makes it effectively continuous — that is a cadence fact, not a prose fact.",
+      "triggerIdentity": "No activation clause → interval (kind:'interval', sec = datamined skill CD; first fire t=sec per convention). The sec value is NOT in the kit prose — ALWAYS-⚑ cadence tuple; pull from skillCooldownsSec and flag.",
+      "targetSet": "self",
+      "nearestWrongModel": "Model it as a passive/permanent Critical Damage +152.84% (100% uptime). With a magnitude this large (~+153pp crit damage) the uptime error is the single biggest damage lever in the kit — permanent vs windowed diverges hard whenever CD > 10s.",
+      "distinguishingAssertion": "cfg.onEvent: collect buffApply with stat==='critDamagePct' && value===152.84 && targetSlug==='maiden'. FAITHFUL: applies recur at a fixed interval, first at t=sec (NOT frame 0), each with expiresFrame ≈ applyFrame + 10*60. NEAREST-WRONG (passive): exactly one frame-0 apply with no expiry — RED. Also assert value is the raw percentage 152.84 (plain pct stat, not flat-resolved).",
+      "inertness": "Self-only: no ally receives critDamagePct from maiden; no application keyed to fullBurstEnter or burstCast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ all enemies. 457.87% Burst Skill damage",
+      "disposition": "FAITHFUL",
+      "scope": "Instant burst-skill damage, 457.87% of FINAL ATK (buffed at resolution), single hit to the boss.",
+      "durationSemantics": "Instant, once per burst cast. Burst cd 40s → fires on alternating FB rotations in a standard ~20s cycle.",
+      "triggerIdentity": "burstCast (her OWN burst, stage 3) — NOT fullBurstEnter. Burst-cast damage lands BEFORE the Full Burst window opens: no +50% FB major, no FB-entry auras; riders take no +30% range bonus.",
+      "targetSet": "enemy (boss)",
+      "nearestWrongModel": "Keying it to fullBurstEnter (fires on EVERY team FB including rotations where the other B3 — helm in controlComp — bursts, roughly doubling cast count in a 2×B3 comp), and/or letting it collect the +50% Full-Burst major.",
+      "distinguishingAssertion": "In controlComp('maiden') (helm co-B3): count damage events from maiden's burst slot — FAITHFUL: exactly one per maiden burstCast event, zero on helm-burst rotations; each event has fbMajorApplied===false && inFullBurst===false (pre-FB landing) && mult≈457.87. NEAREST-WRONG: events on every fullBurstStart (count ≈ 2×) or fbMajorApplied===true — RED.",
+      "inertness": "Zero casts on rotations where maiden does not burst; unaffected by Revenge status (line 1 is UNCONDITIONAL — only line 2 is gated).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ same target(s) when in Revenge status: +457.87%",
+      "disposition": "FIX",
+      "scope": "A second 457.87%-of-final-ATK hit on the same targets, ADDITIONAL damage flavor, conditional. 'When in Revenge status' — Revenge is defined in skill1 as MAIDEN's own self-status, so the gate is 'maiden currently holds Revenge at burst cast', not a boss status pre-existing on the target.",
+      "durationSemantics": "Instant conditional rider, resolved at cast: gate checked against Revenge liveness at the cast frame.",
+      "triggerIdentity": "Same burstCast trigger as line 1, gated on the caster's own live Revenge buff. The engine's only status-gate primitive (requiresTargetStatus) is BOSS-status-keyed, so a faithful encoding must bridge (e.g. skill1 co-emitting a name-keyed targetStatus 'Revenge' with the same 20s window, or a resourceGate) — the gate mechanism is where I expect a shared-prior misread.",
+      "targetSet": "enemy (boss — 'the same target(s)')",
+      "nearestWrongModel": "Ungated: always deal 2×457.87% on every burst (over-credits every cast where Revenge lapsed — exactly the casts where she wasn't being attacked). Second-nearest: gate keyed to a status that can never open in the sim (since no attacked event exists), silently zeroing the rider forever — a 457.87% under-credit per gated cast.",
+      "distinguishingAssertion": "Two-sided A/B via withPatchedOverride: (a) with the shipped Revenge source intact and uptime spanning a burst cast, maiden's burst rotation produces TWO ~457.87% damage events at that cast (both pre-FB: fbMajorApplied===false); (b) patch the override to remove the Revenge status source (strip the skill1 status carrier) → the same cast produces exactly ONE. NEAREST-WRONG (ungated): (b) still shows two — RED. NEAREST-WRONG (never-opens): (a) shows one — RED. Also assert totals delta between (a) and (b) ≈ one 457.87% hit per gated cast, nothing else.",
+      "inertness": "Must not fire on helm's burst rotations; must not double line 1 when Revenge is absent; removing the gate source must move ONLY this rider's damage (skill2 crit-damage windows untouched).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Revenge ATK ▲26.66% (attacked-20 counter, ⚑ cadence)",
+    "skill2:Critical Damage ▲152.84% interval self-buff",
+    "burst:457.87% burst-skill hit (burstCast, pre-FB)",
+    "burst:+457.87% Revenge-gated additional hit"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": ["Taunt for 10 sec."],
+    "burst": []
+  },
+  "notes": "Three reconciliation points. (1) The kit's spine is a SELF-STATUS DEPENDENCY CHAIN the engine has no native primitive for: skill1's Revenge is triggered by BEING ATTACKED (no such event in the sim — boss deals no damage at scope) and the burst's second 457.87% gates on Revenge liveness at cast. Any model must (i) approximate the attacked-20 cadence as an explicit ⚑ (taunt-informed uptime estimate, never a silent passive), and (ii) make Revenge a queryable status for the burst gate — I expect the shared-prior misread to be EITHER an always-on Revenge (over-credits both the ATK buff and the rider to 100% uptime) OR a dead gate that zeroes the rider. Tests must probe both directions (assertion on burst:2 is deliberately two-sided). (2) skill2's crit-damage magnitude (152.84%) is the kit's biggest lever and its cadence is NOT in the prose — a passive encoding is the classic trap; the interval sec is an ALWAYS-⚑ from skillCooldownsSec and the 10s window must expire (expiresFrame checked). (3) Both burst hits are burstCast-timed: pre-FB landing, no +50% major, and in controlComp the helm co-B3 makes burstCast-vs-fullBurstEnter directly observable (≈2× cast-count divergence) — assert cast count against maiden's own burstCast events, not fullBurstStart. Taunt itself must stay damage-inert and land verbatim in unmodeled.skill2, but its existence belongs in the Revenge-cadence ⚑ recipe.",
+  "model": "claude-fable-5"
+}

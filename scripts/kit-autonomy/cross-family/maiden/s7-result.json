@@ -1,0 +1,72 @@
+{
+  "slug": "maiden",
+  "kitDescription": "Maiden is an Electric shotgun Burst-III attacker whose kit is built around a 'Revenge' self-status she earns by being attacked 20 times. Skill 1 grants her +26.66% ATK for 20 seconds once Revenge opens, and her burst's second 457.87% hit fires only while Revenge is active — so in real play her burst effectively doubles. Skill 2 taunts all enemies for 10 seconds (which is what pulls fire onto her to feed the Revenge counter) and separately grants her +152.84% Critical Damage for 10 seconds. Her burst's unconditional half deals 457.87% of final ATK to all enemies. In the sim's scope-lock fight the boss never attacks, so Revenge can never be earned and only the unconditional lines — the crit-damage buff and the single burst nuke — actually fire.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "attacked 20 time(s)…Revenge: ATK ▲ 26.66%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED + ⚑1 (out-of-domain: no incoming-damage model, no attacked-count trigger, no self-status gate; yulha/admi/noise precedent for the identical archetype)",
+        "blindSaid": "S5: GAP, asserts positively that NO atkPct 26.66 buff fires (and that an always-on proxy WOULD — proving the omission is a choice). S6: implemented as interval:20 approximation under an explicit ⚑ — divergent posture, same mechanics reading.",
+        "formulaCheck": "atkPct 26.66 would sit inside the (1+ΣATK%) term if it fired; nothing to route. Trigger cadence is outside the sim's input domain — any encoding manufactures an unmeasured cadence (measured>fudge).",
+        "fireRateOk": true,
+        "explanation": "Omission is deliberate, recorded verbatim in unmodeled.skill1, and pinned by M3 + S5's zero-buff assertion with a phantom-arm counterfactual proving discrimination. S6's approximated encoding is the weaker posture (fudges a cadence the prose does not give); the driver's faithful omission matches the S2b reconciliation and the landed yulha precedent."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Affects all enemies. Taunt for 10 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim; no aggro primitive, single boss already takes everyone's attacks, zero damage impact; its real role (feeding the attacked-counter) noted in ⚑1's recipe",
+        "blindSaid": "S5: UNMODELED, it.skip. S6: identical disposition, verbatim in unmodeled.skill2.",
+        "formulaCheck": "No stat/damage/debuff payload; must never appear as a boss damageTakenPct debuff — it does not.",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence. Documented, load-bearing-neutral, verbatim recorded."
+      },
+      {
+        "kitLine": "Critical Damage ▲ 152.84% for 10 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval:30 (datamined skillCooldownsSec.skill2, ⚑ cadence tuple) → self → critDamagePct 152.84 / durationSec 10, first fire t=30, unscoped",
+        "blindSaid": "S5: FAITHFUL disposition; asserts magnitude, self-scope, finite expiry, permanence counterfactual strictly raises damage, crit-rate mis-encoding absent. S6: byte-identical block (interval:30 / self / 152.84 / 10s).",
+        "formulaCheck": "critDamagePct is unscoped (no 'of normal attacks' clause) → correctly lifts every crit-eligible hit in-window via critBonus in the Major bracket; 10s expiry prevents the classic 100%-uptime over-credit on the kit's biggest lever.",
+        "fireRateOk": true,
+        "explanation": "Full three-way convergence on the exact encoding; fires 5× over 180s (t=30/60/90/120/150) per M1's frame pins. Only soft spot is the 30s cadence being datamine-sourced, which the driver flags ⚑."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 457.87% of final ATK as Burst Skill damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy → flatDamage 457.87, crit via engine default-on, no core, FB-exempt by cast timing (no noFb flag)",
+        "blindSaid": "S5: FAITHFUL; asserts fbMajorApplied false, contributes real damage, exactly one hit per cast. S6: identical block (explicit crit:true, behaviorally same as the default).",
+        "formulaCheck": "Matches the measured 2026-07-13 boundary rule: burst-cast damage lands pre-FB (Major FB term 0), crits at sheet rate, no core/range for burst nukes; % of final ATK uses live buffed ATK — engine flatDamage path ✓.",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence; trigger/magnitude/scope/bucket all pinned with discriminating counterfactuals (fullBurstEnter takes the +50%, lvl-1 270.56 mis-magnitude)."
+      },
+      {
+        "kitLine": "when in Revenge status…457.87% additional damage",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED + ⚑1: gate's only input is the unmodelable attacked-counter; burst fires at half theoretical Revenge-active magnitude, honestly (yulha Y2c / helm-aquamarine cannot-fire-gate precedent)",
+        "blindSaid": "S5: GAP-by-cascade; THE load-bearing algebraic identity (base−burstZero ≡ burstDup−base) proves exactly one hit per cast and would fail under an ungated 2× model. S6: divergent — implemented ungated second hit under an assumed ~100% Revenge uptime, explicitly flagged as over-crediting pre-first-proc bursts.",
+        "formulaCheck": "Gate is on MAIDEN's OWN status; requiresTargetStatus is boss-side (wrong channel). With no self-status primitive the faithful zero-rider default stands; S6's ungated double would over-credit every burst (Revenge can never open at scope lock, so 'ungated' ≠ 'gated-and-open' — it is strictly hot).",
+        "fireRateOk": true,
+        "explanation": "Posture split, not a mechanics disagreement: all three agents agree the trigger is unreachable. The driver's omission is the measured>fudge-faithful reading and is pinned by both M2c and S5's identity test; S6's approximation is the rejected branch. Verbatim recorded in unmodeled.burst."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. The two unconditional lines (S2 self critDamagePct 152.84/10s on the datamined 30s interval; burst 457.87% burstCast nuke, pre-FB, crit-eligible) are FAITHFUL and converged on independently by S2b, S5, and S6 — including byte-identical S6 encodings — and both blind test suites discriminate (permanence/scope/magnitude/cadence counterfactuals on S2; fullBurstEnter and lvl-1-magnitude counterfactuals on the burst). The three out-of-domain lines (S1 Revenge ATK, the Revenge-gated burst rider, the taunt) are DOCUMENTED_GAPs recorded verbatim in unmodeled with a tiered ⚑ recipe, and the omissions are actively pinned: S5's algebraic one-hit-per-cast identity and M2c/M3's phantom-arm counterfactuals prove the shipped override did not silently adopt either the ungated-double or the always-on-Revenge mis-model. The one cross-agent divergence (S6 approximates the Revenge cluster as interval:20 + ungated rider) is a posture question on lines outside the sim's input domain, resolved for the driver's faithful omission by measured>fudge and the landed yulha precedent — S6's own flags concede its cadence is invented. Same-model residual for the owner to spot-check: (1) the Revenge-omission posture itself — her board number honestly reflects ~half her theoretical burst, so if the owner ever wants the optimistic reading it must come from a measured Revenge-uptime, not S6's assumed 100%; (2) the interval:30 S2 cadence rests on the datamine (kit prose is silent) — a popup-cadence read would firm it; (3) the SG cadence tuple (rof 90 / reloadFrames 142 / 10 pellets) is unmeasured datamine. None of these block GO; all are flagged in the override.",
+  "model": "kimi-code/k3"
+}

@@ -1,0 +1,84 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-08-03-2[39m
+
+ [31m❯[39m scripts/kit-autonomy/blind/claire.adapted.test.ts [2m([22m[2m14 tests[22m[2m | [22m[31m3 failed[39m[2m | [22m[33m1 skipped[39m[2m)[22m[32m 10[2mms[22m[39m
+[31m     [31m×[31m is keyed to a FULL-CHARGE counter of 3, not to a raw hit/shot/interval counter[39m[32m 4[2mms[22m[39m
+     [32m✓[39m targets exactly 2 allies ranked by FINAL (live) ATK, self not excluded[32m 0[2mms[22m[39m
+[31m     [31m×[31m carries the 2.86% caster-Max-HP recovery as a heal, never as a stat buff[39m[32m 1[2mms[22m[39m
+     [32m✓[39m is keyed to the OWNER BURST CAST, not to Full Burst entry[32m 0[2mms[22m[39m
+     [32m✓[39m shields ALL allies, self included[32m 0[2mms[22m[39m
+     [32m✓[39m uses the shield primitive at 10.13% of caster Max HP for 10 sec[32m 0[2mms[22m[39m
+[31m     [31m×[31m heals all allies for 34.35% of caster Max HP on her own burst cast[39m[32m 0[2mms[22m[39m
+     [2m[90m↓[39m[22m removes 1 debuff — GAP: no cleanse/debuff primitive exists in the effect schema, and the scope-lock boss applies no debuffs, so the line has no observable payload
+     [32m✓[39m records the debuff-removal line in the override prose (no silent drop)[32m 0[2mms[22m[39m
+     [32m✓[39m declares no damage, stat-buff or weapon-economy effect anywhere in the kit[32m 0[2mms[22m[39m
+     [32m✓[39m heal/shield magnitudes are damage-inert: scaling every magnitude 10x moves no unit total[32m 0[2mms[22m[39m
+     [32m✓[39m does not encode the heal or the shield as a Max-HP grant[32m 1[2mms[22m[39m
+     [32m✓[39m removing her whole kit never RAISES any unit total (tandem-safe inertness)[32m 0[2mms[22m[39m
+     [32m✓[39m non-vacuity: claire fires in the fixture, and her burst-cast lines are actually reached[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/claire.adapted.test.ts[2m > [22mclaire skill1 — 3 Full Charges -> heal the 2 highest-final-ATK allies for 2.86% caster Max HP[2m > [22mis keyed to a FULL-CHARGE counter of 3, not to a raw hit/shot/interval counter
+[31m[1mAssertionError[22m: expected 3 to be undefined[39m
+
+[32m- Expected:[39m
+undefined
+
+[31m+ Received:[39m
+3
+
+[36m [2m❯[22m scripts/kit-autonomy/blind/claire.adapted.test.ts:[2m169:33[22m[39m
+    [90m167|[39m     [35mconst[39m count [33m=[39m b[33m.[39mtrigger[33m.[39mcount[33m;[39m
+    [90m168|[39m     [34mexpect[39m([33mArray[39m[33m.[39m[34misArray[39m(count) [33m?[39m count [33m:[39m [count])[33m.[39m[34mtoEqual[39m([[34m3[39m])[33m;[39m
+    [90m169|[39m     expect(b.trigger.countInFb).toBeUndefined(); // no in-FB threshold…
+    [90m   |[39m                                 [31m^[39m
+    [90m170|[39m   })[33m;[39m
+    [90m171|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/claire.adapted.test.ts[2m > [22mclaire skill1 — 3 Full Charges -> heal the 2 highest-final-ATK allies for 2.86% caster Max HP[2m > [22mcarries the 2.86% caster-Max-HP recovery as a heal, never as a stat buff
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m scripts/kit-autonomy/blind/claire.adapted.test.ts:[2m188:40[22m[39m
+    [90m186|[39m     // RED under the nearest-wrong encoding "recovers X% of Max HP" ->…
+    [90m187|[39m     // {stat:'targetMaxHpPct'}, which grants Max HP (a permanent stat)…
+    [90m188|[39m     [34mexpect[39m([34mhasMagnitude[39m(blocks[33m,[39m [34m2.86[39m))[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+    [90m   |[39m                                        [31m^[39m
+    [90m189|[39m     [35mconst[39m kinds [33m=[39m [34meffectsOf[39m(blocks)[33m.[39m[34mmap[39m((e[33m:[39m any) [33m=>[39m e[33m.[39mkind)[33m;[39m
+    [90m190|[39m     [34mexpect[39m(kinds)[33m.[39mnot[33m.[39m[34mtoContain[39m([32m'buff'[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/claire.adapted.test.ts[2m > [22mclaire burst — restore 34.35% caster Max HP to all allies + remove 1 debuff[2m > [22mheals all allies for 34.35% of caster Max HP on her own burst cast
+[31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+[36m [2m❯[22m scripts/kit-autonomy/blind/claire.adapted.test.ts:[2m243:41[22m[39m
+    [90m241|[39m     [34mexpect[39m(b[33m.[39mtarget[33m.[39mkind)[33m.[39m[34mtoBe[39m([32m'allies'[39m)[33m;[39m
+    [90m242|[39m     [34mexpect[39m(b[33m.[39mtarget[33m.[39mexcludeSelf)[33m.[39m[34mtoBeFalsy[39m()[33m;[39m
+    [90m243|[39m     [34mexpect[39m([34mhasMagnitude[39m(blocks[33m,[39m [34m34.35[39m))[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+    [90m   |[39m                                         [31m^[39m
+    [90m244|[39m     expect(effectsOf(blocks).map((e: any) => e.kind)).not.toContain('b…
+    [90m245|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m10 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (14)[39m
+[2m   Start at [22m 10:43:04
+[2m   Duration [22m 355ms[2m (transform 91ms, setup 0ms, import 247ms, tests 10ms, environment 0ms)[22m
+

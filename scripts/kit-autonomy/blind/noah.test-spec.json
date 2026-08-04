@@ -1,0 +1,51 @@
+{
+  "slug": "noah",
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Damage Taken \u25bc8% 10s, allies, on attacked",
+      "disposition": "UNMODELED",
+      "assertion": "Noah's buff-event profile equals the stripped-kit profile on every stat except defPct, so NO damageTakenPct event exists. Fails under the nearest-wrong 'ally Damage Taken \u25bc = boss Damage Taken \u25b2' read, which the injected +8 boss-debuff counterfactual proves would RAISE team totals. Trigger itself is a GAP (it.skip): no incoming-damage model, no probabilistic on-attacked trigger."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge hit \u2192 Taunt 2s (the target)",
+      "disposition": "GAP",
+      "assertion": "it.skip \u2014 no aggro/threat primitive. Covered indirectly: skill1/skill2 carry no damage-moving effect kind, and stripping the slot leaves all totals byte-identical."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK \u25bc13.25% 5s on the target",
+      "disposition": "UNMODELED",
+      "assertion": "No atkPct event is attributable to noah (stat-count profile identical to the stripped run), so the enemy-scoped debuff was not mis-scoped onto allies. Non-vacuous: an injected ally atkPct 13.25 block DOES move totals on the same fixture. Enemy target resolves empty in v1 (no enemy entity), so a faithful model leaves it unmodeled."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attract: Taunt all enemies 10s (self)",
+      "disposition": "GAP",
+      "assertion": "it.skip \u2014 no aggro model. Must appear in unmodeled.burst (asserted: \u22652 entries)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Invulnerable 3s, all allies",
+      "disposition": "GAP",
+      "assertion": "it.skip \u2014 no HP pool (boss deals no damage). Asserted structurally via unmodeled.burst matching /invulnerab/i, and behaviourally as the nearest-wrong DURATION for the DEF line: patching the defPct window to 3s shifts expiresFrame by exactly 420 frames, so 10s vs 3s is discriminated."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF \u25b2133.48% 10s, all allies",
+      "disposition": "FAITHFUL",
+      "assertion": "The one live line. buffApply stat defPct, value exactly 133.48, distinct targetIdx count == roster size and targetSlug list contains noah (RED under a self-only read: 1 target), expiresFrame - 10s window (RED under a 3s read), first apply strictly BEFORE the first fullBurstStart in log order (RED under a fullBurstEnter read, whose counterfactual inverts the order), applies once per ally per cast with total buffed frames < fight length (RED under a permanent/passive read). Damage stays byte-identical when stripped \u2014 defPct is inert in v1 and is kept for kit completeness only."
+    }
+  ],
+  "fixtures": "controlComp('noah', true) is the intended fixture, but noah is Burst II and the control comp's fixed Burst II sits ahead of the carry slot, so the carry can lose stage 2 every rotation and her burst-cast block would never fire. Three candidate fixtures are hoisted \u2014 control+helm, control+helm plus a burstEligibility:3 FIXTURE ENABLER block appended to skill1, and control-helm \u2014 and the first that actually emits her defPct buff becomes BASE (deterministic data-driven selection, not a conditional skip); the enabler only changes WHICH stage she casts at, never what her burst block does, and every counterfactual re-applies the same enabler so all comparisons share one fixture. Provenance of the defPct events is proved independently by the strip counterfactual. Six counterfactuals on that BASE: self-only target, fullBurstEnter trigger, 3s duration, whole-kit strip, injected boss damageTakenPct +8, injected ally atkPct +13.25 (the last two exist solely to prove the byte-identical totals assertions are not vacuous). 9 runs total.",
+  "gaps": [
+    "skill1 10% chance on being attacked \u2014 no incoming-damage model, no probabilistic on-attacked trigger primitive",
+    "skill1 ally-scoped Damage Taken \u25bc8% \u2014 damageTakenPct is the BOSS debuff channel; an ally damage-reduction has no consumer at scope lock (boss deals no damage)",
+    "skill2 Full Charge trigger identity \u2014 chargeCounter count:1 could express it, but both payloads (Taunt, enemy ATK \u25bc) are unobservable so no assertion discriminates",
+    "skill2 / burst Taunt + Attract \u2014 no aggro/threat model in the sim",
+    "burst Invulnerable 3s \u2014 no HP pool modeled",
+    "burst DEF \u25b2133.48% damage consequence \u2014 defPct is inert in v1; the buff is asserted at event level only, pending a DEF/HP scaler consumer"
+  ],
+  "model": "claude-opus-5"
+}

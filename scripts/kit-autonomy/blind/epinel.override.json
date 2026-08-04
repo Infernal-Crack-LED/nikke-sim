@@ -1,0 +1,152 @@
+{
+  "slug": "epinel",
+  "leakDetected": null,
+  "override": {
+    "slug": "epinel",
+    "skill1": [],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 5.05,
+            "durationSec": 5
+          },
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 6.4,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 457.87,
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates when killing an enemy. Affects self.",
+        "Total Noob: ATK ▲ 13.86%, stacks up to 5 time(s) and lasts for 15 sec."
+      ],
+      "skill2": [],
+      "burst": [
+        "Activates when Total Noob is at max stacks. Affects the same targets.",
+        "Deals 457.87% of final ATK as additional damage."
+      ]
+    },
+    "caveats": [
+      "⛑ Skill 1 is gated on an enemy KILL. The schema has no kill trigger and the scope-lock fight is a single partless boss with no killable adds, so Total Noob would accrue 0 stacks here regardless of encoding — the whole skill is modeled as inert rather than given an invented trigger. If footage shows killable adds, this becomes a real +69.3% self ATK ceiling (5 × 13.86%, 15s window) and must be enacted with a kill primitive + stack pool.",
+      "⛑ Burst branch 2 (a second 457.87% hit) fires only at max Total Noob, so it is inert for the same reason as skill 1. It is NOT modeled at partial credit — crediting it unconditionally would roughly DOUBLE her burst damage; crediting it at a guessed uptime would be a fabricated value.",
+      "⛑ The burst hit is authored crit-eligible (rider prior: riders crit at the caster's sheet rate) and left FB-exempt by cast TIMING only — noFb is not set, per the default-OFF/measured-only rule; the engine casts the burst before the Full Burst window opens.",
+      "⛑ SMG cadence (pulls/s) and reloadFrames 81 come from the datamine and are unreliable; they set the last-bullet period, which is the sole driver of skill 2's uptime. A 120-round belt at ~20 effective shots/s implies one last-bullet event per ~7.3s cycle against a 5s buff — i.e. partial, not permanent, uptime."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Epinel is modeled from two live lines: a last-bullet self crit package (Crit Rate 5.05% / Crit Damage 6.4%, 5s, per magazine) and a single burst-cast hit of 457.87% of final ATK on the boss, crit-eligible, resolved pre-Full-Burst by cast timing. Her kill-driven Total Noob stack (ATK ▲ 13.86% ×5, 15s) and the burst's max-stack second 457.87% hit are deliberately unmodeled: the fight has no killable enemy, so their trigger can never fire, and no invented trigger or partial-uptime credit is substituted for it. Skill 1 is therefore an empty slot by evidence, not by oversight — see unmodeled/caveats."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when killing an enemy.",
+      "status": "SKIPPED",
+      "effectOrReason": "No kill/on-death TriggerDef exists in the schema, and the sim's only enemy is the partless raid boss (never killed within the 180s fight), so no encoding of this trigger can fire. Recorded verbatim in unmodeled.skill1; inventing an interval/hitCount proxy would fabricate the stack cadence."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Total Noob: ATK ▲ 13.86%, x5, 15 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "The buff itself is trivially expressible (buff/atkPct 13.86, maxStacks 5, durationSec 15, target self) but is unreachable without the kill trigger above — skipped as a unit, not dropped silently. Ceiling if ever enacted: +69.3% self ATK."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when the last bullet hits",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger lastBullet (per-magazine, fires at reload start), target self."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Rate▲ 5.05% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 5.05, durationSec 5. Unscoped in the prose (no 'of normal attacks' qualifier) → generic critRatePct, NOT critRateNormalPct."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Damage ▲ 6.4% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 6.4, durationSec 5, same block/trigger/target."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single-boss fight, so 'all enemies' collapses to one hit."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 457.87% of final ATK as Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 457.87, crit true, on trigger burstCast. No 'core strike' wording → core omitted; noRange is engine-automatic; noFb left unset (cast lands pre-FB)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Activates when Total Noob is at max",
+      "status": "SKIPPED",
+      "effectOrReason": "Gate depends on skill 1's kill-driven stacks, which cannot accrue at scope lock; no resourceGate authored because no effect can ever increment the pool. Verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 457.87% ... as additional damage.",
+      "status": "SKIPPED",
+      "effectOrReason": "The rider body of the max-stack branch above. Modeling it unconditionally would double burst damage on a condition the fight never satisfies."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1 (entire slot) + burst block 2",
+      "estimate": "0 stacks / branch never fires at scope lock → both left unmodeled (0% contribution). If adds exist and die steadily, the realistic shape is a sawtooth toward the 5-stack cap (+69.3% self ATK) plus a second 457.87% burst hit once the cap is held at cast time.",
+      "reasoning": "The kit's activation clause is an enemy KILL. TriggerDef has no kill/on-death kind, and the sim entity model is a single immortal partless boss, so there is no event to key on. Any proxy trigger (interval, hitCount) would invent the kill cadence, which is exactly the fabricated-value failure mode; a partial-uptime credit on the burst rider would be worse still, since the rider is 50% of her burst damage.",
+      "recipe": "Watch a full scope-lock recording for add spawns/deaths. If none: the skip is correct and permanent for this fight, record it as such. If adds die: count kills per 10s from footage to get a stack trajectory, add a kill trigger primitive (or a resource pool incremented by it) with a resourceGate {name:'totalNoob', min:5} on the burst rider, and pin the pre-cast stack count from the burst-frame buff icons."
+    },
+    {
+      "field": "base cadence (pullsPerSec / reloadFrames) → skill2 lastBullet period",
+      "estimate": "~20 effective shots/s (SMG, 60fps frame quantisation) over a 120-round belt → ~6.0s firing + ~1.35s reload ≈ 7.3s per last-bullet event, against a 5s buff → ~65-70% uptime on both crit buffs.",
+      "reasoning": "Datamined rate_of_fire and reloadFrames are known-unreliable fields, and the effective rate is 60/ceil(60/nominal), not the nominal value. Skill 2 is Epinel's only sustained self-buff, so its entire magnitude is a function of this period — a 10% cadence error moves the crit uptime directly.",
+      "recipe": "Read the on-screen ammo counter across one full magazine in a scope-lock recording (shots/sec measured directly, not inferred from full-burst counts), and time reload-start → refill to pin reloadFrames."
+    },
+    {
+      "field": "burst[0].effects[0].crit",
+      "estimate": "true (rolls crit at Epinel's sheet rate)",
+      "reasoning": "Kit-silent. The standing rider prior is that function-damage riders crit at the caster's rate and receive no core unless the text says 'core strike damage'; this line says neither, so crit ON / core OFF is the prior-consistent read. Flagged because it is an assumption, not kit text.",
+      "recipe": "Read popup colour at the burst frame in footage — orange + crit icon = crit-eligible, plain white across many casts = not. Requires n≥5 casts to separate a non-crit line from an unlucky roll."
+    },
+    {
+      "field": "burst[0].effects[0].noFb (unset)",
+      "estimate": "unset (default OFF) — exemption expected to come from cast timing, not the flag",
+      "reasoning": "The burst hit is keyed to burstCast, which resolves before the Full Burst window opens, so it should already miss the +50% major without an explicit noFb. Setting noFb unmeasured would violate the default-OFF/measured-only rule and would silently double-exempt if the engine ever moved the cast inside the window.",
+      "recipe": "Log the burst damage event and assert inFullBurst === false / fbMajorApplied === false on the burstCast hit; if it lands inside the window, the fix is the cast-timing path, not a per-kit noFb."
+    }
+  ],
+  "model": "claude-opus-5"
+}

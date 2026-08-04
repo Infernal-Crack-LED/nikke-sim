@@ -1,0 +1,47 @@
+{
+  "note": "Kit-autonomy gauntlet 2026-08-03 — FROM-SCRATCH build (no prior override; simSupported:false flipped by this gauntlet), Tier 2, cross-family S2b (claude-fable-5) converged on all 5 lines with zero divergences. UNIT: epinel (Epinel) — SMG/Wind/Attacker/Burst III, Missilis, cd 40s, ammo 120, reloadFrames 81, RoF 1440/min (datamine), baseCrit 15/150. MODEL — SKILL2 'Arachnid' ('Activates when the last bullet hits the target. Affects self.'): lastBullet → self → critRatePct 5.05 + critDamagePct 6.4, durationSec 5, one block (both effects ride the single trigger, same frame — pinned by test). lastBullet (owner magazine empty / reload start) IS the named 'last bullet' archetype (privaty/marciana/anis-sparkling-summer/exia precedent); the 'hits the target' clause is scope-trivial (every shot lands on the partless single boss). Her 120-round magazine cycles ~6.3–7.4s (24/s datamine RoF, ~20/s effective with per-shot gaps, + 81f reload), so the 5s window runs ~65–80% uptime — asserted STRUCTURALLY in the spec test (per-reload-cycle applications, count bounded away from both the shot count and the cast count), never as a pinned percentage. BURST 'SAFE 50-50': burstCast → enemy → flatDamage 457.87 (burst bucket; 'Affects all enemies' collapses to the single partless boss). The cast lands BEFORE the Full Burst window opens, so the nuke never takes the +50% FB major (verified fact 2026-07-13); keyed to HER casts only — co-B3 helm leads alternate FBs in the control fixture, so a fullBurstEnter keying would over-fire and go in-FB (the Tier-2 trigger discrimination, pinned). NO `ignored` blocks. ⚑1 (skill1 'Total Noob', UNMODELED — out-of-domain, world-model): the trigger is an enemy KILL ('Activates when killing an enemy'); the engine has NO kill event (grep-verified: no kill primitive in src/engine) and the scope-lock fight is one immortal partless boss with no adds, so Total Noob (ATK ▲13.86% ×5 stacks, 15s) can never accrue and the line contributes exactly zero in ANY sim run. Deliberately NOT encoded as a passive max-stacks buff (69.3% ATK): that would fabricate damage the sim's world cannot produce (nearest-wrong counterfactual, pinned RED by the spec test). ESTIMATE: in real multi-add content she stacks to 5 within the first add wave (~seconds) and holds it, so the in-game value is ~+69.3% ATK most of a fight — material for any future adds-enabled scope, zero here. RECIPE: if enemy-death/adds are ever modeled, declare resource pool `totalNoob` [0..5], +1 per kill event with the 15s per-stack duration (⚑ per-stack independent timers vs whole-pool refresh — measure from the in-game icon), and read it as a passive self atkPct perResource {totalNoob, mult:13.86}. TIER: out-of-domain (world model), not a value estimate. ⚑2 (burst max-stacks rider, UNMODELED — gated by ⚑1): 'Activates when Total Noob is at max stacks. Affects the same targets. Deals 457.87% of final ATK as additional damage.' The gate reads ⚑1's kill-fed pool, so it can never open at scope and the rider deals zero all fight. Faithful record = verbatim-unmodeled + this ⚑; the nearest-wrong model (folding it into an unconditional second hit, 915.74%/cast) is pinned RED by the spec test. ESTIMATE: in real content the gate is effectively always open by her first burst (kills accrue in the opening seconds vs a 40s CD), so the in-game burst is effectively 915.74% — the sim's 457.87 is a scope-lock necessity, not a value choice. RECIPE: with ⚑1's pool modeled, add a second burstCast → enemy → flatDamage 457.87 block under resourceGate {name:'totalNoob', min:5}. ⚑3 (cadence tuple, standard): ammo 120 / reloadFrames 81 / RoF 1440 are datamine fields (unverified for this unit); they set the lastBullet clock and thus the S2 crit-window uptime. Recipe: read fire cadence + reload gap from any focus video. All magnitudes (13.86, 5.05, 6.4, 457.87) are kit-literal SL10 → DATAMINED; no CALIBRATED values anywhere in this kit.",
+  "caveats": [
+    "skill1: 'Total Noob' (ATK ▲13.86% ×5 stacks on killing an enemy, 15s) is UNMODELED — the engine has no kill event and the scope-lock boss is immortal with no adds, so the stacks can never accrue; provably zero contribution in every sim run (⚑1)",
+    "burst: the 'Total Noob at max stacks' conditional (457.87% additional damage) is UNMODELED with the pool that feeds its gate — zero contribution at scope; in real multi-add content the gate is effectively always open (⚑2)",
+    "skill2: the crit-window uptime (~65–80%) rides the datamine cadence tuple (ammo 120 / reloadFrames 81 / RoF 1440) — unverified for this unit (⚑3)"
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates when killing an enemy. Affects self. Total Noob: ATK ▲ 13.86%, stacks up to 5 time(s) and lasts for 15 sec."
+    ],
+    "skill2": [],
+    "burst": [
+      "Activates when Total Noob is at max stacks. Affects the same targets. Deals 457.87% of final ATK as additional damage."
+    ]
+  },
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "lastBullet" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 5.05,
+          "durationSec": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 6.4,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "flatDamage", "atkPct": 457.87 }]
+    }
+  ]
+}

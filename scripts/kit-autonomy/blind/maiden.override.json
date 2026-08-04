@@ -1,0 +1,92 @@
+{
+  "slug": "maiden",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 26.66,
+          "durationSec": 20
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 30
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 152.84,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.87,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.87,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": ["Taunt for 10 sec."],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ S1 trigger substituted: the kit fires Revenge on 'attacked 20 time(s)'. The sim models no incoming boss damage, so the activation is unobservable and is encoded as interval 20 s (first fire t=20 s). Revenge is therefore continuously up from t=20 s and absent before it — a pure modeling convention, not a measurement.",
+    "⚑ Burst rider is UNGATED: the kit gates the second 457.87% hit on 'Revenge status', and the effect schema has no self-status gate (requiresTargetStatus is an enemy-status channel). Modeled at an assumed ~100% Revenge uptime, which OVER-CREDITS any burst cast before Revenge first procs.",
+    "⚑ S2 cadence invented: the kit prose carries no activation clause and no cooldown, so both S2 sub-lines are keyed to one interval (30 s estimate) with the stated 10 s durations.",
+    "Taunt (all enemies, 10 s) is unmodeled — there is no aggro model and the v1 boss deals no damage — but it is the real-game driver of S1's hit count, so the ⚑ Revenge cadence above stands on an unmodeled line.",
+    "Burst-cast damage is FB-exempt by TIMING (the cast lands before the Full Burst window opens); noFb is deliberately NOT set on either hit (measured-only field, default OFF).",
+    "Both burst hits are crit-eligible at the caster's sheet rate and carry NO core (the kit text does not say 'core strike damage'). This matters more than usual here because S2 grants +152.84% Critical Damage to self.",
+    "⚑ Base weapon economy (9 ammo, reloadFrames 142, 10 pellets/shot, SG cadence) comes from the datamine, which is unreliable for rate_of_fire/reloadFrames; shots fired — and therefore total normal-attack damage — inherit that uncertainty."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Maiden — SG/Electric/Attacker/Burst III, 9 ammo, 10 hits/shot, normal 231.6% / core 200%. S1 Revenge = self ATK ▲26.66% for 20 s; the kit trigger is 'attacked 20 time(s)', which the engine cannot observe (no incoming boss damage is modeled), so it is encoded as ⚑ interval 20 s — first fire t=20 s, then continuously refreshed. S2 has two sub-lines under one activation: an all-enemy Taunt (10 s), unmodeled (no aggro model, boss deals no damage), and a self Critical Damage ▲152.84% for 10 s, keyed to a ⚑ interval 30 s because the kit prose states no cooldown. Burst = two separate 457.87%-of-final-ATK hits at burst-cast; the second is kit-gated on Revenge status, and since the schema has no self-status gate it is modeled UNGATED under an assumed ~100% Revenge uptime (⚑) — this over-credits any burst that fires before Revenge first procs. Both burst hits crit at the caster's sheet rate, take no core, and are Full-Burst-exempt by cast timing (noFb is not set)."
+}

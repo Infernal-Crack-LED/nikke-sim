@@ -1,0 +1,114 @@
+{
+  "slug": "d",
+  "kitDescription": "D is a Wind SMG Attacker whose sustained damage is propped up by two Elemental Advantage Attack Damage buffs that only pay out when she fights an Iron boss: a 91.09% self-buff for the first 15 seconds of the battle, and a 46.93% self-buff for 15 seconds each time the team enters Full Burst. At battle start she instantly fills 98.56% of the team's burst gauge (once per battle) and grants the whole team Stun immunity for 36.95 seconds. Her burst is a 426.24% hit against all enemies, plus a 42.38% Damage-to-Parts buff for all Attacker allies for 15 seconds. If she is still holding her own Stun immunity when she casts burst, that Full Burst lasts 5.04 seconds longer — with her 40-second burst cooldown that effectively means only her first cast of the fight qualifies. She also has self-only lifesteal while her Full Burst-entry buffs are running, with a stronger one-time version on its first activation.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "burst block 3: 'raises TEAM output, not just d's' — expected sumDmg(base) > sumDmg(noFbExtend); measured 1,034,657,732 < 1,077,967,867. Classified RECON_ERROR (blind-side proxy failure): the proxy assumes FB uptime is monotonic in team damage on an infinite horizon; at the fixed 180s scope the +5.04s on FB#1 extends the gauge lock, delays every later chain, and the final cycle is clipped by fight end. The extension itself is proven LIVE by the green inFbHits-monotonic assertion and the driver's exact 902-frame single-window pin, so this is not an encoding divergence."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Elem Adv Atk Dmg ▲46.93% 15s on FB enter",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter -> self -> elemAdvantageDamagePct 46.93 /15s, refreshes every team Full Burst",
+        "blindSaid": "S5+S6 identical encoding; asserted count == fullBurstStart count and burstCast counterfactual strictly under-fires",
+        "formulaCheck": "SSOT 1c/1e: 'Elemental Advantage Attack Damage' is the advantage-gated element bucket (MEASURED 2026-07-14 battery 5, Privaty 130 popup ratio 2.8244); inert vs the Fire fixture boss, live vs Iron — driver pins both sides",
+        "fireRateOk": true,
+        "explanation": "Right bucket, right trigger identity (every team FB, not own cast — helm co-B3 makes these genuinely diverge), right target, right 15s wall-clock window. Driver test asserts one apply per fullBurstStart and a 900-frame expiry on each."
+      },
+      {
+        "kitLine": "Recovers 3.52% of attack damage as HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim in unmodeled.skill1; no HP pool; self-heal unobservable and feeds no consumer (recovery triggers fire only when their OWNER receives a heal)",
+        "blindSaid": "S2b+S5+S6 all converged on UNMODELED; S2b's crown-recovery mis-scope trap is moot since nothing is encoded (driver pins 'no heal effect exists on d')",
+        "formulaCheck": "Offensively inert; no bucket touched",
+        "fireRateOk": true,
+        "explanation": "Honest documented skip with the no-silent-drop record pinned by test. Verbatim text matches the prose."
+      },
+      {
+        "kitLine": "first activated: +16.5% ATK dmg as HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim (both the line and its first-activation semantics die together with the lifesteal)",
+        "blindSaid": "Converged (S2b, S5, S6 all UNMODELED)",
+        "formulaCheck": "Offensively inert",
+        "fireRateOk": true,
+        "explanation": "Same lifesteal rationale; the once-only clause is preserved implicitly since the whole effect is skipped and quoted."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Fills Burst Gauge 98.56%, 1x/battle",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive -> allies -> fillGauge 98.56; passive fires exactly once at frame 0 = the kit's once-per-battle 'stage target appears' at single-boss scope",
+        "blindSaid": "S6 identical; S5 green on both ordering-clock (first FB near-instant vs patched-out run) and once-per-battle cadence (FB count delta <= 2)",
+        "formulaCheck": "Instant fill, NOT a burstGenPct rate buff; gauge mechanics per burst-gauge.md; measured FB#1 at frame 132 (~2.2s) vs ~frame 344 natural fill — matches the residual 1.44% + chain staging (30f+30f+30f+22f)",
+        "fireRateOk": true,
+        "explanation": "Exactly one application at battle start; the once-per-battle reading is exact at scope (driver ⚑4 documents the transition-re-entry caveat). Driver and both blind agents converged."
+      },
+      {
+        "kitLine": "Immunity to Stun 36.95s (all allies)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Encoded as the stunImmune resource window: passive +1 seed at frame 0, interval:36.95 -1 decrement; defensively inert itself (no CC model), carried as the load-bearing gate feed for the burst extension; ally scope documented inert in caveats",
+        "blindSaid": "S2b demanded this line NOT be dropped (it feeds the burst gate; 'GAP is not an acceptable disposition') and sketched exactly this resource-window encoding; S6 wrongly declared it inexpressible and left it unmodeled",
+        "formulaCheck": "No bucket; the observable is purely the burst-gate window [0, 36.95s], which the measured cast frames (110 extended, 2362+ unextended) confirm",
+        "fireRateOk": true,
+        "explanation": "The window semantics the prose implies are fully reproduced for the only consumer (her own burst gate). The all-ally scope is defensively inert at scope and documented — not a silent drop. Interval re-fires past 36.95s clamp harmlessly at resource min 0."
+      },
+      {
+        "kitLine": "Elem Adv Atk Dmg ▲91.09% 15s (self)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive -> self -> elemAdvantageDamagePct 91.09 /15s; one frame-0 application, expires at 15s, never re-applied",
+        "blindSaid": "S6 identical; S5 green (exactly one apply, self-scoped, correct stat)",
+        "formulaCheck": "Same measured element-bucket placement as the 46.93 line; inert vs Fire (byte-identical removal totals), live vs Iron (driver's Iron comp proves both sides); the two same-stat self-buffs STACK additively (measured mult.elem 2.4802 = 1 + 0.10 + 0.4693 + 0.9109), refuting S6's overwrite caveat",
+        "fireRateOk": true,
+        "explanation": "One-shot 15s window exactly as prose; driver's permanent-window counterfactual discriminates. Target is self (second block header), not copied from the all-allies header above it."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "426.24% final ATK Burst Skill dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> enemy -> flatDamage 426.24; burst-cast damage lands pre-FB (engine default), never takes the +50% major",
+        "blindSaid": "S6 identical (plus explicit noFb:true, the engine default); S5 green on damage contribution and enemy-only scope",
+        "formulaCheck": "SSOT 1b/§8: burst-cast direct damage is FB-exempt (Cinderella nuke popup pair settled this); burst bucket, noRange, no core — matches driver's bucket==='burst' and fbMajorApplied===false pins",
+        "fireRateOk": true,
+        "explanation": "One nuke per own cast (count == d burstCast count, >=2 in fixture), keyed to her casts only — helm's rotations produce no nuke, satisfying the burstCast-vs-fullBurstEnter divergence the fixture was built for."
+      },
+      {
+        "kitLine": "Parts Dmg ▲42.38% 15s (Attacker allies)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> alliesOfClass Attacker -> partsDamagePct 42.38 /15s; parsed-but-inert on the partless boss, kept for kit fidelity per repo convention",
+        "blindSaid": "S6 identical; S5 green (parts bucket, liter never receives it, bit-identical totals on removal)",
+        "formulaCheck": "Partless scope-lock boss => zero damage contribution; correctly NOT laundered into attackDamagePct/damageTakenPct (the nearest-wrong models the tests discriminate against)",
+        "fireRateOk": true,
+        "explanation": "Holders pinned per cast frame to exactly {d, helm}; all-ally counterfactual reaches liter+crown as predicted. True inertness verified byte-identically."
+      },
+      {
+        "kitLine": "if user Stun-immune: FB Dur ▲5.04s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> allies -> fullBurstExtend 5.04, resourceGate stunImmune>=1; CD 40s > window 36.95s so at most one cast can ever qualify — measured: cast at frame 110 leads the sole extended window (902 frames = 600+302), casts at 2362/4404/6314/8194/10105 all lead 600-frame windows",
+        "blindSaid": "S5 derived from prose alone that only the FIRST cast should extend and named an unconditional model an over-credit; S6 shipped the extension UNGATED while self-flagging it as 'the single largest faithfulness risk' — its 'inexpressible' claim is refuted by the driver's resource-window encoding (S2b's suggested mechanism, e-h/soda-twinkling-bunny precedent family)",
+        "formulaCheck": "FB duration is team state; extension lands on the next FB start via pendingFbExtendSec (engine semantics confirmed in the override note); gate evaluated at cast time exactly as the prose's 'if the skill user has' condition requires",
+        "fireRateOk": true,
+        "explanation": "The crux line of the kit is modeled with the gated semantics the prose demands, not the blind's over-crediting ungated fallback. Residual ⚑2 (window-condition vs first-cast-counter) is documented and indistinguishable at scope. The one S5 RED against this line is the blind's horizon-blind sumDmg proxy, classified RECON_ERROR — the extension is proven live by the green inFbHits assertion and the driver's exact-window pins."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All 9 kit lines are accounted for: 7 FAITHFUL with correct bucket placement (both Elemental Advantage lines in the measured advantage-gated element bucket, proven inert vs Fire and live vs Iron), correct trigger identities (fullBurstEnter vs burstCast genuinely diverge in this fixture and the driver keyed each correctly), and correct one-shot/timed semantics; the 2 self-lifesteal lines are DOCUMENTED_GAPs converged on by all three blind agents with the verbatim record pinned by test. The kit's crux — the stun-immunity-gated Full Burst extension — is where the driver beat the blind: S6 declared the gate inexpressible and shipped an ungated extension it self-flagged as its largest risk, while S5 independently derived from prose that only the first cast should extend; the driver's resource-window gate (seed at frame 0, decrement at 36.95s, resourceGate on the burst block) reproduces exactly that, with measured cast frames (110 inside, 2362+ outside) and window lengths (one 902-frame FB, all others 600) corroborating. S6's overwrite-vs-stack worry was also measured away (mult.elem 2.4802 = additive stacking). The single S5 RED is a blind-side RECON_ERROR: its sumDmg proxy assumes extension monotonically raises team damage, but at the fixed 180s horizon the longer FB#1 gauge lock delays later chains and clips the final cycle — the extension's liveness is separately proven green, so no encoding change follows. Discrimination holds via the driver's counterfactual suite (generic-stat, all-ally, permanent-window, ungated-extension, no-seed all asserted RED-vs-shipped). Residual same-model risks for the owner to spot-check: the ⚑2 window-vs-first-cast semantics (verify in-game that d's second burst does not extend Full Burst), the ⚑1 SMG cadence/reload tuple against a d focus video, and the ⚑4 passive-as-stage-appear reading should multi-boss scope ever arrive. Nothing must change for GO.",
+  "model": "kimi-code/k3"
+}
