@@ -342,13 +342,15 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
        columns of the hand-count arm (11 MISSED at slack 8, 8 of them phantom) still carry them.
        ⚑ Note when fixing: the arm's cap rule is calibrated on the `9 → 0` case only — for a
        zero-width `8 → 6` flip it credits 1 shot where the truth may be 0.
-    2. **The compensating-errors finding (probe-runs §4.5) — needs a second hand-counted window.**
-       In the counted window the reader's aggregate looks like a 5.6% under-read (34 detections vs 36
-       shots) but per event it misses 6 real shots AND invents 4 non-shots — a true miss rate of
-       16.7%, roughly **3× its aggregate figure**, and at or above the 8% bar. ⚑ n=1, HYPOTHESIS-
-       strength: it does not overturn the whole-fight 4.4%/14.7% headline. Before this can be treated
-       as a rate it needs a second hand-counted window on a **different unit or clip** — `guilty` or
-       `noir`, whose arbiter is still only internally-consistent.
+    2. **The compensating-errors finding (probe-runs §4.5) — REPLICATED at n=2, and it now has a
+       named mechanism.** The second window landed 2026-08-03 on `guilty` (probe-runs §7), so this is
+       no longer "needs a second window". **The per-event miss rate replicates to 0.7 pp — `isabel`
+       16.7%, `guilty` 17.4% — while the aggregates differ 2.3× (5.6% vs 13.0%).** The aggregate is a
+       netted figure; the per-event rate is the real quantity, and it sits at or above the 8% bar.
+       Mechanism: **cluster-merge in `debounce_shots`** (own item below). ⚑ **n=2 windows / 2 units,
+       MEDIUM — below the n ≥ 5 board standard.** It still does not overturn the whole-fight
+       4.4%/14.7% aggregate headline, and the link from the per-event rate to the cold bias is
+       **UNTESTED**. `noir` remains the one unit whose arbiter has no ground truth.
     3. **The reload phase-locked echo (probe-runs §4.4) — identify what it actually is.** REFUTED as
        `isabel`'s S2 rockets (6 events over 190.7 s, spacings 30.4/22.7/49.5/8.8/6.4 s — not
        periodic). 6 of 7 sit +16 to +18 frames after their own magazine's emptying round, a spread
@@ -357,6 +359,41 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
        as a detected shot carrying ~0 pellets, so it inflates detections and deflates the per-shot
        pellet average at the same time. Do NOT cite the arm's "median gap 14.48 s" as a ~15 s period —
        that set includes 0.67 s and 39.63 s gaps and the resemblance to S2's cadence is accidental.
+  - **⇒ 2026-08-03 SECOND OWNER HAND COUNT (`guilty`) LANDED — three items it opened.** 23 shots as
+    9/9/5 magazine segments over 00:42.8–1:02.8 of `docs/probes/ar-sg-smg/guilty solo sg.MP4`; the
+    arbiter reproduces 23 exactly (21 decrements + 2 magazine-empty) **and its reconstructed ending
+    level 4 matches the owner's "4 of 9 left"**, raw == admissible with 0 inadmissible flips. Full
+    record: `docs/probe-runs.md` §7. Three things it opened, none enacted:
+    1. **⛔ OWNER-GATED — `debounce_shots` CLUSTER-MERGE (probe-runs §7.2). Do not touch it without
+       the owner.** The debouncer merges adjacent shots into one event when its gap tolerance is
+       exceeded. **255 of 815 detections (31.3%) span more frames than `max_pellet_frames = 7`** —
+       `isabel` 62/203 (max span 50 frames = 2.5 cadence periods), `guilty` 43/180 (max 28),
+       `marciana` (SG/Iron) 67/218 (max 29), `noir` 83/214 (max 49). Three of the four `guilty`
+       hand-count misses are traced to specific entries: **f1307 (`frames` 27) swallows f1326**,
+       **f1427 (24) swallows f1446**, **f1618 (28) swallows f1637** — swallowed shots peaking at
+       T = 11–13, i.e. **merge failures, not sensitivity failures**. **Blast radius: changing it moves
+       every detected shot in every dump, hence every number in `docs/probe-runs.md` §3b onward plus
+       the fixtures pinning them** — it is not a change for the session that discovered it. Tier:
+       existence + 31.3% prevalence **MEASURED** (4 dumps, code-level); causation of the 3 named
+       misses **DEMONSTRATED**; **link to the cold bias HYPOTHESIS, untested** — a merged event drops
+       a shot from the count AND its pellets from the total, so the net sign on pellets-per-shot must
+       be measured, never guessed. **An investigation is running separately** — check for its result
+       before re-opening this.
+    2. **TOOLING — `--hand-count`'s matcher over-credits in-reload onsets.** It credits **any**
+       in-reload onset as that magazine's emptying round, so it cannot separate a real emptying shot
+       from a false positive in the same reload window. On `guilty` it reported **3 missed** where the
+       truth is **4 missed + 1 invented** (real f1446 vs spurious f1456).
+       ⇒ **`detected_weapon_attributable` is an UPPER BOUND, not authoritative**, and **both the
+       `isabel` and `guilty` hand-count numbers inherit this**. Fix is a matcher change inside the arm
+       only (its fixture
+       `hand-count-slice.json` would need regeneration with it); it does not touch `reconstruct_ammo`
+       or the detector. Filed so nobody quotes the field as ground truth in the meantime.
+    3. **OPEN QUESTION — the f1787 miss has NO mechanism (probe-runs §7.10).** The fourth `guilty`
+       missed shot (9 → 8 at f1787–1790, 59.57 s) is **not** explained by cluster-merge: peak T = 8,
+       on a **fully-measured lock**, at post-reload crosshair re-acquisition. It is also not a stale-
+       lock artifact — 3 of the 4 misses sit on measured locks and stale share during the three firing
+       spans is 1.4% (6/420) versus 24.5% window-wide. ⚑ Do not manufacture a cause; probe-runs §4 is
+       the graveyard of what happens when one is manufactured. n=1 event.
   - **⇒ 2026-08-03 AMMO READ-RATE CEILING MEASURED (probe-runs §5) — the atlas route is REFUTED, and
     the leftover levers are these.** 24,319 frames / 7 series / 4 units via the committed
     `analyze-pellet-tracks.py --ammo-abstention` (fixture
