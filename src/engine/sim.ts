@@ -2307,18 +2307,25 @@ export function runSim(
                 ? (e.value / 100) * Math.max(...units.map((x) => x.staticAtk))
                 : e.stat === 'casterMaxHpPct'
                   ? (e.value / 100) * owner.maxHp
-                  : e.stat === 'atkOfCasterMaxHpPct'
+                  : e.stat === 'highestAllyMaxHpPct'
+                    ? // "Duplicates X% of the Max HP of the Nikke with the highest Max HP"
+                      // (quency S1): the highestAllyAtkPct precedent — static basis, apply time.
+                      (e.value / 100) * Math.max(...units.map((x) => x.maxHp))
+                    : e.stat === 'atkOfCasterMaxHpPct'
                     ? // "ATK ▲ x% of the skill user's FINAL Max HP" (maxwell-ordinary-mechanic
                       // S2): flat add snapshotted at apply time off the caster's LIVE Max HP —
                       // the caster's own-kit Max HP buffs feed (e3 scope), ally grants do not.
                       (e.value / 100) * liveMaxHp(owner, frame)
                     : e.value;
-          // casterMaxHpPct ("% of the skill user's Max HP") and targetMaxHpPct ("Max HP ▲ X%",
-          // the target's OWN %) both grant flat Max HP; targetMaxHpPct's value is per-target
-          // (computed inside the loop). effectiveAtk's e3 rule (casterIdx === self only) then
-          // decides whether it feeds an atkOfMaxHpPct consumer.
+          // casterMaxHpPct ("% of the skill user's Max HP"), targetMaxHpPct ("Max HP ▲ X%",
+          // the target's OWN %) and highestAllyMaxHpPct ("% of the highest-Max-HP unit's Max HP")
+          // all grant flat Max HP; targetMaxHpPct's value is per-target (computed inside the
+          // loop). effectiveAtk's e3 rule (casterIdx === self only) then decides whether it
+          // feeds an atkOfMaxHpPct consumer.
           const statKey =
-            e.stat === 'casterMaxHpPct' || e.stat === 'targetMaxHpPct'
+            e.stat === 'casterMaxHpPct' ||
+            e.stat === 'targetMaxHpPct' ||
+            e.stat === 'highestAllyMaxHpPct'
               ? ('maxHpFlat' as StatKey)
               : e.stat === 'highestAllyAtkPct' ||
                   e.stat === 'atkOfCasterMaxHpPct'

@@ -37,6 +37,11 @@ export type StatKey =
   | 'casterMaxHpPct' // grants Max HP = % of CASTER's Max HP ("X% of the skill user's Max HP" — rouge/anis/trina)
   | 'targetMaxHpPct' // grants Max HP = % of the TARGET's OWN Max HP ("Max HP ▲ X%" — blanc/maiden). Same
   //                    e3 feed rule as casterMaxHpPct: only feeds atkOfMaxHpPct when caster === target (self)
+  | 'highestAllyMaxHpPct' // grants Max HP = % of the HIGHEST-Max-HP unit's Max HP ("Duplicates X% of the
+  //                    Max HP of the Nikke with the highest Max HP" — quency S1). Resolves at APPLY time
+  //                    to a flat Max HP grant of (value/100) × max(all units' static maxHp) — the
+  //                    highestAllyAtkPct precedent (static basis; the kit says plain "highest", not
+  //                    "final"). Same e3 feed rule. Next expected carrier: sin.
   | 'partsDamagePct' // parsed but inert in v1 (no parts on the boss)
   | 'pierceDamagePct' // parsed but inert in v1
   | 'damageTakenPct' // debuff on the boss (positive = boss takes more)
