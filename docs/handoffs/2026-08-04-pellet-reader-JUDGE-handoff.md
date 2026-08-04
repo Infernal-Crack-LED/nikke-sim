@@ -41,23 +41,24 @@ Separately, §8H's long-standing "the two implementations may already be one eve
 | 3   | Does the hybrid meet its pre-committed criteria? (§12)         | **YES, all six.** Categorical **5/5**; ceiling **1.8%** over the full **852** with **`no_rep` = 0**; pooled MISSED **58 / 7.0% UNCHANGED**; falsification control held on all 112 fallback events; lockstep held; `avgTotal` reported-only.                                                                                                                                                                                           |
 | 4   | Did it land cleanly in both readers? (§13)                     | **YES.** Equivalence of the new production `band` channel against the audit arm's independent `_ps_band_totals`: **0 mismatches over 24,685 frames + both labelled crops**. Production `avgTotal` **6.1561**, an **exact match** to §12's scoring-variant figure. Exactly **one** pre-existing pin moved. `pellet-selftest.sh` 19 arms exit 0; `verify.sh` exit 0.                                                                    |
 | 5   | Is the `h4-marciana` 177-vs-176 a lockstep break? (§11)        | **NO, and §8H's diagnosis was wrong twice.** Segmentation is IDENTICAL (`totalShots` **218** both, all 218 events agreeing on span/frames/white), and the two implementations are **byte-identical in logic** including the strict `<` — there is no median tie-break to find. **`white` and `red` are byte-identical on all 5697 frames; only `marker` differs, on 82.**                                                             |
-| 6   | What causes the marker divergence? (§11E)                      | **`read-pellets.ts:599` ranks backends on `white + red` ALONE and carries `marker` as a passenger**, so `Array.reduce`'s strict `<` **resolves ties to ARRAY ORDER** (numpy) and discards opencv's hit-markers. Unanimous **82/82**: all backends tie on `white+red`; marker seen by opencv only; dump marker == opencv's. Cross-dump (§11I): fires on **7 of 8 dumps, 756 frames**, but only **ONE** ever flips an event's validity. |
+| 6   | What causes the marker divergence? (§11E)                      | **`read-pellets.ts:882` ranks backends on `white + red` ALONE and carries `marker` as a passenger**, so `Array.reduce`'s strict `<` **resolves ties to ARRAY ORDER** (numpy) and discards opencv's hit-markers. Unanimous **82/82**: all backends tie on `white+red`; marker seen by opencv only; dump marker == opencv's. Cross-dump (§11I): fires on **7 of 8 dumps, 756 frames**, but only **ONE** ever flips an event's validity. |
 
 ## 2. Provenance ledger — which numbers carry which weight
 
-| Figure                                                   | Weight                                                                                                                                                                                                                                                                                  |
-| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Categorical **5/5** for both band rules                  | **Strong.** Scored on a plateau definition **anchored to §9C's already-recorded shipped verdict before it was committed** (it reproduces shipped = 2/5, IN on 1 and 5). Not fitted. **4 of the 5 shots are on the uncontested structural crop** — the verdict does not hinge on shot 4. |
-| The hybrid's ceiling **1.8% over 852**, `no_rep` **0**   | **Strong.** Decomposes exactly: 740 banded (== bare `plateau_median`) + 112 fallback (== bit-identical shipped), asserted in code both per-event and pooled.                                                                                                                            |
-| MISSED **58 / 7.0% unchanged**                           | **Strong, and TRUE BY CONSTRUCTION.** `match_shots` keys on event **onsets** (`detected_t0 = [s["start"] …]`), never on totals, so a representative-frame change cannot move it. Also reproduced empirically.                                                                           |
-| Production/audit **equivalence, 0 mismatches**           | **Strong.** A re-implementation on a **different data path** reproducing the audit arm exactly, over 24,685 frames. `avgTotal` **6.1561** matches §12 to 4 dp.                                                                                                                          |
-| Lockstep on a **COMMON input**                           | **Strong, judge-verified independently** — both readers give 218 / 177 / 7.2 / 0.15 on the same band-less `frame_counts`. ⚑ This also re-confirms §11: the shipped 176 was purely the marker channel.                                                                                   |
-| §11's mechanism, **82/82 unanimous**                     | **Strong**, committed instrument (`--backend-marker-audit`) with a pinning fixture. ⚑ It does **NOT** decide whether opencv's marker is a TRUE core hit — only that the reader picks between them **by array order**.                                                                   |
-| ⚑ Owner-pellet loss **6 of 42 after mislock correction** | **MEASURED, and it is the new top lead.** 42 owner pellets: **0 never detected**, **5 rejected by the LIFETIME CAP**, 8 by the radius gate (**7 are the documented shot-4 mislock**, 1 genuine), 29 countable. **Detection is not the problem; the GATES are.**                         |
-| ⚑ **Pooled `avgTotal` 7.07 → 6.16**                      | **The uncomfortable number.** The landing moved the counter FURTHER from any warm target. Faithful, and colder. Do not paper over it.                                                                                                                                                   |
-| ⚑ 112 fallback events, implied mean **5.33**             | **Derived** (from the pooled means, judge-checked arithmetic), not directly measured. Consistent with "events too sparse to hold a single band track". **Their nature is UNEXPLAINED.**                                                                                                 |
-| `CACHE_SELFTEST_EXPECT` **7→6 / 7.1→6.7**                | **Legitimately moved.** It is a **replay-consistency pin** (a `--sweep` combo reproduces the cache's OWN creation-time answer), **NOT a measured-truth assert**. Direction coheres with §9D. Every other committed fixture is byte-identical.                                           |
-| Counter cold bias **0.8–1.6 pellets/10 (~1.08/shot)**    | **Still the problem statement, still OPEN.** One more mechanism eliminated as its cause, and the leading candidate is now the lifetime cap.                                                                                                                                             |
+| Figure                                                   | Weight                                                                                                                                                                                                                                                                                                      |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Categorical **5/5** for both band rules                  | **Strong.** Scored on a plateau definition **anchored to §9C's already-recorded shipped verdict before it was committed** (it reproduces shipped = 2/5, IN on 1 and 5). Not fitted. **4 of the 5 shots are on the uncontested structural crop** — the verdict does not hinge on shot 4.                     |
+| The hybrid's ceiling **1.8% over 852**, `no_rep` **0**   | **Strong.** Decomposes exactly: 740 banded (== bare `plateau_median`) + 112 fallback (== bit-identical shipped), asserted in code both per-event and pooled.                                                                                                                                                |
+| MISSED **58 / 7.0% unchanged**                           | **Strong, and TRUE BY CONSTRUCTION.** `match_shots` keys on event **onsets** (`detected_t0 = [s["start"] …]`), never on totals, so a representative-frame change cannot move it. Also reproduced empirically.                                                                                               |
+| Production/audit **equivalence, 0 mismatches**           | **Strong.** A re-implementation on a **different data path** reproducing the audit arm exactly, over 24,685 frames. `avgTotal` **6.1561** matches §12 to 4 dp.                                                                                                                                              |
+| Lockstep on a **COMMON input**                           | **Strong, judge-verified independently** — both readers give 218 / 177 / 7.2 / 0.15 on the same band-less `frame_counts`. ⚑ This also re-confirms §11: the shipped 176 was purely the marker channel.                                                                                                       |
+| §11's mechanism, **82/82 unanimous**                     | **Strong**, committed instrument (`--backend-marker-audit`) with a pinning fixture. ⚑ It does **NOT** decide whether opencv's marker is a TRUE core hit — only that the reader picks between them **by array order**.                                                                                       |
+| ⚑ Owner-pellet loss **6 of 42 after mislock correction** | **MEASURED, and it is the new top lead.** 42 owner pellets: **0 never detected**, **5 rejected by the LIFETIME CAP**, 8 by the radius gate (**7 are the documented shot-4 mislock**, 1 genuine), 29 countable. **Detection is not the problem; the GATES are.**                                             |
+| ⚠ The lifetime-cap **"20–21 gap"**                       | **IN-SAMPLE.** Measured on ONE recording's labelled set (`marciana` SG/Iron, `marciana-solo.MP4`, 5 shots), and the far side of the gap is defined by only **TWO** non-owner tracks (22, 36). Real, but fitted to that footage — see §3's warning and open item 1 before treating it as a general property. |
+| ⚑ **Pooled `avgTotal` 7.07 → 6.16**                      | **The uncomfortable number.** The landing moved the counter FURTHER from any warm target. Faithful, and colder. Do not paper over it.                                                                                                                                                                       |
+| ⚑ 112 fallback events, implied mean **5.33**             | **Derived** (from the pooled means, judge-checked arithmetic), not directly measured. Consistent with "events too sparse to hold a single band track". **Their nature is UNEXPLAINED.**                                                                                                                     |
+| `CACHE_SELFTEST_EXPECT` **7→6 / 7.1→6.7**                | **Legitimately moved.** It is a **replay-consistency pin** (a `--sweep` combo reproduces the cache's OWN creation-time answer), **NOT a measured-truth assert**. Direction coheres with §9D. Every other committed fixture is byte-identical.                                                               |
+| Counter cold bias **0.8–1.6 pellets/10 (~1.08/shot)**    | **Still the problem statement, still OPEN.** One more mechanism eliminated as its cause, and the leading candidate is now the lifetime cap.                                                                                                                                                                 |
 
 ## 3. The single most important thing to carry forward
 
@@ -86,6 +87,16 @@ whereas this one is measured off the owner labels. **It still has to be killed o
 INDEPENDENT method, never by the arithmetic.** Score it categorically: does raising the cap into the
 20–21 gap recover the 5 known-lost owner pellets **without** admitting the life-22 and life-36 static
 elements?
+
+⚠ **AND THAT CATEGORICAL CHECK IS STILL IN-SAMPLE.** It scores against the same 42-pellet labelled
+set that generated the hypothesis — ONE recording (`marciana` SG/Iron, `marciana-solo.MP4`), with the
+far side of the gap defined by only **TWO** tracks. Categorical-vs-arithmetic is a different
+observable, not an independent sample, and the counts are fragile: with 5 and 2, a single mislabel
+flips the verdict. Independent confirmation means **out-of-sample**: pre-commit the rule first (as
+§10 did), score it in-sample, then validate on the other units' dumps (`noir`, `guilty`, `isabel`)
+and the 30 fps dumps before landing. Nothing guarantees other footage has no non-owner artifact
+living at 14–21 — different HUD states, other units' effects. If labelling a second recording's
+shots is cheap, do it.
 
 Also inherited unchanged: **shot detection is DOWNSTREAM of the crosshair lock**, so any measurement
 conditioned on "detected shots" is conditioned on lock quality.
@@ -122,7 +133,7 @@ Carry forward every trap in the prior three handoffs. New or changed this sessio
 3. ⚑ **`CACHE_SELFTEST_EXPECT` is a REPLAY-CONSISTENCY pin, not a measured-truth assert.** It pins
    "the cache path reproduces the live path". It legitimately moves with an algorithm change.
    Measured-truth asserts still never move without a new measurement.
-4. ⚑ **`max_pellet_frames` has THREE different live values** — `read-pellets.ts:505` scales it
+4. ⚑ **`max_pellet_frames` has THREE different live values** — `read-pellets.ts:787` scales it
    (`max(4, round((13/60) × fps))` → **13** at 60 fps, **7** at 30) and `count-pellets.py`'s standalone
    default is **8**. Use each dump's own. It is a **per-blob track-lifetime cap, NOT an event-span
    budget** — that category error produced a headline ~8× too large.
@@ -190,37 +201,58 @@ every other committed fixture is byte-identical.
    at 22 and 36) is a clean separation. **Settle it categorically** — does raising the cap recover the
    5 known-lost owner pellets without admitting the two statics? — **never by the arithmetic**, which
    has the refuted `center_exclude` shape (§3). ⚑ Note the cap is fps-scaled, so the 30 fps dumps
-   (cap 7) may lose a _larger_ fraction; check them.
-2. **⚑ The 112-event abstention population (13.1%) — UNEXPLAINED.** No lifetime-band track in radius
+   (cap 7) may lose a _larger_ fraction; check them. ⚑ **§3's in-sample caveat binds here**: the
+   20–21 gap is fitted to one recording's two statics — pre-commit the rule, score it in-sample,
+   then **validate out-of-sample** (the other units' dumps, the 30 fps dumps) before landing. ⚑ And
+   a cap raise **perturbs the just-landed hybrid**: the band is `band_lo ≤ life ≤ cap`
+   (`count-pellets.py:517`), so raising the cap widens the band, changes which events carry a band
+   track, and moves the 112-event abstention population, the 852-event assertions, and plausibly
+   `CACHE_SELFTEST_EXPECT` again. **The cap pre-commit must declare its fixture blast radius up
+   front** — which pins are expected to move and which are not — so a moved pin is a predicted
+   outcome, not a post-hoc judgment call.
+2. **⚑ PRODUCTION MISLOCK RATE — unquantified, and in-sample it is the LARGEST gate-loss
+   channel.** Of the 13 discarded owner pellets, **7** were the shot-4 crosshair mislock — more than
+   the cap's 5. The cap analysis rightly excludes them as a documented localization defect, but
+   "documented" is not "rare": if mislocks occur in production footage at anything like 1 shot in 5,
+   the radius gate conditioned on a wrong centre is a **bigger undercount channel than the lifetime
+   cap**, and it sits upstream of every shot-conditioned measurement (§3's inherited note). Item 9's
+   structural re-extraction is the entry point; the question to answer is: **what fraction of
+   production shots are mislocked?**
+3. **⚑ The 112-event abstention population (13.1%) — UNEXPLAINED.** No lifetime-band track in radius
    at all; implied mean total **5.33**. Either they are spurious detections, or real shots whose
    pellets fragmented below the band. **If the latter it is a second undercount channel.** Cheap —
    answerable from committed artifacts, no owner time.
-3. **Track fragmentation** — 70% of tracks end by frame 2 at 30 fps, **64.3% at 60 fps**, when it
+4. **Track fragmentation** — 70% of tracks end by frame 2 at 30 fps, **64.3% at 60 fps**, when it
    should have roughly halved in relative terms. Flagged since 08-01 as a **larger** problem than the
-   raw percentages suggest. Plausibly the same root as item 2 — treat them together.
-4. **The missing-shot channel — which BASIS carries the bias was never decided.** Aggregate 3.9–6.8%
+   raw percentages suggest. Plausibly the same root as item 3 — treat them together.
+5. **The missing-shot channel — which BASIS carries the bias was never decided.** Aggregate 3.9–6.8%
    vs per-event 16.7% / 17.4%. Cluster-merge explains ~1/3 of the arbiter-visible part; the `guilty`
    **f1787** miss is still mechanistically unexplained (n=1 — do not manufacture a cause).
-5. **⚑ Is the TARGET itself right?** §9A made 8.40 an f8–11 **window** count. "Does any marker fade
+6. **⚑ Is the TARGET itself right?** §9A made 8.40 an f8–11 **window** count. "Does any marker fade
    before t0+8?" is unanswered and needs owner labels at the plateau frame. **Part of the measured
    cold bias could be a mis-specified reference rather than a reader defect** — do not assume the whole
-   1.08 is reader error.
-6. **§11's backend-selector defect — recorded, unfixed, OWNER-GATED.** `read-pellets.ts:599` resolves
+   1.08 is reader error. ⚠ **This trap goes live the moment a cap fix warms the counter**: the cap
+   loss (~1.2/shot) arithmetically matches the deficit (~1.08), so a landed cap raise will make the
+   pooled number look solved. **No bias-CLOSED verdict until this reference question is settled** —
+   categorical pellet recovery is the cap change's acceptance criterion, never bias closure.
+7. **§11's backend-selector defect — recorded, unfixed, OWNER-GATED.** `read-pellets.ts:882` resolves
    backend ties by array order on a channel the comparison never inspects. Fixing it changes counts.
    ⚑ Prerequisite: **is opencv's marker = 3 at frame 1565 a true core hit or an opencv false
    positive?** The ⚔ hit-marker triangles are visually checkable in the footage. Do not fix the
-   selector before answering it.
-7. **`debounce_shots` SEGMENTATION — still ⛔ OWNER-GATED, untouched.** `cap_cadence` (~3 LOC) and
+   selector before answering it. ⚑ **But answer it NEXT SESSION** — the prerequisite is a
+   minutes-long visual check of committed footage, and the fix's measured blast radius is ONE event
+   across 8 dumps. The fix stays owner-gated; the cheap question should not ride along with it.
+8. **`debounce_shots` SEGMENTATION — still ⛔ OWNER-GATED, untouched.** `cap_cadence` (~3 LOC) and
    `resplit` (~10 LOC) cut pooled MISSED **7.0% → 4.2% / 4.5%**. ⚑ `cap_cadence = 35` is NOT
    reproducible (the literal 0.9× gives 37/11/−0.019). ⛔ `candA` is REFUTED — do not re-propose.
-8. **60 fps localization instability** — `run21`/`run21b` are template-mode with `cross_positions`
+9. **60 fps localization instability** — `run21`/`run21b` are template-mode with `cross_positions`
    None on 100% of frames; **never re-extracted under `--locate structural`.** Re-extract before
-   designing any fix.
-9. **The generator's radial envelope; Phase 2 steps 4–6** — every generator-derived fidelity number
-   inherits the envelope gap; steps 4–6 remain blocked on the owner's Decision 1 and the outstanding
-   `/logic-gate` pre-op revisions.
-10. **Doc hygiene owed:** `/patch-notes` before `main`, and a `QUEUE.md` reconciliation — items 1, 2
-    and 6 above are not yet filed there.
+   designing any fix. Item 2 (the production mislock rate) hangs off this re-extraction.
+10. **The generator's radial envelope; Phase 2 steps 4–6** — every generator-derived fidelity number
+    inherits the envelope gap; steps 4–6 remain blocked on the owner's Decision 1 and the outstanding
+    `/logic-gate` pre-op revisions.
+11. **Doc hygiene owed:** `/patch-notes` before `main`, and a `QUEUE.md` reconciliation — items 1, 2,
+    3 and 7 above are not yet filed there.
 
 ## 8. Method note for the next judge
 
