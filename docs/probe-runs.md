@@ -4264,3 +4264,197 @@ common, but it is a silent, cosmetic disagreement on `marker` almost everywhere 
 count-changing one only where a `debounce_shots` event's total already sits one core-hit away from the
 valid boundary. This is a generalization of the mechanism, not a new count — the flip rate, the
 mechanism's unanimity, and which side is "correct" are exactly as open as §11F leaves them.
+
+---
+
+#### §12 THE `hybrid_plateau_median` MEASUREMENT — scores the enactment PROPOSAL's own fallback rule against its pre-committed §4 criteria
+
+**2026-08-04.** Executes `docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md` §4, whose six
+acceptance criteria were on disk before this entry's numbers existed. **THIS IS A MEASUREMENT PASS
+ONLY — NOTHING HERE ENACTS.** `debounce_shots` stays untouched in both `count-pellets.py:489` and
+`read-pellets.ts:627`; `hybrid_plateau_median` is a fifth scoring variant living entirely inside the
+already-committed `--policy-score` arm (`POLICY_RULES` / `_POLICY_FRAME_RULES` in
+`scripts/probe/analyze-pellet-tracks.py`), added AFTER and separate from the pre-commit doc's own
+§1.4 enumeration (that doc is unedited). No new fixture's raw data was derived — every number below
+reads `scripts/tests/fixtures/pellets/representative-audit-slice.json`, the same source §9–§11
+already used (CLAUDE.md reuse-before-derive).
+
+**The rule, verbatim from the proposal:** for each event, if it has at least one track whose
+lifetime is in the fps-scaled band and is in radius during the event, select the representative
+frame by `plateau_median` (midpoint of the longest run of frames within ±1 of that run's modal
+total, on the lifetime-gated per-frame series). Otherwise fall back to `shipped_median`, unchanged.
+Implemented in `_ps_score_event`: the `hybrid_plateau_median` branch calls the exact same
+`_ps_plateau_rep` band-gated selector `plateau_median` uses, and on `None` returns the event's own
+`ev["rep"]`/`ev["total"]` fields — the literal `debounce_shots` answer already computed for
+`shipped_median`, not a recomputed copy of it — so the fallback is bit-identical BY CONSTRUCTION,
+and §12's controls (below) assert that construction rather than trust it.
+
+##### §12A — THE SIX CRITERIA
+
+| #   | criterion                                                                                                                  | measured                                                                                                                                          | verdict                    |
+| --- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| 1   | Categorical, 5/5 on the 5 labelled shots, shot 4 on its own crop via `locate`                                              | **5/5** — IN on all five (shot 4 crop=template, rep_offset=10, matching bare `plateau_median` exactly)                                            | **PASS**                   |
+| 2   | Ceiling ≤ 12.4% over the full 852, `n_scored`=852, `no_rep`=0                                                              | `above_ceiling_pct`=**1.8%**, `n_scored`=**852**, `no_rep`=**0**                                                                                  | **PASS**                   |
+| 3   | Missing-shot neutrality: pooled MISSED ≤ shipped's 58/7.0% on the 8-series/830-ammo-shot basis, any increase disqualifying | **58 (7.0%), unchanged** — see §12C for why this is a by-construction result, not a re-measurement                                                | **PASS**                   |
+| 4   | Falsification control: bit-identical to shipped on events with no band track, asserted in code                             | **Held on all 112 fallback events**, asserted via `SystemExit` in `_ps_assert_hybrid_decomposition` (not assumed)                                 | **PASS**                   |
+| 5   | Lockstep on a common input (both implementations fed the same `frame_counts`)                                              | Already resolved, §11 — `debounce_shots` needs no reconciliation; shipped-identity control (the common-input check) still **PASS** on all 5 dumps | **PASS**                   |
+| 6   | `avgTotal` / 8.40 comparison reported only, never a ranking criterion                                                      | `avgTotal` = **6.1561** — reported here and nowhere used to rank                                                                                  | **N/A (compliance check)** |
+
+**All five substantive criteria PASS.** Criterion 6 is a reporting discipline, not a pass/fail
+measurement; it is satisfied by this entry never invoking `avgTotal` or 8.40 to prefer, rank, or
+justify `hybrid_plateau_median` over any other rule.
+
+##### §12B — THE CATEGORICAL CHECK, in full
+
+Reusing `_ps_score_labelled` unmodified — the shot-4 crop selection (`locate` field → `cross_tmpl`
+for the radius gate, `cross` for the rest), the MANDATORY FALSIFICATION CONTROL on `shipped_median`,
+and the §9B cross-check on `lifetime_gated_median`/`plateau_median`'s shot-4 total=7 all still fire
+and all still hold, unmodified — because `hybrid_plateau_median` is just one more entry in
+`_POLICY_FRAME_RULES` that `_ps_score_labelled` already iterates:
+
+| shot      | crop         | `plateau_median` | `hybrid_plateau_median` |
+| --------- | ------------ | ---------------- | ----------------------- |
+| 1         | structural   | +5 IN (tot 5)    | +5 IN (tot 5)           |
+| 2         | structural   | +10 IN (tot 8)   | +10 IN (tot 8)          |
+| 3         | structural   | +6 IN (tot 7)    | +6 IN (tot 7)           |
+| 4         | **template** | +10 IN (tot 7)   | +10 IN (tot 7)          |
+| 5         | structural   | +10 IN (tot 8)   | +10 IN (tot 8)          |
+| **score** |              | **5/5**          | **5/5**                 |
+
+`hybrid_plateau_median` reproduces `plateau_median` frame-for-frame and total-for-total on every one
+of the 5 labelled shots — expected, since none of the 5 labelled events abstains (§10 already
+established `plateau_median` is 5/5 IN, never `None`, on this set), so the hybrid never has occasion
+to fall back within the labelled block. The categorical half therefore cannot discriminate the
+hybrid from bare `plateau_median` — the abstention question is answered by §12D, which uses the full 852.
+
+##### §12C — MISSING-SHOT NEUTRALITY, and the basis it is computed on
+
+**MISSED is computed on detected EVENTS, not on VALID (5..10-total) shots — so a representative-frame
+change cannot alter it, and this section says so plainly rather than manufacturing a delta.**
+
+Read off the code, not assumed: `--merge-audit`'s `shipped` candidate builds `ev` from
+`_merge_events(frame_counts, totals, _merge_spans(totals, fps, "shipped"))` filtered only by
+`lo <= x["start"] < hi` — no `total`/valid filter — then scores it with
+`match_shots(events, [x["start"] for x in ev], slack)` (`analyze-pellet-tracks.py:2845-2874`).
+`match_shots` matches ammo-arbiter shot slots to detector onset TIMES (`x["start"]`, the event's
+segmentation boundary), never to `x["total"]` or `x["rep"]`. `n_valid`/`sum_valid_total` (which feed
+`avgTotal`) are the only fields in that function gated on the 5..10 clamp; `MISSED` is not one of
+them.
+
+`hybrid_plateau_median` changes WHICH FRAME an already-segmented event reports its count from
+(`rep`/`total`); it does not touch `_merge_spans`, `debounce_shots`, or any event's `start`/`end` —
+segmentation is not reachable from the `--policy-score` arm at all, by construction (§9K, §10, §11
+all establish this same boundary). So `x["start"]` for every one of the 884 events across the 8
+scorecard series is identical whether or not `hybrid_plateau_median` exists, and MISSED cannot move.
+
+**Reproduced, not just argued:** re-ran the existing committed arm the §4 criterion names
+(`--merge-audit`, reusing the already-cached `<dump>-ammo.json` payloads §8/§9/§10 built, no new raw
+data) over the same 8 series / 830 ammo shots §8E/§8F used:
+
+```
+rule            MISSED      %  SPUR?  detected  valid  avgTotal   change
+shipped             58   7.0%      5       884    716    7.3045      0.0
+```
+
+**Exact reproduction of the pinned 58/7.0%.** Since `hybrid_plateau_median` cannot move `x["start"]`
+for any event (the mechanism above), this is not a coincidence to be re-measured after every future
+change — it is the direct consequence of representative-frame selection being strictly downstream of
+segmentation. **PASS, 0 pp change, by construction and reproduced.**
+
+##### §12D — THE 740/112 DECOMPOSITION — the free, strong internal check
+
+The proposal's own prediction: `hybrid_plateau_median` should reproduce bare `plateau_median` EXACTLY
+on the 740 events that have a band track in radius, and bare `shipped_median` EXACTLY on the other
+112 that do not. **Asserted event-by-event in code** (`_ps_assert_hybrid_decomposition`, called from
+`_ps_score_dump` for every dump on every `--policy-score` / `--policy-score-selftest` run — not a
+separate opt-in check):
+
+- On every event where `_ps_plateau_rep` returns `None` (no band track in radius): raises
+  `SystemExit` unless `hybrid`'s `rep` AND `total` equal the event's own shipped `rep`/`total`
+  exactly (this IS the falsification control, criterion 4).
+- On every event where it returns a frame: raises `SystemExit` unless `hybrid`'s `rep`/`total` equal
+  bare `plateau_median`'s `rep`/`total` exactly, computed via the same `_ps_score_event` call rather
+  than a second implementation.
+
+Pooled across all 5 dumps (`_ps_assert_decomposition_matches_plateau`, called from both `policy_score`
+and `policy_score_selftest`, also `SystemExit` on mismatch):
+
+```
+decomposition: 740 banded (== bare plateau_median) + 112 fallback (== bit-identical shipped) = 852
+```
+
+**740 banded + 112 fallback = 852, exactly matching bare `plateau_median`'s pooled `n_scored`=740 /
+`no_rep`=112 from §10D.** Both the per-event and the pooled assertion held on every run in this
+entry — no `SystemExit` fired. This is the internal check the proposal names as "free and strong":
+it does not depend on any external ground truth, only on the hybrid's own construction being
+correctly implemented, and it is now exercised on every future `--policy-score-selftest` run rather
+than a one-time claim.
+
+##### §12E — Controls
+
+- **Shipped-identity control**: PASS on all 5 dumps, reasserted at the top of both `policy_score()`
+  and `policy_score_selftest()` before any row is scored (unchanged from §10A/§10I).
+- **Falsification control (criterion 4)**: PASS, asserted in code, held on all 112 fallback events —
+  see §12D.
+- **Decomposition check**: PASS, asserted in code both per-event and pooled — see §12D.
+- **§10B's two hard controls** (MANDATORY FALSIFICATION CONTROL on `shipped_median`'s shot-4
+  `rep_offset`=3/OUT; the §9B cross-check that `lifetime_gated_median`/`plateau_median` both report
+  `total`=7 on shot 4) are unmodified and still fire on every run, since `hybrid_plateau_median` was
+  added without touching `_ps_score_labelled`'s existing logic.
+- **`_expected` provenance**: `policy_score` (the fixture writer) and `policy_score_selftest` (the
+  replay) call the identical `_ps_score_labelled` / `_ps_score_dump` / `_ps_pool_dumps` /
+  `_ps_assert_decomposition_matches_plateau` path, so `_expected` can only ever be the source
+  fixture's own numbers — unchanged convention from §10I.
+- **No other fixture's `_expected` moved.** `git status` after this entry's work shows exactly one
+  fixture touched: `scripts/tests/fixtures/pellets/policy-score-slice.json` (this arm's own score
+  fixture, expected to regenerate per the task's own instructions). `representative-audit-slice.json`
+  and every other committed fixture are byte-identical to before this entry.
+- **Lockstep (criterion 5)**: already resolved by §11 — the `h4-marciana` divergence is a
+  marker-channel defect independent of `debounce_shots`, not a lockstep break. The common-input
+  requirement §11G names is satisfied by the shipped-identity control re-running on every
+  `--policy-score` invocation: it feeds both the local span rebuild and (transitively, via the
+  already-committed dump) the shipped TypeScript output the SAME `frame_counts`.
+- **`scripts/probe/pellet-selftest.sh` green, true exit status** (not through `| tail`): confirmed —
+  `bash scripts/probe/pellet-selftest.sh; echo $?` → `0`, "pellet-selftest: all passed", including
+  `--policy-score-selftest` among the 19 tool selftests it runs.
+- **`npm run typecheck` clean**: confirmed. No TypeScript file was touched by this entry —
+  `read-pellets.ts:627` is unmodified, per the task's own constraint.
+
+##### §12F — n and scope
+
+Identical to §10J: 5 labelled shots on one clip, one unit (`marciana`, SG/Iron), for the categorical
+half (§12B); 852 unlabelled events across 5 dumps and 4 units (`marciana` SG/Iron, `isabel`,
+`guilty`, `noir`) for the ceiling and decomposition halves (§12A criterion 2, §12D); 8 ammo series /
+830 ammo shots across the same 4 units plus 4 additional short 60 fps re-extractions, for the
+missing-shot arbiter (§12C) — the same basis §8E/§8F/the PROPOSAL's own §4 criterion 3 name.
+
+**NOTHING HERE ENACTS A CHANGE.** `debounce_shots` is UNTOUCHED in both `count-pellets.py` and
+`read-pellets.ts`; `hybrid_plateau_median` is a local scoring variant living entirely inside the
+`--policy-score` arm of `scripts/probe/analyze-pellet-tracks.py`. No guard, gate, threshold or
+default in the shipped reader was changed; no `DECISIONS.md` entry was edited; no verdict beyond
+this measurement log was stamped. Whether to LAND the hybrid in the shipped pipeline — the design
+the proposal describes — is a separate, owner-gated implementation pass that this entry's PASS
+verdicts make possible but do not themselves authorize.
+
+##### §12G — Instrument and reproduction
+
+`scripts/probe/analyze-pellet-tracks.py --policy-score` (now scoring five rules, extending
+`POLICY_RULES`/`_POLICY_FRAME_RULES`), self-validated against the regenerated
+`scripts/tests/fixtures/pellets/policy-score-slice.json` and already registered in
+`scripts/probe/pellet-selftest.sh` (no new selftest flag needed — `hybrid_plateau_median` rides the
+existing `--policy-score-selftest`).
+
+```sh
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --policy-score
+# replay the committed slice -- no images, no subprocess, no tracks.json:
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --policy-score-selftest
+# criterion 3's missing-shot basis, reusing the already-cached ammo-series payloads (§8J):
+B=/Users/maxwellsutton/nikke-sim/scratchpad/pellets/_missingshot_tmp
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --merge-audit \
+  $B/h4-isabel-ammo.json $B/h4-guilty-ammo.json $B/h4-marciana-ammo.json $B/g2-noir-ammo.json \
+  $B/gt-ammo-series.json $B/i2-marciana-60fps-ammo.json $B/i3-noir-far-60fps-ammo.json \
+  $B/i3-noir-near-60fps-ammo.json \
+  --merge-audit-fps 30 30 30 30 60 60 60 60 --merge-audit-slack 8 8 8 8 6 6 6 6
+# the whole reader toolchain, including this arm's selftest, with a TRUE exit status:
+bash scripts/probe/pellet-selftest.sh; echo $?
+```
