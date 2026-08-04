@@ -1,0 +1,227 @@
+{
+  "slug": "rapunzel-pure-grace",
+  "leakDetected": null,
+  "override": {
+    "slug": "rapunzel-pure-grace",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 20.59
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 20.59
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 1
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "requiresShielded": true,
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 10.41
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 10.13,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 15.24,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Current HP ▼ 2% every 1 sec continuously.",
+        "Restores Shield HP equal to 3.16% of the skill user's final Max HP every 1 sec continuously."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1 team Attack Damage 10.41%: uptime assumed 100% from t=1s. The kit gates it on 'Full Charge maintained for more than 1 sec', which has NO engine analogue (no charge-hold state on a charge weapon — the sim charges and releases). Real uptime is bounded by how much of the fight she actually holds a completed charge; reload (141f datamined) and release windows break the hold. This is the OPTIMISTIC bound, not a measured value.",
+      "Both shield lines are authored target `self`, following the literal 'Affects self' clause, even though the prose says the shield is shared and protects all allies. Self-targeting satisfies this kit's own requiresShielded gate; if the shared shield also fires ALLY `shielded` triggers in game, the target must widen to `allies`. Widening is the over-crediting direction, so the conservative read is shipped.",
+      "'Current HP ▼ 2% every 1 sec' and 'Restores Shield HP … every 1 sec' are unmodeled: v1 models no HP pool and no shield HP pool, and the boss deals no damage, so both are no-ops at scope. The shield restore is deliberately NOT re-emitted as a per-second `shield` effect — that would fire `shielded` triggers ~180× over a fight and over-credit any shield-synergy consumer.",
+      "This kit carries NO damage effects. Her contribution is her own weapon damage plus the two team Attack Damage buffs (10.41% continuous + 15.24% for 10s on her own burst), both additive in the Damage Up bucket and therefore diluted by other support buffs.",
+      "Burst self Max HP ▲ 10.13% is kept for kit completeness; it is offensively inert unless a Max-HP→ATK conversion is present, and ally-granted Max HP does not feed a teammate's atkOfMaxHpPct."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. SR/Iron/Defender/Burst I charge weapon (ammo 6, chargeFrames 60, reloadFrames 141, hitsPerShot 1 — all datamined ⚑, cadence fields are the known-unreliable class). Offensive content is exactly two team Attack-Damage buffs: a continuous 10.41% (skill1, gated on the owner carrying a shield — self-supplied at battle start and re-supplied on her own burst cast) and a 15.24% burst-cast buff for 10 sec. Both shield lines are authored as `shield` effects with maxHpPct recorded for kit completeness (no shield HP pool at scope); they are load-bearing because they satisfy this kit's own requiresShielded gate and can drive shield-synergy consumers. The full-charge self-heal is emitted as a recovery event (no HP amount modeled) so on-recovery consumers (e.g. heal-gated ally buffs) fire per shot. ⚑ The 'Full Charge maintained for more than 1 sec' activation is modeled as an interval-1s permanent grant with 100% uptime after t=1s — see caveats; the true duty cycle is unmeasured. Trigger fidelity: 'when using Burst Skill' is keyed to burstCast (this unit's OWN cast), not fullBurstEnter."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at the start of battle",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger passive → shield{maxHpPct:20.59}, target self, no durationSec ('This effect is continuous' = permanent)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Creates a shared Shield equal to 20.59%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "shield effect; % of caster final Max HP recorded. Absorption itself is inert at scope (boss deals no damage) but the shield state feeds requiresShielded + `shielded` triggers"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when using Burst Skill",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast (own cast, NOT fullBurstEnter — she is Burst I and the clause reads 'using Burst Skill') → second shield{maxHpPct:20.59}, target self"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge maintained >1 sec + Shield",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "gate → requiresShielded:true on the block; the charge-hold half has no engine primitive, approximated by trigger interval{sec:1} (first fire t=1s) ⚑"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Attack Damage ▲ 10.41% continuously",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff{stat:'attackDamagePct', value:10.41}, no durationSec (continuous), target allies ('Affects all allies' — includes self)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when attacking with Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired — every pull of a charge SR is a full-charge release in the sim; target self ⚑ (assumes no partial-charge shots)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recovers 2% of the skill user's",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal{ticks:1} — emits a recovery event per shot (no HP amount modeled); NOT skipped on isolation per the tandem rule (drives on-recovery ally buffs)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Current HP ▼ 2% every 1 sec continuously",
+      "status": "SKIPPED",
+      "effectOrReason": "self-HP cost; v1 models no HP pool and nothing consumes the owner's current HP. Verbatim in unmodeled.skill2"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Restores Shield HP equal to 3.16%",
+      "status": "SKIPPED",
+      "effectOrReason": "no shield-HP pool; the shield is already permanent at scope, so a restore is a no-op. Deliberately not re-emitted as a per-second shield effect (would over-fire `shielded` triggers). Verbatim in unmodeled.skill2"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max HP ▲ 10.13% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff{stat:'targetMaxHpPct', value:10.13, durationSec:10}, target self, trigger burstCast — self Max HP ▲% keyed to the target's OWN Max HP"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage ▲ 15.24% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff{stat:'attackDamagePct', value:15.24, durationSec:10}, target allies, trigger burstCast (burst-slot line with no activation clause = on cast)"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[2].trigger + duty cycle of the 10.41% Attack Damage buff",
+      "estimate": "interval{sec:1}, permanent from t=1s → ~99% fight uptime (optimistic bound). A realistic hold-aware estimate could be materially lower.",
+      "reasoning": "'Full Charge maintained for more than 1 sec' is a HELD-STATE condition; the engine has no charge-hold state — a charge weapon charges (60f) and releases. Nothing in the kit text states the uptime, so any number here is outside the input domain. True onset is also ≥ ~2s (1s charge + >1s hold), not 1s, and the condition presumably lapses across each release and each 141-frame reload.",
+      "recipe": "Focus recording of a comp containing rapunzel-pure-grace: read the ally buff icon/timeline for the 10.41% Attack Damage entry and measure its ON fraction over a 180s fight (or A/B a teammate's popup values with the buff icon present vs absent). Convert to an uptime fraction and either scale value×uptime or model the real trigger; pin the result as a vitest fixture."
+    },
+    {
+      "field": "skill1[0].target / skill1[1].target (shield scope)",
+      "estimate": "self (literal 'Affects self'); alternative is allies (prose: 'shared Shield … protects all allies')",
+      "reasoning": "The structural 'Affects …' clause says self, but the effect text says the shield is shared across all allies. Which entity the sim should treat as SHIELDED determines whether ally `shielded` triggers fire. Self is the conservative read (widening only ever over-credits).",
+      "recipe": "Team rapunzel-pure-grace with a unit whose kit has an 'if a Shield is set / when shielded' gate and no other shield source; check in-game whether that unit's shield-gated effect goes live from rapunzel's shield alone. If yes, retarget both shield blocks to {kind:'allies'}."
+    },
+    {
+      "field": "skill2[0].trigger ('when attacking with Full Charge')",
+      "estimate": "shotFired — every shot counts as a Full Charge attack",
+      "reasoning": "The sim fires charge weapons at full charge, so shotFired and 'full-charge attack' coincide under the current engine model. If the engine ever models partial-charge releases (or the release-latency window causes a non-full release), this over-fires the recovery event.",
+      "recipe": "Only matters when a teammate has an on-recovery consumer; verify by counting that consumer's proc rate against rapunzel's shot count in a focus recording (shots = magazine 6 × reload cycles)."
+    },
+    {
+      "field": "base cadence tuple (ammo 6 / chargeFrames 60 / reloadFrames 141 / hitsPerShot 1)",
+      "estimate": "as datamined",
+      "reasoning": "ALWAYS-⚑: rate_of_fire / reloadFrames are the known-unreliable datamine fields, and every downstream quantity here (shot count → heal/recovery-event count → any charge-hold duty cycle) is derived from them.",
+      "recipe": "Ammo-counter read on a focus recording: count shots between reload starts and time one full reload in frames; compare to the datamined values before trusting shot-count-derived numbers."
+    },
+    {
+      "field": "skill1 block ordering vs requiresShielded evaluation",
+      "estimate": "shield blocks authored FIRST in skill1 so the gate sees the battle-start shield",
+      "reasoning": "requiresShielded is evaluated at trigger time; the gated buff uses interval{sec:1} (first fire t=1s) specifically so it cannot race the frame-0 shield application. Not a kit value, but a modeling dependency a reviewer should know is deliberate.",
+      "recipe": "Engine-level: assert via cfg.onEvent that a buffApply with stat 'attackDamagePct' value 10.41 exists at/after frame 60 in a comp containing this unit (harness test, no measurement needed)."
+    }
+  ],
+  "model": "claude-opus-5"
+}

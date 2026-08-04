@@ -5239,6 +5239,47 @@
       ],
       "board": null
     },
+    "rapunzel-pure-grace": {
+      "name": "Rapunzel: Pure Grace",
+      "burst": "I",
+      "weapon": "SR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/rapunzel-pure-grace.json + scripts/kit-autonomy/manual-review/rapunzel-pure-grace.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "■ Activates only when Full Charge is maintained for more than 1 sec while a Shield is set in front of this unit. Affects self.\nCurrent HP ▼ 2% every 1 sec continuously.\nRestores Shield HP equal to 3.16% of the skill user's final Max HP every 1 sec continuously."
+        ],
+        "burst": []
+      },
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; fresh build — shared shields proven as real events via a naga-type 'shielded' consumer; self-supplied requiresShielded gate proven live (strip shields -> 10.41 buff dies); blind override 4/6 blocks identical",
+      "residual": "S1-c hold-gate uptime flag (always-on upper bound ~100% real play; in-engine hold primitive missing — recipe: focus recording, buff-icon uptime vs shield icon); allies-target shared shield corroborated by 2 agents + naga mechanics but structurally inferred (recipe: one naga+Rapunzel:Pure Grace recording); no recorded comp yet (MODEL_ONLY)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "caveats": [
+        "skill1 SHARED SHIELDS (battle-start passive + on-burstCast re-shield): event/state only — the engine 'shield' effect carries NO shield-HP pool (v1 boss deals no damage). Each application emits a shielded event to ALL allies (fires their 'shielded' triggers, e.g. a naga-type consumer) and opens the target's shield-state window (shieldedUntilFrame); no durationSec = permanent at scope (label precedent). maxHpPct 20.59 (% of the CASTER's final Max HP) is recorded for kit-completeness only.",
+        "The '■ Affects self' header on both shield lines conflicts with the body text 'shared Shield … that protects all allies' — encoded target ALLIES (the shared shield reaches every ally; self-only would be the header-echo trap and would never fire ally 'shielded' triggers).",
+        "⚑ skill1 ATTACK DAMAGE ▲10.41% (all allies, 'continuously') is CALIBRATED on UPTIME, kit-literal on value/target/stat. Encoded passive (frame 0, no expiry = always-on) behind requiresShielded. The SHIELD half of the gate is real and SELF-SUPPLIED: her own battle-start shield opens her own shield window, so the gate passes at frame 0 — stripping her shield blocks kills the buff (proven in the unit spec, group G). The 'Full Charge maintained for more than 1 sec' half has NO engine primitive: her SR reaches full charge at chargeFrames 60 = exactly 1s and the sim fires at full charge, so a literal read gives ~0% in-engine uptime while real play (hold-to-aim between shots, shield self-supplied) is ~100%. ESTIMATE: ~100% real-play uptime; the always-on encoding is the upper bound and matches play. RECIPE: a rapunzel-pure-grace focus recording — compare the buff-icon uptime of the 10.41% Attack Damage grant against her shield icon. TIER: Tier-2 state gate (label 'Delusion is permanent in the no-incoming-damage sim' precedent for the always-on half).",
+        "skill2 SELF-HEAL (2% of caster final Max HP per full-charge attack): trigger shotFired — SR = one full charge per trigger pull (helm/liberalio precedent), so 'attacking with Full Charge' fires once per shot. Event-only: the engine heal carries NO HP amount and the heal targets SELF — her own kit has no 'recovery' trigger, so the self-recovery events are a downstream no-op. Modeled for kit-completeness; the unit spec pins that it moves no damage (neutrality groups) and reaches NO ally (crown's recovery consumer fires identically with and without it).",
+        "⚑ skill2 GATED HP-DRAIN / SHIELD-HP-RESTORE line is UNMODELED (verbatim in `unmodeled`): 'Current HP ▼ 2% every 1 sec' needs an HP pool to drain and 'Restores Shield HP equal to 3.16% …' needs a shield-HP pool — neither exists in a DPS sim (no incoming damage, shields never deplete). Defensive/damage-inert; ESTIMATE of board impact: zero damage. RECIPE: requires an HP-pool + shield-HP-pool model before it can be enacted. Deliberately NOT encoded as a repeating 1 Hz 'shield' effect — that would re-fire every ally's 'shielded' trigger once per second and massively over-credit shield-synergy teammates.",
+        "burst SELF MAX HP ▲10.13% for 10s: targetMaxHpPct on self (own-Max-HP basis; label precedent), resolved by the engine to a maxHpFlat grant of (10.13/100)×her final Max HP. Offensively INERT: she has no atkOfMaxHpPct conversion and v1 has no HP pool — proven by totals-equality in the unit spec (group B4). Kit-completeness only.",
+        "burst TEAM ATTACK DAMAGE ▲15.24% for 10s: her load-bearing damage line — attackDamagePct (Damage Up bucket) on all allies including self, keyed to HER OWN burstCast (never fullBurstEnter; the two-B1 fixture with liter as decoy pins the keying). The shield re-application on the same cast is a separate skill1-slot block (L2 — the line lives in the skill1 prose), matching the kit's line split.",
+        "Damage footprint = exactly the two Attack Damage lines (S1 10.41% permanent gated team buff + burst 15.24% 10s team buff). Everything else (shields, self-heal, self Max HP) is defensive/event-only: the unit spec proves the residue byte-identical to the bare weapon whenever the damage lines are absent (groups N1/N2)."
+      ]
+    },
     "raven": {
       "name": "Raven",
       "burst": "III",
