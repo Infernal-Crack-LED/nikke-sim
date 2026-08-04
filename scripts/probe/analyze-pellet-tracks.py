@@ -27,6 +27,7 @@ shipped detector. Statistics from tracks.json and pixels from the PNGs are separ
 import argparse
 import collections
 import importlib.util
+import inspect
 import json
 import math
 import os
@@ -4107,12 +4108,21 @@ _POLICY_FRAME_RULES = ("shipped_median", "lifetime_gated_median", "plateau_media
                        "hybrid_plateau_median")
 
 
-def _ps_band(fps, max_pellet_frames):
-    """The fps-scaled owner-pellet lifetime band [lo, max_pellet_frames] -- the same `lo` §9G's
-    lifetime census uses (8 frames at 60 fps, scaled down at 30; `max_pellet_frames` is each dump's
-    OWN value, never hardcoded -- trap 4)."""
+def _ps_band(fps, max_pellet_frames, band_hi=None):
+    """The fps-scaled owner-pellet lifetime band [lo, band_hi] -- the same `lo` §9G's lifetime
+    census uses (8 frames at 60 fps, scaled down at 30; `max_pellet_frames` is each dump's OWN
+    value, never hardcoded -- trap 4).
+
+    `band_hi` (docs/handoffs/2026-08-04-lifetime-cap-PRECOMMIT.md §3.8, pre-op gate revision 7) is
+    an OPTIONAL third parameter, STRICTLY ADDITIVE: it defaults to `max_pellet_frames`, so every
+    existing caller (six besides this definition -- the labelled/dump policy-score arms and the
+    hybrid-landing-audit's equivalence + TS-lockstep arms) is behaviourally unchanged. Only
+    `--cap-score` ever passes a non-None value, to decouple the counted-pellet band's upper bound
+    from the `pellet_ids` gate `max_pellet_frames` also drives (the pre-commit's §1: this is a
+    SEPARATE upper bound for the band only, never a recomputation of the cap itself)."""
     lo = max(1, round(REP_OWNER_LIFE_LO_60FPS * fps / 60.0))
-    return lo, max_pellet_frames
+    hi = max_pellet_frames if band_hi is None else band_hi
+    return lo, hi
 
 
 def _ps_band_totals(radius_tracks, band):
@@ -5455,6 +5465,504 @@ def hybrid_landing_audit_selftest():
     return 0 if ok else 1
 
 
+# ============================================================
+# THE LIFETIME-CAP `band_hi` SCORE (docs/handoffs/2026-08-04-lifetime-cap-PRECOMMIT.md) -- a
+# MEASUREMENT-ONLY pass. Scores a DECOUPLED band upper bound (`band_hi`, the counted-pellet band's
+# own ceiling -- NOT a raised `max_pellet_frames`, which also gates `pellet_ids`/segmentation and
+# is explicitly NOT what this arm measures, per the pre-commit's §1) against the pre-committed
+# candidate set {control, 19, 20, 21} (60 fps basis, fps-scaled per dump: `round(x * fps / 60)`,
+# Python `round()` -- the language this instrument runs in; §2.2's own table records where that
+# disagrees with the JS `Math.round()` the shipped 30 fps cap was actually computed with).
+#
+# Reads REP_AUDIT_FIXTURE directly, same precedent as `--policy-score` and `--hybrid-landing-audit`
+# -- no new raw tracks.json, no re-extraction, no owner time (CLAUDE.md reuse-before-derive; the
+# pre-commit's §1 item 3 is explicit that a coupled candidate would need exactly that and is out of
+# scope here).
+#
+# NOTHING HERE ENACTS. `debounce_shots`, `count-pellets.py:514`/`:517` and `read-pellets.ts:787`
+# are never touched or reachable from this arm.
+# ============================================================
+CAP_SCORE_FIXTURE = "scripts/tests/fixtures/pellets/cap-score-slice.json"
+# The pre-committed candidate set (pre-commit §2.2) -- 60 fps basis. "control" means band_hi = that
+# dump's OWN stored `max_pellet_frames` (§3.7 -- never recomputed), i.e. no change from today.
+CAP_CANDIDATES = ("control", 19, 20, 21)
+# §2.3 -- reject above 6.2% (the shipped `plateau_median` anchor this hybrid rule replaced).
+CAP_CEILING_PCT_MAX = 6.2
+# §2.4 -- 2x the in-sample rate (5/5 = 1.00 per event), the thread's own precedent verbatim from
+# the representative-frame pre-commit's §1.2.
+CAP_CORRIDOR_MAX_PER_EVENT = 2.00
+# §2.4 -- the 4 out-of-sample dumps, identified by their `tracks` name prefix. `groundtruth-f811-v4`
+# (the labelled clip's own full-clip dump) is EXCLUDED from this set -- it is the SAME recording
+# the 42-owner corridor was derived from, hence in-sample -- but stays IN the §2.3 pooled-852
+# denominator, which pools all 5 dumps.
+CAP_OUT_OF_SAMPLE_PREFIXES = ("h4-marciana", "h4-isabel", "h4-guilty", "g2-noir")
+
+_CS_DUMP_PUBLIC_KEYS = ("dump", "fps", "band_hi", "n_events", "n_scored", "no_rep", "sum_total",
+                       "above_ceiling", "above_ceiling_pct", "banded", "fallback")
+
+
+def _cs_scaled_band_hi(candidate, fps, max_pellet_frames):
+    """Resolve one 60 fps-basis candidate to THIS dump's own band_hi. "control" is the dump's OWN
+    STORED `max_pellet_frames`, verbatim -- never recomputed (§3.7: `round(13*30/60)` is 6 in
+    Python, but the 30 fps dumps store 7, the JS half-up value read-pellets.ts:787 actually
+    computed; a Python recomputation would silently shift the control by one frame). Every other
+    candidate is fps-scaled by the shipped formula by this instrument's OWN Python `round()` (the
+    language it runs in; §2.2's table records where JS `Math.round()` would disagree -- only at
+    `band_hi=21` on a 30 fps dump, recorded but never promotable for exactly that reason)."""
+    if candidate == "control":
+        return max_pellet_frames
+    return round(candidate * fps / 60.0)
+
+
+def _cs_assert_cap_values(dumps):
+    """§3.7 -- the stored per-dump `max_pellet_frames` must be 13 at 60 fps and 7 at 30 fps. Not a
+    tautology: this is the JS half-up value (`round(6.5)` is 6 in Python, 7 in
+    `Math.round`/read-pellets.ts:787), so asserting the STORED value (rather than recomputing it)
+    is the only way this instrument can avoid silently shifting the control by one frame."""
+    want_by_fps = {60.0: 13, 30.0: 7}
+    for d in dumps:
+        want = want_by_fps.get(d["fps"])
+        if want is None:
+            raise SystemExit(f"--cap-score: unexpected fps {d['fps']} on {d['tracks']} -- only 60 "
+                             "and 30 are known to this validity check (§3.7).")
+        if d["max_pellet_frames"] != want:
+            raise SystemExit(f"--cap-score: STORED max_pellet_frames DRIFTED on {d['tracks']} -- "
+                             f"expected {want} at {d['fps']} fps, got {d['max_pellet_frames']}. "
+                             "§3.7: this value must never be recomputed in Python.")
+
+
+def _cs_assert_fidelity_premises():
+    """§3.9 (pre-op gate revisions 3/4) -- pin the two structural premises the gate verified by
+    inspection: `radius_tracks` is WHITE-ONLY (`_rep_slim_dump` skips `t["is_red"]` before a
+    track's runs are ever built) and its runs are IN-RADIUS-ONLY (built via `_rep_radius_runs`, not
+    a track's raw alive span). Both HOLD today. The control arm (`band_hi = max_pellet_frames`)
+    cannot itself catch a regression in either -- corridor tracks are invisible there by
+    construction -- so this is a static check on the FIXTURE-BUILDING CODE, tripped if a future
+    `--representative-audit` regeneration changes either function's shape, not a check on the data
+    `--cap-score` itself reads (which no longer carries a colour field to check against)."""
+    slim_src = inspect.getsource(_rep_slim_dump)
+    if "is_red" not in slim_src or "continue" not in slim_src:
+        raise SystemExit("--cap-score: FIDELITY PREMISE FAILED -- _rep_slim_dump no longer "
+                         "appears to skip is_red tracks before building radius_tracks; it may no "
+                         "longer be white-only (§3.9, pre-op gate revision 3).")
+    if "_rep_radius_runs" not in slim_src:
+        raise SystemExit("--cap-score: FIDELITY PREMISE FAILED -- _rep_slim_dump no longer "
+                         "appears to build runs via _rep_radius_runs; radius_tracks may no longer "
+                         "be in-radius-only (§3.9, pre-op gate revision 4).")
+    runs_src = inspect.getsource(_rep_radius_runs)
+    if "_rep_in_radius" not in runs_src:
+        raise SystemExit("--cap-score: FIDELITY PREMISE FAILED -- _rep_radius_runs no longer "
+                         "appears to gate on _rep_in_radius; its runs may no longer be "
+                         "in-radius-only (§3.9, pre-op gate revision 4).")
+
+
+def _cs_assert_shot_red_event_fixed(dumps):
+    """§3.10 (pre-op gate risk flag 3) -- the core-hit flag folded into `total` must be read from
+    STORED `marker` counts, not re-derived per candidate (the "widening a band can only raise
+    above_ceiling_pct" monotonicity claim depends on it). `_ps_red_flag` takes no band argument at
+    all, so this holds by construction; spot-checked here on every shipped event against a live
+    recomputation, so a future refactor that threads `band_hi` into it would trip this assert."""
+    for d in dumps:
+        frame_counts, _radius_tracks = _rep_expand_dump(d)
+        for ev in _ps_events(frame_counts, d["fps"]):
+            direct = _ps_red_flag(frame_counts, 0, ev["start"], ev["end"])
+            shipped = 1 if ev["total"] - ev["white"] else 0
+            if direct != shipped:
+                raise SystemExit(f"--cap-score: SHOT_RED NOT EVENT-FIXED on {d['tracks']} event "
+                                 f"[{ev['start']},{ev['end']}) -- recomputed red flag {direct} != "
+                                 f"the shipped event's own {shipped} (§3.10).")
+
+
+def _cs_assert_monotonic(dumps):
+    """§3 validity check 2 -- band membership must be monotone non-decreasing in `band_hi`: a track
+    admitted at candidate 19 is admitted at 20 and 21 too. Checked per dump on the ACTUAL scaled
+    band_hi values (candidate order, not sorted -- a scaling bug could reorder them) and the ACTUAL
+    admitted white-track count from the data, not assumed from the `<=` arithmetic alone."""
+    for d in dumps:
+        fps, max_pf = d["fps"], d["max_pellet_frames"]
+        scaled = [(c, _cs_scaled_band_hi(c, fps, max_pf)) for c in CAP_CANDIDATES]
+        vals = [v for _, v in scaled]
+        if vals != sorted(vals):
+            raise SystemExit(f"--cap-score: MONOTONICITY FAILED on {d['tracks']} -- scaled "
+                             f"band_hi {scaled} is not non-decreasing in candidate order.")
+        _frame_counts, radius_tracks = _rep_expand_dump(d)
+        lo = _ps_band(fps, max_pf)[0]
+        prev = -1
+        for cand, hi in scaled:
+            n = sum(1 for life, _runs in radius_tracks if lo <= life <= hi)
+            if n < prev:
+                raise SystemExit(f"--cap-score: MONOTONICITY FAILED on {d['tracks']} candidate "
+                                 f"{cand} (band_hi={hi}) -- admitted white-track count {n} < "
+                                 f"previous candidate's {prev}.")
+            prev = n
+
+
+def _cs_consistency_2_1(fx):
+    """§2.1 -- IMPLEMENTATION CONSISTENCY CHECK, in-sample (n=42 owner pellets, ONE clip). ⚑ CARRIES
+    NO EVIDENTIAL WEIGHT (pre-op gate risk flag 1): the corridor [19,21] is DERIVED from this same
+    pinned population, so a PASS here confirms only that this arm reads the right population, never
+    that the candidate is correct out-of-sample. Read straight from `_expected.lifetime_summary` --
+    the population §2.1 is defined against -- not recomputed from radius_tracks a second time."""
+    ls = fx["_expected"]["lifetime_summary"]
+    band_lo = ls["band_lo"]
+    owner_hist = {int(k): v for k, v in ls["owner_histogram"].items()}
+    owner_total = sum(owner_hist.values())
+    statics = ls["non_owner_at_or_above_band"]
+    fps = fx["labelled"]["fps"]
+    max_pf = fx["labelled"]["params"]["max_pellet_frames"]
+    per_candidate = {}
+    for cand in CAP_CANDIDATES:
+        hi = _cs_scaled_band_hi(cand, fps, max_pf)
+        admitted = sum(v for life, v in owner_hist.items() if band_lo <= life <= hi)
+        statics_admitted = [s for s in statics if band_lo <= s <= hi]
+        per_candidate[str(cand)] = {
+            "band_hi": hi, "owner_admitted": admitted, "owner_total": owner_total,
+            "all_owner_recovered": admitted == owner_total,
+            "statics_admitted": statics_admitted,
+            "pass": admitted == owner_total and not statics_admitted,
+        }
+    return {"band_lo": band_lo, "owner_total": owner_total, "statics": statics,
+           "per_candidate": per_candidate}
+
+
+def _cs_score_dump_candidate(d, candidate):
+    """One dump, one candidate: `hybrid_plateau_median` scored with THIS candidate's band_hi.
+    Reuses `_ps_events` / `_ps_band_totals` / `_ps_score_event` / `_ps_assert_hybrid_decomposition`
+    VERBATIM (the same functions `--policy-score`'s control arm uses) -- only the band's upper
+    bound differs from `_ps_score_dump`, via `_ps_band`'s new optional third parameter. Keeps
+    `events`/`band_totals` in the return for §2.4/§6 reuse (Python-side only -- never serialized;
+    `_cs_dump_public` is the JSON-safe projection)."""
+    fps, max_pf = d["fps"], d["max_pellet_frames"]
+    frame_counts, radius_tracks = _rep_expand_dump(d)
+    events = _ps_events(frame_counts, fps)
+    hi = _cs_scaled_band_hi(candidate, fps, max_pf)
+    band = _ps_band(fps, max_pf, hi)
+    band_totals = _ps_band_totals(radius_tracks, band)
+    decomp = _ps_assert_hybrid_decomposition(f"{d['tracks']}[cap={candidate}]", events,
+                                             frame_counts, band_totals)
+    totals, above, no_rep = [], 0, 0
+    for ev in events:
+        r = _ps_score_event("hybrid_plateau_median", ev, frame_counts, 0, band_totals)
+        if r["total"] is None:
+            no_rep += 1
+            continue
+        totals.append(r["total"])
+        if r["total"] > REP_HITS_PER_SHOT:
+            above += 1
+    n_scored = len(totals)
+    return {"dump": d["tracks"], "fps": fps, "band_hi": hi, "band_lo": band[0],
+           "max_pellet_frames": max_pf, "n_events": len(events), "n_scored": n_scored,
+           "no_rep": no_rep, "sum_total": sum(totals), "above_ceiling": above,
+           "above_ceiling_pct": round(100 * above / n_scored, 1) if n_scored else None,
+           "banded": decomp["n_banded"], "fallback": decomp["n_fallback"],
+           "radius_tracks": radius_tracks, "band_totals": band_totals, "events": events}
+
+
+def _cs_dump_public(d):
+    return {k: d[k] for k in _CS_DUMP_PUBLIC_KEYS}
+
+
+def _cs_pool_2_3(per_dump):
+    """§2.3 -- pooled `above_ceiling_pct` for `hybrid_plateau_median` over all events/dumps at one
+    candidate's band_hi. Widening a band can only ADD tracks (§2.3's own text), so this figure can
+    only rise as the candidate set is walked control -> 19 -> 20 -> 21."""
+    n_events = sum(x["n_events"] for x in per_dump)
+    n_scored = sum(x["n_scored"] for x in per_dump)
+    no_rep = sum(x["no_rep"] for x in per_dump)
+    above = sum(x["above_ceiling"] for x in per_dump)
+    sm = sum(x["sum_total"] for x in per_dump)
+    banded = sum(x["banded"] for x in per_dump)
+    fallback = sum(x["fallback"] for x in per_dump)
+    above_pct = round(100 * above / n_scored, 1) if n_scored else None
+    return {"n_events": n_events, "n_scored": n_scored, "no_rep": no_rep, "above_ceiling": above,
+           "above_ceiling_pct": above_pct, "avgTotal": round(sm / n_scored, 4) if n_scored else None,
+           "banded": banded, "fallback": fallback,
+           "verdict": ("PASS" if above_pct is not None and above_pct <= CAP_CEILING_PCT_MAX
+                       else "REJECT")}
+
+
+def _cs_assert_control_reproduction(pooled_control):
+    """§3 validity check 1 -- THE CONTROL MUST REPRODUCE EXACTLY. At band_hi = max_pellet_frames
+    (today's value), every figure must match the already-landed §12/§13 numbers. If it does not,
+    the arm is wrong and every other candidate's row is void -- fail loudly, never adjust the
+    expected numbers to match."""
+    want = {"n_scored": 852, "no_rep": 0, "banded": 740, "fallback": 112,
+           "above_ceiling_pct": 1.8, "avgTotal": 6.1561}
+    bad = {k: (want[k], pooled_control[k]) for k in want if pooled_control[k] != want[k]}
+    if bad:
+        detail = "; ".join(f"{k}: expected {w}, got {g}" for k, (w, g) in bad.items())
+        raise SystemExit(f"--cap-score: CONTROL DID NOT REPRODUCE ({detail}). §3 validity check 1: "
+                         "the arm is wrong and every other candidate's row is void.")
+
+
+def _cs_corridor_admits(radius_tracks, events, max_pellet_frames, band_hi):
+    """§2.4's own metric, numerator: distinct WHITE in-radius tracks whose OVERALL lifetime falls
+    in the corridor (max_pellet_frames, band_hi] -- the population a raised band_hi newly admits
+    over today's cap -- and which the radius gate counts at least once during ANY shipped event
+    span (not merely somewhere in the clip)."""
+    n = 0
+    for life, runs in radius_tracks:
+        if not (max_pellet_frames < life <= band_hi):
+            continue
+        if any(any(s < e["end"] and s + ln > e["start"] for s, ln in runs) for e in events):
+            n += 1
+    return n
+
+
+def _cs_corridor_2_4(dumps):
+    """§2.4 -- TERTIARY, out-of-sample, mandatory. Per out-of-sample dump (§2.4 excludes the
+    labelled clip's own full-clip dump, `groundtruth-f811-v4`, which is in-sample):
+    `corridor_admits_per_event` at each candidate, plus the full in-radius lifetime histogram
+    (narrative, every candidate shares it -- it does not depend on band_hi). `h4-marciana` is
+    reported SEPARATELY from the other three (same unit, different recording, vs different units
+    entirely -- different failure modes)."""
+    lifetime_hist_by_dump = {}
+    expanded = {}
+    for d in dumps:
+        fc, radius_tracks = _rep_expand_dump(d)
+        expanded[d["tracks"]] = (fc, radius_tracks)
+        hist = collections.Counter(life for life, _r in radius_tracks)
+        lifetime_hist_by_dump[d["tracks"]] = {str(k): v for k, v in sorted(hist.items())}
+
+    out_of_sample = [d for d in dumps
+                     if any(d["tracks"].startswith(p) for p in CAP_OUT_OF_SAMPLE_PREFIXES)]
+    per_candidate = {}
+    for cand in CAP_CANDIDATES:
+        per_dump = {}
+        for d in out_of_sample:
+            name = d["tracks"]
+            fps, max_pf = d["fps"], d["max_pellet_frames"]
+            fc, radius_tracks = expanded[name]
+            events = _ps_events(fc, fps)
+            hi = _cs_scaled_band_hi(cand, fps, max_pf)
+            n_admits = _cs_corridor_admits(radius_tracks, events, max_pf, hi)
+            rate = round(n_admits / len(events), 4) if events else None
+            per_dump[name] = {
+                "fps": fps, "n_events": len(events), "band_hi": hi, "corridor_admits": n_admits,
+                "corridor_admits_per_event": rate,
+                "verdict": ("CONFIRMS"
+                            if rate is not None and rate <= CAP_CORRIDOR_MAX_PER_EVENT
+                            else "FAILS TO CONFIRM"),
+            }
+        marciana_name = next((n for n in per_dump if n.startswith("h4-marciana")), None)
+        others = {n: v for n, v in per_dump.items() if n != marciana_name}
+        n_failing = sum(1 for v in per_dump.values() if v["verdict"] == "FAILS TO CONFIRM")
+        per_candidate[str(cand)] = {
+            "per_dump": per_dump,
+            "h4_marciana": per_dump.get(marciana_name),
+            "other_three": others,
+            "n_failing_of_4": n_failing,
+            "downgrade": n_failing >= 2,
+        }
+    return {"lifetime_histograms_by_dump": lifetime_hist_by_dump, "per_candidate": per_candidate}
+
+
+def _cs_reported_2_5(ceiling_2_3):
+    """§2.5 -- QUATERNARY, reported only. ⛔ NEVER a ranking criterion (a candidate selected because
+    its avgTotal moved toward 8.40 is DISQUALIFIED by the pre-commit). Relabels figures already
+    computed by §2.3's pooling -- not a second computation -- so there is no way for the two to
+    silently disagree."""
+    return {str(cand): {"avgTotal": ceiling_2_3[str(cand)]["pooled"]["avgTotal"],
+                        "no_rep": ceiling_2_3[str(cand)]["pooled"]["no_rep"],
+                        "fallback_abstentions": ceiling_2_3[str(cand)]["pooled"]["fallback"]}
+           for cand in CAP_CANDIDATES}
+
+
+def _cs_fallback_events_control(dumps):
+    """§6 sub-deliverable -- the 112 CONTROL fallback events (hybrid_plateau_median has no band
+    track in radius, so it falls back to shipped): span, shipped white total, and a categorical
+    breakdown of WHY no band track exists, from the tracks that overlap the event's span at all.
+    REPORT ONLY (§6): this never influences §2's verdict."""
+    out = []
+    for d in dumps:
+        fps, max_pf = d["fps"], d["max_pellet_frames"]
+        fc, radius_tracks = _rep_expand_dump(d)
+        events = _ps_events(fc, fps)
+        band = _ps_band(fps, max_pf)
+        band_lo = band[0]
+        band_totals = _ps_band_totals(radius_tracks, band)
+        for ev in events:
+            a, b = ev["start"], ev["end"]
+            if _ps_plateau_rep(band_totals, a, b) is not None:
+                continue
+            overlapping = [life for life, runs in radius_tracks
+                          if any(s < b and s + ln > a for s, ln in runs)]
+            if not overlapping:
+                category = "none_in_radius"
+            else:
+                in_band = [life for life in overlapping if band_lo <= life <= max_pf]
+                below = [life for life in overlapping if life < band_lo]
+                above = [life for life in overlapping if life > max_pf]
+                if in_band:
+                    # a candidate track IS in the countable band, but no frame in the event ever
+                    # reaches MERGE_EVENT_MIN concurrently among band-eligible tracks
+                    category = "in_band_no_concurrency"
+                elif below and above:
+                    category = "mixed_outside_band"
+                elif below:
+                    category = "all_below_band_lo"
+                else:
+                    category = "all_above_cap"
+            out.append({"dump": d["tracks"], "start": a, "end": b, "frames": b - a,
+                       "white": ev["white"], "category": category,
+                       "n_overlapping_tracks": len(overlapping)})
+    return out
+
+
+def _cs_fallback_become_banded(raw, fallback_events):
+    """§6 -- of the 112 CONTROL fallback events, how many become banded (plateau_rep is no longer
+    None) at each wider candidate band_hi. Reuses `raw[dump][candidate]["band_totals"]` -- already
+    computed by `_cs_score_dump_candidate` -- rather than recomputing the band a second time."""
+    by_dump = collections.defaultdict(list)
+    for e in fallback_events:
+        by_dump[e["dump"]].append((e["start"], e["end"]))
+    out = {}
+    for cand in CAP_CANDIDATES:
+        if cand == "control":
+            out[str(cand)] = 0   # these events ARE the control fallbacks, by definition
+            continue
+        n = 0
+        for dump_name, spans in by_dump.items():
+            band_totals = raw[dump_name][cand]["band_totals"]
+            for a, b in spans:
+                if _ps_plateau_rep(band_totals, a, b) is not None:
+                    n += 1
+        out[str(cand)] = n
+    return out
+
+
+def _cs_compute(fx):
+    """The whole arm, shared by the fixture WRITER and the selftest so `_expected` can only ever be
+    the slice's own numbers (same precedent as `_replay_representative_audit` /
+    `policy_score`/`policy_score_selftest`)."""
+    dumps = fx["dumps"]
+    _cs_assert_cap_values(dumps)
+    _cs_assert_fidelity_premises()
+    _cs_assert_shot_red_event_fixed(dumps)
+    _cs_assert_monotonic(dumps)
+
+    raw = {d["tracks"]: {cand: _cs_score_dump_candidate(d, cand) for cand in CAP_CANDIDATES}
+          for d in dumps}
+
+    ceiling_2_3 = {}
+    for cand in CAP_CANDIDATES:
+        per_dump = [_cs_dump_public(raw[d["tracks"]][cand]) for d in dumps]
+        pooled = _cs_pool_2_3([raw[d["tracks"]][cand] for d in dumps])
+        ceiling_2_3[str(cand)] = {"per_dump": per_dump, "pooled": pooled}
+    _cs_assert_control_reproduction(ceiling_2_3["control"]["pooled"])
+
+    consistency_2_1 = _cs_consistency_2_1(fx)
+    corridor_2_4 = _cs_corridor_2_4(dumps)
+    reported_2_5 = _cs_reported_2_5(ceiling_2_3)
+    fallback_events = _cs_fallback_events_control(dumps)
+    categories = dict(collections.Counter(e["category"] for e in fallback_events))
+    become_banded = _cs_fallback_become_banded(raw, fallback_events)
+
+    return {
+        "consistency_2_1": consistency_2_1,
+        "ceiling_2_3": ceiling_2_3,
+        "corridor_2_4": corridor_2_4,
+        "reported_2_5": reported_2_5,
+        "sub_deliverable_6": {
+            "n_fallback_control": len(fallback_events),
+            "categories": categories,
+            "events": fallback_events,
+            "becomes_banded_by_candidate": become_banded,
+        },
+    }
+
+
+def _print_cap_score(result):
+    print("\n§2.1 CONSISTENCY (in-sample, n=42 owner pellets, ONE clip) -- ⚑ TAUTOLOGICAL, CARRIES "
+          "NO EVIDENTIAL WEIGHT (the corridor is derived from this same population); reported, "
+          "never cited as evidence")
+    c1 = result["consistency_2_1"]
+    print(f"  band_lo={c1['band_lo']}  owner_total={c1['owner_total']}  statics={c1['statics']}")
+    for cand in CAP_CANDIDATES:
+        r = c1["per_candidate"][str(cand)]
+        print(f"  {str(cand):8s} band_hi={r['band_hi']:3d}  owner_admitted={r['owner_admitted']}/"
+              f"{r['owner_total']}  statics_admitted={r['statics_admitted']}  "
+              f"{'PASS' if r['pass'] else 'FAIL'}")
+
+    print("\n§2.3 CEILING (out-of-sample, pooled over 852 events/5 dumps/4 units) -- MANDATORY; "
+          f"reject above {CAP_CEILING_PCT_MAX}%")
+    for cand in CAP_CANDIDATES:
+        p = result["ceiling_2_3"][str(cand)]["pooled"]
+        print(f"  {str(cand):8s} n_scored={p['n_scored']:4d}  no_rep={p['no_rep']}  "
+              f"banded/fallback={p['banded']}/{p['fallback']}  above_ceiling_pct={p['above_ceiling_pct']}%  "
+              f"avgTotal={p['avgTotal']}  {p['verdict']}")
+
+    print("\n§2.4 CORRIDOR (out-of-sample, per dump) -- MANDATORY; CONFIRMS at "
+          f"<= {CAP_CORRIDOR_MAX_PER_EVENT}/event, downgrade if >= 2 of 4 dumps FAIL")
+    for cand in CAP_CANDIDATES:
+        r = result["corridor_2_4"]["per_candidate"][str(cand)]
+        print(f"  candidate {cand}: n_failing_of_4={r['n_failing_of_4']}  "
+              f"{'DOWNGRADE' if r['downgrade'] else 'OK'}")
+        for name, v in r["per_dump"].items():
+            tag = "[same unit, diff recording]" if name.startswith("h4-marciana") else ""
+            print(f"    {name:34s} band_hi={v['band_hi']:3d}  admits={v['corridor_admits']:3d}  "
+                  f"per_event={v['corridor_admits_per_event']}  {v['verdict']} {tag}")
+    print("  in-radius lifetime histograms (narrative, candidate-independent):")
+    for name, hist in result["corridor_2_4"]["lifetime_histograms_by_dump"].items():
+        print(f"    {name}: {hist}")
+
+    print("\n§2.5 REPORTED ONLY -- ⛔ NEVER a ranking criterion")
+    for cand in CAP_CANDIDATES:
+        r = result["reported_2_5"][str(cand)]
+        print(f"  {str(cand):8s} avgTotal={r['avgTotal']}  no_rep={r['no_rep']}  "
+              f"fallback_abstentions={r['fallback_abstentions']}")
+
+    sd = result["sub_deliverable_6"]
+    print(f"\n§6 SUB-DELIVERABLE -- the {sd['n_fallback_control']} CONTROL fallback events, REPORT "
+          "ONLY (never influences §2's verdict)")
+    print(f"  categories: {sd['categories']}")
+    print(f"  become banded by candidate: {sd['becomes_banded_by_candidate']}")
+
+
+def cap_score(save_fixture=None):
+    with open(REP_AUDIT_FIXTURE) as fh:
+        fx = json.load(fh)
+    result = _cs_compute(fx)
+    if save_fixture:
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("Scored entirely off the already-committed "
+                            f"{REP_AUDIT_FIXTURE} -- no new raw tracks.json, no re-derivation "
+                            "(CLAUDE.md reuse-before-derive). docs/handoffs/"
+                            "2026-08-04-lifetime-cap-PRECOMMIT.md is the decision rule this arm's "
+                            "numbers are scored against."),
+                "_note": ("Deliberately carries NO raw track data of its own -- `cap_score`/"
+                          "`cap_score_selftest` both read "
+                          f"{REP_AUDIT_FIXTURE} directly, so this fixture only pins the SCORE "
+                          "(`_expected`), not a second copy of the labelled/dumps blocks. "
+                          "Regenerate with analyze-pellet-tracks.py --cap-score "
+                          "--save-cap-score-fixture <path>."),
+                "_expected": result,
+            }, fh, indent=2)
+        print(f"wrote cap-score fixture -> {save_fixture}")
+    _print_cap_score(result)
+    return result
+
+
+def cap_score_selftest():
+    """Constraint 9 self-validation: replay the whole arm off the already-committed
+    representative-audit-slice.json and assert the result against the committed score fixture."""
+    with open(CAP_SCORE_FIXTURE) as fh:
+        fx = json.load(fh)
+    with open(REP_AUDIT_FIXTURE) as fh:
+        src = json.load(fh)
+    got = _cs_compute(src)
+    ok = got == fx["_expected"]
+    if not ok:
+        for key in sorted(set(got) | set(fx["_expected"])):
+            if got.get(key) != fx["_expected"].get(key):
+                print(f"  DIFF {key}:\n    expected {json.dumps(fx['_expected'].get(key))}"
+                      f"\n    got      {json.dumps(got.get(key))}")
+    _print_cap_score(got)
+    print("SELFTEST PASS" if ok else "SELFTEST FAIL")
+    return 0 if ok else 1
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--tracks", help="tracks.json from count-pellets.py --dump-tracks")
@@ -5737,6 +6245,21 @@ def main():
                     help=f"write the committed replay fixture (see {HYBRID_LANDING_FIXTURE})")
     ap.add_argument("--hybrid-landing-audit-selftest", action="store_true",
                     help=f"replay {HYBRID_LANDING_FIXTURE} (python side only) and exit")
+    ap.add_argument("--cap-score", action="store_true",
+                    help=("THE LIFETIME-CAP band_hi SCORE (docs/handoffs/"
+                          "2026-08-04-lifetime-cap-PRECOMMIT.md): scores the pre-committed "
+                          "candidate set {control, 19, 20, 21} for a DECOUPLED counted-pellet "
+                          "band upper bound (never a raised max_pellet_frames -- see the "
+                          "pre-commit's §1) against §2.1's in-sample consistency check (no "
+                          "evidential weight), §2.3's out-of-sample ceiling check and §2.4's "
+                          "out-of-sample corridor-emptiness check, plus §2.5's reported-only "
+                          f"figures and the §6 fallback-event sub-deliverable. Reads {REP_AUDIT_FIXTURE} "
+                          "directly -- no new raw data, no tracks.json arguments needed. "
+                          "MEASUREMENT ONLY: nothing here enacts."))
+    ap.add_argument("--save-cap-score-fixture", metavar="PATH",
+                    help=f"write the committed score fixture (see {CAP_SCORE_FIXTURE})")
+    ap.add_argument("--cap-score-selftest", action="store_true",
+                    help=f"replay --cap-score against {CAP_SCORE_FIXTURE} and exit")
     args = ap.parse_args()
 
     if args.stale_counting_selftest:
@@ -5755,6 +6278,11 @@ def main():
         raise SystemExit(backend_marker_audit_selftest())
     if args.backend_marker_audit:
         audit_backend_marker(args.backend_marker_audit, args.save_backend_marker_audit_fixture)
+        return 0
+    if args.cap_score_selftest:
+        raise SystemExit(cap_score_selftest())
+    if args.cap_score:
+        cap_score(args.save_cap_score_fixture)
         return 0
     if args.hybrid_landing_audit_selftest:
         raise SystemExit(hybrid_landing_audit_selftest())
