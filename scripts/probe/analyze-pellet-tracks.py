@@ -4089,8 +4089,18 @@ POLICY_SCORE_FIXTURE = "scripts/tests/fixtures/pellets/policy-score-slice.json"
 # the frame-selection difference, not also a change to what "total" means. `lifetime_band_count` is
 # NOT a frame rule (§1.4) and carries no red flag -- it is §9G's own per-event band-track count,
 # verbatim.
-POLICY_RULES = ("shipped_median", "lifetime_gated_median", "plateau_median", "lifetime_band_count")
-_POLICY_FRAME_RULES = ("shipped_median", "lifetime_gated_median", "plateau_median")
+#
+# `hybrid_plateau_median` (docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md §2/§4) is a
+# FIFTH rule, added AFTER the pre-commit doc's four and NOT part of it (that doc's §1.4 enumeration
+# is unedited -- see its own header). It is the enactment PROPOSAL's own candidate: `plateau_median`
+# where the event has a band track in radius, else the shipped median-of-active frame, unchanged --
+# a strict superset of shipped behaviour that can only move events `plateau_median` would otherwise
+# abstain on. THIS IS A MEASUREMENT PASS ONLY -- `debounce_shots` stays untouched in both
+# `count-pellets.py:489` and `read-pellets.ts:627`; this rule lives purely inside this scoring arm.
+POLICY_RULES = ("shipped_median", "lifetime_gated_median", "plateau_median", "lifetime_band_count",
+                "hybrid_plateau_median")
+_POLICY_FRAME_RULES = ("shipped_median", "lifetime_gated_median", "plateau_median",
+                       "hybrid_plateau_median")
 
 
 def _ps_band(fps, max_pellet_frames):
@@ -4238,7 +4248,14 @@ def _ps_red_flag(frame_counts, offset, a, b):
 
 def _ps_score_event(policy, ev, frame_counts, offset, band_totals):
     """One event, one FRAME rule: `rep` (absolute frame index, or None if the rule found nothing to
-    select) and `total` (the count it would report, comparable to shipped's `total`)."""
+    select) and `total` (the count it would report, comparable to shipped's `total`).
+
+    `hybrid_plateau_median` is the one rule that can never abstain: when the event has no band
+    track in radius (`_ps_plateau_rep` returns None) it falls back to the event's OWN shipped
+    `rep`/`total` fields -- the exact `debounce_shots` answer, not a recomputation of it -- so the
+    fallback is bit-identical to shipped BY CONSTRUCTION rather than by a second implementation that
+    could drift from the first. `_ps_score_dump` asserts this at run time (the falsification
+    control) rather than trusting the construction argument alone."""
     if policy == "shipped_median":
         return {"rep": ev["rep"], "total": ev["total"]}
     a, b = ev["start"], ev["end"]
@@ -4246,6 +4263,10 @@ def _ps_score_event(policy, ev, frame_counts, offset, band_totals):
         rep = _ps_median_rep(band_totals, a, b)
     elif policy == "plateau_median":
         rep = _ps_plateau_rep(band_totals, a, b)
+    elif policy == "hybrid_plateau_median":
+        rep = _ps_plateau_rep(band_totals, a, b)
+        if rep is None:
+            return {"rep": ev["rep"], "total": ev["total"]}
     else:
         raise ValueError(f"_ps_score_event: not a frame rule: {policy}")
     if rep is None:
@@ -4365,6 +4386,58 @@ def _ps_score_labelled(fx):
     return {"band": list(band), "rows": rows, "categorical_scores": scores}
 
 
+def _ps_assert_hybrid_decomposition(name, events, frame_counts, band_totals):
+    """Event-by-event: `hybrid_plateau_median` must decompose EXACTLY into bare `plateau_median` on
+    every event with a band track in radius, and into bit-identical shipped (`rep` AND `total`, so
+    `white`/`red` too since `total` is `white + red_flag`) on every event without one. This is
+    PROPOSAL §4 item 4 (the falsification control) and the 740/112 decomposition §12's own text
+    calls "a free, strong internal check" -- both ASSERTED here (SystemExit on mismatch), not
+    assumed from `_ps_score_event`'s construction, and exercised on every `--policy-score` /
+    `--policy-score-selftest` run since `_ps_score_dump` calls this for every dump."""
+    n_banded = n_fallback = 0
+    for ev in events:
+        a, b = ev["start"], ev["end"]
+        plateau_rep = _ps_plateau_rep(band_totals, a, b)
+        hybrid = _ps_score_event("hybrid_plateau_median", ev, frame_counts, 0, band_totals)
+        if plateau_rep is None:
+            n_fallback += 1
+            if hybrid["rep"] != ev["rep"] or hybrid["total"] != ev["total"]:
+                raise SystemExit(
+                    f"--policy-score: FALSIFICATION CONTROL FAILED on {name} event [{a},{b}) -- "
+                    "hybrid_plateau_median must be bit-identical to shipped_median when no band "
+                    f"track is in radius (rep {hybrid['rep']} vs {ev['rep']}, total "
+                    f"{hybrid['total']} vs {ev['total']}).")
+        else:
+            n_banded += 1
+            plateau = _ps_score_event("plateau_median", ev, frame_counts, 0, band_totals)
+            if hybrid["rep"] != plateau["rep"] or hybrid["total"] != plateau["total"]:
+                raise SystemExit(
+                    f"--policy-score: DECOMPOSITION CHECK FAILED on {name} event [{a},{b}) -- "
+                    "hybrid_plateau_median must reproduce bare plateau_median exactly on banded "
+                    f"events (rep {hybrid['rep']} vs {plateau['rep']}, total {hybrid['total']} vs "
+                    f"{plateau['total']}).")
+    return {"n_banded": n_banded, "n_fallback": n_fallback}
+
+
+def _ps_pool_hybrid_decomposition(dumps):
+    return {"n_banded": sum(d["hybrid_decomposition"]["n_banded"] for d in dumps),
+            "n_fallback": sum(d["hybrid_decomposition"]["n_fallback"] for d in dumps)}
+
+
+def _ps_assert_decomposition_matches_plateau(dumps, pooled):
+    """The pooled free check: the 740/112 split the per-event asserts already enforce must also
+    equal bare `plateau_median`'s own pooled `n_scored`/`no_rep` -- banded events are exactly the
+    ones `plateau_median` does NOT abstain on, fallback events are exactly the ones it does."""
+    decomp = _ps_pool_hybrid_decomposition(dumps)
+    pm = pooled["plateau_median"]
+    if decomp["n_banded"] != pm["n_scored"] or decomp["n_fallback"] != pm["no_rep"]:
+        raise SystemExit(
+            "--policy-score: POOLED DECOMPOSITION MISMATCH -- hybrid_plateau_median's "
+            f"banded/fallback split ({decomp['n_banded']}/{decomp['n_fallback']}) does not equal "
+            f"bare plateau_median's n_scored/no_rep ({pm['n_scored']}/{pm['no_rep']}).")
+    return decomp
+
+
 def _ps_score_dump(d):
     """THE CEILING HALF, one dump: for every shipped event, what each rule would report, pooled by
     the caller across all dumps to the 852-event denominator §1.2 scores against."""
@@ -4377,6 +4450,8 @@ def _ps_score_dump(d):
     band = _ps_band(fps, d["max_pellet_frames"])
     band_totals = _ps_band_totals(radius_tracks, band)
     out = {"dump": d["tracks"], "fps": fps, "n_events": len(events)}
+    out["hybrid_decomposition"] = _ps_assert_hybrid_decomposition(d["tracks"], events, frame_counts,
+                                                                   band_totals)
     for policy in _POLICY_FRAME_RULES:
         totals, above, no_rep = [], 0, 0
         for ev in events:
@@ -4419,8 +4494,10 @@ def _ps_expected(labelled, dumps, pooled):
         "rows": labelled["rows"],
         "categorical_scores": labelled["categorical_scores"],
         "per_dump": [{"dump": d["dump"], "fps": d["fps"], "n_events": d["n_events"],
+                     "hybrid_decomposition": d["hybrid_decomposition"],
                      **{p: d[p] for p in POLICY_RULES}} for d in dumps],
         "pooled": pooled,
+        "hybrid_decomposition_pooled": _ps_pool_hybrid_decomposition(dumps),
     }
 
 
@@ -4472,6 +4549,17 @@ def _print_policy_score(labelled, dumps, pooled):
           "which this arm does not measure and does not resolve. Top open risk for any enactment "
           "pass on these rules.")
 
+    hd = _ps_pool_hybrid_decomposition(dumps)
+    hm = pooled["hybrid_plateau_median"]
+    print("\nHYBRID_PLATEAU_MEDIAN -- the PROPOSAL's own rule (plateau_median where the event has a "
+          "band track in radius, else shipped, unchanged); NOT part of the pre-commit doc's §1.4 "
+          "enumeration, added after it per the enactment proposal's §4")
+    print(f"  decomposition (asserted event-by-event, SystemExit on any mismatch): "
+          f"{hd['n_banded']} banded (== bare plateau_median) + {hd['n_fallback']} fallback "
+          f"(== bit-identical shipped) = {hd['n_banded'] + hd['n_fallback']}")
+    print(f"  n_scored={hm['n_scored']}  no_rep={hm['no_rep']}  avgTotal={hm['avgTotal']}  "
+          f"above_ceiling_pct={hm['above_ceiling_pct']}%  (reject above 12.4%)")
+
     print("\nTERTIARY (§1.3, REPORTED ONLY -- never a ranking criterion; mean-matching near 8.40 "
           "DISQUALIFIES a rule)")
     for p in POLICY_RULES:
@@ -4490,6 +4578,7 @@ def policy_score(save_fixture=None):
     labelled = _ps_score_labelled(fx)
     dumps = [_ps_score_dump(d) for d in fx["dumps"]]
     pooled = _ps_pool_dumps(dumps)
+    _ps_assert_decomposition_matches_plateau(dumps, pooled)
     if save_fixture:
         with open(save_fixture, "w") as fh:
             json.dump({
@@ -4524,6 +4613,7 @@ def policy_score_selftest():
     labelled = _ps_score_labelled(src)
     dumps = [_ps_score_dump(d) for d in src["dumps"]]
     pooled = _ps_pool_dumps(dumps)
+    _ps_assert_decomposition_matches_plateau(dumps, pooled)
     got = _ps_expected(labelled, dumps, pooled)
     ok = got == fx["_expected"]
     if not ok:
@@ -5171,7 +5261,12 @@ def main():
                           "shipped_median / lifetime_gated_median / plateau_median / "
                           "lifetime_band_count candidates against the categorical PLATEAU check "
                           f"(n=5) and the free ceiling check (n=852), reading {REP_AUDIT_FIXTURE} "
-                          "directly -- no new raw data, no tracks.json arguments needed."))
+                          "directly -- no new raw data, no tracks.json arguments needed. Also "
+                          "scores `hybrid_plateau_median` (docs/handoffs/"
+                          "2026-08-04-representative-frame-PROPOSAL.md §2/§4): plateau_median where "
+                          "the event has a band track in radius, else shipped, unchanged -- the "
+                          "enactment proposal's own candidate, added after and separate from the "
+                          "pre-commit doc's four."))
     ap.add_argument("--save-policy-score-fixture", metavar="PATH",
                     help=f"write the committed score fixture (see {POLICY_SCORE_FIXTURE})")
     ap.add_argument("--policy-score-selftest", action="store_true",
