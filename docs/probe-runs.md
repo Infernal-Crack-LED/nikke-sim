@@ -3548,6 +3548,13 @@ inverts: the clamp biases the shipped median **WARM by +0.24**, so it is not a c
 
 ##### §8H — ⚑ A pre-existing Python / TypeScript divergence, found in passing and NOT chased
 
+⚑ **SUPERSEDED (2026-08-04) by §11 — disregard this entry's DIAGNOSIS.** The observation (177 vs 176
+on `h4-marciana`) is correct and reproduces. Its two guesses are both REFUTED: it is **not** a median
+tie-break (both implementations are byte-identical in logic, including the strict `<`), and the
+`debounce_shots` lockstep invariant is **NOT** off — segmentation is identical, `totalShots` = 218 in
+both. The cause is a **marker-channel** difference upstream of `debounce_shots` entirely, and it is a
+defect in the SHIPPED TypeScript, not in the Python replay. See §11.
+
 The replay reproduces the shipped `pellets.json` summaries **exactly on 7 of 8 dumps**, but on
 `h4-marciana` (`marciana`, SG/Iron) reads `validShots` 177 / `avgTotal` 7.2 / `avgRed` 0.15 against
 the shipped 176 / 7.3 / 0.14 — **one extra core-flagged valid event**, probably a median tie-break
@@ -4120,3 +4127,114 @@ scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --policy-s
 # replay the committed slice -- no images, no subprocess, no tracks.json:
 scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --policy-score-selftest
 ```
+
+---
+
+#### §11 THE `h4-marciana` 177-vs-176 DIVERGENCE — it is a MARKER-CHANNEL defect in the shipped TypeScript, not a `debounce_shots` lockstep break
+
+**2026-08-04.** Chased because the representative-frame enactment proposal
+(`docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md` §4.5) makes a lockstep assertion, and
+asserting lockstep against a baseline already known to be off is how a silent drift becomes
+permanent. **§8H's observation reproduces; both of its guesses are wrong.**
+
+##### §11A — Segmentation is in PERFECT lockstep — `totalShots` = 218 in BOTH
+
+Replaying `count-pellets.py`'s own `debounce_shots` over `h4-marciana-structural/tracks.json`'s
+`frame_counts` at fps = 30 gives `totalShots` **218**, exactly the shipped `pellets.json` summary's
+**218**. All 218 events agree event-for-event on `start` / `end` / `frames` / `white`.
+
+⇒ **The "the lockstep invariant may ALREADY be one event off" reading in §8H is REFUTED.** The event
+grouping is identical. Only `validShots` differs (177 replay vs 176 shipped), which is the
+`5 ≤ total ≤ 10` filter, not the grouping.
+
+##### §11B — The median tie-break guess is REFUTED BY INSPECTION
+
+`count-pellets.py:489` and `read-pellets.ts:627` are byte-identical in logic: the same
+`(sorted[(m-1)//2] + sorted[m//2]) / 2` median, the same **strict `<`** on the distance-to-median
+comparison (`d < best_d` / `d < bestD`), the same `rep.white + shot_red` total. There is no `<` vs
+`<=` difference to find. The two implementations pick the **same representative frame**.
+
+##### §11C — Exactly ONE event differs, and only on `core`
+
+|               | representative frame | white | red   | total           | core      | frames | span         |
+| ------------- | -------------------- | ----- | ----- | --------------- | --------- | ------ | ------------ |
+| Python replay | 1558                 | 4     | **1** | **5 → VALID**   | **true**  | 14     | [1555, 1569) |
+| Shipped TS    | same                 | 4     | **0** | **4 → invalid** | **false** | 14     | same         |
+
+One event, #56. It crosses the `min_pellets = 5` floor **solely because of the core flag**, which
+contributes `shot_red`. That single flip is the entire 177-vs-176 / 7.2-vs-7.3 / 0.15-vs-0.14 delta.
+
+##### §11D — The channel: `white` and `red` are BYTE-IDENTICAL; only `marker` differs, on 82 frames
+
+Across all **5697** frames of `h4-marciana`:
+
+| channel  | frames differing |
+| -------- | ---------------- |
+| `white`  | **0**            |
+| `red`    | **0**            |
+| `marker` | **82**           |
+
+On **82 of 82** the shipped `reads[j].marker` is **0** and the dump's is higher (+1 on 76, +2 on 4,
++3 on 2).
+
+##### §11E — THE MECHANISM: the backend selector ranks on `white + red` and carries `marker` as a passenger
+
+`read-pellets.ts:599` picks the "best" of three backends by **`|white + red − total|` only** — the
+marker channel takes no part in the ranking — then reads `white`, `red` **and `marker`** off the
+winner (`marker: best.marker ?? 0`, `:619`). `Array.reduce` with a strict `<` **keeps the FIRST
+element on a tie**, i.e. `numpy`. The dump's `frame_counts` come from the `--backend opencv`
+invocation (`:505`), so its marker channel is opencv's.
+
+Verified on all 82 divergent frames, unanimously:
+
+| check                                   | result      |
+| --------------------------------------- | ----------- |
+| all three backends TIE on `white + red` | **82 / 82** |
+| a marker was seen by **opencv only**    | **82 / 82** |
+| dump `marker` == opencv's `marker`      | **82 / 82** |
+
+Frame 1565 is the one that flips event #56: backends `numpy {0,0,0}` / `pil {0,0,0}` /
+`opencv {0,0,**3**}`. All three tie at `white + red` = 0, `reduce` keeps `numpy`, and opencv's 3
+hit-markers are discarded. `MARKER_MIN` is 2, so the event loses its core hit.
+
+⇒ **The selection is arbitrary by construction on ties — it resolves to ARRAY ORDER, on a channel the
+comparison never looks at.** That is a defect independent of which backend is right.
+
+##### §11F — What this does NOT decide
+
+⚑ **Whether opencv's marker = 3 is a TRUE core hit or an opencv false positive is NOT established
+here**, and nothing in this entry should be read as saying the Python replay's 177 is the correct
+answer. What is established is that the shipped reader chooses between them **by array order**. Which
+value is correct needs a measurement against the footage (the ⚔ hit-marker triangles are visually
+checkable at frame 1565) and is a separate pass.
+
+##### §11G — Consequence for the enactment proposal
+
+The proposal's §4.5 lockstep criterion is **safe to assert**, with one correction: assert it on a
+**COMMON input** — feed both implementations the same `frame_counts` — otherwise the assertion
+measures this marker-channel difference rather than the `debounce_shots` algorithm. `debounce_shots`
+itself needs no reconciliation before the representative-frame change lands.
+
+##### §11H — Reproduction
+
+```sh
+S=/Users/maxwellsutton/nikke-sim/scratchpad/pellets/h4-marciana-structural
+# 1. segmentation lockstep + the one differing event
+#    (replay count-pellets.py's debounce_shots over the dump's frame_counts at fps=30
+#     and diff event-for-event against pellets.json's `shots`)
+# 2. the channel census: compare tracks.json frame_counts[j] against pellets.json reads[j]
+#    for white / red / marker across all 5697 frames
+# 3. the mechanism: for each divergent frame, read pellets.json reads[j].backends
+```
+
+⚑ **NOT YET A COMMITTED INSTRUMENT.** This entry was derived with an ad-hoc in-session probe, which
+`CLAUDE.md` constraint 9 does not permit for a citable measurement. **Before this is cited as
+evidence anywhere, it must be re-derived by a committed flag** — the natural home is a
+`--backend-marker-audit` arm on `scripts/probe/analyze-pellet-tracks.py` with a pinning fixture. The
+numbers above are reproducible from the two committed artifacts named in §11H, which is why they are
+recorded now rather than withheld.
+
+**NOTHING HERE ENACTS.** `read-pellets.ts` is UNCHANGED — the backend selector, `MARKER_MIN`, and both
+`debounce_shots` implementations are untouched. No constant, gate or default moved; no fixture was
+regenerated; no `DECISIONS.md` entry was edited. The defect is RECORDED, and fixing it changes counts,
+so it is owner-gated.

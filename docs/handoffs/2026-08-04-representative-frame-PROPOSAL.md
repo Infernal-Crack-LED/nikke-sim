@@ -85,9 +85,16 @@ Written before the hybrid is measured. Do not adjust after seeing a result.
 4. **The falsification control must hold:** on events with no band track, the hybrid must be
    **bit-identical to shipped**. Assert it, do not assume it.
 5. **Lockstep:** `count-pellets.py` and `read-pellets.ts` must agree event-for-event on all 8 dumps
-   **after** the change. ⚑ They may **already** be one event apart on `h4-marciana` (`validShots` 177
-   vs shipped 176, §8H) — **resolve or explicitly quantify that divergence BEFORE landing**, or the
-   lockstep assertion is being made against a baseline already known to be off.
+   **after** the change — asserted on a **COMMON input** (feed both the same `frame_counts`).
+   ✅ **RESOLVED 2026-08-04, §11 — this is no longer a blocker.** The `h4-marciana` 177-vs-176
+   divergence is **not** a `debounce_shots` lockstep break: segmentation is identical (`totalShots`
+   = 218 in both, all 218 events agreeing on span/frames/white), and the two implementations are
+   byte-identical in logic including the strict `<`. The delta is **one event's `core` flag**,
+   caused by a **marker-channel** defect upstream — `read-pellets.ts:599` ranks backends on
+   `white + red` alone and carries `marker` as a passenger, so on ties `reduce` resolves to array
+   order and discards opencv's hit-markers (82/82 divergent frames, unanimous). ⚑ The common-input
+   requirement above exists **because** of that defect: assert lockstep on a shared `frame_counts`
+   or the assertion measures the marker channel instead of the algorithm.
 6. **Reported only, never a ranking criterion:** `avgTotal`, and any comparison to 8.40.
 
 ## 5. Blast radius
