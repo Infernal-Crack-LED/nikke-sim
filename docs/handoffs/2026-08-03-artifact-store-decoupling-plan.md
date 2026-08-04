@@ -1,6 +1,8 @@
 # Decoupling the generated artifacts from the deploy path — scoping doc (2026-08-03)
 
-Status: **SCOPE ONLY — nothing implemented, two owner decisions open (see §8).**
+Status: **SCOPE ONLY — Steps 0–4 unimplemented, two owner decisions open (see §8). Owner decision
+2026-08-04: Step 0 ships WITH a post-deploy builder canary (§8) — that canary is committed on
+branch `worktree-artifact-decoupling-review`.**
 
 Origin: owner asked why the CI `Build rank-board artifacts` step took ~8 min on PR #82 when the
 `b71af726` incremental-rebuild work should have cut it, then asked to scope moving the pre-built
@@ -223,6 +225,19 @@ alongside the other five.
 against `nikkesim.app`, plus the staleness hash test. Takes the 8-minute step to ~1s and removes
 ~50% of CI wall-clock **today**. It also de-risks everything downstream by proving the hash gate and
 the fetch-published-artifacts pattern before any storage migration is committed to.
+
+**Owner decision 2026-08-04 — Step 0's lost-signal mitigation.** Step 0 removes the only scheduled
+proof that the builders still work on merged inputs — a builder broken by a merged PR would
+otherwise surface only at the next manual refresh. Fix (owner decision): a post-deploy canary in
+`deploy.yml` (`builder-canary`, `needs: deploy` — fires after every successful deploy to main, i.e.
+after every merged PR): a forced from-scratch rebuild, `build-dpschart.ts --force --out
+$RUNNER_TEMP/...` (output discarded — health check, not a publish path) plus `npm run ranks:all`.
+`--force` is load-bearing: right after a deploy the live-site carry-over candidate matches the
+merged inputs, so without it every row carries over (`build-dpschart.ts:617` gates the whole
+candidate search on `!FORCE`) and the run proves nothing. Infographics are exempt — PR CI keeps
+building them via the `artifacts` tier. Cost ~8 min, off the deploy critical path. Landed on branch
+`worktree-artifact-decoupling-review` ahead of Step 0: redundant with the deploy path's own builder
+run until then; the redundancy is what lets Step 0 delete that run safely.
 
 **Step 1** — extract + generalize input hashing to all 6 boards + infographics (§5).
 
