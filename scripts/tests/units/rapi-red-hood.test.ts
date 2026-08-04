@@ -24,7 +24,7 @@
 //   S2 ■ passive: Elemental Advantage vs Electric; Projectile Attachment Damage ▲150.72%,
 //                 Projectile Explosion Damage ▲100.6% (continuous)                           [RRH3]
 //      ■ every 120 normals (60 in FB): attachable rocket — 88.11% attachment (immediate, no
-//                 core) + 88.11% explosion (STORED, releases on FB, cores ×0.33, crits)       [RRH4]
+//                 core) + 88.11% explosion (STORED, releases on FB, no core, crits)          [RRH4]
 //      (Max Ammo: 1 — UNMODELED, the meter is modeled as a fill threshold not an ammo slot)
 //   BU ■ Stage 1 → self: Burst CDR ▼20s; all allies: ATK ▲18.01% of caster ATK for 10 sec    [RRH6]
 //      ■ Stage 3 → nearest enemy: 2808% of final ATK as additional damage (flighted ~0.4s,
@@ -42,8 +42,10 @@
 //   RRH3  the 150.72/100.6 buffs are their OWN multiplicative bucket and route ONLY to the flavored
 //       rocket hits — attachment hits carry projFactor 2.5072, explosion hits 2.0060, and removing
 //       the buffs collapses both to 1.0 (normals are never touched, projFactor 1.0 throughout).
-//   RRH4  the explosion is a STORED hit that cores at ×0.33 and crits, the attachment does NOT core.
-//       Removing the storedHit erases every explosion-flavor instance (projFactor 2.0060 gone).
+//   RRH4  the explosion is a STORED hit that crits but does NOT core (skill-damage class — owner
+//       footage ruling 2026-08-04 overturns the 2026-07-16 core-⅓ read), the attachment does not
+//       core either. Removing the storedHit erases every explosion-flavor instance (projFactor
+//       2.0060 gone).
 //   RRH5  the 2808% nuke is a flighted burst-bucket hit that takes the +50% FB major (it lands inside
 //       the window, ~0.4s after the cast banner), once per cast. Removing the block erases it.
 //   RRH6  the Stage-1 ATK grant is caster-scaled flat ATK to ALL allies; the 18.01→11.16 counterfactual
@@ -321,7 +323,7 @@ describe('rapi-red-hood — kit spec', () => {
     });
   });
 
-  describe('RRH4 — S2 rocket: 88.11% attachment (no core) + 88.11% explosion (stored, core ×0.33, crits)', () => {
+  describe('RRH4 — S2 rocket: 88.11% attachment (no core) + 88.11% explosion (stored, no core, crits)', () => {
     const s2 = rrhDmg(hBase.events, 'skill2');
     const attach = s2.filter((d) => near(d.mult.projFactor, PROJ_ATTACH));
     const explode = s2.filter((d) => near(d.mult.projFactor, PROJ_EXPLODE));
@@ -338,18 +340,15 @@ describe('rapi-red-hood — kit spec', () => {
       }
     });
 
-    it('the attachment is immediate and does NOT core; the explosion cores at ×0.33', () => {
+    it('neither flavor cores — the explosion is skill damage (owner footage ruling 2026-08-04)', () => {
       expect(
         attach.every((d) => d.coreEligible === false),
         'attachment must not core'
       ).toBe(true);
       expect(
-        explode.every((d) => d.coreEligible === true),
-        'explosion must core'
+        explode.every((d) => d.coreEligible === false),
+        'explosion must not core'
       ).toBe(true);
-      expect([...new Set(explode.map((d) => d.coreRate.toFixed(3)))]).toEqual([
-        '0.330',
-      ]);
     });
 
     it('both flavors crit-eligible (the stored explosion is NOT crit-exempt)', () => {

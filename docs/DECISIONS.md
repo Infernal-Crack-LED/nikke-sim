@@ -9,6 +9,35 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-04) Rapi: Red Hood's rocket EXPLOSION does NOT core — owner footage ruling overturns
+  the 2026-07-16 core-⅓ landing; `storedHit.core` removed, she is deliberately COLDER.** Owner
+  direct re-read of `docs/probes/probe u7/rapi focus vid.MP4` (the same recording behind
+  `docs/probe-data/rrh-explosion-core.json`): the explosion is dealt as SKILL damage, and skill
+  damage generally cannot core (the U1 function-damage no-core default). The red "CORE HIT" labels
+  the 2026-07-16 OCR-by-eye read tallied (N=9, self-declared LOW-MEDIUM confidence) were concurrent
+  NORMAL-column core hits — exactly the overlap hazard that record itself flagged — and the
+  independent FB1 reread had already shown the consolidated FB-start batch popup rendering
+  WHITE/non-core (`docs/probe-data/rrh-fb1-reread.json`). Change: `storedHit.core` dropped from the
+  override (the release falls to the storedHit no-core DEFAULT — no band-table fallback);
+  `storedHit.crit:true` STANDS (separate consistency landing, untouched); the spec pin flipped
+  test-first (`scripts/tests/units/rapi-red-hood.test.ts` RRH4 RED→GREEN, 20/20). Pre-registered
+  BEFORE the change (paired-seed control comp, LM/crown/helm/rrh): rrh 826.14M → 807.63M (−2.24%;
+  the explosion-core share WAS 2.24% of her total), control ratio 0.918 → 0.898 vs the 899.6M real,
+  Full Burst count INVARIANT (12.0 both arms); the post-change probe landed EXACTLY (807.6M /
+  0.898). Graded snapshot regen (only her rows moved, all measured FB truths held): T7 −4.32%, N1
+  rapi/quency −3.33% (per-comp core-damage buffs make the lost term larger than on the neutral
+  control). PROCESS: the full scientific-method gate was SKIPPED by owner ruling — the overturned
+  read predates the current probe tooling and the owner re-measured it directly; pre-registration +
+  test-first anti-fit hygiene kept. Consequences: (1) the SSOT launchWeapon exception bullet is
+  narrowed (RRH's rocket class is OUT — attach no-core by its own measured ruling, explosion
+  no-core by this one; Anis: Star's stars still core); (2) the U15 ×1.80 core+crit anomaly is now
+  popup mis-association, full stop; (3) the residual stays exposed and is NOT to be re-fit — and
+  the clean-weapon basis (emma MG 0.977 OK, 2026-07-23) no longer supports the older "generic
+  MG-cold" attribution, so the COLD remainder is the deliberately-open Invisible-X gap, no
+  explosion-core credit. SUPERSEDES the core portion of the 2026-07-16 entry below. **Evidence:**
+  owner footage re-read 2026-08-04; `scripts/regression-snapshot.json` regen;
+  `scripts/battery/rrh-control-probe.ts`.
+
 - **(2026-08-04) SECOND CLEAN-WEAPON OVERRIDE LANDED: `snow-crane` (the SR basis cell) carries a
   proven-damage-neutral gauntlet override under the CW1 option-2 invariant (2026-08-01).** The
   kit-autonomy gauntlet landed `snow-crane` at GO faithfulness 1.0, cross-family corroborated
@@ -1093,7 +1122,9 @@ B3 RL, B3 MG]`; B2 `[B1 AR, tested, B2 SR, B3 RL, B3 MG]`. The board uses dedica
   cross-corroborates the additive bucket ([`sim.ts`:58–61](../src/engine/sim.ts#L58-L61)). **Consequence:**
   the RRH ×1.80 anomaly is re-attributed to RRH-LOCAL causes (explosion core bonus / popup association —
   both already named in U15), NOT to the shared bracket; its bounded consequence stays ~0.3–0.4% of her
-  total and rides with the rest of her explosion residual (U15 stays open on its other four bullets). This
+  total and rides with the rest of her explosion residual (U15 stays open on its other four bullets).
+  (FINAL RESOLUTION 2026-08-04: the explosion does not core AT ALL — the ×1.80 body was popup
+  mis-association with a concurrent normal core+crit; see the top entry.) This
   retires the one FORMULA-level unknown that sat underneath all 86 board readings — per-unit retunes no
   longer risk calibrating against a possibly-wrong shared bracket, which is what gated the engine-work
   ordering. Trail: open-questions U15, §P0.
@@ -2009,7 +2040,10 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 - **(2026-07-16) Rapi: Red Hood's projectile-EXPLOSION class cores ~1/3, is DERIVED from the real rocket
   meter (120→60 in-FB cadence + in-burst instant detonation), and her fictional damage placeholders are
-  removed — partially closing the "invisible X".** Reopens the 2026-07-14 invisible-X entry below with new
+  removed — partially closing the "invisible X". CORE PORTION SUPERSEDED (2026-08-04, see the top
+  entry): owner footage re-read rules the explosion SKILL damage — core-INELIGIBLE; `storedHit.core`
+  removed. Everything ELSE here stands (the derived rocket cadence, instantInFb, placeholder removal,
+  the CRIT follow-up).** Reopens the 2026-07-14 invisible-X entry below with new
   same-tier evidence (video re-read of `probe u7/rapi focus vid.MP4`, `docs/probe-data/rrh-explosion-core.json`).
   MEASURED: explosion core fraction **~1/3** (0.30–0.45, N=9; the plain WHITE non-core body dominates every
   burst, red "CORE HIT" bodies are the clear minority — explicitly NOT near-full coring, correcting an earlier
@@ -2939,7 +2973,9 @@ visually-counted-white-popups`; the whites were under-counted (~6 vs true ~9–1
   experiment log "RAPI SYNTHESIS FINAL" + landing entry. **PARTIALLY SUPERSEDED (2026-07-16, see the
   entry above)** — much of the invisible X is now explained: her explosions core ~1/3 and her rocket
   cadence/instant-detonation are DERIVED from the real meter mechanic; the residual is narrowed and left
-  exposed (part MG-cold, part unmodeled explosion crit).
+  exposed (part MG-cold, part unmodeled explosion crit). **The 2026-07-16 core explanation was itself
+  OVERTURNED 2026-08-04 (explosion = skill damage, core-INELIGIBLE — see the top entry); the
+  cadence/instant-detonation derivation still stands.**
 
 - **(2026-07-14) Liberalio's 202.5% full-charge proc receives the +50% Full Burst term by its
   landing timing** — the legacy no-Full-Burst flag was a calibration-era relic contradicting

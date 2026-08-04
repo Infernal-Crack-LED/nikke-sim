@@ -1247,6 +1247,13 @@ residual is closed; CCW grades ~1.0.
 - **Meter carryover semantics** — the threshold switch (120→60) is CORRECT, confirmed by owner.
 - Residual remainder is generic MG-cold (board ~0.947), not a rapi-specific question.
 
+**ADDENDUM 2026-08-04 (owner footage ruling):** the explosion-core answer is OVERTURNED — her
+rocket explosions are SKILL damage and do NOT core (`storedHit.core` removed; DECISIONS 2026-08-04
+top entry). She is deliberately colder (control 0.918 → 0.898; graded T7 −4.32%, N1 −3.33%). The
+"residual remainder is generic MG-cold" line above is also no longer supported: the clean-weapon
+basis reads the MG cell at 0.977 OK (emma, 2026-07-23), so the bare MG weapon is not cold; the
+remaining deficit is the deliberately-open Invisible-X gap, no explosion-core credit.
+
 **Original question + evidence trail retained below.**
 
 > The explosion-core reopen (DECISIONS 2026-07-16) narrowed her deficit (T3 0.84→0.91, T7 0.72→0.81,

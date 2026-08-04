@@ -155,10 +155,11 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
               medium/large bossPelletProfile fights (UNIGEO coverage tables are the scope-lock
               boss silhouette only).
               PER-SHOT OVERRIDE (`coreOverride`, bypasses the band table): some hit types have their
-              OWN core rate independent of aim/range — a consolidated pellet bullet (dorothy-S, `coreRate`)
-              and attached-rocket EXPLOSIONS (Rapi: Red Hood, `storedHit.core` — MEASURED ~1/3 = 0.33,
-              they detonate on the boss body regardless of aim; 2026-07-16, DECISIONS). These pass
-              `coreOverride` so `acr` is that rate, not `acrFor(weapon, band)`.
+              OWN core rate independent of aim/range — a consolidated pellet bullet (dorothy-S,
+              `coreRate`). These pass `coreOverride` so `acr` is that rate, not `acrFor(weapon,
+              band)`. (Rapi: Red Hood's attached-rocket EXPLOSIONS consumed this path 2026-07-16
+              (`storedHit.core` 0.33) but were re-ruled core-INELIGIBLE 2026-08-04 — skill damage;
+              owner footage ruling, DECISIONS.)
         coreBonus = (coreAttackMultiplier − 100)/100 + Core Damage ▲ %/100   (base +100%)
 ```
 
@@ -176,7 +177,8 @@ rocket at each meter-full; rockets attached OUTSIDE Full Burst do NOT explode un
 they ACCUMULATE and the FIRST explosion of each FB is a BATCH of everything banked (this stack
 overlap is why explosions can't be visually counted). A rocket attached DURING FB explodes
 INSTANTLY (`storedHit.instantInFb` → the in-FB per-frame release path). The explosion is
-aim/range-independent, cores ~1/3 (`storedHit.core`, above), and crits at the caster's sheet rate
+aim/range-independent, does NOT core (skill damage — owner footage ruling 2026-08-04 overturning the
+2026-07-16 ~1/3 read), and crits at the caster's sheet rate
 (`storedHit.crit` — removes the stored-hit path's default crit-OFF exemption so the release crits like
 every other hit; consistency, DECISIONS 2026-07-16). The rocket ATTACH is a skill-damage
 hit and generates burst gauge like any skill hit — so the in-FB cadence subtly shifts Full Burst

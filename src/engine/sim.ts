@@ -558,7 +558,7 @@ interface UnitState {
       sequential?: boolean;
       trueFlavor?: boolean;
       projFlavor?: 'attachment' | 'explosion';
-      coreRate?: number; // per-release core rate (coreOverride path) — RRH explosions ~1/3
+      coreRate?: number; // per-release core rate (coreOverride path) — no shipped consumer since the 2026-08-04 RRH explosion no-core ruling
       critRoll?: boolean; // release rolls crit at the caster's sheet rate (removes the stored-hit crit-OFF exemption)
       instantInFb?: boolean; // release each FB frame (in-burst attach detonates instantly), not only at FB start
       releasable: number;

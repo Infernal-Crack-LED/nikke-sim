@@ -5149,14 +5149,14 @@
       "tier": "MEASURED",
       "tuned": true,
       "control": false,
-      "evidence": "THREE focus recordings — burst-nuke recipe fit to measured constants, +421% buff measured-inert removed | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0 (13 FAITHFUL/6 DOCUMENTED_GAP); cross-family S2b(fable)/S5/S6/S7(opus) converged; binding judge discriminationOk true",
+      "evidence": "THREE focus recordings — burst-nuke recipe fit to measured constants, +421% buff measured-inert removed | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0 (13 FAITHFUL/6 DOCUMENTED_GAP); cross-family S2b(fable)/S5/S6/S7(opus) converged; binding judge discriminationOk true | 2026-08-04 owner footage ruling: rocket explosion is SKILL damage — core-INELIGIBLE (storedHit.core removed, overturns the 2026-07-16 ~1/3 read; deliberately colder: control 0.918→0.898, graded T7 −4.32% / N1 −3.33%)",
       "date": "2026-07-14",
       "graded": {
         "teams": 5,
         "within3pct": 1
       },
       "reference": false,
-      "residual": "Invisible-X residual (44-52% of her damage) deliberately left open | Spot-check cluster (measurement-gated): flighted-nuke FB timing (delaySec 0.4, fbMajor true), +421.2% measured-inert removal, batch-accumulation vs prose Max Ammo:1, explosion core 0.33 + crit, countInFb 60 FB-state vs Stage-3+10s. COLD board 0.930 = deliberately-open Invisible-X/MG-cold gap.",
+      "residual": "Invisible-X residual (44-52% of her damage) deliberately left open | Spot-check cluster: flighted-nuke FB timing (delaySec 0.4, fbMajor true), +421.2% measured-inert removal, batch-accumulation vs prose Max Ammo:1, countInFb 60 FB-state vs Stage-3+10s (all measurement-gated) | explosion core RESOLVED 2026-08-04 — NO core (skill damage, owner footage ruling; storedHit.core removed — colder by design: control 0.918→0.898, T7 −4.32%, N1 −3.33%; explosion crit STANDS). COLD remainder = deliberately-open Invisible-X gap; the older generic-MG-cold attribution is unsupported by the clean-weapon basis (emma MG 0.977 OK, 2026-07-23).",
       "unmodeled": {
         "skill1": [
           "Damage to Interruption Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)"
