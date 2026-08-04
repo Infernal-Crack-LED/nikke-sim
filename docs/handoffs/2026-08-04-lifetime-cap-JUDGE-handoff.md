@@ -15,20 +15,23 @@
 
 ## 0. The one-paragraph state
 
-**The lifetime-cap hypothesis PASSED both mandatory out-of-sample gates, and it is a PROPOSAL, not a
-landing.** A decoupled band ceiling `band_hi = 20` (60 fps; 10 at 30 fps) recovers all 5
-cap-discarded owner pellets, holds pooled `above_ceiling_pct` at **3.1%** against a 6.2% reject
-line, and admits only **0.64–0.84 tracks/event** on four out-of-sample dumps against a pre-committed
-2.00 ceiling. Both cross-family gates ran (`kimi-code/k3`): pre-op `APPROVED-WITH-REVISIONS` (7
-mandatory, all executed before any number existed), post-op `ACCEPT` with no blockers.
+**The lifetime-cap hypothesis was measured, passed both mandatory out-of-sample gates, and LANDED —
+all on 2026-08-04, owner-approved.** The decoupled band ceiling `band_hi = 20` (60 fps; 10 at 30 fps)
+recovers all 5 cap-discarded owner pellets, holds pooled `above_ceiling_pct` at **3.1%** against a
+6.2% reject line, and admits only **0.64–0.84 tracks/event** on four out-of-sample dumps against a
+pre-committed 2.00 ceiling. Measurement: `docs/probe-runs.md` §14. Landing: §16, plan
+`2026-08-04-band-hi-LANDING-PLAN.md` — all five pre-stated criteria met, the blast radius **declared
+before the edit held exactly (zero fixtures, zero pins)**. Three cross-family gates ran
+(`kimi-code/k3`): pre-op `APPROVED-WITH-REVISIONS` (7 mandatory, all executed before any number
+existed), and two post-op `ACCEPT`s.
 
-⚑ **UPDATE — THE LANDING WENT IN THE SAME DAY, owner-approved** (`docs/probe-runs.md` §16, plan
-`2026-08-04-band-hi-LANDING-PLAN.md`). All five pre-stated criteria met, the declared blast radius
-held exactly (**zero fixtures, zero pins**), cross-family post-op `ACCEPT`. §3 below is retained
-because it is _why_ the landing is shaped the way it is, and because the restructure it describes is
-now live code. ⚑ **The cold bias is NOT closed and must not be described as closed** (§2, §5.4), and
-⚑ **nothing on the board moves until footage is RE-EXTRACTED** — the improvement reaches new
-extractions only (§7.1).
+⚑ **Two things that must not be misread.** **The cold bias is NOT closed and must not be described
+as closed** (§2, §5.4). And **nothing on the board moves until footage is RE-EXTRACTED** — the
+improvement reaches new extractions only; every committed dump keeps the band values it was
+extracted with (§7.1).
+
+§3 below is retained because it is _why_ the landing is shaped the way it is, and because the
+restructure it describes is now live code.
 
 Separately, item 7's cheap prerequisite is **ANSWERED** (§1.5) and item 3's population is
 **mis-described in two prior documents** (§1.4).
