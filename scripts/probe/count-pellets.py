@@ -684,26 +684,42 @@ def locate_ammo_structural(rgb, templ_h):
 
 
 def locate_crosshair_structural(rgb, templ_h, last_acc, max_disp):
-    """One frame's (cx, cy) digit-row centre + its surround score, or (last_acc, None).
+    """One frame's (cx, cy) digit-row centre, its surround score, and whether it was HELD.
 
-    Selection prefers CONTINUITY over raw score: the candidate nearest the previous
-    lock wins if it is within `max_disp` (the box moves smoothly with the aim point,
-    same gate the template path uses), else the darkest-surround candidate re-acquires
-    the lock outright. There is no confidence-scalar override tier and no carry-forward
-    on a lost lock — H1's diagnosis is that carrying a stale position through a multi-
-    second gap while the aim point moves is wrong by construction; re-acquiring from
-    the best structural candidate every frame is the fix.
+    Returns `(center, score, held)`.
+
+    WHAT IT ACTUALLY DOES, precisely — the previous docstring claimed "no carry-forward on a
+    lost lock" while the `if not cands` branch below IS one, and that mismatch is the reason
+    `held` exists:
+
+      * When the frame yields ANY structural candidate it RE-ACQUIRES from this frame's own
+        pixels — no previous position survives into the answer. Selection prefers CONTINUITY
+        over raw score: the candidate nearest the previous lock wins if it is within
+        `max_disp` (the box moves smoothly with the aim point, same gate the template path
+        uses), else the darkest-surround candidate re-acquires the lock outright. There is no
+        confidence-scalar override tier. `held` is False and `score` is a number.
+      * When candidate generation returns NOTHING it CARRIES THE PREVIOUS POSITION FORWARD
+        (`last_acc`) with `score=None` and `held=True`. Measured (docs/probe-runs.md,
+        2026-08-03): that case is overwhelmingly RELOAD — the badge is crisp and localizable
+        but the game renders no digits in it at all — plus end-of-fight HUD-absent frames and
+        1-2 frame transients. It is NOT a "the aim point moved and we lost it" case, which is
+        why relaxing the gate to recover it was measured strictly WORSE than holding (it locks
+        onto floating damage popups).
+      * Before the first acquisition `last_acc` is None, so a candidate-less frame returns
+        `(None, None, False)` — there is no position, held or otherwise. `held` therefore
+        means "this position is real but is NOT this frame's own measurement", and no caller
+        has to infer that from a None in the confidence slot.
     """
     cands = locate_ammo_structural(rgb, templ_h)
     if not cands:
-        return last_acc, None
+        return last_acc, None, last_acc is not None
     if last_acc is not None:
         nearest = min(cands, key=lambda c: math.hypot(c[1] - last_acc[0], c[2] - last_acc[1]))
         d = math.hypot(nearest[1] - last_acc[0], nearest[2] - last_acc[1])
         if d <= max_disp:
-            return (nearest[1], nearest[2]), nearest[0]
+            return (nearest[1], nearest[2]), nearest[0], False
     best = cands[0]
-    return (best[1], best[2]), best[0]
+    return (best[1], best[2]), best[0], False
 
 
 def segment_ammo_digits(roi_rgb, templ_h):
@@ -894,6 +910,10 @@ def ammo_series_from_dump(tracks_path, frames_dir, atlas, templ_h, digit_score_m
         return {'tracks': str(tracks_path), 'mode': mode, 'refused': (
             f'{mode} dump: cross_rawloc is not a digit-row centre, so there is no reference point '
             f'to read the counter at. Use --ammo-digits with --ammo-template on the frames instead.')}
+    # Per-frame HELD-lock flags when the dump carries them (count-pellets.py has recorded
+    # `cross_held` since 2026-08-03). Absent on older dumps -> every frame reads as not-held and
+    # the reason set is exactly what it always was, so previously-produced series stay comparable.
+    held = data.get('cross_held') or []
     lo, hi = (0, len(fnames)) if limit is None else limit
     reads = []
     for i in range(lo, min(hi, len(fnames))):
@@ -907,6 +927,17 @@ def ammo_series_from_dump(tracks_path, frames_dir, atlas, templ_h, digit_score_m
         e['i'] = i
         e['file'] = fnames[i]
         e['conf'] = confs[i]
+        # A read taken at a HELD position was taken at a place this frame never measured. When it
+        # abstains, the abstention is a LOCALIZATION state, and reporting it as 'no-digits' (or
+        # 'cell-count') attributes a lock failure to segmentation -- measured on the 7 committed
+        # dumps, 70.2% of held frames are RELOADS, where the badge is crisp and the game simply
+        # renders no digits. The segmentation reason is preserved as `seg_reason` rather than
+        # discarded, so nothing that used it can silently lose its denominator.
+        if i < len(held) and held[i] and e.get('ammo') is None:
+            e['seg_reason'] = e['reason']
+            e['reason'] = 'held-lock'
+        if i < len(held):
+            e['held'] = bool(held[i])
         reads.append(e)
     return {
         'tracks': str(tracks_path), 'frames_dir': str(frames_dir), 'mode': 'structural',
@@ -1499,6 +1530,11 @@ def main():
             cross_positions = [tuple(c) if c else None for c in loaded['cross_positions']]
             cross_confs = loaded['cross_confs']
             cross_rawloc = [tuple(c) if c else None for c in loaded['cross_rawloc']]
+            # Caches written before the held-lock signal existed carry no `cross_held`. It is NOT
+            # reconstructible from the cache (the candidate list is gone), so it stays None and the
+            # key is omitted from anything this run writes — consumers then fall back to their own
+            # inferred staleness rule instead of reading a fabricated all-False array as truth.
+            cross_held = loaded.get('cross_held')
             frame_w, frame_h = loaded['params']['frame_w'], loaded['params']['frame_h']
             all_comps = [_filter_components(fr, args, frame_w, frame_h) for fr in loaded['detections']]
         else:
@@ -1511,6 +1547,13 @@ def main():
                                # locate_ammo_structural). Same slot, documented meaning per mode.
             cross_rawloc = []  # per-frame raw (unfiltered) template match top-left loc, or the
                                # best structural candidate's (cx, cy) before the continuity gate
+            cross_held = []    # per-frame True where the position is a CARRY-FORWARD of the
+                               # previous frame's lock rather than this frame's own measurement.
+                               # BOTH modes have a hold branch and neither used to be observable:
+                               # structural signals it by dropping conf to None, template keeps
+                               # recording the FAILING numeric conf, so downstream code had to
+                               # infer staleness per mode (analyze-pellet-tracks.py stale_mask).
+                               # This records the locator's own answer instead of inferring it.
             last_acc = None    # last accepted ammo-box top-left loc (for displacement gate)
             last_acc_struct = None  # last accepted structural digit-row centre (cx, cy)
             max_disp = args.max_template_disp
@@ -1529,12 +1572,14 @@ def main():
                 cross_pos = None
                 conf_val = None
                 raw_loc = None
+                held_val = False
                 if args.locate == 'structural':
-                    center, score = locate_crosshair_structural(img, args.struct_templ_h,
-                                                                  last_acc_struct, max_disp)
+                    center, score, held = locate_crosshair_structural(img, args.struct_templ_h,
+                                                                      last_acc_struct, max_disp)
                     if center is not None:
                         last_acc_struct = center
                         conf_val = score
+                        held_val = held
                         raw_loc = (round(center[0]), round(center[1]))
                         cross_pos = (round(center[0] + args.struct_offset_x),
                                      round(center[1] + args.struct_offset_y))
@@ -1571,6 +1616,7 @@ def main():
                         last_acc = cand
                     elif last_acc is not None:
                         accepted = last_acc
+                        held_val = True   # the carry-forward branch named in the comment above
                     if accepted is not None:
                         th, tw = ammo_tmpl.shape[:2]
                         cross_pos = (int(accepted[0] + tw//2 + args.ammo_offset_x),
@@ -1583,6 +1629,9 @@ def main():
                 cross_positions.append(cross_pos)
                 cross_confs.append(conf_val)
                 cross_rawloc.append(raw_loc)
+                # A --crosshair-file fallback position (the block just above) is an EXTERNAL
+                # measurement, not a carry-forward, so held_val stays False for it by construction.
+                cross_held.append(held_val)
 
             if args.dump_detections:
                 dump = {
@@ -1607,6 +1656,8 @@ def main():
                     "cross_rawloc": cross_rawloc,
                     "detections": raw_dump,
                 }
+                if cross_held is not None:
+                    dump["cross_held"] = cross_held
                 with open(args.dump_detections, 'w') as df:
                     json.dump(dump, df)
                 print(f'dumped raw detections for {len(fnames)} frames -> {args.dump_detections}',
@@ -1651,6 +1702,11 @@ def main():
                     "areas": t['areas'],
                 } for t in tracks],
             }
+            # Omitted (not defaulted to all-False) when this run replayed a pre-held-lock
+            # --load-detections cache: absent means "unknown, use the inferred rule", and a
+            # fabricated all-False array would read as "nothing was ever held".
+            if cross_held is not None:
+                dump["cross_held"] = cross_held
             with open(args.dump_tracks, 'w') as df:
                 json.dump(dump, df)
             print(f'dumped {len(tracks)} tracks -> {args.dump_tracks}', file=sys.stderr)

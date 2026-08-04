@@ -410,6 +410,13 @@ def compare_frames(data, frames_dir, start, count):
 # any of that reaches the COUNTS: the counter only reads t0+8..t0+11 of each DETECTED shot, a small
 # and possibly non-representative subset. This section measures that subset directly.
 #
+# SINCE 2026-08-03 the dump can just SAY SO: count-pellets.py records a per-frame `cross_held`
+# array straight from the locator's own branch, and stale_mask() below prefers it whenever it is
+# present. Everything from here to the end of this comment describes the FALLBACK -- the rules that
+# INFER the hold from its side effects, which is all a dump written before that field supports, and
+# which every dump and fixture committed to date is scored by. The two are kept in one function so
+# a mixed corpus stays comparable.
+#
 # The two hold mechanisms are DIFFERENT per localization mode and must not be tested with each
 # other's rule (the prevalence entry's own "do not conflate the two confidence scales" note):
 #
@@ -480,21 +487,38 @@ def detect_locate_mode(data):
 
 def stale_mask(data, mode):
     """Per-frame True where the crosshair position is a HELD carry-forward, not this frame's own
-    measurement. Returns (mask, modal_delta_or_None)."""
+    measurement. Returns (mask, modal_delta_or_None).
+
+    PREFERS THE DUMP'S OWN ANSWER. count-pellets.py records an explicit per-frame `cross_held`
+    array (since 2026-08-03), which is the locator reporting the branch it actually took; the
+    two per-mode rules above it are INFERENCES from a side effect of that branch (structural
+    drops conf to None, template goes off-modal). When the field is there it is authoritative and
+    the inference is skipped. When it is absent -- every dump and every committed fixture written
+    before it -- the inferred rule runs exactly as before, so no existing scoring moves.
+
+    The template mode's modal offset is still computed for reporting either way: `modal_delta` is
+    a published field of the stale-counting report, not just an intermediate of the mask.
+    """
     cross, confs, raw = data["cross_positions"], data["cross_confs"], data["cross_rawloc"]
     n = len(cross)
+    modal = None
+    if mode != "structural":
+        deltas = collections.Counter()
+        for c, r in zip(cross, raw):
+            if c and r:
+                deltas[(c[0] - r[0], c[1] - r[1])] += 1
+        modal = list(deltas.most_common(1)[0][0]) if deltas else None
+    held = data.get("cross_held")
+    if held is not None and len(held) == n:
+        return [bool(h) for h in held], modal
     if mode == "structural":
         return [confs[i] is None and cross[i] is not None for i in range(n)], None
-    deltas = collections.Counter()
-    for c, r in zip(cross, raw):
-        if c and r:
-            deltas[(c[0] - r[0], c[1] - r[1])] += 1
-    if not deltas:
+    if modal is None:
         return [False] * n, None
-    modal = deltas.most_common(1)[0][0]
-    mask = [bool(cross[i] and raw[i] and (cross[i][0] - raw[i][0], cross[i][1] - raw[i][1]) != modal)
+    mx, my = modal
+    mask = [bool(cross[i] and raw[i] and (cross[i][0] - raw[i][0], cross[i][1] - raw[i][1]) != (mx, my))
             for i in range(n)]
-    return mask, list(modal)
+    return mask, modal
 
 
 def stale_runs(mask):
@@ -1711,6 +1735,14 @@ AMMO_ABSTENTION_FIXTURE = "scripts/tests/fixtures/pellets/ammo-abstention-slice.
 #   --ammo-series path (the mode every dump audited here was produced by):
 #     'no-lock'    count-pellets.py:902 (ammo_series_from_dump) -- cross_rawloc[i] is None: the dump
 #                  carries no digit-row centre for this frame, so no crop is even attempted.
+#     'held-lock'  ammo_series_from_dump -- the dump's `cross_held` says this frame's position is a
+#                  CARRY-FORWARD of the previous lock, and the read taken there abstained. The crop
+#                  was attempted at a place this frame never measured, so the abstention is a
+#                  LOCALIZATION state; the segmentation reason it would otherwise have carried is
+#                  kept alongside as `seg_reason`. Only emitted for dumps written since 2026-08-03
+#                  (the ones carrying `cross_held`) -- on older dumps those frames still report
+#                  their segmentation reason, which is why every reason-consumer here reads
+#                  `seg_reason or reason` when it wants the segmentation view.
 #     'no-digits'  count-pellets.py:867 (read_ammo_at_center) -- segment_ammo_digits returned [].
 #     'cell-count' count-pellets.py:867 -- SAME line: it segmented some cells but not exactly
 #                  AMMO_DIGIT_CELLS (3), so the place values cannot be trusted.
@@ -1722,11 +1754,17 @@ AMMO_ABSTENTION_FIXTURE = "scripts/tests/fixtures/pellets/ammo-abstention-slice.
 #     (that path's 'low-score' twin of :877 lives at count-pellets.py:1470.)
 #
 # Only GLYPH-MATCH is reachable by a better/bigger digit atlas: it is the sole class where the
-# reader got three clean cells and then failed to NAME them. LOCALIZATION and SEGMENTATION frames
-# never reach the atlas at all, so no amount of glyph harvesting can convert them.
+# reader got three clean cells and then failed to NAME them. LOCALIZATION, HELD-LOCK and
+# SEGMENTATION frames never reach the atlas at all, so no amount of glyph harvesting can convert
+# them.
+#
+# HELD-LOCK is its own class, NOT folded into either neighbour: it is not LOCALIZATION-in-the-
+# 'no-lock' sense (a position exists, it is simply the previous frame's), and calling it
+# SEGMENTATION would be the exact mis-attribution this class was added to stop.
 ABSTENTION_CLASS = {
     "no-lock": "LOCALIZATION",
     "no-box": "LOCALIZATION",
+    "held-lock": "HELD-LOCK",
     "no-digits": "SEGMENTATION",
     "cell-count": "SEGMENTATION",
     "too-many-cells": "SEGMENTATION",
@@ -1826,7 +1864,11 @@ def ammo_abstention_raw(ammo, tracks, dark_max=AMMO_SURROUND_DARK_MAX, colours=N
             n_read += 1
         else:
             reasons[reason] += 1
-            if reason == "no-digits" and st:
+            # `seg_reason or reason` keeps this counter meaning the same thing on both dump
+            # generations: on a post-2026-08-03 dump a held frame's 'no-digits' has been
+            # relabelled 'held-lock' with the original preserved, so reading `reason` alone
+            # would report 0 here and look like the phenomenon vanished when only its LABEL moved.
+            if (r.get("seg_reason") or reason) == "no-digits" and st:
                 no_digits_on_stale += 1
             if ABSTENTION_CLASS.get(reason) == ATLAS_FIXABLE_CLASS:
                 if dark:
@@ -2100,9 +2142,18 @@ def _ammo_abstention_slim(ammo, tracks, colours):
     keep = min(AMMO_ABSTENTION_SLICE, n_dump)
     lo = (n_dump - keep) // 2
     hi = lo + keep
-    reads = [{"i": r["i"] - lo, "ammo": r.get("ammo"), "reason": r.get("reason"),
-              "conf": r.get("conf")}
-             for r in ammo["reads"] if lo <= r["i"] < hi]
+    reads = []
+    for r in ammo["reads"]:
+        if not (lo <= r["i"] < hi):
+            continue
+        slim_read = {"i": r["i"] - lo, "ammo": r.get("ammo"), "reason": r.get("reason"),
+                     "conf": r.get("conf")}
+        # Only present on a post-2026-08-03 series. Carried because the report reads it
+        # (`no_digits_on_stale`); dropping it would make the replay disagree with the live run it
+        # is supposed to pin. Omitted entirely when absent, so an older fixture keeps its shape.
+        if r.get("seg_reason") is not None:
+            slim_read["seg_reason"] = r["seg_reason"]
+        reads.append(slim_read)
     slim = {
         "tracks": "/".join(Path(ammo["tracks"]).parts[-2:]),
         "slice": [lo, hi], "n_frames_full_clip": n_dump,
@@ -2112,6 +2163,10 @@ def _ammo_abstention_slim(ammo, tracks, colours):
         "cross_confs": tracks["cross_confs"][lo:hi],
         "cross_rawloc": tracks["cross_rawloc"][lo:hi],
     }
+    # Same conditional-carry rule: with it, the replay's stale mask is the dump's own explicit
+    # answer; without it, the elementwise inferred rule, which slices exactly as before.
+    if tracks.get("cross_held") is not None:
+        slim["cross_held"] = tracks["cross_held"][lo:hi]
     if colours is not None:
         slim["glyph_match_colours"] = {str(i - lo): v for i, v in colours.items() if lo <= i < hi}
     return slim
@@ -2195,6 +2250,414 @@ def ammo_abstention_selftest():
     print(f"got     : {json.dumps(got, sort_keys=True)}")
     print("SELFTEST PASS" if ok else "SELFTEST FAIL")
     return 0 if ok else 1
+
+
+# ======================================================= THE PERFECT-LOCK CEILING (oracle) ========
+# The question --ammo-abstention leaves open: a HELD lock reads at a position this frame never
+# measured, so how much of the ammo counter is the reader losing TO THE LOCK -- i.e. how much would
+# a perfect localizer recover? This arm answers it by CHEATING, deliberately.
+#
+# THE ORACLE. For a stale frame `i`, take the digit-row centre of the nearest frame within
+# `max_gap` that BOTH had a good (non-held) lock AND actually read. That is not a localizer, it is
+# a lower bound on what the best possible one could deliver: the ROI is 214x124px and the box moves
+# ~10-30px/frame, so at max_gap<=2 a neighbour's centre still contains the counter. Feed the stale
+# frame's OWN pixels through the shipped `read_ammo_at_center` at that borrowed centre.
+#
+#   * if it now decodes -> the digits were there and localization was the whole loss;
+#   * if it still does not -> THE DIGITS ARE NOT THERE and no localization fix can recover the
+#     read, because the read already had a better centre than any localizer could have found.
+#
+# THE CONTROL ARM IS WHAT MAKES IT VALID, and it is not optional -- the oracle is a borrowed
+# position, so before its silence on stale frames means anything, the SAME borrowed-position
+# procedure has to be shown harmless on frames that already read. Apply it to good frames and it
+# must (a) still decode at ~the same rate and (b) return the SAME VALUE the frame read for itself.
+# If the control arm degrades, the stale arm's silence is the oracle's own error floor and says
+# nothing about the digits. Both arms are always reported; neither is meaningful alone.
+#
+# NOT A FIX AND NOT A PROPOSAL: nothing here can ship. A real reader has no future frames and no
+# read-confirmed neighbours. This measures a CEILING, and a ceiling's only job is to say whether
+# the work under it is worth doing.
+ORACLE_CEILING_FIXTURE = "scripts/tests/fixtures/pellets/ammo-oracle-ceiling-slice.json"
+ORACLE_MAX_GAP = 2          # frames either side to borrow a centre from (see the ROI argument above)
+ORACLE_CONTROL_TARGET = 300  # good frames sampled per dump for the control arm, evenly spaced
+ORACLE_SLICE = 1200          # frames kept per dump in the committed fixture (see _oracle_slim)
+# DECLARED SANITY GATES, not calibrated boundaries: below either of these the control arm has
+# degraded enough that the stale arm is reporting the oracle's error floor rather than the frames'
+# contents, and the report says so instead of quoting a stale-arm number that cannot mean what it
+# looks like. Set well below the measured control performance so they FAIL LOUDLY on a real
+# regression rather than tracking it.
+#
+# The same-value floor is not 100% deliberately. The control arm reads a frame's OWN pixels at a
+# BORROWED centre, so a mismatch is an oracle-induced misread (a shifted ROI clipping a glyph), not
+# a real counter change -- and the measured rate of that across the 7 committed dumps is exactly
+# 1 in 2216. That is the oracle's error floor; `control_differs_detail` lists the frames so it stays
+# auditable instead of being a bare count.
+ORACLE_CONTROL_FLOOR_PCT = 95.0
+ORACLE_CONTROL_SAME_FLOOR_PCT = 99.0
+ORACLE_ATLAS_DIR = HERE / "ammo-atlas"
+
+
+def _oracle_key(entry):
+    """Decode identity = (frame, borrowed centre). Both matter: the same frame read at a different
+    centre is a different measurement, so a memoized decode may never be reused across centres."""
+    return f'{entry["i"]}@{entry["center"][0]},{entry["center"][1]}'
+
+
+def _oracle_plan(ammo, tracks, max_gap=ORACLE_MAX_GAP, control_target=ORACLE_CONTROL_TARGET):
+    """Assign a borrowed centre to every frame of both arms. Pure and image-free, so the fixture
+    replay builds the SAME plan the live run did and a memoized decode is addressable."""
+    mode, _ev = detect_locate_mode(tracks)
+    mask, _ = stale_mask(tracks, mode)
+    n = len(mask)
+    reads = {r["i"]: r for r in ammo["reads"]}
+    raw = tracks["cross_rawloc"]
+    # The oracle's SOURCE population: good lock AND a value. Both conditions are load-bearing --
+    # a good lock that abstained has a centre of unproven quality, and a read on a held lock has a
+    # value from a position that frame never measured.
+    ok = [i for i in range(n) if not mask[i] and reads.get(i, {}).get("ammo") is not None]
+    okset = set(ok)
+
+    def borrow(i):
+        for k in range(1, max_gap + 1):
+            for j in (i - k, i + k):          # nearest first; ties resolve to the EARLIER frame
+                if j in okset and raw[j] is not None:
+                    return raw[j], j
+        return None, None
+
+    stale_arm, n_no_oracle, n_no_read = [], 0, 0
+    for i in range(n):
+        if not mask[i]:
+            continue
+        if i not in reads:
+            n_no_read += 1                    # frame outside the series' own --ammo-series range
+            continue
+        c, j = borrow(i)
+        if c is None:
+            n_no_oracle += 1                  # no good-lock neighbour within max_gap
+            continue
+        stale_arm.append({"i": i, "center": [c[0], c[1]], "ref": j, "ref_ammo": reads[j]["ammo"]})
+    # Evenly-spaced control sample rather than the first N: a contiguous head would sit entirely in
+    # one part of the fight and could share whatever made that stretch easy or hard to read.
+    step = max(1, len(ok) // control_target)
+    control_arm = []
+    for i in ok[::step]:
+        c, j = borrow(i)
+        if c is None:
+            continue
+        control_arm.append({"i": i, "center": [c[0], c[1]], "ref": j, "own_ammo": reads[i]["ammo"]})
+    return {"mode": mode, "n_frames": n, "n_stale": sum(mask), "n_good_lock_read": len(ok),
+            "n_no_oracle": n_no_oracle, "n_outside_range": n_no_read,
+            "stale": stale_arm, "control": control_arm}
+
+
+def _oracle_decode(frames_dir, entries, files, templ_h, digit_score_min, n_cells, atlas):
+    """Run the SHIPPED reader at each borrowed centre. The only step that needs pixels."""
+    cp = _count_pellets_module()
+    out = {}
+    for e in entries:
+        img = cp.load_rgb(str(Path(frames_dir) / files[e["i"]]))
+        d = cp.read_ammo_at_center(img, tuple(e["center"]), templ_h, atlas, digit_score_min, n_cells)
+        out[_oracle_key(e)] = {"ammo": d.get("ammo"), "reason": d.get("reason"),
+                               "cells": d.get("cells")}
+    return out
+
+
+def _oracle_load_atlas(atlas_dir=None):
+    cp = _count_pellets_module()
+    d = str(atlas_dir or ORACLE_ATLAS_DIR)
+    atlas = cp.load_digit_atlas(d)
+    if not atlas:
+        raise SystemExit(f"--ammo-oracle-ceiling: no digit glyphs found at {d} "
+                         f"(pass --ammo-oracle-atlas)")
+    return atlas
+
+
+def oracle_ceiling_raw(plan, decodes, max_gap=ORACLE_MAX_GAP):
+    """RAW counts for both arms. Percentages are derived separately, so pooled figures are a sum of
+    counts and never an average of rounded rates (same rule as the abstention audit)."""
+    stale_fail = collections.Counter()
+    stale_fail_cells = collections.Counter()
+    diffs = collections.Counter()
+    n_dec = n_impossible = 0
+    for e in plan["stale"]:
+        d = decodes[_oracle_key(e)]
+        if d["ammo"] is None:
+            stale_fail[d["reason"]] += 1
+            stale_fail_cells[f'{d["reason"]}:{d["cells"]}'] += 1
+            continue
+        n_dec += 1
+        gap = abs(d["ammo"] - e["ref_ammo"])
+        diffs[gap] += 1
+        # IMPOSSIBILITY BOUND, not a tolerance: the counter falls by at most one per frame (one
+        # round), and the borrowed centre is at most max_gap frames away, so a decode further than
+        # max_gap from the bracketing level cannot be a real counter value -- it is a misread. This
+        # is the arm's own falsifier: a ceiling built out of misreads would show up right here.
+        if gap > max_gap:
+            n_impossible += 1
+    ctrl_fail = collections.Counter()
+    ctrl_differs_detail = []
+    ctrl_dec = ctrl_same = ctrl_differs = 0
+    for e in plan["control"]:
+        d = decodes[_oracle_key(e)]
+        if d["ammo"] is None:
+            ctrl_fail[d["reason"]] += 1
+            continue
+        ctrl_dec += 1
+        if d["ammo"] == e["own_ammo"]:
+            ctrl_same += 1
+        else:
+            ctrl_differs += 1
+            ctrl_differs_detail.append({"i": e["i"], "at_borrowed_centre": d["ammo"],
+                                        "own_read": e["own_ammo"], "ref": e["ref"]})
+    return {
+        "mode": plan["mode"], "n_frames": plan["n_frames"], "n_stale": plan["n_stale"],
+        "n_good_lock_read": plan["n_good_lock_read"], "n_no_oracle": plan["n_no_oracle"],
+        "n_outside_range": plan["n_outside_range"],
+        "stale_n_oracled": len(plan["stale"]), "stale_n_decoded": n_dec,
+        "stale_fail": dict(stale_fail), "stale_fail_cells": dict(stale_fail_cells),
+        "stale_decode_gap": {str(k): v for k, v in sorted(diffs.items())},
+        "stale_n_impossible": n_impossible,
+        "control_n": len(plan["control"]), "control_n_decoded": ctrl_dec,
+        "control_n_same_value": ctrl_same, "control_n_differs": ctrl_differs,
+        "control_differs_detail": ctrl_differs_detail, "control_fail": dict(ctrl_fail),
+    }
+
+
+def _pool_oracle_raw(raws):
+    modes = {r["mode"] for r in raws}
+    ints = ("n_frames", "n_stale", "n_good_lock_read", "n_no_oracle", "n_outside_range",
+            "stale_n_oracled", "stale_n_decoded", "stale_n_impossible",
+            "control_n", "control_n_decoded", "control_n_same_value", "control_n_differs")
+    out = {"mode": modes.pop() if len(modes) == 1 else "mixed"}
+    out.update({k: sum(r[k] for r in raws) for k in ints})
+    out["stale_fail"] = _sum_counts([r["stale_fail"] for r in raws])
+    out["stale_fail_cells"] = _sum_counts([r["stale_fail_cells"] for r in raws])
+    out["stale_decode_gap"] = _sum_counts([r["stale_decode_gap"] for r in raws])
+    out["control_fail"] = _sum_counts([r["control_fail"] for r in raws])
+    out["control_differs_detail"] = [d for r in raws for d in r["control_differs_detail"]]
+    return out
+
+
+def _oracle_view(raw):
+    """Derived rates for one raw block, plus the control arm's own verdict on itself."""
+    ctrl_n = max(1, raw["control_n"])
+    ctrl_dec_pct = round(100 * raw["control_n_decoded"] / ctrl_n, 1)
+    same_n = max(1, raw["control_n_decoded"])
+    same_pct = round(100 * raw["control_n_same_value"] / same_n, 1)
+    return {
+        "stale_decode_pct": round(100 * raw["stale_n_decoded"] / max(1, raw["stale_n_oracled"]), 1),
+        "stale_oracled_pct_of_stale": round(
+            100 * raw["stale_n_oracled"] / max(1, raw["n_stale"]), 1),
+        "control_decode_pct": ctrl_dec_pct,
+        "control_same_value_pct": same_pct,
+        # The gate the whole arm hangs on. VALID means the borrowed-position procedure was shown
+        # harmless on frames that already read, so the stale arm's silence is about the FRAMES.
+        "control_verdict": ("VALID" if ctrl_dec_pct >= ORACLE_CONTROL_FLOOR_PCT
+                            and same_pct >= ORACLE_CONTROL_SAME_FLOOR_PCT else
+                            "DEGRADED -- stale-arm figure is the oracle's error floor, not a ceiling"),
+    }
+
+
+def oracle_ceiling_report(name, plan, decodes, max_gap=ORACLE_MAX_GAP):
+    raw = oracle_ceiling_raw(plan, decodes, max_gap)
+    return {"dump": name, "raw": raw, **_oracle_view(raw)}
+
+
+def _oracle_ceiling_expected(reports, pooled):
+    """The pinned summary: both arms' counts per dump plus the pooled block."""
+    keys = ("stale_n_oracled", "stale_n_decoded", "stale_n_impossible",
+            "control_n", "control_n_decoded", "control_n_same_value", "control_n_differs")
+    per = [{"dump": r["dump"], **{k: r["raw"][k] for k in keys},
+            "stale_fail": r["raw"]["stale_fail"], "control_verdict": r["control_verdict"]}
+           for r in reports]
+    return {"per_dump": per,
+            "pooled": {**{k: pooled["raw"][k] for k in keys},
+                       "control_differs_detail": pooled["raw"]["control_differs_detail"],
+                       "stale_fail": pooled["raw"]["stale_fail"],
+                       "stale_fail_cells": pooled["raw"]["stale_fail_cells"],
+                       "stale_decode_gap": pooled["raw"]["stale_decode_gap"],
+                       "stale_decode_pct": pooled["stale_decode_pct"],
+                       "control_decode_pct": pooled["control_decode_pct"],
+                       "control_same_value_pct": pooled["control_same_value_pct"],
+                       "control_verdict": pooled["control_verdict"]}}
+
+
+def _print_oracle_ceiling(reports, pooled):
+    print("\nPERFECT-LOCK CEILING -- what a flawless localizer could recover from HELD frames")
+    print(f"{'dump':22s} {'stale':>6s} {'oracled':>8s} {'decoded':>8s} {'%':>6s} "
+          f"{'ctrl n':>7s} {'ctrl dec':>9s} {'same':>6s} {'differs':>8s}")
+    for r in list(reports) + [pooled]:
+        w = r["raw"]
+        print(f"{r['dump'][:22]:22s} {w['n_stale']:6d} {w['stale_n_oracled']:8d} "
+              f"{w['stale_n_decoded']:8d} {r['stale_decode_pct']:5.1f}% {w['control_n']:7d} "
+              f"{w['control_n_decoded']:9d} {w['control_n_same_value']:6d} "
+              f"{w['control_n_differs']:8d}")
+    pr = pooled["raw"]
+    print(f"\nCONTROL ARM: {pooled['control_decode_pct']}% of already-reading frames still decode at "
+          f"a BORROWED centre, {pooled['control_same_value_pct']}% of those to the SAME value "
+          f"({pr['control_n_same_value']}/{pr['control_n_decoded']}) -> {pooled['control_verdict']}")
+    print(f"  oracle error floor (control frames whose borrowed-centre read DIFFERS from their "
+          f"own): {pr['control_differs_detail'] or 'none'}")
+    print(f"STALE ARM  : {pr['stale_n_decoded']}/{pr['stale_n_oracled']} "
+          f"({pooled['stale_decode_pct']}%) of held frames decode under a PERFECT lock; "
+          f"{pr['n_no_oracle']} held frames had no good-lock neighbour within the gap at all")
+    print(f"  failures by reason:cells  {dict(sorted(pr['stale_fail_cells'].items()))}")
+    print(f"  decode vs bracketing level (|gap|): {pr['stale_decode_gap']}  "
+          f"impossible (> max gap): {pr['stale_n_impossible']}")
+    print("A stale frame that will not decode AT A BETTER CENTRE THAN ANY LOCALIZER COULD FIND has "
+          "no digits to read;\nno localization work recovers it. That is what this arm is for.")
+
+
+def _oracle_slice_bounds(n_dump, keep, stale_idx):
+    """The contiguous `keep`-frame window containing the most ORACLED STALE frames.
+
+    Not the middle slice the abstention fixture takes: held frames cluster (reloads), so a middle
+    slice can contain almost none and would pin a stale arm of ~0, i.e. a fixture that exercises
+    the half of the instrument nobody else covers not at all. Oracle-ability is decided within
+    +-max_gap frames, so away from the two edges a full-clip oracled frame is oracled in the slice
+    too -- which makes this window an exact maximiser, not a heuristic. Ties go to the earliest
+    start, so the choice is deterministic."""
+    if keep >= n_dump:
+        return 0, n_dump
+    idx = sorted(stale_idx)
+    best_lo, best_n, j0 = 0, -1, 0
+    for lo in range(0, n_dump - keep + 1):
+        while j0 < len(idx) and idx[j0] < lo:
+            j0 += 1
+        j = j0
+        while j < len(idx) and idx[j] < lo + keep:
+            j += 1
+        if j - j0 > best_n:
+            best_lo, best_n = lo, j - j0
+    return best_lo, best_lo + keep
+
+
+def _oracle_slim(ammo, tracks, plan_full, keep=ORACLE_SLICE):
+    """One dump reduced to a contiguous slice re-indexed to 0, carrying only the fields the plan
+    and the report read. Returns (slim, lo) -- `lo` maps a slice index back to a frame file."""
+    n_dump = len(tracks["cross_confs"])
+    lo, hi = _oracle_slice_bounds(n_dump, min(keep, n_dump), [e["i"] for e in plan_full["stale"]])
+    slim = {
+        "tracks": "/".join(Path(ammo["tracks"]).parts[-2:]),
+        "slice": [lo, hi], "n_frames_full_clip": n_dump, "range": [0, hi - lo],
+        "reads": [{"i": r["i"] - lo, "ammo": r.get("ammo"), "reason": r.get("reason")}
+                  for r in ammo["reads"] if lo <= r["i"] < hi],
+        "cross_positions": tracks["cross_positions"][lo:hi],
+        "cross_confs": tracks["cross_confs"][lo:hi],
+        "cross_rawloc": tracks["cross_rawloc"][lo:hi],
+    }
+    if tracks.get("cross_held") is not None:
+        slim["cross_held"] = tracks["cross_held"][lo:hi]
+    return slim, lo
+
+
+def _replay_oracle_ceiling(dumps, max_gap=ORACLE_MAX_GAP, control_target=ORACLE_CONTROL_TARGET):
+    """Run both arms over slim dumps carrying MEMOIZED decodes -- no images, no subprocess. Shared
+    by the fixture WRITER and the selftest, so `_expected` can only ever be the slice's own
+    numbers. What it pins is the ORACLE LOGIC (neighbour selection, both arms' tallies, the
+    impossibility bound); the pixel decode itself is precomputed, exactly as the abstention
+    fixture precomputes its GLYPH-MATCH colour labels."""
+    reports = []
+    for d in dumps:
+        ammo = {"tracks": d["tracks"], "range": d["range"], "reads": d["reads"]}
+        plan = _oracle_plan(ammo, d, max_gap, control_target)
+        reports.append(oracle_ceiling_report(d["tracks"], plan, d["decodes"], max_gap))
+    pooled_raw = _pool_oracle_raw([r["raw"] for r in reports])
+    pooled = {"dump": "POOLED", "raw": pooled_raw, **_oracle_view(pooled_raw)}
+    return reports, pooled
+
+
+def audit_oracle_ceiling(ammo_paths, max_gap=ORACLE_MAX_GAP, control_target=ORACLE_CONTROL_TARGET,
+                         atlas_dir=None, save_fixture=None):
+    atlas = _oracle_load_atlas(atlas_dir)
+    reports, raws, slims = [], [], []
+    for p in ammo_paths:
+        with open(p) as fh:
+            ammo = json.load(fh)
+        if ammo.get("refused"):
+            print(f"REFUSED {p}: {ammo['refused']}")
+            continue
+        with open(ammo["tracks"]) as fh:
+            tracks = json.load(fh)
+        files = {r["i"]: r["file"] for r in ammo["reads"]}
+        templ_h = ammo.get("templ_h", 74.0)
+        smin = ammo.get("digit_score_min", 0.60)
+        n_cells = ammo.get("n_cells", 3)
+        plan = _oracle_plan(ammo, tracks, max_gap, control_target)
+        decodes = _oracle_decode(ammo["frames_dir"], plan["stale"] + plan["control"], files,
+                                 templ_h, smin, n_cells, atlas)
+        rep = oracle_ceiling_report("/".join(Path(p).parts[-1:]), plan, decodes, max_gap)
+        reports.append(rep)
+        raws.append(rep["raw"])
+        if save_fixture:
+            slim, lo = _oracle_slim(ammo, tracks, plan)
+            sl_ammo = {"tracks": slim["tracks"], "range": slim["range"], "reads": slim["reads"]}
+            sl_plan = _oracle_plan(sl_ammo, slim, max_gap, control_target)
+            # Decoded against the SLICE's own plan, not filtered out of the full-clip decode: the
+            # slice's borrowed centres are re-derived from the sliced arrays, so a full-clip decode
+            # could be keyed to a centre the slice never asks for.
+            slim["decodes"] = _oracle_decode(ammo["frames_dir"], sl_plan["stale"] + sl_plan["control"],
+                                             {e["i"]: files[e["i"] + lo]
+                                              for e in sl_plan["stale"] + sl_plan["control"]},
+                                             templ_h, smin, n_cells, atlas)
+            slims.append(slim)
+    if not reports:
+        print("no readable series given")
+        return None
+    pooled_raw = _pool_oracle_raw(raws)
+    pooled = {"dump": "POOLED", "raw": pooled_raw, **_oracle_view(pooled_raw)}
+    out = {"params": {"max_gap": max_gap, "control_target": control_target},
+           "dumps": reports, "pooled": pooled}
+    if save_fixture:
+        sl_reports, sl_pooled = _replay_oracle_ceiling(slims, max_gap, control_target)
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("count-pellets.py --ammo-series reads + the --dump-tracks lock arrays "
+                            "they were scored against, for the 7 dumps of the 2026-08-03 stale-lock "
+                            "recoverability diagnosis (isabel / guilty / marciana (SG/Iron -- NOT "
+                            "marciana-marine-study, AR/Iron) / noir). Constraint 9 "
+                            "self-validation, same precedent as ammo-abstention-slice.json."),
+                "_note": ("SLICED, not full-clip: each dump is the contiguous "
+                          f"{ORACLE_SLICE}-frame window holding the most ORACLED STALE frames (or "
+                          "the whole clip if shorter), re-indexed to 0, and `_expected` pins THAT "
+                          "SLICE's numbers -- they are NOT the full-clip figures the docs cite. "
+                          "`slice` records the source range. `decodes` memoizes the shipped "
+                          "read_ammo_at_center result at each borrowed centre, so the replay needs "
+                          "no frame PNGs and no digit atlas; what it pins is the ORACLE LOGIC and "
+                          "both arms' tallies. Regenerate with analyze-pellet-tracks.py "
+                          "--ammo-oracle-ceiling <ammo-series.json...> "
+                          "--save-ammo-oracle-fixture <path>."),
+                "params": out["params"], "dumps": slims,
+                "_expected": _oracle_ceiling_expected(sl_reports, sl_pooled),
+            }, fh)
+        print(f"wrote oracle-ceiling slice fixture -> {save_fixture} "
+              f"(`_expected` pins the SLICE: stale {sl_pooled['raw']['stale_n_decoded']}/"
+              f"{sl_pooled['raw']['stale_n_oracled']}, control "
+              f"{sl_pooled['raw']['control_n_decoded']}/{sl_pooled['raw']['control_n']}, "
+              f"NOT the full-clip figures below)")
+    print(json.dumps(out, indent=2))
+    _print_oracle_ceiling(reports, pooled)
+    return out
+
+
+def oracle_ceiling_selftest():
+    """Constraint 9 self-validation: replay both arms over the committed slice."""
+    with open(ORACLE_CEILING_FIXTURE) as fh:
+        fx = json.load(fh)
+    p = fx["params"]
+    reports, pooled = _replay_oracle_ceiling(fx["dumps"], p["max_gap"], p["control_target"])
+    got = _oracle_ceiling_expected(reports, pooled)
+    ok = got == fx["_expected"]
+    # The control arm is not just reported here, it is ASSERTED: a fixture whose control arm went
+    # DEGRADED would still "match" its own pinned numbers while measuring nothing.
+    ctrl_ok = pooled["control_verdict"] == "VALID"
+    print(f"expected: {json.dumps(fx['_expected'], sort_keys=True)}")
+    print(f"got     : {json.dumps(got, sort_keys=True)}")
+    print(f"control arm: {pooled['control_verdict']} "
+          f"({pooled['control_decode_pct']}% decode, "
+          f"{pooled['raw']['control_n_same_value']}/{pooled['raw']['control_n_decoded']} same value)")
+    print("SELFTEST PASS" if ok and ctrl_ok else "SELFTEST FAIL")
+    return 0 if ok and ctrl_ok else 1
 
 
 FIXTURE = "scripts/tests/fixtures/pellets/run16-tracks-slice.json"
@@ -2379,6 +2842,28 @@ def main():
                      help=f"write the selftest slice fixture (default path {AMMO_ABSTENTION_FIXTURE})")
     ap.add_argument("--ammo-abstention-selftest", action="store_true",
                      help=f"replay --ammo-abstention against {AMMO_ABSTENTION_FIXTURE} and exit")
+    ap.add_argument("--ammo-oracle-ceiling", nargs="+", metavar="AMMO_SERIES_JSON",
+                     help="THE PERFECT-LOCK CEILING: re-read every HELD-lock frame at the digit-row "
+                          "centre BORROWED from its nearest good-lock reading neighbour, to measure "
+                          "how much of the ammo counter a flawless localizer could recover. Needs "
+                          "the frame PNGs each series records in its `frames_dir`. Always reports "
+                          "the CONTROL ARM alongside -- the same borrowed centre applied to frames "
+                          "that already read, which must still decode to the SAME value or the "
+                          "stale-arm figure is the oracle's own error floor. Diagnostic only: no "
+                          "real reader has future frames, so nothing here can ship")
+    ap.add_argument("--ammo-oracle-gap", type=int, default=ORACLE_MAX_GAP,
+                     help=f"frames either side to borrow a centre from (default {ORACLE_MAX_GAP}; "
+                          f"the ROI is 214x124px and the box moves ~10-30px/frame, so beyond ~2 the "
+                          f"borrowed ROI can no longer be assumed to contain the counter)")
+    ap.add_argument("--ammo-oracle-control", type=int, default=ORACLE_CONTROL_TARGET,
+                     help=f"good frames sampled per dump for the control arm, evenly spaced "
+                          f"(default {ORACLE_CONTROL_TARGET})")
+    ap.add_argument("--ammo-oracle-atlas", metavar="DIR",
+                     help=f"digit glyph atlas for the re-read (default {ORACLE_ATLAS_DIR})")
+    ap.add_argument("--save-ammo-oracle-fixture", metavar="PATH",
+                     help=f"write the selftest slice fixture (default path {ORACLE_CEILING_FIXTURE})")
+    ap.add_argument("--ammo-oracle-ceiling-selftest", action="store_true",
+                     help=f"replay --ammo-oracle-ceiling against {ORACLE_CEILING_FIXTURE} and exit")
     ap.add_argument("--gt-score-json", metavar="PATH",
                      help="score-pellets.py --real-fixture stdout JSON (carries each shot's owner "
                           "count, the shipped estimator's error and its per-offset counts)")
@@ -2392,6 +2877,13 @@ def main():
         raise SystemExit(hand_count_selftest())
     if args.ammo_abstention_selftest:
         raise SystemExit(ammo_abstention_selftest())
+    if args.ammo_oracle_ceiling_selftest:
+        raise SystemExit(oracle_ceiling_selftest())
+    if args.ammo_oracle_ceiling:
+        audit_oracle_ceiling(args.ammo_oracle_ceiling, args.ammo_oracle_gap,
+                             args.ammo_oracle_control, args.ammo_oracle_atlas,
+                             args.save_ammo_oracle_fixture)
+        return
     if args.ammo_abstention:
         audit_ammo_abstention(args.ammo_abstention, args.ammo_abstention_frames,
                               args.ammo_abstention_dark_max, args.save_ammo_abstention_fixture)
