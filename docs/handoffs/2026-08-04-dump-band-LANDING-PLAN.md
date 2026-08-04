@@ -84,4 +84,20 @@ Record as `docs/probe-runs.md` §23 and fill §7 below. ⛔ Do not push; `main` 
 
 ## 7. Result
 
-_(Written only after the landing verifies.)_
+**2026-08-04 — LANDED (`bde7a37f`). Full narrative: `docs/probe-runs.md` §23.**
+
+All five §4 criteria MET. ⚑ **The §3 blast-radius prediction HELD exactly: zero fixtures moved, zero
+pins moved**, `CACHE_SELFTEST_EXPECT` unmoved, only the two script files touched. No §5 hard stop
+fired. Gates: `pellet-selftest.sh` 25 arms TRUE exit 0, `verify.sh` TRUE exit 0.
+
+⚑ **§2's reader list was NOT exhaustive** — it named two hard 3-unpack sites; the tree had **eleven**,
+of which **six** are genuinely reachable from `_rep_slim_dump`'s output (four not in this plan). All
+six were widened via a shared `_expand_frame_counts_row`; the five unreachable ones were reported,
+not changed. Recorded in §23C because that is precisely the latent-crash class this landing prevents.
+
+The omit-vs-fabricate semantic of §2 was verified **behaviourally**, not just by inspection: a 3-wide
+row yields no `band` key, while a genuine `band = 0` is preserved and stays distinguishable from
+"unknown" (§23B).
+
+⚑ Scope limit, unchanged from the plan: **only newly-written dumps gain the field.** Existing dumps
+still replay pre-hybrid, so any measurement re-derived from one is still scoring the old rule.
