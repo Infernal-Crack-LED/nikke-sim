@@ -4460,3 +4460,250 @@ scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --merge-au
 # the whole reader toolchain, including this arm's selftest, with a TRUE exit status:
 bash scripts/probe/pellet-selftest.sh; echo $?
 ```
+
+---
+
+#### §13 THE FALLBACK HYBRID LANDS — `band` channel + `debounce_shots`/`debounceShots` hybrid, both implementations, owner-authorized
+
+**2026-08-04.** Executes the owner-authorized implementation pass named in
+[`docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md`](handoffs/2026-08-04-representative-frame-PROPOSAL.md):
+moves the fallback hybrid on `plateau_median` from a scoring variant inside `--policy-score`
+(§9–§12) into the SHIPPED pipeline — `count-pellets.py:debounce_shots` and its TypeScript mirror
+`read-pellets.ts:debounceShots`. **This entry enacts a change** (unlike §9–§12, which were
+measurement-only); it is gated by the six pre-committed §4 criteria and the four mandatory checks
+below, all re-measured against the landed code, not the audit-arm scoring variant that predicted
+them.
+
+##### §13A — What changed, in both implementations
+
+**`scripts/probe/count-pellets.py`:**
+
+- A new `REP_OWNER_LIFE_LO_60FPS = 8` constant + `_band_lo(fps)` helper (duplicated from
+  `analyze-pellet-tracks.py`'s constant of the same name/value/formula — the two files have no
+  import relationship in that direction, same convention `debounce_shots`'s own "kept in lockstep,
+  not shared" note already uses).
+- `build_tracks_and_counts` split into `_track_components` (the nearest-neighbor tracker, logic
+  unchanged) and `_frame_pellet_counts` (the per-frame radius/lifetime window), the latter now
+  emitting a FOURTH key, `band`: the count of in-radius WHITE (non-red) tracks on that frame whose
+  OVERALL lifetime also falls in `[_band_lo(fps), max_pellet_frames]` — a strict subset of `white`.
+  `build_tracks_and_counts`'s public signature/return shape is unchanged; every one of its callers
+  (`--shots`, `--sweep`, and `--temporal`'s stdout `results`) now carries `band` for free.
+- `debounce_shots`: a `has_band = any('band' in r for r in frame_counts)` check computed once, up
+  front. When `True`, each event additionally computes `_plateau_rep` (a verbatim port of
+  `analyze-pellet-tracks.py`'s `_ps_plateau_rep`/`_ps_longest_modal_run` — the longest run of
+  frames with `band >= event_min` whose values sit within ±1 of the run's own mode) over its own
+  `band` series; if that returns a frame, `rep_idx`/`white`/`total` are OVERWRITTEN with the band
+  value at that frame (`shot_red`/`core_hit`/`event_frames`/`start`/`end` never move). When
+  `has_band` is `False`, or the event's own plateau returns `None`, the function is byte-identical
+  to the pre-hybrid code path — this is the backward-compat default the design required, and it is
+  what makes every band-less committed dump/fixture replay unchanged (§13E).
+
+**`scripts/probe/read-pellets.ts`:** the identical port —
+
+- `PelletCount`/`FrameCounts`/`Read` gain an optional `band` field, threaded from the Python
+  counter's stdout through `best.band ?? 0` (same pattern as `marker`).
+- The inline debounce block (previously top-level imperative code) is now a hoisted
+  `function debounceShots(frameCountsIn, fps, markerMin, minPellets, maxPellets)`, mirroring
+  `count-pellets.py`'s signature and returning `{shots, summary}` keyed by absolute frame index
+  (`frame`, not enriched with `videoT`/`timerSec` — the main pipeline enriches those afterward via
+  `reads[s.frame]`, same separation `debounce_shots` already has from any timer/video concept).
+  `longestModalRun`/`plateauRep` are direct ports of the Python helpers above.
+- A new `--debounce-json <path>` CLI mode: reads a JSON array of `{white,red,marker,band}`, calls
+  `debounceShots` directly, prints `{shots, summary}` — no video, ffmpeg, or VLM endpoint needed.
+  This exists SPECIFICALLY so the two implementations can be fed a literal common input and diffed
+  (mandatory check 4, §13D) rather than asserting lockstep only through two separate live runs that
+  happen to have processed "the same" video. Required moving the CLI's video-vs-flag parsing loop
+  to scan from `argv[0]` instead of assuming it is always the video (previously true; `--debounce-
+json` has no video argument at all).
+
+##### §13B — MANDATORY CHECK 1: EQUIVALENCE — production's own `band` channel vs the audit arm's independent `_ps_band_totals`
+
+New instrument: `scripts/probe/analyze-pellet-tracks.py --hybrid-landing-audit`. Its `band`
+computation is a genuine SECOND implementation on a DIFFERENT data path from
+`_ps_band_totals` (§9G/§12): production reconstructs `frame_tracks` from a track list (no
+re-tracking — the nearest-neighbor tracker is never re-run, only which frames each already-
+identified track was in-radius on is re-derived, avoiding any risk of a crossing-track
+reassignment drifting from the original live run) and calls the SHIPPED `_frame_pellet_counts` in
+a frame-major loop; the audit arm walks track-then-frame over already radius-gated `runs`, built
+and aggregated in an entirely separate function (`_ps_band_totals`), reusing
+`representative-audit-slice.json`'s already-committed `radius_tracks`/`tracks_raw` (CLAUDE.md
+reuse-before-derive — nothing here re-derives ground truth, only the NEW production channel).
+
+**Result: 0 mismatches, on every frame, on every dump checked** — the labelled block (both crops,
+446 frames × 2) and all 5 full-clip dumps (852 events' worth, 5697+5723+5740+5724+1801 = 24,685
+frames):
+
+| block                    | frames | mismatched |
+| ------------------------ | ------ | ---------- |
+| labelled/structural      | 446    | **0**      |
+| labelled/template        | 446    | **0**      |
+| `groundtruth-f811-v4`    | 1801   | **0**      |
+| `h4-marciana-structural` | 5697   | **0**      |
+| `h4-isabel-structural`   | 5723   | **0**      |
+| `h4-guilty-structural`   | 5740   | **0**      |
+| `g2-noir-structural`     | 5724   | **0**      |
+
+**Asserted, not just reported**: `audit_hybrid_landing` raises `SystemExit` on the first non-zero
+mismatch count, on every dump, before any downstream check runs — a silent disagreement could not
+have been buried in a summary stat.
+
+##### §13C — MANDATORY CHECK 2: criteria re-measured against the PRODUCTION `debounce_shots`
+
+Every number below comes from `_hla_score`, which calls the real `count_pellets.debounce_shots`
+(imported in-process) — not `_ps_score_event`'s `hybrid_plateau_median` scoring variant (§9–§12),
+which only PREDICTED these numbers would hold once landed.
+
+| criterion                                                         | measured                                                               | verdict  |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------- | -------- |
+| Categorical, 5/5 on the 5 labelled shots, shot 4 on its own crop  | **5/5** — offsets +5/+10/+6/+10/+10, all IN                            | **PASS** |
+| Ceiling ≤ 12.4% over the full 852, `n_scored` = 852, `no_rep` = 0 | `above_ceiling_pct` = **1.8%**, `n_scored` = **852**, `no_rep` = **0** | **PASS** |
+| Pooled MISSED ≤ 58 / 7.0% (8-series / 830-ammo-shot basis)        | **58 (7.0%), unchanged** — see §13F                                    | **PASS** |
+
+`no_rep = 0` is not a measured coincidence: production's hybrid branch has no abstain path by
+construction (PROPOSAL §2) — when the plateau returns `None`, the event falls back to the shipped
+`rep`/`total` already computed, never to a null. `above_ceiling_pct` = 1.8% reproduces §12A's own
+scoring-variant figure (also 1.8%) exactly, and the pooled `avgTotal` computed the audit arm's own
+way (unclamped mean over every scored event, §9F/§10D/§12A's convention) is **6.1561** — an EXACT
+match to §12A's `hybrid_plateau_median` figure, corroborating that the landed code and the scoring
+variant that motivated it compute the identical thing. ⚑ A SECOND, differently-defined `avgTotal`
+is also reported (`avgTotal_validShots` = 6.8305, the `5..10`-clamped figure a real run's own
+`summary.avgTotal` would show) — the two are not comparable and neither is a ranking criterion
+(PROPOSAL §4 criterion 6); recorded so a future session does not read the delta between them as a
+finding.
+
+##### §13D — MANDATORY CHECK 3: the falsification control
+
+`_hla_falsification` asserts, per event: if NO frame in that event's own span carries `band > 0`,
+the hybrid answer is bit-identical to a band-stripped replay of the SAME `debounce_shots` (same
+`frame`/`white`/`red`/`total`). **Held on every event, on every dump — 0 bad events, asserted via
+`SystemExit`, not assumed:**
+
+| dump                     | events | falsification bad |
+| ------------------------ | ------ | ----------------- |
+| `groundtruth-f811-v4`    | 37     | **0**             |
+| `h4-marciana-structural` | 218    | **0**             |
+| `h4-isabel-structural`   | 203    | **0**             |
+| `h4-guilty-structural`   | 180    | **0**             |
+| `g2-noir-structural`     | 214    | **0**             |
+
+##### §13E — MANDATORY CHECK 4: lockstep on a common input (live)
+
+`--hybrid-landing-audit-ts-lockstep` feeds `count-pellets.py`'s `debounce_shots` AND
+`read-pellets.ts`'s new `--debounce-json` mode the LITERAL SAME `frame_counts`-with-`band` array
+(a temp JSON file, one per dump) and diffs `shots` event-for-event. **0 diffs on every one of the 6
+inputs checked** (the labelled block + all 5 full dumps):
+
+```
+labelled/structural                ok=True py=10  ts=10  n_diff=0
+groundtruth-f811-v4                 ok=True py=37  ts=37  n_diff=0
+h4-marciana-structural               ok=True py=218 ts=218 n_diff=0
+h4-isabel-structural                 ok=True py=203 ts=203 n_diff=0
+h4-guilty-structural                 ok=True py=180 ts=180 n_diff=0
+g2-noir-structural                   ok=True py=214 ts=214 n_diff=0
+```
+
+This is LIVE-only (needs `npx tsx`; not part of `--hybrid-landing-audit-selftest`, same
+live/replay split `audit_representative`'s "FULL-CLIP CONTROL" already uses) — it was run for
+real during this landing pass, not skipped.
+
+##### §13F — MISSED, confirmed unchanged by construction (not re-derived)
+
+Per the task's own instruction: MISSED is matched on event ONSETS (`detected_t0`), never on
+totals, so a representative-frame rule cannot move it (§12C already established this — `_merge_
+spans`/`_merge_events`, the segmentation `--merge-audit`'s `shipped` candidate uses, are a
+SEPARATE code path from `debounce_shots` and are untouched by this landing). Re-ran anyway (no new
+raw data — the already-cached `_missingshot_tmp/*-ammo.json` payloads §8/§12C used):
+
+```
+rule            MISSED      %  SPUR?  detected  valid  avgTotal   change
+shipped             58   7.0%      5       884    716    7.3045      0.0
+```
+
+**Exact reproduction of the pinned 58/7.0% and 7.3045 `avgTotal`.** Confirmed, not manufactured.
+
+##### §13G — Fixtures: what moved, and why
+
+`git status` after this landing shows exactly ONE existing fixture-adjacent value moved, and one
+new fixture added:
+
+- **`count-pellets.py`'s `CACHE_SELFTEST_EXPECT`** (a pinned constant, not a JSON fixture) moved
+  `validShots` 7→6, `avgTotal` 7.1→6.7 on the committed `h1-cache-slice.json` 200-frame real slice.
+  This is the hybrid rule genuinely re-picking a lower-total plateau frame on 7 of the slice's 9
+  events (consistent with §9D: the shipped median often samples the muzzle flash, which reads
+  high); one event (span `[78, 85)`) crosses the `min_pellets = 5` floor going from `total = 5`
+  (valid) to `total = 4` (invalid), which is the entire delta. Reproduced directly: `debounce_
+shots` on this slice's own `build_tracks_and_counts` output vs the same output with `band`
+  stripped diverges on events `{0, 2, 3, 4, 6}` (0-indexed) and agrees on `{1, 5, 7, 8}` — event 4
+  is the only one that also flips validity. Explained in-line at the constant's definition.
+- **Every other committed `scripts/tests/fixtures/pellets/*.json` is byte-identical to before this
+  entry** — confirmed by `git status` showing no other file under that path modified. This is the
+  backward-compat default working as designed: every existing fixture was built on a band-less
+  dump, `has_band` is `False` for all of them, and `debounce_shots` takes the unchanged code path.
+- **New pinning fixture**: `scripts/tests/fixtures/pellets/hybrid-landing-audit-slice.json` —
+  production's own `band` series for the labelled block (both crops) and all 5 full-clip dumps,
+  self-validated by `--hybrid-landing-audit-selftest` (registered in `pellet-selftest.sh`) cross-
+  checked against the ALREADY-committed `representative-audit-slice.json` for everything the audit
+  side needs (§13B's reuse-before-derive). This is the fixture the task instructions required: "the
+  old dumps cannot pin [the new behaviour] — add one."
+- **`read-pellets-ammo-offset.test.ts`** (the one other pellet-adjacent vitest file) is a pure
+  source-text regex check unrelated to `debounceShots`; unaffected, confirmed by `npm run
+typecheck` and `npx vitest run` (via `verify.sh`) both green.
+
+##### §13H — Controls
+
+- **Backward compat**: asserted structurally (`has_band` computed once, up front, from the WHOLE
+  input) and empirically (every pre-existing fixture replays byte-identical, §13G).
+- **Falsification control**: PASS on all 5 dumps, asserted in code (§13D).
+- **Equivalence**: PASS on the labelled block (both crops) and all 5 dumps, asserted in code
+  (§13B).
+- **Lockstep**: PASS on 6/6 inputs, live (§13E).
+- **`_expected` provenance**: `audit_hybrid_landing` (the fixture writer) and `hybrid_landing_
+audit_selftest` (the replay) both route every number through `_hla_score`/`_hla_equivalence`/
+  `_hla_falsification`, so `_expected` can only ever be those functions' own numbers — same
+  discipline as every other arm in this file.
+- **Gates, TRUE exit status, not through `| tail`**:
+  - `bash scripts/probe/pellet-selftest.sh; echo $?` → `0` ("pellet-selftest: all passed",
+    including the new `--hybrid-landing-audit-selftest`).
+  - `bash scripts/verify.sh; echo $?` → `0` (typecheck, override validation, all regressions,
+    `npx vitest run` — 151 files / 2179 tests passed).
+  - `npm run typecheck` → clean, no errors.
+
+##### §13I — n and scope
+
+Identical scope to §9–§12: 5 labelled shots on one clip (`marciana`, SG/Iron) for the categorical
+half; 852 events across 5 dumps and 4 units (`marciana` SG/Iron, `isabel`, `guilty`, `noir`) for
+the ceiling/equivalence/falsification/lockstep halves; 8 ammo series / 830 ammo shots for the
+missing-shot confirmation.
+
+**THIS ENTRY ENACTS.** `count-pellets.py:debounce_shots` and `read-pellets.ts:debounceShots` now
+carry the fallback hybrid on `plateau_median`, live in the shipped pipeline. Segmentation
+(`_merge_spans`/`_merge_events`/`debounce_shots`'s own event-grouping loop), `MARKER_MIN`, and
+every other constant/gate/default named out-of-scope by the implementation task are UNCHANGED.
+
+##### §13J — Instrument and reproduction
+
+```sh
+# the new instrument (equivalence, categorical, ceiling, falsification — python side):
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --hybrid-landing-audit \
+  /Users/maxwellsutton/nikke-sim/scratchpad/pellets/groundtruth-f811-v4 \
+  /Users/maxwellsutton/nikke-sim/scratchpad/pellets/h4-marciana-structural \
+  /Users/maxwellsutton/nikke-sim/scratchpad/pellets/h4-isabel-structural \
+  /Users/maxwellsutton/nikke-sim/scratchpad/pellets/h4-guilty-structural \
+  /Users/maxwellsutton/nikke-sim/scratchpad/pellets/g2-noir-structural \
+  --hybrid-landing-audit-ts-lockstep \
+  --save-hybrid-landing-audit-fixture scripts/tests/fixtures/pellets/hybrid-landing-audit-slice.json
+# replay the committed slice -- python side only, no live tracks.json, no npx tsx:
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --hybrid-landing-audit-selftest
+# the TS common-input harness directly:
+npx tsx scripts/probe/read-pellets.ts --debounce-json <frame_counts_with_band.json> --fps 30
+# MISSED confirmation (§13F), reusing the already-cached ammo-series payloads:
+B=/Users/maxwellsutton/nikke-sim/scratchpad/pellets/_missingshot_tmp
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --merge-audit \
+  $B/h4-isabel-ammo.json $B/h4-guilty-ammo.json $B/h4-marciana-ammo.json $B/g2-noir-ammo.json \
+  $B/gt-ammo-series.json $B/i2-marciana-60fps-ammo.json $B/i3-noir-far-60fps-ammo.json \
+  $B/i3-noir-near-60fps-ammo.json \
+  --merge-audit-fps 30 30 30 30 60 60 60 60 --merge-audit-slack 8 8 8 8 6 6 6 6
+# the whole reader toolchain, including this arm's new selftest, TRUE exit status:
+bash scripts/probe/pellet-selftest.sh; echo $?
+bash scripts/verify.sh; echo $?
+```

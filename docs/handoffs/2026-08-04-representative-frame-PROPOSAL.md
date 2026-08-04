@@ -127,14 +127,23 @@ Written before the hybrid is measured. Do not adjust after seeing a result.
 
 ## 7. Rollback
 
-Single revert of the enactment commit plus the regenerated fixtures. The branch is unpushed and
-`main` is deliberately held, so nothing leaves the machine on a revert. `/patch-notes` is owed before
+**LANDED 2026-08-04 — [`docs/probe-runs.md` §13](../probe-runs.md#§13-the-fallback-hybrid-lands--band-channel--debounce_shotsdebounceshots-hybrid-both-implementations-owner-authorized).**
+Single revert of the landing commit(s) plus the one moved constant
+(`count-pellets.py`'s `CACHE_SELFTEST_EXPECT`, explained in §13G) and the one new fixture
+(`hybrid-landing-audit-slice.json`) would restore the pre-hybrid state. The branch is unpushed and
+`main` is deliberately held, so nothing has left the machine. `/patch-notes` is still owed before
 anything on this branch reaches `main`.
 
-## 8. Owner decision requested
+## 8. Owner decision requested — RESOLVED 2026-08-04
 
-1. **Land the hybrid, or hold?** — a bare swap is disqualified by §2; the hybrid still needs §4's
-   numbers before it can land.
-2. **`plateau_median` or `lifetime_gated_median`** as the gated rule (§3 recommends `plateau_median`).
-3. **Resolve or quantify the `h4-marciana` 177-vs-176 divergence first?** (§4.5) — landing a lockstep
-   change against a baseline already one event off is how a silent drift becomes permanent.
+1. **Land the hybrid, or hold?** — **LANDED.** All four mandatory checks the enactment pass added
+   (equivalence, criteria re-measured against production, falsification, TS/Python lockstep on a
+   common input) held; §4's six pre-committed criteria all PASS against the shipped code. See
+   `docs/probe-runs.md` §13.
+2. **`plateau_median` or `lifetime_gated_median`** as the gated rule — **`plateau_median`**, per §3's
+   faithful>fit recommendation (unchanged by the landing).
+3. **Resolve or quantify the `h4-marciana` 177-vs-176 divergence first?** — **Not required**: §11
+   already resolved this (a `marker`-channel backend-selector defect, independent of
+   `debounce_shots`) before this pass began, and §13B's lockstep check confirms `debounce_shots`
+   itself needs no reconciliation — `count-pellets.py` and `read-pellets.ts` agree event-for-event
+   on every input checked, including `h4-marciana-structural`.
