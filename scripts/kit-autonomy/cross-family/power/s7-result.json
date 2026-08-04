@@ -1,0 +1,116 @@
+{
+  "slug": "power",
+  "kitDescription": "Power is a Fire rocket-launcher Attacker whose every full-charge shot — which for an RL on auto is every shot — grants a stacking self ATK buff, Blood Fiend: +6.4% ATK per stack, up to 5 stacks, lasting 3 seconds, so she ramps to +32% within her first magazine and holds it while she keeps firing. Once per battle, after her 18th normal attack fired while Blood Fiend is at max stacks, she instantly refills her entire magazine, skipping one reload. That same trigger also widens her explosion radius for 10 seconds, which has no damage effect against a single boss. Her burst nukes the single highest-ATK enemy for 1584% of her final ATK, and if Blood Fiend is at max stacks at cast time it lands a second 1584% hit on the same target, doubling the burst.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "'moves no teammate' — RECON_ERROR (test premise): clearing the whole skill1 slot also removes the bloodFiend pool block that gates S2, so the one-time reload-skip dies, shot count changes (103→104, 4→5 casts), and teammate totals shift via 180s-cutoff phase. The premise 'S1 changes ATK only' is false for ANY encoding that houses the stack gate in S1; driver's per-apply targetIdx===POWER pin already proves no ally ATK leakage.",
+      "'free reload adds fire time' — RECON_ERROR (fixed-horizon phase artifact): the reload-skip is strictly ≥0 over an unbounded horizon but phase-shifts the cycle ~172f; at exactly 180s the noS2 arm lands a 5th burst cast inside the horizon while base's cast 5 (frame ~10842) misses it. 144.13−131.57 = 12.56M ≈ exactly one 3168% double nuke; the same line is net-positive (+1.05M) in the driver's 4-unit fixture.",
+      "'lands TWO burst-bucket instances per cast' — RECON_ERROR (reader bug): the blind filter keys damage events on numeric casterIdx, but damage events carry srcSlot as a string and key by slug. With e.slug==='power' the driver emits 8 burst-bucket instances vs 4 casts = exactly 2× in the blind comp (all 4 casts genuinely max-stacked there)."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "when attacking with Full Charge",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "chargeCounter count 1; every RL pull is a full charge (60f charge + 22f release, no dump), so trigger cadence = shot cadence",
+        "blindSaid": "S5: per-shot apply cadence expected, concordant; S6: identical chargeCounter count 1",
+        "formulaCheck": "Auto always full-charges (mechanics §4/§7); chargeCounter is the faithful full-charge vocabulary",
+        "fireRateOk": true,
+        "explanation": "Applies exactly once per shot (111 applies === 111 shots in fixture). Driver also caught that a multi-effect chargeCounter block CYCLES its effects array one-per-charge and split the buff and pool-increment into two single-effect blocks — a real whole-picture catch the S6 blind missed."
+      },
+      {
+        "kitLine": "Blood Fiend: ATK ▲ 6.4%, 5 stacks, 3 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff atkPct 6.4, maxStacks 5, durationSec 3; engine discrete stack accrual, refresh per apply",
+        "blindSaid": "S5: value 6.4 / cap 5 / expiry in (120,500) — all passed; S6: same buff but ADDED rampSec 6 on top of maxStacks (its own flag admitted double-ramp risk)",
+        "formulaCheck": "Plain ATK ▲ sums into the (1+ATK%) multiplier on staticAtk; self-scoped unscoped-stat is correct — charge scoping lives on the trigger (S2b concurs)",
+        "fireRateOk": true,
+        "explanation": "Every apply carries value 6.4 / maxStacks 5 / expiresFrame−frame = 180 exactly; stacks observed reaching 5 at frame 395. Driver correctly rejected S6's rampSec: the kit is stepwise per charge and the engine's accrual IS the ramp. Discriminates the S2b nearest-wrong flat +32% passive (counterfactual applies once and strictly out-damages base)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "after 18 normal attacks if Blood Fiend",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount 18 + resourceGate{bloodFiend, min:5}; pool 0→5, +1 per full charge, mirrors the stack count; ⚑ documented: pool never decays, buff does at 3s",
+        "blindSaid": "S5: honestly it.skipped (declared the gate inexpressible shape-agnostically); S6: SKIPPED, claimed no primitive exists — but its own flag proposed exactly the resource-pool+resourceGate approach the driver used",
+        "formulaCheck": "Gate is causally wired (P5: pool zeroed → skip never fires; buff still stacks to 5, isolating gate from damage line). At scope-lock cadence every gate-read moment (hit 18, all 6 casts) lands at genuine 5 stacks",
+        "fireRateOk": true,
+        "explanation": "The proxy is behaviorally exact at every point the gate is read in the graded comps. The ⚑ is honest: the pool outlives the real buff across any >3s fire pause (e.g. a boss transition stacked on a reload boundary), and the note's 'longest gap 172f' ignores transition-stretched gaps — the blind fixture did observe at least one lapse. No gate read collides with a lapse window in either fixture, so this is a documented low-tier residual, not a gotcha."
+      },
+      {
+        "kitLine": "Explosion Radius ▲ 38.61% for 10 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; damage-inert — the sim fights one partless boss, no AoE/multi-target axis for a radius to act on",
+        "blindSaid": "S5: asserted no damage-stat ~38.61 is emitted (passed); S6: FELL INTO THE TRAP — encoded it as projectileExplosionPct 38.61/10s, recurring",
+        "formulaCheck": "Formula §1e/§1f: projectileExplosionPct is a Damage-Up-bucket entry for explosion DAMAGE on RL normal attacks — a different mechanic from AoE radius. Encoding radius as it manufactures ~+38.61 Damage-Up points the kit never granted",
+        "fireRateOk": true,
+        "explanation": "Driver matches S2b's disposition exactly and avoided the named nearest-wrong that the S6 blind walked into. Correctly carried verbatim in unmodeled with the reason in the note."
+      },
+      {
+        "kitLine": "Reloads 100% of the magazine.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "instantReload fraction 1, fires inside the 18th pull so the natural 141f reload is skipped exactly once",
+        "blindSaid": "S5: damage-positive bounded uplift (failed only on a fixed-horizon phase artifact, see convergence); S6: instantReload, concordant",
+        "formulaCheck": "Weapon-state effect that directly raises shots fired — never skippable per taxonomy; reload economics per mechanics §2",
+        "fireRateOk": true,
+        "explanation": "Pinned by the shot-gap signature: gap after shot 18 ≤ 82f (bare charge cycle) vs ≥172f at the 6th/12th control boundaries, and an early-arming counterfactual (threshold 1) demonstrably migrates the skip to the 6th boundary."
+      },
+      {
+        "kitLine": "Activates 1 time(s) per battle.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "everyN 999 / everyNOffset 1 idiom — first gated activation only; no generic once-per-battle block field exists",
+        "blindSaid": "S5: used the <1.04 uplift bound as the discriminator; S6: dropped the cap entirely (recurring every 18 hits — the single largest over-credit in its baseline, its own audit admits)",
+        "formulaCheck": "A recurring refill tops up a non-empty magazine (capped at 6), netting a +1-round carryover per 18 hits — the once-limit is what removes that gain",
+        "fireRateOk": true,
+        "explanation": "Discriminating counterfactual: removing the everyN idiom strictly out-damages base while the first activation at hit 18 is identical in both arms. The idiom is the schema-faithful spelling of a hard one-shot latch."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 1584% of final ATK as Burst dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast flatDamage 1584, target enemy; engine-forced pre-FB (no explicit noFb needed)",
+        "blindSaid": "S5: count + fbMajorApplied assertions (count test failed on its own reader bug; fbMajor check passed vacuously on 0 events — driver's own test covers both properly); S6: identical block with redundant explicit noFb/noRange",
+        "formulaCheck": "Formula §1b/§8: burst-cast damage lands before the FB window (no +0.5, no entry auras); burst nukes crit at caster rate, never core without 'as core dmg' text, never range — all engine defaults, no override field mis-set",
+        "fireRateOk": true,
+        "explanation": "One 1584% nuke on every one of the 6 fixture casts, atkPct pinned at exactly 1584, zero instances with fbMajorApplied. Crit/core/range ride correct engine defaults but are not pinned by a driver assertion — minor coverage note, not an encoding gap."
+      },
+      {
+        "kitLine": "max stacks → 1584% additional dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "second burstCast flatDamage 1584 block gated on resourceGate{bloodFiend, min:5}",
+        "blindSaid": "S5: honestly it.skipped as non-discriminating at scope lock; S6: second block UNCONDITIONAL (over-credits below-cap casts, its own flag admits)",
+        "formulaCheck": "Kit conditions the second instance on live max stacks at cast; the fixture delivers a REAL gate-closed cast — first burst at frame 322 after only 4 full charges (stacks 4 < 5) — so gated vs ungated is distinguished by the kit's own natural behavior, stronger than S2b's proposed withPatchedOverride forcing",
+        "fireRateOk": true,
+        "explanation": "Cast 1 lands exactly ONE nuke, casts 2–6 land two each (11 = 2×6−1), all pre-FB. Pool-zero counterfactual drops the second nuke on every cast while the buff still stacks — gate causality proven, isolation clean. This is the strongest discrimination result in the packet."
+      },
+      {
+        "kitLine": "1 enemy with the highest final ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "target enemy; single scope-lock boss makes the ATK-ranked selection degenerate (caveated)",
+        "blindSaid": "S5: trivially satisfied, no assertion beyond bucket attribution; S6: same collapse, flagged",
+        "formulaCheck": "No multi-enemy axis exists in the sim; the collapse loses nothing at scope lock",
+        "fireRateOk": true,
+        "explanation": "Degenerate-by-scope target line, recorded in caveats. Nothing to discriminate."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0 (10 of 11 kit lines FAITHFUL; the Explosion Radius line is a correctly DOCUMENTED_GAP carried verbatim in unmodeled — S2b, S5, and the formula SSOT all concur it is damage-inert on a partless single boss)",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA exists in the driver implementation: every kit line is either FAITHFUL with a firing, discriminating assertion or a deliberately documented gap. The raw S5 run is RED, but all three failures are blind-side artifacts, each with a quantitatively sound driver adjudication that I verified arithmetically — the 12.56M delta equals exactly one 3168% double nuke (a fixed-horizon cast-count artifact, not a sign error in the reload economy); the teammate-movement failure follows necessarily from clearing the slot that houses the gate proxy (false isolation premise, not ATK leakage — per-apply targetIdx is pinned self-only); and the burst-count failure is an event-reader field-shape bug (corrected reader gives exactly 2 instances per cast). The blind re-derivations converged on everything load-bearing, and where S6 diverged it was wrong in precisely the ways S2b pre-registered: it fell into the projectileExplosionPct radius trap, dropped the once-per-battle latch, left both max-stack gates unconditional, and added a double-counting rampSec — the driver is corroborated by prose + formula + S2b on all four. Two same-model residuals for the owner to spot-check: (1) the bloodFiend pool never decays while the real buff does at 3s — documented ⚑ tier-low with a recipe, and every in-fixture gate read lands at genuine 5 stacks, but the note's 'longest gap 172f' understates transition-stretched pauses (the blind fixture did lapse at least once), so a >3s fire pause coinciding with a cast or hit-18 is the live divergence window; (2) the driver's claim that a multi-effect chargeCounter block cycles its effects one-per-charge is asserted engine behavior not independently verified in this packet — the split-block encoding is harmless either way, but if the claim is wrong the note's rationale (not the behavior) needs correcting. Nothing must change for GO.",
+  "model": "kimi-code/k3"
+}

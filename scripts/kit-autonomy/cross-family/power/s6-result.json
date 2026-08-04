@@ -1,0 +1,256 @@
+{
+  "slug": "power",
+  "leakDetected": null,
+  "override": {
+    "slug": "power",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "chargeCounter",
+          "count": 1
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 6.4,
+            "durationSec": 3,
+            "maxStacks": 5,
+            "rampSec": 6
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 18
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "projectileExplosionPct",
+            "value": 38.61,
+            "durationSec": 10
+          },
+          {
+            "kind": "instantReload"
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 1584,
+            "noFb": true,
+            "noRange": true
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 1584,
+            "noFb": true,
+            "noRange": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Activates 1 time(s) per battle.",
+        "Activates after 18 normal attacks if Blood Fiend is at max stacks."
+      ],
+      "burst": [
+        "Affects the 1 enemy unit(s) with the highest final ATK.",
+        "Activates when Blood Fiend is at max stacks."
+      ]
+    },
+    "caveats": [
+      "⚑ skill1 trigger: kit says 'Activates when attacking with Full Charge' — modeled as chargeCounter count:1 (every full charge). If the engine's RL charge cycle differs from one-charge-per-pull, the stack ramp rate is wrong.",
+      "⚑ skill1 rampSec 6 is an UNMEASURED estimate: 5 stacks × 3 sec each with a ~1.2s charge+fire cycle means max stacks are reachable and holdable, but the opening seconds run below cap. Value chosen as ~5 charge cycles.",
+      "⚑ skill1 stack STEADY-STATE is the load-bearing unknown: 3 sec duration vs the RL charge cadence decides whether 5 stacks are sustainable at all. If a full-charge cycle exceeds 3 sec, stacks can never exceed 1 and both the skill2 and burst gates NEVER open.",
+      "⚑ skill2 'once per battle' is NOT modeled — the engine has no per-battle-cap primitive on a hitCount trigger, so this block re-fires every 18 normal attacks. This OVER-CREDITS both the explosion-radius buff and the free reload. A `everyN` gate cannot express a hard one-shot cap either. Flagged, not fudged.",
+      "⚑ skill2 'if Blood Fiend is at max stacks' gate is NOT modeled — there is no resourceGate on a buff-stack count (stacks are a buff property, not a declared resource). The block therefore fires unconditionally at 18 normal attacks. Over-credits when stacks are below cap.",
+      "⚑ skill2 'Explosion Radius ▲ 38.61%' mapped to projectileExplosionPct. Explosion RADIUS is a geometry/AoE stat, not literally a damage percentage; against a single partless boss a radius increase may be entirely INERT in reality. Mapping to the RL-only Damage-Up bucket is the closest schema fit but may over-credit by the full 38.61%.",
+      "⚑ burst second block's 'Activates when Blood Fiend is at max stacks' gate is NOT modeled (same stack-gate limitation). Modeled as unconditional, which over-credits any burst cast below max stacks.",
+      "⚑ burst target 'the 1 enemy unit with the highest final ATK' collapses to the single boss at scope lock — modeled as plain enemy, no behavioural difference here.",
+      "⚑ Both burst hits set noFb: burst-cast damage lands before the Full Burst window opens (verified project fact), so the +50% major does not apply. noRange follows the rider convention.",
+      "⚑ Cadence tuple (chargeFrames 60, reloadFrames 141, ammo 6) is datamined and unreliable; the whole stack-uptime model rests on it."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Power is an RL/Fire/Attacker Burst III. S1 'Blood Fiend' is a self ATK stack (6.4%/stack, 5 stacks, 3s) built by full-charge attacks — modeled as a chargeCounter self-buff with a ramp haircut. S2 is a one-per-battle explosion-radius window plus a full instant reload, gated on max Blood Fiend stacks after 18 normal attacks; the once-per-battle cap and the max-stack gate are BOTH unexpressible in the current schema and are flagged, not approximated. Burst is 1584% of final ATK as burst damage plus a second 1584% instance gated on max stacks; both authored FB-exempt per the burst-cast-lands-pre-FB rule. The load-bearing open question is whether the RL full-charge cadence can sustain 5 stacks against a 3-second per-stack duration — every gated component in this kit hangs off it.",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when attacking w/ Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger chargeCounter{count:1} — every full-charge attack advances the counter and fires the block"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'}"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Blood Fiend: ATK 6.4%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff{stat:'atkPct', value:6.4} — self ATK scaling, unscoped (kit gives no normal/charge scope)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "stacks up to 5 time(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "maxStacks:5"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "lasts for 3 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "durationSec:3 — wall-clock seconds, not rounds (text says 'sec')"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after 18 normal attacks",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount{count:18} — counts rounds, not pulls"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "if Blood Fiend is at max stacks",
+      "status": "SKIPPED",
+      "effectOrReason": "No schema primitive gates a block on a BUFF's stack count (resourceGate reads declared resource pools, not buff stacks). Block fires unconditionally — over-credits. ⚑ flagged."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'}"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Explosion Radius 38.61% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff{stat:'projectileExplosionPct', value:38.61, durationSec:10} — RL-only Damage-Up bucket; closest schema fit for an RL explosion stat. ⚑ radius≠damage."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Reloads 100% of the magazine.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "instantReload{} (full refill) — a weapon-state modifier, NEVER skippable: it directly raises shots fired"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates 1 time(s) per battle.",
+      "status": "SKIPPED",
+      "effectOrReason": "No once-per-battle primitive exists on a hitCount trigger (everyN is a modulo phase, not a hard cap). Block re-fires every 18 normal attacks — over-credits both effects. ⚑ flagged."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects the 1 enemy w/ highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single partless boss at scope lock, so the ATK-ranked selection is degenerate"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1584% as Burst Skill damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage{atkPct:1584, noFb:true, noRange:true} on burstCast — burst-cast damage lands pre-FB"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Activates when Blood Fiend at max stacks",
+      "status": "SKIPPED",
+      "effectOrReason": "Same buff-stack-gate limitation as skill2. Second damage block modeled unconditional — over-credits below-cap casts. ⚑ flagged."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1584% as additional damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "second flatDamage{atkPct:1584, noFb:true, noRange:true} block on burstCast — separate instance, same target"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "chargeCounter{count:1} — one stack per full-charge attack",
+      "reasoning": "Kit says 'Activates when attacking with Full Charge'. No count is given, so every full charge is assumed to fire it. chargeCounter is the schema's full-charge phase counter; count:1 makes every charge a firing phase. An alternative encoding is shotFired with a charge gate, but the schema offers no such gate, so chargeCounter is the faithful vocabulary.",
+      "recipe": "DBG_BUFFS on a solo Power run: count Blood Fiend buffApply events per magazine and compare against the shot count. One apply per pull confirms count:1."
+    },
+    {
+      "field": "skill1[0].effects[0].rampSec",
+      "estimate": "6 sec",
+      "reasoning": "The buff is authored at per-stack magnitude with maxStacks:5, so the engine builds the stack naturally — but the ramp haircut prior still applies to the opening window where fewer than 5 stacks exist. 5 stacks × ~1.2s per charge cycle ≈ 6 s to reach cap from t=0. UNMEASURED.",
+      "recipe": "Run with DBG_BUFFS and read the frame at which the 5th Blood Fiend stack first applies; set rampSec to that time in seconds, or drop rampSec entirely if the engine's own stack accrual already models the ramp (double-counting risk — verify before trusting)."
+    },
+    {
+      "field": "skill1[0].effects[0].durationSec vs charge cadence",
+      "estimate": "5 stacks sustainable IF a full-charge cycle is under 3 sec; chargeFrames 60 (=1 s) plus fire/recovery suggests yes",
+      "reasoning": "This is the kit's LOAD-BEARING unknown. Blood Fiend expires 3 s after each stack. If the RL full-charge cycle (charge 60f = 1 s, plus release latency 22f and inter-shot recovery) totals under 3 s, stacks accumulate to 5 and hold with only reload gaps dropping them. If it exceeds 3 s, the unit NEVER reaches max stacks and BOTH the skill2 activation and the burst's second 1584% instance are permanently dead. The whole kit's magnitude hinges on this.",
+      "recipe": "DBG_BUFFS + DBG_CD on a solo run: log Blood Fiend stack count over the fight and measure the fraction of frames at 5 stacks. Cross-check against a real focus recording by counting Power's charge shots between reloads."
+    },
+    {
+      "field": "skill2[0] (once-per-battle cap)",
+      "estimate": "Currently unbounded; true behaviour is ONE activation for the whole fight",
+      "reasoning": "'Activates 1 time(s) per battle' is a hard cap the schema cannot express on a hitCount trigger. A 180 s fight at RL cadence fires far more than 18 normal attacks, so the block will re-fire many times — over-crediting both the 10 s explosion window (making it near-permanent) and, more seriously, the full instant reload (which fabricates shots). This is the single largest over-credit in this baseline.",
+      "recipe": "Count reload events in a solo Power run with and without the skill2 block. The delta is the fabricated shot count. Fixing this needs either a new once-per-battle primitive or a resource pool initialized to 1 with a resourceGate{min:1} plus a resource{delta:-1} spend — the latter is expressible TODAY and should be preferred at enactment time."
+    },
+    {
+      "field": "skill2[0].effects[0].stat",
+      "estimate": "projectileExplosionPct 38.61 — possibly should be 0 (fully inert)",
+      "reasoning": "'Explosion Radius' is an AoE GEOMETRY stat. Against the scope-lock partless single-target boss, a larger explosion radius may add exactly nothing (no extra targets, no extra parts to clip). The schema's projectileExplosionPct is an RL-only Damage-Up bucket entry, which is the nearest fit but semantically different (damage vs radius). Modeling it as damage could over-credit 38.61 Damage-Up points for 10 s per activation.",
+      "recipe": "Compare a focus recording's Power popup values inside vs outside the 10 s window. Flat values = radius is inert on this boss, and the buff should be dropped to an unmodeled line. Elevated values = the radius genuinely maps to damage and the magnitude can be fit."
+    },
+    {
+      "field": "burst[1] (max-stack gate)",
+      "estimate": "Modeled unconditional; true behaviour is gated on 5 Blood Fiend stacks at cast time",
+      "reasoning": "Doubles Power's burst damage (1584% → 3168%). If the unit reliably sits at max stacks going into a burst (likely, given a 3 s refresh on every charge), unconditional is a good approximation and the over-credit is near zero. If stacks lapse during the pre-burst reload or the burst-cast animation, the second instance should not fire and the model over-credits by a full 1584%.",
+      "recipe": "DBG_BUFFS: log Blood Fiend stack count at each burstCast frame across a full 180 s run. If it is 5 at every cast, the unconditional model is validated by behaviour and the gate is moot; otherwise implement it as a resource mirror of the stack count with a resourceGate."
+    },
+    {
+      "field": "burst[*].noFb",
+      "estimate": "true (FB-exempt) for both instances",
+      "reasoning": "Project-verified fact: burst-cast damage lands BEFORE Full Burst begins, so it takes no +50% major and no entry auras. Both 1584% instances key off burstCast, so both are exempt. This is a rule application, not a per-unit measurement — but it is listed because the second instance's timing (does the max-stack rider land with the cast, or a frame later inside the FB window?) is genuinely kit-silent.",
+      "recipe": "Read a focus recording's two Power burst popups: if both carry identical magnitudes, both are pre-FB. A 1.5× ratio between them means the rider lands inside the window and its noFb should be dropped."
+    },
+    {
+      "field": "cadence tuple (chargeFrames 60, reloadFrames 141, ammo 6)",
+      "estimate": "Datamined values used as given",
+      "reasoning": "Standing rule: datamined rate_of_fire / reloadFrames are known-unreliable and are ALWAYS ⚑. Power's entire stack-uptime model, the 18-normal-attack threshold timing, and the value of the free reload all depend on this tuple.",
+      "recipe": "Count Power's ammo-counter transitions in a focus recording over a fixed window; derive effective charge-to-charge time and reload duration, and correct the datamined values before trusting any uptime figure."
+    }
+  ],
+  "model": "claude-opus-5"
+}

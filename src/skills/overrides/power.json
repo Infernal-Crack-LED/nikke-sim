@@ -1,0 +1,121 @@
+{
+  "note": "power (Power — Chainsaw Man collab) — RL / Attacker / Fire / Burst III, cd 40s, ammo 6, chargeFrames 60, reloadFrames 141. Fresh build, Kit-autonomy gauntlet 2026-08-03 (test-first: scripts/tests/units/power.test.ts). S1 'Blood Fiend' modeled as a per-full-charge self ATK stack buff (chargeCounter count 1 -> buff atkPct 6.4, maxStacks 5, durationSec 3 — one apply per full charge, stacks climb 1..5, expiry refreshes per apply, all stacks drop together on lapse = the engine's standard stack-buff semantics) as TWO single-effect blocks (the ATK buff + the bloodFiend pool increment): a multi-effect chargeCounter CYCLES its effects array one-per-charge instead of applying all of them, which would silently halve both the stack rate and the pool. Every Power pull IS a full charge (RL charge 60f + 22f release recovery, no dump mode), so the trigger cadence = her shot cadence; measured at scope lock the 3s expiry OUTLASTS her 172f (2.87s) reload boundary by 8 frames, so stacks persist across magazines once at cap. The kit's 'Blood Fiend at max stacks' condition (S2 activation + burst additional damage) is a STACK GATE the engine has no buff-stack gate primitive for, so the override mirrors the stack count into a `bloodFiend` resource pool (0->5, +1 per full charge, clamped) and reads it via resourceGate {min:5} — see caveats for the expiry-divergence ⚑ (pool never expires; the buff does at 3s; at scope-lock cadence her longest apply-to-apply gap is the 172f (2.87s) reload boundary < 3s, so the two never disagree inside a sim fight). S2 'Blood Explosion': the hit-18 max-stacks-gated activation is hitCount 18 + resourceGate, the once-per-battle limit is the everyN 999/offset 1 idiom (first gated activation only; no generic once-per-battle block field exists — burstCdr.oncePerBattle is effect-local), the reload line is instantReload fraction 1 (fires inside the 18th pull, before the ammo decrement, so the natural 141f reload is skipped exactly once). The S2 'Explosion Radius ▲38.61%' line is UNMODELED: the sim fights one boss — there is no AoE/multi-target axis for an explosion RADIUS to act on, damage-inert (the nearest-wrong encoding projectileExplosionPct is explosion DAMAGE, a different mechanic). Burst 'Blood Hammer': two burstCast flatDamage 1584 blocks on the (single, trivially highest-final-ATK) boss — the unconditional nuke + the max-stacks-gated additional damage; both resolve pre-FB (no +50% major on burst-cast damage, U10), crit at caster rate (U1), never core/range. BEHAVIORAL NOTE (pinned by the test): camera-focused behind liter/crown she casts her FIRST burst at ~5.4s, after only 4 full charges — stacks are 4 < 5, so the gate is genuinely CLOSED on cast 1 (one nuke) and open on every later cast (two nukes); that is the kit, not an encoding artifact. Pinned by scripts/tests/units/power.test.ts (P1..P5 incl. counterfactuals: flat-32% misread, early-arming threshold, no-once re-fire, single-nuke, pool-zero gate causality).",
+  "resources": [
+    {
+      "name": "bloodFiend",
+      "initial": 0,
+      "min": 0,
+      "max": 5
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Explosion Radius ▲ 38.61% for 10 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "skill1: the 'Blood Fiend at max stacks' condition is read from a `bloodFiend` resource pool (0→5, +1 per full charge), not from the buff itself — the engine has no buff-stack gate primitive. The pool does NOT expire; the real buff drops 3 sec after the last full charge. ⚑ estimate: zero divergence at scope-lock cadence — measured, her longest apply-to-apply gap in a sim fight is the 172f (2.87s) reload boundary, under the 3s expiry by 8 frames, so the pool and the buff never disagree in-fight; divergence only after a >3s fire pause. Recipe: a focused Power recording spanning a >3s fire pause (boss phase transition) — read the Blood Fiend icon expiry vs whether the next S2/burst still consumed the max-stacks condition. Tier: low (outside every graded comp's cadence).",
+    "skill2: 'Activates 1 time(s) per battle' is encoded as everyN 999 / everyNOffset 1 — first gated activation only; no generic once-per-battle block field exists (burstCdr.oncePerBattle is effect-local).",
+    "burst: 'the 1 enemy unit(s) with the highest final ATK' resolves to the single scope-lock boss (target enemy) — the sim has no multi-enemy axis to rank."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 1
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 6.4,
+          "maxStacks": 5,
+          "durationSec": 3
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 1
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "bloodFiend",
+          "delta": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 18
+      },
+      "resourceGate": {
+        "name": "bloodFiend",
+        "min": 5
+      },
+      "everyN": 999,
+      "everyNOffset": 1,
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "instantReload",
+          "fraction": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1584
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "resourceGate": {
+        "name": "bloodFiend",
+        "min": 5
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1584
+        }
+      ]
+    }
+  ]
+}

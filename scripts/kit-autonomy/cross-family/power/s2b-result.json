@@ -1,0 +1,91 @@
+{
+  "slug": "power",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Blood Fiend: ATK ▲ 6.4%, 5 stacks, 3 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic self ATK (atkPct) — not scoped to normal/charge damage; the CHARGE scoping is on the TRIGGER (full-charge attack), not the stat.",
+      "durationSemantics": "Wall-clock 3 sec, refreshed on each application (standard stack-refresh); maxStacks 5. NOT rounds, NOT permanent. With ammo 6 / reloadFrames 141 (~2.35s) the stack survives a normal reload, so steady state is 5 stacks with an opening ramp over the first ~5 full-charge shots.",
+      "triggerIdentity": "Per full-charge attack by self. On an auto-firing RL (chargeFrames 60) every pull is a full charge, so this is effectively per-shot (shotFired) — but the trigger is the CHARGE SHOT, not hitCount and not passive.",
+      "targetSet": "self",
+      "nearestWrongModel": "Encoding it as a passive atkPct 32% (5 × 6.4%) always-on buff — instant-to-max at t=0 with no expiry — because steady state is near-permanent max stacks. Over-credits the opening ramp and any lapse window; also erases the per-application refresh semantics.",
+      "distinguishingAssertion": "cfg.onEvent buffApply stream for stat 'atkPct' targeting power: FIRST application occurs at/after the first shot event (never frame 0), with stacks:1, and stacks climb 1→5 across the first 5 shots; each buffApply carries expiresFrame ≈ applyFrame + 180 (3 s at 60 fps). A passive encoding emits stacks 5 (or a single 32% apply) at frame 0 with no expiresFrame — RED.",
+      "inertness": "Must not buff allies (no buffApply with targetSlug ≠ power) and must not apply to a comp where power is absent.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Explosion Radius ▲ 38.61% for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "Explosion radius (AoE size), self. Not a damage stat, not projectileExplosionPct (that is explosion DAMAGE — encoding radius as that stat is the classic mis-map).",
+      "durationSemantics": "10 sec wall-clock — but moot at scope: the scope-lock boss is single-target/partless and hit location never changes damage, so radius size moves zero damage.",
+      "triggerIdentity": "Same block as the reload line: after 18 normal attacks with Blood Fiend at max stacks, once per battle.",
+      "targetSet": "self",
+      "nearestWrongModel": "Mapping 'Explosion Radius ▲ 38.61%' onto projectileExplosionPct (a Damage-Up-bucket damage stat) — a plausible RL-kit misread that manufactures a +38.61% damage window that does not exist.",
+      "distinguishingAssertion": "No buffApply with stat 'projectileExplosionPct' (or any damage-bucket stat) is emitted around the 18th-attack trigger, and power's per-shot damage mult is IDENTICAL on the shots immediately before vs during the 10 s window (holding S1 stacks constant at 5). Any damage delta attributable to this line is RED. The verbatim line must appear in the override's unmodeled.skill2.",
+      "inertness": "Total damage for all 5 units must be invariant to this line's presence.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Reloads 100% of magazine; 1/battle",
+      "disposition": "FAITHFUL",
+      "scope": "Weapon-state effect (taxonomy trap 6: reload/ammo lines ARE damage — this refunds a full magazine and skips one ~141-frame reload, adding real shots).",
+      "durationSemantics": "Instant, ONE TIME PER BATTLE — 'Activates 1 time(s) per battle' is a hard once-latch on the whole block, not a cooldown and not recurring.",
+      "triggerIdentity": "hitCount count:18 (counts ROUNDS; RL hitsPerShot 1 → 18 pulls, i.e. during the 3rd magazine), gated on Blood Fiend at max stacks at trigger time. Given 3 s stack duration vs 2.35 s reload, the gate is satisfied at attack 18 in continuous fire, but the gate must still be encoded/checked at trigger time, not assumed.",
+      "targetSet": "self (instantReload fraction 1 on power only)",
+      "nearestWrongModel": "A RECURRING every-18-attacks instant reload (dropping 'Activates 1 time(s) per battle') — refunds a magazine every 3 magazines for the whole 180 s fight, skipping ~a dozen reloads and massively over-crediting shot count.",
+      "distinguishingAssertion": "In the event log, power's ammo refills to max WITHOUT a reload event exactly once, immediately after her 18th round; her 36th round (and every later magazine boundary) IS followed by a normal reload event with the full ~141-frame gap. Recurring encoding shows a second gapless refill at round 36 — RED. Also assert her total shot count exceeds the no-skill2 baseline by roughly one reload's worth of shots, not N reloads' worth.",
+      "inertness": "No ally's ammo/reload timeline changes; no second activation ever.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1584% of final ATK as Burst dmg",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-skill flat damage, 1584% of power's FINAL ATK (so S1's live stacks feed it at cast). Single enemy target (highest final ATK — trivially the sole boss at scope).",
+      "durationSemantics": "Instant hit per burst cast; no duration.",
+      "triggerIdentity": "burstCast (power's OWN burst, cd 40 s) — NOT fullBurstEnter. Burst-cast damage lands BEFORE the Full Burst window opens: no +50% FB major, no FB-entry auras (repo-verified fact).",
+      "targetSet": "enemy (1 highest final ATK)",
+      "nearestWrongModel": "Letting the hit ride the Full Burst +50% (encoding on fullBurstEnter, or flatDamage without the FB exemption) — over-credits every burst by ×1.5.",
+      "distinguishingAssertion": "Each of power's burst-bucket damage events has mult consistent with 1584% and carries inFullBurst:false / fbMajorApplied:false (and rangeApplied:false per the rider-range rule). A fullBurstEnter/FB-inclusive encoding emits fbMajorApplied:true — RED. Count of these events equals power's measured burst-cast count for the comp.",
+      "inertness": "Lands in the burst bucket only; never cores (no 'core strike' text).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max stacks → 1584% additional dmg",
+      "disposition": "FAITHFUL",
+      "scope": "A second 1584%-of-final-ATK instance on the same target, conditional — doubles the burst to 3168% only when the condition holds.",
+      "durationSemantics": "Instant, per qualifying cast; no duration.",
+      "triggerIdentity": "Same burstCast event, GATED on Blood Fiend being at max stacks (5) AT CAST TIME. This is a stack-threshold gate on her own S1 buff — not unconditional, and not a separate fullBurstEnter effect.",
+      "targetSet": "enemy (same target as line 1)",
+      "nearestWrongModel": "Unconditional doubling (a single 3168% hit or an ungated second 1584% on every cast) — the steady-state near-permanence of 5 stacks makes the gate look free, but a cast arriving during the opening ramp, right after a stack lapse, or in a rotation where she wasn't firing (chain delays / boss transition) must pay single damage. Second-nearest: keying the rider to fullBurstEnter, which both mistimes it into the FB window (+50%) and fires it on rotations another B3 bursts.",
+      "distinguishingAssertion": "With the gate FORCED unsatisfied at cast (via withPatchedOverride stripping S1's stack blocks so Blood Fiend can never reach 5), power's burst cast emits exactly ONE 1584% burst-bucket instance; with S1 intact and 5 live stacks at cast, exactly TWO — both pre-FB (fbMajorApplied:false). An ungated model emits two in the stripped run — RED.",
+      "inertness": "The additional hit must not appear on team Full Bursts power did not cast, and must not take the FB +50%.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Blood Fiend ATK stack buff",
+    "skill2:one-time 100% magazine reload",
+    "burst:1584% burst-skill damage",
+    "burst:conditional additional 1584% at max stacks"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Explosion Radius ▲ 38.61% for 10 sec."
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to reconcile against the driver: (1) S1 flattened to a permanent passive +32% ATK — steady state hides the ramp and the refresh semantics; the assertion pins first-apply timing and expiresFrame. (2) S2's 'Activates 1 time(s) per battle' silently dropped, turning one reload refund into a recurring every-18-rounds refund — the single highest-damage-swing trap in this kit; assert the round-36 boundary reloads normally. (3) Explosion Radius pattern-matched to projectileExplosionPct because both are RL-flavored 'explosion' stats — radius is scope-inert (partless boss, location never changes damage) and belongs verbatim in unmodeled. (4) Burst rider ungated or keyed to fullBurstEnter — must be burstCast-gated on 5 live stacks and FB-exempt (pre-FB landing, no +50%). Cadence note: chargeFrames 60 + ammo 6 means the 18th round arrives mid-3rd-magazine around ~20+ s in continuous fire; a test asserting the reload skip should locate it by round index, not wall-clock. All magnitudes are kit-literal (DATAMINED); no ⚑ estimates are required by this kit except the usual cadence tuple if the tests pin absolute timing.",
+  "model": "claude-fable-5"
+}

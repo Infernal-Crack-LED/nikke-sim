@@ -43,7 +43,7 @@
 | `cast` | 6 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |
 | `casterMaxHpPct` | 10 | ade, anis-star, avistar, cinderella, mary-bay-goddess, mast, maxwell-ordinary-mechanic, rouge, … |
 | `charge` | 1 | snow-white |
-| `chargeCounter` | 6 | bay, claire, frima, milk, noise, scarlet-black-shadow |
+| `chargeCounter` | 7 | bay, claire, frima, milk, noise, power, scarlet-black-shadow |
 | `chargeMultPct` | 9 | ada, cinderella-crystal-wave, e-h, eunhwa-tactical-upgrade, maxwell-ordinary-mechanic, nayuta, red-hood, snow-white, … |
 | `consolidation` | 1 | dorothy-serendipity |
 | `consumeAmmo` | 2 | asuka-wille, jill |
@@ -52,11 +52,11 @@
 | `delaySec` | 5 | asuka-wille, dorothy, flora, rapi-red-hood, snow-white |
 | `durationShots` | 8 | emilia, helm, miranda, neve, phantom, snow-white-heavy-arms, vesti-tactical-upgrade, zwei |
 | `escalating` | 8 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, mary-bay-goddess, volume |
-| `everyN` | 7 | clay, mast-romantic-maid, mint, neon-vision-eye, phantom, rouge, soda-twinkling-bunny |
-| `everyNOffset` | 3 | mint, neon-vision-eye, phantom |
+| `everyN` | 8 | clay, mast-romantic-maid, mint, neon-vision-eye, phantom, power, rouge, soda-twinkling-bunny |
+| `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
 | `excludeSelf` | 15 | arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, label, … |
 | `fbGate` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |
-| `flatDamage` | 75 | 2b, a2, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, … |
+| `flatDamage` | 76 | 2b, a2, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 4 | d, isabel, modernia, soda-twinkling-bunny |
 | `gainPierce` | 8 | ade-agent-bunny, asuka, dorothy, grave, mari, milk-blooming-bunny, naga, neve |
@@ -64,12 +64,12 @@
 | `hasPierce` | 6 | alice, laplace, laplace-ultimate-hero, maxwell-ordinary-mechanic, red-hood, zwei |
 | `hasTrueNormals` | 0 | _none_ |
 | `highestAllyAtkPct` | 1 | guilty |
-| `hitCount` | 54 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, … |
+| `hitCount` | 55 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, … |
 | `hitRatePct` | 17 | anchor-innocent-maid, aria, asuka, chisato, dorothy-serendipity, drake, jill, leona, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
 | `inFb` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |
 | `instantInFb` | 1 | rapi-red-hood |
-| `instantReload` | 10 | alice-wonderland-bunny, asuka-wille, diesel, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, … |
+| `instantReload` | 11 | alice-wonderland-bunny, asuka-wille, diesel, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, … |
 | `interval` | 26 | ade, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, elegg-boom-and-shock, emma-tactical-upgrade, … |
 | `lastBullet` | 10 | anis-sparkling-summer, aria, dorothy, epinel, exia, helm, k, marciana, … |
 | `magDumpRof` | 1 | cinderella |
@@ -96,7 +96,7 @@
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 2 | asuka, naga |
 | `requiresTargetStatus` | 12 | asuka-wille, d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, … |
-| `resourceGate` | 16 | d, e-h, elegg-boom-and-shock, exia, guillotine, guillotine-winter-slayer, julia, laplace-ultimate-hero, … |
+| `resourceGate` | 17 | d, e-h, elegg-boom-and-shock, exia, guillotine, guillotine-winter-slayer, julia, laplace-ultimate-hero, … |
 | `selfAndAdjacent` | 2 | flora, rouge |
 | `sequentialMultPct` | 1 | eve |
 | `shielded` | 2 | flora, naga |
