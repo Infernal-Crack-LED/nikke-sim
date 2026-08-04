@@ -5034,6 +5034,42 @@
       ],
       "board": null
     },
+    "quency": {
+      "name": "Quency",
+      "burst": "II",
+      "weapon": "SMG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/quency.json + scripts/kit-autonomy/manual-review/quency.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null,
+      "date": "2026-08-03",
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; fresh build — S1 self-HP-buffer converged to the blind casterMaxHpPct reading (inert); S2 interval:8 datamined (S6 blind interval:20 rejected); burstCast-vs-fullBurstEnter pinned by a crown-contention arm; no recorded comp yet",
+      "residual": "same-model spot-checks (judge): game-side 60-normal-attacks hits-vs-pulls (count 60 vs 120) flagged by all parties, inert; S1 self-HP-buff vs shield reading — the sim consumes neither, the line moves no damage either way; S2 8s cadence is datamined not prose — the one number a frame-read of a real quency fight could overturn; S1 highest-ally-HP basis is a missing-primitive flag (exact only when quency holds the team highest Max HP, inert)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "caveats": [
+        "skill1: 'Duplicates 12.42% of the Max HP of the Nikke with the highest Max HP' is a temporary SELF HP-buffer grant (cross-family-converged on a self Max-HP buff; a shield reading was set aside). Modeled as hitCount-60 self casterMaxHpPct 12.42 dur 10. DAMAGE-INERT (no atkOfMaxHpPct consumer, no damage-taken in v1) but observable — the spec pins trigger/value/duration/cadence. ⚑ BASIS: kit source is the HIGHEST-Max-HP ally; no StatKey expresses an ally-scaled HP source, so casterMaxHpPct resolves to % of quency's OWN Max HP — exact only when she holds the team's highest Max HP; inert either way (completeness gap, not accuracy).",
+        "skill1: ⚑ 'after 60 normal attacks' hits-vs-pulls — the engine hitCount counts HITS (adds hitsPerShot per pull, sim.ts:3782), so count 60 = 60 hits = 30 pulls; if the kit means 60 SHOTS the threshold is 120. Inert either way (S1 moves no damage).",
+        "skill2: ⚑ interval first-fire phase — the engine fires interval sec:8 first at t=8 (convention, not t=0); a wrong phase rescales only the opening ramp (negligible). The 8s cadence is DATAMINED (skillCooldownsSec.skill2 = 8), not prose. 'highest FINAL ATK' → byFinalAtk:true (live effectiveAtk at proc, A3 literal-word ruling); self-inclusive pool but quency does not rank top-2.",
+        "burst: the Max HP ▲ 43.87% line is modeled (targetMaxHpPct dur 5) but DAMAGE-INERT — ally-granted maxHpFlat is excluded from live Max HP and feeds atkOfMaxHpPct only when caster===target (self). Only the Critical Damage ▲ 29.9% line moves damage. Both ride one burstCast block on the same two highest-final-ATK allies.",
+        "all: quency is Burst II (cd 20s). The primary fixture fields her as the SOLE B2 (liter B1 / quency B2 / emilia B3 / helm B3) so she casts every ~20s Full Burst cycle; a second crown-contention arm (liter/crown/quency/helm) pins burstCast-vs-fullBurstEnter (crown wins the slot → quency casts zero → her burst buffs must not fire on those Full Bursts). Her own damage is negligible; her value is the S2 ATK buff and the burst Critical Damage buff on the two highest-final-ATK carries."
+      ]
+    },
     "quency-escape-queen": {
       "name": "Quency: Escape Queen",
       "burst": "III",
