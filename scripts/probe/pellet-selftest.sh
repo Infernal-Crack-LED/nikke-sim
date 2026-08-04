@@ -30,6 +30,7 @@ run "$HERE/analyze-pellet-tracks.py" --stale-counting-selftest
 run "$HERE/analyze-pellet-tracks.py" --missing-shots-selftest
 run "$HERE/analyze-pellet-tracks.py" --hand-count-selftest
 run "$HERE/analyze-pellet-tracks.py" --ammo-abstention-selftest
+run "$HERE/analyze-pellet-tracks.py" --ammo-oracle-ceiling-selftest
 run "$HERE/temporal-count-regression.py"
 run "$HERE/score-pellets.py" --selftest
 run "$HERE/score-pellets.py" --audit-fidelity-selftest
