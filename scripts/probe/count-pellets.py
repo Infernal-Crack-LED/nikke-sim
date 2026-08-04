@@ -469,21 +469,30 @@ def _track_components(all_comps):
 def _frame_pellet_counts(frame_tracks, cross_positions, pellet_ids, band_ids, args):
     """Per-frame {"white", "red", "marker", "band"} counts, windowed by crosshair radius.
 
-    `band` (docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md §2) is the number of WHITE
-    (non-red) in-radius tracks on that frame whose OVERALL lifetime also falls in the fps-scaled
-    owner-pellet band `[_band_lo(fps), args.max_pellet_frames]` — a strict subset of `white`, which
-    only requires lifetime `<= args.max_pellet_frames` (the `pellet_ids` gate). `band_ids` is that
-    subset of `pellet_ids`, precomputed by the caller once from `track_life`."""
+    `band` (docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md §2, upper bound decoupled
+    from `pellet_ids` by docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md) is the number of WHITE
+    (non-red) in-radius tracks on that frame whose OVERALL lifetime falls in `[_band_lo(fps),
+    band_hi]`, bounded by radius + non-red only — NOT gated by `pellet_ids`. `white` requires
+    lifetime `<= args.max_pellet_frames` (the `pellet_ids` gate) instead. `band` is therefore no
+    longer a strict subset of `white`: it MAY EXCEED `white` when `band_hi > args.max_pellet_frames`
+    (band_hi defaults to `args.max_pellet_frames`, which reproduces the old subset relation
+    exactly). `band_ids` is precomputed by the caller once from `track_life`, directly off
+    `tracks` — not as a subset of `pellet_ids`."""
     results = []
     for fi in range(len(frame_tracks)):
         cp = cross_positions[fi] if fi < len(cross_positions) else None
         white, red, marker, band = 0, 0, 0, 0
         if cp:
             for tid, x, y, is_red in frame_tracks[fi]:
-                if tid not in pellet_ids:
-                    continue
                 dist = math.hypot(x - cp[0], y - cp[1])
                 if dist > args.pellet_radius:
+                    continue
+                # `band` is gated by radius + non-red only (NOT by pellet_ids) — hoisted out of
+                # the pellet_ids skip below so a track with band_lo <= life <= band_hi can count
+                # here even when band_hi > max_pellet_frames excludes it from pellet_ids/white.
+                if not is_red and tid in band_ids:
+                    band += 1
+                if tid not in pellet_ids:
                     continue
                 if is_red:
                     # Red components tight to the crosshair are the triangular core-hit
@@ -494,8 +503,6 @@ def _frame_pellet_counts(frame_tracks, cross_positions, pellet_ids, band_ids, ar
                         red += 1
                 else:
                     white += 1
-                    if tid in band_ids:
-                        band += 1
         results.append({"white": white, "red": red, "marker": marker, "band": band})
     return results
 
@@ -514,7 +521,15 @@ def build_tracks_and_counts(all_comps, cross_positions, args):
     pellet_ids = {t['id'] for t in tracks if track_life[t['id']] <= args.max_pellet_frames}
     fps = getattr(args, 'fps', 30.0) or 30.0
     band_lo = _band_lo(fps)
-    band_ids = {tid for tid in pellet_ids if band_lo <= track_life[tid] <= args.max_pellet_frames}
+    # `band_hi` is DECOUPLED from `max_pellet_frames`/`pellet_ids` (docs/handoffs/
+    # 2026-08-04-band-hi-LANDING-PLAN.md) — build band_ids from `tracks` directly rather than as a
+    # subset of pellet_ids, so a track admitted into `band` need not be admitted into `pellet_ids`.
+    # Resolved per-call (not once at parse time) so a --sweep combo that overrides
+    # max_pellet_frames without also overriding band_hi still gets the right default.
+    band_hi = getattr(args, 'band_hi', None)
+    if band_hi is None:
+        band_hi = args.max_pellet_frames
+    band_ids = {t['id'] for t in tracks if band_lo <= track_life[t['id']] <= band_hi}
 
     results = _frame_pellet_counts(frame_tracks, cross_positions, pellet_ids, band_ids, args)
     return results, tracks, track_life, pellet_ids, frame_tracks
@@ -585,9 +600,11 @@ def debounce_shots(frame_counts, fps, marker_min=2, min_pellets=5, max_pellets=1
 
     FALLBACK HYBRID representative-frame rule (docs/handoffs/2026-08-04-representative-frame-
     PROPOSAL.md §2/§4, landed docs/probe-runs.md §13): if any frame in the event carries a `band`
-    key (docs/probe-runs.md §9G's lifetime-gated series — a strict subset of `white`, restricted to
-    tracks whose overall lifetime falls in the fps-scaled owner-pellet band), select the
-    representative by `plateau_median` over that band series instead of the shipped median-of-
+    key (docs/probe-runs.md §9G's lifetime-gated series — restricted to tracks whose overall
+    lifetime falls in `[band_lo, band_hi]`; bounded by radius + non-red only, NOT by `pellet_ids`,
+    so `band` may EXCEED `white` when `band_hi > max_pellet_frames`, docs/handoffs/
+    2026-08-04-band-hi-LANDING-PLAN.md), select the representative by `plateau_median` over that
+    band series instead of the shipped median-of-
     `white+red`. ⚑ BACKWARD COMPAT: when NO frame in `frame_counts` carries a `band` key (every
     dump before 2026-08-04, and every fixture committed before this rule), this function is
     BYTE-IDENTICAL to the pre-hybrid shipped behaviour below — the `has_band` check is computed
@@ -1445,6 +1462,7 @@ def main():
     parser.add_argument('--struct-offset-y', type=float, help='crosshair Y offset from the structural digit-row CENTRE in zoomed px (default -6.25*zoom = -12.5 at zoom 2)')
     parser.add_argument('--temporal', action='store_true', help='enable temporal filtering (track components across frames, classify by lifetime)')
     parser.add_argument('--max-pellet-frames', type=int, default=8, help='max frames a pellet component persists (default 8 at 30fps)')
+    parser.add_argument('--band-hi', type=int, default=None, help='upper lifetime bound (frames) for the `band` series (docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md), decoupled from --max-pellet-frames/pellet_ids. Defaults to --max-pellet-frames when omitted, which reproduces the pre-existing band ⊆ pellet_ids behaviour exactly (byte-identical output for every caller that does not pass this flag). Raising it admits longer-lived tracks into `band` WITHOUT admitting them into `pellet_ids`/`white` — band may then exceed white.')
     parser.add_argument('--dump-tracks', help='(temporal) write full per-track diagnostics JSON to this path')
     parser.add_argument('--dump-detections', help='(temporal) write the RAW pre-filter per-frame component list + crosshair track to this path — the cache half of cache-then-sweep (Phase 1 §1.1, docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md). Detection (mask+CC+contour stats) runs once and is cached; a later --load-detections run replays filtering/tracking against it in seconds instead of minutes.')
     parser.add_argument('--load-detections', help='(temporal) replay filtering + tracking from a --dump-detections cache instead of re-detecting from frame images. The positional `input` arg is ignored in this mode (frame identity comes from the cache). Combine with --min-area/--max-area/--min-circ/--center-exclude/--pellet-radius/--max-pellet-frames/--peanut-* to sweep those cheaply; the crosshair track and raw components are frozen at dump time (re-dump to change --locate or the WHITE_LO/RED_LO color thresholds).')
