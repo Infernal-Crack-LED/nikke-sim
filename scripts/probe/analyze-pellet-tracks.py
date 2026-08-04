@@ -4648,6 +4648,352 @@ def policy_score_selftest():
 
 
 # ============================================================
+# THE FADE-SCREEN GAP (docs/probe-runs.md §9A) -- §9A's own COULD-NOT-DETERMINE: the owner's f8-11
+# label and `real-fidelity-slice.json` both only see the plateau window, so a marker that lands and
+# fully dies BEFORE t0+8 is invisible to either. If any such marker is a real pellet, part of the
+# measured ~1.08 cold bias is a mis-specified REFERENCE (the label misses pellets that already
+# faded), not a reader defect. §9A says settling it needs owner labels at the plateau frame; this
+# arm narrows that ask from "hand-count a new frame" down to a short adjudication list, over the SAME
+# already-committed `labelled` block representative-audit's own reuse of the raw xs/ys (§9B/§9C)
+# already established as this clip's ground truth.
+#
+# Every in-radius (§9B's own gate: `pellet_radius`, against whichever crosshair the shot's `locate`
+# field says its crops were actually cut with), non-red track whose LAST frame is before its shot's
+# t0+8 is bucketed by lifetime. Life 1..FLASH_MODE_MAX_LIFE is the documented flash-blob phase (§9C:
+# "blobs live 1-3 frames"); life >= REP_OWNER_LIFE_LO_60FPS (8, the owner's own measured pellet
+# floor, §9A) is a different population (§9B's one known static, life 22 -- a persistent UI element,
+# not a fading pellet). Only the band BETWEEN those two -- life 4..7 -- is genuinely ambiguous: too
+# long-lived to dismiss as flash, too short-lived to already sit in the owner's own verified range.
+#
+# `hitsPerShot` is 10 (REP_HITS_PER_SHOT, data/characters.json marciana -- SG/Iron, NOT
+# marciana-marine-study, AR/Iron): a shot whose owner label already reads 10 has ZERO headroom, so
+# whatever its ambiguous objects are, they cannot be additional COUNTABLE pellets without breaching
+# the kit's own per-shot ceiling -- they are reported but not adjudicable. `min(headroom, ambiguous)`
+# per shot, pooled over 5 shots, is the ABSOLUTE upper bound on how far this gap could shift the 8.40
+# reference even in the most generous reading (every headroom-permitted ambiguous object turns out to
+# be a real fading pellet).
+#
+# READ-ONLY BY CONSTRUCTION: reads only the already-committed REP_AUDIT_FIXTURE's `labelled` block
+# (CLAUDE.md reuse-before-derive -- no new raw tracks.json, no live scratchpad access). Never touches
+# read-pellets.ts, count-pellets.py, or any constant/default; enacts nothing -- this arm GENERATES
+# the adjudication list, it does not decide it (2026-08-04 fade-screen ask, task 1 of 2).
+# ============================================================
+FADE_SCREEN_FIXTURE = "scripts/tests/fixtures/pellets/fade-screen-slice.json"
+FLASH_MODE_MAX_LIFE = 3  # docs/probe-runs.md §9C: "blobs live 1-3 frames" -- the documented flash phase
+
+# Per-shot t0 (absolute frame index, the same numbering `labelled.tracks_raw[].first` uses) --
+# copied from policy-score-slice.json's own `_expected.rows[].t0`
+# (scripts/tests/fixtures/pellets/policy-score-slice.json), itself
+# groundtruth-f8-11.json's `shots[].t0` (shot 0 excluded there: no blast onset, an owner-confirmed
+# false positive, so it carries no t0 at all -- the numbering here is 1..5, not 0..5). Owner labels
+# are groundtruth-f8-11.json's `shots[].white` verbatim. Both are already-committed, independently
+# labelled artifacts (CLAUDE.md reuse-before-derive) -- never re-derived here.
+FADE_SCREEN_SHOTS = (
+    # (shot, t0, owner_white, crosshair_key)
+    (1, 1060, 7, "cross"),
+    (2, 1096, 10, "cross"),
+    (3, 1140, 8, "cross"),
+    (4, 1289, 9, "cross_tmpl"),  # groundtruth-f8-11.json shot 4: locate == "template"
+    (5, 1369, 8, "cross"),
+)
+
+
+def _fs_shot_events(labelled, shots=FADE_SCREEN_SHOTS):
+    """Per-shot temporal neighbourhood, reusing `_ps_events` (== `_merge_spans`/`_merge_events`,
+    already exercised on this exact `labelled.frame_counts` by `_ps_score_labelled`, which raises the
+    identical premise check below) rather than re-deriving segmentation: the SHIPPED-debounced event
+    span each shot's t0 falls inside. `labelled.frame_counts` covers ELEVEN spans, not five -- most of
+    them unrelated flash/decay blips between the 5 real shots (§9C) -- so a track must overlap the
+    SPECIFIC span its own shot owns, not merely be temporally closest to some t0; nearest-t0
+    assignment over-attributes cross-event debris (verified empirically: it roughly 1.4x's this
+    arm's population versus event-span attribution).
+
+    Padded BACKWARD by the same debounce gap tolerance `_merge_spans`'s "shipped" rule itself uses
+    (`max(3, round(fps*0.13))`, 8 frames at 60fps) so a pre-onset object -- alive before the frame
+    total first crosses MERGE_EVENT_MIN, e.g. a track that dies at t0-1 -- is still attributed to the
+    shot it precedes, without the pad reaching back into the PRIOR (unrelated) detected event (the
+    real inter-event gaps here are 17+ frames, comfortably wider than the 8-frame pad)."""
+    frame_counts = [{"white": w, "red": r, "marker": m} for w, r, m in labelled["frame_counts"]]
+    fps, offset = labelled["fps"], labelled["offset"]
+    events = _ps_events(frame_counts, fps)
+    gap_pad = max(3, round(fps * 0.13))
+    out = {}
+    for shot, t0, owner, key in shots:
+        ev = next((e for e in events if e["start"] <= (t0 - offset) < e["end"]), None)
+        if ev is None:
+            raise SystemExit(f"--fade-screen: shot {shot} (t0={t0}) falls in no shipped event; the "
+                             "labelled slice boundary cut it.")
+        out[shot] = {"nb_lo": ev["start"] + offset - gap_pad, "nb_hi": ev["end"] + offset,
+                    "t0": t0, "owner": owner, "key": key}
+    return out
+
+
+def _fs_collect(labelled, shots=FADE_SCREEN_SHOTS):
+    """Every in-radius, non-red track in `labelled.tracks_raw` that overlaps its shot's own event
+    neighbourhood (`_fs_shot_events`) and whose LAST frame is before that shot's t0+8 -- the
+    population §9A's COULD-NOT-DETERMINE gap is about (invisible to both the owner's f8-11 label and
+    real-fidelity-slice.json, which also only look at f8-11)."""
+    radius = labelled["params"]["pellet_radius"]
+    offset = labelled["offset"]
+    cross_by_key = {
+        "cross": [tuple(c) if c else None for c in labelled["cross"]],
+        "cross_tmpl": [tuple(c) if c else None for c in labelled["cross_tmpl"]],
+    }
+    neighbourhoods = _fs_shot_events(labelled, shots)
+    rows = []
+    for tid, first, is_pellet, xs, ys in labelled["tracks_raw"]:
+        life = len(xs)
+        last = first + life - 1
+        matched = [s for s, nb in neighbourhoods.items() if first < nb["nb_hi"] and last >= nb["nb_lo"]]
+        if not matched:
+            continue  # belongs to none of the 5 real shots' own detected event -- unrelated debris
+        # A track overlapping >1 neighbourhood would have to span the gap between them, which is
+        # always far longer than 8 frames here -- it can never survive the t0+8 filter below whichever
+        # shot it is attributed to. Nearest-t0 among the matches keeps the choice deterministic anyway.
+        shot = min(matched, key=lambda s: abs((first + last) / 2 - neighbourhoods[s]["t0"]))
+        nb = neighbourhoods[shot]
+        t0, owner, key = nb["t0"], nb["owner"], nb["key"]
+        track = {"first": first, "last": last, "xs": xs, "ys": ys}
+        if not _rep_ever_in_radius(track, cross_by_key[key], radius, offset):
+            continue
+        if last >= t0 + 8:
+            continue  # survives into (or past) the owner's own window -- not this gap's population
+        rows.append({"id": tid, "shot": shot, "t0": t0, "owner": owner,
+                    "first": first, "last": last, "life": life,
+                    "span": [first - t0, last - t0], "is_pellet": bool(is_pellet)})
+    return sorted(rows, key=lambda r: (r["shot"], r["first"]))
+
+
+def _fs_ambiguous(row):
+    return FLASH_MODE_MAX_LIFE < row["life"] < REP_OWNER_LIFE_LO_60FPS
+
+
+def _fs_score(rows, shots=FADE_SCREEN_SHOTS):
+    histogram = collections.Counter(r["life"] for r in rows)
+    per_shot = []
+    for shot, t0, owner, _key in shots:
+        shot_rows = [r for r in rows if r["shot"] == shot]
+        ambiguous = [r for r in shot_rows if _fs_ambiguous(r)]
+        headroom = REP_HITS_PER_SHOT - owner
+        adjudicable = ambiguous if headroom > 0 else []
+        max_additional = min(max(headroom, 0), len(ambiguous))
+        per_shot.append({
+            "shot": shot, "t0": t0, "owner": owner, "headroom": headroom,
+            "n_dies_before_window": len(shot_rows), "n_ambiguous": len(ambiguous),
+            "n_adjudicable": len(adjudicable), "max_additional": max_additional,
+            "adjudicable_ids": [r["id"] for r in adjudicable],
+        })
+    pooled_max_additional = sum(s["max_additional"] for s in per_shot)
+    pooled_bound = round(pooled_max_additional / len(shots), 4)
+    return {
+        "histogram": {str(k): v for k, v in sorted(histogram.items())},
+        "n_total": len(rows),
+        "n_ambiguous": sum(s["n_ambiguous"] for s in per_shot),
+        "per_shot": per_shot,
+        "pooled_max_additional": pooled_max_additional,
+        "pooled_bound_per_shot": pooled_bound,
+    }
+
+
+def _fs_expected(score):
+    """The whole score IS the pinned summary -- a histogram, a 5-row per-shot table and a pooled
+    bound, small enough to read in a diff, and exactly what the printout below is read off."""
+    return score
+
+
+def _print_fade_screen(score):
+    print("\nFADE-SCREEN -- markers that die before t0+8 (docs/probe-runs.md §9A)")
+    print(f"\npooled lifetime histogram (n={score['n_total']}, in-radius, non-red, dies before "
+         "shot's own t0+8):")
+    for life, n in score["histogram"].items():
+        tag = " <- AMBIGUOUS" if FLASH_MODE_MAX_LIFE < int(life) < REP_OWNER_LIFE_LO_60FPS else ""
+        print(f"  life={life:>3s}  n={n:3d}{tag}")
+    print(f"\nambiguous band: {FLASH_MODE_MAX_LIFE} < life < {REP_OWNER_LIFE_LO_60FPS} (above the "
+         f"flash phase, below the owner's own measured floor) -- {score['n_ambiguous']} objects "
+         "pooled")
+    print(f"\n  {'shot':>4s} {'t0':>6s} {'owner':>5s} {'headroom':>8s} {'ambiguous':>9s} "
+         f"{'adjudicable':>11s} {'max_add':>7s}  ids")
+    for s in score["per_shot"]:
+        print(f"  {s['shot']:4d} {s['t0']:6d} {s['owner']:5d} {s['headroom']:8d} "
+             f"{s['n_ambiguous']:9d} {s['n_adjudicable']:11d} {s['max_additional']:7d}  "
+             f"{s['adjudicable_ids']}")
+    print(f"\npooled upper bound on the reference shift: {score['pooled_max_additional']} additional "
+         f"pellets max / {len(score['per_shot'])} shots = {score['pooled_bound_per_shot']} "
+         "pellets/shot (absolute ceiling, kit-hitsPerShot-constrained -- NOT a claim any specific "
+         "object IS a pellet; that needs the owner's adjudication)")
+
+
+def fade_screen(save_fixture=None):
+    with open(REP_AUDIT_FIXTURE) as fh:
+        fx = json.load(fh)
+    rows = _fs_collect(fx["labelled"])
+    score = _fs_score(rows)
+    if save_fixture:
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": (f"Scored entirely off the already-committed {REP_AUDIT_FIXTURE}'s "
+                           "`labelled` block -- no new raw tracks.json, no re-derivation "
+                           "(CLAUDE.md reuse-before-derive). docs/probe-runs.md §9A is the "
+                           "COULD-NOT-DETERMINE gap this answers."),
+                "_note": ("Deliberately carries NO raw track data of its own -- `fade_screen`/"
+                          f"`fade_screen_selftest` both read {REP_AUDIT_FIXTURE} directly, so this "
+                          "fixture only pins the SCORE (`_expected`). Regenerate with "
+                          "analyze-pellet-tracks.py --fade-screen --save-fade-screen-fixture "
+                          "<path>."),
+                "_expected": _fs_expected(score),
+            }, fh, indent=2)
+        print(f"wrote fade-screen fixture -> {save_fixture}")
+    _print_fade_screen(score)
+    return score
+
+
+def fade_screen_selftest():
+    """Constraint 9 self-validation: replay the whole arm off the already-committed
+    representative-audit-slice.json and assert the result against the committed fade-screen
+    fixture."""
+    with open(FADE_SCREEN_FIXTURE) as fh:
+        fx = json.load(fh)
+    with open(REP_AUDIT_FIXTURE) as fh:
+        src = json.load(fh)
+    rows = _fs_collect(src["labelled"])
+    score = _fs_score(rows)
+    got = _fs_expected(score)
+    ok = got == fx["_expected"]
+    if not ok:
+        for key in sorted(set(got) | set(fx["_expected"])):
+            if got.get(key) != fx["_expected"].get(key):
+                print(f"  DIFF {key}:\n    expected {json.dumps(fx['_expected'].get(key))}"
+                      f"\n    got      {json.dumps(got.get(key))}")
+    _print_fade_screen(score)
+    print("SELFTEST PASS" if ok else "SELFTEST FAIL")
+    return 0 if ok else 1
+
+
+# ---------------------------------------------------------------- adjudication crops (evidence
+# generation ONLY -- this half of the fade-screen arm never scores or verdicts anything; it renders
+# the `--fade-screen`-derived adjudicable objects as filmstrips for a HUMAN to look at. See
+# docs/probe-runs.md §9A and the 2026-08-04 fade-screen ask, task 2.
+FADE_SCREEN_CROP_HALF = 110   # -> 220x220 source-px crop, matching the ask's "roughly 220x220"
+FADE_SCREEN_CROP_SCALE = 2    # nearest-neighbour upscale factor
+FADE_SCREEN_RING_RADIUS = 26  # px, in the UPSCALED panel -- clear of a pellet's own few-px blob
+FADE_SCREEN_LABEL_H = 46      # px, per-panel label strip height (upscaled space)
+FADE_SCREEN_TITLE_H = 56      # px, whole-filmstrip title strip height (upscaled space)
+
+
+def _fsc_track_positions(labelled):
+    """id -> (first, xs, ys) for every track in `labelled.tracks_raw`, so the crop generator can
+    look up any adjudicable id's raw per-frame positions without re-deriving them."""
+    return {tid: (first, xs, ys) for tid, first, _is_pellet, xs, ys in labelled["tracks_raw"]}
+
+
+def _fsc_adjudicable_rows(labelled, shots=FADE_SCREEN_SHOTS):
+    """The exact objects `--fade-screen` flags as adjudicable (ambiguous AND its shot has
+    headroom > 0) -- reused, not re-picked by hand, so a future fixture regeneration keeps the crop
+    generator in lockstep with the arm's own numbers instead of a frozen id list going stale."""
+    rows = _fs_collect(labelled, shots)
+    score = _fs_score(rows, shots)
+    adjudicable_ids = {rid for s in score["per_shot"] for rid in s["adjudicable_ids"]}
+    by_shot = {s["shot"]: s for s in score["per_shot"]}
+    return [dict(r, headroom=by_shot[r["shot"]]["headroom"]) for r in rows if r["id"] in adjudicable_ids]
+
+
+def _fsc_crop(img, cx, cy, half=FADE_SCREEN_CROP_HALF):
+    """A `2*half` square crop centred on (cx, cy), shifted (not shrunk) at the frame edges so every
+    panel is the same size. Returns the crop plus the object's own position IN CROP COORDINATES (the
+    shift means that is not always exactly `(half, half)`)."""
+    h, w = img.shape[:2]
+    x0 = max(0, min(int(round(cx)) - half, w - 2 * half))
+    y0 = max(0, min(int(round(cy)) - half, h - 2 * half))
+    crop = img[y0:y0 + 2 * half, x0:x0 + 2 * half]
+    return crop, (cx - x0, cy - y0)
+
+
+def _fsc_panel(frame_path, cx, cy, label):
+    """One filmstrip panel: an upscaled (nearest-neighbour, so no re-blur) crop centred on the
+    object's position at this frame, a high-contrast ring drawn AROUND (never over) that position,
+    and a label strip on top. Ring radius (26px, upscaled space) is well clear of a pellet's own
+    few-px blob, satisfying "beside or around, never on it"."""
+    img = cv2.imread(str(frame_path))
+    if img is None:
+        raise SystemExit(f"--fade-screen-crops: could not read frame {frame_path}")
+    crop, (ox, oy) = _fsc_crop(img, cx, cy)
+    up = cv2.resize(crop, None, fx=FADE_SCREEN_CROP_SCALE, fy=FADE_SCREEN_CROP_SCALE,
+                    interpolation=cv2.INTER_NEAREST)
+    px, py = int(round(ox * FADE_SCREEN_CROP_SCALE)), int(round(oy * FADE_SCREEN_CROP_SCALE))
+    # black outline + cyan ring, both OFF the object (radius > any pellet's own extent)
+    cv2.circle(up, (px, py), FADE_SCREEN_RING_RADIUS, (0, 0, 0), 4, cv2.LINE_AA)
+    cv2.circle(up, (px, py), FADE_SCREEN_RING_RADIUS, (255, 255, 0), 2, cv2.LINE_AA)
+    strip = np.zeros((FADE_SCREEN_LABEL_H, up.shape[1], 3), dtype=np.uint8)
+    cv2.putText(strip, label, (8, FADE_SCREEN_LABEL_H - 14), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
+               (255, 255, 255), 2, cv2.LINE_AA)
+    return np.vstack([strip, up])
+
+
+def _fsc_filmstrip(frames_dir, row, id_positions):
+    """The whole filmstrip for one adjudicable object: one panel per frame of its life, PLUS one
+    extra panel at t0+8 (the first frame of the owner's labelled window) cropped at the object's
+    LAST known position, to show it is gone by then."""
+    tid, t0 = row["id"], row["t0"]
+    first, xs, ys = id_positions[tid]
+    panels = []
+    for k, (x, y) in enumerate(zip(xs, ys)):
+        fi = first + k
+        offset = fi - t0
+        label = f"t0{offset:+d}"
+        panels.append(_fsc_panel(frames_dir / f"f_{fi + 1:05d}.png", x, y, label))
+    extra_fi = t0 + 8
+    panels.append(_fsc_panel(frames_dir / f"f_{extra_fi + 1:05d}.png", xs[-1], ys[-1],
+                             "t0+8 (owner window opens)"))
+    gap = np.full((panels[0].shape[0], 6, 3), 128, dtype=np.uint8)
+    body = panels[0]
+    for p in panels[1:]:
+        body = np.hstack([body, gap, p])
+    title = (f"shot {row['shot']}  track {tid}  life={row['life']}  span=[{row['span'][0]:+d}, "
+            f"{row['span'][1]:+d}]  owner={row['owner']}  headroom={row['headroom']}")
+    title_strip = np.zeros((FADE_SCREEN_TITLE_H, body.shape[1], 3), dtype=np.uint8)
+    cv2.putText(title_strip, title, (10, FADE_SCREEN_TITLE_H - 18), cv2.FONT_HERSHEY_SIMPLEX, 0.8,
+               (255, 255, 255), 2, cv2.LINE_AA)
+    return np.vstack([title_strip, body])
+
+
+def fade_screen_crops(frames_dir, out_dir):
+    """TASK 2 of the 2026-08-04 fade-screen ask: render one filmstrip PNG per `--fade-screen`
+    adjudicable object, plus an INDEX.md. GENERATES EVIDENCE ONLY -- decides nothing, alters no
+    recorded number, and never runs as part of --selftest / pellet-selftest.sh (its output is
+    owner-facing scratch in /tmp, not a committed fixture; see CLAUDE.md's constraint 9 note on
+    `--fade-screen` itself, which IS the committed, tested half)."""
+    frames_dir, out_dir = Path(frames_dir), Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    with open(REP_AUDIT_FIXTURE) as fh:
+        fx = json.load(fh)
+    labelled = fx["labelled"]
+    id_positions = _fsc_track_positions(labelled)
+    rows = _fsc_adjudicable_rows(labelled)
+    index_rows = []
+    for row in rows:
+        strip = _fsc_filmstrip(frames_dir, row, id_positions)
+        fname = f"shot{row['shot']}_track{row['id']}.png"
+        cv2.imwrite(str(out_dir / fname), strip)
+        index_rows.append((row, fname))
+        print(f"wrote {out_dir / fname}")
+    lines = ["| shot | track id | span (t0-relative) | lifetime | owner label | headroom | file |",
+            "| ---- | -------- | ------------------- | -------- | ------------ | -------- | ---- |"]
+    for row, fname in index_rows:
+        lines.append(f"| {row['shot']} | {row['id']} | [{row['span'][0]:+d}, {row['span'][1]:+d}] "
+                     f"| {row['life']} | {row['owner']} | {row['headroom']} | `{fname}` |")
+    index_path = out_dir / "INDEX.md"
+    index_path.write_text(
+        "# Fade-screen adjudication crops (docs/probe-runs.md §9A)\n\n"
+        "Generated by `analyze-pellet-tracks.py --fade-screen-crops` -- evidence only, decides "
+        "nothing. Each row is one in-radius, non-red track that dies before its shot's own t0+8 "
+        "AND falls in the life-4..7 ambiguous band AND its shot has headroom under the "
+        f"hitsPerShot={REP_HITS_PER_SHOT} ceiling. Is it a fading pellet or a muzzle-flash artifact?\n\n"
+        + "\n".join(lines) + "\n")
+    print(f"wrote {index_path}")
+    return [r for r, _ in index_rows]
+
+
+# ============================================================
 # THE BACKEND/MARKER-CHANNEL AUDIT (docs/probe-runs.md §11) -- the `h4-marciana` 177-vs-176
 # divergence found in passing by the merge audit (§8H). Replays count-pellets.py's OWN
 # `debounce_shots` in-process over a dump's tracks.json `frame_counts` -- no re-implementation, no
@@ -6621,6 +6967,29 @@ def main():
                     help=f"write the committed replay slice (see {MARKER_GEOMETRY_FIXTURE})")
     ap.add_argument("--marker-geometry-selftest", action="store_true",
                     help=f"replay {MARKER_GEOMETRY_FIXTURE} and exit")
+    ap.add_argument("--fade-screen", action="store_true",
+                    help=("FADE-SCREEN GAP (docs/probe-runs.md §9A): every in-radius, non-red track "
+                          "in the already-committed representative-audit-slice.json's `labelled` "
+                          "block whose last frame dies before its shot's t0+8, bucketed by lifetime "
+                          "-- pooled histogram, the ambiguous life-4..7 band (above the documented "
+                          "1-3-frame flash phase, below the owner's own measured 8-frame pellet "
+                          "floor), and per-shot hitsPerShot=10 headroom bounding how many of them "
+                          "could possibly be additional pellets. Reads REP_AUDIT_FIXTURE directly -- "
+                          "no new raw data, no tracks.json argument needed. MEASUREMENT ONLY: "
+                          "nothing here enacts or adjudicates."))
+    ap.add_argument("--save-fade-screen-fixture", metavar="PATH",
+                    help=f"write the committed score fixture (see {FADE_SCREEN_FIXTURE})")
+    ap.add_argument("--fade-screen-selftest", action="store_true",
+                    help=f"replay --fade-screen against {FADE_SCREEN_FIXTURE} and exit")
+    ap.add_argument("--fade-screen-crops", metavar="FRAMES_DIR",
+                    help=("EVIDENCE GENERATION ONLY (task 2 of the 2026-08-04 fade-screen ask): "
+                          "render one filmstrip PNG per --fade-screen adjudicable object (one panel "
+                          "per life frame + one at t0+8) plus an INDEX.md, for a human to adjudicate "
+                          "pellet-vs-artifact. FRAMES_DIR holds the extracted frame PNGs "
+                          "(f_00001.png.., 1-indexed; absolute frame i -> f_{i+1:05d}.png). Never "
+                          "runs under --selftest / pellet-selftest.sh; decides nothing."))
+    ap.add_argument("--fade-screen-crops-out", metavar="DIR", default="/tmp/fade-adjudication",
+                    help="output directory for --fade-screen-crops (default /tmp/fade-adjudication)")
     args = ap.parse_args()
 
     if args.stale_counting_selftest:
@@ -6644,6 +7013,14 @@ def main():
         raise SystemExit(cap_score_selftest())
     if args.cap_score:
         cap_score(args.save_cap_score_fixture)
+        return 0
+    if args.fade_screen_selftest:
+        raise SystemExit(fade_screen_selftest())
+    if args.fade_screen:
+        fade_screen(args.save_fade_screen_fixture)
+        return 0
+    if args.fade_screen_crops:
+        fade_screen_crops(args.fade_screen_crops, args.fade_screen_crops_out)
         return 0
     if args.marker_geometry_selftest:
         raise SystemExit(marker_geometry_selftest())
