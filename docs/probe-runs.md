@@ -4960,3 +4960,80 @@ Both fixes were shown to FIRE when their condition is violated (prefix removed /
 synthetic red track flipped white / in-radius track moved out), then reverted with the Edit tool —
 a check that cannot be shown to fail is not a check. `pellet-selftest.sh` 21 arms and `verify.sh`
 both re-run at TRUE exit 0 afterwards, and `cap-score-slice.json` never moved.
+
+---
+
+#### §15 THE `h4-marciana` FRAME 1565 marker=3 GEOMETRY — one crosshair-attached track, two single-frame components on an unrelated line, not three real markers
+
+**2026-08-04.** Answers the prerequisite `docs/handoffs/2026-08-04-pellet-reader-JUDGE-handoff.md`
+item 7 names before §11's backend-selector defect (`read-pellets.ts:882`, array-order tie-break on a
+channel the comparison never inspects) can be fixed: **is opencv's `marker = 3` reading at
+`h4-marciana-structural` frame 1565 a true core hit, or an opencv false positive?**
+(`marciana` = SG/Iron, `docs/probes/clean-weapons/marciana-solo.MP4` — NOT `marciana-marine-study`.)
+
+##### §15A — The three components, and which one is crosshair-attached
+
+Of the three RED tracks `analyze-pellet-tracks.py`'s general pellet tracker finds within
+`pellet_radius` (160px) of frame 1565's crosshair — the same population §11's channel census reads,
+an INDEPENDENT signal from the `marker` detector channel itself — only one carries any evidence of
+being a real, persistent UI element glued to the crosshair:
+
+| track id | life | frame(s) present | dx                 | dy                    | reading                                                                                                            |
+| -------- | ---- | ---------------- | ------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `11110`  | 3    | 1564, 1565, 1566 | +9.1 / +8.9 / +9.4 | −57.5 / −57.0 / −58.8 | **CROSSHAIR-ATTACHED** — near-constant offset (dx range 0.5px, dy range 1.8px) across all three frames of its life |
+| `11115`  | 1    | 1565 only        | −46.5              | −7.7                  | single-frame — no persistence evidence                                                                             |
+| `11117`  | 1    | 1565 only        | +63.3              | −6.0                  | single-frame — no persistence evidence                                                                             |
+
+`11115` and `11117` sit on a **near-horizontal line through the crosshair** (dy −7.7 and −6.0, dx on
+opposite sides) — consistent with a red UI chevron/banner element visible in the frame image, not two
+independent hit-marker glyphs. **The crosshair-attached marker count at frame 1565 is 1, not 3.**
+
+##### §15B — What this does and does not establish
+
+⚑ This is **an independent geometric signal that opencv's marker=3 reading over-counts** — it does
+not directly inspect the `marker` detector's own pixels, only the general red-track population's
+persistence pattern. It is consistent with §11F's open question ("is opencv's marker=3 a true core
+hit or a false positive") resolving toward **false positive** at this specific frame, but the ⚔
+hit-marker triangles in the actual footage (§11F's suggested visual check) have not been inspected
+here — that remains a separate pass if a definitive visual read is wanted.
+
+##### §15C — n and scope
+
+**n = 1 frame (1565), 1 dump (`h4-marciana-structural`), 1 unit (`marciana`, SG/Iron).** This is a
+single-frame, single-dump observation, not a swept measurement across the 82 marker-divergent frames
+§11I catalogued — it characterizes the ONE frame that actually flips an event's valid/core status
+(§11C), not the general marker-divergence population.
+
+⚑ **EVIDENCE-PROPORTIONALITY — this entry RECORDS an observation and ENACTS NOTHING.** Per
+CLAUDE.md's evidence-proportionality rule, an n=1 single-frame read is HYPOTHESIS-strength: it never
+in the same motion changes a constant/default or stamps a verdict. Specifically:
+
+- `read-pellets.ts:882`'s backend-selector defect stays **owner-gated and unfixed** — nothing here
+  fixes it, and fixing it is out of scope for this entry regardless of §15A's reading.
+- No verdict (VALIDATED/REFUTED/SUPERSEDED) is stamped on that defect or on §11F's open question.
+  §15A's "false-positive" reading is reported as a hypothesis-strength geometric signal, not a
+  closure.
+- `MARKER_MIN`, `debounce_shots` (both implementations) and every constant/threshold are untouched.
+
+##### §15D — Instrument and reproduction
+
+New flag on the existing instrument (constraint 9: extend, don't fork): `analyze-pellet-tracks.py
+--marker-geometry`, self-validated against the committed slice fixture
+`scripts/tests/fixtures/pellets/marker-geometry-slice.json` (10 pinned checks, including the exact
+frame-1565 ids/life/dx/dy above) and registered in `scripts/probe/pellet-selftest.sh`. For each
+queried frame it lists every RED track within the dump's own `params.pellet_radius` of that frame's
+crosshair — id, lifetime, absolute position, distance, crosshair-relative dx/dy — plus each track's
+dx/dy across a `+/-` window of neighbouring frames, so a near-constant offset (crosshair-attached) is
+distinguishable from a single-frame detection.
+
+```sh
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --marker-geometry \
+  /Users/maxwellsutton/nikke-sim/scratchpad/pellets/h4-marciana-structural/tracks.json \
+  --marker-geometry-frames 1565
+# replay the committed slice -- no scratchpad access, no re-derivation:
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --marker-geometry-selftest
+```
+
+**NOTHING HERE ENACTS.** `read-pellets.ts`, `count-pellets.py`'s `debounce_shots` and `MARKER_MIN` are
+UNCHANGED. No constant, gate or default moved; no existing fixture was touched; no `DECISIONS.md`
+entry was written. The backend-selector defect (§11) stays owner-gated.
