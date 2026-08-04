@@ -2343,10 +2343,15 @@ and `SPUR?` collapses from 6/8/12/19 to 0/1/1/0 over the same sweep — i.e. at 
 manufacturing MISSED/SPURIOUS pairs out of the same shot.
 
 **Landed pellets per shot, measured: 8.4** — the owner's own per-shot totals on the five real fixture
-shots are 7, 10, 8, 9, 8. That is the plan's assumed value exactly, so **the 8% threshold is unchanged**
+shots are 7, 10, 8, 9, 8. ⚑ **SUPERSEDED (2026-08-04) — disregard "landed": §9A shows this is a
+count of the markers visible in the f8–11 WINDOW, not a per-shot landed total.** That is the plan's
+assumed value exactly, so **the 8% threshold is unchanged**
 (0.8/8.4 ÷ (10/8.4) = 8.0%, 1.6/8.4 ÷ (10/8.4) = 16.0%). The reader's own `avgTotal` on valid shots is
 7.0–7.4 across the four dumps, i.e. ~1.0–1.4 pellets/shot colder than the owner's 8.4 — that gap is the
-already-recorded per-shot bias, not this channel.
+already-recorded per-shot bias, not this channel. ⚑ **SUPERSEDED (2026-08-04) — disregard that
+sentence's framing: §9B decomposes the same five shots and finds only 12 of the reader's 35 reported
+pellets are owner pellets at all, so the ~1.0–1.4 gap is a residual between two different quantities,
+not a per-shot bias of a size.**
 
 **Cadence — MEASURED, not assumed from `rate_of_fire`.** Mode **20 frames at 30 fps** on all four
 full-fight dumps (62/160, 64/139, 37/145, 85/174 of the inter-shot gaps) and **40 frames at 60 fps** on
@@ -2435,7 +2440,10 @@ not encode, and neither changes the §3a gate result:
   arbiter's blind spots coincide with the detector's, so a shot destroyed by a stale lock is one this
   measurement is LEAST able to see, and MISSED is biased low for that reason too.
 - **The 8% threshold's dependence on landed-pellets-per-shot — MEASURED, unchanged.** 8.4 exactly (7,
-  10, 8, 9, 8 on the owner's five real shots). Threshold stays 8–16%.
+  10, 8, 9, 8 on the owner's five real shots). Threshold stays 8–16%. ⚑ **SUPERSEDED (2026-08-04) —
+  disregard "landed": §9A shows 8.4 is an f8–11 WINDOW count, so the threshold it feeds is
+  window-conditional. §9A also argues it is probably still the right number (the cohort coexists on
+  a flat plateau), but whether any marker fades before f08 is UNDETERMINED.**
 - **Cadence not constant — CONTROLLED.** Cadence was measured from the ammo series itself, per dump, on
   single-shot decrements with no reload between (mode 20 at 30 fps, 40 at 60 fps), and reload-spanning
   gaps are excluded from the multiple sub-case. `gap ÷ 40` was used to generate hypotheses only; the
@@ -2646,7 +2654,10 @@ board standard; everything else in this paragraph stands.]
 
 **6 of the 34** in-window detections carry a `total` of 0, 1 or 2 pellets — frames 1124, 1180, 1511,
 1534, 1665, 1729 — against the measured 8.4 landed pellets per shot. Summed pellet total over all 34
-detections is **221**; the owner's 36 shots × 8.4 implies **~302**. ⚑ Reported as an observation only;
+detections is **221**; the owner's 36 shots × 8.4 implies **~302**. ⚑ **SUPERSEDED (2026-08-04) —
+disregard "landed": §9A shows 8.4 is an f8–11 WINDOW count, so both sides of this 221-vs-302
+comparison are single-window observations taken in DIFFERENT windows (§9C).** ⚑ Reported as an
+observation only;
 no cause is assigned here. One of the six, frame 1124, is also one of the window's two non-ammo extra
 onsets (the other being 1546), so the near-empty set and the §4.4 echo overlap but are not the same
 set.
@@ -3435,11 +3446,15 @@ via median-over-a-longer-window. On the 31 over-span events: shipped mean **5.81
 **But the magnitude is negligible.** Recomputed pooled `avgTotal` over the four full fights: shipped
 **7.3242**; `cap_cadence` 7.3214 (**−0.003**); `resplit` 7.3170 (**−0.007**); `gap2` 7.3492
 (+0.025); `gap1` 7.3967 (+0.072); `candA` 7.1767 (−0.148). The deficit to close is
-**8.4 − 7.32 = 1.08 pellets/shot**. The merge fix delivers **0.3%–6.7%** of it, and **the two
-best-scoring variants deliver the WRONG SIGN.**
+**8.4 − 7.32 = 1.08 pellets/shot**. ⚑ **SUPERSEDED (2026-08-04) — disregard that subtraction as a
+per-shot deficit: §9A shows 8.4 is an f8–11 WINDOW count and §9B shows the 7.32 side is 12 owner
+pellets plus 23 non-owner ones, so the two terms are not the same quantity.** The merge fix delivers
+**0.3%–6.7%** of it, and **the two best-scoring variants deliver the WRONG SIGN.**
 
 **The decisive check — an existing labelled fixture, not a new derivation.** The 5 owner-labelled
-`marciana` (SG/Iron) shots in `groundtruth-f8-11.json` (mean 8.40):
+`marciana` (SG/Iron) shots in `groundtruth-f8-11.json` (mean 8.40 ⚑ **SUPERSEDED (2026-08-04) as a
+LANDED total — §9A: it is an f8–11 window count.** The bit-identical result below is unaffected, as
+it compares shipped against candidates, not against the owner):
 
 | t0       | owner    | shipped  | `cap_cadence` | `resplit` |
 | -------- | -------- | -------- | ------------- | --------- |
@@ -3508,11 +3523,26 @@ Median is cold, max is hot, truth is between — exactly the trade the `read-pel
 the median was chosen to make. **⚑ The 75th percentile was picked AFTER seeing the other two, on n=5
 from one clip. It is a fitted number, not a measurement, and it is NOT proposed.**
 
+⚑ **SUPERSEDED (2026-08-04) — disregard the third column as a distance-to-truth, and disregard
+"truth is between".** §9A: the `8.40` it is measured against is an f8–11 window count, not a landed
+total. §9D: **89% of the peak's white is unmatched to any owner pellet**, so `max` measures the
+muzzle flash and p75, which leans toward it, is refuted with it. §9B: the median's `7.00` is 12 owner
+pellets against 23 non-owner ones — its agreement is **cancellation**, not proximity. What survives
+is the median's RATIONALE (avoid the peak); what fails is WHICH frame it lands on (§9C).
+
 **What would settle it is a REUSE path needing NO new labels and no owner footage:** score
 representative policies against `real-fidelity-slice.json` (the xy-matched real-pellet set) and the
 `groundtruth-f8-11` crops on more than 5 labelled shots — that decides whether the high frames are
 VFX spikes (median right) or real pellets (median wrong). ⚑ **Confound: the `valid` clamp** — the
 75th percentile pushes 118 more events past `max_pellets = 10` and out of the average entirely.
+
+⚑ **SUPERSEDED (2026-08-04) — that reuse path was taken and it does NOT decide the question as
+worded.** `real-fidelity-slice.json` holds f8–11 crops only, so it can speak to detection and the two
+filters and to nothing else (§9E) — in particular it can see neither the peak nor the plateau. The
+check that DOES decide it is categorical, not a mean: **which frame** a rule selects, pre-cohort vs
+plateau, scored against the 5 labelled events (§9H). The `valid`-clamp confound was measured and
+inverts: the clamp biases the shipped median **WARM by +0.24**, so it is not a cold contributor
+(§9F).
 
 ##### §8H — ⚑ A pre-existing Python / TypeScript divergence, found in passing and NOT chased
 
@@ -3591,3 +3621,304 @@ scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --merge-au
 is pooled over all 8 series (830 ammo shots), while the over-span census, the arbiter and every
 `avgTotal` are pooled over the 4 full fights (815 events, 770 ammo shots). Passing one set and
 reading the other's figure is the easiest way to misquote this entry.
+
+#### §9 THE REPRESENTATIVE-FRAME AUDIT — the reader samples the muzzle flash, and the mean agreement is cancellation
+
+Settles §8G, which left the representative-frame policy as an unenactable n=5 hypothesis with a named
+reuse path. The reuse path was taken; it does not answer the question as §8G worded it (§9E), and the
+question it does answer is different from the one §8G asked.
+
+**Read §9A first.** A load-bearing premise underneath §3b, §4.5, §4.6 and all of §8 is wrong, and the
+correction changes what several earlier numbers mean.
+
+##### §9A — ⚑ PREMISE CORRECTION: the owner's label is a WINDOW count, not a per-shot landed total
+
+`groundtruth-f8-11.json` records `white` = 7 / 10 / 8 / 9 / 8 on the five real shots. That has been
+carried through this log as **"landed pellets per shot, measured: 8.4"**. It is not that.
+
+The label is a hand count of the markers visible in the **f8–11 window**, and
+`groundtruth-f8-11-positions.json` — the owner's own drawn centroids for the same crops — carries the
+**identical count on all four frames of every shot**:
+
+| shot | owner `white` | f08 / f09 / f10 / f11 | identical? |
+| ---- | ------------- | --------------------- | ---------- |
+| 1    | 7             | 7 / 7 / 7 / 7         | yes        |
+| 2    | 10            | 10 / 10 / 10 / 10     | yes        |
+| 3    | 8             | 8 / 8 / 8 / 8         | yes        |
+| 4    | 9             | 9 / 9 / 9 / 9         | yes        |
+| 5    | 8             | 8 / 8 / 8 / 8         | yes        |
+
+**Owner and reader are BOTH single-window observers. They differ in WHICH window.** The owner reads
+f8–11; the reader reads one representative frame that is usually somewhere else entirely (§9C). Every
+figure derived from 8.4 as a landed total is therefore **window-conditional**, and the ones this log
+carries are marked SUPERSEDED in place at §3b, §4.5, §4.6, §8D and §8G.
+
+**It is probably still the right number**, because the cohort demonstrably coexists rather than fading
+one pellet at a time (§9B's coexistence row: max simultaneously-visible countable == total countable
+on all five shots, with a flat plateau 8–10 frames long). But that is an argument, not the
+measurement, and it is stated as one.
+
+⚑ **COULD NOT DETERMINE: whether any marker appears and fully fades before t0+8.** Both the owner
+label and `real-fidelity-slice.json` live only in f8–11, so such a pellet is invisible to both, and
+the "never detected = 0" row in §9B is conditional on that window. Settling it needs owner labels at
+the plateau frame — **owner time**. Tier: OPEN.
+
+##### §9B — THE DECOMPOSITION: of the 35 pellets the reader reports, 12 are owner pellets
+
+Every one of the 42 owner-drawn centroids links **1:1 to a distinct track** (nearest-centroid
+consensus over f08/f09/f10 — the offsets `real-fidelity-slice.json` puts at 100% raw-found AND 100%
+both-pass, so a missing link there would be a linking failure and cannot be a detection failure). Max
+link residual per shot: 2.83 / 3.32 / 2.83 / 4.12 / 3.06 px.
+
+Counting geometry below is the **shipped structural crosshair**, on every shot including 4 — because
+that is what the reader counts against regardless of which crosshair the crops were cut with.
+
+| shot    | owner  | never detected | rejected `min_area`/`min_circ` | rejected **lifetime gate** | rejected **radius gate** | countable | owner at rep | non-owner at rep | reader |
+| ------- | ------ | -------------- | ------------------------------ | -------------------------- | ------------------------ | --------- | ------------ | ---------------- | ------ |
+| 1       | 7      | 0              | 0                              | 0                          | 1                        | 6         | 5            | 1                | 6      |
+| 2       | 10     | 0              | 0                              | 2                          | 0                        | 8         | 0            | 8                | 8      |
+| 3       | 8      | 0              | 0                              | 1                          | 0                        | 7         | 0            | 9                | 9      |
+| 4       | 9      | 0              | 0                              | 2                          | 7 _(mislock)_            | 0         | 0            | 4                | 4      |
+| 5       | 8      | 0              | 0                              | 0                          | 0                        | 8         | 7            | 1                | 8      |
+| **tot** | **42** | **0**          | **0**                          | **5**                      | **8**                    | **29**    | **12**       | **23**           | **35** |
+
+Both sums close: 42 = 0 + 0 + 5 + 8 + 29, and reader 35 = 29 − 17 + 23.
+
+⇒ **Of the 35 pellets the reader reports across these five shots, only 12 are owner pellets.** The
+mean agreement §8G tabled (7.00 vs 8.40) is **coincidental cancellation of a large under-count against
+a large over-count**, not a measurement of the right quantity landing slightly low. **This is the
+headline of §9.**
+
+**Coexistence — the hypothesis that the cohort fades asynchronously is REFUTED.** For every labelled
+shot, max simultaneously-visible countable owner pellets **equals** total countable owner pellets:
+6 @f1061, 8 @f1105, 7 @f1141, 7 @f1295 (under the template lock, next paragraph), 8 @f1377. Cohorts
+appear within one frame of each other and hold a flat plateau for 8–10 frames.
+
+**Shot 4 re-scored under the TEMPLATE crosshair its crops were actually cut with** — the label file
+itself records `locate: "template"` for that shot, so this is its own provenance, not a hypothesis:
+**0 radius-rejected, 7 countable, coexisting 8 consecutive frames (t0+6 … t0+13)**. The entire −5
+residual on that shot is the documented structural mislock. Corrected countable totals across the five
+shots are 6 / 8 / 7 / 7 / 8 = **36 vs owner 42**; the remaining residual of 6 is 5 lifetime-gate plus
+1 genuine radius rejection — a shot-1 pellet (track 6715, life 10) whose **closest approach to the
+crosshair over its whole life is 161.4 px**, against `pellet_radius` 160. It misses the gate by
+1.4 px, not by a margin that suggests the radius is wrong.
+
+##### §9C — THE MECHANISM: a two-phase event window, and the rule samples the wrong phase
+
+The event spans a **4–6 frame blast/flash phase** (blobs live 1–3 frames) and then the **pellet cohort
+phase**. Any single order statistic over the pooled per-frame totals samples a **mixture** of the two.
+
+Countable owner pellets in radius, per frame, `R` marking the representative frame the shipped rule
+picks and `|` marking `t0`:
+
+```
+shot 1 (t0-4 ->): 0  0  0  0  0| 6  5R 5  5  5  5  5  5  5  5  2  1  1  0
+shot 2 (t0-4 ->): 0  0  0  0  0| 0  0R 0  0  7  7  7  7  8  8  8  8  7  6  4  1  0
+shot 3 (t0-4 ->): 0  0R 0  0  2| 7  7  7  7  7  7  7  7  7  7  3  1  0  0
+shot 4 (t0-4 ->): 0  0  0  0  0| 0  0  0R 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+shot 4 RELOCKED : 0  0  0  0  0| 0  0  0R 3  6  7  7  7  7  7  7  7  7  6  4  2  0  0  0  0
+shot 5 (t0-4 ->): 0  0  0  0  0| 0  0  1  1  7  7  7R 8  8  8  8  8  8  8  3  1  0
+```
+
+**The representative frame lands in the pre-cohort flash phase on 3 of the 5 labelled shots** (2, 3
+and 4); on shots 1 and 5 it lands in the plateau, and there the reader's count equals the plateau size
+(6 and 8, matching `countable`) — though even there it is 5 owner + 1 non-owner and 7 owner + 1
+non-owner, not a clean read.
+
+At the representative frame, `owner countable / other white` is **5 / 1** on shot 1, **0 / 8** on
+shot 2, **0 / 9** on shot 3, **0 / 4** on shot 4 and **7 / 1** on shot 5. On shots 2, 3 and 4 **not a
+single countable owner pellet is present** and the whole reported count is other blobs (2, 1 and 1
+owner-linked tracks are alive at those frames respectively, but all of them failed the lifetime gate,
+so none is countable). On shot 3 the rep sits at **t0−3**, before the cohort exists at all.
+
+⚑ **Secondary finding — the blast produces TWO detector onsets** (flash, then cohort). Both are
+rising edges clearing `EVENT_MIN`, and `make-groundtruth-f811.py`'s `find_t0` ranks onsets by
+distance to `approx_idx − EXPECTED_LEAD`, so it takes whichever of the two is nearer. The fixture's
+`t0` is therefore the **flash** onset on shots 2/4/5 and the **cohort** onset on 1/3 — the cohort
+appears at t0+1 on shots 1 and 3 but at t0+5 (shots 2 and 5) or t0+6 (shot 4, relocked) on the
+others. **The f8–11 window is NOT anchored to the same physical event across shots**, which is a
+second, independent reason the owner label is window-conditional (§9A).
+
+##### §9D — THE PEAK IS ARTEFACT, and the median's RATIONALE therefore HOLDS
+
+| shot    | peak frame | peak white | owner-matched | unmatched |
+| ------- | ---------- | ---------- | ------------- | --------- |
+| 1       | t0−4       | 10         | 0             | 10        |
+| 2       | t0+1       | 14         | 0             | 14        |
+| 3       | t0−4       | 11         | 0             | 11        |
+| 4       | t0+0       | 15         | 0             | 15        |
+| 5       | t0+5       | 13         | 7             | 6         |
+| **tot** |            | **63**     | **7 (11%)**   | **56**    |
+
+**4 of 5 peaks are 100% unmatched.** Independently of any label, `max` puts **504 / 852 events (59%)
+above 10** — physically impossible: `hitsPerShot` is **10** for `marciana` (SG/Iron — NOT
+`marciana-marine-study`, AR/Iron, which is 1), `isabel`, `guilty` and `noir` in `data/characters.json`.
+
+⇒ **`max` measures the muzzle flash**, and p75 is refuted with it. The median was chosen to avoid the
+peak (`read-pellets.ts:663`) and that rationale survives §9 intact. What fails is **which frame the
+median lands on**.
+
+##### §9E — Detection and the `min_area` / `min_circ` filters cost ZERO — and that fixture can say nothing else
+
+Scored by `score-pellets.py`'s own cascade over its own committed slice (`real-fidelity-slice.json`,
+168 instances / 42 distinct pellets): **100% raw-found and 100% both-pass at offsets 8, 9 and 10**,
+dropping to 88.1% / 78.6% at offset 11 (the fade has started).
+
+⚑ It holds **only f8–11 crops** — no peak frame, no plateau, no full event. It therefore **cannot**
+speak to the phase question or the peak question, which is why §8G's reuse path does not settle §8G's
+question.
+
+##### §9F — The `valid` clamp biases WARM — REFUTED as a cold contributor
+
+Pooled over 5 structural dumps, **852 events**:
+
+| policy               | raw `avgTotal` | events < 5 | events > 10 | clamped n | clamped `avgTotal` | clamp effect     |
+| -------------------- | -------------- | ---------- | ----------- | --------- | ------------------ | ---------------- |
+| **median (shipped)** | 7.0669         | 107        | 53          | 692       | **7.3092**         | **+0.24 WARMER** |
+| p75                  | 8.7887         | 52         | 207         | 593       | 8.0270             | −0.76            |
+| max                  | 11.4789        | 25         | 504         | 323       | 8.5882             | −2.89            |
+
+**Is either bound motivated?** Split the in-band track count by which side of the clamp the event's
+shipped total falls on (`--representative-audit` prints this table per dump):
+
+| clamp bucket    | mean rep `total` reported | mean in-band tracks actually present         |
+| --------------- | ------------------------- | -------------------------------------------- |
+| `< 5`           | 2.90 – 3.50               | **3.27 – 4.35** (30 fps); 1.00 (60 fps, n=2) |
+| `5..10` (valid) | 7.03 – 7.44               | 5.89 – 7.28                                  |
+| `> 10`          | 11.14 – 12.79             | **6.21 – 9.13**                              |
+
+The **upper** bound is physically motivated: 10 is the kit ceiling, and a `> 10` event reporting ~12
+carries only ~6–9 long-lived tracks, so it really is over-counting. The **lower** bound is **not**:
+a `< 5` event reporting ~3 carries ~3–4 long-lived tracks, i.e. it is a genuine low reading being
+excluded wrongly.
+
+⚑ **7.3092 here vs the 7.3242 in §8** — different dump sets (5 dumps / 852 events here; 8 dumps /
+815 events there, and §8's `avgTotal` basis is the 4 full fights). Not chased; recorded so the two are
+not read as a drift.
+
+##### §9G — THE DISCRIMINATOR IS TRACK LIFETIME, not frame magnitude — and it replicates with NO labels
+
+Over the 5 labelled events, radius-gated non-red tracks:
+
+- **owner pellets n = 42**, lives 8–19, modal at 10 (16 of 42) with 11 next (11 of 42), **minimum
+  8**;
+- **non-owner n = 148**, of which **146 have life ≤ 7**. The only two at or above 8 are life 22 and 36
+  — static HUD elements, already removed by `max_pellet_frames`.
+
+**Zero overlap in the 8–13 band.**
+
+**This replicates without labels.** Every dump's in-event track-lifetime histogram is **bimodal**: a
+huge 1–2 frame mode and a separate mode at the owner-pellet lifetime (10–11 at 60 fps; 5–6 at 30 fps,
+the correct half). Counting only tracks in the lifetime band gives:
+
+| dump                                        | fps | events  | band    | mean per event | > 10 (ceiling) |
+| ------------------------------------------- | --- | ------- | ------- | -------------- | -------------- |
+| `groundtruth-f811-v4` (`marciana`, SG/Iron) | 60  | 37      | [8, 13] | 5.62           | 1 (2.7%)       |
+| `h4-marciana` (`marciana`, SG/Iron)         | 30  | 218     | [4, 7]  | 6.37           | 7 (3.2%)       |
+| `h4-isabel`                                 | 30  | 203     | [4, 7]  | 6.46           | 13 (6.4%)      |
+| `h4-guilty`                                 | 30  | 180     | [4, 7]  | 6.20           | 8 (4.4%)       |
+| `g2-noir`                                   | 30  | 214     | [4, 7]  | 6.85           | 18 (8.4%)      |
+| **pooled**                                  |     | **852** |         |                |                |
+
+versus `max`'s 59% above the ceiling. **This is what makes §9 STRONG MECHANISTIC rather than n=5**:
+852 unlabelled events across five dumps and four units reproduce the same two-population structure
+the five labelled shots show directly.
+
+⚑ **Correction to a claim made during this investigation: `max_pellet_frames` IS fps-scaled.**
+`read-pellets.ts:505` sets it as `max(4, round((13/60) × fps))` — **13 at 60 fps, 7 at 30 fps** — and
+the dumps' own `params` confirm it (§8A already recorded this). The standalone `count-pellets.py`
+default is a third value, **8**. What survives is the operative half: at 60 fps the cap of 13 **cuts 5
+of the 42 owner pellets** (§9B's lifetime-gate column), and cross-dump lifetime comparisons must use
+each dump's own value rather than a hardcoded 13.
+
+##### §9H — VERDICT, and what settles it next
+
+**The representative-frame policy is mechanically wrong.** Tier: **STRONG MECHANISTIC** — supported by
+the two-phase structure (§9C) AND by the bimodal lifetime distribution replicating on 852 unlabelled
+events (§9G), not by the n=5 mean, which §9B shows is cancellation anyway.
+
+Contributing but **secondary**: the lifetime gate drops 5 of 42 real pellets; the radius gate drops 1
+of 42 genuinely (the other 7 are the shot-4 mislock).
+
+**What settles it, needing NO new labels and NO owner time:** score any candidate rule on **WHICH
+FRAME it selects** — pre-cohort vs plateau — against the 5 labelled events. That is a **categorical**
+check with an unambiguous right answer per shot, immune to the mean-matching trap that sank p75. The
+per-frame series in §9C is pinned in the fixture as `counted_owner_series` precisely so a candidate can
+be scored against it. Second free check: any rule putting more than a few percent of the 852 events
+above 10 is over-counting by construction.
+
+⚑ **The ammo arbiter cannot speak to this.** It fixes the DENOMINATOR (how many shots there were), not
+the NUMERATOR (pellets per shot). §3b/§4/§8's arbiter results are orthogonal to §9.
+
+##### §9I — Controls
+
+- **White reconstruction.** Recomputing each frame's white count from `tracks` alone reproduces the
+  dump's own `frame_counts` on **1786 / 1801** frames of the full ground-truth clip; **all 15
+  mismatches fall outside every labelled window** (frames 670, 985, 1660–1671, 1745) and are
+  red/marker classification, not white. Over the committed slice's event window the match is
+  **369 / 369**.
+- **Shipped identity.** The arm's local span rebuild is asserted event-for-event against
+  `count-pellets.py`'s own `debounce_shots` on all 5 dumps before any row is scored, so every policy
+  row is a difference from the real baseline rather than from a private re-implementation. The
+  `debounce_shots` port reproduces the recorded reads **6 / 8 / 9 / 4 / 8** exactly.
+- **`_expected` provenance.** The fixture writer and the selftest share one replay helper, so
+  `_expected` can only ever be the fixture's own numbers.
+
+##### §9J — ⚑ No `src/skills/overrides/marciana.json` exists
+
+Only `marciana-marine-study.json` is present. `marciana` (SG/Iron) — the unit the ground-truth clip
+and two of this thread's structural dumps were recorded on — has **no override**. Recorded as an
+observation; nothing here acts on it.
+
+##### Confounds, each with a verdict
+
+- **"8.4 is landed pellets per shot" — REFUTED as worded (§9A).** It is an f8–11 window count. Probably
+  still the right number, by the coexistence argument, but that is an argument and the pre-f08 case is
+  UNDETERMINED without owner labels.
+- **"The cohort fades asynchronously, so no single frame sees it all" — REFUTED (§9B).** Max
+  simultaneously-visible == total countable on all 5 shots.
+- **"The peak frame is the real count" — REFUTED (§9D).** 89% of peak white is unmatched to any owner
+  pellet; `max` breaks the kit ceiling on 59% of events.
+- **"The `valid` clamp is a cold contributor" — REFUTED (§9F).** It biases the shipped median WARM by
+  +0.24.
+- **"Detection or the area/circularity filters lose pellets" — REFUTED in-window (§9E).** 100% / 100%
+  at f08–f10. ⚑ In-window only; that fixture cannot see the peak or the plateau.
+- **"Shot 4's −5 residual is a counting error" — REFUTED (§9B).** Re-scored under the crosshair its
+  crops were cut with, it is 0 radius-rejected and 7 countable; the residual is the documented
+  structural mislock, which the label file itself records as `locate: "template"`.
+- **"`max_pellet_frames` = 13 is not fps-scaled" — REFUTED (§9G).** `read-pellets.ts:505` scales it;
+  the operative half (it cuts 5 of 42 owner pellets at 60 fps) stands.
+- **n and scope.** 5 owner-labelled shots on one clip for the categorical half; **852 shipped events
+  across 5 dumps and 4 units** for the lifetime and policy halves. The verdict rests on the second.
+
+**NOTHING HERE ENACTS A CHANGE.** `debounce_shots` and every representative-frame policy are UNTOUCHED
+in both `count-pellets.py` and `read-pellets.ts`; every policy in this entry is a local scoring variant
+inside the audit arm. No guard, gate, threshold or constant was changed; no `DECISIONS.md` entry was
+edited; no verdict was stamped on anything outside this measurement log.
+
+##### §9K — Instrument and reproduction
+
+`scripts/probe/analyze-pellet-tracks.py --representative-audit`, self-validated against the committed
+slice `scripts/tests/fixtures/pellets/representative-audit-slice.json` and registered in
+`scripts/probe/pellet-selftest.sh`. It reads the owner labels from the already-committed
+`scripts/tests/fixtures/pellets/groundtruth-f8-11.json` and `-positions.json`, and the filter cascade
+from `scripts/tests/fixtures/pellets/real-fidelity-slice.json` via `score-pellets.py`'s own scorer.
+
+```sh
+S=/Users/maxwellsutton/nikke-sim/scratchpad/pellets
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --representative-audit \
+  $S/groundtruth-f811-v4/tracks.json $S/h4-marciana-structural/tracks.json \
+  $S/h4-isabel-structural/tracks.json $S/h4-guilty-structural/tracks.json \
+  $S/g2-noir-structural/tracks.json \
+  --representative-audit-fps 60 30 30 30 30 \
+  --representative-audit-labelled $S/groundtruth-f811-v4/tracks.json \
+  --representative-audit-labelled-tmpl $S/groundtruth-f811-shot04-tmpl/tracks.json \
+  --representative-audit-labelled-fps 60
+# replay the committed slice -- no images, no subprocess, no tracks.json:
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --representative-audit-selftest
+```
+
+⚑ **The fixture pins the SLICE, not the full clip.** `_expected` holds the labelled block's quiet-
+snapped window and all five dumps' full-clip `frame_counts`; the **1786 / 1801**
+reconstruction figure in §9I is **live-run only** (printed as `FULL-CLIP CONTROL`), because the
+fixture cannot carry 11k tracks. Same split the merge audit uses.
