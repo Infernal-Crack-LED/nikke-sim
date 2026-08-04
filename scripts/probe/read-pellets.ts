@@ -217,9 +217,11 @@ interface PelletCount {
   white: number;
   red: number;
   marker?: number; // core-hit hit-markers (red triangles tight to the crosshair)
-  band?: number; // lifetime-gated white-pellet count (docs/probe-runs.md §9G/§13) — a strict
-  // subset of `white`, restricted to tracks whose overall lifetime falls in the fps-scaled
-  // owner-pellet band. Feeds the fallback-hybrid representative-frame rule in `debounceShots`.
+  band?: number; // lifetime-gated pellet-track count (docs/probe-runs.md §9G/§13), restricted to
+  // tracks whose overall lifetime falls in [band_lo, band_hi] and bounded by radius + non-red
+  // only (NOT by pellet_ids/`white`'s gate) — may EXCEED `white` when band_hi > max_pellet_frames
+  // (docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md). Feeds the fallback-hybrid
+  // representative-frame rule in `debounceShots`.
 }
 interface FrameCounts {
   file: string;
@@ -784,7 +786,7 @@ if (!mock) {
         ? `--dump-tracks "${dumpTracksFlag}"`
         : '';
   const raw = execSync(
-    `"${pythonBin}" "${counterScript}" "${pelletFramesDir}" --center-exclude ${centerExclude} --min-area ${minArea} --max-area ${maxArea} --backend opencv ${crosshairArgs} --pellet-radius ${pelletRadius} --marker-radius ${markerRadius} --temporal --max-pellet-frames ${Math.max(4, Math.round((13 / 60) * fps))} --red-r-min ${redRMin} --red-gb-max ${redGbMax} --pellet-unit-area ${pelletUnitArea} --peanut-circ-lo ${peanutCircLo} --peanut-aspect ${peanutAspect} --peanut-max-mult ${peanutMaxMult} ${dumpTracksArg}`,
+    `"${pythonBin}" "${counterScript}" "${pelletFramesDir}" --center-exclude ${centerExclude} --min-area ${minArea} --max-area ${maxArea} --backend opencv ${crosshairArgs} --pellet-radius ${pelletRadius} --marker-radius ${markerRadius} --temporal --max-pellet-frames ${Math.max(4, Math.round((13 / 60) * fps))} --band-hi ${Math.max(4, Math.round((20 / 60) * fps))} --red-r-min ${redRMin} --red-gb-max ${redGbMax} --pellet-unit-area ${pelletUnitArea} --peanut-circ-lo ${peanutCircLo} --peanut-aspect ${peanutAspect} --peanut-max-mult ${peanutMaxMult} ${dumpTracksArg}`,
     { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 }
   );
   frameCounts = JSON.parse(raw) as FrameCounts[];
