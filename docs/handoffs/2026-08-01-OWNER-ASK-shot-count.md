@@ -1,5 +1,19 @@
 # Owner ask — one hand shot-count, to close the missing-shot channel
 
+> ## ✅ ANSWERED — 2026-08-03
+>
+> **The owner's reply.** Video `docs/probes/ar-sg-smg/isabel solo sg.MP4` (**not**
+> `docs/probes/clean-weapons/`, which the ask below points at and which holds no `isabel` recording),
+> window **00:30.205 → 1:00.205**: **36 shots fired, 4 clean full magazines.** Plus **2** rocket-
+> projectile events from a skill of `isabel`'s in the same window — no ammo cost, no pellet markers,
+> damage popups only (S2 "Pointed Feather").
+>
+> **Outcome — the decision table's row 1 fires.** The ammo arbiter reproduces the hand count exactly
+> (32 visible decrements + 4 structurally invisible magazine-emptying rounds = 36), so the
+> **admissible reading (~4.4%) stands, the raw 14.7% is an artifact, and the arbiter is now
+> ground-truth-validated on `isabel`** — not only on `marciana` (SG/Iron). Full record, including the
+> three findings this opened: `docs/probe-runs.md` §4.
+
 > **For the owner to review, not an AI-facing doc.** Written 2026-08-01. One ask, ~5–10 minutes of
 > your time, plus one piece of work I can do without you. Nothing here is urgent — the branch is in a
 > clean, committed state either way.

@@ -2459,3 +2459,190 @@ scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py \
   --missing-shots gt-ammo-series.json --missing-shots-fps 60 --missing-shots-slack 6 \
   --missing-shots-gate
 ```
+
+#### §4 THE OWNER HAND SHOT-COUNT — the arbiter validated on `isabel`, and the flip rule confirmed
+
+Answers the ask in `docs/handoffs/2026-08-01-OWNER-ASK-shot-count.md`, which §3b's "what would decide
+it" named as item (a): the arbiter was gate-validated on `marciana` (SG/Iron — **not**
+`marciana-marine-study`, AR/Iron) only, and `isabel` is where it mattered, because her raw and
+admissible readings differ 3.4×.
+
+**Owner ground truth.** Video `docs/probes/ar-sg-smg/isabel solo sg.MP4` (the dump's own
+`pellets.json` records this exact path, `fps` 30, `at` 0), window **00:30.205 → 1:00.205**
+(frames 906–1806): **36 shots fired, 4 clean full magazines.** The owner also reports a skill of
+`isabel`'s firing rocket projectiles **2 times** in that window — no ammo cost, no pellet markers,
+damage popups only. That is S2 "Pointed Feather", already measured 2026-07-16 as time-based
+~14.7 s / ~12× per 180 s and modeled as `interval: 15` `flatDamage` 170.58 in
+`src/skills/overrides/isabel.json`.
+
+**Path correction to the ask doc.** It pointed the owner at `docs/probes/clean-weapons/`, which
+contains no `isabel` recording. The recording is at `docs/probes/ar-sg-smg/isabel solo sg.MP4`, and
+that is the clip the numbers below were read from.
+
+**Instrument (committed, re-runnable).** `scripts/probe/analyze-pellet-tracks.py --hand-count`,
+pinned by `scripts/tests/fixtures/pellets/hand-count-slice.json` and replayed with no images and no
+subprocess by `--hand-count-selftest` (now wired into `scripts/probe/pellet-selftest.sh`). Two
+subagents scored the window independently, one through that arm and one deriving from the raw JSON
+while forbidden from reading the script.
+
+##### §4.1 — The arbiter reproduces the hand count EXACTLY — it is now gate-validated on `isabel`
+
+**32 visible decrements + 4 structurally invisible magazine-emptying rounds = 36**, equal to the
+owner's count. Both agents reached it independently, under different level-acceptance rules.
+Corroborated three ways by the independent derivation:
+
+| corroboration                      | what it shows                                                                                                                            |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| the accepted level trace           | the reconstructed 9→1 ladders account for every shot in the window                                                                        |
+| **61-frame reload invariant**      | emptying shot → next `9` is 61 / 62 / 59 / 61 frames across the window's four magazines, and 61 frames in **12 of the clip's other 15** measurable reloads |
+| **20-frame pellet grid**           | magazine A's nine detections at f910…f1070 are exactly 20 frames apart, nine times, with no drift                                          |
+
+Measured cadence **20 frames = 1.500 shots/s** (mode and median of 143 ammo spacings), matching §3b's
+independently measured mode of 20 at 30 fps.
+
+⇒ **The ammo arbiter's shot reconstruction is validated against owner ground truth on `isabel`, not
+only on `marciana` (SG/Iron).** §3b's scope caveat — "gate-validated on one unit and merely
+internally-consistent on the other three" — is retired for `isabel`. It still stands for `guilty` and
+`noir`.
+
+##### §4.2 — The flip rule is CONFIRMED, by an independent method
+
+The independent derivation never used the cadence-arithmetic admissibility rule at all. From glyph
+consistency alone it found that **all 11 raw `ammo: 0` reads across the whole clip sit inside an
+8-run** — the pattern is `8, 8, 8, 0, 0, 0, 8, 8, 8`. The counter never credibly displays 0. So the
+disputed drops are glyph misreads and discarding them was correct.
+
+⇒ **The ask's decision table, row 1 fires: the admissible reading (~4.4%) stands, and the raw 14.7%
+is an artifact.** `isabel`'s 3.4× swing is RESOLVED in favour of admissible, and §3b's board-level
+"between" verdict — the channel carries roughly a quarter to a half of the 0.8–1.6 pellets/10 cold
+bias, not all of it — is unchanged by this measurement.
+
+##### §4.3 — A defect in `reconstruct_ammo`, and it IS the swing — NOT fixed here
+
+`reconstruct_ammo` has no magazine-consistency check. The 3-frame `0` at f1602–1604, sitting between
+a confirmed 9 and a confirmed 8, is therefore scored as a `9 → 0` decrement — **minting 9 phantom
+shots** — plus a phantom `0 → 8` reload. Inside the window that inflated the raw reading to **40
+decrements / 44 implied total / MISSED 11** (of which **8 are phantom**, all inside that one
+decrement) against the true **32 / 36**. `flag_inadmissible_decrements` REPORTS these events, but the
+raw MISSED figure does not exclude them — which is precisely the raw-versus-admissible split.
+
+Whole-clip, five decrements are flagged inadmissible:
+
+| window (frames) | transition | claimed shots |
+| --------------- | ---------- | ------------- |
+| 686 → 686       | 8 → 6      | 2             |
+| 1596 → 1602     | 9 → 0      | 9             |
+| 1833 → 1833     | 8 → 6      | 2             |
+| 4668 → 4673     | 9 → 6      | 3             |
+| 5363 → 5363     | 8 → 0      | 8             |
+
+**The defect is explicitly NOT fixed in this pass.** `reconstruct_ammo` is shared with the whole-fight
+numbers already recorded in §3b above and pinned in
+`scripts/tests/fixtures/pellets/missing-shots-slice.json`, so changing it has whole-fight blast radius
+and needs its own deliberate pass. What DID land is reporting-only: the `--hand-count` arm now emits
+admissible-basis fields (`decrement_shots_admissible`, `implied_total_admissible`,
+`ammo_implied_total_admissible`, `ammo_total_admissible_matches_hand`) **alongside** the raw ones,
+never instead of them, capping each flagged decrement at what its window can physically hold at the
+measured cadence — the exact inverse of the flag's own predicate. On this window that reads **32
+decrements + 4 magazine-empty = 36, MATCHES the hand count**, where the raw headline read 40 / 44.
+
+##### §4.4 — The in-reload extras are NOT the rockets — REFUTED
+
+The natural reading of the owner's "2 rocket events" was that the arm's non-ammo extra onsets are S2
+projectiles. They are not:
+
+- **Not periodic.** The whole-clip scan finds **6 distinct such events across 190.7 s**, with spacings
+  30.4 / 22.7 / 49.5 / 8.8 / 6.4 s — median 22.7 s, standard deviation ≈ 16 s. A ~15 s cooldown does
+  not produce that.
+- **Phase-locked to the magazine instead.** **6 of 7 bursts sit +16 to +18 frames (0.533–0.600 s)
+  after their own magazine's emptying round** — a spread under 0.07 s across four minutes of footage.
+- **Mechanism.** At a 20-frame cadence a +17-frame echo is buried under the next shot everywhere
+  EXCEPT after a magazine's final round, which is precisely and only where it appears.
+
+⚠ **Do not cite the `--hand-count` arm's "median gap 14.48 s" as a ~15 s period.** It is a coincidence
+of an irregular set — that set's gaps include 0.67 s and 39.63 s — and the resemblance to S2's ~14.7 s
+cadence is accidental.
+
+⚠ **Two different whole-clip counts are in play, and they are not reconciled here.** The committed arm
+reports `n_extras_whole_clip` **9** (8 gaps, median 14.48 s); the independent derivation counted **6
+distinct events** (5 gaps, median 22.7 s). Anyone re-running the reproduce command below will see 9,
+not 6. Neither count is periodic and the phase-lock result above holds on either, but the difference
+itself is unexplained and belongs to the same question as the ⚑ below.
+
+⚑ Whether the echo is a delayed projectile impact, a reload-visual-effect artifact of the reader, or a
+late pellet-marker render is **UNDETERMINED** from these files.
+
+##### §4.5 — The aggregate 34-vs-36 hides COMPENSATING ERRORS — the finding that matters most
+
+`pellets.json` reports **34 detections** in the window against **36 real shots**, which reads as a
+5.6% under-count. Judged per event it is not one: the reader **misses 6 real shots AND invents 4
+non-shots**, a true miss rate of **16.7%** — three times the aggregate figure. The shipped matcher at
+slack 8 scores the same window more conservatively at **4 missed / 11.1%**. Either way the window's
+miss rate is **well above the 4.4% whole-fight admissible figure and at or above the 8% bar**.
+
+⚑ **n=1 window, HYPOTHESIS-strength for the rate.** Per the evidence-proportionality rule this RECORDS
+an observation. It does **not** overturn the whole-fight 4.4% / 14.7% headline, does not change any
+constant, guard, gate or threshold, and does not re-stamp the missing-shot channel's size. Treating
+16.7% (or 11.1%) as the channel's rate requires a second hand-counted window on a different unit or
+clip.
+
+##### §4.6 — Near-empty detections
+
+**6 of the 34** in-window detections carry a `total` of 0, 1 or 2 pellets — frames 1124, 1180, 1511,
+1534, 1665, 1729 — against the measured 8.4 landed pellets per shot. Summed pellet total over all 34
+detections is **221**; the owner's 36 shots × 8.4 implies **~302**. ⚑ Reported as an observation only;
+no cause is assigned here. One of the six, frame 1124, is also one of the window's two non-ammo extra
+onsets (the other being 1546), so the near-empty set and the §4.4 echo overlap but are not the same
+set.
+
+##### §4.7 — Knob sensitivity — stated plainly
+
+| quantity                        | slack 3 | 6   | 8   | 10  | 12  |
+| ------------------------------- | ------- | --- | --- | --- | --- |
+| `detected_in_window`            | 34      | 34  | 34  | 34  | 34  |
+| naive missed (every onset a shot) | 2     | 2   | 2   | 2   | 2   |
+| `MISSED` (arbiter basis)        | 14      | →   | →   | →   | 10  |
+| `SPURIOUS`                      | 8       | →   | →   | →   | 4   |
+| `extras_in_window`              | 2       | 2   | 2   | 1   | 1   |
+| `MISSED_vs_hand`                | 4       | 4   | 4   | 3   | 3   |
+
+`detected_in_window` (34) and the naive reading (2 missed / 5.6%) are **identical at every slack
+3 / 6 / 8 / 10 / 12**. `MISSED` on the arbiter basis moves 14 → 10 and `SPURIOUS` 8 → 4,
+monotonically. `extras_in_window` drops 2 → 1 at slack ≥ 10, which moves `MISSED_vs_hand` 4 → 3, i.e.
+11.1% → 8.3%.
+
+##### Confounds, each with a verdict
+
+- **Magazine-emptying blind spot — CONFIRMED, and the hand count is what corrects it.** The arbiter
+  counts decrements, so the round that empties each magazine is invisible to it. §3b flagged its
+  figures as a floor for exactly this reason. The hand count supplies the true denominator (36), and
+  the 4 magazine-empty rounds close the gap to the 32 visible decrements.
+- **The flip rule was the analyst's rule, not a measurement — RESOLVED (§4.2).** Confirmed by an
+  independent method that never used it.
+- **`reconstruct_ammo` phantom shots — IDENTIFIED, quantified, NOT enacted on (§4.3).** Blast
+  radius is whole-fight; deferred to its own pass and filed in `docs/handoffs/QUEUE.md`.
+- **Rockets as a confound on the extras — REFUTED (§4.4).** The extras are phase-locked to the
+  magazine, not to the ~15 s skill cadence.
+- **Aggregate-versus-per-event scoring — the aggregate is misleading (§4.5).** 34-vs-36 nets a
+  6-shot miss against a 4-shot invention. MISSED and SPURIOUS are not netted anywhere in this entry.
+- **n and scope — one 30 s window, one unit (`isabel`), one clip.** HYPOTHESIS-strength for any rate
+  it implies; ground-truth-strength for the two binary questions it was run to settle (does the
+  arbiter reconstruct correctly on `isabel`, and is the flip rule right), both of which it answers
+  affirmatively.
+
+RECORDS a measurement, plus reporting-only tooling. No guard, gate, threshold or constant was changed;
+no `DECISIONS.md` entry was edited; `reconstruct_ammo` itself is untouched.
+
+**Reproduce:**
+
+```sh
+# <dump>-ammo.json comes from count-pellets.py --ammo-series exactly as in §3b, on the
+# h4-isabel-structural dump of docs/probes/ar-sg-smg/isabel solo sg.MP4
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py \
+  --hand-count <dump>-ammo.json \
+  --hand-count-window 30.205 60.205 --hand-count-at 0 --hand-count-fps 30 \
+  --hand-count-slack 8 \
+  --hand-count-shots 36 --hand-count-magazines 4 --hand-count-nonammo 2
+# replay the committed slice -- no images, no subprocess:
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --hand-count-selftest
+```

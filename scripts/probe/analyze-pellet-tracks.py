@@ -1065,6 +1065,19 @@ def flag_inadmissible_decrements(events, cadence_lo):
     return bad
 
 
+def admissible_shots(event, cadence_lo):
+    """The most shots a decrement's window can physically hold at the measured cadence.
+
+    The exact INVERSE of flag_inadmissible_decrements' predicate (w >= (d-1) * cadence_lo): a
+    window of w frames admits at most w // cadence_lo + 1 shots. For a decrement that rule did not
+    flag this is already >= its own `shots`, so the min() leaves it untouched -- only a flagged
+    (physically impossible) drop is capped, which is exactly the phantom-shot inflation.
+    """
+    if not cadence_lo:
+        return event["shots"]
+    return min(event["shots"], int((event["hi"] - event["lo"]) // cadence_lo) + 1)
+
+
 def measure_cadence(events):
     """Inter-shot spacing MEASURED from the ammo series, not assumed from `rate_of_fire`.
 
@@ -1258,10 +1271,24 @@ def hand_count_report(ammo, tracks, fps, slack, confirm, ammo_max, window, hand,
     extras = [t for t in extras if f_lo <= t <= f_hi]
 
     cad = measure_cadence(events_all)
-    bad = flag_inadmissible_decrements(events_all, cad.get("p10") or 0)
+    cad_lo = cad.get("p10") or 0
+    bad = flag_inadmissible_decrements(events_all, cad_lo)
     bad_in_window = [e for e in bad if f_lo <= e["hi"] <= f_hi]
 
     dec_shots = sum(e["shots"] for e in events if e["kind"] == "decrement")
+    # ADMISSIBLE basis, reported ALONGSIDE the raw one and never instead of it (the
+    # missing_shots_report precedent). reconstruct_ammo has no magazine-consistency check, so a
+    # glyph misread that survives `confirm` MINTS shots: measured on `isabel`, the 3-frame `0` at
+    # f1602-1604 sitting between a confirmed 9 and a confirmed 8 scores as a 9-shot `9 -> 0`
+    # decrement, inflating this window's headline to 40 decrements / 44 implied against a hand
+    # count of 32 / 36. Capping each FLAGGED decrement at what its window can hold removes exactly
+    # that inflation. n_reloads is deliberately NOT adjusted -- the flag rule speaks to decrements
+    # only, and the reload count is the proxy for the magazine-emptying rounds the arbiter cannot
+    # see. The underlying reconstruct_ammo defect is NOT fixed here (whole-fight blast radius).
+    bad_keys = {(e["lo"], e["hi"]) for e in bad_in_window}
+    dec_shots_adm = sum(
+        admissible_shots(e, cad_lo) if (e["lo"], e["hi"]) in bad_keys else e["shots"]
+        for e in events if e["kind"] == "decrement")
     n_reloads = sum(1 for e in events if e["kind"] == "reload")
     missed = [s for s in slots if s["t0"] is None]
     n_hand = hand.get("shots")
@@ -1285,6 +1312,8 @@ def hand_count_report(ammo, tracks, fps, slack, confirm, ammo_max, window, hand,
         "ammo": {
             "decrement_shots": dec_shots, "n_reloads": n_reloads,
             "implied_total": dec_shots + n_reloads,
+            "decrement_shots_admissible": dec_shots_adm,
+            "implied_total_admissible": dec_shots_adm + n_reloads,
             "read_pct": round(100 * sum(1 for r in reads
                                         if f_lo <= r["i"] <= f_hi and r.get("ammo") is not None)
                               / max(1, sum(1 for r in reads if f_lo <= r["i"] <= f_hi)), 1),
@@ -1312,6 +1341,9 @@ def hand_count_report(ammo, tracks, fps, slack, confirm, ammo_max, window, hand,
             "ammo_visible_shots": dec_shots,
             "ammo_implied_total": dec_shots + n_reloads,
             "ammo_total_matches_hand": (dec_shots + n_reloads) == n_hand,
+            "ammo_visible_shots_admissible": dec_shots_adm,
+            "ammo_implied_total_admissible": dec_shots_adm + n_reloads,
+            "ammo_total_admissible_matches_hand": (dec_shots_adm + n_reloads) == n_hand,
             "detected_in_window": len(detected_t0),
             "detected_weapon_attributable": det_weapon,
             "MISSED_vs_hand": miss_vs_hand,
@@ -1343,9 +1375,13 @@ def audit_hand_count(ammo_paths, fps, slack, confirm, ammo_max, window, hand, at
               f"(frames {r['window_frames']})")
         print(f"  owner hand count      : {s['hand_shots']} shots / "
               f"{s['hand_magazines']} magazines / {s['hand_nonammo_events']} non-ammo events")
-        print(f"  ammo arbiter          : {s['ammo_visible_shots']} decrements + "
+        print(f"  ammo arbiter, raw     : {s['ammo_visible_shots']} decrements + "
               f"{r['ammo']['n_reloads']} mag-empty = {s['ammo_implied_total']} "
               f"({'MATCHES' if s['ammo_total_matches_hand'] else 'DIFFERS FROM'} the hand count)")
+        print(f"  ammo arbiter, ADMISS. : {s['ammo_visible_shots_admissible']} decrements + "
+              f"{r['ammo']['n_reloads']} mag-empty = {s['ammo_implied_total_admissible']} "
+              f"({'MATCHES' if s['ammo_total_admissible_matches_hand'] else 'DIFFERS FROM'} "
+              f"the hand count)   [flagged decrements capped at what their window can hold]")
         print(f"  detector              : {s['detected_in_window']} onsets, "
               f"{r['nonammo']['n_extras_in_window']} of them non-ammo -> "
               f"{s['detected_weapon_attributable']} weapon shots")
