@@ -25,31 +25,16 @@
 
 `centi`
 
-`claire`  
-`clay`  
-`cocoa`  
-`d`  
-`epinel`  
-`flora`  
-`folkwang`
-`maiden`  
-`milk`  
-`noah`
-
-## Batch 7 — D (10 units)
-
-| #   | Slug                  | Tier |
-| --- | --------------------- | ---- |
-| 62  | `pepper`              | D    |
-| 63  | `power`               | D    |
-| 64  | `quency`              | D    |
-| 65  | `rapunzel-pure-grace` | D    |
-| 66  | `rumani`              | D    |
-| 67  | `rupee`               | D    |
-| 68  | `sakura-suzuhara`     | D    |
-| 69  | `snow-crane`          | D    |
-| 70  | `sora`                | D    |
-| 71  | `trony`               | D    |
+`pepper`  
+`power`  
+`quency`  
+`rapunzel-pure-grace`
+`rumani`  
+`rupee`  
+`sakura-suzuhara`  
+`snow-crane`  
+`sora`  
+`trony`
 
 ## Batch 8 — E (10 units)
 
@@ -83,44 +68,35 @@
 
 ## Batch 10 — F (10 units)
 
-| #   | Slug           | Tier |
-| --- | -------------- | ---- |
-| 92  | `belorta`      | F    |
-| 93  | `brid`         | F    |
-| 94  | `delta`        | F    |
-| 95  | `emma`         | F    |
-| 96  | `ether`        | F    |
-| 97  | `eunhwa`       | F    |
-| 98  | `harran`       | F    |
-| 99  | `himeno`       | F    |
-| 100 | `idoll-flower` | F    |
-| 101 | `idoll-ocean`  | F    |
+| #   | Slug      | Tier |
+| --- | --------- | ---- |
+| 92  | `belorta` | F    |
+| 93  | `brid`    | F    |
+| 94  | `delta`   | F    |
+| 95  | `emma`    | F    |
+| 96  | `ether`   | F    |
+| 97  | `eunhwa`  | F    |
+| 98  | `harran`  | F    |
+| 99  | `himeno`  | F    |
 
 ## Batch 11 — F (10 units)
 
-| #   | Slug         | Tier |
-| --- | ------------ | ---- |
-| 102 | `idoll-sun`  | F    |
-| 103 | `kilo`       | F    |
-| 104 | `mary`       | F    |
-| 105 | `mica`       | F    |
-| 106 | `mihara`     | F    |
-| 107 | `pascal`     | F    |
-| 108 | `product-08` | F    |
-| 109 | `product-12` | F    |
-| 110 | `product-23` | F    |
-| 111 | `rapi`       | F    |
+| #   | Slug     | Tier |
+| --- | -------- | ---- |
+| 103 | `kilo`   | F    |
+| 104 | `mary`   | F    |
+| 105 | `mica`   | F    |
+| 106 | `mihara` | F    |
+| 107 | `pascal` | F    |
+| 111 | `rapi`   | F    |
 
 ## Batch 12 — F (6 units)
 
-| #   | Slug         | Tier |
-| --- | ------------ | ---- |
-| 112 | `rosanna`    | F    |
-| 113 | `signal`     | F    |
-| 114 | `soldier-eg` | F    |
-| 115 | `soldier-fa` | F    |
-| 116 | `soldier-ow` | F    |
-| 117 | `yuni`       | F    |
+| #   | Slug      | Tier |
+| --- | --------- | ---- |
+| 112 | `rosanna` | F    |
+| 113 | `signal`  | F    |
+| 117 | `yuni`    | F    |
 
 ---
 
