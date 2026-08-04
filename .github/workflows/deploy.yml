@@ -87,10 +87,10 @@ jobs:
   # --force is load-bearing: without it build-dpschart carries rows over from
   # the live site (fetchLiveCandidate), which right after a deploy matches our
   # inputs — every row would carry and the run would prove nothing. With
-  # --force the candidate search is skipped (:617 gates it on !FORCE) and all
-  # 67 rows re-simulate. Output is discarded: this is a health check, not a
-  # publish path — freshness still comes from the Railway build until plan
-  # Step 2. ranks:all needs no bypass: its builders have no input hashing and
+  # --force the candidate search is skipped (the `if (!FORCE)` gate in
+  # build-dpschart.ts) and all 67 rows re-simulate. Output is discarded: this
+  # is a health check, not a publish path — freshness still comes from the
+  # Railway build until plan Step 2. ranks:all needs no bypass: its builders
   # always rebuild. Infographics are NOT covered here — PR CI keeps building
   # them via verify.sh's artifacts tier.
   #

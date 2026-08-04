@@ -130,6 +130,10 @@ export const GLOBAL_FILES = [
   'scripts/build-dpschart.ts',
   'scripts/artifact-input-hash.ts', // this module — the hash inputs live here now
   'src/prepare.ts',
+  'src/stats.ts', // characterStat — every simulated unit's ATK/DEF/HP. Missed by the
+  // original b71af726 bucket and its verbatim extraction; found by the 2026-08-04
+  // cross-family review via the transitive import closure (sim.ts:16, prepare.ts:20).
+  'src/data/squads.ts', // squadOf — same-squad block gates inside sim (same review find)
   'src/olconfigs.ts',
   'src/relationship.ts',
   'src/elements.ts',
@@ -274,9 +278,11 @@ export function computeDpsChartInputHashes(): DpsChartInputHashes {
 // never mislead a decision the hash drives, and over-enumerating kills the
 // dangerous failure mode (a missed input reading FRESH). Every input any board
 // reads is in here: src/ranks imports only engine/sim, prepare, elements, types,
-// skills/index and dpschart/noop (verified 2026-08-04), plus the data tables the
-// builders load and the static JSON imports of that dep tree (gauge-per-shot via
-// sim.ts, relationship-bonus via relationship.ts).
+// skills/index and dpschart/noop — and that TRANSITIVE closure is covered too:
+// sim.ts's own stats.ts + data/squads.ts imports are listed below (found by the
+// 2026-08-04 cross-family review; the first cut scanned only direct imports).
+// Plus the data tables the builders load and the static JSON imports of that dep
+// tree (gauge-per-shot via sim.ts, relationship-bonus via relationship.ts).
 export const RANKS_GLOBAL_DIRS = [
   'src/engine', // sim.ts — every board simulates
   'src/ranks', // board logic + curated tables + artifact types
@@ -290,6 +296,8 @@ export const RANKS_GLOBAL_FILES = [
   'scripts/build-b1b2dps.ts',
   'scripts/artifact-input-hash.ts', // this module — the hash inputs live here
   'src/prepare.ts',
+  'src/stats.ts', // characterStat — every simulated unit's ATK/DEF/HP
+  'src/data/squads.ts', // squadOf — same-squad block gates inside sim
   'src/olconfigs.ts',
   'src/relationship.ts',
   'src/elements.ts',
@@ -362,6 +370,7 @@ export function computeOlDefaultInputHash(): string {
 export const INFOGRAPHICS_GLOBAL_DIRS = [
   'src/infographics', // core/unitCardData.ts + node/render.ts + table data
   'web/public/img/portraits', // committed thumbs — every unit card embeds one
+  'web/public/nikke-icons', // committed icon set — icons.ts reads it DIRECTLY at render
   'web/public/fonts', // self-hosted Roboto subsets — the text-layout input
 ];
 
@@ -370,6 +379,7 @@ export const INFOGRAPHICS_GLOBAL_FILES = [
   'scripts/lib/unit-card-sources.ts',
   'scripts/lib/portrait-thumbs.ts',
   'scripts/artifact-input-hash.ts', // this module — the hash inputs live here
+  'src/dpschart/matrix.ts', // parseCellId/cellLabel — runtime import of build-infographics
   'data/characters.json',
 ];
 

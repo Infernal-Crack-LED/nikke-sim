@@ -53,28 +53,32 @@ let stale = false;
 
 const dpschart = readArtifact('web/public/dpschart.json');
 if (dpschart === null) {
-  process.stderr.write(
-    'board-freshness: no web/public/dpschart.json to compare ' +
-      '(run scripts/fetch-published-boards.ts first) — skipping\n'
-  );
-  process.exit(0);
-}
-
-const { globalHash, inputsHash } = computeDpsChartInputHashes();
-if (dpschart.inputsHash === inputsHash) {
   console.log(
-    `dpschart: FRESH — matches this tree (inputsHash ${short(inputsHash)})`
+    'dpschart: MISSING from web/public/ — not comparable ' +
+      '(run scripts/fetch-published-boards.ts or npm run dpschart first)'
+  );
+} else if (typeof dpschart.inputsHash !== 'string') {
+  console.log(
+    'dpschart: NO-HASH — artifact predates input hashing; ' +
+      'run `npm run dpschart` to make it checkable.'
   );
 } else {
-  stale = true;
-  const globalMatch = dpschart.globalHash === globalHash;
-  console.log(
-    [
-      'dpschart: STALE — the published artifact was built from different inputs.',
-      `  published inputsHash ${short(dpschart.inputsHash)} / this tree ${short(inputsHash)}`,
-      `  global bucket ${globalMatch ? 'MATCHES (per-unit drift only)' : 'differs (engine/global inputs moved)'}`,
-    ].join('\n')
-  );
+  const { globalHash, inputsHash } = computeDpsChartInputHashes();
+  if (dpschart.inputsHash === inputsHash) {
+    console.log(
+      `dpschart: FRESH — matches this tree (inputsHash ${short(inputsHash)})`
+    );
+  } else {
+    stale = true;
+    const globalMatch = dpschart.globalHash === globalHash;
+    console.log(
+      [
+        'dpschart: STALE — the published artifact was built from different inputs.',
+        `  published inputsHash ${short(dpschart.inputsHash)} / this tree ${short(inputsHash)}`,
+        `  global bucket ${globalMatch ? 'MATCHES (per-unit drift only)' : 'differs (engine/global inputs moved)'}`,
+      ].join('\n')
+    );
+  }
 }
 
 // ---- the five rank boards (one shared bucket — see artifact-input-hash.ts) --------
