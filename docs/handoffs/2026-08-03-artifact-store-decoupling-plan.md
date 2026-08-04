@@ -1,9 +1,10 @@
 # Decoupling the generated artifacts from the deploy path — scoping doc (2026-08-03)
 
-Status: **SCOPE ONLY — Steps 1–4 unimplemented; Step 0 + the builder canary are IMPLEMENTED on
+Status: **SCOPE ONLY — Steps 2–4 unimplemented; Steps 0–1 + the builder canary are IMPLEMENTED on
 branch `worktree-artifact-decoupling-review` (2026-08-04; verified: `verify.sh full` and the
-simulated PR-CI artifacts tier green locally). Decision §8.1 applied as recommended (advisory on
-PRs; the deploy path is the hard gate); decision §8.2 still open.**
+simulated PR-CI artifacts tier green locally, incl. a full fetch-state simulation). Decision §8.1
+applied as recommended (advisory on PRs; the deploy path is the hard gate); decision §8.2 still
+open.**
 
 Origin: owner asked why the CI `Build rank-board artifacts` step took ~8 min on PR #82 when the
 `b71af726` incremental-rebuild work should have cut it, then asked to scope moving the pre-built
@@ -251,6 +252,21 @@ set while the deploy box keeps building. The b1b2dps `MUTABLE_PATHS` fix (§7) l
 One-time cost: the extraction adds the new module to `GLOBAL_FILES`, moving every hash once (one
 full rebuild on the next deploy). Verified before commit: 65/65 per-unit hashes byte-identical to
 the live artifact, `verify.sh full` green, `SKIP_BOARD_BUILD=1 verify.sh artifacts` green.
+
+**Step 1 landed 2026-08-04 on `worktree-artifact-decoupling-review`** (commits `a13c7d6d` /
+`d4627b20` / `90ea0545`): input hashing generalized to every builder in `scripts/artifact-input-hash.ts`.
+One shared GLOBAL bucket for the five rank boards — a deviation from the per-builder buckets
+sketched in §5, justified because their refresh unit is `ranks:all` (all five rebuild
+unconditionally), so a shared bucket can never mislead a decision the hash drives and
+over-enumeration kills the false-FRESH failure mode. `ol-default.json` gets its own bucket — and
+since it is COMMITTED, its parity gate is hard everywhere (a drift is always rebuild + commit).
+Every builder embeds `inputsHash`; `dist/img/manifest.json` gains it as provenance (boards hashed
+stripped-content, so rebuild timestamps cannot move it). `check-board-freshness.ts` covers all
+boards (FRESH/STALE/NO-HASH, advisory), and `board-hash-parity.test.ts` is the §5 test — hard on
+built/committed artifacts, skip-stale under `BOARDS_FETCHED=1` (ci.yml's fetch path), naming the
+exact refresh command on failure. Verified before commit: rebuild determinism, recomputed ==
+embedded for every bucket, full PR-CI simulation green. Steps 2–4 remain deferred options per the
+2026-08-04 review ruling.
 
 **Step 1** — extract + generalize input hashing to all 6 boards + infographics (§5).
 
