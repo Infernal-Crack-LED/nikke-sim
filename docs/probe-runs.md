@@ -2388,7 +2388,11 @@ raw / **4.4%** admissible. Pooled **6.8%** raw / **3.9%** admissible. **No video
 whose arbiter is clean**, and only `marciana` clears ≤ 2%, so the board-level answer is the middle row:
 **report as-is.** The channel is REAL and non-zero on every video, but on this evidence it is 3.9–6.8%
 where 8–16% would be needed to carry the whole 0.8–1.6/10 cold bias — it can carry roughly **a quarter
-to a half** of it, not all of it.
+to a half** of it, not all of it. [SUPERSEDED (2026-08-03) — disregard the preceding sentence's
+3.9–6.8% ONLY as a PER-EVENT rate; it is an AGGREGATE (netted) figure and the two bases are now
+measured to differ. Hand-counted windows read **16.7%** (`isabel`) and **17.4%** (`guilty`) per event
+against aggregates of 5.6% and 13.0% — see §7. The 3.9–6.8% figure stands as what it is, the
+whole-fight aggregate reading, and the "between" verdict it drives is unchanged.]
 
 **What would decide it, stated explicitly.** (a) An owner hand shot-count on ONE non-`marciana` clip.
 The gate validated this arbiter on `marciana` only, and `isabel` is where it matters — its raw and
@@ -2499,11 +2503,11 @@ while forbidden from reading the script.
 owner's count. Both agents reached it independently, under different level-acceptance rules.
 Corroborated three ways by the independent derivation:
 
-| corroboration                      | what it shows                                                                                                                            |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| the accepted level trace           | the reconstructed 9→1 ladders account for every shot in the window                                                                        |
-| **61-frame reload invariant**      | emptying shot → next `9` is 61 / 62 / 59 / 61 frames across the window's four magazines, and 61 frames in **12 of the clip's other 15** measurable reloads |
-| **20-frame pellet grid**           | magazine A's nine detections at f910…f1070 are exactly 20 frames apart, nine times, with no drift                                          |
+| corroboration                 | what it shows                                                                                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| the accepted level trace      | the reconstructed 9→1 ladders account for every shot in the window                                                                                         |
+| **61-frame reload invariant** | emptying shot → next `9` is 61 / 62 / 59 / 61 frames across the window's four magazines, and 61 frames in **12 of the clip's other 15** measurable reloads |
+| **20-frame pellet grid**      | magazine A's nine detections at f910…f1070 are exactly 20 frames apart, nine times, with no drift                                                          |
 
 Measured cadence **20 frames = 1.500 shots/s** (mode and median of 143 ammo spacings), matching §3b's
 independently measured mode of 20 at 30 fps.
@@ -2518,7 +2522,10 @@ internally-consistent on the other three" — is retired for `isabel`. It still 
 The independent derivation never used the cadence-arithmetic admissibility rule at all. From glyph
 consistency alone it found that **all 11 raw `ammo: 0` reads across the whole clip sit inside an
 8-run** — the pattern is `8, 8, 8, 0, 0, 0, 8, 8, 8`. The counter never credibly displays 0. So the
-disputed drops are glyph misreads and discarding them was correct.
+disputed drops are glyph misreads and discarding them was correct. [SCOPE-LIMITED (2026-08-03) — the
+"sits inside an 8-run" FORM is `isabel`-specific and does not transfer: `guilty` has 3 raw `0` reads,
+none inside an 8-run, two provably impossible and one indeterminate. The general conclusion — a `0`
+read is untrustworthy — survives on both clips. See §7.8.]
 
 ⇒ **The ask's decision table, row 1 fires: the admissible reading (~4.4%) stands, and the raw 14.7%
 is an artifact.** `isabel`'s 3.4× swing is RESOLVED in favour of admissible, and §3b's board-level
@@ -2631,7 +2638,11 @@ miss rate is **well above the 4.4% whole-fight admissible figure and at or above
 an observation. It does **not** overturn the whole-fight 4.4% / 14.7% headline, does not change any
 constant, guard, gate or threshold, and does not re-stamp the missing-shot channel's size. Treating
 16.7% (or 11.1%) as the channel's rate requires a second hand-counted window on a different unit or
-clip.
+clip. [SUPERSEDED (2026-08-03) — disregard the last sentence only: that second window EXISTS. A
+`guilty` hand count over 00:42.8–1:02.8 reads **17.4%** per event against a 13.0% aggregate, within
+0.7 pp of the 16.7% here while the aggregates differ 2.3× — and the misses are traced to cluster-merge
+in `debounce_shots`. See §7. The n=1 caveat on the RATE is now n=2 / MEDIUM, still below the n ≥ 5
+board standard; everything else in this paragraph stands.]
 
 ##### §4.6 — Near-empty detections
 
@@ -2644,14 +2655,14 @@ set.
 
 ##### §4.7 — Knob sensitivity — stated plainly
 
-| quantity                        | slack 3 | 6   | 8   | 10  | 12  |
-| ------------------------------- | ------- | --- | --- | --- | --- |
-| `detected_in_window`            | 34      | 34  | 34  | 34  | 34  |
-| naive missed (every onset a shot) | 2     | 2   | 2   | 2   | 2   |
-| `MISSED` (arbiter basis)        | 14      | →   | →   | →   | 10  |
-| `SPURIOUS`                      | 8       | →   | →   | →   | 4   |
-| `extras_in_window`              | 2       | 2   | 2   | 1   | 1   |
-| `MISSED_vs_hand`                | 4       | 4   | 4   | 3   | 3   |
+| quantity                          | slack 3 | 6   | 8   | 10  | 12  |
+| --------------------------------- | ------- | --- | --- | --- | --- |
+| `detected_in_window`              | 34      | 34  | 34  | 34  | 34  |
+| naive missed (every onset a shot) | 2       | 2   | 2   | 2   | 2   |
+| `MISSED` (arbiter basis)          | 14      | →   | →   | →   | 10  |
+| `SPURIOUS`                        | 8       | →   | →   | →   | 4   |
+| `extras_in_window`                | 2       | 2   | 2   | 1   | 1   |
+| `MISSED_vs_hand`                  | 4       | 4   | 4   | 3   | 3   |
 
 `detected_in_window` (34) and the naive reading (2 missed / 5.6%) are **identical at every slack
 3 / 6 / 8 / 10 / 12**. `MISSED` on the arbiter basis moves 14 → 10 and `SPURIOUS` 8 → 4,
@@ -2672,10 +2683,15 @@ monotonically. `extras_in_window` drops 2 → 1 at slack ≥ 10, which moves `MI
   magazine, not to the ~15 s skill cadence.
 - **Aggregate-versus-per-event scoring — the aggregate is misleading (§4.5).** 34-vs-36 nets a
   6-shot miss against a 4-shot invention. MISSED and SPURIOUS are not netted anywhere in this entry.
+  [REPLICATED (2026-08-03) — §7 reproduces this on `guilty` at n=2: per-event 17.4% vs aggregate
+  13.0%, and the mechanism is cluster-merge in `debounce_shots`.]
 - **n and scope — one 30 s window, one unit (`isabel`), one clip.** HYPOTHESIS-strength for any rate
   it implies; ground-truth-strength for the two binary questions it was run to settle (does the
   arbiter reconstruct correctly on `isabel`, and is the flip rule right), both of which it answers
-  affirmatively.
+  affirmatively. [SUPERSEDED (2026-08-03) — disregard "one unit, one clip" as the standing scope for
+  the RATE: §7 adds a second window on `guilty`, so the rate is n=2 / MEDIUM. The two binary questions
+  remain `isabel`-scoped, and ⚑ §7.8 finds that §4.2's specific "every raw `0` sits inside an 8-run"
+  form does NOT transfer to `guilty` — only the general conclusion (a `0` read is untrustworthy) does.]
 
 RECORDS a measurement, plus reporting-only tooling. No guard, gate, threshold or constant was changed;
 no `DECISIONS.md` entry was edited; `reconstruct_ammo` itself is untouched.
@@ -2729,37 +2745,37 @@ identical across units:
 
 14,731 of 24,319 frames produced a value: **60.6%**.
 
-| field                | value      | meaning                                                        |
-| -------------------- | ---------- | -------------------------------------------------------------- |
-| `n_read_any_lock`    | **14,731** | every frame that produced a value                              |
-| `n_read_good_lock`   | **14,694** | of those, on a frame whose crosshair lock was fresh            |
-| `n_read_stale_lock`  | **37**     | of those, on a frame whose lock was stale                      |
+| field               | value      | meaning                                             |
+| ------------------- | ---------- | --------------------------------------------------- |
+| `n_read_any_lock`   | **14,731** | every frame that produced a value                   |
+| `n_read_good_lock`  | **14,694** | of those, on a frame whose crosshair lock was fresh |
+| `n_read_stale_lock` | **37**     | of those, on a frame whose lock was stale           |
 
 14,694 + 37 = 14,731. A non-null read has **already cleared the 0.60 score gate by construction**, so
 "reads above threshold" is not a separate population and must not be reported as one.
 
 Per video:
 
-| series                | frames     | read       | rate      |
-| --------------------- | ---------- | ---------- | --------- |
-| `isabel` (h4)         | 5721       | 3163       | **55.3%** |
-| `guilty` (h4)         | 5738       | 2998       | **52.2%** |
-| `marciana` (h4)       | 5697       | 3564       | **62.6%** |
-| `noir` (g2)           | 5722       | 4043       | **70.7%** |
-| `i2-marciana-60fps`   | 480        | 287        | **59.8%** |
-| `i3-noir-far-60fps`   | 480        | 343        | **71.5%** |
-| `i3-noir-near-60fps`  | 481        | 333        | **69.2%** |
+| series               | frames | read | rate      |
+| -------------------- | ------ | ---- | --------- |
+| `isabel` (h4)        | 5721   | 3163 | **55.3%** |
+| `guilty` (h4)        | 5738   | 2998 | **52.2%** |
+| `marciana` (h4)      | 5697   | 3564 | **62.6%** |
+| `noir` (g2)          | 5722   | 4043 | **70.7%** |
+| `i2-marciana-60fps`  | 480    | 287  | **59.8%** |
+| `i3-noir-far-60fps`  | 480    | 343  | **71.5%** |
+| `i3-noir-near-60fps` | 481    | 333  | **69.2%** |
 
 ##### §5.3 — Abstention reasons, and the four-way classification
 
 Pooled over all 24,319 frames:
 
-| reason       | frames    | % of frames | class            |
-| ------------ | --------- | ----------- | ---------------- |
-| `cell-count` | **4,092** | 16.8%       | SEGMENTATION     |
-| `no-digits`  | **3,643** | 15.0%       | SEGMENTATION     |
-| `low-score`  | **1,171** | 4.8%        | **GLYPH-MATCH**  |
-| `no-lock`    | **682**   | 2.8%        | LOCALIZATION     |
+| reason       | frames    | % of frames | class           |
+| ------------ | --------- | ----------- | --------------- |
+| `cell-count` | **4,092** | 16.8%       | SEGMENTATION    |
+| `no-digits`  | **3,643** | 15.0%       | SEGMENTATION    |
+| `low-score`  | **1,171** | 4.8%        | **GLYPH-MATCH** |
+| `no-lock`    | **682**   | 2.8%        | LOCALIZATION    |
 
 The classification is not a guess — the emission sites were traced in `scripts/probe/count-pellets.py`
 (all line references verified un-drifted) and are encoded as `ABSTENTION_CLASS` at
@@ -2767,11 +2783,11 @@ The classification is not a guess — the emission sites were traced in `scripts
 `no-digits` and `cell-count` both at `count-pellets.py:867` (SEGMENTATION); `low-score` at
 `count-pellets.py:877` (GLYPH-MATCH). **GLYPH-MATCH is the only atlas-fixable class.**
 
-| class            | abstentions | share of abstentions |
-| ---------------- | ----------- | -------------------- |
-| SEGMENTATION     | **7,735**   | **80.7%**            |
-| GLYPH-MATCH      | **1,171**   | **12.2%**            |
-| LOCALIZATION     | **682**     | **7.1%**             |
+| class        | abstentions | share of abstentions |
+| ------------ | ----------- | -------------------- |
+| SEGMENTATION | **7,735**   | **80.7%**            |
+| GLYPH-MATCH  | **1,171**   | **12.2%**            |
+| LOCALIZATION | **682**     | **7.1%**             |
 
 ##### §5.4 — Both ceilings on a perfect atlas
 
@@ -2830,12 +2846,12 @@ by `reconstruct_ammo`'s `> ammo_max` filter, **but nothing catches one that happ
 
 ##### §5.9 — Costed alternatives (⚑ ESTIMATES, not recommendations)
 
-| lever                          | coverage gain            | cost                                       | caveat                                                                                                                                                    |
-| ------------------------------ | ------------------------ | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Fix stale-lock localization    | ~~**+14.3 to +17.1 pp**~~ | days                                      | **SUPERSEDED (2026-08-03) — disregard this row.** Measured with an oracle localizer in §6: the real gain is **+0.18 pp demonstrated / +1.33 pp optimistic bound**, because 70.2% of stale frames render no digits at all. REFUTED, not deferred |
-| Safe temporal interpolation    | **+4.7 pp measured** (1,149 frames) | 2–4 h, pure post-processing on existing JSON | Fills abstention runs ≤ 5 frames whose bracketing levels differ by ≤ 1. **It NARROWS decrement windows; it does not recover shots hidden in long gaps** — 58–91% of abstained frames sit in runs > 10 frames, max 226 frames = 7.5 s, longer than a full magazine cycle |
-| Bright-surround gate           | ~0 pp (accuracy, not coverage) | 0.5–1 day + a threshold study        | Removes most confidently-wrong reads, but 7,825 good/bright frames DO read correctly, so a naive cut costs real reads                                     |
-| Relax the 3-cell gate          | up to **+10.1 pp** nominal | needs a positional rule                  | Place value becomes ambiguous — dropping the last glyph of `004` reads `0`, not `4`                                                                       |
+| lever                       | coverage gain                       | cost                                         | caveat                                                                                                                                                                                                                                                                  |
+| --------------------------- | ----------------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fix stale-lock localization | ~~**+14.3 to +17.1 pp**~~           | days                                         | **SUPERSEDED (2026-08-03) — disregard this row.** Measured with an oracle localizer in §6: the real gain is **+0.18 pp demonstrated / +1.33 pp optimistic bound**, because 70.2% of stale frames render no digits at all. REFUTED, not deferred                         |
+| Safe temporal interpolation | **+4.7 pp measured** (1,149 frames) | 2–4 h, pure post-processing on existing JSON | Fills abstention runs ≤ 5 frames whose bracketing levels differ by ≤ 1. **It NARROWS decrement windows; it does not recover shots hidden in long gaps** — 58–91% of abstained frames sit in runs > 10 frames, max 226 frames = 7.5 s, longer than a full magazine cycle |
+| Bright-surround gate        | ~0 pp (accuracy, not coverage)      | 0.5–1 day + a threshold study                | Removes most confidently-wrong reads, but 7,825 good/bright frames DO read correctly, so a naive cut costs real reads                                                                                                                                                   |
+| Relax the 3-cell gate       | up to **+10.1 pp** nominal          | needs a positional rule                      | Place value becomes ambiguous — dropping the last glyph of `004` reads `0`, not `4`                                                                                                                                                                                     |
 
 ##### Confounds, each with a verdict
 
@@ -2931,8 +2947,8 @@ frame that precedes the first lock.
 | INTRO / pre-fight           | 33        | 0.7%      |
 
 The OTHER bucket is visual-effect / particle occlusion and popup swamp. **During reload the badge is
-present, crisp and perfectly localizable, but its three digit cells carry no glyph** — frame *i* shows
-the empty widget, frame *i+1* shows `009`.
+present, crisp and perfectly localizable, but its three digit cells carry no glyph** — frame _i_ shows
+the empty widget, frame _i+1_ shows `009`.
 
 **Four independent confirmations that the 70.2% bucket is the reload:**
 
@@ -2946,11 +2962,11 @@ the empty widget, frame *i+1* shows `009`.
 
 ##### §6.4 — Which stage fails (730 sampled stale frames)
 
-| stage                                                    | share    | note                                   |
-| -------------------------------------------------------- | -------- | -------------------------------------- |
-| **A** — `_digit_glyph_mask` finds no digit-shaped blob    | **~19%** | 15–35% on 30 fps, 3–8% on 60 fps       |
-| **B** — groups exist, none of size 2–3                    | **~81%** | the dominant stage                      |
-| **C** — `bg.size == 0`                                    | **0**    | never fires                             |
+| stage                                                  | share    | note                             |
+| ------------------------------------------------------ | -------- | -------------------------------- |
+| **A** — `_digit_glyph_mask` finds no digit-shaped blob | **~19%** | 15–35% on 30 fps, 3–8% on 60 fps |
+| **B** — groups exist, none of size 2–3                 | **~81%** | the dominant stage               |
+| **C** — `bg.size == 0`                                 | **0**    | never fires                      |
 
 `templ_h` is **not implicated**: the control arm of §6.5 decodes **99.2%** at the same `templ_h = 74`.
 The group-size histogram is dominated by **size 1** (isolated fragments) with a tail at **4–8**
@@ -2971,14 +2987,14 @@ anything**: without it, silence in the stale arm could be the oracle's own failu
 **STALE arm.** Only **519 of 4,707** stale frames even have such an oracle. Of those, **43 (8.3%)**
 decode.
 
-| outcome                | frames  |
-| ---------------------- | ------- |
-| decoded                | **43**  |
-| `no-digits`, cells = 0 | 231     |
-| `cell-count`, cells = 1| 178     |
-| cells 4–6 (31/20/2)    | 53      |
-| cells = 2              | 8       |
-| `low-score`            | 6       |
+| outcome                 | frames |
+| ----------------------- | ------ |
+| decoded                 | **43** |
+| `no-digits`, cells = 0  | 231    |
+| `cell-count`, cells = 1 | 178    |
+| cells 4–6 (31/20/2)     | 53     |
+| cells = 2               | 8      |
+| `low-score`             | 6      |
 
 231 + 178 + 53 + 8 + 6 = **476** failures, + 43 decodes = **519**. The ledger balances. All 43 decodes
 are consistent with the bracketing ammo level — **33 identical, 10 off by exactly 1** — and there are
@@ -3003,11 +3019,11 @@ magnitude smaller, and for frames whose semantic content is "reloading", not a m
 Whole-run simulation under the shipped continuity rule (`max_disp = 150`), seeded from a
 read-confirmed good lock and judged at the far end against another, **n = 331** bracketed runs:
 
-| policy                       | end-of-run error, median | within 40 px |
-| ---------------------------- | ------------------------ | ------------ |
-| **HOLD** (ships today)       | **27.8 px**              | **61.3%**    |
-| `localcontrast20`            | 254.9 px                 | 25.7%        |
-| `darkbadge`                  | 0–4% candidate rate — unusable |         |
+| policy                 | end-of-run error, median       | within 40 px |
+| ---------------------- | ------------------------------ | ------------ |
+| **HOLD** (ships today) | **27.8 px**                    | **61.3%**    |
+| `localcontrast20`      | 254.9 px                       | 25.7%        |
+| `darkbadge`            | 0–4% candidate rate — unusable |              |
 
 And the two free precision checks cannot rescue a relaxed candidate set: **92–97% of the wrong
 recoveries fall INSIDE the good-lock envelope**, because the box legitimately traverses almost the
@@ -3102,3 +3118,227 @@ python3 scripts/probe/analyze-pellet-tracks.py --ammo-oracle-ceiling-selftest
 # all 15 arms:
 bash scripts/probe/pellet-selftest.sh
 ```
+
+#### §7 THE SECOND HAND COUNT (`guilty`) — the per-event miss rate replicates, and it has a mechanism
+
+Answers the item §4.5 left open and `docs/handoffs/QUEUE.md` carried as "needs a second hand-counted
+window on a different unit or clip". The owner supplied one on `guilty`. **The per-event miss rate
+replicates to within 0.7 percentage points while the aggregate figure disagrees by 2.3×** — and this
+time the misses are traced to a named mechanism in the reader's own code.
+
+##### §7.1 — THE REPLICATION, first because it is the headline
+
+| window                   | aggregate miss | per-event miss |
+| ------------------------ | -------------- | -------------- |
+| `isabel`, 30 s, 36 shots | 5.6%           | **16.7%**      |
+| `guilty`, 20 s, 23 shots | 13.0%          | **17.4%**      |
+
+The two aggregate figures differ by **2.3×**; the two per-event figures land within **0.7 percentage
+points** of each other. That is the signature of the aggregate being noise from cancelling errors
+while the per-event rate is the real quantity — §4.5's reading, now measured twice on two units.
+
+⚑ **n=2 windows, 2 units. MEDIUM, below the n ≥ 5 board standard.** Replicated, not established.
+
+##### §7.2 — THE MECHANISM — cluster-merge in `debounce_shots`
+
+`debounce_shots` merges adjacent shots into one event when its gap tolerance is exceeded. **Three of
+the four `guilty` misses are traced to specific entries:**
+
+| merged entry | `frames` | span      | shot it swallows |
+| ------------ | -------- | --------- | ---------------- |
+| f1307        | 27       | 1307–1333 | **f1326**        |
+| f1427        | 24       | 1427–1450 | **f1446**        |
+| f1618        | 28       | 1618–1645 | **f1637**        |
+
+The swallowed shots peak at **T = 11 and T = 13**, well above threshold. **These are merge failures,
+not sensitivity failures** — the pellets were seen; the event boundary was not drawn.
+
+**Cross-dump prevalence — 255 of 815 detections (31.3%) span more frames than `max_pellet_frames = 7`:**
+
+| dump                                           | over-spanning | share     | max span |
+| ---------------------------------------------- | ------------- | --------- | -------- |
+| `h4-isabel-structural`                         | 62 / 203      | 30.5%     | **50**   |
+| `h4-guilty-structural`                         | 43 / 180      | 23.9%     | 28       |
+| `h4-marciana-structural` (`marciana`, SG/Iron) | 67 / 218      | 30.7%     | 29       |
+| `g2-noir-structural`                           | 83 / 214      | **38.8%** | **49**   |
+
+A 50-frame span is **2.5 cadence periods** at the measured 20-frame cadence.
+
+##### §7.3 — The owner ground truth, and both arms reproduce 23 exactly
+
+Video `docs/probes/ar-sg-smg/guilty solo sg.MP4` (dump `h4-guilty-structural`, `fps` 30, `at` 0,
+`framesProcessed` 5738 — all verified from its own `pellets.json`), window **00:42.8 → 1:02.8** =
+frames **1284–1884**. Owner: **23 shots** as three magazine segments of **9, 9, 5**; **2 reloads**;
+**4 of 9 rounds left at 1:02.8**.
+
+**Both arms reproduce 23**: **21 visible decrements + 2 magazine-emptying rounds** (8 + 8 + 5
+decrements). The 9/9/5 structure is confirmed. **The reconstructed ammo level at frame 1884 is 4**,
+matching the owner's ending state — **an independent check the `isabel` clean-magazine window did
+not have** (four clean magazines end at a magazine boundary; a mid-magazine ending state is a second,
+separately-falsifiable constraint on the reconstruction).
+
+Supporting structure, all from the ammo series itself:
+
+| corroboration | what it shows                                                                                   |
+| ------------- | ----------------------------------------------------------------------------------------------- |
+| cadence       | **20 frames = 1.500 shots/s with ZERO dispersion** — all 20 intra-magazine intervals exactly 20 |
+| reload gaps   | last shot → first shot of the next magazine: **91 and 90 frames = 3.03 s / 3.00 s**             |
+| ending level  | reconstructed **4** at frame 1884, equal to the owner's "4 of 9 left"                           |
+
+Window read rate **58.1%**, against 52.2% for the whole clip.
+
+##### §7.4 — Instrument arm (`--hand-count`, slack 8)
+
+Detected **20** onsets in the window; `matched` 18, `MISSED` **3**, `SPURIOUS` **2** (both
+`in-reload-window`, **zero `unexplained`**). `ammo_visible_shots` 21, `ammo_implied_total` **23**,
+`ammo_total_matches_hand` **true**.
+
+**Raw and admissible bases are IDENTICAL here** — 0 inadmissible flips in-window, 0 phantom reloads —
+**unlike the `isabel` window, where they diverged 45 vs 36.** So `guilty`'s reading does not depend on
+the §4.3 cap rule at all, and the `reconstruct_ammo` defect filed in `QUEUE.md` does not touch it.
+
+`MISSED_vs_hand` 3 = **13.0%**; `MISSED_pct_arbiter_basis` 14.3%. The missed windows are **one per
+magazine segment**:
+
+| miss  | frames     | time    |
+| ----- | ---------- | ------- |
+| 7 → 6 | f1326      | 44.20 s |
+| 4 → 3 | f1637–1640 | 54.57 s |
+| 9 → 8 | f1787–1790 | 59.57 s |
+
+##### §7.5 — Independent arm (own rising-edge rule, forbidden from reading the instrument)
+
+It found **all 23 onsets**, and its reconciliation against `pellets.json` is the honest one:
+
+- `pellets.json` **missed 4 real shots** — f1326, **f1446**, f1637, f1787;
+- and **separately reported 1 non-shot** — f1456.
+
+On the denominator of 23: **missed 4 = 17.4%**, plus 1 false positive = **5.0% of its own 20 reported
+detections**.
+
+⚠ **The two error counts must not be netted.** The raw 20-vs-23 deficit of 3 only works because the
+f1456 false positive numerically stands in for the f1446 shot it is not. This is exactly §4.5's
+compensating-errors pattern, and it is why the aggregate reads 13.0% where the per-event truth is
+17.4%.
+
+**f1456 is REFUTED as a weapon shot, four ways:**
+
+1. the counter held `1` from f1426–1445 and showed a full `9` at f1531, so **magazine 1 was exhausted
+   at f1446** — there was no round left to fire at f1456;
+2. 1446 → 1456 is **10 frames against a 20-frame cadence floor**;
+3. its pellet `total` of 4 is **below the weakest confirmed shot** in the window (T = 5);
+4. f1456–1462 is a **7-of-7 stale-lock run**.
+
+##### §7.6 — The two failure modes separate cleanly
+
+**3 of the 4 missed shots sit on FULLY-MEASURED locks** — a detector failure. **The 1 false positive
+is entirely inside a stale run** — a localization failure. Window stale share is 24.5% (147/601), but
+only **6/420 = 1.4% during the three firing spans**, versus 74/90 and 67/89 inside the two reload
+gaps.
+
+⇒ **The misses are NOT a localization artifact.** §3's standing warning — every measurement
+conditioned on "detected shots" is conditioned on lock quality — is respected here rather than
+tripped over: the stale frames are concentrated in the reload gaps, where nothing was fired.
+
+##### §7.7 — ⚑ An instrument limitation, recorded explicitly
+
+**`--hand-count`'s matcher credits ANY in-reload onset as the magazine-emptying round, so it cannot
+distinguish f1446 (the real emptying shot) from f1456 (a false positive).** Its
+`detected_weapon_attributable` therefore OVERCOUNTS whenever a merge and a false positive coincide
+inside the same reload window — which is why the arm reported **3 missed** where the truth is **4
+missed + 1 invented**.
+
+**Both the `isabel` (§4) and `guilty` (§7) `--hand-count` numbers inherit this.** Do not read
+`detected_weapon_attributable` as authoritative; it is an upper bound on weapon-attributable
+detections.
+
+##### §7.8 — Two structural discoveries from the independent arm
+
+1. **`reads[k].conf` in the ammo series is byte-identical to `tracks.json.cross_confs`.** It is the
+   **crosshair LOCK confidence, not digit-match quality.** Digit quality lives in `reads[k].scores`
+   (three per-cell template scores); the counter renders as **3 cells with leading zeros** ("008").
+   ⚑ **This refines how §5.5's dark-badge `conf < 60` split should be read: it is a lock/surround
+   measure, not a glyph-quality measure.** §5.5 already labels the threshold a PROXY for "the reader
+   is on the semi-transparent ammo badge" rather than a calibrated boundary, so the split's meaning
+   is unchanged — but nobody should now re-read it as an OCR-quality partition.
+2. **§4.2's "the counter never credibly displays 0" does NOT transfer in its specific form.** On
+   `guilty` there are **3 raw `0` reads** (none in the counted window), all carrying an
+   all-cells-match-zero `[0,0,0]` signature, and **none inside an 8-run** — the `isabel`-derived form
+   of the finding. Two are provably impossible (**f2689** between a 4 and a 3; **f3368** between a 9
+   and an 8); **f645 is INDETERMINATE ⚑** — positionally where a real 0 would fall, but carrying the
+   same misread signature and the worst scores of the three. **The general conclusion survives — a
+   `0` read is untrustworthy — but the specific 8-run form is `isabel`-only.**
+
+##### §7.9 — Slack sweep
+
+**Knob-stable** across slack 3 / 6 / 8 / 10 / 12: `ammo_visible_shots` 21, `n_reloads` 2,
+`implied_total` 23, admissible == raw, `ammo_total_matches_hand` true, `detected_in_window` 20, naive
+`MISSED` 3, `inadmissible_in_window` 0, and the reconstructed level at f1884 = 4.
+
+**Knob-sensitive:** `matched` / `MISSED` / `SPURIOUS` / `MISSED_pct_arbiter_basis` — `MISSED` moves
+5 → 3 as slack rises, saturating at 8.
+
+⚑ **At slack 6 ONLY**, onset f1537 lands inside the first reload window's slack skirt and is
+reclassified as an extra, dropping `detected_weapon_attributable` to 19 and raising `MISSED_vs_hand`
+to 4 (**17.4%** — coincidentally the independent arm's figure, by a different route; do not read the
+agreement as corroboration).
+
+##### §7.10 — ⚑ Open
+
+- **The f1787 miss is NOT explained by cluster-merge.** Peak T = 8, at post-reload crosshair
+  re-acquisition, on a measured lock. **Mechanism unknown.**
+- **Whether the merge explains the cold-bias remainder is UNTESTED.** A merged event drops a shot from
+  the count AND its pellets from the total, so **the net sign on pellets-per-shot is not obvious and
+  must not be guessed.** An investigation is running separately.
+
+##### §7.11 — Evidence tiers, stated so nothing here is over-read later
+
+| claim                                                | tier                                                       |
+| ---------------------------------------------------- | ---------------------------------------------------------- |
+| Cluster-merge exists and affects 31.3% of detections | **MEASURED** — 4 dumps, code-level                         |
+| It causes specific missed shots                      | **DEMONSTRATED** for 3 named entries on `guilty`           |
+| The ~17% per-event miss rate                         | **n=2 windows, MEDIUM** — replicated, small n, below n ≥ 5 |
+| The cold-bias link                                   | **HYPOTHESIS, untested**                                   |
+
+##### Confounds, each with a verdict
+
+- **Aggregate-versus-per-event scoring — REPLICATED (§7.1).** The aggregate is a netted figure and
+  moves 2.3× between windows; the per-event rate moves 0.7 pp. MISSED and SPURIOUS are never netted
+  anywhere in this entry.
+- **"The misses are a stale-lock artifact" — REFUTED (§7.6).** 3 of 4 misses sit on fully-measured
+  locks, and in-window stale share during the three firing spans is 1.4%.
+- **"f1456 is the magazine-emptying shot" — REFUTED four ways (§7.5).** Magazine exhausted at f1446;
+  10 frames against a 20-frame cadence floor; pellet total below the weakest confirmed shot; inside a
+  7-of-7 stale run.
+- **`reconstruct_ammo`'s magazine-consistency defect — DOES NOT APPLY HERE.** 0 inadmissible flips and
+  0 phantom reloads in-window; raw and admissible bases are identical, unlike `isabel`'s 45 vs 36.
+- **Matcher over-crediting — IDENTIFIED, NOT fixed (§7.7).** `detected_weapon_attributable` is an
+  upper bound; both hand-count entries inherit the limitation.
+- **Slack as a free parameter — SWEPT (§7.9).** Every ammo-reconstruction quantity is flat across
+  3 / 6 / 8 / 10 / 12; only matcher-basis fields move, and the one reclassification at slack 6 is
+  named.
+- **n and scope — one 20 s window, one unit (`guilty`), one clip, plus §4's 30 s `isabel` window.**
+  Two windows, two units. **HYPOTHESIS-to-MEDIUM for the rate**; ground-truth-strength for the binary
+  questions it was run to settle (does the arbiter reconstruct `guilty` correctly — yes, including the
+  ending level — and does the per-event/aggregate divergence replicate — yes).
+
+**NOTHING HERE ENACTS A CHANGE.** `debounce_shots` is UNTOUCHED. Changing it would move every detected
+shot in every dump and therefore every number in this measurement log — **an owner-gated decision**,
+and per evidence-proportionality **not for the session that discovered it**. No guard, gate, threshold
+or constant was changed; no `DECISIONS.md` entry was edited; no verdict was stamped.
+
+**Reproduce:**
+
+```sh
+python3 scripts/probe/analyze-pellet-tracks.py --hand-count \
+  /Users/maxwellsutton/nikke-sim/scratchpad/pellets/_missingshot_tmp/h4-guilty-ammo.json \
+  --hand-count-window 42.8 62.8 --hand-count-at 0 --hand-count-fps 30 --hand-count-slack 8 \
+  --hand-count-shots 23 --hand-count-magazines 2
+# replay the committed slice -- no images, no subprocess:
+python3 scripts/probe/analyze-pellet-tracks.py --hand-count-selftest
+```
+
+⚑ **Note on the invocation:** `--hand-count-magazines` was passed the owner's **reload count** (2)
+here, not a magazine count — the window holds three magazine segments (9/9/5) separated by two
+reloads. The field is a **pure passthrough that enters no arithmetic**, so the reading is unaffected;
+it is recorded so the numbers above can be reproduced verbatim.
