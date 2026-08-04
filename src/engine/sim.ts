@@ -432,6 +432,16 @@ interface BuffInstance {
   // (stripReloadBuffs, called at the genuine reload-to-max sites). Set from the buff effect's
   // removeOnReload flag; INERT unless an override declares it.
   removeOnReload?: boolean;
+  // SELF-STATUS GATE (mirrors the effect's noRetriggerWhileActive): set from the buff effect's
+  // flag. Two jobs, both scoped to a self-consuming trigger (one that both GRANTS this buff and
+  // fires again WHILE it is live): (1) the target-loop application-site check skips a refresh
+  // while a same-key instance is still active (see the buff-apply call site); (2) the ROUND-COUNT
+  // decrement below skips the shot that just (re-)granted this buff — that shot's own charge/fire
+  // predates the buff's existence (it could not have benefited), so it does not spend one of the
+  // buff's own N rounds. Together: "for N round(s)" reads as N rounds AFTER the granting shot, not
+  // N-1 (vesti-tactical-upgrade's Missile Guide: one full charge, then N=3 rapid follow-ups —
+  // owner-confirmed gameplay pattern, 2026-08-03). INERT for every unit that does not set it.
+  noRetriggerWhileActive?: boolean;
 }
 
 interface Dot {
@@ -2012,7 +2022,8 @@ export function runSim(
     casterIdx?: number,
     perResource?: { name: string; mult: number },
     removeOnReload?: boolean,
-    durationShots?: number
+    durationShots?: number,
+    noRetriggerWhileActive?: boolean
   ) {
     const expiresFrame =
       durationSec != null ? frame + Math.round(durationSec * FPS) : null;
@@ -2041,6 +2052,7 @@ export function runSim(
       existing.removeOnReload = removeOnReload;
       // a re-cast refills the round budget, exactly as it refreshes expiresFrame
       existing.shotsLeft = durationShots;
+      existing.noRetriggerWhileActive = noRetriggerWhileActive;
     } else {
       list.push({
         key,
@@ -2056,6 +2068,7 @@ export function runSim(
         perResource,
         removeOnReload,
         shotsLeft: durationShots,
+        noRetriggerWhileActive,
       });
     }
     if (onEvent) {
@@ -2301,13 +2314,30 @@ export function runSim(
             // targetMaxHpPct is "% of the TARGET's own Max HP" → value differs per target.
             const appliedValue =
               e.stat === 'targetMaxHpPct' ? (e.value / 100) * t.maxHp : value;
+            const buffKey = `${ownerIdx}:${block.slot}:${statKey}:${e.value}`;
+            // SELF-STATUS GATE (noRetriggerWhileActive): "while NOT in [this buff's] status" —
+            // skip this application entirely (no refresh, no stack) if the SAME key is already
+            // active on the target. Without this, a trigger that both grants a buff and is itself
+            // gated on firing while that buff is live can never lapse (applyBuff always refills
+            // shotsLeft/expiresFrame on refresh) — see the field doc in skills/types.ts.
+            if (e.noRetriggerWhileActive) {
+              const existing = t.buffs.find((b) => b.key === buffKey);
+              const active =
+                existing !== undefined &&
+                (existing.expiresFrame === null ||
+                  existing.expiresFrame > frame) &&
+                (existing.shotsLeft === undefined || existing.shotsLeft > 0);
+              if (active) {
+                continue;
+              }
+            }
             // KR stacking rule (game-mechanics.md §11): the same buff (stat+value) from
             // the same skill slot of the same caster overwrites/refreshes across trigger
             // blocks instead of co-stacking (e.g. Crown's two S1 "Reloading Speed ▲
             // 44.35%" lines). Different skills / different casters still stack.
             applyBuff(
               t.buffs,
-              `${ownerIdx}:${block.slot}:${statKey}:${e.value}`,
+              buffKey,
               statKey,
               appliedValue,
               alwaysOn ? undefined : e.durationSec,
@@ -2318,7 +2348,8 @@ export function runSim(
               ownerIdx,
               e.perResource,
               e.removeOnReload,
-              e.durationShots
+              e.durationShots,
+              e.noRetriggerWhileActive
             );
             // Max Ammo ▼ clips the CURRENT belt when it lands (user-confirmed);
             // increases never clip. Stacking stays additive inside maxAmmo().
@@ -3841,8 +3872,20 @@ export function runSim(
     // A round is one bullet, the same count the ammo economy spends (MG burns hitsPerShot per pull),
     // but counted whether or not ammo was actually deducted: an unlimited-ammo shot still fires a
     // round. Inert for every unit with no round-scoped buff.
+    //
+    // EXCEPTION — self-status-gated buffs (noRetriggerWhileActive) whose GRANT happened on THIS
+    // exact shot (startFrame === frame): the granting shot's own charge/fire predates the buff
+    // (it fired before the buff existed, so it could not have benefited from it) and does not
+    // spend one of the buff's own N rounds — "for N round(s)" reads as N rounds AFTER the grant.
+    // Every other buff (the general case, including a helm-style grant from a DIFFERENT trigger
+    // than the one being counted) is unaffected: its startFrame is from an earlier frame than any
+    // firePull that decrements it, so this skip never engages.
     for (const b of u.buffs) {
-      if (b.shotsLeft !== undefined && b.shotsLeft > 0) {
+      if (
+        b.shotsLeft !== undefined &&
+        b.shotsLeft > 0 &&
+        !(b.noRetriggerWhileActive && b.startFrame === frame)
+      ) {
         b.shotsLeft -= u.char.weapon === 'MG' ? u.char.hitsPerShot : 1;
       }
     }
