@@ -6054,6 +6054,251 @@ def cap_score_selftest():
     return 0 if ok else 1
 
 
+# ============================================================
+# MARKER GEOMETRY (docs/probe-runs.md §15) -- §11F/§11H's backend-marker-audit found that the
+# shipped backend selector resolves a tie between numpy/pil/opencv's white+red count by ARRAY
+# ORDER, discarding opencv's `marker` reading on the loser -- but explicitly left open WHICH side
+# is correct at the one event this flips (h4-marciana-structural frame 1565, opencv marker=3).
+# docs/handoffs/2026-08-04-pellet-reader-JUDGE-handoff.md item 7 names that as the prerequisite
+# before the selector defect can be fixed.
+#
+# This arm answers it with an INDEPENDENT signal from `marker`/`frame_counts` itself: the general
+# RED pellet tracker (`tracks`, the same population `--backend-marker-audit`'s census reads) that
+# count-pellets.py's `--dump-tracks` already carries. For one or more queried frames it lists every
+# RED track within the dump's own `params.pellet_radius` of that frame's crosshair -- id, life,
+# absolute position, distance, crosshair-relative dx/dy -- and, per track, that same dx/dy across a
+# +/- window of neighbouring frames. A track whose crosshair-relative offset stays near-constant
+# across several frames is CROSSHAIR-ATTACHED (plausibly a real UI element, e.g. a hit-marker
+# glyph); a track that exists for exactly one frame is a one-off detection with no such evidence.
+#
+# READ-ONLY BY CONSTRUCTION: read-pellets.ts, count-pellets.py's debounce_shots and MARKER_MIN are
+# never touched or reachable from here -- same precedent as --backend-marker-audit.
+# ============================================================
+MARKER_GEOMETRY_FIXTURE = "scripts/tests/fixtures/pellets/marker-geometry-slice.json"
+
+
+def _mg_radius_tracks(tracks, cross, frame, radius):
+    """Every RED track alive at `frame` and within `radius` of `cross`, sorted by id."""
+    out = []
+    for t in tracks:
+        if not (t["first"] <= frame <= t["last"]):
+            continue
+        idx = frame - t["first"]
+        x, y = t["xs"][idx], t["ys"][idx]
+        dx, dy = x - cross[0], y - cross[1]
+        dist = math.hypot(dx, dy)
+        if dist <= radius:
+            out.append({"id": t["id"], "life": t["life"], "x": round(x, 1), "y": round(y, 1),
+                       "dist": round(dist, 2), "dx": round(dx, 2), "dy": round(dy, 2)})
+    return sorted(out, key=lambda r: r["id"])
+
+
+def _mg_track_window(track, cross_positions, frame, window):
+    """`track`'s crosshair-relative dx/dy at every frame in [frame-window, frame+window]. A frame
+    the track isn't alive at (outside [first, last]) reports dx=dy=None -- absence IS the signal
+    that distinguishes a one-frame detection from a persistent, crosshair-attached one."""
+    out = []
+    for f in range(frame - window, frame + window + 1):
+        if f < 0 or f >= len(cross_positions) or not (track["first"] <= f <= track["last"]):
+            out.append({"frame": f, "dx": None, "dy": None})
+            continue
+        idx = f - track["first"]
+        x, y = track["xs"][idx], track["ys"][idx]
+        cx, cy = cross_positions[f]
+        out.append({"frame": f, "dx": round(x - cx, 2), "dy": round(y - cy, 2)})
+    return out
+
+
+def _mg_frame_report(tracks, cross_positions, frame, radius, window):
+    cross = cross_positions[frame]
+    tracks_by_id = {t["id"]: t for t in tracks}
+    near = _mg_radius_tracks(tracks, cross, frame, radius)
+    for r in near:
+        r["window"] = _mg_track_window(tracks_by_id[r["id"]], cross_positions, frame, window)
+        present = [w for w in r["window"] if w["dx"] is not None]
+        r["n_window_present"] = len(present)
+        if len(present) > 1:
+            dxs, dys = [w["dx"] for w in present], [w["dy"] for w in present]
+            r["dx_range"] = round(max(dxs) - min(dxs), 2)
+            r["dy_range"] = round(max(dys) - min(dys), 2)
+        else:
+            r["dx_range"] = r["dy_range"] = None
+    return {"frame": frame, "cross": list(cross), "radius": radius, "n_near": len(near),
+           "tracks": near}
+
+
+def _mg_dump_report(name, tracks, cross_positions, frames, radius, window):
+    return {"dump": name, "radius": radius, "window": window,
+           "frames": [_mg_frame_report(tracks, cross_positions, f, radius, window) for f in frames]}
+
+
+def _mg_expected(report):
+    """The whole report IS the pinned summary -- a couple of frames, a handful of tracks each,
+    small enough to read in a diff, and it is exactly what docs/probe-runs.md §15's geometry table
+    is read off."""
+    return report
+
+
+def _print_marker_geometry(report):
+    print(f"\nMARKER GEOMETRY -- {report['dump']}  radius={report['radius']}  "
+         f"window=+/-{report['window']}")
+    for fr in report["frames"]:
+        print(f"\nframe {fr['frame']}  crosshair={fr['cross']}  n_near={fr['n_near']}")
+        print(f"  {'id':>7s} {'life':>5s} {'x':>8s} {'y':>8s} {'dist':>7s} {'dx':>7s} {'dy':>7s} "
+             f"{'n_win':>6s} {'dx_rng':>7s} {'dy_rng':>7s}")
+        for t in fr["tracks"]:
+            dxr = "-" if t["dx_range"] is None else f"{t['dx_range']:.2f}"
+            dyr = "-" if t["dy_range"] is None else f"{t['dy_range']:.2f}"
+            print(f"  {t['id']:7d} {t['life']:5d} {t['x']:8.1f} {t['y']:8.1f} {t['dist']:7.2f} "
+                 f"{t['dx']:7.2f} {t['dy']:7.2f} {t['n_window_present']:6d} {dxr:>7s} {dyr:>7s}")
+            for w in t["window"]:
+                dx = "." if w["dx"] is None else f"{w['dx']:.2f}"
+                dy = "." if w["dy"] is None else f"{w['dy']:.2f}"
+                print(f"      f{w['frame']}: dx={dx} dy={dy}")
+
+
+def _mg_load_dump(path):
+    """Load one --marker-geometry TRACKS_JSON: only RED tracks' id/first/last/life/xs/ys, the
+    crosshair series (`cross_positions`), and the dump's own `params.pellet_radius` -- never the
+    full ~40k-track dump verbatim. `path` is the tracks.json FILE (not a dump dir); the dump name
+    is its parent directory's name, the same slug every other arm uses."""
+    with open(path) as fh:
+        data = json.load(fh)
+    cross_positions = data["cross_positions"]
+    radius = data["params"]["pellet_radius"]
+    tracks = [{"id": t["id"], "first": t["first"], "last": t["last"], "life": t["life"],
+              "xs": t["xs"], "ys": t["ys"]}
+             for t in data["tracks"] if t["is_red"]]
+    name = Path(path).resolve().parent.name
+    return name, tracks, cross_positions, radius
+
+
+def _mg_slim(tracks, cross_positions, radius, frames, window):
+    """Reduce a full dump to exactly what --marker-geometry-selftest needs to reproduce `frames`:
+    the crosshair positions over the queried span (every frame in [min(frames)-window,
+    max(frames)+window], since a track's window can reach any frame in that span) and only the RED
+    tracks that land within `radius` of the crosshair at one of the QUERIED frames -- the only ones
+    `_mg_frame_report` ever looks up -- each carrying its full xs/ys (a handful of points; these
+    are short-lived tracks, not the whole clip). Mirrors `_bma_slim`'s precedent of storing only
+    what the arm's own functions consume, replayed through those same functions."""
+    lo, hi = min(frames) - window, max(frames) + window
+    lo_c, hi_c = max(lo, 0), min(hi, len(cross_positions) - 1)
+    cross_slice = {str(f): list(cross_positions[f]) for f in range(lo_c, hi_c + 1)}
+    keep_ids = set()
+    for f in frames:
+        if 0 <= f < len(cross_positions):
+            keep_ids.update(r["id"] for r in _mg_radius_tracks(tracks, cross_positions[f], f, radius))
+    tracks_by_id = {t["id"]: t for t in tracks}
+    return {
+        "cross_positions": cross_slice,
+        "radius": radius,
+        "tracks": [tracks_by_id[i] for i in sorted(keep_ids)],
+        "frame_span": [lo, hi],
+    }
+
+
+class _MGCrossSpan:
+    """Dict-backed stand-in for the live `cross_positions` list, indexable the same way
+    (`obj[frame]`) over exactly the fixture's committed span. A frame outside that span is a
+    fixture/query mismatch, not a legitimate replay -- it raises (KeyError) rather than silently
+    returning a wrong position."""
+
+    def __init__(self, cross, hi):
+        self._cross, self._hi = cross, hi
+
+    def __len__(self):
+        return self._hi + 1
+
+    def __getitem__(self, f):
+        return self._cross[f]
+
+
+def _mg_expand(d):
+    """Compact fixture slice -> the (tracks, cross_positions, radius) shapes `_mg_dump_report`
+    reads, unchanged from the live shapes `_mg_slim` compacted."""
+    cross = {int(k): v for k, v in d["cross_positions"].items()}
+    _, hi = d["frame_span"]
+    return d["tracks"], _MGCrossSpan(cross, hi), d["radius"]
+
+
+def audit_marker_geometry(tracks_json, frames, radius_override, window, save_fixture=None):
+    name, tracks, cross_positions, radius = _mg_load_dump(tracks_json)
+    if radius_override is not None:
+        radius = radius_override
+    report = _mg_dump_report(name, tracks, cross_positions, frames, radius, window)
+    if save_fixture:
+        slim = _mg_slim(tracks, cross_positions, radius, frames, window)
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": (f"{tracks_json}'s own `tracks`/`cross_positions`/`params.pellet_radius` "
+                           "(count-pellets.py --dump-tracks), for the 2026-08-04 marker=3 "
+                           "false-positive-geometry check (docs/probe-runs.md §15, answering "
+                           "docs/handoffs/2026-08-04-pellet-reader-JUDGE-handoff.md item 7's "
+                           "prerequisite). Constraint 9 self-validation, same precedent as "
+                           "backend-marker-audit-slice.json."),
+                "_note": ("A SLICE, not the full dump: `slice.cross_positions` only covers "
+                         "`slice.frame_span` (queried frames +/- window), and `slice.tracks` is "
+                         "only the RED tracks within `radius` of the crosshair at one of the "
+                         "queried `frames`, each with its full xs/ys (they are short-lived). "
+                         "Regenerate with analyze-pellet-tracks.py --marker-geometry "
+                         "<tracks.json> --marker-geometry-frames <F...> "
+                         "--save-marker-geometry-fixture <path>."),
+                "dump": name, "frames": frames, "window": window,
+                "slice": slim,
+                "_expected": _mg_expected(report),
+            }, fh, indent=2)
+        print(f"wrote marker-geometry fixture -> {save_fixture}")
+    _print_marker_geometry(report)
+    return report
+
+
+def marker_geometry_selftest():
+    """Constraint 9 self-validation: replay --marker-geometry over the committed slice (no
+    scratchpad access -- every path this touches is under scripts/tests/fixtures/) and assert BOTH
+    the general `_expected` dict AND the frame-1565 finding explicitly, so a fixture edit that moved
+    either cannot hide behind a coarse dict-equality pass: ONE crosshair-attached track (id 11110,
+    life 3, near-constant +9/-57..-59 across frames 1564-1566) plus TWO single-frame components
+    (11115, 11117, life 1) that exist only at frame 1565 -- three red components within
+    pellet_radius, but only one with any evidence of being crosshair-attached."""
+    with open(MARKER_GEOMETRY_FIXTURE) as fh:
+        fx = json.load(fh)
+    tracks, cross_positions, radius = _mg_expand(fx["slice"])
+    report = _mg_dump_report(fx["dump"], tracks, cross_positions, fx["frames"], radius, fx["window"])
+    got = _mg_expected(report)
+    ok = got == fx["_expected"]
+    if not ok:
+        print(f"  DIFF:\n    expected {json.dumps(fx['_expected'])}\n    got      {json.dumps(got)}")
+
+    by_frame = {fr["frame"]: fr for fr in report["frames"]}
+    f1565 = by_frame.get(1565)
+    checks = [("frame 1565 present", f1565 is not None)]
+    if f1565 is not None:
+        by_id = {t["id"]: t for t in f1565["tracks"]}
+        checks += [
+            ("n_near at 1565 == 3", f1565["n_near"] == 3),
+            ("track ids at 1565 == {11110, 11115, 11117}", set(by_id) == {11110, 11115, 11117}),
+            ("11110 life == 3", by_id.get(11110, {}).get("life") == 3),
+            ("11110 dx == 8.9 at 1565", by_id.get(11110, {}).get("dx") == 8.9),
+            ("11110 dy == -57.0 at 1565", by_id.get(11110, {}).get("dy") == -57.0),
+            ("11110 spans >1 window frame (crosshair-attached)",
+             by_id.get(11110, {}).get("n_window_present", 0) > 1),
+            ("11110 dx_range <= 1.0 (near-constant offset)",
+             (by_id.get(11110, {}).get("dx_range") or 99) <= 1.0),
+            ("11115 life == 1, single-frame only",
+             by_id.get(11115, {}).get("life") == 1
+             and by_id.get(11115, {}).get("n_window_present") == 1),
+            ("11117 life == 1, single-frame only",
+             by_id.get(11117, {}).get("life") == 1
+             and by_id.get(11117, {}).get("n_window_present") == 1),
+        ]
+    all_ok = ok and all(v for _, v in checks)
+    for label, v in checks:
+        print(f"  {'PASS' if v else 'FAIL'}  {label}")
+    _print_marker_geometry(report)
+    print("SELFTEST PASS" if all_ok else "SELFTEST FAIL")
+    return 0 if all_ok else 1
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--tracks", help="tracks.json from count-pellets.py --dump-tracks")
@@ -6351,6 +6596,31 @@ def main():
                     help=f"write the committed score fixture (see {CAP_SCORE_FIXTURE})")
     ap.add_argument("--cap-score-selftest", action="store_true",
                     help=f"replay --cap-score against {CAP_SCORE_FIXTURE} and exit")
+    ap.add_argument("--marker-geometry", metavar="TRACKS_JSON",
+                    help=("MARKER GEOMETRY (docs/probe-runs.md §15): for each of "
+                          "--marker-geometry-frames, list every RED track within (the dump's own) "
+                          "params.pellet_radius of that frame's crosshair -- id, lifetime, "
+                          "absolute position, distance, and crosshair-relative dx/dy -- plus each "
+                          "track's dx/dy across a +/- --marker-geometry-window neighbourhood, so a "
+                          "track with a near-constant offset (crosshair-attached) is "
+                          "distinguishable from one that exists for a single frame only. Answers "
+                          "docs/handoffs/2026-08-04-pellet-reader-JUDGE-handoff.md item 7's "
+                          "prerequisite: is opencv's marker=3 reading at h4-marciana-structural "
+                          "frame 1565 a true core hit or a false positive? TRACKS_JSON is the "
+                          "tracks.json FILE from count-pellets.py --dump-tracks. Read-only: never "
+                          "touches read-pellets.ts, count-pellets.py or any constant/default."))
+    ap.add_argument("--marker-geometry-frames", type=int, nargs="+", metavar="FRAME",
+                    help="frame indices to query (required with --marker-geometry)")
+    ap.add_argument("--marker-geometry-window", type=int, default=3,
+                    help="+/- frames of neighbourhood each near-crosshair track's dx/dy "
+                         "trajectory is reported over (default 3)")
+    ap.add_argument("--marker-geometry-radius", type=float, default=None,
+                    help="override the dump's own params.pellet_radius (default: use the dump's "
+                         "own)")
+    ap.add_argument("--save-marker-geometry-fixture", metavar="PATH",
+                    help=f"write the committed replay slice (see {MARKER_GEOMETRY_FIXTURE})")
+    ap.add_argument("--marker-geometry-selftest", action="store_true",
+                    help=f"replay {MARKER_GEOMETRY_FIXTURE} and exit")
     args = ap.parse_args()
 
     if args.stale_counting_selftest:
@@ -6374,6 +6644,15 @@ def main():
         raise SystemExit(cap_score_selftest())
     if args.cap_score:
         cap_score(args.save_cap_score_fixture)
+        return 0
+    if args.marker_geometry_selftest:
+        raise SystemExit(marker_geometry_selftest())
+    if args.marker_geometry:
+        if not args.marker_geometry_frames:
+            ap.error("--marker-geometry requires --marker-geometry-frames")
+        audit_marker_geometry(args.marker_geometry, args.marker_geometry_frames,
+                              args.marker_geometry_radius, args.marker_geometry_window,
+                              args.save_marker_geometry_fixture)
         return 0
     if args.hybrid_landing_audit_selftest:
         raise SystemExit(hybrid_landing_audit_selftest())
