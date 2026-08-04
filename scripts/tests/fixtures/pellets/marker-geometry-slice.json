@@ -1,0 +1,253 @@
+{
+  "_source": "/Users/maxwellsutton/nikke-sim/scratchpad/pellets/h4-marciana-structural/tracks.json's own `tracks`/`cross_positions`/`params.pellet_radius` (count-pellets.py --dump-tracks), for the 2026-08-04 marker=3 false-positive-geometry check (docs/probe-runs.md \u00a715, answering docs/handoffs/2026-08-04-pellet-reader-JUDGE-handoff.md item 7's prerequisite). Constraint 9 self-validation, same precedent as backend-marker-audit-slice.json.",
+  "_note": "A SLICE, not the full dump: `slice.cross_positions` only covers `slice.frame_span` (queried frames +/- window), and `slice.tracks` is only the RED tracks within `radius` of the crosshair at one of the queried `frames`, each with its full xs/ys (they are short-lived). Regenerate with analyze-pellet-tracks.py --marker-geometry <tracks.json> --marker-geometry-frames <F...> --save-marker-geometry-fixture <path>.",
+  "dump": "h4-marciana-structural",
+  "frames": [
+    1565
+  ],
+  "window": 3,
+  "slice": {
+    "cross_positions": {
+      "1562": [
+        751,
+        489
+      ],
+      "1563": [
+        772,
+        496
+      ],
+      "1564": [
+        776,
+        508
+      ],
+      "1565": [
+        780,
+        518
+      ],
+      "1566": [
+        786,
+        525
+      ],
+      "1567": [
+        792,
+        528
+      ],
+      "1568": [
+        798,
+        529
+      ]
+    },
+    "radius": 160,
+    "tracks": [
+      {
+        "id": 11110,
+        "first": 1564,
+        "last": 1566,
+        "life": 3,
+        "xs": [
+          785.1,
+          788.9,
+          795.4
+        ],
+        "ys": [
+          450.5,
+          461.0,
+          466.2
+        ]
+      },
+      {
+        "id": 11115,
+        "first": 1565,
+        "last": 1565,
+        "life": 1,
+        "xs": [
+          733.5
+        ],
+        "ys": [
+          510.3
+        ]
+      },
+      {
+        "id": 11117,
+        "first": 1565,
+        "last": 1565,
+        "life": 1,
+        "xs": [
+          843.3
+        ],
+        "ys": [
+          512.0
+        ]
+      }
+    ],
+    "frame_span": [
+      1562,
+      1568
+    ]
+  },
+  "_expected": {
+    "dump": "h4-marciana-structural",
+    "radius": 160,
+    "window": 3,
+    "frames": [
+      {
+        "frame": 1565,
+        "cross": [
+          780,
+          518
+        ],
+        "radius": 160,
+        "n_near": 3,
+        "tracks": [
+          {
+            "id": 11110,
+            "life": 3,
+            "x": 788.9,
+            "y": 461.0,
+            "dist": 57.69,
+            "dx": 8.9,
+            "dy": -57.0,
+            "window": [
+              {
+                "frame": 1562,
+                "dx": null,
+                "dy": null
+              },
+              {
+                "frame": 1563,
+                "dx": null,
+                "dy": null
+              },
+              {
+                "frame": 1564,
+                "dx": 9.1,
+                "dy": -57.5
+              },
+              {
+                "frame": 1565,
+                "dx": 8.9,
+                "dy": -57.0
+              },
+              {
+                "frame": 1566,
+                "dx": 9.4,
+                "dy": -58.8
+              },
+              {
+                "frame": 1567,
+                "dx": null,
+                "dy": null
+              },
+              {
+                "frame": 1568,
+                "dx": null,
+                "dy": null
+              }
+            ],
+            "n_window_present": 3,
+            "dx_range": 0.5,
+            "dy_range": 1.8
+          },
+          {
+            "id": 11115,
+            "life": 1,
+            "x": 733.5,
+            "y": 510.3,
+            "dist": 47.13,
+            "dx": -46.5,
+            "dy": -7.7,
+            "window": [
+              {
+                "frame": 1562,
+                "dx": null,
+                "dy": null
+              },
+              {
+                "frame": 1563,
+                "dx": null,
+                "dy": null
+              },
+              {
+                "frame": 1564,
+                "dx": null,
+                "dy": null
+              },
+              {
+                "frame": 1565,
+                "dx": -46.5,
+                "dy": -7.7
+              },
+              {
+                "frame": 1566,
+                "dx": null,
+                "dy": null
+              },
+              {
+                "frame": 1567,
+                "dx": null,
+                "dy": null
+              },
+              {
+                "frame": 1568,
+                "dx": null,
+                "dy": null
+              }
+            ],
+            "n_window_present": 1,
+            "dx_range": null,
+            "dy_range": null
+          },
+          {
+            "id": 11117,
+            "life": 1,
+            "x": 843.3,
+            "y": 512.0,
+            "dist": 63.58,
+            "dx": 63.3,
+            "dy": -6.0,
+            "window": [
+              {
+                "frame": 1562,
+                "dx": null,
+                "dy": null
+              },
+              {
+                "frame": 1563,
+                "dx": null,
+                "dy": null
+              },
+              {
+                "frame": 1564,
+                "dx": null,
+                "dy": null
+              },
+              {
+                "frame": 1565,
+                "dx": 63.3,
+                "dy": -6.0
+              },
+              {
+                "frame": 1566,
+                "dx": null,
+                "dy": null
+              },
+              {
+                "frame": 1567,
+                "dx": null,
+                "dy": null
+              },
+              {
+                "frame": 1568,
+                "dx": null,
+                "dy": null
+              }
+            ],
+            "n_window_present": 1,
+            "dx_range": null,
+            "dy_range": null
+          }
+        ]
+      }
+    ]
+  }
+}
