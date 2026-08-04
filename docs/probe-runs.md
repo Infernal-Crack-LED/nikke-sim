@@ -4707,3 +4707,187 @@ scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --merge-au
 bash scripts/probe/pellet-selftest.sh; echo $?
 bash scripts/verify.sh; echo $?
 ```
+
+#### §14 THE LIFETIME-CAP `band_hi` MEASUREMENT — a decoupled band ceiling; 19 and 20 clear both out-of-sample gates, 21 clears them too but is not lockstep-safe
+
+**2026-08-04.** Executes the measurement pass pre-committed in
+[`docs/handoffs/2026-08-04-lifetime-cap-PRECOMMIT.md`](handoffs/2026-08-04-lifetime-cap-PRECOMMIT.md).
+**MEASUREMENT ONLY — this entry does not enact anything.** Scores a DECOUPLED upper bound for the
+counted-pellet band (`band_hi`) — never a raised `max_pellet_frames`, which also gates
+`pellet_ids`/segmentation and would move `totalShots`/onsets (the pre-commit's §1) — against the
+pre-committed candidate set `{control, 19, 20, 21}` (60 fps basis, fps-scaled per dump by this
+instrument's own Python `round()`). New instrument: `analyze-pellet-tracks.py --cap-score`, reading
+`representative-audit-slice.json` directly — no new raw data, no re-extraction, no owner time.
+
+##### §14A — Validity checks (§3 of the pre-commit; all six PASS, asserted via `SystemExit`)
+
+| check                                                             | result                                                                                                                                                  | verdict             |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| 1. Control reproduces the landed §12/§13 figures                  | `n_scored`=852, `no_rep`=0, banded/fallback=740/112, `above_ceiling_pct`=1.8%, `avgTotal`=6.1561 — **exact**                                            | **PASS**            |
+| 2. Monotonicity (band membership non-decreasing)                  | scaled `band_hi` non-decreasing per dump; admitted white-track count non-decreasing per candidate, per dump                                             | **PASS**            |
+| 3. Stored (never recomputed) `max_pellet_frames`                  | 13 at 60 fps, 7 at 30 fps on all 5 dumps — the JS half-up value, not Python's `round(6.5)=6`                                                            | **PASS**            |
+| 4. Shot 4's radius gate on `cross_tmpl`                           | inherited verbatim from `_ps_score_labelled`/`_ps_labelled_radius_tracks`; not re-derived here                                                          | **N/A — inherited** |
+| 5. `_ps_band` additive (`band_hi=None` default)                   | all 6 pre-existing callers pass no third argument; `--policy-score-selftest` / `--hybrid-landing-audit-selftest` still byte-identical after this change | **PASS**            |
+| 6. Fidelity premises (`radius_tracks` white-only, in-radius-only) | pinned via source inspection of `_rep_slim_dump`/`_rep_radius_runs`                                                                                     | **PASS**            |
+| 7. `shot_red` event-fixed                                         | recomputed red flag matches the shipped event's own on every event, every dump                                                                          | **PASS**            |
+
+##### §14B — §2.1 CONSISTENCY (in-sample, n=42 owner pellets, ONE clip, `marciana` SG/Iron) — ⚑ NO EVIDENTIAL WEIGHT
+
+Read straight from `representative-audit-slice.json`'s own `_expected.lifetime_summary`, not
+recomputed. `band_lo` = 8 at 60 fps throughout.
+
+| candidate | `band_hi` | owner admitted | statics admitted | verdict                                                      |
+| --------- | --------- | -------------- | ---------------- | ------------------------------------------------------------ |
+| control   | 13        | 37/42          | none             | **FAIL** — the pinned 5-pellet gap (§9B), reproduced exactly |
+| 19        | 19        | 42/42          | none             | **PASS**                                                     |
+| 20        | 20        | 42/42          | none             | **PASS**                                                     |
+| 21        | 21        | 42/42          | none             | **PASS** — life-22 static still excluded (22 > 21)           |
+
+Tautological by construction (the pre-commit's own risk-flag disposition): all three non-control
+candidates pass because the corridor `[19,21]` was derived from this exact population. **Reported,
+not cited as evidence.**
+
+##### §14C — §2.3 CEILING (out-of-sample, 852 events / 5 dumps / 4 units: `marciana` SG/Iron ×2 recordings, `isabel`, `guilty`, `noir`) — MANDATORY
+
+| candidate | `n_scored` | banded/fallback | `above_ceiling_pct` | `avgTotal` | verdict (≤6.2% PASS)          |
+| --------- | ---------- | --------------- | ------------------- | ---------- | ----------------------------- |
+| control   | 852        | 740/112         | 1.8%                | 6.1561     | **PASS** (reproduces §12/§13) |
+| 19        | 852        | 756/96          | 3.1%                | 6.6631     | **PASS**                      |
+| 20        | 852        | 756/96          | 3.1%                | 6.6631     | **PASS**                      |
+| 21        | 852        | 756/96          | 3.1%                | 6.6643     | **PASS**                      |
+
+All three non-control candidates clear the 6.2% ceiling with room (3.1% vs 6.2%). 19 and 20 are
+numerically identical here; 21 differs by 0.0012 in `avgTotal` only (one additional life-21 track on
+the 60 fps `groundtruth-f811-v4` dump — see §14G).
+
+##### §14D — §2.4 CORRIDOR (out-of-sample, 4 dumps: `h4-isabel`, `h4-guilty`, `g2-noir` + `h4-marciana` reported separately) — MANDATORY
+
+`corridor_admits_per_event` = distinct in-radius white tracks with lifetime in
+`(max_pellet_frames, band_hi]` that the radius gate counts at least once during any shipped event,
+÷ that dump's event count. Threshold ≤2.00/event; downgrade at ≥2 of 4 dumps failing.
+
+| candidate | `h4-marciana` (same unit, diff recording) | `h4-isabel` | `h4-guilty` | `g2-noir` | failing of 4 | verdict      |
+| --------- | ----------------------------------------- | ----------- | ----------- | --------- | ------------ | ------------ |
+| control   | 0.00 (band_hi=7)                          | 0.00        | 0.00        | 0.00      | 0            | **CONFIRMS** |
+| 19        | 0.77 (band_hi=10)                         | 0.64        | 0.72        | 0.84      | 0            | **CONFIRMS** |
+| 20        | 0.77 (band_hi=10)                         | 0.64        | 0.72        | 0.84      | 0            | **CONFIRMS** |
+| 21        | 0.77 (band_hi=10)                         | 0.64        | 0.72        | 0.84      | 0            | **CONFIRMS** |
+
+19, 20 and 21 are numerically identical on every out-of-sample dump: all three fps-scale to
+`band_hi=10` at 30 fps by this instrument's own Python `round()` (§2.2's own table: `round(9.5)=10`,
+`round(10.0)=10`, `round(10.5)=10`, all banker's-round to the even 10) — they differ only on the 60
+fps `groundtruth-f811-v4` dump, which §2.4 excludes as in-sample. All rates sit well under the 2.00
+threshold (max observed 0.84), roughly 2.4–3.1× the in-sample rate of 1.00 but still under the
+pre-committed 2.00 ceiling — **0 of 4 out-of-sample dumps fail on any candidate.**
+
+In-radius lifetime histograms (narrative, per dump, candidate-independent — pinned in full in
+`cap-score-slice.json`'s `corridor_2_4.lifetime_histograms_by_dump`): every dump's histogram is
+heavily front-loaded at life 1–7 (thousands of short-lived non-pellet tracks on the 30 fps dumps)
+with a long, populated tail continuing well past `band_hi=21` on every dump (into the 30s–60s, one
+outlier at 135 on `h4-isabel-structural`) — there is no gap immediately above the corridor on any
+dump; the tail is continuous. This is reported as narrative per the pre-commit's own instruction and
+is not itself a criterion.
+
+##### §14E — §2.5 REPORTED ONLY (⛔ never a ranking criterion)
+
+| candidate | `avgTotal` | fallback abstentions |
+| --------- | ---------- | -------------------- |
+| control   | 6.1561     | 112                  |
+| 19        | 6.6631     | 96                   |
+| 20        | 6.6631     | 96                   |
+| 21        | 6.6643     | 96                   |
+
+No candidate is preferred here on the basis of `avgTotal` moving toward 8.40 or the ~1.08 cold bias;
+per the pre-commit's §2.5 that would be disqualifying.
+
+##### §14F — §6 sub-deliverable: the 112 CONTROL fallback events — REPORT ONLY, does not influence §14B–§14D
+
+n=112 (13.1% of 852), the same population §12/§13 already established. Per-event frame-span and
+shipped `white` total (full 112-row detail pinned in `cap-score-slice.json`'s
+`sub_deliverable_6.events`; distributions summarized here): `frames` (event length) ranges 2–25,
+median 6; shipped `white` ranges 0–19, median 4.5. By dump: `h4-isabel-structural` 29,
+`h4-marciana-structural` 26, `h4-guilty-structural` 25, `g2-noir-structural` 25,
+`groundtruth-f811-v4` 7.
+
+Categorical breakdown of WHY no band track exists, from every in-radius white track overlapping the
+event's span:
+
+| category                 | n   | frames (min/med/max) | white (min/med/max) | meaning                                                                                                                                                                        |
+| ------------------------ | --- | -------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `in_band_no_concurrency` | 81  | 2 / 7 / 25           | 0 / 5 / 19          | at least one overlapping track has lifetime in `[band_lo, max_pellet_frames]`, but no frame in the span ever reaches `MERGE_EVENT_MIN` concurrently among band-eligible tracks |
+| `all_below_band_lo`      | 18  | 2 / 3 / 16           | 1 / 4 / 15          | every overlapping track's lifetime is below `band_lo`                                                                                                                          |
+| `mixed_outside_band`     | 9   | 2 / 3 / 18           | 4 / 7 / 8           | overlapping tracks exist both below `band_lo` and above `max_pellet_frames`, none inside                                                                                       |
+| `none_in_radius`         | 3   | 5 / 9 / 16           | 0 / 0 / 0           | no white track ever enters radius during the event's span at all                                                                                                               |
+| `all_above_cap`          | 1   | 4 / 4 / 4            | 0 / 0 / 0           | every overlapping track's lifetime exceeds `max_pellet_frames`                                                                                                                 |
+
+⚑ This taxonomy refines the task's three-bucket framing ("below `band_lo` / above the cap / none in
+radius") into five mutually-exclusive categories once the actual data was inspected — a real
+`mixed_outside_band` case exists (tracks on both sides of the countable range, none inside it), and
+the dominant category (`in_band_no_concurrency`, 72% of the 112) is a fourth reason the task's three
+buckets did not name: a band-eligible track is present but never co-occurs with enough others in the
+same frame. Reported as found; not folded silently into one of the three original buckets.
+
+How many of the 112 become banded (plateau_rep no longer `None`) at each wider candidate, using the
+SAME events (not re-selected):
+
+| candidate | becomes banded (of 112) |
+| --------- | ----------------------- |
+| control   | 0 (by definition)       |
+| 19        | 16                      |
+| 20        | 16                      |
+| 21        | 16                      |
+
+**No theorizing about what the 112 or the 16 mean, and this sub-deliverable did not influence any
+verdict in §14B–§14D**, per the pre-commit's §6.
+
+##### §14G — Controls
+
+- **Control reproduction**: exact match to §12/§13's landed figures, asserted via `SystemExit`
+  (§14A #1) — not merely reported.
+- **Monotonicity**: asserted per dump, both on the scaled `band_hi` ordering and on the actual
+  admitted white-track count (§14A #2).
+- **Stored cap values**: asserted equal to 13/7 (60/30 fps) on every dump, never recomputed
+  (§14A #3).
+- **`_ps_band` additivity**: `--policy-score-selftest` and `--hybrid-landing-audit-selftest` both
+  still pass byte-identical after adding the third parameter (confirmed via the full
+  `pellet-selftest.sh` run, §14H).
+- **Fidelity premises + `shot_red` event-fixed**: asserted via `SystemExit` at the top of every
+  `--cap-score` / `--cap-score-selftest` run (§14A #6–7).
+- **19 vs 20 vs 21 non-identity check**: 21 is confirmed to differ from 19/20 (§14C: `avgTotal`
+  6.6643 vs 6.6631, traced to one life-21 track on `groundtruth-f811-v4` — see §14C) — the identical
+  rows are a genuine consequence of the fps-scaling formula tying at `band_hi=10` on every 30 fps
+  dump for all three candidates, not a bug silently ignoring the candidate parameter.
+- **Gates, TRUE exit status, not through `| tail`**:
+  - `bash scripts/probe/pellet-selftest.sh; echo $?` → **0** ("pellet-selftest: all passed", 21
+    arms, including the new `--cap-score-selftest`).
+  - `bash scripts/verify.sh; echo $?` → **0** (typecheck, override validation, all regressions,
+    `npx vitest run` — 151 files / 2179 tests passed, 24 skipped).
+  - `git status` / `git diff --stat` after this landing: **zero pre-existing fixtures moved** — the
+    only new path is `scripts/tests/fixtures/pellets/cap-score-slice.json`.
+
+##### §14H — n and scope
+
+§2.1: 42 labelled owner pellets, ONE clip (`marciana`, SG/Iron). §2.3: 852 events across all 5
+dumps. §2.4: 852 minus the 37 in-sample events = out-of-sample dumps only (`h4-marciana-structural`
+218, `h4-isabel-structural` 203, `h4-guilty-structural` 180, `g2-noir-structural` 214 — 815 events, 4
+units: `marciana` SG/Iron, `isabel`, `guilty`, `noir`). §6: the 112 CONTROL fallback events, same
+852-event/5-dump/4-unit pool as §2.3.
+
+**THIS ENTRY DOES NOT ENACT.** `debounce_shots` is untouched in both `count-pellets.py` and
+`read-pellets.ts`; `count-pellets.py:514`/`:517` and `read-pellets.ts:787` are untouched; no
+constant/default/threshold changed; no `DECISIONS.md` entry. **A PASS here is a PROPOSAL, not a
+landing** (pre-commit §4) — the landing pass is separate and owner-gated, and is scored on the
+criteria the pre-commit's §5 states, not on this entry.
+
+##### §14I — Instrument and reproduction
+
+```sh
+# the new instrument (§2.1/§2.3/§2.4/§2.5/§6, all validity checks as SystemExit asserts):
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --cap-score \
+  --save-cap-score-fixture scripts/tests/fixtures/pellets/cap-score-slice.json
+# replay the committed slice -- no images, no subprocess, no tracks.json:
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --cap-score-selftest
+# the whole reader toolchain, including this arm's new selftest, TRUE exit status:
+bash scripts/probe/pellet-selftest.sh; echo $?
+bash scripts/verify.sh; echo $?
+```
