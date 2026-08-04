@@ -170,6 +170,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   ramp and the first burst's build. Magnitude for `flora` depends entirely on which stack-ramp buffs
   are live on her Electric allies (could be large, could be zero), so it is correctly not estimated.
   Two carriers is not yet a mandate; log a third before building. Not authorized.
+- **⇒ ENGINE PRIMITIVE GAP: windowed damage accumulator** — `trony` S1 "T.Rony Bomber" Cumulative
+  Damage Skill (plant on full-charge hit: 5s window, accumulates 50% of her dealt damage, cap 1536%
+  of final ATK, explodes as Distributed Damage; burst adds +62.83pp to the collection rate) has no
+  expression — `storedHit` accumulates CHARGES not damage, `hitRepeat` mirrors %-of-hit instantly,
+  and the dorothy-Brand at-cap `flatDamage+delaySec` idiom does NOT apply because trony's cap is
+  knife-edge (binds only in her burst-enhanced windows). Blocks `trony` — NO-GO(engine-core)
+  gauntlet 2026-08-04; sole roster carrier. Primitive spec + three open semantics (release pipeline
+  raw-vs-re-run, sub-cap expiry, collection scope) in
+  `scripts/kit-autonomy/manual-review/trony.md`; threading point = hitRepeat's `dealDamage` landing
+  path. Not authorized.
 - **⇒ ENGINE PRIMITIVE GAP: HP pool + HP-threshold triggers** — v1 models no ally HP pool and the
   scope-lock boss deals no damage, so "HP ≤ X%" / "reaches max HP" / "while shielded by damage" kit
   lines are structurally out of domain (precedents: `liter` cover-HP NO-OP, owner 2026-07-21; the
@@ -294,9 +304,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     disagreement** — 6/44 SR/RL gauge rows are synthesized, 4 units have a value with no gauge row at
     all, `raven` has a live one-field disagreement; suggested fix (source from `characters.json`,
     gauge row as an override-only-when-it-disagrees) not yet built.
-  - **Theme 21 `durationShots`-eats-its-own-pull engine bug** — a per-pull `durationShots:1` buff
-    reaches zero rounds (confirmed via `emilia`'s self-clearing CANARY test, still `it.skip`ped);
-    affects emilia, zwei, phantom, vesti-tactical-upgrade COLD→warmer. Fix + board A/B not yet done.
+  - **Theme 21 `durationShots`-eats-its-own-pull engine bug — `vesti-tactical-upgrade`'s SLICE
+    LANDED 2026-08-03** (branch `vesti-missile-guide-gate`, driven by a DPS-chart rank
+    investigation, not this theme's own queue item — the granting-shot-decrement exemption was
+    built and wired scoped behind a NEW `noRetriggerWhileActive` buff flag, deliberately NOT made
+    the unconditional default, so `emilia`/`zwei`/`phantom` are UNTOUCHED by this PR pending their
+    own board A/B). **Still open: emilia, zwei, phantom** — a per-pull `durationShots:1` buff
+    reaches zero rounds (confirmed via `emilia`'s self-clearing CANARY test, still `it.skip`ped).
+    A follow-up could either reuse `noRetriggerWhileActive` on those three (if their kit text also
+    has a "while not in X" gate) or make the granting-shot exemption unconditional for all
+    `durationShots` carriers (matching this theme's original engine-level fix plan) — needs an
+    owner call + board A/B before enacting, per batch-and-stop.
 - **⇒ ROLE-AUDIT FOLLOW-UPS → `docs/handoffs/closed/2026-07-17-role-audit-followups.md`:** (1)
   custom-weaponry `role` sweep — mostly deflated; what's left = pierce-from-kit-text + the
   (data-blocked) weapon-swap secondary-weapon row; (2) **`anis-star` dot-gauge re-model**

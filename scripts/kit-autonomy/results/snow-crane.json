@@ -1,0 +1,98 @@
+{
+  "slug": "snow-crane",
+  "kitDescription": "Snow Crane is a Water SR Defender whose kit is entirely sustain and team protection, with no damage lines of her own. Her Skill 1 passively raises all allies' Max HP by 10% of her own Max HP, but only while she is not in Terminated Contract status; when she receives healing from another unit she stacks Proof of Violation, which weakens her outgoing healing, up to three stacks. Her Skill 2 heals the team a small amount after every third full-charge shot (targeting allies still under her Exclusive Recovery Agreement), and puts a 10-second shield worth 9.5% of her Max HP on all allies every time the team enters Full Burst. Once Proof of Violation reaches max stacks she flips into Terminated Contract: immune to further stacks and regenerating a small amount of HP every second, while her team Max HP grant switches off. Her burst heals all allies for 44.68% of her Max HP and grants herself Pierce for 10 seconds. In the sim her footprint is the recovery/shield event cadence (which drives teammates' on-recovery and on-shield triggers) plus the timed self-Pierce window; the healing magnitudes and the Proof-of-Violation cascade are unmodeled because the engine has no HP pool and no heal-source filter.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": [
+      "[fixture-premise, not a spec divergence] raw blind run's burst-keyed assertions read an empty set: controlComp seats crown at Burst II and crown wins every stage-II cast, so snow-crane casts zero times there (S2b's fixture hazard, confirmed live); resolved in the documented A1-A4 adaptation (liter/folkwang-bare/snow-crane/asuka, two alternating 40s Burst IIs)",
+      "[fixture-premise] 'the control comp is 5 units' — it is 4",
+      "[fixture-premise] the S2a strip emptied a chargeCounter block's effects[] and crashed the engine dispatch; adaptation removes the block whole",
+      "[fixture-premise] the 'no recovery consumer in the comp' premise is false of controlComp (crown S2 is a recovery→attackDamagePct consumer); adaptation uses asuka as the sole, intentional consumer and excludes her from the heal-strip totals equalities",
+      "adapted run (byte-identical except documented A1-A4): 17 passed / 3 skipped / 0 failed vs the shipped driver override; the 3 skips are the blind model's own declared GAP skips (Proof of Violation, Terminated Contract, ERA off-gate) — the same lines the driver rules unmodeled"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "ERA: Max HP ▲ 10% of user's Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive / allies / buff casterMaxHpPct 10, no duration; fires frame 0 as maxHpFlat, one equal flat value on all 4 allies, no expiry (M6 pins)",
+        "blindSaid": "S5: identical encoding expected (casterMaxHpPct, continuous, all-equal flat values discriminate targetMaxHpPct); S6: byte-identical block",
+        "formulaCheck": "Not a damage bucket; ally-granted Max HP feeds no HP→ATK conversion (SSOT §1a: own Max HP only), so offensively inert as asserted; caster-scaled stat choice matches 'of the skill user's Max HP'",
+        "fireRateOk": true,
+        "explanation": "Correct stat (caster- not target-scaled), correct target set, correct permanent-while-gated semantics. The 'only while not in Terminated Contract' off-gate is deliberately ungated and documented in caveat 1 (no negative self-status primitive; gate unreachable while PoV is unmodeled; inert either way) — a documented elision, not a gotcha."
+      },
+      {
+        "kitLine": "Proof of Violation: outgoing healing ▼",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill1; caveat 5: (1) recovery trigger has no source filter — counting her own S2a/burst heals (which hit herself) would self-stack PoV and flip the cascade in every comp, worse than none; (2) no outgoing-healing StatKey; (3) recipe given (recoveryFromOther trigger + PoV resource pool + resourceGate)",
+        "blindSaid": "S2b: GAP, source gate load-bearing, no-external-healer control required; S5: it.skip double-GAP (no primitive, no source discrimination); S6: SKIPPED for the same two reasons",
+        "formulaCheck": "No damage bucket touched; the live payload would be the 3-stack threshold gating the cascade, which is tandem-event timing only",
+        "fireRateOk": true,
+        "explanation": "Three independent derivations converge: inexpressible without a source-filtered recovery trigger, and a naive all-recovery counter is the named nearest-wrong model (self-stacks in every comp). Honest documented gap with a recipe — correct call."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "after 3 Full Charge attacks / heal",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "chargeCounter {count:3, countInFb:3} / allies / heal ticks:1; M2 proves recoveryFirings == floor(chargedShots/3) + burstCasts through asuka's recovery consumer; count:1 and countInFb-omitted counterfactuals both over-fire RED",
+        "blindSaid": "S2b: chargeCounter count 3, ERA-scoped targets; S5: per-3-charge cadence expected; S6: same block but WITHOUT countInFb — the SBS-baked `countInFb ?? 1` default would heal every full charge for 10s after each own cast",
+        "formulaCheck": "Heal magnitude (1.32%) unmodeled by schema (amount-free recovery events) and documented; cadence rides the real SR full-charge cycle (chargeFrames 60 + 22f release + reload), so the count threshold is the kit-literal payload",
+        "fireRateOk": true,
+        "explanation": "The driver's explicit countInFb:3 is the single best catch of this run: it neutralizes an engine-primitive default that would silently over-fire the heal in every post-own-burst window, and the driver proves both directions with counterfactuals. S6's omission is ruled a blind-side ENCODING error, not a driver divergence. ERA-membership target filter elided to plain 'allies', documented in caveat 2 (sets coextensive pre-Terminated-Contract)."
+      },
+      {
+        "kitLine": "entering Full Burst / Shield 9.5%, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter / allies / shield {maxHpPct 9.5, durationSec 10}; M3: asuka's requiresShielded gate passes at EVERY Full Burst entry (== fbStarts, which strictly exceeds her own cast count in the two-B2 fixture); burstCast-keyed counterfactual passes the gate ZERO times (10s shield granted at her stage-II cast expires during the stage-III wait)",
+        "blindSaid": "S2b: fullBurstEnter, burstCast-keying named as nearest-wrong; S5: same trigger-identity assertion; S6: fullBurstEnter, convergent",
+        "formulaCheck": "Shield is not a damage instance; its tandem role (shielded triggers / requiresShielded gates) is exactly what M3 measures through an isolated consumer with folkwang forced bare to avoid shield contamination",
+        "fireRateOk": true,
+        "explanation": "Trigger identity correct per the prose's explicit 'when entering Full Burst', and the discriminating test is strong: the two keyings differ by the whole comp (every FB vs zero), not an edge case. Magnitudes 9.5/10s are prose-literal; maxHpPct is %-of-caster, matching 'the skill user's final Max HP'."
+      },
+      {
+        "kitLine": "Proof of Violation max / Terminated",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill2; caveat 5: trigger (PoV at 3 stacks) inexpressible while PoV is unmodeled; regen is unbounded ('continuously') vs finite ticks; payload sustain-only and damage-inert; recipe included",
+        "blindSaid": "S2b: GAP with cascade semantics (grant drops, ERA vanishes, S2a goes dead); S5: it.skip unreachable; S6: IMPLEMENTED as passive/self/heal ticks:180 @1Hz, self-flagged ⚑ 'over-credits the pre-threshold window'",
+        "formulaCheck": "No bucket touched directly — but note S6's always-on 1Hz self-regen is NOT damage-inert through the tandem channel: in a comp with a recovery consumer (asuka/crown) it fabricates a per-second proc cadence the real kit never produces pre-threshold (and never produces at all in healer-less comps)",
+        "fireRateOk": true,
+        "explanation": "Driver's omission ruled correct; S6's divergence ruled spurious. An always-on emitter invents recovery events that drive teammates' recovery triggers — precisely the failure mode non-negotiable 2 forbids (never invent mechanics). The driver keeps the line verbatim in unmodeled with a measurement/primitive recipe."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "all allies / Recovers 44.68%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast / allies / heal ticks:1; M4: with S1+S2 stripped, recovery firings == her burstCast count; cross-check in the base run (firings − floor(charges/3) == casts)",
+        "blindSaid": "S2b: burstCast keying, fullBurstEnter named nearest-wrong (over-credits consumer cadence on rotations crown/another B2 casts); S5: same; S6: burstCast, convergent",
+        "formulaCheck": "Amount-free recovery event (documented); burst-cast keying matches the no-activation-clause convention and the burst-boundary rule is irrelevant here (no damage instance)",
+        "fireRateOk": true,
+        "explanation": "Correct trigger identity — fires only on rotations she actually casts, which the two-B2 fixture makes strictly fewer than FB count. Heal magnitude documented as unmodeled (no HP pool)."
+      },
+      {
+        "kitLine": "self / Gains Pierce for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast / self / gainPierce {durationSec 10} as a second block (kit splits targets); M5 probes the window through an in-memory pierceDamagePct buff: no-pierce == base < 10s window < permanent pierce; structural pins on trigger/target/duration",
+        "blindSaid": "S2b: gainPierce-vs-hasPierce trap named; S5: static-flag counterfactual + self-scope + no-early-tag assertions; S6: identical block, convergent",
+        "formulaCheck": "Pierce tag feeds only the DamageUp Pierce term (SSOT §1e/§11) when a pierceDamagePct source exists — none shipped, so v1-inert; PIERCE_CORE_DOUBLE off and keyed to the static flag, so no partless-boss doubling leak from the timed window",
+        "fireRateOk": true,
+        "explanation": "Timed window proven live and time-bounded by the strict inequality chain, with the no-tag control making the inequalities evidence rather than noise. Self-only target set matches the prose's split lines. CW1 clean-weapon neutrality holds because the basis runs bursts-disabled (owner-ruled marciana precedent)."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0 (7/7 kit lines: 5 FAITHFUL — S1a grant, S2a charge-heal, S2b FB-entry shield, burst heal, burst Pierce — and 2 DOCUMENTED_GAP — Proof of Violation, Terminated Contract — both verbatim in unmodeled with reasons and a recipe; the two partial-clause elisions, S1a's Terminated-Contract off-gate and S2a's ERA-membership target filter, are documented in caveats and offensively inert)",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA found: every divergence between the shipped override and the prose is documented, and the two fully unmodeled lines are carried verbatim with an inexpressibility argument (no heal-source filter, no outgoing-healing StatKey, no self-status channel) that all three independent agents reached separately. The blind re-derivations converged on all five core encodings; the two S6 divergences were ruled spurious and actively worse — the always-on Terminated-Contract regen would fabricate a 1Hz recovery-event stream that is damage-BEARING through tandem consumers (asuka/crown) in comps where the real kit emits nothing, and the omitted countInFb would trip the chargeCounter primitive's SBS-baked ?? 1 default and over-fire the S2a heal for 10s after every own cast (the driver authored countInFb:3 explicitly and pinned both directions with counterfactuals — the strongest single catch in this packet). The raw S5 REDs were fixture-premises, not spec divergences — controlComp's crown wins every stage-II cast so snow-crane never bursts there (S2b's own predicted hazard), the comp is 4 units, an illegal empty-effects strip, and crown being a recovery consumer — and the documented A1-A4 adaptation runs 17/0-fail with the 3 skips being the blind model's own declared GAPs. Discrimination is real throughout: M2's floor(charges/3)+casts equality, M3's every-FB-vs-zero shield-gate split under the two-B2 fixture, and M5's no-tag < 10s-window < permanent pierce inequality chain each fail under their named nearest-wrong model. Same-model residuals for the owner to spot-check: (1) the countInFb-default claim is an engine-semantics reading of sim.ts firePull that every agent here sourced the same way — worth one direct glance at the primitive; (2) the burstCast-vs-fullBurstEnter split rests on prose that is explicit for the shield and on the no-activation-clause convention for the burst lines — low risk, but it is the kit's one deliberate trigger-identity asymmetry; (3) heal-magnitude inertness assumes no shipped or future consumer reads heal amounts (true in v1: no HP pool).",
+  "model": "kimi-code/k3"
+}

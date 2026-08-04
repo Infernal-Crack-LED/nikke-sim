@@ -1,0 +1,167 @@
+{
+  "slug": "sakura-suzuhara",
+  "leakDetected": null,
+  "override": {
+    "slug": "sakura-suzuhara",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 120
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 17.18,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesLowestHp",
+          "count": 2
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 10,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "■ Activates after landing 60 normal attacks. Affects the 2 ally unit(s) with the lowest HP percentage.",
+        "Incoming healing ▲ 15.18% for 10 sec.",
+        "■ Activates after landing 120 normal attacks. Affects the 2 ally unit(s) with the lowest HP percentage.",
+        "Damage Taken ▼ 14.97% for 10 sec."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ Her only offensive channel is the S1 boss debuff (Damage Taken ▲17.18%/5s on a 120-hit counter). Every number below the banner that is not literally in the kit text is an unmeasured estimate.",
+      "⚑ The 120/60 thresholds count LANDED normal attacks in the kit's wording; the engine's hitCount trigger counts rounds the owner fires. With SMG accuracy below 100% the real threshold arrives later than the sim's, so both S1 uptime and the (unmodeled) S2 windows are optimistic.",
+      "⚑ Debuff uptime is cadence-bound, not kit-bound: 120 rounds is exactly one magazine (ammo 120, reloadFrames 81), so S1 fires roughly once per magazine cycle and its 5-second window covers only a fraction of that cycle. The duty cycle moves with the datamined SMG cadence, which is a known-unreliable field.",
+      "S2's two ally lines carry no offensive channel in the schema: 'Incoming healing ▲' has no StatKey, and ally-side 'Damage Taken ▼' is not expressible (damageTakenPct is the boss-side debuff, positive = boss takes more). They are recorded verbatim in unmodeled rather than approximated.",
+      "The burst heal models the recovery EVENT stream only (10 ticks at 1 s) — no HP pool exists at scope lock, so the 10.03%-of-caster-Max-HP magnitude is not represented. The ticks matter because they fire teammates' 'recovery' triggers.",
+      "alliesLowestHp resolves to the leftmost 2 allies in v1 (no HP pool, immortal boss) — a documented engine stand-in, not a kit reading."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Sakura Suzuhara is an SMG/Water/Supporter Burst I with no damage lines of her own. Modeled today: S1's recurring 120-round boss debuff (Damage Taken ▲17.18% for 5 s, target enemy) and the burst's 10-tick recovery stream to the 2 lowest-HP allies (burstCast trigger, event-only — no HP amount). Deliberately unmodeled: both S2 ally lines (incoming-healing lift and ally damage-taken reduction), neither of which has a schema channel and neither of which moves damage at scope lock. Trigger identity is read literally: both S1 and S2 activation clauses are hit-count, and the burst block has no activation clause of its own, so it is keyed to her own burst cast."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after landing 120 normal atks",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount{count:120} — recurring per-magazine counter, not a one-shot"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects the target(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — boss-held debuff, benefits the whole team"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Damage Taken ▲ 17.18% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff damageTakenPct 17.18, durationSec 5"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after landing 60 normal attacks",
+      "status": "SKIPPED",
+      "effectOrReason": "trigger would be hitCount{count:60}, but its sole effect line has no schema channel — whole block unmodeled"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects 2 ally unit(s) lowest HP%",
+      "status": "SKIPPED",
+      "effectOrReason": "target alliesLowestHp{count:2}; carried block unmodeled"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Incoming healing ▲ 15.18% for 10 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "no StatKey for incoming-healing amplification; heals are modeled as events with no HP amount, so the multiplier has nothing to scale"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after landing 120 normal atks",
+      "status": "SKIPPED",
+      "effectOrReason": "trigger would be hitCount{count:120}; its effect line has no schema channel"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Damage Taken ▼ 14.97% for 10 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "ally-side damage reduction; damageTakenPct is the enemy-side debuff channel (positive = boss takes more) — encoding -14.97 on allies would be a mis-scope, not a model. No boss damage at scope lock"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 2 ally unit(s) lowest HP%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target alliesLowestHp{count:2}, no excludeSelf (kit does not exclude the user)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 10.03% Max HP every 1s for 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal{ticks:10,intervalSec:1} on burstCast — emits 10 recovery events that keep teammates' on-recovery consumers refreshed; the 10.03%-of-caster-Max-HP magnitude is unrepresentable (no HP pool)"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger.count (hit-counting semantics)",
+      "estimate": "count 120 as authored, i.e. 120 rounds fired ≈ one full magazine",
+      "reasoning": "The kit says 'after landing 120 normal attacks'; the engine's hitCount counts ROUNDS the owner fires, not rounds that connect. SMG spread means landed < fired, so the real activation is later than the sim's and the debuff's duty cycle is over-credited. Her whole team contribution is this debuff's uptime, so the error is not marginal — it scales the entire value of the unit.",
+      "recipe": "Focus-record her in a graded comp and count the interval between consecutive Damage Taken ▲ applications on the boss (buff icon appearance, or the ▲ debuff aura). Compare against magazine boundaries read off the ammo counter: if the debuff lands exactly at the reload, fired-count is right; if it lags into the next magazine, raise count by the observed landing fraction."
+    },
+    {
+      "field": "cadence tuple (pullsPerSec / effective SMG fire rate)",
+      "estimate": "engine default SMG cadence, unmodified by this override",
+      "reasoning": "ALWAYS-⚑: the datamined rate_of_fire is nominal and the game fires on 60fps frame boundaries, so effective = 60/ceil(60/nominal). Both of this unit's live and unmodeled triggers are hit-count-keyed, which makes debuff uptime a direct function of cadence rather than of any kit value — a cadence error propagates 1:1 into the S1 debuff's duty cycle.",
+      "recipe": "Read shots/sec directly off the ammo counter in a focus recording (the instrument that measures the disputed quantity), not off full-burst counts, which are downstream of gauge. Cross-check the 120-round magazine drain time against reloadFrames 81."
+    },
+    {
+      "field": "skill1[0].effects[0] uptime (duty cycle, not a kit value)",
+      "estimate": "~5 s of Damage Taken ▲17.18% per ~(120 rounds + 81 frames reload) cycle",
+      "reasoning": "The 17.18% and the 5 s are both kit-literal, but the fraction of the fight the boss actually carries the debuff is derived entirely from cadence + the counting rule above, neither of which is measured. Any board comparison of this unit is really a comparison of that duty cycle.",
+      "recipe": "Count Damage Taken ▲ application timestamps over a 180 s scope-lock fight from a focus recording; uptime = 5 s × applications / 180. Score against the sim's buffApply event stream filtered to stat 'damageTakenPct', value 17.18."
+    },
+    {
+      "field": "burst[0].trigger (kind: burstCast)",
+      "estimate": "burstCast — fires only on rotations where she casts her own Burst I",
+      "reasoning": "The burst block carries no activation clause, so the slot's own default applies: a self burst-effect keyed to the owner's cast, not to team full-burst entry. Keying it to fullBurstEnter would over-fire whenever another Burst I chains the rotation. Low risk here (the effect is heal-only) but it matters to any teammate whose damage is gated on 'when recovery takes effect'.",
+      "recipe": "Any comp pairing her with an on-recovery consumer: check that the consumer's buff applications track her burst casts, not every full-burst entry."
+    },
+    {
+      "field": "burst[0].effects[0] (heal magnitude channel)",
+      "estimate": "event-only: 10 recovery events, no HP amount",
+      "reasoning": "The engine models heals as recovery events (no HP pool at scope lock, immortal boss). The 10.03%-of-caster-final-Max-HP magnitude is therefore recorded in prose only. This is correct for damage purposes today but silently drops the value if a future consumer scales off healed AMOUNT rather than the recovery event.",
+      "recipe": "None needed while no consumer reads heal magnitude. Revisit if a kit lands that scales off amount healed; the kit value 10.03% × caster final Max HP × 10 ticks is already stated here."
+    },
+    {
+      "field": "unmodeled.skill2 (both ally lines)",
+      "estimate": "zero damage contribution at scope lock",
+      "reasoning": "Incoming-healing amplification has no StatKey and nothing to scale (heals carry no amount); ally damage-taken reduction has no ally-side channel and no incoming boss damage to reduce. Both are genuinely inert for this sim's purpose rather than convenient skips — but the skip is a scope claim, not a kit claim, and would become wrong if boss damage were ever modeled.",
+      "recipe": "Re-audit if an HP pool or boss damage lands. Until then the claim is verifiable by inspection: no StatKey exists for either line in types.ts."
+    }
+  ],
+  "model": "claude-opus-5"
+}

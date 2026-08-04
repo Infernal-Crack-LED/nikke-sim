@@ -241,6 +241,37 @@ describe('vesti-tactical-upgrade — kit spec', () => {
       );
       expect(removed.length).toBe(0);
     });
+
+    it('CADENCE (2026-08-03 fix, owner-confirmed gameplay pattern): 1 slow charge then 3 near-instant follow-ups, repeating — noRetriggerWhileActive + the paired granting-shot round-count exemption together', () => {
+      const shots = vestiShots(base.events);
+      expect(shots.length).toBeGreaterThan(8);
+      const gaps = shots.slice(1).map((s, i) => s.sec - shots[i].sec);
+      // classify each gap: FAST (chargeSpeedPct live, near 1-frame) vs SLOW (~120f charge, or a
+      // reload-padded slow charge) — 0.5s is comfortably between the two (fast ≈ 0.017s, slow ≥ 2s).
+      const kinds = gaps.map((g) => (g < 0.5 ? 'F' : 'S'));
+      // every SLOW gap must be followed by exactly 3 FAST gaps before the next SLOW (the 4-shot
+      // cycle: 1 charge + 3 rapid). The kit's "for 3 round(s)" — not 2, not 4 — is the discriminator.
+      const cycles: number[] = [];
+      let run = 0;
+      for (const k of kinds) {
+        if (k === 'F') {
+          run++;
+        } else {
+          cycles.push(run);
+          run = 0;
+        }
+      }
+      // drop the first (partial, pre-cycle) and last (truncated by fight end) entries
+      const fullCycles = cycles.slice(1, -1);
+      expect(
+        fullCycles.length,
+        `expected several full slow→fast×3 cycles; gaps=${gaps.map((g) => g.toFixed(2)).join(',')}`
+      ).toBeGreaterThan(1);
+      expect(
+        [...new Set(fullCycles)],
+        'every cycle must show EXACTLY 3 rapid follow-ups per slow charge'
+      ).toEqual([3]);
+    });
   });
 
   describe('V2 — S1 Missile Guide Charge Damage ▲58.5% is a 3-ROUND self window, removed on reload', () => {

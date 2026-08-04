@@ -1,0 +1,82 @@
+{
+  "slug": "sora",
+  "kitDescription": "Sora is a Wind-element rocket-launcher Supporter whose kit is almost entirely healing-oriented. Her first skill permanently increases her own outgoing healing by 35.2%. Her second skill activates only when she or an ally destroys an enemy part: it stores a portion of her excess healing in up to five stacks and grants the whole team an ATK buff scaled off her own ATK for 15 seconds — against enemies with no destructible parts this skill simply never activates. Her burst heals the entire team for roughly half of her max HP and cleanses one debuff from each ally. On the scope-lock test boss, which has no parts and applies no debuffs, only the burst heal has any gameplay effect, and it matters because teammates whose skills trigger when they receive healing fire off each of her casts.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Outgoing healing ▲ 35.2% continuously.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "skill1 [] — heal AMOUNTS do not exist in the sim (heal = valueless recovery event), so an outgoing-healing multiplier has nothing to scale; line verbatim in unmodeled (K1), residual R2 with estimate/recipe/Tier 2.",
+        "blindSaid": "S2b: UNMODELED, not load-bearing; heal magnitude irrelevant to recovery triggers (events, not amounts). S5: it.skip declared GAP + assertion that no 35.2-valued buff exists in skill1 — green vs driver. S6: identical ([]), same caveat.",
+        "formulaCheck": "No StatKey or damage bucket consumes a heal amount or an outgoing-healing scalar; the damage formula's buckets are untouched by this line. Unrecordable ≠ dropped: verbatim in unmodeled with recipe.",
+        "fireRateOk": true,
+        "explanation": "Inert by construction and documented verbatim; the nearest-wrong (35.2 parked on a damage stat) is pinned absent by both the driver's zero-buffApply assertion and S5's structural check. All three agents converged."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "when ally/self destroys an enemy part",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Trigger header verbatim in unmodeled; no part-destroyed event primitive and the scope-lock boss is partless, so the whole slot is empty by construction (K2) — diesel-winter-sweets/ark-ranger-black precedent; residual R1 (partDestroyed primitive + parted fixture, Tier 2).",
+        "blindSaid": "S2b: UNMODELED, structurally unreachable in v1; nearest-wrong = substitute trigger materializing the grant. S6 diverged in FORM only: one block with trigger {kind:'unsupported'} → casterAtkPct 23.74/15s — behaviorally identical (no engine handling of 'unsupported'; partless boss).",
+        "formulaCheck": "Correct: nothing in the engine can fire this trigger; vs a partless boss the kit itself grants nothing. Encoding a live trigger would fabricate a DamageUp-relevant FinalATK term (caster-ATK flat add) the prose gates behind an impossible event.",
+        "fireRateOk": true,
+        "explanation": "The S6 divergence is style, not faithfulness: both forms are inert at scope. The driver's empty-slot + verbatim-unmodeled form matches repo convention and its structural test pins it; the materialized-passive counterfactual (driver) and passive re-key non-vacuity check (S5) both go red under the nearest-wrong. Blind-side divergence ruled spurious."
+      },
+      {
+        "kitLine": "Storage: excess healing ≤5.36% MaxHP ×5",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Verbatim in unmodeled (K2); needs an overheal/HP pool v1 does not model; residual R2 (Tier 2).",
+        "blindSaid": "S2b: UNMODELED; nearest-wrong = encoding as a shield, opening phantom shielded/requiresShielded channels. S5: asserts no 5.36-valued buff anywhere in the override — green. S6: same line in unmodeled.",
+        "formulaCheck": "No storage/HP-pool construct exists; the prose names no damage consumer, so zero damage expression is correct.",
+        "fireRateOk": true,
+        "explanation": "Doubly inert (no primitive + unreachable trigger), documented verbatim; S5's shield-channel and 5.36-value absence checks confirm nothing leaked."
+      },
+      {
+        "kitLine": "ATK ▲ 23.74% of user's ATK, 15s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Verbatim in unmodeled (K2); note records the correct shape if ever modeled — casterAtkPct (23.74% of SORA's Supporter-tier ATK, flat add), NOT atkPct per target — and names the substitute-trigger materialization as the nearest-wrong the spec test discriminates (soraMaterializedAtk counterfactual reds).",
+        "blindSaid": "S2b: UNMODELED with the same shape note (casterAtkPct, flat outside the target's 1+ATK%). S5: asserts no atkPct 23.74 and no sora-originated damage-stat buffApply — green vs driver; non-vacuity proven by the passive re-key moving the board. S6 encodes it (inert, unsupported trigger) with the identical casterAtkPct shape and 15s duration.",
+        "formulaCheck": "SSOT: '% of caster's ATK' = caster's static ATK added FLAT outside the recipient's (1+ATK%) — the driver/blind-agreed casterAtkPct shape is the correct bucket placement. Inert at scope because the gating trigger cannot fire.",
+        "fireRateOk": true,
+        "explanation": "Faithful non-modeling: in game vs a partless boss this line does nothing, and the override reproduces exactly that. Both counterfactual harnesses (driver's materialized passive, S5's re-keyed clone) discriminate the nearest-wrong and red under it."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Recovers 52.27% of user's Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burst → burstCast → allies → heal (engine-default ticks 1, instant). Keyed burstCast NOT fullBurstEnter (she is the Burst I opener; cast precedes the window). The 52.27% magnitude is unrecordable (heal = valueless recovery event) and is deliberately absent from the encoding — pinned by the no-'52.27'-in-blocks test.",
+        "blindSaid": "S2b: FAITHFUL, the kit's one load-bearing line (taxonomy-#4 trap: skipping it kills recovery-fed teammates). S5: burst-structure assertions (burstCast/allies/no damage effects) green vs driver; recovery-sensor-on-crown tandem green. S6: semantically identical block (explicit ticks:1 = engine default).",
+        "formulaCheck": "Burst-cast timing SSOT: cast-instant effects resolve at cast, pre-Full-Burst — burstCast keying reproduces this; a fullBurstEnter keying would shift landings +82f and mis-fire on team FBs she did not open (multi-B1 generality). Heal carries no damage instance, so no bucket application is required; its whole footprint is the recovery events, which is what the engine's heal case emits.",
+        "fireRateOk": true,
+        "explanation": "FIRES at the prose-implied cadence: probed 5 casts at frames 508/2908/5308/7708/10108 (CD-limited every 40s), each landing exactly one recovery proc on the isolated consumer (asuka's stripped fixture) on the cast frame. Counterfactuals all discriminate: heal-removed zeros the consumer, self-only never reaches asuka, FBE shifts every landing to the FB-start frame, ticks>1 would break the count equality. The fixture isolates the channel (bare folkwang + lifesteal-stripped asuka → sora sole recovery source) — the S2b-isolation requirement is met, and S5's independent crown-sensor fixture corroborates green."
+      },
+      {
+        "kitLine": "Removes 1 debuff(s)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Verbatim in unmodeled (K4); v1 models no ally debuffs (boss deals no damage, applies none) — cocoa precedent; residual R3 (Tier 2).",
+        "blindSaid": "S2b: UNMODELED; nearest-wrong = stripping boss-held team debuffs (damage-negative). S5: it.skip declared GAP. S6: same line in unmodeled.",
+        "formulaCheck": "No ally-debuff pool exists; nothing to remove. The boss-debuff misread is absent (no removal effects anywhere in the override).",
+        "fireRateOk": true,
+        "explanation": "Inert at scope, documented verbatim; all three agents converged."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA found: all six kit lines are FAITHFUL (the burst heal — the kit's only live line, modeled burstCast/allies/heal and probed firing 5× on its 40s CD with recovery landings exactly on cast frames) or DOCUMENTED_GAP (heal-out 35.2%, both part-gated skill2 lines plus their trigger header, and the cleanse — each verbatim in unmodeled with estimate/recipe/Tier-2 residuals R1–R3 and a named nearest-wrong the suites discriminate). The blind re-derivations converged strongly: S2b dispositioned all 6 lines identically to the driver, S5's prose-only suite runs 12-pass/2-self-declared-skip GREEN against the shipped override (its skips are exactly the driver's K1/K4), and S6's single divergence — an `unsupported`-trigger skill2 block vs the driver's empty-slot+verbatim-unmodeled — is behaviorally identical (no engine handling; partless boss) and was ruled a blind-side style difference, with the driver form matching repo precedent. Discrimination is real, not vacuous: the RED phase showed 6/12 failing pre-implementation, and every load-bearing assertion reds under its named counterfactual (heal-removed, self-only, fullBurstEnter, materialized-passive-ATK), with the fixture properly isolating the recovery channel (bare folkwang, lifesteal-stripped asuka → sora sole source). Same-model residual for the owner to spot-check: every agent here shares the prior that (a) part-gated kits are truly inert vs partless targets in game and (b) heal magnitude never matters to on-recovery consumers — both rest on repo precedent (diesel-winter-sweets/ark-ranger-black/cocoa, engine event model) rather than a fresh measurement of Sora herself; a single parted-fight footage read of Sora's skill2 uptime would independently confirm R1's premise.",
+  "model": "kimi-code/k3"
+}

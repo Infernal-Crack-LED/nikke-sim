@@ -1,0 +1,85 @@
+{
+  "slug": "quency",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 60
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 12.42,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 16.11,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 43.87,
+          "durationSec": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 29.9,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 skill1 trigger: 'after 60 normal attacks' is encoded as hitCount:60, which the engine counts in ROUNDS, not trigger pulls. This unit is an SMG with hitsPerShot 2, so if the kit means 60 PULLS the real cadence is twice as fast as modeled. Unmeasured.",
+    "\u2691 skill1 scaling basis: the kit duplicates 12.42% of the HIGHEST-Max-HP ally's Max HP; the schema has no highest-ally Max-HP analog to highestAllyAtkPct, so it is approximated as casterMaxHpPct on a self target (12.42% of this unit's OWN Max HP). Wrong whenever a higher-Max-HP ally (typically a Defender) is present. Offensively inert today either way \u2014 this unit carries no atkOfMaxHpPct \u2014 so the approximation moves no damage, but it is NOT faithful and must not be cited as a modeled HP value.",
+    "\u2691 skill2 trigger is KIT-SILENT (no activation clause in the prose). Modeled as interval:20s to match the only cooldown figure in the packet; the live alternative is fullBurstEnter (a 5s window keyed to Full Burst entry). Uptime differs materially between the two \u2014 do not trust this unit's skill2 contribution before the trigger is pinned.",
+    "\u2691 Both ally-buff blocks rank by LIVE effective ATK (byFinalAtk:true) because the prose literally says 'highest final ATK'. No excludeSelf \u2014 the kit does not say 'except the skill user', so this unit is a valid target of its own buffs.",
+    "\u2691 Cadence: the SMG fire-rate/reload datamine (reloadFrames 121, nominal rate) is engine-side and known-unreliable; effective rate quantizes to 60/ceil(60/nominal). Not an override field, but it directly drives the skill1 hitCount cadence above."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (SMG/Electric/Supporter/Burst II). Full kit is modeled \u2014 three slots, zero silent drops. skill1: a self Max-HP duplication on a 60-normal-attack counter, 10s; approximated as casterMaxHpPct because the schema cannot express 'of the highest-Max-HP ally' (offensively inert for this unit \u2014 no atkOfMaxHpPct consumer). skill2: ATK \u25b216.11%/5s to the 2 highest-final-ATK allies on a KIT-SILENT trigger, modeled as interval:20s (\u2691 \u2014 fullBurstEnter is the live alternative). burst: own burstCast (Burst II, pre-Full-Burst by timing) grants the same 2 highest-final-ATK allies Max HP \u25b243.87%/5s (targetMaxHpPct, ally-granted so it feeds no teammate's HP\u2192ATK conversion) and Critical Damage \u25b229.9%/10s \u2014 the latter is the unit's only real damage contribution and it is a plain, unscoped critDamagePct with no normal-attack scoping in the text."
+}

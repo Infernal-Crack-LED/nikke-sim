@@ -1,0 +1,248 @@
+{
+  "slug": "snow-crane",
+  "leakDetected": null,
+  "override": {
+    "slug": "snow-crane",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterMaxHpPct",
+            "value": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "chargeCounter",
+          "count": 3
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 9.5,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 180,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "gainPierce",
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates only while not in Terminated Contract status. — Exclusive Recovery Agreement gate: the Max HP grant is modeled as unconditional; the Terminated Contract state is entered mid-fight (skill2) and would suppress it, but the sim has no HP pool so ally-granted Max HP is offensively inert either way (e3 rule).",
+        "Affects all allies in Exclusive Recovery Agreement status. — status-membership scoping of the skill2 heal: modeled as plain `allies` (every ally holds the S1 grant at scope lock, so the sets coincide unless Terminated Contract has been entered).",
+        "Proof of Violation: Outgoing healing ▼ 10% continuously, up to 3 time(s). — no outgoing-healing-magnitude stat exists in the schema (heals are modeled as recovery EVENTS with no HP amount), so the debuff itself has no representable effect; only its 3-stack threshold matters, and that is folded into the always-on Terminated Contract regen below.",
+        "Activates when recovery takes effect if the recovery is not coming from this unit. — the Proof of Violation accrual trigger (`recovery`, self-targeted, external-heal-only). The engine's `recovery` trigger does not distinguish heal SOURCE, so an external-only filter is not expressible; block omitted rather than modeled over-firing."
+      ],
+      "skill2": [
+        "Activates when Proof of Violation reaches max stacks. — the 3-stack gate on Terminated Contract. Not representable (no stack counter for an unmodeled debuff), so the regen is authored as an always-on passive; ⚑ this over-credits the pre-threshold window, which is recovery-event timing only and carries no damage.",
+        "Terminated Contract: Gains immunity to Proof of Violation continuously. — self-status immunity to an already-unmodeled debuff; no mechanical consequence."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ Every heal effect is amount-free by schema: the engine models recovery as an EVENT (fires teammates' `recovery` triggers) and models no HP pool, so 1.32% / 0.24% / 44.68% of final Max HP are recorded here for kit completeness but move no damage directly. This unit's entire offensive contribution is TANDEM — she is a recovery/shield ENGINE for on-recovery and on-shield consumers (`recovery` / `shielded` triggers, `requiresShielded` gates). Judge her model by recovery/shield EVENT CADENCE, not by her own damage.",
+      "⚑ skill2-a cadence: `chargeCounter {count:3}` on a 60-frame (1.0s) charge weapon with 6 ammo and 141 reload frames. Emission rate therefore depends on the datamine-unreliable charge/reload frames; a consumer keyed to her heals inherits that error.",
+      "⚑ skill2-c regen authored as ticks:180 (fight length) — an always-on 1 Hz recovery emitter. Real onset is gated behind 3 external-heal events, so early-fight recovery events are over-emitted.",
+      "⚑ Burst Pierce is a self 10s `gainPierce`, NOT the whole-fight `hasPierce` flag — it is timed and only live in her own burst window.",
+      "⚑ Burst heal + Pierce keyed to `burstCast` (her own burst block, no separate activation clause), so they fire only on rotations she actually casts. FB-exempt by construction (a burst cast lands before the FB window opens).",
+      "⚑ Proof of Violation / Terminated Contract is a real STATE MACHINE (external heal ×3 → immunity + self-regen, and the S1 team Max HP grant switches OFF on entry). It is collapsed here into 'grant always on, regen always on' because outgoing-healing magnitude is not a modeled stat. If a teammate consumer is ever found keyed to her Max HP grant, this collapse must be revisited."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Snow Crane (snow-crane, SR/Water/Defender/Burst II) is a pure sustain unit: NO damage effect appears anywhere in her kit — no flatDamage, no DoT, no weaponSwap, no ATK/crit/core/Damage-Up buff. Her sim-visible output is (a) recovery events (skill2 per-3-full-charges, skill2 Terminated Contract 1 Hz, burst all-ally), (b) a full-burst-enter team shield (9.5% caster Max HP, 10s), (c) a team Max HP grant of 10% of her OWN Max HP (casterMaxHpPct — caster-scaled, so it does NOT feed a teammate's atkOfMaxHpPct per the e3 ally-grant rule; kept for kit completeness and future consumers), and (d) a self 10s Pierce window on her burst. Per the tandem/cross-unit HARD RULE these heal/shield/HP lines are NOT skippable on isolation — they are the input to teammates' `recovery`/`shielded` triggers and `requiresShielded` gates. Her Proof of Violation → Terminated Contract state machine is deliberately collapsed (see caveats): outgoing-healing magnitude has no StatKey, so the debuff is unrepresentable and its 3-stack threshold cannot gate the regen; the regen is therefore authored always-on and the S1 Max HP grant authored unconditional. Charge cadence (60 chargeFrames / 141 reloadFrames / 6 ammo) is datamine-sourced and drives the per-3-full-charges heal rate — ⚑ unreliable."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates only while not in Terminat",
+      "status": "SKIPPED",
+      "effectOrReason": "Negative status gate on the S1 grant. Terminated Contract is entered mid-fight, but ally-granted Max HP is offensively inert (e3 rule) and no HP pool exists, so gating moves nothing. Recorded in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Exclusive Recovery Agreement: Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "passive / allies / buff casterMaxHpPct 10 — '10% of the SKILL USER's Max HP' is caster-scaled, so casterMaxHpPct (not targetMaxHpPct). Also names the status the skill2 heal scopes to."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when recovery takes effect",
+      "status": "SKIPPED",
+      "effectOrReason": "`recovery` trigger with an external-source filter. The engine's recovery trigger carries no heal-source discrimination, so an 'if not coming from this unit' block would over-fire on her own heals; omitted rather than mis-modeled. Its only consumer is the Proof stack count, itself unrepresentable."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Proof of Violation: Outgoing healing",
+      "status": "SKIPPED",
+      "effectOrReason": "No outgoing-healing-magnitude StatKey exists (heal is an amount-free event). Debuff has no representable effect; its 3-stack cap is the skill2 Terminated Contract threshold."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after 3 Full Charge attack",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger chargeCounter {count:3} — the per-full-charge phase counter is the exact primitive for 'after N Full Charge attacks'. Scalar count (kit states one uniform threshold, not a per-phase ladder)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies in Exclusive Reco",
+      "status": "SKIPPED",
+      "effectOrReason": "Status-membership target scoping. No status-scoped TargetDef exists; modeled as plain `allies` — the sets coincide while nobody is in Terminated Contract."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recovers 1.32% of the skill user's f",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal {ticks:1} to allies — emits one recovery event per 3 full charges, firing teammates' `recovery` triggers. Amount unmodeled by schema (no HP pool)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when entering Full Burst.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter — literal 'when entering Full Burst', so it fires on ANY team Full Burst (NOT burstCast; she is Burst II and the team FB is the stated condition)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Generates a Shield equal to 9.5% of",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "shield {maxHpPct:9.5, durationSec:10} to allies — emits shield events firing teammates' `shielded` triggers and opening `requiresShielded` gates. maxHpPct = % of CASTER final Max HP, matching the kit wording."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when Proof of Violation re",
+      "status": "SKIPPED",
+      "effectOrReason": "3-stack threshold on an unrepresentable debuff; cannot be authored as a gate. The gated regen is instead authored as an always-on passive (⚑ over-credits the pre-threshold window)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Terminated Contract: Gains immunity",
+      "status": "SKIPPED",
+      "effectOrReason": "Immunity to an already-unmodeled debuff — no mechanical consequence in the sim."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recovers 0.24% of the skill user's f",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal {ticks:180, intervalSec:1} to self — 'every 1 sec continuously' = a 1 Hz recovery emitter for the fight length. Self-target per 'Affects self'."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies. / Recovers 44.68",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast / allies / heal {ticks:1} — a single instant recovery event on her own burst cast. No separate activation clause, so it is the burst's own effect (burstCast, not fullBurstEnter)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self. / Gains Pierce for 10 ",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast / self / gainPierce {durationSec:10} — a TIMED window, so the gainPierce EFFECT, never the whole-fight hasPierce flag. Makes her own attacks Pierce-tagged (feeds Pierce Damage ▲ buckets) for 10s."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[0].trigger.chargeCounter.count / cadence",
+      "estimate": "count:3 exactly as stated; realized emission rate ≈ one heal per (3 × (chargeFrames 60 + inter-shot frames) + reload amortization) — roughly one per 3–5s with 6 ammo / 141 reloadFrames",
+      "reasoning": "The threshold 3 is kit-literal and NOT flagged. What is flagged is the CADENCE it realizes: chargeFrames/reloadFrames/ammo are datamine fields on the always-⚑ list (rate_of_fire/reloadFrames unreliable), and this block is a charge-weapon Defender whose whole output is heal-event timing. A teammate keyed to `recovery` inherits any cadence error 1:1.",
+      "recipe": "Focus recording of snow-crane: count her full-charge releases and heal popups over a 180s fight; heals ÷ 3 should equal full charges. Cross-check charge cycle time against the 22-frame release latency + measured charge ladder rather than the datamined chargeFrames."
+    },
+    {
+      "field": "skill2[2] (Terminated Contract regen) — trigger + gating",
+      "estimate": "always-on passive, ticks:180 @ 1 Hz; real onset ⚑ estimated at the first 3 external heal events, plausibly 5–20s into a fight with a dedicated healer, NEVER on a heal-less team",
+      "reasoning": "Kit gates this behind Proof of Violation reaching max stacks (3), which itself accrues only on recovery from ANOTHER unit. Neither the outgoing-healing debuff nor the external-source filter is expressible in the schema, so the gate cannot be authored. Always-on is the conservative-for-completeness choice but is over-firing by construction: on a team with no other healer the real regen NEVER activates, and this model emits 180 recovery events.",
+      "recipe": "Two-part: (1) run her in a comp with NO other healer — if a `recovery`-triggered teammate consumer still shows procs in-game, the gate is looser than read; (2) with a healer present, timestamp her first self-regen popup and count the preceding external heal events to confirm the 3-stack threshold and measure onset delay. Then either author a resourceGate on a Proof pool, or set ticks to (180 − onset)."
+    },
+    {
+      "field": "skill1[0] — unconditional casterMaxHpPct grant",
+      "estimate": "10% of caster Max HP, always on; real duty cycle 100% until Terminated Contract is entered, then 0%",
+      "reasoning": "The 'only while NOT in Terminated Contract' gate is an anti-synergy the kit builds in on purpose — the same state that grants her self-regen REVOKES the team Max HP grant. Modeled always-on because no HP pool + the e3 ally-grant rule make it offensively inert today. This is a correctness debt, not a damage error: it becomes real the moment a consumer scaling off granted Max HP exists.",
+      "recipe": "Only actionable if an atkOfMaxHpPct-style consumer is teamed with her. Then: record a fight where she enters Terminated Contract and check whether the consumer's ATK drops at that instant. Until such a comp exists, leave as-is and keep the caveat."
+    },
+    {
+      "field": "burst[0]/[1] trigger — burstCast vs fullBurstEnter",
+      "estimate": "burstCast (both blocks)",
+      "reasoning": "Neither burst line carries an activation clause, and per the trigger-identity rule a self mode / effect in the unit's OWN burst block is burst-cast. She is Burst II, so on a standard rotation she casts every chain anyway and the two triggers rarely diverge — but they DO diverge in any comp carrying a second Burst II unit, where burstCast correctly fires only on rotations she actually casts. Keying to fullBurstEnter would over-credit there.",
+      "recipe": "Record a comp with two Burst II units including snow-crane. On rotations where the OTHER B2 casts, check whether her ally heal / self Pierce still appear. Present → the effect is FB-keyed; absent → burstCast confirmed."
+    },
+    {
+      "field": "skill2[1].effects[0] — shield trigger identity",
+      "estimate": "fullBurstEnter (fires on ANY team Full Burst), 10s duration covering the whole FB window",
+      "reasoning": "Kit-literal 'Activates when entering Full Burst' → full-burst-enter per the trigger-identity rule; NOT flagged as ambiguous. Flagged instead because the 10s shield exactly spans the FB window and thus makes `requiresShielded` gates and `shielded` triggers effectively FB-scoped for the whole team — a large tandem lever whose value depends entirely on which teammate consumes it. Shield magnitude (9.5% caster Max HP) is unmodeled by schema.",
+      "recipe": "No measurement needed for the trigger. To validate the tandem consequence, run a comp pairing her with a `shielded`-trigger or requiresShielded carrier and confirm the consumer's proc appears at every FB entry."
+    }
+  ],
+  "model": "claude-opus-5"
+}

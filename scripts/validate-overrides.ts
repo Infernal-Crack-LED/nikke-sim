@@ -183,6 +183,12 @@ function checkEffect(e: any, path: string, errors: string[]) {
         `${path}: durationShots must be a positive integer (rounds fired), got ${e.durationShots}`
       );
     }
+    if (
+      e.noRetriggerWhileActive !== undefined &&
+      typeof e.noRetriggerWhileActive !== 'boolean'
+    ) {
+      errors.push(`${path}: noRetriggerWhileActive must be a boolean`);
+    }
   }
   if (e.kind === 'flatDamage') {
     if (typeof e.atkPct !== 'number') {

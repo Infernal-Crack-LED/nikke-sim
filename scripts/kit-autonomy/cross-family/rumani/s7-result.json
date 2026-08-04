@@ -1,0 +1,85 @@
+{
+  "slug": "rumani",
+  "kitDescription": "Rumani is a Fire rocket-launcher Defender with a Burst-I kit built around her Muscle Up mechanic: every fully-charged shot grants her a small stacking Max HP buff (up to 5 stacks, 2 seconds each), and fully-charged shots landed during Full Burst taunt the enemy for 5 seconds. Her Skill 2 rewards hitting enemy parts — after 5 parts hits the whole team gains a parts-damage buff for 5 seconds. Her burst raises her own Max HP for 10 seconds and, more importantly, gives the entire team a 10% normal-attack damage multiplier for 10 seconds — the kit's only real offensive contribution. If Muscle Up is at max stacks when she bursts, she also takes 20% less damage for 10 seconds. On the scope-lock partless boss, everything except the burst's team normal-attack buff is either defensive or parts-related and moves no damage.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "skill1 'is capped at 5 stacks and never exceeds the cap' — blind filter stat==='maxHpFlat' && targetSlug==='rumani' && maxStacks!==undefined also matches the burst's self Max-HP grant (maxStacks 1), so every(...===5) fails; filter artifact, not an encoding flaw (driver R1 pins stack sequence [1,2,3,4,5], 110 applies == 110 shots, 2s expiry, sawtooth reset)",
+      "skill2 'never fires: partless boss, so hit Parts 5 times is unreachable' — real modeling divergence, damage-zero either way: blind reads the parts trigger as unreachable → unmodeled; driver encodes hitCount 5 → partsDamagePct as a documented ⚑ proxy (sim has no parts axis; helm-H4 precedent; S2b spec explicitly accepted either encoding)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Full Charge → Muscle Up Max HP ▲ 3.04%, 5 stacks, 2s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "chargeCounter count:1 → targetMaxHpPct 3.04, maxStacks 5, durationSec 2, self; every RL pull is a full charge (power precedent); sawtooth pinned (129f reload > 2s expiry)",
+        "blindSaid": "S6: shotFired, same stat/value/stacks/duration — observationally identical (110/180s); S5: cadence GREEN, cap assertion RED via filter artifact",
+        "formulaCheck": "targetMaxHpPct → maxHpFlat off own static HP; no atkOfMaxHpPct consumer so damage-inert — correct routing, no damage bucket involved",
+        "fireRateOk": true,
+        "explanation": "Trigger spelling differs (chargeCounter vs shotFired) but both fire exactly once per pull on this weapon; S2b noted the two are numerically identical here. Stack ramp, cap, 2s expiry, and post-reload reset all pinned and green. The S5 RED is a blind filter artifact → logged as RECON_ERROR, not a finding."
+      },
+      {
+        "kitLine": "Full Charge during Full Burst → Taunts 5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; no targeting/aggro model in v1; rejected targetStatus channel as a fake model",
+        "blindSaid": "S6: unmodeled verbatim; S5: GAP it.skip",
+        "formulaCheck": "aggro control has no damage bucket; v1 boss deals no damage — inert by construction",
+        "fireRateOk": true,
+        "explanation": "All three agents converged on unmodeled-verbatim. Correct disposition."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "hit Parts ×5 → Damage to Parts ▲ 10.05% allies, 5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "hitCount 5 → partsDamagePct 10.05, 5s, allies; ⚑ documented: sim has no parts axis so every hit counts as a parts hit; payload inert vs partless boss (helm-H4 precedent)",
+        "blindSaid": "S5/S6: partless boss makes the real trigger unreachable → leave unmodeled verbatim",
+        "formulaCheck": "partsDamagePct is parsed-but-inert in v1; totals byte-identical with skill2 stripped either way — both readings land on zero damage movement",
+        "fireRateOk": true,
+        "explanation": "A real, documented modeling divergence with zero damage consequence. S2b's spec explicitly accepted either encoding ('whether encoded as hitCount:5 or left un-triggered, the damage outcome must be identical: zero'), and types.ts carries partsDamagePct as a deliberately inert stat. The driver's version keeps the line observable (22 four-ally firings pinned) at the cost of a trigger-semantics proxy it flags with estimate/tier. Not a gotcha — it is documented; the blind red is classified, not upheld."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "self: Max HP ▲ 15.13% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, self, targetMaxHpPct 15.13, durationSec 10; pinned by cast cadence + exact 15.13/3.04 flat-value ratio vs the S1 grant",
+        "blindSaid": "S6: byte-identical block; S5: green",
+        "formulaCheck": "same maxHpFlat conversion as L1; damage-inert (no HP scaler); trigger identity (burstCast not fullBurstEnter) verified in the B1-contention arm",
+        "fireRateOk": true,
+        "explanation": "Byte-identical convergence across driver and blind override; magnitude cross-pinned against L1 via the shared static-HP basis."
+      },
+      {
+        "kitLine": "allies: Normal Attack Damage Multiplier ▲ 10.05%, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, allies (incl. self), normalAttackPct 10.05, durationSec 10 — the only load-bearing line; discriminated vs attackDamagePct bucket misread, self-only scope misread, and fullBurstEnter trigger misread",
+        "blindSaid": "S6: byte-identical block, both sides explicitly reject the attackDamagePct Damage-Up bucket; S5: green incl. the bucket non-equivalence assertion",
+        "formulaCheck": "SSOT: normalAttackPct scales the normal-attack multiplier (normalScale), NOT the additive DamageUp bucket — correct bucket, correct scope, correct trigger; emilia's %-of-hit skill repeat inheriting the parent lift is faithful per SSOT §3, not a leak",
+        "fireRateOk": true,
+        "explanation": "The kit's single damage-moving line converged byte-identically across independent derivations and is discriminated against all three named nearest-wrong models. Helm's skill/burst buckets proven unmoved; normal bucket proven moved."
+      },
+      {
+        "kitLine": "Muscle Up max stacks → Damage Taken ▼ 20.06% self",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "modeled via muscleUp resource pool (0→5, +1/full charge) + resourceGate min:5 on burstCast self damageTakenPct -20.06 (power precedent); ⚑ documented: pool never lapses while real stacks lapse after 2s and rumani's reload gap exceeds the expiry, so the gate can read open post-reload; zero damage consequence (v1 consumes no self damageTakenPct); pinned self-held, never boss-flipped",
+        "blindSaid": "S5/S6: unmodeled — no own-buff-stack gate primitive; purely defensive and inert",
+        "formulaCheck": "self damageTakenPct -20.06 has no consumer channel in v1 (engine's live read is the boss-debuff channel, positive = boss takes more) — inert observable; the boss-debuff flip trap is explicitly asserted against (no targetIdx-null damageTakenPct events)",
+        "fireRateOk": true,
+        "explanation": "Driver's pool-gate proxy reproduces the gate's observable cadence (cast 1 gate-closed, casts 2-9 open — measured against the 5th-charge frame) and documents the expiry divergence with estimate + recipe + tier. The unmodeled reading is equally defensible; both are damage-zero. Documented ⚑, not a gotcha."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: every divergence the blind agents surfaced is either a blind-side artifact or a documented, damage-zero modeling choice. The S5 run vs the shipped override is 9 GREEN / 2 RED; RED-1 is a RECON_ERROR (the blind maxStacks filter sweeps in the burst's single maxHpFlat grant, so the every(===5) assertion fails on its own filter — the driver's spec pins the true stack sequence [1,2,3,4,5], 1 apply per shot, 2s expiry, and the post-reload sawtooth reset, all green), and RED-2 is the parts-line disposition split (blind: unreachable trigger → unmodeled; driver: hitCount 5 → inert partsDamagePct with a documented ⚑) on which the S2b spec explicitly ruled either encoding acceptable and whose damage outcome is byte-identical zero. The two load-bearing-ish lines converged byte-identically across the independent derivations: the burst's all-ally normalAttackPct 10.05 (correct bucket vs the attackDamagePct misread, correct burstCast trigger proven in the B1-contention arm against liter, correct all-allies scope) and the self Max-HP grants (magnitude cross-pinned by the exact 15.13/3.04 ratio). Both catastrophic over-credit traps named by S2b — parts buff as generic attackDamagePct, and the self Damage Taken ▼ flipped into the boss damageTakenPct channel — are directly asserted against and absent. Discrimination holds on every load-bearing test (passive-misread, fullBurstEnter-misread, bucket-misread, scope-misread, unconditional-gate arms all go red where they should). Same-model residual for the owner to spot-check: convergence here is three instances of one model agreeing, so the shared conventions deserve the eyeball — (a) the muscleUp resource pool never lapsing vs the real 2s stack expiry (the ⚑ with a footage recipe; currently damage-inert but it will silently govern any future HP-scaler or mitigation consumer), and (b) the parts-trigger proxy counting every hit as a parts hit, which stays honest only as long as partsDamagePct remains inert.",
+  "model": "kimi-code/k3"
+}

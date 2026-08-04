@@ -432,10 +432,38 @@ if (mode === '--refresh') {
     `${slug}: kitParse.status=unit-tested provenance=${u.kitParse.provenance} date=${date}; ` +
       `${u.kitParse.findings.length} finding(s); tier=${u.tier} tuned=${u.tuned} (unchanged); AUTO mirrors synced`
   );
+} else if (mode === '--sync-mirrors') {
+  // Re-sync ONE unit's AUTO mirrors (provenance / unmodeled / caveats) from its override, without
+  // the global `--refresh`. Exists because those three fields are what `--check` gates, but a full
+  // refresh also rewrites `generatedAt`, the global `counts`, and EVERY unit's board row — so a
+  // session that edits one override's prose would otherwise have to sweep every OTHER session's
+  // pending mirror updates into its own diff (observed 2026-08-03: a one-unit change pulled in 8
+  // unrelated units because main's mirror was stale). Same three assignments `--gauntlet` makes,
+  // minus the gauntlet bookkeeping (status/date/evidence/residual/findings are left untouched).
+  const slug = args[1];
+  const doc = loadDoc();
+  if (!doc?.units?.[slug]) {
+    console.error(`unknown slug "${slug}" (or kit-status.json missing)`);
+    process.exit(1);
+  }
+  const o = JSON.parse(readFileSync(OVERRIDE_URL(slug), 'utf8'));
+  const u = doc.units[slug];
+  u.kitParse.provenance = provenance(o.note ?? '');
+  u.unmodeled = o.unmodeled ?? { skill1: [], skill2: [], burst: [] };
+  if (o.caveats) {
+    u.caveats = o.caveats;
+  } else {
+    delete u.caveats;
+  }
+  await saveDoc(doc);
+  console.log(
+    `${slug}: AUTO mirrors synced from override (provenance=${u.kitParse.provenance}, ` +
+      `${(u.caveats ?? []).length} caveat(s)); global counts/board left to --refresh`
+  );
 } else {
   console.error(
     'usage: kit-status.ts --refresh | --check | --set <slug> k=v... | --finding <slug> "<text>" | ' +
-      '--gauntlet <slug> --evidence "<line>" --residual "<line>"'
+      '--gauntlet <slug> --evidence "<line>" --residual "<line>" | --sync-mirrors <slug>'
   );
   process.exit(1);
 }

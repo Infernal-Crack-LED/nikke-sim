@@ -35,14 +35,17 @@
 //     so she is not bare-weapon even under the never-burst constraint. folkwang replaced her as
 //     the only AR with zero damage-touching lines including her burst (owner ruling 2026-07-23).
 //
-// FIXTURE. Five of the six have no override on disk (`simSupported: false`); marciana now carries
-// a proven-damage-neutral gauntlet override (recovery-event emitters + one inert defPct buff —
-// owner ruling 2026-08-01, docs/DECISIONS.md). The fixture still measures the EMPTY kit regardless:
-// `bareWeaponComp` hands every slug the synthetic empty `bareWeaponOverride` (see the note there),
-// so the basis never reads a committed encoding. CW1's third test pins the machine-checkable core
-// of P1 — any override a clean-weapon unit carries must sim byte-identical to that empty kit. They
-// cannot be fielded as one team (owner constraint), so they run as two teams of three, split by
-// burst stage: team A is all Burst II and therefore cannot burst at all. Deterministic (no seed).
+// FIXTURE. Four of the six have no override on disk (`simSupported: false`); marciana and
+// snow-crane now carry proven-damage-neutral gauntlet overrides (marciana: recovery-event
+// emitters + one inert defPct buff; snow-crane: recovery-event emitters + a full-burst shield +
+// an inert casterMaxHpPct aura + a timed self-Pierce window that never fires here — owner
+// rulings 2026-08-01 / 2026-08-04, docs/DECISIONS.md). The fixture still measures the EMPTY kit
+// regardless: `bareWeaponComp` hands every slug the synthetic empty `bareWeaponOverride` (see the
+// note there), so the basis never reads a committed encoding. CW1's third test pins the
+// machine-checkable core of P1 — any override a clean-weapon unit carries must sim byte-identical
+// to that empty kit. They cannot be fielded as one team (owner constraint), so they run as two
+// teams of three, split by burst stage: team A is all Burst II and therefore cannot burst at all.
+// Deterministic (no seed).
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import type { Element, SimEvent } from '../../../src/types.js';

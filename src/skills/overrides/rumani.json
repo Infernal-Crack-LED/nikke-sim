@@ -1,0 +1,81 @@
+{
+  "note": "Kit-autonomy gauntlet 2026-08-04: baseline-authoring (no prior override; simSupported flipped false→true by this run). rumani (Rumani) — RL / Defender / Fire / Burst I, cd 20s, ammo 6, chargeFrames 60, reloadFrames 129, hitsPerShot 1. Six kit lines, all dispositioned, none dropped: (L1) S1 Muscle Up Max-HP stack grant — modeled, damage-INERT but observable; (L2) S1 Full-Burst taunt — UNMODELED verbatim (no targeting/aggro model in v1); (L3) S2 parts-damage team buff — modeled, damage-INERT (partless boss); (L4) burst self Max HP — modeled, damage-INERT; (L5) burst all-ally Normal Attack Damage Multiplier — the ONLY load-bearing line; (L6) burst max-stacks-gated Damage-Taken reduction — modeled via resource-pool gate, damage-INERT (v1 consumes no self damage-taken). || MODELED TODAY: (1) S1 Muscle Up '■ Activates when performing a Full Charge attack. Affects self. Muscle Up: Max HP ▲ 3.04%. Stacks up to 5 times and lasts for 2 sec.' → TWO single-effect chargeCounter count:1 blocks on self: buff {stat:targetMaxHpPct, value:3.04, maxStacks:5, durationSec:2} + resource {name:muscleUp, delta:1}. A multi-effect chargeCounter CYCLES its effects one-per-charge instead of applying both (power precedent 2026-08-03), so the buff and the pool increment are separate blocks. Every rumani pull IS a full charge (RL charge 60f, no dump mode — same precedent as power's per-charge stack buff), so the per-full-charge cadence equals her shot cadence. targetMaxHpPct on self resolves to a flat maxHpFlat of 3.04% of her OWN static Max HP per stack; the grant is DAMAGE-INERT (rumani has no atkOfMaxHpPct consumer and v1 models no damage-taken) but OBSERVABLE — the spec pins the 1-per-pull cadence, the 1→5 stack ramp, the 2s window, and the SAWTOOTH: her 129f (2.15s) reload gap EXCEEDS the 2s expiry, so stacks provably lapse to 1 after every reload (110 applies / 22 fresh ramps over 180s). (2) S2 Muscle Time '■ Activates when hitting a target's Parts for 5 time(s). Affects all allies. Damage to Parts ▲ 10.05% for 5 sec.' → hitCount count:5, target allies, buff {stat:partsDamagePct, value:10.05, durationSec:5}. ⚑ the sim has no parts axis, so the counter counts EVERY hit as a parts hit and partsDamagePct is inert vs the partless scope-lock boss (helm-H4 precedent) — inert either way, never fudged. (3) Burst Almighty Muscle, three burstCast blocks: (a) self {stat:targetMaxHpPct, value:15.13, durationSec:10} — DAMAGE-INERT (same reasoning as L1; pinned by cast cadence + self scope + the exact 15.13/3.04 flat-value ratio to the L1 grant, both scaling off her own static Max HP); (b) all allies {stat:normalAttackPct, value:10.05, durationSec:10} — LOAD-BEARING: normalAttackPct scales the normal-attack multiplier (sim.ts normalScale) of every holder's normal-category hits; it must NOT be the attackDamagePct Damage-Up bucket (that would dilute AND lift skill/burst damage) — the spec pins the bucket split directly; (c) self {stat:damageTakenPct, value:-20.06, durationSec:10} gated by resourceGate {name:muscleUp, min:5}. || THE MAX-STACKS GATE (L6): the kit's 'Activates when Muscle Up is at max stacks' is a STACK GATE the engine has no buff-stack gate primitive for; the override mirrors the stack count into the muscleUp resource pool (0→5, +1 per full charge, clamped) and reads it via resourceGate — the exact power precedent (2026-08-03). ⚑ EXPIRY DIVERGENCE: the pool never lapses, but the real stacks drop 2 sec after the last full charge; rumani's reload gap (~2.15s + charge) EXCEEDS the 2s expiry (unlike power, whose 3s expiry beat her reload gap by 8 frames), so the pool can OVERSTATE stacks just after a reload boundary — the gate may read open where the real kit reads closed. estimate: zero DAMAGE divergence either way (v1 consumes no self damageTakenPct, and the buff itself is a defensive observable only); worst case is one extra gated buffApply per post-reload cast. recipe: a focused rumani recording across a >2s fire pause — read the Muscle Up icon expiry vs whether the next burst grants the damage-taken shield. tier: low (defensive-only consequence). ⚑ CHANNEL: damageTakenPct here is SELF-held and NEGATIVE (a reduction); the engine's live damageTakenPct channel is the boss-debuff read (positive = boss takes more), so this grant is consumed by NOTHING in v1 — pinned self-held (targetIdx never null) to rule out the catastrophic boss-debuff flip. || TIER 2 (all-ally scoped burst buff with duration; burstCast-vs-fullBurstEnter identity load-bearing — pinned in a B1-contention arm vs liter; stack gate via resource pool). EVIDENCE TIER: every magnitude/duration is kit-text-literal (3.04/5/2, 10.05/5, 15.13/10, 10.05/10, 20.06/10); conventions are the RL full-charge-per-pull equivalence, the parts-hit counter reading, and the pool-gate proxy (all flagged). Faithful>fit; measured>fudge. || Kit-autonomy gauntlet 2026-08-04.",
+  "resources": [
+    {
+      "name": "muscleUp",
+      "initial": 0,
+      "min": 0,
+      "max": 5
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "■ Activates when landing a Full Charge attack during Full Burst. Affects the target.\nTaunts for 5 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "skill1: the taunt line ('landing a Full Charge attack during Full Burst → Taunts for 5 sec') is UNMODELED verbatim — the sim has no targeting/aggro model and v1 models no damage taken by allies, so a taunt moves nothing observable. Nearest-wrong encoding rejected: targetStatus is the ENEMY-status channel (a boss status) — a taunt is self-aggro, not a boss status; forcing it through that channel would be a fake model.",
+    "skill1: every rumani pull is a FULL CHARGE (RL charge 60f, no dump mode), so chargeCounter count:1 fires once per pull — the power precedent for per-full-charge triggers on this weapon.",
+    "skill1: the muscleUp resource pool (L6's gate source) does NOT expire; the real Muscle Up stacks lapse 2 sec after the last full charge. ⚑ EXPIRY DIVERGENCE: rumani's reload gap (~2.15s + charge) EXCEEDS the 2s expiry, so after a reload boundary the pool can overstate stacks (gate open where the real kit reads closed). estimate: zero damage divergence (the gated line is a defensive observable in v1); worst case one extra gated buffApply per post-reload cast. recipe: focused rumani recording across a >2s fire pause — Muscle Up icon expiry vs next burst's damage-taken grant. tier: low (defensive-only consequence).",
+    "skill2: 'hitting a target's Parts for 5 time(s)' is encoded as hitCount 5 — the sim has no parts axis, so every hit counts as a parts hit and partsDamagePct is inert vs the partless scope-lock boss. Both divergences cancel to zero damage; the line stays observable (22 four-ally firings / 180s).",
+    "burst: the Max HP ▲ 15.13% line is modeled (targetMaxHpPct self, dur 10) but DAMAGE-INERT — no atkOfMaxHpPct consumer, v1 models no damage-taken. Pinned by cast cadence, self scope, and the exact 15.13/3.04 flat-value ratio vs the S1 grant (both scale off her own static Max HP).",
+    "burst: the Damage Taken ▼ 20.06% grant is SELF-held damageTakenPct -20.06 — the engine's live damageTakenPct read is the boss-debuff channel (positive = boss takes more), so this self-grant is consumed by NOTHING in v1 (inert observable). Pinned self-held (targetIdx never null) and never boss-flipped."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "chargeCounter", "count": 1 },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "targetMaxHpPct", "value": 3.04, "maxStacks": 5, "durationSec": 2 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "chargeCounter", "count": 1 },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "resource", "name": "muscleUp", "delta": 1 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "hitCount", "count": 5 },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "partsDamagePct", "value": 10.05, "durationSec": 5 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "targetMaxHpPct", "value": 15.13, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "normalAttackPct", "value": 10.05, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "resourceGate": { "name": "muscleUp", "min": 5 },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "damageTakenPct", "value": -20.06, "durationSec": 10 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "note": "Sora (slug sora) — RL / Supporter / Wind / Burst I, Elysion, cd 40s, ammo 6, chargeFrames 60, reloadFrames 141. FROM-SCRATCH kit-autonomy build 2026-08-04 (no prior override; baseline was bare weapon, simSupported false -> true). Sora is a pure healer/supporter: exactly ONE of her kit lines has any expression in a damage-dealt sim — the burst's team heal, and only as a RECOVERY EVENT (the engine models no HP amounts — sim.ts `case 'heal'` emits valueless recovery events — so the 52.27%-of-final-Max-HP magnitude is unrecordable; heal AMPLIFICATION is likewise unrecordable, and heal magnitude is irrelevant to on-recovery consumers, which fire off the EVENT). ENCODED: burst -> burstCast -> allies -> heal (ticks 1, instant): the kit's one load-bearing line — it feeds teammates' 'recovery'-triggered blocks (Crown/asuka-style consumers). Keyed burstCast, NOT fullBurstEnter: the heal lands on HER OWN cast (she is the Burst I opener); the cast precedes the Full Burst window (~82f in the probe fixture), and a fullBurstEnter keying would fire on team FBs she did not initiate in multi-B1 comps. skill1/skill2 are EMPTY BY CONSTRUCTION, not by omission — every line there is out-of-domain for cause: (K1) S1 'Outgoing healing ▲ 35.2%' modifies heal AMOUNTS, which do not exist in the sim — no stat, no channel, and no recovery-consumer reads an amount. (K2) S2 is gated on PART DESTRUCTION ('when an ally or self destroys an enemy's part'): the engine emits no part-destroyed event and the scope-lock boss is partless (sim.ts: 'partless test boss ... kept as a switch for part-ed boss support later'), so the trigger can never fire in scope — exactly as in game vs partless targets (diesel-winter-sweets / ark-ranger-black precedent). Its ATK line is casterAtkPct-shaped (23.74% of SORA's ATK) if ever modeled — NOT atkPct per target; materializing it on a substitute trigger is the nearest-wrong model the spec test discriminates. Its Storage line additionally needs an overheal pool v1 does not model. (K4) 'Removes 1 debuff(s)' — v1 models no ally debuffs (boss deals no damage, applies none), so there is nothing to remove (cocoa precedent). GAUGE: no data/gauge-per-shot.json row — accrual uses the RL modal fallback (sim.ts GAUGE_MODAL_BY_WEAPON, 280 energy/trigger x focus charge mult); no kit line modifies gauge. Kit-autonomy gauntlet 2026-08-04: cross-family S2b (claude-fable-5) converged 6/6 lines, no REAL-GOTCHA; the faithful override is one burstCast/allies/heal block plus a complete verbatim unmodeled record. Pinned in scripts/tests/units/sora.test.ts (fixture: sora B1 sole / folkwang-bare B2 / asuka B3 lifesteal-stripped — sora is the sole recovery source; asuka's self-targeted S1 consumer reads exactly one buffApply per landing). Structured residuals (estimate / recipe / tier): (R1) partDestroyed trigger primitive — UNMODELED K2 trigger/ATK/storage: estimate = Sora's entire in-game team contribution in PARTED fights (15s team ATK buff of 23.74% of her Supporter-tier ATK per part destroy — a few % of team damage across the windows) and exactly zero vs partless targets, so zero at scope today; recipe = a part-destroyed event in sim.ts + a parted scope-boss fixture, then encode S2 as partDestroyed -> allies -> casterAtkPct 23.74 / 15s (+ the storage block once R2 lands), popup footage of one parted fight to pin trigger count; Tier 2. (R2) overheal-storage resource — UNMODELED K2 Storage (5.36% Max HP per stack, 5 stacks, 15s): estimate = damage-neutral as worded (the prose names no consumption — stores only; survivability utility); recipe = HP-amount modeling + overheal detection + a per-caster storage pool (also unlocks K1's outgoing-healing amplifier, which only has something to scale once heal amounts exist); Tier 2. (R3) debuff cleanse — UNMODELED K4: estimate = zero (v1 allies are never debuffed); recipe = an ally-debuff model first (none planned while the boss deals no damage); Tier 2.",
+  "unmodeled": {
+    "skill1": [
+      "■ Activates at the start of battle. Affects self.\nOutgoing healing ▲ 35.2% continuously."
+    ],
+    "skill2": [
+      "■ Activates when an ally or self destroys an enemy's part. Affects all allies.",
+      "Storage: Stores excess healing received by the skill user, up to 5.36% of their Max HP. Stacks up to 5 time(s) and lasts for 15 sec.",
+      "ATK ▲ 23.74% of the skill user's ATK for 15 sec."
+    ],
+    "burst": [
+      "Removes 1 debuff(s)."
+    ]
+  },
+  "caveats": [
+    "burst: the heal is event-only — the 52.27%-of-final-Max-HP magnitude is unrecordable in v1 (no HP amounts), and 'final Max HP' scaling has no carrier; the block's observable is the recovery events it emits to allies on her cast frame",
+    "burst: keyed burstCast (her own Burst I cast), NOT fullBurstEnter — the cast precedes the Full Burst window and a FB-entry keying would misattribute team FBs another Burst I opened (multi-B1 generality)",
+    "skill2: the part-destruction trigger has no engine primitive and the scope boss is partless, so the WHOLE slot is verbatim-unmodeled rather than proxied onto a reachable trigger — a substitute trigger would materialize a team ATK grant the kit never gives vs partless targets (spec-tested counterfactual)",
+    "gauge: no gauge-per-shot.json row — RL modal fallback (280 energy/trigger x focus charge mult); her 40s-cd cast cadence in fixtures is gauge/CD-limited by that estimate, which rescales nothing kit-side (no kit line keys off her shots)"
+  ],
+  "skill1": [],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "slug": "sakura-suzuhara",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 120
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 17.18,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 2
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "\u25a0 Activates after landing 60 normal attacks. Affects the 2 ally unit(s) with the lowest HP percentage.",
+      "Incoming healing \u25b2 15.18% for 10 sec.",
+      "\u25a0 Activates after landing 120 normal attacks. Affects the 2 ally unit(s) with the lowest HP percentage.",
+      "Damage Taken \u25bc 14.97% for 10 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 Her only offensive channel is the S1 boss debuff (Damage Taken \u25b217.18%/5s on a 120-hit counter). Every number below the banner that is not literally in the kit text is an unmeasured estimate.",
+    "\u2691 The 120/60 thresholds count LANDED normal attacks in the kit's wording; the engine's hitCount trigger counts rounds the owner fires. With SMG accuracy below 100% the real threshold arrives later than the sim's, so both S1 uptime and the (unmodeled) S2 windows are optimistic.",
+    "\u2691 Debuff uptime is cadence-bound, not kit-bound: 120 rounds is exactly one magazine (ammo 120, reloadFrames 81), so S1 fires roughly once per magazine cycle and its 5-second window covers only a fraction of that cycle. The duty cycle moves with the datamined SMG cadence, which is a known-unreliable field.",
+    "S2's two ally lines carry no offensive channel in the schema: 'Incoming healing \u25b2' has no StatKey, and ally-side 'Damage Taken \u25bc' is not expressible (damageTakenPct is the boss-side debuff, positive = boss takes more). They are recorded verbatim in unmodeled rather than approximated.",
+    "The burst heal models the recovery EVENT stream only (10 ticks at 1 s) \u2014 no HP pool exists at scope lock, so the 10.03%-of-caster-Max-HP magnitude is not represented. The ticks matter because they fire teammates' 'recovery' triggers.",
+    "alliesLowestHp resolves to the leftmost 2 allies in v1 (no HP pool, immortal boss) \u2014 a documented engine stand-in, not a kit reading."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Sakura Suzuhara is an SMG/Water/Supporter Burst I with no damage lines of her own. Modeled today: S1's recurring 120-round boss debuff (Damage Taken \u25b217.18% for 5 s, target enemy) and the burst's 10-tick recovery stream to the 2 lowest-HP allies (burstCast trigger, event-only \u2014 no HP amount). Deliberately unmodeled: both S2 ally lines (incoming-healing lift and ally damage-taken reduction), neither of which has a schema channel and neither of which moves damage at scope lock. Trigger identity is read literally: both S1 and S2 activation clauses are hit-count, and the burst block has no activation clause of its own, so it is keyed to her own burst cast."
+}

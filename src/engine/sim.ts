@@ -432,6 +432,16 @@ interface BuffInstance {
   // (stripReloadBuffs, called at the genuine reload-to-max sites). Set from the buff effect's
   // removeOnReload flag; INERT unless an override declares it.
   removeOnReload?: boolean;
+  // SELF-STATUS GATE (mirrors the effect's noRetriggerWhileActive): set from the buff effect's
+  // flag. Two jobs, both scoped to a self-consuming trigger (one that both GRANTS this buff and
+  // fires again WHILE it is live): (1) the target-loop application-site check skips a refresh
+  // while a same-key instance is still active (see the buff-apply call site); (2) the ROUND-COUNT
+  // decrement below skips the shot that just (re-)granted this buff — that shot's own charge/fire
+  // predates the buff's existence (it could not have benefited), so it does not spend one of the
+  // buff's own N rounds. Together: "for N round(s)" reads as N rounds AFTER the granting shot, not
+  // N-1 (vesti-tactical-upgrade's Missile Guide: one full charge, then N=3 rapid follow-ups —
+  // owner-confirmed gameplay pattern, 2026-08-03). INERT for every unit that does not set it.
+  noRetriggerWhileActive?: boolean;
 }
 
 interface Dot {
@@ -462,6 +472,10 @@ interface WeaponSwap {
   maxAmmo?: number;
   pullsPerSec?: number; // swap weapon's own fire cadence (moran: 24/s vs base AR 12/s)
   weapon?: string; // swap weapon's class override (nayuta: SR mode) → range/core banding
+  // swap weapon's own pellet count — read ONLY when weapon === 'SG' (k: burst swaps to a literal
+  // 10-pellet shotgun). Falls back to the base char's hitsPerShot when omitted. damagePct for an
+  // SG swap is the FULL-SHOT total (all pellets landing), same convention as normalAttackMultiplier.
+  pelletCount?: number;
   trueNormals?: boolean;
   hasPierce?: boolean; // swap shots are Pierce-tagged (swap-scoped "Additional Effect: Pierce",
   // snow-white's cannon) — feeds the per-shot pierceActive tag only
@@ -1422,9 +1436,18 @@ export function runSim(
   // queryable pellet-count change — each pellet carries 1/base of the shot — instead of a
   // normalAttackPct proxy. `stat()` sums pelletCountFlat buffs (0 for every non-carrier ⇒ eff = base
   // ⇒ byte-identical). May be fractional while a pelletCountFlat buff ramps (rampSec).
+  // A swap that declares weapon:'SG' (k's burst shotgun) is a REAL shotgun for this path: it uses the
+  // swap's own `pelletCount` as the base (falling back to the char's hitsPerShot). Any swap that is
+  // absent or non-SG keeps the base char's hitsPerShot exactly as before — byte-identical.
+  const sgPelletBase = (u: UnitState): number =>
+    u.swap?.weapon === 'SG'
+      ? (u.swap.pelletCount ?? u.char.hitsPerShot)
+      : u.char.hitsPerShot;
+  const isSgSpray = (u: UnitState): boolean =>
+    (u.char.weapon === 'SG' && !u.swap) || u.swap?.weapon === 'SG';
   const effectivePellets = (u: UnitState, frame: number): number =>
-    u.char.weapon === 'SG' && !u.swap
-      ? u.char.hitsPerShot + stat(u, 'pelletCountFlat', frame)
+    isSgSpray(u)
+      ? sgPelletBase(u) + stat(u, 'pelletCountFlat', frame)
       : u.char.hitsPerShot;
   // one skill-damage impact (flatDamage proc, dot tick) = one target-base hit of gen
   // (maiden's rider measured exactly her target per-shot value, 364, no focus bonus)
@@ -2012,7 +2035,8 @@ export function runSim(
     casterIdx?: number,
     perResource?: { name: string; mult: number },
     removeOnReload?: boolean,
-    durationShots?: number
+    durationShots?: number,
+    noRetriggerWhileActive?: boolean
   ) {
     const expiresFrame =
       durationSec != null ? frame + Math.round(durationSec * FPS) : null;
@@ -2041,6 +2065,7 @@ export function runSim(
       existing.removeOnReload = removeOnReload;
       // a re-cast refills the round budget, exactly as it refreshes expiresFrame
       existing.shotsLeft = durationShots;
+      existing.noRetriggerWhileActive = noRetriggerWhileActive;
     } else {
       list.push({
         key,
@@ -2056,6 +2081,7 @@ export function runSim(
         perResource,
         removeOnReload,
         shotsLeft: durationShots,
+        noRetriggerWhileActive,
       });
     }
     if (onEvent) {
@@ -2301,13 +2327,30 @@ export function runSim(
             // targetMaxHpPct is "% of the TARGET's own Max HP" → value differs per target.
             const appliedValue =
               e.stat === 'targetMaxHpPct' ? (e.value / 100) * t.maxHp : value;
+            const buffKey = `${ownerIdx}:${block.slot}:${statKey}:${e.value}`;
+            // SELF-STATUS GATE (noRetriggerWhileActive): "while NOT in [this buff's] status" —
+            // skip this application entirely (no refresh, no stack) if the SAME key is already
+            // active on the target. Without this, a trigger that both grants a buff and is itself
+            // gated on firing while that buff is live can never lapse (applyBuff always refills
+            // shotsLeft/expiresFrame on refresh) — see the field doc in skills/types.ts.
+            if (e.noRetriggerWhileActive) {
+              const existing = t.buffs.find((b) => b.key === buffKey);
+              const active =
+                existing !== undefined &&
+                (existing.expiresFrame === null ||
+                  existing.expiresFrame > frame) &&
+                (existing.shotsLeft === undefined || existing.shotsLeft > 0);
+              if (active) {
+                continue;
+              }
+            }
             // KR stacking rule (game-mechanics.md §11): the same buff (stat+value) from
             // the same skill slot of the same caster overwrites/refreshes across trigger
             // blocks instead of co-stacking (e.g. Crown's two S1 "Reloading Speed ▲
             // 44.35%" lines). Different skills / different casters still stack.
             applyBuff(
               t.buffs,
-              `${ownerIdx}:${block.slot}:${statKey}:${e.value}`,
+              buffKey,
               statKey,
               appliedValue,
               alwaysOn ? undefined : e.durationSec,
@@ -2318,7 +2361,8 @@ export function runSim(
               ownerIdx,
               e.perResource,
               e.removeOnReload,
-              e.durationShots
+              e.durationShots,
+              e.noRetriggerWhileActive
             );
             // Max Ammo ▼ clips the CURRENT belt when it lands (user-confirmed);
             // increases never clip. Stacking stays additive inside maxAmmo().
@@ -2477,6 +2521,7 @@ export function runSim(
             maxAmmo: e.maxAmmo,
             pullsPerSec: e.pullsPerSec,
             weapon: e.weapon,
+            pelletCount: e.pelletCount,
             trueNormals: e.trueNormals,
             hasPierce: e.hasPierce,
             maxShots: e.maxShots,
@@ -3549,7 +3594,9 @@ export function runSim(
     // byte-identical when eff===base (every non-carrier). GAUGE is capped at base pellets: a "+N pellets"
     // buff does NOT pump per-trigger burst energy (datamine is per-trigger; preserves measured-exact FB
     // counts). See docs/handoffs/2026-07-21-a4-pellet-count-prereg.md.
-    const sgBase = u.char.hitsPerShot;
+    // For a weapon:'SG' swap the base is the SWAP weapon's own pellet count (k: 10); for every other
+    // case (no swap, or a non-SG swap) this is the char's hitsPerShot exactly as before.
+    const sgBase = sgPelletBase(u);
     const sgEff = effectivePellets(u, frame);
     // per-pellet landing mean → { dmg: landed/base over `sgEff` pellets, gauge: base-capped landed/base }.
     // For sgEff===sgBase this draws exactly `sgBase` Bernoulli(mean) — identical rng sequence & return
@@ -3575,42 +3622,56 @@ export function runSim(
       } // fractional extra pellet (ramp); never counts toward gauge
       return { dmg: k / sgBase, gauge: Math.min(kBase, sgBase) / sgBase };
     };
-    const bandSg: { dmg: number; gauge: number } =
-      u.char.weapon === 'SG' && !u.swap
-        ? UNIGEO !== 'off' && (cfg.bossPelletProfile ?? 'small') === 'small'
-          ? // UNIGEO SG landing: ε × silhouette coverage of the HR-state aim circle (adds the
-            // Hit-Rate landing term the live table lacks). Bernoulli per pellet under a seed.
-            // UNIGEO_GAUGE=legacy (isolation knob, worktree A/B only): DAMAGE keeps the UNIGEO
-            // landing, but the burst-gauge feed reverts to the LIVE engine's landing value (the
-            // cone-path mean under the default CONE_DELTA; the deep-fallback table otherwise) so
-            // gauge generation — and therefore rotation — behaves exactly as the UNIGEO=off
-            // baseline. Localizes rotation drift to the landing→gauge coupling. Under a seed the
-            // legacy gauge uses the expected mean directly (no extra rng draws).
+    const bandSg: { dmg: number; gauge: number } = isSgSpray(u)
+      ? UNIGEO !== 'off' && (cfg.bossPelletProfile ?? 'small') === 'small'
+        ? // UNIGEO SG landing: ε × silhouette coverage of the HR-state aim circle (adds the
+          // Hit-Rate landing term the live table lacks). Bernoulli per pellet under a seed.
+          // UNIGEO_GAUGE=legacy (isolation knob, worktree A/B only): DAMAGE keeps the UNIGEO
+          // landing, but the burst-gauge feed reverts to the LIVE engine's landing value (the
+          // cone-path mean under the default CONE_DELTA; the deep-fallback table otherwise) so
+          // gauge generation — and therefore rotation — behaves exactly as the UNIGEO=off
+          // baseline. Localizes rotation drift to the landing→gauge coupling. Under a seed the
+          // legacy gauge uses the expected mean directly (no extra rng draws).
+          (() => {
+            const hr = stat(u, 'hitRatePct', frame);
+            const r = sgLandFromMean(unigeoSgLanding(band, hr));
+            if (ENV.UNIGEO_GAUGE === 'legacy') {
+              const sig = coneSigmaFor('SG', hr);
+              const prof =
+                cfg.bossPelletProfile === 'large'
+                  ? 8
+                  : cfg.bossPelletProfile === 'medium'
+                    ? 1.3
+                    : 1;
+              const liveMean =
+                CONE_DELTA && sig !== null
+                  ? pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof)
+                  : SG_LANDING_BY_BAND[band];
+              return { dmg: r.dmg, gauge: liveMean };
+            }
+            return r;
+          })()
+        : CONE_DELTA
+          ? // δ-cone landing (implementation-plan §1.5): the SAME σ(hr) as the core path drives SG
+            // landing — a centred Rayleigh overlap of the σ-cone with the boss body (δ negligible vs
+            // the body radius, so landing stays centre-aimed). Bernoulli per pellet under a seed.
             (() => {
-              const hr = stat(u, 'hitRatePct', frame);
-              const r = sgLandFromMean(unigeoSgLanding(band, hr));
-              if (ENV.UNIGEO_GAUGE === 'legacy') {
-                const sig = coneSigmaFor('SG', hr);
-                const prof =
-                  cfg.bossPelletProfile === 'large'
-                    ? 8
-                    : cfg.bossPelletProfile === 'medium'
-                      ? 1.3
-                      : 1;
-                const liveMean =
-                  CONE_DELTA && sig !== null
-                    ? pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof)
-                    : SG_LANDING_BY_BAND[band];
-                return { dmg: r.dmg, gauge: liveMean };
-              }
-              return r;
+              const sig = coneSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
+              const prof =
+                cfg.bossPelletProfile === 'large'
+                  ? 8
+                  : cfg.bossPelletProfile === 'medium'
+                    ? 1.3
+                    : 1;
+              return sgLandFromMean(
+                pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof)
+              );
             })()
-          : CONE_DELTA
-            ? // δ-cone landing (implementation-plan §1.5): the SAME σ(hr) as the core path drives SG
-              // landing — a centred Rayleigh overlap of the σ-cone with the boss body (δ negligible vs
-              // the body radius, so landing stays centre-aimed). Bernoulli per pellet under a seed.
+          : PELLET_GAUSS
+            ? // ⚑ center-weighted Gaussian cone (spec §2): landing = Rayleigh overlap of the σ-cone with
+              // the boss body; each pellet lands ~Bernoulli(mean) under a seed, else the expected mean.
               (() => {
-                const sig = coneSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
+                const sig = pelletSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
                 const prof =
                   cfg.bossPelletProfile === 'large'
                     ? 8
@@ -3621,43 +3682,25 @@ export function runSim(
                   pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof)
                 );
               })()
-            : PELLET_GAUSS
-              ? // ⚑ center-weighted Gaussian cone (spec §2): landing = Rayleigh overlap of the σ-cone with
-                // the boss body; each pellet lands ~Bernoulli(mean) under a seed, else the expected mean.
+            : rng
+              ? // legacy jitter fallback (non-cone A/B): scale the drawn landed count by eff, gauge base-capped
                 (() => {
-                  const sig = pelletSigmaFor(
-                    'SG',
-                    stat(u, 'hitRatePct', frame)
-                  )!;
-                  const prof =
-                    cfg.bossPelletProfile === 'large'
-                      ? 8
-                      : cfg.bossPelletProfile === 'medium'
-                        ? 1.3
-                        : 1;
-                  return sgLandFromMean(
-                    pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof)
+                  const landed = sgLandedPellets(
+                    band,
+                    Math.round(sgEff),
+                    rng,
+                    cfg.bossPelletProfile
                   );
+                  return {
+                    dmg: landed / sgBase,
+                    gauge: Math.min(landed, sgBase) / sgBase,
+                  };
                 })()
-              : rng
-                ? // legacy jitter fallback (non-cone A/B): scale the drawn landed count by eff, gauge base-capped
-                  (() => {
-                    const landed = sgLandedPellets(
-                      band,
-                      Math.round(sgEff),
-                      rng,
-                      cfg.bossPelletProfile
-                    );
-                    return {
-                      dmg: landed / sgBase,
-                      gauge: Math.min(landed, sgBase) / sgBase,
-                    };
-                  })()
-                : {
-                    dmg: (SG_LANDING_BY_BAND[band] * sgEff) / sgBase,
-                    gauge: SG_LANDING_BY_BAND[band],
-                  }
-        : { dmg: 1, gauge: 1 };
+              : {
+                  dmg: (SG_LANDING_BY_BAND[band] * sgEff) / sgBase,
+                  gauge: SG_LANDING_BY_BAND[band],
+                }
+      : { dmg: 1, gauge: 1 };
     // Pellet-consolidation mode (dorothy-S, open-questions A26): "after hitting the target with 80
     // pellets, for 3 rounds pellet count is fixed at 1" + Pierce + 98% hit + Attack-dmg. MEASURED
     // (exact-counter re-read, dorothy-solo-reanalysis.json + owner): "3 rounds" = 3 SHOTS/episode (the
@@ -3841,8 +3884,20 @@ export function runSim(
     // A round is one bullet, the same count the ammo economy spends (MG burns hitsPerShot per pull),
     // but counted whether or not ammo was actually deducted: an unlimited-ammo shot still fires a
     // round. Inert for every unit with no round-scoped buff.
+    //
+    // EXCEPTION — self-status-gated buffs (noRetriggerWhileActive) whose GRANT happened on THIS
+    // exact shot (startFrame === frame): the granting shot's own charge/fire predates the buff
+    // (it fired before the buff existed, so it could not have benefited from it) and does not
+    // spend one of the buff's own N rounds — "for N round(s)" reads as N rounds AFTER the grant.
+    // Every other buff (the general case, including a helm-style grant from a DIFFERENT trigger
+    // than the one being counted) is unaffected: its startFrame is from an earlier frame than any
+    // firePull that decrements it, so this skip never engages.
     for (const b of u.buffs) {
-      if (b.shotsLeft !== undefined && b.shotsLeft > 0) {
+      if (
+        b.shotsLeft !== undefined &&
+        b.shotsLeft > 0 &&
+        !(b.noRetriggerWhileActive && b.startFrame === frame)
+      ) {
         b.shotsLeft -= u.char.weapon === 'MG' ? u.char.hitsPerShot : 1;
       }
     }

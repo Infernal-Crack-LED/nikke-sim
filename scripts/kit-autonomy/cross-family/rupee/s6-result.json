@@ -1,0 +1,227 @@
+{
+  "slug": "rupee",
+  "leakDetected": null,
+  "override": {
+    "slug": "rupee",
+    "resources": [
+      {
+        "name": "mileage",
+        "initial": 0,
+        "min": 0,
+        "max": 5
+      }
+    ],
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 100
+        },
+        "target": {
+          "kind": "alliesOfElement",
+          "element": "Iron"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 2.24,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 30
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 13.8,
+            "durationSec": 15,
+            "maxStacks": 5
+          },
+          {
+            "kind": "resource",
+            "name": "mileage",
+            "delta": 1
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 274.28
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "resourceGate": {
+          "name": "mileage",
+          "min": 5
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 19.8,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1 stack cap is kit-silent ('Increases stack count of buffs by 1' with no 'Stacks up to N'). Modeled as a single refreshing instance (no maxStacks): at the datamined AR cadence one activation costs ~9.7s (100 rounds incl. one 81f reload out of a 60 belt) against a 10s duration, so 2 stacks could only ever co-exist for ~0.3s. Any cap choice is damage-inert at this cadence.",
+      "⚑ The burst's 'when Mileage is at max stacks' gate is modeled with a monotonic named resource pool ('mileage', cap 5) incremented by the same 30-hit trigger that grants the Mileage ATK buff. The real stack lapses 15s after the last gain; the trigger recurs every ~2.6s while firing, so the pool only diverges from the buff if the unit stops firing for 15s (does not happen at scope lock). The gate is NOT vacuous: max Mileage needs 150 landed rounds ≈ 15s incl. two reloads, so an early first burst can legitimately miss it.",
+      "⚑ Every hit-count trigger here (100 / 30) converts to wall-clock through the datamine-unreliable cadence tuple (pullsPerSec, ammo 60, reloadFrames 81). The buff-uptime and the burst gate's satisfaction time move directly with that tuple; a cadence error is a model error even though the thresholds themselves are kit-exact.",
+      "noFb is NOT set on the 274.28% burst hit — the engine's FB-by-timing default is left ON and a burst cast resolves before the Full Burst window opens, so the exemption should fall out of timing rather than a per-kit flag. Unmeasured for this unit.",
+      "crit is left unset on the burst hit (engine-global rider-crit policy governs); noRange is deliberately not set (engine-automatic).",
+      "Alternate parse of skill1 line 2 not taken: 'Increases stack count of buffs by 1' could conceivably mean it raises the stack CAP of other buffs rather than describing its own stacking. Nothing else in this kit consumes such a mechanic, so the self-referential reading is used."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rupee (AR/Iron/Attacker/Burst II) is a two-lever unit: a team-wide Iron-Code crit trickle on a 100-hit counter (skill1) and a self ATK stack ladder 'Mileage' on a 30-hit counter capping at 5x13.8% (skill2), with the burst paying a 274.28%-of-final-ATK instant hit plus a 5s team ATK 19.8% aura that only fires while Mileage sits at max. Every magnitude, duration, stack cap and threshold in skill2/burst is verbatim kit-stated; the only authored (non-kit) structure is the 'mileage' resource pool used to express the burst's max-stack gate, since a stack COUNT is not otherwise readable by a block gate. All three slots are fully modeled — no line is dropped, so `unmodeled` is empty by construction, not by omission."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after landing 100 normal atk",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'hitCount', count:100} — counts the owner's landed rounds, not trigger pulls (AR hitsPerShot 1, so rounds == pulls here)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all Iron Code allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesOfElement', element:'Iron'} — excludeSelf NOT set; Rupee is Iron Code and the text carries no 'except self' clause."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Increases stack count of buffs by 1.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Read as the stacking semantics of the crit line below (each activation = +1 stack). Cap is kit-silent, so maxStacks is omitted (single refreshing instance) and flagged ⚑ rather than guessed."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Rate ▲ 2.24% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat 'critRatePct' value 2.24 durationSec 10 — UNSCOPED crit (the text says plain 'Critical Rate', not 'Critical Rate of normal attacks'), so critRateNormalPct is deliberately NOT used."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after 30 attacks.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'hitCount', count:30} — owner's own attacks ('Affects self' scoping, no ally-attack clause)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'}."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Mileage: ATK ▲ 13.8%.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat 'atkPct' value 13.8 (scales the holder's own ATK; self-target, so casterAtkPct would be wrong). Same block also carries {kind:'resource', name:'mileage', delta:1} so the named stack count is queryable by the burst gate."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stacks up to 5 times, lasts for 15 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "maxStacks 5 + durationSec 15 (wall-clock seconds, not a round count — the line says 'sec'). Resource pool capped at max 5 to mirror it."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects enemies within range.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} on the damage block; range handling is engine-automatic (noRange not authored)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 274.28% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 274.28 on trigger {kind:'burstCast'}. No 'core strike' wording, so core is NOT set; noFb left unset (burst cast resolves pre-FB by timing)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Activates when Mileage is at max stacks",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resourceGate {name:'mileage', min:5} on the aura block — the gate is evaluated at trigger (cast) time, matching the kit's activation clause."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} — includes self (no 'except self' clause)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 19.8% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat 'atkPct' value 19.8 durationSec 5, keyed to burstCast (Rupee's OWN burst block → burst-cast trigger, NOT fullBurstEnter; keying it to FB entry would over-credit rotations another Burst II casts)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].effects[0].maxStacks",
+      "estimate": "omitted (single refreshing instance); realistic ceiling 1–2 stacks",
+      "reasoning": "The kit states 'Increases stack count of buffs by 1' but never states a cap, so any numeric maxStacks would be fabricated. The cadence makes the choice near-inert: 100 landed rounds at the datamined AR cadence out of a 60-round belt costs ~8.3s of firing plus one 81-frame (~1.35s) reload ≈ 9.7s, against a 10s buff — a second stack could only overlap for ~0.3s per cycle.",
+      "recipe": "Read the in-game buff icon's stack pip count on a focus recording of Rupee during a sustained 60s+ segment; or count distinct crit-rate steps on the stat panel. If the pips exceed 1 for a sustained period, the cadence assumption (not the cap) is what is wrong — re-check pullsPerSec first."
+    },
+    {
+      "field": "override.resources[0] + burst[1].resourceGate",
+      "estimate": "monotonic pool, cap 5, +1 per 30 landed rounds; max reached at ~150 rounds ≈ 15s incl. two reloads",
+      "reasoning": "A block gate cannot read a buff's stack count, so the kit's 'when Mileage is at max stacks' condition is expressed through a parallel named resource driven by the same trigger. The pool has no decay while the real buff lapses 15s after the last gain — safe only because the 30-hit trigger recurs every ~2.6s of firing. It over-credits if Rupee is idle/stunned/out-of-cover for a full 15s stretch, which scope lock does not produce.",
+      "recipe": "On a focus recording, timestamp Rupee's first burst and check whether the team ATK aura appears; then check a later burst. If the aura is present on a burst cast before ~15s of firing, the gate or the stack-accrual rate is wrong. Cross-check the Mileage pip count on the buff bar at cast time."
+    },
+    {
+      "field": "cadence tuple (pullsPerSec / ammo 60 / reloadFrames 81)",
+      "estimate": "datamined values taken as-is; ~9.7s per skill1 activation, ~2.6s per Mileage stack",
+      "reasoning": "Both of this unit's triggers are hit-COUNT triggers, so every wall-clock consequence — crit-buff uptime, Mileage ramp time, whether the first burst clears the max-stack gate — is a pure function of the cadence tuple, and rate_of_fire/reloadFrames are the known-unreliable datamine fields. Nothing in the kit text pins them.",
+      "recipe": "Ammo-counter read on a focus recording: count rounds spent per second across one full belt, and time the reload from belt-empty to belt-full. That measures shots/sec directly rather than inferring it from a downstream quantity (full-burst counts measure gauge/sec, not fire rate)."
+    },
+    {
+      "field": "burst[0].effects[0].noFb",
+      "estimate": "not set (FB-by-timing default ON)",
+      "reasoning": "Per-kit noFb is measured-only and defaults OFF. A burst cast resolves before the Full Burst window opens, so the +50% exemption should emerge from landing timing rather than a hand-set flag; setting it blindly would double-apply an exemption the engine already produces.",
+      "recipe": "Compare the burst popup value against ATK x 274.28% x (element/crit/core factors) on a focus recording with and without a co-active FB; if the popup carries a 1.5x that the timing model does not predict, the timing (not the flag) is the finding."
+    },
+    {
+      "field": "burst[0].effects[0].crit / core",
+      "estimate": "both left unset",
+      "reasoning": "The kit gives no 'core strike damage' wording, so core stays off. Rider crit-eligibility is governed engine-globally rather than per-override, so authoring crit:true here risks encoding a policy this unit has no evidence for.",
+      "recipe": "Popup-colour read on a focus recording of Rupee's burst across n>=5 casts: orange-with-icon popups mean the burst hit crits; a red 'CORE HIT' would refute the no-core reading."
+    }
+  ],
+  "model": "claude-opus-5"
+}

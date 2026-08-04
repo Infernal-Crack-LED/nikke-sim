@@ -1,0 +1,134 @@
+{
+  "slug": "rapunzel-pure-grace",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "start of battle: shared Shield 20.59%",
+      "disposition": "FAITHFUL",
+      "scope": "shield creation, not a stat buff; 20.59% of the SKILL USER's final Max HP (own-HP scaler, taxonomy #7)",
+      "durationSemantics": "'continuous' = no durationSec (permanent at scope; boss damage unmodeled, nothing breaks shields)",
+      "triggerIdentity": "passive (start-of-battle, t=0) — NOT interval, NOT burstCast",
+      "targetSet": "prose header says 'Affects self' but the effect text says the shared Shield 'protects all allies' — the shield event must reach ALL allies (fires every ally's 'shielded' trigger), not self only",
+      "nearestWrongModel": "shield targeted self-only per the '■ Affects self' header, so ally 'shielded' triggers (e.g. a naga-style shield-gate teammate) never fire; or the line skipped entirely as 'defensive, no damage' (taxonomy #4 trap)",
+      "distinguishingAssertion": "with a synthetic 'shielded'-triggered marker buff patched onto a NON-rapunzel ally via withPatchedOverride, the marker's buffApply appears at frame 0 — green under allies-targeted shield, red under self-only or missing shield. Additionally, patching the shield blocks OUT of her override must kill her own requiresShielded-gated skill1 10.41 buff (the gate feeder test)",
+      "inertness": "the shield itself moves zero damage directly (no HP pool at scope); totals must be unchanged by the shield block alone in a comp with no shield-consumers",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "when using Burst Skill: shared Shield",
+      "disposition": "FAITHFUL",
+      "scope": "same shield re-creation, 20.59% of own final Max HP",
+      "durationSemantics": "'continuous' = no durationSec; each cast refreshes/replaces",
+      "triggerIdentity": "burstCast — 'when using Burst Skill' is THIS unit casting her own Burst I, NOT any team Full Burst",
+      "targetSet": "shield event to all allies (same shared-shield reading as the start-of-battle line)",
+      "nearestWrongModel": "keyed to fullBurstEnter — fires on EVERY team Full Burst including rotations where the other B1 (liter in the control comp) bursts instead of her; over-fires ally 'shielded' triggers. Second-nearest: dropped as redundant with the t=0 shield (inert at scope but loses the re-fired shielded events)",
+      "distinguishingAssertion": "count of shield-driven 'shielded' marker applications after t=0 equals the count of burstCast events with srcSlot === her slot, and is strictly less than the fullBurstStart count in a comp where liter also casts B1 — green under burstCast, red under fullBurstEnter",
+      "inertness": "no direct damage; must not add or move totals in a consumer-free comp",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge >1 sec + Shield: Atk Dmg 10.41%",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "attackDamagePct (Damage Up bucket) — generic Attack Damage, applies to allies' all damage; NOT atkPct, NOT charge-scoped despite the Full-Charge wording (the charge condition is on the CASTER's state, the buff itself is unscoped)",
+      "durationSemantics": "'continuously' = active while the maintain-condition holds; no fixed durationSec. Uptime is the open question, not duration",
+      "triggerIdentity": "state-condition, not an event: 'Full Charge maintained for MORE THAN 1 sec' AND 'a Shield is set in front of this unit' (requiresShielded gate; her own continuous shield self-satisfies it). CRITICAL: her SR reaches full charge in 60 frames (1 s) and the sim's fire policy releases at full charge + 22 f latency — under fire-at-full-charge she may NEVER literally maintain full charge >1 s, so the faithful uptime is a firing-policy question. ⚑ uptime must be estimated/measured (buff-icon uptime in focus footage), never silently assumed 100%",
+      "targetSet": "ALL allies (including self) — the header says 'Affects all allies'",
+      "nearestWrongModel": "an unconditional always-on passive team buff (drops both the shield gate and the >1 s-hold condition) — over-credits the whole team's damage by up to 10.41% Damage-Up dilution-adjusted; the opposite misread (never-active because the sim never overholds, modeled as fully dropped) under-credits",
+      "distinguishingAssertion": "buffApply events with stat 'attackDamagePct', value 10.41, targeting all 5 targetIdx values, casterIdx === her slot; AND under withPatchedOverride removing her shield-creating blocks, those buffApply events disappear (gate proven live) — green under gated model, red under unconditional passive. The uptime fraction itself carries a ⚑ pin",
+      "inertness": "with the shield blocks patched out, team totals must fall by exactly the 10.41 contribution (gate-coupled); it must contribute nothing before her shield exists (never before frame 0 — trivially satisfied here)",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "attacking with Full Charge: recover 2% HP",
+      "disposition": "FAITHFUL",
+      "scope": "heal, 2% of own final Max HP; no damage",
+      "durationSemantics": "instant per activation",
+      "triggerIdentity": "per full-charge shot — shotFired on an SR whose every normal shot is a full-charge attack under the sim's charge model (fbGate none). On-attack, not interval",
+      "targetSet": "self — the heal event reaches only her, so only HER 'recovery' triggers can fire",
+      "nearestWrongModel": "skipped as 'defensive, no damage' (taxonomy #4 — heal lines drive teammate/self 'recovery' consumers); or mis-targeted to allies, which would wrongly fire ally recovery triggers (Crown-style consumers) she cannot actually feed",
+      "distinguishingAssertion": "with a synthetic recovery-triggered marker buff patched onto HER OWN override, the marker fires once per shot event with srcSlot === her slot; with the same marker patched onto a different ally, it must NEVER fire — green under self-targeted heal, red under skipped or ally-targeted",
+      "inertness": "zero damage movement in any comp lacking a recovery-consumer on rapunzel-pure-grace herself; totals identical with the block patched out in the control comp",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "gated: Current HP ▼ 2% every 1 sec",
+      "disposition": "UNMODELED",
+      "scope": "self HP drain — pure HP economy, no damage stat",
+      "durationSemantics": "1 s tick while the same maintain-condition holds",
+      "triggerIdentity": "same state-condition as skill1 line 3 (Full Charge >1 s + shielded)",
+      "targetSet": "self",
+      "nearestWrongModel": "encoded as a DoT on the BOSS (a 'Current HP ▼' misread as enemy damage) — that would invent damage from a self-cost line",
+      "distinguishingAssertion": "no damage events with srcSlot === her slot in any 'dot'/skill bucket attributable to this line; her damage total contains only weapon + burst-line contributions",
+      "inertness": "must move ZERO damage for any unit; belongs verbatim in unmodeled.skill2",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "gated: restore Shield HP 3.16% every 1 sec",
+      "disposition": "UNMODELED",
+      "scope": "shield-HP restoration — no shield HP pool exists at scope (boss deals no damage, shields never deplete)",
+      "durationSemantics": "1 s tick while condition holds",
+      "triggerIdentity": "same maintain-condition gate",
+      "targetSet": "self (the shield in front of her)",
+      "nearestWrongModel": "modeled as a repeating 'shield' EFFECT every 1 s — which would re-fire every ally's 'shielded' trigger once per second, massively over-crediting any shield-synergy teammate",
+      "distinguishingAssertion": "in a comp with a shielded-trigger consumer ally, that consumer's trigger count matches only the discrete shield CASTS (t=0 + her burst casts), never a 1 Hz tick train — green under unmodeled/restore-as-non-event, red under repeating shield effect",
+      "inertness": "zero damage; zero extra shielded-trigger firings; verbatim in unmodeled.skill2",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "self: Max HP ▲ 10.13% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "self Max HP stat (maxHpPct / maxHpFlat-resolved). She has no atkOfMaxHpPct conversion, so it is offensively inert TODAY — keep the stat buff anyway (taxonomy #7, future consumer). Note it also briefly raises the base of her own %-of-Max-HP shield/heal values if those recompute at cast",
+      "durationSemantics": "durationSec 10 — wall-clock, correctly seconds (no 'round(s)' wording)",
+      "triggerIdentity": "burstCast (her own Burst I block)",
+      "targetSet": "self only",
+      "nearestWrongModel": "dropped entirely as inert; or target widened to allies. Also the emitted-event trap: harness emits Max HP grants under stat 'maxHpFlat' as a FLAT HP number, not 10.13",
+      "distinguishingAssertion": "on each of her burstCast events, one buffApply with stat 'maxHpFlat', targetIdx === casterIdx === her slot, value ≈ 0.1013 × her final Max HP, expiresFrame = cast frame + 600 — green under faithful, red under dropped/ally-targeted",
+      "inertness": "team damage totals unchanged when this block is patched out (no HP→ATK consumer in the comp)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "all allies: Atk Dmg ▲ 15.24% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "attackDamagePct (Damage Up bucket, additive/diluted with other Damage-Up sources incl. her own 10.41 line — assert additive stacking, not multiplicative)",
+      "durationSemantics": "durationSec 10, wall-clock",
+      "triggerIdentity": "burstCast — fires ONLY on rotations SHE casts Burst I. With liter (also B1) in the control comp, first-ready-in-window selection means some rotations may go to liter; burst-cast vs fullBurstEnter genuinely diverge here",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "keyed to fullBurstEnter — fires on EVERY team Full Burst regardless of which B1 cast, over-crediting the team on liter-cast rotations; also note the 20 s burst cd vs the rotation period decides real uptime",
+      "distinguishingAssertion": "count of buffApply events (stat 'attackDamagePct', value 15.24) equals the count of burstCast events with srcSlot === her slot × 5 targets, and is NOT equal to fullBurstStart count × 5 whenever the rotation log shows a Full Burst she did not open — green under burstCast, red under fullBurstEnter",
+      "inertness": "no applications on rotations where her burstCast is absent; buff must lapse at +600 frames (read expiresFrame off buffApply — no buffRemove is emitted on natural expiry)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:shield-start-of-battle",
+    "skill1:shield-on-burst-cast",
+    "skill1:atkDmg-10.41-shield+hold-gated",
+    "burst:atkDmg-15.24-allies-10s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Current HP ▼ 2% every 1 sec continuously.",
+      "Restores Shield HP equal to 3.16% of the skill user's final Max HP every 1 sec continuously."
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to reconcile: (1) THE BIG ONE — skill1's 10.41% team Attack Damage is gated on 'Full Charge maintained for MORE THAN 1 sec while shielded'. Her SR reaches full charge at chargeFrames 60 = exactly 1 s and the sim fires at full charge + 22 f release latency, so a literal reading gives ~0% uptime while the lazy reading (always-on passive) gives 100%. Neither extreme is proven; uptime is a ⚑ requiring a buff-icon/focus recording. A driver who ships it as an ungated passive with no ⚑ has silently taken the over-credit branch. (2) Both 'when using Burst Skill' lines (shield refresh, and the burst slot's own buffs) are burstCast, never fullBurstEnter — and this distinction is LIVE in the control comp because liter is a competing B1. (3) The shield's '■ Affects self' header conflicts with 'protects all allies' body text — the shared shield must fire ALL allies' shielded triggers; self-only is the header-echo trap. (4) The shield blocks are load-bearing even though shields move no damage: they FEED her own requiresShielded gate on the 10.41 line, so patching them out must kill that buff. (5) Skill2's shield-HP restore must NOT be encoded as a repeating 'shield' effect (would spam ally shielded triggers at 1 Hz). (6) All magnitudes are kit-literal (DATAMINED); the only CALIBRATED ⚑ is the hold-condition uptime. (7) Defender static ATK 78,707 at scope; her personal damage is small — the two team Attack Damage lines are where the board sensitivity lives.",
+  "model": "claude-fable-5"
+}

@@ -176,6 +176,20 @@ export type EffectDef =
       // Speed toggle). Apply it via a per-shot/full-charge trigger with NO durationSec so it persists
       // across the magazine and only the reload ends it. INERT for every unit that does not set it.
       removeOnReload?: boolean;
+      // SELF-STATUS GATE: "Activates ... while NOT in [this buff's own] status" — a recurring NIKKE
+      // kit pattern (vesti-tactical-upgrade's Missile Guide: "when performing a Full Charge attack
+      // while not in Missile Guide status"). Without this flag, a re-trigger of the SAME buff key
+      // (same caster+slot+stat+value) ALWAYS refreshes it (applyBuff always refills shotsLeft /
+      // expiresFrame), so a self-consuming trigger — one that both GRANTS the buff and is itself
+      // gated on firing while the buff is live — can never lapse: it keeps re-arming its own
+      // durationShots/durationSec window before the count/timer reaches zero, producing
+      // near-permanent uptime instead of the kit's intended duty cycle (2026-08-03, vesti). When
+      // true, this application is SKIPPED (no refresh, no stack) if a buff with the same key is
+      // already ACTIVE (not lapsed: expiresFrame in the future AND shotsLeft, if set, > 0) on the
+      // target — it only (re-)applies once the prior instance has fully lapsed. INERT for every
+      // unit that does not set it (skipped only reads existing.expiresFrame/shotsLeft, both already
+      // tracked).
+      noRetriggerWhileActive?: boolean;
     }
   | {
       // adjust a named resource pool (declared in CharacterSkills.resources) by `delta` when this
@@ -292,7 +306,14 @@ export type EffectDef =
       pullsPerSec?: number;
       // The swap weapon's CLASS, when it differs from the base weapon — drives range-band
       // eligibility + auto-core rate for swap shots (nayuta: SMG base → SR "Memory Incineration" mode).
+      // weapon:'SG' additionally routes the swap through the SG pellet-landing model (accuracy-circle
+      // miss loss by range band) instead of guaranteed 100% landing (K: literal shotgun swap).
       weapon?: string;
+      // Swap weapon's own pellet count, read only when weapon:'SG' — the SG landing/gauge path's
+      // pellet base while swapped (falls back to the base char's hitsPerShot if omitted).
+      // damagePct is the FULL-SHOT total (all pellets landing), same convention as a real SG
+      // unit's normalAttackMultiplier — NOT a per-pellet value.
+      pelletCount?: number;
       trueNormals?: boolean; // swap shots are true-flavored (Takina: "Normal attacks deal true damage")
       hasPierce?: boolean; // swap shots are Pierce-tagged ("Additional Effect: Pierce" scoped to the
       // swapped weapon, snow-white's cannon — owner-ruled 2026-07-20). Feeds the

@@ -1,0 +1,62 @@
+{
+  "slug": "sakura-suzuhara",
+  "kitDescription": "Sakura Suzuhara is a Water SMG Supporter whose entire offensive contribution is a recurring boss debuff: after landing 120 normal attacks (exactly one of her 120-round magazines), the boss takes 17.18% increased damage for 5 seconds, refreshing once per magazine cycle at roughly 75-80% uptime. Her Skill 2 is pure sustain \u2014 every 60 hits she boosts incoming healing on the 2 lowest-HP allies, and every 120 hits she cuts the damage those 2 allies take by about 15%. Her Burst I is a heal-over-time that restores 10.03% of her own max HP to the 2 lowest-HP allies every second for 10 seconds. She has no damage lines of her own; in a damage sim her value is the team-wide damage-taken debuff's uptime plus the recovery-event stream that feeds teammates' on-heal triggers.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "120 normal attacks \u2192 Damage Taken \u25b217.18%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:120 \u2192 target enemy \u2192 buff damageTakenPct 17.18 / durationSec 5; boss-held (targetIdx null), refreshes per KR overwrite rule, ~79% uptime at one proc per magazine",
+        "blindSaid": "S2b FAITHFUL (load-bearing); S6 blind override reproduces the block line-for-line (hitCount 120 / enemy / 17.18 / 5s)",
+        "formulaCheck": "damageTakenPct routes to the Taken bucket (SSOT \u00a71g '1 + \u03a3 Damage Taken \u25b2 on the boss') \u2014 correct bucket, correct boss scope, correct 5s wall-clock semantics; hitCount is the prose-stated primitive, NOT lastBullet (coincides at ammo 120 but diverges under ammo modifiers \u2014 correctly avoided)",
+        "fireRateOk": true,
+        "explanation": "Driver test pins count === floor(shots/120), first apply > t=0, exact 5*60 frame expiry, team damage drop on removal, and discriminates vs a passive always-on counterfactual. The fired-vs-landed hitCount semantics gap is a documented \u2691 (caveat with estimate + recipe), matching the repo convention for 'after landing N normal attacks'."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "60 hits \u2192 Incoming healing \u25b215.18%/10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim in unmodeled.skill2; caveat: no healing-received StatKey exists and heal effects carry no HP amount, so the amplifier multiplies nothing; nearest-wrong (encoding as a heal effect every 60 hits \u2192 spurious recovery events feeding crown-class consumers) explicitly rejected",
+        "blindSaid": "S2b UNMODELED; S5 it.skip with the same GAP reasoning; S6 unmodeled verbatim",
+        "formulaCheck": "No schema channel for received-healing scaling; inert at scope lock; the rejected nearest-wrong would over-credit recovery consumers at SMG cadence \u2014 correctly not encoded",
+        "fireRateOk": true,
+        "explanation": "Deliberate, documented, and pinned by negative assertions (nothing may come out of the skill2 slot; byte-identical totals under strip)."
+      },
+      {
+        "kitLine": "120 hits \u2192 Damage Taken \u25bc14.97%/10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim; \u2691 caveat: ally received-damage mitigation with no ally HP pool / no incoming boss damage in v1; estimate + recipe + tier (engine-core, out-of-domain) supplied; explicitly refuses to misuse the boss-facing damageTakenPct channel (wrong direction/target \u2014 would manufacture a phantom ~15% team damage change on the same 120-hit frame as S1)",
+        "blindSaid": "S2b UNMODELED \u2014 flagged as THE kit trap (twin 'Damage Taken' lines firing on the same frame); S5 requires exactly one boss-held apply of exactly 17.18 per proc, never \u00b114.97 or a stacked 32.15; S6 unmodeled verbatim",
+        "formulaCheck": "Taken bucket is boss-side only (SSOT \u00a71g); an ally-side \u25bc has no engine primitive and the boss deals no damage in v1 \u2014 unmodelable by construction; the conflation trap is neutralized by value+count pins",
+        "fireRateOk": true,
+        "explanation": "The highest-risk line in the kit is handled exactly right: documented, flagged with a recipe, and pinned so neither a +14.97 nor \u221214.97 boss encoding can pass."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Recovers 10.03% caster Max HP /1s \u00d710s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast \u2192 alliesLowestHp count:2 \u2192 heal ticks:10 intervalSec:1; recovery-EVENT cadence is the modeled substance (helm H2 precedent), the 10.03%-of-final-Max-HP magnitude inherently unmodeled (no HP pool) and documented",
+        "blindSaid": "S2b FAITHFUL (load-bearing: the recovery events, not the HP number); S6 blind override reproduces the block line-for-line",
+        "formulaCheck": "'every 1 sec for 10 sec' \u2192 ticks:10 intervalSec:1 matches the documented HoT encoding; trigger correctly burstCast (her own cast) not fullBurstEnter \u2014 the contention arm with liter proves liter-opened FBs emit zero recovery stream; heal feeds recovery triggers per the taxonomy-#4 rule",
+        "fireRateOk": true,
+        "explanation": "Driver pins \u22653 casts/180s, exactly 10 ticks \u00d7 N allies per cast, 1s spacing across the 9*60-frame window, and discriminates vs ticks:1 (exactly 1/10 the events) and vs fullBurstEnter (heals appear on liter-opened rotations). The alliesLowestHp \u2192 leftmost-2 stand-in is a documented engine convention, not a kit misread."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: both blind re-derivations converged mechanically \u2014 the S6 blind override reproduces the driver's shipped override line-for-line (same skill1 block, same burst block, same two verbatim unmodeled skill2 lines), and the adapted S5 blind suite is fully GREEN against the shipped override; the only S5 as-authored failures were fixture masking on the blind side (helm's saturating heals hiding the crown consumer in BOTH arms \u2014 the known helm H8 isolation problem), classified as a blind-fixture recon artifact, not a driver divergence. All four kit lines are FAITHFUL (S1 boss debuff \u2014 right Taken bucket, right hitCount primitive, cadence-pinned and counterfactual-discriminated; burst HoT \u2014 right burstCast identity proven under B1 contention with liter) or DOCUMENTED_GAP (both skill2 lines, verbatim in unmodeled with the twin-'Damage Taken' conflation trap explicitly rejected and negative-pinned, plus an estimate/recipe/tier \u2691 on the ally mitigation line). Every load-bearing test discriminates against its named nearest-wrong model (passive-S1, ticks:1, fullBurstEnter, stripped slots), and each FAITHFUL block demonstrably fires at the prose-implied cadence (floor(shots/120) debuff applies; 10 recovery ticks per cast). What must change for GO: nothing. Same-model residual for the owner to spot-check: the hitCount fired-vs-landed semantics (engine counts fired rounds; prose says landed \u2014 both blind agents and the driver adopted the repo convention and flagged it, so a real over-credit of the debuff duty cycle could hide in plain sight) and the always-\u2691 SMG cadence tuple, which scales her entire contribution 1:1.",
+  "model": "kimi-code/k3"
+}

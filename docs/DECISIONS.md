@@ -9,6 +9,69 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-04) SECOND CLEAN-WEAPON OVERRIDE LANDED: `snow-crane` (the SR basis cell) carries a
+  proven-damage-neutral gauntlet override under the CW1 option-2 invariant (2026-08-01).** The
+  kit-autonomy gauntlet landed `snow-crane` at GO faithfulness 1.0, cross-family corroborated
+  (S2b claude-fable-5 / S5+S6 claude-opus-5 / S7 kimi-code/k3 binding judge, zero gotchas). Her
+  override is recovery-event emitters (every-3rd-full-charge team heal, burst team heal), a
+  full-burst-enter team shield (9.5% caster Max HP / 10s), an inert `casterMaxHpPct` aura, and a
+  timed self `gainPierce` 10s window — no damage line and no weapon-state modifier, so it is
+  **byte-identical to the bare weapon on damage**. She is the delicate one of the six (CW1's prose
+  pin names it): her BURST grants Pierce, so "never burst" is load-bearing — the basis runs
+  `disableBursts: true`, so the window never opens there, and even bursts-ON the window is inert
+  in v1 (gainPierce pays out only through a `pierceDamagePct` buff, which no shipped unit carries,
+  and PIERCE_CORE_DOUBLE is off / keyed to the static hasPierce flag). The unit test additionally
+  proves the window is real and time-bounded through an in-memory probe (never committed):
+  no-pierce ≡ base < 10s window < permanent pierce. Two encoding notes of record: (1) the
+  chargeCounter carries `countInFb: 3` EXPLICITLY — the primitive defaults `countInFb ?? 1` in the
+  10s post-own-burst window (SBS-baked semantics), which would heal every full charge after each
+  of her casts; the blind override-writer omitted it and the judge ruled that a blind-side error.
+  (2) The Proof-of-Violation → Terminated-Contract cascade (S1b/S2c) stays VERBATIM UNMODELED: the
+  `recovery` trigger has no source filter, her own heals target herself, so any expressible
+  counter self-stacks and flips the cascade in every comp (the nearest-wrong model); the blind
+  alternative (always-on 1 Hz regen) was ruled spurious-and-worse — it fabricates a
+  tandem-bearing recovery stream the real kit never emits in healer-less comps. CW2–CW5 baselines
+  unchanged (they sim via `bareWeaponComp`, which never reads the committed encoding).
+  **Evidence:** `scripts/tests/units/clean-weapons.test.ts` 27/27 green (CW1 damage-neutrality vs
+  the on-disk override); `scripts/tests/units/snow-crane.test.ts` 26/26 green;
+  `scripts/kit-autonomy/results/snow-crane.json` (GO 1.0);
+  `scripts/kit-autonomy/manual-review/snow-crane.md`; `docs/data/clean-weapons.md` (team A row +
+  Fixture note). Residual (judge-named, ⚑ with recipe): the countInFb engine-default reading, the
+  burstCast-vs-fullBurstEnter trigger-identity split, and heal-magnitude inertness — all inert on
+  damage today; the cascade recipe (a `recoveryFromOther` trigger + PoV resource pool) awaits
+  HP-pool work.
+
+- **(2026-08-03) `vesti-tactical-upgrade` Missile Guide duty cycle FIXED — new engine primitive
+  `noRetriggerWhileActive`, owner-confirmed gameplay pattern (n=1, not footage-measured).**
+  Investigation trigger: `vesti-tactical-upgrade` (and separately `k`) were ranking unexpectedly
+  high on the DPS chart for units the owner rates low-tier; checked for an implementation bug
+  before assuming the modeling was simply aggressive. `k`'s numbers traced back correctly to her
+  kit text (no bug). `vesti-tactical-upgrade`'s Missile Guide ("Charge Speed ▲100%... for 3
+  round(s)... while not in Missile Guide status") had no way to express the "while not in [own
+  status]" re-trigger gate — the engine's only round-count primitive (`durationShots`) always
+  refills on a refresh, so a `shotFired` trigger that both grants and is gated on its own buff
+  re-armed the window on every full charge, producing near-permanent uptime instead of a duty
+  cycle (already self-documented as caveat ⚑5 at kit-autonomy-gauntlet time, 2026-08-01). Owner
+  confirmed the real pattern directly: one full (slow) charge, then 3 near-instant follow-up
+  rockets, repeating. Two paired engine changes land this: (1) `noRetriggerWhileActive` on a buff
+  effect skips any re-application while a same-key instance is still active on the target: (2) the
+  `durationShots` round-count decrement now exempts the shot that just (re-)granted a
+  `noRetriggerWhileActive` buff (its own charge predates the buff, so it cannot have benefited and
+  must not spend one of the buff's own N rounds — without this, "for 3 round(s)" yields only 2
+  rapid follow-ups, not the observed 3). Both are opt-in and proven inert for the rest of the
+  roster (dedicated primitive test + the full control/engine regression suite unchanged for every
+  other carrier). Datamined magnitudes (`chargeSpeedPct` 100, `chargeDamagePct` 58.5,
+  `durationShots` 3) are UNCHANGED — only the trigger-gating mechanism moved. Impact: control-comp
+  total damage 887.4M → 436.0M (**-51%**). **This lands the `vesti-tactical-upgrade` slice of the
+  already-tracked "Theme 21" `durationShots`-eats-its-own-pull engine bug** (QUEUE.md,
+  `docs/engine-modeling-gaps.md`); `emilia`/`zwei`/`phantom` are the theme's other three carriers
+  and are deliberately UNTOUCHED by this change (the exemption is gated behind
+  `noRetriggerWhileActive`, not made the `durationShots` default) pending their own board A/B and
+  an owner call on whether to reuse this flag or make the exemption unconditional. — `src/engine/sim.ts`
+  (`applyBuff`, the buff-apply call site, the ROUND-COUNT decrement loop), `src/skills/types.ts`,
+  `src/skills/overrides/vesti-tactical-upgrade.json`, `scripts/tests/engine/no-retrigger-while-active.test.ts`,
+  `scripts/tests/units/vesti-tactical-upgrade.test.ts`
+
 - **(2026-08-03) `mint` Singing/Dancing gate ENACTED as a dynamic per-cast alternation (`resourceGate`),
   superseding the 50%-uptime halving proxy — owner-confirmed parity (Dancing-first) + strict
   alternation, zero graded-board impact.** Follows directly from the same-day mode-default ruling
@@ -3743,3 +3806,48 @@ build:deploy` **only**. But `railway.json`'s `buildCommand` is `bash scripts/ver
   generator) plus served-byte assertions in **both** serve suites — `serve-headers` (serve.mjs) and
   `serve-api` (the `static.ts` port production runs); none of them can skip. — `scripts/build-content-pages.ts`,
   `src/server/static.ts`, `scripts/serve.mjs`, `scripts/verify.sh`
+
+- **(2026-08-03) K's burst weapon: `damagePct` 925 → 92.5, real SG pellet-landing routing, cadence 2 → 2.4.**
+  K's burst kit reads "Damage: 92.5% of the final ATK / Pelletcount: 10 / Attack speed ▼90%". The
+  2026-08-02 kit-autonomy gauntlet encoded this as `damagePct: 925` — reading 92.5 as a PER-PELLET
+  value and collapsing 10 pellets into one 925%-of-ATK hit per pull — and signed it off in-session as
+  "no bug / EV-exact"; that sign-off left no `DECISIONS` entry of its own, so this entry supersedes it
+  by name. **Finding:** "Damage X% / Pelletcount N" is the FULL-SHOT total, each pellet carrying X/N —
+  the same convention `normalAttackMultiplier` uses for every SG-class unit in this engine. Evidence
+  (MEASURED, not a new K reading): `dorothy-serendipity`'s kit ("Damage 201.5%, Pelletcount 10", raw
+  `shot_detail.damage: 20150`) matches her MEASURED one-full-shot popup total
+  (`docs/probe-data/dorothy-solo-reanalysis.json`) ≈243,000 vs 118,027 × 201.5% = 237,824 (+2%; a
+  per-pellet reading predicts 2,378,240, refuted 10×); cross-checked against `drake`'s measured white
+  pellet in `docs/probe-data/coreband-drake-sg.json`. **Changed:** override `damagePct: 92.5`,
+  `pelletCount: 10`, `weapon: "SG"` (routes the swap through the SAME accuracy-circle pellet-landing
+  model and near-band-only range eligibility every genuine SG unit already takes — no weapon-swap in
+  the engine could reach that model before this, gated `u.char.weapon==='SG' && !u.swap`, unconditionally
+  false during any swap). Engine gains an optional `pelletCount` field on the `weaponSwap` effect kind;
+  the two SG-landing gates broaden to `u.swap?.weapon==='SG'`. Provably inert elsewhere: full regression
+  diff byte-identical, K in no graded comp or snapshot cell, and only `nayuta` (`weapon:'SR'`)
+  otherwise sets a swap `weapon`. **Same-day addendum:** `pullsPerSec` corrected 2 → 2.4 — the kit's
+  "Attack speed ▼90%" applies to the swap weapon's own NOMINAL rate (base SMG's datamined
+  `rate_of_fire` 1440 RPM × 0.10 = 144 RPM), not to the already frame-quantized 20.0/s effective SMG
+  rate the original derivation had scaled instead; run through the engine's existing
+  `quantizeToFrames` (sim.ts:224, already MEASURED/validated 2026-07-23 for the general mechanism —
+  144 RPM lands on an exact 25-frame interval, no rounding). **Tier:** MEASURED, via existing
+  Dorothy/Drake probe data + datamined field-schema match — NOT a new K measurement; K remains
+  MODEL-ONLY, unvalidated against real footage. **Process note:** both the driver and a BLIND Fable
+  post-op judge independently ACCEPTed the core fix (`/scientific-method`, full pipeline —
+  `docs/handoffs/scientific-method-harness.md` 2026-08-03 entry) but capped confidence at MEDIUM, one
+  bounded item short of the HIGH+HIGH bar this harness requires to auto-IMPLEMENT: K's swap weapon
+  (`shot_id 1004102`) has no `shot_detail` record anywhere in the datamine, so a hidden `muzzle_count`
+  multiplier (the same KIND that already invisibly doubles her own base SMG, `damage:455 × muzzle_count:2
+→ normalAttackMultiplier 9.1`) can't be ruled in or out — the harness therefore LOGGED this as an
+  owner action item rather than auto-landing it. **The owner reviewed the LOG and chose to merge as-is**,
+  accepting the MEDIUM-confidence risk: even in the worst case (a hidden ×2 muzzle multiplier), the
+  corrected reading is a strict improvement over the certainly-10×-wrong 925 value. **Open:** (a) the
+  muzzle-count question — a scope-lock focus recording of a K team would resolve it in the same pass as
+  graduating her off MODEL-ONLY (popup-read her burst-window white-pellet base value: ~10,918
+  ATK-equivalent under the accepted no-muzzle reading vs ~~21,836 under a hidden ×2); (b) with the
+  corrected cadence her burst weapon nets a real but MODEST advantage over just continuing her own
+  buffed SMG fire (~~+11% total damage on the `scripts/tests/units/k.test.ts` fixture, not the ~10× the
+  pre-fix 925 misread implied) — an atypically thin margin for a Burst III's signature weapon, though
+  not disqualifying (her S2 grants the whole team +10.62% Attack Damage, which may be the kit's real
+  value driver). — `src/skills/types.ts`, `src/engine/sim.ts` (`effectivePellets`, `firePull`'s `bandSg`
+  gate, `WeaponSwap` interface), `src/skills/overrides/k.json`, `scripts/tests/units/k.test.ts`

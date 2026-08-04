@@ -197,6 +197,32 @@ while the ammo counter measures shots/second**, so they could not discriminate t
 datamined value and a board reading disagree, find the instrument that measures the disputed quantity
 _directly_ rather than the one that is merely downstream of it.
 
+**A "▼N% Attack speed" line on a weapon-swap burst must scale the swap weapon's OWN nominal rate, not
+the base weapon's already-quantized effective rate (2026-08-03, `k`).** `k`'s burst swaps to a slower
+weapon kit-texted "Attack speed ▼90%"; the first pass computed this as `20.0/s (the base SMG's
+frame-quantized effective rate) × 0.10 = 2.0/s`, silently compounding the base weapon's own
+quantization loss into the swap's cadence. The correct order of operations is `1440 rpm (the base
+weapon's NOMINAL rate_of_fire) × 0.10 = 144 rpm = 2.4/s nominal`, THEN frame-quantize that fresh
+(`quantizeToFrames`) — which for 144 rpm lands on an exact 25-frame interval (2.4/s, no rounding loss)
+and is 20% higher than the wrong order gives. Percentage modifiers always apply to a NOMINAL rate;
+quantization is the LAST step, never something to chain twice.
+
+## "Damage X% ... Pelletcount N" is the FULL-SHOT total, never per-pellet
+
+A kit line shaped "Damage: X% of the final ATK / Pelletcount: N" (shotguns, and any weapon-swap into
+a shotgun-like weapon) states the TOTAL of the whole shot assuming every pellet lands — each pellet
+individually carries `X/N`% — the same convention every SG-class unit's `normalAttackMultiplier`
+already uses in this engine (confirmed against MEASURED popup data: `dorothy-serendipity`'s "Damage
+201.5%, Pelletcount 10" matches her measured one-full-shot total to within 2%; a per-pellet reading
+predicts 10× too high). **The tell that this was misread once already (`k`, 2026-08-02→2026-08-03):**
+the value was encoded as `X × N` (one collapsed hit worth the WHOLE multiplied total) instead of `X`
+(the shot's already-total value, to be split across landed pellets). If a future SG/pellet kit line
+reads suspiciously large relative to a comparable already-implemented SG unit's multiplier, check this
+first before assuming a new mechanic. This also means any weapon-swap into a pellet weapon should be
+declared `weapon: "SG"` (with a `pelletCount`) so it inherits the real accuracy-circle pellet-landing
+model and near-band-only range eligibility, not a flat 100%-landing shortcut — no other primitive in
+the engine currently grants a swap that model unless the override explicitly asks for it.
+
 ## Measuring fire cadence: two frames beat a whole session
 
 The cheapest high-value read in the toolkit. The ammo counter is the designated shot clock, so
