@@ -2951,6 +2951,46 @@
       ],
       "board": null
     },
+    "jackal": {
+      "name": "Jackal",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/jackal.json + scripts/kit-autonomy/manual-review/jackal.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "date": "2026-08-04",
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "S1 attacked-10x cluster + burst 38.91% scoped amp are DOCUMENTED-GAP (maiden/trina precedent); comp reads cold by the flag amounts; flag1 uptime estimate unanchored pending a boss-attack-cadence measurement",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when attacked 10 time(s). Affects 1 enemy unit(s) with the highest final Max HP.",
+          "Damage Taken ▲ 9.09% for 10 sec.",
+          "ATK ▼ 9.09% for 10 sec."
+        ],
+        "skill2": ["Equally shares damage taken  for 120 sec."],
+        "burst": [
+          "Burst Skill damage of skills with \"Affects 1 enemy unit(s)\" in the description ▲ 38.91% for 15 sec."
+        ]
+      },
+      "caveats": [
+        "burst: the 38.91% Burst-Skill-Damage amp (scoped to skills whose description says 'Affects 1 enemy unit(s)', 15s per cast) is NOT modeled — the engine has no Burst-Skill-Damage bucket/stat and no description-text scope gate (trina precedent, same mechanic family). Teammates' single-target burst nukes cast within 15s of jackal's cast are missing the amp, so jackal comps read COLD by exactly that amount — a documented engine gap (⚑2), not a tuning residual.",
+        "skill1: the whole attacked-10x cluster (Damage Taken ▲9.09% + ATK ▼9.09% on the boss, 10s) is unmodeled — the sim has no incoming-damage model and no attacked-count trigger (maiden Revenge-cluster precedent). If it were fireable it would be a ~+9.09% team amp after the first 10 hits taken; her in-game tanking role feeds the counter, so real uptime is high — honestly absent here (⚑1).",
+        "skill2: 'Equally shares damage taken' (self + 2 highest-final-ATK allies, 120s) is unmodeled — no redistribution primitive and no incoming damage at scope; defensive.",
+        "Both modeled lines are defPct (damage-INERT in v1): jackal's modeled kit contributes ZERO damage — her sim output is her bare RL weapon. Her real value (the burst amp + the S1 boss debuff) lives entirely in the two documented engine gaps."
+      ]
+    },
     "jill": {
       "name": "Jill",
       "burst": "III",

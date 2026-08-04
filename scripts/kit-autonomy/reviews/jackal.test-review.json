@@ -1,0 +1,107 @@
+{
+  "slug": "jackal",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Damage Taken ▲ 9.09% for 10 sec.",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "Boss DEBUFF (damageTakenPct) — multiplies ALL team damage of every bucket while live; not scoped to any attack type. This is a team-damage lever, NOT a defensive line.",
+      "durationSemantics": "Wall-clock durationSec:10 (expiresFrame = applyFrame + 600); refresh on re-proc.",
+      "triggerIdentity": "'Activates when attacked 10 time(s)' = a counter of hits RECEIVED by jackal. No engine trigger exists for being-attacked (v1 boss deals no damage), so the faithful encoding is an ⚑ interval proxy whose cadence = 10 ÷ measured boss attacks-received rate (boss target-selection also unmeasured ⚑). Per ALWAYS-⚑ rule 2 the effect must ship with a flagged estimate + recipe, never be silently dropped.",
+      "targetSet": "enemy — '1 enemy unit(s) with the highest final Max HP' resolves to the sole raid boss; emitted as a boss-held debuff (buffApply with casterIdx===null AND targetIdx===null, filter by stat+value).",
+      "nearestWrongModel": "Trigger misread 'attacked' as 'attacking': hitCount:10 on jackal's OWN shots — her RL cadence then gives a fixed fast proc rate and near-permanent +9.09% team uptime, over-crediting the whole board. Second-nearest: dropped entirely as 'defensive' because it sits on a Defender's kit.",
+      "distinguishingAssertion": "Event log contains buffApply {stat:'damageTakenPct', value:9.09, casterIdx:null, targetIdx:null} with expiresFrame−applyFrame=600, recurring at the ⚑ interval cadence; proc frames must NOT shift when jackal's own fire economy is patched via withPatchedOverride (e.g. changed ammo/cadence) — green under an interval/attacked proxy, red under hitCount(own-shots) keying.",
+      "inertness": "Must never apply as a buff ON a unit (no buffApply with a non-null targetIdx for this stat/value); zeroing the block must change ONLY the global damage-taken multiplier window, no per-unit stat.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▼ 9.09% for 10 sec.",
+      "disposition": "UNMODELED",
+      "scope": "Boss outgoing-ATK debuff — purely defensive; boss outgoing damage is not simulated in v1.",
+      "durationSemantics": "10 sec (moot).",
+      "triggerIdentity": "Same when-attacked-10 header as the line above.",
+      "targetSet": "enemy (the boss).",
+      "nearestWrongModel": "Encoded as an atkPct ▼ on an ALLY (target misread) — would wrongly reduce a unit's damage; or encoded on the boss via some stat that leaks into team damage.",
+      "distinguishingAssertion": "Total damage of every unit is byte-identical with and without this line present; no buffApply with stat 'atkPct' and value −9.09 targeting any unit index appears in the log.",
+      "inertness": "Zero damage delta everywhere; recorded verbatim in unmodeled.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Equally shares damage taken  for 120 sec.",
+      "disposition": "UNMODELED",
+      "scope": "Incoming-damage redistribution among self + 2 highest-final-ATK allies — v1 has no incoming-damage pool.",
+      "durationSemantics": "120 sec (moot).",
+      "triggerIdentity": "'Activates at the start of battle' = passive/one-shot apply at t=0.",
+      "targetSet": "self + 2 allies with highest FINAL ATK.",
+      "nearestWrongModel": "Tandem-rule trap in reverse: inventing an interaction (e.g. treating the share as a heal/shield event that fires teammates' recovery/shielded triggers). It is neither — no 'heal' nor 'shield' effect, so no recovery/shielded consumer may fire from it.",
+      "distinguishingAssertion": "No 'recovery' or 'shielded' events (and no heal/shield effect dispatch) originate from jackal's skill2; all units' totals identical with the line removed.",
+      "inertness": "Zero damage delta; zero synthetic recovery/shielded events; recorded verbatim in unmodeled.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▲ 8.27% for 120 sec.",
+      "disposition": "FAITHFUL",
+      "scope": "Generic DEF stat buff — engine-inert in v1 (defPct: self DEF does not affect own damage) but KEPT per the future-consumer rule (taxonomy 7).",
+      "durationSemantics": "durationSec:120 — NOTE the fight is 180 s, so the buff genuinely LAPSES at t=120 (expiresFrame ≈ 7200). It is not permanent.",
+      "triggerIdentity": "passive, applied at battle start (frame 0). 'At the start of battle' is not an interval and not fullBurstEnter.",
+      "targetSet": "self PLUS alliesTopAtk {count:2, excludeSelf:true, byFinalAtk:true} — kit literally says 'highest final ATK', which per the schema's A3 rule sets byFinalAtk (live effectiveAtk ranking), and 'self and 2 ally unit(s)' means self is unconditional, excluded from the top-2 pick.",
+      "nearestWrongModel": "alliesTopAtk {count:3} including self in the ranking — jackal is a Defender (lowest static-ATK class), so she'd drop out and a third ally wrongly gains the grant; or byFinalAtk omitted (static ranking) against the literal 'final ATK' wording; or durationSec omitted (permanent).",
+      "distinguishingAssertion": "Exactly 3 buffApply {stat:'defPct', value:8.27} events at frame 0: targetIdx set = {jackal's slot} ∪ {the 2 allies with highest live effectiveAtk}, each with expiresFrame ≈ 7200 — red if jackal is absent from the recipient set, if a 3rd ally replaces her, or if no expiry is set.",
+      "inertness": "Every unit's totalDamage identical with the block zeroed (defPct inert in v1) — the assertion is on the buffApply events, not damage.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Burst Skill damage ▲ 38.91% for 15 sec",
+      "disposition": "GAP",
+      "scope": "DOUBLY scoped: only damage instances in the BURST bucket, and only for allies whose Burst Skill description contains 'Affects 1 enemy unit(s)' (single-target bursts). NOT normals, NOT skill procs, NOT AoE-burst allies. The published StatKey list has NO burst-bucket-scoped damage stat at all (nothing like 'burstDamagePct'), let alone a description-gated one — engine primitive missing; needs a new primitive or a per-ally authoring-time qualification, which the driver must reconcile explicitly.",
+      "durationSemantics": "durationSec:15 from jackal's own Burst I cast — covers the subsequent B2/B3 casts of that rotation (measured 30-frame chain gaps) and any delayed burst damage landing inside the window.",
+      "triggerIdentity": "burstCast (jackal's OWN Burst I; she is B1, cd 20 s) — the buff must be LIVE BEFORE the rotation's B3 cast, because burst-cast damage resolves PRE-Full-Burst. Keying to fullBurstEnter applies it only after the B3's burst damage has already landed.",
+      "targetSet": "allies (all, self included — self-effect inert since jackal's own burst deals no damage); effective recipients are only the description-qualifying allies.",
+      "nearestWrongModel": "Three, in descending plausibility: (a) keyed to fullBurstEnter — the buff arrives AFTER the B3 burst-cast damage it exists to boost, silently zeroing the kit's signature effect while looking implemented; (b) encoded as generic attackDamagePct to all allies for 15 s — over-credits every bucket of every unit; (c) burst-scoped but UNFILTERED — AoE-burst allies wrongly buffed.",
+      "distinguishingAssertion": "Comp: jackal as the SOLE Burst I (controlComp fixes liter at B1, so a custom runComp comp replacing liter is required, keeping a B2 + a qualifying single-target-burst B3 so full bursts actually chain). A/B vs withPatchedOverride(jackal, zero-this-block): (i) the qualifying carry's burst-bucket damage events landing between jackal's burstCast event and fullBurstStart are ×1.3891; (ii) the carry's normal and skill buckets are identical between runs; (iii) a non-qualifying (AoE-burst) ally's burst bucket is identical between runs. Green only under burstCast + burst-bucket + description-gate; red under (a) [no delta at all], (b) [normals move], and (c) [AoE ally moves].",
+      "inertness": "All normal/skill-bucket damage of every ally, and the burst damage of every non-qualifying ally, must NOT move.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▲ 14.69% for 10 sec.",
+      "disposition": "FAITHFUL",
+      "scope": "Generic DEF stat buff — inert in v1, kept per future-consumer rule.",
+      "durationSemantics": "durationSec:10 from the burst cast.",
+      "triggerIdentity": "burstCast (same cast as the line above; distinct 10 s duration vs the 15 s damage line — assert both durations independently, they are not one buff).",
+      "targetSet": "allies (all, self included).",
+      "nearestWrongModel": "Merged with the 38.91% line into one 15 s block (wrong duration), or keyed to fullBurstEnter (timing shift — damage-inert here but a wrong-trigger tell), or silently dropped.",
+      "distinguishingAssertion": "buffApply {stat:'defPct', value:14.69} on all 5 unit indices at jackal's burstCast frame with expiresFrame = castFrame + 600 (≠ the 900-frame expiry of the damage line).",
+      "inertness": "Every unit's totalDamage identical with the block zeroed.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Damage Taken ▲ 9.09% (boss debuff, ⚑ cadence)",
+    "skill2:DEF ▲ 8.27% (inert stat — event-level assertions only)",
+    "burst:Burst Skill damage ▲ 38.91% (GAP — included despite label; the unit's signature line, driver must reconcile the missing primitive, cannot wave it off)",
+    "burst:DEF ▲ 14.69% (inert stat — event-level assertions only)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "ATK ▼ 9.09% for 10 sec."
+    ],
+    "skill2": [
+      "Equally shares damage taken  for 120 sec."
+    ],
+    "burst": []
+  },
+  "notes": "Where I expect shared-prior misreads, in order of damage: (1) burst 38.91% keyed to fullBurstEnter instead of burstCast — because burst-cast damage lands PRE-FB, an FB-enter keying applies the buff after the B3 nuke it exists to boost, so the kit's signature line becomes silently inert while appearing implemented; the pre-FB landing rule makes this the single most consequential trigger-identity call in the kit. (2) The same line's scope: no StatKey expresses burst-bucket-only damage, so a driver under schema pressure will reach for attackDamagePct or a generic buff — both refuted by the bucket-isolation assertions; this is a genuine engine GAP the driver must name, not paper over. (3) skill1 'when attacked 10 time(s)' misread as jackal's own hitCount:10 — 'attacked' is hits RECEIVED; with no being-attacked event source in v1 the faithful route is an ⚑ interval proxy from measured boss attack cadence (ALWAYS-⚑: estimate + recipe, never silent), and the fire-economy-invariance assertion distinguishes the two. (4) skill1 Damage Taken ▲ dropped as 'defensive' because it sits on a Defender — it is a boss debuff and the kit's second team-damage lever. Reconciliation items: (a) test comp must make jackal the SOLE B1 (controlComp pins liter at B1 — a custom comp is required, retaining B2 + a qualifying single-target-burst B3, since a broken chain makes zero full bursts); (b) the 'Affects 1 enemy unit(s)' description-gate needs a decidable qualification source (ally burst target-kind or per-ally authoring flag) and a comp containing BOTH a qualifying and a non-qualifying burst ally to assert the gate both ways; (c) skill2's 120 s duration is SHORTER than the 180 s fight — assert the lapse, don't model it permanent; (d) the two burst effects carry different durations (15 s vs 10 s) and must be separate buffs with separate expiries.",
+  "model": "claude-fable-5"
+}

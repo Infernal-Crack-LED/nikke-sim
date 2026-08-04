@@ -30,7 +30,7 @@
 | `alliesOfElement` | 10 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, exia, guillotine-winter-slayer, guilty, maiden-ice-rose, … |
 | `alliesOfElementWeapon` | 3 | ark-ranger-black, sugar, trina |
 | `alliesOfWeapon` | 9 | arcana-fortune-mate, d-killer-wife, drake, leona, miranda, noir, rem, sugar, … |
-| `alliesTopAtk` | 14 | alice, anis, avistar, chime, claire, folkwang, mast, maxwell, … |
+| `alliesTopAtk` | 15 | alice, anis, avistar, chime, claire, folkwang, jackal, mast, … |
 | `atkOfMaxHpPct` | 5 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose, maxwell-ordinary-mechanic |
 | `bossElement` | 1 | eve |
 | `bossElementGate` | 6 | brid-silent-track, eve, helm-aquamarine, marciana-marine-study, phantom, rosanna |
@@ -39,7 +39,7 @@
 | `burstEligibility` | 1 | rapi-red-hood |
 | `burstFirst` | 1 | prika |
 | `burstSnapshotsPreFb` | 1 | cinderella |
-| `byFinalAtk` | 11 | alice, anis, claire, folkwang, liberalio, mast, milk, miranda, … |
+| `byFinalAtk` | 12 | alice, anis, claire, folkwang, jackal, liberalio, mast, milk, … |
 | `cast` | 6 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |
 | `casterMaxHpPct` | 10 | ade, anis-star, avistar, cinderella, mary-bay-goddess, mast, maxwell-ordinary-mechanic, rouge, … |
 | `charge` | 1 | snow-white |
@@ -54,7 +54,7 @@
 | `escalating` | 8 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, mary-bay-goddess, volume |
 | `everyN` | 7 | clay, mast-romantic-maid, mint, neon-vision-eye, phantom, rouge, soda-twinkling-bunny |
 | `everyNOffset` | 3 | mint, neon-vision-eye, phantom |
-| `excludeSelf` | 16 | anis, arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, … |
+| `excludeSelf` | 17 | anis, arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, … |
 | `fbGate` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |
 | `flatDamage` | 76 | 2b, a2, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
