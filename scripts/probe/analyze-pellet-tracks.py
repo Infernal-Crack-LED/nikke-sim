@@ -5556,6 +5556,55 @@ def _cs_assert_fidelity_premises():
                          "in-radius-only (§3.9, pre-op gate revision 4).")
 
 
+def _cs_assert_fidelity_premises_behavioural():
+    """§3.9 hardening (cross-family post-op review fix 2, 2026-08-04) -- a BEHAVIOURAL pin alongside
+    `_cs_assert_fidelity_premises`, which is a source-text tripwire (`inspect.getsource()` substring
+    checks) and nothing more: a comment mentioning `is_red` would satisfy it, and a semantically
+    broken builder that still mentions the right identifiers would pass. This runs the REAL
+    `_rep_slim_dump` on a tiny synthetic in-memory dump and checks the three outcomes the two §3.9
+    premises predict:
+      - a RED track that would otherwise be in radius every frame (synthetic life=5) must NOT
+        appear in `radius_tracks` (white-only premise);
+      - a WHITE track entirely OUT of radius (synthetic life=6) must NOT appear (in-radius-only
+        premise);
+      - a WHITE track entirely IN radius (synthetic life=7) MUST appear, with the expected
+        `[life, runs]` shape.
+    Kept ALONGSIDE the source-text tripwire, not instead of it -- neither subsumes the other."""
+    cross = [(0.0, 0.0)] * 8
+    dump = {
+        "frame_counts": [{"white": 0, "red": 0} for _ in range(8)],
+        "cross_positions": cross,
+        "params": {"pellet_radius": 5, "max_pellet_frames": 13},
+        "tracks": [
+            # RED, in radius every frame -- must NOT survive into radius_tracks
+            {"id": 1, "first": 0, "last": 4, "life": 5, "is_red": True, "is_pellet": True,
+             "xs": [0.0] * 5, "ys": [0.0] * 5},
+            # WHITE, entirely OUT of radius -- must NOT survive
+            {"id": 2, "first": 0, "last": 5, "life": 6, "is_red": False, "is_pellet": True,
+             "xs": [100.0] * 6, "ys": [100.0] * 6},
+            # WHITE, entirely IN radius -- MUST survive, as [7, [0, 7]]
+            {"id": 3, "first": 0, "last": 6, "life": 7, "is_red": False, "is_pellet": True,
+             "xs": [0.0] * 7, "ys": [0.0] * 7},
+        ],
+    }
+    out = _rep_slim_dump("synthetic-fidelity-probe", dump, 60.0)["radius_tracks"]
+    lives = [life for life, _runs in out]
+    if 5 in lives:
+        raise SystemExit("--cap-score: FIDELITY PREMISE FAILED (behavioural) -- a synthetic RED "
+                         "track (life=5, in-radius every frame) appears in radius_tracks; "
+                         "_rep_slim_dump is no longer white-only (§3.9, pre-op gate revision 3).")
+    if 6 in lives:
+        raise SystemExit("--cap-score: FIDELITY PREMISE FAILED (behavioural) -- a synthetic WHITE "
+                         "track (life=6) entirely OUT of radius appears in radius_tracks; "
+                         "_rep_slim_dump's runs are no longer in-radius-only (§3.9, pre-op gate "
+                         "revision 4).")
+    matches = [runs for life, runs in out if life == 7]
+    if len(out) != 1 or len(matches) != 1 or matches[0] != [0, 7]:
+        raise SystemExit("--cap-score: FIDELITY PREMISE FAILED (behavioural) -- expected exactly "
+                         f"one radius_tracks entry [7, [0, 7]] (the synthetic in-radius WHITE "
+                         f"track), got {out}.")
+
+
 def _cs_assert_shot_red_event_fixed(dumps):
     """§3.10 (pre-op gate risk flag 3) -- the core-hit flag folded into `total` must be read from
     STORED `marker` counts, not re-derived per candidate (the "widening a band can only raise
@@ -5595,6 +5644,46 @@ def _cs_assert_monotonic(dumps):
                                  f"{cand} (band_hi={hi}) -- admitted white-track count {n} < "
                                  f"previous candidate's {prev}.")
             prev = n
+
+
+def _cs_assert_out_of_sample_coverage(dumps, labelled_tracks_name):
+    """§2.4 hardening (cross-family post-op review fix 1, 2026-08-04) -- `_cs_corridor_2_4` picks the
+    4 out-of-sample dumps for the MANDATORY corridor arm by `d["tracks"].startswith(prefix)`. A
+    future dump added to the fixture that matches NO prefix would silently fall out of that set --
+    while still counting in §2.3's pooled 852-event denominator -- exactly the quiet scope drift this
+    pre-commit exists to prevent. Assert SET EQUALITY instead of trusting the filter: every dump that
+    is not the in-sample labelled clip must match EXACTLY ONE prefix, and every prefix must match at
+    least one dump (a renamed dump would otherwise shrink the arm silently without either side
+    raising)."""
+    unmatched, ambiguous = [], []
+    matched_by_prefix = {p: [] for p in CAP_OUT_OF_SAMPLE_PREFIXES}
+    for d in dumps:
+        name = d["tracks"]
+        if name == labelled_tracks_name:
+            continue
+        hits = [p for p in CAP_OUT_OF_SAMPLE_PREFIXES if name.startswith(p)]
+        if not hits:
+            unmatched.append(name)
+        elif len(hits) > 1:
+            ambiguous.append((name, hits))
+        else:
+            matched_by_prefix[hits[0]].append(name)
+    if unmatched:
+        raise SystemExit(
+            f"--cap-score: OUT-OF-SAMPLE COVERAGE FAILED -- dump(s) {unmatched} match no entry in "
+            f"CAP_OUT_OF_SAMPLE_PREFIXES {CAP_OUT_OF_SAMPLE_PREFIXES} and are not the in-sample "
+            f"labelled clip ({labelled_tracks_name!r}). §2.4's mandatory corridor arm's scope must "
+            "be updated deliberately to include or exclude it -- it must never be dropped silently.")
+    if ambiguous:
+        raise SystemExit(
+            f"--cap-score: OUT-OF-SAMPLE COVERAGE FAILED -- dump(s) {ambiguous} match more than one "
+            "entry in CAP_OUT_OF_SAMPLE_PREFIXES; the prefix set must stay unambiguous.")
+    empty_prefixes = [p for p, names in matched_by_prefix.items() if not names]
+    if empty_prefixes:
+        raise SystemExit(
+            f"--cap-score: OUT-OF-SAMPLE COVERAGE FAILED -- prefix(es) {empty_prefixes} in "
+            "CAP_OUT_OF_SAMPLE_PREFIXES match zero dumps in the fixture (a renamed dump would "
+            "otherwise shrink §2.4's mandatory corridor arm silently).")
 
 
 def _cs_consistency_2_1(fx):
@@ -5838,8 +5927,10 @@ def _cs_compute(fx):
     dumps = fx["dumps"]
     _cs_assert_cap_values(dumps)
     _cs_assert_fidelity_premises()
+    _cs_assert_fidelity_premises_behavioural()
     _cs_assert_shot_red_event_fixed(dumps)
     _cs_assert_monotonic(dumps)
+    _cs_assert_out_of_sample_coverage(dumps, fx["labelled"]["tracks"])
 
     raw = {d["tracks"]: {cand: _cs_score_dump_candidate(d, cand) for cand in CAP_CANDIDATES}
           for d in dumps}
