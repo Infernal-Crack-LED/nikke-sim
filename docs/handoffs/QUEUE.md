@@ -293,11 +293,25 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
   **⇒ 2026-07-30 PELLET-READER REBUILD — plan of record
   `docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md` (START HERE block at the top;
   prior-art + sources in the companion `…-solution-survey.md`). Findings-only, nothing enacted.
-  ⇒ READ FIRST: `docs/handoffs/2026-08-03-pellet-reader-JUDGE-handoff.md`** — the current judge
-  handoff (it continues `2026-08-02-…`, which continues `2026-08-01-pellet-cascade-…`; the
-  graveyards and traps in all three are BINDING). Work lives on branch `fix/pellet-reader`,
-  UNPUSHED — read the count live with `git rev-list --count origin/fix/pellet-reader..HEAD`, never
-  from a written number. `/patch-notes` is owed before anything reaches `main`.
+  ⇒ READ FIRST: `docs/handoffs/2026-08-04-lifetime-cap-JUDGE-handoff.md`** — the current judge
+  handoff (it continues `2026-08-04-pellet-reader-…` → `2026-08-03-…` → `2026-08-02-…` →
+  `2026-08-01-pellet-cascade-…`; the graveyards and traps in ALL FIVE are BINDING). Work lives on
+  branch `fix/pellet-reader`, UNPUSHED — read the count live with
+  `git rev-list --count origin/fix/pellet-reader..HEAD`, never from a written number.
+  `/patch-notes` is owed before anything reaches `main`.
+  - **⚑ TOP ITEM (owner-gated): land `band_hi = 20`, the decoupled lifetime-band ceiling.** Both
+    mandatory out-of-sample gates PASSED (`docs/probe-runs.md` §14; ceiling 3.1% vs a 6.2% reject
+    line, corridor 0.64–0.84/event vs a 2.00 ceiling, 0 of 4 dumps failing). The pre-commit's
+    evidence bar is **MET** — this needs an owner decision, not more measurement.
+    ⚑ **It is a RESTRUCTURE, not a constant change: the naive edit is a provable silent no-op**
+    (`band_ids` is built as a subset of `pellet_ids`, which `_frame_pellet_counts` skips before the
+    band check). Read the handoff's §3 before touching it.
+  - **⚑ The cold bias is NOT closed** and `avgTotal` may not be cited as evidence that it is — it is
+    a per-EVENT pooled figure, a different basis from the per-SHOT ~1.08 deficit. Settling the bias
+    now gates on whether the 8.40 f8–11 **window** reference is itself right (handoff item 2).
+  - Item 7's prerequisite (is opencv's `marker = 3` at frame 1565 a true core hit?) is **ANSWERED —
+    no**, at n=1 (`docs/probe-runs.md` §15). The `read-pellets.ts:882` selector fix stays
+    owner-gated; do not self-authorize it on an n=1 read.
   - **Error budget (the target, computed):** U35 needs ±0.5 pellets/10 discrimination; at n≈40
     shots/band a per-shot random SD of **±1.5 pellets is tolerable**, but per-band **bias must be
     ≤ ±0.25 pellets/10**. The counter is ~10–20% cold = 0.8–1.6 → **3–6× over budget on BIAS.**
