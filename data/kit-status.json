@@ -4549,6 +4549,43 @@
       },
       "board": null
     },
+    "mica": {
+      "name": "Mica",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/mica.json + scripts/kit-autonomy/manual-review/mica.md."
+        ],
+        "date": "2026-08-05"
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "burst DEF▼ gap (comps read cold by a small team-wide lift; ≤0.12% DEF-materiality per SSOT); S2 interval:20 datamined (skillCooldownsSec.skill2), first-fire phase engine-native convention; byFinalAtk live re-ranking unexercised in driver fixture (ranking held static-shaped — spot-check in ATK-buff comps)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when attacked 20 time(s). Affects self.",
+          "DEF ▲ 39.18% for 10S."
+        ],
+        "skill2": [],
+        "burst": ["DEF ▼ 13.32% for 5 sec."]
+      },
+      "caveats": [
+        "skill1: the whole attacked-20x sentence (self DEF ▲39.18% / 10s) is unmodeled — the sim has no incoming-damage model and no attacked-count trigger primitive, and the effect would be damage-inert even if it fired (admi/jackal precedent). Honestly absent (⚑1), not a stale fixture — the unit test pins the zero against the hitCount:20 'attacks' misread.",
+        "burst: the DEF ▼13.32% / 5s enemy debuff is unmodeled — the engine has no debuff-scalable boss-DEF channel (enemyBuffs admits only damageTakenPct/distributedDamagePct; bossDef is a flat constant), himeno/eunhwa precedent. Mica comps read COLD by exactly that small team-wide lift (⚑2); the unit test pins the zero against a damageTakenPct laundering.",
+        "skill2's modeled ammo channel is the kit's only damage lever: the +2-round windows (50% duty cycle, 10s every 20s) lift ONLY the two highest-final-ATK holders' firing uptime; the DEF half is inert. On a basis where mica herself or a low-ATK carry tops the ranking, the holder set re-ranks live per cast (byFinalAtk)."
+      ]
+    },
     "mica-snow-buddy": {
       "name": "Mica: Snow Buddy",
       "burst": "I",

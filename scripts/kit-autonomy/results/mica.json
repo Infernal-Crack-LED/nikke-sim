@@ -1,0 +1,72 @@
+{
+  "slug": "mica",
+  "kitDescription": "Mica is a Wind-element rocket-launcher Supporter occupying the Burst-I slot. Her skill 1 would raise her own DEF after she takes 20 hits, but the sim's boss never attacks, so that line never comes into play. Every 20 seconds her skill 2 grants the two allies with the highest final ATK a +2-round magazine extension and a DEF buff, each lasting 10 seconds — the extra rounds mean fewer reloads and more firing uptime for those two carries. Her burst deals 152.22% of her final ATK to all enemies (a single hit on the test boss) and would lower enemy DEF by 13.32% for 5 seconds; that debuff is honestly unmodeled because the sim has no debuff-scalable boss-DEF channel, so her comps read slightly cold by that small team-wide lift. She is otherwise a pure support whose only damage lever is the ammo extension she hands out.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates when attacked 20 time(s). DEF ▲39.18%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim; no incoming-damage model and no attacked-count trigger primitive in v1; self defPct would be damage-inert even if it fired (admi/jackal family precedent); ⚑1 with estimate+recipe+tier",
+        "blindSaid": "S2b: UNMODELED, nearest-wrong hitCount:20 misread named; S5: it.skip GAP (no being-attacked channel); S6: skill1 [] + verbatim unmodeled",
+        "formulaCheck": "Engine has no being-attacked channel and no attacked-count TriggerDef; self DEF never feeds damage dealt — omission is costless at scope lock",
+        "fireRateOk": true,
+        "explanation": "All three independent derivations agree: no faithful encoding exists in the v1 engine and the effect is inert regardless. Driver pins the zero against the hitCount:20 attacks-misread counterfactual, proving absence is a choice. Recorded verbatim in unmodeled.skill1."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Max Ammunition Capacity ▲ 2 round(s) 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "maxAmmoFlat value 2, durationSec 10, interval:20 trigger, alliesTopAtk{count:2, byFinalAtk:true} — flat-round primitive; maxAmmoPct 2 would compute round(6×1.02)=6 and never extend a magazine (pinned RED)",
+        "blindSaid": "S2b: FAITHFUL, maxAmmoFlat 2 + durationSec 10 (NOT durationShots, NOT pct), byFinalAtk mandatory; S5: asserts stat=maxAmmoFlat value 2, 2 targets/window, ≥2 windows, load-bearing movement; S6: identical encoding",
+        "formulaCheck": "maxAmmo() = round(base×(1+pct/100)) + flat, so a flat +2 is the correct channel; extended magazines → fewer reloads → more shots (weapon-state modifier = damage, taxonomy #6)",
+        "fireRateOk": true,
+        "explanation": "Interval:20 fires first at t=20s then every 20s (8+ firings over 180s, driver's M2 pins exact 1200-frame period and first-fire phase). Targeting is live-final-ATK top-2 with no excludeSelf, matching the literal prose; driver fixture keeps the ranking static-shaped ({ada,helm}) and pins the all-allies and lowest-2 counterfactuals RED. The one adapted S5 assertion (net-sign → movement + one-sided lift) is a fixture-dynamics accommodation, not a divergence — the grant is live and moves recipient damage; the clean all-positive form is pinned in the driver's M4."
+      },
+      {
+        "kitLine": "DEF ▲ 19.89% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "defPct 19.89, durationSec 10, same block/targets as the ammo line; damage-inert in v1, byte-identical removal pinned, atkPct misread pinned RED",
+        "blindSaid": "S2b: FAITHFUL with inertness pin (keep per keep-inert-stat convention); S5: defPct 19.89 co-fires on identical frames/targets as ammo; S6: identical",
+        "formulaCheck": "defPct has no damage consumer in v1 — kept per convention for a future consumer; inertness proven both directions (removal byte-identical, offensive misread moves totals)",
+        "fireRateOk": true,
+        "explanation": "Rides the same interval block as the ammo line, same top-2 pool, same 10s window — one block, two effects, matching the prose's single ■ header. All three derivations converged."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 152.22% of final ATK as Burst Skill",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "ONE burstCast block, target enemy, flatDamage atkPct 152.22; sole-B1 fixture so she casts every FB (≥6 casts); nukes land on cast frames with fbMajorApplied=false (FB-exempt by timing); lvl-1 66.6 and fullBurstEnter keying pinned RED",
+        "blindSaid": "S2b: FAITHFUL, burstCast not fullBurstEnter, no +50% major; S5: canon-rewrite no-op, zero-atkPct lowers total, noFb forcing is a no-op, trigger=burstCast/target=enemy pinned; S6: identical block, noFb deliberately unset (exemption falls out of timing)",
+        "formulaCheck": "Burst-cast damage lands before the FB window opens (MEASURED boundary rule): no +0.5 major, no entry auras; burst damage never cores/ranges; crit-eligible by flatDamage convention ✓; 'all enemies' collapses to the single partless boss ✓",
+        "fireRateOk": true,
+        "explanation": "Fires once per own cast at the kit magnitude in the burst bucket. Timing discrimination is real: the fullBurstEnter counterfactual lands inside the window and takes the +50% major, and totals differ — the shipped model does neither. Three-way convergence on trigger identity, magnitude, and FB exemption."
+      },
+      {
+        "kitLine": "DEF ▼ 13.32% for 5 sec (all enemies)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim — ENGINE GAP: enemyBuffs admits only damageTakenPct/distributedDamagePct and bossDef is a flat constant no debuff scales (sim.ts drops enemy DEF▼ at dispatch); damageTakenPct laundering pinned RED; ⚑2 with estimate+recipe+tier; comps read cold by that small lift",
+        "blindSaid": "S2b: disposition FAITHFUL *with escape clause* — 'if the engine's DEF term turns out not to consume an enemy defPct debuff, that is a GAP the driver must declare, not a silent skip'; S5: it.skip GAP (no enemy-DEF channel; damageTakenPct explicitly NOT a substitute); S6: verbatim unmodeled, laundering rejected as fabrication",
+        "formulaCheck": "DEF is a small flat subtractive term inside the base; at scope lock bossDef=0 a DEF▼ moves literally nothing, and in game (DEF≈140) the lift is small but real — a DEF reduction is NOT interchangeable with damageTakenPct (subtraction vs multiplicative bucket)",
+        "fireRateOk": true,
+        "explanation": "The S2b escape clause's condition verified FALSE against the engine facts, so the declared GAP is exactly what the spec prescribed — not a divergence. All three derivations reject the damageTakenPct laundering on identical formula grounds. Recorded verbatim in unmodeled.burst."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA exists: all five kit lines are either FAITHFUL (S2 ammo flat-round grant, S2 DEF grant, burst nuke) or DOCUMENTED_GAP with verbatim unmodeled entries and ⚑ estimate+recipe+tier (S1 attacked-20× — no incoming-damage channel; burst DEF▼ — no debuff-scalable boss-DEF channel). The two blind re-derivations converged completely: S6's override is behaviorally identical to the driver's on every line (cosmetic/provenance differences only, with the driver holding better provenance on the datamined 20s skill CD), and S5's blind tests run 15/15 green with 2 skips that are the author's own documented GAPs on the same two lines the driver holds unmodeled — convergence is mechanical, not asserted. Discrimination is strong: 13 counterfactual arms each pinned RED (attacks-misread hitCount:20, passive duty cycle, all-allies scope, lowest-2 rank swap, maxAmmoPct percent-misread, atkPct def-misread, lvl-1 magnitude, fullBurstEnter timing, damageTakenPct laundering, plus removals and encoding pins), and the load-bearing ammo line is proven live via magazine-size (8-round mags), refill-size, and recipient-total assertions. The single adapted S5 assertion (net-sign → movement + one-sided lift) is a fixture-dynamics accommodation with the substance preserved and the clean form pinned in driver M4 — not a divergence. Ranked residuals for the owner: (1) the burst DEF▼ gap means mica comps read cold by a small team-wide lift (at boss DEF≈140, ~13.32% DEF cut at ~25% uptime — negligible per the SSOT's own ≤0.12% DEF-materiality note, but real); (2) the S2 interval:20 cadence is datamine-sourced, not footage-pinned — same-model stability risk is low given three independent derivations, but the interval first-fire phase (t=20s vs t=0) remains an engine-native convention worth a popup-cadence read if an S2 consumer is ever measured; (3) the sole-B1 fixture is sound, but the owner should spot-check that the byFinalAtk live-ranking behaves correctly in comps where an ATK buff re-ranks the pool mid-fight (the driver fixture deliberately holds the ranking static).",
+  "model": "kimi-code/k3"
+}
