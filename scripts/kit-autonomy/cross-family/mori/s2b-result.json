@@ -1,0 +1,153 @@
+{
+  "slug": "mori",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies. Sustained damage ▲",
+      "disposition": "FAITHFUL",
+      "scope": "Sustained-flavored damage ONLY (sustainedDamagePct) — never generic Damage Up; boosts allies' 'sustained'-flavor hits/DoTs, nothing else",
+      "durationSemantics": "durationSec 10 (wall-clock, 'for 10 sec'), no stacks",
+      "triggerIdentity": "burstCast — the line sits in HER OWN burst block with no activation clause, so it fires only on rotations mori herself casts Burst II; NOT fullBurstEnter",
+      "targetSet": "allies (all, including self — 'all allies' with no except-self clause)",
+      "nearestWrongModel": "Two: (a) encoding as attackDamagePct/generic Damage Up 10.16% (over-credits every ally's ALL damage); (b) keying to fullBurstEnter so it fires on every team Full Burst even on rotations another B2 (crown in the control fixture) casts",
+      "distinguishingAssertion": "Every buffApply {stat:'sustainedDamagePct', value:10.16, caster=mori's slot} is preceded in the same rotation by a burstCast event from mori's slot; rotations where the OTHER B2 casts produce ZERO such buffApply. And the stat on the buffApply is 'sustainedDamagePct', never 'attackDamagePct'",
+      "inertness": "With the line live, totals of a carry with NO sustained-flavored damage are IDENTICAL to a withPatchedOverride(mori, strip burst line) run — the buff must move only sustained-flavor damage",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "start of battle … Shield 40.12% Max HP",
+      "disposition": "FAITHFUL",
+      "scope": "Shield grant (no damage); opens the 'Struggle' self-status that gates skill2's taunt and both burst branches",
+      "durationSemantics": "'continuously' — permanent at scope lock (boss deals no damage, shields never break, so Struggle NEVER ends for the whole fight)",
+      "triggerIdentity": "passive / battle-start (t=0), fires once",
+      "targetSet": "self",
+      "nearestWrongModel": "Giving the shield a finite durationSec so Struggle 'ends' mid-fight, which would incorrectly arm the Struggle-end Max-HP stacks and the not-in-Struggle burst branch",
+      "distinguishingAssertion": "Zero buffApply events for maxHpFlat from skill1 across the entire run (the Struggle-end stack line must never fire, because Struggle never lapses at scope). Shield itself has no onEvent kind — assert via the absence of downstream Struggle-end effects plus damage-inertness of skill1",
+      "inertness": "mori's own damage totals and every ally's totals unchanged whether the shield block is present or stripped — the shield is offensively inert; only the status topology matters",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "when using Burst Skill … if not in Struggle",
+      "disposition": "UNMODELED",
+      "scope": "Re-shield fallback",
+      "durationSemantics": "'continuously' (re-opens permanent Struggle)",
+      "triggerIdentity": "burstCast (her own burst), gated on NOT-in-Struggle — unreachable at scope since Struggle never ends",
+      "targetSet": "self",
+      "nearestWrongModel": "Dropping the not-in-Struggle gate so a fresh shield/status re-applies on every burst cast; or keying it to fullBurstEnter",
+      "distinguishingAssertion": "No shield re-application side effects on any burst cast (the block, if authored, must be status-gated closed for the whole fight); mori's burst casts produce ONLY the burst-slot effects",
+      "inertness": "Nothing moves — this line must be a no-op end to end at scope lock",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "when Struggle ends … Max HP ▲ 5.06%",
+      "disposition": "UNMODELED",
+      "scope": "Self Max HP stat; offensively inert regardless (mori's kit has NO Max-HP→ATK/damage scaler, and ally-granted HP never feeds conversions)",
+      "durationSemantics": "'continuously', stacks up to 5 — but the trigger (Struggle ending) is unreachable at scope",
+      "triggerIdentity": "status-end event — no engine primitive, and Struggle never ends (boss deals no damage)",
+      "targetSet": "self",
+      "nearestWrongModel": "Applying the 5-stack Max HP as an always-on passive from t=0 ('it would be at cap anyway') — wrong direction entirely: at scope the correct stack count is ZERO for the whole fight",
+      "distinguishingAssertion": "Zero buffApply events with stat maxHpFlat/maxHpPct sourced from mori's skill1 slot at any frame",
+      "inertness": "No Max HP buff ever appears; mori's damage identical with the line absent",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "after landing 60 normal attack(s) … Taunts",
+      "disposition": "UNMODELED",
+      "scope": "Taunt (boss targeting) — defensive, no damage channel in the sim",
+      "durationSemantics": "4 sec taunt window",
+      "triggerIdentity": "hitCount:60 (counts ROUNDS — with ammo 60 that is ~once per magazine, adjacent to lastBullet timing), gated on self-in-Struggle (always true at scope)",
+      "targetSet": "the target (enemy)",
+      "nearestWrongModel": "Inventing a damage payload for the proc, or wiring the hitCount trigger to some other effect",
+      "distinguishingAssertion": "mori emits no damage events from skill2 at any 60-round boundary; skill-bucket damage from this line is exactly 0",
+      "inertness": "Nothing — the whole line is a no-op",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ally or self destroys an enemy's part…▲2.03%",
+      "disposition": "UNMODELED",
+      "scope": "Team sustained-damage buff — but the trigger is part destruction and the scope-lock boss is PARTLESS; the trigger can never fire",
+      "durationSemantics": "15 sec, stacks up to 5 — moot at scope",
+      "triggerIdentity": "part-destruction event — no engine primitive, physically impossible on the partless boss",
+      "targetSet": "allies (all)",
+      "nearestWrongModel": "Approximating with an interval or fullBurstEnter trigger so the 2.03%×5 sustained buff fires anyway — silently over-credits every sustained-flavor dealer",
+      "distinguishingAssertion": "Zero buffApply events with stat sustainedDamagePct value 2.03 anywhere in the run",
+      "inertness": "No stacking team buff ever appears; ally totals identical with the line stripped",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "destroys an enemy's part … 23.23% every 1 sec",
+      "disposition": "UNMODELED",
+      "scope": "Sustained-flavor DoT on the highest-ATK enemy — same part-destruction gate, impossible on the partless boss",
+      "durationSemantics": "ticks every 1 sec for 15 sec — moot at scope",
+      "triggerIdentity": "part-destruction event (unreachable); target-selection 'highest ATK enemy' is trivial (one boss)",
+      "targetSet": "enemy (1, highest ATK)",
+      "nearestWrongModel": "Authoring it as an interval/passive DoT (23.23%/s) because 'the trigger text is awkward' — adds a large phantom skill-damage stream (~23%×15 ATK per proc window) that never exists at scope",
+      "distinguishingAssertion": "mori's total skill-bucket damage across the full 180s run is exactly 0 — she deals normal-attack damage ONLY (her burst also carries no damage line)",
+      "inertness": "No dot damage events sourced from mori at any time",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "in Struggle … Recovers Shield HP 15.04%",
+      "disposition": "UNMODELED",
+      "scope": "Shield-HP top-up on self; at scope the shield is never damaged, so this is a no-op even in-fiction. Self-targeted, so it could only feed mori's OWN shielded-trigger consumers — she has none",
+      "durationSemantics": "instant on cast",
+      "triggerIdentity": "burstCast, gated on in-Struggle (always true at scope) — this is the branch that ACTUALLY fires every time she bursts",
+      "targetSet": "self",
+      "nearestWrongModel": "Treating the 15.04% Max-HP figure as damage or as a Max HP buff; or emitting it to allies (it is self-only)",
+      "distinguishingAssertion": "mori's burst casts emit NO damage events and NO maxHpFlat buffApply — only the sustainedDamagePct 10.16 team buff accompanies each of her casts",
+      "inertness": "Nothing moves",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "not in Struggle … Max HP ▲ 10.09%",
+      "disposition": "UNMODELED",
+      "scope": "Self Max HP, offensively inert (no HP→damage scaler in kit)",
+      "durationSemantics": "10 sec — but the not-in-Struggle gate is closed for the entire fight at scope",
+      "triggerIdentity": "burstCast, gated NOT-in-Struggle — unreachable (Struggle permanent)",
+      "targetSet": "self",
+      "nearestWrongModel": "Applying the Max HP buff ungated on every burst cast",
+      "distinguishingAssertion": "Zero buffApply with stat maxHpFlat sourced from mori's burst slot at any of her casts",
+      "inertness": "No Max HP buff ever appears from the burst",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "burst:all-allies Sustained damage ▲ 10.16% for 10 sec (burstCast, sustainedDamagePct)",
+    "skill1:start-of-battle Struggle shield (permanent status topology — gates every branch)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Activates when using Burst Skill. Affects self if not in Struggle status. Struggle: Creates a Shield equal to 40.12% of the final Max HP continuously.",
+      "Activates when Struggle status ends. Affects self. Max HP ▲ 5.06% continuously, stacks up to 5 time(s)."
+    ],
+    "skill2": [
+      "Activates after landing 60 normal attack(s) when self is in Struggle status. Affects the target. Taunts for 4 sec.",
+      "Activates when an ally or self destroys an enemy's part. Affects all allies. Sustained damage ▲ 2.03%, stacks up to 5 time(s) and lasts for 15 sec.",
+      "Activates when an ally or self destroys an enemy's part. Affects 1 enemy unit(s) with the highest ATK. Deals 23.23% of final ATK as sustained damage every 1 sec for 15 sec."
+    ],
+    "burst": [
+      "Activates when self is in Struggle status. Affects self. Recovers Shield HP equal to 15.04% of the skill user's final Max HP.",
+      "Activates when self is not in Struggle status. Affects self. Max HP ▲ 10.09% for 10 sec."
+    ]
+  },
+  "notes": "Structural read: mori deals ZERO skill/burst damage at scope lock — her entire sim-visible contribution is normal attacks plus ONE team buff (burst sustainedDamagePct 10.16%/10s). Expected shared-prior misreads the tests must kill: (1) 'Sustained damage ▲' encoded as attackDamagePct/generic Damage Up — the single most damaging misread, it moves every ally; (2) the burst team buff keyed to fullBurstEnter instead of burstCast — she is Burst II, and the control fixture already contains crown (B2), so the two B2s compete per rotation and the wrong trigger fires on crown's rotations too (assert per-rotation pairing with mori's own burstCast events); (3) the part-destruction pair (skill2 lines 2–3) fired via an invented interval trigger — the scope-lock boss is partless, both lines must be dead, and 23.23%/s×15s is a large phantom DoT if guessed in; (4) Struggle topology inverted — at scope the shield never breaks, so Struggle is PERMANENT: the Struggle-end Max-HP stacks and both not-in-Struggle branches must never fire (correct stack count is 0 all fight, not 5). Fixture caveats for the driver: because crown is also B2, decide explicitly whether the test swaps crown out or asserts on the mixed-B2 rotation; and since sustainedDamagePct only feeds sustained-flavored damage, the control carry likely has none — assert the load-bearing line on buffApply events (stat+value+caster) and via an A/B with the line stripped against a sustained-flavor dealer, never on raw totals alone. Shield effects have no onEvent kind in the listed API, so skill1 assertions must be indirect (absence of downstream effects + damage inertness). Could not write the file (no tools in this run) — JSON returned inline for the orchestrator to save to scripts/kit-autonomy/reviews/mori.test-review.json.",
+  "model": "claude-fable-5"
+}

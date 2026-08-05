@@ -4603,6 +4603,51 @@
         "temp": "COLD ▼"
       }
     },
+    "mori": {
+      "name": "Mori",
+      "burst": "II",
+      "weapon": "AR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/mori.json + scripts/kit-autonomy/manual-review/mori.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "date": "2026-08-04",
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5(claude-opus-5)/S6(claude-opus-5)/S7(kimi-code-k3) converged; no REAL-GOTCHA",
+      "residual": "Struggle=shield-presence proxy + 'recover Shield HP' as shield set-effect agreed by construction not measurement (shield-break focus recording) + part-destruction payload out-of-domain on partless boss + cadence tuple datamined unmeasured — spot-check cluster on a mori-focus recording",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when using Burst Skill. Affects self if not in Struggle status.\nStruggle: Creates a Shield equal to 40.12% of the final Max HP continuously.",
+          "■ Activates when Struggle status ends. Affects self.\nMax HP ▲ 5.06% continuously, stacks up to 5 time(s)."
+        ],
+        "skill2": [
+          "■ Activates after landing 60 normal attack(s) when self is in Struggle status. Affects the target.\nTaunts for 4 sec.",
+          "■ Activates when an ally or self destroys an enemy's part. Affects all allies.\nSustained damage ▲ 2.03%, stacks up to 5 time(s) and lasts for 15 sec.",
+          "■ Activates when an ally or self destroys an enemy's part. Affects 1 enemy unit(s) with the highest ATK.\nDeals 23.23% of final ATK as sustained damage every 1 sec for 15 sec."
+        ],
+        "burst": [
+          "■ Activates when self is not in Struggle status. Affects self.\nMax HP ▲ 10.09% for 10 sec."
+        ]
+      },
+      "caveats": [
+        "skill1: Struggle is modeled as a durationSec-less shield (permanent at scope — sim.ts: no duration = MAX_SAFE_INTEGER window). This is the faithful reading of 'continuously' for a fight where the boss deals no damage: the shield can never break, so Struggle never ends and the kit's three Struggle-END/NOT-IN-STRUGGLE branches (all unmodeled) correctly fire ZERO times all fight",
+        "burst: the 15.04% shield-recovery line carries requiresShielded even though the gate always passes at scope — the condition is part of the kit text ('Activates when self is in Struggle status') and becomes live the day an engine model can break shields; M4 proves the block is exactly damage-inert today. The shield effect records the magnitude only (no HP pool is modeled — types.ts shield docstring 'recorded for kit completeness')",
+        "burst: 'Affects all allies' = {kind:'allies'} incl. self (engine convention, no excludeSelf). mori herself has no sustained-flavor hits in the model, so the buff is damage-inert ON HER and lives through teammates' sustained-flavor damage (test fixture: jill's Acid Ammo DoT)",
+        "burst: buff lands at cast time (burstCast), which precedes the Full Burst window — the line has no FB-timing clause, so no fbGate/noFb annotation (it is a buff, not a damage instance, so the FB major is not in play either way)",
+        "gauge: mori has a datamined gauge-per-shot row (base 20 / target 40 = burst_energy_pershot 2000 / target 4000 divided by 100, same convention as every datamined AR row). The AR class-modal fallback (40) happens to coincide with her target value, so the row is documentation-grade as well as correct",
+        "fixture: mori is Burst II — the standard controlComp (crown B2) would starve her casts; the unit test fields her as the SOLE B2 (liter/mori/jill) so she casts every chain"
+      ]
+    },
     "n102": {
       "name": "N102",
       "burst": "I",
