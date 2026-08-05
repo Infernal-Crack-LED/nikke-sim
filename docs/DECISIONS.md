@@ -3851,3 +3851,62 @@ build:deploy` **only**. But `railway.json`'s `buildCommand` is `bash scripts/ver
   not disqualifying (her S2 grants the whole team +10.62% Attack Damage, which may be the kit's real
   value driver). — `src/skills/types.ts`, `src/engine/sim.ts` (`effectivePellets`, `firePull`'s `bandSg`
   gate, `WeaponSwap` interface), `src/skills/overrides/k.json`, `scripts/tests/units/k.test.ts`
+
+## Board artifacts decoupled from the PR-CI build path — Steps 0–1 landed, Steps 2–4 deferred (2026-08-04)
+
+**Decision.** PR CI no longer BUILDS the six board JSONs — it FETCHES the published set from
+nikkesim.app (~1s; `scripts/fetch-published-boards.ts`: retries, hard-fail, documented escape
+hatch) and runs an ADVISORY staleness check (`scripts/check-board-freshness.ts`, FRESH/STALE/NO-HASH
+states, never fails CI). The deploy path keeps building — `deploy.yml` builds the boards pre-deploy
+and the Railway build rebuilds them from the merged branch — so a stale published artifact
+self-heals at deploy time and the deployed site is never stale: the deploy path is the HARD gate
+(owner decision applied as recommended: advisory on PR, hard on `main`/pre-deploy). `verify.sh`'s
+artifacts tier skips the builders under `SKIP_BOARD_BUILD=1` (set by ci.yml only), and a
+post-deploy `builder-canary` job in deploy.yml force-rebuilds the boards after every successful
+deploy — the builder-breakage signal Step 0 removes from PR CI (`--force` is load-bearing: without
+it the post-deploy live candidate carries every row and proves nothing). Step 1 generalizes the
+dpschart input hash (2026-07-29 entry above) into one SSOT, `scripts/artifact-input-hash.ts`: one
+shared GLOBAL bucket for the five rank boards — the refresh unit is `ranks:all`, all five rebuild
+unconditionally, so per-builder granularity could never change a decision the hash drives — plus
+own buckets for ol-default and infographics, with `inputsHash` embedded in every artifact (the
+infographics manifest carries it as provenance; boards are hashed stripped-content so rebuild
+timestamps cannot move it). `board-hash-parity.test.ts` is the hard half: a locally-present artifact
+whose embedded hash disagrees with the tree fails naming the exact refresh command; it skips only
+where unactionable (absent artifact, pre-hash published artifact, or fetched-and-stale under
+`BOARDS_FETCHED=1`). ol-default.json is COMMITTED, so its gate is hard everywhere. Also pinned:
+`b1b2dps.json` was the only board missing from `MUTABLE_PATHS` on both servers (no-cache by
+fallback accident, one matcher change from a year-long cache).
+
+**Why.** The board-build step cost 472s on any engine PR (434s dpschart full rebuild + ranks:all on
+the 4-vCPU runner; CI run 30877617106 / PR #82): the 2026-07-29 skip gate correctly cannot carry
+rows over when a global-bucket file moves, because an engine edit can move any unit's damage and a
+file hash cannot prove otherwise — the rebuild WAS the step. Storage and scheduling are separable
+and only scheduling buys the time back; the live site already functions as the artifact store
+(`fetchLiveCandidate` has fetched it for carry-over since 2026-07-29), so Step 0 generalizes an
+existing proven transport instead of adding infra. The DB-storage half (plan Step 2) is deferred
+indefinitely: for ~314 KB of JSON already publicly served, a DB adds schema/migration/secret
+surface for zero time beyond Step 0, and the plan's own hazard review preferred the public-URL
+path. Steps 3–4 (image-store split for ~48s of infographics; nightly rebuild cron) deferred
+likewise — revisitable options, not roadmap; Step 4 additionally waits on its open roster-drift
+decision. The board-join tests are shape/join checks (slugs ⊆ roster, fixed card geometry,
+rank/index consistency), not engine-vs-artifact value parity, so running them against a fetched
+artifact stale w.r.t. the branch is safe — the common stale case is exactly an engine PR.
+
+**Cross-family code review (kimi-k3, two rounds, owner-directed routing).** Round 1 BLOCKED:
+`src/stats.ts` (characterStat — every simulated unit's ATK/DEF/HP) and `src/data/squads.ts`
+(squadOf — same-squad block gates) were in NO hash bucket, the false-FRESH failure mode; the gap
+pre-existed in the 2026-07-29 dpschart bucket (the Step-0 extraction carried it verbatim) and the
+first ranks cut repeated it (direct-imports-only scan missed the transitive closure of sim.ts /
+prepare.ts). Fixed in `1252c6da`; the NEW parity test correctly caught the intermediate ol-default
+drift during the fix. Round 2 CLEAN, one FOLLOW-UP filed: the infographics bucket still misses
+`src/ranks/b1b2-cells.ts` + `src/ranks/buffer-rows.ts` (value-imported by
+`src/infographics/core/rankTables.ts`, one hop beyond the round-1 fix) — zero impact while the
+manifest hash is provenance-only; a Step-3 pre-req, queued in `docs/handoffs/QUEUE.md`.
+
+**Evidence.** `verify.sh` fast + full green; full PR-CI simulation green (`BOARDS_FETCHED=1` full
+gate against fetched stale boards + `SKIP_BOARD_BUILD=1` artifacts tier); rebuild determinism
+(twice → identical hash); all 65 dpschart per-unit hashes byte-identical to the live artifact
+post-extraction; PR #85 CI green in 5m38s with the fetch step at ~1.2s. One-time cost: the bucket
+additions move every hash once — one full board rebuild on the first deploy, which the deploy path
+performs anyway. Plan + landing record + audit trail:
+`docs/handoffs/2026-08-03-artifact-store-decoupling-plan.md`; PR #85.

@@ -349,6 +349,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **⇒ Bakery-bot share-URL durability — one residual to tell the bot:** a `characters.json` change (e.g.
   a unit rename) moves pixels without moving the render cache key — `specCacheKey` covers renderer
   changes, not data changes. If that bites, add a data stamp to the key.
+- **⇒ Artifact-decoupling Step-3 pre-req: infographics input bucket misses two render inputs** —
+  `src/ranks/b1b2-cells.ts` + `src/ranks/buffer-rows.ts` (value-imported by
+  `src/infographics/core/rankTables.ts`). Zero impact while `dist/img/manifest.json`'s `inputsHash`
+  is provenance-only; load-bearing if Step 3 ever gates on it. Filed by the kimi-k3 round-2 review
+  (2026-08-04) → `docs/handoffs/2026-08-03-artifact-store-decoupling-plan.md` §8.
+- **⇒ Artifact-decoupling Steps 2–4: deferred options, one owner decision open** — DB storage for the
+  board JSON (2), image-store split (3), nightly rebuild cron (4; blocked on open decision #2: the
+  nightly sync's roster-drift policy — recommendation stands: refuse to publish + notify). Revisit
+  only if the need materializes → `docs/handoffs/2026-08-03-artifact-store-decoupling-plan.md` §8.
 
 ### Tier-0 open threads
 

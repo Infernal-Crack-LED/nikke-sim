@@ -1,10 +1,10 @@
 # Decoupling the generated artifacts from the deploy path — scoping doc (2026-08-03)
 
 Status: **SCOPE ONLY — Steps 2–4 unimplemented; Steps 0–1 + the builder canary are IMPLEMENTED on
-branch `worktree-artifact-decoupling-review` (2026-08-04; verified: `verify.sh full` and the
+branch `worktree-artifact-decoupling-review` (PR #85, CI green; verified: `verify.sh full` and the
 simulated PR-CI artifacts tier green locally, incl. a full fetch-state simulation). Decision §8.1
 applied as recommended (advisory on PRs; the deploy path is the hard gate); decision §8.2 still
-open.**
+open. Settled WHY + landed state → DECISIONS 2026-08-04 + STATE.md §8.**
 
 Origin: owner asked why the CI `Build rank-board artifacts` step took ~8 min on PR #82 when the
 `b71af726` incremental-rebuild work should have cut it, then asked to scope moving the pre-built

@@ -339,9 +339,12 @@ Two structural facts that keep getting re-derived:
 
 Five ranked lists. Sources `src/ranks/`, builders
 `scripts/build-{burstgen,burstcdr,sustain,bufferchart,b1b2dps}.ts` (`npm run ranks:all`), artifacts
-`web/public/{burstgen,burstcdr,sustain,bufferchart,b1b2dps}.json` (gitignored build outputs, not in
-verify.sh), tests `scripts/tests/ranks/*.test.ts`. Methodology of record: `docs/data/rank-boards.md`.
-Planned follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
+`web/public/{burstgen,burstcdr,sustain,bufferchart,b1b2dps}.json` — gitignored build outputs; PR CI
+FETCHES the published set instead of building and the deploy path rebuilds (each artifact embeds its
+`inputsHash` from `scripts/artifact-input-hash.ts`, parity-gated by
+`scripts/tests/share/board-hash-parity.test.ts`) → DECISIONS 2026-08-04. Tests
+`scripts/tests/ranks/*.test.ts`. Methodology of record: `docs/data/rank-boards.md`. Planned
+follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
 
 - **burstgen** — all sim-supported units, standard no-op team, bursting enabled, unit focused and
   leftmost in its burst category. Ranked by `gaugePerSec` = `gaugeGenerated` / `gaugeBuildTimeSec`
