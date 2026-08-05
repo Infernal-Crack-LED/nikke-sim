@@ -5913,3 +5913,92 @@ NUMERATORS and the mechanism partition.
 `debounce_shots` and the `--dump-tracks` schema are all UNCHANGED; no constant, gate, threshold or
 default moved; no existing fixture was touched. The schema fix this finding implies is a separate
 landing with its own blast-radius pass.
+
+#### §26 THE `--dump-tracks` SCHEMA FIDELITY LANDING — §25's two mechanisms go to ZERO by construction, and a THIRD gap surfaces
+
+**2026-08-05.** Executes `docs/handoffs/2026-08-05-dump-schema-LANDING-PLAN.md` (blast radius
+measured before any production file was touched; cross-family pre-op gate `kimi-code/k3`
+**APPROVED-WITH-REVISIONS**, all four revisions executed, verdict quoted in the plan's §7 at receipt
+per trap 6). Landing `8d500ff9`. Implementation delegated to a Sonnet subagent against the approved
+plan; every acceptance number below was **independently re-derived by the driver**, not accepted as
+reported.
+
+##### §26A — What changed
+
+| Edit  | Change                                                                                            | Kills                         |
+| ----- | ------------------------------------------------------------------------------------------------- | ----------------------------- |
+| A     | `_track_components` stamps a per-frame `reds` array parallel to `xs`/`ys`/`areas`                 | **SPLIT**, exactly            |
+| B     | `--dump-tracks` stores `xs`/`ys` at **full precision** (no `round(v, 1)`)                         | **BOUNDARY**, by construction |
+| C     | `params` persists `marker_radius` **and** `band_hi`                                               | the silent replay assumption  |
+| D1–D4 | The two per-frame reconstructions consume `reds`; two sites resolve `marker_radius` from `params` | the NO-OP the gate flagged    |
+
+⚑ **Edit B is full precision because the gate refused 2 dp.** 2 dp only shrinks the flip window to
+~±0.007 px and leaves `n_divergent == 0` unprovable — the dump does not record the true pre-rounding
+distance, so no measurement on an existing dump can rule out a residual flip. Full precision removes
+the mechanism instead of shrinking it. **This is exact only because `cross_positions` carries no
+rounding error** — verified, not assumed: every stored value on `h4-marciana-structural` (n=5473)
+and `groundtruth-f811-v4` (n=1801) is **integer-valued**, so `xs`/`ys` were the only lossy term.
+
+##### §26B — Acceptance, all five controls
+
+New dump `groundtruth-f811-v5-schemafix` — `groundtruth-f811-v4`'s 1801 on-disk frames re-run
+through the counter with the original flags (no ffmpeg, no VLM). ⛔ The original was **never
+overwritten**; it is §25's evidence.
+
+| Control                                                             | Result                                                                                      |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| **Determinism** — new `frame_counts` vs old, `white`/`red`/`marker` | **0 diffs / 1801 frames.** These edits change no counting math.                             |
+| **Replay fidelity on the NEW dump** (`n_divergent`)                 | **15 → 0** (was 13 SPLIT + 2 BOUNDARY)                                                      |
+| **⚑ The no-op check**                                               | A landing that left this at 15 would be the no-op the gate caught twice before. It did not. |
+| **Backward compat** — untouched `h4-marciana-structural`            | still exactly **89** (88 SPLIT / 1 BOUNDARY), marker rate 0.1386 — §25A reproduced          |
+| **Fixtures moved**                                                  | **ZERO.** 26 selftest arms and `verify.sh` green.                                           |
+
+##### §26C — First-ever `band`-channel replay reading (§4.1's known-unknown)
+
+`band` rides the same SPLIT mechanism, and until this dump existed **no dump on disk carried `band`
+in `frame_counts`** — every one predates §23, so it had never been measurable. On the first post-§23
+dump: **pre-fix 13 divergent frames of 1801** (577 band-bearing), **post-fix 0**. Consistent with
+the 13 SPLIT frames in the same dump's `white`/`red`/`marker` divergence — the same colour-flipping
+tracks, as the mechanism predicts. The plan's pre-committed rule was that a nonzero reading here
+records a finding and does not block; it went to zero, so nothing was owed.
+
+##### §26D — ⚑ A THIRD SCHEMA GAP, FOUND WHILE VERIFYING — reported, NOT acted on
+
+**`fps` is not persisted in the `--dump-tracks` `params` block either**, and `band_lo` is
+`round(8 × fps / 60)` — so **a replay of the `band` channel cannot resolve its own lower bound from
+the dump.** It has to guess, exactly the failure §25 and this landing exist to remove.
+
+This is not hypothetical: the driver's first pass at §26C assumed `fps = 60` (the clip's own
+sampling rate), got **312 pre-fix / 304 post-fix**, and would have reported the landing as failing
+`band`. `count-pellets.py --fps` defaults to **30** and `make-groundtruth-f811.py`'s `run_counter`
+never passes it, so the real value is `band_lo = 4`, giving 13 / 0. **The wrong-`fps` reading was
+caught by the whole-picture check** (a fix that takes `white`/`red`/`marker` to exactly zero cannot
+leave `band` at 304 — same mechanism, same tracks; the contradiction was the tell).
+
+⚑ Two consequences, both **recorded for a later pass, neither enacted here**:
+
+1. Persisting `fps` belongs with edit C. Out of scope for this landing, which was gate-approved with
+   a fixed edit list.
+2. ⚑ **`make-groundtruth-f811.py` extracts at 60 fps but lets the counter default to `--fps 30`**,
+   so that dump's `band_lo` is 4 where the clip's own rate implies 8. This predates `band` existing
+   and touches no landed conclusion, but it is a live provenance mismatch for any future `band` work
+   on that clip.
+
+##### §26E — Cost and scope
+
+`tracks.json` **2,758,003 → 3,800,307 bytes (+37.8%)** on this dump — above the plan's per-edit
+estimates (A +10%, B +19–22%, which were not strictly additive). Recorded as measured; scales with
+`sum(track life)`, not with clip length alone.
+
+**Eleven call sites in `analyze-pellet-tracks.py` plus two in `score-pellets.py` still read the
+track-level creation-time `is_red`** — deliberately: they ask "which colour is this track", not a
+per-frame channel-counting question, and changing them would move committed fixtures for no measured
+reason. ⚑ On a SPLIT frame that value is now something the same dump demonstrably contradicts, so
+any FUTURE arm built on them inherits §25's 12.20% mislabel. A code comment in the
+`--dump-replay-fidelity` section records this so a later pass finds it rather than re-deriving it.
+
+⛔ **The gains reach NEW extractions only.** Every dump written before `8d500ff9` still carries
+neither `reds` nor full-precision positions and still exhibits both mechanisms exactly as §25A
+measured. ⛔ Nothing here touches the cold bias, `MARKER_MIN`, `debounce_shots`, or `read-pellets.ts`'s
+counting path, and no verdict is stamped on marker truth — that is the marker-semantics pass, still
+open.
