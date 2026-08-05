@@ -25,13 +25,14 @@
 | --- | --- | --- |
 | `advantageVs` | 2 | rapi-red-hood, sugar |
 | `alliesLowestAtk` | 1 | liberalio |
-| `alliesLowestHp` | 6 | blanc, naga, pepper, poli, rapunzel, sakura-suzuhara |
+| `alliesLowestHp` | 7 | blanc, misato, naga, pepper, poli, rapunzel, sakura-suzuhara |
 | `alliesOfClass` | 2 | biscuit, d |
 | `alliesOfElement` | 11 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, exia, guillotine-winter-slayer, guilty, maiden-ice-rose, … |
 | `alliesOfElementWeapon` | 3 | ark-ranger-black, sugar, trina |
 | `alliesOfWeapon` | 10 | arcana-fortune-mate, d-killer-wife, drake, leona, miranda, neon, noir, rem, … |
-| `alliesTopAtk` | 16 | alice, anis, avistar, chime, claire, folkwang, jackal, lily, … |
-| `atkOfMaxHpPct` | 5 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose, maxwell-ordinary-mechanic |
+| `alliesTopAtk` | 17 | alice, anis, avistar, chime, claire, folkwang, jackal, lily, … |
+| `atkOfCasterMaxHpPct` | 1 | maxwell-ordinary-mechanic |
+| `atkOfMaxHpPct` | 4 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose |
 | `bossElement` | 1 | eve |
 | `bossElementGate` | 7 | brid-silent-track, eve, helm-aquamarine, marciana-marine-study, neon-blue-ocean, phantom, rosanna |
 | `burstCasters` | 3 | ada, arcana, crown |
@@ -39,7 +40,7 @@
 | `burstEligibility` | 1 | rapi-red-hood |
 | `burstFirst` | 1 | prika |
 | `burstSnapshotsPreFb` | 1 | cinderella |
-| `byFinalAtk` | 12 | alice, anis, claire, folkwang, jackal, liberalio, mast, milk, … |
+| `byFinalAtk` | 13 | alice, anis, claire, folkwang, jackal, liberalio, mast, milk, … |
 | `cast` | 6 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |
 | `casterMaxHpPct` | 11 | ade, anis-star, avistar, cinderella, mary-bay-goddess, mast, maxwell-ordinary-mechanic, rouge, … |
 | `charge` | 1 | snow-white |
@@ -52,27 +53,27 @@
 | `delaySec` | 5 | asuka-wille, dorothy, flora, rapi-red-hood, snow-white |
 | `durationShots` | 9 | emilia, helm, miranda, neon, neve, phantom, snow-white-heavy-arms, vesti-tactical-upgrade, … |
 | `escalating` | 9 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, mary-bay-goddess, neon-blue-ocean, … |
-| `everyN` | 7 | clay, mast-romantic-maid, mint, neon-vision-eye, phantom, rouge, soda-twinkling-bunny |
-| `everyNOffset` | 3 | mint, neon-vision-eye, phantom |
+| `everyN` | 7 | clay, mast-romantic-maid, mint, neon-vision-eye, phantom, power, soda-twinkling-bunny |
+| `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
 | `excludeSelf` | 17 | anis, arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, … |
 | `fbGate` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |
-| `flatDamage` | 78 | 2b, a2, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, … |
+| `flatDamage` | 81 | 2b, a2, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 4 | d, isabel, modernia, soda-twinkling-bunny |
-| `gainPierce` | 9 | ade-agent-bunny, asuka, dorothy, grave, makima, mari, milk-blooming-bunny, naga, … |
+| `gainPierce` | 10 | ade-agent-bunny, asuka, dorothy, grave, makima, mari, milk-blooming-bunny, naga, … |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
 | `hasPierce` | 6 | alice, laplace, laplace-ultimate-hero, maxwell-ordinary-mechanic, red-hood, zwei |
 | `hasTrueNormals` | 0 | _none_ |
 | `highestAllyAtkPct` | 1 | guilty |
 | `highestAllyMaxHpPct` | 1 | quency |
-| `hitCount` | 59 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, … |
-| `hitRatePct` | 17 | anchor-innocent-maid, aria, asuka, chisato, dorothy-serendipity, drake, jill, leona, … |
+| `hitCount` | 60 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, … |
+| `hitRatePct` | 18 | anchor-innocent-maid, aria, asuka, chisato, dorothy-serendipity, drake, jill, leona, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
 | `inFb` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |
 | `instantInFb` | 1 | rapi-red-hood |
 | `instantReload` | 11 | alice-wonderland-bunny, asuka-wille, diesel, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, … |
-| `interval` | 27 | ade, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, elegg-boom-and-shock, emma-tactical-upgrade, … |
-| `lastBullet` | 10 | anis-sparkling-summer, aria, dorothy, epinel, exia, helm, k, marciana, … |
+| `interval` | 29 | ade, anis, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, elegg-boom-and-shock, … |
+| `lastBullet` | 11 | anis-sparkling-summer, aria, crow, dorothy, epinel, exia, helm, k, … |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 8 | emilia, grave, n102, neon, noir, rem, tove, trina |
 | `maxShots` | 3 | e-h, laplace-ultimate-hero, snow-white-heavy-arms |
@@ -95,7 +96,7 @@
 | `removeOnReload` | 1 | vesti-tactical-upgrade |
 | `requiresCore` | 3 | liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
-| `requiresShielded` | 3 | asuka, mori, naga |
+| `requiresShielded` | 4 | asuka, mori, naga, rapunzel-pure-grace |
 | `requiresTargetStatus` | 12 | asuka-wille, d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, … |
 | `resourceGate` | 20 | d, e-h, elegg-boom-and-shock, exia, guillotine, guillotine-winter-slayer, julia, laplace-ultimate-hero, … |
 | `selfAndAdjacent` | 2 | flora, rouge |
