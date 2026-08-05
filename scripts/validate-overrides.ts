@@ -17,6 +17,8 @@ const STATS = new Set([
   'casterMaxHpPct',
   'targetMaxHpPct',
   'atkOfMaxHpPct',
+  'atkOfCasterMaxHpPct',
+  'highestAllyMaxHpPct',
   'critRatePct',
   'critRateNormalPct',
   'critDamagePct',

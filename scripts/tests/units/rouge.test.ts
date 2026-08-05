@@ -6,9 +6,10 @@
 //   variant; never conflate with a similarly-named unit.
 //
 // Her kit is a COIN-STATE support: Sword Coin → Shield Coin (30 Full Charges) → Double Sword Coin
-// (5 bursts in Shield Coin). The state machine is NOT tracked as engine state; its OFFENSIVE payload
-// is exactly ONE permanent line (Sword Coin Attack Damage ▲6.65%) plus the burst's ATK grant. Every
-// other line is a Max-HP grant or a Damage-Taken reduction.
+// (5 bursts in Shield Coin). The state machine IS tracked as engine state since 2026-08-04
+// (resources coin 0/1/2 + shieldBursts cap 5 — owner-directed HP follow-ups); its OFFENSIVE payload
+// is still exactly ONE permanent line (Sword Coin Attack Damage ▲6.65%) plus the burst's ATK grant.
+// Every other line is a Max-HP grant or a Damage-Taken reduction.
 //
 // HP-SCALING DETERMINATION = OFFENSIVELY INERT. Every "Max HP ▲ X% of the skill user's Max HP" line
 // is a `casterMaxHpPct` ally grant. Ally-granted Max HP does NOT feed a consumer's ATK=%-of-Max-HP
@@ -16,17 +17,19 @@
 // video; SSOT docs/data/damage-calculation.md:106-107; engine enforces it via effectiveAtk
 // casterIdx===self, src/engine/sim.ts:377). Rouge has no atkOfMaxHpPct line of her own, so even her
 // self-grants feed nothing. The engine has no HP pool, so the grants move no damage at all. They are
-// therefore documented VERBATIM in the override's `unmodeled` with NO assertion here (inert). The
+// MODELED for kit-completeness (cross-family consensus: fable S2b + opus S5 both encode them) — the
+// coin-tier burst riders (10.15/20.1/30.02) coin-gated via resourceGate (R4) — and the INERT group
+// below proves byte-identical totals with every one of them stripped. The
 // 2026-07-13 "Max-HP grants are OFFENSIVE for Cinderella" reading was REFUTED 2026-07-17 (e3 video).
 //
 // Kit (blablalink prose, data/characters.json → characters.rouge.skills, level 10):
 //   S1 ■ attacking with Full Charge ×8 → all allies: Cooldown of Burst Skill ▼7 sec            [R3]
 //      ■ (same trigger) all allies: Max HP ▲5% of caster Max HP, no restore, 5 sec   (INERT)   [—]
 //   S2 ■ back row, self + 2 allies each side: Sword Coin Attack Damage ▲6.65% continuously     [R1]
-//      ■ Full Charge ×30 in Sword Coin: Shield Coin Damage Taken ▼15.2% continuously (defensive)[—]
-//      ■ Burst ×5 in Shield Coin: Double Sword Coin Max HP ▲15.08% continuously (INERT)        [—]
+//      ■ Full Charge ×30 in Sword Coin: Shield Coin Damage Taken ▼15.2% continuously (defensive)[R4]
+//      ■ Burst ×5 in Shield Coin: Double Sword Coin Max HP ▲15.08% continuously (INERT)        [R4]
 //   BU ■ all allies: ATK ▲15.07% of caster ATK for 10 sec                                      [R2]
-//      ■ Sword/Shield/Double Sword Coin: Max HP ▲10.15/20.1/30.02% of caster, 10s (INERT)      [—]
+//      ■ Sword/Shield/Double Sword Coin: Max HP ▲10.15/20.1/30.02% of caster, 10s (INERT)      [R4]
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest wrong model gates
 // nothing):
@@ -41,12 +44,25 @@
 //   R3  burstCdr emits no per-buff number to read directly, so it is pinned by its EFFECT on
 //       cadence: with the line removed, rouge (and the team) fit FEWER casts into 180s (the 20s CD
 //       is no longer shaved by 7s every 8 full charges).
+//   R4  the coin machine is pinned by its observable markers: the Shield flip is the first
+//       damageTakenPct application and lands exactly on rouge's 30th full charge (hitCount 30);
+//       the Double Sword flip is the 5th rouge burst AFTER the Shield flip (post-increment
+//       convention, maxwell precedent — the 5th shield-era burst is the first Double Sword cast),
+//       and the 30.02 tier rider + the 15.08 continuous line first apply on exactly that cast.
+//       Tier gating is discriminated by a no-coin-state counterfactual (every resourceGate
+//       stripped): there the 30.02 rider fires from the FIRST burst, before any coin could flip.
+//       Everything here stays INERT — the INERT group's byte-identical proof covers all of it.
 //
 // Fixture: rouge as the SOLE Burst I (rouge B1 / crown B2 / ada B3 / helm B3, boss Fire, focus ada)
 // so the B1→B2→B3 chain runs and rouge casts. Deterministic (no seed); event-log over totals.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import {
+  runComp,
+  totals,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 const WINDOW = 10 * FPS; // 10 sec buff windows
@@ -68,7 +84,7 @@ function run(overrides: Record<string, any> = {}) {
     overrides,
     cfg: { onEvent: (e) => events.push(e) },
   });
-  return { events, totals: totals(res) };
+  return { events, totals: totals(res), res };
 }
 
 // ---- counterfactual patches (nearest-wrong model each PIN must discriminate against) ----------
@@ -139,6 +155,26 @@ const noInert = withPatchedOverride('rouge', (ov) => {
   }
 });
 
+/** R4 counterfactual: NO coin state — every resourceGate stripped, so the coin-tier riders fire
+ *  on EVERY burst from the first cast (and the flips run on raw triggers). The nearest wrong
+ *  model for tier gating. */
+const noCoinState = withPatchedOverride('rouge', (ov) => {
+  let stripped = 0;
+  for (const slot of ['skill2', 'burst'] as const) {
+    for (const b of ov[slot] ?? []) {
+      if ((b as any).resourceGate) {
+        delete (b as any).resourceGate;
+        stripped++;
+      }
+    }
+  }
+  if (stripped < 7) {
+    throw new Error(
+      `expected >=7 coin-gated blocks, stripped ${stripped} — fixture stale`
+    );
+  }
+});
+
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run();
 const noSword = run({ rouge: noSwordCoin });
@@ -147,6 +183,7 @@ const noBurst = run({ rouge: noBurstAtk });
 const dblBurst = run({ rouge: doubleBurstAtk });
 const noCdrRun = run({ rouge: noCdr });
 const inertRun = run({ rouge: noInert });
+const noCoinRun = run({ rouge: noCoinState });
 
 // ---- readers ----------------------------------------------------------------------------------
 const buffs = (evs: SimEvent[]) =>
@@ -259,13 +296,97 @@ describe('rouge (Rouge) — kit spec [Tier 2, coin-state support]', () => {
     });
   });
 
+  describe('R4 — coin-state machine: Sword → Shield (@30FC) → Double Sword (@5 shield-era bursts); riders coin-gated (INERT)', () => {
+    // Observable markers: the Shield flip = the first damageTakenPct application; the Double
+    // Sword flip = the 5th rouge burst AFTER the Shield flip (post-increment convention).
+    const rougeShots = (evs: SimEvent[]) =>
+      evs.filter((e) => e.kind === 'shot' && e.slug === 'rouge');
+    const shieldFlips = rougeBuff(base.events, 'damageTakenPct');
+    const shieldFlipFrame = Math.min(...shieldFlips.map((b) => b.frame));
+    const burstFrames = rougeBursts(base.events).map((b) => b.frame);
+    const shieldEraBursts = burstFrames.filter((f) => f > shieldFlipFrame);
+    const doubleSwordFrame = shieldEraBursts[4];
+    const rougeMaxHp = unitOf(base.res, 'rouge').maxHp;
+    const tier = (evs: SimEvent[], v: number) =>
+      buffs(evs).filter(
+        (b) =>
+          b.casterIdx === ROUGE &&
+          b.stat === 'maxHpFlat' &&
+          Math.abs(b.value - (v / 100) * rougeMaxHp) < 1
+      );
+
+    it('fixture reaches BOTH flips: Shield at 30 full charges, Double Sword 5 shield-era bursts later', () => {
+      expect(
+        shieldFlips.length,
+        'no Shield Coin flip (damageTakenPct)'
+      ).toBeGreaterThan(0);
+      // The flip lands exactly on the 30th full charge (hitCount 30; SR = 1 hit/pull).
+      const shotsAtFlip = rougeShots(base.events).filter(
+        (s) => s.frame <= shieldFlipFrame
+      ).length;
+      expect(shotsAtFlip).toBe(30);
+      expect(
+        shieldEraBursts.length,
+        'need >=5 rouge bursts after the Shield flip'
+      ).toBeGreaterThanOrEqual(5);
+    });
+
+    it('all three coin-tier riders + the 15.08 Double Sword line apply, coin-gated', () => {
+      for (const v of [10.15, 20.1, 30.02, 15.08]) {
+        const applied = tier(base.events, v);
+        expect(applied.length, `no ${v}% maxHpFlat tier grant`).toBeGreaterThan(
+          0
+        );
+        expect(new Set(applied.map((b) => b.targetIdx)).size).toBeGreaterThan(
+          1
+        );
+      }
+    });
+
+    it('TIER GATING: Sword tier from the first cast; Shield tier only after the flip; Double Sword tier + 15.08 on the 5th shield-era burst', () => {
+      const firstTier = (v: number) =>
+        Math.min(...tier(base.events, v).map((b) => b.frame));
+      // Sword tier fires on her first burst (coin 0).
+      expect(firstTier(10.15)).toBe(Math.min(...burstFrames));
+      // Shield tier cannot precede the Shield flip, and lands on the first burst after it.
+      expect(firstTier(20.1)).toBeGreaterThan(shieldFlipFrame);
+      expect(firstTier(20.1)).toBe(Math.min(...shieldEraBursts));
+      // Double Sword tier + the 15.08 continuous line land exactly on the flip cast
+      // (post-increment: the 5th shield-era burst IS the first Double Sword cast).
+      expect(firstTier(30.02)).toBe(doubleSwordFrame);
+      expect(firstTier(15.08)).toBe(doubleSwordFrame);
+      // 10s windows on the tier riders; the 15.08 line is continuous.
+      for (const b of tier(base.events, 10.15)) {
+        expect(b.expiresFrame! - b.frame).toBe(WINDOW);
+      }
+      for (const b of tier(base.events, 15.08)) {
+        expect(
+          b.expiresFrame,
+          '15.08 Double Sword line is continuous'
+        ).toBeNull();
+      }
+    });
+
+    it('DISCRIMINATING: with no coin state, the Double Sword tier fires from the FIRST burst', () => {
+      const ungatedFirst = Math.min(
+        ...tier(noCoinRun.events, 30.02).map((b) => b.frame)
+      );
+      const firstBurst = Math.min(
+        ...rougeBursts(noCoinRun.events).map((b) => b.frame)
+      );
+      expect(ungatedFirst).toBe(firstBurst);
+      // …which is strictly earlier than any coin could flip in the shipped model.
+      expect(ungatedFirst).toBeLessThan(shieldFlipFrame);
+    });
+  });
+
   describe('INERT — Max-HP grants (casterMaxHpPct) + Shield Coin Damage-Taken ▼ move no damage', () => {
     // S1 "Max HP ▲5% / 5s", S2 Double Sword "Max HP ▲15.08%", the burst coin-tier Max-HP grants
-    // (10.15/20.1/30.02%) and the Shield Coin "Damage Taken ▼15.2%" are encoded for kit-completeness
-    // (cross-family consensus) but are OFFENSIVELY INERT: ally-granted Max HP does NOT feed a
-    // consumer's atkOfMaxHpPct conversion (SSOT damage-calculation.md:106; engine casterIdx===self),
-    // the engine has no HP pool, and the v1 boss deals no damage. The proof is byte-identical totals
-    // with every inert stat stripped.
+    // (10.15/20.1/30.02% — coin-gated, R4) and the Shield Coin "Damage Taken ▼15.2%" are encoded
+    // for kit-completeness (cross-family consensus) but are OFFENSIVELY INERT: ally-granted Max HP
+    // does NOT feed a consumer's atkOfMaxHpPct conversion (SSOT damage-calculation.md:106; engine
+    // casterIdx===self), the engine has no HP pool, and the v1 boss deals no damage. The proof is
+    // byte-identical totals with every inert stat stripped.
     it('the inert grants ARE encoded (rouge emits maxHpFlat + a negative ally damageTakenPct)', () => {
       const maxHp = buffs(base.events).filter(
         (b) => b.casterIdx === ROUGE && b.stat === 'maxHpFlat'

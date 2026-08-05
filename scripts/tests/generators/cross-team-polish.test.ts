@@ -41,6 +41,12 @@ const N = 4;
 // calibrated pool) and the B1/B3 windows re-scanned on the current pool: b1@1/b2@2/b3@14 measures
 // greedy=3 / polished=4 / ratio 1.1543 (>1.09 floor) — the same scenario, re-measured. Same class
 // of fixture maintenance as the laplace floor note below; the next pool addition re-opens it.
+// RECALIBRATED 2026-08-04 (max-HP primitives landing): the maiden-ice-rose stackedNuke
+// live-Max-HP read (her r2 residual, DECISIONS 2026-08-04) lifted her damage ~4-6% on the pools
+// greedy considers — she sits at the end of the B3 window, and the b3@14 pool no longer stalls
+// (greedy=4). B3 window re-scanned on the current pool: b3@15 measures greedy=3 / polished=4 /
+// ratio 1.1494 (>1.09 floor) — the same scenario, re-measured. Same class of fixture maintenance
+// as the 2026-07-27 note; the next damage-model change to a pool unit re-opens it.
 const POOL = new Set([
   ...byBurst('I')
     .filter((s) => s !== 'emma-tactical-upgrade')
@@ -48,7 +54,7 @@ const POOL = new Set([
   ...byBurst('II').slice(2, 8),
   ...byBurst('III')
     .filter((s) => s !== 'e-h')
-    .slice(14, 24),
+    .slice(15, 25),
 ]);
 
 // One instance for the whole file: the calc memoizes sims, so both A/B arms and

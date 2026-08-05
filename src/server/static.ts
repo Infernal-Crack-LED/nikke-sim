@@ -787,6 +787,10 @@ const MUTABLE_PATHS = new Set([
   '/burstcdr.json',
   '/sustain.json',
   '/bufferchart.json',
+  // b1b2dps was served no-cache only via the unmatched-path fallback until
+  // 2026-08-04 (found while scoping the artifact-decoupling plan §7) — listed
+  // explicitly so a matcher change cannot flip it to a long cache.
+  '/b1b2dps.json',
   '/ol-default.json',
   '/img/manifest.json',
 ]);

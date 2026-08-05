@@ -85,6 +85,7 @@ import {
   renderThumbTiers,
   thumbPath,
 } from './lib/portrait-thumbs.js';
+import { computeInfographicsInputHash } from './artifact-input-hash.js';
 import { parseCellId, cellLabel } from '../src/dpschart/matrix.js';
 import type {
   BurstGenArtifact,
@@ -601,6 +602,11 @@ interface ManifestImage {
 }
 interface Manifest {
   generatedAt: string;
+  // Input-hash of everything this set was rendered from (renderer code +
+  // committed art + the seven board artifacts' stripped content —
+  // scripts/artifact-input-hash.ts). Provenance for a future decoupled image
+  // store (plan Step 3); absent in --limit mode, where the boards don't exist.
+  inputsHash?: string;
   images: Record<string, ManifestImage>;
   // Slugs with NO unit card ON PURPOSE (unsupported B3/Λ — see unitJobs). A
   // consumer cannot otherwise tell this apart from the other ways a card can be
@@ -718,6 +724,10 @@ async function main(): Promise<void> {
 
   // Stable key order so the manifest is diff-friendly.
   manifest.generatedAt = new Date().toISOString();
+  const infographicsInputsHash = computeInfographicsInputHash();
+  if (infographicsInputsHash !== null) {
+    manifest.inputsHash = infographicsInputsHash;
+  }
   manifest.images = Object.fromEntries(
     Object.entries(manifest.images).sort(([a], [b]) => a.localeCompare(b))
   );
