@@ -293,9 +293,14 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
   **⇒ 2026-07-30 PELLET-READER REBUILD — plan of record
   `docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md` (START HERE block at the top;
   prior-art + sources in the companion `…-solution-survey.md`). Findings-only, nothing enacted.
-  ⇒ READ FIRST: `docs/handoffs/2026-08-04-lifetime-cap-JUDGE-handoff.md`** — the current judge
-  handoff (it continues `2026-08-04-pellet-reader-…` → `2026-08-03-…` → `2026-08-02-…` →
-  `2026-08-01-pellet-cascade-…`; the graveyards and traps in ALL FIVE are BINDING). Work lives on
+  ⇒ READ FIRST: `docs/handoffs/2026-08-04-pellet-reader-SESSION-JUDGE-handoff.md`** — the current
+  judge handoff and the session-close entry point (it continues `2026-08-04-lifetime-cap-…` →
+  `2026-08-04-pellet-reader-…` → `2026-08-03-…` → `2026-08-02-…` → `2026-08-01-pellet-cascade-…`;
+  the graveyards and traps in ALL of them are BINDING). ⚑ Its §8 is the live open-item list.
+  ⚑ Headline: the reader is measurably more faithful (3 landings, 4 items closed, reference
+  OWNER-CONFIRMED) but **the cold SG read is UNEXPLAINED** — the 16.9% mislock rate turned out to
+  cost ~nothing (§22C), so §19's −1.40/shot residual has no identified cause. And **all three
+  landings reach NEW EXTRACTIONS ONLY**, so nothing on the board has moved yet. Work lives on
   branch `fix/pellet-reader`, UNPUSHED — read the count live with
   `git rev-list --count origin/fix/pellet-reader..HEAD`, never from a written number.
   `/patch-notes` is owed before anything reaches `main`.
