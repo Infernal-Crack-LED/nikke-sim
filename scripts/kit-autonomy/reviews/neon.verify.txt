@@ -1,0 +1,18 @@
+--- S2d RED (pre-override): npx vitest run scripts/tests/units/neon.test.ts
+
+ FAIL  scripts/tests/units/neon.test.ts [ scripts/tests/units/neon.test.ts ]
+Error: neon: no override on disk — fixture is stale
+ ❯ withPatchedOverride scripts/tests/lib/harness.ts:71:11
+ ❯ scripts/tests/units/neon.test.ts (module-level withPatchedOverride patch building)
+
+ Test Files  1 failed (1)
+      Tests  no tests
+
+--- S2d RED (pre-override): withPatchedOverride threw "neon: no override on disk — fixture is stale" — correct RED for a from-scratch unit (no prior override existed; simSupported:false). Flips GREEN in S3.
+
+--- S2c reconciliation (driver vs claude-fable-5 test-review): zero divergences. All 4 kit lines converged:
+  N1 skill1 kill-trigger (crit rate 3.56 / 5s / top-2 final ATK) — both UNMODELED: the engine has no kill event, the scope-lock boss is immortal/partless, so the line contributes exactly zero in every sim run; verbatim in unmodeled.skill1, active-encoding counterfactual pinned RED (driver: passive alliesTopAtk(2, byFinalAtk) critRatePct 3.56 inflates team total; reviewer: strip-pin bit-identity — same class, driver's is the stronger direction). epinel/volume precedent for the kill-trigger class.
+  N2 skill2 — both: fullBurstEnter → allies (all incl. self) → unscoped critRatePct 45.93, durationShots 2 per-holder, NO durationSec. Reviewer's nearest-wrong = durationSec:2 (≈2 shots on a slow SG, hides on SG-heavy comps); driver's counterfactual is durationSec:10 (whole FB window). Same misread class (wall-clock vs round-count); the spec's durationShots===2 field pin + differential exactly-2-buffed-shots-per-window assertion discriminates BOTH variants. fullBurstEnter-vs-burstCast count-degenerate for a B1 that casts every FB → pinned by TIMING (buff frame == fullBurstStart frame), milk-K5 precedent; noted in the spec header.
+  N3 burst nuke — both: burstCast → enemy → flatDamage 528.97, burst bucket, lands PRE-FB (inFullBurst false, fbMajorApplied false), count == own cast count. "Highest final DEF" collapses to the single partless boss.
+  N4 burst ammo — both: burstCast → alliesOfWeapon SG (incl. self) → maxAmmoFlat 3, durationSec 10. Reviewer's nearest-wrong = maxAmmoPct 3 (≈+0 rounds after rounding — silently inert); driver's behavioral pin (ammoAfter reaches 11 = 12-round cap, vs ≤8 unbuffed) catches that variant too. Fixture hazard the reviewer flagged (controlComp seats liter at B1 and would race neon for every B1 cast) is avoided by construction: custom comp [neon(B1), naga(B2/SG), helm(B3/SR)] with neon as the ONLY B1, sanity-pinned cast count == FB count; the two SG allies pin alliesOfWeapon vs {allies, self} and helm (SR) is the exclusion control.
+All magnitudes (3.56, 45.93, 528.97, 3 rounds, 5s, 10s, 2 shots) are kit-literal SL10 → DATAMINED; no calibrated values anywhere in this kit. Reviewer model field: claude-fable-5.

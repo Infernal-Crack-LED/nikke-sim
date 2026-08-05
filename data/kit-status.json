@@ -4786,6 +4786,37 @@
         "temp": "COLD ▼"
       }
     },
+    "neon": {
+      "name": "Neon",
+      "burst": "I",
+      "weapon": "SG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/neon.json + scripts/kit-autonomy/manual-review/neon.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "Activates when killing an enemy. Affects 2 ally unit(s) with the highest final ATK.\nCritical Rate ▲ 3.56% for 5 sec."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null,
+      "date": "2026-08-04",
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check cluster: (a) scoped-vs-unscoped crit discrimination is structural-only for neon's own hits (her pre-FB nuke never overlaps her own S2 window); (b) durationShots per-trigger-pull vs per-pellet decrement for a 10-pellet SG holder is the assumed (SSOT round=one-bullet) reading, unverified on video; (c) cadence tuple (reloadFrames 129 / RoF 90rpm) datamine-unverified"
+    },
     "neon-vision-eye": {
       "name": "Neon: Vision Eye",
       "burst": "III",
