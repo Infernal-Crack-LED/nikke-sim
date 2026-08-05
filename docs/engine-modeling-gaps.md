@@ -57,7 +57,7 @@
 | `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
 | `excludeSelf` | 17 | anis, arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, … |
 | `fbGate` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |
-| `flatDamage` | 82 | 2b, a2, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, … |
+| `flatDamage` | 83 | 2b, a2, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 4 | d, isabel, modernia, soda-twinkling-bunny |
 | `gainPierce` | 10 | ade-agent-bunny, asuka, dorothy, grave, makima, mari, milk-blooming-bunny, naga, … |
@@ -66,13 +66,13 @@
 | `hasTrueNormals` | 0 | _none_ |
 | `highestAllyAtkPct` | 1 | guilty |
 | `highestAllyMaxHpPct` | 1 | quency |
-| `hitCount` | 60 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, … |
+| `hitCount` | 61 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, … |
 | `hitRatePct` | 18 | anchor-innocent-maid, aria, asuka, chisato, dorothy-serendipity, drake, jill, leona, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
 | `inFb` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |
 | `instantInFb` | 1 | rapi-red-hood |
 | `instantReload` | 11 | alice-wonderland-bunny, asuka-wille, diesel, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, … |
-| `interval` | 29 | ade, anis, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, elegg-boom-and-shock, … |
+| `interval` | 30 | ade, anis, brid, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, … |
 | `lastBullet` | 11 | anis-sparkling-summer, aria, crow, dorothy, epinel, exia, helm, k, … |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 8 | emilia, grave, n102, neon, noir, rem, tove, trina |

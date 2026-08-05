@@ -1,0 +1,83 @@
+{
+  "note": "Brid — Water AR Attacker, Burst III (burstCd 40), ammo 60 / reloadFrames 99 / hitsPerShot 1 / normalMult 14.29. BASE unit — NOT brid-silent-track (the SG/Fire variant). Kit-autonomy gauntlet 2026-08-05 (test-first: scripts/tests/units/brid.test.ts written RED against the absent override, landed green with this file; cross-family S2b claude-fable-5 converged on every load-bearing line). ALL FIVE kit lines modeled — unmodeled arrays are genuinely empty. SKILL1 'Activates after 30 normal attacks. Affects self. ATK ▲ 18.52% for 10 sec.' → hitCount 30 → self → atkPct 18.52 /10s: hitsPerShot 1 means 30 normal attacks = 30 hits (no pull-vs-pellet ambiguity — that lever exists only for multi-hit weapons); repeating counter, snow-white S1 precedent; AR 720rpm ≈ 12 rounds/s so 30 rounds ≈ 2.5s of firing — the 10s window refreshes near-continuously once armed (also bridges the ~1.65s reload). SKILL2 'Affects the enemy with the highest final DEF. Deals 211.2% of final ATK as damage.' (datamined CD 10s, no activation clause in prose) → interval sec:10 → enemy → flatDamage 211.2: snow-white S2a precedent for a visible-CD nuke; engine convention first fire t=CD, then every 10s of battle; function-class rider defaults per prior 2 (crit at sheet rate, NO core — no 'core strike' text, never the +30% range bonus, +50% FB by landing timing). BURST line 1 'Affects the enemy with the highest final DEF. Deals 1440% of final ATK as Burst Skill damage.' → burstCast → enemy → flatDamage 1440: burst-cast instant damage is auto-FB-exempt (engine cast-instant rule; never set noFb); keyed burstCast NOT fullBurstEnter (own-cast-only — a fullBurstEnter keying would also fire on the co-B3's rotations). BURST line 2 'Affects the same target when at Max HP. Deals 1440% of final ATK as additional damage.' → second burstCast → enemy → flatDamage 1440 block (two SEPARATE instances, 2b/soline dual-block precedent — never folded into one 2880% hit): the Max-HP gate is read as the CASTER's HP and modeled ALWAYS-TRUE — the sim has no incoming boss damage to allies (v1 scope lock), so Max HP is the only reachable state. This is the IDENTICAL wording adjudicated on soline (gauntlet 2026-08-03, GO faithfulness 1.0): caster-HP/always-true ruled FAITHFUL, the boss-HP reading (gate on the boss, fires at most once, silently deletes ~half the burst) explicitly excluded as the nearest-wrong model. TARGETING: the 'highest final DEF' selectors (S2 + burst) collapse to the sole partless scope-lock boss — resolved to the plain enemy target, board-inert today (same documented stand-in as brid-silent-track's lowest-HP selector); multi-enemy content would need a real selector. ⚑ FLAGS: (a) S2 cadence — interval sec:10 is the datamined skillCooldownsSec with the first-fire phase convention (t=10s vs t=0); recipe = time the first 211.2% popup in a brid focus video. (b) Max-HP gate reading — the caster-HP posture is same-model consensus inherited from soline (no popup measurement); recipe = a brid focus video where she takes damage once, watch whether the second 1440% popup stops; if the enemy-HP reading is ever confirmed, remove the second burst block (tests pin the current posture). No heal/shield/DEF/HP/gauge/reload/ammo/weapon-swap lines in this kit; nothing parked in ignored. Kit-autonomy gauntlet 2026-08-05.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 18.52,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 10
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 211.2
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1440
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1440
+        }
+      ]
+    }
+  ],
+  "caveats": [
+    "skill2 + burst: the 'highest final DEF' targeting selectors collapse to the sole partless scope-lock boss (no HP/DEF ranking to discriminate) — resolved to the plain enemy target; board-inert today, a real selector is only needed for multi-enemy content.",
+    "burst: the 'when at Max HP' gate on the second 1440% instance is modeled always-true — the gate reads the CASTER's HP and the sim has no incoming boss damage (v1 scope lock), so Max HP is the only reachable state. Identical wording adjudicated on soline (2026-08-03); if an HP pool is ever modeled this line needs a status-gate primitive.",
+    "skill2: interval sec:10 fires on the wall clock (first at t=10s) from the datamined cooldown — the first-fire phase is a convention, not a measurement (⚑)."
+  ]
+}

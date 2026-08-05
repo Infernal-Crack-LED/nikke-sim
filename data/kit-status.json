@@ -931,6 +931,45 @@
       ],
       "board": null
     },
+    "belorta": {
+      "name": "Belorta",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/belorta.json + scripts/kit-autonomy/manual-review/belorta.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when performing a Full Charge attack. Affects self.\nExplosion Radius ▲ 9.55% for 5 sec."
+        ],
+        "skill2": [
+          "■ Activates when an attack hits more than 4 enemy unit(s). Affects the target(s). \nDEF ▼ 3.52% for 5 sec. \nDeals 14.96% of final ATK as additional damage."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "burst: the 192% nuke is burstCast-keyed — pre-FB by engine timing (U10 auto-exempt), crits at the caster rate (U1 FunctionTable rule), never cores, never gets the +30% range bonus",
+        "burst: chargeSpeedPct 2.82/10s targets all allies on HER cast only — a second Burst II sharing rotations would not refresh it (burstCast, not fullBurstEnter)",
+        "skill1: Explosion Radius ▲ is unmodeled — AoE geometry, damage-inert vs the partless single boss; ⚑ out-of-domain, zero in sim domain",
+        "skill2: the >4-enemies-hit gate is unsatisfiable vs one boss, so the DEF ▼ 3.52% and the 14.96% rider are unmodeled — ⚑ out-of-domain; shipping either ungated would be a ~14.96%-per-shot over-credit"
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "burst nuke pre-FB exemption + caster-rate crit rest on engine/datamined convention (U1/U10 FunctionTable rules), not a belorta-specific popup pair — one recorded burst-cast popup pair (crit vs non-crit, no +50%) would confirm",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "biscuit": {
       "name": "Biscuit",
       "burst": "II",
@@ -1055,6 +1094,40 @@
         "skill1/skill2: full cadence tuple (charge time, reload 141f, 22-frame bolt gap vs autofire) is an unmeasured datamine estimate — ~15-20% shot-count swing"
       ],
       "board": null
+    },
+    "brid": {
+      "name": "Brid",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/brid.json + scripts/kit-autonomy/manual-review/brid.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill2 + burst: the 'highest final DEF' targeting selectors collapse to the sole partless scope-lock boss (no HP/DEF ranking to discriminate) — resolved to the plain enemy target; board-inert today, a real selector is only needed for multi-enemy content.",
+        "burst: the 'when at Max HP' gate on the second 1440% instance is modeled always-true — the gate reads the CASTER's HP and the sim has no incoming boss damage (v1 scope lock), so Max HP is the only reachable state. Identical wording adjudicated on soline (2026-08-03); if an HP pool is ever modeled this line needs a status-gate primitive.",
+        "skill2: interval sec:10 fires on the wall clock (first at t=10s) from the datamined cooldown — the first-fire phase is a convention, not a measurement (⚑)."
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05: GO faithfulness 1.0 (judge kimi-code/k3). Cross-family S2b(claude-fable-5)/S5+S6(claude-opus-5)/S7(kimi-code/k3) converged on all 5 lines FAITHFUL; the one divergence (burst Max-HP rider: caster-HP always-true vs enemy-HP inert) adjudicated for the driver by binding soline precedent (identical wording, 2026-08-03). Artifacts: scripts/kit-autonomy/results/brid.json + scripts/kit-autonomy/manual-review/brid.md.",
+      "residual": "spot-check cluster: (1) Max-HP gate reading — caster-HP posture is same-model consensus carried from soline, no popup measurement; recipe = brid focus recording where she takes damage once, watch whether the second 1440% popup stops (if enemy-HP confirmed, remove the second burst block; tests pin the current posture). (2) S2 interval first-fire phase (t=CD vs t=0) is convention; recipe = time the first 211.2% popup in a focus video.",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     },
     "brid-silent-track": {
       "name": "Brid: Silent Track",
@@ -7211,45 +7284,6 @@
         "burst: swap weapon range-band/core eligibility (charge cannon on an SG base) is an SR-like guess ⚑; base SG cadence tuple is datamine-unreliable ⚑"
       ],
       "board": null
-    },
-    "belorta": {
-      "name": "Belorta",
-      "burst": "II",
-      "weapon": "RL",
-      "class": "Attacker",
-      "kitParse": {
-        "status": "unit-tested",
-        "provenance": "gauntlet",
-        "date": "2026-08-05",
-        "findings": [
-          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/belorta.json + scripts/kit-autonomy/manual-review/belorta.md."
-        ]
-      },
-      "tier": "MODEL_ONLY",
-      "tuned": false,
-      "unmodeled": {
-        "skill1": [
-          "■ Activates when performing a Full Charge attack. Affects self.\nExplosion Radius ▲ 9.55% for 5 sec."
-        ],
-        "skill2": [
-          "■ Activates when an attack hits more than 4 enemy unit(s). Affects the target(s). \nDEF ▼ 3.52% for 5 sec. \nDeals 14.96% of final ATK as additional damage."
-        ],
-        "burst": []
-      },
-      "caveats": [
-        "burst: the 192% nuke is burstCast-keyed — pre-FB by engine timing (U10 auto-exempt), crits at the caster rate (U1 FunctionTable rule), never cores, never gets the +30% range bonus",
-        "burst: chargeSpeedPct 2.82/10s targets all allies on HER cast only — a second Burst II sharing rotations would not refresh it (burstCast, not fullBurstEnter)",
-        "skill1: Explosion Radius ▲ is unmodeled — AoE geometry, damage-inert vs the partless single boss; ⚑ out-of-domain, zero in sim domain",
-        "skill2: the >4-enemies-hit gate is unsatisfiable vs one boss, so the DEF ▼ 3.52% and the 14.96% rider are unmodeled — ⚑ out-of-domain; shipping either ungated would be a ~14.96%-per-shot over-credit"
-      ],
-      "board": null,
-      "date": "2026-08-05",
-      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
-      "residual": "burst nuke pre-FB exemption + caster-rate crit rest on engine/datamined convention (U1/U10 FunctionTable rules), not a belorta-specific popup pair — one recorded burst-cast popup pair (crit vs non-crit, no +50%) would confirm",
-      "graded": {
-        "teams": 0,
-        "within3pct": 0
-      }
     }
   }
 }
