@@ -3737,6 +3737,55 @@
         "temp": "COLD ▼"
       }
     },
+    "makima": {
+      "name": "Makima",
+      "burst": "II",
+      "weapon": "SMG",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/makima.json + scripts/kit-autonomy/manual-review/makima.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "date": "2026-08-04",
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check: (1) S1 unmodeled-policy call — attacked-20x team reload/DEF never fires at scope lock (no incoming-damage model), board under-ranks her real-game value; (2) heal ticks:10@1s granularity is a shared prior (all agents), not footage-confirmed; (3) SMG cadence tuple datamine as-is",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when attacked 20 times. Affects all allies.",
+          "Reload Speed ▲ 36.96% for 10 sec. ",
+          "DEF ▲ 14.78% for 10 sec."
+        ],
+        "skill2": [
+          "■ Activates after landing 120 normal attack(s). Affects self.",
+          " Attract: Taunt all enemies for 3 sec.",
+          "■ Activates when taking lethal damage. Affects self.",
+          "Gain indomitability for 7 sec. Activates 1 time(s) per battle.",
+          "Cooldown of Burst Skill ▼ 11.58 sec."
+        ],
+        "burst": [
+          "■ Activates during indomitability. Affects self.",
+          "Incoming healing ▲ 41.02% for 10 sec."
+        ]
+      },
+      "caveats": [
+        "burst: 'Gain Pierce for 10 sec' is a TIMED gainPierce window on her own burstCast (asuka precedent) — damage-inert at scope lock (no pierceDamagePct consumer, PIERCE_CORE_DOUBLE=false; byte-identical totals pinned), encoded for kit completeness + pierce-buff teammates",
+        "burst: the 34.02% recovery is event-only (no HP amounts modeled); 'over 10 sec' = ticks:10/intervalSec:1 so a recovery consumer stays refreshed across the whole window (helm H8 precedent); self-targeted — she has no recovery trigger of her own",
+        "skill1/skill2: every line is unmodeled — v1 models no incoming ally damage (no attacked-count trigger, no taunt/aggro, no lethal-damage trigger, no indomitability status); the lethal-gated burstCdr in particular must NEVER be encoded on a reachable trigger (rotation blast radius, ⚑3)",
+        "burst: the 'during indomitability' incoming-healing rider is unmodeled — its gate is permanently closed at scope lock (the only indomitability source is itself unmodeled) and no heal amounts exist to amplify (⚑4)",
+        "the '■ Affects self.' burst header line is represented by the two modeled blocks' self targets, not carried in unmodeled"
+      ]
+    },
     "mana": {
       "name": "Mana",
       "burst": "III",

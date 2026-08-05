@@ -59,7 +59,7 @@
 | `flatDamage` | 77 | 2b, a2, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 4 | d, isabel, modernia, soda-twinkling-bunny |
-| `gainPierce` | 8 | ade-agent-bunny, asuka, dorothy, grave, mari, milk-blooming-bunny, naga, neve |
+| `gainPierce` | 9 | ade-agent-bunny, asuka, dorothy, grave, makima, mari, milk-blooming-bunny, naga, … |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
 | `hasPierce` | 6 | alice, laplace, laplace-ultimate-hero, maxwell-ordinary-mechanic, red-hood, zwei |
 | `hasTrueNormals` | 0 | _none_ |
