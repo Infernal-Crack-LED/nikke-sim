@@ -1,0 +1,90 @@
+{
+  "slug": "himeno",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": -6.94,
+          "durationSec": 3
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 10
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "SR"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 10.98,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoFlat",
+          "value": 2,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 23.76,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 16.35,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill2 has NO activation clause in the kit text (header is a bare 'Affects …'), yet the buffs carry a 10 sec duration — a duration implies a real duty cycle. Encoded as interval sec:10 per the no-'Activates when' → interval convention, which yields ~continuous uptime after t=10s. If the real trigger is Full-Burst entry or a longer skill cooldown, this OVER-CREDITS a team-wide ATK ▲10.98% and the SR ammo grant. Measurement-gated.",
+    "⚑ skill1's DEF ▼ is an ENEMY-side DEF reduction. The schema has no enemy-DEF channel (defPct is documented as self-DEF and inert; enemy targets resolve to an empty target set), so this block is recorded for kit completeness and is ENGINE-INERT — it currently moves zero damage even though a real boss-DEF cut would raise whole-team damage. Not folded into damageTakenPct: that is a different mechanic and a 6.94% DEF cut is not a 6.94% damage-taken lift (that fold would be a fudge).",
+    "skill1 trigger encoded as chargeCounter count:1 (one activation per full charge). Literal text also requires the charge to HIT; no miss model exists at scope lock, so hit is assumed. shotFired is the equivalent encoding if every SR trigger pull is a full charge in the engine.",
+    "burst target is authored WITHOUT excludeSelf — the kit says plain '1 ally unit(s) with the highest final ATK', with no 'except the skill user' clause, so himeno herself is an eligible recipient. byFinalAtk:true is set because the text says 'final ATK' literally.",
+    "FB-by-timing left ON everywhere (no noFb set anywhere); noRange not set (engine-automatic). No damage-dealing lines exist in this kit — it is a pure buff/debuff Supporter, so all three slots are buff-only."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. himeno (SR/Wind/Supporter/Burst II) is a pure buff kit with zero damage lines. S1 = per-full-charge enemy DEF ▼6.94%/3s (recorded, engine-inert — no enemy-DEF channel exists). S2 = SR-weapon-scoped team ATK ▲10.98% + Max Ammo ▲2 rounds for 10s, on a KIT-SILENT trigger encoded as interval sec:10 (⚑ the single largest uncertainty in this override — an event trigger would roughly halve its uptime). Burst = highest-final-ATK ally gets Charge Damage ▲23.76% + Crit Rate ▲16.35% for 10s, keyed to her own burst cast. Max Ammo ▲2 is a WEAPON-STATE modifier and therefore damage-bearing (it changes shots fired per magazine on a 6-round SR — a 33% magazine extension for every SR ally, including herself); it is not skippable."
+}

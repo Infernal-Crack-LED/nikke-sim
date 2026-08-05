@@ -1,0 +1,195 @@
+{
+  "slug": "himeno",
+  "leakDetected": null,
+  "override": {
+    "slug": "himeno",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "chargeCounter",
+          "count": 1
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": -6.94,
+            "durationSec": 3
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 10
+        },
+        "target": {
+          "kind": "alliesOfWeapon",
+          "weapon": "SR"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 10.98,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "maxAmmoFlat",
+            "value": 2,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 1,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "chargeDamagePct",
+            "value": 23.76,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 16.35,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill2 has NO activation clause in the kit text (header is a bare 'Affects …'), yet the buffs carry a 10 sec duration — a duration implies a real duty cycle. Encoded as interval sec:10 per the no-'Activates when' → interval convention, which yields ~continuous uptime after t=10s. If the real trigger is Full-Burst entry or a longer skill cooldown, this OVER-CREDITS a team-wide ATK ▲10.98% and the SR ammo grant. Measurement-gated.",
+      "⚑ skill1's DEF ▼ is an ENEMY-side DEF reduction. The schema has no enemy-DEF channel (defPct is documented as self-DEF and inert; enemy targets resolve to an empty target set), so this block is recorded for kit completeness and is ENGINE-INERT — it currently moves zero damage even though a real boss-DEF cut would raise whole-team damage. Not folded into damageTakenPct: that is a different mechanic and a 6.94% DEF cut is not a 6.94% damage-taken lift (that fold would be a fudge).",
+      "skill1 trigger encoded as chargeCounter count:1 (one activation per full charge). Literal text also requires the charge to HIT; no miss model exists at scope lock, so hit is assumed. shotFired is the equivalent encoding if every SR trigger pull is a full charge in the engine.",
+      "burst target is authored WITHOUT excludeSelf — the kit says plain '1 ally unit(s) with the highest final ATK', with no 'except the skill user' clause, so himeno herself is an eligible recipient. byFinalAtk:true is set because the text says 'final ATK' literally.",
+      "FB-by-timing left ON everywhere (no noFb set anywhere); noRange not set (engine-automatic). No damage-dealing lines exist in this kit — it is a pure buff/debuff Supporter, so all three slots are buff-only."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. himeno (SR/Wind/Supporter/Burst II) is a pure buff kit with zero damage lines. S1 = per-full-charge enemy DEF ▼6.94%/3s (recorded, engine-inert — no enemy-DEF channel exists). S2 = SR-weapon-scoped team ATK ▲10.98% + Max Ammo ▲2 rounds for 10s, on a KIT-SILENT trigger encoded as interval sec:10 (⚑ the single largest uncertainty in this override — an event trigger would roughly halve its uptime). Burst = highest-final-ATK ally gets Charge Damage ▲23.76% + Crit Rate ▲16.35% for 10s, keyed to her own burst cast. Max Ammo ▲2 is a WEAPON-STATE modifier and therefore damage-bearing (it changes shots fired per magazine on a 6-round SR — a 33% magazine extension for every SR ally, including herself); it is not skippable."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when hitting with Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger chargeCounter{count:1} — one activation per full-charge attack; hit assumed (no miss model at scope lock)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects the target.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — the boss, not an ally"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▼ 6.94% for 3 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat defPct value -6.94 durationSec 3 on the enemy. Recorded for kit completeness; ENGINE-INERT (no enemy-DEF channel). Deliberately NOT converted to damageTakenPct — different mechanic, would over/under-credit."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies with sniper rifles",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesOfWeapon', weapon:'SR'}, excludeSelf omitted (no 'except self' clause; himeno is SR so she buffs herself)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "(no activation clause in header)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "⚑ kit-silent trigger → interval{sec:10} per the no-'Activates when' convention; see flags"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 10.98% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat atkPct value 10.98 durationSec 10 (generic ATK — text carries no normal/charge/crit scope)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max Ammunition Capacity ▲ 2 round(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat maxAmmoFlat value 2 durationSec 10 — FLAT round count, not a percentage. Weapon-state modifier = damage (gates shots fired; +2 on a 6-round SR magazine)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 1 ally with highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesTopAtk', count:1, byFinalAtk:true} — 'final ATK' stated literally, so LIVE buffed ranking, not static"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Damage ▲ 23.76% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat chargeDamagePct value 23.76 durationSec 10 (additive charge-bucket points; NOT chargeDamageMultPct — text says plain 'Charge Damage ▲', not 'multiplier')"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Critical Rate ▲ 16.35% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat critRatePct value 16.35 durationSec 10 — UNSCOPED (text does not say 'of normal attacks'), so critRatePct not critRateNormalPct"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "(trigger: own Burst Skill use)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'} — effects in the unit's OWN burst block fire only on rotations where she bursts; NOT fullBurstEnter (which would over-credit rotations another Burst II casts)"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill2[0].trigger",
+      "estimate": "interval{sec:10} → ~continuous uptime from t=10s onward",
+      "reasoning": "ALWAYS-⚑ #2 class (kit-silent trigger). The skill2 header is a bare 'Affects all allies with sniper rifles' with NO 'Activates when …' clause, yet both effects carry 'for 10 sec' — a wall-clock duration only means something if there is a periodic activation. Repo convention for a no-activation-clause line is an interval trigger; sec:10 is chosen to match the stated duration (continuous cover) rather than invented from a datamined cooldown I was not given. The realistic alternatives are (a) a longer skill cooldown → a duty cycle below 100%, or (b) fullBurstEnter → ~10s of every ~20s rotation, i.e. roughly HALF the uptime modeled here. This is the single largest magnitude risk in the override: it multiplies a team ATK ▲10.98% and an SR ammo grant across the whole fight.",
+      "recipe": "The Max Ammunition ▲2 rounds line is DIRECTLY OBSERVABLE on the HUD — an SR ally's ammo counter reads 8 instead of 6 while the buff is live. Record one fight with an SR ally (or himeno solo, watching her own counter): timestamp every frame where the max-ammo readout flips 6→8 and 8→6. That gives the trigger identity (t=0 / periodic / at Full-Burst entry) AND the exact duty cycle in one pass, with no damage-math inference. Cross-check against the FB banner timestamps to separate 'interval' from 'fullBurstEnter'."
+    },
+    {
+      "field": "override.skill1[0].effects[0] (stat defPct on enemy)",
+      "estimate": "-6.94% enemy DEF for 3s per full-charge hit; modeled as 0 damage (inert)",
+      "reasoning": "This is an ENEMY DEF reduction, and the effect schema has no enemy-DEF StatKey — defPct is documented as self-DEF/inert and {kind:'enemy'} targets resolve to an empty set. The honest options were (i) record it inert, or (ii) fold it into damageTakenPct. (ii) is a fudge: DEF▼X% and Damage Taken▲X% are different mechanics with different magnitudes under the (ATK − enemyDEF) formula, so equating them would invent damage. I chose (i) — the line is preserved so a future enemy-DEF consumer picks it up, and the audit records it rather than silently dropping it. Consequence: this override currently under-credits himeno's real team contribution by whatever the boss-DEF cut is worth.",
+      "recipe": "Two parts. (1) Magnitude: needs the boss's DEF value at scope lock — the standing boss-DEF battery (fire a fixed-ATK unit at the boss and solve (ATK − DEF) from popup values across two known ATK levels) yields DEF, then 6.94% of it converts to a per-hit damage delta. (2) Uptime: 3 sec off a full-charge hit on a 6-round SR — count charge-shot cadence from footage to get the duty cycle. Only after (1) does an enemyDefPct engine channel become worth building; until then the inert record is the correct state."
+    },
+    {
+      "field": "override.skill1[0].trigger (chargeCounter vs shotFired)",
+      "estimate": "chargeCounter{count:1} — one activation per full charge",
+      "reasoning": "The text says 'when hitting a target with Full Charge', i.e. a per-full-charge trigger conditioned on a hit. chargeCounter{count:1} states that literally. shotFired is behaviourally identical IF and ONLY IF every himeno trigger pull in the engine is a full-charge shot (chargeFrames 60 suggests yes for an SR). If the engine ever models partial charges or a non-charge tap, the two diverge and shotFired would over-fire. Low damage risk today because the effect it carries is inert, but the trigger choice matters if the DEF channel is ever built.",
+      "recipe": "Read the engine's charge path for SRs (does it emit a distinct full-charge event per pull?) and pin with a harness test: run controlComp with himeno, count chargeCounter activations vs shot events over 180s and assert they are 1:1."
+    },
+    {
+      "field": "base cadence tuple (chargeFrames 60 / reloadFrames 159 / ammo 6)",
+      "estimate": "taken as given: 60f charge, 159f reload, 6-round magazine",
+      "reasoning": "ALWAYS-⚑ #1 (datamine-unreliable cadence). These are datamined fields with a known history of being nominal rather than effective, and they are load-bearing here in a way they usually are not: her S1 fires once per full charge, and her S2 Max Ammo ▲2 changes shots-per-magazine, so both charge time and reload frames set how often BOTH of her kit lines actually land. I did not adjust them.",
+      "recipe": "Frame-count a himeno focus recording: measure charge-start→shot-release and shot-empty→ammo-refilled directly off the ammo counter, and compare with 60/159 at 60fps. Round any nominal rate to the 60fps frame grid before use."
+    },
+    {
+      "field": "override.burst[0].target (self-eligibility of the top-ATK grant)",
+      "estimate": "himeno herself is eligible (excludeSelf NOT set)",
+      "reasoning": "The kit says '1 ally unit(s) with the highest final ATK' with no 'except the skill user' clause, so the literal-word rule keeps her in the candidate pool. As a Supporter (lower static ATK than an Attacker) she will almost never win the ranking on a real team, so this is near-zero magnitude in practice — but on a Supporter-heavy or solo comp it decides whether the Charge Damage ▲23.76% lands on a carry or on herself.",
+      "recipe": "No measurement needed — this is a text-fidelity call. Pin it with a harness test: buffApply for chargeDamagePct 23.76 must carry targetSlug === the highest-final-ATK unit in controlComp, and a second run with a Supporter-only roster must show it landing on himeno."
+    }
+  ],
+  "model": "claude-opus-5"
+}

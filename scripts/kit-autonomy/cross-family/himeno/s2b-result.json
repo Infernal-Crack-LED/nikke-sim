@@ -1,0 +1,90 @@
+{
+  "slug": "himeno",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▼ 6.94% for 3 sec.",
+      "disposition": "GAP",
+      "scope": "Boss debuff — DEF reduction on the enemy; benefits the WHOLE team's damage via the ATK−DEF formula, not just himeno (taxonomy item 4: an enemy-side ▼ is never a self line).",
+      "durationSemantics": "durationSec: 3 — wall-clock seconds, refreshed per qualifying hit. With SR cadence (60f charge + release latency per shot) uptime is near-continuous while firing but LAPSES around reload: last hit + 3s expires before reload(159f≈2.65s) + recharge(1s) + latency completes, so a ~1s dead window per magazine exists.",
+      "triggerIdentity": "On-HIT gated on Full Charge ('Activates when hitting a target with Full Charge') — per-shot on-hit, not on-cast, not interval. For an SR that always fully charges in-sim this rides every landed shot; the gate matters only if partial-charge shots exist.",
+      "targetSet": "enemy ('Affects the target'). Boss-held debuff — expect buffApply with casterIdx===null AND targetIdx===null, filtered by stat+value 6.94.",
+      "nearestWrongModel": "Dropping the line as inert because the schema comments defPct as 'inert in v1 (self DEF…)' — that comment governs SELF DEF only; an ENEMY DEF ▼ is damage-live wherever boss DEF enters the formula. Second-nearest: encoding it as a self/ally buff, or as permanent (no 3s expiry).",
+      "distinguishingAssertion": "A/B via withPatchedOverride('himeno', o => { o.skill1 = [] }): team total damage (all slugs, not just himeno) must DROP with the debuff present-vs-removed if modeled. Event-log: recurring buffApply {stat matching the enemy-DEF channel, value 6.94, casterIdx:null, targetIdx:null} beginning at her first full-charge hit, each with expiresFrame = applyFrame + 180; count scales with her shots fired, and no application occurs in the post-reload dead window before her next landed charge shot.",
+      "inertness": "Must NOT apply before her first landed shot (no t=0 passive application); must NOT buff any ally stat; removal must move ALL five units' totals in the same direction (it is not a himeno-only knob).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 10.98% for 10 sec.",
+      "disposition": "FAITHFUL",
+      "scope": "Generic atkPct (scales target's own ATK) — no normal-attack/charge/crit scoping in the text.",
+      "durationSemantics": "durationSec: 10. NOT permanent — the ■ header has no activation clause, so per the interval convention this re-applies on the unit's datamined skill cooldown; if that CD exceeds 10s there are genuine uncovered windows and a passive encoding over-credits.",
+      "triggerIdentity": "interval (no 'Activates when' clause → internal-cooldown trigger, first fire per the t=CD convention unless the kit forces a cast). The interval seconds come from datamined skillCooldownsSec — that number is outside this prose, so the tuple (interval sec, first-fire phase) is a ⚑/DATAMINED input the test must pin explicitly, not assume.",
+      "targetSet": "alliesOfWeapon {weapon:'SR'} — all sniper-rifle allies INCLUDING self (no 'except self' clause). In the control fixture both himeno and helm (SR) qualify; liter and crown do not.",
+      "nearestWrongModel": "Passive always-on aura (drops the 10s duration and any CD gap — strictly over-credits whenever CD > 10s); second-nearest: target 'allies' unscoped, buffing non-SR units.",
+      "distinguishingAssertion": "buffApply {stat:'atkPct', value:10.98} events recur spaced by the interval CD, each with expiresFrame = applyFrame + 600; the set of targetSlug values across all applications == exactly the SR wielders in the comp (himeno + helm in controlComp) and NEVER liter or crown. If the datamined CD > 10s, assert at least one frame span with the buff expired (a passive model shows a single application with no expiry gap).",
+      "inertness": "Non-SR allies' damage must NOT move when this block is zeroed via withPatchedOverride; no application keyed to burst casts or FB entry.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max Ammunition Capacity ▲ 2 round(s)",
+      "disposition": "FAITHFUL",
+      "scope": "Weapon-state modifier — taxonomy item 6: ammo capacity IS damage (it gates reload frequency / shots fired). Never 'skip: defensive'.",
+      "durationSemantics": "durationSec: 10, magnitude = 2 FLAT rounds. CRITICAL PARSE: '2 round(s)' is the AMOUNT, '10 sec' is the duration — this is NOT a 'for N round(s)' round-count duration. maxAmmoFlat:2, durationSec:10.",
+      "triggerIdentity": "Same interval block as the ATK line (same ■ header, same CD, same 10s window).",
+      "targetSet": "alliesOfWeapon {weapon:'SR'} including self — same target set as the ATK line.",
+      "nearestWrongModel": "Misreading '2 round(s)' as durationShots:2 (buff dies after 2 shots — massively under-credits); second-nearest: maxAmmoPct:2 (a 2% bump rounds to +0 on a 6-round magazine → silently inert).",
+      "distinguishingAssertion": "buffApply {stat:'maxAmmoFlat', value:2, durationShots:undefined, expiresFrame:applyFrame+600} on SR allies only; ammo economy: while the buff window covers a full magazine, himeno's reload events are spaced 8 shots apart (6 base + 2), reverting to 6 outside the window. A durationShots:2 misread shows the buff lapsing mid-magazine; a maxAmmoPct misread shows reloads still every 6 shots.",
+      "inertness": "Non-SR allies' reload cadence must NOT change; himeno's per-shot damage value must NOT change (capacity moves shot COUNT, not shot size).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Damage ▲ 23.76% for 10 sec.",
+      "disposition": "FAITHFUL",
+      "scope": "chargeDamagePct — additive percentage points in the CHARGE bucket only. Moves damage ONLY if the recipient actually deals charge-bucket damage (SR/RL charge shots); inert on a non-charge recipient even while critRatePct on the same block is live.",
+      "durationSemantics": "durationSec: 10.",
+      "triggerIdentity": "burstCast — this is himeno's OWN Burst II block ('when using Burst Skill' semantics implicit in a burst slot); it fires ONLY on rotations SHE casts, never on any team Full Burst. burstCast ≠ fullBurstEnter, and they diverge exactly when another Burst II unit (crown in the control fixture) takes the rotation instead.",
+      "targetSet": "alliesTopAtk {count:1, byFinalAtk:true} — the kit literally says 'highest FINAL ATK', which per the schema is the only sanctioned use of byFinalAtk (live effectiveAtk ranking, not static). Pool includes self absent an except-self clause, but a Supporter (static 98,367) loses to any Attacker carry (118,027), so in practice the carry receives it.",
+      "nearestWrongModel": "Keying to fullBurstEnter (fires on EVERY team FB even when crown bursts — over-credits in any two-B2 comp); second-nearest: static-ATK ranking (byFinalAtk omitted), which diverges whenever buffs reorder final ATK.",
+      "distinguishingAssertion": "In a comp where crown (B2) out-prioritizes himeno so himeno casts ZERO bursts: assert ZERO buffApply events for {stat:'chargeDamagePct', value:23.76} across the whole run (a fullBurstEnter misread emits one per FB). In a comp where himeno IS the B2 caster: exactly one application per her burstCast event, targetIdx == the index of the live-highest-final-ATK unit, expiresFrame = castFrame + 600.",
+      "inertness": "Must NOT apply on FBs himeno did not cast; a non-charge-weapon recipient's totals must NOT move from this line alone (zero it while keeping the crit line to isolate).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Critical Rate ▲ 16.35% for 10 sec.",
+      "disposition": "FAITHFUL",
+      "scope": "Generic critRatePct — no 'of normal attacks' scoping in the text, so the unscoped stat is correct here (do NOT reach for critRateNormalPct; that narrowing is for kits that say it).",
+      "durationSemantics": "durationSec: 10.",
+      "triggerIdentity": "Same burstCast block as the Charge Damage line — one block, two effects, identical trigger/target/duration.",
+      "targetSet": "Same alliesTopAtk {count:1, byFinalAtk:true} single recipient.",
+      "nearestWrongModel": "Scoping it to normal attacks only (critRateNormalPct — under-credits the recipient's skill/burst hits), or granting it to all allies instead of the single highest-final-ATK unit.",
+      "distinguishingAssertion": "buffApply {stat:'critRatePct', value:16.35} exactly once per himeno burstCast, exactly one targetIdx per application; damage events from the recipient inside the 10s window carry an elevated crit rate on ALL categories (normal AND skill/burst), while every other unit's crit rate is unchanged.",
+      "inertness": "No other ally receives it; nothing applies on rotations himeno does not burst; recipient's crit reverts after expiresFrame.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:DEF ▼ 6.94% for 3 sec",
+    "skill2:ATK ▲ 10.98% for 10 sec",
+    "skill2:Max Ammunition Capacity ▲ 2 round(s) for 10 sec",
+    "burst:Charge Damage ▲ 23.76% for 10 sec",
+    "burst:Critical Rate ▲ 16.35% for 10 sec"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Three reconciliation points. (1) SHARED-PRIOR MISREAD RISK, skill1: the schema's defPct comment ('inert in v1') is about SELF DEF and is the trap most likely to make a driver silently drop the enemy DEF ▼ — an enemy-side DEF reduction is damage-live for the WHOLE team via the ATK−DEF term. I marked it GAP because the visible StatKey list exposes no explicitly enemy-DEF-labeled channel; if the engine consumes enemy-targeted defPct (or an equivalent boss-DEF channel), the disposition upgrades to FAITHFUL — but the A/B assertion (zero the block, whole-team totals must move) is the test either way, and if the engine truly has no consumer the line belongs in unmodeled with the gap surfaced, not silently dropped. (2) FIXTURE HAZARD, burst: himeno is Burst II and controlComp pins crown in the B2 slot — the driver must construct the comp so himeno's burstCast actually fires for the positive assertions (and, adversarially, a comp where crown bursts instead is exactly the fixture that separates burstCast from a fullBurstEnter misread; helm as the fixed B3 keeps FBs chaining either way and conveniently doubles as the second SR for the skill2 target-set assertion). (3) skill2's interval seconds are OUTSIDE this prose (datamined skillCooldownsSec) — the test must pin the CD it assumes and assert the apply-spacing against it; if CD ≤ 10s the duration-vs-passive distinction collapses observationally and the assertion should then lean on expiresFrame stamps rather than coverage gaps. Also note the deliberate near-collision in skill2's wording: '▲ 2 round(s)' (magnitude) vs the taxonomy's 'for N round(s)' (duration) — the durationShots misread is the single most damaging plausible error on this kit.",
+  "model": "claude-fable-5"
+}
