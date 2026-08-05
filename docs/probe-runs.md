@@ -4933,7 +4933,10 @@ bash scripts/verify.sh; echo $?
 ##### §14J — Cross-family reviews (both gates, `kimi-code/k3`)
 
 Driver was Claude, so `/logic-gate`'s routing sends both gates to Kimi — genuinely cross-family, not
-a same-family fallback. Packets and verdicts: `scratchpad/gates/2026-08-04-lifetime-cap/`.
+a same-family fallback. ⚠ The raw packets and verdict JSONs were written to
+`scratchpad/gates/2026-08-04-lifetime-cap/` (gitignored) and were **LOST when the worktree was
+deleted on 2026-08-04**. Their substance is quoted verbatim in the tables below and in the
+pre-commit's §8; the raw artifacts are not recoverable.
 
 **PRE-OP (on the plan, before any code): `APPROVED-WITH-REVISIONS`, 7 mandatory revisions**, all
 executed before any number existed; logged item-by-item in the pre-commit's §8. Three changed the
@@ -5117,7 +5120,8 @@ discoverability**; it was not.
 
 ##### §16F — Cross-family post-op review
 
-`kimi-code/k3`, blind, on the diff (`scratchpad/gates/2026-08-04-band-hi-landing/`): **`ACCEPT`**, no
+`kimi-code/k3`, blind, on the diff (raw packet gitignored and **LOST** with the worktree,
+2026-08-04; verdict quoted here): **`ACCEPT`**, no
 blocking findings, contamination check **clean** this time (the §14J packet error was not repeated).
 It confirmed onset invariance is guaranteed **by construction** rather than by the single-dump probe,
 and that the `None`-sentinel default is a defensible deviation. Its three NOTEs: record the
