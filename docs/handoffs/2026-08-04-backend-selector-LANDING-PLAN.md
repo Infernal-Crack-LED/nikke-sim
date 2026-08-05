@@ -1,0 +1,122 @@
+# Backend-selector tie-break — LANDING PLAN, blast radius MEASURED first
+
+> AI-facing. Written and committed **before any production file is touched**. Fixes the defect
+> recorded at `docs/probe-runs.md` §11E, carried as item 6 of
+> [`2026-08-04-lifetime-cap-JUDGE-handoff.md`](2026-08-04-lifetime-cap-JUDGE-handoff.md).
+> Owner-approved 2026-08-04 under the standing principle that **tooling faithfulness is a win
+> regardless of the cold-SG question.** Prior graveyards and traps remain binding.
+>
+> **Slugs:** `marciana` (SG/Iron — `docs/probes/clean-weapons/marciana-solo.MP4`; **not**
+> `marciana-marine-study`, AR/Iron), `noir`, `guilty`, `isabel`.
+
+---
+
+## 1. The defect, stated exactly
+
+`read-pellets.ts:874-884`:
+
+```js
+const backendEntries = [fc.numpy, fc.pil, fc.opencv];
+const activeTotals = backendEntries.map((b) => b.white + b.red).filter((t) => t > 0).sort(...);
+const total = activeTotals.length ? activeTotals[Math.floor(activeTotals.length / 2)] : 0;
+const best = backendEntries.reduce((a, b) =>
+  Math.abs(b.white + b.red - total) < Math.abs(a.white + a.red - total) ? b : a);
+// ... marker: best.marker ?? 0,  band: best.band ?? 0,
+```
+
+The ranking key is **`white + red` only**. `marker` and `band` are then read off whichever backend
+that key selected — **they never participate in the choice.** `Array.reduce`'s **strict `<`** means a
+tie leaves the accumulator in place, and the accumulator starts at `backendEntries[0]`, so **ties
+resolve to array order: numpy → pil → opencv.**
+
+⚑ **Two channels ride as passengers, not one.** §11E recorded `marker`. **`band` — added by the
+2026-08-04 hybrid landing — inherits the identical defect**, and `band` feeds
+`perFrameForDebounce` → `debounceShots` → the landed representative-frame rule. §11E predates it.
+
+⚑ **Production runs a single backend** (`read-pellets.ts:789` passes `--backend opencv`), and
+`count-pellets.py` zero-fills the inactive ones. So the tie fires precisely when
+**`white + red == 0` on every backend** — then `total = 0`, no comparison is ever strictly less, and
+`best` stays **numpy**, whose zero-filled `marker`/`band` overwrite opencv's real values.
+
+## 2. ⚑ BLAST RADIUS — MEASURED, not assumed, and §11E's figure is STALE
+
+§11E's "fires on 7 of 8 dumps, 756 frames, only ONE flips an event's validity" was measured **before
+the `band` channel existed**. Re-measured across **24,679 frames / 848 shots / 5 dumps / 4 units**,
+at the landed `band_hi`:
+
+| exposure                                                         | frames       |
+| ---------------------------------------------------------------- | ------------ |
+| `white + red == 0` (the tie fires)                               | **12,614**   |
+| …of those, opencv's `band > 0` is discarded                      | **442**      |
+| …of those, opencv's `marker > 0` is discarded                    | **606**      |
+| ⚑ …**in-span AND `band ≥ MERGE_EVENT_MIN`** (can form a plateau) | **0**        |
+| ⚑ …shots whose **representative frame** is such a frame          | **0 of 848** |
+
+⇒ **The `band`-channel impact is ZERO on all available footage.** Every one of the 442 discarded
+`band` values is 1–2, below `MERGE_EVENT_MIN = 3`, so it could never have formed a plateau. The
+counting path is **not** currently affected.
+
+⚑ **This narrowing is the point.** The raw 1,018-frame exposure is arithmetically impressive and
+would have been the wrong number to quote — the same trap §20D fell into. **What survives is the
+`marker` channel**, whose impact remains as §11E measured it: one event's validity across 8 dumps.
+
+⇒ **This is a low-risk faithfulness fix, not an urgent correctness fix.** Land it because the code is
+demonstrably wrong, not because it is currently costing counts.
+
+## 3. The change — `marker` and `band` get their OWN consensus
+
+**Do not** patch the tie-break to prefer a different backend by fiat. The defect is that passenger
+channels are decided by someone else's ranking; the fix is to stop treating them as passengers.
+
+`total` is already a **median across active backends**. Apply the same treatment per channel: derive
+`marker` and `band` by the same active-backend consensus used for `total`, rather than reading them
+off `best`.
+
+⚑ In single-backend production this is unambiguous — the only active backend supplies every channel,
+and the numpy-zero-fill can no longer win a tie it never participated in.
+
+⚑ `best` may remain for `white`/`red` (its ranking key genuinely is `white + red`); the change is
+that `marker`/`band` no longer come from it.
+
+## 4. Success criteria
+
+| #   | Criterion                                                                                                                                                        |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | On a frame where all backends have `white + red == 0` but opencv has `marker > 0` or `band > 0`, the emitted `marker`/`band` are **opencv's**, not numpy's zeros |
+| 2   | On single-backend runs, every emitted channel equals that backend's value on **every** frame                                                                     |
+| 3   | `white`/`red`/`total`/`valid` are **unchanged** on all 5 dumps — this fix must not move the count itself                                                         |
+| 4   | Shot segmentation (`totalShots`, every event onset) **unchanged** on all 5 dumps                                                                                 |
+| 5   | Both gates green: `pellet-selftest.sh` (25 arms) + `verify.sh`, TRUE exit codes                                                                                  |
+
+## 5. ⚑ PREDICTED BLAST RADIUS — ZERO fixtures, ZERO pins
+
+Per §2 the counting path is unaffected on all available footage, and `white`/`red`/`total` are not
+touched by §3. Committed fixtures record counts and segmentation, not the per-frame `marker`/`band`
+of a zero-total frame.
+
+| artifact                                      | prediction                    |
+| --------------------------------------------- | ----------------------------- |
+| every `scripts/tests/fixtures/pellets/*.json` | **UNCHANGED, byte-identical** |
+| `CACHE_SELFTEST_EXPECT`                       | **UNCHANGED**                 |
+| all 25 `pellet-selftest.sh` arms              | **PASS**                      |
+| `verify.sh`                                   | **PASS**                      |
+
+⚠ **One known possible exception, declared up front:** the `marker` channel drives `core_hit`, and
+§11I recorded **one** event across 8 dumps whose validity flips on it. If a committed fixture pins
+that event, it may move. **That is the ONLY sanctioned mover**; anything else is a §6 hard stop.
+⚑ Per §15, opencv's extra markers are **not** automatically correct — two of the three at `f1565`
+were red UI-banner glyphs. **This fix does not adjudicate marker truth; it only stops the choice
+being made by array order.**
+
+## 6. HARD STOPS
+
+1. ⛔ **Any fixture moves other than the single §5-declared `core_hit` event.** STOP and report.
+2. ⛔ **`white`/`red`/`total` change on any dump** (criterion 3) — that would mean the fix leaked
+   into the counting key.
+3. ⛔ **Any event onset moves** (criterion 4).
+4. ⛔ Do not touch `debounce_shots`' selection logic, `MARKER_MIN`, `MIN_PELLETS`/`MAX_PELLETS`,
+   `band_hi`, `max_pellet_frames`, or `count-pellets.py`'s counting code.
+
+## 7. Result
+
+_(Written only after the landing verifies.)_
