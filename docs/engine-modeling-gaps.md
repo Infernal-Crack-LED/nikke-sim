@@ -30,7 +30,7 @@
 | `alliesOfElement` | 10 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, exia, guillotine-winter-slayer, guilty, maiden-ice-rose, … |
 | `alliesOfElementWeapon` | 3 | ark-ranger-black, sugar, trina |
 | `alliesOfWeapon` | 9 | arcana-fortune-mate, d-killer-wife, drake, leona, miranda, noir, rem, sugar, … |
-| `alliesTopAtk` | 15 | alice, anis, avistar, chime, claire, folkwang, jackal, mast, … |
+| `alliesTopAtk` | 16 | alice, anis, avistar, chime, claire, folkwang, jackal, lily, … |
 | `atkOfMaxHpPct` | 5 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose, maxwell-ordinary-mechanic |
 | `bossElement` | 1 | eve |
 | `bossElementGate` | 6 | brid-silent-track, eve, helm-aquamarine, marciana-marine-study, phantom, rosanna |
@@ -70,7 +70,7 @@
 | `inFb` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |
 | `instantInFb` | 1 | rapi-red-hood |
 | `instantReload` | 10 | alice-wonderland-bunny, asuka-wille, diesel, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, … |
-| `interval` | 26 | ade, anis, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, elegg-boom-and-shock, … |
+| `interval` | 27 | ade, anis, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, elegg-boom-and-shock, … |
 | `lastBullet` | 10 | anis-sparkling-summer, aria, crow, dorothy, epinel, exia, helm, k, … |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 7 | emilia, grave, n102, noir, rem, tove, trina |

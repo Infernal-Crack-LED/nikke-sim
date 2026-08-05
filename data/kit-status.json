@@ -3396,6 +3396,47 @@
         "temp": "COLD ▼"
       }
     },
+    "lily": {
+      "name": "Lily",
+      "burst": "II",
+      "weapon": "SMG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/lily.json + scripts/kit-autonomy/manual-review/lily.md."
+        ],
+        "date": "2026-08-04"
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "■ Affects all allies.\nRestores 10% of Cover HP. — UNMODELED (inert): restores COVER HP, not a unit's HP; no sim cover-HP representation (same NO-OP class as liter S2, owner ruling 2026-07-21; naga cover-restore precedent). Emits no unit-recovery event, so it must not trigger recovery-consumer teammates (the liter trap — pinned by the unit spec's Crown guard)."
+        ],
+        "burst": [
+          "■ Affects 1 random ally unit whose cover has been destroyed.\nRebuild Cover with 30% HP.\nATK ▲ 20% of the skill user's ATK for 10 sec. — UNMODELED (inert): the destroyed-cover gate can never legitimately fire in v1 — there is no incoming-damage / cover-destruction model (immortal boss), so no ally's cover is ever destroyed and this branch never applies (biscuit S2 un-fireable-trigger disposition). The Rebuild Cover portion is the liter-S2 cover-HP NO-OP class regardless. Its 20% ATK magnitude is pinned ABSENT by the unit spec (lily grants ONLY the 40% branch-B flat value)."
+        ]
+      },
+      "caveats": [
+        "skill1: cadence is the DATAMINED skill cooldown (interval 15s); first-fire phase (t=15 vs t=0) is the engine interval convention (⚑3).",
+        "skill1 + burst: '1 random ally' resolves to the single highest-base-ATK ally (alliesTopAtk count:1 — chime single-ally-grant precedent; no random-selection target kind exists in the deterministic sim). ⚑1 — the true random pick would rotate the holder; flat-ATK grants are near-damage-neutral across holders, so the stand-in moves holder identity, not (much) team damage.",
+        "burst: destroyed-cover status gate is CONSTANT in v1 — branch A (rebuilt cover + 20% ATK) never fires (no cover-destruction model), branch B (40% ATK) always fires; the gate is documented, never enacted as a blocker (soline Max-HP-gate pattern).",
+        "skill2: the cover restore is an inert NO-OP in v1 (no cover representation); it is NOT a unit heal and emits no recovery events.",
+        "weapon: lily's own SMG damage is minor relative to her buffer value; the base-weapon cadence is datamined (RoF 1440, reloadFrames 81) and unverified by footage (⚑2).",
+        "rarity: lily is SR; the scope-lock basis (3★/core 7) is an SSR ceiling — the helm-in-controlComp precedent ships her uncapped for spec consistency, and her own ATK (the casterAtkPct basis) is therefore slightly warm (affects the flat grant magnitude, not the structure)."
+      ],
+      "board": null,
+      "date": "2026-08-04",
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-checks: (a) ⚑1 random-ally stand-in — alliesTopAtk count:1 vs the blind expectation-split; a focus-video popup read settles which ally actually receives each grant; (b) ⚑3 interval first-fire phase (t=15 vs t=0) convention; (c) SR rarity ceiling not applied (helm-in-controlComp precedent) so the casterAtkPct flat basis is slightly warm",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "liter": {
       "name": "Liter",
       "burst": "I",

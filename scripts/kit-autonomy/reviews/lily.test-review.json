@@ -1,0 +1,92 @@
+{
+  "slug": "lily",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 20% of skill user's ATK, 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK stat buff — no normal-attack/charge/crit scoping in the text.",
+      "durationSemantics": "durationSec: 5 — literal seconds, not rounds ('for 5 sec').",
+      "triggerIdentity": "No '■ Activates when' clause → interval trigger on the skill's own cooldown; first fire t=CD (no 'Forcefully uses' wording, so no t=0 force-cast). ⚑ the interval seconds — the CD is NOT in the kit text (datamined skillCooldownsSec, known-unreliable class).",
+      "targetSet": "'1 random ally unit' — exactly ONE ally per activation. The schema has NO random-ally TargetDef; a deterministic stand-in (or time-averaged split) must be chosen and DOCUMENTED, ⚑ CALIBRATED. Not self, not all allies.",
+      "nearestWrongModel": "stat atkPct 20 (scales the TARGET's own ATK) instead of casterAtkPct (flat 20% of Lily's Supporter ATK); and/or target 'allies' (5× over-credit of a single-ally buff).",
+      "distinguishingAssertion": "In controlComp(lily): buffApply events with stat==='casterAtkPct' and value≈19673.4 (0.20×98367 Supporter staticAtk, FLAT-resolved at apply — NOT raw 20), exactly ONE targetIdx per activation, expiresFrame−applyFrame≈300f, first application at t=CD not t=0. RED if stat==='atkPct'/value===20, or 5 buffApply per fire, or value≈23605 (20% of an Attacker target's ATK).",
+      "inertness": "Must add ZERO damage of its own (pure stat buff, no flatDamage/dot); must never apply to Lily herself.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Restores 10% of Cover HP.",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "Cover HP restoration, all allies — defensive; no cover HP pool exists in v1 (boss deals no damage).",
+      "durationSemantics": "Instant per activation; no duration.",
+      "triggerIdentity": "No activation clause → interval on the skill CD (⚑ same as skill1). The gated question: does a COVER-HP restore count as 'recovery takes effect' for on-recovery consumers (the 'recovery' trigger kind)? Unit-HP heal vs cover repair are different game channels; unmeasured.",
+      "targetSet": "All allies (all 5, including self).",
+      "nearestWrongModel": "Encoding it as a heal effect to all allies. This is NOT obviously safe: the control fixture pins crown at B2, whose kit keys off received recovery — a heal-encoded cover repair firing every CD would silently drive a teammate's on-recovery engine permanently. The opposite misread (silent drop with no unmodeled record) also fails the audit trail.",
+      "distinguishingAssertion": "Isolation: totals(res)['lily'] identical with the skill2 block stripped via withPatchedOverride. Tandem: in controlComp (crown present), crown's recovery-triggered buffApply stream must NOT gain lily-CD-cadence events unless a measurement has ruled cover repair = recovery; count crown-side buffApply with/without lily's skill2 and assert the delta matches the DOCUMENTED choice.",
+      "inertness": "Until measured: must move NO unit's damage — including crown's — in the control comp. If shipped as heal, that is an enacted tandem claim requiring evidence, not a default.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Rebuild Cover with 30% HP.",
+      "disposition": "UNMODELED",
+      "scope": "Cover reconstruction on the destroyed-cover branch — defensive, cover HP pool not modeled.",
+      "durationSemantics": "Instant; no duration.",
+      "triggerIdentity": "Rider on the burst's branch-A block (burstCast + destroyed-cover condition, which is never satisfied at scope).",
+      "targetSet": "The 1 random ally whose cover has been destroyed.",
+      "nearestWrongModel": "Modeling it as a unit heal that emits recovery events (same crown-tandem hazard as skill2) — or dropping it without an unmodeled record.",
+      "distinguishingAssertion": "No heal/recovery event and no damage delta attributable to this line in any scope-lock comp; the verbatim text present in override.unmodeled.burst.",
+      "inertness": "Everything — fully inert at scope.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 20% of user's ATK 10s (branch A)",
+      "disposition": "GAP",
+      "scope": "Generic ATK buff, but gated on 'ally unit whose cover has been destroyed' — a game state the sim does not model. At scope lock (partless boss, no damage taken, covers never destroyed) the gate is NEVER satisfied, so the faithful scope-level model is: this branch never fires.",
+      "durationSemantics": "durationSec: 10 — literal seconds.",
+      "triggerIdentity": "burstCast (Lily's OWN Burst II cast) + the unrepresentable cover-destroyed condition. Resolving the branch by the scope fact (always branch B) is a documented stand-in, not a kit read.",
+      "targetSet": "1 random ally with destroyed cover (empty set at scope).",
+      "nearestWrongModel": "Firing BOTH branches per cast (20% + 40%), or averaging them, instead of branch-B-only at scope — the '■ … if there is no ally unit whose cover has been destroyed' text makes them mutually exclusive.",
+      "distinguishingAssertion": "Across the full run, NO buffApply from Lily's burst slot with value≈19673.4 (0.20×98367); the ONLY burst-slot casterAtkPct value observed is ≈39346.8. RED if any cast emits two ATK buffs or the 20% magnitude.",
+      "inertness": "Must contribute zero buffApply events at scope; must not be summed into branch B.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 40% of user's ATK 10s (branch B)",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK buff (no attack-type scoping); the live branch at scope lock since no cover is ever destroyed.",
+      "durationSemantics": "durationSec: 10 — literal seconds ('for 10 sec'), not rounds.",
+      "triggerIdentity": "burstCast — this sits in Lily's OWN burst block, so it fires ONLY on rotations Lily wins the Burst-II slot. NOT fullBurstEnter. This divergence is LIVE in the control fixture: crown is the pinned B2, so with Lily as carry two same-tier B2 units compete and Lily bursts on only a subset of rotations — keying to fullBurstEnter over-credits every crown rotation. Buff applies at cast, pre-FB-window.",
+      "targetSet": "1 random ally unit — single ally, deterministic stand-in required (⚑, same schema gap as skill1). Which ally the stand-in picks moves the carry's total materially (a flat ≈39.3k ATK is worth far more on the focused Attacker than a support); do not silently default it onto the carry.",
+      "nearestWrongModel": "trigger fullBurstEnter (fires on ANY team Full Burst including crown's rotations) with stat atkPct 40 on all allies — over-crediting on trigger count, magnitude basis, and target count simultaneously.",
+      "distinguishingAssertion": "Count Lily's burstCast events vs fullBurstStart events in controlComp(lily): assert the buffApply count (stat 'casterAtkPct', value≈39346.8 = 0.40×98367) EQUALS Lily's burstCast count and is STRICTLY LESS than the fullBurstStart count when crown out-competes her on some rotations; exactly one targetIdx per cast; expiresFrame−applyFrame≈600f. RED under fullBurstEnter keying (count==FB count) or atkPct 40 raw-value emission.",
+      "inertness": "No damage of its own; no application on rotations where crown casts the stage-2 burst.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:ATK ▲ 20% of skill user's ATK for 5 sec (casterAtkPct, 1 ally, interval ⚑CD)",
+    "burst:ATK ▲ 40% of user's ATK for 10 sec — branch B (casterAtkPct, burstCast, 1 ally)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Restores 10% of Cover HP."
+    ],
+    "burst": [
+      "Rebuild Cover with 30% HP.",
+      "ATK ▲ 20% of the skill user's ATK for 10 sec. (destroyed-cover branch — gate never satisfied at scope)"
+    ]
+  },
+  "notes": "Five reconciliation points, three of them expected shared-prior misreads. (1) STAT BASIS: every ATK line reads 'of the skill user's ATK' — casterAtkPct (flat add resolved off Lily's Supporter staticAtk 98,367 → 19,673.4 / 39,346.8), never atkPct; the buffApply 'value' is the FLAT number, so an assertion on raw 20/40 is itself the wrong-model tell. (2) BURST TRIGGER: burstCast, not fullBurstEnter — and the control fixture makes this maximally diagnostic because crown (pinned B2) competes with Lily (B2) for the stage-2 slot, so the two keyings produce DIFFERENT event counts in the standard harness; any test whose buff count equals the FB count has encoded the misread. (3) RANDOM TARGET: '1 random ally' has no TargetDef in the schema — a deterministic stand-in is mandatory and must be a documented ⚑ choice; silently resolving it to the focused carry over-credits that unit by roughly the full channel (a flat ~39k ATK on the Attacker vs on a support are very different board outcomes). An expected-value split across the 5 allies is the defensible alternative; either way the test must pin WHICH stand-in shipped. (4) BRANCH EXCLUSIVITY: the two burst ■ blocks are mutually exclusive by text; at scope lock covers are never destroyed so branch B (40%) is the sole live path — assert branch A's 20% magnitude never appears and the branches are never summed. (5) SKILL2 TANDEM HAZARD: 'Restores 10% of Cover HP' is NOT a unit heal; encoding it as a heal effect would emit recovery events every skill CD and permanently feed crown's on-recovery engine inside the control comp itself — whether cover repair satisfies 'when recovery takes effect' consumers is unmeasured, so the shipped choice must be explicit, defaulted inert, and asserted (crown's buff stream unchanged by Lily's presence until a measurement says otherwise). Cadence caveat: both skill CDs are absent from the kit text → interval triggers with ⚑ datamined skillCooldownsSec, first fire t=CD (no force-cast wording). Note: instructed to save this JSON to scripts/kit-autonomy/reviews/lily.test-review.json, but this run has no file tools — returning inline; the orchestrator should persist it.",
+  "model": "claude-fable-5"
+}

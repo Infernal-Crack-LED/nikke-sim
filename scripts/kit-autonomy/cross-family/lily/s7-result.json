@@ -1,0 +1,72 @@
+{
+  "slug": "lily",
+  "kitDescription": "Lily is a Wind SMG Supporter whose entire kit is single-ally ATK support plus cover repair. Her Skill 1 periodically grants one random ally a flat ATK bonus equal to 20% of Lily's own ATK for 5 seconds. Her Skill 2 periodically restores 10% Cover HP to the whole team — a defensive effect with no damage relevance in a fight where nobody takes damage. Her Burst II checks whether any ally's cover has been destroyed: if so, she rebuilds that ally's cover at 30% HP and grants them 20% of her ATK for 10 seconds; if not (always the case in the sim's scope-lock fight), she instead grants one random ally a larger 40%-of-her-ATK bonus for 10 seconds. She deals only ordinary SMG weapon damage herself; her value is the ATK she hands to a teammate.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "ATK ▲ 20% of the skill user's ATK for 5 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval:15 (datamined CD, neve/helm-aquamarine convention, first fire t=15) → alliesTopAtk count:1 → casterAtkPct 20 / 5s; random-ally stand-in flagged ⚑1",
+        "blindSaid": "S5: asserts casterAtkPct, flat-resolved value >1000, seconds-not-rounds, single-ally authored, recurs ≥2× — all GREEN vs driver. S6: same stat/duration but interval:10 (self-declared INVENTED, no datamine in blind packet) and expectation-split allies@4%",
+        "formulaCheck": "SSOT §1a/§11: 'X% of caster's ATK' = caster BASE ATK added FLAT outside recipient's (1+ATK%) — casterAtkPct is the correct stat; 0.20×98,367 ≈ 19,673 flat matches. No-activation-clause line → internal-cooldown interval on the skill's own CD is the owner-stated mechanic (§2b), first fire t=N ⚑ convention — driver's 15s (datamined CD) is the sanctioned read; blind's 10s was admittedly invented and is mooted.",
+        "fireRateOk": true,
+        "explanation": "Right bucket, right stat basis, right duration semantics, right cadence convention; 11 fires pinned at exact 15s spacing (t=15..165) so it demonstrably FIRES at the prose-implied cadence. The only gap — '1 random ally' has no engine primitive — is documented ⚑1 with a recipe (driver's alliesTopAtk stand-in vs blind's expectation-split are both flagged stand-ins; neither contradicts prose)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Restores 10% of Cover HP.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim — liter-S2 NO-OP class (owner ruling 2026-07-21; naga precedent); deliberately NOT a heal (the liter trap: recovery events would fire Crown-class consumers); L2 guard test proves shipped feeds Crown zero recovery while the heal counterfactual fires her ≥10×",
+        "blindSaid": "S2b/S5/S6 all independently demanded exactly this: inert, not a heal, crown-tandem hazard asserted (S5 s2Removed byte-identical check GREEN)",
+        "formulaCheck": "No cover-HP pool exists in v1 (boss deals no damage); whether cover repair satisfies 'when recovery takes effect' consumers is unmeasured — defaulting inert and recording it is the MEASURED > FUDGE compliant disposition.",
+        "fireRateOk": true,
+        "explanation": "Three independent blind agents and the driver converged on the same disposition with the same hazard analysis; the decision is recorded verbatim in unmodeled plus a discriminating guard test. Textbook DOCUMENTED_GAP."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Rebuild Cover with 30% HP.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim — destroyed-cover gate never satisfiable in v1 (no incoming-damage/cover-destruction model; biscuit S2 un-fireable-trigger disposition); rebuild portion is the liter-S2 cover NO-OP class regardless",
+        "blindSaid": "S2b: UNMODELED + inertness assertion; S5: skipped as unobservable at scope; S6: unmodeled verbatim — full agreement",
+        "formulaCheck": "No cover representation exists; the gate state ('ally whose cover has been destroyed') is always-false at scope lock, so the faithful scope-level model is 'never fires' — recorded, not silently dropped.",
+        "fireRateOk": true,
+        "explanation": "Inert by construction and documented verbatim; no recovery/damage side effects leak (driver's 'no lily-cast buff other than casterAtkPct' assertion pins this)."
+      },
+      {
+        "kitLine": "ATK ▲ 20% ... 10 sec (destroyed-cover branch)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim with branch A; its 20% magnitude pinned ABSENT by the burst-slot value-set assertion (only FLAT_40 ever emitted from the burst slot)",
+        "blindSaid": "S2b: GAP, never-fireable at scope, nearest-wrong = firing both branches; S5: 'models ONE branch' + 2:1 ratio assertions GREEN; S6: unmodeled verbatim — full agreement",
+        "formulaCheck": "Branches are mutually exclusive by the prose's '■ ... if there is no ally unit whose cover has been destroyed'; at scope lock branch A's gate is constant-false, so never emitting the 20% value is the faithful behavior.",
+        "fireRateOk": true,
+        "explanation": "Branch exclusivity preserved and actively pinned (no double-count, no averaging, no 20% leakage) — the exact failure modes S2b named are discriminated against by both driver and blind tests."
+      },
+      {
+        "kitLine": "ATK ▲ 40% of the skill user's ATK for 10 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast (own cast, NOT fullBurstEnter) → alliesTopAtk count:1 → casterAtkPct 40 / 10s; sole-B2 fixture pins one buff per cast, 5 casts = 5 FBs; same ⚑1 stand-in",
+        "blindSaid": "S5: burst = exactly 2× S1 magnitude, one branch only, one ally per activation, bounded 10s window — all GREEN. S6: same trigger/stat/duration, diverges only on the stand-in (allies@8% expectation split)",
+        "formulaCheck": "burstCast keying is correct — the SSOT FB-timing rule governs cast DAMAGE, not buffs, and keying to fullBurstEnter would over-credit rotations where another B2 casts (S2b's live-divergence warning, which the driver's sole-B2 fixture and the blind's fixture rebuild both neutralize). Flat-add basis correct per §1a.",
+        "fireRateOk": true,
+        "explanation": "Fires once per Lily cast at the correct 40% magnitude with correct 10s duration; cast-coupling (5 casts = 5 grants, strictly her own casts) is pinned, and wrong-branch/scope/trigger counterfactuals all discriminate. The random-ally stand-in is the only gap and is documented ⚑1."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA found: all five kit lines are either FAITHFUL (S1 20% grant, burst branch-B 40% grant) or DOCUMENTED_GAP with verbatim unmodeled records and discriminating guards (S2 cover restore, burst branch A rebuild+20%). Convergence is strong and mechanical — the S5 blind suite runs 15 GREEN / 0 RED against the shipped override after three documented structural adaptations (the fixture rebuild to sole-B2 was pre-diagnosed by the blind writer's own header, not a retrofit to force green). The two blind divergences are both spurious-or-moot rather than fresh finds: S6's interval:10 was self-declared invented and is superseded by the datamined 15s CD the driver used (the sanctioned internal-cooldown convention), and the random-ally stand-in split (driver: alliesTopAtk count:1 at full magnitude per the chime precedent; blind: expectation-split allies at value/5) is a documented ⚑ on both sides — neither contradicts the prose and the formula confirms flat-ATK adds are near-damage-neutral across holders, so the choice moves holder identity, not structure. Discrimination holds everywhere: atkPct-vs-casterAtkPct, all-allies scope, wrong-branch 20%-vs-40%, cover-as-heal Crown-tandem, and window-stretch counterfactuals all fail under their named wrong models in both suites. Same-model residual for the owner to spot-check: (1) the ⚑1 random-ally stand-in choice (single top-ATK ally vs expectation-split — a focus-video popup read settles which ally actually receives each grant), (2) the ⚑3 interval first-fire phase (t=15 vs t=0), and (3) a stale parenthetical in the override note ('RoF 1440 (24 shots/s quantized)') — the engine's default-ON SMG frame quantization yields 20/s regardless and the override ships no charFixes, so this is cosmetic note drift, not a modeling error.",
+  "model": "kimi-code/k3"
+}

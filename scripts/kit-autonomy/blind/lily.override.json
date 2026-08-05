@@ -1,0 +1,62 @@
+{
+  "slug": "lily",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 10
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 4,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 8,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "■ Affects all allies.",
+      "Restores 10% of Cover HP."
+    ],
+    "burst": [
+      "■ Affects 1 random ally unit whose cover has been destroyed.",
+      "Rebuild Cover with 30% HP.",
+      "ATK ▲ 20% of the skill user's ATK for 10 sec."
+    ]
+  },
+  "caveats": [
+    "skill1: the kit text states NO activation clause — the 10s interval trigger is INVENTED (⚑ unmeasured); it scales her entire contribution.",
+    "skill1: '1 random ally' has no engine primitive — encoded as all-allies at 1/5 the kit value (20% → 4%), expectation-preserving.",
+    "burst: same 1-random-ally encoding (40% → 8%); the destroyed-cover branch is unreachable at scope lock and is unmodeled.",
+    "skill2: Cover HP repair is not modeled (no cover pool in v1) and is deliberately not wired as a recovery event — ⚑ open."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number.\n\nPure supporter — the kit carries NO damage line in any slot; her whole contribution is flat caster-ATK grants (casterAtkPct = % of Lily's OWN ATK, added flat to the target).\n\nS1 — '1 random ally unit, ATK ▲20% of the skill user's ATK for 5 sec'. Two ⚑. (a) TRIGGER IS INVENTED: the kit text carries no activation clause at all, so it is modeled as interval 10s per the no-'Activates when' convention. This single number scales her entire contribution (5s ⇒ permanent uptime, 20s ⇒ quarter uptime) — TOP-priority flag. (b) RANDOM TARGET: the schema has no random-ally primitive, so '1 random ally' is encoded EXPECTATION-PRESERVING — all 5 candidates (allies incl. self) at 20/5 = 4% each. Flat ATK is linear in the damage formula, so both the team total AND each unit's expectation match the stochastic line exactly; a deterministic single-ally stand-in (alliesTopAtk/alliesLowestHp) would be 5x hot on one unit and cold on the other four, which the ±3%-per-unit board reads as a per-unit error. The raw kit magnitude is preserved in this note so the 1/5 is auditable, not a calibration.\n\nS2 — 'all allies, Restores 10% of Cover HP' — UNMODELED. v1 models no incoming damage, so no cover is ever damaged and there is nothing to restore. Deliberately NOT wired as a {kind:'heal'} event: the line repairs the COVER's HP, a different object from a Nikke's HP, so under a literal read it does not satisfy on-recovery consumers ('when recovery takes effect', Crown-style). ⚑ open — if cover repair DOES proc those triggers, add {kind:'heal'} target allies on an interval block; that is a large team-ATK swing on any recovery-consumer comp, which is exactly why it is flagged rather than silently assumed either way.\n\nBURST — two mutually-exclusive branches keyed on whether ANY ally's cover has been destroyed. At scope lock nothing is ever destroyed (boss deals no damage in v1), so the destroyed-cover branch (Rebuild Cover 30% HP + ATK ▲20%/10s) is UNREACHABLE and sits verbatim in `unmodeled`; the 'if there is no ally unit whose cover has been destroyed' branch (ATK ▲40% of caster ATK for 10 sec) is the one that always fires. This follows the literal branch condition — it is not a pick of the larger number. Encoded with the same 1-random-ally rule: allies at 40/5 = 8% for 10s. Trigger is burstCast (her OWN Burst II cast), NOT fullBurstEnter — fullBurstEnter would over-credit every rotation a different B2 casts.\n\n⚑ CADENCE TUPLE (mandatory blind flag): datamined SMG ammo 120 / reloadFrames 81 / hitsPerShot 1 shipped as-is, no charFixes, rate-of-fire left at the SMG class default. Magazine empties in ~6s at the class rate — plausible, and the kit text carries no special-fire-mode flavor, so no escalation to probably-wrong. Her normals are near-irrelevant to her value but do drive her burst gauge.\n\nNot applicable this kit: noFb / noRange (no damage effects at all), Hit-Rate→core (no Hit Rate line), weapon-swap economy (no swap), stack/currency steady-state (no resource), multi-projectile split-vs-merge (no projectile line)."
+}
