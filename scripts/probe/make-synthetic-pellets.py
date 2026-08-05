@@ -6,18 +6,18 @@ Six hand-counted real shots (scripts/tests/fixtures/pellets/groundtruth-f8-11.js
 separate candidate detectors/counters. This generates as many labeled examples as needed by
 compositing REAL pellet patches (cropped from the owner-counted ground truth, so their pixel
 statistics are real, not synthesized from scratch) onto REAL background frames sampled from all
-four SG videos (marciana/noir/guilty/isabel), rendered as full 13-frame lifecycle sequences (not
+four SG videos (marciana/noir/guilty/isabel), rendered as full 14-frame lifecycle sequences (not
 isolated frames) so Phase 2's per-track lifecycle scorer has something to score against.
 
-The 13-frame size/alpha curve below is THIS SCRIPT's linear interpolation of the owner's
+The 14-frame size/alpha curve below is THIS SCRIPT's linear interpolation of the owner's
 QUALITATIVE lifecycle table (docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md, "The
 pellet lifecycle (owner spec, 2026-07-30)") -- f1=1x, peak 2x held at f3-4, shrink back to 1x by
-f11, fade over f12-13. It is NOT re-derived from a separate measurement; treat it as a modeling
+f11, fade over f12-14. It is NOT re-derived from a separate measurement; treat it as a modeling
 choice, not a second data point corroborating the spec.
 
 HONEST LIMIT (mandatory per the plan's own instruction): the background for one synthetic blast
-is a SINGLE real quiet frame (no detected pellets nearby) repeated across all 13 frames, not a
-real 13-frame background sequence -- avoids needing a fresh 60fps extraction for guilty/isabel/
+is a SINGLE real quiet frame (no detected pellets nearby) repeated across all 14 frames, not a
+real 14-frame background sequence -- avoids needing a fresh 60fps extraction for guilty/isabel/
 noir (only marciana has one, from the groundtruth-f8-11 session; the other three videos' existing
 dumps in scratchpad/pellets/ are 30fps). This is a reasonable simplification (a game background
 barely changes in 0.2s) but it means NO synthetic sequence exercises background motion/VFX
@@ -90,6 +90,11 @@ VIDEO_DUMPS = {
     'isabel': '/Users/maxwellsutton/nikke-sim/scratchpad/pellets/h4-isabel-structural',
 }
 
+# Pellet lifetime, OWNER-MEASURED. 2026-08-05: corrected 13 -> 14 (docs/probe-runs.md §28/§29) --
+# "the lifecycle is the same, it just has one additional frame at the end", i.e. the qualitative
+# table is unchanged and the FADE phase gains a frame (f12-13 -> f12-14).
+PELLET_LIFETIME_FRAMES = 14
+FADE_START_OFFSET = 12  # f1-11 fully opaque; the fade runs FADE_START_OFFSET..PELLET_LIFETIME_FRAMES
 PELLET_RADIUS = 160    # zoomed px, matches every reference run's --pellet-radius at zoom 2
 CENTER_EXCLUDE = 36    # score-pellets.py passes this to count-pellets.py --center-exclude
 CENTER_EXCLUDE_MARGIN = 6  # buffer above count-pellets.py's strict "< center_exclude" rejection --
@@ -118,11 +123,12 @@ def sample_pellet_position(cx0, cy0, w, h, edge_margin, rng, max_tries=MAX_PLACE
 
 
 def lifecycle_scale(offset):
-    """offset: 1..13 (game frame within the blast). Returns the pellet's linear SIZE multiplier.
+    """offset: 1..PELLET_LIFETIME_FRAMES (game frame within the blast). Returns the linear SIZE multiplier.
 
     f1=1x -> grows to 2x by f3, holds through f4 (the only two frames at one size), shrinks
-    linearly back to 1x by f11, holds at 1x while fading (f12-13 alpha, not further shrinkage --
-    the table lists f12-13 size as "1x", not smaller).
+    linearly back to 1x by f11, holds at 1x while fading (f12-14 alpha, not further shrinkage --
+    the table lists the fade frames' size as "1x", not smaller). Unchanged by the 2026-08-05
+    13->14 correction: the added frame is a FADE frame, and every fade frame already holds 1x.
     """
     if offset <= 1:
         return 1.0
@@ -136,12 +142,21 @@ def lifecycle_scale(offset):
 
 
 def lifecycle_alpha(offset):
-    """f1-11 fully opaque; f12-13 fade ("partially transparent") toward, but not to, zero."""
-    if offset <= 11:
+    """f1..FADE_START_OFFSET-1 fully opaque; the fade frames ramp linearly toward, but never to,
+    zero ("partially transparent" in the owner's qualitative table).
+
+    ⚑ The ramp is a FORMULA, not a table, so extending the lifetime cannot silently leave it
+    stale. It is the SAME rule the hardcoded values it replaces encoded: at the old 13-frame
+    lifetime (2 fade frames) it yields 2/3 and 1/3 -- of which the previous literals 0.66 and 0.33
+    were 2dp roundings. At 14 frames (3 fade frames) it yields 0.75 / 0.50 / 0.25.
+
+    ⚑ These alphas remain THIS SCRIPT's interpolation of a qualitative table, not a measurement --
+    the module docstring's caveat applies to them unchanged.
+    """
+    if offset < FADE_START_OFFSET:
         return 1.0
-    if offset == 12:
-        return 0.66
-    return 0.33
+    n_fade = PELLET_LIFETIME_FRAMES - FADE_START_OFFSET + 1
+    return (n_fade - (offset - FADE_START_OFFSET)) / (n_fade + 1)
 
 
 def extract_patch_library(rng):
@@ -302,7 +317,7 @@ def render_sequences(args):
             seq_dir.mkdir(parents=True, exist_ok=True)
             frames_out = []
             phases = []
-            for offset in range(1, 14):
+            for offset in range(1, PELLET_LIFETIME_FRAMES + 1):
                 frame, occluded = composite(bg, chosen, positions, offset)
                 fname = f'f_{offset:05d}.png'
                 cv2.imwrite(str(seq_dir / fname), frame)
@@ -337,7 +352,7 @@ def render_sequences(args):
     manifest_path.write_text(json.dumps({
         '_honest_limit': ('Synthetic labels validate the DETECTOR, not the compositing '
                            'assumption -- background is a single real quiet frame repeated '
-                           'across all 13 offsets, and alpha-blit compositing is easier than '
+                           'across all 14 offsets, and alpha-blit compositing is easier than '
                            'however the game actually blends its pellet markers. Held-out real '
                            'data (scripts/tests/fixtures/pellets/groundtruth-f8-11.json, '
                            'docs/probe-data/*-sg-band.json) is MANDATORY alongside this, never a '
@@ -446,6 +461,36 @@ def audit_selftest():
     ok = got == expected
     print(f'expected: {expected}')
     print(f'got:      {got}')
+
+    # ---- lifecycle curve, pinned (2026-08-05, docs/probe-runs.md §29E) ----
+    # The 13->14 correction was "the lifecycle is the same, it just has one additional frame at the
+    # end". These checks encode exactly that claim, so a future lifetime edit that changes the
+    # SHAPE rather than just its length fails here instead of silently producing wrong synthetics.
+    lc = []
+    lc.append(('lifetime is 14 frames', PELLET_LIFETIME_FRAMES == 14))
+    lc.append(('f1 = 1x, f3-f4 peak at 2x, f11 back to 1x (shape unchanged)',
+               (round(lifecycle_scale(1), 3), round(lifecycle_scale(3), 3),
+                round(lifecycle_scale(4), 3), round(lifecycle_scale(11), 3)) == (1.0, 2.0, 2.0, 1.0)))
+    lc.append(('every fade frame holds size 1x',
+               all(round(lifecycle_scale(o), 3) == 1.0
+                   for o in range(FADE_START_OFFSET, PELLET_LIFETIME_FRAMES + 1))))
+    lc.append(('f1..f11 fully opaque',
+               all(lifecycle_alpha(o) == 1.0 for o in range(1, FADE_START_OFFSET))))
+    lc.append(('fade ramps strictly down and never reaches zero',
+               all(lifecycle_alpha(o) > lifecycle_alpha(o + 1) > 0
+                   for o in range(FADE_START_OFFSET, PELLET_LIFETIME_FRAMES))))
+    lc.append(('fade is f12-f14 at 0.75/0.50/0.25',
+               [round(lifecycle_alpha(o), 4) for o in (12, 13, 14)] == [0.75, 0.5, 0.25]))
+    # ⚑ THE RULE-CONTINUITY CHECK. The previous literals (0.66, 0.33) were 2dp roundings of 2/3 and
+    # 1/3 -- the SAME ramp evaluated over 2 fade frames. Re-deriving them here is what makes
+    # "the lifecycle is unchanged, it just got longer" a checked claim rather than an assertion.
+    n2 = 2
+    old_ramp = [round((n2 - i) / (n2 + 1), 2) for i in range(n2)]
+    lc.append(('the ramp reproduces the OLD 13-frame fade (0.67, 0.33) at 2 fade frames',
+               old_ramp == [0.67, 0.33]))
+    for label, v in lc:
+        print(f"  {'PASS' if v else 'FAIL'}  {label}")
+    ok = ok and all(v for _, v in lc)
     print('SELFTEST PASS' if ok else 'SELFTEST FAIL')
     return 0 if ok else 1
 
