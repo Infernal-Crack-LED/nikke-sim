@@ -275,7 +275,11 @@ pre-existed in `b71af726`'s original dpschart bucket (the Step-0 extraction carr
 and the first ranks cut repeated it (direct-imports-only scan). `1252c6da` fixes both lists, plus
 the review's FOLLOW-UP (infographics bucket was missing `web/public/nikke-icons/` and
 `src/dpschart/matrix.ts`) and both NOTEs; the parity test correctly caught the intermediate
-ol-default drift during the fix. Re-review of the corrected diff dispatched 2026-08-04.
+ol-default drift during the fix. Re-review (round 2) returned CLEAN. One FOLLOW-UP filed from the
+review, open for Step 3: the infographics bucket still misses `src/ranks/b1b2-cells.ts` and
+`src/ranks/buffer-rows.ts` (value-imported by `src/infographics/core/rankTables.ts`) — zero impact
+while the manifest hash is provenance-only, load-bearing once Step 3 gates on it. Audit trail:
+`scratchpad/gates/2026-08-04-artifact-decoupling-step0-step1/` (both result JSONs + RUN-NOTES.md).
 
 **Step 1** — extract + generalize input hashing to all 6 boards + infographics (§5).
 
