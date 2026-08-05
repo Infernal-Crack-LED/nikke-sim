@@ -1,0 +1,243 @@
+{
+  "slug": "mihara",
+  "leakDetected": null,
+  "override": {
+    "slug": "mihara",
+    "resources": [
+      {
+        "name": "highwayToHell",
+        "initial": 0,
+        "min": 0,
+        "max": 2
+      }
+    ],
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 18.7,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "resource",
+            "name": "highwayToHell",
+            "delta": 1
+          },
+          {
+            "kind": "escalating",
+            "steps": [
+              {
+                "kind": "buff",
+                "stat": "atkPct",
+                "value": 15.56,
+                "durationSec": 45
+              },
+              {
+                "kind": "buff",
+                "stat": "critRatePct",
+                "value": 11.28,
+                "durationSec": 45
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "fullBurstExtend",
+            "seconds": -5
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 399.6,
+            "crit": true
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "resourceGate": {
+          "name": "highwayToHell",
+          "min": 2
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 266.4,
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ burst[0] fullBurstExtend seconds:-5 — literal read of 'Full Burst Duration ▼ 5 sec' as reduce-BY-5 (10s→5s), not set-TO-5. Negative-seconds handling in the engine is UNVERIFIED; if unsupported this line is silently inert.",
+      "⚑ 'Highway to Hell N' is modeled as a monotone burstCast counter (resource highwayToHell, capped 2), NOT as a decaying status. The kit's stat buffs carry 45s; if the STATUS itself also lapses at 45s the 266.4% rider would drop out whenever the gap between mihara's own casts exceeds 45s (burst cd 40s, so at scope-lock rotation the two readings coincide).",
+      "⚑ Gate ordering: skill2's +1 increment is dispatched in the same burstCast frame as the burst slot, so the 266.4% rider is credited on the SECOND cast itself. If the in-game status only arms for the NEXT cast, this over-credits one proc per fight.",
+      "⚑ crit:true on both burst damage effects follows the rider convention (riders crit at the caster's sheet rate, no core unless the text says 'core strike'); the kit text states neither.",
+      "⚑ Cadence tuple (pullsPerSec / reloadFrames 121 / ammo 60) is datamined and unreliable, and it directly sets skill1's uptime — a ~60-round magazine plus reload is a shorter cycle than the 10s Critical Damage window, so this model gives near-100% skill1 uptime. A cadence error moves the whole S1 contribution.",
+      "noFb is not set anywhere (default FB-by-timing ON). Both burst damage effects fire on the cast, which lands before the Full Burst window opens, so they are FB-exempt by timing rather than by flag."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. mihara — AR/Water/Attacker/Burst III, ammo 60, normalAttackMultiplier 15.07, coreAttackMultiplier 200. S1: last-bullet self Critical Damage ▲18.7%/10s (per-magazine trigger; at AR cadence the window is longer than the magazine cycle, so uptime is effectively continuous). S2: burst-cast self escalation — 'Highway to Hell' 1/2 modeled with the escalating effect (Nth activation applies steps 1..N), ATK ▲15.56% then Critical Rate ▲11.28%, both 45s, and a parallel highwayToHell resource counter that exists solely to gate the burst's status-conditional rider. Trigger is burstCast, not fullBurstEnter — the kit says 'when using Burst Skill', so it fires only on rotations mihara herself bursts. Burst: a team-wide Full Burst Duration ▼5s (fullBurstExtend seconds:-5), 399.6% of final ATK as burst damage, and a 266.4% additional-damage rider gated on Highway to Hell 2 (resourceGate min:2). All three burst lines are implemented; nothing in this kit is skipped, so all unmodeled slots are empty."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when the last bullet hits",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'lastBullet'} — literal activation text, per-magazine (not shotFired, not hitCount)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Damage ▲ 18.7% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 18.7, durationSec 10, target self — unscoped (no 'of normal attacks' clause)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'}, target self — own-cast keyed, NOT fullBurstEnter (would over-credit in multi-B3 comps)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Each subsequent effect triggers all",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect {kind:'escalating', steps:[...]} — Nth activation applies steps 1..N, the exact Liter-style semantics"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Once: ATK ▲ 15.56% for 45 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 1: buff atkPct 15.56, durationSec 45"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Twice: Critical Rate ▲ 11.28%/45s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 2: buff critRatePct 11.28, durationSec 45 (unscoped crit rate — no normal-attack scoping in the text)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "(status bookkeeping for the burst gate)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resource highwayToHell delta:+1 per own burst cast, max 2 — the only available primitive for the burst slot's 'while in Highway to Hell 2' gate"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} on the Full Burst Duration block"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Full Burst Duration ▼ 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "fullBurstExtend seconds:-5 — a downward duration modifier, and a weapon-state-class line (it changes how many shots the team fires in FB), so never a skip"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 399.6% of final ATK (burst)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 399.6, crit:true, target enemy, trigger burstCast — lands pre-FB by cast timing, so no noFb flag needed"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "while in Highway to Hell 2 status",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resourceGate {name:'highwayToHell', min:2} on the rider block — status gate, evaluated at trigger time"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 266.4% as additional damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 266.4, crit:true, target enemy — no 'core strike' wording, so no core; no flavor keyword, so plain function damage"
+    }
+  ],
+  "flags": [
+    {
+      "field": "burst[0].effects[0].seconds",
+      "estimate": "-5 (Full Burst 10s → 5s while mihara bursts)",
+      "reasoning": "'Full Burst Duration ▼ 5 sec' is read literally as reduce-BY-5, matching every other ▲/▼ N sec line in the schema. The alternative reading (set duration TO 5s) is numerically identical at the standard 10s Full Burst but diverges the moment any ally carries a fullBurstExtend, which is exactly the comp where this matters. Separately, fullBurstExtend has only ever been exercised with positive seconds; a negative value may be clamped or ignored, in which case this faithful line is silently inert.",
+      "recipe": "Run controlComp with mihara as carry and time fullBurstStart→fullBurstEnd off cfg.onEvent; assert the window is 5s, then re-run with a positive fullBurstExtend ally patched in to separate reduce-BY from set-TO. Cross-check against footage: count shots landed inside one Full Burst with and without mihara bursting."
+    },
+    {
+      "field": "resources[0] / burst[2].resourceGate",
+      "estimate": "monotone counter, capped at 2, never decays",
+      "reasoning": "The kit names 'Highway to Hell 1/2' as a status but only ever states 45s on the STAT buffs, never on the status itself. I model the status as permanent-once-reached. At mihara's 40s burst cooldown the two readings are indistinguishable (she re-casts inside the 45s window), so this choice is invisible on any comp where she bursts every rotation — but it over-credits the 266.4% rider on any rotation where her cast gap exceeds 45s (boss transition, chain collision, or a comp where another B3 takes the stage).",
+      "recipe": "Record a fight where mihara's second and third casts are >45s apart (or force it in-sim by patching her cooldown) and check whether the additional-damage popup appears on the late cast. If it disappears, the status carries the 45s duration and the counter must become a durationSec-bounded buff read by the gate."
+    },
+    {
+      "field": "burst[2] gate ordering vs skill2 increment",
+      "estimate": "rider fires ON the second cast (skill2 increments first)",
+      "reasoning": "Slot dispatch order (skill1 → skill2 → burst) means the +1 lands before the gate is read, so the counter reads 2 on the second cast itself. In-game the self-buff and the burst damage of a single cast resolve together, which supports this, but the ordering is an engine convention, not a kit statement — the opposite ordering costs exactly one 266.4% proc per fight (~2-4% of her burst total at scope lock).",
+      "recipe": "Count damage events with bucket 'burst' on mihara's second cast via cfg.onEvent — two instances (399.6 + 266.4) confirms same-cast arming, one instance confirms next-cast. Score against a focus recording's popup count on the second Full Burst."
+    },
+    {
+      "field": "burst[1].crit / burst[2].crit",
+      "estimate": "true (caster's sheet crit rate, no core)",
+      "reasoning": "Convention rule: function-damage riders crit at the caster's rate and take no core unless the text says 'core strike damage'. Neither line states crit or core. This interacts directly with mihara's own kit — S1 (+18.7% Critical Damage) and Highway to Hell 2 (+11.28% Critical Rate) both inflate exactly these two hits, so the crit call compounds rather than being a flat offset.",
+      "recipe": "Read the burst popups on a focus recording: orange + crit icon confirms crit-eligible, plain white refutes. One recording is sufficient here — the popup colour is a direct observation of the disputed property, not an inference from a damage total."
+    },
+    {
+      "field": "(cadence — not authored; engine reads the datamine)",
+      "estimate": "AR base cadence, ammo 60, reloadFrames 121",
+      "reasoning": "rate_of_fire and reloadFrames are the known-unreliable datamine fields, and here they are load-bearing twice over: they set how often the lastBullet trigger fires, and the 10s S1 window is longer than one magazine cycle at any plausible AR cadence, so this model gives near-continuous +18.7% Critical Damage. If the true cycle is longer than 10s the buff develops real downtime and her S1 contribution drops materially.",
+      "recipe": "Count magazine cycles per minute off a focus recording's ammo counter (the instrument that measures shots/sec directly) rather than inferring cadence from a damage total, then check the buffApply stream for critDamagePct 18.7 to confirm the re-arm interval stays under 10s."
+    }
+  ],
+  "model": "claude-opus-5"
+}

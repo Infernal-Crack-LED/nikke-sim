@@ -1,0 +1,132 @@
+{
+  "slug": "mihara",
+  "resources": [
+    {
+      "name": "highwayToHell",
+      "initial": 0,
+      "min": 0,
+      "max": 2
+    }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 18.7,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "highwayToHell",
+          "delta": 1
+        },
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "atkPct",
+              "value": 15.56,
+              "durationSec": 45
+            },
+            {
+              "kind": "buff",
+              "stat": "critRatePct",
+              "value": 11.28,
+              "durationSec": 45
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "fullBurstExtend",
+          "seconds": -5
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 399.6,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "resourceGate": {
+        "name": "highwayToHell",
+        "min": 2
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 266.4,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 burst[0] fullBurstExtend seconds:-5 \u2014 literal read of 'Full Burst Duration \u25bc 5 sec' as reduce-BY-5 (10s\u21925s), not set-TO-5. Negative-seconds handling in the engine is UNVERIFIED; if unsupported this line is silently inert.",
+    "\u2691 'Highway to Hell N' is modeled as a monotone burstCast counter (resource highwayToHell, capped 2), NOT as a decaying status. The kit's stat buffs carry 45s; if the STATUS itself also lapses at 45s the 266.4% rider would drop out whenever the gap between mihara's own casts exceeds 45s (burst cd 40s, so at scope-lock rotation the two readings coincide).",
+    "\u2691 Gate ordering: skill2's +1 increment is dispatched in the same burstCast frame as the burst slot, so the 266.4% rider is credited on the SECOND cast itself. If the in-game status only arms for the NEXT cast, this over-credits one proc per fight.",
+    "\u2691 crit:true on both burst damage effects follows the rider convention (riders crit at the caster's sheet rate, no core unless the text says 'core strike'); the kit text states neither.",
+    "\u2691 Cadence tuple (pullsPerSec / reloadFrames 121 / ammo 60) is datamined and unreliable, and it directly sets skill1's uptime \u2014 a ~60-round magazine plus reload is a shorter cycle than the 10s Critical Damage window, so this model gives near-100% skill1 uptime. A cadence error moves the whole S1 contribution.",
+    "noFb is not set anywhere (default FB-by-timing ON). Both burst damage effects fire on the cast, which lands before the Full Burst window opens, so they are FB-exempt by timing rather than by flag."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. mihara \u2014 AR/Water/Attacker/Burst III, ammo 60, normalAttackMultiplier 15.07, coreAttackMultiplier 200. S1: last-bullet self Critical Damage \u25b218.7%/10s (per-magazine trigger; at AR cadence the window is longer than the magazine cycle, so uptime is effectively continuous). S2: burst-cast self escalation \u2014 'Highway to Hell' 1/2 modeled with the escalating effect (Nth activation applies steps 1..N), ATK \u25b215.56% then Critical Rate \u25b211.28%, both 45s, and a parallel highwayToHell resource counter that exists solely to gate the burst's status-conditional rider. Trigger is burstCast, not fullBurstEnter \u2014 the kit says 'when using Burst Skill', so it fires only on rotations mihara herself bursts. Burst: a team-wide Full Burst Duration \u25bc5s (fullBurstExtend seconds:-5), 399.6% of final ATK as burst damage, and a 266.4% additional-damage rider gated on Highway to Hell 2 (resourceGate min:2). All three burst lines are implemented; nothing in this kit is skipped, so all unmodeled slots are empty."
+}

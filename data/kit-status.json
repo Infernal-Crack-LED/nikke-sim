@@ -4622,6 +4622,40 @@
       ],
       "board": null
     },
+    "mihara": {
+      "name": "Mihara",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/mihara.json + scripts/kit-autonomy/manual-review/mihara.md."
+        ],
+        "provenance": "gauntlet",
+        "date": "2026-08-05"
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "FB▼5s net rotation sign (engine net-positive +10.5% team via extra full burst; real-game sign measurement-gated — /sim-battery diff + mihara focus recording before trusting her board number); 266.4% rider cast-2 onset (same-cast arming) + same-cast S2 ATK snapshot — one popup read settles both",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "caveats": [
+        "burst: the Full Burst Duration ▼5s line (fullBurstExtend:-5) shortens ONLY the FB windows mihara's own casts open (5s vs the bare 10s) — its NET rotation effect (lost +50% uptime vs faster re-cycle) is unverified (⚑1, isabel's standing flag); diff via /sim-battery before grading her board number off it.",
+        "burst: the Highway-to-Hell-2-gated additional damage is encoded as the second step of the burst's escalating ladder (no owner-buff-active gate exists in the engine) — the ladder counter ticks on the same burstCast trigger as S2's counter, which coincides with the named status at scope (45s > 40s CD); the spec pins cast-2 onset against the cast-3 counterfactual.",
+        "burst: cast-time simultaneity — the same-cast S2 ATK buff is visible to the same-cast nuke (skill2 dispatches before burst at SLOTS order); in-game order supports this reading but a popup read would settle it (⚑2)."
+      ]
+    },
     "mihara-bonding-chain": {
       "name": "Mihara: Bonding Chain",
       "burst": "III",
