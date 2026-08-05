@@ -39,6 +39,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { selectPassengerChannel } from './pellet-backend-select.js';
 
 const argv = process.argv.slice(2);
 const flags: Record<string, string> = {};
@@ -901,8 +902,8 @@ for (let i = 0; i < pelletFiles.length; i++) {
     counts: { numpy: fc.numpy, pil: fc.pil, opencv: fc.opencv },
     white: best.white,
     red: best.red,
-    marker: best.marker ?? 0,
-    band: best.band ?? 0,
+    marker: selectPassengerChannel(backendEntries, best, 'marker'),
+    band: selectPassengerChannel(backendEntries, best, 'band'),
     total,
     valid,
   });
