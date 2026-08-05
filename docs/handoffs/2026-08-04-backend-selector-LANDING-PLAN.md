@@ -149,4 +149,18 @@ being made by array order.**
 
 ## 7. Result
 
-_(Written only after the landing verifies.)_
+**2026-08-04 — LANDED (`a662b842`). Full narrative: `docs/probe-runs.md` §24.**
+
+All seven §4 criteria MET. **Zero fixtures moved.** Exactly one shot changed across 848 — the
+pre-declared §5 exception (`h4-marciana-structural` event #56: `red` 0→1, `total` 4→5, `core`
+false→true, **onset unchanged**). `white`/`red`/`total`/`valid` diffs are **0 on all 5 dumps**;
+`totalShots` unchanged on all 5. Gates: 25 selftest arms, `verify.sh`, `npm run typecheck` all green.
+
+⚑ The marker-divergent frame counts (82/146/230/204) **reproduce §11I's table exactly** by a
+different method — independent corroboration the fix hits precisely the intended population.
+
+⚑ **§24D is the finding that outlives this landing:** the flipped event spans f1565, where §15
+established opencv's `marker = 3` is 1 real marker + 2 UI-banner glyphs. `MARKER_MIN = 2`, so banner
+glyphs alone raise a core-hit flag. The selection is now faithful; the **marker semantics are not**,
+and the old array-order bug was accidentally masking that. **New open item, deliberately not fixed
+here.**
