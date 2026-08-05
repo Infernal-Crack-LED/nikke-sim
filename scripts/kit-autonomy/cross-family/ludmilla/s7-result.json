@@ -1,0 +1,82 @@
+{
+  "slug": "ludmilla",
+  "kitDescription": "Ludmilla is a Water SMG Defender whose Burst I, Snow Queen, hits the boss once for 163.1% of her final ATK and, while she is above half HP, grants the whole team a small DEF buff for 10 seconds. Her first skill shaves the boss's DEF and ATK by 8.4% for 10 seconds every time she empties her magazine, which in real play is her main team-damage contribution because the DEF cut applies near-continuously. Her second skill triggers whenever the team enters Full Burst: she taunts all enemies for about 15 seconds and takes 57.86% less damage herself for 15 seconds. She is a tank whose kit is mostly defensive — aggro control, self-mitigation, and boss stat-downs — with only the burst hit and the DEF debuff touching the damage sheet. In the sim the boss deals no damage and runs with zero DEF, so everything except the burst nuke and the carried DEF buff is genuinely unobservable.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "DEF ▼ 8.4% for 10 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled, declared GAP ⚑1: engine applyEffect drops enemy DEF▼ debuffs and scope-lock bossDef=0, so exactly zero damage impact; recipe recorded if nonzero bossDef ever enters the basis.",
+        "blindSaid": "S6: ⚑ no schema channel, refused to launder into damageTakenPct; S5: it.skip GAP naming the missing boss-DEF StatKey.",
+        "formulaCheck": "Boss DEF is a small flat subtractive term (≈140 measured, run at 0, ≤0.12% board shift) — the line is inexpressible AND zero-valued on this basis; the classification is a genuine documented gap, not a drop.",
+        "fireRateOk": true,
+        "explanation": "All three agents independently converge: the engine has no boss-DEF-debuff primitive and the basis runs bossDef=0. Documented with estimate + recipe + tier. S2b's FAITHFUL disposition assumed a working boss-DEF-debuff channel that the mechanics SSOT shows does not exist — that premise was wrong, not the driver."
+      },
+      {
+        "kitLine": "ATK ▼ 8.4% for 10 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled ⚑2: boss never attacks in the DPS sim AND applyEffect drops enemy ATK▼ — doubly inert.",
+        "blindSaid": "S5/S6 identical: defensive-only, no consumer, verbatim in unmodeled.",
+        "formulaCheck": "No incoming-damage model exists at scope lock; no bucket this line could feed.",
+        "fireRateOk": true,
+        "explanation": "Correctly unmodeled with verbatim kit text preserved."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Attract: Taunt all enemies for 15.09 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled: no threat/targeting model; trigger identity fullBurstEnter recorded for future consumers.",
+        "blindSaid": "S5/S6 identical GAP; S5 proved taunt stripped = byte-identical totals and rotation.",
+        "formulaCheck": "Boss movement follows the measured range script; a taunt must not perturb it — no primitive exists and none should be invented.",
+        "fireRateOk": true,
+        "explanation": "Clean documented gap; the nearest-wrong model (inventing an offensive taunt effect) is guarded against by both test suites."
+      },
+      {
+        "kitLine": "Damage Taken ▼ 57.86% for 15 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled: self-targeted ▼ mirror, never the boss damageTakenPct channel; zero-damageTakenPct-anywhere guard pins the sign/channel misread.",
+        "blindSaid": "S5/S6 identical; S5 asserts zero damageTakenPct at 57.86 and non-vacuously proves the fudge would move the board.",
+        "formulaCheck": "The taxonomy's big shared-prior trap (self mitigation misread as boss Damage Taken ▲) was explicitly checked by three independent agents and is absent.",
+        "fireRateOk": true,
+        "explanation": "The most dangerous line in the kit is handled correctly by driver and both blind agents."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 163.1% of final ATK as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage 163.1, one hit per cast; 10-target clause is capacity, not a multiplier; FB-major-exempt by the burst-cast boundary rule.",
+        "blindSaid": "S6 identical modulo an explicit noFb:true (behaviorally identical — engine forces noFb on burst-cast direct damage); S5 matches a hand-built single-instance reference within 0.1%.",
+        "formulaCheck": "Burst nuke row: crits, no core, no range, no FB +50% at cast — driver's spec pins fbMajorApplied absent, single 163.1 atkPct, burst bucket, one event per cast; discriminates lv1 89.7 and ×10=1631 counterfactuals.",
+        "fireRateOk": true,
+        "explanation": "G0 fixture sanity proves she is sole B1 and casts at every Full Burst (≥3), so the nuke fires at prose cadence — not vacuously green."
+      },
+      {
+        "kitLine": "DEF ▲ 12.93% for 10 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies defPct 12.93/10s; HP>50% gate always-true at scope lock, documented not enacted (soline pattern); defPct inert but carried per tandem rule.",
+        "blindSaid": "S6 byte-identical block; S5 asserts the buffApply events (value, scope incl. self, duration) and proves it moves zero damage.",
+        "formulaCheck": "defPct feeds no damage bucket in v1 — encoded as a future-consumer feed exactly as the tandem DEF/heal/shield rule requires; trigger correctly burstCast, not fullBurstEnter (diverges with a co-B1, which the fixture excludes).",
+        "fireRateOk": true,
+        "explanation": "Fires once per cast to all 4 allies, self included; scope counterfactual (self-only) is discriminated. The always-true HP gate is flagged ⚑5 for real-game divergence."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. The two load-bearing lines (burst nuke, boss DEF▼ disposition) are correct: the nuke is a single 163.1% burst-cast hit with no FB major, no core, no range, discriminated against the lv1-magnitude and ×10-multi-target misreads; the DEF▼ line is a DOCUMENTED_GAP — driver, S5, and S6 independently agree the engine has no boss-DEF-debuff primitive and the scope-lock basis runs bossDef=0, so the line is zero-valued and inexpressible rather than dropped, with estimate, recipe, and tier recorded. The kit's most dangerous line (self Damage Taken ▼57.86%) was checked by all three agents against the boss-damageTakenPct sign/channel trap and is clean; the zero-damageTakenPct guard is non-vacuous (the injected nearest-wrong moves team totals). S5's blind tests run GREEN against the shipped override 13/0-fail with the 5 skips being honest GAP declarations; S6's blind override is byte-equivalent to the driver's except an explicit noFb flag that the engine already forces — full cross-family convergence. S2b's one wrong premise (expecting the DEF▼ line to be modelable as FAITHFUL) was corrected by the mechanics SSOT itself and is noted, not a finding. Residual for owner spot-check: every agent read the same doc claiming applyEffect drops enemy ATK▼/DEF▼ debuffs — a same-model/shared-doc agreement; a 5-minute grep of sim.ts applyEffect would independently confirm that claim, and the datamined SMG cadence tuple (RoF 1440, reloadFrames 187) remains footage-unverified (⚑3).",
+  "model": "kimi-code/k3"
+}

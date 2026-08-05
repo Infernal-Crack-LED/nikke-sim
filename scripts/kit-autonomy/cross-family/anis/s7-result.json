@@ -1,0 +1,72 @@
+{
+  "slug": "anis",
+  "kitDescription": "Anis is an Iron rocket-launcher Burst-II Defender whose kit is almost entirely survivability. Her Skill 1 raises her own DEF by 120% for 10 seconds after she has been attacked 40 times. Her Skill 2 raises DEF by 80% for 5 seconds on herself and her two highest-final-ATK allies, and shares incoming damage equally among them for 10 seconds. Her burst fires a missile dealing 156.73% of final ATK to enemies in range and lowers enemy DEF by 32% for 5 seconds. On the sim's immortal, non-attacking boss her defensive lines have nothing to act on, so her only real damage contribution beyond normal rocket fire is the burst nuke; the enemy DEF shred would be her sole team-offensive contribution but is negligible against the boss's small fixed DEF and has no engine channel.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates when attacked 40 time(s)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unrepresentable: no incoming-damage model and no attacked-N trigger primitive; empty skill1, verbatim in unmodeled",
+        "blindSaid": "S2b/S5/S6 all agree unmodelable; S5 pins zero defPct-120 applications; S6 skill1 []",
+        "formulaCheck": "No damage relevance: payload is defPct, offensively inert; an incoming-hit counter has no engine trigger kind (hitCount counts outgoing rounds)",
+        "fireRateOk": true,
+        "explanation": "Correctly documented as untriggerable at scope lock; the nearest-wrong hitCount-40-on-dealt-hits encoding is pinned by the driver's discriminating counterfactual (it emits defPct-120 applies, the shipped model never does). Verbatim in unmodeled.skill1."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "DEF ▲ 80% for 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval:30 (datamined skillCooldownsSec.skill2=30), split self-block + alliesTopAtk{count:2,excludeSelf:true,byFinalAtk:true}, defPct 80/5s",
+        "blindSaid": "S6 identical structure but interval sec:20 (kit-silent estimate; the prose-only packet lacked skillCooldownsSec); S5 green on targeting/recurrence/duration",
+        "formulaCheck": "defPct is offensively inert (no consumer); targeting matches the literal prose: self AND 2 highest-FINAL-ATK allies, exclude user from the pool; duration 5s wall-clock",
+        "fireRateOk": true,
+        "explanation": "Fires exactly at t=30/60/90/120/150 (driver-pinned) covering anis+helm+ada in COMP and flipping to anis+helm+liter in STARVED — the live byFinalAtk ranking is proven per-comp. S6's 20s cadence is a spurious blind divergence (S6 lacked the datamined 30s; the driver matches ground truth) — noted, not a finding. Inertness verified byte-identical under deletion."
+      },
+      {
+        "kitLine": "Equally shares damage taken for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "No redistribution primitive and no incoming damage to share; verbatim in unmodeled.skill2; every shipped S2 effect is a defPct buff (structural pin)",
+        "blindSaid": "S2b/S5/S6 agree; S2b names the nearest-wrong damageTakenPct fold trap; S5 it.skip GAP",
+        "formulaCheck": "No HP pool / incoming damage at scope; a damageTakenPct encoding would be a boss-debuff multiplier, the wrong mechanic in the wrong direction",
+        "fireRateOk": true,
+        "explanation": "Correctly documented out-of-domain gap; driver additionally notes the 10s duration differs from the DEF line's 5s so the two could never share one effect entry."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 156.73% of final ATK as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy → flatDamage atkPct 156.73, no explicit flags (burst-cast damage is auto FB-exempt, noRange on riders)",
+        "blindSaid": "S6 adds explicit noFb:true/noRange:true — behaviorally identical per engine convention; S5 asserts fbMajorApplied=false and rangeApplied=false on every nuke instance vs the shipped override (GREEN)",
+        "formulaCheck": "Burst-cast damage lands before the FB window opens (MEASURED 2026-07-13): no +50% major, no entry auras; no core (kit doesn't say core strike); no range for skill/burst instances; one instance per cast on the single partless boss",
+        "fireRateOk": true,
+        "explanation": "Fires once per anis burstCast (~8 in COMP) and is provably silent in the STARVED comp where crown takes every B2 slot — the burstCast-vs-fullBurstEnter identity is behaviorally pinned, not just structurally. Magnitude 156.73 exact-pinned; SL1 datamine 68.57 counterfactual discriminates."
+      },
+      {
+        "kitLine": "DEF ▼ 32% for 5 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unenactable (boss DEF is the fixed cfg.bossDef subtraction with no debuff channel) + negligible (~0.04%/hit); verbatim in unmodeled.burst; NOT folded into damageTakenPct",
+        "blindSaid": "S2b classified GAP with the identical no-silent-fudge requirement; S5 asserts zero damageTakenPct-32 applications + it.skip GAP; S6 identical unmodeled line",
+        "formulaCheck": "True DEF shred is 0.32·bossDef/(finalATK−bossDef) per attacker — a damageTakenPct fold would be a uniform ×1.32 team multiplier, proven by the driver's counterfactual to inflate every ally's total; at 140 boss DEF the honest value is ~44.8 ATK ≈ +0.04%",
+        "fireRateOk": true,
+        "explanation": "All four agents converged: documented gap, no fudge, nearest-wrong fold pinned out. This is the kit's only team-offensive line and the override note honestly records that the board reflects zero of it."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: every kit line is either FAITHFUL (S2 DEF buff, burst nuke) or a DOCUMENTED_GAP recorded verbatim in unmodeled with the nearest-wrong encodings pinned out by discriminating counterfactuals (hitCount-40 on dealt hits, damageTakenPct folds for both the share and the DEF shred, all-allies scope, dropped self, burstCast re-key, SL1 magnitude). The S5 blind suite runs GREEN against the shipped override, and S6's override is structurally identical except (a) explicit noFb/noRange flags that are behaviorally no-ops under the engine's burst-cast FB-exemption, and (b) a 20s S2 interval that is a spurious blind divergence — S6 never saw the datamined skillCooldownsSec.skill2=30, which the driver used correctly; classified as a recon-side artifact, not a driver finding. Fire-rate behavior is proven, not merely modeled: the S2 buff fires on the exact 30s grid in both comps with comp-dependent byFinalAtk target flips, and the nuke fires exactly once per anis cast and goes silent under B2 starvation. Discrimination holds — every load-bearing assertion has a failing nearest-wrong model. Same-model residual for the owner to spot-check: the no-activation-clause → interval-at-skill-CD convention itself (first fire t=CD is an unmeasured phase convention), and the standing decision that the burst DEF shred stays unmodeled despite being the kit's only team-offensive line — the honest omission is correct today (no boss-DEF primitive, ~0.04% magnitude), but it is the one place a future boss-DEF primitive would change this unit's board reading.",
+  "model": "kimi-code/k3"
+}

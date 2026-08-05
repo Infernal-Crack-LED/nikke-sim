@@ -1,0 +1,177 @@
+{
+  "slug": "mori",
+  "leakDetected": null,
+  "override": {
+    "slug": "mori",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 40.12
+          }
+        ]
+      }
+    ],
+    "skill2": [],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "requiresShielded": true,
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 15.04
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "sustainedDamagePct",
+            "value": 10.16,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates when using Burst Skill; affects self if NOT in Struggle status — re-creates the 40.12% final-Max-HP Shield. SKIPPED: the engine has no inverse of `requiresShielded`, and the branch is unreachable at scope anyway (the start-of-battle Shield is continuous and the v1 boss deals no damage, so Struggle never ends).",
+        "Activates when Struggle status ends; affects self — Max HP ▲ 5.06% continuously, stacks up to 5. SKIPPED: no shield-break / status-end trigger exists (nothing removes a shield in v1), so it never fires; the stat is also offensively inert for this kit (no atkOfMaxHpPct consumer)."
+      ],
+      "skill2": [
+        "Activates after landing 60 normal attacks while self is in Struggle status; affects the target — Taunts for 4 sec. SKIPPED: no taunt/aggro primitive and no boss-targeting model; zero damage path at scope.",
+        "Activates when an ally or self destroys an enemy's part; affects all allies — Sustained damage ▲ 2.03%, stacks up to 5, lasts 15 sec. SKIPPED: TriggerDef has no part-destruction trigger and the scope-lock boss is partless, so the line is unreachable.",
+        "Activates when an ally or self destroys an enemy's part; affects the 1 enemy with the highest ATK — 23.23% of final ATK as sustained damage every 1 sec for 15 sec. SKIPPED: same part-destruction trigger gap; unreachable against a partless boss."
+      ],
+      "burst": [
+        "Activates when self is NOT in Struggle status; affects self — Max HP ▲ 10.09% for 10 sec. SKIPPED: negative self-status gate has no engine expression and the condition is unreachable at scope (the S1 Shield is never lost); the stat is offensively inert for this kit."
+      ]
+    },
+    "caveats": [
+      "⚑ 'Struggle' is a self-status with no engine primitive. It is modeled as the shield-present proxy (`requiresShielded`), which is exact for the positive branches and INEXPRESSIBLE for the two 'not in Struggle' branches — both are recorded in `unmodeled` rather than approximated.",
+      "⚑ Every Struggle-END and part-destruction branch is inert at scope lock (nothing breaks a shield; the boss is partless). If the sim ever models shield loss or destructible parts, the skill1 Max-HP stack line and both skill2 part lines must be re-derived, not resurrected as-is.",
+      "⚑ The base AR cadence tuple (ammo 60, reloadFrames 81, rate of fire) is datamined and unverified for this unit — normal-attack throughput is a hypothesis.",
+      "Burst-slot lines with no activation clause are keyed to `burstCast` (this unit's own Burst II cast), not `fullBurstEnter`; keying the ally Sustained buff to FB entry would over-credit rotations where another Burst II casts.",
+      "The whole modeled contribution of this unit is one team buff (Sustained damage ▲ 10.16% / 10 s) plus two self-shield events; skill2 contributes nothing at scope."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Modeled today: skill1 = a continuous self Shield worth 40.12% of final Max HP from t=0 (the 'Struggle' status carrier, no durationSec); burst = a self Shield-recovery of 15.04% of final Max HP gated on the owner holding a shield (`requiresShielded`, the Struggle proxy — always satisfied at scope), plus the kit's only offensive line, Sustained damage ▲ 10.16% to all allies including self for 10 s on her own burst cast. skill2 is deliberately EMPTY: all three of its lines hang off triggers the engine cannot express (a taunt after 60 landed normals, and two part-destruction riders) against a boss with no destructible parts — they are recorded verbatim-in-substance in `unmodeled` rather than approximated with an invented trigger. Both 'not in Struggle status' branches are likewise unmodelable (no inverse shield gate) and unreachable, since nothing in v1 removes a shield. This unit carries no direct damage, no weapon-state modifier, and no ATK/crit/core buff; its board footprint is the single Sustained-damage team buff and its interaction with any teammate that consumes shield events."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "start of battle; Shield 40.12% Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "passive / self / shield{maxHpPct:40.12} — 'continuously' = no durationSec. Emits the shield event that opens the Struggle proxy and fires any `shielded` trigger on self."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "on Burst Skill, if not in Struggle",
+      "status": "SKIPPED",
+      "effectOrReason": "Negative self-status gate: `requiresShielded` has no inverse. Also provably unreachable at scope — the S1 shield is continuous and the v1 boss deals no damage, so Struggle never ends. Recorded in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "when Struggle ends; Max HP ▲5.06% x5",
+      "status": "SKIPPED",
+      "effectOrReason": "No shield-break / status-end trigger in TriggerDef and no mechanism removes the shield, so uptime is 0. Would be buff{stat:'targetMaxHpPct',value:5.06,maxStacks:5} on self if a Struggle-end trigger existed; offensively inert regardless (no atkOfMaxHpPct in this kit)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "after 60 normals in Struggle; Taunt 4s",
+      "status": "SKIPPED",
+      "effectOrReason": "No taunt/aggro primitive; boss targeting is unmodeled and the trigger carries no damage or stat rider. Recorded in unmodeled.skill2 (would be hitCount{count:60} + requiresShielded if a taunt primitive existed)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "part destroyed; Sustained ▲2.03% x5 15s",
+      "status": "SKIPPED",
+      "effectOrReason": "TriggerDef has no part-destruction trigger, and the scope-lock boss is partless (partsDamagePct and every parts path are inert in v1) — the line can never fire. Not approximated with an invented trigger."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "part destroyed; 23.23%/s sustained 15s",
+      "status": "SKIPPED",
+      "effectOrReason": "Same part-destruction gap. Would be dot{atkPct:23.23,durationSec:15,intervalSec:1,flavor:'sustained'} on a partDestroyed trigger; encoding it on any available trigger (passive/interval/hitCount) would fabricate a cadence the kit does not state."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "in Struggle; recover Shield 15.04% MaxHP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast / self / requiresShielded:true / shield{maxHpPct:15.04} — % of the skill user's final Max HP, so maxHpPct is the correct field. Gate is satisfied for the whole fight at scope."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "not in Struggle; Max HP ▲10.09% 10s",
+      "status": "SKIPPED",
+      "effectOrReason": "Negative Struggle gate (inexpressible) and unreachable at scope; the stat is also offensively inert here. Recorded in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "all allies; Sustained damage ▲10.16% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast / allies (includes self) / buff{stat:'sustainedDamagePct',value:10.16,durationSec:10}. No activation clause in the burst slot = the owner's own burst cast, NOT fullBurstEnter."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[0] + override.burst[0] — 'Struggle' status semantics",
+      "estimate": "Struggle ≡ 'the owner currently holds a shield'; modeled with the `requiresShielded` block gate, which is true for the entire fight at scope lock.",
+      "reasoning": "The kit names Struggle only as the state created by the Shield lines, so shield-presence is the closest faithful proxy. The engine has no self-status channel (`targetStatus`/`requiresTargetStatus` are enemy-only), and no inverse of `requiresShielded`, so the two 'not in Struggle' branches cannot be expressed at all and are left unmodeled rather than guessed.",
+      "recipe": "Record a fight where the boss actually damages this unit and watch whether the Struggle icon drops when the shield is depleted; if it does, the Struggle-end Max-HP stacks and both 'not in Struggle' branches become live and need a self-status primitive before they can be modeled."
+    },
+    {
+      "field": "base cadence tuple (ammo 60, reloadFrames 81, AR fire rate)",
+      "estimate": "Use the datamined AR values as shipped; no per-unit adjustment applied.",
+      "reasoning": "Datamined rate_of_fire / reloadFrames are the known-unreliable fields, and a nominal rate is quantized to 60 fps frame boundaries in practice, so effective throughput can differ from the sheet. This unit's damage share is small (no ATK/crit buff, no rider), so the error is bounded, but her normal-attack contribution and her burst-gauge generation both ride on it.",
+      "recipe": "Focus recording: count ammo-counter decrements over a fixed window for shots/sec, and count frames from empty to full for the reload; compare against 60/ceil(60/nominal)."
+    },
+    {
+      "field": "unmodeled.skill1[1] — Struggle-end Max HP ▲5.06%, up to 5 stacks",
+      "estimate": "0% uptime at scope lock (never fires); would be 25.3% self Max HP at cap.",
+      "reasoning": "The trigger requires the shield/Struggle to END, and nothing in v1 removes a shield (the boss deals no damage). Even if it fired, self Max HP has no offensive consumer in this kit — it would only matter to a teammate scaling off her HP, which the e3 rule already blocks for ally grants.",
+      "recipe": "Only re-derive once shield depletion is modeled; then measure how many times Struggle drops and re-forms over 180 s to get the real stack trajectory (expect a sawtooth, ~cap/2 time-average, not instant cap)."
+    },
+    {
+      "field": "override.skill2 (empty) — both part-destruction blocks",
+      "estimate": "Zero contribution at scope lock: the ally Sustained ▲2.03%×5 buff and the 23.23%/s / 15 s sustained DoT both never fire.",
+      "reasoning": "There is no part-destruction trigger in TriggerDef, and the validation boss is partless, so the kit's entire skill2 damage/support payload is dead on this fight. Encoding it on a substitute trigger (interval/hitCount/passive) would invent a cadence the kit never states and would silently over-credit her on every graded comp — a fabrication, not a model.",
+      "recipe": "If a boss with destructible parts is ever in scope: add a partDestroyed trigger, then measure part-break frequency from footage to get the real stack count and DoT re-arm cadence. Note the DoT must be ONE appended instance per break (15 s, 1 s interval) — a repeating trigger with a long duration multiplies."
+    },
+    {
+      "field": "override.burst[1].trigger — burstCast vs fullBurstEnter",
+      "estimate": "burstCast (the owner's own Burst II cast).",
+      "reasoning": "The line carries no activation clause and sits in the burst slot, which the trigger-identity rule reads as the owner's own cast. This unit is Burst II; keying it to fullBurstEnter would make it fire on rotations where a DIFFERENT Burst II casts, over-crediting the team buff.",
+      "recipe": "Two-comp A/B: run a comp where another Burst II takes the stage-2 slot and confirm the ally Sustained buff is absent on those rotations in the buffApply event stream."
+    },
+    {
+      "field": "override.burst[1].target — 'all allies' includes self",
+      "estimate": "{kind:'allies'} with no excludeSelf, i.e. the buff also lands on this unit.",
+      "reasoning": "The kit says 'all allies' with no exclusion clause; the excludeSelf variant is reserved for kits that literally say '(except self)'. Self-inclusion is near-irrelevant here (she has no sustained-flavored damage of her own once skill2 is inert), so the choice moves no damage today but matters if her skill2 DoT ever goes live.",
+      "recipe": "Read the buffApply targetSlug set on her burst cast; confirm 5 targets, not 4."
+    }
+  ],
+  "model": "claude-opus-5"
+}

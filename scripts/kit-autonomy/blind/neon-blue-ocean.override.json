@@ -1,0 +1,124 @@
+{
+  "slug": "neon-blue-ocean",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "partsDamagePct",
+              "value": 12.4,
+              "durationSec": 20
+            },
+            {
+              "kind": "buff",
+              "stat": "partsDamagePct",
+              "value": 12.4,
+              "durationSec": 20
+            },
+            {
+              "kind": "buff",
+              "stat": "partsDamagePct",
+              "value": 12.4,
+              "durationSec": 20
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "elemAdvantageDamagePct",
+              "value": 20.56,
+              "durationSec": 10
+            },
+            {
+              "kind": "buff",
+              "stat": "elemAdvantageDamagePct",
+              "value": 20.2,
+              "durationSec": 10
+            },
+            {
+              "kind": "buff",
+              "stat": "elemAdvantageDamagePct",
+              "value": 20.2,
+              "durationSec": 10
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 33,
+          "durationSec": 7
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "bossElementGate": "Fire",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 11,
+          "noRange": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ burst weaponSwap shot economy: kit states only damagePct 33% + 7 sec. No maxAmmo, pullsPerSec, weapon class or chargeTime given — the swap inherits the base MG cadence (300 ammo, 171 reloadFrames) by omission. If the swap weapon is not an MG, shot count over the 7 sec window is wrong. MEASUREMENT-GATED.",
+    "⚑ burst Fire-Code rider cadence: 'when attacking a Fire Code target' names the CONDITION but not the per-hit cadence; modeled as per-trigger-pull (shotFired). If it is per-HIT (MG hitsPerShot 1 here, so identical) or on an internal cooldown, the rate is wrong. Also unstated whether it is burst-window-scoped or whole-fight — modeled as whole-fight (the header carries no duration).",
+    "⚑ skill1 partsDamagePct is engine-inert at scope lock (partless boss). Kept for kit completeness per the tandem/completeness rule; contributes zero damage on the graded comps.",
+    "⚑ escalating counters are per-battle and never reset in the kit text; steps 2 and 3 of each skill are cumulative ADDS on top of step 1 (Liter-style 'each subsequent effect triggers all effects before it'), giving 12.4/24.8/37.2 and 20.56/40.76/60.96 at the 1st/2nd/3rd activation.",
+    "⚑ cadence tuple (pullsPerSec / reloadFrames 171 / ammo 300) is datamine-sourced and known-unreliable; not independently verified."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Neon: Blue Ocean is MG/Water/Attacker/Burst III. S1 is a burst-cast-keyed escalating Damage-to-Parts stack (inert vs the partless scope-lock boss but modeled for completeness). S2 is a stageEnter{3} escalating Elemental Advantage Attack Damage buff — modeled as elemAdvantageDamagePct so it lands in the Damage Up bucket and is live only with elemental advantage (taxonomy item 8: this kit exceeds the clean x1.10). Trigger fidelity: S2 says 'entering Burst Stage 3', which is a STAGE entry any team B3 cast satisfies, NOT full-burst-enter and NOT self-burst-cast; keying it to burstCast would under-fire in comps where another B3 casts, keying it to fullBurstEnter would shift it past the stage boundary. Burst is a 7 sec weapon swap at 33% of final ATK plus a boss-element-gated 11%-of-final-ATK rider on Fire Code targets, authored target enemy with bossElementGate 'Fire' so it is inert vs the neutral scope-lock boss and never disturbs graded comps. Every kit line is IMPLEMENTED; unmodeled is empty for all three slots."
+}

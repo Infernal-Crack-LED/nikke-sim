@@ -1,0 +1,214 @@
+{
+  "slug": "jackal",
+  "leakDetected": null,
+  "override": {
+    "slug": "jackal",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 10
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 9.09,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 2,
+          "excludeSelf": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 8.27,
+            "durationSec": 120
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 8.27,
+            "durationSec": 120
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 14.69,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "ATK ▼ 9.09% for 10 sec."
+      ],
+      "skill2": [
+        "Equally shares damage taken  for 120 sec."
+      ],
+      "burst": [
+        "Burst Skill damage of skills with \"Affects 1 enemy unit(s)\" in the description ▲ 38.91% for 15 sec."
+      ]
+    },
+    "caveats": [
+      "⚑ skill1 trigger: \"Activates when attacked 10 time(s)\" is an INCOMING-hit counter (boss attacks on the squad), not an owner hit/shot counter. v1 models no boss damage, so the real cadence is unobservable in-sim; modeled as hitCount:10 (owner rounds) as a stand-in cadence. UNMEASURED — the Damage Taken ▲ uptime this produces is a guess, not a reading.",
+      "⚑ skill1 target: \"1 enemy unit(s) with the highest final Max HP\" = the sole boss at scope lock; modeled as {kind:'enemy'}. The paired ATK ▼ 9.09% is a boss-offense debuff with no sim consumer (boss ATK is unmodeled) — recorded in unmodeled, not as a block.",
+      "⚑ skill2 target split: the kit line covers \"self and 2 ally unit(s) with the highest final ATK\". alliesTopAtk has no self-inclusive form, so it is authored as TWO blocks (alliesTopAtk count:2 excludeSelf:true + self). If the game instead ranks self INTO the top-2 pool (i.e. self may occupy one of the two slots), this over-covers by one ally. Kit says \"self AND 2 ally\", which reads as exclude-then-take-2 — the encoding follows the literal wording.",
+      "⚑ skill2 \"highest final ATK\" is a FINAL-ATK ranking per the literal-word rule, but byFinalAtk is NOT set here: the buff is DEF only and offensively inert, so live-vs-static ranking moves zero damage. Set byFinalAtk:true if a future consumer makes the target set matter.",
+      "defPct is inert in v1 (self DEF does not affect own damage). All three DEF lines are kept for kit completeness / future consumers, per the do-not-skip-DEF rule.",
+      "⚑ burst conditional-damage buff: \"Burst Skill damage of skills with 'Affects 1 enemy unit(s)' in the description ▲ 38.91%\" is a SCOPED buff on a per-ally kit-text predicate. The schema has no StatKey for 'burst-skill damage of single-target-flagged skills' — attackDamagePct/atkPct would be an unscoped over-credit across the entire team's whole damage. Left unmodeled rather than fudged. Recipe: add a scoped StatKey (e.g. burstSingleTargetDamagePct) gated on a per-override boolean marking which units' burst blocks carry an 'Affects 1 enemy unit(s)' clause, then A/B the carriers.",
+      "⚑ burst trigger identity: modeled as burstCast (this unit is Burst I; the line sits in her OWN burst block with no 'entering Full Burst' clause). Burst-cast damage/auras land pre-Full-Burst, so the DEF aura carries no FB major — correct for a stat buff.",
+      "⚑ cadence tuple (ammo 6 / reloadFrames 142 / chargeFrames 60 / RL) is datamined and known-unreliable; unverified for this unit.",
+      "\"Equally shares damage taken\" is a survivability redistribution with no v1 consumer (the boss deals no modeled damage and nobody dies at scope lock) — recorded verbatim in unmodeled."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Jackal (RL/Iron/Defender/Burst I) is a defensive/utility kit: her only team-damage-relevant live line is the S1 Damage Taken ▲ 9.09% boss debuff (10 s), keyed to an incoming-hit counter the v1 sim cannot observe — its uptime is a stand-in cadence, not a measurement. The burst's headline 38.91% is a SCOPED buff on allies' single-target burst skills with no matching StatKey; it is deliberately unmodeled rather than approximated by an unscoped damage stat, which would over-credit the whole team. Three DEF grants (S2 8.27%/120 s to self + top-2-ATK allies, burst 14.69%/10 s to all allies) are modeled for kit completeness and are inert in v1. Damage-shared / ATK▼ lines have no v1 consumer."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when attacked 10 time(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger — modeled as hitCount:10 (⚑ stand-in: the real counter is INCOMING attacks on the squad, which v1 does not simulate; no boss damage exists, so the true firing cadence is unobservable)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects 1 enemy w/ highest final Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Target — the sole boss at scope lock; target {kind:'enemy'}."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Damage Taken ▲ 9.09% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff damageTakenPct 9.09, durationSec 10 — a boss DEBUFF benefiting the whole team (HARD RULE 4), not a self buff."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▼ 9.09% for 10 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Enemy ATK debuff — reduces BOSS offense, which v1 does not model (boss deals no damage). No sim consumer; not a self/ally stat. Recorded verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates at the start of battle.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger — {kind:'passive'} with durationSec 120 (fires once at t=0; 120 s window on a 180 s fight, so it genuinely lapses at 2:00 — duration retained, not treated as whole-fight)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects self and 2 allies highest ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Target split into two blocks: alliesTopAtk{count:2,excludeSelf:true} + self (no self-inclusive top-ATK target kind exists). ⚑ split-vs-merge noted in caveats."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Equally shares damage taken for 120 s",
+      "status": "SKIPPED",
+      "effectOrReason": "Damage redistribution among the covered allies — v1 models no HP pool and no boss damage, so there is nothing to share. Not a heal/shield/gauge line (no recovery or shielded trigger is fired), so the do-not-skip-sustain rule does not apply. Recorded verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▲ 8.27% for 120 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct 8.27, durationSec 120, on both target blocks. Inert in v1 (self DEF does not affect own damage) but kept per the DEF-not-skippable rule / future consumers."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Target {kind:'allies'} (self-inclusive; no excludeSelf clause) on a burstCast trigger."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Burst Skill dmg of \"Affects 1 enemy\" ▲",
+      "status": "SKIPPED",
+      "effectOrReason": "38.91%/15 s scoped to allies' burst skills whose text carries an 'Affects 1 enemy unit(s)' clause. No StatKey expresses that scope; attackDamagePct/atkPct would over-credit ALL team damage (failure mode 1, SCOPE). Flagged with a schema-extension recipe rather than fudged. Recorded verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▲ 14.69% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct 14.69, durationSec 10, all allies. Inert in v1; kept for kit completeness."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "hitCount:10 (owner rounds) as a stand-in for \"attacked 10 time(s)\"",
+      "reasoning": "The kit counter is INCOMING attacks (boss hits on the squad), an axis v1 does not simulate at all — the boss deals no modeled damage, so the true trigger never fires. Any encoding is an invented cadence. hitCount:10 keeps the debuff live at a plausible-but-arbitrary rate; the honest alternative (drop the block) would silently delete a real team-damage buff. Uptime of the Damage Taken ▲ is therefore UNMEASURED and the single largest source of error in this baseline.",
+      "recipe": "Record a scope-lock fight with jackal and read boss-attack cadence from the footage (count incoming attack animations to the 10th), then convert to a wall-clock interval and re-key the block to {kind:'interval', sec:<measured>}; cross-check by A/B-ing total team damage with the block on vs off against the recorded total."
+    },
+    {
+      "field": "skill1[0].effects[0].value / uptime",
+      "estimate": "damageTakenPct 9.09 at whatever duty cycle the stand-in trigger produces",
+      "reasoning": "The magnitude 9.09% is kit-literal (not flagged); the UPTIME is not. A 10 s window on an unknown re-trigger period can range from ~0% to 100% coverage of the 180 s fight, and this is the only line in the kit that moves team damage.",
+      "recipe": "Same measurement as the trigger flag; then pin with a spec test asserting the number of damageTakenPct buffApply events (casterIdx===null/targetIdx===null boss-held filter by stat+value 9.09) over a 180 s run."
+    },
+    {
+      "field": "burst[0] — missing scoped buff",
+      "estimate": "38.91% additive on ally burst-skill damage, but ONLY for skills whose text says \"Affects 1 enemy unit(s)\"",
+      "reasoning": "No StatKey in types.ts scopes to burst-slot damage filtered by a per-ally kit-text predicate. Encoding it as attackDamagePct would apply to every ally's every hit for 15 s — a large unscoped over-credit (failure mode 1). Leaving it out under-credits single-target-burst carriers instead; that is the conservative, non-fabricating choice per MEASURED > FUDGE.",
+      "recipe": "Add StatKey 'burstSingleTargetDamagePct' consumed only in the burst bucket, plus a per-override boolean (e.g. singleTargetBurst:true) on carriers whose burst text contains 'Affects 1 enemy unit(s)'; audit the roster for carriers, then A/B a jackal + single-target-burst-carry comp against a recorded fight to confirm the buff lands additively in the Damage Up bucket rather than as its own multiplier."
+    },
+    {
+      "field": "skill2 target split (two blocks vs one)",
+      "estimate": "self + top-2 OTHER allies by ATK (exclude-then-take-2)",
+      "reasoning": "Kit says \"self and 2 ally unit(s)\", which reads as self PLUS two others = 3 covered units. If the game instead ranks self into the same pool, coverage is 3 only when self is outside the top 2, else 2. Damage-neutral today (defPct is inert), but the target set would matter the moment a consumer reads it.",
+      "recipe": "Zero-cost to leave as-is while defPct is inert. If a consumer lands, confirm from an in-game buff-icon read on a comp where jackal has the highest ATK of the three candidates — count how many allies show the DEF icon."
+    },
+    {
+      "field": "burst[0].trigger",
+      "estimate": "burstCast (not fullBurstEnter)",
+      "reasoning": "The line sits in this unit's OWN burst block with no \"entering Full Burst\" / \"during Full Burst\" clause, so per the trigger-identity rule it fires when SHE casts. As a Burst I unit she casts on essentially every rotation, so burstCast vs fullBurstEnter barely diverges here — but the faithful encoding is burstCast, and it also correctly places the aura pre-FB.",
+      "recipe": "Structural read of the kit text; no measurement needed unless a comp is built where the FB chain completes without her cast."
+    },
+    {
+      "field": "base cadence tuple (ammo 6 / reloadFrames 142 / chargeFrames 60)",
+      "estimate": "as datamined",
+      "reasoning": "ALWAYS-⚑ field: datamined rate_of_fire / reloadFrames are known-unreliable, and RL charge behaviour interacts with the 22-frame release latency. Her own normal-attack output is not a load-bearing part of this override (no damage riders), so the error is contained to her personal damage column and burst-gauge generation.",
+      "recipe": "Ammo-counter read from a focus recording (shots/sec measures the disputed quantity directly, per the nominal-vs-effective rate prior); compare her solo total-damage against a scope-lock screenshot."
+    }
+  ],
+  "model": "claude-opus-5"
+}

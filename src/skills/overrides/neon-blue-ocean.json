@@ -1,0 +1,106 @@
+{
+  "note": "neon-blue-ocean (Neon: Blue Ocean) — MG / Attacker / Water / Burst III, Elysion, cd 40s, ammo 300, reloadFrames 171, hitsPerShot 1, normalMult 5.57, core 200, baseCrit 15/150. EXACT SLUG: this is the WATER MG variant 'nbo' — NOT base `neon` (SG/Supporter/Fire/Burst I) and NOT neon-vision-eye (RL/Electric/Burst III). Kit-autonomy gauntlet 2026-08-04: FROM-SCRATCH build (no shipped override existed; simSupported was false) — test-first re-derivation (scripts/tests/units/neon-blue-ocean.test.ts). MODEL — SKILL1 'Upper Wave' ('Activates when using Burst Skill. Affects self. Effects vary according to the number of times used. Each subsequent effect triggers all effects before it: Once/Twice/Three times: Damage to Parts ▲12.4% for 20 sec'): burstCast → self → escalating [partsDamagePct 12.4/20s ×3] — the escalating case applies steps 1..N on the Nth own-burst cast (liter/volume precedent), so cast 1 → +12.4, cast 2 → +24.8, cast 3+ → +37.2, each instance 20s. partsDamagePct is INERT in v1 (partless scope-lock boss — types.ts 'parsed but inert'; raven/cinderella-crystal-wave keep-inert-for-fidelity precedent, helm H4 byte-identity pin) but modeled, never dropped (hard rule 3). SKILL2 'Water Jet' ('Activates when entering Burst Stage 3. Affects self. Effects vary according to the number of times entered. Each subsequent effect triggers all effects before it: Once: Elemental Advantage Attack Damage ▲20.56% / Twice: ▲20.2% / Three times: ▲20.2%, each for 10 sec'): stageEnter:3 → self → escalating [elemAdvantageDamagePct 20.56/20.2/20.2, 10s each] — 'entering Burst Stage 3' = stageEnter{stage:3} per the gauntlet-validated repo convention for that literal wording (laplace-ultimate-hero S2c + rei-ayanami S2b, both cross-family corroborated; fable S2b converged on it here too): it fires on the stage-3 CAST frame of ANY B3 (the fixture's helm co-B3 included — own-burstCast keying would under-fire; fullBurstEnter lands ~22f late, past the cast frame), and the escalating counter counts every such entry. elemAdvantageDamagePct sits in the ELEMENT bucket and is active only while elementally advantaged (MEASURED 2026-07-14 battery 5; ENV.ELEMADV='damageup' is the legacy A/B arm) — live here (Water vs the Fire scope-lock boss). NOMINAL ladder sum is 60.96, but the two equal 20.2 steps share one buff key (owner:slot:stat:value), so per the official same-buff refresh rule (game-mechanics.md §11, @NIKKE_en — same buff name + same scope re-application REFRESHES, never co-stacks) the LIVE element lift caps at 20.56 + 20.2 = 40.76 (observed elem mult 1.5076, never the naive co-stack's 1.7096 — pinned by the unit test). BURST 'Full Hydro Shot' line 1 ('Affects self. Changes the weapon in use: Damage: 33% of final ATK, Duration: 7 sec'): burstCast → self → weaponSwap damagePct 33 durationSec 7 — moran precedent (kit-silent swap cadence = BASE weapon cadence; the prose states only per-shot damage + duration, so the swap fires her base MG wind-up cadence and refills the 300-round belt on entry/exit; no unlimitedAmmo — the prose grants none). BURST line 2 ('Activates when attacking a Fire Code target. Affects the target. Deals 11% of final ATK as additional damage'): burstCast → self → extraHitDamagePct 11 durationSec 7, bossElementGate 'Fire' — a per-normal-hit function rider live ONLY inside the burst-weapon window (both burst lines ride the ChangeWeapon skill state; the 7s duration matches the swap window) and ONLY vs a Fire Code boss (helm-aquamarine Bb / brid-silent-track bossElementGate precedent; inert vs any other boss, so it never disturbs a non-Fire graded comp). Rider flavor: crits at sheet rate (RIDER_CRIT), never cores, no range bucket, FB by landing time (function-damage SSOT §2b). UNMODELED: none — every kit line is modeled (no heal/shield/ammo/gauge/defensive lines exist in this kit). ⚑ FLAGS: ⚑1 (burst-weapon cadence/ammo, MEASUREMENT-GATED): the kit text states NO fire rate and NO ammo count for the swapped weapon; the datamine carries a swap shot_id (1001402) + an unlabeled integer 90 in skill_value_data, and characters.json ships only the BASE weapon's shot_detail, so neither is independently confirmable — NOT enacted per moran (2026-07-25, the board refuted an unlabeled swap rate_of_fire there). ESTIMATE: base MG wind-up cadence + full-belt refill (engine swap default). RECIPE: an isolated nbo-solo scope-lock video — count rounds fired inside one 7s burst window and watch the ammo counter (a distinct 90-round belt or a faster/slower cadence would show). TIER: cadence/throughput (sets the swap-window DPS ~17% of the fight). ⚑2 (standard cadence tuple): reloadFrames 171 + MG wind-up ladder defaults are datamine, unverified on video for this unit; low priority (engine MG cadence is measured across the class). Kit-autonomy gauntlet 2026-08-04.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "burst: the swapped weapon's fire cadence + ammo pool are kit-silent — modeled as base MG cadence + full-belt refill (⚑1, measurement-gated; the datamine's unlabeled 90 was NOT enacted)",
+    "skill1: Damage to Parts is inert vs the partless scope-lock boss (modeled for fidelity — byte-identical totals with the line removed)",
+    "skill2: Elemental Advantage Attack Damage is live only vs an elementally-weak boss (Fire here); it adds to the element bucket, not Damage Up",
+    "burst: the 11% additional damage vs Fire Code targets only fires inside the 7s burst-weapon window AND only vs a Fire boss"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "partsDamagePct",
+              "value": 12.4,
+              "durationSec": 20
+            },
+            {
+              "kind": "buff",
+              "stat": "partsDamagePct",
+              "value": 12.4,
+              "durationSec": 20
+            },
+            {
+              "kind": "buff",
+              "stat": "partsDamagePct",
+              "value": 12.4,
+              "durationSec": 20
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "stageEnter", "stage": 3 },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "elemAdvantageDamagePct",
+              "value": 20.56,
+              "durationSec": 10
+            },
+            {
+              "kind": "buff",
+              "stat": "elemAdvantageDamagePct",
+              "value": 20.2,
+              "durationSec": 10
+            },
+            {
+              "kind": "buff",
+              "stat": "elemAdvantageDamagePct",
+              "value": 20.2,
+              "durationSec": 10
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 33,
+          "durationSec": 7
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "bossElementGate": "Fire",
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "extraHitDamagePct",
+          "value": 11,
+          "durationSec": 7
+        }
+      ]
+    }
+  ]
+}

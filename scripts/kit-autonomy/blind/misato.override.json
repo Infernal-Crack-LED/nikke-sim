@@ -1,0 +1,75 @@
+{
+  "slug": "misato",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 60
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 5.04,
+          "durationSec": 5,
+          "maxStacks": 3
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 120
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 1
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 5,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "■ Only activates when in Shooting Manual status. Affects all allies. Damage dealt to Shield ▲ 150% continuously.",
+      "■ Only activates when Shooting Manual is at max stacks. Affects self. Outgoing healing ▲ 30.05% continuously."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ hitRatePct 5.04 (×3 stacks) is the kit-literal Hit Rate value; the Hit-Rate→core-rate CONVERSION magnitude (sim.ts hrCoreMult) is derived, not measured for this unit. Her whole offensive contribution runs through it.",
+    "⚑ Both hitCount triggers (60 / 120 landed normal attacks) fire on a cadence set by the SMG pulls-per-second tuple, a datamine-unreliable field. Stack uptime and heal frequency scale directly with it.",
+    "⚑ Shooting Manual max-stack UPTIME is an estimate: 60 rounds per stack against a 5 sec per-stack duration means max stacks hold only while the 60-round interval stays under 5 sec. Un-measured against a real fight.",
+    "The 'Shooting Manual status' / 'at max stacks' gates on skill2 have no engine primitive (self-buff-status gating does not exist; requiresTargetStatus is boss-scoped, resourceGate is pool-scoped). Moot today because both gated lines are unmodeled for lack of a StatKey — it becomes load-bearing only if either line gains one.",
+    "The engine models a heal as a recovery EVENT with no HP amount, so both heal lines are offensively inert on their own; they are kept because on-recovery consumers (heal-synergy kits) read those events."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Misato (SMG/Iron/Supporter/Burst I) is a sustain/support unit with essentially no direct damage line — she carries zero flatDamage, zero DoT, zero ATK buff. Her only damage-relevant effect is a self Hit Rate stack (5.04% ×3, 5 sec, refreshed every 60 landed rounds), which reaches the damage model solely through the Hit-Rate→core lift. Skill 2 is two continuous team lines that the schema cannot express: 'Damage dealt to Shield ▲ 150%' has no StatKey and is inert at scope lock (the boss carries no shield), and 'Outgoing healing ▲ 30.05%' scales a heal AMOUNT, which the engine does not model (heals are recovery events without an HP quantity). Both are recorded verbatim in unmodeled rather than approximated. Burst is a 5-tick heal-over-time to all allies (5.06% of the caster's final Max HP per tick, 1 sec interval, 5 sec) authored as ticks:5 so each tick emits its own recovery event and keeps on-recovery consumers refreshed — collapsing it to a single event would under-fire them 5:1. Skill 1's second line heals the lowest-HP-percentage ally, modeled as alliesLowestHp count 1 (the engine resolves this to the leftmost ally as a documented stand-in, since v1 has no HP pool); the target choice moves no damage. FB-by-timing left at the default (noFb unset); noRange is engine-automatic."
+}

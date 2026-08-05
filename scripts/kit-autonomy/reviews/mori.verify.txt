@@ -1,0 +1,44 @@
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [2mno tests[22m
+[2m   Start at [22m 21:05:50
+[2m   Duration [22m 149ms[2m (transform 75ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)[22m
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-08-04[39m
+
+ [31m❯[39m scripts/tests/units/mori.test.ts [2m([22m[2m0 test[22m[2m)[22m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/mori.test.ts[2m [ scripts/tests/units/mori.test.ts ][22m
+[31m[1mError[22m: mori: no override on disk — fixture is stale[39m
+[36m [2m❯[22m withPatchedOverride scripts/tests/lib/harness.ts:[2m71:11[22m[39m
+    [90m 69|[39m   [35mconst[39m base [33m=[39m [34mloadOverride[39m(slug)[33m;[39m
+    [90m 70|[39m   [35mif[39m ([33m![39mbase) {
+    [90m 71|[39m     [35mthrow[39m [35mnew[39m [33mError[39m([32m`[39m[36m${[39mslug[36m}[39m[32m: no override on disk — fixture is stale`[39m)[33m;[39m
+    [90m   |[39m           [31m^[39m
+    [90m 72|[39m   }
+    [90m 73|[39m   [35mconst[39m clone [33m=[39m [33mJSON[39m[33m.[39m[34mparse[39m([33mJSON[39m[33m.[39m[34mstringify[39m(base))[33m;[39m
+[90m [2m❯[22m scripts/tests/units/mori.test.ts:[2m131:20[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [2mno tests[22m
+[2m   Start at [22m 21:05:51
+[2m   Duration [22m 152ms[2m (transform 77ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)[22m
+
+
+--- post-S3 re-run (GREEN) ---
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-08-04[39m
+
+ [32m✓[39m scripts/tests/units/mori.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m14 passed[39m[22m[90m (14)[39m
+[2m   Start at [22m 21:08:15
+[2m   Duration [22m 264ms[2m (transform 75ms, setup 0ms, import 208ms, tests 7ms, environment 0ms)[22m
+

@@ -1,0 +1,181 @@
+{
+  "slug": "neon",
+  "leakDetected": null,
+  "override": {
+    "slug": "neon",
+    "skill1": [],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 45.93,
+            "durationShots": 2
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 528.97
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesOfWeapon",
+          "weapon": "SG"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "maxAmmoFlat",
+            "value": 3,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates when killing an enemy. Affects 2 ally unit(s) with the highest final ATK. Critical Rate ▲ 3.56% for 5 sec."
+      ],
+      "skill2": [],
+      "burst": [
+        "Affects 1 enemy unit(s) with the highest final DEF. (single-target selection — the scope-lock fight has one boss, so the DEF-ranked selector is a no-op)"
+      ]
+    },
+    "caveats": [
+      "skill1 is entirely inert at scope lock: its trigger is an enemy KILL and the raid boss is never killed during the 180s fight. There is also no on-kill TriggerDef in the schema. If a future fight profile includes killable adds, this line becomes live: 2 highest-final-ATK allies (alliesTopAtk count:2, byFinalAtk:true — the text says 'final ATK'), critRatePct 3.56 for 5 sec.",
+      "⚑ skill2 duration semantics: 'for 2 shots' is modeled as a ROUND count (durationShots:2) per the round-count convention, NOT 2 seconds. Unverified whether the in-game counter decrements per trigger pull or per pellet/hit for a SG holder; durationShots decrements per round fired (1 per pull for a SG), which is the assumed reading.",
+      "⚑ skill2 is unscoped Critical Rate (no 'of normal attacks' clause) → critRatePct, so it feeds skill/burst crit as well as normals. Modeled literally from the text.",
+      "Burst damage is burst-cast (lands before the Full Burst window opens) so it takes no +50% FB major — this is engine-automatic for burstCast timing, not flagged via noFb.",
+      "No noFb / noRange set anywhere: noRange is engine-automatic, and per-kit noFb is measured-only."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Neon (neon), SG/Fire/Supporter/Burst I. Modeled: S2 team-wide unscoped Critical Rate ▲45.93% on Full-Burst entry with a 2-ROUND duration; burst single-target 528.97% of final ATK plus Max Ammunition ▲3 flat rounds for 10s to all Shotgun allies (self included — neon is SG). S1 is deliberately unmodeled: it is gated on killing an enemy, which never occurs against the partless raid boss, and the schema carries no on-kill trigger. The burst's 'highest final DEF' enemy selector is a no-op in a single-boss fight. maxAmmoFlat is a weapon-state modifier and therefore a damage line (it gates shots fired per magazine across the 10s window for every SG on the team), not a skippable utility grant.",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when killing an enemy.",
+      "status": "SKIPPED",
+      "effectOrReason": "Trigger is an enemy kill. The scope-lock raid boss is never killed in the 180s fight, and no on-kill TriggerDef exists in types.ts. Whole skill1 is inert at scope; recorded verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects 2 allies highest final ATK",
+      "status": "SKIPPED",
+      "effectOrReason": "Target set of the dead trigger above. Would be alliesTopAtk {count:2, byFinalAtk:true} — 'final ATK' is the literal wording, so live-ATK ranking. Not authored because the trigger can never fire."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Rate ▲ 3.56% for 5 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Payload of the dead trigger. Would be buff critRatePct 3.56 durationSec 5 (unscoped — no 'of normal attacks' clause). Magnitude recorded in caveats for a future killable-adds profile."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates at beginning of Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'fullBurstEnter'} — 'beginning of Full Burst' is the team-wide FB window opening, fires on ANY team full burst, not gated on neon casting her own burst. No ownBurstGate (kit states no own-burst condition)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} — no excludeSelf (text says 'all allies', neon included)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Rate ▲ 45.93% for 2 shots",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 45.93 durationShots 2. Unscoped Critical Rate (no 'of normal attacks' → critRatePct, not critRateNormalPct). 'for 2 shots' is a ROUND count → durationShots, NOT durationSec; window spans reloads and shrinks for fast-firing holders."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 1 enemy highest final DEF",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single-target selector is a no-op against the one partless boss; recorded in unmodeled.burst as the selection clause that carries no sim effect."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 528.97% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 528.97 on trigger {kind:'burstCast'}, target enemy. No core (text says no core strike), no explicit noFb (burst-cast damage lands pre-FB by engine timing), no noRange (engine-automatic)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies with a Shotgun.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesOfWeapon', weapon:'SG'} — weapon-typed, class-blind. No excludeSelf; neon is SG so she receives it too."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammunition ▲ 3 round(s) for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff maxAmmoFlat 3 durationSec 10. FLAT round count (not %) per the '▲ N round(s)' schema note. Weapon-state modifier → IS a damage line (gates shots per magazine / reload frequency for every SG ally); never skipped as utility. 'for 10 sec' here IS wall-clock (seconds are stated explicitly), unlike skill2's round count."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill2[0].effects[0].durationShots",
+      "estimate": "2 (rounds), per the round-count convention",
+      "reasoning": "'for 2 shots' is a round/shot count, never wall-clock seconds. The engine's durationShots decrements one per round fired (1 per trigger pull for SG/AR/SMG, hitsPerShot for MG) right after that shot's blocks dispatch, so the 2nd shot still benefits. UNMEASURED whether NIKKE's counter for this line decrements per trigger pull or per landed pellet for a shotgun holder — a SG pull is 10 pellets, so a per-pellet reading would make the buff effectively last a fraction of one pull. Per-pull is the assumed reading (matches the engine's round definition and the ammo economy).",
+      "recipe": "Focus-record a Full Burst with neon in the team on an SG carry: count how many trigger pulls after FB entry show orange crit popups at the elevated rate. 2 full pulls = per-pull; sub-one-pull = per-pellet. Cross-check on a non-SG ally (e.g. an AR holder) where pull==round unambiguously, to isolate whether the discrepancy is SG-specific."
+    },
+    {
+      "field": "override.skill2[0].effects[0].stat (critRatePct vs critRateNormalPct)",
+      "estimate": "critRatePct (unscoped) — 45.93",
+      "reasoning": "The kit text is a bare 'Critical Rate ▲', with no 'of normal attacks' qualifier, so per the SCOPE failure-mode rule it is modeled as generic crit and feeds skill-proc and burst crit alongside normals. Flagged because generic-vs-scoped is the single highest-frequency mis-encoding in this taxonomy and an unscoped model over-credits the WHOLE team's skill/burst crit if the real line is normals-only.",
+      "recipe": "During a Full Burst with neon present, read popup colours on a teammate's SKILL-proc / burst-damage popups (orange + crit icon vs white) in the 2-round window vs outside it. Crit-coloured skill popups only inside the window → unscoped is correct; normals-only crit lift → switch to critRateNormalPct."
+    },
+    {
+      "field": "override.burst[1].effects[0] (maxAmmoFlat 3 → shots fired)",
+      "estimate": "+3 rounds on a 9-round SG magazine (≈33% more shots per magazine) for 10 sec, all SG allies",
+      "reasoning": "Weapon-state economy: the DAMAGE consequence of a flat ammo grant depends on how many extra pulls actually land inside the 10s window and on where in the magazine cycle the burst lands (a near-full magazine at cast benefits fully; a nearly-empty one may reload past the window and gain little). The engine's maxAmmo() adds the flat on top of maxAmmoPct scaling, but whether the CURRENT magazine is topped up on grant or only the NEXT reload fills to the higher cap is kit-silent and changes the in-window shot count.",
+      "recipe": "Solo-run an SG carry with and without neon's burst active, reading the ammo counter frame-by-frame across the 10s window: count pulls between reloads and note whether the counter jumps by +3 at cast (current-magazine top-up) or only reaches 12 after the next reload. Compare total shots fired in the window against sim."
+    },
+    {
+      "field": "override.skill1 (empty) — kit-line inertness",
+      "estimate": "Zero contribution at scope lock; would be critRatePct 3.56 / 5 sec to alliesTopAtk{count:2, byFinalAtk:true} if kills occurred",
+      "reasoning": "The 'kills an enemy' premise being scope-inert is itself a LOAD-BEARING claim, not a free skip: it holds only because the raid boss is never killed and the scope-lock fight spawns no killable adds. Also, the schema has no on-kill TriggerDef at all, so even a killable-adds profile would need an engine primitive first. Magnitude is small (3.56% crit to 2 allies) so the modeling cost of being wrong is low, but the SKIP is a scope judgement, not a text judgement.",
+      "recipe": "Confirm from the boss profile / a fight recording that no adds spawn and die during the 180s scope-lock fight. If any killable entity exists, this needs an on-kill trigger primitive in types.ts before the line can be modeled at all."
+    },
+    {
+      "field": "override.burst[0] (flatDamage 528.97) — FB exposure",
+      "estimate": "No noFb flag set; relies on burst-cast landing pre-FB (engine timing)",
+      "reasoning": "Per the verified facts, burst-cast damage lands before the Full Burst window opens, so it takes no +50% FB major and no entry auras. Setting an explicit noFb would be a per-kit measured-only flag (default OFF), so it is deliberately omitted. Flagged so a reviewer knows the FB-exemption here comes from CAST TIMING, not from an authored flag — if the engine's burst-cast ordering ever changed, this line would silently gain +50%.",
+      "recipe": "Read the burst popup value against sim's pre-FB expectation on a focus recording; a value ~1.5x the sim's would indicate the hit is landing inside the FB window."
+    },
+    {
+      "field": "cadence tuple (ammo 9 / reloadFrames 129 / hitsPerShot 10)",
+      "estimate": "As given in base stats; SG pulls-per-second from the datamined rate is nominal",
+      "reasoning": "ALWAYS-⛑ field: datamined rate_of_fire and reloadFrames are known-unreliable, and the game fires on 60fps frame boundaries so effective cadence = 60/ceil(60/nominal). For neon this matters doubly because her own burst grants +3 ammo to herself, so magazine length and reload frequency both shift inside the window.",
+      "recipe": "Ammo-counter read from a focus recording: count pulls per second and frames between last-shot and first-shot-of-next-magazine, comparing against the datamined 129 reload frames."
+    }
+  ],
+  "model": "claude-opus-5"
+}

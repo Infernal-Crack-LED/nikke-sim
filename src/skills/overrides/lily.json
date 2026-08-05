@@ -1,0 +1,41 @@
+{
+  "note": "lily (Lily) — SMG / Supporter / Wind / Burst II, cd 40s, ammo 120, RoF 1440 (20 shots/s under the engine's default-ON SMG frame quantization), reloadFrames 81, hitsPerShot 1, SR (Abnormal). A pure ATK-buffer whose two modeled lines are both 'ATK ▲ x% of the skill user's ATK' flat grants (casterAtkPct) to a SINGLE ally; her two cover lines are inert NO-OPs in v1. Kit-autonomy gauntlet 2026-08-04: FROM-SCRATCH build (no prior override; simSupported false → true) — test-first re-derivation pinned by scripts/tests/units/lily.test.ts (groups G0/L1/L4 + L2-L3 guard), cross-family S2b (claude-fable-5) / S5+S6 (claude-opus-5) / S7 (kimi-code/k3 binding judge) converged. SKILL1 ('Precise Adjustment', 15s CD, no visible activation clause): 'Affects 1 random ally unit. ATK ▲ 20% of the skill user's ATK for 5 sec.' → interval:15 (the datamined skill cooldown — neve/helm-aquamarine precedent; first fire t=15 per the engine interval convention ⚑) → alliesTopAtk count:1 → casterAtkPct 20 / durationSec 5. '1 RANDOM ALLY' has no engine target kind (no random selection in the deterministic expected-value sim) — it resolves to the single highest-base-ATK ally as the documented stand-in (chime 'The King' precedent for single-ally grants; the alliesLowestHp leftmost-stand-in convention for indeterminate targeting). ⚑1: true random would spread each 5s window across the team in expectation; the stand-in concentrates it on the carry (damage effect is near-neutral — a flat ATK add contributes ~the same absolute damage on any holder — but holder identity differs). SKILL2 ('Emergency Repair', 15s CD): 'Affects all allies. Restores 10% of Cover HP.' → UNMODELED (inert; verbatim below): cover HP is the liter-S2 NO-OP class (owner ruling 2026-07-21; naga cover-restore precedent) — an object's HP, not a unit HP pool; v1 models no cover HP, and encoding it as a unit heal is the liter TRAP (it would emit recovery events and spuriously fire Crown-class 'when recovery takes effect' consumers). The unit spec's L2 guard proves the shipped override feeds Crown zero recovery while the nearest-wrong heal encoding fires her every 15s. BURST ('The Best Engineer!', cd 40s) — a destroyed-cover BRANCH kit; v1 has no incoming-damage / cover-destruction model (immortal boss), so nobody's cover is ever destroyed and the branch gate is CONSTANT: branch A (destroyed cover → Rebuild Cover 30% HP + ATK ▲20%/10s) can NEVER legitimately fire → UNMODELED verbatim (the biscuit S2 un-fireable-trigger disposition; its 20% ATK is pinned ABSENT by the spec's value-set assertion); branch B ('if there is no ally whose cover has been destroyed' — always TRUE in v1, soline Max-HP-gate documentation pattern: the gate is recorded, never enacted) → burstCast → alliesTopAtk count:1 → casterAtkPct 40 / durationSec 10 (⚑1 stand-in again). Burst CASTS: lily is the fixture's SOLE B2 (controlComp's crown out-rotates a co-B2 → the spec's MAIN fixture swaps crown for lily; G0 pins one lily cast per Full Burst). Burst gauge (0.1/shot) is carried by the datamined burst_energy_pershot, not an override block. No heal/shield/DEF/gauge/ammo/reload/weapon-swap/Hit-Rate lines in this kit; no stacks/rounds/resources; every duration is plain wall-clock seconds. Element: Wind — clean engine ×1.10 advantage vs Iron (no Superior-Elemental-Code buff in kit). ⚑ FLAGS: (⚑1) RANDOM-ALLY STAND-IN (both modeled lines) — estimate = highest-base-ATK ally (alliesTopAtk count:1, static ranking, slot tie-break); recipe = focus video, read which ally's ATK-buff popup appears on each S1/burst fire; near-damage-neutral (flat add), holder identity is the real delta. (⚑2) CADENCE TUPLE — SMG RoF 1440 + reloadFrames 81 shipped datamine as-is (no charFixes); she is a support and her own damage is minor; recipe = rounds/min + reload gap from any focus video. (⚑3) INTERVAL FIRST-FIRE PHASE — t=15 vs t=0 is the engine convention; pinned at t=15. TIER 2: scoped single-ally buffs + burstCast trigger + destroyed-cover status-gate kit (the gate is constant in v1: always-false for branch A, always-true for branch B).",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "■ Affects all allies.\nRestores 10% of Cover HP. — UNMODELED (inert): restores COVER HP, not a unit's HP; no sim cover-HP representation (same NO-OP class as liter S2, owner ruling 2026-07-21; naga cover-restore precedent). Emits no unit-recovery event, so it must not trigger recovery-consumer teammates (the liter trap — pinned by the unit spec's Crown guard)."
+    ],
+    "burst": [
+      "■ Affects 1 random ally unit whose cover has been destroyed.\nRebuild Cover with 30% HP.\nATK ▲ 20% of the skill user's ATK for 10 sec. — UNMODELED (inert): the destroyed-cover gate can never legitimately fire in v1 — there is no incoming-damage / cover-destruction model (immortal boss), so no ally's cover is ever destroyed and this branch never applies (biscuit S2 un-fireable-trigger disposition). The Rebuild Cover portion is the liter-S2 cover-HP NO-OP class regardless. Its 20% ATK magnitude is pinned ABSENT by the unit spec (lily grants ONLY the 40% branch-B flat value)."
+    ]
+  },
+  "caveats": [
+    "skill1: cadence is the DATAMINED skill cooldown (interval 15s); first-fire phase (t=15 vs t=0) is the engine interval convention (⚑3).",
+    "skill1 + burst: '1 random ally' resolves to the single highest-base-ATK ally (alliesTopAtk count:1 — chime single-ally-grant precedent; no random-selection target kind exists in the deterministic sim). ⚑1 — the true random pick would rotate the holder; flat-ATK grants are near-damage-neutral across holders, so the stand-in moves holder identity, not (much) team damage.",
+    "burst: destroyed-cover status gate is CONSTANT in v1 — branch A (rebuilt cover + 20% ATK) never fires (no cover-destruction model), branch B (40% ATK) always fires; the gate is documented, never enacted as a blocker (soline Max-HP-gate pattern).",
+    "skill2: the cover restore is an inert NO-OP in v1 (no cover representation); it is NOT a unit heal and emits no recovery events.",
+    "weapon: lily's own SMG damage is minor relative to her buffer value; the base-weapon cadence is datamined (RoF 1440, reloadFrames 81) and unverified by footage (⚑2).",
+    "rarity: lily is SR; the scope-lock basis (3★/core 7) is an SSR ceiling — the helm-in-controlComp precedent ships her uncapped for spec consistency, and her own ATK (the casterAtkPct basis) is therefore slightly warm (affects the flat grant magnitude, not the structure)."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "interval", "sec": 15 },
+      "target": { "kind": "alliesTopAtk", "count": 1 },
+      "effects": [
+        { "kind": "buff", "stat": "casterAtkPct", "value": 20, "durationSec": 5 }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "alliesTopAtk", "count": 1 },
+      "effects": [
+        { "kind": "buff", "stat": "casterAtkPct", "value": 40, "durationSec": 10 }
+      ]
+    }
+  ]
+}

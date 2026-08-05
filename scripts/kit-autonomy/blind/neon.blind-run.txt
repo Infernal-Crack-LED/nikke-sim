@@ -1,0 +1,58 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-08-04[39m
+
+ [31m❯[39m scripts/kit-autonomy/blind/neon.adapted.test.ts [2m([22m[2m21 tests[22m[2m | [22m[31m2 failed[39m[2m | [22m[33m1 skipped[39m[2m)[22m[32m 13[2mms[22m[39m
+     [32m✓[39m the control comp actually enters Full Burst (else every FB assertion below is vacuous)[32m 1[2mms[22m[39m
+     [32m✓[39m neon is in the comp and deals damage[32m 0[2mms[22m[39m
+     [2m[90m↓[39m[22m GAP — on-kill trigger is unreachable at scope lock (immortal partless boss, nothing ever dies); no engine trigger kind expresses "when killing an enemy", so the 3.56%/5 s grant is unobservable
+     [32m✓[39m emits NO 3.56% crit grant during the fight (the kill trigger never fires)[32m 1[2mms[22m[39m
+     [32m✓[39m fires at all (non-vacuity: the 45.93% grant is actually applied)[32m 0[2mms[22m[39m
+[31m     [31m×[31m SCOPE — the grant is UNSCOPED critRatePct, not critRateNormalPct[39m[32m 3[2mms[22m[39m
+     [32m✓[39m DURATION SEMANTICS — durationShots === 2 (a ROUND count), never a 2-second window[32m 1[2mms[22m[39m
+     [32m✓[39m TRIGGER IDENTITY — every application lands exactly on a fullBurstStart frame (FB-enter, not burst-cast)[32m 1[2mms[22m[39m
+     [32m✓[39m TARGET SET — "all allies": every comp member incl. neon receives it, once per FB[32m 0[2mms[22m[39m
+     [32m✓[39m lands in the BURST bucket, once per neon burst cast[32m 1[2mms[22m[39m
+     [32m✓[39m is FB-exempt — a burst cast resolves before the Full Burst window opens (no +50% major)[32m 1[2mms[22m[39m
+     [32m✓[39m DISCRIMINATES — removing the 528.97% line strictly lowers ONLY neon, teammates byte-identical[32m 0[2mms[22m[39m
+     [32m✓[39m INERTNESS — the nuke never lands in the normal/charge/skill buckets[32m 1[2mms[22m[39m
+     [32m✓[39m "1 enemy with the highest final DEF" is scope-trivial (single partless boss) — one hit, not N[32m 1[2mms[22m[39m
+     [32m✓[39m fires at all, granting FLAT 3 rounds (maxAmmoFlat, not maxAmmoPct)[32m 0[2mms[22m[39m
+     [32m✓[39m TARGET SET — weapon-typed, class-blind: neon (SG) receives it; non-SG allies do NOT[32m 0[2mms[22m[39m
+     [32m✓[39m DURATION — a 10 s wall-clock window (durationSec), NOT a round count[32m 0[2mms[22m[39m
+     [32m✓[39m IS DAMAGE — an ammo grant gates shots fired: removing it moves an SG holder’s total[32m 0[2mms[22m[39m
+[31m     [31m×[31m INERTNESS — removing the ammo grant leaves every non-SG teammate byte-identical[39m[32m 0[2mms[22m[39m
+     [32m✓[39m grants exactly TWO distinct crit magnitudes at most (3.56 / 45.93) — nothing else[32m 0[2mms[22m[39m
+     [32m✓[39m carries no DoT, no weapon swap, no pierce, no stored hits (kit text has none)[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/neon.adapted.test.ts[2m > [22mneon skill2 — FB entry, all allies, Critical Rate ▲45.93% for 2 SHOTS[2m > [22mSCOPE — the grant is UNSCOPED critRatePct, not critRateNormalPct
+[31m[1mAssertionError[22m: expected 108725403.58216774 to not be close to 108725403.58216774, received difference is 0, but expected 5e-7[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/neon.adapted.test.ts:[2m225:47[22m[39m
+    [90m223|[39m     [34mexpect[39m([34mapplies[39m()[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m224|[39m     // ...and it is not merely a naming difference: re-scoping moves t…
+    [90m225|[39m     [34mexpect[39m([34mtotals[39m([33mCF_SCOPED[39m[33m.[39mres)[[32m'neon'[39m])[33m.[39mnot[33m.[39m[34mtoBeCloseTo[39m(
+    [90m   |[39m                                               [31m^[39m
+    [90m226|[39m       [34mtotals[39m([33mBASE[39m[33m.[39mres)[[32m'neon'[39m][33m,[39m
+    [90m227|[39m       [34m6[39m[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/neon.adapted.test.ts[2m > [22mneon burst — "all allies with a Shotgun": Max Ammunition ▲3 rounds for 10 s[2m > [22mINERTNESS — removing the ammo grant leaves every non-SG teammate byte-identical
+[31m[1mAssertionError[22m: expected 87425292.83552161 to be close to 87491368.70300688, received difference is 66075.8674852699, but expected 5e-7[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/neon.adapted.test.ts:[2m361:24[22m[39m
+    [90m359|[39m     [35mfor[39m ([35mconst[39m slug [35mof[39m [33mObject[39m[33m.[39m[34mkeys[39m(base)) {
+    [90m360|[39m       [35mif[39m ([34munitOf[39m([33mBASE[39m[33m.[39mres[33m,[39m slug)[33m.[39mweapon [33m===[39m [32m'SG'[39m) [35mcontinue[39m[33m;[39m
+    [90m361|[39m       [34mexpect[39m(cf[slug])[33m.[39m[34mtoBeCloseTo[39m(base[slug][33m,[39m [34m6[39m)[33m;[39m
+    [90m   |[39m                        [31m^[39m
+    [90m362|[39m     }
+    [90m363|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m18 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (21)[39m
+[2m   Start at [22m 22:30:01
+[2m   Duration [22m 420ms[2m (transform 92ms, setup 0ms, import 306ms, tests 13ms, environment 0ms)[22m
+

@@ -1,0 +1,106 @@
+{
+  "slug": "ludmilla",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "last bullet hits: DEF ▼ 8.4% 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Boss-held DEF debuff — reduces boss DEF in the (final ATK − boss DEF) damage formula, so it lifts the WHOLE TEAM's per-hit damage, not just ludmilla's. Not a self/ally stat.",
+      "durationSemantics": "durationSec: 10 (wall-clock seconds, stated literally). NOT rounds. Cycle math: 120-round SMG magazine at ~20/s ≈ 6.0s fire + 187f ≈ 3.12s reload ≈ 9.1s per lastBullet — so 10s duration gives near-continuous uptime with each reapply landing ~0.9s before lapse.",
+      "triggerIdentity": "lastBullet (per-magazine, fires at the final round of each magazine / reload start). No FB gate, no everyN, no status gate.",
+      "targetSet": "enemy (the boss). Per harness note, boss-held debuffs emit buffApply with casterIdx===null AND targetIdx===null — filter by stat+value.",
+      "nearestWrongModel": "Two plausible misreads: (a) trigger drift — shotFired or interval instead of lastBullet, giving ~permanent uptime from t=0.05s instead of first apply at ~6s and reapplies keyed to reloads; (b) scope drift — encoding as an inert self/enemy stat the engine never reads, so the line silently moves ZERO damage despite being the kit's main offensive contribution.",
+      "distinguishingAssertion": "Run controlComp with ludmilla; collect buffApply events for the DEF-down stat at value 8.4 with casterIdx===null && targetIdx===null. Assert (1) the count equals the number of ludmilla reload events (±1 for fight-end truncation) and each apply frame is within one shot-frame of a ludmilla reload/last-bullet frame — RED under shotFired (thousands of applies) or interval; (2) first apply is at ~6s (first magazine end), NOT frame 0 — RED under passive/interval-t=0; (3) A/B: totals of the OTHER units (e.g. crown, helm) are strictly HIGHER with the block present than with withPatchedOverride('ludmilla', o => strip the DEF▼ effect) — RED under any encoding where boss DEF reduction is not actually wired into the damage formula.",
+      "inertness": "Must NOT apply to any ally (no buffApply with a non-null ally targetIdx for this stat); must NOT change ludmilla's own fire cadence, shot count, or reload timing; the apply cadence must not change inside vs outside Full Burst.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "last bullet hits: ATK ▼ 8.4% 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "Boss ATK debuff — purely defensive (reduces incoming boss damage). The v1 boss deals no modeled damage, so this moves nothing offensively.",
+      "durationSemantics": "durationSec: 10 if encoded; irrelevant if listed in unmodeled.",
+      "triggerIdentity": "Same lastBullet trigger as the DEF▼ line (same ■ header).",
+      "targetSet": "enemy (the boss).",
+      "nearestWrongModel": "Mis-encoding as atkPct ▼ on ALLIES or on SELF (a −8.4% ATK team debuff), which would wrongly depress the whole board. Second misread: conflating it with the DEF▼ line into a single damageTakenPct boss debuff, inventing team damage the kit does not grant.",
+      "distinguishingAssertion": "Assert NO buffApply with stat atkPct and a negative/8.4 value ever targets a non-null ally/self targetIdx; assert no damageTakenPct buffApply exists anywhere in the run (the kit has no Damage Taken ▲ line). A/B with the line stripped: every unit's total is IDENTICAL to the digit.",
+      "inertness": "Must move zero damage for all five units; must appear verbatim in override.unmodeled.skill1 if not encoded.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB enter: Attract taunt 15.09 sec",
+      "disposition": "UNMODELED",
+      "scope": "Taunt/aggro on all enemies — positioning/defensive. No damage stat. Boss movement follows the MEASURED range script (a hard constraint); a taunt must not perturb it.",
+      "durationSemantics": "15.09 sec if ever encoded; N/A as unmodeled.",
+      "triggerIdentity": "fullBurstEnter (literal 'when entering Full Burst' — fires on ANY team FB, not only rotations ludmilla bursts). Note this is the correct trigger identity even though the line is unmodeled — record it so a future consumer doesn't misfile it as burstCast.",
+      "targetSet": "all enemies.",
+      "nearestWrongModel": "Inventing a mechanical effect for the taunt — e.g. modeling it as boss-range/position manipulation or as a Damage Taken ▲ boss debuff ('Attract' pattern-matching to an offensive status).",
+      "distinguishingAssertion": "A/B with skill2 fully stripped via withPatchedOverride: all five units' totals identical, and the fullBurstStart/fullBurstEnd event timeline (count + frames) identical — RED if the taunt was given any damage or rotation side-effect.",
+      "inertness": "Zero damage movement; zero rotation/FB-count movement; verbatim line present in override.unmodeled.skill2.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB enter self: Damage Taken ▼ 57.86% 15s",
+      "disposition": "UNMODELED",
+      "scope": "SELF-targeted damage-reduction — defensive. CRITICAL SCOPE TRAP: this is the mirror image of the taxonomy's 'Damage Taken ▲ is a boss debuff' rule. Here the arrow is ▼ and the target is SELF; it is NOT the boss damageTakenPct channel.",
+      "durationSemantics": "15 sec if encoded; N/A as unmodeled.",
+      "triggerIdentity": "fullBurstEnter, target self.",
+      "targetSet": "self.",
+      "nearestWrongModel": "THE expected shared-prior misread for this kit: encoding as damageTakenPct on the ENEMY. With the engine convention 'positive = boss takes more', a naive sign-carry produces either a −57.86% boss debuff (collapsing the entire team's damage by more than half during every FB) or a spurious +57.86% boss debuff (massively over-crediting the team). Either direction is catastrophic and easy to write from the words 'Damage Taken'.",
+      "distinguishingAssertion": "Assert the event log contains ZERO buffApply with stat damageTakenPct in the whole run (kit has no boss Damage-Taken line); A/B with skill2 stripped shows byte-identical totals for all five units — RED under either sign of the boss-debuff misread, which moves every unit's FB-window damage by a huge factor.",
+      "inertness": "No damageTakenPct events; no damage movement anywhere; verbatim line in override.unmodeled.skill2.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "10 enemies highest ATK: 163.1% dmg",
+      "disposition": "FAITHFUL",
+      "scope": "Instant burst-cast damage, % of ludmilla's final ATK. Multi-target line vs a SINGLE partless boss: exactly ONE enemy exists, so exactly ONE hit of 163.1% per cast — the 10-target count is target-capacity, not a hit multiplier.",
+      "durationSemantics": "Instant (one damage instance per cast). No duration.",
+      "triggerIdentity": "burstCast — dealt when ludmilla casts her own Burst I (cd 20s, so once per rotation she wins the B1 slot). Burst-cast/instant damage is always FB-exempt (lands before the FB window opens) and riders take no range bonus by engine default.",
+      "targetSet": "enemy (boss).",
+      "nearestWrongModel": "Multiplying by the target count — 10 hits (or atkPct 1631) against the single boss, a clean 10× over-credit of her burst bucket. Secondary misreads: letting the hit take the +50% FB major (fbMajorApplied true) or the +30% range bonus, or granting it core.",
+      "distinguishingAssertion": "For each ludmilla burstCast event, assert EXACTLY ONE damage event in bucket 'burst' with srcSlot 'burst' on that frame, with mult consistent with 163.1% of her final ATK (not 1631%), fbMajorApplied === false, rangeApplied === false, and no core contribution. Count of these damage events === count of her burstCast events. RED under the 10-hit misread (10 events or 10× mult) and under FB/range inclusion.",
+      "inertness": "Zero burst-bucket damage on rotations where ludmilla does NOT cast (if another B1 wins the slot); no damage events of this kind outside burst-cast frames.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "above 50% HP: allies DEF ▲ 12.93% 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Ally DEF ▲ — offensively inert (defPct does not feed any damage path), but per the tandem rule DEF/HP/heal/shield lines are ENCODED anyway as a future consumer feed, not silently dropped. The 'above 50% HP' gate is trivially always-true at scope (no unit ever takes damage), so no gate primitive is needed — but the condition must be recorded.",
+      "durationSemantics": "durationSec: 10.",
+      "triggerIdentity": "burstCast (a line inside her OWN burst block with a condition clause, not a team-FB clause) — fires only on rotations ludmilla actually casts B1. NOT fullBurstEnter.",
+      "targetSet": "allies (kit says 'all allies' — verify whether the encoding includes self; 'all allies' conventionally includes the caster unless 'except self' is stated, so allies with excludeSelf absent).",
+      "nearestWrongModel": "Keying to fullBurstEnter instead of burstCast — diverges the moment another Burst-I unit is in the team (liter is the fixture's B1!), applying the buff on rotations ludmilla never cast. Secondary: encoding as atkPct 12.93 (DEF misread as ATK — a real +12.93% team ATK buff, large board movement).",
+      "distinguishingAssertion": "Assert buffApply events with stat defPct value 12.93 appear ONLY on frames where a ludmilla burstCast event fired, one per ally target — RED under fullBurstEnter (applies would appear on every FB including liter-cast rotations). Assert zero buffApply with stat atkPct value 12.93 anywhere. A/B with the line stripped: all totals identical (proves the inert-encoding claim).",
+      "inertness": "Must move zero damage for all five units (defPct is inert); must NOT fire on Full Bursts whose B1 cast was liter's.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:DEF ▼ 8.4% for 10 sec (boss DEF shave — team-wide damage)",
+    "burst:Deals 163.1% of final ATK as damage"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "ATK ▼ 8.4% for 10 sec."
+    ],
+    "skill2": [
+      "Attract: Taunt all enemies for 15.09 sec.",
+      "Damage Taken ▼ 57.86% for 15 sec."
+    ],
+    "burst": []
+  },
+  "notes": "Three things the driver must reconcile. (1) FIXTURE HAZARD — ludmilla is Burst I, but controlComp(carry) seats the carry in the B3 slot with liter as B1: a same-stage collision. Her burstCast damage and burst DEF▲ only fire on rotations SHE wins B1 (first-ready in-window), so the tests must first assert her burstCast events actually occur in the chosen comp (or build a comp without a competing B1); a test that passes with zero ludmilla casts vacuously greens every burst assertion. (2) The kit's ONLY offensive lever besides the 163.1% nuke is the boss DEF ▼ 8.4% — the tests must prove it moves TEAMMATE totals (the A/B in the skill1 spec), because an encoding that emits the buffApply but never reaches the damage formula's boss-DEF term passes event-count assertions while being damage-inert; if the engine has no boss-DEF-reduction path, that is a GAP to declare, not a line to silently drop. (3) EXPECTED SHARED-PRIOR MISREAD: 'Damage Taken ▼ 57.86%' on SELF pattern-matches the well-known boss damageTakenPct channel — the zero-damageTakenPct-events assertion is the cheapest guard against a sign-or-target error that would move the board by tens of percent. Duration semantics are benign here (all seconds, no round counts); the interesting cadence fact is that the 9.1s magazine cycle (6.0s fire + 3.12s reload) vs the 10s debuff duration gives near-permanent but not gapless DEF▼ uptime — an interval/passive mis-trigger would erase the ~6s debuff-free opening window, which the first-apply-frame assertion catches.",
+  "model": "claude-fable-5"
+}

@@ -1,0 +1,137 @@
+{
+  "slug": "makima",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Reload Speed ▲ 36.96% for 10 sec",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "Generic weapon-state modifier (reload speed) — not attack-scoped; applies to the holder's reload cycle. Damage-relevant per taxonomy #6: faster reloads = more shots fired, especially on a 120-round SMG with 111 reloadFrames.",
+      "durationSemantics": "durationSec: 10 — literal seconds, no round-count wording.",
+      "triggerIdentity": "'Activates when attacked 20 times' = an INCOMING-hit counter (boss attacks landing on allies/Makima), NOT the owner's own attacks. The engine has no incoming-attack trigger (boss offense is unmodeled at scope lock), so the cadence is outside the input domain: honest encoding is an ⚑ interval{sec:≈estimate from boss attack script} with a footage recipe, or the line sits in unmodeled with the gap declared. Cadence tuple is an ALWAYS-⚑ field.",
+      "targetSet": "allies (all allies — read as all-including-self per 'Affects all allies').",
+      "nearestWrongModel": "trigger {kind:'hitCount', count:20} — counting the OWNER'S OWN landed rounds. An SMG at ~20 effective rounds/sec crosses 20 hits roughly every second, giving near-100% Reload-Speed uptime team-wide instead of the boss-attack-paced duty cycle. This is the single most plausible shared misread of this kit.",
+      "distinguishingAssertion": "Count buffApply events with stat 'reloadSpeedPct', value 36.96, in the first 15s of a controlComp(makima) run: under the faithful encoding (⚑ interval paced to boss attacks, or unmodeled) there are ≤1 applications; under the nearest-wrong hitCount:20 there are ≥5 rapid re-applications with near-continuous refresh. Also assert targets = all 5 slots when it does fire, not self-only.",
+      "inertness": "Must NOT be keyed to Makima's own fire cadence — her shot count must not drive the buff's uptime. Zeroing the value must only change reload timing (reload event spacing), never touch crit/core/burst rotation.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▲ 14.78% for 10 sec",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "Plain DEF stat buff — defensive; defPct is engine-inert in v1 (no incoming damage), but taxonomy #7 says keep the stat buff for completeness/future consumers.",
+      "durationSemantics": "durationSec: 10 — literal seconds.",
+      "triggerIdentity": "Same block as the reload line — the same unmodelable 'attacked 20 times' incoming-hit trigger; shares whatever ⚑ interval / unmodeled disposition the block gets.",
+      "targetSet": "allies (all allies).",
+      "nearestWrongModel": "Silently dropping the line entirely (rather than carrying an inert defPct buff or an unmodeled entry), OR riding it on the same wrong hitCount:20 own-attack trigger as the reload line.",
+      "distinguishingAssertion": "If the block is modeled: a buffApply with stat 'defPct', value 14.78 appears alongside each reloadSpeedPct application (same trigger frame, same targets). Inertness half: totals(res) for every unit are bit-identical when this defPct value is zeroed via withPatchedOverride — defPct must move zero damage.",
+      "inertness": "defPct must not leak into any damage bucket; total damage identical with the stat zeroed.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attract: Taunt all enemies for 3 sec",
+      "disposition": "UNMODELED",
+      "scope": "Enemy-targeting control effect (taunt). No engine primitive; boss targeting/aggro is not simulated and the boss deals no damage at scope lock, so it is damage-inert.",
+      "durationSemantics": "3 sec wall-clock (irrelevant once unmodeled).",
+      "triggerIdentity": "'after landing 120 normal attack(s)' = hitCount{count:120} counting the owner's ROUNDS (hitsPerShot 1 on this SMG, so rounds = pulls = exactly one magazine). NOT interval, NOT lastBullet — though note it coincides with magazine size 120, inviting a lastBullet misread.",
+      "targetSet": "enemy (kit says 'Affects self' for the status holder, but the taunt acts on all enemies).",
+      "nearestWrongModel": "Encoding it as lastBullet-triggered (magazine == 120 makes them superficially equivalent, but any maxAmmo buff or partial reload desynchronizes them), or attaching some damage/stat side-effect to the proc.",
+      "distinguishingAssertion": "Totals for all 5 units are identical with this line present vs deleted (withPatchedOverride stripping the block) — the taunt must contribute zero damage events and zero buffApply events that touch any damage-relevant stat.",
+      "inertness": "Entire line must be board-inert; belongs verbatim in unmodeled.skill2.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Gain indomitability for 7 sec",
+      "disposition": "UNMODELED",
+      "scope": "Survival status, self-only, gated on 'taking lethal damage' — an event that CANNOT occur at scope lock (immortal-boss v1, no incoming damage model, nobody dies).",
+      "durationSemantics": "7 sec; 'Activates 1 time(s) per battle' = once-per-battle cap — moot since the trigger never fires.",
+      "triggerIdentity": "'when taking lethal damage' — no engine trigger exists for this and its precondition is unreachable in v1. The status matters only as the GATE read by the burst's second block ('Activates during indomitability') — which is therefore also permanently closed.",
+      "targetSet": "self.",
+      "nearestWrongModel": "Approximating it as passive/interval so the indomitability window (and everything gated on it) has uptime it can never have in-game at scope lock.",
+      "distinguishingAssertion": "No buffApply/targetStatus event corresponding to indomitability appears anywhere in a full 180s controlComp(makima) run; the burst's indomitability-gated block (see burst line 3) never applies.",
+      "inertness": "Must never open the 'during indomitability' gate; zero events, zero damage movement.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Cooldown of Burst Skill ▼ 11.58 sec",
+      "disposition": "UNMODELED",
+      "scope": "Burst-cooldown reduction on self — ROTATION-relevant (an 11.58s cut on a 20s B2 cooldown reshapes full-burst cadence) but it is INSIDE the lethal-damage block, so at scope lock it can never fire.",
+      "durationSemantics": "Instant one-shot CDR (no duration); once per battle via the parent block's cap.",
+      "triggerIdentity": "Rides the same 'when taking lethal damage' trigger — unreachable in v1. The schema HAS a burstCdr primitive, which makes the over-eager encoding tempting; the gate is the whole point.",
+      "targetSet": "self.",
+      "nearestWrongModel": "Encoding burstCdr{seconds:11.58, oncePerBattle:true} on a reachable trigger (burstCast / passive / interval) because the primitive exists — this shifts Makima's burst availability, can flip which B2 wins the chain against a co-B2 teammate, and perturbs the comp's full-burst count. This is the highest-blast-radius misread in the kit.",
+      "distinguishingAssertion": "In controlComp(makima): the sequence of fullBurstStart frames and the total full-burst COUNT are bit-identical with Makima's skill2 present vs stripped (withPatchedOverride removing skill2 blocks); no burstCast event of hers occurs earlier than the natural 20s-cooldown cadence permits. Red under the nearest-wrong: her burst re-arms ~11.6s early and the rotation log diverges.",
+      "inertness": "MUST NOT move burst rotation, FB count, or any unit's total. The whole lethal-damage block is a pure unmodeled-verbatim entry.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Gain Pierce for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Self weapon-tagging: her attacks count as Pierce-tagged for 10s, making Pierce Damage ▲ buffs (own or ally) live on her hits during the window. On the partless scope-lock boss with no Pierce-Damage buff in the control comp this is damage-quiet, but the ENCODING SHAPE is load-bearing.",
+      "durationSemantics": "durationSec: 10 — a timed window, NOT permanent.",
+      "triggerIdentity": "Self mode in the unit's OWN burst block → burstCast (stage 2 — she is Burst II). NOT fullBurstEnter: in the control fixture another B2 (crown) exists, so team full-bursts occur on rotations Makima did not cast — keying to fullBurstEnter over-credits exactly there.",
+      "targetSet": "self.",
+      "nearestWrongModel": "Top-level hasPierce:true (whole-fight boolean) instead of a gainPierce{durationSec:10} effect on the burstCast block — a boolean cannot express the 10s window; second-nearest: trigger fullBurstEnter so the window opens on ANY team FB including rotations crown won the B2 slot.",
+      "distinguishingAssertion": "Using withPatchedOverride to add a pierceDamagePct ally buff as a probe: Makima's damage events are lifted ONLY within 10s windows that each start at one of HER OWN burstCast events (and she must have ≥1 burstCast — assert this first, since crown competes for the B2 cast and the fixture may need the co-B2 resolved). Red under hasPierce (lift spans the whole fight) and red under fullBurstEnter (windows open on FBs she didn't cast).",
+      "inertness": "No pierce tagging outside the 10s post-own-cast windows; zero effect on rotations where the other B2 casts.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recover 34.02% of attack damage as HP",
+      "disposition": "FAITHFUL",
+      "scope": "Self lifesteal over time. The engine models no HP amounts, but a heal effect EMITS recovery events that fire the target's 'recovery' triggers — taxonomy #4 forbids skipping heal lines as 'defensive'. Self-targeted here, so it feeds only Makima's own recovery consumers (she has none), but the event stream must exist for tandem correctness.",
+      "durationSemantics": "'over 10 sec' = a heal-over-time: heal{ticks:10, intervalSec:1} emitting 10 recovery events across the window — NOT a single instant event.",
+      "triggerIdentity": "Own burst block → burstCast (stage 2). Same burstCast-vs-fullBurstEnter divergence as the pierce line.",
+      "targetSet": "self.",
+      "nearestWrongModel": "heal with default ticks:1 (one instant recovery event at cast) — collapses the 10-tick stream any on-recovery consumer would count; or dropping the line entirely as defensive.",
+      "distinguishingAssertion": "Patch Makima's override (withPatchedOverride) with a marker block trigger {kind:'recovery'} applying an inert self-buff: exactly 10 buffApply events of that marker follow each of her burstCast events, spaced ~1s apart. Red under ticks:1 (one marker per cast) and red under a skipped line (zero markers).",
+      "inertness": "The heal itself must add zero damage and zero HP-derived stat movement (no maxHpFlat, no atkOfMaxHpPct feed); events only.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Incoming healing ▲ 41.02% for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "Self healing-received amplifier — doubly inert at scope lock: (1) gated 'during indomitability', a status unreachable in v1 (see skill2), and (2) the engine models no heal AMOUNTS for it to amplify.",
+      "durationSemantics": "durationSec: 10 (moot).",
+      "triggerIdentity": "A conditionally-gated second block INSIDE her burst: burstCast trigger + a requires-status gate on the indomitability window. The gate, not the trigger, is the live question — and the gate is permanently closed at scope lock.",
+      "targetSet": "self.",
+      "nearestWrongModel": "Folding it into the unconditional burst block (ungated) because both blocks live under 'burst' — the status-gate rider pattern from the taxonomy (#3, gated rider). Damage-inert either way today, but the ungated encoding is a latent bug for any future HP-modeled mode.",
+      "distinguishingAssertion": "No buffApply for any healing-received stat appears in a full run (the gate never opens). If the driver modeled it at all, the block must carry the indomitability gate and fire zero times; totals identical with the block stripped.",
+      "inertness": "Zero events, zero damage; belongs in unmodeled.burst with the gate wording preserved.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "burst:Gain Pierce for 10 sec",
+    "burst:Recover 34.02% of attack damage as HP"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "■ Activates when attacked 20 times. Affects all allies. (trigger cadence — incoming-attack counter with no engine primitive; if the block is shipped it rides an ⚑ interval estimate with a footage recipe, else BOTH effect lines sit here verbatim)"
+    ],
+    "skill2": [
+      "■ Activates after landing 120 normal attack(s). Affects self. Attract: Taunt all enemies for 3 sec.",
+      "■ Activates when taking lethal damage. Affects self. Gain indomitability for 7 sec. Activates 1 time(s) per battle.",
+      "Cooldown of Burst Skill ▼ 11.58 sec."
+    ],
+    "burst": [
+      "■ Activates during indomitability. Affects self. Incoming healing ▲ 41.02% for 10 sec."
+    ]
+  },
+  "notes": "Where I expect shared-prior misreads, in blast-radius order: (1) skill2's burst CDR — the burstCdr primitive exists and 11.58s on a 20s B2 cooldown is rotation-moving, so the tempting encoding is a reachable trigger; the faithful model NEVER fires it (lethal damage is unreachable at scope lock) and the test must pin fullBurstStart frames + FB count invariant against skill2 removal. (2) skill1's 'attacked 20 times' misread as hitCount:20 of her OWN rounds — at ~20 effective rounds/sec that gives near-permanent team-wide Reload Speed ▲, and reload speed IS damage (shots fired); the assertion is buffApply frequency in the opening seconds. Reload cadence is an ALWAYS-⚑ field here (boss attack rate is not in the kit); a driver shipping a precise unflagged cadence is wrong regardless of value. (3) 'Gain Pierce for 10 sec' as top-level hasPierce:true — a boolean cannot express the timed window; must be a gainPierce effect with durationSec:10 on the burstCast block. (4) burstCast vs fullBurstEnter matters concretely in this fixture: Makima is Burst II and controlComp fixes crown (also B2), so team FBs occur on rotations Makima did not cast; every burst-block test must FIRST assert Makima actually emits ≥1 burstCast event (the co-B2 contention may otherwise silently zero her casts and turn window assertions vacuous), and may need the comp adjusted so both B2 outcomes are exercised. (5) 'over 10 sec' heal must be ticks:10, not one instant recovery event. (6) skill2's hitCount:120 coincides exactly with her 120-round magazine — a lastBullet encoding is superficially equivalent but desynchronizes under any maxAmmo modifier; taunt is inert either way, so this is shape-hygiene only. Driver must also reconcile that totals(res) is a per-slug map (index by 'makima'), and that expiry of the 10s windows is read from expiresFrame on buffApply, not from buffRemove (which only fires for removeOnReload).",
+  "model": "claude-fable-5"
+}
