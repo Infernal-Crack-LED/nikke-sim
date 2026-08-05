@@ -1,0 +1,61 @@
+{
+  "note": "Kit-autonomy gauntlet 2026-08-03: baseline-authoring (no prior override; simSupported flipped false→true by this run). quency (Quency) — SMG / Supporter / Electric / Burst II, cd 20s, ammo 120, hitsPerShot 2, rate_of_fire 1440rpm. NOT the `quency-escape-queen` variant (a different unit, SMG/Water/Burst III) — this spec reasons from slug quency throughout (lint-slug-disambiguation advisory on the shared base-name resolved to this slug). Three kit lines, all dispositioned, none dropped: (L1) S1 'New Route' self HP-buffer grant — modeled, damage-INERT; (L2) S2 'Hidden Accomplice' ATK buff — load-bearing, pinned; (L3a) burst Max HP — modeled, damage-INERT; (L3b) burst Critical Damage — load-bearing, pinned. || MODELED TODAY: (1) S1 New Route '■ Activates after 60 normal attacks. Affects self. Duplicates 12.42% of the Max HP of the Nikke with the highest Max HP. Lasts for 10 sec.' → hitCount count:60 self buff {stat:highestAllyMaxHpPct, value:12.42, durationSec:10}. A temporary SELF HP-buffer grant on a hit counter. DAMAGE-INERT: it converts to a self-granted maxHpFlat; quency has no atkOfMaxHpPct consumer and v1 models no damage-taken, so it moves no damage — but it IS observable (emits a buffApply), so the spec pins its trigger/value/duration/cadence. ENCODING RATIONALE (cross-family converged): both blind opus passes (S5 test + S6 override) independently re-derived S1 as a self Max-HP buff; a shield reading was considered and set aside — the kit's genuine Max-HP buff (the burst line) uses the phrasing 'Max HP ▲', while S1's 'Duplicates % of the Max HP' is a second self-HP-buffer mechanic that the sim likewise cannot consume, and the convergent self-HP-grant encoding is faithful to every observable the engine models. BASIS RESOLVED 2026-08-04: the kit's source is 'the Nikke with the HIGHEST Max HP' — the new StatKey highestAllyMaxHpPct (the HP analog of highestAllyAtkPct) resolves at apply time to a flat of 12.42% × the team's highest STATIC maxHp (highestAllyAtkPct precedent; kit says plain 'highest', not 'final'); exact in every comp, still damage-inert. The pre-2026-08-04 casterMaxHpPct stand-in (own-HP basis, ⚑ BASIS) is now the spec's counterfactual. ⚑ '60 normal attacks' hits-vs-pulls: the engine hitCount adds hitsPerShot PER PULL (sim.ts:3782 counts HITS), so count 60 = 60 hits = 30 pulls; if the kit means 60 SHOTS the threshold is 120 — inert either way. (2) S2 Hidden Accomplice '■ Affects 2 ally unit(s) with the highest final ATK. ATK ▲ 16.11% for 5 sec.' (cd 8s, no visible activation clause) → interval sec:8, target alliesTopAtk count:2 byFinalAtk:true, buff atkPct 16.11 durationSec:5. interval = 'just happens on an internal cooldown with no activation clause' (types.ts); ⚑ first-fire phase is the engine convention (first at t=sec, not t=0) — a wrong phase rescales only the opening ramp, negligible over a fight. The 8s cadence is datamined (skillCooldownsSec.skill2 = 8), NOT prose — flagged, never invented. 'highest FINAL ATK' → byFinalAtk:true per the A3 literal-word ruling (rank by live effectiveAtk at proc time; the pool is self-inclusive but quency, a low-ATK Supporter, does not rank top-2). atkPct = 'ATK ▲ x%' scaling each TARGET's own ATK (NOT casterAtkPct). (3) Burst The Great Escape '■ Affects 2 ally unit(s) with the highest final ATK. Max HP ▲ 43.87% for 5 sec. Critical Damage ▲ 29.9% for 10 sec.' → ONE burstCast block on alliesTopAtk count:2 byFinalAtk:true with two same-target effects: targetMaxHpPct 43.87 durationSec:5 + critDamagePct 29.9 durationSec:10 (per-effect durationSec → the 300-vs-600-frame expiresFrame split is directly pinned). The Max HP line is DAMAGE-INERT: ally-granted maxHpFlat is excluded from live Max HP (casterIdx !== holder) and feeds atkOfMaxHpPct only when caster===target (self) — neither holds. The Critical Damage line is LOAD-BEARING: critDamagePct raises the two buffed carries' crit multiplier. burstCast is pinned against fullBurstEnter by a crown-contention arm in the spec (quency loses the B2 slot to crown → casts zero → the buff must NOT fire on those Full Bursts). || TIER 2 (scoped buffs: S2 + burst resolve 'highest FINAL ATK' via alliesTopAtk/byFinalAtk; burstCast-vs-fullBurstEnter trigger identity is load-bearing). EVIDENCE TIER: every live magnitude/duration is kit-text-literal (12.42/10, 16.11/5, 43.87/5, 29.9/10, count 2); the only conventions are the interval first-fire phase and the S1 hits-vs-pulls reading (both flagged, both inert-to-negligible); the S1 HP basis is exact since highestAllyMaxHpPct landed 2026-08-04. Faithful>fit; measured>fudge. || Kit-autonomy gauntlet 2026-08-03.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "skill1: 'Duplicates 12.42% of the Max HP of the Nikke with the highest Max HP' is a temporary SELF HP-buffer grant (cross-family-converged on a self Max-HP buff; a shield reading was set aside). Modeled as hitCount-60 self highestAllyMaxHpPct 12.42 dur 10. DAMAGE-INERT (no atkOfMaxHpPct consumer, no damage-taken in v1) but observable — the spec pins trigger/value/duration/cadence. BASIS RESOLVED 2026-08-04: highestAllyMaxHpPct (new StatKey, the highestAllyAtkPct HP analog) resolves the flat off the team's highest STATIC maxHp at apply time — exact in every comp; the pre-2026-08-04 casterMaxHpPct own-basis stand-in is now the spec's counterfactual. Still inert either way.",
+    "skill1: ⚑ 'after 60 normal attacks' hits-vs-pulls — the engine hitCount counts HITS (adds hitsPerShot per pull, sim.ts:3782), so count 60 = 60 hits = 30 pulls; if the kit means 60 SHOTS the threshold is 120. Inert either way (S1 moves no damage).",
+    "skill2: ⚑ interval first-fire phase — the engine fires interval sec:8 first at t=8 (convention, not t=0); a wrong phase rescales only the opening ramp (negligible). The 8s cadence is DATAMINED (skillCooldownsSec.skill2 = 8), not prose. 'highest FINAL ATK' → byFinalAtk:true (live effectiveAtk at proc, A3 literal-word ruling); self-inclusive pool but quency does not rank top-2.",
+    "burst: the Max HP ▲ 43.87% line is modeled (targetMaxHpPct dur 5) but DAMAGE-INERT — ally-granted maxHpFlat is excluded from live Max HP and feeds atkOfMaxHpPct only when caster===target (self). Only the Critical Damage ▲ 29.9% line moves damage. Both ride one burstCast block on the same two highest-final-ATK allies.",
+    "all: quency is Burst II (cd 20s). The primary fixture fields her as the SOLE B2 (liter B1 / quency B2 / emilia B3 / helm B3) so she casts every ~20s Full Burst cycle; a second crown-contention arm (liter/crown/quency/helm) pins burstCast-vs-fullBurstEnter (crown wins the slot → quency casts zero → her burst buffs must not fire on those Full Bursts). Her own damage is negligible; her value is the S2 ATK buff and the burst Critical Damage buff on the two highest-final-ATK carries."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 60 },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "highestAllyMaxHpPct",
+          "value": 12.42,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "interval", "sec": 8 },
+      "target": { "kind": "alliesTopAtk", "count": 2, "byFinalAtk": true },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 16.11, "durationSec": 5 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "alliesTopAtk", "count": 2, "byFinalAtk": true },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 43.87,
+          "durationSec": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 29.9,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

@@ -70,9 +70,12 @@ rule (Prydwen unit notes + JP verification + einkk implementation — there are 
 
 Delivery-type exceptions:
 
-- **launchWeapon** procs (Anis: Star's stars, Rapi:RH's attachable projectiles) are real
-  weapon fire: they core and crit, still no range bonus; they take Projectile
-  Explosion/Attachment buffs via the projectile factor.
+- **launchWeapon** procs (Anis: Star's stars, Rapi:RH's rocket ATTACHES) are real weapon
+  fire: they core and crit, still no range bonus; they take Projectile
+  Explosion/Attachment buffs via the projectile factor. Rapi:RH's EXPLOSION half is the
+  EXCEPTION: skill damage — core-INELIGIBLE (owner footage ruling 2026-08-04, DECISIONS).
+  The attach's 2026-07-14 no-core read was overturned the same day (owner re-read):
+  attachments core at the band-table rate.
 - **%-of-hit repeats** ("deals X% of the damage dealt") inherit everything from the parent
   hit implicitly.
 - Full-charge-GATED procs (Maiden:IR, SBS S1 counter, rouge S1, neon-VE) only count

@@ -107,7 +107,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 #### Engine / model threads (measurement- or owner-gated)
 
 - **⇒ ENGINE REGRESSION FULL-BURST COUNT FAILURES — four comps disabled in `scripts/regression.ts`**
-  (`:106`, `:131`, `:158`, `:236`): `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`,
+  (`:106`, `:131`, `:158`, `:239`): `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`,
   `N3 scarlet/liberalio iron` each read 1–3 Full Bursts short of their video-measured counts on clean
   `HEAD`, skipped via the `disabled` flag so `verify.sh` stays green.
   **2026-08-03 /scientific-method pass (LOG, 2-of-2 ACCEPT both MEDIUM — full account:
@@ -123,6 +123,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `scripts/tests/gauge-cycle-decomp.test.ts`). Confidence capped MEDIUM on one open question: does a
   real fight hit the sim's own opening/first-FB time (raising to HIGH needs a direct frame-measurement
   of the real FB-end→next-B1 gap on one disabled comp's footage). Leave `disabled: true` until then.
+  **2026-08-04 update:** that open question is RESOLVED — the owner confirmed fight time ≠ video time
+  (recordings start during the pre-fight intro) and once offsets are accounted the real first FB
+  matches the sim's (~5.6s vs ~5.4s); the same ruling removed the post-FB chain-open block
+  (`ROTMODEL=refill` is now the default, DECISIONS top entry). The flip does NOT move these comps —
+  T5/T1 read 11-12 under BOTH rotation arms (the block never bound for them), so all four stay
+  short of their measured counts; the fill-TEMPO gap is unchanged and remains the open channel. The
+  `decomposeCycles` floor was re-derived (its old +2.5s lock term is dead; `excess` now reads the
+  refill-from-zero directly).
   Separately logged (do NOT bundle in): a general (non-liberalio) `skillGauge`-fires-twice-per-shot
   pattern on any `shotFired`-triggered `flatDamage` rider (`sim.ts:2393`) — its correction direction is
   gauge-DOWN, which would worsen these 4 comps if "fixed" alone; needs its own pre-op pass.
@@ -149,6 +157,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   ramp and the first burst's build. Magnitude for `flora` depends entirely on which stack-ramp buffs
   are live on her Electric allies (could be large, could be zero), so it is correctly not estimated.
   Two carriers is not yet a mandate; log a third before building. Not authorized.
+- **⇒ ENGINE PRIMITIVE GAP: windowed damage accumulator** — `trony` S1 "T.Rony Bomber" Cumulative
+  Damage Skill (plant on full-charge hit: 5s window, accumulates 50% of her dealt damage, cap 1536%
+  of final ATK, explodes as Distributed Damage; burst adds +62.83pp to the collection rate) has no
+  expression — `storedHit` accumulates CHARGES not damage, `hitRepeat` mirrors %-of-hit instantly,
+  and the dorothy-Brand at-cap `flatDamage+delaySec` idiom does NOT apply because trony's cap is
+  knife-edge (binds only in her burst-enhanced windows). Blocks `trony` — NO-GO(engine-core)
+  gauntlet 2026-08-04; sole roster carrier. Primitive spec + three open semantics (release pipeline
+  raw-vs-re-run, sub-cap expiry, collection scope) in
+  `scripts/kit-autonomy/manual-review/trony.md`; threading point = hitRepeat's `dealDamage` landing
+  path. Not authorized.
 - **⇒ ENGINE PRIMITIVE GAP: HP pool + HP-threshold triggers** — v1 models no ally HP pool and the
   scope-lock boss deals no damage, so "HP ≤ X%" / "reaches max HP" / "while shielded by damage" kit
   lines are structurally out of domain (precedents: `liter` cover-HP NO-OP, owner 2026-07-21; the
@@ -339,6 +357,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **⇒ Bakery-bot share-URL durability — one residual to tell the bot:** a `characters.json` change (e.g.
   a unit rename) moves pixels without moving the render cache key — `specCacheKey` covers renderer
   changes, not data changes. If that bites, add a data stamp to the key.
+- **⇒ Artifact-decoupling Step-3 pre-req: infographics input bucket misses two render inputs** —
+  `src/ranks/b1b2-cells.ts` + `src/ranks/buffer-rows.ts` (value-imported by
+  `src/infographics/core/rankTables.ts`). Zero impact while `dist/img/manifest.json`'s `inputsHash`
+  is provenance-only; load-bearing if Step 3 ever gates on it. Filed by the kimi-k3 round-2 review
+  (2026-08-04) → `docs/handoffs/2026-08-03-artifact-store-decoupling-plan.md` §8.
+- **⇒ Artifact-decoupling Steps 2–4: deferred options, one owner decision open** — DB storage for the
+  board JSON (2), image-store split (3), nightly rebuild cron (4; blocked on open decision #2: the
+  nightly sync's roster-drift policy — recommendation stands: refuse to publish + notify). Revisit
+  only if the need materializes → `docs/handoffs/2026-08-03-artifact-store-decoupling-plan.md` §8.
 
 ### Tier-0 open threads
 

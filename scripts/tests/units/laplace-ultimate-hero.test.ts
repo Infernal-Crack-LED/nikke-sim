@@ -12,7 +12,7 @@
 //   S1c ■ Warm Up max → self: swap weapon Electric Power 9.45%/120 ammo/Pierce         [H5] FAITHFUL structurally (cadence ⚑; uses-based end)
 //   S1d ■ swap ends → self: removes 100% ammo                                          [--] UNMODELED (inert — shared mag is already 0 after 120 swap rounds)
 //   S2a ■ 12 normals in swap → self: Over Energy ▲ 5% to 100%                          [--] UNMODELED meter (stage keyed to the kit-exact 240-normal count, see H6)
-//   S2b ■ Over Energy 100% → stage; Max HP ▲ 2/3/7/10.5%                               [--] UNMODELED HP (small atkOfMaxHpPct feed; fragile per-stage timing) — stage ITSELF modeled (H6)
+//   S2b ■ Over Energy 100% → stage; Max HP ▲ 2/3/7/10.5%                               [H7] FAITHFUL (4× resourceGate-gated targetMaxHpPct riders on the oeStage advance; feed into H1's conversion) — stage ITSELF modeled (H6)
 //   S2c ■ entering Burst Stage 3 → self: Attack Damage ▲ 52.14% for 10 sec             [H2] FAITHFUL (stageEnter:3)
 //   BUa ■ self: ATK ▲ 63.36% for 10 sec                                                [H3] FAITHFUL (burstCast)
 //   BUb ■ all enemies: 2953.84% of final ATK as Burst Skill damage                     [H4] FAITHFUL (burstCast, FB-exempt)
@@ -35,6 +35,14 @@
 //   H6  the additional hit is gated OFF at stage 0 (the first bursts of the fight carry no companion),
 //       then sums to stage × 934.76 — exactly one companion at stage 1, two at stage 2. An ungated flat
 //       934.76 rider (the nearest wrong model) would fire on EVERY burst from the first cast.
+//   H7  the stage Max-HP lines ride the SAME oeStage advance as H6's riders (4× resourceGate-gated
+//       targetMaxHpPct self-grants, kit-cumulative: "each subsequent effect triggers all effects before
+//       it"). Pinned three ways: each stage's grant lands in the window between the last cast at the
+//       previous stage and the first cast at its own stage (the observable stage markers are H6's rider
+//       counts); the stage-2 advance applies BOTH the stage-1 refresh and the stage-2 grant on one frame
+//       (cumulative); and her total drops when the lines are stripped (they feed H1's atkOfMaxHpPct
+//       conversion via liveMaxHp — own-kit, e3-admitted). The per-stage TIMING carries H6's ⚑ (it rides
+//       the kit-silent swap cadence); the per-stage MAGNITUDES are kit-exact.
 //
 // Fixture: controlComp('laplace-ultimate-hero') = liter B1 / crown B2 / laplace-ultimate-hero B3
 // (focus) / helm B3, boss Fire. Two B3s so Full Bursts actually fire and alternate (this is exactly the
@@ -45,6 +53,7 @@ import {
   controlComp,
   runComp,
   totals,
+  unitOf,
   withPatchedOverride,
 } from '../lib/harness.js';
 
@@ -64,7 +73,7 @@ function run(overrides: Record<string, any> = {}) {
     overrides,
     cfg: { onEvent: (e) => events.push(e) },
   });
-  return { events, totals: totals(res) };
+  return { events, totals: totals(res), res };
 }
 
 // ---- counterfactual patches -------------------------------------------------------------------
@@ -126,6 +135,15 @@ const ungatedAdditional = withPatchedOverride(SLUG, (ov) => {
   }
 });
 
+/** H7 reference: strip the stage-gated Max-HP riders from skill2 (the feed into H1's conversion). */
+const noStageHp = withPatchedOverride(SLUG, (ov) => {
+  const before = ov.skill2.length;
+  ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'targetMaxHpPct'));
+  if (before - ov.skill2.length < 2) {
+    throw new Error('S2b stage Max-HP riders missing — stale fixture');
+  }
+});
+
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run();
 const atkRemoved = run({ [SLUG]: noAtkOfMaxHp });
@@ -133,6 +151,7 @@ const atkGeneric = run({ [SLUG]: genericAtkPct });
 const adBurstCast = run({ [SLUG]: adOnBurstCast });
 const swapRemoved = run({ [SLUG]: noSwap });
 const additionalUngated = run({ [SLUG]: ungatedAdditional });
+const stageHpRemoved = run({ [SLUG]: noStageHp });
 
 // ---- readers ----------------------------------------------------------------------------------
 const buffs = (evs: SimEvent[]) =>
@@ -290,6 +309,80 @@ describe('laplace-ultimate-hero — kit spec', () => {
       // and the ungated model wrongly hits on the first (stage-0) cast
       const firstCastFrame = Math.min(...nukes.map((d) => d.frame));
       expect(ungated.filter((d) => d.frame === firstCastFrame).length).toBe(4);
+    });
+  });
+
+  describe('H7 — S2b stage Max HP ▲ 2/3/7/10.5% (cumulative, rides the oeStage advance; feeds H1)', () => {
+    // Observable stage markers: H6's rider count per burst cast (0 = stage 0, 1 = stage 1, ...).
+    const ridersAt = (evs: SimEvent[], castFrame: number) =>
+      lhAdditional(evs).filter((d) => d.frame === castFrame).length;
+    const castFramesByRiders = (evs: SimEvent[], riders: number) =>
+      lhNukes(evs)
+        .map((n) => n.frame)
+        .filter((f) => ridersAt(evs, f) === riders);
+    const selfHp = (evs: SimEvent[], value: number) =>
+      lhBuffs(evs, 'maxHpFlat').filter(
+        (b) => b.targetIdx === LH && Math.abs(b.value - value) < 1
+      );
+    const lhMaxHp = unitOf(base.res, SLUG).maxHp;
+    const stage1Val = (2 / 100) * lhMaxHp;
+    const stage2Val = (3 / 100) * lhMaxHp;
+
+    it('fixture reaches stages 1 AND 2 (stage markers for the window pins below)', () => {
+      expect(castFramesByRiders(base.events, 0).length).toBeGreaterThan(0);
+      expect(castFramesByRiders(base.events, 1).length).toBeGreaterThan(0);
+      expect(castFramesByRiders(base.events, 2).length).toBeGreaterThan(0);
+    });
+
+    it('stage grants are kit-exact flats of her base Max HP, self-targeted, continuous', () => {
+      const s1 = selfHp(base.events, stage1Val);
+      const s2 = selfHp(base.events, stage2Val);
+      expect(s1.length, 'no stage-1 Max HP grant applied').toBeGreaterThan(0);
+      expect(s2.length, 'no stage-2 Max HP grant applied').toBeGreaterThan(0);
+      for (const b of [...s1, ...s2]) {
+        expect(b.targetIdx).toBe(LH);
+        expect(b.expiresFrame, 'stage HP lines are continuous').toBeNull();
+      }
+    });
+
+    it('each stage grant lands BETWEEN the last lower-stage cast and the first own-stage cast', () => {
+      const stage0Casts = castFramesByRiders(base.events, 0);
+      const stage1Casts = castFramesByRiders(base.events, 1);
+      const stage2Casts = castFramesByRiders(base.events, 2);
+      const firstS1 = Math.min(
+        ...selfHp(base.events, stage1Val).map((b) => b.frame)
+      );
+      expect(firstS1).toBeGreaterThan(Math.max(...stage0Casts));
+      expect(firstS1).toBeLessThan(Math.min(...stage1Casts));
+      const firstS2 = Math.min(
+        ...selfHp(base.events, stage2Val).map((b) => b.frame)
+      );
+      expect(firstS2).toBeGreaterThan(Math.max(...stage1Casts));
+      expect(firstS2).toBeLessThan(Math.min(...stage2Casts));
+    });
+
+    it('CUMULATIVE: the stage-2 advance refreshes stage 1 and grants stage 2 on the SAME frame', () => {
+      // Kit: "Each subsequent effect triggers all effects before it."
+      const s1Frames = new Set(
+        selfHp(base.events, stage1Val).map((b) => b.frame)
+      );
+      const s2Frames = selfHp(base.events, stage2Val).map((b) => b.frame);
+      expect(
+        s2Frames.some((f) => s1Frames.has(f)),
+        'stage-2 advance must re-apply the stage-1 line'
+      ).toBe(true);
+    });
+
+    it('is a LIVE FEED: stripping the stage HP lines drops her total (H1 reads liveMaxHp)', () => {
+      expect(base.totals[SLUG]).toBeGreaterThan(stageHpRemoved.totals[SLUG]);
+    });
+
+    it('RED vs counterfactual: no self maxHpFlat grants exist when the lines are stripped', () => {
+      expect(
+        lhBuffs(stageHpRemoved.events, 'maxHpFlat').filter(
+          (b) => b.targetIdx === LH
+        )
+      ).toHaveLength(0);
     });
   });
 });

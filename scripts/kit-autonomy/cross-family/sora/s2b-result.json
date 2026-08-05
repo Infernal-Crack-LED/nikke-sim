@@ -1,0 +1,108 @@
+{
+  "slug": "sora",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ start of battle / Outgoing healing ▲ 35.2%",
+      "disposition": "UNMODELED",
+      "scope": "Healing effectiveness only — modifies the magnitude of heals Sora casts. Not a damage stat, not scoped to any attack category.",
+      "durationSemantics": "\"continuously\" = permanent passive, whole fight. No rounds, no stacks.",
+      "triggerIdentity": "passive (activates at battle start, always on).",
+      "targetSet": "self only.",
+      "nearestWrongModel": "Encoding it as a live damage stat (attackDamagePct 35.2 or atkPct 35.2 on self) because 'Outgoing ▲' pattern-matches a generic buff — or granting it to allies. Either over-credits massively. A subtler misread: assuming heal MAGNITUDE matters to teammates' on-recovery triggers (it does not — the engine models recovery EVENTS, not HP amounts, so a bigger heal fires the same triggers).",
+      "distinguishingAssertion": "In a comp with sora as B1, filter buffApply events with casterIdx === sora's index: NO buffApply carrying any damage-relevant StatKey (atkPct/attackDamagePct/etc.) may originate from skill1, and totals(res)[<each slug>] must be identical when skill1's line is stripped via withPatchedOverride('sora', o => { o.skill1 = [] }). Green under faithful (inert, recorded in unmodeled); red under nearest-wrong (a 35.2% damage buffApply appears and totals move).",
+      "inertness": "Must move ZERO damage for every unit in the comp; must not change the count or timing of recovery events emitted by Sora's burst heal.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ when ally/self destroys an enemy's part",
+      "disposition": "UNMODELED",
+      "scope": "Trigger header for both skill2 effect lines. Gates everything below it.",
+      "durationSemantics": "n/a (trigger clause).",
+      "triggerIdentity": "Part-destruction event. The engine's TriggerDef has NO part-destroy kind, and the scope-lock boss is PARTLESS (partsDamagePct is documented 'parsed but inert in v1 — no parts on the boss'). This trigger is structurally unreachable in v1: it can never fire.",
+      "targetSet": "all allies (per header).",
+      "nearestWrongModel": "Substituting a reachable trigger to 'make the kit live' — keying the block to fullBurstEnter, interval, or hitCount so the ATK buff applies anyway. Any substitute trigger converts a dead line into a permanent ~23.74%-of-caster-ATK team grant: a large over-credit with no kit basis.",
+      "distinguishingAssertion": "Covered by the skill2 ATK-line assertion below (no casterAtkPct buffApply from Sora, ever).",
+      "inertness": "The whole skill2 block must be inert at scope lock — no buffApply, no resource events, no damage movement attributable to skill2.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Storage: stores excess healing, 5.36% Max HP",
+      "disposition": "UNMODELED",
+      "scope": "A stored-healing/overheal pool on the skill user — defensive resource, no damage consumer anywhere in this kit.",
+      "durationSemantics": "Stacks up to 5, each lasting 15 sec — stack semantics with a per-stack wall-clock timer. NOT rounds.",
+      "triggerIdentity": "Same unreachable part-destruction trigger as the header.",
+      "targetSet": "Pool is held by the skill user (self); the header's 'all allies' applies to the block, but the storage text names the skill user.",
+      "nearestWrongModel": "Modeling it as a 'shield' effect on a live trigger, which would fire allies' 'shielded' triggers and open teammates' requiresShielded gates — a phantom cross-unit activation channel (taxonomy #4 in reverse: inventing a tandem feed that doesn't exist at scope because the trigger never fires).",
+      "distinguishingAssertion": "No shield-kind events and no 'shielded'-triggered buffApply chains originate from Sora across a full 180s run; a teammate with a shield-gated kit line must behave identically with Sora present vs replaced.",
+      "inertness": "Must not open any requiresShielded/shielded pathway on any ally; zero damage movement.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 23.74% of the skill user's ATK, 15 sec",
+      "disposition": "UNMODELED",
+      "scope": "Generic ATK grant (flat add scaled off CASTER's ATK — the casterAtkPct shape, not atkPct), to all allies.",
+      "durationSemantics": "'for 15 sec' — genuine durationSec 15, wall-clock. Not rounds, not stacks (the ATK line itself states no stack count; the 5-stack clause belongs to the Storage line).",
+      "triggerIdentity": "Gated on the unreachable part-destruction trigger — never fires vs the partless scope-lock boss.",
+      "targetSet": "all allies (including self).",
+      "nearestWrongModel": "Two-layer misread: (1) making it live via a substitute trigger (fullBurstEnter/interval) — grants every ally ≈0.2374 × Sora's staticAtk flat ATK for 15s windows, moving the whole team's damage; (2) encoding it as atkPct 23.74 (scales each TARGET's own ATK) instead of casterAtkPct — wrong shape even if it were live, over-crediting high-ATK carries since Sora is a Supporter with low static ATK.",
+      "distinguishingAssertion": "Across a full run with sora as B1, assert there is NO buffApply with stat 'casterAtkPct' whose casterIdx is Sora's slot (and no atkPct ≈ 23.74 from her either). Green under faithful (the line lives in unmodeled, block absent or unreachable); red under BOTH nearest-wrong variants (a buffApply appears with value ≈ 0.2374 × sora staticAtk, flat-resolved per the harness rule, or raw 23.74 under atkPct).",
+      "inertness": "Team totals must be identical with Sora's skill2 present vs stripped; the carry's damage must not move at all.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 52.27% of skill user's Max HP",
+      "disposition": "FAITHFUL",
+      "scope": "A heal — no damage of its own, but it is the kit's ONE live cross-unit channel: taxonomy #4 forbids skipping heals on isolation because on-recovery consumers (Crown's 'when recovery takes effect') feed off the EVENT.",
+      "durationSemantics": "Instant single heal per burst cast — ticks:1 (default), no HoT wording ('every 1 sec for N sec' is absent).",
+      "triggerIdentity": "burstCast (Sora's OWN burst — she is Burst I, cd 40s, so this fires on every rotation she opens). NOT fullBurstEnter: the heal must land on her cast, pre-FB-window, not on any team FB she didn't initiate — though as sole B1 in a fixture the two coincide, the encoding still matters for multi-B1 generality.",
+      "targetSet": "all allies (including self).",
+      "nearestWrongModel": "Skipping the heal entirely as 'defensive, no damage modeled' — the classic taxonomy-#4 trap. This silently kills every recovery-triggered teammate buff. Secondary misread: modeling HP magnitude and concluding it inert while forgetting the heal effect-kind exists precisely to emit recovery events.",
+      "distinguishingAssertion": "Build a comp with sora in the B1 slot + crown B2 + a B3 carry (note: controlComp() pins liter as B1, so the test must construct CompOptions with sora replacing liter). Assert: (a) after each sora burstCast event, buffApply events attributable to crown's recovery-triggered kit line appear (filter by stat+key, casterIdx === crown's slot); (b) totals with Sora's burst heal stripped via withPatchedOverride are strictly LOWER for the team than with it present (crown's recovery-fed contribution disappears). Green under faithful (heal effect kind:'heal', target allies, trigger burstCast); red under nearest-wrong (no recovery events, crown's consumers never fire off Sora's burst).",
+      "inertness": "The heal itself must add zero direct damage (no damage event with srcSlot burst from this effect); its whole footprint is the recovery events it emits.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Removes 1 debuff(s)",
+      "disposition": "UNMODELED",
+      "scope": "Ally debuff-cleanse. The v1 boss deals no damage and applies no debuffs to allies — there is nothing to remove.",
+      "durationSemantics": "Instant, per cast.",
+      "triggerIdentity": "Same burstCast as the heal line.",
+      "targetSet": "all allies.",
+      "nearestWrongModel": "Reading 'Removes 1 debuff' as dispelling the BOSS's beneficial-status or as stripping boss-held debuffs the TEAM applied (damageTakenPct debuffs are boss-held team ASSETS — removing those would be actively wrong and damage-negative).",
+      "distinguishingAssertion": "Boss-held debuffs applied by teammates (buffApply with casterIdx===null && targetIdx===null, e.g. a damageTakenPct carrier) must persist unchanged across Sora's burst casts — no removal, no re-application gap.",
+      "inertness": "Must not touch any boss-held debuff window or any ally buff.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "burst:Recovers 52.27% of skill user's Max HP as HP (heal → recovery events, tandem channel)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Outgoing healing ▲ 35.2% continuously."
+    ],
+    "skill2": [
+      "■ Activates when an ally or self destroys an enemy's part. Affects all allies.",
+      "Storage: Stores excess healing received by the skill user, up to 5.36% of their Max HP. Stacks up to 5 time(s) and lasts for 15 sec.",
+      "ATK ▲ 23.74% of the skill user's ATK for 15 sec."
+    ],
+    "burst": [
+      "Removes 1 debuff(s)."
+    ]
+  },
+  "notes": "Sora is a near-total scope-lock null: her ONLY live mechanic is the burst heal's recovery-event emission (tandem with on-recovery consumers — Crown, who sits in the standard control comp, is the natural probe). Expected shared-prior misreads to check the driver against: (1) skipping the burst heal as 'defensive' — taxonomy #4's exact trap, and the single load-bearing line; (2) resurrecting skill2 on a substitute trigger (fullBurstEnter/interval) because a fully-dead skill 'feels wrong' — the part-destruction trigger has no engine primitive AND the scope-lock boss is partless, so total inertness IS the faithful model; (3) shape error on the ATK line if ever modeled: it is casterAtkPct (23.74% of SORA's supporter-tier ATK, flat-resolved at apply per the harness rule), not atkPct on each target; (4) skill1's outgoing-healing stat has no StatKey and no damage consumer — and heal MAGNITUDE is irrelevant to recovery triggers (events, not amounts), so it stays inert even in tandem comps. Fixture note: sora is Burst I — controlComp() hard-pins liter as B1, so her test comp must be hand-built (sora B1 / crown B2 / carry B3) or bursts will mis-attribute; a lone-B3-style zero-FB failure isn't the risk here, but liter-vs-sora B1 substitution is. All magnitudes are kit-literal (DATAMINED); no ⚑ fields are needed since no cadence/trigger invention is required — the faithful override is one burstCast heal block plus a complete unmodeled record.",
+  "model": "claude-fable-5"
+}

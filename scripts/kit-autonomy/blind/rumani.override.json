@@ -1,0 +1,79 @@
+{
+  "slug": "rumani",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 3.04,
+          "durationSec": 2,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 15.13,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "normalAttackPct",
+          "value": 10.05,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "\u25a0 Activates when landing a Full Charge attack during Full Burst. Affects the target. Taunts for 5 sec."
+    ],
+    "skill2": [
+      "\u25a0 Activates when hitting a target's Parts for 5 time(s). Affects all allies. Damage to Parts \u25b2 10.05% for 5 sec."
+    ],
+    "burst": [
+      "\u25a0 Activates when Muscle Up is at max stacks. Affects self. Damage Taken \u25bc 20.06% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "\u2691 CADENCE (mandatory for a charge weapon): pullsPerSec / reloadFrames 129 / chargeFrames 60 are datamined-unreliable, and whether this RL AUTOFIRES (noBoltRecovery) vs takes the measured 22-frame bolt gap is a ~15-20% shot-count swing not derivable from kit text. Engine default (bolt gap ON) shipped unmeasured; do not set noBoltRecovery without footage.",
+    "\u2691 MUSCLE UP STEADY STATE: 3.04% Max HP per full charge, cap 5, 2 sec duration. At the RL charge cycle implied by chargeFrames 60 + bolt gap + a 6-round magazine (~1.3-1.5 s/shot), only ~1-2 stacks are ever concurrently live, so the cap is effectively unreachable outside a charge-speed buff. Offensively inert today (this kit carries no atkOfMaxHpPct consumer); kept for a future HP scaler and because the burst's max-stack clause reads it.",
+    "\u2691 SKILL1 TRIGGER MAPPING: 'performing a Full Charge attack' is authored as shotFired, which assumes every RL trigger pull resolves as a full charge. If partial-charge pulls exist, the stack rate is overstated (damage-neutral while the granted stat is inert).",
+    "SKILL2 SKIPPED, NOT DROPPED: the Damage-to-Parts buff is doubly inert at scope lock \u2014 partsDamagePct is inert in v1 and the boss is partless, so the parts-hit trigger never fires. Modeling it on a hitCount:5 proxy would make it fire when the real condition cannot, a trigger-identity error; the line is recorded verbatim in unmodeled instead. Magnitude if it is ever wired: 10.05% partsDamagePct to all allies, 5 sec, on 5 parts hits.",
+    "The burst's Damage Taken \u25bc 20.06% is a SELF damage-reduction, not the enemy-facing damageTakenPct debuff. No HP pool is modeled at scope lock, so it has no channel; it is not the team-benefiting 'Damage Taken \u25b2' shape."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rumani (rumani) is an RL/Fire/Defender/Burst I whose ONLY offensive channel in this kit is the burst's team-wide Normal Attack Damage Multiplier \u25b2 10.05% for 10 sec \u2014 everything else is Max HP, taunt, parts, or self damage-reduction. Burst lines carry no activation clause and grant a self mode plus a team buff, so they are keyed burstCast (fires only on rotations this unit bursts), not fullBurstEnter. The two Max HP grants use targetMaxHpPct ('Max HP \u25b2 X%' = % of the target's own Max HP) and are offensively inert for this unit \u2014 no atkOfMaxHpPct consumer in kit \u2014 but are kept per the never-skip-HP rule as a future scaler feed. No function-damage riders, DoTs, weapon swaps, or shot-count modifiers appear anywhere in the kit, so there is no noFb decision to make and no reload/ammo/fire-rate line to audit."
+}

@@ -501,6 +501,17 @@ probes/burst tests/alice focused.MP4`, crown/liter/alice/red-hood, boss Water, a
   the higher FB count) shows the blind/adversarial roles run both directions — the judge checks the
   driver, and re-deriving the judge's stated math against the actual rotation log is exactly the
   "verify, don't trust" habit this harness is built on.
+  **ADDENDUM 2026-08-04 (ROTATION DEFAULT FLIP):** the owner overturned the post-FB chain-open
+  delay this instrument's floor carried (there is NO lock — the ~3s was natural refill-from-zero
+  plus a video-offset confound: the bar-anatomy recordings start before the 3:00 clock, and the
+  control video's 14.1s first FB is ~5.6s of fight time, matching the sim). Consequences for this
+  record: (a) the confidence-capping assumption "whether real fights can hit the sim's own
+  opening/first-FB time" is RESOLVED — they do, once video offsets are accounted; (b) the
+  decomposition floor dropped the dead +2.5s term (`decomposeCycles` now uses FB-duration +
+  0.5s pre-B1 + chain span), so `excess` reads the refill-from-zero directly (~2.5-4.7s across
+  the six comps, consistent with the owner's ~3-4s), and the test bands were re-derived per the
+  instrument's own contract; (c) the LOG verdict itself STANDS — refill tempo is exactly the
+  channel the shortfall lives in. See DECISIONS 2026-08-04 (top entry).
 - **2026-08-03 — K's burst weapon: `damagePct` 10x misread + no SG-swap landing routing: LOG, 2-of-2
   ACCEPT, both MEDIUM confidence.** K's burst (`weaponSwap`, kit line "Damage: 92.5% of the final ATK /
   Pelletcount: 10") was modeled as `damagePct: 925` (10 pellets × 92.5%, collapsed to one hit) by the

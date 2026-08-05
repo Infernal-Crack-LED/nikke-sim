@@ -1,0 +1,84 @@
+{
+  "slug": "quency",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after 60 normal attacks",
+      "disposition": "GAP",
+      "scope": "trigger counts the owner's normal attacks only; effect is a self Max-HP grant (no damage scope)",
+      "durationSemantics": "'Lasts for 10 sec' = durationSec 10 (wall-clock, not rounds)",
+      "triggerIdentity": "hitCount count:60 \u2014 counts ROUNDS per the harness contract. Ammo 120 => fires ~2x per magazine, spanning reloads. hitsPerShot 2 is a trap: 60 'normal attacks' is 60 rounds, not 60 per-hit events (which would halve the threshold to 30 rounds) and not an interval-seconds clock.",
+      "targetSet": "self only ('Affects self') \u2014 the highest-Max-HP Nikke is the SOURCE of the % scaling, never a target",
+      "nearestWrongModel": "Three plausible misreads: (a) encode as a heal, which would falsely fire teammates' recovery triggers (Crown-style consumers); (b) casterMaxHpPct = % of QUENCY's own Max HP instead of the highest-Max-HP ally's (schema has no highest-ally-HP source \u2014 highestAllyAtkPct has no HP analog, hence GAP); (c) trigger read per-hit so hitsPerShot 2 doubles the cadence.",
+      "distinguishingAssertion": "Patch the skill1 block out via withPatchedOverride(quency): totals(res) identical for all 5 slugs (offensive inertness \u2014 quency has no atkOfMaxHpPct consumer, and the e3 rule makes HP grants feed conversion only when caster===target===HP-scaler carrier, which never holds here). If modeled as a buff: buffApply stat 'maxHpFlat' targeting self recurs every 60 rounds fired (cross-check against shot events), expiresFrame = applyFrame + 600, and ZERO 'heal' events / recovery-trigger activations are attributable to it.",
+      "inertness": "Every unit's totalDamage unchanged with the line present vs removed; no recovery or shielded trigger of any teammate fires from it; no burst-gauge contribution.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK \u25b2 16.11% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "generic atkPct (scales target's own ATK) \u2014 no normal-attack/charge/crit scoping in the text; NOT casterAtkPct (no 'of the skill user's ATK' wording)",
+      "durationSemantics": "durationSec 5 \u2014 wall-clock seconds, not rounds",
+      "triggerIdentity": "The header has NO activation clause ('Affects\u2026' only) => interval trigger at the unit's datamined skill cooldown, first fire t=CD (no force-cast wording). The interval seconds are NOT in the kit text \u2014 \u2691/DATAMINED from skillCooldownsSec, never invented.",
+      "targetSet": "alliesTopAtk count:2, byFinalAtk:true \u2014 text literally says 'highest final ATK', which is the sole sanctioned condition for live-effectiveAtk ranking. No '(except self)' clause, so the candidate pool includes quency herself.",
+      "nearestWrongModel": "Passive/permanent always-on ATK buff (100% uptime instead of 5s-per-CD windows) \u2014 the natural read of a trigger-less header; second-nearest: keyed to fullBurstEnter, or static base-ATK ranking (dropping byFinalAtk).",
+      "distinguishingAssertion": "Collect buffApply events with stat 'atkPct' and value 16.11: they recur at a fixed interval cadence (count over 180s \u2248 floor(180/CD), NOT one continuous application from frame 0, NOT aligned 1:1 with fullBurstStart events); each carries expiresFrame = applyFrame + 300; each application hits exactly 2 targetIdx, and in a fixture where a patched low-static unit carries a huge self atkPct buff, the target set follows LIVE final-ATK ranking, not static.",
+      "inertness": "Never more than 2 recipients per application; no atkPct 16.11 buff live outside the 5-second windows; the buff must not appear on frames before the first CD elapses.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max HP \u25b2 43.87% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "generic Max HP stat grant \u2014 'Max HP \u25b2 X%' = targetMaxHpPct (% of the TARGET's OWN Max HP, blanc/maiden pattern), emitted as flat-resolved stat 'maxHpFlat'",
+      "durationSemantics": "durationSec 5 \u2014 DIFFERENT from the sibling crit-damage line's 10s; one shared block duration cannot express both",
+      "triggerIdentity": "burstCast (quency's OWN Burst II cast, cd 20s) \u2014 this is her burst block, so it fires only on rotations SHE bursts, never on every team Full Burst",
+      "targetSet": "alliesTopAtk count:2, byFinalAtk:true (same 'highest final ATK' clause as skill2; pool includes self)",
+      "nearestWrongModel": "casterMaxHpPct (% of QUENCY's Max HP instead of each target's own), or fullBurstEnter keying, or copying the 10s duration from the crit line onto this one.",
+      "distinguishingAssertion": "buffApply stat 'maxHpFlat' at quency's burst-cast frames with value = 0.4387 \u00d7 the TARGET's own Max HP (differs per target when their HP differs) and expiresFrame = castFrame + 300, while the same cast's critDamagePct apply shows expiresFrame = castFrame + 600 \u2014 the 300 vs 600 split is the assertion.",
+      "inertness": "Ally-granted Max HP feeds NO teammate's atkOfMaxHpPct conversion (e3 rule): totals(res) for every unit unchanged with this effect removed \u2014 the test pins that it is emitted AND damage-inert.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Critical Damage \u25b2 29.9% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "unscoped critDamagePct \u2014 applies to the recipients' crit hits generally (no 'of normal attacks' scoping in the text)",
+      "durationSemantics": "durationSec 10 \u2014 the LONGER of the two burst durations; expires 5s after the Max-HP grant does",
+      "triggerIdentity": "burstCast (own B2), NOT fullBurstEnter. This is the line where the misread actually moves damage: keying to fullBurstEnter over-credits every rotation where the OTHER Burst II unit (crown, present in the control fixture) completes the chain instead of quency.",
+      "targetSet": "alliesTopAtk count:2, byFinalAtk:true \u2014 with the B3 carry focused, the intended payload is the carry's crit damage",
+      "nearestWrongModel": "fullBurstEnter keying (fires on ANY team FB \u2014 in the liter/crown/quency/helm control comp, crown and quency contend for the B2 slot, so this doubles-or-worse the uptime); second-nearest: 5s duration copied from the Max-HP sibling; third: all-allies target.",
+      "distinguishingAssertion": "In controlComp(quency) \u2014 which naturally contains crown as a competing Burst II \u2014 every buffApply with stat 'critDamagePct' value 29.9 occurs on a frame where a burstCast event from quency's slot (srcSlot/casterIdx = quency) fired that rotation; rotations where crown cast B2 show ZERO such applies. expiresFrame = castFrame + 600. Exactly 2 targetIdx per cast, and the carry (top final ATK) is always among them.",
+      "inertness": "No critDamagePct 29.9 application on Full Bursts quency did not burst into; the 3rd-and-lower final-ATK units never receive it; removing it must lower the carry's totalDamage (positive-control: the line is NOT inert).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill2:ATK \u25b2 16.11% for 5 sec",
+    "burst:Max HP \u25b2 43.87% for 5 sec",
+    "burst:Critical Damage \u25b2 29.9% for 10 sec"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Duplicates 12.42% of the Max HP of the Nikke with the highest Max HP. Lasts for 10 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in descending damage impact: (1) BURST TRIGGER \u2014 burstCast vs fullBurstEnter is live for quency because the control fixture keeps crown as a fixed Burst II, so the two units contend for the B2 cast; a fullBurstEnter encoding is green in any single-B2 comp and only fails when the second B2 is present \u2014 the test MUST use the crown-contention comp. (2) SKILL2 TRIGGER INVENTION \u2014 the header has no activation clause; the tempting encodings are passive (over-credits uptime from 5s-per-CD to 100%) or fullBurstEnter. Faithful is interval at the datamined skill CD, first fire t=CD; that CD is outside the kit text and must be sourced/flagged (\u2691 if the datamine lacks it), never guessed silently. (3) SPLIT DURATIONS \u2014 the burst's two effects expire at +5s and +10s respectively; a single-durationSec block is wrong for one of them, and the 300-frame vs 600-frame expiresFrame split is directly assertable off buffApply (do NOT expect buffRemove on natural lapse \u2014 the engine only emits it for removeOnReload). (4) 'FINAL ATK' \u2014 both target clauses literally say 'highest final ATK', mandating byFinalAtk:true (live effectiveAtk ranking); the shared prior from plain-'highest ATK' kits (naga) is static ranking. Caveat for target assertions: in the control comp the non-carry pool is largely same-class (two Supporters at equal static ATK), so build the ranking-flip assertion with a patched buff rather than relying on class-static separation, and pin the tie-break behavior observed rather than assuming one. (5) SKILL1 COUNTER \u2014 hitCount counts ROUNDS; hitsPerShot 2 tempts a per-hit read that doubles the proc rate (count 30). The skill1 effect itself has no engine primitive for 'highest-Max-HP ally' as a % source (highestAllyAtkPct has no HP analog) \u2014 since it is provably damage-inert here, verbatim unmodeled with an inertness pin is the honest disposition; if the driver instead modeled it as an approximate self maxHpFlat buff, the test must additionally pin that it emits no heal/recovery events. (6) NEGATIVE SPACE \u2014 quency's kit has NO damage line, NO DoT, NO weapon-state modifier, and no burst-gauge effect: her entire board contribution flows through recipients' stats, so every test should be event-log + recipient-totals shaped; any sim damage attributed to quency beyond her own SMG normals is itself a red flag.",
+  "model": "claude-fable-5",
+  "driverReconciliation": {
+    "verdict": "GO (cross-family corroborated at S2b): blind fable spec == driver encoding on all three damage-relevant lines; no REAL-GOTCHA; one inert-line modeling divergence (S1) documented; fable's one engine-contract claim (hitCount=rounds) verified INCORRECT against sim.ts:3782.",
+    "convergence": "3/3 load-bearing lines converge exactly. S2: interval sec:8 (first fire t=CD), atkPct 16.11 (NOT casterAtkPct), durationSec 5, alliesTopAtk count:2 byFinalAtk:true, pool self-inclusive \u2014 fable and driver identical, including the \u2691 that the 8s CD is datamined (skillCooldownsSec) not prose. Burst Critical Damage: burstCast (own B2), critDamagePct 29.9, durationSec 10, alliesTopAtk count:2 byFinalAtk:true \u2014 identical. Burst Max HP: targetMaxHpPct 43.87 durationSec 5 on the SAME block as the crit line (per-effect durationSec \u2192 the 300-vs-600-frame expiresFrame split fable's distinguishingAssertion predicts is exactly what the shipped block emits and the test pins) \u2014 identical, and both agree it is damage-INERT via the e3 ally-granted-maxHpFlat rule (driver test pins inertness: strip-whole-burst == strip-crit-only).",
+    "burstCastVsFullBurstEnter": "ACCEPTED + ENACTED. Fable's note (1) correctly observed the driver's primary (sole-B2) fixture cannot separate burstCast from fullBurstEnter. Driver added a second crown-contention arm (liter/crown/quency/helm): crown wins the B2 slot by priority, quency casts ZERO while 5 Full Bursts occur; shipped burstCast fires 0 crit buffs there, a fullBurstEnter counterfactual fires 10 (5 FB x 2 targets). Pinned GREEN (shipped==0) and RED (fullBurstEnter>0). This is the Tier-2 trigger-identity discrimination.",
+    "skill1Modeling": "CONVERGED (inert line, resolved after the S5 run). Fable dispositioned S1 GAP/unmodeled; the driver FIRST modeled it as the shield primitive. Running the S5 blind test exposed that BOTH blind opus passes (S5 test + S6 override) independently re-derived S1 as a SELF Max-HP buff, and a shield emits NO buffApply so the blind suite could not see it. Final disposition: hitCount-60 self casterMaxHpPct 12.42 dur 10 \u2014 a temporary self HP-buffer, faithful to every observable the engine models (v1 can consume neither a shield pool nor an ally-scaled HP source, so shield-vs-maxHp is sim-indistinguishable). It is DAMAGE-INERT (no atkOfMaxHpPct consumer, no damage-taken) but OBSERVABLE, so the driver spec NOW pins it (trigger/cadence/self-target/10s/inertness). Residual basis \u2691: kit source is the HIGHEST-Max-HP ally; no StatKey expresses an ally-scaled HP source, so casterMaxHpPct resolves to % of quency's OWN Max HP (exact only when she holds the team's highest Max HP; inert either way \u2014 completeness gap, not accuracy).",
+    "hitCountContract": "FABLE INCORRECT, driver verified. Fable asserted hitCount 'counts ROUNDS per the harness contract'. The engine increments the hitCount counter by hitsPerShot PER PULL (sim.ts:3782 `c = (u.hitCounters.get(key)??0) + u.char.hitsPerShot`), i.e. it counts HITS. For quency (hitsPerShot 2) count 60 = 60 hits = 30 pulls, matching the driver's encoding and the escape-queen precedent. The residual is only the game-side hits-vs-pulls reading of '60 normal attacks' (count 60 vs 120), already flagged \u2691 and inert (S1 moves no damage).",
+    "blindTestRun": "S5 blind test (opus) run vs the driver override: 23 passed / 3 it.skip (the skill1 basis GAP + the two hits-vs-pulls / no-activation-clause FLAGs). Two blind-author errors were reconciled, both documented in quency.adapted.test.ts: (1) FIXTURE \u2014 controlComp('quency') fields crown as a second B2 and crown out-prioritizes quency, so quency casts ZERO times there and the whole burst suite would be vacuous; adapted to a sole-B2 fixture (liter/quency/emilia/helm) so quency casts every cycle (a fixture correction, assertions unchanged). (2) S1 primitive \u2014 see skill1Modeling. Separately, the S6 blind OVERRIDE carried an S2 error (interval sec:20 \u2014 it lacked/mis-sourced the 8s skill cooldown); the DRIVER keeps interval sec:8 from skillCooldownsSec.skill2=8 (datamined, corroborated by fable S2b), so the blind override was NOT copied \u2014 S5/S6 inform, the datamine + driver spec govern."
+  }
+}

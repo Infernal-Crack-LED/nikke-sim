@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04",
+  "generatedAt": "2026-08-05",
   "policy": "Per-unit single source of truth: kit-parse rollout status (kitParse.*), tuning provenance (tier/tuned/evidence — absorbed from data/hand-tuned.json 2026-07-16; tier definitions in docs/hand-tuned.md), unmodeled kit text (mirrored from the override), and board pass records (sim/real per recorded comp, >1 = HOT). AUTO fields regenerate via scripts/kit-status.ts --refresh; workflow/evidence fields are preserved. Board ratio convention: docs/CONVENTIONS.md \"Ratio direction\".",
   "tiers": {
     "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
@@ -14,20 +14,20 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 137,
+      "unit-tested": 146,
       "authored": 1
     },
     "tier": {
-      "MODEL_ONLY": 104,
+      "MODEL_ONLY": 113,
       "VALIDATED": 10,
       "MEASURED": 14,
       "CALIBRATED": 10
     },
     "band": {
-      "±3% ✓": 5,
-      "±5%": 4,
-      "±15%": 14,
-      "±8%": 12,
+      "±3% ✓": 7,
+      "±5%": 6,
+      "±15%": 13,
+      "±8%": 9,
       ">15%": 10
     }
   },
@@ -539,57 +539,57 @@
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 0.9066
+            "ratio": 0.8392
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9482
+            "ratio": 0.8761
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9565
+            "ratio": 0.8838
           },
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.9583
+            "ratio": 0.8746
           },
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.8257
+            "ratio": 0.7627
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.9694
+            "ratio": 0.8913
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9691
+            "ratio": 0.8768
           },
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 1.0371
+            "ratio": 0.8995
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
-            "ratio": 0.8872
+            "ratio": 0.8395
           },
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.0254
+            "ratio": 0.9559
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.019
+            "ratio": 0.9518
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.8573
+            "ratio": 0.7882
           }
         ],
         "n": 12,
-        "mean": 0.9467,
-        "mad": 0.0669,
-        "band": "±8%",
+        "mean": 0.87,
+        "mad": 0.13,
+        "band": "±15%",
         "temp": "COLD ▼"
       }
     },
@@ -1164,11 +1164,11 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9772
+            "ratio": 0.9891
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9604
+            "ratio": 0.9687
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
@@ -1176,8 +1176,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.9767,
-        "mad": 0.0233,
+        "mean": 0.9834,
+        "mad": 0.0166,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -1229,11 +1229,11 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.8586
+            "ratio": 0.859
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.8418
+            "ratio": 0.851
           },
           {
             "comp": "PB elec battery (boss Water)",
@@ -1257,8 +1257,8 @@
           }
         ],
         "n": 7,
-        "mean": 0.8806,
-        "mad": 0.1232,
+        "mean": 0.882,
+        "mad": 0.1218,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -1300,16 +1300,16 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.8912
+            "ratio": 0.8899
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9737
+            "ratio": 0.9803
           }
         ],
         "n": 2,
-        "mean": 0.9324,
-        "mad": 0.0676,
+        "mean": 0.9351,
+        "mad": 0.0649,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -1514,31 +1514,31 @@
           },
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9506
+            "ratio": 0.9763
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.1614
+            "ratio": 1.1644
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.156
+            "ratio": 1.159
           },
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.9782
+            "ratio": 0.9785
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.9781
+            "ratio": 1.001
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.8976
+            "ratio": 0.9001
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9565
+            "ratio": 0.9636
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
@@ -1550,37 +1550,37 @@
           },
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.0054
+            "ratio": 0.9998
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 1.0168
+            "ratio": 1.0162
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
-            "ratio": 1.0078
+            "ratio": 1.0213
           },
           {
             "comp": "C-Helm control (neutral, focus helm)",
-            "ratio": 0.9584
+            "ratio": 0.9746
           },
           {
             "comp": "C-LM control (neutral, focus little-mermaid)",
-            "ratio": 0.9985
+            "ratio": 1.012
           },
           {
             "comp": "C-Crown control (neutral, focus crown)",
-            "ratio": 0.97
+            "ratio": 0.9831
           },
           {
             "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
-            "ratio": 1.0302
+            "ratio": 1.0476
           }
         ],
         "n": 17,
-        "mean": 0.9943,
-        "mad": 0.0526,
-        "band": "±8%",
+        "mean": 1.0021,
+        "mad": 0.05,
+        "band": "±5%",
         "temp": "OK  ·"
       }
     },
@@ -1715,7 +1715,7 @@
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.8962
+            "ratio": 0.8986
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
@@ -1723,8 +1723,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.9399,
-        "mad": 0.0601,
+        "mean": 0.9407,
+        "mad": 0.0593,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -1990,16 +1990,16 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 0.9805
+            "ratio": 0.9793
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.868
+            "ratio": 0.8663
           }
         ],
         "n": 2,
-        "mean": 0.9243,
-        "mad": 0.0757,
+        "mean": 0.9228,
+        "mad": 0.0772,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -2236,12 +2236,12 @@
         "records": [
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.7949
+            "ratio": 0.7946
           }
         ],
         "n": 1,
-        "mean": 0.7949,
-        "mad": 0.2051,
+        "mean": 0.7946,
+        "mad": 0.2054,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2651,20 +2651,20 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.1121
+            "ratio": 1.132
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.1058
+            "ratio": 1.1261
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.0938
+            "ratio": 1.0999
           }
         ],
         "n": 3,
-        "mean": 1.1039,
-        "mad": 0.1039,
+        "mean": 1.1194,
+        "mad": 0.1194,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -2746,12 +2746,12 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.0243
+            "ratio": 1.0238
           }
         ],
         "n": 1,
-        "mean": 1.0243,
-        "mad": 0.0243,
+        "mean": 1.0238,
+        "mad": 0.0238,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -2831,50 +2831,50 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 1.017
+            "ratio": 1.0207
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9469
+            "ratio": 0.9544
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9676
+            "ratio": 0.9753
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.9872
+            "ratio": 1.0021
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9934
+            "ratio": 0.9834
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
-            "ratio": 0.9609
+            "ratio": 0.9652
           },
           {
             "comp": "C-Helm control (neutral, focus helm)",
-            "ratio": 0.9453
+            "ratio": 0.9872
           },
           {
             "comp": "C-LM control (neutral, focus little-mermaid)",
-            "ratio": 0.9515
+            "ratio": 0.9563
           },
           {
             "comp": "C-Crown control (neutral, focus crown)",
-            "ratio": 0.9907
+            "ratio": 0.9951
           },
           {
             "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
-            "ratio": 0.9352
+            "ratio": 0.9351
           }
         ],
         "n": 10,
-        "mean": 0.9696,
-        "mad": 0.0338,
-        "band": "±5%",
-        "temp": "COLD ▼"
+        "mean": 0.9775,
+        "mad": 0.0271,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "helm-aquamarine": {
@@ -3031,21 +3031,21 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9004
+            "ratio": 0.9132
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.93
+            "ratio": 0.9355
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.9295
+            "ratio": 0.9314
           }
         ],
         "n": 3,
-        "mean": 0.92,
-        "mad": 0.08,
-        "band": "±15%",
+        "mean": 0.9267,
+        "mad": 0.0733,
+        "band": "±8%",
         "temp": "COLD ▼"
       }
     },
@@ -3271,7 +3271,7 @@
         "teams": 0,
         "within3pct": 0
       },
-      "residual": "swap weapon fire cadence kit-silent (driver chargeTimeSec 0.25 = 4/s vs S6 ~20/s, 5x spread) = dominant unmeasured lever pacing swap DPS + Over Energy stage unlocks; Warm Up charge-speed stacks + stage Max HP buffs (2/3/7/10.5%) unmodeled (no stack-consume / auto-advance-stage primitive; low-single-digit % under-credit); swap-end ammo dump unmodeled (inert under shared-mag model; S6 agreed untriggerable). Spot-check: focus-video fire-rate read of Electric Power mode.",
+      "residual": "swap weapon fire cadence kit-silent (driver chargeTimeSec 0.25 = 4/s vs S6 ~20/s, 5x spread) = dominant unmeasured lever pacing swap DPS + Over Energy stage unlocks; Warm Up charge-speed stacks unmodeled (no stack-consume primitive; cadence-only — the swap is charge-speed-immune); swap-end ammo dump unmodeled (inert under shared-mag model; S6 agreed untriggerable). Spot-check: focus-video fire-rate read of Electric Power mode. (The stage Max HP buffs 2/3/7/10.5% closed 2026-08-04: resourceGate-gated riders on the modeled oeStage advance, feeding her own HP→ATK conversion — see DECISIONS.)",
       "unmodeled": {
         "skill1": [
           "Activates when performing a Full Charge attack. Affects self. Warm Up: Charge Speed ▲ 10% continuously. Stacks up to 5 times.",
@@ -3288,7 +3288,7 @@
         "skill1: the swap trigger (hitCount:5 + swapGate:'unswapped') captures the Warm Up 5-full-charge GATE; the counter is cumulative and swapGate gates firing not counting, so the re-swap phasing after the first cycle is approximate (⚑ low — magnitudes kit-exact).",
         "skill1: hasPierce on the swap is inert at scope lock (PIERCE_CORE_DOUBLE hard-off, no pierceDamagePct carrier → byte-identical totals); tagged for kit completeness, scoped to swap shots only.",
         "skill2/burst: the Over Energy STAGE is tracked (oeStage 0-4, advanced by hitCount:240 swap-gated = the kit-exact 240-swapped-normals-per-stage build rate) and feeds the burst additional damage (4× resourceGate-gated 934.76 riders = stage × 934.76). The wall-clock stage-UNLOCK timing rides the kit-silent swap cadence (⚑); the per-stage MAGNITUDE is kit-exact. hitCount counts cumulative shots and swapGate gates firing not counting, so the unlock phasing is approximate.",
-        "skill2: the stage Max HP buffs (2/3/7/10.5% cumulative) and the 0-100% Over Energy meter are UNMODELED — the HP buffs are a small second-order feed into the modeled atkOfMaxHpPct (≈+123 ATK at stage 4) with fragile per-stage timing (no auto-advance-stage primitive); the meter's only consumer (stage advance) is keyed directly to the 240-count.",
+        "skill2: the stage Max HP buffs (2/3/7/10.5% cumulative) are MODELED — four resourceGate-gated targetMaxHpPct SELF-grants (min 1/2/3/4, continuous, kit-cumulative) riding the oeStage advance, feeding her atkOfMaxHpPct conversion via liveMaxHp (own-kit, e3-admitted); they carry the SAME ⚑ stage-timing as the burst additional riders. The 0-100% Over Energy METER itself remains untracked — its only consumer (the stage advance) is keyed directly to the kit-exact 240 count.",
         "skill2: the Full Burst Attack Damage ▲ 52.14% is keyed to stageEnter:3 ('entering Burst Stage 3' = the B3 cast frame, fires on any stage-3 caster); burstCast (own-casts-only) and fullBurstEnter (~22f late) are the nearest wrong models (discriminated in the unit test)."
       ],
       "board": null
@@ -3378,7 +3378,7 @@
           },
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.8511
+            "ratio": 0.8508
           },
           {
             "comp": "PG iron sweep (boss Electric)",
@@ -3390,8 +3390,8 @@
           }
         ],
         "n": 4,
-        "mean": 0.9155,
-        "mad": 0.1172,
+        "mean": 0.9154,
+        "mad": 0.1173,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -3519,15 +3519,15 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9733
+            "ratio": 0.9826
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.9477
+            "ratio": 0.9723
           },
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.0038
+            "ratio": 1.0036
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
@@ -3535,30 +3535,30 @@
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
-            "ratio": 0.9921
+            "ratio": 1.0001
           },
           {
             "comp": "C-Helm control (neutral, focus helm)",
-            "ratio": 0.9664
+            "ratio": 0.9772
           },
           {
             "comp": "C-LM control (neutral, focus little-mermaid)",
-            "ratio": 0.984
+            "ratio": 0.991
           },
           {
             "comp": "C-Crown control (neutral, focus crown)",
-            "ratio": 0.985
+            "ratio": 0.9927
           },
           {
             "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
-            "ratio": 0.8549
+            "ratio": 0.8576
           }
         ],
         "n": 9,
-        "mean": 0.9666,
-        "mad": 0.0343,
-        "band": "±5%",
-        "temp": "COLD ▼"
+        "mean": 0.9743,
+        "mad": 0.0265,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "ludmilla": {
@@ -3703,7 +3703,7 @@
         "within3pct": 1
       },
       "reference": false,
-      "residual": "Burst Max-HP scaling is a deliberate conservative lower-bound | engine-core r1-r6: MP init +1 dropped (first burst 0 stacks), stackedNuke hpPct reads base not live Max HP, stackedNuke forced non-crit, MP-replenish trigger fold, cast-frame ordering, MP-above-1 threshold; spot-check = burst repeat-hits per cast in footage",
+      "residual": "Burst Max-HP scaling is a deliberate conservative lower-bound | engine-core r1/r3-r6: MP init +1 dropped (first burst 0 stacks), stackedNuke forced non-crit, MP-replenish trigger fold, cast-frame ordering, MP-above-1 threshold; spot-check = burst repeat-hits per cast in footage. (The hpPct base-vs-live residual landed 2026-08-04: the burst HP term reads live Max HP at cast per the kit's 'final Max HP' — see DECISIONS.)",
       "unmodeled": {
         "skill1": [
           "Activates when entering Burst Stage 1 with MP at 0. MP recovers by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.",
@@ -3719,7 +3719,7 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.9992
+            "ratio": 0.9991
           },
           {
             "comp": "PF maiden solo (boss Water)",
@@ -3727,13 +3727,13 @@
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 0.7482
+            "ratio": 0.7894
           }
         ],
         "n": 3,
-        "mean": 0.9228,
-        "mad": 0.0911,
-        "band": "±15%",
+        "mean": 0.9364,
+        "mad": 0.0775,
+        "band": "±8%",
         "temp": "COLD ▼"
       }
     },
@@ -4068,12 +4068,12 @@
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 1.0089
+            "ratio": 1.0105
           }
         ],
         "n": 2,
-        "mean": 0.9499,
-        "mad": 0.059,
+        "mean": 0.9508,
+        "mad": 0.0598,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -4153,7 +4153,7 @@
         "teams": 0,
         "within3pct": 0
       },
-      "residual": "owner spot-check vs a recording: (1) post-increment order-of-operations read (cast N Overcurrent stack feeds cast N ladder; kit-ambiguous, documented); (2) flag-1 S2a caster-vs-own Max HP basis on ally grants (atkOfMaxHpPct resolves vs target own HP); (3) 10s swap-duration flag + ammo-1 reload shot economy",
+      "residual": "owner spot-check vs a recording: (1) post-increment order-of-operations read (cast N Overcurrent stack feeds cast N ladder; kit-ambiguous, documented); (2) 10s swap-duration flag + ammo-1 reload shot economy. (The former flag-1 — S2a caster-vs-own Max HP basis — was settled 2026-08-04: the kit is caster-scaled, owner ruling; S2-A is now atkOfCasterMaxHpPct, a flat add of her live Max HP at cast. See DECISIONS.)",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
@@ -4246,7 +4246,7 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9691
+            "ratio": 0.9885
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
@@ -4254,10 +4254,10 @@
           }
         ],
         "n": 2,
-        "mean": 1.0244,
-        "mad": 0.0553,
-        "band": "±8%",
-        "temp": "OK  ·"
+        "mean": 1.0341,
+        "mad": 0.0456,
+        "band": "±5%",
+        "temp": "HOT ▲"
       }
     },
     "milk": {
@@ -4593,7 +4593,7 @@
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.6581
+            "ratio": 0.658
           }
         ],
         "n": 3,
@@ -4776,12 +4776,12 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.7906
+            "ratio": 0.7907
           }
         ],
         "n": 1,
-        "mean": 0.7906,
-        "mad": 0.2094,
+        "mean": 0.7907,
+        "mad": 0.2093,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -4895,7 +4895,7 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.888
+            "ratio": 0.889
           },
           {
             "comp": "PB elec battery (boss Water)",
@@ -4907,8 +4907,8 @@
           }
         ],
         "n": 3,
-        "mean": 1.0105,
-        "mad": 0.0852,
+        "mean": 1.0109,
+        "mad": 0.0849,
         "band": "±15%",
         "temp": "OK  ·"
       }
@@ -5031,16 +5031,16 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.8855
+            "ratio": 0.8972
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9017
+            "ratio": 0.9067
           }
         ],
         "n": 2,
-        "mean": 0.8936,
-        "mad": 0.1064,
+        "mean": 0.902,
+        "mad": 0.098,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -5118,6 +5118,40 @@
         "skill2: 'landing 100 normal attacks' is encoded as hitCount:100 — the counter advances by hitsPerShot per trigger pull (novel hitsPerShot 1, so 100 shots = 100 hits); SMG shots at scope lock do not miss",
         "burst: the Damage-Taken mark targets '1 enemy unit(s)' — unspecified WHICH enemy in prose; with one boss it is boss-held regardless (enemy buffs key on the enemyBuffs list). Gate reads the PRE-fire pool at cast time; casts before the 5th Cornucopia stack accrue land without the mark — faithful to 'Activates when Cornucopia is at max stacks'"
       ],
+      "board": null
+    },
+    "pepper": {
+      "name": "Pepper",
+      "burst": "I",
+      "weapon": "SG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/pepper.json + scripts/kit-autonomy/manual-review/pepper.md.",
+          "low ENCODING (data (not a kit line)): pepper has no row in data/gauge-per-shot.json: engine falls back to SG modal 400 while her datamined shot_detail carries 4500/9000 (≈900/shot, drake profile) — burst-gauge generation undervalued ~2.2×, affecting her burst cadence, nuke count, and gate timing"
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "date": "2026-08-03",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "spot-check: Refresh Heart no-lapse approximation (⚑3), skill2 first-fire phase t=10 convention (⚑2), kit-■-order increment-before-gate reading (4-mag-cast pin), gauge-per-shot row missing (owner data backfill)",
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when the last bullet hits the target. Affects all allies.\nRefresh Heart: Incoming healing ▲ 6.53%, stacks up to 5 time(s) and lasts for 15 sec."
+        ],
+        "skill2": ["ATK ▼ 3.55% for 5 sec."],
+        "burst": [
+          "■ Affects all allies.\nIncreases stack count of stackable buffs by 1."
+        ]
+      },
       "board": null
     },
     "phantom": {
@@ -5210,6 +5244,40 @@
         "skill2: the badge-ending recovery line is unmodeled — no own-shield-expiry trigger primitive; heal amount inert (no HP pool), recovery events second-order (⚑1)",
         "burst: Indomitability + 'Removes Police Badge' unmodeled (no primitive; defensive; the badge gate is structurally unsatisfiable at scope lock — badge ends t=10s, first burst >=40s)",
         "burst: the shared shield ships at the prose 40% — the datamine description_value_list says 22.27% at level 10 (⚑2); magnitude unobservable in v1 (no HP pool), the block exists for shield-synergy wiring"
+      ],
+      "board": null
+    },
+    "power": {
+      "name": "Power",
+      "burst": "III",
+      "weapon": "RL",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/power.json + scripts/kit-autonomy/manual-review/power.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; fresh build — stack-gate via bloodFiend resource proxy; fixture delivers a real gate-closed first cast (single nuke); S6 blind fell into both pre-registered traps (radius->projectileExplosionPct, ungated second nuke), driver corroborated",
+      "date": "2026-08-03",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "bloodFiend pool no-expiry ⚑ tier-low (divergence only after a >3s fire pause — boss-transition spot-check); once-per-battle reload-skip is fixed-horizon phase-sensitive at exactly 180s in the 3-unit comp (artifact, not encoding); no recorded comp yet — all magnitudes datamine-only (MODEL_ONLY until a fight grades them)",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": ["Explosion Radius ▲ 38.61% for 10 sec."],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the 'Blood Fiend at max stacks' condition is read from a `bloodFiend` resource pool (0→5, +1 per full charge), not from the buff itself — the engine has no buff-stack gate primitive. The pool does NOT expire; the real buff drops 3 sec after the last full charge. ⚑ estimate: zero divergence at scope-lock cadence — measured, her longest apply-to-apply gap in a sim fight is the 172f (2.87s) reload boundary, under the 3s expiry by 8 frames, so the pool and the buff never disagree in-fight; divergence only after a >3s fire pause. Recipe: a focused Power recording spanning a >3s fire pause (boss phase transition) — read the Blood Fiend icon expiry vs whether the next S2/burst still consumed the max-stacks condition. Tier: low (outside every graded comp's cadence).",
+        "skill2: 'Activates 1 time(s) per battle' is encoded as everyN 999 / everyNOffset 1 — first gated activation only; no generic once-per-battle block field exists (burstCdr.oncePerBattle is effect-local).",
+        "burst: 'the 1 enemy unit(s) with the highest final ATK' resolves to the single scope-lock boss (target enemy) — the sim has no multi-enemy axis to rank."
       ],
       "board": null
     },
@@ -5311,11 +5379,11 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.188
+            "ratio": 1.2189
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.1472
+            "ratio": 1.177
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
@@ -5323,8 +5391,8 @@
           }
         ],
         "n": 3,
-        "mean": 1.0991,
-        "mad": 0.1243,
+        "mean": 1.1194,
+        "mad": 0.1445,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -5362,6 +5430,42 @@
         "skill2: the '≥5 pellets with a single normal attack' gate on the reload-speed buff has no engine primitive and is dropped — assumed satisfied at single-boss focus-band landing; the 2s window refreshed every shot gives ~100% uptime regardless (⚑2)",
         "skill2: the FB-gated '30 pellet hits' counter (fbGate:'inFb') still accrues ungated in the engine — a small boundary over-accrual into FB-entry firings, the same documented approximation as modernia S2b (⚑3); 'Reload 1 round' is a one-shell drip (instantReload fraction ~1/9), not a full refill",
         "burst: the burst nuke targets all enemies — modeled as the lone boss"
+      ],
+      "board": null
+    },
+    "quency": {
+      "name": "Quency",
+      "burst": "II",
+      "weapon": "SMG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/quency.json + scripts/kit-autonomy/manual-review/quency.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; fresh build — S1 self-HP-buffer converged to the blind casterMaxHpPct reading (inert); S2 interval:8 datamined (S6 blind interval:20 rejected); burstCast-vs-fullBurstEnter pinned by a crown-contention arm; no recorded comp yet",
+      "date": "2026-08-03",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "same-model spot-checks (judge): game-side 60-normal-attacks hits-vs-pulls (count 60 vs 120) flagged by all parties, inert; S1 self-HP-buff vs shield reading — the sim consumes neither, the line moves no damage either way; S2 8s cadence is datamined not prose — the one number a frame-read of a real quency fight could overturn. (The S1 highest-ally-HP basis missing-primitive flag closed 2026-08-04: new StatKey highestAllyMaxHpPct resolves the exact basis — see DECISIONS.)",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: 'Duplicates 12.42% of the Max HP of the Nikke with the highest Max HP' is a temporary SELF HP-buffer grant (cross-family-converged on a self Max-HP buff; a shield reading was set aside). Modeled as hitCount-60 self highestAllyMaxHpPct 12.42 dur 10. DAMAGE-INERT (no atkOfMaxHpPct consumer, no damage-taken in v1) but observable — the spec pins trigger/value/duration/cadence. BASIS RESOLVED 2026-08-04: highestAllyMaxHpPct (new StatKey, the highestAllyAtkPct HP analog) resolves the flat off the team's highest STATIC maxHp at apply time — exact in every comp; the pre-2026-08-04 casterMaxHpPct own-basis stand-in is now the spec's counterfactual. Still inert either way.",
+        "skill1: ⚑ 'after 60 normal attacks' hits-vs-pulls — the engine hitCount counts HITS (adds hitsPerShot per pull, sim.ts:3782), so count 60 = 60 hits = 30 pulls; if the kit means 60 SHOTS the threshold is 120. Inert either way (S1 moves no damage).",
+        "skill2: ⚑ interval first-fire phase — the engine fires interval sec:8 first at t=8 (convention, not t=0); a wrong phase rescales only the opening ramp (negligible). The 8s cadence is DATAMINED (skillCooldownsSec.skill2 = 8), not prose. 'highest FINAL ATK' → byFinalAtk:true (live effectiveAtk at proc, A3 literal-word ruling); self-inclusive pool but quency does not rank top-2.",
+        "burst: the Max HP ▲ 43.87% line is modeled (targetMaxHpPct dur 5) but DAMAGE-INERT — ally-granted maxHpFlat is excluded from live Max HP and feeds atkOfMaxHpPct only when caster===target (self). Only the Critical Damage ▲ 29.9% line moves damage. Both ride one burstCast block on the same two highest-final-ATK allies.",
+        "all: quency is Burst II (cd 20s). The primary fixture fields her as the SOLE B2 (liter B1 / quency B2 / emilia B3 / helm B3) so she casts every ~20s Full Burst cycle; a second crown-contention arm (liter/crown/quency/helm) pins burstCast-vs-fullBurstEnter (crown wins the slot → quency casts zero → her burst buffs must not fire on those Full Bursts). Her own damage is negligible; her value is the S2 ATK buff and the burst Critical Damage buff on the two highest-final-ATK carries."
       ],
       "board": null
     },
@@ -5407,17 +5511,17 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.0635
+            "ratio": 1.0574
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.0427
+            "ratio": 1.0355
           }
         ],
         "n": 2,
-        "mean": 1.0531,
-        "mad": 0.0531,
-        "band": "±8%",
+        "mean": 1.0464,
+        "mad": 0.0464,
+        "band": "±5%",
         "temp": "HOT ▲"
       }
     },
@@ -5443,51 +5547,52 @@
       "tier": "MEASURED",
       "tuned": true,
       "control": false,
-      "evidence": "THREE focus recordings — burst-nuke recipe fit to measured constants, +421% buff measured-inert removed | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0 (13 FAITHFUL/6 DOCUMENTED_GAP); cross-family S2b(fable)/S5/S6/S7(opus) converged; binding judge discriminationOk true",
+      "evidence": "THREE focus recordings — burst-nuke recipe fit to measured constants, +421% buff measured-inert removed | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0 (13 FAITHFUL/6 DOCUMENTED_GAP); cross-family S2b(fable)/S5/S6/S7(opus) converged; binding judge discriminationOk true | 2026-08-04 owner footage ruling: rocket explosion is SKILL damage — core-INELIGIBLE (storedHit.core removed, overturns the 2026-07-16 ~1/3 read) | 2026-08-04 ATTACHMENT REWORK (owner control+carry re-read): +421.2% Stage-3 attachment buff RESTORED (2026-07-14 inert verdict overturned), attachment CORES (band table; 2026-07-14 sticky verdict overturned), ▼60 meter scoped to her OWN Stage-3 window (countInFbStage) — she flips cold→HOT: control 0.898→1.091, graded T7 +21.9% / N1 +21.5%; overshoot exposed, not re-fit",
       "date": "2026-07-14",
       "graded": {
         "teams": 5,
         "within3pct": 1
       },
       "reference": false,
-      "residual": "Invisible-X residual (44-52% of her damage) deliberately left open | Spot-check cluster (measurement-gated): flighted-nuke FB timing (delaySec 0.4, fbMajor true), +421.2% measured-inert removal, batch-accumulation vs prose Max Ammo:1, explosion core 0.33 + crit, countInFb 60 FB-state vs Stage-3+10s. COLD board 0.930 = deliberately-open Invisible-X/MG-cold gap.",
+      "residual": "ATTACHMENT REWORK 2026-08-04 (owner overrides): +421.2% restored, attach cores (band table), ▼60 own-B3-window scoped, Max Ammo:1 cosmetic — she flips COLD→HOT: control 0.898→1.091 vs 899.6M real, graded T7 +21.9% / N1 +21.5% (core-buffed comps amplify the new attach-core term). The +9.1% overshoot was RESOLVED later the same day by the PROJECTILE BUCKET RULING: the proj buffs compose ADDITIVELY into Damage Up (owner popup read 5,057,974 attach-core — additive matches −0.24%/+1.1%, multiplicative missed −38%). Control went 0.908 → 0.928 on the ROTATION DEFAULT FLIP (same day, top DECISIONS entry: refill became default, no post-FB chain-open block — owner ruling) with NO override change; both popup classes reproduce the owner's reads (attach +1.1%, explosion 1,192,831 vs 1,195,658 = −0.2%), so the remaining −7% is count/rotation-channel (sim 12 FB vs real 13), NOT instance magnitude. That 1-FB shortfall is the board-wide charge-B3 gauge-fill-tempo gap (U31/U29 family, DECISIONS 2026-08-03 LOG verdict) — the sim refills slightly slower than a real team, dropping the knife-edge 13th FB; it is NOT an RRH-specific lever. Explosion RESOLVED: skill damage, no core, body 1,195,658 during B3 = floor of sim bodies (never the carrier); the 2026-07-16 '4.41M explosion body' was a +421.2% amplified attach. Closed items: batch-accumulation vs Max Ammo:1 (cosmetic), countInFb scope (own Stage-3 window), explosion core (none), +421.2% (live). Still measurement-gated: flighted-nuke FB timing (delaySec 0.4, fbMajor true). Invisible-X history retained in DECISIONS; generic-MG-cold attribution unsupported (emma MG 0.977 OK, 2026-07-23).",
       "unmodeled": {
         "skill1": [
           "Damage to Interruption Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)"
         ],
-        "skill2": ["Attachable Projectile — Max Ammo: 1"],
+        "skill2": [
+          "Attachable Projectile — Max Ammo: 1 (COSMETIC per owner ruling 2026-08-04: one rocket 'loaded' at meter-full fires alongside the bullet on the first frame after 100%; not reflected in game, no damage effect — nothing to model)"
+        ],
         "burst": [
           "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)",
-          "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 3 — a second, separate kit line from the Stage 1 instance; inert on the partless boss)",
-          "Projectile Attachment Damage ▲421.2% for 10 sec (self; Burst Stage 3 — MEASURED-INERT on every visible class, 0.13% precision across 3 comps, 2026-07-14; removed as dead datamine entry 101631006, see note)"
+          "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 3 — a second, separate kit line from the Stage 1 instance; inert on the partless boss)"
         ]
       },
       "board": {
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9508
+            "ratio": 0.9656
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.9583
+            "ratio": 1.0028
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.8548
+            "ratio": 0.8416
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9561
+            "ratio": 0.8745
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.9265
+            "ratio": 0.9701
           }
         ],
         "n": 5,
-        "mean": 0.9293,
-        "mad": 0.0707,
+        "mean": 0.9309,
+        "mad": 0.0702,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -5531,6 +5636,47 @@
         "⚑ burst RESURRECT (1 incapacitated highest-final-ATK ally at 81.67% HP) is UNMODELED — there is no resurrection / death / HP-pool primitive in a DPS sim where nobody dies on the partless boss. META-DEFINING for real play (Rapunzel's signature raid value) but offensively inert here; estimate of board impact: none on damage, the entire reason she is fielded is unmodeled. Recipe: needs an HP-pool + death/revive model before it can be enacted; tier meta-defining.",
         "⚑ burst enemy STUN (all enemies 1s when an ally falls below 30% HP) is UNMODELED — there is no HP pool to gate the 'below 30%' threshold and no enemy-action model for the stun to interrupt (the boss deals no damage and its actions don't gate ally DPS). Status-gate + inert in a DPS sim.",
         "Zero damage lines and zero weapon-state modifiers in the whole kit — this unit cannot move its OWN damage. Her entire board footprint is cross-unit: recovery events on two channels (skill1 per full charge, burst per cast) plus an inert Max HP buff. Damage-neutral by construction; the unit spec proves byte-identity to the bare weapon whenever no ally consumes her recovery events."
+      ],
+      "board": null
+    },
+    "rapunzel-pure-grace": {
+      "name": "Rapunzel: Pure Grace",
+      "burst": "I",
+      "weapon": "SR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-03",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-03: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/rapunzel-pure-grace.json + scripts/kit-autonomy/manual-review/rapunzel-pure-grace.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-03; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; fresh build — shared shields proven as real events via a naga-type 'shielded' consumer; self-supplied requiresShielded gate proven live (strip shields -> 10.41 buff dies); blind override 4/6 blocks identical",
+      "date": "2026-08-03",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "S1-c hold-gate uptime flag (always-on upper bound ~100% real play; in-engine hold primitive missing — recipe: focus recording, buff-icon uptime vs shield icon); allies-target shared shield corroborated by 2 agents + naga mechanics but structurally inferred (recipe: one naga+Rapunzel:Pure Grace recording); no recorded comp yet (MODEL_ONLY)",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "■ Activates only when Full Charge is maintained for more than 1 sec while a Shield is set in front of this unit. Affects self.\nCurrent HP ▼ 2% every 1 sec continuously.\nRestores Shield HP equal to 3.16% of the skill user's final Max HP every 1 sec continuously."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1 SHARED SHIELDS (battle-start passive + on-burstCast re-shield): event/state only — the engine 'shield' effect carries NO shield-HP pool (v1 boss deals no damage). Each application emits a shielded event to ALL allies (fires their 'shielded' triggers, e.g. a naga-type consumer) and opens the target's shield-state window (shieldedUntilFrame); no durationSec = permanent at scope (label precedent). maxHpPct 20.59 (% of the CASTER's final Max HP) is recorded for kit-completeness only.",
+        "The '■ Affects self' header on both shield lines conflicts with the body text 'shared Shield … that protects all allies' — encoded target ALLIES (the shared shield reaches every ally; self-only would be the header-echo trap and would never fire ally 'shielded' triggers).",
+        "⚑ skill1 ATTACK DAMAGE ▲10.41% (all allies, 'continuously') is CALIBRATED on UPTIME, kit-literal on value/target/stat. Encoded passive (frame 0, no expiry = always-on) behind requiresShielded. The SHIELD half of the gate is real and SELF-SUPPLIED: her own battle-start shield opens her own shield window, so the gate passes at frame 0 — stripping her shield blocks kills the buff (proven in the unit spec, group G). The 'Full Charge maintained for more than 1 sec' half has NO engine primitive: her SR reaches full charge at chargeFrames 60 = exactly 1s and the sim fires at full charge, so a literal read gives ~0% in-engine uptime while real play (hold-to-aim between shots, shield self-supplied) is ~100%. ESTIMATE: ~100% real-play uptime; the always-on encoding is the upper bound and matches play. RECIPE: a rapunzel-pure-grace focus recording — compare the buff-icon uptime of the 10.41% Attack Damage grant against her shield icon. TIER: Tier-2 state gate (label 'Delusion is permanent in the no-incoming-damage sim' precedent for the always-on half).",
+        "skill2 SELF-HEAL (2% of caster final Max HP per full-charge attack): trigger shotFired — SR = one full charge per trigger pull (helm/liberalio precedent), so 'attacking with Full Charge' fires once per shot. Event-only: the engine heal carries NO HP amount and the heal targets SELF — her own kit has no 'recovery' trigger, so the self-recovery events are a downstream no-op. Modeled for kit-completeness; the unit spec pins that it moves no damage (neutrality groups) and reaches NO ally (crown's recovery consumer fires identically with and without it).",
+        "⚑ skill2 GATED HP-DRAIN / SHIELD-HP-RESTORE line is UNMODELED (verbatim in `unmodeled`): 'Current HP ▼ 2% every 1 sec' needs an HP pool to drain and 'Restores Shield HP equal to 3.16% …' needs a shield-HP pool — neither exists in a DPS sim (no incoming damage, shields never deplete). Defensive/damage-inert; ESTIMATE of board impact: zero damage. RECIPE: requires an HP-pool + shield-HP-pool model before it can be enacted. Deliberately NOT encoded as a repeating 1 Hz 'shield' effect — that would re-fire every ally's 'shielded' trigger once per second and massively over-credit shield-synergy teammates.",
+        "burst SELF MAX HP ▲10.13% for 10s: targetMaxHpPct on self (own-Max-HP basis; label precedent), resolved by the engine to a maxHpFlat grant of (10.13/100)×her final Max HP. Offensively INERT: she has no atkOfMaxHpPct conversion and v1 has no HP pool — proven by totals-equality in the unit spec (group B4). Kit-completeness only.",
+        "burst TEAM ATTACK DAMAGE ▲15.24% for 10s: her load-bearing damage line — attackDamagePct (Damage Up bucket) on all allies including self, keyed to HER OWN burstCast (never fullBurstEnter; the two-B1 fixture with liter as decoy pins the keying). The shield re-application on the same cast is a separate skill1-slot block (L2 — the line lives in the skill1 prose), matching the kit's line split.",
+        "Damage footprint = exactly the two Attack Damage lines (S1 10.41% permanent gated team buff + burst 15.24% 10s team buff). Everything else (shields, self-heal, self Max HP) is defensive/event-only: the unit spec proves the residue byte-identical to the bare weapon whenever the damage lines are absent (groups N1/N2)."
       ],
       "board": null
     },
@@ -5873,14 +6019,8 @@
       "residual": "coin-exclusivity (does 6.65% lapse at Shield Coin @30FC? med); Shield-Coin burst-rider heal asymmetry (20.1% omits no-restore clause, could arm crown recovery; med); ally-held negative damageTakenPct inert (low)",
       "unmodeled": {
         "skill1": [],
-        "skill2": [
-          "Coin-state progression itself (Sword Coin → Shield Coin at 30 Full Charges → Double Sword Coin at 5 own bursts in Shield Coin) is not tracked as engine state; the coin-gated lines are encoded on their nearest trigger with the gate approximated (all inert — see note flag 3)"
-        ],
-        "burst": [
-          "Activates when in Sword Coin status. Affects all allies. Max HP ▲ 10.15% of the skill user's Max HP without restoring HP, lasts for 10 sec (casterMaxHpPct ALLY grant; offensively inert AND coin-state-gated — the engine tracks no coin state, so the per-tier burst rider cannot be gated precisely; documented rather than fired every cast, which would over-credit the cadence)",
-          "Activates when in Shield Coin status. Affects all allies. Max HP ▲ 20.1% of the skill user's Max HP for 10 sec (casterMaxHpPct ALLY grant, offensively inert, coin-state-gated; HEAL ASYMMETRY ⚑ — this rider ALONE omits 'without restoring HP', so literally it also restores HP and could arm on-recovery consumers, but it is Shield-Coin-gated which the engine cannot track and the marginal recovery-consumer impact is small — see note flag 2)",
-          "Activates when in Double Sword Coin status. Affects all allies. Max HP ▲ 30.02% of the skill user's Max HP without restoring HP, lasts for 10 sec (casterMaxHpPct ALLY grant; offensively inert, coin-state-gated)"
-        ]
+        "skill2": [],
+        "burst": []
       },
       "board": {
         "records": [
@@ -5903,6 +6043,83 @@
         "band": "±8%",
         "temp": "OK  ·"
       }
+    },
+    "rumani": {
+      "name": "Rumani",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/rumani.json + scripts/kit-autonomy/manual-review/rumani.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; fresh build — stack gate via muscleUp resource proxy (power precedent); fixture delivers a real gate-closed first cast (8 gated applies of 9 casts); burstCast-vs-fullBurstEnter pinned by a B1-contention arm against liter; the only load-bearing line (burst all-ally normalAttackPct 10.05) converged byte-identically across blind derivations; no recorded comp yet",
+      "date": "2026-08-04",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "spot-check: muscleUp pool never lapses vs the real 2s stack expiry — rumani's ~2.15s reload gap EXCEEDS the 2s expiry (unlike power's 8-frame margin), so the gate can read open just after a reload boundary; zero damage consequence today (v1 consumes no self damageTakenPct) but it will silently govern any future HP-scaler/mitigation consumer; parts-trigger proxy counts every hit as a parts hit — honest only while partsDamagePct stays inert (helm-H4 precedent)",
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when landing a Full Charge attack during Full Burst. Affects the target.\nTaunts for 5 sec."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the taunt line ('landing a Full Charge attack during Full Burst → Taunts for 5 sec') is UNMODELED verbatim — the sim has no targeting/aggro model and v1 models no damage taken by allies, so a taunt moves nothing observable. Nearest-wrong encoding rejected: targetStatus is the ENEMY-status channel (a boss status) — a taunt is self-aggro, not a boss status; forcing it through that channel would be a fake model.",
+        "skill1: every rumani pull is a FULL CHARGE (RL charge 60f, no dump mode), so chargeCounter count:1 fires once per pull — the power precedent for per-full-charge triggers on this weapon.",
+        "skill1: the muscleUp resource pool (L6's gate source) does NOT expire; the real Muscle Up stacks lapse 2 sec after the last full charge. ⚑ EXPIRY DIVERGENCE: rumani's reload gap (~2.15s + charge) EXCEEDS the 2s expiry, so after a reload boundary the pool can overstate stacks (gate open where the real kit reads closed). estimate: zero damage divergence (the gated line is a defensive observable in v1); worst case one extra gated buffApply per post-reload cast. recipe: focused rumani recording across a >2s fire pause — Muscle Up icon expiry vs next burst's damage-taken grant. tier: low (defensive-only consequence).",
+        "skill2: 'hitting a target's Parts for 5 time(s)' is encoded as hitCount 5 — the sim has no parts axis, so every hit counts as a parts hit and partsDamagePct is inert vs the partless scope-lock boss. Both divergences cancel to zero damage; the line stays observable (22 four-ally firings / 180s).",
+        "burst: the Max HP ▲ 15.13% line is modeled (targetMaxHpPct self, dur 10) but DAMAGE-INERT — no atkOfMaxHpPct consumer, v1 models no damage-taken. Pinned by cast cadence, self scope, and the exact 15.13/3.04 flat-value ratio vs the S1 grant (both scale off her own static Max HP).",
+        "burst: the Damage Taken ▼ 20.06% grant is SELF-held damageTakenPct -20.06 — the engine's live damageTakenPct read is the boss-debuff channel (positive = boss takes more), so this self-grant is consumed by NOTHING in v1 (inert observable). Pinned self-held (targetIdx never null) and never boss-flipped."
+      ],
+      "board": null
+    },
+    "rupee": {
+      "name": "Rupee",
+      "burst": "II",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/rupee.json + scripts/kit-autonomy/manual-review/rupee.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "date": "2026-08-04",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "S1 'Increases stack count of buffs by 1' interpretation (+1-grant majority vs awb/diesel stack-cap dissent; gate opens shot 120 vs 150 — inert in all legal fixtures; one rupee-focus recording of the Mileage icon settles it); no-decay mileage-pool approximation; cadence tuple (datamine)",
+      "unmodeled": {
+        "skill1": [
+          "Increases stack count of buffs by 1. (PARTIALLY MODELED — the SELF slice is folded as +1 to the mileage pool on the same hitCount:100 trigger (skill1[1]); the CROSS-ALLY slice (teammates' stackable buffs) is out-of-domain ⚑3 and the mileage ATK-buff component of the self stack is unrepresentable ⚑2 — the line stays here verbatim as the audit trail)"
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "⚑ CADENCE TUPLE (ALWAYS-⚑): AR rate_of_fire 720 = 12 rounds/s nominal + reloadFrames 81 + ammo 60, all datamine (single-chunk reload, reload_bullet 10000) — drives the S1/S2 proc cadence (every 100 / 30 shots), the Mileage ramp timing and hence the burst-gate opening. Recipe: rounds/min + reload gap from any rupee-focus video.",
+        "⚑ MEASUREMENT-GATED (interpretation): the S1 'Increases stack count of buffs by 1' SELF slice is encoded as +1 to the mileage POOL ONLY — the stack's ATK-buff component (13.8%) is NOT granted because buff instances key on caster+slot+stat+value (sim.ts KR stacking rule), so a skill1-slot Mileage buff would be a parallel second instance (double-counted stacks), not a merge into S2's Mileage. ESTIMATE: ≤13.8% of rupee's OWN ATK under-credited during the opening ramp only (the pool reaches 5 at shot ~120; from then on S2 procs alone keep the real buff at 5 stacks, so the missing component exists only while stacks accrue, ≈ first 11s). RECIPE: popup-read rupee's ATK buff icon after an S1 proc in a rupee focus recording — does Mileage show +1 stack carrying the 13.8% value? TIER: override-only (an engine cross-slot stack-merge primitive would remove the divergence).",
+        "⚑ OUT-OF-DOMAIN (engine-core): the CROSS-ALLY slice of S1 'Increases stack count of buffs by 1' — +1 stack to each Iron ally's OWN stackable buffs (the soda-type team amplifier). ESTIMATE: zero in any encoding the sim can field today (purely a function of which stacking Iron comps are fielded; in the scope-lock fixture the only stackable buff any Iron ally holds is rupee's own Mileage, already folded as the self slice). RECIPE: an engine primitive 'bump each target's stackable buffs by N' reading each holder's live maxStacks buffs (does not exist; mica-snow-buddy ⚑M5 / pepper ⚑4 precedent). TIER: out-of-domain (engine-core); the self-slice is the honest in-scope model.",
+        "⚑ MEASUREMENT-GATED (no-lapse approximation, power/pepper precedent): the mileage POOL never decays (no timer-decay primitive) while the Mileage BUFF lapses 15s after its last refresh. At her sustained scope-lock cadence (S2 procs ≈ every 3.2s; S1 adds one ≈ every 10.6s) applications beat the 15s expiry by ~5×, so stacks never lapse while she keeps firing and the pool and the buff never disagree inside a sim fight — diverges only if she stops firing for >15s. RECIPE: read the Mileage stack icon across a long fire-pause in a rupee focus recording. TIER: override-only.",
+        "⚑ INTERPRETATION (awb/diesel dissent on record): alice-wonderland-bunny's gauntlet read the identical sentence as a stack-CAP raise and left it fully unmodeled, warning that a +1-grant reading 'spuriously accelerates the max-stacks gate'; diesel left it unmodeled as ambiguous. This encoding follows the NEWER mica-snow-buddy + pepper majority (self stackable resource folded as +1, cross-ally out-of-domain) because rupee's own stackable buff IS the gate read by her burst, exactly the mica/pepper shape. If a rupee focus recording shows S1 NOT feeding Mileage, drop skill1[1] (the pool block) and the gate simply opens one S2 proc later (shot 150 instead of 120) — the encoding is one block away from the conservative reading."
+      ],
+      "board": null
     },
     "sakura": {
       "name": "Sakura",
@@ -5980,6 +6197,47 @@
         "skill2: Dancing Flower Attack Damage ▲ 15.64%/15s time-averaged to 7.82% over the 90s/180s (50%) uptime (engine passive buffs cannot carry a duration) — was 1.30% for the single-window model ⚑",
         "burst: 457.14% ×10 sequential attacks modeled as 10 same-frame hits vs the single boss; the stacking DoT assumes all 10 stacks apply per cast (351.6%/s ×10s) ⚑",
         "cadence: datamined 12 pulls/s + 81-frame reload are unverified estimates ⚑"
+      ],
+      "board": null
+    },
+    "sakura-suzuhara": {
+      "name": "Sakura Suzuhara",
+      "burst": "I",
+      "weapon": "SMG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/sakura-suzuhara.json + scripts/kit-autonomy/manual-review/sakura-suzuhara.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; S6 blind override line-for-line identical; S5 blind suite green vs driver override (documented heal-isolation adaptation); kimi judge gotchas [] discrimination ok",
+      "date": "2026-08-04",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "hitCount fired-vs-landed semantics (engine counts fired rounds; prose says landed — flagged, estimate+recipe in caveats); SMG cadence tuple always-flag; alliesLowestHp leftmost-2 stand-in for 2-lowest-HP targeting",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "■ Activates after landing 60 normal attacks. Affects the 2 ally unit(s) with the lowest HP percentage.\nIncoming healing ▲ 15.18% for 10 sec.",
+          "■ Activates after landing 120 normal attacks. Affects the 2 ally unit(s) with the lowest HP percentage.\nDamage Taken ▼ 14.97% for 10 sec."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: 'Damage Taken ▲ 17.18%' on the target is the boss-facing damageTakenPct debuff (positive = boss takes MORE — the channel's documented polarity), NOT an ally attack buff and NOT the mirror of skill2's 'Damage Taken ▼'. KR stacking rule: same caster slot/stat/value OVERWRITES/refreshes across procs — one debuff instance, re-applied every 120th landed round (her full magazine), 5s duration vs ~6.35s mag cycle ≈ 79% uptime with a ~1.35s gap per cycle.",
+        "skill2 (Incoming healing ▲ 15.18% / 10s): UNMODELED verbatim — v1's heal effects carry no HP amount and the schema has no healing-received stat (validate-overrides STATS), so the amplifier multiplies nothing; damage-neutral. Nearest-wrong rejected: encoding it as a 'heal' effect every 60 hits would spuriously emit recovery events at SMG cadence and feed on-recovery consumers (crown-class kits) — a massive over-credit. It is a stat buff on the recipients, not a heal; pinned silent by the spec's negative assertions.",
+        "skill2 (Damage Taken ▼ 14.97% / 10s) ⚑ engine-core / out-of-domain: ally received-damage mitigation; v1 models no ally HP pool and no incoming boss damage, so it can never move anything here. ESTIMATE: in a real fight this is a meaningful survivability window on the 2 lowest-HP allies once per mag dump (~15% less damage taken for 10s) — damage-neutral in this sim. The boss-facing damageTakenPct channel is the WRONG direction/target — encoding it (as +14.97 or −14.97 on the boss) would manufacture a phantom team damage change on the exact same 120-hit frame as skill1, so it is NOT used (noise precedent). RECIPE: add an engine ally-HP-pool + incoming-boss-damage model and an ally received-damage-reduction stat (distinct from the boss-facing damageTakenPct debuff), then encode on hitCount:120 to alliesLowestHp count:2. TIER: engine-core (new primitive), out-of-domain for the no-incoming-damage v1 sim.",
+        "burst: the heal is recovery-EVENT cadence only — the 10.03%-of-caster-final-Max-HP magnitude is inherently unmodeled (no HP pool); only the window shape is kit-literal ('every 1 sec for 10 sec' → ticks:10 intervalSec:1, the type comment's documented HoT shape; helm precedent). The burst has NO damage component (datamined ulti skill_type SetBuff, no hurt values) and is damage-inert; its observable is the recovery stream driving teammate 'recovery' triggers.",
+        "burst: target alliesLowestHp count:2 resolves to the LEFTMOST-2 allies (documented v1 stand-in — no HP pool, 'lowest HP percentage' is indeterminate; types.ts). ⚑ in a real fight the heal lands on whoever is actually lowest; an on-recovery consumer only stays refreshed if it is among the real 2 targets. ESTIMATE: bounded by the consumer's buff value × the 10s window per cast; zero consequence in a comp with no recovery consumer. RECIPE: any sakura-suzuhara focus recording — read which 2 units the heal popups land on vs their HP bars. TIER: low (only moves comps that stack a recovery consumer).",
+        "skill1 ⚑ hit-count semantics (cross-family S6 flag, reconciled): the engine's hitCount accrues FIRED rounds × hitsPerShot (sim.ts hitCounters), the repo convention for 'after landing N normal attacks'; in-game SMG spread means landed ≤ fired, so the real activation can lag the sim's and the debuff duty cycle is slightly over-credited. ESTIMATE: bounded by the miss fraction over 120 rounds vs the immobile scope-lock-style boss (high hit rate; the lag is a fraction of one mag cycle, not a re-phase). RECIPE (S6): focus-record her in a graded comp and measure the interval between consecutive Damage Taken ▲ applications on the boss vs the magazine boundaries off the ammo counter — at the reload = fired-count correct; lagging into the next mag = raise count by the observed landing fraction. TIER: medium — her entire team contribution is this debuff's uptime, so a cadence error scales it 1:1.",
+        "cadence tuple ⚑ (always-⚑): pullsPerSec is the engine-default SMG cadence (datamined rate_of_fire 1440 fired on 60fps frame boundaries), reloadFrames 81, ammo 120 — unmodified by this override. Both live and unmodeled triggers are hit-count-keyed, so any cadence error propagates 1:1 into the S1 debuff duty cycle. RECIPE: read shots/sec + reload gap from any focus recording. TIER: standard."
       ],
       "board": null
     },
@@ -6079,6 +6337,48 @@
         "temp": "COLD ▼"
       }
     },
+    "snow-crane": {
+      "name": "Snow Crane",
+      "burst": "II",
+      "weapon": "SR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (7/7 kit lines: 5 FAITHFUL — S1a grant, S2a charge-heal, S2b FB-entry shield, burst heal, burst Pierce — and 2 DOCUMENTED_GAP — Proof of Violation, Terminated Contract — both verbatim in unmodeled with reasons and a recipe; the two partial-clause elisions, S1a's Terminated-Contract off-gate and S2a's ERA-membership target filter, are documented in caveats and offensively inert) (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/snow-crane.json + scripts/kit-autonomy/manual-review/snow-crane.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged | kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; clean-weapon basis — CW1 damage-neutrality proven (bursts-off basis + in-team bare equality); countInFb:3 authored around the chargeCounter SBS-default trap",
+      "date": "2026-08-04",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "countInFb engine-default semantics (firePull); burstCast-vs-fullBurstEnter trigger-identity split; heal-magnitude inertness (v1 has no HP pool) | countInFb engine-default semantics (firePull); burstCast-vs-fullBurstEnter trigger-identity split; heal-magnitude inertness (v1 has no HP pool)",
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when recovery takes effect if the recovery is not coming from this unit. Affects self. Proof of Violation: Outgoing healing ▼ 10% continuously, up to 3 time(s)."
+        ],
+        "skill2": [
+          "■ Activates when Proof of Violation reaches max stacks. Affects self. Terminated Contract: Gains immunity to Proof of Violation continuously. Recovers 0.24% of the skill user's final Max HP as HP every 1 sec continuously."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "⚑ S1a's activation clause 'Activates only while not in Terminated Contract status' is NOT gated: there is no negative self-status primitive, and Terminated Contract is unreachable without the unmodeled Proof-of-Violation stack counter below — so the ERA aura reads unconditional. Offensively inert either way (ally-granted Max HP feeds no damage path; the atkOfMaxHpPct conversion is self-only, and snow-crane carries no HP→ATK scaler).",
+        "⚑ S2a's target filter 'allies in Exclusive Recovery Agreement status' is elided to all allies: S1a grants ERA to every ally continuously (pre-Terminated-Contract), so at scope the two sets are coextensive; the filter can only bite post-Terminated-Contract, which is the unmodeled state below.",
+        "⚑ chargeCounter carries countInFb:3 EXPLICITLY: the engine's chargeCounter defaults countInFb to 1 inside the 10s window after the owner's OWN burst cast (SBS-specific semantics baked into the primitive). snow-crane's kit has no such in-burst modification — omitting countInFb would fire the heal on EVERY full charge for 10s after each of her casts. countInFb:3 keeps the threshold at 3 everywhere.",
+        "Heal MAGNITUDES (S2a 1.32% / burst 44.68% of the skill user's final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount (v1 has no HP pool). Both lines are implemented for their TANDEM value only — they fire allies' 'recovery' triggers.",
+        "⚑ The Proof-of-Violation → Terminated-Contract cascade (S1b + S2c) is UNMODELED whole: (1) the engine's 'recovery' trigger has no SOURCE filter — the kit's 'recovery not coming from this unit' clause is inexpressible, and since her own S2a/burst heals target all allies INCLUDING herself, counting all recoveries would self-stack Proof of Violation and flip Terminated Contract in EVERY comp (the nearest-wrong model, which is worse than none); (2) there is no self-status channel for ERA / Terminated Contract membership; (3) S2c's regen is unbounded ('continuously') and heal ticks are finite. The payload is sustain-only and damage-inert. Recipe: needs a recoveryFromOther trigger (or HP-pool modeling), then a PoV resource pool (0..3) + resourceGate-gated ERA/S2a + a bounded regen.",
+        "burst Pierce line is a REAL timed window but damage-inert in v1: gainPierce only matters through a pierceDamagePct buff (no shipped unit carries one) and PIERCE_CORE_DOUBLE is off (and keyed to the static hasPierce flag, never a timed pierceUntilFrame window). The unit test probes the window through an in-memory pierceDamagePct buff. The clean-weapon basis additionally runs disableBursts:true, so she never casts there at all.",
+        "Zero damage lines and zero weapon-state modifiers in the whole kit — snow-crane is the SR clean-weapon basis cell: her override must sim byte-identical to the empty kit (CW1 damage-neutrality, owner ruling 2026-08-01). Her entire board footprint is cross-unit: recovery events (2 channels), a full-burst shield, an inert Max HP aura, and a v1-inert timed Pierce window."
+      ],
+      "board": null
+    },
     "snow-white": {
       "name": "Snow White",
       "burst": "III",
@@ -6122,24 +6422,24 @@
         "records": [
           {
             "comp": "C-SW control (neutral, focus snow-white)",
-            "ratio": 0.893
+            "ratio": 0.9014
           },
           {
             "comp": "C-Helm control (neutral, focus helm)",
-            "ratio": 0.905
+            "ratio": 0.9246
           },
           {
             "comp": "C-LM control (neutral, focus little-mermaid)",
-            "ratio": 0.9954
+            "ratio": 1.004
           },
           {
             "comp": "C-Crown control (neutral, focus crown)",
-            "ratio": 0.9197
+            "ratio": 0.9277
           }
         ],
         "n": 4,
-        "mean": 0.9283,
-        "mad": 0.0717,
+        "mean": 0.9394,
+        "mad": 0.0626,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -6190,15 +6490,15 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.93
+            "ratio": 0.9417
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9451
+            "ratio": 0.957
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.983
+            "ratio": 1.0023
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
@@ -6206,9 +6506,9 @@
           }
         ],
         "n": 4,
-        "mean": 0.9422,
-        "mad": 0.0578,
-        "band": "±8%",
+        "mean": 0.9529,
+        "mad": 0.0482,
+        "band": "±5%",
         "temp": "COLD ▼"
       }
     },
@@ -6294,12 +6594,12 @@
           },
           {
             "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
-            "ratio": 0.764
+            "ratio": 0.7705
           }
         ],
         "n": 2,
-        "mean": 0.7897,
-        "mad": 0.2103,
+        "mean": 0.793,
+        "mad": 0.207,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -6378,6 +6678,47 @@
         "skill1: cadence tuple (SG rate of fire, reloadFrames 111) is the unverified datamine — read rounds/min + the reload gap from a focus video (⚑)",
         "skill1: her only damage is base SG spray — per-unit SG pellet landing is unmeasured; the class SG landing table is the shipped default (⚑)",
         "skill2: the emergency heal (squad HP < 15%, consumes a ticket) is unmodeled — the sim models no incoming boss damage and the schema has no HP-threshold trigger; on-recovery consumers are still driven every rotation by her Burst heal"
+      ],
+      "board": null
+    },
+    "sora": {
+      "name": "Sora",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/sora.json + scripts/kit-autonomy/manual-review/sora.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "date": "2026-08-04",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "part-destroy trigger absent (K2 gated lines inert at scope — diesel/ark-ranger-black precedent); heal-magnitude inertness (v1 event-only heals); burstCast-vs-fullBurstEnter trigger identity (+82f)",
+      "unmodeled": {
+        "skill1": [
+          "■ Activates at the start of battle. Affects self.\nOutgoing healing ▲ 35.2% continuously."
+        ],
+        "skill2": [
+          "■ Activates when an ally or self destroys an enemy's part. Affects all allies.",
+          "Storage: Stores excess healing received by the skill user, up to 5.36% of their Max HP. Stacks up to 5 time(s) and lasts for 15 sec.",
+          "ATK ▲ 23.74% of the skill user's ATK for 15 sec."
+        ],
+        "burst": ["Removes 1 debuff(s)."]
+      },
+      "caveats": [
+        "burst: the heal is event-only — the 52.27%-of-final-Max-HP magnitude is unrecordable in v1 (no HP amounts), and 'final Max HP' scaling has no carrier; the block's observable is the recovery events it emits to allies on her cast frame",
+        "burst: keyed burstCast (her own Burst I cast), NOT fullBurstEnter — the cast precedes the Full Burst window and a FB-entry keying would misattribute team FBs another Burst I opened (multi-B1 generality)",
+        "skill2: the part-destruction trigger has no engine primitive and the scope boss is partless, so the WHOLE slot is verbatim-unmodeled rather than proxied onto a reachable trigger — a substitute trigger would materialize a team ATK grant the kit never gives vs partless targets (spec-tested counterfactual)",
+        "gauge: no gauge-per-shot.json row — RL modal fallback (280 energy/trigger x focus charge mult); her 40s-cd cast cadence in fixtures is gauge/CD-limited by that estimate, which rescales nothing kit-side (no kit line keys off her shots)"
       ],
       "board": null
     },
@@ -6664,12 +7005,12 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.9987
+            "ratio": 0.9985
           }
         ],
         "n": 1,
-        "mean": 0.9987,
-        "mad": 0.0013,
+        "mean": 0.9985,
+        "mad": 0.0015,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }

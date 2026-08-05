@@ -1,0 +1,107 @@
+{
+  "slug": "rumani",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Full Charge attack → Muscle Up Max HP ▲",
+      "disposition": "FAITHFUL",
+      "scope": "Self Max HP stat only; applies per full-charge shot (RL always fires full-charged in the sim, chargeFrames 60), not per hit-count of a scoped damage type.",
+      "durationSemantics": "durationSec 2 per application with maxStacks 5, refresh-on-reapply. NOT permanent, NOT rounds. Critical: reloadFrames 129 (~2.15s) > 2s duration, so the stack pool collapses to 0 during every reload — steady-state is a sawtooth, not a held cap.",
+      "triggerIdentity": "shotFired (every pull is a Full Charge attack for this RL). Not fullBurstEnter, not hitCount-on-landing (hitsPerShot 1 makes shotFired vs hitCount numerically identical here, but shotFired matches 'performing').",
+      "targetSet": "self only (targetMaxHpPct → emitted as stat 'maxHpFlat', flat HP = 3.04% of rumani's own Max HP per stack)",
+      "nearestWrongModel": "Stacks modeled permanent/until-reload (no 2s expiry), so Muscle Up sits at max stacks for the whole fight and the burst's max-stacks gate is always satisfied; or the Max HP dropped entirely as 'defensive, skip'.",
+      "distinguishingAssertion": "Filter buffApply events stat==='maxHpFlat' with casterIdx===targetIdx===rumani's slot from skill1: stacks must climb 1→5 across consecutive shots with each apply's expiresFrame ≈ applyFrame+120; after any reload event (129f > 120f gap) the NEXT apply must report stacks===1 again. Red if stacks never reset post-reload (permanent misread) or if no skill1 maxHpFlat applies exist at all (dropped-line misread).",
+      "inertness": "Must move ZERO damage for every unit: rumani has no atkOfMaxHpPct/HP-scaling consumer, so totals(res) must be bit-identical with skill1 block 1 removed via withPatchedOverride.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ Full Charge during Full Burst → Taunts 5s",
+      "disposition": "UNMODELED",
+      "scope": "Enemy aggro control only — no damage component.",
+      "durationSemantics": "5 sec wall-clock (irrelevant at scope).",
+      "triggerIdentity": "on-hit (landing) with fbGate:'inFb' if it were modeled — note 'during Full Burst' is an FB-state gate, NOT a burstCast condition.",
+      "targetSet": "the target (enemy/boss)",
+      "nearestWrongModel": "Inventing a damage or debuff payload for the taunt (e.g. a damageTakenPct rider), or modeling it as a buff block that pollutes the event log.",
+      "distinguishingAssertion": "No buffApply and no damage event attributable to this line; totals identical with the line absent vs present. Verbatim text must appear in unmodeled.skill1.",
+      "inertness": "Must move nothing — the v1 boss deals no damage and has no targeting model; taunt is pure aggro.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ hit Parts ×5 → Damage to Parts ▲ allies",
+      "disposition": "FAITHFUL",
+      "scope": "Parts-damage bucket ONLY (partsDamagePct — 'parsed but inert in v1, no parts on the boss'). NOT generic Attack Damage, NOT normal-attack damage.",
+      "durationSemantics": "durationSec 5, re-triggerable. Not rounds.",
+      "triggerIdentity": "hitCount count:5 as the nearest expressible trigger — but the kit condition counts PARTS hits, and the scope-lock boss is PARTLESS, so the real-game trigger literally never fires here. Whether encoded as hitCount:5 (fires, applies an inert stat) or left un-triggered, the damage outcome must be identical: zero.",
+      "targetSet": "all allies (including self)",
+      "nearestWrongModel": "'Damage to Parts ▲ 10.05%' mis-encoded as generic attackDamagePct/damageTakenPct — a permanent-uptime ~10% team-wide Damage-Up on a boss where the line should be totally inert. This is the single biggest over-credit trap in the kit.",
+      "distinguishingAssertion": "Assert NO buffApply from rumani's skill2 with stat 'attackDamagePct' (or any non-partsDamagePct stat) at value 10.05 exists; and totals(res) for ALL FIVE slugs are identical when skill2 is emptied via withPatchedOverride(rumani, o => { o.skill2 = [] }). Green if faithful (inert), red under the generic-damage misread (every unit's total rises).",
+      "inertness": "Whole-team damage must be untouched — this is an inertness-primary line at scope lock (partless boss, partsDamagePct inert).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ self: Max HP ▲ 15.13% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Self Max HP stat; no damage scaling (rumani has no HP→ATK conversion).",
+      "durationSemantics": "durationSec 10, wall-clock.",
+      "triggerIdentity": "burstCast (rumani's OWN Burst-I cast) — NOT fullBurstEnter. With liter as the fixture's fixed B1, rumani and liter COMPETE for the B1 slot each rotation; the buff must appear only on rotations rumani actually casts.",
+      "targetSet": "self",
+      "nearestWrongModel": "Keyed to fullBurstEnter, applying every team Full Burst including rotations where liter cast B1 instead of rumani.",
+      "distinguishingAssertion": "Count rumani burstCast events (cfg.onEvent kind 'burstCast', rumani's slot); the number of burst-sourced maxHpFlat buffApply events (value ≈ 0.1513 × rumani Max HP, distinguishable from skill1's 3.04% stacks by value) must equal rumani's burstCast count, NOT the fullBurstStart count. Red under the fullBurstEnter misread whenever liter out-competes rumani for a rotation.",
+      "inertness": "Zero damage movement for all units (no HP-scaler consumer); totals identical with the line removed.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ allies: Normal Attack Damage Mult ▲ 10.05%",
+      "disposition": "FAITHFUL",
+      "scope": "NORMAL-ATTACK damage multiplier only — the normalAttackPct stat, which scales each holder's normal-attack multiplier. It must NOT lift skill/burst/rider damage and must NOT be encoded as attackDamagePct (additive, diluted Damage-Up bucket — different composition and different cross-buff interaction).",
+      "durationSemantics": "durationSec 10, wall-clock.",
+      "triggerIdentity": "burstCast (own B1 cast), same rumani-vs-liter divergence as the previous line — fullBurstEnter over-credits every rotation liter casts.",
+      "targetSet": "all allies INCLUDING self (target kind 'allies' with no excludeSelf — the kit says 'all allies', not 'except self')",
+      "nearestWrongModel": "attackDamagePct 10.05 for 10s (wrong bucket: additive/diluted, and it would also boost skill+burst damage), or the same value on fullBurstEnter (wrong trigger).",
+      "distinguishingAssertion": "On a rotation where rumani casts (burstCast event present): every one of the 5 units receives a buffApply with stat==='normalAttackPct', value===10.05, casterIdx===rumani's slot; AND no buffApply with stat==='attackDamagePct' value 10.05 exists. Then assert damage events during the window: 'normal'-category damage mult reflects the lift while a skill-bucket damage event's value is unchanged vs the patched-out baseline. Red under both the wrong-bucket and wrong-trigger reads.",
+      "inertness": "Skill-proc and burst-cast damage instances must NOT move; only normal-attack damage moves, only during the 10s windows following rumani's own casts.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Muscle Up max stacks → Dmg Taken ▼ self",
+      "disposition": "UNMODELED",
+      "scope": "SELF damage-taken reduction — pure mitigation. The v1 boss deals no damage, so this is defensively inert.",
+      "durationSemantics": "durationSec 10 (irrelevant at scope).",
+      "triggerIdentity": "burstCast gated on Muscle Up stacks === 5 at cast time (a resource/stack-threshold gate). Given the 2s stack duration vs 2.15s reload, whether the gate is even satisfied at cast depends on shot timing — another reason to leave it unmodeled rather than fake it.",
+      "targetSet": "self",
+      "nearestWrongModel": "'Damage Taken ▼ 20.06%' mis-read as the boss-debuff damageTakenPct channel (target/sign flip) — that stat means 'boss takes more damage' and would hand the whole team a spurious ~20% damage window every rumani burst. Second-nearest: modeling it ungated (ignoring the max-stacks condition).",
+      "distinguishingAssertion": "Assert NO buffApply with stat==='damageTakenPct' exists anywhere in the run (boss-held debuffs emit casterIdx===null — filter by stat+value 20.06 to be safe), and totals for all units are identical with this block absent. Green when faithful (unmodeled/inert), catastrophically red under the boss-debuff flip.",
+      "inertness": "Team damage must be completely untouched — this is the kit's highest-risk over-credit line despite being defensive.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Muscle Up Max HP stack buff",
+    "skill2:Damage to Parts ▲ 10.05% (inertness-primary)",
+    "burst:self Max HP ▲ 15.13%",
+    "burst:allies Normal Attack Damage Multiplier ▲ 10.05%"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Taunts for 5 sec."
+    ],
+    "skill2": [],
+    "burst": [
+      "Damage Taken ▼ 20.06% for 10 sec. (Muscle Up max-stacks gated — defensive, boss deals no damage)"
+    ]
+  },
+  "notes": "Rumani is a Burst-I Defender whose ONLY damage-moving line is the burst's ally-wide Normal Attack Damage Multiplier ▲ 10.05% — everything else is Max HP, taunt, mitigation, or a parts buff that is doubly inert at scope (partless boss + inert partsDamagePct stat). Expected shared-prior misreads to attack: (1) 'Damage to Parts ▲' encoded as generic attackDamagePct — a permanent ~10% team over-credit that the partless-boss inertness assertion must kill; (2) burst 'Damage Taken ▼' on SELF flipped into the boss damageTakenPct debuff channel — a ~20% team over-credit; assert the stat never appears; (3) burst lines keyed to fullBurstEnter instead of burstCast — this genuinely diverges in the control fixture because liter (the fixed B1) competes with rumani for the B1 cast each rotation, so assert buff-application count equals rumani's burstCast count, not the FB count; (4) 'Normal Attack Damage Multiplier' belongs in normalAttackPct (scales the normal mult), not the diluted attackDamagePct Damage-Up bucket, and must not touch skill/burst-bucket damage; (5) Muscle Up's 2s stack duration versus the 129-frame (~2.15s) reload means stacks provably lapse every magazine — a permanent-stack model is wrong and also silently changes the burst mitigation line's gate truth value. All magnitudes are kit-literal (DATAMINED); no ⚑ fields are required — cadence is the standard RL charge cycle already owned by the base stats, and no kit line carries an untriggered damage value. Fixture note: rumani is B1, so controlComp's liter/crown/helm scaffolding still bursts fine, but any assertion about rumani's own casts must count burstCast events rather than assume she casts every rotation.",
+  "model": "claude-fable-5"
+}

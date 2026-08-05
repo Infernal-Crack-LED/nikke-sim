@@ -1,0 +1,109 @@
+{
+  "slug": "power",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 1
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 6.4,
+          "durationSec": 3,
+          "maxStacks": 5,
+          "rampSec": 6
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 18
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "projectileExplosionPct",
+          "value": 38.61,
+          "durationSec": 10
+        },
+        {
+          "kind": "instantReload"
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1584,
+          "noFb": true,
+          "noRange": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1584,
+          "noFb": true,
+          "noRange": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Activates 1 time(s) per battle.",
+      "Activates after 18 normal attacks if Blood Fiend is at max stacks."
+    ],
+    "burst": [
+      "Affects the 1 enemy unit(s) with the highest final ATK.",
+      "Activates when Blood Fiend is at max stacks."
+    ]
+  },
+  "caveats": [
+    "⚑ skill1 trigger: kit says 'Activates when attacking with Full Charge' — modeled as chargeCounter count:1 (every full charge). If the engine's RL charge cycle differs from one-charge-per-pull, the stack ramp rate is wrong.",
+    "⚑ skill1 rampSec 6 is an UNMEASURED estimate: 5 stacks × 3 sec each with a ~1.2s charge+fire cycle means max stacks are reachable and holdable, but the opening seconds run below cap. Value chosen as ~5 charge cycles.",
+    "⚑ skill1 stack STEADY-STATE is the load-bearing unknown: 3 sec duration vs the RL charge cadence decides whether 5 stacks are sustainable at all. If a full-charge cycle exceeds 3 sec, stacks can never exceed 1 and both the skill2 and burst gates NEVER open.",
+    "⚑ skill2 'once per battle' is NOT modeled — the engine has no per-battle-cap primitive on a hitCount trigger, so this block re-fires every 18 normal attacks. This OVER-CREDITS both the explosion-radius buff and the free reload. A `everyN` gate cannot express a hard one-shot cap either. Flagged, not fudged.",
+    "⚑ skill2 'if Blood Fiend is at max stacks' gate is NOT modeled — there is no resourceGate on a buff-stack count (stacks are a buff property, not a declared resource). The block therefore fires unconditionally at 18 normal attacks. Over-credits when stacks are below cap.",
+    "⚑ skill2 'Explosion Radius ▲ 38.61%' mapped to projectileExplosionPct. Explosion RADIUS is a geometry/AoE stat, not literally a damage percentage; against a single partless boss a radius increase may be entirely INERT in reality. Mapping to the RL-only Damage-Up bucket is the closest schema fit but may over-credit by the full 38.61%.",
+    "⚑ burst second block's 'Activates when Blood Fiend is at max stacks' gate is NOT modeled (same stack-gate limitation). Modeled as unconditional, which over-credits any burst cast below max stacks.",
+    "⚑ burst target 'the 1 enemy unit with the highest final ATK' collapses to the single boss at scope lock — modeled as plain enemy, no behavioural difference here.",
+    "⚑ Both burst hits set noFb: burst-cast damage lands before the Full Burst window opens (verified project fact), so the +50% major does not apply. noRange follows the rider convention.",
+    "⚑ Cadence tuple (chargeFrames 60, reloadFrames 141, ammo 6) is datamined and unreliable; the whole stack-uptime model rests on it."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Power is an RL/Fire/Attacker Burst III. S1 'Blood Fiend' is a self ATK stack (6.4%/stack, 5 stacks, 3s) built by full-charge attacks — modeled as a chargeCounter self-buff with a ramp haircut. S2 is a one-per-battle explosion-radius window plus a full instant reload, gated on max Blood Fiend stacks after 18 normal attacks; the once-per-battle cap and the max-stack gate are BOTH unexpressible in the current schema and are flagged, not approximated. Burst is 1584% of final ATK as burst damage plus a second 1584% instance gated on max stacks; both authored FB-exempt per the burst-cast-lands-pre-FB rule. The load-bearing open question is whether the RL full-charge cadence can sustain 5 stacks against a 3-second per-stack duration — every gated component in this kit hangs off it.",
+  "hasPierce": false
+}

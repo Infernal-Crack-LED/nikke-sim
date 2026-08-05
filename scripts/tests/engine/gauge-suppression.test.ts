@@ -4,8 +4,8 @@
 //
 // THE RULE (sim.ts `addGauge`): while a Full Burst window is open, or while the burst CHAIN is
 // running (stages 1–3), team fire generates NO burst gauge at all. User-confirmed 2026-07-13,
-// correcting an over-read of the bar anatomy — the fast post-FB refill is charge units releasing
-// held charges plus normal team rates, not generation continuing through the window.
+// re-confirmed 2026-08-04 — the lock lifts the instant FB ends (no lingering post-FB delay; the
+// observed ~3-4s to the next chain is the natural refill-from-zero).
 //
 // It is load-bearing for the whole rotation model: gauge is what times the next chain, so a leak
 // here shortens every cycle and adds Full Bursts to the fight — the one output the graded comps

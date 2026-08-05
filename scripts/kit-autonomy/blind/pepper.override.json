@@ -1,0 +1,108 @@
+{
+  "slug": "pepper",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 1
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": []
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 160,
+          "noRange": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1237.5,
+          "noRange": true,
+          "noFb": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Refresh Heart: Incoming healing ▲ 6.53%, stacks up to 5 time(s) and lasts for 15 sec. (no incoming-healing StatKey; no HP pool modeled — tracked only as the named stack the burst heal gates on)",
+      "Restores HP equal to 4.45% of the skill user's final Max HP. (HP amount not modeled; the recovery EVENT is emitted so teammate on-recovery triggers fire)"
+    ],
+    "skill2": [
+      "ATK ▼ 3.55% for 5 sec. (enemy ATK debuff — boss damage is unmodeled at scope lock, so this is inert)"
+    ],
+    "burst": [
+      "Increases stack count of stackable buffs by 1. (no schema primitive for incrementing an arbitrary already-applied buff's stack count — engine has no cross-buff stack-bump effect)",
+      "Activates when Refresh Heart is at max stacks. (stack-count gate not expressible — no resourceGate on a named ally buff; modeled as unconditional, see caveats)",
+      "Restores HP equal to 27.22% of the skill user's final Max HP. (HP amount not modeled; recovery event only)"
+    ]
+  },
+  "caveats": [
+    "⛑ skill2 trigger + cadence INVENTED: the kit line carries no activation clause, so it is modeled as interval/20s from the datamined skill cooldown. Both the kind (interval vs an event trigger) and the 20s are unmeasured.",
+    "⛑ skill2 first-fire phase is the t=sec convention (first hit at 20s, not t=0) — not a kit-stated or measured value.",
+    "⛑ burst 27.22% heal is gated in-kit on Refresh Heart at MAX (5) stacks; that gate is not modeled, so the recovery event fires on every burst cast. Refresh Heart gains 1 stack per last-bullet (one per 9-round magazine), so at a real cadence max stacks is plausibly reached before the first burst — but whether it holds at cast time (15s stack duration vs magazine cadence) is unverified. If it does NOT hold, this over-fires teammates' on-recovery triggers.",
+    "⛑ The 'increases stack count of stackable buffs by 1' line is dropped entirely. If it lands on a teammate's damage-relevant stacking buff, the model UNDER-credits the team.",
+    "⛑ Both damage lines are written noRange (function damage takes no +30% range bonus). Burst-cast damage is noFb per the pre-FB rule; the skill2 rider keeps FB-by-timing (default ON).",
+    "⛑ Cadence tuple (SG 9 ammo / 142 reloadFrames / 10 hitsPerShot) is datamined and drives last-bullet frequency, which is the ONLY thing making skill1 fire — an ammo/reload error moves both heal and stack cadence."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. pepper is an SG/Wind/Supporter/Burst-I healer with almost no self-damage surface: her only damage is skill2's 160% rider and the burst's 1237.5% hit, both single-target function damage on the highest-ATK enemy (one boss at scope lock, so the targeting clause is a no-op). Her sim-relevant output is therefore (a) two damage instances and (b) recovery EVENTS that fire teammates' 'recovery' triggers — heals are modeled as events with no HP amount, per the engine's no-HP-pool scope. Refresh Heart (incoming healing ▲) has no StatKey and no consumer while HP is unmodeled; it is carried in unmodeled, not as a buff block. The empty-effects allies block on skill1 is retained ONLY to keep the audit 1:1 with the kit's two ■ headers — it applies nothing.",
+  "hasPierce": false
+}

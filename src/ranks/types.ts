@@ -28,6 +28,7 @@ export type BurstGenRow = [
 ];
 export interface BurstGenArtifact {
   generatedAt: string;
+  inputsHash: string; // shared ranks bucket — scripts/artifact-input-hash.ts
   methodology: string;
   focusedMethodology: string; // methodology note for `focusedEntries` (the unit as its team's designated burst-gen carry)
   units: Record<string, RankUnitMeta>;
@@ -50,6 +51,7 @@ export type BurstCdrRow = [
 ];
 export interface BurstCdrArtifact {
   generatedAt: string;
+  inputsHash: string; // shared ranks bucket — scripts/artifact-input-hash.ts
   methodology: string;
   units: Record<string, RankUnitMeta>;
   profiles: Record<string, string>;
@@ -69,6 +71,7 @@ export type SustainRow = [
 ];
 export interface SustainArtifact {
   generatedAt: string;
+  inputsHash: string; // shared ranks bucket — scripts/artifact-input-hash.ts
   methodology: string;
   units: Record<string, RankUnitMeta>;
   profiles: Record<string, string>;
@@ -87,6 +90,7 @@ export type BufferRow = [
 ];
 export interface BufferChartArtifact {
   generatedAt: string;
+  inputsHash: string; // shared ranks bucket — scripts/artifact-input-hash.ts
   methodology: string;
   units: Record<string, RankUnitMeta>;
   profiles: Record<string, string>;
@@ -103,6 +107,7 @@ export type B1B2DpsRow = [
 ];
 export interface B1B2DpsArtifact {
   generatedAt: string;
+  inputsHash: string; // shared ranks bucket — scripts/artifact-input-hash.ts
   methodology: string;
   units: Record<string, RankUnitMeta>;
   profiles: Record<string, string>;

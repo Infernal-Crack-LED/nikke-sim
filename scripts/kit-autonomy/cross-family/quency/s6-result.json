@@ -1,0 +1,172 @@
+{
+  "slug": "quency",
+  "leakDetected": "Non-substantive mention only: the session's ambient memory index names the slug in an unrelated burst-eligibility rule ('a lone B3 like dorothy/quency'). It carries NO kit magnitudes, effects, triggers, or override content, and it CONTRADICTS this packet's stated Burst II — I modeled strictly from the packet prose. Nothing about this unit's answer leaked; the redacted methodology and style example were clean.",
+  "override": {
+    "slug": "quency",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 60
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterMaxHpPct",
+            "value": 12.42,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 20
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 2,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 16.11,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 2,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 43.87,
+            "durationSec": 5
+          },
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 29.9,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1 trigger: 'after 60 normal attacks' is encoded as hitCount:60, which the engine counts in ROUNDS, not trigger pulls. This unit is an SMG with hitsPerShot 2, so if the kit means 60 PULLS the real cadence is twice as fast as modeled. Unmeasured.",
+      "⚑ skill1 scaling basis: the kit duplicates 12.42% of the HIGHEST-Max-HP ally's Max HP; the schema has no highest-ally Max-HP analog to highestAllyAtkPct, so it is approximated as casterMaxHpPct on a self target (12.42% of this unit's OWN Max HP). Wrong whenever a higher-Max-HP ally (typically a Defender) is present. Offensively inert today either way — this unit carries no atkOfMaxHpPct — so the approximation moves no damage, but it is NOT faithful and must not be cited as a modeled HP value.",
+      "⚑ skill2 trigger is KIT-SILENT (no activation clause in the prose). Modeled as interval:20s to match the only cooldown figure in the packet; the live alternative is fullBurstEnter (a 5s window keyed to Full Burst entry). Uptime differs materially between the two — do not trust this unit's skill2 contribution before the trigger is pinned.",
+      "⚑ Both ally-buff blocks rank by LIVE effective ATK (byFinalAtk:true) because the prose literally says 'highest final ATK'. No excludeSelf — the kit does not say 'except the skill user', so this unit is a valid target of its own buffs.",
+      "⚑ Cadence: the SMG fire-rate/reload datamine (reloadFrames 121, nominal rate) is engine-side and known-unreliable; effective rate quantizes to 60/ceil(60/nominal). Not an override field, but it directly drives the skill1 hitCount cadence above."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (SMG/Electric/Supporter/Burst II). Full kit is modeled — three slots, zero silent drops. skill1: a self Max-HP duplication on a 60-normal-attack counter, 10s; approximated as casterMaxHpPct because the schema cannot express 'of the highest-Max-HP ally' (offensively inert for this unit — no atkOfMaxHpPct consumer). skill2: ATK ▲16.11%/5s to the 2 highest-final-ATK allies on a KIT-SILENT trigger, modeled as interval:20s (⚑ — fullBurstEnter is the live alternative). burst: own burstCast (Burst II, pre-Full-Burst by timing) grants the same 2 highest-final-ATK allies Max HP ▲43.87%/5s (targetMaxHpPct, ally-granted so it feeds no teammate's HP→ATK conversion) and Critical Damage ▲29.9%/10s — the latter is the unit's only real damage contribution and it is a plain, unscoped critDamagePct with no normal-attack scoping in the text."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after 60 normal attacks.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger { kind:'hitCount', count:60 } — recurring conditional trigger, not a one-shot. ⚑ engine counts ROUNDS; SMG hitsPerShot 2 makes pulls-vs-rounds ambiguous."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target { kind:'self' }"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Duplicates 12.42% of the Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterMaxHpPct 12.42 — HP line, never auto-skipped (HARD RULE: heal/shield/DEF/HP/lifesteal are not skippable). ⚑ scaling basis is the HIGHEST-Max-HP ally, which no StatKey expresses; self-scaled proxy used."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Lasts for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "durationSec 10 — wall-clock seconds (not a round count, not stacks)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects 2 allies, highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target { kind:'alliesTopAtk', count:2, byFinalAtk:true } — 'final ATK' is literal, so live effectiveAtk ranking. No excludeSelf clause in the text."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 16.11% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 16.11, durationSec 5 — unscoped ATK (target's own ATK scaler), not casterAtkPct. ⚑ carried on an INVENTED interval:20s trigger; the prose gives no activation clause."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 2 allies, highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target { kind:'alliesTopAtk', count:2, byFinalAtk:true }"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max HP ▲ 43.87% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff targetMaxHpPct 43.87, durationSec 5 — the 'Max HP ▲ X%' shape scales off each target's OWN Max HP. Ally-granted, so it feeds no teammate's atkOfMaxHpPct (e3 rule); kept for kit completeness + future consumers."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Critical Damage ▲ 29.9% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 29.9, durationSec 10 — unscoped (no 'of normal attacks' clause), so it applies to skill/burst crits too. Trigger burstCast: this is the unit's OWN burst block, so it fires only on rotations where SHE bursts, and lands pre-Full-Burst by cast timing."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger.count (hitCount 60)",
+      "estimate": "60 rounds (as authored); the competing reading is 60 trigger pulls = 120 rounds on this 2-hits-per-shot SMG, i.e. the buff would land HALF as often as modeled.",
+      "reasoning": "The kit says '60 normal attacks'. The engine's hitCount counts ROUNDS, not pulls, and this unit fires 2 hits per pull — so the two readings differ by exactly 2x in activation cadence. The kit word 'attacks' does not disambiguate. Damage impact today is nil (the granted stat is Max HP with no consumer on this unit), but the cadence is load-bearing the moment any HP→ATK or on-buff consumer enters the team.",
+      "recipe": "Focus-record this unit solo and time the first activation from battle start; divide by her measured effective pulls/sec (ammo-counter method, not FB counts). ~60 rounds ≈ half the wall-clock of ~120 rounds. Alternatively pin the round count from a datamined skill activation-count field if one exists for this slot."
+    },
+    {
+      "field": "skill1[0].effects[0].stat (casterMaxHpPct as a proxy for 'highest-Max-HP ally')",
+      "estimate": "12.42% of this unit's OWN Max HP (self-scaled). True value = 12.42% of max(all allies' final Max HP), which on a team containing a Defender is materially larger.",
+      "reasoning": "No StatKey expresses 'X% of the HIGHEST ally's Max HP' — the roster has highestAllyAtkPct for the ATK analog but no Max-HP counterpart. Both casterMaxHpPct and targetMaxHpPct resolve identically here (caster === target === self), so the choice is cosmetic; the BASIS is what is wrong. Marked implemented rather than skipped because the grant genuinely exists and the HP magnitude may later feed a consumer.",
+      "recipe": "Zero damage impact while this unit carries no atkOfMaxHpPct — verify that by A/B toggling the block (expect a 0.00% delta on any graded comp). If a future consumer makes it live, the faithful fix is a new StatKey (highestAllyMaxHpPct) mirroring highestAllyAtkPct's resolve-at-apply-time path, not a hand-tuned percentage."
+    },
+    {
+      "field": "skill2[0].trigger (kit-silent — interval:20s invented)",
+      "estimate": "interval, sec 20 → 9 activations over a 180s fight, 5s each = ~45s uptime (25%). Competing model: fullBurstEnter (5s per team Full Burst).",
+      "reasoning": "ALWAYS-⚑ case (2): the prose supplies a target clause and a magnitude but NO activation clause, so the trigger is outside the input domain. Per the methodology's classification rule, an absent 'Activates when…' clause defaults to interval. 20s is taken from the only cooldown figure in the packet (the unit's stated 20s burst cooldown) as a traceable, deliberately conservative proxy — it is NOT a datamined skill cooldown. A shorter interval would over-credit; keying it to fullBurstEnter instead would change both the cadence and WHICH rotations it covers.",
+      "recipe": "Read the datamined per-skill cooldown for this slot if available (that settles interval vs event). Failing that, focus-record a fight and log when the ATK buff appears on the two highest-ATK allies: activations locked to Full Burst entry => fullBurstEnter; evenly spaced independent of the burst chain => interval, and the spacing IS the sec value. Do not tune the 16.11% magnitude to compensate for a wrong trigger."
+    },
+    {
+      "field": "engine cadence (SMG fire rate / reloadFrames 121) — not an override field",
+      "estimate": "Effective pulls/sec = 60/ceil(60/nominal); the nominal datamine value is unreliable and quantizes to 60fps frame boundaries.",
+      "reasoning": "ALWAYS-⚑ case (1). This unit has no cadence-modifying kit line, so nothing is authored in the override — but the skill1 hitCount:60 activation time is a direct function of the effective rate, so a wrong cadence silently mis-times the only recurring trigger in the kit.",
+      "recipe": "Ammo-counter method: count magazine drain over a fixed window in a focus recording (measures shots/sec directly) rather than inferring it from full-burst counts, which sit downstream of the gauge model."
+    }
+  ],
+  "model": "claude-opus-5"
+}

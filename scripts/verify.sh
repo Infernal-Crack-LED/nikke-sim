@@ -107,9 +107,21 @@ fi # end of the correctness gate (skipped by the `artifacts` tier)
 if [ "$MODE" = "full" ] || [ "$MODE" = "deploy" ] || [ "$MODE" = "artifacts" ]; then
   # the artifacts must exist BEFORE vite build, which copies publicDir -> dist
   if [ "$MODE" != "full" ]; then
-    say "DPS-chart + rank-board artifacts (gitignored build outputs — deploy/artifacts tiers only)"
-    npm run dpschart
-    npm run ranks:all
+    if [ -n "${SKIP_BOARD_BUILD:-}" ]; then
+      # Step 0 of the artifact-decoupling plan
+      # (docs/handoffs/2026-08-03-artifact-store-decoupling-plan.md): PR CI
+      # FETCHES the published boards (scripts/fetch-published-boards.ts) instead
+      # of building them and sets SKIP_BOARD_BUILD=1, so this tier smokes the
+      # fetched set without re-running the builders. The deploy box (railway.json
+      # buildCommand) and deploy.yml do NOT set it — the deploy path keeps
+      # rebuilding the boards, which is exactly what makes a stale published
+      # artifact self-healing at deploy time (and is the plan's HARD gate).
+      say "board artifacts pre-supplied — skipping builders (SKIP_BOARD_BUILD set)"
+    else
+      say "DPS-chart + rank-board artifacts (gitignored build outputs — deploy/artifacts tiers only)"
+      npm run dpschart
+      npm run ranks:all
+    fi
     # Regenerated here and not only in build:deploy because THIS is the tier the
     # deploy box runs (railway.json buildCommand). scripts/prerender.ts lived in
     # build:deploy only, so it never executed in production and /mechanics +

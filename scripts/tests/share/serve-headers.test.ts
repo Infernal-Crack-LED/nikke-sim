@@ -78,6 +78,7 @@ beforeAll(async () => {
   put('assets/App-AbCd1234.js', 'js');
   put('dpschart.json', '{}');
   put('burstgen.json', '{}');
+  put('b1b2dps.json', '{}');
   put('ol-default.json', '{}');
   // The builder tab's og:image resolves 'unit/maiden-ice-rose.discord'
   // against this manifest — real shape (width/height in physical px, the
@@ -159,6 +160,9 @@ describe('serve.mjs cache-control classes', () => {
   it('unversioned mutable JSON is no-cache (the live bug this fixes)', async () => {
     expect(await cacheOf('/dpschart.json')).toBe(NO_CACHE);
     expect(await cacheOf('/burstgen.json')).toBe(NO_CACHE);
+    // listed explicitly in MUTABLE_PATHS only since 2026-08-04 — before that it
+    // was no-cache by fallback accident (artifact-decoupling plan §7)
+    expect(await cacheOf('/b1b2dps.json')).toBe(NO_CACHE);
     expect(await cacheOf('/ol-default.json')).toBe(NO_CACHE);
     expect(await cacheOf('/img/manifest.json')).toBe(NO_CACHE);
   });

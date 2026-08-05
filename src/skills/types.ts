@@ -8,6 +8,13 @@ export type StatKey =
   | 'casterAtkPct' // ATK ▲ x% of caster's ATK (flat add)
   | 'highestAllyAtkPct' // ATK ▲ x% of the HIGHEST ally's ATK (flat add — guilty "Mind If I Borrow This?"). Resolves to (value/100)×max(all units' staticAtk) at apply time; feeds the same flat-ATK path as casterAtkPct. Solo (self is the max) == casterAtkPct.
   | 'atkOfMaxHpPct' // ATK ▲ x% of the unit's own final Max HP (flat add — Cinderella, Maiden:IR)
+  | 'atkOfCasterMaxHpPct' // ATK ▲ x% of the SKILL USER'S final Max HP, granted to the target
+  //                    (maxwell-ordinary-mechanic S2). Resolved at APPLY time to a FLAT ATK add
+  //                    ((value/100) × the caster's liveMaxHp) and routed to the casterAtkPct
+  //                    consumer — uniform across all targets, snapshotted per application. The
+  //                    caster's live Max HP follows the e3 scope: own-kit maxHpFlat feeds (the
+  //                    caster's own S-stacks count), ally-granted Max HP does not. DISTINCT from
+  //                    atkOfMaxHpPct, which re-reads each TARGET'S own live Max HP every frame.
   | 'critRatePct'
   | 'critRateNormalPct' // "Critical Rate of normal attacks ▲x%" — Critical Rate that applies ONLY to
   //                       normal-attack hits, never to skill procs or burst damage. Distinct mechanic
@@ -30,6 +37,11 @@ export type StatKey =
   | 'casterMaxHpPct' // grants Max HP = % of CASTER's Max HP ("X% of the skill user's Max HP" — rouge/anis/trina)
   | 'targetMaxHpPct' // grants Max HP = % of the TARGET's OWN Max HP ("Max HP ▲ X%" — blanc/maiden). Same
   //                    e3 feed rule as casterMaxHpPct: only feeds atkOfMaxHpPct when caster === target (self)
+  | 'highestAllyMaxHpPct' // grants Max HP = % of the HIGHEST-Max-HP unit's Max HP ("Duplicates X% of the
+  //                    Max HP of the Nikke with the highest Max HP" — quency S1). Resolves at APPLY time
+  //                    to a flat Max HP grant of (value/100) × max(all units' static maxHp) — the
+  //                    highestAllyAtkPct precedent (static basis; the kit says plain "highest", not
+  //                    "final"). Same e3 feed rule. Next expected carrier: sin.
   | 'partsDamagePct' // parsed but inert in v1 (no parts on the boss)
   | 'pierceDamagePct' // parsed but inert in v1
   | 'damageTakenPct' // debuff on the boss (positive = boss takes more)
@@ -65,7 +77,12 @@ export type TriggerDef =
   | { kind: 'burstCast'; stage?: 1 | 2 | 3 } // when the owner casts their burst (optionally only at that stage — Λ kits)
   | { kind: 'fullBurstEnter' } // when full burst begins
   | { kind: 'fullBurstEnd' }
-  | { kind: 'hitCount'; count: number; countInFb?: number } // fires every `count` cumulative hits; `countInFb` overrides the threshold DURING Full Burst (RRH rocket meter: 120 out of burst → 60 in her FB)
+  | {
+      kind: 'hitCount';
+      count: number;
+      countInFb?: number;
+      countInFbStage?: number;
+    } // fires every `count` cumulative hits; `countInFb` overrides the threshold DURING Full Burst (RRH rocket meter: 120 out of burst → 60 in her FB). `countInFbStage` SCOPES that override: it then applies ONLY during the 10s window after the owner's OWN burst cast at that stage (prose "▼N for 10 sec" granted by that cast — RRH's ▼60 is a Stage-3 line, owner ruling 2026-08-04), NOT any team FB window; without it the any-FB-state convention stays (SWID)
   | {
       kind: 'chargeCounter';
       count: number | number[];
@@ -352,7 +369,7 @@ export type EffectDef =
         | 'true'
         | 'projectileAttachment'
         | 'projectileExplosion';
-      core?: number; // per-release core RATE (0..1) via the coreOverride path — aim/range-INDEPENDENT, not the weapon/band acr table (RRH attached-rocket explosions core ~1/3, MEASURED 2026-07-16)
+      core?: number; // per-release core RATE (0..1) via the coreOverride path — aim/range-INDEPENDENT, not the weapon/band acr table. No shipped consumer since 2026-08-04: RRH's attached-rocket explosions were re-ruled core-INELIGIBLE (skill damage — owner footage ruling overturning the 2026-07-16 ~1/3 read; see DECISIONS)
       crit?: boolean; // the release rolls crit at the caster's sheet rate (like every other hit) — removes the stored-hit path's default crit-OFF exemption; consistency, not a new mechanic (RRH explosions crit — orange bodies observed; 2026-07-16 DECISIONS)
       instantInFb?: boolean; // charges added DURING Full Burst detonate immediately that same window (RRH: a rocket that attaches in FB explodes instantly), instead of only batch-releasing at the next FB start
     }

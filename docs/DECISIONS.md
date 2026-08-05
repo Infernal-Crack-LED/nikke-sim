@@ -9,6 +9,243 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-04) ROTATION DEFAULT FLIP — there is NO post-Full-Burst chain-open lock; `refill`
+  (chain opens on gauge-full) becomes the engine default and the fixed 150f block retires to the
+  opt-in `ROTMODEL=floor` A/B arm.** Owner ruling, three corrections to the burst-gen picture
+  (all traced against the implementation, not the docs): (1) generation is locked during FB and
+  unlocks IMMEDIATELY when FB ends — no lingering delay; the sim's `addGauge` guard already
+  matched this and stands. (2) There is no ~3s post-FB lock — the run-I bar-anatomy read
+  ("chain glow at FB-end +3.0s even with the gauge full") was natural refill-from-zero: good
+  teams take ~3-4s of normal generation to rebuild the bar, and the recordings that anchored the
+  old read start during the pre-fight intro (fight time ≠ video time — the control video's
+  "first FB at 14.1s" includes ~9s of pre-fight; the real first fill (~5.6s of fight, cf.
+  QUEUE.md) matches the sim's ~5.4s).
+  (3) There is no multi-second opening phase — the boss is hittable from 3:00; the engine's only
+  fight-start delay is the 8f deploy delay, which already agreed. CHANGE: `chainBlockedUntil`
+  now defaults to no block (`ENV.ROTMODEL === 'floor'` opts back in); `POST_FB_CHAIN_DELAY_FRAMES`
+  (150f) kept only for that arm. VERIFICATION: full vitest suite green after one re-pin
+  (trina fixture: the faster rotation lets the FINAL chain's B2 cast land before the 180s buzzer
+  with its FB starting past it — `casts === fbs + 1`; the equality pin became `0..1` over fbs
+  with the trailing-chain rationale documented). Regression: ALL enabled measured-FB pins hold.
+  PH water B3s' pin is RESTORED at 12 — but the flip did NOT cause the count: the seeded
+  distribution already read 12×25 pre-flip (verified on flip day: the ROTMODEL=floor arm,
+  engine-identical to the pre-flip HEAD, reads 12×25 too); the old 13-over-count had been fixed
+  earlier, almost certainly by 61d10e08 (SMG cadence 24→20.0/s frame-quantization flip,
+  2026-07-23 — PH is exactly the 2-SMG comp the unpin note blamed). The re-pin corrects a stale
+  unpin, not a behavior change. The disabled wind-weak comps are UNCHANGED by the flip (T5/T1
+  read 11-12 under BOTH arms — the block never bound for them; still short of the measured 13,
+  charge-B3
+  gauge-fill-tempo shortfall remains open); iron sweep / N3 / N1 / soda-tb distributions unchanged
+  for the same reason; T4 tightens 12x9 13x16 → 13x25 (the block bound on ~36% of seeds there;
+  modal 13 unchanged, still short of the measured 14, deliberately unpinned). The gauge-cycle-decomp
+  instrument was re-derived per its own contract: its floor drops the dead +2.5s term (now
+  FB-duration + 0.5s pre-B1 + chain span), so `excess` reads the refill-from-zero directly —
+  2.5-4.7s across the six comps, consistent with the owner's ~3-4s; bands re-pinned from measured
+  values. SSOT docs synced: STATE.md (env + constants + §3), game-mechanics.md (rotation
+  section + the auto-burst priority line — the latter brought forward to the 2026-07-21
+  FIRST-READY ruling it had been stale against since that date, verified vs sim.ts:3078),
+  damage-calculation.md, burst-gauge.md, and the agent-facing context pack
+  (.claude/skills/context/SKILL.md — its sync also refreshed pre-existing staleness beyond
+  the flip itself, all verified against sim.ts: the first-ready selection text, the
+  PRE_B1_GAP/FB_PRE_DELAY clauses, and §7 focus-gen anchors). Frozen archives deliberately
+  untouched: judge packets under
+  scripts/kit-autonomy/results/ and the blind-rebuild code bundles under
+  scripts/blind-rebuild/code-bundle/ (they carry the old floor default by design). PROCESS:
+  owner directive ("make it the default, I thought it was already the default") — no
+  scientific-method gate; test-first discipline kept (re-derive → re-pin with rationale).
+  **Evidence:** owner rulings 2026-08-04 (no lock; ~3-4s refill; no opening phase; video-offset);
+  `scripts/battery/rrh-rotation-anatomy-scratch.ts` + `rrh-fb-dist-scratch.ts` (floor-vs-refill
+  timings + 25-seed FB distributions); `scripts/tests/gauge-cycle-decomp.test.ts` re-derivation;
+  `scripts/regression.ts` (PH re-pin, all FB pins green).
+
+- **(2026-08-04) PROJECTILE BUCKET RULING — Projectile Attachment/Explosion Damage compose
+  ADDITIVELY into the Damage Up bucket; the own-multiplicative bucket is OVERTURNED. RRH's hot
+  read is resolved (control 1.091 → 0.908); both rocket popup classes now reproduce the
+  owner's reads.** Owner popup read from the control+carry recording: a non-crit CORE attach
+  during her B3 window hit **5,057,974**. The additive composition reproduces it across buff
+  states (5,046,017 / 5,113,185 = −0.24% / +1.1%); the shipped multiplicative bucket's nearest
+  body missed by −38% (it over-credited in-window attaches ~×1.6–1.7 — the hot read). Change:
+  `projectileAttachmentPct`/`projectileExplosionPct` now add into the Damage Up sum in
+  `dealDamage` (flavor-scoped as before — an attach reads only the attachment stat, an
+  explosion only the explosion stat); the event's `projFactor` is retained as a FLAVOR MARKER,
+  no longer a factor in the product (the event-log product invariant updated accordingly).
+  Popup double-check under the new bucket: the in-FB EXPLOSION body sims at 1,192,831 vs the
+  owner's 1,195,658 read (−0.2%) — the explosion was and is modeled correctly; multi-rocket
+  FB-start batches render as exact integer multiples. Blast radius: RRH control 981.1M →
+  816.4M = 0.908 (the −9% remainder is count/rotation-channel — sim 12 FB vs real 13 — NOT
+  instance magnitude, both popup classes now match); Anis: Star's shooting-star dots ride the
+  same stat and move with her board rows (regenerated). The 2026-07-13 U4 arm (RL normals take
+  projExpl in Damage Up) was already additive — consistent precedent. Test-first: RRH3's
+  additive-composition pin added RED→GREEN; RRH/event-log/hit-repeat/anis-star 66/66. PROCESS:
+  owner override, gate skipped by owner ruling. SUPERSEDES the validation-era own-bucket rule;
+  the earlier-same-day ATTACHMENT REWORK claim that the multiplicative projFactor reproduced
+  the old 4,414,404 body is WITHDRAWN (that arithmetic assumed the overturned bucket).
+  **Evidence:** owner popup read 2026-08-04 (5,057,974 attach-core, 1,195,658 explosion);
+  `scripts/tests/units/rapi-red-hood.test.ts` RRH3; `scripts/regression-snapshot.json` regen;
+  `scripts/battery/rrh-control-probe.ts` (0.908).
+
+- **(2026-08-04) ATTACHMENT REWORK — three owner overrides restore the attachment class as Rapi:
+  Red Hood's damage carrier: the +421.2% Stage-3 buff is LIVE again, the attachment CORES, and
+  the ▼60 meter threshold is scoped to her own B3 window. She flips COLD → HOT (control 0.898 →
+  1.091); the overshoot stays exposed, no re-fit.** Owner direct re-read of the control+carry
+  footage (`docs/probes/control + carry/rrh control.MP4`): the explosion body during her B3 is
+  1,195,658 — at the floor of the sim's in-FB explosion bodies, so the explosion was never the
+  under-modeled carrier; the ATTACHMENT is the main damage and gets a massive amp during her B3.
+  (1) +421.2% Projectile Attachment Damage (Burst Stage 3, self, 10s) RESTORED — overturns the
+  2026-07-14 "MEASURED-INERT" verdict: the amplified attachment bodies that read could not
+  attribute were mis-sorted into the explosion class (same flavor family, overlapping popup
+  columns). The "dominant white body" 4,414,404 of the 2026-07-16 record is a +421.2% AMPLIFIED
+  ATTACHMENT — an in-window attach at the sim's own buff state reproduces it within ~1%
+  (projFactor 6.7192), its ×1.5 crit twin matching the measured orange 6,621,606; the red
+  "CORE HIT" labels on the 7-digit bodies were attachment cores. (2) The ATTACHMENT CORES —
+  launchWeapon delivery at the band-table rate (`core:true` on the flatDamage); the 2026-07-14
+  "stickies never core" verdict is OVERTURNED for the attach. The explosion stays core-INELIGIBLE
+  (skill damage — the same-day CORE OVERTURN below STANDS). (3) The ▼60 meter threshold applies
+  ONLY inside the 10s window of her OWN Stage-3 cast — new opt-in `countInFbStage` on the
+  hitCount trigger (engine tracks `lastBurstCastStage`); the any-FB-state default stands for the
+  other carrier (SWID), whose same-shaped line is flagged for its own review. Max Ammo: 1
+  reclassified COSMETIC (owner: one rocket "loaded" at meter-full fires alongside the bullet; not
+  reflected in game, no damage effect). Test-first kept: RRH4 flipped (attach cores), RRH7/RRH8
+  added RED→GREEN (25/25); SWID + hit-count engine pins byte-green. Reads (owner directed: no
+  pre-registration): control 807.6M → 981.1M = **1.091** vs 899.6M real (FB count invariant
+  12.0); graded T7 +21.9%, N1 +21.5% (those comps buff the new core term), T7 teammates within
+  ±0.03% gauge-coupling. The +9.1% overshoot is the new exposed residual — attribution candidates
+  for the owner's footage pass: the band-table attachment CORE RATE (may over-credit vs in-game)
+  and the 421.2% effective UPTIME. PROCESS: full gate skipped by owner ruling (owner overrides);
+  SUPERSEDES the 2026-07-14 inert + sticky verdicts and re-narrows the launchWeapon bullet.
+  **Evidence:** owner control+carry re-read 2026-08-04; `scripts/tests/units/rapi-red-hood.test.ts`
+  RRH3/RRH4/RRH7/RRH8; `scripts/regression-snapshot.json` regen; `scripts/battery/rrh-control-probe.ts`.
+
+- **(2026-08-04) Rapi: Red Hood's rocket EXPLOSION does NOT core — owner footage ruling overturns
+  the 2026-07-16 core-⅓ landing; `storedHit.core` removed, she is deliberately COLDER.** Owner
+  direct re-read of `docs/probes/probe u7/rapi focus vid.MP4` (the same recording behind
+  `docs/probe-data/rrh-explosion-core.json`): the explosion is dealt as SKILL damage, and skill
+  damage generally cannot core (the U1 function-damage no-core default). The red "CORE HIT" labels
+  the 2026-07-16 OCR-by-eye read tallied (N=9, self-declared LOW-MEDIUM confidence) were concurrent
+  NORMAL-column core hits — exactly the overlap hazard that record itself flagged — and the
+  independent FB1 reread had already shown the consolidated FB-start batch popup rendering
+  WHITE/non-core (`docs/probe-data/rrh-fb1-reread.json`). Change: `storedHit.core` dropped from the
+  override (the release falls to the storedHit no-core DEFAULT — no band-table fallback);
+  `storedHit.crit:true` STANDS (separate consistency landing, untouched); the spec pin flipped
+  test-first (`scripts/tests/units/rapi-red-hood.test.ts` RRH4 RED→GREEN, 20/20). Pre-registered
+  BEFORE the change (paired-seed control comp, LM/crown/helm/rrh): rrh 826.14M → 807.63M (−2.24%;
+  the explosion-core share WAS 2.24% of her total), control ratio 0.918 → 0.898 vs the 899.6M real,
+  Full Burst count INVARIANT (12.0 both arms); the post-change probe landed EXACTLY (807.6M /
+  0.898). Graded snapshot regen (only her rows moved, all measured FB truths held): T7 −4.32%, N1
+  rapi/quency −3.33% (per-comp core-damage buffs make the lost term larger than on the neutral
+  control). PROCESS: the full scientific-method gate was SKIPPED by owner ruling — the overturned
+  read predates the current probe tooling and the owner re-measured it directly; pre-registration +
+  test-first anti-fit hygiene kept. Consequences: (1) the SSOT launchWeapon exception bullet is
+  narrowed (RRH's rocket class is OUT — attach no-core by its own measured ruling, explosion
+  no-core by this one; Anis: Star's stars still core) — RE-NARROWED again later the same day: the
+  attach CORES again under the ATTACHMENT REWORK (top entry), only the explosion stays out;
+  (2) the U15 ×1.80 core+crit anomaly is now
+  popup mis-association, full stop; (3) the residual stays exposed and is NOT to be re-fit — and
+  the clean-weapon basis (emma MG 0.977 OK, 2026-07-23) no longer supports the older "generic
+  MG-cold" attribution, so the COLD remainder is the deliberately-open Invisible-X gap, no
+  explosion-core credit. SUPERSEDES the core portion of the 2026-07-16 entry below. **Evidence:**
+  owner footage re-read 2026-08-04; `scripts/regression-snapshot.json` regen;
+  `scripts/battery/rrh-control-probe.ts`.
+
+- **(2026-08-04) MAX-HP FOLLOW-UPS (owner-directed, same branch as the entry below): three
+  disclosed HP residuals closed — a third grant basis, a stage feed, and rouge's coin state.**
+  1. **quency S1 basis made exact — new StatKey `highestAllyMaxHpPct`** (commit f270dd2c):
+     "Duplicates 12.42% of the Max HP of the Nikke with the highest Max HP" is the THIRD grant
+     basis (after casterMaxHpPct / targetMaxHpPct). The new key resolves at apply time to a flat
+     Max HP grant of (value/100) × max(all units' static maxHp) — the highestAllyAtkPct
+     precedent (static basis; the kit says plain "highest", not "final" — literal-word rule).
+     Closes the gauntlet's ⚑ BASIS (the casterMaxHpPct stand-in was exact only when quency held
+     the team's highest Max HP); still damage-inert (no consumer). Discriminated in her spec's
+     crown-contention arm (crown strictly out-HPs quency there). Next expected carrier: sin.
+  2. **laplace-ultimate-hero stage Max-HP lines enacted** (commit 15ad83a5): her S2b "Stage
+     1/2/3/4: Max HP ▲ 2/3/7/10.5% continuously" (cumulative) was the disclosed ⚑ "estimated,
+     not enacted" second-order feed into her own atkOfMaxHpPct 4.05 conversion. The stage
+     advance was ALREADY modeled (oeStage, hitCount:240 swap-gated — what her burst additional
+     riders ride), so the HP lines take the identical encoding: four targetMaxHpPct self-grants
+     resourceGate'd at oeStage min 1/2/3/4, dispatched AFTER the delta block (each advance
+     grants its own line and refreshes all earlier ones — the kit's cumulative clause, pinned to
+     one frame). Own-kit self-grants → feed liveMaxHp → feed the conversion (e3-admitted). Same
+     ⚑ stage-timing as the riders; magnitudes kit-exact. Her board number moves up slightly —
+     the direction of her documented under-model; she is in no regression comp.
+  3. **rouge coin-state machine tracked; coin-tier riders modeled + coin-gated** (commit
+     f6b9ebe6): resources coin (0=Sword/1=Shield/2=Double Sword) + shieldBursts (cap 5).
+     Progression: hitCount:30 + gate{coin≤0} flips Sword→Shield (applying the Damage-Taken
+     ▼15.2% line on the same fire); burstCast under gate{coin==1} counts shield-era bursts;
+     gate{shieldBursts≥5} flips Shield→Double Sword — post-increment convention (maxwell
+     precedent): the 5th shield-era burst IS the first Double Sword cast. The three per-tier
+     burst riders (10.15/20.1/30.02, previously unmodeled) and the 15.08 continuous line
+     (previously an everyN:5 approximation) are resourceGate'd on coin — exact gating. All
+     offensively INERT per e3 (the spec's byte-identical proof covers them); no board/regression
+     movement. The coin-tier gating flag is resolved (it was flag 3 in the PRE-rewrite note
+     numbering); the surviving flags — (1) coin exclusivity and (2) Shield-rider heal asymmetry —
+     remain measurement-gated.
+     All three landed test-first (RED→GREEN spec pins); no damage-bearing path moves except
+     laplace's own total (up, toward her measured board value).
+
+- **(2026-08-04) MAX-HP-SCALING PRIMITIVES: maxwell-ordinary-mechanic S2 is CASTER-basis (owner
+  ruling — the target-own encoding was a misread), and every "% of Max HP" engine term now reads
+  live Max HP through one reader.** Three landings on branch `worktree-max-hp-scaling`, all
+  test-first (RED→GREEN) with the spec pins named below:
+  1. **`liveMaxHp(u, frame)` extracted from `effectiveAtk`** (byte-identical refactor, commit
+     f8055b46) — base + OWN-kit maxHpFlat buffs (e3 scope unchanged), now the single reader for
+     every Max-HP-scaled term.
+  2. **New StatKey `atkOfCasterMaxHpPct`** (commit 9afac614): "ATK ▲ X% of the skill user's
+     final Max HP" granted to others resolves at apply time to a FLAT add of the caster's
+     liveMaxHp, routed to the casterAtkPct consumer — uniform across targets, one snapshot per
+     cast; the caster's own-kit Max HP stacks feed the basis (self-grants are the one case e3
+     admits), ally grants do not. Owner ruling: maxwell's kit reads "the skill user's final max
+     HP" — the shipped per-target-own resolution was a misread of the caster-scaled text (the
+     gauntlet spec's OWN kit quote already said "skill user's", confirmed against
+     data/characters.json). Maxwell's spec M3 rewritten around the flat add (exact per-cast
+     value = 1% × her live Max HP, uniform across allies, growing with her S1 stacks, old-model
+     counterfactual); she is in no regression comp (MODEL_ONLY), snapshot untouched.
+  3. **stackedNuke hpPct reads live Max HP** (maiden-ice-rose residual r2 closed): her burst is
+     "1372.8% of the sum of 10% of the skill user's FINAL Max HP and … ATK" — kit-literal
+     "final" = live (own-kit feed), the base read was the residual. Spec M5 pins it via a
+     battle-start Max-HP doubling: the per-stack HP portion (shipped-vs-ATK-only-twin amount
+     difference, eff-invariant) must scale ~2× with her Max HP (base read gives ratio 1.0002 —
+     proven RED before the change). Blast radius: her two regression comps — T2 snapshot
+     unchanged (no live S1 stacks at her cast frames under that timing), N6 her total +5.52%
+     (FB counts unchanged: 12/12 T2, 11/11 N6, both vs measured); control-regression CTRL
+     maiden comp +3.88% (477.0M → 495.5M vs real 559.0M — 0.853 → 0.886, correct direction on
+     the documented conservative lower bound; r1/r3 residuals remain).
+     Scope + remaining non-goals (reporting-layer maxHp, grant re-derivation, ally-grant opt-in,
+     HP-pool adjacency): the scope handoff was CLOSED + archived on landing (owner: completed work
+     in an open PR does not stay in the docs) — design record lives in PR #84's history
+     (`docs/handoffs/2026-08-04-max-hp-scaling-primitives.md`, commit 27d49110).
+
+- **(2026-08-04) SECOND CLEAN-WEAPON OVERRIDE LANDED: `snow-crane` (the SR basis cell) carries a
+  proven-damage-neutral gauntlet override under the CW1 option-2 invariant (2026-08-01).** The
+  kit-autonomy gauntlet landed `snow-crane` at GO faithfulness 1.0, cross-family corroborated
+  (S2b claude-fable-5 / S5+S6 claude-opus-5 / S7 kimi-code/k3 binding judge, zero gotchas). Her
+  override is recovery-event emitters (every-3rd-full-charge team heal, burst team heal), a
+  full-burst-enter team shield (9.5% caster Max HP / 10s), an inert `casterMaxHpPct` aura, and a
+  timed self `gainPierce` 10s window — no damage line and no weapon-state modifier, so it is
+  **byte-identical to the bare weapon on damage**. She is the delicate one of the six (CW1's prose
+  pin names it): her BURST grants Pierce, so "never burst" is load-bearing — the basis runs
+  `disableBursts: true`, so the window never opens there, and even bursts-ON the window is inert
+  in v1 (gainPierce pays out only through a `pierceDamagePct` buff, which no shipped unit carries,
+  and PIERCE_CORE_DOUBLE is off / keyed to the static hasPierce flag). The unit test additionally
+  proves the window is real and time-bounded through an in-memory probe (never committed):
+  no-pierce ≡ base < 10s window < permanent pierce. Two encoding notes of record: (1) the
+  chargeCounter carries `countInFb: 3` EXPLICITLY — the primitive defaults `countInFb ?? 1` in the
+  10s post-own-burst window (SBS-baked semantics), which would heal every full charge after each
+  of her casts; the blind override-writer omitted it and the judge ruled that a blind-side error.
+  (2) The Proof-of-Violation → Terminated-Contract cascade (S1b/S2c) stays VERBATIM UNMODELED: the
+  `recovery` trigger has no source filter, her own heals target herself, so any expressible
+  counter self-stacks and flips the cascade in every comp (the nearest-wrong model); the blind
+  alternative (always-on 1 Hz regen) was ruled spurious-and-worse — it fabricates a
+  tandem-bearing recovery stream the real kit never emits in healer-less comps. CW2–CW5 baselines
+  unchanged (they sim via `bareWeaponComp`, which never reads the committed encoding).
+  **Evidence:** `scripts/tests/units/clean-weapons.test.ts` 27/27 green (CW1 damage-neutrality vs
+  the on-disk override); `scripts/tests/units/snow-crane.test.ts` 26/26 green;
+  `scripts/kit-autonomy/results/snow-crane.json` (GO 1.0);
+  `scripts/kit-autonomy/manual-review/snow-crane.md`; `docs/data/clean-weapons.md` (team A row +
+  Fixture note). Residual (judge-named, ⚑ with recipe): the countInFb engine-default reading, the
+  burstCast-vs-fullBurstEnter trigger-identity split, and heal-magnitude inertness — all inert on
+  damage today; the cascade recipe (a `recoveryFromOther` trigger + PoV resource pool) awaits
+  HP-pool work.
+
 - **(2026-08-03) `vesti-tactical-upgrade` Missile Guide duty cycle FIXED — new engine primitive
   `noRetriggerWhileActive`, owner-confirmed gameplay pattern (n=1, not footage-measured).**
   Investigation trigger: `vesti-tactical-upgrade` (and separately `k`) were ranking unexpectedly
@@ -1061,7 +1298,9 @@ B3 RL, B3 MG]`; B2 `[B1 AR, tested, B2 SR, B3 RL, B3 MG]`. The board uses dedica
   cross-corroborates the additive bucket ([`sim.ts`:58–61](../src/engine/sim.ts#L58-L61)). **Consequence:**
   the RRH ×1.80 anomaly is re-attributed to RRH-LOCAL causes (explosion core bonus / popup association —
   both already named in U15), NOT to the shared bracket; its bounded consequence stays ~0.3–0.4% of her
-  total and rides with the rest of her explosion residual (U15 stays open on its other four bullets). This
+  total and rides with the rest of her explosion residual (U15 stays open on its other four bullets).
+  (FINAL RESOLUTION 2026-08-04: the explosion does not core AT ALL — the ×1.80 body was popup
+  mis-association with a concurrent normal core+crit; see the top entry.) This
   retires the one FORMULA-level unknown that sat underneath all 86 board readings — per-unit retunes no
   longer risk calibrating against a possibly-wrong shared bracket, which is what gated the engine-work
   ordering. Trail: open-questions U15, §P0.
@@ -1977,7 +2216,11 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 - **(2026-07-16) Rapi: Red Hood's projectile-EXPLOSION class cores ~1/3, is DERIVED from the real rocket
   meter (120→60 in-FB cadence + in-burst instant detonation), and her fictional damage placeholders are
-  removed — partially closing the "invisible X".** Reopens the 2026-07-14 invisible-X entry below with new
+  removed — partially closing the "invisible X". CORE PORTION SUPERSEDED (2026-08-04, see the top
+  entry): owner footage re-read rules the explosion SKILL damage — core-INELIGIBLE; `storedHit.core`
+  removed. Everything ELSE here stands (the derived rocket cadence, instantInFb, placeholder removal,
+  the CRIT follow-up). The "stickies never core" ruling cited below is OVERTURNED for the attach by
+  the same-day ATTACHMENT REWORK (top entry) — the CORE-HIT labels were attachment cores.** Reopens the 2026-07-14 invisible-X entry below with new
   same-tier evidence (video re-read of `probe u7/rapi focus vid.MP4`, `docs/probe-data/rrh-explosion-core.json`).
   MEASURED: explosion core fraction **~1/3** (0.30–0.45, N=9; the plain WHITE non-core body dominates every
   burst, red "CORE HIT" bodies are the clear minority — explicitly NOT near-full coring, correcting an earlier
@@ -2907,7 +3150,11 @@ visually-counted-white-popups`; the whites were under-counted (~6 vs true ~9–1
   experiment log "RAPI SYNTHESIS FINAL" + landing entry. **PARTIALLY SUPERSEDED (2026-07-16, see the
   entry above)** — much of the invisible X is now explained: her explosions core ~1/3 and her rocket
   cadence/instant-detonation are DERIVED from the real meter mechanic; the residual is narrowed and left
-  exposed (part MG-cold, part unmodeled explosion crit).
+  exposed (part MG-cold, part unmodeled explosion crit). **The 2026-07-16 core explanation was itself
+  OVERTURNED 2026-08-04 (explosion = skill damage, core-INELIGIBLE — see the top entry); the
+  cadence/instant-detonation derivation still stands. The +421.2% "MEASURED-INERT" verdict in THIS
+  entry was ALSO OVERTURNED 2026-08-04 (ATTACHMENT REWORK, top entry): the amplified attachment
+  bodies were mis-sorted into the explosion class; the buff is RESTORED and the attachment CORES.**
 
 - **(2026-07-14) Liberalio's 202.5% full-charge proc receives the +50% Full Burst term by its
   landing timing** — the legacy no-Full-Burst flag was a calibration-era relic contradicting
@@ -3819,3 +4066,62 @@ build:deploy` **only**. But `railway.json`'s `buildCommand` is `bash scripts/ver
   not disqualifying (her S2 grants the whole team +10.62% Attack Damage, which may be the kit's real
   value driver). — `src/skills/types.ts`, `src/engine/sim.ts` (`effectivePellets`, `firePull`'s `bandSg`
   gate, `WeaponSwap` interface), `src/skills/overrides/k.json`, `scripts/tests/units/k.test.ts`
+
+## Board artifacts decoupled from the PR-CI build path — Steps 0–1 landed, Steps 2–4 deferred (2026-08-04)
+
+**Decision.** PR CI no longer BUILDS the six board JSONs — it FETCHES the published set from
+nikkesim.app (~1s; `scripts/fetch-published-boards.ts`: retries, hard-fail, documented escape
+hatch) and runs an ADVISORY staleness check (`scripts/check-board-freshness.ts`, FRESH/STALE/NO-HASH
+states, never fails CI). The deploy path keeps building — `deploy.yml` builds the boards pre-deploy
+and the Railway build rebuilds them from the merged branch — so a stale published artifact
+self-heals at deploy time and the deployed site is never stale: the deploy path is the HARD gate
+(owner decision applied as recommended: advisory on PR, hard on `main`/pre-deploy). `verify.sh`'s
+artifacts tier skips the builders under `SKIP_BOARD_BUILD=1` (set by ci.yml only), and a
+post-deploy `builder-canary` job in deploy.yml force-rebuilds the boards after every successful
+deploy — the builder-breakage signal Step 0 removes from PR CI (`--force` is load-bearing: without
+it the post-deploy live candidate carries every row and proves nothing). Step 1 generalizes the
+dpschart input hash (2026-07-29 entry above) into one SSOT, `scripts/artifact-input-hash.ts`: one
+shared GLOBAL bucket for the five rank boards — the refresh unit is `ranks:all`, all five rebuild
+unconditionally, so per-builder granularity could never change a decision the hash drives — plus
+own buckets for ol-default and infographics, with `inputsHash` embedded in every artifact (the
+infographics manifest carries it as provenance; boards are hashed stripped-content so rebuild
+timestamps cannot move it). `board-hash-parity.test.ts` is the hard half: a locally-present artifact
+whose embedded hash disagrees with the tree fails naming the exact refresh command; it skips only
+where unactionable (absent artifact, pre-hash published artifact, or fetched-and-stale under
+`BOARDS_FETCHED=1`). ol-default.json is COMMITTED, so its gate is hard everywhere. Also pinned:
+`b1b2dps.json` was the only board missing from `MUTABLE_PATHS` on both servers (no-cache by
+fallback accident, one matcher change from a year-long cache).
+
+**Why.** The board-build step cost 472s on any engine PR (434s dpschart full rebuild + ranks:all on
+the 4-vCPU runner; CI run 30877617106 / PR #82): the 2026-07-29 skip gate correctly cannot carry
+rows over when a global-bucket file moves, because an engine edit can move any unit's damage and a
+file hash cannot prove otherwise — the rebuild WAS the step. Storage and scheduling are separable
+and only scheduling buys the time back; the live site already functions as the artifact store
+(`fetchLiveCandidate` has fetched it for carry-over since 2026-07-29), so Step 0 generalizes an
+existing proven transport instead of adding infra. The DB-storage half (plan Step 2) is deferred
+indefinitely: for ~314 KB of JSON already publicly served, a DB adds schema/migration/secret
+surface for zero time beyond Step 0, and the plan's own hazard review preferred the public-URL
+path. Steps 3–4 (image-store split for ~48s of infographics; nightly rebuild cron) deferred
+likewise — revisitable options, not roadmap; Step 4 additionally waits on its open roster-drift
+decision. The board-join tests are shape/join checks (slugs ⊆ roster, fixed card geometry,
+rank/index consistency), not engine-vs-artifact value parity, so running them against a fetched
+artifact stale w.r.t. the branch is safe — the common stale case is exactly an engine PR.
+
+**Cross-family code review (kimi-k3, two rounds, owner-directed routing).** Round 1 BLOCKED:
+`src/stats.ts` (characterStat — every simulated unit's ATK/DEF/HP) and `src/data/squads.ts`
+(squadOf — same-squad block gates) were in NO hash bucket, the false-FRESH failure mode; the gap
+pre-existed in the 2026-07-29 dpschart bucket (the Step-0 extraction carried it verbatim) and the
+first ranks cut repeated it (direct-imports-only scan missed the transitive closure of sim.ts /
+prepare.ts). Fixed in `1252c6da`; the NEW parity test correctly caught the intermediate ol-default
+drift during the fix. Round 2 CLEAN, one FOLLOW-UP filed: the infographics bucket still misses
+`src/ranks/b1b2-cells.ts` + `src/ranks/buffer-rows.ts` (value-imported by
+`src/infographics/core/rankTables.ts`, one hop beyond the round-1 fix) — zero impact while the
+manifest hash is provenance-only; a Step-3 pre-req, queued in `docs/handoffs/QUEUE.md`.
+
+**Evidence.** `verify.sh` fast + full green; full PR-CI simulation green (`BOARDS_FETCHED=1` full
+gate against fetched stale boards + `SKIP_BOARD_BUILD=1` artifacts tier); rebuild determinism
+(twice → identical hash); all 65 dpschart per-unit hashes byte-identical to the live artifact
+post-extraction; PR #85 CI green in 5m38s with the fetch step at ~1.2s. One-time cost: the bucket
+additions move every hash once — one full board rebuild on the first deploy, which the deploy path
+performs anyway. Plan + landing record + audit trail:
+`docs/handoffs/2026-08-03-artifact-store-decoupling-plan.md`; PR #85.
