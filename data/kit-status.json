@@ -3024,6 +3024,44 @@
       ],
       "board": null
     },
+    "harran": {
+      "name": "Harran",
+      "burst": "III",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/harran.json + scripts/kit-autonomy/manual-review/harran.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when an enemy afflicted with Virus Transfer is neutralized. Affects 2 nearest enemy unit(s). Virus Transfer: Constantly deals 17.28% of final ATK as damage every 1 sec for 5 sec. (no kill/neutralize trigger primitive and no add/multi-enemy model — the v1 boss is immortal and alone, so the spread can never fire at scope lock; see ⚑3)"
+        ],
+        "skill2": [
+          "■ Activates when killing an enemy. Affects self. ATK ▲ 3.02%, stacks up to 15 time(s) and lasts for 10 sec. (no kill trigger primitive — the v1 boss never dies and there are no adds; zero stacks accrue at scope lock; see ⚑3)"
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the 25% proc chance is encoded as everyN:4 on shotFired — the expectation-exact periodic thinning for the deterministic sim (⚑1); the engine has no chance primitive, so a per-shot RNG roll is inexpressible; the chosen phase fires on every 4th activation.",
+        "skill2: 'Critical Rate ▲ 2.95% for 1 round(s)' is encoded as the steady-state passive proxy (rampSec 2.2) because the literal shotFired durationShots:1 self-buff is net-inert — the granting firePull decrements it the same frame it is dispatched (MEASURED probe 2026-08-05); the re-trigger cadence (every SR shot is a full charge) makes the in-game steady state permanent uptime (⚑2).",
+        "skill2: 'Gain Pierce for 1 round(s)' is a duration-less gainPierce re-arm on shotFired — gainPierce carries only durationSec (no round count), and a durationSec:1 window would lapse between SR shots (charge cycle > 1s); the per-shot re-arm is behaviorally exact while she fires, and the line is damage-inert at scope lock (partless boss, no Pierce Damage ▲ carrier) (⚑2)."
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check the 2026-08-05 probe claim that a shotFired-granted durationShots:1 buff self-consumes on its granting frame (if overturned, the literal encoding becomes preferable; the flag-2 engine-primitive recipe is the tracked fix); doc nit: override note says DoT non-crit per engine default but DOT_CRIT default is ON per SSOT — encoding carries no crit field so behavior follows the engine default either way",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "helm": {
       "name": "Helm (Treasure)",
       "burst": "III",

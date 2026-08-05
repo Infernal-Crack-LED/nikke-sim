@@ -1,0 +1,84 @@
+{
+  "slug": "harran",
+  "kitDescription": "Harran is an Electric SR sniper Attacker whose attacks have a 25% chance to infect the target with Virus Transfer, a damage-over-time that ticks for 17.28% of her ATK every second for 5 seconds. When an infected enemy dies, the virus spreads to the 2 nearest other enemies. Every full-charge shot — which for a sniper is effectively every shot — grants her Pierce and a +2.95% Critical Rate buff for one round, and each kill she scores stacks +3.02% ATK up to fifteen times. Her burst is a single 999% of final ATK hit to all enemies. On the single immortal scope-lock boss the kill-triggered spread and ATK-stack lines can never fire, so her live kit there is the DoT, the per-shot self-buffs, and the nuke.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S2 crit line: 'grants Critical Rate 2.95% with a ROUND-count duration, to SELF only' — asserts durationShots === 1 on the critRatePct buffApply; the driver encodes the line as a steady-state passive (rampSec 2.2), so no durationShots:1 buffApply exists"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "25% chance of activating when attacking",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired → enemy, everyN:4, dot 17.28%/5s/1s — expectation-exact periodic proxy for the 25% proc, ⚑1 with recipe (focus-video debuff-uptime read)",
+        "blindSaid": "S6 byte-identical shape (same trigger, everyN:4, same dot magnitudes); S5 assertions on gate/cadence/magnitude all GREEN",
+        "formulaCheck": "DoT = sustained function damage: ticks read current buffs, never core, noRange, FB by landing timing; DOT_CRIT default-ON per SSOT (driver note's 'non-crit engine default' is stale text, but the encoding carries no crit field so the engine default governs — no behavioral divergence; S6's explicit crit:true is redundant)",
+        "fireRateOk": true,
+        "explanation": "Three independent derivations (driver, S2b, S5/S6) converged on everyN:4 thinning; driver test pins 5 ticks/application, 1-in-4 application cadence, and the ungated-4x counterfactual. The chance-proxy phase is a documented ⚑, not a fudge."
+      },
+      {
+        "kitLine": "when an enemy afflicted ... neutralized",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill1 — no kill/neutralize primitive, no add model, immortal single boss (⚑3 out-of-domain)",
+        "blindSaid": "S2b and S5 (it.skip) and S6 all rule it structurally dead at scope; S5's inertness half enforced via zero-delta expectation",
+        "formulaCheck": "correct — nothing dies in v1, no enemy entity to spread to; folding it into live damage would be an invented over-credit",
+        "fireRateOk": true,
+        "explanation": "Correctly unmodeled with verbatim text and a zero-delta pin; the highest-value outcome for a dead line."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Full Charge ... Gain Pierce for 1 round(s)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "duration-less gainPierce re-arm on own shotFired — every SR shot is a full charge, so shots are Pierce-tagged continuously; gainPierce has no durationShots field (⚑2 engine primitive gap, recipe logged)",
+        "blindSaid": "S6 used a durationSec:1.3 wall-clock proxy that LAPSES between SR shots (~zero uptime) — strictly worse; S2b explicitly preferred the re-arm shape or documented hasPierce; S5 pierce-round test is the blind's own it.skip GAP",
+        "formulaCheck": "pierce tag feeds only the DamageUp Pierce term; no Pierce Damage ▲ carrier in fixture and partless boss → damage-inert, pinned byte-identical with the block removed",
+        "fireRateOk": true,
+        "explanation": "Driver's re-arm is the most faithful expressible shape (matches S2b's preferred encoding); the missing round-count pierce primitive is documented with a recipe. Damage-inert at scope, so zero board risk."
+      },
+      {
+        "kitLine": "Critical Rate ▲ 2.95% for 1 round(s)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "steady-state passive critRatePct 2.95 + rampSec 2.2, because the literal shotFired+durationShots:1 self-buff is MEASURED net-inert (the granting firePull decrements it same-frame; probe 2026-08-05, pinned by driver test R3's discriminating assertion: literal ≡ no-crit per-frame)",
+        "blindSaid": "S5 RED on durationShots===1 (mechanism over-specification); S2b derived the same steady state ('permanent uptime from the second shot on') as the semantic target; S6's own ⚑ flagged the literal encoding as unpinned vs dispatch ordering — the blind side anticipated exactly this uncertainty",
+        "formulaCheck": "unscoped critRatePct (not critRateNormalPct) matches the literal 'Critical Rate' wording; steady-state lift verified live (zeroCrit counterfactual < base in BOTH S5 and driver runs; per-frame delta pinned at exactly 0.0295 past the ramp)",
+        "fireRateOk": true,
+        "explanation": "The one real divergence of the gauntlet. The proxy encodes the kit's re-trigger steady state (which S2b independently derived as the correct semantics) because the literal encoding is engine-inexpressible — evidenced by an executed vitest pin comparing literal-vs-removed per-frame crit rates, not by the driver's word. Documented as ⚑2 with an engine-fix recipe; per non-negotiable 4 the executed pin meets the prove-it-differently bar. Not a gotcha: fully documented, behaviorally live, magnitude exact."
+      },
+      {
+        "kitLine": "when killing an enemy ... ATK ▲ 3.02% x15",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill2; static pin asserts NO atkPct buff anywhere in her blocks (no fabricated kill-stack encoding)",
+        "blindSaid": "S2b/S5/S6 unanimous: structurally dead at scope, nearest-wrong (passive ATK ramp up to +45.3%) is the highest-magnitude possible error on this kit — explicitly excluded by the driver's static pin and S5's zero-buffApply assertion",
+        "formulaCheck": "correct — no kill event exists in v1; zero stacks accrue",
+        "fireRateOk": true,
+        "explanation": "Verbatim-documented with an anti-fabrication pin; exactly the required handling."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 999% of final ATK as Burst Skill damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy, flatDamage 999, no core, no noFb flag (FB exemption by cast timing)",
+        "blindSaid": "S6 identical (its crit:true is redundant with flatDamage convention); S5 burst block all GREEN including the fbEnter-keyed counterfactual sitting strictly above shipped",
+        "formulaCheck": "burst-cast damage lands before FB opens (MEASURED 2026-07-13, popup-verified): no +0.5 major, no entry auras; no 'core strike' wording → no core; burst bucket ✓",
+        "fireRateOk": true,
+        "explanation": "Keyed to her own cast with helm as co-B3 in the fixture, so burstCast-vs-fullBurstEnter genuinely diverges and both suites pin it (6 casts, 1:1 nukes, zero fbMajorApplied). Three-way convergence."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: every divergence from literal prose is a documented ⚑ with an estimate, tier, and recipe, and the two out-of-domain kill lines are verbatim-unmodeled with anti-fabrication pins. The blind re-derivations converged on every load-bearing encoding — the everyN:4 proc thinning, the burstCast keying (discriminated against fullBurstEnter in a fixture where the two genuinely diverge), the pierce re-arm shape (the driver's version is strictly more faithful than the blind's lapsing 1.3s wall-clock proxy), and the kill-line rulings. The single S5 RED is mechanism over-specification, not a driver error: the blind pinned the literal durationShots:1 shape, which the driver shows — via an executed vitest pin (literal encoding per-frame crit rates identical to the line being absent), not self-report — to be net-inert in this engine; the driver's steady-state passive proxy reproduces the kit's re-trigger steady state that S2b independently derived as the correct semantics, and the crit lift is verified live by counterfactual in both suites. Per non-negotiable 4 the executed pin is an independent method and the bar is met. Same-model residual for the owner to spot-check: (1) the 2026-08-05 probe claim that a shotFired-granted durationShots:1 buff self-consumes on its granting frame — if that engine reading were ever overturned, the literal encoding becomes preferable to the proxy and the ⚑2 engine-primitive recipe (noRetriggerWhileActive generalized + durationShots on gainPierce) is the tracked fix; (2) a documentation nit, not a finding — the driver note's 'DoT non-crit (engine default)' is stale against the SSOT's DOT_CRIT default-ON, but the encoding carries no crit field so behavior follows the engine default either way. Nothing must change for GO.",
+  "model": "kimi-code/k3"
+}

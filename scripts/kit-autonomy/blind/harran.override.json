@@ -1,0 +1,86 @@
+{
+  "slug": "harran",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "everyN": 4,
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 17.28,
+          "durationSec": 5,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 1.3
+        },
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 2.95,
+          "durationShots": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 999,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "\u25a0 Activates when an enemy afflicted with Virus Transfer is neutralized. Affects 2 nearest enemy unit(s).",
+      "Virus Transfer: Constantly deals 17.28% of final ATK as damage every 1 sec for 5 sec. (spread instance from the neutralize branch)"
+    ],
+    "skill2": [
+      "\u25a0 Activates when killing an enemy. Affects self.",
+      "ATK \u25b2 3.02%, stacks up to 15 time(s) and lasts for 10 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 everyN:4 on shotFired is the deterministic stand-in for the kit's 25%-per-attack proc chance: the expected rate matches, per-run variance does not, and the phase (everyNOffset) is unpinned.",
+    "\u2691 Virus Transfer DoT instances APPEND in the engine (no dedup). At ~1 proc per 4 pulls against a 5 sec duration the overlap is small, but if the in-game status REFRESHES rather than stacks, any faster real proc cadence would over-credit.",
+    "\u2691 gainPierce durationSec 1.3 is a proxy for 'for 1 round(s)' \u2014 the engine has no round-count pierce window (durationShots exists only on `buff`). Pierce Damage \u25b2 is inert in v1, so this moves no damage today; it only tags shots.",
+    "\u2691 critRatePct durationShots:1 \u2014 whether the granting full-charge shot itself crits at the lifted rate, or only the NEXT round does, depends on engine block-dispatch vs damage ordering and is unpinned.",
+    "\u2691 Both kill/neutralize-gated lines (S1 spread branch, S2 stacking ATK) are modeled as INERT on the scope-lock premise: one partless immortal boss, no adds, nothing is ever neutralized. They must be revisited for any content with adds.",
+    "\u2691 Cadence tuple (ammo 6 / reloadFrames 159 / chargeFrames 60) is datamined and unverified for this unit.",
+    "Every skill2 trigger assumes each SR trigger pull is a Full Charge (the sim charges to full before firing); a cancelled or partial charge would not satisfy the kit's activation clause.",
+    "noFb is deliberately NOT set on the 999% burst hit \u2014 the FB exemption comes from cast timing (burst-cast damage lands before Full Burst begins), not from a per-kit flag."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Harran is an SR/Electric/Attacker Burst III charge unit. Skill 1 is a 25%-per-attack Virus Transfer DoT (17.28% of final ATK every 1 sec for 5 sec) modeled deterministically as one proc per 4 trigger pulls (everyN:4) \u2691; its second branch spreads the DoT only when an afflicted enemy is neutralized, which never happens at scope lock (single partless immortal boss, no adds), so that branch is unmodeled. Skill 2 grants, on each full-charge attack, self Pierce and Critical Rate \u25b22.95% for 1 round \u2014 the crit line uses durationShots:1 (a round count, not seconds), the Pierce line uses a \u2691 durationSec proxy sized to roughly one shot cycle because the engine has no round-count pierce window. Skill 2's kill-gated stacking ATK \u25b23.02% (up to 15, 10 sec) is inert at scope lock and unmodeled. Burst is a single 999% of final ATK burst-skill hit on cast, crit-eligible, no core (the text says no core strike), and full-burst-exempt by cast timing rather than by flag."
+}
