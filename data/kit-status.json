@@ -7211,6 +7211,45 @@
         "burst: swap weapon range-band/core eligibility (charge cannon on an SG base) is an SR-like guess ⚑; base SG cadence tuple is datamine-unreliable ⚑"
       ],
       "board": null
+    },
+    "belorta": {
+      "name": "Belorta",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/belorta.json + scripts/kit-autonomy/manual-review/belorta.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when performing a Full Charge attack. Affects self.\nExplosion Radius ▲ 9.55% for 5 sec."
+        ],
+        "skill2": [
+          "■ Activates when an attack hits more than 4 enemy unit(s). Affects the target(s). \nDEF ▼ 3.52% for 5 sec. \nDeals 14.96% of final ATK as additional damage."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "burst: the 192% nuke is burstCast-keyed — pre-FB by engine timing (U10 auto-exempt), crits at the caster rate (U1 FunctionTable rule), never cores, never gets the +30% range bonus",
+        "burst: chargeSpeedPct 2.82/10s targets all allies on HER cast only — a second Burst II sharing rotations would not refresh it (burstCast, not fullBurstEnter)",
+        "skill1: Explosion Radius ▲ is unmodeled — AoE geometry, damage-inert vs the partless single boss; ⚑ out-of-domain, zero in sim domain",
+        "skill2: the >4-enemies-hit gate is unsatisfiable vs one boss, so the DEF ▼ 3.52% and the 14.96% rider are unmodeled — ⚑ out-of-domain; shipping either ungated would be a ~14.96%-per-shot over-credit"
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "burst nuke pre-FB exemption + caster-rate crit rest on engine/datamined convention (U1/U10 FunctionTable rules), not a belorta-specific popup pair — one recorded burst-cast popup pair (crit vs non-crit, no +50%) would confirm",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     }
   }
 }

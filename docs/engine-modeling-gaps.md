@@ -57,7 +57,7 @@
 | `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
 | `excludeSelf` | 17 | anis, arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, … |
 | `fbGate` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |
-| `flatDamage` | 81 | 2b, a2, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, … |
+| `flatDamage` | 82 | 2b, a2, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 4 | d, isabel, modernia, soda-twinkling-bunny |
 | `gainPierce` | 10 | ade-agent-bunny, asuka, dorothy, grave, makima, mari, milk-blooming-bunny, naga, … |

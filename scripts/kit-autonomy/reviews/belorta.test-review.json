@@ -1,0 +1,92 @@
+{
+  "slug": "belorta",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge: Explosion Radius ▲ 9.55%",
+      "disposition": "UNMODELED",
+      "scope": "Self, on-full-charge attacks only (RL, chargeFrames 90 — every completed pull is a full charge, so trigger cadence ≈ per shot).",
+      "durationSemantics": "durationSec 5 (wall-clock seconds, refreshed per full-charge attack — near-permanent uptime given her fire cycle, but irrelevant: see below).",
+      "triggerIdentity": "shotFired on the owner's full-charge shots (a 'performing a Full Charge attack' self-trigger).",
+      "targetSet": "self",
+      "nearestWrongModel": "Encoding 'Explosion Radius ▲' as a damage stat — most plausibly projectileExplosionPct (RL-flavored Damage-Up) or attackDamagePct — turning a pure AoE-geometry stat into free per-shot damage. Explosion RADIUS changes how many enemies a splash covers, not the damage to any enemy it hits; vs the single partless scope-lock boss it moves nothing. There is also no StatKey for explosion radius, which is itself the tell that it belongs in `unmodeled`.",
+      "distinguishingAssertion": "cfg.onEvent: zero buffApply events with caster belorta carrying stat 'projectileExplosionPct' or 'attackDamagePct'; and totals(res)['belorta'] is IDENTICAL when run with withPatchedOverride('belorta', o => { o.skill1 = []; }) — skill1 must be a strict no-op on damage.",
+      "inertness": "belorta's total damage, every damage event's mult, and the buff event stream must not move when skill1 is emptied. No skill1-sourced buffApply may exist.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "hits >4 enemy units: DEF ▼ 3.52% 5s",
+      "disposition": "UNMODELED",
+      "scope": "Enemy-targeted debuff, gated on one attack hitting MORE THAN 4 enemy units (i.e. 5+ simultaneous splash victims).",
+      "durationSemantics": "durationSec 5 on the boss if it could ever fire.",
+      "triggerIdentity": "A multi-enemy-hit gate. The v1 fight has exactly ONE enemy (partless boss), so 'hits more than 4 enemy unit(s)' is unsatisfiable — the trigger can NEVER fire at scope lock. Faithful model = record verbatim in `unmodeled`, ship no block.",
+      "targetSet": "the target(s) — the enemies hit (boss debuff, would emit buffApply with casterIdx===null/targetIdx===null if modeled).",
+      "nearestWrongModel": "Two plausible misreads: (a) reading 'hits more than 4 enemy unit(s)' as a hit-COUNT trigger ('every 4+ hits' → hitCount:5 or hitCount:4), making the DEF ▼ + 14.96% rider fire continuously all fight; (b) treating the RL splash as auto-satisfying the gate and shipping it ungated per-shot. Both over-credit a line that is dead in this fight.",
+      "distinguishingAssertion": "cfg.onEvent: ZERO damage events with srcSlot === belorta's slot and bucket 'skill' (the 14.96% rider must never land), and zero buffApply events carrying a DEF-down/damageTakenPct-style stat with value 3.52. Additionally totals(res)['belorta'] identical with o.skill2 = [].",
+      "inertness": "The entire skill2 block: no skill-bucket damage from belorta, no boss debuff, no gauge contribution from a phantom rider (a wrongly-shipped 14.96% rider would also pump burst gauge via skill-damage impacts — another observable to hold at zero).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 14.96% of final ATK addl damage",
+      "disposition": "UNMODELED",
+      "scope": "Flat damage rider on the same >4-enemies-hit trigger — inherits the unsatisfiable gate above.",
+      "durationSemantics": "Instant hit, no duration.",
+      "triggerIdentity": "Same unsatisfiable multi-enemy-hit gate as the DEF ▼ line (one ■ header governs both sentences).",
+      "targetSet": "the target(s) hit.",
+      "nearestWrongModel": "Splitting this sentence from its ■ header and shipping it as an ungated per-shot flatDamage {atkPct:14.96} rider (shotFired) — a permanent ~24%-of-normal-mult damage inflation plus spurious burst-gauge generation.",
+      "distinguishingAssertion": "Same as above: no belorta skill-bucket damage events at all across a full 180s run; her damage comes exclusively from buckets 'normal'/'charge' (weapon) and 'burst'.",
+      "inertness": "Skill-bucket damage from belorta must be exactly zero; her FB count must match the no-skill2 baseline (no phantom gauge).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 192% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-cast instant damage, enemies in range (single boss → one hit). Crits at caster's sheet rate per rider convention; NO core (text says nothing about core strike); no +30% range bonus (riders are range-OFF universally).",
+      "durationSemantics": "Instant, once per own burst cast (cd 20s → fires on each rotation she bursts).",
+      "triggerIdentity": "burstCast (stage 2 — her OWN Burst II cast), NOT fullBurstEnter. Per the FB-exemption rule, burst-cast damage lands BEFORE the Full Burst window opens → noFb by timing.",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Granting the +50% Full Burst major to the 192% hit (modeling it as landing inside FB, or keying it to fullBurstEnter) — a straight 1.5× over-credit on every cast; secondarily, letting it take the +30% range bonus or core.",
+      "distinguishingAssertion": "cfg.onEvent: every damage event with srcSlot === belorta's slot and bucket 'burst' has fbMajorApplied === false AND rangeApplied === false, and the count of such events === the count of burstCast events by belorta over the run (one hit per cast, no extras).",
+      "inertness": "Must NOT fire on Full Bursts belorta did not initiate; must not appear in the charge or skill buckets.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Speed ▲ 2.82% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic Charge Speed stat (chargeSpeedPct) — affects charge-weapon wielders' charge time; live for belorta herself (RL, 90-frame charge) and any SR/RL allies.",
+      "durationSemantics": "durationSec 10 — plain wall-clock seconds ('for 10 sec', not rounds).",
+      "triggerIdentity": "burstCast (her own Burst II cast). The ■ header sits inside her burst block with no 'entering Full Burst' wording → this is burst-cast-keyed, firing ONLY on rotations belorta bursts.",
+      "targetSet": "all allies INCLUDING self ({kind:'allies'} with no excludeSelf — the prose says 'all allies', not 'except self').",
+      "nearestWrongModel": "Keying it to fullBurstEnter — divergent whenever another Burst II unit shares the team and takes some rotations: fullBurstEnter applies the buff on EVERY team FB, over-crediting rotations belorta sat out. Secondary misread: excluding self from 'all allies'.",
+      "distinguishingAssertion": "In a comp with a second Burst II unit sharing rotations: count of buffApply events with stat 'chargeSpeedPct' and value 2.82 === count of belorta's own burstCast events, strictly LESS than the fullBurstStart count; and the per-cast buffApply set covers all 5 targetIdx values including belorta's own slot.",
+      "inertness": "No chargeSpeedPct 2.82 buffApply on Full Bursts initiated by a different Burst II; value emitted is the raw percentage 2.82 (plain % stat, not flat-resolved).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "burst:Deals 192% of final ATK as damage",
+    "burst:Charge Speed ▲ 2.82% for 10 sec"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "■ Activates when performing a Full Charge attack. Affects self. Explosion Radius ▲ 9.55% for 5 sec."
+    ],
+    "skill2": [
+      "■ Activates when an attack hits more than 4 enemy unit(s). Affects the target(s). DEF ▼ 3.52% for 5 sec.",
+      "Deals 14.96% of final ATK as additional damage."
+    ],
+    "burst": []
+  },
+  "notes": "Harness caveat the driver must reconcile: belorta is Burst II, but controlComp(carry) fixes the carry in the B3 slot (liter B1 / crown B2 / carry B3 / helm B3) — her tests need a custom CompOptions placing her in the B2 slot with a B1 + B3 present so full bursts actually chain; the burstCast-vs-fullBurstEnter distinguisher specifically needs crown (or another B2) co-present and rotating. Expected shared-prior misreads, in order of likelihood: (1) skill2's '>4 enemy unit(s)' gate silently dropped or reread as a hitCount trigger, shipping a permanent 14.96% per-shot rider + DEF shred that the single-boss fight can never legitimately produce — this is the biggest damage-inflation trap in the kit (~24% of her 61.3 normal mult per shot if shipped ungated); (2) the 192% burst hit taking the +50% FB major (it must land pre-FB, fbMajorApplied false); (3) Explosion Radius laundered into projectileExplosionPct/attackDamagePct damage — radius is AoE geometry, damage-inert vs one partless boss, and has no StatKey by design; (4) burst charge-speed keyed to fullBurstEnter. Whole-picture check: with skill1+skill2 correctly unmodeled, belorta's sim damage = RL weapon cycle (6 ammo, 141-frame reload, 90-frame charge, 61.3/200 mults) + 192% per own burst — any skill-bucket damage event from her slot is by itself proof of a misencoding. All magnitudes are literal kit text (DATAMINED); nothing here requires a ⚡/⚑ calibrated value, and no ALWAYS-⚑ field applies (no kit-silent cadence, no swap, no stacks, no multi-projectile split beyond the boss-irrelevant radius line).",
+  "model": "claude-fable-5"
+}

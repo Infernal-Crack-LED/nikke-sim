@@ -1,0 +1,72 @@
+{
+  "slug": "belorta",
+  "kitDescription": "Belorta is an Electric rocket-launcher Attacker with a Burst II on a 20-second cooldown. Whenever she fires a full-charge shot she briefly widens her explosion radius, which only affects how many enemies a rocket splash can catch — irrelevant against a single boss. Her Skill 2 is a crowd-fighting tool: if one of her attacks splashes more than four enemies at once, those enemies take a small DEF reduction plus a bonus hit; against one boss this can never trigger. Her burst deals a single 192% of final ATK hit to enemies in range the moment she casts, and at the same time grants the whole team, herself included, a small Charge Speed increase for 10 seconds.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Full Charge: Explosion Radius ▲9.55%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; AoE geometry, no StatKey, damage-inert vs one partless boss; ⚑ out-of-domain with recipe (multi-enemy/spatial model needed)",
+        "blindSaid": "S6 shipped it live as projectileExplosionPct 9.55 but self-flagged this as its top uncertainty and named full-unmodeled as the faithful alternative; S2b ruled UNMODELED; S5 pins clearing-skill1 byte-identical and 9.55 absent from the buff channel",
+        "formulaCheck": "DamageUp bucket (1e/1f): projectileExplosionPct is Explosion DAMAGE ▲, a different mechanic — booking 9.55 there fabricates per-shot damage the kit never grants; no radius term exists anywhere in the formula",
+        "fireRateOk": true,
+        "explanation": "Correct disposition. The S6 live encoding is the exact nearest-wrong model S2b named; the blind model's own caveat and both other independent reviewers converge on the driver's read. Divergence is spurious (RECON_ERROR-class on S6's side), not a driver finding."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "hits >4 enemies: DEF ▼3.52% 5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; gate unsatisfiable vs single boss; no enemy-DEF-down primitive exists (defPct is self-DEF, damageTakenPct is a different bucket); ⚑ out-of-domain with recipe",
+        "blindSaid": "S6 shipped a value-0 damageTakenPct placeholder while self-flagging the gate as never satisfiable at scope lock; S2b ruled UNMODELED; S5 pins 3.52 absent from the buff channel and skill2-clear byte-identical",
+        "formulaCheck": "DEF is a flat subtractive term inside the base; the engine has no boss-DEF-reduction channel, and folding into damageTakenPct would misplace the mechanic into the Taken bucket — the driver correctly refused the fudge",
+        "fireRateOk": true,
+        "explanation": "Correct disposition on both counts (unsatisfiable gate + missing primitive). S6 divergence spurious; blind's own caveat concedes the inert reading."
+      },
+      {
+        "kitLine": "14.96% of final ATK addl damage",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; inherits the >4-enemies gate; absence pinned by test (zero skill-bucket damage from her slot vs a gate-less-rider counterfactual that demonstrably fires)",
+        "blindSaid": "S6 shipped it live on shotFired under a self-imposed 'never silently delete a damage line' rule, while flagging the pessimistic drop-both-blocks reading as equally defensible; S2b ruled UNMODELED (gate can never fire); S5 pins 14.96 absent and totals identical with skill2 cleared",
+        "formulaCheck": "As a function rider it would crit, never core, noRange — but the gate governs; vs one boss the true rate is zero. A shipped ungated rider would also mint phantom burst gauge via skill-hit generation (§6), a second over-credit the driver's fixture correctly excludes",
+        "fireRateOk": true,
+        "explanation": "Correct disposition. This was the kit's biggest damage-inflation trap (~24% of her 61.3 normal mult per shot) and the driver avoided it with a discriminating counterfactual test. S6 divergence spurious."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 192% of final ATK as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast flatDamage 192 target enemy; pre-FB by engine timing (auto noFb on burst-cast damage), crits at caster rate, never cores, noRange",
+        "blindSaid": "S6 identical encoding (plus explicit noRange/noFb the engine already hardcodes); S2b FAITHFUL with the +50%-FB grant as nearest-wrong; S5 pins the line load-bearing (zeroing it drops her total) and locused on belorta",
+        "formulaCheck": "Boundary rule (§1b): burst-cast damage lands before FB opens — no +0.5, no entry auras; burst nuke row: crits, no core, no range. Driver test pins fbMajorApplied false, critEligible true, bucket 'burst', atkPct exactly 192, one hit per cast. All agree",
+        "fireRateOk": true,
+        "explanation": "Fires once per own cast at the literal kit magnitude with correct bucket routing. Discriminates against Lv-1 magnitude (68.57) and crit:false counterfactuals."
+      },
+      {
+        "kitLine": "allies: Charge Speed ▲2.82% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast chargeSpeedPct 2.82 durationSec 10 target allies incl. self; keyed to HER cast, not Full Burst entry",
+        "blindSaid": "S6 identical encoding; S2b FAITHFUL with fullBurstEnter-keying and excludeSelf as the named misreads; S5 pins raw 2.82 value, all-3-targets fan-out per cast, and buff frames equal to her cast frames and never on fullBurstStart frames",
+        "formulaCheck": "Charge Speed is subtractive on charge time (§4: effective = base × (1 − ΣCS%)); sim consumes it live on her 90-frame charge. Buff windows are timed seconds ('for 10 sec' — not rounds), durationSec 10 correct; one uniform window fanned to every ally per cast matches §11 refresh semantics",
+        "fireRateOk": true,
+        "explanation": "Correct stat, value, scope (allies incl. self — prose says 'all allies'), duration, and trigger identity. Discriminates against self-scoped and fullBurstEnter-keyed counterfactuals; 1s-duration counterfactual confirms live consumption."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. The two load-bearing burst lines are FAITHFUL and converge across all three independent derivations (S2b spec, S5 blind tests green 13/13 with only pre-declared structural GAPs skipped, S6 blind override byte-equivalent on burst); both discriminating counterfactual suites (Lv-1 magnitude, crit:false, self-scope, fullBurstEnter-keying, gate-less S2 rider) fail as required, so the green is not vacuous. The skill1/skill2 divergences are S6-side spurious: the blind override shipped the exact nearest-wrong encodings S2b pre-named (projectileExplosionPct laundering, gate-less rider) while its own caveats conceded the driver's inert/unmodeled reading, and the formula SSOT sides with the driver — Explosion Radius has no damage term anywhere in the buckets, and the >4-enemies gate is structurally unsatisfiable against the single partless scope-lock boss, so both lines are correctly DOCUMENTED_GAP with verbatim unmodeled entries, notes, and ⚑ recipes. Residual for the owner to spot-check (same-model stability, not a finding): the burst nuke's pre-FB exemption and caster-rate crit rest on engine/datamined convention (U1/U10 FunctionTable rules) rather than a belorta-specific popup pair — a single recorded burst-cast popup pair (crit vs non-crit, no +50%) would independently confirm, per the standing popup-math note. Note: this reviewer has no tools by design; the JSON is returned here and must be persisted to scripts/kit-autonomy/results/belorta.json by the orchestrator.",
+  "model": "kimi-code/k3"
+}
