@@ -5883,6 +5883,42 @@
       ],
       "board": null
     },
+    "rupee-winter-shopper": {
+      "name": "Rupee: Winter Shopper",
+      "burst": "I",
+      "weapon": "AR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/rupee-winter-shopper.json + scripts/kit-autonomy/manual-review/rupee-winter-shopper.md.",
+          "low FIDELITY (skill2): Shopping resource pool never decays while the real Shopping buff lapses 20s after its last refresh — in sole-B1 comps (3 casts/chain) the real max-stack gate never opens, but the sim's pool crosses 4 during chain 2 and the 7.9% gauge buff over-fires from the 2nd FB end onward. Exact in double-B1 comps (the kit's home, where 4 casts/chain keep buff and pool in agreement at every gate read)."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Attract: Taunts all enemies for 5 sec. (UNMODELED — no engine taunt primitive; defensive: the v1 partless boss deals no damage and has no target choice, so enemy target-lock moves no damage. The label taunt-immunity precedent.)"
+        ]
+      },
+      "caveats": [
+        "⚑ CADENCE TUPLE (ALWAYS-⚑): AR rate_of_fire 720 = 12 rounds/s nominal + reloadFrames 81 + ammo 60, all datamine (single-chunk reload, reload_bullet 10000) — drives the S1 last-bullet cadence (once per ~5s magazine + reload) and the reload-economy gain from her burst. Recipe: rounds/min + reload gap from any rupee-winter-shopper-focus video.",
+        "⚑ MEASUREMENT-GATED (no-lapse approximation, power/rupee-base precedent): the shopping POOL never decays (no timer-decay primitive) while the Shopping BUFF lapses 20s after its last refresh. In a DOUBLE-B1 comp (the kit's home — her re-entry exists to field one), every chain carries ≥4 burst casts, stacks reach the 4-cap during chain 1, and at each Full Burst END the stacks applied during the just-ended chain are still live (20s duration > the ~10s cast→FB-end span), so the pool and the buff AGREE at every gate-read moment — exact there. In a SOLE-B1 comp on a 40s chain cycle (3 casts/chain), the real buff ramps only to 3 and lapses between chains, so the real gate NEVER opens, but the pool crosses 4 during chain 2 and the sim's gate over-fires from the 2nd FB end onward. ESTIMATE: over-credits a 7.9% gauge-fill window for 5s after each FB end in sole-B1 comps only — a few-percent-of-the-gauge timing nudge on the next chain, zero in any double-B1 comp. RECIPE: a sole-B1 rws focus recording — does the gauge-speed buff icon appear after Full Burst ends? TIER: override-only (a decaying-pool / buff-stack-read primitive would remove the divergence)."
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "sole-B1 pool-no-decay gate overfire (caveat 2, measurement-gated — one sole-B1 rws focus recording of the gauge-speed icon settles it); burstGenPct per-holder scaler mapping same-model prior; cadence tuple (datamine)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "sakura": {
       "name": "Sakura",
       "burst": "I",

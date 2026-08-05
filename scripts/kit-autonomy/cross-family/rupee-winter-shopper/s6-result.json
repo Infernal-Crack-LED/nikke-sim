@@ -1,0 +1,257 @@
+{
+  "slug": "rupee-winter-shopper",
+  "leakDetected": null,
+  "override": {
+    "slug": "rupee-winter-shopper",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 19.02,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 1.33,
+            "durationSec": 20,
+            "maxStacks": 4
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnd"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "burstGenPct",
+            "value": 7.9,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 10,
+            "intervalSec": 1
+          },
+          {
+            "kind": "reenterStage",
+            "stage": 1
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "reloadSpeedPct",
+            "value": 63.17,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Activates if Shopping is at max stacks when Full Burst ends. (max-stack precondition on the Burst Gauge filling speed rider is not gated — no maxStacks-reached block gate exists in the schema)"
+      ],
+      "burst": [
+        "Attract: Taunts all enemies for 5 sec."
+      ]
+    },
+    "caveats": [
+      "⚑ skill2 Shopping stack trigger: kit says 'when an ally uses a Burst Skill' — modeled as burstCast on ANY ally (the engine's burstCast trigger is owner-cast-keyed). If the engine keys burstCast to the OWNER only, this UNDER-fires by ~3-4x per rotation; a stageEnter-per-stage triple-block would over/under-fire differently. Unmeasured.",
+      "⚑ skill2 max-stacks precondition on the Burst Gauge rider is NOT gated: with 3 burst casts per rotation the 4-stack cap (20s duration) is reached during rotation 2 and holds thereafter, so the rider is modeled as always-on from the first fullBurstEnd. This OVER-credits the first ~1-2 rotations' gauge.",
+      "⚑ Burst Gauge filling speed ▲7.9% mapped to burstGenPct (the unit's own gauge contribution scaler) applied to all allies. Whether the engine's burstGenPct is per-unit-contribution or a global fill-rate scaler determines whether this is faithful.",
+      "defPct is documented inert in v1 (self DEF does not affect own damage). Both DEF lines are kept for kit completeness / a future consumer, per the HARD RULE that DEF/HP lines are not skippable — they may drive a teammate's DEF-scaling conversion.",
+      "The burst heal is modeled as 10 recovery events over 10 sec (ticks:10) so on-recovery consumers (e.g. a Crown-style 'when recovery takes effect' partner) stay refreshed; no HP amount is modeled. The 50.47%-of-attack-damage magnitude is not representable.",
+      "Taunt is skipped: the v1 boss deals no damage and there is no aggro model, so a taunt has no damage-relevant channel."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rupee: Winter Shopper is an AR/Electric/Defender Burst I. Her kit carries NO damage effects at all — it is entirely DEF, heal/taunt, reload speed, burst-gauge, and a Burst-Stage-1 re-entry. The two damage-relevant channels are (a) burst Reload Speed ▲63.17%/10s to all allies, which is a weapon-state modifier and therefore IS damage (it gates shots fired — HARD RULE 6), and (b) the reenterStage:1 rotation effect, which lets a second Burst I unit also cast at stage 1 and can materially change the rotation. The Shopping stack and Burst Gauge filling speed lines feed rotation via gauge rate. Both DEF lines (S1 last-bullet 19.02%/5s, S2 Shopping 1.33%×4/20s) are modeled as defPct even though defPct is inert in v1 — DEF lines are never auto-skipped (tandem/cross-unit rule), and dropping them would erase the kit from the file. All three slots authored; skipped lines are listed verbatim in `unmodeled`.",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when the last bullet hits",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger lastBullet — literal 'when the last bullet hits the target' = the per-magazine last-bullet trigger (trigger-identity rule). NOT interval, NOT shotFired."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} — 'all allies' includes self (no 'except self' clause), so excludeSelf is omitted."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▲ 19.02% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct 19.02, durationSec 5. Wall-clock seconds (explicit 'for 5 sec', not rounds). defPct is engine-inert in v1 but is NOT skippable per the DEF/HP/lifesteal hard rule — kept for kit completeness and any future DEF-scaling consumer."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when an ally uses a Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast. ⛑ Kit says 'an ALLY uses a Burst Skill' — an ANY-ally-cast trigger, which fires ~3x per rotation (B1+B2+B3), not once. The schema's burstCast is documented as 'when the OWNER casts their burst'. Modeled as burstCast as the nearest primitive; flagged as the top divergence risk."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} — no exclude-self clause."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Shopping: DEF ▲ 1.33%.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct 1.33 — the per-stack magnitude (kit states the PER-STACK value, with the cap expressed separately as maxStacks)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stacks up to 4 times, 20 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "maxStacks 4, durationSec 20 on the same buff. Wall-clock seconds. Named status 'Shopping' is the stack pool that the second S2 block's precondition reads."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates if Shopping is at max",
+      "status": "SKIPPED",
+      "effectOrReason": "The MAX-STACKS PRECONDITION is not modeled: there is no block gate for 'this unit's own named buff is at max stacks' (resourceGate reads a declared resource pool, not a buff's stack count; requiresTargetStatus is boss-scoped). Modeled as ungated, which over-credits early rotations before 4 stacks accrue. Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "when Full Burst ends",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnd — literal match to the schema's fullBurstEnd kind."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Burst Gauge filling speed ▲ 7.9%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff burstGenPct 7.9, durationSec 5, target allies. ⛑ burstGenPct is documented as 'scales the unit's burst gauge contribution'; a team-wide gauge-fill-speed line is the closest available stat. Rotation-relevant (it can shift full-burst counts), so it is NOT skippable."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'} for the taunt/heal block."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attract: Taunts all enemies 5s",
+      "status": "SKIPPED",
+      "effectOrReason": "No taunt/aggro primitive in the schema and no damage channel for it — the v1 boss deals no damage and targeting is unmodeled, so a taunt is provably damage-inert at scope lock. Verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 50.47% of atk dmg as HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal {ticks:10, intervalSec:1} on self — 'over 10 sec' modeled as 10 one-per-second recovery events so any teammate's 'when recovery takes effect' consumer stays refreshed (tandem rule: heal lines are never skipped on isolation). No HP pool is modeled, so the 50.47% magnitude is unrepresentable and is not encoded anywhere."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} on the second burst block (the kit's second header re-scopes from self to all allies)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Reload Speed ▲ 63.17% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff reloadSpeedPct 63.17, durationSec 10, target allies. This is a WEAPON-STATE modifier and therefore IS damage (HARD RULE 6) — it raises shots fired for every ally in the window. The single largest damage-relevant line in the kit."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Re-enters Burst Stage 1.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "reenterStage {stage:1} — the rotation stays at stage 1 so ANOTHER eligible Burst I unit may also cast. Placed on the self-targeted block (a rotation-state effect, not a per-ally grant). Rotation-material: it can change full-burst counts."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill2[0].trigger",
+      "estimate": "burstCast (owner-keyed) as the encoded primitive; the kit's true semantics are ANY-ally-burst-cast, ~3 fires per rotation vs 1",
+      "reasoning": "Kit text is literally 'Activates when an ALLY uses a Burst Skill' — the trigger-identity failure mode #3 in reverse: this is broader than burst-cast, not narrower. types.ts documents burstCast as 'when the OWNER casts their burst'. If the engine fires it owner-only, Shopping accrues 1 stack/rotation and takes 4 rotations to cap instead of reaching 4 within rotation 2. The alternative encodings — three stageEnter blocks (stage 1/2/3) or a single fullBurstEnter — each mis-time differently. Since defPct is inert in v1 the DAMAGE consequence is zero today, but the stack count feeds the max-stacks precondition on the gauge rider, which IS rotation-relevant.",
+      "recipe": "Read the engine's burstCast dispatch: does it fire per-owner-cast or per-any-cast? If owner-only, split into three stageEnter{stage:1|2|3} blocks (a Burst I unit's own cast is already covered by stage 1) and re-check that Shopping caps by the second rotation. Cross-check against any other roster unit whose kit says 'when an ally uses a Burst Skill'."
+    },
+    {
+      "field": "override.skill2[1] (max-stacks gate)",
+      "estimate": "ungated — rider fires on EVERY fullBurstEnd from the first one; true behavior gates it to fullBurstEnd events where Shopping is at 4 stacks",
+      "reasoning": "No schema primitive gates a block on the owner's own named buff being at max stacks. The available gates (resourceGate / requiresTargetStatus / fbGate / everyN) do not read a buff's stack count. Under the any-ally-burst reading, 3 stacks accrue per rotation with a 20s duration, so 4 stacks are reached partway through rotation 2 and hold for the rest of a 180s fight — meaning the ungated model over-credits roughly the first 1-2 full-burst-end events out of ~8-12. Small but non-zero on gauge.",
+      "recipe": "Either (a) declare a 'shopping' resource pool with the stack trigger adding delta:1 (clamped max 4) and gate the rider with resourceGate {name:'shopping', min:4} — but resource pools have no time decay, so the 20s expiry is lost; or (b) approximate with everyN/everyNOffset to skip the first N fullBurstEnd events once the real ramp is measured. Measure by counting full bursts in a recording with and without the rider active."
+    },
+    {
+      "field": "override.skill2[1].effects[0].stat",
+      "estimate": "burstGenPct 7.9 applied to all allies",
+      "reasoning": "'Burst Gauge filling speed ▲' is a team-wide gauge-rate line, but burstGenPct is documented as scaling 'the unit's burst gauge contribution'. If the engine multiplies each holder's own per-shot gauge, applying it to all allies is faithful; if it is a caster-scoped global, applying it 5x would 5x-count. Magnitude is kit-literal (7.9), so only the SCOPE is uncertain, not the number.",
+      "recipe": "Grep sim.ts for the burstGenPct consumer: confirm it multiplies the HOLDER's own gauge contribution per shot. If so, allies-scope is correct as written. Validate end-to-end by full-burst count on a recorded fight with this unit present vs a sim run with the rider stripped."
+    },
+    {
+      "field": "override.burst[0].effects[0] (heal ticks)",
+      "estimate": "ticks: 10, intervalSec: 1 (10 recovery events over the stated 10 sec)",
+      "reasoning": "Kit says 'Recovers 50.47% of attack damage as HP OVER 10 sec' — a heal-over-time, not an instant. types.ts explicitly documents the HoT pattern as ticks:N with intervalSec default 1. The tick COUNT is a convention (the kit does not state a per-second cadence, only a total window), and it matters only to on-recovery consumers' refresh cadence, which are the sole reason this effect exists in the model at all (no HP pool in v1).",
+      "recipe": "Only matters when this unit is teamed with an on-recovery consumer (e.g. a Crown-style 'when recovery takes effect' kit). Record such a team and count the consumer's proc events across the 10s window: 10 procs confirms 1/sec, 1 proc means it is an instant-total heal and ticks should drop to 1."
+    },
+    {
+      "field": "override (base cadence / reloadFrames)",
+      "estimate": "engine defaults from the datamine (ammo 60, reloadFrames 81) — not overridden here",
+      "reasoning": "ALWAYS-⛑ field 1: the datamined cadence tuple (rate_of_fire, reloadFrames) is a known-unreliable source. This unit's ONLY damage-relevant burst line is Reload Speed ▲ 63.17%, whose entire effect is mediated through reloadFrames — so an unreliable reloadFrames propagates directly into the one number this kit contributes to the board. Not encoded as an override field (nothing to override without a measurement), but load-bearing.",
+      "recipe": "Frame-count her reload animation in a focus recording (last-bullet frame → first-shot-of-next-magazine frame), unbuffed, then again inside her own burst window, and check the ratio against 1/(1+0.6317)."
+    },
+    {
+      "field": "override (noFb)",
+      "estimate": "not set (default OFF / FB-by-timing ON)",
+      "reasoning": "Per the methodology, noFb is measured-only and defaults OFF. This kit carries NO damage effects whatsoever — no flatDamage, dot, hitRepeat, or storedHit — so noFb has no carrier to attach to and the question is vacuous for this unit. Recorded here only to show the ALWAYS-⛑ checklist item was evaluated, not silently dropped."
+    }
+  ],
+  "model": "claude-opus-5"
+}
