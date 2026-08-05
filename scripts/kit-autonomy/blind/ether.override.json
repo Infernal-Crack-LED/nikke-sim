@@ -1,0 +1,77 @@
+{
+  "slug": "ether",
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 10
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 56.32,
+          "crit": true,
+          "noRange": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": -9.38,
+          "durationSec": 6
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 3
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 96,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Affects 1 allies with the lowest remaining HP. Damage Taken \u25bc 52.5% for 5 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 skill2 damage line carries NO activation clause in the kit text \u2014 trigger identity is INVENTED (interval). If the real trigger is fullBurstEnter/hitCount/lastBullet, both cadence and FB-uptime are wrong.",
+    "\u2691 skill2 interval sec:10 is an UNMEASURED estimate. The unit's datamined cd 40s is the BURST cooldown, not a skill cooldown; no skill CD is in the input domain.",
+    "\u2691 skill2 DEF \u25bc 9.38% is authored as a defPct buff of -9.38 on the enemy. The schema documents defPct as inert in v1 (self DEF does not affect own damage) \u2014 whether an enemy-targeted negative defPct actually reduces boss DEF in the damage formula is UNVERIFIED from the schema alone; if inert, this line is silently dropping a real team-wide damage lever.",
+    "\u2691 skill2 \"Affects 3 enemy unit(s) with the highest final DEF\" \u2014 v1 has ONE boss, so the count-3 targeting collapses to a single application. No multi-target scaling is modeled.",
+    "\u2691 skill2 damage rider FB handling: left at engine default (FB by timing, ON) per methodology; noFb is measured-only and NOT set.",
+    "\u2691 burst shield is offensively inert in isolation (no HP pool at scope lock) but is retained because it emits shield events that fire teammates' `shielded` triggers and satisfy `requiresShielded` gates.",
+    "\u2691 burst trigger keyed burstCast (this unit's own Burst I cast), not fullBurstEnter \u2014 a shield created by the unit's own burst block fires on rotations THIS unit bursts."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Ether is an SG/Electric/Defender/Burst I support: S1 is a pure ally damage-mitigation line (no damage path at scope lock, unmodeled); S2 carries the only damage in the kit (56.32% of final ATK, trigger kit-silent) plus an FB-gated enemy DEF \u25bc 9.38%/6s; the burst is a 96%-of-caster-Max-HP shield to the 3 lowest-HP allies, retained for shield-synergy tandem effects rather than for its own (unmodeled) HP pool."
+}
