@@ -304,6 +304,32 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
   branch `fix/pellet-reader`, UNPUSHED — read the count live with
   `git rev-list --count origin/fix/pellet-reader..HEAD`, never from a written number.
   `/patch-notes` is owed before anything reaches `main`.
+  - ✅ **DUMP-SCHEMA FIDELITY LANDED 2026-08-05** (`docs/probe-runs.md` §25 measured it, §26 records
+    the landing; plan `docs/handoffs/2026-08-05-dump-schema-LANDING-PLAN.md`, cross-family pre-op
+    gate `kimi-code/k3` APPROVED-WITH-REVISIONS with all four revisions executed). `--dump-tracks`
+    could not replay the `white`/`red`/`marker` split — **12.20% of the marker-bearing population**
+    over 23,997 frames, two mechanisms, `UNEXPLAINED = 0`. Now per-frame `reds` + full-precision
+    `xs`/`ys` + persisted `marker_radius`/`band_hi`; `n_divergent` **15 → 0** on a new dump, old
+    dumps still replay identically (`h4-marciana-structural` = 89), **zero fixtures moved**.
+    ⚑ **Reaches NEW extractions only** — every dump written before `8d500ff9` still exhibits both
+    mechanisms exactly as §25A measured.
+    - **⇒ §8 item 2 (MARKER SEMANTICS) IS NOW UNBLOCKED** — this was its prerequisite. `MARKER_MIN
+= 2` is met by red UI-banner glyphs (§24D); the discriminator exists (§15's constant-offset
+      test) and can now be swept on a faithful substrate. Findings-only until its own blast-radius
+      pass.
+    - **⇒ OPEN, from §26D — persist `fps` in the dump's `params`.** Third gap of the same family:
+      `band_lo = round(8 × fps / 60)`, so a `band` replay cannot resolve its own lower bound from
+      the dump and must guess. Left out because the landing's edit list was gate-fixed. Fold into
+      the same pass as item 2 or into the re-extraction prep.
+    - **⇒ OPEN, from §26D — `make-groundtruth-f811.py` extracts at 60 fps but lets the counter
+      default to `--fps 30`**, so `groundtruth-f811-v4`'s `band_lo` is 4 where the clip's rate
+      implies 8. Predates `band` existing and touches no landed conclusion; live provenance
+      mismatch for future `band` work on that clip.
+  - **⚑ RE-EXTRACTION (§8 item 7) IS THE GATE ON EVERYTHING, and it must carry the schema fix.**
+    Sequencing correction (2026-08-05): the schema fix had to land FIRST or the re-extraction would
+    have to be redone. Frames for all 5 dumps are on disk (~24,700) and the counter re-runs on them
+    **without ffmpeg and without the VLM** — see §26B's command shape. Until it happens, none of the
+    four landings has moved the board and no measurement re-derived from an existing dump is current.
   - ✅ **`band_hi = 20` LANDED 2026-08-04** (owner-approved; `docs/probe-runs.md` §16, plan
     `docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md`). All five pre-stated criteria met, the
     blast radius declared before the edit **held exactly — zero fixtures, zero pins**, cross-family
