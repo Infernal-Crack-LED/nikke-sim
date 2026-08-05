@@ -9,6 +9,32 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-04) PROJECTILE BUCKET RULING — Projectile Attachment/Explosion Damage compose
+  ADDITIVELY into the Damage Up bucket; the own-multiplicative bucket is OVERTURNED. RRH's hot
+  read is resolved (control 1.091 → 0.908); both rocket popup classes now reproduce the
+  owner's reads.** Owner popup read from the control+carry recording: a non-crit CORE attach
+  during her B3 window hit **5,057,974**. The additive composition reproduces it across buff
+  states (5,046,017 / 5,113,185 = −0.24% / +1.1%); the shipped multiplicative bucket's nearest
+  body missed by −38% (it over-credited in-window attaches ~×1.6–1.7 — the hot read). Change:
+  `projectileAttachmentPct`/`projectileExplosionPct` now add into the Damage Up sum in
+  `dealDamage` (flavor-scoped as before — an attach reads only the attachment stat, an
+  explosion only the explosion stat); the event's `projFactor` is retained as a FLAVOR MARKER,
+  no longer a factor in the product (the event-log product invariant updated accordingly).
+  Popup double-check under the new bucket: the in-FB EXPLOSION body sims at 1,192,831 vs the
+  owner's 1,195,658 read (−0.2%) — the explosion was and is modeled correctly; multi-rocket
+  FB-start batches render as exact integer multiples. Blast radius: RRH control 981.1M →
+  816.4M = 0.908 (the −9% remainder is count/rotation-channel — sim 12 FB vs real 13 — NOT
+  instance magnitude, both popup classes now match); Anis: Star's shooting-star dots ride the
+  same stat and move with her board rows (regenerated). The 2026-07-13 U4 arm (RL normals take
+  projExpl in Damage Up) was already additive — consistent precedent. Test-first: RRH3's
+  additive-composition pin added RED→GREEN; RRH/event-log/hit-repeat/anis-star 66/66. PROCESS:
+  owner override, gate skipped by owner ruling. SUPERSEDES the validation-era own-bucket rule;
+  the earlier-same-day ATTACHMENT REWORK claim that the multiplicative projFactor reproduced
+  the old 4,414,404 body is WITHDRAWN (that arithmetic assumed the overturned bucket).
+  **Evidence:** owner popup read 2026-08-04 (5,057,974 attach-core, 1,195,658 explosion);
+  `scripts/tests/units/rapi-red-hood.test.ts` RRH3; `scripts/regression-snapshot.json` regen;
+  `scripts/battery/rrh-control-probe.ts` (0.908).
+
 - **(2026-08-04) ATTACHMENT REWORK — three owner overrides restore the attachment class as Rapi:
   Red Hood's damage carrier: the +421.2% Stage-3 buff is LIVE again, the attachment CORES, and
   the ▼60 meter threshold is scoped to her own B3 window. She flips COLD → HOT (control 0.898 →

@@ -232,7 +232,10 @@ export type SimEvent =
       fbMajorApplied: boolean; // ...and this instance actually took the +50% (noFb units/lines do not)
       rangeApplied: boolean;
       /** The multiplier decomposition, exactly as the damage formula composes it
-       *  (docs/data/damage-calculation.md). amount = baseAtk × atkPct/100 × the product of these. */
+       *  (docs/data/damage-calculation.md). amount = baseAtk × atkPct/100 × the product of
+       *  these — EXCEPT projFactor: since 2026-08-04 the projectile flavor contribution is
+       *  composed ADDITIVELY inside dmgUp (owner popup ruling), and projFactor is reported
+       *  only as the flavor marker (1 = unflavored). */
       mult: {
         major: number;
         elem: number;

@@ -263,22 +263,26 @@ DamageUp = 1 + ( Attack Damage ▲ %
                + Pierce Damage ▲ %         [only for Pierce-tagged shots: static hasPierce,
                                             a live gainPierce window, or a swap-scoped
                                             weaponSwap.hasPierce shot (snow-white cannon)]
-               + Projectile Explosion ▲ %  [RL NORMAL attacks — see 1f]
+               + Projectile Explosion ▲ %  [explosion-flavored hits, plus RL NORMAL attacks — see 1f]
+               + Projectile Attachment ▲ % [attachment-flavored hits — see 1f]
                ) / 100
 ```
 
 The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with no dot, etc.
 
-### 1f. Projectile bucket
+### 1f. Projectile flavor routing (DamageUp addition)
 
-```
-Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
-```
-
-Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
-stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
-buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
-rocket/proc popup ratio test, 1.2491 = prediction to four digits).
+Projectile Explosion ▲ % / Projectile Attachment ▲ % compose ADDITIVELY into the DamageUp
+bucket (1e), flavor-scoped: an attachment hit reads ONLY Projectile Attachment ▲, an explosion
+hit ONLY Projectile Explosion ▲. Applies to explosion/attachment-_flavored_ hits (Rapi: Red
+Hood's projectiles, Anis: Star's stars). For plain rocket-launcher NORMAL attacks the Projectile
+Explosion buff applies too (also DamageUp) — MEASURED exactly (the buff-independent
+rocket/proc popup ratio test, 1.2491 = prediction to four digits). Owner popup ruling
+2026-08-04: a non-crit CORE Rapi:RH attach during her B3 window hit 5,057,974 in the
+control+carry recording — the additive composition reproduces it (−0.24%/+1.1% across buff
+states); the prior own-multiplicative-bucket model over-credited ~×1.6 (her hot read). This
+OVERTURNS the validation-era own-bucket rule. The event `projFactor` field is now a flavor
+MARKER (1 = unflavored), not a factor in the damage product.
 
 ### 1g. Taken and Distributed buckets (boss-side)
 

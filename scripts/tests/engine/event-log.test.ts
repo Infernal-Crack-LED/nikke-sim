@@ -114,6 +114,8 @@ describe('cfg.onEvent structured event log', () => {
   it('reports the REAL multiplier decomposition — every event reproduces its own amount', () => {
     const bad = of('damage').filter((e) => {
       const m = e.mult;
+      // projFactor is the flavor MARKER only — its contribution is composed additively
+      // inside dmgUp (2026-08-04), so it is NOT a factor in this product.
       const expected =
         e.baseAtk *
         (e.atkPct / 100) *
@@ -122,7 +124,6 @@ describe('cfg.onEvent structured event log', () => {
         m.charge *
         m.dmgUp *
         m.seqMult *
-        m.projFactor *
         m.taken *
         m.distributed;
       const scale = Math.max(1, Math.abs(e.amount));

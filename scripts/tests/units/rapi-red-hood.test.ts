@@ -41,10 +41,12 @@
 //       total dropping when the block is removed. A mis-gated (always-on) buff would appear in both.
 //   RRH2  the OTHER side of the gate: 8.02% team buff + a STAGE-1 cast fire ONLY in noB1. A unit
 //       that fails to fill B1 could not open the chain at all (zero stage-1 casts).
-//   RRH3  the 150.72/100.6 buffs are their OWN multiplicative bucket and route ONLY to the flavored
-//       rocket hits — attachment hits carry projFactor 2.5072, explosion hits 2.0060, and removing
-//       the passives collapses both to 1.0 except in-window attaches, which keep ONLY the Stage-3
-//       421.2 line (5.212). Normals are never touched (projFactor 1.0 throughout).
+//   RRH3  the 150.72/100.6 buffs route ONLY to the flavored rocket hits — attachment hits carry
+//       projFactor 2.5072, explosion hits 2.0060 — and compose ADDITIVELY into the Damage Up
+//       bucket with attack damage (owner popup ruling 2026-08-04 — projFactor stays on the event
+//       as the flavor marker, NOT a separate factor). Removing the passives collapses both to 1.0
+//       except in-window attaches, which keep ONLY the Stage-3 421.2 line (5.212). Normals are
+//       never touched (projFactor 1.0 throughout).
 //   RRH4  the attachment CORES (launchWeapon delivery — owner footage ruling 2026-08-04; band
 //       table, so eligibility is pinned, not the rate); the explosion is a STORED hit that crits
 //       but does NOT core (skill-damage class — same-day ruling overturning the 2026-07-16
@@ -333,6 +335,32 @@ describe('rapi-red-hood — kit spec', () => {
       expect(
         [...new Set(s2p.map((d) => d.mult.projFactor.toFixed(4)))].sort()
       ).toEqual(['1.0000', PROJ_STAGE3_ONLY.toFixed(4)].sort());
+    });
+
+    it('composes ADDITIVELY into Damage Up — amount reproduces WITHOUT a projFactor factor', () => {
+      // Owner popup ruling 2026-08-04: a non-crit CORE attach during her B3 window hit
+      // 5,057,974 in the control+carry recording — the additive composition matches it to
+      // −0.24%, the old own-multiplicative bucket misses by −38%. projFactor stays on the
+      // event as the FLAVOR MARKER; the damage rides in dmgUp with attack damage.
+      const flavored = [...attach, ...explode];
+      expect(flavored.length).toBeGreaterThan(0);
+      for (const d of flavored) {
+        const product =
+          d.baseAtk *
+          (d.atkPct / 100) *
+          d.mult.major *
+          d.mult.elem *
+          d.mult.charge *
+          d.mult.dmgUp *
+          d.mult.seqMult *
+          d.mult.taken *
+          d.mult.distributed;
+        const scale = Math.max(1, Math.abs(d.amount));
+        expect(
+          Math.abs(product - d.amount) / scale,
+          `proj contribution leaked out of dmgUp on a ${d.mult.projFactor} hit`
+        ).toBeLessThan(1e-9);
+      }
     });
   });
 

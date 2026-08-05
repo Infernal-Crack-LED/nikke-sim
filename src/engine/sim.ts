@@ -1721,10 +1721,13 @@ export function runSim(
             100 +
           stat(u, 'chargeDamagePct', frame) / 100
         : 1;
-    // Projectile Attachment/Explosion Damage is its OWN multiplier bucket on
-    // the flavored hit (multiplicative with Damage Up), not additive within it.
-    // It applies ONLY to explosion/attachment-flavored hits (RRH's projectiles,
-    // Anis: Star's stars) — normal attacks, RL included, never benefit.
+    // Projectile Attachment/Explosion Damage — flavor-scoped (an attachment hit reads ONLY
+    // projectileAttachmentPct, an explosion hit ONLY projectileExplosionPct; unflavored hits
+    // never benefit) and composed ADDITIVELY into the Damage Up bucket with attack damage.
+    // Owner popup ruling 2026-08-04: a non-crit CORE attach during RRH's B3 window hit
+    // 5,057,974 in the control+carry recording — the additive composition matches to −0.24%;
+    // the prior own-multiplicative bucket over-credited it ~×1.6 (her hot read). `projFactor`
+    // is still REPORTED on the event as the flavor marker but is NOT a factor in the product.
     const projExplosion =
       opts.projFlavor === 'explosion'
         ? stat(u, 'projectileExplosionPct', frame)
@@ -1733,7 +1736,7 @@ export function runSim(
       opts.projFlavor === 'attachment'
         ? stat(u, 'projectileAttachmentPct', frame)
         : 0;
-    const projFactor = 1 + (projExplosion + projAttachment) / 100;
+    const projFactor = 1 + (projExplosion + projAttachment) / 100; // event marker only
     // Q10: Pierce Damage ▲ empowers Pierce-tagged units' attacks — a Damage Up
     // bucket addition, only while the unit's attacks are Pierce-tagged: static kit
     // pierce (hasPierce), a live timed "Gain Pierce for N sec" window
@@ -1761,9 +1764,11 @@ export function runSim(
           : 0) +
         pierce +
         (opts.extraDmgUpPct ?? 0) +
-        rlNormalProjExpl) /
+        rlNormalProjExpl +
+        projExplosion +
+        projAttachment) /
         100;
-    // Sequential-attack TRUE multiplier — its OWN multiplicative bucket (like charge/projFactor),
+    // Sequential-attack TRUE multiplier — its OWN multiplicative bucket (like charge),
     // NOT additive into Damage Up. Kit wording "Damage multiplier of sequential attacks is scaled
     // by x%" (eve's Exospine Mk2 ×2) is a genuine multiplier on the sequential-flavored instance, so
     // it must not dilute against other Damage-Up buffs (which the additive `sequentialDamagePct` does
@@ -1793,7 +1798,6 @@ export function runSim(
       charge *
       dmgUp *
       seqMult *
-      projFactor *
       taken *
       distributed;
     // DBG_UNIT=<slug> [DBG_N=<count>]: log per-instance bucket decomposition (video

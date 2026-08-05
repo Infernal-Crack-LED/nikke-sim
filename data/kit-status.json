@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04",
+  "generatedAt": "2026-08-05",
   "policy": "Per-unit single source of truth: kit-parse rollout status (kitParse.*), tuning provenance (tier/tuned/evidence — absorbed from data/hand-tuned.json 2026-07-16; tier definitions in docs/hand-tuned.md), unmodeled kit text (mirrored from the override), and board pass records (sim/real per recorded comp, >1 = HOT). AUTO fields regenerate via scripts/kit-status.ts --refresh; workflow/evidence fields are preserved. Board ratio convention: docs/CONVENTIONS.md \"Ratio direction\".",
   "tiers": {
     "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
@@ -26,8 +26,8 @@
     "band": {
       "±3% ✓": 5,
       "±5%": 4,
-      "±15%": 14,
-      "±8%": 12,
+      "±15%": 15,
+      "±8%": 11,
       ">15%": 10
     }
   },
@@ -500,57 +500,57 @@
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 0.9066
+            "ratio": 0.8392
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9482
+            "ratio": 0.8574
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9565
+            "ratio": 0.865
           },
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.9583
+            "ratio": 0.875
           },
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.8257
+            "ratio": 0.7629
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.966
+            "ratio": 0.8913
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9697
+            "ratio": 0.8734
           },
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 1.0371
+            "ratio": 0.8995
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
-            "ratio": 0.8872
+            "ratio": 0.8395
           },
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.0254
+            "ratio": 0.9437
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.019
+            "ratio": 0.9378
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.8573
+            "ratio": 0.7882
           }
         ],
         "n": 12,
-        "mean": 0.9464,
-        "mad": 0.0672,
-        "band": "±8%",
+        "mean": 0.8644,
+        "mad": 0.1356,
+        "band": "±15%",
         "temp": "COLD ▼"
       }
     },
@@ -5156,7 +5156,7 @@
         "within3pct": 1
       },
       "reference": false,
-      "residual": "ATTACHMENT REWORK 2026-08-04 (owner overrides): +421.2% restored, attach cores (band table), ▼60 own-B3-window scoped, Max Ammo:1 cosmetic — she flips COLD→HOT: control 0.898→1.091 vs 899.6M real (FB count invariant 12.0), graded T7 +21.9% / N1 +21.5% (core-buffed comps amplify the new attach-core term). The +9.1% overshoot is the new EXPOSED residual — not re-fit; owner footage-pass candidate: the band-table attachment CORE RATE (may over-credit) — the 421.2% effective UPTIME was confirmed FULL 10s by the owner 2026-08-04 (engine models a full 10s; uptime eliminated as a candidate). Explosion RESOLVED: skill damage, no core, body 1,195,658 during B3 = floor of sim bodies (never the carrier); the 2026-07-16 '4.41M explosion body' was a +421.2% amplified attach. Closed items: batch-accumulation vs Max Ammo:1 (cosmetic), countInFb scope (own Stage-3 window), explosion core (none), +421.2% (live). Still measurement-gated: flighted-nuke FB timing (delaySec 0.4, fbMajor true). Invisible-X history retained in DECISIONS; generic-MG-cold attribution unsupported (emma MG 0.977 OK, 2026-07-23).",
+      "residual": "ATTACHMENT REWORK 2026-08-04 (owner overrides): +421.2% restored, attach cores (band table), ▼60 own-B3-window scoped, Max Ammo:1 cosmetic — she flips COLD→HOT: control 0.898→1.091 vs 899.6M real (FB count invariant 12.0), graded T7 +21.9% / N1 +21.5% (core-buffed comps amplify the new attach-core term). The +9.1% overshoot was RESOLVED later the same day by the PROJECTILE BUCKET RULING (top DECISIONS entry): the proj buffs compose ADDITIVELY into Damage Up (owner popup read 5,057,974 attach-core — additive matches −0.24%/+1.1%, multiplicative missed −38%). Control is now 0.908 — both popup classes reproduce the owner's reads (attach +1.1%, explosion 1,192,831 vs 1,195,658 = −0.2%); the −9% remainder is count/rotation-channel (sim 12 FB vs real 13), NOT instance magnitude. Explosion RESOLVED: skill damage, no core, body 1,195,658 during B3 = floor of sim bodies (never the carrier); the 2026-07-16 '4.41M explosion body' was a +421.2% amplified attach. Closed items: batch-accumulation vs Max Ammo:1 (cosmetic), countInFb scope (own Stage-3 window), explosion core (none), +421.2% (live). Still measurement-gated: flighted-nuke FB timing (delaySec 0.4, fbMajor true). Invisible-X history retained in DECISIONS; generic-MG-cold attribution unsupported (emma MG 0.977 OK, 2026-07-23).",
       "unmodeled": {
         "skill1": [
           "Damage to Interruption Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)"
@@ -5173,30 +5173,30 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 1.1474
+            "ratio": 0.9498
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 1.1409
+            "ratio": 0.9463
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 1.005
+            "ratio": 0.8416
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 1.1004
+            "ratio": 0.8728
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.0931
+            "ratio": 0.9714
           }
         ],
         "n": 5,
-        "mean": 1.0973,
-        "mad": 0.0973,
+        "mean": 0.9164,
+        "mad": 0.0836,
         "band": "±15%",
-        "temp": "HOT ▲"
+        "temp": "COLD ▼"
       }
     },
     "rapunzel": {
