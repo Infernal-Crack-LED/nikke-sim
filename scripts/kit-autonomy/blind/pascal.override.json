@@ -1,0 +1,56 @@
+{
+  "slug": "pascal",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 10
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 1
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "maxHpPct": 6.28
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 3
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "maxHpPct": 55.29
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "■ Activates when entering Burst Stage 1. Affects 3 ally unit(s) with the lowest remaining HP.",
+      "Incoming healing ▲ 38.4% for 10 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ TARGET STAND-IN: skill1's \"1 ally unit(s) with the highest final DEF\" has no DEF-ranked TargetDef in the schema. Modeled as alliesLowestHp count 1 — cardinality (1) is faithful, identity is NOT (v1 resolves lowest-HP deterministically to the leftmost ally). Damage-neutral today; it only decides WHICH ally's 'recovery' trigger fires.",
+    "⚑ HEAL EFFECT SHAPE: the redacted schema handed to this pass does not list a 'heal' EffectDef kind, but the 'recovery' TriggerDef explicitly reads \"when the owner RECEIVES a heal (a 'heal' effect targets them)\", so the kind exists. Authored as { kind:'heal', maxHpPct } by analogy with the 'shield' effect (maxHpPct = % of CASTER final Max HP), matching the kit's \"% of the skill user's final Max HP\" wording. Field name unverified against live types.ts.",
+    "⚑ CADENCE: skill1's 10-round threshold is paced by the datamined cadence tuple (ammo 6, reloadFrames 171, RL fire rate) — a known-unreliable datamine field, so the number of skill1 procs per fight is an estimate, not a measurement.",
+    "SKIPPED-BUT-NOT-SKIPPABLE-BY-DEFAULT: the heal lines are modeled (not dropped on isolation) purely for the tandem channel — a teammate's \"when recovery takes effect\" trigger. Pascal contributes no direct damage at all; her whole sim footprint is heal events + burst-gauge/rotation participation as a Burst I."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Pascal (pascal, RL/Iron/Supporter/Burst I, cd 40s) is a pure sustain kit — no ATK, crit, damage-taken, weapon-state or gauge line anywhere in the three slots, so she deals and enables ZERO direct damage in the sim. S1 heals 1 ally for 6.28% of Pascal's final Max HP every 10 rounds fired (recurring, not once-per-battle); the burst heals 3 allies for 55.29% on cast. Heals are offensively inert at scope lock (immortal boss, no HP pool), so these blocks exist for exactly one reason: they emit heal events that fire teammates' 'recovery' triggers (crown-style \"when recovery takes effect\") — the tandem/cross-unit rule forbids skipping them on isolation. ⚑ \"highest final DEF\" is a stand-in target (see caveats) because no DEF-ranked TargetDef exists; the count-1 cardinality is faithful, the identity is not. S2 is fully unmodeled: \"Incoming healing ▲ 38.4%\" has no StatKey, and it only scales heal MAGNITUDE, which nothing in v1 consumes (recovery triggers fire on application regardless of amount) — so the omission is magnitude-only, not a lost trigger. Her burst is a Burst I with no damage component, so no noFb / noRange / core question arises anywhere in this kit."
+}

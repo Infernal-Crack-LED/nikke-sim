@@ -25,7 +25,7 @@
 | --- | --- | --- |
 | `advantageVs` | 2 | rapi-red-hood, sugar |
 | `alliesLowestAtk` | 1 | liberalio |
-| `alliesLowestHp` | 9 | blanc, ether, mary, misato, naga, pepper, poli, rapunzel, … |
+| `alliesLowestHp` | 10 | blanc, ether, mary, misato, naga, pascal, pepper, poli, … |
 | `alliesOfClass` | 2 | biscuit, d |
 | `alliesOfElement` | 11 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, exia, guillotine-winter-slayer, guilty, maiden-ice-rose, … |
 | `alliesOfElementWeapon` | 3 | ark-ranger-black, sugar, trina |

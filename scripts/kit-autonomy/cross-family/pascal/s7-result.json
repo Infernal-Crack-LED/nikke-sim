@@ -1,0 +1,52 @@
+{
+  "slug": "pascal",
+  "kitDescription": "Pascal is a pure-heal Burst I Supporter with a rocket launcher. Every 10 shots she fires, she heals the single ally with the highest final DEF for 6.28% of her own final Max HP. Whenever any unit enters Burst Stage 1, she buffs the 3 lowest-HP allies with +38.4% incoming healing for 10 seconds. Her burst heals the 3 lowest-HP allies for 55.29% of her final Max HP on cast, with no damage component. Offensively she contributes nothing but her plain RL fire and Burst-I rotation participation; her kit's only damage-sim footprint is the recovery events her heals emit, which can feed teammates whose kits trigger on receiving healing.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates after firing 10 time(s)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "VERBATIM unmodeled + ⚑2: hitCount:10 cadence expressible but the target '1 ally with highest final DEF' has no DEF-ranked TargetDef (grep-verified no DEF path in resolveTargets); emitting the heal event on any expressible stand-in fabricates a recovery attribution, since on-recovery consumers key on the RECIPIENT. Priced absence per flora/grave precedent, with estimate (~1 event/10 shots ≈ every 9.5s), recipe (plumb DEF into UnitState, add DEF-ranked selector, pin from focus video), tier (engine-core, low comp-frequency). Absence pinned RED-discriminating by spec: materializing S1 on a stand-in floods the recovery channel past cast cadence.",
+        "blindSaid": "S2b and S6 both proposed encoding on a stand-in (S2b: Defender-class resolution, while conceding 'this is a schema GAP'; S6: alliesLowestHp count:1 with a ⚑ that identity is wrong). Both independently confirmed the two blocking facts (no DEF-ranked selector; heal magnitudes event-less). Divergence is purely the absence-vs-proxy judgment call.",
+        "formulaCheck": "No damage bucket involved (heal). Arithmetic whole-picture check: 90 RPM = 1.5 shots/s; 10 shots span one 171f reload: 6 shots in 4s + 2.85s reload + 4 shots in 2.67s ≈ 9.5s/proc — matches the driver's estimate. RL hitsPerShot 1 ⇒ pulls = rounds = hits, so hitCount:10 is the correct cadence identity IF ever modeled.",
+        "fireRateOk": true,
+        "explanation": "RULED FOR THE DRIVER. The line is accounted for verbatim in `unmodeled` with estimate+recipe+tier — that is exactly what DOCUMENTED_GAP requires. The proxy alternative violates non-negotiable 2: a wrong-recipient heal does not merely approximate, it actively feeds on-recovery consumers (crown/asuka class) the real kit starves, and starves the one it feeds — an invented mechanic, worse than an honest flag. S2b's own documentation bar ('never silently target self/leftmost') is met more strongly by the pinned absence, and the spec falsifies the nearest-wrong materialization. Bounded (moves damage only in comps fielding an on-recovery consumer who is the DEF-ranked ally), so engine-core tier is correct, not NO-GO(engine-core)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Incoming healing ▲ 38.4% for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "VERBATIM unmodeled + ⚑3: no incomingHealingPct StatKey and heal effects carry no HP amount, so the amplifier multiplies nothing — damage-neutral by construction. sakura-suzuhara S2 cited as the binding identical-line precedent. Trigger-if-modeled (stageEnter{stage:1}, anyone's B1 cast — NOT burstCast) recorded in the note for the recipe path only. Nearest-wrong (a heal proxy on stageEnter:1) pinned RED: it would spuriously emit recovery events at every chain start.",
+        "blindSaid": "S2b: UNMODELED, identical reasoning (no StatKey, no modeled consumer, fires on heal receipt regardless of magnitude). S6: identical verbatim unmodeled. Full three-way convergence.",
+        "formulaCheck": "No damage bucket; the buff is a heal-received amplifier and the engine's recovery trigger is magnitude-blind (fires on receipt), so inertness is structural, not a judgment call.",
+        "fireRateOk": true,
+        "explanation": "Clean convergence across driver, S2b, and S6, corroborated by the mechanics SSOT (recovery triggers fire regardless of magnitude). The stageEnter-vs-burstCast trigger distinction is correctly recorded for the recipe path. Inert tier correct."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Recovers 55.29% of user's final Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → alliesLowestHp count:3 → heal (bare, event-only). Trigger keyed to her OWN cast (not fullBurstEnter — cast precedes the FB window, helm H7 fact; not stageEnter — multi-B1 comps would over-fire). Target = documented leftmost-3 stand-in for 'lowest remaining HP' (⚑1: no HP pool in v1; estimate/recipe/tier supplied; sakura-suzuhara/ether precedent). Magnitude 55.29% unrecordable by engine design (heals are valueless recovery events) — documented in caveats, never fabricated into the encoding (spec asserts no magnitude string appears in any block).",
+        "blindSaid": "S2b: FAITHFUL, burstCast, alliesLowestHp:3, tandem recovery driver — identical routing. S6: identical block (burstCast/alliesLowestHp:3/heal), differing only in a self-flagged unverified maxHpPct field the live heal kind does not carry. Full convergence on routing, trigger, target, and event-only payload.",
+        "formulaCheck": "Heals are not damage instances, so no bucket routing applies; the relevant timing rule (burst-cast effects resolve pre-FB) is honored — the heal lands on the cast frame, and the spec's fullBurstEnter counterfactual provably moves landings to FB-start frames. Target cardinality 3 is kit-literal and behaviorally pinned (slot-3 probe outside the leftmost-3 fires zero at baseline, once per cast under all-allies).",
+        "fireRateOk": true,
+        "explanation": "The one expressible line is modeled with the correct trigger identity and scope, and it FIRES at the prose cadence: ≥3 casts per 180s (40s cd) with exactly one consumer landing per cast on the cast frame — pinned against heal-removed, self-only, FB-enter, and all-allies counterfactuals. The magnitude being event-only is an engine-wide design property, documented as ⚑1/caveats, not a fudge. The fixture isolates the channel properly (folkwang bared, asuka's lifesteal stripped, synthetic probe at slot 3) — the isolation concern in method III is addressed."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "GO. All three kit lines are accounted for: the burst heal is FAITHFUL (burstCast / alliesLowestHp:3 / event-only heal, firing at cast cadence and discriminated against four nearest-wrong counterfactuals), and S1/S2 are DOCUMENTED_GAP with verbatim unmodeled text plus estimate+recipe+tier — no REAL-GOTCHA exists. On the litigated S1 line I rule for the driver's priced absence: both blind agents converged on a stand-in proxy, but both conceded the DEF-ranked selector does not exist, and emitting recovery events on a wrong recipient actively fabricates consumer attributions (non-negotiable 2 forbids inventing mechanics; the blind honest ⚑ IS the correct output); the spec pins the absence falsifiably (materialized-S1 floods the recovery channel past cast cadence). Convergence is GREEN (adapted S5: 10 passed / 3 author-skips / 0 failed), and the S5 pristine's one substantive divergence (whole-kit inertness) is a RECON_ERROR induced by packet redaction hiding the live `heal` kind — S2b and S6 both independently inferred that kind exists, corroborating the driver, so the pristine's premise is refuted rather than the driver. Two residuals for owner spot-check: (1) the EXECUTED S5 copy is driver-adapted — the three API fixes are mechanical, but the re-expressed inertness arm is substantive, so the independence of that green is weaker than a pristine run; diff the adapted file against the preserved pristine. (2) Same-model residual: every agent here shares the prior that 'lowest remaining HP → leftmost-3' and 'heal = event-only' are settled; the leftmost-3 stand-in (⚑1) and the unrecordable 55.29/6.28 magnitudes have never been checked against a real pascal recording — a single focus video reading heal-popup targets vs HP bars is the cheap experiment that closes both.",
+  "model": "kimi-code/k3"
+}

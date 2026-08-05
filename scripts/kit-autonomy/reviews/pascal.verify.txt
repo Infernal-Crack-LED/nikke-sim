@@ -1,0 +1,17 @@
+== S2d RED (from-scratch baseline; ether/novel precedent) ==
+FAIL scripts/tests/units/pascal.test.ts — Error: pascal: no override on disk — fixture is stale (all assertions RED at load until S3 lands the override)
+
+== post-S3 GREEN (final state) ==
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m15 passed[39m[22m[90m (15)[39m
+[2m   Start at [22m 15:16:28
+[2m   Duration [22m 263ms[2m (transform 79ms, setup 0ms, import 208ms, tests 5ms, environment 0ms)[22m
+
+
+== S5 blind suite (adapted) vs driver override ==
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m10 passed[39m[22m[2m | [22m[33m3 skipped[39m[90m (13)[39m
+[2m   Start at [22m 15:16:28
+[2m   Duration [22m 416ms[2m (transform 91ms, setup 0ms, import 251ms, tests 77ms, environment 0ms)[22m
+

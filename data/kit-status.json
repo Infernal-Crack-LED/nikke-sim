@@ -5579,6 +5579,47 @@
       ],
       "board": null
     },
+    "pascal": {
+      "name": "Pascal",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/pascal.json + scripts/kit-autonomy/manual-review/pascal.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates after firing 10 time(s). Affects 1 ally unit(s) with the highest final DEF. \nRecovers 6.28% of the skill user's final Max HP as HP."
+        ],
+        "skill2": [
+          "■ Activates when entering Burst Stage 1. Affects 3 ally unit(s) with the lowest remaining HP.\nIncoming healing ▲ 38.4% for 10 sec."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "burst: the heal is event-only — the 55.29%-of-final-Max-HP magnitude is unrecordable in v1 (no HP amounts), and 'the skill user's final Max HP' scaling has no carrier; the block's observable is the recovery events it emits to the leftmost-3 allies on her cast frame (pinned via asuka's S1 consumer in the spec fixture)",
+        "burst: keyed burstCast (her own Burst I cast), NOT fullBurstEnter — the cast precedes the Full Burst window and an FB-entry keying would misattribute team FBs another Burst I opened (multi-B1 generality; sora/milk precedent)",
+        "burst ⚑1 (targeting stand-in): 'the 3 ally unit(s) with the lowest remaining HP' is indeterminate in v1 (no HP pool) → alliesLowestHp resolves to the documented LEFTMOST-3 stand-in (types.ts TargetDef comment; sakura-suzuhara/ether precedent). ESTIMATE: in a real fight the heal lands on whoever is actually lowest; an on-recovery consumer only stays refreshed if it is among the real 3 targets — bounded by the consumer's buff value × its window per cast, zero consequence in a comp with no recovery consumer. RECIPE: any pascal focus recording — read which 3 units the heal popups land on vs their HP bars. TIER: low (only moves comps that stack a recovery consumer outside the real target set).",
+        "skill1 ⚑2 (UNMODELED — engine-core: no ally DEF-ranking selector): 'after firing 10 time(s) → the 1 ally with the highest final DEF → Recovers 6.28% of pascal's final Max HP'. The cadence (every 10th shot; RL hitsPerShot 1, so pulls = rounds = hits → hitCount:10) and the heal EVENT are expressible, but the targeting clause is not: resolveTargets has no DEF-ranked ally kind, and S4 forbids the engine edit. Emitting the event on any expressible stand-in would fabricate a recovery attribution (on-recovery consumers key on the RECIPIENT), so the line ships as a priced absence — flora/grave precedent (genuine missing primitive, bounded, documented → DOCUMENTED_GAP, not NO-GO(engine-core)). ESTIMATE: 1 recovery event every 10 pascal shots (≈ every ~9.5s: 10 shots at 90 RPM spanning one 171-frame reload) to the highest-final-DEF ally — in practice usually a Defender-class teammate; damage impact zero unless a teammate with an on-recovery consumer IS that ally, then the consumer's buff value × uptime; the heal amount itself (6.28% of her final Max HP) is survivability-only and out of domain. RECIPE: add a DEF-ranked ally selector to resolveTargets (level-scaled DEF is already computed in stats.ts but not carried into UnitState, so plumb it through prepare first; then mirror alliesTopAtk's evaluated-once ranking), then encode hitCount:10 → {that selector, count 1} → heal; pin from a pascal focus video showing which ally the S1 heal popups land on. TIER: engine-core (new selector primitive), low comp-frequency.",
+        "skill2 ⚑3 (UNMODELED — inert): 'Incoming healing ▲ 38.4% for 10 sec' on the 3 lowest-remaining-HP allies at Burst Stage 1 entry. No incomingHealingPct StatKey exists and heal effects carry no HP amount, so the amplifier multiplies nothing — damage-neutral by construction (sakura-suzuhara's S2 is the identical line and the binding precedent). ESTIMATE: zero damage impact in v1; in game it amplifies the recipients' received healing for 10s per chain. RECIPE: none for DPS — would need an HP pool + an incomingHealingPct stat; the nearest-wrong proxy (a HEAL on stageEnter:1) is pinned RED by the spec: it would spuriously emit recovery events at every chain start and feed on-recovery consumers. TIER: inert/out-of-domain.",
+        "gauge: no gauge-per-shot.json row — RL modal fallback (sim.ts GAUGE_MODAL_BY_WEAPON); her 40s-cd cast cadence in fixtures is gauge/CD-limited by that estimate, which rescales nothing kit-side (no kit line keys off her shots)"
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "burst heal leftmost-3 stand-in + unrecordable 55.29/6.28 magnitudes unverified vs real recording; S1 highest-final-DEF targeting unmodeled (no DEF selector)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "pepper": {
       "name": "Pepper",
       "burst": "I",
