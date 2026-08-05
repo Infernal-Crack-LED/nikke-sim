@@ -1,0 +1,71 @@
+{
+  "slug": "makima",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 15
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 36.96,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 14.78,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 10
+        },
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Activates after landing 120 normal attack(s). Affects self. Attract: Taunt all enemies for 3 sec.",
+      "Activates when taking lethal damage. Affects self. Gain indomitability for 7 sec. Activates 1 time(s) per battle.",
+      "Activates when taking lethal damage. Affects self. Cooldown of Burst Skill \u25bc 11.58 sec."
+    ],
+    "burst": [
+      "Activates during indomitability. Affects self. Incoming healing \u25b2 41.02% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "\u2691 S1's stated trigger \"Activates when attacked 20 times\" has NO engine representation (v1 models no incoming damage), so it is approximated as interval 15s / 10s duration \u2248 67% uptime. This is the kit's ONLY damage lever (team-wide Reload Speed gates shots fired), so the whole unit's damage contribution rides an unmeasured cadence guess.",
+    "S1 DEF \u25b2 14.78% is authored as a defPct buff and is offensively inert in v1 (kept for completeness / future consumers), not a fudge.",
+    "\u2691 Burst lifesteal is modeled as 10 \u00d7 1s recovery EVENTS with no HP amount (the engine models no HP pool); the 34.02%-of-attack-damage magnitude is recorded in prose only. Tick granularity (1/s over the stated 10 sec) is an assumption. Target is self, so it has no tandem (\"on recovery\") value in this kit.",
+    "S2's \"Cooldown of Burst Skill \u25bc 11.58 sec\" is SKIPPED because it rides the lethal-damage trigger, which is unreachable at scope lock \u2014 it is the one skipped line that would materially move damage (a shortened burst cycle) if it ever fired.",
+    "\u2691 Base SMG cadence (rate_of_fire, reloadFrames 111) is datamine-sourced and unverified; the value of the Reload Speed buff scales directly with it."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Makima (SMG/Water/Defender/Burst II) is a pure sustain/aggro kit: no damage rider, no ATK/crit/core buff, no boss debuff. The only damage-relevant line in the whole kit is S1's team-wide Reload Speed \u25b2 36.96% / 10s \u2014 reload speed gates shots fired, so it is NOT skippable \u2014 and its trigger (\"attacked 20 times\") has no engine representation, so it is approximated as \u2691 interval 15s. S1 DEF \u25b2 14.78% is kept as a stat buff though defPct is offensively inert in v1. Burst = self Pierce as a timed gainPierce effect (10s window; deliberately NOT the whole-fight hasPierce flag) plus the self lifesteal recorded as a 10-tick heal so any on-recovery consumer would see the events. S2 is entirely unreachable at scope lock: the taunt has no aggro model, and both the indomitability window and the Burst-CD \u25bc 11.58s ride \"when taking lethal damage\" (nobody takes damage in v1), which in turn leaves the burst's indomitability-gated Incoming Healing \u25b2 dead."
+}

@@ -1,0 +1,180 @@
+{
+  "slug": "anis",
+  "leakDetected": null,
+  "override": {
+    "slug": "anis",
+    "skill1": [],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 20
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 80,
+            "durationSec": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 20
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 2,
+          "excludeSelf": true,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 80,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 156.73,
+            "noFb": true,
+            "noRange": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates when attacked 40 time(s). Affects self.",
+        "DEF ▲ 120% for 10 sec."
+      ],
+      "skill2": ["Equally shares damage taken for 10 sec."],
+      "burst": ["DEF ▼ 32% for 5 sec."]
+    },
+    "caveats": [
+      "⛑ skill2 trigger is KIT-SILENT (no activation clause) — modeled as interval at the datamined 20s skill cooldown, first fire t=20s. Both the cadence and the first-fire phase are unmeasured conventions.",
+      "⛑ skill1 is entirely unmodeled: 'attacked 40 time(s)' is an INCOMING-hit counter and the v1 boss deals no damage to units, so the trigger can never be satisfied; there is also no TriggerDef for incoming hits (hitCount counts the OWNER'S OUTGOING rounds — a different mechanic). Its payload is defPct, documented inert in v1, so the omission is damage-neutral today.",
+      "⛑ burst DEF ▼ 32% has no engine channel. Boss DEF reduction acts inside the (ATK − DEF) term and is NOT the same mechanic as damageTakenPct (Damage Up bucket); substituting damageTakenPct would mis-credit the whole team by an unknown factor that depends on the boss DEF constant. Left unmodeled pending a boss-DEF-reduction primitive — this is the single largest offensive omission in this kit.",
+      "⛑ skill2's DEF ▲ 80% is modeled as TWO blocks (self + 2 top-ATK allies) because excludeSelf removes the owner from the alliesTopAtk pool; the kit's 'Affects self and 2 allies ... (except the skill user)' reads as self PLUS 2 others, i.e. 3 recipients.",
+      "defPct is documented inert in v1 (self DEF does not affect own damage), so every DEF ▲ block here is offensively zero-damage; they are authored for kit completeness and for any future consumer/scaler."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Anis (RL/Iron/Defender/Burst II) is a near-pure defensive kit: the ONLY damage line in the whole kit is the burst's 156.73% of final ATK. S1 (DEF ▲ 120% on an incoming-attack counter) and S2's DEF ▲ 80% are inert at scope (defPct does not feed own damage); S2's damage-share and the burst's DEF ▼ 32% have no engine channel. Burst damage is authored FB-exempt (noFb) and range-exempt per the burst-cast convention — a burst cast resolves before the Full Burst window opens. Expect this unit's simulated damage to be dominated by her base RL normal attacks (charge weapon, 60 charge frames, ammo 6) rather than by kit effects.",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when attacked 40 time(s)",
+      "status": "SKIPPED",
+      "effectOrReason": "INCOMING-hit counter. No TriggerDef expresses 'unit is attacked N times', and the v1 boss deals no damage to units so the condition is never satisfiable at scope. Encoding it as hitCount:40 would be WRONG — that counts the owner's OUTGOING rounds (a ~6-round RL magazine would fire it every ~40 pulls, granting near-permanent uptime the kit never intends). Reported verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self.",
+      "status": "SKIPPED",
+      "effectOrReason": "Target clause of the unreachable S1 trigger above; would be target {kind:'self'} if the trigger existed."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▲ 120% for 10 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Payload of the unreachable trigger. Would be buff{stat:'defPct', value:120, durationSec:10}; defPct is documented inert in v1 regardless, so the omission moves zero damage. Kept verbatim in unmodeled.skill1 so a future incoming-hit primitive can wire it."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects self and 2 allies w/ highest",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Split into TWO blocks: target {kind:'self'} and target {kind:'alliesTopAtk', count:2, excludeSelf:true, byFinalAtk:true}. byFinalAtk set because the kit says 'highest final ATK' literally (A3 rule); excludeSelf per '(except the skill user)'."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "[no activation clause]",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "⛑ Kit gives NO trigger for S2 — per the taxonomy, a line that 'just happens' with no visible activation clause maps to trigger {kind:'interval', sec:20} using the datamined 20s skill cooldown, first fire at t=sec. Flagged; both cadence and phase unmeasured."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▲ 80% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff{stat:'defPct', value:80, durationSec:5} on both blocks. Offensively inert in v1 but authored for kit completeness per the 'DEF/HP/lifesteal not skippable' HARD RULE."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Equally shares damage taken 10s",
+      "status": "SKIPPED",
+      "effectOrReason": "Damage REDISTRIBUTION among allies. There is no HP pool and the boss deals no damage at scope, so there is nothing to redistribute; no EffectDef expresses it (shield/heal are event emitters, not damage routing). Reported verbatim in unmodeled.skill2. Note it is NOT a 'Damage Taken ▲' boss debuff — it is an ally-side share, so it must not be encoded as damageTakenPct."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects enemies within attack range",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'}. Single-target at scope (partless boss, one enemy) so the AoE wording adds nothing."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 156.73% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage{atkPct:156.73, noFb:true, noRange:true} on trigger {kind:'burstCast'}. noFb per the convention that burst-cast damage lands before the Full Burst window opens (no +50% major); noRange per the universal rider range exemption. No core:true (text does not say 'core strike'); no crit:true left default."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▼ 32% for 5 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Boss DEF REDUCTION — acts inside the (ATK − DEF) term of the formula, a channel the StatKey set does not expose. damageTakenPct is a DIFFERENT mechanic (Damage Up bucket) and substituting it would mis-credit the entire team by a factor set by the boss DEF constant. Reported verbatim in unmodeled.burst; this is the kit's largest unmodeled OFFENSIVE line (it is a team-wide boss debuff, not a self buff)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[*].trigger",
+      "estimate": "{kind:'interval', sec:20}, first fire t=20s",
+      "reasoning": "⛑ KIT-SILENT TRIGGER (ALWAYS-⛑ #2). The S2 prose has no activation clause at all — no 'Activates when', no hit/round/burst condition — so per the taxonomy it is an interval line on an internal cooldown. The 20s figure is the unit's datamined skill cooldown (cd 20s), which is the only cadence number available; datamined cooldown fields are a coarser source than a measured observable. First-fire phase (t=sec vs t=0) is a documented convention, not a measurement — the kit carries no 'Forcefully uses Skill' wording that would justify a t=0 first fire.",
+      "recipe": "Record a focus fight with anis and watch for the DEF ▲ buff icon appearing on her and the two highest-ATK allies; timestamp the first appearance (discriminates t=0 vs t=20s) and the gap between successive appearances (pins the 20s period). Because defPct is offensively inert, this cannot be pinned from damage totals at all — it needs a buff-icon read, which makes it low-priority until a defPct consumer exists."
+    },
+    {
+      "field": "burst[0].effects[0].noFb",
+      "estimate": "true (FB-exempt)",
+      "reasoning": "⛑ Per-kit noFb is an ALWAYS-⛑ field (default OFF, measured-only) — but the burst-cast convention states that burst-cast/instant damage is ALWAYS FB-exempt because the cast resolves before the Full Burst window opens. I follow the convention rather than the bare default, since this is burst-cast damage specifically and not a function-damage rider. Flagged because it is a ×1.5 swing on the kit's only damage line, so if the convention does not hold for this unit it is a large single-line error.",
+      "recipe": "Popup-read the burst hit in a focus recording and compare the observed value against (final ATK × 1.5673 × element × crit-expectation) with and without the +50% Full Burst major; the two predictions differ by exactly ×1.5, well outside popup read noise."
+    },
+    {
+      "field": "burst — DEF ▼ 32% (unmodeled)",
+      "estimate": "Unmodeled; expected team-wide damage lift is monotonic in bossDef/(effectiveAtk) and is NOT expressible as any current StatKey",
+      "reasoning": "⛑ The kit's only team-offensive line has no engine channel. It is genuinely OUTSIDE the input domain: its damage effect depends on the boss DEF constant and every recipient's effective ATK, not on a fixed percentage, so no single damageTakenPct value reproduces it across comps. Guessing a substitute value here is exactly the fudge the MEASURED > FUDGE rule forbids — a wrong substitution would silently mis-credit all four teammates as well as anis. Modeling this correctly needs a new primitive (a boss-DEF-reduction effect), which is an engine change outside a blind parser's scope.",
+      "recipe": "A/B a comp with and without anis on a fixed boss, popup-reading ONE teammate's identical normal-attack hit inside and outside the 5s post-burst window; the ratio of those two popup values isolates the DEF reduction's true multiplier at that boss DEF, and repeating it on a second teammate with different ATK confirms the (ATK − DEF) shape rather than a flat Damage-Up percentage."
+    },
+    {
+      "field": "skill1 (entire slot, empty array)",
+      "estimate": "Empty — unreachable trigger; would be buff{defPct:120, durationSec:10} on an incoming-hit-count:40 trigger",
+      "reasoning": "⛑ The 'attacked 40 time(s)' trigger has no schema representation and is unsatisfiable at scope (v1 boss deals no damage to units). Reported rather than approximated: the nearest available primitive, hitCount, counts OUTGOING rounds and would fire on a completely different cadence. Damage impact today is provably zero because the payload is defPct, which is documented inert — so this flag is completeness-only, not an accuracy risk.",
+      "recipe": "No measurement can resolve this at scope lock (the boss deals no damage, so the counter never advances). It becomes measurable only if/when incoming damage is modeled; until then the correct state is exactly what is authored — an empty slot plus the verbatim unmodeled entries."
+    },
+    {
+      "field": "cadence tuple (base RL weapon)",
+      "estimate": "As datamined: ammo 6, reloadFrames 142, chargeFrames 60, hitsPerShot 1",
+      "reasoning": "⛑ Standing ALWAYS-⛑ #1 — datamined rate_of_fire / reloadFrames are known-unreliable fields, and for this unit the base-weapon cadence carries essentially ALL of her damage (the kit contributes one burst hit and nothing else). A cadence error therefore maps almost 1:1 onto her total, with no kit effects to dilute it. The override sets no cadence overrides, so the engine's datamined values stand.",
+      "recipe": "Ammo-counter read on a focus recording: count trigger pulls per second and time a full reload from empty to full — the ammo counter measures shots/sec directly rather than inferring it from a downstream quantity."
+    }
+  ],
+  "model": "claude-opus-5"
+}

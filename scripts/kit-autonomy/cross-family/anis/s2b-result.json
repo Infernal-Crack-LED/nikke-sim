@@ -1,0 +1,90 @@
+{
+  "slug": "anis",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates when attacked 40 time(s)",
+      "disposition": "UNMODELED",
+      "scope": "Generic self stat (DEF ▲ 120%), not damage-scoped; self DEF is offensively inert (defPct is inert in v1).",
+      "durationSemantics": "10 sec wall-clock — genuine seconds, no 'round(s)' wording anywhere in this kit.",
+      "triggerIdentity": "Incoming-hit counter: the unit being ATTACKED 40 times. No TriggerDef kind exists for received hits, and the v1 scope models no incoming boss damage at all — the trigger is unrepresentable, not merely unmeasured.",
+      "targetSet": "Self only.",
+      "nearestWrongModel": "Misreading 'attacked 40 time(s)' as the unit's OWN attacks — a hitCount:40 trigger (which counts rounds SHE fires) applying defPct 120 on her own shot cadence; or an unflagged interval approximation of boss attack cadence.",
+      "distinguishingAssertion": "The event log contains NO buffApply with stat 'defPct' value 120 keyed to anis's own shot/hit count at any point in the fight; totals(res) for all four units are bit-identical with the skill1 line present vs stripped via withPatchedOverride.",
+      "inertness": "Must move zero damage for every unit in the comp under any encoding (self DEF feeds nothing).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▲ 80% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic stat buff (defPct) — damage-inert today, but taxonomy rule 4/7 says DEF/HP grant lines are kept as real buffs, never silently dropped (future consumer/scaler).",
+      "durationSemantics": "5 sec wall-clock.",
+      "triggerIdentity": "The ■ header has NO 'Activates when' clause → interval trigger at the unit's datamined skill cooldown per the no-activation-clause convention; first fire at t=CD (no 'Forcefully uses' wording). The interval seconds are NOT in this packet — ALWAYS-⚑ cadence.",
+      "targetSet": "Self AND alliesTopAtk{count:2, excludeSelf:true, byFinalAtk:true}. 'highest final ATK' is literal → byFinalAtk (live effectiveAtk ranking) is REQUIRED; 'except the skill user' → exclude-then-take-2 from the candidate pool; 'self and' adds anis on top of the two.",
+      "nearestWrongModel": "Omitting byFinalAtk (static-ATK ranking — plain-'highest ATK' kits keep static, so a driver pattern-matching on that prior drops the flag), or dropping the self application, or failing to exclude anis from the top-2 pool.",
+      "distinguishingAssertion": "Each firing emits buffApply events with stat 'defPct' value 80 to exactly 3 target indices: anis plus the 2 allies with highest LIVE effectiveAtk at apply time. Green under byFinalAtk, red under static ranking on any apply frame where a caster-ATK buff (e.g. the B1's) has reordered live ATK relative to static class ATK (Attacker 118,027 > Supporter 98,367 > Defender 78,707).",
+      "inertness": "Damage totals must NOT change whether this block is present or absent (defPct inert) — the assertion is buffApply presence/targeting, never a damage delta.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Equally shares damage taken for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "Defensive damage-redistribution among the 3 targets; no incoming-damage/HP-pool model exists at scope (immortal boss, nobody takes damage).",
+      "durationSemantics": "10 sec wall-clock (note: a DIFFERENT duration from the 5 sec DEF line in the same block — one block cannot carry both durations on one effect).",
+      "triggerIdentity": "Same interval trigger as the DEF line (no activation clause).",
+      "targetSet": "Same self + 2 highest-final-ATK allies.",
+      "nearestWrongModel": "Pattern-matching 'damage taken' onto the damageTakenPct StatKey — which in this engine is a BOSS debuff (positive = boss takes MORE) — thereby converting a defensive share into a spurious team-wide damage BUFF.",
+      "distinguishingAssertion": "The event log contains NO buffApply with stat 'damageTakenPct' sourced from anis's skill2 (filter by stat+value 10 or any value with casterIdx = anis's slot); team damage totals identical with the line present vs stripped.",
+      "inertness": "Zero damage movement for all units; the line lives verbatim in the override's unmodeled.skill2.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 156.73% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "One instant function-damage hit, burst bucket. Riders default: no core, crit only if opted in (kit says nothing → default off), noRange forced on riders, and burst-cast damage is ALWAYS FB-exempt — it lands before the Full Burst window opens, so no +50% major and no FB-entry auras.",
+      "durationSemantics": "Instant, no duration.",
+      "triggerIdentity": "burstCast — fires ONLY on rotations anis herself casts her Burst II. NOT fullBurstEnter. This is the packet's sharpest divergence: the control fixture carries a second Burst II unit (crown), and first-ready in-window selection means anis does NOT cast on every rotation.",
+      "targetSet": "Enemy ('enemies within attack range' = the single partless boss → exactly one damage instance per cast; no per-enemy multiplication).",
+      "nearestWrongModel": "Keying to fullBurstEnter — the hit then fires on EVERY team Full Burst including rotations where crown takes the B2 slot, over-crediting by the ratio of total FBs to anis-cast FBs; secondary misread: letting the hit take the +50% Full Burst major (inFullBurst/fbMajorApplied true).",
+      "distinguishingAssertion": "count(damage events, srcSlot 'burst', caster anis, mult 156.73) === count(burstCast events with caster anis), and is STRICTLY LESS THAN count(fullBurstStart events) whenever crown wins at least one B2 selection; every such damage event has inFullBurst === false, fbMajorApplied === false, rangeApplied === false.",
+      "inertness": "Zero burst-bucket damage from anis in any rotation where she never casts; the hit's own multiplier decomposition takes no core and no range bonus.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▼ 32% for 5 sec",
+      "disposition": "GAP",
+      "scope": "A stat debuff on the BOSS — this is the kit's ONLY team-damage-relevant line. The damage formula subtracts boss DEF, so −32% boss DEF raises EVERY attacker's per-hit damage during the window. It is emphatically NOT 'defensive/inert' like the kit's self/ally DEF ▲ lines.",
+      "durationSemantics": "5 sec wall-clock from cast landing.",
+      "triggerIdentity": "burstCast (rides her own burst; same burstCast-not-fullBurstEnter identity as the damage line).",
+      "targetSet": "Enemy (boss). Boss-held debuffs emit buffApply with casterIdx===null and targetIdx===null — filterable only by stat+value.",
+      "nearestWrongModel": "Two live traps: (a) skipping it as 'defensive' by prior-matching on DEF-line inertness — silently deleting the kit's one team buff; (b) fudging it as damageTakenPct 32 — a flat ×-multiplier is NOT DEF-shred arithmetic (the true per-hit gain is 0.32·DEF/(finalATK−DEF), different for every attacker's ATK), so the fold mis-credits unless boss DEF happens to satisfy the equivalence.",
+      "distinguishingAssertion": "Today (no boss-DEF primitive in the effect schema — StatKey has no bossDef entry and damageTakenPct is a multiplier bucket): the override must carry this line verbatim in unmodeled.burst, AND the event log must contain NO buffApply with stat 'damageTakenPct' or 'defPct' attributable to anis's burst (green = documented gap; red = silent drop OR silent damageTakenPct fudge). If a boss-DEF primitive lands later: per-hit damage of ALL units inside [cast, cast+5s] rises vs a stripped-line control, and the rise is ATK-dependent, not a uniform ×1.32.",
+      "inertness": "Under the current schema it must move nothing; once modeled, only hits landing inside the 5-second post-cast windows move, and only on rotations anis actually cast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill2:DEF ▲ 80% → self + 2 highest-FINAL-ATK allies (buffApply presence/targeting, damage-inert)",
+    "burst:Deals 156.73% of final ATK (burstCast-keyed, FB-exempt, no-range, no-core)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "■ Activates when attacked 40 time(s). Affects self.",
+      "DEF ▲ 120% for 10 sec."
+    ],
+    "skill2": ["Equally shares damage taken for 10 sec."],
+    "burst": ["DEF ▼ 32% for 5 sec."]
+  },
+  "notes": "Where I expect a shared-prior misread, ranked: (1) burst 'DEF ▼ 32%' — the reflex that DEF lines are defensive/inert is TRUE for the kit's self/ally DEF ▲ lines and FALSE here; an enemy DEF shred is a team-wide offensive debuff (formula subtracts boss DEF). The schema has no boss-DEF primitive (GAP, not MISSING), so the correct ship is verbatim-unmodeled + no silent damageTakenPct fudge; if a conversion is attempted anyway it is per-attacker-ATK-dependent and must be ⚑ CALIBRATED with the boss-DEF value cited. (2) burstCast vs fullBurstEnter on both burst lines — the control fixture's crown is a co-Burst-II, so first-ready selection makes the two keyings numerically diverge in the standard comp; assert damage-event count === anis burstCast count, not FB count. (3) skill1 'when attacked' misread as own-attack hitCount (which counts rounds SHE fires) — the faithful reading is unrepresentable (no incoming-damage model), so the whole skill1 belongs in unmodeled, asserted inert. (4) skill2 'Equally shares damage taken' misencoded via the damageTakenPct StatKey, which is a BOSS debuff here — that fudge would spuriously BUFF team damage. (5) skill2 target needs all three of: byFinalAtk:true (kit literally says 'final ATK'), excludeSelf:true on the pool, plus a self application ('self and 2 allies'). ⚑ open: skill2's interval cadence (datamined skill CD) is not in this packet — cadence tuple is an ALWAYS-⚑ field; first-fire t=CD per the no-activation-clause convention. Duration semantics carry no traps in this kit (all three durations are genuine seconds; note skill2's two effects carry DIFFERENT durations, 5s and 10s, so they cannot share one effect entry).",
+  "model": "claude-fable-5"
+}

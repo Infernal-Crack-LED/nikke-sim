@@ -23,19 +23,6 @@
 
 `centi`
 
-## Batch 8 — E (10 units)
-
-`anis`  
-`crow`  
-`jackal`  
-`lily`  
-`ludmilla`  
-`makima`  
-`misato`  
-`mori`  
-`neon`  
-`neon-blue-ocean`
-
 ## Batch 9 — E / F (10 units)
 
 `nero`  
@@ -59,9 +46,6 @@
 `eunhwa`  
 `harran`  
 `himeno`
-
-## Batch 11 — F (8 units)
-
 `kilo`
 `mary`
 `mica`

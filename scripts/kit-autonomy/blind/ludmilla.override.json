@@ -1,0 +1,65 @@
+{
+  "slug": "ludmilla",
+  "skill1": [],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 163.1,
+          "noFb": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 12.93,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates when the last bullet hits the target. Affects the target.",
+      "DEF ▼ 8.4% for 10 sec.",
+      "ATK ▼ 8.4% for 10 sec."
+    ],
+    "skill2": [
+      "Activates when entering Full Burst. Affects all enemies.",
+      "Attract: Taunt all enemies for 15.09 sec.",
+      "Activates when entering Full Burst. Affects self.",
+      "Damage Taken ▼ 57.86% for 15 sec."
+    ],
+    "burst": ["Activates when above 50% HP."]
+  },
+  "caveats": [
+    "⚑ skill1's enemy DEF ▼ 8.4% is TEAM-WIDE damage-relevant but has NO schema channel: StatKey defPct means the holder's own DEF, and the sim's boss DEF is an engine-level constant, not a buffable stat. It is therefore UNMODELED and the sim under-credits every ally's damage while it is up. Encoding it as damageTakenPct would be a fabricated conversion (DEF ▼ 8.4% ≠ Damage Taken ▲ 8.4%) and is refused.",
+    "⚑ Uptime arithmetic for that debuff (contingent on the datamined cadence): 120 ammo at SMG ~20 rounds/s effective = ~6.0s firing + 187 reload frames ≈ 3.1s = a ~9.1s magazine cycle against a 10s debuff, so the last-bullet debuff is effectively PERMANENT after the first magazine rather than intermittent.",
+    "skill1's enemy ATK ▼ 8.4% is defensive-only at scope lock (boss damage is unmodeled, allies are immortal) — no damage channel exists for it.",
+    "skill2's Attract/Taunt and the self Damage Taken ▼ 57.86% are both defensive-only at scope lock; the schema's damageTakenPct is a BOSS debuff (positive = boss takes more), not a self mitigation stat, so neither line maps to it.",
+    "⚑ The burst's 163.1% hit is authored noFb:true per the burst-cast FB-exemption rule (a burst cast resolves before the Full Burst window opens); crit-eligibility is kit-silent and left to the engine default (no crit flag set).",
+    "The burst's 'Affects 10 enemy unit(s) with the highest final ATK' selector collapses to the single boss at scope lock; authored as target enemy.",
+    "The burst's ally DEF ▲ 12.93% is authored for kit completeness only — defPct is offensively inert in v1.",
+    "The burst's 'above 50% HP' activation gate is always satisfied at scope lock (no HP pool, nobody takes damage), so no block gate is authored; the verbatim line is recorded in unmodeled.burst."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Ludmilla (SMG/Water/Defender/Burst I) is a near-pure defensive kit: the only damage this override models is her burst's 163.1%-of-final-ATK instant hit, plus an ally DEF ▲ 12.93% / 10s carried for kit completeness (defPct is inert in v1). Both burst lines are keyed to burstCast (her own cast), and the burst hit is FB-exempt because a burst cast resolves before the Full Burst window opens. Skill1 and skill2 are modeled as EMPTY: skill1's last-bullet enemy ATK ▼ is defensive, and its enemy DEF ▼ 8.4% — genuinely team-wide damage-relevant, at near-permanent uptime — has no schema channel because boss DEF is an engine constant rather than a buffable stat; skill2's Taunt and self Damage Taken ▼ 57.86% have no damage channel at scope lock. Those skipped lines are recorded verbatim in unmodeled and the DEF ▼ gap is flagged, not approximated."
+}

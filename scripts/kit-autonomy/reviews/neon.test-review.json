@@ -1,0 +1,77 @@
+{
+  "slug": "neon",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when killing an enemy",
+      "disposition": "UNMODELED",
+      "scope": "Generic Critical Rate (no normal-attack/charge scoping in the text)",
+      "durationSemantics": "durationSec: 5 (wall-clock 'for 5 sec')",
+      "triggerIdentity": "On-kill trigger. The sim has NO kill event and the scope-lock raid boss is immortal/partless — this trigger can never fire in-sim. No engine TriggerDef expresses it; structurally inert at scope.",
+      "targetSet": "alliesTopAtk count:2, byFinalAtk:true ('highest FINAL ATK' — the literal-word rule sets byFinalAtk only because the text says final)",
+      "nearestWrongModel": "Encoding it as an active buff anyway — e.g. an interval or passive critRatePct 3.56 self/ally buff 'to approximate kill procs' — which over-credits a line that produces zero activations against a boss that never dies.",
+      "distinguishingAssertion": "Run controlComp with neon; collect buffApply events: NO buffApply with stat critRatePct and value 3.56 ever appears in the full 180s log. Additionally, totals(res) is bit-identical when the override is patched to strip any skill1 block (withPatchedOverride(neon, o => { o.skill1 = [] })) — the slot must be damage-inert.",
+      "inertness": "Skill1 must move nothing: no buffApply, no damage delta on any unit, no gauge delta.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates at the beginning of Full Burst",
+      "disposition": "FAITHFUL",
+      "scope": "Generic critRatePct — the text does NOT say 'of normal attacks', so it is the unscoped stat (skill/burst hits crit-eligible too), not critRateNormalPct.",
+      "durationSemantics": "'for 2 shots' is a ROUND/SHOT count → durationShots: 2, per-HOLDER (each ally's own next 2 rounds), spanning reloads, with NO time expiry (no durationSec). This is the taxonomy's #2 trap verbatim.",
+      "triggerIdentity": "fullBurstEnter — 'at the beginning of Full Burst' fires on ANY team Full Burst, every rotation, regardless of who cast which stage. NOT burstCast (neon is B1; keying to her own cast would fire pre-FB and at the wrong times).",
+      "targetSet": "allies, all-including-self ('Affects all allies', no except-self clause) — {kind:'allies'} with no excludeSelf.",
+      "nearestWrongModel": "durationSec: 2 instead of durationShots: 2. For a slow-cadence SG holder 2 seconds ≈ 2 shots so the error hides, but for a fast-cadence holder (MG/SMG teammate) a 2-second window covers dozens of rounds vs the kit's exactly 2 — massive over-credit. Secondary misread: keying to burstCast (only rotations neon herself bursts).",
+      "distinguishingAssertion": "At each fullBurstStart, a buffApply with stat critRatePct, value 45.93 appears for EVERY living ally (targetIdx spanning all 5 slots) carrying durationShots === 2 and no meaningful expiresFrame-based 2s lapse. Faithful-green/wrong-red: for a fast-firing holder, count damage events with elevated crit rate after FB entry — exactly the next 2 rounds benefit; under durationSec:2 the count is cadence×2s ≫ 2. Also assert the buff re-applies at EVERY fullBurstStart (one per rotation), not only on rotations neon casts B1.",
+      "inertness": "No crit lift outside the 2-round windows; the buff must not persist as a permanent passive.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 528.97% of final ATK as Burst Skill",
+      "disposition": "FAITHFUL",
+      "scope": "One instant burst-bucket damage instance; no core ('core strike' not stated); crit per the engine's burst-hit convention.",
+      "durationSemantics": "Instant hit, no duration.",
+      "triggerIdentity": "burstCast — the damage line sits in her OWN burst block; it fires ONLY on rotations neon actually casts Burst I (cd 20s). Per the measured timing rule, burst-cast damage lands BEFORE the Full Burst window opens → no +50% FB major, no FB-entry auras.",
+      "targetSet": "enemy ('1 enemy unit with the highest final DEF' — trivially the single boss).",
+      "nearestWrongModel": "Applying the +50% Full Burst major to the hit (or keying it to fullBurstEnter so it lands inside FB and on rotations another B1 casts). Either over-credits ~50% on ~9 casts.",
+      "distinguishingAssertion": "Every burstCast damage event from neon's slot with mult 528.97 has bucket 'burst', inFullBurst === false and fbMajorApplied === false, and the count of such events equals neon's actual B1 cast count in the rotation log (not the team's FB count).",
+      "inertness": "Zero instances on rotations where another Burst I unit (e.g. liter in controlComp) takes the B1 cast instead of neon.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammunition Capacity ▲ 3 round(s)",
+      "disposition": "FAITHFUL",
+      "scope": "Weapon-state modifier — this IS damage (taxonomy #6): +3 max ammo on a 9-round SG = 12-round magazines during the window → fewer reloads → more shots fired.",
+      "durationSemantics": "durationSec: 10 (wall-clock 'for 10 sec'). CRITICAL: '3 round(s)' here is the VALUE'S unit (a flat +3 rounds of capacity), NOT a duration — do not read it as durationShots.",
+      "triggerIdentity": "burstCast (rides her own Burst I cast, same block family as the damage line).",
+      "targetSet": "alliesOfWeapon weapon:'SG', INCLUDING self ('all allies with a Shotgun', no except-self; neon is SG so she self-benefits). Weapon-typed, class/element-blind.",
+      "nearestWrongModel": "maxAmmoPct 3 (a 3% capacity scale ≈ +0 rounds after flooring — silently inert) instead of maxAmmoFlat 3; or targeting all allies unconditionally so non-SG units get the capacity too.",
+      "distinguishingAssertion": "On each neon burst cast, buffApply events with stat maxAmmoFlat, value 3, durationSec-consistent expiresFrame (~600 frames) appear ONLY on SG-wielding units (neon + any SG carry); liter/crown (non-SG) receive NONE. Faithful-green/wrong-red: during the 10s window an SG holder's reload events space out at 12 shots per magazine (count shot events between consecutive reload events === 12), reverting to 9 after expiry; under maxAmmoPct 3 the spacing stays 9 (red).",
+      "inertness": "Non-SG allies' magazine size and reload cadence must not move; outside the 10s windows SG magazines are exactly 9.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill2:critRatePct 45.93 for 2 shots @ fullBurstEnter (allies)",
+    "burst:flatDamage 528.97% burst bucket @ burstCast (pre-FB, no +50%)",
+    "burst:maxAmmoFlat +3 for 10s @ burstCast (SG allies incl. self)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Activates when killing an enemy. Affects 2 ally unit(s) with the highest final ATK.",
+      "Critical Rate ▲ 3.56% for 5 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Three reconciliation points. (1) FIXTURE HAZARD — neon is Burst I, but controlComp(carry) seats the carry in the B3 slot with liter fixed at B1: a naive controlComp(neon) makes her compete with liter for every B1 cast under first-ready/slot-order selection, so burst-line assertions may silently see zero neon casts. The tests must either verify neon actually wins B1 casts in the fixture (count her burstCast events > 0 as a precondition) or build a custom comp replacing liter; skill2 assertions are immune (fullBurstEnter fires regardless of who cast B1). (2) EXPECTED SHARED-PRIOR MISREAD — skill2's 'for 2 shots' as durationSec:2. On SG-heavy comps the two encodings nearly coincide (~1 shot/sec), so a board-fit test won't catch it; only a per-round event-count assertion on a fast-cadence holder discriminates. Demand the durationShots===2 field assertion, not a totals-level check. (3) burst '▲ 3 round(s)' must be maxAmmoFlat (the theme-14 flat-round stat), not maxAmmoPct — a 3% read is de-facto inert and a totals assertion against the faithful reload-spacing shift catches it. Skill1 is structurally dead at scope (no kill events vs an immortal boss) and belongs verbatim in unmodeled; any active encoding of it is over-credit.",
+  "model": "claude-fable-5"
+}

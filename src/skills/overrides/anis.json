@@ -1,0 +1,51 @@
+{
+  "note": "anis = Anis (BASE) — RL/Defender/Iron/Burst II, cd 20s, ammo 6, chargeFrames 60, reloadFrames 142, normalMult 65.02, coreMult 200, chargeMult 250, critRate 15 / critDamage 150, burstGaugePerShot 3.55, Tetra SR. Kit-autonomy gauntlet 2026-08-04 — first modeling (no prior override / kit-status row; simSupported was false). ⚠ EXACT SLUG: `anis` is the RL/Iron original (nicknames 'base anis') — NOT `anis-star` (RL/Electric Burst I) nor `anis-sparkling-summer` (SG/Electric Supporter Burst III); the slug-disambiguation lint's AMBIGUOUS-base guard was explicitly resolved on the slug. A near-pure TANK whose only damage line is her burst nuke: S1 is an attacked-counter self-DEF buff, S2 is a DEF buff + damage-taken share, and the burst's second line lowers enemy DEF — three survivability/offensive-DEF mechanics, two of which the sim's input domain cannot produce and one the engine cannot enact. || MODELED (2 lines): (S2-DEF) 'Affects self and 2 allies with the highest final ATK (except the skill user). DEF ▲ 80% for 5 sec' — no activation clause in the prose, so interval:30 per the no-activation-clause convention (datamined skillCooldownsSec.skill2 = 30; first fire t=30, fires t=30/60/90/120/150 on the 180s basis — maiden/milk precedent), encoded as TWO blocks per the soda-twinkling-bunny/mast pattern for 'self and 2 allies': (a) target self defPct 80 durationSec 5, (b) target alliesTopAtk{count:2, excludeSelf:true, byFinalAtk:true} defPct 80 durationSec 5. byFinalAtk is REQUIRED by the literal-word rule (A3, 2026-07-20): the prose says 'highest FINAL ATK' → live effectiveAtk ranking at apply time, not static; exclude-then-take-2 from the candidate pool. defPct is OFFENSIVELY INERT in v1 (types.ts: self DEF doesn't affect own damage — Endurance cube slot); the block is kept for kit completeness so a future DEF consumer reads it (bay/marciana precedent) and its application/targeting is pinned in the spec test. (BURST-NUKE) 'Affects enemies within attack range. Deals 156.73% of final ATK as damage' → burstCast → enemy → flatDamage 156.73 — her ONLY damage line. The single immortal boss is the only enemy ('within attack range' collapses to one instance per cast); burst-cast damage is auto FB-exempt and snapshots pre-FB (the B2 cast lands BEFORE the Full Burst window opens — verified fact 2026-07-13), so the nuke takes no +50% major; no core (text does not say 'core strike'); fires ONLY on rotations anis herself casts (a co-B2 seated beside her — e.g. crown in the controlComp — wins same-stage selection and starves this line; pinned by the spec's STARVED comp). || UNMODELED (3 lines, all VERBATIM in `unmodeled`, never an `ignored` drop — all out-of-domain or unenactable, ⚑ below): (S1) the ENTIRE attacked-40 cluster — the sim has NO incoming-damage model (v1 boss is immortal and never acts) and NO attacked-N trigger primitive, so the trigger is unrepresentable, not merely unmeasured; the DEF ▲120% it feeds is offensively inert regardless (maiden/yulha precedent for a gate that cannot fire on the scope-lock basis — faithful omission, not a fudge). (S2-SHARE) 'Equally shares damage taken for 10 sec' — no incoming damage to redistribute and no redistribution primitive (bay precedent); note the 10s duration differs from the co-targeted DEF line's 5s, so the two effects could not share one block even if the share were enactable. (BURST-DEFSHRED) 'DEF ▼ 32% for 5 sec' — the engine EXPLICITLY drops enemy DEF debuffs: boss DEF enters the formula only as the FIXED cfg.bossDef per-hit subtraction (sim.ts; NO buff/debuff channel feeds it), and the magnitude is negligible (32% of the 140-DEF scope-lock boss ≈ 44.8 ATK against ~118k effective ATK ≈ +0.04%/hit, only inside the 5s post-cast windows on anis-cast rotations). It is emphatically NOT damageTakenPct — that StatKey is a boss-taken AMPLIFIER bucket (a uniform multiplier, ≠ DEF-shred arithmetic, which is per-attacker 0.32·bossDef/(effectiveAtk−bossDef)); folding it would spuriously over-credit the WHOLE team by ~32% in-window (viper/cocoa/marciana precedent; the spec test proves the inflation under that counterfactual). This is nonetheless the kit's ONLY team-facing offensive contribution — her board reading reflects zero of it, honestly. || ⚑ LIST: [1] (OUT-OF-DOMAIN, incoming-damage subsystem) S1 'Activates when attacked 40 time(s) → self DEF ▲120%/10s'. estimate: in-game an SR Defender tanks regularly so the buff's real uptime is high, but DEF feeds nothing offensively in v1 → 0 damage impact under ANY encoding. recipe: needs an incoming-damage / attacked-count trigger primitive (neither exists); before any encoding, measure attacked-40 cadence from a real fight. tier: out-of-domain (maiden/yulha precedent). [2] (OUT-OF-DOMAIN, no redistribution primitive) S2 'Equally shares damage taken for 10 sec'. estimate: 0 damage impact (nobody takes damage at scope). recipe: needs incoming damage + a redistribution model; if it ever lands it must carry its OWN 10s duration (not the DEF line's 5s). tier: out-of-domain (bay precedent). [3] (UNENACTABLE + negligible, the one team-damage line) burst 'DEF ▼32%/5s'. estimate: +0.04%/hit in-window (44.8 ATK vs ~118k effective). recipe: if a boss-DEF-reduction primitive ever lands, per-hit gain = 0.32·bossDef/(effectiveAtk−bossDef) per attacker — NEVER a damageTakenPct fold. tier: 2. [4] (MANDATORY cadence tuple, datamine-unreliable) RL cadence: rate_of_fire 60 / chargeFrames 60 / reloadFrames 142 / ammo 6 shipped as-is from the datamine (no charFixes). estimate = datamine as-is; recipe = read the rocket cadence + reload gap from any focused anis video; tier = measurement-gated. Low-impact: her self-damage is one 156.73% nuke per 20s + RL normals. [5] (cadence) the S2 interval sec 30 is the datamined skillCooldownsSec.skill2 (the kit prose carries no number) — ⚑ cadence tuple (maiden precedent). || EVIDENCE TIER: both modeled magnitudes (80, 156.73) are SL10 kit-text-literal (DATAMINED); the 30s interval is the datamined skill CD. || TIER 2: scoped buff (alliesTopAtk byFinalAtk + self split), the burstCast-vs-fullBurstEnter/starvation lever (STARVED comp in the spec), and burstCast FB-exemption on the nuke. Cross-family: S2b claude-fable-5 independently CONVERGED on both FAITHFUL encodings (trigger identity, byFinalAtk, exclude-then-take-2 + self, burstCast FB-exempt nuke) and ALL three unmodeled mechanics, including the same nearest-wrong set (hitCount-40-on-dealt-hits for S1; damageTakenPct fudge for the share AND for the DEF shred; static-ATK ranking; dropped self application). Faithful>fit; measured>fudge. Kit-autonomy gauntlet 2026-08-04.",
+  "kitDescription": "Anis is an Iron rocket-launcher Burst-II Defender whose kit is nearly all survivability: Skill 1 raises her own DEF after she has been attacked 40 times, and Skill 2 raises the DEF of herself and her two highest-final-ATK allies while sharing damage taken among them. In the sim (immortal boss, no incoming damage) only two lines fire: the Skill 2 DEF buff every 30s (offensively inert — self DEF feeds no damage in v1) and her burst's 156.73%-of-final-ATK nuke, her only damage line. Skill 1's attacked cluster, the damage-share, and the burst's enemy DEF-lower are documented but unmodeled — the first two need an incoming-damage model the sim deliberately lacks, and boss DEF is a fixed per-hit subtraction the engine cannot debuff (and the shred's magnitude is ~0.04% anyway).",
+  "caveats": [
+    "skill1: the entire attacked-40 cluster (self DEF ▲120%/10s) is UNMODELED — no incoming-damage model, no attacked-N trigger primitive; the boss never acts. Nearest-wrong (hitCount 40 on hits she DEALS) is pinned in the spec test and provably fails",
+    "skill2: 'Equally shares damage taken for 10 sec' is UNMODELED — no redistribution primitive and no incoming damage to share (its 10s duration is distinct from the co-targeted DEF line's 5s)",
+    "burst: 'DEF ▼ 32% for 5 sec' is UNMODELED — boss DEF is the fixed cfg.bossDef subtraction with no debuff channel; magnitude ~0.04%/hit; NOT damageTakenPct (that would over-credit the whole team ~32% in-window — pinned as a counterfactual in the spec test)",
+    "skill2: the 30s interval cadence is the datamined skillCooldownsSec.skill2 (the kit prose carries no number) — ⚑ cadence tuple",
+    "weapon: RL cadence tuple (rate_of_fire 60 / chargeFrames 60 / reloadFrames 142 / ammo 6) is an unmeasured datamine estimate"
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates when attacked 40 time(s). Affects self.",
+      "DEF ▲ 120% for 10 sec."
+    ],
+    "skill2": ["Equally shares damage taken for 10 sec."],
+    "burst": ["DEF ▼ 32% for 5 sec."]
+  },
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "interval", "sec": 30 },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "defPct", "value": 80, "durationSec": 5 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "interval", "sec": 30 },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "excludeSelf": true,
+        "byFinalAtk": true
+      },
+      "effects": [
+        { "kind": "buff", "stat": "defPct", "value": 80, "durationSec": 5 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "flatDamage", "atkPct": 156.73 }]
+    }
+  ]
+}

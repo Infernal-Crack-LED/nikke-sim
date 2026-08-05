@@ -403,6 +403,12 @@
     "source": "datamined",
     "targetPerTrigger": 50.0
   },
+  "mori": {
+    "basePerTrigger": 20.0,
+    "fullChargeBonus": 0.0,
+    "source": "datamined",
+    "targetPerTrigger": 40.0
+  },
   "naga": {
     "basePerTrigger": 200.0,
     "fullChargeBonus": 0.0,

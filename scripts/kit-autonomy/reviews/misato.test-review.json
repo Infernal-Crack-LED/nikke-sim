@@ -1,0 +1,106 @@
+{
+  "slug": "misato",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ after landing 60 normal attack(s): Hit Rate ▲",
+      "disposition": "FAITHFUL",
+      "scope": "Hit Rate buff, unscoped within the kit but engine-wise it is the hitRatePct core-hit lift (hrCoreMult path, live by default); applies to the holder's own hits only.",
+      "durationSemantics": "5 sec wall-clock per application (durationSec 5), stacking to maxStacks 3; each 60-hit proc adds a stack AND refreshes the window. At SMG effective ~20 rounds/s, 60 hits ≈ 3s < 5s duration and the 81-frame (~1.35s) reload gap is shorter than the window, so steady state is near-permanent 3 stacks after a ~9s ramp — NOT instant-to-max at t=0.",
+      "triggerIdentity": "hitCount count:60 (counts landed ROUNDS — SMG hitsPerShot 1, so 60 rounds; cumulative, spans reloads). Not shotFired, not interval, no FB gate.",
+      "targetSet": "self only",
+      "nearestWrongModel": "A single passive/t=0 self-buff at the 3-stack aggregate value (15.12%) with no stacking ramp — or keying it to shotFired/interval so stack cadence detaches from landed-hit count.",
+      "distinguishingAssertion": "Filter cfg.onEvent buffApply for stat 'hitRatePct' targeting misato: faithful shows value 5.04 (plain % stat, raw magnitude), maxStacks 3, stacks progressing 1→2→3 at cumulative-hit boundaries 60/120/180 (~3s/6s/9s of firing), with refreshes thereafter. Nearest-wrong shows a single apply at frame 0 (or value 15.12, or stacks pinned at 1). Also assert NO hitRatePct buffApply exists before the 60th shot event.",
+      "inertness": "Must never target allies (no buffApply with a non-misato targetSlug); must not pump burst gauge or emit damage; with HRCORE=0 the line must move zero damage (it is purely the core-rate lift).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ after landing 120 normal attack(s): Recovers",
+      "disposition": "FAITHFUL",
+      "scope": "A heal (8.04% of caster's final Max HP). The engine models no HP amount — the effect is a 'heal' kind whose entire observable value is the recovery event it emits to its target (tandem trigger feed, taxonomy #4: never skip a heal as 'defensive').",
+      "durationSemantics": "Instant single event per proc (ticks default 1); no duration.",
+      "triggerIdentity": "hitCount count:120 (landed rounds, cumulative across reloads). CRITICAL ADVERSARIAL NOTE: 120 exactly equals misato's magazine (ammo 120), so hitCount:120 and lastBullet COINCIDE in a vanilla solo run — a lastBullet mis-encoding is invisible until max ammo changes.",
+      "targetSet": "alliesLowestHp count:1 ('1 ally with the lowest HP percentage'; v1 has no HP pool so the schema's documented stand-in resolves it to the leftmost ally — one ally, not self-only, not all allies).",
+      "nearestWrongModel": "Dropped entirely as 'defensive heal, no damage relevance' (MISSING) — the most plausible shared-prior misread since the fixture's crown consumes recovery events; second-nearest is encoding the trigger as lastBullet (coincides with 120 hits at base ammo).",
+      "distinguishingAssertion": "There is no 'heal' event kind — observe via the consumer: in controlComp (crown B2 carries an on-recovery trigger), A/B with withPatchedOverride('misato', strip this skill1 heal block) and assert crown's recovery-triggered buffApply count DROPS by ~one per 120 misato rounds fired (~every 6s of fire time). To split hitCount:120 from lastBullet, patch a maxAmmoPct/maxAmmoFlat change onto misato and assert the proc cadence stays pinned to 120 landed rounds, not to reload boundaries.",
+      "inertness": "Must emit to exactly ONE ally per proc (not all allies, not a self-only heal); must deal zero damage and apply zero stat buffs itself.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ in Shooting Manual status: Dmg to Shield ▲",
+      "disposition": "UNMODELED",
+      "scope": "Damage dealt to Shield ▲ 150%, all allies — the scope-lock boss has no shield/HP-pool mechanic; there is no shield-damage stat in the schema. Inert in v1 by construction.",
+      "durationSemantics": "'continuously' while the gate holds (given S1a's near-permanent 3-stack uptime, effectively always after ~3s) — moot while unmodeled.",
+      "triggerIdentity": "Gated on the caster's OWN Shooting Manual buff being active — note the block schema has NO 'requires own buff active' gate (requiresTargetStatus is boss-side, requiresShielded is shield-receipt); a faithful gate is inexpressible today, which is fine because the effect is inert.",
+      "targetSet": "all allies (would include self)",
+      "nearestWrongModel": "Encoding it as a live generic damage buff (e.g. attackDamagePct or damageTakenPct 150) because '▲ 150%' pattern-matches a damage stat — a catastrophic over-credit.",
+      "distinguishingAssertion": "A/B the full comp with this line's block present vs absent (withPatchedOverride): totals(res) must be IDENTICAL for every slug, and no buffApply may carry a 150-magnitude value from misato. The verbatim text must appear in override.unmodeled.skill2.",
+      "inertness": "Everything — zero damage delta, zero buffApply events attributable to this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Shooting Manual at max stacks: Outgoing heal ▲",
+      "disposition": "UNMODELED",
+      "scope": "Outgoing healing ▲ 30.05%, self — heal AMOUNTS are unmodeled (the 'heal' effect kind carries no HP magnitude and recovery consumers are amount-blind), so a healing-output multiplier has no consumer. Inert.",
+      "durationSemantics": "'continuously' while at 3 stacks — moot while unmodeled.",
+      "triggerIdentity": "Gated on Shooting Manual at MAX stacks (3) — a stack-count read on the caster's own buff; also inexpressible in the current gate set. Distinct condition from skill2 line 1 (any stacks vs max stacks) — do not merge them.",
+      "targetSet": "self",
+      "nearestWrongModel": "Modeling it as a live stat buff (e.g. a 30.05% attackDamagePct or a multiplier on the recovery events) — or emitting extra/scaled recovery events, which would over-fire crown's on-recovery trigger.",
+      "distinguishingAssertion": "A/B with the line stripped: identical totals AND an identical count of crown recovery-triggered buffApply events (the line must not change recovery-event COUNT — amount is the only thing it touches in-game and amount does not exist in the sim). Verbatim text in override.unmodeled.skill2.",
+      "inertness": "Everything — zero damage delta, zero change to recovery-event counts.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ All allies: Recovers 5.06% every 1 sec for 5",
+      "disposition": "FAITHFUL",
+      "scope": "A heal-over-time: 5.06% of caster's final Max HP per tick, all allies. Amount unmodeled; the observable is the STREAM of recovery events (5 of them) feeding on-recovery consumers (crown).",
+      "durationSemantics": "5 ticks at 1s intervals ('every 1 sec for 5 sec') → heal effect with ticks:5, intervalSec:1. NOT a single instant heal, NOT durationSec-shaped.",
+      "triggerIdentity": "burstCast — misato's OWN Burst I cast (cd 40s). NOT fullBurstEnter: in any comp with another Burst I unit (the control fixture has liter B1), first-ready selection means misato does not cast every rotation, and a fullBurstEnter encoding would fire on rotations where LITER burst — a classic over-credit. Test fixture must guarantee misato actually casts (slot order / no competing B1) before asserting the stream exists.",
+      "targetSet": "allies (all, including self; excludeSelf absent)",
+      "nearestWrongModel": "A single instant heal event (ticks:1, the schema's back-compatible default) — emits ONE recovery event instead of five, silently starving on-recovery consumers of 4 refreshes per cast; second-nearest is keying to fullBurstEnter.",
+      "distinguishingAssertion": "After a burstCast event with misato's srcSlot, count crown's recovery-triggered buffApply refreshes attributable to this cast (A/B via withPatchedOverride stripping the burst heal): faithful adds FIVE events spaced ~60 frames apart over the 5s following the cast; nearest-wrong adds exactly one at cast frame. For the trigger identity: in a comp where liter casts B1 instead of misato that rotation, zero misato-sourced recovery events may appear.",
+      "inertness": "Must deal zero damage, apply zero stat buffs, and emit nothing on rotations where misato did not cast her burst.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:60-hit Shooting Manual hitRatePct stack buff",
+    "skill1:120-hit heal to 1 lowest-HP ally (recovery-event feed)",
+    "burst:5-tick 1s-interval heal-over-time to all allies (recovery-event feed)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Damage dealt to Shield ▲ 150% continuously.",
+      "Outgoing healing ▲ 30.05% continuously."
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in order of risk: (1) BOTH heal lines dropped as 'defensive, no damage' — wrong here specifically because the control fixture's crown (B2) carries an on-recovery trigger, so misato's skill1-2 proc heal and her burst HoT are live tandem feeds; the tests MUST observe them through crown's recovery-triggered buffApply events (there is no 'heal' event kind in cfg.onEvent, so any assertion written against a heal event is vacuous — verify the driver's tests observe via the consumer or via an A/B totals diff). (2) The burst HoT encoded ticks:1 (single event) — the ticks:5/intervalSec:1 stream is the whole point of 'every 1 sec for 5 sec'. (3) skill1-2's 120-hit trigger coinciding exactly with the 120-round magazine: a lastBullet mis-encoding passes every base-ammo test; force divergence with an ammo patch. (4) skill2's two gates read on the caster's OWN Shooting Manual buff (any-stacks vs max-stacks — two DIFFERENT conditions); no schema gate expresses either, and both gated effects are inert in v1 (no boss shield; heal amounts unmodeled), so the correct disposition is UNMODELED-verbatim — flag if the driver instead invented a resourceGate/targetStatus hack or, worse, shipped the 150% as a live damage stat. (5) hitRatePct is a plain percentage stat: buffApply 'value' should be the raw 5.04, not a flat-resolved number; its damage effect flows only through the ⚑ HR→core engine conversion (hrCoreMult, measured-only magnitude per the ALWAYS-⚑ list — the 5.04 itself is kit-literal, the conversion slope is not this unit's to calibrate). (6) Burst identity: misato is Burst I and the standard fixture already contains liter (B1) — a test asserting her burst effects without pinning WHO casts B1 that rotation is unsound; conversely her burstCast blocks must be shown inert on liter-cast rotations.",
+  "model": "claude-fable-5",
+  "reconciliation": {
+    "driver": "qwen (gauntlet driver)",
+    "reviewer": "claude-fable-5 (S2b, blind)",
+    "agreements": "All five dispositions converge: M1 hitCount60 self hitRatePct FAITHFUL (damage-live); M2 hitCount120 alliesLowestHp:1 heal EVENTS-ONLY; M3/M4 UNMODELED-verbatim (no boss shield bar, no heal-amount channel, no self-status-gate primitive); M5 burstCast allies heal ticks:5 EVENTS-ONLY. Load-bearing set identical. Verbatim-unmodeled: driver pins the FULL prose lines from characters.json (gate clauses included) — stricter than the reviewer's abbreviated forms; the S3 override must carry the full lines.",
+    "reviewerGapsClosed": [
+      "hitCount:120 == lastBullet at base ammo (120-round magazine) — ADDED: extended-magazine (+60 via in-memory skill2 block; real skill2 is empty) keeps cadence pinned to floor(shots/120) while a lastBullet re-encoding provably drops to reload-boundary cadence (two new runs: ammoExt, ammoExtLastBullet).",
+      "Stack progression — ADDED: first three applies must read stacks [1,2,3] and the first apply frame must be >= the 60th shot frame (no t=0/passive encoding)."
+    ],
+    "reviewerGapsAlreadyCovered": [
+      "burstCast-vs-fullBurstEnter: fixture fields NO other Burst I unit (custom comp crown/ada/misato, not controlComp — liter absent), so misato casts every FB (asserted >= 3 casts); M5's exact 5-tick window anchored at cast.frame already fails under a fullBurstEnter encoding because the tick stream would shift ~1-2s later (chain completion) and the [cast, cast+4s] window would catch fewer than 5 ticks.",
+      "no-heal-event-kind: all heal assertions observe through crown's recovery consumer (casterIdx CROWN, attackDamagePct 20.99), helm.test.ts pattern.",
+      "crown's own hitCount heal isolated in both heal-channel runs (crownNoHeal)."
+    ],
+    "residualDivergences": "None. Reviewer's HRCORE=0 inertness suggestion is env-flag behavior not assertable in a vitest file; the default-env damage-live pins stand."
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "slug": "misato",
+  "kitDescription": "Misato is an Iron SMG Supporter and Burst I caster whose kit is built around a self-buff called Shooting Manual: every 60 landed normal attacks she gains a stacking Hit Rate buff (5.04% per stack, up to 3 stacks, 5 seconds each), which sharpens her own core-hit rate. Every 120 landed normal attacks she heals the single ally with the lowest HP percentage for 8.04% of her own max HP. While Shooting Manual is active her team deals increased damage to enemy shields, and while it is at max stacks her outgoing healing is increased. Her burst is a team-wide heal-over-time, restoring 5.06% of her max HP to all allies every second for 5 seconds. She is fundamentally a sustain/support unit whose only offensive footprint is her own Hit Rate stacking.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "after 60 normal attacks: Hit Rate ▲",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount 60 → self hitRatePct 5.04, durationSec 5, maxStacks 3; damage-live via the Hit-Rate→core model; stacks ramp 1→2→3, never instant at t=0.",
+        "blindSaid": "S5 and S6 produced the identical block; S5 pins value/stacks/window/target/trigger and a cadence of exactly floor(hits/60) applications.",
+        "formulaCheck": "hitRatePct is the engine's ACR input (SSOT §1b: accuracy circle shrinks with hit rate → core-hit lift) — correct stat, correct self scope, 5s wall-clock stacks with refresh-not-costack per §11.",
+        "fireRateOk": true,
+        "explanation": "Fires at the prose cadence (floor(shots/60) observed, shots > 600), stacks progress [1,2,3] and reach the cap; the 1-stack counterfactual lands strictly between removed and shipped, proving the stack magnitude is load-bearing. Three-way convergence (driver/S5/S6 byte-identical block)."
+      },
+      {
+        "kitLine": "after 120 normal attacks: Recovers",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount 120 → alliesLowestHp{count:1} → heal event; 8.04% magnitude recorded in caveats but unmodeled (heal = recovery event, no HP pool); the 120-hit == lastBullet coincidence at base ammo is split by a +60-round magazine patch.",
+        "blindSaid": "S5/S6 identical block; S2b's adversarial note (lastBullet coincidence invisible at base ammo) was explicitly closed by the driver's extended-magazine runs.",
+        "formulaCheck": "A heal is an amount-free recovery event whose value is feeding on-recovery consumers (taxonomy: never skip a heal as defensive); the alliesLowestHp leftmost-ally stand-in is the documented v1 behavior. The unmodeled magnitude is engine-wide and documented, not a drop.",
+        "fireRateOk": true,
+        "explanation": "Cadence pinned to floor(shots/120) in both the base fixture and the 180-round extended magazine, while a lastBullet re-encoding provably under-fires — trigger identity is proven, not assumed. Target reaches exactly one ally; widening it is shown to change consumer traffic (non-vacuity)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "in Shooting Manual: Dmg to Shield ▲",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "No skill2 block; line verbatim in unmodeled.skill2; no shield-damage StatKey, scope-lock boss has no shield, and no self-buff-status gate primitive exists.",
+        "blindSaid": "S6 identical disposition and verbatim recording; S5 carries it as its own it.skip GAP; S2b concurs (inert in v1 by construction).",
+        "formulaCheck": "No shield-damage bucket or entity exists anywhere in the damage SSOT; the line is inert in-domain. The nearest-wrong model (a live 150% generic damage stat) is absent — no 150-magnitude buffApply exists.",
+        "fireRateOk": true,
+        "explanation": "Correct documented skip. Both the payload (no StatKey, no boss shield) and the gate (no self-status primitive) are genuinely inexpressible; the driver barred the nearest-wrong re-expression in caveats and pins the verbatim text in its M3/M4 test."
+      },
+      {
+        "kitLine": "max stacks: Outgoing healing ▲",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "No skill2 block; line verbatim in unmodeled.skill2; heal amounts are unmodeled engine-wide so there is no payload to scale, and the max-stacks gate has no primitive.",
+        "blindSaid": "S6 identical; S5 it.skip GAP; S2b concurs and warns against scaling/extra recovery events — none present.",
+        "formulaCheck": "The heal channel carries no HP magnitude (SSOT-consistent: recovery events only), so an outgoing-healing multiplier has no consumer; recovery-event COUNTS are unchanged, satisfying the S2b inertness assertion.",
+        "fireRateOk": true,
+        "explanation": "Correct documented skip, distinct gate from skill2 line 1 (any-stacks vs max-stacks) and correctly not merged. Verbatim pinned, zero event or damage delta."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "all allies: Recovers 5.06% every 1s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → heal{ticks:5, intervalSec:1}; fixture (crown B2 / ada B3 / misato sole B1) guarantees she casts every rotation; ≥3 casts, each full-window cast yields 5 recovery firings spanning ≥3.9s.",
+        "blindSaid": "S6 identical block; S5 pins burstCast (not fullBurstEnter), ticks 5, allies target, and shows 1-tick and self-only counterfactuals strictly reduce on-recovery traffic.",
+        "formulaCheck": "'Every 1 sec for 5 sec' is a 5-tick heal-over-time, not an instant heal — ticks:5/intervalSec:1 is the faithful shape; burstCast is the correct trigger identity (fullBurstEnter would over-fire on rotations another B1 casts, the classic over-credit). First-tick phase (t=0 vs t=1s) is ⚑-flagged convention.",
+        "fireRateOk": true,
+        "explanation": "Fires at the prose cadence with the correct per-cast event stream; isolated from her S1-b heal and crown's own heal so every firing is attributable. Magnitude (5.06%/tick) unmodeled and documented — engine-wide heal channel, not a unit-level drop."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1 (caveats/note commentary only)",
+      "summary": "Driver caveat text cites the stale 24 pulls/s SMG cadence ('60 hits ≈ 2.5s at 24 pulls/s') while the engine ships the measured 20.0/s frame-quantized SMG rate by default",
+      "evidence": "Driver override caveats: 'rate_of_fire 1440 = 24 pulls/s', '60 hits ≈ 2.5s at 24 pulls/s'. SSOT game-mechanics §2: SMG measured 20.0/s via ammo-counter frame reads; frame quantization DEFAULT-ON since 2026-07-23 (SMGRATE=24 is the revert arm). S6 blind independently estimated ~20 pulls/s. No kit prose number is contradicted; the actual engine behavior (20/s) is what the sim computes.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Documentation-only: update the caveat/note wording to the measured 20.0/s SMG cadence (60 hits ≈ 3.0s of fire, ~9–10s to 3 stacks). No override or test change needed — all cadence assertions are ratio-based (floor(shots/60), floor(shots/120)) and the 3s-vs-5s margin still sustains max stacks, so no conclusion changes."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": 1.0,
+  "verdict": "GO",
+  "verdictRationale": "Convergence is mechanical and clean: the S5 blind suite, run against the driver's shipped override, is fully green after one wiring fix inside the blind file itself (it filtered damage events by a numeric srcSlot that events don't carry — a RECON_ERROR in the blind artifact, not a driver divergence), and the S6 blind override is byte-identical to the driver's on every block, differing only cosmetically in unmodeled-line punctuation. All five kit lines are FAITHFUL or DOCUMENTED_GAP: the 60-hit Hit Rate stack buff is damage-live, cadence-exact (floor(shots/60)), and proven load-bearing by the strictly-between 1-stack counterfactual; the 120-hit ally heal survives the S2b adversarial split (extended-magazine patch separates hitCount:120 from lastBullet, which coincided at base ammo); the burst is the correct 5-tick burstCast-keyed HoT, not an instant heal or a fullBurstEnter over-credit; both skill2 lines are correctly unmodeled-verbatim with both the absent StatKey and the absent self-status gate primitive documented and the nearest-wrong re-expressions explicitly barred. The only real finding is low-severity and documentation-only: the driver caveats quote the stale 24/s SMG cadence while the engine defaults to the measured 20/s — no behavioral or test impact since every cadence assertion is ratio-based. Same-model residuals for owner spot-check: (1) the entire heal-channel value depends on the crown recovery-consumer fixture reading event counts, which is a sim-internal observable, not game truth; (2) the driver names the Hit-Rate→core path 'CONE_DELTA σ-shrink' while the SSOT's default live path is UNIGEO (cone is the fallback arm) — routing and sign agree, naming may be stale; (3) the ⚑ set (cadence tuple, HoT first-tick phase, stack-uptime coupling) remains unmeasured and is honestly flagged as such.",
+  "model": "kimi-code/k3"
+}

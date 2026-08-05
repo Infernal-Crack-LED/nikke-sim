@@ -1,0 +1,65 @@
+{
+  "slug": "neon",
+  "kitDescription": "Neon is a Fire shotgun Supporter whose Burst I does two things: it fires a single 528.97% shot at the enemy with the highest defense, and for the next 10 seconds every Shotgun-wielding ally (herself included) gets +3 rounds of magazine capacity, so those units reload less often and fire more. Separately, whenever the team enters Full Burst — no matter who cast it — every ally's critical rate jumps by 45.93% for exactly their next two shots. Her first passive would grant the two highest-attack allies a small crit-rate boost whenever she kills an enemy, but against a single boss that never dies this never triggers. In practice she is a low-cooldown Burst I filler whose value is the Full-Burst crit burst and the shotgun magazine extension.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "skill2 'SCOPE — UNSCOPED critRatePct, not critRateNormalPct': only the totals-level cross-check failed (CF_SCOPED total == BASE total for neon, diff exactly 0); the event-level stat-key pin PASSED",
+      "burst 'INERTNESS — removing the ammo grant leaves every non-SG teammate byte-identical': failed by 66,076 damage (~0.076%) on a non-SG teammate via the shared burst-gauge channel; the target-set pin PASSED"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates when killing an enemy...Crit Rate 3.56%/5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED: no kill event in the engine (grep-verified), scope-lock boss is immortal/partless; empty slot + line verbatim in unmodeled.skill1 + ⚑1 with recipe (kill credit → alliesTopAtk count:2 byFinalAtk → critRatePct 3.56 durationSec 5) and tier (out-of-domain: world model)",
+        "blindSaid": "S2b and S6 both independently chose the identical disposition: structurally inert at scope, any active encoding is over-credit, same future recipe",
+        "formulaCheck": "SSOT confirms no kill primitive exists and the scope-lock fight has no adds; a passive/interval proxy would fabricate a buff the sim world cannot produce — deliberately not encoding is the faithful choice",
+        "fireRateOk": true,
+        "explanation": "Three independent derivations (driver, S2b, S6) converge: zero activations is the correct behavior. Driver's spec pins it three ways (no 3.56-value grant ever emitted; verbatim unmodeled entry checked against characters.json; the s1Passive counterfactual inflates the team). Deliberate, documented, damage-inert."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Beginning of Full Burst, all allies, Crit 45.93%/2 shots",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → allies (incl. self) → critRatePct 45.93, durationShots 2, no durationSec; pinned by timing (grant lands on fullBurstStart frame), count (5 grant-waves vs 9 own casts — helm gates the chain), stat key, and a differential crit-rate read showing exactly 2 buffed hits per FB window per holder",
+        "blindSaid": "S5 (opus-5) and S6 (opus-5) independently produced the byte-identical block (fullBurstEnter/allies/critRatePct 45.93/durationShots 2); S2b (fable-5) specified the same trigger/target/scope/duration semantics",
+        "formulaCheck": "SSOT §11: plain 'Critical Rate ▲' with no 'of normal attacks' qualifier → unscoped critRatePct (helm S1 is the contrast case); 'for N shots' → round-scoped durationShots, not wall-clock; 'beginning of Full Burst' → fullBurstEnter, which fires on any team FB regardless of caster — all four routing decisions match the SSOT taxonomy",
+        "fireRateOk": true,
+        "explanation": "Fires at every Full Burst (5 in the fixture) and each holder's next 2 rounds carry it — the driver's per-window differential pin (exactly 2 buffed crit-rate hits per holder per FB, helm-cancelling) proves it is live at cadence, not merely present. The S5 RED on the SCOPE assertion is a RECON_ERROR: the blind author's totals cross-check assumed re-scoping would move neon's own total, but her nuke lands pre-FB (before her own S2 buff exists) and she has no skill procs, so scoped-vs-unscoped cannot move her personal total in any fixture — the stat-key pin that actually carries the scope claim passed."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 528.97% of final ATK as Burst Skill dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy → flatDamage 528.97, burst bucket; cast lands before the FB window opens so no +50% major (fbMajorApplied false pinned, inFullBurst false pinned); once per own cast",
+        "blindSaid": "S6 produced the identical block; S2b named the +50%-applied nearest-wrong model and the own-cast-count pin; S5's burst-bucket/fbMajorApplied/once-per-cast assertions all passed",
+        "formulaCheck": "SSOT §8/§1b: burst-cast direct damage resolves before FB entry (noFb engine-automatic, MEASURED 2026-07-13 on cinderella's nuke); 'highest final DEF' selector collapses trivially to the single partless boss — documented as a no-op by both driver (note) and S6 (unmodeled.burst entry). Burst hits crit per convention, never core, no range — engine default for flatDamage.",
+        "fireRateOk": true,
+        "explanation": "Fires exactly once per neon B1 cast (9 in the fixture) at the kit-literal SL10 magnitude. The magnitude matches the prose's own number (528.97), so it is in scope to check and it checks. Driver's noNuke counterfactual zeroes her burst bucket and lowers only her total."
+      },
+      {
+        "kitLine": "Allies with Shotgun: Max Ammo +3 rounds/10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → alliesOfWeapon SG (incl. self) → maxAmmoFlat 3, durationSec 10; '3 round(s)' is the value's unit not a duration; observable as ammoAfter up to 11 in-window, ≤8 without",
+        "blindSaid": "S6 produced the identical block including the maxAmmoFlat (not maxAmmoPct) primitive; S2b named both nearest-wrong models (maxAmmoPct ≈ +0 rounds; unconditional-allies targeting); S5's value/duration/SG-only-recipient assertions all passed",
+        "formulaCheck": "SSOT §11: max-ammo increases never clip, sources stack additively — a flat +3 rounds primitive is correct; weapon-state modifier gates shots fired so it is a damage line (taxonomy #6), correctly modeled not skipped; alliesOfWeapon matches 'all allies with a Shotgun' with no except-self clause",
+        "fireRateOk": true,
+        "explanation": "Fires per cast on exactly {neon, naga} and demonstrably extends magazines (12-round caps in-window, reverting to 9). The S5 RED on the INERTNESS assertion is a RECON_ERROR: the byte-identity premise ignored that the extra real shots the grant produces feed the shared team burst gauge (SSOT §6 — every shot adds gauge), so FB timing legitimately shifts for the whole team; the target-set pin (SG recipients only, helm untouched) passed, and the driver's own ammoAllies/ammoSelf counterfactuals pin the target set independently."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. All four kit lines are accounted for: three FAITHFUL with byte-identical convergence across the driver and both blind re-derivations (S5/S6 opus-5, S2b fable-5), and skill1 a correctly DOCUMENTED_GAP (kill trigger unreachable at scope, verbatim in unmodeled with estimate + recipe + tier). The S5 run is nominally RED, but both red assertions are blind-test artifacts, not divergences: (1) the scope totals cross-check was mis-targeted — neon's pre-FB nuke and lack of skill procs make her own total provably insensitive to the scoped/unscoped distinction, and the load-bearing stat-key pin passed; (2) the ammo inertness byte-identity premise ignored the shared burst-gauge channel, a real SSOT-documented coupling — the target-set pin passed. Discrimination holds on every load-bearing line via the driver's counterfactual suite (s1Passive, s2SecBased, s2BurstCast 9-vs-5 count split, noNuke, ammoAllies, ammoSelf) plus S5's own passing counterfactuals. The same-model residual the owner should spot-check: (a) the unscoped-vs-normal-scoped crit distinction is verified only by the structural stat pin and helm-side differential, never by a damage differential on a skill/burst hit of neon's own — acceptable given the prose is unambiguous, but it is the weakest discrimination leg; (b) durationShots per-trigger-pull vs per-pellet decrement for a 10-pellet SG holder is an unverified reading (S6 ⚑, matches the SSOT round=one-bullet convention); (c) the 5-FB-vs-9-cast trigger discrimination rests on the fixture's helm-gated chain arithmetic — deterministic, but fixture-dependent.",
+  "model": "kimi-code/k3"
+}

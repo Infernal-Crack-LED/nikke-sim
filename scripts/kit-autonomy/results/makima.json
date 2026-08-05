@@ -1,0 +1,102 @@
+{
+  "slug": "makima",
+  "kitDescription": "Makima is a defensive Water SMG tank whose kit barely touches the damage board. When she is attacked 20 times she boosts all allies' Reload Speed by 36.96% and DEF by 14.78% for 10 seconds, and after landing 120 of her own shots she taunts all enemies for 3 seconds. If she ever takes lethal damage she gains Indomitability for 7 seconds (once per battle) and her burst cooldown drops by 11.58 seconds. Her burst gives herself Pierce for 10 seconds and heals her over 10 seconds based on her attack damage, with an extra Incoming Healing buff that only applies while Indomitability is active. In the scope-lock sim the boss never attacks allies, so everything triggered by being attacked or by lethal damage can never fire; only her burst's timed Pierce window and recovery stream are modeled, and both are damage-quiet on the test boss.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Reload Speed ▲ 36.96% for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled + ⚑1 (Tier 2): no attacked-count trigger exists; v1 boss never attacks allies so the line never fires on the sim basis; an invented cadence granting a team-wide damage-relevant buff is a fudge; admi precedent carries identical wording with the same disposition. Recipe: needs an incoming-hit trigger primitive + hit-accrual cadence from a focus video.",
+        "blindSaid": "S2b: MEASUREMENT-GATED — honest encoding is an ⚑ interval OR unmodeled with the gap declared; cadence is an ALWAYS-⚑ field. S5: stripping skill1 must be byte-identical (RED if any invented cadence exists) — passes only under the driver's disposition. S6: encoded interval:15 ⚑ (~67% uptime guess).",
+        "formulaCheck": "Reload speed gates shots fired (§2a reload formula, subtractive) — this IS a damage line team-wide, so an unmeasured ~67% uptime (S6) would fabricate damage the scope-lock basis cannot produce; zero-fire is the only measured-consistent behavior on a boss that never attacks.",
+        "fireRateOk": true,
+        "explanation": "Sole substantive divergence, ruled for the driver. The S6 interval:15 is exactly the 'invented cadence' nearest-wrong S2b/S5 named: it is underivable from any measured source and moves team damage. The driver's unmodeled + ⚑ (estimate: zero at scope lock; recipe: new trigger primitive + footage) satisfies MEASURED>FUDGE and is corroborated by S5's strip test passing. Documented gap, acceptable; flagged for owner policy review since two defensible dispositions existed."
+      },
+      {
+        "kitLine": "DEF ▲ 14.78% for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled together with the reload line (same block, same unreachable trigger); DEF is engine-inert in v1 regardless.",
+        "blindSaid": "S2b: shares whatever disposition the block gets; defPct is engine-inert. S6: defPct buff on the same interval:15 block.",
+        "formulaCheck": "defPct touches no damage bucket (bossDef is the only DEF consumer and it is boss-side); inert either way — only its trigger's legitimacy matters, which is the reload line's question.",
+        "fireRateOk": true,
+        "explanation": "Rides the S1 trigger disposition; no independent issue."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Attract: Taunt all enemies for 3 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim: no taunt/aggro primitive (folkwang/maiden/ludmilla precedent); trigger identity recorded as hitCount:120, explicitly NOT lastBullet (desyncs under maxAmmo modifiers).",
+        "blindSaid": "S2b/S5/S6 all agree: UNMODELED, board-inert; hitCount:120 coincides with the 120-round magazine, inviting a lastBullet misread — shape hygiene only.",
+        "formulaCheck": "No aggro/targeting model exists; boss deals no damage at scope lock; zero damage contribution.",
+        "fireRateOk": true,
+        "explanation": "Full three-way convergence; correctly documented."
+      },
+      {
+        "kitLine": "Gain indomitability for 7 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled: lethal-damage trigger unreachable at scope lock (nobody takes damage); blanc/poli death-immunity precedent.",
+        "blindSaid": "S2b/S5/S6 all agree: UNMODELED; the status matters only as the gate for the burst's incoming-healing rider, which is therefore permanently closed.",
+        "formulaCheck": "No incoming-damage model in v1; the event cannot occur.",
+        "fireRateOk": true,
+        "explanation": "Convergent; its closure propagates correctly to the burst rider."
+      },
+      {
+        "kitLine": "Cooldown of Burst Skill ▼ 11.58 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled: rides the lethal-damage trigger; burstCdr primitive exists but encoding it on a reachable trigger is the kit's highest-blast-radius misread (11.58s off a 20s B2 CD flips chain contention). Pinned absent: no burstCdr block anywhere (M3 structural), rotation byte-identical to bare weapon, M4 CD-floor check.",
+        "blindSaid": "S2b: UNMODELED — nearest-wrong is a reachable-trigger burstCdr; distinguish by fullBurstStart frames invariant. S5: no burstCdr effect rides any reachable trigger (structural); the behavioral cdrProbe was evidence-documented as non-discriminating (gauge-limited rotation makes even unconditional CDR byte-identical) and skipped, structural assertion carries discrimination. S6: UNMODELED, identical.",
+        "formulaCheck": "Rotation is cooldown + gauge arithmetic (§3/§8); at scope lock this team's rotation is gauge-limited, which is why the behavioral probe can't bite — the structural pin plus M4's cast-gap floor is the right discrimination and it is present.",
+        "fireRateOk": true,
+        "explanation": "Convergent and correctly gated. The documented cdrProbe skip is sound: a probe that cannot fail for ANY override gates nothing; the structural and CD-floor pins discriminate instead."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Gain Pierce for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self → gainPierce{durationSec:10} (asuka precedent): a timed window, NOT top-level hasPierce, NOT fullBurstEnter. Damage-inert at scope lock (no pierceDamagePct source, PIERCE_CORE_DOUBLE=false); pinned by M1: totals byte-identical to tag-less model, pierceDamagePct probe lifts only in-window hits, out-of-window gaps byte-identical.",
+        "blindSaid": "S2b: FAITHFUL, load-bearing — gainPierce{durationSec:10} on burstCast; nearest-wrong hasPierce:true or fullBurstEnter. S5: structural asserts exactly this shape. S6: identical encoding.",
+        "formulaCheck": "§1e/§11: Pierce tag gates the Damage-Up Pierce term on the partless boss; a 10s window off her own cast matches the kit wording; RL-never/boolean misreads excluded by the probe's window-boundary pins.",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence on trigger (burstCast, stage 2), target (self), and duration semantics (10s timed). M0 fixture guard (sole-B2 liter/makima/ada, ≥6 casts) proves the block FIRES repeatedly at her natural CD cadence — modeled-and-working, not merely present."
+      },
+      {
+        "kitLine": "Recover 34.02% of attack damage as HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self → heal{ticks:10, intervalSec:1} (helm H8 precedent): 'over 10 sec' = a per-second recovery-event stream, event-only (no HP amounts modeled), self-targeted so only her own recovery triggers could consume it (she has none). M2: recovery probe fires ~10x per cast spanning ≥8s; instant-heal counterfactual fires 1x and fails.",
+        "blindSaid": "S2b: FAITHFUL, load-bearing — ticks:10 not one instant event. S5: skips behavioral (no comp unit consumes recovery) but S6 and driver agree on the encoding; S6 merges into one block with pierce (same semantics).",
+        "formulaCheck": "Engine models no HP pool, so the magnitude 34.02% is necessarily unencoded — documented in note/caveats by both driver and S6 (⚑ tick granularity 1/s is an assumption). The event-stream shape is the faithful representation available; taxonomy forbids dropping heal lines as 'defensive'.",
+        "fireRateOk": true,
+        "explanation": "Convergent. The line fires at every cast (M0) and the 10-tick cadence is probe-pinned against the instant-heal nearest-wrong. Magnitude carried as prose-only is a documented limitation, not a drop."
+      },
+      {
+        "kitLine": "Incoming healing ▲ 41.02% for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled + ⚑4 (Tier 1): doubly inert — the indomitability gate is permanently closed (its only source is S2-b, unmodeled/unreachable) and no heal amounts / no incoming-healing StatKey exist to amplify. Encoding it ungated would fabricate an effect the kit gates (poli badge-gate precedent).",
+        "blindSaid": "S2b/S5/S6 all agree: UNMODELED; nearest-wrong is folding it ungated into the unconditional burst block — latent bug for any future HP-modeled mode.",
+        "formulaCheck": "Gate condition unreachable in v1; no heal-amount consumer exists; zero events is the only correct behavior.",
+        "fireRateOk": true,
+        "explanation": "Convergent; gate wording preserved verbatim in unmodeled.burst."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: all 7 kit lines are FAITHFUL (the two load-bearing burst lines) or DOCUMENTED_GAP (the five out-of-domain lines, each carried verbatim in unmodeled with ⚑ estimate + recipe + tier). The blind re-derivations converged on 6 of 7 lines exactly, and the sole divergence (S6's interval:15 ⚑ encoding of the attacked-20-times S1 vs the driver's unmodeled disposition) is ruled SPURIOUS: the interval cadence is underivable from anything measured, it grants a team-wide damage-relevant buff (reload speed gates shots fired), and S5's own strip test is GREEN only under the driver's disposition — the blind test harness corroborates the driver over the blind override. Discrimination holds on both load-bearing lines (M1 pierce window boundary vs permanent-tag and fullBurstEnter counterfactuals; M2 HoT cadence vs instant-heal counterfactual), the fire-rate check passes (M0: sole-B2 fixture, ≥6 stage-2 casts, blocks demonstrably fire), and the one skipped behavioral probe (cdrProbe) is evidence-documented as structurally non-discriminating on a gauge-limited rotation, with the structural no-burstCdr pin and M4 CD-floor carrying discrimination instead. Same-model residual the owner should spot-check: (1) the S1 disposition is a POLICY call — 'unmodeled at scope lock' (driver, admi precedent) vs '⚑ interval approximation' (S6) — both were deemed acceptable by S2b; the owner should confirm the unmodeled policy stands for incoming-damage-triggered damage-relevant lines, since it zeroes Makima's primary real-game value and the board will under-rank her accordingly. (2) The 'over 10 sec = ticks:10 at 1/s' tick granularity is an untested assumption shared by every agent (driver and both blinds) — a shared prior, not an independent verification. (3) The SMG cadence tuple (RoF 1440 / reloadFrames 111 / ammo 120) rides datamine as-is with the standing SMG 20-vs-24/s question unaddressed for this unit (⚑5).",
+  "model": "kimi-code/k3"
+}

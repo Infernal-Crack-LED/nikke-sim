@@ -1,0 +1,45 @@
+{
+  "note": "Makima (slug `makima`) — Abnormal Water SMG DEFENDER, Burst II, 20s burst CD, ammo 120 / hitsPerShot 1 / reloadFrames 111 / RoF 1440 / normalMult 8.73 (datamine). FROM-SCRATCH kit-autonomy build 2026-08-04 (no prior override; simSupported was false). A Chainsaw-Man collab tank whose kit is almost entirely defensive (team reload/DEF on being attacked, taunt, indomitability); her ONLY encoded offensive surface is the burst's timed Pierce tag + a self recovery-over-time event stream. MODEL — BURST ('Can You Be Quiet?', self): (1) 'Gain Pierce for 10 sec' = burstCast → self → gainPierce{durationSec:10}: a TIMED pierce tag on her own casts (asuka precedent — NOT the permanent top-level hasPierce flag, which a boolean cannot window; and NOT fullBurstEnter — the kit names no full-burst condition and the line sits under her own burst's 'Affects self'). Damage-INERT at scope lock (nothing consumes the tag: no pierceDamagePct source in scope comps, PIERCE_CORE_DOUBLE=false — alice precedent, byte-identical totals pinned), encoded for kit completeness + future pierce-buff teammates. (2) 'Recover 34.02% of attack damage as HP over 10 sec' = burstCast → self → heal{ticks:10, intervalSec:1}: the 'OVER 10 SEC' window is a per-second recovery-event stream, not a single instant event (helm H8 precedent) — event-only, no HP amount modeled; self-targeted, so it feeds only her own 'recovery' triggers (she has none) and keeps any future consumer refreshed across the window. UNMODELED (all five lines out-of-domain for the v1 DPS basis, which models NO incoming ally damage — every ⚑ below carries estimate+recipe): (S1, entire slot) 'Activates when attacked 20 times → all allies Reload Speed ▲36.96% / DEF ▲14.78% for 10s' — no attacked-count trigger primitive exists (incoming-hit counter; the nearest-wrong hitCount:20 would count HER OWN rounds and give near-permanent uptime — the single most plausible misread, pinned absent by the empty skill1 + byte-identical bare-weapon totals). admi carries the IDENTICAL trigger wording with the same disposition. (S2-a) 'after landing 120 normal attacks → Attract: Taunt all enemies for 3s' — no taunt/aggro primitive (folkwang/maiden/ludmilla precedent); trigger identity recorded as hitCount:120 (hitsPerShot 1 → 120 hits = one full magazine; NOT lastBullet, which desyncs under any maxAmmo modifier). (S2-b) 'taking lethal damage → Indomitability 7s (1/battle)' + 'Cooldown of Burst Skill ▼11.58s' — no lethal-damage trigger; indomitability is the death-immunity class (blanc/poli precedent). The burstCdr PRIMITIVE exists, which makes a reachable-trigger encoding tempting — it is the kit's highest-blast-radius misread (11.58s off a 20s CD flips B2 chain contention); the gate is the whole point and lethal damage is unreachable at scope lock, so the line never fires and stays unmodeled (pinned: no burstCdr block anywhere, rotation identical to bare weapon). (BURST rider) 'during indomitability → Incoming healing ▲41.02% for 10s' — doubly inert: the gate is permanently closed (its only source, S2-b, is unmodeled/unreachable) and no heal AMOUNTS exist for it to amplify (no incoming-healing StatKey either); encoding it ungated would fabricate an effect the kit gates (poli badge-gate precedent). ⚑ FLAGS: (⚑1 OUT-OF-DOMAIN, incoming-damage subsystem — TIER 2) the entire S1 attacked-20x team reload/DEF line; estimate = zero damage impact at scope lock (never fires); in a real fight with steady boss attacks the 10s window is near-permanent uptime ≈ team-wide ×1.37 reload speed (more shots for every ally) + inert DEF; recipe = needs an attacked-count trigger primitive (engine-core) + hit-accrual cadence from a focus video (boss-targeting dependent — also unmodeled). (⚑2 OUT-OF-DOMAIN, aggro — TIER 2) the S2 taunt; estimate = zero damage impact; in-game role is feeding her OWN attacked-counter (S1 synergy) + ally protection; recipe = needs an aggro/targeting model; not observable from damage popups. (⚑3 OUT-OF-DOMAIN, lethal damage — TIER 2) the S2 indomitability + burstCdr cluster; estimate = zero damage impact at scope lock; in a real fight the one lethal proc collapses her CD 20s → 8.42s residual, roughly doubling her pierce/heal uptime for the rest of the fight; recipe = needs incoming-damage/HP modeling; the CDR itself is then a burst-cadence popup read. (⚑4 GATED RIDER — TIER 1) the burst incoming-healing line; estimate = zero (gate closed + no amounts); recipe = becomes meaningful only once ⚑3 AND heal amounts exist; gate opens exactly when indomitability does. (⚑5 CADENCE TUPLE, mandatory) SMG class rate RoF 1440 + reloadFrames 111 + ammo 120 shipped datamine as-is (no charFixes); drives her shot count → burst gauge → cast cadence; recipe = rounds/min + reload gap from any makima focus video; Tier 1. TIER 2 overall: the faithful encoding is two plain Tier-1-shape burstCast blocks, but the adjudication cluster is Tier 2 — three out-of-domain incoming-damage lines (attacked-count trigger, lethal-damage trigger, status gate) where the tempting misreads (own-hit hitCount:20, reachable-trigger burstCdr, ungated rider, permanent hasPierce) are each pinned absent by scripts/tests/units/makima.test.ts (M1 timed-pierce probe + inertness, M2 HoT cadence probe, M3 bare-weapon behavioural + structural absence pins, M4 rotation integrity). Kit-autonomy gauntlet 2026-08-04: encoding authored test-first — every FAITHFUL line pinned GREEN vs this override and RED vs its nearest-wrong counterfactual; cross-family S2b (claude-fable-5) converged on all 7 lines.",
+  "unmodeled": {
+    "skill1": [
+      "■ Activates when attacked 20 times. Affects all allies.",
+      "Reload Speed ▲ 36.96% for 10 sec. ",
+      "DEF ▲ 14.78% for 10 sec."
+    ],
+    "skill2": [
+      "■ Activates after landing 120 normal attack(s). Affects self.",
+      " Attract: Taunt all enemies for 3 sec.",
+      "■ Activates when taking lethal damage. Affects self.",
+      "Gain indomitability for 7 sec. Activates 1 time(s) per battle.",
+      "Cooldown of Burst Skill ▼ 11.58 sec."
+    ],
+    "burst": [
+      "■ Activates during indomitability. Affects self.",
+      "Incoming healing ▲ 41.02% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "burst: 'Gain Pierce for 10 sec' is a TIMED gainPierce window on her own burstCast (asuka precedent) — damage-inert at scope lock (no pierceDamagePct consumer, PIERCE_CORE_DOUBLE=false; byte-identical totals pinned), encoded for kit completeness + pierce-buff teammates",
+    "burst: the 34.02% recovery is event-only (no HP amounts modeled); 'over 10 sec' = ticks:10/intervalSec:1 so a recovery consumer stays refreshed across the whole window (helm H8 precedent); self-targeted — she has no recovery trigger of her own",
+    "skill1/skill2: every line is unmodeled — v1 models no incoming ally damage (no attacked-count trigger, no taunt/aggro, no lethal-damage trigger, no indomitability status); the lethal-gated burstCdr in particular must NEVER be encoded on a reachable trigger (rotation blast radius, ⚑3)",
+    "burst: the 'during indomitability' incoming-healing rider is unmodeled — its gate is permanently closed at scope lock (the only indomitability source is itself unmodeled) and no heal amounts exist to amplify (⚑4)",
+    "the '■ Affects self.' burst header line is represented by the two modeled blocks' self targets, not carried in unmodeled"
+  ],
+  "kitDescription": "Defensive collab tank. When attacked 20 times she would raise all allies' Reload Speed by 36.96% and DEF by 14.78% for 10s, and after 120 landed shots she would taunt all enemies for 3s — both unmodeled (v1 simulates no incoming attacks / aggro). Taking lethal damage would grant Indomitability for 7s (once per battle) and cut her burst cooldown by 11.58s — unmodeled (no lethal damage at scope lock). Her burst grants herself Pierce for 10s (damage-quiet at scope lock) and emits a 10-second self recovery stream; the indomitability-gated Incoming Healing rider is unmodeled (gate closed).",
+  "skill1": [],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [{ "kind": "gainPierce", "durationSec": 10 }]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [{ "kind": "heal", "ticks": 10, "intervalSec": 1 }]
+    }
+  ]
+}

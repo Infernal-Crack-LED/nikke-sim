@@ -1,0 +1,62 @@
+{
+  "slug": "neon-blue-ocean",
+  "kitDescription": "Neon: Blue Ocean is a Water machine-gun attacker whose burst swaps her weapon for 7 seconds to a 33%-of-ATK gun, and while firing at a Fire-Code enemy each of those shots also lands an extra 11%-of-ATK hit. Her Skill 1 builds up a Damage-to-Parts buff each time she uses her burst (12.4% per tier, 20 seconds, cumulative to three tiers), which does nothing against a partless boss. Her Skill 2 builds an Elemental Advantage Attack Damage buff every time any ally takes the Burst Stage 3 slot (20.56% then 20.2% tiers, 10 seconds), so she ramps up over the fight specifically against bosses she has elemental advantage over. Everything she does is self-buffing; she brings no team utility, healing, or gauge tricks.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "using Burst → Parts ▲12.4% 20s ×3 esc",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast→self escalating partsDamagePct 12.4×3/20s; inert on partless boss, byte-identity pinned; equal steps refresh per §11",
+        "blindSaid": "S5+S6: identical encoding (burstCast, self, escalating 12.4×3, 20s, inert-pin assertion)",
+        "formulaCheck": "partsDamagePct parsed-but-inert vs partless scope-lock boss; inertness is CORRECT and both blind agents pinned it rather than 'fixing' it into a live stat",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence on trigger (own burstCast, not fullBurstEnter — driver discriminates with 30-vs-15 apply counts under the counterfactual), target, escalation shape (per-cast applies [1,2,3,3,3,3]), and duration (1200f). The refresh-vs-co-stack question is moot here (inert stat) but the driver kept the event-log pin for a future parts boss."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "entering Stage 3 → ElemAdv ▲ esc 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "stageEnter:3→self escalating elemAdvantageDamagePct 20.56/20.2/20.2, 10s; element bucket; live cap 40.76 (equal 20.2 lines refresh per §11)",
+        "blindSaid": "S5+S6: stageEnter:3, same stat/values/duration; S2b expected co-stack 60.96; all three blind roles derived stageEnter (driver flipped from fullBurstEnter on their convergence + repo precedent)",
+        "formulaCheck": "damage-calculation.md §1c (MEASURED 2026-07-14 battery 5, Privaty 2.8244) places elemAdvantageDamagePct in the ELEMENT bucket — driver matches, observed elem mults exactly {1.1, 1.3056, 1.5076}. §11 official rule (@NIKKE_en): same buff name + same scope REFRESHES — the two identical 20.2 steps collapse to one live instance, so 40.76 is the SSOT-backed reading; S2b's 60.96 expectation lacked §11 in its pack (information asymmetry, RECON note, not a finding)",
+        "fireRateOk": true,
+        "explanation": "Trigger identity is the line's real hazard and it is exhaustively discriminated: stageEnter beats burstCast (helm-cast entries fire — 11 waves vs 6 own casts) and beats fullBurstEnter (cast-frame vs ~22f-late landing). The driver flip from fullBurstEnter to stageEnter:3, driven by independent blind convergence plus gauntlet-validated precedent (laplace-ultimate-hero, rei-ayanami), is the gauntlet working as designed. Bucket placement follows the newer MEASURED SSOT; note game-mechanics.md §10 still carries the stale Damage-Up wording (doc hygiene item, owner's upkeep skill). Co-stack residual flagged for owner below."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Changes weapon: 33% final ATK, 7s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "weaponSwap damagePct 33 durationSec 7, own burstCast; cadence kit-silent → ⚑1 base MG cadence + belt refill, measurement-gated with recipe (moran precedent; unlabeled datamine 90 NOT enacted)",
+        "blindSaid": "S5+S6: identical (33%/7s weaponSwap; both flag cadence as kit-silent ⚑/GAP)",
+        "formulaCheck": "weaponSwap primitive per SSOT §2b; 7s window deliberately shorter than the 10s FB window — S2b's duration-10 nearest-wrong is excluded by the 3s/60s counterfactuals and the strict [cast, cast+420f] containment pin",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence on the swap's identity, magnitude, and window. The only soft spot — swap shot economy — is kit-silent and correctly shipped as a flagged measurement-gated estimate (⚑1, tier + recipe), never a silent precise value. Per-window shot counts deliberately unpinned (175–420 variance from MG ladder + refill); containment + multiplier identity pinned instead. Correct handling of an ALWAYS-⚑ field."
+      },
+      {
+        "kitLine": "vs Fire target: 11% additional dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast→self extraHitDamagePct 11 durationSec 7, bossElementGate Fire — window-scoped per-hit function rider (modernia/nayuta/neon-vision-eye validated primitive)",
+        "blindSaid": "S6: shotFired→enemy flatDamage 11, WHOLE-FIGHT (own caveat admits the scope is unstated); S2b + S5 both independently ruled swap-window-scoped",
+        "formulaCheck": "RIDER SCOPE RULING (binding): window-scoped is faithful. The burst is skill_type ChangeWeapon with duration_value 7s; the additional-damage function rides the skill state, so it lives and dies with the 7s window. Two of three blind roles + the datamine shape agree; S6's whole-fight reading is exactly the over-credit trap S2b named (~3.4× rider damage). ENCODING-IDENTITY RULING (binding): the extraHitDamagePct timed-carrier primitive is the repo's validated convention for window-scoped per-attack additional damage and is functionally the kit's 'deals 11% as additional damage' — the S5 adaptation (3) is mechanics-only and intent-preserving. Rider behavior pinned: 1:1 with swap shots, crits at sheet rate, never cores, no range, FB by landing time (SSOT §2b function rules); Fire gate proven load-bearing vs the Iron boss (zero buffs, zero riders) and the ungated counterfactual fires vs Iron",
+        "fireRateOk": true,
+        "explanation": "The driver's strongest-tested line: rider count == swap-shot count per window, strict window containment, function-damage flavor pins, and a two-sided element-gate proof (closed vs Iron, open-when-ungated counterfactual). Both submitted divergences on this line resolve in the driver's favor."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: all four kit lines are FAITHFUL with their known unknowns (swap cadence ⚑1, cadence tuple ⚑2) documented with recipes and tiers. Convergence is real, not just same-model echo: the blind S5 suite runs GREEN against the shipped override after four banner-documented mechanics-only adaptations, and the one substantive disagreement chain resolved by evidence — all three blind roles independently derived stageEnter:3 for skill2, the driver flipped to match, and repo precedent (laplace-ultimate-hero, rei-ayanami) corroborates; that is three independent derivations plus prior cross-family validation, so the PROVE-IT-DIFFERENTLY bar is met and I stop there. The two divergences submitted for binding ruling both resolve for the driver: (1) the 11% Fire rider is window-scoped to the 7s swap (datamine ChangeWeapon duration_value + S2b + S5 against S6's self-admitted-uncertain whole-fight reading, the exact over-credit trap S2b predicted); (2) equal-value escalating steps refresh rather than co-stack per the official §11 rule, so skill2's live cap is 40.76 (elem mult 1.5076, pinned) — S2b's 60.96 expectation is an information-asymmetry recon note, not a finding. Discrimination holds on every load-bearing assertion (trigger keyings, window lengths, element gate, inertness pins all fail under their named nearest-wrong models). Residuals for the owner to spot-check, in order: (a) the refresh-vs-co-stack reading of 'each subsequent effect triggers all effects before it' — every agent here is the same model and all read §11 the same way; a single popup read of the element multiplier on a third stage-3 entry (1.5076 vs 1.7096) would settle it independently, and it is the only same-model-residual with real damage weight; (b) the ⚑1 swap-cadence measurement (recipe already written: isolated nbo-solo video, count rounds in one 7s window); (c) doc hygiene — game-mechanics.md §10 still says elemAdvantageDamagePct sits in Damage-Up while damage-calculation.md §1c (MEASURED, superseding) says element bucket; the driver followed the measured doc, and §10's stale sentence should be reconciled by the upkeep skill. Ship it.",
+  "model": "kimi-code/k3"
+}

@@ -165,10 +165,11 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
               medium/large bossPelletProfile fights (UNIGEO coverage tables are the scope-lock
               boss silhouette only).
               PER-SHOT OVERRIDE (`coreOverride`, bypasses the band table): some hit types have their
-              OWN core rate independent of aim/range — a consolidated pellet bullet (dorothy-S, `coreRate`)
-              and attached-rocket EXPLOSIONS (Rapi: Red Hood, `storedHit.core` — MEASURED ~1/3 = 0.33,
-              they detonate on the boss body regardless of aim; 2026-07-16, DECISIONS). These pass
-              `coreOverride` so `acr` is that rate, not `acrFor(weapon, band)`.
+              OWN core rate independent of aim/range — a consolidated pellet bullet (dorothy-S,
+              `coreRate`). These pass `coreOverride` so `acr` is that rate, not `acrFor(weapon,
+              band)`. (Rapi: Red Hood's attached-rocket EXPLOSIONS consumed this path 2026-07-16
+              (`storedHit.core` 0.33) but were re-ruled core-INELIGIBLE 2026-08-04 — skill damage;
+              owner footage ruling, DECISIONS.)
         coreBonus = (coreAttackMultiplier − 100)/100 + Core Damage ▲ %/100   (base +100%)
 ```
 
@@ -186,11 +187,16 @@ rocket at each meter-full; rockets attached OUTSIDE Full Burst do NOT explode un
 they ACCUMULATE and the FIRST explosion of each FB is a BATCH of everything banked (this stack
 overlap is why explosions can't be visually counted). A rocket attached DURING FB explodes
 INSTANTLY (`storedHit.instantInFb` → the in-FB per-frame release path). The explosion is
-aim/range-independent, cores ~1/3 (`storedHit.core`, above), and crits at the caster's sheet rate
+aim/range-independent, does NOT core (skill damage — owner footage ruling 2026-08-04 overturning the
+2026-07-16 ~1/3 read), and crits at the caster's sheet rate
 (`storedHit.crit` — removes the stored-hit path's default crit-OFF exemption so the release crits like
-every other hit; consistency, DECISIONS 2026-07-16). The rocket ATTACH is a skill-damage
-hit and generates burst gauge like any skill hit — so the in-FB cadence subtly shifts Full Burst
-timing (a second-order coupling, DECISIONS 2026-07-16).
+every other hit; consistency, DECISIONS 2026-07-16). The rocket ATTACH is launchWeapon delivery:
+it CORES at the band-table rate, crits, and generates burst gauge like any skill hit — so the
+in-FB cadence subtly shifts Full Burst timing (a second-order coupling, DECISIONS 2026-07-16).
+Two 2026-08-04 owner rulings: the ▼60 in-window threshold is scoped to the 10s window of her OWN
+Stage-3 cast (`countInFbStage`, not any FB window), and her Stage-3 cast self-buffs Projectile
+Attachment Damage ▲421.2% for 10s (restored — the 2026-07-14 measured-inert verdict overturned;
+DECISIONS ATTACHMENT REWORK).
 
 **Flighted damage (2026-07-14):** some burst skills are projectiles with real flight time —
 Rapi: Red Hood's 2808% nuke lands ~0.4 seconds AFTER her banner, inside her own window, and
@@ -267,22 +273,26 @@ DamageUp = 1 + ( Attack Damage ▲ %
                + Pierce Damage ▲ %         [only for Pierce-tagged shots: static hasPierce,
                                             a live gainPierce window, or a swap-scoped
                                             weaponSwap.hasPierce shot (snow-white cannon)]
-               + Projectile Explosion ▲ %  [RL NORMAL attacks — see 1f]
+               + Projectile Explosion ▲ %  [explosion-flavored hits, plus RL NORMAL attacks — see 1f]
+               + Projectile Attachment ▲ % [attachment-flavored hits — see 1f]
                ) / 100
 ```
 
 The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with no dot, etc.
 
-### 1f. Projectile bucket
+### 1f. Projectile flavor routing (DamageUp addition)
 
-```
-Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
-```
-
-Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
-stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
-buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
-rocket/proc popup ratio test, 1.2491 = prediction to four digits).
+Projectile Explosion ▲ % / Projectile Attachment ▲ % compose ADDITIVELY into the DamageUp
+bucket (1e), flavor-scoped: an attachment hit reads ONLY Projectile Attachment ▲, an explosion
+hit ONLY Projectile Explosion ▲. Applies to explosion/attachment-_flavored_ hits (Rapi: Red
+Hood's projectiles, Anis: Star's stars). For plain rocket-launcher NORMAL attacks the Projectile
+Explosion buff applies too (also DamageUp) — MEASURED exactly (the buff-independent
+rocket/proc popup ratio test, 1.2491 = prediction to four digits). Owner popup ruling
+2026-08-04: a non-crit CORE Rapi:RH attach during her B3 window hit 5,057,974 in the
+control+carry recording — the additive composition reproduces it (−0.24%/+1.1% across buff
+states); the prior own-multiplicative-bucket model over-credited ~×1.6 (her hot read). This
+OVERTURNS the validation-era own-bucket rule. The event `projFactor` field is now a flavor
+MARKER (1 = unflavored), not a factor in the damage product.
 
 ### 1g. Taken and Distributed buckets (boss-side)
 
@@ -400,8 +410,11 @@ gauge fills, the chain opens (consuming the gauge): **gauge-full → 30f → Bur
 10-second window for the next (DATAMINED `burst_duration`); in-window selection is FIRST-READY (the
 stage-filler whose cooldown ends soonest, tie→leftmost — owner ruling 2026-07-21); an expired window
 collapses the chain back to a full refill. The Full Burst countdown starts 22f AFTER the Burst-3 cast
-(so instant burst-cast attacks land before it — no +50%). After it ends, the next chain cannot open for
-**~2.5s** (`POST_FB_CHAIN_DELAY_FRAMES` 150f — the earlier ~3s double-counted the 30f-pre-B1). Casts are
+(so instant burst-cast attacks land before it — no +50%). After it ends, generation unlocks IMMEDIATELY
+and the next chain opens the moment the refilled gauge is full — there is NO post-FB chain-open lock
+(owner ruling 2026-08-04, overturning the earlier fixed ~2.5-3s `POST_FB_CHAIN_DELAY_FRAMES` block: the
+observed gap was natural refill-from-zero, ~3-4s for a good team, compounded by video-offset confound;
+`ROTMODEL=floor` keeps the old block as an opt-in A/B arm). Casts are
 blocked while the boss is off-screen in a range transition — the one real
 source of run-to-run full-burst-count variance. Everything else is cooldown arithmetic, which is
 why full-burst counts are deterministic and pinned as regression asserts.

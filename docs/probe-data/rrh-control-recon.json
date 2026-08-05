@@ -64,7 +64,9 @@
       155.25, 171.0, 185.12
     ],
     "interval_s_avg": 14.25,
-    "interval_note": "very regular ~14s cadence; no intermediate/irregular splashes found at lowered threshold, so 13 is believed complete"
+    "interval_note": "very regular ~14s cadence; no intermediate/irregular splashes found at lowered threshold, so 13 is believed complete",
+    "time_base_note": "All splash_peak_times_s are VIDEO-relative, not fight time: the recording starts during the pre-fight intro/AMBUSH (~8.5s before the 3:00 clock starts; see video.fight_window_s). Fight-relative FB1 = 14.12 - ~8.5 = ~5.6s — matching the sim's first-FB ~5.4s and the owner's ~3-4s refill-from-zero + chain picture (owner ruling 2026-08-04). Cadences/intervals are unaffected by the offset.",
+    "offset_derivation": "2026-08-04: fight_window_s[0]=8.5 (processor) reconciled against sim first-FB 5.37s; owner confirmed the video's opening is pre-fight and excluded from the 3:00."
   },
   "red_rocket_meter": {
     "finding": "The red '%' box to the RIGHT of the crosshair is BOSS HP (labeled 'DRL ROY'), NOT the rocket meter. Early spawn intro animates the boss HP bar 0->100% (read 001->006->025->070% at t=9-12) which mimics a filling meter; in combat it reads 097->095->094%... (decreasing).",

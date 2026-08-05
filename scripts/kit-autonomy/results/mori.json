@@ -1,0 +1,112 @@
+{
+  "slug": "mori",
+  "kitDescription": "Mori is a Wind AR Supporter whose kit revolves around a self-shield status called Struggle: at battle start she gives herself a permanent shield worth 40.12% of her Max HP, and while she holds it, landing 60 normal attacks taunts the enemy and her Burst II tops the shield back up. If the shield is ever lost she can re-create it by bursting, and each time Struggle ends she permanently gains stacking Max HP. Her burst always hands the whole team +10.16% Sustained damage for 10 seconds, and whenever anyone breaks an enemy part she stacks a small team-wide Sustained damage buff and plants a 15-second damage-over-time on the highest-ATK enemy. On the partless, non-damaging scope-lock boss her shield never breaks and no parts exist, so in practice she is a normal-attack damage dealer whose only live support contribution is the 10-second team Sustained-damage buff on each of her own burst casts.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "start of battle: Shield 40.12% Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive/self/shield{maxHpPct:40.12}, no durationSec = permanent at scope (label precedent); the Struggle carrier",
+        "blindSaid": "S6 identical block; S5 structural pin (passive, self, 40.12, no duration) + no-heal inertness, all PASS",
+        "formulaCheck": "Shield effect, no damage bucket involvement; 'continuously' correctly maps to durationless (nothing in v1 removes shields, sim.ts MAX_SAFE_INTEGER window)",
+        "fireRateOk": true,
+        "explanation": "Fires once at t=0 as the prose demands; opens the requiresShielded window that makes Struggle permanent at scope. Inert-but-encoded is the honest treatment of an event-invisible status; M3's probe discriminates its presence (probe dead without it)."
+      },
+      {
+        "kitLine": "on burst, if NOT in Struggle: re-shield",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim: no negated-shield gate in the engine and the branch is unreachable at scope",
+        "blindSaid": "S6 skipped for the same two reasons; S5 asserts no ungated per-burst re-shield (structural + behavioural), PASS",
+        "formulaCheck": "Unreachable is provable: S1a shield is permanent, boss deals no damage, Struggle never lapses; an ungated encoding would fabricate per-cast shield events",
+        "fireRateOk": true,
+        "explanation": "Correctly recorded rather than approximated; the inertness half is tested and green."
+      },
+      {
+        "kitLine": "when Struggle ends: Max HP +5.06% x5",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim: no shield-end trigger; correct stack count at scope is 0, not 5",
+        "blindSaid": "S6 identical disposition + ⚑ recipe (re-derive only once shield depletion is modeled); S5 asserts zero maxHp buffs with maxStacks 5 on mori, PASS",
+        "formulaCheck": "Self Max HP has no offensive consumer in this kit (no atkOfMaxHpPct; ally-granted HP never feeds conversions per SSOT 1a), so even a mis-encode would be inert — but the 0-stack reading is the faithful one and both blinds agree",
+        "fireRateOk": true,
+        "explanation": "The nearest-wrong (always-on passive at cap) is exactly what both blinds and the driver refused to do."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "after 60 normals in Struggle: Taunt 4s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim: no taunt/aggro primitive, damage-inert",
+        "blindSaid": "S6 identical; S5 asserts mori's skill-bucket damage is exactly 0 across 180s (non-vacuous: her 60-round mag means a hitCount:60 trigger WOULD fire repeatedly), PASS",
+        "formulaCheck": "Taunt redirects boss targeting — no incoming-damage model exists at scope, so zero damage-path involvement is correct",
+        "fireRateOk": true,
+        "explanation": "No payload invented on the 60-hit cadence; the S5 inertness assertion is meaningful precisely because the cadence is live."
+      },
+      {
+        "kitLine": "part destroyed: allies Sustained +2.03% x5",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim: no part-destruction trigger; scope-lock boss is partless",
+        "blindSaid": "S6 identical + ⚑ recipe (partDestroyed trigger + footage-measured break frequency if parts ever in scope); S5 asserts zero 2.03 sustainedDamagePct applications + it.skip GAP, PASS",
+        "formulaCheck": "Trigger is physically impossible on the partless boss; any substitute trigger (interval/passive) would fabricate a permanent 10.15% team buff the kit never grants",
+        "fireRateOk": true,
+        "explanation": "Textbook documented gap — recorded, reasoned, asserted inert, active case pre-registered as skip."
+      },
+      {
+        "kitLine": "part destroyed: 23.23%/s sustained 15s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim: same part-destruction gap; a guessed-in 23.23%/s phantom DoT is the misread the battery kills",
+        "blindSaid": "S6 identical (would-be dot{atkPct:23.23,durationSec:15,intervalSec:1} shape documented, correctly NOT encoded); S5 asserts zero sustained/skill damage events from mori + it.skip GAP, PASS",
+        "formulaCheck": "Had it been encodable, sustained flavor + tick-crit-on + noRange would apply per SSOT 2c — moot at scope; the large phantom stream (~23%x15 per window) is correctly absent",
+        "fireRateOk": true,
+        "explanation": "The highest-value trap in this kit (a big invented DoT) is dead on both sides and pinned inert."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "in Struggle: recover Shield HP 15.04%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast/self/requiresShielded:true/shield{maxHpPct:15.04} — the branch that actually fires every cast at scope; M4 proves byte-identical totals with it stripped",
+        "blindSaid": "S6 block-for-block identical (gate, target, magnitude); S5 structural pin + no-recovery-event + strip-inertness probe, PASS. S2b had called UNMODELED acceptable; driver+S6 encoded it as kit-completeness instead",
+        "formulaCheck": "Gate (requiresShielded = Struggle proxy) always passes at scope, matching 'Activates when self is in Struggle status'; % of skill user's final Max HP correctly carried as maxHpPct; no HP pool exists so the effect is magnitude-record only — damage- and event-inert in v1",
+        "fireRateOk": true,
+        "explanation": "Faithful on trigger, gate, target, and magnitude, and provably inert. One nuance both sides share: 'recovers Shield HP' (a top-up) is encoded as a `shield` effect (a set), which per engine semantics re-fires the shielded event on every cast — unobservable at scope because the effect is self-targeted and mori has no shielded-event consumers, but it is the shared-prior residual to spot-check if an ally ever gains a 'when an ally is shielded' line. Documented in the driver caveat, so not a gotcha."
+      },
+      {
+        "kitLine": "NOT in Struggle: Max HP +10.09% 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim: negative status gate inexpressible, condition unreachable at scope, stat offensively inert",
+        "blindSaid": "S6 identical; S5 asserts zero 10.09-valued self Max HP buffApplies at any cast, PASS",
+        "formulaCheck": "Mirror of the S1b gate: Struggle is permanent, so this branch's correct fire count is 0; the ungated mis-encode is what both sides refused",
+        "fireRateOk": true,
+        "explanation": "Correct dead-branch handling, tested in the inertness direction."
+      },
+      {
+        "kitLine": "all allies: Sustained +10.16% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast/allies(incl. self)/buff{sustainedDamagePct,10.16,10s} — the one load-bearing line; M1/M2 pin cast-frame alignment, 10s window shape, allies-incl-self target set, and sustained-only bucket scope",
+        "blindSaid": "S6 identical encoding; S5 (adapted) asserts value 10.16, 4 targets per cast incl. self, cast-frame keying (never FB frames), exactly-600-frame windows, zero 10.16 attackDamagePct leakage — all PASS",
+        "formulaCheck": "SSOT 1e: Sustained Damage ▲ lives in the DamageUp bucket and gates on sustained-flavored instances only — sustainedDamagePct is the correct stat, NOT attackDamagePct. Burst-slot line with no activation clause keys to the owner's own burstCast, not fullBurstEnter (SSOT §8; S2b's #1/#2 traps both avoided). Window is wall-clock 10s, not round-scoped, not permanent",
+        "fireRateOk": true,
+        "explanation": "Fires on every mori cast in the sole-B2 fixture (>=4 casts/180s, strictly more often than chain completions), lands on all allies including self, expires exactly 600 frames after application. Discriminates against BOTH nearest-wrong models: fullBurstEnter rekey (fewer groups, FB-frame alignment) and generic attackDamagePct (leaks into jill's normal bucket in M2; S5's strip test keeps mori's own normals byte-identical)."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: all 9 kit lines are FAITHFUL (3) or DOCUMENTED_GAP (6), with the unmodeled set recorded verbatim plus reasons on both sides. The two independent blind re-derivations converged with the driver on the only live decision surface — S6's override is block-for-block identical to the shipped one, and the S5 adapted suite runs 12 PASS / 0 FAIL / 2 pre-registered GAP skips against it (the pristine artifact's module-load crash and shield-event reads are blind-side RECON_ERRORs, RE1–RE8, none attributable to the driver). The three shared-prior traps the S2b review named were all killed with discriminating evidence: the burst team buff is sustainedDamagePct on burstCast with an exact 10s window (counterfactuals for fullBurstEnter keying, generic bucket, and permanence all fail the shipped encoding), the part-destruction pair is dead rather than guessed-in, and the Struggle topology is correct-side-up (0 stacks, never 5; both not-in-Struggle branches silent). The residual the owner should spot-check is the one place driver and both blinds agreed by construction rather than by measurement: Struggle-as-requiresShielded proxy and 'recover Shield HP' encoded as a `shield` set-effect — both inert and unreachable-wrong at scope, but the shielded-event re-fire semantics would matter if a future teammate consumes 'when a shield is set' lines on mori, and the datamined cadence/gauge tuple (ammo 60, reloadFrames 81, gauge 20/40) remains unverified per S6's ⚑. Magnitudes are prose-exact everywhere (40.12/15.04/10.16/10s); nothing requires a measurement recipe for GO.",
+  "model": "kimi-code/k3"
+}

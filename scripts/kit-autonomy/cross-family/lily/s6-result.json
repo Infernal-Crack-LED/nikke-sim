@@ -1,0 +1,158 @@
+{
+  "slug": "lily",
+  "leakDetected": null,
+  "override": {
+    "slug": "lily",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 10
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 4,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 8,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": ["■ Affects all allies.", "Restores 10% of Cover HP."],
+      "burst": [
+        "■ Affects 1 random ally unit whose cover has been destroyed.",
+        "Rebuild Cover with 30% HP.",
+        "ATK ▲ 20% of the skill user's ATK for 10 sec."
+      ]
+    },
+    "caveats": [
+      "skill1: the kit text states NO activation clause — the 10s interval trigger is INVENTED (⚑ unmeasured); it scales her entire contribution.",
+      "skill1: '1 random ally' has no engine primitive — encoded as all-allies at 1/5 the kit value (20% → 4%), expectation-preserving.",
+      "burst: same 1-random-ally encoding (40% → 8%); the destroyed-cover branch is unreachable at scope lock and is unmodeled.",
+      "skill2: Cover HP repair is not modeled (no cover pool in v1) and is deliberately not wired as a recovery event — ⚑ open."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number.\n\nPure supporter — the kit carries NO damage line in any slot; her whole contribution is flat caster-ATK grants (casterAtkPct = % of Lily's OWN ATK, added flat to the target).\n\nS1 — '1 random ally unit, ATK ▲20% of the skill user's ATK for 5 sec'. Two ⚑. (a) TRIGGER IS INVENTED: the kit text carries no activation clause at all, so it is modeled as interval 10s per the no-'Activates when' convention. This single number scales her entire contribution (5s ⇒ permanent uptime, 20s ⇒ quarter uptime) — TOP-priority flag. (b) RANDOM TARGET: the schema has no random-ally primitive, so '1 random ally' is encoded EXPECTATION-PRESERVING — all 5 candidates (allies incl. self) at 20/5 = 4% each. Flat ATK is linear in the damage formula, so both the team total AND each unit's expectation match the stochastic line exactly; a deterministic single-ally stand-in (alliesTopAtk/alliesLowestHp) would be 5x hot on one unit and cold on the other four, which the ±3%-per-unit board reads as a per-unit error. The raw kit magnitude is preserved in this note so the 1/5 is auditable, not a calibration.\n\nS2 — 'all allies, Restores 10% of Cover HP' — UNMODELED. v1 models no incoming damage, so no cover is ever damaged and there is nothing to restore. Deliberately NOT wired as a {kind:'heal'} event: the line repairs the COVER's HP, a different object from a Nikke's HP, so under a literal read it does not satisfy on-recovery consumers ('when recovery takes effect', Crown-style). ⚑ open — if cover repair DOES proc those triggers, add {kind:'heal'} target allies on an interval block; that is a large team-ATK swing on any recovery-consumer comp, which is exactly why it is flagged rather than silently assumed either way.\n\nBURST — two mutually-exclusive branches keyed on whether ANY ally's cover has been destroyed. At scope lock nothing is ever destroyed (boss deals no damage in v1), so the destroyed-cover branch (Rebuild Cover 30% HP + ATK ▲20%/10s) is UNREACHABLE and sits verbatim in `unmodeled`; the 'if there is no ally unit whose cover has been destroyed' branch (ATK ▲40% of caster ATK for 10 sec) is the one that always fires. This follows the literal branch condition — it is not a pick of the larger number. Encoded with the same 1-random-ally rule: allies at 40/5 = 8% for 10s. Trigger is burstCast (her OWN Burst II cast), NOT fullBurstEnter — fullBurstEnter would over-credit every rotation a different B2 casts.\n\n⚑ CADENCE TUPLE (mandatory blind flag): datamined SMG ammo 120 / reloadFrames 81 / hitsPerShot 1 shipped as-is, no charFixes, rate-of-fire left at the SMG class default. Magazine empties in ~6s at the class rate — plausible, and the kit text carries no special-fire-mode flavor, so no escalation to probably-wrong. Her normals are near-irrelevant to her value but do drive her burst gauge.\n\nNot applicable this kit: noFb / noRange (no damage effects at all), Hit-Rate→core (no Hit Rate line), weapon-swap economy (no swap), stack/currency steady-state (no resource), multi-projectile split-vs-merge (no projectile line)."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Affects 1 random ally unit.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} with the buff value divided by the 5-candidate pool — expectation-preserving encoding of a random single target (no random primitive in the schema)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 20% of the skill user's ATK for",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct value 4 (=20/5) durationSec 5, on an INVENTED interval-10s trigger (kit states no activation clause) ⚑"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Affects all allies.",
+      "status": "SKIPPED",
+      "effectOrReason": "target header of the cover-repair line below; nothing modelable without that effect"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Restores 10% of Cover HP.",
+      "status": "SKIPPED",
+      "effectOrReason": "v1 has no cover/HP pool (nobody takes damage) so nothing is ever repaired; cover HP is a distinct object from a Nikke's HP, so it is read as NOT emitting a recovery event — ⚑ open, not an isolation-inertness skip"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects 1 random ally unit whose cov",
+      "status": "SKIPPED",
+      "effectOrReason": "branch gate is unreachable at scope lock — no cover is ever destroyed in v1, and there is no requiresCoverDestroyed primitive"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Rebuild Cover with 30% HP.",
+      "status": "SKIPPED",
+      "effectOrReason": "same unreachable branch; no cover pool exists to rebuild"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 20% of the skill user's ATK for",
+      "status": "SKIPPED",
+      "effectOrReason": "belongs to the destroyed-cover branch only; unreachable at scope lock (the live branch is the 40% one below)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects 1 random ally unit if there",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "branch condition is ALWAYS true at scope lock → trigger burstCast (own Burst II cast), target {kind:'allies'} with 1/5-scaled value"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 40% of the skill user's ATK for",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct value 8 (=40/5) durationSec 10"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "{kind:'interval', sec:10} (first fire t=10s)",
+      "reasoning": "ALWAYS-⚑ #2 — the kit text gives NO activation clause, so the trigger is invented. Repo convention maps a clause-free skill line to `interval`. 10s is the neutral midpoint: the 5s buff duration bounds the plausible range at 5s (continuous uptime) to ~20s (25% uptime), and this one number linearly scales her whole contribution, so it is the highest-leverage unknown in the file.",
+      "recipe": "Read the datamined skillCooldownsSec for her S1; failing that, a focus recording — count how many times the ATK-up icon appears on an ally over 180s (18 applications ⇒ 10s; 36 ⇒ 5s) and whether the buff ever lapses between applications."
+    },
+    {
+      "field": "skill1[0].target + effects[0].value",
+      "estimate": "target {kind:'allies'}, value 4 (kit 20% ÷ 5 candidates)",
+      "reasoning": "The schema has no random-target kind. Flat casterAtkPct is linear in the damage formula, so spreading 1/N of the magnitude over the N candidates reproduces both the team total and each unit's per-unit expectation of the stochastic line. A deterministic single-ally stand-in is wrong with p=4/5 and 5x hot on the unit it picks — unacceptable against a ±3%-per-unit board. Pool assumed to be 5 (NIKKE 'ally unit' includes self absent an 'except self' clause).",
+      "recipe": "Confirm the candidate pool from a focus recording — does the caster ever receive her own S1 buff? If self is excluded the divisor is 4 (value 5, burst value 10). If a Monte Carlo random-target primitive is ever added, replace this encoding with it and use cfg.seed."
+    },
+    {
+      "field": "burst[0].effects[0].value",
+      "estimate": "8 (kit 40% ÷ 5 candidates), durationSec 10",
+      "reasoning": "Same random-target encoding as skill1, applied to the live burst branch.",
+      "recipe": "Same as skill1's pool check; additionally confirm the 10s window is wall-clock and starts at her cast, not at Full Burst entry."
+    },
+    {
+      "field": "burst — branch selection (unmodeled destroyed-cover branch)",
+      "estimate": "Only the 'no destroyed cover' branch is modeled; the rebuild + ATK ▲20% branch is unmodeled",
+      "reasoning": "v1 models no incoming damage, so no ally cover is ever destroyed and the first branch's gate can never be satisfied. This is a scope-lock consequence, not a magnitude choice — the modeled branch happening to be the larger one falls out of the literal condition.",
+      "recipe": "Re-open if cover damage is ever modeled (boss damage / cover HP pool). Then the burst needs a cover-state gate and the branch split becomes live; until then a real fight can confirm the 40% branch by reading which ATK-up magnitude appears on the buff tooltip during her burst."
+    },
+    {
+      "field": "skill2 — Cover HP restore (recovery-consumer question)",
+      "estimate": "Not modeled (no block). Alternative if refuted: {kind:'heal'} target {kind:'allies'} on an interval block.",
+      "reasoning": "Hard rule 2 forbids skipping a heal on isolation-inertness, but this skip is on mechanic IDENTITY, not isolation: the line repairs the COVER's HP, a distinct object from a Nikke's HP, so under the literal-word rule it should not satisfy 'when recovery takes effect'. Wiring it as a heal would hand every recovery-consumer teammate (Crown-style ~21% team ATK) near-permanent uptime off a cover repair — a large silent over-credit if the read is wrong, hence flagged rather than assumed.",
+      "recipe": "Record a team pairing lily with an on-recovery consumer and NO unit-HP heal source; watch whether the consumer's on-recovery buff ever applies. If it does, add the heal effect (ticks:1) on the same interval trigger as S1 and log the delta."
+    },
+    {
+      "field": "cadence tuple — pullsPerSec / reloadFrames / rolling reload",
+      "estimate": "Datamined SMG defaults shipped unchanged: ammo 120, reloadFrames 81, hitsPerShot 1, class-default rate of fire; no charFixes written.",
+      "reasoning": "Mandatory unconditional blind flag (rate_of_fire and reloadFrames are the known-unreliable datamine fields). No escalation tell in the text: 120 rounds at the SMG class rate empties in ~6s, which is plausible for the class, and the kit carries no special-fire-mode flavor. Her cadence does not affect her buff output but does drive her burst-gauge contribution and therefore team rotation.",
+      "recipe": "Focus video — count rounds/min off the ammo counter and measure the reload gap frame-to-frame; also check reload_start_ammo / rolling-reload behavior. Note the 60fps quantization: effective rate = 60/ceil(60/nominal)."
+    }
+  ],
+  "model": "claude-opus-5"
+}
