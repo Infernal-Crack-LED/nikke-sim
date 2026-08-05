@@ -1,0 +1,138 @@
+{
+  "slug": "sin",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Duplicate 15.03% Max HP of highest ally",
+      "disposition": "FAITHFUL",
+      "scope": "Stat grant (Max HP), not attack-scoped; basis is the ALLY WITH THE HIGHEST MAX HP, not self — the quency-S1 'highest Max HP' shape, resolving at apply time to a flat grant of (15.03/100) × max(all units' static maxHp)",
+      "durationSemantics": "durationSec 5 (wall-clock 'lasts for 5 sec'); with ammo 60 AR + 81f reload the lastBullet cadence is ~6.3s, so uptime is high but non-permanent",
+      "triggerIdentity": "lastBullet (per-magazine, '■ Activates when firing the last bullet'); no FB gate, no everyN",
+      "targetSet": "self ('Affects self')",
+      "nearestWrongModel": "Basis misread: duplicating SIN'S OWN Max HP (self-basis targetMaxHpPct) instead of the highest-Max-HP ally's, or encoding 'Duplicate' as a heal/recovery event instead of a Max HP stat grant",
+      "distinguishingAssertion": "On each lastBullet reload boundary, a buffApply with stat 'maxHpFlat', targetSlug 'sin', value === 0.1503 × max(static maxHp across the 5-unit comp). RED under self-basis when sin is not the team's highest-HP unit (value would key off her own maxHp instead); RED if a recovery event fires (a heal would trip on-recovery consumers, a stat grant must not)",
+      "inertness": "Offensively inert: sin's kit has no atkOfMaxHpPct / HP→ATK scaler, so patching this buff out must not move sin's or any teammate's totalDamage (ally-granted Max HP never feeds a teammate's conversion per the e3 rule). Must NOT emit heal/recovery events",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Burst Gauge filling speed ▲ 16.17% 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Gauge-fill stat (burstGenPct — scales the unit's own gauge contribution), not damage",
+      "durationSemantics": "durationSec 5 (wall-clock)",
+      "triggerIdentity": "fullBurstEnd ('■ Activates when Full Burst ends') — NOT fullBurstEnter and NOT burstCast; fires on EVERY team Full Burst's end regardless of who cast",
+      "targetSet": "self only ('Affects self') — teammates' gauge contribution untouched",
+      "nearestWrongModel": "Keying to fullBurstEnter (buff live DURING the FB window instead of the 5s gauge-rebuild window after it) — same event count, wrong window, which is exactly where it moves rotation; second-nearest: targeting allies",
+      "distinguishingAssertion": "Every buffApply with stat 'burstGenPct' value 16.17 lands on the same frame as a fullBurstEnd event (and targetIdx resolves to sin only). RED under fullBurstEnter keying: the apply frame would coincide with fullBurstStart, ~10s earlier",
+      "inertness": "No buffApply of this stat on any non-sin target; zero applications before the first Full Burst ends",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Once: Recover 15.3% of attack damage as HP",
+      "disposition": "FAITHFUL",
+      "scope": "Lifesteal (defensive HP recovery) — no HP pool at scope, but a 'heal' effect must carry it so on-recovery triggers see it (tandem rule: never silently drop heal lines)",
+      "durationSemantics": "5-sec lifesteal window per cast; reasonable encodings are heal with ticks over 5s or a single recovery event — either way durationSec-bounded, not permanent",
+      "triggerIdentity": "burstCast ('■ Activates when using Burst Skill' — SIN'S OWN burst, stage 2), step 1 of an escalating chain; NOT fullBurstEnter",
+      "targetSet": "self — so it fires SIN's recovery trigger, not a teammate's (crown-style on-recovery consumers only fire when THEY receive the heal; sin's self-lifesteal must not feed them)",
+      "nearestWrongModel": "Keying the whole escalating chain to fullBurstEnter — in any comp where the OTHER Burst II unit (crown, in the control fixture) completes the chain, fullBurstEnter fires on rotations sin never cast, over-advancing the Once/Twice/Thrice counter and over-crediting uptime",
+      "distinguishingAssertion": "Count of escalating-chain applications === count of burstCast events whose caster is sin (srcSlot match). RED under fullBurstEnter keying whenever fullBurstStart count > sin's burstCast count. Also assert the heal targets sin (no recovery event on crown/liter/helm from this line)",
+      "inertness": "Zero damage events from this line; teammates' totals unchanged with it patched out (self-targeted heal cannot trip an ally's recovery trigger)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Twice: Incoming healing ▲ 51% for 5 sec",
+      "disposition": "UNMODELED",
+      "scope": "Incoming-heal amplification (defensive)",
+      "durationSemantics": "durationSec 5 per qualifying cast",
+      "triggerIdentity": "burstCast escalating step 2 (cumulative chain)",
+      "targetSet": "self",
+      "nearestWrongModel": "Force-encoding it under an existing StatKey (there is no incoming-healing stat in the effect schema) or as an extra heal effect that would emit spurious recovery events",
+      "distinguishingAssertion": "No buffApply carries a 51-valued stat from sin's kit; no additional recovery events appear on sin's 2nd+ burst casts beyond the step-1 lifesteal. Verbatim line present in the override's unmodeled.skill2",
+      "inertness": "Must move nothing — no schema consumer exists",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Three times: DEF ▲ 43.2% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Self DEF stat (defPct — inert in v1, self DEF never affects own damage); keep the stat buff per the future-consumer rule",
+      "durationSemantics": "durationSec 5 per qualifying cast",
+      "triggerIdentity": "burstCast escalating step 3. CRITICAL semantics: 'Each subsequent effect triggers all effects before it' = the escalating kind's exact contract — cast N applies steps 1..min(N,3), CUMULATIVE",
+      "targetSet": "self",
+      "nearestWrongModel": "Non-cumulative reading (cast 3 applies ONLY DEF, dropping the lifesteal+healing steps) or instant-max (all three steps from cast 1)",
+      "distinguishingAssertion": "On sin's 1st burst cast: step-1 heal only, NO defPct buffApply. On her 3rd cast: heal AND defPct 43.2 both apply on the same cast frame. RED under instant-max (defPct on cast 1) and RED under non-cumulative (no heal event on cast 3)",
+      "inertness": "defPct must not change sin's damage events (v1 inert); no ally receives it",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": ">4 enemies: Damage Taken ▲ 12.23% 5 sec",
+      "disposition": "UNMODELED",
+      "scope": "Boss DEBUFF benefiting the whole team (taxonomy rule 4) — but GATED on 'enemy unit(s) (excluding Nikkes) are more than 4'. The scope-lock fight is ONE partless boss, so the gate is never satisfied; the Block schema also has no enemy-count gate primitive, so the faithful encoding is unmodeled-verbatim, never an ungated debuff",
+      "durationSemantics": "durationSec 5 per cast, if it could ever fire",
+      "triggerIdentity": "burstCast, gated on enemy count > 4 (unmeetable at scope)",
+      "targetSet": "all enemies (boss debuff — buffApply with casterIdx===null when boss-held)",
+      "nearestWrongModel": "THE trap of this kit: shipping the line as an UNGATED damageTakenPct 12.23 boss debuff on every sin burst — that over-credits the ENTIRE team's damage by up to ~12% during each 5s window, the largest possible error in this kit by an order of magnitude",
+      "distinguishingAssertion": "A full controlComp(sin) run contains ZERO buffApply events with stat 'damageTakenPct' and value 12.23 (filter boss-held debuffs by stat+value since casterIdx/targetIdx are null). RED the moment the ungated model applies it on any cast",
+      "inertness": "Whole-team totals must be bit-identical with this line present vs stripped — it must move NOTHING at scope",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 176.32% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "Instant burst damage hit ('Affects enemies within attack range' — its own ■ block with NO activation clause, so it is UNCONDITIONAL on cast, NOT gated by the preceding >4-enemy header). Crits at caster's sheet rate, NO core (text lacks 'core strike'), no range bonus (riders force no-range)",
+      "durationSemantics": "Instant, once per cast",
+      "triggerIdentity": "burstCast (sin's own Burst II cast, cd 20s)",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Two plausible misreads: (a) letting the hit take the +50% Full Burst major — a burst cast lands BEFORE the FB window opens, so it is always FB-exempt (noFb); (b) folding it under the previous header's >4-enemy gate and dropping it entirely, zeroing sin's burst bucket",
+      "distinguishingAssertion": "On EVERY sin burstCast there is exactly one damage event with bucket 'burst', mult 176.32, fbMajorApplied === false, rangeApplied === false. RED under (a) if fbMajorApplied is true on any instance; RED under (b) if the event is absent",
+      "inertness": "Never cores (no core-bucket contribution); exactly one instance per cast (no per-FB or interval repetition)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Attract: Taunt all enemies for 5 sec",
+      "disposition": "UNMODELED",
+      "scope": "Taunt/aggro — no threat model exists and the boss's targeting never changes a damage value at scope",
+      "durationSemantics": "5 sec, irrelevant at scope",
+      "triggerIdentity": "lastBullet (shares skill1's header)",
+      "targetSet": "all enemies",
+      "nearestWrongModel": "Encoding taunt as a targetStatus or a boss damage-taken debuff 'to represent aggro'",
+      "distinguishingAssertion": "No targetStatus effect and no boss-held buffApply attributable to skill1; totals identical with the line stripped. Verbatim line present in unmodeled.skill1",
+      "inertness": "Moves nothing",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Duplicate 15.03% Max HP of highest ally",
+    "skill2:Burst Gauge filling speed ▲ 16.17% 5 sec",
+    "skill2:Once: Recover 15.3% of attack damage as HP",
+    "skill2:Three times: DEF ▲ 43.2% for 5 sec",
+    "burst:Deals 176.32% of final ATK as damage"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Attract: Taunt all enemies for 5 sec."
+    ],
+    "skill2": [
+      "Twice: Incoming healing ▲ 51% for 5 sec."
+    ],
+    "burst": [
+      "Activates when enemy unit(s) (excluding Nikkes) are more than 4. Affects all enemies. Damage Taken ▲ 12.23% for 5 sec."
+    ]
+  },
+  "notes": "Four places I expect a shared-prior misread. (1) THE big one: the burst's Damage Taken ▲ 12.23% is gated on MORE THAN 4 non-Nikke enemies — never true against the single partless scope-lock boss — and the Block schema has no enemy-count gate, so any encoding of it as a live ungated boss debuff over-credits the whole TEAM ~12% per 5s window; the test suite MUST include the absence assertion (no damageTakenPct 12.23 buffApply anywhere in a control run). (2) FIXTURE VALIDITY: sin is Burst II, but controlComp(carry) seats the carry in the B3 slot with crown fixed at B2 — the driver must verify from the event log that sin actually CASTS bursts in the chosen fixture (burstCast events with sin as caster), because three kit lines (both escalating steps and the 176.32% hit) are burstCast-keyed and a fixture where crown always wins the stage-2 pick renders them all silently untested; if the harness comp can't produce sin casts, the tests need a comp variant that can. (3) skill2 has TWO different triggers that both involve Full Burst vocabulary: the gauge-speed buff is fullBurstEND (fires after ANY team FB ends) while the escalating chain is burstCast (only sin's own casts) — collapsing either onto fullBurstEnter is the nearest-wrong for both and they diverge in opposite directions. (4) skill1's 'Duplicate' is a Max HP grant keyed to the HIGHEST-Max-HP ALLY (quency-S1 precedent: flat grant off max static maxHp, emitted as stat 'maxHpFlat'), not a self-basis buff and not a heal — and it is offensively inert since sin has no HP→ATK conversion, so its test is a value/basis assertion plus an inertness pin, not a damage assertion. All magnitudes (15.03/16.17/15.3/51/43.2/12.23/176.32) are literal kit text — DATAMINED tier, no ⚑ estimates needed; the only ALWAYS-⚑ field in play is cadence, which the base stats supply (AR, ammo 60, 81f reload ⇒ lastBullet every ~6.3s).",
+  "model": "claude-fable-5"
+}

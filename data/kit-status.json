@@ -6135,6 +6135,47 @@
         "temp": "COLD ▼"
       }
     },
+    "sin": {
+      "name": "Sin",
+      "burst": "II",
+      "weapon": "AR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/sin.json + scripts/kit-autonomy/manual-review/sin.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "unmodeled": {
+        "skill1": [
+          "Attract: Taunt all enemies for 5 sec. — no threat model in v1: the partless boss deals no damage and has no ally-targeting AI, so taunt has zero in-domain surface (nero N7 / delta-ninja-thief Attract precedent)."
+        ],
+        "skill2": [
+          "Twice: Incoming healing ▲ 51% for 5 sec. — the escalation step-2 payload has no carrier: the schema has no incoming-healing StatKey and heals are event-only (nero grumpy-cat ruling). The escalation GATE is still encoded (the 'burstUses' pool advances on every own cast), so steps 1 and 3 fire on exactly the casts the kit says they fire on."
+        ],
+        "burst": [
+          "Activates when enemy unit(s) (excluding Nikkes) are more than 4. Affects all enemies. Damage Taken ▲ 12.23% for 5 sec. — the enemy-count gate is NEVER satisfied at single-boss scope (1 enemy), so never-firing IS the faithful behaviour here; the schema also has no enemy-count primitive, and the nearest-wrong ungated damageTakenPct would over-credit the whole team ~12% per cast (absence canary in the test). ⚑2 OUT-OF-DOMAIN, recipe in the note."
+        ]
+      },
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged | kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check cluster | ⚑1 cadence tuple (AR rate_of_fire 720 = 12/s + ammo 60 + reloadFrames 81 datamine; drives pull count, S1 lastBullet cadence, gauge contribution) | ⚑2 OUT-OF-DOMAIN: burst Damage Taken ▲12.23%/5s gated on >4 non-Nikke enemies — never satisfiable at single-boss scope (zero impact); needs an enemy-count gate primitive if multi-target content enters scope | step-1 lifesteal (15.3%/5s) is modeled as self heal-HoT ticks:5 but is event-only and behaviorally silent (no recovery-event log kind; no consumer of sin's own recovery) | S1 Duplicate-Max-HP basis is provably value-tied to self-basis roster-wide (all Defenders share the max static-HP basis) — equivalence pinned, not discriminated | spot-check cluster | ⚑1 cadence tuple (AR rate_of_fire 720 = 12/s + ammo 60 + reloadFrames 81 datamine; drives pull count, S1 lastBullet cadence, gauge contribution) | ⚑2 OUT-OF-DOMAIN: burst Damage Taken ▲12.23%/5s gated on >4 non-Nikke enemies — never satisfiable at single-boss scope (zero impact); needs an enemy-count gate primitive if multi-target content enters scope | step-1 lifesteal (15.3%/5s) is modeled as self heal-HoT ticks:5 but is event-only and behaviorally silent (no recovery-event log kind; no consumer of sin's own recovery) | S1 Duplicate-Max-HP basis is provably value-tied to self-basis roster-wide (all Defenders share the max static-HP basis) — equivalence pinned, not discriminated",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "caveats": [
+        "skill1: 'Duplicate 15.03% Max HP' is mapped as a maxHpFlat grant (highestAllyMaxHpPct — quency precedent), not the shield channel: in-game this creates a shield, but the shield primitive's maxHpPct basis is caster-only and event-only; both channels are offensively inert for sin, and the roster-tie (all Defenders share the max static-HP basis) makes the highest-ally basis provably value-identical to a self-basis on every team",
+        "skill2: the burst-usage escalation is a 'burstUses' resource pool (+1 per own burstCast, gates read the PRE-increment value); the step-2 payload (Incoming healing ▲51%) is unmodeled for the missing StatKey, but the gate still advances — steps 1 and 3 fire on exactly the right casts",
+        "skill2: the step-1 lifesteal is a self heal-HoT (ticks:5, event-only) — behaviorally silent in v1 (no recovery-event log kind, and no unit consumes sin's own recovery)",
+        "burst: the 176.32% nuke is burstCast-keyed (her OWN cast), lands pre-Full-Burst and never takes the +50% FB major; its ■ block has NO activation clause, so it is NOT gated by the preceding >4-enemies header — 'enemies within attack range' collapses to the single partless boss"
+      ]
+    },
     "snow-crane": {
       "name": "Snow Crane",
       "burst": "II",

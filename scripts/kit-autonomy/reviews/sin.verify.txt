@@ -1,0 +1,12 @@
+S2d verify record. PRE-OVERRIDE (greenfield RED — module load throws 'sin: no override on disk — fixture is stale'; 0 tests collected). POST-S3 FINAL STATE below: 20/20 green.
+---
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-08-04-b[39m
+
+ [32m✓[39m scripts/tests/units/sin.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+[2m   Start at [22m 03:55:53
+[2m   Duration [22m 310ms[2m (transform 79ms, setup 0ms, import 254ms, tests 5ms, environment 0ms)[22m
+
