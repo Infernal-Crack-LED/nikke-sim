@@ -6665,6 +6665,326 @@ def marker_geometry_selftest():
 
 
 # ============================================================
+# DUMP-REPLAY FIDELITY -- can tracks.json reproduce the channels production actually counted?
+#
+# Every analysis arm in this file that reasons about `white`/`red`/`marker` reads a
+# count-pellets.py --dump-tracks tracks.json and re-derives those channels from the dump's
+# `tracks` + `cross_positions` + `params`. That is only legitimate if the re-derivation MATCHES
+# the `frame_counts` production actually emitted. This arm checks exactly that, per frame, and
+# -- when it does not match -- separates the two mechanisms that can cause it:
+#
+#   (1) SPLIT: the in-radius, is_pellet track total is the SAME but its white/red/marker split
+#       differs. `_track_components` stores `is_red` on a track ONCE, at creation, and never
+#       updates it, while `_frame_pellet_counts` classifies using the PER-FRAME component's
+#       `is_red` out of `frame_tracks`. --dump-tracks writes the track-level value, so a track
+#       whose components change colour mid-life replays under the wrong channel. Nothing enters
+#       or leaves the radius window, so the total is conserved -- that conservation IS the
+#       signature.
+#   (2) BOUNDARY: the total is NOT conserved. --dump-tracks rounds `xs`/`ys` to 0.1px, so a
+#       track sitting within a rounding step of `pellet_radius` or `marker_radius` can fall on
+#       the other side of `dist > radius` on replay. Signature: a track within
+#       --fidelity-boundary-eps of one of those two radii on that frame.
+#
+# ⚑ `marker_radius` is NOT persisted in a --dump-tracks `params` block at all (unlike
+# `pellet_radius`/`max_pellet_frames`/etc.), so replay has to assume count-pellets.py's default;
+# --fidelity-marker-radius exists to make that assumption explicit rather than silent.
+#
+# READ-ONLY / MEASUREMENT ONLY: this reports a divergence rate and attributes it to a mechanism.
+# It never touches count-pellets.py, read-pellets.ts, MARKER_MIN, debounce_shots, or any
+# constant/gate/default, and it stamps no verdict on the cold bias.
+DUMP_REPLAY_FIDELITY_FIXTURE = "scripts/tests/fixtures/pellets/dump-replay-fidelity-slice.json"
+DRF_DEFAULT_MARKER_RADIUS = 65.0   # count-pellets.py's --marker-radius default; not persisted
+DRF_BOUNDARY_EPS = 0.05            # half a 0.1px rounding step
+
+
+def _drf_frame_tracks(tracks, n_frames):
+    """frame index -> [(id, x, y, is_red, is_pellet)] for every track alive at that frame, read
+    straight off a --dump-tracks `tracks` list (`xs`/`ys` are indexed by frame - first)."""
+    out = collections.defaultdict(list)
+    for t in tracks:
+        for i, f in enumerate(range(t["first"], t["last"] + 1)):
+            if 0 <= f < n_frames and i < len(t["xs"]):
+                out[f].append((t["id"], t["xs"][i], t["ys"][i], bool(t["is_red"]),
+                               bool(t["is_pellet"])))
+    return out
+
+
+def _drf_recon_frame(entries, cross, pellet_radius, marker_radius):
+    """Replay `_frame_pellet_counts`' white/red/marker window for ONE frame from dumped tracks.
+
+    Deliberately the same shape as count-pellets.py's loop -- radius gate, then the is_pellet
+    (lifetime) gate, then red-inside-marker_radius vs red-outside vs white. `dists` carries every
+    in-frame track's distance so the BOUNDARY signature can be tested without a second pass."""
+    white = red = marker = 0
+    dists = []
+    if cross is not None:
+        for _tid, x, y, is_red, is_pellet in entries:
+            dist = math.hypot(x - cross[0], y - cross[1])
+            dists.append(dist)
+            if dist > pellet_radius or not is_pellet:
+                continue
+            if is_red:
+                if dist < marker_radius:
+                    marker += 1
+                else:
+                    red += 1
+            else:
+                white += 1
+    return {"white": white, "red": red, "marker": marker}, dists
+
+
+def _drf_score(name, frame_tracks, cross_positions, frame_counts, pellet_radius, marker_radius,
+               eps=DRF_BOUNDARY_EPS):
+    """Score one dump frame-by-frame. `frame_tracks` need only support `[frame]` returning the
+    entry list -- a live run passes the defaultdict `_drf_frame_tracks` builds, the selftest
+    passes the fixture's own per-frame dict, both replay through this same function."""
+    n = len(cross_positions)
+    n_scored = n_div = n_marker_div = n_marker_bearing = 0
+    n_split = n_boundary = n_unexplained = 0
+    boundary_gaps = []
+    divergent_frames = []
+    for f in range(n):
+        cross = cross_positions[f]
+        stored = frame_counts[f]
+        got, dists = _drf_recon_frame(frame_tracks[f], cross, pellet_radius, marker_radius)
+        if cross is None:
+            continue
+        n_scored += 1
+        if stored.get("marker", 0) > 0:
+            n_marker_bearing += 1
+        same = all(got[k] == stored.get(k, 0) for k in ("white", "red", "marker"))
+        if same:
+            continue
+        n_div += 1
+        if got["marker"] != stored.get("marker", 0):
+            n_marker_div += 1
+        got_total = got["white"] + got["red"] + got["marker"]
+        stored_total = sum(stored.get(k, 0) for k in ("white", "red", "marker"))
+        if got_total == stored_total:
+            n_split += 1
+            mech = "split"
+            gap = None
+        else:
+            gap = min((min(abs(d - pellet_radius), abs(d - marker_radius)) for d in dists),
+                      default=None)
+            if gap is not None and gap <= eps:
+                n_boundary += 1
+                mech = "boundary"
+                boundary_gaps.append(gap)
+            else:
+                n_unexplained += 1
+                mech = "UNEXPLAINED"
+        divergent_frames.append({
+            "frame": f, "mechanism": mech,
+            "stored": {k: stored.get(k, 0) for k in ("white", "red", "marker")},
+            "replayed": got,
+            "boundary_gap": None if gap is None else round(gap, 4),
+        })
+    return {
+        "dump": name, "pellet_radius": pellet_radius, "marker_radius": marker_radius,
+        "n_frames": n, "n_frames_scored": n_scored,
+        "n_divergent": n_div,
+        "n_marker_divergent": n_marker_div,
+        "n_marker_bearing_frames": n_marker_bearing,
+        # The rate that matters for any marker-channel analysis: divergence is concentrated on
+        # the sparse marker population, so a per-FRAME rate understates it several-fold.
+        "marker_divergence_rate": (round(n_marker_div / n_marker_bearing, 4)
+                                   if n_marker_bearing else None),
+        "frame_divergence_rate": round(n_div / n_scored, 4) if n_scored else None,
+        "n_split": n_split, "n_boundary": n_boundary, "n_unexplained": n_unexplained,
+        "max_boundary_gap": round(max(boundary_gaps), 4) if boundary_gaps else None,
+        "frames": divergent_frames,
+    }
+
+
+def _drf_pool(reports):
+    tot = lambda k: sum(r[k] for r in reports)  # noqa: E731
+    div, mb, md = tot("n_divergent"), tot("n_marker_bearing_frames"), tot("n_marker_divergent")
+    gaps = [r["max_boundary_gap"] for r in reports if r["max_boundary_gap"] is not None]
+    return {
+        "n_dumps": len(reports),
+        "n_frames_scored": tot("n_frames_scored"),
+        "n_divergent": div,
+        "n_marker_divergent": md,
+        "n_marker_bearing_frames": mb,
+        "marker_divergence_rate": round(md / mb, 4) if mb else None,
+        "frame_divergence_rate": (round(div / tot("n_frames_scored"), 4)
+                                  if tot("n_frames_scored") else None),
+        "n_split": tot("n_split"), "n_boundary": tot("n_boundary"),
+        "n_unexplained": tot("n_unexplained"),
+        "split_share_of_divergent": round(tot("n_split") / div, 4) if div else None,
+        "max_boundary_gap": round(max(gaps), 4) if gaps else None,
+    }
+
+
+def _drf_expected(reports, pooled):
+    return {
+        "pooled": pooled,
+        "dumps": [{k: r[k] for k in ("dump", "n_frames_scored", "n_divergent",
+                                     "n_marker_divergent", "n_marker_bearing_frames",
+                                     "marker_divergence_rate", "n_split", "n_boundary",
+                                     "n_unexplained", "max_boundary_gap")}
+                  for r in reports],
+    }
+
+
+def _print_dump_replay_fidelity(reports, pooled):
+    print("\nDUMP-REPLAY FIDELITY -- does tracks.json reproduce the dump's own frame_counts?")
+    print(f"  {'dump':28s} {'frames':>7s} {'diverg':>7s} {'mk-div':>7s} {'mk-frm':>7s} "
+          f"{'mk-rate':>8s} {'split':>6s} {'bound':>6s} {'unexp':>6s}")
+    for r in reports:
+        rate = "-" if r["marker_divergence_rate"] is None else f"{r['marker_divergence_rate']:.4f}"
+        print(f"  {r['dump']:28s} {r['n_frames_scored']:7d} {r['n_divergent']:7d} "
+              f"{r['n_marker_divergent']:7d} {r['n_marker_bearing_frames']:7d} {rate:>8s} "
+              f"{r['n_split']:6d} {r['n_boundary']:6d} {r['n_unexplained']:6d}")
+    print(f"\n  POOLED  {pooled['n_dumps']} dumps / {pooled['n_frames_scored']} frames scored")
+    print(f"    divergent frames          {pooled['n_divergent']} "
+          f"({pooled['frame_divergence_rate']} of frames)")
+    print(f"    marker-channel divergent  {pooled['n_marker_divergent']} of "
+          f"{pooled['n_marker_bearing_frames']} marker-bearing frames "
+          f"= {pooled['marker_divergence_rate']}")
+    print(f"    mechanism: SPLIT {pooled['n_split']} ({pooled['split_share_of_divergent']} of "
+          f"divergent) / BOUNDARY {pooled['n_boundary']} / UNEXPLAINED "
+          f"{pooled['n_unexplained']}")
+    if pooled["max_boundary_gap"] is not None:
+        print(f"    worst BOUNDARY gap to a radius: {pooled['max_boundary_gap']}px "
+              f"(eps {DRF_BOUNDARY_EPS})")
+
+
+def _drf_load_dump(path, marker_radius):
+    with open(path) as fh:
+        data = json.load(fh)
+    name = Path(path).resolve().parent.name
+    cross = data["cross_positions"]
+    frame_counts = data["frame_counts"]
+    pellet_radius = float(data["params"]["pellet_radius"])
+    frame_tracks = _drf_frame_tracks(data["tracks"], len(cross))
+    return name, frame_tracks, cross, frame_counts, pellet_radius, marker_radius
+
+
+def _drf_slim(name, frame_tracks, cross, frame_counts, pellet_radius, marker_radius, report,
+              n_control):
+    """Reduce a full dump to what the selftest replays: EVERY divergent frame (the population the
+    whole finding rests on) plus `n_control` evenly-spaced non-divergent frames (so a replay that
+    merely reported "everything diverges" would fail), each carrying its crosshair, its stored
+    frame_counts, and the raw per-frame track entries `_drf_recon_frame` consumes. Per-frame
+    independence is what makes a frame SUBSET an exact replay rather than an approximation."""
+    div = {fr["frame"] for fr in report["frames"]}
+    non_div = [f for f in range(len(cross)) if cross[f] is not None and f not in div]
+    step = max(1, len(non_div) // n_control) if non_div else 1
+    keep = sorted(div | set(non_div[::step][:n_control]))
+    return {
+        "dump": name, "pellet_radius": pellet_radius, "marker_radius": marker_radius,
+        "frames": {str(f): {
+            "cross": None if cross[f] is None else list(cross[f]),
+            "counts": {k: frame_counts[f].get(k, 0) for k in ("white", "red", "marker")},
+            "tracks": [list(e) for e in frame_tracks[f]],
+        } for f in keep},
+    }
+
+
+class _DRFSeq:
+    """Dict-backed stand-in for a full-length `cross_positions` / `frame_counts` / frame-tracks
+    view, indexable over exactly the fixture's committed frames.
+
+    ⚑ Indexing is POSITIONAL over the sorted kept frames, not by absolute frame number: the
+    fixture is a scattered SUBSET, and `_drf_score` walks `range(len(cross_positions))`. All
+    three views share one `frames` list, so position i means the same source frame in each --
+    which is what makes a subset replay exact, since `_drf_score` scores every frame
+    independently. The consequence is that a replayed report's `frames[].frame` is a slice
+    index rather than the dump's own frame number; nothing in `_drf_expected` reads it, and the
+    live path (real lists) is unaffected."""
+
+    def __init__(self, per_frame, key, frames):
+        self._d, self._key, self._frames = per_frame, key, frames
+
+    def __len__(self):
+        return len(self._frames)
+
+    def __getitem__(self, i):
+        v = self._d[self._frames[i]][self._key]
+        return [tuple(e) for e in v] if self._key == "tracks" else v
+
+
+def _drf_expand(d):
+    frames = sorted(int(k) for k in d["frames"])
+    per_frame = {int(k): v for k, v in d["frames"].items()}
+    return (d["dump"], _DRFSeq(per_frame, "tracks", frames),
+            _DRFSeq(per_frame, "cross", frames), _DRFSeq(per_frame, "counts", frames),
+            d["pellet_radius"], d["marker_radius"])
+
+
+def audit_dump_replay_fidelity(paths, marker_radius, n_control=200, save_fixture=None):
+    reports = []
+    slims = []
+    for p in paths:
+        name, ft, cross, fc, pr, mr = _drf_load_dump(p, marker_radius)
+        r = _drf_score(name, ft, cross, fc, pr, mr)
+        reports.append(r)
+        if save_fixture:
+            slims.append(_drf_slim(name, ft, cross, fc, pr, mr, r, n_control))
+    pooled = _drf_pool(reports)
+    if save_fixture:
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("count-pellets.py --dump-tracks tracks.json for each dump's own "
+                            "`tracks`/`cross_positions`/`frame_counts`/`params.pellet_radius`, "
+                            "sliced to every divergent frame plus evenly-spaced non-divergent "
+                            "controls (docs/probe-runs.md §25). Regenerate with "
+                            "analyze-pellet-tracks.py --dump-replay-fidelity <tracks.json...> "
+                            "--save-dump-replay-fidelity-fixture <path>."),
+                # Pin what the SLICE replays, not what the full dumps scored -- the selftest
+                # replays the slice, and a slice's control frames change its denominators.
+                "_expected": (lambda rs: _drf_expected(rs, _drf_pool(rs)))(
+                    [_drf_score(*_drf_expand(s)) for s in slims]),
+                "dumps": slims,
+            }, fh)
+        print(f"wrote dump-replay-fidelity fixture -> {save_fixture}")
+    _print_dump_replay_fidelity(reports, pooled)
+    return reports, pooled
+
+
+def dump_replay_fidelity_selftest():
+    """Constraint 9 self-validation: replay --dump-replay-fidelity over the committed slice (no
+    scratchpad access) and assert the pinned `_expected` dict AND the finding's two decisive
+    claims explicitly, so a fixture edit that moved either cannot hide behind dict equality:
+      * the arm DISCRIMINATES -- the committed control frames replay EXACTLY (a check that fails
+        the moment the reconstruction stops matching production at all), and
+      * every divergent frame is attributed to SPLIT or BOUNDARY, i.e. `n_unexplained == 0`, the
+        claim that the two mechanisms are a COMPLETE account rather than a partial one."""
+    with open(DUMP_REPLAY_FIDELITY_FIXTURE) as fh:
+        fx = json.load(fh)
+    reports = [_drf_score(*_drf_expand(d)) for d in fx["dumps"]]
+    pooled = _drf_pool(reports)
+    got = _drf_expected(reports, pooled)
+    ok = got == fx["_expected"]
+    if not ok:
+        print(f"  DIFF:\n    expected {json.dumps(fx['_expected'])}\n    got      {json.dumps(got)}")
+    n_control = sum(len(d["frames"]) for d in fx["dumps"]) - pooled["n_divergent"]
+    checks = [
+        ("every divergent frame attributed to SPLIT or BOUNDARY (n_unexplained == 0)",
+         pooled["n_unexplained"] == 0),
+        (f"{n_control} committed control frames replay EXACTLY (arm discriminates)",
+         n_control > 0 and pooled["n_divergent"] == sum(len(r["frames"]) for r in reports)),
+        ("the SPLIT mechanism dominates (> 90% of divergent frames)",
+         (pooled["split_share_of_divergent"] or 0) > 0.90),
+        (f"every BOUNDARY frame sits within {DRF_BOUNDARY_EPS}px of a radius",
+         pooled["max_boundary_gap"] is None or pooled["max_boundary_gap"] <= DRF_BOUNDARY_EPS),
+    ]
+    all_ok = ok and all(v for _, v in checks)
+    for label, v in checks:
+        print(f"  {'PASS' if v else 'FAIL'}  {label}")
+    _print_dump_replay_fidelity(reports, pooled)
+    print("  ⚑ RATES BELOW/ABOVE ARE SLICE RATES AND ARE ENRICHMENT-BIASED -- the slice keeps "
+          "EVERY divergent\n    frame but only a sample of the non-divergent ones, so its "
+          "denominators are not the dumps'.\n    The population figures are in docs/probe-runs.md "
+          "§25; re-derive them with --dump-replay-fidelity\n    over the full tracks.json set. "
+          "What this selftest pins is the NUMERATORS and the mechanism split.")
+    print("SELFTEST PASS" if all_ok else "SELFTEST FAIL")
+    return 0 if all_ok else 1
+
+
+# ============================================================
 # MISLOCK RATE -- docs/handoffs/2026-08-04-mislock-rate-PRECOMMIT.md
 #
 # What fraction of PRODUCTION shots have a mislocked crosshair? The detector is
@@ -7613,6 +7933,29 @@ def main():
                     help=f"write the committed replay slice (see {MARKER_GEOMETRY_FIXTURE})")
     ap.add_argument("--marker-geometry-selftest", action="store_true",
                     help=f"replay {MARKER_GEOMETRY_FIXTURE} and exit")
+    ap.add_argument("--dump-replay-fidelity", nargs="+", metavar="TRACKS_JSON",
+                    help=("DUMP-REPLAY FIDELITY (docs/probe-runs.md §25): does re-deriving "
+                          "white/red/marker from a --dump-tracks tracks.json reproduce the "
+                          "`frame_counts` production actually emitted? Scores every frame of "
+                          "every named dump and attributes each divergence to SPLIT (in-radius "
+                          "total conserved -- the per-frame is_red that --dump-tracks does not "
+                          "persist) or BOUNDARY (total not conserved -- the 0.1px xs/ys rounding "
+                          "flipping a radius test). Reports the marker-channel divergence rate, "
+                          "which is what any marker-semantics analysis off tracks.json inherits. "
+                          "READ-ONLY / MEASUREMENT ONLY: never touches count-pellets.py, "
+                          "read-pellets.ts, MARKER_MIN, debounce_shots or any constant."))
+    ap.add_argument("--fidelity-marker-radius", type=float, default=DRF_DEFAULT_MARKER_RADIUS,
+                    help=("marker_radius to replay with. A --dump-tracks `params` block does NOT "
+                          "persist it (unlike pellet_radius), so replay must assume "
+                          f"count-pellets.py's default (={DRF_DEFAULT_MARKER_RADIUS}); this flag "
+                          "makes that assumption explicit instead of silent."))
+    ap.add_argument("--fidelity-controls", type=int, default=200, metavar="N",
+                    help="non-divergent control frames per dump to commit into the fixture "
+                         "(default 200)")
+    ap.add_argument("--save-dump-replay-fidelity-fixture", metavar="PATH",
+                    help=f"write the committed replay slice (see {DUMP_REPLAY_FIDELITY_FIXTURE})")
+    ap.add_argument("--dump-replay-fidelity-selftest", action="store_true",
+                    help=f"replay {DUMP_REPLAY_FIDELITY_FIXTURE} and exit")
     ap.add_argument("--fade-screen", action="store_true",
                     help=("FADE-SCREEN GAP (docs/probe-runs.md §9A): every in-radius, non-red track "
                           "in the already-committed representative-audit-slice.json's `labelled` "
@@ -7717,6 +8060,13 @@ def main():
     if args.fade_screen_crops:
         fade_screen_crops(args.fade_screen_crops, args.fade_screen_crops_out)
         return 0
+    if args.dump_replay_fidelity_selftest:
+        raise SystemExit(dump_replay_fidelity_selftest())
+    if args.dump_replay_fidelity:
+        audit_dump_replay_fidelity(args.dump_replay_fidelity, args.fidelity_marker_radius,
+                                   args.fidelity_controls,
+                                   args.save_dump_replay_fidelity_fixture)
+        raise SystemExit(0)
     if args.marker_geometry_selftest:
         raise SystemExit(marker_geometry_selftest())
     if args.marker_geometry:

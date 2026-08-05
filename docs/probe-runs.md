@@ -5824,3 +5824,94 @@ that genuinely observed zero — resolving that needs active-backend metadata in
 output, which was **deliberately deferred** as a schema change outside this landing's hard stops.
 
 ⛔ Nothing here touches the cold bias, and no verdict is stamped on it.
+
+#### §25 `--dump-tracks` CANNOT FAITHFULLY REPLAY THE `white`/`red`/`marker` SPLIT — the third analysis/production divergence, fully accounted
+
+**2026-08-05.** Answers a prerequisite the §8 item-2 marker-semantics pass walks straight into:
+**§15's discriminator, and every other arm in `analyze-pellet-tracks.py` that re-derives channels
+from a `tracks.json`, reads a substrate that is not what production counted.** Same shape as §23's
+missing `band` channel and §11E/§24A's array-order tie-break — this is the **third** instance of the
+analysis path silently disagreeing with the production path, so it is recorded as a pattern, not an
+incident.
+
+##### §25A — The measurement
+
+`analyze-pellet-tracks.py --dump-replay-fidelity` re-derives each frame's `white`/`red`/`marker`
+from a dump's own `tracks` + `cross_positions` + `params` — exactly the way every consuming arm
+does — and compares it against the `frame_counts` that same dump emitted.
+
+| dump                     | frames scored | divergent | marker-divergent | marker-bearing frames | marker divergence rate |
+| ------------------------ | ------------- | --------- | ---------------- | --------------------- | ---------------------- |
+| `h4-marciana-structural` | 5473          | 89        | 61               | 440                   | **13.86%**             |
+| `h4-isabel-structural`   | 5601          | 149       | 93               | 693                   | **13.42%**             |
+| `h4-guilty-structural`   | 5614          | 86        | 63               | 599                   | **10.52%**             |
+| `g2-noir-structural`     | 5508          | 168       | 111              | 1004                  | **11.06%**             |
+| `groundtruth-f811-v4`    | 1801          | 15        | 13               | 58                    | **22.41%**             |
+| **pooled**               | **23,997**    | **507**   | **341**          | **2794**              | **12.20%**             |
+
+⚑ **Quote the marker rate, not the frame rate.** Per-frame divergence is 2.11% and reads as
+negligible; the marker channel is sparse, so on the population a marker analysis actually consumes
+the divergence is **12.20%** — a ~6× difference in the same data. (§4's NARROW-BEFORE-YOU-QUOTE trap,
+run in the other direction: here the raw denominator is the one that misleads.)
+
+##### §25B — ⚑ TWO MECHANISMS, AND THEY ARE A COMPLETE ACCOUNT — `UNEXPLAINED = 0`
+
+Every one of the 507 divergent frames is attributed, none left over:
+
+1. **SPLIT — 491 of 507 (96.8%).** `_track_components` writes `is_red` onto a track **once, at
+   creation**, and never updates it; `_frame_pellet_counts` classifies using the **per-frame**
+   component's `is_red` out of `frame_tracks`. `--dump-tracks` persists only the track-level value,
+   so a track whose components change colour mid-life replays under the wrong channel. Nothing
+   enters or leaves the radius window, so **the in-radius total is conserved — that conservation IS
+   the signature**, and it is what makes the mechanism testable rather than asserted.
+2. **BOUNDARY — 16 of 507 (3.2%).** `--dump-tracks` rounds `xs`/`ys` to 0.1 px, so a track within a
+   rounding step of `pellet_radius` or `marker_radius` lands on the other side of `dist > radius` on
+   replay. **All 16 sit within 0.0397 px of one of those two radii** (test threshold 0.05).
+
+⇒ The two mechanisms are not competing hypotheses; they partition the population exactly, and each
+carries its own independent signature (total-conservation; boundary proximity). That is what raises
+this above a code-read inference: the code read predicts both signatures, and both are observed at
+the predicted proportions on 23,997 frames.
+
+##### §25C — What it does and does not invalidate
+
+- ⚑ **§15's frame-1565 read STANDS.** Replayed directly: f1564 `marker` 1 = 1, **f1565 `marker` 3 =
+  3**, f1566 1 = 1, with `11110`/`11115`/`11117` at 57.7/47.1/63.6 px — the exact ids and distances
+  §15A tabulated. That frame is not in the divergent population.
+- ⛔ **It DOES bound any swept marker-semantics measurement off `tracks.json`** — the §8 item-2 pass
+  would inherit a ~12% mislabel rate on precisely the channel it is measuring. That is the reason
+  this was run before item 2, not after.
+- ⛔ **No pellet-count conclusion is disturbed.** `white`'s divergence rides the same SPLIT
+  mechanism but the cold-bias work scores `band`/`white` per shot, and the affected frames are 2.11%
+  of all frames. **No prior §-entry's number is restated here**, and nothing about the cold bias is
+  touched.
+- `marker_radius` is **not persisted in a `--dump-tracks` `params` block at all**, unlike
+  `pellet_radius`/`max_pellet_frames`. Replay must assume `count-pellets.py`'s default (65);
+  `--fidelity-marker-radius` makes that assumption explicit rather than silent. **A second,
+  independent schema gap**, found while measuring the first.
+
+##### §25D — Instrument and reproduction
+
+New arm on the existing instrument (constraint 9: extend, don't fork):
+`analyze-pellet-tracks.py --dump-replay-fidelity`, self-validated against the committed slice
+`scripts/tests/fixtures/pellets/dump-replay-fidelity-slice.json` and registered in
+`scripts/probe/pellet-selftest.sh` (now **26 arms**; `verify.sh` green). The slice commits **every**
+divergent frame plus 200 non-divergent controls per dump, so the selftest asserts the arm
+DISCRIMINATES (1000 control frames replay exactly) as well as that it runs.
+
+```sh
+PY=/Users/maxwellsutton/nikke-sim/scripts/probe/.venv/bin/python
+$PY scripts/probe/analyze-pellet-tracks.py --dump-replay-fidelity \
+  /Users/maxwellsutton/nikke-sim/scratchpad/pellets/{h4-marciana-structural,h4-isabel-structural,h4-guilty-structural,g2-noir-structural,groundtruth-f811-v4}/tracks.json
+# replay the committed slice -- no scratchpad access:
+$PY scripts/probe/analyze-pellet-tracks.py --dump-replay-fidelity-selftest
+```
+
+⚑ The selftest's printed RATES are **enrichment-biased** (the slice keeps every divergent frame and
+only a sample of the rest); the population figures are §25A's table. What the fixture pins is the
+NUMERATORS and the mechanism partition.
+
+**RECORDS a measurement. NOTHING ENACTS.** `count-pellets.py`, `read-pellets.ts`, `MARKER_MIN`,
+`debounce_shots` and the `--dump-tracks` schema are all UNCHANGED; no constant, gate, threshold or
+default moved; no existing fixture was touched. The schema fix this finding implies is a separate
+landing with its own blast-radius pass.
