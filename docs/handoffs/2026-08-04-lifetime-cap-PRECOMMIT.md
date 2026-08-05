@@ -378,7 +378,9 @@ owner-gated decision against the §5 sketch's own success criteria — not decid
 
 ## 8. PRE-OP GATE — `kimi-code/k3`, cross-family, `APPROVED-WITH-REVISIONS`
 
-Packet + verdict: `scratchpad/gates/2026-08-04-lifetime-cap/{preop-packet.md,preop-result.json}`.
+Packet + verdict were written to `scratchpad/gates/2026-08-04-lifetime-cap/` (gitignored) and were
+**LOST when the worktree was deleted on 2026-08-04**. Every revision is quoted verbatim in the table
+below, which is the surviving record.
 Driver is Claude, so the reviewer is Kimi per `/logic-gate`'s routing table — genuinely cross-family,
 not a same-family fallback. **All 7 revisions are mandatory and were executed BEFORE any number
 existed.** Recorded item-by-item so the post-op gate can check compliance:

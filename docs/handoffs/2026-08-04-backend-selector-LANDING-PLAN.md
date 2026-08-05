@@ -74,7 +74,8 @@ found, the exposure table must be recomputed for it **before** landing.
 `total`". THAT WOULD HAVE BEEN A SILENT NO-OP.** `total`'s activity test is `white + red > 0`, which
 is **false for every backend on exactly the frames the defect fires** — so no backend would be
 "active", the consensus would emit **0**, and the wrong answer would be preserved. Recorded rather
-than quietly replaced (`scratchpad/gates/2026-08-04-backend-selector/`, revision 1).
+than quietly replaced (gate revision 1; the raw packet was gitignored and **LOST** when the worktree
+was deleted on 2026-08-04 — the verdict's substance is quoted here and in §24E).
 
 **The landed design is the gate's `simplerPath`:** keep `best` for `white`/`red` on its existing key,
 and source each passenger channel **from the first backend whose OWN value for that channel is > 0**,
