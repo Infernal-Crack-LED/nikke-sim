@@ -2387,6 +2387,46 @@
       ],
       "board": null
     },
+    "emma": {
+      "name": "Emma",
+      "burst": "I",
+      "weapon": "MG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/emma.json + scripts/kit-autonomy/manual-review/emma.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "ticks:5/intervalSec:1 lifesteal cadence is an unmeasured convention (⚑3 — recipe: frame-read a recovery-consumer's refresh cadence across the 5s window after an emma burst); S1 attacked-5% cluster + S2 incoming-healing line out-of-domain (no incoming-damage model, no HP pool, no incoming-healing StatKey); heal magnitudes unmodeled by design (recovery events, not numbers)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "■ There is a 5% chance to activate when attacked. Affects all allies.\nRecovers 10.77% of the skill user's final Max HP as HP."
+        ],
+        "skill2": [
+          "■ Activates when above 90% HP. Affects all allies.\nIncoming healing ▲ 13.33% continuously."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "⚑ HoT tick granularity: the burst's lifesteal line is stated 'over 5 sec' with NO per-second clause, so ticks:5/intervalSec:1 is an ESTIMATE (marciana's 'over 3 sec' precedent). Tick count is the only thing that block contributes (no HP pool), and it directly scales how many times a teammate's on-recovery consumer fires per emma burst — over-stating ticks over-credits that teammate.",
+        "Heal MAGNITUDES (skill1 10.77% of the caster's final Max HP; burst 39.6% of the caster's final Max HP instant + 39.6% of attack damage lifesteal) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount, and v1 has no HP pool. Both burst lines are implemented for their TANDEM value only (they fire allies' 'recovery' triggers).",
+        "skill1's 'when attacked' trigger has NO engine primitive (TriggerDef has no on-damaged kind) and the v1 boss never acts — the 5% proc can never fire at scope lock. An interval-cadence approximation would fabricate a proc rate from nothing; the line is omitted, not proxied (jackal/maiden/admi attacked-cluster precedent).",
+        "skill2's 'above 90% HP' gate is trivially SATISFIED in v1 (no incoming damage ⇒ everyone sits at full HP), so the omission reason is NOT a dead gate — it is the missing incoming-healing stat primitive (no StatKey scales heal amounts the engine never quantifies). If an HP pool ever lands, the condition degenerates to a passive.",
+        "Zero damage lines and zero weapon-state modifiers in the whole kit — emma is the MG clean-weapon basis cell (harness CLEAN_WEAPON_TEAMS.b): this override is proven damage-neutral vs the bare weapon (CW1 in clean-weapons.test.ts pins the bursts-off solo half; her unit test pins the bursts-on in-team half). Her entire board footprint is cross-unit: recovery events on her own Burst I casts."
+      ]
+    },
     "emma-tactical-upgrade": {
       "name": "Emma: Tactical Upgrade",
       "burst": "I",

@@ -1,0 +1,58 @@
+{
+  "slug": "emma",
+  "skill1": [],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 5,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "There is a 5% chance to activate when attacked. Affects all allies.",
+      "Recovers 10.77% of the skill user's final Max HP as HP."
+    ],
+    "skill2": [
+      "Activates when above 90% HP. Affects all allies.",
+      "Incoming healing ▲ 13.33% continuously."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "Emma's entire kit is healing/heal-amplification. She carries NO damage line, NO ATK/crit/damage-bucket stat, and NO burst-CDR — at scope lock she is offensively inert EXCEPT as a source of `recovery` events for heal-synergy consumers (a teammate whose kit reads 'when recovery takes effect'). Her whole modeled value is therefore the burst's two recovery emissions; judge this override on TANDEM behaviour, not on her own damage.",
+    "The engine's `heal` effect models NO HP amount (v1 has no HP pool and the boss deals no damage), so both burst percentages (39.6% of caster final Max HP; 39.6% of attack damage over 5 sec) are recorded for kit completeness only and move no number by themselves.",
+    "⚑ burst HoT tick cadence (5 ticks @ 1 s) is an UNMEASURED convention — the kit says 'over 5 sec' and gives no tick rate. Tick COUNT is what drives an on-recovery consumer's refresh count, so this estimate is load-bearing for tandem comps.",
+    "⚑ skill1 is unmodeled: TriggerDef has no 'when attacked' primitive and the v1 boss deals no damage to the team, so a 5%-on-incoming-attack heal has no derivable firing rate. Modeled activations = 0. If a real incoming-damage model ever lands, this becomes a recurring recovery source and must be revisited.",
+    "⚑ skill2 is unmodeled: 'Incoming healing ▲ 13.33%' has no StatKey (no heal-magnitude channel exists) and heal amounts are not simulated. Its 'above 90% HP' gate is trivially TRUE at scope lock (nobody takes damage), so the only thing lost is the magnitude, not the condition.",
+    "⚑ Base-weapon cadence (MG, 300 ammo, reloadFrames 171) comes from the datamine, which is unreliable for rate_of_fire/reloadFrames; the MG wind-up ladder is an engine-side measured constant. Nothing in this override touches it."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Emma (emma) is an MG/Fire/Supporter/Burst I pure healer. Modeled: her burst's two recovery lines, both as `heal` effects on burstCast → allies (self included; the text says plain 'all allies' with no exception clause) — an instant single-event heal for the flat 'Recover HP equal to 39.6% of final Max HP' line, and a 5-tick/1 s heal-over-time for the 'Recover 39.6% of attack damage as HP over 5 sec' line, so an on-recovery consumer stays refreshed across the window. Deliberately unmodeled: skill1 (no 'when attacked' trigger primitive; the scope-lock boss deals no damage, so the 5% proc has no derivable rate) and skill2 ('Incoming healing ▲' has no StatKey and heal magnitudes are not simulated). No damage, stat, weapon-state, gauge, or CDR effect exists anywhere in this kit, so no fbGate/noFb/range decision applies."
+}

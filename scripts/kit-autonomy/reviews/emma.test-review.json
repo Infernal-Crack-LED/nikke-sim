@@ -1,0 +1,109 @@
+{
+  "slug": "emma",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "5% chance to activate when attacked",
+      "disposition": "UNMODELED",
+      "scope": "Heal proc — not attack-scoped; fires off INCOMING attacks on emma, not her own fire cycle.",
+      "durationSemantics": "Instant one-shot heal per proc; no duration.",
+      "triggerIdentity": "\"when attacked\" = on receiving a boss hit, 5% roll. The engine has NO incoming-attack trigger (TriggerDef has no on-damaged kind) and the v1 boss deals no modeled damage — the trigger is unrepresentable, not merely defensive.",
+      "targetSet": "All allies (including self) receive the heal; the amount scales off the SKILL USER's final Max HP.",
+      "nearestWrongModel": "Approximating it as {kind:'interval'} with an invented boss-attack-rate × 5% cadence (an ALWAYS-⚑ invented trigger+cadence), emitting periodic recovery events that feed crown's on-recovery consumer in every controlComp fixture — manufacturing team damage from a fabricated proc rate. Second-nearest: silently dropping the line without an unmodeled record.",
+      "distinguishingAssertion": "Zero heal/recovery events attributable to emma's skill1 across the full run: every recovery event received by crown must be traceable to a real modeled heal source (emma's burstCast heals, crown's own kit), never to an interval-keyed emma block; totals(res) for all four teammates identical with skill1 present vs stripped via withPatchedOverride.",
+      "inertness": "skill1 must move NOTHING — no damage, no recovery events, no gauge; the line lives verbatim in override.unmodeled.skill1.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 10.77% of user's final Max HP",
+      "disposition": "UNMODELED",
+      "scope": "Heal amount rider on the unrepresentable trigger above.",
+      "durationSemantics": "Instant.",
+      "triggerIdentity": "Inherits the when-attacked 5% proc — same unrepresentable trigger.",
+      "targetSet": "All allies; amount = 10.77% of CASTER's (emma's) final Max HP, not each target's.",
+      "nearestWrongModel": "Encoding the magnitude anyway as a casterMaxHpPct/maxHpFlat BUFF (a Max-HP grant) instead of a heal — a stat grant would be a permanently-applied buffApply, visible in the event log and potentially feeding a future HP-scaler, where the kit gives a transient HP recovery.",
+      "distinguishingAssertion": "No buffApply with stat 'maxHpFlat' sourced from emma's skill1 slot on any target; ally Max-HP-derived values (e.g. any atkOfMaxHpPct consumer) unchanged with emma present vs absent.",
+      "inertness": "No Max-HP buffApply events from skill1; no change to any teammate's HP-scaled ATK.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when above 90% HP",
+      "disposition": "UNMODELED",
+      "scope": "Condition gate on the incoming-healing buff below.",
+      "durationSemantics": "\"continuously\" = maintained passive while the condition holds; at scope lock nobody takes damage, so >90% HP is ALWAYS true — condition-trivial, equivalent to passive.",
+      "triggerIdentity": "HP-threshold condition; engine has no HP-pool gate, but since the condition is always satisfied in v1, {kind:'passive'} is the condition-faithful shape IF the effect were modelable.",
+      "targetSet": "All allies (including self).",
+      "nearestWrongModel": "Treating the >90%-HP clause as un-satisfiable in a sim with no HP pool and marking the line dead-by-gate — inverted: with no incoming damage everyone sits at 100%, so the gate is trivially OPEN, not closed.",
+      "distinguishingAssertion": "None needed at runtime (effect below is inert either way); the override's note/unmodeled record must state the gate is trivially satisfied at scope, not the reason for omission — the omission reason is the missing stat primitive.",
+      "inertness": "No block-level gate machinery (resourceGate/requiresShielded/etc.) misused to fake an HP threshold.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Incoming healing ▲ 13.33% continuously",
+      "disposition": "UNMODELED",
+      "scope": "A healing-TAKEN amplifier on allies — modifies heal AMOUNTS, which the engine does not model (heal effects carry no HP quantity); it does NOT create heals.",
+      "durationSemantics": "Continuous maintained passive (uptime 100% given the trivially-open >90% gate).",
+      "triggerIdentity": "Passive stat buff. Critically NOT a heal: it never fires anyone's 'recovery' trigger by itself.",
+      "targetSet": "All allies including self.",
+      "nearestWrongModel": "Encoding it as kind:'heal' (misreading \"healing … continuously\" as a heal-over-time) — that would emit recovery events every tick for the whole fight and keep crown's on-recovery buff permanently refreshed, a large team over-credit. Second-nearest: mapping to some existing StatKey (there is no incoming-healing StatKey in the schema) and shipping a phantom buffApply.",
+      "distinguishingAssertion": "With emma in controlComp, the count of recovery events crown receives while emma's burst is on cooldown and no other heal source fired is ZERO — crown's recovery-triggered buffApply timestamps must cluster only after real heal casts, never continuously; and no buffApply from emma's skill2 slot appears in the event log at all.",
+      "inertness": "Skill2 must emit zero events of any kind; stripping it via withPatchedOverride changes no unit's total. Line recorded verbatim in unmodeled.skill2.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recover HP equal to 39.6% of user's Max HP",
+      "disposition": "FAITHFUL",
+      "scope": "Instant team heal on burst cast. The AMOUNT is unmodeled by engine design (heal carries no HP quantity) — the EVENT is the modeled payload, because it drives teammates' 'recovery' triggers (crown sits in every controlComp fixture, so this line is live in every test).",
+      "durationSemantics": "Instant, ticks:1 (default).",
+      "triggerIdentity": "{kind:'burstCast'} — this sits in emma's OWN burst block, so it fires only on rotations EMMA casts Burst I. It is NOT fullBurstEnter: emma contends for the B1 slot with liter in controlComp, so the two triggers genuinely diverge — fullBurstEnter would fire the heal on every team FB including every liter-led rotation. Burst-cast effects land pre-FB-window (no +50%, irrelevant for a heal but relevant to event timing assertions).",
+      "targetSet": "{kind:'allies'} — all allies INCLUDING self (\"Affects all allies\", no except-self clause).",
+      "nearestWrongModel": "Keying the heal to {kind:'fullBurstEnter'} — with liter (another B1) in the fixture, that over-fires crown's on-recovery consumer on every full burst regardless of who cast B1, over-crediting crown/team damage on every liter rotation.",
+      "distinguishingAssertion": "Collect burstCast events by srcSlot and heal-driven recovery consequences on crown (her recovery-triggered buffApply): every emma-sourced recovery burst must coincide (same frame) with a burstCast event from emma's slot, and NO emma-sourced recovery event may coincide with a fullBurstStart whose preceding B1 cast was liter's. If liter wins every B1 rotation (plausible given her shorter CD), the faithful model produces ZERO emma heals while the nearest-wrong model produces one per FB — maximally separated.",
+      "inertness": "Emma's own totalDamage is unaffected by this line (a heal deals no damage); the boss-side event log gains no damage instances from emma's burst slot beyond gauge/rotation effects.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recover 39.6% of attack damage as HP, 5 sec",
+      "disposition": "FIX",
+      "scope": "Team lifesteal window: for 5s after emma's burst, allies recover HP proportional to damage they deal. Amount unmodeled (no HP pool); the load-bearing payload is that recovery events keep flowing across the 5s window — refreshing on-recovery consumers (crown) for the window, not just at the cast instant.",
+      "durationSemantics": "5-second window, wall-clock (durationSec-shaped, kit says \"over 5 sec\" — not rounds, not stacks).",
+      "triggerIdentity": "{kind:'burstCast'} same block as the instant heal; the window's recovery events are damage-coupled in-game, approximated as {kind:'heal', ticks:5, intervalSec:1} since allies fire continuously at scope (every second of the window contains ally damage). The tick-count approximation is a ⚑ convention, not kit-stated cadence.",
+      "targetSet": "All allies including self.",
+      "nearestWrongModel": "Collapsing it into the instant heal (a single ticks:1 recovery event at cast) — crown's on-recovery buff then gets exactly one refresh per emma burst instead of ~5 over the window, under-crediting her uptime; the symmetric over-read is a fight-length heal-over-time (\"continuously\"-style, duration ≥ 180s) that keeps crown permanently refreshed.",
+      "distinguishingAssertion": "After each emma burstCast, emma-sourced recovery events on crown span the [cast, cast+5s] window (≥2 distinct frames within 5s) and NONE occur later than cast+5s before the next emma cast — green under ticks:5/5s, red both under a single-instant collapse (only 1 frame) and under a permanent HoT (events at cast+10s+).",
+      "inertness": "No recovery events outside emma's burst-anchored 5s windows; no damage instance is created by this line (it is not a hitRepeat/lifesteal-damage — it converts damage TO healing, never healing to damage).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "burst:instant-team-heal-39.6pct-caster-maxhp",
+    "burst:lifesteal-window-5s-recovery-ticks"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "There is a 5% chance to activate when attacked. Affects all allies.",
+      "Recovers 10.77% of the skill user's final Max HP as HP."
+    ],
+    "skill2": [
+      "Activates when above 90% HP. Affects all allies.",
+      "Incoming healing ▲ 13.33% continuously."
+    ],
+    "burst": [
+      "Heal AMOUNTS (39.6% of caster final Max HP; 39.6% of attack damage) — engine heal effects carry no HP quantity; only the recovery EVENTS are modeled."
+    ]
+  },
+  "notes": "The shared-prior trap for emma is 'pure defensive healer → empty override, everything inert'. That is wrong in exactly one place, and it is in every fixture: controlComp fixes crown at B2, and crown carries an on-recovery consumer, so emma's burst heals are tandem-load-bearing team damage (failure-mode taxonomy #4). The three things the driver must get right: (1) trigger identity burstCast, NOT fullBurstEnter — this is not academic here because liter (another Burst I) is in the standard fixture, so the two readings diverge on every rotation; note also that as a B1 unit contending with liter's shorter cooldown, emma may cast rarely or never in controlComp — a test must first assert emma's burstCast events actually occur (or force them, e.g. patching liter out / a custom comp), else a burstCast-keyed heal is vacuously green; (2) the 5s lifesteal window must produce recovery events ACROSS the window (multi-tick heal), not one instant event and not a permanent HoT; (3) skill2's 'Incoming healing ▲ … continuously' is a heal-TAKEN amplifier with no engine StatKey — it must emit ZERO events, and the nearest-wrong encoding (kind:'heal' misread from 'continuously') would permanently refresh crown and is the single worst over-credit available in this kit. Skill1's 'when attacked' trigger has no engine primitive and the v1 boss deals no damage — any interval-cadence approximation is an invented ⚑ trigger feeding crown from fabricated events; the line belongs verbatim in unmodeled. All magnitudes are kit-literal (DATAMINED); nothing in this kit needs a CALIBRATED value. Emma is Fire vs the Fire control boss — no elemental-advantage interaction to model, and as a Supporter her static ATK basis is the 98,367 class anchor if any future consumer reads it.",
+  "model": "claude-fable-5"
+}
