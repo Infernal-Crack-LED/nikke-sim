@@ -1,0 +1,178 @@
+{
+  "slug": "rapi",
+  "leakDetected": null,
+  "override": {
+    "slug": "rapi",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 20
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 21.81,
+            "durationSec": 20
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 40
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 528.97
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 657.72,
+            "noFb": true
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 60.75,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Taunt for 5 sec."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1 trigger identity: kit says \"when attacked 20 time(s)\" — an INCOMING-hit counter (boss attacks on this unit), not an outgoing shot/hit counter. The sim models no boss damage output, so there is no incoming-hit channel; modeled as the engine's nearest available recurring counter (hitCount 20 = the owner's own rounds), which fires FAR more often than the real condition. Uptime is therefore an UNMEASURED estimate and likely OVER-credited.",
+      "⚑ skill2 trigger identity + cadence: the kit gives NO activation clause for the 528.97% hit, so it is modeled as an interval on the datamined skill cooldown (40s, the same field as the burst cd) with first fire at t=sec. Both the interval convention and the 40s period are unmeasured.",
+      "⚑ skill2/burst target selection: \"1 enemy unit with the highest final ATK\" is a multi-enemy selector; the scope-lock fight is single-target, so it resolves to the boss unconditionally. No modeling loss at scope, but the selector is not represented.",
+      "Burst cast damage is FB-exempt (noFb) per the standing rule that a burst cast lands before the Full Burst window opens; the self ATK buff is applied at cast and covers the FB window by timing."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rapi (AR/Fire/Attacker/Burst III, cd 40s). S1 = self ATK ▲21.81%/20s on a 20-count trigger whose real condition is INCOMING attacks (unmodellable at scope — no boss damage output); mapped to the engine's own-round hitCount 20 as the nearest recurring counter, so uptime is an over-credit risk. S2 = single 528.97% flat hit with no kit-stated trigger, modeled as interval 40s (datamined cd) ⚑; its Taunt is a threat/aggro mechanic with no damage channel at scope (unmodeled). Burst = 657.72% flat hit at cast (noFb — pre-FB by timing) plus self ATK ▲60.75%/10s covering the FB window. Riders take crit at the caster's rate by engine default and get no core (the kit says nothing about core strikes); noRange is engine-automatic and not set. FB-by-timing left ON (noFb unset on the S2 rider) per the default.",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when attacked 20 time(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount{count:20} — ⚑ IDENTITY MISMATCH: the kit counts INCOMING attacks on this unit; the sim has no boss-damage channel, so the nearest recurring counter (owner's own rounds) is used. Flagged, not silently equated."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'}"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 21.81% for 20 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 21.81, durationSec 20 (wall-clock seconds, not rounds — text says 'sec'). Unscoped ATK, self-only."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects 1 enemy with highest ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single-target selector collapses to the boss at scope lock; the 'highest final ATK' ranking has no representation (see caveats)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 528.97% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 528.97 on trigger interval{sec:40} ⚑ (no activation clause in the kit → interval per the taxonomy; period = datamined 40s cd). crit default (caster rate), no core (text says nothing about core strikes), FB by timing (noFb unset)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Taunt for 5 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Aggro/threat redirection. The sim models no boss targeting or incoming damage, so a taunt has no damage channel and no consumer — and it is NOT a heal/shield/DEF/HP/lifesteal/gauge/weapon-state line, so no hard rule forbids the skip. Verbatim in unmodeled.skill2. NOTE the interaction: it is also the only in-kit thing that would FEED the S1 'when attacked' counter — recorded, not modeled."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects the 1 enemy … highest ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — same single-target collapse as skill2."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 657.72% … Burst Skill damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 657.72, noFb:true (burst-cast damage lands before the FB window opens — standing rule), trigger burstCast, target enemy. Lands in the burst bucket via the slot."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects self. ATK ▲ 60.75% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "second block: trigger burstCast, target self, buff atkPct 60.75 durationSec 10 — a self buff in the unit's OWN burst block ⇒ burstCast (NOT fullBurstEnter), so it only fires on rotations this unit actually bursts."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "hitCount{count:20} on the owner's own rounds (stand-in)",
+      "reasoning": "The kit condition is 'when attacked 20 time(s)' — an INCOMING-hit counter. The v1 scope-lock boss deals no modeled damage to allies, so there is no incoming-attack event in the engine and no faithful representation exists. Every available trigger (hitCount = own rounds, shotFired, interval) counts something the kit does not. hitCount:20 preserves the literal number 20 but changes what is counted, and Rapi's AR fires ~12 rounds/s, so the stand-in re-triggers roughly every ~1.7s vs a real boss-attack cadence measured in many seconds — near-100% uptime instead of a duty cycle. Direction of error: OVER-credit on the 21.81% ATK buff.",
+      "recipe": "Record a scope-lock fight with Rapi and read her ATK-buff icon uptime (or the sim-vs-real ratio with the buff forced ON vs OFF). If the real buff is effectively permanent after the opening seconds, keep the stand-in (it converges) and say so; if it is intermittent, model it as an interval whose period = measured boss attack-cadence × 20, or drop the block to a fixed-uptime approximation with the measured duty cycle stated."
+    },
+    {
+      "field": "skill2[0].trigger",
+      "estimate": "interval{sec:40} (= the datamined burst cd field), first fire t=40s",
+      "reasoning": "The skill2 block carries NO activation clause — per the trigger taxonomy, a damage line with no activation clause is an interval, and the invented period must be flagged. 40s is the only cadence number the given data carries (base cd 40s), and it is the burst cooldown field, not a verified skill-2 cooldown — so both the period AND the first-fire phase (t=sec vs t=0) are conventions, not measurements. Over a 180s fight the choice between t=0 and t=40 is a whole extra proc (~4 vs ~5 hits, ~20% of this skill's contribution).",
+      "recipe": "Count 528.97%-magnitude popups in a focused recording of Rapi across the 180s fight; the popup count gives the true proc count and the first popup's timestamp gives the phase. Cross-check the datamined per-skill cooldown field (skillCooldownsSec) rather than the burst cd before trusting 40s."
+    },
+    {
+      "field": "skill2[0].effects[0] / burst[0].effects[0] — core eligibility",
+      "estimate": "core: unset (function damage takes no core)",
+      "reasoning": "Neither damage line says 'core strike damage', and the standing rule is that riders get NO core unless the text says so. Stated here only because both hits are large (528.97% / 657.72%) so a wrong core call would move this unit's total substantially.",
+      "recipe": "Read popup colour on a focused recording — a red 'CORE HIT' popup at the rider's magnitude would refute the default."
+    },
+    {
+      "field": "override.noFb (burst rider)",
+      "estimate": "noFb:true on the burst hit only; S2 rider left FB-by-timing (noFb unset)",
+      "reasoning": "Per the standing rule, burst-cast damage resolves before the Full Burst window opens, so it is FB-exempt by construction (not a per-kit measurement). The S2 rider is a normal function-damage proc and takes the +50% by landing timing per the default-ON convention; a per-kit noFb is measured-only and is NOT set here.",
+      "recipe": "If a future measurement shows the S2 rider's magnitude flat across in-FB vs out-FB landings, set noFb:true on it then — never before."
+    }
+  ],
+  "model": "claude-opus-5"
+}

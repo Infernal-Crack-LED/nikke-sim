@@ -6025,6 +6025,45 @@
         "temp": "HOT ▲"
       }
     },
+    "rapi": {
+      "name": "Rapi",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/rapi.json + scripts/kit-autonomy/manual-review/rapi.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Activates when attacked 20 time(s). Affects self.",
+          "ATK ▲ 21.81% for 20 sec."
+        ],
+        "skill2": ["Taunt for 5 sec."],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the entire attacked-20 cluster (self ATK ▲21.81%/20s) is UNMODELED — the sim has no incoming-damage model and no 'attacked N times' trigger primitive; the boss never acts. Nearest-wrong (hitCount 20 on hits she DEALS) is pinned in the spec test and provably fails",
+        "skill2: 'Taunt for 5 sec.' is UNMODELED — no taunt/aggro primitive; the single partless boss already takes everyone's attacks; its in-game role is feeding the attacked-counter (⚑1)",
+        "skill2: the 20s interval cadence is the datamined skillCooldownsSec.skill2 (the kit prose carries no number) — ⚑ cadence tuple",
+        "burst: block ORDER is load-bearing — the 657.72% nuke dispatches before the +60.75% self buff so the hit snapshots pre-buff ATK (pinned by the spec's reordered-block arm)",
+        "skill1/skill2/burst: AR cadence tuple (rate_of_fire 720 / reloadFrames 81 / ammo 60) is an unmeasured datamine estimate"
+      ],
+      "board": null,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "interval first-fire phase (t=sec) unmeasured at scope; S2 20s cadence is datamined skillCooldownsSec.skill2, not popup-counted; S1 attacked-20 cluster + taunt out-of-domain (no incoming-damage model)"
+    },
     "rapi-red-hood": {
       "name": "Rapi: Red Hood",
       "burst": "III",
