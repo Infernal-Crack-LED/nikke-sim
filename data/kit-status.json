@@ -26,8 +26,8 @@
     "band": {
       "±3% ✓": 5,
       "±5%": 4,
-      "±15%": 14,
-      "±8%": 12,
+      "±15%": 13,
+      "±8%": 13,
       ">15%": 10
     }
   },
@@ -3157,7 +3157,7 @@
         "teams": 0,
         "within3pct": 0
       },
-      "residual": "swap weapon fire cadence kit-silent (driver chargeTimeSec 0.25 = 4/s vs S6 ~20/s, 5x spread) = dominant unmeasured lever pacing swap DPS + Over Energy stage unlocks; Warm Up charge-speed stacks + stage Max HP buffs (2/3/7/10.5%) unmodeled (no stack-consume / auto-advance-stage primitive; low-single-digit % under-credit); swap-end ammo dump unmodeled (inert under shared-mag model; S6 agreed untriggerable). Spot-check: focus-video fire-rate read of Electric Power mode.",
+      "residual": "swap weapon fire cadence kit-silent (driver chargeTimeSec 0.25 = 4/s vs S6 ~20/s, 5x spread) = dominant unmeasured lever pacing swap DPS + Over Energy stage unlocks; Warm Up charge-speed stacks unmodeled (no stack-consume primitive; cadence-only — the swap is charge-speed-immune); swap-end ammo dump unmodeled (inert under shared-mag model; S6 agreed untriggerable). Spot-check: focus-video fire-rate read of Electric Power mode. (The stage Max HP buffs 2/3/7/10.5% closed 2026-08-04: resourceGate-gated riders on the modeled oeStage advance, feeding her own HP→ATK conversion — see DECISIONS.)",
       "unmodeled": {
         "skill1": [
           "Activates when performing a Full Charge attack. Affects self. Warm Up: Charge Speed ▲ 10% continuously. Stacks up to 5 times.",
@@ -3174,7 +3174,7 @@
         "skill1: the swap trigger (hitCount:5 + swapGate:'unswapped') captures the Warm Up 5-full-charge GATE; the counter is cumulative and swapGate gates firing not counting, so the re-swap phasing after the first cycle is approximate (⚑ low — magnitudes kit-exact).",
         "skill1: hasPierce on the swap is inert at scope lock (PIERCE_CORE_DOUBLE hard-off, no pierceDamagePct carrier → byte-identical totals); tagged for kit completeness, scoped to swap shots only.",
         "skill2/burst: the Over Energy STAGE is tracked (oeStage 0-4, advanced by hitCount:240 swap-gated = the kit-exact 240-swapped-normals-per-stage build rate) and feeds the burst additional damage (4× resourceGate-gated 934.76 riders = stage × 934.76). The wall-clock stage-UNLOCK timing rides the kit-silent swap cadence (⚑); the per-stage MAGNITUDE is kit-exact. hitCount counts cumulative shots and swapGate gates firing not counting, so the unlock phasing is approximate.",
-        "skill2: the stage Max HP buffs (2/3/7/10.5% cumulative) and the 0-100% Over Energy meter are UNMODELED — the HP buffs are a small second-order feed into the modeled atkOfMaxHpPct (≈+123 ATK at stage 4) with fragile per-stage timing (no auto-advance-stage primitive); the meter's only consumer (stage advance) is keyed directly to the 240-count.",
+        "skill2: the stage Max HP buffs (2/3/7/10.5% cumulative) are MODELED — four resourceGate-gated targetMaxHpPct SELF-grants (min 1/2/3/4, continuous, kit-cumulative) riding the oeStage advance, feeding her atkOfMaxHpPct conversion via liveMaxHp (own-kit, e3-admitted); they carry the SAME ⚑ stage-timing as the burst additional riders. The 0-100% Over Energy METER itself remains untracked — its only consumer (the stage advance) is keyed directly to the kit-exact 240 count.",
         "skill2: the Full Burst Attack Damage ▲ 52.14% is keyed to stageEnter:3 ('entering Burst Stage 3' = the B3 cast frame, fires on any stage-3 caster); burstCast (own-casts-only) and fullBurstEnter (~22f late) are the nearest wrong models (discriminated in the unit test)."
       ],
       "board": null
@@ -3508,7 +3508,7 @@
         "within3pct": 1
       },
       "reference": false,
-      "residual": "Burst Max-HP scaling is a deliberate conservative lower-bound | engine-core r1-r6: MP init +1 dropped (first burst 0 stacks), stackedNuke hpPct reads base not live Max HP, stackedNuke forced non-crit, MP-replenish trigger fold, cast-frame ordering, MP-above-1 threshold; spot-check = burst repeat-hits per cast in footage",
+      "residual": "Burst Max-HP scaling is a deliberate conservative lower-bound | engine-core r1/r3-r6: MP init +1 dropped (first burst 0 stacks), stackedNuke forced non-crit, MP-replenish trigger fold, cast-frame ordering, MP-above-1 threshold; spot-check = burst repeat-hits per cast in footage. (The hpPct base-vs-live residual landed 2026-08-04: the burst HP term reads live Max HP at cast per the kit's 'final Max HP' — see DECISIONS.)",
       "unmodeled": {
         "skill1": [
           "Activates when entering Burst Stage 1 with MP at 0. MP recovers by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.",
@@ -3532,13 +3532,13 @@
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 0.7482
+            "ratio": 0.7894
           }
         ],
         "n": 3,
-        "mean": 0.9228,
-        "mad": 0.0911,
-        "band": "±15%",
+        "mean": 0.9365,
+        "mad": 0.0774,
+        "band": "±8%",
         "temp": "COLD ▼"
       }
     },
@@ -3909,7 +3909,7 @@
         "teams": 0,
         "within3pct": 0
       },
-      "residual": "owner spot-check vs a recording: (1) post-increment order-of-operations read (cast N Overcurrent stack feeds cast N ladder; kit-ambiguous, documented); (2) flag-1 S2a caster-vs-own Max HP basis on ally grants (atkOfMaxHpPct resolves vs target own HP); (3) 10s swap-duration flag + ammo-1 reload shot economy",
+      "residual": "owner spot-check vs a recording: (1) post-increment order-of-operations read (cast N Overcurrent stack feeds cast N ladder; kit-ambiguous, documented); (2) 10s swap-duration flag + ammo-1 reload shot economy. (The former flag-1 — S2a caster-vs-own Max HP basis — was settled 2026-08-04: the kit is caster-scaled, owner ruling; S2-A is now atkOfCasterMaxHpPct, a flat add of her live Max HP at cast. See DECISIONS.)",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
@@ -5056,14 +5056,14 @@
         "teams": 0,
         "within3pct": 0
       },
-      "residual": "same-model spot-checks (judge): game-side 60-normal-attacks hits-vs-pulls (count 60 vs 120) flagged by all parties, inert; S1 self-HP-buff vs shield reading — the sim consumes neither, the line moves no damage either way; S2 8s cadence is datamined not prose — the one number a frame-read of a real quency fight could overturn; S1 highest-ally-HP basis is a missing-primitive flag (exact only when quency holds the team highest Max HP, inert)",
+      "residual": "same-model spot-checks (judge): game-side 60-normal-attacks hits-vs-pulls (count 60 vs 120) flagged by all parties, inert; S1 self-HP-buff vs shield reading — the sim consumes neither, the line moves no damage either way; S2 8s cadence is datamined not prose — the one number a frame-read of a real quency fight could overturn. (The S1 highest-ally-HP basis missing-primitive flag closed 2026-08-04: new StatKey highestAllyMaxHpPct resolves the exact basis — see DECISIONS.)",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
         "burst": []
       },
       "caveats": [
-        "skill1: 'Duplicates 12.42% of the Max HP of the Nikke with the highest Max HP' is a temporary SELF HP-buffer grant (cross-family-converged on a self Max-HP buff; a shield reading was set aside). Modeled as hitCount-60 self casterMaxHpPct 12.42 dur 10. DAMAGE-INERT (no atkOfMaxHpPct consumer, no damage-taken in v1) but observable — the spec pins trigger/value/duration/cadence. ⚑ BASIS: kit source is the HIGHEST-Max-HP ally; no StatKey expresses an ally-scaled HP source, so casterMaxHpPct resolves to % of quency's OWN Max HP — exact only when she holds the team's highest Max HP; inert either way (completeness gap, not accuracy).",
+        "skill1: 'Duplicates 12.42% of the Max HP of the Nikke with the highest Max HP' is a temporary SELF HP-buffer grant (cross-family-converged on a self Max-HP buff; a shield reading was set aside). Modeled as hitCount-60 self highestAllyMaxHpPct 12.42 dur 10. DAMAGE-INERT (no atkOfMaxHpPct consumer, no damage-taken in v1) but observable — the spec pins trigger/value/duration/cadence. BASIS RESOLVED 2026-08-04: highestAllyMaxHpPct (new StatKey, the highestAllyAtkPct HP analog) resolves the flat off the team's highest STATIC maxHp at apply time — exact in every comp; the pre-2026-08-04 casterMaxHpPct own-basis stand-in is now the spec's counterfactual. Still inert either way.",
         "skill1: ⚑ 'after 60 normal attacks' hits-vs-pulls — the engine hitCount counts HITS (adds hitsPerShot per pull, sim.ts:3782), so count 60 = 60 hits = 30 pulls; if the kit means 60 SHOTS the threshold is 120. Inert either way (S1 moves no damage).",
         "skill2: ⚑ interval first-fire phase — the engine fires interval sec:8 first at t=8 (convention, not t=0); a wrong phase rescales only the opening ramp (negligible). The 8s cadence is DATAMINED (skillCooldownsSec.skill2 = 8), not prose. 'highest FINAL ATK' → byFinalAtk:true (live effectiveAtk at proc, A3 literal-word ruling); self-inclusive pool but quency does not rank top-2.",
         "burst: the Max HP ▲ 43.87% line is modeled (targetMaxHpPct dur 5) but DAMAGE-INERT — ally-granted maxHpFlat is excluded from live Max HP and feeds atkOfMaxHpPct only when caster===target (self). Only the Critical Damage ▲ 29.9% line moves damage. Both ride one burstCast block on the same two highest-final-ATK allies.",
@@ -5620,14 +5620,8 @@
       "residual": "coin-exclusivity (does 6.65% lapse at Shield Coin @30FC? med); Shield-Coin burst-rider heal asymmetry (20.1% omits no-restore clause, could arm crown recovery; med); ally-held negative damageTakenPct inert (low)",
       "unmodeled": {
         "skill1": [],
-        "skill2": [
-          "Coin-state progression itself (Sword Coin → Shield Coin at 30 Full Charges → Double Sword Coin at 5 own bursts in Shield Coin) is not tracked as engine state; the coin-gated lines are encoded on their nearest trigger with the gate approximated (all inert — see note flag 3)"
-        ],
-        "burst": [
-          "Activates when in Sword Coin status. Affects all allies. Max HP ▲ 10.15% of the skill user's Max HP without restoring HP, lasts for 10 sec (casterMaxHpPct ALLY grant; offensively inert AND coin-state-gated — the engine tracks no coin state, so the per-tier burst rider cannot be gated precisely; documented rather than fired every cast, which would over-credit the cadence)",
-          "Activates when in Shield Coin status. Affects all allies. Max HP ▲ 20.1% of the skill user's Max HP for 10 sec (casterMaxHpPct ALLY grant, offensively inert, coin-state-gated; HEAL ASYMMETRY ⚑ — this rider ALONE omits 'without restoring HP', so literally it also restores HP and could arm on-recovery consumers, but it is Shield-Coin-gated which the engine cannot track and the marginal recovery-consumer impact is small — see note flag 2)",
-          "Activates when in Double Sword Coin status. Affects all allies. Max HP ▲ 30.02% of the skill user's Max HP without restoring HP, lasts for 10 sec (casterMaxHpPct ALLY grant; offensively inert, coin-state-gated)"
-        ]
+        "skill2": [],
+        "burst": []
       },
       "board": {
         "records": [

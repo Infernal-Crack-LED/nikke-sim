@@ -26,12 +26,18 @@
 //       so it is capped — not unlimited, not 1), the all-ally scope, the shotFired cadence (one
 //       application per shot per ally) and the continuous (no-expiry) duration. Ally-granted Max
 //       HP is offensively inert by the cindy e3 rule, so the line's only damage path is mom's OWN
-//       stacks feeding her own M3 atkOfMaxHpPct — the buff-application signature is the pin.
+//       stacks feeding her own M3 caster-Max-HP conversion basis — the buff-application signature
+//       is the pin.
 //   M2  stageEnter:3, NOT burstCast: the value-10 buff fires EXACTLY on the B3 caster's (ada's)
 //       cast frames, which are distinct from mom's own B2 cast frames. A burstCast-keyed model
 //       fires on mom's frames — the frame-set equality is the discriminator.
-//   M3  the stat IS atkOfMaxHpPct (ATK from Max HP), not atkPct/casterAtkPct; burstCast-keyed
-//       (fires on mom's B2 frames), all-ally scope, 15 sec.
+//   M3  the stat IS atkOfCasterMaxHpPct — "ATK ▲ 1% of the SKILL USER'S final max HP" is
+//       CASTER-basis: it arrives as a FLAT casterAtkPct-routed ATK add of 1% of mom's LIVE Max HP
+//       at each cast (owner ruling 2026-08-04: the shipped target-own atkOfMaxHpPct was a misread
+//       of the caster-scaled kit text). Her own S1 stacks feed the basis (self-granted Max HP is
+//       the one case the e3 rule admits), so the flat is uniform across all three allies per cast
+//       and GROWS across successive casts as her stacks accrue. burstCast-keyed (mom's B2 frames),
+//       all-ally scope, 15 sec.
 //   M4  Overcurrent: self-ONLY scope (targetIdx === mom, no ally shares it), stack cap 5 (maxes
 //       at 5 despite ~10 burst casts), continuous (no expiry), one stack per burst cast.
 //   M5  gauge generation is carried by data/gauge-per-shot.json (helm-H3 precedent), NOT an
@@ -134,10 +140,21 @@ const momS1BOnBurstCast = withPatchedOverride(SLUG, (ov) => {
 /** M3 reference: S2-A ATK-from-HP line removed. */
 const momNoS2A = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
-  ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'atkOfMaxHpPct'));
+  ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'atkOfCasterMaxHpPct'));
   if (ov.skill2.length === before) {
-    throw new Error('mom S2-A atkOfMaxHpPct block missing — fixture is stale');
+    throw new Error('mom S2-A atkOfCasterMaxHpPct block missing — fixture is stale');
   }
+});
+/** M3 counterfactual: the PRE-2026-08-04 model — target-own atkOfMaxHpPct (a percent stat
+ *  re-read against each holder's own Max HP) instead of the caster-basis flat add. */
+const momS2ATargetOwn = withPatchedOverride(SLUG, (ov) => {
+  const b = ov.skill2.find((x: any) => hasStat(x, 'atkOfCasterMaxHpPct'));
+  if (!b) {
+    throw new Error('mom S2-A atkOfCasterMaxHpPct block missing — fixture is stale');
+  }
+  b.effects
+    .filter((e: any) => e.stat === 'atkOfCasterMaxHpPct')
+    .forEach((e: any) => (e.stat = 'atkOfMaxHpPct'));
 });
 /** M4 reference: S2-B Overcurrent line removed. */
 const momNoS2B = withPatchedOverride(SLUG, (ov) => {
@@ -228,6 +245,7 @@ const base = run();
 const noS1A = run({ [SLUG]: momNoS1A });
 const s1BOnBurstCast = run({ [SLUG]: momS1BOnBurstCast });
 const noS2A = run({ [SLUG]: momNoS2A });
+const s2ATargetOwn = run({ [SLUG]: momS2ATargetOwn });
 const noS2B = run({ [SLUG]: momNoS2B });
 const s2BAllies = run({ [SLUG]: momS2BAllies });
 const noSwap = run({ [SLUG]: momNoSwap });
@@ -299,10 +317,22 @@ describe('maxwell-ordinary-mechanic — kit spec', () => {
     });
   });
 
-  describe('M3 — S2 Burst Skill grants all allies ATK ▲ 1% of final Max HP for 15 sec', () => {
-    const applied = momBuffs(base.events, 'atkOfMaxHpPct', 1);
+  describe("M3 — S2 Burst Skill grants all allies ATK ▲ 1% of the SKILL USER'S final Max HP for 15 sec", () => {
+    // Caster-basis: a FLAT casterAtkPct-routed add of 1% of mom's LIVE Max HP, snapshotted at
+    // each cast. Her own S1 stacks (self-granted maxHpFlat — the one case the e3 rule admits)
+    // feed the basis, so the expected flat at a cast frame is 1% × (base + stacks × 1% base).
+    const applied = momBuffs(base.events, 'casterAtkPct');
+    const ownGrants = momBuffs(base.events, 'maxHpFlat').filter(
+      (b) => b.targetIdx === MOM
+    );
+    const stacksAt = (f: number) => {
+      const upTo = ownGrants.filter((b) => b.frame <= f);
+      return upTo.length > 0 ? upTo[upTo.length - 1].stacks : 0;
+    };
+    const expectedFlat = (f: number) =>
+      (1 / 100) * (momMaxHp + stacksAt(f) * (1 / 100) * momMaxHp);
 
-    it('is the HP-scaling ATK stat (atkOfMaxHpPct), burstCast-keyed, all allies, 15 sec', () => {
+    it('is a flat add of 1% of mom LIVE Max HP at each cast, uniform across all three allies', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect(distinctFrames(applied)).toEqual(momFrames);
       expect([...new Set(applied.map((b) => b.targetIdx))].sort()).toEqual([
@@ -311,10 +341,31 @@ describe('maxwell-ordinary-mechanic — kit spec', () => {
       expect([
         ...new Set(applied.map((b) => b.expiresFrame! - b.frame)),
       ]).toEqual([15 * FPS]);
+      for (const b of applied) {
+        expect(b.value).toBeCloseTo(expectedFlat(b.frame), 6);
+      }
     });
 
-    it('DISCRIMINATING: removing the line strips every atkOfMaxHpPct grant', () => {
-      expect(momBuffs(noS2A.events, 'atkOfMaxHpPct').length).toBe(0);
+    it('GROWS across casts as her S1 stacks accrue (the basis is live, snapshotted per cast)', () => {
+      const perCast = momFrames.map(
+        (f) => applied.find((b) => b.frame === f)!.value
+      );
+      expect(perCast.length).toBeGreaterThanOrEqual(2);
+      for (let i = 1; i < perCast.length; i++) {
+        expect(perCast[i]).toBeGreaterThanOrEqual(perCast[i - 1]);
+      }
+      expect(perCast[perCast.length - 1]).toBeGreaterThan(perCast[0]);
+    });
+
+    it('DISCRIMINATING: removing the line strips every mom casterAtkPct grant', () => {
+      expect(momBuffs(noS2A.events, 'casterAtkPct').length).toBe(0);
+    });
+
+    it('DISCRIMINATING: the old target-own model (atkOfMaxHpPct) emits no flat add at all', () => {
+      expect(momBuffs(s2ATargetOwn.events, 'casterAtkPct').length).toBe(0);
+      expect(
+        momBuffs(s2ATargetOwn.events, 'atkOfMaxHpPct', 1).length
+      ).toBeGreaterThan(0);
     });
   });
 

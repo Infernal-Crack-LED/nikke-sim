@@ -16,16 +16,18 @@
 //        ■ Max HP ▲ 43.87% for 5 sec                                                    [L3a INERT]
 //        ■ Critical Damage ▲ 29.9% for 10 sec                                           [L3b FAITHFUL]
 //
-// L1 (S1 self HP-buffer grant) is modeled as hitCount-60 self casterMaxHpPct 12.42 dur 10 — a
+// L1 (S1 self HP-buffer grant) is modeled as hitCount-60 self highestAllyMaxHpPct 12.42 dur 10 — a
 //      temporary SELF HP-buffer. CROSS-FAMILY CONVERGED: both blind opus passes (S5 test + S6 override)
 //      independently re-derived S1 as a self Max-HP buff; a shield reading was set aside (the sim can
 //      consume neither a shield pool nor an ally-scaled HP source, so the convergent self-HP-grant is
 //      faithful to every observable the engine models). It is DAMAGE-INERT (quency has no atkOfMaxHpPct
 //      consumer, v1 models no damage-taken) but OBSERVABLE (it emits a self maxHpFlat), so it IS pinned:
-//      trigger/cadence/self-target/10s duration + inertness. ⚑ BASIS: the kit's source is the
-//      HIGHEST-Max-HP ally but no StatKey expresses an ally-scaled HP source, so casterMaxHpPct resolves
-//      to % of quency's OWN Max HP (exact only when she holds the team's highest Max HP; inert either
-//      way — completeness gap, not accuracy). ⚑ '60 normal attacks' hits-vs-pulls: engine hitCount counts
+//      trigger/cadence/self-target/10s duration + inertness. BASIS RESOLVED 2026-08-04: the kit's
+//      source is the HIGHEST-Max-HP unit — the new StatKey highestAllyMaxHpPct (the HP analog of
+//      highestAllyAtkPct) resolves at apply time to a flat of 12.42% × the team's highest STATIC
+//      maxHp (the highestAllyAtkPct precedent; kit says plain "highest", not "final"). The earlier
+//      casterMaxHpPct stand-in (⚑ BASIS, own-HP resolution) is the counterfactual now. Still inert.
+//      ⚑ '60 normal attacks' hits-vs-pulls: engine hitCount counts
 //      HITS (adds hitsPerShot per pull, sim.ts:3782), so count 60 = 60 hits = 30 pulls; if it means 60
 //      SHOTS the threshold is 120 — inert either way.
 //   L3a (burst Max HP ▲ 43.87%) is modeled (targetMaxHpPct dur 5) but DAMAGE-INERT: it converts to an
@@ -56,6 +58,7 @@ import type { SimEvent } from '../../../src/types.js';
 import {
   runComp,
   totals,
+  unitOf,
   withPatchedOverride,
 } from '../lib/harness.js';
 
@@ -76,7 +79,7 @@ function run(overrides: Record<string, any> = {}) {
     overrides,
     cfg: { onEvent: (e) => events.push(e) },
   });
-  return { events, totals: totals(res) };
+  return { events, totals: totals(res), res };
 }
 const sum = (t: Record<string, number>) =>
   Object.values(t).reduce((a, b) => a + b, 0);
@@ -123,6 +126,17 @@ const noS1 = withPatchedOverride('quency', (ov) => {
   }
   ov.skill1 = [];
 });
+/** L1 counterfactual: the PRE-2026-08-04 stand-in — own-basis casterMaxHpPct instead of the
+ *  highest-Max-HP basis. Resolves % of quency's OWN Max HP, strictly smaller in this fixture. */
+const s1OwnBasis = withPatchedOverride('quency', (ov) => {
+  const e = ov.skill1
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.stat === 'highestAllyMaxHpPct');
+  if (!e) {
+    throw new Error('quency S1 highestAllyMaxHpPct missing — fixture is stale');
+  }
+  e.stat = 'casterMaxHpPct';
+});
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run();
@@ -142,14 +156,14 @@ const CONTEND_SLUGS = ['liter', 'crown', 'quency', 'helm'];
 const CONTEND_Q = CONTEND_SLUGS.indexOf('quency');
 function runContend(overrides: Record<string, any> = {}) {
   const events: SimEvent[] = [];
-  runComp({
+  const res = runComp({
     slugs: CONTEND_SLUGS,
     bossElement: 'Fire',
     focusSlug: 'helm',
     overrides,
     cfg: { onEvent: (e) => events.push(e) },
   });
-  return events;
+  return { events, res };
 }
 /** Nearest-wrong trigger: key the burst buffs to fullBurstEnter instead of quency's OWN cast. */
 const burstFullBurstEnter = withPatchedOverride('quency', (ov) => {
@@ -159,6 +173,7 @@ const burstFullBurstEnter = withPatchedOverride('quency', (ov) => {
 });
 const contendBase = runContend();
 const contendFBE = runContend({ quency: burstFullBurstEnter });
+const contendOwnBasis = runContend({ quency: s1OwnBasis });
 const contendQuencyCrit = (evs: SimEvent[]) =>
   evs.filter(
     (e) =>
@@ -186,10 +201,13 @@ const quencyBursts = (evs: SimEvent[]) =>
 const distinctTargets = (bs: BuffApply[]) => [...new Set(bs.map((b) => b.targetIdx))];
 
 describe('quency — kit spec', () => {
-  describe('L1 — S1 self HP-buffer grant (after 60 normal attacks; casterMaxHpPct 12.42%, 10s; INERT)', () => {
-    // casterMaxHpPct on self re-emits as a self maxHpFlat; S1 is the ONLY self-targeted one.
+  describe('L1 — S1 self HP-buffer grant (after 60 normal attacks; highestAllyMaxHpPct 12.42%, 10s; INERT)', () => {
+    // highestAllyMaxHpPct on self re-emits as a self maxHpFlat; S1 is the ONLY self-targeted one.
     const selfHp = quencyBuffs(base.events, 'maxHpFlat').filter(
       (b) => b.targetIdx === QUENCY
+    );
+    const teamMaxHp = Math.max(
+      ...SLUGS.map((s) => unitOf(base.res, s).maxHp)
     );
 
     it('is a self grant on a hit counter that re-fires over the fight', () => {
@@ -199,6 +217,39 @@ describe('quency — kit spec', () => {
         expect(b.targetIdx).toBe(QUENCY);
         expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
       }
+    });
+
+    it('BASIS: the flat is 12.42% of the team-HIGHEST Max HP', () => {
+      // In THIS fixture quency is tied for highest (liter == quency), so the basis is not
+      // observable here — the formula pin holds either way, and the crown-contention arm below
+      // (where crown is strictly highest) is where the basis discriminates.
+      for (const b of selfHp) {
+        expect(b.value).toBeCloseTo((12.42 / 100) * teamMaxHp, 6);
+      }
+    });
+
+    it('BASIS DISCRIMINATED (contention comp): the flat tracks the highest holder (crown), not quency-own', () => {
+      const crownMaxHp = unitOf(contendBase.res, 'crown').maxHp;
+      const quencyMaxHp = unitOf(contendBase.res, 'quency').maxHp;
+      expect(crownMaxHp).toBeGreaterThan(quencyMaxHp);
+      // quency is slot CONTEND_Q in the contention comp (not QUENCY) — filter both sides.
+      const contendSelfHp = (evs: SimEvent[]) =>
+        buffs(evs).filter(
+          (b) =>
+            b.casterIdx === CONTEND_Q &&
+            b.targetIdx === CONTEND_Q &&
+            b.stat === 'maxHpFlat'
+        );
+      const applied = contendSelfHp(contendBase.events);
+      expect(applied.length).toBeGreaterThan(0);
+      for (const b of applied) {
+        expect(b.value).toBeCloseTo((12.42 / 100) * crownMaxHp, 6);
+      }
+      // The old own-basis stand-in resolves strictly LESS there.
+      const own = contendSelfHp(contendOwnBasis.events);
+      expect(own.length).toBeGreaterThan(0);
+      expect(own[0].value).toBeCloseTo((12.42 / 100) * quencyMaxHp, 6);
+      expect(own[0].value).toBeLessThan(applied[0].value);
     });
 
     it('RED vs counterfactual: the line is ABSENT when S1 is removed', () => {
@@ -330,8 +381,10 @@ describe('quency — kit spec', () => {
   });
 
   describe('burst trigger identity — burstCast (own B2 cast), NOT fullBurstEnter [crown-contention arm]', () => {
-    const fbStarts = contendBase.filter((e) => e.kind === 'fullBurstStart');
-    const qCasts = contendBase.filter(
+    const fbStarts = contendBase.events.filter(
+      (e) => e.kind === 'fullBurstStart'
+    );
+    const qCasts = contendBase.events.filter(
       (e) => e.kind === 'burstCast' && e.slug === 'quency'
     );
 
@@ -341,11 +394,11 @@ describe('quency — kit spec', () => {
     });
 
     it('GREEN: the shipped burstCast fires NO crit buff on Full Bursts quency did not cast into', () => {
-      expect(contendQuencyCrit(contendBase)).toHaveLength(0);
+      expect(contendQuencyCrit(contendBase.events)).toHaveLength(0);
     });
 
     it('RED: a fullBurstEnter encoding would misfire its crit buff on those same Full Bursts', () => {
-      expect(contendQuencyCrit(contendFBE).length).toBeGreaterThan(0);
+      expect(contendQuencyCrit(contendFBE.events).length).toBeGreaterThan(0);
     });
   });
 });

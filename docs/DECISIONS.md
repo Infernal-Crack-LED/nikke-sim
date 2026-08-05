@@ -9,6 +9,73 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-04) MAX-HP FOLLOW-UPS (owner-directed, same branch as the entry below): three
+  disclosed HP residuals closed — a third grant basis, a stage feed, and rouge's coin state.**
+  1. **quency S1 basis made exact — new StatKey `highestAllyMaxHpPct`** (commit f270dd2c):
+     "Duplicates 12.42% of the Max HP of the Nikke with the highest Max HP" is the THIRD grant
+     basis (after casterMaxHpPct / targetMaxHpPct). The new key resolves at apply time to a flat
+     Max HP grant of (value/100) × max(all units' static maxHp) — the highestAllyAtkPct
+     precedent (static basis; the kit says plain "highest", not "final" — literal-word rule).
+     Closes the gauntlet's ⚑ BASIS (the casterMaxHpPct stand-in was exact only when quency held
+     the team's highest Max HP); still damage-inert (no consumer). Discriminated in her spec's
+     crown-contention arm (crown strictly out-HPs quency there). Next expected carrier: sin.
+  2. **laplace-ultimate-hero stage Max-HP lines enacted** (commit 15ad83a5): her S2b "Stage
+     1/2/3/4: Max HP ▲ 2/3/7/10.5% continuously" (cumulative) was the disclosed ⚑ "estimated,
+     not enacted" second-order feed into her own atkOfMaxHpPct 4.05 conversion. The stage
+     advance was ALREADY modeled (oeStage, hitCount:240 swap-gated — what her burst additional
+     riders ride), so the HP lines take the identical encoding: four targetMaxHpPct self-grants
+     resourceGate'd at oeStage min 1/2/3/4, dispatched AFTER the delta block (each advance
+     grants its own line and refreshes all earlier ones — the kit's cumulative clause, pinned to
+     one frame). Own-kit self-grants → feed liveMaxHp → feed the conversion (e3-admitted). Same
+     ⚑ stage-timing as the riders; magnitudes kit-exact. Her board number moves up slightly —
+     the direction of her documented under-model; she is in no regression comp.
+  3. **rouge coin-state machine tracked; coin-tier riders modeled + coin-gated** (commit
+     f6b9ebe6): resources coin (0=Sword/1=Shield/2=Double Sword) + shieldBursts (cap 5).
+     Progression: hitCount:30 + gate{coin≤0} flips Sword→Shield (applying the Damage-Taken
+     ▼15.2% line on the same fire); burstCast under gate{coin==1} counts shield-era bursts;
+     gate{shieldBursts≥5} flips Shield→Double Sword — post-increment convention (maxwell
+     precedent): the 5th shield-era burst IS the first Double Sword cast. The three per-tier
+     burst riders (10.15/20.1/30.02, previously unmodeled) and the 15.08 continuous line
+     (previously an everyN:5 approximation) are resourceGate'd on coin — exact gating. All
+     offensively INERT per e3 (the spec's byte-identical proof covers them); no board/regression
+     movement. The coin-tier gating flag is resolved (it was flag 3 in the PRE-rewrite note
+     numbering); the surviving flags — (1) coin exclusivity and (2) Shield-rider heal asymmetry —
+     remain measurement-gated.
+  All three landed test-first (RED→GREEN spec pins); no damage-bearing path moves except
+  laplace's own total (up, toward her measured board value).
+
+- **(2026-08-04) MAX-HP-SCALING PRIMITIVES: maxwell-ordinary-mechanic S2 is CASTER-basis (owner
+  ruling — the target-own encoding was a misread), and every "% of Max HP" engine term now reads
+  live Max HP through one reader.** Three landings on branch `worktree-max-hp-scaling`, all
+  test-first (RED→GREEN) with the spec pins named below:
+  1. **`liveMaxHp(u, frame)` extracted from `effectiveAtk`** (byte-identical refactor, commit
+     f8055b46) — base + OWN-kit maxHpFlat buffs (e3 scope unchanged), now the single reader for
+     every Max-HP-scaled term.
+  2. **New StatKey `atkOfCasterMaxHpPct`** (commit 9afac614): "ATK ▲ X% of the skill user's
+     final Max HP" granted to others resolves at apply time to a FLAT add of the caster's
+     liveMaxHp, routed to the casterAtkPct consumer — uniform across targets, one snapshot per
+     cast; the caster's own-kit Max HP stacks feed the basis (self-grants are the one case e3
+     admits), ally grants do not. Owner ruling: maxwell's kit reads "the skill user's final max
+     HP" — the shipped per-target-own resolution was a misread of the caster-scaled text (the
+     gauntlet spec's OWN kit quote already said "skill user's", confirmed against
+     data/characters.json). Maxwell's spec M3 rewritten around the flat add (exact per-cast
+     value = 1% × her live Max HP, uniform across allies, growing with her S1 stacks, old-model
+     counterfactual); she is in no regression comp (MODEL_ONLY), snapshot untouched.
+  3. **stackedNuke hpPct reads live Max HP** (maiden-ice-rose residual r2 closed): her burst is
+     "1372.8% of the sum of 10% of the skill user's FINAL Max HP and … ATK" — kit-literal
+     "final" = live (own-kit feed), the base read was the residual. Spec M5 pins it via a
+     battle-start Max-HP doubling: the per-stack HP portion (shipped-vs-ATK-only-twin amount
+     difference, eff-invariant) must scale ~2× with her Max HP (base read gives ratio 1.0002 —
+     proven RED before the change). Blast radius: her two regression comps — T2 snapshot
+     unchanged (no live S1 stacks at her cast frames under that timing), N6 her total +5.52%
+     (FB counts unchanged: 12/12 T2, 11/11 N6, both vs measured); control-regression CTRL
+     maiden comp +3.88% (477.0M → 495.5M vs real 559.0M — 0.853 → 0.886, correct direction on
+     the documented conservative lower bound; r1/r3 residuals remain).
+  Scope + remaining non-goals (reporting-layer maxHp, grant re-derivation, ally-grant opt-in,
+  HP-pool adjacency): the scope handoff was CLOSED + archived on landing (owner: completed work
+  in an open PR does not stay in the docs) — design record lives in PR #84's history
+  (`docs/handoffs/2026-08-04-max-hp-scaling-primitives.md`, commit 27d49110).
+
 - **(2026-08-04) SECOND CLEAN-WEAPON OVERRIDE LANDED: `snow-crane` (the SR basis cell) carries a
   proven-damage-neutral gauntlet override under the CW1 option-2 invariant (2026-08-01).** The
   kit-autonomy gauntlet landed `snow-crane` at GO faithfulness 1.0, cross-family corroborated

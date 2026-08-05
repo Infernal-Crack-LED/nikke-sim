@@ -106,7 +106,17 @@ blast radius), as a dedicated owner-greenlit increment. See open-questions U13 +
 - **"ATK ▲ X% of Max HP"** conversions use the unit's OWN Max HP only — own-kit HP stacks count,
   ally-granted Max HP buffs do NOT feed the conversion (MEASURED: cinderella focus video; her
   full-burst proc popups match own-HP math within 2% early and late, and would read ~28% higher
-  if ally grants fed it).
+  if ally grants fed it). "Live Max HP" here and below is the single engine reader `liveMaxHp`
+  (base + own-kit maxHpFlat buffs, honoring expiry/stacks/ramp).
+- **"ATK ▲ X% of the skill user's final Max HP"** granted to OTHERS (maxwell-ordinary-mechanic
+  S2, `atkOfCasterMaxHpPct`) converts at application time to a FLAT add of the caster's live
+  Max HP × X — uniform across all targets, one snapshot per application; the caster's own-kit
+  Max HP stacks feed the basis (the e3 scope above), ally-granted Max HP on the caster does not
+  (owner ruling 2026-08-04: the kit line is caster-scaled; the earlier target-own resolution was
+  a misread).
+- **"% of Max HP" damage terms** (stackedNuke hpPct — maiden-ice-rose's burst "10% of the skill
+  user's FINAL Max HP") read live Max HP at cast, same e3 scope (2026-08-04; the base-Max-HP
+  read was a documented residual, kit text says "final").
 
 ### 1b. Major bucket (crit, core, Full Burst, range — one additive bracket)
 

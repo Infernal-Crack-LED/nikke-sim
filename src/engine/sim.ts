@@ -1570,15 +1570,17 @@ export function runSim(
     (BEATS[u.char.element] === cfg.bossElement ||
       u.advantageVs.has(cfg.bossElement));
 
-  function effectiveAtk(u: UnitState, frame: number): number {
-    // casterMaxHpPct buffs arrive as flat Max HP (converted at apply time)
-    // VIDEO-MEASURED (cindy e3, 2026-07-13): "ATK = % of final Max HP" conversions count
-    // the unit's OWN Max HP (incl. own-kit stacks) but NOT ally-granted Max HP buffs —
-    // FB proc popups match own-HP math within 2% early AND late, and would be ~28% higher
-    // if rouge's grants fed the conversion. So live Max HP = static base + OWN-kit maxHpFlat
-    // buffs only (casterIdx === u.idx); ally-granted maxHpFlat (casterIdx !== u.idx) is excluded.
-    // Honors rampFrames (cinderella's Beautiful +1.6%×12 ramping over ~36s reproduces the
-    // measured early/late FB-proc growth 633.7k→667.0k).
+  // Live Max HP = static base + OWN-kit maxHpFlat buffs only (casterIdx === u.idx);
+  // ally-granted maxHpFlat (casterIdx !== u.idx) is EXCLUDED.
+  // VIDEO-MEASURED (cindy e3, 2026-07-13): "ATK = % of final Max HP" conversions count
+  // the unit's OWN Max HP (incl. own-kit stacks) but NOT ally-granted Max HP buffs —
+  // FB proc popups match own-HP math within 2% early AND late, and would be ~28% higher
+  // if rouge's grants fed the conversion. This is THE single reader for every Max-HP-scaled
+  // term (effectiveAtk's atkOfMaxHpPct conversion, stackedNuke's hpPct term) — casterMaxHpPct/
+  // targetMaxHpPct grants arrive as flat Max HP buffs (converted at apply time). Honors
+  // rampFrames (cinderella's Beautiful +1.6%×12 ramping over ~36s reproduces the measured
+  // early/late FB-proc growth 633.7k→667.0k).
+  function liveMaxHp(u: UnitState, frame: number): number {
     let ownMaxHpFlat = 0;
     for (const b of u.buffs) {
       if (b.stat !== 'maxHpFlat' || b.casterIdx !== u.idx) {
@@ -1593,11 +1595,14 @@ export function runSim(
       }
       ownMaxHpFlat += c;
     }
-    const liveMaxHp = u.maxHp + ownMaxHpFlat;
+    return u.maxHp + ownMaxHpFlat;
+  }
+
+  function effectiveAtk(u: UnitState, frame: number): number {
     return (
       u.staticAtk * (1 + stat(u, 'atkPct', frame) / 100) +
       stat(u, 'casterAtkPct', frame) +
-      (stat(u, 'atkOfMaxHpPct', frame) / 100) * liveMaxHp
+      (stat(u, 'atkOfMaxHpPct', frame) / 100) * liveMaxHp(u, frame)
     );
   }
 
@@ -2302,15 +2307,28 @@ export function runSim(
                 ? (e.value / 100) * Math.max(...units.map((x) => x.staticAtk))
                 : e.stat === 'casterMaxHpPct'
                   ? (e.value / 100) * owner.maxHp
-                  : e.value;
-          // casterMaxHpPct ("% of the skill user's Max HP") and targetMaxHpPct ("Max HP ▲ X%",
-          // the target's OWN %) both grant flat Max HP; targetMaxHpPct's value is per-target
-          // (computed inside the loop). effectiveAtk's e3 rule (casterIdx === self only) then
-          // decides whether it feeds an atkOfMaxHpPct consumer.
+                  : e.stat === 'highestAllyMaxHpPct'
+                    ? // "Duplicates X% of the Max HP of the Nikke with the highest Max HP"
+                      // (quency S1): the highestAllyAtkPct precedent — static basis, apply time.
+                      (e.value / 100) * Math.max(...units.map((x) => x.maxHp))
+                    : e.stat === 'atkOfCasterMaxHpPct'
+                      ? // "ATK ▲ x% of the skill user's FINAL Max HP" (maxwell-ordinary-mechanic
+                        // S2): flat add snapshotted at apply time off the caster's LIVE Max HP —
+                        // the caster's own-kit Max HP buffs feed (e3 scope), ally grants do not.
+                        (e.value / 100) * liveMaxHp(owner, frame)
+                      : e.value;
+          // casterMaxHpPct ("% of the skill user's Max HP"), targetMaxHpPct ("Max HP ▲ X%",
+          // the target's OWN %) and highestAllyMaxHpPct ("% of the highest-Max-HP unit's Max HP")
+          // all grant flat Max HP; targetMaxHpPct's value is per-target (computed inside the
+          // loop). effectiveAtk's e3 rule (casterIdx === self only) then decides whether it
+          // feeds an atkOfMaxHpPct consumer.
           const statKey =
-            e.stat === 'casterMaxHpPct' || e.stat === 'targetMaxHpPct'
+            e.stat === 'casterMaxHpPct' ||
+            e.stat === 'targetMaxHpPct' ||
+            e.stat === 'highestAllyMaxHpPct'
               ? ('maxHpFlat' as StatKey)
-              : e.stat === 'highestAllyAtkPct'
+              : e.stat === 'highestAllyAtkPct' ||
+                  e.stat === 'atkOfCasterMaxHpPct'
                 ? ('casterAtkPct' as StatKey) // resolved flat ATK → feed the same effectiveAtk consumer
                 : e.stat;
           // always-on triggers keep their buffs up regardless of listed duration
@@ -2730,8 +2748,10 @@ export function runSim(
           const stacks = Math.min(owner.fbMissedSinceBurst, e.maxStacks ?? 12);
           if (stacks > 0) {
             const eff = Math.max(1, effectiveAtk(owner, frame));
+            // Kit: "% of the skill user's FINAL Max HP" — liveMaxHp (own-kit Max-HP buffs
+            // feed, e3 scope), the same reader as effectiveAtk's atkOfMaxHpPct conversion.
             const hpEquivPct = e.hpPct
-              ? ((e.hpPct / 100) * owner.maxHp * 100) / eff
+              ? ((e.hpPct / 100) * liveMaxHp(owner, frame) * 100) / eff
               : 0;
             dealDamage(owner, (e.atkPct + hpEquivPct) * stacks, frame, {
               crit: false,
