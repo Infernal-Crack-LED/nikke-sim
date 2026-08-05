@@ -1,0 +1,58 @@
+{
+  "slug": "signal",
+  "note": "signal (Signal — SMG / Attacker / Fire / Burst II, cd 20s, ammo 120, reloadFrames 81, hitsPerShot 1, normalMult 8.1, coreMult 200, burstGaugePerShot 0.1, Elysion, SSR, released 2022-11-04). BASE unit — no variant shares the name, slug-disambiguation lint clean. Kit-autonomy gauntlet 2026-08-05: FROM-SCRATCH build (no prior override / kit-status row; simSupported was false) — test-first re-derivation pinned by scripts/tests/units/signal.test.ts (groups G1-G4 + encoding pins; fixture liter/signal/ada/asuka, forced-neutral boss, focus ada: signal is the SOLE B2 [biscuit sole-B2 pattern — a competing B2 like crown would vacate her burst/FB assertions]; asuka [B3, no stage collision] is a NON-HEALING partner — her burst's instant self-heal is filtered out in every run [helm H8 isolation precedent] so no fixture mate delivers recovery to anyone and signal's own S2 is the fixture's only recovery source). The S2 self-heal is observed through signal's own inert recovery PROBE (a withPatchedOverride recovery-triggered defPct 1 block — the engine emits no recovery SimEvent and fireRecovery dispatches only the RECIPIENT's blocks, so a self-directed heal is observable only through the recipient's own recovery trigger; ether's shield-probe pattern), pinned inert on totals. Cross-family S2b (claude-fable-5) independently re-derived the kit and converged on every encodable line: the hitCount:60 trigger identity (cumulative normal-attack hits, first fire EARNED — never t=0), fullBurstEnter (NOT burstCast) on S2, burstCast + FB-exempt-by-cast-timing on the nuke, and the trap to avoid on S2 ('44.08% of attack damage as HP' is lifesteal-HoT, NEVER an attackDamagePct 44.08 buff). Its two conditional-FAITHFUL enemy-defPct dispositions carried their own escape clause — 'if the engine has no enemy-DEF consumer, the faithful dispositions become GAP and the driver must declare that openly' — and the condition verified FALSE in sim.ts applyEffect: enemyBuffs admits ONLY damageTakenPct/distributedDamagePct > 0; 'other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0', and cfg.bossDef is a flat per-hit subtraction no debuff scales. SKILL1 'Attack Signal' ('■ Activates after landing 60 normal attack(s). Affects the target(s). DEF ▼ 5.94% for 5 sec. ATK ▼ 5.94% for 5 sec.'): UNMODELED IN FULL (all three sentences verbatim in unmodeled.skill1). The hitCount:60 trigger IS engine-native, but BOTH effect halves have no sim channel (enemy ATK▼/DEF▼ dropped at dispatch — mica/ether/exia/himeno/eunhwa precedent), so encoding the live trigger with dead effects would be noise, not faithfulness; the omission is pinned by ABSENCE (zero signal-cast buffApply events) against the damageTakenPct-laundering counterfactual, which emits boss debuffs and lifts team totals. SKILL2 'Waiting for Signal' ('■ Affects self. Activates when entering Full Burst. Recover 44.08% of attack damage as HP over 10 sec.'): MODELED as the event channel — fullBurstEnter → self → heal ticks:10 intervalSec:1. TRIGGER IDENTITY: 'when entering Full Burst' = fullBurstEnter — ANY team Full Burst (the wider trigger; S2b concur), never burstCast: as the B2 her own cast lands mid-chain BEFORE the Full Burst window opens, and the unit test discriminates by the recovery start offset (every shipped firing strictly after her cast frame; the burstCast counterfactual fires exactly ON it). The lifesteal-style HoT carries no HP amount by engine design (no HP pool) — the 44.08% magnitude rides VERBATIM in unmodeled.skill2 ('magnitude only', milk K6 precedent); the modeled substance is the 10-SECOND RECOVERY-EVENT WINDOW (first tick at the FB-entry frame, nine more at 1s intervals), which fires the RECIPIENT's 'when recovery takes effect' blocks — signal herself here (self-targeted), observed via the unit test's inert probe; modeled for the event channel, NOT dropped as 'defensive' (helm H8 / milk K6 / biscuit precedent). INERT for her own damage; in a comp where a teammate's kit delivered recovery TO signal (none does — she is the source, not a sink) or where her own recovery blocks existed, the channel would be live. BURST 'Emergency Signal' ('■ Affects enemies within attack range. Deals 229.22% of final ATK as damage. DEF ▼ 12.34% for 10 sec.'): line 1 MODELED — burstCast → enemy → flatDamage 229.22 (burst bucket, crit-eligible by rider convention, no core, no range; 'enemies within attack range' collapses to the single scope-lock boss). FB-EXEMPT by cast timing: the burst cast lands before the Full Burst window opens, so the nuke never takes the +50% major (mica M6 / milk K5 / helm H7 precedent; pinned via fbMajorApplied + cast-frame identity; the fullBurstEnter counterfactual takes the major and moves totals). Line 2 UNMODELED (verbatim in unmodeled.burst) — ENGINE GAP, same no-channel fate as the S1 DEF▼ (mica M7 / ether ⚑2 / himeno / eunhwa precedent); the nearest-wrong damageTakenPct laundering is pinned RED. Burst gauge: no gauge line in the kit — burstGaugePerShot 0.1 is the datamine and the class-modal fallback applies. Cadence: SMG ammo 120 / reloadFrames 81 / RoF 1440 shipped datamine as-is (the cadence-tuple ⚑ was RETIRED by owner ruling 2026-07-25); no charFixes. SSR → plain scope-lock ceiling (copies 10 ⇒ 3★ + core 7). NO `ignored` blocks. EVIDENCE TIER: every modeled magnitude is SL10 kit-text-literal (DATAMINED): 229.22 (burst nuke); S2 is event-only (44.08 magnitude unmodeled by design). TIER 2: fullBurstEnter-vs-burstCast identity on the S2 heal (recovery start-offset discriminated), the FB-exempt nuke's burstCast timing (a B2 casting mid-chain), the 10s heal-event tandem channel, and two engine-gap ⚑ clusters on the unmodeled ▼ lines. ⚑ LIST: [⚑1] (ENGINE GAP, minor — the S1 cluster) hitCount:60 → enemy 'DEF ▼ 5.94% / ATK ▼ 5.94% for 5s': estimate = ~8.3 flat boss DEF (5.94% of the 140-DEF scope-lock boss) off every hit during the 5s window at near-permanent uptime (SMG ~24 hits/s ⇒ 60 hits ≈ 2.5s, so the counter refreshes well inside the 5s expiry while firing) — a small team-wide lift, honestly absent; the ATK▼ half is damage-ZERO in v1 (the boss never attacks — a survivability lever only in real fights). recipe = a boss-DEF-reduction debuff primitive feeding the subtractive DEF term (+ an incoming-boss-damage model before the ATK▼ half could mean anything), engine-core; NEVER launder into damageTakenPct (pinned RED). tier = engine gap, minor (mica ⚑2 / ether ⚑2 precedent). [⚑2] (ENGINE GAP, minor) the burst 'DEF ▼ 12.34% for 10s': estimate = ~17.3 flat boss DEF off every hit during the 10s window per 20s cycle (~50% uptime) — a small team-wide lift; comps read COLD by exactly that amount. recipe = the same debuff-scalable boss-DEF channel, enact together with mica's DEF▼13.32% and novel's DEF▼7.05% lines (same mechanic family); tier = engine gap, minor. Kit-autonomy gauntlet 2026-08-05.",
+  "unmodeled": {
+    "skill1": [
+      "■ Activates after landing 60 normal attack(s). Affects the target(s).",
+      "DEF ▼ 5.94% for 5 sec.",
+      "ATK ▼ 5.94% for 5 sec."
+    ],
+    "skill2": [
+      "Recover 44.08% of attack damage as HP over 10 sec. — magnitude only: the engine `heal` carries no HP amount by design (no HP pool); the 10-second recovery-event WINDOW is modeled (fullBurstEnter heal ticks:10 intervalSec:1)."
+    ],
+    "burst": [
+      "DEF ▼ 12.34% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "skill1: the whole 60-hit ▼ cluster (enemy DEF ▼5.94% / ATK ▼5.94% for 5s) is unmodeled — enemy ATK▼/DEF▼ has no sim channel (enemyBuffs admits only damageTakenPct/distributedDamagePct; bossDef is a flat constant; sim.ts drops them at dispatch), mica/ether/exia precedent. Honestly absent (⚑1), not a stale fixture — the unit test pins the zero against a damageTakenPct laundering on the hitCount:60 counter.",
+    "skill2: the modeled heal is event-only — the 44.08%-of-attack-damage HP magnitude is NOT modeled (no HP pool by design); the 10-second recovery-event WINDOW IS modeled (ticks:10 intervalSec:1). The heal is SELF-targeted: recovery events are delivered to signal herself and fire only HER OWN 'recovery'-triggered blocks (fireRecovery dispatches the recipient's blocks; she has none — the unit test observes the window with an inert probe). Damage-inert by construction: totals are byte-identical with the line removed.",
+    "burst: the DEF ▼12.34% / 10s enemy debuff is unmodeled — same no-channel fate as skill1's DEF▼ (⚑2); the unit test pins the zero against a damageTakenPct laundering. The modeled 229.22% nuke is FB-exempt by cast timing (a B2 cast lands before the Full Burst window opens)."
+  ],
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 229.22
+        }
+      ]
+    }
+  ]
+}
