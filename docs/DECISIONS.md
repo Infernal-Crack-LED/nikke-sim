@@ -38,8 +38,9 @@ lives. Newest first within each section.
      burst riders (10.15/20.1/30.02, previously unmodeled) and the 15.08 continuous line
      (previously an everyN:5 approximation) are resourceGate'd on coin — exact gating. All
      offensively INERT per e3 (the spec's byte-identical proof covers them); no board/regression
-     movement. Flag 3 (coin-tier gating) resolved; flags 1-2 (exclusivity, Shield-rider heal
-     asymmetry) remain measurement-gated.
+     movement. The coin-tier gating flag is resolved (it was flag 3 in the PRE-rewrite note
+     numbering); the surviving flags — (1) coin exclusivity and (2) Shield-rider heal asymmetry —
+     remain measurement-gated.
   All three landed test-first (RED→GREEN spec pins); no damage-bearing path moves except
   laplace's own total (up, toward her measured board value).
 
