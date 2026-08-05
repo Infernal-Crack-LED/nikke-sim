@@ -20,6 +20,7 @@ import { sustainRank, SUSTAIN_PROFILES } from '../src/ranks/sustain.js';
 import { SUSTAIN_TABLE } from '../src/ranks/sustain-table.js';
 import type { RanksCtx } from '../src/ranks/burstgen.js';
 import type { SustainArtifact, SustainRow } from '../src/ranks/types.js';
+import { computeRanksInputHash } from './artifact-input-hash.js';
 
 const load = <T>(rel: string): T =>
   JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8')) as T;
@@ -86,6 +87,7 @@ const listed = new Set(ranked.map((r) => r.slug));
 
 const artifact: SustainArtifact = {
   generatedAt: new Date().toISOString(),
+  inputsHash: computeRanksInputHash(),
   methodology:
     'Total effective HP restored + shielded over a 180s scope-lock fight, team ' +
     "total (multi-ally lines × targets at the caster's final Max HP). One sim " +

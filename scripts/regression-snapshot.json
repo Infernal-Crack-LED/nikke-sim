@@ -1,152 +1,152 @@
 {
- "elec battery (run B order)": {
-  "moran": 147589615,
-  "cinderella": 544557841,
-  "neon-vision-eye": 517610492,
-  "trina": 57841850
- },
- "misc B3s (run I order)": {
-  "grave": 321322240,
-  "anis-star": 623831065,
-  "jill": 483638817,
-  "chisato": 470743623,
-  "noir": 145541176
- },
- "elec DPS (run E order)": {
-  "crown": 134793151,
-  "ein": 336643007,
-  "ada": 463124705,
-  "rouge": 110061000,
-  "cinderella": 350775584
- },
- "iron sweep (run G)": {
-  "d-killer-wife": 54111753,
-  "takina": 332890977,
-  "milk-blooming-bunny": 472583841,
-  "maxwell": 77425267,
-  "liberalio": 524962178
- },
- "T1": {
-  "mast-romantic-maid": 131241332,
-  "scarlet-black-shadow": 2327468944,
-  "anis-star": 907498438,
-  "liberalio": 971375592,
-  "crown": 248346109
- },
- "T2": {
-  "crown": 185575071,
-  "neon-vision-eye": 1320395531,
-  "anis-star": 923953973,
-  "cinderella": 1207914737,
-  "maiden-ice-rose": 301519148
- },
- "T4": {
-  "anis-star": 1081132856,
-  "privaty": 1342456209,
-  "snow-white-heavy-arms": 1713250238,
-  "helm": 350267368,
-  "crown": 429934076
- },
- "T7": {
-  "crown": 261511268,
-  "rapi-red-hood": 981665817,
-  "anis-star": 845565570,
-  "cinderella": 1084522627,
-  "mast-romantic-maid": 131965885
- },
- "T2 elec-weak": {
-  "crown": 194857344,
-  "neon-vision-eye": 1303934965,
-  "anis-star": 965311420,
-  "cinderella": 1188915319,
-  "maiden-ice-rose": 248538350
- },
- "T5 wind-weak": {
-  "nayuta": 721058581,
-  "cinderella-crystal-wave": 1068802057,
-  "anis-star": 601276256,
-  "liberalio": 899805500,
-  "velvet": 185622510
- },
- "PA MiKa": {
-  "anis-star": 818883437,
-  "mint": 198692068,
-  "prika": 147604799,
-  "alice": 439225336,
-  "red-hood": 778260224
- },
- "T1 wind-weak": {
-  "mast-romantic-maid": 130219081,
-  "scarlet-black-shadow": 1522226447,
-  "anis-star": 838899435,
-  "liberalio": 992614209,
-  "crown": 237196436
- },
- "PH water B3s": {
-  "little-mermaid": 347676469,
-  "crown": 160255059,
-  "quency-escape-queen": 628738584,
-  "dorothy-serendipity": 745680130,
-  "guillotine-winter-slayer": 280037330
- },
- "PD Eva duo": {
-  "emma-tactical-upgrade": 146257354,
-  "eunhwa-tactical-upgrade": 408472438,
-  "diesel-winter-sweets": 508176819,
-  "helm": 268682542
- },
- "N1 rapi/quency wind": {
-  "d-killer-wife": 77196744,
-  "grave": 255689025,
-  "rapi-red-hood": 527780533,
-  "quency-escape-queen": 391824922,
-  "jill": 232730037
- },
- "N3 scarlet/liberalio iron": {
-  "rouge": 54284751,
-  "trina": 49268349,
-  "scarlet-black-shadow": 463349543,
-  "liberalio": 471337889,
-  "soda-twinkling-bunny": 115530974
- },
- "N6 mihara/maiden wind": {
-  "little-mermaid": 224103033,
-  "ade-agent-bunny": 95920439,
-  "mihara-bonding-chain": 782774915,
-  "maiden-ice-rose": 315820450,
-  "maxwell": 109955130
- },
- "N8 emma/eunhwa duo fire": {
-  "emma-tactical-upgrade": 100481893,
-  "eunhwa-tactical-upgrade": 277019997,
-  "guillotine-winter-slayer": 318428537,
-  "eve": 278493351,
-  "vesti-tactical-upgrade": 756875620
- },
- "N9 redhood/elegg electric": {
-  "moran": 153190659,
-  "crown": 182390801,
-  "red-hood": 492778502,
-  "elegg-boom-and-shock": 318270910,
-  "dorothy-serendipity": 284837922
- },
- "N10 milk/phantom electric": {
-  "little-mermaid": 120905418,
-  "arcana": 50352153,
-  "milk-blooming-bunny": 245218498,
-  "helm": 103050909,
-  "phantom": 162847021
- },
- "soda-tb control (boss Electric, focus soda-twinkling-bunny)": {
-  "little-mermaid": 385891532,
-  "crown": 200622298,
-  "soda-twinkling-bunny": 419690213,
-  "helm": 348802390
- },
- "soda-tb control (neutral, focus soda-twinkling-bunny)": {
-  "little-mermaid": 345536803,
-  "crown": 183034318,
-  "soda-twinkling-bunny": 318195657,
-  "helm": 359152817
- }
+  "elec battery (run B order)": {
+    "moran": 147589615,
+    "cinderella": 544557841,
+    "neon-vision-eye": 517610492,
+    "trina": 57841850
+  },
+  "misc B3s (run I order)": {
+    "grave": 321322240,
+    "anis-star": 623831065,
+    "jill": 483638817,
+    "chisato": 470743623,
+    "noir": 145541176
+  },
+  "elec DPS (run E order)": {
+    "crown": 134793151,
+    "ein": 336643007,
+    "ada": 463124705,
+    "rouge": 110061000,
+    "cinderella": 350775584
+  },
+  "iron sweep (run G)": {
+    "d-killer-wife": 54111753,
+    "takina": 332890977,
+    "milk-blooming-bunny": 472583841,
+    "maxwell": 77425267,
+    "liberalio": 524962178
+  },
+  "T1": {
+    "mast-romantic-maid": 131241332,
+    "scarlet-black-shadow": 2327468944,
+    "anis-star": 907498438,
+    "liberalio": 971375592,
+    "crown": 248346109
+  },
+  "T2": {
+    "crown": 185575071,
+    "neon-vision-eye": 1320395531,
+    "anis-star": 923953973,
+    "cinderella": 1207914737,
+    "maiden-ice-rose": 301519148
+  },
+  "T4": {
+    "anis-star": 1081132856,
+    "privaty": 1342456209,
+    "snow-white-heavy-arms": 1713250238,
+    "helm": 350267368,
+    "crown": 429934076
+  },
+  "T7": {
+    "crown": 261511268,
+    "rapi-red-hood": 981665817,
+    "anis-star": 845565570,
+    "cinderella": 1084522627,
+    "mast-romantic-maid": 131965885
+  },
+  "T2 elec-weak": {
+    "crown": 194857344,
+    "neon-vision-eye": 1303934965,
+    "anis-star": 965311420,
+    "cinderella": 1188915319,
+    "maiden-ice-rose": 248538350
+  },
+  "T5 wind-weak": {
+    "nayuta": 721058581,
+    "cinderella-crystal-wave": 1068802057,
+    "anis-star": 601276256,
+    "liberalio": 899805500,
+    "velvet": 185622510
+  },
+  "PA MiKa": {
+    "anis-star": 818883437,
+    "mint": 198692068,
+    "prika": 147604799,
+    "alice": 439225336,
+    "red-hood": 778260224
+  },
+  "T1 wind-weak": {
+    "mast-romantic-maid": 130219081,
+    "scarlet-black-shadow": 1522226447,
+    "anis-star": 838899435,
+    "liberalio": 992614209,
+    "crown": 237196436
+  },
+  "PH water B3s": {
+    "little-mermaid": 347676469,
+    "crown": 160255059,
+    "quency-escape-queen": 628738584,
+    "dorothy-serendipity": 745680130,
+    "guillotine-winter-slayer": 280037330
+  },
+  "PD Eva duo": {
+    "emma-tactical-upgrade": 146257354,
+    "eunhwa-tactical-upgrade": 408472438,
+    "diesel-winter-sweets": 508176819,
+    "helm": 268682542
+  },
+  "N1 rapi/quency wind": {
+    "d-killer-wife": 77196744,
+    "grave": 255689025,
+    "rapi-red-hood": 527780533,
+    "quency-escape-queen": 391824922,
+    "jill": 232730037
+  },
+  "N3 scarlet/liberalio iron": {
+    "rouge": 54284751,
+    "trina": 49268349,
+    "scarlet-black-shadow": 463349543,
+    "liberalio": 471337889,
+    "soda-twinkling-bunny": 115530974
+  },
+  "N6 mihara/maiden wind": {
+    "little-mermaid": 224103033,
+    "ade-agent-bunny": 95920439,
+    "mihara-bonding-chain": 782774915,
+    "maiden-ice-rose": 333248592,
+    "maxwell": 109955130
+  },
+  "N8 emma/eunhwa duo fire": {
+    "emma-tactical-upgrade": 100481893,
+    "eunhwa-tactical-upgrade": 277019997,
+    "guillotine-winter-slayer": 318428537,
+    "eve": 278493351,
+    "vesti-tactical-upgrade": 756875620
+  },
+  "N9 redhood/elegg electric": {
+    "moran": 153190659,
+    "crown": 182390801,
+    "red-hood": 492778502,
+    "elegg-boom-and-shock": 318270910,
+    "dorothy-serendipity": 284837922
+  },
+  "N10 milk/phantom electric": {
+    "little-mermaid": 120905418,
+    "arcana": 50352153,
+    "milk-blooming-bunny": 245218498,
+    "helm": 103050909,
+    "phantom": 162847021
+  },
+  "soda-tb control (boss Electric, focus soda-twinkling-bunny)": {
+    "little-mermaid": 385891532,
+    "crown": 200622298,
+    "soda-twinkling-bunny": 419690213,
+    "helm": 348802390
+  },
+  "soda-tb control (neutral, focus soda-twinkling-bunny)": {
+    "little-mermaid": 345536803,
+    "crown": 183034318,
+    "soda-twinkling-bunny": 318195657,
+    "helm": 359152817
+  }
 }

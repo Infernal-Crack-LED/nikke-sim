@@ -36,11 +36,10 @@
 //        cold — her graded comps have her bursting every OTHER FB). Recipe: a `stackOffset`
 //        param on stackedNuke (stacks = min(fbMissed + offset, maxStacks)) or literal MP via
 //        the resources pool. Tier: engine-core (src/engine/sim.ts).
-//   (r2) "final Max HP" in the burst: stackedNuke's hpPct→ATK conversion uses BASE owner.maxHp
-//        (sim.ts ~2089), not liveMaxHp, so her own S1 Max-HP stacks do not feed the HP portion
-//        (they DO feed her M3 atkOfMaxHpPct consumer, which reads liveMaxHp — the e3 rule).
-//        Estimate: S1 holds ~1-2 stacks steady-state (+6-13% Max HP) × the 10% HP share of the
-//        nuke ≈ ≤1% of burst damage. Recipe: liveMaxHp in the hpEquivPct term. Tier: engine-core.
+//   (r2) LANDED 2026-08-04: the burst's "10% of the skill user's FINAL Max HP" now reads
+//        liveMaxHp(owner) (the P1 helper) — her own S1 Max-HP stacks feed the HP portion
+//        (e3 scope: own-kit grants, same as her M3 consumer). PINNED by M5's battle-start
+//        Max-HP-doubling discrimination: the lift far exceeds the old BASE read's eff-only leak.
 //   (r3) stackedNuke forces crit:false/core:false (sim.ts ~2092) — an expected-value primitive
 //        choice the kit text neither states nor excludes; direction is conservative (the nuke
 //        is a documented lower bound). Estimate: allowing crit at her 15% rate ≈ +7.5% on the
@@ -159,6 +158,43 @@ const mirAtkOnlyBurst = withPatchedOverride(SLUG, (ov) => {
   delete e.hpPct;
 });
 
+/** r2 (P1b) discriminator: a battle-start self Max-HP DOUBLING (own-kit targetMaxHpPct grant,
+ *  so it feeds liveMaxHp per the e3 scope). Under the LIVE read the burst HP PORTION (the
+ *  shipped-vs-ATK-only-twin amount difference at equal stacks) doubles with her Max HP; under
+ *  the old BASE read that portion is invariant to the injection. See M5. */
+const mirHpDoubled = withPatchedOverride(SLUG, (ov) => {
+  ov.skill2 = [
+    ...ov.skill2,
+    {
+      slot: 'skill2',
+      trigger: { kind: 'passive' },
+      target: { kind: 'self' },
+      effects: [{ kind: 'buff', stat: 'targetMaxHpPct', value: 100 }],
+    },
+  ];
+});
+
+/** r2 (P1b) companion: the SAME doubling combined with the ATK-only burst (hpPct dropped) —
+ *  the twin for the doubled run, so the HP portion can be read in BOTH runs. */
+const mirHpDoubledAtkOnly = withPatchedOverride(SLUG, (ov) => {
+  ov.skill2 = [
+    ...ov.skill2,
+    {
+      slot: 'skill2',
+      trigger: { kind: 'passive' },
+      target: { kind: 'self' },
+      effects: [{ kind: 'buff', stat: 'targetMaxHpPct', value: 100 }],
+    },
+  ];
+  const e = ov.burst
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.kind === 'stackedNuke');
+  if (!e || e.hpPct !== 137.28) {
+    throw new Error('MIR burst stackedNuke/hpPct missing — fixture is stale');
+  }
+  delete e.hpPct;
+});
+
 /** M6 reference: BOTH elemAdvantageDamagePct lines stripped (S2 blk1's 40.9 + blk2's 31.68). */
 const mirNoElemAdv = withPatchedOverride(SLUG, (ov) => {
   let removed = 0;
@@ -188,6 +224,8 @@ const selfish = run({ [SLUG]: mirSelfishBuff });
 const noSelfBuff = run({ [SLUG]: mirNoSelfBuff });
 const riderL1 = run({ [SLUG]: mirRiderL1 });
 const atkOnly = run({ [SLUG]: mirAtkOnlyBurst });
+const hpDoubled = run({ [SLUG]: mirHpDoubled });
+const hpDoubledAtkOnly = run({ [SLUG]: mirHpDoubledAtkOnly });
 // Forced-NEUTRAL boss pair (S2b reviewer hunt): no element is advantaged, so both
 // elemAdvantageDamagePct lines must be exactly inert there — see M6.
 const neutralBase = run({}, null);
@@ -380,6 +418,32 @@ describe('maiden-ice-rose — kit spec', () => {
     it('DISCRIMINATING: the old ATK-only model deals strictly less burst damage', () => {
       const sum = (ds: Damage[]) => ds.reduce((s, d) => s + d.amount, 0);
       expect(sum(nukes)).toBeGreaterThan(sum(atkOnlyNukes));
+    });
+
+    it('the HP term reads her LIVE Max HP (r2 landed): doubling her Max HP doubles the per-stack HP portion', () => {
+      // The HP portion is read as the shipped-vs-ATK-only-twin AMOUNT difference at equal
+      // frame/stacks — eff and the shared multiplier stack cancel, so this is a direct read of
+      // the nuke's Max-HP term. Old BASE read: the term ignores the injected Max HP (ratio ≈ 1,
+      // RED). Live read: it scales with her live Max HP (ratio ≈ 1.9 — the injection doubles
+      // the base while her S1 stacks stay constant).
+      const hpPortion = (nukes: Damage[], twins: Damage[]) => {
+        expect(twins.length).toBe(nukes.length);
+        let s = 0;
+        nukes.forEach((d, i) => {
+          const t = twins[i];
+          expect(d.frame).toBe(t.frame);
+          expect(d.amount).toBeGreaterThan(t.amount);
+          s += d.amount - t.amount;
+        });
+        return s;
+      };
+      const baseHp = hpPortion(nukes, atkOnlyNukes);
+      const doubledHp = hpPortion(
+        mirDamage(hpDoubled.events, 'burst'),
+        mirDamage(hpDoubledAtkOnly.events, 'burst')
+      );
+      expect(baseHp).toBeGreaterThan(0);
+      expect(doubledHp).toBeGreaterThan(baseHp * 1.5);
     });
   });
 

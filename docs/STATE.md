@@ -233,7 +233,7 @@ current but not a contract.
 | `critRateNormalPct`                                   | Critical Rate that applies ONLY to normal-attack hits ("Critical Rate of normal attacks ▲x%") — never to skill procs or burst damage. Distinct from the unscoped `critRatePct`; `dealDamage` adds it only when `category === 'normal'` | helm (S1, allies)                                              |
 | `maxAmmoFlat`                                         | Flat round-count added on top of `maxAmmoPct`                                                                                                                                                                                          | grave, noir, tove                                              |
 | `hitRatePct`                                          | Core-hit lift via `hrCoreMult` (HRCORE-gated; AR/SMG/SG only)                                                                                                                                                                          | ~14 units (jill, noir, modernia, …)                            |
-| `atkOfMaxHpPct` / `casterMaxHpPct` / `targetMaxHpPct` | Flat ATK = % own Max HP / grant Max HP = % caster's / target's Max HP                                                                                                                                                                  | anis-star, blanc, cinderella, rouge, trina, maiden-ice-rose, … |
+| `atkOfMaxHpPct` / `atkOfCasterMaxHpPct` / `casterMaxHpPct` / `targetMaxHpPct` / `highestAllyMaxHpPct` | Flat ATK = % own live Max HP (per-frame re-read) / flat ATK = % the CASTER's live Max HP snapshotted at apply time (granted to others) / grant Max HP = % caster's / target's / the HIGHEST-Max-HP unit's Max HP | anis-star, blanc, cinderella, rouge, trina, maiden-ice-rose, maxwell-ordinary-mechanic, quency, laplace-ultimate-hero, … |
 
 ### Unit-level / char-static flags (`charFixes` etc.)
 
@@ -339,9 +339,12 @@ Two structural facts that keep getting re-derived:
 
 Five ranked lists. Sources `src/ranks/`, builders
 `scripts/build-{burstgen,burstcdr,sustain,bufferchart,b1b2dps}.ts` (`npm run ranks:all`), artifacts
-`web/public/{burstgen,burstcdr,sustain,bufferchart,b1b2dps}.json` (gitignored build outputs, not in
-verify.sh), tests `scripts/tests/ranks/*.test.ts`. Methodology of record: `docs/data/rank-boards.md`.
-Planned follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
+`web/public/{burstgen,burstcdr,sustain,bufferchart,b1b2dps}.json` — gitignored build outputs; PR CI
+FETCHES the published set instead of building and the deploy path rebuilds (each artifact embeds its
+`inputsHash` from `scripts/artifact-input-hash.ts`, parity-gated by
+`scripts/tests/share/board-hash-parity.test.ts`) → DECISIONS 2026-08-04. Tests
+`scripts/tests/ranks/*.test.ts`. Methodology of record: `docs/data/rank-boards.md`. Planned
+follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
 
 - **burstgen** — all sim-supported units, standard no-op team, bursting enabled, unit focused and
   leftmost in its burst category. Ranked by `gaugePerSec` = `gaugeGenerated` / `gaugeBuildTimeSec`

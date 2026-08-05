@@ -42,17 +42,14 @@ import {
   writeFileSync,
   mkdirSync,
   existsSync,
-  readdirSync,
   rmSync,
 } from 'node:fs';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { availableParallelism, tmpdir } from 'node:os';
-import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { DataFile, LevelMultiplier, Element } from '../src/types.js';
+import type { DataFile, LevelMultiplier } from '../src/types.js';
 import { loadOverride } from '../src/skills/overrides-node.js';
-import { unitElements } from '../src/elements.js';
 import type { OverrideFile } from '../src/skills/index.js';
 import type {
   CubesFile,
@@ -64,7 +61,6 @@ import {
   CELLS,
   ALL_HEADLINERS,
   cellId,
-  assembleTeam,
   FRAMEWORKS,
   ELEADVS,
   CORES,
@@ -79,8 +75,11 @@ import {
 } from '../src/dpschart/matrix.js';
 import { dpsFor, type RunCtx, type OptMemo } from '../src/dpschart/run.js';
 import { NOOP_CHARACTERS } from '../src/dpschart/noop.js';
+import {
+  buildDpsChartPopulation,
+  computeDpsChartInputHashes,
+} from './artifact-input-hash.js';
 
-const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
 const SCRIPT = fileURLToPath(import.meta.url);
 
 // ---- cli ---------------------------------------------------------------------------
@@ -158,207 +157,24 @@ const ctx: RunCtx = { characters: data.characters as any, mult, deps };
 
 // ---- tested population -------------------------------------------------------------
 
-// tested population: every B3 with a kit override (simSupported) — no enikk-proven/"meta"
-// usage gate; a unit only needs a real override to produce a meaningful damage number.
-// Λ units are pinned to a fixed slot instead of treated as unsupported — see FORCED_BURST
-// (same forced mapping as the team generators, src/teamcalc.ts). The chart's top-N windows
-// the raw ranked population, tier unrestricted — `tier` is display-only here.
-const FORCED_BURST: Record<string, 'III'> = { 'red-hood': 'III' };
-const effBurst = (slug: string, burst: string) => FORCED_BURST[slug] ?? burst;
-interface UnitMeta {
-  slug: string;
-  name: string;
-  element: Element;
-  // every element the unit counts as (own code + any its kit grants — src/elements.ts); the
-  // element filter/grouping on the chart matches against this, not the bare `element`
-  elements: Element[];
-  weapon: string;
-  tier: string;
-  imageUrl: string | null;
-}
-const population: UnitMeta[] = [];
-for (const [slug, c] of Object.entries(data.characters)) {
-  // guard against garbled multi-mode burst strings
-  if (effBurst(slug, c.burst) !== 'III') {
-    continue;
-  }
-  if (!c.simSupported) {
-    continue;
-  }
-  const tier = tiersFile.tiers[slug];
-  if (!tier) {
-    continue;
-  }
-  population.push({
-    slug,
-    name: c.name,
-    element: c.element as Element,
-    elements: unitElements(c),
-    weapon: c.weapon,
-    tier,
-    imageUrl: c.imageUrl ?? null,
-  });
-}
-population.sort((a, b) => a.name.localeCompare(b.name));
-
-// A slug in CHART_VARIANTS is tested TWICE — its plain default row (profile:
-// null) and the variant row — and both compete in the SAME ranking, same
-// convention as the buffer/sustain/burstgen boards (src/ranks/*.ts).
-const tested: TestedUnit[] = population.flatMap((u) => {
-  const rows: TestedUnit[] = [
-    { slug: u.slug, element: u.element, profile: null },
-  ];
-  const variant = CHART_VARIANTS[u.slug];
-  if (variant) {
-    rows.push({ slug: u.slug, element: u.element, profile: variant.id });
-  }
-  return rows;
-});
+// The population + tested-row derivation lives in scripts/artifact-input-hash.ts:
+// the hashed unit set and the simulated unit set must come from the SAME rules
+// (Step 0 of the artifact-decoupling plan), so the builder imports them instead
+// of carrying a second copy.
+const { population, tested } = buildDpsChartPopulation(
+  data.characters,
+  tiersFile.tiers
+);
 
 const rowKey = (t: { slug: string; profile?: string | null }): string =>
   `${t.slug}::${t.profile ?? ''}`;
 
 // ---- input hashes ------------------------------------------------------------------
-
-// Directories hashed WHOLESALE into the GLOBAL bucket (every file inside, recursively) —
-// a new file added here needs no update to this list. Scope is deliberately narrower than
-// `src/`: it excludes e.g. src/skills/overrides-baselines|legacy (archival, not read by
-// loadOverride) and src/ranks|infographics|server|share|cli.ts (unrelated to the
-// dps-chart's damage math).
-const GLOBAL_DIRS = [
-  'src/dpschart', // matrix.ts/run.ts/noop.ts — cell + team-assembly logic
-  'src/engine', // sim.ts + sg-geometry.ts/unigeo*.ts it imports — the damage formula
-];
-
-// Individual files: flat under src/ with no isolating subdirectory, so a directory
-// scoop would either miss them or drag in unrelated siblings (teamcalc.ts, ranks/,
-// share/, …). Hand-listed because there's no cheaper automatic boundary here; all
-// of them are foundational/low-churn (team-prep, the OL optimizer, relationship-bonus,
-// element helpers, shared types, the skill-scaling/override-loading plumbing) —
-// per-unit modeling churn lives in src/skills/overrides/, which is hashed per-unit below.
-const GLOBAL_FILES = [
-  'scripts/build-dpschart.ts',
-  'src/prepare.ts',
-  'src/olconfigs.ts',
-  'src/relationship.ts',
-  'src/elements.ts',
-  'src/types.ts',
-  'src/skills/index.ts',
-  'src/skills/overrides-node.ts',
-  'src/skills/scale.ts',
-  'src/skills/types.ts',
-  'data/level-multiplier.json',
-  'data/cubes.json',
-  'data/ol-lines.json',
-  'data/ol-tiers.json', // OL_TIER's per-line values — matrix.ts imports it statically
-  'data/gauge-per-shot.json', // read via a static `with { type: 'json' }` import in sim.ts
-  'data/relationship-bonus.json', // read the same way via relationship.ts
-  'data/skill-levels.json', // optional (try/catch above) — hashPath skips missing paths
-];
-// NOTE: data/characters.json and data/bossing-tiers.json are deliberately absent — they are
-// hashed PER ENTRY below (globally for controls, per-unit for the tested population), so one
-// unit's sync no longer invalidates the whole matrix. An override file that belongs to
-// neither a control nor a tested unit is hashed by NEITHER bucket, and correctly so:
-// prepareTeam only ever indexes `deps.overrides[<a team member's slug>]` (src/prepare.ts) —
-// it never iterates the map — so such a file cannot reach this artifact's numbers.
-
-function walkFiles(absDir: string): string[] {
-  const out: string[] = [];
-  const walk = (dir: string) => {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const p = join(dir, entry.name);
-      if (entry.isDirectory()) {
-        walk(p);
-      } else {
-        out.push(p);
-      }
-    }
-  };
-  walk(absDir);
-  return out;
-}
-
-// (relative path + content) of each path, sorted so the digest is stable regardless of
-// directory-read order. A rename/add/remove changes the hash exactly like a content edit.
-function hashPaths(h: ReturnType<typeof createHash>, abs: string[]): void {
-  for (const p of [...abs].sort()) {
-    if (!existsSync(p)) {
-      continue;
-    }
-    h.update(p.slice(REPO_ROOT.length));
-    h.update('\0');
-    h.update(readFileSync(p));
-  }
-}
-
-// Every slug that appears in a chart team OTHER than as the tested unit. Derived by
-// assembling every (cell × tested row) rather than hand-listed, so adding a control in
-// matrix.ts can never silently desynchronize this bucket. assembleTeam is pure and
-// sim-free, so the full sweep costs milliseconds.
-function controlSlugs(): string[] {
-  const s = new Set<string>();
-  for (const cell of CELLS) {
-    for (const t of tested) {
-      for (const slug of assembleTeam(cell as Cell, t).slugs) {
-        if (slug !== t.slug) {
-          s.add(slug);
-        }
-      }
-    }
-  }
-  return [...s].sort();
-}
-
-// A slug's own inputs: its override file + its characters.json entry + its bossing-tier.
-function hashUnit(h: ReturnType<typeof createHash>, slug: string): void {
-  hashPaths(h, [join(REPO_ROOT, 'src/skills/overrides', `${slug}.json`)]);
-  h.update(slug);
-  h.update('\0');
-  h.update(JSON.stringify(data.characters[slug] ?? null));
-  h.update('\0');
-  h.update(JSON.stringify(tiersFile.tiers[slug] ?? null));
-}
-
-interface Hashes {
-  globalHash: string;
-  unitHashes: Record<string, string>;
-  inputsHash: string;
-}
-
-function computeHashes(): Hashes {
-  const g = createHash('sha256');
-  const abs: string[] = [];
-  for (const d of GLOBAL_DIRS) {
-    abs.push(...walkFiles(join(REPO_ROOT, d)));
-  }
-  for (const f of GLOBAL_FILES) {
-    abs.push(join(REPO_ROOT, f));
-  }
-  hashPaths(g, abs);
-  // controls move every tested unit's number, so they belong to the global bucket
-  for (const slug of controlSlugs()) {
-    hashUnit(g, slug);
-  }
-  const globalHash = g.digest('hex');
-
-  const unitHashes: Record<string, string> = {};
-  for (const u of population) {
-    const h = createHash('sha256');
-    hashUnit(h, u.slug);
-    unitHashes[u.slug] = h.digest('hex');
-  }
-
-  // whole-artifact digest — the fast path when literally nothing changed
-  const all = createHash('sha256');
-  all.update(globalHash);
-  for (const slug of Object.keys(unitHashes).sort()) {
-    all.update('\0');
-    all.update(slug);
-    all.update('\0');
-    all.update(unitHashes[slug]);
-  }
-  return { globalHash, unitHashes, inputsHash: all.digest('hex') };
-}
+// The two-level input-hash implementation (GLOBAL/PER-UNIT buckets) lives in
+// scripts/artifact-input-hash.ts — the SSOT shared with check-board-freshness.ts
+// (the artifact-decoupling plan's §5 "one implementation" rule). Note GLOBAL_FILES
+// now includes that module, so the extraction itself moves every hash once — one
+// unavoidable full rebuild on the next deploy.
 
 // ---- prior-artifact reuse ----------------------------------------------------------
 
@@ -607,7 +423,7 @@ if (IS_WORKER) {
 
 // ---- main --------------------------------------------------------------------------
 
-const { globalHash, unitHashes, inputsHash } = computeHashes();
+const { globalHash, unitHashes, inputsHash } = computeDpsChartInputHashes();
 
 // Prefer a locally pre-built artifact, then fall back to the live site. On the deploy box the
 // local file is essentially never there — `railway up` respects .gitignore and web/public/
