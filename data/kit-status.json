@@ -377,6 +377,43 @@
       },
       "board": null
     },
+    "anchor": {
+      "name": "Anchor",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/anchor.json + scripts/kit-autonomy/manual-review/anchor.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": ["Taunt for 5 sec."],
+        "skill2": [
+          "When attacking an enemy projectile, damage dealt to that projectile ▲ 25.6% continuously."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the taunt half of S1 is unmodeled — enemy aggro manipulation; no taunt primitive and no enemy-behaviour model in the sim, offensively inert by construction",
+        "skill1: the defPct grant is inert-in-v1 (self DEF never feeds own damage) — event-pinned at one application per magazine depletion (the RL magazine STRETCHES 6 -> 8-9 rounds under the fixture's liter escalating maxAmmoPct 45.17%; the pin keys on the engine's reload events, not a shots/ammo division), magnitude + duration + scope pinned, damage-neutral",
+        "skill2: '+25.6% damage vs enemy projectiles' is ⚑ OUT-OF-DOMAIN (engine-core) — no enemy-projectile entities in the sim; estimate zero in every fight the sim can run; recipe: projectile entity model + scoped modifier",
+        "burst: 'Affects all enemies' collapses to ONE instance on the lone partless boss (multi-enemy selection is out of the single-boss scope)"
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6(claude-opus-5)/S7(kimi-k3) converged; FROM-SCRATCH build (simSupported was false) — skill1 DEF lastBullet->self defPct 23.82/5s event-pinned inert + burst burstCast->enemy flatDamage 304.45 FB-exempt single-instance four-way converged; taunt + anti-projectile 25.6% unmodeled verbatim (no primitives; the 25.6% scope-trap independently refused by both blind agents); driver spec 9/9 GREEN (incl. solo-B1 burstCast-vs-fullBurstEnter 8-vs-4 split + reload-event cadence pin absorbing liter maxAmmoPct magazine stretch); S5 blind 16 pass/2 own GAP skips vs driver override; S6 byte-identical load-bearing blocks",
+      "residual": "spot-check cluster: (1) 'last bullet hits' = engine lastBullet-at-depletion is precedent-based, never popup-verified for anchor (defPct damage-inert, low stakes); (2) burst 304.45% live-ATK magnitude has no popup anchor (measurement-gated regardless); (3) taunt-positionally-inert rests on the measured fixed boss range script — if a taunt can ever move the boss, the omission becomes damage-relevant",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "anchor-innocent-maid": {
       "name": "Anchor: Innocent Maid",
       "burst": "II",
