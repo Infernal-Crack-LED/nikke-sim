@@ -340,7 +340,23 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
       exceed the ceiling and never reach `marker` at all** — MISSED core hits, making shots colder
       by 1. Opposite sign to §27's warm channel; **the two have not been netted.** The marker
       landing must treat the channel as two-sided.
-    - **⇒ OPEN — the `13 → 14` pellet-lifetime correction is NOT ENACTED (§28D/E).** At 30 fps —
+    - ✅ **`13 → 14` LANDED 2026-08-05 (`docs/probe-runs.md` §29, `07b82474`)**, plan
+      `docs/handoffs/2026-08-05-pellet-lifetime-14-LANDING-PLAN.md`, cross-family pre-op gate
+      `kimi-code/k3` APPROVED-WITH-REVISIONS (all four executed). **Inert where it matters** — the
+      30 fps invariance control gives 7 either way, so **no measurement in §§14–27 moves**; only a
+      diagnostic census on two 60 fps dumps changed (one fixture, 3 fields, exactly as predicted).
+      ⚑ It **retires trap 1** (the `(13/60)×30 = 6.5` JS/Python rounding tie); `floor(x + 0.5)` is
+      kept as the correct JS mirror at other fps and its docstring now says so historically.
+      - **⇒ OPEN, NEW (§29D) — `make-synthetic-pellets.py` still renders 13-FRAME lifecycles**
+        against a now-14-frame spec. It is a real generator (`range(1, 14)` + an f1→f13 size/alpha
+        curve), **not** a comment, so the implementer correctly refused a number swap. Fixing it
+        needs the owner's **f1…f14 qualitative table** (or an explicitly-labelled interpolation) —
+        the script's own docstring already warns its curve is "a modeling choice, not a second data
+        point corroborating the spec." **Do not swap the number alone.**
+      - ⚑ **Method note worth keeping:** the gate's demand that the repo-wide grep be STATED rather
+        than assumed is what surfaced the site the plan had missed (`score-pellets.py`). An unstated
+        completeness search is not evidence of completeness.
+    - **⇒ SUPERSEDED — the `13 → 14` item below is closed by the above.** At 30 fps —
       every production dump — it is **INERT** (`max_pellet_frames = 7` either way), so no
       measurement in §§14–27 moves. At 60 fps it is 13 → 14. ⚑ It also **eliminates the documented
       cross-language rounding trap** (`(13/60)×30 = 6.5` is a JS-half-up/Python-half-even tie that
