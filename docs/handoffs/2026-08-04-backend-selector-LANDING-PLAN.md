@@ -63,30 +63,60 @@ would have been the wrong number to quote — the same trap §20D fell into. **W
 ⇒ **This is a low-risk faithfulness fix, not an urgent correctness fix.** Land it because the code is
 demonstrably wrong, not because it is currently costing counts.
 
-## 3. The change — `marker` and `band` get their OWN consensus
+⚑ **Scope of the ZERO claim** (gate rev. 6 / risk flag 4): it holds for **`debounceShots`'s two
+`band` consumers — `MERGE_EVENT_MIN` plateau formation and representative-frame selection** — over
+**available footage at the current `band_hi` and `MERGE_EVENT_MIN`**. If another `band` consumer is
+found, the exposure table must be recomputed for it **before** landing.
 
-**Do not** patch the tie-break to prefer a different backend by fiat. The defect is that passenger
-channels are decided by someone else's ranking; the fix is to stop treating them as passengers.
+## 3. The change — ⚑ REVISED AFTER THE PRE-OP GATE, which found the original FATAL
 
-`total` is already a **median across active backends**. Apply the same treatment per channel: derive
-`marker` and `band` by the same active-backend consensus used for `total`, rather than reading them
-off `best`.
+⚑ **The original §3 said "derive `marker`/`band` by the same active-backend consensus used for
+`total`". THAT WOULD HAVE BEEN A SILENT NO-OP.** `total`'s activity test is `white + red > 0`, which
+is **false for every backend on exactly the frames the defect fires** — so no backend would be
+"active", the consensus would emit **0**, and the wrong answer would be preserved. Recorded rather
+than quietly replaced (`scratchpad/gates/2026-08-04-backend-selector/`, revision 1).
 
-⚑ In single-backend production this is unambiguous — the only active backend supplies every channel,
-and the numpy-zero-fill can no longer win a tie it never participated in.
+**The landed design is the gate's `simplerPath`:** keep `best` for `white`/`red` on its existing key,
+and source each passenger channel **from the first backend whose OWN value for that channel is > 0**,
+falling back to `best`, then to 0.
 
-⚑ `best` may remain for `white`/`red` (its ranking key genuinely is `white + red`); the change is
-that `marker`/`band` no longer come from it.
+```
+marker := first b in [numpy, pil, opencv] with b.marker > 0   else best.marker   else 0
+band   := first b in [numpy, pil, opencv] with b.band   > 0   else best.band     else 0
+```
+
+Why this and not a per-channel median:
+
+- **It cannot no-op.** Activity is defined **per channel**, so opencv's `marker = 2` is visible even
+  when every `white + red` is 0.
+- **In single-backend production it is exactly correct**: the zero-filled backends can never be
+  selected for a channel they report 0 on, so the sole active backend always supplies every channel.
+- ⚑ **A per-channel median would ERASE a lone real marker** in a genuine 3-backend run (two zeros
+  outvote it), and an upper-index median on an even count biases arbitrarily on a near-boolean
+  channel (gate risk flags 1–2).
+
+⚑ **`white`/`red` keep the existing `backendEntries` order and strict-`<` comparator, untouched.** A
+careless refactor there would reintroduce the very array-order dependence this fixes.
+
+⚑ **No schema change.** Adding explicit active-backend metadata from `count-pellets.py` would resolve
+the true-zero/zero-fill ambiguity more cleanly, but it crosses into the Python output contract and is
+**out of scope** — the §6 hard stops protect counting code, not the schema. Deferred, not adopted.
+
+⚑ **Residual ambiguity, stated:** a zero-filled inactive backend is indistinguishable from an active
+backend that genuinely observed zero. This design is correct for single-backend production and
+defensible for diagnostics; it is not a general multi-backend consensus, and it does not claim to be.
 
 ## 4. Success criteria
 
-| #   | Criterion                                                                                                                                                        |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | On a frame where all backends have `white + red == 0` but opencv has `marker > 0` or `band > 0`, the emitted `marker`/`band` are **opencv's**, not numpy's zeros |
-| 2   | On single-backend runs, every emitted channel equals that backend's value on **every** frame                                                                     |
-| 3   | `white`/`red`/`total`/`valid` are **unchanged** on all 5 dumps — this fix must not move the count itself                                                         |
-| 4   | Shot segmentation (`totalShots`, every event onset) **unchanged** on all 5 dumps                                                                                 |
-| 5   | Both gates green: `pellet-selftest.sh` (25 arms) + `verify.sh`, TRUE exit codes                                                                                  |
+| #   | Criterion                                                                                                                                                                                                                                                                                                             |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | On a frame where all backends have `white + red == 0` but opencv has `marker > 0` or `band > 0`, the emitted `marker`/`band` are **opencv's**, not numpy's zeros                                                                                                                                                      |
+| 2   | On single-backend runs, every emitted channel equals that backend's value on **every** frame                                                                                                                                                                                                                          |
+| 3   | `white`/`red`/`total`/`valid` are **unchanged** on all 5 dumps — this fix must not move the count itself                                                                                                                                                                                                              |
+| 4   | Shot segmentation (`totalShots`, every event onset) **unchanged** on all 5 dumps                                                                                                                                                                                                                                      |
+| 5   | Both gates green: `pellet-selftest.sh` (25 arms) + `verify.sh`, TRUE exit codes                                                                                                                                                                                                                                       |
+| 6   | ⚑ **Unit tests, added before landing** (gate rev. 3): a synthetic frame where all backends have `white + red == 0` but opencv has `marker > 0` and/or `band > 0` must emit **opencv's** values; plus a single-backend identity property asserting every emitted channel equals the sole active backend on every frame |
+| 7   | ⚑ **No-leak regression** (gate rev. 4): run over all 5 dumps and **diff** `white`/`red`/`total`/`valid`, `totalShots` and every event onset against baseline. Any movement is a HARD STOP, not a post-hoc explanation                                                                                                 |
 
 ## 5. ⚑ PREDICTED BLAST RADIUS — ZERO fixtures, ZERO pins
 
