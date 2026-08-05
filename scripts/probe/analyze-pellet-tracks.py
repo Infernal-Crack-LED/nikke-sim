@@ -7078,8 +7078,10 @@ def _ms_classify(tracks, cross_positions, pellet_radius, marker_radius):
         reds = t.get("reds")
         marker_frames, abs_pts, rel_pts, cross_pts = [], [], [], []
         for i, f in enumerate(range(t["first"], t["last"] + 1)):
-            if f >= len(cross_positions) or i >= len(t["xs"]):
-                break
+            # `f < 0` is not merely out of range -- Python would index from the END of
+            # cross_positions and silently score against the wrong frame. Guarded explicitly.
+            if f < 0 or f >= len(cross_positions) or i >= len(t["xs"]):
+                continue
             cp = cross_positions[f]
             if cp is None:
                 continue
@@ -7281,13 +7283,18 @@ def _ms_controls(reports, pooled):
 
 
 def _ms_expected(reports, pooled):
+    # ⚑ `attached_life_hist` is keyed by INT life. JSON writes those keys as strings and reads
+    # them back as strings, so a fixture round-trip would never dict-compare equal to a live
+    # replay -- stringify on both sides here, where the comparison actually happens.
+    def _lh(d):
+        return {str(k): v for k, v in d.items()}
     return {"pooled": {k: v for k, v in pooled.items()
                        if k not in ("verdicts", "attached_life_hist")},
             "verdicts": pooled["verdicts"],
-            "attached_life_hist": pooled["attached_life_hist"],
+            "attached_life_hist": _lh(pooled["attached_life_hist"]),
             "dumps": [{"dump": r["dump"], "n_marker_tracks": r["n_marker_tracks"],
                        "verdicts": r["verdicts"],
-                       "attached_life_hist": r["attached_life_hist"],
+                       "attached_life_hist": _lh(r["attached_life_hist"]),
                        "recon_mismatch_frames": r["recon_mismatch_frames"],
                        "arms": r["arms"]} for r in reports]}
 
@@ -7360,12 +7367,31 @@ def _ms_slim(name, tracks, cross_positions, frame_counts, params, fps, report):
     else:
         mid = fr[len(fr) // 2]
         lo, hi = max(0, mid - 400), min(len(frame_counts) - 1, mid + 400)
-    keep = [t for t in tracks if t["last"] >= lo and t["first"] <= hi]
+    # ⚑ Straddling tracks are TRIMMED to the window, not dropped. Dropping them would break the
+    # reconstruction control -- the slice's own `frame_counts` come from the dump, so every track
+    # contributing a marker inside the window must still be present, or the recomputation would
+    # under-count at the edges and the control would fail for a slicing reason rather than a real
+    # one. Re-basing without trimming is not an option either: a negative `first` makes Python
+    # index cross_positions from the END and score against the wrong frame silently.
+    #
+    # ⚑ `life` deliberately keeps its ORIGINAL value. C1 asks how long the track really persisted,
+    # which is a fact about the track, not about the window we happened to cut.
+    keep = []
+    for t in tracks:
+        if t["last"] < lo or t["first"] > hi:
+            continue
+        a, b = max(t["first"], lo), min(t["last"], hi)
+        o = a - t["first"]                      # offset into the track's own arrays
+        k = dict(t, first=a - lo, last=b - lo)
+        for arr in ("xs", "ys", "areas", "reds"):
+            if arr in t:
+                k[arr] = t[arr][o:o + (b - a + 1)]
+        keep.append(k)
     return {
         "dump": name, "params": params, "fps": fps, "frame_span": [lo, hi],
         "cross_positions": [cross_positions[f] for f in range(lo, hi + 1)],
         "frame_counts": [frame_counts[f] for f in range(lo, hi + 1)],
-        "tracks": [dict(t, first=t["first"] - lo, last=t["last"] - lo) for t in keep],
+        "tracks": keep,
     }
 
 
