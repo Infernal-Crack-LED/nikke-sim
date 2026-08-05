@@ -7057,6 +7057,19 @@ MARKER_SEMANTICS_FIXTURE = "scripts/tests/fixtures/pellets/marker-semantics-slic
 MS_LIFE_MIN = 2        # C1, pre-commit §4
 MS_SPREAD_MAX = 6.0    # C2 attached/screen-fixed spread bound (zoomed px)
 MS_TRAVEL_MIN = 10.0   # C2 minimum crosshair travel for the test to carry information
+# Fragment-likeness proxy (owner 2026-08-05: the hit-marker VFX lasts 14 native frames). Distances
+# are CROSSHAIR-RELATIVE so crosshair motion between the two frames cannot fake a match.
+MS_FRAGMENT_REL_PX = 15.0
+MS_FRAGMENT_FRAMES = 2
+
+
+def _ms_rel_at(t, cross_positions, f):
+    """One track's crosshair-relative (dx, dy) at absolute frame `f`, or None if unavailable."""
+    i = f - t["first"]
+    if i < 0 or i >= len(t["xs"]) or f < 0 or f >= len(cross_positions):
+        return None
+    cp = cross_positions[f]
+    return None if cp is None else (t["xs"][i] - cp[0], t["ys"][i] - cp[1])
 
 
 def _ms_spread(pts):
@@ -7208,11 +7221,74 @@ def _ms_score(name, tracks, cross_positions, frame_counts, params, fps, marker_m
     # duration from footage, or an owner adjudication.
     att_life = collections.Counter(i["life"] for i in classified.values()
                                    if i["verdict"] == "ATTACHED")
+
+    # ⚑ OWNER MEASUREMENT 2026-08-05: the hit-marker VFX lasts 14 NATIVE frames -- ~7 frames at the
+    # production 30fps sampling, i.e. exactly `max_pellet_frames`. Two consequences, both measured
+    # here rather than argued, and they push in OPPOSITE directions:
+    #
+    #   (a) CEILING EXCLUSION (a COLD channel this arm otherwise never sees). A red near-crosshair
+    #       track whose life exceeds max_pellet_frames is dropped from `pellet_ids` and never
+    #       reaches `marker` at all. Since a full marker already spans ~7 sampled frames, a little
+    #       detection jitter puts it over. These are MISSED core hits, the opposite sign to the
+    #       false-flag channel this arm was built to measure.
+    #   (b) FRAGMENT-LIKENESS (which cuts AGAINST C1). If a genuine marker spans ~7 sampled frames
+    #       but tracks fragment, a life-1 detection may be a PIECE of a real marker rather than a
+    #       UI glyph. Proxy: does a life-1 marker track sit within MS_FRAGMENT_REL_PX (in
+    #       CROSSHAIR-RELATIVE coordinates, so crosshair motion cannot fake it) of a life>=2 marker
+    #       track within +/- MS_FRAGMENT_FRAMES? ⚑ Suggestive, NOT decisive: "fragment-like" is not
+    #       "is a fragment", and a marker that shattered into ALL life-1 pieces has no life>=2
+    #       anchor, so this test would call every piece isolated. It is a LOWER bound on
+    #       fragmentation.
+    tracks_by_id = {t["id"]: t for t in tracks}
+    excluded = 0
+    for t in tracks:
+        if t.get("is_pellet") or t["life"] <= params.get("max_pellet_frames", 7):
+            continue
+        reds = t.get("reds")
+        for i, f in enumerate(range(t["first"], t["last"] + 1)):
+            if f < 0 or f >= len(cross_positions) or i >= len(t["xs"]):
+                continue
+            cp = cross_positions[f]
+            if cp is None:
+                continue
+            is_red = bool(reds[i]) if reds and i < len(reds) else bool(t["is_red"])
+            if is_red and math.hypot(t["xs"][i] - cp[0],
+                                     t["ys"][i] - cp[1]) < params.get("marker_radius", 65):
+                excluded += 1
+                break
+    by_frame = collections.defaultdict(list)
+    for tid, info in classified.items():
+        for f in info["marker_frames"]:
+            by_frame[f].append((tid, info))
+    frag = iso = 0
+    for tid, info in classified.items():
+        if info["life"] != 1:
+            continue
+        f = info["marker_frames"][0]
+        rel = _ms_rel_at(tracks_by_id[tid], cross_positions, f)
+        near = False
+        for g in range(f - MS_FRAGMENT_FRAMES, f + MS_FRAGMENT_FRAMES + 1):
+            if g == f:
+                continue
+            for tid2, info2 in by_frame.get(g, []):
+                if tid2 == tid or info2["life"] < 2:
+                    continue
+                r2 = _ms_rel_at(tracks_by_id[tid2], cross_positions, g)
+                if rel and r2 and math.hypot(rel[0] - r2[0],
+                                             rel[1] - r2[1]) <= MS_FRAGMENT_REL_PX:
+                    near = True
+                    break
+            if near:
+                break
+        frag += near
+        iso += not near
     return {
         "dump": name, "fps": fps, "n_frames": n,
         "n_marker_tracks": len(classified),
         "verdicts": dict(sorted(verdicts.items())),
         "attached_life_hist": dict(sorted(att_life.items())),
+        "n_excluded_by_ceiling": excluded,
+        "life1_fragment_like": frag, "life1_isolated": iso,
         "recon_mismatch_frames": recon_mismatch,
         "arms": arms,
         "_classified": classified,
@@ -7223,6 +7299,9 @@ def _ms_pool(reports):
     out = {"n_dumps": len(reports),
            "n_marker_tracks": sum(r["n_marker_tracks"] for r in reports),
            "recon_mismatch_frames": sum(r["recon_mismatch_frames"] for r in reports),
+           "n_excluded_by_ceiling": sum(r["n_excluded_by_ceiling"] for r in reports),
+           "life1_fragment_like": sum(r["life1_fragment_like"] for r in reports),
+           "life1_isolated": sum(r["life1_isolated"] for r in reports),
            "verdicts": dict(sorted(collections.Counter(
                {k: sum(r["verdicts"].get(k, 0) for r in reports)
                 for k in {k for r in reports for k in r["verdicts"]}}).items())),
@@ -7295,6 +7374,9 @@ def _ms_expected(reports, pooled):
             "dumps": [{"dump": r["dump"], "n_marker_tracks": r["n_marker_tracks"],
                        "verdicts": r["verdicts"],
                        "attached_life_hist": _lh(r["attached_life_hist"]),
+                       "n_excluded_by_ceiling": r["n_excluded_by_ceiling"],
+                       "life1_fragment_like": r["life1_fragment_like"],
+                       "life1_isolated": r["life1_isolated"],
                        "recon_mismatch_frames": r["recon_mismatch_frames"],
                        "arms": r["arms"]} for r in reports]}
 
@@ -7328,6 +7410,18 @@ def _print_marker_semantics(reports, pooled, checks):
     print("    ⚑ supporting evidence for C1's `life >= 2`, not proof — a life-1 track's attachment")
     print("      is undefined by construction, so geometry cannot settle whether a GENUINE marker")
     print("      can be single-frame. That needs the marker VFX duration or an owner adjudication.")
+    fl, il = pooled["life1_fragment_like"], pooled["life1_isolated"]
+    print(f"\n  ⚑ OWNER 2026-08-05: the marker VFX lasts 14 NATIVE frames (~7 at 30fps sampling,")
+    print(f"    i.e. exactly max_pellet_frames) -- two consequences, OPPOSITE in sign:")
+    print(f"    (a) CEILING EXCLUSION (COLD): {pooled['n_excluded_by_ceiling']} red near-crosshair "
+          f"tracks live LONGER than\n        max_pellet_frames and never reach `marker` at all -- "
+          f"MISSED core hits.")
+    print(f"    (b) FRAGMENT-LIKENESS (cuts AGAINST C1): of {fl + il} life-1 marker tracks, "
+          f"{fl} ({fl / (fl + il):.1%})\n        sit within {MS_FRAGMENT_REL_PX:.0f}px "
+          f"crosshair-relative of a life>=2 marker within +/-{MS_FRAGMENT_FRAMES} frames,\n"
+          f"        so they may be PIECES of a real marker rather than glyphs. {il} are isolated.\n"
+          f"        ⚑ Suggestive, not decisive, and a LOWER bound: a marker shattered into ALL\n"
+          f"        life-1 pieces has no life>=2 partner and would score as isolated.")
     print(f"\n  RECONSTRUCTION CONTROL: {pooled['recon_mismatch_frames']} frames where the "
           f"UNFILTERED recomputation disagrees with the dump's own stored `marker` "
           f"(must be 0 -- §26)")
