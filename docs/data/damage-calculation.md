@@ -400,8 +400,11 @@ gauge fills, the chain opens (consuming the gauge): **gauge-full → 30f → Bur
 10-second window for the next (DATAMINED `burst_duration`); in-window selection is FIRST-READY (the
 stage-filler whose cooldown ends soonest, tie→leftmost — owner ruling 2026-07-21); an expired window
 collapses the chain back to a full refill. The Full Burst countdown starts 22f AFTER the Burst-3 cast
-(so instant burst-cast attacks land before it — no +50%). After it ends, the next chain cannot open for
-**~2.5s** (`POST_FB_CHAIN_DELAY_FRAMES` 150f — the earlier ~3s double-counted the 30f-pre-B1). Casts are
+(so instant burst-cast attacks land before it — no +50%). After it ends, generation unlocks IMMEDIATELY
+and the next chain opens the moment the refilled gauge is full — there is NO post-FB chain-open lock
+(owner ruling 2026-08-04, overturning the earlier fixed ~2.5-3s `POST_FB_CHAIN_DELAY_FRAMES` block: the
+observed gap was natural refill-from-zero, ~3-4s for a good team, compounded by video-offset confound;
+`ROTMODEL=floor` keeps the old block as an opt-in A/B arm). Casts are
 blocked while the boss is off-screen in a range transition — the one real
 source of run-to-run full-burst-count variance. Everything else is cooldown arithmetic, which is
 why full-burst counts are deterministic and pinned as regression asserts.

@@ -1403,12 +1403,11 @@ export function runSim(
     return per * (u.idx === focusIdx ? focusMult : UNFOCUSED_CHARGE_GEN) + flat;
   };
   const addGauge = (u: UnitState, frame: number, energyPct: number) => {
-    // Generation is LOCKED during Full Burst (user-confirmed 2026-07-13, correcting an
-    // over-read of the bar anatomy: the fast post-FB refill is charge units releasing
-    // held full charges a split second after FB ends + normal team rates — with the
-    // measured ~3s post-FB chain-open delay, high-generation comps finish refilling
-    // before the chain can open anyway, so rotations stay cooldown/chain-bound).
-    // Also no generation during the chain itself (stages 1-3, einkk).
+    // Generation is LOCKED during Full Burst and during the chain itself (stages 1-3,
+    // einkk; user-confirmed 2026-07-13, re-confirmed 2026-08-04). The lock lifts the
+    // instant FB ends — there is NO lingering post-FB delay (owner ruling 2026-08-04,
+    // overturning the earlier "~3s post-FB chain-open delay" read: the bar just refills
+    // from zero, which takes a good team ~3-4s of normal generation).
     if (fbEndFrame > frame || stage !== 0) {
       return;
     }
@@ -1498,8 +1497,8 @@ export function runSim(
   let focusBurstCount = 0;
   // stage-3 caster of the most recent full burst — drives the everyOther gate
   let lastStage3Caster = -1;
-  let chainBlockedUntil = 0; // post-full-burst chain-open block (measured ~3s)
-  const POST_FB_CHAIN_DELAY_FRAMES = ENV.POSTFB ? Number(ENV.POSTFB) : 150; // 180→150: the measured 3s (FB-end→B1) minus the now-separately-modeled 30f-pre-B1 (was double-counted). FB counts are flat across 60-150f; 150 gives the best board.
+  let chainBlockedUntil = 0; // post-full-burst chain-open block (opt-in floor arm only — see below)
+  const POST_FB_CHAIN_DELAY_FRAMES = ENV.POSTFB ? Number(ENV.POSTFB) : 150; // opt-in A/B arm ONLY (ROTMODEL=floor). OVERTURNED as a game mechanic 2026-08-04 (owner): there is no post-FB chain-open lock — the old "measured 3s (FB-end→B1)" was natural refill-from-zero (~3-4s for a good team), and the bar-anatomy reads that motivated it were video-relative: the recording starts during the pre-fight intro, before the 3:00 clock (so its "first FB at 14.1s" is NOT 14.1s of fight time). Kept behind ROTMODEL=floor for A/B.
   let stageExpireFrame = Infinity; // stage-2/3 window deadline (stage 1 never expires)
   // Reserve/grace window: how long a filled chain WAITS at stage 2/3 for a stage-filler to come
   // off cooldown. This is the auto's inter-activation grace (owner 2026-07-21: auto casts B1→~1s→
@@ -2978,16 +2977,16 @@ export function runSim(
       });
       rotationCasters = [];
       stage = 0;
-      // MEASURED (run-I bar anatomy, 2026-07-13): the next chain cannot open until
-      // ~3s after full burst ends (chain glow at FB-end +3.0s even with the gauge
-      // full at +1.2s and the Burst-1 cooldown ready at +1.5s) — the post-full-burst
-      // camera/re-engage window. Generation keeps running during it.
-      // ENV.ROTMODEL='refill': experiment arm removing the fixed post-FB block (chain opens
-      // on gauge-full; SWHA 13-window bar traces). HELD — floor removal breaks the pinned
-      // wind-weak 13s until the T5/T1 refill over-speed is measured (see cycle-rework design
-      // in experiment-harness-ai.md). Default 'floor' = current measured-constant behavior.
+      // There is NO post-FB chain-open lock (owner ruling 2026-08-04, overturning the
+      // 2026-07-13 run-I bar-anatomy read): generation is locked during FB and unlocks
+      // IMMEDIATELY when FB ends; the chain opens the moment the refilled gauge is full.
+      // The old "chain glow at FB-end +3.0s" observation was natural refill-from-zero —
+      // good teams take ~3-4s to rebuild the bar — compounded by a video-offset confound
+      // (the recordings start before the 3:00 clock; fight time ≠ video time).
+      // ENV.ROTMODEL='floor': opt-in A/B arm restoring the old fixed 150f post-FB block
+      // (kept for comparisons against pre-2026-08-04 boards). Default = no block.
       chainBlockedUntil =
-        ENV.ROTMODEL === 'refill' ? frame : frame + POST_FB_CHAIN_DELAY_FRAMES;
+        ENV.ROTMODEL === 'floor' ? frame + POST_FB_CHAIN_DELAY_FRAMES : frame;
     }
 
     // ---- burst rotation ----

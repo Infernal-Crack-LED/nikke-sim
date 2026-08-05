@@ -213,12 +213,16 @@ Details: **[auto-play.md](auto-play.md)**.
 FB countdown (10s)`**. So gauge-full → FB-start ≈ 112f (~1.87s), not the old ~0.9s. Constants:
   a **30f delay before B1** (`PRE_B1_GAP_FRAMES`), **30f between stages** (`STAGE_CAST_GAP_FRAMES`,
   0.5s), and a **22f delay between the B3 cast and the FB countdown** (`FB_PRE_DELAY_FRAMES`) — that
-  gap is why instant burst-cast attacks land before Full Burst begins (no +50%). After FB ends, the
-  next chain can't open for **~2.5s** (`POST_FB_CHAIN_DELAY_FRAMES` = **150f**; the earlier 180f/~3s
-  double-counted the now-separately-modeled 30f-pre-B1). **Fight start:** ~8f (`FIGHT_DELAY_FRAMES`
+  gap is why instant burst-cast attacks land before Full Burst begins (no +50%). After FB ends there
+  is NO chain-open lock (owner ruling 2026-08-04, overturning the earlier "~2.5-3s post-FB block"
+  read): gauge generation is locked during FB and unlocks immediately at FB-end, and the next chain
+  opens the moment the refilled bar is full — good teams take ~3-4s of natural generation to rebuild
+  from zero, which is what the old bar-anatomy reads mistook for a fixed delay (the recordings also
+  start before the 3:00 clock, so video timestamps ≠ fight time). The fixed block survives only as
+  the opt-in `ROTMODEL=floor` A/B arm (`POST_FB_CHAIN_DELAY_FRAMES` = 150f). **Fight start:** ~8f (`FIGHT_DELAY_FRAMES`
   0.133s) before the first bullet (bullet lands at 0.133s; the earlier 1s was a timer-framing confound —
-  the 3:00 timer reads 2:59:999 at elapsed 0). This post-full-burst window + the chain timing, not
-  gauge refill, pace high-generation teams.
+  the 3:00 timer reads 2:59:999 at elapsed 0; there is NO multi-second opening phase — the boss is
+  hittable from 3:00). The chain timing + natural gauge refill pace high-generation teams.
 - **Casts are blocked while the boss is off-screen** during a range transition (~1s,
   owner-confirmed) — the only genuine source of run-to-run full-burst-count variance
   (a transition colliding with a chain). Everywhere else, **full-burst counts are

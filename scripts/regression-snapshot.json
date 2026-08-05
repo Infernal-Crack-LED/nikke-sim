@@ -6,11 +6,11 @@
     "trina": 57841850
   },
   "misc B3s (run I order)": {
-    "grave": 321322240,
-    "anis-star": 574103531,
-    "jill": 483638817,
-    "chisato": 470743623,
-    "noir": 145541176
+    "grave": 324954059,
+    "anis-star": 579306723,
+    "jill": 490418045,
+    "chisato": 474759910,
+    "noir": 146439033
   },
   "elec DPS (run E order)": {
     "crown": 134793151,
@@ -41,11 +41,11 @@
     "maiden-ice-rose": 301519148
   },
   "T4": {
-    "anis-star": 977885478,
-    "privaty": 1342456209,
-    "snow-white-heavy-arms": 1713250238,
-    "helm": 350267368,
-    "crown": 429934076
+    "anis-star": 990867927,
+    "privaty": 1350497162,
+    "snow-white-heavy-arms": 1715964569,
+    "helm": 356929035,
+    "crown": 437064913
   },
   "T7": {
     "crown": 261542803,
@@ -96,11 +96,11 @@
     "helm": 268682542
   },
   "N1 rapi/quency wind": {
-    "d-killer-wife": 77196744,
-    "grave": 255689025,
-    "rapi-red-hood": 552047407,
-    "quency-escape-queen": 391824922,
-    "jill": 232730037
+    "d-killer-wife": 77622803,
+    "grave": 254900296,
+    "rapi-red-hood": 552234587,
+    "quency-escape-queen": 391329226,
+    "jill": 232903944
   },
   "N3 scarlet/liberalio iron": {
     "rouge": 54284751,
@@ -144,9 +144,9 @@
     "helm": 348802390
   },
   "soda-tb control (neutral, focus soda-twinkling-bunny)": {
-    "little-mermaid": 345536803,
-    "crown": 183034318,
-    "soda-twinkling-bunny": 318195657,
-    "helm": 359152817
+    "little-mermaid": 340550925,
+    "crown": 176586470,
+    "soda-twinkling-bunny": 315087444,
+    "helm": 358675753
   }
 }
