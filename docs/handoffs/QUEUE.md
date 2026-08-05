@@ -347,12 +347,13 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
       diagnostic census on two 60 fps dumps changed (one fixture, 3 fields, exactly as predicted).
       ⚑ It **retires trap 1** (the `(13/60)×30 = 6.5` JS/Python rounding tie); `floor(x + 0.5)` is
       kept as the correct JS mirror at other fps and its docstring now says so historically.
-      - **⇒ OPEN, NEW (§29D) — `make-synthetic-pellets.py` still renders 13-FRAME lifecycles**
-        against a now-14-frame spec. It is a real generator (`range(1, 14)` + an f1→f13 size/alpha
-        curve), **not** a comment, so the implementer correctly refused a number swap. Fixing it
-        needs the owner's **f1…f14 qualitative table** (or an explicitly-labelled interpolation) —
-        the script's own docstring already warns its curve is "a modeling choice, not a second data
-        point corroborating the spec." **Do not swap the number alone.**
+      - ✅ **CLOSED 2026-08-05 (§29E)** — owner clarified _"the lifecycle is the same, it just has
+        one additional frame at the end"_, so the fade phase runs **f12–14**. The SIZE curve needed
+        no change (the added frame is a fade frame, and fade frames already hold 1×). The two
+        hardcoded fade literals turned out to be 2 dp roundings of **2/3, 1/3** — the same linear
+        ramp over 2 fade frames — so the ramp is now a **formula** giving 0.75/0.50/0.25, and the
+        selftest re-derives the old values at `n_fade = 2` to keep "same rule, one more frame" a
+        CHECKED claim. Zero fixtures moved; reaches future synthetic generation only.
       - ⚑ **Method note worth keeping:** the gate's demand that the repo-wide grep be STATED rather
         than assumed is what surfaced the site the plan had missed (`score-pellets.py`). An unstated
         completeness search is not evidence of completeness.
