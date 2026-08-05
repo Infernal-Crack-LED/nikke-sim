@@ -326,11 +326,28 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
       and dropped flags cross that boundary both ways (`isabel`'s is POSITIVE while losing 6 flags).
     - ⚑ The 21.7% is a **FLOOR**: `MOVING` (618) and `UNDECIDABLE` (612) tracks are all KEPT, and on
       `marciana` (SG/Iron) 58 of 113 `MOVING` lean screen-fixed against 4 leaning attached.
-    - **⇒ OPEN — the landing is warranted by the band but GATED on a non-geometric answer (§27F).**
-      C1 rests on "a genuine hit-marker persists ≥ 2 frames", which **geometry cannot settle** — a
-      life-1 track has one frame, so attachment is undefined by construction, and the supporting
-      ATTACHED-life histogram is truncated at 2 by construction. Needs the marker VFX's own duration
-      from footage, or an owner adjudication. **Do not land C1 before that.**
+    - ✅ **§27F's GATE IS ANSWERED — OWNER-MEASURED 2026-08-05 (`docs/probe-runs.md` §28): the
+      hit-marker VFX lasts 14 NATIVE frames** (~7 at the production 30 fps sampling). C1's premise
+      holds by a wide margin — one sampled frame is a seventh of a marker.
+    - ⚑ **BUT A NEW QUALIFICATION REPLACED IT AND IT CUTS AGAINST §27 (§28B).** The premise being
+      right about the VFX does not make C1 right about a TRACK: **255 of 1351 life-1 marker tracks
+      (18.9%) are FRAGMENT-LIKE** (within 15 px crosshair-relative of a life ≥ 2 marker within
+      ±2 frames), so C1 also drops pieces of real markers. ⇒ **§27's 21.7% is BRACKETED, not
+      pinned** — it over-drops AND under-drops, opposite signs, **not known to cancel.** The
+      verdict "a real channel" survives; the figure is not a point estimate.
+    - **⇒ OPEN — §28C, a COLD channel nothing has scored.** A full marker spans ~7 sampled frames,
+      which IS `max_pellet_frames`, so **164 red near-crosshair tracks (life peaking at 8–10)
+      exceed the ceiling and never reach `marker` at all** — MISSED core hits, making shots colder
+      by 1. Opposite sign to §27's warm channel; **the two have not been netted.** The marker
+      landing must treat the channel as two-sided.
+    - **⇒ OPEN — the `13 → 14` pellet-lifetime correction is NOT ENACTED (§28D/E).** At 30 fps —
+      every production dump — it is **INERT** (`max_pellet_frames = 7` either way), so no
+      measurement in §§14–27 moves. At 60 fps it is 13 → 14. ⚑ It also **eliminates the documented
+      cross-language rounding trap** (`(13/60)×30 = 6.5` is a JS-half-up/Python-half-even tie that
+      `_merge_max_pellet_frames` carries a bespoke workaround for; `7.0` is not). Changing it moves
+      `_merge_max_pellet_frames(60)` and reaches three committed 60 fps fixtures
+      (`merge-audit-slice`, `representative-audit-slice`, `stale-counting-slice`) ⇒ **its own gated
+      pass with a blast-radius declaration.**
     - **⇒ OPEN — the per-unit spread is large and unexplained**: 8.6% / 14.0% / **40.0%** / 22.6%
       across `marciana` / `isabel` / `guilty` / `noir` (n=4). `guilty` has 54% of its marker tracks
       life-1 vs 38% on `marciana`. Recorded without a manufactured cause.
