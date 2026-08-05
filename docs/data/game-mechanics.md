@@ -243,10 +243,14 @@ FB countdown (10s)`**. So gauge-full → FB-start ≈ 112f (~1.87s), not the old
   and survives only on the `UNIGEO=off` revert path. Scope-lock boss only — medium/large
   `bossPelletProfile` fights fall through to the cone path. → DECISIONS 2026-07-22;
   `docs/probe-data/soda-tb-sg-core-hr-windows.json` (the count of record).
-- Auto burst priority is **leftmost slot order, with waiting**: inside a timed stage
-  window the chain waits for the leftmost stage-filling unit whose cooldown ends before
-  the window closes rather than handing the cast to a lower-priority ready unit
-  (owner-ruled + Monte Carlo evidence; a round-robin was tried and rejected).
+- Auto burst priority is **first-ready, with waiting** (owner ruling 2026-07-21,
+  DECISIONS): inside a timed stage window the chain waits for the stage-filling unit
+  whose cooldown ends SOONEST (tie → leftmost) rather than handing the cast to a
+  lower-priority ready unit. This replaced the old strict-leftmost wait, which let the
+  leftmost slot MONOPOLIZE equal-cooldown alternation (a 40-team random battery: ~1/3 of
+  comps differed, all first-ready correcting a leftmost monopoly/skip; graded board
+  byte-neutral). `B3_LEFTMOST=1` restores the old strict-leftmost pick. (A round-robin
+  was tried earlier and rejected — bench B3s cast where real fights never pick them.)
 - **Focus-sync burst gate** (`burstGate: 'syncWithFocus'`, `PreparedUnit`/`UnitState`): an
   opt-in per-unit flag — used by the DPS-chart Hyper Carry frameworks for Mast — that lets a
   unit take its burst stage only while the focus (tested) unit is off cooldown (so it bursts
@@ -259,7 +263,7 @@ FB countdown (10s)`**. So gauge-full → FB-start ≈ 112f (~1.87s), not the old
   stage-3 cast in two consecutive Full Bursts, so it strictly alternates with the other
   Burst-3 unit. Needed because a Full-Burst-extending kit (e.g. Modernia's 15-second Full
   Burst) can bring the unit's cooldown inside the next stage window, where the
-  leftmost-with-waiting rule would stall the chain and hand it consecutive casts. Not a
+  first-ready-with-waiting rule would stall the chain and hand it consecutive casts. Not a
   measured value — a framework modeling switch; no real comp sets it.
 
 ## 8. Burst rotation rules
@@ -276,8 +280,10 @@ Full Burst = 10s; rotation = FB + chain + gauge refill, gated by burst cooldowns
 Burst-1/2 cast opens the next stage for 10 seconds (DATAMINED `burst_duration`; 5s/15s/
 20s variants exist — the same column encodes short-Full-Burst units); if the window
 expires with no ready caster the chain collapses and the gauge must fully refill
-(measured: the 3-unit battery fight's 40s rotation). Auto-burst picks the LEFTMOST ready
-unit of the wanted stage. Burst cooldowns
+(measured: the 3-unit battery fight's 40s rotation). Auto-burst picks the FIRST-READY
+unit of the wanted stage — inside a timed stage window the filler whose cooldown ends
+soonest (tie → leftmost); `B3_LEFTMOST=1` restores the old strict-leftmost pick
+(DECISIONS 2026-07-21). Burst cooldowns
 (20s/40s per unit; DB errors exist — Tia's real CD is 20s, fixed via
 `charFixes.burstCooldownSec`; Cinderella's 40s was re-verified correct by nuke-storm
 counting after a cut-in-artifact misread). Λ (all-stage) units count as NO burst type for formation

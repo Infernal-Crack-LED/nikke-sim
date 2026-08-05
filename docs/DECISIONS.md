@@ -18,7 +18,8 @@ lives. Newest first within each section.
   ("chain glow at FB-end +3.0s even with the gauge full") was natural refill-from-zero: good
   teams take ~3-4s of normal generation to rebuild the bar, and the recordings that anchored the
   old read start during the pre-fight intro (fight time ≠ video time — the control video's
-  "first FB at 14.1s" includes ~9s of pre-fight; the real first fill matches the sim's ~~5.4s).
+  "first FB at 14.1s" includes ~9s of pre-fight; the real first fill (~5.6s of fight, cf.
+  QUEUE.md) matches the sim's ~~5.4s).
   (3) There is no multi-second opening phase — the boss is hittable from 3:00; the engine's only
   fight-start delay is the 8f deploy delay, which already agreed. CHANGE: `chainBlockedUntil`
   now defaults to no block (`ENV.ROTMODEL === 'floor'` opts back in); `POST_FB_CHAIN_DELAY_FRAMES`
@@ -39,9 +40,14 @@ lives. Newest first within each section.
   instrument was re-derived per its own contract: its floor drops the dead +2.5s term (now
   FB-duration + 0.5s pre-B1 + chain span), so `excess` reads the refill-from-zero directly —
   2.5-4.7s across the six comps, consistent with the owner's ~3-4s; bands re-pinned from measured
-  values. SSOT docs synced: STATE.md (env + constants + §3), game-mechanics.md,
+  values. SSOT docs synced: STATE.md (env + constants + §3), game-mechanics.md (rotation
+  section + the auto-burst priority line — the latter brought forward to the 2026-07-21
+  FIRST-READY ruling it had been stale against since that date, verified vs sim.ts:3078),
   damage-calculation.md, burst-gauge.md, and the agent-facing context pack
-  (.claude/skills/context/SKILL.md); frozen archives deliberately untouched: judge packets under
+  (.claude/skills/context/SKILL.md — its sync also refreshed pre-existing staleness beyond
+  the flip itself, all verified against sim.ts: the first-ready selection text, the
+  PRE_B1_GAP/FB_PRE_DELAY clauses, and §7 focus-gen anchors). Frozen archives deliberately
+  untouched: judge packets under
   scripts/kit-autonomy/results/ and the blind-rebuild code bundles under
   scripts/blind-rebuild/code-bundle/ (they carry the old floor default by design). PROCESS:
   owner directive ("make it the default, I thought it was already the default") — no
