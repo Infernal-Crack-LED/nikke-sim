@@ -108,7 +108,9 @@ const noCritDmg = withPatchedOverride('quency', (ov) => {
     removed += before - b.effects.length;
   }
   if (removed !== 1) {
-    throw new Error('quency burst critDamagePct effect missing — fixture is stale');
+    throw new Error(
+      'quency burst critDamagePct effect missing — fixture is stale'
+    );
   }
 });
 /** L3a/L3b inertness discriminator: remove the ENTIRE burst (both effects). If the Max-HP line is
@@ -198,7 +200,9 @@ const quencyBursts = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'quency'
   );
-const distinctTargets = (bs: BuffApply[]) => [...new Set(bs.map((b) => b.targetIdx))];
+const distinctTargets = (bs: BuffApply[]) => [
+  ...new Set(bs.map((b) => b.targetIdx)),
+];
 
 describe('quency — kit spec', () => {
   describe('L1 — S1 self HP-buffer grant (after 60 normal attacks; highestAllyMaxHpPct 12.42%, 10s; INERT)', () => {
@@ -206,13 +210,17 @@ describe('quency — kit spec', () => {
     const selfHp = quencyBuffs(base.events, 'maxHpFlat').filter(
       (b) => b.targetIdx === QUENCY
     );
-    const teamMaxHp = Math.max(
-      ...SLUGS.map((s) => unitOf(base.res, s).maxHp)
-    );
+    const teamMaxHp = Math.max(...SLUGS.map((s) => unitOf(base.res, s).maxHp));
 
     it('is a self grant on a hit counter that re-fires over the fight', () => {
-      expect(selfHp.length, 'no S1 self maxHpFlat grant was applied').toBeGreaterThan(0);
-      expect(selfHp.length, 'S1 must re-fire on the hit counter, not apply once').toBeGreaterThanOrEqual(3);
+      expect(
+        selfHp.length,
+        'no S1 self maxHpFlat grant was applied'
+      ).toBeGreaterThan(0);
+      expect(
+        selfHp.length,
+        'S1 must re-fire on the hit counter, not apply once'
+      ).toBeGreaterThanOrEqual(3);
       for (const b of selfHp) {
         expect(b.targetIdx).toBe(QUENCY);
         expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
@@ -254,7 +262,9 @@ describe('quency — kit spec', () => {
 
     it('RED vs counterfactual: the line is ABSENT when S1 is removed', () => {
       expect(
-        quencyBuffs(rNoS1.events, 'maxHpFlat').filter((b) => b.targetIdx === QUENCY)
+        quencyBuffs(rNoS1.events, 'maxHpFlat').filter(
+          (b) => b.targetIdx === QUENCY
+        )
       ).toHaveLength(0);
     });
 
@@ -268,7 +278,10 @@ describe('quency — kit spec', () => {
     const targets = distinctTargets(applied);
 
     it('is the kit magnitude, 5s window, single stack, applied by quency to allies', () => {
-      expect(applied.length, 'no atkPct@16.11 buff was applied').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no atkPct@16.11 buff was applied'
+      ).toBeGreaterThan(0);
       for (const b of applied) {
         expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
         expect(b.maxStacks).toBe(1);
@@ -284,8 +297,13 @@ describe('quency — kit spec', () => {
     });
 
     it('refreshes on the 8s internal cooldown (consecutive applications are 8s apart)', () => {
-      const frames = [...new Set(applied.map((b) => b.frame))].sort((a, b) => a - b);
-      expect(frames.length, 'S2 must fire repeatedly over the fight').toBeGreaterThanOrEqual(3);
+      const frames = [...new Set(applied.map((b) => b.frame))].sort(
+        (a, b) => a - b
+      );
+      expect(
+        frames.length,
+        'S2 must fire repeatedly over the fight'
+      ).toBeGreaterThanOrEqual(3);
       for (let i = 1; i < frames.length; i++) {
         expect(frames[i] - frames[i - 1]).toBe(8 * FPS);
       }
@@ -306,9 +324,10 @@ describe('quency — kit spec', () => {
     it('DISCRIMINATING: the buffed carries each do more damage with S2 than without', () => {
       for (const t of targets) {
         const slug = SLUGS[t as number];
-        expect(base.totals[slug], `${slug} should be lifted by S2`).toBeGreaterThan(
-          rNoS2.totals[slug]
-        );
+        expect(
+          base.totals[slug],
+          `${slug} should be lifted by S2`
+        ).toBeGreaterThan(rNoS2.totals[slug]);
       }
     });
 
@@ -333,7 +352,10 @@ describe('quency — kit spec', () => {
     });
 
     it('is the kit magnitude, 10s window, scoped to two non-self allies', () => {
-      expect(applied.length, 'no critDamagePct@29.9 buff was applied').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no critDamagePct@29.9 buff was applied'
+      ).toBeGreaterThan(0);
       for (const b of applied) {
         expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
       }
@@ -355,7 +377,9 @@ describe('quency — kit spec', () => {
     });
 
     it('RED vs counterfactual: the line is ABSENT when the crit-damage effect is stripped', () => {
-      expect(quencyBuffs(rNoCrit.events, 'critDamagePct', 29.9)).toHaveLength(0);
+      expect(quencyBuffs(rNoCrit.events, 'critDamagePct', 29.9)).toHaveLength(
+        0
+      );
     });
   });
 
@@ -363,7 +387,9 @@ describe('quency — kit spec', () => {
     it('DISCRIMINATING inertness: stripping the ENTIRE burst equals stripping ONLY the crit-damage line', () => {
       // If the Max-HP line carried any damage, removing the whole burst would drop MORE than removing
       // only the crit-damage effect. They are equal (to floating-point) → the Max-HP line is inert.
-      expect(Math.abs(sum(rNoBurst.totals) - sum(rNoCrit.totals))).toBeLessThan(1);
+      expect(Math.abs(sum(rNoBurst.totals) - sum(rNoCrit.totals))).toBeLessThan(
+        1
+      );
     });
 
     it('the burst Max-HP effect is still PRESENT in the shipped override (modeled, not dropped)', () => {
@@ -372,7 +398,10 @@ describe('quency — kit spec', () => {
       const maxHpGrants = quencyBuffs(base.events, 'maxHpFlat').filter(
         (b) => b.targetIdx !== QUENCY
       );
-      expect(maxHpGrants.length, 'burst Max-HP grant should be applied').toBeGreaterThan(0);
+      expect(
+        maxHpGrants.length,
+        'burst Max-HP grant should be applied'
+      ).toBeGreaterThan(0);
       for (const b of maxHpGrants) {
         expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
         expect(b.targetIdx).not.toBeNull(); // an ally, not the boss
@@ -389,8 +418,14 @@ describe('quency — kit spec', () => {
     );
 
     it('precondition: Full Bursts happen while crown wins the B2 slot (quency casts zero)', () => {
-      expect(fbStarts.length, 'no Full Bursts in the contention comp').toBeGreaterThan(0);
-      expect(qCasts.length, 'crown should out-prioritize quency for the B2 cast').toBe(0);
+      expect(
+        fbStarts.length,
+        'no Full Bursts in the contention comp'
+      ).toBeGreaterThan(0);
+      expect(
+        qCasts.length,
+        'crown should out-prioritize quency for the B2 cast'
+      ).toBe(0);
     });
 
     it('GREEN: the shipped burstCast fires NO crit buff on Full Bursts quency did not cast into', () => {

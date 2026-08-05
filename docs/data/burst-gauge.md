@@ -33,22 +33,26 @@ Primary sources:
   this column. Shotguns: the table value is per pellet; per trigger = value ×
   `shot_count` (10). Multi-muzzle rows multiply by `muzzle_count`.
 - **Locked during Full Burst and during the chain** (stages 1–3; einkk, KR sources,
-  user-confirmed). The fast post-FB refill visible in recordings is NOT in-FB banking:
-  charge-weapon units sit at full charge when FB ends and release a split second
-  after the boundary, front-loading the first moments of the refill, on top of normal
-  team rates. (An in-FB-generation interpretation was briefly adopted 2026-07-13 from
-  the bar anatomy and corrected by the user the same day — the refill curves are
-  explained without it.) Bar-reading note for future analysis: the bar's FULL-RESTING
-  render occupies 83.5% of its pixel width (confirmed on a 9-second wait-at-full
-  stretch); readings ≥96% are the pre-chain glow pulse.
-- **The next chain cannot open until ~3s after Full Burst ends** (MEASURED: chain glow
-  at FB-end +3.0s even when the refill completes at ~+1.2-2s and the Burst-1 cooldown
-  is ready at +1.5s) — a post-full-burst re-engage window.
-- Consequence: since high-generation comps finish refilling inside that ~3s window,
-  **rotations are cooldown- and chain-bound, not gauge-bound** — full-burst counts are
-  cooldown arithmetic, which is why they are deterministic run-to-run (the only real
-  variance source is a boss range transition colliding with a chain, which blocks
-  casts ~1s while the boss is off-screen).
+  user-confirmed 2026-07-13, re-confirmed 2026-08-04). The lock lifts the INSTANT Full
+  Burst ends — there is NO lingering post-FB delay: the ~3-4s to the next chain is the
+  natural refill-from-zero at normal team generation rates (owner ruling 2026-08-04,
+  overturning both the "charge units releasing held shots" refill story and the fixed
+  ~3s post-FB chain-open delay — see the next bullet). Bar-reading note for future
+  analysis: the bar's FULL-RESTING render occupies 83.5% of its pixel width (confirmed
+  on a 9-second wait-at-full stretch); readings ≥96% are the pre-chain glow pulse.
+- **There is NO post-Full-Burst chain-open lock** (owner ruling 2026-08-04). The chain
+  opens the moment the refilled gauge is full. The earlier "chain glow at FB-end +3.0s"
+  MEASURED read that motivated a fixed 150f block is OVERTURNED: that gap was natural
+  refill-from-zero (~3-4s for a good team), compounded by a video-offset confound — the
+  bar-anatomy recordings start during the pre-fight intro, so their timestamps are not
+  fight time (the control video's "first FB at 14.1s" is ~5.6s of fight, matching the
+  sim). The fixed block survives only as the opt-in `ROTMODEL=floor` A/B arm
+  (`POST_FB_CHAIN_DELAY_FRAMES` = 150f); DECISIONS 2026-08-04.
+- Consequence: cycle time = refill-from-zero (~3-4s of generation) + chain casts + the
+  10s Full Burst — **rotations are gauge-refill- and cooldown-bound** — full-burst
+  counts are refill/cooldown arithmetic, which is why they are deterministic run-to-run
+  (the only real variance source is a boss range transition colliding with a chain,
+  which blocks casts ~1s while the boss is off-screen).
 - Burst Gen ▲ buffs and the Quantum cube sum additively, then multiply base generation.
 - **No auto-play efficiency factor exists.** Both solo recordings match the datamined
   values with no loss; the old `AUTO_GEN_EFFICIENCY 0.7` was compensating for the chain

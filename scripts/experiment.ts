@@ -51,11 +51,15 @@ interface Comp {
 }
 
 // Per-cycle floor/observed/excess decomposition (2026-08-03 fb-count-regression investigation,
-// docs/handoffs/scientific-method-harness.md). floor = FB duration + measured 3s FB-end->B1
-// total (POST_FB_CHAIN_DELAY_FRAMES 2.5s + PRE_B1_GAP_FRAMES 0.5s, sim.ts) + the comp's own
-// median chain span (first-stage-cast -> FULL BURST). excess = observed steady-state FB-to-FB
-// period - floor, i.e. gauge-fill time beyond the cooldown/chain floor. DECOMP=1 (via `report`)
-// exposes this on the CLI; exported here so scripts/tests can pin it as a regression fixture.
+// docs/handoffs/scientific-method-harness.md). floor = FB duration + PRE_B1_GAP (0.5s between
+// gauge-full and the B1 cast) + the comp's own median chain span (first-stage-cast -> FULL BURST).
+// excess = observed steady-state FB-to-FB period - floor, i.e. the time the engine spends
+// refilling the gauge from zero beyond the mechanical floor — the owner-confirmed 2026-08-04
+// picture is ~3-4s of natural generation for a good team. (The pre-2026-08-04 floor carried an
+// extra +2.5s for the fixed post-FB chain-open block; that block was OVERTURNED as a game
+// mechanic — the chain opens on gauge-full — and ROTMODEL=floor is now the opt-in A/B arm.)
+// DECOMP=1 (via `report`) exposes this on the CLI; exported here so scripts/tests can pin it as a
+// regression fixture.
 export function decomposeCycles(rotationLog: string[]) {
   const fbLines = rotationLog.filter((l) => l.includes('FULL BURST'));
   const stageStarts: number[] = [];
@@ -82,7 +86,7 @@ export function decomposeCycles(rotationLog: string[]) {
   };
   const chain = median(chainSpans.filter((x) => !isNaN(x)));
   const fbDur = median(fbDurs.filter((x) => !isNaN(x)));
-  const floor = fbDur + 3.0 + chain;
+  const floor = fbDur + 0.5 + chain; // 0.5s = PRE_B1_GAP_FRAMES (gauge-full → B1 cast)
   // steady-state period from the middle 60% of cycles (skip opening/closing edge effects)
   const lo = Math.floor(fbStarts.length * 0.2);
   const hi = Math.ceil(fbStarts.length * 0.8);

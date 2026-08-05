@@ -1,0 +1,65 @@
+{
+  "note": "Neon (slug `neon`) — the BASE Neon: SG / Supporter / Fire / Burst I, Elysion, cd 20s, ammo 9, reloadFrames 129, hitsPerShot 10 (pellets), normalMult 224.5, baseCrit 15/150. EXACT SLUG: the slug-disambiguation lint's AMBIGUOUS-base advisory fires on the bare name by design (the base display name is 'Neon' with no variant colon) and is resolved on this slug — she is NOT neon-blue-ocean (MG/Water Burst III, 'nbo') and NOT neon-vision-eye (RL/Electric Burst III, 'nve'). FROM-SCRATCH kit-autonomy build (no prior override; simSupported:false flipped by this gauntlet). Kit-autonomy gauntlet 2026-08-04: test-first spec scripts/tests/units/neon.test.ts (N1-N5, event-log pins + 8 counterfactual/reference patches), cross-family S2b claude-fable-5 converged on all 4 lines with zero divergences. MODEL — SKILL2 'Viva Firepower!' ('Activates at the beginning of Full Burst. Affects all allies. Critical Rate ▲ 45.93% for 2 shots'): fullBurstEnter → allies (all incl. self) → critRatePct 45.93, durationShots 2, NO durationSec. 'At the beginning of Full Burst' = fullBurstEnter — fires only when a Full Burst ACTUALLY opens, regardless of who cast which stage; NOT burstCast: helm (B3, 40s CD) gates the fixture's chain, so neon casts her B1 9× in 180s but only 5 Full Bursts open — an own-cast keying over-fires the grant on the 4 incomplete rotations (pinned by both timing — the buff lands on the fullBurstStart frame — and the 5-vs-9 count split). 'For 2 shots' = the engine's round-count duration (durationShots): each holder's OWN next 2 rounds carry the buff, then it lapses right after the 2nd (sim.ts round-count expiry); no wall-clock expiry. Plain 'Critical Rate' → the unscoped critRatePct, NOT critRateNormalPct (volume precedent: the prose carries no normal-attack qualifier, so skill/burst hits are lifted too). BURST 'Firepower Rules!' line 1 ('Affects 1 enemy unit(s) with the highest final DEF. Deals 528.97% of final ATK as Burst Skill damage'): burstCast → enemy → flatDamage 528.97 (burst bucket). The cast lands BEFORE the Full Burst window opens, so the nuke never takes the +50% FB major (verified fact 2026-07-13; fbMajorApplied false pinned). 'Highest final DEF' collapses to the single partless boss. BURST line 2 ('Affects all allies with a Shotgun. Max Ammunition Capacity ▲ 3 round(s) for 10 sec'): burstCast → alliesOfWeapon SG (incl. self — neon IS SG, no except-self clause) → maxAmmoFlat 3, durationSec 10. maxAmmoFlat is the theme-14 flat-rounds primitive ('▲ N round(s)' — maxAmmoPct would mis-scale per ally's base mag: 3% of 9 rounds rounds to +0); tove precedent (same shape: alliesOfWeapon SG + maxAmmoFlat, video-confirmed there). '3 round(s)' is the VALUE's unit, not a duration — the duration is the wall-clock 10s. Observable: SG magazines run 9→12 inside the window (ammoAfter up to 11). SKILL1 'Neon's Special Bullet' is UNMODELED — see ⚑1. BURST-ELIGIBILITY: every modeled line is Full-Burst-gated — in a team that cannot chain B1→B2→B3 her kit contributes plain SG fire only. NO `ignored` blocks. All magnitudes (3.56, 45.93, 528.97, 3 rounds, 5s, 10s, 2 shots) are kit-literal SL10 → DATAMINED; nothing calibrated. ⚑ FLAGS: ⚑1 (skill1 'Neon's Special Bullet', UNMODELED — out-of-domain: world model). The trigger is an enemy KILL; the engine has no kill event (grep-verified: no kill primitive in src/engine) and the scope-lock fight is one immortal partless boss with no adds, so the crit grant can never fire and contributes exactly zero in ANY sim run — deliberately NOT encoded as an always-on/interval proxy (that would fabricate a buff the sim's world cannot produce; the nearest-wrong counterfactual is pinned RED by the spec test). ESTIMATE: in real multi-add content kills are frequent, so in-game the 2 highest-final-ATK allies run +3.56% crit at near-full uptime (5s refresh vs frequent kills); at scope the value is 0. RECIPE: if enemy-death/adds are ever modeled, fire on the kill credit → target alliesTopAtk count 2 byFinalAtk → critRatePct 3.56 durationSec 5 (the prose says 'highest FINAL ATK' → byFinalAtk per the A3 literal-word rule; self is eligible, no except-self clause). TIER: out-of-domain (world model), not a value estimate. epinel/volume precedent for the class. ⚑2 (cadence tuple, standard): ammo 9 / reloadFrames 129 / RoF 90 rpm are datamine fields, unverified on video for this unit; they set the magazine cycle (~6s mag + ~2.15s reload) and therefore both the timing of the maxAmmoFlat window uptake and how fast the durationShots 2 budget is spent. Recipe: focused solo scope-lock video — count rounds per 10s window + the mag-empty→first-shot gap.",
+  "unmodeled": {
+    "skill1": [
+      "Activates when killing an enemy. Affects 2 ally unit(s) with the highest final ATK.\nCritical Rate ▲ 3.56% for 5 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 45.93,
+          "durationShots": 2
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 528.97
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "SG"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoFlat",
+          "value": 3,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,164 @@
+{
+  "slug": "crow",
+  "leakDetected": null,
+  "override": {
+    "slug": "crow",
+    "skill1": [],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 89.09
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 12.72,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 915.75
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Affects all enemies. Activates when entering Full Burst.",
+        "ATK ▼ 19.93% for 10 sec."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill1 is an ENEMY ATK ▼ (all enemies, 10 s, on Full Burst entry). It is a boss-offense debuff, not a team buff: at scope lock the boss deals no modeled damage and nobody has an HP pool, so it moves zero damage. It is also not expressible as a live block — the schema's only enemy-facing stat is damageTakenPct (a different mechanic) and target {kind:'enemy'} resolves to no entity. Recorded verbatim in unmodeled rather than encoded as an inert block.",
+      "skill2's DEF ▲ 12.72% is modeled as defPct, which is documented inert in v1 (self DEF does not affect own damage). Kept for kit completeness / future consumers; it contributes nothing to damage today.",
+      "⚑ The 89.09% rider's REAL magnitude is set by how often lastBullet fires, i.e. by the SMG cadence + 120-round magazine + hitsPerShot 2 + reloadFrames 121 — all datamine-sourced and unverified here. Every number in the blocks is kit-literal; the per-fight proc COUNT is not.",
+      "The burst hit is authored on burstCast, so it lands pre-Full-Burst by engine timing (no +50% major, no FB entry auras) per the verified burst-cast rule. noFb is deliberately NOT set — the exemption comes from cast timing, not from a per-kit flag.",
+      "The 89.09% and 915.75% hits carry no 'core strike' wording, so neither is core-flagged; crit eligibility is left to the engine's flat-damage-rider default rather than asserted per-kit."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Crow (SMG/Fire/Defender/Burst III, 40 s CD, 120 ammo, hitsPerShot 2). Kit is short and almost entirely literal: S1 is an enemy ATK ▼ 19.93%/10 s on Full Burst entry — defensive-only at scope lock and left unmodeled (verbatim in unmodeled.skill1). S2 is two lastBullet-triggered lines off the same activation clause: a 89.09%-of-final-ATK rider on the target (flatDamage, no core, engine-default range/FB handling) and a self DEF ▲ 12.72%/5 s (defPct, inert in v1, kept for completeness). Burst is a single 915.75%-of-final-ATK hit on the highest-final-ATK enemy — one boss at scope lock, so target enemy; authored on burstCast, therefore pre-FB by timing. No stacks, no weapon swap, no DoT, no mode gates, no pierce. The only unmeasured quantity driving output is the lastBullet proc rate (magazine cadence)."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all enemies. Activates when e…",
+      "status": "SKIPPED",
+      "effectOrReason": "Activation clause + target of the ATK ▼ line below; skipped with it (enemy-facing debuff has no live channel)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▼ 19.93% for 10 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Enemy ATK debuff — purely defensive at scope lock (boss damage/HP unmodeled) and not representable: the enemy-facing stat channel is damageTakenPct (different mechanic) and target 'enemy' resolves to no entity. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when the last bullet hits",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'lastBullet'} (per-magazine), target {kind:'enemy'} — literal 'Affects the target'."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 89.09% of final ATK as add…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 89.09 — no core (no 'core strike' wording), no noFb/noRange set (engine-automatic), crit left to engine rider default."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "…last bullet hits. Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Second lastBullet block, target {kind:'self'} — distinct target set from the damage line, so authored as its own block."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▲ 12.72% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct 12.72, durationSec 5 (self). Documented inert in v1; kept per the 'never drop DEF/HP lines' rule."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects the enemy with the highest…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single partless boss at scope lock, so 'highest final ATK enemy' degenerates to the boss."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 915.75% of final ATK as Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'} + flatDamage atkPct 915.75 — burst-slot damage lands in the burst bucket; pre-FB by cast timing (no noFb flag)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "base cadence tuple (pullsPerSec / reloadFrames 121 / hitsPerShot 2)",
+      "estimate": "Use the datamined SMG cadence floored to 60fps frame boundaries — effective pulls/s = 60/ceil(60/nominal) (a nominal 24/s SMG lands at 20/s, 3 frames/pull). With 120 rounds at hitsPerShot 2 that is ~60 pulls/magazine ≈ 3.0 s of fire + ~2.0 s reload (121 f), i.e. a lastBullet proc roughly every ~5 s ⇒ ~30–36 procs over a 180 s fight.",
+      "reasoning": "ALWAYS-⚑ #1: rate_of_fire and reloadFrames are known-unreliable datamine fields, and NOTHING in Crow's kit text states cadence. Her entire non-burst output is the 89.09% rider, whose magnitude is (proc count) × (89.09% of final ATK) — so cadence error propagates 1:1 into her skill bucket.",
+      "recipe": "Focus-slot recording under scope lock: frame-count the ammo counter over one full magazine (shots/sec, the directly-measured quantity) and count frames from empty to refill for the true reload window; then count 89.09% popups per magazine cycle to confirm the derived proc rate."
+    },
+    {
+      "field": "override.skill2[0].trigger (lastBullet proc count per fight)",
+      "estimate": "~30–36 procs / 180 s (derived from the cadence estimate above; ~1 per ~5 s).",
+      "reasoning": "ALWAYS-⚑ #2-adjacent: the trigger IS kit-stated ('when the last bullet hits'), but its FREQUENCY is not, and it is the sole lever on her skill-bucket total. Note also that hitsPerShot 2 means round accounting (1 round = 1 bullet, 2 per trigger pull) decides where 'the last bullet' falls — a wrong round model shifts proc count by ~2×.",
+      "recipe": "Count discrete 89.09%-magnitude popups over a full recorded fight and divide by fight length; cross-check against magazine cycles counted off the ammo counter (the two must agree)."
+    },
+    {
+      "field": "override.skill2[0].effects[0].crit (omitted)",
+      "estimate": "Rider crits at Crow's sheet crit rate (engine flat-damage-rider default), no core.",
+      "reasoning": "Prior #9: function-damage riders crit at the caster's rate but take no core unless the text says 'core strike damage' — Crow's text says neither. I deliberately did not assert crit:true per-kit, because the engine already carries a global rider-crit gate and a redundant per-kit flag would hide a future gate change.",
+      "recipe": "Popup colour census on a focus recording: classify every 89.09%-band popup orange+icon (crit) vs white (plain); a crit fraction matching her sheet rate confirms the default, ~0% would justify an explicit crit:false."
+    },
+    {
+      "field": "override.burst[0] (Full-Burst exemption; noFb unset)",
+      "estimate": "Burst hit resolves BEFORE the Full Burst window opens — no +50% major, no FB entry auras.",
+      "reasoning": "ALWAYS-⚑ #6 says noFb is measured-only and default-OFF; the exemption here is expected to come from cast TIMING (burstCast fires pre-FB), not a per-kit flag, so setting noFb would double-model it. Flagging because the two routes are indistinguishable from the kit text alone.",
+      "recipe": "Frame-align the 915.75% popup against the Full Burst banner frame in a focus recording; if the popup precedes the banner the timing route is correct and noFb must stay unset."
+    },
+    {
+      "field": "override.skill1 (enemy ATK ▼ 19.93% / 10 s — left unmodeled)",
+      "estimate": "Zero damage contribution at scope lock.",
+      "reasoning": "The debuff reduces BOSS offense; the sim models no incoming damage and no HP pools, and there is no enemy entity for a stat buff to attach to. Recorded verbatim rather than encoded as a permanently-inert block, so the file states the model as it is.",
+      "recipe": "No measurement needed for damage validation. It would only need modeling if survival/incoming-damage is ever simulated; re-open then."
+    },
+    {
+      "field": "override.skill2[1].effects[0] (defPct 12.72 — inert)",
+      "estimate": "Zero damage contribution (self DEF does not feed any damage path).",
+      "reasoning": "types.ts documents defPct as inert in v1. Kept per the rule that DEF/HP/heal/shield lines are never dropped on isolation — a future HP-scaling or DEF-consuming mechanic would need it present.",
+      "recipe": "None. Revisit only if a DEF-scaling consumer lands."
+    }
+  ],
+  "model": "claude-opus-5"
+}

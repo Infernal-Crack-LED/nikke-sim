@@ -558,7 +558,7 @@ interface UnitState {
       sequential?: boolean;
       trueFlavor?: boolean;
       projFlavor?: 'attachment' | 'explosion';
-      coreRate?: number; // per-release core rate (coreOverride path) — RRH explosions ~1/3
+      coreRate?: number; // per-release core rate (coreOverride path) — no shipped consumer since the 2026-08-04 RRH explosion no-core ruling
       critRoll?: boolean; // release rolls crit at the caster's sheet rate (removes the stored-hit crit-OFF exemption)
       instantInFb?: boolean; // release each FB frame (in-burst attach detonates instantly), not only at FB start
       releasable: number;
@@ -573,6 +573,7 @@ interface UnitState {
   resourceCfg: { name: string; initial: number; min?: number; max?: number }[];
   burstCdFrames: number;
   lastBurstCastFrame: number;
+  lastBurstCastStage: number; // the stage that cast filled (hitCount countInFbStage scoping)
   // The PRIMARY weapon-fire damage instance of this unit's most recent trigger pull, and the
   // frame it landed on. Written by firePull immediately after that instance resolves, i.e.
   // BEFORE the pull's shotFired/hitCount/chargeCounter blocks dispatch — which is what lets a
@@ -894,6 +895,7 @@ export function runSim(
       resourceCfg: skills.resources ?? [],
       burstCdFrames: 0,
       lastBurstCastFrame: -1,
+      lastBurstCastStage: -1,
       lastHitDamage: 0,
       lastHitFrame: -1,
       damage: { normal: 0, skill: 0, burst: 0 },
@@ -1401,12 +1403,11 @@ export function runSim(
     return per * (u.idx === focusIdx ? focusMult : UNFOCUSED_CHARGE_GEN) + flat;
   };
   const addGauge = (u: UnitState, frame: number, energyPct: number) => {
-    // Generation is LOCKED during Full Burst (user-confirmed 2026-07-13, correcting an
-    // over-read of the bar anatomy: the fast post-FB refill is charge units releasing
-    // held full charges a split second after FB ends + normal team rates — with the
-    // measured ~3s post-FB chain-open delay, high-generation comps finish refilling
-    // before the chain can open anyway, so rotations stay cooldown/chain-bound).
-    // Also no generation during the chain itself (stages 1-3, einkk).
+    // Generation is LOCKED during Full Burst and during the chain itself (stages 1-3,
+    // einkk; user-confirmed 2026-07-13, re-confirmed 2026-08-04). The lock lifts the
+    // instant FB ends — there is NO lingering post-FB delay (owner ruling 2026-08-04,
+    // overturning the earlier "~3s post-FB chain-open delay" read: the bar just refills
+    // from zero, which takes a good team ~3-4s of normal generation).
     if (fbEndFrame > frame || stage !== 0) {
       return;
     }
@@ -1496,8 +1497,8 @@ export function runSim(
   let focusBurstCount = 0;
   // stage-3 caster of the most recent full burst — drives the everyOther gate
   let lastStage3Caster = -1;
-  let chainBlockedUntil = 0; // post-full-burst chain-open block (measured ~3s)
-  const POST_FB_CHAIN_DELAY_FRAMES = ENV.POSTFB ? Number(ENV.POSTFB) : 150; // 180→150: the measured 3s (FB-end→B1) minus the now-separately-modeled 30f-pre-B1 (was double-counted). FB counts are flat across 60-150f; 150 gives the best board.
+  let chainBlockedUntil = 0; // post-full-burst chain-open block (opt-in floor arm only — see below)
+  const POST_FB_CHAIN_DELAY_FRAMES = ENV.POSTFB ? Number(ENV.POSTFB) : 150; // opt-in A/B arm ONLY (ROTMODEL=floor). OVERTURNED as a game mechanic 2026-08-04 (owner): there is no post-FB chain-open lock — the old "measured 3s (FB-end→B1)" was natural refill-from-zero (~3-4s for a good team), and the bar-anatomy reads that motivated it were video-relative: the recording starts during the pre-fight intro, before the 3:00 clock (so its "first FB at 14.1s" is NOT 14.1s of fight time). Kept behind ROTMODEL=floor for A/B.
   let stageExpireFrame = Infinity; // stage-2/3 window deadline (stage 1 never expires)
   // Reserve/grace window: how long a filled chain WAITS at stage 2/3 for a stage-filler to come
   // off cooldown. This is the auto's inter-activation grace (owner 2026-07-21: auto casts B1→~1s→
@@ -1724,10 +1725,13 @@ export function runSim(
             100 +
           stat(u, 'chargeDamagePct', frame) / 100
         : 1;
-    // Projectile Attachment/Explosion Damage is its OWN multiplier bucket on
-    // the flavored hit (multiplicative with Damage Up), not additive within it.
-    // It applies ONLY to explosion/attachment-flavored hits (RRH's projectiles,
-    // Anis: Star's stars) — normal attacks, RL included, never benefit.
+    // Projectile Attachment/Explosion Damage — flavor-scoped (an attachment hit reads ONLY
+    // projectileAttachmentPct, an explosion hit ONLY projectileExplosionPct; unflavored hits
+    // never benefit) and composed ADDITIVELY into the Damage Up bucket with attack damage.
+    // Owner popup ruling 2026-08-04: a non-crit CORE attach during RRH's B3 window hit
+    // 5,057,974 in the control+carry recording — the additive composition matches to −0.24%;
+    // the prior own-multiplicative bucket over-credited it ~×1.6 (her hot read). `projFactor`
+    // is still REPORTED on the event as the flavor marker but is NOT a factor in the product.
     const projExplosion =
       opts.projFlavor === 'explosion'
         ? stat(u, 'projectileExplosionPct', frame)
@@ -1736,7 +1740,7 @@ export function runSim(
       opts.projFlavor === 'attachment'
         ? stat(u, 'projectileAttachmentPct', frame)
         : 0;
-    const projFactor = 1 + (projExplosion + projAttachment) / 100;
+    const projFactor = 1 + (projExplosion + projAttachment) / 100; // event marker only
     // Q10: Pierce Damage ▲ empowers Pierce-tagged units' attacks — a Damage Up
     // bucket addition, only while the unit's attacks are Pierce-tagged: static kit
     // pierce (hasPierce), a live timed "Gain Pierce for N sec" window
@@ -1764,9 +1768,11 @@ export function runSim(
           : 0) +
         pierce +
         (opts.extraDmgUpPct ?? 0) +
-        rlNormalProjExpl) /
+        rlNormalProjExpl +
+        projExplosion +
+        projAttachment) /
         100;
-    // Sequential-attack TRUE multiplier — its OWN multiplicative bucket (like charge/projFactor),
+    // Sequential-attack TRUE multiplier — its OWN multiplicative bucket (like charge),
     // NOT additive into Damage Up. Kit wording "Damage multiplier of sequential attacks is scaled
     // by x%" (eve's Exospine Mk2 ×2) is a genuine multiplier on the sequential-flavored instance, so
     // it must not dilute against other Damage-Up buffs (which the additive `sequentialDamagePct` does
@@ -1796,7 +1802,6 @@ export function runSim(
       charge *
       dmgUp *
       seqMult *
-      projFactor *
       taken *
       distributed;
     // DBG_UNIT=<slug> [DBG_N=<count>]: log per-instance bucket decomposition (video
@@ -2891,7 +2896,9 @@ export function runSim(
     }
     units.forEach((u) => fireTriggered(u, 'fullBurstEnter', atFrame));
     // release stored hits (e.g. Rapi:RH's attached projectiles exploding) AFTER enter-buffs so FB
-    // auras apply to them; charges added this frame (from the stage-3 cast itself) wait for next FB
+    // auras apply to them; charges added this frame (from the stage-3 cast itself) wait for next FB.
+    // NO skillGauge here: releases only ever happen DURING Full Burst, and burst gauge cannot be
+    // generated during FB (owner ruling 2026-08-04) — the asymmetry with the attach hit is correct.
     for (const u of units) {
       for (const entry of u.storedHits.values()) {
         if (entry.freshFrame < atFrame) {
@@ -2990,16 +2997,16 @@ export function runSim(
       });
       rotationCasters = [];
       stage = 0;
-      // MEASURED (run-I bar anatomy, 2026-07-13): the next chain cannot open until
-      // ~3s after full burst ends (chain glow at FB-end +3.0s even with the gauge
-      // full at +1.2s and the Burst-1 cooldown ready at +1.5s) — the post-full-burst
-      // camera/re-engage window. Generation keeps running during it.
-      // ENV.ROTMODEL='refill': experiment arm removing the fixed post-FB block (chain opens
-      // on gauge-full; SWHA 13-window bar traces). HELD — floor removal breaks the pinned
-      // wind-weak 13s until the T5/T1 refill over-speed is measured (see cycle-rework design
-      // in experiment-harness-ai.md). Default 'floor' = current measured-constant behavior.
+      // There is NO post-FB chain-open lock (owner ruling 2026-08-04, overturning the
+      // 2026-07-13 run-I bar-anatomy read): generation is locked during FB and unlocks
+      // IMMEDIATELY when FB ends; the chain opens the moment the refilled gauge is full.
+      // The old "chain glow at FB-end +3.0s" observation was natural refill-from-zero —
+      // good teams take ~3-4s to rebuild the bar — compounded by a video-offset confound
+      // (the recordings start before the 3:00 clock; fight time ≠ video time).
+      // ENV.ROTMODEL='floor': opt-in A/B arm restoring the old fixed 150f post-FB block
+      // (kept for comparisons against pre-2026-08-04 boards). Default = no block.
       chainBlockedUntil =
-        ENV.ROTMODEL === 'refill' ? frame : frame + POST_FB_CHAIN_DELAY_FRAMES;
+        ENV.ROTMODEL === 'floor' ? frame + POST_FB_CHAIN_DELAY_FRAMES : frame;
     }
 
     // ---- burst rotation ----
@@ -3135,6 +3142,7 @@ export function runSim(
         cand.burstFirstPending = false;
         cand.burstCasts++;
         cand.lastBurstCastFrame = frame;
+        cand.lastBurstCastStage = stage;
         cand.burstCdFrames = Math.round(cand.char.burstCooldownSec * FPS);
         rotationCasters.push(cand.idx);
         rotationLog.push(
@@ -3498,7 +3506,8 @@ export function runSim(
     // ---- in-FB instant stored-hit release: a rocket that ATTACHES during Full Burst
     // detonates immediately in the same window (RRH), instead of only batch-releasing at the
     // next FB start. Per-entry `instantInFb` (RRH S2 explosion) drives it permanently;
-    // ENV.XINSTEXPL forces it on for experiments. Same core/flavor treatment as the FB-start batch. ----
+    // ENV.XINSTEXPL forces it on for experiments. Same core/flavor treatment as the FB-start batch;
+    // same NO-skillGauge rule (in-FB releases cannot generate burst gauge, owner ruling 2026-08-04). ----
     if (fbEndFrame > frame) {
       for (const u of units) {
         const envForce = XINSTEXPL.has(u.char.slug);
@@ -3835,13 +3844,21 @@ export function runSim(
         applyBlock(u.idx, b, bi, frame);
       } else if (b.trigger.kind === 'hitCount') {
         const key = `hc:${bi}`;
-        // RRH rocket meter fills 2× faster in her Full Burst: threshold 120 → countInFb (60)
-        // while in FB. The counter carries over across the boundary (no reset) — the faster
-        // threshold just consumes the accrued fill, so a near-full meter fires on FB entry.
-        const threshold =
-          fbEndFrame > frame && b.trigger.countInFb != null
-            ? b.trigger.countInFb
-            : b.trigger.count;
+        // Threshold-lowering scope: DEFAULT = any team Full Burst state (SWID convention,
+        // pinned by hit-count-trigger.test.ts). `countInFbStage` SCOPES the lowered
+        // threshold to the 10s window after the owner's OWN burst cast at that stage —
+        // RRH's "▼ 60 for 10 sec" is a Stage-3 self-buff line (owner ruling 2026-08-04:
+        // teammate-opened FBs and her own noB1 stage-1 casts run the full threshold). The
+        // counter carries over across any boundary (no reset) — the lower threshold just
+        // consumes the accrued fill, so a near-full meter fires at the window's start.
+        const lowered =
+          b.trigger.countInFb != null &&
+          (b.trigger.countInFbStage != null
+            ? u.lastBurstCastFrame >= 0 &&
+              u.lastBurstCastStage === b.trigger.countInFbStage &&
+              frame - u.lastBurstCastFrame < 10 * FPS
+            : fbEndFrame > frame);
+        const threshold = lowered ? b.trigger.countInFb! : b.trigger.count;
         let c = (u.hitCounters.get(key) ?? 0) + u.char.hitsPerShot;
         while (c >= threshold) {
           c -= threshold;

@@ -1,0 +1,85 @@
+{
+  "slug": "jackal",
+  "kitDescription": "Jackal is an Iron rocket-launcher Defender whose kit is almost entirely defensive. When she is attacked 10 times, she debuffs the highest-HP enemy with increased Damage Taken and reduced ATK for 10 seconds. At the start of battle she links herself and the two highest-ATK allies to equally share incoming damage and grants them a 120-second DEF buff. Her Burst I gives all allies a 10-second DEF buff and, for 15 seconds, boosts the Burst Skill damage of allies whose burst skills target a single enemy. In a damage sim where the boss never attacks, her only offensively relevant contributions are the boss Damage-Taken debuff and the single-target burst-damage amp.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "burst DEF 14.69% 'grants DEF 14.69% to all five allies' — blind assumed a 5-unit team; controlComp fields 4 (holder set {liter, crown, jackal, helm})",
+      "burst DEF 14.69% 'DEF 14.69% is re-granted per burst cast, not once' — expected jackalBursts*5 applications; actual 6 casts x 4 allies = 24"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Damage Taken ▲ 9.09% for 10 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED with ⚑1 (estimate: near-permanent uptime if fireable, ~+9.09% team amp; recipe: needs an incoming-damage/attacked-count trigger primitive + measured boss attack cadence; tier: out-of-domain). maiden 'attacked 20 times' Revenge cluster is the binding precedent.",
+        "blindSaid": "S5: GAP it.skip on the trigger + behavioral assertions satisfied by zero applications. S6: MODELED it as hitCount:10 on jackal's OWN shots, self-flagged in caveats as an unmeasured stand-in cadence.",
+        "formulaCheck": "damageTakenPct is a real Taken-bucket team amp; the trigger 'attacked 10 time(s)' counts hits RECEIVED — the sim has no being-attacked event source and skillCooldownsSec.skill1 is null, so any encoding fabricates uptime. S6's own-shot hitCount is exactly S2b's named nearest-wrong model ('attacked' misread as 'attacking').",
+        "fireRateOk": true,
+        "explanation": "Driver's documented omission is the faithful disposition under the ALWAYS-⚑ rule and maiden precedent; S6's divergence is a self-admitted guess at the nearest-wrong trigger, not a fresh find. The driver's J1 test pins both directions (zero applications at baseline; both fireable counterfactuals lift totals), so the omission is proven deliberate, not a stale fixture."
+      },
+      {
+        "kitLine": "ATK ▼ 9.09% for 10 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim; engine drops enemy ATK debuffs at dispatch (boss deals no damage).",
+        "blindSaid": "S2b/S5/S6 all agree: UNMODELED, purely defensive; S5 asserts no negative atkPct ever lands on an ally (green vs shipped).",
+        "formulaCheck": "Boss outgoing ATK has no consumer in v1; zero damage delta is correct.",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence; documented omission."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Equally shares damage taken for 120 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim; no redistribution primitive and no incoming damage to redistribute (bay/marciana/poli precedent).",
+        "blindSaid": "S2b/S5/S6 all agree UNMODELED; S5 asserts no synthetic recovery/shielded events originate from skill2.",
+        "formulaCheck": "No incoming-damage pool exists; the line is inert by construction.",
+        "fireRateOk": true,
+        "explanation": "Full convergence; documented omission."
+      },
+      {
+        "kitLine": "DEF ▲ 8.27% for 120 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Two passive frame-0 blocks: self + alliesTopAtk{count:2, excludeSelf:true, byFinalAtk:true}, defPct 8.27/120s; lapse at t=120 asserted; byte-identical-totals inertia pinned.",
+        "blindSaid": "S6 converged on identical structure but omitted byFinalAtk; S2b independently derived byFinalAtk:true per the literal 'highest final ATK' wording; S5 pins holder set = exactly 3 including jackal and 7200-frame expiry (green vs shipped).",
+        "formulaCheck": "defPct is inert in v1 (no damage path reads holder DEF); target-set and duration semantics match prose; 'self AND 2 allies' = exclude-then-take-2 is the literal reading.",
+        "fireRateOk": true,
+        "explanation": "Driver's byFinalAtk follows the repo A3 literal-word rule (milk/maxwell/miranda) that S2b derived independently; S6's omission is an encoding-rule lapse with zero damage consequence — noted, not a finding. The 120s duration genuinely lapses inside the 180s fight and is asserted, not modeled permanent."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Burst Skill damage ▲ 38.91% for 15 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim with ⚑2 (estimate: qualifying single-target burst nukes in-window miss x1.3891, comps read ~28% cold on that portion; recipe: new burstSkillDamagePct StatKey + dealDamage bucket term + per-ally description-scope qualification, verified against popup reads; tier: engine gap). trina 2026-07-24 GO carries the same mechanic family documented identically.",
+        "blindSaid": "S2b: GAP, load-bearing, named the unscoped attackDamagePct nearest-wrong. S5: GAP it.skip + asserts 38.91 never appears as any generic damage stat (green vs shipped). S6: unmodeled with the SAME reasoning — converged.",
+        "formulaCheck": "Confirmed: the formula SSOT has no Burst-Skill-Damage bucket — StatKey carries no burst-scoped damage stat and the dmgUp bracket has no burst-category term; the 'Affects 1 enemy unit(s)' description-text scope has no decidable gate primitive. Any enactable encoding today (attackDamagePct etc.) is the refuted nearest-wrong.",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence on the gap; the driver named it explicitly with estimate+recipe+tier rather than waving it off, satisfying S2b's load-bearing demand. The driver's J4 test proves the omission is a choice (unscoped-38.91% counterfactual lifts team totals)."
+      },
+      {
+        "kitLine": "DEF ▲ 14.69% for 10 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> allies -> defPct 14.69/10s; pinned on magnitude (vs lvl-1 8.08), scope (all allies per cast), timing (cast frame, not fullBurstEnter), duration (600f, not 900f), and byte-identical inertia.",
+        "blindSaid": "S6: IDENTICAL encoding. S5: green on holder set, per-cast re-grant, and value after comp-size constants corrected (the two unmodified reds are the blind author's 5-vs-4 team-size arithmetic, a fixture RECON_ERROR — the kit-line content of both assertions passes vs the shipped override).",
+        "formulaCheck": "defPct inert in v1; burstCast trigger identity is correct — the line sits in her own Burst I cast with no Full-Burst-entry clause, and stat buffs correctly land pre-window.",
+        "fireRateOk": true,
+        "explanation": "Driver's fixture (jackal/crown/ada/helm, sole B1) guarantees 6 casts/180s so the per-cast cadence is observable; the fullBurstEnter counterfactual is pinned RED. S5's two reds here are RECON_ERROR fixture arithmetic, not divergences."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: every kit line is either FAITHFUL with discriminating counterfactual pins (the two defPct grants — magnitude, scope, trigger timing, duration, and byte-identical inertia all pinned GREEN vs shipped and RED vs named nearest-wrong models) or a DOCUMENTED_GAP carrying an estimate, recipe, tier, and binding precedent (maiden for the attacked-10x cluster, trina for the description-scoped burst amp). Convergence is strong where it matters: S5's adapted run is fully GREEN and its two unmodified reds are blind-side fixture arithmetic (5-unit assumption vs the 4-unit controlComp), a RECON_ERROR, not a divergence; S6 converged on the S2 DEF structure, the burst DEF encoding, and both burst/S2 unmodeled dispositions. The two S6 divergences resolve in the driver's favor: S6's hitCount:10 encoding of the S1 Damage-Taken line is exactly S2b's named nearest-wrong trigger misread ('attacked' = hits received, not own shots), self-flagged by S6 as an unmeasured guess, whereas the driver's omission matches the maiden precedent and is pinned deliberate by J1; and the driver's byFinalAtk:true follows the A3 literal-word rule that S2b derived independently (S6's omission is inert anyway). The honest cost is real and disclosed: jackal's two damage-relevant lines are absent, so her comps read cold by the ⚑1/⚑2 amounts — this is recorded, not silent. Same-model residual for the owner to spot-check: the DOCUMENTED_GAP dispositions lean on precedent (maiden/trina GOs) rather than a fresh jackal-specific measurement, and the ⚑1 'near-permanent uptime' estimate is unanchored — if a boss-attack-cadence measurement ever lands, revisit whether an interval proxy for the S1 debuff beats the current zero.",
+  "model": "kimi-code/k3"
+}

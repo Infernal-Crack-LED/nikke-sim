@@ -1,0 +1,164 @@
+{
+  "slug": "ludmilla",
+  "leakDetected": null,
+  "override": {
+    "slug": "ludmilla",
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 163.1,
+            "noFb": true
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 12.93,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates when the last bullet hits the target. Affects the target.",
+        "DEF ▼ 8.4% for 10 sec.",
+        "ATK ▼ 8.4% for 10 sec."
+      ],
+      "skill2": [
+        "Activates when entering Full Burst. Affects all enemies.",
+        "Attract: Taunt all enemies for 15.09 sec.",
+        "Activates when entering Full Burst. Affects self.",
+        "Damage Taken ▼ 57.86% for 15 sec."
+      ],
+      "burst": ["Activates when above 50% HP."]
+    },
+    "caveats": [
+      "⚑ skill1's enemy DEF ▼ 8.4% is TEAM-WIDE damage-relevant but has NO schema channel: StatKey defPct means the holder's own DEF, and the sim's boss DEF is an engine-level constant, not a buffable stat. It is therefore UNMODELED and the sim under-credits every ally's damage while it is up. Encoding it as damageTakenPct would be a fabricated conversion (DEF ▼ 8.4% ≠ Damage Taken ▲ 8.4%) and is refused.",
+      "⚑ Uptime arithmetic for that debuff (contingent on the datamined cadence): 120 ammo at SMG ~20 rounds/s effective = ~6.0s firing + 187 reload frames ≈ 3.1s = a ~9.1s magazine cycle against a 10s debuff, so the last-bullet debuff is effectively PERMANENT after the first magazine rather than intermittent.",
+      "skill1's enemy ATK ▼ 8.4% is defensive-only at scope lock (boss damage is unmodeled, allies are immortal) — no damage channel exists for it.",
+      "skill2's Attract/Taunt and the self Damage Taken ▼ 57.86% are both defensive-only at scope lock; the schema's damageTakenPct is a BOSS debuff (positive = boss takes more), not a self mitigation stat, so neither line maps to it.",
+      "⚑ The burst's 163.1% hit is authored noFb:true per the burst-cast FB-exemption rule (a burst cast resolves before the Full Burst window opens); crit-eligibility is kit-silent and left to the engine default (no crit flag set).",
+      "The burst's 'Affects 10 enemy unit(s) with the highest final ATK' selector collapses to the single boss at scope lock; authored as target enemy.",
+      "The burst's ally DEF ▲ 12.93% is authored for kit completeness only — defPct is offensively inert in v1.",
+      "The burst's 'above 50% HP' activation gate is always satisfied at scope lock (no HP pool, nobody takes damage), so no block gate is authored; the verbatim line is recorded in unmodeled.burst."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Ludmilla (SMG/Water/Defender/Burst I) is a near-pure defensive kit: the only damage this override models is her burst's 163.1%-of-final-ATK instant hit, plus an ally DEF ▲ 12.93% / 10s carried for kit completeness (defPct is inert in v1). Both burst lines are keyed to burstCast (her own cast), and the burst hit is FB-exempt because a burst cast resolves before the Full Burst window opens. Skill1 and skill2 are modeled as EMPTY: skill1's last-bullet enemy ATK ▼ is defensive, and its enemy DEF ▼ 8.4% — genuinely team-wide damage-relevant, at near-permanent uptime — has no schema channel because boss DEF is an engine constant rather than a buffable stat; skill2's Taunt and self Damage Taken ▼ 57.86% have no damage channel at scope lock. Those skipped lines are recorded verbatim in unmodeled and the DEF ▼ gap is flagged, not approximated."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when the last bullet hits",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger identity read as {kind:'lastBullet'} with target enemy — but both riders it carries are unmodelable (rows below), so no block is emitted; the trigger read is recorded here for the judge."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▼ 8.4% for 10 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Enemy DEF reduction — damage-relevant for the whole team, but no StatKey expresses it (defPct = the holder's own DEF; boss DEF is an engine constant). ⚑ flagged as an unmodeled faithfulness gap rather than converted into damageTakenPct."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▼ 8.4% for 10 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Enemy ATK debuff — purely defensive at scope lock (boss damage unmodeled, no HP pool); no damage channel."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when entering Full Burst",
+      "status": "SKIPPED",
+      "effectOrReason": "fullBurstEnter trigger read, but both riders it carries are defensive-only, so no block is emitted."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attract: Taunt all enemies 15.09s",
+      "status": "SKIPPED",
+      "effectOrReason": "Aggro redirection — no aggro/threat model in the sim and the boss deals no modeled damage; no offensive or shot-count consequence."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Damage Taken ▼ 57.86% for 15 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Self damage mitigation. The schema's damageTakenPct is a BOSS debuff (positive = boss takes more), so this is not that stat; defensive-only at scope lock."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 10 enemy unit(s), highest ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Target selector collapses to the single boss → target {kind:'enemy'}."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 163.1% of final ATK as damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burst[0]: trigger burstCast, flatDamage atkPct 163.1, noFb true (burst-cast resolves pre-FB). No core (text says no core strike); crit left to engine default; noRange is engine-automatic."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Activates when above 50% HP.",
+      "status": "SKIPPED",
+      "effectOrReason": "Gate is unconditionally true at scope lock (no HP pool, allies take no damage), so no block gate is authored; line kept verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▲ 12.93% for 10 sec (all allies)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burst[1]: trigger burstCast, target {kind:'allies'} (includes self), buff defPct 12.93 durationSec 10. Kept for kit completeness per the 'DEF/HP not skippable' rule even though defPct is inert in v1."
+    }
+  ],
+  "flags": [
+    {
+      "field": "unmodeled.skill1 — enemy DEF ▼ 8.4% / 10 sec (no channel)",
+      "estimate": "Near-100% uptime after the first magazine; effect on team damage is whatever a 8.4% boss-DEF reduction is worth in the formula's (ATK·k − DEF) term — low single-digit % team-wide at scope-lock ATK, larger for low-ATK units.",
+      "reasoning": "The kit line reduces the BOSS's DEF, which lifts every ally's damage. No StatKey targets enemy DEF (defPct is the holder's own DEF, documented inert; damageTakenPct is a different multiplier and using it would be a fabricated conversion), and the engine's boss DEF is a fixed constant. Uptime whole-picture check: 120 ammo ÷ ~20 rounds/s ≈ 6.0s firing + 187 reload frames ≈ 3.1s ⇒ ~9.1s per last-bullet cycle vs a 10s window, so it re-arms before it lapses.",
+      "recipe": "A/B the sim with the boss-DEF constant scaled by (1 − 0.084 × uptime) and read the per-unit delta; confirm empirically by comparing a teammate's popup values in a recorded fight before her first reload vs after (same buff state, same range band) — the ratio is the DEF-term lift."
+    },
+    {
+      "field": "burst[0].effects[0].noFb",
+      "estimate": "true (FB-exempt)",
+      "reasoning": "Authoring convention, not a measurement for this unit: a burst cast resolves before the Full Burst window opens, so the +50% FB major should not apply to the 163.1% hit. She is Burst I, so her cast is furthest in time from FB entry — the exemption is least likely to be wrong here.",
+      "recipe": "Focus recording of her burst: read the 163.1% popup value and divide by the same-frame expected final ATK·1.631; a ×1.5 residual means the hit did take the FB major and noFb must be dropped."
+    },
+    {
+      "field": "burst[0].effects[0].crit (unset)",
+      "estimate": "left to the engine default (no crit flag authored)",
+      "reasoning": "The kit text is silent on crit for the burst hit. Setting crit:true would credit an unmeasured crit expectation on the unit's only damage line; leaving it unset keeps the engine's flat-damage default in charge.",
+      "recipe": "Popup colour read on a focus recording of her burst across ≥10 casts — orange/crit-icon popups mean the hit is crit-eligible and crit:true should be authored."
+    },
+    {
+      "field": "burst[1] — 'above 50% HP' gate treated as always-true",
+      "estimate": "gate omitted (100% satisfied)",
+      "reasoning": "Scope lock has no HP pool and the boss deals no modeled damage, so an HP-threshold gate can never fail. Authoring a gate primitive for it would add a condition the sim cannot evaluate.",
+      "recipe": "None needed at scope lock; revisit if/when boss damage and an HP pool are modeled (then the gate becomes a real duty cycle)."
+    },
+    {
+      "field": "base cadence tuple (SMG pulls/s, ammo 120, reloadFrames 187)",
+      "estimate": "~20 effective rounds/s (60 ÷ ceil(60 ÷ nominal)); ~6.0s magazine + ~3.1s reload",
+      "reasoning": "ALWAYS-⚑ #1: datamined rate_of_fire and reloadFrames are unreliable, and the effective rate must snap to 60fps frame boundaries. This tuple is what sets her last-bullet frequency, which is the entire uptime argument for the unmodeled DEF ▼ above — so a wrong cadence changes whether that debuff is permanent or intermittent.",
+      "recipe": "Ammo-counter read from a focus recording: count frames between full magazine and dry, and frames from dry to refill, for ≥3 cycles."
+    }
+  ],
+  "model": "claude-opus-5"
+}

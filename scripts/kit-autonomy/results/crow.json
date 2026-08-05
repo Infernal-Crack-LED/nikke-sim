@@ -1,0 +1,66 @@
+{
+  "slug": "crow",
+  "kitDescription": "Crow is a Fire SMG Defender whose Burst III, The Terrorist, is a single large hit (915.75% of final ATK) on the enemy with the highest final ATK, fired on her own cast before the Full Burst window opens. Her Skill 2, Daredevil, does two things each time her magazine runs dry: it lands a bonus hit on the target (89.09% of final ATK) and grants Crow a small self DEF buff (12.72% for 5 seconds). Her Skill 1, Killing Time, lowers all enemies' ATK by 19.93% for 10 seconds whenever the team enters Full Burst — a purely defensive debuff. She has no ally-facing buffs, no stacks, no weapon swap, and no damage over time.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S1: 'emits a boss-held ATK-down buffApply at each Full Burst entry' — driver leaves S1 unmodeled; engine drops enemy ATK▼ at dispatch (sim.ts:2295) so no buffApply can exist",
+      "S1: 'DISCRIMINATES: it is an ENEMY debuff, not a team ATK buff' — no S1 blocks exist to patch, counterfactual observes no delta",
+      "S1: 'DISCRIMINATES: trigger is fullBurstEnter, not burstCast' — same root cause (no S1 blocks)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "All enemies ATK▼19.93%/10s on FB entry",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED, verbatim in unmodeled.skill1 with reason; enemy-buff channel admits only damageTakenPct/distributedDamagePct>0, enemy ATK▼ dropped at dispatch, DEF=0 boss deals no damage; C4 test enacts the line anyway and proves byte-identical totals + zero buffApply",
+        "blindSaid": "S5 (opus test-writer) assumed the line must be encoded as a boss-held debuff emitting buffApply — its 3 RED assertions all stem from this; S6 (opus override-writer) independently ruled it unmodelable for the identical reason and matched the driver block-for-block; S2b (fable) pre-specified UNMODELED and explicitly forbade 'upgrading' it to damageTakenPct",
+        "formulaCheck": "Engine fact #4 (sim.ts:2295) admits no enemy ATK channel; the sim basis is one immortal DEF=0 boss dealing no damage, so enemy ATK▼ has no observable. The driver's C4 counterfactual is the decisive proof: even a fully authored enemy-targeted ATK▼ block emits no buffApply and moves no total — the line is inexpressible, not dropped",
+        "fireRateOk": true,
+        "explanation": "Deliberate, documented, provably damage-neutral skip with the prose recorded verbatim — the definition of DOCUMENTED_GAP. The S5 divergence is spurious (RECON_ERROR on the blind test-writer's side): it asserted an engine capability that does not exist, contradicting the S2b spec it was given and the engine SSOT. S6's independent convergence on the same ruling corroborates the driver."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Last bullet hits: 89.09% ATK add'l dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "lastBullet -> enemy flatDamage 89.09, skill bucket srcSlot skill2, crit-eligible, never cores, never range, FB by timing; C1 pins rider frames exactly equal to dry-shot (ammoAfter===0) frames",
+        "blindSaid": "S5 asserts per-magazine cadence (riders == crow reloads ±1), never-core/never-range, and a shotFired counterfactual firing >5× more — all GREEN vs driver; S6 authored the identical block",
+        "formulaCheck": "Function-damage rules (damage-calculation §2b): crits at caster rate, never core without 'core strike' text, noRange, FB by landing timing — encoding matches; lastBullet trigger fires at magazine dry (sim.ts:3930), the literal 'last bullet hits' condition",
+        "fireRateOk": true,
+        "explanation": "Right trigger, right bucket, right flavor gates; fires ~20+ times per 180s at her SMG cadence, frame-paired to magazine exhaustion in both driver and blind tests. Load-bearing line fully discriminated (shotFired counterfactual fires per pull)."
+      },
+      {
+        "kitLine": "Last bullet hits: self DEF▲12.72% 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "lastBullet -> self defPct 12.72 durationSec 5; encoded for completeness, inert in v1; C2 pins exact 300-frame windows paired with rider frames and byte-identical totals when removed, plus a defAsAtk counterfactual proving the inertness pin bites",
+        "blindSaid": "S5 asserts crow-cast self defPct 12.72/300-frame window/cadence pairing/inertness — all GREEN; S6 authored the identical block with the same inert-but-kept rationale (diesel/sakura/bay precedent)",
+        "formulaCheck": "defPct is a real StatKey deliberately inert in v1 (types.ts:60; boss deals no damage). Encoding is the literal kit line; inertness is an engine fact, not a modeling gap — the line is present, correctly scoped (self), correctly timed (5s), correctly triggered",
+        "fireRateOk": true,
+        "explanation": "Faithfully encoded rather than silently dropped (the S2b reviewer's named worst-case), with inertness proven rather than assumed. Driver's C2 isolation and counterfactual pair is exactly the required shape."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Highest final ATK enemy: 915.75% Burst",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> enemy flatDamage 915.75, burst bucket; C3 pins one nuke per crow cast on her cast frames, strictly fewer nukes than team fullBurstStart count (helm co-B3 takes rotations), fbMajorApplied false on every instance, and discriminates vs both fullBurstEnter keying and the level-1 magnitude 541.12",
+        "blindSaid": "S5 asserts crow burst-bucket count in range, FB-exempt by timing, and a fullBurstEnter counterfactual collecting the +50% major — all GREEN; S6 authored the identical block with the same cast-timing (not noFb-flag) rationale",
+        "formulaCheck": "Burst-cast damage lands before the Full Burst window opens (MEASURED 2026-07-13, §1b/§8): no +50%, no entry auras — engine skillNoFb applies it for burstCast blocks; 'highest final ATK enemy' collapses to the single scope-lock boss (documented stand-in, exia/novel precedent)",
+        "fireRateOk": true,
+        "explanation": "Right trigger (own cast, not FB entry — the fixture's helm co-B3 makes the divergence observable and the driver exploits it), right magnitude, right bucket, FB-exempt verified per-instance. Both nearest-wrong models (fullBurstEnter keying, level-1 value) are pinned RED."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. Three of four kit lines (S2 rider, S2 DEF▲, burst nuke) are FAITHFUL and converged across all three independent derivations (S2b spec, S5 tests, S6 override — block-for-block identical to the driver), each with a discriminating counterfactual that is RED under its nearest-wrong model (per-shot rider, DEF-as-ATK, FB-entry nuke, level-1 magnitude). The fourth line (S1 enemy ATK▼) is a DOCUMENTED_GAP: the engine has no enemy-ATK channel (sim.ts:2295), the DEF=0 boss deals no damage, and the driver's C4 counterfactual proves that even enacting the line emits no buffApply and moves no total — it is inexpressible, not dropped, and recorded verbatim in unmodeled. The only divergence in the whole gauntlet is S5's three RED S1 assertions, which assume an encodability the engine does not have; S2b predicted exactly this misread and S6 independently ruled the same way as the driver, so it is classified as a blind-side recon error, not a finding. Same-model residual for the owner to spot-check: the S1 ruling is load-bearing on the sim's no-boss-offense basis — if a boss-damage model is ever added, S1 must be revisited (already noted in caveats); and the rider's per-fight count rides the contested SMG 20/s cadence, which is base-stats-owned, not a kit-line issue.",
+  "model": "kimi-code/k3"
+}

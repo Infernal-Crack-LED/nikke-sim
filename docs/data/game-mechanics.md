@@ -213,12 +213,16 @@ Details: **[auto-play.md](auto-play.md)**.
 FB countdown (10s)`**. So gauge-full → FB-start ≈ 112f (~1.87s), not the old ~0.9s. Constants:
   a **30f delay before B1** (`PRE_B1_GAP_FRAMES`), **30f between stages** (`STAGE_CAST_GAP_FRAMES`,
   0.5s), and a **22f delay between the B3 cast and the FB countdown** (`FB_PRE_DELAY_FRAMES`) — that
-  gap is why instant burst-cast attacks land before Full Burst begins (no +50%). After FB ends, the
-  next chain can't open for **~2.5s** (`POST_FB_CHAIN_DELAY_FRAMES` = **150f**; the earlier 180f/~3s
-  double-counted the now-separately-modeled 30f-pre-B1). **Fight start:** ~8f (`FIGHT_DELAY_FRAMES`
+  gap is why instant burst-cast attacks land before Full Burst begins (no +50%). After FB ends there
+  is NO chain-open lock (owner ruling 2026-08-04, overturning the earlier "~2.5-3s post-FB block"
+  read): gauge generation is locked during FB and unlocks immediately at FB-end, and the next chain
+  opens the moment the refilled bar is full — good teams take ~3-4s of natural generation to rebuild
+  from zero, which is what the old bar-anatomy reads mistook for a fixed delay (the recordings also
+  start before the 3:00 clock, so video timestamps ≠ fight time). The fixed block survives only as
+  the opt-in `ROTMODEL=floor` A/B arm (`POST_FB_CHAIN_DELAY_FRAMES` = 150f). **Fight start:** ~8f (`FIGHT_DELAY_FRAMES`
   0.133s) before the first bullet (bullet lands at 0.133s; the earlier 1s was a timer-framing confound —
-  the 3:00 timer reads 2:59:999 at elapsed 0). This post-full-burst window + the chain timing, not
-  gauge refill, pace high-generation teams.
+  the 3:00 timer reads 2:59:999 at elapsed 0; there is NO multi-second opening phase — the boss is
+  hittable from 3:00). The chain timing + natural gauge refill pace high-generation teams.
 - **Casts are blocked while the boss is off-screen** during a range transition (~1s,
   owner-confirmed) — the only genuine source of run-to-run full-burst-count variance
   (a transition colliding with a chain). Everywhere else, **full-burst counts are
@@ -239,10 +243,14 @@ FB countdown (10s)`**. So gauge-full → FB-start ≈ 112f (~1.87s), not the old
   and survives only on the `UNIGEO=off` revert path. Scope-lock boss only — medium/large
   `bossPelletProfile` fights fall through to the cone path. → DECISIONS 2026-07-22;
   `docs/probe-data/soda-tb-sg-core-hr-windows.json` (the count of record).
-- Auto burst priority is **leftmost slot order, with waiting**: inside a timed stage
-  window the chain waits for the leftmost stage-filling unit whose cooldown ends before
-  the window closes rather than handing the cast to a lower-priority ready unit
-  (owner-ruled + Monte Carlo evidence; a round-robin was tried and rejected).
+- Auto burst priority is **first-ready, with waiting** (owner ruling 2026-07-21,
+  DECISIONS): inside a timed stage window the chain waits for the stage-filling unit
+  whose cooldown ends SOONEST (tie → leftmost) rather than handing the cast to a
+  lower-priority ready unit. This replaced the old strict-leftmost wait, which let the
+  leftmost slot MONOPOLIZE equal-cooldown alternation (a 40-team random battery: ~1/3 of
+  comps differed, all first-ready correcting a leftmost monopoly/skip; graded board
+  byte-neutral). `B3_LEFTMOST=1` restores the old strict-leftmost pick. (A round-robin
+  was tried earlier and rejected — bench B3s cast where real fights never pick them.)
 - **Focus-sync burst gate** (`burstGate: 'syncWithFocus'`, `PreparedUnit`/`UnitState`): an
   opt-in per-unit flag — used by the DPS-chart Hyper Carry frameworks for Mast — that lets a
   unit take its burst stage only while the focus (tested) unit is off cooldown (so it bursts
@@ -255,7 +263,7 @@ FB countdown (10s)`**. So gauge-full → FB-start ≈ 112f (~1.87s), not the old
   stage-3 cast in two consecutive Full Bursts, so it strictly alternates with the other
   Burst-3 unit. Needed because a Full-Burst-extending kit (e.g. Modernia's 15-second Full
   Burst) can bring the unit's cooldown inside the next stage window, where the
-  leftmost-with-waiting rule would stall the chain and hand it consecutive casts. Not a
+  first-ready-with-waiting rule would stall the chain and hand it consecutive casts. Not a
   measured value — a framework modeling switch; no real comp sets it.
 
 ## 8. Burst rotation rules
@@ -272,8 +280,10 @@ Full Burst = 10s; rotation = FB + chain + gauge refill, gated by burst cooldowns
 Burst-1/2 cast opens the next stage for 10 seconds (DATAMINED `burst_duration`; 5s/15s/
 20s variants exist — the same column encodes short-Full-Burst units); if the window
 expires with no ready caster the chain collapses and the gauge must fully refill
-(measured: the 3-unit battery fight's 40s rotation). Auto-burst picks the LEFTMOST ready
-unit of the wanted stage. Burst cooldowns
+(measured: the 3-unit battery fight's 40s rotation). Auto-burst picks the FIRST-READY
+unit of the wanted stage — inside a timed stage window the filler whose cooldown ends
+soonest (tie → leftmost); `B3_LEFTMOST=1` restores the old strict-leftmost pick
+(DECISIONS 2026-07-21). Burst cooldowns
 (20s/40s per unit; DB errors exist — Tia's real CD is 20s, fixed via
 `charFixes.burstCooldownSec`; Cinderella's 40s was re-verified correct by nuke-storm
 counting after a cut-in-artifact misread). Λ (all-stage) units count as NO burst type for formation

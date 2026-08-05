@@ -5,8 +5,10 @@
 // gets a second pill row (Generic / Typed carries). Only the active board's
 // artifact fetches. Every board's `methodology` string sits in a collapsible
 // "How this works" card — mirroring the DPS chart's Custom Profiles
-// disclosure (DpsChartTab). No row links into the sim: the sustain board
-// includes non-simSupported units, so no links at all is the simplest truth.
+// disclosure (DpsChartTab). Rows link to the unit page (/unit/<slug>) when
+// the slug resolves in characters.json — the sustain board includes
+// non-simSupported units, but every board row is a real character with a
+// unit page, so every row links (owner 2026-08-04).
 import { useEffect, useState } from 'react';
 import { RankBarChart } from './components/RankBarChart';
 import {

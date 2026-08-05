@@ -403,7 +403,10 @@ const VOLATILE_ARTIFACT_KEYS = new Set([
   'unitHashes',
 ]);
 
-function hashStrippedArtifact(h: ReturnType<typeof createHash>, abs: string): void {
+function hashStrippedArtifact(
+  h: ReturnType<typeof createHash>,
+  abs: string
+): void {
   const parsed = JSON.parse(readFileSync(abs, 'utf8')) as Record<
     string,
     unknown

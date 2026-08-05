@@ -18,7 +18,12 @@
       "trigger": { "kind": "hitCount", "count": 60 },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "highestAllyMaxHpPct", "value": 12.42, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "highestAllyMaxHpPct",
+          "value": 12.42,
+          "durationSec": 10
+        }
       ]
     }
   ],
@@ -38,8 +43,18 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "alliesTopAtk", "count": 2, "byFinalAtk": true },
       "effects": [
-        { "kind": "buff", "stat": "targetMaxHpPct", "value": 43.87, "durationSec": 5 },
-        { "kind": "buff", "stat": "critDamagePct", "value": 29.9, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 43.87,
+          "durationSec": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 29.9,
+          "durationSec": 10
+        }
       ]
     }
   ]

@@ -60,6 +60,27 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Code / tooling (unblocked, no footage or owner ruling needed)
 
+- **⇒ ARTIFACT-STORE DECOUPLING — scoped 2026-08-03, Step 0 unblocked and worth doing alone.**
+  Plan: `docs/handoffs/2026-08-03-artifact-store-decoupling-plan.md`. Move the generated artifacts
+  (6 board JSONs + the 385-image infographic set) out of the deploy critical path; regenerate
+  post-deploy + nightly instead. **The incremental dpschart gate is NOT broken** — it correctly
+  declines to carry over whenever a GLOBAL-bucket input moves (`src/engine/**`,
+  `src/skills/types.ts`), which is every engine PR; 434s IS the full 67-row rebuild on a 4-vCPU
+  runner. Artifact floor today is ~85s even when dpschart caches perfectly, because `ranks:all`
+  (37s) and `build:infographics` (48s) have **no input hash at all** and rebuild unconditionally.
+  - **Step 0 (hours, no DB/cron/migration, ~50% of CI wall-clock):** swap the CI board-build step for
+    6 `curl`s against `nikkesim.app` (all 6 already served publicly, verified 200) + the staleness
+    hash test. De-risks every later step by proving the pattern first.
+  - Steps 1–4 (hash extraction → DB for the JSON → images to volume/object store → nightly cron)
+    are in the doc. **Images are NOT a Postgres fit** (29.2 MB content-hashed immutables); Step 3
+    needs an `imgDir`/`distDir` split in `src/server/static.ts` and may want its own plan doc.
+  - **2 owner decisions block Steps 1 and 4 only** (doc §8): hard-fail vs advisory for the staleness
+    test (it goes red on _every_ engine PR by design), and what the nightly sync does when it finds
+    roster drift (it builds from a `data/characters.json` the repo has not committed — a permanent
+    false-fail trap if unhandled).
+  - **Independent one-line fix found while scoping, do NOT bundle:** `b1b2dps.json` is missing from
+    `MUTABLE_PATHS` (`src/server/static.ts:783-792`) while the other five boards are listed — it
+    serves `no-cache` by fallback, not by intent.
 - **⇒ Unit-card infographic follow-ups (3, code-verified still open 2026-08-02):**
   1. **No vector source for burst icons.** `web/public/nikke-icons/burst_*` is webp-only (~100px native)
      — fine at every size drawn today, but a surface wanting it large has nothing to rasterize from.
@@ -107,7 +128,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 #### Engine / model threads (measurement- or owner-gated)
 
 - **⇒ ENGINE REGRESSION FULL-BURST COUNT FAILURES — four comps disabled in `scripts/regression.ts`**
-  (`:106`, `:131`, `:158`, `:236`): `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`,
+  (`:106`, `:131`, `:158`, `:239`): `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`,
   `N3 scarlet/liberalio iron` each read 1–3 Full Bursts short of their video-measured counts on clean
   `HEAD`, skipped via the `disabled` flag so `verify.sh` stays green.
   **2026-08-03 /scientific-method pass (LOG, 2-of-2 ACCEPT both MEDIUM — full account:
@@ -123,6 +144,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `scripts/tests/gauge-cycle-decomp.test.ts`). Confidence capped MEDIUM on one open question: does a
   real fight hit the sim's own opening/first-FB time (raising to HIGH needs a direct frame-measurement
   of the real FB-end→next-B1 gap on one disabled comp's footage). Leave `disabled: true` until then.
+  **2026-08-04 update:** that open question is RESOLVED — the owner confirmed fight time ≠ video time
+  (recordings start during the pre-fight intro) and once offsets are accounted the real first FB
+  matches the sim's (~5.6s vs ~5.4s); the same ruling removed the post-FB chain-open block
+  (`ROTMODEL=refill` is now the default, DECISIONS top entry). The flip does NOT move these comps —
+  T5/T1 read 11-12 under BOTH rotation arms (the block never bound for them), so all four stay
+  short of their measured counts; the fill-TEMPO gap is unchanged and remains the open channel. The
+  `decomposeCycles` floor was re-derived (its old +2.5s lock term is dead; `excess` now reads the
+  refill-from-zero directly).
   Separately logged (do NOT bundle in): a general (non-liberalio) `skillGauge`-fires-twice-per-shot
   pattern on any `shotFired`-triggered `flatDamage` rider (`sim.ts:2393`) — its correction direction is
   gauge-DOWN, which would worsen these 4 comps if "fixed" alone; needs its own pre-op pass.

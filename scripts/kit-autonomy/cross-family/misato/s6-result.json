@@ -1,0 +1,168 @@
+{
+  "slug": "misato",
+  "leakDetected": null,
+  "override": {
+    "slug": "misato",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 60
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "hitRatePct",
+            "value": 5.04,
+            "durationSec": 5,
+            "maxStacks": 3
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 120
+        },
+        "target": {
+          "kind": "alliesLowestHp",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "heal"
+          }
+        ]
+      }
+    ],
+    "skill2": [],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 5,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "■ Only activates when in Shooting Manual status. Affects all allies. Damage dealt to Shield ▲ 150% continuously.",
+        "■ Only activates when Shooting Manual is at max stacks. Affects self. Outgoing healing ▲ 30.05% continuously."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ hitRatePct 5.04 (×3 stacks) is the kit-literal Hit Rate value; the Hit-Rate→core-rate CONVERSION magnitude (sim.ts hrCoreMult) is derived, not measured for this unit. Her whole offensive contribution runs through it.",
+      "⚑ Both hitCount triggers (60 / 120 landed normal attacks) fire on a cadence set by the SMG pulls-per-second tuple, a datamine-unreliable field. Stack uptime and heal frequency scale directly with it.",
+      "⚑ Shooting Manual max-stack UPTIME is an estimate: 60 rounds per stack against a 5 sec per-stack duration means max stacks hold only while the 60-round interval stays under 5 sec. Un-measured against a real fight.",
+      "The 'Shooting Manual status' / 'at max stacks' gates on skill2 have no engine primitive (self-buff-status gating does not exist; requiresTargetStatus is boss-scoped, resourceGate is pool-scoped). Moot today because both gated lines are unmodeled for lack of a StatKey — it becomes load-bearing only if either line gains one.",
+      "The engine models a heal as a recovery EVENT with no HP amount, so both heal lines are offensively inert on their own; they are kept because on-recovery consumers (heal-synergy kits) read those events."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Misato (SMG/Iron/Supporter/Burst I) is a sustain/support unit with essentially no direct damage line — she carries zero flatDamage, zero DoT, zero ATK buff. Her only damage-relevant effect is a self Hit Rate stack (5.04% ×3, 5 sec, refreshed every 60 landed rounds), which reaches the damage model solely through the Hit-Rate→core lift. Skill 2 is two continuous team lines that the schema cannot express: 'Damage dealt to Shield ▲ 150%' has no StatKey and is inert at scope lock (the boss carries no shield), and 'Outgoing healing ▲ 30.05%' scales a heal AMOUNT, which the engine does not model (heals are recovery events without an HP quantity). Both are recorded verbatim in unmodeled rather than approximated. Burst is a 5-tick heal-over-time to all allies (5.06% of the caster's final Max HP per tick, 1 sec interval, 5 sec) authored as ticks:5 so each tick emits its own recovery event and keeps on-recovery consumers refreshed — collapsing it to a single event would under-fire them 5:1. Skill 1's second line heals the lowest-HP-percentage ally, modeled as alliesLowestHp count 1 (the engine resolves this to the leftmost ally as a documented stand-in, since v1 has no HP pool); the target choice moves no damage. FB-by-timing left at the default (noFb unset); noRange is engine-automatic."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after landing 60 normal atk",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount{count:60} — 'landing N normal attacks' counts ROUNDS, and hitsPerShot is 1 for this SMG so rounds == trigger pulls. Not an interval trigger: the kit states an explicit activation condition."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Shooting Manual: Hit Rate ▲ 5.04%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff{stat:'hitRatePct', value:5.04, durationSec:5, maxStacks:3}, target self. Value authored PER STACK so the engine accrues real stacks from real triggers — no rampSec haircut (that primitive is for buffs authored at max-stack magnitude). 'lasts for 5 sec' is wall-clock seconds, not rounds. Hit Rate is never auto-skipped (HARD RULE: Hit-Rate→core)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after landing 120 normal at",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount{count:120} — a SECOND, independent counter at twice the first threshold; authored as its own block rather than an everyN:2 rider on the 60-hit block, because the two lines have different targets and the kit states each threshold absolutely."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 8.04% of user Max HP as HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal{} (ticks default 1) to alliesLowestHp{count:1}. Heal/shield/DEF/HP/lifesteal lines are NOT skippable on isolation (tandem rule) — this emits a recovery event that drives a teammate's on-recovery consumer. The 8.04% magnitude is unrepresentable (the heal effect carries no HP amount) and is recorded in the note, not fabricated into a stat."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Only activates in Shooting Manual sta",
+      "status": "SKIPPED",
+      "effectOrReason": "Gate clause only; its payload line is unmodelable (next row), so the gate has nothing to gate. Recorded verbatim in unmodeled.skill2 as part of the whole line."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Damage dealt to Shield ▲ 150% cont.",
+      "status": "SKIPPED",
+      "effectOrReason": "No StatKey expresses shield-damage scaling, and the scope-lock boss carries no shield, so the line is inert at the validated preset. NOT approximated as attackDamagePct — that would credit generic damage the kit never grants. Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Only activates at max Shooting Manual",
+      "status": "SKIPPED",
+      "effectOrReason": "Gate clause only; its payload line is unmodelable (next row). No self-buff-status/stack-threshold gate primitive exists for a buff (resourceGate reads a declared resource pool, requiresTargetStatus reads a boss status) — flagged in caveats in case the payload ever becomes modelable."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Outgoing healing ▲ 30.05% cont.",
+      "status": "SKIPPED",
+      "effectOrReason": "Scales a heal AMOUNT; the engine models heals as amount-free recovery events, so there is nothing to scale. No StatKey exists. Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies{} — 'all allies' includes the caster (excludeSelf is only for the explicit 'except self' wording)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 5.06% Max HP every 1s for 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast (her OWN burst block, so burst-cast fidelity — NOT fullBurstEnter, which would over-fire on rotations another Burst I casts). heal{ticks:5, intervalSec:1} — the heal-over-time shape, so 5 recovery events fire over 5 sec instead of one. The 5.06% magnitude is unrepresentable and recorded in the note."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].effects[0].value (hitRatePct 5.04) → core-rate lift",
+      "estimate": "Kit value 5.04% per stack, 15.12% at 3 stacks, converted to core rate by the engine's derived hrCoreMult path (ALWAYS-⚑ #7: Hit-Rate→core magnitude is measured-only).",
+      "reasoning": "The 5.04 / 3-stack / 5 sec numbers are literal kit text and are not in doubt. What IS outside the input domain is how much core-hit rate a given Hit Rate percentage actually buys — that relationship is derived, not stated by any kit. For misato this is not a marginal ⚑: she has no damage line and no ATK buff, so the Hit-Rate→core conversion is the ENTIRE offensive footprint of her override. An error there is an error in 100% of her modeled contribution.",
+      "recipe": "Focus-record misato in a fixed comp against the scope-lock boss and count CORE HIT popups (red) vs plain popups over a window with the stack confirmed live, then repeat the same comp with HRCORE=0 (the engine's disable switch) and compare the sim's core fraction to the counted one. The delta between the two runs isolates hrCoreMult from every other buff in the comp."
+    },
+    {
+      "field": "skill1[0].trigger / skill1[1].trigger (hitCount 60 / 120) — cadence",
+      "estimate": "SMG effective cadence ~20 pulls/sec (60fps frame-boundary rounding of the nominal datamined rate), hitsPerShot 1 → 60 rounds ≈ 3.0 sec of continuous fire, 120 rounds ≈ 6.0 sec; the 120-round magazine is one full belt ≈ 6.0 sec, plus 81 frames (1.35 sec) reload.",
+      "reasoning": "ALWAYS-⚑ #1: the datamined rate_of_fire is nominal and unreliable, and the game fires on frame boundaries so the effective rate is 60/ceil(60/nominal). Both of misato's skill-1 triggers are hit-COUNT triggers, so the cadence tuple sets how often her only damage-relevant buff refreshes AND how often the ally heal fires. A cadence error propagates to both.",
+      "recipe": "Read the ammo counter frame-by-frame on a misato recording over a full magazine — shots/sec measured directly off the counter is the instrument for the disputed quantity, unlike full-burst counts (which are downstream of gauge-per-shot and confound cadence with gauge)."
+    },
+    {
+      "field": "skill1[0] Shooting Manual stack steady-state / uptime",
+      "estimate": "At ~3.0 sec per 60 rounds against a 5 sec per-stack duration, stacks 1→3 build over the first ~9 sec of sustained fire and then hold at 3, EXCEPT across the reload gap (1.35 sec) and any boss-downtime/cover window, where the oldest stack can lapse before the next 60 rounds land. First-order estimate: max stacks held most of the fight, dropping to 2 briefly around reloads. Not authored as a rampSec haircut — the per-stack value lets the engine derive the real trajectory.",
+      "reasoning": "ALWAYS-⚑ #4. The 60-round refresh interval and the 5 sec stack life are close enough (3.0 vs 5.0 sec) that the margin is only ~2 sec; any cadence overestimate (see the cadence ⚑) or any fire interruption flips the steady state from 3 stacks to 2, changing her entire contribution by a third. The two ⚑s are coupled — do not resolve this one without the cadence one.",
+      "recipe": "Log buffApply events for stat 'hitRatePct' with their expiresFrame over a full 180 sec sim run and compute the time-weighted mean stack count; then confirm against footage by watching the Shooting Manual stack pips through a reload and a boss-cover window."
+    },
+    {
+      "field": "burst[0].trigger (burstCast) — Burst I rotation participation",
+      "estimate": "Fires once per rotation in which misato herself casts, at a 40 sec kit cooldown; as the team's Burst I she is expected to cast every rotation, so ~4-5 casts over a 180 sec fight.",
+      "reasoning": "Trigger identity per the HARD RULE: this is her OWN burst block with no 'entering Full Burst' wording, so burst-cast is the faithful key. It matters here specifically because burst-cast vs full-burst-enter diverge whenever a second Burst I is in the comp — keying this heat-over-time to fullBurstEnter would fire her heal on rotations she never cast, over-crediting every on-recovery consumer downstream. The cast COUNT itself is rotation arithmetic, not a kit value.",
+      "recipe": "Run the comp with ROT=1 and confirm the burstCast event count for misato matches the measured full-burst count from footage; the graded comps already pin full-burst counts as measured-exact, so this validates against an existing labeled artifact rather than a new measurement."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,56 @@
+{
+  "note": "mori (Mori) — AR / Supporter / Wind / Burst II, cd 20s, ammo 60, hitsPerShot 1, gauge 0.2/shot (datamined 2000/4000 energy → data/gauge-per-shot.json row, NOT an override block). Kit-autonomy gauntlet 2026-08-04: FROM-SCRATCH build (no shipped override existed; simSupported was false) — test-first re-derivation (scripts/tests/units/mori.test.ts, groups M1-M6). Her identity is the STRUGGLE state machine: a battle-start Shield that defines an in-Struggle/not-in-Struggle branch on her burst. MODELED: (S1) battle-start passive self-shield 40.12% of final Max HP, durationSec-less = permanent at scope (label precedent) — the v1 boss deals no damage and nothing removes shields, so Struggle NEVER lapses for the whole fight; the shield is damage- and event-inert in v1 (no HP pool is modeled — types.ts shield docstring) but establishes the shield-state window her burst gate reads. (BURST L1) 'while in Struggle: recover Shield HP 15.04% of final Max HP' = burstCast + requiresShielded → self shield maxHpPct 15.04 — kit-completeness encoding of the branch that ACTUALLY fires on every one of her casts at scope (gate always passes: Struggle permanent); provably moves nothing (M4 byte-identical totals with the whole shield chain stripped). (BURST L3) her one load-bearing damage line in v1: burstCast → all allies (incl. self) → sustainedDamagePct 10.16 for 10s — additive Damage-Up bucket feeding ONLY sustained-flavor hits, NOT the generic attackDamagePct bucket. UNMODELED (all six verbatim below, each with a reason): S1 'burst while not in Struggle → re-shield' and burst 'not in Struggle → Max HP ▲ 10.09%/10s' — UNREACHABLE branches: the engine has no negated-shield-state gate and Struggle never lapses at scope, so encoding either un-gated would over-credit a branch the kit conditions away; S1 'when Struggle ends → Max HP ▲ 5.06% ×5' — no shield-end/removal trigger exists AND Struggle never ends at scope (correct stack count is 0 all fight — an always-on passive would model the OPPOSITE); S2 taunt (60 normals in Struggle) — no taunt/targeting primitive, damage-inert; S2 part-destruction pair (all-ally sustained ▲ 2.03% ×5/15s + highest-ATK-enemy sustained DoT 23.23%/1s ×15s) — no part-destruction trigger primitive and the partless scope-lock boss has nothing to destroy (out-of-domain; d-killer-wife parts-branch + partsDamagePct-inert precedent; a guessed-in 23.23%/s phantom DoT is exactly the misread the test battery kills). No heal/gauge/ammo/reload/charFixes lines in this kit. Element: Wind — clean ×1.10 vs Iron engine-handled (no elemental-advantage buff in kit). TIER 2: status gate (requiresShielded Struggle gate selects the burst branch) + team-wide ally buff.",
+  "unmodeled": {
+    "skill1": [
+      "■ Activates when using Burst Skill. Affects self if not in Struggle status.\nStruggle: Creates a Shield equal to 40.12% of the final Max HP continuously.",
+      "■ Activates when Struggle status ends. Affects self.\nMax HP ▲ 5.06% continuously, stacks up to 5 time(s)."
+    ],
+    "skill2": [
+      "■ Activates after landing 60 normal attack(s) when self is in Struggle status. Affects the target.\nTaunts for 4 sec.",
+      "■ Activates when an ally or self destroys an enemy's part. Affects all allies.\nSustained damage ▲ 2.03%, stacks up to 5 time(s) and lasts for 15 sec.",
+      "■ Activates when an ally or self destroys an enemy's part. Affects 1 enemy unit(s) with the highest ATK.\nDeals 23.23% of final ATK as sustained damage every 1 sec for 15 sec."
+    ],
+    "burst": [
+      "■ Activates when self is not in Struggle status. Affects self.\nMax HP ▲ 10.09% for 10 sec."
+    ]
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
+      "effects": [{ "kind": "shield", "maxHpPct": 40.12 }]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "requiresShielded": true,
+      "effects": [{ "kind": "shield", "maxHpPct": 15.04 }]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 10.16,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "caveats": [
+    "skill1: Struggle is modeled as a durationSec-less shield (permanent at scope — sim.ts: no duration = MAX_SAFE_INTEGER window). This is the faithful reading of 'continuously' for a fight where the boss deals no damage: the shield can never break, so Struggle never ends and the kit's three Struggle-END/NOT-IN-STRUGGLE branches (all unmodeled) correctly fire ZERO times all fight",
+    "burst: the 15.04% shield-recovery line carries requiresShielded even though the gate always passes at scope — the condition is part of the kit text ('Activates when self is in Struggle status') and becomes live the day an engine model can break shields; M4 proves the block is exactly damage-inert today. The shield effect records the magnitude only (no HP pool is modeled — types.ts shield docstring 'recorded for kit completeness')",
+    "burst: 'Affects all allies' = {kind:'allies'} incl. self (engine convention, no excludeSelf). mori herself has no sustained-flavor hits in the model, so the buff is damage-inert ON HER and lives through teammates' sustained-flavor damage (test fixture: jill's Acid Ammo DoT)",
+    "burst: buff lands at cast time (burstCast), which precedes the Full Burst window — the line has no FB-timing clause, so no fbGate/noFb annotation (it is a buff, not a damage instance, so the FB major is not in play either way)",
+    "gauge: mori has a datamined gauge-per-shot row (base 20 / target 40 = burst_energy_pershot 2000 / target 4000 divided by 100, same convention as every datamined AR row). The AR class-modal fallback (40) happens to coincide with her target value, so the row is documentation-grade as well as correct",
+    "fixture: mori is Burst II — the standard controlComp (crown B2) would starve her casts; the unit test fields her as the SOLE B2 (liter/mori/jill) so she casts every chain"
+  ]
+}

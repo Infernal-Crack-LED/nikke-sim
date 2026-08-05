@@ -142,7 +142,9 @@ const momNoS2A = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'atkOfCasterMaxHpPct'));
   if (ov.skill2.length === before) {
-    throw new Error('mom S2-A atkOfCasterMaxHpPct block missing — fixture is stale');
+    throw new Error(
+      'mom S2-A atkOfCasterMaxHpPct block missing — fixture is stale'
+    );
   }
 });
 /** M3 counterfactual: the PRE-2026-08-04 model — target-own atkOfMaxHpPct (a percent stat
@@ -150,7 +152,9 @@ const momNoS2A = withPatchedOverride(SLUG, (ov) => {
 const momS2ATargetOwn = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill2.find((x: any) => hasStat(x, 'atkOfCasterMaxHpPct'));
   if (!b) {
-    throw new Error('mom S2-A atkOfCasterMaxHpPct block missing — fixture is stale');
+    throw new Error(
+      'mom S2-A atkOfCasterMaxHpPct block missing — fixture is stale'
+    );
   }
   b.effects
     .filter((e: any) => e.stat === 'atkOfCasterMaxHpPct')

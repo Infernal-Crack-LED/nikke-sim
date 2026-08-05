@@ -23,14 +23,16 @@
 //      (hasB1 "Damage to Interruption Parts ▲48%" — UNMODELED, inert on the partless boss)
 //   S2 ■ passive: Elemental Advantage vs Electric; Projectile Attachment Damage ▲150.72%,
 //                 Projectile Explosion Damage ▲100.6% (continuous)                           [RRH3]
-//      ■ every 120 normals (60 in FB): attachable rocket — 88.11% attachment (immediate, no
-//                 core) + 88.11% explosion (STORED, releases on FB, cores ×0.33, crits)       [RRH4]
-//      (Max Ammo: 1 — UNMODELED, the meter is modeled as a fill threshold not an ammo slot)
+//      ■ every 120 normals (60 inside the 10s window of her OWN Stage-3 cast — NOT any FB):
+//                 attachable rocket — 88.11% attachment (immediate, CORES — band table) +
+//                 88.11% explosion (STORED, releases on FB, no core, crits)                  [RRH4]
+//      (Max Ammo: 1 — cosmetic: one rocket "loaded" at meter-full fires alongside the bullet;
+//       not reflected in game, no damage effect — owner ruling 2026-08-04)
 //   BU ■ Stage 1 → self: Burst CDR ▼20s; all allies: ATK ▲18.01% of caster ATK for 10 sec    [RRH6]
 //      ■ Stage 3 → nearest enemy: 2808% of final ATK as additional damage (flighted ~0.4s,
 //                 lands INSIDE the FB window; charge-gated, requires ≥120 pulls)             [RRH5]
-//      (Stage 1 & 3 "Explosion Radius ▲100.62%" — UNMODELED, inert on the partless boss;
-//       Stage 3 "Projectile Attachment Damage ▲421.2%" — MEASURED-INERT, removed 2026-07-14)
+//      ■ Stage 3 → self: Projectile Attachment Damage ▲421.2% for 10 sec                     [RRH7]
+//      (Stage 1 & 3 "Explosion Radius ▲100.62%" — UNMODELED, inert on the partless boss)
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest wrong model gates
 // nothing). Counterfactuals are built with `withPatchedOverride` ONLY to prove the shipped encoding
@@ -39,15 +41,28 @@
 //       total dropping when the block is removed. A mis-gated (always-on) buff would appear in both.
 //   RRH2  the OTHER side of the gate: 8.02% team buff + a STAGE-1 cast fire ONLY in noB1. A unit
 //       that fails to fill B1 could not open the chain at all (zero stage-1 casts).
-//   RRH3  the 150.72/100.6 buffs are their OWN multiplicative bucket and route ONLY to the flavored
-//       rocket hits — attachment hits carry projFactor 2.5072, explosion hits 2.0060, and removing
-//       the buffs collapses both to 1.0 (normals are never touched, projFactor 1.0 throughout).
-//   RRH4  the explosion is a STORED hit that cores at ×0.33 and crits, the attachment does NOT core.
-//       Removing the storedHit erases every explosion-flavor instance (projFactor 2.0060 gone).
+//   RRH3  the 150.72/100.6 buffs route ONLY to the flavored rocket hits — attachment hits carry
+//       projFactor 2.5072, explosion hits 2.0060 — and compose ADDITIVELY into the Damage Up
+//       bucket with attack damage (owner popup ruling 2026-08-04 — projFactor stays on the event
+//       as the flavor marker, NOT a separate factor). Removing the passives collapses both to 1.0
+//       except in-window attaches, which keep ONLY the Stage-3 421.2 line (5.212). Normals are
+//       never touched (projFactor 1.0 throughout).
+//   RRH4  the attachment CORES (launchWeapon delivery — owner footage ruling 2026-08-04; band
+//       table, so eligibility is pinned, not the rate); the explosion is a STORED hit that crits
+//       but does NOT core (skill-damage class — same-day ruling overturning the 2026-07-16
+//       core-⅓ read). Removing the storedHit erases every explosion-flavor instance (projFactor
+//       2.0060 gone).
 //   RRH5  the 2808% nuke is a flighted burst-bucket hit that takes the +50% FB major (it lands inside
 //       the window, ~0.4s after the cast banner), once per cast. Removing the block erases it.
 //   RRH6  the Stage-1 ATK grant is caster-scaled flat ATK to ALL allies; the 18.01→11.16 counterfactual
 //       moves it by exactly 18.01/11.16, pinning the magnitude without depending on absolute ATK.
+//   RRH7  the Stage-3 self attachment buff (421.2%, 10s) fires once per stage-3 cast and is LIVE:
+//       in-window attachment hits carry projFactor 6.7192 (passive 150.72 + 421.2), out-of-window
+//       stay 2.5072, and noB1 (stage-1 casts) never gets it. A dead buff or a wrong scope fails.
+//   RRH8  the meter's ▼60 threshold applies ONLY inside the 10s window of her OWN Stage-3 cast
+//       (owner ruling 2026-08-04 — NOT any FB state): in hasB1, her own FB windows run ~1 rocket
+//       per 60 shots while helm-opened windows run ~1 per 120, and in noB1 (stage-1 casts only)
+//       every window runs 120. An any-FB model fails the helm/noB1 windows.
 //
 // Fixture is deterministic (no seed); assertions read the event log, not totals, except where a
 // counterfactual's whole point is that the total moves.
@@ -200,6 +215,7 @@ function holdersPerFrame(bs: BuffApply[]): Map<number, Set<number | null>> {
 
 const PROJ_ATTACH = 2.5072; // 1 + 150.72/100
 const PROJ_EXPLODE = 2.006; // 1 + 100.6/100
+const PROJ_ATTACH_AMP = 1 + (150.72 + 421.2) / 100; // 6.7192 — passive + Stage-3 buff
 const near = (a: number, b: number, eps = 1e-3) => Math.abs(a - b) < eps;
 
 describe('rapi-red-hood — kit spec', () => {
@@ -312,18 +328,49 @@ describe('rapi-red-hood — kit spec', () => {
       ]).toEqual(['1.0000']);
     });
 
-    it('DISCRIMINATING: removing the buffs collapses every rocket projFactor to 1.0', () => {
+    it('DISCRIMINATING: removing the passives collapses every rocket projFactor to 1.0 (in-window attaches keep ONLY the Stage-3 421.2)', () => {
       const s2p = rrhDmg(hNoProj.events, 'skill2');
       expect(s2p.length).toBeGreaterThan(0);
-      expect([
-        ...new Set(s2p.map((d) => d.mult.projFactor.toFixed(4))),
-      ]).toEqual(['1.0000']);
+      const PROJ_STAGE3_ONLY = 1 + 421.2 / 100; // 5.212 — the burst buff alone
+      expect(
+        [...new Set(s2p.map((d) => d.mult.projFactor.toFixed(4)))].sort()
+      ).toEqual(['1.0000', PROJ_STAGE3_ONLY.toFixed(4)].sort());
+    });
+
+    it('composes ADDITIVELY into Damage Up — amount reproduces WITHOUT a projFactor factor', () => {
+      // Owner popup ruling 2026-08-04: a non-crit CORE attach during her B3 window hit
+      // 5,057,974 in the control+carry recording — the additive composition matches it to
+      // −0.24%, the old own-multiplicative bucket misses by −38%. projFactor stays on the
+      // event as the FLAVOR MARKER; the damage rides in dmgUp with attack damage.
+      const flavored = [...attach, ...explode];
+      expect(flavored.length).toBeGreaterThan(0);
+      for (const d of flavored) {
+        const product =
+          d.baseAtk *
+          (d.atkPct / 100) *
+          d.mult.major *
+          d.mult.elem *
+          d.mult.charge *
+          d.mult.dmgUp *
+          d.mult.seqMult *
+          d.mult.taken *
+          d.mult.distributed;
+        const scale = Math.max(1, Math.abs(d.amount));
+        expect(
+          Math.abs(product - d.amount) / scale,
+          `proj contribution leaked out of dmgUp on a ${d.mult.projFactor} hit`
+        ).toBeLessThan(1e-9);
+      }
     });
   });
 
-  describe('RRH4 — S2 rocket: 88.11% attachment (no core) + 88.11% explosion (stored, core ×0.33, crits)', () => {
+  describe('RRH4 — S2 rocket: 88.11% attachment (CORES) + 88.11% explosion (stored, no core, crits)', () => {
     const s2 = rrhDmg(hBase.events, 'skill2');
-    const attach = s2.filter((d) => near(d.mult.projFactor, PROJ_ATTACH));
+    const attach = s2.filter(
+      (d) =>
+        near(d.mult.projFactor, PROJ_ATTACH) ||
+        near(d.mult.projFactor, PROJ_ATTACH_AMP)
+    );
     const explode = s2.filter((d) => near(d.mult.projFactor, PROJ_EXPLODE));
     const isMultipleOf8811 = (a: number) =>
       Math.abs(a / 88.11 - Math.round(a / 88.11)) < 1e-6;
@@ -338,18 +385,15 @@ describe('rapi-red-hood — kit spec', () => {
       }
     });
 
-    it('the attachment is immediate and does NOT core; the explosion cores at ×0.33', () => {
+    it('the attachment CORES (launchWeapon delivery); the explosion does NOT (skill damage)', () => {
       expect(
-        attach.every((d) => d.coreEligible === false),
-        'attachment must not core'
+        attach.every((d) => d.coreEligible === true),
+        'attachment must core'
       ).toBe(true);
       expect(
-        explode.every((d) => d.coreEligible === true),
-        'explosion must core'
+        explode.every((d) => d.coreEligible === false),
+        'explosion must not core'
       ).toBe(true);
-      expect([...new Set(explode.map((d) => d.coreRate.toFixed(3)))]).toEqual([
-        '0.330',
-      ]);
     });
 
     it('both flavors crit-eligible (the stored explosion is NOT crit-exempt)', () => {
@@ -417,6 +461,123 @@ describe('rapi-red-hood — kit spec', () => {
 
     it('DISCRIMINATING: does NOT fire in hasB1 formation (stage-3 cast)', () => {
       expect(rrhBuffs(hBase.events, 'casterAtkPct', HASB1_RRH)).toEqual([]);
+    });
+  });
+
+  describe('RRH7 — burst Stage 3: self Projectile Attachment Damage ▲421.2% for 10 sec', () => {
+    const applied = rrhBuffs(
+      hBase.events,
+      'projectileAttachmentPct',
+      HASB1_RRH
+    ).filter((b) => b.value === 421.2);
+    const casts = rrhBursts(hBase.events);
+
+    it('fires once per stage-3 cast, self-scoped, for 10 sec', () => {
+      expect(casts.length).toBeGreaterThan(0);
+      expect(applied.length, 'no 421.2 attachment buff applied').toBe(
+        casts.length
+      );
+      expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([
+        HASB1_RRH,
+      ]);
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
+    });
+
+    it('is LIVE: in-window attaches carry 6.7192, out-of-window stay 2.5072', () => {
+      const attaches = rrhDmg(hBase.events, 'skill2').filter(
+        (d) =>
+          near(d.mult.projFactor, PROJ_ATTACH) ||
+          near(d.mult.projFactor, PROJ_ATTACH_AMP)
+      );
+      expect(attaches.length).toBeGreaterThan(0);
+      expect(
+        attaches.some((d) => near(d.mult.projFactor, PROJ_ATTACH_AMP)),
+        'no amplified attachment hit — the buff is dead'
+      ).toBe(true);
+      expect(
+        [...new Set(attaches.map((d) => d.mult.projFactor.toFixed(4)))].sort(),
+        'attachment hits carry ONLY the passive or passive+421.2 bucket'
+      ).toEqual([PROJ_ATTACH.toFixed(4), PROJ_ATTACH_AMP.toFixed(4)].sort());
+    });
+
+    it('DISCRIMINATING: does NOT fire in noB1 formation (stage-1 casts)', () => {
+      expect(
+        rrhBuffs(nBase.events, 'projectileAttachmentPct', NOB1_RRH).filter(
+          (b) => b.value === 421.2
+        )
+      ).toEqual([]);
+    });
+  });
+
+  describe('RRH8 — S2 meter: the ▼60 threshold lives in her OWN Stage-3 window, not any FB', () => {
+    type FBStart = Extract<SimEvent, { kind: 'fullBurstStart' }>;
+    type Cast = Extract<SimEvent, { kind: 'burstCast' }>;
+    type Shot = Extract<SimEvent, { kind: 'shot' }>;
+
+    /** Aggregate rrh shots vs rocket attaches per FB window, attributed to the B3 opener. */
+    function windowRates(events: SimEvent[]) {
+      const starts = events.filter(
+        (e): e is FBStart => e.kind === 'fullBurstStart'
+      );
+      const casts = events.filter((e): e is Cast => e.kind === 'burstCast');
+      const shots = events.filter(
+        (e): e is Shot => e.kind === 'shot' && e.slug === SLUG
+      );
+      const attaches = dmg(events).filter(
+        (d) =>
+          d.slug === SLUG &&
+          d.srcSlot === 'skill2' &&
+          (near(d.mult.projFactor, PROJ_ATTACH) ||
+            near(d.mult.projFactor, PROJ_ATTACH_AMP))
+      );
+      const own = { shots: 0, attaches: 0 };
+      const other = { shots: 0, attaches: 0 };
+      for (const s of starts) {
+        const opener = casts
+          .filter((c) => c.stage === 3 && c.frame <= s.frame)
+          .at(-1);
+        const inWin = (f: number) => f >= s.frame && f < s.endFrame;
+        const nShots = shots.filter((x) => inWin(x.frame)).length;
+        if (nShots < 250) {
+          continue;
+        } // ramp/short windows: boundary terms dominate
+        const nAtt = attaches.filter((x) => inWin(x.frame)).length;
+        const acc = opener?.slug === SLUG ? own : other;
+        acc.shots += nShots;
+        acc.attaches += nAtt;
+      }
+      return { own, other };
+    }
+
+    it('hasB1: her own windows run ~1 rocket per 60 shots, helm-opened run ~1 per 120', () => {
+      const { own, other } = windowRates(hBase.events);
+      expect(own.shots, 'no rrh-opened FB window sampled').toBeGreaterThan(0);
+      expect(
+        other.shots,
+        'no teammate-opened FB window sampled'
+      ).toBeGreaterThan(0);
+      // separation bound: threshold-60 windows sit ≥ ~1/60 − boundary, threshold-120
+      // windows ≤ ~1/120 + carryover; 1/85 splits the two bands with margin.
+      expect(
+        own.attaches / own.shots,
+        'own-window cadence should be ~1 rocket per 60 shots'
+      ).toBeGreaterThan(1 / 85);
+      expect(
+        other.attaches / other.shots,
+        'teammate-opened windows must stay at the 120 threshold'
+      ).toBeLessThan(1 / 85);
+    });
+
+    it('DISCRIMINATING: noB1 never opens the window (her casts are stage 1)', () => {
+      const { own, other } = windowRates(nBase.events);
+      expect(own.shots, 'she opens no FB in noB1 — ada does').toBe(0);
+      expect(other.shots, 'no FB window sampled').toBeGreaterThan(0);
+      expect(
+        other.attaches / other.shots,
+        'noB1 windows must stay at the 120 threshold'
+      ).toBeLessThan(1 / 85);
     });
   });
 });

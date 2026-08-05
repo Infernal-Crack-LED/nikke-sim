@@ -1,0 +1,76 @@
+{
+  "slug": "neon",
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 45.93,
+          "durationShots": 2
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 528.97
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "SG"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoFlat",
+          "value": 3,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates when killing an enemy. Affects 2 ally unit(s) with the highest final ATK. Critical Rate ▲ 3.56% for 5 sec."
+    ],
+    "skill2": [],
+    "burst": [
+      "Affects 1 enemy unit(s) with the highest final DEF. (single-target selection — the scope-lock fight has one boss, so the DEF-ranked selector is a no-op)"
+    ]
+  },
+  "caveats": [
+    "skill1 is entirely inert at scope lock: its trigger is an enemy KILL and the raid boss is never killed during the 180s fight. There is also no on-kill TriggerDef in the schema. If a future fight profile includes killable adds, this line becomes live: 2 highest-final-ATK allies (alliesTopAtk count:2, byFinalAtk:true — the text says 'final ATK'), critRatePct 3.56 for 5 sec.",
+    "⚑ skill2 duration semantics: 'for 2 shots' is modeled as a ROUND count (durationShots:2) per the round-count convention, NOT 2 seconds. Unverified whether the in-game counter decrements per trigger pull or per pellet/hit for a SG holder; durationShots decrements per round fired (1 per pull for a SG), which is the assumed reading.",
+    "⚑ skill2 is unscoped Critical Rate (no 'of normal attacks' clause) → critRatePct, so it feeds skill/burst crit as well as normals. Modeled literally from the text.",
+    "Burst damage is burst-cast (lands before the Full Burst window opens) so it takes no +50% FB major — this is engine-automatic for burstCast timing, not flagged via noFb.",
+    "No noFb / noRange set anywhere: noRange is engine-automatic, and per-kit noFb is measured-only."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Neon (neon), SG/Fire/Supporter/Burst I. Modeled: S2 team-wide unscoped Critical Rate ▲45.93% on Full-Burst entry with a 2-ROUND duration; burst single-target 528.97% of final ATK plus Max Ammunition ▲3 flat rounds for 10s to all Shotgun allies (self included — neon is SG). S1 is deliberately unmodeled: it is gated on killing an enemy, which never occurs against the partless raid boss, and the schema carries no on-kill trigger. The burst's 'highest final DEF' enemy selector is a no-op in a single-boss fight. maxAmmoFlat is a weapon-state modifier and therefore a damage line (it gates shots fired per magazine across the 10s window for every SG on the team), not a skippable utility grant.",
+  "hasPierce": false
+}
