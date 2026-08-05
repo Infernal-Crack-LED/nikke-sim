@@ -9,6 +9,144 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-04) ROTATION DEFAULT FLIP — there is NO post-Full-Burst chain-open lock; `refill`
+  (chain opens on gauge-full) becomes the engine default and the fixed 150f block retires to the
+  opt-in `ROTMODEL=floor` A/B arm.** Owner ruling, three corrections to the burst-gen picture
+  (all traced against the implementation, not the docs): (1) generation is locked during FB and
+  unlocks IMMEDIATELY when FB ends — no lingering delay; the sim's `addGauge` guard already
+  matched this and stands. (2) There is no ~3s post-FB lock — the run-I bar-anatomy read
+  ("chain glow at FB-end +3.0s even with the gauge full") was natural refill-from-zero: good
+  teams take ~3-4s of normal generation to rebuild the bar, and the recordings that anchored the
+  old read start during the pre-fight intro (fight time ≠ video time — the control video's
+  "first FB at 14.1s" includes ~9s of pre-fight; the real first fill (~5.6s of fight, cf.
+  QUEUE.md) matches the sim's ~5.4s).
+  (3) There is no multi-second opening phase — the boss is hittable from 3:00; the engine's only
+  fight-start delay is the 8f deploy delay, which already agreed. CHANGE: `chainBlockedUntil`
+  now defaults to no block (`ENV.ROTMODEL === 'floor'` opts back in); `POST_FB_CHAIN_DELAY_FRAMES`
+  (150f) kept only for that arm. VERIFICATION: full vitest suite green after one re-pin
+  (trina fixture: the faster rotation lets the FINAL chain's B2 cast land before the 180s buzzer
+  with its FB starting past it — `casts === fbs + 1`; the equality pin became `0..1` over fbs
+  with the trailing-chain rationale documented). Regression: ALL enabled measured-FB pins hold.
+  PH water B3s' pin is RESTORED at 12 — but the flip did NOT cause the count: the seeded
+  distribution already read 12×25 pre-flip (verified on flip day: the ROTMODEL=floor arm,
+  engine-identical to the pre-flip HEAD, reads 12×25 too); the old 13-over-count had been fixed
+  earlier, almost certainly by 61d10e08 (SMG cadence 24→20.0/s frame-quantization flip,
+  2026-07-23 — PH is exactly the 2-SMG comp the unpin note blamed). The re-pin corrects a stale
+  unpin, not a behavior change. The disabled wind-weak comps are UNCHANGED by the flip (T5/T1
+  read 11-12 under BOTH arms — the block never bound for them; still short of the measured 13,
+  charge-B3
+  gauge-fill-tempo shortfall remains open); iron sweep / N3 / N1 / soda-tb distributions unchanged
+  for the same reason; T4 tightens 12x9 13x16 → 13x25 (the block bound on ~36% of seeds there;
+  modal 13 unchanged, still short of the measured 14, deliberately unpinned). The gauge-cycle-decomp
+  instrument was re-derived per its own contract: its floor drops the dead +2.5s term (now
+  FB-duration + 0.5s pre-B1 + chain span), so `excess` reads the refill-from-zero directly —
+  2.5-4.7s across the six comps, consistent with the owner's ~3-4s; bands re-pinned from measured
+  values. SSOT docs synced: STATE.md (env + constants + §3), game-mechanics.md (rotation
+  section + the auto-burst priority line — the latter brought forward to the 2026-07-21
+  FIRST-READY ruling it had been stale against since that date, verified vs sim.ts:3078),
+  damage-calculation.md, burst-gauge.md, and the agent-facing context pack
+  (.claude/skills/context/SKILL.md — its sync also refreshed pre-existing staleness beyond
+  the flip itself, all verified against sim.ts: the first-ready selection text, the
+  PRE_B1_GAP/FB_PRE_DELAY clauses, and §7 focus-gen anchors). Frozen archives deliberately
+  untouched: judge packets under
+  scripts/kit-autonomy/results/ and the blind-rebuild code bundles under
+  scripts/blind-rebuild/code-bundle/ (they carry the old floor default by design). PROCESS:
+  owner directive ("make it the default, I thought it was already the default") — no
+  scientific-method gate; test-first discipline kept (re-derive → re-pin with rationale).
+  **Evidence:** owner rulings 2026-08-04 (no lock; ~3-4s refill; no opening phase; video-offset);
+  `scripts/battery/rrh-rotation-anatomy-scratch.ts` + `rrh-fb-dist-scratch.ts` (floor-vs-refill
+  timings + 25-seed FB distributions); `scripts/tests/gauge-cycle-decomp.test.ts` re-derivation;
+  `scripts/regression.ts` (PH re-pin, all FB pins green).
+
+- **(2026-08-04) PROJECTILE BUCKET RULING — Projectile Attachment/Explosion Damage compose
+  ADDITIVELY into the Damage Up bucket; the own-multiplicative bucket is OVERTURNED. RRH's hot
+  read is resolved (control 1.091 → 0.908); both rocket popup classes now reproduce the
+  owner's reads.** Owner popup read from the control+carry recording: a non-crit CORE attach
+  during her B3 window hit **5,057,974**. The additive composition reproduces it across buff
+  states (5,046,017 / 5,113,185 = −0.24% / +1.1%); the shipped multiplicative bucket's nearest
+  body missed by −38% (it over-credited in-window attaches ~×1.6–1.7 — the hot read). Change:
+  `projectileAttachmentPct`/`projectileExplosionPct` now add into the Damage Up sum in
+  `dealDamage` (flavor-scoped as before — an attach reads only the attachment stat, an
+  explosion only the explosion stat); the event's `projFactor` is retained as a FLAVOR MARKER,
+  no longer a factor in the product (the event-log product invariant updated accordingly).
+  Popup double-check under the new bucket: the in-FB EXPLOSION body sims at 1,192,831 vs the
+  owner's 1,195,658 read (−0.2%) — the explosion was and is modeled correctly; multi-rocket
+  FB-start batches render as exact integer multiples. Blast radius: RRH control 981.1M →
+  816.4M = 0.908 (the −9% remainder is count/rotation-channel — sim 12 FB vs real 13 — NOT
+  instance magnitude, both popup classes now match); Anis: Star's shooting-star dots ride the
+  same stat and move with her board rows (regenerated). The 2026-07-13 U4 arm (RL normals take
+  projExpl in Damage Up) was already additive — consistent precedent. Test-first: RRH3's
+  additive-composition pin added RED→GREEN; RRH/event-log/hit-repeat/anis-star 66/66. PROCESS:
+  owner override, gate skipped by owner ruling. SUPERSEDES the validation-era own-bucket rule;
+  the earlier-same-day ATTACHMENT REWORK claim that the multiplicative projFactor reproduced
+  the old 4,414,404 body is WITHDRAWN (that arithmetic assumed the overturned bucket).
+  **Evidence:** owner popup read 2026-08-04 (5,057,974 attach-core, 1,195,658 explosion);
+  `scripts/tests/units/rapi-red-hood.test.ts` RRH3; `scripts/regression-snapshot.json` regen;
+  `scripts/battery/rrh-control-probe.ts` (0.908).
+
+- **(2026-08-04) ATTACHMENT REWORK — three owner overrides restore the attachment class as Rapi:
+  Red Hood's damage carrier: the +421.2% Stage-3 buff is LIVE again, the attachment CORES, and
+  the ▼60 meter threshold is scoped to her own B3 window. She flips COLD → HOT (control 0.898 →
+  1.091); the overshoot stays exposed, no re-fit.** Owner direct re-read of the control+carry
+  footage (`docs/probes/control + carry/rrh control.MP4`): the explosion body during her B3 is
+  1,195,658 — at the floor of the sim's in-FB explosion bodies, so the explosion was never the
+  under-modeled carrier; the ATTACHMENT is the main damage and gets a massive amp during her B3.
+  (1) +421.2% Projectile Attachment Damage (Burst Stage 3, self, 10s) RESTORED — overturns the
+  2026-07-14 "MEASURED-INERT" verdict: the amplified attachment bodies that read could not
+  attribute were mis-sorted into the explosion class (same flavor family, overlapping popup
+  columns). The "dominant white body" 4,414,404 of the 2026-07-16 record is a +421.2% AMPLIFIED
+  ATTACHMENT — an in-window attach at the sim's own buff state reproduces it within ~1%
+  (projFactor 6.7192), its ×1.5 crit twin matching the measured orange 6,621,606; the red
+  "CORE HIT" labels on the 7-digit bodies were attachment cores. (2) The ATTACHMENT CORES —
+  launchWeapon delivery at the band-table rate (`core:true` on the flatDamage); the 2026-07-14
+  "stickies never core" verdict is OVERTURNED for the attach. The explosion stays core-INELIGIBLE
+  (skill damage — the same-day CORE OVERTURN below STANDS). (3) The ▼60 meter threshold applies
+  ONLY inside the 10s window of her OWN Stage-3 cast — new opt-in `countInFbStage` on the
+  hitCount trigger (engine tracks `lastBurstCastStage`); the any-FB-state default stands for the
+  other carrier (SWID), whose same-shaped line is flagged for its own review. Max Ammo: 1
+  reclassified COSMETIC (owner: one rocket "loaded" at meter-full fires alongside the bullet; not
+  reflected in game, no damage effect). Test-first kept: RRH4 flipped (attach cores), RRH7/RRH8
+  added RED→GREEN (25/25); SWID + hit-count engine pins byte-green. Reads (owner directed: no
+  pre-registration): control 807.6M → 981.1M = **1.091** vs 899.6M real (FB count invariant
+  12.0); graded T7 +21.9%, N1 +21.5% (those comps buff the new core term), T7 teammates within
+  ±0.03% gauge-coupling. The +9.1% overshoot is the new exposed residual — attribution candidates
+  for the owner's footage pass: the band-table attachment CORE RATE (may over-credit vs in-game)
+  and the 421.2% effective UPTIME. PROCESS: full gate skipped by owner ruling (owner overrides);
+  SUPERSEDES the 2026-07-14 inert + sticky verdicts and re-narrows the launchWeapon bullet.
+  **Evidence:** owner control+carry re-read 2026-08-04; `scripts/tests/units/rapi-red-hood.test.ts`
+  RRH3/RRH4/RRH7/RRH8; `scripts/regression-snapshot.json` regen; `scripts/battery/rrh-control-probe.ts`.
+
+- **(2026-08-04) Rapi: Red Hood's rocket EXPLOSION does NOT core — owner footage ruling overturns
+  the 2026-07-16 core-⅓ landing; `storedHit.core` removed, she is deliberately COLDER.** Owner
+  direct re-read of `docs/probes/probe u7/rapi focus vid.MP4` (the same recording behind
+  `docs/probe-data/rrh-explosion-core.json`): the explosion is dealt as SKILL damage, and skill
+  damage generally cannot core (the U1 function-damage no-core default). The red "CORE HIT" labels
+  the 2026-07-16 OCR-by-eye read tallied (N=9, self-declared LOW-MEDIUM confidence) were concurrent
+  NORMAL-column core hits — exactly the overlap hazard that record itself flagged — and the
+  independent FB1 reread had already shown the consolidated FB-start batch popup rendering
+  WHITE/non-core (`docs/probe-data/rrh-fb1-reread.json`). Change: `storedHit.core` dropped from the
+  override (the release falls to the storedHit no-core DEFAULT — no band-table fallback);
+  `storedHit.crit:true` STANDS (separate consistency landing, untouched); the spec pin flipped
+  test-first (`scripts/tests/units/rapi-red-hood.test.ts` RRH4 RED→GREEN, 20/20). Pre-registered
+  BEFORE the change (paired-seed control comp, LM/crown/helm/rrh): rrh 826.14M → 807.63M (−2.24%;
+  the explosion-core share WAS 2.24% of her total), control ratio 0.918 → 0.898 vs the 899.6M real,
+  Full Burst count INVARIANT (12.0 both arms); the post-change probe landed EXACTLY (807.6M /
+  0.898). Graded snapshot regen (only her rows moved, all measured FB truths held): T7 −4.32%, N1
+  rapi/quency −3.33% (per-comp core-damage buffs make the lost term larger than on the neutral
+  control). PROCESS: the full scientific-method gate was SKIPPED by owner ruling — the overturned
+  read predates the current probe tooling and the owner re-measured it directly; pre-registration +
+  test-first anti-fit hygiene kept. Consequences: (1) the SSOT launchWeapon exception bullet is
+  narrowed (RRH's rocket class is OUT — attach no-core by its own measured ruling, explosion
+  no-core by this one; Anis: Star's stars still core) — RE-NARROWED again later the same day: the
+  attach CORES again under the ATTACHMENT REWORK (top entry), only the explosion stays out;
+  (2) the U15 ×1.80 core+crit anomaly is now
+  popup mis-association, full stop; (3) the residual stays exposed and is NOT to be re-fit — and
+  the clean-weapon basis (emma MG 0.977 OK, 2026-07-23) no longer supports the older "generic
+  MG-cold" attribution, so the COLD remainder is the deliberately-open Invisible-X gap, no
+  explosion-core credit. SUPERSEDES the core portion of the 2026-07-16 entry below. **Evidence:**
+  owner footage re-read 2026-08-04; `scripts/regression-snapshot.json` regen;
+  `scripts/battery/rrh-control-probe.ts`.
+
 - **(2026-08-04) MAX-HP FOLLOW-UPS (owner-directed, same branch as the entry below): three
   disclosed HP residuals closed — a third grant basis, a stage feed, and rouge's coin state.**
   1. **quency S1 basis made exact — new StatKey `highestAllyMaxHpPct`** (commit f270dd2c):
@@ -41,8 +179,8 @@ lives. Newest first within each section.
      movement. The coin-tier gating flag is resolved (it was flag 3 in the PRE-rewrite note
      numbering); the surviving flags — (1) coin exclusivity and (2) Shield-rider heal asymmetry —
      remain measurement-gated.
-  All three landed test-first (RED→GREEN spec pins); no damage-bearing path moves except
-  laplace's own total (up, toward her measured board value).
+     All three landed test-first (RED→GREEN spec pins); no damage-bearing path moves except
+     laplace's own total (up, toward her measured board value).
 
 - **(2026-08-04) MAX-HP-SCALING PRIMITIVES: maxwell-ordinary-mechanic S2 is CASTER-basis (owner
   ruling — the target-own encoding was a misread), and every "% of Max HP" engine term now reads
@@ -71,10 +209,10 @@ lives. Newest first within each section.
      (FB counts unchanged: 12/12 T2, 11/11 N6, both vs measured); control-regression CTRL
      maiden comp +3.88% (477.0M → 495.5M vs real 559.0M — 0.853 → 0.886, correct direction on
      the documented conservative lower bound; r1/r3 residuals remain).
-  Scope + remaining non-goals (reporting-layer maxHp, grant re-derivation, ally-grant opt-in,
-  HP-pool adjacency): the scope handoff was CLOSED + archived on landing (owner: completed work
-  in an open PR does not stay in the docs) — design record lives in PR #84's history
-  (`docs/handoffs/2026-08-04-max-hp-scaling-primitives.md`, commit 27d49110).
+     Scope + remaining non-goals (reporting-layer maxHp, grant re-derivation, ally-grant opt-in,
+     HP-pool adjacency): the scope handoff was CLOSED + archived on landing (owner: completed work
+     in an open PR does not stay in the docs) — design record lives in PR #84's history
+     (`docs/handoffs/2026-08-04-max-hp-scaling-primitives.md`, commit 27d49110).
 
 - **(2026-08-04) SECOND CLEAN-WEAPON OVERRIDE LANDED: `snow-crane` (the SR basis cell) carries a
   proven-damage-neutral gauntlet override under the CW1 option-2 invariant (2026-08-01).** The
@@ -1160,7 +1298,9 @@ B3 RL, B3 MG]`; B2 `[B1 AR, tested, B2 SR, B3 RL, B3 MG]`. The board uses dedica
   cross-corroborates the additive bucket ([`sim.ts`:58–61](../src/engine/sim.ts#L58-L61)). **Consequence:**
   the RRH ×1.80 anomaly is re-attributed to RRH-LOCAL causes (explosion core bonus / popup association —
   both already named in U15), NOT to the shared bracket; its bounded consequence stays ~0.3–0.4% of her
-  total and rides with the rest of her explosion residual (U15 stays open on its other four bullets). This
+  total and rides with the rest of her explosion residual (U15 stays open on its other four bullets).
+  (FINAL RESOLUTION 2026-08-04: the explosion does not core AT ALL — the ×1.80 body was popup
+  mis-association with a concurrent normal core+crit; see the top entry.) This
   retires the one FORMULA-level unknown that sat underneath all 86 board readings — per-unit retunes no
   longer risk calibrating against a possibly-wrong shared bracket, which is what gated the engine-work
   ordering. Trail: open-questions U15, §P0.
@@ -2076,7 +2216,11 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 - **(2026-07-16) Rapi: Red Hood's projectile-EXPLOSION class cores ~1/3, is DERIVED from the real rocket
   meter (120→60 in-FB cadence + in-burst instant detonation), and her fictional damage placeholders are
-  removed — partially closing the "invisible X".** Reopens the 2026-07-14 invisible-X entry below with new
+  removed — partially closing the "invisible X". CORE PORTION SUPERSEDED (2026-08-04, see the top
+  entry): owner footage re-read rules the explosion SKILL damage — core-INELIGIBLE; `storedHit.core`
+  removed. Everything ELSE here stands (the derived rocket cadence, instantInFb, placeholder removal,
+  the CRIT follow-up). The "stickies never core" ruling cited below is OVERTURNED for the attach by
+  the same-day ATTACHMENT REWORK (top entry) — the CORE-HIT labels were attachment cores.** Reopens the 2026-07-14 invisible-X entry below with new
   same-tier evidence (video re-read of `probe u7/rapi focus vid.MP4`, `docs/probe-data/rrh-explosion-core.json`).
   MEASURED: explosion core fraction **~1/3** (0.30–0.45, N=9; the plain WHITE non-core body dominates every
   burst, red "CORE HIT" bodies are the clear minority — explicitly NOT near-full coring, correcting an earlier
@@ -3006,7 +3150,11 @@ visually-counted-white-popups`; the whites were under-counted (~6 vs true ~9–1
   experiment log "RAPI SYNTHESIS FINAL" + landing entry. **PARTIALLY SUPERSEDED (2026-07-16, see the
   entry above)** — much of the invisible X is now explained: her explosions core ~1/3 and her rocket
   cadence/instant-detonation are DERIVED from the real meter mechanic; the residual is narrowed and left
-  exposed (part MG-cold, part unmodeled explosion crit).
+  exposed (part MG-cold, part unmodeled explosion crit). **The 2026-07-16 core explanation was itself
+  OVERTURNED 2026-08-04 (explosion = skill damage, core-INELIGIBLE — see the top entry); the
+  cadence/instant-detonation derivation still stands. The +421.2% "MEASURED-INERT" verdict in THIS
+  entry was ALSO OVERTURNED 2026-08-04 (ATTACHMENT REWORK, top entry): the amplified attachment
+  bodies were mis-sorted into the explosion class; the buff is RESTORED and the attachment CORES.**
 
 - **(2026-07-14) Liberalio's 202.5% full-charge proc receives the +50% Full Burst term by its
   landing timing** — the legacy no-Full-Burst flag was a calibration-era relic contradicting

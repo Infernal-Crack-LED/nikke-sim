@@ -62,7 +62,8 @@ async function fetchBoard(name: string): Promise<string> {
       }
     }
   }
-  const msg = lastError instanceof Error ? lastError.message : String(lastError);
+  const msg =
+    lastError instanceof Error ? lastError.message : String(lastError);
   throw new Error(
     `${SITE_ORIGIN}/${name}.json failed after ${ATTEMPTS} attempts: ${msg}`
   );

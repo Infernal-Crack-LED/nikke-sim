@@ -57,9 +57,13 @@ const dpsExpected = hasHash(dpschart)
   : '';
 const dpsStale = hasHash(dpschart) && dpschart!.inputsHash !== dpsExpected;
 
-const ranksArtifacts = ['burstgen', 'burstcdr', 'sustain', 'bufferchart', 'b1b2dps'].map(
-  (name) => ({ name, art: loadArtifact(`web/public/${name}.json`) })
-);
+const ranksArtifacts = [
+  'burstgen',
+  'burstcdr',
+  'sustain',
+  'bufferchart',
+  'b1b2dps',
+].map((name) => ({ name, art: loadArtifact(`web/public/${name}.json`) }));
 const ranksExpected = ranksArtifacts.some(({ art }) => hasHash(art))
   ? computeRanksInputHash()
   : '';

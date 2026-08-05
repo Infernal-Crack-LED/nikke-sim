@@ -107,7 +107,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 #### Engine / model threads (measurement- or owner-gated)
 
 - **⇒ ENGINE REGRESSION FULL-BURST COUNT FAILURES — four comps disabled in `scripts/regression.ts`**
-  (`:106`, `:131`, `:158`, `:236`): `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`,
+  (`:106`, `:131`, `:158`, `:239`): `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`,
   `N3 scarlet/liberalio iron` each read 1–3 Full Bursts short of their video-measured counts on clean
   `HEAD`, skipped via the `disabled` flag so `verify.sh` stays green.
   **2026-08-03 /scientific-method pass (LOG, 2-of-2 ACCEPT both MEDIUM — full account:
@@ -123,6 +123,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `scripts/tests/gauge-cycle-decomp.test.ts`). Confidence capped MEDIUM on one open question: does a
   real fight hit the sim's own opening/first-FB time (raising to HIGH needs a direct frame-measurement
   of the real FB-end→next-B1 gap on one disabled comp's footage). Leave `disabled: true` until then.
+  **2026-08-04 update:** that open question is RESOLVED — the owner confirmed fight time ≠ video time
+  (recordings start during the pre-fight intro) and once offsets are accounted the real first FB
+  matches the sim's (~5.6s vs ~5.4s); the same ruling removed the post-FB chain-open block
+  (`ROTMODEL=refill` is now the default, DECISIONS top entry). The flip does NOT move these comps —
+  T5/T1 read 11-12 under BOTH rotation arms (the block never bound for them), so all four stay
+  short of their measured counts; the fill-TEMPO gap is unchanged and remains the open channel. The
+  `decomposeCycles` floor was re-derived (its old +2.5s lock term is dead; `excess` now reads the
+  refill-from-zero directly).
   Separately logged (do NOT bundle in): a general (non-liberalio) `skillGauge`-fires-twice-per-shot
   pattern on any `shotFired`-triggered `flatDamage` rider (`sim.ts:2393`) — its correction direction is
   gauge-DOWN, which would worsen these 4 comps if "fixed" alone; needs its own pre-op pass.

@@ -68,7 +68,8 @@
 //       Electric AR ally (slot order; moran slot 0), attackDamagePct 94.15 + reloadSpeedPct 50.82, 10s
 //       (600f), once per trina cast. Nearest-wrong (a): count 99 (would buff BOTH Electric AR allies
 //       [0,3], not just the leftmost [0]). (b) trigger fullBurstEnter — trina is sole B2 so she casts
-//       every Full Burst cycle (casts === fbs), so trigger identity is discriminated by FRAME, not count:
+//       every Full Burst cycle (casts >= fbs; one trailing cast may outrun the buzzer), so trigger
+//       identity is discriminated by FRAME, not count:
 //       burstCast lands on trina's cast frame (the B2 step), fullBurstEnter lands on the later FB-start
 //       frame (after the B3 step); the two frame sets never coincide. (c) duration ≠ 10s. All discriminated.
 //   T5  Burst "all allies: Max HP ▲20.14% of caster Max HP / Attack Damage ▲20.9% for 10s" = burstCast,
@@ -101,8 +102,10 @@
 //
 // Fixture: Trina is Burst II, so a custom comp [moran(B1,Elec AR) / liter(B1) / trina(B2,Elec RL) /
 // scarlet(B3,Elec AR) / helm(B3)] is used (NOT controlComp — crown would be a second B2 and steal half her
-// casts). Trina is the SOLE Burst II → she casts every Full Burst cycle (13 casts over 180s) and the team
-// completes 13 Full Bursts (casts === fbs); trigger identity is therefore discriminated by FRAME, not count —
+// casts). Trina is the SOLE Burst II → she casts every Full Burst cycle; under the refill rotation
+// default (2026-08-04) that reads 13 casts vs 12 completed Full Bursts — the final chain opens at
+// ~178.9s and its Full Burst would start past the 180s buzzer (casts === fbs + 1). Trigger identity
+// is therefore discriminated by FRAME, not count —
 // trina's burstCast frame (the B2 chain step) strictly PRECEDES each Full-Burst-start frame (after the B3
 // step), so the two frame sets never coincide (a fullBurstEnter encoding lands ~52f later every cycle). The
 // comp deliberately fields TWO Electric AR allies — moran (slot 0,
@@ -370,7 +373,7 @@ const healBase = runHeal();
 const healOnceRun = runHeal({ trina: healOnce });
 const healNoneRun = runHeal({ trina: healRemoved });
 
-const casts = trinaBursts(base.events).length; // trina's burst casts (13)
+const casts = trinaBursts(base.events).length; // trina's burst casts (13 — incl. the buzzer-trailing chain)
 const fbs = fbStarts(base.events).length; // team Full Bursts (12)
 const trinaMaxHp = unitOf(base.res, 'trina').maxHp; // caster Max HP basis for the maxHpFlat conversions
 
@@ -379,10 +382,16 @@ describe('trina — kit spec', () => {
     it('Trina casts >0 bursts, the team completes >0 Full Bursts, and burstCast frames != fullBurstStart frames (trigger-identity is frame-discriminable)', () => {
       expect(casts).toBeGreaterThan(0);
       expect(fbs).toBeGreaterThan(0);
-      // sole-B2 comp: Trina casts every Full Burst cycle (casts === fbs), but her burstCast frame
-      // PRECEDES each Full Burst window opening (the B2 step fires before the B3 step completes the
-      // chain), so burstCast vs fullBurstEnter is discriminated by FRAME, not by count.
-      expect(casts).toBe(fbs);
+      // sole-B2 comp: Trina casts every Full Burst cycle, so casts >= fbs. Under the refill
+      // rotation default (2026-08-04: no post-FB chain-open block) the FINAL chain opens late
+      // enough that its B2 cast lands before the 180s buzzer while its Full Burst would start
+      // after it — one trailing cast with no completed FB (casts === fbs + 1 here). A collapsed
+      // chain would add more; >1 over fbs is a rotation regression to investigate, not re-pin.
+      // Her burstCast frame PRECEDES each Full Burst window opening (the B2 step fires before
+      // the B3 step completes the chain), so burstCast vs fullBurstEnter is discriminated by
+      // FRAME, not by count.
+      expect(casts - fbs).toBeGreaterThanOrEqual(0);
+      expect(casts - fbs).toBeLessThanOrEqual(1);
       const cf = castFrames(base.events);
       const ff = fbStartFrames(base.events);
       expect(cf.every((f) => !ff.includes(f))).toBe(true);

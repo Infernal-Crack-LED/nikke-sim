@@ -84,7 +84,13 @@ if (dpschart === null) {
 // ---- the five rank boards (one shared bucket — see artifact-input-hash.ts) --------
 
 const ranksHash = computeRanksInputHash();
-const rankBoards = ['burstgen', 'burstcdr', 'sustain', 'bufferchart', 'b1b2dps'];
+const rankBoards = [
+  'burstgen',
+  'burstcdr',
+  'sustain',
+  'bufferchart',
+  'b1b2dps',
+];
 for (const name of rankBoards) {
   const art = readArtifact(`web/public/${name}.json`);
   if (art === null) {

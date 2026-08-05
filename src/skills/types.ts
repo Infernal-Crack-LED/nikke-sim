@@ -77,7 +77,12 @@ export type TriggerDef =
   | { kind: 'burstCast'; stage?: 1 | 2 | 3 } // when the owner casts their burst (optionally only at that stage — Λ kits)
   | { kind: 'fullBurstEnter' } // when full burst begins
   | { kind: 'fullBurstEnd' }
-  | { kind: 'hitCount'; count: number; countInFb?: number } // fires every `count` cumulative hits; `countInFb` overrides the threshold DURING Full Burst (RRH rocket meter: 120 out of burst → 60 in her FB)
+  | {
+      kind: 'hitCount';
+      count: number;
+      countInFb?: number;
+      countInFbStage?: number;
+    } // fires every `count` cumulative hits; `countInFb` overrides the threshold DURING Full Burst (RRH rocket meter: 120 out of burst → 60 in her FB). `countInFbStage` SCOPES that override: it then applies ONLY during the 10s window after the owner's OWN burst cast at that stage (prose "▼N for 10 sec" granted by that cast — RRH's ▼60 is a Stage-3 line, owner ruling 2026-08-04), NOT any team FB window; without it the any-FB-state convention stays (SWID)
   | {
       kind: 'chargeCounter';
       count: number | number[];
@@ -364,7 +369,7 @@ export type EffectDef =
         | 'true'
         | 'projectileAttachment'
         | 'projectileExplosion';
-      core?: number; // per-release core RATE (0..1) via the coreOverride path — aim/range-INDEPENDENT, not the weapon/band acr table (RRH attached-rocket explosions core ~1/3, MEASURED 2026-07-16)
+      core?: number; // per-release core RATE (0..1) via the coreOverride path — aim/range-INDEPENDENT, not the weapon/band acr table. No shipped consumer since 2026-08-04: RRH's attached-rocket explosions were re-ruled core-INELIGIBLE (skill damage — owner footage ruling overturning the 2026-07-16 ~1/3 read; see DECISIONS)
       crit?: boolean; // the release rolls crit at the caster's sheet rate (like every other hit) — removes the stored-hit path's default crit-OFF exemption; consistency, not a new mechanic (RRH explosions crit — orange bodies observed; 2026-07-16 DECISIONS)
       instantInFb?: boolean; // charges added DURING Full Burst detonate immediately that same window (RRH: a rocket that attaches in FB explodes instantly), instead of only batch-releasing at the next FB start
     }

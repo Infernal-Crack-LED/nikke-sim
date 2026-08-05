@@ -316,20 +316,30 @@ describe('rouge (Rouge) — kit spec [Tier 2, coin-state support]', () => {
       );
 
     it('fixture reaches BOTH flips: Shield at 30 full charges, Double Sword 5 shield-era bursts later', () => {
-      expect(shieldFlips.length, 'no Shield Coin flip (damageTakenPct)').toBeGreaterThan(0);
+      expect(
+        shieldFlips.length,
+        'no Shield Coin flip (damageTakenPct)'
+      ).toBeGreaterThan(0);
       // The flip lands exactly on the 30th full charge (hitCount 30; SR = 1 hit/pull).
       const shotsAtFlip = rougeShots(base.events).filter(
         (s) => s.frame <= shieldFlipFrame
       ).length;
       expect(shotsAtFlip).toBe(30);
-      expect(shieldEraBursts.length, 'need >=5 rouge bursts after the Shield flip').toBeGreaterThanOrEqual(5);
+      expect(
+        shieldEraBursts.length,
+        'need >=5 rouge bursts after the Shield flip'
+      ).toBeGreaterThanOrEqual(5);
     });
 
     it('all three coin-tier riders + the 15.08 Double Sword line apply, coin-gated', () => {
       for (const v of [10.15, 20.1, 30.02, 15.08]) {
         const applied = tier(base.events, v);
-        expect(applied.length, `no ${v}% maxHpFlat tier grant`).toBeGreaterThan(0);
-        expect(new Set(applied.map((b) => b.targetIdx)).size).toBeGreaterThan(1);
+        expect(applied.length, `no ${v}% maxHpFlat tier grant`).toBeGreaterThan(
+          0
+        );
+        expect(new Set(applied.map((b) => b.targetIdx)).size).toBeGreaterThan(
+          1
+        );
       }
     });
 
@@ -350,7 +360,10 @@ describe('rouge (Rouge) — kit spec [Tier 2, coin-state support]', () => {
         expect(b.expiresFrame! - b.frame).toBe(WINDOW);
       }
       for (const b of tier(base.events, 15.08)) {
-        expect(b.expiresFrame, '15.08 Double Sword line is continuous').toBeNull();
+        expect(
+          b.expiresFrame,
+          '15.08 Double Sword line is continuous'
+        ).toBeNull();
       }
     });
 
