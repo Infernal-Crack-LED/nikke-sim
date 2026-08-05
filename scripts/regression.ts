@@ -167,15 +167,17 @@ const COMPS: Comp[] = [
       'guillotine-winter-slayer',
     ],
     boss: 'Fire',
-    // FB RE-PINNED 2026-08-04 (ROTMODEL refill became the default): the measured truth was always
-    // 12 (video, rrh probe "water weak vid" 2026-07-14: 12/12 splash-counted, first banner exact
-    // 2:54) and was UNPINNED 2026-07-17 only because the sim over-counted 13 — the same ±1
-    // burst-cycle-boundary over-prediction as T4/T7/N2/N4/N5 (the only SMG comp it affected: 2 SMGs
-    // + little-mermaid's teamAmmo-400/37% fill, whose +20% ammo rate tripped one cycle early). The
-    // 2026-08-04 removal of the fixed post-FB chain-open block (owner ruling: the chain opens on
-    // gauge-full; the old "3s" read was natural refill + video-offset confound) moved the seeded
-    // distribution to 12×25 — exact. The unpin note said re-pin when the burst-cycle increment
-    // lands; this is it. guillotine-winter-slayer never bursts (bench B3) confirmed.
+    // FB RE-PINNED 2026-08-04: the measured truth was always 12 (video, rrh probe "water weak vid"
+    // 2026-07-14: 12/12 splash-counted, first banner exact 2:54) and was UNPINNED 2026-07-17 only
+    // because the sim over-counted 13 — the same ±1 burst-cycle-boundary over-prediction as
+    // T4/T7/N2/N4/N5 (the only SMG comp it affected: 2 SMGs + little-mermaid's teamAmmo-400/37%
+    // fill, whose +20% ammo rate tripped one cycle early). The over-count was ALREADY fixed before
+    // the 2026-08-04 rotation flip — verified on flip day: the ROTMODEL=floor arm (engine-identical
+    // to the pre-flip HEAD) reads 12×25, byte-identical to the refill default. The resolving change
+    // is almost certainly 61d10e08 (SMG cadence 24→20.0/s frame-quantization flip, 2026-07-23) —
+    // PH is exactly the 2-SMG comp this note blames the 13 on. The re-pin corrects the stale unpin;
+    // it is NOT a behavior change from the flip. guillotine-winter-slayer never bursts (bench B3)
+    // confirmed.
     realFullBursts: 12,
   },
   // T4: KNOWN MISMATCH — real = 14 FBs with privaty focus (probe u7, 2026-07-14) vs sim 13.

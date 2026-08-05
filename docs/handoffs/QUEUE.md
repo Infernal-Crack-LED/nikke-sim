@@ -126,8 +126,9 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   **2026-08-04 update:** that open question is RESOLVED — the owner confirmed fight time ≠ video time
   (recordings start during the pre-fight intro) and once offsets are accounted the real first FB
   matches the sim's (~5.6s vs ~5.4s); the same ruling removed the post-FB chain-open block
-  (`ROTMODEL=refill` is now the default, DECISIONS top entry), which lifted T5/T1 by +1 (now 11-12)
-  but left all four comps short — the fill-TEMPO gap is unchanged and remains the open channel. The
+  (`ROTMODEL=refill` is now the default, DECISIONS top entry). The flip does NOT move these comps —
+  T5/T1 read 11-12 under BOTH rotation arms (the block never bound for them), so all four stay
+  short of their measured counts; the fill-TEMPO gap is unchanged and remains the open channel. The
   `decomposeCycles` floor was re-derived (its old +2.5s lock term is dead; `excess` now reads the
   refill-from-zero directly).
   Separately logged (do NOT bundle in): a general (non-liberalio) `skillGauge`-fires-twice-per-shot

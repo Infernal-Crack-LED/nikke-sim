@@ -18,24 +18,32 @@ lives. Newest first within each section.
   ("chain glow at FB-end +3.0s even with the gauge full") was natural refill-from-zero: good
   teams take ~3-4s of normal generation to rebuild the bar, and the recordings that anchored the
   old read start during the pre-fight intro (fight time ≠ video time — the control video's
-  "first FB at 14.1s" includes ~9s of pre-fight; the real first fill matches the sim's ~5.4s).
+  "first FB at 14.1s" includes ~9s of pre-fight; the real first fill matches the sim's ~~5.4s).
   (3) There is no multi-second opening phase — the boss is hittable from 3:00; the engine's only
   fight-start delay is the 8f deploy delay, which already agreed. CHANGE: `chainBlockedUntil`
   now defaults to no block (`ENV.ROTMODEL === 'floor'` opts back in); `POST_FB_CHAIN_DELAY_FRAMES`
   (150f) kept only for that arm. VERIFICATION: full vitest suite green after one re-pin
   (trina fixture: the faster rotation lets the FINAL chain's B2 cast land before the 180s buzzer
   with its FB starting past it — `casts === fbs + 1`; the equality pin became `0..1` over fbs
-  with the trailing-chain rationale documented). Regression: ALL enabled measured-FB pins hold;
-  PH water B3s' over-count RESOLVES (sim 13 → 12×25, exact) and its pin is RESTORED per its own
-  unpin note ("re-pin when the burst-cycle increment lands"); the disabled wind-weak comps gain
-  at most +1 (T5/T1 now 11-12, still short of the measured 13 — the charge-B3 gauge-fill-tempo
-  shortfall remains open); iron sweep / N3 / T4 / N1 / soda-tb counts unchanged (their refills
-  already exceeded the old block, so it never bound for them). The gauge-cycle-decomp instrument
-  was re-derived per its own contract: its floor drops the dead +2.5s term (now FB-duration +
-  0.5s pre-B1 + chain span), so `excess` reads the refill-from-zero directly — 2.5-4.7s across
-  the six comps, consistent with the owner's ~3-4s; bands re-pinned from measured values. SSOT
-  docs synced: STATE.md (env + constants + §3), game-mechanics.md, damage-calculation.md;
-  judge-packet archives under scripts/kit-autonomy/results/ deliberately untouched. PROCESS:
+  with the trailing-chain rationale documented). Regression: ALL enabled measured-FB pins hold.
+  PH water B3s' pin is RESTORED at 12 — but the flip did NOT cause the count: the seeded
+  distribution already read 12×25 pre-flip (verified on flip day: the ROTMODEL=floor arm,
+  engine-identical to HEAD~~1, reads 12×25 too); the old 13-over-count had been fixed earlier,
+  almost certainly by 61d10e08 (SMG cadence 24→20.0/s frame-quantization flip, 2026-07-23 — PH
+  is exactly the 2-SMG comp the unpin note blamed). The re-pin corrects a stale unpin, not a
+  behavior change. The disabled wind-weak comps are UNCHANGED by the flip (T5/T1 read 11-12 under
+  BOTH arms — the block never bound for them; still short of the measured 13, charge-B3
+  gauge-fill-tempo shortfall remains open); iron sweep / N3 / N1 / soda-tb distributions unchanged
+  for the same reason; T4 tightens 12x9 13x16 → 13x25 (the block bound on ~36% of seeds there;
+  modal 13 unchanged, still short of the measured 14, deliberately unpinned). The gauge-cycle-decomp
+  instrument was re-derived per its own contract: its floor drops the dead +2.5s term (now
+  FB-duration + 0.5s pre-B1 + chain span), so `excess` reads the refill-from-zero directly —
+  2.5-4.7s across the six comps, consistent with the owner's ~3-4s; bands re-pinned from measured
+  values. SSOT docs synced: STATE.md (env + constants + §3), game-mechanics.md,
+  damage-calculation.md, burst-gauge.md, and the agent-facing context pack
+  (.claude/skills/context/SKILL.md); frozen archives deliberately untouched: judge packets under
+  scripts/kit-autonomy/results/ and the blind-rebuild code bundles under
+  scripts/blind-rebuild/code-bundle/ (they carry the old floor default by design). PROCESS:
   owner directive ("make it the default, I thought it was already the default") — no
   scientific-method gate; test-first discipline kept (re-derive → re-pin with rationale).
   **Evidence:** owner rulings 2026-08-04 (no lock; ~3-4s refill; no opening phase; video-offset);

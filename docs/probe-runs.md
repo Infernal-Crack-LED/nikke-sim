@@ -548,11 +548,10 @@ a nice-to-have (they double as repeatability data) but not required.
 Sim predictions — THIRD REVISION (2026-07-13 late): after the Part A measurements PLUS
 the rotation-anatomy findings from existing footage (~~generation runs DURING full burst~~
 SUPERSEDED (2026-07-13) — generation is LOCKED during full burst; ~~the fast refill is charge
-users releasing held shots right after it ends (owner correction, burst-gauge.md §1);
-the gauge is consumed when the chain opens; the next chain can't open until ~3s after
-full burst ends~~ SUPERSEDED (2026-08-04) — the ~3s was natural refill-from-zero plus a
-video-offset confound; there is NO post-FB chain-open lock and the gauge unlocks the
-instant FB ends (owner ruling, DECISIONS 2026-08-04, ROTMODEL=refill now default);
+users releasing held shots right after it ends (owner correction, burst-gauge.md §1)~~ and ~~the
+next chain can't open until ~3s after full burst ends~~ — both SUPERSEDED (2026-08-04): the ~3s was
+natural refill-from-zero plus a video-offset confound; there is NO post-FB chain-open lock and the
+gauge unlocks the instant FB ends (owner ruling, DECISIONS 2026-08-04, ROTMODEL=refill now default);
 the gauge is consumed when the chain opens — all measured from the run-I/run-B/3-unit bar traces), the sim now
 matches ALL FOUR graded comps exactly and most comps are seed-deterministic:
 
