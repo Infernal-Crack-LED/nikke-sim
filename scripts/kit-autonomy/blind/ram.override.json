@@ -1,0 +1,94 @@
+{
+  "slug": "ram",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "teamHas": {
+        "sameSquad": true
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 20.16
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 40.72,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 2
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 11.34,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 10.08,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates after landing 5 normal attack(s). Affects the target(s). ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the v1 boss deals no damage and enemy ATK is not an input to the damage formula, so the line has no consumer (it is NOT a Damage Taken ▲ debuff, which would benefit the team)."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ Kit-silent triggers: both skill2 lines state a duration but carry NO activation clause. Modeled as `passive`, so each applies once at t=0 and lapses after its stated window (10 s / 5 s) instead of refreshing. Damage-inert for this kit either way, but the trigger identity is unverified.",
+    "⚑ teamHas.sameSquad FAILS CLOSED — if src/data/squads.ts carries no squad entry for ram, the 20.16 s burst-CDR never fires and her Burst I cadence stays at the flat 40 s cooldown. This is the ONE damage-relevant lever in the kit (faster Burst I → more full bursts), so the squad curation is load-bearing.",
+    "DEF ▲ 11.34% \"of the skill user's DEF\" has no caster-scaled DEF StatKey (no `casterDefPct` exists); authored as plain `defPct`, which is inert in v1 (self DEF does not affect own damage). Kept for kit completeness and as a future consumer hook; the caster-scaling is not represented.",
+    "Max HP ▲ 40.72% is offensively inert here — ram carries no `atkOfMaxHpPct`, and ally-granted Max HP never feeds a teammate's HP→ATK conversion. It does set the basis of the burst shield (10.08% of final Max HP); the sim models no HP pool, so the shield amount is recorded, not simulated.",
+    "\"without restoring HP\" — the Max HP grant emits NO recovery event. It is deliberately NOT paired with a `heal`, which would falsely fire teammates' `recovery` triggers (e.g. crown).",
+    "The burst shield targets ALL allies (self included) and fires their `shielded` triggers / satisfies `requiresShielded` gates — the only cross-unit damage channel in this kit. Do not skip it on isolation grounds."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. ram (SR/Fire/Defender/Burst I) is a pure support/defensive kit — no damage effect of any kind. Modeled: (skill1) a full-burst-end self burst-CDR of 20.16 s gated on a same-squad ally; (skill2) a self Max HP ▲ 40.72% and a 2-lowest-HP-ally DEF ▲ 11.34%; (burst) an all-ally shield worth 10.08% of her final Max HP for 10 s. The burst-CDR is the only line that moves damage — it shortens her 40 s Burst I cooldown and therefore the team's full-burst cadence. Her skill1 target ATK ▼ is unmodeled (see `unmodeled`). No `noFb` is set (no damage riders exist to exempt) and `noRange` is engine-automatic."
+}

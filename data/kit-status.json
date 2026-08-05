@@ -5247,6 +5247,47 @@
         "burst: the heal carries no HP amount — recovery-event window only (ticks:10 intervalSec:1); the 6.96%-of-final-Max-HP magnitude is unmodeled, not fudged"
       ]
     },
+    "ram": {
+      "name": "Ram",
+      "burst": "I",
+      "weapon": "SR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/ram.json + scripts/kit-autonomy/manual-review/ram.md.",
+          "med ENCODING (skill1): Squad gate on the Full-Burst-end burst CDR is omitted (modeled always-satisfied); the kit conditions the 20.16s refund on a same-squad ally, so the CDR over-fires in comps without rem/emilia."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates after landing 5 normal attack(s). Affects the target(s).\nATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v1 boss deals no damage; the enemy-buff branch accepts only damageTakenPct/distributedDamagePct > 0), offensively inert by construction; the nearest-wrong mapping (damageTakenPct) is a different mechanic (boss-takes-more) that would over-credit the whole team."
+        ],
+        "skill2": [
+          "■ Affects 2 ally unit(s) with the lowest remaining HP.\nDEF ▲ 11.34% of the skill user's DEF for 5 sec. — caster-basis flat DEF add: no such primitive (defPct scales the TARGET's own DEF — wrong basis — and is inert in v1 regardless); the target clause has a primitive (alliesLowestHp count 2, leftmost stand-in) — the blocker is purely the payload."
+        ],
+        "burst": []
+      },
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check cluster: same-squad gate modeled always-satisfied — owner confirms ram's in-game squad field (QUEUE.md migration item) then one-line teamHas.sameSquad swap (⚑2, the sole S5 RED, judge-adjudicated DOCUMENTED_GAP) + skill2 interval:15 first-fire phase unpinned by footage (⚑3) + SR cadence tuple datamine-unverified (⚑1) — one ram focus video + one squad-field lookup settles all three",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "caveats": [
+        "skill1: the burst-CDR's 'an ally from the same squad still on the battlefield' clause is modeled ALWAYS-SATISFIED — ram's collab squad is uncurated (squad membership is owner-confirmed fact; QUEUE.md 'same-squad primitive migrations' says confirm before authoring). If her in-game squad requires rem/emilia, the CDR over-fires in non-collab teams (⚑2: swap in teamHas.sameSquad once curated)",
+        "skill1: the 'after landing 5 normal attacks → target ATK ▼ 7.95%' line is UNMODELED — the engine drops enemy ATK debuffs (they cannot affect damage dealt at DEF=0); NOT damageTakenPct (that is 'boss takes more damage' — a different mechanic)",
+        "skill2: the Max-HP grant fires on the interval:15 convention for kit-silent CD skills (first fire t=15; ⚑3 phase unpinned by footage); it is damage-INERT for ram (no atkOfMaxHpPct consumer) and 'without restoring HP' is honored by construction (a Max-HP grant never emits recovery events)",
+        "skill2: the DEF grant (11.34% of the skill user's DEF → 2 lowest-HP allies) is UNMODELED — no caster-basis DEF stat; defPct would be the wrong basis (target's own %) and is inert in v1 anyway",
+        "burst: the shield is EVENT-ONLY (no HP pool in v1) — it opens shield-state windows and fires 'shielded' triggers (naga-class consumers), keyed to ram's OWN burstCast (never on Full Bursts she sat out); the 10.08%-of-final-Max-HP magnitude is recorded for kit completeness only"
+      ]
+    },
     "rapi-red-hood": {
       "name": "Rapi: Red Hood",
       "burst": "III",

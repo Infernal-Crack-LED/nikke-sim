@@ -1,0 +1,92 @@
+{
+  "slug": "ram",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▼ 7.95% for 5 sec (after 5 hits)",
+      "disposition": "UNMODELED",
+      "scope": "Enemy ATK stat debuff only — reduces boss outgoing damage; no scope on any ally damage stat. Boss deals no damage in v1, so the line is defensively inert.",
+      "durationSemantics": "5 sec wall-clock (durationSec), not rounds.",
+      "triggerIdentity": "hitCount count:5 (counts ROUNDS; SR hitsPerShot=1 so 5 rounds = 5 trigger pulls of the ~1s-charge SR — no pull/round divergence for this unit). No FB gate.",
+      "targetSet": "enemy (the target(s)) — never allies, never self.",
+      "nearestWrongModel": "Mis-encoding the enemy ATK ▼ as an offensive boss debuff (damageTakenPct — the 'boss debuff benefits the team' prior over-applied), or applying negative atkPct to allies/self. Either moves team damage; the faithful model moves nothing.",
+      "distinguishingAssertion": "Run the comp and collect all buffApply events: assert ZERO events with stat 'damageTakenPct' and ZERO events with a negative atkPct value sourced from ram. Then A/B via withPatchedOverride stripping the skill1 hitCount block: totals(res) for every slug must be bit-identical with the block present vs absent.",
+      "inertness": "Every unit's totalDamage; the boss damageTakenPct channel; ram's own damage buckets.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB ends + same-squad ally: Burst CD ▼",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-skill cooldown only — no damage stat, no other CDs.",
+      "durationSemantics": "Instant one-shot cooldown reduction of 20.16 sec per qualifying activation (burstCdr effect), not a timed buff; kit states no once-per-battle limit → repeats on every qualifying Full Burst end.",
+      "triggerIdentity": "fullBurstEnd — NOT fullBurstEnter and NOT burstCast — gated by teamHas.sameSquad:true (the 'an ally from the same squad still on the battlefield' primitive; the on-battlefield clause is scope-trivial, composition-only). Gate FAILS CLOSED if ram's squad is not curated in src/data/squads.ts — a silent-dead-CDR hazard the test must expose.",
+      "targetSet": "self only.",
+      "nearestWrongModel": "Dropping the sameSquad gate so the CDR fires in ANY comp (the gate is easy to wave off as flavor); second-nearest: keying to fullBurstEnter (CDR lands ~10s early every rotation, shifting when the burst re-readies) or targeting allies with the CDR.",
+      "distinguishingAssertion": "Ram base CD is 40s, so faithful CDR (~19.84s effective after each FB end) lets her burst essentially every rotation. (a) Comp WITH a curated same-squad ally: assert ram's burstCast event count over 180s ≈ every-rotation cadence (materially above the 40s-CD baseline count). (b) Same comp WITHOUT any same-squad ally: assert ram's burstCast count exactly equals the 40s-CD baseline — GREEN faithful, RED for the ungated model. (c) Assert liter's (any other ally's) burst cadence is unchanged in both comps — kills the allies-target misread. (d) Assert the first CDR applies only after the first fullBurstEnd event frame, not at fullBurstStart.",
+      "inertness": "Other units' burst cooldowns; ram's cadence in any comp lacking a same-squad ally; nothing before the first Full Burst ends.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP ▲ 40.72% no-restore, self, 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Self Max HP stat only. 'without restoring HP' is load-bearing negative scope: the grant must NOT be accompanied by any heal/recovery emission.",
+      "durationSemantics": "10 sec wall-clock (durationSec:10), then lapses (read expiresFrame off buffApply — no buffRemove on natural lapse).",
+      "triggerIdentity": "No activation clause in the ■ header → interval trigger on the datamined skill cooldown (first-fire phase t=CD per convention, ⚑ — pin from footage only if a consumer's cadence ever becomes popup-read). NOT a permanent passive: the 10s duration against a CD implies a duty cycle, not 100% uptime.",
+      "targetSet": "self.",
+      "nearestWrongModel": "Two: (1) emitting a heal effect alongside the Max HP grant — falsely fires teammates' 'recovery' triggers (a crown-style consumer would over-credit); (2) encoding as an always-on passive (permanent uptime) instead of a CD-windowed 10s buff.",
+      "distinguishingAssertion": "Filter buffApply for stat 'maxHpFlat' (targetMaxHpPct flat-resolves at apply) with targetSlug ram: assert value = 40.72% of ram's static Max HP and expiresFrame = applyFrame + 600; assert re-application at the interval cadence, with lapse gaps between windows (red under the permanent-passive misread). Separately, put a recovery-triggered consumer (e.g. crown, or a synthetic via withPatchedOverride) in the comp: assert it shows ZERO recovery-trigger activations attributable to ram's skill2 (red under the heal-emitting misread).",
+      "inertness": "All damage totals (ram has no atkOfMaxHpPct conversion, and ally-granted HP never feeds a teammate's conversion); teammates' recovery-trigger consumers.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▲ 11.34% of user's DEF, 2 lowest-HP",
+      "disposition": "UNMODELED",
+      "scope": "Caster-DEF-scaled DEF grant — a defensive stat with no offensive consumer; the schema has no caster-DEF-scaled StatKey (defPct is own-DEF and inert in v1), so there is no faithful primitive and the line belongs verbatim in `unmodeled`.",
+      "durationSemantics": "5 sec wall-clock.",
+      "triggerIdentity": "No activation clause → same interval/CD trigger as the skill2 self-HP line.",
+      "targetSet": "alliesLowestHp count:2 (v1 has no HP pool — deterministic leftmost-2 stand-in per the documented convention; the stand-in choice moves no damage).",
+      "nearestWrongModel": "Misreading the caster-scaled DEF grant as a caster-scaled ATK grant (casterAtkPct 11.34 — the 'X% of the skill user's <stat>' template pattern-matches the ATK version), silently adding flat ATK to two allies.",
+      "distinguishingAssertion": "Assert ZERO buffApply events with stat 'casterAtkPct' sourced from ram; A/B with the line present vs absent (withPatchedOverride): the leftmost two allies' totals and all other totals bit-identical.",
+      "inertness": "Every unit's totalDamage; all ATK-channel buffApply events.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Shield 10.08% user's final Max HP, 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Shield emission to the whole team; no damage of its own. Scales off the CASTER'S final Max HP (magnitude recorded for completeness — no HP pool at scope), so it composes with skill2's self Max HP window at cast time.",
+      "durationSemantics": "10 sec wall-clock shield window (drives requiresShielded gates for its duration).",
+      "triggerIdentity": "burstCast (ram's OWN Burst I cast) — NOT fullBurstEnter. Diverges whenever another Burst I unit is in the team (e.g. liter): on rotations where the other B1 casts, the faithful model emits NO shield.",
+      "targetSet": "allies including self (all allies).",
+      "nearestWrongModel": "Skipping the line as 'defensive, no damage' (taxonomy trap 4 — a shield inert alone still drives teammates' 'shielded' triggers and requiresShielded gates); second-nearest: keying to fullBurstEnter so it fires on every team Full Burst including rotations ram sat out.",
+      "distinguishingAssertion": "Comp with ram + liter (two B1s) and a teammate given a synthetic shielded-triggered buff via withPatchedOverride: assert that consumer's buffApply events appear exactly once per ram burstCast event (matching frames), and NEVER on Full Bursts whose rotation liter cast B1 for — GREEN faithful, RED under both the skipped-entirely and the fullBurstEnter misreads. Also assert 5 shield applications reach 5 distinct targets per cast (all-allies incl. self).",
+      "inertness": "In a comp with no shield-consuming kit, the shield must move zero damage for every unit; no shield emission on rotations where ram's burst was not cast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:fullBurstEnd-sameSquad-burstCdr-20.16",
+    "skill2:self-maxHp-40.72-10s-no-heal",
+    "burst:shield-all-allies-10.08-castersHp-10s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "ATK ▼ 7.95% for 5 sec."
+    ],
+    "skill2": [
+      "DEF ▲ 11.34% of the skill user's DEF for 5 sec."
+    ],
+    "burst": []
+  },
+  "notes": "FIXTURE SHAPE IS THE FIRST TRAP: ram is Burst I — controlComp(carry) seats the carry in the B3 slot, so a naive controlComp(ram) fixture is malformed for her. Tests must build a custom comp (runComp) with ram as a B1 alongside a B2 + B3 so bursts actually cast; for the burstCast-vs-fullBurstEnter shield assertion the comp additionally needs a SECOND B1 (liter) to create diverging rotations. SECOND: the sameSquad CDR gate fails closed — if src/data/squads.ts has no curated squad for ram (she is a collab unit; squad-mates would be her collab partners), the CDR is silently dead and her burst cadence halves; a test must pin the WITH-squad-ally cadence so an uncurated squads.ts turns the suite red rather than passing vacuously. Expected shared-prior misreads to reconcile against the driver: (1) all four support lines waved off as 'defensive, skip' — the shield and the self-HP line are load-bearing (shielded-trigger tandem; burst-shield scaler + no-heal negative scope) even though they move zero damage alone; (2) the 'without restoring HP' clause ignored, emitting a heal that would fire recovery-triggered teammates (crown); (3) CDR keyed to fullBurstEnter or left ungated; (4) the enemy ATK ▼ upgraded into damageTakenPct 'because boss debuffs help the team'. Every magnitude in this kit is literally kit-stated (DATAMINED); the only ⚑ is the skill2 interval first-fire phase convention. No tools were available in this run, so the JSON could not be written to scripts/kit-autonomy/reviews/ram.test-review.json — the orchestrator must save this output there.",
+  "model": "claude-fable-5"
+}
