@@ -1,0 +1,108 @@
+{
+  "slug": "kilo",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "start of battle: Shield 21.12% Max HP",
+      "disposition": "FAITHFUL",
+      "scope": "Self shield only; no damage stat. Its sim role is STATE: it opens/holds the Nano Coating status that gates skill2-line1 and selects the burst's damage branch.",
+      "durationSemantics": "'continuously' = permanent (no durationSec). v1 boss deals no damage, so the shield can never break — Nano Coating is up from t=0 for the whole fight.",
+      "triggerIdentity": "passive (start of battle), applied at t=0.",
+      "targetSet": "self",
+      "nearestWrongModel": "Two plausible misreads: (a) shield encoded as a 'heal' effect — Crown is the fixed B2 in controlComp and carries a 'recovery' trigger, so a heal-flavored encoding would ping Crown's on-recovery kit and over-credit the whole team; (b) shield given a finite durationSec, so the Nano Coating gate lapses mid-fight and the burst flips to its not-coated branch.",
+      "distinguishingAssertion": "With withPatchedOverride(kilo, deleting the skill1 shield block): every requiresShielded-gated burst damage instance disappears (kilo burst-bucket damage → 0), proving the nuke is genuinely gated on this shield, not hardcoded. And with skill1 present, Crown's recovery-triggered buffApply count is IDENTICAL to a run with kilo's skill1 removed (shield must emit shielded, never recovery). Note: there is no 'shield' event kind on cfg.onEvent, so the shield is asserted indirectly through the gate and through the Crown-inertness check.",
+      "inertness": "Must not itself add any damage instance, any recovery event, or any stat buffApply; kilo total damage outside the burst bucket unchanged if removed.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "on Burst Skill: re-Shield if not coated",
+      "disposition": "UNMODELED",
+      "scope": "Self re-shield, gated on NOT being in Nano Coating.",
+      "durationSemantics": "'continuously' = permanent once applied.",
+      "triggerIdentity": "burstCast (own burst) + self-status gate 'not in Nano Coating' — the noRetriggerWhileActive-shaped inverse gate.",
+      "targetSet": "self",
+      "nearestWrongModel": "Modeling it ungated so every kilo burst re-applies/refreshes a shield event (could double-fire any future shielded-trigger consumer), or treating the branch as live and letting it satisfy some cadence assertion.",
+      "distinguishingAssertion": "Dead branch at scope: the boss deals no damage, the skill1 t=0 shield never drops, so 'not in Nano Coating' is never true. Assert NO second shield application path is reachable — equivalently, burst behavior is identical whether this block exists or not.",
+      "inertness": "Must move nothing: no events, no damage, no gate flips, on every rotation.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "200 normal attacks: restore Shield 2.85%",
+      "disposition": "FAITHFUL",
+      "scope": "Self shield-HP restore; zero damage. Kept (not skipped) per the tandem rule — heal/shield lines feed cross-unit 'shielded'/'recovery' triggers and must exist for completeness even when damage-inert.",
+      "durationSemantics": "Instant restore per proc; no duration.",
+      "triggerIdentity": "hitCount count:200 (counts ROUNDS = normal-attack hits; MG hitsPerShot 1 so rounds == pulls here), gated on Nano Coating status (requiresShielded — trivially true at scope since the t=0 shield never breaks). NOT an interval.",
+      "targetSet": "self",
+      "nearestWrongModel": "Two: (a) 'after 200 normal attacks' misread as interval sec:200 — fires ~0 times in a 180s fight instead of repeatedly at MG cadence off a 300-round belt; (b) restore encoded as a 'heal' effect — every ~200 rounds it would fire Crown's on-recovery trigger and systematically over-credit the control comp.",
+      "distinguishingAssertion": "Crown's recovery-triggered buffApply count with kilo in the comp equals the count with this skill2 block patched out (restore must NOT emit recovery). If modeled as a shield event, proc count over the fight ≈ floor(kilo normal-attack rounds / 200) ≥ several — red under the interval-200s misread which yields 0. Kilo totalDamage identical with the block removed (damage-inert).",
+      "inertness": "Must not create damage instances or stat buffs; must not touch Crown's recovery consumers.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Once/Twice/Thrice: Next Shield's HP ▲",
+      "disposition": "UNMODELED",
+      "scope": "Escalating (Liter-style steps) next-shield HP magnitude buff, self.",
+      "durationSemantics": "'continuously' per step; escalating 'Each subsequent effect triggers all effects before it' = the escalating EffectDef shape.",
+      "triggerIdentity": "burstCast gated on NOT in Nano Coating — a dead gate at scope (shield never breaks), stacked on top of the fact that shield HP magnitude has no pool in v1.",
+      "targetSet": "self",
+      "nearestWrongModel": "Misreading these as Max HP ▲ buffs (they are SHIELD HP ▲) and letting them feed the burst's 5%-of-Max-HP damage basis — a compounding over-credit growing with use count.",
+      "distinguishingAssertion": "No buffApply with stat maxHpFlat/maxHpPct in the 17.75/26.66/35.53 family ever appears for kilo; burst damage magnitude is constant across her 1st/2nd/3rd casts (no escalation leaks into the nuke).",
+      "inertness": "Must move nothing at scope; specifically must NOT scale the burst nuke across casts.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "in Coating: 1150.84% of ATK from 5% MaxHP",
+      "disposition": "FIX",
+      "scope": "The kit's only damage line. AoE 'all enemies' = the single boss. Damage basis is NOT sheet ATK: the ATK term is REPLACED by 5% of kilo's OWN final Max HP, then multiplied by 1150.84% — i.e. per cast ≈ 11.5084 × 0.05 × finalMaxHp. Per the e3 rule, 'final Max HP' means her own-kit-fed live Max HP (ally HP grants don't feed conversions); at scope her only Max HP source (the 48% branch) is dead, so basis = static Max HP. No core (text never says core strike); range bonus OFF (rider default); +50% FB does NOT apply — burst-cast damage lands pre-FB (measured convention).",
+      "durationSemantics": "Instant hit per cast; no duration.",
+      "triggerIdentity": "burstCast (her OWN burst, 40s cd), gated on Nano Coating status (requiresShielded) — trivially satisfied at scope via the skill1 permanent shield. Critically NOT fullBurstEnter: controlComp seats helm as a co-B3, so team FBs outnumber kilo's own casts.",
+      "targetSet": "enemy (boss)",
+      "nearestWrongModel": "Two, both plausible: (a) flatDamage atkPct:1150.84 off caster final ATK — Defender static ATK 78,707 vs an HP basis that is a different number entirely, AND it would wrongly inflate under ally ATK buffs (liter/crown); (b) trigger keyed to fullBurstEnter — with helm co-B3 the nuke fires on helm's rotations too, roughly doubling its count, and picks up the +50% FB major it must not have. Note the engine's flatDamage is %-of-final-ATK with no HP-basis field (stackedNuke.hpPct is a different primitive), so a faithful encoding needs a derived conversion — that derivation is where a driver silently regresses to sheet-ATK.",
+      "distinguishingAssertion": "(1) Basis: withPatchedOverride granting kilo a large self atkPct buff → burst-bucket damage per cast UNCHANGED; granting maxHpPct instead → burst damage per cast scales proportionally to the HP change. (2) Trigger: number of kilo burst-bucket damage instances === number of kilo burstCast events (filter cfg.onEvent burstCast by caster), NOT the fullBurstStart count. (3) FB: each such damage event has inFullBurst/fbMajorApplied false (lands pre-window) and rangeApplied false.",
+      "inertness": "Must not core; must not take the +30% range bonus; must not appear on full bursts kilo did not cast; must not scale with team ATK buffs.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "not in Coating: Max HP ▲ 48% for 20 sec",
+      "disposition": "UNMODELED",
+      "scope": "Self Max HP buff — the not-coated fallback branch. Dead at scope: Nano Coating never drops.",
+      "durationSemantics": "20 s wall-clock (genuine durationSec — no round wording).",
+      "triggerIdentity": "burstCast + 'not in Nano Coating' self-status gate (the branch-selector opposite the damage line).",
+      "targetSet": "self",
+      "nearestWrongModel": "Applying the 48% unconditionally on every burst cast (both branches live at once). Because the OTHER branch's damage scales off final Max HP, a leaked 48% self-HP buff inflates the nuke by up to +48% on any cast landing inside a prior cast's 20 s window — a compounding, hard-to-spot over-credit.",
+      "distinguishingAssertion": "No buffApply with stat maxHpFlat (the targetMaxHpPct emission path) at value ≈ 0.48 × kilo static Max HP ever appears at her burst casts; burst nuke magnitude is identical on cast 1 and cast 2 (no HP-buff carryover).",
+      "inertness": "Must never fire at scope; must never feed the burst damage basis.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:start-of-battle Nano Coating shield (permanent; gates the burst nuke)",
+    "skill2:hitCount-200 shield restore (damage-inert; tandem-channel + cadence)",
+    "burst:in-Nano-Coating nuke 1150.84% of (5% final Max HP)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Activates when using Burst Skill. Affects self if not in Nano Coating status. Nano Coating: Creates a Shield equal to 21.12% of the skill user's final Max HP continuously."
+    ],
+    "skill2": [
+      "Activates when using Burst Skill while not in Nano Coating status. Affects self. Effects vary according to the number of uses: Once: Next Shield's HP ▲ 17.75% / Twice: ▲ 26.66% / Three times: ▲ 35.53% continuously."
+    ],
+    "burst": [
+      "Activates when not in Nano Coating status. Affects self. Max HP ▲ 48% for 20 sec."
+    ]
+  },
+  "notes": "Expected shared-prior misreads to reconcile against the driver: (1) BASIS — the burst nuke is % of an ATK 'calculated from 5% of final Max HP', not sheet ATK; the effect schema's flatDamage has no HP-basis field (stackedNuke.hpPct is a different primitive), so the faithful encoding needs a derived flat conversion — the exact place a driver silently regresses to atkPct-off-final-ATK, which both changes the magnitude and wrongly couples the nuke to team ATK buffs. The conversion constant (static Max HP at scope lock) comes from reference stats, not this packet — if the driver hand-picked it, it is a ⚑ derived value and the test must pin the HP-tracking property, not just a number. (2) TRIGGER — burstCast vs fullBurstEnter diverges hard here because controlComp seats helm as a co-B3: fullBurstEnter roughly doubles nuke frequency and adds the +50% FB major that a pre-FB burst cast must not take. (3) SHIELD ≠ HEAL — Crown (fixed B2) has an on-recovery kit; encoding kilo's shield or the every-200-rounds restore as a 'heal' effect over-credits the whole comp via Crown's recovery trigger. The Crown-inertness assertion is the cheapest tripwire for this whole class of error. (4) DEAD BRANCHES — all three 'not in Nano Coating' lines are unreachable at scope (boss deals no damage, shield never breaks); a model that lets the 48% Max HP branch fire anyway inflates the nuke through the HP basis. (5) Because cfg.onEvent has no shield event kind, shield presence is only assertable indirectly — via the requiresShielded gate (delete skill1's shield → nuke must go silent) — which is also the assertion that catches a hardcoded, ungated nuke. (6) hitCount counts rounds; MG hitsPerShot=1 makes rounds==pulls for kilo, so that classic trap is inert here — the live trap on skill2-line1 is interval-vs-hitCount.",
+  "model": "claude-fable-5"
+}

@@ -3441,6 +3441,46 @@
       ],
       "board": null
     },
+    "kilo": {
+      "name": "Kilo",
+      "burst": "III",
+      "weapon": "MG",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/kilo.json + scripts/kit-autonomy/manual-review/kilo.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when using Burst Skill. Affects self if not in Nano Coating status.\nNano Coating: Creates a Shield equal to 21.12% of the skill user's final Max HP continuously."
+        ],
+        "skill2": [
+          "■ Activates after performing 200 normal attacks while in Nano Coating status. Affects self.\nRestores Shield HP equal to 2.85% the skill user's final Max HP.",
+          "■ Activates when using Burst Skill while not in Nano Coating status. Affects self.\nEffects vary according to the number of uses. Each subsequent effect triggers all effects before it:\nOnce: Next Shield's HP ▲ 17.75% continuously.\nTwice: Next Shield's HP ▲ 26.66% continuously.\nThree times: Next Shield's HP ▲ 35.53% continuously."
+        ],
+        "burst": [
+          "■ Activates when not in Nano Coating status. Affects self.\nMax HP ▲ 48% for 20 sec."
+        ]
+      },
+      "caveats": [
+        "burst: the in-Nano-Coating nuke is modeled at the kit multiplier (1150.84%) off her own final ATK, but the kit text says that ATK is 'calculated from 5% of final Max HP' — the engine has no HP-basis primitive (effectiveAtk is purely additive; stackedNuke.hpPct is Maiden:IR-specific stack semantics) and the gauntlet forbids engine edits. On the scope-lock basis 5% of her final Max HP ~= 2.07x her ATK, so the nuke is undercounted by up to ~52% (~4% of her personal total, ~1-2% of a team total) AND it wrongly rides teammate ATK buffs (liter/crown windows) that a true HP basis would ignore — both documented infidelities collapse together when the basis is measured. Precedent: maiden-ice-rose shipped her HP-scaled burst portion the same documented-under-model way. MEASUREMENT-GATED: focus recording, read her burst popup vs the ATK x 1150.84 prediction; a popup ~2x higher confirms the HP basis and calls for an engine primitive.",
+        "skill1/skill2/burst: all four uncoated-status lines (S1 re-shield on burst, S2 200-attack shield-HP restore, S2 escalating Next-Shield-HP buffs, burst Max HP +48%/20s) are dead at scope — the battle-start shield has no duration and nothing breaks it — and are recorded verbatim in unmodeled. No negated-shield-gate, shield-HP-pool, or shield-size-modifier primitive exists; encoding them ungated would over-fire them every burst."
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "burst nuke HP basis MEASUREMENT-GATED: shipped at ATK basis, kit says ATK 'calculated from 5% of final Max HP' (~2.07x undercount at scope lock + false coupling to teammate ATK buffs); recipe = focus recording, burst popup vs ATK x 1150.84 prediction, ~2x higher confirms HP basis and calls for a flatDamage HP-basis primitive (S6 route 1). shieldedUntilFrame not name-keyed to Nano Coating: unobservable at scope (shield never breaks), re-check if shield-breaking is ever modeled.",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "kurumi": {
       "name": "Kurumi",
       "burst": "I",

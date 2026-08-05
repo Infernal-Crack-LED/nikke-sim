@@ -1,0 +1,55 @@
+{
+  "note": "kilo (Kilo) — MG / Defender / Fire / Burst III, cd 40s, base unit. Kit-autonomy gauntlet 2026-08-05: test-first from-scratch build (scripts/tests/units/kilo.test.ts, groups K1-K9). Her identity: Nano Coating — a permanent self-shield granted at battle start (21.12% of final Max HP, 'continuously'), and a burst that BRANCHES on the coating: in-coating = AoE nuke (1150.84% 'of the ATK, which is calculated from 5% of final Max HP'); uncoated = Max HP +48%/20s fallback + S1 re-shield + S2 escalating Next-Shield-HP buffs. SCOPE-DEAD REASONING: the coating never breaks in the v1 sim (no incoming boss damage; sim.ts: 'durationSec-less shields are permanent at scope'), so every uncoated branch (S1 re-shield, S2 next-shield stacks, burst Max HP) is UNREACHABLE at scope and is recorded verbatim in unmodeled rather than encoded ungated (an ungated encoding would fire every burst — unfaithful; the engine has no negated requiresShielded). MODELED: (1) S1 battle-start shield = shield{maxHpPct 21.12} self passive, no duration — event-silent by engine design (no HP pool in v1), its observable is the gate it opens; (2) burst nuke = burstCast flatDamage 1150.84 gated requiresShielded:true (the 'when in Nano Coating status' clause; naga precedent) — no core clause in the text, lands pre-FB (never takes the +50% major). The 200-normal-attack shield-HP restore (S2) is UNMODELED: it RESTORES an existing shield's HP pool (no pool in v1) — a heal encoding would fire crown-class recovery consumers and a fresh-shield encoding would re-fire naga-class 'shielded' triggers every 200 rounds; neither event is what the kit does (S2b reviewer's tandem-rule suggestion reconciled to UNMODELED on this ground).",
+  "caveats": [
+    "burst: the in-Nano-Coating nuke is modeled at the kit multiplier (1150.84%) off her own final ATK, but the kit text says that ATK is 'calculated from 5% of final Max HP' — the engine has no HP-basis primitive (effectiveAtk is purely additive; stackedNuke.hpPct is Maiden:IR-specific stack semantics) and the gauntlet forbids engine edits. On the scope-lock basis 5% of her final Max HP ~= 2.07x her ATK, so the nuke is undercounted by up to ~52% (~4% of her personal total, ~1-2% of a team total) AND it wrongly rides teammate ATK buffs (liter/crown windows) that a true HP basis would ignore — both documented infidelities collapse together when the basis is measured. Precedent: maiden-ice-rose shipped her HP-scaled burst portion the same documented-under-model way. MEASUREMENT-GATED: focus recording, read her burst popup vs the ATK x 1150.84 prediction; a popup ~2x higher confirms the HP basis and calls for an engine primitive.",
+    "skill1/skill2/burst: all four uncoated-status lines (S1 re-shield on burst, S2 200-attack shield-HP restore, S2 escalating Next-Shield-HP buffs, burst Max HP +48%/20s) are dead at scope — the battle-start shield has no duration and nothing breaks it — and are recorded verbatim in unmodeled. No negated-shield-gate, shield-HP-pool, or shield-size-modifier primitive exists; encoding them ungated would over-fire them every burst."
+  ],
+  "unmodeled": {
+    "skill1": [
+      "■ Activates when using Burst Skill. Affects self if not in Nano Coating status.\nNano Coating: Creates a Shield equal to 21.12% of the skill user's final Max HP continuously."
+    ],
+    "skill2": [
+      "■ Activates after performing 200 normal attacks while in Nano Coating status. Affects self.\nRestores Shield HP equal to 2.85% the skill user's final Max HP.",
+      "■ Activates when using Burst Skill while not in Nano Coating status. Affects self.\nEffects vary according to the number of uses. Each subsequent effect triggers all effects before it:\nOnce: Next Shield's HP ▲ 17.75% continuously.\nTwice: Next Shield's HP ▲ 26.66% continuously.\nThree times: Next Shield's HP ▲ 35.53% continuously."
+    ],
+    "burst": [
+      "■ Activates when not in Nano Coating status. Affects self.\nMax HP ▲ 48% for 20 sec."
+    ]
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 21.12
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "requiresShielded": true,
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1150.84
+        }
+      ]
+    }
+  ]
+}

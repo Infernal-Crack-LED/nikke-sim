@@ -1,0 +1,77 @@
+{
+  "slug": "kilo",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 21.12
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 200
+      },
+      "target": {
+        "kind": "self"
+      },
+      "requiresShielded": true,
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 2.85
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "requiresShielded": true,
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 575,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "■ Activates when using Burst Skill. Affects self if not in Nano Coating status. — Nano Coating: Creates a Shield equal to 21.12% of the skill user's final Max HP continuously. (UNREACHABLE at scope lock: the battle-start Shield from the first header carries no duration and the v1 boss deals no damage, so the owner is in Nano Coating status from frame 0 for the whole fight and the 'if not in Nano Coating' branch can never fire. The engine also has no 'not shielded' block gate — requiresShielded is a boolean whose only documented semantic is 'shielded'.)"
+    ],
+    "skill2": [
+      "■ Activates when using Burst Skill while not in Nano Coating status. Affects self. Effects vary according to the number of uses. Each subsequent effect triggers all effects before it: — Once: Next Shield's HP ▲ 17.75% continuously. / Twice: Next Shield's HP ▲ 26.66% continuously. / Three times: Next Shield's HP ▲ 35.53% continuously. (Triple-unmodelable: (a) the 'while not in Nano Coating status' gate is unreachable at scope lock and inexpressible in the schema; (b) there is no StatKey for Shield HP magnitude; (c) no shield HP pool is modeled at all — the 'shield' effect records maxHpPct for kit completeness and emits the event only.)"
+    ],
+    "burst": [
+      "■ Activates when not in Nano Coating status. Affects self. — Max HP ▲ 48% for 20 sec. (UNREACHABLE at scope lock, same reason as the skill1 branch. Encoded as targetMaxHpPct it would fire on EVERY burst and over-credit; the owner carries no atkOfMaxHpPct so it is offensively inert today, but it WOULD raise the HP basis of the Nano-Coating burst nuke if that nuke is ever given a true Max-HP basis — the two branches are mutually exclusive in the kit, so the interaction is moot in-game.)"
+    ]
+  },
+  "caveats": [
+    "⚑ HP-BASIS DAMAGE — the burst's atkPct 575 is a PLACEHOLDER, not the kit number. The kit deals 1150.84% of an ATK computed from 5% of final Max HP; the schema's flatDamage.atkPct scales off final ATK only, so the value shown is a converted estimate and is WRONG by the ratio of this unit's real Max HP to her ATK. This is the single largest source of error in the file.",
+    "⚑ Every ⚑ magnitude here is derived from kit text plus modeling convention — nothing in this file has been measured against a real fight.",
+    "⚑ The burst nuke's crit:true follows the rider-crit convention; noFb is deliberately unset (default ON by timing). Burst-cast damage is understood to land before the Full Burst window opens, so the +50% major should not apply — but that is engine-level behaviour, not asserted here.",
+    "⚑ The skill2 shield-restore cadence (hitCount 200) depends on the MG's real fire cadence and reload, both from datamine-unreliable fields; its real per-fight fire count is unverified.",
+    "SCOPE-LOCK DETERMINISM: three of the seven kit lines are gated on 'not in Nano Coating status'. Because the skill1 shield is continuous and the v1 boss deals no damage, the owner is permanently coated, so those three lines are dead at scope lock and are recorded in `unmodeled` rather than modeled behind an unexpressible negative gate. If shield-breaking is ever modeled, this file needs a real duty-cycle (a `modes` toggle or a negative shield gate)."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Kilo (MG/Fire/Defender/B3) is a shield-state kit whose every branch reads one self-status, Nano Coating. S1 grants a continuous Shield of 21.12% of her own final Max HP at battle start; at scope lock the boss deals no damage and the shield carries no duration, so she is coated from frame 0 to the end of the fight. That single fact collapses the kit: the coated branches always fire and the uncoated branches never do. Modeled: the battle-start shield (passive/self), the S2 shield restore after 200 rounds while coated (hitCount 200 + requiresShielded), and the burst nuke (burstCast + requiresShielded, target enemy). The burst nuke's magnitude is the file's weak point — the kit's 1150.84% is applied to an ATK derived from 5% of her final Max HP, and the schema has no HP-basis damage effect, so atkPct 575 is a converted placeholder (see caveats). Deliberately unmodeled: the three 'while not in Nano Coating' lines (the burst-cast shield re-grant, the escalating Next-Shield-HP buffs, and the Max HP ▲48% burst branch) — all unreachable at scope lock, and the escalating buffs additionally have no schema stat and no shield HP pool behind them. Her shield effects target self only, so they drive her own `shielded` triggers and nothing on a teammate; they are offensively inert today but are kept because shield/heal lines are never skipped on isolation."
+}
