@@ -1,0 +1,56 @@
+{
+  "note": "Yan (slug yan — the unique roster entry with this base name, lint-clean; NOT rei-ayanami / rei-ayanami-tentative-name) — Tetra Fire RL Supporter, Burst I, 20s CD, ammo 6, chargeFrames 90, reloadFrames 141, normalMult 61.3, chargeMultiplier 350. FROM-SCRATCH kit-autonomy build 2026-08-05 (no prior override; baseline was bare weapon, simSupported:false). S1 'Struck Dumb': 'Activates at the beginning of Full Burst' = fullBurstEnter (the FB window opening), NOT burstCast — her B1 cast lands BEFORE the window opens (helm H7 precedent), and fullBurstEnter fires on every team rotation regardless of who cast B1, faithful to the any-team-FB wording. chargeDamagePct is additive percentage points in the charge bucket (the kit says 'Charge Damage ▲' — a flat additive, not chargeDamageMultPct which would scale base charge damage); it pays off only on charged hits (her own RL normals and any RL/SR teammate's), and is held inert by non-charge allies. S2 'The More, the Merrier': 'when performing a Full Charge attack' = shotFired — every RL trigger pull IS a full charge (pinned in the unit test: every `shot` event of hers carries charged:true; frima precedent for the SR analogue). ATK ▲2.77% is plain atkPct (a percentage of each target's OWN ATK, not a flat add off the caster's ATK). Critical Rate ▲1.33% is the UNSCOPED critRatePct (no 'of normal attacks' wording — the inverse of the usual scope trap; it lifts every ally's crit on every bucket). The kit names NO stack counter: default maxStacks 1, so re-fires REFRESH the 5s window without stacking; her ~1.9s/shot cadence bridges the 141f reload, so near-permanent uptime is EMERGENT from refresh, not encoded as a passive (a passive would apply at t=0 before her first charge lands — rejected by test). BURST 'Fat Cat': burstCast → enemy flatDamage 348.73 (burst bucket; 'enemies within attack range' collapses to the single scope-lock boss). The B1 cast precedes the FB window, so the nuke never takes the +50% FB major. Cross-family: S2b claude-fable-5, S5/S6 claude-opus-5, S7 kimi-code/k3. Kit-autonomy gauntlet 2026-08-05.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Forced movement toward the center of attack range, lasts for 2 sec. (crowd-control PULL on normal enemies; v1 fights a single scope-lock boss with no enemy movement/position model and bosses are not pulled, so the line moves no damage. NOT re-encoded as a damage or range buff — that would over-credit a benefit the kit does not deliver; viper/phantom/marciana precedent.)"
+    ]
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 21.55,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 2.77, "durationSec": 5 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 1.33,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "flatDamage", "atkPct": 348.73 }]
+    }
+  ]
+}

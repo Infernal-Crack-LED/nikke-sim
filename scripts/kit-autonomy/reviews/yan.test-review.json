@@ -1,0 +1,91 @@
+{
+  "slug": "yan",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "beginning of Full Burst: Charge Dmg ▲",
+      "disposition": "FAITHFUL",
+      "scope": "Charge-bucket damage only (chargeDamagePct, additive percentage points in the charge bucket) — NOT generic attackDamagePct and NOT chargeDamageMultPct (no 'multiplier'/'of damage' wording in the line).",
+      "durationSemantics": "Wall-clock 10 sec (durationSec:10). Literal 'for 10 sec' — no rounds/stacks ambiguity. With the ~10s Full Burst window this buff spans essentially the whole FB.",
+      "triggerIdentity": "fullBurstEnter — 'Activates at the beginning of Full Burst' is the canonical any-team-FB wording. NOT burstCast: yan is a Burst I unit, so on any team where another B1 (e.g. liter) takes the cast, the two readings diverge.",
+      "targetSet": "All allies including self ({kind:'allies'}, no excludeSelf). Yan is RL (chargeFrames 90) so she self-benefits; charge-weapon allies (RL/SR) benefit; non-charge allies hold an inert buff.",
+      "nearestWrongModel": "Trigger keyed to burstCast (fires only on rotations yan herself casts B1) instead of fullBurstEnter; secondary misread: chargeDamageMultPct (scales base charge damage) instead of additive chargeDamagePct.",
+      "distinguishingAssertion": "In a comp where liter holds the B1 cast (yan present but never bursting — assert via burstCast events that yan's srcSlot never casts), a buffApply {stat:'chargeDamagePct', value:21.55} still fires at EVERY fullBurstStart, targeting all 5 units. Green under fullBurstEnter; zero applications (red) under burstCast. Additionally assert stat==='chargeDamagePct' (raw 21.55), not 'chargeDamageMultPct'.",
+      "inertness": "Must not move a non-charge-weapon ally's damage at all (chargeDamagePct only feeds the charge bucket); must not apply outside the 10s window (expiresFrame ≈ applyFrame + 600).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "on Full Charge attack: ATK ▲ 2.77%",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK buff on each target's OWN ATK (atkPct) — the kit says plain 'ATK ▲', not 'x% of the skill user's ATK', so NOT casterAtkPct (which would flat-add off yan's low Supporter staticAtk 98,367).",
+      "durationSemantics": "Wall-clock 5 sec (durationSec:5), refreshed on every full-charge shot. Yan's cadence (90f charge + 22f release latency ≈ 1.9s/shot, ammo 6, reload 141f ≈ 2.35s) means the 5s window bridges her reload — near-permanent uptime is EMERGENT from refresh, not something to encode as passive.",
+      "triggerIdentity": "Per full-charge attack by yan — for an RL that always full-charges, this is her per-pull trigger (shotFired; a chargeCounter count:1 encoding is equivalent). On-attack, no FB gate, no status gate. NOT interval, NOT fullBurstEnter, and critically NOT passive: a passive never lapses and applies at t=0 before her first shot even lands.",
+      "targetSet": "All allies including self ({kind:'allies'}).",
+      "nearestWrongModel": "Encoded as an always-on passive self/team buff ('she always full-charges anyway') — over-credits t=0 through her first ~1.9s charge and any stun/downtime, and erases the refresh cadence; secondary misread: casterAtkPct (flat add of yan's ATK) instead of atkPct.",
+      "distinguishingAssertion": "Assert (a) NO buffApply {stat:'atkPct', key matching yan skill2} before yan's first shot event (first apply frame ≥ ~112f), (b) repeated buffApply refreshes tracking her shot events one-to-one across the fight, (c) stat==='atkPct' with raw value 2.77 (plain percentage stats keep the kit %), targetIdx covering all 5 slots. Green under per-full-charge trigger; red under passive (single frame-0 apply) and red under casterAtkPct (stat/value would be a flat ~2725 ATK).",
+      "inertness": "Must not apply while yan has fired nothing; value must not scale with yan's own buffed ATK (it is each target's own-ATK %).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "on Full Charge attack: Crit Rate ▲",
+      "disposition": "FAITHFUL",
+      "scope": "GENERIC Critical Rate (critRatePct) — the line has no 'of normal attacks' scoping, so critRateNormalPct would be an over-narrowing misread here (the inverse of the usual scope trap).",
+      "durationSemantics": "Wall-clock 5 sec (durationSec:5), same refresh-per-full-charge shape as the ATK line.",
+      "triggerIdentity": "Same block as the ATK line: per full-charge attack (shotFired-equivalent), two effects on one trigger.",
+      "targetSet": "All allies including self.",
+      "nearestWrongModel": "Scoped to normal attacks only (critRateNormalPct), suppressing crit on allies' skill/burst hits; or dropped entirely as 'too small to matter' (1.33% is small but team-wide and near-permanent uptime).",
+      "distinguishingAssertion": "Assert buffApply {stat:'critRatePct', value:1.33} accompanies each atkPct application (same trigger frame, same targets). Green under generic critRatePct; red if the stat is critRateNormalPct or the effect is absent.",
+      "inertness": "Must not exceed 1.33 or stack multiplicatively across refreshes (refresh, not stack — no maxStacks in the text).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 348.73% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "One instant AoE damage instance off yan's final ATK at cast (flatDamage atkPct:348.73, burst bucket). Single boss target at scope lock, so 'enemies within attack range' collapses to one hit.",
+      "durationSemantics": "Instant, on cast. Burst I, cd 20s.",
+      "triggerIdentity": "burstCast (yan's own Burst I cast) — fires ONLY on rotations yan actually takes the B1 slot; in a comp with liter, first-ready selection decides who casts, so the damage must track yan's own burstCast events, never every rotation.",
+      "targetSet": "Enemy (the boss).",
+      "nearestWrongModel": "Crediting the hit with the +50% Full Burst major (methodology: burst-cast/instant damage always lands BEFORE the FB window opens and is FB-exempt); secondary misread: letting it take the +30% range bonus (riders are force-no-range).",
+      "distinguishingAssertion": "For each yan burstCast event, assert exactly one damage event {srcSlot: yan, bucket:'burst', mult ≈ 348.73} with fbMajorApplied===false and inFullBurst===false (and rangeApplied per the engine's rider force-no-range rule). Green under FB-exempt burst-cast damage; red if fbMajorApplied is true. Also assert damage count === yan's burstCast count (no per-rotation over-fire).",
+      "inertness": "Must contribute zero damage on rotations where yan does not cast; must not double-hit (single enemy, one instance per cast).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Forced movement toward center, 2 sec",
+      "disposition": "UNMODELED",
+      "scope": "Boss crowd-control / positioning pull — the sim has no boss position mutation channel, and the scope-lock boss follows a measured range script (a measured constant, never refit).",
+      "durationSemantics": "2 sec, irrelevant while unmodeled.",
+      "triggerIdentity": "On yan's burst cast, applied to the boss.",
+      "targetSet": "Enemy.",
+      "nearestWrongModel": "Fudging it as a range-band improvement for the team (modeling an unobserved positioning benefit to 'capture' the pull) — a measured>fudge violation against the measured boss range script.",
+      "distinguishingAssertion": "Assert the boss range band / rangeApplied pattern on the team's shots is IDENTICAL with the burst block's movement line present vs absent (inertness pin) — the line must live verbatim in unmodeled.burst, not as an effect.",
+      "inertness": "Must not move any unit's damage, range eligibility, or the boss range script.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Charge Damage ▲21.55% for 10 sec (fullBurstEnter, all allies)",
+    "skill2:ATK ▲2.77% for 5 sec (per full-charge attack, all allies)",
+    "skill2:Critical Rate ▲1.33% for 5 sec (same trigger/block)",
+    "burst:348.73% final-ATK damage (burstCast, FB-exempt)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Forced movement toward the center of attack range, lasts for 2 sec."
+    ]
+  },
+  "notes": "Three reconciliation points. (1) Yan is BURST I — the controlComp fixture (liter B1 / crown B2 / carry B3 / helm B3) places the carry at B3, so yan cannot sit in the carry slot as-is; the test comp must slot yan alongside a real B3 and must decide the B1 contention with liter explicitly (first-ready in-window selection). This B1 collision is exactly what makes skill1's trigger testable: with liter taking the B1 cast, fullBurstEnter (faithful) still fires every FB while burstCast (nearest-wrong) fires never — I expect a shared-prior misread here because on any comp where yan IS the sole/actual B1 caster the two readings coincide and a calibrated board would hide it. (2) skill2's expected trap is the opposite of the usual one: the crit line is GENERIC (no 'normal attacks' scoping), so an over-cautious critRateNormalPct encoding would under-credit; and the ATK line is plain atkPct, not casterAtkPct — assert on the emitted raw value 2.77 to pin this (a casterAtkPct misencoding emits a flat ~2725). Also reject any passive encoding of skill2: uptime is near-permanent EMERGENTLY (5s window bridges the 141-frame reload), but a passive applies at frame 0 before her first ~112-frame charge+latency completes — assert first-apply frame. (3) Burst damage must be FB-exempt (lands pre-FB-window; fbMajorApplied false) — applying the +50% is the classic over-credit on burst-cast damage. All four magnitudes (21.55 / 2.77 / 1.33 / 348.73) are literal kit text; no ALWAYS-⚑ fields are needed beyond the standard cadence tuple, which the harness already pins via base stats (chargeFrames 90 / reloadFrames 141 / ammo 6).",
+  "model": "claude-fable-5"
+}

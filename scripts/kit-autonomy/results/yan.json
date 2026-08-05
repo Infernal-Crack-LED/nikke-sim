@@ -1,0 +1,72 @@
+{
+  "slug": "yan",
+  "kitDescription": "Yan is a Fire rocket-launcher Supporter whose whole kit is team-wide buffing plus one burst nuke. Whenever any Full Burst begins, she grants all allies (including herself) +21.55% Charge Damage for 10 seconds, which pays off on her own and her allies' charged shots. Every time she fires a full-charge rocket — which is every shot she takes — she refreshes a 5-second +2.77% ATK and +1.33% Critical Rate buff on the whole team, so with her roughly 2-second fire cycle these small buffs stay up almost permanently. Her Burst I skill is a single hit dealing 348.73% of her final ATK to enemies in range, landing before the Full Burst window opens so it never gets the +50% Full Burst bonus. The burst also yanks normal enemies toward the center of its area for 2 seconds, a crowd-control pull that has no damage effect on the single test boss.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "beginning of Full Burst: Charge Dmg ▲ 21.55%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → allies chargeDamagePct 21.55 / 10s; charge-bucket additive, not chargeDamageMultPct; FB-entry not burstCast (helm H7 precedent)",
+        "blindSaid": "S5 asserts fullBurstEnter identity (one apply per ally per FB start, target set all 4 allies, chargeDamagePct not attackDamagePct) — 15/0 green vs driver; S6 encoding byte-identical to driver",
+        "formulaCheck": "SSOT 1d: ordinary Charge Damage ▲ adds flat points inside the charge bucket — chargeDamagePct is the correct stat; 'at the beginning of Full Burst' is the canonical fullBurstEnter wording, fires on any team FB (§8)",
+        "fireRateOk": true,
+        "explanation": "Driver test pins application frames equal to fullBurstStart frames and strictly after her B1 cast frames; a burstCast counterfactual provably lands on different (cast) frames. Crown (MG, no charged hits) is byte-exact with S1 removed — correct bucket scoping confirmed by payoff isolation."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "on Full Charge attack: ATK ▲ 2.77% 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired → allies atkPct 2.77 / 5s; every RL pull is a full charge (pinned: every shot event charged:true); refresh-no-stack via default maxStacks 1; plain atkPct not casterAtkPct",
+        "blindSaid": "S6 uses one chargeCounter{count:1} block with both effects — semantically identical for an RL (S2b explicitly noted the equivalence); S5 asserts per-shot cadence ≫ FB count, first apply pre-FB, all-ally targets, raw value 2.77",
+        "formulaCheck": "§11: plain ATK ▲ sums into the (1+ATK%) term on each target's own staticAtk — atkPct correct; no stack counter in kit text so refresh (maxStacks 1) matches the re-application rule",
+        "fireRateOk": true,
+        "explanation": "Applications track her shot events one-to-one (≥90% of pulls×allies), start at her first pull (≥ first shot frame, pre-FB) and continue outside FB windows; the in-FB-gated and stacking counterfactuals both provably diverge. Near-permanent uptime is emergent from refresh, not encoded as a passive."
+      },
+      {
+        "kitLine": "on Full Charge attack: Crit Rate ▲ 1.33% 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired → allies critRatePct 1.33 / 5s; UNSCOPED (no 'of normal attacks' wording — the inverse of the usual scope trap), lifts crit on every bucket",
+        "blindSaid": "S5 asserts stat==='critRatePct' and critRateNormalPct count === 0; co-occurs 1:1 with the atkPct applications; S6 identical stat/value/duration",
+        "formulaCheck": "§1b/§11: unscoped Crit Rate ▲ joins critRate on all instances; the normal-only term critRateNormalPct is reserved for 'of normal attacks' wording (helm S1) — driver correctly avoided it",
+        "fireRateOk": true,
+        "explanation": "Same trigger/cadence as the ATK line (driver splits into two shotFired blocks, blind one block — equivalent). Unscoped reach proven by the negative: removing S2 moves crit on ada's skill-bucket hits, which a normal-scoped encoding would leave untouched."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 348.73% of final ATK as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage 348.73, burst bucket, once per own cast; FB-exempt (B1 cast precedes the window); AoE collapses to the single scope-lock boss",
+        "blindSaid": "S6 adds explicit crit:true/noRange:true/noFb:true — all three are engine defaults for instant burst-cast flatDamage (sim.ts U1/U10), so semantically identical to the driver's omission; S5 asserts fbMajorApplied never true and core never applied",
+        "formulaCheck": "SSOT 1b burst-cast timing rule (MEASURED, popup-verified on cinderella): burst-cast direct damage lands before FB opens, no +0.5 major; burst-nuke row of the per-type table: crits, no core, no range — engine defaults match the kit's plain 'as damage'",
+        "fireRateOk": true,
+        "explanation": "Driver pins exactly one 348.73 burst-bucket nuke per yan burstCast event (count equality) with fbMajorApplied false on every instance; removal deletes exactly her burst bucket and leaves teammates byte-identical. Magnitude is literal kit text."
+      },
+      {
+        "kitLine": "Forced movement toward center, 2 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "carried verbatim in unmodeled.burst with reason: CC pull on normal enemies, no enemy-position primitive, boss follows the measured range script; explicitly NOT re-encoded as a damage/range buff",
+        "blindSaid": "S5 it.skip with the same reasoning (no displacement primitive; would perturb measured ground truth); S6 same verbatim unmodeled line plus caveat",
+        "formulaCheck": "§5: boss movement is a MEASURED fixed script the engine owns; no boss-position mutation channel exists — no faithful representation is available",
+        "fireRateOk": true,
+        "explanation": "All three agents independently agree the line is inert at scope lock and must not be fudged into a damage benefit (S2b's nearest-wrong model — a fudged range improvement — was correctly rejected by both writers). Decision recorded; acceptable."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": 1.0,
+  "verdict": "GO",
+  "verdictRationale": "Convergence is mechanical and real: the S5 blind suite runs 15 GREEN / 1 documented skip / 0 RED against the driver's shipped override with zero assertion-semantics changes, and the S6 blind override is semantically identical to the driver's on every line (the only diffs are encoding-shape equivalents the S2b spec pre-cleared: chargeCounter{count:1} vs shotFired for an always-full-charge RL, and explicit vs engine-default crit/noRange/noFb on the burst flatDamage). All four load-bearing lines are FAITHFUL with correct formula routing — chargeDamagePct in the charge bucket (not the multiplier stat), plain atkPct (not casterAtkPct), UNSCOPED critRatePct (the inverse scope trap, correctly avoided), and an FB-exempt burst-cast nuke matching the measured timing rule — and each is pinned by a discriminating counterfactual that provably diverges (burstCast re-trigger, FB gate, stacking, strip). The forced-movement line is a DOCUMENTED_GAP agreed by all three agents. Residuals for owner spot-check (none blocking): (1) the blind S6 ⚑ that yan's burst is modeled instant on cast while other roster RL burst nukes have measured flight delay — if popup footage ever shows her nuke landing inside the FB window, add delaySec and drop the noFb default (recipe: banner-to-popup frame read on a yan-focused recording); (2) the datamined cadence tuple (chargeFrames 90 / reloadFrames 141) is the standard scope-lock basis, unmeasured per-unit, which bounds how precisely the S2 5s-refresh uptime is known; (3) cross-family convergence here is stronger than the usual same-model caveat (driver Qwen, blinds Claude, judge Kimi), but the burst flight-time question is the one place every agent relied on convention rather than a yan-specific measurement.",
+  "model": "kimi-code/k3"
+}

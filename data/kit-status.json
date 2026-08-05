@@ -7044,6 +7044,37 @@
       ],
       "board": null
     },
+    "yan": {
+      "name": "Yan",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/yan.json + scripts/kit-autonomy/manual-review/yan.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "burst flight-time convention (instant on cast, unmeasured per-unit for yan); datamined cadence tuple (chargeFrames 90 / reloadFrames 141) is the scope-lock basis, unmeasured per-unit; forced-movement burst CC unmodeled (inert vs scope-lock boss)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Forced movement toward the center of attack range, lasts for 2 sec. (crowd-control PULL on normal enemies; v1 fights a single scope-lock boss with no enemy movement/position model and bosses are not pulled, so the line moves no damage. NOT re-encoded as a damage or range buff — that would over-credit a benefit the kit does not deliver; viper/phantom/marciana precedent.)"
+        ]
+      }
+    },
     "yulha": {
       "name": "Yulha",
       "burst": "III",
