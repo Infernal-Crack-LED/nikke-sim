@@ -1,0 +1,104 @@
+{
+  "slug": "soda",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 180
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxHpPct",
+          "value": 13,
+          "durationSec": 10,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 900
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 642.56,
+          "crit": true,
+          "noRange": true
+        },
+        {
+          "kind": "stun",
+          "durationSec": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Restores HP equal to 3.23% of the skill user's final Max HP.",
+      "Restores HP equal to 12.71% of the skill user's final Max HP."
+    ],
+    "burst": [
+      "Stack count of buffs ▲ 1."
+    ]
+  },
+  "caveats": [
+    "⚑ skill1 hitCount 180 counts ROUNDS, not trigger pulls — an MG at hitsPerShot 1 makes rounds == pulls here, so 180 rounds ≈ 180 shots; if hitsPerShot is ever >1 the cadence changes. Stack cadence (how fast 5 stacks accrue and whether the 10s window survives between refills) is UNMEASURED.",
+    "⚑ skill1 Max HP ▲ 13% ×5 is offensively INERT at scope lock unless a teammate converts Max HP to ATK; it is modeled as maxHpPct (self) so a future atkOfMaxHpPct consumer sees it. It does NOT feed an ally's conversion (e3 rule).",
+    "⚑ skill2 line 1 has NO activation clause in the kit text — trigger INVENTED as interval 20s (the unit's listed burst cooldown, the only cadence number the kit gives). This is a pure guess; the real cadence must be read from footage (count green heal popups per minute).",
+    "⚑ skill2 line 2 fires 'when Maid Spirit is at max stacks' — modeled as hitCount 900 (5 × the 180-hit stack threshold, i.e. the shot count at which the 5th stack lands). This re-fires every 900 cumulative rounds, which is a crude proxy: the real line is a state gate on a decaying 5-stack pool, not a hit counter. If the stacks lapse (10s window) it should re-fire on each fresh climb to 5.",
+    "⚑ Both skill2 heals are modeled as HP-less 'heal' events (the engine models no HP pool). Their only live effect is firing teammates' 'recovery' triggers (crown-style on-recovery consumers) — the 3.23%/12.71% magnitudes are recorded for completeness only.",
+    "⚑ burst 321.28% 'Affects 2 enemy unit(s) randomly' — the scope-lock boss is a SINGLE partless target. Modeled as 642.56% (2 × 321.28) on the assumption both random picks resolve onto the one enemy. If the game instead lands only one instance on a solo target, this OVER-CREDITS by 2×. Recipe: focus-record Soda's burst and read the popup count/value (one 321% popup vs two).",
+    "⚑ burst damage is burstCast-triggered, so it lands BEFORE the Full Burst window opens (verified fact: burst-cast damage takes no +50% FB major and no entry auras). noRange:true per the rider convention; crit:true at the caster's sheet rate; no core (the text says no core strike).",
+    "⚑ burst 'Stack count of buffs ▲ 1' (all Fire Code allies) is NOT MODELED — the schema has no cross-unit stack-count primitive; it would need to add +1 stack to every stacking buff held by Fire allies, including Soda's own Maid Spirit. On a Fire-heavy team this is a real damage effect and this override under-credits it. Recipe: A/B a Fire comp with a stacking-buff carrier (e.g. a 5-stack ATK stacker) and compare their popup values with vs without Soda bursting.",
+    "⚑ Stun 1s on the boss is recorded for kit completeness; the scope-lock boss's fire/movement script is not modeled as interruptible, so it is inert on damage."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Soda (soda) is an MG/Fire/Supporter/Burst I whose entire kit is sustain + a stack-count grant: S1 self-stacks Max HP (offensively inert at scope lock, kept as maxHpPct so a future HP→ATK consumer reads it), S2 is two heal lines whose only modeled effect is firing allies' on-recovery triggers, and the burst is a 321.28%×2-target instant hit plus a 1s stun and a +1 buff-stack-count grant to Fire allies. The burst's multi-target resolution against a single boss and the +1 stack-count line are the two load-bearing unknowns: the first is modeled optimistically (2× on one target) and the second is not modeled at all, so on a Fire-stacking team this override is directionally LOW on team damage and possibly HIGH on Soda's own burst. S2's first heal line carries no activation clause at all — its 20s interval is invented and must be pinned from footage before any tuning rests on it.",
+  "hasPierce": false
+}

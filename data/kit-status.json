@@ -6385,6 +6385,42 @@
       ],
       "board": null
     },
+    "soda": {
+      "name": "Soda",
+      "burst": "I",
+      "weapon": "MG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/soda.json + scripts/kit-autonomy/manual-review/soda.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": ["Stun for 1 sec."]
+      },
+      "caveats": [
+        "skill2: interval 12 is the datamined skillCooldownsSec.skill2 (the prose carries no activation clause); first-fire phase t=12 is the engine interval convention — ⚑ pin from footage if a recovery-consumer cadence is ever popup-read",
+        "skill2: heal magnitudes 3.23% / 12.71% of the skill user's final Max HP are amount-less by engine design (no HP pool) — carried verbatim in the note, not fudged into fake numbers",
+        "burst: '2 enemy unit(s) randomly' collapses to ONE instance on the lone partless boss (multi-enemy selection is out of the single-boss scope)",
+        "burst: the CROSS-ALLY slice of 'all Fire Code allies: Stack count of buffs ▲1' is ⚑ OUT-OF-DOMAIN (engine-core) — no 'bump each target's stackable buffs by N' primitive (mica-snow-buddy ⚑M5 / pepper ⚑4 precedent); self-slice modeled via the maidSpirit pool",
+        "skill1/burst: the maidSpirit pool is monotonic vs the real 10s per-stack expiry — divergence only in >10s firing gaps (soda-twinkling-bunny Golden-Chip precedent class)"
+      ],
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6(claude-opus-5)/S7(kimi-k3) converged; FROM-SCRATCH build (simSupported was false) — hitCount180 self Max-HP 13%x5/10s + maidSpirit pool; interval-12 dual heal recovery channel (rider resourceGate min5); burstCast 321.28 single-instance pre-FB; burst self-slice +1 pool; stun + cross-ally stack-amp carried unmodeled/flagged",
+      "residual": "spot-check cluster: (1) burst '2 enemy unit(s) randomly' — single-instance collapse vs 2x321.28 is a one-popup measurement on a soda-focus recording (driver ships the spec'd single-instance reading; both opus blinds split on it, S2b named 2x the nearest-wrong); (2) S2 interval-12 first-fire phase t=12 is engine convention (no activation clause in prose; CD from datamined skillCooldownsSec.skill2); (3) cross-ally slice of 'all Fire Code allies: buff stacks +1' is engine-core flagged (no primitive; self-slice modeled, pool clamped at 5)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "soda-twinkling-bunny": {
       "name": "Soda: Twinkling Bunny",
       "burst": "III",

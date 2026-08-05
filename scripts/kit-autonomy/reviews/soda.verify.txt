@@ -1,0 +1,315 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-08-04-b[39m
+
+ [31m❯[39m scripts/tests/units/soda.test.ts [2m([22m[2m20 tests[22m[2m | [22m[31m16 failed[39m[2m)[22m[32m 15[2mms[22m[39m
+     [32m✓[39m fixture sanity: soda fires an MG belt and alternates Burst I casts with liter[32m 1[2mms[22m[39m
+[31m       [31m×[31m fires exactly once per 180 hits, plus one application per own burst cast (self-slice)[39m[32m 3[2mms[22m[39m
+[31m       [31m×[31m is 13% of her own Max HP per stack, capped at 5 stacks, on a 10s duration[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m is self-scoped — no ally ever holds the Maid Spirit grant[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m DISCRIMINATING: a halved threshold (90) fires twice as often[39m[32m 1[2mms[22m[39m
+       [32m✓[39m removing Maid Spirit entirely moves NO unit's total by a single point[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING: the channel is live — an HP→ATK converter she does not own WOULD feed[32m 0[2mms[22m[39m
+[31m       [31m×[31m fires at the 12s CD cadence: ticks at t=12,24,...,180 (15 ticks in a 180s fight)[39m[32m 1[2mms[22m[39m
+       [32m✓[39m each firing reaches ALL FOUR allies through crown (≥4 buffApply per tick frame)[32m 0[2mms[22m[39m
+[31m       [31m×[31m is LIVE: removing S2 zeros the recovery firings and drops team damage (crown AD uptime)[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m DISCRIMINATING: a 6s interval doubles the tick count to 30[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m the first tick (t=12s) is SINGLE: ≤720 hits + no burst by 12s cannot reach 5 stacks[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m once max stacks accrue, every later tick is DOUBLE (the rider joins the base heal)[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m DISCRIMINATING: dropping the gate doubles the FIRST tick too[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m GATE DEPENDENCY (S2b): with no Maid Spirit stacks, the rider never joins — all ticks single[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m fires once per soda burst cast at the kit magnitude, in the burst bucket[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m never takes the +50% Full Burst major (the cast lands before FB opens)[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m DISCRIMINATING: a fullBurstEnter-keyed nuke fires on EVERY team FB, not her casts[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m the stack count = hit procs + one per own burst (the self-slice lands on her own buff)[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m DISCRIMINATING: without the self-slice, only hit procs apply stacks[39m[32m 1[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 16 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD1 — S1 Maid Spirit: after 180 normals, self Max HP ▲13%, 5 stacks, 10s[2m > [22mfires exactly once per 180 hits, plus one application per own burst cast (self-slice)
+[31m[1mAssertionError[22m: expected +0 to be 37 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 37[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m246:30[22m[39m
+    [90m244|[39m
+    [90m245|[39m     it('fires exactly once per 180 hits, plus one application per own …
+    [90m246|[39m       expect(applied.length).toBe(Math.floor(SHOT_COUNT / 180) + CAST_…
+    [90m   |[39m                              [31m^[39m
+    [90m247|[39m     })[33m;[39m
+    [90m248|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD1 — S1 Maid Spirit: after 180 normals, self Max HP ▲13%, 5 stacks, 10s[2m > [22mis 13% of her own Max HP per stack, capped at 5 stacks, on a 10s duration
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m250:30[22m[39m
+    [90m248|[39m
+    [90m249|[39m     it('is 13% of her own Max HP per stack, capped at 5 stacks, on a 1…
+    [90m250|[39m       [34mexpect[39m(applied[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                              [31m^[39m
+    [90m251|[39m       [35mconst[39m expected [33m=[39m ([34m13[39m [33m/[39m [34m100[39m) [33m*[39m [33mSODA_MAX_HP[39m[33m;[39m
+    [90m252|[39m       expect([...new Set(applied.map((b) => b.value))]).toEqual([expec…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD1 — S1 Maid Spirit: after 180 normals, self Max HP ▲13%, 5 stacks, 10s[2m > [22mis self-scoped — no ally ever holds the Maid Spirit grant
+[31m[1mAssertionError[22m: expected [] to deeply equal [ 'soda' ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   "soda",[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m264:62[22m[39m
+    [90m262|[39m
+    [90m263|[39m     it('is self-scoped — no ally ever holds the Maid Spirit grant', ()…
+    [90m264|[39m       expect([...new Set(applied.map((b) => b.targetSlug))]).toEqual([…
+    [90m   |[39m                                                              [31m^[39m
+    [90m265|[39m     })[33m;[39m
+    [90m266|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD1 — S1 Maid Spirit: after 180 normals, self Max HP ▲13%, 5 stacks, 10s[2m > [22mDISCRIMINATING: a halved threshold (90) fires twice as often
+[31m[1mAssertionError[22m: expected +0 to be 70 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 70[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m269:25[22m[39m
+    [90m267|[39m     it('DISCRIMINATING: a halved threshold (90) fires twice as often',…
+    [90m268|[39m       [35mconst[39m cf [33m=[39m [34mmaidSpiritApplies[39m(halfThreshold[33m.[39mevents)[33m;[39m
+    [90m269|[39m       [34mexpect[39m(cf[33m.[39mlength)[33m.[39m[34mtoBe[39m([33mMath[39m[33m.[39m[34mfloor[39m([33mSHOT_COUNT[39m [33m/[39m [34m90[39m) [33m+[39m [33mCAST_COUNT[39m)[33m;[39m
+    [90m   |[39m                         [31m^[39m
+    [90m270|[39m       [34mexpect[39m(cf[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m(applied[33m.[39mlength)[33m;[39m
+    [90m271|[39m     })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD3 — S2: all allies recover every 12s (recovery-event channel only)[2m > [22mfires at the 12s CD cadence: ticks at t=12,24,...,180 (15 ticks in a 180s fight)
+[31m[1mAssertionError[22m: expected [] to deeply equal [ 720, 1440, 2160, 2880, 3600, …(10) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   720,[39m
+[32m-   1440,[39m
+[32m-   2160,[39m
+[32m-   2880,[39m
+[32m-   3600,[39m
+[32m-   4320,[39m
+[32m-   5040,[39m
+[32m-   5760,[39m
+[32m-   6480,[39m
+[32m-   7200,[39m
+[32m-   7920,[39m
+[32m-   8640,[39m
+[32m-   9360,[39m
+[32m-   10080,[39m
+[32m-   10800,[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m293:38[22m[39m
+    [90m291|[39m
+    [90m292|[39m     it('fires at the 12s CD cadence: ticks at t=12,24,...,180 (15 tick…
+    [90m293|[39m       [34mexpect[39m(frames[33m.[39m[34mmap[39m(([f]) [33m=>[39m f))[33m.[39m[34mtoEqual[39m(
+    [90m   |[39m                                      [31m^[39m
+    [90m294|[39m         [33mArray[39m[33m.[39m[35mfrom[39m({ length[33m:[39m [34m15[39m }[33m,[39m (_[33m,[39m i) [33m=>[39m (i [33m+[39m [34m1[39m) [33m*[39m [34m12[39m [33m*[39m [33mFPS[39m)
+    [90m295|[39m       )[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD3 — S2: all allies recover every 12s (recovery-event channel only)[2m > [22mis LIVE: removing S2 zeros the recovery firings and drops team damage (crown AD uptime)
+[31m[1mAssertionError[22m: expected 332870439.22793734 to be less than 332870439.22793734[39m
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m306:34[22m[39m
+    [90m304|[39m     it('is LIVE: removing S2 zeros the recovery firings and drops team…
+    [90m305|[39m       [34mexpect[39m([34mcrownAdApplies[39m(noS2[33m.[39mevents)[33m.[39mlength)[33m.[39m[34mtoBe[39m([34m0[39m)[33m;[39m
+    [90m306|[39m       [34mexpect[39m(noS2[33m.[39mtotals[[32m'ada'[39m])[33m.[39m[34mtoBeLessThan[39m(base[33m.[39mtotals[[32m'ada'[39m])[33m;[39m
+    [90m   |[39m                                  [31m^[39m
+    [90m307|[39m     })[33m;[39m
+    [90m308|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD3 — S2: all allies recover every 12s (recovery-event channel only)[2m > [22mDISCRIMINATING: a 6s interval doubles the tick count to 30
+[31m[1mAssertionError[22m: expected +0 to be 30 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 30[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m310:62[22m[39m
+    [90m308|[39m
+    [90m309|[39m     it('DISCRIMINATING: a 6s interval doubles the tick count to 30', (…
+    [90m310|[39m       [34mexpect[39m([34mperFrame[39m([34mcrownAdApplies[39m(s2Fast[33m.[39mevents))[33m.[39mlength)[33m.[39m[34mtoBe[39m([34m30[39m)[33m;[39m
+    [90m   |[39m                                                              [31m^[39m
+    [90m311|[39m     })[33m;[39m
+    [90m312|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD4 — S2 rider: the extra heal fires only at Maid Spirit max stacks[2m > [22mthe first tick (t=12s) is SINGLE: ≤720 hits + no burst by 12s cannot reach 5 stacks
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading '1')[39m
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m321:23[22m[39m
+    [90m319|[39m       // MG terminal cadence is 60/s (the engine's MG constant), so <9…
+    [90m320|[39m       // t=12s, and soda's first burst casts well after — the pool is …
+    [90m321|[39m       [34mexpect[39m(frames[[34m0[39m][[34m1[39m])[33m.[39m[34mtoBe[39m([34m4[39m)[33m;[39m
+    [90m   |[39m                       [31m^[39m
+    [90m322|[39m     })[33m;[39m
+    [90m323|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD4 — S2 rider: the extra heal fires only at Maid Spirit max stacks[2m > [22monce max stacks accrue, every later tick is DOUBLE (the rider joins the base heal)
+[31m[1mAssertionError[22m: expected -1 to be greater than 0[39m
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m326:25[22m[39m
+    [90m324|[39m     it('once max stacks accrue, every later tick is DOUBLE (the rider …
+    [90m325|[39m       [35mconst[39m doubledAt [33m=[39m frames[33m.[39m[34mfindIndex[39m(([[33m,[39m n]) [33m=>[39m n [33m===[39m [34m8[39m)[33m;[39m
+    [90m326|[39m       [34mexpect[39m(doubledAt)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                         [31m^[39m
+    [90m327|[39m       [35mfor[39m ([35mconst[39m [[33m,[39m n] [35mof[39m frames[33m.[39m[34mslice[39m(doubledAt)) {
+    [90m328|[39m         [34mexpect[39m(n)[33m.[39m[34mtoBe[39m([34m8[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD4 — S2 rider: the extra heal fires only at Maid Spirit max stacks[2m > [22mDISCRIMINATING: dropping the gate doubles the FIRST tick too
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading '1')[39m
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m333:24[22m[39m
+    [90m331|[39m
+    [90m332|[39m     it('DISCRIMINATING: dropping the gate doubles the FIRST tick too',…
+    [90m333|[39m       [34mexpect[39m(ungated[[34m0[39m][[34m1[39m])[33m.[39m[34mtoBe[39m([34m8[39m)[33m;[39m
+    [90m   |[39m                        [31m^[39m
+    [90m334|[39m     })[33m;[39m
+    [90m335|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD4 — S2 rider: the extra heal fires only at Maid Spirit max stacks[2m > [22mGATE DEPENDENCY (S2b): with no Maid Spirit stacks, the rider never joins — all ticks single
+[31m[1mAssertionError[22m: expected +0 to be 15 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 15[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m342:31[22m[39m
+    [90m340|[39m       [34mexpect[39m([33mCAST_COUNT[39m)[33m.[39m[34mtoBeLessThan[39m([34m5[39m)[33m;[39m
+    [90m341|[39m       [35mconst[39m noStacks [33m=[39m [34mperFrame[39m([34mcrownAdApplies[39m(noS1[33m.[39mevents))[33m;[39m
+    [90m342|[39m       [34mexpect[39m(noStacks[33m.[39mlength)[33m.[39m[34mtoBe[39m([34m15[39m)[33m;[39m
+    [90m   |[39m                               [31m^[39m
+    [90m343|[39m       [35mfor[39m ([35mconst[39m [[33m,[39m n] [35mof[39m noStacks) {
+    [90m344|[39m         [34mexpect[39m(n)[33m.[39m[34mtoBe[39m([34m4[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD5 — burst: 321.28% of final ATK, once per own cast, before the FB window[2m > [22mfires once per soda burst cast at the kit magnitude, in the burst bucket
+[31m[1mAssertionError[22m: expected +0 to be 4 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 4[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m355:28[22m[39m
+    [90m353|[39m
+    [90m354|[39m     it('fires once per soda burst cast at the kit magnitude, in the bu…
+    [90m355|[39m       [34mexpect[39m(nukes[33m.[39mlength)[33m.[39m[34mtoBe[39m([33mCAST_COUNT[39m)[33m;[39m
+    [90m   |[39m                            [31m^[39m
+    [90m356|[39m       [34mexpect[39m(nukes[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m357|[39m       expect([...new Set(nukes.map((d) => d.atkPct))]).toEqual([321.28…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD5 — burst: 321.28% of final ATK, once per own cast, before the FB window[2m > [22mnever takes the +50% Full Burst major (the cast lands before FB opens)
+[31m[1mAssertionError[22m: expected [] to deeply equal [ false ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   false,[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m363:61[22m[39m
+    [90m361|[39m     it('never takes the +50% Full Burst major (the cast lands before F…
+    [90m362|[39m       [34mexpect[39m(nukes[33m.[39m[34mfilter[39m((d) [33m=>[39m d[33m.[39mfbMajorApplied))[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m363|[39m       expect([...new Set(nukes.map((d) => d.inFullBurst))]).toEqual([f…
+    [90m   |[39m                                                             [31m^[39m
+    [90m364|[39m     })[33m;[39m
+    [90m365|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD5 — burst: 321.28% of final ATK, once per own cast, before the FB window[2m > [22mDISCRIMINATING: a fullBurstEnter-keyed nuke fires on EVERY team FB, not her casts
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m370:25[22m[39m
+    [90m368|[39m         (d) [33m=>[39m d[33m.[39mslug [33m===[39m [32m'soda'[39m [33m&&[39m d[33m.[39msrcSlot [33m===[39m [32m'burst'[39m
+    [90m369|[39m       )[33m;[39m
+    [90m370|[39m       [34mexpect[39m(cf[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m(nukes[33m.[39mlength)[33m;[39m
+    [90m   |[39m                         [31m^[39m
+    [90m371|[39m     })[33m;[39m
+    [90m372|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD6 — burst: Fire-ally "buff stacks ▲1" SELF slice — +1 Maid Spirit stack per cast[2m > [22mthe stack count = hit procs + one per own burst (the self-slice lands on her own buff)
+[31m[1mAssertionError[22m: expected +0 to be 37 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 37[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m377:30[22m[39m
+    [90m375|[39m     it('the stack count = hit procs + one per own burst (the self-slic…
+    [90m376|[39m       [35mconst[39m applied [33m=[39m [34mmaidSpiritApplies[39m(base[33m.[39mevents)[33m;[39m
+    [90m377|[39m       expect(applied.length).toBe(Math.floor(SHOT_COUNT / 180) + CAST_…
+    [90m   |[39m                              [31m^[39m
+    [90m378|[39m     })[33m;[39m
+    [90m379|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/16]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/soda.test.ts[2m > [22msoda — kit spec[2m > [22mSD6 — burst: Fire-ally "buff stacks ▲1" SELF slice — +1 Maid Spirit stack per cast[2m > [22mDISCRIMINATING: without the self-slice, only hit procs apply stacks
+[31m[1mAssertionError[22m: expected +0 to be 33 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 33[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/soda.test.ts:[2m382:25[22m[39m
+    [90m380|[39m     it('DISCRIMINATING: without the self-slice, only hit procs apply s…
+    [90m381|[39m       [35mconst[39m cf [33m=[39m [34mmaidSpiritApplies[39m(noSelfSlice[33m.[39mevents)[33m;[39m
+    [90m382|[39m       [34mexpect[39m(cf[33m.[39mlength)[33m.[39m[34mtoBe[39m([33mMath[39m[33m.[39m[34mfloor[39m([33mSHOT_COUNT[39m [33m/[39m [34m180[39m))[33m;[39m
+    [90m   |[39m                         [31m^[39m
+    [90m383|[39m     })[33m;[39m
+    [90m384|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/16]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m16 failed[39m[22m[2m | [22m[1m[32m4 passed[39m[22m[90m (20)[39m
+[2m   Start at [22m 05:04:00
+[2m   Duration [22m 490ms[2m (transform 75ms, setup 0ms, import 415ms, tests 15ms, environment 0ms)[22m
+

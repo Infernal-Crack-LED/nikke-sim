@@ -1,0 +1,82 @@
+{
+  "slug": "soda",
+  "kitDescription": "Soda is a Fire-element machine-gun Supporter whose kit is almost entirely sustain. Her Skill 1 builds Maid Spirit stacks on herself — one stack of +13% Max HP per 180 normal attacks fired, up to 5 stacks, each lasting 10 seconds. Her Skill 2 periodically heals the whole team for a small fraction of her own Max HP, and once Maid Spirit is fully stacked each activation additionally heals a much larger fraction. Her Burst I deals a single moderate hit to randomly selected enemies with a brief stun, and grants every Fire-element ally +1 stack count on their stackable buffs — which for Soda herself means an extra Maid Spirit stack. In a damage sim her offensive footprint is just her MG fire and the burst hit; her heals matter only insofar as they trigger teammates' on-recovery effects, and her Max HP stacking converts to nothing without an HP-to-ATK consumer.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "after 180 normal attacks, self Max HP ▲13%, 5 stacks, 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount 180 → self targetMaxHpPct 13, maxStacks 5, durationSec 10, plus +1 to a maidSpirit resource pool mirroring the stack count (the gate-able state S2 reads)",
+        "blindSaid": "S6 converged exactly (hitCount 180/self/13%/5/10s, stat spelled maxHpPct — both damage-inert); S5 pins cadence, cap, timed-window semantics, self-scope, and inertness, all GREEN vs the driver override",
+        "formulaCheck": "Max HP is damage-inert for soda (no atkOfMaxHpPct consumer in her kit or the fixture); the driver's SD2 pair proves both the inertness AND that the e3 self-feed channel is live (a hypothetical converter WOULD read it) — correct handling per SSOT §1a e3 scope",
+        "fireRateOk": true,
+        "explanation": "Trigger identity (hitCount 180; hitsPerShot 1 so hits == pulls), target set, magnitude, stack cap, and wall-clock duration all match the prose. Driver pins the exact application count (floor(shots/180) + burst casts) and discriminates against a halved-threshold misread. The monotonic-pool vs 10s-expiry divergence is real but documented, and unreachable under sustained MG fire (180 rounds accrue well inside 10s)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "all allies: restores 3.23% of user's final Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval 12 (datamined skillCooldownsSec.skill2 — the prose carries no activation clause) → allies heal; magnitude deliberately amount-less (no HP pool), carried verbatim in the note; ⚑ first-fire phase flagged",
+        "blindSaid": "S6 invented interval 20s self-flagged as a pure guess; S2b ruled the cadence an ALWAYS-⚑ field requiring the datamined CD — the driver's 12s is exactly that, so the blind's 20s is the spurious reading (RECON_ERROR-class divergence, resolved for the driver)",
+        "formulaCheck": "A heal emits a recovery event feeding on-recovery consumers (crown's team Attack Damage ▲20.99% in the fixture) — a real damage channel per the tandem rule; removing S2 drops ada via crown AD uptime (SD3), so the block is modeled-AND-working, not decorative",
+        "fireRateOk": true,
+        "explanation": "Fires at t=12..168 (14 ticks, pinned frame-exact), reaches all four allies through the consumer, discriminates against a 6s misread (29 ticks). The unencodable magnitude is honestly documented rather than fudged — correct per hard rule 2."
+      },
+      {
+        "kitLine": "at Maid Spirit max stacks: restores 12.71%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "second heal block on the same interval 12, gated resourceGate {maidSpirit min:5} — joins each S2 tick only while stacks are maxed; pool is fed by S1 procs AND the burst self-slice, matching the real stack state",
+        "blindSaid": "S6 used hitCount 900 (5×180) — a crude cumulative proxy that ignores the decaying-stack semantics it itself flags; S2b specified a resource gate mirroring Maid Spirit, which is what the driver shipped. Blind divergence resolved for the driver.",
+        "formulaCheck": "The gate is exercised both directions: ungated counterfactual doubles the FIRST tick (RED under the always-fires misread), and killing S1 keeps all 14 ticks single (RED under the dead-gate misread) — both S2b distinguisher branches are pinned",
+        "fireRateOk": true,
+        "explanation": "First tick provably single (<900 hits possible by t=12s, no burst yet), later ticks double once the pool saturates. The state-gate encoding matches the prose's 'when at max stacks' clause far better than the blind's hit-count proxy; monotonic-pool divergence is documented and unreachable in-fight."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "2 enemy unit(s) randomly: 321.28% of final ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage 321.28, exactly ONE instance — the 2-random-enemy selection collapses onto the lone partless boss (anis-sparkling-summer / privaty-unkind-maid precedent), never doubled; collapse reading stated in note + caveats",
+        "blindSaid": "S6 modeled 642.56 (2×) self-flagged with a popup-count recipe; S2b explicitly named 2× as the nearest-wrong model and single-instance as the faithful reading; S5 skipped the 1-vs-2 question as a flagged authoring choice contingent on the note stating the reading — which it does",
+        "formulaCheck": "burstCast keying lands the hit BEFORE the Full Burst window — no +50% major, no entry auras (SSOT §1b/§8, measured boundary rule); pinned: fbMajorApplied never set, inFullBurst always false, and a fullBurstEnter-keyed counterfactual fires on every team FB (discriminating)",
+        "fireRateOk": true,
+        "explanation": "Fires once per own cast at the kit magnitude in the burst bucket, FB-exempt per the house rule. The single-vs-double collapse is the one genuinely uncertain reading on the kit (the two blind agents split on it) — the driver followed the S2b spec and house precedent and documented it; flagged below as the owner spot-check residual, not a gotcha, since both readings are one-popup-measurement apart and the driver's is the spec'd one."
+      },
+      {
+        "kitLine": "Stun for 1 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst verbatim — enemy CC, the sim has no enemy-behaviour model, offensively inert by construction",
+        "blindSaid": "S2b: UNMODELED verbatim (no enemy entity to act on); S5: GAP-skip (stun primitive targets a NIKKE; enemy targets resolve empty); S6 authored a stun effect anyway but conceded it is inert — the driver's is the cleaner disposition",
+        "formulaCheck": "No observable exists or should exist; single-target partless boss with no enemy entity (scope-lock note). Inertness requirement met.",
+        "fireRateOk": true,
+        "explanation": "Deliberately unmodeled, recorded verbatim — the sanctioned disposition."
+      },
+      {
+        "kitLine": "all Fire Code allies: Stack count of buffs ▲ 1",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "SELF slice modeled (soda is Fire Code; her only stackable buff is Maid Spirit → +1 maidSpirit pool, clamped at 5, plus one stack application); CROSS-ALLY slice ⚑ out-of-domain engine-core — no 'bump each target's stackable buffs by N' primitive (mica-snow-buddy ⚑M5 / pepper ⚑4 precedent), with estimate + recipe + tier; refresh-semantics approximation documented",
+        "blindSaid": "S6 unmodeled the whole line verbatim (no primitive); S2b: GAP with a phantom-buff detector predicated on no primitive existing. The driver's self-slice goes one step further on owner precedent ('the self-slice is the honest in-scope model') and is load-bearing for the S2 gate: without it the pool would under-count the real stack state the rider reads.",
+        "formulaCheck": "Kit semantics = increment an existing stack count, capped at maxStacks — the driver's pool is clamped at 5 and SD6 pins count = hit procs + one per cast, discriminating against a no-self-slice counterfactual. Residual infidelity (fresh application refreshes the 10s window; applies even if no stack is currently held) is documented in the note and damage-inert for soda herself.",
+        "fireRateOk": true,
+        "explanation": "The cross-ally amplifier is a real damage effect on Fire-stacking teams and its absence is the kit's largest honest gap — but it is documented with recipe and tier, and the engine genuinely lacks the primitive. The self-slice encoding is the best available representation and is test-pinned."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: every divergence between the driver and the blind agents reconciles in the driver's favor against prose + SSOT — the S6 20s S2 interval was a self-flagged guess superseded by the datamined 12s CD the driver used; the S6 hitCount-900 rider proxy is strictly worse than the driver's resourceGate on a Maid Spirit pool (which is what S2b specified); the S6 2× nuke is the exact nearest-wrong model S2b named, with the driver's single-instance collapse carrying house precedent (anis-sparkling-summer / privaty-unkind-maid) and an explicit note. Convergence is real, not just same-model agreement: the S5 blind suite runs GREEN unmodified against the shipped override (13 pass, 3 skips that are its own GAP annotations), and the driver's 20-assertion spec pins every S2b distinguisher in both directions — halved/faster cadence counterfactuals, ungated-rider, dead-gate (S1 removed), fullBurstEnter-keyed nuke, no-self-slice, plus the inert-but-live Max-HP channel check. The two documented gaps (stun; cross-ally stack-increment) are the sanctioned dispositions with recipes and precedent. One same-model residual for the owner to spot-check: the burst's '2 enemy unit(s) randomly' resolution on a single boss — both blind agents and the driver split 2-vs-1 on this and it is a clean one-popup measurement (focus-record Soda's burst: one 321.28% popup vs two); the driver ships the spec'd single-instance reading, but if footage ever shows two popups, her burst damage doubles and every other line stands.",
+  "model": "kimi-code/k3"
+}
