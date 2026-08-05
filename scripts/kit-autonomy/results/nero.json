@@ -1,0 +1,107 @@
+{
+  "slug": "nero",
+  "kitDescription": "Nero is a Fire SMG Defender with a Burst II who plays as a heal-reactive tank. Whenever an ally heals her, the healer gets a short Damage Taken reduction and Nero builds a stacking self-buff called Cat's Repayment (up to 5 stacks, each lasting 5 seconds). When she is attacked, she has a 30% chance to make the attacker take increased damage, and while in her Grumpy Cat status that same proc also fires a 158.05% counter-hit. Her burst deals a single large hit (1104.91% of final ATK) to the highest-HP enemy, taunts all enemies for 15 seconds, and — if Cat's Repayment is at max stacks when she casts — grants her Grumpy Cat, boosting her incoming healing for 15 seconds. She also passively starts each battle with 60.28% more Max HP. In the scope-lock DPS sim, where the boss never attacks and heals carry no HP amounts, only her burst nuke and her Max HP passive have any observable effect.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "fixture-sanity 'nero casts her Burst II at least twice' (got 0) — BLIND-FIXTURE ARTIFACT: controlComp('nero',true) seats nero behind crown at B2; same-20s-cd slot-first selection starves her to zero casts. Independently predicted by S2b note (1) and the aria-probed phenomenon; the driver fixture (sole B2) asserts casts >= 5 first.",
+      "burst1 'emits one burst-bucket hit per burst cast' — same starvation artifact (0 casts → 0 nukes; the count===casts half passes vacuously, the >=2 guard fails). Not a faithfulness claim.",
+      "skill1a NON-VACUITY patch + skill2c INERTNESS patch + burst1 DISCRIMINATING (halving) + burst1 INERTNESS (removal) — 4 × RECON_ERROR: blind iterates ov.<slot>.blocks; the real override shape is ov.<slot> as a bare block array (the driver's own counterfactuals use ov.burst.filter/.flatMap), so all four throw TypeError before asserting anything.",
+      "skill2c 'applies the self Max HP grant exactly once at battle start' — RECON_ERROR: blind filters buffApply on e.targetSlug / a expiresFrame===undefined payload the engine does not emit (driver pins targetIdx + expiresFrame [null]); the assertion's filter finds nothing. No allegation that the shipped encoding contradicts the kit."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "recovery → healer: Dmg Taken ▼14.14%/5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; defensive ally stat (v1 boss deals no damage) + no 'heal caster' TargetDef exists",
+        "blindSaid": "S5: GAP (asserts no boss-scoped/negative damageTakenPct leaks — passed); S6: same ruling, ships value-0 placeholder + verbatim unmodeled",
+        "formulaCheck": "damageTakenPct is the boss-side Taken bucket; an ally-side ▼ has no bucket and no observable at scope lock (boss deals no damage). Correct to record, not enact.",
+        "fireRateOk": true,
+        "explanation": "All three agents converge: the line is inert and its true target (the healer) is inexpressible. Verbatim carriage + reason recorded = DOCUMENTED_GAP, not SILENT_DROP."
+      },
+      {
+        "kitLine": "Cat's Repayment: DT ▼8.43% ×5, 5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; stack count's only consumer is the Grumpy Cat gate, whose chain is damage-dead in v1; no stack-count gate primitive exists, so any encoding degenerates to the unconditional grant (S2b's own nearest-wrong #2)",
+        "blindSaid": "S2b: FIX/load-bearing (model stacks + lapse, test reaching/non-reaching heal fixtures); S5: GAP (stack count unobservable, it.skip); S6: unmodeled, chain dark end-to-end",
+        "formulaCheck": "The DT▼ stat has no damage bucket; the stack count feeds only N8's gate → N4's rider, and N4 requires the absent 'attacked' trigger. Modeling 5s lapse semantics would enact kit-silent behavior for zero observables (fabrication, not faithfulness).",
+        "fireRateOk": true,
+        "explanation": "The one genuine S2b-vs-driver divergence, adjudicated for the driver: S2b's load-bearing argument is real in kit-structure terms but its terminal effect is unreachable (no attacked trigger, no chance primitive, no heal amount), and both blind post-op agents independently arrived at the driver's ruling. Documented with an activation recipe = acceptable DOCUMENTED_GAP."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "30% when attacked: DT ▲8.26%/5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; trigger absent (v1 boss deals no damage; no 'attacked' trigger; no chance primitive); a shotFired/interval proxy is flatly wrong ('attacked' ≠ 'attacking'); ⚑ cadence recipe recorded",
+        "blindSaid": "S2b: measurement-gated, record don't enact; S5: asserts no invented always-on 8.26% amp shipped (passed); S6: same ruling, names it the single largest unmodeled offensive loss",
+        "formulaCheck": "The stat (boss damageTakenPct → Taken bucket) is real and would be a team-wide ×~1.08 amp if live — but no faithful trigger exists. Enacting any proxy cadence would fabricate kit-silent magnitude.",
+        "fireRateOk": true,
+        "explanation": "Unanimous across all four agents. This is the kit's largest unmodeled offensive surface and is engine-capability-gated, not a driver omission. Recorded verbatim with a measurement recipe = DOCUMENTED_GAP."
+      },
+      {
+        "kitLine": "30% attacked in Grumpy Cat: 158.05%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; doubly gated on the absent attacked trigger AND the unencodable max-stacks status gate",
+        "blindSaid": "S5: asserts zero 158.05% skill-bucket events and zero skill-bucket damage at all (passed); S6: same ruling",
+        "formulaCheck": "Would be skill-bucket function damage (crit, no core, noRange) per the proc rules — but both gates are unreachable in v1. No faithful encoding exists.",
+        "fireRateOk": true,
+        "explanation": "Unanimous. Correctly recorded, not enacted; no phantom flatDamage ships."
+      },
+      {
+        "kitLine": "start of battle: Max HP ▲60.28% cont.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive self targetMaxHpPct 60.28, no durationSec ('continuously' = permanent); converts to observable maxHpFlat self-grant; offensively inert (no HP→ATK in kit) but kept per keep-inert-stats rule",
+        "blindSaid": "S2b: FAITHFUL, targetMaxHpPct own-% basis; S5: pins once-at-frame-0, permanent, self-only, inert (passing assertions consistent); S6: DIVERGED — shipped bare stat 'maxHpPct', which per the stated engine fact (conversion exists only on the cube/OL path, not the skill-apply path) applies raw and is consumed by nothing — an inert, unobservable encoding of a line the kit grants",
+        "formulaCheck": "Kit: self Max HP ▲60.28% permanent. targetMaxHpPct → maxHpFlat at own-% basis is the schema's documented carrier (blanc/maiden precedent) and the only one that materializes the grant on the skill path. Driver test pins value === 0.6028 × static HP from an independent block-removed basis, frame 0, expiresFrame [null], self-scope, byte-equal totals under removal.",
+        "fireRateOk": true,
+        "explanation": "Driver encoding is faithful AND observable; the S6 stat-key divergence is a blind-side error (its encoding would silently not fire — exactly the 'modeled≠working' failure mode), adjudicated as RECON_ERROR against S6, not a driver gotcha. Driver's value is kit-literal lvl-10 (DATAMINED)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "1104.91% Burst Skill dmg, highest HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast-keyed flatDamage 1104.91 on enemy; own cast only; lands pre-FB so never takes the +50% major (pinned fbMajorApplied false); 'highest remaining HP' collapses to the single partless boss",
+        "blindSaid": "S2b: FAITHFUL, same spec (own-cast keying, no FB major); S5: same assertions (starved fixture prevented observation, not a divergence); S6: IDENTICAL block, adds redundant noFb:true",
+        "formulaCheck": "Engine forces noFb for burst-cast direct damage (SSOT: burst-cast blocks resolve before full-burst-entry triggers) — the blind's explicit noFb is behaviorally identical, NOT a divergence. Burst-skill damage: crit at sheet rate, no core, noRange — driver ships no core/range flags, correct.",
+        "fireRateOk": true,
+        "explanation": "Fires at prose cadence: sole-B2 fixture yields ≥5 own casts over 180s, nukes === casts pinned. Discriminates against lvl-1 magnitude 975.31, removal, and FB-boosted misreads. Three-way convergence (S2b, S5 intent, S6 identical block)."
+      },
+      {
+        "kitLine": "Attract: Taunts all enemies for 15 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; no taunt primitive, zero in-domain surface vs a partless boss with no ally-targeting AI (delta-ninja-thief precedent)",
+        "blindSaid": "S2b: UNMODELED (only legitimate role is ⚑ rationale for attacked cadence); S5: GAP it.skip; S6: unmodeled",
+        "formulaCheck": "No damage bucket; no boss-targeting model exists. Inert.",
+        "fireRateOk": true,
+        "explanation": "Unanimous DOCUMENTED_GAP."
+      },
+      {
+        "kitLine": "max Cat's Repayment: Grumpy Cat 60.08%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; incoming-healing ▲ has no StatKey carrier and heals carry no HP amount; gate unencodable without a stack-count primitive; only consumer (158.05% rider) unreachable",
+        "blindSaid": "S2b: FIX/load-bearing (model the 15s status window even if its stat is inert); S5: GAP (asserts no 60.08 value leaks onto any damage-side stat — passed); S6: unmodeled",
+        "formulaCheck": "Healing-received multiplier × no heal amount = unobservable; the status's only damage-side consumer requires the absent attacked trigger. Any status-window encoding would open zero observable events while risking the unconditional-grant misread.",
+        "fireRateOk": true,
+        "explanation": "Second half of the adjudicated S2b divergence: ruling for the driver, for the same reasons as skill1b — the blind post-op agents independently converged on the driver's carriage, and S5 shipped a passing guard against the 60.08 value leaking damage-side."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs. The driver's two modeled lines are faithful and provably firing: the 1104.91% burst nuke is own-burstCast-keyed, lands pre-FB (fbMajorApplied false pinned), fires once per cast at ≥5 casts per fight, and discriminates against the lvl-1 magnitude, removal, and FB-boosted nearest-wrongs; the Max HP ▲60.28% passive uses targetMaxHpPct — the schema carrier that actually materializes an observable maxHpFlat self-grant — pinned at the exact 0.6028×static-HP value against an independent block-removed basis, frame 0, permanent, self-scoped, and byte-inert under removal. The six Grumpy-Cat-chain lines are unanimous DOCUMENTED_GAPs carried verbatim with an activation recipe: the S2b reviewer's FIX divergence on the stack/status chain is adjudicated in the driver's favor because both blind post-op agents (S5's gap list, S6's override) independently re-derived the identical ruling from prose alone, and the chain's only damage-side observables require an 'attacked' trigger, a chance primitive, a stack-count gate, and heal amounts that v1 does not have — modeling any of it would fabricate kit-silent semantics or degenerate into S2b's own named nearest-wrong unconditional grant. The S5 run's 7 reds are all blind-side artifacts (2 fixture starvation behind crown — a phenomenon S2b itself pre-warned about — 4 override-shape TypeErrors, 1 event-payload guess); zero allege the shipped encoding does anything the kit does not say, and S5's negative guards that did run (no leaked damageTakenPct, no 158.05% rider, no 60.08 leak) all passed against the driver. Same-model residual for the owner to spot-check: the universal convergence on the unmodeled ruling rests on the shared premise that the scope-lock boss deals no damage and heals carry no amounts — if that engine premise ever changes, the 8.26% boss Damage Taken ▲ line (all agents' named largest unmodeled offensive loss, worth roughly a team-wide ×1.08 at realistic uptime) is the first thing to re-open, with the driver's recorded ⚑ cadence recipe (boss attack rate × 30%, taunt-amplified) as the measurement entry point.",
+  "model": "kimi-code/k3"
+}

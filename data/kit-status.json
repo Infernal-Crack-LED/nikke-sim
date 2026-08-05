@@ -4515,6 +4515,50 @@
         "temp": "OK  ·"
       }
     },
+    "nero": {
+      "name": "Nero",
+      "burst": "II",
+      "weapon": "SMG",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/nero.json + scripts/kit-autonomy/manual-review/nero.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Activates when recovery takes effect. Affects the target who cast the skill with recovery effect on Nero. Damage Taken ▼ 14.14% for 5 sec.",
+          "Activates when recovery takes effect. Affects self. Cat's Repayment: Damage Taken ▼ 8.43%, stacks up to 5 time(s) and lasts for 5 sec."
+        ],
+        "skill2": [
+          "There is a 30% chance of activating when attacked. Affects the target. Damage Taken ▲ 8.26% for 5 sec.",
+          "There is a 30% chance of activating when attacked in Grumpy Cat status. Affects the target. Deals 158.05% of final ATK as damage."
+        ],
+        "burst": [
+          "Affects self. Attract: Taunts all enemies for 15 sec.",
+          "Activates when Cat's Repayment is at max stacks. Affects self. Grumpy Cat: Incoming healing ▲ 60.08% for 15 sec."
+        ]
+      },
+      "caveats": [
+        "burst: the 1104.91% nuke is burstCast-keyed (her OWN cast) and lands pre-Full-Burst — it never takes the +50% FB major; 'highest remaining HP' collapses to the single partless boss",
+        "skill2: Max HP ▲60.28% is a passive self maxHpFlat grant (targetMaxHpPct → own-% basis), permanent ('continuously'), offensively INERT (no HP→ATK conversion in her kit) but kept — her raised live Max HP is readable by cross-unit consumers (highestAllyMaxHpPct rankers)",
+        "THE GRUMPY-CAT CHAIN (S1 stacks → burst Grumpy Cat status → S2 attacked-procs) is carried verbatim in `unmodeled`: the v1 boss deals no damage, the schema has no 'attacked' trigger / chance primitive / stack-count gate / incoming-healing stat, so the chain has ZERO in-domain observables; activation recipe recorded in the note (engine-capability-gated, TIER 3)",
+        "skill1: nero's `recovery` trigger condition DOES occur in comps with a healer (helm's full-charge pulls in the test fixture) — S1 ships no blocks, so nothing fires; this is the unmodeled ruling, not a missing trigger"
+      ],
+      "board": null,
+      "date": "2026-08-04",
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0 (judge kimi-code/k3); cross-family S2b(claude-fable-5)/S5/S6(claude-opus-5)/S7(kimi-k3) converged; FROM-SCRATCH build (simSupported was false) — burstCast enemy flatDamage 1104.91 (own cast, lands pre-FB, no FB major) + passive self targetMaxHpPct 60.28 (maxHpFlat self-grant, offensively inert — kept for HP-rank consumers); all six Grumpy-Cat-chain lines carried verbatim as unmodeled (v1 boss deals no damage: no attacked trigger / chance primitive / stack-count gate / heal-amount payload / healer TargetDef)",
+      "residual": "spot-check cluster: (1) the 8.26% boss Damage Taken ▲ proc (S2 line 1) is the single largest unmodeled offensive loss (all four cross-family agents concur) — re-open FIRST if the engine ever models incoming attacks, recipe recorded (boss attack cadence x 30%, taunt-amplified during the 15s Attract window, from a focused nero recording); (2) cadence tuple unmeasured (SMG datamine as-is); (3) no board datapoints (tank never recorded)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "neve": {
       "name": "Neve",
       "burst": "III",
