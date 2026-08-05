@@ -313,10 +313,32 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
     dumps still replay identically (`h4-marciana-structural` = 89), **zero fixtures moved**.
     ⚑ **Reaches NEW extractions only** — every dump written before `8d500ff9` still exhibits both
     mechanisms exactly as §25A measured.
-    - **⇒ §8 item 2 (MARKER SEMANTICS) IS NOW UNBLOCKED** — this was its prerequisite. `MARKER_MIN
-= 2` is met by red UI-banner glyphs (§24D); the discriminator exists (§15's constant-offset
-      test) and can now be swept on a faithful substrate. Findings-only until its own blast-radius
-      pass.
+  - ✅ **MARKER SEMANTICS (§8 item 2) MEASURED 2026-08-05 — `docs/probe-runs.md` §27**, rule
+    pre-committed at `e909c94c` before any number existed
+    (`docs/handoffs/2026-08-05-marker-semantics-PRECOMMIT.md`). **21.7% of production `core` flags
+    (39/180, 815 shots, 4 units) fail a persistence test** ⇒ the pre-committed `> 20%` DOMINANT
+    band. All three falsification controls PASS; CONTROL A reproduces §15's independent f1565
+    adjudication exactly (3 → 1).
+    - ⚑ **BUT THE TWO HALVES HAVE DIFFERENT BASES — do not conflate.** The pellet-count cost is
+      **−39 pellets over 815 shots = −0.048/shot ≈ 3.4% of §19's −1.40 residual**, and it moves the
+      residual the **wrong way** (to ~−1.45). **Marker semantics is a faithfulness win, NOT a
+      cold-bias lead.** ⛔ Never quote `ΔavgTotal` as the cost — it averages over the valid subset
+      and dropped flags cross that boundary both ways (`isabel`'s is POSITIVE while losing 6 flags).
+    - ⚑ The 21.7% is a **FLOOR**: `MOVING` (618) and `UNDECIDABLE` (612) tracks are all KEPT, and on
+      `marciana` (SG/Iron) 58 of 113 `MOVING` lean screen-fixed against 4 leaning attached.
+    - **⇒ OPEN — the landing is warranted by the band but GATED on a non-geometric answer (§27F).**
+      C1 rests on "a genuine hit-marker persists ≥ 2 frames", which **geometry cannot settle** — a
+      life-1 track has one frame, so attachment is undefined by construction, and the supporting
+      ATTACHED-life histogram is truncated at 2 by construction. Needs the marker VFX's own duration
+      from footage, or an owner adjudication. **Do not land C1 before that.**
+    - **⇒ OPEN — the per-unit spread is large and unexplained**: 8.6% / 14.0% / **40.0%** / 22.6%
+      across `marciana` / `isabel` / `guilty` / `noir` (n=4). `guilty` has 54% of its marker tracks
+      life-1 vs 38% on `marciana`. Recorded without a manufactured cause.
+    - ✅ **Four production dumps now carry the `reds` schema** (`h4-marciana-schemafix`,
+      `h4-isabel-schemafix`, `h4-guilty-schemafix`, `g2-noir-schemafix`), each reproducing its
+      original's `white`/`red`/`marker` **and** `cross_positions` with zero diffs — the
+      `tracks.json` half of item 7 is therefore already done; a full re-extraction still needs the
+      `read-pellets.ts` pass for `pellets.json`.
     - **⇒ OPEN, from §26D — persist `fps` in the dump's `params`.** Third gap of the same family:
       `band_lo = round(8 × fps / 60)`, so a `band` replay cannot resolve its own lower bound from
       the dump and must guess. Left out because the landing's edit list was gate-fixed. Fold into
