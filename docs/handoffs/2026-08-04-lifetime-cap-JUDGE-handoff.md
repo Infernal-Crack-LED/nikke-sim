@@ -280,11 +280,22 @@ it is a real owner-pellet recovery and not cancellation. Two limits ride with it
 5. **The missing-shot channel — which BASIS carries the bias was never decided.** Aggregate 3.9–6.8%
    vs per-event 16.7%/17.4%. The `guilty` **f1787** miss is still mechanistically unexplained (n=1 —
    do not manufacture a cause).
-6. **§11's backend-selector defect — the PREREQUISITE IS NOW ANSWERED (§1.5); the FIX is still
-   OWNER-GATED.** `read-pellets.ts:882` resolves backend ties by array order on a channel the
-   comparison never inspects. The blocking question ("is the f1565 marker real?") is answered **no**
-   at n=1. Measured blast radius: ONE event across 8 dumps. ⚑ Ready for an owner decision; do not
-   self-authorize it on an n=1 read.
+6. ~~**§11's backend-selector defect**~~ — ✅ **FIXED 2026-08-04** (`docs/probe-runs.md` §24, plan
+   `2026-08-04-backend-selector-LANDING-PLAN.md`, landing `a662b842`). §11E recorded ONE passenger
+   channel; there were **two** (`band` inherited it after the hybrid landing). Blast radius
+   re-measured: the tie fires on 12,614 of 24,679 frames, but narrowed to what can change an answer
+   the **band impact is ZERO across 848 shots**. Outcome: exactly **one** shot moved — the
+   pre-declared `core_hit` flip, onset unchanged, zero fixtures moved. ⚑ The marker-divergent frame
+   counts (82/146/230/204) reproduce §11I's table **exactly** by a different method.
+
+6b. **⚑ NEW — MARKER SEMANTICS: the reader counts UI artifacts as hit-markers** (`§24D`). The event
+§24 flipped to `core = true` spans **f1565**, where §15 established opencv's `marker = 3` is
+**1 genuine crosshair-attached marker + 2 red UI-banner glyphs**. `MARKER_MIN = 2`, so **banner
+glyphs alone raise a core-hit flag.** The old array-order bug was accidentally masking this.
+⚑ **The discriminator already exists** — §15's constant-crosshair-offset test separates attached
+markers from single-frame banner glyphs. Concrete, bounded, and pure faithfulness; needs its own
+blast-radius pass since it changes `core_hit`.
+
 7. ~~**60 fps localization instability**~~ — ✅ **ANSWERED 2026-08-04, in the NEGATIVE**
    (`docs/probe-runs.md` §17). Re-localized both windows under `--locate structural`: lock rate goes
    **0% → 100% / 99.4%**, but **~81% of those locks are HELD** (`conf is None`) against 8.1% on
@@ -300,7 +311,9 @@ it is a real owner-pellet recovery and not cancellation. Two limits ride with it
    reproducible. ⛔ `candA` is REFUTED — do not re-propose.
 9. **The generator's radial envelope; Phase 2 steps 4–6** — blocked on the owner's Decision 1 and
    the outstanding `/logic-gate` pre-op revisions.
-10. **Doc hygiene owed:** `/patch-notes` before `main`. QUEUE.md now points here (updated this
+10. **Doc hygiene owed:** `/patch-notes` + `/doc-maintenance` before **`main`** (both hooks nudged
+    on the 2026-08-04 branch push; neither is due for a feature-branch push, both are due before
+    anything reaches `main`, which lands via **PR**, never a local merge). QUEUE.md now points here (updated this
     session); items 1–4 and 7 above are the live ones.
 
 ## 8. Method note for the next judge
