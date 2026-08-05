@@ -6002,3 +6002,114 @@ neither `reds` nor full-precision positions and still exhibits both mechanisms e
 measured. ⛔ Nothing here touches the cold bias, `MARKER_MIN`, `debounce_shots`, or `read-pellets.ts`'s
 counting path, and no verdict is stamped on marker truth — that is the marker-semantics pass, still
 open.
+
+#### §27 MARKER SEMANTICS — 21.7% of production `core` flags fail a persistence test, but the pellet-count cost is ~3% of the cold residual
+
+**2026-08-05.** Executes `docs/handoffs/2026-08-05-marker-semantics-PRECOMMIT.md`, whose rule,
+thresholds, decision bands and three falsification controls were committed at **`e909c94c` before
+any production number existed**. Closes §8 item 2 of the 08-04 session handoff as a MEASUREMENT.
+Unblocked by §26 — this could not honestly be asked before the substrate was fixed.
+
+##### §27A — ⚑ WHY THIS IS NOT A REPORTING-FIDELITY ITEM
+
+Verified in **both** implementations (`count-pellets.py` `debounce_shots`, `read-pellets.ts`
+`debounceShots`): `shot_red = 1 if core_hit else 0`, then `total = white + shot_red`. **A `core`
+flag adds exactly +1 pellet to that shot's total.** So a false flag makes the reader **warmer**, and
+removing false flags makes it **colder** — the pre-commit's §2 directional prediction, recorded
+before scoring precisely so a "the fix improves the number" result would read as suspect.
+
+##### §27B — The measurement, 815 shots / 22,196 frames / 4 units
+
+Substrate: the four `*-schemafix` dumps (per-frame `reds`, §26). Each reproduced its original's
+`white`/`red`/`marker` **and** `cross_positions` with **zero** diffs, and the arm's own
+reconstruction control is **0 mismatched frames on all four** — so the delta below is attributable
+to the filter, not to the reconstruction.
+
+| dump (unit)                          | marker tracks | LIFE1 | ATTACHED | SCREEN_FIXED | MOVING | UNDECIDABLE | core flags | dropped (C1) | rate      |
+| ------------------------------------ | ------------- | ----- | -------- | ------------ | ------ | ----------- | ---------- | ------------ | --------- |
+| `h4-marciana-schemafix` (`marciana`) | 400           | 153   | 29       | 21           | 113    | 84          | 35         | 3            | 8.6%      |
+| `h4-isabel-schemafix` (`isabel`)     | 744           | 365   | 27       | 11           | 178    | 163         | 43         | 6            | 14.0%     |
+| `h4-guilty-schemafix` (`guilty`)     | 569           | 309   | 17       | 20           | 108    | 115         | 40         | 16           | **40.0%** |
+| `g2-noir-schemafix` (`noir`)         | 1041          | 524   | 30       | 18           | 219    | 250         | 62         | 14           | 22.6%     |
+| **pooled**                           | **2754**      | 1351  | 103      | 70           | 618    | 612         | **180**    | **39**       | **21.7%** |
+
+⇒ **The pre-committed band (§6) returns `> 20%`: a DOMINANT reporting defect.** Adding C2 moves it
+to 46/180 = **25.6%**.
+
+##### §27C — ⚑ BIG AS A FRACTION OF CORE FLAGS, SMALL AS A FRACTION OF THE PELLET COUNT
+
+**These are different bases and must not be conflated** (the §4 trap, in a new place):
+
+- **21.7% of core FLAGS** is the §27B headline.
+- **The pellet-count cost is −39 pellets over 815 shots = −0.048 pellets/shot.**
+
+Against §19's **−1.40 pellets/shot** cold residual that is **~3.4%**, and it moves the residual the
+**wrong way** — to about −1.45. ⚑ **Marker semantics is a faithfulness win, NOT a cold-bias lead.**
+It removes a small warm contamination that was partially masking the cold read.
+
+⛔ **Do not quote `ΔavgTotal` as the cost.** `avgTotal` averages over the `[min_pellets,
+max_pellets]` VALID subset, and dropping a flag moves shots ACROSS that boundary in both directions
+(`isabel` 157→155 valid, `noir` 167→168) — `isabel`'s `ΔavgTotal` is **positive** (+0.0035) while
+losing 6 flags, purely because two low-total shots fell below `min_pellets` and left the average.
+The honest cost is Δtotal over ALL shots, above.
+
+##### §27D — Falsification controls: all three PASS, none fired
+
+- **CONTROL A — DISCRIMINATION (the decisive one).** The rule reproduces §15's independently
+  adjudicated `h4-marciana` **f1565**: 3 contributing tracks, `11110` **ATTACHED** (kept),
+  `11115` and `11117` both **LIFE1** (dropped) ⇒ `marker` **3 → 1**, exactly §15A's table. That
+  label was made before this rule existed and is pinned in the committed
+  `marker-geometry-slice.json` — an independent method, not the same derivation twice.
+- **CONTROL B — OVER-FILTERING.** Removes **25.7%** of marker mass, against a 60% VOID line.
+- **CONTROL C — NON-VACUITY.** 39 of 180 flags dropped, not all.
+
+##### §27E — ⚑ THE RATE IS A FLOOR, NOT AN ESTIMATE
+
+The rule only ever drops what it can **positively** rule out; everything undecidable is KEPT. Two
+populations make this a lower bound:
+
+- **`MOVING` (618 pooled, all KEPT).** On `h4-marciana` **58 of 113** lean screen-fixed
+  (`abs_spread` well below `rel_spread`; medians 24 vs 44 px) against only **4** leaning attached.
+  These are artifact-like and survive both arms only because they drift past the strict 6 px bound.
+- **`UNDECIDABLE` (612 pooled, all KEPT)** — the crosshair moved less than `MS_TRAVEL_MIN` over the
+  track's life, so C2 has no leverage and abstention is the honest answer.
+
+##### §27F — What is NOT established
+
+- ⚑ **Whether a GENUINE hit-marker can be single-frame is NOT settled, and C1 rests on it.** A
+  life-1 track has one frame, so its attachment is undefined **by construction** — geometry cannot
+  answer this. The available support is that positively-ATTACHED markers live **2–7 frames**
+  (pooled histogram `{2:31, 3:31, 4:18, 5:6, 6:7, 7:10}`, median ~3), which makes a life-1 red blob
+  near the crosshair likelier a glyph than a marker. ⚑ **That histogram is truncated at 2 by
+  construction** (C2 only runs on life ≥ 2), so it can never speak to life-1 directly. Settling it
+  needs the marker VFX's own duration from footage, or an owner adjudication.
+- ⚑ **The per-unit spread is large and unexplained: 8.6% / 14.0% / 40.0% / 22.6%**, n=4 units.
+  `guilty` is an outlier with 54% of its marker tracks life-1 (vs 38% on `marciana`). Recorded, not
+  explained; do not manufacture a cause.
+- CONTROL A is a discrimination check against an **n = 1 frame** adjudication. The rule _agreeing_
+  with it is not independent confirmation that the rule generalizes.
+
+##### §27G — Instrument and reproduction
+
+New arm on the existing instrument (constraint 9): `analyze-pellet-tracks.py --marker-semantics`,
+self-validated against `scripts/tests/fixtures/pellets/marker-semantics-slice.json` and registered
+in `scripts/probe/pellet-selftest.sh` (now **27 arms**; `verify.sh` green). The arm **REFUSES** a
+dump written before the `reds` schema with a loud banner rather than scoring it — §25's 12.20%
+mislabel sits on exactly this channel. It measures on the **production path**: it rewrites only
+`marker` in the dump's own stored `frame_counts` and re-runs `count-pellets.py`'s real
+`debounce_shots`, so `white`/`red`/`band` are bit-identical between arms and segmentation
+invariance is asserted, not assumed.
+
+```sh
+PY=/Users/maxwellsutton/nikke-sim/scripts/probe/.venv/bin/python
+S=/Users/maxwellsutton/nikke-sim/scratchpad/pellets
+$PY scripts/probe/analyze-pellet-tracks.py --marker-semantics \
+  $S/{h4-marciana,h4-isabel,h4-guilty,g2-noir}-schemafix/tracks.json
+$PY scripts/probe/analyze-pellet-tracks.py --marker-semantics-selftest   # committed slice
+```
+
+**RECORDS a measurement. NOTHING ENACTS.** `MARKER_MIN`, `debounce_shots` (both implementations),
+`read-pellets.ts`'s counting path and every constant/gate/threshold/default are UNCHANGED; no
+existing fixture was touched. ⛔ The band says a landing is warranted — that landing is a **separate
+pass** with its own blast-radius pass and its own gate, and per §27F it should not proceed until the
+life-1 question has an answer that is not geometric.
