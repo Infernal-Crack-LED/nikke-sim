@@ -7031,6 +7031,408 @@ def dump_replay_fidelity_selftest():
 
 
 # ============================================================
+# MARKER SEMANTICS -- docs/handoffs/2026-08-05-marker-semantics-PRECOMMIT.md
+#
+# §24D: `MARKER_MIN = 2` is met by red UI-BANNER GLYPHS, so the reader raises `core` flags on UI
+# artifacts. ⚑ That is NOT a reporting detail -- BOTH debounce implementations compute
+# `shot_red = 1 if core_hit else 0` and `total = white + shot_red`, so a FALSE core flag adds
+# exactly +1 pellet to that shot. Removing false flags therefore makes the reader COLDER (the
+# pre-commit's §2 directional prediction, stated before scoring).
+#
+# The discriminator (pre-commit §4), over each marker-contributing track's own life:
+#   C1 PERSISTENCE -- life >= 2. Always decidable; a single-frame detection carries no
+#                     persistence evidence by construction.
+#   C2 ATTACHMENT  -- a crosshair-attached marker holds a near-constant CROSSHAIR-RELATIVE offset
+#                     while its ABSOLUTE position follows the crosshair; a screen-fixed UI glyph is
+#                     the opposite. Needs the crosshair to actually move, so below
+#                     MS_TRAVEL_MIN the honest answer is UNDECIDABLE -- reported as its own
+#                     category, never folded into either verdict.
+#
+# ⚑ SUBSTRATE RULE (pre-commit §3): only a dump carrying per-frame `reds` may be scored. On a
+# pre-2026-08-05 dump §25 measured a 12.20% mislabel on exactly this channel, so this arm REFUSES
+# such a dump rather than returning a plausible wrong answer.
+#
+# MEASUREMENT ONLY: never touches MARKER_MIN, debounce_shots, read-pellets.ts or any constant.
+MARKER_SEMANTICS_FIXTURE = "scripts/tests/fixtures/pellets/marker-semantics-slice.json"
+MS_LIFE_MIN = 2        # C1, pre-commit §4
+MS_SPREAD_MAX = 6.0    # C2 attached/screen-fixed spread bound (zoomed px)
+MS_TRAVEL_MIN = 10.0   # C2 minimum crosshair travel for the test to carry information
+
+
+def _ms_spread(pts):
+    """Max pairwise distance over a small point list (track lives are <= max_pellet_frames)."""
+    return max((math.hypot(a[0] - b[0], a[1] - b[1]) for a in pts for b in pts), default=0.0)
+
+
+def _ms_classify(tracks, cross_positions, pellet_radius, marker_radius):
+    """Classify every marker-CONTRIBUTING track (red on some frame, in pellet_ids, within
+    marker_radius of the crosshair on that frame) by the pre-commit's C1/C2.
+
+    Returns {track_id: {"life", "verdict", "rel_spread", "abs_spread", "cross_travel",
+    "marker_frames"}}. `verdict` is one of LIFE1 / ATTACHED / SCREEN_FIXED / MOVING / UNDECIDABLE.
+    Uses the PER-FRAME `reds` channel (post-2026-08-05 schema) -- the caller guarantees it."""
+    out = {}
+    for t in tracks:
+        if not t.get("is_pellet"):
+            continue
+        reds = t.get("reds")
+        marker_frames, abs_pts, rel_pts, cross_pts = [], [], [], []
+        for i, f in enumerate(range(t["first"], t["last"] + 1)):
+            if f >= len(cross_positions) or i >= len(t["xs"]):
+                break
+            cp = cross_positions[f]
+            if cp is None:
+                continue
+            x, y = t["xs"][i], t["ys"][i]
+            abs_pts.append((x, y))
+            rel_pts.append((x - cp[0], y - cp[1]))
+            cross_pts.append(tuple(cp))
+            is_red = bool(reds[i]) if reds and i < len(reds) else bool(t["is_red"])
+            if is_red and math.hypot(x - cp[0], y - cp[1]) < marker_radius:
+                marker_frames.append(f)
+        if not marker_frames:
+            continue
+        life = t["life"]
+        rel = _ms_spread(rel_pts)
+        abs_ = _ms_spread(abs_pts)
+        travel = _ms_spread(cross_pts)
+        if life < MS_LIFE_MIN:
+            verdict = "LIFE1"
+        elif travel < MS_TRAVEL_MIN:
+            verdict = "UNDECIDABLE"
+        elif rel <= MS_SPREAD_MAX:
+            verdict = "ATTACHED"
+        elif abs_ <= MS_SPREAD_MAX:
+            verdict = "SCREEN_FIXED"
+        else:
+            verdict = "MOVING"
+        out[t["id"]] = {"life": life, "verdict": verdict, "rel_spread": round(rel, 2),
+                        "abs_spread": round(abs_, 2), "cross_travel": round(travel, 2),
+                        "marker_frames": marker_frames}
+    return out
+
+
+# Which verdicts a marker KEEPS under each arm. C1 keeps everything that persists at all; C1+C2
+# additionally drops the tracks C2 positively identifies as screen-fixed. ⚑ UNDECIDABLE and MOVING
+# are KEPT in both arms -- the rule only ever drops what it can positively rule out, which is what
+# makes it biased AGAINST finding artifacts (pre-commit §4).
+MS_ARMS = {
+    "C1": {"ATTACHED", "SCREEN_FIXED", "MOVING", "UNDECIDABLE"},
+    "C1+C2": {"ATTACHED", "MOVING", "UNDECIDABLE"},
+}
+
+
+def _ms_marker_series(classified, n_frames, keep_verdicts):
+    """Per-frame marker count counting only tracks whose verdict is in `keep_verdicts`."""
+    series = [0] * n_frames
+    for _tid, info in classified.items():
+        if info["verdict"] not in keep_verdicts:
+            continue
+        for f in info["marker_frames"]:
+            series[f] += 1
+    return series
+
+
+def _ms_score(name, tracks, cross_positions, frame_counts, params, fps, marker_min):
+    """Score one dump. The A/B replaces ONLY `marker` in the dump's own stored `frame_counts`, so
+    `white`/`red`/`band` are bit-identical between arms and the delta isolates the marker channel
+    (and `band`'s presence keeps `debounce_shots` on the same hybrid branch in both arms -- a
+    recomputed series that dropped `band` would silently take the PRE-hybrid path and change the
+    answer for reasons unrelated to this filter)."""
+    cp_mod = _count_pellets_module()
+    n = len(frame_counts)
+    classified = _ms_classify(tracks, cross_positions, params["pellet_radius"],
+                              params.get("marker_radius", 65))
+    # CONTROL: the unfiltered recomputation must reproduce the dump's own stored marker exactly.
+    # This is docs/probe-runs.md §26's n_divergent == 0 restated per-frame, and it is what makes
+    # the filtered arm's delta attributable to the FILTER rather than to the reconstruction.
+    unfiltered = _ms_marker_series(classified, n, set(MS_ARMS["C1"]) | {"LIFE1"})
+    recon_mismatch = sum(1 for f in range(n) if unfiltered[f] != frame_counts[f].get("marker", 0))
+
+    shipped = [dict(r) for r in frame_counts]
+    base_shots, _base_summary = cp_mod.debounce_shots(shipped, fps, marker_min)
+
+    # ⚑ NOT `summary['avgTotal']` -- debounce_shots rounds that to ONE decimal, so differencing two
+    # of them yields a 0.1-resolution number that LOOKS precise at 4dp and is not (both arms
+    # reported an identical -0.1000 on the first run, which is what surfaced this). Recomputed
+    # here at full precision from the shot list, over the same [min_pellets, max_pellets] valid
+    # subset the summary uses. The valid SET itself moves as flags drop (a shot at total 11 that
+    # drops to 10 ENTERS it), so this is not simply -1/n.
+    def avg_total(shots, lo=5, hi=10):
+        v = [s["total"] for s in shots if lo <= s["total"] <= hi]
+        return (sum(v) / len(v), len(v)) if v else (None, 0)
+
+    base_avg, base_valid = avg_total(base_shots)
+    arms = {}
+    for arm, keep in MS_ARMS.items():
+        series = _ms_marker_series(classified, n, keep)
+        filtered = [dict(r, marker=series[f]) for f, r in enumerate(frame_counts)]
+        # Segmentation is IDENTICAL between arms by construction -- debounce_shots segments on
+        # `white + red`, and this filter only ever rewrites `marker` -- so zipping the two shot
+        # lists is index-aligned. Asserted rather than assumed.
+        shots, _summary = cp_mod.debounce_shots(filtered, fps, marker_min)
+        assert len(shots) == len(base_shots), (
+            f"{name}/{arm}: segmentation moved ({len(base_shots)} -> {len(shots)} shots); the "
+            "marker filter must never change event grouping")
+        base_core = [s for s in base_shots if s["core"]]
+        dropped = [(b, s) for b, s in zip(base_shots, shots) if b["core"] and not s["core"]]
+        gained = [(b, s) for b, s in zip(base_shots, shots) if not b["core"] and s["core"]]
+        after_avg, after_valid = avg_total(shots)
+        arms[arm] = {
+            "n_shots": len(shots), "n_shots_base": len(base_shots),
+            "n_core_base": len(base_core),
+            "n_core_after": sum(1 for s in shots if s["core"]),
+            "n_core_dropped": len(dropped), "n_core_gained": len(gained),
+            "core_drop_rate": (round(len(dropped) / len(base_core), 4) if base_core else None),
+            # -1 pellet per dropped flag, straight off total = white + shot_red
+            "delta_total_pellets": -len(dropped),
+            "n_valid_base": base_valid, "n_valid_after": after_valid,
+            "avg_total_base": None if base_avg is None else round(base_avg, 4),
+            "avg_total_after": None if after_avg is None else round(after_avg, 4),
+            "delta_avg_total": (None if (base_avg is None or after_avg is None)
+                                else round(after_avg - base_avg, 4)),
+            "marker_mass_base": sum(unfiltered),
+            "marker_mass_after": sum(series),
+            "marker_mass_removed_pct": (round(1 - sum(series) / sum(unfiltered), 4)
+                                        if sum(unfiltered) else None),
+        }
+    verdicts = collections.Counter(i["verdict"] for i in classified.values())
+    # ⚑ THE SHARPEST CHALLENGE TO C1, measured rather than argued: could a GENUINE hit-marker be
+    # single-frame? Geometry cannot answer it directly -- a life-1 track has one frame, so its
+    # attachment is undefined by construction, which is exactly why C1 fires before C2. What CAN
+    # be measured is how long the POSITIVELY-identified crosshair-attached markers live. If those
+    # cluster well above 1, a life-1 red blob near the crosshair is far likelier a glyph than a
+    # marker. ⚑ SUPPORTING EVIDENCE, NOT PROOF -- settling it outright needs the marker VFX's own
+    # duration from footage, or an owner adjudication.
+    att_life = collections.Counter(i["life"] for i in classified.values()
+                                   if i["verdict"] == "ATTACHED")
+    return {
+        "dump": name, "fps": fps, "n_frames": n,
+        "n_marker_tracks": len(classified),
+        "verdicts": dict(sorted(verdicts.items())),
+        "attached_life_hist": dict(sorted(att_life.items())),
+        "recon_mismatch_frames": recon_mismatch,
+        "arms": arms,
+        "_classified": classified,
+    }
+
+
+def _ms_pool(reports):
+    out = {"n_dumps": len(reports),
+           "n_marker_tracks": sum(r["n_marker_tracks"] for r in reports),
+           "recon_mismatch_frames": sum(r["recon_mismatch_frames"] for r in reports),
+           "verdicts": dict(sorted(collections.Counter(
+               {k: sum(r["verdicts"].get(k, 0) for r in reports)
+                for k in {k for r in reports for k in r["verdicts"]}}).items())),
+           "attached_life_hist": dict(sorted(
+               {k: sum(r["attached_life_hist"].get(k, 0) for r in reports)
+                for k in {k for r in reports for k in r["attached_life_hist"]}}.items())),
+           "arms": {}}
+    for arm in MS_ARMS:
+        base = sum(r["arms"][arm]["n_core_base"] for r in reports)
+        drop = sum(r["arms"][arm]["n_core_dropped"] for r in reports)
+        mb = sum(r["arms"][arm]["marker_mass_base"] for r in reports)
+        ma = sum(r["arms"][arm]["marker_mass_after"] for r in reports)
+        out["arms"][arm] = {
+            "n_core_base": base, "n_core_dropped": drop,
+            "n_core_gained": sum(r["arms"][arm]["n_core_gained"] for r in reports),
+            "core_drop_rate": round(drop / base, 4) if base else None,
+            "delta_total_pellets": -drop,
+            "n_shots": sum(r["arms"][arm]["n_shots"] for r in reports),
+            "marker_mass_removed_pct": round(1 - ma / mb, 4) if mb else None,
+        }
+    return out
+
+
+def _ms_band(rate):
+    """Pre-commit §6's three bands, committed at e909c94c before any number existed."""
+    if rate < 0.05:
+        return "< 5%: MINOR channel -- record the measurement and close item 2, no landing"
+    if rate <= 0.20:
+        return "5-20%: a REAL channel -- worth its own landing with its own blast-radius pass"
+    return "> 20%: DOMINANT reporting defect -- landing is the next priority after re-extraction"
+
+
+def _ms_controls(reports, pooled):
+    """Pre-commit §7's three falsification controls. Any firing VOIDS the result."""
+    c1 = pooled["arms"]["C1"]
+    checks = []
+    # CONTROL A -- discrimination, against §15's INDEPENDENT n=1 adjudication.
+    a_dump = next((r for r in reports if "marciana" in r["dump"]), None)
+    a_ok, a_detail = None, "no marciana dump in this run -- control A NOT EXERCISED"
+    if a_dump:
+        cls = a_dump["_classified"]
+        at_1565 = {tid: i for tid, i in cls.items() if 1565 in i["marker_frames"]}
+        kept = {tid for tid, i in at_1565.items() if i["verdict"] in MS_ARMS["C1"]}
+        a_ok = len(at_1565) == 3 and kept == {11110}
+        a_detail = (f"f1565: {len(at_1565)} contributing tracks "
+                    f"{ {t: at_1565[t]['verdict'] for t in sorted(at_1565)} }, kept={sorted(kept)} "
+                    f"(§15 adjudication: 3 -> 1, only 11110 survives)")
+    checks.append(("CONTROL A -- reproduces §15's f1565 adjudication (3 -> 1)", a_ok, a_detail))
+    # CONTROL B -- over-filtering.
+    removed = c1["marker_mass_removed_pct"] or 0
+    checks.append(("CONTROL B -- removes <= 60% of marker mass", removed <= 0.60,
+                   f"removed {removed:.1%} of marker mass (C1 arm)"))
+    # CONTROL C -- non-vacuity.
+    checks.append(("CONTROL C -- does not drop EVERY core flag",
+                   c1["n_core_dropped"] < c1["n_core_base"],
+                   f"dropped {c1['n_core_dropped']} of {c1['n_core_base']} core flags"))
+    return checks
+
+
+def _ms_expected(reports, pooled):
+    return {"pooled": {k: v for k, v in pooled.items()
+                       if k not in ("verdicts", "attached_life_hist")},
+            "verdicts": pooled["verdicts"],
+            "attached_life_hist": pooled["attached_life_hist"],
+            "dumps": [{"dump": r["dump"], "n_marker_tracks": r["n_marker_tracks"],
+                       "verdicts": r["verdicts"],
+                       "attached_life_hist": r["attached_life_hist"],
+                       "recon_mismatch_frames": r["recon_mismatch_frames"],
+                       "arms": r["arms"]} for r in reports]}
+
+
+def _print_marker_semantics(reports, pooled, checks):
+    print("\nMARKER SEMANTICS -- are `core` flags raised by UI artifacts? "
+          "(docs/handoffs/2026-08-05-marker-semantics-PRECOMMIT.md)")
+    print(f"\n  {'dump':26s} {'mkTracks':>9s} {'LIFE1':>6s} {'ATTCH':>6s} {'FIXED':>6s} "
+          f"{'MOVNG':>6s} {'UNDEC':>6s} {'reconΔ':>7s}")
+    for r in reports:
+        v = r["verdicts"]
+        print(f"  {r['dump']:26s} {r['n_marker_tracks']:9d} {v.get('LIFE1',0):6d} "
+              f"{v.get('ATTACHED',0):6d} {v.get('SCREEN_FIXED',0):6d} {v.get('MOVING',0):6d} "
+              f"{v.get('UNDECIDABLE',0):6d} {r['recon_mismatch_frames']:7d}")
+    for arm in MS_ARMS:
+        print(f"\n  ARM {arm}")
+        print(f"    {'dump':26s} {'shots':>6s} {'core0':>6s} {'core1':>6s} {'drop':>5s} "
+              f"{'rate':>7s} {'ΔavgTot':>9s} {'valid':>6s}")
+        for r in reports:
+            a = r["arms"][arm]
+            rate = "-" if a["core_drop_rate"] is None else f"{a['core_drop_rate']:.4f}"
+            dav = "-" if a["delta_avg_total"] is None else f"{a['delta_avg_total']:+.4f}"
+            print(f"    {r['dump']:26s} {a['n_shots']:6d} {a['n_core_base']:6d} "
+                  f"{a['n_core_after']:6d} {a['n_core_dropped']:5d} {rate:>7s} "
+                  f"{dav:>9s} {a['n_valid_base']:6d}->{a['n_valid_after']:<6d}")
+        p = pooled["arms"][arm]
+        print(f"    POOLED: {p['n_core_dropped']}/{p['n_core_base']} core flags dropped "
+              f"= {p['core_drop_rate']}  |  Δtotal {p['delta_total_pellets']} pellets over "
+              f"{p['n_shots']} shots  |  marker mass removed {p['marker_mass_removed_pct']}")
+    print(f"\n  ATTACHED-track life histogram (pooled): {pooled['attached_life_hist']}")
+    print("    ⚑ supporting evidence for C1's `life >= 2`, not proof — a life-1 track's attachment")
+    print("      is undefined by construction, so geometry cannot settle whether a GENUINE marker")
+    print("      can be single-frame. That needs the marker VFX duration or an owner adjudication.")
+    print(f"\n  RECONSTRUCTION CONTROL: {pooled['recon_mismatch_frames']} frames where the "
+          f"UNFILTERED recomputation disagrees with the dump's own stored `marker` "
+          f"(must be 0 -- §26)")
+    print(f"\n  PRE-COMMITTED BAND (C1 arm): {_ms_band(pooled['arms']['C1']['core_drop_rate'] or 0)}")
+    print("\n  FALSIFICATION CONTROLS (pre-commit §7 -- any firing VOIDS the result):")
+    for label, ok, detail in checks:
+        state = "NOT EXERCISED" if ok is None else ("PASS" if ok else "*** FIRED -- VOID ***")
+        print(f"    {state:22s} {label}\n{' ' * 26}{detail}")
+
+
+def _ms_load_dump(path, fps):
+    with open(path) as fh:
+        data = json.load(fh)
+    name = Path(path).resolve().parent.name
+    if not any("reds" in t for t in data["tracks"][:50]):
+        raise SystemExit(
+            "=" * 78 + "\n"
+            "!! DUMP PREDATES THE PER-FRAME `reds` SCHEMA -- REFUSING !!\n" + "=" * 78 + "\n"
+            f"  {path}\n"
+            "  carries no per-frame `reds`, so its white/red/marker split cannot be replayed\n"
+            "  faithfully -- docs/probe-runs.md §25 measured a 12.20% mislabel on exactly the\n"
+            "  marker channel this arm scores. Scoring it would return a plausible WRONG answer.\n"
+            "  => Re-dump with count-pellets.py at or after commit 8d500ff9 (docs/probe-runs.md\n"
+            "     §26), then score the new dump.\n" + "=" * 78)
+    return (name, data["tracks"], data["cross_positions"], data["frame_counts"],
+            data["params"], fps)
+
+
+def _ms_slim(name, tracks, cross_positions, frame_counts, params, fps, report):
+    """Commit the frames each marker-contributing track touches, plus those tracks themselves --
+    what `_ms_classify` and `debounce_shots` actually consume. `debounce_shots` needs a CONTIGUOUS
+    series (it walks events across frames), so the slice keeps a contiguous frame WINDOW around
+    the densest marker region rather than a scattered subset."""
+    fr = sorted({f for i in report["_classified"].values() for f in i["marker_frames"]})
+    if not fr:
+        lo, hi = 0, min(400, len(frame_counts) - 1)
+    else:
+        mid = fr[len(fr) // 2]
+        lo, hi = max(0, mid - 400), min(len(frame_counts) - 1, mid + 400)
+    keep = [t for t in tracks if t["last"] >= lo and t["first"] <= hi]
+    return {
+        "dump": name, "params": params, "fps": fps, "frame_span": [lo, hi],
+        "cross_positions": [cross_positions[f] for f in range(lo, hi + 1)],
+        "frame_counts": [frame_counts[f] for f in range(lo, hi + 1)],
+        "tracks": [dict(t, first=t["first"] - lo, last=t["last"] - lo) for t in keep],
+    }
+
+
+def _ms_expand(d):
+    return (d["dump"], d["tracks"], d["cross_positions"], d["frame_counts"], d["params"], d["fps"])
+
+
+def audit_marker_semantics(paths, fps_list, marker_min=2, save_fixture=None):
+    fpss = fps_list if len(fps_list) == len(paths) else [fps_list[0]] * len(paths)
+    reports, slims = [], []
+    for p, fps in zip(paths, fpss):
+        name, tracks, cross, fc, params, fps = _ms_load_dump(p, fps)
+        r = _ms_score(name, tracks, cross, fc, params, fps, marker_min)
+        reports.append(r)
+        if save_fixture:
+            slims.append(_ms_slim(name, tracks, cross, fc, params, fps, r))
+    pooled = _ms_pool(reports)
+    checks = _ms_controls(reports, pooled)
+    if save_fixture:
+        srs = [_ms_score(*_ms_expand(s), marker_min) for s in slims]
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("count-pellets.py --dump-tracks tracks.json (post-8d500ff9, carrying "
+                            "per-frame `reds`), sliced to a contiguous frame window around each "
+                            "dump's densest marker region. docs/probe-runs.md §27. Regenerate "
+                            "with analyze-pellet-tracks.py --marker-semantics <tracks.json...> "
+                            "--save-marker-semantics-fixture <path>."),
+                "_expected": _ms_expected(srs, _ms_pool(srs)),
+                "dumps": slims,
+            }, fh)
+        print(f"wrote marker-semantics fixture -> {save_fixture}")
+    _print_marker_semantics(reports, pooled, checks)
+    return reports, pooled, checks
+
+
+def marker_semantics_selftest():
+    """Constraint 9 self-validation: replay --marker-semantics over the committed slice (no
+    scratchpad access) and assert the pinned `_expected` dict AND that the arm DISCRIMINATES --
+    the unfiltered recomputation must reproduce each slice's own stored `marker` exactly (0
+    mismatched frames), and the classifier must place tracks in more than one verdict class. A
+    rule that classified everything identically would score a tidy delta and mean nothing."""
+    with open(MARKER_SEMANTICS_FIXTURE) as fh:
+        fx = json.load(fh)
+    reports = [_ms_score(*_ms_expand(d), 2) for d in fx["dumps"]]
+    pooled = _ms_pool(reports)
+    got = _ms_expected(reports, pooled)
+    ok = got == fx["_expected"]
+    if not ok:
+        print(f"  DIFF:\n    expected {json.dumps(fx['_expected'])}\n    got      {json.dumps(got)}")
+    checks = [
+        ("unfiltered recomputation reproduces stored `marker` exactly (§26 substrate holds)",
+         pooled["recon_mismatch_frames"] == 0),
+        ("classifier is DISCRIMINATING (>1 verdict class populated)",
+         sum(1 for v in pooled["verdicts"].values() if v) > 1),
+    ]
+    all_ok = ok and all(v for _, v in checks)
+    for label, v in checks:
+        print(f"  {'PASS' if v else 'FAIL'}  {label}")
+    _print_marker_semantics(reports, pooled, _ms_controls(reports, pooled))
+    print("  ⚑ SLICE numbers, not population numbers -- the committed window is a contiguous\n"
+          "    excerpt around each dump's densest marker region. docs/probe-runs.md §27 carries\n"
+          "    the population figures; this pins the classifier and the A/B machinery.")
+    print("SELFTEST PASS" if all_ok else "SELFTEST FAIL")
+    return 0 if all_ok else 1
+
+
+# ============================================================
 # MISLOCK RATE -- docs/handoffs/2026-08-04-mislock-rate-PRECOMMIT.md
 #
 # What fraction of PRODUCTION shots have a mislocked crosshair? The detector is
@@ -8003,6 +8405,26 @@ def main():
                     help=f"write the committed replay slice (see {DUMP_REPLAY_FIDELITY_FIXTURE})")
     ap.add_argument("--dump-replay-fidelity-selftest", action="store_true",
                     help=f"replay {DUMP_REPLAY_FIDELITY_FIXTURE} and exit")
+    ap.add_argument("--marker-semantics", nargs="+", metavar="TRACKS_JSON",
+                    help=("MARKER SEMANTICS (docs/handoffs/2026-08-05-marker-semantics-PRECOMMIT.md, "
+                          "docs/probe-runs.md §27): what fraction of production `core` flags are "
+                          "raised by UI artifacts rather than real crosshair-attached hit-markers, "
+                          "and what does that cost? ⚑ A core flag adds +1 to that shot's `total` "
+                          "(total = white + shot_red), so this moves the pellet count, not just a "
+                          "report. Classifies every marker-contributing track by C1 persistence "
+                          "(life >= 2) and C2 attachment (crosshair-relative vs absolute spread), "
+                          "then re-runs count-pellets.py's OWN debounce_shots on shipped vs "
+                          "filtered marker series. ⚑ REFUSES a dump written before the per-frame "
+                          "`reds` schema (§26) -- §25 measured a 12.20%% mislabel on exactly this "
+                          "channel. MEASUREMENT ONLY: never touches MARKER_MIN, debounce_shots, "
+                          "read-pellets.ts or any constant."))
+    ap.add_argument("--marker-semantics-fps", type=float, nargs="+", default=[30.0], metavar="FPS",
+                    help="sampling fps, 1 value or one per --marker-semantics dump (default 30, "
+                         "matching every production dump)")
+    ap.add_argument("--save-marker-semantics-fixture", metavar="PATH",
+                    help=f"write the committed replay slice (see {MARKER_SEMANTICS_FIXTURE})")
+    ap.add_argument("--marker-semantics-selftest", action="store_true",
+                    help=f"replay {MARKER_SEMANTICS_FIXTURE} and exit")
     ap.add_argument("--fade-screen", action="store_true",
                     help=("FADE-SCREEN GAP (docs/probe-runs.md §9A): every in-radius, non-red track "
                           "in the already-committed representative-audit-slice.json's `labelled` "
@@ -8107,6 +8529,12 @@ def main():
     if args.fade_screen_crops:
         fade_screen_crops(args.fade_screen_crops, args.fade_screen_crops_out)
         return 0
+    if args.marker_semantics_selftest:
+        raise SystemExit(marker_semantics_selftest())
+    if args.marker_semantics:
+        audit_marker_semantics(args.marker_semantics, args.marker_semantics_fps,
+                               save_fixture=args.save_marker_semantics_fixture)
+        raise SystemExit(0)
     if args.dump_replay_fidelity_selftest:
         raise SystemExit(dump_replay_fidelity_selftest())
     if args.dump_replay_fidelity:
