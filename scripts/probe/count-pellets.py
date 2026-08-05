@@ -454,12 +454,19 @@ def _track_components(all_comps):
                 best_t['circs'].append(circ)
                 best_t['xs'].append(cx)
                 best_t['ys'].append(cy)
+                # `reds` is the PER-FRAME is_red, parallel to xs/ys/areas — `is_red` above stays
+                # the track-level (creation-time) value untouched, since eleven out-of-scope call
+                # sites still read it (docs/handoffs/2026-08-05-dump-schema-LANDING-PLAN.md §3).
+                # Appended in BOTH tracker branches (this matched-track one and the new-track one
+                # below) so `reds` never drifts out of alignment with `xs` (§4.2).
+                best_t['reds'].append(is_red)
                 matched.add(best_t['id'])
                 frame_active.append((best_t['id'], cx, cy, is_red))
             else:
                 tracks.append({'id': next_id, 'is_red': is_red, 'first_frame': fi,
                                'last_frame': fi, 'last_pos': (cx, cy),
-                               'areas': [area], 'circs': [circ], 'xs': [cx], 'ys': [cy]})
+                               'areas': [area], 'circs': [circ], 'xs': [cx], 'ys': [cy],
+                               'reds': [is_red]})
                 frame_active.append((next_id, cx, cy, is_red))
                 next_id += 1
         frame_tracks.append(frame_active)
@@ -1850,12 +1857,23 @@ def main():
 
         # Optional diagnostic dump: every track with full stats + per-frame crosshair data
         if args.dump_tracks:
+            # `len(reds) == len(xs)` for every track — Edit A appends to `reds` in both tracker
+            # branches on the assumption that a track can never resume after a missed frame
+            # (docs/handoffs/2026-08-05-dump-schema-LANDING-PLAN.md §4.2); this is the constructive
+            # check that a future tracker change hasn't silently broken that assumption.
+            for t in tracks:
+                assert len(t['reds']) == len(t['xs']), (
+                    f"track {t['id']}: reds/xs length mismatch "
+                    f"({len(t['reds'])} vs {len(t['xs'])}) — reds is no longer parallel to xs"
+                )
             dump = {
                 "params": {
                     "max_pellet_frames": args.max_pellet_frames,
                     "min_area": args.min_area, "max_area": args.max_area,
                     "min_circ": args.min_circ, "center_exclude": args.center_exclude,
                     "pellet_radius": args.pellet_radius,
+                    "marker_radius": args.marker_radius,
+                    "band_hi": args.band_hi if getattr(args, 'band_hi', None) is not None else args.max_pellet_frames,
                     "ammo_offset_x": args.ammo_offset_x, "ammo_offset_y": args.ammo_offset_y,
                 },
                 "frame_files": fnames,
@@ -1870,9 +1888,19 @@ def main():
                     "mean_area": round(sum(t['areas']) / len(t['areas']), 1),
                     "max_area": max(t['areas']),
                     "mean_circ": round(sum(t['circs']) / len(t['circs']), 3),
-                    "xs": [round(v, 1) for v in t['xs']],
-                    "ys": [round(v, 1) for v in t['ys']],
+                    # Full precision (no round()) — a 0.1px rounding step could flip a `dist >
+                    # radius` boundary test on replay (BOUNDARY, §25B); `cross_positions` is
+                    # verified unrounded (count-pellets.py's own list, integer-valued on every
+                    # dump measured), so full-precision xs/ys make replay arithmetic bit-identical
+                    # to production's instead of merely closer.
+                    "xs": t['xs'],
+                    "ys": t['ys'],
                     "areas": t['areas'],
+                    # Per-frame is_red, parallel to xs/ys/areas — kills SPLIT (§25B) by letting a
+                    # replay classify each frame's component instead of the track's creation-time
+                    # value. `is_red` above is left untouched for the eleven out-of-scope
+                    # track-level call sites (plan §3).
+                    "reds": t['reds'],
                 } for t in tracks],
             }
             # Omitted (not defaulted to all-False) when this run replayed a pre-held-lock
