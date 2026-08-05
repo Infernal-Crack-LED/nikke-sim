@@ -5448,12 +5448,19 @@ def _hla_reconstruct_frame_tracks(tracks, n_frames, offset=0):
     track_life = {}
     for t in tracks:
         tid, is_red, first, xs, ys = t["id"], t["is_red"], t["first"], t["xs"], t["ys"]
+        # D2 (2026-08-05-dump-schema-LANDING-PLAN.md §2.2): prefer the PER-FRAME `reds` channel
+        # when the dump carries it -- kills SPLIT (docs/probe-runs.md §25B) by classifying each
+        # frame's component instead of the track's creation-time `is_red`. Falls back to the
+        # track-level value (today's behaviour, byte-identical) when `reds` is absent or short, so
+        # a pre-fix or hand-built dump degrades gracefully instead of IndexError-ing mid-audit.
+        reds = t.get("reds")
         life = len(xs)
         track_life[tid] = life
         for k in range(life):
             fi = first + k - offset
             if 0 <= fi < n_frames:
-                frame_tracks[fi].append((tid, xs[k], ys[k], is_red))
+                frame_is_red = reds[k] if reds and k < len(reds) else is_red
+                frame_tracks[fi].append((tid, xs[k], ys[k], frame_is_red))
     return frame_tracks, track_life
 
 
@@ -5470,7 +5477,14 @@ def _hla_production_band(tracks, cross_positions, params, fps, offset=0):
     pellet_ids = {tid for tid, life in track_life.items() if life <= max_pf}
     band_lo = cp._band_lo(fps)
     band_ids = {tid for tid in pellet_ids if band_lo <= track_life[tid] <= max_pf}
-    args_ns = SimpleNamespace(pellet_radius=params["pellet_radius"], marker_radius=65)
+    # D4 (2026-08-05-dump-schema-LANDING-PLAN.md §2.2): resolve marker_radius from the dump's own
+    # persisted `params` (Edit C) with the same fallback-to-default-65 D3 uses, instead of
+    # hardcoding 65 here. Output impact today is ZERO -- `_frame_pellet_counts`'s `band` branch is
+    # gated on `not is_red` only and never consults `marker_radius` -- this is a provenance-
+    # correctness edit so a future extension of this function's `marker` output isn't silently
+    # wrong on dumps with a non-default marker_radius (plan's stated non-overclaim).
+    args_ns = SimpleNamespace(pellet_radius=params["pellet_radius"],
+                               marker_radius=params.get("marker_radius", 65))
     prod = cp._frame_pellet_counts(frame_tracks, cross_positions, pellet_ids, band_ids, args_ns)
     return [r["band"] for r in prod]
 
@@ -6685,26 +6699,51 @@ def marker_geometry_selftest():
 #       the other side of `dist > radius` on replay. Signature: a track within
 #       --fidelity-boundary-eps of one of those two radii on that frame.
 #
-# ⚑ `marker_radius` is NOT persisted in a --dump-tracks `params` block at all (unlike
-# `pellet_radius`/`max_pellet_frames`/etc.), so replay has to assume count-pellets.py's default;
-# --fidelity-marker-radius exists to make that assumption explicit rather than silent.
+# 2026-08-05-dump-schema-LANDING-PLAN.md landed the fix for BOTH: `_track_components` now stamps a
+# per-frame `reds` array parallel to `xs`/`ys` (kills SPLIT on dumps that carry it -- D1/D2 read
+# `reds` when present) and `--dump-tracks` stores `xs`/`ys` at full precision instead of rounding
+# to 0.1px (kills BOUNDARY by construction, since `cross_positions` was already unrounded). Dumps
+# written BEFORE that landing carry neither field and still exhibit both mechanisms exactly as
+# measured in docs/probe-runs.md §25 -- this arm's fallback-to-track-level-`is_red` path is what
+# replays those old dumps unchanged, so it is still worth knowing the two signatures above.
+#
+# ⚑ `marker_radius` is now persisted in `--dump-tracks`' `params` block (Edit C); D3/D4 resolve it
+# from there with a fallback to count-pellets.py's default (65) for dumps that predate the
+# persistence. `--fidelity-marker-radius` still lets a caller override it explicitly.
+#
+# ⚑ SCOPE NOTE, recorded rather than rediscovered later (plan §3): eleven OTHER call sites in this
+# file plus two in score-pellets.py still read a track's creation-time `is_red` (deliberately --
+# they ask a track-level "which colour is this track" question, not a per-frame channel-counting
+# one, and changing them would move committed fixtures for no measured reason). On a SPLIT frame
+# that per-track value is now something `reds`/`frame_counts` on the SAME dump demonstrably
+# contradicts for at least one frame of that track's life. Any FUTURE arm built on those eleven
+# sites inherits that mislabel; this comment exists so a later pass finds this note before
+# re-deriving the SPLIT finding from scratch.
 #
 # READ-ONLY / MEASUREMENT ONLY: this reports a divergence rate and attributes it to a mechanism.
 # It never touches count-pellets.py, read-pellets.ts, MARKER_MIN, debounce_shots, or any
 # constant/gate/default, and it stamps no verdict on the cold bias.
 DUMP_REPLAY_FIDELITY_FIXTURE = "scripts/tests/fixtures/pellets/dump-replay-fidelity-slice.json"
-DRF_DEFAULT_MARKER_RADIUS = 65.0   # count-pellets.py's --marker-radius default; not persisted
+DRF_DEFAULT_MARKER_RADIUS = 65.0   # count-pellets.py's --marker-radius default; fallback for
+                                    # dumps written before params.marker_radius was persisted
 DRF_BOUNDARY_EPS = 0.05            # half a 0.1px rounding step
 
 
 def _drf_frame_tracks(tracks, n_frames):
     """frame index -> [(id, x, y, is_red, is_pellet)] for every track alive at that frame, read
-    straight off a --dump-tracks `tracks` list (`xs`/`ys` are indexed by frame - first)."""
+    straight off a --dump-tracks `tracks` list (`xs`/`ys` are indexed by frame - first).
+
+    D1 (2026-08-05-dump-schema-LANDING-PLAN.md §2.2): prefer the per-frame `reds` channel when
+    present -- this is §25's OWN arm, the one that measured SPLIT in the first place, so it is the
+    most direct kill of it. Falls back to the track-level `is_red` when `reds` is absent or short
+    (pre-fix / hand-built dumps), byte-identical to today's behaviour."""
     out = collections.defaultdict(list)
     for t in tracks:
+        reds = t.get("reds")
         for i, f in enumerate(range(t["first"], t["last"] + 1)):
             if 0 <= f < n_frames and i < len(t["xs"]):
-                out[f].append((t["id"], t["xs"][i], t["ys"][i], bool(t["is_red"]),
+                is_red = bool(reds[i]) if reds and i < len(reds) else bool(t["is_red"])
+                out[f].append((t["id"], t["xs"][i], t["ys"][i], is_red,
                                bool(t["is_pellet"])))
     return out
 
@@ -6852,12 +6891,19 @@ def _print_dump_replay_fidelity(reports, pooled):
 
 
 def _drf_load_dump(path, marker_radius):
+    """`marker_radius=None` means "not explicitly overridden on the CLI" -- resolve it from the
+    dump's own persisted `params.marker_radius` (Edit C) when present, falling back to
+    DRF_DEFAULT_MARKER_RADIUS for dumps that predate that persistence (D3,
+    2026-08-05-dump-schema-LANDING-PLAN.md §2.2 / gate revision R1: persisting the value is a
+    no-op unless something reads it). An explicit `--fidelity-marker-radius` value still wins."""
     with open(path) as fh:
         data = json.load(fh)
     name = Path(path).resolve().parent.name
     cross = data["cross_positions"]
     frame_counts = data["frame_counts"]
     pellet_radius = float(data["params"]["pellet_radius"])
+    if marker_radius is None:
+        marker_radius = float(data["params"].get("marker_radius", DRF_DEFAULT_MARKER_RADIUS))
     frame_tracks = _drf_frame_tracks(data["tracks"], len(cross))
     return name, frame_tracks, cross, frame_counts, pellet_radius, marker_radius
 
@@ -7944,11 +7990,12 @@ def main():
                           "which is what any marker-semantics analysis off tracks.json inherits. "
                           "READ-ONLY / MEASUREMENT ONLY: never touches count-pellets.py, "
                           "read-pellets.ts, MARKER_MIN, debounce_shots or any constant."))
-    ap.add_argument("--fidelity-marker-radius", type=float, default=DRF_DEFAULT_MARKER_RADIUS,
-                    help=("marker_radius to replay with. A --dump-tracks `params` block does NOT "
-                          "persist it (unlike pellet_radius), so replay must assume "
-                          f"count-pellets.py's default (={DRF_DEFAULT_MARKER_RADIUS}); this flag "
-                          "makes that assumption explicit instead of silent."))
+    ap.add_argument("--fidelity-marker-radius", type=float, default=None,
+                    help=("marker_radius to replay with, overriding the dump's own persisted "
+                          "params.marker_radius (D3, 2026-08-05-dump-schema-LANDING-PLAN.md). "
+                          "Dumps written before that persistence landed carry no such param, so "
+                          f"replay falls back to count-pellets.py's default "
+                          f"(={DRF_DEFAULT_MARKER_RADIUS}) for those."))
     ap.add_argument("--fidelity-controls", type=int, default=200, metavar="N",
                     help="non-divergent control frames per dump to commit into the fixture "
                          "(default 200)")
