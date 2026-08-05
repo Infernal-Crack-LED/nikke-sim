@@ -6195,3 +6195,66 @@ measured value, not a refit, but it still lands under the normal discipline.
 ⛔ §27's measurement is **not** restated or re-scored; §28B qualifies its interpretation, and the
 instrument now reports both new quantities alongside it. ⛔ Nothing here touches the cold bias,
 `MARKER_MIN`, or `debounce_shots`.
+
+#### §29 THE PELLET LIFETIME IS 14 — LANDED, inert at 30 fps, and a documented cross-language trap is retired
+
+**2026-08-05.** Enacts §28D's owner correction. Plan
+`docs/handoffs/2026-08-05-pellet-lifetime-14-LANDING-PLAN.md` with the blast radius **measured by
+toggling the constant and running the gate before any production file was touched** (then reverted,
+`cmp`-verified byte-identical). Cross-family pre-op gate `kimi-code/k3` **APPROVED-WITH-REVISIONS**,
+all four executed, verdict quoted in the plan's §8 at receipt. Landing `07b82474`.
+
+##### §29A — What changed
+
+`max_pellet_frames` is now derived from **14** native frames, not 13, at six sites: the live
+production derivation (`read-pellets.ts`), its Python mirror (`_merge_max_pellet_frames`), the
+`make-groundtruth-f811.py` 60 fps generator plus **both its justifying comments**,
+`score-pellets.py`'s two explicit `--max-pellet-frames` literals, and the mirror's docstring.
+
+##### §29B — Acceptance, every control
+
+| Control                                                       | Result                                                                                                                                                                                                      |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **30 fps invariance** (the load-bearing claim), run literally | `13 → 7`, `14 → 7`. **Identical.** Every production dump is untouched.                                                                                                                                      |
+| Only the predicted arm fails                                  | `--merge-audit-selftest` and nothing else, out of 27 arms.                                                                                                                                                  |
+| Fixture diff, `merge-audit-slice.json`                        | **5 lines, 3 fields, exactly as predicted**: `max_pellet_frames` 13→14 (both 60 fps dumps), `n_over_max_pellet_frames` 22→11 and pooled 110→99, `over_max_pellet_frames_pct` 51.4→46.3. Nothing else moved. |
+| ONE fixture regenerated, with the change it reflects          | Yes — constraint 5 satisfied.                                                                                                                                                                               |
+| `pellet-selftest.sh` (27 arms) + `verify.sh`                  | Green.                                                                                                                                                                                                      |
+| `docs/data/damage-calculation.md:302`'s `+ 13 frames`         | **UNTOUCHED** — that is the RELOAD constant, and it matches the same grep. The named trap of this landing, avoided.                                                                                         |
+
+⇒ **No measurement in §§14–27 moves.** All are 30 fps production dumps and the cap is 7 either way.
+The only thing that moved anywhere is a **diagnostic census** whose own docstring flags it as a
+category error displayed for contrast.
+
+##### §29C — ⚑ The trap this actually retires
+
+`(13/60) × 30 = 6.5` sat **exactly** on the JS-half-up / Python-half-to-even tie — trap 1 of the
+08-04 session handoff, and the reason `_merge_max_pellet_frames` carries a bespoke
+`floor(x + 0.5)`. `(14/60) × 30 = 7.0` is not a tie in either language. **The correction removes the
+defect the workaround exists for**, and the docstring now says so in the right tense: the tie is
+described as HISTORICAL, the `floor(x + 0.5)` form is **kept** (still the correct JS mirror at any
+other fps), and its stale `read-pellets.ts:505` anchor was replaced with a line-number-free citation
+so it cannot rot again.
+
+##### §29D — ⚑ TWO PLAN ERRORS, both caught downstream of me, both recorded
+
+1. **The gate's demand for a STATED repo-wide grep found a site the plan had missed** —
+   `score-pellets.py:246`/`:377` pass `--max-pellet-frames 13` explicitly. The first draft's
+   completeness rested on an unstated search. Landed as edit E with its own measured exposure (all
+   four `score-pellets.py` arms pass at 14 — they replay committed slices rather than re-invoking
+   the counter).
+2. ⚑ **The IMPLEMENTER correctly refused edit C's `make-synthetic-pellets.py` citation, and it was
+   right to.** That file does not carry a comment mirroring the derivation — it carries a real
+   **13-frame generator**: `range(1, 14)`, with `_size_mult`/`_alpha` defining an f1→f13 curve
+   (f1 = 1×, peak 2× held at f3–4, shrink to 1× by f11, fade over f12–13). Editing the prose to say
+   "14" without a 14-frame curve would have made the comment describe code that does not exist.
+   **Left untouched, deliberately.** ⇒ **NEW OPEN ITEM:** the synthetic pellet generator still
+   renders **13**-frame lifecycles against a now-**14**-frame spec. Fixing it needs the owner's
+   f1…f14 qualitative table (or an explicitly-labelled interpolation), not a number swap — and the
+   script's own docstring already warns its curve is "a modeling choice, not a second data point
+   corroborating the spec."
+
+⛔ **Nothing re-dumped or re-extracted.** Existing dumps keep the `max_pellet_frames` they were made
+with; this changes what FUTURE runs derive. ⛔ `MARKER_MIN`, `debounce_shots`, `band_hi`,
+`REP_OWNER_LIFE_LO_60FPS` and every other constant are untouched, and no verdict is stamped on the
+cold bias or on §27/§28.
