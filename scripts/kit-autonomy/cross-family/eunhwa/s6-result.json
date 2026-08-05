@@ -1,0 +1,200 @@
+{
+  "slug": "eunhwa",
+  "leakDetected": null,
+  "override": {
+    "slug": "eunhwa",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "chargeDamagePct",
+            "value": 37.28,
+            "durationShots": 2
+          },
+          {
+            "kind": "buff",
+            "stat": "chargeSpeedPct",
+            "value": 15.53,
+            "durationShots": 2
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": -29,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 85.62
+          },
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": -2.43,
+            "durationSec": 15
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 4.65,
+            "durationSec": 15
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ durationShots=2 for both S1 buffs: the kit says 'for 2 shots' (Charge Damage) and 'for 2 round(s)' (Charge Speed). Both read as ROUND counts, not seconds; on a 6-round SR every round is a charged shot, so the two wordings collapse to the same window. Unmeasured whether the window covers 2 rounds of the NEXT magazine or is consumed partly by the triggering last bullet itself (engine decrements durationShots right after the firing shot's blocks dispatch).",
+      "⚑ S2 enemy DEF ▼29% is authored as stat 'defPct' with a negative value on target 'enemy' — the only DEF StatKey in the schema, whose comment scopes inertness to SELF DEF. Whether the engine routes an enemy-side defPct into the boss-DEF subtraction is UNVERIFIED from the material available here; if it does not, this line is silently inert and needs an engine-side channel (or damageTakenPct as a proxy, which would be a different mechanic and is NOT used here).",
+      "⚑ Burst flatDamage: crit/noFb/noRange left unset. Per methodology, riders crit at the caster's rate under the engine's global rider-crit path, burst-cast damage is Full-Burst-exempt by TIMING (it lands before the FB window opens), and no-range is engine-automatic. No per-kit noFb is set — that field is measured-only.",
+      "Burst targeting 'Affects 10 enemy unit(s) with the highest final ATK' is scope-trivial: the raid fight has one boss entity, so it is modeled as target 'enemy'. The 10-target fan-out is untestable at scope lock and carries no sim consequence.",
+      "⚑ Cadence tuple (chargeFrames 60, reloadFrames 161, ammo 6) comes from the datamine, which is known-unreliable for fire/reload timing. Shot count per magazine drives last-bullet frequency, which drives BOTH S1 and S2 uptime, so a cadence error propagates to every buff window here."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Eunhwa is a 6-round charge SR (Fire/Attacker/Burst II) whose whole kit hangs off the last-bullet trigger, so both non-burst skills fire once per magazine. S1 (self, on last round): Charge Damage ▲37.28% and Charge Speed ▲15.53%, both authored as ROUND-count windows (durationShots 2) so they span the reload into the next magazine — Charge Damage is additive in the charge bucket, Charge Speed shortens the 60-frame charge and therefore raises shots fired (a weapon-state modifier, not a skippable QoL line). S2 (enemy, on last bullet): DEF ▼29% for 5 sec, authored as a negative defPct on target enemy. Burst: a burst-cast hit for 85.62% of final ATK plus DEF ▼2.43% for 15 sec on the enemy, and Critical Rate ▲4.65% for 15 sec to all allies (self included). No weapon swap, no stack/currency pool, no DoT, no core-strike or Hit-Rate line, no formation/team gate, no mode. Every kit line is implemented; unmodeled is empty for all three slots.",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self. After firing last round",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'lastBullet'}, target {kind:'self'} — 'after firing the last round' is the per-magazine last-bullet trigger, not an interval or FB trigger."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Damage ▲ 37.28% for 2 shots",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeDamagePct 37.28, durationShots 2 — additive percentage points in the charge bucket; 'for 2 shots' is a round count, never seconds."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Speed ▲ 15.53% for 2 rounds",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeSpeedPct 15.53, durationShots 2 — weapon-state modifier (shortens charge time → more shots fired); explicit 'for N round(s)' semantics."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "After firing last bullet. The target",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'lastBullet'}, target {kind:'enemy'} — same per-magazine trigger as S1; 'the target' is the boss."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▼ 29% for 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct -29, durationSec 5 on target enemy — boss DEF reduction is real team-wide damage (DEF is subtracted in the formula), so it is not skippable on isolation. ⚑ engine-side consumption of enemy defPct unverified (see caveats)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 10 enemies, highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single-boss fight, so the 10-target highest-final-ATK fan-out collapses to the one enemy entity; no schema target kind exists for enemy ranking."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 85.62% of final ATK as damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 85.62 on trigger {kind:'burstCast'} — no core (text says no core strike), no explicit noFb/noRange (burst-cast damage is FB-exempt by timing; no-range is engine-automatic)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▼ 2.43% for 15 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct -2.43, durationSec 15 on the same burstCast/enemy block — stacks with the S2 29% window as a separate caster-slot key."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "second burst block, target {kind:'allies'} with no excludeSelf — 'all allies' includes the caster."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Critical Rate ▲ 4.65% for 15 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 4.65, durationSec 15 — UNSCOPED crit (the kit does not say 'Critical Rate of normal attacks'), so critRatePct, not critRateNormalPct."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].effects[0].durationShots / skill1[0].effects[1].durationShots",
+      "estimate": "2 (both buffs)",
+      "reasoning": "Kit states 'for 2 shots' and 'for 2 round(s)'. Round-count duration semantics (expires after the holder fires N rounds, spanning reloads) — a durationSec could not express a window that straddles the 161-frame reload. The 'shots' vs 'rounds' wording difference is treated as a translation artifact because on a 1-hit-per-shot SR a round IS a shot. Unresolved sub-question: whether the triggering last bullet itself consumes one of the two (the engine decrements durationShots right after the firing shot's blocks dispatch, and the trigger fires on that same shot), which would leave only 1 buffed round.",
+      "recipe": "Focus-record Eunhwa solo and count buffed charged shots after a magazine empties: read the charge-shot damage popups following each reload and count how many carry the ~37% charge-damage lift (expect exactly 2 of the new magazine's rounds if the trigger shot does not consume the window, 1 if it does). Cross-check the charge-speed side by timing charge→release intervals of the first 3 rounds post-reload against the unbuffed steady-state interval."
+    },
+    {
+      "field": "skill2[0].effects[0] (stat 'defPct', value -29, target enemy)",
+      "estimate": "defPct -29 on target enemy for 5 sec",
+      "reasoning": "'DEF ▼ 29%' on the target is a boss debuff and therefore real damage for the whole team, so it must not be skipped. But the schema offers only one DEF StatKey, whose comment scopes its inertness to SELF DEF (Endurance cube) and says nothing about an enemy-side path. If the engine has no enemy defPct consumer, this authoring is silently inert — a modeled-but-not-working line. Encoding it as damageTakenPct instead would be a fudge (a different mechanic with a different formula position), so the faithful encoding is kept and the uncertainty flagged rather than resolved by guessing.",
+      "recipe": "Sighted check (no fight needed): grep the engine for the defPct consumer and confirm whether it reads enemy-targeted applications into the boss-DEF subtraction. If it does not, this is an engine gap, not an override error — file it and keep the line authored. Empirical confirmation: A/B the same comp with the S2 block present vs removed and compare per-shot popup values inside the 5s post-reload window (a 29% boss-DEF cut should visibly lift ALL allies' popups, not just Eunhwa's)."
+    },
+    {
+      "field": "burst[0].effects[0] (flatDamage — crit / noFb / noRange all unset)",
+      "estimate": "engine defaults: crit at caster rate, FB-exempt by timing, no range bonus",
+      "reasoning": "Methodology: function-damage riders crit at the caster's sheet rate under the engine's global rider-crit path (so an explicit crit:true would be redundant or double-specified), burst-cast damage always lands before the Full Burst window opens (so per-kit noFb is unnecessary and is measured-only anyway), and no-range is force-set by the engine on riders (explicitly not to be set or flagged as a field). The kit says nothing about core strike damage, so no core.",
+      "recipe": "Read the burst-cast damage popup in a focus recording: colour tells crit (orange + icon) vs plain white, and its magnitude against the caster's ATK at cast time tells whether the +50% Full Burst major was applied. If popups show the hit landing INSIDE the FB window with the major applied, the FB-exemption-by-timing assumption is wrong for this unit and the cast ordering needs re-checking."
+    },
+    {
+      "field": "cadence tuple (ammo 6, chargeFrames 60, reloadFrames 161)",
+      "estimate": "as datamined: 6-round magazine, 1.0s full charge, ~2.68s reload",
+      "reasoning": "ALWAYS-⚑ item: datamined cadence/reload fields are known-unreliable, and here they are load-bearing twice over — magazine size sets how often the last-bullet trigger fires (which is the ONLY trigger in the non-burst kit), and chargeFrames sets what the 15.53% charge-speed buff is actually worth. A cadence error propagates into both S1 uptime and S2 uptime simultaneously, so total damage error would not localize to either skill.",
+      "recipe": "Count rounds per magazine and time reload-to-first-shot off a focus recording's ammo counter (the instrument that measures the disputed quantity directly), rather than inferring cadence from downstream full-burst counts or total damage."
+    },
+    {
+      "field": "override-level: no noFb, no hitRatePct, no weaponSwap, no resources",
+      "estimate": "none present",
+      "reasoning": "Stated explicitly so the absence is auditable rather than an oversight: the kit text carries no weapon-swap line (no swap shot economy to estimate), no stack/currency pool (no steady-state or ramp haircut to derive), no Hit Rate ▲ line (no core-lift magnitude to flag), no multi-projectile split (hitsPerShot 1), and no untriggered damage line (the only damage line is the burst, which carries its own burst-cast trigger). FB-by-timing is left at its default-ON setting per the rule that noFb is measured-only.",
+      "recipe": "N/A — nothing to measure; this flag exists to record that the five other ALWAYS-⚑ categories were checked and found not to apply."
+    }
+  ],
+  "model": "claude-opus-5"
+}
