@@ -1,0 +1,73 @@
+{
+  "note": "vesti (Vesti) — Elysion RL ATTACKER, Water, Burst III, cd 40s, ammo 6, reloadFrames 142, chargeFrames 60, chargeMultiplier 250, normalMult 61.3 / coreMult 200, critRate 15 / critDamage 150. P0 DISAMBIGUATION: this is BASE `vesti` (RL/Water, resource_id 91) — NOT `vesti-tactical-upgrade` (RL/Fire, aka vtu/vestitu); the slug-disambiguation lint flags the shared base name (advisory, exit 0) and every artifact keys `characters['vesti']`. Kit-autonomy gauntlet 2026-08-05: GREENFIELD build (no shipped override existed; simSupported was false) — test-first re-derivation (scripts/tests/units/vesti.test.ts, groups V2/V3/V4/V5 + V1 absence canaries + counterfactual discrimination). A burst-use ESCALATING carry: her damage lives in the Survival-Instinct-staged burst riders + the twin missile containers, both keyed to her own burst casts (≈ every 40s alongside a co-B3). || MODELED TODAY: (S2 'Survival Instinct') 'Activates when using Burst Skill. Effects vary according to the number of times used. Each subsequent effect triggers all effects before it: Once ATK ▲5.35% / Twice Critical Damage ▲22.34% / Three times Critical Rate ▲15.51%, each for 45 sec' = ONE `escalating` block on burstCast → self with three buff steps (atkPct 5.35 / critDamagePct 22.34 / critRatePct 15.51, durationSec 45): the Nth OWN cast applies steps 1..N (isabel Marked-Target precedent), each step a DISTINCT buff key so all three coexist and SUM from cast 3 (45s > 40s CD → steps never lapse between her casts in a sustained fight). burstCast = her OWN casts only — NOT fullBurstEnter (a co-B3's rotation must not advance her stage; pinned in the spec). (BURST line 1 'two Missile Containers') 'Deploys two Missile Containers that deal 15.56% of final ATK as damage to the enemy with the lowest remaining HP every 1 sec for 18 sec' = TWO `dot` blocks, one PER CONTAINER (the prose's plural subject 'two Missile Containers that deal 15.56% ... every 1 sec' is the per-container reading — the combined-15.56%-per-volley alternative is HALF this and is the spec's named counterfactual), each atkPct 15.56 / intervalSec 1 / durationSec 18 → 18 ticks per container at cast+1s..cast+18s (sim.ts dot path: first tick at cast+interval, ticks while frame <= endFrame) = 36 hits / 560.16% ATK-equivalent per deployment, burst bucket, noRange (dot path hardcodes), never cores, crit per the engine DoT default (DOT_CRIT ON since 2026-07-21 — ticks roll crit at her sheet rate; no explicit crit field, engine governs), FB-by-landing-timing (burst-placed dots are not cast-FB-exempt — sim.ts skillNoFb; her own 5s windows guarantee in-FB ticks). Burst CD 40s > 18s window → deployments never overlap. 'Enemy with the lowest remaining HP' targeting is scope-trivial at single-boss (exia precedent). (BURST line 2 SI-staged riders) 'Affects all enemies. Effects vary for each stage of Survival Instinct. Each subsequent effect triggers all effects before it: SI1 210.62% / SI2 247.25% / SI3 302.19% of final ATK as additional damage' = ONE `escalating` block on burstCast → enemy with three flatDamage steps: the Nth cast deals steps 1..min(N,3) — CUMULATIVE and SAME-CAST-INCLUSIVE (cast 1 deals 210.62: S2 fires 'when using Burst Skill', and skill2-slot blocks dispatch BEFORE burst-slot blocks, so the SI stage granted by the cast is the stage the burst reads). Burst-cast damage lands BEFORE the Full Burst window opens → never takes the +50% FB major (verified fact); instant riders keep noRange:true + no core (flatDamage defaults). (BURST line 3) 'Affects all allies. Full Burst Duration ▼ 5 sec.' = burstCast → allies → fullBurstExtend seconds:-5 — isabel's 'Full Burst Time ▼ 5 sec' encoding exactly: the FB window HER cast opens shrinks to 5s (fullBurstExtend applies to the live window her cast just set); windows opened by another B3's cast stay 10s. A rotation mechanic (halves the +50% window on her rotations), damage-relevant, NOT a skippable utility line. || UNMODELED (verbatim in `unmodeled`, reason here): (S1) 'Activates when performing a Full Charge attack. Explosion Radius ▲ 15.01% for 10 sec.' — 'Explosion Radius' is an AoE RADIUS, not a damage stat: no radius stat exists in the schema and it is damage-INERT vs the single partless scope-lock boss (splash radius moves no damage) — the vesti-tactical-upgrade burst carries the identical residual for the identical reason. Nearest-wrong counterfactual: projectileExplosionPct 15.01 (a REAL Damage-Up stat that would silently credit +15% explosion-flavored damage); the spec pins its absence. || TIER 2 encoding (two burstCast-keyed escalating usage counters, fullBurstExtend sign, dot cadence, burstCast-vs-fullBurstEnter keying). || ⚑ FLAGS: (⚑1 CADENCE TUPLE, mandatory) RL charge cadence (chargeFrames 60 / reloadFrames 142 / ammo 6) shipped at datamine-synced values; drives her pull count, gauge contribution, and full-charge count. Estimate = datamine as-is. Recipe = rounds/min + reload gap from any focused vesti video. Tier: low. (⚑2 MISSILE CRIT, engine-default-governed) the container ticks carry NO explicit crit field, so the engine's DoT-crit default governs: DOT_CRIT has been ON since 2026-07-21 (game-mechanics.md U13 — DoT ticks roll crit universally), so the missiles roll crit at her sheet rate (~15-30% with SI3). The encoding is SSOT-aligned; the residual is a carrier-specific spot-check only — no vesti focus-video popup read exists to confirm the universal tick-crit matches her missiles in game. Recipe: popup-read a missile volley for the crit-body fraction on a vesti focus video. Tier: low. (⚑3 MISSILE CONTAINER COUNT, prose-literal ruling) the two-container reading (2 × 15.56%/s = 560.16% per deployment) is the prose-literal one and matches the datamine's explicit container-count value 2 (ulti_skill skill_value_data); the combined-volley alternative (280.08%) is exactly half and is the spec's oneContainer counterfactual — no footage exists to discriminate further. Recipe: count missile popups in one 18s window on a vesti focus video (36 vs 18). Tier: 2. (⚑4 FB-DURATION BLAST RADIUS, carried from isabel) the net rotation sign of fullBurstExtend:-5 in the engine's rotation model (per-cycle FB shortening vs faster next-cycle) is UNVERIFIED — needs a /sim-battery diff; pull if it spuriously net-harms the board. Tier: 2. || EVIDENCE TIER: every magnitude/duration/trigger is kit-text-literal (DATAMINED lvl-10); the only estimates are the ⚑ flags above. Faithful > fit; measured > fudge. || Kit-autonomy gauntlet 2026-08-05: cross-family S2b (claude-fable-5) test review CONVERGED on all 5 lines (4 FAITHFUL + V1 UNMODELED, leakDetected null); reviewer's shared-prior trap list (fullBurstEnter keying, FB-line drop, container halving, escalation cumulativity, nuke FB-exemption) is exactly what the spec's counterfactuals discriminate.",
+  "unmodeled": {
+    "skill1": [
+      "■ Activates when performing a Full Charge attack. Affects self.\nExplosion Radius ▲ 15.01% for 10 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "skill1: 'Explosion Radius ▲15.01% for 10s' is UNMODELED — no explosion-radius stat exists in the schema and radius is damage-inert vs the single partless boss (vesti-tactical-upgrade carries the identical residual for its burst radius line). The nearest-wrong encoding (projectileExplosionPct 15.01) is pinned absent by the spec",
+    "burst: the missile containers are modeled as TWO dots (one per container, prose-literal + datamine container-count 2) — 36 ticks × 15.56% = 560.16% ATK-equivalent per deployment; the combined-volley alternative is exactly half (⚑3, popup-count recipe). Ticks ride the DoT conventions: never core, noRange, crit per the engine DoT default (DOT_CRIT ON since 2026-07-21 — ticks roll crit at her sheet rate, ⚑2), FB-by-landing-timing (burst-placed dots are not cast-FB-exempt)",
+    "burst: the SI-staged riders are cumulative AND same-cast-inclusive — cast 1 deals 210.62% (the SI stage granted by that same cast; skill2-slot blocks dispatch before burst-slot blocks); cast 3+ deals all three steps = 760.06%. Burst-cast damage lands before the Full Burst window opens → never takes the +50% major",
+    "burst: 'Full Burst Duration ▼ 5 sec' = fullBurstExtend:-5 on her OWN casts (isabel precedent) — her windows run 5s, co-B3-opened windows stay 10s. Net rotation blast-radius sign unverified (⚑4, carried from isabel)"
+  ],
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "buff", "stat": "atkPct", "value": 5.35, "durationSec": 45 },
+            { "kind": "buff", "stat": "critDamagePct", "value": 22.34, "durationSec": 45 },
+            { "kind": "buff", "stat": "critRatePct", "value": 15.51, "durationSec": 45 }
+          ]
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "dot", "atkPct": 15.56, "durationSec": 18, "intervalSec": 1 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "dot", "atkPct": 15.56, "durationSec": 18, "intervalSec": 1 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "flatDamage", "atkPct": 210.62 },
+            { "kind": "flatDamage", "atkPct": 247.25 },
+            { "kind": "flatDamage", "atkPct": 302.19 }
+          ]
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [{ "kind": "fullBurstExtend", "seconds": -5 }]
+    }
+  ]
+}

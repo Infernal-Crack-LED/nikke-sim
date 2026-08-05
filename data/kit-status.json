@@ -6890,6 +6890,43 @@
         "temp": "OK  ·"
       }
     },
+    "vesti": {
+      "name": "Vesti",
+      "burst": "III",
+      "weapon": "RL",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/vesti.json + scripts/kit-autonomy/manual-review/vesti.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged on all 5 lines (4 FAITHFUL + 1 DOCUMENTED_GAP)",
+      "residual": "missile container count 36-vs-18 popup read (⚑3); DoT tick-crit carrier spot-check (⚑2); fullBurstExtend:-5 rotation net sign (⚑4)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when performing a Full Charge attack. Affects self.\nExplosion Radius ▲ 15.01% for 10 sec."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: 'Explosion Radius ▲15.01% for 10s' is UNMODELED — no explosion-radius stat exists in the schema and radius is damage-inert vs the single partless boss (vesti-tactical-upgrade carries the identical residual for its burst radius line). The nearest-wrong encoding (projectileExplosionPct 15.01) is pinned absent by the spec",
+        "burst: the missile containers are modeled as TWO dots (one per container, prose-literal + datamine container-count 2) — 36 ticks × 15.56% = 560.16% ATK-equivalent per deployment; the combined-volley alternative is exactly half (⚑3, popup-count recipe). Ticks ride the DoT conventions: never core, noRange, crit per the engine DoT default (DOT_CRIT ON since 2026-07-21 — ticks roll crit at her sheet rate, ⚑2), FB-by-landing-timing (burst-placed dots are not cast-FB-exempt)",
+        "burst: the SI-staged riders are cumulative AND same-cast-inclusive — cast 1 deals 210.62% (the SI stage granted by that same cast; skill2-slot blocks dispatch before burst-slot blocks); cast 3+ deals all three steps = 760.06%. Burst-cast damage lands before the Full Burst window opens → never takes the +50% major",
+        "burst: 'Full Burst Duration ▼ 5 sec' = fullBurstExtend:-5 on her OWN casts (isabel precedent) — her windows run 5s, co-B3-opened windows stay 10s. Net rotation blast-radius sign unverified (⚑4, carried from isabel)"
+      ]
+    },
     "vesti-tactical-upgrade": {
       "name": "Vesti: Tactical Upgrade",
       "burst": "III",

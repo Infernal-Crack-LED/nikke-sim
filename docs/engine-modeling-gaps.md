@@ -52,14 +52,14 @@
 | `critRateNormalPct` | 3 | biscuit, helm, julia |
 | `delaySec` | 5 | asuka-wille, dorothy, flora, rapi-red-hood, snow-white |
 | `durationShots` | 8 | emilia, helm, miranda, neve, phantom, snow-white-heavy-arms, vesti-tactical-upgrade, zwei |
-| `escalating` | 8 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, mary-bay-goddess, volume |
+| `escalating` | 9 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, mary-bay-goddess, vesti, … |
 | `everyN` | 7 | clay, mast-romantic-maid, mint, neon-vision-eye, phantom, power, soda-twinkling-bunny |
 | `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
 | `excludeSelf` | 15 | arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, label, … |
 | `fbGate` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |
-| `flatDamage` | 81 | 2b, a2, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, … |
+| `flatDamage` | 82 | 2b, a2, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
-| `fullBurstExtend` | 4 | d, isabel, modernia, soda-twinkling-bunny |
+| `fullBurstExtend` | 5 | d, isabel, modernia, soda-twinkling-bunny, vesti |
 | `gainPierce` | 10 | ade-agent-bunny, asuka, dorothy, grave, mari, milk-blooming-bunny, naga, neve, … |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
 | `hasPierce` | 6 | alice, laplace, laplace-ultimate-hero, maxwell-ordinary-mechanic, red-hood, zwei |
