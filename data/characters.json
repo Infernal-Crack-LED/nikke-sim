@@ -55908,7 +55908,7 @@
         }
       },
       "generatorSupported": false,
-      "simSupported": false,
+      "simSupported": true,
       "baseStats": {
         "hp": 11500,
         "atk": 450,

@@ -4440,6 +4440,49 @@
       },
       "board": null
     },
+    "misato": {
+      "name": "Misato",
+      "burst": "I",
+      "weapon": "SMG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/misato.json + scripts/kit-autonomy/manual-review/misato.md.",
+          "low FIDELITY (skill1 (caveats/note commentary only)): Driver caveat text cites the stale 24 pulls/s SMG cadence ('60 hits ≈ 2.5s at 24 pulls/s') while the engine ships the measured 20.0/s frame-quantized SMG rate by default"
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Only activates when in Shooting Manual status. Affects all allies.\nDamage dealt to Shield ▲ 150% continuously.",
+          "Only activates when Shooting Manual is at max stacks. Affects self.\nOutgoing healing ▲ 30.05% continuously."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1 blk1 (Shooting Manual) is the ONLY damage-live line in the kit: hitRatePct feeds the live Hit-Rate→core geometry (UNIGEO uniform-in-circle, DEFAULT since 2026-07-22; CONE_DELTA is the fallback arm). Stacks accrue 1→2→3 over the first ~9-10s of firing (60 hits ≈ 3.0s at the measured ~20 pulls/s frame-quantized SMG cadence, one reload gap included) and hold at 3 at steady state — re-trigger every 60 hits (~3s) refreshes the shared 5s window before it lapses, exactly the NIKKE stack-refresh convention (applyBuff). NOT instant-to-max at t=0.",
+        "skill1 blk1 trigger identity: hitCount 60 (cumulative LANDED rounds, hitsPerShot 1) — NOT shotFired, NOT interval. Pinned by scripts/tests/units/misato.test.ts to exactly floor(shots/60) applications with stacks progression [1,2,3].",
+        "skill1 blk2 heal MAGNITUDE (8.04% of caster final Max HP) is recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount (v1 has no HP pool). Implemented for its TANDEM value only — it fires the target's 'recovery' triggers (Crown-type). Target 'alliesLowestHp count:1' is indeterminate without an HP pool → the engine's documented LEFTMOST-ALLY stand-in (types.ts); the spec test slots misato rightmost so crown observes the channel.",
+        "skill1 blk2 trigger identity: hitCount 120, NOT lastBullet — the two COINCIDE at her base 120-round magazine; the spec test splits them with a +60-round magazine patch (cadence stays pinned to 120 landed rounds; a lastBullet encoding provably drops to reload-boundary cadence). S2b adversarial note (claude-fable-5, 2026-08-04).",
+        "burst heal MAGNITUDE (5.06% of caster final Max HP per tick) is NOT modeled — same event-only 'heal' channel. ticks:5/intervalSec:1 = first tick at cast, then +1s..+4s: five recovery events per ally per cast keep on-recovery consumers refreshed across the whole 5s window (blanc convention). Trigger is burstCast (HER own Burst I cast, cd 40s) — NOT fullBurstEnter, which would fire on rotations where another Burst I casts.",
+        "skill2 is EMPTY by design: both lines are UNMODELED (verbatim above). L1 'Damage dealt to Shield ▲150%' needs a boss shield bar the sim never models (no shieldDamage StatKey; out of domain, same class as helm's partsDamagePct) and a 'requires own Shooting Manual buff active' gate the block schema has no primitive for (requiresTargetStatus is boss-side; requiresShielded is shield-receipt). L2 'Outgoing healing ▲30.05%' scales heal AMOUNTS that are themselves unmodeled (no outgoing-healing StatKey) and needs the max-stacks variant of the same gate. Both are offensively inert in the sim's domain — skips, not approximations; do NOT re-express them as generic damage/heal-count buffs (nearest-wrong models per S2b).",
+        "⚑ CADENCE TUPLE (MANDATORY, datamine-unreliable): pullsPerSec at the measured frame-quantized ~20/s (datamine rate_of_fire 1440 nominally 24/s; SMG frame quantization DEFAULT-ON since 2026-07-23, SMGRATE=24 the documented revert arm — game-mechanics.md §2 'SMG CADENCE IS CONTESTED') / reloadFrames 81 / ammo 120. Both skill1 channels scale directly with it (60/120-hit thresholds ≈ 3s/6s of fire time + reload gaps). Recipe: any Misato focus video — read the ammo counter frame-by-frame over a full magazine. ⚑ HoT first-tick timing: kit says 'every 1 sec for 5 sec'; the engine emits the first tick at the cast frame (5 events spanning 4s) — the t=0-vs-t=1s phase of the first tick is a convention, not measured.",
+        "Rarity: SR — spec test runs her at the 2★/core 0 ceiling (claire precedent); scope lock's copies:10 encodes an SSR ceiling an SR can never reach."
+      ],
+      "board": null,
+      "date": "2026-08-04",
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged — S6 override byte-identical, S5 green vs driver after 1 blind-wiring RECON_ERROR",
+      "residual": "spot-check: heal channel reads crown recovery-consumer event counts (sim-internal observable); HR->core conversion magnitude unmeasured (her whole offensive footprint); SMG cadence tuple + HoT first-tick phase flagged",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "modernia": {
       "name": "Modernia",
       "burst": "III",
