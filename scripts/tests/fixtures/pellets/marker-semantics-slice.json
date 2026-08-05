@@ -5,6 +5,9 @@
       "n_dumps": 4,
       "n_marker_tracks": 725,
       "recon_mismatch_frames": 0,
+      "n_excluded_by_ceiling": 37,
+      "life1_fragment_like": 69,
+      "life1_isolated": 279,
       "arms": {
         "C1": {
           "n_core_base": 49,
@@ -46,6 +49,9 @@
           "UNDECIDABLE": 9
         },
         "attached_life_hist": { "2": 5, "3": 4, "4": 2, "6": 1 },
+        "n_excluded_by_ceiling": 5,
+        "life1_fragment_like": 6,
+        "life1_isolated": 49,
         "recon_mismatch_frames": 0,
         "arms": {
           "C1": {
@@ -97,6 +103,9 @@
           "UNDECIDABLE": 24
         },
         "attached_life_hist": { "2": 4, "3": 3, "4": 1, "5": 1 },
+        "n_excluded_by_ceiling": 6,
+        "life1_fragment_like": 12,
+        "life1_isolated": 42,
         "recon_mismatch_frames": 0,
         "arms": {
           "C1": {
@@ -148,6 +157,9 @@
           "UNDECIDABLE": 49
         },
         "attached_life_hist": { "2": 5, "3": 4, "4": 1, "5": 1 },
+        "n_excluded_by_ceiling": 13,
+        "life1_fragment_like": 29,
+        "life1_isolated": 99,
         "recon_mismatch_frames": 0,
         "arms": {
           "C1": {
@@ -206,6 +218,9 @@
           "6": 3,
           "7": 2
         },
+        "n_excluded_by_ceiling": 13,
+        "life1_fragment_like": 22,
+        "life1_isolated": 89,
         "recon_mismatch_frames": 0,
         "arms": {
           "C1": {

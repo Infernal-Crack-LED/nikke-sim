@@ -6115,3 +6115,85 @@ $PY scripts/probe/analyze-pellet-tracks.py --marker-semantics-selftest   # commi
 existing fixture was touched. ⛔ The band says a landing is warranted — that landing is a **separate
 pass** with its own blast-radius pass and its own gate, and per §27F it should not proceed until the
 life-1 question has an answer that is not geometric.
+
+#### §28 OWNER CORRECTION — the marker VFX AND the pellet both last 14 frames; §27F's gate is answered and §27's rate is BRACKETED
+
+**2026-08-05, OWNER-MEASURED.** Two inputs, given in response to §27F's stated blocker:
+
+1. **The hit-marker VFX lasts 14 native frames.**
+2. **A pellet lasts 14 native frames, not 13** — a correction to the lifecycle spec that has governed
+   every derivation in this thread.
+
+##### §28A — §27F's gate is ANSWERED: C1's premise holds
+
+§27F blocked the marker-semantics landing on a question geometry could not answer — can a GENUINE
+hit-marker be single-frame? At **14 native frames ≈ 7 frames at the production 30 fps sampling**, a
+single sampled frame is **one seventh** of a whole marker. ⇒ **C1's premise ("a genuine hit-marker
+persists ≥ 2 frames") is CONFIRMED as a statement about the VFX**, and by a wide margin rather than
+narrowly.
+
+##### §28B — ⚑ BUT A NEW QUALIFICATION REPLACES IT, AND IT CUTS AGAINST §27
+
+The premise being right about the _VFX_ does not make C1 right about a _track_. If a marker spans
+~7 sampled frames but the tracker FRAGMENTS it, a life-1 detection can be a **piece of a real
+marker** rather than a UI glyph. §27's own ATTACHED-life histogram already hinted at this: median
+life ~3 against an expected ~7.
+
+Measured (`--marker-semantics`, pooled over the four `*-schemafix` dumps): of **1351** life-1 marker
+tracks, **255 (18.9%)** sit within 15 px **crosshair-relative** (so crosshair motion cannot fake the
+match) of a life ≥ 2 marker track within ±2 frames — **fragment-like**. **1096 (81.1%) are
+isolated.**
+
+⚑ **Suggestive, not decisive**, and a **LOWER** bound: a marker shattered into ALL life-1 pieces has
+no life ≥ 2 partner and scores as isolated.
+
+⇒ **§27's 21.7% is BRACKETED, not pinned.** It **over**-drops (≈19% of the life-1 population it
+removes is fragment-like) and **under**-drops (`MOVING` 618 + `UNDECIDABLE` 612 all kept, 58 of 113
+`MOVING` on `h4-marciana` leaning screen-fixed). The two errors are of opposite sign and are **not**
+known to cancel. The verdict "a real channel worth fixing" survives; the specific figure should not
+be quoted as a point estimate.
+
+##### §28C — ⚑ A COLD CHANNEL THIS ARM WAS NOT BUILT TO SEE: markers clipped by the ceiling
+
+A full marker spans ~7 sampled frames at 30 fps — **exactly `max_pellet_frames = 7`**. A red
+near-crosshair track whose life EXCEEDS that is dropped from `pellet_ids` and never reaches `marker`
+at all. Measured: **164 such tracks** across the four dumps (5.6% of red near-crosshair tracks), life
+histogram peaking at **8–10**, i.e. just over the cutoff.
+
+⇒ These are plausibly **MISSED core hits** — the **opposite sign** to §27's false-flag channel:
+missing a real flag makes a shot **colder** by 1. §27's warm-removal and this cold-omission push
+against each other, and **neither has been netted**. Not scored here; recorded so the marker-landing
+pass treats the channel as two-sided.
+
+##### §28D — Does the 13 → 14 pellet correction matter? Mostly NO, and where it does it REMOVES A TRAP
+
+`max_pellet_frames` is derived as `Math.max(4, Math.round((13 / 60) * fps))`
+(`read-pellets.ts:790`), mirrored in `analyze-pellet-tracks.py`'s `_merge_max_pellet_frames`.
+
+| L      | fps 30 (JS / Python) | fps 60 |
+| ------ | -------------------- | ------ |
+| **13** | **7 / 6** ⚠ DESYNC   | 13     |
+| **14** | **7 / 7** ✅         | 14     |
+
+- ⇒ **At 30 fps — every production dump — the correction is INERT.** `max_pellet_frames = 7` either
+  way. No production measurement in §§14–27 moves.
+- ⇒ **At 60 fps it is 13 → 14**, so the `groundtruth-f811-v4`/`v5` clips were built one frame short
+  of the true pellet lifetime.
+- ⚑ **It ELIMINATES the cross-language rounding hazard** that trap 1 of the 08-04 session handoff
+  documents: `(13/60)×30 = 6.5` lands exactly on the JS-half-up / Python-half-to-even tie, which is
+  why `_merge_max_pellet_frames` carries a bespoke `floor(x + 0.5)` workaround. `(14/60)×30 = 7.0` is
+  not a tie in either language. **The correction removes the defect the workaround exists for.**
+
+##### §28E — What this does NOT do
+
+⛔ **No constant changed here.** `13` is still live in `read-pellets.ts:790` and
+`_merge_max_pellet_frames`. Changing it is an ENACTMENT with a real blast radius —
+`_merge_max_pellet_frames(60)` moves 13 → 14, which reaches the merge-audit arm and the three
+committed 60 fps fixtures carrying `max_pellet_frames: 13` (`merge-audit-slice`,
+`representative-audit-slice`, `stale-counting-slice`) — and it gets its own pass with its own
+blast-radius declaration and gate, per constraint 3's distinction: this is an owner CORRECTION to a
+measured value, not a refit, but it still lands under the normal discipline.
+
+⛔ §27's measurement is **not** restated or re-scored; §28B qualifies its interpretation, and the
+instrument now reports both new quantities alongside it. ⛔ Nothing here touches the cold bias,
+`MARKER_MIN`, or `debounce_shots`.
