@@ -4817,6 +4817,41 @@
       "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
       "residual": "spot-check cluster: (a) scoped-vs-unscoped crit discrimination is structural-only for neon's own hits (her pre-FB nuke never overlaps her own S2 window); (b) durationShots per-trigger-pull vs per-pellet decrement for a 10-pellet SG holder is the assumed (SSOT round=one-bullet) reading, unverified on video; (c) cadence tuple (reloadFrames 129 / RoF 90rpm) datamine-unverified"
     },
+    "neon-blue-ocean": {
+      "name": "Neon: Blue Ocean",
+      "burst": "III",
+      "weapon": "MG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/neon-blue-ocean.json + scripts/kit-autonomy/manual-review/neon-blue-ocean.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null,
+      "date": "2026-08-04",
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0 (judge kimi-code/k3, 0 gotchas); cross-family S2b(claude-fable-5)/S5(claude-opus-5)/S6(claude-opus-5)/S7(kimi-code-k3) converged; stageEnter:3 ratified by 3 blind derivations + laplace-ultimate-hero/rei-ayanami precedent; judge binding rulings: 11% Fire rider window-scoped + §11 refresh-cap on equal escalating values",
+      "residual": "spot-check cluster: (a) §11 refresh-vs-co-stack popup read of the elem mult on a 3rd stage-3 entry (1.5076 vs 1.7096) — only same-model residual with damage weight; (b) ⚑1 swap-weapon cadence/ammo kit-silent (isolated nbo-solo video, rounds in one 7s window); (c) doc hygiene: game-mechanics.md §10 stale Damage-Up wording for elemAdvantageDamagePct (measured SSOT damage-calculation.md §1c says element bucket)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "caveats": [
+        "burst: the swapped weapon's fire cadence + ammo pool are kit-silent — modeled as base MG cadence + full-belt refill (⚑1, measurement-gated; the datamine's unlabeled 90 was NOT enacted)",
+        "skill1: Damage to Parts is inert vs the partless scope-lock boss (modeled for fidelity — byte-identical totals with the line removed)",
+        "skill2: Elemental Advantage Attack Damage is live only vs an elementally-weak boss (Fire here); it adds to the element bucket, not Damage Up",
+        "burst: the 11% additional damage vs Fire Code targets only fires inside the 7s burst-weapon window AND only vs a Fire boss"
+      ]
+    },
     "neon-vision-eye": {
       "name": "Neon: Vision Eye",
       "burst": "III",

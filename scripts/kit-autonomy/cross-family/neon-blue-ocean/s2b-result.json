@@ -1,0 +1,75 @@
+{
+  "slug": "neon-blue-ocean",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "when using Burst Skill … Damage to Parts ▲ 12.4%",
+      "disposition": "FAITHFUL",
+      "scope": "Parts-damage stat only (partsDamagePct) — NOT generic damage, NOT core damage; parts ≠ core, and the scope-lock boss is partless, so this stat is engine-inert in v1 by design",
+      "durationSemantics": "20 sec wall-clock per application (durationSec: 20). 'Once/Twice/Three times' is an escalating step-count keyed to cumulative burst-cast count, NOT stacks and NOT rounds",
+      "triggerIdentity": "burstCast (owner's OWN burst use — 'Activates when using Burst Skill'). NOT fullBurstEnter (any team FB) and NOT stageEnter (any B3 cast). Escalating: Nth own-cast applies steps 1..N cumulatively → 12.4 / 24.8 / 37.2% total, capped at 3 steps",
+      "targetSet": "self",
+      "nearestWrongModel": "Two plausible misreads: (a) the damage-moving one — encoding 'Damage to Parts' as attackDamagePct or coreDamagePct because partsDamagePct 'does nothing', silently adding up to +37.2% Damage-Up that the kit never grants against a partless boss; (b) keying to fullBurstEnter so it fires on rotations where the co-B3 (helm) bursts",
+      "distinguishingAssertion": "In controlComp('neon-blue-ocean'), collect buffApply events: stat must be 'partsDamagePct' (never attackDamagePct/coreDamagePct), targetSlug 'neon-blue-ocean', emitted ONLY on frames where a burstCast event with the carry's srcSlot precedes it — zero applications on rotations where helm casts B3. Escalation: 1st cast applies 1 step, 3rd cast applies 3 (cumulative 37.2). Inertness: totals(res)['neon-blue-ocean'] with the skill1 blocks stripped via withPatchedOverride must EQUAL the shipped-override total exactly (partless boss ⇒ zero damage movement)",
+      "inertness": "Must move ZERO damage on the scope-lock partless boss — any totals delta from skill1 is a mis-encoded stat. Must also never fire on helm's B3 casts",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "entering Burst Stage 3 … Elemental Advantage Attack Damage ▲",
+      "disposition": "FAITHFUL",
+      "scope": "elemAdvantageDamagePct — Damage-Up bucket active ONLY under elemental advantage (Water vs the Fire control boss ⇒ LIVE in controlComp). This is the failure-mode-8 case: her element multiplier must exceed the clean ×1.10 while the buff is up. NOT generic elementDamagePct (always-on) and NOT attackDamagePct",
+      "durationSemantics": "10 sec wall-clock per application. Escalating by cumulative stage-3-entry count: Once 20.56, Twice +20.2, Three times +20.2 → 20.56 / 40.76 / 60.96% total, capped at 3 steps; each subsequent entry re-applies all prior steps for a fresh 10 s",
+      "triggerIdentity": "stageEnter{stage:3} — 'Activates when entering Burst Stage 3' is stage-entry by ANYONE's stage-3 cast, not gated on the owner being the caster. In controlComp the carry shares B3 with helm; entries where HELM takes the B3 slot still count and still advance the escalation counter",
+      "targetSet": "self",
+      "nearestWrongModel": "burstCast (self-only) — the single most plausible shared misread, because the unit is herself a B3 and skill1 right above IS burst-cast-keyed. Under it, rotations where helm casts B3 grant nothing and the escalation ramps at half speed. Second-nearest: fullBurstEnter (fires ~52 frames later than the B3 cast; also fires on FBs regardless of which stage-3 path opened them). Third: reading 20.56% as generic element/attack damage active without advantage",
+      "distinguishingAssertion": "In controlComp (helm co-B3 present): buffApply events with stat 'elemAdvantageDamagePct', targetSlug 'neon-blue-ocean', must appear on EVERY full-burst rotation's stage-3 entry — including at least one rotation where the burstCast event's caster is helm, not the carry (GREEN under stageEnter, RED under burstCast). First application value 20.56; by the third entry the concurrently-active applications sum to 60.96. Each application's expiresFrame ≈ applyFrame + 600 (10 s), never 20 s",
+      "inertness": "Against a NON-advantaged boss the buff must add zero damage (elemAdvantageDamagePct gates on advantage) — though controlComp's Fire boss keeps it live for the damage-moving assertions. The buff must not persist past 10 s from its last application",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Changes the weapon in use: Damage: 33% … 7 sec",
+      "disposition": "FAITHFUL",
+      "scope": "weaponSwap primitive — a per-shot replacement weapon at 33% of final ATK per shot for the window, replacing her MG normals (5.57% base mult). NOT a one-off flatDamage of 33%, NOT a +33% buff on MG shots",
+      "durationSemantics": "durationSec: 7 — a hard 7-second time bound, deliberately SHORTER than the 10 s Full Burst window; the swap ends and MG fire resumes ~3 s before FB closes. No maxShots stated",
+      "triggerIdentity": "burstCast (her own burst block), target self. Swap cadence (pulls/sec) is KIT-SILENT ⇒ ALWAYS-⚑ #3: the shot-economy tuple must ship as a flagged estimate with a recipe (popup cadence count from a focus recording), never a silent precise value. Whether swap shots bypass the MG wind-up ladder is likewise kit-silent ⚑",
+      "targetSet": "self",
+      "nearestWrongModel": "durationSec 10 (conflating the swap window with the FB window — over-credits ~43% more swap shots per burst), or modeling the burst as a single 33% flatDamage nuke instead of a per-shot weapon for 7 s, or silently keeping MG cadence+wind-up for the swap weapon without a ⚑",
+      "distinguishingAssertion": "onEvent trace in controlComp: from each of HER burstCast frames, damage events for her slot switch to the swap shot spec (mult consistent with 33, not 5.57) and the LAST swap-spec shot lands ≤ 7 s (420 frames) after cast — a shot at cast+8 s must already be back on the 5.57 MG spec (GREEN under 7 s, RED under a 10 s window). No swap events on rotations where helm bursts",
+      "inertness": "Zero swap shots outside her own 7 s post-cast windows; helm's B3 casts must not trigger her swap",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "when attacking a Fire Code target … 11% … additional",
+      "disposition": "FIX",
+      "scope": "A flat additional-damage rider per attack, element-gated on the BOSS being Fire Code (bossElementGate:'Fire') — live in controlComp (Fire boss). Per rider conventions: no range bonus (engine force-sets no-range), no core, crit at caster's rate only if measured; takes the +50% FB major by landing timing (default ON)",
+      "durationSemantics": "No stated duration on the rider itself — the faithful reading scopes it to attacks made during the burst's own window (the 7 s weapon swap), i.e. per-swap-shot, since it sits inside the burst block whose only clock is the swap. A whole-fight permanent rider from a burst block with no duration is the over-credit reading; if the driver believes it is fight-long it must be MEASUREMENT-GATED, not assumed",
+      "triggerIdentity": "Per-attack on-hit rider (shotFired-keyed flatDamage atkPct:11) gated by bossElementGate:'Fire' AND scoped to the swap window (swapGate:'swapped' or equivalent); 'Affects the target' = target enemy",
+      "targetSet": "enemy (the target)",
+      "nearestWrongModel": "The ungated whole-fight rider: +11% of final ATK on EVERY shot she fires for the entire 180 s fight (≈300-round magazines of MG fire all carrying the rider) — a massive over-credit vs the swap-scoped reading. Second-nearest: dropping the Fire gate so it fires vs any boss element; third: folding it into the swap's damagePct (33→44), which destroys the rider's separate no-range/bucket identity",
+      "distinguishingAssertion": "In controlComp (Fire boss): 11%-ATK flat-damage events for her slot exist ONLY inside the 7 s post-burstCast windows and their count per window equals that window's swap-shot count (GREEN under swap-scoped, RED under whole-fight where thousands of rider events appear across MG fire). Element gate: rerun with a non-Fire boss element — rider event count must be ZERO while the swap shots persist",
+      "inertness": "Zero rider events outside her burst windows; zero rider events vs a non-Fire boss; the rider must not receive the +30% range bonus (rangeApplied false on its damage events)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1: burstCast escalating partsDamagePct 12.4×3 (event-presence + damage-inertness pin)",
+    "skill2: stageEnter{3} escalating elemAdvantageDamagePct 20.56/20.2/20.2 for 10s",
+    "burst: weaponSwap 33% for 7s (not 10s), own-cast only",
+    "burst: 11% Fire-gated additional-damage rider, swap-window-scoped"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to reconcile against the driver: (1) skill2's trigger — 'entering Burst Stage 3' is stageEnter{3} (anyone's B3 cast counts, helm's included), but a driver primed by skill1's burst-cast wording will plausibly key BOTH skills to burstCast; the controlComp fixture deliberately co-slots helm B3, so the divergence is directly assertable — demand the helm-cast-rotation assertion. (2) Escalation semantics — 'each subsequent effect triggers all effects before it' is CUMULATIVE (skill1 caps 37.2%, skill2 caps 60.96%); a replace-not-stack encoding (flat 12.4 / 20.2 forever) is the nearest quiet under-credit. (3) The burst's 11% rider with no stated duration: whole-fight scoping is the big over-credit trap — if the driver shipped it ungated, every MG round all fight carries +11% ATK; the per-window rider-count-equals-swap-shot-count assertion kills that reading. (4) skill1's partsDamagePct must stay in the inert parts stat — watch for a 'helpful' re-encode into attackDamagePct because the faithful stat moves nothing on the partless boss (that inertness is CORRECT and must be pinned, not fixed). (5) Swap cadence and wind-up interaction are kit-silent ALWAYS-⚑ fields — a precise unflagged pulls/sec in the override is a guess dressed as data. Minor: skill2 vs fullBurstEnter differs by only ~52 frames per rotation (B3-cast → 22f → FB), so a timing-only assertion won't separate them reliably — separate them by CASTER IDENTITY (helm rotations), not by frame offset.",
+  "model": "claude-fable-5"
+}

@@ -33,7 +33,7 @@
 | `alliesTopAtk` | 16 | alice, anis, avistar, chime, claire, folkwang, jackal, lily, … |
 | `atkOfMaxHpPct` | 5 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose, maxwell-ordinary-mechanic |
 | `bossElement` | 1 | eve |
-| `bossElementGate` | 6 | brid-silent-track, eve, helm-aquamarine, marciana-marine-study, phantom, rosanna |
+| `bossElementGate` | 7 | brid-silent-track, eve, helm-aquamarine, marciana-marine-study, neon-blue-ocean, phantom, rosanna |
 | `burstCasters` | 3 | ada, arcana, crown |
 | `burstCdr` | 19 | anis-star, arcana, blanc, d-killer-wife, dolla, dorothy, helm-aquamarine, liter, … |
 | `burstEligibility` | 1 | rapi-red-hood |
@@ -51,7 +51,7 @@
 | `critRateNormalPct` | 3 | biscuit, helm, julia |
 | `delaySec` | 5 | asuka-wille, dorothy, flora, rapi-red-hood, snow-white |
 | `durationShots` | 9 | emilia, helm, miranda, neon, neve, phantom, snow-white-heavy-arms, vesti-tactical-upgrade, … |
-| `escalating` | 8 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, mary-bay-goddess, volume |
+| `escalating` | 9 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, mary-bay-goddess, neon-blue-ocean, … |
 | `everyN` | 7 | clay, mast-romantic-maid, mint, neon-vision-eye, phantom, rouge, soda-twinkling-bunny |
 | `everyNOffset` | 3 | mint, neon-vision-eye, phantom |
 | `excludeSelf` | 17 | anis, arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, … |
@@ -102,7 +102,7 @@
 | `shielded` | 2 | flora, naga |
 | `shotFired` | 35 | a2, ade-agent-bunny, anis-star, bready, cinderella, clay, delta-ninja-thief, diesel-winter-sweets, … |
 | `stackedNuke` | 1 | maiden-ice-rose |
-| `stageEnter` | 11 | cinderella, ein, flora, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, … |
+| `stageEnter` | 12 | cinderella, ein, flora, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, … |
 | `storedHit` | 1 | rapi-red-hood |
 | `stun` | 1 | mast-romantic-maid |
 | `swapGate` | 8 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
@@ -115,7 +115,7 @@
 | `unlimitedAmmo` | 6 | grave, modernia, moran, nayuta, red-hood, snow-white-innocent-days |
 | `unswapped` | 2 | laplace, laplace-ultimate-hero |
 | `weapon` | 14 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, k, leona, miranda, nayuta, … |
-| `weaponSwap` | 18 | ada, chisato, cinderella-crystal-wave, clay, e-h, eunhwa-tactical-upgrade, frima, k, … |
+| `weaponSwap` | 19 | ada, chisato, cinderella-crystal-wave, clay, e-h, eunhwa-tactical-upgrade, frima, k, … |
 | `whileSwapped` | 0 | _none_ |
 
 <!-- END GENERATED: primitive-census -->
