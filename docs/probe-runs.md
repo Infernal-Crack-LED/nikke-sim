@@ -5733,3 +5733,90 @@ old rule.** Realizing the benefit requires re-running `--dump-tracks`. That is t
 
 ⛔ Nothing here touches the cold bias, and no verdict is stamped on it. This is a
 tooling-faithfulness landing: it makes the analysis path agree with the production path, nothing more.
+
+#### §24 THE BACKEND-SELECTOR TIE-BREAK IS FIXED — and it exposes a downstream defect it deliberately does not fix
+
+Closes §11E's recorded defect (item 6). Plan with blast radius **measured before any production file
+was touched**: `docs/handoffs/2026-08-04-backend-selector-LANDING-PLAN.md` (`42d26077`), pre-op gate
+folded (`f1341e72`), landing `a662b842`.
+
+##### §24A — The defect, and what §11E did not say
+
+`read-pellets.ts` ranked backends on **`white + red` alone**, then read `marker` — and, since the
+2026-08-04 hybrid landing, **`band`** — off whichever backend that key selected. Those two channels
+never participated in the choice, and `Array.reduce`'s strict `<` leaves the accumulator in place on
+a tie, so **ties resolved to array order: numpy → pil → opencv.** Production runs `--backend opencv`
+with the others zero-filled, so the tie fires exactly when **`white + red == 0` on every backend** —
+`total = 0`, nothing is ever strictly less, and numpy's zeros overwrite opencv's real values.
+
+⚑ **§11E recorded one passenger channel; there were two.** `band` inherited the identical defect and
+feeds `perFrameForDebounce` → `debounceShots` → the landed representative-frame rule.
+
+##### §24B — Blast radius, MEASURED (§11E's figure was stale)
+
+Re-measured over **24,679 frames / 848 shots / 5 dumps / 4 units** at the landed `band_hi`: the tie
+fires on **12,614** frames, discarding a nonzero `band` on **442** and a nonzero `marker` on **606**.
+
+⚑ **Narrowed to what can change an answer — in-span AND `band ≥ MERGE_EVENT_MIN`, i.e. able to form
+a plateau — the count is ZERO, and 0 of 848 shots have a representative frame there.** Every
+discarded `band` value is 1–2. **The counting path was never affected.** The raw 1,018-frame exposure
+would have been the wrong number to quote; that is the §20D trap, avoided by narrowing before
+reporting.
+
+##### §24C — The landing moved exactly ONE event, the pre-declared one
+
+| dump                     | frames | `white`/`red`/`total`/`valid` diffs | marker-divergent frames | `totalShots` | shot diffs |
+| ------------------------ | ------ | ----------------------------------- | ----------------------- | ------------ | ---------- |
+| `h4-marciana-structural` | 5697   | **0**                               | 82                      | 218 = 218    | **1**      |
+| `h4-isabel-structural`   | 5721   | **0**                               | 146                     | 203 = 203    | 0          |
+| `h4-guilty-structural`   | 5738   | **0**                               | 230                     | 180 = 180    | 0          |
+| `g2-noir-structural`     | 5722   | **0**                               | 204                     | 214 = 214    | 0          |
+| `groundtruth-f811-v4`    | 1801   | **0**                               | 22                      | 37 = 37      | 0          |
+
+⚑ **The marker-divergent frame counts 82 / 146 / 230 / 204 reproduce §11I's table EXACTLY**, by a
+different method (diffing the fix's own output rather than auditing backends). Independent
+corroboration that the fix targets precisely the population §11 identified.
+
+The single shot diff is the **pre-declared §5 exception**: `h4-marciana-structural` event #56, frames
+1555–1569 — `red` 0→1, `total` 4→5, `core` false→true, with **`frame`/`start`/`end` unchanged, so no
+onset moved.** No committed fixture pins it: **zero fixtures moved**, all 25 selftest arms,
+`verify.sh` and `npm run typecheck` green.
+
+##### §24D — ⚑ THE FIX IS RIGHT AND ITS RESULT ON THAT EVENT IS PROBABLY WRONG
+
+The event that flipped to `core = true` spans **f1565** — the exact frame §15 adjudicated, where
+opencv's `marker = 3` is **1 genuine crosshair-attached marker + 2 single-frame red UI-banner
+glyphs.** `MARKER_MIN` is 2, so **two banner glyphs are sufficient to raise a core-hit flag.**
+
+⇒ **This landing stops the passenger channel being chosen by array order. It does NOT adjudicate
+marker truth, and the plan said so up front.** The consequence is that a defect previously masked by
+the array-order bug is now visible: **`marker` counts UI artifacts as hit-markers, and `MARKER_MIN = 2`
+is met by them.** ⚑ **NEW OPEN ITEM**, not fixed here — fixing it means filtering markers by the
+crosshair-attached geometry §15 established (constant offset across frames), which is its own pass
+with its own blast radius.
+
+⚑ Read plainly: the reader's _selection_ is now faithful; its _marker semantics_ are not, and the
+old bug was accidentally suppressing a symptom of that.
+
+##### §24E — The pre-op gate caught a fatal flaw in the plan's own design
+
+The original §3 proposed deriving `marker`/`band` "by the same active-backend consensus used for
+`total`". **That would have been a silent no-op:** `total`'s activity test is `white + red > 0`,
+false for every backend on exactly the frames the defect fires — the consensus would have emitted 0
+and preserved the wrong answer. The gate's `simplerPath` was adopted instead (per-channel activity:
+first backend with that channel > 0, else `best`, else 0), and a per-channel median was explicitly
+rejected because it would **erase a lone real marker** in a genuine 3-backend run.
+
+⚑ **Second time in this session a cross-family pre-op gate caught a landing plan that would have been
+a no-op** (the first was the `band_hi` restructure). Recorded because that is now a pattern, not an
+incident.
+
+##### §24F — Scope
+
+5 dumps / 4 units / 24,679 frames for the blast radius; production is single-backend
+(`--backend opencv`), and the fix's multi-backend behaviour is defensible but untested against real
+3-backend footage. A zero-filled inactive backend remains indistinguishable from an active backend
+that genuinely observed zero — resolving that needs active-backend metadata in `count-pellets.py`'s
+output, which was **deliberately deferred** as a schema change outside this landing's hard stops.
+
+⛔ Nothing here touches the cold bias, and no verdict is stamped on it.
