@@ -25,7 +25,7 @@
 | --- | --- | --- |
 | `advantageVs` | 2 | rapi-red-hood, sugar |
 | `alliesLowestAtk` | 1 | liberalio |
-| `alliesLowestHp` | 8 | blanc, ether, misato, naga, pepper, poli, rapunzel, sakura-suzuhara |
+| `alliesLowestHp` | 9 | blanc, ether, mary, misato, naga, pepper, poli, rapunzel, … |
 | `alliesOfClass` | 2 | biscuit, d |
 | `alliesOfElement` | 11 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, exia, guillotine-winter-slayer, guilty, maiden-ice-rose, … |
 | `alliesOfElementWeapon` | 3 | ark-ranger-black, sugar, trina |
@@ -73,7 +73,7 @@
 | `instantInFb` | 1 | rapi-red-hood |
 | `instantReload` | 11 | alice-wonderland-bunny, asuka-wille, diesel, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, … |
 | `interval` | 32 | ade, anis, brid, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, … |
-| `lastBullet` | 12 | anis-sparkling-summer, aria, crow, dorothy, epinel, eunhwa, exia, helm, … |
+| `lastBullet` | 13 | anis-sparkling-summer, aria, crow, dorothy, epinel, eunhwa, exia, helm, … |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 9 | emilia, grave, himeno, n102, neon, noir, rem, tove, … |
 | `maxShots` | 3 | e-h, laplace-ultimate-hero, snow-white-heavy-arms |

@@ -1,0 +1,204 @@
+{
+  "slug": "mary",
+  "leakDetected": null,
+  "override": {
+    "slug": "mary",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "alliesLowestHp",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": []
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 19.8,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Recovers 8.4% of the skill user's final Max HP as HP."
+      ],
+      "skill2": [
+        "Incoming healing ▲ 23.78% for 15 sec."
+      ],
+      "burst": [
+        "Recovers 39.6% of the skill user's final Max HP as HP.",
+        "Activates when above 50% HP."
+      ]
+    },
+    "caveats": [
+      "⛑ S1 target 'lowest HP percentage' is indeterminate at scope lock (immortal boss, nobody takes damage) — resolved to alliesLowestHp count 1, the documented leftmost-ally stand-in. The heal AMOUNT (8.4% of caster final Max HP) is not modeled (the engine models no HP pool); the recovery EVENT is what matters, and it fires every magazine via lastBullet.",
+      "⛑ S2 'Incoming healing ▲ 23.78%' has NO StatKey in the schema — it scales heal AMOUNTS, and the engine models no HP amounts, so it is structurally inexpressible. The block is retained with an empty effects array to keep the fullBurstEnter trigger auditable; the line is recorded verbatim in unmodeled.skill2. It is offensively inert unless a future consumer scales off healing magnitude.",
+      "⛑ Burst 'Activates when above 50% HP' is a self-HP gate with no schema primitive (no HP pool at scope lock). Modeled as UNGATED (always true) — the scope-lock boss deals no damage, so mary is permanently above 50% HP and the gate is trivially satisfied. Faithful at scope lock; would over-credit on a damaging boss.",
+      "⛑ defPct is inert in v1 by schema comment (self DEF does not affect own damage). Retained per HARD RULE 7 (keep the stat buff even if the engine treats it inert — a future consumer/scaler may read it). Ally-granted DEF is likewise offensively inert.",
+      "⛑ Cadence tuple (ammo 9 / reloadFrames 111 / hitsPerShot 10) is datamine-sourced and unreliable; it sets the lastBullet cadence that drives the S1 heal frequency, so a teammate with an on-recovery consumer (crown-style) inherits that error directly."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Mary is an SG/Water/Supporter/Burst I pure-sustain kit: every one of her five kit lines is a heal, a healing-amplifier, or a DEF buff — she carries ZERO damage effects and ZERO offensive stat buffs. Her sim-relevant surface is therefore TANDEM ONLY (HARD RULE: never skip heal/shield/DEF/HP lines on isolation): S1 emits a recovery event on every last bullet (per-magazine cadence), and the burst emits a team-wide recovery event on cast — both drive a teammate's 'recovery' trigger (e.g. crown's on-recovery consumer). Solo she moves no damage beyond her own SG normals. Trigger fidelity: S1 'when the last bullet hits' = lastBullet; S2 'when entering Full Burst' = fullBurstEnter (fires on ANY team Full Burst, not just rotations she bursts); the burst block is burstCast, and as a Burst I unit she casts on essentially every rotation. The burst's two ■ headers are authored as SEPARATE blocks because the second carries an activation clause the first does not. Heal AMOUNTS are deliberately unmodeled — the engine tracks no HP pool at scope lock — so the percentages live verbatim in unmodeled; the recovery EVENT is the modeled mechanic."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when last bullet hits",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger lastBullet — per-magazine, fires on reload start. Literal reading of the activation clause; NOT shotFired, NOT hitCount."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects 1 ally, lowest HP percentage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target alliesLowestHp count 1. 'Lowest HP percentage' is indeterminate with an immortal boss; the schema documents the deterministic leftmost-ally stand-in for exactly this wording."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 8.4% of Max HP as HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal ticks 1 — emits a recovery event to the target, firing their 'recovery' triggers. The 8.4% AMOUNT is not modeled (no HP pool) and is recorded verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter — fires on ANY team Full Burst, per the trigger-identity rule ('entering Full Burst' ≠ burstCast). Block retained with empty effects so the trigger stays auditable."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies (includes self — no 'except self' clause)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Incoming healing ▲ 23.78% 15 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "No StatKey exists for incoming-healing amplification. It scales heal AMOUNTS, which the engine does not model (no HP pool). Structurally inexpressible — not a judgement that it is unimportant. Recorded verbatim in unmodeled.skill2. NOTE: this is NOT a heal/shield line being skipped on isolation — the underlying heal events ARE modeled (S1 + burst); only the amount-scaling multiplier is absent."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies on the first burst block."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 39.6% of Max HP as HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal ticks 1 on trigger burstCast — a team-wide recovery event on her burst cast. Amount unmodeled (no HP pool); recorded verbatim."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Activates when above 50% HP",
+      "status": "SKIPPED",
+      "effectOrReason": "Self-HP-threshold gate with no schema primitive and no HP pool at scope lock. Modeled as ungated: the boss deals no damage, so the condition is permanently TRUE and an ungated block is FAITHFUL at scope lock (it would over-credit only on a damaging boss). Recorded verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▲ 19.8% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct 19.8 durationSec 10, target allies, trigger burstCast. Authored as a SEPARATE block from the heal because the kit gives it its own ■ header with a distinct activation clause. defPct is engine-inert in v1 but retained per HARD RULE 7."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "(burst trigger identity)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast on both burst blocks — effects in a unit's OWN burst slot fire when THAT unit casts, per the trigger-identity rule. As Burst I (cd 40s) she opens essentially every rotation."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "(base weapon — SG, 10 pellets)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Engine-automatic from base stats (SG landing/pellet model, normalAttackMultiplier 201.5). No override block needed; no kit line modifies her weapon state."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger (lastBullet cadence)",
+      "estimate": "ammo 9, reloadFrames 111, 1 pull per trigger — so ~1 recovery event per magazine, roughly every (9 shots ÷ SG pulls-per-sec) + 1.85s reload.",
+      "reasoning": "ALWAYS-⛑ #1: the cadence tuple is datamined and known-unreliable (rate_of_fire nominal vs 60fps-frame-boundary effective; reloadFrames likewise). Mary carries no ammo/reload modifiers of her own, so the tuple is the SOLE driver of how often her S1 recovery fires — and any teammate with an on-recovery damage consumer inherits that error one-for-one. This is her single highest-leverage unknown despite her having no damage of her own.",
+      "recipe": "Focus-record mary in a comp with an on-recovery carrier; count her reload cycles over a fixed 60s window from the ammo counter (the instrument that measures the DISPUTED quantity directly), and count the carrier's recovery-gated procs over the same window. Compare against sim lastBullet firings."
+    },
+    {
+      "field": "skill1[0].target",
+      "estimate": "alliesLowestHp count 1 — resolved to the leftmost ally (the documented stand-in).",
+      "reasoning": "'1 ally with the lowest HP percentage' is genuinely indeterminate at scope lock: the boss deals no damage, so every ally sits at 100% and the real game's selection never has a defined answer in this fight. The schema documents alliesLowestHp resolving to leftmost as a deliberate stand-in. Since only a recovery EVENT (not an amount) is emitted, WHICH ally receives it matters only if some ally has an on-recovery consumer — then the stand-in is load-bearing and could credit or starve the wrong unit.",
+      "recipe": "Only decidable on a damaging boss (out of v1 scope). At scope lock, bound the blast radius instead: A/B the comp with the target forced to each slot and check whether any teammate's on-recovery proc count moves. If it does, the stand-in is load-bearing and the comp needs a note."
+    },
+    {
+      "field": "skill2[0].effects (Incoming healing ▲ 23.78%)",
+      "estimate": "Inexpressible — empty effects array; 0 damage impact.",
+      "reasoning": "No StatKey covers incoming-healing amplification, and the engine models no HP amounts, so there is nothing for it to scale. I am flagging rather than silently dropping because a future heal-magnitude consumer (or an HP-scaling ATK conversion fed by healing) would make this line live. Note the trigger identity is still worth pinning: fullBurstEnter fires on ANY team Full Burst, so a wrong read here (burstCast) would under-fire in multi-caster comps.",
+      "recipe": "No measurement needed while the engine has no HP pool. Revisit if an HP-amount model lands; then the line needs a new StatKey (e.g. incomingHealingPct) rather than a re-tune."
+    },
+    {
+      "field": "burst[1] (missing 'above 50% HP' gate)",
+      "estimate": "Ungated — condition always TRUE at scope lock.",
+      "reasoning": "The gate is trivially satisfied on a partless, non-damaging boss (mary can never drop below 50%). Modeling it ungated is faithful HERE, but it is an explicit scope-lock assumption, not a claim about the kit: on any boss that deals damage the DEF buff would have real downtime. Recording it so the assumption is visible if the sim ever gains a damage-taken model.",
+      "recipe": "Only testable on a damaging boss (out of v1 scope). If HP modeling lands, this needs a self-HP-threshold block gate primitive (none exists today)."
+    },
+    {
+      "field": "burst[1].effects[0] (defPct)",
+      "estimate": "19.8% for 10s, allies — kit-literal value, engine-inert.",
+      "reasoning": "The MAGNITUDE is not a ⛑ (it is verbatim in the kit text). The flag is on its INERTNESS: defPct is documented inert in v1, so this buff moves zero damage today. I am keeping it per HARD RULE 7 (retain the stat buff for a future consumer) and flagging so a later reader does not mistake 'present in the override' for 'affecting the board'.",
+      "recipe": "No measurement. Verify inertness cheaply by A/B toggling the block in the harness — expect a byte-identical total (that A/B IS the independent check; no footage needed)."
+    },
+    {
+      "field": "override (whole-unit blast radius)",
+      "estimate": "Mary contributes ZERO damage effects and ZERO offensive stat buffs. Her board footprint is her own SG normals plus whatever a teammate's recovery-trigger consumer produces.",
+      "reasoning": "Whole-picture check: all five kit lines are sustain (2 heals, 1 healing amp, 1 DEF buff, plus their activation clauses). This is a genuine, kit-faithful result — NOT a sign of an under-parsed kit — but it is exactly the profile that gets wrongly dismissed as 'skip, defensive'. Per the tandem/cross-unit HARD RULE the heals are retained precisely because they are the interface a partner damage kit reads. Also note she is a SUPPORTER (static ATK 98,367 at Base 5), so her own SG normals are modest.",
+      "recipe": "Run her in the harness alongside an on-recovery carrier and assert the carrier's recovery-gated proc count > 0 (S1 lastBullet + burst cast). A solo run asserting ~zero skill/burst-bucket damage is the complementary pin."
+    }
+  ],
+  "model": "claude-opus-5"
+}
