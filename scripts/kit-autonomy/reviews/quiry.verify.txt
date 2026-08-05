@@ -1,0 +1,213 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-08-04-b[39m
+
+ [31m❯[39m scripts/tests/units/quiry.test.ts [2m([22m[2m17 tests[22m[2m | [22m[31m11 failed[39m[2m)[22m[32m 13[2mms[22m[39m
+     [32m✓[39m fixture sanity: quiry is the sole Burst II and casts every Full Burst[32m 1[2mms[22m[39m
+[31m       [31m×[31m is a flat CASTER-basis add (5.81% of quiry static ATK), not the target's own %[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m reaches ONLY the Defender-class ally (never asuka/liter/quiry herself)[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m fires on EVERY full charge — an RL fires every shot as a full charge[39m[32m 1[2mms[22m[39m
+       [32m✓[39m is a 3-second window, refreshed per shot[32m 0[2mms[22m[39m
+[31m       [31m×[31m DISCRIMINATING: a generic all-allies own-% ATK buff reaches all four at value 5.81[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m applies at frame 0 to the Defender only, at 11.63% of the TARGET's own Max HP[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m is continuous — no wall-clock expiry[39m[32m 0[2mms[22m[39m
+       [32m✓[39m is damage-INERT by the e3 rule: removing it moves NO unit's total (even 2b, an HP scaler)[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING: the same magnitude as 2b's OWN grant DOES feed her HP→ATK conversion[32m 0[2mms[22m[39m
+       [32m✓[39m has bursts with a complete window to measure[32m 0[2mms[22m[39m
+[31m       [31m×[31m keeps recovery firing across the whole 10 sec after each cast (10 ticks, 1s apart)[39m[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING: a one-shot heal never reaches the 10-firing window[32m 0[2mms[22m[39m
+[31m       [31m×[31m is 19.9% for 10 sec, one application per quiry cast, on her cast frames[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m reaches ONLY the Defender-class ally[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m is LIVE: 2b's crit rate inside a window is exactly +0.199 over her out-of-window rate[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m DISCRIMINATING: unscoping the buff lifts EVERY unit's crit, not just the Defender[39m[32m 3[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 11 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/quiry.test.ts[2m > [22mquiry — kit spec[2m > [22mQ1 — S1 full-charge attack: 2 Defender allies gain ATK = 5.81% of quiry's ATK, 3s[2m > [22mis a flat CASTER-basis add (5.81% of quiry static ATK), not the target's own %
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/tests/units/quiry.test.ts:[2m235:30[22m[39m
+    [90m233|[39m
+    [90m234|[39m     it("is a flat CASTER-basis add (5.81% of quiry static ATK), not th…
+    [90m235|[39m       [34mexpect[39m(applied[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                              [31m^[39m
+    [90m236|[39m       [35mconst[39m expected [33m=[39m ([34m5.81[39m [33m/[39m [34m100[39m) [33m*[39m [33mQUIRY_STATIC_ATK[39m[33m;[39m
+    [90m237|[39m       expect([...new Set(applied.map((b) => b.value))]).toEqual([expec…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/quiry.test.ts[2m > [22mquiry — kit spec[2m > [22mQ1 — S1 full-charge attack: 2 Defender allies gain ATK = 5.81% of quiry's ATK, 3s[2m > [22mreaches ONLY the Defender-class ally (never asuka/liter/quiry herself)
+[31m[1mAssertionError[22m: expected [] to deeply equal [ 3 ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   3,[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m scripts/tests/units/quiry.test.ts:[2m241:61[22m[39m
+    [90m239|[39m
+    [90m240|[39m     it('reaches ONLY the Defender-class ally (never asuka/liter/quiry …
+    [90m241|[39m       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([T…
+    [90m   |[39m                                                             [31m^[39m
+    [90m242|[39m     })[33m;[39m
+    [90m243|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/quiry.test.ts[2m > [22mquiry — kit spec[2m > [22mQ1 — S1 full-charge attack: 2 Defender allies gain ATK = 5.81% of quiry's ATK, 3s[2m > [22mfires on EVERY full charge — an RL fires every shot as a full charge
+[31m[1mAssertionError[22m: expected +0 to be 102 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 102[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/quiry.test.ts:[2m245:30[22m[39m
+    [90m243|[39m
+    [90m244|[39m     it('fires on EVERY full charge — an RL fires every shot as a full …
+    [90m245|[39m       [34mexpect[39m(applied[33m.[39mlength)[33m.[39m[34mtoBe[39m([34mquiryShots[39m(base[33m.[39mevents)[33m.[39mlength)[33m;[39m
+    [90m   |[39m                              [31m^[39m
+    [90m246|[39m     })[33m;[39m
+    [90m247|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/quiry.test.ts[2m > [22mquiry — kit spec[2m > [22mQ1 — S1 full-charge attack: 2 Defender allies gain ATK = 5.81% of quiry's ATK, 3s[2m > [22mDISCRIMINATING: a generic all-allies own-% ATK buff reaches all four at value 5.81
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/tests/units/quiry.test.ts:[2m258:30[22m[39m
+    [90m256|[39m         (b) => b.casterIdx === QUIRY && b.stat === 'atkPct' && b.value…
+    [90m257|[39m       )[33m;[39m
+    [90m258|[39m       [34mexpect[39m(generic[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                              [31m^[39m
+    [90m259|[39m       expect(new Set(generic.map((b) => b.targetIdx)).size).toBe(SLUGS…
+    [90m260|[39m       // and the shipped flat basis is one the generic model provably …
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/quiry.test.ts[2m > [22mquiry — kit spec[2m > [22mQ2 — S2 battle-start: Defender allies gain Max HP ▲11.63% continuously[2m > [22mapplies at frame 0 to the Defender only, at 11.63% of the TARGET's own Max HP
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/tests/units/quiry.test.ts:[2m275:30[22m[39m
+    [90m273|[39m
+    [90m274|[39m     it("applies at frame 0 to the Defender only, at 11.63% of the TARG…
+    [90m275|[39m       [34mexpect[39m(applied[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                              [31m^[39m
+    [90m276|[39m       [34mexpect[39m([[33m...[39m[35mnew[39m [33mSet[39m(applied[33m.[39m[34mmap[39m((b) [33m=>[39m b[33m.[39mframe))])[33m.[39m[34mtoEqual[39m([[34m0[39m])[33m;[39m
+    [90m277|[39m       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([T…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/quiry.test.ts[2m > [22mquiry — kit spec[2m > [22mQ2 — S2 battle-start: Defender allies gain Max HP ▲11.63% continuously[2m > [22mis continuous — no wall-clock expiry
+[31m[1mAssertionError[22m: expected [] to deeply equal [ null ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   null,[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m scripts/tests/units/quiry.test.ts:[2m283:64[22m[39m
+    [90m281|[39m
+    [90m282|[39m     [34mit[39m([32m'is continuous — no wall-clock expiry'[39m[33m,[39m () [33m=>[39m {
+    [90m283|[39m       expect([...new Set(applied.map((b) => b.expiresFrame))]).toEqual…
+    [90m   |[39m                                                                [31m^[39m
+    [90m284|[39m     })[33m;[39m
+    [90m285|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/quiry.test.ts[2m > [22mquiry — kit spec[2m > [22mQ3 — burst: all allies recover every 1 sec for 10 sec (a 10-tick recovery window)[2m > [22mkeeps recovery firing across the whole 10 sec after each cast (10 ticks, 1s apart)
+[31m[1mAssertionError[22m: burst at 6.63s produced 1 recovery firing(s) spanning 0.5s — a single instant heal produces 1 (+≤1 lifesteal): expected 1 to be greater than or equal to 10[39m
+[36m [2m❯[22m scripts/tests/units/quiry.test.ts:[2m329:11[22m[39m
+    [90m327|[39m           `burst at ${cast.sec.toFixed(2)}s produced ${inWindow.length…
+    [90m328|[39m             `spanning ${spanSec.toFixed(1)}s — a single instant heal p…
+    [90m329|[39m         )[33m.[39m[34mtoBeGreaterThanOrEqual[39m([34m10[39m)[33m;[39m
+    [90m   |[39m           [31m^[39m
+    [90m330|[39m         [34mexpect[39m(
+    [90m331|[39m           spanSec[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/quiry.test.ts[2m > [22mquiry — kit spec[2m > [22mQ4 — burst: all Defender allies gain Critical Rate ▲19.9% for 10 sec[2m > [22mis 19.9% for 10 sec, one application per quiry cast, on her cast frames
+[31m[1mAssertionError[22m: expected +0 to be 3 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 3[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/quiry.test.ts:[2m360:30[22m[39m
+    [90m358|[39m
+    [90m359|[39m     it('is 19.9% for 10 sec, one application per quiry cast, on her ca…
+    [90m360|[39m       [34mexpect[39m(applied[33m.[39mlength)[33m.[39m[34mtoBe[39m(casts[33m.[39mlength)[33m;[39m
+    [90m   |[39m                              [31m^[39m
+    [90m361|[39m       [34mexpect[39m(applied[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m362|[39m       expect([...new Set(applied.map((b) => b.value))]).toEqual([19.9]…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/quiry.test.ts[2m > [22mquiry — kit spec[2m > [22mQ4 — burst: all Defender allies gain Critical Rate ▲19.9% for 10 sec[2m > [22mreaches ONLY the Defender-class ally
+[31m[1mAssertionError[22m: expected [] to deeply equal [ 3 ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   3,[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m scripts/tests/units/quiry.test.ts:[2m373:61[22m[39m
+    [90m371|[39m
+    [90m372|[39m     [34mit[39m([32m'reaches ONLY the Defender-class ally'[39m[33m,[39m () [33m=>[39m {
+    [90m373|[39m       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([T…
+    [90m   |[39m                                                             [31m^[39m
+    [90m374|[39m     })[33m;[39m
+    [90m375|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/quiry.test.ts[2m > [22mquiry — kit spec[2m > [22mQ4 — burst: all Defender allies gain Critical Rate ▲19.9% for 10 sec[2m > [22mis LIVE: 2b's crit rate inside a window is exactly +0.199 over her out-of-window rate
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/tests/units/quiry.test.ts:[2m387:28[22m[39m
+    [90m385|[39m         (d) [33m=>[39m [33m![39mwindows[33m.[39m[34msome[39m(([a[33m,[39m z]) [33m=>[39m d[33m.[39mframe [33m>=[39m a [33m&&[39m d[33m.[39mframe [33m<[39m z)
+    [90m386|[39m       )[33m;[39m
+    [90m387|[39m       [34mexpect[39m(inWin[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                            [31m^[39m
+    [90m388|[39m       [34mexpect[39m(outWin[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m389|[39m       [35mconst[39m baseRate [33m=[39m [33mMath[39m[33m.[39m[34mmin[39m([33m...[39moutWin[33m.[39m[34mmap[39m((d) [33m=>[39m d[33m.[39mcritRate))[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/quiry.test.ts[2m > [22mquiry — kit spec[2m > [22mQ4 — burst: all Defender allies gain Critical Rate ▲19.9% for 10 sec[2m > [22mDISCRIMINATING: unscoping the buff lifts EVERY unit's crit, not just the Defender
+[31m[1mAssertionError[22m: the unscoped buff must lift the non-Defenders the shipped scope excludes: expected 0 to be greater than or equal to 2[39m
+[36m [2m❯[22m scripts/tests/units/quiry.test.ts:[2m409:9[22m[39m
+    [90m407|[39m         moved[33m.[39mlength[33m,[39m
+    [90m408|[39m         'the unscoped buff must lift the non-Defenders the shipped sco…
+    [90m409|[39m       )[33m.[39m[34mtoBeGreaterThanOrEqual[39m([34m2[39m)[33m;[39m
+    [90m   |[39m         [31m^[39m
+    [90m410|[39m     })[33m;[39m
+    [90m411|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m11 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (17)[39m
+[2m   Start at [22m 23:47:44
+[2m   Duration [22m 294ms[2m (transform 78ms, setup 0ms, import 221ms, tests 13ms, environment 0ms)[22m
+
+
+=== POST-S3 GREEN (2026-08-04) ===
+
+ [32m✓[39m scripts/tests/units/quiry.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m18 passed[39m[22m[90m (18)[39m
+[2m   Start at [22m 23:55:35
+[2m   Duration [22m 321ms[2m (transform 87ms, setup 0ms, import 249ms, tests 12ms, environment 0ms)[22m
+
