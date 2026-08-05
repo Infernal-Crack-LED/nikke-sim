@@ -1,0 +1,104 @@
+{
+  "slug": "rupee-winter-shopper",
+  "kitDescription": "Rupee: Winter Shopper is an Electric Burst-I Defender whose own damage is just her AR spray — every kit line is team support or rotation machinery. Whenever her magazine empties, the whole team gets a short DEF buff. Every time any ally casts a Burst Skill, the team gains a stacking 'Shopping' DEF buff (up to 4 stacks); once Shopping is maxed, the end of each Full Burst grants the team a 5-second burst-gauge filling-speed window. Her burst taunts enemies, heals herself over 10 seconds, speeds up the whole team's reloads for 10 seconds, and re-opens Burst Stage 1 so a second Burst-I ally can also cast in the same chain — which is exactly what supplies the 4th burst cast needed to max Shopping each rotation.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "burst block: 're-enters Burst Stage 1 so the other Burst I ally still casts' — teamTotal(burstFirst fixture) > teamTotal(reenter-removed) direction assertion. Driver probe of the identical fixture shows liter casts 6 times EITHER WAY (the throttled ~36s chains leave rotations where rws's 20s CD is down and liter takes stage 1 outright), so the re-entry's mechanical payload is not exercised by that fixture's totals; measured direction is -0.056% timing noise. Classified RECON_ERROR (blind fixture misread), not a driver divergence — the mechanical re-entry is pinned GREEN in both the driver spec (RW5: liter fills stage 1 exactly one 30f stage-gap after rws in chain 1, before crown; removed -> no chain-1 liter cast; sole-B1 fixture byte-identical no-op) and the blind's own reenterRemoved>0 count assertion."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "DEF ▲ 19.02% for 5 sec (last bullet)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "lastBullet -> allies -> defPct 19.02 / 5s; 'hits the target' == 60th shot of each magazine (no miss model, clay precedent); inert in v1, modeled for completeness",
+        "blindSaid": "S6 identical encoding; S5 event-level pins (all-ally targets, per-magazine cadence 4-80 waves, removal byte-identical) all GREEN",
+        "formulaCheck": "defPct has no damage consumer — offensively inert; removal must be byte-identical (both specs assert this, green). No bucket involvement.",
+        "fireRateOk": true,
+        "explanation": "Driver RW1 pins one apply per ally frame-exact with each magazine's last shot plus 300-frame (5s) expiry, and discriminates against a fullBurstEnter keying (counterfactual lands only on FB-start frames). Cadence, target set, duration, and inertness all corroborated by prose and by the blind re-derivation."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Shopping: DEF ▲ 1.33%. Stacks up to 4",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "THREE stageEnter blocks (stage 1/2/3) — any ally's burst cast at any stage — merging into one Shopping instance via the shared buff key; maxStacks 4, 20s",
+        "blindSaid": "S6 used ONE owner-keyed burstCast block (under-fires 3-4x/chain), self-flagged as a schema-visibility limitation; S5's S2a assertions (>=3 waves before first fullBurstStart, all-ally targets, cap at 4) all GREEN against the driver override",
+        "formulaCheck": "Kit says 'when AN ALLY uses a Burst Skill' — not own-burst, not FB entry. Stage-enter per stage is the faithful reading; the blind burstCast reading is contradicted by the prose's 'ally' wording. Inert stat (defPct); removal byte-identical asserted green.",
+        "fireRateOk": true,
+        "explanation": "The S6 divergence is spurious (schema-limited reading, flagged by its own author); the driver's any-ally-cast keying is corroborated by the prose and by S5's pre-first-FB stack-accrual assertion passing against it. RW2 pins the ramp 1->4 inside one 4-cast chain, per-cast frame set (not just count), and discriminates against the owner-burstCast counterfactual via the frame set."
+      },
+      {
+        "kitLine": "Burst Gauge filling speed ▲ 7.9% (max stacks, FB end)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnd + resourceGate{shopping >= 4} via a per-cast resource-pool mirror (power/rupee-base construction; engine has no buff-stack gate primitive) -> allies burstGenPct 7.9 / 5s; gate load-bearing, first-FB-end silence pinned",
+        "blindSaid": "S6 left it UNGATED fullBurstEnd with the precondition carried verbatim in unmodeled.skill2, self-flagged ('no maxStacks-reached block gate exists in the schema' — they lacked the resource-mirror precedent); S5 gate assertions (not before 2nd fullBurstStart; ungate-strip counterfactual yields strictly more applications) GREEN against the driver",
+        "formulaCheck": "fullBurstEnd (not fullBurstEnter) matches 'when Full Burst ends' (awb-S2 precedent for the identical sentence); burstGenPct scales each holder's gauge contribution (the kit's 'filling speed' mechanic), not an instant fill. Stat placement consistent with the gauge-generation SSOT.",
+        "fireRateOk": true,
+        "explanation": "The gate is real and encoded — the most valuable line of the kit and the one both blind agents were positioned to miss. Driver's resourceGate construction reproduces the kit's precondition; the S6 ungated version would over-fire on every early FB end (its own author flagged the over-credit). One documented approximation: the pool never decays while the real buff lapses at 20s, so in SOLE-B1 comps (3 casts/chain, real stacks cap at 3 and lapse) the sim gate opens from chain 2 where the real gate never opens — driver disclosed this with an estimate, a measurement recipe, and a tier (⚑ caveat 2); exact in the double-B1 comps the kit is built for. Documented, so not a gotcha; tracked in gotchas as a low-severity documented item."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Attract: Taunts all enemies for 5 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst verbatim — no taunt primitive; v1 partless boss deals no damage and has no target choice, so target-lock moves no damage (label taunt-immunity precedent)",
+        "blindSaid": "S6 identical (verbatim unmodeled, same reasoning); S5 it.skip (no aggro primitive)",
+        "formulaCheck": "No damage bucket, no debuff, no observable at scope lock — an invention here would be the error, not the skip. RW6 closed-effect-set pin asserts no fabricated channel stands in for it.",
+        "fireRateOk": true,
+        "explanation": "All three parties converge on the skip; the decision is recorded verbatim in the override. Acceptable DOCUMENTED_GAP."
+      },
+      {
+        "kitLine": "Recovers 50.47% of attack damage as HP (self)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> SELF -> heal ticks:10 intervalSec:1 (engine models recovery events, no HP amount; avistar self-HoT encoding); target set pinned via RW7 — with crown's own heal patched out, crown's recovery consumer stays silent all fight, and an allies-widened counterfactual fires it after every rws cast",
+        "blindSaid": "S6 identical encoding (self, ticks 10 / 1s, amount unrepresentable, noted for future recovery consumers); S5 it.skip on observability grounds but concurs the line is self-targeted and kit-required",
+        "formulaCheck": "No HP pool exists; the recovery-event emission is the only modeled payload. The 'Affects self' target set is the adversarial crux (S2b) and the driver's inverted-isolation pin (crown-consumer silence) is exactly the fixture-isolation the method demands — crown's own heal stripped so rws's heal is the only candidate source.",
+        "fireRateOk": true,
+        "explanation": "Encoding, cadence (10 ticks over 10s), and self-only targeting all match the prose; the magnitude is moot (no HP pool). The target-set discrimination is proven both directions. FAITHFUL."
+      },
+      {
+        "kitLine": "Reload Speed ▲ 63.17% for 10 sec (allies)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> allies -> reloadSpeedPct 63.17 / 10s; damage-relevant weapon-state modifier (shot economy); keyed to her own casts only",
+        "blindSaid": "S6 identical; S5 pins all-ally targets, burstFirst-fixture non-vacuity, and damage-positivity (removal lowers team and own totals) — all GREEN",
+        "formulaCheck": "Reload speed is SUBTRACTIVE on reload time per the SSOT (displayed x 0.975 x (1-buff) + 13f tail); buff active from her cast frame, 10s window. Correct stat, bucket path, and trigger identity.",
+        "fireRateOk": true,
+        "explanation": "Driver RW4 pins one apply per ally frame-exact with each of her casts, 600-frame expiry, byte-different totals on removal, and discriminates against self-only targeting. Fires at the prose-implied cadence (every cast she makes). Converged across all three agents."
+      },
+      {
+        "kitLine": "Re-enters Burst Stage 1",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> allies -> reenterStage stage:1 (Tia/awb/avistar stage-hold primitive); datamined burstMeta (use_burst_skill/change_burst_step = Step1) corroborates; RW5 pins liter filling stage 1 exactly one 30f stage-gap after rws in chain 1, removed -> no chain-1 liter cast, sole-B1 fixture byte-identical no-op",
+        "blindSaid": "S6 same effect (target folded into the self block — behaviorally identical for a rotation-state effect); S5's reenterRemoved>0 count GREEN but its team-total direction assertion RED — the blind assumed the fixed B1 never casts without the re-entry, which the driver probe disproves (liter casts 6x either way in the throttled control comp)",
+        "formulaCheck": "Rotation-machine effect consistent with the burst-chain SSOT (stage windows, first-ready selection, stage-cast gaps). The 30f liter-after-rws spacing is the frame-perfect STAGE_CAST_GAP constant — a strong independent corroboration.",
+        "fireRateOk": true,
+        "explanation": "The mechanical payload (a second B1 cast inside the same chain, and the sole-B1 no-op) is pinned green in the driver spec and uncontested by the blind's count assertion. The single S5 RED is a fixture-design misread by the blind, not an encoding divergence — RECON_ERROR on the blind side, recorded under convergence. The encoding itself is faithful and corroborated by datamined burstMeta."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "Shopping resource pool never decays while the real Shopping buff lapses 20s after its last refresh — in sole-B1 comps (3 casts/chain) the real max-stack gate never opens, but the sim's pool crosses 4 during chain 2 and the 7.9% gauge buff over-fires from the 2nd FB end onward. Exact in double-B1 comps (the kit's home, where 4 casts/chain keep buff and pool in agreement at every gate read).",
+      "evidence": "Kit: 'Stacks up to 4 times and lasts for 20 sec' + 'Activates if Shopping is at max stacks when Full Burst ends'. Driver caveat 2 (⚑, with estimate + recipe + tier): pool-vs-buff divergence bounded to sole-B1 comps, a few-percent gauge-timing nudge per FB end, zero in double-B1 comps. Blind S6 lacked the gate entirely (different, coarser divergence); S5's gate assertions pass against the driver.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Needs measurement + an engine primitive, not a fudge: (1) recipe per the driver caveat — a sole-B1 rws focus recording, does the gauge-speed buff icon appear after Full Burst ends? (2) longer-term, a decaying-pool or buff-stack-read gate primitive would remove the divergence (override-only tier today)."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1",
+  "verdict": "GO",
+  "verdictRationale": "No undocumented REAL-GOTCHA exists. All seven kit lines are FAITHFUL or DOCUMENTED_GAP: the taunt skip is verbatim-recorded and converged by all three agents; every other line is encoded with the correct stat, trigger identity, target set, duration, and stacking semantics, and each load-bearing assertion discriminates against a named nearest-wrong counterfactual (fbEnter keying, owner-burstCast keying, ungated FB-end, self-only reload, no-reenter, allies-widened heal — including a properly isolated crown-consumer fixture for the heal's 'Affects self' trap). The blind re-derivations converged on everything load-bearing: S6's two divergences (owner-keyed burstCast for Shopping, ungated gauge rider) were schema-visibility limitations its own author flagged, and the prose + SSOT side with the driver on both ('when AN ALLY uses a Burst Skill'; 'if Shopping is at max stacks'). The single S5 RED is a RECON_ERROR — a blind fixture-design misread (the throttled control comp lets liter cast 6 times with or without the re-entry), disproven by the driver's fixture probe, with the mechanical re-entry pinned green in both specs and corroborated by datamined burstMeta. The one real residual, ranked: (1) the documented sole-B1 pool-no-decay over-fire (low severity, measurement recipe supplied, exact in double-B1 comps) — this is the same-model-residual the owner should spot-check, since every agent shares the resource-mirror prior and only footage of the buff icon in a sole-B1 comp independently settles it; (2) a minor same-model convergence caveat: the burstGenPct mapping (per-holder contribution scaler vs global fill rate) was accepted by all agents from the same schema prior — worth one glance against the energy-term code path, though it matches the 'filling speed' wording. Nothing must change for GO; the sole-B1 measurement can proceed as a standing ⚑ refit candidate.",
+  "model": "kimi-code/k3"
+}

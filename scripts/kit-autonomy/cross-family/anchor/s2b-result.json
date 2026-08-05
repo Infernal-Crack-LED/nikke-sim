@@ -1,0 +1,77 @@
+{
+  "slug": "anchor",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ last bullet hits → Taunt for 5 sec",
+      "disposition": "UNMODELED",
+      "scope": "Defensive aggro control on the enemy; no damage component. v1 boss follows a fixed range script and deals no modeled damage, so taunt has no mechanical surface.",
+      "durationSemantics": "durationSec 5 (literal seconds) — would apply if ever modeled.",
+      "triggerIdentity": "lastBullet (per-magazine — RL ammo 6, so roughly one proc per 6 full-charge shots + reload cycle). 'hits the target' = on-hit, but the engine's lastBullet fires at last-bullet/reload-start, which is the correct available primitive.",
+      "targetSet": "enemy (the target).",
+      "nearestWrongModel": "Encoding taunt as a boss-facing effect that moves damage — a targetStatus window some rider could key on, or worse a damageTakenPct debuff standing in for 'aggro'. Second misread: merging this block with the following self-DEF block into one enemy-targeted block.",
+      "distinguishingAssertion": "A run with the shipped override vs a run with skill1's taunt block removed (withPatchedOverride) produces IDENTICAL totals() for every slug, and the event log contains NO buffApply from anchor's skill1 targeting the boss (casterIdx===null/targetIdx===null boss-debuff shape must not appear with a skill1-attributable stat).",
+      "inertness": "Must move zero damage for all five units; must not open any requiresTargetStatus window.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ last bullet hits → DEF ▲ 23.82% 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic self DEF stat buff, no attack-type scoping. defPct is a declared StatKey the engine treats as damage-inert in v1 (self DEF never feeds own damage), but taxonomy rule 7 says keep the stat for future consumers — so it should be ENCODED, not dropped.",
+      "durationSemantics": "durationSec 5 — kit says 'for 5 sec', true wall-clock, NOT rounds (no 'round(s)' wording).",
+      "triggerIdentity": "lastBullet, self-block sibling of the taunt block (same activation header). NOT interval, NOT shotFired, NOT reload-complete.",
+      "targetSet": "self only.",
+      "nearestWrongModel": "Mis-targeting: reading 'DEF ▲' onto the TARGET (boss) — which in a sim with boss DEF in the formula would REDUCE all five units' damage — or granting it to allies. Secondary misread: keying it to a passive/interval instead of lastBullet.",
+      "distinguishingAssertion": "Event log shows buffApply {stat:'defPct', value:23.82, casterIdx===targetIdx===anchor's slot} with first application only after anchor's 6th shot (magazine exhaustion), recurring per reload cycle; AND totals() for every slug is identical to a run with this block removed (defPct self is inert — the buff must exist in events yet move nothing).",
+      "inertness": "Zero damage movement for all units; no boss-held buffApply (casterIdx null) with value 23.82 may appear.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ battle start → vs enemy projectile ▲25.6%",
+      "disposition": "UNMODELED",
+      "scope": "Damage buff scoped EXCLUSIVELY to hits on enemy projectiles (interception objects). The scope-lock boss is partless and the sim has no projectile entities — the scoped surface does not exist, so the buff is structurally inert.",
+      "durationSemantics": "'continuously' = permanent passive from t=0, no expiry — but only within its (nonexistent) scope.",
+      "triggerIdentity": "passive (start of battle), self.",
+      "targetSet": "self; the SCOPE condition (attacking a projectile) is the gate, not the target set.",
+      "nearestWrongModel": "The classic SCOPE trap: encoding it as a generic passive attackDamagePct 25.6 (or partsDamagePct treated as live), silently over-crediting ALL of anchor's boss damage by a Damage-Up-bucket 25.6 points for the whole fight.",
+      "distinguishingAssertion": "No buffApply with value 25.6 in any damage-feeding stat appears in the event log; anchor's totalDamage with the shipped override equals a run with skill2's blocks emptied via withPatchedOverride (skill2 must be verbatim in unmodeled, not folded into a live stat).",
+      "inertness": "Anchor's own damage and all ally damage unchanged by skill2's presence; no Damage-Up-bucket contribution.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 304.45% final ATK as Burst Skill dmg",
+      "disposition": "FAITHFUL",
+      "scope": "One instant burst-bucket damage instance, 304.45% of anchor's FINAL ATK (buffed at cast). 'Affects all enemies' collapses to one hit on the single boss. No core wording → no core; crits at caster sheet rate per standard burst-hit handling.",
+      "durationSemantics": "Instant, one instance per cast.",
+      "triggerIdentity": "burstCast (anchor's OWN Burst-I cast, cd 20s) — NOT fullBurstEnter. Per the noFb timing rule, burst-cast damage lands BEFORE the Full Burst window opens: no +50% FB major, no FB-entry auras in its buff snapshot.",
+      "targetSet": "enemy (the boss).",
+      "nearestWrongModel": "Two plausible misreads: (a) keying to fullBurstEnter, so the hit fires on EVERY team Full Burst — over-credits whenever anchor's 20s cd or B1 competition (another B1 in the comp) makes her skip a rotation; (b) letting the hit take the +50% Full Burst major (fbMajorApplied true), inflating every cast ~1.5×.",
+      "distinguishingAssertion": "Count of anchor-sourced burst-bucket damage events EQUALS the count of burstCast events with anchor's srcSlot (and is strictly LESS than fullBurstStart count if any rotation is cast by a competing B1); each such damage event carries inFullBurst:false and fbMajorApplied:false with mult consistent with atkPct 304.45. Assert the burstCast count is > 0 first — see notes on fixture B1 competition.",
+      "inertness": "No burst-bucket damage on rotations anchor did not cast; no FB-major on any instance.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:DEF ▲ 23.82% self, lastBullet, 5 sec (event-present, damage-inert)",
+    "burst:304.45% final ATK burst-bucket hit on own burstCast, FB-exempt"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Taunt for 5 sec."
+    ],
+    "skill2": [
+      "When attacking an enemy projectile, damage dealt to that projectile ▲ 25.6% continuously."
+    ],
+    "burst": []
+  },
+  "notes": "FIXTURE TRAP (expected shared-prior misread): controlComp(carry) pins liter in the Burst-I slot, and anchor is HERSELF Burst I. Under first-ready in-window selection she competes with liter for every B1 cast and may cast ZERO bursts — making the burstCast-vs-fullBurstEnter distinguishing assertion VACUOUSLY green (0 events on both sides). The test must first assert anchor's burstCast count > 0, and if the shared fixture starves her, build an explicit comp where anchor is the only B1 (anchor B1 + crown B2 + a B3 + helm) so bursts actually cast — the harness itself warns a chain needs B1+B2+B3 present. Second reconcile point: the skill2 SCOPE trap is the highest-risk over-credit (a generic +25.6% Damage-Up passive is exactly the misread calibration would hide, since anchor is a Defender whose board reading nobody grades closely). Third: anchor has NO cadence ⚑ concerns beyond base data (RL, chargeFrames 60, ammo 6, reloadFrames 141 drive lastBullet frequency ≈ one proc per ~8.35s cycle: 6×1s charges + 2.35s reload) — if the driver asserted lastBullet cadence in wall-clock terms, verify it derives from these base stats, not an invented interval. Kit has no heal/shield/gauge lines, so no tandem consumers to preserve.",
+  "model": "claude-fable-5"
+}

@@ -1,0 +1,72 @@
+{
+  "slug": "vesti",
+  "kitDescription": "Vesti is a Water rocket-launcher Burst III attacker whose kit revolves around a burst-usage ladder called Survival Instinct. Each time she fires her own burst she gains the next rung of self-buffs — first ATK up, then Critical Damage up, then Critical Rate up, each lasting 45 seconds and stacking with the previous rungs. Her burst also deploys two missile containers that pepper the weakest enemy once a second for 18 seconds, and deals an instant extra hit whose size grows with her Survival Instinct stage (all prior stages' hits firing together). The tradeoff is that her burst shortens that Full Burst window by 5 seconds for the whole team. Her skill 1 widens her explosion radius on full-charge shots, which matters only against groups and does nothing against a single boss.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Full Charge · Explosion Radius ▲ 15.01%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled: no explosion-radius primitive; damage-inert vs the single partless boss; verbatim line carried in unmodeled.skill1; absence canaries pin no projectileExplosionPct laundering.",
+        "blindSaid": "S5: it.skip GAP annotation + asserts no 15.01-valued damage buff and the line survives in override prose. S6: identical unmodeled callout with the same do-not-launder reasoning.",
+        "formulaCheck": "Radius is AoE geometry, not a damage bucket; zero effect on single-target damage. Correctly excluded from DamageUp/Projectile buckets.",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence (S2b, S5, S6, driver). Deliberate, documented, damage-inert at scope lock. The nearest-wrong laundering (projectileExplosionPct 15.01) is pinned absent by both test suites."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Burst use → SI1/2/3 self-buffs 45s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "One escalating block, burstCast→self, steps atkPct 5.35 / critDamagePct 22.34 / critRatePct 15.51, durationSec 45; Nth own cast applies steps 1..N.",
+        "blindSaid": "S6: identical single escalating block, same stats/values/durations. S5: per-cast rung-count pins, 45s duration pins, self-only inertness, own-cast-vs-fullBurstEnter trigger test — all GREEN.",
+        "formulaCheck": "Unscoped stat buffs match prose (no normal-only scoping on the crit-rate line, so critRatePct is correct, not critRateNormalPct). Same (caster,slot,stat) refresh semantics satisfied by re-application; 45s > 40s CD so rungs never lapse.",
+        "fireRateOk": true,
+        "explanation": "Cumulative escalation and burstCast keying (not fullBurstEnter) are pinned by per-frame, per-stat counts in both suites; the helm two-B3 fixture makes the trigger-identity test non-vacuous."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "two Missile Containers · 15.56%/s 18s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "TWO dot blocks (one per container), each atkPct 15.56 / intervalSec 1 / durationSec 18 → 36 ticks = 560.16% per deployment; ⚑3 flags the count with a popup-count recipe.",
+        "blindSaid": "S5: asserts 2×15.56=31.12% per volley frame and 18 lattice frames per cast — GREEN vs driver. S6 DIVERGED: authored ONE container (280.08%, exactly half), flagged as its own ⚑.",
+        "formulaCheck": "Dot rules: never core, noRange, FB-by-landing-timing, crit per engine DOT_CRIT default (no explicit crit field, so engine governs). Prose plural subject + datamine ulti_skill container-count Integer 2 + S2b + S5 all corroborate the two-container reading; S6's single-container read is the spurious outlier (RECON_ERROR on the blind side, not a driver finding).",
+        "fireRateOk": true,
+        "explanation": "Driver's reading is the corroborated one (prose + datamine + two independent agents). The 36-vs-18-tick split remains genuinely unmeasured in footage — the driver's ⚑3 with an explicit popup-count recipe is the correct handling."
+      },
+      {
+        "kitLine": "SI1 210.62 / SI2 247.25 / SI3 302.19",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "One escalating block, burstCast→enemy, three flatDamage steps; Nth cast deals steps 1..min(N,3) — cumulative and same-cast-inclusive (cast 1 = 210.62); FB-exempt by cast timing.",
+        "blindSaid": "S5: per-cast atkPct multisets [210.62]/[210.62,247.25]/[210.62,247.25,302.19], fbMajorApplied false, no core, no range — GREEN. S6: identical block (explicit crit:true, equivalent to the engine flatDamage default).",
+        "formulaCheck": "Function 'additional damage' rules: crit at caster rate, never core, noRange, burst-cast damage lands pre-FB (no +0.5) — all asserted. Cumulative read is forced by the prose's 'each subsequent effect triggers all effects before it'.",
+        "fireRateOk": true,
+        "explanation": "Full convergence. The stage-only and pre-cast-stage misreadings are discriminated without patches via the per-cast multisets; instant-max and wrong-magnitude counterfactuals provably fail."
+      },
+      {
+        "kitLine": "■ all allies · Full Burst Duration ▼ 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast→allies→fullBurstExtend seconds:-5 (isabel precedent); her windows run 5s, co-B3-opened windows stay 10s; ⚑4 rotation blast-radius sign unverified.",
+        "blindSaid": "S5: every vesti-opened window ≈5s; nearest-wrong drop-the-line patch restores 10s and moves the board — GREEN. S6: identical fullBurstExtend:-5 encoding with the same engine-acceptance ⚑.",
+        "formulaCheck": "fullBurstExtend applies to the live window her cast opens; negative extend is the isabel-shipped precedent for this exact kit wording. Not a damage-bucket line — a rotation/window modifier, correctly not dropped as 'utility'.",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence. The sign-flip counterfactual (15s windows) and the per-opener window-length pins prove it is keyed to her casts, not a global FB rewrite."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All five kit lines are FAITHFUL or DOCUMENTED_GAP, the S5 blind suite runs GREEN unmodified against the shipped override, and every load-bearing assertion discriminates against a named nearest-wrong model (instant-max ladder, single container, stage-only/pre-cast riders, sign-flipped FB extend, laundered explosion radius). The one substantive blind divergence — S6 modeling one missile container instead of two — is spurious: the driver's per-container reading is corroborated by the prose's plural subject, the datamine's explicit container-count Integer 2, the S2b review, and the other blind agent's own test, and the driver carries it as ⚑3 with a popup-count recipe rather than asserting it as measured. No undocumented divergences surfaced. Two residuals for the owner to spot-check, both same-model-shared rather than driver defects: (1) the two-container magnitude has no footage discrimination (36 vs 18 popups per window) — this is the kit's largest unmeasured number (~560% vs ~280% ATK per cast); (2) both blind agents and the driver's note describe DoT crit as 'default OFF', while the mechanics SSOT states DOT_CRIT landed ON by default 2026-07-21 — the encoding is agnostic (no explicit crit field, engine default governs, which per the SSOT is crit-ON), so behavior should be correct, but the note/caveat wording is stale and worth a one-line correction. Nothing here blocks GO.",
+  "model": "kimi-code/k3"
+}

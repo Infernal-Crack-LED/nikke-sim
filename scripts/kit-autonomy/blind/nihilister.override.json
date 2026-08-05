@@ -1,0 +1,100 @@
+{
+  "slug": "nihilister",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 2
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 10
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 112.64,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 158.59,
+          "crit": true
+        },
+        {
+          "kind": "dot",
+          "atkPct": 13.19,
+          "durationSec": 10,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoFlat",
+          "value": 6,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Piercing Radius ▲ 50% for 1 round(s).",
+      "Activates when hits 2 or more enemies concurrently. Affects all enemies hit. Deals 50.33% of final ATK as additional damage."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill2 cadence: the 112.64% line carries NO activation clause and the packet supplies no datamined skill cooldown — modeled as interval 10s, first fire at t=10s (no 'Forcefully uses Skill' clause ⇒ interval convention). Every skill-bucket number scales linearly with this guess.",
+    "⚑ skill1 pierce duration: 'for 1 round(s)' is a ROUND count, but gainPierce has no durationShots field — converted to durationSec 2.0 (≈ one SR charge-fire cycle) so pierce stays live across consecutive shots without spanning the reload gap. Not a measured value.",
+    "⚑ skill1 trigger: 'attacking with Full Charge' is modeled as shotFired — there is no full-charge trigger kind, and an SR at scope lock full-charges every shot. If any kit/mode path fires her uncharged, this over-fires.",
+    "⚑ cadence tuple: chargeFrames 60 / reloadFrames 141 / ammo 6 are datamined fields on the known-unreliable list; her shot economy (and therefore the burst's Max Ammunition ▲6 gain) rests on them unmeasured.",
+    "Pierce is offensively INERT at scope lock unless a teammate carries Pierce Damage ▲ (pierceDamagePct is parsed-but-inert in v1); the gainPierce effect is kept for tagging fidelity, not for damage.",
+    "The skill1 multi-enemy branch (2+ enemies hit concurrently) is structurally unreachable on the single, partless scope-lock boss — its 50.33% rider contributes zero and is recorded in unmodeled rather than modeled behind an unreachable gate.",
+    "Riders (skill2 instant, burst instant) are authored crit-eligible at the caster's sheet rate and take NO core (no 'core strike' wording); the burn DoT is left non-crit per the default-OFF DOT_CRIT gate (crit opt-in is measured-only).",
+    "noFb / noRange are deliberately unset: full-burst eligibility is by landing TIMING (default on) and the range exemption is engine-automatic on riders."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Independent prose→JSON read of Nihilister (nihilister, SR/Fire/Attacker/Burst II). Modeled: S1 full-charge Pierce tag (shotFired → gainPierce, ⚑2.0s stand-in for '1 round'); S2 range-wide 112.64% instant on an ⚑interval-10s cadence (no activation clause in the kit text ⇒ interval per the trigger taxonomy); burst 158.59% instant + a 13.19%/s × 10s sustained Burn (one DoT instance per cast, append-not-refresh) + a self Max Ammunition ▲6 rounds for 15s (a weapon-state modifier — it doubles her 6-round magazine and removes reloads inside the window, so it IS damage). Deliberately unmodeled: Piercing Radius ▲50% (no StatKey; a multi-target geometry stat with no meaning against one partless boss) and the whole 'hits 2 or more enemies concurrently' branch incl. its 50.33% rider (the gate cannot be satisfied at scope lock). Burst instant damage resolves pre-Full-Burst by engine convention; the Burn ticks then run through the FB window and take the +50% by tick timing."
+}

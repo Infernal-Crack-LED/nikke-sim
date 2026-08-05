@@ -1,0 +1,85 @@
+{
+  "slug": "yan",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 21.55,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 1
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 2.77,
+          "durationSec": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 1.33,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 348.73,
+          "crit": true,
+          "noRange": true,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Forced movement toward the center of attack range, lasts for 2 sec."
+    ]
+  },
+  "caveats": [
+    "\u2691 skill2 trigger cadence: kit says 'when performing a Full Charge attack' \u2014 modeled as chargeCounter count:1 (every full charge). Yan is RL with chargeFrames 90; the datamined cadence tuple (reloadFrames 141, ammo 6, chargeFrames 90) is a known-unreliable datamine field, so the resulting re-application rate (and therefore the 5s buff's real uptime) is UNMEASURED.",
+    "\u2691 skill2 uptime: the 5s window vs the full-charge interval decides whether the ATK/crit buff is effectively permanent or duty-cycled. If the effective charge cycle exceeds 5s the buff lapses between shots; unmeasured either way.",
+    "\u2691 burst damage: modeled as instant on-cast (no flight time). RL burst nukes elsewhere in the roster have measured flight delay; if popup footage shows the hit landing inside the Full Burst window, add delaySec and drop noFb.",
+    "\u2691 burst crit: the 348.73% hit is modeled crit-eligible at the caster's sheet rate (roster default for burst damage) and core-ineligible (kit says no 'core strike'). Unmeasured for this unit.",
+    "Burst-cast damage is FB-exempt by convention (a burst cast lands before the Full Burst window opens) \u2014 noFb:true here follows that rule, not a per-unit measurement.",
+    "'Forced movement toward the center of attack range' is a boss-positioning effect; the scope-lock boss has a scripted range/movement profile the engine owns, so this line has no representable primitive."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Yan (RL/Fire/Supporter/Burst I) is a pure charge-support buffer plus one burst nuke. S1 is a team-wide Charge Damage \u25b221.55%/10s keyed to Full Burst entry (fullBurstEnter \u2014 the kit says 'at the beginning of Full Burst', which fires on ANY team Full Burst, not only rotations Yan bursts); chargeDamagePct is the additive charge-bucket stat, not chargeDamageMultPct (the kit line is a plain 'Charge Damage \u25b2 x%', not a 'damage multiplier scaled by' line). S2 is a team-wide ATK \u25b22.77% + Critical Rate \u25b21.33% for 5s re-applied on each of Yan's own full-charge attacks; the crit line is UNSCOPED in the kit text (no 'of normal attacks' qualifier) so it is generic critRatePct, not critRateNormalPct. Burst deals 348.73% of final ATK to enemies in range as an instant on-cast hit, FB-exempt per the burst-cast convention. The forced-movement clause is unmodeled: the sim owns boss position via a measured range script, so a kit-driven reposition has no primitive and would collide with measured ground truth.",
+  "hasPierce": false
+}

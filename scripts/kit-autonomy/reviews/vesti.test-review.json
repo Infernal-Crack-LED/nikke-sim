@@ -1,0 +1,91 @@
+{
+  "slug": "vesti",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill2",
+      "kitLine": "■ when using Burst Skill · SI 1/2/3",
+      "disposition": "FAITHFUL",
+      "scope": "Generic (unscoped) stat buffs: ATK ▲5.35%, Critical Damage ▲22.34%, Critical Rate ▲15.51% — no normal-attack/charge/crit-only scoping in the prose.",
+      "durationSemantics": "Wall-clock: 'for 45 sec' each — durationSec 45, no round count. Each re-application refreshes all prior steps ('each subsequent effect triggers all effects before it').",
+      "triggerIdentity": "burstCast — 'Activates when using Burst Skill' is her OWN burst cast, NOT fullBurstEnter. Escalating counter = number of her own casts (kind:'escalating', steps 1..N on Nth activation).",
+      "targetSet": "self",
+      "nearestWrongModel": "Keyed to fullBurstEnter: Survival Instinct advances on EVERY team Full Burst, so with a second Burst III in the comp (controlComp has helm) she reaches SI3 in ~3 rotations even when she casts only half of them — over-credits the buffs AND the burst nuke's stage.",
+      "distinguishingAssertion": "count(buffApply stat:'atkPct' value:5.35 targetSlug:'vesti') === count of vesti's own burstCast events, strictly less than count of fullBurstStart events in a two-B3 comp; 1st cast emits atkPct only, 2nd cast emits atkPct 5.35 AND critDamagePct 22.34, 3rd+ additionally critRatePct 15.51.",
+      "inertness": "Zero Survival Instinct buffApply events before her first own burst cast; a Full Burst chained by the other Burst III must add no SI application and advance no stage.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "two Missile Containers · every 1 sec 18 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Function damage (15.56% of final ATK per tick); not a normal attack — no core, no +30% range on riders; crit off by default (opt-in measured-only).",
+      "durationSemantics": "18 ticks per container at intervalSec 1 for durationSec 18 — a per-cast DoT instance, NOT a permanent passive (burst CD 40s > 18s, so no overlap between casts).",
+      "triggerIdentity": "burstCast (deployed by her burst), target 'enemy'. dot encoding: one fresh instance per cast; TWO containers = 2× the tick stream (2 dot effects of 15.56, or one at 31.12).",
+      "targetSet": "enemy ('the enemy with the lowest remaining HP' — scope-trivial with a single boss).",
+      "nearestWrongModel": "ONE container modeled instead of two (18 ticks/cast instead of 36 — exactly half the damage), or the line collapsed to a single instant flatDamage 15.56% at cast.",
+      "distinguishingAssertion": "Per vesti burst cast, the event log shows 2 tick-damage events per second for 18 s (36 instances) in the burst bucket, per-tick mult 15.56% of final ATK — cast total 560.16% ATK-equivalent, not 280.08% and not a single hit.",
+      "inertness": "Ticks never carry core; no container ticks exist before her first burst cast; tick count per cast is exactly 36 (no residual instance stacking across casts).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "SI1 210.62 / SI2 247.25 / SI3 302.19",
+      "disposition": "FAITHFUL",
+      "scope": "Instant additional damage, % of final ATK; rider rules — no core, noRange; burst-cast damage is FB-EXEMPT (lands before the Full Burst window opens).",
+      "durationSemantics": "Instantaneous per cast; magnitude is stage-CUMULATIVE ('each subsequent effect triggers all effects before it'): cast 1 = 210.62%, cast 2 = 210.62+247.25 = 457.87%, cast 3+ = 760.06%.",
+      "triggerIdentity": "burstCast + escalating(flatDamage steps), sharing the SAME own-cast counter as skill2's Survival Instinct — the stage is the number of her burst uses, not FB count.",
+      "targetSet": "enemy ('all enemies' — single boss at scope).",
+      "nearestWrongModel": "Current-stage-only (3rd cast deals 302.19% alone — under-credits ~60%), or full 760.06% from the first cast (over-credits), or the hit taking the +50% Full Burst major.",
+      "distinguishingAssertion": "Summed burst additional-damage instances at her 1st cast = 210.62% ATK, 2nd = 457.87%, 3rd = 760.06%, each event with fbMajorApplied === false and inFullBurst false (pre-FB landing).",
+      "inertness": "No core bucket, no +30% range on these hits; stage must not advance on the other B3's rotations (mirrors the skill2 trigger assertion).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ all allies · Full Burst Duration ▼ 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Rotation-level: shortens the Full Burst WINDOW her cast opens — gates every unit's +50%-window uptime and the whole cycle cadence. This is damage-relevant (window/shot-economy modifier), not a skippable 'utility' line.",
+      "durationSemantics": "A flat −5 s on that Full Burst's duration (10 s → ~5 s), applied per cast — not a timed buff.",
+      "triggerIdentity": "Her burst cast, applied to the FB it initiates — fullBurstExtend with seconds: -5 (negative extend).",
+      "targetSet": "allies / team-wide FB timer.",
+      "nearestWrongModel": "Dropped entirely as a 'defensive/no-damage drawback' (the classic weapon-state-style skip), or sign-flipped into a +5 s extension.",
+      "distinguishingAssertion": "On a rotation vesti bursts: fullBurstEnd − fullBurstStart ≈ 300 frames (~5 s), vs ~600 frames on a rotation the other Burst III casts; consequently the 180 s FB timeline (count + window lengths) differs measurably from a no-op model.",
+      "inertness": "Must NOT lengthen any FB; must NOT shorten Full Bursts opened by the other Burst III's cast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge · Explosion Radius ▲ 15.01%",
+      "disposition": "UNMODELED",
+      "scope": "Self, on performing a Full Charge attack; the stat is an AoE RADIUS, not a damage stat — zero extra hits against a single partless boss.",
+      "durationSemantics": "10 s wall-clock (durationSec) — moot while unmodeled.",
+      "triggerIdentity": "Per full-charge shot (shotFired/charge-gated) — moot while unmodeled.",
+      "targetSet": "self",
+      "nearestWrongModel": "Laundered into a damage stat — projectileExplosionPct 15.01 (Damage Up bucket) or attackDamagePct — because 'Explosion' pattern-matches the RL damage StatKey; that over-credits ~15% for a stat that adds no damage vs one boss.",
+      "distinguishingAssertion": "No buffApply with ANY damage-affecting StatKey originates from skill1; emptying skill1's blocks changes vesti's total by exactly 0. The verbatim line appears in unmodeled.skill1.",
+      "inertness": "Skill1 must move nothing — damage, gauge, rotation all identical with it removed.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill2:Survival Instinct escalating self-buffs (burstCast, cumulative, 45s)",
+    "burst:two Missile Containers dot (36 ticks × 15.56% per cast)",
+    "burst:Survival-Instinct-staged additional damage (cumulative 210.62/457.87/760.06)",
+    "burst:Full Burst Duration ▼ 5 sec (negative fullBurstExtend on her cast)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Explosion Radius ▲ 15.01% for 10 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in order of likelihood: (1) 'Activates when using Burst Skill' keyed to fullBurstEnter — the control fixture pairs her with a second Burst III, so this over-advances Survival Instinct on rotations she never casts; every SI assertion must count HER burstCast events against fullBurstStart events. (2) The 'Full Burst Duration ▼ 5 sec' line silently dropped as a utility/drawback — it is the kit's biggest rotation lever (halves the +50% window on her rotations) and must be asserted via the FB start/end frame delta, not just a buffApply. (3) The container line halved (one container instead of two) or flattened to a single hit — pin the 36-events-per-cast tick count. (4) Escalation semantics: both skill2 and the burst nuke are CUMULATIVE ('each subsequent effect triggers all effects before it') — assert the 2nd cast deals 457.87%, not 247.25%, and applies BOTH stat buffs; also assert the two escalating tracks share one counter (the 2nd cast's nuke is stage 2 even while cast 1's buffs are still live). (5) Burst nuke FB-exemption: burst-cast instant damage lands pre-FB — fbMajorApplied must be false; a +50%-credited model is the over-credit to catch. Skill1's radius must stay out of projectileExplosionPct. 'Enemy with the lowest remaining HP' targeting is scope-trivial (single boss) and needs no stand-in machinery.",
+  "model": "claude-fable-5"
+}

@@ -1,0 +1,140 @@
+{
+  "slug": "nero",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "recovery → healer: Dmg Taken ▼14.14%",
+      "disposition": "UNMODELED",
+      "scope": "Defensive stat on an ALLY (the unit who cast the heal on Nero) — not a boss stat, not a damage stat; offensively inert at scope (boss deals no damage to units in v1).",
+      "durationSemantics": "5 sec wall-clock (genuine durationSec; no round wording).",
+      "triggerIdentity": "recovery — fires when Nero RECEIVES a heal (a 'heal' effect targets her). Requires a healer in comp (helm's heal in controlComp drives it).",
+      "targetSet": "The HEALER (the ally whose recovery effect landed on Nero) — note the schema has NO 'heal caster' TargetDef kind; even if someone wanted to model it, the target is inexpressible. Correct handling is unmodeled-with-verbatim-record.",
+      "nearestWrongModel": "Reading 'Damage Taken ▼' as the boss-debuff stat damageTakenPct with a negative/positive value on the enemy — the taxonomy trains 'Damage Taken ▲ = boss debuff', so the ▼-on-ally inverse is the natural misread; that would MOVE team damage.",
+      "distinguishingAssertion": "No buffApply with stat 'damageTakenPct' and |value| ≈ 14.14 appears anywhere in the event log (in particular none with casterIdx===null/targetIdx===null, the boss-held-debuff signature); totals(res) for every slug identical with skill1 present vs the line conceptually absent.",
+      "inertness": "Must move zero damage for every unit in the comp.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Cat's Repayment: DT ▼8.43% ×5, 5s",
+      "disposition": "FIX",
+      "scope": "Self-targeted stacking named status. The Damage Taken ▼ STAT is defensive/inert, but the STACK COUNT is load-bearing: burst line 3 (Grumpy Cat) is gated on 'Cat's Repayment at max stacks', and Grumpy Cat gates skill2's 158.05% damage rider. Skipping this line as 'defensive' kills a whole damage chain — taxonomy trap #4/#6 (never skip heal/def lines on isolation).",
+      "durationSemantics": "Each application lasts 5 sec wall-clock; stacks up to 5. NOT permanent, NOT rounds. If heal cadence is sparser than the 5s window, stacks decay and max-stacks is never reached — the model must let stacks lapse, not latch.",
+      "triggerIdentity": "recovery — one stack per heal event Nero receives. A heal-over-time with ticks:N emits N recovery events, so a ticking healer ramps stacks fast; a single instant heal gives 1 stack. Trigger is NOT interval, NOT shotFired.",
+      "targetSet": "self.",
+      "nearestWrongModel": "Two plausible misreads: (a) drop the line entirely as defensive → Grumpy Cat gate can never be evaluated / silently always-open or always-closed; (b) model stacks as permanent (no 5s lapse) → max stacks reached from any 5 lifetime heals, over-crediting the Grumpy Cat window in sparse-heal comps.",
+      "distinguishingAssertion": "Filter buffApply events for the Cat's Repayment key: stacks field increments 1→5 only across recovery events within rolling 5s windows, maxStacks===5, and expiresFrame ≈ applyFrame+300. In a comp where Nero receives fewer than 5 heals inside any 5s window, no burst cast opens a Grumpy Cat window (zero 158.05% skill-damage events all fight) — RED under the permanent-stacks misread, GREEN under faithful.",
+      "inertness": "The DT▼ stat value itself must move zero damage; only the stack-count gate may have downstream effect.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "30% when attacked: DT ▲8.26% 5s",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "'Affects the target' = the ATTACKER = the boss. Damage Taken ▲ on the boss is a TEAM-WIDE offensive debuff (taxonomy #4) — this line is live damage for the whole comp, not defense.",
+      "durationSemantics": "5 sec wall-clock per proc; re-procs refresh. Effective value is an uptime question driven by boss attack cadence × 30%.",
+      "triggerIdentity": "when ATTACKED — Nero is hit by the boss. The schema has NO attacked/damage-taken trigger kind, and the v1 sim models no boss-to-unit attacks; any enactment needs an ⚑ interval proxy whose sec is (boss attack cadence vs Nero, amplified by her 15s taunt) × 30% expected value — that cadence is an ALWAYS-⚑ field (kit-silent), measured-only. Until measured: record, don't enact silently.",
+      "targetSet": "enemy (boss-held debuff — buffApply with casterIdx===null AND targetIdx===null).",
+      "nearestWrongModel": "Keying the trigger to Nero's OWN offense — shotFired or hitCount ('when attacking' misread of 'when attacked') × 30%. An SMG at ~20 pulls/s would proc this near-continuously, pinning the boss at permanent +8.26% Damage Taken and over-crediting the entire team.",
+      "distinguishingAssertion": "If unmodeled: zero buffApply events with stat 'damageTakenPct' value 8.26 exist. If modeled via ⚑ interval: the count of such applies over 180s equals the interval arithmetic and is INDEPENDENT of Nero's shot count — patch her cadence/ammo via withPatchedOverride and assert the apply count is unchanged (RED under the shotFired misread, whose apply count scales with shots).",
+      "inertness": "Under the shipped (gated) reading, team totals must not silently carry a near-permanent 8.26% boss debuff.",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "30% attacked in Grumpy Cat: 158.05%",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "A flat damage rider (skill bucket, % of final ATK) — no core (text says nothing about core strike), crits only if measured, noRange per rider default. STATUS-GATED: only while Nero is in Grumpy Cat.",
+      "durationSemantics": "Instant hit per proc; the GATE window is Grumpy Cat's 15 sec.",
+      "triggerIdentity": "when attacked (same missing primitive as skill2 line 1) AND self-status gate 'in Grumpy Cat status'. Grumpy Cat exists only for 15s after a Nero burst cast that had Cat's Repayment at 5 stacks — so the rider's live window is burst-anchored AND stack-conditional. Cadence inside the window is the same ⚑ boss-attack-rate estimate.",
+      "targetSet": "enemy (the attacker).",
+      "nearestWrongModel": "Dropping the Grumpy Cat gate — modeling it as an ungated 30%-per-attack (or per-shot) proc live the whole fight. Secondary misread: gating on 'any Full Burst' (fullBurstEnter windows) instead of Nero's OWN burstCast + max-stacks condition.",
+      "distinguishingAssertion": "Every skill-bucket damage event with mult ≈ 158.05 falls inside [t_cast, t_cast+15s] of a Nero burstCast event whose preceding Cat's Repayment buffApply showed stacks===5; assert ZERO such events before her first qualifying burst and ZERO in windows following a <5-stack burst. GREEN under faithful, RED under both the ungated and the fullBurstEnter misreads.",
+      "inertness": "No 158.05% events outside Grumpy Cat windows; none at all if max stacks is never reached.",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "start of battle: Max HP ▲60.28% cont.",
+      "disposition": "FAITHFUL",
+      "scope": "Self Max HP stat. Offensively inert for Nero (her kit has no HP→ATK scaler), but the stat is KEPT per taxonomy #7 (a future consumer — e.g. a teammate's highestAllyMaxHpPct ranker — can read it).",
+      "durationSemantics": "'continuously' = permanent, no expiry. NOT durationSec.",
+      "triggerIdentity": "'Activates at the start of battle' = passive (t=0, always on).",
+      "targetSet": "self (targetMaxHpPct — % of the TARGET'S own Max HP; self-cast so caster===target and it would feed her own atkOfMaxHpPct if she ever gained one).",
+      "nearestWrongModel": "Dropping the line because it moves no damage today — losing the stat for cross-unit HP-ranking consumers; or emitting it as a timed buff.",
+      "distinguishingAssertion": "A buffApply with stat 'maxHpFlat' (flat-resolved: ≈ 0.6028 × Nero's static maxHp) exists at/near frame 0 with no finite expiry, targeting Nero; totals(res)['nero'] identical with the line present vs removed (inertness half).",
+      "inertness": "Zero damage movement for every unit in the control comp.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "1104.91% Burst Skill dmg, highest HP",
+      "disposition": "FAITHFUL",
+      "scope": "One instant hit, burst bucket, 1104.91% of final ATK, single enemy (partless scope-lock boss — 'highest remaining HP' target selection collapses to the boss).",
+      "durationSemantics": "Instant on cast.",
+      "triggerIdentity": "burstCast — Nero's OWN burst (she is Burst II, 20s cd). Fires only on rotations SHE is the selected B2, and burst-cast damage lands PRE-Full-Burst: no +50% FB major, no FB-entry auras (rule 9 / verified fact).",
+      "targetSet": "enemy.",
+      "nearestWrongModel": "Letting the nuke take the +50% Full Burst bonus (fbMajorApplied true) because it 'happens at burst time'; or keying it to fullBurstEnter so it fires on rotations where the OTHER B2 (crown in the control fixture) casts.",
+      "distinguishingAssertion": "For every damage event with bucket 'burst' and mult ≈ 1104.91 from Nero's slot: inFullBurst===false and fbMajorApplied===false, and its frame coincides with a Nero burstCast event (count of nukes === count of her own burstCast events, NOT the comp's fullBurstStart count).",
+      "inertness": "No nuke on rotations where Nero did not cast; no FB major on any nuke.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attract: Taunts all enemies for 15 sec",
+      "disposition": "UNMODELED",
+      "scope": "Taunt/aggro — no boss-targeting or incoming-attack model exists at scope; zero damage primitive.",
+      "durationSemantics": "15 sec (irrelevant while unmodeled).",
+      "triggerIdentity": "burstCast rider.",
+      "targetSet": "enemy (all).",
+      "nearestWrongModel": "Inventing a mechanic for it (e.g. a boss debuff). Its only legitimate role is as the ⚑ RATIONALE that Nero's 'when attacked' cadence is elevated during the 15s post-burst — an estimate input, never a block.",
+      "distinguishingAssertion": "No buff/damage/status event attributable to Attract exists; removing the line changes no total.",
+      "inertness": "Fully inert.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "max Cat's Repayment: Grumpy Cat 60.08%",
+      "disposition": "FIX",
+      "scope": "Self status 'Grumpy Cat' + Incoming Healing ▲ stat. The healing-amount STAT is inert (sim heals carry no HP amount), but the named STATUS is load-bearing: it is the gate for skill2's 158.05% rider. Must be modeled as a 15s self-status window even though its stat does nothing.",
+      "durationSemantics": "15 sec wall-clock from the qualifying burst cast.",
+      "triggerIdentity": "burstCast (her OWN burst) + a conditional gate 'Cat's Repayment is at max stacks' evaluated at cast time. NOT fullBurstEnter, NOT unconditional. Note the schema has no buff-stack gate primitive (resourceGate reads named resources, which have no duration/lapse) — encoding Cat's Repayment as a resource pool must still reproduce the 5s stack lapse, or the gate over-opens; this is the subtlest encoding hazard in the kit.",
+      "targetSet": "self.",
+      "nearestWrongModel": "Grumpy Cat granted on EVERY burst cast regardless of stack count (dropping the max-stacks condition), or keyed to any team Full Burst — either way the 158.05% rider window over-opens massively.",
+      "distinguishingAssertion": "In a fixture where Nero's incoming-heal cadence provably cannot stack Cat's Repayment to 5 inside a 5s window, her burst casts open ZERO Grumpy Cat windows (no Grumpy-Cat-gated events all fight); in a fixture with a ticking healer that does reach 5 stacks pre-cast, exactly the post-cast 15s windows go live. GREEN faithful / RED under the unconditional-grant misread.",
+      "inertness": "The Incoming Healing ▲ 60.08% value must move zero damage directly; only the status gate has downstream effect.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Cat's Repayment stacking status (gate feeder)",
+    "skill2:Max HP ▲60.28% passive (kept-stat)",
+    "burst:1104.91% burst nuke",
+    "burst:Grumpy Cat status window (max-stacks-gated)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Activates when recovery takes effect. Affects the target who cast the skill with recovery effect on Nero. Damage Taken ▼ 14.14% for 5 sec.",
+      "(within Cat's Repayment) the Damage Taken ▼ 8.43% stat value itself — defensive, inert; only the stack count is consumed"
+    ],
+    "skill2": [
+      "There is a 30% chance of activating when attacked. Affects the target. Damage Taken ▲ 8.26% for 5 sec. — measurement-gated: no attacked-trigger primitive; boss attack cadence is ⚑ measured-only",
+      "There is a 30% chance of activating when attacked in Grumpy Cat status. Affects the target. Deals 158.05% of final ATK as damage. — measurement-gated: same missing trigger; window gate must still be tested if enacted"
+    ],
+    "burst": [
+      "Attract: Taunts all enemies for 15 sec.",
+      "(within Grumpy Cat) Incoming healing ▲ 60.08% — heal amounts unmodeled; only the status window is consumed"
+    ]
+  },
+  "notes": "Reconcile these five points. (1) FIXTURE VALIDITY IS THE FIRST ASSERTION: Nero is Burst II, but controlComp(carry) seats the carry in the B3 slot with crown already at B2 — a Nero-as-carry fixture either never lets her burst (crown wins the B2 pick) or needs an explicit comp where Nero occupies/wins B2. Every burst-anchored test (nuke count, Grumpy Cat windows) silently passes-vacuous if she casts zero bursts; assert her burstCast count > 0 before anything else. (2) The entire offensive identity of this kit outside the burst nuke hangs on a trigger primitive the engine does not have ('when attacked') — expect the driver to have either measurement-gated both skill2 procs (correct) or invented an interval/shotFired proxy (must be ⚑-flagged with the boss-attack-cadence recipe, and the shotFired variant is flatly wrong: 'attacked' ≠ 'attacking'). (3) Expected shared-prior misread #1: skipping the whole S1/Cat's-Repayment chain as 'defensive, no damage' — it is the gate feeder for the only conditional damage in the kit. (4) Expected shared-prior misread #2: Grumpy Cat granted unconditionally or on fullBurstEnter; the faithful gate is own-burstCast + Cat's-Repayment===5-stacks-at-cast, and the 5s stack lapse means heal CADENCE (helm's heal ticks reaching Nero) decides whether the gate ever opens — a test must exercise both a reaching and a non-reaching heal pattern. (5) Encoding hazard: no buff-stack gate exists in the schema; a resource-pool encoding of Cat's Repayment has no native 5s lapse, so whatever encoding shipped must be tested specifically for stack EXPIRY, not just accrual. All magnitudes are kit-literal (DATAMINED); the only ⚑ values are the two proc cadences (boss attack rate × 30%, taunt-amplified), which are measured-only.",
+  "model": "claude-fable-5"
+}

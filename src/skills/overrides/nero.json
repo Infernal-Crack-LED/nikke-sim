@@ -1,0 +1,59 @@
+{
+  "note": "nero (Nero) — Tetra SMG DEFENDER, Fire, Burst II, cd 20s, ammo 120, reloadFrames 99, normalMult 8.39 / coreMult 200, critRate 15 / critDamage 150. Kit-autonomy gauntlet 2026-08-04: GREENFIELD build (no shipped override existed; simSupported was false) — test-first re-derivation (scripts/tests/units/nero.test.ts, groups N5/N6 + counterfactual discrimination). A TANK whose offensive surface in the v1 DPS sim is exactly TWO lines: her burst nuke (1104.91% of final ATK, Burst Skill damage on the highest-remaining-HP enemy — single partless boss → `enemy`) and a battle-start self Max HP ▲60.28% (continuous). Everything else is defensive / requires incoming attacks, which v1 does not model. || MODELED TODAY: (1) BURST line 1 → burstCast-keyed flatDamage 1104.91 on `enemy` — her OWN cast only ('Affects the 1 enemy unit(s)...' is her Burst Skill's impact; burstCast, NOT fullBurstEnter: a competing B2 could open chains she does not cast — same precedent as aria/claire own-cast keying). Burst-cast damage lands BEFORE the Full Burst window opens, so it correctly never takes the +50% FB major (pinned in the test). 'Highest remaining HP' target selection collapses to the single scope-lock boss (v1 has no HP pool to rank). (2) SKILL2 line 3 'Activates at the start of battle. Affects self. Max HP ▲ 60.28% continuously.' → passive self targetMaxHpPct 60.28, NO durationSec ('continuously' = permanent — passive without durationSec is always-on). Engine converts targetMaxHpPct → maxHpFlat SELF-grant (own-% basis; e3 rule: feeds atkOfMaxHpPct only caster===target — nero has NO HP→ATK conversion, so the line is offensively INERT today, but the stat is KEPT per the keep-inert-stats rule: her raised live Max HP is readable by future cross-unit consumers, e.g. a teammate's highestAllyMaxHpPct ranker). Inertness pinned as a canary in the test (byte-equal totals under removal). || DELIBERATELY UNMODELED — THE GRUMPY-CAT CHAIN (verbatim in `unmodeled`; this is the kit's defining mechanic and the record is explicit, not a silent skip): S1's two lines (heal → healer Damage Taken ▼14.14%/5s; heal → self Cat's Repayment stacks, Damage Taken ▼8.43% ×5, 5s each), S2's two attacked-procs (30% when attacked → attacker Damage Taken ▲8.26%/5s; 30% when attacked in Grumpy Cat → 158.05% final ATK counter), burst line 2 (Attract: taunt all enemies 15s), burst line 3 (Cat's Repayment at max stacks → self Grumpy Cat, Incoming healing ▲60.08%/15s). RULING (driver, S2c; S2b claude-fable-5 diverged — wanted stacks+status modeled as load-bearing — reconciliation in scripts/kit-autonomy/reviews/nero.test-review.json): the chain is DAMAGE-DEAD in v1 for four independent reasons — (a) its terminal damage effect (the 158.05% counter) and its only boss-facing debuff (the 8.26% Damage Taken ▲) both require a 'when ATTACKED' trigger: the v1 boss deals NO damage and the schema has NO attacked trigger and NO chance primitive — this is an engine-CAPABILITY gap, not a footage gap (a shotFired/hitCount proxy is flatly wrong: 'attacked' ≠ 'attacking'); (b) the Grumpy Cat status's own effect (Incoming healing ▲) has no StatKey carrier and heals are event-only (no HP amount), so the status window would be unobservable; (c) the schema has no stack-count gate, so any Grumpy Cat encoding would degenerate into the unconditional/fullBurstEnter grant (the nearest-wrong model); (d) modeling the 5s stack lapse would enact kit-silent semantics for zero observables — fabrication risk, not faithfulness. When the engine gains incoming attacks, the recipe is: stack-counted Cat's Repayment (recovery-triggered, maxStacks 5, per-stack 5s lapse) → burstCast-gated Grumpy Cat status window (15s, condition stacks===5 at cast) → attacked×30% procs (counter 158.05% skill bucket; boss damageTakenPct 8.26/5s). N1's healer-targeted Damage Taken ▼ additionally has no 'heal caster' TargetDef, and ally/self Damage-Taken-▼ lines remain defensive even with incoming attacks (survivability — outside the DPS-sim domain). N7 taunt/attract has zero in-domain surface vs a partless boss with no ally-targeting AI (delta-ninja-thief Attract precedent). || FIXTURE NOTE: the test comp ['liter','nero','helm'] seats nero as the SOLE B2 (a 20s-cd B2 like crown would starve her to zero casts under same-stage slot-first selection — the aria-probed phenomenon) and includes helm (Treasure) whose full-charge pulls heal the team, so nero's `recovery` trigger CONDITION genuinely occurs in-fight; S1 stays silent because no block ships for it, not because the trigger never fires. || EVIDENCE TIER: both modeled values are kit-text-literal (DATAMINED lvl-10); the only estimates are the ⚑ cadences below. || TIER 1 encoding (two blocks: burstCast nuke + passive stat; no scoped buffs, no round counts, no status gate AMONG THE MODELED LINES — the kit's status gate lives entirely in the unmodeled residual, where it cannot be encoded wrong because it is not encoded). ⚑ FLAGS: (⚑1 CADENCE TUPLE, mandatory) SMG rate of fire (datamine rate_of_fire 1440 = 24/s instant SMG) + ammo 120 (empties in 5s) + reloadFrames 99 shipped datamine as-is (no charFixes; no odd-fire-mode text tell → NOT escalated). Estimate = datamine as-is. Recipe = rounds/min + reload gap from any focused nero video. (⚑2 OUT-OF-DOMAIN, incoming-attack cluster — TIER 3) the six unmodeled lines move zero damage in v1 (boss deals no damage, no HP pool): estimate = zero impact at scope lock; recipe = the activation sequence above, gated on the engine modeling boss attacks; the two proc CADENCES (boss attack rate × 30%, taunt-amplified during the 15s Attract window) are measured-only from a nero focus recording once that exists. Faithful > fit; measured > fudge. || Kit-autonomy gauntlet 2026-08-04: cross-family S2b (claude-fable-5) review — converged on N5/N6/N3/N4 + fixture validity; diverged on the stack/status chain (driver ruling above, adjudicated by S7).",
+  "unmodeled": {
+    "skill1": [
+      "Activates when recovery takes effect. Affects the target who cast the skill with recovery effect on Nero. Damage Taken ▼ 14.14% for 5 sec.",
+      "Activates when recovery takes effect. Affects self. Cat's Repayment: Damage Taken ▼ 8.43%, stacks up to 5 time(s) and lasts for 5 sec."
+    ],
+    "skill2": [
+      "There is a 30% chance of activating when attacked. Affects the target. Damage Taken ▲ 8.26% for 5 sec.",
+      "There is a 30% chance of activating when attacked in Grumpy Cat status. Affects the target. Deals 158.05% of final ATK as damage."
+    ],
+    "burst": [
+      "Affects self. Attract: Taunts all enemies for 15 sec.",
+      "Activates when Cat's Repayment is at max stacks. Affects self. Grumpy Cat: Incoming healing ▲ 60.08% for 15 sec."
+    ]
+  },
+  "caveats": [
+    "burst: the 1104.91% nuke is burstCast-keyed (her OWN cast) and lands pre-Full-Burst — it never takes the +50% FB major; 'highest remaining HP' collapses to the single partless boss",
+    "skill2: Max HP ▲60.28% is a passive self maxHpFlat grant (targetMaxHpPct → own-% basis), permanent ('continuously'), offensively INERT (no HP→ATK conversion in her kit) but kept — her raised live Max HP is readable by cross-unit consumers (highestAllyMaxHpPct rankers)",
+    "THE GRUMPY-CAT CHAIN (S1 stacks → burst Grumpy Cat status → S2 attacked-procs) is carried verbatim in `unmodeled`: the v1 boss deals no damage, the schema has no 'attacked' trigger / chance primitive / stack-count gate / incoming-healing stat, so the chain has ZERO in-domain observables; activation recipe recorded in the note (engine-capability-gated, TIER 3)",
+    "skill1: nero's `recovery` trigger condition DOES occur in comps with a healer (helm's full-charge pulls in the test fixture) — S1 ships no blocks, so nothing fires; this is the unmodeled ruling, not a missing trigger"
+  ],
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 60.28
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1104.91
+        }
+      ]
+    }
+  ]
+}

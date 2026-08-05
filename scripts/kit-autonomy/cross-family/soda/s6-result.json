@@ -1,0 +1,239 @@
+{
+  "slug": "soda",
+  "leakDetected": null,
+  "override": {
+    "slug": "soda",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 180
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "maxHpPct",
+            "value": 13,
+            "durationSec": 10,
+            "maxStacks": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 20
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 900
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 642.56,
+            "crit": true,
+            "noRange": true
+          },
+          {
+            "kind": "stun",
+            "durationSec": 1
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Restores HP equal to 3.23% of the skill user's final Max HP.",
+        "Restores HP equal to 12.71% of the skill user's final Max HP."
+      ],
+      "burst": [
+        "Stack count of buffs ▲ 1."
+      ]
+    },
+    "caveats": [
+      "⚑ skill1 hitCount 180 counts ROUNDS, not trigger pulls — an MG at hitsPerShot 1 makes rounds == pulls here, so 180 rounds ≈ 180 shots; if hitsPerShot is ever >1 the cadence changes. Stack cadence (how fast 5 stacks accrue and whether the 10s window survives between refills) is UNMEASURED.",
+      "⚑ skill1 Max HP ▲ 13% ×5 is offensively INERT at scope lock unless a teammate converts Max HP to ATK; it is modeled as maxHpPct (self) so a future atkOfMaxHpPct consumer sees it. It does NOT feed an ally's conversion (e3 rule).",
+      "⚑ skill2 line 1 has NO activation clause in the kit text — trigger INVENTED as interval 20s (the unit's listed burst cooldown, the only cadence number the kit gives). This is a pure guess; the real cadence must be read from footage (count green heal popups per minute).",
+      "⚑ skill2 line 2 fires 'when Maid Spirit is at max stacks' — modeled as hitCount 900 (5 × the 180-hit stack threshold, i.e. the shot count at which the 5th stack lands). This re-fires every 900 cumulative rounds, which is a crude proxy: the real line is a state gate on a decaying 5-stack pool, not a hit counter. If the stacks lapse (10s window) it should re-fire on each fresh climb to 5.",
+      "⚑ Both skill2 heals are modeled as HP-less 'heal' events (the engine models no HP pool). Their only live effect is firing teammates' 'recovery' triggers (crown-style on-recovery consumers) — the 3.23%/12.71% magnitudes are recorded for completeness only.",
+      "⚑ burst 321.28% 'Affects 2 enemy unit(s) randomly' — the scope-lock boss is a SINGLE partless target. Modeled as 642.56% (2 × 321.28) on the assumption both random picks resolve onto the one enemy. If the game instead lands only one instance on a solo target, this OVER-CREDITS by 2×. Recipe: focus-record Soda's burst and read the popup count/value (one 321% popup vs two).",
+      "⚑ burst damage is burstCast-triggered, so it lands BEFORE the Full Burst window opens (verified fact: burst-cast damage takes no +50% FB major and no entry auras). noRange:true per the rider convention; crit:true at the caster's sheet rate; no core (the text says no core strike).",
+      "⚑ burst 'Stack count of buffs ▲ 1' (all Fire Code allies) is NOT MODELED — the schema has no cross-unit stack-count primitive; it would need to add +1 stack to every stacking buff held by Fire allies, including Soda's own Maid Spirit. On a Fire-heavy team this is a real damage effect and this override under-credits it. Recipe: A/B a Fire comp with a stacking-buff carrier (e.g. a 5-stack ATK stacker) and compare their popup values with vs without Soda bursting.",
+      "⚑ Stun 1s on the boss is recorded for kit completeness; the scope-lock boss's fire/movement script is not modeled as interruptible, so it is inert on damage."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Soda (soda) is an MG/Fire/Supporter/Burst I whose entire kit is sustain + a stack-count grant: S1 self-stacks Max HP (offensively inert at scope lock, kept as maxHpPct so a future HP→ATK consumer reads it), S2 is two heal lines whose only modeled effect is firing allies' on-recovery triggers, and the burst is a 321.28%×2-target instant hit plus a 1s stun and a +1 buff-stack-count grant to Fire allies. The burst's multi-target resolution against a single boss and the +1 stack-count line are the two load-bearing unknowns: the first is modeled optimistically (2× on one target) and the second is not modeled at all, so on a Fire-stacking team this override is directionally LOW on team damage and possibly HIGH on Soda's own burst. S2's first heal line carries no activation clause at all — its 20s interval is invented and must be pinned from footage before any tuning rests on it.",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after 180 normal attack(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount{count:180} — 'normal attack(s)' counts ROUNDS fired by the owner, the same count the ammo economy spends. MG hitsPerShot 1 → 1 round per pull."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'} — literal."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Maid Spirit: Max HP ▲ 13%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff maxHpPct 13 (self Max HP ▲ %, converted to a maxHpFlat self-grant by the engine; feeds own atkOfMaxHpPct if any consumer ever reads it). Named-buff label 'Maid Spirit' is the gate S2's second line reads."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "stacks up to 5 time(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "maxStacks:5 → 65% Max HP at cap."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "lasts for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "durationSec:10 — wall-clock seconds (the text says 'sec', not 'round(s)'), so stacks decay unless the next 180 rounds land inside 10s."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} — includes self (no 'except self' clause)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Restores HP equal to 3.23%…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal{ticks:1} — emits one recovery event per activation, firing allies' 'recovery' triggers. HP amount not modeled (no HP pool at scope lock); the 3.23%-of-caster-Max-HP magnitude is recorded verbatim in unmodeled. ⚑ Trigger INVENTED (interval 20s) — the kit line has NO activation clause."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when Maid Spirit is at max",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Gate on the S1 5-stack state. No resourceGate/stack-count gate primitive exists for a buff's own stack count, so modeled as a PROXY trigger hitCount{count:900} = 5 × 180 rounds (the shot count at which the 5th stack lands). ⚑ crude — see caveats."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Restores HP equal to 12.71%…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "second heal{ticks:1} to all allies — same recovery-event channel; magnitude in unmodeled."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 2 enemy unit(s) randomly.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'}; the 2-target count is folded into the damage as a ×2 magnitude on the single scope-lock boss. ⚑ split-vs-merge is kit-silent — read popups."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 321.28% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 642.56 (=321.28 × 2 targets), crit:true, noRange:true, no core, no noFb flag set (burstCast lands pre-FB so it is FB-exempt by timing, per the verified fact)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Stun for 1 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "stun{durationSec:1} on the enemy — recorded for kit completeness; inert on damage at scope lock (the boss's script is not modeled as interruptible)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all Fire Code allies.",
+      "status": "SKIPPED",
+      "effectOrReason": "The target set itself is expressible (alliesOfElement{element:'Fire'}) but its only effect is the stack-count line below, which has no primitive — so no block is authored."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Stack count of buffs ▲ 1.",
+      "status": "SKIPPED",
+      "effectOrReason": "NO SCHEMA PRIMITIVE. This grants +1 to the stack count of buffs held by Fire allies (a meta-effect on other buffs' maxStacks/current stacks), which the EffectDef vocabulary cannot express — there is no 'stackCount' effect and maxStacks is a per-effect authoring field, not a runtime-modifiable target property. Recorded verbatim in unmodeled.burst; a real modeling of it needs a new engine primitive. This is Soda's principal team-damage contribution on a Fire team, so the override knowingly under-credits her there."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger.count",
+      "estimate": "hitCount 180 rounds (≈180 pulls at hitsPerShot 1)",
+      "reasoning": "Kit states 180 normal attacks literally; the ⚑ is on the CADENCE it implies, not the number — with ammo 300 and reloadFrames 171 the time to 180 rounds depends on the datamine-unreliable rate_of_fire, so how many of the 5 stacks are actually live at any moment (10s window) is unknown. Stack decay between refills could keep her far below cap.",
+      "recipe": "Focus-record Soda and read the Maid Spirit stack pips off the buff bar: time from battle start to stack 1, and whether stack N survives until stack N+1 lands. Alternatively DBG_BUFFS=1 on a sim run to print apply frames, then compare against the footage timestamps."
+    },
+    {
+      "field": "skill1[0].effects[0].stat",
+      "estimate": "maxHpPct 13 × up to 5 stacks (self)",
+      "reasoning": "Self Max HP ▲ % → the engine converts to a maxHpFlat self-grant, which feeds the unit's OWN atkOfMaxHpPct if she ever has one (she does not). Kept rather than skipped per the HARD RULE: HP/DEF lines are never auto-skipped, and this one is the named status ('Maid Spirit') that S2's second line gates on, so deleting it would break the gate's semantics even though the stat itself moves no damage today.",
+      "recipe": "No measurement needed for damage (inert). To confirm the label/stack behaviour, read the buff-bar icon count in footage."
+    },
+    {
+      "field": "skill2[0].trigger",
+      "estimate": "interval 20s (first fire at t=20s)",
+      "reasoning": "ALWAYS-⚑ category 2: a kit line with NO activation clause. The only cadence number anywhere in the packet is the 20s burst cooldown, so it is used as the interval; this is a convention, not evidence. The first-fire phase (t=sec vs t=0) is itself a convention per the schema comment. If this line is actually a skill-cooldown-driven heal its true period may be anything from ~10s to ~40s, which changes how many recovery events allies' on-recovery consumers see by 2-4×.",
+      "recipe": "Focus-record Soda with a heal-visible team and count green heal popups over a fixed 60s window → period = 60/count. Cross-check against data/skill cooldown datamine (skillCooldownsSec) if a value exists for soda skill2; per the skill-CD convention, an interval-shaped line (no 'Activates when' clause) first-fires at t=CD."
+    },
+    {
+      "field": "skill2[1].trigger",
+      "estimate": "hitCount 900 (= 5 × 180) as a proxy for 'Maid Spirit at max stacks'",
+      "reasoning": "ALWAYS-⚑ category 4 (stack/currency steady-state). The real condition is a STATE gate on a 5-stack pool with a 10s decay window, not a cumulative hit count. hitCount 900 fires correctly the FIRST time (the 5th stack lands at round 900 if no decay), but afterwards it re-fires every 900 further rounds regardless of the live stack count — too rarely if stacks are maintained continuously (the gate would then be satisfied nearly always), and possibly never-correctly if stacks decay and rebuild on a different cadence. Whether Soda ever reaches 5 stacks in a 180s fight at all is the load-bearing unknown: 900 rounds in 180s requires ≥5 rounds/sec sustained through reloads.",
+      "recipe": "Same footage as the flag above: read the stack pips, note the first frame Maid Spirit shows 5 pips and how long it holds. Then decide between (a) keeping the hitCount proxy with a measured count, or (b) requesting a stack-state gate primitive. Sim-side, DBG_BUFFS=1 + a shot counter gives the round-count-to-5-stacks under the current cadence assumption for comparison."
+    },
+    {
+      "field": "burst[0].effects[0].atkPct",
+      "estimate": "642.56 (= 321.28 × 2), i.e. both random target picks resolve onto the single boss",
+      "reasoning": "ALWAYS-⚑ category 5 (split-vs-merge, kit-silent). 'Affects 2 enemy unit(s) randomly' against a partless single-target boss is ambiguous: the game may fire two instances that both land on the only enemy (merge → 642.56%), or it may only find one valid target and deal 321.28% once. The optimistic merge is chosen because the ⚑ instruction for kit-silent economy is to estimate optimistically, but the downside risk is a clean 2× over-credit on Soda's burst bucket, which is her only damage line.",
+      "recipe": "Focus-record Soda's burst against the scope-lock boss and count the damage popups on the cast frame: two popups (or one at ~2× the single-instance value) confirms the merge; a single 321.28%-consistent popup refutes it and atkPct drops to 321.28."
+    },
+    {
+      "field": "burst[0].effects[0] (noFb)",
+      "estimate": "noFb NOT set (left default OFF)",
+      "reasoning": "ALWAYS-⚑ category 6: per-kit noFb is measured-only and defaults OFF. It is unnecessary here anyway — the effect is keyed to burstCast, and burst-cast damage is a verified fact to land before the Full Burst window opens, so the engine's timing already exempts it from the +50% major. Setting noFb explicitly would be redundant, and setting it wrong on some future re-key to fullBurstEnter would silently change the number.",
+      "recipe": "None required (timing-exempt by the verified fact). If the block is ever re-keyed to fullBurstEnter, re-derive from popup values inside vs outside the FB window."
+    },
+    {
+      "field": "burst — 'Stack count of buffs ▲ 1' (all Fire Code allies)",
+      "estimate": "NOT MODELED — no primitive exists",
+      "reasoning": "The EffectDef union has no way to modify another buff's stack count at runtime; maxStacks is an authoring field on a buff effect, not a mutable per-target property, and no 'stackCount' StatKey or effect kind exists. Authoring a synthetic stand-in (e.g. an atkPct buff sized to 'one more stack of a typical stacker') would be exactly the fabricated-calibration fudge the prime directive forbids, since the magnitude depends entirely on which Fire allies are present and what they stack. Left in unmodeled.burst verbatim. Consequence: on a Fire team this override is directionally LOW on TEAM damage; on the neutral/non-Fire graded comps it is inert and moves nothing.",
+      "recipe": "A/B a Fire comp containing a known stacking-buff carrier (a unit whose buff stacks to N with a visible per-stack magnitude): record the carrier's popup values and buff-bar pip count with Soda bursting vs a non-Soda Fire filler. The delta gives both the mechanic's reality and its magnitude, and tells whether it raises the CURRENT stack count (one-off +1) or the CAP (maxStacks +1). That measurement is the prerequisite for proposing an engine primitive."
+    }
+  ],
+  "model": "claude-opus-5"
+}

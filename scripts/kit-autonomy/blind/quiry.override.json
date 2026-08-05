@@ -1,0 +1,95 @@
+{
+  "slug": "quiry",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "alliesOfClass",
+        "cls": "Defender"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 5.81,
+          "durationSec": 3
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "alliesOfClass",
+        "cls": "Defender"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 11.63
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfClass",
+        "cls": "Defender"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 19.9,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "■ Activates when hitting a target with Full Charge. Affects the target. ATK ▼ 8.94% of the skill user's ATK for 3 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill1 ally buff is keyed to `shotFired` as a proxy for \"attacking with Full Charge\": quiry is a charge RL (chargeFrames 60) and the sim's charge model is assumed to full-charge every pull, so every trigger pull is a Full Charge attack. If any pull can be uncharged, this OVER-fires.",
+    "⚑ \"Affects 2 Defender ally unit(s)\" — the schema's `alliesOfClass` carries no `count`, so both the skill1 ATK grant and the skill2 Max HP grant hit ALL Defender allies. Equivalent for teams with ≤2 Defenders; OVER-CREDITS a 3+-Defender team. Selection order among Defenders is also unspecified by the kit.",
+    "⚑ Uptime of the 3 sec ally ATK buff is set by the datamined cadence tuple (ammo 6, chargeFrames 60, reloadFrames 141). At those values the 3 sec window is refreshed every full charge and outlasts the ~2.35 s reload, i.e. ~100% uptime — the buff's real value is therefore highly sensitive to a cadence datamine error.",
+    "The skill1 ATK ▼ line is an ENEMY debuff (target = the hit target). The sim has no enemy entity and the boss deals no modeled damage at scope lock, so it is recorded unmodeled rather than authored as a no-op enemy-targeted block. It is NOT a Damage Taken ▲ line and carries no team damage benefit.",
+    "The burst heal is authored for its TANDEM value only (no HP pool is modeled): 10 `recovery` events to all allies, which keep on-recovery consumers (e.g. crown) refreshed across the 10 s window.",
+    "skill2 Max HP is an ALLY grant, so per the e3 scope rule it does NOT feed a teammate's atkOfMaxHpPct conversion — kept for kit completeness / future consumers.",
+    "Both skill1 lines share one activation event but differ in wording — \"hitting a target\" (the debuff, requires a landed hit) vs \"attacking\" (the ally buff, fires on the attack). Only the ally buff is modeled, so the hit/attack distinction is currently unobservable."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. quiry (RL/Wind/Supporter/Burst II) is a pure Defender-focused support with NO damage lines in any slot: S1 grants Defender allies ATK ▲5.81% of quiry's ATK for 3 s per Full Charge attack (near-permanent uptime at the datamined cadence) and debuffs the target's ATK (unmodeled — enemy-scoped, defensive); S2 is a start-of-battle continuous Max HP ▲11.63% to Defender allies; burst is a 10-tick team heal-over-time plus Critical Rate ▲19.9% to all Defender allies for 10 s. All offensive value routes through Defender-class allies, so this unit is inert on a comp with no Defenders."
+}

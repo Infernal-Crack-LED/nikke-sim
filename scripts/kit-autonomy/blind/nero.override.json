@@ -1,0 +1,102 @@
+{
+  "slug": "nero",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "recovery"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 0,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "recovery"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 0,
+          "durationSec": 5,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxHpPct",
+          "value": 60.28
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1104.91,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates when recovery takes effect. Affects the target who cast the skill with recovery effect on Nero. Damage Taken \u25bc 14.14% for 5 sec.",
+      "Activates when recovery takes effect. Affects self. Cat's Repayment: Damage Taken \u25bc 8.43%, stacks up to 5 time(s) and lasts for 5 sec."
+    ],
+    "skill2": [
+      "There is a 30% chance of activating when attacked. Affects the target. Damage Taken \u25b2 8.26% for 5 sec.",
+      "There is a 30% chance of activating when attacked in Grumpy Cat status. Affects the target. Deals 158.05% of final ATK as damage.",
+      "Activates at the start of battle. Affects self. Max HP \u25b2 60.28% continuously."
+    ],
+    "burst": [
+      "Affects self. Attract: Taunts all enemies for 15 sec.",
+      "Activates when Cat's Repayment is at max stacks. Affects self. Grumpy Cat: Incoming healing \u25b2 60.08% for 15 sec."
+    ]
+  },
+  "caveats": [
+    "\u26d1 skill1 BOTH lines are SELF/ALLY damage-REDUCTION (Damage Taken \u25bc on a Nikke), not a boss debuff. The engine's damageTakenPct is an ENEMY-side debuff stat (positive = boss takes more); there is no defensive damage-taken channel at scope lock (the boss deals no damage). Both blocks are authored with value 0 so they are provably inert while still recording the recovery-trigger shape and stack structure; the real magnitudes (14.14% / 8.43% \u00d7 up to 5) live verbatim in unmodeled. Do NOT 'fix' these by writing the magnitudes in \u2014 a positive damageTakenPct here would fabricate a boss debuff the kit never grants.",
+    "\u26d1 skill1 line 1's target is the ALLY WHO HEALED Nero (\"the target who cast the skill with recovery effect on Nero\") \u2014 a reverse-causal, healer-identity target set with no TargetDef in the schema (no 'healer'/'lastHealer' kind). Even the correct target is unexpressible; combined with the inert-stat problem above the line is fully unmodeled.",
+    "\u26d1 Cat's Repayment stack count (max 5, 5 sec each) is the load-bearing GATE for the burst's Grumpy Cat line and for skill2's Grumpy-Cat-gated 158.05% rider \u2014 the whole kit chain is heal-driven. Nero receives no self-heal in her own kit, so the stack pool is entirely ally-sourced and UNKNOWABLE from kit text alone. No stack pool is modeled; the chain is therefore dark end-to-end.",
+    "\u26d1 skill2's 30%-on-attacked proc rate has no engine expression \u2014 there is no 'when attacked' trigger (the scope-lock boss deals no damage to Nikkes, so the trigger can never fire even if it existed). BOTH skill2 riders (the 8.26% Damage Taken \u25b2 boss debuff, which WOULD be a real team damage gain, and the 158.05% flatDamage) are therefore dark. The 8.26% line is the single largest unmodeled OFFENSIVE loss in this kit.",
+    "\u26d1 Attract (taunt) has no engine primitive and is scope-inert (no boss targeting model).",
+    "\u26d1 Burst 1104.91% is authored noFb:true per the standing rule that burst-cast/instant damage lands before the Full Burst window opens. It is a plain single-target hit: no core (the text says no core strike), crit at the caster's sheet rate (engine default), no range (burst-cast riders are force-set no-range).",
+    "\u26d1 Nero is a Burst II SMG Defender with essentially no offensive kit outside a single burst nuke. A sim total for her will be dominated by SMG normals + the burst hit; the modeled/unmodeled split above is a faithful reflection of that, not an omission."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u26d1 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Nero (nero) \u2014 SMG/Fire/Defender/Burst II, cd 20s, ammo 120, reload 99f, no charge, hitsPerShot 1, normal mult 8.39, core 200. MODELED: burst 1104.91% single-target flatDamage on burstCast (noFb per the pre-FB-landing rule); skill2's start-of-battle Max HP \u25b2 60.28% as a self maxHpPct passive (kept per the HP/DEF-scaler prior \u2014 offensively inert today, live for any future atkOfMaxHpPct consumer, and it is the unit's own Max HP so it would feed one). NOT MODELED, with reasons in caveats: both skill1 Damage-Taken-\u25bc lines (defensive self/ally mitigation \u2014 the schema's damageTakenPct is the enemy-side debuff stat, so they are authored at value 0 and are provably inert rather than silently inverted into a fake boss debuff; line 1 additionally targets the HEALER, a target set the schema cannot express), both 30%-on-attacked skill2 riders (no 'when attacked' trigger exists and the scope-lock boss deals no damage, so neither the 8.26% boss Damage Taken \u25b2 nor the 158.05% Grumpy-Cat-gated hit can ever fire), the burst taunt (no primitive, scope-inert), and the burst's Grumpy Cat incoming-healing \u25b2 60.08% (a healing-received multiplier with no HP pool at scope lock, gated on a Cat's Repayment stack pool that is entirely ally-heal-sourced and unmodeled). The kit is a heal-reactive defender chain: allies heal Nero \u2192 Cat's Repayment stacks \u2192 max stacks unlock Grumpy Cat \u2192 Grumpy Cat gates skill2's 158.05% rider. Nero self-heals nowhere in her own kit, so the entire chain's entry condition is external and cannot be derived from kit text. Highest-value measurement target: the skill2 8.26% Damage Taken \u25b2 boss debuff \u2014 it is the only line here that would move team damage, and it needs both an on-attacked trigger primitive and a proc-rate model.",
+  "hasPierce": false
+}

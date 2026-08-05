@@ -1,0 +1,145 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-08-04-b[39m
+
+ [31m❯[39m scripts/tests/units/anchor.test.ts [2m([22m[2m9 tests[22m[2m | [22m[31m7 failed[39m[2m)[22m[32m 9[2mms[22m[39m
+     [32m✓[39m fixture sanity: anchor empties RL magazines and alternates Burst I casts with liter[32m 1[2mms[22m[39m
+[31m       [31m×[31m fires once per magazine depletion (every 6th shot), not per shot[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m is 23.82% for 5 sec, held by anchor alone (self-scoped)[39m[32m 2[2mms[22m[39m
+       [32m✓[39m is damage-INERT (defPct is inert-in-v1): removing S1 moves NO unit's total[32m 0[2mms[22m[39m
+[31m       [31m×[31m DISCRIMINATING: a shotFired-keyed buff applies on every pull, not per magazine[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m fires once per anchor burst cast at the kit magnitude, in the burst bucket[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m never takes the +50% Full Burst major (the cast lands before FB opens)[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m DISCRIMINATING: a fullBurstEnter-keyed nuke fires on EVERY team FB, not her casts[39m[32m 1[2mms[22m[39m
+[31m       [31m×[31m DISCRIMINATING: "all enemies" is ONE instance on the lone boss — a doubled block doubles the hits[39m[32m 1[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 7 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/anchor.test.ts[2m > [22manchor — kit spec[2m > [22mA1 — S1: last bullet hits → self DEF ▲23.82% for 5 sec[2m > [22mfires once per magazine depletion (every 6th shot), not per shot
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/tests/units/anchor.test.ts:[2m179:30[22m[39m
+    [90m177|[39m
+    [90m178|[39m     it('fires once per magazine depletion (every 6th shot), not per sh…
+    [90m179|[39m       [34mexpect[39m(applied[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                              [31m^[39m
+    [90m180|[39m       [34mexpect[39m(applied[33m.[39mlength)[33m.[39m[34mtoBe[39m([33mMath[39m[33m.[39m[34mfloor[39m([33mSHOT_COUNT[39m [33m/[39m [33mAMMO[39m))[33m;[39m
+    [90m181|[39m     })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/anchor.test.ts[2m > [22manchor — kit spec[2m > [22mA1 — S1: last bullet hits → self DEF ▲23.82% for 5 sec[2m > [22mis 23.82% for 5 sec, held by anchor alone (self-scoped)
+[31m[1mAssertionError[22m: expected [] to deeply equal [ 23.82 ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   23.82,[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m scripts/tests/units/anchor.test.ts:[2m184:57[22m[39m
+    [90m182|[39m
+    [90m183|[39m     it('is 23.82% for 5 sec, held by anchor alone (self-scoped)', () =…
+    [90m184|[39m       expect([...new Set(applied.map((b) => b.value))]).toEqual([23.82…
+    [90m   |[39m                                                         [31m^[39m
+    [90m185|[39m       [35mfor[39m ([35mconst[39m b [35mof[39m applied) {
+    [90m186|[39m         [34mexpect[39m(b[33m.[39mexpiresFrame[33m![39m [33m-[39m b[33m.[39mframe)[33m.[39m[34mtoBe[39m([34m5[39m [33m*[39m [33mFPS[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/anchor.test.ts[2m > [22manchor — kit spec[2m > [22mA1 — S1: last bullet hits → self DEF ▲23.82% for 5 sec[2m > [22mDISCRIMINATING: a shotFired-keyed buff applies on every pull, not per magazine
+[31m[1mAssertionError[22m: expected +0 to be 105 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 105[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/anchor.test.ts:[2m197:25[22m[39m
+    [90m195|[39m     it('DISCRIMINATING: a shotFired-keyed buff applies on every pull, …
+    [90m196|[39m       [35mconst[39m cf [33m=[39m [34mdefApplies[39m(shotFiredS1[33m.[39mevents)[33m;[39m
+    [90m197|[39m       [34mexpect[39m(cf[33m.[39mlength)[33m.[39m[34mtoBe[39m([33mSHOT_COUNT[39m)[33m;[39m
+    [90m   |[39m                         [31m^[39m
+    [90m198|[39m       [34mexpect[39m(cf[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m(applied[33m.[39mlength)[33m;[39m
+    [90m199|[39m     })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/anchor.test.ts[2m > [22manchor — kit spec[2m > [22mA2 — burst: 304.45% of final ATK to all enemies, once per own cast, before FB[2m > [22mfires once per anchor burst cast at the kit magnitude, in the burst bucket
+[31m[1mAssertionError[22m: expected +0 to be 4 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 4[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/anchor.test.ts:[2m206:28[22m[39m
+    [90m204|[39m
+    [90m205|[39m     it('fires once per anchor burst cast at the kit magnitude, in the …
+    [90m206|[39m       [34mexpect[39m(nukes[33m.[39mlength)[33m.[39m[34mtoBe[39m([33mCAST_COUNT[39m)[33m;[39m
+    [90m   |[39m                            [31m^[39m
+    [90m207|[39m       [34mexpect[39m(nukes[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m208|[39m       expect([...new Set(nukes.map((d) => d.atkPct))]).toEqual([304.45…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/anchor.test.ts[2m > [22manchor — kit spec[2m > [22mA2 — burst: 304.45% of final ATK to all enemies, once per own cast, before FB[2m > [22mnever takes the +50% Full Burst major (the cast lands before FB opens)
+[31m[1mAssertionError[22m: expected [] to deeply equal [ false ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   false,[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m scripts/tests/units/anchor.test.ts:[2m214:61[22m[39m
+    [90m212|[39m     it('never takes the +50% Full Burst major (the cast lands before F…
+    [90m213|[39m       [34mexpect[39m(nukes[33m.[39m[34mfilter[39m((d) [33m=>[39m d[33m.[39mfbMajorApplied))[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m214|[39m       expect([...new Set(nukes.map((d) => d.inFullBurst))]).toEqual([f…
+    [90m   |[39m                                                             [31m^[39m
+    [90m215|[39m     })[33m;[39m
+    [90m216|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/anchor.test.ts[2m > [22manchor — kit spec[2m > [22mA2 — burst: 304.45% of final ATK to all enemies, once per own cast, before FB[2m > [22mDISCRIMINATING: a fullBurstEnter-keyed nuke fires on EVERY team FB, not her casts
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/tests/units/anchor.test.ts:[2m219:25[22m[39m
+    [90m217|[39m     it('DISCRIMINATING: a fullBurstEnter-keyed nuke fires on EVERY tea…
+    [90m218|[39m       [35mconst[39m cf [33m=[39m [34manchorNukes[39m(fbEnterNuke[33m.[39mevents)[33m;[39m
+    [90m219|[39m       [34mexpect[39m(cf[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m(nukes[33m.[39mlength)[33m;[39m
+    [90m   |[39m                         [31m^[39m
+    [90m220|[39m     })[33m;[39m
+    [90m221|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/anchor.test.ts[2m > [22manchor — kit spec[2m > [22mA2 — burst: 304.45% of final ATK to all enemies, once per own cast, before FB[2m > [22mDISCRIMINATING: "all enemies" is ONE instance on the lone boss — a doubled block doubles the hits
+[31m[1mAssertionError[22m: expected +0 to be 8 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 8[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/anchor.test.ts:[2m224:25[22m[39m
+    [90m222|[39m     it('DISCRIMINATING: "all enemies" is ONE instance on the lone boss…
+    [90m223|[39m       [35mconst[39m cf [33m=[39m [34manchorNukes[39m(doubledNuke[33m.[39mevents)[33m;[39m
+    [90m224|[39m       [34mexpect[39m(cf[33m.[39mlength)[33m.[39m[34mtoBe[39m([34m2[39m [33m*[39m [33mCAST_COUNT[39m)[33m;[39m
+    [90m   |[39m                         [31m^[39m
+    [90m225|[39m     })[33m;[39m
+    [90m226|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m7 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 08:44:22
+[2m   Duration [22m 302ms[2m (transform 72ms, setup 0ms, import 237ms, tests 9ms, environment 0ms)[22m
+

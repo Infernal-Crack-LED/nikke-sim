@@ -1,0 +1,77 @@
+{
+  "slug": "quiry",
+  "kitDescription": "Quiry is a Wind rocket-launcher Supporter whose kit is aimed almost entirely at Defender-class teammates. Each full-charge shot she fires grants up to two Defender allies bonus attack equal to 5.81% of her own attack for 3 seconds, and the same hits reduce the struck target's attack by 8.94% of hers for 3 seconds. At the start of battle she permanently raises two Defender allies' max HP by 11.63%. Her Burst II heals the whole team for 6.96% of her max HP once per second for 10 seconds, and gives all Defender allies +19.9% critical rate for 10 seconds. She has no personal damage lines; her value is Defender-scoped attack and crit support plus team sustain.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "PRISTINE unmodified run: 13/18 red — all 13 trace to a single blind-side wiring bug (onEvent sink never reached cfg in controlComp, so the event log was empty); totals-based S1/S2 inertness assertions still passed",
+      "ADAPTED run red 1/7: 'lasts 3 wall-clock seconds' — asserts durationShots === undefined; engine emits durationShots:null with the asserted semantics (no round budget). Blind-side null-vs-undefined type artifact (RECON_ERROR)",
+      "ADAPTED run red 2/7: 'is continuous' — asserts expiresFrame === undefined || >10000; engine emits expiresFrame:null (no expiry = continuous). Same null-vs-undefined artifact (RECON_ERROR)",
+      "ADAPTED run reds 3-7/7: the entire burst group (ticks:10 / allies target / casts-at-all / Defender-only / 10s window) — quiry casts 0x in the blind's own controlComp fixture because crown (B2, cd 20) wins every stage-II slot over quiry (B2, cd 60); the blind test's own non-vacuity guard ('casts at all in this fixture') is the assertion that flags it. Fixture vacuity on the blind side, not a driver divergence — the same burst lines are pinned GREEN by the driver's sole-B2 fixture (Q3/Q4, 4 casts) and converge with the S6 blind override"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "hit w/ Full Charge → target ATK ▼ 8.94% 3s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim: the engine models no enemy ATK (boss deals no damage; the enemy-buff branch accepts only damageTakenPct/distributedDamagePct > 0); offensively inert by construction",
+        "blindSaid": "S2b: UNMODELED, must appear only in unmodeled.skill1, zero buffApply derived from 8.94% — S6: identical disposition, explicitly 'NOT a Damage Taken ▲ line'",
+        "formulaCheck": "SSOT has no enemy-ATK bucket; the nearest-wrong mapping (damageTakenPct) would over-credit the whole team. The blind's smuggle-check (boss-debuff tally identical with S1 present vs stripped) passed — no leak",
+        "fireRateOk": true,
+        "explanation": "Deliberately unmodeled with the reason recorded verbatim in unmodeled.skill1 and caveats; both blind agents independently reached the identical disposition. Acceptable documented gap."
+      },
+      {
+        "kitLine": "atk w/ Full Charge → 2 Defender ATK ▲ 5.81% 3s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "chargeCounter count:1 countInFb:1 (RL: every shot dispatches charged — bay precedent; preserves the 'with Full Charge' trigger identity) → alliesOfClass Defender → casterAtkPct 5.81 durationSec:3, flat add (5.81/100)xquiry.staticAtk at apply time",
+        "blindSaid": "S6: identical block modulo trigger — shotFired instead of chargeCounter:1, self-flagged '⚑ trigger proxy'; observationally identical on an RL at scope. S2b: FAITHFUL, flat ~5715 per apply, expiresFrame−applyFrame=180, Defender-only, lapses across reloads",
+        "formulaCheck": "SSOT: 'X% of caster's ATK' = caster's BASE (static) ATK added FLAT outside the recipient's (1+ATK%) — casterAtkPct routing correct; prose says plain 'the skill user's ATK', not 'final', so the static basis is the literal reading. Driver Q1 pins: value set == [(5.81/100)xstaticAtk], applies == quiry shot count, expiry exactly 180f, Defender-only target",
+        "fireRateOk": true,
+        "explanation": "Fires on every full-charge shot (pinned 1:1 with shot events) and genuinely lapses across the 141f reload + next charge (max inter-apply gap > 3s pinned), refuting a passive/permanent encoding. Count-2 cap is a schema-level DOCUMENTED_GAP carried as ⚑2 (alliesOfClass has no count field; exact at ≤2 Defenders)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "start of battle → 2 Defender Max HP ▲ 11.63% cont.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive → alliesOfClass Defender → targetMaxHpPct 11.63, no durationSec ('continuously' = never expires); resolves per-target to maxHpFlat at frame 0",
+        "blindSaid": "S6: byte-identical block. S2b: FAITHFUL — must exist yet move zero damage (ally-granted Max HP does not feed a teammate's atkOfMaxHpPct per the e3 rule); nearest-wrong is casterMaxHpPct",
+        "formulaCheck": "SSOT: plain 'Max HP ▲ X%' with no 'of the skill user' clause = target's own basis (targetMaxHpPct, blanc/maiden precedent); ally-granted maxHpFlat (casterIdx ≠ self) is excluded from atkOfMaxHpPct conversions — e3 scope, video-measured 2026-07-13. Driver Q2 pins frame-0 apply, value == 0.1163 x TARGET's maxHp, expiresFrame null, totals identical with the block stripped, and the load-bearing basis proof: the same magnitude as 2b's OWN grant provably moves her total",
+        "fireRateOk": true,
+        "explanation": "Correct trigger (passive/frame 0), correct basis (target-own), correct scope (Defender only), correct permanence, and the inertness is pinned rather than assumed. Same ⚑ count-2 cap caveat as S1."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "all allies recover 6.96% final MaxHP /1s 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → heal ticks:10 intervalSec:1 — the recovery-event WINDOW is modeled; the 6.96%-of-final-Max-HP magnitude rides verbatim in unmodeled (engine heal carries no HP amount by design — no HP pool), not fudged",
+        "blindSaid": "S6: identical block (burstCast/allies/ticks:10/intervalSec:1), magnitude noted. S2b: FAITHFUL — the tandem trap is ticks:1; trigger identity burstCast not fullBurstEnter",
+        "formulaCheck": "SSOT/engine: heal emits recovery events (ticks x intervalSec) that fire targets' 'recovery' triggers — the modeled observable. Driver Q3 pins ≥10 consumer firings spanning ≥8s per complete cast window, first tick INLINE on her own cast frame (refutes fullBurstEnter), and the one-shot counterfactual produces ≤2 firings. Magnitude is owner/measurement-gated and out of scope; documented, not invented",
+        "fireRateOk": true,
+        "explanation": "Cadence, trigger identity, and target set all faithful and discriminatingly pinned; the HP magnitude is a documented engine-scope gap carried in unmodeled. As the fixture's sole B2 she casts every Full Burst (≥3 casts asserted), so the line demonstrably fires."
+      },
+      {
+        "kitLine": "all Defender allies Crit Rate ▲ 19.9% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → alliesOfClass Defender → critRatePct 19.9 durationSec:10 — UNSCOPED Critical Rate (no 'of normal attacks' clause, so critRateNormalPct would over-narrow)",
+        "blindSaid": "S6: byte-identical block. S2b: FAITHFUL — nearest-wrongs are unscoped-allies and fullBurstEnter; generic critRatePct is correct",
+        "formulaCheck": "SSOT: critRatePct joins the base crit rate for all damage types; the normal-only scoped stat exists precisely for 'of normal attacks' wording this line lacks — correct stat chosen. Driver Q4 pins one apply per quiry cast on cast frames, expiry exactly 600f, Defender-only target, 2b's live in-window crit rate exactly +0.199 over out-of-window, and unscoping provably lifts ≥2 non-Defenders while leaving 2b unmoved",
+        "fireRateOk": true,
+        "explanation": "Value, duration, scope, stat, and trigger identity all match the prose and the crit-bucket SSOT; live-fire effect on the Defender's actual crit rate is pinned, not just the buffApply presence."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA exists in the driver implementation: all five kit lines are FAITHFUL (S1 ally ATK grant, S2 Max HP grant, burst heal window, burst crit grant) or DOCUMENTED_GAP (S1 enemy ATK▼, correctly unmodeled verbatim with the no-enemy-ATK engine reason, plus the heal magnitude and the count-2 cap carried as documented ⚑s). The two blind re-derivations converged: S6's override is byte-identical to the driver's on every line except the S1 trigger spelling (shotFired vs chargeCounter:1), which is observationally identical on an RL at scope and which the blind itself flagged as a proxy; S5's reds are entirely blind-side artifacts — one onEvent wiring bug, two null-vs-undefined type misreads, and a five-assertion burst group that went red only because the blind's own controlComp fixture hands every stage-II slot to crown and casts quiry zero times (the blind's own non-vacuity guard catches exactly this), while the driver's sole-B2 fixture pins the same burst lines green with discrimination. Every load-bearing test discriminates against its named nearest-wrong (generic atkPct all-allies, passive/permanent S1, one-shot heal, unscoped crit, casterMaxHpPct basis). Same-model residual the owner should spot-check: (1) a data-level conflict the packet does not resolve — burstCooldownSec 60 vs skillCooldownsSec.burst 40; driver and both blinds all read 60, so convergence proves stability, not correctness, and a true 40s CD would add casts/crit uptime (worth one owner glance at which column the engine and the game actually use); (2) the chargeCounter:1 full-charge identity and the 141f-reload lapse both rest on the datamined cadence tuple, which the driver itself carries as the mandatory low-tier ⚑ with a frame-count recipe; (3) the count-2 Defender cap is a real schema gap (alliesOfClass has no count field), exact on every ≤2-Defender comp and over-granting only in 3-tank teams — recorded, low severity. Nothing here blocks shipment.",
+  "model": "kimi-code/k3"
+}
