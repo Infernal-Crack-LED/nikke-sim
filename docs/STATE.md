@@ -425,7 +425,10 @@ entry flagged `profile: null | <id>` (the frontend differentiator). burstgen: li
 her own Relax self-heal), naga `with-shielder` (shield-gated core/ATK lines live vs inert) — both
 via a synthetic heal/shield kit on the no-op fillers (`COMP_PROFILES` in `src/ranks/buffer.ts`).
 Frontend: `/ranks` (Rankings section home, `/ranks/support` boards + `/ranks/compare` comparator,
-pill-switched, profile badges — `web/src/App.tsx`, PR #31).
+pill-switched, profile badges — `web/src/App.tsx`, PR #31). Bar rows link to the unit page
+(`/unit/<slug>` — name AND portrait) whenever the slug resolves in `data/characters.json`; every
+board row does, non-simSupported sustain units included, so the old "no links at all" stance is
+retired (2026-08-04).
 
 ---
 

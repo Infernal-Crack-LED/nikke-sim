@@ -69,6 +69,19 @@ for (;;) {
 }
 
 const text = dom.window.document.body.textContent;
+// Bar rows + compare annotation link to unit pages (owner 2026-08-04). Every
+// dpschart row is a real character, so every drawn name must be an anchor —
+// a bare <span> row is a regression.
+const art = JSON.parse(artifact);
+const swSlug = Object.keys(art.units).find(
+  (s) => art.units[s].name === 'Snow White: Heavy Arms'
+);
+const barNameCells = [
+  ...dom.window.document.querySelectorAll('.dpschart-bars .dpschart-name'),
+];
+const cmpCells = [
+  ...dom.window.document.querySelectorAll('.dpschart-compare .dpschart-name'),
+];
 const checks = {
   'DPS Rankings tab active': text.includes('DPS Rankings'),
   'framework toggle renders':
@@ -80,6 +93,24 @@ const checks = {
   'charted bars render': text.includes('Snow White: Heavy Arms'),
   'full matrix renders': text.includes('Full matrix'),
   'compare annotation renders': /rank\s*\d+\s*\/\s*\d+/.test(text),
+  'every charted bar name links to a unit page':
+    barNameCells.length > 0 &&
+    barNameCells.every(
+      (el) =>
+        el.tagName === 'A' && el.getAttribute('href')?.startsWith('/unit/')
+    ),
+  'charted portraits link to unit pages':
+    dom.window.document.querySelectorAll(
+      '.dpschart-bars a.dpschart-portrait-link'
+    ).length > 0,
+  [`Snow White: Heavy Arms bar links to /unit/${swSlug}`]:
+    !!swSlug &&
+    barNameCells.some((el) => el.getAttribute('href') === `/unit/${swSlug}`),
+  'compare annotation links to /unit/helm':
+    cmpCells.length > 0 &&
+    cmpCells.every(
+      (el) => el.tagName === 'A' && el.getAttribute('href') === '/unit/helm'
+    ),
 };
 let ok = true;
 for (const [name, pass] of Object.entries(checks)) {
