@@ -30,6 +30,7 @@ import {
 } from '../src/ranks/buffer.js';
 import type { RanksCtx } from '../src/ranks/burstgen.js';
 import type { BufferChartArtifact, BufferRow } from '../src/ranks/types.js';
+import { computeRanksInputHash } from './artifact-input-hash.js';
 
 const load = <T>(rel: string): T =>
   JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8')) as T;
@@ -194,6 +195,7 @@ const pack = (ranked: BufferValue[]): BufferRow[] =>
 
 const artifact: BufferChartArtifact = {
   generatedAt: new Date().toISOString(),
+  inputsHash: computeRanksInputHash(),
   methodology:
     'Total % team damage increase: two standard carries (synthetic class-modal ' +
     'MG + RL, Attacker scope-lock stats, both elementally advantaged) are simmed ' +

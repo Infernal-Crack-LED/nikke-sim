@@ -24,6 +24,7 @@ import {
 } from '../src/ranks/burstcdr.js';
 import type { RanksCtx } from '../src/ranks/burstgen.js';
 import type { BurstCdrArtifact, BurstCdrRow } from '../src/ranks/types.js';
+import { computeRanksInputHash } from './artifact-input-hash.js';
 
 const load = <T>(rel: string): T =>
   JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8')) as T;
@@ -70,6 +71,7 @@ const ranked = rankCdr(population, ctx);
 
 const artifact: BurstCdrArtifact = {
   generatedAt: new Date().toISOString(),
+  inputsHash: computeRanksInputHash(),
   methodology:
     `Nominal team Burst Skill cooldown reduction (seconds) per ${FB_CYCLE_SEC}s ` +
     `Full Burst, averaged over a ${FIGHT_SEC}s fight. Full-Burst-triggered CDR is ` +

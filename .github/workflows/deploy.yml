@@ -75,3 +75,43 @@ jobs:
         run: railway up --ci --service "nikke-sim" --message "$DEPLOY_MSG"
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+  # Post-deploy CANARY for the board builders (owner decision 2026-08-04,
+  # docs/handoffs/2026-08-03-artifact-store-decoupling-plan.md §8 Step 0).
+  # Step 0 replaces the PR-CI board build with fetch + staleness hash, which
+  # removes the signal that the builders still WORK on merged inputs — a
+  # builder broken by a merged PR would otherwise surface only at the next
+  # manual refresh. This job rebuilds from scratch after every successful
+  # deploy so a broken builder fails fast on main instead.
+  #
+  # --force is load-bearing: without it build-dpschart carries rows over from
+  # the live site (fetchLiveCandidate), which right after a deploy matches our
+  # inputs — every row would carry and the run would prove nothing. With
+  # --force the candidate search is skipped (the `if (!FORCE)` gate in
+  # build-dpschart.ts) and all 67 rows re-simulate. Output is discarded: this
+  # is a health check, not a publish path — freshness still comes from the
+  # Railway build until plan Step 2. ranks:all needs no bypass: its builders
+  # always rebuild. Infographics are NOT covered here — PR CI keeps building
+  # them via verify.sh's artifacts tier.
+  #
+  # Until Step 0 lands, this job is redundant with the deploy path's own
+  # builder run; the redundancy is the point — it is what will let Step 0
+  # delete that run safely.
+  builder-canary:
+    name: post-deploy builder canary (forced rebuild)
+    needs: deploy
+    runs-on: ubuntu-latest
+    # ~8 min worst case (67 forced dpschart rows + ranks:all); runs after the
+    # deploy, never blocks it.
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Forced dpschart rebuild (output discarded)
+        run: npx tsx scripts/build-dpschart.ts --force --out "$RUNNER_TEMP/dpschart-canary.json"
+      - name: Rank-board rebuild
+        run: npm run ranks:all

@@ -33,6 +33,7 @@ import type {
   B1B2DpsRow,
   RankUnitMeta,
 } from '../src/ranks/types.js';
+import { computeRanksInputHash } from './artifact-input-hash.js';
 
 const load = <T>(rel: string): T =>
   JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8')) as T;
@@ -224,6 +225,7 @@ const profiles: Record<string, string> = {
 
 const artifact: B1B2DpsArtifact = {
   generatedAt: new Date().toISOString(),
+  inputsHash: computeRanksInputHash(),
   methodology:
     'B1/B2 units ranked by their own DPS in a Solo-style no-op control team. ' +
     'Team shape: B1 20s [tested, B2 SR, B2 SR, B3 RL, B3 MG]; B1 40s [tested, B1 AR, B2 SR, B3 RL, B3 MG]; ' +

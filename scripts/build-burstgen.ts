@@ -25,6 +25,7 @@ import {
   type RanksCtx,
 } from '../src/ranks/burstgen.js';
 import type { BurstGenArtifact, BurstGenRow } from '../src/ranks/types.js';
+import { computeRanksInputHash } from './artifact-input-hash.js';
 
 const load = <T>(rel: string): T =>
   JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8')) as T;
@@ -135,6 +136,7 @@ const rankedFocused = rankBurstGen(population, ctx, true);
 
 const artifact: BurstGenArtifact = {
   generatedAt: new Date().toISOString(),
+  inputsHash: computeRanksInputHash(),
   methodology:
     'No-op team 180s fight, bursts enabled: unit tested in a standard no-op team ' +
     '(B1/B2/B3 slots filled by weapon-modal controls), leftmost in its burst ' +

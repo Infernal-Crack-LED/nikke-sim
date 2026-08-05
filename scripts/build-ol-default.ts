@@ -7,6 +7,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { OlProbModel, Target } from '../src/overload/model.js';
 import { monteCarloBuild } from '../src/overload/policy.js';
+import { computeOlDefaultInputHash } from './artifact-input-hash.js';
 
 const model = JSON.parse(
   readFileSync(
@@ -44,6 +45,7 @@ const fmt = (s: {
 
 const artifact = {
   generatedAt: new Date().toISOString(),
+  inputsHash: computeOlDefaultInputHash(),
   config: { lines: ['Elem DMG T11', 'ATK T11'], pieces: 4, trials: 20_000 },
   perPiece: result.perPiece.map(fmt),
   total: fmt(result.total),
