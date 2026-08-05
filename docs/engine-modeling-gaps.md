@@ -102,14 +102,14 @@
 | `selfAndAdjacent` | 2 | flora, rouge |
 | `sequentialMultPct` | 1 | eve |
 | `shielded` | 2 | flora, naga |
-| `shotFired` | 36 | a2, ade-agent-bunny, anis-star, bready, cinderella, clay, delta-ninja-thief, diesel-winter-sweets, … |
+| `shotFired` | 37 | a2, ade-agent-bunny, anis-star, bready, cinderella, clay, delta, delta-ninja-thief, … |
 | `stackedNuke` | 1 | maiden-ice-rose |
 | `stageEnter` | 12 | cinderella, ein, flora, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, … |
 | `storedHit` | 1 | rapi-red-hood |
 | `stun` | 1 | mast-romantic-maid |
 | `swapGate` | 8 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
 | `swapped` | 8 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
-| `targetMaxHpPct` | 12 | 2b, blanc, diesel, folkwang, label, laplace-ultimate-hero, maiden-ice-rose, noise, … |
+| `targetMaxHpPct` | 13 | 2b, blanc, delta, diesel, folkwang, label, laplace-ultimate-hero, maiden-ice-rose, … |
 | `targetStatus` | 11 | asuka-wille, d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, … |
 | `teamAmmo` | 3 | cinderella-crystal-wave, elegg-boom-and-shock, little-mermaid |
 | `teamHas` | 3 | blanc, eunhwa-tactical-upgrade, noir |

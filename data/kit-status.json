@@ -1802,6 +1802,44 @@
         "temp": "COLD ▼"
       }
     },
+    "delta": {
+      "name": "Delta",
+      "burst": "II",
+      "weapon": "SR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/delta.json + scripts/kit-autonomy/manual-review/delta.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "burstCast-vs-fullBurstEnter divergence is only LIVE in the driver's STARVED comp (crown starves delta to 0 casts) — the adapted S5 sole-B2 fixture takes the blind file's own else-branch (readings coincide); decoy/taunt out-of-domain until an avatar/threat/aggro subsystem exists; reloadFrames 111 unmeasured datamine",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Decoy: Creates an avatar with 91.68% of the skill user's final Max HP that lasts for 10 sec.",
+          "Attract: Taunts all enemies for 10 sec."
+        ]
+      },
+      "caveats": [
+        "skill1: Max HP ▲ 8.82% is modeled as targetMaxHpPct on shotFired (every SR pull is a full charge); offensively inert in v1 — no atkOfMaxHpPct, no HP pool",
+        "skill2: DEF ▲ 51.42% is keyed to her OWN burstCast ('when using Burst Skills' = own cast, not fullBurstEnter); offensively inert in v1",
+        "burst: both 'Decoy' (avatar) and 'Attract' (taunt) are UNMODELED — no avatar/threat/aggro model; the burst deals no damage and must never be encoded as a shield (shielded-trigger contamination)",
+        "weapon: reloadFrames 111 is an unmeasured datamine estimate (SR charge cadence is the engine's measured universal bolt-recovery rule)"
+      ]
+    },
     "delta-ninja-thief": {
       "name": "Delta: Ninja Thief",
       "burst": "II",

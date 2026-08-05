@@ -1,0 +1,152 @@
+{
+  "slug": "delta",
+  "leakDetected": null,
+  "override": {
+    "slug": "delta",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 8.82,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 51.42,
+            "durationSec": 20
+          }
+        ]
+      }
+    ],
+    "burst": [],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": [
+        "Decoy: Creates an avatar with 91.68% of the skill user's final Max HP that lasts for 10 sec.",
+        "Attract: Taunts all enemies for 10 sec."
+      ]
+    },
+    "caveats": [
+      "⚑ skill1 trigger: the kit says 'when performing a Full Charge attack'; the schema has no full-charge trigger kind, so it is keyed to shotFired. Faithful only if every SR pull the engine models is a full charge (chargeFrames 60). If partial-charge fires exist, this over-fires.",
+      "⚑ skill1 uptime: a 10s self buff re-applied on every SR pull (ammo 6, reloadFrames 111) refreshes long before it lapses, so modelled uptime is ~permanent from the first shot onward. That is the literal kit reading, not a tuned value.",
+      "⚑ skill2 trigger identity: 'Activates when using Burst Skills' is read as the OWNER's own burst cast (burstCast). If the line means any ally's burst, fullBurstEnter/stageEnter would be correct instead. Damage-inert either way at v1 (defPct does not affect own damage).",
+      "Max HP encoding: targetMaxHpPct with target self (the 'Max HP ▲ X%' kit wording). maxHpPct is the equivalent self-scoped alternative; both resolve to a self maxHpFlat grant. Delta carries no atkOfMaxHpPct scaler, so the buff is offensively inert today and is kept for completeness / future consumers.",
+      "Burst is authored as an effect-free slot: Decoy (an avatar entity with 91.68% of final Max HP) and Attract (taunt) have no schema primitive. Decoy was deliberately NOT encoded as a `shield` effect — that would fire `shielded` triggers and satisfy `requiresShielded` gates on teammates, crediting synergy the kit does not grant.",
+      "⚑ Cadence inputs (ammo 6, reloadFrames 111, chargeFrames 60, normalAttackMultiplier 65.95, coreAttackMultiplier 200) are datamined base stats read straight from the character row; no override adjusts them. rate/reload datamine fields are the known-unreliable class."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Delta (SR/Wind/Defender/Burst II) is a pure-defensive kit: S1 grants herself Max HP ▲ 8.82% for 10s on each full-charge shot (keyed to shotFired — every SR pull is a full charge); S2 grants herself DEF ▲ 51.42% for 20s on her own burst cast. Both stats are offensively inert at v1 scope (defPct does not feed own damage; she has no HP→ATK scaler) and are modelled for kit completeness and future consumers, per the no-skip rule on DEF/HP lines. Her burst carries no damage, buff, heal, shield, gauge or debuff channel — Decoy (a taunting avatar scaled to 91.68% of her final Max HP) and Attract (10s taunt) have no schema primitive and are recorded verbatim in `unmodeled`. Expected sim contribution: her own SR normal-attack damage plus burst-gauge generation only; her presence in a comp matters through burst-rotation slotting (Burst II), not through buffs."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when Full Charge attack",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger { kind: 'shotFired' } — no full-charge trigger kind exists in the schema; an SR pull (chargeFrames 60) is a full charge. chargeCounter{count:1} is the alternative encoding; shotFired is the simpler equivalent. ⚑ flagged."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target { kind: 'self' }"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Max HP ▲ 8.82% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff targetMaxHpPct 8.82, durationSec 10, self. Percentage of the target's own Max HP; self-target so it resolves as a self maxHpFlat grant (would feed atkOfMaxHpPct if she had one — she does not)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skills",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger { kind: 'burstCast' } — literal 'when using Burst Skill' = the owner's own cast, per trigger-identity rule; NOT fullBurstEnter (which would over-fire on rotations another Burst II casts). ⚑ flagged."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target { kind: 'self' }"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▲ 51.42% for 20 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct 51.42, durationSec 20, self. Kept though defPct is inert in v1 (self DEF does not affect own damage) — DEF lines are explicitly not skippable."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "N/A — the burst block has no modelable effect, so no block is authored; the scope clause is inert."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Decoy: Creates an avatar 91.68% MaxHP",
+      "status": "SKIPPED",
+      "effectOrReason": "No decoy/summon primitive in the schema. Deliberately NOT encoded as `shield` — a shield effect emits shield events, fires teammates' `shielded` triggers and opens `requiresShielded` gates, which would fabricate synergy the kit does not grant. The v1 boss deals no damage, so the avatar's survivability role is out of scope. Verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attract: Taunts all enemies 10 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "No aggro/taunt model exists (no enemy entity, boss deals no damage at scope lock); nothing in the damage path reads target aggro. Verbatim in unmodeled.burst."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "{ kind: 'shotFired' } — fires once per trigger pull",
+      "reasoning": "The kit's activation clause is 'when performing a Full Charge attack', and TriggerDef has no full-charge kind. For a charge weapon (chargeFrames 60) each modelled pull is a full charge, so shotFired is the 1:1 mapping. The invented part is the assumption that the engine never fires her uncharged — if it models partial-charge shots, this trigger over-fires. chargeCounter{count:1} is the alternative if a charge-specific counter is required.",
+      "recipe": "Read the engine's charge-weapon fire path (src/engine/sim.ts charge/release handling) and confirm every SR shot is a full charge; if not, re-key to chargeCounter with count 1. Then assert with cfg.onEvent that buffApply(stat 'maxHpFlat', casterIdx=delta) count equals the shot count over the fight."
+    },
+    {
+      "field": "skill1[0].effects[0] (stat choice + uptime)",
+      "estimate": "targetMaxHpPct 8.82 / durationSec 10; effective uptime ≈ 100% after the first shot",
+      "reasoning": "Kit wording 'Max HP ▲ X%' matches targetMaxHpPct (percentage of the target's own Max HP); with target self it resolves to a self maxHpFlat grant identical to maxHpPct. A 10s window refreshed on every SR pull (magazine 6, reloadFrames 111 ⇒ full cycle well under 10s) never lapses, so the model is near-permanent uptime. Both facts are offensively inert today (no atkOfMaxHpPct on this kit), so the choice moves no damage — but it becomes load-bearing the moment an HP-scaling consumer or a decoy-HP model exists.",
+      "recipe": "Whichever stat is used, assert one buffApply per shot in a spec test and confirm it emits under stat 'maxHpFlat' with value ≈ 0.0882 × delta.staticMaxHp. If a future HP→ATK consumer lands, A/B targetMaxHpPct vs maxHpPct on the graded board — they should be identical for a self target."
+    },
+    {
+      "field": "skill2[0].trigger",
+      "estimate": "{ kind: 'burstCast' } (owner's own cast, no stage scope)",
+      "reasoning": "'Activates when using Burst Skills' is read literally as the owner using her Burst Skill. Keying it to fullBurstEnter would fire on every team Full Burst including rotations where a different Burst II casts — the classic over-credit. Delta is Burst II only, so no stage scope is set. The plural 'Burst Skills' leaves residual ambiguity (any-ally reading). Currently damage-inert (defPct), so the risk is latent, not live.",
+      "recipe": "Compare against other Defender kits with the same clause in the shipped roster (structural grep for 'when using Burst Skill' in the kit corpus) and check which trigger their validated overrides use. Empirically it is unfalsifiable at v1 while defPct stays inert — re-open if DEF ever gains a damage consumer."
+    },
+    {
+      "field": "burst (empty slot)",
+      "estimate": "No blocks — Decoy and Attract both unmodelable",
+      "reasoning": "Neither an avatar/summon nor a taunt has a schema primitive, and the v1 boss deals no damage, so neither has a damage-path consequence. Encoding Decoy as `shield` (the nearest-looking primitive) would be a fabrication: it would fire `shielded` triggers and satisfy `requiresShielded` gates on shield-synergy teammates (naga-style), inventing cross-unit synergy the kit does not grant. Her burst still contributes to the rotation as a Burst II cast — that is engine-level, not override-level.",
+      "recipe": "If a decoy/taunt model is ever added (boss damage or an aggro axis), revisit: the decoy's HP is 91.68% of her FINAL Max HP, i.e. it consumes her own S1 grant and any ally Max HP buffs — read it at cast time, not from static stats. Until then, confirm by rotation log that delta casts Burst II on schedule and adds nothing else to the damage buckets."
+    },
+    {
+      "field": "base stats (cadence tuple)",
+      "estimate": "ammo 6, reloadFrames 111, chargeFrames 60, hitsPerShot 1 — taken as given, unadjusted",
+      "reasoning": "ALWAYS-⚑ item 1: the datamined cadence fields (rate_of_fire / reloadFrames) are the known-unreliable class, and a nominal rate is not the effective 60fps-boundary rate. No override field corrects them here, so any shot-count error propagates directly into both her normal-attack damage and the S1 trigger count.",
+      "recipe": "Ammo-counter read on a focus recording of delta: count trigger pulls and reload gaps over a fixed window and compare against the sim's shot events (cfg.onEvent kind 'shot'/'reload'). The ammo counter measures the disputed quantity directly; full-burst counts do not."
+    }
+  ],
+  "model": "claude-opus-5"
+}
