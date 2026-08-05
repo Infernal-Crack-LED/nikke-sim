@@ -16,10 +16,15 @@
 ## 0. The one-paragraph state
 
 **The reader is measurably more faithful than it was this morning; the cold SG read is not
-explained.** Four items closed, two landings shipped, four hypotheses died, and the owner confirmed
-the ground-truth reference. **But the largest defect found — a 16.9% mislock rate — turned out to
-cost approximately nothing**, so §19's −1.40 pellets/shot residual now has no identified cause.
-⚑ **And nothing on the board has moved yet: both landings reach NEW EXTRACTIONS ONLY.**
+explained.** Four items closed, **three behaviour-touching landings** shipped, four hypotheses died,
+and the owner confirmed the ground-truth reference. **But the largest defect found — a 16.9% mislock
+rate — turned out to cost approximately nothing**, so §19's −1.40 pellets/shot residual now has no
+identified cause.
+
+⚑ **And nothing on the board has moved yet.** All three landings change **FUTURE reads only**; none
+retroactively alters an existing dump. Every dump on disk still carries the values it was extracted
+with and still replays the OLD pre-hybrid rule, so **no measurement re-derived from an existing dump
+is current** until footage is re-extracted (§8.7).
 
 Owner's framing, which set the priority order for the second half of the session: _"the goal is
 chasing why shotguns are cold, but to do that at scale we need proper tooling. Anything that makes
