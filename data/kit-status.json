@@ -4594,6 +4594,44 @@
       ],
       "board": null
     },
+    "nihilister": {
+      "name": "Nihilister",
+      "burst": "II",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/nihilister.json + scripts/kit-autonomy/manual-review/nihilister.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "date": "2026-08-04",
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6(claude-opus-5)/S7(kimi-k3) converged; FROM-SCRATCH build (simSupported was false) — shotFired self gainPierce 4s round stand-in, interval:10 flatDamage 112.64 (datamined skill CD), burstCast nuke 158.59 + burn dot 13.19/1s x 10s sustained + self maxAmmoFlat 6/15s; Piercing Radius + 2+-enemy 50.33% rider carried verbatim unmodeled (out-of-domain, single-enemy v1)",
+      "residual": "spot-check cluster: ⚑1 SR cadence tuple (chargeFrames 60 + bolt gap -> gainPierce 4s round stand-in) + ⚑2 S2 first-fire t=10 phase — one focused-solo recording each; ⚑3/⚑4 multi-target out-of-domain (2+-enemy 50.33% rider + piercing radius need a multi-enemy engine model)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "Piercing Radius ▲ 50% for 1 round(s).",
+          "■ Activates when hits 2 or more enemies concurrently. Affects all enemies hit.\nDeals 50.33% of final ATK as additional damage."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: 'Gain Pierce for 1 round(s)' is a ROUND-COUNT duration carried as a timed gainPierce window (durationSec 4 = worst-case inter-shot gap incl. one empty-mag reload, from the ⚑1 SR cadence tuple; gainPierce has no durationShots) — per-shot shotFired refresh keeps the tag continuous while firing; the grant lags the triggering shot's damage by engine dispatch order (phantom ⚑2 class), so shot 1 is the application event",
+        "skill1: Piercing Radius ▲50% and the 2+-enemies-concurrent 50.33% bonus are UNMODELED verbatim — out-of-domain for v1's single partless boss (no geometry, no second enemy); ⚑3/⚑4",
+        "skill2: the 112.64% hit has NO kit-stated trigger — fires on its datamined internal cooldown (interval:10, skillCooldownsSec.skill2), first fire t=10 (⚑2 phase)",
+        "burst: all three lines are burstCast-keyed (HER casts only — a different B2's Full Burst must not fire them); the Burn is a 10×1s-tick DoT whose ticks crit via the universal DOT_CRIT gate (no per-dot opt-in); the ammo line is maxAmmoFlat 6 (NOT maxAmmoPct — the % form coincides at her 6-round base and is the trap)"
+      ]
+    },
     "noah": {
       "name": "Noah",
       "burst": "II",

@@ -1,0 +1,121 @@
+{
+  "slug": "nihilister",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge → Gain Pierce for 1 round",
+      "disposition": "FAITHFUL",
+      "scope": "Full-Charge attacks only (SR, chargeFrames 60). At scope-lock the sim's SR fire cycle is charge→release every pull, so every normal shot qualifies — but the model must still key the grant to the full-charge shot, not declare unconditional whole-fight pierce by fiat.",
+      "durationSemantics": "'for 1 round(s)' = ROUND count — the pierce covers the triggering round (and lapses after 1 fired round), NOT durationSec:1. Because every subsequent full-charge shot re-triggers it, effective uptime is continuous while firing, but the mechanism is per-shot re-grant.",
+      "triggerIdentity": "Per full-charge shot by the owner (shotFired-family trigger on the charge release; no FB gate, no status gate). NOT burstCast, NOT fullBurstEnter, NOT passive-from-t0 as a semantic matter — though a hasPierce:true static flag is damage-equivalent at scope since all her shots are full-charge.",
+      "targetSet": "self",
+      "nearestWrongModel": "gainPierce with durationSec:1 (wall-clock second). The SR cycle (60f charge + ~22f latency ≈ 1.37s/shot) exceeds 1s, so a durationSec:1 window lapses between shots and pierce coverage of each shot then hinges on apply-vs-dispatch ordering; alternatively, dropping the line entirely as 'inert vs single boss'.",
+      "distinguishingAssertion": "Run control comp twice via withPatchedOverride: (a) shipped model, (b) shipped model + a passive self pierceDamagePct buff patched onto nihilister. If her shots are pierce-tagged, (b) > (a) on totals(res)['nihilister']; a model that dropped pierce leaves (b) === (a). (If pierceDamagePct is still fully inert in the engine, fall back to asserting the override carries hasPierce/gainPierce at all and record the behavioral check as blocked.)",
+      "inertness": "On the plain control comp (no Pierce Damage ▲ carriers, partless single boss) pierce tagging must move ZERO damage — totals identical with the pierce grant removed.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Piercing Radius ▲ 50% for 1 round(s)",
+      "disposition": "UNMODELED",
+      "scope": "Geometric AoE radius of the pierce line — no StatKey exists for it and the scope-lock boss is a single partless target, so radius has no consumer.",
+      "durationSemantics": "'for 1 round(s)' = round count (same semantics as the pierce grant), moot while unmodeled.",
+      "triggerIdentity": "Same full-charge activation header as the pierce grant.",
+      "targetSet": "self",
+      "nearestWrongModel": "Encoding it as pierceDamagePct +50% (a damage stat) — 'Piercing Radius' is geometry, not Pierce DAMAGE; that misread would silently buff her Damage-Up bucket by 50 points on a pierce-tagged model.",
+      "distinguishingAssertion": "No buffApply event with stat 'pierceDamagePct' value 50 appears anywhere in a control run; the line's text sits verbatim in override.unmodeled.skill1.",
+      "inertness": "Must move zero damage; must not appear as any stat buff.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "hits 2+ enemies concurrently: 50.33% add'l",
+      "disposition": "UNMODELED",
+      "scope": "Multi-enemy rider: fires only when one attack hits ≥2 enemies concurrently (pierce through a crowd). The scope-lock fight has exactly ONE partless enemy — the condition is structurally unsatisfiable, so the faithful model is inert/absent with the text recorded in unmodeled.",
+      "durationSemantics": "Instant additional damage per qualifying hit; no duration.",
+      "triggerIdentity": "Conditional on-hit rider gated on concurrent multi-enemy contact — NOT a plain per-shot rider.",
+      "targetSet": "all enemies hit (enemy)",
+      "nearestWrongModel": "A shotFired/hitCount flatDamage block of atkPct 50.33 with no gate — the single most damaging plausible misread: it adds ~50.33/69.04 ≈ +73% of her normal-attack line on every shot, a massive over-credit that calibration could then hide by shaving other values.",
+      "distinguishingAssertion": "Collect damage events for srcSlot skill1 in a full control run: ZERO instances with mult ≈ 50.33 may exist. Equivalently, totals(res)['nihilister'] is identical with and without any such block via withPatchedOverride.",
+      "inertness": "The entire line must move zero damage at scope — this inertness assertion IS the test.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 112.64% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "Standalone skill damage instance vs enemies in range (one boss → one hit per proc). Function damage: takes Full Burst by landing timing (default ON), force-noRange, no core, crits only if opted in (default off).",
+      "durationSemantics": "Instant hit per activation; no duration.",
+      "triggerIdentity": "NO activation clause in the prose → interval trigger by convention, first fire at t=CD. The cadence value is NOT in the kit text — ALWAYS-⚑ #2: it must come from datamined skillCooldownsSec or be flagged ⚑ with a recipe; a silent invented cadence is a violation. (The base-stat 'cd 20s' is the Burst II cooldown, not automatically this skill's CD — do not conflate.)",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Keying it to fullBurstEnter (fires ~5-6×/fight instead of floor(180/CD)×), to shotFired (fires ~every pull, huge over-credit), or granting it core/range like a weapon shot.",
+      "distinguishingAssertion": "Filter damage events with mult ≈ 112.64: count === floor(180/intervalSec) with first instance at t=intervalSec and uniform spacing; count must NOT equal the fullBurstStart count nor the shot count; every instance has rangeApplied false and coreRate 0.",
+      "inertness": "Cadence must not change with FB count or fire rate (interval is wall-clock); no instance may carry the +30% range bonus.",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 158.59% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "Instant burst-cast damage vs enemies in range. Burst-cast damage lands BEFORE the Full Burst window opens → FB-exempt (no +50%), no entry auras, no range bonus, no core.",
+      "durationSemantics": "Instant, once per own burst cast.",
+      "triggerIdentity": "burstCast (nihilister's OWN Burst II cast) — NOT fullBurstEnter. She is Burst II with a 20s cd; in any comp with another Burst II (the control fixture has crown at B2) the two triggers diverge hard: fullBurstEnter fires every team FB, burstCast only on rotations SHE wins the B2 slot.",
+      "targetSet": "enemy",
+      "nearestWrongModel": "fullBurstEnter keying (over-credits every rotation crown bursts instead of her) and/or letting the hit take the +50% FB major (fbMajorApplied true) because it 'happens at burst time'.",
+      "distinguishingAssertion": "count of damage events with mult ≈ 158.59 === count of burstCast events whose caster is nihilister (NOT the fullBurstStart count), and every such event has fbMajorApplied false and inFullBurst false.",
+      "inertness": "Zero instances on rotations where nihilister did not cast; no FB major on any instance.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Burn: 13.19% every 1 sec for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Sustained-flavor DoT on the boss ('sustained damage' → flavor 'sustained', feeds sustainedDamagePct). DoT ticks are never core-boosted; crit stays default-OFF absent a measurement.",
+      "durationSemantics": "durationSec 10, intervalSec 1 → exactly 10 ticks per cast. Per-cast instance appended on each burst; with burst cd 20s > 10s duration, instances never overlap — steady state is 10 ticks per cast, not a permanent stack.",
+      "triggerIdentity": "Rides the same burstCast trigger as the 158.59% hit — one fresh DoT instance per OWN burst cast.",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Encoding the Burn as a single passive/continuous DoT with duration ≥ fight length (taxonomy #5 inversion — under-counts nothing per cast but decouples it from her actual cast count and never expires), or keying it to fullBurstEnter (ticks on crown's rotations too).",
+      "distinguishingAssertion": "Total damage events with mult ≈ 13.19 === 10 × (nihilister burstCast count), each cast's ticks spaced 1s across a 10s window starting at her cast frame; zero such ticks in any 20s→cast gap after t=cast+10s; every tick coreRate 0.",
+      "inertness": "No Burn ticks on rotations she sat out; tick count per cast is exactly 10, never fight-length.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammunition ▲ 6 round(s) for 15 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Self weapon-state buff — this IS damage (taxonomy #6): base magazine 6 → 12 for 15s halves reload frequency in the window (reload 141f ≈ 2.35s each), directly adding shots fired. Never skip as 'defensive/QoL'.",
+      "durationSemantics": "'for 15 sec' is a genuine wall-clock durationSec 15 (contrast the skill1 lines' round-count semantics — both forms appear in this one kit, which is exactly the trap).",
+      "triggerIdentity": "burstCast (own-burst self block) — same divergence-vs-fullBurstEnter stakes as the burst damage: it must NOT arm on crown's B2 rotations.",
+      "targetSet": "self",
+      "nearestWrongModel": "maxAmmoPct 6 (a 6% scaling ≈ +0.36 rounds, rounds to nothing — silently inert) instead of maxAmmoFlat 6; second-nearest: dropping the line as non-damage, or durationShots 15.",
+      "distinguishingAssertion": "On each nihilister burstCast a buffApply with stat 'maxAmmoFlat', value 6, caster===target===nihilister appears (RED if stat is 'maxAmmoPct'); behaviorally, within the 15s post-cast window she fires up to 12 rounds between reload events (shot-event runs between reloads lengthen vs the out-of-window baseline of 6), and A/B via withPatchedOverride with the buff deleted shows a real totals drop from the extra uptime.",
+      "inertness": "Outside the 15s windows the magazine is exactly 6 again; no ammo buff on rotations she did not cast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Full-Charge Gain Pierce (1 round)",
+    "skill2:112.64% interval damage",
+    "burst:158.59% instant on own cast",
+    "burst:Burn DoT 13.19%/1s ×10 per cast",
+    "burst:maxAmmoFlat +6 for 15s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Piercing Radius ▲ 50% for 1 round(s).",
+      "Activates when hits 2 or more enemies concurrently. Affects all enemies hit. Deals 50.33% of final ATK as additional damage."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "FIXTURE HAZARD (highest-value reconcile): nihilister is Burst II, and controlComp(carry) fixes crown at B2 — a B2 carry contests the B2 slot with crown under first-ready in-window selection. Every burstCast-keyed assertion (158.59% hit, Burn, maxAmmoFlat) must therefore count her ACTUAL burstCast events from the event log, never assume one cast per rotation; and a driver test that asserts 'per full burst' counts would be wrong-by-fixture even with a faithful override. Verify she casts at least once in the fixture (else all three burst assertions are vacuous) — if crown always wins the slot, the test needs a comp without a competing B2. EXPECTED SHARED-PRIOR MISREADS: (1) 'for 1 round(s)' on the pierce grant encoded as durationSec:1; (2) 'Max Ammunition ▲ 6 round(s)' encoded as maxAmmoPct — note '6 round(s)' here is the VALUE'S unit (flat rounds) while 'for 15 sec' is the duration, the inverse of skill1 where 'round(s)' is the DURATION — one kit, both semantics; (3) the skill2 no-clause damage line shipping a silent invented cadence instead of a ⚑ (its interval is outside the kit text; the base 'cd 20s' is the burst cooldown and must not be borrowed for skill2 without a datamined skillCooldownsSec source); (4) the 50.33% multi-enemy rider modeled as an ungated per-shot flatDamage — at single-boss scope it must be fully inert, and calibration hiding that over-credit elsewhere is the classic trap. SCHEMA FRICTION to reconcile: gainPierce carries only durationSec (no durationShots), so a literal '1 round' pierce grant can't be expressed round-counted; since every SR shot at scope is full-charge, hasPierce:true or a per-shot gainPierce are damage-equivalent here — acceptable, but the override note should say which stand-in was chosen and why. Pierce is expected damage-inert on the control comp (no Pierce Damage ▲ carriers, partless boss) — the pierce test should prove the TAG exists, not expect a damage delta unpatched.",
+  "model": "claude-fable-5"
+}
