@@ -6258,3 +6258,60 @@ so it cannot rot again.
 with; this changes what FUTURE runs derive. ⛔ `MARKER_MIN`, `debounce_shots`, `band_hi`,
 `REP_OWNER_LIFE_LO_60FPS` and every other constant are untouched, and no verdict is stamped on the
 cold bias or on §27/§28.
+
+#### §29E — THE SYNTHETIC GENERATOR IS ON THE 14-FRAME LIFECYCLE (closes §29D's open item)
+
+**2026-08-05, OWNER-CLARIFIED:** _"the lifecycle is the same, it just has one additional frame at
+the end."_ That is the spec §29D was blocked on — the qualitative table is unchanged and the **fade
+phase** gains a frame (f12–13 → **f12–14**).
+
+⚑ **The added frame is a FADE frame, so the SIZE curve needed no change at all** — `lifecycle_scale`
+already returns 1× for every offset past f11, which is exactly what a fourth… third fade frame
+requires. Only the alpha ramp and the loop bound moved.
+
+##### The alpha ramp is now a FORMULA, and it re-derives the values it replaced
+
+The previous fade was two hardcoded literals, `0.66` and `0.33`. Those turn out to be 2 dp roundings
+of **2/3 and 1/3** — a linear ramp toward, but not to, zero, evaluated over **2** fade frames. The
+same rule over **3** fade frames gives **0.75 / 0.50 / 0.25**.
+
+⇒ Extending the lifetime is therefore the SAME rule applied to one more frame, **not a new modeling
+invention** — and that is a checked claim, not an assertion: the selftest re-derives the old
+`0.67 / 0.33` from the formula at `n_fade = 2`. Replacing the literals with the formula also means a
+future lifetime change cannot silently leave the fade stale.
+
+| offset | f1  | f2   | f3  | f4  | f5–f10   | f11 | f12  | f13  | f14  |
+| ------ | --- | ---- | --- | --- | -------- | --- | ---- | ---- | ---- |
+| size   | 1×  | 1.5× | 2×  | 2×  | linear ↓ | 1×  | 1×   | 1×   | 1×   |
+| alpha  | 1.0 | 1.0  | 1.0 | 1.0 | 1.0      | 1.0 | 0.75 | 0.50 | 0.25 |
+
+##### Blast radius — MEASURED
+
+`pellet-selftest.sh` **all 27 arms pass, zero fixtures moved**, `verify.sh` green. The committed
+synthetic fixtures replay stored slices rather than re-invoking the generator, so this reaches
+**future synthetic generation only** — the same "new extractions only" shape as §16/§23/§26.
+
+⚑ **`score_sequence` needed no functional change**: it derives its offset range from
+`len(seq['frames'])`, not a hardcoded 13, so it scores a 14-frame sequence correctly as-is. Its
+docstring said `(1..13)` and was corrected to name the derivation instead of a number.
+
+##### Pinned, so the shape cannot drift
+
+`make-synthetic-pellets.py --audit-selftest` now asserts seven lifecycle properties alongside its
+existing union-counting arithmetic: the 14-frame lifetime, the unchanged size shape (f1 = 1×, f3–4
+peak 2×, f11 back to 1×), size 1× on every fade frame, f1–f11 fully opaque, a strictly-decreasing
+fade that never reaches zero, the f12–14 values, **and the rule-continuity check that re-derives the
+old 13-frame fade.** A future lifetime edit that changes the SHAPE rather than just the LENGTH now
+fails here instead of silently producing wrong synthetics.
+
+##### Scope
+
+Two dated docstrings in `analyze-pellet-tracks.py` (2026-07-31 Phase-2 provenance) stated the
+13-frame spec as current fact. They were **annotated, not rewritten** — the dated rationale is
+preserved and marked `then-13-frame … OWNER-CORRECTED to 14 on 2026-08-05`, so the historical record
+stays intact while the stale live claim does not.
+
+⛔ No gate was run for this one and that is a deliberate, stated choice: this is a synthetic-fixture
+GENERATOR, which the SUFFICIENCY rule puts outside the `/scientific-method` surface — `verify.sh`
+plus the existing fixtures are its gate, and both are green with zero fixtures moved. The two
+production-touching landings today (§26, §29) did go through the cross-family gate.

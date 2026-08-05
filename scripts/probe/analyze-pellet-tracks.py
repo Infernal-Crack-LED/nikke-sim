@@ -266,7 +266,9 @@ def report_raw_tracks(data, n, min_life):
     """Print RAW per-frame area sequences for the N longest-lived near-crosshair white tracks.
 
     Added 2026-07-31 (pellet-reader Phase 2 gate, ITEM 2 -- premise check: has the owner's
-    13-frame lifecycle (f1 1x dot -> f3-4 plateau -> f5-11 monotone decay -> f12-13 fade) ever
+    then-13-frame lifecycle (f1 1x dot -> f3-4 plateau -> f5-11 monotone decay -> f12-13 fade)
+    -- OWNER-CORRECTED to 14 frames on 2026-08-05 (docs/probe-runs.md §29; same shape, one extra
+    FADE frame, so f12-14) -- ever
     been observed at NATIVE 60fps, not just in the 30fps `report_tracks()` aggregate profile
     above (which resamples to 11 "sample positions", not raw frame offsets, and is dominated by
     the "acquires at its own peak" tracks the same way run16 was)? This prints individual tracks
@@ -291,7 +293,7 @@ def report_dup_check(frames_dir, files, start, count):
     Added 2026-07-31 (pellet-reader Phase 2 gate, ITEM 2). If the GAME renders pellet VFX at
     30fps internally and this is a 60fps CAPTURE, every pair of consecutive extracted frames
     would be near-pixel-identical (duplicated) rather than each frame being a genuinely new
-    render -- which would mean the "13-frame lifecycle" observed at 60fps sampling is really
+    render -- which would mean the (then-13-frame; 14 since 2026-08-05) lifecycle observed at 60fps is really
     13 duplicated HALF-frames (6.5 real updates), not 13 independent samples, and phase indexing
     (f1, f3-4, f8-11, f12-13) would be wrong by a factor of ~2. Mean absolute pixel difference
     between frame i and i+1, cropped to the pellet ROI (crosshair-radius disc) where motion is

@@ -1264,7 +1264,8 @@ def aggregate_estimator_stats(per_seq_rows):
 
 
 def score_sequence(seq, dump):
-    """Per-offset (1..13) TP/FP/FN from the pipeline's pellet-classified track positions vs the
+    """Per-offset (1..len(seq['frames'])) TP/FP/FN from the pipeline's pellet-classified track
+    positions vs the
     sequence's true (fixed) pellet positions, plus the f8-11 mean count for RMSE.
 
     Filters candidate tracks by distance from the crosshair (<= pellet_radius), matching what the
