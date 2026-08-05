@@ -7,7 +7,7 @@ The original 6-shot ground truth (scratchpad/pellets/HANDOFF.md, 2026-07-26, mai
 untracked) was hand-counted on make-groundtruth.py's PEAK-frame crops -- the frame the owner's
 own pellet-lifecycle spec (2026-07-30) identifies as LEAST readable (pellets overlap at 2x size).
 This script extracts the SAME 6 shots at 60fps (the lifecycle spec's own frame rate -- a fully
-detected pellet spans exactly 13 native frames at 60fps sampling, no 30fps rounding), locates
+detected pellet spans exactly 14 native frames at 60fps sampling, no 30fps rounding), locates
 each shot's t0 from the tracked white-pellet count crossing EVENT_MIN (matching read-pellets.ts's
 own shot-debounce definition, so "t0" here means the same thing it means everywhere else in this
 pipeline), and crops t0+8..t0+11 -- the "reliable" window per the lifecycle table.
@@ -42,7 +42,7 @@ EVENT_MIN = 3  # matches read-pellets.ts's debounce / count-pellets.py's debounc
 
 
 def extract_frames(video, at, dur, zoom, out_dir):
-    fps = 60  # the lifecycle spec's own rate -- a full pellet is exactly 13 frames at this fps
+    fps = 60  # the lifecycle spec's own rate -- a full pellet is exactly 14 frames at this fps
     vf = f'fps={fps},crop=1303:396:672:268'
     if zoom != 1:
         vf += f',scale=iw*{zoom}:ih*{zoom}'
@@ -67,7 +67,7 @@ def run_counter(frames_dir, zoom, dump_tracks_path, locate='structural', ammo_te
         '--min-circ', '0.55',
         '--pellet-radius', str(round(80 * zoom)),
         '--marker-radius', '65',
-        '--max-pellet-frames', '13',  # 13 native frames at 60fps sampling == 1 game frame each
+        '--max-pellet-frames', '14',  # 14 native frames at 60fps sampling == 1 game frame each
         '--dump-tracks', str(dump_tracks_path),
     ]
     if locate == 'template' and ammo_template:

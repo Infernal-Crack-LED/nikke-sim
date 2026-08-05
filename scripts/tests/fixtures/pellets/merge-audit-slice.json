@@ -13299,11 +13299,11 @@
       {
         "dump": "groundtruth-f811-v4/tracks.json",
         "n_events": 26,
-        "n_over_max_pellet_frames": 22,
+        "n_over_max_pellet_frames": 11,
         "n_over_cadence": 1,
         "max_span": 56,
         "cadence_frames": 40,
-        "max_pellet_frames": 13,
+        "max_pellet_frames": 14,
         "n_ammo_shots": 23,
         "arbiter_ammo_shots_inside": 2,
         "arbiter_excess_lost": 1,
@@ -13366,7 +13366,7 @@
         "n_over_cadence": 2,
         "max_span": 71,
         "cadence_frames": 40,
-        "max_pellet_frames": 13,
+        "max_pellet_frames": 14,
         "n_ammo_shots": 9,
         "arbiter_ammo_shots_inside": 4,
         "arbiter_excess_lost": 2,
@@ -13425,7 +13425,7 @@
     ],
     "pooled": {
       "n_events": 214,
-      "n_over_max_pellet_frames": 110,
+      "n_over_max_pellet_frames": 99,
       "n_over_cadence": 18,
       "max_span": 71,
       "cadence_frames": null,
@@ -13485,7 +13485,7 @@
         }
       },
       "over_cadence_pct": 8.4,
-      "over_max_pellet_frames_pct": 51.4,
+      "over_max_pellet_frames_pct": 46.3,
       "over_span_shipped_mean_total": 5.8889,
       "excess_lost_pct_of_ammo": 6.2,
       "candidate_view": {

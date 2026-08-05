@@ -450,7 +450,7 @@ def compare_frames(data, frames_dir, start, count):
 # max(conf) > 1 separates them with no overlap. The report prints the discriminator, not just the
 # verdict.
 # THE COUNTING WINDOW IS DEFINED AT 60fps SAMPLING and is an OFFSET IN FRAMES, so it does not
-# transfer to a dump extracted at another rate: the owner's pellet-lifecycle spec is 13 native
+# transfer to a dump extracted at another rate: the owner's pellet-lifecycle spec is 14 native
 # frames at 60fps, and f8-11 is 133-183ms after onset. On a 30fps extraction the same INDEX offsets
 # land 267-367ms after onset -- past the blast. Measured, and the reason --stale-counting-offsets
 # exists: on the three 60fps dumps here the mean total at t0+8..t0+11 is 5.3-6.6 pellets (the window
@@ -2710,7 +2710,7 @@ MERGE_AUDIT_SLICE = 1200
 
 
 def _merge_max_pellet_frames(fps):
-    """read-pellets.ts:505's `Math.max(4, Math.round((13 / 60) * fps))`.
+    """Mirrors read-pellets.ts's production `Math.max(4, Math.round((14 / 60) * fps))` derivation.
 
     ⚑ THIS IS A PER-BLOB TRACK-LIFETIME CAP, NOT AN EVENT-SPAN BUDGET. It is passed to
     count-pellets.py as `--max-pellet-frames` and read at count-pellets.py:380 (`temporal_filter`)
@@ -2719,10 +2719,14 @@ def _merge_max_pellet_frames(fps):
     different unit. It is computed here only so the census can put the two side by side and show
     the category error rather than repeat it (§8A).
 
-    JS `Math.round` is half-UP where Python's `round` is half-to-EVEN, and (13/60)*30 = 6.5 lands
-    exactly on the tie -- 7 in the shipped pipeline, 6 from a naive Python port. Reproduced
-    explicitly, because the 31.3% figure this arm corrects is the `frames > 7` census."""
-    return max(4, math.floor((13 / 60) * fps + 0.5))
+    JS `Math.round` is half-UP where Python's `round` is half-to-EVEN. HISTORICAL: under the prior
+    13-frame pellet-lifetime spec, (13/60)*30 = 6.5 landed exactly on that tie (7 in the shipped
+    pipeline, 6 from a naive Python `round` port), which is why this uses `floor(x + 0.5)` instead
+    of Python's own `round`. Under the corrected 14-frame spec, (14/60)*30 = 7.0 is not a tie in
+    either language, so the trap is not currently live -- but `floor(x + 0.5)` is kept regardless,
+    because it remains the correct way to reproduce JS `Math.round` at any other fps where the
+    product does land on a `.5` tie."""
+    return max(4, math.floor((14 / 60) * fps + 0.5))
 
 
 def _merge_resplit(totals, spans, cadence):

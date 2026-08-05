@@ -243,7 +243,7 @@ def run_fidelity_detections(seq, tmp_dir):
         '--min-area', str(FIDELITY_MIN_AREA), '--max-area', str(FIDELITY_MAX_AREA),
         '--min-circ', str(FIDELITY_MIN_CIRC),
         '--pellet-radius', str(seq['pellet_radius']), '--marker-radius', '65',
-        '--max-pellet-frames', '13',
+        '--max-pellet-frames', '14',
         '--dump-detections', str(dets_out), '--force',
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True)
@@ -374,7 +374,7 @@ def run_counter_on_sequence(seq, tmp_dir):
         '--center-exclude', str(seq['center_exclude']),
         '--min-area', '25', '--max-area', '750', '--min-circ', '0.55',
         '--pellet-radius', str(seq['pellet_radius']), '--marker-radius', '65',
-        '--max-pellet-frames', '13',
+        '--max-pellet-frames', '14',
         '--dump-tracks', str(tracks_out),
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True)

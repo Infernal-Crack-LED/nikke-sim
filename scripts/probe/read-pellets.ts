@@ -3,7 +3,7 @@
 // via VLM at a SPARSE 1fps, builds a timer spine, and maps it onto the high-fps pellet reads.
 //
 //   npx tsx scripts/probe/read-pellets.ts <video> [opts]
-//     --fps <n>             pellet sampling rate (default 30 — pellets last ~13/60fps ≈ 0.22s)
+//     --fps <n>             pellet sampling rate (default 30 — pellets last ~14/60fps ≈ 0.23s)
 //     --at <s> --dur <s>    clip window (default: whole video)
 //     --endpoint <url>      VLM base (default http://localhost:8090/v1)
 //     --model <name>        VLM model (default qwen2.5-vl)
@@ -787,7 +787,7 @@ if (!mock) {
         ? `--dump-tracks "${dumpTracksFlag}"`
         : '';
   const raw = execSync(
-    `"${pythonBin}" "${counterScript}" "${pelletFramesDir}" --center-exclude ${centerExclude} --min-area ${minArea} --max-area ${maxArea} --backend opencv ${crosshairArgs} --pellet-radius ${pelletRadius} --marker-radius ${markerRadius} --temporal --max-pellet-frames ${Math.max(4, Math.round((13 / 60) * fps))} --band-hi ${Math.max(4, Math.round((20 / 60) * fps))} --red-r-min ${redRMin} --red-gb-max ${redGbMax} --pellet-unit-area ${pelletUnitArea} --peanut-circ-lo ${peanutCircLo} --peanut-aspect ${peanutAspect} --peanut-max-mult ${peanutMaxMult} ${dumpTracksArg}`,
+    `"${pythonBin}" "${counterScript}" "${pelletFramesDir}" --center-exclude ${centerExclude} --min-area ${minArea} --max-area ${maxArea} --backend opencv ${crosshairArgs} --pellet-radius ${pelletRadius} --marker-radius ${markerRadius} --temporal --max-pellet-frames ${Math.max(4, Math.round((14 / 60) * fps))} --band-hi ${Math.max(4, Math.round((20 / 60) * fps))} --red-r-min ${redRMin} --red-gb-max ${redGbMax} --pellet-unit-area ${pelletUnitArea} --peanut-circ-lo ${peanutCircLo} --peanut-aspect ${peanutAspect} --peanut-max-mult ${peanutMaxMult} ${dumpTracksArg}`,
     { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 }
   );
   frameCounts = JSON.parse(raw) as FrameCounts[];
