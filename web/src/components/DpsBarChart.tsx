@@ -210,7 +210,18 @@ export function DpsBarChart({
   };
   const compareRow = compare && (
     <div className="dpschart-compare">
-      <span className="dpschart-name">{compare.name}</span>
+      {compare.known ? (
+        <a
+          className="dpschart-name"
+          href={`/unit/${compare.slug}`}
+          onClick={onSpaLinkClick(`/unit/${compare.slug}`)}
+          title={compare.name}
+        >
+          {compare.name}
+        </a>
+      ) : (
+        <span className="dpschart-name">{compare.name}</span>
+      )}
       <span className="dpschart-rankinfo">
         rank {compare.rank} / {compare.total}
       </span>

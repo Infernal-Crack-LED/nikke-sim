@@ -238,6 +238,28 @@ const checks = {
   // the boards are precomputed — the App's boss/team settings can't affect
   // them, so the shared panel is hidden on this tab (owner 2026-07-26)
   'boss & team settings hidden': !text().includes('Boss & team settings'),
+  // every row links to its unit page (owner 2026-08-04): name AND portrait
+  // anchors to /unit/<slug>, asserted on the default (buffer generic) board —
+  // every board row is a real character, so a bare <span> row is a regression
+  'every row name links to its unit page': (() => {
+    const cells = [
+      ...dom.window.document.querySelectorAll('.dpschart-bars .dpschart-name'),
+    ];
+    return (
+      cells.length > 0 &&
+      cells.every(
+        (el) =>
+          el.tagName === 'A' && el.getAttribute('href')?.startsWith('/unit/')
+      )
+    );
+  })(),
+  [`top row name + portrait link to /unit/${bufferTop}`]:
+    dom.window.document
+      .querySelector('.dpschart-bars a.dpschart-name')
+      ?.getAttribute('href') === `/unit/${bufferTop}` &&
+    dom.window.document
+      .querySelector('.dpschart-bars a.dpschart-portrait-link')
+      ?.getAttribute('href') === `/unit/${bufferTop}`,
 };
 // switch boards like a user would: Burst Gen, then back to Buffer → Typed
 const clickPill = (label) => {
@@ -257,6 +279,10 @@ try {
   await waitFor(/Burst Generation/, 'burst-gen board');
   checks[`burst-gen top bar renders (${burstgenTopName})`] =
     text().includes(burstgenTopName);
+  checks[`burst-gen top row links to /unit/${burstgenTop}`] =
+    dom.window.document
+      .querySelector('.dpschart-bars a.dpschart-name')
+      ?.getAttribute('href') === `/unit/${burstgenTop}`;
   clickPill('Team Buffs');
   await waitFor(/Generic/, 'buffer sub-board pills');
   clickPill('Typed');

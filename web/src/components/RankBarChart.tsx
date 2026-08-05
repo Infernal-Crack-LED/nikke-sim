@@ -7,8 +7,13 @@
 import { useState } from 'react';
 import { ELEMENT_COLORS } from '../../../src/infographics/core/theme';
 import type { RankChartBar } from '../../../src/infographics/core/rankChart';
+import type { DataFile } from '../../../src/types';
+import charactersJson from '../../../data/characters.json';
 import { usePortraitThumbs } from '../usePortraitThumbs';
+import { onSpaLinkClick } from '../router';
 import { ChartModal } from './ChartModal';
+
+const data = charactersJson as unknown as DataFile;
 
 const PORTRAIT_CSS = 33; // must match .dpschart-portrait width/height in styles.css
 
@@ -45,42 +50,78 @@ function RankBarsList({
         const widthPct =
           min < 0 ? (Math.abs(b.value) / span) * 100 : (b.value / span) * 100;
         const [heal, shield, steal] = b.split ?? [0, 0, 0];
+        // Unit-page link gate — mirrors UnitPage: a row links when its slug
+        // resolves in characters.json. Every support-board row is a real
+        // character (non-simSupported ones included — they have unit pages),
+        // so this keeps any future synthetic row link-safe by construction.
+        const known = Object.hasOwn(data.characters, b.slug);
+        const unitHref = `/unit/${b.slug}`;
+        const tooltip = `${b.name} · ${b.burst} · ${b.weapon} · ${b.element}`;
+        const portraitImg = b.imageUrl ? (
+          <img
+            className="dpschart-portrait"
+            src={thumbs[b.imageUrl] ?? b.imageUrl}
+            alt={b.name}
+            loading="lazy"
+            title={tooltip}
+          />
+        ) : (
+          <span
+            className="dpschart-portrait ranks-no-portrait"
+            aria-hidden="true"
+          />
+        );
+        const nameInner = (
+          <>
+            {b.name}
+            {b.badge && (
+              <span className="ranks-badge" title={b.badgeTitle}>
+                {b.badge}
+              </span>
+            )}
+            {b.condition && (
+              <span className="ranks-cond" title={b.condition}>
+                *
+              </span>
+            )}
+            {b.info && (
+              <span className="ranks-info" title={b.info}>
+                ⓘ
+              </span>
+            )}
+          </>
+        );
         return (
           <div className="dpschart-row ranks-row" key={b.key}>
             <span className="dpschart-rank">{b.rank}</span>
-            {b.imageUrl ? (
-              <img
-                className="dpschart-portrait"
-                src={thumbs[b.imageUrl] ?? b.imageUrl}
-                alt={b.name}
-                loading="lazy"
-                title={`${b.name} · ${b.burst} · ${b.weapon} · ${b.element}`}
-              />
-            ) : (
-              <span
-                className="dpschart-portrait ranks-no-portrait"
+            {known ? (
+              <a
+                className="dpschart-portrait-link"
+                href={unitHref}
+                onClick={onSpaLinkClick(unitHref)}
                 aria-hidden="true"
-              />
+                tabIndex={-1}
+              >
+                {portraitImg}
+              </a>
+            ) : (
+              portraitImg
             )}
             <span className="ranks-name">
-              <span className="dpschart-name" title={b.name}>
-                {b.name}
-                {b.badge && (
-                  <span className="ranks-badge" title={b.badgeTitle}>
-                    {b.badge}
-                  </span>
-                )}
-                {b.condition && (
-                  <span className="ranks-cond" title={b.condition}>
-                    *
-                  </span>
-                )}
-                {b.info && (
-                  <span className="ranks-info" title={b.info}>
-                    ⓘ
-                  </span>
-                )}
-              </span>
+              {known ? (
+                <a
+                  className="dpschart-name"
+                  href={unitHref}
+                  onClick={onSpaLinkClick(unitHref)}
+                  title={b.name}
+                >
+                  {nameInner}
+                </a>
+              ) : (
+                <span className="dpschart-name" title={b.name}>
+                  {nameInner}
+                </span>
+              )}
               {b.sub && <span className="ranks-sub">{b.sub}</span>}
             </span>
             <span className="dpschart-track ranks-track" title={b.splitTitle}>
