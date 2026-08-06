@@ -6412,3 +6412,86 @@ reconstruction control is 0, the landing widened every band, and the A/B is non-
 **RECORDS a measurement. NOTHING ENACTS.** `band_hi`, `debounce_shots`, `read-pellets.ts` and every
 constant are UNCHANGED; no existing fixture moved. ⛔ Still open and untouched here: netting §28C's
 cold ceiling-exclusion channel against §27's warm false-flag channel.
+
+#### §31 THE TWO MARKER CHANNELS, NETTED — the cold one is ~NIL, so the marker thread nets to −0.043 pellets/shot
+
+**2026-08-05.** Closes the last open marker thread. §27 and §28C found channels of **opposite sign**
+in the same `marker` series and neither was ever netted against the other.
+
+##### §31A — Pre-declared before scoring
+
+⚑ **The cold channel will add FAR fewer core flags than its 164-track count**, because
+`MARKER_MIN = 2` needs two admitted tracks **concurrent in one event**. ⚑ **The NET SIGN is not
+predictable in advance** — that is the point of the measurement. Both statements are recorded here
+as they were made, before the numbers existed.
+
+⚑ **The recovery ceiling is not invented.** The owner measured (§28) that the hit-marker VFX and
+the pellet VFX have the **same** 14-native-frame duration, and `band_hi` is the already-landed,
+already-gated ceiling for a 14-frame VFX's lifetime band (§14's out-of-sample ceiling + corridor
+gates, landed §16) — **10 at 30 fps** against a nominal 7. Reusing it applies a **validated** bound
+to a same-duration VFX rather than fitting a new one. An **unbounded** arm is reported alongside as
+the strict upper bound.
+
+##### §31B — The result, 815 shots / 4 units
+
+| configuration                  | core flags | Δcore   | Δpellets | **Δ/shot**  |
+| ------------------------------ | ---------- | ------- | -------- | ----------- |
+| shipped                        | 180        | 0       | 0        | 0.0000      |
+| **WARM removed** (§27 C1)      | 141        | **−39** | −39      | **−0.0479** |
+| **COLD recovered** (`band_hi`) | 182        | **+2**  | +2       | **+0.0025** |
+| **NET (both)**                 | **145**    | **−35** | **−35**  | **−0.0429** |
+| COLD recovered (unbounded)     | 183        | +3      | +3       | +0.0037     |
+| NET (both, unbounded)          | 146        | −34     | −34      | −0.0417     |
+
+⇒ **§28C's cold channel is ~NIL at the event level: 164 excluded tracks yield only 2 additional core
+flags (3 unbounded).** The pre-declared reason is the right one — `MARKER_MIN = 2` requires two
+admitted tracks concurrent in one event, and the excluded tracks are overwhelmingly isolated or sit
+in events already flagged.
+
+⇒ ⚑ **The netting does NOT change the picture: the net is −0.0429/shot, 90% of the warm channel
+alone.** §28C does not offset §27.
+
+##### §31C — ⚑ The conclusion is ROBUST to the ceiling choice
+
+`band_hi = 10` and **unbounded** differ by a **single** core flag across 815 shots. So the one
+judgment call in this measurement — which ceiling to recover at — is **not load-bearing**: any
+ceiling from 10 to infinity gives the same answer. That is a stronger result than picking a defensible
+value and hoping, and it removes the obvious way this measurement could have been fitted.
+
+##### §31D — What the marker thread nets to, end to end
+
+- The marker channel's total effect on the pellet count, if both fixes landed, is **−0.043
+  pellets/shot** — about **3%** of §19's **−1.40/shot** cold residual, and in the **cold**
+  direction, so it makes that residual marginally **worse**.
+- ⇒ **The marker thread is a faithfulness fix and explains NONE of the cold bias.** That was §27C's
+  reading on the warm channel alone; netting the cold channel in does not rescue it.
+- ⛔ **§28B's bracket still stands** and is not narrowed here: C1 over-drops (≈19% of the life-1
+  population it removes is fragment-like) and under-drops (`MOVING` + `UNDECIDABLE` all kept). This
+  section nets the two CHANNELS; it does not re-litigate C1's internal accuracy.
+- The validity precondition is the arm's **reconstruction control: 0 mismatched frames on all four
+  dumps** — the shipped configuration reproduces each dump's own stored `marker` exactly. Segmentation
+  invariance is asserted, not assumed.
+
+##### §31E — Instrument and reproduction
+
+New arm (constraint 9): `analyze-pellet-tracks.py --marker-net`, wired into
+`scripts/probe/pellet-selftest.sh` (now **29 arms**; `verify.sh` green). `_ms_classify` gained an
+optional `ceiling` parameter whose **default reproduces the shipped `is_pellet` gate exactly**, so
+§27's committed fixture is untouched and still passes.
+
+```sh
+PY=/Users/maxwellsutton/nikke-sim/scripts/probe/.venv/bin/python
+S=/Users/maxwellsutton/nikke-sim/scratchpad/pellets
+$PY scripts/probe/analyze-pellet-tracks.py --marker-net \
+  $S/{h4-marciana,h4-isabel,h4-guilty,g2-noir}-schemafix/tracks.json
+$PY scripts/probe/analyze-pellet-tracks.py --marker-net-selftest
+```
+
+⚑ Like `--band-production-ab`, this fixture pins **RESULTS, not a replay slice** — the lifetime
+ceiling is a property of the FULL track list, so a frame-window slice would silently change which
+tracks are admitted. The selftest asserts coherence plus the properties the conclusion rests on (the
+two channels have opposite sign; unbounded ≥ `band_hi`; the net is neither channel alone; the
+shipped arm is the zero point) and **prints that it does not re-derive** the numbers.
+
+**RECORDS a measurement. NOTHING ENACTS.** `MARKER_MIN`, `debounce_shots`, `max_pellet_frames`,
+`band_hi` and every constant are UNCHANGED; no existing fixture moved.

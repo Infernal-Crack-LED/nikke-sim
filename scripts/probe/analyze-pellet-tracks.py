@@ -7295,16 +7295,25 @@ def _ms_spread(pts):
     return max((math.hypot(a[0] - b[0], a[1] - b[1]) for a in pts for b in pts), default=0.0)
 
 
-def _ms_classify(tracks, cross_positions, pellet_radius, marker_radius):
-    """Classify every marker-CONTRIBUTING track (red on some frame, in pellet_ids, within
-    marker_radius of the crosshair on that frame) by the pre-commit's C1/C2.
+def _ms_classify(tracks, cross_positions, pellet_radius, marker_radius, ceiling=None):
+    """Classify every marker-CONTRIBUTING track (red on some frame, within marker_radius of the
+    crosshair on that frame, and admitted by the lifetime `ceiling`) by the pre-commit's C1/C2.
 
     Returns {track_id: {"life", "verdict", "rel_spread", "abs_spread", "cross_travel",
     "marker_frames"}}. `verdict` is one of LIFE1 / ATTACHED / SCREEN_FIXED / MOVING / UNDECIDABLE.
-    Uses the PER-FRAME `reds` channel (post-2026-08-05 schema) -- the caller guarantees it."""
+    Uses the PER-FRAME `reds` channel (post-2026-08-05 schema) -- the caller guarantees it.
+
+    ⚑ `ceiling=None` reproduces the SHIPPED reader exactly: admit iff the dump's own `is_pellet`
+    (life <= max_pellet_frames). §27 was measured on that default and its committed fixture pins
+    it, so the default must never move. A numeric `ceiling` instead admits `life <= ceiling`, which
+    is what §31 needs to reach the tracks the shipped ceiling EXCLUDES (docs/probe-runs.md §28C).
+    """
     out = {}
     for t in tracks:
-        if not t.get("is_pellet"):
+        if ceiling is None:
+            if not t.get("is_pellet"):
+                continue
+        elif t["life"] > ceiling:
             continue
         reds = t.get("reds")
         marker_frames, abs_pts, rel_pts, cross_pts = [], [], [], []
@@ -7768,6 +7777,196 @@ def marker_semantics_selftest():
           "    the population figures; this pins the classifier and the A/B machinery.")
     print("SELFTEST PASS" if all_ok else "SELFTEST FAIL")
     return 0 if all_ok else 1
+
+
+# ============================================================
+# NETTING THE TWO MARKER CHANNELS -- docs/probe-runs.md §31
+#
+# §27 and §28C found channels of OPPOSITE SIGN in the same `marker` series, and neither was ever
+# netted against the other:
+#
+#   WARM (§27) -- `core` flags raised by tracks that fail C1 persistence. A `core` flag adds +1 to
+#       that shot's total, so removing false ones makes the reader COLDER. Measured: 39 of 180
+#       flags, -0.048 pellets/shot.
+#   COLD (§28C) -- red near-crosshair tracks whose life EXCEEDS `max_pellet_frames` never enter
+#       `pellet_ids`, so they never reach `marker` at all. If they are genuine markers those are
+#       MISSED core hits, and recovering them makes the reader WARMER. Measured: 164 tracks, life
+#       histogram peaking at 8-10, just over the cutoff of 7.
+#
+# ⚑ THE CEILING VALUE IS NOT INVENTED HERE. The owner measured (2026-08-05) that the hit-marker VFX
+# and the pellet VFX have the SAME duration -- 14 native frames. `band_hi` is the already-landed,
+# already-gated ceiling for a 14-frame VFX's lifetime band (§14's out-of-sample ceiling + corridor
+# gates, landed §16) -- 10 at 30 fps against a nominal 7. Reusing it for the marker channel applies
+# a validated bound to a same-duration VFX rather than fitting a new one. The unbounded arm is
+# reported alongside as the strict upper bound.
+#
+# ⚑ PRE-DECLARED, before scoring: the cold channel will add FAR fewer core flags than its 164-track
+# count, because MARKER_MIN = 2 needs two admitted tracks CONCURRENT in one event. The NET SIGN is
+# NOT predictable in advance and is the point of the measurement.
+#
+# MEASUREMENT ONLY: never touches MARKER_MIN, debounce_shots, max_pellet_frames or any constant.
+MARKER_NET_FIXTURE = "scripts/tests/fixtures/pellets/marker-net-slice.json"
+MN_UNBOUNDED = 10 ** 9
+
+
+def _mn_configs(params):
+    """The four scored configurations plus the upper bound. `ceiling=None` means the SHIPPED
+    `is_pellet` gate; `keep=None` means no C1 filter."""
+    band_hi = params.get("band_hi") or params["max_pellet_frames"]
+    return [
+        ("shipped", None, None),
+        ("warm_removed_C1", None, MS_ARMS["C1"]),
+        (f"cold_recovered_band_hi_{band_hi}", band_hi, None),
+        (f"net_both_band_hi_{band_hi}", band_hi, MS_ARMS["C1"]),
+        ("cold_recovered_unbounded", MN_UNBOUNDED, None),
+        ("net_both_unbounded", MN_UNBOUNDED, MS_ARMS["C1"]),
+    ]
+
+
+def _mn_score(name, tracks, cross_positions, frame_counts, params, fps, marker_min=2):
+    cp_mod = _count_pellets_module()
+    n = len(frame_counts)
+    pr, mr = params["pellet_radius"], params.get("marker_radius", 65)
+
+    def series_for(ceiling, keep):
+        cls = _ms_classify(tracks, cross_positions, pr, mr, ceiling)
+        verdicts = keep if keep is not None else {"LIFE1", "ATTACHED", "SCREEN_FIXED", "MOVING",
+                                                  "UNDECIDABLE"}
+        return _ms_marker_series(cls, n, verdicts), cls
+
+    def run(series):
+        return cp_mod.debounce_shots([dict(r, marker=series[f]) for f, r in enumerate(frame_counts)],
+                                     fps, marker_min)
+
+    base_series, _ = series_for(None, None)
+    # VALIDITY CONTROL: the shipped configuration must reproduce the dump's own stored `marker`.
+    recon_mismatch = sum(1 for f in range(n) if base_series[f] != frame_counts[f].get("marker", 0))
+    base_shots, _ = run(base_series)
+    base_core = sum(1 for s in base_shots if s["core"])
+
+    arms = {}
+    for label, ceiling, keep in _mn_configs(params):
+        series, cls = series_for(ceiling, keep)
+        shots, _ = run(series)
+        assert len(shots) == len(base_shots), (
+            f"{name}/{label}: segmentation moved; the marker channel must never change grouping")
+        core = sum(1 for s in shots if s["core"])
+        d_total = sum(s["total"] - b["total"] for b, s in zip(base_shots, shots))
+        arms[label] = {
+            "n_marker_tracks": len(cls),
+            "n_core": core, "delta_core": core - base_core,
+            "delta_total_pellets": d_total,
+            "delta_per_shot": round(d_total / len(shots), 4) if shots else None,
+        }
+    return {"dump": name, "n_shots": len(base_shots), "n_core_shipped": base_core,
+            "recon_mismatch_frames": recon_mismatch, "arms": arms}
+
+
+def _mn_pool(reports):
+    labels = list(reports[0]["arms"]) if reports else []
+    n = sum(r["n_shots"] for r in reports)
+    out = {"n_dumps": len(reports), "n_shots": n,
+           "n_core_shipped": sum(r["n_core_shipped"] for r in reports),
+           "recon_mismatch_frames": sum(r["recon_mismatch_frames"] for r in reports),
+           "arms": {}}
+    for lb in labels:
+        dt = sum(r["arms"][lb]["delta_total_pellets"] for r in reports)
+        out["arms"][lb] = {
+            "n_core": sum(r["arms"][lb]["n_core"] for r in reports),
+            "delta_core": sum(r["arms"][lb]["delta_core"] for r in reports),
+            "delta_total_pellets": dt,
+            "delta_per_shot": round(dt / n, 4) if n else None,
+        }
+    return out
+
+
+def _mn_expected(reports, pooled):
+    return {"pooled": pooled,
+            "dumps": [{"dump": r["dump"], "n_shots": r["n_shots"],
+                       "n_core_shipped": r["n_core_shipped"],
+                       "recon_mismatch_frames": r["recon_mismatch_frames"],
+                       "arms": r["arms"]} for r in reports]}
+
+
+def _print_marker_net(reports, pooled):
+    print("\nNETTING THE TWO MARKER CHANNELS (docs/probe-runs.md §31)")
+    print("  WARM = §27's false core flags (removing them COOLS the reader)")
+    print("  COLD = §28C's ceiling-excluded markers (recovering them WARMS it)")
+    print(f"\n  {'configuration':32s} {'core':>6s} {'Δcore':>6s} {'Δpellets':>9s} {'Δ/shot':>9s}")
+    for lb, a in pooled["arms"].items():
+        star = "  <<< THE NET" if lb.startswith("net_both_band_hi") else ""
+        print(f"  {lb:32s} {a['n_core']:6d} {a['delta_core']:+6d} "
+              f"{a['delta_total_pellets']:+9d} {a['delta_per_shot']:+9.4f}{star}")
+    print(f"\n  over {pooled['n_shots']} shots / {pooled['n_dumps']} dumps; shipped core flags "
+          f"= {pooled['n_core_shipped']}")
+    print(f"  RECONSTRUCTION CONTROL: {pooled['recon_mismatch_frames']} frames where the SHIPPED "
+          f"configuration\n    disagrees with the dump's own stored `marker` (must be 0)")
+
+
+def audit_marker_net(paths, fps_list, save_fixture=None):
+    fpss = fps_list if len(fps_list) == len(paths) else [fps_list[0]] * len(paths)
+    reports = []
+    for p, fps in zip(paths, fpss):
+        name, tracks, cross, fc, params, fps = _ms_load_dump(p, fps)
+        reports.append(_mn_score(name, tracks, cross, fc, params, fps))
+    pooled = _mn_pool(reports)
+    if save_fixture:
+        with open(save_fixture, "w") as fh:
+            json.dump({"_source": ("count-pellets.py --dump-tracks tracks.json (post-8d500ff9), "
+                                   "FULL dumps; docs/probe-runs.md §31. Regenerate with "
+                                   "analyze-pellet-tracks.py --marker-net <tracks.json...> "
+                                   "--save-marker-net-fixture <path>."),
+                       "_expected": _mn_expected(reports, pooled)}, fh, indent=1)
+        print(f"wrote marker-net fixture -> {save_fixture}")
+    _print_marker_net(reports, pooled)
+    return reports, pooled
+
+
+def marker_net_selftest():
+    """Constraint 9 self-validation. ⚑ Like `--band-production-ab`, this pins RESULTS rather than a
+    replay slice: the lifetime ceiling is a property of the FULL track list, so a frame-window
+    slice would silently change which tracks are admitted. It asserts the committed numbers are
+    internally coherent and carry the properties §31's conclusion rests on -- and PRINTS that it
+    does not re-derive them."""
+    with open(MARKER_NET_FIXTURE) as fh:
+        fx = json.load(fh)
+    exp = fx["_expected"]
+    p, dumps = exp["pooled"], exp["dumps"]
+    warm = p["arms"]["warm_removed_C1"]
+    cold = next(v for k, v in p["arms"].items() if k.startswith("cold_recovered_band_hi"))
+    net = next(v for k, v in p["arms"].items() if k.startswith("net_both_band_hi"))
+    unb = next(v for k, v in p["arms"].items() if k.startswith("cold_recovered_unbounded"))
+    checks = [
+        ("reconstruction control is 0 on every dump (validity precondition)",
+         p["recon_mismatch_frames"] == 0
+         and all(d["recon_mismatch_frames"] == 0 for d in dumps)),
+        ("the shipped arm is the zero point (delta_core == 0, delta_total == 0)",
+         p["arms"]["shipped"]["delta_core"] == 0
+         and p["arms"]["shipped"]["delta_total_pellets"] == 0),
+        ("WARM removal is COLD-signed (drops core flags, delta <= 0)",
+         warm["delta_core"] <= 0 and warm["delta_total_pellets"] <= 0),
+        ("COLD recovery is WARM-signed (adds core flags, delta >= 0)",
+         cold["delta_core"] >= 0 and cold["delta_total_pellets"] >= 0),
+        ("the two channels have OPPOSITE sign -- the premise §31 exists to test",
+         warm["delta_total_pellets"] * cold["delta_total_pellets"] <= 0
+         and (warm["delta_total_pellets"] or cold["delta_total_pellets"])),
+        ("the unbounded ceiling recovers at least as much as band_hi (it is the upper bound)",
+         unb["delta_core"] >= cold["delta_core"]),
+        ("the NET equals neither channel alone (it is genuinely a combination)",
+         net["delta_total_pellets"] != warm["delta_total_pellets"]
+         or net["delta_total_pellets"] != cold["delta_total_pellets"]),
+        ("pooled shot count equals the sum of the per-dump rows",
+         p["n_shots"] == sum(d["n_shots"] for d in dumps)),
+    ]
+    ok = all(v for _, v in checks)
+    for label, v in checks:
+        print(f"  {'PASS' if v else 'FAIL'}  {label}")
+    print(f"  WARM {warm['delta_per_shot']:+.4f}/shot | COLD {cold['delta_per_shot']:+.4f}/shot "
+          f"| NET {net['delta_per_shot']:+.4f}/shot over {p['n_shots']} shots")
+    print("  ⚑ COHERENCE-ONLY: replays no dump (they are gitignored). Re-derive with --marker-net; "
+          "\n    docs/probe-runs.md §31D has the command.")
+    print("SELFTEST PASS" if ok else "SELFTEST FAIL")
+    return 0 if ok else 1
 
 
 # ============================================================
@@ -8743,6 +8942,21 @@ def main():
                     help=f"write the committed replay slice (see {DUMP_REPLAY_FIDELITY_FIXTURE})")
     ap.add_argument("--dump-replay-fidelity-selftest", action="store_true",
                     help=f"replay {DUMP_REPLAY_FIDELITY_FIXTURE} and exit")
+    ap.add_argument("--marker-net", nargs="+", metavar="TRACKS_JSON",
+                    help=("NET THE TWO MARKER CHANNELS (docs/probe-runs.md §31): §27's WARM channel "
+                          "(false core flags -- removing them COOLS the reader) against §28C's COLD "
+                          "channel (markers whose life exceeds max_pellet_frames and never reach "
+                          "`marker` at all -- recovering them WARMS it). Opposite signs, never "
+                          "netted. The recovery ceiling reuses the already-landed band_hi, which is "
+                          "the validated bound for a 14-frame VFX (owner: the marker and the pellet "
+                          "share that duration), with an unbounded arm as the strict upper bound. "
+                          "MEASUREMENT ONLY."))
+    ap.add_argument("--marker-net-fps", type=float, nargs="+", default=[30.0], metavar="FPS",
+                    help="sampling fps, 1 value or one per dump (default 30)")
+    ap.add_argument("--save-marker-net-fixture", metavar="PATH",
+                    help=f"write the committed result fixture (see {MARKER_NET_FIXTURE})")
+    ap.add_argument("--marker-net-selftest", action="store_true",
+                    help=f"replay {MARKER_NET_FIXTURE} and exit")
     ap.add_argument("--band-production-ab", nargs="+", metavar="TRACKS_JSON",
                     help=("BAND_HI ON THE PRODUCTION PATH, OUT OF SAMPLE (docs/probe-runs.md §30): "
                           "what the landed band_hi actually buys per SHOT, across every shot of "
@@ -8883,6 +9097,11 @@ def main():
     if args.fade_screen_crops:
         fade_screen_crops(args.fade_screen_crops, args.fade_screen_crops_out)
         return 0
+    if args.marker_net_selftest:
+        raise SystemExit(marker_net_selftest())
+    if args.marker_net:
+        audit_marker_net(args.marker_net, args.marker_net_fps, args.save_marker_net_fixture)
+        raise SystemExit(0)
     if args.band_production_selftest:
         raise SystemExit(band_production_selftest())
     if args.band_production_ab:
