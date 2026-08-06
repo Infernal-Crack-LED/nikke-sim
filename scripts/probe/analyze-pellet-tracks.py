@@ -5613,7 +5613,7 @@ def _hla_reconstruct_frame_tracks(tracks, n_frames, offset=0):
     return frame_tracks, track_life
 
 
-def _hla_gate_ids(tracks, params, fps):
+def _hla_gate_ids(tracks, params, fps, band_hi_override=None):
     """PRODUCTION's OWN two lifetime gates, resolved exactly as `build_tracks_and_counts`:528-539
     resolves them, off a committed/live track list (dicts carrying `id` + `xs`):
 
@@ -5634,11 +5634,18 @@ def _hla_gate_ids(tracks, params, fps):
     fixture built from a band-carrying dump WILL be scored decoupled), because
     `band_lo <= life <= band_hi <= max_pf` already implies membership in `pellet_ids`. Only a dump
     that persisted `band_hi > max_pellet_frames` (the landed `--max-pellet-frames 14 --band-hi 20`
-    configuration) is scored differently, and there the OLD formulation was simply wrong."""
+    configuration) is scored differently, and there the OLD formulation was simply wrong.
+
+    `band_hi_override` (2026-08-06, `--residual-ab`) is STRICTLY ADDITIVE and defaults to None,
+    which reproduces the persisted-params resolution above byte for byte -- no existing caller
+    passes it, and all four (`_rep_hybrid_events`, `_hla_production_band`, and via that
+    `audit_hybrid_landing`'s two halves) call positionally only as far as `fps`/`offset`. Only an
+    arm that VARIES `band_hi` as its independent variable, against a dump whose own persisted
+    value must not be consulted, ever passes a value."""
     cp = _count_pellets_module()
     life = {t["id"]: len(t["xs"]) for t in tracks}
     max_pf = params["max_pellet_frames"]
-    band_hi = params.get("band_hi")
+    band_hi = params.get("band_hi") if band_hi_override is None else band_hi_override
     if band_hi is None:
         band_hi = max_pf
     band_lo = cp._band_lo(fps)
@@ -5646,16 +5653,19 @@ def _hla_gate_ids(tracks, params, fps):
             {tid for tid, ln in life.items() if band_lo <= ln <= band_hi})
 
 
-def _hla_production_band(tracks, cross_positions, params, fps, offset=0):
+def _hla_production_band(tracks, cross_positions, params, fps, offset=0, band_hi_override=None):
     """PRODUCTION's OWN `band` channel: count-pellets.py's real `_frame_pellet_counts`, called on
     `frame_tracks` reconstructed from `tracks` (see `_hla_reconstruct_frame_tracks`) -- the same
     function `build_tracks_and_counts` calls in the shipped `--temporal` pipeline, imported
     in-process rather than re-implemented. Returns a plain per-frame list, local-indexed like
-    `cross_positions`."""
+    `cross_positions`.
+
+    `band_hi_override` is forwarded verbatim to `_hla_gate_ids` and is STRICTLY ADDITIVE (None =
+    today's persisted-params behaviour; see that function's docstring)."""
     cp = _count_pellets_module()
     n = len(cross_positions)
     frame_tracks, _track_life = _hla_reconstruct_frame_tracks(tracks, n, offset)
-    pellet_ids, band_ids = _hla_gate_ids(tracks, params, fps)
+    pellet_ids, band_ids = _hla_gate_ids(tracks, params, fps, band_hi_override)
     # D4 (2026-08-05-dump-schema-LANDING-PLAN.md §2.2): resolve marker_radius from the dump's own
     # persisted `params` (Edit C) with the same fallback-to-default-65 D3 uses, instead of
     # hardcoding 65 here. Output impact today is ZERO -- `_frame_pellet_counts`'s `band` branch is
@@ -6608,6 +6618,352 @@ def cap_score_selftest():
                 print(f"  DIFF {key}:\n    expected {json.dumps(fx['_expected'].get(key))}"
                       f"\n    got      {json.dumps(got.get(key))}")
     _print_cap_score(got)
+    print("SELFTEST PASS" if ok else "SELFTEST FAIL")
+    return 0 if ok else 1
+
+
+# ============================================================
+# THE RESIDUAL A/B (docs/handoffs/2026-08-06-residual-ab-PRECOMMIT.md; rebuilds docs/probe-runs.md
+# §19's A/B, whose §19E "Reproduction" names only the INPUTS and left `-1.40 pellets/shot` -- the
+# denominator of the whole cold-SG accounting -- with NO committed instrument. Sweep item 1 of
+# docs/handoffs/2026-08-06-band-channel-SWEEP.md §7; second occurrence of the constraint-9 failure
+# the 2026-07-29 gauge instrument caused.)
+#
+# ⛔ WHAT THIS ARM IS FOR, AND THE HAZARD IT IS BUILT AGAINST. `-1.40` is written down in six
+# places, so anyone rebuilding this knows the answer before running it. The pre-commit's §4 CONTROL
+# FIT therefore fixes the arm's parameters, band values, error definition and shot set from §19E's
+# stated inputs BEFORE any output is read, and forbids adjusting them afterwards. Everything below
+# marked ⛔ FIXED is part of that pre-declaration and must not be retuned to move the result:
+#
+#   ⛔ FIXED -- ARMS.        `RESIDUAL_AB_BAND_HI = ("coupled", 20)`: the pre-landing value (coupled
+#                            to the dump's OWN stored `max_pellet_frames`, never recomputed -- the
+#                            §3.7 trap `--cap-score` documents) and the landed 60 fps value 20.
+#                            `band_hi` is the ONLY thing that varies; localization, tracks,
+#                            `frame_counts`, `pellet_radius`, `max_pellet_frames`, segmentation and
+#                            `debounce_shots`' own knobs all come from the dump and are held.
+#   ⛔ FIXED -- LABELS.      `_rep_load_labels()`, i.e. `groundtruth-f8-11.json` verbatim: white =
+#                            7/10/8/9/8 at t0 1060/1096/1140/1289/1369, shot 0 EXCLUDED (owner-
+#                            confirmed false positive, `t0: null`). No re-labelling, no owner time.
+#   ⛔ FIXED -- ERROR.       `err = reader - owner` per shot; `E = mean(err)` over the 5 labelled
+#                            shots; `delta = E(20) - E(coupled)`. Signed, reader-minus-owner, so a
+#                            COLD reader is negative -- §19's own convention.
+#   ⛔ FIXED -- SHOT SET.    n = 5, ONE clip, IN-SAMPLE (these are the labels the reader was tuned
+#                            against, §19D). ⇒ ELIMINATION-strength, never a certification. `n` is
+#                            printed on every aggregate line.
+#
+# ⛔ CONTROL BASIS (pre-commit §4). The error is scored on the SHIPPED channel -- `debounce_shots`'
+# hybrid representative, where `white := band_totals[band_rep]`, the BAND count at the band-plateau
+# frame (count-pellets.py:664-671) -- NOT the legacy `pellet_ids`/median-frame channel that
+# docs/probe-runs.md §36/§37 found `--representative-audit` had been scoring. The arm PRINTS, per
+# shot, the representative frame, whether the hybrid override fired (`banded`, read off
+# count-pellets.py's OWN `_plateau_rep` with the arguments `debounce_shots` passes it), the band
+# value at that frame and the LEGACY white value at that same frame. On a banded row `reader`
+# equals `band@rep`; where the two columns differ, that equality is the self-evidence of which
+# channel was scored. `_rab_assert_channel` turns it into a hard gate rather than an eyeball check.
+#
+# ⚑ REUSE, NOT RE-IMPLEMENTATION (pre-commit §2). `_frame_pellet_counts` and `debounce_shots` are
+# count-pellets.py's own, imported in-process via `_hla_production_band` / `_hla_score`; the
+# lifetime gates via `_hla_gate_ids` (which already honours a persisted `band_hi`, extended here by
+# a strictly-additive `band_hi_override`); the independent per-frame band aggregation via
+# `_ps_band`/`_ps_band_totals`. Nothing in this section re-derives a production number.
+#
+# ⚑ SHOT 4 IS `locate: "template"` -- its crops were cut with the template crosshair, so the whole
+# radius-gate residual on it is the documented structural mislock. Handled exactly as
+# `--representative-audit`'s `template_relock` row does it: the SAME tracks and the SAME
+# `frame_counts`, re-banded against the TEMPLATE dump's `cross_positions`, giving that crop its own
+# band series and therefore its own hybrid event. BOTH numbers are always reported -- an
+# `as_scored` mean (every shot on the structural crosshair, which is what production actually
+# counts against) and a `relocked` mean (template shots taken from their relock row). Never one
+# silently.
+#
+# ⛔ NOTHING HERE ENACTS. No constant, guard, threshold or default changes; `count-pellets.py`,
+# `read-pellets.ts` and every shipped value are read-only from this arm.
+# ============================================================
+RESIDUAL_AB_FIXTURE = "scripts/tests/fixtures/pellets/residual-ab-slice.json"
+# ⛔ FIXED -- ARMS (see the block comment). "coupled" means the dump's OWN stored
+# `max_pellet_frames`, verbatim, never recomputed.
+RESIDUAL_AB_BAND_HI = ("coupled", 20)
+_RAB_SHOT_KEYS = ("shot", "t0", "locate", "owner", "reader", "err", "rep", "banded", "band_at_rep",
+                  "legacy_white_at_rep", "relock_reader", "relock_err", "relock_rep",
+                  "relock_banded", "relock_band_at_rep")
+
+
+def _rab_band_hi(candidate, params):
+    """Resolve one arm label to this dump's `band_hi`. ⛔ FIXED: "coupled" is the dump's own STORED
+    `max_pellet_frames` (the pre-landing state, where the two were one knob), never a recomputation
+    -- the same §3.7 trap `_cs_scaled_band_hi` documents."""
+    if candidate == "coupled":
+        return params["max_pellet_frames"]
+    return int(candidate)
+
+
+def _rab_banded(cp, band, ev):
+    """Did `debounce_shots`' hybrid override fire on this event? Read off count-pellets.py's OWN
+    `_plateau_rep` with the arguments `debounce_shots` passes it (`event_min=3`), never a second
+    copy of the test -- so the flag can only ever agree with the branch the shipped function took.
+    Same construction as `_rep_hybrid_events`."""
+    band_totals = {j: band[j] for j in range(ev["start"], ev["end"])}
+    return cp._plateau_rep(band_totals, ev["start"], ev["end"], 3) is not None
+
+
+def _rab_event_for(shots, t0, what):
+    ev = next((s for s in shots if s["start"] <= t0 < s["end"]), None)
+    if ev is None:
+        raise SystemExit(f"--residual-ab: labelled shot t0={t0} falls in no production event "
+                         f"({what}). The A/B cannot score a shot the segmentation never opened.")
+    return ev
+
+
+def _rab_assert_channel(rows, arm_label, dump_name):
+    """⛔ CONTROL BASIS, as a GATE rather than a printed hint. On every row where the hybrid
+    override fired, the scored `reader` MUST equal the band count at the representative frame --
+    that is the definition of the shipped channel (count-pellets.py:670). If it ever equals the
+    legacy white-at-rep instead while the two disagree, the arm is scoring the §36/§37 defect's
+    channel and its number is void; fail loudly rather than report it."""
+    for r in rows:
+        if r["banded"] and r["reader"] != r["band_at_rep"]:
+            raise SystemExit(
+                f"--residual-ab: CONTROL BASIS FAILED on {dump_name} arm band_hi={arm_label} "
+                f"shot {r['shot']}: the hybrid override fired but reader={r['reader']} != "
+                f"band@rep={r['band_at_rep']} (legacy white@rep={r['legacy_white_at_rep']}). "
+                "The arm is not scoring the shipped band channel.")
+
+
+def _rab_score_arm(frame_counts, band_struct, band_tmpl, fps, band_hi, labels):
+    """One (dump, band_hi) arm, end to end, off already-computed band series. Shared VERBATIM by
+    the live arm and the selftest replay -- the only difference between them is where the band
+    series came from (reconstructed from a live dump's tracks vs. read from the committed fixture),
+    so `_expected` can only ever be this function's own numbers."""
+    cp = _count_pellets_module()
+    shots_struct, summary_struct = _hla_score(frame_counts, band_struct, fps)
+    shots_tmpl, _summary_tmpl = _hla_score(frame_counts, band_tmpl, fps)
+    rows = []
+    for s in labels:
+        t0 = s["t0"]
+        ev = _rab_event_for(shots_struct, t0, "structural crosshair")
+        rep = ev["frame"]
+        row = {"shot": s["shot"], "t0": t0, "locate": s["locate"], "owner": s["owner"],
+               "reader": ev["white"], "err": ev["white"] - s["owner"], "rep": rep,
+               "banded": _rab_banded(cp, band_struct, ev), "band_at_rep": band_struct[rep],
+               "legacy_white_at_rep": frame_counts[rep]["white"],
+               "relock_reader": None, "relock_err": None, "relock_rep": None,
+               "relock_banded": None, "relock_band_at_rep": None}
+        if s["locate"] == "template":
+            evt = _rab_event_for(shots_tmpl, t0, "template relock crosshair")
+            row.update({"relock_reader": evt["white"],
+                        "relock_err": evt["white"] - s["owner"], "relock_rep": evt["frame"],
+                        "relock_banded": _rab_banded(cp, band_tmpl, evt),
+                        "relock_band_at_rep": band_tmpl[evt["frame"]]})
+        rows.append(row)
+    n = len(rows)
+    as_scored = [r["err"] for r in rows]
+    relocked = [r["relock_err"] if r["relock_err"] is not None else r["err"] for r in rows]
+    return {
+        "band_hi": band_hi, "n": n, "totalShots": summary_struct["totalShots"],
+        "shots": [{k: r[k] for k in _RAB_SHOT_KEYS} for r in rows],
+        "sum_owner": sum(r["owner"] for r in rows),
+        "sum_reader_as_scored": sum(r["reader"] for r in rows),
+        "sum_reader_relocked": sum(r["relock_reader"] if r["relock_reader"] is not None
+                                   else r["reader"] for r in rows),
+        "E_as_scored": round(sum(as_scored) / n, 4) if n else None,
+        "E_relocked": round(sum(relocked) / n, 4) if n else None,
+    }
+
+
+def _rab_expand_frame_counts(rows):
+    return [{"white": w, "red": r, "marker": m} for w, r, m in rows]
+
+
+def _rab_compute_live(struct_dir, tmpl_dir, fps):
+    """Reconstruct both crops' production band series per arm from the LIVE dumps and score them.
+
+    ⚑ The relock reuses the STRUCTURAL dump's tracks and `frame_counts` and swaps only
+    `cross_positions` -- identical to `_rep_labelled_report`'s `template_relock`. The two dumps are
+    the same frames run through the same detector with the same filter params, so the component
+    tracks are the same population; what differs is where the crosshair was located, which is the
+    only thing the relock is asking about."""
+    with open(Path(struct_dir) / "tracks.json") as fh:
+        dump = json.load(fh)
+    with open(Path(tmpl_dir) / "tracks.json") as fh:
+        tmpl = json.load(fh)
+    params = dump["params"]
+    max_pf = params["max_pellet_frames"]
+    frame_counts = [{"white": c["white"], "red": c["red"], "marker": c.get("marker", 0)}
+                    for c in dump["frame_counts"]]
+    cross = [tuple(c) if c else None for c in dump["cross_positions"]]
+    cross_t = [tuple(c) if c else None for c in tmpl["cross_positions"]]
+    if len(cross_t) != len(cross):
+        raise SystemExit(f"--residual-ab: {tmpl_dir} has {len(cross_t)} cross positions against "
+                         f"{struct_dir}'s {len(cross)} -- not the same clip.")
+    radius = params["pellet_radius"]
+    rtracks = [(t["life"], _rep_radius_runs({"first": t["first"], "last": t["last"],
+                                             "xs": t["xs"], "ys": t["ys"]}, cross, radius))
+               for t in dump["tracks"] if not t["is_red"]]
+    rtracks = [(life, runs) for life, runs in rtracks if runs]
+    labels = _rep_load_labels()
+    name = "/".join(Path(struct_dir).parts[-2:])
+    bands, arms = [], []
+    for cand in RESIDUAL_AB_BAND_HI:
+        band_hi = _rab_band_hi(cand, params)
+        band_s = _hla_production_band(dump["tracks"], cross, params, fps, 0, band_hi)
+        band_t = _hla_production_band(dump["tracks"], cross_t, params, fps, 0, band_hi)
+        # MANDATORY CHECK, LIVE ONLY (the selftest replay has no radius_tracks to rebuild it from
+        # -- same live/replay split as `--hybrid-landing-audit`'s TS lockstep and
+        # `--representative-audit`'s full-clip control): production's `band` must agree per-frame
+        # with this file's INDEPENDENT `_ps_band_totals` aggregation over the SAME radius/lifetime
+        # facts, at THIS arm's band_hi.
+        equiv = _hla_equivalence(band_s, _ps_band_totals(rtracks, _ps_band(fps, max_pf, band_hi)),
+                                 0, len(frame_counts))
+        if equiv["n_mismatch"]:
+            raise SystemExit(f"--residual-ab: EQUIVALENCE FAILED on {name} at band_hi={band_hi}: "
+                             f"{equiv['n_mismatch']}/{equiv['n_frames']} frames disagree "
+                             f"{equiv['diff_frames']}")
+        arm = _rab_score_arm(frame_counts, band_s, band_t, fps, band_hi, labels)
+        arm["arm"] = cand
+        arm["equivalence_mismatch"] = equiv["n_mismatch"]
+        _rab_assert_channel(arm["shots"], band_hi, name)
+        bands.append({"arm": cand, "band_hi": band_hi, "band": band_s, "band_tmpl": band_t})
+        arms.append(arm)
+    stored = {"name": name, "tmpl": "/".join(Path(tmpl_dir).parts[-2:]), "fps": fps,
+              "params": {k: params[k] for k in ("pellet_radius", "max_pellet_frames", "band_hi")
+                         if k in params},
+              "frame_counts": [[c["white"], c["red"], c["marker"]] for c in frame_counts],
+              "bands": bands}
+    return stored, _rab_dump_report(name, fps, params, arms)
+
+
+def _rab_dump_report(name, fps, params, arms):
+    report = {"dump": name, "fps": fps, "max_pellet_frames": params["max_pellet_frames"],
+              "params_band_hi": params.get("band_hi"), "arms": arms}
+    if len(arms) == 2:
+        report["diff_as_scored"] = round(arms[1]["E_as_scored"] - arms[0]["E_as_scored"], 4)
+        report["diff_relocked"] = round(arms[1]["E_relocked"] - arms[0]["E_relocked"], 4)
+    return report
+
+
+def _rab_expected(report):
+    return {"dumps": [{k: v for k, v in d.items() if k != "equivalence_mismatch"}
+                      for d in report["dumps"]]}
+
+
+_RAB_CHANNEL_BANNER = (
+    "CHANNEL SCORED: the SHIPPED one -- `debounce_shots`' hybrid representative, where\n"
+    "  `white := band_totals[band_rep]`, i.e. the BAND count at the band-plateau frame\n"
+    "  (count-pellets.py:664-671). NOT the legacy pellet_ids/median-frame channel\n"
+    "  (docs/probe-runs.md §36/§37). Self-evidence, per shot row: on every `banded=True` row\n"
+    "  `reader` == `band@rep`; `legacy_white@rep` is the same frame's pre-hybrid white count,\n"
+    "  printed alongside so the two channels are visibly distinguishable. `_rab_assert_channel`\n"
+    "  hard-fails the run if that identity is ever broken.")
+
+
+def _print_residual_ab(report):
+    print("\n== RESIDUAL A/B -- `band_hi` varied ALONE on the production counting path, scored "
+          "against owner labels ==")
+    print(_RAB_CHANNEL_BANNER)
+    print("\nERROR DEFINITION (pre-committed): err = reader - owner per shot; E = mean(err); "
+          "difference = E(landed) - E(pre-landing).\nA COLD reader is NEGATIVE. n = the labelled shots "
+          "scored, printed on every aggregate line.")
+    for d in report["dumps"]:
+        print(f"\nDUMP {d['dump']}  fps={d['fps']}  max_pellet_frames={d['max_pellet_frames']}  "
+              f"params.band_hi={d['params_band_hi']}")
+        for a in d["arms"]:
+            tag = "pre-landing, coupled" if a["arm"] == "coupled" else "landed"
+            print(f"  ARM band_hi={a['band_hi']:<3d} [{tag}]  totalShots={a['totalShots']}  "
+                  f"n={a['n']}")
+            print(f"    {'shot':>4s} {'t0':>5s} {'locate':10s} {'owner':>5s} {'reader':>6s} "
+                  f"{'err':>4s} {'rep':>5s} {'banded':>6s} {'band@rep':>8s} "
+                  f"{'legacy_white@rep':>16s}")
+            for r in a["shots"]:
+                print(f"    {r['shot']:>4d} {r['t0']:>5d} {r['locate']:10s} {r['owner']:>5d} "
+                      f"{r['reader']:>6d} {r['err']:>+4d} {r['rep']:>5d} "
+                      f"{str(r['banded']):>6s} {r['band_at_rep']:>8d} "
+                      f"{r['legacy_white_at_rep']:>16d}")
+                if r["relock_reader"] is not None:
+                    print(f"      -> RELOCK (locate=template, scored on the template crosshair "
+                          f"its crops were cut with): reader={r['relock_reader']} "
+                          f"err={r['relock_err']:+d} rep={r['relock_rep']} "
+                          f"banded={r['relock_banded']} band@rep={r['relock_band_at_rep']}")
+            print(f"    MEAN as-scored  n={a['n']}  owner_sum={a['sum_owner']} "
+                  f"reader_sum={a['sum_reader_as_scored']}  E={a['E_as_scored']:+.4f}")
+            print(f"    MEAN relocked   n={a['n']}  owner_sum={a['sum_owner']} "
+                  f"reader_sum={a['sum_reader_relocked']}  E={a['E_relocked']:+.4f}")
+        if "diff_as_scored" in d:
+            lo, hi = d["arms"][0]["band_hi"], d["arms"][1]["band_hi"]
+            print(f"  DIFFERENCE n={d['arms'][0]['n']}  as-scored: E({hi}) - E({lo}) = "
+                  f"{d['diff_as_scored']:+.4f}   relocked: {d['diff_relocked']:+.4f}")
+    print("\n⚑ n = 5 labelled shots, ONE clip, ONE unit (`marciana`, SG/Iron), IN-SAMPLE (these "
+          "are the labels\n  the reader was tuned against, docs/probe-runs.md §19D). "
+          "ELIMINATION-strength, never a certification.")
+
+
+def residual_ab(pairs, fps_list, save_fixture=None):
+    """`pairs` is a flat list of STRUCTURAL dump dirs; `fps_list` is parallel (or length 1).
+    Template counterparts come from `--residual-ab-tmpl`, parallel to `pairs`."""
+    report = {"dumps": []}
+    fixture_dumps = []
+    for k, (struct_dir, tmpl_dir) in enumerate(pairs):
+        fps = fps_list[k] if len(fps_list) > 1 else fps_list[0]
+        stored, drep = _rab_compute_live(struct_dir, tmpl_dir, fps)
+        fixture_dumps.append(stored)
+        report["dumps"].append(drep)
+    if save_fixture:
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("The two labelled-clip dumps' own `frame_counts` plus, per pre-"
+                            "committed `band_hi` arm, the production `band` series reconstructed "
+                            "from their tracks on BOTH crosshairs (structural + template relock) "
+                            "-- docs/handoffs/2026-08-06-residual-ab-PRECOMMIT.md, rebuilding "
+                            "docs/probe-runs.md §19's A/B. Constraint 9 self-validation, same "
+                            "precedent as the other pellets/*-slice.json fixtures."),
+                "_note": ("Regenerate with analyze-pellet-tracks.py --residual-ab <structural-dump-"
+                          "dir...> --residual-ab-tmpl <template-dump-dir...> --residual-ab-fps "
+                          "<fps...> --save-residual-ab-fixture <path>. ⛔ --residual-ab-tmpl and "
+                          "--residual-ab-fps are MANDATORY and positionally parallel to "
+                          "--residual-ab; both labelled dumps are 60 fps, and the fps default of "
+                          "60 must NOT be relied on if a 30 fps dump is ever added. The band "
+                          "series are the ONLY thing reconstructed from the (gitignored) raw "
+                          "dumps; the selftest replays the SCORING off them, calling the same "
+                          "`_rab_score_arm` the live arm calls. The per-frame EQUIVALENCE check "
+                          "against `_ps_band_totals` is LIVE-ONLY (it needs radius_tracks the "
+                          "fixture does not carry) -- same live/replay split as "
+                          "--hybrid-landing-audit's TS lockstep."),
+                "dumps": fixture_dumps,
+                "_expected": _rab_expected(report),
+            }, fh)
+        print(f"wrote residual-ab fixture -> {save_fixture}")
+    _print_residual_ab(report)
+    return report
+
+
+def residual_ab_selftest():
+    """Constraint 9 self-validation: replay the A/B's SCORING off the committed band series --
+    real `cp.debounce_shots` via `_hla_score`, real labels via `_rep_load_labels`, the same
+    `_rab_score_arm` the live arm calls -- and assert every row against the committed `_expected`.
+    A change to the labels, to `debounce_shots`, to the hybrid representative rule or to the error
+    arithmetic all trip it."""
+    with open(RESIDUAL_AB_FIXTURE) as fh:
+        fx = json.load(fh)
+    labels = _rep_load_labels()
+    report = {"dumps": []}
+    for d in fx["dumps"]:
+        frame_counts = _rab_expand_frame_counts(d["frame_counts"])
+        arms = []
+        for b in d["bands"]:
+            arm = _rab_score_arm(frame_counts, b["band"], b["band_tmpl"], d["fps"], b["band_hi"],
+                                 labels)
+            arm["arm"] = b["arm"]
+            _rab_assert_channel(arm["shots"], b["band_hi"], d["name"])
+            arms.append(arm)
+        params = dict(d["params"])
+        report["dumps"].append(_rab_dump_report(d["name"], d["fps"], params, arms))
+    got = _rab_expected(report)
+    ok = got == fx["_expected"]
+    if not ok:
+        for key in sorted(set(got) | set(fx["_expected"])):
+            if got.get(key) != fx["_expected"].get(key):
+                print(f"  DIFF {key}:\n    expected {json.dumps(fx['_expected'].get(key))}"
+                      f"\n    got      {json.dumps(got.get(key))}")
+    _print_residual_ab(report)
     print("SELFTEST PASS" if ok else "SELFTEST FAIL")
     return 0 if ok else 1
 
@@ -9540,6 +9896,29 @@ def main():
                     help=f"write the committed score fixture (see {CAP_SCORE_FIXTURE})")
     ap.add_argument("--cap-score-selftest", action="store_true",
                     help=f"replay --cap-score against {CAP_SCORE_FIXTURE} and exit")
+    ap.add_argument("--residual-ab", nargs="+", metavar="DUMP_DIR",
+                    help=("THE RESIDUAL A/B (docs/handoffs/2026-08-06-residual-ab-PRECOMMIT.md): "
+                          "rebuilds docs/probe-runs.md §19's A/B as a committed instrument. Varies "
+                          f"`band_hi` ALONE over the pre-committed arms {RESIDUAL_AB_BAND_HI} "
+                          "('coupled' = the dump's own stored max_pellet_frames) on the PRODUCTION "
+                          "counting path -- count-pellets.py's own _frame_pellet_counts + "
+                          "debounce_shots, driven off each dump's own tracks and cross_positions "
+                          "-- and scores per-shot counts against the owner labels in "
+                          f"{REP_LABEL_COUNTS} (7/10/8/9/8, shot 0 excluded). Reports mean per-shot "
+                          "error per arm and the difference between arms, n on every aggregate line. "
+                          "Takes STRUCTURAL dump dirs; --residual-ab-tmpl gives the parallel "
+                          "template-located dirs for the shot-4 relock row. MEASUREMENT ONLY: "
+                          "nothing here enacts."))
+    ap.add_argument("--residual-ab-tmpl", nargs="+", metavar="DUMP_DIR",
+                    help=("template-located counterpart dumps, positionally parallel to "
+                          "--residual-ab (used for the `locate: template` relock row, exactly as "
+                          "--representative-audit's template_relock does it)"))
+    ap.add_argument("--residual-ab-fps", nargs="+", type=float, default=[60.0],
+                    help="fps per --residual-ab dump (one value applies to all; default 60)")
+    ap.add_argument("--save-residual-ab-fixture", metavar="PATH",
+                    help=f"write the committed A/B fixture (see {RESIDUAL_AB_FIXTURE})")
+    ap.add_argument("--residual-ab-selftest", action="store_true",
+                    help=f"replay --residual-ab against {RESIDUAL_AB_FIXTURE} and exit")
     ap.add_argument("--marker-geometry", metavar="TRACKS_JSON",
                     help=("MARKER GEOMETRY (docs/probe-runs.md §15): for each of "
                           "--marker-geometry-frames, list every RED track within (the dump's own) "
@@ -9763,6 +10142,19 @@ def main():
         raise SystemExit(cap_score_selftest())
     if args.cap_score:
         cap_score(args.save_cap_score_fixture)
+        return 0
+    if args.residual_ab_selftest:
+        raise SystemExit(residual_ab_selftest())
+    if args.residual_ab:
+        if not args.residual_ab_tmpl or len(args.residual_ab_tmpl) != len(args.residual_ab):
+            raise SystemExit("--residual-ab needs --residual-ab-tmpl with exactly one "
+                             "template-located dump dir per structural dump dir (the shot-4 "
+                             "relock row is MANDATORY, never silently skipped).")
+        if len(args.residual_ab_fps) not in (1, len(args.residual_ab)):
+            raise SystemExit("--residual-ab-fps takes either one value for all dumps or one per "
+                             "dump.")
+        residual_ab(list(zip(args.residual_ab, args.residual_ab_tmpl)), args.residual_ab_fps,
+                    args.save_residual_ab_fixture)
         return 0
     if args.fade_screen_selftest:
         raise SystemExit(fade_screen_selftest())
