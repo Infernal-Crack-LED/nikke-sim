@@ -7171,3 +7171,53 @@ measurement of that population.
   construction, so shots pair 1:1 without §22D's onset-matching noise.
 - Fixture pins all six dump pairs and replays the live report **byte-identically with no scratchpad
   access** — closing §20E's limit 3 for this arm's numbers.
+
+#### §40 SCREENING THE MISLOCK POPULATION FOR AN OWNER ASK — 40% is a STUCK TEMPLATE, and the rest disagree SYSTEMATICALLY
+
+**2026-08-06.** A pre-check before spending owner labelling time on §39's mislock population. ⚑ No
+new instrument; a read over `mislock-identity-slice.json` plus the `*-tmplloc` dumps' own
+`cross_positions`.
+
+##### §40A — ⛔ 55 of 137 flagged mislocks (40.1%) are a STUCK TEMPLATE LOCK
+
+On the extreme-displacement shots the template crosshair is **frozen at one pixel across many
+frames** — `h4-isabel-structural` reads `[2343, 554]` identically on t0 2218 / 2238 / 2258 / 2278;
+`h4-guilty-structural` reads `[2457, 472]` on 1156 / 1176 / 1196 — while the structural lock moves
+plausibly frame to frame. Screening the whole population on "template position repeated on ≥ 40
+frames" flags **55 of 137**.
+
+⇒ **A frozen reference is a failure of the TEMPLATE ARM, not a structural mislock.** ⛔ **§20's
+16.9% therefore measures DISAGREEMENT, not structural mislock rate** — a large share of it is the
+reference failing. ⚑ **No owner time is needed to identify these; they are mechanically detectable.**
+
+##### §40B — ✅ §39 SURVIVES THIS CONFOUND — checked, not assumed
+
+`J_mis` recomputed with stuck-template shots removed:
+
+| dump                     | `J_mis` published | `J_mis` clean | n scored → clean |
+| ------------------------ | ----------------- | ------------- | ---------------- |
+| `h4-marciana-structural` | 0.3333            | **0.3333**    | 8 → 7            |
+| `h4-isabel-structural`   | 0.2857            | **0.2679**    | 13 → 8           |
+| `h4-guilty-structural`   | 0.6000            | **0.6000**    | 7 → 7            |
+| `g2-noir-structural`     | 0.3750            | **0.3750**    | 12 → 11          |
+
+Only **7 of 40** scored mislocks are stuck-template, and removing them moves nothing material.
+⇒ **§39's finding stands**; the confound lives overwhelmingly in the UNSCORED tail.
+
+##### §40C — ⚑ THE SURVIVING DISAGREEMENT IS SYSTEMATIC, NOT RANDOM — a lead
+
+On the 10 clean candidates, structural minus template:
+
+- **`dx` = +322 ± 121 px — POSITIVE on 10 of 10**
+- **`dy` = −330 ± 63 px — NEGATIVE on 10 of 10**
+
+⛔ **Selection cannot explain the SIGNS.** These shots were selected for _disagreeing_, so
+disagreement is guaranteed — but under a random-mislock null the direction would be mixed, and
+10/10 in **both** axes is not that. The tight `dy` spread (±63 px on a −330 mean) points at the two
+locators tracking **different HUD elements** with a fixed geometric relationship, rather than one
+jittering.
+
+⚑ **RECORDED AS A LEAD, NOT A VERDICT.** n = 10, hand-screened, and the mechanism is inferred from
+geometry alone. But if it holds, a large part of the "mislock" channel is **one systematic offset**
+— a far cheaper fix than per-shot localization, and it would be worth identifying which element each
+locator is on before any localizer change is designed.
