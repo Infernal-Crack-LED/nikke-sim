@@ -930,6 +930,13 @@ def stale_counting_groundtruth(tracks_dir, score_json):
                                          if a_in["se"] else None)}
     print(json.dumps(out, indent=2))
     print("\nGROUND-TRUTH ARM -- 6-shot `marciana` (SG/Iron) f8-11 fixture, owner-anchored t0")
+    # ⚑ sweep item 3 (docs/handoffs/2026-08-06-band-channel-SWEEP.md §3): these errors are NOT the
+    # shipped reader's. Naming the estimator at the point of output, not just in score-pellets.py.
+    print("  ⛔ `err`/bias/rmse below come from score-pellets.py's `current` estimator -- a mean of\n"
+          "     raw per-frame detector counts over f8-11. That is NEITHER CHANNEL of the shipped\n"
+          "     reader, whose per-shot count is the `band` value at debounce_shots' plateau frame\n"
+          "     (docs/probe-runs.md §37). ⇒ Do NOT read these as the reader's error against 8.40;\n"
+          "     for that, use `--residual-ab` (§38).")
     print(f"{'shot':>4} {'t0':>6} {'locate':>10} {'owner':>5} {'t0stale':>7} {'stale f':>16} "
           f"{'err incl':>8} {'err excl':>8}")
     for r in shots:
@@ -3993,6 +4000,13 @@ def _print_representative_audit(labelled, reports, pooled):
           f"Counting only the band keeps >{REP_HITS_PER_SHOT}\n  to a few percent.")
 
     print(f"\nPOLICY + `valid` CLAMP -- pooled over {pooled['median']['n_events']} events")
+    # ⚑ sweep item 2 (docs/handoffs/2026-08-06-band-channel-SWEEP.md §2): the scoping below was
+    # correct and documented in code, but NO MARKER REACHED STDOUT -- and since §37 the block a few
+    # lines ABOVE this one IS the shipped channel. That adjacency is the §36 defect's exact shape.
+    print("  ⛔ LEGACY PRE-HYBRID CHANNEL -- NOT the shipped reader. `median`/`p75`/`max` here are\n"
+          "     `_merge_events`' median-of-`white+red` (pellet_ids), and `p75`/`max` are not even\n"
+          "     reachable from the shipped reader. The per-shot decomposition ABOVE is the shipped\n"
+          "     channel (band @ plateau frame); these two blocks are NOT on the same basis.")
     print(f"{'policy':8s} {'raw avgTotal':>13s} {'<5':>5s} {'>10':>5s} {'clamped n':>10s} "
           f"{'clamped avgTotal':>17s} {'clamp effect':>13s}")
     for policy in REP_POLICIES:

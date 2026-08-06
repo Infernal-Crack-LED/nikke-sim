@@ -28,7 +28,8 @@ Run with the probe venv:
 --estimators (2026-07-31, Phase 2 pre-op revision, docs/handoffs/2026-07-30-pellet-reader-
 implementation-plan.md §2.2/step 2): also scores the PRE-REGISTERED cheap-estimator list --
 aggregation formulas over the SAME per-frame counts already computed above, no new detection code
--- against the current-pipeline control, reporting signed bias/SD/SE/RMSE per estimator so a
+-- against the `current` control (⛔ a fixed-window detector mean, NOT the shipped reader's channel
+-- see compute_estimators), reporting signed bias/SD/SE/RMSE per estimator so a
 candidate can be screened before building Phase 2's full lifecycle-template machinery.
 --real-fixture scores against the 6 owner-counted real shots (scripts/tests/fixtures/pellets/
 groundtruth-f8-11.json) instead of a synthetic --labels file -- the mandatory held-out real-data
@@ -1178,7 +1179,21 @@ def compute_estimators(seq, dump, per_offset):
     """The pre-registered estimator list (docs/handoffs/2026-07-30-pellet-reader-implementation-
     plan.md §2.2 step 2a), scored on the SAME sequence score_sequence() already scored:
 
-      current                    -- CONTROL: existing pipeline, mean of raw f8-11 counts
+      current                    -- CONTROL: mean of raw f8-11 per-frame detector counts.
+                                     ⛔ MISNAMED, AND THE NAME IS LOAD-BEARING (sweep item 3,
+                                     docs/handoffs/2026-08-06-band-channel-SWEEP.md §3): this is
+                                     NEITHER CHANNEL of the shipped reader. It is a fixed-window
+                                     mean over per-frame detector counts; the shipped per-shot
+                                     count is the `band` value at the band-plateau frame chosen by
+                                     debounce_shots (docs/probe-runs.md §37). Nothing in this file
+                                     ever calls debounce_shots or reads `band` -- it scores CROPS,
+                                     not events. ⇒ A row beating `current` has NOT beaten the
+                                     shipped reader, and `current`'s bias/RMSE is NOT the shipped
+                                     reader's error against 8.40.
+                                     ⚑ The KEY is deliberately left as `current`: renaming it would
+                                     move every fixture and consumer that stores it, which is real
+                                     blast radius for a labelling fix. The name is wrong; the
+                                     correction lives here and at every use site instead.
       median_persist_readable    -- kimi's form: median over the readable window (f1, f8-11),
                                      after the minimal persist+monotonic-decay filter
       max_nonpeak_persist        -- fable's form (max)
