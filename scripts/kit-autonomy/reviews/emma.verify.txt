@@ -1,0 +1,13 @@
+== S2d verify (post-S3 override) ==
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m15 passed[39m[22m[90m (15)[39m
+[2m   Start at [22m 04:26:53
+[2m   Duration [22m 331ms[2m (transform 76ms, setup 0ms, import 268ms, tests 10ms, environment 0ms)[22m
+
+
+== clean-weapons guard (CW1 damage-neutrality with emma override on disk) ==
+[2m      Tests [22m [1m[32m27 passed[39m[22m[90m (27)[39m
+[2m   Start at [22m 04:26:53
+[2m   Duration [22m 481ms[2m (transform 75ms, setup 0ms, import 100ms, tests 330ms, environment 0ms)[22m
+

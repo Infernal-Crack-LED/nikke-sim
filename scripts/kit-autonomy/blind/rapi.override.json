@@ -1,0 +1,91 @@
+{
+  "slug": "rapi",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 20
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 21.81,
+          "durationSec": 20
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 40
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 528.97
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 657.72,
+          "noFb": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 60.75,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Taunt for 5 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill1 trigger identity: kit says \"when attacked 20 time(s)\" — an INCOMING-hit counter (boss attacks on this unit), not an outgoing shot/hit counter. The sim models no boss damage output, so there is no incoming-hit channel; modeled as the engine's nearest available recurring counter (hitCount 20 = the owner's own rounds), which fires FAR more often than the real condition. Uptime is therefore an UNMEASURED estimate and likely OVER-credited.",
+    "⚑ skill2 trigger identity + cadence: the kit gives NO activation clause for the 528.97% hit, so it is modeled as an interval on the datamined skill cooldown (40s, the same field as the burst cd) with first fire at t=sec. Both the interval convention and the 40s period are unmeasured.",
+    "⚑ skill2/burst target selection: \"1 enemy unit with the highest final ATK\" is a multi-enemy selector; the scope-lock fight is single-target, so it resolves to the boss unconditionally. No modeling loss at scope, but the selector is not represented.",
+    "Burst cast damage is FB-exempt (noFb) per the standing rule that a burst cast lands before the Full Burst window opens; the self ATK buff is applied at cast and covers the FB window by timing."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rapi (AR/Fire/Attacker/Burst III, cd 40s). S1 = self ATK ▲21.81%/20s on a 20-count trigger whose real condition is INCOMING attacks (unmodellable at scope — no boss damage output); mapped to the engine's own-round hitCount 20 as the nearest recurring counter, so uptime is an over-credit risk. S2 = single 528.97% flat hit with no kit-stated trigger, modeled as interval 40s (datamined cd) ⚑; its Taunt is a threat/aggro mechanic with no damage channel at scope (unmodeled). Burst = 657.72% flat hit at cast (noFb — pre-FB by timing) plus self ATK ▲60.75%/10s covering the FB window. Riders take crit at the caster's rate by engine default and get no core (the kit says nothing about core strikes); noRange is engine-automatic and not set. FB-by-timing left ON (noFb unset on the S2 rider) per the default.",
+  "hasPierce": false
+}

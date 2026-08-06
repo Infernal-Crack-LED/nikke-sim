@@ -1,0 +1,76 @@
+{
+  "slug": "mary",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "last bullet hits → 1 lowest-HP ally heal",
+      "disposition": "FAITHFUL",
+      "scope": "Per-magazine on-hit heal; no attack-type scoping. SG ammo 9, so cadence = every 9th pull (pellets irrelevant — lastBullet is per magazine, not per pellet).",
+      "durationSemantics": "Instant, single tick (heal ticks:1 default). No duration.",
+      "triggerIdentity": "lastBullet (per-magazine, fires at the 9th round / reload start). NOT shotFired, NOT hitCount.",
+      "targetSet": "alliesLowestHp count:1 (v1 has no HP pool — deterministic leftmost stand-in per schema comment). NOT self, NOT all allies.",
+      "nearestWrongModel": "Skipped as 'defensive heal, no damage' — dropping the heal effect entirely. Second-nearest: trigger keyed to shotFired (every pull) instead of lastBullet, inflating recovery-event cadence ×9.",
+      "distinguishingAssertion": "In a comp containing mary + crown (controlComp includes crown B2), crown's recovery-triggered buffApply events attributable to mary's magazine cycle appear ~once per mary reload event (pair each mary `reload` event with a crown on-recovery buffApply at the same frame). RED if zero such procs (heal dropped) or if procs ≈ shot count (shotFired misread). Heal amounts are unmodeled, so the recovery EVENT via a consumer is the only observable.",
+      "inertness": "With no on-recovery consumer in the comp, this line moves zero damage — mary-solo-style totals must not change when the block is stripped via withPatchedOverride.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB enter → Incoming healing ▲23.78% 15s",
+      "disposition": "UNMODELED",
+      "scope": "Team-wide healing-received modifier; modifies heal AMOUNTS only.",
+      "durationSemantics": "15 sec wall-clock (durationSec — literal seconds, not rounds).",
+      "triggerIdentity": "fullBurstEnter (text: 'when entering Full Burst' — any team FB, not mary's own burst cast).",
+      "targetSet": "All allies (all-including-self).",
+      "nearestWrongModel": "Encoding it as a `heal` effect on fullBurstEnter — which would spuriously emit recovery events every FB and falsely fire teammates' on-recovery consumers (crown) once per rotation. Second-nearest: mis-mapping to some damage-relevant StatKey. The schema has NO incoming-healing stat, and heal amounts are unmodeled, so the line is offensively inert by construction.",
+      "distinguishingAssertion": "At each fullBurstStart there is NO recovery-consumer proc (no crown on-recovery buffApply) attributable to mary's skill2, and no buffApply from mary's skill2 slot carrying any damage-relevant stat. Stripping skill2 via withPatchedOverride changes totals() for no unit.",
+      "inertness": "Must move zero damage for every unit; must not fire any 'recovery' trigger.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 39.6% caster Max HP, all allies",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-cast team heal; no attack scoping.",
+      "durationSemantics": "Instant, single tick.",
+      "triggerIdentity": "burstCast (mary's OWN Burst-I cast, cd 40s) — NOT fullBurstEnter. Divergence is live in the control fixture: liter is also Burst I, so first-ready selection means mary does not cast every rotation; fullBurstEnter would over-fire on liter's rotations.",
+      "targetSet": "allies (all, including self).",
+      "nearestWrongModel": "Keyed to fullBurstEnter — emits team recovery events on EVERY Full Burst including rotations where liter (the other B1) cast, over-crediting crown's on-recovery consumers. Second-nearest: dropped as defensive.",
+      "distinguishingAssertion": "Count mary burstCast events (srcSlot = mary) vs fullBurstStart events in a mary+liter comp; crown on-recovery buffApply bursts sourced from mary's burst heal must equal the mary-burstCast count, NOT the fullBurstStart count. RED under fullBurstEnter misread whenever liter takes a B1 rotation.",
+      "inertness": "On rotations where liter casts B1, no mary-burst recovery procs may appear.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "above 50% HP → DEF ▲19.8% all, 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Generic DEF stat buff; the 'above 50% HP' activation gate is trivially always-true at scope lock (immortal team, no damage taken) — encode ungated with the condition documented in the note.",
+      "durationSemantics": "durationSec 10 — literal seconds.",
+      "triggerIdentity": "burstCast (rides mary's own burst cast; same ■ block family as the burst heal).",
+      "targetSet": "allies (all, including self).",
+      "nearestWrongModel": "Dropped entirely as 'DEF is defensive/inert' — taxonomy rule 7 says keep the stat buff even though defPct is engine-inert (future consumer). Second-nearest: encoding the 50%-HP clause as a fail-closed gate that never applies.",
+      "distinguishingAssertion": "On each mary burstCast, buffApply events with stat 'defPct', value 19.8, appear for all 5 targetIdx values with expiresFrame ≈ cast+600 frames. RED if absent (dropped) — AND totals() for every unit must be identical with the block stripped (defPct is inert; any damage movement means it was mis-encoded onto a live stat).",
+      "inertness": "Zero damage movement for all units — defPct is declared inert in v1.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:lastBullet lowest-HP heal (tandem via on-recovery consumers)",
+    "burst:team heal on own burst cast (tandem via on-recovery consumers)",
+    "burst:DEF ▲19.8% 10s all allies (inert-but-present)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Incoming healing ▲ 23.78% for 15 sec"
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to guard: (1) 'pure healer = fully inert' — mary's two heal lines are the classic tandem trap (taxonomy #4); the control fixture ships crown (on-recovery consumer), so the heals are observably load-bearing through crown's buffApply stream even though heal amounts (8.4%/39.6% of caster Max HP) are not simulated — those magnitudes are display-only and cannot be asserted numerically. (2) burstCast vs fullBurstEnter on the burst heal is LIVE in this fixture because liter is a competing Burst I — a driver testing mary in controlComp must decide mary's slot placement carefully (controlComp's carry param is the B3 slot; mary is B1, so a custom CompOptions or slot-aware assertions on burstCast srcSlot are needed) and must assert per-mary-cast, not per-FB. (3) skill2 has no representable stat (no incoming-healing StatKey) — the correct encoding is unmodeled-verbatim, and the test must pin its inertness, especially that it does NOT emit recovery events. (4) The 50%-HP gate on the DEF line is scope-trivial; a fail-closed gate encoding would silently drop the buffApply. No cadence/damage ⚑ fields are in play — mary's kit contains zero damage lines, so the ALWAYS-⚑ list is satisfied vacuously.",
+  "model": "claude-fable-5"
+}

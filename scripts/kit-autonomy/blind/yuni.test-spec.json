@@ -1,0 +1,66 @@
+{
+  "slug": "yuni",
+  "model": "claude-opus-5",
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Speed ▲ 8.97% for 10 sec",
+      "disposition": "FIX",
+      "assertion": "Proves the grant is a WEAPON-STATE modifier that gates shots (removing it moves team totals) with a 600-frame wall-clock window and no durationShots. Fails under the nearest-wrong 'defensive stat, skip' model (no movement) and under a 'for N rounds' duration reading (durationShots set). ⚑ the 8.97%→attackSpeedPct mapping is a modeling choice, so magnitude is deliberately unasserted."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when entering Full Burst",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves trigger identity is fullBurstEnter (any team FB), not burstCast: every application frame sits at-or-after a fullBurstStart frame, and the distinct application-frame count equals the fullBurstStart count exactly. Fails under a burstCast model, whose applications land strictly before the FB window opens."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves the target set is allies with NO except-self: distinct targetSlugs on one application frame equals the comp size and includes yuni. Fails under target self (count 1) and under allies{excludeSelf} (count = size-1, yuni absent)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when attacking w/ Full Charge",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves the trigger is a per-full-charge owner trigger: distinct application frames strictly exceed the full-burst count, and the first application is after t=0. Fails under fullBurstEnter (counts would be equal) and under passive (first application at frame 0). This is the non-vacuity pin — it establishes both the pre-first-charge inactive case and the active case."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▲ 2.77% for 10 sec",
+      "disposition": "UNMODELED",
+      "assertion": "Proves the buff is emitted at 2.77 with a 600-frame window to all allies, even though defPct is offensively inert in v1 (kept per taxonomy #7 for a future consumer). Fails under a 'drop it, DEF does nothing' model (no buffApply at all) and under a value/duration copy from a neighbouring line."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Restores 2.77% of atk dmg as HP/10s",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves the heal channel emits recovery events (tandem/on-recovery consumers, taxonomy #4) rather than being skipped as 'no HP pool modeled'. Fails under a model that drops the heal entirely. Its damage-inertness in this consumer-free control comp is recorded explicitly rather than asserted as a value."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max Ammunition ▲ 1 round for 5 sec",
+      "disposition": "FIX",
+      "assertion": "Two discriminations: (a) the window is 300 frames (5 sec), NOT the 600 of the sibling lines — fails under a duration copy-paste; (b) stripping only this effect moves yuni's own total, proving ammo capacity is shot economy and therefore damage (taxonomy #6) — fails under the 'defensive, skip' model."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 348.73% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves burst-bucket damage exists and is FB-exempt (fbMajorApplied false on every burst-slot damage event) per the verified fact that a burst cast lands before Full Burst begins. Fails under the nearest-wrong fullBurstEnter keying, which would take the +50% major. Also pins no-core (no 'core strike' wording) and teammate byte-identity."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Immobilizes the target(s) for 5 sec",
+      "disposition": "GAP",
+      "assertion": "it.skip — no enemy entity exists (resolveTargets({kind:'enemy'}) returns []) and the scope-lock boss has no modeled attack/movement loop, so a stun has no observable payload. Belongs in unmodeled.burst, not in an invented consumer."
+    }
+  ],
+  "fixtures": "controlComp('yuni', true) for every run — a single deterministic (no-seed) control comp with the fixed B3 kept ON. yuni is Burst II, so B1 and B3 slots are required for any burst to chain at all; without them the fixture makes ZERO Full Bursts and the skill1 fullBurstEnter line would be vacuous. The fixed B3 is retained rather than dropped because none of yuni's assertions read a stat the helm slot also grants (the discriminating reads are on yuni-cast buffApply events filtered by casterIdx, and on counterfactual deltas), so its buffs cannot confound. Five hoisted runs total (base + four withPatchedOverride counterfactuals: skill1 stripped, skill2 maxAmmo effect stripped, skill2 heal stripped, burst flatDamage stripped), well under the ~20-run budget.",
+  "gaps": [
+    "burst 'Immobilizes the target(s) for 5 sec' — it.skip: no enemy entity in the sim and the scope-lock boss has no modeled attack/movement loop, so a stun has no observable payload. Record in unmodeled.burst.",
+    "skill1 'Charge Speed ▲ 8.97%' exact magnitude — it.skip: the StatKey list has no chargeSpeedPct; the nearest live primitive is attackSpeedPct (charge-time scaler). Whether 8.97% charge speed maps 1:1 onto attackSpeedPct is a modeling choice, not a kit fact — ⚑ flagged, magnitude deliberately unasserted. The trigger/target/duration assertions hold under either mapping.",
+    "skill2 'Restores 2.77% of attack damage as HP' — the HP AMOUNT is unmodeled by design (no HP pool at scope lock); only the recovery-event emission is assertable. The 2.77%-of-attack-damage scaling has no engine consumer and no observable payload."
+  ]
+}

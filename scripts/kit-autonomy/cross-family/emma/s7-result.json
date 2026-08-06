@@ -1,0 +1,88 @@
+{
+  "slug": "emma",
+  "kitDescription": "Emma is a pure team healer whose entire kit is sustain. Her Skill 1 has a 5% chance, whenever she is attacked, to heal all allies for 10.77% of her final Max HP. Her Skill 2 passively raises all allies' incoming healing by 13.33% while she stays above 90% HP. Her Burst heals the whole team instantly for 39.6% of her final Max HP and additionally lets allies recover HP equal to 39.6% of the damage they deal over the following 5 seconds. She has no damage, buff, debuff, or weapon-modifying line anywhere in the kit, so her only relevance to the damage sim is that her heals fire teammates' on-recovery triggers.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "'DISCRIMINATES against the passive-heal mis-read' — RECON ARTIFACT: reads nonexistent 'heal'/'recovery' SimEvent kinds (engine emits none; log kinds are shot/damage/buffApply/buffRemove/reload/burstCast/fullBurstStart/fullBurstEnd), and its counterfactual patch writes ov.skill1.blocks on an ARRAY-shaped slot (silent no-op), so the assertion could never observe anything.",
+      "'recoveries occur, and every one of them is at or after a burst cast' — RECON ARTIFACT: same nonexistent event kinds → recoveryFrames is vacuously empty.",
+      "'the HoT emits MULTIPLE recovery events per burst, spread over ~5 sec' — RECON ARTIFACT: same nonexistent event kinds.",
+      "'the heal targets ALL allies, not just self' — RECON ARTIFACT: same nonexistent event kinds; no targetSlug/targetIdx exists on any emitted event.",
+      "'the burst is damage-inert' — RECON ARTIFACT: filters damage events by a nonexistent 'srcSlug' field (engine field is 'slug'), so the filter matched every unit; the 5 instances it caught are helm's. Emma's own burst damage is independently proven zero by the driver's E1 byte-equality pin and by the 9 passing totals assertions."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "5% chance to activate when attacked",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "No on-damaged TriggerDef exists and the v1 boss deals no damage; an interval proxy would fabricate a cadence — omitted, verbatim in unmodeled.skill1, ⚑1 with recipe.",
+        "blindSaid": "S6: SKIPPED identically (no incoming-damage trigger; inventing a cadence fabricates recovery events). S2b: UNMODELED with the interval-cadence trap pre-registered.",
+        "formulaCheck": "No damage-formula interaction; only a fabricated proc stream could move numbers (via ally on-recovery consumers), which is exactly what was avoided.",
+        "fireRateOk": true,
+        "explanation": "Driver, S6, and S2b all converged independently on the same disposition and the same reasoning. Driver's E4 pins the verbatim unmodeled record and zero emma-sourced buffs; S5's stripped-S1 totals-equality assertion passed, confirming inertness."
+      },
+      {
+        "kitLine": "Recovers 10.77% of user's final Max HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Payload of the unfirable trigger; magnitude recorded in caveats/note, no maxHpFlat or any buff emitted.",
+        "blindSaid": "S6: SKIPPED identically. S2b: warned against encoding the magnitude as a Max-HP buff — driver did not.",
+        "formulaCheck": "Heal amounts carry no engine quantity; no bucket touched. No buffApply from emma's S1 exists (E4 pin, green).",
+        "fireRateOk": true,
+        "explanation": "Convergent across all three independent derivations; the magnitude is documented rather than fudged into a stat grant."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when above 90% HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Gate is trivially OPEN at scope lock (no incoming damage) — explicitly documented as NOT the omission reason; omission reason is the missing stat primitive.",
+        "blindSaid": "S2b pre-registered exactly this trap (gate trivially satisfied, not dead) and S6 matched. S5's two GAP skips say the same.",
+        "formulaCheck": "No gate machinery misused; no block exists to misroute.",
+        "fireRateOk": true,
+        "explanation": "Driver's caveat wording matches the S2b-specified reasoning verbatim in substance — the gate is correctly characterized as always-true, and no fake HP-threshold gate was bolted on."
+      },
+      {
+        "kitLine": "Incoming healing ▲ 13.33% continuously",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "No incoming-healing StatKey and heal amounts are unmodeled; emits ZERO events; verbatim in unmodeled.skill2; ⚑2 with recipe.",
+        "blindSaid": "S6: SKIPPED identically. S2b: named the nearest-wrong (kind:'heal' misread of 'continuously' → permanent crown refresh) the worst available over-credit — driver did not commit it.",
+        "formulaCheck": "Stripping S2 changes no unit's total (S5 pass + driver E4). 13.33 appears as no buff value anywhere (driver pin, green).",
+        "fireRateOk": true,
+        "explanation": "The single most dangerous line in the kit (a fake HoT would permanently refresh recovery consumers) is handled correctly by every derivation: total omission with documentation."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Recover HP equal to 39.6% of user's Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → heal ticks:1; keyed to emma's OWN cast, not fullBurstEnter; magnitude recorded but unmodeled (no HP pool).",
+        "blindSaid": "S6: IMPLEMENTED identically (functionally identical override). S2b: load-bearing, burstCast not fullBurstEnter — driver matches.",
+        "formulaCheck": "A heal deals no damage; no bucket interaction. Event timing: burst-cast effects resolve pre-FB-window per the measured boundary rule — consistent. Recovery-event payload is the correct engine representation of a heal in a sim with no HP pool.",
+        "fireRateOk": true,
+        "explanation": "Trigger identity is the load-bearing question and the driver nails it with a fixture where burstCast and fullBurstEnter diverge in BOTH directions (5 emma casts vs 4 FBs; 3 liter-led). Isolation test: HoT stripped → recovery firings == emma's burstCast count exactly. The fullBurstEnter counterfactual demonstrably produces a different volley set, so the pin discriminates. S2b's vacuity warning (emma might never cast beside liter) is addressed head-on by the calibrated anatomy and the non-vacuity gates."
+      },
+      {
+        "kitLine": "Recover 39.6% of attack damage as HP, 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → heal ticks:5 intervalSec:1 (⚑3 cadence convention, marciana 'over 3 sec' precedent, recipe given); magnitude unmodeled and documented.",
+        "blindSaid": "S6: identical ticks:5/intervalSec:1 encoding with the same ⚑ and the same recipe (count a consumer's refresh popups across the window). S2b: FIX disposition — multi-tick across the 5s window, neither collapsed to 1 nor permanent — driver matches.",
+        "formulaCheck": "The tick count is the only measurable payload and it directly scales ally consumer refreshes; the ⚑ is the honest way to carry an unstated tick rate. Magnitude itself is out of scope per the magnitude rule (no HP pool exists to contradict the prose's number).",
+        "fireRateOk": true,
+        "explanation": "Driver proves the cadence fires: exactly 6 recovery landings per emma cast through asuka's consumer (1 instant + 5 HoT), and the ticks:1 counterfactual collapses to 2 per cast — the assertion fails under its named nearest-wrong model. Two blind derivations independently chose the identical ticks:5/intervalSec:1 convention; the residual is the unmeasured tick count itself, which is flagged, not hidden."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas exist. The S5-vs-driver RED is entirely recon artifacts: all five failing assertions read SimEvent kinds ('heal'/'recovery') and fields ('srcSlug') that do not exist in the engine's event schema, and one counterfactual patch is a silent no-op on an array-shaped slot — these are blind-harness misreads of the engine, not divergences from the driver's encoding, and the 9 passing S5 assertions (including both stripped-skill totals-equality pins and the no-offensive-buff pin) independently confirm the driver's inertness claims. The substantive convergence is strong: S6's blind override is functionally identical to the driver's (same two burstCast→allies→heal blocks, same unmodeled sets), and S2b pre-registered every trap (fullBurstEnter keying, ticks-collapse, 'continuously'-as-HoT, interval-proxy for S1, dead-gate misread of S2) — the driver adopted and behaviorally pinned each one, including a fixture engineered so burstCast and fullBurstEnter genuinely diverge in both directions with non-vacuity gates. The driver's own 15/15 suite discriminates against each named nearest-wrong model (fullBurstEnter volley-set, ticks:1 collapse, heal-as-damage-buff), and the clean-weapon guard (27/27) plus E1 byte-equality prove her kit is damage-neutral. What must change for GO: nothing. Same-model residual for the owner to spot-check: the ticks:5/intervalSec:1 lifesteal cadence is an unmeasured convention (flagged ⚑3 by both driver and blind, with the same recipe — a frame-read of a recovery consumer's refresh cadence across the 5s window) and is the only number in the kit that moves anything measurable; every other quantity is either kit-literal or documented as out-of-domain.",
+  "model": "kimi-code/k3"
+}

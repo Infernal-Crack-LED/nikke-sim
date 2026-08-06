@@ -1,0 +1,82 @@
+{
+  "slug": "mihara",
+  "kitDescription": "Mihara is a Water-element AR Burst-III attacker whose kit escalates with her own burst usage. Her Skill 1 refreshes a 10-second Critical Damage buff on herself every time she empties her 60-round magazine, giving near-continuous uptime. Her Skill 2 builds a two-stage 'Highway to Hell' ladder on each of her own burst casts: the first cast grants 45 seconds of ATK up, and from the second cast onward she also gains Critical Rate up. Her burst deals an immediate 399.6% burst hit to all enemies, shortens the Full Burst window her cast opens from 10 to 5 seconds, and — once Highway to Hell 2 is active (her second cast onward) — adds a further 266.4% hit. The Full Burst shortening is a self-trade: her rotations give the team less +50% window time but cycle back to the next chain sooner.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "last bullet hits → Crit Damage ▲18.7% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "lastBullet → self critDamagePct 18.7 durationSec 10; fires on every magazine-end frame (≥20 applications / 180s; exactly the ammoAfter==0 frames)",
+        "blindSaid": "S5 and S6 independently produced the identical block (trigger lastBullet, seconds-not-rounds, unscoped critDamage, self-only)",
+        "formulaCheck": "critDamagePct feeds the critBonus term in the Major bucket for all her crit-eligible hits — matches the unscoped 'Critical Damage' wording; not the normal-attacks-scoped variant",
+        "fireRateOk": true,
+        "explanation": "Byte-identical across driver and both blind agents. 10s window vs ~7s magazine+reload cycle gives near-continuous uptime after the first magazine — consistent with the prose and pinned by the driver's magazine-end-frame set-equality assertion. S6's cadence ⚑ is a datamine-tuple concern the owner retired 2026-07-25; not a finding."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Once: HtH1 — ATK ▲15.56% 45s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast (own cast) → self, escalating step 1, atkPct 15.56 / 45s; helm co-B3 fixture makes burstCast vs fullBurstEnter genuinely diverge and the test counts against her own casts",
+        "blindSaid": "S5/S6 identical encoding; S2b independently named the fullBurstEnter trap as the nearest-wrong model",
+        "formulaCheck": "atkPct sums into the (1+ΣATK%) term on her static ATK — correct bucket for plain 'ATK ▲'; 45s > 40s CD so refresh keeps it live at scope",
+        "fireRateOk": true,
+        "explanation": "Three independent derivations agree on trigger identity, stat, value, duration, and target. The driver's flat-encoding and passive counterfactuals both go RED."
+      },
+      {
+        "kitLine": "Twice: HtH2 — Crit Rate ▲11.28% 45s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "escalating step 2: absent on cast 1, applied alongside a fresh ATK re-grant on every cast 2+ ('each subsequent effect triggers all effects before it'); capped at 2 steps, no phantom third step",
+        "blindSaid": "S5 asserts the exact identity critRate applications === atk applications − 1, and it held GREEN against the driver override",
+        "formulaCheck": "Unscoped critRatePct lifts crit on normals and both burst instances — matches the plain 'Critical Rate' wording; correctly NOT the normal-only scoped variant",
+        "fireRateOk": true,
+        "explanation": "Escalation semantics (steps 1..N, cap at ladder length) exactly reproduce the prose including the cast-2+ re-application of step 1. Driver and blind converged with zero divergence."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "allies: Full Burst Duration ▼5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstExtend seconds:-5 on burstCast → allies; her-cast windows measure exactly 300f, helm-cast windows stay 600f; sign-flip counterfactual reads 900f, removal reads 600f. Net rotation sign carried as documented ⚑1 (isabel precedent)",
+        "blindSaid": "S6 identical encoding (-5 literal read, negative-seconds engine handling flagged then verified live); S2b's conditional GAP ('if the engine clamps negative seconds') verified FALSE against the engine",
+        "formulaCheck": "The window-level effect is outside the per-instance bucket math but is the engine's only primitive for this line; per-window shortening is directly observed (1633 vs 2446 in-FB instances in the blind run)",
+        "fireRateOk": true,
+        "explanation": "The line FIRES and the per-window semantics are exactly the prose. The engine's rotation model resolves the net sign as net-POSITIVE (shorter windows re-cycle the chain sooner → 5 FBs vs 4, +10.5% team) — opposite to the blind writer's pristine expectation. This is the standing isabel ⚑, documented by the driver, measurement-gated, and out of scope for a gotcha ruling; it is the top owner spot-check item."
+      },
+      {
+        "kitLine": "enemies: 399.6% Burst Skill damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage 399.6, burst bucket, crit-eligible at sheet rate, never core, fbMajorApplied === false on every instance",
+        "blindSaid": "S6 byte-identical (explicit crit:true is the engine's flatDamage default — semantically equal); S5's burst-bucket FB-exemption assertion GREEN",
+        "formulaCheck": "Matches the SSOT burst-cast timing rule (damage lands pre-FB-window, no +0.5 major, no entry auras; same-cast S2 grant visible per SLOTS dispatch — the cinderella cast-grant snapshot family precedent). Skill/burst damage: crit yes, core no, range no — all consistent with the per-type table.",
+        "fireRateOk": true,
+        "explanation": "One instance per own cast, on cast frames, count equals her cast count. No divergence anywhere."
+      },
+      {
+        "kitLine": "while in HtH2: +266.4% additional damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "encoded as step 2 of the burst slot's own escalating damage ladder (counter ticks on the same own-burstCast trigger as S2's ladder) — rider absent on cast 1, present on every cast 2+; no owner-buff-active gate exists in the engine, and at scope (45s status > 40s CD) the ladder and the named status are exactly coincident; the lapse-divergence case is documented in caveats",
+        "blindSaid": "S6 chose a resource-pool + resourceGate(min:2) encoding and explicitly conceded behavioral identity with a step-index gate at scope; S5's gate assertion needed a shape adaptation (accept either form) and then passed; S5 honestly skipped the cast-2-vs-cast-3 onset question as kit-ambiguous",
+        "formulaCheck": "Rider is burst-bucket function damage: crits, no core, FB-exempt by timing — matches the SSOT function-damage rules; 'additional damage' is correctly a separate instant instance, not folded into the 399.6% coefficient",
+        "fireRateOk": true,
+        "explanation": "The two encodings are proven-equivalent at scope by the blind run itself (ungating strictly adds cast-1 damage; removing strictly lowers her total). The single genuine open item — same-cast arming on cast 2 vs cast 3 — is an ordering choice both sides landed on identically (cast 2, via SLOTS dispatch), is flagged by S5 as needing footage, and is documented in the driver's caveat. Recorded, not a gotcha."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA found on any of the six kit lines: every line is encoded, fires at the prose-implied cadence, and discriminates RED under its named nearest-wrong model (shotFired spam, flat/passive S2, always-on rider, omitted rider, lvl-1 magnitudes, sign-flipped or removed FB line). The three independent derivations converged on the same model — including the two classic traps (burstCast vs fullBurstEnter keying, and the FB▼5s line not being a skippable no-op) — and S2b's one conditional GAP (negative-seconds clamp) was verified false against the engine. Because convergence here is substantially same-shape reasoning, the stability-not-correctness caveat applies, but the discriminating counterfactual suite and the event-frame-level pins (magazine-end set equality, per-cast nuke decomposition, 300f/600f/900f window lengths) are exactly the artifacts that make a shared misread expensive to hide. Two items survive as documented, measurement-gated residuals for the owner to spot-check rather than as verdict blockers: (1) the FB▼5s line's NET effect — the engine's rotation model resolves it net-positive (+10.5% team, an extra full burst per fight) where the blind writer's pristine prior expected net-negative; this is the isabel standing ⚑ and needs a real-footage or battery confirmation before mihara's board number is trusted, since it is a ~10% team-level swing driven by one kit line; (2) the cast-2 onset of the 266.4% rider (same-cast arming via SLOTS dispatch) and the same-cast S2 ATK feeding the same-cast nuke — both plausible, both flagged by the blind side as kit-ambiguous, both settled one recording away. Nothing must change for GO; both residuals are already written into the driver's own caveats and ⚑ list.",
+  "model": "kimi-code/k3"
+}

@@ -1,0 +1,87 @@
+{
+  "slug": "mary",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 1
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": []
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 19.8,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Recovers 8.4% of the skill user's final Max HP as HP."
+    ],
+    "skill2": [
+      "Incoming healing ▲ 23.78% for 15 sec."
+    ],
+    "burst": [
+      "Recovers 39.6% of the skill user's final Max HP as HP.",
+      "Activates when above 50% HP."
+    ]
+  },
+  "caveats": [
+    "⛑ S1 target 'lowest HP percentage' is indeterminate at scope lock (immortal boss, nobody takes damage) — resolved to alliesLowestHp count 1, the documented leftmost-ally stand-in. The heal AMOUNT (8.4% of caster final Max HP) is not modeled (the engine models no HP pool); the recovery EVENT is what matters, and it fires every magazine via lastBullet.",
+    "⛑ S2 'Incoming healing ▲ 23.78%' has NO StatKey in the schema — it scales heal AMOUNTS, and the engine models no HP amounts, so it is structurally inexpressible. The block is retained with an empty effects array to keep the fullBurstEnter trigger auditable; the line is recorded verbatim in unmodeled.skill2. It is offensively inert unless a future consumer scales off healing magnitude.",
+    "⛑ Burst 'Activates when above 50% HP' is a self-HP gate with no schema primitive (no HP pool at scope lock). Modeled as UNGATED (always true) — the scope-lock boss deals no damage, so mary is permanently above 50% HP and the gate is trivially satisfied. Faithful at scope lock; would over-credit on a damaging boss.",
+    "⛑ defPct is inert in v1 by schema comment (self DEF does not affect own damage). Retained per HARD RULE 7 (keep the stat buff even if the engine treats it inert — a future consumer/scaler may read it). Ally-granted DEF is likewise offensively inert.",
+    "⛑ Cadence tuple (ammo 9 / reloadFrames 111 / hitsPerShot 10) is datamine-sourced and unreliable; it sets the lastBullet cadence that drives the S1 heal frequency, so a teammate with an on-recovery consumer (crown-style) inherits that error directly."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Mary is an SG/Water/Supporter/Burst I pure-sustain kit: every one of her five kit lines is a heal, a healing-amplifier, or a DEF buff — she carries ZERO damage effects and ZERO offensive stat buffs. Her sim-relevant surface is therefore TANDEM ONLY (HARD RULE: never skip heal/shield/DEF/HP lines on isolation): S1 emits a recovery event on every last bullet (per-magazine cadence), and the burst emits a team-wide recovery event on cast — both drive a teammate's 'recovery' trigger (e.g. crown's on-recovery consumer). Solo she moves no damage beyond her own SG normals. Trigger fidelity: S1 'when the last bullet hits' = lastBullet; S2 'when entering Full Burst' = fullBurstEnter (fires on ANY team Full Burst, not just rotations she bursts); the burst block is burstCast, and as a Burst I unit she casts on essentially every rotation. The burst's two ■ headers are authored as SEPARATE blocks because the second carries an activation clause the first does not. Heal AMOUNTS are deliberately unmodeled — the engine tracks no HP pool at scope lock — so the percentages live verbatim in unmodeled; the recovery EVENT is the modeled mechanic."
+}

@@ -1,0 +1,63 @@
+{
+  "note": "Eunhwa (slug eunhwa — the BASE unit; never the variant eunhwa-tactical-upgrade, aka eunwhatu — P0 disambiguation) — Elysion Fire SR Attacker, Burst II, 20s CD, 6-round SR (71.07% normal / 250% full charge, 60f charge / 161f reload). FROM-SCRATCH kit-autonomy build 2026-08-05 (no prior override; baseline was bare weapon, simSupported:false). SKILL1 'Ready and Able' ('Affects self. Activates after firing the last round.'): ONE block, trigger lastBullet (the engine fires it on the frame the magazine runs dry — the reload-start convention), target self, two effects: Charge Damage ▲37.28% (chargeDamagePct — additive percentage points INSIDE the charge bucket, 250 → 287.28) and Charge Speed ▲15.53% (chargeSpeedPct — shortens the 60f charge cycle by (1 − cs/100) = 51f), BOTH with durationShots:2 and NO durationSec — 'for 2 shots' / 'for 2 rounds' are ROUND counts. The round-count encoding is load-bearing in an unusually sharp way: the trigger is reload-START and the reload is 161f ≈ 2.68s, so a durationSec:2 encoding would expire MID-RELOAD before a single shot benefits (silently, totally inert) — the unit test discriminates both the always-on passive AND the timed counterfactuals. As encoded, each dry-fire grants the window to exactly the first two full charges of the next magazine (~2/6 duty cycle), and the window survives the reload because a shots-only budget has no wall-clock expiry. SKILL2 'Achilles' Heel' ('Activates after firing the last bullet. Affects the target. DEF ▼ 29% for 5 sec.'): UNMODELED — see unmodeled/caveats (no enemy-DEF channel; dropped at dispatch). BURST 'Turning the Tide': block 1 — burstCast flatDamage 85.62 vs the enemy ('the 10 enemy unit(s) with the highest final ATK' collapses to the single immortal boss — multi-target selection is inert in the single-target sim, exia precedent; one hit, never ×10); the cast lands BEFORE the Full Burst window opens, so the hit is auto-exempt from the +50% FB major and crits at the caster rate (U1 rider convention). Block 2 — burstCast critRatePct 4.65 for 15s to ALL allies INCLUDING self (the kit says 'Affects all allies', never 'other allies' — no excludeSelf). GENERIC critRatePct, not critRateNormalPct: the kit says plain 'Critical Rate', with no 'of normal attacks' scoping, so it lifts every bucket (the inverse of the helm trap). burstCast-keyed, NOT fullBurstEnter: the buff is granted by HER burst skill, so it applies on her casts only — a Tier-2 discrimination the unit test pins against a second Burst II in the rotation. 15s window vs 20s CD ⇒ ~75% uptime when she casts every eligible chain. The burst's 'DEF ▼ 2.43% for 15 sec' rider is UNMODELED — same DEF basis as skill2 (see caveats). Cross-family: S2b claude-fable-5, S5/S6 claude-opus-5, S7 kimi-code/k3. Kit-autonomy gauntlet 2026-08-05.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "■ Activates after firing the last bullet. Affects the target.\nDEF ▼ 29% for 5 sec. — no sim channel: the enemy-buff path admits only damageTakenPct/distributedDamagePct and the boss's DEF is the flat constant cfg.bossDef=140 that no debuff scales, so an enemy DEF▼ moves nothing (sim.ts drops it at dispatch; exia precedent). The whole sentence is skipped — an enemy-targeted lastBullet effect has no channel either."
+    ],
+    "burst": [
+      "DEF ▼ 2.43% for 15 sec. — no sim channel: enemy DEF▼ is dropped at dispatch on the constant-bossDef basis (sim.ts 'other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0'); same basis as the skill2 DEF▼ line"
+    ]
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "lastBullet" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 37.28,
+          "durationShots": 2
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 15.53,
+          "durationShots": 2
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "flatDamage", "atkPct": 85.62 }]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 4.65,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "caveats": [
+    "skill1: both S1 buffs are lastBullet-keyed ROUND-COUNT windows (durationShots 2, no wall-clock expiry) — granted on the frame the magazine runs dry, they survive the 161f reload and cover exactly the first two full charges of the next magazine, then lapse right after the 2nd shot's dispatch (the Nth shot still benefits, then the buff drops at 0 — the standard round-count shape).",
+    "skill1: the nearest-wrong encoding is durationSec:2 — the trigger is reload-start and the reload lasts ~2.68s, so a 2-second timed window expires MID-RELOAD and the line goes silently, totally inert (0 shots ever buffed). scripts/tests/units/eunhwa.test.ts pins the round-count shape behaviorally (duty cycle + 9-frame charge-cycle shortening + magazine-0 untouched).",
+    "skill2: 'DEF ▼ 29% for 5 sec' (last-bullet target) is game-real but unenactable — the engine's enemy-buff channel admits only damageTakenPct/distributedDamagePct (sim.ts drops enemy ATK▼/DEF▼ at dispatch) and the boss's DEF contribution is the flat constant cfg.bossDef=140, which no debuff scales. Recorded verbatim in unmodeled; the nearest-wrong laundering (damageTakenPct 29) would fabricate a ~29% team lift the kit never grants, and the spec test pins its absence.",
+    "burst: the 85.62% nuke is burstCast-keyed — pre-FB by engine timing (auto-exempt from the +50% FB major), crits at the caster rate, never cores, never gets the range bonus; 'the 10 enemy unit(s) with the highest final ATK' collapses to one hit on the single partless boss (multi-target selection out of domain, exia precedent).",
+    "burst: 'DEF ▼ 2.43% for 15 sec' is unmodelable on the same constant-bossDef basis as skill2 (recorded verbatim in unmodeled) — in game it would be a minor multiplicative team lift at ~75% uptime; in sim domain its contribution is exactly 0.",
+    "burst: the critRatePct 4.65 buff is keyed to HER burstCast (not fullBurstEnter) — with a second Burst II in the team the two keyings diverge on rotations the other B2 chains; the spec test pins application frames to her casts. Window 15s vs CD 20s ⇒ ~75% team uptime when she casts every eligible chain (the 5s gap is real, not an encoding artifact)."
+  ]
+}

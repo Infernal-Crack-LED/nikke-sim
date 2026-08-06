@@ -1,0 +1,84 @@
+{
+  "slug": "yuni",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackSpeedPct",
+          "value": 8.97,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 2.77,
+          "durationSec": 10
+        },
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoFlat",
+          "value": 1,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 348.73
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Immobilizes the target(s) for 5 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ S1 Charge Speed ▲8.97%: the schema exposes no dedicated charge-speed StatKey; encoded as attackSpeedPct (nearest weapon-state primitive). If attackSpeedPct does not shorten chargeFrames in the engine, this line is effectively inert and must move to `unmodeled` or gain a charge-speed StatKey — it is a shots-fired (damage) line, not a defensive one.",
+    "⚑ S2 trigger: 'when attacking with Full Charge' encoded as shotFired, assuming every RL pull on a charge weapon (chargeFrames 90) is a full charge. Uncharged/tap fires would over-fire this block.",
+    "⚑ S2 lifesteal is a %-of-damage-dealt continuous effect; the heal primitive models no HP pool, so it is encoded as 10 recovery events (1/s) purely to keep teammates' on-recovery triggers live. Recovery-event COUNT is an authoring choice, not a kit value.",
+    "⚑ S2 Max Ammunition ▲1 round uses a flat-rounds StatKey (maxAmmoFlat). A percentage encoding is not usable: the buff targets ALL allies, so +1 round on a 6-round RL magazine (+16.67%) would grant an MG ally ~+50 rounds. If no flat-rounds StatKey exists in the live schema, this line must move to `unmodeled` rather than be approximated by maxAmmoPct.",
+    "Burst 348.73% is left FB-eligible-by-timing (no noFb set) and no explicit crit/core/noRange fields — burst-cast damage resolves on the engine's own pre-Full-Burst cast timing, riders take no range bonus automatically, and the kit text carries no core-strike wording."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Yuni (RL/Fire/Defender/Burst II) is a full-team support: S1 grants a team Charge Speed window on every Full Burst entry; S2 fires off her own full-charge shots and grants the team DEF, a 10s attack-damage lifesteal, and +1 magazine round for 5s; her burst is a single instant AoE hit for 348.73% of final ATK plus a 5s immobilize. The DEF grant is offensively inert at scope but retained per the keep-the-stat rule; the lifesteal is retained because it drives teammates' on-recovery triggers. The burst immobilize is unmodeled: the sim has no enemy entity and the boss range/movement script is a fixed measured constant."
+}

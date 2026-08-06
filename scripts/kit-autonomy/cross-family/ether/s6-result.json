@@ -1,0 +1,176 @@
+{
+  "slug": "ether",
+  "leakDetected": null,
+  "override": {
+    "slug": "ether",
+    "skill1": [],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 10
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 56.32,
+            "crit": true,
+            "noRange": true
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": -9.38,
+            "durationSec": 6
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesLowestHp",
+          "count": 3
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 96,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Affects 1 allies with the lowest remaining HP. Damage Taken ▼ 52.5% for 5 sec."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill2 damage line carries NO activation clause in the kit text — trigger identity is INVENTED (interval). If the real trigger is fullBurstEnter/hitCount/lastBullet, both cadence and FB-uptime are wrong.",
+      "⚑ skill2 interval sec:10 is an UNMEASURED estimate. The unit's datamined cd 40s is the BURST cooldown, not a skill cooldown; no skill CD is in the input domain.",
+      "⚑ skill2 DEF ▼ 9.38% is authored as a defPct buff of -9.38 on the enemy. The schema documents defPct as inert in v1 (self DEF does not affect own damage) — whether an enemy-targeted negative defPct actually reduces boss DEF in the damage formula is UNVERIFIED from the schema alone; if inert, this line is silently dropping a real team-wide damage lever.",
+      "⚑ skill2 \"Affects 3 enemy unit(s) with the highest final DEF\" — v1 has ONE boss, so the count-3 targeting collapses to a single application. No multi-target scaling is modeled.",
+      "⚑ skill2 damage rider FB handling: left at engine default (FB by timing, ON) per methodology; noFb is measured-only and NOT set.",
+      "⚑ burst shield is offensively inert in isolation (no HP pool at scope lock) but is retained because it emits shield events that fire teammates' `shielded` triggers and satisfy `requiresShielded` gates.",
+      "⚑ burst trigger keyed burstCast (this unit's own Burst I cast), not fullBurstEnter — a shield created by the unit's own burst block fires on rotations THIS unit bursts."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Ether is an SG/Electric/Defender/Burst I support: S1 is a pure ally damage-mitigation line (no damage path at scope lock, unmodeled); S2 carries the only damage in the kit (56.32% of final ATK, trigger kit-silent) plus an FB-gated enemy DEF ▼ 9.38%/6s; the burst is a 96%-of-caster-Max-HP shield to the 3 lowest-HP allies, retained for shield-synergy tandem effects rather than for its own (unmodeled) HP pool."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Affects 1 allies w/ lowest remaining HP",
+      "status": "SKIPPED",
+      "effectOrReason": "Target clause only; its payload (Damage Taken ▼) is ally-defensive. Target would be alliesLowestHp count:1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Damage Taken ▼ 52.5% for 5 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "ALLY-targeted damage-taken REDUCTION — purely defensive. The schema's damageTakenPct is an ENEMY debuff (positive = boss takes more damage); there is no ally-side damage-reduction consumer, and the v1 boss deals no modeled damage. Recorded verbatim in unmodeled.skill1. NOT the skippable-by-reflex case: checked against HARD RULE 4 (Damage Taken ▲ on an ENEMY is a team damage buff) — this is the inverse direction on an ALLY, so it carries no damage path."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects 3 enemy w/ highest final DEF",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} on both skill2 blocks. Count-3 / highest-final-DEF selection collapses to the single v1 boss."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 56.32% of final ATK as damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct:56.32, crit:true, noRange:true. NO activation clause in the kit text → interval trigger per the schema's own guidance for lines that 'just happen'. ⚑ trigger identity AND cadence both invented."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects the same enemy unit(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Second sub-block re-targets the enemy hit by the first — same {kind:'enemy'} target."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates during Full Burst.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "'during Full Burst' → fullBurstEnter trigger (fires on ANY team Full Burst, not this unit's own cast — the text says nothing about her own burst)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▼ 9.38% for 6 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat:'defPct' value:-9.38 durationSec:6 on the enemy — a boss-DEF reduction, a genuine team-wide damage lever (not skippable). ⚑ engine consumption of enemy-side defPct unverified."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 3 ally w/ lowest remaining HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesLowestHp', count:3}. Schema documents this resolves deterministically to the leftmost 3 allies at scope lock (no HP pool)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Shield = 96% of user's final Max HP 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "shield maxHpPct:96 durationSec:5 on a burstCast trigger. Retained per HARD RULE 4 — emits shield events that fire teammates' 'shielded' triggers and open 'requiresShielded' gates; never skipped on isolation."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[0].trigger",
+      "estimate": "{kind:'interval', sec:10}",
+      "reasoning": "ALWAYS-⚑ category 2: a damage line the kit text gives NO trigger for. The prose has a target clause and a damage clause but no activation clause, which the schema maps to `interval` ('kit lines that just happen on an internal cooldown with no visible activation clause'). The competing readings are fullBurstEnter (the sibling sub-line IS FB-gated, so the skill may be one FB-keyed package) and hitCount/lastBullet. Choosing interval keeps the two sub-lines independent, which is what the prose structure shows: the FB clause is attached ONLY to the second ■ block, and its presence there is evidence the FIRST block is deliberately NOT FB-gated (the kit spells the gate out when it means it).",
+      "recipe": "Focus-record ether in a comp and count 56.32% popups over a fixed 180s window. A flat ~18 popups = interval 10s; popups clustering only inside FB windows = fullBurstEnter; popups tracking her SG magazine (9 rounds) = lastBullet/hitCount. Cross-check popup TIMESTAMPS against the FB windows in the rotation log — the discriminator is whether popups appear OUTSIDE any FB window at all."
+    },
+    {
+      "field": "skill2[0].trigger.sec",
+      "estimate": "10",
+      "reasoning": "ALWAYS-⚑ category 1 (cadence tuple, datamine-unreliable) compounded by category 2. NOTHING in the input domain gives a skill cooldown — the provided cd 40s is the BURST cooldown (Burst I), not a skill CD, so it must NOT be reused here. 10s is a generic mid-range skill-CD prior, deliberately round to signal it is a placeholder rather than a derived value.",
+      "recipe": "Same focus recording: measure the wall-clock delta between consecutive 56.32% popups outside FB. If the datamined skillCooldownsSec field exists for ether, prefer it over this placeholder — but per the skill-CD first-fire convention still treat first-fire phase (t=sec vs t=0) as a separate ⚑, since this is an interval (non-force-cast) classification."
+    },
+    {
+      "field": "skill2[1].effects[0] (stat defPct, value -9.38)",
+      "estimate": "buff stat:'defPct' value:-9.38 durationSec:6, target enemy",
+      "reasoning": "The kit line is a real boss-DEF reduction, which raises EVERY teammate's damage through the boss-DEF term of the formula — a team-wide lever that must not be dropped. But the schema annotates defPct as 'inert in v1 (self DEF doesn't affect own damage — Endurance cube)', which describes the SELF-buff case; whether an ENEMY-targeted negative defPct is consumed by the boss-DEF term is not determinable from types.ts alone. Per HARD RULE 7 I keep the stat buff even where the engine may treat it inert (a future consumer/scaler), and flag rather than silently re-encode it as damageTakenPct — those are DIFFERENT formula buckets (DEF reduction is inside the boss-DEF term; Damage Taken ▲ is its own multiplier), and substituting one for the other to make it 'work' would be exactly the fudge the prime directive forbids.",
+      "recipe": "Read sim.ts's boss-DEF term for whether it reads any per-target defPct buff. If it does not, this is an engine-modeling gap, not an override bug — file it in docs/engine-modeling-gaps.md rather than re-encoding the stat. Empirically: A/B a comp with and without ether's S2 block and check whether ANY teammate's damage moves during the 6s post-FB-entry window; a flat-zero delta confirms the gate is inert."
+    },
+    {
+      "field": "burst[0].trigger",
+      "estimate": "{kind:'burstCast'}",
+      "reasoning": "Trigger identity per the taxonomy: this is the unit's OWN burst block, so the shield fires when SHE casts — burstCast, not fullBurstEnter. Keying it to fullBurstEnter would OVER-CREDIT in any comp where another Burst I unit completes the chain instead of her. She is Burst I, so in a standard B1/B2/B3 rotation she is the likely stage-1 caster, but that is a comp property, not a kit property.",
+      "recipe": "No measurement needed for trigger identity (the kit structure settles it). If a teammate's shield-gated effect is being validated, assert via the harness that the shield buffApply/shield event lands on ether's OWN cast frame, not at FB entry — the two differ by the measured B1→FB chain timing."
+    },
+    {
+      "field": "burst[0].effects[0].maxHpPct",
+      "estimate": "96 (kit-literal)",
+      "reasoning": "NOT a ⚑ on the VALUE — 96% is stated verbatim in the kit text. Flagged only for the downstream note that shield magnitude is unobservable at scope lock (no HP pool, boss deals no modeled damage), so the number is carried for kit completeness and cannot be validated by any damage reading.",
+      "recipe": "Not validatable in v1. If HP/damage-taken modeling ever lands, verify the shield scales off ETHER's final Max HP (caster), not the recipient's — the kit says 'the skill user's final Max HP', matching the casterMaxHpPct convention."
+    },
+    {
+      "field": "skill1 (whole slot, empty array)",
+      "estimate": "No blocks; line recorded verbatim in unmodeled.skill1",
+      "reasoning": "Deliberate skip, stated so it is auditable rather than silent. An ALLY Damage Taken ▼ has no damage path: the boss deals no modeled damage at scope lock, and there is no ally-side damage-reduction consumer in the schema. I explicitly checked this against HARD RULE 4's warning — that warning concerns 'Damage Taken ▲' on an ENEMY (a team damage buff commonly mis-skipped as defensive); this is the opposite polarity on an ALLY target, so the warning does not apply.",
+      "recipe": "Re-open only if an ally-side damage-mitigation consumer is ever added, or if a teammate's kit carries an 'when shielded/protected/mitigated' trigger that this line could satisfy. Grep the roster's overrides for triggers keyed to damage-taken state before assuming permanence."
+    }
+  ],
+  "model": "claude-opus-5"
+}

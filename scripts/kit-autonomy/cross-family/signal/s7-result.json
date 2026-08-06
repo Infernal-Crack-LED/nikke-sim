@@ -1,0 +1,90 @@
+{
+  "slug": "signal",
+  "kitDescription": "Signal is a Fire SMG Attacker with a Burst II on a 20-second cooldown. Her Skill 1 counts her own normal attacks and, every 60 landed rounds, briefly cuts the boss's DEF and ATK by 5.94% for 5 seconds — effectively permanent uptime while she keeps firing. Her Skill 2 triggers whenever the team enters Full Burst (from any caster, not just her own) and heals her for 44.08% of her attack damage over the following 10 seconds — a self-sustain tool with no damage role. Her Burst is an instant hit on all enemies in range for 229.22% of her final ATK, plus a 12.34% DEF cut on the boss for 10 seconds, so roughly half-uptime on a 20-second rotation. In game terms her team value is the recurring DEF shred; at this sim's scope (boss DEF ≈ 0, no incoming damage) both the DEF/ATK debuffs and the lifesteal are structurally inert, leaving the burst nuke as her only damage-relevant kit line.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "skill1 'is authored as a hitCount:60 block carrying the 5.94%/5s debuff(s)' — expects dead encoded blocks; driver ships verbatim unmodeled instead",
+      "skill1 'procs many times per fight' — expects boss-debuff buffApply events the engine cannot emit",
+      "skill1 'doubling the threshold halves the procs' — counterfactual vacuous: no procs exist under the shipped zero",
+      "skill1 'debuff lands on the boss only' — expects events; none exist",
+      "burst 'the 12.34% debuff fires once per signal burst' — expects boss-debuff events; none exist",
+      "burst 'zeroing the 229.22% hit strictly lowers signal damage' — vacuous under the blind fixture (crown competes for Burst II; signal casts 0 times: probe {liter:10, crown:10, helm:5, signal:0})",
+      "burst 'forcing core:true strictly raises it' — same competing-B2 fixture artifact"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "DEF ▼ 5.94% for 5 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Verbatim unmodeled + ⚑1 (estimate ~8.3 flat boss DEF at near-permanent uptime; recipe = debuff-scalable boss-DEF channel; tier engine-gap/minor); absence pinned against a damageTakenPct-laundering counterfactual that DOES emit and lift totals.",
+        "blindSaid": "S2b: FAITHFUL conditional on an enemy-DEF consumer existing, with an explicit escape clause ('if the engine has no enemy-DEF consumer, the dispositions become GAP and the driver must declare that openly'). S6: encodes dead blocks whose own audit admits engine-inert. S5: expects dead blocks + events (5 REDs).",
+        "formulaCheck": "SSOT §1a: boss DEF is a small flat subtractive term, run at bossDef:0 with no debuff-scalable channel; sim.ts enemyBuffs admits only damageTakenPct/distributedDamagePct > 0. The driver's declared GAP is exactly the S2b escape-clause branch, verified against engine dispatch. A damageTakenPct substitution would be the documented naming-trap fudge (DEF-subtractive ≠ Taken-multiplicative) — correctly refused by all parties.",
+        "fireRateOk": true,
+        "explanation": "Behaviorally identical across all three derivations (zero buffApply, zero total movement); the divergence is documentation policy — verbatim-unmodeled+flag vs dead blocks that emit nothing. The driver's treatment is the sanctioned one: the SSOT (game-mechanics.md 'Skill resolution') names `unmodeled` as the deliberate-skip channel, and encoding a trigger with effects the engine provably drops would be noise plus a false implication of observability. The S5 REDs on this line are a blind misread of engine behavior (it assumed dead encodings emit boss-debuff events; dispatch drops them), not a faithfulness signal — the blind's own mechanical fudge-detector ('shred moves NO damage') is GREEN against the driver override."
+      },
+      {
+        "kitLine": "ATK ▼ 5.94% for 5 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Verbatim unmodeled inside the ⚑1 cluster; damage-ZERO by construction (the boss never attacks at scope).",
+        "blindSaid": "S2b: UNMODELED (no damage-side consumer). S6: encodes for completeness, self-flagged 'permanently 0 damage'. S5: presence-or-recorded check (its recorded-unmodeled branch passes).",
+        "formulaCheck": "No incoming-damage model exists at scope; an enemy ATK cut has no consumer in any bucket of the damage formula. All three derivations agree.",
+        "fireRateOk": true,
+        "explanation": "Full three-way convergence on unmodeled; recorded verbatim. No gotcha."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when entering Full Burst.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → self → heal ticks:10 intervalSec:1; discriminated against burstCast keying by recovery start offset (every shipped firing strictly after the cast frame; counterfactual fires exactly ON every cast frame).",
+        "blindSaid": "S2b: fullBurstEnter is 'the correct WIDER trigger; do not narrow it to burstCast'. S6: identical block, 'literal text, NOT burstCast'. S5 structural assertions on trigger/target GREEN.",
+        "formulaCheck": "SSOT §8 + game-mechanics §9: 'when entering Full Burst' lines fire on the FB-entry event from any caster; the engine's fullBurstEnter trigger is the named primitive. Three-way convergence.",
+        "fireRateOk": true,
+        "explanation": "Fires on every team Full Burst (≥6 windows/180s observed via probe). The probe methodology is sound: the engine emits no recovery SimEvent and fireRecovery dispatches only the recipient's blocks, so a self-heal's window is observable only through the recipient's own recovery trigger; the probe (recovery → self defPct 1) is pinned damage-inert (probed totals byte-equal to base), matching the ether shield-probe precedent. Window shape (≥8 firings spanning ≥8s per window) distinguishes the 10s HoT from an instant heal; the counterfactual pins trigger identity. Cluster 2 RULED FAITHFUL."
+      },
+      {
+        "kitLine": "Recover 44.08% of attack damage as HP over 10 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Magnitude 44.08 verbatim in unmodeled.skill2 ('magnitude only — no HP pool by design'); the 10-second recovery-event window is the modeled substance (milk K6 / helm H8 precedent).",
+        "blindSaid": "S2b: UNMODELED (no HP-pool consequence at scope); flagged the nearest-wrong trap — parsing it as an attackDamagePct 44.08 buff. S6: same heal block, same magnitude caveat. S5: asserts no 44.08-valued buff exists anywhere — GREEN vs driver.",
+        "formulaCheck": "The engine `heal` carries no HP amount (no HP pool in v1); the magnitude has no consumer. Critically, the dangerous misparse (44.08 as a damage buff) is absent from the driver override and pinned absent by a GREEN blind assertion.",
+        "fireRateOk": true,
+        "explanation": "Magnitude gap is documented with the design reason; the encodable substance (event channel) is modeled and discriminated. No gotcha."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 229.22% of final ATK as damage.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy → flatDamage 229.22; pinned once-per-cast (nukes.length === casts.length ≥ 6), burst bucket, crit-eligible, on cast frames, fbMajorApplied always false; counterfactuals: lvl-1 magnitude 114.61 changes every nuke, fullBurstEnter keying takes the +50% major off cast frames, removal lowers her total.",
+        "blindSaid": "S2b: FAITHFUL, FB-exempt by cast timing, assert against burstCast not fullBurstStart. S6: identical encoding (explicit crit:true is the engine default — behaviorally identical). S5: structural assertions GREEN; the two vacuous REDs are the competing-B2 fixture artifact.",
+        "formulaCheck": "SSOT §1b Full Burst timing rule (MEASURED, popup-verified on Cinderella): burst-cast damage lands before the window opens — no +50%, no entry auras; engine forces noFb for burst-cast direct damage. Skill/rider damage: crits, never cores (kit grants no 'core strike'), never range. The driver's encoding matches the SSOT exactly.",
+        "fireRateOk": true,
+        "explanation": "Cluster 3 CONFIRMED. The sole-B2 fixture [liter/signal/ada/asuka] is the correct discriminating choice (signal casts every cycle; count-and-timing both non-vacuous); the blind controlComp fixture seats crown as a competing 20s Burst II that takes every stage-2 slot (signal: 0 casts), vacating its own nuke assertions — a fixture-choice artifact per standing batch precedent, not a faithfulness signal."
+      },
+      {
+        "kitLine": "DEF ▼ 12.34% for 10 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Verbatim unmodeled + ⚑2 (estimate ~17.3 flat boss DEF at ~50% uptime per 20s cycle; recipe = same debuff-scalable boss-DEF channel, enact with mica's 13.32% and novel's 7.05% family; tier engine-gap/minor); zero boss debuffs pinned against a damageTakenPct laundering that WOULD emit and lift totals.",
+        "blindSaid": "S2b: FAITHFUL conditional on the enemy-DEF channel, same escape clause as skill1. S6: dead encoded block, self-flagged inert. S5: structural-recorded branch passes; the event-expectation assertion RED (same policy cluster).",
+        "formulaCheck": "Identical channel analysis as skill1's DEF line: subtractive DEF term with no debuff-scalable consumer at scope; damageTakenPct substitution refused by all parties (the SSOT's naming trap, grouped with Taken not Attack Damage).",
+        "fireRateOk": true,
+        "explanation": "Documented engine gap with estimate + recipe + tier; the driver's per-cast cadence claim (~50% uptime) is consistent with the 20s burst cooldown and is honestly absent rather than fudged. No gotcha."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. Every kit line is either FAITHFUL (S2 event channel, burst nuke) or a DOCUMENTED_GAP with estimate+recipe+tier (the three enemy ▼ lines — an engine-missing boss-DEF/ATK debuff channel — and the S2 44.08 magnitude, unmodelable without an HP pool). The three independent derivations converged on every encodable line: fullBurstEnter-not-burstCast on S2, burstCast + FB-exempt-by-cast-timing on the 229.22 nuke, and refusal to launder DEF▼ into damageTakenPct (the one fudge that would have moved totals, pinned RED by both driver and blind). The 7 S5 REDs decompose entirely into (a) a documentation-policy divergence the blind author's own mechanical assertions contradict — her fudge-detector is GREEN against the driver override, and the S6 blind's dead encodings are self-admittedly inert, so blind-vs-blind agrees the difference is policy not mechanics — and (b) the competing-B2 fixture artifact (crown takes every stage-2 cast; signal: 0 bursts), which vacates the blind nuke assertions under standing batch precedent; the driver's sole-B2 fixture pins the nuke non-vacuously. Ruling on Cluster 1: the driver's documented-zero treatment is faithful — verbatim unmodeled + flags is the SSOT-sanctioned skip channel, and dead blocks that provably emit nothing are noise that falsely implies observability; the dead encoding need NOT ship. Cluster 2: probe methodology and window assertions ruled faithful. Cluster 3: confirmed. Nothing must change for GO. Same-model residual for owner spot-check: (1) the ⚑ uptime/cadence estimates in flags 1-2 (near-permanent S1 uptime assumes ~24 hits/s SMG cadence — the SMG-rate question is owner-retired but the estimate is arithmetic on that premise); (2) all three agents are same-family-adjacent readers of the same prose, so a genuinely ambiguous English reading (none identified here — the kit is unusually literal) would converge falsely; the load-bearing facts (FB timing rule, enemyBuffs dispatch, heal event channel) are anchored in MEASURED SSOT entries, not shared priors.",
+  "model": "kimi-code/k3"
+}

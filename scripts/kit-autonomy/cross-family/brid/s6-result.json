@@ -1,0 +1,163 @@
+{
+  "slug": "brid",
+  "leakDetected": null,
+  "override": {
+    "slug": "brid",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 30
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 18.52,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 10
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 211.2,
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 1440,
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": [
+        "Affects the same target when at Max HP.",
+        "Deals 1440% of final ATK as additional damage."
+      ]
+    },
+    "caveats": [
+      "⚑ skill2 has NO activation clause in the kit text — the interval trigger and its 10s period are an INVENTED cadence (interval convention for clause-free damage lines). Total skill2 contribution scales 1:1 with this guess (180s / sec procs); pin it from a datamined skill cooldown or a focus recording before trusting any skill-bucket number.",
+      "⚑ Base weapon cadence (pulls/s from rate_of_fire) and reloadFrames=99 are datamine-unreliable fields; they set how fast the skill1 hitCount:30 window re-arms (AR hitsPerShot 1 ⇒ 30 rounds ≈ half a 60-round magazine), so buff UPTIME rides on them.",
+      "The burst's second 1440% branch is gated on the enemy being at Max HP. There is no target-HP model in v1 and no schema gate for it; at scope lock the boss is below Max HP from the opening shots, so every burst after t=0 fails the condition — the branch is recorded unmodeled rather than credited unconditionally. If a real fight ever shows the doubled burst popup (a first burst landing on an undamaged boss), this needs a target-HP gate primitive.",
+      "Both damage lines target 'the enemy with the highest final DEF'; the scope-lock fight has a single partless boss, so that selection is trivially the boss — modeled as target 'enemy'.",
+      "Both damage lines are function damage: crit at the caster's sheet rate, no core (the text never says 'core strike damage'), no +30% range (engine force-set). noFb is left unset (default FB-by-timing ON) for the skill2 rider; the burst cast is engine-exempt from the +50% Full Burst major because it resolves before the FB window opens."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. brid — AR/Water/Attacker/Burst III, ammo 60, hitsPerShot 1, cd 40s, no charge. S1 is a self ATK ▲18.52% for 10s re-armed every 30 rounds fired (~half a magazine), so uptime is high but not permanent and depends on the ⚑ cadence tuple. S2 is a single-target 211.2%-of-final-ATK function hit with no activation clause in the kit — modeled as an interval proc at a ⚑ estimated 10s period. Burst is a 1440%-of-final-ATK single-target hit on the owner's own burst cast. The burst's second 1440% branch (enemy at Max HP) is deliberately unmodeled: v1 has no target-HP model, and at scope lock the boss is already damaged before the first burst, so crediting it would over-count every rotation."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after 30 normal attacks",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount{count:30} (counts rounds fired; hitsPerShot 1 ⇒ rounds == pulls for an AR)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'}"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 18.52% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat atkPct value 18.52 durationSec 10 — unscoped ATK (no 'normal attacks only' qualifier), wall-clock seconds not rounds"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects the enemy w/ highest final DEF",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single partless boss at scope lock, so the DEF ranking is trivial"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 211.2% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 211.2, crit true, no core (text says plain damage), no explicit trigger ⇒ ⚑ interval{sec:10}"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects the enemy w/ highest final DEF",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'}"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1440% of final ATK as Burst Skl",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 1440, crit true, on trigger burstCast (owner's own burst — the block lives in her burst slot)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects the same target when at Max HP",
+      "status": "SKIPPED",
+      "effectOrReason": "No target-HP model in v1 and no schema gate for enemy-HP conditions; the scope-lock boss is below Max HP from the opening shots, so the condition fails for every burst after t=0. Recorded verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1440% of final ATK as add'l dmg",
+      "status": "SKIPPED",
+      "effectOrReason": "The damage payload of the Max-HP-gated branch above — skipped with it rather than credited unconditionally (crediting it would double the burst on every rotation). Recorded verbatim in unmodeled.burst."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill2[0].trigger",
+      "estimate": "interval{sec:10} — first fire at t=10s, ~17 procs over a 180s fight",
+      "reasoning": "ALWAYS-⚑ #2: the kit gives this 211.2% damage line NO activation clause at all, so both the trigger KIND and its period are invented. Convention for a clause-free damage line is `interval`; 10s is the roster-modal skill cooldown, not anything stated in this kit. Total skill-bucket damage from this line is exactly inversely proportional to the chosen period, so a 2× error here is a 2× error in the whole S2 contribution.",
+      "recipe": "Read the unit's datamined skillCooldownsSec entry for skill2 and set sec to it (first-fire convention: t=CD for an interval-style line with no 'Forcefully uses Skill N' wording). Independent confirmation: a camera-focus recording — count the 211.2% popups over a fixed window and divide, or diff sim-vs-real skill-bucket totals across two candidate periods."
+    },
+    {
+      "field": "base cadence tuple (pullsPerSec / reloadFrames=99) — engine-side, not an override field",
+      "estimate": "AR datamined rate_of_fire as loaded; reload 99 frames (1.65s)",
+      "reasoning": "ALWAYS-⚑ #1: rate_of_fire and reloadFrames are known-unreliable datamine fields, and the effective rate is quantized to 60fps frame boundaries (60/ceil(60/nominal)). These set how often the skill1 hitCount:30 window completes (30 rounds out of a 60 magazine ⇒ two S1 procs per magazine plus reload dead time), so they drive S1 buff UPTIME, not just shot count.",
+      "recipe": "Ammo-counter read from a focus recording: count rounds/sec directly off the magazine counter (the instrument that measures the disputed quantity), and time full-magazine → full-magazine to get the real reload. Do NOT infer cadence from full-burst counts (downstream of gauge)."
+    },
+    {
+      "field": "override.unmodeled.burst — the Max-HP-gated second 1440%",
+      "estimate": "0 (branch inert at scope lock); worst case it would DOUBLE burst-bucket damage if it ever fired",
+      "reasoning": "The schema has no enemy-HP gate (requiresTargetStatus is name-keyed status, not an HP threshold), and the sim models no boss HP pool. Faithful-over-fit says record the line rather than credit an effect whose gate cannot be evaluated. In a 180s solo raid the boss is damaged well before the first Burst III cast, so the real-game branch should also be dead — but that is an inference from fight structure, not a measurement.",
+      "recipe": "Focus recording of a brid burst: if the burst produces ONE popup ≈1440%-scaled and never a paired second popup of equal size, the branch is confirmed dead and this stays unmodeled. If a doubled popup appears (e.g. an opening burst on an untouched boss), a target-HP gate primitive is required before modeling it."
+    },
+    {
+      "field": "override.skill1[0].trigger.count semantics",
+      "estimate": "30 rounds FIRED (engine hitCount), not 30 landed hits",
+      "reasoning": "The kit says '30 normal attacks'. The engine's hitCount counts rounds; for an AR (hitsPerShot 1, no pellet spread) fired and landed coincide in the sim, so the two readings are damage-identical here. Flagged only because the equivalence breaks if brid is ever given a shot-loss model.",
+      "recipe": "No action needed at scope lock; re-check only if an accuracy/landing model is introduced for ARs."
+    }
+  ],
+  "model": "claude-opus-5"
+}

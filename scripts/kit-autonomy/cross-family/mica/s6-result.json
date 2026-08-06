@@ -1,0 +1,163 @@
+{
+  "slug": "mica",
+  "leakDetected": null,
+  "override": {
+    "slug": "mica",
+    "skill1": [],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 20
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 2,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "maxAmmoFlat",
+            "value": 2,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 19.89,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 152.22
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates when attacked 20 time(s). Affects self.",
+        "DEF ▲ 39.18% for 10S."
+      ],
+      "skill2": [],
+      "burst": [
+        "DEF ▼ 13.32% for 5 sec."
+      ]
+    },
+    "caveats": [
+      "⚑ S2 trigger is INVENTED. The prose gives no activation clause, only a target clause + two 10-sec grants, so a repeating internal cooldown is inferred; sec 20 is an estimate, not a kit value. Uptime (and therefore the ammo lever) scales directly with this number — 10s would be 100% uptime, 30s ~33%.",
+      "⚑ S2 Max Ammunition ▲ 2 round(s) is a WEAPON-STATE modifier, not a defensive line: it adds 2 rounds to the recipients' magazine (maxAmmoFlat), stretching each magazine and lowering reload frequency. Read as amount=2 rounds, duration=10 wall-clock seconds — NOT a durationShots round-count window.",
+      "S2 target is authored WITHOUT excludeSelf: the prose says plain '2 allies with the highest final ATK' and never excludes the skill user, so mica remains eligible for her own grant. byFinalAtk is set because the text literally says 'final ATK' (live effectiveAtk ranking).",
+      "S2 DEF ▲ 19.89% is kept as defPct even though defPct is inert in v1 — the stat is retained for kit completeness / a future consumer, per the DEF-is-not-skippable rule. It moves no damage today.",
+      "S1 is authored as an EMPTY slot, not because it is effect-free but because no faithful trigger exists (see flags). Both its lines sit verbatim in unmodeled.skill1.",
+      "Burst damage carries no noFb flag: mica is Burst I and her cast resolves before the Full Burst window opens, so FB exemption falls out of TIMING. Setting noFb would be an unmeasured per-kit assertion.",
+      "Burst flatDamage crit eligibility is left to the engine's rider default (no explicit crit flag) — the kit text says only 'Burst Skill damage', with no core-strike wording, so core is off.",
+      "⚑ Base cadence tuple (RL, 6 ammo / 60 chargeFrames / 141 reloadFrames, hitsPerShot 1) is datamined and known-unreliable; the ammo lever's real value depends on it."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. RL/Wind/Supporter/Burst I. S1 (self DEF ▲ 39.18% for 10s, triggered by being attacked 20 times) is DROPPED: the sim models no incoming damage at scope lock, so an 'attacked N times' condition can never fire and no TriggerDef expresses it; defPct is inert in v1 regardless. Encoding it as a passive would assert permanent uptime the kit does not grant. S2 grants the 2 highest-final-ATK allies Max Ammunition ▲ 2 rounds (maxAmmoFlat — a real damage lever, it changes shots fired per magazine) plus DEF ▲ 19.89%, both 10 wall-clock seconds; the prose carries NO activation clause, so the trigger is an invented recurring interval (⚑ sec 20). Burst deals 152.22% of final ATK as instant burst-skill damage on cast. The burst's DEF ▼ 13.32% for 5 sec on the boss is UNMODELED: there is no enemy-DEF StatKey, and a DEF reduction is a subtraction inside the formula, not a fixed damageTakenPct percentage — any proxy value would be fabricated."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when attacked 20 time(s).",
+      "status": "SKIPPED",
+      "effectOrReason": "No engine primitive: TriggerDef has no 'attacked'/damage-taken kind, and the v1 boss deals no modeled damage to allies, so the 20-hit condition can never be reached. Recorded verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self.",
+      "status": "SKIPPED",
+      "effectOrReason": "Target would be {kind:'self'}; dropped with its parent block because the block's trigger is unmodelable."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▲ 39.18% for 10S.",
+      "status": "SKIPPED",
+      "effectOrReason": "Would be buff defPct 39.18 durationSec 10 on self. Not authored — no valid trigger to hang it on; also defPct is inert in v1. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects 2 allies w/ highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesTopAtk', count:2, byFinalAtk:true} — 'final ATK' is literal, so live effectiveAtk ranking; no excludeSelf (kit does not exclude the skill user)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max Ammunition ▲ 2 round(s) 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff maxAmmoFlat value 2, durationSec 10. Weapon-state modifier (gates shots fired) — explicitly NOT skipped as defensive. '2 round(s)' is the AMOUNT, '10 sec' the wall-clock duration; this is not a durationShots round-count window."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▲ 19.89% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct 19.89, durationSec 10, same target set. Retained for kit completeness though defPct is inert in v1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "(no activation clause in prose)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "⚑ trigger {kind:'interval', sec:20} — invented. A 10-sec grant implies a repeating internal cooldown, not a passive; first fire at t=sec per engine convention (no 'Forcefully uses Skill N' wording)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} on the burst block."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 152.22% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 152.22 on trigger burstCast. No core (no 'core strike' wording); no noFb (Burst I cast resolves pre-FB by timing); noRange left to the engine's automatic rider handling."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▼ 13.32% for 5 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Boss DEF reduction. No StatKey expresses enemy DEF; damageTakenPct is a different mechanic (a Damage-Taken multiplier, not a DEF subtraction) and the equivalent % would vary per hit magnitude, so proxying it at 13.32 would fabricate a value. Verbatim in unmodeled.burst."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[0].trigger.sec",
+      "estimate": "interval, sec 20 (invented trigger + cadence)",
+      "reasoning": "ALWAYS-⚑ #2: the kit prose gives this block NO activation clause — only a target clause and two 10-second grants. A 10-sec duration rules out a permanent passive, so a repeating internal cooldown is the shape; 20 is chosen as the only cooldown-scale number visible in the packet (the unit's stated 20s burst cooldown) and is a placeholder, NOT a datamined skill cooldown. Uptime = 10/sec, so this single number scales the entire value of the ammo lever: sec 10 → 100% uptime, sec 20 → 50%, sec 30 → 33%.",
+      "recipe": "Read the datamined skillCooldownsSec entry for mica's skill2 (data/skill-levels) and set sec to it. Cross-check from footage: the Max Ammunition ▲2 is directly observable — watch a recipient ally's ammo counter maximum step from N to N+2 and back, and time the gap between successive steps over a 180s fight. Also confirm first-fire phase (t=0 vs t=sec) from the first step's timestamp."
+    },
+    {
+      "field": "skill1 (whole slot — authored empty)",
+      "estimate": "0 blocks; DEF ▲ 39.18%/10s never applied",
+      "reasoning": "'Activates when attacked 20 time(s)' has no TriggerDef counterpart, and the scope-lock boss's damage to allies is unmodeled, so the condition is unreachable in principle. Authoring it as passive/interval would assert an uptime the kit never grants; the stat itself (defPct) is inert in v1, so the damage cost of the omission is provably zero TODAY — the risk is only that a future DEF consumer/scaler would miss it.",
+      "recipe": "No sim-side measurement resolves this. If an incoming-damage model or a DEF-scaling consumer ever lands, add an 'attacked-count' trigger primitive (or a measured proxy cadence from footage: count boss attack instances that hit the squad per 20-hit window) and restore the block as a self defPct 39.18 / durationSec 10 buff."
+    },
+    {
+      "field": "burst — DEF ▼ 13.32% for 5 sec (unmodeled)",
+      "estimate": "0 (no damage credited)",
+      "reasoning": "A boss DEF reduction enters the formula as a subtraction (ATK×mult − DEF), so its damage benefit is NOT a fixed percentage: it depends on the boss's DEF value and on each hit's pre-DEF magnitude (largest lift on small hits, negligible on large ones). There is no enemy-DEF StatKey, and encoding it as damageTakenPct 13.32 would silently invent a magnitude. Under-crediting here is the honest failure mode; it makes mica's burst a floor, not a fit.",
+      "recipe": "Two routes. (1) Derive: with the scope-lock boss DEF constant and a known pre-DEF hit magnitude, compute the per-hit lift 0.1332×DEF/(hitDamage) and confirm whether it is stable enough across the roster's hit sizes to justify a scalar. (2) Measure: record the same comp with and without mica's burst cast landing, and compare a teammate's per-popup values inside vs outside the 5-second window — the ratio IS the effective multiplier. Landing this properly wants an enemy-DEF-reduction primitive in the schema rather than a damageTakenPct proxy."
+    },
+    {
+      "field": "base cadence tuple (data/characters.json — not an override field)",
+      "estimate": "RL, ammo 6, chargeFrames 60, reloadFrames 141, hitsPerShot 1, normalAttackMultiplier 61.3, coreAttackMultiplier 200",
+      "reasoning": "ALWAYS-⚑ #1: rate_of_fire / reloadFrames are known-unreliable datamine fields, and a nominal rate is quantized to 60fps frame boundaries in-game. For a charge RL this matters twice over — it sets both the shot economy and, through it, the real value of the S2 Max Ammunition ▲2 grant (whose worth is entirely 'how many extra rounds actually get fired before a reload').",
+      "recipe": "Time mica's ammo counter over a full magazine in footage (shots/sec directly, per the datamined-nominal-vs-effective rule — use the ammo counter, not a downstream gauge/FB read), and time reload start→full to check the 141-frame value. The measured 22-frame charge release latency is already a fixed constant and is not refit."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,11 @@
+mary — S2d verification (test-first, pre-S3)
+run: npx vitest run scripts/tests/units/mary.test.ts
+result: 13/13 RED — every test fails "no skill override for mary" (override not yet on disk; expected RED state)
+S2b (claude-fable-5) review: converged on all 4 lines; leakDetected null. dispositions matched:
+  L1 FAITHFUL lastBullet->alliesLowestHp1->heal ticks1; L2 UNMODELED (no incoming-heal stat, no HP pool);
+  L3 FAITHFUL burstCast->allies->heal ticks1; L4 FAITHFUL burstCast->allies->defPct 19.8/10s (gate scope-trivial).
+S2c reconciliation: one reinforcement adopted (L2 event-channel pin: no recovery firing on any FB-start frame).
+post-S3 run recorded below.
+
+post-S3 run: npx tsx scripts/validate-overrides.ts mary → valid (dmg 69.9M, bursts 5, 6 caveats echoed)
+npx vitest run scripts/tests/units/mary.test.ts → 13/13 GREEN (336ms)

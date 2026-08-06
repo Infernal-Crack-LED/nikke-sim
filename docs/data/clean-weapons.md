@@ -35,7 +35,7 @@ the only element neutral for all six.
 | A    | `folkwang`    | AR     | Water    | II    | 3★/7     | shields / taunt / Max HP only                                  |
 | A    | `marciana`    | SG     | Iron     | II    | 3★/7     | heals / DEF only; carries a proven-damage-neutral **override** |
 | A    | `snow-crane`  | SR     | Water    | II    | 3★/7     | ⚠ burst grants **Pierce** — "never burst" is load-bearing; carries a proven-damage-neutral **override** |
-| B    | `emma`        | MG     | Fire     | I     | 3★/7     | heals only                                                     |
+| B    | `emma`        | MG     | Fire     | I     | 3★/7     | heals only; carries a proven-damage-neutral **override**       |
 | B    | `claire`      | RL     | Electric | I     | **2★/0** | heals / shield only; not SSR                                   |
 | B    | `idoll-ocean` | SMG    | Water    | I     | **0★/0** | heals only; not SSR                                            |
 
@@ -108,16 +108,18 @@ Attack Speed, direct damage, or an enemy `DEF ▼` / `Damage Taken ▲`).
 
 ## Fixture note
 
-Four of the six have no override on disk (`simSupported: false`); `marciana` and `snow-crane` now
-carry **proven-damage-neutral** gauntlet overrides (marciana: recovery-event emitters + one inert
-`defPct` buff — owner ruling 2026-08-01; snow-crane: recovery-event emitters + a full-burst shield
-+ an inert `casterMaxHpPct` aura + a timed self-Pierce window — owner ruling 2026-08-04,
-`docs/DECISIONS.md`). The basis still measures the **empty kit** regardless: `bareWeaponComp`
+Three of the six have no override on disk (`simSupported: false`); `marciana`, `snow-crane` and
+`emma` now carry **proven-damage-neutral** gauntlet overrides (marciana: recovery-event emitters
++ one inert `defPct` buff — owner ruling 2026-08-01; snow-crane: recovery-event emitters + a
+full-burst shield + an inert `casterMaxHpPct` aura + a timed self-Pierce window — owner ruling
+2026-08-04; emma: recovery-event emitters only — gauntlet 2026-08-05, `docs/DECISIONS.md`). The
+basis still measures the **empty kit** regardless: `bareWeaponComp`
 hands every slug the synthetic empty `bareWeaponOverride`, so the fixture never reads a committed
 encoding and there is no override that could drift away from "bare weapon". The engine throws for
 a unit that has skill prose but no override, which is why the empty kit is synthesized for the
-four rather than committed. CW1's third test pins the machine-checkable core of premise P1: any
-override a clean-weapon unit carries must sim **byte-identical** to that empty kit — marciana and
-snow-crane do (their kits move no damage of their own; snow-crane's burst-granted Pierce never
-fires because the basis runs bursts-off), and the other four satisfy it trivially, having no
+three rather than committed. CW1's third test pins the machine-checkable core of premise P1: any
+override a clean-weapon unit carries must sim **byte-identical** to that empty kit — marciana,
+snow-crane and emma do (their kits move no damage of their own; snow-crane's burst-granted Pierce
+never fires because the basis runs bursts-off; emma's burst heals only fire on her own casts,
+never under the basis's bursts-off runs), and the other three satisfy it trivially, having no
 override at all.

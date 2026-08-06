@@ -1,0 +1,72 @@
+{
+  "slug": "himeno",
+  "kitDescription": "Himeno is a Wind Supporter sniper whose whole kit is team support with no damage lines of her own. Every full-charge shot she lands shaves the target's DEF by 6.94% for 3 seconds. On a 20-second cycle she hands every sniper-rifle ally (herself included) +10.98% ATK and +2 max ammo for 10 seconds, so the buffs are up about half the time. When she casts her Burst II, the single ally with the highest final ATK (never herself, per the datamined targeting) gets +23.76% Charge Damage and +16.35% Critical Rate for 10 seconds. In practice she exists to make a charge-weapon carry hit harder and crit more often while giving SR teammates longer magazines.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "DEF ▼ 6.94% for 3 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled, recorded verbatim in unmodeled.skill1: the enemy-buff channel admits only damageTakenPct/distributedDamagePct and boss DEF is a flat constant no debuff scales, so the line is dropped at dispatch; the nearest-wrong laundering into damageTakenPct is pinned absent by test.",
+        "blindSaid": "S6 encoded an enemy-targeted defPct -6.94 block it itself proved board-inert (same observable, different bookkeeping); S5 skipped the enactment test as a GAP and pinned board-inertness plus zero damageTakenPct 6.94 events.",
+        "formulaCheck": "SSOT: scope lock runs bossDef:0; measured boss DEF ≈140 implies ≤0.12% board shift even if modeled, and the engine has no enemy-DEF consumer — both blind agents and the driver verified this independently.",
+        "fireRateOk": true,
+        "explanation": "Nothing to fire — the gap is deliberate, verbatim-recorded, anti-laundering pinned by both driver and blind tests, and the formula SSOT confirms the line is worth ~nothing on the constant-DEF basis. The full-charge trigger is correctly skipped as part of the same sentence. This is the audited no-silent-drop record, not a gotcha."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "ATK ▲ 10.98% for 10 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval:20 (datamined skillCooldownsSec.skill2=20, poli precedent, first fire t=20s), target alliesOfWeapon SR with no excludeSelf, atkPct 10.98, durationSec 10 → 50% duty cycle; apply-frame spacing pinned at exactly 1200f.",
+        "blindSaid": "S6 converged on alliesOfWeapon SR / atkPct 10.98 / 10s but had to use interval sec:10 (no datamine access — flagged as its dominant ⚑); S5 pinned target set (self + helm, never liter), raw-percent stat identity, and wall-clock duration; its cadence assertion is a documented skip.",
+        "formulaCheck": "Generic atkPct sums into the (1+ΣATK%) term on each target's staticAtk — correct bucket, correct scope, duration semantics match prose.",
+        "fireRateOk": true,
+        "explanation": "Fires every 20s exactly (pinned first-at-t=20s, period 1200f, ≥8 applications). The driver's sec:20 is strictly better-grounded than the blind sec:10 — information asymmetry, not disagreement. The passive-always-on and all-allies nearest-wrongs are both discriminated by failing counterfactuals. The t=20s first-fire phase is an engine-native ⚑ the driver documented."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity ▲ 2 round(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "maxAmmoFlat 2 (theme-14 flat-round parse) in the same interval:20 block, durationSec 10; functional pin: in-window refills load exactly 8 rounds (first-shot ammoAfter 7).",
+        "blindSaid": "S6 independently converged on maxAmmoFlat 2 / same block / 10s; S5 pinned flat-vs-percent (maxAmmoPct byte-identical to no-ammo), sniper-only scope, no durationShots, and damage-bearing move.",
+        "formulaCheck": "Ammo capacity gates reload frequency → shots fired; maxAmmo() = round(base×(1+pct/100)) + flat, so only the flat encoding extends a 6-round magazine. The '2 round(s)' magnitude vs 'for N round(s)' duration trap — S2b's flagged most-damaging misread — is avoided by all three agents.",
+        "fireRateOk": true,
+        "explanation": "Observably fires (8-round magazines exist in-window, never out of it or under the pct counterfactual). The S2b durationShots misread is excluded (durationShots undefined pinned). Driver handled liter's own maxAmmoPct contamination correctly by keying on the first-shot ammoAfter 7 observable."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Charge Damage ▲ 23.76% for 10 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast-keyed (not fullBurstEnter), alliesTopAtk{count:1, excludeSelf:true, byFinalAtk:true}, chargeDamagePct 23.76, durationSec 10; functional pin: recipient's charge mult lifts by exactly +0.2376 in-window (2.5 → 2.7376).",
+        "blindSaid": "S6 converged on burstCast / alliesTopAtk{1, byFinalAtk:true} / chargeDamagePct 23.76 / 10s (omit excludeSelf only because the prose omits it — datamine asymmetry); S5 pinned single-recipient, count-1, additive-not-multiplier (no chargeDamageMultPct 23.76), per-cast application.",
+        "formulaCheck": "chargeDamagePct adds flat percentage points inside the charge bucket per SSOT §1d — the +0.2376 shift on a 2.5 base matches exactly (2.7376/2.5 = 1.09504). burstCast-vs-fullBurstEnter divergence pinned in the two-B2 fixture (applications land on her cast frames, never on FB start frames).",
+        "fireRateOk": true,
+        "explanation": "Casts >2 times in fixture A, applies exactly once per her cast to exactly one non-self ally, never on rotations she doesn't cast. Inert-on-a-non-charge-recipient is faithful (charge bucket is recipient-gated by the formula), and the fixtures exercise a charge-weapon recipient so the buff is observably live."
+      },
+      {
+        "kitLine": "Critical Rate ▲ 16.35% for 10 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Same block: generic critRatePct 16.35 (kit says plain 'Critical Rate', no normal-attacks scoping — the inverse of the helm critRateNormalPct trap), same single target, 10s.",
+        "blindSaid": "S6 and S5 both converged on generic critRatePct; S5 pinned zero critRateNormalPct 16.35 events and count equality with the charge line.",
+        "formulaCheck": "Unscoped critRatePct lifts the crit term of the Major bucket for all hit categories, matching the prose's unscoped wording; functional pin shows the recipient's crit rate moving by exactly +0.1635 in-window and reverting out of it.",
+        "fireRateOk": true,
+        "explanation": "Rides the same single target as the charge line once per cast (pinned frame-by-frame), reverts at expiry, and the normal-attacks-only mis-scope is discriminated by S5. Recipient in-window crit-rate delta is exactly the kit number."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: all five kit lines are FAITHFUL or DOCUMENTED_GAP (4 FAITHFUL + the S1 enemy-DEF line as a verbatim-recorded, anti-laundering-pinned gap that the damage SSOT confirms is worth ≤0.12% on the constant-bossDef basis). The two blind re-derivations converged on every load-bearing encoding — the S2 flat-round ammo parse, the SR-scoped target set including self, the burstCast (not fullBurstEnter) keying, the single highest-final-ATK target, and the additive chargeDamagePct / generic critRatePct stat identities — and the only three divergences are pure information asymmetry resolved in the driver's favor by ground truth (interval sec:20 from datamined skillCooldownsSec vs the blind's flagged sec:10 ⚑; excludeSelf from datamined prefer_target_condition the prose omits; S1 verbatim-unmodeled vs an equally-inert enemy-defPct block). Every nearest-wrong model named by S2b fails under the shipped tests: passive-always-on, all-allies scope (both slots), maxAmmoPct-2, durationShots, chargeDamageMultPct, critRateNormalPct, fullBurstEnter keying, and damageTakenPct laundering. The S5 suite ran GREEN (23/2-skip/0-fail) against the shipped override; the driver's adaptations were documented harness plumbing plus the exact B2-tie fixture hazard S2b pre-registered (unmodified, the burst assertions would have been vacuous-or-red for fixture reasons, not override reasons), with assertions otherwise byte-identical. Same-model residual for the owner to spot-check: every agent shares the unmeasured conventions that (a) the S2 interval first-fires at t=CD rather than t=0 and (b) the datamined ExcludeSelf governs over the prose's silence — both flagged in the driver's own ⚑ list; the cheapest independent confirmation is the blind author's HUD recipe (watch an SR ally's ammo counter flip 6→8 and timestamp the flips against FB banners), which pins trigger identity, phase, and duty cycle in one recording.",
+  "model": "kimi-code/k3"
+}

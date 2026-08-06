@@ -1,0 +1,61 @@
+{
+  "slug": "pascal",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates after firing 10 time(s)",
+      "disposition": "GAP",
+      "scope": "Heal effect, not a damage/stat buff — 6.28% of the SKILL USER'S (pascal's) final Max HP, recovered as HP to the target. HP-scaler rule: counts pascal's OWN live Max HP only (ally-granted Max HP would not feed it).",
+      "durationSemantics": "Instant heal on each activation; no duration. The trigger is a repeating counter, not one-shot: fires EVERY 10 rounds fired, cumulative across reloads (ammo 6 → each activation spans at least one reload).",
+      "triggerIdentity": "hitCount count:10 — 'after firing 10 time(s)' counts ROUNDS the owner fires (RL hitsPerShot 1, so pulls = rounds). NOT interval{sec:10}, NOT lastBullet, NOT once-only. No FB gate stated → fires in and out of Full Burst at the same threshold.",
+      "targetSet": "1 ally with the HIGHEST FINAL DEF. The target vocabulary has no DEF-ranked kind (only alliesTopAtk / alliesLowestAtk / alliesLowestHp / class / element / weapon) — this is a schema GAP requiring a documented deterministic stand-in. At scope lock a Defender-class ally (class static DEF is highest) is the faithful resolution; note 'final DEF' would formally want live-DEF ranking, but with no DEF buffs in the control fixture static class ranking is exact.",
+      "nearestWrongModel": "Skipping the line entirely as 'defensive heal, no damage relevance' (the classic drop), or encoding the trigger as interval{sec:10} (wall-clock instead of rounds-fired), or targeting self/all-allies instead of 1 DEF-ranked ally.",
+      "distinguishingAssertion": "There is no 'heal' event kind in cfg.onEvent, so assert through the tandem consumer already in the control fixture: crown (B2 slot) carries a 'when recovery takes effect' trigger. Run controlComp(pascal); collect crown's recovery-driven buffApply events. GREEN-faithful: their count equals floor(pascal's total shots/10) and their frame timestamps track pascal's fire+reload cadence (gaps stretch across her 171-frame reloads). RED-under-interval: events land every 600 frames regardless of reloads. RED-under-skip: zero such buffApply events, and totals(res) for crown's recovery-fed contribution drops when pascal's skill1 block is stripped via withPatchedOverride.",
+      "inertness": "Alone (no recovery-trigger teammate), the heal must move ZERO damage — pascal's own totals identical with skill1 stripped. It must NOT be encoded as any stat buff or damage effect.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Activates when entering Burst Stage 1",
+      "disposition": "UNMODELED",
+      "scope": "'Incoming healing ▲ 38.4%' — a heal-received amplifier on the targets. StatKey has no incoming-healing stat, and the engine's recovery trigger fires on heal RECEIPT regardless of magnitude, so the buff has no modeled consumer: it neither changes damage nor changes whether/when recovery triggers fire.",
+      "durationSemantics": "10 sec wall-clock (durationSec 10) — genuine seconds here, no round-count wording.",
+      "triggerIdentity": "stageEnter{stage:1} — 'when entering Burst Stage 1' fires when ANYONE casts a Stage-1 burst (liter's B1 cast counts), NOT only pascal's own cast. This is the burstCast-vs-stageEnter twin of the burstCast-vs-fullBurstEnter trap: in any comp with a second Burst-I unit the two diverge every rotation.",
+      "targetSet": "alliesLowestHp count:3 — 'lowest remaining HP' is indeterminate in v1 (no HP pool); documented stand-in resolves to the leftmost 3 allies.",
+      "nearestWrongModel": "Forcing the magnitude into an existing stat (e.g. a generic heal/atk buff) to avoid 'dropping' it, or keying the trigger to burstCast (pascal-only) — both wrong; the faithful move is verbatim unmodeled text.",
+      "distinguishingAssertion": "Inertness assertion: totals(res) for every unit is bit-identical with the skill2 block removed via withPatchedOverride, AND no buffApply event with an unexpected stat is emitted at Stage-1 entry. If the driver DID model it, the review must check the trigger fires on liter's B1 cast (stageEnter), not only pascal's.",
+      "inertness": "Must move zero damage for all five units; must not emit spurious buffApply events; must not alter recovery-trigger firing on crown.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 55.29% of user's final Max HP",
+      "disposition": "FAITHFUL",
+      "scope": "Instant heal to 3 allies, 55.29% of PASCAL'S final Max HP (caster-scaled, own live Max HP only). No damage component; no FB/range/crit questions arise — but the heal is a tandem driver.",
+      "durationSemantics": "Instant on cast; no duration.",
+      "triggerIdentity": "burstCast (stage 1) — this is pascal's OWN burst block, so it fires ONLY on rotations pascal herself casts, never on liter's B1 casts. Burst-cast effects land PRE-Full-Burst (before the FB window opens). With liter sharing Burst I in the control fixture, first-ready-in-window selection + pascal's 40s cd decide which rotations she actually casts — the test must pin this before asserting cadence.",
+      "targetSet": "alliesLowestHp count:3 — leftmost-3 stand-in (v1 has no HP pool). Whether crown's slot falls inside the leftmost 3 determines whether her recovery trigger fires off this heal; the test must fix the slot layout deliberately.",
+      "nearestWrongModel": "Keying to fullBurstEnter or stageEnter{1} (fires on EVERY rotation's B1 cast including liter's — over-fires the tandem recovery procs by roughly the ratio of total rotations to pascal-cast rotations), or skipping the heal as defensive.",
+      "distinguishingAssertion": "Collect burstCast events for pascal and crown's recovery-driven buffApply events. GREEN-faithful: a burst-sourced recovery proc on crown occurs exactly and only on frames where a burstCast event with pascal's slot fired (over and above the skill1-cadence procs). RED-under-stageEnter: burst-heal procs appear on every rotation including those where the burstCast event belongs to liter. RED-under-skip: no burst-coincident recovery procs at all.",
+      "inertness": "Pascal's own damage totals must not change from the heal itself; rotations pascal does NOT burst must show no burst-heal recovery proc.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:hitCount-10 heal (6.28% caster MaxHP, tandem recovery driver)",
+    "burst:burstCast heal (55.29% caster MaxHP to 3 allies, tandem recovery driver)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Incoming healing ▲ 38.4% for 10 sec."
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to reconcile: (1) THE BIG ONE — both heals look offensively inert in isolation, and the taxonomy's tandem rule makes them load-bearing anyway: crown sits in the control fixture's fixed B2 slot with a 'when recovery takes effect' trigger, so pascal's heals are a live cross-unit damage channel; a driver who dispositioned the heals as skip/inert has under-modeled. (2) There is NO 'heal' event kind in cfg.onEvent — every assertion must be routed through the recovery-trigger consumer (crown's buffApply stream) or through withPatchedOverride A/Bs on totals; a test asserting on a nonexistent heal event vacuously passes. (3) skill1's target needs a DEF-ranked target kind the schema lacks — verify the driver documented a stand-in rather than silently targeting self/leftmost without noting it; at scope lock the Defender-class ally is the correct resolution. (4) burst is burstCast (pascal's own, pre-FB) while skill2 is stageEnter{1} (anyone's B1) — with liter also Burst I in controlComp these diverge every rotation pascal doesn't cast; a test that never pins WHICH B1 unit bursts cannot distinguish them. Pascal's 40s cd vs liter's shorter cd makes 'pascal never actually bursts in the fixture' a real vacuous-pass risk — the test should force or verify at least one pascal cast. (5) skill1's 'after firing 10 time(s)' must count rounds fired across reloads (ammo 6, 171-frame reload), not wall-clock and not per-magazine.",
+  "model": "claude-fable-5"
+}

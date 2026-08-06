@@ -1,0 +1,105 @@
+{
+  "slug": "mihara",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "last bullet hits → Crit Damage ▲18.7%",
+      "disposition": "FAITHFUL",
+      "scope": "Generic Critical Damage (unscoped — kit says plain 'Critical Damage', not 'of normal attacks'); applies to all her crit-eligible hits.",
+      "durationSemantics": "durationSec: 10 — wall-clock seconds, NOT rounds. With ammo 60 @ AR cadence (~5s magazine) + 121f reload (~2s), the 10s window spans the full reload cycle → near-continuous uptime after the first magazine.",
+      "triggerIdentity": "lastBullet (per-magazine, fires at magazine exhaustion / reload start). No gate.",
+      "targetSet": "self only",
+      "nearestWrongModel": "Keyed to shotFired/passive (uptime from t=0) or hitCount:60 misconverted, instead of lastBullet — over-credits the opening magazine (~5s of crit damage the kit doesn't grant). Secondary misread: critRatePct instead of critDamagePct.",
+      "distinguishingAssertion": "onEvent: NO buffApply {stat:'critDamagePct', value:18.7, caster==target==mihara} occurs before mihara's first reload event; the first buffApply lands on the same frame region as her first lastBullet/reload, and buffApply count over 180s ≈ her reload count. expiresFrame - applyFrame == 600 frames, and durationShots is undefined on the event.",
+      "inertness": "No ally ever receives this buff (targetIdx always mihara's slot). Value is 18.7 (raw %), never flat-resolved.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Once: HtH1 — ATK ▲15.56% 45s",
+      "disposition": "FAITHFUL",
+      "scope": "Generic self ATK (atkPct — scales own ATK; not casterAtkPct flat).",
+      "durationSemantics": "durationSec: 45 — seconds. Burst cd is 40s, so back-to-back own-casts refresh before lapse; but with a co-B3 in the comp her casts can be >45s apart and the buff MUST be allowed to lapse between them.",
+      "triggerIdentity": "burstCast (her OWN burst cast — '■ Activates when using Burst Skill' in her own kit) — NOT fullBurstEnter. This is the classic trap: controlComp fixes helm as a second B3, so team Full Bursts occur on rotations mihara does NOT cast.",
+      "targetSet": "self only",
+      "nearestWrongModel": "Trigger keyed to fullBurstEnter — fires on EVERY team Full Burst including helm-cast rotations, over-crediting ATK uptime and accelerating the escalating counter (HtH2 arrives one rotation early).",
+      "distinguishingAssertion": "In controlComp('mihara') (helm co-B3 present): every buffApply {stat:'atkPct', value:15.56} frame coincides with a burstCast event whose srcSlot is mihara's; the count equals mihara's own burstCast count and is strictly LESS than the fullBurstStart count. Red under fullBurstEnter keying (count would equal FB count).",
+      "inertness": "No atkPct application on helm-cast-only rotations; allies never targeted.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Twice: HtH2 — Crit Rate ▲11.28% 45s",
+      "disposition": "FAITHFUL",
+      "scope": "Generic self Critical Rate (unscoped critRatePct — kit says plain 'Critical Rate').",
+      "durationSemantics": "durationSec: 45 — seconds, same lapse rule as step 1.",
+      "triggerIdentity": "burstCast, escalating step 2 (Liter-style 'escalating' effect: Nth activation applies steps 1..N, capped at 2 steps). 'Each subsequent effect triggers all effects before it' is explicit: cast 2 applies BOTH the ATK refresh AND the crit-rate buff; cast 3+ re-applies both.",
+      "targetSet": "self only",
+      "nearestWrongModel": "Cast 2 applies ONLY the new crit-rate step without refreshing the ATK buff (drops the 'triggers all effects before it' clause) — ATK can lapse in long-gap rotations. Secondary: a third phantom step or uncapped stacking on cast 3+.",
+      "distinguishingAssertion": "On mihara's 2nd burstCast frame, TWO buffApply events land on her: atkPct 15.56 (refresh:true or a fresh apply) AND critRatePct 11.28. On her 1st cast, NO critRatePct event exists. On her 3rd cast, exactly the same two events again (no new stat, no stack growth).",
+      "inertness": "critRatePct never appears before the 2nd own-cast; maxStacks/stacks never exceed 1 per stat.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "allies: Full Burst Duration ▼ 5 sec",
+      "disposition": "GAP",
+      "scope": "Rotation-level: shortens the Full Burst WINDOW of the rotation her burst opens (10s → 5s). This is a weapon/rotation-state modifier, NOT a defensive no-op — it cuts the whole team's +50% FB uptime on her rotations and pulls every subsequent rotation earlier (likely RAISING total FB count over 180s). Taxonomy trap #6-adjacent: 'does it change shots/windows?' — yes.",
+      "durationSemantics": "One-shot structural effect per cast, no buff duration.",
+      "triggerIdentity": "burstCast (fires as part of her own burst resolution); only the FB window she opens is shortened — helm-cast rotations keep ~10s.",
+      "targetSet": "all allies (mechanically: the shared FB window)",
+      "nearestWrongModel": "Silently skipped as 'defensive/no damage' (the single most likely shared-prior misread), or sign-flipped into a +5s fullBurstExtend, or applied to EVERY Full Burst including helm's.",
+      "distinguishingAssertion": "For each fullBurstStart whose rotation's burstCast srcSlot is mihara's, the matching fullBurstEnd fires ≈300 frames (5s) later; for helm-cast rotations ≈600 frames (10s). Additionally the total fullBurstStart count over 180s differs from a control run with this effect nulled via withPatchedOverride. Red under skip (all ~600f), red under sign-flip (~900f), red under any-FB application (helm rotations also ~300f).",
+      "inertness": "Helm-cast FB windows must remain ~10s; no damage event is directly emitted by this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "enemies: 399.6% Burst Skill damage",
+      "disposition": "FAITHFUL",
+      "scope": "Instant burst-bucket hit, % of her final ATK (snapshots her live buffs incl. HtH ATK from this same cast if skill2 dispatches first — ordering worth pinning). Crits at sheet rate; NO core (text lacks 'core strike').",
+      "durationSemantics": "Instant, once per cast.",
+      "triggerIdentity": "burstCast → flatDamage 399.6, target enemy. FB-exempt by timing: burst-cast damage lands BEFORE the Full Burst window opens (project-verified fact), so no +50%.",
+      "targetSet": "enemy (boss)",
+      "nearestWrongModel": "Applying the +50% Full Burst major to the burst hit (fbMajorApplied true), or granting it core, or routing it to the skill bucket.",
+      "distinguishingAssertion": "Each mihara burstCast produces exactly one damage event in the burst bucket with atkPct basis 399.6 where fbMajorApplied === false and core rate 0. Red if fbMajorApplied is true or the event carries core.",
+      "inertness": "No such event on helm-cast rotations; count == mihara's own cast count.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "while in HtH2: +266.4% additional damage",
+      "disposition": "FAITHFUL",
+      "scope": "Additional instant enemy hit, % of final ATK, gated on mihara's OWN 'Highway to Hell 2' status (a SELF buff-state from skill2's 2nd activation — NOT a boss status). Same FB-exempt/no-core treatment as the 399.6%.",
+      "durationSemantics": "Instant per qualifying cast. The gate state (HtH2) lasts 45s per skill2; with 40s burst cd, once entered it holds for every subsequent own-cast unless her casts drift >45s apart.",
+      "triggerIdentity": "burstCast + a self-status/escalation-count gate (e.g. resourceGate on an own-burst-cast counter ≥2, or equivalent). Cast 1: absent. Cast 2 onward: present (skill2's escalation resolves on the same cast, granting HtH2 before/with the burst riders — the plausible faithful ordering; if the driver resolved the gate PRE-skill2, it would first fire on cast 3 — this ordering is itself a divergence the test must pin one way).",
+      "targetSet": "enemy (boss)",
+      "nearestWrongModel": "Ungated — the 266.4% fires on EVERY burst cast including the first (over-credits the opening rotation); or gated via requiresTargetStatus on a boss status another kit could open; or keyed to fullBurstEnter.",
+      "distinguishingAssertion": "On mihara's 1st burstCast, exactly ONE enemy damage event exists in the burst bucket (the 399.6%). On her 2nd and every later cast, exactly TWO (399.6% + 266.4%), both fbMajorApplied === false, no core. Red under ungated (two events on cast 1) and red under fullBurstEnter keying (a rider on helm-cast rotations).",
+      "inertness": "Never fires on cast 1; never fires on a rotation mihara did not cast; never satisfied by any other unit's status.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:lastBullet critDamage 18.7% 10s",
+    "skill2:once ATK 15.56% 45s (burstCast, escalating)",
+    "skill2:twice CritRate 11.28% 45s (escalating step 2 re-applies step 1)",
+    "burst:Full Burst Duration ▼5s (own-cast rotations only)",
+    "burst:399.6% burst damage (FB-exempt, no core)",
+    "burst:266.4% HtH2-gated rider (absent on cast 1)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Three places I expect a shared-prior misread. (1) TRIGGER IDENTITY on skill2 + both burst riders: 'when using Burst Skill' is burstCast, and controlComp fixes helm as a co-B3, so burstCast vs fullBurstEnter genuinely diverge in the standard fixture — every assertion must count against mihara's own burstCast events, not fullBurstStart. (2) 'Full Burst Duration ▼ 5 sec' is the highest-risk line: it pattern-matches 'utility/defensive → skip', but it is a rotation primitive that cuts team-wide +50% uptime on her rotations AND re-times every later rotation (plausibly increasing total FB count — self-trade kit design). The schema's only handle is fullBurstExtend{seconds}; whether the engine accepts a NEGATIVE seconds (shortening) is unverified from my blind position — if it clamps at 0 this line is a real GAP and must be declared, not silently absorbed. The test must also pin that ONLY mihara-cast windows shorten. (3) The 266.4% gate is a SELF-status (Highway to Hell 2), not a boss status — encoding it as targetStatus/requiresTargetStatus happens to reproduce timing solo but breaks name-isolation semantics; and the cast-2-vs-cast-3 first-fire ordering (does skill2's escalation resolve before the burst riders on the same cast?) must be pinned explicitly by the test rather than left to dispatch order. Minor: skill1's 10s window exceeds the ~7s magazine+reload cycle, so post-first-reload uptime is near-continuous — the discriminating window is the FIRST magazine (~first 5s), where the faithful model shows NO crit-damage buff; assert there, not on steady-state totals.",
+  "model": "claude-fable-5"
+}

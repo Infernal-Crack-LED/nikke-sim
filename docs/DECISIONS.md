@@ -9,6 +9,29 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-05) THIRD CLEAN-WEAPON OVERRIDE LANDED: `emma` (the MG basis cell) carries a
+  proven-damage-neutral gauntlet override.** The kit-autonomy gauntlet landed `emma` at GO
+  faithfulness 1.0, cross-family corroborated (S2b claude-fable-5 / S5+S6 claude-opus-5 / S7
+  kimi-code/k3 binding judge). Emma is a PURE HEALER: S1 (5%-on-attacked team heal) and S2
+  (incoming-healing ▲13.33%) are UNMODELED verbatim (no attacked trigger, no incoming-damage
+  model, no incoming-healing StatKey, no HP pool — the >90% HP gate is trivially OPEN in v1, so
+  the omission is the missing stat primitive, not a dead gate); the burst's two heal lines are
+  modeled as recovery-EVENT emitters on her OWN burstCast (instant ticks:1 + "over 5 sec"
+  lifesteal as ticks:5/intervalSec:1, the latter a flagged ⚑ convention per marciana's "over 3
+  sec" precedent). She has zero buffs, zero damage lines, zero weapon-state modifiers — CW1's
+  damage-neutrality test (the option-2 refinement of 2026-08-01) passes with the override on
+  disk, and her unit fixture proves the burstCast keying discriminates in BOTH directions
+  (co-B1 liter opens 3 of 4 Full Bursts without her; 4 of her 5 casts stall without completing
+  a chain). CW2–CW5 baselines unchanged (they sim via `bareWeaponComp`, which never reads the
+  committed encoding). **Evidence:** `scripts/tests/units/clean-weapons.test.ts` 27/27 green;
+  `scripts/tests/units/emma.test.ts` 15/15 green; `scripts/kit-autonomy/results/emma.json`
+  (GO 1.0); `scripts/kit-autonomy/manual-review/emma.md`; `docs/data/clean-weapons.md` (team B
+  row + Fixture note). Residual (judge-named, ⚑ with recipe): the ticks:5/intervalSec:1
+  lifesteal cadence — an unmeasured convention that scales on-recovery consumer refresh; recipe
+  is a frame-read of a recovery consumer's refresh cadence across the 5s window after an emma
+  burst. The remaining three basis cells (folkwang, claire, idoll-ocean) still carry no
+  override.
+
 - **(2026-08-04) ROTATION DEFAULT FLIP — there is NO post-Full-Burst chain-open lock; `refill`
   (chain opens on gauge-full) becomes the engine default and the fixed 150f block retires to the
   opt-in `ROTMODEL=floor` A/B arm.** Owner ruling, three corrections to the burst-gen picture

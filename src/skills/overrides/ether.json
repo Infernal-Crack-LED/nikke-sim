@@ -1,0 +1,58 @@
+{
+  "note": "ether (Ether) — SG / Defender / Electric / Burst I, cd 40s, ammo 9, hitsPerShot 10, reloadFrames 141, normalAttackMultiplier 214.3, burstGaugePerShot 2, Missilis, original_rare SR (released 2022-11-04; BASE unit — no variant shares her name, lint clean). Kit-autonomy gauntlet 2026-08-05: FROM-SCRATCH build (no prior override / kit-status row; simSupported was false) — test-first re-derivation pinned by scripts/tests/units/ether.test.ts (groups E0-E5, three fixtures: A main sole-B1 [ether, crown, ada, helm]; B double-B1 shield-TRIGGER probe [ether, liter, asuka, admi, ada]; C shield-SCOPE probe [ether, liter, admi, ada, asuka]). Cross-family S2b (claude-fable-5) independently re-derived the kit and converged on all four lines; the ONE disputed line — the S2a trigger identity — was re-litigated against the prose convention + the datamined CD and landed on interval:13 (the driver's initial fullBurstEnter derivation was the outlier — see TRIGGER IDENTITY below). TIER 2: scoped buff (the burst's '3 lowest remaining HP allies' → leftmost-3 v1 stand-in) + burstCast-vs-fullBurstEnter identity on the shield + the CD-bearing auto-cast rider. ETHER IS A TANK/SHIELDER; HER KIT IS MOSTLY OUT-OF-DOMAIN FOR A DAMAGE SIM. MODELED: (S2a) '■ Affects 3 enemy unit(s) with the highest final DEF. Deals 56.32% of final ATK as damage.' → interval:13 → enemy → flatDamage atkPct 56.32. TRIGGER IDENTITY: the damage block's ■ header carries NO activation clause and the datamined skillCooldownsSec.skill2 = 13 — the CD-bearing auto-cast skill shape, whose house encoding is interval:13 (the schema's own interval guidance: 'kit lines that just happen on an internal cooldown with no visible activation clause'; novel precedent — her CD-bearing auto-cast S1 ships as interval:10; neve/snow-white CD-bearing auto-cast line). Two structural facts settle it against a fullBurstEnter (whole-slot) reading: (1) PROSE CONVENTION — an activation clause attaches to the ■ block whose header carries it: ada's S2 writes 'Activates during Full Burst' at the HEAD of the block it governs (shipped fullBurstEnter) and kurumi's likewise (shipped hitCount+FB), while ether's FB clause sits in the SECOND block's header ('■ Affects the same enemy unit(s). Activates during Full Burst.'), governing the DEF▼ line alone. (2) THE DATAMINED CD — ada/kurumi, whose skill2 IS purely FB-keyed, have CD null; ether's 13s CD is meaningful ONLY on a CD-driven activation path (an FB cycle is >=20s, so no CD could ever gate a purely FB-entry skill). The driver's initial fullBurstEnter derivation was OVERTURNED by the convergent cross-family re-derivations (S2b claude-fable-5, S5/S6 claude-opus-5 all independently read interval) plus these two structural facts — the pivot is documented in the judge packet. The 13s period is DATAMINED (skillCooldownsSec), not invented; the first-fire phase (t=13 vs t=0) is the engine interval convention (⚑ — caveat 1). Nearest-wrong encodings pinned RED: fullBurstEnter keying (fires only on FB-start frames — loses every out-of-FB CD activation and renders the 13s CD meaningless), burstCast keying (lands on her cast frames), a ×3 hit-multiplier misread of the '3 enemy unit(s)' header (it is a multi-target SPREAD which collapses to the single scope-lock boss — novel precedent — NOT a multiplier), and the lvl-1 24.64 magnitude. Bare flatDamage rider defaults (crit-eligible, no core, skill bucket, FB-major by landing timing — the interval activations land BOTH in and out of the FB window and both states are pinned; nothing stated in prose). (BURST) '■ Affects 3 ally unit(s) with the lowest remaining HP. Creates a Shield equal to 96% of the the skill user's final Max HP for 5 sec.' → burstCast → alliesLowestHp count:3 → shield maxHpPct 96 / durationSec 5. TRIGGER IDENTITY: her OWN Burst I cast (burstCast, NOT fullBurstEnter — FB-entry keying would over-cover rotations opened by ANOTHER Burst I; pinned in fixture B via asuka's requiresShielded probe: gate-passes == ether's cast count, strictly less than the FB count). SCOPE: the kit's 'lowest remaining HP' is indeterminate in v1 (no HP pool; nobody takes damage) → the engine's documented leftmost-3 stand-in (alliesLowestHp; pinned in fixture C: a slot-4 asuka is unshielded at baseline, shielded by the all-allies counterfactual). No shield HP AMOUNT is modeled (v1 boss deals no damage): the encoded substance is the SHIELDED event + each target's shield-state window (fires teammates' 'shielded' triggers / requiresShielded gates — snow-crane precedent; never skip a shield line for isolation). maxHpPct = % of CASTER final Max HP (the schema's documented reading of 'the skill user's final Max HP'; a flip to the TARGET's own Max HP basis is the nearest-wrong). Damage-INERT in v1 (removal leaves totals byte-identical — pinned). UNMODELED (both VERBATIM in unmodeled, never an ignored drop): (S1) '■ Affects 1 allies with the lowest remaining HP. Damage Taken ▼ 52.5% for 5 sec.' (CD 15s) — ally-side received-damage mitigation; v1 models no ally HP pool and no incoming boss damage, so it can never move anything (sakura-suzuhara's S2 is the identical kit line and the binding precedent — ⚑1). The boss-facing damageTakenPct channel is the WRONG direction AND target — encoding it (±52.5) would manufacture a phantom team damage change on S1's 15s cadence, so it is NOT used; the nearest-wrong +52.5 amp is pinned RED (E3). (S2b) '■ Affects the same enemy unit(s). Activates during Full Burst. DEF ▼ 9.38% for 6 sec.' — the engine has no dynamic enemy-DEF-reduction primitive (applyBuff ignores enemy ATK▼/DEF▼; cfg.bossDef is a fixed per-hit subtraction; damageTakenPct is a separate bucket — novel / mast Sea-Breeze precedent — ⚑2). Magnitude ~0.03% team damage (9.38% of the 140-DEF scope-lock boss = 13.13 flat DEF off a ~50k effective-ATK term) — minor, not load-bearing. The nearest-wrong (a damageTakenPct +9.38 misread) is pinned RED (E4). Cadence: no ⚑ — the cadence-tuple flag was RETIRED by owner ruling 2026-07-25 (datamine tuple reliable); no charFixes. Burst gauge: her kit carries no gauge line (burstGaugePerShot 2 is the datamine; the class-modal fallback applies). Element: Electric vs the scope-lock Fire boss = neutral. SR fixture note: run on the plain scope-lock basis (copies:10 ⇒ 3★/core 7), the sakura-suzuhara precedent for SR gauntlet builds — her assertions are event-structural, not magnitude ratios. NO `ignored` blocks. Faithful>fit; measured>fudge; every modeled magnitude is verbatim lvl-10 kit text (DATAMINED). ⚑ LIST: [⚑1] (OUT-OF-DOMAIN, ally-side mitigation — TIER engine-core) S1 'Damage Taken ▼52.5% for 5s' on the 1 lowest-remaining-HP ally, 15s CD. estimate = a real survivability window (~52.5% less damage taken on the designated ally for 5s every 15s — high uptime in real fights where the lowest-HP ally is stable), but damage-NEUTRAL in this sim by construction (the boss deals no damage); zero damage impact at scope. recipe = an engine ally-HP-pool + incoming-boss-damage model + an ally received-damage-reduction stat (distinct from the boss-facing damageTakenPct channel), then encode on interval:15 to alliesLowestHp count:1. tier = out-of-domain (the whole incoming-damage subsystem the sim deliberately lacks — sakura-suzuhara / jackal precedent). [⚑2] (ENGINE GAP — minor, TIER 2) S2b 'DEF ▼9.38% for 6s' on the 3 highest-final-DEF enemies during Full Burst. estimate = 13.13 flat boss DEF off every hit inside the 6s FB-entry window ≈ ~0.03% team damage (subtractive DEF term vs ~50k effective ATK) — comps read COLD by exactly that, honestly. recipe = a boss-DEF-reduction debuff primitive feeding the subtractive DEF term (9.38% for 6s, refreshed at every FB entry) — enact together with novel's DEF ▼7.05% line (same mechanic family). tier = engine gap, minor. Kit-autonomy gauntlet 2026-08-05.",
+  "unmodeled": {
+    "skill1": [
+      "■ Affects 1 allies with the lowest remaining HP. \nDamage Taken ▼ 52.5% for 5 sec."
+    ],
+    "skill2": [
+      "■ Affects the same enemy unit(s). Activates during Full Burst.\nDEF ▼ 9.38% for 6 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "skill2: the damage block has NO activation clause and a datamined 13s skill cooldown → interval:13 auto-cast (novel/neve/snow-white precedent; the schema's interval guidance for clause-less CD-bearing lines). 'Activates during Full Burst' sits in the SECOND ■ block's header and governs that block alone (the DEF▼ line, unmodeled below) — the house prose convention attaches an activation clause to the block whose header carries it (ada/kurumi both head their FB-keyed blocks with it). A purely FB-keyed reading also cannot explain the 13s CD: ada/kurumi's purely FB-keyed skill2s have CD null, and an FB cycle is >=20s, so no CD could gate them. ⚑ first-fire phase t=13 (vs t=0) is the engine interval CONVENTION (neve/snow-white/novel precedent) — pin from footage if a consumer's cadence is ever popup-read.",
+    "skill2: the '3 enemy unit(s) with the highest final DEF' targeting collapses to the single scope-lock boss — v1 fields one immortal enemy ({kind:'enemy'} documented stand-in; novel precedent). It is a multi-target SPREAD, NOT a ×3 hit multiplier.",
+    "skill2: the DEF ▼9.38%/6s enemy debuff is UNMODELED — no dynamic enemy-DEF-reduction primitive (cfg.bossDef is fixed; damageTakenPct is a different bucket; novel / mast Sea-Breeze precedent). At the 140-DEF scope-lock boss this is 13.13 flat DEF ≈ ~0.03% team damage — minor, not load-bearing (⚑2). Recipe if a primitive lands: a boss-DEF-reduction debuff (9.38% for 6s, refreshed at every FB entry) feeding the subtractive DEF term.",
+    "skill1: 'Damage Taken ▼52.5% for 5s' on the 1 lowest-remaining-HP ally is UNMODELED — v1 models no ally HP pool and no incoming boss damage, so ally-side mitigation can never move anything (sakura-suzuhara S2 precedent). The boss-facing damageTakenPct channel is deliberately NOT used — wrong direction AND wrong target; encoding it would manufacture a phantom team damage change on the 15s skill cadence (⚑1).",
+    "burst: the shield carries no modeled HP AMOUNT (v1 boss deals no damage) — the encoded substance is the SHIELDED event + the 5s shield-state window on the leftmost-3 targets (fires teammates' 'shielded' triggers / requiresShielded gates; snow-crane precedent). The 'lowest remaining HP' targeting resolves to the leftmost-3 documented stand-in (no HP pool in v1); shield amounts and true lowest-HP selection are measurement-gated on an HP-pool model.",
+    "Ether's modeled kit is one skill-damage rider + one shield-event channel; her sim output is dominated by her bare SG weapon. Her real tank value (S1 mitigation + S2b DEF shred) lives in the two documented engine gaps (⚑1/⚑2)."
+  ],
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 13
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 56.32
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 3
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 96,
+          "durationSec": 5
+        }
+      ]
+    }
+  ]
+}

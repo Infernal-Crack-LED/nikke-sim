@@ -1,0 +1,92 @@
+{
+  "slug": "mica",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "when attacked 20 time(s): DEF ▲ 39.18%",
+      "disposition": "UNMODELED",
+      "scope": "Self stat buff, generic DEF — no attack-type scoping.",
+      "durationSemantics": "for 10S = durationSec:10 (wall-clock, not rounds).",
+      "triggerIdentity": "'Activates when attacked 20 time(s)' = incoming-hit counter on the OWNER. The sim has NO being-attacked channel (v1 boss deals no damage, no HP pool) and no trigger primitive for hits RECEIVED — hitCount counts the owner's own outgoing rounds, which is a different event entirely.",
+      "targetSet": "self",
+      "nearestWrongModel": "Encoding the trigger as hitCount:20 (the unit's OWN attacks) or interval, granting a periodic self defPct buff — misreading 'attacked' (passive voice, hits received) as 'attacks' (hits dealt). Second-order misread: inventing a boss attack cadence to drive it.",
+      "distinguishingAssertion": "Event log contains ZERO buffApply with stat 'defPct' value 39.18 across the whole fight (faithful = line lives verbatim in unmodeled, no block); nearest-wrong emits periodic defPct 39.18 self-applies keyed to mica's own shot count.",
+      "inertness": "Must move nothing: totals for all five units identical with the line absent. Self defPct is engine-inert in v1 anyway, but the block itself must not exist (no invented trigger).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max Ammunition Capacity ▲ 2 round(s)",
+      "disposition": "FAITHFUL",
+      "scope": "Weapon-state modifier — taxonomy #6: ammo capacity IS damage (gates shots fired / reload frequency). Never a skip.",
+      "durationSemantics": "TRAP LINE, two duration-like tokens: '2 round(s)' is the AMOUNT (a flat +2-round capacity add), 'for 10 sec' is the duration (durationSec:10). NOT durationShots — the rounds token is the value, not the window.",
+      "triggerIdentity": "The ■ header carries only a target clause, NO 'Activates when' — per convention that is an interval trigger at the datamined skill CD, first fire at t=CD (no force-cast wording). The CD itself is not in the prose (the base-stat 'cd 20s' is the Burst-I cooldown, not skill2's) — cadence is datamine-sourced, ⚑ if unverified.",
+      "targetSet": "alliesTopAtk count:2, byFinalAtk:true — prose literally says 'highest final ATK', which mandates live effectiveAtk ranking (the A3 rule); no '(except self)' clause, so self stays in the candidate pool (a Supporter rarely wins it, but the pool must not silently exclude her).",
+      "nearestWrongModel": "stat maxAmmoPct value 2 (percent instead of flat rounds — on a 6-ammo RL ally +2% rounds to zero extra rounds vs the true +2 flat), or durationShots:10 from the 'round(s)' token, or static-ATK ranking (byFinalAtk omitted) because plain-'highest ATK' kits default static.",
+      "distinguishingAssertion": "buffApply events with stat 'maxAmmoFlat' value 2 recur at the skill-CD interval, each with exactly 2 targetIdx recipients (the two highest-FINAL-ATK units) and expiresFrame ≈ applyFrame+600; nearest-wrong emits stat 'maxAmmoPct' (or a durationShots field) instead and is red on the stat/field filter. Carry's shot economy must shift vs a patched-out control (withPatchedOverride stripping the effect → fewer shots in windows covering reload boundaries).",
+      "inertness": "Zero applications to non-top-2-ATK units; no effect outside each 10s window.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▲ 19.89% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic DEF stat buff to the same 2 highest-final-ATK allies; engine-inert (defPct has no damage consumer) but kept per the keep-inert-stat convention (future consumer).",
+      "durationSemantics": "durationSec:10, plain wall-clock.",
+      "triggerIdentity": "Same block/trigger as the ammo line — the interval-at-skill-CD activation; both effects ride one block.",
+      "targetSet": "Same alliesTopAtk count:2 byFinalAtk:true pool as the ammo line.",
+      "nearestWrongModel": "Dropping the line entirely as 'defensive, no damage' without recording it (silent drop), or mis-targeting it to self/all-allies instead of the same top-2 pool.",
+      "distinguishingAssertion": "buffApply with stat 'defPct' value 19.89 appears alongside each maxAmmoFlat application, same 2 targetIdx, expiresFrame ≈ +600 — AND totals(res) for every unit are bit-identical when this effect alone is patched out (inert by construction).",
+      "inertness": "Must move ZERO damage for any unit — a nonzero delta on patch-out means defPct grew a consumer and the model needs re-review.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 152.22% of final ATK as Burst Skill",
+      "disposition": "FAITHFUL",
+      "scope": "Instant burst-skill function damage, % of caster final ATK; 'all enemies' collapses to one hit on the single partless boss (AoE inert at scope).",
+      "durationSemantics": "Instantaneous hit, no duration.",
+      "triggerIdentity": "burstCast (mica's OWN Burst-I cast) — the damage line sits in her own burst block, so it fires only on rotations SHE casts B1, never on any team full-burst entry. Burst-cast damage is always FB-exempt by timing (lands before the FB window opens): no +50% major, no FB-entry auras, and no range bonus on riders.",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Keying it to fullBurstEnter (fires on EVERY team FB even when liter, the other Burst-I in the fixture, won the B1 slot — over-credits in exactly the multi-B1 comp the harness builds), or leaving the +50% Full Burst major applied to the hit.",
+      "distinguishingAssertion": "For each of mica's burstCast events there is exactly ONE damage event, bucket 'burst', mult 152.22, with fbMajorApplied === false and inFullBurst === false; on a rotation where the OTHER B1 casts (mica does not), NO such damage event exists — red under fullBurstEnter, red under an applied FB major. Test must first confirm mica actually casts B1 (see notes).",
+      "inertness": "No burst-bucket damage from mica on rotations she did not cast; no core, no range bonus on the hit.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▼ 13.32% for 5 sec (all enemies)",
+      "disposition": "FAITHFUL",
+      "scope": "Boss DEBUFF, not a self/ally stat: enemy DEF down raises the WHOLE TEAM's damage through the formula's DEF term for 5s after her cast (taxonomy #4 — never skip an enemy-targeted line as 'defensive').",
+      "durationSemantics": "durationSec:5 — distinct from the kit's other 10s windows; a copy-pasted 10 is wrong.",
+      "triggerIdentity": "Same burstCast block as the damage line — applies only when mica herself casts B1; uptime is 5s per her own cast, NOT per team FB.",
+      "targetSet": "enemy (boss-held debuff — emitted with casterIdx === null and targetIdx === null per the harness convention).",
+      "nearestWrongModel": "Encoding it as damageTakenPct 13.32 ('boss takes 13.32% more') — a DEF ▼ is NOT a damage-taken % (the damage delta depends on the formula's ATK−DEF relation, so the equivalence silently over- or under-credits); or applying it as an ally DEF ▲; or 10s duration.",
+      "distinguishingAssertion": "On each mica burstCast: a buffApply with stat 'defPct', negative value 13.32-magnitude, casterIdx === null AND targetIdx === null, expiresFrame ≈ castFrame+300 — and NO buffApply of stat 'damageTakenPct' 13.32 anywhere. Team damage summed inside the 5s window exceeds the same window with the effect patched out; red if the debuff is stat-swapped, ally-targeted, or 10s. If the engine's DEF term turns out not to consume an enemy defPct debuff, that is a GAP the driver must declare, not a silent skip.",
+      "inertness": "No effect outside the 5s post-cast windows; zero applications on rotations mica did not burst.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill2:Max Ammunition Capacity ▲ 2 round(s) for 10 sec",
+    "skill2:DEF ▲ 19.89% for 10 sec (inertness pin)",
+    "burst:Deals 152.22% of final ATK as Burst Skill damage",
+    "burst:DEF ▼ 13.32% for 5 sec on all enemies"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "■ Activates when attacked 20 time(s). Affects self.",
+      "DEF ▲ 39.18% for 10S."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Three expected shared-prior traps. (1) FIXTURE VALIDITY: mica is Burst I, but controlComp(carry) seats the carry in the B3 slot alongside liter (also Burst I) — in that fixture mica competes with liter for stage 1 and may cast rarely or never, making every burstCast assertion vacuous. Tests MUST either build a comp where mica is the sole B1 or first assert mica's burstCast events actually occur (and separately exercise a liter-casts rotation to pin the over-credit case against fullBurstEnter). (2) skill2's '▲ 2 round(s) for 10 sec' packs an amount-in-rounds next to a duration-in-seconds — the plausible misreads are maxAmmoPct:2 (flat-vs-percent) and durationShots:10; the faithful encoding is maxAmmoFlat value 2 + durationSec 10, and the stat-key filter on buffApply distinguishes them cleanly. (3) The burst DEF ▼ is an enemy debuff whose nearest-wrong is a damageTakenPct conversion; the two are NOT interchangeable and the assertion must pin stat identity, null caster/target indices, and the 5s (not 10s) expiry. Cadence caveat: skill2 has no activation clause, so its trigger is interval-at-datamined-CD with first fire at t=CD; the CD is outside the prose (the base-stat 20s is her burst CD) — the driver must source it from the datamine and ⚑ it if unverified. Skill1 is UNMODELED on two independent grounds (no being-attacked channel in the sim; self defPct inert) and must appear verbatim in the override's unmodeled field with no invented trigger.",
+  "model": "claude-fable-5"
+}

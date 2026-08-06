@@ -1,0 +1,83 @@
+{
+  "slug": "signal",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 60
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": -5.94,
+          "durationSec": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": -5.94,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 229.22,
+          "crit": true
+        },
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": -12.34,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "ENEMY-TARGETED STAT LINES ARE ENCODED BUT ENGINE-INERT: resolveTargets({kind:'enemy'}) returns no entity, and the schema has no boss-DEF-debuff channel (defPct is documented as self-DEF, inert in v1). Both DEF \u25bc lines (skill1 5.94%, burst 12.34%) are REAL team-wide damage gains in game \u2014 they are recorded as blocks per the 'keep the stat buff even if inert' prior, not converted to damageTakenPct, because DEF-subtraction \u2192 damage is not a 1:1 percentage map and any conversion factor would be fabricated. Modeling gap, measurement-gated (boss-DEF battery).",
+    "The enemy ATK \u25bc 5.94% line is defensive-only at scope lock (no incoming damage, no HP pool) and carries no tandem consumer; encoded for kit completeness, permanently 0 damage.",
+    "skill2 is a self-lifesteal window with no HP pool in v1 \u2014 its ONLY live function is emitting `recovery` events for heal-synergy teammates ('when recovery takes effect'). The \u2691 tick count therefore changes a teammate's proc count, not this unit's damage.",
+    "\u2691 burst flatDamage takes no explicit noFb: a burstCast-triggered hit resolves before the Full Burst window opens, so the engine's own timing already excludes the +50% major. noFb is left unset (default OFF, measured-only)."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Signal (SMG/Fire/Attacker/Burst II, ammo 120, hitsPerShot 1). Three-line kit, no stacks, no weapon swap, no mode gates, no DoT. skill1 = a per-60-round enemy debuff pair (hitCount:60 counts ROUNDS, not trigger pulls \u2014 hitsPerShot 1 so rounds == pulls here); both riders are enemy-scoped and engine-inert (see caveats). skill2 = fullBurstEnter self-lifesteal, modeled as a 10-tick heal-over-time so on-recovery consumers stay fed; trigger is 'entering Full Burst' (any team FB), NOT burstCast \u2014 the kit text is literal. burst = a burstCast instant hit at 229.22% of final ATK (crit-eligible at the caster's sheet rate per the rider convention; no core \u2014 the text does not say core strike; noRange is engine-automatic and not set) plus a 10 sec enemy DEF \u25bc 12.34%. No line was silently dropped; unmodeled is empty because every kit line is represented as a block."
+}

@@ -1,0 +1,72 @@
+{
+  "slug": "mary",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 1
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 19.8,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Activates when entering Full Burst. Affects all allies. Incoming healing ▲ 23.78% for 15 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ alliesLowestHp stand-in: the kit's '1 ally unit(s) with the lowest HP percentage' is indeterminate in v1 (no HP pool — nobody takes damage), so the engine resolves it deterministically to the LEFTMOST ally (types.ts documented stand-in, blanc/moran precedent). The target choice moves no damage: the heal carries no modeled HP amount, only a recovery EVENT. The spec fixture puts crown leftmost so the stand-in target is the fixture's recovery consumer and the channel is observable.",
+    "Heal MAGNITUDES (skill1 8.4% / burst 39.6% of the skill user's final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount, and v1 has no HP pool. Both lines are implemented for their TANDEM value only — they fire allies' 'recovery' triggers (helm H2 precedent 'a heal is an event, not a number'; flora/marciana/sakura-suzuhara healer-lineage precedent).",
+    "⚑ lastBullet cadence: the per-magazine firing rate of skill1 depends on ammo (9) and reloadFrames (111) — datamine-unreliable fields (marciana precedent, same SG chassis). A wrong magazine economy scales the whole skill1 recovery channel.",
+    "burst DEF line's 'Activates when above 50% HP' gate is a DERIVED-DETERMINISTIC collapse: v1 models no HP pool and no incoming damage (immortal units), so every unit's HP fraction is permanently 100% > 50% and the gate is ALWAYS satisfied — the line is encoded unconditional on burstCast. Whether the game reads the gate on the CASTER's HP or each TARGET's HP is unobservable in v1 — both readings collapse to the same encoding while nobody takes damage (flora's stage-enter proxy is the same argument shape).",
+    "defPct is declared INERT in v1 (StatKey doc: self DEF doesn't affect own damage): the DEF line is kept for kit completeness + future consumers and is pinned damage-neutral by the spec (byte-identical totals with the line stripped).",
+    "Gauge: mary has no datamined row in data/gauge-per-shot.json; the engine's SG weapon-class modal fallback (400) equals her datamined target_burst_energy_pershot 4000 → 400.0, so the fallback IS her value — no row needed (helm H3 pattern: gauge carried by data, not the override)."
+  ],
+  "note": "mary (Mary, slug `mary` — the SG/Water BASE unit; NOT the variant `mary-bay-goddess` SR/Water aka 'mbg'; lint-slug-disambiguation flags every bare 'Mary' token for this pair, so the disambiguation is recorded here) — SG / Supporter / Water / Burst I, cd 40s, ammo 9, hitsPerShot 10, reloadFrames 111, base HP 15000 / ATK 500 / DEF 96. A PURE support/sustain kit: zero damage lines, zero weapon-state modifiers — her entire board footprint is cross-unit (recovery events on two channels + an inert DEF buff). Kit-autonomy gauntlet 2026-08-05, test-first (scripts/tests/units/mary.test.ts). AUDIT (4 kit lines): (L1) S1 'CPR' — 'Activates when the last bullet hits the target. Affects 1 ally unit(s) with the lowest HP percentage. Recovers 8.4% of the skill user's final Max HP as HP.' → trigger lastBullet (per emptied 9-shell magazine; 'the last bullet' = the magazine-emptying round — shotFired/hitCount counterfactuals over-fire and are pinned out by the spec), target alliesLowestHp count:1 (leftmost stand-in — see caveats), heal ticks:1 (single instant recovery; the line carries no duration/interval clause, NOT a HoT). The 8.4% magnitude is unmodeled (no HP pool) — the recovery EVENT cadence is the modeled substance. (L2) S2 'Nursing' — 'entering Full Burst → all allies Incoming healing ▲ 23.78% for 15 sec' → UNMODELED (verbatim below): there is no incomingHealingPct StatKey and no HP pool for healing received to scale — doubly inert, damage-neutral (flora S1 / marciana S1 / sakura-suzuhara L2 precedent). Pinned by negative assertions: no skill2-slot buffApply AND no recovery event on any Full Burst start frame (a smuggled fullBurstEnter heal would show there). (L3) burst 'Angel in White' heal — 'Affects all allies. Recovers 39.6% of the skill user's final Max HP as HP.' → trigger burstCast — HER cast, never fullBurstEnter: she is Burst I, and keying to the team FB window would heal on rotations ANOTHER Burst I opened (marciana's own-cast precedent; pinned in the spec's two-B1 contention arm vs liter) — target allies (self-inclusive), heal ticks:1, magnitude unmodeled (no HP pool). (L4) burst DEF line — 'Activates when above 50% HP. Affects all allies. DEF ▲ 19.8% for 10 sec.' → the HP gate is scope-trivial (always satisfied — see caveats), so: burstCast → allies → defPct 19.8 / 10s. DEF ▲ is PLAIN target-scaled (the kit carries no 'of the skill user's DEF' qualifier — unlike marciana's caster-scaled line, no approximation caveat); defPct is inert in v1, pinned damage-neutral. TRIGGER IDENTITIES pinned: lastBullet (L1, anchored to her ammoAfter-0 shots) and burstCast-vs-fullBurstEnter (L3, timing arm + B1-contention arm). TIER 2 (burstCast-vs-fullBurstEnter identity + status-gate collapse + trigger identity). EVIDENCE TIER: every magnitude/duration is kit-text-literal Lv.10 (8.4 / 23.78 / 39.6 / 19.8 / 15s / 10s / 50%), corroborated by the datamined description_value tables in role.skillDetails; conventions are the recovery-event modeling of heals, the alliesLowestHp leftmost stand-in and the gate-always-true collapse (all flagged in caveats). Faithful>fit; measured>fudge. || Kit-autonomy gauntlet 2026-08-05."
+}

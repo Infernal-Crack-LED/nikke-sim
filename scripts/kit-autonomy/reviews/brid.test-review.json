@@ -1,0 +1,104 @@
+{
+  "slug": "brid",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "After 30 normal attacks: ATK ▲ 18.52%",
+      "disposition": "FAITHFUL",
+      "scope": "Generic self ATK buff (atkPct) — the 30-normal-attack clause is the TRIGGER accrual, not a scope on the buff itself; buff feeds all of brid's damage while live.",
+      "durationSemantics": "durationSec: 10 — wall-clock seconds, explicitly 'for 10 sec'. NOT durationShots. Recurring: hitCount re-fires every 30 rounds and REFRESHES the buff (AR ~30 rounds ≈ 2.5s of firing, so steady-state uptime is near-permanent after the first ~2.5s ramp; the 10s window also bridges the ~1.65s reload at 60 ammo).",
+      "triggerIdentity": "hitCount count:30 (counts ROUNDS; AR hitsPerShot 1 so rounds == pulls). No FB gate, no burst gate — accrues from t=0 outside any burst state.",
+      "targetSet": "self (explicit 'Affects self')",
+      "nearestWrongModel": "Passive always-on from t=0 (skipping the 30-attack accrual), or a once-only trigger whose single 10s window lapses at ~t=12.5s and never returns — either drops the accrual/refresh structure the prose states.",
+      "distinguishingAssertion": "Via cfg.onEvent on controlComp(brid): count brid's 'shot' events before the FIRST buffApply {stat:'atkPct', value:18.52, casterIdx==targetIdx==brid} — must be exactly 30 (no apply at frame 0); then further buffApply events with the same key recur every 30 subsequent shots for the whole fight (refresh), each with expiresFrame ≈ applyFrame + 600. Once-only model fails the recurrence check; passive model fails the first-apply-after-30-shots check.",
+      "inertness": "No buffApply for this key targets any ally (targetIdx must always equal brid's idx); no application before the 30th round; buff must not be gated on or keyed to Full Burst.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 211.2% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "Function (skill) damage instance, 211.2% of brid's final ATK. Rider rules: crits at caster's sheet rate, NO core (text lacks 'core strike'), noRange (universal rider rule), takes +50% FB by landing timing (default ON — no burst-cast exemption applies since it is not burst-cast damage).",
+      "durationSemantics": "Instant hit per activation; no duration.",
+      "triggerIdentity": "NO activation clause in the prose → interval trigger by convention, sec = datamined skillCooldownsSec, first fire at t=sec (not t=0; no 'Forcefully uses' clause). The cadence value itself is ⚑ ALWAYS-FLAG class 2 (damage line with no kit-stated trigger — invented trigger + cadence).",
+      "targetSet": "enemy ('highest final DEF' — trivially the single boss; targeting clause is inert at scope lock but must be authored target:'enemy')",
+      "nearestWrongModel": "Inventing an attack-linked trigger (hitCount/lastBullet/shotFired) so cadence scales with fire rate and reloads, or granting the hit core (core:true) / range — any of which silently re-couples a fixed-cooldown skill to weapon cadence or over-credits core exposure.",
+      "distinguishingAssertion": "Event log: brid emits 'damage' events with bucket 'skill' and mult consistent with 211.2% at a FIXED interval — timestamps at t=CD, 2·CD, 3·CD… independent of shot count (assert the gap between consecutive skill-bucket instances is constant and does NOT shrink when a buff raises fire uptime); each such event has zero core contribution and rangeApplied false. Under a hitCount misread the inter-hit gap tracks ammo/reload cadence instead — RED.",
+      "inertness": "Never cores; never takes the +30% range bonus; count of instances over 180s must equal floor(180/CD) — not scale with shots fired.",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "1440% of final ATK as Burst Skill damage",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-bucket damage instance, 1440% of final ATK. Crits at sheet rate; no core; no range bonus; FB-EXEMPT — burst-cast damage lands before the Full Burst window opens (measured house rule: no +50%, no entry auras).",
+      "durationSemantics": "Instant, once per own burst cast. 40s burst cooldown.",
+      "triggerIdentity": "burstCast (stage 3) — fires ONLY on rotations BRID herself casts. NOT fullBurstEnter: the control fixture carries helm as a co-B3, so a fullBurstEnter keying would fire this nuke on helm's rotations too — the canonical burstCast-vs-fullBurstEnter over-credit.",
+      "targetSet": "enemy ('highest final DEF' — the single boss)",
+      "nearestWrongModel": "Keyed to fullBurstEnter (fires on EVERY team Full Burst including helm's rotations, roughly doubling proc count in the control comp) and/or left FB-eligible so it collects the +50% Full-Burst major it can never see in-game.",
+      "distinguishingAssertion": "On controlComp(brid) (helm co-B3 present): the number of brid burst-bucket 'damage' instances at 1440% === the number of burstCast events whose caster is brid (strictly fewer than total fullBurstStart events when helm takes rotations), and every such event has inFullBurst false / fbMajorApplied false. RED under fullBurstEnter keying (count matches fullBurstStart count) and RED under FB-major application.",
+      "inertness": "Zero instances on rotations where helm bursts; fbMajorApplied must never be true on this hit.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "same target at Max HP: 1440% additional",
+      "disposition": "UNMODELED",
+      "scope": "Additional 1440% function damage, gated on the ENEMY being at Max HP ('Affects the same target when at Max HP' — the condition attaches to the target clause, i.e. an untouched-enemy opener bonus).",
+      "durationSemantics": "Instant conditional rider per own burst cast.",
+      "triggerIdentity": "Same burstCast as the main hit, but condition-gated on target-at-Max-HP. At scope lock the boss stops being at Max HP within the first frames of the fight (all 5 units fire from t=0) and brid's first cast is seconds later, so the gate is NEVER satisfied in any real comp — the line is effectively inert. The effect schema has no enemy-HP gate, so the correct treatment is an unmodeled-verbatim entry plus an inertness pin, not a modeled block.",
+      "targetSet": "enemy (the same highest-final-DEF target)",
+      "nearestWrongModel": "TWO plausible misreads, both over-crediting: (a) dropping the condition entirely → every cast deals 2880% (2× the burst bucket); (b) reading 'at Max HP' as SELF-at-Max-HP — at scope lock nobody ever takes damage, so a self-HP reading is ALWAYS true and silently reproduces misread (a). The target clause says 'the same target', so the HP condition belongs to the enemy.",
+      "distinguishingAssertion": "Per brid burst cast, exactly ONE 1440%-class burst/function damage instance is emitted — sum brid's burst-cast-frame damage events and assert single-instance magnitude (≈1440%, not ≈2880%). Any always-on encoding of the rider doubles the per-cast total — RED.",
+      "inertness": "Brid's per-cast burst damage must equal the single 1440% hit; total damage must not move if this line's text is present vs absent from the override.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:ATK ▲ 18.52% after 30 normal attacks (hitCount 30, self, 10s refresh)",
+    "skill2:211.2% interval skill damage (⚑ cadence)",
+    "burst:1440% burstCast nuke (FB-exempt, own-cast-only)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "■ Affects the same target when at Max HP. Deals 1440% of final ATK as additional damage."
+    ]
+  },
+  "notes": "Three expected shared-prior traps to reconcile against the driver. (1) The burst Max-HP rider: any reading that makes it live — always-on, or self-HP-gated (trivially true at scope lock where nobody takes damage) — doubles brid's burst bucket to 2880%; the literal target clause pins the condition to the ENEMY, and the boss leaves Max HP within the opening frames, so the faithful model is effectively inert and belongs in unmodeled with a single-instance-per-cast inertness pin. (2) The burst nuke must be burstCast-keyed, not fullBurstEnter — the control fixture's helm co-B3 makes these genuinely divergent, and it must stay FB-exempt (pre-FB landing). (3) skill2 has NO kit-stated trigger: interval per convention with the cadence a ⚑ from datamined skillCooldownsSec (first fire t=CD); tests should assert fixed-interval cadence decoupled from fire rate rather than pin an unverified CD magnitude. Base-stat sanity: AR/60 ammo/hitsPerShot 1 means 'normal attacks' == rounds == pulls, so skill1's counter has no pellet/multi-hit ambiguity; 30 rounds ≈ 2.5s of firing, so the 10s buff is near-permanent at steady state — the discriminating structure is first-apply-after-30-shots and per-30-shot refresh, not uptime.",
+  "model": "claude-fable-5",
+  "driverReconciliation": {
+    "date": "2026-08-05",
+    "converged": [
+      "skill1 (hitCount 30, self, atkPct 18.52, 10s refresh)",
+      "skill2 (interval 10s, flatDamage 211.2, crit-on, no core, no range)",
+      "burst main (burstCast, enemy, flatDamage 1440, FB-exempt, own-cast-only)"
+    ],
+    "divergences": [
+      {
+        "line": "burst: same target when at Max HP → additional 1440%",
+        "reviewerSaid": "UNMODELED — read the Max-HP condition as the ENEMY's HP (boss leaves Max HP in the opening frames → gate never satisfied → effectively inert; unmodeled-verbatim + single-instance-per-cast pin)",
+        "driverSaid": "MODELED always-true — read the Max-HP condition as the CASTER's HP; at scope lock nobody takes damage so the caster is always at Max HP; second burstCast flatDamage 1440 block (soline dual-block precedent)",
+        "resolution": "DRIVER stands, by ADJUDICATED PRECEDENT: soline (GO faithfulness 1.0, 2026-08-03, judge kimi-code/k3) carries the IDENTICAL wording (\"Affects the same target(s) when at Max HP. Deals X% of final ATK as additional damage.\") and its judge record explicitly ruled the caster-HP/always-true reading FAITHFUL and NAMED the boss-HP reading as the nearest-wrong model (\"gate on the BOSS's HP, which would fire the 924 at most once and silently delete ~70% of burst damage — excluded\"). Both blind families converged on that posture in the soline run. Roster consistency requires the same encoding here.",
+        "residual": "⚑ carried forward from soline: the caster-HP reading is itself a same-model consensus (all agents share it; kit-internal consistency supports it but no popup measurement exists) — owner spot-check recipe: a brid focus video where she takes damage once, watching whether the second 1440% popup stops; if the enemy-HP reading is ever confirmed, remove the second burst block (the tests pin the current posture)."
+      }
+    ],
+    "reviewerImprovementsAdopted": [
+      "B3 phase pin: first S1 buffApply must land at/after the 30th shot frame (excludes a passive t=0 model)",
+      "B4: rangeApplied===false pinned (universal noRange rider rule, sim.ts:2476)",
+      "B5: exact wall-clock firing seconds [10,20,...,170] pin the interval phase (first fire t=CD) and decouple from fire-rate"
+    ],
+    "flagsCarried": [
+      "skill2 cadence ⚑ class 2 (no kit-stated trigger clause; interval sec:10 from datamined skillCooldownsSec, first-fire phase convention t=CD — snow-white precedent)",
+      "skill2/burst \"highest final DEF\" selectors collapse to the sole partless boss (inert stand-in, caveat)",
+      "Max-HP gate ⚑ (see residual above)"
+    ],
+    "verdict": "GO (cross-family) — all 5 load-bearing dispositions converge; the single divergence resolved by adjudicated precedent, not by fiat"
+  }
+}

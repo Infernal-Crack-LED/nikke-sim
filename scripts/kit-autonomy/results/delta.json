@@ -1,0 +1,62 @@
+{
+  "slug": "delta",
+  "kitDescription": "Delta is a Wind sniper-rifle Burst-II Defender whose kit is entirely defensive. Skill 1 raises her own Max HP by 8.82% for 10 seconds every time she fires a full-charge shot, which in practice keeps it up almost permanently while she is firing. Skill 2 raises her own DEF by 51.42% for 20 seconds each time she casts her own burst. Her burst deploys a Decoy avatar carrying 91.68% of her final Max HP for 10 seconds and taunts all enemies for 10 seconds, redirecting enemy attention away from the team. She contributes no damage buffs, debuffs, or skill damage of any kind — her damage output is purely her sniper rifle.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Full Charge attack: Max HP ▲ 8.82% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired → self targetMaxHpPct 8.82/10s; every SR pull is a full charge (helm/a2 precedent); converts to maxHpFlat at apply (folkwang C3 precedent)",
+        "blindSaid": "S5: authored as one self Max-HP buff at 8.82/10s on a per-pull trigger, fires per shot, 600-frame window, seconds not rounds — all green. S6: byte-identical encoding (shotFired/self/targetMaxHpPct 8.82/10s)",
+        "formulaCheck": "No damage bucket interaction — Max HP self-grant with no HP→ATK consumer in kit; whole-kit byte-identity pin confirms inertness. Trigger identity (per-full-charge pull vs magazine-end/burst) confirmed by count binding to ~107 pulls and by the lastBullet counterfactual failing the count bound.",
+        "fireRateOk": true,
+        "explanation": "Driver, S5, and S6 all independently converged on the same trigger (shotFired == per-full-charge on an SR), same stat family, same magnitude, same duration semantics (wall-clock seconds, refresh-on-reapply). Applications track shot count, first apply after first shot, 600-frame windows. The raw-maxHpPct never-converts trap is pinned by the driver's conversion counterfactual. Magnitude is SL10 kit-text-literal (DATAMINED), in scope only as prose-vs-encoding, which matches."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Using Burst Skills: DEF ▲ 51.42% 20s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast (her OWN cast, marciana/dnt precedent) → self defPct 51.42/20s; STARVED comp (crown takes every B2 slot, 0 delta casts) pins the burstCast-vs-fullBurstEnter divergence behaviorally",
+        "blindSaid": "S5: one self defPct 51.42/20s on burstCast, one apply per own cast, 1200-frame window — green. S6: byte-identical (burstCast/self/defPct 51.42/20s) with the same ⚑ note on own-cast vs any-ally-burst reading.",
+        "formulaCheck": "defPct feeds no damage bucket in v1 — inert by design; totals unchanged under strip (byte-identity green). The one load-bearing routing question is trigger identity: kit says 'when using Burst Skills', and the whole-picture reading (Defender self-buff on her own 40s-cd cast) plus repo precedent support own-cast; the STARVED-comp counterfactual shows a fullBurstEnter key would fire on crown-only rotations — provably the over-credit model.",
+        "fireRateOk": true,
+        "explanation": "Applies exactly once per own burst cast (~4/180s in the sole-B2 fixture), 1200-frame windows, self-held, SL10 value 51.42 (the SL1 18.36 counterfactual provably fails). S5's own divergence assertion degraded to its documented else-branch under the adapted sole-B2 fixture (controlComp starves delta entirely), but the driver's STARVED-comp spec covers the same discrimination directly — the load-bearing assertion is live somewhere in the combined suite."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Decoy: avatar 91.68% final Max HP, 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "out-of-domain: no avatar/summon/threat/HP-pool subsystem; recorded verbatim in unmodeled with estimate (0 damage impact — boss never acts), recipe (needs avatar/threat primitive), tier; deliberately NOT a shield effect (shielded-trigger/requiresShielded cross-unit contamination)",
+        "blindSaid": "S5: no shield/stun/damage effect present, unmodeled contains the Decoy line verbatim — green (shield-or-unmodeled branch; driver's burst==[] takes the unmodeled branch). S6: identical unmodeled entry, same shield-contamination warning. S2b: same disposition and same shield-encoding nearest-wrong.",
+        "formulaCheck": "No engine primitive exists; a shield encoding would falsely fire teammates' shielded triggers (naga-style) — the one damage-relevant routing hazard is explicitly avoided by all three agents. burst==[] produces zero damage/gauge/buff side-effects beyond the rotation cast itself.",
+        "fireRateOk": true,
+        "explanation": "All three independent agents (driver, S2b, S5/S6) converged on the identical disposition and the identical rejected nearest-wrong (shield encoding). Verbatim line present in unmodeled — no silent drop. This is a documented gap, not a fudge: nothing was invented to make the burst do something, and the burst-fudge counterfactual (atkPct 91.68) provably moves her total, so the byte-identity pin gates any future backslide."
+      },
+      {
+        "kitLine": "Attract: Taunts all enemies for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "out-of-domain: no aggro/targeting model, single partless boss; verbatim in unmodeled with estimate (0 damage impact), recipe (needs enemy-targeting model), tier; not a targetStatus, not a damageTaken debuff",
+        "blindSaid": "S5: unmodeled matches /taunt|attract/i, no stun encoding — green. S6: identical verbatim unmodeled entry. S2b: same disposition; nearest-wrong (boss damageTaken/targetStatus debuff) explicitly rejected.",
+        "formulaCheck": "Taunt carries no damage-taken component and names no status; any boss-held debuff from this line would be invented mechanics. Driver asserts no boss-debuff events (casterIdx delta, targetIdx null) at runtime.",
+        "fireRateOk": true,
+        "explanation": "Identical three-way convergence: recorded verbatim, no invented boss debuff, no stun misencoding. Documented gap with tier and recipe, exactly per the MEASURED>FUDGE rule."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All four kit lines are FAITHFUL or DOCUMENTED_GAP and the two blind re-derivations converged exactly on the driver: S5's adapted suite runs GREEN (18 passed, 4 skips that are the blind file's own missing-primitive it.skips) against the shipped override, and S6's blind override is structurally byte-identical to the driver's on every slot including the verbatim unmodeled burst lines. Convergence here is stronger than the usual same-model caveat because the kit is damage-inert, so the entire graded surface is event-log discipline — and the discriminating assertions are genuinely load-bearing: S1's per-full-charge cadence fails under lastBullet, its self scope fails under an allies retarget, its maxHpFlat conversion fails under the raw maxHpPct stat; S2's own-cast keying fails under fullBurstEnter in the STARVED comp (the one place the pristine S5 fixture lost discrimination — controlComp's crown starves delta of every B2 slot — the driver independently built the same lever and the divergence is covered); the burst's no-damage/no-shield/no-boss-debuff encoding fails under any make-it-do-something fudge via the whole-kit byte-identity pin. No REAL-GOTCHA of any subkind was found; no silent drops (both burst lines verbatim in unmodeled), no engine/fidelity rerouting, no encoding errors — all four magnitudes/durations are SL10 kit-text-literal. The one residual the owner should spot-check is shared-prior rather than observed: every agent (same base model) read 'when using Burst Skills' as own-cast and 'Max HP ▲' as targetMaxHpPct self — both readings are repo-precedent-backed and behaviorally pinned, but if a future measurement showed either kit line behaving differently in game (e.g. ally-cast triggering), the fix is a one-line trigger change, not a remodel. Nothing must change for GO.",
+  "model": "kimi-code/k3"
+}

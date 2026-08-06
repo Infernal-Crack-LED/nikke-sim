@@ -1,0 +1,92 @@
+{
+  "slug": "rapi",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "when attacked 20 time(s) → ATK ▲ 21.81%",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "Generic (unscoped) self ATK buff — applies to all of her damage, not normal-attack-scoped.",
+      "durationSemantics": "durationSec: 20 — genuine wall-clock seconds ('for 20 sec'), NOT rounds/stacks.",
+      "triggerIdentity": "INCOMING-hit counter: fires after the unit RECEIVES 20 attacks. No TriggerDef exists for being attacked, and the v1 sim models no boss attacks against units. If approximated at all it must be an interval whose period = 20 × measured boss attack cadence at scope lock (⚑), first-fire per the interval convention — never a trigger keyed to her own outgoing fire.",
+      "targetSet": "self",
+      "nearestWrongModel": "hitCount:20 — reading 'attacked 20 times' as HER dealing 20 hits. AR at ~12 pulls/s procs every ~1.7s with a 20s duration → effectively permanent +21.81% ATK from t≈2s, a large over-credit riding every bucket.",
+      "distinguishingAssertion": "Filter buffApply events stat==='atkPct' && value===21.81 on rapi. Faithful: zero applications (unmodeled/gated), or — if an interval approximation ships — an application cadence that is INVARIANT when her fire economy changes (withPatchedOverride/ammo patch leaves the count unchanged). Nearest-wrong: first application lands within ~2s of t=0 and the application count scales with rounds fired.",
+      "inertness": "rapi's totalDamage must NOT embed near-permanent +21.81% ATK; deleting the skill1 block from a patched override must move her total by 0 if the line is unmodeled.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 528.97% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "Function damage (skill bucket), % of caster final ATK. Rider conventions: engine force-sets no-range; takes the +50% Full Burst major by LANDING TIMING only (noFb default OFF); no core (text lacks 'core strike'); crits at the caster's sheet rate per the rider-crit convention.",
+      "durationSemantics": "Instant hit, no duration.",
+      "triggerIdentity": "The ■ header has NO activation clause ('Affects 1 enemy…' only) → interval trigger, sec = the datamined skill cooldown, first fire t=sec. The cadence is an ALWAYS-⚑ field if not datamined — a bare invented number is wrong; a flagged one is correct.",
+      "targetSet": "enemy — '1 enemy unit(s) with the highest final ATK' is degenerate on the solo boss.",
+      "nearestWrongModel": "Inventing a trigger: keying the hit to burstCast or fullBurstEnter (~4–6 procs per 180s fight instead of ~180/CD), or shipping an unflagged precise cadence. Secondary misread: routing it to the burst bucket.",
+      "distinguishingAssertion": "Collect damage events with mult===528.97 (srcSlot skill2, bucket 'skill'). Faithful interval CD c: count ≈ floor(180/c) and procs land at t=c, 2c, 3c… — i.e. some procs occur OUTSIDE any fullBurstStart..fullBurstEnd window. Nearest-wrong: every proc frame coincides with a burstCast/fullBurstStart event.",
+      "inertness": "Proc count must NOT change between rotations rapi bursts and rotations the co-B3 (helm in controlComp) bursts — the interval is rotation-independent.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Taunt for 5 sec",
+      "disposition": "UNMODELED",
+      "scope": "Boss-targeting redirection — the sim has no aggro/boss-attack model and no taunt effect kind.",
+      "durationSemantics": "5 sec, moot while unmodeled.",
+      "triggerIdentity": "Rides the same interval cast as the 528.97% hit.",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Silently dropping it with no unmodeled record; or worse, mis-encoding it as a boss debuff (e.g. damageTakenPct) — taunt changes who the boss attacks, not damage taken.",
+      "distinguishingAssertion": "No buffApply/effect of any kind is emitted for this line; the verbatim taunt text appears in the override's unmodeled.skill2 array.",
+      "inertness": "Must move zero damage; no boss-held debuff (casterIdx===null) may exist with a taunt-shaped value.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 657.72% as Burst Skill damage",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-bucket hit, % of caster final ATK. Burst-cast damage lands BEFORE the Full Burst window opens → FB-exempt (no +50%, no FB-entry auras) and rider no-range; no core.",
+      "durationSemantics": "Instant hit on cast.",
+      "triggerIdentity": "burstCast — fires ONLY on rotations rapi herself casts Burst III. NOT fullBurstEnter: controlComp carries helm as a co-B3, so the two triggers genuinely diverge (helm-cast rotations must produce nothing).",
+      "targetSet": "enemy (highest final ATK — degenerate solo boss).",
+      "nearestWrongModel": "Keying to fullBurstEnter: the hit then fires on EVERY team Full Burst including helm's rotations AND lands inside the FB window picking up the +50% major — a compound over-credit.",
+      "distinguishingAssertion": "Every damage event with mult===657.72 has inFullBurst===false && fbMajorApplied===false, and the count of such events equals the count of rapi burstCast events (strictly fewer than fullBurstStart events in controlComp with helm co-B3).",
+      "inertness": "Zero 657.72% events on rotations where the burstCast event belongs to helm.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 60.75% for 10 sec (self)",
+      "disposition": "FAITHFUL",
+      "scope": "Generic self ATK buff, unscoped.",
+      "durationSemantics": "durationSec: 10 — seconds ('for 10 sec'), covering the ~10s FB window that follows her pre-FB cast.",
+      "triggerIdentity": "burstCast (self mode in her OWN burst block) — NOT fullBurstEnter. Same divergence lever as the burst hit: helm co-B3 rotations must not grant it.",
+      "targetSet": "self",
+      "nearestWrongModel": "fullBurstEnter keying → the +60.75% applies on every team Full Burst (helm's included), roughly doubling its uptime in a 2×B3 rotation.",
+      "distinguishingAssertion": "Count of buffApply events (stat==='atkPct', value===60.75, targetSlug==='rapi') equals rapi's burstCast count and each application frame matches a rapi burstCast frame — never a helm-rotation fullBurstStart frame.",
+      "inertness": "No 60.75 atkPct application on helm-cast rotations; no application to any ally.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill2:528.97%-interval-damage",
+    "burst:657.72%-burst-hit",
+    "burst:ATK-60.75%-self"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "■ Activates when attacked 20 time(s). Affects self. / ATK ▲ 21.81% for 20 sec. (no incoming-attack model; interval approximation is measurement-gated on boss attack cadence)"
+    ],
+    "skill2": [
+      "Taunt for 5 sec."
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to reconcile: (1) THE BIG ONE — skill1 'Activates when attacked 20 time(s)' read as an outgoing hitCount:20; hitCount counts the OWNER'S rounds, giving near-permanent +21.81% ATK. The sim has no incoming-attack channel, so the faithful state today is unmodeled/measurement-gated; any approximation must be an interval derived from measured boss attack cadence (⚑) and must be fire-rate-invariant. (2) Both burst blocks keyed to fullBurstEnter instead of burstCast — controlComp's helm co-B3 makes this divergence directly assertable; a sole-B3 fixture would mask it, so tests must use the standard controlComp. (3) skill2's damage line has no activation clause → interval per convention; keying it to her burst or FB entry under-fires it ~30×, and its cadence is an ALWAYS-⚑ field unless the datamined skill CD is cited. (4) Ordering trap worth pinning: the 657.72% hit and the +60.75% self buff ride the same cast, damage block listed FIRST — assert whether the burst hit's effective ATK includes the fresh buff (block dispatch order says it should not) rather than leaving snapshot order implicit. (5) Tandem coupling: in-game the skill2 taunt accelerates skill1's 'attacked' counter — if skill1 is ever measured into an interval, the measurement inherently includes taunt uptime; do not model them independently. Base stats show chargeFrames 0 / hitsPerShot 1 — no charge or pellet semantics anywhere in this kit; any charge/round-count encoding is spurious.",
+  "model": "claude-fable-5"
+}

@@ -1,0 +1,92 @@
+{
+  "slug": "signal",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "after landing 60 normal attack(s): DEF ▼",
+      "disposition": "FAITHFUL",
+      "scope": "Counts NORMAL-ATTACK hits only — skill/burst damage instances, DoT ticks, and any rider hits must NOT advance the 60-hit counter. SMG hitsPerShot=1, so rounds == hits == pulls here (the AR/MG rounds-vs-pulls divergence is moot, but the trigger must still be authored as hitCount, which counts rounds).",
+      "durationSemantics": "durationSec: 5 — wall-clock seconds, refreshed on each re-trigger (same caster+slot key overwrite). NOT durationShots. At SMG effective cadence (~20 rounds/s ⚑ datamine-unreliable), 60 rounds ≈ 3s, so continuous fire refreshes the 5s window before lapse → near-permanent uptime while firing; the only lapse risk is a reload gap plus trigger-rebuild exceeding 5s (mag 120 @ ~20/s = ~6s, reload 81f ≈ 1.35s → refresh at ~10.4s beats the ~11s expiry; assert it does NOT lapse under continuous fire, and that the counter is cumulative across reloads).",
+      "triggerIdentity": "hitCount count:60 on the owner's normal attacks. No FB gate, no status gate, no everyN beyond the count itself. First fire is EARNED (~3s in), never t=0.",
+      "targetSet": "enemy (the boss) — 'Affects the target(s)'. Boss-held debuff: buffApply with casterIdx===null AND targetIdx===null; filter by stat+value. Benefits the WHOLE TEAM's damage (a boss debuff is never a self buff — taxonomy 4).",
+      "nearestWrongModel": "Encoding DEF ▼ as damageTakenPct 5.94 (a multiplicative 'takes more damage' debuff) instead of a boss-DEF reduction — the two diverge everywhere because DEF is a subtractive term in the damage formula, so a 5.94% DEF cut moves damage far less than a 5.94% damage-taken multiplier. Secondary misread: interval {sec:60} instead of hitCount 60.",
+      "distinguishingAssertion": "Event log: first buffApply for the DEF-down (stat defPct — NOT damageTakenPct — value 5.94, casterIdx===null) appears only after 60 owner normal-attack shot events (~3s), with zero applications at t=0; re-applications every subsequent 60 rounds refresh it. Damage delta from toggling the line ON (withPatchedOverride removing it) must equal the boss-DEF-term reduction for ALL FOUR units' totals, not a flat ×1.0594 on anyone.",
+      "inertness": "Zero buffApply before the 60th round; skill/burst/DoT damage events must not advance the counter (patch the burst off → counter cadence unchanged); no unit's totals move by a flat 5.94% multiplier.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▼ 5.94% for 5 sec.",
+      "disposition": "UNMODELED",
+      "scope": "Boss OFFENSE reduction — the boss deals no damage at scope (no HP pool, nobody takes hits), so this line has no damage-side consumer.",
+      "durationSemantics": "5 sec wall-clock, same refresh cadence as the DEF line if modeled.",
+      "triggerIdentity": "Same hitCount:60 trigger as the sibling DEF line (one ■ header covers both effect sentences).",
+      "targetSet": "enemy (boss).",
+      "nearestWrongModel": "Applying ATK ▼ to SELF or to allies (reading 'the target(s)' as the buff recipient pool) — an ally-scoped atkPct −5.94 would visibly DEPRESS team damage; or modeling it as a live boss stat that somehow feeds a damage term.",
+      "distinguishingAssertion": "totals() for every unit are bit-identical with this effect present vs stripped (withPatchedOverride); no buffApply with stat atkPct and a negative value ever targets a unit slot (targetIdx must never be 0..3 for this line).",
+      "inertness": "Must move ZERO damage for all four units; must never appear as an ally/self debuff.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recover 44.08% of attack damage as HP",
+      "disposition": "UNMODELED",
+      "scope": "Lifesteal-style HP recovery over 10s, SELF only. No HP pool consequence at scope (boss deals no damage). If encoded at all for completeness, it is a heal effect (ticks:10, intervalSec:1) emitting recovery events to SIGNAL — and only Signal's own 'recovery' triggers would fire (she has none), so it is damage-inert even in heal-synergy comps unless a teammate heals off HER (they don't; recovery triggers fire on the RECIPIENT).",
+      "durationSemantics": "over 10 sec — a heal-over-time window, NOT a buff duration.",
+      "triggerIdentity": "fullBurstEnter — 'when entering Full Burst' fires on ANY team Full Burst, including rotations where the OTHER Burst II unit (not Signal) cast stage 2. This is the correct WIDER trigger; do not narrow it to burstCast.",
+      "targetSet": "self.",
+      "nearestWrongModel": "THE trap on this kit: parsing '44.08% of attack damage' as an attackDamagePct 44.08 BUFF (Damage Up bucket) on FB entry — converting a defensive lifesteal into a massive recurring team-tier damage steroid. A model carrying buffApply{stat:'attackDamagePct', value:44.08} is catastrophically over-credited.",
+      "distinguishingAssertion": "Across a full run, NO buffApply with stat attackDamagePct (or atkPct/sustainedDamagePct) valued 44.08 ever appears from Signal's skill2; totals() for all units are identical with skill2 stripped via withPatchedOverride. If the driver encoded it as a heal for completeness: heal-driven recovery events target Signal only, first at each fullBurstStart (any caster), and totals still do not move.",
+      "inertness": "Zero damage movement for every unit; zero recovery events targeting anyone but Signal; fires per team FB, not only per Signal-cast rotation (if encoded).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 229.22% of final ATK as damage.",
+      "disposition": "FAITHFUL",
+      "scope": "One instant burst-slot damage instance per cast, 229.22% of Signal's FINAL ATK (buffed at cast). Lands in the burst bucket. No core (text never says core strike); crit per the engine's rider convention; no +30% range bonus (riders are universally range-OFF).",
+      "durationSemantics": "Instant — no duration.",
+      "triggerIdentity": "burstCast — Signal's OWN Burst II cast. Verified timing fact: burst-cast damage lands BEFORE Full Burst begins → no +50% FB major, no FB-entry auras snapshot into it (FB-exempt by timing, taxonomy 9). Fires ONLY on rotations Signal is the stage-2 caster.",
+      "targetSet": "enemy (boss); 'enemies within attack range' is AoE flavor — single boss at scope.",
+      "nearestWrongModel": "Two compounding misreads: (a) keying to fullBurstEnter so it fires on rotations the OTHER Burst II unit casts (over-fires whenever a same-tier competitor exists — exactly the burstCast≠fullBurstEnter trap); (b) letting the hit take the +50% Full Burst major because 'bursts happen at FB time'.",
+      "distinguishingAssertion": "Every damage event with mult 229.22 has srcSlot === Signal's slot, bucket 'burst', inFullBurst === false AND fbMajorApplied === false, rangeApplied === false — and the COUNT of such events equals the count of Signal's own burstCast events, NOT the count of fullBurstStart events (in a comp with a second Burst II, these two counts diverge; assert against burstCast).",
+      "inertness": "No 229.22% instance on rotations where the other Burst II unit cast stage 2; no instance ever carries the FB +50% or the range +30%.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▼ 12.34% for 10 sec.",
+      "disposition": "FAITHFUL",
+      "scope": "Boss DEF reduction — team-wide damage benefit via the DEF term, same channel question as skill1's DEF line. Stacks WITH skill1's 5.94% DEF ▼ (different slot key → both live simultaneously; they never overwrite each other).",
+      "durationSemantics": "durationSec: 10, wall-clock, from the cast frame. With Signal's 20s burst cooldown, expect ~50% uptime at best on Signal-cast rotations — a near-permanent encoding is wrong.",
+      "triggerIdentity": "burstCast (rides the same cast as the 229.22% hit). Only on Signal-cast rotations.",
+      "targetSet": "enemy (boss) — boss-held buffApply, casterIdx===null, targetIdx===null.",
+      "nearestWrongModel": "durationSec 10 silently extended/refreshed by team FBs (fullBurstEnter keying), giving whole-fight uptime; or damageTakenPct 12.34 substituted for the DEF reduction (same subtractive-vs-multiplicative confusion as skill1).",
+      "distinguishingAssertion": "buffApply for stat defPct value 12.34 (casterIdx===null) occurs exactly once per SIGNAL burstCast with expiresFrame = castFrame + 600; no application on rotations the other Burst II unit casts; toggling the line moves all four units' totals only during the 10s post-cast windows (damage delta consistent with a DEF-term cut, not ×1.1234 anywhere).",
+      "inertness": "Absent on non-Signal rotations; expires at 10s (no refresh from team FB events); never stacks by overwriting skill1's separate 5.94% key.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:DEF ▼ 5.94% (hitCount 60)",
+    "burst:Deals 229.22% of final ATK",
+    "burst:DEF ▼ 12.34% for 10 sec"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "ATK ▼ 5.94% for 5 sec."
+    ],
+    "skill2": [
+      "Recover 44.08% of attack damage as HP over 10 sec."
+    ],
+    "burst": []
+  },
+  "notes": "Three reconciliation points. (1) FIXTURE HAZARD: Signal is Burst II, but controlComp(carry) seats the carry in the B3 slot beside crown (B2) — with two Burst II units the stage-2 cast alternates/competes under first-ready selection, and helm must carry stage 3 for FBs to happen at all. The driver's tests MUST establish which rotations Signal actually casts (count her burstCast events) before asserting her burst-line cadence; a test that assumes she casts every rotation is wrong in this fixture, and a burst keyed to fullBurstEnter would falsely pass a per-rotation count. (2) ENEMY-DEF CHANNEL: both DEF ▼ lines require a live boss-DEF reduction path. The schema's defPct comment covers only SELF DEF ('inert in v1'); if the engine has no enemy-DEF consumer, the faithful dispositions become GAP and the driver must declare that openly — silently substituting damageTakenPct with the raw kit percentages is the shared-prior fudge I most expect, and it is numerically wrong because DEF is subtractive in the damage formula. (3) SKILL2 MISPARSE: '44.08% of attack damage as HP' is the single most dangerous line — a parser pattern-matching 'attack damage 44.08%' into an attackDamagePct buff on FB entry would inflate the whole kit; the inertness assertion (totals identical with skill2 stripped) is mandatory even though the line is defensive. Magnitudes are all kit-literal (DATAMINED); the only ⚑ in play is the SMG cadence tuple feeding the 60-hit trigger's expected timing, which the tests should treat as approximate (assert ordering/counting, not exact frames).",
+  "model": "claude-fable-5"
+}

@@ -1,0 +1,62 @@
+{
+  "slug": "ether",
+  "kitDescription": "Ether is a Burst I shotgun Defender whose kit is almost entirely defensive. On a 13-second internal cooldown she automatically fires a small skill hit (56.32% of her final ATK) at the enemies with the highest DEF — against a single boss this is one modest recurring hit. Every 15 seconds she also grants the ally with the lowest HP a 52.5% damage-taken reduction for 5 seconds, and during Full Burst the same enemies she hits take a 9.38% DEF reduction for 6 seconds. Her Burst I creates a shield equal to 96% of her own final Max HP for 5 seconds on the three allies with the lowest HP. In a damage sim with no incoming boss damage, only the 13-second skill hit and the shield's synergy events are observable; her real value is survivability.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Damage Taken ▼ 52.5% for 5 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Verbatim unmodeled; ally-side mitigation, out-of-domain (no ally HP pool / no incoming boss damage); ⚑1 with estimate, recipe, tier; boss damageTakenPct channel deliberately NOT used (wrong direction and target).",
+        "blindSaid": "S5/S6 both independently read UNMODELED; S5 pins the boss-channel inversion as nearest-wrong (anti-fudge assertion green vs driver).",
+        "formulaCheck": "Correct: no sim bucket expresses ally received-damage reduction; damageTakenPct is boss-side and positive=boss takes more. Encoding it there would manufacture phantom team damage on a 15s cadence.",
+        "fireRateOk": true,
+        "explanation": "All three derivations converge. Documented omission with verbatim text + ⚑; the driver's E3 counterfactual (+52.5 boss channel) is pinned RED, proving the omission is a choice, not a drop."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Deals 56.32% of final ATK as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval:13 → enemy → flatDamage atkPct 56.32, bare rider defaults (crit-eligible, no core, skill bucket, FB-major by landing timing).",
+        "blindSaid": "S2b/S5/S6 all independently read interval/CD auto-cast (S6 invented sec:10; the datamined skillCooldownsSec.skill2=13 the driver used is correct). S5 green: 13 fires at t=13k, implied pct recovers 56.32, refuting the ×3 fold.",
+        "formulaCheck": "Matches SSOT §2b internal-cooldown skills (owner-stated mechanic; snow-white/novel precedent): clause-less CD-bearing lines fire on the interval trigger, first at t=N. Skill-function rules satisfied: noRange (rangeApplied false pinned), no core (core:true counterfactual adds damage), crit at caster rate, FB by landing timing (both states exist and are pinned). The '3 enemy units' header correctly treated as multi-target spread collapsing to the single boss, not a hit multiplier.",
+        "fireRateOk": true,
+        "explanation": "Fires exactly floor(180/13)=13 times at the 13s frames — presence AND cadence both pinned. The litigated trigger identity rules FOR the driver: (a) the FB clause sits in the second ■ block's header and governs the DEF▼ line alone (house prose convention; ada/kurumi ship their FB-headed blocks as fullBurstEnter), (b) a purely FB-keyed skill cannot explain a 13s datamined CD (FB cycle ≥20s; ada/kurumi's FB-keyed skill2s have CD null), (c) three independent blind derivations all read interval. The driver's initial fullBurstEnter reading was the outlier and is pinned RED in its own test. First-fire phase t=13 is the documented ⚑ engine convention, flagged in caveat 1."
+      },
+      {
+        "kitLine": "DEF ▼ 9.38% for 6 sec (during Full Burst)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Verbatim unmodeled + ⚑2 (estimate ~0.03% team damage = 9.38% × 140 DEF ≈ 13.1 flat off ~50k effective ATK; recipe = boss-DEF-reduction debuff primitive feeding the subtractive DEF term; tier = engine gap, minor). Novel/mast Sea-Breeze precedent.",
+        "blindSaid": "S5: GAP (it.skip), refused encoding as fudge. S6: encoded as defPct -9.38 on enemy keyed to fullBurstEnter — diverges from driver.",
+        "formulaCheck": "Correct: the engine has no enemy-DEF primitive — defPct is self-DEF and inert, and applyBuff drops enemy-side DEF debuffs at dispatch, so S6's encoding is an INERT block masquerading as a modeled line (a silent drop with extra steps), plus a wrong trigger (fullBurstEnter vs the prose's 'activates during Full Burst' rider on the S2 hit). damageTakenPct is a different bucket with a different magnitude. The driver's verbatim-unmodeled+⚑ is the only honest representation; ~0.03% team impact is sub-noise at the 140-DEF scope-lock boss.",
+        "fireRateOk": true,
+        "explanation": "Driver wins the S6 split. S6's divergence is a blind misread (RECON_ERROR), not a fresh find — the S5 blind author explicitly refused the same encoding. E4 pins the damageTakenPct +9.38 misread RED."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Shield = 96% of user's final Max HP, 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → alliesLowestHp count:3 → shield maxHpPct 96 / durationSec 5; no HP amount modeled (v1 boss deals no damage) — the encoded substance is the shielded event + 5s shield-state window.",
+        "blindSaid": "S6 identical block. S5 it.skips the tandem/target-set assertions in ITS fixture but the driver's fixtures B/C cover both behaviorally via asuka's requiresShielded probe.",
+        "formulaCheck": "Matches SSOT §9 shield machinery: shield lines must never be skipped (they fire 'shielded' triggers and open requiresShielded gates); 'the skill user's final Max HP' is caster-basis (maxHpPct) per schema reading — the nearest-wrong target-basis flip is excluded by the shape pin. burstCast (not fullBurstEnter) is correct: she is Burst I and the shield belongs to HER cast.",
+        "fireRateOk": true,
+        "explanation": "Behavioral pins are strong: fixture B proves trigger identity (gate passes == ether's cast count, strictly < FB count under a second B1; fullBurstEnter keying over-covers by exactly liter's rotations) and fixture C proves scope (slot-4 asuka unshielded at baseline, shielded by the all-allies counterfactual). The 5s window comfortably covers FB entry after her B1 cast (~1.4s of chain gap). Damage-inertia pin (removal byte-identical) confirms no phantom damage. 'Lowest remaining HP' resolving to leftmost-3 is the documented v1 stand-in, flagged."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA: all four kit lines are either FAITHFUL (S2a interval:13 rider, burst shield) or DOCUMENTED_GAP (S1 ally mitigation, S2b enemy DEF▼) with verbatim unmodeled text plus ⚑ estimate+recipe+tier each. The blind re-derivations converged: S5 runs GREEN against the shipped override (17 pass / 3 author-skips / 0 fail — the skips are the blind author's own engine-gap declarations, both covered behaviorally by the driver's asuka-probe fixtures B/C), and S6 agrees on three of four lines; its one divergence (S2b encoded as defPct -9.38 on fullBurstEnter) is a RECON_ERROR — an inert-at-dispatch encoding with a wrong trigger, which the S5 blind author independently refused as a fudge, so the driver's verbatim-unmodeled+⚑ stands. The one litigated line (S2a trigger identity) rules FOR interval:13 on three independent grounds: the house prose convention (an activation clause governs the ■ block whose header carries it — ada/kurumi precedent), the datamined 13s CD which no FB-keyed path can explain, and three-way blind convergence; the driver's initial fullBurstEnter reading was the outlier and is pinned RED in its own suite. Discrimination is adequate: every load-bearing assertion has a named nearest-wrong counterfactual pinned RED (fullBurstEnter/burstCast keyings, ×3 fold, lvl-1 magnitude, both boss-channel misreads, shield trigger and scope flips). Same-model residual for the owner to spot-check: the interval:13 trigger identity and its first-fire phase (t=13) rest on the engine's ⚑ interval convention plus prose-structure inference rather than footage — a single popup-cadence read of ether's S2 in a real fight would settle it; and the leftmost-3 stand-in for 'lowest remaining HP' targeting is a documented v1 approximation that only an HP-pool model can make true.",
+  "model": "kimi-code/k3"
+}

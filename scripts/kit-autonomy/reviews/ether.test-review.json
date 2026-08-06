@@ -1,0 +1,76 @@
+{
+  "slug": "ether",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Damage Taken ▼ 52.5% for 5 sec",
+      "disposition": "UNMODELED",
+      "scope": "Defensive damage-taken reduction on ONE ally; no attack-type scoping.",
+      "durationSemantics": "durationSec 5 — literal seconds, not rounds.",
+      "triggerIdentity": "No activation clause on the ■ header → interval trigger by convention (datamined skillCooldownsSec, first fire t=CD, ⚑). Irrelevant while unmodeled.",
+      "targetSet": "alliesLowestHp count:1 (self-inclusive candidate pool; v1 stand-in = leftmost ally, documented). NOT the enemy.",
+      "nearestWrongModel": "Sign/target inversion: 'Damage Taken' pattern-matched to the damageTakenPct BOSS-debuff stat (positive = boss takes more), turning a defensive ally buff into a +52.5% team damage window. Second-nearest: encoding it as any live offensive stat instead of recording it unmodeled.",
+      "distinguishingAssertion": "In a comp with ether, filter buffApply events: expect ZERO with stat 'damageTakenPct' (including boss-held casterIdx===null events) attributable to a value of 52.5. And totals(res) for every unit must be identical when skill1 is emptied via withPatchedOverride('ether', o => { o.skill1 = [] }) — green under faithful (unmodeled ⇒ no delta), red under the boss-debuff misread (large team-wide delta).",
+      "inertness": "This line must move NO unit's damage — no damage events, no offensive buffApply, no gauge. It also fires no 'recovery'/'shielded' consumer (it is neither a heal nor a shield effect), so tandem exemption does not apply.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 56.32% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "Function damage (skill bucket) off ether's final ATK; not tied to normals/charge/crit-only. Rider conventions: noRange forced ON, no core, crit at caster's sheet rate (RIDERCRIT), FB +50% by landing timing (noFb default OFF).",
+      "durationSemantics": "Instant hit per activation — no duration.",
+      "triggerIdentity": "Damage line with NO activation clause → interval trigger (kind:'interval'), cadence from datamined skillCooldownsSec, first fire t=CD per convention. The cadence tuple is an ALWAYS-⚑ field (not in kit text) — must ship flagged with recipe, never as a silent constant.",
+      "targetSet": "'3 enemy unit(s) with the highest final DEF' — target enemy; the sim's single partless boss collapses this to ONE recipient. The '3' is multi-target spread, NOT a hit multiplier.",
+      "nearestWrongModel": "Multiplying by target count: encoding 3× hits on the one boss (168.96% per activation) because the header says 3 enemy units. Second-nearest: inventing a hit/shot-keyed trigger (shotFired/hitCount) instead of interval, tying cadence to her SG pull rate.",
+      "distinguishingAssertion": "Per interval activation, exactly ONE skill-bucket damage event from ether's srcSlot, with mult consistent with atkPct 56.32 (single instance) — red under the 3× misread (either three events per fire or a tripled mult). Also assert the first fire lands at t≈CD, not t=0 and not on a per-shot cadence (event count over 180s ≈ floor(180/CD), decoupled from her shot count).",
+      "inertness": "Must not appear in the normal/charge buckets, must not core, must not take the +30% range bonus (rangeApplied false on these events).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▼ 9.38% for 6 sec (during Full Burst)",
+      "disposition": "GAP",
+      "scope": "Enemy DEF reduction — a team-wide damage increase via the boss-DEF term of the formula, NOT a self/ally stat. The schema's defPct is self-DEF and explicitly inert; there is no enemy-DEF StatKey, so a faithful encoding needs either a new primitive or a derived damageTakenPct-equivalent conversion (⚑ CALIBRATED, from the known boss DEF constant).",
+      "durationSemantics": "durationSec 6 — literal seconds ('for 6 sec'), refreshable on each qualifying activation.",
+      "triggerIdentity": "'Affects the same enemy unit(s). Activates during Full Burst.' → a RIDER on the skill2 interval damage, gated fbGate:'inFb' — it applies when the skill2 hit lands during Full Burst. It is NOT fullBurstEnter: the clause conditions the skill's own activation, it is not an FB-entry event of its own.",
+      "targetSet": "Same enemy as the damage line → the boss (boss-held debuff; buffApply with casterIdx===null AND targetIdx===null per harness note).",
+      "nearestWrongModel": "Keying it to fullBurstEnter — the debuff then applies at EVERY team FB start with 6s uptime per FB, decoupled from the skill2 interval cadence (over-credits whenever CD and FB windows don't coincide). Second-nearest: encoding as the inert self defPct (silently drops a live team-wide effect), or as an ally 'DEF buff'.",
+      "distinguishingAssertion": "Every boss-held debuff application attributable to this line (filter by stat+value, casterIdx===null) must be frame-coincident with a skill2 interval damage event that has inFullBurst===true — and there must be NO application at a fullBurstStart frame that lacks a coincident skill2 fire. Green under fbGate-on-interval, red under fullBurstEnter keying. Additionally, if the interval fire lands OUTSIDE FB, assert no debuff application follows it.",
+      "inertness": "No debuff outside Full Burst; no effect on ether's own DEF stat; ally units receive no buffApply from this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Shield = 96% of user's final Max HP, 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Shield grant — no HP pool at scope, but MUST be encoded as a 'shield' effect (kind:'shield', maxHpPct:96, durationSec:5) because it fires recipients' 'shielded' triggers and opens requiresShielded gates (tandem rule: never skip shield lines on isolation).",
+      "durationSemantics": "durationSec 5 — literal seconds; bounds the requiresShielded window on recipients.",
+      "triggerIdentity": "burstCast — ether's OWN Burst I cast (cd 40s), never fullBurstEnter. She is a B1: in a comp where she is the sole B1, this fires once per rotation SHE opens.",
+      "targetSet": "alliesLowestHp count:3 (v1 stand-in: leftmost 3 allies, documented; the Max-HP basis is the CASTER's final Max HP — casterMaxHpPct semantics — not each target's own).",
+      "nearestWrongModel": "Skipping the whole line as 'defensive, no damage' — which silently kills any shield-synergy teammate (a 'shielded'-trigger or requiresShielded-gated kit gets zero uptime with ether on the team). Second-nearest: basis flip to the TARGET's Max HP (targetMaxHpPct-style) instead of the caster's 96%.",
+      "distinguishingAssertion": "On each of ether's burstCast events, assert shield events are emitted to exactly 3 ally targets with durationSec 5 — and in a comp pairing ether with a requiresShielded/shielded-trigger consumer (patched-in via withPatchedOverride if no roster carrier is convenient), assert the consumer's gated block activates within the 5s post-cast window and NOT outside it. Green under the shield encoding, red under the skip.",
+      "inertness": "No direct damage, no gauge fill, no offensive stat on recipients from this line itself; nothing fires on OTHER units' bursts (burstCast ≠ stageEnter).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill2:Deals 56.32% of final ATK as damage",
+    "skill2:DEF ▼ 9.38% for 6 sec (during Full Burst)",
+    "burst:Shield = 96% of user's final Max HP, 5 sec"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Damage Taken ▼ 52.5% for 5 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Three things the driver must reconcile. (1) FIXTURE SHAPE: ether is Burst I — controlComp(carry) seats the carry at B3, so she cannot be the carry there; tests need a custom CompOptions with ether IN the B1 slot (replacing liter) plus a B2 and a real B3, or her burstCast/shield lines never fire. And her 40s burst cooldown is double a standard B1's — in a sole-B1 comp the FB cadence stretches to her CD, so full-burst counts will differ materially from a liter baseline; assert rotation still chains rather than assuming liter-like FB counts. (2) EXPECTED SHARED-PRIOR MISREADS, in order of likelihood: skill1's 'Damage Taken ▼' inverted into the boss damageTakenPct debuff (the taxonomy-4 trap runs both directions — here the wrong direction manufactures +52.5% team damage); the skill2 DEF ▼ keyed to fullBurstEnter instead of fbGate:'inFb' on the interval rider; and the 3-enemy header read as a 3× hit multiplier on the single boss. (3) SCHEMA GAP: there is no enemy-DEF StatKey — if the driver modeled DEF ▼ at all it is via a derived conversion (must be ⚑ CALIBRATED with the recipe stated, e.g. equivalent damage-taken uplift from the known boss DEF constant) or it must appear verbatim in unmodeled with the gap named; a silent drop OR a silent precise constant both fail. The skill2 interval cadence is an ALWAYS-⚑ field (no trigger text) — a shipped unflagged cadence is a violation regardless of whether the number is right.",
+  "model": "claude-fable-5"
+}

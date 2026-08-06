@@ -1,0 +1,65 @@
+{
+  "slug": "brid",
+  "kitDescription": "Brid is a Water AR Burst-III Attacker whose Skill 1 re-arms every 30 rounds she fires and grants herself a 10-second ATK ▲18.52% buff, which at AR cadence refreshes near-continuously once armed. Her Skill 2 is a single-target 211.2%-of-final-ATK skill hit that fires on a fixed 10-second internal cooldown against the highest-DEF enemy. Her burst deals 1440% of final ATK as burst damage to the highest-DEF enemy, plus a second 1440% additional-damage instance gated on a Max-HP condition. On the partless scope-lock boss the targeting selectors are trivially the boss, and the burst cast lands before Full Burst opens so it never takes the +50%. In the control rotation she casts 5 bursts over 180s.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "skill1 duration: expect(b.durationShots).toBeUndefined() — engine emits durationShots:null (not undefined) for a time-bounded buff; the assertion's intent (wall-clock 10s, no round budget, finite expiresFrame) is satisfied by the driver model — schema-literal artifact of writing blind against the event shape",
+      "burst Max-HP rider: 'credits exactly ONE 1440% instance' — the duplicate-flatDamage ratio patch reads 1.50 under the driver's two-instance model instead of the blind's pinned 2.00; this IS the adjudicated divergence, not an independent fault"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "after 30 normal attacks: self ATK ▲18.52% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount 30 → self → atkPct 18.52 /10s (AR hitsPerShot 1 → 30 NAs = 30 hits; snow-white S1 precedent)",
+        "blindSaid": "S6 converged identically (hitCount 30 / self / atkPct 18.52 / 10s); S2b FAITHFUL with first-apply-after-30-shots + refresh discrimination; S5's only skill1 red is the null-vs-undefined durationShots schema artifact",
+        "formulaCheck": "atkPct feeds the (1+ΣATK%) multiplier on staticAtk — correct bucket for plain 'ATK ▲'; 10s wall-clock duration matches 'for 10 sec'; refresh-not-stack semantics match the re-application rule",
+        "fireRateOk": true,
+        "explanation": "AR 12/s → counter re-arms ~every 2.5s of firing, 10s window bridges the ~1.65s reload; driver's B3 pins exact application count floor(shots/30) and first-apply ≥ 30th shot frame (excludes passive t=0). 17/17 driver tests green. The S5 red is a RECON_ERROR-class artifact of the blind event-shape assumption, not a modeling fault."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "highest final DEF: 211.2% of final ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval sec:10 → enemy → flatDamage 211.2, crit-on/no-core/no-range rider defaults; sec:10 is the DATAMINED skillCooldownsSec skill2=10 (snow-white S2a visible-CD precedent)",
+        "blindSaid": "S6 converged on the identical structure (interval 10s / enemy / flatDamage 211.2 / crit) but flagged its own cadence ⚑ not knowing the packet omitted the datamined CD — that flag is superseded; S5 correctly declined to pin any cadence from prose alone (it.skip with recipe)",
+        "formulaCheck": "function-type skill damage: crits at caster rate, never core, never range, FB by landing timing — matches the SSOT rider table exactly; magnitude 211.2 matches the level-10 prose (driver B4 pins against the base-level 124.8 counterfactual)",
+        "fireRateOk": true,
+        "explanation": "Driver B5 pins exact wall-clock firing seconds [10,20,…,170] — 17 procs, decoupled from fire rate, first fire t=CD. Residual ⚑ is only the first-fire PHASE convention (t=CD vs t=0), documented in caveats with a popup-cadence recipe; the period itself is datamined, not invented."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "highest final DEF: 1440% Burst Skill damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy → flatDamage 1440; keyed burstCast NOT fullBurstEnter (own-cast-only); auto-FB-exempt via the engine cast-instant rule",
+        "blindSaid": "S6 converged identically (burstCast / enemy / flatDamage 1440 / crit); S2b FAITHFUL with the fullBurstEnter + FB-major nearest-wrong discriminations; S5 burst-cast/landing assertions green",
+        "formulaCheck": "burst-nuke row of the SSOT table: crit yes, core no, range no, and the MEASURED cast-instant rule (lands before the FB window — no +0.5, no entry auras); driver B7 pins fbMajorApplied never true",
+        "fireRateOk": true,
+        "explanation": "Fires on each of her 5 own casts in the control rotation (helm co-B3 makes burstCast-vs-fullBurstEnter genuinely divergent in the fixture). No fault found by any party."
+      },
+      {
+        "kitLine": "same target when at Max HP: +1440%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "second burstCast flatDamage 1440 block; Max-HP gate read as the CASTER's HP → always-true at v1 scope lock (no incoming damage exists); documented caveat + ⚑ residual with a measurement recipe (brid focus video where she takes damage once; if the second popup stops, remove the block)",
+        "blindSaid": "S2b + S5 + S6 (both blind families, three independent derivations) read the gate as the ENEMY's HP → boss leaves Max HP in the opening frames → inert → unmodeled-verbatim / single-instance pin; grammar argument: soline's 'Only affects SELF at Max HP' shows the kit says SELF explicitly when the condition is self-referential",
+        "formulaCheck": "no HP-pool primitive exists in v1, so EITHER reading reduces to a posture (always-true vs inert), not a measured mechanic; the effect itself (function damage, crit-eligible, cast-instant FB-exempt) is correctly routed under the driver's encoding",
+        "fireRateOk": true,
+        "explanation": "ADJUDICATION — driver's encoding STANDS, by binding adjudicated precedent: soline (gauntlet 2026-08-03, GO faithfulness 1.0, judge kimi-code/k3 — this judge family) carries the IDENTICAL wording and its record ruled caster-HP/always-true FAITHFUL and explicitly NAMED the boss-HP reading as the nearest-wrong model ('fires the 924 at most once, silently deletes ~70% of burst damage — excluded'), with both blind families converging there. Roster consistency requires identical wording to encode identically; reversing here on the same evidence base would fork the roster. The blind-side grammar counter-argument is real but was available to the soline judge and did not carry. The decision is fully documented (caveat + note + test pin B8/B9 discriminating 2-vs-1 and 2×1440-vs-merged-2880), so even under the alternative reading this is a DOCUMENTED posture, never a silent drop. The ⚑ same-model residual and its popup recipe carry forward for owner spot-check."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: all five kit lines are FAITHFUL, four by direct triple convergence (driver + S6 structure + S2b spec) and the fifth — the burst Max-HP rider — by binding adjudicated precedent (soline 2026-08-03, identical wording, caster-HP/always-true ruled FAITHFUL with the boss-HP reading explicitly excluded as nearest-wrong). The two S5 reds decompose exactly as the soline run's did: one is the convention dispute itself (the payload of this adjudication, not an independent fault), the other a schema-literal artifact (durationShots null vs undefined) whose intent the driver model satisfies — a RECON_ERROR in the blind test, not a finding. S6's ⚑ on the S2 cadence is superseded by the datamined skillCooldownsSec skill2=10 the packet omitted from its brief. Discrimination holds throughout: B3 (counter 30 vs 60), B5 (interval vs hitCount, exact wall-clock pin), B7 (fbMajorApplied never true), B8/B9 (2 instances vs 1, and two 1440s vs merged 2880), and the S5 duplicate-patch ratio test all fail under their named counterfactuals. Fire-rate check passes: S1 re-arms every ~2.5s of firing with exact application-count pinning, S2 fires at t=10..170 wall-clock, burst lands 2 instances × 5 casts. SAME-MODEL RESIDUAL for owner spot-check (carried from soline, ⚑): the caster-HP reading of the Max-HP gate is same-model consensus with no popup measurement — recipe: a brid focus recording where she takes damage once, watching whether the second 1440% popup stops; if the enemy-HP reading is ever confirmed, remove the second burst block (tests pin the current posture and will go red to signal the change).",
+  "model": "kimi-code/k3"
+}
