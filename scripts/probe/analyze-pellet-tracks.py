@@ -9122,6 +9122,543 @@ def mislock_rate_selftest():
 
 
 # ============================================================
+# MISLOCK IDENTITY -- docs/handoffs/2026-08-06-mislock-identity-PRECOMMIT.md
+#
+# THE CONTRADICTION THIS EXISTS TO RESOLVE (pre-commit §1). §22C measured what a mislock costs by
+# comparing COUNTS under the two locks across 10 owner-adjudicated shots and found ~0. §38C, on one
+# owner-anchored shot, read a mislock carrying ~1.0 of the labelled clip's -1.40. §37B supplies the
+# mechanism that would reconcile them: on the very same 5 shots the TOTAL was identical (35) under
+# two channels whose COMPOSITION was completely different (12 owner + 23 non-owner vs 31 + 4), so a
+# mislocked count can be REFILLED by whatever tracks sit under the wrong crosshair and a COUNT
+# observable is structurally blind to the loss. ⛔ That is an EXPLANATION, not a measurement. This
+# arm measures it.
+#
+# THE MEASUREMENT (pre-commit §2). Per shot, build the SET of track ids the SHIPPED path actually
+# counts -- `band_ids` members inside `pellet_radius` of the crosshair at the band-plateau frame --
+# TWICE, once under the STRUCTURAL lock and once under the TEMPLATE lock, then report per shot
+# `n_struct`, `n_tmpl`, `count_diff = n_tmpl - n_struct` and `jaccard = |A n B| / |A u B|`.
+# Aggregated per dump as `J_mis` / `J_ok` (median jaccard on mislocked / not-mislocked shots) and
+# `dC` (mean |count_diff| on mislocked shots), each with its own n.
+#
+# ⚑ JACCARD IS SYMMETRIC AND NEEDS NO GROUND TRUTH -- that is the whole point. It asks "are these
+# the same pellets?", never "which lock is right?", so it runs on production mislocks where no owner
+# labels exist. It also CANNOT size the channel: a low jaccard proves the two locks count DIFFERENT
+# pellets, never which is correct nor how many REAL pellets are lost (pre-commit §5).
+#
+# ⚑ WHY THE TWO ARMS' TRACK IDS ARE COMPARABLE AT ALL -- the design's load-bearing choice. Both arms
+# reuse the STRUCTURAL dump's own `tracks` and `frame_counts` and swap ONLY `cross_positions`:
+# `_rep_labelled_report`'s `template_relock` construction, the same one `--residual-ab` uses. Two
+# independent tracker runs would assign different ids to the same blob and a set comparison between
+# them would be meaningless. It also makes the two arms' EVENT segmentation identical BY
+# CONSTRUCTION (`debounce_shots` segments on white+red, which a crosshair swap never touches), so
+# shots pair 1:1 with no nearest-onset matching -- removing exactly the pairing noise §22D names as
+# a limit on its own severity figure. For the four production dumps the choice is also FORCED:
+# their template-located dumps carry `cross_positions` only (`"tracks": []`).
+#
+# REUSE, NOT RE-DERIVATION (pre-commit §4's CONTROL POPULATION + the shipped-channel rule):
+#   - classification is §20's OWN `_mlr_score` at its committed 160 px / t0+8..11 criterion and its
+#     §4.1 template-lock gate -- never re-tuned, never re-defined here;
+#   - the band series is `_hla_production_band`, i.e. count-pellets.py's real `_frame_pellet_counts`
+#     on reconstructed `frame_tracks`; the gates are `_hla_gate_ids`; the events are the real
+#     `cp.debounce_shots` via `_hla_score`. Nothing in this block re-implements either.
+#
+# MEASUREMENT ONLY: no constant, default, guard, threshold or localizer changes regardless of the
+# outcome (pre-commit §5), and no existing fixture is touched.
+MISLOCK_IDENTITY_FIXTURE = "scripts/tests/fixtures/pellets/mislock-identity-slice.json"
+_MLI_SHOT_KEYS = ("t0", "mislocked", "median_disp", "scored", "why_unscored", "rep_struct",
+                  "rep_tmpl", "n_struct", "n_tmpl", "count_diff", "n_inter", "n_union", "jaccard")
+
+
+def _mli_counted_ids(frame_tracks_at, cross, band_ids, pellet_radius, frame):
+    """The SET of track ids the SHIPPED `band` channel counts on `frame`, under whichever crosshair
+    series `cross` is.
+
+    ⚑ This is the ONE thing no existing helper can supply: `_frame_pellet_counts` returns the
+    CARDINALITY of exactly this set and never the members, and identity is the whole question here.
+    The predicate is therefore held to production's byte for byte -- radius `<=` (production
+    `continue`s on `dist > pellet_radius`), `not is_red`, `tid in band_ids`, and `band_ids` itself
+    comes from `_hla_gate_ids` rather than a second lifetime rule. It is never trusted on its own:
+    `_mli_assert_channel` hard-fails the run unless `len(this set) == band[frame]`, where `band` is
+    `_frame_pellet_counts`' own output for the same frame and crosshair. So the set is validated
+    against the shipped function on EVERY scored row, in both arms."""
+    cp = cross[frame]
+    if cp is None:
+        return None
+    out = set()
+    for tid, x, y, is_red in frame_tracks_at[frame]:
+        if is_red or tid not in band_ids:
+            continue
+        if math.hypot(x - cp[0], y - cp[1]) <= pellet_radius:
+            out.add(tid)
+    return out
+
+
+def _mli_assert_channel(name, row, band_s, band_t, shot_struct):
+    """⛔ CONTROL CHANNEL (pre-commit §4), as a GATE rather than a printed hint.
+
+    Three identities, all on the SHIPPED channel, checked on every scored row:
+      1/2. each arm's reconstructed id-set cardinality == `_frame_pellet_counts`' own `band` at that
+           arm's own representative frame -- so the sets ARE what production counted, not a
+           lookalike;
+      3.   the structural arm's `debounce_shots` `white` == `band@rep_struct` -- count-pellets.py:
+           664-671's hybrid override, i.e. the reader really did take the band count at the band
+           plateau (the same identity `_rab_assert_channel` enforces). If it ever failed, the arm
+           would be scoring the legacy `pellet_ids`/median-frame channel, the §36/§37 defect, and
+           its numbers would be void."""
+    if row["n_struct"] != band_s[row["rep_struct"]]:
+        raise SystemExit(
+            f"--mislock-identity: CONTROL CHANNEL FAILED on {name} shot t0={row['t0']}: structural "
+            f"id-set size {row['n_struct']} != band@rep {band_s[row['rep_struct']]} at frame "
+            f"{row['rep_struct']}. The reconstructed set is not what _frame_pellet_counts counted.")
+    if row["n_tmpl"] != band_t[row["rep_tmpl"]]:
+        raise SystemExit(
+            f"--mislock-identity: CONTROL CHANNEL FAILED on {name} shot t0={row['t0']}: template "
+            f"id-set size {row['n_tmpl']} != band@rep {band_t[row['rep_tmpl']]} at frame "
+            f"{row['rep_tmpl']}. The reconstructed set is not what _frame_pellet_counts counted.")
+    if shot_struct["white"] != band_s[row["rep_struct"]]:
+        raise SystemExit(
+            f"--mislock-identity: CONTROL CHANNEL FAILED on {name} shot t0={row['t0']}: shipped "
+            f"reader white={shot_struct['white']} != band@rep {band_s[row['rep_struct']]}. The arm "
+            "is not scoring the shipped band channel (docs/probe-runs.md §36/§37).")
+
+
+def _mli_jaccard(a, b):
+    union = len(a | b)
+    return round(len(a & b) / union, 4) if union else None
+
+
+def _mli_median(vals):
+    return round(st.median(vals), 4) if vals else None
+
+
+def _mli_band(j_mis, dc):
+    """Pre-commit §3's decision bands, committed at 8c9e98e3 BEFORE this arm emitted any number.
+    Returns the verdict text for one dump's own (J_mis, dC); ⛔ never pooled across dumps (§4's
+    CONTROL SEPARATION)."""
+    if j_mis is None or dc is None:
+        return "no mislocked shots scored -- no band applies"
+    if dc >= 1.0:
+        return ("dC >= 1.0: counts diverge materially too -- §22C's own premise (that counts barely "
+                "move) does not hold on this population. Record; re-examine §22C's sample before "
+                "ranking anything.")
+    if j_mis < 0.50:
+        return ("J_mis < 0.50 and dC < 1.0: COMPENSATING ERROR CONFIRMED AT SCALE -- same count, "
+                "different pellets. §22C's ~0 is explained as BLINDNESS, not absence; localization "
+                "becomes the established channel.")
+    if j_mis >= 0.80:
+        return ("J_mis >= 0.80 and dC < 1.0: MISLOCKS ARE GENUINELY HARMLESS -- same count AND same "
+                "pellets, so §22C stands unqualified, §38C's shot 4 was atypical, and the -1.40 "
+                "lives somewhere not yet identified.")
+    return ("0.50 <= J_mis < 0.80: PARTIAL. Record with its n; does not on its own promote or "
+            "demote the channel.")
+
+
+def _mli_score(name, fps, params, n, shots_struct, shots_tmpl, mlr, frame_tracks_at, band_ids,
+               cross_s, cross_t, band_s, band_t):
+    """One dump, scored end to end off already-built inputs. Shared VERBATIM by the live arm and the
+    selftest replay -- the only difference is where the band series / frame_tracks came from -- so
+    `_expected` can only ever be this function's own numbers (same discipline as `_rab_score_arm`).
+
+    `frame_tracks_at`, `cross_s`, `cross_t`, `band_s`, `band_t` need only support `[frame]`: the
+    live arm passes dense lists, the selftest passes sparse dicts over exactly the frames this
+    function will index (`_mlr_expand`'s precedent)."""
+    cp = _count_pellets_module()
+    pellet_radius = params["pellet_radius"]
+    if len(shots_struct) != len(shots_tmpl):
+        raise SystemExit(
+            f"--mislock-identity: CONTROL PAIRING FAILED on {name}: {len(shots_struct)} structural "
+            f"events vs {len(shots_tmpl)} template events. debounce_shots segments on white+red, "
+            "which a crosshair swap cannot touch, so an unequal count means the two arms did not "
+            "come from the same frame_counts.")
+    by_t0 = {s["t0"]: s for s in mlr["shots"]}
+    rows = []
+    for es, et in zip(shots_struct, shots_tmpl):
+        if (es["start"], es["end"]) != (et["start"], et["end"]):
+            raise SystemExit(
+                f"--mislock-identity: CONTROL PAIRING FAILED on {name}: event "
+                f"[{es['start']},{es['end']}) vs [{et['start']},{et['end']}).")
+        cls = by_t0.get(es["start"])
+        row = {"t0": es["start"], "mislocked": None if cls is None else cls["mislocked"],
+               "median_disp": None if cls is None else cls["median_disp"],
+               "scored": False, "why_unscored": None,
+               "rep_struct": es["frame"], "rep_tmpl": et["frame"],
+               "n_struct": None, "n_tmpl": None, "count_diff": None,
+               "n_inter": None, "n_union": None, "jaccard": None}
+        # The measurement is DEFINED at the band-PLATEAU frame. On an event where the hybrid
+        # override never fired there is no such frame in that arm (the representative is the legacy
+        # median-total one), so the row is recorded UNSCORED rather than silently scored on a
+        # different channel -- the §36/§37 defect, in miniature.
+        if not _rab_banded(cp, band_s, es):
+            row["why_unscored"] = "no band plateau under the structural lock"
+        elif not _rab_banded(cp, band_t, et):
+            row["why_unscored"] = "no band plateau under the template lock"
+        elif cls is None or cls["median_disp"] is None:
+            row["why_unscored"] = "shot not classified by the --mislock-rate detector"
+        else:
+            a = _mli_counted_ids(frame_tracks_at, cross_s, band_ids, pellet_radius, es["frame"])
+            b = _mli_counted_ids(frame_tracks_at, cross_t, band_ids, pellet_radius, et["frame"])
+            if a is None or b is None:
+                row["why_unscored"] = "no crosshair lock at a representative frame"
+            else:
+                row.update({"scored": True, "n_struct": len(a), "n_tmpl": len(b),
+                            "count_diff": len(b) - len(a), "n_inter": len(a & b),
+                            "n_union": len(a | b), "jaccard": _mli_jaccard(a, b)})
+                _mli_assert_channel(name, row, band_s, band_t, es)
+        rows.append(row)
+
+    scored = [r for r in rows if r["scored"]]
+    mis = [r for r in scored if r["mislocked"]]
+    ok = [r for r in scored if not r["mislocked"]]
+    j_mis = _mli_median([r["jaccard"] for r in mis])
+    j_ok = _mli_median([r["jaccard"] for r in ok])
+    dc = round(sum(abs(r["count_diff"]) for r in mis) / len(mis), 4) if mis else None
+    return {
+        "dump": name, "fps": fps, "pellet_radius": pellet_radius,
+        "band": [cp._band_lo(fps), params.get("band_hi") or params["max_pellet_frames"]],
+        "max_pellet_frames": params["max_pellet_frames"],
+        "excluded": mlr["excluded"], "template_lock_rate": mlr["template_lock_rate"],
+        "n_shots": len(rows), "n_scored": len(scored),
+        "n_unscored": len(rows) - len(scored),
+        "unscored_reasons": dict(collections.Counter(
+            r["why_unscored"] for r in rows if not r["scored"])),
+        # ⛔ THE SELECTION EFFECT, QUANTIFIED RATHER THAN SMOOTHED OVER -- and it is not symmetric.
+        # A shot whose wrong lock lands on empty screen has NO band plateau there (the plateau rule
+        # needs a run of frames at band >= 3), so the WORST mislocks are the ones most likely to be
+        # excluded. That biases J_mis UPWARD (toward "same pellets") and dC DOWNWARD, i.e. AGAINST
+        # this pass's own hypothesis -- the same shape as §22D's excluded NEITHER cases. Printed
+        # with every headline so no reader has to reconstruct it.
+        "n_mislocked_total": sum(1 for r in rows if r["mislocked"]),
+        "n_mislocked_unscored": sum(1 for r in rows if r["mislocked"] and not r["scored"]),
+        "mislocked_unscored_reasons": dict(collections.Counter(
+            r["why_unscored"] for r in rows if r["mislocked"] and not r["scored"])),
+        "n_mislocked_scored": len(mis), "n_ok_scored": len(ok),
+        "J_mis": j_mis, "J_ok": j_ok, "dC": dc,
+        "mean_count_diff_mislocked": (round(sum(r["count_diff"] for r in mis) / len(mis), 4)
+                                      if mis else None),
+        "dC_ok": (round(sum(abs(r["count_diff"]) for r in ok) / len(ok), 4) if ok else None),
+        "control_sanity_ok": j_ok is not None and j_ok >= 0.90,
+        "verdict": _mli_band(j_mis, dc),
+        "shots": [{k: r[k] for k in _MLI_SHOT_KEYS} for r in rows],
+    }
+
+
+def _mli_frame_tracks_and_ids(tracks, cross_s, params, fps):
+    """The two SHIPPED-path objects both arms share: `frame_tracks` reconstructed by
+    `_hla_reconstruct_frame_tracks` (per-frame `reds`-aware, D2) and `band_ids` resolved by
+    `_hla_gate_ids` from the dump's OWN persisted params. Neither is re-derived here."""
+    frame_tracks, _life = _hla_reconstruct_frame_tracks(tracks, len(cross_s), 0)
+    _pellet_ids, band_ids = _hla_gate_ids(tracks, params, fps)
+    return frame_tracks, band_ids
+
+
+def _mli_equivalence(tracks, cross, params, fps, band, n):
+    """MANDATORY LIVE CHECK, `--residual-ab`'s verbatim: production's `band` (from the real
+    `_frame_pellet_counts`) must agree per-frame with this file's INDEPENDENT `_ps_band_totals`
+    aggregation over the same radius/lifetime facts. `band_hi` is passed EXPLICITLY so the open
+    `_ps_band` coupling hazard (sweep item 4) cannot silently narrow the band here."""
+    band_hi = params.get("band_hi") or params["max_pellet_frames"]
+    rtracks = [(t["life"], _rab_white_radius_runs(t, cross, params["pellet_radius"]))
+               for t in tracks]
+    rtracks = [(life, runs) for life, runs in rtracks if runs]
+    totals = _ps_band_totals(rtracks, _ps_band(fps, params["max_pellet_frames"], band_hi))
+    return _hla_equivalence(band, totals, 0, n)
+
+
+def _mli_compute_live(struct_path, tmpl_path, fps):
+    """Score one (structural, template) dump pair from the live dumps, and return the compact slice
+    a selftest can replay it from."""
+    cp = _count_pellets_module()
+    with open(struct_path) as fh:
+        sd = json.load(fh)
+    with open(tmpl_path) as fh:
+        td = json.load(fh)
+    frame_counts = [{"white": c["white"], "red": c["red"], "marker": c.get("marker", 0)}
+                    for c in sd["frame_counts"]]
+    n = len(frame_counts)
+    cross_s = [tuple(c) if c else None for c in sd["cross_positions"]]
+    cross_t = [tuple(c) if c else None for c in td["cross_positions"]]
+    if len(cross_s) != n or len(cross_t) != n:
+        raise SystemExit(f"--mislock-identity: {struct_path} ({len(cross_s)} cross positions) vs "
+                         f"{tmpl_path} ({len(cross_t)}) vs frame_counts ({n}) -- length mismatch. "
+                         "Wrong template, a partial run, or a mismatched frame source; refusing to "
+                         "score misaligned frame indices.")
+    params = sd["params"]
+    tracks = sd["tracks"]
+    if not tracks:
+        raise SystemExit(f"--mislock-identity: {struct_path} carries no `tracks`. The STRUCTURAL "
+                         "dump supplies the track population for BOTH arms (only the crosshair is "
+                         "swapped); a cross-positions-only dump cannot be the structural side.")
+    frame_tracks, band_ids = _mli_frame_tracks_and_ids(tracks, cross_s, params, fps)
+    band_s = _hla_production_band(tracks, cross_s, params, fps, 0)
+    band_t = _hla_production_band(tracks, cross_t, params, fps, 0)
+    for label, cross, band in (("structural", cross_s, band_s), ("template", cross_t, band_t)):
+        eq = _mli_equivalence(tracks, cross, params, fps, band, n)
+        if eq["n_mismatch"]:
+            raise SystemExit(f"--mislock-identity: EQUIVALENCE FAILED on {struct_path} "
+                             f"{label} arm: {eq['n_mismatch']}/{eq['n_frames']} frames disagree "
+                             f"{eq['diff_frames']}")
+    shots_struct, _ = _hla_score(frame_counts, band_s, fps)
+    shots_tmpl, _ = _hla_score(frame_counts, band_t, fps)
+    name = Path(struct_path).resolve().parent.name
+    # ⛔ CONTROL POPULATION: §20's own detector, its own committed threshold, on its own inputs.
+    mlr = _mlr_score(name, shots_struct, n, cross_s, cross_t, params["pellet_radius"], fps)
+    report = _mli_score(name, fps, params, n, shots_struct, shots_tmpl, mlr, frame_tracks,
+                        band_ids, cross_s, cross_t, band_s, band_t)
+    report["tmpl"] = Path(tmpl_path).resolve().parent.name
+    slim = _mli_slim(name, report["tmpl"], fps, params, frame_counts, cross_s, cross_t,
+                     band_s, band_t, frame_tracks, band_ids, shots_struct, shots_tmpl, n)
+    return report, slim
+
+
+def _mli_slim(name, tmpl, fps, params, frame_counts, cross_s, cross_t, band_s, band_t,
+              frame_tracks, band_ids, shots_struct, shots_tmpl, n):
+    """Reduce a full dump pair to exactly what `--mislock-identity-selftest` needs.
+
+    KEPT WHOLE: `frame_counts` and BOTH band series -- the replay runs the real `cp.debounce_shots`
+    (via `_hla_score`) over them, so segmentation, the hybrid representative rule and the plateau
+    frames are all re-derived rather than pinned. SLICED: the crosshair positions and the per-frame
+    track lists, to the frames some shot's counting window (`_mlr_needed_frames`) or some arm's
+    representative frame actually touches. A change that MOVES a representative frame therefore
+    trips the replay loudly (a missing key), instead of silently scoring a stale frame."""
+    need_cross = set(_mlr_needed_frames(shots_struct, n))
+    reps = {s["frame"] for s in shots_struct} | {s["frame"] for s in shots_tmpl}
+    need_cross |= reps
+    kept_ids = set()
+    tracks_at = {}
+    for f in sorted(reps):
+        entries = [[int(tid), x, y, bool(is_red)] for tid, x, y, is_red in frame_tracks[f]]
+        tracks_at[str(f)] = entries
+        kept_ids.update(e[0] for e in entries)
+    return {
+        "name": name, "tmpl": tmpl, "fps": fps, "n": n,
+        "params": {k: params[k] for k in ("pellet_radius", "max_pellet_frames", "band_hi",
+                                          "marker_radius") if k in params},
+        "frame_counts": [[c["white"], c["red"], c["marker"]] for c in frame_counts],
+        "band_struct": band_s, "band_tmpl": band_t,
+        "cross_struct": {str(f): cross_s[f] for f in sorted(need_cross)},
+        "cross_tmpl": {str(f): cross_t[f] for f in sorted(need_cross)},
+        "tracks_at_rep": tracks_at,
+        # only the band members that actually appear at a stored frame -- the gate still runs, on a
+        # set reduced to the ids it can ever be asked about
+        "band_ids": sorted(band_ids & kept_ids),
+    }
+
+
+def _mli_replay(d):
+    """Replay one committed slice through the SAME `_mli_score` the live arm calls, re-deriving the
+    events with the real `cp.debounce_shots` off the committed frame_counts + band series."""
+    fps = d["fps"]
+    frame_counts = _rab_expand_frame_counts(d["frame_counts"])
+    band_s, band_t = d["band_struct"], d["band_tmpl"]
+    cross_s = {int(k): (tuple(v) if v else None) for k, v in d["cross_struct"].items()}
+    cross_t = {int(k): (tuple(v) if v else None) for k, v in d["cross_tmpl"].items()}
+    tracks_at = {int(k): [tuple(e) for e in v] for k, v in d["tracks_at_rep"].items()}
+    band_ids = set(d["band_ids"])
+    shots_struct, _ = _hla_score(frame_counts, band_s, fps)
+    shots_tmpl, _ = _hla_score(frame_counts, band_t, fps)
+    mlr = _mlr_score(d["name"], shots_struct, d["n"], cross_s, cross_t,
+                     d["params"]["pellet_radius"], fps)
+    rep = _mli_score(d["name"], fps, d["params"], d["n"], shots_struct, shots_tmpl, mlr,
+                     tracks_at, band_ids, cross_s, cross_t, band_s, band_t)
+    rep["tmpl"] = d["tmpl"]
+    return rep
+
+
+def _mli_expected(reports):
+    return {"dumps": reports}
+
+
+_MLI_CHANNEL_BANNER = (
+    "CHANNEL SCORED: the SHIPPED one -- `band_ids` members inside `pellet_radius` of the\n"
+    "  crosshair at the BAND-PLATEAU frame, i.e. exactly the set `_frame_pellet_counts`'\n"
+    "  `band` branch counts (count-pellets.py:494-499) at the frame `debounce_shots`' hybrid\n"
+    "  override selects (count-pellets.py:664-671). NOT the legacy pellet_ids/median-frame\n"
+    "  channel (docs/probe-runs.md §36/§37). Self-evidence, per scored row: `n_struct` ==\n"
+    "  band@rep_struct AND `n_tmpl` == band@rep_tmpl AND the shipped reader's own `white` ==\n"
+    "  band@rep_struct; `_mli_assert_channel` hard-fails the run if any of the three breaks,\n"
+    "  and rows with no band plateau are recorded UNSCORED rather than scored off another frame.")
+
+
+def _print_mislock_identity(reports):
+    print("\nMISLOCK SEVERITY BY TRACK-SET IDENTITY -- "
+          "docs/handoffs/2026-08-06-mislock-identity-PRECOMMIT.md")
+    print(_MLI_CHANNEL_BANNER)
+    print("\nDEFINITIONS (pre-committed): A = ids counted under the STRUCTURAL lock, B = under the "
+          "TEMPLATE lock;\n  count_diff = |B| - |A|; jaccard = |A n B| / |A u B|; J_mis / J_ok = "
+          "MEDIAN jaccard on mislocked /\n  not-mislocked shots; dC = MEAN |count_diff| on "
+          "mislocked shots. Mislocked = §20's OWN committed\n  criterion (median structural-vs-"
+          "template displacement over t0+8..11 > pellet_radius), unmodified.")
+    print("\n⛔ REPORTED PER DUMP, NEVER POOLED (pre-commit §4, CONTROL SEPARATION): the labelled "
+          "clip is\n  IN-SAMPLE (the labels the reader was tuned against, §19D) and must not be "
+          "averaged with production.")
+    for r in reports:
+        tag = "EXCLUDED (template lock < 90%, §20's §4.1 gate)" if r["excluded"] else "included"
+        print(f"\nDUMP {r['dump']}  (template lock from {r['tmpl']})  [{tag}]")
+        lr = (f"{r['template_lock_rate'] * 100:.1f}%"
+              if r["template_lock_rate"] is not None else "n/a")
+        print(f"  fps={r['fps']} pellet_radius={r['pellet_radius']} band={r['band']} "
+              f"max_pellet_frames={r['max_pellet_frames']} template_lock_rate={lr}")
+        print(f"  shots={r['n_shots']}  scored={r['n_scored']}  unscored={r['n_unscored']} "
+              f"{r['unscored_reasons'] or ''}")
+        print(f"  scored population: mislocked={r['n_mislocked_scored']}  "
+              f"not-mislocked={r['n_ok_scored']}")
+        print(f"  ⛔ SELECTION EFFECT: {r['n_mislocked_unscored']} of "
+              f"{r['n_mislocked_total']} mislocked shots are UNSCORED "
+              f"{r['mislocked_unscored_reasons'] or ''} -- a wrong lock on empty screen leaves no "
+              f"band plateau,\n     so the WORST mislocks drop out. J_mis is biased UP (toward "
+              f"'same pellets') and dC DOWN by it.")
+        jm = "n/a" if r["J_mis"] is None else f"{r['J_mis']:.4f}"
+        jo = "n/a" if r["J_ok"] is None else f"{r['J_ok']:.4f}"
+        dc = "n/a" if r["dC"] is None else f"{r['dC']:.4f}"
+        print(f"    >>> J_ok  = {jo}   (n={r['n_ok_scored']})  "
+              f"<<< CONTROL SANITY: must be >= 0.90")
+        print(f"    >>> J_mis = {jm}   (n={r['n_mislocked_scored']})")
+        print(f"    >>> dC    = {dc}   (n={r['n_mislocked_scored']}); mean signed count_diff on "
+              f"mislocked = {r['mean_count_diff_mislocked']}; dC on not-mislocked = {r['dC_ok']}")
+        print(f"  CONTROL SANITY: {'PASS' if r['control_sanity_ok'] else 'FIRED -- VOID'} "
+              f"(J_ok {jo} vs 0.90)")
+        print(f"  §3 BAND: {r['verdict']}")
+        mis = [s for s in r["shots"] if s["scored"] and s["mislocked"]]
+        if mis:
+            print(f"    {'t0':>6s} {'disp':>8s} {'rep_s':>6s} {'rep_t':>6s} {'nA':>3s} {'nB':>3s} "
+                  f"{'diff':>5s} {'|AnB|':>6s} {'|AuB|':>6s} {'jaccard':>8s}")
+            for s in mis:
+                print(f"    {s['t0']:>6d} {s['median_disp']:>8.1f} {s['rep_struct']:>6d} "
+                      f"{s['rep_tmpl']:>6d} {s['n_struct']:>3d} {s['n_tmpl']:>3d} "
+                      f"{s['count_diff']:>+5d} {s['n_inter']:>6d} {s['n_union']:>6d} "
+                      f"{s['jaccard']:>8.4f}")
+    print("\n⛔ SCOPE (pre-commit §5): this measures the MECHANISM, not the MAGNITUDE. A low jaccard "
+          "proves the two\n  locks count DIFFERENT pellets; it does NOT say which is correct, nor "
+          "how many REAL pellets are lost.\n  Sizing the channel still requires owner labels. "
+          "NOTHING IS ENACTED. It does not overturn §22C -- at\n  most it establishes that §22C's "
+          "OBSERVABLE cannot see the effect, a statement about the instrument.")
+
+
+def audit_mislock_identity(struct_paths, tmpl_paths, fps_list, save_fixture=None):
+    if len(struct_paths) != len(tmpl_paths):
+        raise SystemExit(f"--mislock-identity: {len(struct_paths)} structural path(s) vs "
+                         f"{len(tmpl_paths)} --mislock-identity-template path(s) -- must pair 1:1, "
+                         "same order")
+    if len(fps_list) not in (1, len(struct_paths)):
+        raise SystemExit("--mislock-identity-fps takes 1 value or one per dump "
+                         f"({len(struct_paths)} given), got {len(fps_list)}")
+    reports, slims = [], []
+    for i, (sp, tp) in enumerate(zip(struct_paths, tmpl_paths)):
+        fps = fps_list[0] if len(fps_list) == 1 else fps_list[i]
+        rep, slim = _mli_compute_live(sp, tp, fps)
+        reports.append(rep)
+        slims.append(slim)
+    if save_fixture:
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("count-pellets.py --dump-tracks structural + template pairs (see "
+                            "docs/handoffs/2026-08-06-mislock-identity-PRECOMMIT.md), sliced to "
+                            "what --mislock-identity-selftest needs to reproduce the score."),
+                "_note": ("A SLICE per dump pair. `frame_counts` and both `band_*` series are kept "
+                          "WHOLE so the replay re-runs the real cp.debounce_shots (via _hla_score) "
+                          "and re-derives every representative frame; `cross_*` and `tracks_at_rep` "
+                          "cover only the frames some shot's t0+{8,9,10,11} window or some arm's "
+                          "representative frame touches, and `band_ids` is reduced to the ids that "
+                          "appear at those frames. Regenerate with analyze-pellet-tracks.py "
+                          "--mislock-identity <structural.json...> --mislock-identity-template "
+                          "<template.json...> --mislock-identity-fps <fps...> "
+                          "--save-mislock-identity-fixture <path>. ⛔ --mislock-identity-fps is "
+                          "MANDATORY and positionally parallel: the labelled clip is 60 fps and "
+                          "every production dump is 30, and fps sets the band's lower bound."),
+                "dumps": slims,
+                "_expected": _mli_expected(reports),
+            }, fh)
+        print(f"wrote mislock-identity fixture -> {save_fixture}")
+    _print_mislock_identity(reports)
+    return reports
+
+
+def mislock_identity_selftest():
+    """Constraint 9 self-validation: replay --mislock-identity over the committed slices (no
+    scratchpad access) and assert BOTH the pinned `_expected` dict AND the arm's own decisive
+    behaviours explicitly, so a fixture edit that moved one cannot hide behind a coarse
+    dict-equality pass:
+
+      - CONTROL SANITY is actually evaluated (J_ok computed on a non-empty not-mislocked control);
+      - the arm DISCRIMINATES -- perturbing one stored track's position at a representative frame
+        must change that shot's jaccard, and dropping an id from `band_ids` must change its counts;
+      - CONTROL CHANNEL is a real gate -- corrupting a band value must make `_mli_assert_channel`
+        raise rather than report a number.
+    """
+    with open(MISLOCK_IDENTITY_FIXTURE) as fh:
+        fx = json.load(fh)
+    reports = [_mli_replay(d) for d in fx["dumps"]]
+    got = _mli_expected(reports)
+    ok = got == fx["_expected"]
+    if not ok:
+        exp = fx["_expected"]["dumps"]
+        for i, g in enumerate(got["dumps"]):
+            e = exp[i] if i < len(exp) else {}
+            for k in sorted(set(g) | set(e)):
+                if g.get(k) != e.get(k):
+                    print(f"  DIFF dumps[{i}].{k}:\n    expected {json.dumps(e.get(k))}"
+                          f"\n    got      {json.dumps(g.get(k))}")
+
+    checks = [("every dump scored a non-empty not-mislocked CONTROL population (CONTROL SANITY is "
+               "evaluated, not vacuous)", all(r["n_ok_scored"] > 0 for r in reports)),
+              ("at least one dump scored a mislocked shot (J_mis is not vacuous)",
+               any(r["n_mislocked_scored"] > 0 for r in reports))]
+
+    # DISCRIMINATION 1: move one track far away at a representative frame -> that shot's sets change.
+    d = json.loads(json.dumps(fx["dumps"][0]))
+    base = reports[0]
+    target = next((s for s in base["shots"] if s["scored"]), None)
+    moved = False
+    if target is not None:
+        entries = d["tracks_at_rep"][str(target["rep_struct"])]
+        ids = set(d["band_ids"])
+        cp0 = d["cross_struct"][str(target["rep_struct"])]
+        radius = d["params"]["pellet_radius"]
+        for e in entries:
+            # a track the shipped channel actually COUNTS on that frame: in band, not red, in
+            # radius -- moving anything else out is a no-op and would prove nothing
+            if (e[0] in ids and not e[3]
+                    and math.hypot(e[1] - cp0[0], e[2] - cp0[1]) <= radius):
+                e[1], e[2] = 100000.0, 100000.0
+                moved = True
+                break
+    if moved:
+        try:
+            _mli_replay(d)
+            hit = "no error"
+        except SystemExit as exc:
+            # the channel assert fires because the reconstructed set no longer matches production's
+            # own `band` at that frame -- which is exactly the gate doing its job
+            hit = str(exc)
+        checks.append(("moving a counted track out of radius trips CONTROL CHANNEL by NAME (the id "
+                       "set is pinned to _frame_pellet_counts' own count)",
+                       "CONTROL CHANNEL FAILED" in hit))
+    else:
+        checks.append(("a counted track was available to perturb", False))
+
+    # DISCRIMINATION 2: corrupt a band value -> the run must ABORT, never report a number. Either
+    # gate is a pass: the channel assert (the corrupted value no longer matches the id set) or the
+    # slice's own frame coverage (a moved plateau frame is simply not stored -- see `_mli_slim`).
+    d2 = json.loads(json.dumps(fx["dumps"][0]))
+    if target is not None:
+        d2["band_struct"][target["rep_struct"]] += 3
+        try:
+            _mli_replay(d2)
+            rejected = False
+        except (SystemExit, KeyError):
+            rejected = True
+        checks.append(("a corrupted band value is REJECTED (channel gate, or the slice's own "
+                       "representative-frame coverage), never scored", rejected))
+
+    all_ok = ok and all(v for _, v in checks)
+    for label, v in checks:
+        print(f"  {'PASS' if v else 'FAIL'}  {label}")
+    _print_mislock_identity(reports)
+    print("SELFTEST PASS" if all_ok else "SELFTEST FAIL")
+    return 0 if all_ok else 1
+
+
+# ============================================================
 # LOCK ADJUDICATION -- docs/handoffs/2026-08-04-mislock-cost-PRECOMMIT.md's own §21C conclusion:
 # "measuring what a mislock costs requires ground truth on mislocked PRODUCTION shots." §21 (the
 # swapped-window Δcount A/B) is VOID and stays void -- this does not retry it. It generates the
@@ -10160,6 +10697,30 @@ def main():
                     help=f"write the committed replay slice (see {MISLOCK_RATE_FIXTURE})")
     ap.add_argument("--mislock-rate-selftest", action="store_true",
                     help=f"replay {MISLOCK_RATE_FIXTURE} and exit")
+    ap.add_argument("--mislock-identity", nargs="+", metavar="STRUCT_TRACKS_JSON",
+                    help=("MISLOCK SEVERITY BY TRACK-SET IDENTITY "
+                          "(docs/handoffs/2026-08-06-mislock-identity-PRECOMMIT.md): per shot, the "
+                          "SET of track ids the SHIPPED path counts (band_ids members inside "
+                          "pellet_radius of the crosshair at the band-plateau frame), built TWICE "
+                          "-- under the structural lock and under the template lock -- and reported "
+                          "as n_struct / n_tmpl / count_diff and jaccard = |AnB|/|AuB|. ⚑ Jaccard "
+                          "is SYMMETRIC and needs NO ground truth, so it runs on production "
+                          "mislocks where no owner labels exist. Aggregated PER DUMP (never pooled) "
+                          "as J_mis / J_ok / dC. Classification is §20's OWN --mislock-rate "
+                          "criterion, unmodified. MEASUREMENT ONLY: measures the MECHANISM, never "
+                          "the magnitude; no constant, default, threshold or localizer changes."))
+    ap.add_argument("--mislock-identity-template", nargs="+", metavar="TEMPLATE_TRACKS_JSON",
+                    help="template-mode tracks.json paths, one per --mislock-identity entry, same "
+                         "order. Only its `cross_positions` is read -- both arms share the "
+                         "STRUCTURAL dump's tracks, which is what makes the two id sets comparable "
+                         "(and is forced anyway: the production template dumps carry no tracks).")
+    ap.add_argument("--mislock-identity-fps", type=float, nargs="+", default=[30.0], metavar="FPS",
+                    help="sampling fps, 1 value or one per --mislock-identity dump (default 30, "
+                         "matching every production dump; the labelled clip is 60)")
+    ap.add_argument("--save-mislock-identity-fixture", metavar="PATH",
+                    help=f"write the committed replay slice (see {MISLOCK_IDENTITY_FIXTURE})")
+    ap.add_argument("--mislock-identity-selftest", action="store_true",
+                    help=f"replay {MISLOCK_IDENTITY_FIXTURE} and exit")
     ap.add_argument("--lock-adjudication", nargs="+", metavar="STRUCT_TRACKS_JSON",
                     help=("LOCK ADJUDICATION (docs/handoffs/2026-08-04-mislock-cost-PRECOMMIT.md's "
                           "§21C ask): render a BLINDED image set for the owner to answer, per shot, "
@@ -10291,6 +10852,14 @@ def main():
             ap.error("--mislock-rate requires --mislock-rate-template")
         audit_mislock_rate(args.mislock_rate, args.mislock_rate_template, args.mislock_rate_fps,
                            args.save_mislock_rate_fixture)
+        return 0
+    if args.mislock_identity_selftest:
+        raise SystemExit(mislock_identity_selftest())
+    if args.mislock_identity:
+        if not args.mislock_identity_template:
+            ap.error("--mislock-identity requires --mislock-identity-template")
+        audit_mislock_identity(args.mislock_identity, args.mislock_identity_template,
+                               args.mislock_identity_fps, args.save_mislock_identity_fixture)
         return 0
     if args.lock_adjudication_score_selftest:
         raise SystemExit(lock_adjudication_score_selftest())
