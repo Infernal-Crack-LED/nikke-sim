@@ -7037,6 +7037,218 @@ def dump_replay_fidelity_selftest():
 
 
 # ============================================================
+# BAND_HI ON THE PRODUCTION PATH, OUT OF SAMPLE -- docs/probe-runs.md §30
+#
+# §19 measured what the landed `band_hi = 20` (10 at 30 fps) buys on the production path and got
+# +0.60 pellets/shot -- but on ONE clip, FIVE shots, and its own §19D says so: the recovered
+# pellets are among the five that GENERATED the cap hypothesis, so "the fix recovers them" is close
+# to tautological on that footage. The out-of-sample evidence was §14's ceiling and corridor gates,
+# which are per-EVENT and label-free -- a different basis from the per-SHOT production gain.
+#
+# This arm closes that named gap: the same A/B, on the PRODUCTION path, across every shot of every
+# schemafix dump -- footage that had no part in generating the hypothesis.
+#
+# ⚑ WHY NO RE-EXTRACTION IS NEEDED (and this is the reuse-before-derive finding, §30A):
+# `--dump-tracks` stores `frame_counts` as `results[i]["opencv"]`, and `--temporal`'s stdout -- the
+# thing read-pellets.ts parses and feeds to `debounceShots` -- prints that same `results` list.
+# Production runs `--backend opencv` with the others zero-filled, and since the §24 selector fix
+# the passenger channels resolve to opencv's real values. So a schemafix dump's `frame_counts` ARE
+# the per-frame values production's estimator consumes. Running `debounce_shots` on them IS the
+# production path, without ffmpeg, without the VLM, and without re-extracting anything.
+#
+# ⚑ The CONTROL arm has to be RECOMPUTED (band at the pre-landing bound) while the LANDED arm is
+# the dump's own stored `band`. That asymmetry is the arm's own validity check: recomputing at the
+# dump's OWN band_hi must reproduce the stored series exactly, or the recomputation is wrong and
+# the A/B means nothing.
+#
+# MEASUREMENT ONLY: never touches band_hi, debounce_shots, read-pellets.ts or any constant.
+BAND_PROD_FIXTURE = "scripts/tests/fixtures/pellets/band-production-ab-slice.json"
+
+
+def _bp_band_series(tracks, cross_positions, pellet_radius, band_lo, band_hi, n):
+    """Recompute count-pellets.py's `band` channel at an arbitrary `band_hi`, from a dump's own
+    tracks -- mirroring `_frame_pellet_counts`' band branch exactly: NON-RED on that frame, in
+    radius, and overall lifetime within [band_lo, band_hi]. NOT gated by pellet_ids.
+
+    ⚑ Uses the PER-FRAME `reds` channel, because the band branch tests `not is_red` per frame --
+    on a pre-2026-08-05 dump this would inherit §25's mislabel (§26C measured 13 divergent band
+    frames from exactly that, going to 0 once `reds` existed)."""
+    band_ids = {t["id"] for t in tracks if band_lo <= t["life"] <= band_hi}
+    series = [0] * n
+    for t in tracks:
+        if t["id"] not in band_ids:
+            continue
+        reds = t.get("reds")
+        for i, f in enumerate(range(t["first"], t["last"] + 1)):
+            if f < 0 or f >= n or i >= len(t["xs"]):
+                continue
+            cp = cross_positions[f]
+            if cp is None:
+                continue
+            if bool(reds[i]) if reds and i < len(reds) else bool(t["is_red"]):
+                continue
+            if math.hypot(t["xs"][i] - cp[0], t["ys"][i] - cp[1]) <= pellet_radius:
+                series[f] += 1
+    return series
+
+
+def _bp_score(name, tracks, cross_positions, frame_counts, params, fps, marker_min=2):
+    cp_mod = _count_pellets_module()
+    n = len(frame_counts)
+    pr = params["pellet_radius"]
+    band_lo = cp_mod._band_lo(fps)
+    landed_hi = params.get("band_hi") or params["max_pellet_frames"]
+    control_hi = params["max_pellet_frames"]   # the pre-landing bound: band_hi defaulted to it
+
+    # VALIDITY CHECK -- recomputing at the dump's OWN band_hi must reproduce its stored series.
+    recomputed_landed = _bp_band_series(tracks, cross_positions, pr, band_lo, landed_hi, n)
+    recon_mismatch = sum(1 for f in range(n)
+                         if recomputed_landed[f] != frame_counts[f].get("band", 0))
+    control = _bp_band_series(tracks, cross_positions, pr, band_lo, control_hi, n)
+
+    def run(series):
+        fc = [dict(r, band=series[f]) for f, r in enumerate(frame_counts)]
+        return cp_mod.debounce_shots(fc, fps, marker_min)
+
+    ctrl_shots, _ = run(control)
+    land_shots, _ = run(recomputed_landed)
+    assert len(ctrl_shots) == len(land_shots), (
+        f"{name}: segmentation moved ({len(ctrl_shots)} -> {len(land_shots)}); band_hi must not "
+        "change event grouping -- debounce_shots segments on white+red, which this A/B never touches")
+
+    def avg_total(shots, lo=5, hi=10):
+        v = [s["total"] for s in shots if lo <= s["total"] <= hi]
+        return (sum(v) / len(v), len(v)) if v else (None, 0)
+
+    deltas = [l["total"] - c["total"] for c, l in zip(ctrl_shots, land_shots)]
+    moved = [d for d in deltas if d]
+    ca, cv = avg_total(ctrl_shots)
+    la, lv = avg_total(land_shots)
+    return {
+        "dump": name, "fps": fps, "band_lo": band_lo,
+        "control_band_hi": control_hi, "landed_band_hi": landed_hi,
+        "recon_mismatch_frames": recon_mismatch,
+        "n_shots": len(land_shots),
+        "n_shots_moved": len(moved),
+        "sum_delta_total": sum(deltas),
+        # THE headline, per SHOT -- the same basis §19 reported (+0.60 on 5 in-sample shots)
+        "delta_per_shot": round(sum(deltas) / len(deltas), 4) if deltas else None,
+        "mean_delta_on_moved": round(sum(moved) / len(moved), 4) if moved else None,
+        "n_valid_control": cv, "n_valid_landed": lv,
+        "avg_total_control": None if ca is None else round(ca, 4),
+        "avg_total_landed": None if la is None else round(la, 4),
+        "delta_hist": dict(sorted(collections.Counter(deltas).items())),
+    }
+
+
+def _bp_pool(reports):
+    tot = lambda k: sum(r[k] for r in reports)  # noqa: E731
+    n = tot("n_shots")
+    return {
+        "n_dumps": len(reports), "n_shots": n,
+        "n_shots_moved": tot("n_shots_moved"),
+        "sum_delta_total": tot("sum_delta_total"),
+        "delta_per_shot": round(tot("sum_delta_total") / n, 4) if n else None,
+        "recon_mismatch_frames": tot("recon_mismatch_frames"),
+        "n_valid_control": tot("n_valid_control"), "n_valid_landed": tot("n_valid_landed"),
+    }
+
+
+def _bp_expected(reports, pooled):
+    return {"pooled": pooled,
+            "dumps": [{k: (v if k != "delta_hist" else {str(a): b for a, b in v.items()})
+                       for k, v in r.items()} for r in reports]}
+
+
+def _print_band_production(reports, pooled):
+    print("\nBAND_HI ON THE PRODUCTION PATH, OUT OF SAMPLE (docs/probe-runs.md §30)")
+    print(f"  {'dump':26s} {'shots':>6s} {'moved':>6s} {'Σδ':>6s} {'δ/shot':>8s} "
+          f"{'avgT ctrl':>10s} {'avgT land':>10s} {'reconΔ':>7s}")
+    for r in reports:
+        print(f"  {r['dump']:26s} {r['n_shots']:6d} {r['n_shots_moved']:6d} "
+              f"{r['sum_delta_total']:6d} {r['delta_per_shot']:+8.4f} "
+              f"{r['avg_total_control']:10.4f} {r['avg_total_landed']:10.4f} "
+              f"{r['recon_mismatch_frames']:7d}")
+    print(f"\n  POOLED  {pooled['n_shots']} shots / {pooled['n_dumps']} dumps: "
+          f"Σδ {pooled['sum_delta_total']:+d} pellets, **{pooled['delta_per_shot']:+.4f} per shot**")
+    print(f"    valid shots {pooled['n_valid_control']} -> {pooled['n_valid_landed']}")
+    print(f"    RECONSTRUCTION CONTROL: {pooled['recon_mismatch_frames']} frames where recomputing "
+          f"at the dump's OWN band_hi\n      disagrees with its stored `band` (must be 0, else the "
+          f"A/B is meaningless)")
+    print("\n  ⚑ OUT OF SAMPLE. §19's +0.60/shot was 5 shots on the ONE clip that generated the cap")
+    print("    hypothesis (its own §19D calls that near-tautological). These dumps had no part in")
+    print("    generating it. ⚑ Different BASIS from §19 too: every shot, not 5 owner-labelled ones,")
+    print("    and no owner reference -- this measures what the landing MOVED, not accuracy.")
+
+
+def _bp_load(path, fps):
+    with open(path) as fh:
+        d = json.load(fh)
+    if not any("reds" in t for t in d["tracks"][:50]):
+        raise SystemExit(
+            "=" * 78 + "\n!! DUMP PREDATES THE PER-FRAME `reds` SCHEMA -- REFUSING !!\n" + "=" * 78 +
+            f"\n  {path}\n  The `band` branch tests `not is_red` PER FRAME, so a pre-2026-08-05 dump\n"
+            "  inherits docs/probe-runs.md §25's mislabel on exactly this channel (§26C measured\n"
+            "  13 divergent band frames from it). Re-dump at or after 8d500ff9 (§26).\n" + "=" * 78)
+    if not any("band" in r for r in d["frame_counts"][:50]):
+        raise SystemExit(f"!! {path} carries no `band` in frame_counts (pre-§23 dump) -- REFUSING")
+    return (Path(path).resolve().parent.name, d["tracks"], d["cross_positions"],
+            d["frame_counts"], d["params"], fps)
+
+
+def audit_band_production(paths, fps_list, save_fixture=None):
+    fpss = fps_list if len(fps_list) == len(paths) else [fps_list[0]] * len(paths)
+    reports = [_bp_score(*_bp_load(p, f)) for p, f in zip(paths, fpss)]
+    pooled = _bp_pool(reports)
+    if save_fixture:
+        with open(save_fixture, "w") as fh:
+            json.dump({"_source": ("count-pellets.py --dump-tracks tracks.json (post-8d500ff9), "
+                                   "full dumps; docs/probe-runs.md §30. Regenerate with "
+                                   "analyze-pellet-tracks.py --band-production-ab <tracks.json...> "
+                                   "--save-band-production-fixture <path>."),
+                       "_expected": _bp_expected(reports, pooled)}, fh, indent=1)
+        print(f"wrote band-production fixture -> {save_fixture}")
+    _print_band_production(reports, pooled)
+    return reports, pooled
+
+
+def band_production_selftest():
+    """Constraint 9 self-validation. ⚑ This arm's fixture pins RESULTS, not a replay slice: the A/B
+    needs whole dumps (band_ids is a lifetime property of the FULL track list, so a frame-window
+    slice would silently change which tracks are admitted). The scratchpad dumps are gitignored, so
+    the selftest asserts the committed numbers are internally coherent and carry the properties the
+    §30 conclusion rests on -- and states plainly that it does NOT re-derive them."""
+    with open(BAND_PROD_FIXTURE) as fh:
+        fx = json.load(fh)
+    exp = fx["_expected"]
+    p, dumps = exp["pooled"], exp["dumps"]
+    checks = [
+        ("reconstruction control is 0 on every dump (the A/B's validity precondition)",
+         all(d["recon_mismatch_frames"] == 0 for d in dumps) and p["recon_mismatch_frames"] == 0),
+        ("pooled totals equal the sum of the per-dump rows",
+         p["n_shots"] == sum(d["n_shots"] for d in dumps)
+         and p["sum_delta_total"] == sum(d["sum_delta_total"] for d in dumps)),
+        ("delta_per_shot is sum_delta_total / n_shots",
+         p["n_shots"] and abs(p["delta_per_shot"] - p["sum_delta_total"] / p["n_shots"]) < 5e-4),
+        ("every dump's landed band_hi exceeds its control (the landing widened the band)",
+         all(d["landed_band_hi"] > d["control_band_hi"] for d in dumps)),
+        ("the A/B moved something (non-vacuous)", p["n_shots_moved"] > 0),
+        ("every per-dump delta_hist sums to that dump's shot count",
+         all(sum(d["delta_hist"].values()) == d["n_shots"] for d in dumps)),
+    ]
+    ok = all(v for _, v in checks)
+    for label, v in checks:
+        print(f"  {'PASS' if v else 'FAIL'}  {label}")
+    print(f"  pooled: {p['n_shots']} shots, {p['sum_delta_total']:+d} pellets, "
+          f"{p['delta_per_shot']:+.4f}/shot")
+    print("  ⚑ COHERENCE-ONLY: this replays no dump (they are gitignored). Re-derive with "
+          "--band-production-ab\n    over the schemafix dumps; docs/probe-runs.md §30D has the "
+          "command.")
+    print("SELFTEST PASS" if ok else "SELFTEST FAIL")
+    return 0 if ok else 1
+
+
+# ============================================================
 # MARKER SEMANTICS -- docs/handoffs/2026-08-05-marker-semantics-PRECOMMIT.md
 #
 # §24D: `MARKER_MIN = 2` is met by red UI-BANNER GLYPHS, so the reader raises `core` flags on UI
@@ -8531,6 +8743,22 @@ def main():
                     help=f"write the committed replay slice (see {DUMP_REPLAY_FIDELITY_FIXTURE})")
     ap.add_argument("--dump-replay-fidelity-selftest", action="store_true",
                     help=f"replay {DUMP_REPLAY_FIDELITY_FIXTURE} and exit")
+    ap.add_argument("--band-production-ab", nargs="+", metavar="TRACKS_JSON",
+                    help=("BAND_HI ON THE PRODUCTION PATH, OUT OF SAMPLE (docs/probe-runs.md §30): "
+                          "what the landed band_hi actually buys per SHOT, across every shot of "
+                          "every named dump. Closes §19D's own caveat -- §19's +0.60/shot was 5 "
+                          "shots on the ONE clip that generated the cap hypothesis. Recomputes the "
+                          "band series at the pre-landing bound and at the dump's own, then runs "
+                          "count-pellets.py's real debounce_shots on each. ⚑ Needs NO "
+                          "re-extraction: a --dump-tracks frame_counts IS what --temporal prints "
+                          "and production consumes. REFUSES a dump without per-frame `reds` or "
+                          "without `band`. MEASUREMENT ONLY."))
+    ap.add_argument("--band-production-fps", type=float, nargs="+", default=[30.0], metavar="FPS",
+                    help="sampling fps, 1 value or one per dump (default 30)")
+    ap.add_argument("--save-band-production-fixture", metavar="PATH",
+                    help=f"write the committed result fixture (see {BAND_PROD_FIXTURE})")
+    ap.add_argument("--band-production-selftest", action="store_true",
+                    help=f"replay {BAND_PROD_FIXTURE} and exit")
     ap.add_argument("--marker-semantics", nargs="+", metavar="TRACKS_JSON",
                     help=("MARKER SEMANTICS (docs/handoffs/2026-08-05-marker-semantics-PRECOMMIT.md, "
                           "docs/probe-runs.md §27): what fraction of production `core` flags are "
@@ -8655,6 +8883,12 @@ def main():
     if args.fade_screen_crops:
         fade_screen_crops(args.fade_screen_crops, args.fade_screen_crops_out)
         return 0
+    if args.band_production_selftest:
+        raise SystemExit(band_production_selftest())
+    if args.band_production_ab:
+        audit_band_production(args.band_production_ab, args.band_production_fps,
+                              args.save_band_production_fixture)
+        raise SystemExit(0)
     if args.marker_semantics_selftest:
         raise SystemExit(marker_semantics_selftest())
     if args.marker_semantics:
