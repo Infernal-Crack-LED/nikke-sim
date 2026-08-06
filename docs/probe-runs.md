@@ -6736,6 +6736,16 @@ no committed number.
 
 #### §35 THE RADIUS GATE — ⚑ THE PRE-COMMITTED BAND FIRED AND AN INDEPENDENT CHECK OVERTURNED IT
 
+> ⛔ **JUDGED 2026-08-06 — §35D/E PARTIALLY SUPERSEDED; read
+> [`docs/handoffs/2026-08-06-radius-gate-JUDGE-verdict.md`](handoffs/2026-08-06-radius-gate-JUDGE-verdict.md)
+> before quoting anything below.** §35A–C stand (the `T = 1.043` contamination finding and its
+> method lesson are correct and independently re-derived). **§35D's ≈0.45 pellets/shot and §35E's
+> "largest single channel yet identified" / "the cloud ends at ~167 px, not a badly-placed cut" do
+> NOT stand:** the 9 instances are **2 distinct pellets in shot 1 + 1 borderline in shot 5** out of
+> 42 distinct pellets (the 168 are 4× pseudo-replicated), and the **2026-08-01 counting-window
+> sweep** in this same document already read the same 9 marks as **H_centre** (a mis-centred window)
+> rather than H_radius, with `--representative-audit` agreeing from a third angle. §35 cites neither.
+
 **2026-08-05.** Executes `docs/handoffs/2026-08-05-radius-gate-PRECOMMIT.md`, whose rule and
 controls were committed at **`57c1de78` before any number existed**. Chases the only channel any
 measurement had ever named as carrying §19's −1.40/shot (§19C), the mislock half having closed at
