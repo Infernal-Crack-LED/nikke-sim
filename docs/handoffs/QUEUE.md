@@ -426,6 +426,28 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
     all 6 survivors adjudicated **not pellets** (HUD ammo-bar segments at a fixed `dy ≈ −40`, and
     rising damage numbers). ⇒ **the ~1.08 cold bias is real reader behaviour, not a bad target**,
     and the old "no bias verdict is possible until this is settled" block is **LIFTED**.
+  - ⛔ **§8 ITEM 1 (SIZE THE BOTH-WRONG POPULATION) CANNOT RUN — `docs/probe-runs.md` §32.**
+    ⚑ **The item's phrasing is wrong: the RATE is already SETTLED** (§22E stamps 20%). It is a
+    **COST** question about 4 specific cases. ⛔ **Those 4 can no longer be identified** — the
+    24-case selection regenerates from its seed, but the owner's VERDICTS were never written to the
+    tree. Recovery was ATTEMPTED and fails structurally: §22C's severity multiset recovers the 10
+    template-right cases, leaving 10 that split 6 structural-right / 4 `neither` with **nothing
+    recorded to distinguish them** (severity is undefined for both).
+    - ✅ **Both prerequisites are now FIXED** (§32C/§32D), so a fresh adjudication is productive:
+      the crop now **PADS** instead of shifting (the owner's §22F complaint — a position within
+      `half` of a frame edge could not be centred; verified on the failing geometry);
+      `ANSWERS.json` is emitted pre-filled and **must be committed**; `INDEX.md` now offers
+      `neither`/`both` **explicitly** (08-04 offered only `A`/`B`/`?`, so the owner had to volunteer
+      the category that turned out to be 20%); and `--lock-adjudication-score` rescores committed
+      answers, reproducing §22D's exclusion structurally.
+    - **⇒ THE ASK, if item 1 is wanted: a fresh 24-case adjudication (~the 08-04 effort) with
+      `ANSWERS.json` filled and committed.** ⚠ Even then the COST needs a **third reference** —
+      neither lock is valid on those cases. ⛔ **Do NOT build the pellet-cloud-centring estimator
+      as that reference: it is CIRCULAR** (choosing the window that maximises pellets, then counting
+      pellets in it) — it bounds the loss from above, it cannot measure it.
+    - ⚑ **Trap 6 claimed a second victim.** The same 08-04 session lost four gate packets to a
+      gitignored scratchpad AND never committed its adjudication answers. **An owner's answers are
+      PRIMARY EVIDENCE — commit them when they arrive**, not only the doc that summarizes them.
   - ✅ **PRODUCTION MISLOCK RATE MEASURED 2026-08-04: 16.9%** (`docs/probe-runs.md` §20; rule
     pre-committed at `9bc829dd`). 137 of 811 shots, 4 dumps, 4 units. ⇒ the pre-committed
     **"> 10% ⇒ mislocks are the DOMINANT undercount channel"** band. The detector flags the known
