@@ -3870,7 +3870,11 @@ def _print_representative_audit(labelled, reports, pooled):
     print("  `rep@`/`bnd?`/`rep_own`/`rep_non`/`reader` are the SHIPPED channel: the real "
           "cp.debounce_shots on\n  production's reconstructed `band` (`bnd?`=Y where the hybrid "
           "plateau override fired). `life`/`rad`/\n  `cntbl` remain the legacy `is_pellet` "
-          "(pellet_ids) columns; `band` is the shipped `band_ids` gate.")
+          "(pellet_ids) columns; `band` is the shipped `band_ids` gate.\n"
+          "  ⚑ TWO BASES IN ONE TABLE, ON PURPOSE: `rep_own` CAN EXCEED `cntbl` and that is not a "
+          "bug --\n  `cntbl` counts pellet_ids members, `rep_own` counts band_ids members, and "
+          "under a decoupled\n  `band_hi > max_pellet_frames` a track can be in the second and not "
+          "the first.")
     print(f"{'shot':>4s} {'owner':>5s} {'nodet':>5s} {'filt':>4s} {'life':>4s} {'band':>4s} "
           f"{'rad':>4s} {'cntbl':>5s} {'coex':>4s} {'rep@':>5s} {'bnd?':>4s} {'rep_own':>7s} "
           f"{'rep_non':>7s} {'reader':>6s} {'link_px':>7s}")
@@ -4150,7 +4154,12 @@ def audit_representative(tracks_paths, fps_list, labelled_path, labelled_tmpl_pa
                           "Regenerate with analyze-pellet-tracks.py --representative-audit "
                           "<tracks.json...> --representative-audit-labelled <tracks.json> "
                           "--representative-audit-labelled-tmpl <tracks.json> "
-                          "--save-representative-audit-fixture <path>."),
+                          "--representative-audit-fps 60 30 30 30 30 "
+                          "--save-representative-audit-fixture <path>. "
+                          "⛔ THE --representative-audit-fps LIST IS MANDATORY AND EASY TO MISS: "
+                          "it defaults to 30 for EVERY dump, but dumps[0] (the 60 fps labelled clip) "
+                          "is 60 -- omitting it silently rewrites ~45 _expected values instead of "
+                          "failing. Pass one fps per positional dump, in order."),
                 "labelled": fixture["labelled"], "dumps": fixture["dumps"],
                 "_expected": _rep_expected(labelled, reports, pooled),
             }, fh)
@@ -5620,7 +5629,9 @@ def _hla_gate_ids(tracks, params, fps):
 
     ⚑ BYTE-IDENTICAL to the old `{tid in pellet_ids if band_lo <= life <= max_pf}` formulation
     whenever `band_hi <= max_pellet_frames` -- which covers every `band_hi`-less dump AND every
-    committed fixture (`_rep_slim_labelled`'s params whitelist has no `band_hi`), because
+    committed fixture (whose SOURCE dumps all predate `--band-hi` and so persist no `band_hi` at
+    all -- note `_rep_slim_labelled`'s whitelist DOES carry `band_hi` since bad4808e, so a future
+    fixture built from a band-carrying dump WILL be scored decoupled), because
     `band_lo <= life <= band_hi <= max_pf` already implies membership in `pellet_ids`. Only a dump
     that persisted `band_hi > max_pellet_frames` (the landed `--max-pellet-frames 14 --band-hi 20`
     configuration) is scored differently, and there the OLD formulation was simply wrong."""
