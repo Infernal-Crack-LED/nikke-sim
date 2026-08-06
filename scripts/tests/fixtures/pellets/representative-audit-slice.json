@@ -58678,13 +58678,15 @@
         "linked": 7,
         "never_detected": 0,
         "life_gate_rejected": 0,
+        "life_gate_rejected_band": 0,
         "radius_gate_rejected": 1,
         "countable": 6,
         "max_coexisting_countable": 6,
-        "rep_offset": 2,
+        "rep_offset": 5,
+        "rep_banded": true,
         "rep_owner": 5,
-        "rep_non_owner": 1,
-        "reader_white": 6,
+        "rep_non_owner": 0,
+        "reader_white": 5,
         "one_to_one": true
       },
       {
@@ -58693,12 +58695,14 @@
         "linked": 10,
         "never_detected": 0,
         "life_gate_rejected": 2,
+        "life_gate_rejected_band": 2,
         "radius_gate_rejected": 0,
         "countable": 8,
         "max_coexisting_countable": 8,
-        "rep_offset": 2,
-        "rep_owner": 0,
-        "rep_non_owner": 8,
+        "rep_offset": 10,
+        "rep_banded": true,
+        "rep_owner": 8,
+        "rep_non_owner": 0,
         "reader_white": 8,
         "one_to_one": true
       },
@@ -58708,13 +58712,15 @@
         "linked": 8,
         "never_detected": 0,
         "life_gate_rejected": 1,
+        "life_gate_rejected_band": 1,
         "radius_gate_rejected": 0,
         "countable": 7,
         "max_coexisting_countable": 7,
-        "rep_offset": -3,
-        "rep_owner": 0,
-        "rep_non_owner": 9,
-        "reader_white": 9,
+        "rep_offset": 6,
+        "rep_banded": true,
+        "rep_owner": 7,
+        "rep_non_owner": 0,
+        "reader_white": 7,
         "one_to_one": true
       },
       {
@@ -58723,10 +58729,12 @@
         "linked": 9,
         "never_detected": 0,
         "life_gate_rejected": 2,
+        "life_gate_rejected_band": 2,
         "radius_gate_rejected": 7,
         "countable": 0,
         "max_coexisting_countable": 0,
         "rep_offset": 3,
+        "rep_banded": false,
         "rep_owner": 0,
         "rep_non_owner": 4,
         "reader_white": 4,
@@ -58738,12 +58746,14 @@
         "linked": 8,
         "never_detected": 0,
         "life_gate_rejected": 0,
+        "life_gate_rejected_band": 0,
         "radius_gate_rejected": 0,
         "countable": 8,
         "max_coexisting_countable": 8,
-        "rep_offset": 7,
-        "rep_owner": 7,
-        "rep_non_owner": 1,
+        "rep_offset": 10,
+        "rep_banded": true,
+        "rep_owner": 8,
+        "rep_non_owner": 0,
         "reader_white": 8,
         "one_to_one": true
       }
@@ -58753,12 +58763,13 @@
       "linked": 42,
       "never_detected": 0,
       "life_gate_rejected": 5,
+      "life_gate_rejected_band": 5,
       "radius_gate_rejected": 8,
       "countable": 29,
       "max_coexisting_countable": 29,
-      "rep_owner": 12,
-      "rep_non_owner": 23,
-      "reader_white": 35
+      "rep_owner": 28,
+      "rep_non_owner": 4,
+      "reader_white": 32
     },
     "coexistence_equals_countable": true,
     "template_relock": [
@@ -58768,13 +58779,15 @@
         "linked": 9,
         "never_detected": 0,
         "life_gate_rejected": 2,
+        "life_gate_rejected_band": 2,
         "radius_gate_rejected": 0,
         "countable": 7,
         "max_coexisting_countable": 7,
-        "rep_offset": 3,
-        "rep_owner": 0,
-        "rep_non_owner": 4,
-        "reader_white": 4
+        "rep_offset": 10,
+        "rep_banded": true,
+        "rep_owner": 7,
+        "rep_non_owner": 0,
+        "reader_white": 7
       }
     ],
     "corrected_countable_total": 36,
@@ -58857,13 +58870,13 @@
       {
         "shot": 1,
         "first_offset": -4,
-        "rep_offset": 2,
+        "rep_offset": 5,
         "series": [0, 0, 0, 0, 0, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 1, 1, 0]
       },
       {
         "shot": 2,
         "first_offset": -4,
-        "rep_offset": 2,
+        "rep_offset": 10,
         "series": [
           0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 8, 8, 8, 8, 7, 6, 4, 1, 0
         ]
@@ -58871,7 +58884,7 @@
       {
         "shot": 3,
         "first_offset": -4,
-        "rep_offset": -3,
+        "rep_offset": 6,
         "series": [0, 0, 0, 0, 2, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 1, 0, 0]
       },
       {
@@ -58886,7 +58899,7 @@
       {
         "shot": 5,
         "first_offset": -4,
-        "rep_offset": 7,
+        "rep_offset": 10,
         "series": [
           0, 0, 0, 0, 0, 0, 0, 1, 1, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 3, 1, 0
         ]
@@ -58896,7 +58909,7 @@
       {
         "shot": 4,
         "first_offset": -4,
-        "rep_offset": 3,
+        "rep_offset": 10,
         "series": [
           0, 0, 0, 0, 0, 0, 0, 0, 3, 6, 7, 7, 7, 7, 7, 7, 7, 7, 6, 4, 2, 0, 0,
           0, 0

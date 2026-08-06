@@ -3356,12 +3356,28 @@ def _rep_owner_links(shot, by_frame, cross_crop, offset):
     return links, residuals
 
 
-def _rep_decompose(shot, links, tracks_by_id, event, cross_count, radius, offset, reader_white):
+def _rep_decompose(shot, links, tracks_by_id, event, cross_count, radius, offset, reader_white,
+                   band_ids):
     """Where does each owner pellet go, and what is the reader actually reporting in its place?
 
     `cross_count` is the SHIPPED structural crosshair for every shot including 4 -- because that is
     what the reader counts against no matter which geometry the crops were cut with. The shot-4
-    re-run under the template crosshair is a separate call (§9C)."""
+    re-run under the template crosshair is a separate call (§9C).
+
+    ⚑ TWO CHANNELS, BOTH REPORTED (docs/handoffs/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md §2).
+    `event` is now the HYBRID (shipped) answer -- `cp.debounce_shots` on band-augmented frames --
+    so `rep`/`reader_white` are the numbers the production reader actually emits. The population
+    those numbers come from therefore differs per event:
+
+    - a BANDED event (`event["banded"]`, i.e. `_plateau_rep` found a plateau on the band series)
+      counts `band_ids` -- radius + non-red + `band_lo <= life <= band_hi`, NOT `pellet_ids`;
+    - a FALLBACK event (no band plateau) counts `pellet_ids`, i.e. the dump's own `is_pellet`.
+
+    `rep_owner` follows that switch. `life_gate_rejected` stays the `is_pellet` number it has always
+    been and `life_gate_rejected_band` is ADDED alongside it, so the legacy figure the §36C scoping
+    note quotes stays auditable next to the shipped one instead of being silently redefined.
+    `countable`/`radius_gate_rejected` are deliberately left on the `is_pellet` channel: they are
+    "ever in radius", a rep-frame-independent property of the legacy population."""
     ids = sorted(set(links.values()))
     tracks = [tracks_by_id[i] for i in ids]
     life_rej = [t for t in tracks if not t["is_pellet"]]
@@ -3375,15 +3391,21 @@ def _rep_decompose(shot, links, tracks_by_id, event, cross_count, radius, offset
         if c > best_n:
             best_n, best_f = c, fi
     rep = event["rep"]
-    rep_owner = sum(1 for t in countable if _rep_in_radius(t, rep, cross_count, radius, offset))
+    # The population the reader's own count at `rep` was drawn from. On a fallback event this is
+    # `passed` (== `pellet_ids`), and scoring `passed` at `rep` is identical to scoring `countable`
+    # at `rep`, since being in radius ON `rep` implies being in radius EVER.
+    rep_pop = [t for t in tracks if t["id"] in band_ids] if event["banded"] else passed
+    rep_owner = sum(1 for t in rep_pop if _rep_in_radius(t, rep, cross_count, radius, offset))
     return {
         "shot": shot["shot"], "t0": shot["t0"], "owner": shot["owner"],
         "linked": len(links), "distinct_tracks": len(ids),
         "never_detected": shot["owner"] - len(links),
-        "life_gate_rejected": len(life_rej), "radius_gate_rejected": len(rad_rej),
+        "life_gate_rejected": len(life_rej),
+        "life_gate_rejected_band": sum(1 for t in tracks if t["id"] not in band_ids),
+        "radius_gate_rejected": len(rad_rej),
         "countable": len(countable),
         "max_coexisting_countable": best_n, "max_coexisting_frame": best_f,
-        "rep_frame": rep, "rep_offset": rep - shot["t0"],
+        "rep_frame": rep, "rep_offset": rep - shot["t0"], "rep_banded": event["banded"],
         "rep_owner": rep_owner, "rep_non_owner": reader_white - rep_owner,
         "reader_white": reader_white,
     }
@@ -3426,7 +3448,9 @@ def _rep_trajectory(shot, links, tracks_by_id, event, frame_counts, cross_count,
                      "owner_counted": len(inr), "other_white": white - len(inr),
                      "is_rep": fi == event["rep"], "is_t0": fi == t0,
                      "in_f8_11": 8 <= fi - t0 <= 11})
-    return {"shot": shot["shot"], "rows": rows}
+    # `rep_frame`/`t0` are carried so `_rep_series` can raise a DIAGNOSTIC naming the frame instead
+    # of a bare StopIteration if the representative frame ever lands outside this window.
+    return {"shot": shot["shot"], "rows": rows, "rep_frame": event["rep"], "t0": t0}
 
 
 def _rep_lifetimes(shot, links, tracks, event, cross_phys, radius, offset):
@@ -3554,6 +3578,52 @@ def _rep_radius_runs(track, cross, radius, offset=0):
 
 # ---------------------------------------------------------------- the two halves, assembled
 
+def _rep_hybrid_events(block, cross, params, fps, offset, frame_counts, ev_lo, ev_hi):
+    """THE SHIPPED CHANNEL, for one crop (docs/handoffs/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md
+    §1C/§2.2). Reconstructs production's real `band` series from the labelled block's own
+    `tracks_raw` -- `_hla_production_band`, i.e. count-pellets.py's own `_frame_pellet_counts`
+    called in-process -- and feeds it to the real `cp.debounce_shots`. The events returned are
+    therefore the production reader's own answer, not `_merge_events`' median-of-`white+red`
+    re-implementation, which is what docs/probe-runs.md §36A found this arm was scoring instead.
+
+    ⚑ ROUTE C: nothing about the fixture's ROW SHAPE changes. `_rep_slim_labelled` still writes
+    3-wide `[white, red, marker]` rows and the block's source dump still carries no `band` key --
+    the band is RECONSTRUCTED from the raw coordinates the labelled block already keeps, which is
+    exactly why no re-dump (and none of the coordinate-precision/`reds` changes a re-dump would
+    bundle, §1B) is needed to score the shipped channel.
+
+    ⚑ TWO "SHIPPED" DEFINITIONS NOW COEXIST (plan §4.2). `--policy-score`'s `shipped_median`
+    control (`_ps_score_event`/`_ps_score_labelled`, and its MANDATORY FALSIFICATION CONTROL
+    asserting shot 4's `rep_offset == 3`, OUT) stays on the PRE-HYBRID `_ps_events` median path ON
+    PURPOSE -- that arm scores candidate frame rules against the rule they were proposed to replace,
+    so its baseline must be the pre-hybrid one. THIS arm reports what production emits. The
+    divergence is deliberate and is flagged at BOTH sites so it cannot land silently.
+
+    Returns (events, band_ids). Events are shifted back to ABSOLUTE clip frame indices and carry a
+    `banded` flag: True where `debounce_shots`' hybrid override actually fired (a band plateau
+    existed), False where it fell back to the pre-hybrid median-of-active frame. Segmentation is
+    untouched by the hybrid rule (docs/probe-runs.md §12C), so `start`/`end` are the same spans the
+    pre-hybrid path produced."""
+    cp = _count_pellets_module()
+    tracks_dicts = [{"id": tid, "is_red": False, "first": first, "xs": xs, "ys": ys}
+                    for tid, first, _isp, xs, ys in block["tracks_raw"]]
+    _pellet_ids, band_ids = _hla_gate_ids(tracks_dicts, params, fps)
+    band = _hla_production_band(tracks_dicts, cross, params, fps, offset)
+    lo, hi = ev_lo - offset, ev_hi - offset
+    shots, _summary = _hla_score(frame_counts[lo:hi], band[lo:hi], fps)
+    out = []
+    for s in shots:
+        # `banded` is read off count-pellets.py's OWN `_plateau_rep`, with the same arguments
+        # `debounce_shots` passes it (`event_min=3`), rather than a second copy of the test -- so
+        # the flag can only ever agree with the branch the shipped function actually took.
+        band_totals = {j: band[lo + j] for j in range(s["start"], s["end"])}
+        banded = cp._plateau_rep(band_totals, s["start"], s["end"], 3) is not None
+        out.append({"start": s["start"] + ev_lo, "end": s["end"] + ev_lo,
+                    "rep": s["frame"] + ev_lo, "white": s["white"], "red": s["red"],
+                    "total": s["total"], "frames": s["frames"], "banded": banded})
+    return out, band_ids
+
+
 def _rep_labelled_report(block, shots, fidelity):
     """The n=5 half. Everything here is computed from the block's RAW track coordinates, so the
     radius gate, the linking and the reconstruction control are all auditable from the fixture."""
@@ -3575,12 +3645,19 @@ def _rep_labelled_report(block, shots, fidelity):
     # are shifted back up immediately. It runs over `event_window`, whose head and tail are quiet --
     # NOT over the whole stored range, which is widened to carry every overlapping track in full.
     ev_lo, ev_hi = block["event_window"]
-    window_counts = frame_counts[ev_lo - offset:ev_hi - offset]
-    totals_slice = [r["white"] + r["red"] for r in window_counts]
-    events = _merge_events(window_counts, totals_slice,
-                           _merge_spans(totals_slice, fps, "shipped"))
-    events = [{**e, "start": e["start"] + ev_lo, "end": e["end"] + ev_lo,
-               "rep": e["rep"] + ev_lo} for e in events]
+    # ⚑ THE SHIPPED CHANNEL, per crop (docs/handoffs/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md
+    # §2.2). Both `events` and `events_tmpl` come from the REAL `cp.debounce_shots` fed production's
+    # reconstructed `band`, so `rep`/`white` below are the numbers the production reader emits --
+    # NOT `_merge_events`' median-of-`white+red`, which docs/probe-runs.md §36A established is a
+    # different channel at a different frame. The band is crosshair-dependent (it is radius-gated),
+    # so the template relock gets its own reconstruction on `cross_tmpl`, exactly as
+    # `audit_hybrid_landing` computes one band series per crop.
+    events, band_ids = _rep_hybrid_events(block, cross, params, fps, offset, frame_counts,
+                                          ev_lo, ev_hi)
+    # `band_ids` is a pure LIFETIME gate and so is crosshair-independent -- the same set for both
+    # crops. Only the per-frame `band` SERIES (radius-gated) and therefore the events differ.
+    events_tmpl, _same_band_ids = _rep_hybrid_events(block, cross_tmpl, params, fps, offset,
+                                                     frame_counts, ev_lo, ev_hi)
     totals = {k + offset: r["white"] + r["red"] for k, r in enumerate(frame_counts)}
 
     premise = _rep_label_window_counts(shots)
@@ -3594,7 +3671,7 @@ def _rep_labelled_report(block, shots, fidelity):
         links, resid = _rep_owner_links(s, by_frame, crop_cross, offset)
         links_by_shot[s["shot"]] = links
         decomp.append({**_rep_decompose(s, links, tracks_by_id, ev, cross, radius, offset,
-                                        ev["white"]),
+                                        ev["white"], band_ids),
                        "max_link_residual_px": round(max(resid.values()), 2) if resid else None,
                        "one_to_one": len(set(links.values())) == len(links) == s["owner"]})
         peaks.append(_rep_peak(s, links, tracks_by_id, ev, totals, frame_counts, cross,
@@ -3611,9 +3688,12 @@ def _rep_labelled_report(block, shots, fidelity):
     for s in shots:
         if s["locate"] != "template":
             continue
-        ev = next(e for e in events if e["start"] <= s["t0"] < e["end"])
+        # The relock scores the TEMPLATE crop end to end: its radius gate, its band series, and
+        # therefore its own hybrid event. Scoring a frame picked from the structural band against
+        # the template crop's population would be trap 9 (`_ps_labelled_radius_tracks`) exactly.
+        ev = next(e for e in events_tmpl if e["start"] <= s["t0"] < e["end"])
         tmpl.append(_rep_decompose(s, links_by_shot[s["shot"]], tracks_by_id, ev, cross_tmpl,
-                                   radius, offset, ev["white"]))
+                                   radius, offset, ev["white"], band_ids))
         tmpl_traj.append(_rep_trajectory(s, links_by_shot[s["shot"]], tracks_by_id, ev,
                                          frame_counts, cross_tmpl, radius, offset))
 
@@ -3621,8 +3701,9 @@ def _rep_labelled_report(block, shots, fidelity):
     non_lives = sorted(x for row in lifes for x in row["non_owner_lives"])
     band_lo = max(1, round(REP_OWNER_LIFE_LO_60FPS * fps / 60.0))
     tot = {k: sum(row[k] for row in decomp) for k in
-           ("owner", "linked", "never_detected", "life_gate_rejected", "radius_gate_rejected",
-            "countable", "max_coexisting_countable", "rep_owner", "rep_non_owner", "reader_white")}
+           ("owner", "linked", "never_detected", "life_gate_rejected", "life_gate_rejected_band",
+            "radius_gate_rejected", "countable", "max_coexisting_countable", "rep_owner",
+            "rep_non_owner", "reader_white")}
     return {
         "premise_window_counts": premise,
         "decomposition": decomp,
@@ -3712,8 +3793,25 @@ def _rep_series(traj):
     """One event's per-frame counted-owner series, pinned as a list. This is the CATEGORICAL form of
     §9's finding -- where in the series the representative frame lands -- and it is what a candidate
     rule should be scored against, because it has an unambiguous right answer per shot."""
+    # ⚑ TRAP 1 (docs/handoffs/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md §4.1): the representative
+    # frame is now the HYBRID one, which can sit later in the event than the median one. It is still
+    # structurally inside `_rep_trajectory`'s window -- `debounce_shots` only ever picks a frame in
+    # [event.start, event.end), and the window is [min(event.start, t0-4), max(event.end+3, t0+15))
+    # -- but the old bare `next(...)` would have failed as an uninformative `StopIteration` if that
+    # ever stopped holding. A REAL diagnostic naming the frame is raised instead. The window is
+    # deliberately NOT widened: `first_offset` and `series` are PINNED in `_expected`, and widening
+    # would move them (the plan's P4 lists only `rep_offset` as moving on these rows).
+    rep_offset = next((r["offset"] for r in traj["rows"] if r["is_rep"]), None)
+    if rep_offset is None:
+        raise SystemExit(
+            f"--representative-audit: shot {traj['shot']}'s representative frame "
+            f"{traj['rep_frame']} (offset {traj['rep_frame'] - traj['t0']} from t0={traj['t0']}) "
+            f"falls OUTSIDE _rep_trajectory's window, which covers offsets "
+            f"{traj['rows'][0]['offset']}..{traj['rows'][-1]['offset']}. A representative frame is "
+            "supposed to be inside its own event span; widen the window in _rep_trajectory only "
+            "after establishing why it is not.")
     return {"shot": traj["shot"], "first_offset": traj["rows"][0]["offset"],
-            "rep_offset": next(r["offset"] for r in traj["rows"] if r["is_rep"]),
+            "rep_offset": rep_offset,
             "series": [r["owner_counted"] for r in traj["rows"]]}
 
 
@@ -3721,8 +3819,12 @@ def _rep_expected(labelled, reports, pooled):
     """The pinned summary. Deliberately the CATEGORICAL rows first -- which frame the rule picks,
     how much of the peak is unmatched, where the lifetime bands sit -- because those are what §9
     rests on; the means come last and are the weakest column."""
+    # `life_gate_rejected` (the legacy `is_pellet`/`pellet_ids` gate) and `life_gate_rejected_band`
+    # (the SHIPPED channel's `band_ids` gate) are BOTH pinned -- additive by design so the §36C
+    # legacy figure stays auditable beside the one the production reader's count is drawn from.
     dec_keys = ("shot", "owner", "linked", "never_detected", "life_gate_rejected",
-                "radius_gate_rejected", "countable", "max_coexisting_countable", "rep_offset",
+                "life_gate_rejected_band", "radius_gate_rejected", "countable",
+                "max_coexisting_countable", "rep_offset", "rep_banded",
                 "rep_owner", "rep_non_owner", "reader_white")
     ls = labelled["lifetime_summary"]
     return {
@@ -3765,27 +3867,36 @@ def _print_representative_audit(labelled, reports, pooled):
 
     print("\nPER-SHOT DECOMPOSITION -- where each owner pellet goes, and what the reader reports "
           "instead")
-    print(f"{'shot':>4s} {'owner':>5s} {'nodet':>5s} {'filt':>4s} {'life':>4s} {'rad':>4s} "
-          f"{'cntbl':>5s} {'coex':>4s} {'rep@':>5s} {'rep_own':>7s} {'rep_non':>7s} "
-          f"{'reader':>6s} {'link_px':>7s}")
+    print("  `rep@`/`bnd?`/`rep_own`/`rep_non`/`reader` are the SHIPPED channel: the real "
+          "cp.debounce_shots on\n  production's reconstructed `band` (`bnd?`=Y where the hybrid "
+          "plateau override fired). `life`/`rad`/\n  `cntbl` remain the legacy `is_pellet` "
+          "(pellet_ids) columns; `band` is the shipped `band_ids` gate.")
+    print(f"{'shot':>4s} {'owner':>5s} {'nodet':>5s} {'filt':>4s} {'life':>4s} {'band':>4s} "
+          f"{'rad':>4s} {'cntbl':>5s} {'coex':>4s} {'rep@':>5s} {'bnd?':>4s} {'rep_own':>7s} "
+          f"{'rep_non':>7s} {'reader':>6s} {'link_px':>7s}")
     for row in labelled["decomposition"]:
         print(f"{row['shot']:4d} {row['owner']:5d} {row['never_detected']:5d} {0:4d} "
-              f"{row['life_gate_rejected']:4d} {row['radius_gate_rejected']:4d} "
+              f"{row['life_gate_rejected']:4d} {row['life_gate_rejected_band']:4d} "
+              f"{row['radius_gate_rejected']:4d} "
               f"{row['countable']:5d} {row['max_coexisting_countable']:4d} "
-              f"{row['rep_offset']:+5d} {row['rep_owner']:7d} {row['rep_non_owner']:7d} "
+              f"{row['rep_offset']:+5d} {('Y' if row['rep_banded'] else 'n'):>4s} "
+              f"{row['rep_owner']:7d} {row['rep_non_owner']:7d} "
               f"{row['reader_white']:6d} {str(row['max_link_residual_px']):>7s}")
     tot = labelled["decomposition_total"]
     print(f"{'TOT':>4s} {tot['owner']:5d} {tot['never_detected']:5d} {0:4d} "
-          f"{tot['life_gate_rejected']:4d} {tot['radius_gate_rejected']:4d} {tot['countable']:5d} "
-          f"{tot['max_coexisting_countable']:4d} {'':5s} {tot['rep_owner']:7d} "
+          f"{tot['life_gate_rejected']:4d} {tot['life_gate_rejected_band']:4d} "
+          f"{tot['radius_gate_rejected']:4d} {tot['countable']:5d} "
+          f"{tot['max_coexisting_countable']:4d} {'':5s} {'':4s} {tot['rep_owner']:7d} "
           f"{tot['rep_non_owner']:7d} {tot['reader_white']:6d}")
     print(f"  sums: owner {tot['owner']} = {tot['never_detected']} + 0 + "
           f"{tot['life_gate_rejected']} + {tot['radius_gate_rejected']} + {tot['countable']}   |   "
           f"reader {tot['reader_white']} = {tot['rep_owner']} owner + {tot['rep_non_owner']} "
           f"non-owner")
-    print(f"  ⇒ OF THE {tot['reader_white']} PELLETS THE READER REPORTS, {tot['rep_owner']} ARE "
-          f"OWNER PELLETS. The mean agreement is\n  a large under-count cancelling a large "
-          f"over-count, not a measurement of the right quantity.")
+    print(f"  ⇒ OF THE {tot['reader_white']} PELLETS THE SHIPPED READER REPORTS ACROSS THESE "
+          f"{len(labelled['decomposition'])} SHOTS,\n  {tot['rep_owner']} ARE OWNER PELLETS. "
+          "Reported, not adjudicated: n=5 is an observation, and the composite\n"
+          "  figure localizes nothing to a single gate on its own (CLAUDE.md "
+          "evidence-proportionality).")
     print(f"  `filt` (min_area/min_circ) is 0 by construction here -- every owner pellet linked to "
           f"a track,\n  and score-pellets.py's own fidelity slice puts the two filters at 100% "
           f"pass on f08/f09/f10.")
@@ -3986,10 +4097,23 @@ def audit_representative(tracks_paths, fps_list, labelled_path, labelled_tmpl_pa
             print(f"SKIPPED {p}: no `frame_counts` (re-dump with count-pellets.py --dump-tracks)")
             continue
         fps = fps_list[k] if len(fps_list) > 1 else fps_list[0]
-        if not _merge_shipped_identity(dump["frame_counts"], fps):
+        # ⚑ BAND-STRIPPED ON PURPOSE (docs/probe-runs.md §36B; the landing plan's §6 observable).
+        # This control guards the DUMPS half only -- `_rep_policy_table` / `_rep_lifetime_census`,
+        # which are an explicitly PRE-HYBRID policy comparison (`median`/`p75`/`max` via
+        # `_merge_spans`+`_merge_events`; `p75`/`max` are not even reachable from the shipped
+        # reader). On a band-carrying dump `cp.debounce_shots` takes the hybrid branch while that
+        # local rebuild cannot, so comparing them un-stripped made the arm exit 1 on every
+        # production dump without any of the rows below being wrong. Stripping `band` compares the
+        # rebuild against the baseline it is actually a rebuild OF, at full strength -- the same
+        # strip `_hla_falsification` applies for the same reason. The LABELLED half needs no such
+        # control: since this landing it calls the real `cp.debounce_shots` (`_rep_hybrid_events`)
+        # rather than re-implementing it.
+        fc_no_band = [{k2: v for k2, v in c.items() if k2 != "band"} for c in dump["frame_counts"]]
+        if not _merge_shipped_identity(fc_no_band, fps):
             raise SystemExit(f"--representative-audit: the shipped-identity control FAILED on {p}. "
-                             "The local span rebuild no longer reproduces debounce_shots, so no "
-                             "row below would be a difference from the real baseline.")
+                             "The local span rebuild no longer reproduces band-stripped "
+                             "debounce_shots, so no row below would be a difference from the real "
+                             "baseline.")
         fixture["dumps"].append(_rep_slim_dump("/".join(Path(p).parts[-2:]), dump, fps))
     full_clip = None
     if labelled_path:
@@ -4397,6 +4521,16 @@ def _ps_score_labelled(fx):
         row["lifetime_band_count"] = {"count": _ps_band_count(rtracks, band, ev["start"], ev["end"])}
         rows.append(row)
 
+    # ⚑ TWO "SHIPPED" DEFINITIONS NOW COEXIST -- read this together with `_rep_hybrid_events` /
+    # `_rep_labelled_report` (docs/handoffs/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md §4.2).
+    # `shipped_median` HERE is deliberately the PRE-HYBRID median-of-`white+red` control: this arm
+    # exists to SCORE candidate frame rules against each other, and `hybrid_plateau_median` is one
+    # of the candidates, so its baseline must be the rule it was proposed to replace. The
+    # representative AUDIT arm (`--representative-audit`) went the other way on 2026-08-06 and now
+    # reports the PRODUCTION answer (`cp.debounce_shots` on a reconstructed `band`). Both are
+    # correct for their own question; the divergence is intentional and is flagged at both sites so
+    # it cannot land silently.
+    #
     # MANDATORY FALSIFICATION CONTROL (JUDGE REVIEW 2026-08-04): the crop swap touches ONLY the
     # radius gate feeding the band-dependent rules. `shipped_median` reads straight off the raw
     # `frame_counts` white+red totals, which are crosshair-independent (§9B: those counts are
@@ -5470,6 +5604,37 @@ def _hla_reconstruct_frame_tracks(tracks, n_frames, offset=0):
     return frame_tracks, track_life
 
 
+def _hla_gate_ids(tracks, params, fps):
+    """PRODUCTION's OWN two lifetime gates, resolved exactly as `build_tracks_and_counts`:528-539
+    resolves them, off a committed/live track list (dicts carrying `id` + `xs`):
+
+    - `pellet_ids` -- `life <= max_pellet_frames`; the gate on `white` (and on the dump's own
+      per-track `is_pellet` flag).
+    - `band_ids`   -- `_band_lo(fps) <= life <= band_hi`; the gate on `band`.
+
+    ⚑ `band_hi` is DECOUPLED from `max_pellet_frames`/`pellet_ids`
+    (docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md). It is read from the dump's OWN persisted
+    `params` (count-pellets.py:1876 writes it), falls back to `max_pellet_frames` when absent, and
+    `band_ids` is built straight off the lifetimes rather than as a subset of `pellet_ids` -- a
+    track admitted into `band` need not be admitted into `pellet_ids`/`white`.
+
+    ⚑ BYTE-IDENTICAL to the old `{tid in pellet_ids if band_lo <= life <= max_pf}` formulation
+    whenever `band_hi <= max_pellet_frames` -- which covers every `band_hi`-less dump AND every
+    committed fixture (`_rep_slim_labelled`'s params whitelist has no `band_hi`), because
+    `band_lo <= life <= band_hi <= max_pf` already implies membership in `pellet_ids`. Only a dump
+    that persisted `band_hi > max_pellet_frames` (the landed `--max-pellet-frames 14 --band-hi 20`
+    configuration) is scored differently, and there the OLD formulation was simply wrong."""
+    cp = _count_pellets_module()
+    life = {t["id"]: len(t["xs"]) for t in tracks}
+    max_pf = params["max_pellet_frames"]
+    band_hi = params.get("band_hi")
+    if band_hi is None:
+        band_hi = max_pf
+    band_lo = cp._band_lo(fps)
+    return ({tid for tid, ln in life.items() if ln <= max_pf},
+            {tid for tid, ln in life.items() if band_lo <= ln <= band_hi})
+
+
 def _hla_production_band(tracks, cross_positions, params, fps, offset=0):
     """PRODUCTION's OWN `band` channel: count-pellets.py's real `_frame_pellet_counts`, called on
     `frame_tracks` reconstructed from `tracks` (see `_hla_reconstruct_frame_tracks`) -- the same
@@ -5478,11 +5643,8 @@ def _hla_production_band(tracks, cross_positions, params, fps, offset=0):
     `cross_positions`."""
     cp = _count_pellets_module()
     n = len(cross_positions)
-    frame_tracks, track_life = _hla_reconstruct_frame_tracks(tracks, n, offset)
-    max_pf = params["max_pellet_frames"]
-    pellet_ids = {tid for tid, life in track_life.items() if life <= max_pf}
-    band_lo = cp._band_lo(fps)
-    band_ids = {tid for tid in pellet_ids if band_lo <= track_life[tid] <= max_pf}
+    frame_tracks, _track_life = _hla_reconstruct_frame_tracks(tracks, n, offset)
+    pellet_ids, band_ids = _hla_gate_ids(tracks, params, fps)
     # D4 (2026-08-05-dump-schema-LANDING-PLAN.md §2.2): resolve marker_radius from the dump's own
     # persisted `params` (Edit C) with the same fallback-to-default-65 D3 uses, instead of
     # hardcoding 65 here. Output impact today is ZERO -- `_frame_pellet_counts`'s `band` branch is
