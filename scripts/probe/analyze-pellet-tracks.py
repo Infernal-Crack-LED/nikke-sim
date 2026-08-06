@@ -8270,6 +8270,9 @@ LOCK_ADJUDICATION_CROP_HALF = 150           # -> 300x300 source-px crop (the ask
 LOCK_ADJUDICATION_CROP_SCALE = 2            # nearest-neighbour upscale factor
 LOCK_ADJUDICATION_RING_RADIUS = 22          # px, upscaled-crop space -- clear of crop centre
 LOCK_ADJUDICATION_RING_RADIUS_CTX = 10      # px, in the DOWNSCALED context panel
+# Fill for out-of-frame area in an edge-adjacent crop (§22F). Flat mid-grey: no game frame produces
+# a uniform patch of it, so it reads as "outside the capture", not as dark game content.
+LOCK_ADJUDICATION_PAD_BGR = (128, 128, 128)
 LOCK_ADJUDICATION_LABEL_H = 44              # px, per-crop label strip height (upscaled space)
 LOCK_ADJUDICATION_FIXTURE_KEEP_MIS = 8      # per dump, real candidates kept in the committed slice
 LOCK_ADJUDICATION_FIXTURE_KEEP_CTL = 3      # -- more than the 5/1 --lock-adjudication draws, so the
@@ -8439,18 +8442,31 @@ def _la_context_panel(frame_path, struct_pos, tmpl_pos, letter_struct, letter_tm
 
 def _la_crop_panel(frame_path, cx, cy, label, half=LOCK_ADJUDICATION_CROP_HALF,
                    scale=LOCK_ADJUDICATION_CROP_SCALE):
-    """One ~300x300 source-px crop centred on (cx, cy) (shifted, not shrunk, at frame edges --
-    mirrors `_fsc_crop`), upscaled nearest-neighbour, with a high-contrast ring drawn AROUND (never
-    over) the position and a label strip carrying ONLY `A` or `B`."""
+    """One ~300x300 source-px crop **always centred** on (cx, cy), upscaled nearest-neighbour, with
+    a high-contrast ring drawn AROUND (never over) the position and a label strip carrying ONLY
+    `A` or `B`.
+
+    ⚑ PADS rather than shifts or clips (docs/probe-runs.md §22F, owner-flagged on the 2026-08-04
+    set: _"b shows the right half of the crosshair, the left bound of the image bisects the
+    crosshair"_). The previous version SHIFTED the window back inside the frame, which cannot help
+    when the marked position is itself within `half` of a frame edge -- the ring then lands on the
+    crop boundary with no context on that side, exactly what the owner hit. Out-of-frame area is
+    filled with a flat mid-grey that no game frame produces, so an adjudicator reads it as "outside
+    the capture" rather than as dark game content. The marked position is now at the crop centre on
+    EVERY case, which also removes centring as a possible blinding cue."""
     img = cv2.imread(str(frame_path))
     if img is None:
         raise SystemExit(f"--lock-adjudication: could not read frame {frame_path}")
     h, w = img.shape[:2]
-    x0 = max(0, min(int(round(cx)) - half, w - 2 * half))
-    y0 = max(0, min(int(round(cy)) - half, h - 2 * half))
-    crop = img[y0:y0 + 2 * half, x0:x0 + 2 * half]
+    ix, iy = int(round(cx)), int(round(cy))
+    crop = np.full((2 * half, 2 * half, 3), LOCK_ADJUDICATION_PAD_BGR, dtype=np.uint8)
+    sx0, sy0 = max(0, ix - half), max(0, iy - half)
+    sx1, sy1 = min(w, ix + half), min(h, iy + half)
+    if sx1 > sx0 and sy1 > sy0:
+        crop[sy0 - (iy - half):sy1 - (iy - half),
+             sx0 - (ix - half):sx1 - (ix - half)] = img[sy0:sy1, sx0:sx1]
     up = cv2.resize(crop, None, fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
-    px, py = int(round((cx - x0) * scale)), int(round((cy - y0) * scale))
+    px, py = half * scale, half * scale
     cv2.circle(up, (px, py), LOCK_ADJUDICATION_RING_RADIUS, (0, 0, 0), 4, cv2.LINE_AA)
     cv2.circle(up, (px, py), LOCK_ADJUDICATION_RING_RADIUS, (255, 255, 0), 2, cv2.LINE_AA)
     strip = np.zeros((LOCK_ADJUDICATION_LABEL_H, up.shape[1], 3), dtype=np.uint8)
@@ -8503,8 +8519,19 @@ def lock_adjudication(struct_paths, tmpl_paths, fps_list, out_dir, seed=LOCK_ADJ
     out_dir.mkdir(parents=True, exist_ok=True)
     index_lines = [
         "# Lock adjudication", "",
-        "For each image, decide which marked position -- `A` or `B` -- is the ACTUAL crosshair. "
-        "Answer `A`, `B`, or `?` (genuinely undecidable) per case.", "",
+        "For each image, decide which marked position -- `A` or `B` -- is the ACTUAL crosshair.",
+        "",
+        "Answer one of: `A`, `B`, `neither` (NEITHER marker is on the crosshair), `both` (the two "
+        "markers coincide / both sit on the reticle), or `?` (genuinely undecidable).",
+        "",
+        "⚑ `neither` and `both` are offered EXPLICITLY because the 2026-08-04 set did not offer "
+        "them and the owner had to volunteer both -- `neither` turned out to be 20% of flagged "
+        "shots (docs/probe-runs.md §22B), a category the two-mode comparison cannot name.",
+        "",
+        "⛔ RECORD THE ANSWERS IN `ANSWERS.json` (written alongside these images) AND COMMIT IT. "
+        "The 2026-08-04 answers were never committed, so the 4 `neither` cases can no longer be "
+        "identified and their cost is unmeasurable -- see docs/probe-runs.md §32.",
+        "",
     ]
     answer_key = []
     for c in cases:
@@ -8527,6 +8554,22 @@ def lock_adjudication(struct_paths, tmpl_paths, fps_list, out_dir, seed=LOCK_ADJ
     with open(out_dir / "ANSWER-KEY.json", "w") as fh:
         json.dump({"seed": seed, "cases": answer_key}, fh, indent=2)
     print(f"wrote {out_dir / 'ANSWER-KEY.json'}")
+    # ⚑ §32: the 2026-08-04 run wrote only the KEY, into a gitignored scratch dir, and the owner's
+    # verdicts were never persisted anywhere -- so the 4 `neither` cases became unidentifiable and
+    # §8 item 1 (their cost) cannot be executed. Emitting a pre-filled, order-matched template makes
+    # recording them the DEFAULT rather than an afterthought.
+    answers_stub = {
+        "_README": ("Fill each `verdict` with one of: A | B | neither | both | ?. Then COMMIT this "
+                    "file (it is the durable record of the adjudication -- ANSWER-KEY.json alone "
+                    "cannot reconstruct the owner's verdicts). Score it with "
+                    "analyze-pellet-tracks.py --lock-adjudication-score <this file> "
+                    "--lock-adjudication-key <ANSWER-KEY.json>."),
+        "seed": seed,
+        "answers": [{"case": c["case"], "verdict": None} for c in answer_key],
+    }
+    with open(out_dir / "ANSWERS.json", "w") as fh:
+        json.dump(answers_stub, fh, indent=2)
+    print(f"wrote {out_dir / 'ANSWERS.json'}  <-- FILL IN AND COMMIT (see §32)")
 
     if save_fixture:
         slim_pools = _la_slim_pools(pools, dump_order)
@@ -8552,6 +8595,142 @@ def lock_adjudication(struct_paths, tmpl_paths, fps_list, out_dir, seed=LOCK_ADJ
             }, fh, indent=2)
         print(f"wrote lock-adjudication fixture -> {save_fixture}")
     return cases
+
+
+# --- scoring a filled ANSWERS.json (§32) -------------------------------------------------------
+LA_VERDICTS = ("A", "B", "neither", "both", "?")
+
+
+def _las_score(answers, key):
+    """Join a filled ANSWERS.json against its ANSWER-KEY.json and reproduce docs/probe-runs.md
+    §22B's verdict split and §22C's severity, from committed data rather than from chat.
+
+    ⚑ §22D's limit is STRUCTURAL and is reproduced here rather than papered over: severity is
+    defined ONLY on template-right cases, because that is the only subset where a valid reference
+    exists. `neither` cases are counted and reported, never folded into the severity mean."""
+    by_case = {c["case"]: c for c in key["cases"]}
+    ans = {a["case"]: a.get("verdict") for a in answers["answers"]}
+    missing = [c for c, v in ans.items() if v is None]
+    unknown = [c for c in ans if c not in by_case]
+    bad = [f"{c}={v}" for c, v in ans.items() if v is not None and v not in LA_VERDICTS]
+    if unknown or bad:
+        raise SystemExit(f"--lock-adjudication-score: unknown cases {unknown}; "
+                         f"bad verdicts {bad} (allowed: {', '.join(LA_VERDICTS)})")
+    split = collections.Counter()
+    severity, sev_cases = [], []
+    for case, v in ans.items():
+        if v is None:
+            continue
+        k = by_case[case]
+        if not k["mislocked"]:
+            split[f"control:{v}"] += 1
+            continue
+        if v == "?":
+            split["undecidable"] += 1
+        elif v == "neither":
+            split["neither"] += 1
+        elif v == "both":
+            split["both"] += 1
+        elif v == k["letter_struct"]:
+            split["structural_right"] += 1
+        elif v == k["letter_tmpl"]:
+            split["template_right"] += 1
+            # production (structural) lock is WRONG here; template is the valid reference
+            d = k["total_struct"] - k["total_tmpl"]
+            severity.append(d)
+            sev_cases.append({"case": case, "delta": d})
+        else:
+            raise SystemExit(f"--lock-adjudication-score: {case} verdict {v!r} matches neither "
+                             f"letter ({k['letter_struct']}/{k['letter_tmpl']})")
+    n_mis = sum(v for k2, v in split.items() if not k2.startswith("control:"))
+    mean = round(st.mean(severity), 4) if severity else None
+    sd = round(st.stdev(severity), 4) if len(severity) > 1 else 0.0
+    return {
+        "n_answered": len([v for v in ans.values() if v is not None]),
+        "n_unanswered": len(missing), "unanswered": sorted(missing),
+        "n_mislocked_scored": n_mis,
+        "split": dict(sorted(split.items())),
+        "production_lock_bad": split["template_right"] + split["neither"],
+        "production_lock_bad_rate": (round((split["template_right"] + split["neither"]) / n_mis, 4)
+                                     if n_mis else None),
+        "severity_n": len(severity), "severity_mean": mean, "severity_sd": sd,
+        "severity_se": round(sd / math.sqrt(len(severity)), 4) if len(severity) > 1 else None,
+        "severity_values": severity, "severity_cases": sev_cases,
+    }
+
+
+def _print_lock_adjudication_score(r):
+    print("\nLOCK ADJUDICATION — SCORED FROM COMMITTED ANSWERS (docs/probe-runs.md §22/§32)")
+    print(f"  answered {r['n_answered']}, unanswered {r['n_unanswered']} {r['unanswered'] or ''}")
+    print(f"  verdict split (mislocked cases, n={r['n_mislocked_scored']}): {r['split']}")
+    print(f"  production lock BAD on {r['production_lock_bad']}/{r['n_mislocked_scored']} "
+          f"= {r['production_lock_bad_rate']}   (template-right + neither)")
+    if r["severity_n"]:
+        print(f"  severity (template-right only, n={r['severity_n']}): {r['severity_values']}")
+        print(f"    mean {r['severity_mean']} sd {r['severity_sd']} SE {r['severity_se']}")
+    print("  ⛔ §22D: `neither` cases are EXCLUDED from severity by construction — template is not a")
+    print("     valid reference there — so the severity mean is biased TOWARD zero and the true")
+    print("     cost is >= what it reports. Sizing that needs a third reference, not this arm.")
+
+
+def audit_lock_adjudication_score(answers_path, key_path):
+    with open(answers_path) as fh:
+        answers = json.load(fh)
+    with open(key_path) as fh:
+        key = json.load(fh)
+    if answers.get("seed") != key.get("seed"):
+        raise SystemExit(f"--lock-adjudication-score: seed mismatch — answers {answers.get('seed')} "
+                         f"vs key {key.get('seed')}. These are not the same adjudication run.")
+    r = _las_score(answers, key)
+    _print_lock_adjudication_score(r)
+    return r
+
+
+def lock_adjudication_score_selftest():
+    """Constraint 9 self-validation on synthetic data (the 2026-08-04 answers are LOST, §32, so
+    there is no real pair to replay). Pins the join, the letter->lock mapping, the §22D exclusion,
+    and the severity arithmetic against a hand-built key whose right answer is computable by hand."""
+    key = {"seed": 1, "cases": [
+        # struct picked (A) -> structural_right, no severity
+        {"case": "c1", "mislocked": True, "letter_struct": "A", "letter_tmpl": "B",
+         "total_struct": 7, "total_tmpl": 7},
+        # tmpl picked (B) -> template_right, severity = 5 - 8 = -3
+        {"case": "c2", "mislocked": True, "letter_struct": "A", "letter_tmpl": "B",
+         "total_struct": 5, "total_tmpl": 8},
+        # letters SWAPPED, tmpl picked (A) -> template_right, severity = 9 - 7 = +2
+        {"case": "c3", "mislocked": True, "letter_struct": "B", "letter_tmpl": "A",
+         "total_struct": 9, "total_tmpl": 7},
+        # neither -> counted, EXCLUDED from severity
+        {"case": "c4", "mislocked": True, "letter_struct": "A", "letter_tmpl": "B",
+         "total_struct": 1, "total_tmpl": 2},
+        # control -> never enters the mislocked split
+        {"case": "c5", "mislocked": False, "letter_struct": "A", "letter_tmpl": "B",
+         "total_struct": 8, "total_tmpl": 8},
+    ]}
+    answers = {"seed": 1, "answers": [
+        {"case": "c1", "verdict": "A"}, {"case": "c2", "verdict": "B"},
+        {"case": "c3", "verdict": "A"}, {"case": "c4", "verdict": "neither"},
+        {"case": "c5", "verdict": "both"},
+    ]}
+    r = _las_score(answers, key)
+    checks = [
+        ("letter->lock mapping honours per-case swapped letters (c3's A is TEMPLATE)",
+         r["split"].get("template_right") == 2),
+        ("structural_right counted, and contributes NO severity",
+         r["split"].get("structural_right") == 1 and r["severity_n"] == 2),
+        ("`neither` counted but EXCLUDED from severity (§22D)",
+         r["split"].get("neither") == 1 and -1 not in r["severity_values"]),
+        ("controls never enter the mislocked split",
+         r["n_mislocked_scored"] == 4 and r["split"].get("control:both") == 1),
+        ("severity values are struct - tmpl, in case order", r["severity_values"] == [-3, 2]),
+        ("production lock bad = template_right + neither", r["production_lock_bad"] == 3),
+    ]
+    ok = all(v for _, v in checks)
+    for label, v in checks:
+        print(f"  {'PASS' if v else 'FAIL'}  {label}")
+    _print_lock_adjudication_score(r)
+    print("SELFTEST PASS" if ok else "SELFTEST FAIL")
+    return 0 if ok else 1
 
 
 def lock_adjudication_selftest():
@@ -9048,6 +9227,16 @@ def main():
                           "--lock-adjudication-template. READ-ONLY: shares §20's --mislock-rate "
                           "detector, never redefines it; never touches read-pellets.ts or "
                           "count-pellets.py's debounce_shots/thresholds/defaults."))
+    ap.add_argument("--lock-adjudication-score", metavar="ANSWERS_JSON",
+                    help=("Score a FILLED ANSWERS.json against its ANSWER-KEY.json and reproduce "
+                          "docs/probe-runs.md §22B's verdict split + §22C's severity from committed "
+                          "data. Exists because the 2026-08-04 answers were never persisted (§32), "
+                          "so the 4 `neither` cases can no longer be identified. Needs "
+                          "--lock-adjudication-key."))
+    ap.add_argument("--lock-adjudication-key", metavar="ANSWER_KEY_JSON",
+                    help="the ANSWER-KEY.json written beside the images, for --lock-adjudication-score")
+    ap.add_argument("--lock-adjudication-score-selftest", action="store_true",
+                    help="replay --lock-adjudication-score over synthetic data and exit")
     ap.add_argument("--lock-adjudication-template", nargs="+", metavar="TEMPLATE_TRACKS_JSON",
                     help="template-mode tracks.json paths, one per --lock-adjudication entry, same "
                          "order")
@@ -9138,6 +9327,13 @@ def main():
         audit_mislock_rate(args.mislock_rate, args.mislock_rate_template, args.mislock_rate_fps,
                            args.save_mislock_rate_fixture)
         return 0
+    if args.lock_adjudication_score_selftest:
+        raise SystemExit(lock_adjudication_score_selftest())
+    if args.lock_adjudication_score:
+        if not args.lock_adjudication_key:
+            ap.error("--lock-adjudication-score requires --lock-adjudication-key")
+        audit_lock_adjudication_score(args.lock_adjudication_score, args.lock_adjudication_key)
+        raise SystemExit(0)
     if args.lock_adjudication_selftest:
         raise SystemExit(lock_adjudication_selftest())
     if args.lock_adjudication:
