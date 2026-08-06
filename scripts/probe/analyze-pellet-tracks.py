@@ -4038,7 +4038,7 @@ def _rep_slim_labelled(tracks_path, tmpl_path, fps, shots):
         "n_frames_full_clip": len(frame_counts),
         "params": {k: dump["params"][k] for k in
                    ("pellet_radius", "center_exclude", "min_area", "max_area", "min_circ",
-                    "max_pellet_frames") if k in dump["params"]},
+                    "max_pellet_frames", "band_hi") if k in dump["params"]},
         "cross": cross[cov_lo:cov_hi],
         "cross_tmpl": tmpl["cross_positions"][cov_lo:cov_hi],
         "frame_counts": [[c["white"], c["red"], c.get("marker", 0)]
