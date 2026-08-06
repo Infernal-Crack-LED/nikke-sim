@@ -1,0 +1,200 @@
+{
+  "slug": "quiry",
+  "leakDetected": null,
+  "override": {
+    "slug": "quiry",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "alliesOfClass",
+          "cls": "Defender"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 5.81,
+            "durationSec": 3
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "alliesOfClass",
+          "cls": "Defender"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 11.63
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 10,
+            "intervalSec": 1
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesOfClass",
+          "cls": "Defender"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 19.9,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "■ Activates when hitting a target with Full Charge. Affects the target. ATK ▼ 8.94% of the skill user's ATK for 3 sec."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1 ally buff is keyed to `shotFired` as a proxy for \"attacking with Full Charge\": quiry is a charge RL (chargeFrames 60) and the sim's charge model is assumed to full-charge every pull, so every trigger pull is a Full Charge attack. If any pull can be uncharged, this OVER-fires.",
+      "⚑ \"Affects 2 Defender ally unit(s)\" — the schema's `alliesOfClass` carries no `count`, so both the skill1 ATK grant and the skill2 Max HP grant hit ALL Defender allies. Equivalent for teams with ≤2 Defenders; OVER-CREDITS a 3+-Defender team. Selection order among Defenders is also unspecified by the kit.",
+      "⚑ Uptime of the 3 sec ally ATK buff is set by the datamined cadence tuple (ammo 6, chargeFrames 60, reloadFrames 141). At those values the 3 sec window is refreshed every full charge and outlasts the ~2.35 s reload, i.e. ~100% uptime — the buff's real value is therefore highly sensitive to a cadence datamine error.",
+      "The skill1 ATK ▼ line is an ENEMY debuff (target = the hit target). The sim has no enemy entity and the boss deals no modeled damage at scope lock, so it is recorded unmodeled rather than authored as a no-op enemy-targeted block. It is NOT a Damage Taken ▲ line and carries no team damage benefit.",
+      "The burst heal is authored for its TANDEM value only (no HP pool is modeled): 10 `recovery` events to all allies, which keep on-recovery consumers (e.g. crown) refreshed across the 10 s window.",
+      "skill2 Max HP is an ALLY grant, so per the e3 scope rule it does NOT feed a teammate's atkOfMaxHpPct conversion — kept for kit completeness / future consumers.",
+      "Both skill1 lines share one activation event but differ in wording — \"hitting a target\" (the debuff, requires a landed hit) vs \"attacking\" (the ally buff, fires on the attack). Only the ally buff is modeled, so the hit/attack distinction is currently unobservable."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. quiry (RL/Wind/Supporter/Burst II) is a pure Defender-focused support with NO damage lines in any slot: S1 grants Defender allies ATK ▲5.81% of quiry's ATK for 3 s per Full Charge attack (near-permanent uptime at the datamined cadence) and debuffs the target's ATK (unmodeled — enemy-scoped, defensive); S2 is a start-of-battle continuous Max HP ▲11.63% to Defender allies; burst is a 10-tick team heal-over-time plus Critical Rate ▲19.9% to all Defender allies for 10 s. All offensive value routes through Defender-class allies, so this unit is inert on a comp with no Defenders."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when hitting w/ Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Read as the activation clause for both S1 branches; modeled via trigger {kind:'shotFired'} on the ally-buff block (charge-RL: every pull assumed a Full Charge). ⚑ trigger proxy."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▼ 8.94% of user's ATK, 3 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "Enemy-targeted ATK debuff (\"Affects the target\"). resolveTargets({kind:'enemy'}) returns [] and the boss's ATK is not modeled (boss damage is out of scope), so it is purely defensive at scope lock. Recorded verbatim in unmodeled.skill1 — NOT a Damage Taken ▲ line, so it carries no team damage benefit."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects 2 Defender ally unit(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesOfClass', cls:'Defender'}. ⚑ the count-2 cap is not expressible (alliesOfClass has no count field); quiry is a Supporter so self-inclusion is a non-issue."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 5.81% of user's ATK, 3 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff {stat:'casterAtkPct', value:5.81, durationSec:3} — \"of the skill user's ATK\" = flat add scaled off quiry's ATK, not the target's."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates at the start of battle",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'passive'} — start-of-battle + \"continuously\" = an always-on passive, no durationSec."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects 2 Defender ally unit(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesOfClass', cls:'Defender'}; same ⚑ count-2 limitation as skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP ▲ 11.63% continuously",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff {stat:'targetMaxHpPct', value:11.63} (plain \"Max HP ▲ X%\" = % of the TARGET's own Max HP). Ally-granted, so it does not feed a teammate's atkOfMaxHpPct — kept per the never-skip-HP/DEF rule."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} (no excludeSelf — \"all allies\" includes quiry)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 6.96% Max HP /1s for 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal {ticks:10, intervalSec:1} on trigger {kind:'burstCast'}. No HP amount modeled (no HP pool at scope); the 10 recovery events are what matter — they drive teammates' 'recovery' triggers across the window."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all Defender allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesOfClass', cls:'Defender'} — \"all\", so no count cap here."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Critical Rate ▲ 19.9% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff {stat:'critRatePct', value:19.9, durationSec:10} on {kind:'burstCast'} — unscoped Critical Rate (the kit does NOT say \"of normal attacks\", so critRateNormalPct would under-credit)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "{kind:'shotFired'} — fires on every trigger pull",
+      "reasoning": "The kit says \"when attacking with Full Charge\"; the schema has no full-charge trigger kind. quiry is an RL with chargeFrames 60, so under the standard charge-weapon model every pull is a Full Charge release and shotFired == full-charge count. chargeCounter{count:1} was rejected: it is a cycling per-phase counter, not a per-charge trigger. If the engine ever fires an uncharged RL shot, this over-fires the ally ATK buff.",
+      "recipe": "Instrument a controlComp with quiry via cfg.onEvent: count 'shot' events and buffApply events with stat casterAtkPct value≈(5.81/100)×quiry.staticAtk over 180 s; they must be 1:1. Cross-check against a focus recording of quiry — count her visible full-charge releases in a 30 s window."
+    },
+    {
+      "field": "skill1[0].target / skill2[0].target",
+      "estimate": "all Defender allies (count-2 cap dropped)",
+      "reasoning": "Kit says \"2 Defender ally unit(s)\" but TargetDef.alliesOfClass carries no count field (unlike alliesTopAtk / alliesLowestAtk). Dropping the cap is exact for teams with ≤2 Defenders and over-credits a 3+-Defender team by up to 50%. The kit also does not state the selection rule when >2 Defenders are present (leftmost? highest ATK?).",
+      "recipe": "Run a 3-Defender comp and assert the number of distinct targetIdx values on the casterAtkPct buffApply events — 3 confirms the over-credit. Fixing it needs either a count field on alliesOfClass or a schema-level Defender+count target; the selection rule needs an in-game read of which two Defenders light up."
+    },
+    {
+      "field": "base cadence tuple (pullsPerSec / chargeFrames 60 / reloadFrames 141 / ammo 6)",
+      "estimate": "as datamined: 1 s charge, 6 rounds, ~2.35 s reload → ~100% uptime on the 3 s Defender ATK buff",
+      "reasoning": "ALWAYS-⚑: rate_of_fire / reloadFrames are known-unreliable datamine fields, and here they are load-bearing for the ONLY continuously-refreshing offensive effect quiry has. The 3 s window survives the ~2.35 s reload gap only if reloadFrames 141 is right; a slower real reload would open dead time and cut the buff's effective value.",
+      "recipe": "Frame-count one full magazine cycle in a quiry recording (first charge start → 6th release → next charge start) and compare against 6×(chargeFrames+release latency)+reloadFrames. Then assert uptime in-sim from buffApply expiresFrame gaps."
+    },
+    {
+      "field": "burst[0].effects[0] (heal tick phase)",
+      "estimate": "ticks:10, intervalSec:1, first tick on the cast frame (t=0)",
+      "reasoning": "\"every 1 sec for 10 sec\" gives 10 ticks, but the kit does not say whether the first tick lands at cast or one second later. This is invisible for quiry herself (no HP modeled) but shifts a teammate's on-recovery consumer by up to 1 s — enough to move which side of a Full Burst boundary the first proc lands on.",
+      "recipe": "Read a recording of quiry's burst with a heal-synergy partner (crown-style 'when recovery takes effect'): note the frame of the first green heal number relative to the burst banner. Confirm the engine's heal-tick phase in the same run via cfg.onEvent recovery timing."
+    },
+    {
+      "field": "unmodeled.skill1 (enemy ATK ▼ 8.94%)",
+      "estimate": "inert at scope lock — no damage impact",
+      "reasoning": "The debuff reduces the boss's ATK, and the scope-lock boss deals no modeled damage (nobody takes damage, nobody dies). Modeling it as an enemy-targeted block would be a guaranteed no-op (resolveTargets({kind:'enemy'}) returns []), which is why it is recorded rather than authored. Flagged because the judgement \"purely defensive\" is a scope claim, not a kit claim — it would matter in any future survivability model.",
+      "recipe": "None needed for damage validation. Re-open only if the sim ever models incoming boss damage; then it becomes a real enemy-stat channel and needs a schema primitive (there is none today)."
+    }
+  ],
+  "model": "claude-opus-5"
+}

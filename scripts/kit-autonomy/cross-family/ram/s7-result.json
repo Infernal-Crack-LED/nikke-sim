@@ -1,0 +1,84 @@
+{
+  "slug": "ram",
+  "kitDescription": "Ram is a Fire sniper-rifle Defender whose kit is almost entirely team survivability. After every five landed shots she weakens the target's attack briefly, and each time a Full Burst ends she refunds a large chunk of her own Burst I cooldown, letting her burst again much sooner than her raw 40-second cooldown would allow — provided a squadmate is on the field. Her second skill periodically raises her own max HP for ten seconds (without healing) and stiffens the defense of the two most hurt allies. Her burst casts a ten-second shield on the whole team sized off her own max HP. In damage terms only two things matter: the cooldown refund speeds up the team's burst rotation, and the shield can trigger allies' shield-reactive skills.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S1-b structural pin: expect(b.teamHas?.sameSquad).toBe(true) — the driver's burstCdr block omits the sameSquad gate (documented ⚑2: collab squad unconfirmed, gate fails closed)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "ATK ▼ 7.95% for 5 sec (after 5 hits)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim — engine has no enemy ATK; the damageTakenPct reflex is a different mechanic that would over-credit the team; pinned by absence + sensitivity counterfactual.",
+        "blindSaid": "S5 accepts unmodeled-if-verbatim and asserts no damageTakenPct/ally-ATK anywhere; S6 also unmodeled. Full agreement.",
+        "formulaCheck": "Enemy ATK is not an input to any bucket in the per-instance formula; boss deals no damage in v1. Inert by construction. Rerouting to damageTakenPct would wrongly enter the Taken bucket — driver explicitly guards this.",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence (driver + both blinds) on unmodeled-with-verbatim-record; driver's sensitivity test proves the nearest-wrong mapping would be caught."
+      },
+      {
+        "kitLine": "FB ends + same-squad ally: Burst CD ▼",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "fullBurstEnd → self burstCdr 20.16, gate omitted as ⚑2 (tier 2, recipe: owner confirms squad → curate squads.ts → swap in teamHas.sameSquad). Cadence pinned by cast-gap <35s and no-CDR counterfactual.",
+        "blindSaid": "S5 structurally demands teamHas.sameSquad === true (the sole RED); S6 independently adds the same gate. Both blinds derive it from the kit wording.",
+        "formulaCheck": "Trigger identity (fullBurstEnd), target (self), value (20.16), repeatability all match prose and engine semantics. The gate primitive exists and fails closed off squads.ts; with ram uncurated, adding it now would silently kill the CDR in every comp — the driver's documented always-satisfied choice is the honest interim, but it IS a real deviation from the kit clause: in non-collab teams the CDR over-fires.",
+        "fireRateOk": true,
+        "explanation": "Core encoding faithful and fire-verified (second cast well inside raw 40s CD; count beats no-CDR counterfactual). The one divergence — the squad gate — is deliberately documented with a recipe rather than silently dropped, so it classifies DOCUMENTED_GAP (⚑), not REAL-GOTCHA. It remains the unit's only load-bearing open item."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Max HP ▲ 40.72% no-restore, self, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval:15 → self targetMaxHpPct 40.72 / 10s (kit-silent CD skill = internal timer at datamined 15s CD, pepper/helm-aquamarine convention; first fire t=15 flagged ⚑3). 11 grants pinned, expiry 600 frames, inertness proven byte-identical.",
+        "blindSaid": "S5 accepts targetMaxHpPct/maxHpPct self 40.72/10s and passes. S6 used trigger passive (fires once at t=0, never re-fires) — contradicts the SSOT internal-cooldown convention and the datamined 15s cooldown; spurious divergence.",
+        "formulaCheck": "SSOT: kit-silent lines on CD skills are interval triggers firing every N sec, first at t=N (⚑ phase). Driver matches; the own-% reading (targetMaxHpPct) matches the e3 own-kit scope rule; 'without restoring HP' holds by construction (no recovery event exists for Max-HP grants).",
+        "fireRateOk": true,
+        "explanation": "Driver faithful with the phase convention flagged; S6's passive reading is a blind-side recon slip on a damage-inert line."
+      },
+      {
+        "kitLine": "DEF ▲ 11.34% of user's DEF, 2 lowest-HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim — no caster-DEF-scaled StatKey exists; defPct would be the wrong basis (target's own DEF) and is inert anyway. Absence pinned; defPct and casterAtkPct reflexes both sensitivity-tested.",
+        "blindSaid": "S5 accepts unmodeled-if-verbatim (passes). S6 modeled defPct 11.34 → alliesLowestHp 2 — wrong-basis encoding of a caster-scaled grant; inert in v1 so harmless, but the driver's verbatim-recorded gap is the more honest disposition.",
+        "formulaCheck": "DEF appears nowhere in the damage formula's buckets on the ally side; no caster-DEF primitive exists. Unmodeled-with-record is correct.",
+        "fireRateOk": true,
+        "explanation": "Driver and S5 converge; S6's modeling is formally wrong-basis though damage-neutral. No gotcha."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Shield 10.08% user's final Max HP, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies (self included) → shield maxHpPct 10.08 / 10s; keyed to ram's OWN cast, proven by the two-B1 alternation probe (no shield on liter-cast chains) and the fullBurstEnter counterfactual; consumer-observed frame-locked via naga's shielded trigger; removal and shield-as-heal counterfactuals both silence the consumer.",
+        "blindSaid": "S5's structural pin (burstCast/allies/10.08/10s, no damage rider) passes; its two skips are observability gaps the driver closed with the naga fixture. S6's block is byte-identical to the driver's.",
+        "formulaCheck": "Shield is event-channel only in v1 (no HP pool); magnitude rides on the effect per the recorded-magnitude convention. burstCast keying matches the kit's 'Affects all allies' on her own burst; fullBurstEnter would fire on chains she sat out — excluded by probe.",
+        "fireRateOk": true,
+        "explanation": "Strongest line in the packet: three-way encoding convergence plus a driver fixture that isolates the shield channel through a real consumer and discriminates both nearest-wrong models (skip-the-line and fullBurstEnter keying)."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENCODING",
+      "slot": "skill1",
+      "summary": "Squad gate on the Full-Burst-end burst CDR is omitted (modeled always-satisfied); the kit conditions the 20.16s refund on a same-squad ally, so the CDR over-fires in comps without rem/emilia.",
+      "evidence": "Kit: 'when Full Burst ends with an ally from the same squad still on the battlefield. Affects self. Cooldown of Burst Skill ▼ 20.16 sec.' Both blind agents (S5 structural pin, S6 override) independently derived teamHas.sameSquad from this wording — the sole S5 RED. Driver omitted it deliberately because the primitive fails closed off src/data/squads.ts and ram's collab squad is unconfirmed (QUEUE.md: confirm before authoring); documented as ⚑2 tier 2 in note+caveats.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Needs owner confirmation, not a fudge: confirm ram's in-game squad field (Re:ZERO collab — rem/emilia), curate src/data/squads.ts, then add teamHas.sameSquad:true to the skill1 burstCdr block per the QUEUE.md migration item. Until then the ⚑ stands."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Every kit line is either FAITHFUL or a documented, recipe-carrying gap; there are no silent drops, no engine misroutes, and no wrong-value encodings attributable to the driver. The single S5 RED — the missing teamHas.sameSquad on the burst CDR — is a divergence the driver anticipated, documented (⚑2, tier 2), and justified (the primitive fails closed on unconfirmed squad data, so gating now would silently kill the CDR everywhere); it is the one real behavioral deviation and the owner should close it by confirming ram's squad and curating squads.ts, after which adding the gate is a one-line change and the blind suite goes green as-is. The blind re-derivations otherwise converged hard: S6's burst block is byte-identical, both blinds agree on both unmodeled lines, and S6's two divergences (passive instead of interval:15 on the Max-HP line; wrong-basis defPct modeling of the DEF line) are blind-side recon slips against the SSOT's internal-cooldown convention, not driver findings. Driver discrimination is genuine: counterfactuals for no-CDR, damageTakenPct-reflex, defPct-reflex, shield-removal, shield-as-heal, and fullBurstEnter re-keying all flip the expected assertions, and the naga-consumer fixture isolates the shield channel with frame-locked attribution. Same-model residual for the owner to spot-check: all agents share the interval:15 first-fire phase convention (⚑3, footage-unpinned) and the always-satisfied squad gate; both are cheap confirmations — one ram focus video for the S2 cadence, one squad-field lookup for the gate.",
+  "model": "kimi-code/k3"
+}

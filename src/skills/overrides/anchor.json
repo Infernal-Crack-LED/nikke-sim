@@ -1,0 +1,35 @@
+{
+  "note": "Kit-autonomy gauntlet 2026-08-05 — Anchor (slug `anchor`; the RL/Defender/Wind/Burst-I BASE unit, NOT anchor-innocent-maid, the RL/Water Supporter Burst-II variant — disambiguation lint resolved explicitly 2026-08-05). FROM-SCRATCH unit (simSupported was false; the empty-skeleton RED state + test-first spec landed at S2a of this same gauntlet). Independently re-derived + pinned by a 9-assertion spec (scripts/tests/units/anchor.test.ts, A1–A2); cross-family claude-fable-5 S2b converged on all four lines. LINE DISPOSITIONS: (1) S1 'Activates when the last bullet hits the target. Affects self. DEF ▲ 23.82% for 5 sec' = lastBullet → self defPct 23.82, durationSec 5. defPct is INERT-IN-V1 by engine design (self DEF never feeds own damage — the stat exists for the Endurance-cube channel), so the line is event-pinned, not damage-pinned: per-magazine cadence (RL ammo 6 — every 6th shot empties the magazine), magnitude 23.82, wall-clock 5s duration (prose 'for 5 sec', not rounds), self scope, plus byte-identical totals when the block is removed (A1). The trigger fires at magazine depletion (the engine's lastBullet primitive), the standing reading of 'the last bullet hits' (anis-sparkling-summer precedent). (2) S1 'Affects the target. Taunt for 5 sec' = UNMODELED verbatim: enemy aggro manipulation — the sim has no enemy-behaviour model (the scope-lock boss deals no damage and has no targeting) and no taunt primitive exists, so it is offensively inert by construction (soda 1-sec-stun precedent). (3) S2 'Activates at the start of battle. When attacking an enemy projectile, damage dealt to that projectile ▲ 25.6% continuously' = UNMODELED verbatim, ⚑ OUT-OF-DOMAIN (engine-core): the sim fields no enemy-projectile entities (missile interception), so the scoped modifier has no target domain in any encoding the sim can field today. ESTIMATE: zero in every fight the sim can run (the scope-lock boss has no interceptable projectiles; no projectile entities exist). RECIPE: an enemy-projectile entity model + a per-source conditional damage modifier keyed on target kind. TIER: out-of-domain (engine-core). S2b named the nearest-wrong model — a generic passive attackDamagePct/partsDamagePct 25.6 that would silently over-credit ALL of anchor's boss damage for the whole fight; rejected. (4) Burst '304.45% of final ATK as Burst Skill damage, affects all enemies' = burstCast → enemy flatDamage 304.45, exactly ONE instance: 'all enemies' collapses onto the lone partless scope-lock boss (anis-sparkling-summer / privaty-unkind-maid / soda precedent), never multiplied by enemy count. burstCast-keyed, so the nuke lands BEFORE the Full Burst window and never takes the +50% major (B1 casts at stage 1; helm H7 precedent); flatDamage procs crit by engine default. 'final ATK' = the standard flatDamage live-ATK resolution (helm/soda precedent). Kit-autonomy gauntlet 2026-08-05.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "lastBullet" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "defPct", "value": 23.82, "durationSec": 5 }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "flatDamage", "atkPct": 304.45 }]
+    }
+  ],
+  "unmodeled": {
+    "skill1": ["Taunt for 5 sec."],
+    "skill2": [
+      "When attacking an enemy projectile, damage dealt to that projectile ▲ 25.6% continuously."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "skill1: the taunt half of S1 is unmodeled — enemy aggro manipulation; no taunt primitive and no enemy-behaviour model in the sim, offensively inert by construction",
+    "skill1: the defPct grant is inert-in-v1 (self DEF never feeds own damage) — event-pinned at one application per magazine depletion (the RL magazine STRETCHES 6 -> 8-9 rounds under the fixture's liter escalating maxAmmoPct 45.17%; the pin keys on the engine's reload events, not a shots/ammo division), magnitude + duration + scope pinned, damage-neutral",
+    "skill2: '+25.6% damage vs enemy projectiles' is ⚑ OUT-OF-DOMAIN (engine-core) — no enemy-projectile entities in the sim; estimate zero in every fight the sim can run; recipe: projectile entity model + scoped modifier",
+    "burst: 'Affects all enemies' collapses to ONE instance on the lone partless boss (multi-enemy selection is out of the single-boss scope)"
+  ]
+}

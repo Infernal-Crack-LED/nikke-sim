@@ -1,0 +1,62 @@
+{
+  "slug": "anchor",
+  "kitDescription": "Anchor is a Wind rocket-launcher Defender whose kit is almost entirely defensive. Each time she fires the last round of her 6-shot magazine she taunts the enemy for 5 seconds and gains a 5-second 23.82% DEF buff on herself. From battle start she permanently deals 25.6% more damage to enemy projectiles (missile interception), a situation that never arises against the scope-lock boss. Her Burst I (20s cooldown) is a single instant hit on all enemies for 304.45% of her final ATK. Offensively she is just her weapon plus this one modest burst nuke.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "last bullet hits → Taunt for 5 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim: no taunt primitive, no enemy-behaviour model, offensively inert by construction (soda stun precedent).",
+        "blindSaid": "S5: GAP skip (no aggro/threat primitive; boss deals no damage) + asserts no stun/targetStatus fabrication and verbatim 'taunt' in unmodeled. S6: same line unmodeled verbatim.",
+        "formulaCheck": "Boss follows a fixed measured range script and deals no modeled damage — taunt has no mechanical surface in v1; a no-op is the only faithful encoding.",
+        "fireRateOk": true,
+        "explanation": "Three independent derivations (driver, S2b, S5/S6) converge: deliberately unmodeled, recorded verbatim, and S5 positively asserts no damage-bearing fabrication stands in for it."
+      },
+      {
+        "kitLine": "last bullet → self DEF ▲23.82% 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "lastBullet → self defPct 23.82 durationSec 5; inert-in-v1 so event-pinned: one application per reload event, 300-frame duration, self target, byte-identical totals when removed; shotFired counterfactual discriminates.",
+        "blindSaid": "S5: same encoding asserted structurally (trigger lastBullet, self, 23.82, durationSec 5, no durationShots, finite expiresFrame), per-magazine cadence discriminated vs both passive and shotFired counterfactuals, inertness + non-vacuous stat-swap probe. S6: byte-identical block semantics.",
+        "formulaCheck": "defPct never enters the per-instance damage formula (FinalATK reads ATK, not own DEF); encoding the stat while moving no damage matches the SSOT. 'for 5 sec' = wall-clock seconds, correctly NOT durationShots. lastBullet-per-magazine is the standing reading of 'last bullet hits' (anis-sparkling-summer precedent).",
+        "fireRateOk": true,
+        "explanation": "Buff demonstrably fires at the prose-implied cadence: driver pins one defPct apply per engine reload event (robust to liter's maxAmmoPct stretching the 6-round mag to 8–9); S5 pins per-magazine vs per-shot via a 3–10x ratio band. Whole-picture cadence check passed against ammo 6 / chargeFrames 60 / reloadFrames 141."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "battle start → vs projectile ▲25.6%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim, ⚑ OUT-OF-DOMAIN (engine-core): no enemy-projectile entities exist; estimate zero in every runnable fight; recipe (projectile entity model + scoped modifier) + tier recorded in note/caveats.",
+        "blindSaid": "S5: GAP skip + asserts NO effect anywhere carries value/atkPct 25.6, no attackDamagePct/projectileExplosionPct/atkPct in skill2, strip-skill2 totals byte-identical, and a +25.6 attackDamagePct probe WOULD move her total (non-vacuous inertness). S6: skill2 empty with the same scope-trap rationale in caveats.",
+        "formulaCheck": "The buff's scope (damage dealt TO interception projectiles) has no target domain in the sim; a generic Damage-Up-bucket 25.6 would multiply every boss hit and contradict the prose scope — the nearest-wrong trap S2b named, independently refused by both blind agents.",
+        "fireRateOk": true,
+        "explanation": "The highest-risk over-credit line in the kit is handled correctly and verifiably: S5's sensitivity probe proves the fixture would register the misread, so the byte-identical-totals assertion is a real constraint, not a numb fixture."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "all enemies: 304.45% final ATK burst dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage atkPct 304.45, one instance; nukes count == own burstCast count, bucket 'burst', inFullBurst:false and fbMajorApplied:false on every instance; noFb correctly left unset (engine cast-timing property).",
+        "blindSaid": "S5: burstCast/enemy/single flatDamage/atkPct 304.45/no core asserted structurally; linear 2:1 scaling pair isolates the burst contribution with non-vacuity (down>0); fullBurstEnter counterfactual strictly raises her total; teammates unmoved. S6: byte-identical block semantics.",
+        "formulaCheck": "Matches the measured Full-Burst boundary rule: burst-cast damage lands before the window opens (no +50% major, no entry auras) — SSOT §1b/§8, Cinderella popup pair. Burst-slot hits crit at sheet rate, never core, no range, 'final ATK' = live buffed ATK at cast — all engine defaults. 'All enemies' collapses to one instance on the lone partless boss (soda/privaty-unkind-maid precedent).",
+        "fireRateOk": true,
+        "explanation": "Nuke fires at the prose-implied cadence (once per own 20s-CD cast; 4 in the main fixture, 8 in the solo-B1 fixture) and never inside Full Burst. The driver's doubled-block counterfactual kills the 'all enemies = double hit' misread."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All four kit lines are either FAITHFUL (self DEF grant; burst nuke) or DOCUMENTED_GAP with verbatim carry, estimate, recipe, and tier (taunt; anti-projectile scope) — zero REAL-GOTCHAs. The two blind re-derivations converged mechanically, not just rhetorically: S6's override is byte-identical in semantics on every block and independently refused the skill2 scope trap (the one genuinely dangerous line — a generic +25.6% Damage-Up would have silently inflated every hit on a low-scrutiny Defender), while S5's 16 passing assertions exercise the driver override through an independent fixture and independent discrimination style (total-based scaling pairs + event-structure reads) and still land GREEN. Discrimination is real on both sides: the driver's dedicated solo-B1 fixture splits burstCast vs fullBurstEnter 8-vs-4 (the main fixture's 4-casts=4-FBs coincidence is explicitly diagnosed, not passed along), the doubled-block counterfactual pins the single-instance reading, and S5's sensitivity probe proves the inertness assertions are non-vacuous. Fire-rate check passes: the DEF buff demonstrably fires once per magazine depletion (driver keys on engine reload events, correctly absorbing liter's maxAmmoPct magazine stretch rather than an invented shots÷6 interval), and the nuke fires per own cast with inFullBurst:false everywhere. Residuals the owner may spot-check (same-model-family convergence proves stability, not correctness): (1) the standing 'last bullet hits' = engine lastBullet-at-depletion reading is precedent-based, never popup-verified for this unit — low value at stake since defPct is damage-inert; (2) the burst's 304.45% live-ATK magnitude has no popup anchor (magnitudes are owner/measurement-gated regardless); (3) the taunt-is-positionally-inert assumption rests on the measured fixed range script — if a taunt can ever move the boss, the omission becomes damage-relevant. Nothing must change for GO; simSupported may flip to true.",
+  "model": "kimi-code/k3"
+}

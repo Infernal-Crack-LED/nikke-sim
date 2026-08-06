@@ -1,0 +1,187 @@
+{
+  "slug": "ram",
+  "leakDetected": null,
+  "override": {
+    "slug": "ram",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnd"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "teamHas": {
+          "sameSquad": true
+        },
+        "effects": [
+          {
+            "kind": "burstCdr",
+            "seconds": 20.16
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 40.72,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "alliesLowestHp",
+          "count": 2
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 11.34,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 10.08,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates after landing 5 normal attack(s). Affects the target(s). ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the v1 boss deals no damage and enemy ATK is not an input to the damage formula, so the line has no consumer (it is NOT a Damage Taken ▲ debuff, which would benefit the team)."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ Kit-silent triggers: both skill2 lines state a duration but carry NO activation clause. Modeled as `passive`, so each applies once at t=0 and lapses after its stated window (10 s / 5 s) instead of refreshing. Damage-inert for this kit either way, but the trigger identity is unverified.",
+      "⚑ teamHas.sameSquad FAILS CLOSED — if src/data/squads.ts carries no squad entry for ram, the 20.16 s burst-CDR never fires and her Burst I cadence stays at the flat 40 s cooldown. This is the ONE damage-relevant lever in the kit (faster Burst I → more full bursts), so the squad curation is load-bearing.",
+      "DEF ▲ 11.34% \"of the skill user's DEF\" has no caster-scaled DEF StatKey (no `casterDefPct` exists); authored as plain `defPct`, which is inert in v1 (self DEF does not affect own damage). Kept for kit completeness and as a future consumer hook; the caster-scaling is not represented.",
+      "Max HP ▲ 40.72% is offensively inert here — ram carries no `atkOfMaxHpPct`, and ally-granted Max HP never feeds a teammate's HP→ATK conversion. It does set the basis of the burst shield (10.08% of final Max HP); the sim models no HP pool, so the shield amount is recorded, not simulated.",
+      "\"without restoring HP\" — the Max HP grant emits NO recovery event. It is deliberately NOT paired with a `heal`, which would falsely fire teammates' `recovery` triggers (e.g. crown).",
+      "The burst shield targets ALL allies (self included) and fires their `shielded` triggers / satisfies `requiresShielded` gates — the only cross-unit damage channel in this kit. Do not skip it on isolation grounds."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. ram (SR/Fire/Defender/Burst I) is a pure support/defensive kit — no damage effect of any kind. Modeled: (skill1) a full-burst-end self burst-CDR of 20.16 s gated on a same-squad ally; (skill2) a self Max HP ▲ 40.72% and a 2-lowest-HP-ally DEF ▲ 11.34%; (burst) an all-ally shield worth 10.08% of her final Max HP for 10 s. The burst-CDR is the only line that moves damage — it shortens her 40 s Burst I cooldown and therefore the team's full-burst cadence. Her skill1 target ATK ▼ is unmodeled (see `unmodeled`). No `noFb` is set (no damage riders exist to exempt) and `noRange` is engine-automatic."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after landing 5 normal attack",
+      "status": "SKIPPED",
+      "effectOrReason": "Trigger would be hitCount{count:5} (SR hitsPerShot 1, so 5 rounds = 5 hits), but the effect it carries has no consumer — skipped with the whole block, recorded verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▼ 7.95% for 5 sec (the target(s))",
+      "status": "SKIPPED",
+      "effectOrReason": "Enemy ATK debuff. v1 boss deals no damage and enemy ATK is not an input to the damage formula (only boss DEF is); resolveTargets({kind:'enemy'}) returns [] so a block would be a silent no-op. Distinct from damageTakenPct, which WOULD be modeled."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "When Full Burst ends w/ same-squad ally",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'fullBurstEnd'} + block gate teamHas:{sameSquad:true}. \"still on the battlefield\" is scope-trivial (nobody dies at scope lock), so the gate is composition-only."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Cooldown of Burst Skill ▼ 20.16 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect {kind:'burstCdr', seconds:20.16}, target self. `oncePerBattle` NOT set — the kit states no once-per-battle limit, so it recurs on every qualifying full-burst end (⚑)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'}; no activation clause → trigger {kind:'passive'} (⚑ kit-silent)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP ▲ 40.72% ... for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat 'targetMaxHpPct' value 40.72 durationSec 10 (self-cast, so it is her own Max HP). \"without restoring HP\" → no `heal` effect emitted."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects 2 ally unit(s) w/ lowest HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesLowestHp', count:2}. No excludeSelf (the kit does not say \"except self\"). v1 has no HP pool, so the engine resolves this to the leftmost 2 allies as the documented stand-in."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▲ 11.34% of user's DEF for 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat 'defPct' value 11.34 durationSec 5. Caster-scaling is NOT expressible (no casterDefPct StatKey); defPct is inert in v1. Kept per the \"DEF/HP lines are not skippable\" rule."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} (no excludeSelf — \"all allies\" includes the caster)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Shield 10.08% of user's final Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'} (the line sits in her OWN burst block) + effect {kind:'shield', maxHpPct:10.08, durationSec:10}. Fires teammates' `shielded` triggers and opens `requiresShielded` gates — the kit's only cross-unit channel."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].teamHas.sameSquad + effects[0].seconds",
+      "estimate": "Gate active (assumed ram has a curated squad); burst-CDR 20.16 s recurring on EVERY qualifying full-burst end, not once per battle.",
+      "reasoning": "`sameSquad` fails closed by design — an owner with no entry in src/data/squads.ts never satisfies the gate, which would silently zero the only damage-relevant line in this kit (her 40 s Burst I cooldown would never be shortened). The kit text also states no once-per-battle limit, so recurring is the literal read, but that is the difference between ~1 extra Burst I cast and several over a 180 s fight.",
+      "recipe": "1) Confirm src/data/squads.ts contains ram and note which co-units share her squad (the gate is composition-only at scope lock). 2) Record a fight with a same-squad ally present and count her Burst I casts / full-burst count vs a run without one; a recurring 20.16 s CDR on a 40 s cooldown should roughly halve her effective cycle after the first full burst. 3) Compare against the flat-40 s sim rotation log (ROT=1) — the full-burst COUNT is the discriminating observable."
+    },
+    {
+      "field": "skill2[0].trigger, skill2[1].trigger",
+      "estimate": "passive (applied once at battle start, lapsing after 10 s / 5 s respectively).",
+      "reasoning": "Neither ■ block carries an \"Activates when …\" clause, unlike both skill1 blocks in the same kit — so the prose gives no trigger at all, yet both lines state a finite duration. That combination is contradictory: a true permanent passive needs no duration, and a 10 s/5 s window implies an unstated refresh cadence (interval, on-hit, or an in-game HP-threshold condition the dump omits). Modeling it as `passive` + durationSec is the literal read and deliberately UNDER-credits rather than inventing an interval. Both lines are damage-inert for this kit (ram has no atkOfMaxHpPct and defPct is inert in v1), so the choice moves no damage today — it matters only if a future consumer reads her live Max HP (e.g. the burst shield basis) or DEF.",
+      "recipe": "Record a scope-lock fight with ram and watch her self buff-icon strip: if the Max HP icon re-arms on a fixed cadence, re-key to {kind:'interval', sec:N}; if it is present for the entire fight, drop durationSec; if it appears only after a triggering event (a hit count, a burst, an HP threshold), key it to that trigger. Same read for the 2-ally DEF grant on the ally icons."
+    },
+    {
+      "field": "base cadence tuple (chargeFrames 60 / reloadFrames 141 / ammo 6)",
+      "estimate": "Datamined values used as given — SR, 6 rounds, ~1.0 s full charge, ~2.35 s reload.",
+      "reasoning": "ALWAYS-⚑ #1: rate_of_fire / reloadFrames are known-unreliable datamine fields, and the effective rate is quantized to 60 fps frame boundaries. Ram deals no kit damage, so the tuple only affects her own normal-attack output and burst-gauge generation — but her gauge contribution feeds the full-burst cadence her own burst-CDR is being judged on, so an error here confounds the flag above.",
+      "recipe": "Count shots and reloads off a focus recording of ram (ammo counter is the direct instrument for shots/sec, not full-burst counts, which are downstream of gauge); compare against the sim's shot log."
+    },
+    {
+      "field": "burst[0].effects[0] — shield consumers",
+      "estimate": "Shield applies to all 5 allies at burst cast, duration 10 s, amount 10.08% of ram's final Max HP (including her own skill2 +40.72%, if that buff is live at cast time).",
+      "reasoning": "The shield's AMOUNT is kit-stated and needs no flag, but the SIM has no HP pool, so the amount is inert and the only live behaviour is the `shielded` event it emits. Whether that event fires for a teammate whose own gate is evaluated at cast time depends on ordering relative to the burst-cast frame, and whether ram's skill2 Max HP buff is active at cast (it is, under the `passive` model, only for the first 10 s of the fight) changes the recorded amount but nothing observable.",
+      "recipe": "Assert via the harness: run a comp containing a shield-gated consumer (a `requiresShielded` block or a `shielded` trigger) alongside ram and check the buffApply/damage events land in the window after her burstCast. No in-game measurement is needed for the event plumbing; the shield MAGNITUDE only becomes measurable if a future kit scales damage off shield value."
+    }
+  ],
+  "model": "claude-opus-5"
+}

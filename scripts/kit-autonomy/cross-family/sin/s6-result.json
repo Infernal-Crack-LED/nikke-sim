@@ -1,0 +1,247 @@
+{
+  "slug": "sin",
+  "leakDetected": "src/skills/types.ts (read as permitted methodology) — the StatKey comment for 'highestAllyMaxHpPct' ends 'Next expected carrier: sin.', naming THIS unit's slug. The packet's REDACTED schema copy has that clause stripped; the on-disk file does not. No magnitudes, triggers, durations or block structure leaked, and the S1 line 'Duplicate 15.03% Max HP of ally with the highest Max HP' maps to that StatKey from the prose alone, so the parse is unaffected. Reported per the blindness contract; the packet-prep redactor should also strip target-slug mentions from the LIVE types.ts read path, not just the pasted copy.",
+  "override": {
+    "slug": "sin",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "highestAllyMaxHpPct",
+            "value": 15.03,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnd"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "burstGenPct",
+            "value": 16.17,
+            "durationSec": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "escalating",
+            "steps": [
+              {
+                "kind": "heal",
+                "ticks": 5,
+                "intervalSec": 1
+              },
+              {
+                "kind": "buff",
+                "stat": "defPct",
+                "value": 0,
+                "durationSec": 5
+              },
+              {
+                "kind": "buff",
+                "stat": "defPct",
+                "value": 43.2,
+                "durationSec": 5
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 176.32,
+            "crit": true,
+            "noFb": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Attract: Taunt all enemies for 5 sec."
+      ],
+      "skill2": [
+        "Twice: Incoming healing ▲ 51% for 5 sec."
+      ],
+      "burst": [
+        "■ Activates when enemy unit(s) (excluding Nikkes) are more than 4. Affects all enemies. Damage Taken ▲ 12.23% for 5 sec."
+      ]
+    },
+    "caveats": [
+      "⚑ BURST DAMAGE-TAKEN IS GATED OFF AT SCOPE LOCK, NOT DROPPED. The burst's first sub-block requires >4 enemy units (excluding Nikkes); the scope-lock fight is a single partless raid boss, so the condition is never satisfied and the 12.23% Damage Taken ▲ debuff never applies. There is no enemy-count block gate in the schema, so authoring it as a live damageTakenPct block would credit the ENTIRE TEAM a 12.23% boss debuff that the real fight never grants — the single largest over-credit available in this kit. It is recorded in unmodeled instead. If an enemy-count gate primitive is ever added, this is the block to revive; it stays inert on every graded solo-raid comp either way.",
+      "⚑ escalating step 2 is a ZERO-VALUE INDEX PLACEHOLDER, not a modeled effect. The `escalating` primitive applies steps 1..N on the Nth activation, so the step list must stay positionally aligned with the kit's Once/Twice/Three-times ladder. 'Incoming healing ▲ 51%' has no StatKey (the sim models no HP pool, so incoming-healing scaling is unrepresentable), but silently omitting it would slide 'DEF ▲ 43.2%' from the 3rd burst cast to the 2nd — a trigger-identity error. The placeholder is defPct:0 (defPct is already inert in v1, and 0 is inert unconditionally). Replace it with a real effect if an incoming-healing stat is ever added.",
+      "⚑ Skill-2 'Once' lifesteal is modeled as a recovery EVENT emitter only, with no HP amount. 'Recover 15.3% of attack damage as HP' has no HP pool to fill at scope (immortal boss, nobody takes damage), but the heal/shield HARD RULE forbids skipping it: the recovery events it emits are what a teammate's on-recovery consumer reads. Target is self, so at present it fires only Sin's own recovery triggers — she has none, making it inert TODAY but correct if she is ever paired with a kit that keys off her being healed.",
+      "⚑ Both Max-HP and DEF grants are offensively inert as modeled. highestAllyMaxHpPct grants Sin flat Max HP, which only converts to ATK through an atkOfMaxHpPct line — Sin's kit has none — and ally-granted Max HP does not feed a teammate's conversion (the e3 scope rule). defPct is inert in v1. Both are retained for kit completeness and for a future consumer/scaler, per the HP/DEF-scaler prior; neither should be read as a damage contribution.",
+      "⚑ EVERY numeric value below that is not literally in the kit prose is an unmeasured estimate. This override has never been scored against a real fight."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Sin (AR/Electric/Defender/Burst II, 20s CD, 60 ammo). Modeled: S1 last-bullet self Max-HP duplication from the highest-Max-HP ally (15.03%, 5s); S2 full-burst-END burst-gauge-generation buff (16.17%, 5s) and a burst-cast escalating ladder (lifesteal recovery events → [placeholder] → DEF ▲ 43.2%); burst instant damage 176.32% of final ATK. Trigger fidelity is the load-bearing read here: S2's gauge buff is fullBurstEnd (NOT fullBurstEnter — it arms the NEXT rotation, not the current window), and the escalating ladder is burstCast (NOT fullBurstEnter — it counts only rotations SIN herself bursts, which diverges from team full bursts in any comp carrying a second Burst II unit). The burst damage is FB-exempt because a burst cast resolves before the Full Burst window opens. The burst's Damage Taken ▲ 12.23% is condition-gated on >4 enemies and is therefore INERT against a single raid boss — see caveats; it is recorded in unmodeled rather than authored live, because modeling it would hand the whole team a boss debuff the real fight never grants. Sin contributes no team ATK/damage buff: her offensive footprint at scope is her own weapon fire plus a single 176.32% burst hit, and everything else is survivability or gauge economy."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when firing the last bullet",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'lastBullet'} — literal activation text, fires once per magazine (60-round AR, so once per full belt plus once per forced reload). Target {kind:'self'} per 'Affects self.'"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Duplicate 15.03% Max HP of ally with",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat 'highestAllyMaxHpPct' value 15.03 durationSec 5. 'Max HP of the ally with the highest Max HP' is the highest-ally basis, not the target's own Max HP (targetMaxHpPct) and not the caster's (casterMaxHpPct). Offensively inert (Sin has no atkOfMaxHpPct conversion) but retained per the HP-scaler prior."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Attract: Taunt all enemies for 5 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "No taunt/aggro primitive in the schema and no enemy entity to redirect (resolveTargets({kind:'enemy'}) returns []). Aggro control is purely defensive at scope lock — the boss deals no modeled damage, so redirecting its attention changes nothing measurable. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when Full Burst ends.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'fullBurstEnd'} — read literally. Distinct from fullBurstEnter/burstCast: this arms the wind-down after the window closes, so its 5s window overlaps the post-FB chain delay and the start of the next gauge build, never the FB window itself."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Burst Gauge filling speed ▲ 16.17%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff stat 'burstGenPct' value 16.17 durationSec 5, target self. Scopes to Sin's own gauge contribution only ('Affects self'), so it accelerates rotation modestly rather than buffing the team's gauge pool."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'} — 'when using Burst Skill' is own-cast, NOT fullBurstEnter. Keying this to full-burst entry would advance the escalating counter on rotations another Burst II unit casts, reaching the DEF tier early and over-firing the ladder in any multi-B2 comp."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effects vary according to the number",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect {kind:'escalating', steps:[...]} — 'Each subsequent effect triggers all effects before it' is exactly the Liter-style cumulative ladder (Nth activation applies steps 1..N), not three independently-gated blocks."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Once: Recover 15.3% of attack damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 1 = {kind:'heal', ticks:5, intervalSec:1}. Lifesteal has no HP amount at scope (no HP pool) but emits recovery events for on-recovery consumers, which the heal/shield HARD RULE forbids skipping. ⚑ ticks/interval are kit-silent — the prose says 'for 5 sec', not a per-second recovery cadence."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Twice: Incoming healing ▲ 51%",
+      "status": "SKIPPED",
+      "effectOrReason": "No incoming-healing StatKey; the sim models no HP pool, so a healing-received multiplier has nothing to scale. NOT silently dropped — escalating step 2 carries a zero-value defPct placeholder so 'DEF ▲ 43.2%' stays on the THIRD cast rather than sliding to the second. Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Three times: DEF ▲ 43.2% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 3 = buff stat 'defPct' value 43.2 durationSec 5. Self DEF is inert in v1 (own DEF does not affect own damage) but is retained per the DEF-scaler prior, and its position in the ladder is the reason step 2 needs the placeholder."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Activates when enemy unit(s) ... > 4",
+      "status": "SKIPPED",
+      "effectOrReason": "No enemy-count block gate exists in the schema, and the scope-lock fight is ONE partless raid boss, so the condition is never satisfied — the correct model is inert. Authoring the 12.23% damageTakenPct live would grant the entire team a boss debuff the real fight never applies (the largest single over-credit available in this kit). Verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage Taken ▲ 12.23% for 5 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Same block as above — the magnitude is real but unreachable behind the >4-enemy gate. Recorded, not modeled. Revive only if an enemy-count gate primitive is added AND the sim ever fights a >4-unit wave."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects enemies within attack range.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'}, trigger {kind:'burstCast'}. 'Within attack range' is a targeting-area clause with no in-range/out-of-range distinction against a single boss; it does not gate the hit."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 176.32% of final ATK as damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 176.32, crit true, noFb true. crit per the rider-crit rule (function-damage riders crit at the caster's sheet rate). No core: the prose says plain 'damage', not 'core strike damage'. noFb because burst-cast damage resolves before the Full Burst window opens (no +50%, no entry auras). noRange is engine-automatic and deliberately not set."
+    }
+  ],
+  "flags": [
+    {
+      "field": "burst[0].effects[0] — the >4-enemy Damage Taken ▲ 12.23% block (recorded in unmodeled.burst, NOT authored)",
+      "estimate": "INERT at scope lock — zero team damage contribution from Sin's burst debuff.",
+      "reasoning": "The activation clause requires more than 4 non-Nikke enemy units. The scope-lock validation fight is a single partless raid boss (1 enemy), so the gate is false for the entire 180s. The schema has no enemy-count gate, so the only two authoring choices are 'live and always-on' (wrong — credits a 12.23% whole-team boss debuff that never exists) or 'recorded in unmodeled' (right). I chose the latter. This is the highest-leverage line in the kit: 12.23% Damage Taken ▲ is a multiplicative team-wide bucket, so a naive parse inflates EVERY unit in the comp, not just Sin.",
+      "recipe": "No measurement can resolve this at scope lock — the condition is structurally unreachable against a solo raid boss, so this is a MODELING decision, not a measurement gap. If the sim ever gains multi-enemy waves, add an enemy-count block gate (e.g. requiresEnemyCount:{min:5}) and revive the block with damageTakenPct 12.23 / durationSec 5 / target enemy / trigger burstCast. Until then, any board reading that seems to want +12% team damage from Sin is evidence of a DIFFERENT error."
+    },
+    {
+      "field": "skill2[1].effects[0].steps[1] — zero-value defPct placeholder standing in for 'Incoming healing ▲ 51%'",
+      "estimate": "defPct 0 for 5s — a no-op index holder; contributes exactly 0 damage and 0 mitigation.",
+      "reasoning": "The escalating primitive is positional (Nth activation applies steps 1..N), so the step list must have the same length and order as the kit's Once/Twice/Three-times ladder. 'Incoming healing ▲' has no StatKey because the sim models no HP pool. Omitting the step would move 'DEF ▲ 43.2%' from Sin's 3rd burst cast to her 2nd — a real trigger-identity error even though the DEF buff itself is inert today. defPct was chosen for the placeholder because it is already inert in v1, and value 0 makes it inert unconditionally regardless of any future defPct consumer.",
+      "recipe": "Not measurable and not worth measuring — it is a schema-expressiveness gap, not a game-mechanics question. Resolve by adding an 'incomingHealingPct' StatKey (inert until an HP pool exists) and swapping the placeholder for it, OR by adding an explicit no-op EffectDef kind for ladder alignment. Re-check this step's index alignment if the escalating semantics ever change from cumulative to per-tier."
+    },
+    {
+      "field": "skill2[1].effects[0].steps[0].ticks / .intervalSec (lifesteal recovery cadence)",
+      "estimate": "ticks 5, intervalSec 1 — five recovery events, one per second across the stated 5s window.",
+      "reasoning": "The kit says 'Recover 15.3% of attack damage as HP for 5 sec' — it states a WINDOW, not a tick cadence. Real lifesteal recovers per damaging hit, which at AR cadence would be far more than 5 events; a per-second approximation is the schema's nearest expressible shape (the heal effect's ticks/intervalSec pair). The recovered AMOUNT is unmodeled either way (no HP pool). Only the event COUNT matters, and only to a teammate's on-recovery consumer — of which Sin currently has none, since the block targets self. So the estimate is inert today and I have deliberately not guessed a per-hit cadence I cannot verify.",
+      "recipe": "Only becomes load-bearing if Sin is ever teamed with an on-recovery consumer (e.g. a Crown-style 'when recovery takes effect' kit) AND the block's target is widened. At that point, record a focus fight and count the consumer's buff-apply events over Sin's 5s lifesteal window: if the consumer refreshes on every Sin weapon hit rather than ~1/s, re-key the step from a ticked heal to a shotFired-triggered heal."
+    },
+    {
+      "field": "burst[0].effects[0].crit",
+      "estimate": "true — the 176.32% burst hit rolls crit at Sin's sheet rate.",
+      "reasoning": "Per the rider-crit rule, function-damage riders crit at the caster's rate; the flatDamage crit flag is opt-in in the schema, so leaving it unset would silently exempt a burst nuke from crit that every comparable rider takes. The kit text gives no crit exemption. Core is correctly left OFF — the prose says plain 'damage', with no 'core strike damage' wording, so the hit takes no core bucket.",
+      "recipe": "Read popups on a focus recording of Sin's burst: an orange-with-icon popup at cast time confirms crit-eligible; a consistently white popup across n>=5 casts refutes it (set crit:false). The same footage settles noFb — a burst popup carrying the +50% Full Burst major would refute the pre-FB resolution assumption below."
+    },
+    {
+      "field": "burst[0].effects[0].noFb",
+      "estimate": "true — the burst hit is exempt from the +50% Full Burst major.",
+      "reasoning": "Not a free guess: the methodology states burst-cast/instant damage is always FB-exempt because a burst cast lands before the Full Burst window opens. Sin is Burst II, so her cast sits mid-chain (B1 -> B2 -> B3 -> 22f -> FB) and resolves well before FB entry. If the engine already force-exempts burst-slot instant damage, this flag is idempotent; if it does not, the flag is what makes the model faithful. Flagged rather than shipped silently because the ALWAYS-⚑ taxonomy lists per-kit noFb as measured-only, and because the alternative encoding (the top-level burstSnapshotsPreFb flag) is per-unit and I cannot tell from the prose which mechanism this engine expects for a Burst II caster.",
+      "recipe": "From a focus recording: compare Sin's burst popup value against her own weapon-hit values in the same buff state. A burst popup ~1.5x the pre-FB expectation means the +50% major landed and noFb must come off (and burstSnapshotsPreFb reconsidered). Cross-check against the pinned measured fact that burst-cast damage lands before Full Burst begins — if Sin contradicts it, that is a mechanics finding, not a Sin finding, and belongs in the measurement log rather than in this override."
+    },
+    {
+      "field": "base cadence tuple (pullsPerSec / reloadFrames 81 / ammo 60) — datamined, not authored in this override",
+      "estimate": "Use the datamined AR tuple as given, with effective fire rate snapped to 60fps frame boundaries (effective = 60/ceil(60/nominal)), not the raw nominal rate_of_fire.",
+      "reasoning": "rate_of_fire and reloadFrames are the known-unreliable datamine fields, and this kit is unusually sensitive to the reload half of the tuple: skill1 is keyed to lastBullet, so its 15.03% Max-HP grant fires exactly once per magazine cycle. A wrong reload time or ammo count changes how many times S1 fires across 180s. Sin's own damage is barely affected (the grant is offensively inert), but her uptime accounting and any future HP-scaling consumer are.",
+      "recipe": "Count Sin's reloads directly off a focus recording's ammo counter over a fixed window (the ammo counter measures shots/sec directly, rather than inferring it from a downstream quantity like full-burst counts). Expected cadence: 60 rounds / effective pulls-per-sec + 81 frames (1.35s) reload per cycle. Compare the observed lastBullet count over 180s against the sim's; a mismatch localizes to the cadence tuple, not to this override."
+    },
+    {
+      "field": "skill1[0] — highestAllyMaxHpPct basis (static vs live Max HP)",
+      "estimate": "Static basis — resolves to 15.03% x max(all units' STATIC maxHp) at apply time.",
+      "reasoning": "The kit says plain 'ally with the highest Max HP', not 'highest FINAL Max HP'. Per the literal-word rule that governs the analogous highest-ATK targeting (plain 'highest' keeps base ranking; only literal 'final' switches to live values), the static basis is the faithful default. The choice moves no damage today — Sin has no atkOfMaxHpPct conversion, and ally-granted Max HP does not feed a teammate's conversion under the e3 scope rule — so this is a fidelity flag, not a magnitude flag.",
+      "recipe": "Becomes load-bearing only if Sin is teamed with a Max-HP-granting supporter AND some unit converts Max HP to ATK. Then A/B the two bases in a comp where a supporter's grant changes who holds the highest Max HP mid-fight: a static basis leaves Sin's grant constant, a live basis steps it up when the supporter's buff lands. Compare against the popup-read damage of the converting unit."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,121 @@
+{
+  "slug": "rupee-winter-shopper",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▲ 19.02% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic DEF stat buff, no attack-type scoping. defPct is offensively inert in v1 (self DEF never feeds own damage), but the buff must still be applied for kit completeness and future consumers.",
+      "durationSemantics": "durationSec: 5 — wall-clock seconds, refreshed on each re-trigger. NOT rounds.",
+      "triggerIdentity": "lastBullet — 'Activates when the last bullet hits the target' is the per-magazine trigger. With ammo 60 and reloadFrames 81 this fires once per magazine cycle, so uptime is periodic, not continuous.",
+      "targetSet": "allies (all 5 units including self — 'Affects all allies').",
+      "nearestWrongModel": "Dropped entirely as 'defensive, no damage, skip' (the reload-speed/Grave-class misread generalized to DEF), or scoped to self only.",
+      "distinguishingAssertion": "Event log contains buffApply {stat:'defPct', value:19.02} events at rupee-winter-shopper's last-bullet/reload boundaries, with target coverage spanning all 5 slots, and expiresFrame - applyFrame == 300 (5s @60fps). Red if zero defPct 19.02 applies exist or targets are self-only.",
+      "inertness": "Total damage of every unit must be IDENTICAL with this block removed via withPatchedOverride — defPct is a no-damage stat in v1. If removing it moves any total, the encoding leaked into a damage stat.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Shopping: DEF ▲ 1.33%. Stacks up to 4",
+      "disposition": "FAITHFUL",
+      "scope": "Generic DEF stat, damage-inert itself — but the STACK STATE is the gate for the skill2 Burst-Gauge line, so the stack bookkeeping is the real payload, not the DEF value.",
+      "durationSemantics": "durationSec: 20 per application, maxStacks: 4. Seconds, not rounds. A rotation's burst-cast cluster (B1→B2→B3 within ~2-3s) lands 3-4 stacks well inside one 20s window.",
+      "triggerIdentity": "'When an ally uses a Burst Skill' = ANY burst cast by ANY team member at ANY stage — engine encoding is stageEnter for stages 1, 2, and 3 (or an equivalent cast-count resource). It is NOT burstCast (own-burst-only) and NOT fullBurstEnter (once per rotation).",
+      "targetSet": "allies (all 5).",
+      "nearestWrongModel": "Keyed to fullBurstEnter — 1 stack per rotation instead of 3-4 per rotation chain. Stacks would then crawl toward 4 across ~4 rotations (and only if 20s windows overlap) instead of hitting max inside the FIRST rotation, so the max-stack gate on the gauge line essentially never opens in time.",
+      "distinguishingAssertion": "Within a single rotation's burst chain (a ~200-frame span containing the B1/B2/B3 burstCast events), the log shows 3+ buffApply {stat:'defPct', value:1.33, maxStacks:4} events with the stacks field incrementing 1→2→3(→4). Red under nearest-wrong: exactly one apply per rotation.",
+      "inertness": "The DEF value itself must move zero damage (same withPatchedOverride removal check as skill1). The stack count 4 must NOT be reachable in a rotation with only 3 burst casts unless the re-enter chain (burst line) produces a 4th cast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Burst Gauge filling speed ▲ 7.9%",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-gauge generation rate — stat burstGenPct. This is the kit's one directly rotation-moving line: it compresses time-to-next-FB, so it can change FB counts/timing.",
+      "durationSemantics": "durationSec: 5.",
+      "triggerIdentity": "fullBurstEnd, GATED on Shopping being at max stacks (4) at that moment — a stack/resource-threshold gate (resourceGate min:4 over a burst-cast-counting pool, or equivalent). Not fullBurstEnter, not ungated.",
+      "targetSet": "allies (all 5).",
+      "nearestWrongModel": "Two plausible misreads: (a) UNGATED — fires on every fullBurstEnd regardless of stack count, over-crediting gauge every rotation even in comps that can never reach 4 stacks; (b) stat misread as an instant fillGauge pct instead of a 5s filling-SPEED rate.",
+      "distinguishingAssertion": "In a comp where a second Burst-I unit exists and the re-enter chain yields 4 casts (4 stacks), a buffApply {stat:'burstGenPct', value:7.9} lands within a frame of fullBurstEnd. In a comp/patch where only 3 stacks accrue by FB end (e.g. re-enter line removed via withPatchedOverride), NO burstGenPct 7.9 apply appears. Green-faithful/red-ungated on the second half.",
+      "inertness": "Must NOT fire when stacks < 4 at FB end, and must NOT fire at fullBurstEnter or burst-cast time. No instant gauge jump (no fillGauge-style discontinuity) — only a 5s rate window.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attract: Taunts all enemies for 5 sec",
+      "disposition": "UNMODELED",
+      "scope": "Enemy-targeting/aggro control — the sim has no aggro model and the partless scope-lock boss deals no modeled damage.",
+      "durationSemantics": "5 sec, moot.",
+      "triggerIdentity": "burstCast (own burst), moot.",
+      "targetSet": "enemy, moot.",
+      "nearestWrongModel": "Inventing a damageTakenPct or targetStatus effect out of 'Attract' — the text grants no damage or debuff, only taunt.",
+      "distinguishingAssertion": "No damage event, no buffApply, and no targetStatus window is attributable to this line; recorded verbatim in unmodeled.burst.",
+      "inertness": "Zero events, zero damage. Anything it emits is an invention.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 50.47% of attack damage as HP",
+      "disposition": "FAITHFUL",
+      "scope": "Self lifesteal-over-time. No HP pool is modeled, but the engine's heal effect exists precisely to emit recovery events for on-recovery consumers — model as heal to SELF with ticks:10, intervalSec:1 (10s of recovery events) on her burstCast.",
+      "durationSemantics": "over 10 sec — a heal-over-time, so ~10 periodic recovery events, not one instant tick.",
+      "triggerIdentity": "burstCast (her own burst block).",
+      "targetSet": "SELF ONLY — '■ Affects self' heads this sub-block. This is the adversarial crux: the recovery trigger fires on units that RECEIVE the heal.",
+      "nearestWrongModel": "Target set widened to allies — which would pump recovery events into any on-recovery consumer teammate (crown's 'when recovery takes effect' engine sits in the standard control fixture) and spuriously move team damage every rotation rupee bursts.",
+      "distinguishingAssertion": "Every recovery/heal event sourced from rupee-winter-shopper's burst targets rupee's own slot; specifically ZERO recovery events from her slot target crown. Green-faithful (crown's recovery consumers untouched by rupee), red-nearest-wrong (crown's buff refreshes track rupee's burst timing).",
+      "inertness": "Team totals must be unchanged with this heal block removed — rupee has no own on-recovery consumer, and a self-heal must not feed any teammate's recovery trigger.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Reload Speed ▲ 63.17% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Weapon-state modifier — this IS damage (taxonomy #6): reload speed gates shots fired for the whole team. stat reloadSpeedPct 63.17.",
+      "durationSemantics": "durationSec: 10.",
+      "triggerIdentity": "burstCast — it sits in her OWN burst block, so it fires ONLY on rotations rupee actually casts. With two Burst-I units in a comp, the B1 selection can go to the other unit; on those rotations this buff must NOT appear.",
+      "targetSet": "allies (all 5, '■ Affects all allies').",
+      "nearestWrongModel": "Two candidates: (a) skipped as 'defensive/utility, no damage' — the documented reload-mechanic drop that over/under-models shot economy; (b) keyed to fullBurstEnter so it fires every rotation even when the other B1 won the cast.",
+      "distinguishingAssertion": "buffApply {stat:'reloadSpeedPct', value:63.17} events exist, land on all 5 slots, and every one coincides (same frame) with a burstCast event whose caster is rupee-winter-shopper — never with a fullBurstStart she didn't burst into. Additionally reload events inside the 10s window show a shortened reload gap vs the 81-frame base (≈50 frames at +63.17%), i.e. carry shot count strictly increases vs a withPatchedOverride copy with this block deleted.",
+      "inertness": "No reloadSpeedPct applies on rotations where rupee did not cast her burst; no effect outside the 10s window.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Re-enters Burst Stage 1",
+      "disposition": "FAITHFUL",
+      "scope": "Rotation-machine effect: reenterStage stage:1 — after her cast the rotation stays at stage 1 so ANOTHER eligible Burst-I unit can also cast. This is also the mechanical enabler of the kit's own 4-stack Shopping gate: B1(rupee) → re-entered B1(other) → B2 → B3 = exactly 4 burst casts in one chain.",
+      "durationSemantics": "Instantaneous rotation-state effect; no duration.",
+      "triggerIdentity": "burstCast (rides her own burst).",
+      "targetSet": "Rotation state, not a unit buff.",
+      "nearestWrongModel": "Omitted entirely (rotation shows one stage-1 cast per chain, Shopping caps at 3, the skill2 gauge line goes permanently dead), or mis-modeled as burstCdr / a self re-cast.",
+      "distinguishingAssertion": "In a comp containing rupee plus one other Burst-I unit, a single rotation chain contains TWO stage-1 burstCast events from two DIFFERENT casters before the fullBurstStart, and the Shopping buffApply stacks field reaches 4 in that chain. Red under omission: one stage-1 cast, stacks max out at 3, and no burstGenPct 7.9 ever fires.",
+      "inertness": "Must not grant rupee herself a second cast, and must not alter chain timing beyond permitting the additional stage-1 cast; in a comp with NO other B1 it changes nothing.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:DEF ▲ 19.02% for 5 sec (lastBullet, all allies)",
+    "skill2:Shopping DEF ▲ 1.33% ×4 stacks, 20 sec (any burst cast)",
+    "skill2:Burst Gauge filling speed ▲ 7.9% for 5 sec (fullBurstEnd, max-stack-gated)",
+    "burst:Recovers 50.47% of attack damage as HP over 10 sec (SELF heal events)",
+    "burst:Reload Speed ▲ 63.17% for 10 sec (burstCast, all allies)",
+    "burst:Re-enters Burst Stage 1"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Attract: Taunts all enemies for 5 sec."
+    ]
+  },
+  "notes": "Expected shared-prior misreads to reconcile, in priority order. (1) The kit is a coherent machine: 'Re-enters Burst Stage 1' exists to produce the 4th burst cast that maxes Shopping (B1 + re-entered B1 + B2 + B3 = 4), which in turn opens the max-stack gate on the fullBurstEnd gauge buff. Tests that exercise skill2's gauge line in a comp where only 3 casts happen per chain — or that never verify the re-enter actually yields a second stage-1 cast — are asserting a state the faithful model cannot reach, and an UNGATED encoding would pass them; demand the paired positive (4 stacks → buff fires) AND negative (3 stacks → silent) assertions. (2) COMP HAZARD: rupee-winter-shopper is Burst I, and the standard control fixture already fixes liter into the B1 slot — the entire burst block (reload speed, re-enter, heal) is conditional on rupee WINNING the stage-1 selection in a two-B1 comp. Any test must first assert a burstCast event with rupee as caster exists at all; otherwise every burst assertion is vacuously green/red for selection reasons, not modeling reasons. (3) skill2a's trigger is any-ally-any-stage burst cast (stageEnter 1/2/3 or a cast-counting resource), not fullBurstEnter — the under-stacking misread. (4) Reload Speed ▲ is DAMAGE (shot-count gate), not skippable utility, and it is burstCast-keyed, not fullBurstEnter — assert both the buffApply-coincides-with-her-cast property and a real shot-count delta. (5) The self-heal's target set is the trap, not its magnitude: 'Affects self' means recovery events must reach only rupee; an allies-targeted heal silently feeds any on-recovery consumer in the fixture (crown) and moves damage. (6) All magnitudes (19.02 / 1.33×4 / 7.9 / 50.47 / 63.17) are kit-literal → DATAMINED; no ⚑ estimates are needed anywhere, so any calibrated-looking value in the override is a red flag. No leak detected in the redacted methodology. Tooling note: I have no file access in this run — the JSON above is returned inline and was not written to scripts/kit-autonomy/reviews/rupee-winter-shopper.test-review.json.",
+  "model": "claude-fable-5"
+}

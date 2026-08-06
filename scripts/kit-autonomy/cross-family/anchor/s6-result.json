@@ -1,0 +1,133 @@
+{
+  "slug": "anchor",
+  "leakDetected": null,
+  "override": {
+    "slug": "anchor",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 23.82,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 304.45
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates when the last bullet hits the target. Affects the target. Taunt for 5 sec."
+      ],
+      "skill2": [
+        "Activates at the start of battle. Affects self. When attacking an enemy projectile, damage dealt to that projectile ▲ 25.6% continuously."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "defPct is offensively inert in v1 (self DEF does not feed any damage bucket). The buff is KEPT per the do-not-skip-DEF/HP/heal rule so a future consumer or scaler sees it; it moves no damage today.",
+      "⛑ The skill1 DEF window's uptime is driven entirely by last-bullet frequency, i.e. by the RL cadence tuple (ammo 6 / chargeFrames 60 / reloadFrames 141) — datamine-unreliable, unverified here. Inert while defPct is inert; becomes load-bearing the moment anything consumes DEF.",
+      "⛑ Taunt is unmodeled: there is no aggro/threat entity in the sim and the boss range/movement script is a measured constant. If a taunt can alter boss position (and therefore the range band a shot lands in), this omission would be damage-relevant — currently assumed not to be.",
+      "⛑ The skill2 anti-projectile Damage ▲ 25.6% is scoped to damage dealt TO an enemy projectile. No projectile entity exists at scope lock, so it is unmodeled rather than encoded as a generic damage stat — encoding it generically would over-credit every hit.",
+      "⛑ noFb is NOT set on the burst hit: burst-cast damage is FB-exempt by cast TIMING (it resolves before the Full Burst window opens), which is an engine-level property rather than a per-kit flag; setting noFb here risks a double exemption. Unverified for this unit.",
+      "This kit carries exactly ONE damage-bearing line (the burst). Any sim-vs-real magnitude gap on this unit therefore isolates to ATK/base-stat inputs, the RL cadence, or the burst multiplier — not to buff modeling."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Anchor (anchor) is RL/Wind/Defender/Burst I with a sparse, defence-flavoured kit: only the burst carries damage. skill1 = two last-bullet riders — a 5s enemy Taunt (unmodeled: no aggro/threat model; boss movement is a measured script) and a 5s self DEF ▲ 23.82% (modeled as a defPct self-buff on a lastBullet trigger; offensively inert in v1 but kept per the do-not-skip-DEF rule). skill2 = a battle-start passive raising damage dealt to enemy PROJECTILES by 25.6% — unmodeled, since no projectile entity exists at scope lock and a generic damage stat would over-credit every hit. burst = one instant 304.45%-of-final-ATK hit on burstCast/enemy; no core (the text does not say core strike), no noFb set (burst-cast damage is FB-exempt by cast timing, an engine property), crit left to the engine's rider default. No calibrated or invented values appear anywhere in this file."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when last bullet hits; target",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger identity: lastBullet (per-magazine, on the owner's final round). Target set: 'the target' = enemy for the taunt rider, 'self' for the DEF rider — authored as two separate readings of the same activation clause."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Taunt for 5 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "No taunt/aggro/threat primitive in the EffectDef schema and no enemy-behaviour model in v1 (boss movement + range bands are a measured script; the boss deals no damage). Not encodable as targetStatus either — no gate reads it. Recorded verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▲ 23.82% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff { stat:'defPct', value:23.82, durationSec:5 } on trigger lastBullet, target self. Scope: generic self DEF, wall-clock seconds (not rounds — the text says 'sec'). Kept despite v1 inertness per the DEF/HP/heal-not-skippable rule."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates at start of battle; self",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger identity read only — a battle-start, self-scoped, continuous passive. No block emitted because its sole payload (below) is unmodelable at scope."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "dmg to enemy projectile ▲ 25.6% cont.",
+      "status": "SKIPPED",
+      "effectOrReason": "Scope-gated to damage dealt to an ENEMY PROJECTILE. The sim has no projectile entity (partless boss, single target), so the buff can never apply; there is no correctly-scoped StatKey for it, and mapping it to attackDamagePct/partsDamagePct would over-credit ordinary boss hits. Recorded verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Target set: { kind:'enemy' }. 'All enemies' is a single instance at scope lock (one partless boss) — no split-vs-merge question arises."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 304.45% of final ATK as Burst dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage { atkPct: 304.45 } on trigger burstCast (the unit's own burst block; no separate activation clause). No core:true (text does not say core strike). No noFb (burst-cast damage lands pre-FB by timing). No delaySec (no flight/travel wording). Lands in the burst bucket by slot."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.burst[0].effects[0].noFb",
+      "estimate": "UNSET (default OFF) — no per-kit exemption authored",
+      "reasoning": "⛑ ALWAYS-⛑ field (per-kit noFb, measured-only). The methodology states burst-cast/instant damage is FB-exempt because the cast resolves before the Full Burst window opens — that is a cast-TIMING property the engine owns, not a per-override flag, so authoring noFb:true here risks exempting the hit twice (or masking a real engine timing bug). Left unset and flagged rather than guessed either way.",
+      "recipe": "Focus-recording of a fight where anchor casts her own burst: read the burst popup value and divide by the same run's expected 304.45%-of-final-ATK baseline with all live buffs. A ratio near 1.00 confirms FB-exempt (noFb correct to leave unset); a ratio near 1.50 means the hit is taking the Full-Burst major and noFb:true is required. Cross-check against a run where a DIFFERENT unit completes the chain."
+    },
+    {
+      "field": "(base stats, not an override field) anchor cadence tuple — chargeFrames 60 / reloadFrames 141 / ammo 6 / hitsPerShot 1",
+      "estimate": "Use the datamined values as-is: 6 rounds, 60f full charge, 141f reload → one lastBullet activation per ~(6 charges + reload) cycle",
+      "reasoning": "⛑ ALWAYS-⛑ field (cadence tuple, datamine-unreliable — rate_of_fire/reloadFrames are the known-bad fields, and the game fires on 60fps frame boundaries so any nominal rate is quantised). For this unit the tuple drives (a) total normal-attack shot count — the dominant damage term, since the kit adds no multipliers to it — and (b) the frequency of the skill1 lastBullet trigger. Not derivable from the kit text.",
+      "recipe": "Ammo-counter frame count from a focus recording: count frames between consecutive rounds fired and between the last round and the refilled magazine. Ammo counter measures shots/sec DIRECTLY; do not infer it from burst-gauge or full-burst counts (those are downstream of gauge-per-shot)."
+    },
+    {
+      "field": "unmodeled.skill1[0] (Taunt for 5 sec) — boss-behaviour coupling",
+      "estimate": "Assumed damage-neutral (0% effect on this or any teammate's damage)",
+      "reasoning": "⛑ The taunt is skipped on the premise that boss aggro cannot change the fight's damage math. That premise is load-bearing but unverified for this scope: if a taunt shifts the boss's position, it could shift which measured range band shots land in, and the range/movement script is treated as a fixed measured constant. HYPOTHESIS, not a fact — flagged rather than silently assumed.",
+      "recipe": "Compare two recordings of the same comp at scope lock, one with anchor and one with an equivalent non-taunting unit in her slot, and diff the boss's position/range-band timeline against docs/data/range-data.md breakpoints. Identical timelines ⇒ the skip is confirmed damage-neutral."
+    },
+    {
+      "field": "override.skill1[0].effects[0] (defPct 23.82) — engine inertness",
+      "estimate": "Modeled and live, but contributes 0 damage under the v1 formula",
+      "reasoning": "⛑ defPct is documented inert (self DEF does not feed any damage bucket). The buff is authored anyway so the kit line is represented and any future DEF consumer/scaler picks it up; a reviewer should not read its presence as a claimed damage contribution. Its 5s window vs. the lastBullet cadence means uptime is a fraction of the fight, not permanent.",
+      "recipe": "No measurement needed while defPct is inert. If a DEF consumer is ever added, pin uptime first from the ammo-counter cadence above (window = 5s per magazine cycle), then A/B the buff's presence on a graded comp."
+    }
+  ],
+  "model": "claude-opus-5"
+}

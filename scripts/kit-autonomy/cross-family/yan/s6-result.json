@@ -1,0 +1,196 @@
+{
+  "slug": "yan",
+  "leakDetected": null,
+  "override": {
+    "slug": "yan",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "chargeDamagePct",
+            "value": 21.55,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "chargeCounter",
+          "count": 1
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 2.77,
+            "durationSec": 5
+          },
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 1.33,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 348.73,
+            "crit": true,
+            "noRange": true,
+            "noFb": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": [
+        "Forced movement toward the center of attack range, lasts for 2 sec."
+      ]
+    },
+    "caveats": [
+      "⚑ skill2 trigger cadence: kit says 'when performing a Full Charge attack' — modeled as chargeCounter count:1 (every full charge). Yan is RL with chargeFrames 90; the datamined cadence tuple (reloadFrames 141, ammo 6, chargeFrames 90) is a known-unreliable datamine field, so the resulting re-application rate (and therefore the 5s buff's real uptime) is UNMEASURED.",
+      "⚑ skill2 uptime: the 5s window vs the full-charge interval decides whether the ATK/crit buff is effectively permanent or duty-cycled. If the effective charge cycle exceeds 5s the buff lapses between shots; unmeasured either way.",
+      "⚑ burst damage: modeled as instant on-cast (no flight time). RL burst nukes elsewhere in the roster have measured flight delay; if popup footage shows the hit landing inside the Full Burst window, add delaySec and drop noFb.",
+      "⚑ burst crit: the 348.73% hit is modeled crit-eligible at the caster's sheet rate (roster default for burst damage) and core-ineligible (kit says no 'core strike'). Unmeasured for this unit.",
+      "Burst-cast damage is FB-exempt by convention (a burst cast lands before the Full Burst window opens) — noFb:true here follows that rule, not a per-unit measurement.",
+      "'Forced movement toward the center of attack range' is a boss-positioning effect; the scope-lock boss has a scripted range/movement profile the engine owns, so this line has no representable primitive."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Yan (RL/Fire/Supporter/Burst I) is a pure charge-support buffer plus one burst nuke. S1 is a team-wide Charge Damage ▲21.55%/10s keyed to Full Burst entry (fullBurstEnter — the kit says 'at the beginning of Full Burst', which fires on ANY team Full Burst, not only rotations Yan bursts); chargeDamagePct is the additive charge-bucket stat, not chargeDamageMultPct (the kit line is a plain 'Charge Damage ▲ x%', not a 'damage multiplier scaled by' line). S2 is a team-wide ATK ▲2.77% + Critical Rate ▲1.33% for 5s re-applied on each of Yan's own full-charge attacks; the crit line is UNSCOPED in the kit text (no 'of normal attacks' qualifier) so it is generic critRatePct, not critRateNormalPct. Burst deals 348.73% of final ATK to enemies in range as an instant on-cast hit, FB-exempt per the burst-cast convention. The forced-movement clause is unmodeled: the sim owns boss position via a measured range script, so a kit-driven reposition has no primitive and would collide with measured ground truth.",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at the beginning of Full",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter — literal 'beginning of Full Burst' reading; fires on ANY team Full Burst (not burstCast, which would under-fire since Yan is Burst I and the FB is chained by a B3)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} — no 'except self' clause, so Yan is included"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Damage ▲ 21.55% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeDamagePct 21.55, durationSec 10 (additive percentage points in the charge bucket; 10s ≈ the Full Burst window so it is effectively FB-scoped)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when performing a Full C",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger chargeCounter count:1 — fires on every full-charge attack by Yan (the per-full-charge phase counter with a single-phase threshold of 1)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} — team-wide, self included"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 2.77% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 2.77, durationSec 5 (scales each target's own ATK — plain 'ATK ▲ x%', not a caster-ATK-derived flat grant)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Rate ▲ 1.33% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 1.33, durationSec 5 — UNSCOPED in the kit text, so generic crit, not critRateNormalPct"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects enemies within attack rang",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single-boss scope, the AoE breadth is irrelevant against one target"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 348.73% of final ATK as dama",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 348.73, crit true, noRange true, noFb true (burst-cast instant damage lands before the FB window opens — verified-fact convention)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Forced movement toward the center",
+      "status": "SKIPPED",
+      "effectOrReason": "No boss-position primitive: the engine drives boss range/movement from a measured range script (a protected measured constant), and there is no EffectDef that repositions the target. A kit-driven pull would override measured ground truth. Recorded verbatim in unmodeled.burst."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[0].trigger",
+      "estimate": "chargeCounter {count: 1} — one activation per full-charge attack",
+      "reasoning": "The kit gives an activation clause ('when performing a Full Charge attack') but no cadence. The RESULTING re-application rate depends entirely on the datamined cadence tuple (chargeFrames 90 ≈ 1.5s charge, ammo 6, reloadFrames 141 ≈ 2.35s), and rate_of_fire/reloadFrames are the known-unreliable datamine fields. So the trigger IDENTITY is certain from the text; its FREQUENCY — and therefore whether the 5s ATK/crit window ever lapses — is not.",
+      "recipe": "Focus-record Yan firing continuously; count full-charge releases per 10s from the ammo counter / charge-release audio-visual cue and compare against the engine's chargeCounter fire log (DBG_UNIT=yan with a chargeCounter tap). If measured releases occur more often than every 5s, the buffs are effectively permanent and only the ramp-in matters."
+    },
+    {
+      "field": "skill2 buff uptime (durationSec 5 vs charge cycle)",
+      "estimate": "Near-100% uptime while Yan is firing; brief lapses across reloads",
+      "reasoning": "With ~1.5s charge + ~2.35s reload every 6 rounds, consecutive full charges should land inside 5s of each other except possibly across a reload, so the buffs read as near-permanent. This is derived from the same unreliable cadence tuple, so the lapse pattern is a hypothesis, not a measurement.",
+      "recipe": "Instrument buffApply/expiresFrame for stat atkPct value 2.77 over a 180s run and compute active-frame fraction; compare against a focus recording's buff-icon presence at reload boundaries."
+    },
+    {
+      "field": "burst[0].effects[0].crit",
+      "estimate": "true (crit-eligible at the caster's sheet rate)",
+      "reasoning": "The kit text is silent on crit for the 348.73% hit. Roster convention is that burst/function damage crits at the caster's rate unless the kit or a measurement says otherwise; core is withheld because the text does not say 'core strike damage'.",
+      "recipe": "Read the burst popup colour on a focus recording — orange + crit icon = crit-eligible; a fixed white value across many casts at a non-100% sheet crit rate = crit-exempt. Same footage settles core (red 'CORE HIT')."
+    },
+    {
+      "field": "burst[0].effects[0] flight time (delaySec absent)",
+      "estimate": "0s — instant on cast",
+      "reasoning": "Yan is an RL unit and the burst is an area hit; other RL burst nukes in the roster have MEASURED flight delay (a missile landing ~0.4s after the banner, inside the FB window at full buff state). The kit text gives no flight time, so instant is the conservative default, but the FB-exemption and buff-snapshot state both hinge on it.",
+      "recipe": "Frame-count from the burst banner to the damage popup on a focus recording. If the hit lands after Full Burst opens, set delaySec to the measured value and drop noFb:true (the delayed path snapshots buffs/FB at landing)."
+    },
+    {
+      "field": "burst[0].effects[0].noFb",
+      "estimate": "true (Full-Burst-exempt)",
+      "reasoning": "Per the verified-facts convention, burst-cast damage lands before Full Burst begins, so it takes no +50% FB major and no entry auras. This is a convention-level default rather than a per-unit measurement, and it is coupled to the flight-time flag above — a measured flight delay would invert it.",
+      "recipe": "Same recording as the flight-time flag: compare the burst popup value against ATK×3.4873×(known multipliers) with and without the +50% FB major."
+    },
+    {
+      "field": "cadence tuple (ammo 6 / reloadFrames 141 / chargeFrames 90)",
+      "estimate": "Use as given",
+      "reasoning": "ALWAYS-⚑ field 1: the datamined cadence tuple is a known-unreliable source, and for a charge-weapon Supporter it drives BOTH Yan's own damage contribution and the skill2 re-application rate — it is the single largest lever on this override's team-wide output.",
+      "recipe": "Ammo-counter read from a focus recording: count shots per magazine and time reload-start → first-shot to get effective reload; time charge-start → release for the effective charge window (respecting 60fps frame quantization, effective = 60/ceil(60/nominal))."
+    },
+    {
+      "field": "skill1[0].trigger (fullBurstEnter vs burstCast)",
+      "estimate": "fullBurstEnter",
+      "reasoning": "The text says 'at the beginning of Full Burst', which is the full-burst-enter wording, not 'when using Burst Skill'. Yan is Burst I, so a burstCast keying would fire at her own B1 cast — before the FB window — and the 10s Charge Damage window would start ~1.5s early, partially wasting it. Trigger identity is textually clear; noting it because burstCast/fullBurstEnter divergence is the taxonomy's #3 trap and the two are only distinguishable in multi-caster comps.",
+      "recipe": "In a comp where Yan is present but a different unit chains the Full Burst, check that the charge-damage buff icon appears at the FB banner rather than at Yan's own burst cast."
+    }
+  ],
+  "model": "claude-opus-5"
+}
