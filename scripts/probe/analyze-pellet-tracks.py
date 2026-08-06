@@ -9530,7 +9530,7 @@ def _print_mislock_identity(reports):
     print("\n⚑ CONTROL POPULATION, checked rather than asserted. On all four PRODUCTION dumps this "
           "arm's\n  classification reproduces docs/probe-runs.md §20A/§20B EXACTLY at published "
           "precision -- shots\n  218/203/180/214, mislocked 33/41/32/31, template lock "
-          "98.3/100.0/100.0/99.5%% -- so the `*-tmplloc`\n  dumps ARE §20's own production template "
+          "98.3/100.0/100.0/99.5% -- so the `*-tmplloc`\n  dumps ARE §20's own production template "
           "arms and the population here is §20's, unmodified.\n"
           "  ⛔ THE LABELLED CLIP IS THE EXCEPTION: §20's labelled template series was freshly "
           "calibrated\n  (§20F) and survives only as the 148 counting-frame slice inside "
