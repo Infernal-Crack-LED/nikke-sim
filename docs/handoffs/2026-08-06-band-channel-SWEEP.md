@@ -72,14 +72,23 @@ detector-window estimator. Its name and its "existing pipeline" label are the wh
 "hybrid" numbers describe the **§13/§14** hybrid, not the landed **§16** one.
 
 ⛔ **`bad4808e` (this session) added `band_hi` to `_rep_slim_labelled`'s params whitelist** — which
-is what makes this reachable. It is **INERT today** (no committed fixture's source dump persists a
-`band_hi`), and the failure is asymmetric:
+is what makes this reachable, and the failure is asymmetric:
 
 - `--hybrid-landing-audit` **hard-exits** (its equivalence assert compares `_hla_gate_ids`, which
   DOES read `params.band_hi`, against `_ps_band`, which does not) — loud, safe;
 - `--policy-score` **silently narrows the band** — quiet, wrong.
 
 ⇒ The moment the labelled block is re-dumped at production parameters, that goes live.
+
+⛔ **CORRECTION (2026-08-06, while enacting item 4) — this section originally called the hazard
+"INERT today (no committed fixture's source dump persists a `band_hi`)". THAT WAS WRONG, and it was
+wrong in the direction that matters.** A direct scan found **two** committed fixtures already
+carrying **decoupled** dump-level `band_hi`: `marker-semantics-slice.json`'s dumps (`band_hi` 10 vs
+`max_pellet_frames` 7) and `residual-ab-slice.json`'s `dumps[1]` (20 vs 14). ⇒ Threading `band_hi`
+through the 8 omitting call sites is **NOT provably inert**, and `_ps_band` feeds
+`hybrid_plateau_median`, which backs **§12D's load-bearing 740/112 decomposition assert**. That is
+why item 4's fix is **deferred with cause** rather than landed — it needs its own measured
+blast-radius pass. The hazard is documented at `_ps_band` itself.
 
 ## 5. Stale claims still reading as production truth
 
