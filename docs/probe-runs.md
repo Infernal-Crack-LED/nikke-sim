@@ -7221,3 +7221,59 @@ jittering.
 geometry alone. But if it holds, a large part of the "mislock" channel is **one systematic offset**
 — a far cheaper fix than per-shot localization, and it would be worth identifying which element each
 locator is on before any localizer change is designed.
+
+#### §41 THE LOCK-OFFSET LEAD — ⛔ NOT ESTABLISHED by its own pre-committed rule, but the population is BIMODAL
+
+**2026-08-06.** Executes `docs/handoffs/2026-08-06-lock-offset-PRECOMMIT.md`, committed at
+`67014264` **before the wider-n numbers existed**. Tests §40C's `dx` +322 / `dy` −330 offset, which
+was observed on **10 hand-picked shots** and therefore could not test itself.
+
+##### §41A — The three pre-committed predictions
+
+Structural minus template at `t0+9`, stuck-template shots excluded (§40A). **n = 82 clean mislocked
+/ 584 non-mislocked.**
+
+| #      | prediction                              | result                                              | verdict      |
+| ------ | --------------------------------------- | --------------------------------------------------- | ------------ |
+| **P1** | signs consistent on ≥ 90%               | `dx > 0` **92.7%**, `dy < 0` **98.8%**              | ✅ **HOLDS** |
+| **P2** | `dy` sd **< 100 px**                    | **sd = 109** (mean −270, median −282)               | ⛔ **FAILS** |
+| **P3** | non-mislocked median \|dx\|,\|dy\| < 20 | **median \|dx\| = 3.0 px, \|dy\| = 1.0 px** (n=584) | ✅ **HOLDS** |
+
+⇒ **By the pre-committed verdict rule — which required ALL THREE — `H_element` is NOT ESTABLISHED.**
+P2 missed by 9 px on a 100 px threshold.
+
+⚑ **The threshold was NOT moved.** It was committed at 100 before any wider-n number existed, and
+109 is a fail. Rescuing it by widening the bound is precisely what the pre-commit was written to
+prevent.
+
+##### §41B — What DID establish itself, and it is worth more than the failed prediction
+
+**P3 is the strongest result in this section, and it was not the headline.** Across **584
+non-mislocked shots the two independent locators agree to a median of 3 px horizontally and 1 px
+vertically.** Two different localization methods, agreeing to the pixel, on the overwhelming
+majority of shots.
+
+⇒ **The mislock population is genuinely BIMODAL**, not a continuum of jitter: the locks either agree
+essentially exactly, or they jump by ~270 px in a consistent direction (98.8% same sign). ⚑ That
+independently corroborates §39's `J_ok` control from a different quantity — the control passed
+because the locks really do agree, not because the metric is insensitive.
+
+##### §41C — Why the "one cheap constant fix" reading is NOT supported
+
+`dy` = −270 ± 109 is a **40% coefficient of variation**. That is a consistent DIRECTION, not a fixed
+offset — so the §40C hope that a single constant correction closes the channel **does not survive**.
+
+**POST-HOC, and labelled as such** (it did not rescue P2 and was not used to): the spread is not
+explained by splitting per dump — `dy` sd is 87 / 68 / 151 / 94 on `marciana` (SG/Iron) / `isabel` /
+`guilty` / `noir`, means −280 / −301 / −239 / −267. Three of four remain above or near the 100 px
+bound on their own. ⛔ **Recorded as an observation for whoever designs the localizer fix; it is not
+evidence for anything here.**
+
+##### §41D — Consequence
+
+⇒ **The owner ask proceeds as written** (`docs/handoffs/2026-08-06-OWNER-ASK-mislock-labels.md`),
+exactly as the pre-commit said it would if any prediction failed. The lead is **PARTIAL, not dead**:
+the disagreement is directional and the population is bimodal, but it is not a single constant, so
+**labelling is still the route to MAGNITUDE.**
+
+⛔ Nothing enacted. No localizer change, no constant, no threshold.
