@@ -7092,3 +7092,82 @@ right follow-up is an owner-anchored (not count-based) mislock severity measurem
   the reader was tuned against). **ELIMINATION-strength, never a certification.**
 - **Interface note:** `--residual-ab` takes dump **DIRECTORIES**; every other arm takes a
   `tracks.json` path. Passing `tracks.json` raises a confusing `NotADirectoryError`.
+
+#### §39 MISLOCK SEVERITY BY TRACK-SET IDENTITY — the two locks count DIFFERENT pellets, and §22C's own premise fails
+
+**2026-08-06.** Executes `docs/handoffs/2026-08-06-mislock-identity-PRECOMMIT.md` (committed at
+`8c9e98e3` **before any Jaccard existed**). Instrument: **`analyze-pellet-tracks.py
+--mislock-identity`** (+ selftest, fixture `mislock-identity-slice.json`, `pellet-selftest.sh` now
+**33 arms**). Tests §37B's refill mechanism, which until now was an _explanation_ rather than a
+measurement.
+
+##### §39A — The result, per dump (⛔ never pooled)
+
+`A` = track ids counted under the STRUCTURAL lock, `B` under the TEMPLATE lock, both at the
+**band-plateau frame** on the **shipped** channel. `J` = |A∩B| / |A∪B|.
+
+| dump                         | `J_mis` | n_mis | **`J_ok`** | n_ok | `ΔC` |
+| ---------------------------- | ------- | ----- | ---------- | ---- | ---- |
+| `h4-marciana-structural`     | 0.3333  | 8     | **1.0000** | 170  | 1.13 |
+| `h4-isabel-structural`       | 0.2857  | 13    | **0.9500** | 150  | 2.38 |
+| `h4-guilty-structural`       | 0.6000  | 7     | **1.0000** | 136  | 1.29 |
+| `g2-noir-structural`         | 0.3750  | 12    | **1.0000** | 166  | 2.25 |
+| `groundtruth-f811-v6-landed` | 0.5268  | 2     | **1.0000** | 24   | 3.50 |
+| `groundtruth-f811-v4`        | 0.7143  | 1     | **1.0000** | 24   | 2.00 |
+
+⚑ **CONTROL SANITY passes decisively everywhere** — agreeing locks count the _same_ tracks
+(`J_ok` 0.95–1.00 on n = 24–170). The metric is not measuring noise, which is what makes the
+mislocked column interpretable at all.
+
+⇒ **Mislocked shots count LARGELY DIFFERENT PELLETS.** Several individual shots reach **`jaccard`
+= 0.0000** — two _entirely disjoint_ sets — while the counts differ by only 1 (`g2-noir` t0=1175:
+`nA` 3, `nB` 4, |A∩B| **0**; t0=1817: `nA` 6, `nB` 5, |A∩B| **0**). That is the compensating-error
+signature in its purest observed form.
+
+##### §39B — ⛔ THE PRE-COMMITTED BAND THAT FIRED IS ROW 4, NOT ROW 1
+
+All six dumps land on `ΔC ≥ 1.0`: **"counts diverge materially too ⇒ §22C's own premise (that counts
+barely move) does not hold on this population."** Rows 1 and 2 were both unreachable, since each
+required `ΔC < 1.0`.
+
+⚑ **This is a sharper result than the hypothesis it was built to test.** The pass expected _silent_
+compensation (same count, different pellets). What it found is that on the §20-classified mislock
+population **both** the count and the identity move — so §22C's ≈0 severity was measured on a sample
+where counts happened not to move, and that behaviour does not generalise.
+
+⛔ **It does NOT overturn §22C** (pre-commit §5). It establishes that §22C's premise fails here — a
+statement about the sample and the observable, not about the channel's size.
+
+##### §39C — ⚑ THE SELECTION EFFECT, and it cuts AGAINST this pass's own hypothesis
+
+**19–28 of every 31–41 mislocked shots per production dump are UNSCORED**, because a wrong lock on
+empty screen leaves **no band plateau** at all. The exclusion is asymmetric: **the WORST mislocks
+drop out**, so `J_mis` is biased **UP** (toward "same pellets") and `ΔC` **DOWN**.
+
+⇒ **The measured effect is a LOWER BOUND.** Same shape as §22D's excluded both-wrong cases.
+
+⚑ **AND IT LINKS TWO POPULATIONS NOBODY HAS CONNECTED.** "No band plateau" is exactly the condition
+under which `debounce_shots` **falls back to the legacy median-total frame** — §12D's **112 of 852
+(13.1%)** fallback events. So the worst mislocks are **systematically routed onto the legacy
+channel**. ⛔ **Recorded as a LEAD, not a verdict** — it is an inference from the gating logic, not a
+measurement of that population.
+
+##### §39D — Method, and the honest limits
+
+- ⛔ **MECHANISM, NOT MAGNITUDE** (pre-commit §5). A low `J` proves the locks count different
+  pellets; it does **not** say which is correct, nor how many REAL pellets are lost. **Sizing still
+  requires owner labels.** No "mislocks cost N pellets/shot" claim is made or implied.
+- **No control fired.** SANITY, CHANNEL (a live `SystemExit` gate — the selftest proves perturbing a
+  counted track trips it _by name_), POPULATION (`_mlr_score` unchanged at its committed criterion;
+  production classification reproduces §20A/§20B **exactly** — 218/203/180/214 shots, 33/41/32/31
+  mislocked), SEPARATION (no pooled aggregate exists in the arm).
+- ⚑ **One population caveat, self-reported:** §20's _labelled-clip_ template series was freshly
+  calibrated (§20F) and survives only as a 148-counting-frame slice that cannot supply a crosshair at
+  a plateau frame. The labelled clip was therefore scored against the only template-located dumps
+  that exist, reading **10 mislocked of 37** against §20's committed **6** — §20's six are a strict
+  subset, same detector and threshold, only the second lock's provenance differs.
+- **n_mis is small per dump (1–13).** Both locks share the structural dump's tracks (ids must be
+  comparable for a Jaccard to mean anything), which also makes segmentation identical by
+  construction, so shots pair 1:1 without §22D's onset-matching noise.
+- Fixture pins all six dump pairs and replays the live report **byte-identically with no scratchpad
+  access** — closing §20E's limit 3 for this arm's numbers.
