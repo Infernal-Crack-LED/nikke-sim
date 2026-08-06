@@ -6495,3 +6495,97 @@ shipped arm is the zero point) and **prints that it does not re-derive** the num
 
 **RECORDS a measurement. NOTHING ENACTS.** `MARKER_MIN`, `debounce_shots`, `max_pellet_frames`,
 `band_hi` and every constant are UNCHANGED; no existing fixture moved.
+
+#### §32 §8 ITEM 1 CANNOT RUN — the owner's adjudication answers were never persisted; both prerequisites now fixed
+
+**2026-08-05.** §8 item 1 — "size the both-wrong population (§22D), the live thread on the cold
+read" — **cannot be executed**, and the reason is a record-keeping failure rather than a
+methodological one. Both of its prerequisites are fixed here so the next attempt is productive.
+
+##### §32A — What item 1 actually asks, corrected
+
+⚑ The item's own phrasing is misleading and is corrected here: **the RATE is already SETTLED.**
+§22E stamps "20% of flagged shots have both locks wrong" as settled (4 of 20, from a seeded random
+sample). What is unmeasured is the **COST** on those cases — §22D: where both locks are wrong,
+template is not a valid reference, so the loss is unmeasurable and the severity estimate is biased
+toward zero.
+
+⇒ Item 1 is a **cost** question about a specific 4 cases, not a **rate** question.
+
+##### §32B — ⛔ THOSE 4 CASES CAN NO LONGER BE IDENTIFIED
+
+The 24-case selection **regenerates byte-identically from its seed** (`_la_select`, seed `20260804`)
+— but the owner's **verdicts** were never written to the tree. `--lock-adjudication` wrote only
+`ANSWER-KEY.json`, into an ephemeral output directory, and the answers themselves lived in session
+chat. What survives in `docs/probe-runs.md` is §22B's **aggregate** split (6 structural / 10
+template / 4 neither) and §22C's severity **multiset**.
+
+**Recovery was attempted before declaring this blocked** (derive-before-declaring-blocked), and
+fails for a structural reason:
+
+- Matching §22C's multiset `[−7, −1, 0, 0, 0, 0, 0, 1, 2, 2]` against per-case Δcounts would
+  identify the **10 template-right** cases.
+- That leaves **10 of the 20** mislocked cases, splitting **6 structural-right / 4 neither**.
+- **Nothing recorded distinguishes those two groups.** Severity is undefined for BOTH — a
+  structural-right case has no loss to record, and a `neither` case has no valid reference — so the
+  one surviving per-case quantity cannot separate them.
+
+⇒ **The 4 `neither` identities are unrecoverable.** Item 1 needs a fresh adjudication.
+
+⚑ **This is trap 6's pattern claiming a second victim.** The 08-04 session lost four cross-family
+gate packets to a gitignored scratchpad; the same session's owner adjudication answers were never
+committed at all. The lesson generalizes past gate packets: **an owner's answers are primary
+evidence and belong in the tree at the moment they arrive**, not in the doc that summarizes them.
+
+##### §32C — Prerequisite 1 FIXED: the crop defect the owner flagged (§22F)
+
+§22F recorded the owner's complaint on case 9: _"b shows the right half of the crosshair, the left
+bound of the image bisects the crosshair."_
+
+The renderer **shifted** the window back inside the frame — which **cannot help when the marked
+position is itself within `half` of a frame edge**. The ring then lands on the crop boundary with no
+context on that side, which is exactly what the owner hit. It now **PADS**: the crop is always
+`2 × half` centred on the position, with out-of-frame area filled a flat mid-grey no game frame
+produces, so an adjudicator reads it as "outside the capture" rather than as dark game content.
+
+**Verified on the failing geometry**: a marker 5 px from a frame's left edge now lands exactly at
+the crop centre, with pad-grey to its left and real frame content to its right. ⚑ Side benefit: the
+marked position is now centred on **every** case, which removes centring as a possible blinding cue.
+
+##### §32D — Prerequisite 2 FIXED: answers are now persisted by construction
+
+- `--lock-adjudication` now also writes **`ANSWERS.json`** — an order-matched, pre-filled template
+  (one `{case, verdict: null}` per case) whose `_README` says plainly that it must be committed and
+  that `ANSWER-KEY.json` alone cannot reconstruct the verdicts.
+- **`INDEX.md` now offers `neither` and `both` explicitly.** The 08-04 format offered only
+  `A` / `B` / `?`, and the owner had to **volunteer** both — `neither` then turned out to be **20%**
+  of flagged shots, a category the two-mode comparison structurally cannot name. Offering only the
+  two modes under test is a leading question; this fixes that.
+- New arm **`--lock-adjudication-score`** joins a filled `ANSWERS.json` against its key and
+  reproduces §22B's split and §22C's severity **from committed data**. It refuses on a seed
+  mismatch, and it **reproduces §22D's exclusion structurally**: severity is computed only on
+  template-right cases, and `neither` cases are counted and reported but never folded into the mean.
+
+##### §32E — What would unblock item 1, stated so the ask is decidable
+
+A fresh adjudication set (24 cases, ~the same owner effort as 08-04) with `ANSWERS.json` filled and
+**committed**. That yields the `neither` cases' identities, and their production counts follow from
+the dumps.
+
+⚠ **Even then, the COST on those cases needs a third reference** — by construction neither lock is
+valid there. Options, neither taken here: an owner mark of the true crosshair position on those
+cases, or an independent CV estimator. ⛔ **The obvious CV route — centring on the detected pellet
+cloud — is CIRCULAR for this question**: choosing the window that maximises pellets in it and then
+counting pellets in that window is biased high by construction. It can bound the loss from above; it
+cannot measure it. **Recorded so a later session does not build it as though it were a reference.**
+
+##### §32F — Instrument
+
+`analyze-pellet-tracks.py --lock-adjudication` (crop padding + `ANSWERS.json` + the expanded
+`INDEX.md`) and the new `--lock-adjudication-score`, self-validated on synthetic data (the real
+answers are lost, so there is no pair to replay) pinning the letter→lock join **including
+per-case swapped letters**, the control exclusion, the severity arithmetic, and §22D's `neither`
+exclusion. `pellet-selftest.sh` is now **30 arms**; `verify.sh` green.
+
+**RECORDS a blocker + fixes its two prerequisites. NOTHING ELSE ENACTS.** No constant, threshold,
+localizer or default changed; no existing fixture moved; §22's published numbers are untouched.
