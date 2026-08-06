@@ -381,11 +381,28 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
       default to `--fps 30`**, so `groundtruth-f811-v4`'s `band_lo` is 4 where the clip's rate
       implies 8. Predates `band` existing and touches no landed conclusion; live provenance
       mismatch for future `band` work on that clip.
-  - **⚑ RE-EXTRACTION (§8 item 7) IS THE GATE ON EVERYTHING, and it must carry the schema fix.**
-    Sequencing correction (2026-08-05): the schema fix had to land FIRST or the re-extraction would
-    have to be redone. Frames for all 5 dumps are on disk (~24,700) and the counter re-runs on them
-    **without ffmpeg and without the VLM** — see §26B's command shape. Until it happens, none of the
-    four landings has moved the board and no measurement re-derived from an existing dump is current.
+  - ✅ **RE-EXTRACTION (§8 item 7) — RESOLVED 2026-08-05 WITHOUT DOING IT (`docs/probe-runs.md`
+    §30A).** ⚑ **The expensive half was never required.** Verified by code path: `--dump-tracks`
+    writes `frame_counts` as `results[i]["opencv"]`, and `--temporal`'s stdout — what
+    `read-pellets.ts` parses and feeds to `debounceShots` — prints that same `results` list;
+    production runs `--backend opencv` and, since §24's selector fix, the passenger channels
+    resolve to opencv's real values. ⇒ **a schemafix dump's `frame_counts` ARE what production's
+    estimator consumes**, so running `debounce_shots` on them IS the production path — no ffmpeg,
+    no VLM, nothing re-extracted. The ~8–9 min/dump item 7 quoted buys `pellets.json` FILES, a
+    different deliverable from making measurements current, and **no open item needs them.**
+    - ✅ **The measurement it was gating is DONE and OUT OF SAMPLE (§30B):** the landed `band_hi`
+      is worth **+0.4994 pellets/shot over 815 shots / 4 units** (per-unit +0.42…+0.57), against
+      §19's **+0.60 on 5 in-sample shots** whose own §19D called it near-tautological. **The
+      in-sample figure was not an artifact of its footage.**
+    - ⛔ **It measures what the landing MOVED, not that it moved toward TRUTH** — there is no owner
+      reference on these dumps. ⛔ **Never compare that table's `avgTotal` to 8.40**: pooled-over-
+      valid-subset vs a per-shot owner count on one clip's f8–11 window — different bases (§27C hit
+      this trap once already).
+  - **⇒ OPEN — NET §28C AGAINST §27.** The only marker thread left: §27's warm false-flag channel
+    (21.7% of core flags, −0.048 pellets/shot if removed) vs §28C's cold ceiling-exclusion channel
+    (164 red near-crosshair tracks whose life exceeds `max_pellet_frames`, never reaching `marker`
+    at all). **Opposite signs, never netted.** Both are measurable on the schemafix dumps with no
+    owner time and, per §30A, with no re-extraction.
   - ✅ **`band_hi = 20` LANDED 2026-08-04** (owner-approved; `docs/probe-runs.md` §16, plan
     `docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md`). All five pre-stated criteria met, the
     blast radius declared before the edit **held exactly — zero fixtures, zero pins**, cross-family
