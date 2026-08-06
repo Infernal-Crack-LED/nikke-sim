@@ -6587,3 +6587,60 @@ exclusion. `pellet-selftest.sh` is now **30 arms**; `verify.sh` green.
 
 **RECORDS a blocker + fixes its two prerequisites. NOTHING ELSE ENACTS.** No constant, threshold,
 localizer or default changed; no existing fixture moved; §22's published numbers are untouched.
+
+#### §33 THE STRUCTURAL LOCALIZER EMITS OUT-OF-FRAME CROSSHAIRS — 0.43%, always off the RIGHT edge
+
+**2026-08-05.** Found while verifying §32C's crop fix against the real adjudication set — a
+whole-picture check on a rendering detail, not a planned measurement.
+
+##### §33A — The measurement
+
+| dump (unit)                           | frame    | locked frames | out of frame | rate      | x range of bad |
+| ------------------------------------- | -------- | ------------- | ------------ | --------- | -------------- |
+| `h4-marciana-structural` (`marciana`) | 2604×792 | 5473          | 0            | 0.0%      | —              |
+| `h4-isabel-structural` (`isabel`)     | 2604×792 | 5601          | 35           | 0.6%      | 2627…2744      |
+| `h4-guilty-structural` (`guilty`)     | 2604×792 | 5614          | 56           | 1.0%      | 2606…2690      |
+| `g2-noir-structural` (`noir`)         | 2604×792 | 5508          | 4            | 0.1%      | 2608…2652      |
+| **pooled**                            |          | **22,196**    | **95**       | **0.43%** |                |
+
+⚑ **Every one is off the RIGHT edge** — `x` from 2606 to 2744 against `w = 2604`. None is negative,
+none is out vertically. Consistent with the structural localizer's construction: it finds the ammo
+badge and adds a fixed `struct_offset_x` (162 at zoom 2), so a badge detected near the right edge
+puts the derived crosshair past the frame.
+
+##### §33B — This is a different failure from a mislock, and no prior section names it
+
+A mislock is a **wrong but plausible** position — some other screen element. An out-of-frame position
+is **definitively invalid**: there is no pixel there. §20's detector sees only structural-vs-template
+DISAGREEMENT, so these frames enter the "mislocked" population indistinguishably from a lock that
+merely landed on a damage number. **§20/§22's populations therefore contain a sub-category that is
+mechanically decidable and was never separated out.**
+
+⚑ Its counting effect is one-sided: a window centred off-frame can only lose pellets (part or all of
+the `pellet_radius` disc has no pixels), so it can under-count but never over-count. ⛔ **Not scored
+here** — 0.43% of FRAMES is not 0.43% of shots, and the per-shot effect depends on how many of a
+shot's counting frames are affected. Sizing it is its own pass.
+
+##### §33C — What it changed about the adjudication set
+
+Two of the 24 regenerated cases (`case_07`, `case_15`) carry an out-of-frame **structural** marker
+(x = 2606 and 2735). ⚑ **Under the OLD renderer those markers fell OUTSIDE their own crop** — at
+`px` = 604 and 862 in a 600 px-wide crop — so the owner was shown a panel with **no visible ring at
+all** and asked which marker is the crosshair. That is very likely the real shape of §22F's
+complaint, which was recorded as a bisected crosshair.
+
+Under the §32C padding fix both are centred, with the out-of-frame region flat grey. `INDEX.md` now
+states plainly that a mostly-grey panel means that lock is off-screen and definitively wrong, so
+those two cases are answered consistently instead of puzzled over. ⚑ They are **decidable by
+construction**, not judgement calls — flagged so the resulting verdict split is read accordingly.
+
+##### §33D — Reproduction
+
+```sh
+PY=/Users/maxwellsutton/nikke-sim/scripts/probe/.venv/bin/python
+# per dump: compare every non-null cross_positions entry against the frame's own dimensions
+```
+
+⛔ **RECORDS a defect. NOTHING ENACTED.** The localizer is unchanged — no clamp, no reject, no
+retune. Whether an out-of-frame lock should be clamped, dropped, or treated as an abstention is a
+design question with its own blast radius, and it is **not** answered here.
