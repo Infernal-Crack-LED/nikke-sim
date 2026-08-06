@@ -3677,6 +3677,14 @@ not a re-labelling pass. This paragraph is left as written (append-only log); §
 
 ##### §9B — THE DECOMPOSITION: of the 35 pellets the reader reports, 12 are owner pellets
 
+> ⛔ **RETRACTED IN PART (2026-08-06) — §36 → §37.** The `12 of 35` below, and the "coincidental
+> cancellation" reading built on it, are the **LEGACY `pellet_ids` channel** —
+> `--representative-audit` was scoring a channel production stopped using at the `band_hi` landing.
+> On the SHIPPED channel the same five shots read **35 = 31 owner + 4 non-owner (88%)**, not 34%:
+> same total, opposite composition. ⛔ **Do not quote `12 / 35` as shipped-reader behaviour.**
+> ⚑ The _mechanism_ this section describes (the median representative sampling the pre-cohort flash
+> phase) is unaffected — only the composition figure is retracted.
+
 Every one of the 42 owner-drawn centroids links **1:1 to a distinct track** (nearest-centroid
 consensus over f08/f09/f10 — the offsets `real-fidelity-slice.json` puts at 100% raw-found AND 100%
 both-pass, so a missing link there would be a linking failure and cannot be a detection failure). Max
@@ -7011,3 +7019,76 @@ n = **5 shots, one clip** (`marciana`, SG/Iron), and these are the labels the re
 against (§19D) — **ELIMINATION, not confirmation.** ⚑ **The DUMPS half of the arm still scores the
 pre-hybrid channel** (it is an explicitly pre-hybrid `median`/`p75`/`max` policy comparison); only the
 LABELLED half speaks for production. Not a regression, not a full fix either.
+
+#### §38 §19'S A/B IS REBUILT AS A COMMITTED ARM — and it REPRODUCES EXACTLY (band 1)
+
+**2026-08-06.** Executes `docs/handoffs/2026-08-06-residual-ab-PRECOMMIT.md` (committed at `141258da`
+**before the arm emitted any number**) and item 1 of `2026-08-06-band-channel-SWEEP.md` §7. Instrument:
+**`analyze-pellet-tracks.py --residual-ab`** (+ `--residual-ab-selftest`, fixture
+`scripts/tests/fixtures/pellets/residual-ab-slice.json`, `pellet-selftest.sh` now **32 arms**).
+
+##### §38A — The result: PRE-COMMIT BAND 1, REPRODUCED
+
+`band_hi` varied ALONE on the production counting path, scored against the owner labels:
+
+| dump                                   | E(pre-landing) | E(landed)   | Δ           | n   |
+| -------------------------------------- | -------------- | ----------- | ----------- | --- |
+| `groundtruth-f811-v4` (§19's own clip) | **−2.0000**    | **−1.4000** | **+0.6000** | 5   |
+| `groundtruth-f811-v6-landed`           | **−2.0000**    | **−1.4000** | **+0.6000** | 5   |
+
+Within **±0.0000** of §19's `−2.00 → −1.40`, `Δ = +0.60`. §19A's per-shot table reproduces cell for
+cell (reader 5/8/7/4/8 → 5/10/8/4/8 against owner 7/10/8/9/8), `totalShots` unmoved at 37, and the
+gain lands on shots 2 and 3 **and nowhere else** — §19B's pre-recorded prediction. Re-run
+independently by the judge; identical.
+
+⚑ **THIS IS WEAK EVIDENCE AND THE PRE-COMMIT SAID SO FIRST (§1).** Post-§37 `--representative-audit`
+already reported `owner 42 − reader 35 = 7` on these same shots, so a match was **expected**. ⇒ Record
+as **consistency plus a named reproducible path** — ⛔ **not** as independent confirmation.
+
+⇒ **The sweep's item 1 is closed: `−1.40` now has an instrument at a named path** (constraint 9).
+
+##### §38B — What the rebuild adds beyond §19
+
+- ⚑ **`max_pellet_frames` 13 → 14 is INERT on all five labelled shots** — only `band_hi` moves them.
+  A cleaner isolation than §19 had, and it independently corroborates §29's "inert at 30 fps" finding
+  from the other direction.
+- The `42 / 35` sums match §37C's independently-built decomposition.
+- **Channel is demonstrated, not asserted:** every row prints `band@rep` **and** `legacy_white@rep`
+  for the same frame. At `band_hi = 20` shots 2 and 3 read `band@rep` 10/8 against `legacy_white@rep`
+  8/7 — **the reader takes 10 and 8.** On the legacy channel it would have reported 8 and 7 and Δ
+  would have been **0**. `_rab_assert_channel` hard-fails if `reader != band@rep` on a banded row.
+
+##### §38C — ⚑ AN OBSERVATION IN TENSION WITH §22C — n=1, HYPOTHESIS-STRENGTH, NOT A VERDICT
+
+With shot 4's documented template mislock corrected by the relock, the same clip reads:
+
+> **E(landed) relocked = −0.4000** (vs **−1.4000** as-scored). ⇒ On this clip **one mislocked shot
+> carries ~1.0 of the −1.40**.
+
+⛔ **This does NOT overturn §22C's "a bad lock costs ≈0".** Both can be true and probably are:
+§22C measured a **count difference across 10 different shots**; this is **owner-anchored error on
+ONE shot**. And §37B already named the mechanism that reconciles them — a mislocked count gets
+**refilled by non-pellet tracks**, so a count-based observable cannot see the loss that an
+owner-anchored one can.
+
+⚑ **n = 1 shot. Per CLAUDE.md evidence-proportionality this RECORDS an observation and changes
+nothing** — no constant, no default, no re-ranking of the mislock channel. It is a **lead**: the
+right follow-up is an owner-anchored (not count-based) mislock severity measurement over more shots.
+
+##### §38D — Method + honest limits
+
+- **CONTROL FIT held, and is checkable rather than asserted:** the instrument was committed at
+  `5c3959b1` **before it had ever run** (instrument-only, no fixture, 13:14:24), with the measurement
+  landing separately at `315999b2` (13:21:27). **Verified by the judge from the commit contents.**
+  Three post-output edits were declared, all outside the four fixed choices (arms, labels, error
+  definition, shot set); two were to the arm's own equivalence CONTROL and aborted the run before any
+  `E` existed, and the v4 headline row passed both arms on the first run, before either edit.
+- ⚑ **Those two control edits inherit §26E's known defect** — creation-time `is_red` vs the per-frame
+  `reds` classification. The fix is confined to this arm's helper; **the other eleven call sites §26E
+  names remain open, exactly as §26E left them.**
+- **Zero existing fixtures moved** (judge-verified: only `residual-ab-slice.json` appears across both
+  commits). `pellet-selftest.sh` 32/32, `verify.sh` PASS.
+- ⛔ **n = 5 shots, ONE clip, ONE unit (`marciana`, SG/Iron), IN-SAMPLE** (§19D — these are the labels
+  the reader was tuned against). **ELIMINATION-strength, never a certification.**
+- **Interface note:** `--residual-ab` takes dump **DIRECTORIES**; every other arm takes a
+  `tracks.json` path. Passing `tracks.json` raises a confusing `NotADirectoryError`.
