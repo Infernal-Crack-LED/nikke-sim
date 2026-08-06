@@ -6688,6 +6688,40 @@ _RAB_SHOT_KEYS = ("shot", "t0", "locate", "owner", "reader", "err", "rep", "band
                   "relock_banded", "relock_band_at_rep")
 
 
+def _rab_white_radius_runs(track, cross, radius):
+    """`_rep_radius_runs`, made PER-FRAME-`reds` AWARE -- the independent side of this arm's
+    equivalence check.
+
+    ⚑ WHY THIS EXISTS, and it is NOT a weakening. docs/probe-runs.md §26E records that eleven
+    call sites still read a track's CREATION-TIME `is_red`, and warns in as many words that "any
+    FUTURE arm built on them inherits §25's 12.20% mislabel". This arm is such an arm, and the
+    inheritance surfaced immediately, in BOTH directions, on `groundtruth-f811-v6-landed` (the
+    first `reds`-carrying dump on disk): two tracks created WHITE on frame 1659 flip red for the
+    rest of their life, and track 1646 (created RED, life 17) is per-frame WHITE on frame 251.
+    §25B's SPLIT mechanism, exactly. PRODUCTION is right -- `_hla_reconstruct_frame_tracks`'s D2
+    branch classifies each FRAME's component -- while an aggregation that filters on the
+    track-level flag both keeps counting the first pair and drops the third, so the two sides
+    disagreed on 13 frames of 1801 for a reason that has nothing to do with `band_hi`. Filtering
+    per-frame here makes the two sides ask the SAME question again; it does not make them share
+    code (the radius geometry is still re-derived independently), which is the whole point of the
+    check.
+
+    Degrades exactly as D2 degrades: a dump with no `reds` (or a short one) falls back to the
+    track-level `is_red`, i.e. today's `_rep_radius_runs` behaviour, byte for byte."""
+    reds = track.get("reds")
+    runs = []
+    for fi in range(track["first"], track["last"] + 1):
+        k = fi - track["first"]
+        is_red = reds[k] if reds and k < len(reds) else track["is_red"]
+        if is_red or not _rep_in_radius(track, fi, cross, radius):
+            continue
+        if runs and runs[-1][0] + runs[-1][1] == fi:
+            runs[-1][1] += 1
+        else:
+            runs.append([fi, 1])
+    return runs
+
+
 def _rab_band_hi(candidate, params):
     """Resolve one arm label to this dump's `band_hi`. ⛔ FIXED: "coupled" is the dump's own STORED
     `max_pellet_frames` (the pre-landing state, where the two were one knob), never a recomputation
@@ -6796,9 +6830,13 @@ def _rab_compute_live(struct_dir, tmpl_dir, fps):
         raise SystemExit(f"--residual-ab: {tmpl_dir} has {len(cross_t)} cross positions against "
                          f"{struct_dir}'s {len(cross)} -- not the same clip.")
     radius = params["pellet_radius"]
-    rtracks = [(t["life"], _rep_radius_runs({"first": t["first"], "last": t["last"],
-                                             "xs": t["xs"], "ys": t["ys"]}, cross, radius))
-               for t in dump["tracks"] if not t["is_red"]]
+    # ⚑ Per-frame-`reds` aware, and deliberately WITHOUT a track-level `is_red` pre-filter (see
+    # `_rab_white_radius_runs`): the SPLIT runs in BOTH directions -- white-at-creation tracks that
+    # turn red, and red-at-creation tracks that turn white -- and production classifies every one
+    # of them per FRAME. Pre-filtering on the creation-time flag would reintroduce exactly the
+    # §26E mislabel on the independent side. On a dump with no `reds` the helper falls back to that
+    # same track-level flag, so a legacy dump's runs are byte-identical to `_rep_radius_runs`'.
+    rtracks = [(t["life"], _rab_white_radius_runs(t, cross, radius)) for t in dump["tracks"]]
     rtracks = [(life, runs) for life, runs in rtracks if runs]
     labels = _rep_load_labels()
     name = "/".join(Path(struct_dir).parts[-2:])
@@ -6842,7 +6880,13 @@ def _rab_dump_report(name, fps, params, arms):
 
 
 def _rab_expected(report):
-    return {"dumps": [{k: v for k, v in d.items() if k != "equivalence_mismatch"}
+    """`equivalence_mismatch` is stripped because the per-frame equivalence check is LIVE-ONLY --
+    it needs the radius_tracks aggregation the fixture does not carry, same live/replay split as
+    `--hybrid-landing-audit`'s TS lockstep. Everything else -- every per-shot count, every mean,
+    every between-arm figure -- is pinned and replayed."""
+    return {"dumps": [{**{k: v for k, v in d.items() if k != "arms"},
+                       "arms": [{k: v for k, v in a.items() if k != "equivalence_mismatch"}
+                                for a in d["arms"]]}
                       for d in report["dumps"]]}
 
 
@@ -6857,8 +6901,11 @@ _RAB_CHANNEL_BANNER = (
 
 
 def _print_residual_ab(report):
-    print("\n== RESIDUAL A/B -- `band_hi` varied ALONE on the production counting path, scored "
-          "against owner labels ==")
+    # ⚑ Deliberately NOT wrapped in "== ... ==": pellet-selftest.sh prints its own per-arm headers
+    # in exactly that form, and an arm whose body mimics them makes `grep -c '^== '` (the obvious
+    # way to count the harness's arms) over-report by one.
+    print("\nRESIDUAL A/B -- `band_hi` varied ALONE on the production counting path, scored "
+          "against owner labels")
     print(_RAB_CHANNEL_BANNER)
     print("\nERROR DEFINITION (pre-committed): err = reader - owner per shot; E = mean(err); "
           "difference = E(landed) - E(pre-landing).\nA COLD reader is NEGATIVE. n = the labelled shots "

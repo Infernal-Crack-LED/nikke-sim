@@ -47,6 +47,7 @@ run "$HERE/analyze-pellet-tracks.py" --lock-adjudication-selftest
 run "$HERE/analyze-pellet-tracks.py" --lock-adjudication-score-selftest
 run "$HERE/analyze-pellet-tracks.py" --hybrid-landing-audit-selftest
 run "$HERE/analyze-pellet-tracks.py" --cap-score-selftest
+run "$HERE/analyze-pellet-tracks.py" --residual-ab-selftest
 run "$HERE/temporal-count-regression.py"
 run "$HERE/score-pellets.py" --selftest
 run "$HERE/score-pellets.py" --audit-fidelity-selftest
