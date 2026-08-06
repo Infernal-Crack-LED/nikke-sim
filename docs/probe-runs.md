@@ -7277,3 +7277,63 @@ the disagreement is directional and the population is bimodal, but it is not a s
 **labelling is still the route to MAGNITUDE.**
 
 ⛔ Nothing enacted. No localizer change, no constant, no threshold.
+
+#### §42 THE MISLOCK IS ASYMMETRIC — the STRUCTURAL locator jumps onto the floating damage numbers, and that failure was already documented
+
+**2026-08-06.** Found while judging the `--mislock-crops` output (§40's owner ask). ⚑ No new
+instrument; a read over the existing lock series plus one visual inspection.
+
+##### §42A — Only ONE of the two locks moves
+
+Median crosshair `y` at `t0+9`, stuck-template shots excluded, **n = 82 mislocked / 584 normal**
+(screen top is `y = 0`):
+
+| lock           | normal shots | mislocked shots | shift             |
+| -------------- | ------------ | --------------- | ----------------- |
+| **structural** | 498          | **233**         | ⚑ **UP 265 px**   |
+| **template**   | 504          | 534             | 30 px (stays put) |
+
+⇒ **A "mislock" is not two locks disagreeing symmetrically. It is the STRUCTURAL locator leaving,
+upward, while the template locator holds position.**
+
+##### §42B — ⚑ THAT EXACT FAILURE IS ALREADY DOCUMENTED AND WAS ALREADY MEASURED
+
+`make-groundtruth-f811.py:168-175`, written for the ground-truth generator:
+
+> _"a jump this size inside one blast (~0.2s) means the structural locator **lost the real ammo box
+> and grabbed a decoy (e.g. a floating multi-digit damage-number stack briefly matching the digit-row
+> shape gate)**, NOT a moving aim point. **Measured: exactly this pattern produced a garbage crop
+> (no crosshair/pellets, just damage-number text) on one of the 6 shots**"_
+
+Damage numbers float **above** the boss and the ammo box. A 265 px upward jump is that decoy.
+
+##### §42C — Four independent lines, and one visual
+
+1. **§41 P1:** `dy < 0` on **98.8%** of 82 clean mislocks — the jump is directional.
+2. **§42A:** the shift is **entirely on the structural side** (265 px vs 30 px).
+3. **§42B:** the mechanism is documented **and was previously measured** on the labelled clip.
+4. **Visual, shot 6** (`marciana` SG/Iron, t0 3636): the in-game reticle is plainly visible at
+   ≈(330, 455) in crop pixels and the **template** candidate sits on it at (283, 451), while the
+   **structural** candidate (356, 190) sits in the floating damage-number field.
+
+⛔ **This is a HYPOTHESIS, not a verdict** — line 4 is n=1 visual and lines 1–2 are directional
+statistics, not per-shot adjudication. But it is strong enough to **change what the owner should be
+asked**.
+
+##### §42D — ⇒ THE OWNER ASK MAY BE LARGELY UNNECESSARY
+
+The ask (§40) exists to answer **"which lock is right?"**. §42 answers it **mechanically, for the
+population**, without owner time: on a mislock the structural lock has left the ammo box and the
+template lock has not.
+
+⇒ **Recommended before any labelling:** test the decoy hypothesis directly — does the structural
+lock position on mislocked shots sit on damage-number-like content (bright text glyphs) rather than
+the ammo box? That is a pixel test on frames already on disk, needs no owner time, and would
+promote §42 from directional statistics to a per-shot classification.
+
+⛔ **What §42 still does NOT give is MAGNITUDE.** ⚑ And the obvious shortcut — `n_tmpl − n_struct`
+× the mislock rate — is **exactly §20D's refuted move** (rate × a thin-sample severity). It must not
+be taken without its own pre-commit.
+
+⛔ Nothing enacted. No localizer change, no constant, no threshold. The crops and the ask remain
+built and available if the pixel test does not settle it.
