@@ -4281,7 +4281,28 @@ _POLICY_FRAME_RULES = ("shipped_median", "lifetime_gated_median", "plateau_media
 
 
 def _ps_band(fps, max_pellet_frames, band_hi=None):
-    """The fps-scaled owner-pellet lifetime band [lo, band_hi] -- the same `lo` §9G's lifetime
+    """⛔ HAZARD -- OPEN, MEASURED, NOT YET FIXED (sweep item 4,
+    docs/handoffs/2026-08-06-band-channel-SWEEP.md §4).
+
+    `band_hi` defaults to `max_pellet_frames`, i.e. the COUPLED pre-§14 semantics. Of the NINE call
+    sites only ONE passes it (`--cap-score`); `--policy-score` (:4504, :4632) and
+    `--hybrid-landing-audit` (:5758, :5820, :5950, :5984) do not. So on a dump that PERSISTS a
+    decoupled `band_hi`, those arms silently score the §13/§14 hybrid rather than the landed §16 one.
+
+    ⚑ ASYMMETRIC failure: `--hybrid-landing-audit` HARD-EXITS (its equivalence assert compares
+    `_hla_gate_ids`, which DOES honour `params.band_hi`, against this function, which does not);
+    `--policy-score` just narrows the band QUIETLY. Loud vs silent, same root cause.
+
+    ⛔ WHY THIS IS NOT FIXED HERE: two committed fixtures ALREADY carry decoupled dump-level
+    `band_hi` (`marker-semantics-slice.json` dumps: band_hi 10 vs max_pf 7; `residual-ab-slice.json`
+    dumps[1]: 20 vs 14), so threading it through is NOT provably inert -- and this function feeds
+    `hybrid_plateau_median`, which backs §12D's load-bearing 740/112 decomposition assert. It needs
+    a measured blast-radius pass of its own, not an end-of-session edit.
+
+    ⚑ `bad4808e` added `band_hi` to `_rep_slim_labelled`'s params whitelist, so this goes LIVE the
+    moment the labelled block is re-dumped at production parameters. Fix it BEFORE that re-dump.
+
+    The fps-scaled owner-pellet lifetime band [lo, band_hi] -- the same `lo` §9G's lifetime
     census uses (8 frames at 60 fps, scaled down at 30; `max_pellet_frames` is each dump's OWN
     value, never hardcoded -- trap 4).
 
