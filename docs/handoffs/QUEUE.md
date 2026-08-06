@@ -309,15 +309,21 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
     or sized small, and **none of them explains it**: mislocks ~0 (§22C, §34), marker semantics
     −0.043/shot ≈ 3% and in the _wrong_ direction (§31), `band_hi` recovered +0.50/shot
     out-of-sample (§30B). ⚑ **Closing a candidate is not identifying a cause.**
-  - **⇒ ⚑ OPEN — THE RADIUS GATE IS THE SURVIVING NAMED SUSPECT, and it had no queue entry.**
-    §19C: _"the radius gate and the mislock now carry the entire residual on this clip"_ — and the
-    mislock half is now CLOSED at ≈0 cost (§22C, §34). That leaves the radius gate as the only
-    channel any measurement has ever named as carrying the −1.40. Concretely: shot 1 loses a pellet
-    whose closest approach is **161.4 px against a 160 px `pellet_radius`**. ⚠ n=1 on one clip — the
-    obvious next step is to measure, across the 815 production shots, how many white in-band tracks
-    sit just OUTSIDE `pellet_radius` at their counting frames. Needs no owner time and no
-    re-extraction (§30A). ⛔ **Do NOT widen the gate to fit** — that is a fudge, and the geometry is
-    owner-ruled ground truth (accuracy-circle geometry outranks back-derived rates).
+  - ⚑ **THE RADIUS GATE — MEASURED 2026-08-05 (`docs/probe-runs.md` §35). ≈0.45 pellets/shot,
+    ~32% of the residual — the largest single channel yet identified, and NOT enough to explain
+    −1.40 alone.** ⛔ **Do NOT quote the 815-shot profile's `T = 1.043/shot`: it is CONTAMINATED.**
+    Owner-marked pellet positions (crop radius 184 > the 160 px gate) max out at **166.8 px with
+    ZERO beyond 180 px**, so the profile's material past 180 is shot-correlated VFX, not pellets.
+    The 0.45 is a **bound from labels** (9 of 168 instances ≥ 160 px × 8.40/shot), **n = 5 shots on
+    one clip** — the 815-shot profile cannot corroborate it, by the same finding.
+    - **⇒ OPEN — is the ~7 px shortfall real, or crosshair-localization error?** The cloud ends at
+      ~167 px against a 160 px gate. ⛔ **Do NOT widen `pellet_radius` to close it** — that is a
+      fudge; the accuracy-circle geometry is owner-ruled ground truth. Owner's call whether the 7 px
+      is worth chasing.
+    - ⚑ **METHOD LESSON (§35C):** a quiet-frame control removes STATIC clutter but **not
+      SHOT-CORRELATED** non-pellet material (muzzle/impact VFX, debris) that survives the lifetime
+      band. Any future "is X near the crosshair a pellet?" measurement needs a pellet-IDENTITY
+      reference, not just a temporal control.
   - **⇒ OPEN — the abstentions (§8 item 3).** What the 81 `in_band_no_concurrency` events are, and
     what the 16 that become banded at `band_hi = 20` share. Committed fixtures only, no owner time.
   - **⇒ OPEN — track fragmentation (§8 item 4), now with fresh evidence.** 70% of tracks dead by
