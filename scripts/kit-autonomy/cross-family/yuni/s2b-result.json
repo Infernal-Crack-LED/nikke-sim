@@ -1,0 +1,105 @@
+{
+  "slug": "yuni",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Speed ▲ 8.97% for 10 sec",
+      "disposition": "GAP",
+      "scope": "Charge-cycle speed only — a WEAPON-STATE modifier (taxonomy 6), not a damage bucket and not a fire-rate change. It shortens the full-charge wind-up for any charge-weapon holder (Yuni herself: chargeFrames 90 → ~82.6 at 8.97%, ~7.4 frames/charge) and is strictly inert for non-charge allies.",
+      "durationSemantics": "durationSec: 10, wall-clock. Re-applied (refreshed, not stacked) on every subsequent team Full Burst; no round count, no stacks, no until-reload.",
+      "triggerIdentity": "fullBurstEnter — 'Activates when entering Full Burst' fires on ANY team Full Burst, regardless of whether Yuni cast her own Burst II. No ownBurstGate, no fbGate, no everyN.",
+      "targetSet": "allies (all allies, self INCLUDED — no 'except self' clause). Caster-slot keyed, so it overwrites only Yuni's own prior instance.",
+      "nearestWrongModel": "Two plausible misreads, both damaging. (i) NO chargeSpeedPct StatKey exists in the schema, so the line gets folded into a damage stat — chargeDamagePct: 8.97 — converting a shot-count effect into +8.97 additive percentage points of charge-bucket damage for the whole team (wrong in kind, and far larger than the true effect), or silently substituted with attackSpeedPct/fireRatePct, which is a different kit stat on a different engine path. (ii) Re-keyed to burstCast (Yuni's own B2 cast), which under-fires on every rotation another Burst II completes the chain.",
+      "distinguishingAssertion": "Two assertions. (a) Trigger identity: buffApply count for this stat+key === fullBurstStart event count, in a comp where Yuni is NOT the bursting unit at her stage — green under fullBurstEnter, red under burstCast (zero applications). (b) Kind-of-effect: during the 10s post-FB window, consecutive shot-event frame deltas for a charge-weapon holder SHRINK by ~8.2% (90 → ~82.6 frames for Yuni) while every damage event's charge-bucket mult is byte-identical to the unbuffed run — green under a real charge-speed primitive, red under chargeDamagePct (mult moves, shot spacing does not).",
+      "inertness": "Must move NO per-shot damage magnitude — every damage event's mult/crit/core/rangeApplied must be unchanged; the ONLY delta is shot timing and therefore shot COUNT. Must be inert for non-charge-weapon allies (no change to their shot frames).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▲ 2.77% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic DEF, unscoped. Engine-inert for damage (defPct is documented inert in v1 — self DEF does not affect own damage), but per taxonomy 7 it is KEPT as a stat buff for kit completeness and any future consumer.",
+      "durationSemantics": "durationSec: 10, wall-clock, refreshed on each full charge (so effectively continuous while Yuni is firing — the trigger repeats at ~1.5s).",
+      "triggerIdentity": "'Activates when attacking with Full Charge' — for a charge weapon every trigger pull IS a full charge, so shotFired is the faithful encoding (fires on Yuni's own shots only). No fbGate, no everyN, no core requirement.",
+      "targetSet": "allies (all allies, self included).",
+      "nearestWrongModel": "chargeCounter{count:1} on the skill2 header. That primitive advances a PHASE counter per full charge and dispatches effects[P] one at a time, so the three sibling lines (DEF / lifesteal / ammo) would fire round-robin — one per charge — instead of all three on every charge. Roughly a 3× under-application of each line, and it desynchronises their windows. Secondary misread: `passive` (always-on from t=0, ignoring that Yuni must actually be firing).",
+      "distinguishingAssertion": "For a fixed shot count N by Yuni, assert buffApply counts are equal across all three skill2 stats and each === N (one application of EVERY line per full charge) — green under shotFired, red under chargeCounter (counts split ~N/3 each and interleave). Additionally assert the first application frame > 0 (not frame 0), which kills the `passive` misread.",
+      "inertness": "Must move zero damage. Assert totals(res) for every unit is bit-identical with this effect present vs removed (defPct is inert), so its presence can never be justified by a damage delta.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Restores 2.77% of attack damage as HP",
+      "disposition": "MISSING",
+      "scope": "A lifesteal granted to all allies: each ally converts a fraction of its OWN attack damage to HP for the window. No HP pool exists in v1, so the magnitude (2.77%) is unmodellable and irrelevant — what is load-bearing is the RECOVERY CHANNEL it opens (taxonomy 4: never skip heal/shield/lifesteal lines on isolation; the control fixture contains crown, whose on-recovery consumer this line feeds).",
+      "durationSemantics": "The kit's 'over 10 sec' is the lifesteal WINDOW, not a heal-tick count. Encoded as a heal effect emitting recovery event(s) per activation; since the activating trigger itself repeats every ~1.5s (6 ammo × ~90-frame charge, 141-frame reload), continuity comes from the TRIGGER, not from a long tick chain.",
+      "triggerIdentity": "shotFired (full-charge attack), same header as its two siblings — on-fire, not on-hit-count, not fullBurstEnter.",
+      "targetSet": "allies (all allies, self included) — each recipient's own 'recovery' trigger must fire, so cross-unit consumers (crown-style 'when recovery takes effect') go live.",
+      "nearestWrongModel": "Dropped entirely as 'defensive / no HP pool → inert', leaving every teammate's on-recovery consumer dark for the whole fight. The mirror-image over-model is equally wrong: heal{ticks:10, intervalSec:1} on a trigger that re-fires every ~1.5s, which MULTIPLIES (taxonomy 5) — ~10 recovery events per charge × ~40 charges ≈ 400 emissions, over-firing the consumer by an order of magnitude.",
+      "distinguishingAssertion": "Count recovery-driven applications on a teammate with an on-recovery consumer: assert exactly ONE recovery emission per Yuni full charge (recovery-consumer buffApply count === Yuni shot count, within refresh semantics) — red at 0 (line dropped) and red at ~10× (tick-chain multiplication). Second assertion: in a comp with a recovery consumer, totals(res)[consumer] must DIFFER between override-with-heal and override-without — this line is provably not inert.",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max Ammunition Capacity ▲ 1 round(s)",
+      "disposition": "FIX",
+      "scope": "Weapon-state modifier on ALL allies' magazine size (taxonomy 6 — it gates shots fired between reloads and shifts lastBullet frequency for every teammate). The magnitude is a FLAT +1 round, per recipient, independent of that recipient's base capacity.",
+      "durationSemantics": "durationSec: 5 — deliberately SHORTER than its two siblings' 10 sec. The '1 round(s)' token is the ammo AMOUNT, not a duration; there is no durationShots semantics on this line at all.",
+      "triggerIdentity": "shotFired (full-charge attack), same header as its siblings.",
+      "targetSet": "allies (all allies, self included).",
+      "nearestWrongModel": "Two independent traps. (i) DURATION: reading 'for N round(s)' reflexively as durationShots and authoring durationShots: 1 (or durationShots:1 + durationSec:5), which expires the buff after one round instead of after 5 seconds. (ii) MAGNITUDE UNIT: the schema exposes only percentage maxAmmoPct, so +1 round gets converted using YUNI's magazine (1/6 → 16.67%) and applied team-wide — an ally holding a large magazine then gains many rounds instead of one (e.g. ~+20 on a 120-round belt), inflating shots-between-reloads and suppressing that ally's lastBullet cadence.",
+      "distinguishingAssertion": "(a) Duration: read expiresFrame off the buffApply and assert it === triggerFrame + 5s worth of frames, and assert durationShots is absent/undefined — red under the durationShots:1 misread (buff gone after one round) and red under a copy-pasted 10s. (b) Flat-vs-percent: for an ally whose base magazine differs from 6, assert the effective maxAmmo delta is exactly +1 round, and assert that ally's reload-event count over the fight changes by the amount a +1-round magazine predicts — red under maxAmmoPct:16.67, which grants a capacity-proportional bonus and visibly reduces reload count on the large-magazine ally.",
+      "inertness": "Must not change per-shot damage magnitude, crit/core rates, or charge timing — only magazine size, and hence shot count and reload/lastBullet cadence. Must be inert for a teammate whose reloads never bind inside the 5s window.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 348.73% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "Instant burst-cast damage on the boss, % of Yuni's FINAL ATK (so it snapshots her live buff state at cast). Function damage: it is NOT a normal attack, takes no core unless the text says 'core strike' (it does not), and takes no +30% range bonus.",
+      "durationSemantics": "Instantaneous — no duration, no ticks, no delay (the prose gives no flight time, so no delaySec should be invented).",
+      "triggerIdentity": "burstCast (Yuni's OWN Burst II cast) — never fullBurstEnter. Per the repo's verified fact, burst-cast damage lands BEFORE Full Burst begins, so it takes neither the +50% FB major nor any FB-entry aura.",
+      "targetSet": "enemy ('Affects enemies within attack range'; single partless boss at scope lock, so the area clause is scope-trivial).",
+      "nearestWrongModel": "Keyed to fullBurstEnter and/or credited the Full-Burst major — a ~1.5× over-credit on the burst bucket. Adjacent misreads: core:true (plausible for a rocket visually striking the core, but unsupported by the text — the ×200 coreAttackMultiplier belongs to her NORMAL attack, not this rider) and rangeOk/range-eligible.",
+      "distinguishingAssertion": "On the burst-bucket damage event assert fbMajorApplied === false, inFullBurst === false, rangeApplied === false, core rate === 0, and that the event frame precedes the fullBurstStart frame of that rotation — green under burst-cast-pre-FB, red under a fullBurstEnter encoding (event lands inside the window with fbMajorApplied true). Then assert the raw damage equals 348.73% of Yuni's effective ATK at cast with no further multiplier.",
+      "inertness": "Must fire exactly once per Yuni burst cast and never on a rotation she does not cast; must add nothing to the normal or charge buckets.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Immobilizes the target(s) for 5 sec",
+      "disposition": "UNMODELED",
+      "scope": "Boss crowd control. There is no enemy entity in the sim (enemy targets resolve to an empty set) and the schema's `stun` primitive describes a NIKKE being unable to fire/charge/reload — it is not a boss-movement freeze. The only channel by which boss immobilisation could touch damage is the boss RANGE/movement script, which is a MEASURED constant.",
+      "durationSemantics": "5 sec if it were modelled; irrelevant at scope lock.",
+      "triggerIdentity": "burstCast, alongside the damage line.",
+      "targetSet": "enemy.",
+      "nearestWrongModel": "Encoding it as `stun` (which would wrongly target/penalise an ally-side entity), or — far worse — pinning the boss's range band for 5 sec to 'model' the immobilise, which silently overwrites a MEASURED constant (the boss range script) with an invented one and would move damage on every graded comp.",
+      "distinguishingAssertion": "Assert the line is present verbatim in override.unmodeled.burst, and assert boss-range behaviour is untouched: every damage event's rangeApplied/band-derived multiplier across the fight is identical with and without Yuni in the comp (beyond her own damage rows) — red the moment anyone models the immobilise as a movement freeze.",
+      "inertness": "Zero damage movement anywhere; zero change to boss range/band multipliers; no ally-side stun.",
+      "evidenceTier": "COMMUNITY",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Charge Speed ▲ 8.97% for 10 sec (fullBurstEnter → allies)",
+    "skill2:DEF ▲ 2.77% for 10 sec (shotFired/full-charge → allies)",
+    "skill2:Restores 2.77% of attack damage as HP over 10 sec (recovery channel → allies)",
+    "skill2:Max Ammunition Capacity ▲ 1 round(s) for 5 sec (flat +1, 5s)",
+    "burst:Deals 348.73% of final ATK as damage (burstCast, pre-FB, no core, no range)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Immobilizes the target(s) for 5 sec."
+    ]
+  },
+  "notes": "Five things the driver must reconcile. (1) SCHEMA GAP — the StatKey union in the packet contains NO charge-speed stat, yet skill1's only effect is Charge Speed ▲. Every available encoding is wrong in kind: chargeDamagePct/chargeDamageMultPct are damage buckets, attackSpeedPct and fireRatePct are different kit stats on different engine paths. I expect the shared-prior misread here to be a damage-bucket fold, because it is the only encoding that produces a visible number. If the engine really has no charge-time primitive, this line is a GAP to declare, not a stat to approximate — and the distinguishing test is shot-event SPACING, not damage. (2) FLAT-vs-PERCENT AMMO — maxAmmoPct is percentage-only but the kit grants a flat +1 round to ALL ALLIES. Converting via Yuni's own 6-round magazine (16.67%) over-grants every large-magazine teammate; this is the single largest silent damage error in the kit and it is invisible in a fixture where nobody's reloads bind. Test it on an ally with a magazine far from 6. (3) 'round(s)' IS A MAGNITUDE, NOT A DURATION — 'Max Ammunition Capacity ▲ 1 round(s) for 5 sec' will attract a durationShots:1 encoding from anyone primed on the round-count rule; the duration is 5 sec and it is the ONLY skill2 line that is not 10 sec, so a copy-paste of the sibling window is the other likely defect. (4) THE HEAL IS NOT INERT — the control fixture contains crown, an on-recovery consumer, so dropping the lifesteal line as 'defensive' changes a teammate's damage. But the recovery CADENCE is genuinely outside the input domain (⚑): Yuni full-charges roughly every 1.5s, so a ticks:10 heal multiplies to ~400 emissions. I recommend one recovery emission per full charge, with the ⚑ stated and a recipe (count a recovery-consumer's proc rate against footage) rather than a guessed tick chain. (5) FIXTURE HAZARD — Yuni is Burst II, but controlComp(carry) seats the carry in the B3 slot with crown already at B2. As written, a burst-block test may assert on damage from a cast that never happens (vacuous green or spurious red). Assert a burstCast event exists BEFORE asserting burst damage, and expect to need TWO fixtures: one seating Yuni at B2 (displacing crown) to exercise the burst block, and the crown-bearing default to exercise the recovery channel — the two requirements are in direct tension and cannot be satisfied by one comp. Also note the intra-kit feedback loop: skill1's charge speed accelerates Yuni's OWN charge cycle, which raises the fire rate of skill2's trigger — so skill2 application counts should rise inside the 10s post-FB window. That coupling is a useful second-order check that skill1 is on the timing path and not the damage path. Cadence tuple (pullsPerSec / reloadFrames 141 / chargeFrames 90) remains a datamine-unreliable ⚑ throughout.",
+  "model": "claude-fable-5"
+}

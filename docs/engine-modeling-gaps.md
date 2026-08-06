@@ -57,7 +57,7 @@
 | `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
 | `excludeSelf` | 18 | anis, arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, … |
 | `fbGate` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |
-| `flatDamage` | 91 | 2b, a2, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, … |
+| `flatDamage` | 92 | 2b, a2, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 5 | d, isabel, mihara, modernia, soda-twinkling-bunny |
 | `gainPierce` | 11 | ade-agent-bunny, asuka, dorothy, grave, harran, makima, mari, milk-blooming-bunny, … |
@@ -75,7 +75,7 @@
 | `interval` | 34 | ade, anis, brid, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, … |
 | `lastBullet` | 14 | anis-sparkling-summer, aria, crow, dorothy, epinel, eunhwa, exia, helm, … |
 | `magDumpRof` | 1 | cinderella |
-| `maxAmmoFlat` | 10 | emilia, grave, himeno, mica, n102, neon, noir, rem, … |
+| `maxAmmoFlat` | 11 | emilia, grave, himeno, mica, n102, neon, noir, rem, … |
 | `maxShots` | 3 | e-h, laplace-ultimate-hero, snow-white-heavy-arms |
 | `mode` | 8 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, milk-blooming-bunny, mint, prika |
 | `modes` | 8 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, milk-blooming-bunny, mint, prika |
@@ -102,7 +102,7 @@
 | `selfAndAdjacent` | 2 | flora, rouge |
 | `sequentialMultPct` | 1 | eve |
 | `shielded` | 2 | flora, naga |
-| `shotFired` | 38 | a2, ade-agent-bunny, anis-star, bready, cinderella, clay, delta, delta-ninja-thief, … |
+| `shotFired` | 39 | a2, ade-agent-bunny, anis-star, bready, cinderella, clay, delta, delta-ninja-thief, … |
 | `stackedNuke` | 1 | maiden-ice-rose |
 | `stageEnter` | 12 | cinderella, ein, flora, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, … |
 | `storedHit` | 1 | rapi-red-hood |

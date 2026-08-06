@@ -7752,6 +7752,42 @@
       ],
       "board": null
     },
+    "yuni": {
+      "name": "Yuni",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/yuni.json + scripts/kit-autonomy/manual-review/yuni.md.",
+          "low FIDELITY (skill2): Lifesteal recovery cadence: heal ticks:10 on a trigger that re-fires every ~1.5s produces ~6-7 overlapping 10-tick chains per ally, likely over-emitting recovery events vs the real refreshed-single-window lifesteal; the independent pre-op reviewer (S2b) recommended one emission per full charge. Consumer-visible outcome (continuous crown buff uptime) is qualitatively right either way; the HP amount itself is out of domain."
+        ],
+        "date": "2026-08-05"
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged | kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "S2 lifesteal tick cadence (ticks:10 vs one-emission-per-charge — S2b dissent adjudicated to measurement, ⚑2: popup-read crown on-recovery proc cadence in a yuni+crown focus video); burst Immobilize-5s unmodeled (⚑1 — zero damage impact, no boss-CC channel) | S2 lifesteal tick cadence (ticks:10 vs one-emission-per-charge, S2b dissent adjudicated to measurement — spot-check crown on-recovery proc cadence in a yuni+crown focus video); burst Immobilize-5s unmodeled (zero damage impact, no boss-CC channel)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": ["Immobilizes the target(s) for 5 sec."]
+      },
+      "caveats": [
+        "skill1: chargeSpeedPct is the engine's SUBTRACTIVE charge formula (needed = round(chargeFrames×(1−cs/100)) → 90f→82f) and a TIMING channel only — the unit test pins that no per-shot magnitude moves with it on or off; the buff lands exactly on the fullBurstStart frames (fullBurstEnter, never burstCast).",
+        "skill2: the heal line models NO HP amount — it emits recovery events to all allies (10 ticks at 1s per full-charge pull; the 10s WINDOW is kit-literal, the tick cadence is the engine-native approximation per helm H8 precedent). Its only sim observable is on-recovery consumer behaviour; with no consumer in a comp the line is honestly invisible.",
+        "skill2: the ammo line is FLAT +1 round for 5s (theme-14 primitive) — deliberately shorter than its siblings' 10s windows, and a percent encoding (maxAmmoPct 1 → round(6×1.01)=6) silently never extends a magazine; the DEF half rides the same block and is damage-inert in v1.",
+        "burst: 'Affects enemies within attack range' collapses to the single partless boss at scope lock; the Immobilize half has no boss-CC channel (⚑1) — unmodeled verbatim, never laundered into damageTakenPct or stun."
+      ]
+    },
     "zwei": {
       "name": "Zwei (Treasure)",
       "burst": "I",

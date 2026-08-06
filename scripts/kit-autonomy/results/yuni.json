@@ -1,0 +1,95 @@
+{
+  "slug": "yuni",
+  "kitDescription": "Yuni is a Fire rocket-launcher Defender whose Burst II has a 20-second cooldown. Whenever the team enters Full Burst, she grants all allies (including herself) a 10-second Charge Speed buff, shortening charge-weapon wind-ups. Every full-charge shot she fires — which for a launcher is every pull — hands the whole team three riders: a small DEF buff for 10 seconds, a 10-second lifesteal window that converts a fraction of each ally's attack damage into healing, and a flat +1 round of magazine capacity for 5 seconds. Her burst is a single instant area hit for 348.73% of her final ATK that also immobilizes struck enemies for 5 seconds, a crowd-control effect with no damage consequence at scope lock.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "skill2 'grants Max Ammunition ▲1 round for 5 sec' — filters stat === 'maxAmmoPct' (0 events; driver ships the flat primitive maxAmmoFlat)",
+      "skill2 'the +1 round is REAL DAMAGE — stripping it moves yuni own total' — strips maxAmmoPct effects (none exist) so totals are trivially identical"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Charge Speed ▲ 8.97% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → allies → chargeSpeedPct 8.97/10s; engine-native SUBTRACTIVE charge channel (needed = round(chargeFrames×(1−cs/100)), 90f→82f); timing-only, no per-shot magnitude moves",
+        "blindSaid": "S6: attackSpeedPct 8.97/10s with a self-flagged ⚑ that the key may be inert; S2b: declared GAP believing no chargeSpeedPct StatKey exists; S5: skipped the magnitude as a schema GAP",
+        "formulaCheck": "game-mechanics §4: Charge Speed is SUBTRACTIVE on charge time, NOT a damage bucket and NOT base/(1+CS); engine chargeSpeedPct is the correct primitive — S6's attackSpeedPct guess and S2b's GAP belief are redacted-schema artifacts, not kit disagreements",
+        "fireRateOk": true,
+        "explanation": "Right trigger (fullBurstEnter fires on ANY team FB, lands exactly on fullBurstStart frames — burstCast mis-keying pinned RED by frame-set discrimination), right target (all allies incl. self), right duration (600f, no durationShots), right stat kind (timing channel: S1-removal moves team totals while the charge-bucket atkPct set is byte-identical). The blind attackSpeedPct divergence is a RECON_ERROR-class artifact the blind author flagged itself."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "DEF ▲ 2.77% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired → allies → defPct 2.77/10s riding the same block as ammo+heal; damage-inert in v1, kept per keep-the-stat rule; byte-identical totals with only this effect removed; atkPct misread pinned RED",
+        "blindSaid": "S6: identical encoding; S2b: FAITHFUL disposition, inert but kept",
+        "formulaCheck": "Self/ally DEF never feeds damage dealt (formula has no outgoing-DEF term); shotFired is the faithful key for 'attacking with Full Charge' on an RL (every pull is a full charge, helm/cinderella precedent)",
+        "fireRateOk": true,
+        "explanation": "One activation per Yuni shot (S2 frames == shot frames, ≥60), shared frames with the ammo line (one block, three effects — refutes S2b's chargeCounter round-robin nearest-wrong), first application after t=0 (refutes passive). Inertness is proven, not assumed."
+      },
+      {
+        "kitLine": "Restores 2.77% of attack damage as HP over 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "heal ticks:10 intervalSec:1 per full-charge pull; no HP pool in v1 — only the recovery channel is modeled; 10s window kit-literal, intra-window tick cadence an engine-native approximation (helm H8 precedent), ⚑2 with recipe",
+        "blindSaid": "S6: IDENTICAL ticks:10/intervalSec:1 encoding, ⚑-flagged ('recovery-event COUNT is an authoring choice'); S2b: dissented — recommended ONE recovery emission per charge, calling the ticks:10-on-a-1.5s-trigger shape the over-firing nearest-wrong (~400 emissions)",
+        "formulaCheck": "§11: same-buff re-application REFRESHES, never co-stacks — so in game the 10s lifesteal window refreshes per charge rather than stacking ~6-7 concurrent 10-tick chains; the driver's overlapping chains likely over-emit recovery events vs the real refreshed-window cadence, but the consumer-visible outcome (crown's on-recovery buff held continuously) is qualitatively correct under both models and the HP amount itself is out of domain",
+        "fireRateOk": true,
+        "explanation": "The line is not dropped (the real failure mode): recovery is observable through crown's consumer in an isolation fixture (crown's own heal stripped), is attributable (zero firings with only the heal removed), and the burst-keyed counterfactual starves to zero under B2 starvation. The live disagreement is cadence: driver+S6 (same model family) converged on ticks:10 while the independent pre-op reviewer recommended 1-per-charge; both are ⚑ approximations of an unmeasured quantity, and the driver documented estimate+recipe+tier. DOCUMENTED_GAP, not a gotcha — but this is the #1 owner spot-check item."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity ▲ 1 round(s) for 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "maxAmmoFlat 1/5s — theme-14 FLAT primitive; '1 round(s)' is the magnitude, 5s the duration (no durationShots); nearest-wrong maxAmmoPct 1 computes round(6×1.01)=6 and never extends a magazine (pinned RED)",
+        "blindSaid": "S6: IDENTICAL maxAmmoFlat 1/5s with the same flat-vs-percent reasoning; S5: red only because its redacted schema led it to filter maxAmmoPct — and its own percent model is self-contradictory (under maxAmmoPct the line is inert, so its own damage assertion would fail anyway)",
+        "formulaCheck": "maxAmmo() = round(base×(1+pct/100)) + flat — only the flat primitive grants exactly +1 round to every ally regardless of magazine size (a percent keyed to Yuni's 6-round mag would over-grant large-magazine allies, S2b trap #2)",
+        "fireRateOk": true,
+        "explanation": "Observed end-to-end: in-window refills load 6+1 (first-shot ammoAfter 6), 7-round magazines fire, and the ammo-6 holders' totals lift vs S2-removed with the DEF half proven inert and the heal invisible in fixture A — the delta is the ammo channel alone. 300f window and null durationShots pinned; all four allies hold it. The two S5 REDs are redacted-schema RECON_ERRORs corroborated by S6's independent convergence on maxAmmoFlat."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 348.73% of final ATK as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy → flatDamage 348.73; lands on her own cast frames before the FB window (fbMajorApplied never true); lvl-1 172.4 and fullBurstEnter keying both pinned RED",
+        "blindSaid": "S6: identical block; S2b: FAITHFUL with the same burstCast/pre-FB/no-core/no-range spec; S5: green on FB-exemption and no-core assertions",
+        "formulaCheck": "damage-calculation §1b/§2b: burst-cast direct damage lands BEFORE Full Burst (engine noFb forced), function damage never cores, never takes range; 'enemies within attack range' collapses to the single partless boss at scope lock",
+        "fireRateOk": true,
+        "explanation": "Fires once per cast (≥6 casts/180s as sole B2 of fixture A — the B2-starvation trap avoided by not fielding crown there), exactly 348.73 in the burst bucket, teammate-inert. Timing discrimination is real: the fullBurstEnter counterfactual lands inside the window with the +50% major and off the cast frames."
+      },
+      {
+        "kitLine": "Immobilizes the target(s) for 5 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim + ⚑1 (out-of-domain; no boss-CC channel; the v1 boss never acts; recipe = an enemy-action subsystem, engine-core); damageTakenPct laundering pinned RED by absence proofs",
+        "blindSaid": "S6: identical verbatim unmodeled entry; S2b: UNMODELED disposition (boss range script is a MEASURED constant; never pin it); S5: it.skip with the same no-enemy-entity reasoning",
+        "formulaCheck": "No engine channel exists; the schema's stun primitive is ally-side. Zero damage impact at scope lock is the correct estimate — CC modifies neither DEF nor damage-taken.",
+        "fireRateOk": true,
+        "explanation": "All four agents converged independently. The driver's bossBuffs==[] absence pin plus the laundering counterfactual (emits debuffs, lifts totals) prove the CC is dropped, not smuggled into a damage debuff."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "Lifesteal recovery cadence: heal ticks:10 on a trigger that re-fires every ~1.5s produces ~6-7 overlapping 10-tick chains per ally, likely over-emitting recovery events vs the real refreshed-single-window lifesteal; the independent pre-op reviewer (S2b) recommended one emission per full charge. Consumer-visible outcome (continuous crown buff uptime) is qualitatively right either way; the HP amount itself is out of domain.",
+      "evidence": "Kit line 'Restores 2.77% of attack damage as HP over 10 sec' + game-mechanics §11 (re-application REFRESHES, never co-stacks). Driver+S6 (same model family): ticks:10/intervalSec:1; S2b (independent spec): ticks:10 on a per-1.5s trigger 'MULTIPLIES… over-firing the consumer by an order of magnitude' and recommends 1-per-charge.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Needs measurement, not a fudge: popup-read an on-recovery consumer's (crown) proc cadence in a yuni+crown focus video — if the real lifesteal emits one recovery per refresh window rather than stacked tick chains, re-encode as a single recovery emission per full charge (S2b model) or gate the tick chain to refresh-not-stack; the driver's ⚑2 recipe already names this read."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: every modeled line is kit-literal on trigger, target, duration, and magnitude, and both omissions (boss Immobilize, HP-pool-less lifesteal) are documented with verbatim unmodeled entries, ⚑ estimates, and recipes. Convergence is strong where it counts — the blind S6 override is structurally identical to the driver on skill2, burst, and unmodeled, and its lone divergence (attackSpeedPct vs chargeSpeedPct on skill1) is a redacted-schema guess the blind author itself flagged as possibly inert; the driver's chargeSpeedPct is the engine-native subtractive channel the SSOT describes. The 2 S5 REDs are the same redacted-schema artifact (maxAmmoPct filter vs the shipped maxAmmoFlat) and are self-refuting — under the blind author's own percent model the ammo line is inert, so its damage assertion could never pass; S6's independent arrival at maxAmmoFlat closes the question. Driver discrimination is genuine: every load-bearing assertion has a RED counterfactual (burstCast vs fullBurstEnter frame-sets, self-only scope, burst-keyed S2 starved under B2 starvation, maxAmmoPct's round(6×1.01)=6, lvl-1 172.4, FB-enter nuke taking the +50%, damageTakenPct laundering), and the two-fixture split cleanly resolves the B2-starvation tension S2b predicted. What must change for GO: nothing. Same-model residual for the owner to spot-check: the lifesteal tick cadence — driver and S6 are the same model family and both landed on ticks:10, while the independent pre-op reviewer argued that shape over-fires the recovery channel ~an order of magnitude; it is documented ⚑2 with a measurement recipe, but it is the one place convergence proves stability rather than correctness.",
+  "model": "kimi-code/k3"
+}
