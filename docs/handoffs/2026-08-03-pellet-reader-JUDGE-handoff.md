@@ -1,5 +1,14 @@
 # Pellet reader — judge handoff after the representative-frame audit
 
+> ⛔ **RETRACTED IN PART (2026-08-06) — `docs/probe-runs.md` §36 → §37.** This doc's item 7 states
+> _"of the 35 pellets the reader reports across those 5 shots, only 12 are owner pellets"_ and calls
+> the result **"coincidental cancellation"**. ⚑ **That was the LEGACY `pellet_ids` channel, not the
+> shipped reader.** `--representative-audit` was scoring a channel production had not used since the
+> `band_hi` landing. Re-scored on the shipped channel the same 5 shots read **35 = 31 owner + 4
+> non-owner (88%)**, not 12/35 (34%) — same total, opposite composition. **Do not quote 12/35 as a
+> property of the shipped reader.** The flash-phase / representative-frame mechanism this doc
+> describes is unaffected; only the composition figure is retracted.
+
 > AI-facing. Written at the end of a long session, for the judge session that follows.
 > Supersedes nothing; it **CONTINUES**
 > [`2026-08-02-pellet-reader-JUDGE-handoff.md`](2026-08-02-pellet-reader-JUDGE-handoff.md), which in

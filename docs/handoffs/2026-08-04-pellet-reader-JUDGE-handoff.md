@@ -1,5 +1,17 @@
 # Pellet reader — judge handoff after the representative-frame LANDING
 
+> ⛔ **RETRACTED IN PART (2026-08-06) — `docs/probe-runs.md` §36 → §37.** This doc repeats §9B's
+> _"only 12 of 35"_ cancellation reading (§0 and the graveyard row). ⚑ **That figure is the LEGACY
+> `pellet_ids` channel, not the shipped reader** — `--representative-audit` had been scoring a
+> channel production stopped using at the `band_hi` landing. Re-scored on the shipped channel the
+> same 5 shots read **35 = 31 owner + 4 non-owner**. **Do not quote 12/35 as shipped-reader
+> behaviour.**
+>
+> ⚑ **Its "Detection is not the problem; the GATES are" re-ranking SURVIVES** and is now stronger:
+> the shipped-channel decomposition is still `42 = 0 never-detected + 5 life-gated + 8 radius-gated
+>
+> - 29 countable`, with 7 of the 8 radius rejections being the documented shot-4 template mislock.
+
 > AI-facing. Written at the end of a long session, for the judge session that follows.
 > Supersedes nothing; it **CONTINUES**
 > [`2026-08-03-pellet-reader-JUDGE-handoff.md`](2026-08-03-pellet-reader-JUDGE-handoff.md), which
