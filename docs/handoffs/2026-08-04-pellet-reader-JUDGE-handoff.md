@@ -8,9 +8,9 @@
 > behaviour.**
 >
 > ⚑ **Its "Detection is not the problem; the GATES are" re-ranking SURVIVES** and is now stronger:
-> the shipped-channel decomposition is still `42 = 0 never-detected + 5 life-gated + 8 radius-gated
->
-> - 29 countable`, with 7 of the 8 radius rejections being the documented shot-4 template mislock.
+> the shipped-channel decomposition is still `owner 42` = `0 never-detected`, `5 life-gated`,
+> `8 radius-gated`, `29 countable` — with 7 of the 8 radius rejections being the documented shot-4
+> template mislock.
 
 > AI-facing. Written at the end of a long session, for the judge session that follows.
 > Supersedes nothing; it **CONTINUES**

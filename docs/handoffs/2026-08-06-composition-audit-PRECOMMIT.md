@@ -1,8 +1,9 @@
 # The composition audit — PRE-COMMIT (2026-08-06)
 
-> ✅ **EXECUTED — see `docs/probe-runs.md` §36 (VOID) → §37 (the answer).** ⛔ **§1's `rep_owner 12 /
-rep_non_owner 23 / reader_white 35` is the LEGACY channel and must not be quoted as shipped-reader
-> behaviour** — that is precisely what this pre-commit's CONTROL CHANNEL caught. On the shipped
+> ✅ **EXECUTED — see `docs/probe-runs.md` §36 (VOID) → §37 (the answer).**
+> ⛔ **§1's legacy-channel figures (`rep_owner` 12, `rep_non_owner` 23, `reader_white` 35) must not
+> be quoted as shipped-reader behaviour** — that is precisely what this pre-commit's CONTROL CHANNEL
+> caught. On the shipped
 > channel the same 5 shots read **35 = 31 owner + 4 non-owner**, so the composition hypothesis §1
 > raises was **answered AGAINST**: the count IS mostly made of pellets. Retained as the provenance
 > trail for the rule, not as a live claim.
