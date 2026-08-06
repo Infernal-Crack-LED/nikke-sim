@@ -6731,3 +6731,91 @@ cause; it closes a candidate.
 **RECORDS an owner adjudication + a measurement. NOTHING ENACTED** — no localizer retune, no
 constant, no threshold, no default; `--lock-adjudication-imprecise` defaults to `strict` and changes
 no committed number.
+
+#### §35 THE RADIUS GATE — ⚑ THE PRE-COMMITTED BAND FIRED AND AN INDEPENDENT CHECK OVERTURNED IT
+
+**2026-08-05.** Executes `docs/handoffs/2026-08-05-radius-gate-PRECOMMIT.md`, whose rule and
+controls were committed at **`57c1de78` before any number existed**. Chases the only channel any
+measurement had ever named as carrying §19's −1.40/shot (§19C), the mislock half having closed at
+≈0 (§22C, §34).
+
+##### §35A — What the profile shows
+
+Pellet-attributable (shot-frame minus quiet-frame) in-band white tracks per shot, by 20 px annulus,
+at each shot's representative frame — 815 shots / 4 units, gate at 160 px:
+
+| r (px)   | 60–80 | 80–100 | 100–120 | 120–140 | 140–160 | **160–180** | 180–200 | 200–220 | 220–400         |
+| -------- | ----- | ------ | ------- | ------- | ------- | ----------- | ------- | ------- | --------------- |
+| per shot | 0.691 | 0.886  | 1.245   | 1.227   | 1.220   | **0.638**   | 0.229   | 0.176   | ~0.09–0.15 each |
+
+`T` (160–220 px) = **1.043/shot**; density at the gate is **51%** of the in-gate peak. Both
+falsification controls PASS (clutter share **2.4%**, in-gate peak > at-gate).
+
+⇒ **The pre-committed band's top row fires: "THE GATE IS CUTTING THE CLOUD."** ⛔ **And that verdict
+is WRONG.**
+
+##### §35B — ⚑ THE INDEPENDENT CHECK THAT OVERTURNS IT
+
+`groundtruth-f8-11-positions.json` holds **OWNER-MARKED pellet positions** in 368×368 crops centred
+on the crosshair — **crop radius 184 px, so it can see past the 160 px gate.** Its labels were made
+long before this arm existed. Radial distribution of all **168** labelled pellet instances:
+
+| r (px) | 0–20 | 20–40 | 40–60 | 60–80 | 80–100 | 100–120 | 120–140 | 140–160 | **160–180** | **>180** |
+| ------ | ---- | ----- | ----- | ----- | ------ | ------- | ------- | ------- | ----------- | -------- |
+| n      | 2    | 6     | 15    | 35    | 14     | 34      | 35      | 18      | **9**       | **0**    |
+
+**Max labelled radius 166.8 px. ZERO labelled pellets beyond 180 px.** The owner could have marked
+out to ~184 and did not, so the absence is informative rather than a crop artifact.
+
+⇒ **The difference profile's 0.229 + 0.176/shot at 180–220, and its entire 0.09–0.15/shot tail out
+to 400 px, are NOT PELLETS.** `T = 1.043` is **contaminated and must not be quoted**.
+
+##### §35C — Why the pre-commit's own control was insufficient
+
+§2.2's quiet-frame control removes **static** clutter — and it does that well (clutter share 2.4%).
+It **cannot** remove **shot-correlated non-pellet material**: muzzle/impact VFX, debris and smoke
+that appear only near a shot and survive the `[4, 10]` lifetime band. Subtracting quiet frames
+leaves all of it in the "pellet-attributable" difference.
+
+⚑ **The pre-commit was written by the same reasoning that then mis-read the result, and its control
+did not cover the confound that mattered.** What caught it was an EXISTING LABELLED ARTIFACT used as
+an independent method — the SUFFICIENCY rule's route, not a new derivation.
+
+##### §35D — What the gate actually costs, on the evidence that survives
+
+From the owner labels: **9 of 168 pellet instances (5.36%)** sit at or beyond 160 px. Against the
+owner-confirmed **8.40** landed pellets/shot on that clip:
+
+> **≈ 0.45 pellets/shot lost to the radius gate** — about **32%** of §19's −1.40/shot residual.
+
+⛔ **Caveats that ride with it:** n = **5 shots, one clip** (`marciana`, SG/Iron) — the same
+in-sample limitation §19D flagged, and these are the labels the reader was tuned against. The 815-shot
+profile cannot corroborate it, because §35B is exactly the finding that the 815-shot profile is not
+pellet-attributable out there. **This is a bound from labels, not a production measurement.**
+
+##### §35E — Verdict
+
+⚑ **The radius gate is a REAL cold channel and the largest single one yet identified — ≈0.45/shot,
+~32% of the residual — but it is NOT the 1.04/shot the profile appeared to show, and it does not
+explain the −1.40 on its own.**
+
+⛔ **NOTHING ENACTED. `pellet_radius` is unchanged**, per the pre-commit's §5: widening the gate to
+recover pellets would be a **fudge**, because the accuracy-circle geometry is owner-ruled ground
+truth that measures the mechanic directly. ⚑ **And the labels say the gate is very nearly right** —
+the cloud ends at ~167 px against a 160 px gate, a ~7 px shortfall, not a badly-placed cut. Whether
+that 7 px is real or is crosshair-localization error is the next question, and it is the owner's call
+whether it is worth chasing.
+
+##### §35F — Instrument
+
+`analyze-pellet-tracks.py --radius-gate`, wired into `scripts/probe/pellet-selftest.sh` (now **31
+arms**; `verify.sh` green). It prints the contaminated `T` **and** the owner-label check **and** the
+plain statement that the former is contaminated — deliberately, so the number cannot be quoted
+without its refutation attached.
+
+```sh
+PY=/Users/maxwellsutton/nikke-sim/scripts/probe/.venv/bin/python
+S=/Users/maxwellsutton/nikke-sim/scratchpad/pellets
+$PY scripts/probe/analyze-pellet-tracks.py --radius-gate \
+  $S/{h4-marciana,h4-isabel,h4-guilty,g2-noir}-schemafix/tracks.json
+```

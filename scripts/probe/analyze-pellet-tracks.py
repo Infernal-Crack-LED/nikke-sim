@@ -7037,6 +7037,277 @@ def dump_replay_fidelity_selftest():
 
 
 # ============================================================
+# THE RADIUS GATE -- docs/handoffs/2026-08-05-radius-gate-PRECOMMIT.md, docs/probe-runs.md §35
+#
+# §19C named the radius gate and the mislock as carrying the ENTIRE -1.40/shot residual, and the
+# mislock half is now closed at ~0 (§22C, §34). That makes `pellet_radius` the only channel any
+# measurement has named. Is the 160px gate cutting into the real pellet cloud, or sitting in empty
+# space?
+#
+# Radial histogram of LIFETIME-IN-BAND white tracks by distance from the crosshair, at the frame
+# whose count actually becomes the shot's `white` (the landed hybrid's representative frame) -- so
+# the gate is measured where the gate is applied.
+#
+# ⚑ TWO THINGS THE PRE-COMMIT PINS DOWN BECAUSE BOTH ARE EASY TO GET WRONG:
+#   §2.1 annulus AREA grows with r, so a UNIFORM density yields a RISING raw count per annulus. The
+#        verdict is read off DENSITY (count / area), never off raw counts.
+#   §2.2 clutter is on every frame, pellets only near a shot -- so the same profile is built on
+#        QUIET frames and the DIFFERENCE is what is attributed to pellets. A conclusion from the raw
+#        shot-frame profile alone is inadmissible.
+#
+# MEASUREMENT ONLY: `pellet_radius` is not changed regardless of outcome (pre-commit §5).
+RADIUS_GATE_FIXTURE = "scripts/tests/fixtures/pellets/radius-gate-slice.json"
+RG_BIN = 20        # px per annulus
+RG_MAX = 400       # px, outer edge of the profile
+RG_QUIET_GAP = 30  # frames a QUIET frame must be from any event span
+# Owner-marked pellet positions, 368x368 crops centred on the crosshair (radius 184 > the 160px
+# gate). The INDEPENDENT attribution check -- see _rg_owner_label_bound.
+RG_OWNER_POSITIONS = "scripts/tests/fixtures/pellets/groundtruth-f8-11-positions.json"
+RG_CROP_RADIUS = 184.0
+
+
+def _rg_profile(frames, tracks_by_frame, cross_positions, band_ids):
+    """Radial histogram (counts per RG_BIN annulus) of in-band WHITE tracks over `frames`."""
+    nb = RG_MAX // RG_BIN
+    hist = [0] * nb
+    for f in frames:
+        cp = cross_positions[f]
+        if cp is None:
+            continue
+        for tid, x, y, is_red in tracks_by_frame.get(f, ()):
+            if is_red or tid not in band_ids:
+                continue
+            d = math.hypot(x - cp[0], y - cp[1])
+            b = int(d // RG_BIN)
+            if 0 <= b < nb:
+                hist[b] += 1
+    return hist
+
+
+def _rg_density(hist, n_frames):
+    """Per-frame count divided by annulus AREA -- the quantity the verdict is read off (§2.1)."""
+    out = []
+    for b, c in enumerate(hist):
+        r0, r1 = b * RG_BIN, (b + 1) * RG_BIN
+        area = math.pi * (r1 ** 2 - r0 ** 2)
+        out.append((c / n_frames / area) if n_frames else 0.0)
+    return out
+
+
+def _rg_score(name, tracks, cross_positions, frame_counts, params, fps):
+    cp_mod = _count_pellets_module()
+    n = len(frame_counts)
+    band_lo = cp_mod._band_lo(fps)
+    band_hi = params.get("band_hi") or params["max_pellet_frames"]
+    band_ids = {t["id"] for t in tracks if band_lo <= t["life"] <= band_hi}
+
+    by_frame = collections.defaultdict(list)
+    for t in tracks:
+        reds = t.get("reds")
+        for i, f in enumerate(range(t["first"], t["last"] + 1)):
+            if f < 0 or f >= n or i >= len(t["xs"]):
+                continue
+            is_red = bool(reds[i]) if reds and i < len(reds) else bool(t["is_red"])
+            by_frame[f].append((t["id"], t["xs"][i], t["ys"][i], is_red))
+
+    shots, _ = cp_mod.debounce_shots([dict(r) for r in frame_counts], fps)
+    # The representative frame IS the shot's `frame` -- debounce_shots reports the frame whose
+    # count it copied, which is exactly where the radius gate got applied for that shot.
+    shot_frames = [s["frame"] for s in shots if 0 <= s["frame"] < n]
+    spans = [(s["start"], s["end"]) for s in shots]
+    quiet = [f for f in range(n)
+             if cross_positions[f] is not None
+             and all(f < a - RG_QUIET_GAP or f > b + RG_QUIET_GAP for a, b in spans)]
+
+    sh_hist = _rg_profile(shot_frames, by_frame, cross_positions, band_ids)
+    qt_hist = _rg_profile(quiet, by_frame, cross_positions, band_ids)
+    sh_den = _rg_density(sh_hist, len(shot_frames))
+    qt_den = _rg_density(qt_hist, len(quiet))
+    diff_den = [a - b for a, b in zip(sh_den, qt_den)]
+    # per-SHOT pellet-attributable count in an annulus = (shot rate - quiet rate) per frame
+    diff_per_shot = [sh_hist[b] / len(shot_frames) - (qt_hist[b] / len(quiet) if quiet else 0.0)
+                     for b in range(len(sh_hist))]
+
+    gate = params["pellet_radius"]
+    gb = int(gate // RG_BIN)
+    just_out = range(gb, min(gb + 3, len(sh_hist)))          # 160..219 at RG_BIN=20
+    return {
+        "dump": name, "fps": fps, "pellet_radius": gate, "band": [band_lo, band_hi],
+        "n_shots": len(shots), "n_shot_frames": len(shot_frames), "n_quiet_frames": len(quiet),
+        "shot_hist": sh_hist, "quiet_hist": qt_hist,
+        "shot_density": [round(v, 9) for v in sh_den],
+        "diff_density": [round(v, 9) for v in diff_den],
+        "diff_per_shot": [round(v, 5) for v in diff_per_shot],
+        "T_just_outside": round(sum(diff_per_shot[b] for b in just_out), 5),
+        "peak_in_gate_density": round(max(diff_den[:gb]) if gb else 0.0, 9),
+        "density_at_gate": round(diff_den[gb] if gb < len(diff_den) else 0.0, 9),
+        "shot_count_just_outside": sum(sh_hist[b] for b in just_out),
+        "quiet_rate_just_outside": round(
+            sum(qt_hist[b] for b in just_out) / len(quiet) * len(shot_frames), 2) if quiet else 0.0,
+    }
+
+
+def _rg_owner_label_bound():
+    """⚑ THE INDEPENDENT ATTRIBUTION CHECK -- and the one that overturned this arm's own headline.
+
+    The quiet-frame control (§2.2) removes STATIC clutter. It CANNOT remove shot-correlated
+    NON-pellet material (muzzle/impact VFX, debris) that appears only near a shot and survives the
+    lifetime band -- so the difference profile is pellet-attributable only where something
+    independent says pellets actually are.
+
+    `groundtruth-f8-11-positions.json` is that independent thing: OWNER-MARKED pellet positions in
+    368x368 crops centred on the crosshair (radius 184 > the 160px gate, so it CAN see past it).
+    Returns the radial histogram of labelled pellet instances and the share at/beyond the gate."""
+    with open(RG_OWNER_POSITIONS) as fh:
+        d = json.load(fh)
+    R = RG_CROP_RADIUS
+    hist, tot, beyond, mx = collections.Counter(), 0, 0, 0.0
+    for sh in d["shots"]:
+        for fr in sh["frames"]:
+            for px, py in fr["positions"]:
+                r = math.hypot(px - R, py - R)
+                tot += 1
+                mx = max(mx, r)
+                hist[int(r // RG_BIN) * RG_BIN] += 1
+                if r >= 160:
+                    beyond += 1
+    return {"n_instances": tot, "max_radius": round(mx, 1), "n_at_or_beyond_gate": beyond,
+            "share_beyond_gate": round(beyond / tot, 4) if tot else None,
+            "hist": dict(sorted(hist.items())),
+            "n_beyond_180": sum(v for k, v in hist.items() if k >= 180)}
+
+
+def _rg_pool(reports):
+    n_shots = sum(r["n_shots"] for r in reports)
+    nb = RG_MAX // RG_BIN
+    tot = [sum(r["diff_per_shot"][b] * r["n_shots"] for r in reports) for b in range(nb)]
+    per_shot = [t / n_shots if n_shots else 0.0 for t in tot]
+    gb = int(reports[0]["pellet_radius"] // RG_BIN) if reports else 8
+    peak = max(per_shot[:gb]) if gb else 0.0
+    at_gate = per_shot[gb] if gb < len(per_shot) else 0.0
+    sh_out = sum(r["shot_count_just_outside"] for r in reports)
+    qt_out = sum(r["quiet_rate_just_outside"] for r in reports)
+    return {
+        "n_dumps": len(reports), "n_shots": n_shots,
+        "diff_per_shot": [round(v, 5) for v in per_shot],
+        "T_just_outside": round(sum(per_shot[gb:min(gb + 3, nb)]), 5),
+        "peak_in_gate_per_shot": round(peak, 5),
+        "per_shot_at_gate": round(at_gate, 5),
+        "gate_over_peak": round(at_gate / peak, 4) if peak else None,
+        "clutter_share_just_outside": round(qt_out / sh_out, 4) if sh_out else None,
+    }
+
+
+def _rg_band(pooled):
+    """Pre-commit §3's bands, committed at 57c1de78 before any number existed."""
+    T, ratio = pooled["T_just_outside"], (pooled["gate_over_peak"] or 0)
+    if T > 0.30 and ratio >= 0.25:
+        return "THE GATE IS CUTTING THE CLOUD -- a live cold-bias channel, the first one found"
+    if T >= 0.05:
+        return "A REAL BUT MINOR CHANNEL -- record; it does not explain -1.40 on its own"
+    return ("GATE IS IN EMPTY SPACE -- not the cold channel; the -1.40 needs another suspect "
+            "(requires density <= 10% of in-gate peak before the gate, checked below)")
+
+
+def _rg_controls(pooled):
+    cs = pooled["clutter_share_just_outside"]
+    return [
+        ("CONTROL A -- clutter is < 80% of the shot-frame count just outside the gate",
+         cs is not None and cs < 0.80, f"clutter share {cs}"),
+        ("CONTROL B -- the difference profile INSIDE the gate is positive and larger than outside",
+         pooled["peak_in_gate_per_shot"] > 0
+         and pooled["peak_in_gate_per_shot"] > pooled["per_shot_at_gate"],
+         f"in-gate peak {pooled['peak_in_gate_per_shot']}/shot vs at-gate "
+         f"{pooled['per_shot_at_gate']}/shot"),
+    ]
+
+
+def _print_radius_gate(reports, pooled, checks):
+    print("\nTHE RADIUS GATE -- is the 160px cut into the pellet cloud, or in empty space?")
+    print("  (docs/handoffs/2026-08-05-radius-gate-PRECOMMIT.md; verdict read off DENSITY, §2.1)")
+    gate = reports[0]["pellet_radius"] if reports else 160
+    print(f"\n  PELLET-ATTRIBUTABLE (shot - quiet) per shot, by annulus -- gate at {gate}px:")
+    print(f"  {'r range':>12s} {'per shot':>10s}   {'':2s}")
+    for b, v in enumerate(pooled["diff_per_shot"]):
+        r0, r1 = b * RG_BIN, (b + 1) * RG_BIN
+        mark = "  <== GATE" if r0 == gate else ("" if r0 < gate else "   (outside)")
+        bar = "#" * min(40, int(max(v, 0) * 60))
+        print(f"  {f'{r0}-{r1}':>12s} {v:10.4f}   {bar}{mark}")
+    print(f"\n  in-gate PEAK {pooled['peak_in_gate_per_shot']}/shot | at the gate "
+          f"{pooled['per_shot_at_gate']}/shot | ratio {pooled['gate_over_peak']}")
+    print(f"  T (pellet-attributable in {gate}-{gate + 60}px) = "
+          f"**{pooled['T_just_outside']}/shot** over {pooled['n_shots']} shots")
+    ob = pooled.get("owner_label_bound")
+    if ob:
+        print(f"\n  ⚑ INDEPENDENT ATTRIBUTION CHECK — OWNER-MARKED pellet positions "
+              f"(n={ob['n_instances']} instances):")
+        print(f"    max labelled radius **{ob['max_radius']}px**; at/beyond the 160px gate "
+              f"{ob['n_at_or_beyond_gate']} = {ob['share_beyond_gate']}; "
+              f"**beyond 180px: {ob['n_beyond_180']}**")
+        print(f"    label histogram: {ob['hist']}")
+        print("    ⇒ owner pellets STOP at ~167px. The difference profile's material beyond 180px")
+        print("      is therefore NOT pellets — the quiet-frame control removes STATIC clutter but")
+        print("      NOT shot-correlated VFX. ⛔ T as printed above is CONTAMINATED; the")
+        print("      label-based bound is share_beyond_gate x 8.40 pellets/shot.")
+    print(f"\n  PRE-COMMITTED BAND (on the CONTAMINATED T — see above): {_rg_band(pooled)}")
+    print("\n  FALSIFICATION CONTROLS (§4 -- either firing VOIDS):")
+    for label, ok, detail in checks:
+        print(f"    {'PASS' if ok else '*** FIRED -- VOID ***':22s} {label}\n{' ' * 26}{detail}")
+
+
+def audit_radius_gate(paths, fps_list, save_fixture=None):
+    fpss = fps_list if len(fps_list) == len(paths) else [fps_list[0]] * len(paths)
+    reports = []
+    for p, fps in zip(paths, fpss):
+        name, tracks, cross, fc, params, fps = _ms_load_dump(p, fps)
+        reports.append(_rg_score(name, tracks, cross, fc, params, fps))
+    pooled = _rg_pool(reports)
+    pooled["owner_label_bound"] = _rg_owner_label_bound()
+    checks = _rg_controls(pooled)
+    if save_fixture:
+        with open(save_fixture, "w") as fh:
+            json.dump({"_source": ("count-pellets.py --dump-tracks tracks.json (post-8d500ff9), "
+                                   "FULL dumps; docs/probe-runs.md §35."),
+                       "_expected": {"pooled": pooled,
+                                     "dumps": [{k: v for k, v in r.items()
+                                                if k != "shot_density"} for r in reports]}},
+                      fh, indent=1)
+        print(f"wrote radius-gate fixture -> {save_fixture}")
+    _print_radius_gate(reports, pooled, checks)
+    return reports, pooled, checks
+
+
+def radius_gate_selftest():
+    """Constraint 9 self-validation. Pins the committed numbers' internal coherence and the
+    properties §35's conclusion rests on; PRINTS that it does not re-derive them (the dumps are
+    gitignored, and the profile is a property of the FULL track list)."""
+    with open(RADIUS_GATE_FIXTURE) as fh:
+        fx = json.load(fh)
+    p, dumps = fx["_expected"]["pooled"], fx["_expected"]["dumps"]
+    gb = int(dumps[0]["pellet_radius"] // RG_BIN)
+    checks = [
+        ("pooled shot count equals the sum of the per-dump rows",
+         p["n_shots"] == sum(d["n_shots"] for d in dumps)),
+        ("every dump has both shot frames and quiet frames (the control is exercised)",
+         all(d["n_shot_frames"] > 0 and d["n_quiet_frames"] > 0 for d in dumps)),
+        ("the difference profile is positive somewhere INSIDE the gate (method sees pellets)",
+         p["peak_in_gate_per_shot"] > 0),
+        ("T is the sum of the 3 annuli immediately outside the gate",
+         abs(p["T_just_outside"] - sum(p["diff_per_shot"][gb:gb + 3])) < 1e-4),
+        ("the profile spans the committed RG_MAX/RG_BIN grid",
+         len(p["diff_per_shot"]) == RG_MAX // RG_BIN),
+    ]
+    ok = all(v for _, v in checks)
+    for label, v in checks:
+        print(f"  {'PASS' if v else 'FAIL'}  {label}")
+    print(f"  T = {p['T_just_outside']}/shot | in-gate peak {p['peak_in_gate_per_shot']} | "
+          f"gate/peak {p['gate_over_peak']} | clutter share {p['clutter_share_just_outside']}")
+    print("  ⚑ COHERENCE-ONLY: replays no dump. Re-derive with --radius-gate; §35 has the command.")
+    print("SELFTEST PASS" if ok else "SELFTEST FAIL")
+    return 0 if ok else 1
+
+
+# ============================================================
 # BAND_HI ON THE PRODUCTION PATH, OUT OF SAMPLE -- docs/probe-runs.md §30
 #
 # §19 measured what the landed `band_hi = 20` (10 at 30 fps) buys on the production path and got
@@ -9145,6 +9416,20 @@ def main():
                     help=f"write the committed replay slice (see {DUMP_REPLAY_FIDELITY_FIXTURE})")
     ap.add_argument("--dump-replay-fidelity-selftest", action="store_true",
                     help=f"replay {DUMP_REPLAY_FIDELITY_FIXTURE} and exit")
+    ap.add_argument("--radius-gate", nargs="+", metavar="TRACKS_JSON",
+                    help=("THE RADIUS GATE (docs/handoffs/2026-08-05-radius-gate-PRECOMMIT.md, "
+                          "docs/probe-runs.md §35): is the 160px pellet_radius cutting into the real "
+                          "pellet cloud, or sitting in empty space? Radial histogram of "
+                          "lifetime-in-band WHITE tracks at each shot's representative frame, with a "
+                          "QUIET-frame control subtracted to isolate pellets from clutter. ⚑ The "
+                          "verdict is read off DENSITY, not raw counts (annulus area grows with r). "
+                          "MEASUREMENT ONLY -- pellet_radius is not changed regardless of outcome."))
+    ap.add_argument("--radius-gate-fps", type=float, nargs="+", default=[30.0], metavar="FPS",
+                    help="sampling fps, 1 value or one per dump (default 30)")
+    ap.add_argument("--save-radius-gate-fixture", metavar="PATH",
+                    help=f"write the committed result fixture (see {RADIUS_GATE_FIXTURE})")
+    ap.add_argument("--radius-gate-selftest", action="store_true",
+                    help=f"replay {RADIUS_GATE_FIXTURE} and exit")
     ap.add_argument("--marker-net", nargs="+", metavar="TRACKS_JSON",
                     help=("NET THE TWO MARKER CHANNELS (docs/probe-runs.md §31): §27's WARM channel "
                           "(false core flags -- removing them COOLS the reader) against §28C's COLD "
@@ -9314,6 +9599,11 @@ def main():
     if args.fade_screen_crops:
         fade_screen_crops(args.fade_screen_crops, args.fade_screen_crops_out)
         return 0
+    if args.radius_gate_selftest:
+        raise SystemExit(radius_gate_selftest())
+    if args.radius_gate:
+        audit_radius_gate(args.radius_gate, args.radius_gate_fps, args.save_radius_gate_fixture)
+        raise SystemExit(0)
     if args.marker_net_selftest:
         raise SystemExit(marker_net_selftest())
     if args.marker_net:
