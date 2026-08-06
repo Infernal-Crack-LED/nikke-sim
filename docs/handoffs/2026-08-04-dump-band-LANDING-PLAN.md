@@ -1,5 +1,10 @@
 # `--dump-tracks` must carry the `band` channel — LANDING PLAN, blast radius declared first
 
+> **CLOSED (2026-08-05) — LANDED.** --dump-tracks carries the band channel; the record is `docs/probe-runs.md` §23.
+> ⚑ **Deliberately still TRACKED, not archived**: `docs/probe-runs.md` is CHANGELOG-class and cites
+> this file by path as the plan-of-record (blast radius, gate verdict). Moving it to the gitignored
+> `closed/` would dangle that citation. Nothing here is live work — open items are in `QUEUE.md`.
+
 > AI-facing. Written and committed **before any production file is touched**, so the blast-radius
 > prediction is falsifiable. Fixes the defect recorded at `docs/probe-runs.md` §16E and carried as
 > item 1(a) of [`2026-08-04-lifetime-cap-JUDGE-handoff.md`](2026-08-04-lifetime-cap-JUDGE-handoff.md).

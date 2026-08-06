@@ -1,5 +1,10 @@
 # Production mislock rate — PRE-COMMITTED decision rule
 
+> **CLOSED (2026-08-05) — EXECUTED.** the 16.9% production mislock rate; the record is `docs/probe-runs.md` §20.
+> ⚑ **Deliberately still TRACKED, not archived**: `docs/probe-runs.md` is CHANGELOG-class and cites
+> this file by path as the plan-of-record (blast radius, gate verdict). Moving it to the gitignored
+> `closed/` would dangle that citation. Nothing here is live work — open items are in `QUEUE.md`.
+
 > AI-facing. Written **before the production measurement runs**; the calibration in §2 is already
 > recorded and is what the rule is anchored to. Settles item 3 of
 > [`2026-08-04-lifetime-cap-JUDGE-handoff.md`](2026-08-04-lifetime-cap-JUDGE-handoff.md).

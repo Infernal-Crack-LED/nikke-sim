@@ -1,5 +1,10 @@
 # Pellet lifetime 13 → 14 — LANDING PLAN (2026-08-05)
 
+> **CLOSED (2026-08-05) — LANDED.** the pellet lifetime 13 -> 14 correction; the record is `docs/probe-runs.md` §29.
+> ⚑ **Deliberately still TRACKED, not archived**: `docs/probe-runs.md` is CHANGELOG-class and cites
+> this file by path as the plan-of-record (blast radius, gate verdict). Moving it to the gitignored
+> `closed/` would dangle that citation. Nothing here is live work — open items are in `QUEUE.md`.
+
 > AI-facing. Enacts the OWNER-MEASURED correction recorded in `docs/probe-runs.md` §28D/E.
 > **Blast radius below was MEASURED by actually toggling the constant and running the gate**, before
 > any production file was touched — not reasoned about. See §4.

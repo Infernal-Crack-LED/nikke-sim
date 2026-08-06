@@ -1,5 +1,10 @@
 # Lifetime cap — PRE-COMMITTED decision rule
 
+> **CLOSED (2026-08-05) — EXECUTED.** the band_hi measurement; the record is `docs/probe-runs.md` §14.
+> ⚑ **Deliberately still TRACKED, not archived**: `docs/probe-runs.md` is CHANGELOG-class and cites
+> this file by path as the plan-of-record (blast radius, gate verdict). Moving it to the gitignored
+> `closed/` would dangle that citation. Nothing here is live work — open items are in `QUEUE.md`.
+
 > AI-facing. Written by the JUDGE session **deliberately BEFORE the measurement it specifies runs**.
 > Its whole purpose is that the decision rule is fixed on disk before the numbers exist.
 >

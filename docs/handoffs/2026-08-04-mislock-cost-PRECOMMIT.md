@@ -1,5 +1,10 @@
 # Mislock COST — PRE-COMMITTED decision rule
 
+> **CLOSED (2026-08-05) — EXECUTED.** the VOIDed cost pass, then the owner adjudication; the record is `docs/probe-runs.md` §21/§22.
+> ⚑ **Deliberately still TRACKED, not archived**: `docs/probe-runs.md` is CHANGELOG-class and cites
+> this file by path as the plan-of-record (blast radius, gate verdict). Moving it to the gitignored
+> `closed/` would dangle that citation. Nothing here is live work — open items are in `QUEUE.md`.
+
 > AI-facing. Written **before the measurement runs**. Follows
 > [`2026-08-04-mislock-rate-PRECOMMIT.md`](2026-08-04-mislock-rate-PRECOMMIT.md), which measured the
 > RATE (16.9%, `docs/probe-runs.md` §20) but explicitly left the COST derived-not-measured.

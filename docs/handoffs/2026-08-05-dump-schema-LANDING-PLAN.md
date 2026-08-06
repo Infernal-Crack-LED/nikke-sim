@@ -1,5 +1,10 @@
 # `--dump-tracks` schema fidelity — LANDING PLAN (2026-08-05)
 
+> **CLOSED (2026-08-05) — LANDED.** per-frame reds + full-precision positions; the record is `docs/probe-runs.md` §26.
+> ⚑ **Deliberately still TRACKED, not archived**: `docs/probe-runs.md` is CHANGELOG-class and cites
+> this file by path as the plan-of-record (blast radius, gate verdict). Moving it to the gitignored
+> `closed/` would dangle that citation. Nothing here is live work — open items are in `QUEUE.md`.
+
 > AI-facing. Executes the fix `docs/probe-runs.md` §25 identified and deliberately did not make.
 > **Blast radius below was MEASURED before any production file was touched** (the §16/§23/§24
 > convention). Prerequisite for `2026-08-04-pellet-reader-SESSION-JUDGE-handoff.md` §8 item 2
