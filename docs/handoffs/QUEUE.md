@@ -398,11 +398,20 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
       reference on these dumps. ⛔ **Never compare that table's `avgTotal` to 8.40**: pooled-over-
       valid-subset vs a per-shot owner count on one clip's f8–11 window — different bases (§27C hit
       this trap once already).
-  - **⇒ OPEN — NET §28C AGAINST §27.** The only marker thread left: §27's warm false-flag channel
-    (21.7% of core flags, −0.048 pellets/shot if removed) vs §28C's cold ceiling-exclusion channel
-    (164 red near-crosshair tracks whose life exceeds `max_pellet_frames`, never reaching `marker`
-    at all). **Opposite signs, never netted.** Both are measurable on the schemafix dumps with no
-    owner time and, per §30A, with no re-extraction.
+  - ✅ **THE TWO MARKER CHANNELS ARE NETTED — 2026-08-05, `docs/probe-runs.md` §31.** Over 815
+    shots / 4 units: WARM (§27, removing false core flags) **−39 flags, −0.0479/shot**; COLD
+    (§28C, recovering ceiling-excluded markers) **+2 flags, +0.0025/shot**; **NET −35 flags,
+    −0.0429/shot.** ⚑ **§28C's cold channel is ~NIL at the event level** — 164 excluded tracks
+    yield TWO additional flags, because `MARKER_MIN = 2` needs two admitted tracks concurrent in
+    one event (pre-declared before scoring). ⚑ **Robust to the one judgment call:** `band_hi` vs
+    UNBOUNDED differ by a single flag across 815 shots, so the recovery ceiling is not load-bearing.
+    - ⇒ **THE MARKER THREAD IS CLOSED AS A MEASUREMENT and explains NONE of the cold bias.** End to
+      end it is worth **−0.043 pellets/shot ≈ 3% of §19's −1.40 residual**, in the **cold**
+      direction — it makes the residual marginally **worse**. It is a FAITHFULNESS fix.
+    - ⛔ **§28B's bracket is NOT narrowed** — C1 still over-drops (≈19% of the life-1 population it
+      removes is fragment-like) and under-drops (`MOVING` + `UNDECIDABLE` all kept). §31 nets the
+      two CHANNELS; it does not re-litigate C1's internal accuracy. **Any landing of C1 still needs
+      that bracket addressed**, and the −0.043/shot says the prize is small either way.
   - ✅ **`band_hi = 20` LANDED 2026-08-04** (owner-approved; `docs/probe-runs.md` §16, plan
     `docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md`). All five pre-stated criteria met, the
     blast radius declared before the edit **held exactly — zero fixtures, zero pins**, cross-family
