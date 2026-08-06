@@ -1,5 +1,6 @@
 {
   "_source": "count-pellets.py --dump-tracks tracks.json (post-8d500ff9), FULL dumps; docs/probe-runs.md \u00a731. Regenerate with analyze-pellet-tracks.py --marker-net <tracks.json...> --save-marker-net-fixture <path>.",
+  "_note": "POPULATION (2026-08-06 sweep, item 6): the headline -0.043 pellets/shot is the NET of the warm and cold marker channels over 815 shots / 4 `*-schemafix` dumps, on the BAND substrate. \u2691 Not to be confused with \u00a727C's -0.048, which is the WARM channel alone (-39/815); different quantities, both correct.",
   "_expected": {
     "pooled": {
       "n_dumps": 4,

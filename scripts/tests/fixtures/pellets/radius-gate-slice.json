@@ -1,5 +1,6 @@
 {
   "_source": "count-pellets.py --dump-tracks tracks.json (post-8d500ff9), FULL dumps; docs/probe-runs.md \u00a735.",
+  "_note": "POPULATION (2026-08-06 sweep, item 6): \u26d4 the stored `T_just_outside` = 1.043/shot is CONTAMINATED and must never be quoted -- owner-marked pellet positions max out at 166.8px with ZERO beyond 180px, so the profile's material past 180 is shot-correlated VFX, not pellets (docs/probe-runs.md \u00a735B). \u2691 And \u00a735D's surviving ~0.45/shot is itself DE-RANKED by the 2026-08-06 judge verdict: the 9 instances are 2-3 DISTINCT pellets (168 is 4x pseudo-replicated), and the 2026-08-01 counting-window sweep read the same marks as H_centre, not H_radius.",
   "_expected": {
     "pooled": {
       "n_dumps": 4,
