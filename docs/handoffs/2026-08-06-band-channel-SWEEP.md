@@ -109,7 +109,7 @@ is what makes this reachable. It is **INERT today** (no committed fixture's sour
   genuinely band-independent (they measure locks, sub-band lifetimes, or onsets, not per-shot counts).
 - ✅ **`8.40` is an owner hand-count, not a reader output**, and is unaffected throughout.
 
-## 7. ⛔ THE BATCHED PROPOSAL — owner's call, nothing enacted
+## 7. ⛔ THE BATCHED PROPOSAL — owner-approved 2026-08-06; STATUS BELOW
 
 Ordered by value; each is independently landable.
 
@@ -132,5 +132,17 @@ Ordered by value; each is independently landable.
 7. **Optional, larger:** re-express `STATE.md:315` with per-claim arm attribution, and supersede
    `DECISIONS.md:2913-2916` in place with an attributed version.
 
-⛔ **None of the above is enacted.** Items 2, 3, 5 and 6 are documentation/labelling and carry no
-behavioural blast radius; items 1 and 4 do and want their own plans.
+## 8. STATUS — owner approved 2026-08-06, worked through autonomously
+
+| #   | Status                                                                                                                                                                                                                                                                                                                                                          | Where                                   |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| 1   | ✅ **DONE — and §19 REPRODUCED to ±0.0000** (band 1). `--residual-ab` + fixture + selftest arm (32 arms). ⚑ Recorded as _consistency_, not confirmation — the pre-commit said so before the number existed.                                                                                                                                                     | `probe-runs` §38, pre-commit `141258da` |
+| 2   | ✅ **DONE** — the legacy policy block now says so on stdout.                                                                                                                                                                                                                                                                                                    | `ad54abf4`                              |
+| 3   | ✅ **DONE** — `current` corrected at its definition, in the module docstring, and at the point of output. ⚑ The KEY is deliberately NOT renamed (real fixture radius for a labelling item); stated in code.                                                                                                                                                     | `ad54abf4`                              |
+| 4   | ⚠ **HALF DONE — hazard documented, fix DEFERRED WITH CAUSE.** Two committed fixtures already carry decoupled dump-level `band_hi`, so threading it is **NOT provably inert**, and `_ps_band` feeds §12D's load-bearing 740/112 assert. ⇒ needs its own measured blast-radius pass. **Do it BEFORE any re-dump of the labelled block at production parameters.** | `be519635`                              |
+| 5   | ✅ **DONE** — retraction banners on §9B and three handoffs, scoped to retract only the composition figure.                                                                                                                                                                                                                                                      | `e8bb241c`, `71a13467`                  |
+| 6   | ⚠ **MOSTLY DONE** — all five fixtures now carry a population `_note`. ⛔ **Remaining half: the WRITERS do not emit them, so a regeneration drops them.**                                                                                                                                                                                                        | `c2716ecb`                              |
+| 7   | ✅ **DONE** — per doc class: `STATE.md` rewritten (current-state), `DECISIONS.md` amended in place (changelog). Every figure now carries arm, basis and n.                                                                                                                                                                                                      | `41ca8b21`                              |
+
+⚑ **Two items are deliberately incomplete and say so.** Item 4's fix and item 6's writer sync are
+both filed rather than rushed — item 4 specifically because its radius is measured and non-zero.
