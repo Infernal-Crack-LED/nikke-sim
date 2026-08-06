@@ -426,28 +426,30 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
     all 6 survivors adjudicated **not pellets** (HUD ammo-bar segments at a fixed `dy ≈ −40`, and
     rising damage numbers). ⇒ **the ~1.08 cold bias is real reader behaviour, not a bad target**,
     and the old "no bias verdict is possible until this is settled" block is **LIFTED**.
-  - ⛔ **§8 ITEM 1 (SIZE THE BOTH-WRONG POPULATION) CANNOT RUN — `docs/probe-runs.md` §32.**
-    ⚑ **The item's phrasing is wrong: the RATE is already SETTLED** (§22E stamps 20%). It is a
-    **COST** question about 4 specific cases. ⛔ **Those 4 can no longer be identified** — the
-    24-case selection regenerates from its seed, but the owner's VERDICTS were never written to the
-    tree. Recovery was ATTEMPTED and fails structurally: §22C's severity multiset recovers the 10
-    template-right cases, leaving 10 that split 6 structural-right / 4 `neither` with **nothing
-    recorded to distinguish them** (severity is undefined for both).
-    - ✅ **Both prerequisites are now FIXED** (§32C/§32D), so a fresh adjudication is productive:
-      the crop now **PADS** instead of shifting (the owner's §22F complaint — a position within
-      `half` of a frame edge could not be centred; verified on the failing geometry);
-      `ANSWERS.json` is emitted pre-filled and **must be committed**; `INDEX.md` now offers
-      `neither`/`both` **explicitly** (08-04 offered only `A`/`B`/`?`, so the owner had to volunteer
-      the category that turned out to be 20%); and `--lock-adjudication-score` rescores committed
-      answers, reproducing §22D's exclusion structurally.
-    - **⇒ THE ASK, if item 1 is wanted: a fresh 24-case adjudication (~the 08-04 effort) with
-      `ANSWERS.json` filled and committed.** ⚠ Even then the COST needs a **third reference** —
-      neither lock is valid on those cases. ⛔ **Do NOT build the pellet-cloud-centring estimator
-      as that reference: it is CIRCULAR** (choosing the window that maximises pellets, then counting
-      pellets in it) — it bounds the loss from above, it cannot measure it.
-    - ⚑ **Trap 6 claimed a second victim.** The same 08-04 session lost four gate packets to a
-      gitignored scratchpad AND never committed its adjudication answers. **An owner's answers are
-      PRIMARY EVIDENCE — commit them when they arrive**, not only the doc that summarizes them.
+  - ✅ **§8 ITEM 1 IS ANSWERED — 2026-08-05, `docs/probe-runs.md` §34.** Owner re-adjudicated the
+    24 cases; **answers are COMMITTED** at `docs/probe-data/lock-adjudication-2026-08-05-ANSWERS.json`
+    (+ `-KEY.json`), closing the §32 gap that blocked it.
+    - ⚑ **THE ANSWER: the both-wrong (`neither`) cases are NOT the worst.** Identified (5 of 20),
+      their mean production count is **5.00** vs **5.73** on other mislocked cases — a difference of
+      **−0.73 ± 1.16, INDISTINGUISHABLE FROM ZERO.** §22D's "probably the worst" is **not supported**.
+      ⇒ **§22D's caveat is DISCHARGED**: §22C's ~0 severity no longer has an unexamined worst-case
+      reservoir behind it, so **the bad-lock channel is measured at ~0 pellets/shot.**
+    - ⚑ **§22 REPLICATES**: production lock bad **14/20 = 70%** under both readings (identical to
+      §22B), `structural_right` 6 then and now, severity multiset = §22C's minus exactly one `+2`
+      (one case moved template→`neither`), controls reproduce case for case. ⛔ Not fully
+      independent — same seed, same images, owner had seen them; strong on consistency, weaker on
+      accuracy.
+    - ⛔ **Compares production COUNTS, not LOSSES** — no valid reference exists on those cases, so
+      the loss is still unmeasured; what is established is that the population is not an OUTLIER.
+      ⛔ **Never difference those counts against 8.40** (different bases — the trap §27C/§30C each
+      hit once).
+    - ⚑ **The offered vocabulary was too narrow a SECOND time.** 08-04 lacked `both`/`neither`;
+      08-05 the owner volunteered _"a but slightly off, b is a total miss though"_ on 6 of 20 —
+      now first-class `A_imprecise`/`B_imprecise` with `verdict_verbatim` preserved. **All 6 named
+      TEMPLATE**, so the total miss was always the structural production lock. **Next adjudication:
+      offer these too, and expect the vocabulary to be incomplete again.**
+    - ⛔ **The cold bias is STILL NOT EXPLAINED.** Closing the mislock candidate is not identifying
+      a cause.
   - ✅ **PRODUCTION MISLOCK RATE MEASURED 2026-08-04: 16.9%** (`docs/probe-runs.md` §20; rule
     pre-committed at `9bc829dd`). 137 of 811 shots, 4 dumps, 4 units. ⇒ the pre-committed
     **"> 10% ⇒ mislocks are the DOMINANT undercount channel"** band. The detector flags the known
