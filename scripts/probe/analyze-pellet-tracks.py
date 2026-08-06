@@ -10232,6 +10232,490 @@ def lock_adjudication_selftest():
     return 0 if all_ok else 1
 
 
+# ============================================================
+# MISLOCK LABEL CROPS -- docs/handoffs/2026-08-06-OWNER-ASK-mislock-labels.md
+#
+# Renders the crop set that owner ask needs, for the 10 shots it names. §39 established the
+# MECHANISM (the two locks count largely different pellets) and said in as many words that it could
+# not establish the MAGNITUDE; only owner labels can. This arm generates the ASK. It adjudicates
+# nothing, scores nothing, and changes no constant, default, threshold or localizer.
+#
+# WHY NOT make-groundtruth-f811.py: that path centres each crop on ONE crosshair at radius 184. On
+# these shots the two candidates are 271-619 px apart, so a one-lock-centred crop cuts the OTHER
+# candidate's counting window clean out of the image -- every label would then be biased toward
+# whichever lock the crop happened to be cut with. That is the same defect class as §22F's
+# edge-clipping. Here the crop is centred on the MIDPOINT of the two candidates at a radius large
+# enough that BOTH counting windows are wholly inside the image.
+#
+# THREE HARD RENDERING RULES, each from a prior defect:
+#  1. MIDPOINT-CENTRED, radius covers both windows       (this section's own reason to exist)
+#  2. NO marker/ring/crosshair/label drawn on the crop    (§22/§32: a drawn ring anchors the eye to
+#     a suggested centre, and drawing both would re-introduce the A/B blinding problem)
+#  3. PAD, never clip, at frame edges (§32C)              -- the dumps are 2604x792 and the crop
+#     radius reaches 454, so a 909 px crop CANNOT fit vertically: padding fires on every shot here.
+#     Clipping instead would silently move the crop centre off the midpoint and corrupt the labels.
+#
+# ⚑ THE ASK DOC'S TABULATED `crop r` IS NOT USED AS-IS, and that is deliberate. Its `disp px` column
+# is the shot's MEDIAN displacement over t0+8..t0+11 (§20's own classification quantity), while the
+# crop is cut around the t0+9 candidate pair the same table lists. On 3 of the 10 shots those differ
+# enough that the tabulated radius would clip a candidate window (h4-isabel t0=1300 needs 494, table
+# says 407). The radius is therefore computed HERE from the positions actually being cropped, and
+# the tabulated value is carried into the manifest as `doc_crop_r` so the divergence is visible
+# rather than silent.
+# ============================================================
+MISLOCK_CROPS_FIXTURE = "scripts/tests/fixtures/pellets/mislock-crops-slice.json"
+MISLOCK_CROPS_LOCK_OFFSET = 9        # the frame at which the two candidate locks are DEFINED
+                                      # (t0+9, a counting frame -- the ask doc's own table)
+MISLOCK_CROPS_OFFSETS = (8, 9, 10, 11)  # the emitted window: the lifecycle-reliable f8..f11 phase,
+                                      # same as the groundtruth-f8-11 set
+# The counting window is a disc of radius params.pellet_radius around a lock. 1.15x is the display
+# margin make-groundtruth-f811.py already uses, so a candidate's window is shown with context rather
+# than flush to it: 160 * 1.15 -> 184, the ask doc's own number.
+MISLOCK_CROPS_WINDOW_MULT = 1.15
+MISLOCK_CROPS_PAD_BGR = (128, 128, 128)  # flat mid-grey; no game frame produces a uniform patch of
+                                          # it, so it reads as "outside the capture" (§32C)
+MISLOCK_CROPS_SEED = 20260806        # seeds ONLY the cand_1/cand_2 anonymisation order
+
+# The 10 shots, exactly as tabulated in docs/handoffs/2026-08-06-OWNER-ASK-mislock-labels.md.
+# `struct`/`tmpl` and `doc_crop_r` are the DOC's values and are VERIFIED against the live dumps at
+# render time (a mismatch is a hard SystemExit, never a silent re-derivation) -- so this table is a
+# committed pin of the ask, not a second source of truth for the geometry.
+MISLOCK_CROPS_SHOTS = [
+    # group A -- disjoint track sets (jaccard 0.0): both locks count pellets, ZERO overlap
+    {"shot": 1, "group": "A", "dump": "h4-guilty-structural", "t0": 4279,
+     "struct": [2114, 232], "tmpl": [1755, 498], "doc_disp": 447, "doc_crop_r": 407},
+    {"shot": 2, "group": "A", "dump": "h4-isabel-structural", "t0": 1300,
+     "struct": [1604, 230], "tmpl": [1086, 569], "doc_disp": 446, "doc_crop_r": 407},
+    {"shot": 3, "group": "A", "dump": "g2-noir-structural", "t0": 1817,
+     "struct": [1083, 226], "tmpl": [818, 554], "doc_disp": 411, "doc_crop_r": 389},
+    {"shot": 4, "group": "A", "dump": "h4-guilty-structural", "t0": 1697,
+     "struct": [1361, 226], "tmpl": [1115, 498], "doc_disp": 400, "doc_crop_r": 383},
+    {"shot": 5, "group": "A", "dump": "g2-noir-structural", "t0": 1175,
+     "struct": [1917, 318], "tmpl": [1523, 652], "doc_disp": 376, "doc_crop_r": 372},
+    {"shot": 6, "group": "A", "dump": "h4-marciana-structural", "t0": 3636,
+     "struct": [792, 234], "tmpl": [719, 495], "doc_disp": 272, "doc_crop_r": 319},
+    # group B -- the UNSCORED tail (§39C's selection effect): no band plateau, so §39 could not
+    # score them, and production routes them onto the legacy fallback channel
+    {"shot": 7, "group": "B", "dump": "h4-marciana-structural", "t0": 4858,
+     "struct": [1448, 315], "tmpl": [1027, 654], "doc_disp": 539, "doc_crop_r": 453},
+    {"shot": 8, "group": "B", "dump": "h4-isabel-structural", "t0": 1993,
+     "struct": [1749, 130], "tmpl": [1411, 534], "doc_disp": 538, "doc_crop_r": 452},
+    {"shot": 9, "group": "B", "dump": "g2-noir-structural", "t0": 3809,
+     "struct": [1672, 90], "tmpl": [1464, 561], "doc_disp": 515, "doc_crop_r": 441},
+    {"shot": 10, "group": "B", "dump": "h4-isabel-structural", "t0": 389,
+     "struct": [2120, 224], "tmpl": [1717, 512], "doc_disp": 515, "doc_crop_r": 431},
+]
+
+MISLOCK_CROPS_VOCABULARY = ["struct", "tmpl", "both", "neither", "partial", "?"]
+
+
+def _mc_geometry(struct_pos, tmpl_pos, frame_w, frame_h, window_r, doc_crop_r=None):
+    """PURE geometry for one shot's crop -- no image access, so --mislock-crops-selftest replays it
+    with no scratchpad.
+
+    Centre = the MIDPOINT of the two candidate locks (rounded to a pixel). Radius satisfies BOTH:
+      * the ask doc's floor, `round(disp / 2) + window_r`; and
+      * the actual containment condition, which is CHEBYSHEV not Euclidean -- a square crop of
+        half-size `r` contains a candidate's disc of radius `window_r` iff
+        `max(|dx|, |dy|) + window_r <= r` measured from the ROUNDED centre. Taking the max of the
+        two keeps the doc's formula as a floor while guaranteeing containment even where rounding
+        the midpoint nudged a candidate outward.
+    Crop is `2r + 1` square so the centre pixel is exactly index `r` on both axes -- an even size
+    would put the midpoint half a pixel off centre, which is precisely the silent-recentring bug
+    §32C is about.
+
+    Padding, never clipping: `pad_*` are how many crop columns/rows fall outside the frame. The
+    frame content is pasted at its true offset, so the midpoint stays at (r, r) regardless.
+    """
+    sx, sy = struct_pos
+    tx, ty = tmpl_pos
+    disp = math.hypot(sx - tx, sy - ty)
+    cx = int(round((sx + tx) / 2))
+    cy = int(round((sy + ty) / 2))
+    cheb = max(max(abs(sx - cx), abs(sy - cy)), max(abs(tx - cx), abs(ty - cy)))
+    r = max(int(round(disp / 2)) + window_r, cheb + window_r)
+    size = 2 * r + 1
+    x0, y0 = cx - r, cy - r
+    sx0, sy0 = max(0, x0), max(0, y0)
+    sx1, sy1 = min(frame_w, x0 + size), min(frame_h, y0 + size)
+    geom = {
+        "disp": round(disp, 2),
+        "centre": [cx, cy],
+        "radius": r,
+        "window_r": window_r,
+        "size": [size, size],
+        "origin": [x0, y0],           # frame coords of crop pixel (0, 0)
+        "src_rect": [sx0, sy0, sx1, sy1],
+        "pad_left": sx0 - x0,
+        "pad_top": sy0 - y0,
+        "pad_right": (x0 + size) - sx1,
+        "pad_bottom": (y0 + size) - sy1,
+        "struct_crop_px": [sx - x0, sy - y0],
+        "tmpl_crop_px": [tx - x0, ty - y0],
+    }
+    geom["radius_floor_doc"] = int(round(disp / 2)) + window_r
+    geom["radius_floor_chebyshev"] = cheb + window_r
+    if doc_crop_r is not None:
+        geom["doc_crop_r"] = doc_crop_r
+        geom["doc_crop_r_would_clip"] = doc_crop_r < geom["radius_floor_chebyshev"]
+    # The claim the whole ask rests on: BOTH candidate windows wholly inside the crop.
+    geom["both_windows_inside"] = all(
+        p - window_r >= 0 and p + window_r <= size - 1
+        for p in (*geom["struct_crop_px"], *geom["tmpl_crop_px"])
+    )
+    return geom
+
+
+def _mc_render(frame_path, geom):
+    """Cut the crop. PAD-then-paste; NOTHING is drawn on top -- no ring, no crosshair, no label, no
+    strip. The returned array is raw frame pixels plus flat pad grey, and nothing else."""
+    img = cv2.imread(str(frame_path))
+    if img is None:
+        raise SystemExit(f"--mislock-crops: could not read frame {frame_path}")
+    h, w = img.shape[:2]
+    if [w, h] != geom["frame_wh"]:
+        raise SystemExit(f"--mislock-crops: {frame_path} is {w}x{h}, expected "
+                         f"{geom['frame_wh'][0]}x{geom['frame_wh'][1]} -- refusing to cut a crop "
+                         "whose geometry was computed against different frame dimensions.")
+    size = geom["size"][0]
+    crop = np.full((size, size, 3), MISLOCK_CROPS_PAD_BGR, dtype=np.uint8)
+    sx0, sy0, sx1, sy1 = geom["src_rect"]
+    x0, y0 = geom["origin"]
+    if sx1 > sx0 and sy1 > sy0:
+        crop[sy0 - y0:sy1 - y0, sx0 - x0:sx1 - x0] = img[sy0:sy1, sx0:sx1]
+    return crop
+
+
+def _mc_verify_positions(spec, sd, td):
+    """The ask doc's tabulated candidate positions VS the live dumps, at t0+9. A mismatch means the
+    doc and the dumps have drifted apart and every downstream label would be cut around the wrong
+    pair -- hard failure, never a silent re-derivation."""
+    f9 = spec["t0"] + MISLOCK_CROPS_LOCK_OFFSET
+    for arm, data, want in (("structural", sd, spec["struct"]), ("template", td, spec["tmpl"])):
+        cross = data["cross_positions"]
+        if not 0 <= f9 < len(cross):
+            raise SystemExit(f"--mislock-crops: shot {spec['shot']} ({spec['dump']} t0={spec['t0']}): "
+                             f"frame {f9} out of range for the {arm} dump ({len(cross)} frames)")
+        got = cross[f9]
+        if got is None or [int(got[0]), int(got[1])] != list(want):
+            raise SystemExit(
+                f"--mislock-crops: shot {spec['shot']} ({spec['dump']} t0={spec['t0']}): {arm} lock "
+                f"at frame {f9} is {got}, but "
+                "docs/handoffs/2026-08-06-OWNER-ASK-mislock-labels.md tabulates "
+                f"{want}. Refusing to render -- the ask and the dumps have drifted.")
+
+
+def _mc_expected(rows):
+    """Exactly the geometry fields --mislock-crops-selftest pins."""
+    return [{k: row[k] for k in ("shot", "dump", "t0", "disp", "centre", "radius", "size",
+                                 "origin", "pad_left", "pad_top", "pad_right", "pad_bottom",
+                                 "struct_crop_px", "tmpl_crop_px", "both_windows_inside",
+                                 "doc_crop_r", "doc_crop_r_would_clip")}
+            for row in rows]
+
+
+def _mc_index_md(rows, out_dir):
+    """INDEX.md -- ⛔ deliberately carries NO per-lock pellet counts and NEVER says which candidate
+    is the structural lock and which is the template one. Both would prime the labeller toward the
+    answer the ask exists to obtain. The two candidates are listed as `cand_1` / `cand_2` in a
+    seeded random order; CANDIDATE-KEY.json holds the mapping."""
+    lines = [
+        "# Mislock labels -- 10 shots, 4 frames each",
+        "",
+        "Generated by `analyze-pellet-tracks.py --mislock-crops` for",
+        "`docs/handoffs/2026-08-06-OWNER-ASK-mislock-labels.md`.",
+        "",
+        "## What each image is",
+        "",
+        "A raw crop of one game frame. **Nothing is drawn on it** -- no crosshair marker, no ring,",
+        "no label. Flat mid-grey area is OUTSIDE the captured frame (the crop is padded, never",
+        "shifted, so the geometry below is exact on every image).",
+        "",
+        "Each shot has two CANDIDATE crosshair positions, listed below in crop pixel coordinates as",
+        "`cand_1` and `cand_2` (origin = top-left of the crop). Each candidate defines a counting",
+        "window: a disc of radius `window_r` centred on it. Both windows are wholly inside every",
+        "crop -- that is what the crop radius is chosen to guarantee.",
+        "",
+        "## What to record, in `ANSWERS.json`",
+        "",
+        "Per shot: which candidate (if either) is on the ACTUAL crosshair, and how many REAL pellets",
+        "fall inside each candidate's window.",
+        "",
+        "`verdict` is one of: " + " | ".join(f"`{v}`" for v in MISLOCK_CROPS_VOCABULARY) + ".",
+        "",
+        "`struct` and `tmpl` are the two localization methods under test. Which of `cand_1` /",
+        "`cand_2` is which is in `CANDIDATE-KEY.json` -- open it only AFTER you have decided, or",
+        "just record the counts against `cand_1` / `cand_2` and let the key resolve them. Neither",
+        "these crops nor this file says which is which, on purpose: the mislock population's two",
+        "locks disagree systematically in direction (docs/probe-runs.md §41A), so knowing which",
+        "candidate is the production lock would tell you where to expect the answer.",
+        "",
+        "⚑ **If none of those words fits, write what you actually saw in `verdict_verbatim` and",
+        "leave `verdict` as `?`.** This vocabulary has been too narrow twice running -- 2026-08-04",
+        "lacked `both`/`neither` (docs/probe-runs.md §22A) and 2026-08-05 lacked the",
+        "\"right one but slightly off\" category (§34A). Both times the owner had to volunteer it.",
+        "A word this list does not have is a finding, not a nuisance.",
+        "",
+        "⛔ **Fill in `ANSWERS.json` and COMMIT it.** The 2026-08-04 answers were never persisted,",
+        "so those cases can no longer be identified and their cost is unmeasurable (§32D).",
+        "",
+        "## The shots",
+        "",
+    ]
+    for row in rows:
+        lines.append(f"### shot {row['shot']:02d} -- `{row['dump']}`")
+        lines.append("")
+        lines.append(f"- t0 = {row['t0']}; frames shown t0+8..t0+11 "
+                     f"(absolute {row['t0'] + 8}..{row['t0'] + 11})")
+        lines.append(f"- candidate separation: {row['disp']:.1f} px")
+        lines.append(f"- crop: {row['size'][0]}x{row['size'][1]} px, centred on frame pixel "
+                     f"({row['centre'][0]}, {row['centre'][1]}); crop pixel (0,0) is frame pixel "
+                     f"({row['origin'][0]}, {row['origin'][1]})")
+        pads = [f"{v} {k}" for k, v in (("left", row["pad_left"]), ("top", row["pad_top"]),
+                                        ("right", row["pad_right"]), ("bottom", row["pad_bottom"]))
+                if v]
+        lines.append(f"- pad (grey, outside the frame): {', '.join(pads) if pads else 'none'}")
+        lines.append(f"- counting-window radius `window_r` = {row['window_r']} px")
+        for i, pos in enumerate(row["cand_crop_px"], start=1):
+            lines.append(f"- `cand_{i}` at crop pixel ({pos[0]}, {pos[1]})")
+        for c in row["crops"]:
+            lines.append(f"- `{Path(c['file']).relative_to(out_dir)}` -- frame t0+{c['offset']} "
+                         f"(absolute {c['frame']})")
+        lines.append("")
+    return "\n".join(lines) + "\n"
+
+
+def mislock_crops(dumps_root, out_dir, seed=MISLOCK_CROPS_SEED, save_fixture=None):
+    """Render the 10-shot crop set for the owner ask. READ-ONLY over the dumps: reads each dump's
+    already-extracted `frames-pellet/` PNGs and the two `tracks.json` files (structural +
+    `-tmplloc`). Never re-extracts, never touches a source video, never runs a detector."""
+    dumps_root = Path(dumps_root)
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    loaded = {}
+
+    def load(dump):
+        if dump not in loaded:
+            sp = dumps_root / dump / "tracks.json"
+            tp = dumps_root / f"{dump}-tmplloc" / "tracks.json"
+            for p in (sp, tp):
+                if not p.exists():
+                    raise SystemExit(f"--mislock-crops: missing {p}")
+            with open(sp) as fh:
+                sd = json.load(fh)
+            with open(tp) as fh:
+                td = json.load(fh)
+            if len(sd["cross_positions"]) != len(td["cross_positions"]):
+                raise SystemExit(f"--mislock-crops: {dump}: structural has "
+                                 f"{len(sd['cross_positions'])} frames, template has "
+                                 f"{len(td['cross_positions'])} -- refusing to pair misaligned "
+                                 "frame indices.")
+            first = dumps_root / dump / "frames-pellet" / sd["frame_files"][0]
+            img = cv2.imread(str(first))
+            if img is None:
+                raise SystemExit(f"--mislock-crops: could not read {first}")
+            loaded[dump] = (sd, td, [img.shape[1], img.shape[0]])
+        return loaded[dump]
+
+    rng = random.Random(seed)
+    rows, key_rows = [], []
+    for spec in MISLOCK_CROPS_SHOTS:
+        sd, td, frame_wh = load(spec["dump"])
+        _mc_verify_positions(spec, sd, td)
+        window_r = int(round(sd["params"]["pellet_radius"] * MISLOCK_CROPS_WINDOW_MULT))
+        geom = _mc_geometry(spec["struct"], spec["tmpl"], frame_wh[0], frame_wh[1], window_r,
+                            spec["doc_crop_r"])
+        geom["frame_wh"] = frame_wh
+        if not geom["both_windows_inside"]:
+            raise SystemExit(f"--mislock-crops: shot {spec['shot']}: computed crop does NOT contain "
+                             "both candidate windows -- refusing to emit a biased crop.")
+        shot_dir = out_dir / f"shot{spec['shot']:02d}"
+        shot_dir.mkdir(exist_ok=True)
+        crops = []
+        for off in MISLOCK_CROPS_OFFSETS:
+            fi = spec["t0"] + off
+            if not 0 <= fi < len(sd["frame_files"]):
+                raise SystemExit(f"--mislock-crops: shot {spec['shot']}: frame {fi} out of range")
+            frame_path = dumps_root / spec["dump"] / "frames-pellet" / sd["frame_files"][fi]
+            img = _mc_render(frame_path, geom)
+            fname = shot_dir / f"f{off:02d}_idx{fi:05d}.png"
+            cv2.imwrite(str(fname), img)
+            crops.append({"offset": off, "frame": fi, "file": str(fname),
+                          "source_frame": str(frame_path)})
+        # cand_1 / cand_2 anonymisation: which of the two the labeller sees first is a coin flip per
+        # shot, so neither the INDEX order nor the ANSWERS order encodes "structural first".
+        struct_is_1 = rng.random() < 0.5
+        cand = ([geom["struct_crop_px"], geom["tmpl_crop_px"]] if struct_is_1
+                else [geom["tmpl_crop_px"], geom["struct_crop_px"]])
+        row = dict(spec)
+        row.pop("struct")
+        row.pop("tmpl")
+        row.update(geom)
+        row["cand_crop_px"] = cand
+        row["crops"] = crops
+        rows.append(row)
+        key_rows.append({
+            "shot": f"shot{spec['shot']:02d}", "dump": spec["dump"], "t0": spec["t0"],
+            "group": spec["group"], "frame_lock": spec["t0"] + MISLOCK_CROPS_LOCK_OFFSET,
+            "cand_1": "struct" if struct_is_1 else "tmpl",
+            "cand_2": "tmpl" if struct_is_1 else "struct",
+            "struct_pos": spec["struct"], "tmpl_pos": spec["tmpl"],
+            "struct_crop_px": geom["struct_crop_px"], "tmpl_crop_px": geom["tmpl_crop_px"],
+            "centre": geom["centre"], "radius": geom["radius"], "window_r": window_r,
+        })
+        print(f"shot{spec['shot']:02d} {spec['dump']} t0={spec['t0']}: "
+              f"{geom['size'][0]}x{geom['size'][1]} @ ({geom['centre'][0]}, {geom['centre'][1]})  "
+              f"pad L{geom['pad_left']} T{geom['pad_top']} R{geom['pad_right']} B{geom['pad_bottom']}"
+              f"  both_windows_inside={geom['both_windows_inside']}")
+
+    (out_dir / "INDEX.md").write_text(_mc_index_md(rows, out_dir))
+    print(f"wrote {out_dir / 'INDEX.md'}")
+    with open(out_dir / "MANIFEST.json", "w") as fh:
+        json.dump({"_source": ("docs/handoffs/2026-08-06-OWNER-ASK-mislock-labels.md, rendered by "
+                               "analyze-pellet-tracks.py --mislock-crops"),
+                   "seed": seed, "shots": rows}, fh, indent=2)
+    print(f"wrote {out_dir / 'MANIFEST.json'}")
+    with open(out_dir / "CANDIDATE-KEY.json", "w") as fh:
+        json.dump({"_README": ("Maps cand_1/cand_2 (as listed in INDEX.md and ANSWERS.json) to the "
+                               "structural / template lock. ⛔ Do NOT read this before labelling -- "
+                               "the crops and INDEX.md are deliberately silent about which "
+                               "candidate is which so the labels are not primed."),
+                   "seed": seed, "shots": key_rows}, fh, indent=2)
+    print(f"wrote {out_dir / 'CANDIDATE-KEY.json'}")
+    answers = {
+        "_README": (
+            "The durable record of the owner's mislock labels. FILL THIS IN AND COMMIT IT -- the "
+            "2026-08-04 adjudication answers were never persisted and are unrecoverable "
+            "(docs/probe-runs.md §32D). Per shot: `verdict` is one of "
+            + " | ".join(MISLOCK_CROPS_VOCABULARY)
+            + ". `verdict_verbatim` is FREE TEXT -- if none of those words fits, write what you "
+            "actually saw and leave `verdict` as \"?\"; a category this list lacks is a finding "
+            "(§22A and §34A were both exactly that). `n_real_cand_1` / `n_real_cand_2` are how many "
+            "REAL pellets fall inside each candidate's counting window (see INDEX.md for where "
+            "cand_1/cand_2 sit in each crop); `n_real_total` is how many real pellets the shot has "
+            "in total, whether or not any window contains them. Leave a field null if unknown -- "
+            "null is data, a guess is not."),
+        "seed": seed,
+        "vocabulary": MISLOCK_CROPS_VOCABULARY,
+        "answers": [{"shot": k["shot"], "group": k["group"], "verdict": None,
+                     "verdict_verbatim": None, "n_real_cand_1": None, "n_real_cand_2": None,
+                     "n_real_total": None, "notes": None} for k in key_rows],
+    }
+    with open(out_dir / "ANSWERS.json", "w") as fh:
+        json.dump(answers, fh, indent=2)
+    print(f"wrote {out_dir / 'ANSWERS.json'}  <-- FILL IN AND COMMIT (see §32D)")
+
+    if save_fixture:
+        slim = []
+        for row, spec in zip(rows, MISLOCK_CROPS_SHOTS):
+            slim.append({"shot": spec["shot"], "dump": spec["dump"], "t0": spec["t0"],
+                         "struct": spec["struct"], "tmpl": spec["tmpl"],
+                         "doc_crop_r": spec["doc_crop_r"], "window_r": row["window_r"],
+                         "frame_wh": row["frame_wh"]})
+        with open(save_fixture, "w") as fh:
+            json.dump({
+                "_source": ("The 10 shots of docs/handoffs/2026-08-06-OWNER-ASK-mislock-labels.md; "
+                            "candidate positions read from the production dumps' own tracks.json "
+                            "(structural + -tmplloc) at t0+9 and VERIFIED equal to the doc's table "
+                            "at generation time."),
+                "_note": ("Geometry inputs only -- no pixels. --mislock-crops-selftest replays "
+                          "`_mc_geometry` over these with no scratchpad access, which is what makes "
+                          "the crop arithmetic (midpoint centring, both-windows-inside, pad-not-"
+                          "clip) reproducible after the gitignored dumps are gone. Regenerate with "
+                          "analyze-pellet-tracks.py --mislock-crops <dumps-root> "
+                          "--save-mislock-crops-fixture <path>."),
+                "shots": slim, "_expected": _mc_expected(rows),
+            }, fh, indent=2)
+        print(f"wrote mislock-crops fixture -> {save_fixture}")
+    return rows
+
+
+def mislock_crops_selftest():
+    """Constraint 9 self-validation: replay `_mc_geometry` over the committed slice -- pure data, NO
+    scratchpad or frame access -- and assert the pinned per-shot geometry matches, PLUS the claims a
+    dict-equality pass alone could hide behind:
+
+      * BOTH candidate windows land wholly inside the crop on all 10 shots (the entire reason this
+        arm exists rather than make-groundtruth-f811.py);
+      * the crop centre really is the midpoint of the two candidates, to within the 0.5 px of the
+        pixel rounding;
+      * PADDING actually fires (these dumps are 792 px tall against crop sizes up to 909, so a
+        clipping implementation would be caught here) and the padded crop stays exactly 2r+1 with
+        the centre at index r -- the §32C regression guard;
+      * the ask doc's own tabulated `crop r` WOULD have clipped a candidate window on at least one
+        shot, which is why it is not used as-is;
+      * a deliberately edge-adjacent synthetic case pads rather than shifts.
+    """
+    with open(MISLOCK_CROPS_FIXTURE) as fh:
+        fx = json.load(fh)
+    rows = []
+    for s in fx["shots"]:
+        g = _mc_geometry(s["struct"], s["tmpl"], s["frame_wh"][0], s["frame_wh"][1],
+                         s["window_r"], s["doc_crop_r"])
+        g.update({"shot": s["shot"], "dump": s["dump"], "t0": s["t0"]})
+        rows.append(g)
+    got = _mc_expected(rows)
+    ok = got == fx["_expected"]
+    if not ok:
+        for a, b in zip(got, fx["_expected"]):
+            if a != b:
+                print(f"  DIFF shot {a['shot']}:\n    expected {json.dumps(b)}\n    got      "
+                      f"{json.dumps(a)}")
+
+    def centred(g, s):
+        cx, cy = g["centre"]
+        return (abs(cx - (s["struct"][0] + s["tmpl"][0]) / 2) <= 0.5
+                and abs(cy - (s["struct"][1] + s["tmpl"][1]) / 2) <= 0.5)
+
+    def midpoint_is_crop_centre(g, s):
+        r = g["radius"]
+        px = [(a + b) / 2 - o for a, b, o in
+              zip(s["struct"], s["tmpl"], g["origin"])]
+        return abs(px[0] - r) <= 0.5 and abs(px[1] - r) <= 0.5
+
+    padded = [g for g in rows if g["pad_top"] or g["pad_bottom"] or g["pad_left"] or g["pad_right"]]
+    # An edge-adjacent synthetic pair: candidates 100 px apart, 5 px from the left edge of a small
+    # frame. A SHIFTING implementation would move the centre back inside; a PADDING one must not.
+    edge = _mc_geometry([5, 100], [105, 100], 640, 360, 184)
+    edge_size = edge["size"][0]
+    would_clip = [g["shot"] for g in rows if g.get("doc_crop_r_would_clip")]
+    checks = [
+        (f"all {len(rows)} shots: BOTH candidate windows wholly inside the crop",
+         len(rows) == len(MISLOCK_CROPS_SHOTS) and all(g["both_windows_inside"] for g in rows)),
+        ("crop centre == midpoint of the two candidates (all shots)",
+         all(centred(g, s) for g, s in zip(rows, fx["shots"]))),
+        ("the midpoint sits at crop pixel (r, r) (all shots)",
+         all(midpoint_is_crop_centre(g, s) for g, s in zip(rows, fx["shots"]))),
+        ("crop is exactly 2r+1 square (all shots)",
+         all(g["size"] == [2 * g["radius"] + 1] * 2 for g in rows)),
+        ("padding FIRES on these dumps (792px frames vs up to 909px crops)", len(padded) > 0),
+        ("every padded crop still has its centre at index r (pad, not clip)",
+         all(g["origin"][0] + g["radius"] == g["centre"][0]
+             and g["origin"][1] + g["radius"] == g["centre"][1] for g in rows)),
+        ("pads + source rect reconstruct the full crop width/height (all shots)",
+         all(g["pad_left"] + (g["src_rect"][2] - g["src_rect"][0]) + g["pad_right"] == g["size"][0]
+             and g["pad_top"] + (g["src_rect"][3] - g["src_rect"][1]) + g["pad_bottom"] == g["size"][1]
+             for g in rows)),
+        ("the doc's tabulated crop r WOULD clip a candidate window on >= 1 shot "
+         f"(shots {would_clip})", len(would_clip) > 0),
+        ("edge-adjacent synthetic case PADS on the left rather than shifting",
+         edge["pad_left"] > 0 and edge["origin"][0] + edge["radius"] == edge["centre"][0]),
+        ("edge-adjacent synthetic case keeps its 2r+1 size",
+         edge_size == 2 * edge["radius"] + 1),
+    ]
+    all_ok = ok and all(v for _, v in checks)
+    print("MISLOCK LABEL CROPS -- docs/handoffs/2026-08-06-OWNER-ASK-mislock-labels.md")
+    for g in rows:
+        print(f"  shot{g['shot']:02d} {g['dump']:<24} t0={g['t0']:<5} disp={g['disp']:>7.2f}  "
+              f"r={g['radius']:<4} size={g['size'][0]:<4} "
+              f"pad L{g['pad_left']} T{g['pad_top']} R{g['pad_right']} B{g['pad_bottom']}  "
+              f"doc_r={g['doc_crop_r']}{' (would clip)' if g['doc_crop_r_would_clip'] else ''}")
+    for label, v in checks:
+        print(f"  {'PASS' if v else 'FAIL'}  {label}")
+    print("SELFTEST PASS" if all_ok else "SELFTEST FAIL")
+    return 0 if all_ok else 1
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--tracks", help="tracks.json from count-pellets.py --dump-tracks")
@@ -10776,6 +11260,33 @@ def main():
                     help=f"write the committed replay slice (see {LOCK_ADJUDICATION_FIXTURE})")
     ap.add_argument("--lock-adjudication-selftest", action="store_true",
                     help=f"replay {LOCK_ADJUDICATION_FIXTURE} and exit")
+    ap.add_argument("--mislock-crops", metavar="DUMPS_ROOT",
+                    help=("MISLOCK LABEL CROPS (docs/handoffs/"
+                          "2026-08-06-OWNER-ASK-mislock-labels.md): render the 10-shot x 4-frame "
+                          "crop set that ask needs, from ALREADY-EXTRACTED frames. DUMPS_ROOT is "
+                          "the directory holding <dump>/ and <dump>-tmplloc/. Each crop is centred "
+                          "on the MIDPOINT of the two candidate crosshairs at a radius that keeps "
+                          "BOTH counting windows wholly inside the image (make-groundtruth-f811's "
+                          "one-lock-centred radius-184 crop cuts the other candidate out entirely "
+                          "on a 271-619px displacement, biasing every label toward whichever lock "
+                          "the crop was cut with). ⛔ NOTHING is drawn on the crop -- no marker, "
+                          "ring or label -- and edges PAD rather than clip (§32C). Emits INDEX.md, "
+                          "MANIFEST.json, CANDIDATE-KEY.json and a pre-filled ANSWERS.json (§32D). "
+                          "READ-ONLY: no re-extraction, no video access, no detector run, no "
+                          "constant/threshold/localizer touched. It GENERATES an ask; it "
+                          "adjudicates and scores nothing."))
+    ap.add_argument("--mislock-crops-out", metavar="DIR",
+                    default="scratchpad/pellets/mislock-labels",
+                    help="output directory for --mislock-crops (default "
+                         "scratchpad/pellets/mislock-labels, gitignored -- ⛔ the images are NOT "
+                         "committed, the script and its fixture are)")
+    ap.add_argument("--mislock-crops-seed", type=int, default=MISLOCK_CROPS_SEED,
+                    help=f"RNG seed for the cand_1/cand_2 anonymisation order only (default "
+                         f"{MISLOCK_CROPS_SEED})")
+    ap.add_argument("--save-mislock-crops-fixture", metavar="PATH",
+                    help=f"write the committed geometry fixture (see {MISLOCK_CROPS_FIXTURE})")
+    ap.add_argument("--mislock-crops-selftest", action="store_true",
+                    help=f"replay {MISLOCK_CROPS_FIXTURE} and exit")
     args = ap.parse_args()
 
     if args.stale_counting_selftest:
@@ -10891,6 +11402,12 @@ def main():
         lock_adjudication(args.lock_adjudication, args.lock_adjudication_template,
                           args.lock_adjudication_fps, args.lock_adjudication_out,
                           args.lock_adjudication_seed, args.save_lock_adjudication_fixture)
+        return 0
+    if args.mislock_crops_selftest:
+        raise SystemExit(mislock_crops_selftest())
+    if args.mislock_crops:
+        mislock_crops(args.mislock_crops, args.mislock_crops_out, args.mislock_crops_seed,
+                      args.save_mislock_crops_fixture)
         return 0
     if args.hybrid_landing_audit_selftest:
         raise SystemExit(hybrid_landing_audit_selftest())

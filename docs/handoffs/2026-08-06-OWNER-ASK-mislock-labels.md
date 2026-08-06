@@ -56,20 +56,54 @@ measurement has reached.
 | 9   | `noir`               | 3809 |     515 |  [1672, 90] | [1464, 561] |    441 |
 | 10  | `isabel`             |  389 |     515 | [2120, 224] | [1717, 512] |    431 |
 
-## ⛔ What I must build BEFORE this is actually askable
+## ✅ BUILT — the crops exist; the ask is now askable
 
-**Do not generate these crops with the existing `make-groundtruth-f811.py` path.** It centres on
-ONE crosshair at radius 184 — on a 400–540 px displacement that crops out the other candidate
-entirely, and the labels would be **biased toward whichever lock the crop was cut with**. That is
-the same defect class as §22F's edge-clipping.
+`analyze-pellet-tracks.py --mislock-crops <dumps-root>` (2026-08-06). Reads the
+**already-extracted** `frames-pellet/` PNGs plus each dump's structural and `-tmplloc`
+`tracks.json`; no re-extraction, no video access, no detector run, no constant touched.
 
-Needed first:
+```sh
+PY=/Users/maxwellsutton/nikke-sim/scripts/probe/.venv/bin/python
+$PY scripts/probe/analyze-pellet-tracks.py \
+    --mislock-crops /Users/maxwellsutton/nikke-sim/scratchpad/pellets \
+    --mislock-crops-out /Users/maxwellsutton/nikke-sim/scratchpad/pellets/mislock-labels
+```
 
-1. A crop generator centred on the **midpoint of the two candidates**, at the per-shot `crop r`
-   above, so both windows are fully visible and the labelling is **blind to which lock is which**.
-2. ⛔ **No lock marker drawn on the crop** — otherwise the marks are anchored to a suggested centre.
-3. The §32C padding fix applied (pad, never clip, at frame edges).
-4. Answers persisted by construction (the §32D lesson — §8 item 1 was lost once because they were not).
+Output (gitignored; the SCRIPT and its geometry fixture are what is committed):
+`scratchpad/pellets/mislock-labels/` — `shotNN/f08..f11` crops, `INDEX.md`, `MANIFEST.json`,
+`CANDIDATE-KEY.json` and a pre-filled **`ANSWERS.json`** (§32D — fill it in and COMMIT it).
+
+What it does, against the four requirements above:
+
+1. **Midpoint-centred**, radius chosen so BOTH candidates' 184 px counting windows are wholly
+   inside the image — verified per shot, and a hard refusal if it ever is not.
+   ⛔ Not `make-groundtruth-f811.py`, which centres on ONE crosshair at radius 184: on a 271–619 px
+   displacement that crops the other candidate out entirely and would bias every label toward
+   whichever lock the crop was cut with (§22F's defect class).
+2. **Nothing is drawn on the crop** — no ring, marker, crosshair or label strip. Each crop is
+   byte-identical to its source frame region plus flat pad-grey, checked over all 40.
+   The two candidates are listed as `cand_1`/`cand_2` in **seeded-random order** in `INDEX.md`
+   (crop-pixel coordinates only); `CANDIDATE-KEY.json` holds the mapping and is not needed to label.
+3. **Pads, never clips** (§32C). The dumps are 2604×792 and the crops reach 989 px, so vertical
+   padding fires on **9 of the 10** shots — a clipping implementation would silently move the crop
+   centre off the midpoint and corrupt the labels.
+4. **`ANSWERS.json` by construction**, vocabulary `struct` / `tmpl` / `both` / `neither` /
+   `partial` / `?` **plus a free-text `verdict_verbatim`** and per-candidate real-pellet counts.
+
+⚑ **The `crop r` column in the table above is NOT what the tool uses, and should not be.** That
+column derives from `disp px`, which is each shot's **median** displacement over t0+8..t0+11, while
+the crop is cut around the **t0+9** candidate pair the same table lists. On **shots 2 and 5** those
+differ enough that the tabulated radius would clip a candidate window (shot 2 needs **494**, the
+table says 407; shot 5 needs **442**, the table says 372). The radius is therefore computed from the
+positions actually being cropped; the tabulated value is carried into `MANIFEST.json` as
+`doc_crop_r` so the divergence is visible rather than silent, and the selftest asserts the table
+would have clipped.
+
+Self-validation (constraint 9): the tool **verifies the doc's tabulated `struct`/`tmpl` positions
+against the live dumps** at render time and refuses on any mismatch (all 10 matched), and
+`--mislock-crops-selftest` replays the crop arithmetic from
+`scripts/tests/fixtures/pellets/mislock-crops-slice.json` with no scratchpad access.
+`pellet-selftest.sh` is now **34 arms**.
 
 ## ⚑ Expect the vocabulary to be wrong again
 
