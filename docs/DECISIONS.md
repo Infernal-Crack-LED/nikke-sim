@@ -4192,6 +4192,18 @@ sized small — mislocks ≈0, marker semantics −0.043/shot **in the wrong dir
 +0.50/shot recovered. **Closing candidates is not identifying a cause**, and the ~1.4/shot residual
 stands.
 
+> ⚑ **AMENDED (2026-08-06) — the summary sentence above merges FOUR arms with different bases and
+> n into one unattributed claim. It is not withdrawn; it is under-specified.** Attribution, per the
+> band-channel sweep (`docs/handoffs/2026-08-06-band-channel-SWEEP.md`): **−1.40** ⇒ `--residual-ab`
+> (probe-runs §38 — it had **NO committed instrument** until then, the second occurrence of the
+> constraint-9 failure; n=5 shots, one clip, in-sample). **mislocks ≈0** ⇒ `--lock-adjudication`, a
+> **COUNT** observable — ⚑ §37B established that a mislocked count is **refilled by non-pellet
+> tracks**, so a count observable structurally cannot see the loss, and §38C's n=1 relock (−1.40 →
+> −0.40 on one clip) is in tension with it. ⛔ Neither overturns item 5 above; both are recorded as
+> leads. **−0.043/shot** ⇒ `--marker-net` (815 shots). **+0.50/shot** ⇒ `--band-production-ab` (815
+> shots out-of-sample, measuring what the landing MOVED, not movement toward truth, §30C).
+> ⇒ **Quote the arm, the basis and the n — never the merged sentence.**
+
 ⚑ **A gap this pass found and did NOT backfill:** `DECISIONS.md` had no entry between 2026-07-30 and
 this one, while `docs/probe-runs.md` §13–§24 records six 08-01→08-04 landings (the `band_hi = 20`
 ceiling, the `band` dump channel, the backend-selector tie-break, the representative-frame hybrid,
