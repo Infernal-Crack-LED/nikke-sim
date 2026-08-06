@@ -1,5 +1,9 @@
 # `--representative-audit` → the shipped channel — LANDING PLAN (2026-08-06)
 
+> ✅ **CLOSED (2026-08-06) — LANDED.** Commits `313d8c2e` (Route C), `bad4808e` (the `band_hi`
+> whitelist completion, correcting this plan's own §2.1 spec error), `7962f7d6` (three corrections).
+> Outcome recorded in `docs/probe-runs.md` §37; P1–P6 all held exactly. Nothing here is live.
+
 > AI-facing. **Blast radius MEASURED before the edit, not assumed** (the `2026-08-04-band-hi` /
 > `2026-08-05-dump-schema` precedent). Owner-approved 2026-08-06. Closes `docs/probe-runs.md` §36's
 > open item.
