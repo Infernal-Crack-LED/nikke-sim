@@ -309,6 +309,15 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
     or sized small, and **none of them explains it**: mislocks ~0 (§22C, §34), marker semantics
     −0.043/shot ≈ 3% and in the _wrong_ direction (§31), `band_hi` recovered +0.50/shot
     out-of-sample (§30B). ⚑ **Closing a candidate is not identifying a cause.**
+  - **⇒ ⚑ OPEN — THE RADIUS GATE IS THE SURVIVING NAMED SUSPECT, and it had no queue entry.**
+    §19C: _"the radius gate and the mislock now carry the entire residual on this clip"_ — and the
+    mislock half is now CLOSED at ≈0 cost (§22C, §34). That leaves the radius gate as the only
+    channel any measurement has ever named as carrying the −1.40. Concretely: shot 1 loses a pellet
+    whose closest approach is **161.4 px against a 160 px `pellet_radius`**. ⚠ n=1 on one clip — the
+    obvious next step is to measure, across the 815 production shots, how many white in-band tracks
+    sit just OUTSIDE `pellet_radius` at their counting frames. Needs no owner time and no
+    re-extraction (§30A). ⛔ **Do NOT widen the gate to fit** — that is a fudge, and the geometry is
+    owner-ruled ground truth (accuracy-circle geometry outranks back-derived rates).
   - **⇒ OPEN — the abstentions (§8 item 3).** What the 81 `in_band_no_concurrency` events are, and
     what the 16 that become banded at `band_hi = 20` share. Committed fixtures only, no owner time.
   - **⇒ OPEN — track fragmentation (§8 item 4), now with fresh evidence.** 70% of tracks dead by
@@ -354,36 +363,14 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
     `scripts/probe/analyze-pellet-tracks.py`, each with a self-validating fixture and wired into
     `scripts/probe/pellet-selftest.sh`, 30 arms): `--hand-count`, `--ammo-abstention`,
     `--ammo-oracle-ceiling`, `--merge-audit`, `--representative-audit`.
-    1. **THE REPRESENTATIVE-FRAME POLICY — the live lead on the cold bias, tier STRONG MECHANISTIC
-       (probe-runs §9).** `debounce_shots` copies each event's count from ONE frame (the active
-       frame nearest the **median**) and sums nothing. **THE MECHANISM: a two-phase event window** —
-       a 4–6 frame blast/flash phase (blobs live 1–3 frames), then the pellet cohort, which holds a
-       flat **plateau for 8–10 frames**. The median samples the mixture and lands in the
-       **pre-cohort flash phase on 3 of 5 labelled shots**; **of the 35 pellets the reader reports
-       across those 5 shots only 12 are owner pellets**, so the 7.00-vs-8.40 near-miss is
-       **coincidental cancellation** of a large under-count against a large over-count.
-       - **Coexistence is REFUTED** — all countable owner pellets ARE simultaneously visible in one
-         frame on every shot.
-       - **The peak is ARTIFACT and the median's rationale HOLDS**: 89% of peak-frame blobs are
-         unmatched, 4 of 5 peaks 100% unmatched, and `max` puts **504/852 events (59%) above the
-         physical ceiling of 10** (`hitsPerShot: 10`, confirmed in `data/characters.json` for all
-         four units). **p75 is refuted with it.**
-       - **THE DISCRIMINATOR IS TRACK LIFETIME, not frame magnitude**: owner pellets n=42, lives
-         **8–19** (min 8); non-owner n=148, **146 of 148 at life ≤ 7** — **zero overlap in the 8–13
-         band**. It **replicates without labels** (bimodal in-event lifetime histograms on all four
-         units across 815+ events), which is what carries the tier — **not** the n=5 mean.
-       - Eliminated: detection and the area/circularity filters cost **ZERO** (100% both-pass at
-         offsets 8/9/10); the `valid` clamp biases **WARM (+0.24)**, not cold.
-       - **⇒ WHAT SETTLES IT — no new labels, no owner time:** score any candidate rule on **WHICH
-         FRAME it selects** (pre-cohort flash vs plateau) against the 5 labelled events — a
-         **categorical** check with an unambiguous right answer per shot, immune to the
-         mean-matching trap that sank p75. Second free check: any rule putting **>10 on more than a
-         few percent of 815 events** is over-counting by construction.
-       - ⚑ **The blast produces TWO detector onsets** (flash, then cohort) and `find_t0` picks
-         whichever is nearest the owner's index, so the fixture's `t0` is the flash onset on shots
-         2/4/5 and the cohort onset on 1/3 — **f8–11 is NOT anchored to the same physical event
-         across shots.** ⚑ Shot 4's entire −5 residual is its own documented structural mislock
-         (`locate: "template"`); under the template lock it gives 7 countable, coexisting 8 frames.
+    1. **THE REPRESENTATIVE-FRAME POLICY — ⚑ ITS FIX LANDED; only a narrow clause is still open.**
+       The two-phase-event diagnosis (probe-runs §9: the median samples the pre-cohort flash phase
+       on 3 of 5 labelled shots) was ACTED ON — the fallback-hybrid `plateau_median` rule landed
+       §13, the decoupled `band_hi` landed §16, and together they bought **+0.60/shot in-sample
+       (§19) and +0.4994/shot out-of-sample over 815 shots (§30B)**. ⛔ **Do not re-derive this as
+       an open problem.** What actually remains: on shot 1 one owner pellet is still **"one the
+       representative frame does not see"** (§19C) — a single-frame-selection miss that survived
+       the hybrid. n=1; treat as a lead, not a channel.
     2. **⛔ OWNER-GATED — `debounce_shots` MINIMAL FIX (probe-runs §8F).** `cap_cadence` (~3 LOC)
        and `resplit` (~10 LOC) both beat shipped on every arm, pooled MISSED **7.0% → 4.2% / 4.5%**.
        It buys a **missing-shot** improvement, **NOT** a cold-bias fix. Gated because **3 committed
