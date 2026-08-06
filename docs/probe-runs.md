@@ -6834,6 +6834,12 @@ $PY scripts/probe/analyze-pellet-tracks.py --radius-gate \
 
 #### §36 THE COMPOSITION AUDIT — ⛔ VOID: `--representative-audit` CANNOT SCORE THE SHIPPED PATH, AND ITS OWN CONTROL SAYS SO
 
+> ⛔ **RESOLVED 2026-08-06 by §37 — the instrument was fixed, and the composition hypothesis this
+> section raises was then ANSWERED AGAINST it: the shipped reader's count IS mostly made of pellets
+> (31 of 35, not 12 of 35).** §36C's `12 / 35` describes the **LEGACY channel only** and must never
+> be quoted as a property of the shipped reader. §36D's structural finding stands — it is precisely
+> what §37 fixed.
+
 **2026-08-06.** Executes `docs/handoffs/2026-08-06-composition-audit-PRECOMMIT.md`, committed at
 `7bbdd3ed` **before any number existed**. Chases the defect surfaced by
 `docs/handoffs/2026-08-06-radius-gate-JUDGE-verdict.md` §4: `representative-audit-slice.json` reports
@@ -6927,3 +6933,81 @@ $PY scripts/probe/count-pellets.py <frames> --temporal --locate structural --bac
 # template variant: --locate template --ammo-template scripts/probe/ammo-box-template.png
 #                   --ammo-offset-x 125 --ammo-offset-y -11 --ammo-roi-x0 0.55 --ammo-roi-y0 0.50
 ```
+
+#### §37 THE AUDIT NOW SCORES THE SHIPPED CHANNEL — §36's question ANSWERED: the count IS mostly made of pellets
+
+**2026-08-06.** Lands `docs/handoffs/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md`. Closes §36's open
+item. Commits `313d8c2e` (Route C), `bad4808e` (the `band_hi` whitelist completion), `7962f7d6`
+(three corrections).
+
+##### §37A — ⚑ THE ROUTE CHANGED, and the measurement is why
+
+§36E proposed widening `_rep_slim_labelled`'s rows to carry `band`. The blast-radius pass **refuted
+that route** and it was abandoned: no committed band-carrying source dump exists; any re-dump bundles
+`8d500ff9`'s coordinate-precision change (**11,314 of 11,525 tracks differ**, a known mover of the
+radius gate) into the same diff; and the capability **already existed** in `--hybrid-landing-audit`'s
+`_hla_production_band`, which reconstructs production's real `band` from `labelled.tracks_raw`,
+hard-asserts it against an independent aggregation, and feeds it to the real `cp.debounce_shots`.
+
+⇒ The landing **reuses** that reconstruction. No row widening, no re-dump, no constant change — and
+the four `for w, r, m in` destructure sites (which the measurement proved would ALL hard-crash on a
+widened row) were never touched.
+
+##### §37B — ⚑ THE RESULT: same total, completely different composition
+
+On the 5 labelled shots, at the landed `--max-pellet-frames 14 --band-hi 20`:
+
+| Channel scored                | reader | owner pellets | non-owner |
+| ----------------------------- | ------ | ------------- | --------- |
+| Legacy `pellet_ids` (pre-§37) | 35     | **12**        | **23**    |
+| **Shipped (band + hybrid)**   | 35     | **31**        | **4**     |
+
+⚑ **The TOTAL IS IDENTICAL AND THE COMPOSITION IS NOT** — 34% owner pellets against 88%. The legacy
+arm got the right total for entirely the wrong reasons; the three shots that appeared to count ZERO
+real pellets count 8, 10 and 8. **This is the compensating-error principle in its purest observed
+form**, and it is why a count-based severity measurement (§22C) could not see what a bad lock costs.
+
+⇒ **§36's composition question is ANSWERED, against the hypothesis: the reader's count IS mostly made
+of pellets.** ⛔ The defect was in the INSTRUMENT, never in the reader. §36C's `12 / 35` must not be
+quoted as a property of the shipped reader — it never was one.
+
+##### §37C — What the residual decomposes to now
+
+`owner 42 = 0 never-detected + 5 life-gated (pellet_ids) + 8 radius-gated + 29 countable`, and the
+shipped reader reports **35 = 31 owner + 4 non-owner**. So **42 − 35 = 7 across 5 shots = −1.40
+pellets/shot** — the same MAGNITUDE as §19's production residual, now on the correct channel and
+fully decomposed. ⛔ Different basis (5 labelled shots vs 815 production shots): **the same
+magnitude, not the same measurement.**
+
+Of the 8 radius-gated, **7 are shot 4's documented template mislock** and go to 0 on relock. The 5
+life-gated fail `pellet_ids` (life 15/16/17/19 > `max_pellet_frames` 14) but **ARE band members** at
+`band_hi` 20 — which is why `rep_own` (31) legitimately EXCEEDS `cntbl` (29): two bases, one table.
+
+##### §37D — Blast radius: DECLARED BEFORE THE EDIT, HELD EXACTLY
+
+P1–P6 all held. Of `representative-audit-slice.json`'s `_expected`, exactly **25 keys moved and every
+one is `rep_offset` / `rep_owner` / `rep_non_owner` / `reader_white`** — zero out-of-contract movers,
+zero removals. `peaks`, `peak_total`, `lifetime_summary`, `white_reconstruction`, `filter_fidelity`,
+`premise`, `per_dump`, `coexistence_equals_countable`, `corrected_countable_total` all unchanged. No
+other fixture moved. `pellet-selftest.sh` 31/31 and `verify.sh` PASS at every step.
+
+##### §37E — ⛔ Traps closed, and one that was live in the tree
+
+1. ⚑ **The fixture's own regeneration recipe was a TRAP.** Its `_note` omitted
+   `--representative-audit-fps 60 30 30 30 30`; that flag defaults to 30 for every positional dump,
+   but `dumps[0]` is the 60 fps labelled clip — so **following the documented recipe literally
+   rewrote ~45 `_expected` values silently instead of failing.** Now documented as mandatory.
+2. `_rep_series`' bare `next(...)` raised `StopIteration` rather than a diagnostic if a rep frame
+   fell outside `_rep_trajectory`'s window — newly reachable once the rep frame became the hybrid
+   one. Now a real error naming shot, frame and window.
+3. The shipped-identity control is compared **band-stripped**, against the pre-hybrid baseline it is
+   actually a rebuild OF. ⛔ Not a weakening: `_merge_shipped_identity` itself is untouched, so
+   `--merge-audit` is unaffected, and the labelled half needs no such control because it now calls
+   the real `cp.debounce_shots`.
+
+##### §37F — ⛔ Honest limits
+
+n = **5 shots, one clip** (`marciana`, SG/Iron), and these are the labels the reader was tuned
+against (§19D) — **ELIMINATION, not confirmation.** ⚑ **The DUMPS half of the arm still scores the
+pre-hybrid channel** (it is an explicitly pre-hybrid `median`/`p75`/`max` policy comparison); only the
+LABELLED half speaks for production. Not a regression, not a full fix either.
