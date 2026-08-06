@@ -40,6 +40,7 @@ run "$HERE/analyze-pellet-tracks.py" --dump-replay-fidelity-selftest
 run "$HERE/analyze-pellet-tracks.py" --marker-semantics-selftest
 run "$HERE/analyze-pellet-tracks.py" --band-production-selftest
 run "$HERE/analyze-pellet-tracks.py" --marker-net-selftest
+run "$HERE/analyze-pellet-tracks.py" --radius-gate-selftest
 run "$HERE/analyze-pellet-tracks.py" --fade-screen-selftest
 run "$HERE/analyze-pellet-tracks.py" --mislock-rate-selftest
 run "$HERE/analyze-pellet-tracks.py" --lock-adjudication-selftest
