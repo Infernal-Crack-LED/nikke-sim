@@ -8528,6 +8528,11 @@ def lock_adjudication(struct_paths, tmpl_paths, fps_list, out_dir, seed=LOCK_ADJ
         "them and the owner had to volunteer both -- `neither` turned out to be 20% of flagged "
         "shots (docs/probe-runs.md §22B), a category the two-mode comparison cannot name.",
         "",
+        "⚑ A panel that is mostly FLAT GREY means that lock points OUTSIDE the captured frame, "
+        "so there is no game content there to show. That lock is definitively wrong -- answer the "
+        "other letter, or `neither` if the other one is also not on the crosshair. "
+        "(docs/probe-runs.md §33: 0.43% of locked frames land off the right edge.)",
+        "",
         "⛔ RECORD THE ANSWERS IN `ANSWERS.json` (written alongside these images) AND COMMIT IT. "
         "The 2026-08-04 answers were never committed, so the 4 `neither` cases can no longer be "
         "identified and their cost is unmeasurable -- see docs/probe-runs.md §32.",
