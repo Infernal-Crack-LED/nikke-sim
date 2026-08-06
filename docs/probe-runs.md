@@ -6831,3 +6831,99 @@ S=/Users/maxwellsutton/nikke-sim/scratchpad/pellets
 $PY scripts/probe/analyze-pellet-tracks.py --radius-gate \
   $S/{h4-marciana,h4-isabel,h4-guilty,g2-noir}-schemafix/tracks.json
 ```
+
+#### §36 THE COMPOSITION AUDIT — ⛔ VOID: `--representative-audit` CANNOT SCORE THE SHIPPED PATH, AND ITS OWN CONTROL SAYS SO
+
+**2026-08-06.** Executes `docs/handoffs/2026-08-06-composition-audit-PRECOMMIT.md`, committed at
+`7bbdd3ed` **before any number existed**. Chases the defect surfaced by
+`docs/handoffs/2026-08-06-radius-gate-JUDGE-verdict.md` §4: `representative-audit-slice.json` reports
+**`rep_owner` 12 / `rep_non_owner` 23 / `reader_white` 35 against `owner` 42**, with three of five
+shots counting ZERO owner pellets while still landing near the true total.
+
+##### §36A — The pre-commit's CONTROL CHANNEL FIRED, and wider than it was written
+
+The rule reserved judgment on `life_gate_rejected` pending a blind check of which track population
+the shipped count is built from. That check returned **DIFFERENT CHANNEL**, and the divergence is
+not confined to the life gate — **the whole arm is pre-hybrid, three ways over**:
+
+1. `_rep_decompose`'s life gate reads `is_pellet`, which `count-pellets.py:1887` sets as
+   `life <= max_pellet_frames`. **`band_hi` gates a different population (`band_ids`).**
+2. `reader_white` and the representative frame come from `_merge_events`
+   (`analyze-pellet-tracks.py:2840`) — the **median-of-`white+red`** frame, i.e. `pellet_ids`.
+   The shipped path (`read-pellets.ts:431-447`) instead overwrites `repFrame`/`white` with the
+   **`band` count on the band plateau frame** whenever a band plateau exists.
+3. `_rep_slim_labelled:3933` writes 3-wide `[white, red, marker]` rows, so `_expand_frame_counts_row`
+   omits the key and `has_band` is **false by construction** — the labelled block cannot carry a band
+   series even in principle. (§23C already listed this builder among the readers that "can never emit
+   `band`"; nothing connected that to the arm's validity.)
+
+⇒ ⛔ **`P = rep_owner / reader_white`, the pre-commit's own verdict metric, measures the WRONG
+CHANNEL AT THE WRONG FRAME.** Re-running at any config cannot repair it. The composition verdict is
+**VOID** — not answered, and not answerable by this arm.
+
+##### §36B — ⚑ The instrument's OWN runtime control fires, independently
+
+The two 60 fps dumps were regenerated from frames already on disk at the landed
+`--max-pellet-frames 14 --band-hi 20` (CONTROL A passed: params verified `14`/`20`, tracks carry
+`reds`). Fed those plus the four `*-schemafix` production dumps, the arm **refuses to report**:
+
+```
+--representative-audit: the shipped-identity control FAILED on .../h4-marciana-schemafix/tracks.json.
+The local span rebuild no longer reproduces debounce_shots, so no row below would be a difference
+from the real baseline.
+```
+
+`_merge_shipped_identity:3058` compares the SHIPPED `debounce_shots` against the arm's own
+`_merge_spans`/`_merge_events` rebuild. On a band-carrying dump `debounce_shots` takes the hybrid
+branch and the pre-hybrid rebuild does not, so they diverge and the control fires. **Exit 1, no
+report, no rows.**
+
+⚑ **Three independent methods, one verdict:** a blind code read, the instrument's own runtime
+control, and fixture provenance — `representative-audit-slice.json` was built on
+`h4-*-structural` / `groundtruth-f811-v4` dumps, which carry **no `band` key at all**, which is
+precisely why the control ever passed.
+
+##### §36C — What this retroactively scopes
+
+The fixture's decomposition is not wrong; it is **NARROWER THAN IT READS**. `owner` 42 =
+`never_detected` 0 + `life_gate_rejected` 5 + `radius_gate_rejected` 8 + `countable` 29, and
+`rep_owner` 12 / `rep_non_owner` 23 / `reader_white` 35, all describe the **pre-hybrid estimator on
+pre-band dumps**. Today that corresponds to the **112 of 852 fallback events (13.1%)** where
+`_ps_plateau_rep` returns `None`; the **740 banded events (86.9%)** — §12D's decomposition, asserted
+event-by-event in code — are scored by a channel this arm never reads.
+
+⇒ ⛔ **The composition defect is NOT established.** Per the pre-commit §6 bar (`P < 0.50` or
+`S ≥ 2` with Controls A, B, C and PASSENGER all passing) it is **not met** — B and C never ran. It
+survives as an open hypothesis **about the legacy channel only**, and the 12/35 figure must never be
+quoted as a property of the shipped reader.
+
+##### §36D — ⚑ The structural gap this exposes
+
+Every owner-label-linked arm (`--representative-audit`, `--fade-screen`, `--policy-score`'s labelled
+path) reads the band-less `labelled` block. Every band-aware arm (`_ps_band`,
+`--band-production-ab`) runs on production dumps, which carry no owner labels. ⇒ **THE OWNER'S
+LABELS AND THE BAND CHANNEL HAVE NEVER MET.** Every "the reader is N pellets cold" figure on this
+branch is therefore either owner-anchored but scoring the legacy channel, or production-accurate but
+unanchored to truth. That is why the composition question stayed invisible.
+
+This is the **fourth** instance of one defect class here — §23 (`--dump-tracks` dropped `band`), §25
+(could not replay the marker split), §26 (schema fidelity), now the audit arm.
+
+##### §36E — Verdict + scope
+
+⛔ **NOTHING ENACTED**, per pre-commit §5. No constant, no default, no instrument change.
+`scripts/tests/fixtures/pellets/representative-audit-slice.json` is **byte-identical**; `git status`
+clean. The pass answered no question — it established that **the instrument cannot ask it**, which is
+a reportable outcome only because the rule was committed first.
+
+**Reproduction** (the two dumps are gitignored scratchpad; these commands rebuild them):
+
+```sh
+PY=/Users/maxwellsutton/nikke-sim/scripts/probe/.venv/bin/python
+$PY scripts/probe/count-pellets.py <frames> --temporal --locate structural --backend opencv \
+  --zoom 2 --center-exclude 36 --min-area 25 --max-area 750 --min-circ 0.55 \
+  --pellet-radius 160 --marker-radius 65 --max-pellet-frames 14 --band-hi 20 \
+  --dump-tracks scratchpad/pellets/groundtruth-f811-v6-landed/tracks.json
+# template variant: --locate template --ammo-template scripts/probe/ammo-box-template.png
+#                   --ammo-offset-x 125 --ammo-offset-y -11 --ammo-roi-x0 0.55 --ammo-roi-y0 0.50
+```
