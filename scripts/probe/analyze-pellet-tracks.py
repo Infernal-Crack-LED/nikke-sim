@@ -8603,10 +8603,15 @@ def lock_adjudication(struct_paths, tmpl_paths, fps_list, out_dir, seed=LOCK_ADJ
 
 
 # --- scoring a filled ANSWERS.json (§32) -------------------------------------------------------
-LA_VERDICTS = ("A", "B", "neither", "both", "?")
+# ⚑ `A_imprecise` / `B_imprecise` were OWNER-VOLUNTEERED on 2026-08-05 ("a but slightly off, b is a
+# total miss though") -- the SECOND time the offered vocabulary proved too narrow, after `neither`
+# and `both` on 2026-08-04 (§22A). Recorded as first-class values rather than coerced, because
+# coercing is exactly how the 08-04 `neither` category nearly went unnamed.
+LA_VERDICTS = ("A", "B", "A_imprecise", "B_imprecise", "neither", "both", "?")
+LA_IMPRECISE = {"A_imprecise": "A", "B_imprecise": "B"}
 
 
-def _las_score(answers, key):
+def _las_score(answers, key, imprecise="strict"):
     """Join a filled ANSWERS.json against its ANSWER-KEY.json and reproduce docs/probe-runs.md
     §22B's verdict split and §22C's severity, from committed data rather than from chat.
 
@@ -8630,7 +8635,11 @@ def _las_score(answers, key):
         if not k["mislocked"]:
             split[f"control:{v}"] += 1
             continue
-        if v == "?":
+        if v in LA_IMPRECISE and imprecise == "lenient":
+            v = LA_IMPRECISE[v]
+        if v in LA_IMPRECISE:
+            split[v] += 1
+        elif v == "?":
             split["undecidable"] += 1
         elif v == "neither":
             split["neither"] += 1
@@ -8648,6 +8657,13 @@ def _las_score(answers, key):
             raise SystemExit(f"--lock-adjudication-score: {case} verdict {v!r} matches neither "
                              f"letter ({k['letter_struct']}/{k['letter_tmpl']})")
     n_mis = sum(v for k2, v in split.items() if not k2.startswith("control:"))
+    # An `*_imprecise` verdict still says the OTHER lock is "a total miss", so under EITHER reading
+    # the production (structural) lock is bad whenever the imprecise pick is TEMPLATE.
+    # ⚑ ONLY in the strict arm: under `lenient` these were already folded into `template_right`
+    # above, so adding them again double-counts (it reported 20/20 before this guard).
+    imp_tmpl = sum(1 for c, v in ans.items()
+                   if v in LA_IMPRECISE and by_case[c]["mislocked"]
+                   and LA_IMPRECISE[v] == by_case[c]["letter_tmpl"]) if imprecise == "strict" else 0
     mean = round(st.mean(severity), 4) if severity else None
     sd = round(st.stdev(severity), 4) if len(severity) > 1 else 0.0
     return {
@@ -8655,9 +8671,11 @@ def _las_score(answers, key):
         "n_unanswered": len(missing), "unanswered": sorted(missing),
         "n_mislocked_scored": n_mis,
         "split": dict(sorted(split.items())),
-        "production_lock_bad": split["template_right"] + split["neither"],
-        "production_lock_bad_rate": (round((split["template_right"] + split["neither"]) / n_mis, 4)
-                                     if n_mis else None),
+        "imprecise_reading": imprecise,
+        "production_lock_bad": split["template_right"] + split["neither"] + imp_tmpl,
+        "production_lock_bad_rate": (
+            round((split["template_right"] + split["neither"] + imp_tmpl) / n_mis, 4)
+            if n_mis else None),
         "severity_n": len(severity), "severity_mean": mean, "severity_sd": sd,
         "severity_se": round(sd / math.sqrt(len(severity)), 4) if len(severity) > 1 else None,
         "severity_values": severity, "severity_cases": sev_cases,
@@ -8667,6 +8685,7 @@ def _las_score(answers, key):
 def _print_lock_adjudication_score(r):
     print("\nLOCK ADJUDICATION — SCORED FROM COMMITTED ANSWERS (docs/probe-runs.md §22/§32)")
     print(f"  answered {r['n_answered']}, unanswered {r['n_unanswered']} {r['unanswered'] or ''}")
+    print(f"  imprecise reading: {r.get('imprecise_reading')}")
     print(f"  verdict split (mislocked cases, n={r['n_mislocked_scored']}): {r['split']}")
     print(f"  production lock BAD on {r['production_lock_bad']}/{r['n_mislocked_scored']} "
           f"= {r['production_lock_bad_rate']}   (template-right + neither)")
@@ -8678,7 +8697,7 @@ def _print_lock_adjudication_score(r):
     print("     cost is >= what it reports. Sizing that needs a third reference, not this arm.")
 
 
-def audit_lock_adjudication_score(answers_path, key_path):
+def audit_lock_adjudication_score(answers_path, key_path, imprecise="strict"):
     with open(answers_path) as fh:
         answers = json.load(fh)
     with open(key_path) as fh:
@@ -8686,7 +8705,7 @@ def audit_lock_adjudication_score(answers_path, key_path):
     if answers.get("seed") != key.get("seed"):
         raise SystemExit(f"--lock-adjudication-score: seed mismatch — answers {answers.get('seed')} "
                          f"vs key {key.get('seed')}. These are not the same adjudication run.")
-    r = _las_score(answers, key)
+    r = _las_score(answers, key, imprecise)
     _print_lock_adjudication_score(r)
     return r
 
@@ -9240,6 +9259,10 @@ def main():
                           "--lock-adjudication-key."))
     ap.add_argument("--lock-adjudication-key", metavar="ANSWER_KEY_JSON",
                     help="the ANSWER-KEY.json written beside the images, for --lock-adjudication-score")
+    ap.add_argument("--lock-adjudication-imprecise", choices=["strict", "lenient"], default="strict",
+                    help="how to read owner-volunteered A_imprecise/B_imprecise verdicts: `strict` "
+                         "(own category, excluded from severity) or `lenient` (mapped to the plain "
+                         "letter). Report BOTH -- see _las_score's docstring.")
     ap.add_argument("--lock-adjudication-score-selftest", action="store_true",
                     help="replay --lock-adjudication-score over synthetic data and exit")
     ap.add_argument("--lock-adjudication-template", nargs="+", metavar="TEMPLATE_TRACKS_JSON",
@@ -9337,7 +9360,8 @@ def main():
     if args.lock_adjudication_score:
         if not args.lock_adjudication_key:
             ap.error("--lock-adjudication-score requires --lock-adjudication-key")
-        audit_lock_adjudication_score(args.lock_adjudication_score, args.lock_adjudication_key)
+        audit_lock_adjudication_score(args.lock_adjudication_score, args.lock_adjudication_key,
+                                      args.lock_adjudication_imprecise)
         raise SystemExit(0)
     if args.lock_adjudication_selftest:
         raise SystemExit(lock_adjudication_selftest())

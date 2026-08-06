@@ -6644,3 +6644,90 @@ PY=/Users/maxwellsutton/nikke-sim/scripts/probe/.venv/bin/python
 ⛔ **RECORDS a defect. NOTHING ENACTED.** The localizer is unchanged — no clamp, no reject, no
 retune. Whether an out-of-frame lock should be clamped, dropped, or treated as an abstention is a
 design question with its own blast radius, and it is **not** answered here.
+
+#### §34 §8 ITEM 1 IS ANSWERED — the both-wrong cases are identified, and they are NOT the worst
+
+**2026-08-05, OWNER-ADJUDICATED.** The re-run §32 called for. Answers are **COMMITTED** at
+`docs/probe-data/lock-adjudication-2026-08-05-ANSWERS.json` (+ `-KEY.json`) — the durable record
+whose absence blocked this item.
+
+##### §34A — ⚑ THE VOCABULARY WAS TOO NARROW A SECOND TIME
+
+08-04 offered `A`/`B`/`?` and the owner volunteered **`both`** and **`neither`**. §32D added those.
+08-05 the owner volunteered a **third** category the format still lacked:
+
+> _"a but slightly off, b is a total miss though"_ — on **6 of 20** mislocked cases.
+
+Recorded as first-class `A_imprecise` / `B_imprecise` with the owner's exact wording preserved in
+`verdict_verbatim`, **not coerced** — coercion is precisely how the 08-04 `neither` category nearly
+went unnamed. ⚑ **All 6 named TEMPLATE as the approximately-right lock**, i.e. the "total miss" was
+**always structural**, the production lock.
+
+Scored under **two** readings, both reported rather than one chosen: `strict` (own category,
+excluded from severity) and `lenient` (mapped to the plain letter).
+
+##### §34B — ⚑ §22 REPLICATES, INDEPENDENTLY
+
+| quantity                           | §22 (08-04)                         | this run (08-05)                                |
+| ---------------------------------- | ----------------------------------- | ----------------------------------------------- |
+| structural right                   | 6                                   | **6**                                           |
+| **production lock BAD**            | **14/20 = 70%**                     | **14/20 = 70%** — identical under BOTH readings |
+| severity multiset (template-right) | `[−7, −1, 0, 0, 0, 0, 0, 1, 2, 2]`  | `[−7, −1, 0, 0, 0, 0, 0, 1, 2]`                 |
+| controls: 3 smallest disagreements | answered `both` (1, 4, 8 px)        | answered `both` (1.4, 3.6, 7.7 px)              |
+| control: the distinguishable one   | answered, identified **structural** | 97.6 px, answered, identified **structural**    |
+
+⚑ The severity multiset is §22C's **minus exactly one `+2`** — precisely what one case moving
+template-right → `neither` produces. ⚑ The control behaviour reproduces case for case. Two
+adjudications, ~a day apart, agree on the headline to the digit. ⛔ **Not fully independent** — same
+seed, same 24 images, and the owner had seen them before, so recall may contribute. The replication
+is strong evidence of consistency, weaker evidence of accuracy.
+
+##### §34C — THE ANSWER: the both-wrong population is NOT the worst
+
+§22D's stated worry was that the `neither` cases are _"probably the worst"_ and that excluding them
+biases severity toward zero. **Now that they are identified, that is testable on production counts:**
+
+| case      | dump (unit)                           | t0   | disp    | production counted |
+| --------- | ------------------------------------- | ---- | ------- | ------------------ |
+| `case_04` | `h4-marciana-structural` (`marciana`) | 2467 | 236.5px | 7                  |
+| `case_09` | `h4-isabel-structural` (`isabel`)     | 2505 | 357.4px | 5                  |
+| `case_17` | `h4-marciana-structural` (`marciana`) | 1776 | 506.8px | 2                  |
+| `case_18` | `h4-isabel-structural` (`isabel`)     | 4828 | 418.2px | 5                  |
+| `case_24` | `h4-isabel-structural` (`isabel`)     | 1300 | 446.1px | 6                  |
+
+| population             | n   | mean production count | sd   | SE   |
+| ---------------------- | --- | --------------------- | ---- | ---- |
+| both-wrong (`neither`) | 5   | **5.00**              | 1.87 | 0.84 |
+| other mislocked        | 15  | **5.73**              | 3.13 | 0.81 |
+| **difference**         |     | **−0.73 ± 1.16**      |      |      |
+
+⇒ **INDISTINGUISHABLE FROM ZERO at 2 SE. §22D's "probably the worst" is NOT supported.** The
+both-wrong cases count _slightly_ lower, by well under the noise §21 already measured (0.706) — and
+if their windows were catastrophically off-target they would count ~0, not 5.00.
+
+##### §34D — ⛔ What this still does not measure, and the base trap
+
+- ⛔ **This compares production COUNTS, not LOSSES.** By construction neither lock is a valid
+  reference on these cases, so the true count is unknown and the _loss_ remains unmeasured. What is
+  now established is that the population is **not an outlier** — which is what §22D's bias argument
+  actually rested on.
+- ⛔ **Do NOT difference these against 8.40.** That reference is the owner's f8–11 window count on
+  the labelled `marciana` clip, not on these production dumps — **different bases**, the trap §4
+  names and §27C/§30C each hit once.
+- n = 5. `case_17`'s template arm has **no matched event at all** (`total_tmpl` is null), so it is
+  unpairable by construction, not merely unmeasured.
+
+##### §34E — Where this leaves the mislock channel
+
+✅ The production lock is bad on **70%** of detected-mislocked shots ⇒ **≈11.8% of all production
+shots** (§22B's arithmetic, now replicated).
+✅ The both-wrong subpopulation is **identified and sized** and is **not** worse than the rest.
+⇒ ⚑ **§22D's caveat is DISCHARGED**: §22C's severity, ~0, is no longer known to be biased toward
+zero by an excluded worst-case population. **Combined with §22C, the bad-lock channel is measured at
+~0 pellets/shot and no longer has an unexamined reservoir behind it.**
+⛔ **The cold bias is still NOT explained.** Removing mislocks as a candidate does not identify a
+cause; it closes a candidate.
+
+**RECORDS an owner adjudication + a measurement. NOTHING ENACTED** — no localizer retune, no
+constant, no threshold, no default; `--lock-adjudication-imprecise` defaults to `strict` and changes
+no committed number.

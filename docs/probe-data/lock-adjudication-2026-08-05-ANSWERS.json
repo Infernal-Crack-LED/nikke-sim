@@ -1,0 +1,135 @@
+{
+  "_README": "OWNER-ADJUDICATED 2026-08-05. THE DURABLE RECORD -- docs/probe-runs.md \u00a732 exists because the 2026-08-04 answers were never committed.  is the canonical value;  preserves the owner exact wording, which is PRIMARY EVIDENCE and must not be normalised away. Score with analyze-pellet-tracks.py --lock-adjudication-score.",
+  "_verdict_vocabulary": {
+    "A": "marker A is the crosshair",
+    "B": "marker B is the crosshair",
+    "A_imprecise": "A is the crosshair but slightly off; B is a total miss (OWNER-VOLUNTEERED 2026-08-05)",
+    "B_imprecise": "B is the crosshair but slightly off; A is a total miss (OWNER-VOLUNTEERED 2026-08-05)",
+    "neither": "neither marker is on the crosshair",
+    "both": "the two markers coincide / both on the reticle",
+    "?": "genuinely undecidable"
+  },
+  "seed": 20260804,
+  "answers": [
+    {
+      "case": "case_01",
+      "verdict": "A",
+      "verdict_verbatim": "a"
+    },
+    {
+      "case": "case_02",
+      "verdict": "both",
+      "verdict_verbatim": "both"
+    },
+    {
+      "case": "case_03",
+      "verdict": "B",
+      "verdict_verbatim": "b"
+    },
+    {
+      "case": "case_04",
+      "verdict": "neither",
+      "verdict_verbatim": "neither"
+    },
+    {
+      "case": "case_05",
+      "verdict": "both",
+      "verdict_verbatim": "both"
+    },
+    {
+      "case": "case_06",
+      "verdict": "B",
+      "verdict_verbatim": "b"
+    },
+    {
+      "case": "case_07",
+      "verdict": "A",
+      "verdict_verbatim": "a"
+    },
+    {
+      "case": "case_08",
+      "verdict": "B",
+      "verdict_verbatim": "b"
+    },
+    {
+      "case": "case_09",
+      "verdict": "neither",
+      "verdict_verbatim": "neither"
+    },
+    {
+      "case": "case_10",
+      "verdict": "A",
+      "verdict_verbatim": "a"
+    },
+    {
+      "case": "case_11",
+      "verdict": "B",
+      "verdict_verbatim": "b"
+    },
+    {
+      "case": "case_12",
+      "verdict": "A_imprecise",
+      "verdict_verbatim": "a but slightly off, b is a total miss though"
+    },
+    {
+      "case": "case_13",
+      "verdict": "both",
+      "verdict_verbatim": "both"
+    },
+    {
+      "case": "case_14",
+      "verdict": "A_imprecise",
+      "verdict_verbatim": "a but slightly off, b is a total miss though"
+    },
+    {
+      "case": "case_15",
+      "verdict": "B",
+      "verdict_verbatim": "b"
+    },
+    {
+      "case": "case_16",
+      "verdict": "A",
+      "verdict_verbatim": "a"
+    },
+    {
+      "case": "case_17",
+      "verdict": "neither",
+      "verdict_verbatim": "neither"
+    },
+    {
+      "case": "case_18",
+      "verdict": "neither",
+      "verdict_verbatim": "neither"
+    },
+    {
+      "case": "case_19",
+      "verdict": "B_imprecise",
+      "verdict_verbatim": "b but slightly off, a is a total miss though"
+    },
+    {
+      "case": "case_20",
+      "verdict": "B_imprecise",
+      "verdict_verbatim": "b but slightly off, a is a total miss though"
+    },
+    {
+      "case": "case_21",
+      "verdict": "B",
+      "verdict_verbatim": "b"
+    },
+    {
+      "case": "case_22",
+      "verdict": "A_imprecise",
+      "verdict_verbatim": "a but slightly off, b is a total miss though"
+    },
+    {
+      "case": "case_23",
+      "verdict": "A_imprecise",
+      "verdict_verbatim": "a but slightly off, b is a total miss though"
+    },
+    {
+      "case": "case_24",
+      "verdict": "neither",
+      "verdict_verbatim": "neither"
+    }
+  ]
+}
