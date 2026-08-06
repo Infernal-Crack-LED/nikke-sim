@@ -1,5 +1,10 @@
 # Marker semantics — PRE-COMMIT (2026-08-05)
 
+> **CLOSED (2026-08-05) — EXECUTED.** the marker-semantics measurement; the record is `docs/probe-runs.md` §27.
+> ⚑ **Deliberately still TRACKED, not archived**: `docs/probe-runs.md` is CHANGELOG-class and cites
+> this file by path as the plan-of-record (blast radius, gate verdict). Moving it to the gitignored
+> `closed/` would dangle that citation. Nothing here is live work — open items are in `QUEUE.md`.
+
 > AI-facing. **Committed BEFORE any production number exists**, following the `2026-08-04-mislock-rate-PRECOMMIT.md`
 > precedent — the §21 lesson is that a pre-committed control is the only thing that reliably voids a
 > tidy-looking wrong answer. Executes §8 item 2 of

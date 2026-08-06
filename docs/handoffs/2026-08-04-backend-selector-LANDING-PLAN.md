@@ -1,5 +1,10 @@
 # Backend-selector tie-break — LANDING PLAN, blast radius MEASURED first
 
+> **CLOSED (2026-08-05) — LANDED.** the passenger-channel tie-break fix; the record is `docs/probe-runs.md` §24.
+> ⚑ **Deliberately still TRACKED, not archived**: `docs/probe-runs.md` is CHANGELOG-class and cites
+> this file by path as the plan-of-record (blast radius, gate verdict). Moving it to the gitignored
+> `closed/` would dangle that citation. Nothing here is live work — open items are in `QUEUE.md`.
+
 > AI-facing. Written and committed **before any production file is touched**. Fixes the defect
 > recorded at `docs/probe-runs.md` §11E, carried as item 6 of
 > [`2026-08-04-lifetime-cap-JUDGE-handoff.md`](2026-08-04-lifetime-cap-JUDGE-handoff.md).

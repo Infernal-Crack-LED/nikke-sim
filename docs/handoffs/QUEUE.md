@@ -304,167 +304,40 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
   branch `fix/pellet-reader`, UNPUSHED — read the count live with
   `git rev-list --count origin/fix/pellet-reader..HEAD`, never from a written number.
   `/patch-notes` is owed before anything reaches `main`.
-  - ✅ **DUMP-SCHEMA FIDELITY LANDED 2026-08-05** (`docs/probe-runs.md` §25 measured it, §26 records
-    the landing; plan `docs/handoffs/2026-08-05-dump-schema-LANDING-PLAN.md`, cross-family pre-op
-    gate `kimi-code/k3` APPROVED-WITH-REVISIONS with all four revisions executed). `--dump-tracks`
-    could not replay the `white`/`red`/`marker` split — **12.20% of the marker-bearing population**
-    over 23,997 frames, two mechanisms, `UNEXPLAINED = 0`. Now per-frame `reds` + full-precision
-    `xs`/`ys` + persisted `marker_radius`/`band_hi`; `n_divergent` **15 → 0** on a new dump, old
-    dumps still replay identically (`h4-marciana-structural` = 89), **zero fixtures moved**.
-    ⚑ **Reaches NEW extractions only** — every dump written before `8d500ff9` still exhibits both
-    mechanisms exactly as §25A measured.
-  - ✅ **MARKER SEMANTICS (§8 item 2) MEASURED 2026-08-05 — `docs/probe-runs.md` §27**, rule
-    pre-committed at `e909c94c` before any number existed
-    (`docs/handoffs/2026-08-05-marker-semantics-PRECOMMIT.md`). **21.7% of production `core` flags
-    (39/180, 815 shots, 4 units) fail a persistence test** ⇒ the pre-committed `> 20%` DOMINANT
-    band. All three falsification controls PASS; CONTROL A reproduces §15's independent f1565
-    adjudication exactly (3 → 1).
-    - ⚑ **BUT THE TWO HALVES HAVE DIFFERENT BASES — do not conflate.** The pellet-count cost is
-      **−39 pellets over 815 shots = −0.048/shot ≈ 3.4% of §19's −1.40 residual**, and it moves the
-      residual the **wrong way** (to ~−1.45). **Marker semantics is a faithfulness win, NOT a
-      cold-bias lead.** ⛔ Never quote `ΔavgTotal` as the cost — it averages over the valid subset
-      and dropped flags cross that boundary both ways (`isabel`'s is POSITIVE while losing 6 flags).
-    - ⚑ The 21.7% is a **FLOOR**: `MOVING` (618) and `UNDECIDABLE` (612) tracks are all KEPT, and on
-      `marciana` (SG/Iron) 58 of 113 `MOVING` lean screen-fixed against 4 leaning attached.
-    - ✅ **§27F's GATE IS ANSWERED — OWNER-MEASURED 2026-08-05 (`docs/probe-runs.md` §28): the
-      hit-marker VFX lasts 14 NATIVE frames** (~7 at the production 30 fps sampling). C1's premise
-      holds by a wide margin — one sampled frame is a seventh of a marker.
-    - ⚑ **BUT A NEW QUALIFICATION REPLACED IT AND IT CUTS AGAINST §27 (§28B).** The premise being
-      right about the VFX does not make C1 right about a TRACK: **255 of 1351 life-1 marker tracks
-      (18.9%) are FRAGMENT-LIKE** (within 15 px crosshair-relative of a life ≥ 2 marker within
-      ±2 frames), so C1 also drops pieces of real markers. ⇒ **§27's 21.7% is BRACKETED, not
-      pinned** — it over-drops AND under-drops, opposite signs, **not known to cancel.** The
-      verdict "a real channel" survives; the figure is not a point estimate.
-    - **⇒ OPEN — §28C, a COLD channel nothing has scored.** A full marker spans ~7 sampled frames,
-      which IS `max_pellet_frames`, so **164 red near-crosshair tracks (life peaking at 8–10)
-      exceed the ceiling and never reach `marker` at all** — MISSED core hits, making shots colder
-      by 1. Opposite sign to §27's warm channel; **the two have not been netted.** The marker
-      landing must treat the channel as two-sided.
-    - ✅ **`13 → 14` LANDED 2026-08-05 (`docs/probe-runs.md` §29, `07b82474`)**, plan
-      `docs/handoffs/2026-08-05-pellet-lifetime-14-LANDING-PLAN.md`, cross-family pre-op gate
-      `kimi-code/k3` APPROVED-WITH-REVISIONS (all four executed). **Inert where it matters** — the
-      30 fps invariance control gives 7 either way, so **no measurement in §§14–27 moves**; only a
-      diagnostic census on two 60 fps dumps changed (one fixture, 3 fields, exactly as predicted).
-      ⚑ It **retires trap 1** (the `(13/60)×30 = 6.5` JS/Python rounding tie); `floor(x + 0.5)` is
-      kept as the correct JS mirror at other fps and its docstring now says so historically.
-      - ✅ **CLOSED 2026-08-05 (§29E)** — owner clarified _"the lifecycle is the same, it just has
-        one additional frame at the end"_, so the fade phase runs **f12–14**. The SIZE curve needed
-        no change (the added frame is a fade frame, and fade frames already hold 1×). The two
-        hardcoded fade literals turned out to be 2 dp roundings of **2/3, 1/3** — the same linear
-        ramp over 2 fade frames — so the ramp is now a **formula** giving 0.75/0.50/0.25, and the
-        selftest re-derives the old values at `n_fade = 2` to keep "same rule, one more frame" a
-        CHECKED claim. Zero fixtures moved; reaches future synthetic generation only.
-      - ⚑ **Method note worth keeping:** the gate's demand that the repo-wide grep be STATED rather
-        than assumed is what surfaced the site the plan had missed (`score-pellets.py`). An unstated
-        completeness search is not evidence of completeness.
-    - **⇒ SUPERSEDED — the `13 → 14` item below is closed by the above.** At 30 fps —
-      every production dump — it is **INERT** (`max_pellet_frames = 7` either way), so no
-      measurement in §§14–27 moves. At 60 fps it is 13 → 14. ⚑ It also **eliminates the documented
-      cross-language rounding trap** (`(13/60)×30 = 6.5` is a JS-half-up/Python-half-even tie that
-      `_merge_max_pellet_frames` carries a bespoke workaround for; `7.0` is not). Changing it moves
-      `_merge_max_pellet_frames(60)` and reaches three committed 60 fps fixtures
-      (`merge-audit-slice`, `representative-audit-slice`, `stale-counting-slice`) ⇒ **its own gated
-      pass with a blast-radius declaration.**
-    - **⇒ OPEN — the per-unit spread is large and unexplained**: 8.6% / 14.0% / **40.0%** / 22.6%
-      across `marciana` / `isabel` / `guilty` / `noir` (n=4). `guilty` has 54% of its marker tracks
-      life-1 vs 38% on `marciana`. Recorded without a manufactured cause.
-    - ✅ **Four production dumps now carry the `reds` schema** (`h4-marciana-schemafix`,
-      `h4-isabel-schemafix`, `h4-guilty-schemafix`, `g2-noir-schemafix`), each reproducing its
-      original's `white`/`red`/`marker` **and** `cross_positions` with zero diffs — the
-      `tracks.json` half of item 7 is therefore already done; a full re-extraction still needs the
-      `read-pellets.ts` pass for `pellets.json`.
-    - **⇒ OPEN, from §26D — persist `fps` in the dump's `params`.** Third gap of the same family:
-      `band_lo = round(8 × fps / 60)`, so a `band` replay cannot resolve its own lower bound from
-      the dump and must guess. Left out because the landing's edit list was gate-fixed. Fold into
-      the same pass as item 2 or into the re-extraction prep.
-    - **⇒ OPEN, from §26D — `make-groundtruth-f811.py` extracts at 60 fps but lets the counter
-      default to `--fps 30`**, so `groundtruth-f811-v4`'s `band_lo` is 4 where the clip's rate
-      implies 8. Predates `band` existing and touches no landed conclusion; live provenance
-      mismatch for future `band` work on that clip.
-  - ✅ **RE-EXTRACTION (§8 item 7) — RESOLVED 2026-08-05 WITHOUT DOING IT (`docs/probe-runs.md`
-    §30A).** ⚑ **The expensive half was never required.** Verified by code path: `--dump-tracks`
-    writes `frame_counts` as `results[i]["opencv"]`, and `--temporal`'s stdout — what
-    `read-pellets.ts` parses and feeds to `debounceShots` — prints that same `results` list;
-    production runs `--backend opencv` and, since §24's selector fix, the passenger channels
-    resolve to opencv's real values. ⇒ **a schemafix dump's `frame_counts` ARE what production's
-    estimator consumes**, so running `debounce_shots` on them IS the production path — no ffmpeg,
-    no VLM, nothing re-extracted. The ~8–9 min/dump item 7 quoted buys `pellets.json` FILES, a
-    different deliverable from making measurements current, and **no open item needs them.**
-    - ✅ **The measurement it was gating is DONE and OUT OF SAMPLE (§30B):** the landed `band_hi`
-      is worth **+0.4994 pellets/shot over 815 shots / 4 units** (per-unit +0.42…+0.57), against
-      §19's **+0.60 on 5 in-sample shots** whose own §19D called it near-tautological. **The
-      in-sample figure was not an artifact of its footage.**
-    - ⛔ **It measures what the landing MOVED, not that it moved toward TRUTH** — there is no owner
-      reference on these dumps. ⛔ **Never compare that table's `avgTotal` to 8.40**: pooled-over-
-      valid-subset vs a per-shot owner count on one clip's f8–11 window — different bases (§27C hit
-      this trap once already).
-  - ✅ **THE TWO MARKER CHANNELS ARE NETTED — 2026-08-05, `docs/probe-runs.md` §31.** Over 815
-    shots / 4 units: WARM (§27, removing false core flags) **−39 flags, −0.0479/shot**; COLD
-    (§28C, recovering ceiling-excluded markers) **+2 flags, +0.0025/shot**; **NET −35 flags,
-    −0.0429/shot.** ⚑ **§28C's cold channel is ~NIL at the event level** — 164 excluded tracks
-    yield TWO additional flags, because `MARKER_MIN = 2` needs two admitted tracks concurrent in
-    one event (pre-declared before scoring). ⚑ **Robust to the one judgment call:** `band_hi` vs
-    UNBOUNDED differ by a single flag across 815 shots, so the recovery ceiling is not load-bearing.
-    - ⇒ **THE MARKER THREAD IS CLOSED AS A MEASUREMENT and explains NONE of the cold bias.** End to
-      end it is worth **−0.043 pellets/shot ≈ 3% of §19's −1.40 residual**, in the **cold**
-      direction — it makes the residual marginally **worse**. It is a FAITHFULNESS fix.
-    - ⛔ **§28B's bracket is NOT narrowed** — C1 still over-drops (≈19% of the life-1 population it
-      removes is fragment-like) and under-drops (`MOVING` + `UNDECIDABLE` all kept). §31 nets the
-      two CHANNELS; it does not re-litigate C1's internal accuracy. **Any landing of C1 still needs
-      that bracket addressed**, and the −0.043/shot says the prize is small either way.
-  - ✅ **`band_hi = 20` LANDED 2026-08-04** (owner-approved; `docs/probe-runs.md` §16, plan
-    `docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md`). All five pre-stated criteria met, the
-    blast radius declared before the edit **held exactly — zero fixtures, zero pins**, cross-family
-    post-op `ACCEPT`. ⚑ **The improvement reaches NEW EXTRACTIONS ONLY** — committed dumps keep the
-    band values they were extracted with, so **nothing on the board moves until footage is
-    re-extracted**. ⚑ Also open from it: `--dump-tracks` never carries the `band` series, so any
-    such dump replays as pre-hybrid and cannot exercise the landing (§16E; production reader is
-    unaffected — it parses `--temporal` stdout).
-  - ✅ **THE 8.40 REFERENCE IS CONFIRMED, 2026-08-04, OWNER-CONFIRMED** (`docs/probe-runs.md` §18).
-    Nothing lands and fades before `t0+8`, so the f8–11 window count IS the landed total. Of 140
-    screened tracks, 11 were candidates, shot 2's `hitsPerShot` ceiling killed 5 by arithmetic, and
-    all 6 survivors adjudicated **not pellets** (HUD ammo-bar segments at a fixed `dy ≈ −40`, and
-    rising damage numbers). ⇒ **the ~1.08 cold bias is real reader behaviour, not a bad target**,
-    and the old "no bias verdict is possible until this is settled" block is **LIFTED**.
-  - ✅ **§8 ITEM 1 IS ANSWERED — 2026-08-05, `docs/probe-runs.md` §34.** Owner re-adjudicated the
-    24 cases; **answers are COMMITTED** at `docs/probe-data/lock-adjudication-2026-08-05-ANSWERS.json`
-    (+ `-KEY.json`), closing the §32 gap that blocked it.
-    - ⚑ **THE ANSWER: the both-wrong (`neither`) cases are NOT the worst.** Identified (5 of 20),
-      their mean production count is **5.00** vs **5.73** on other mislocked cases — a difference of
-      **−0.73 ± 1.16, INDISTINGUISHABLE FROM ZERO.** §22D's "probably the worst" is **not supported**.
-      ⇒ **§22D's caveat is DISCHARGED**: §22C's ~0 severity no longer has an unexamined worst-case
-      reservoir behind it, so **the bad-lock channel is measured at ~0 pellets/shot.**
-    - ⚑ **§22 REPLICATES**: production lock bad **14/20 = 70%** under both readings (identical to
-      §22B), `structural_right` 6 then and now, severity multiset = §22C's minus exactly one `+2`
-      (one case moved template→`neither`), controls reproduce case for case. ⛔ Not fully
-      independent — same seed, same images, owner had seen them; strong on consistency, weaker on
-      accuracy.
-    - ⛔ **Compares production COUNTS, not LOSSES** — no valid reference exists on those cases, so
-      the loss is still unmeasured; what is established is that the population is not an OUTLIER.
-      ⛔ **Never difference those counts against 8.40** (different bases — the trap §27C/§30C each
-      hit once).
-    - ⚑ **The offered vocabulary was too narrow a SECOND time.** 08-04 lacked `both`/`neither`;
-      08-05 the owner volunteered _"a but slightly off, b is a total miss though"_ on 6 of 20 —
-      now first-class `A_imprecise`/`B_imprecise` with `verdict_verbatim` preserved. **All 6 named
-      TEMPLATE**, so the total miss was always the structural production lock. **Next adjudication:
-      offer these too, and expect the vocabulary to be incomplete again.**
-    - ⛔ **The cold bias is STILL NOT EXPLAINED.** Closing the mislock candidate is not identifying
-      a cause.
-  - ✅ **PRODUCTION MISLOCK RATE MEASURED 2026-08-04: 16.9%** (`docs/probe-runs.md` §20; rule
-    pre-committed at `9bc829dd`). 137 of 811 shots, 4 dumps, 4 units. ⇒ the pre-committed
-    **"> 10% ⇒ mislocks are the DOMINANT undercount channel"** band. The detector flags the known
-    shot-4 mislock and none of the four known-good labelled shots, the 160 px threshold sits in a
-    real empty band (nothing 127–242 px), and the rate reproduces on independent footage
-    (16.2% labelled clip, 20% on §9B's set). **⇒ NEXT: measure what the channel COSTS** — the
-    0.85 pellets/shot figure is DERIVED from one shot's severity (n=1) and carries the refuted
-    `center_exclude` arithmetic shape; it sizes the channel, it does not close anything.
-  - **⚑ The cold bias is still NOT closed** — the target being right says what the bias _isn't_.
-    `avgTotal` may not be cited as evidence it is closed: it is a per-EVENT pooled figure, a
-    different basis from the per-SHOT ~1.08 deficit. The remaining channels (radius gate,
-    missing-shot channel, fragmentation) now carry all of it.
-  - Item 7's prerequisite (is opencv's `marker = 3` at frame 1565 a true core hit?) is **ANSWERED —
-    no**, at n=1 (`docs/probe-runs.md` §15). The `read-pellets.ts:882` selector fix stays
-    owner-gated; do not self-authorize it on an n=1 read.
+  - ⛔ **THE COLD SG READ IS STILL UNEXPLAINED — this is the thread.** §19 leaves **−1.40
+    pellets/shot** after the `band_hi` landing. Every channel investigated so far has been closed
+    or sized small, and **none of them explains it**: mislocks ~0 (§22C, §34), marker semantics
+    −0.043/shot ≈ 3% and in the _wrong_ direction (§31), `band_hi` recovered +0.50/shot
+    out-of-sample (§30B). ⚑ **Closing a candidate is not identifying a cause.**
+  - **⇒ OPEN — the abstentions (§8 item 3).** What the 81 `in_band_no_concurrency` events are, and
+    what the 16 that become banded at `band_hi = 20` share. Committed fixtures only, no owner time.
+  - **⇒ OPEN — track fragmentation (§8 item 4), now with fresh evidence.** 70% of tracks dead by
+    frame 2 at 30 fps, 64.3% at 60. ⚑ **§28B measured 18.9% of life-1 marker tracks as
+    fragment-like**, which is the same defect seen from another angle. Plausibly the same root as
+    item 3 — treat together.
+  - **⇒ OPEN — the C1 marker landing is warranted but GATED.** §27's band says land it; §31 says the
+    prize is **−0.043 pellets/shot**. ⛔ **§28B's bracket must be addressed first** — C1 over-drops
+    (≈19% fragment-like) and under-drops (`MOVING` + `UNDECIDABLE` kept), opposite signs, not known
+    to cancel.
+  - **⇒ OPEN — the out-of-frame localizer defect (§33), measured but NOT scored and NOT fixed.**
+    0.43% of locked frames put the crosshair outside the frame, always off the right edge. Its
+    counting effect is one-sided (can only lose pellets). Whether to clamp, drop, or treat as an
+    abstention is a design question with its own blast radius.
+  - **⇒ FOR THE NEXT LOCK ADJUDICATION:** offer `A_imprecise`/`B_imprecise` alongside
+    `A`/`B`/`neither`/`both`/`?` — **and expect the vocabulary to be incomplete again** (it has been
+    too narrow twice running, §22A then §34A). Answers are PRIMARY EVIDENCE: commit `ANSWERS.json`
+    when they arrive (§32).
+  - **⇒ OPEN, FOR THE OWNER — `DECISIONS.md` has a six-landing gap (2026-08-01 → 08-04).** The
+    `band_hi = 20` ceiling, the `band` dump channel, the backend-selector tie-break, the
+    representative-frame hybrid and two pre-committed measurement passes all changed landed state
+    and are recorded ONLY in `docs/probe-runs.md` §13–§24 — a log of MEASUREMENTS, not of settled
+    WHYs. ⚑ **Deliberately not backfilled**: writing them now means inferring another session's
+    rationale from its numbers. The owner should either dictate them or rule that probe-runs is
+    sufficient provenance for that arc.
+  - ⛔ **BASIS TRAPS, binding.** Never difference production per-shot counts against **8.40** (that
+    is an owner f8–11 window count on the labelled `marciana` clip). Never quote `avgTotal` as a
+    per-shot cost (it pools over the `[5,10]` valid subset, whose membership MOVES). Both have been
+    hit once each this session (§27C, §30C, §34D).
   - **Error budget (the target, computed):** U35 needs ±0.5 pellets/10 discrimination; at n≈40
     shots/band a per-shot random SD of **±1.5 pellets is tolerable**, but per-band **bias must be
     ≤ ±0.25 pellets/10**. The counter is ~10–20% cold = 0.8–1.6 → **3–6× over budget on BIAS.**
@@ -474,12 +347,12 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
     on all four frames of every shot. **So "landed pellets per shot = 8.4", and the 8–16%
     missing-shot threshold derived from it, are WINDOW-CONDITIONAL.** Re-check anything leaning on
     them.
-  - **Owner pellet-lifecycle spec (60fps, 13 frames)** still governs: f1 small w/ shadowed surround
-    → f3–4 peak (2×, **pellets occlude — least readable**) → f5–11 shrink to 1× → f12–13 fade.
+  - **Owner pellet-lifecycle spec (60fps, 14 frames — CORRECTED 2026-08-05, §29)** still governs: f1 small w/ shadowed surround
+    → f3–4 peak (2×, **pellets occlude — least readable**) → f5–11 shrink to 1× → f12–14 fade.
     **Readable frames are f1 and f8–11.**
   - **OPEN, IN PRIORITY ORDER.** Records: `docs/probe-runs.md` §4–§9. Instruments (all committed on
     `scripts/probe/analyze-pellet-tracks.py`, each with a self-validating fixture and wired into
-    `scripts/probe/pellet-selftest.sh`, 17 arms): `--hand-count`, `--ammo-abstention`,
+    `scripts/probe/pellet-selftest.sh`, 30 arms): `--hand-count`, `--ammo-abstention`,
     `--ammo-oracle-ceiling`, `--merge-audit`, `--representative-audit`.
     1. **THE REPRESENTATIVE-FRAME POLICY — the live lead on the cold bias, tier STRONG MECHANISTIC
        (probe-runs §9).** `debounce_shots` copies each event's count from ONE frame (the active
@@ -522,31 +395,20 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
        RE-PROPOSE**: pooled MISSED 7.0% → **14.5%**, worse on 7 of 8 series, 32 vs a hand count of
        36 on `isabel`; root defect is **no minimum-duration guard** (fires on a one-frame VFX spike,
        then refracts over the real shot).
-    3. ✅ **60 fps LOCALIZATION INSTABILITY — CLOSED 2026-08-04, answered in the NEGATIVE**
-       (`docs/probe-runs.md` §17). Re-localized `run21`/`run21b` under `--locate structural`: lock
-       rate **0% → 100% / 99.4%**, but **~81% of those locks are HELD** (vs 8.1% on the working
-       far-band dump `i3-noir-far-60fps`, 21.4% on `h4-marciana-structural`), stale displacement
-       median **202.6 px** against a 160 px `pellet_radius`, 29 of 30 shots carrying a stale
-       counting frame. ⚑ **Structural turns a LOUD failure into a SILENT one** — these two windows
-       stay UNUSABLE, and the re-localized dumps are more dangerous to a consumer that checks lock
-       RATE rather than lock PROVENANCE. ⚑ The item's framing was wrong too: 4 of 6 60 fps dumps
-       already lock 100%, one of them far-band, so neither 60 fps nor the far band is the
-       discriminator. **Why these two windows fail is UNEXPLAINED** (§17E), and this gates nothing —
-       the production mislock question needs a displacement test on the production dumps instead.
-    4. **THE WORKTREE HOOK GAP.** `core.hooksPath=.husky/_`, but `.husky/_` is husky's **gitignored
+    3. **THE WORKTREE HOOK GAP.** `core.hooksPath=.husky/_`, but `.husky/_` is husky's **gitignored
        generated** directory, created by `npm install` in the main repo and **never present in a git
        worktree** — so **every commit in any `nikke-sim-wt-*` worktree silently bypasses lint-staged
        and `npm run typecheck`.** Until fixed, run `npx prettier --write` on every file touched and
        `npm run typecheck` manually before committing. **The fix belongs at worktree creation.**
-    5. ⚑ **THE f1787 MISS on `guilty` — mechanism UNKNOWN (probe-runs §7.10).** Not explained by
+    4. ⚑ **THE f1787 MISS on `guilty` — mechanism UNKNOWN (probe-runs §7.10).** Not explained by
        cluster-merge: peak T = 8, post-reload lock re-acquisition, on a **measured** lock. n=1
        event. Do not manufacture a cause.
-    6. ⚑ **PRE-EXISTING PYTHON/TYPESCRIPT ONE-EVENT DIVERGENCE on `h4-marciana`** (`marciana`,
+    5. ⚑ **PRE-EXISTING PYTHON/TYPESCRIPT ONE-EVENT DIVERGENCE on `h4-marciana`** (`marciana`,
        SG/Iron; probe-runs §8H): `validShots` 177 vs shipped 176. **The lockstep invariant may
        ALREADY be off** — verify it on the dump you are using.
-    7. ⚑ **DOES ANY MARKER FADE BEFORE t0+8?** Needs owner labels at the plateau frame (owner time).
+    6. ⚑ **DOES ANY MARKER FADE BEFORE t0+8?** Needs owner labels at the plateau frame (owner time).
        The "never detected = 0" row is conditional on the f8–11 window.
-    8. **THE GENERATOR'S RADIAL ENVELOPE, then Phase 2 steps 4–6.** The envelope places every label
+    7. **THE GENERATOR'S RADIAL ENVELOPE, then Phase 2 steps 4–6.** The envelope places every label
        strictly inside the counting window (884 labels, r=42.0–157.1) while ~10% of real marks fall
        outside, so **no synthetic measurement can see that** and every generator-derived fidelity
        number inherits the gap. Phase 2 steps 4–6 stay blocked on the owner's Decision 1 and the

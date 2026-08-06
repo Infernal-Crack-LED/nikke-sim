@@ -1,5 +1,10 @@
 # Representative-frame policy — ENACTMENT PROPOSAL
 
+> **CLOSED (2026-08-05) — LANDED.** the fallback-hybrid representative-frame rule; the record is `docs/probe-runs.md` §13.
+> ⚑ **Deliberately still TRACKED, not archived**: `docs/probe-runs.md` is CHANGELOG-class and cites
+> this file by path as the plan-of-record (blast radius, gate verdict). Moving it to the gitignored
+> `closed/` would dangle that citation. Nothing here is live work — open items are in `QUEUE.md`.
+
 > AI-facing. Written by the JUDGE session after the §10 measurement returned two candidates at 5/5.
 > **This is a PROPOSAL. It changes no code.** It exists so the enactment pass has a plan with
 > pre-committed acceptance criteria instead of improvising after a green selftest.

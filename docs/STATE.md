@@ -312,9 +312,31 @@ chronological measurement log → `docs/probe-runs.md`.
 | `read-battle-records.ts`                          | per-unit **totals / damage taken / healing / Combat Power** + slot order | VLM on the static end-of-fight screen + an arithmetic checksum vs the cumulative team total                                | ✅ 37/37 numbers exact on 2 screenshots — but only trusted when the **checksum closes**                                                            |
 | `read-total-damage.ts`                            | cumulative team total over the fight (the SG-lattice source)             | VLM @1 fps + monotonicity warnings                                                                                         | survey; individual totals need confirmation before a lattice fit rests on them                                                                     |
 | `read-burst-gauge.ts`                             | burst-state timeline + transitions, optional sim compare                 | `--classifier cv` (default) delegates to `scan.ts`; `--classifier vlm` is the old per-frame read                           | cv as above. ⚠ **vlm must not be used for FB counts** — 6 `full` transitions in a 30 s window where the truth is ≤2                                |
-| `read-pellets.ts` + `count-pellets.py`            | SG **per-shot pellet landing**                                           | CV pellet detection + crosshair tracking                                                                                   | ⚑ CANDIDATE — tuned on `marciana-solo.MP4` only; 70 of ~90 shots, avgTotal 7.6 vs the lattice's ≈8.45. Not a landing measurement (U35)             |
+| `read-pellets.ts` + `count-pellets.py` | SG **per-shot pellet landing** | CV pellet detection + crosshair tracking; per-frame `reds` + full-precision positions in `--dump-tracks` (2026-08-05); lifetime band `[band_lo, band_hi]` decoupled from `max_pellet_frames` | ⚑ **CANDIDATE, still ~1.4 pellets/shot COLD and the cause is UNIDENTIFIED.** Measured out-of-sample on 815 shots / 4 units. Channels investigated and CLOSED without explaining it: mislocks ≈0, marker semantics −0.043/shot. Not a landing measurement (U35) |
 | `read-popups-vlm.ts`                              | per-hit **damage popups** (value, crit/core, position)                   | VLM per frame + dedup + confidence scoring + hit-value band membership                                                     | PROVISIONAL. Its useful output is the ranked `needsConfirmation[]`; the **auto-accept path is UNEXERCISED** and unproven                           |
 | `hit-values.ts` / `hit-bands.ts`                  | the per-unit **hit-value band table** (the attribution key)              | sim debug tap, no video                                                                                                    | deterministic. Overlapping bands CANNOT be attributed — that rule is upstream of every popup read                                                  |
+
+**Pellet-reader analysis arms** (`analyze-pellet-tracks.py`, **30** self-validating selftest arms via
+`scripts/probe/pellet-selftest.sh`; each has a committed fixture). The load-bearing ones for reading
+any pellet measurement: `--dump-replay-fidelity` (does a dump replay what production counted),
+`--marker-semantics` / `--marker-net` (core-flag faithfulness, both channels), `--band-production-ab`
+(what `band_hi` buys per shot), `--mislock-rate` / `--lock-adjudication` (+ `--lock-adjudication-score`,
+which scores COMMITTED owner answers).
+
+⚑ **Two substrate rules, enforced by the tools themselves rather than by convention:**
+
+- A `tracks.json` written **before 2026-08-05** cannot faithfully replay the `white`/`red`/`marker`
+  split — 12.20% of the marker-bearing population is mislabelled. `--marker-semantics` and
+  `--band-production-ab` **REFUSE** such a dump rather than returning a plausible wrong answer.
+- A `--dump-tracks` `frame_counts` **is** what `--temporal` prints and production consumes, so running
+  `debounce_shots` on it **is** the production path — **no re-extraction, no ffmpeg, no VLM.**
+
+**Owner-measured:** a pellet AND a hit-marker each last **14 native frames** (corrected from 13 on
+2026-08-05). At 30 fps `max_pellet_frames = 7` either way; at 60 fps it is 14.
+
+⛔ **Two basis traps, both hit once each on 2026-08-05:** never difference per-shot counts against
+**8.40** (an owner f8–11 window count on one clip), and never quote `avgTotal` as a per-shot cost (it
+pools over the `[5,10]` valid subset, whose membership moves).
 
 Two structural facts that keep getting re-derived:
 

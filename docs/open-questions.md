@@ -266,7 +266,10 @@ scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py \
   (14.3%). The lock did not look frozen (477px wander), but this run's crosshair track is weaker than
   the reference and the statistics above should be read with that in mind, not as a clean replication.
 
-**UNANSWERED, narrower than before.** The lifecycle is real at 60 fps, not merely a 30 fps artifact or
+**UNANSWERED, narrower than before.** ⚑ **The spec referenced throughout this entry is the
+then-13-frame one; the owner corrected the lifecycle to 14 native frames on 2026-08-05 (the added
+frame is a FADE frame — `docs/probe-runs.md` §29/§29E), which does not disturb the dropout finding
+below.** The lifecycle is real at 60 fps, not merely a 30 fps artifact or
 a spec/generator fiction — but the owner's exact 2-frame peak-plateau table is optimistic for a
 majority of individual tracks, and detection dropout (not fps) is now the dominant open question for
 whether steps 4–6's track-level identity scoring has enough surviving evidence per pellet to work at
