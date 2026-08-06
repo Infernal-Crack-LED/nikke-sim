@@ -6317,3 +6317,98 @@ stays intact while the stale live claim does not.
 GENERATOR, which the SUFFICIENCY rule puts outside the `/scientific-method` surface — `verify.sh`
 plus the existing fixtures are its gate, and both are green with zero fixtures moved. The two
 production-touching landings today (§26, §29) did go through the cross-family gate.
+
+#### §30 THE `band_hi` LANDING, OUT OF SAMPLE ON THE PRODUCTION PATH — +0.50 pellets/shot over 815 shots, and RE-EXTRACTION TURNS OUT NOT TO BE NEEDED
+
+**2026-08-05.** Executes §8 item 7 of the 08-04 session handoff — "re-extraction, the gate on
+everything above" — and finds that the expensive half of it was never required.
+
+##### §30A — ⚑ THE RE-EXTRACTION IS UNNECESSARY FOR THE MEASUREMENT IT WAS GATING
+
+Item 7 called for re-running the production path (`read-pellets.ts`: ffmpeg extraction + timer VLM +
+counter, ~8–9 min × 5 dumps, and a live VLM server) so that today's landings would reach the
+measurements. **They already do.** Verified by code path, not assumed:
+
+- `--dump-tracks` writes `frame_counts` as **`results[i]["opencv"]`**, and `--temporal`'s stdout —
+  the thing `read-pellets.ts` parses and hands to `debounceShots` — prints that **same `results`
+  list** (`count-pellets.py:1963`).
+- Production runs `--backend opencv` with the other backends zero-filled, and since §24's selector
+  fix the passenger channels (`marker`, `band`) resolve to opencv's real values rather than to
+  array order.
+
+⇒ **A schemafix dump's `frame_counts` ARE the per-frame values production's estimator consumes.**
+Running `debounce_shots` on them **is** the production path — no ffmpeg, no VLM, nothing
+re-extracted. The four `*-schemafix` dumps (§26/§27, each reproducing its original's
+`white`/`red`/`marker` **and** `cross_positions` with zero diffs) already carry `--band-hi 10`,
+which is exactly what `read-pellets.ts` derives at 30 fps.
+
+⚑ **Reuse-before-derive, in the shape the SUFFICIENCY rule names:** the artifact needed to answer
+the question already existed. The cost quoted in item 7 was for regenerating `pellets.json` files,
+which is a **different** deliverable from making the measurements current — and no open item needs
+those files.
+
+##### §30B — What §19 could not do, and this does
+
+§19 measured the landed `band_hi` on the production path at **+0.60 pellets/shot** — but on **5
+shots, one clip**, and **§19D says so itself**: the recovered pellets are among the five that
+generated the cap hypothesis, so "the fix recovers them" is close to tautological on that footage.
+The out-of-sample evidence was §14's ceiling and corridor gates, which are **per-EVENT** and
+label-free — a different basis from the per-SHOT production gain.
+
+**This is that gain, out of sample, on every shot of four dumps that had no part in generating the
+hypothesis:**
+
+| dump (unit)                          | shots   | shots moved | Σδ       | **δ / shot** | avgTotal control → landed |
+| ------------------------------------ | ------- | ----------- | -------- | ------------ | ------------------------- |
+| `h4-marciana-schemafix` (`marciana`) | 218     | 102         | +117     | **+0.5367**  | 6.8187 → 7.2514           |
+| `h4-isabel-schemafix` (`isabel`)     | 203     | 75          | +86      | **+0.4236**  | 6.9195 → 7.2675           |
+| `h4-guilty-schemafix` (`guilty`)     | 180     | 75          | +81      | **+0.4500**  | 6.7413 → 6.8954           |
+| `g2-noir-schemafix` (`noir`)         | 214     | 99          | +123     | **+0.5748**  | 6.9545 → 7.3952           |
+| **pooled**                           | **815** | **351**     | **+407** | **+0.4994**  | valid shots 617 → 652     |
+
+⇒ **+0.4994/shot out-of-sample against §19's +0.60 in-sample**, with a tight per-unit range
+(+0.42 … +0.57) across four units. The in-sample figure was **not** an artifact of the footage it
+was fitted on.
+
+##### §30C — ⛔ WHAT THIS DOES NOT SHOW, and the basis trap it sits next to
+
+- ⛔ **It measures what the landing MOVED, not that it moved toward TRUTH.** There is no owner
+  reference on these dumps. §19 could score against the confirmed 8.40; this cannot. A +0.50/shot
+  warm shift is an improvement only if the reader was cold by at least that much — which §19's
+  post-landing **−1.40/shot** residual supports, but on one clip.
+- ⛔ **DO NOT compare the `avgTotal` column to 8.40.** `avgTotal` is pooled over the
+  `[min_pellets, max_pellets]` VALID subset; 8.40 is a per-SHOT owner count on the labelled clip's
+  f8–11 window. **Different bases** — the §4 trap, which §27C already hit once in this session.
+  The columns are there to show the direction and rough scale, nothing more.
+- The A/B's validity precondition is the arm's **reconstruction control: 0 mismatched frames on all
+  four dumps** — recomputing the band at each dump's OWN `band_hi` reproduces its stored series
+  exactly. Without that, the recomputed control arm would be measuring the recomputation.
+- Segmentation invariance is **asserted, not assumed**: `debounce_shots` segments on `white + red`,
+  which this A/B never touches, and the arm raises if the shot count moves.
+
+##### §30D — Instrument and reproduction
+
+New arm (constraint 9: extend, don't fork): `analyze-pellet-tracks.py --band-production-ab`, wired
+into `scripts/probe/pellet-selftest.sh` (now **28 arms**; `verify.sh` green). It **REFUSES** a dump
+lacking per-frame `reds` or lacking `band` — the `band` branch tests `not is_red` **per frame**, so
+a pre-§26 dump inherits §25's mislabel on exactly this channel (§26C measured 13 divergent band
+frames from it, going to 0 once `reds` existed).
+
+```sh
+PY=/Users/maxwellsutton/nikke-sim/scripts/probe/.venv/bin/python
+S=/Users/maxwellsutton/nikke-sim/scratchpad/pellets
+$PY scripts/probe/analyze-pellet-tracks.py --band-production-ab \
+  $S/{h4-marciana,h4-isabel,h4-guilty,g2-noir}-schemafix/tracks.json
+$PY scripts/probe/analyze-pellet-tracks.py --band-production-selftest
+```
+
+⚑ **This arm's fixture pins RESULTS, not a replay slice, and its selftest says so.** `band_ids` is a
+lifetime property of the FULL track list, so a frame-window slice would silently change which
+tracks are admitted — the honest fixture is the committed numbers plus coherence checks
+(pooled = Σ per-dump, `delta_per_shot` = Σδ / n, each `delta_hist` sums to its shot count, the
+reconstruction control is 0, the landing widened every band, and the A/B is non-vacuous). It does
+**not** re-derive the numbers, and the selftest prints that limitation rather than implying a replay.
+
+**RECORDS a measurement. NOTHING ENACTS.** `band_hi`, `debounce_shots`, `read-pellets.ts` and every
+constant are UNCHANGED; no existing fixture moved. ⛔ Still open and untouched here: netting §28C's
+cold ceiling-exclusion channel against §27's warm false-flag channel.
