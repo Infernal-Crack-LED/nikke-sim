@@ -10240,6 +10240,16 @@ def lock_adjudication_selftest():
 # not establish the MAGNITUDE; only owner labels can. This arm generates the ASK. It adjudicates
 # nothing, scores nothing, and changes no constant, default, threshold or localizer.
 #
+# ⛔ THE ASK IS "MARK WHAT YOU SEE", NEVER "DO THE GEOMETRY" (2026-08-06 owner ruling). The first
+# version of INDEX.md asked how many real pellets fall inside a 184 px disc centred on a bare
+# coordinate, in an image with nothing drawn on it -- i.e. it asked a human to do by eye the one
+# thing a tool is exactly good at. The labeller now draws GREEN on each real pellet and MAGENTA on
+# the reticle; extract-groundtruth-positions.py --marks reads those positions, and window
+# membership, per-lock counts and the adjudication are all COMPUTED from them. Nothing
+# labeller-facing mentions the candidates at all any more -- INDEX.md carries no candidate
+# coordinates and no window radius, and ANSWERS.json has no verdict field. (The crops themselves
+# were correct and are unchanged: this changed the TASK, not the images.)
+#
 # WHY NOT make-groundtruth-f811.py: that path centres each crop on ONE crosshair at radius 184. On
 # these shots the two candidates are 271-619 px apart, so a one-lock-centred crop cuts the OTHER
 # candidate's counting window clean out of the image -- every label would then be biased toward
@@ -10305,8 +10315,6 @@ MISLOCK_CROPS_SHOTS = [
     {"shot": 10, "group": "B", "dump": "h4-isabel-structural", "t0": 389,
      "struct": [2120, 224], "tmpl": [1717, 512], "doc_disp": 515, "doc_crop_r": 431},
 ]
-
-MISLOCK_CROPS_VOCABULARY = ["struct", "tmpl", "both", "neither", "partial", "?"]
 
 
 def _mc_geometry(struct_pos, tmpl_pos, frame_w, frame_h, window_r, doc_crop_r=None):
@@ -10415,10 +10423,15 @@ def _mc_expected(rows):
 
 
 def _mc_index_md(rows, out_dir):
-    """INDEX.md -- ⛔ deliberately carries NO per-lock pellet counts and NEVER says which candidate
-    is the structural lock and which is the template one. Both would prime the labeller toward the
-    answer the ask exists to obtain. The two candidates are listed as `cand_1` / `cand_2` in a
-    seeded random order; CANDIDATE-KEY.json holds the mapping."""
+    """INDEX.md -- the LABELLING TASK, and nothing that could answer it for the labeller.
+
+    ⛔ It carries no candidate coordinates, no counting-window radius, no per-lock counts, and never
+    names the structural vs template lock. The task is: MARK what you can see. Which pellets fall
+    under which lock, which lock is right, and every count are derived from the marks by
+    extract-groundtruth-positions.py --marks. Asking a human to judge disc membership by eye against
+    a bare coordinate -- which the first version of this file did -- is geometry the tool owns.
+    CANDIDATE-KEY.json still holds the cand_1/cand_2 -> struct/tmpl mapping, for that tool.
+    """
     lines = [
         "# Mislock labels -- 10 shots, 4 frames each",
         "",
@@ -10431,35 +10444,47 @@ def _mc_index_md(rows, out_dir):
         "no label. Flat mid-grey area is OUTSIDE the captured frame (the crop is padded, never",
         "shifted, so the geometry below is exact on every image).",
         "",
-        "Each shot has two CANDIDATE crosshair positions, listed below in crop pixel coordinates as",
-        "`cand_1` and `cand_2` (origin = top-left of the crop). Each candidate defines a counting",
-        "window: a disc of radius `window_r` centred on it. Both windows are wholly inside every",
-        "crop -- that is what the crop radius is chosen to guarantee.",
+        "## What to do -- MARK the image; the tool does the rest",
         "",
-        "## What to record, in `ANSWERS.json`",
+        "Draw on the crop, in any tool (macOS Preview markup is what the earlier",
+        "`groundtruth-f8-11` set used; its shape autocomplete is fine -- circles and squares both",
+        "read, and only a mark's CENTRE is used, never its size or shape):",
         "",
-        "Per shot: which candidate (if either) is on the ACTUAL crosshair, and how many REAL pellets",
-        "fall inside each candidate's window.",
+        "1. **GREEN** -- one shape around **every real pellet** you can see. Enclose the pellet.",
+        "2. **MAGENTA** -- one shape on the **in-game crosshair reticle**, if you can identify it.",
+        "   At most one per crop, and only when you can actually see it.",
         "",
-        "`verdict` is one of: " + " | ".join(f"`{v}`" for v in MISLOCK_CROPS_VOCABULARY) + ".",
+        "Mark **ONE frame per shot** -- whichever of the four reads clearest -- and save the marked",
+        "copy in place, same filename. Then run:",
         "",
-        "`struct` and `tmpl` are the two localization methods under test. Which of `cand_1` /",
-        "`cand_2` is which is in `CANDIDATE-KEY.json` -- open it only AFTER you have decided, or",
-        "just record the counts against `cand_1` / `cand_2` and let the key resolve them. Neither",
-        "these crops nor this file says which is which, on purpose: the mislock population's two",
-        "locks disagree systematically in direction (docs/probe-runs.md §41A), so knowing which",
-        "candidate is the production lock would tell you where to expect the answer.",
+        "```sh",
+        "scripts/probe/.venv/bin/python scripts/probe/extract-groundtruth-positions.py \\",
+        "    --marks <this directory> --marks-write",
+        "```",
         "",
-        "⚑ **If none of those words fits, write what you actually saw in `verdict_verbatim` and",
-        "leave `verdict` as `?`.** This vocabulary has been too narrow twice running -- 2026-08-04",
-        "lacked `both`/`neither` (docs/probe-runs.md §22A) and 2026-08-05 lacked the",
-        "\"right one but slightly off\" category (§34A). Both times the owner had to volunteer it.",
-        "A word this list does not have is a finding, not a nuisance.",
+        "It reads the marks, writes their positions into `ANSWERS.json`, records which frame each",
+        "shot came from in `MARKS.json`, and prints what it found.",
+        "",
+        "⛔ **You are never asked for a count, for which lock is right, or for whether a pellet is",
+        "inside some window.** All of that is arithmetic the tool does from the marks. If you find",
+        "yourself measuring distances by eye, stop -- that is the tool's job, not yours.",
+        "",
+        "⚑ **MAGENTA, not red.** This footage is full of red VFX and red/orange damage numbers, and",
+        "no colour mask can separate a drawn red from a rendered one. Magenta reads cleanly.",
+        "",
+        "⚑ **\"I cannot read this one\" is a real answer and a real finding.** Some of these crops are",
+        "dense with damage numbers and red VFX. If you cannot pick the pellets out, leave the crop",
+        "UNMARKED and say so in that shot's `notes` in `ANSWERS.json` -- an unreadable crop is data",
+        "about the footage, not a failure. Same for the reticle: if you cannot identify it, leave it",
+        "unmarked and set `reticle_visible` to `false`. A null is data; a guess is not.",
         "",
         "⛔ **Fill in `ANSWERS.json` and COMMIT it.** The 2026-08-04 answers were never persisted,",
         "so those cases can no longer be identified and their cost is unmeasurable (§32D).",
         "",
         "## The shots",
+        "",
+        "Geometry is listed so the tool can map crop pixels back to frame pixels; nothing here is",
+        "something you need to read off an image.",
         "",
     ]
     for row in rows:
@@ -10467,7 +10492,6 @@ def _mc_index_md(rows, out_dir):
         lines.append("")
         lines.append(f"- t0 = {row['t0']}; frames shown t0+8..t0+11 "
                      f"(absolute {row['t0'] + 8}..{row['t0'] + 11})")
-        lines.append(f"- candidate separation: {row['disp']:.1f} px")
         lines.append(f"- crop: {row['size'][0]}x{row['size'][1]} px, centred on frame pixel "
                      f"({row['centre'][0]}, {row['centre'][1]}); crop pixel (0,0) is frame pixel "
                      f"({row['origin'][0]}, {row['origin'][1]})")
@@ -10475,9 +10499,6 @@ def _mc_index_md(rows, out_dir):
                                         ("right", row["pad_right"]), ("bottom", row["pad_bottom"]))
                 if v]
         lines.append(f"- pad (grey, outside the frame): {', '.join(pads) if pads else 'none'}")
-        lines.append(f"- counting-window radius `window_r` = {row['window_r']} px")
-        for i, pos in enumerate(row["cand_crop_px"], start=1):
-            lines.append(f"- `cand_{i}` at crop pixel ({pos[0]}, {pos[1]})")
         for c in row["crops"]:
             lines.append(f"- `{Path(c['file']).relative_to(out_dir)}` -- frame t0+{c['offset']} "
                          f"(absolute {c['frame']})")
@@ -10576,30 +10597,35 @@ def mislock_crops(dumps_root, out_dir, seed=MISLOCK_CROPS_SEED, save_fixture=Non
                    "seed": seed, "shots": rows}, fh, indent=2)
     print(f"wrote {out_dir / 'MANIFEST.json'}")
     with open(out_dir / "CANDIDATE-KEY.json", "w") as fh:
-        json.dump({"_README": ("Maps cand_1/cand_2 (as listed in INDEX.md and ANSWERS.json) to the "
-                               "structural / template lock. ⛔ Do NOT read this before labelling -- "
-                               "the crops and INDEX.md are deliberately silent about which "
-                               "candidate is which so the labels are not primed."),
+        json.dump({"_README": ("INTERNAL -- for the scoring tool, not for the labeller. Maps "
+                               "cand_1/cand_2 to the structural / template lock, and carries each "
+                               "lock's crop-pixel position and counting-window radius, so a later "
+                               "pass can compute which MARKED pellets fall under which lock. "
+                               "Neither the crops, INDEX.md nor ANSWERS.json mentions candidates "
+                               "at all: the labelling task is to mark what is visible, never to "
+                               "adjudicate between two positions."),
                    "seed": seed, "shots": key_rows}, fh, indent=2)
     print(f"wrote {out_dir / 'CANDIDATE-KEY.json'}")
     answers = {
         "_README": (
-            "The durable record of the owner's mislock labels. FILL THIS IN AND COMMIT IT -- the "
-            "2026-08-04 adjudication answers were never persisted and are unrecoverable "
-            "(docs/probe-runs.md §32D). Per shot: `verdict` is one of "
-            + " | ".join(MISLOCK_CROPS_VOCABULARY)
-            + ". `verdict_verbatim` is FREE TEXT -- if none of those words fits, write what you "
-            "actually saw and leave `verdict` as \"?\"; a category this list lacks is a finding "
-            "(§22A and §34A were both exactly that). `n_real_cand_1` / `n_real_cand_2` are how many "
-            "REAL pellets fall inside each candidate's counting window (see INDEX.md for where "
-            "cand_1/cand_2 sit in each crop); `n_real_total` is how many real pellets the shot has "
-            "in total, whether or not any window contains them. Leave a field null if unknown -- "
-            "null is data, a guess is not."),
+            "The durable record of the owner's mislock labels: WHERE the real pellets are, and "
+            "where the in-game reticle is. FILL THIS IN AND COMMIT IT -- the 2026-08-04 "
+            "adjudication answers were never persisted and are unrecoverable (docs/probe-runs.md "
+            "§32D). Filled by drawing marks on the crops (GREEN = one shape per real pellet, "
+            "MAGENTA = the crosshair reticle) and running "
+            "`extract-groundtruth-positions.py --marks <this dir> --marks-write`, which reads the "
+            "marks and writes the positions here; MARKS.json beside this file records which frame "
+            "each shot's marks came from. Per shot: `pellets` is the list of [x, y] CROP-pixel "
+            "positions of the marked pellets; `crosshair` is the marked reticle's [x, y] crop-pixel "
+            "position, or null; `reticle_visible` is false when the reticle could not be identified "
+            "in that crop; `notes` is free text -- and \"this crop is unreadable\" belongs there, it "
+            "is a finding about the footage, not a failure. ⛔ Nothing here asks for a count, for "
+            "which lock is right, or for whether a pellet falls inside some window -- all of that "
+            "is computed from these positions. Leave a field null if unknown -- null is data, a "
+            "guess is not."),
         "seed": seed,
-        "vocabulary": MISLOCK_CROPS_VOCABULARY,
-        "answers": [{"shot": k["shot"], "group": k["group"], "verdict": None,
-                     "verdict_verbatim": None, "n_real_cand_1": None, "n_real_cand_2": None,
-                     "n_real_total": None, "notes": None} for k in key_rows],
+        "answers": [{"shot": k["shot"], "pellets": [], "crosshair": None,
+                     "reticle_visible": None, "notes": None} for k in key_rows],
     }
     with open(out_dir / "ANSWERS.json", "w") as fh:
         json.dump(answers, fh, indent=2)
@@ -11271,7 +11297,11 @@ def main():
                           "on a 271-619px displacement, biasing every label toward whichever lock "
                           "the crop was cut with). ⛔ NOTHING is drawn on the crop -- no marker, "
                           "ring or label -- and edges PAD rather than clip (§32C). Emits INDEX.md, "
-                          "MANIFEST.json, CANDIDATE-KEY.json and a pre-filled ANSWERS.json (§32D). "
+                          "MANIFEST.json, CANDIDATE-KEY.json (internal) and a pre-filled "
+                          "ANSWERS.json (§32D). The labelling task is to MARK the crops (green = "
+                          "pellet, magenta = reticle) and let "
+                          "extract-groundtruth-positions.py --marks read the positions off; the "
+                          "labeller is never asked for a count or a window-membership judgement. "
                           "READ-ONLY: no re-extraction, no video access, no detector run, no "
                           "constant/threshold/localizer touched. It GENERATES an ask; it "
                           "adjudicates and scores nothing."))

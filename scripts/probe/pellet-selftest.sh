@@ -56,6 +56,7 @@ run "$HERE/score-pellets.py" --audit-fidelity-selftest
 run "$HERE/score-pellets.py" --audit-fidelity-real-selftest
 run "$HERE/score-pellets.py" --audit-centering-selftest
 run "$HERE/extract-groundtruth-positions.py" --selftest
+run "$HERE/extract-groundtruth-positions.py" --marks-selftest
 run "$HERE/make-synthetic-pellets.py" --audit-selftest
 
 if [ "$fail" -ne 0 ]; then

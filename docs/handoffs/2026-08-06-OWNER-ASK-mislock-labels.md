@@ -82,13 +82,39 @@ What it does, against the four requirements above:
    whichever lock the crop was cut with (§22F's defect class).
 2. **Nothing is drawn on the crop** — no ring, marker, crosshair or label strip. Each crop is
    byte-identical to its source frame region plus flat pad-grey, checked over all 40.
-   The two candidates are listed as `cand_1`/`cand_2` in **seeded-random order** in `INDEX.md`
-   (crop-pixel coordinates only); `CANDIDATE-KEY.json` holds the mapping and is not needed to label.
 3. **Pads, never clips** (§32C). The dumps are 2604×792 and the crops reach 989 px, so vertical
    padding fires on **9 of the 10** shots — a clipping implementation would silently move the crop
    centre off the midpoint and corrupt the labels.
-4. **`ANSWERS.json` by construction**, vocabulary `struct` / `tmpl` / `both` / `neither` /
-   `partial` / `?` **plus a free-text `verdict_verbatim`** and per-candidate real-pellet counts.
+4. **`ANSWERS.json` by construction** (§32D), carrying marked pellet positions, a marked reticle
+   position, `reticle_visible` and free-text `notes`.
+
+## ⛔ The task: MARK the image — the tool does the geometry
+
+**You do exactly two things per crop**, drawing straight onto it (macOS Preview markup is fine; only
+a mark's centre is read, never its size or shape):
+
+1. **GREEN** — one shape around **every real pellet** you can see.
+2. **MAGENTA** — one shape on the **in-game crosshair reticle**, if you can identify it (at most one
+   per crop). ⚑ Magenta, not red: this footage is full of red VFX and red/orange damage numbers, and
+   no colour mask can separate a drawn red from a rendered one.
+
+Mark **one frame per shot** (whichever reads clearest), save in place, then:
+
+```sh
+$PY scripts/probe/extract-groundtruth-positions.py \
+    --marks /Users/maxwellsutton/nikke-sim/scratchpad/pellets/mislock-labels --marks-write
+```
+
+That reads the marks into `ANSWERS.json` (+ `MARKS.json` provenance). **Which pellets fall under
+which lock, which lock is right, and every count are computed from those positions** — you are never
+asked for a count, a window membership, or a struct-vs-tmpl verdict. `INDEX.md` therefore carries no
+candidate coordinates and no window radius, and `CANDIDATE-KEY.json` is purely internal.
+
+⚑ **"I cannot read this one" is a real answer and a real finding.** Several of these crops are dense
+with damage numbers and red VFX. Leave such a crop unmarked and say so in that shot's `notes`; leave
+`reticle_visible` `false` when the reticle cannot be identified. A null is data, a guess is not — and
+`--marks` refuses (rather than guesses) when a shot has several marked frames or several reticle
+marks.
 
 ⚑ **The `crop r` column in the table above is NOT what the tool uses, and should not be.** That
 column derives from `disp px`, which is each shot's **median** displacement over t0+8..t0+11, while
@@ -103,13 +129,17 @@ Self-validation (constraint 9): the tool **verifies the doc's tabulated `struct`
 against the live dumps** at render time and refuses on any mismatch (all 10 matched), and
 `--mislock-crops-selftest` replays the crop arithmetic from
 `scripts/tests/fixtures/pellets/mislock-crops-slice.json` with no scratchpad access.
-`pellet-selftest.sh` is now **34 arms**.
+`extract-groundtruth-positions.py --marks-selftest` pins the two-colour mark reading — including
+that a game-red and a game-white blob read as neither, and all three refusal paths — on synthetic
+crops in a temp dir. `pellet-selftest.sh` is now **35 arms**.
 
-## ⚑ Expect the vocabulary to be wrong again
+## ⚑ The vocabulary problem, solved by removing the vocabulary
 
-It has been too narrow **twice running** (§22A, then §34A). Offer at minimum: `struct` / `tmpl` /
-`both` / `neither` / `partial` / `?`, **and an explicit free-text field** — the last two times the
-owner supplied a category the harness had not imagined.
+A verdict vocabulary has been too narrow **twice running** (§22A, then §34A) — each time the owner
+had to supply a category the harness had not imagined. There is now **no verdict field to be too
+narrow**: the owner records only what is visible (pellet positions, reticle position, free-text
+`notes`), and the adjudication is derived. What remains open-ended is `notes`, and "this crop is
+unreadable" is an expected, wanted answer there.
 
 ## What this buys
 
