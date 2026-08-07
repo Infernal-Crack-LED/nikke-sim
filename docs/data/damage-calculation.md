@@ -19,12 +19,18 @@ Every damage instance — one bullet, one pellet volley, one skill proc, one dot
 hit — is computed independently at the frame it lands (`dealDamage()`):
 
 ```
-damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
+damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × seqMult × Taken × Distributed
 ```
 
 Buffs _inside_ a bucket add; buckets _multiply_. `rate%` is the instance's skill/attack
 multiplier (e.g. a normal attack's `normalAttackMultiplier`, a proc's "deals X% of final ATK"
-value), after any per-unit override corrections.
+value), after any per-unit override corrections. There is no separate Projectile bucket — the
+Projectile Explosion ▲ / Attachment ▲ terms compose additively inside DamageUp (§1f); `seqMult`
+is the sequential-attack TRUE multiplier (§1e).
+
+For the inverse index — **every buff, stat, gear line and boss-side term mapped to the factor it
+feeds**, with live per-stat carrier counts — see
+[damage-bucket-matrix.md](damage-bucket-matrix.md).
 
 ### 1a. FinalATK
 
@@ -279,6 +285,13 @@ DamageUp = 1 + ( Attack Damage ▲ %
 ```
 
 The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with no dot, etc.
+
+**`seqMult` — the sequential-attack TRUE multiplier, its own bucket.** Kit wording "Damage
+multiplier of sequential attacks is scaled by x%" (eve's Exospine Mk2, ×2) is a genuine multiplier
+on a sequential-flavored instance, so it gets its own factor (`1 + sequentialMultPct/100`) rather
+than diluting inside DamageUp. This is a DIFFERENT mechanic from "Sequential Attack Damage ▲x%"
+(`sequentialDamagePct`, Snow White: Heavy Arms), which is an ordinary additive DamageUp member.
+Both are `1` / inert for every instance that is not sequential-flavored.
 
 ### 1f. Projectile flavor routing (DamageUp addition)
 

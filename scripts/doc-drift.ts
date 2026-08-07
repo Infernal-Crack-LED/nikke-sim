@@ -16,6 +16,13 @@
 //          are deliberately abbreviated ("~30 units"). False membership is the half that misleads;
 //          a missing name is benign (STATE.md says the lists are "current but not a contract").
 //
+//   1b. "which damage bucket does StatKey X feed" — the same class, one axis over: a StatKey is
+//      added to src/skills/types.ts and wired into a bucket in dealDamage, but nothing forces the
+//      human-facing routing table to learn about it. The BUCKET_ROUTING map below is the single
+//      written source for that routing; it is LINTED against the StatKey union (a new StatKey with
+//      no routing entry, or a routing entry for a StatKey that no longer exists, fails verify.sh)
+//      and GENERATED into docs/data/damage-bucket-matrix.md together with live carrier counts.
+//
 //   2. a resolved question still filed under open-questions ## UNANSWERED. Failures seen: U17 sat
 //      in UNANSWERED with a header reading "CLOSED — OWNER OVERRIDE"; U22 stayed CONTESTED after
 //      the owner re-ruled it the same day. Greps for open work kept resurfacing settled records.
@@ -23,7 +30,9 @@
 //
 // USAGE
 //   npx tsx scripts/doc-drift.ts            # check (verify.sh gate) — exits 1 on drift
-//   npx tsx scripts/doc-drift.ts --update   # regenerate the census block in engine-modeling-gaps
+//   npx tsx scripts/doc-drift.ts --update   # regenerate both generated blocks (primitive census in
+//                                           # engine-modeling-gaps, StatKey→bucket matrix in
+//                                           # docs/data/damage-bucket-matrix.md)
 //
 // MATCHING NOTE (learned the hard way): primitives are matched as a QUOTED TOKEN inside the
 // override's NON-PROSE fields only. A bare-token grep hits `note`/`caveats` prose and produces
@@ -36,10 +45,16 @@ const OVERRIDES = new URL('src/skills/overrides/', ROOT);
 const STATE_MD = new URL('docs/STATE.md', ROOT);
 const GAPS_MD = new URL('docs/engine-modeling-gaps.md', ROOT);
 const QUESTIONS_MD = new URL('docs/open-questions.md', ROOT);
+const BUCKET_MD = new URL('docs/data/damage-bucket-matrix.md', ROOT);
+const TYPES_TS = new URL('src/skills/types.ts', ROOT);
+const SIM_TS = new URL('src/engine/sim.ts', ROOT);
 
 const BEGIN =
   '<!-- BEGIN GENERATED: primitive-census (npx tsx scripts/doc-drift.ts --update) -->';
 const END = '<!-- END GENERATED: primitive-census -->';
+const BUCKET_BEGIN =
+  '<!-- BEGIN GENERATED: stat-bucket-matrix (npx tsx scripts/doc-drift.ts --update) -->';
+const BUCKET_END = '<!-- END GENERATED: stat-bucket-matrix -->';
 
 // Prose fields are current-state narration, never structural — see CONVENTIONS "Doc hygiene".
 const PROSE_FIELDS = new Set(['note', 'caveats', 'unmodeled']);
@@ -306,32 +321,399 @@ const censusLines = [
 ];
 const census = censusLines.join('\n');
 
-const gapsText = readFileSync(GAPS_MD, 'utf8');
-const hasMarkers = gapsText.includes(BEGIN) && gapsText.includes(END);
-if (!hasMarkers) {
-  problems.push(
-    `engine-modeling-gaps.md: missing the generated census markers. Add\n      ${BEGIN}\n      ${END}\n      then run: npx tsx scripts/doc-drift.ts --update`
-  );
-} else {
-  const re = new RegExp(
-    `${BEGIN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`
-  );
-  const current = gapsText.match(re)![0];
-  if (update) {
-    if (current !== census) {
-      writeFileSync(GAPS_MD, gapsText.replace(re, census));
-      console.log(
-        `doc-drift: census updated (${censusPrims.length} primitives)`
-      );
-    } else {
-      console.log('doc-drift: census already fresh');
-    }
-  } else if (current !== census) {
+/**
+ * Replace a BEGIN…END generated block in `file`, or (without --update) report it stale.
+ * `label` names the block in the console/error line.
+ */
+const syncBlock = (
+  file: URL,
+  fileLabel: string,
+  begin: string,
+  end: string,
+  label: string,
+  body: string,
+  freshMsg: string
+) => {
+  const text = readFileSync(file, 'utf8');
+  if (!text.includes(begin) || !text.includes(end)) {
     problems.push(
-      'engine-modeling-gaps.md: the generated primitive census is STALE — run `npx tsx scripts/doc-drift.ts --update`'
+      `${fileLabel}: missing the generated ${label} markers. Add\n      ${begin}\n      ${end}\n      then run: npx tsx scripts/doc-drift.ts --update`
+    );
+    return;
+  }
+  const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`${esc(begin)}[\\s\\S]*?${esc(end)}`);
+  const current = text.match(re)![0];
+  if (update) {
+    if (current !== body) {
+      writeFileSync(file, text.replace(re, body));
+      console.log(`doc-drift: ${freshMsg}`);
+    } else {
+      console.log(`doc-drift: ${label} already fresh`);
+    }
+  } else if (current !== body) {
+    problems.push(
+      `${fileLabel}: the generated ${label} is STALE — run \`npx tsx scripts/doc-drift.ts --update\``
+    );
+  }
+};
+
+syncBlock(
+  GAPS_MD,
+  'engine-modeling-gaps.md',
+  BEGIN,
+  END,
+  'primitive census',
+  census,
+  `census updated (${censusPrims.length} primitives)`
+);
+
+// ── GENERATE + LINT: the StatKey → damage-bucket matrix ──────────────────────────────────────
+// The routing below is the WRITTEN source for "which factor of the damage product does this stat
+// feed". It is read off src/engine/sim.ts (`dealDamage` / `effectiveAtk` / the economy paths) and
+// kept honest by two mechanical checks:
+//   (a) COVERAGE — every member of the StatKey union has exactly one entry here, and vice versa.
+//       Adding a StatKey without deciding its bucket now fails the gate.
+//   (b) LIVENESS — a stat routed to any factor must still be READ somewhere in sim.ts, and a stat
+//       routed to `—` (inert) must NOT be. This is what catches a rewire that leaves the doc
+//       describing a bucket the engine no longer feeds (and the reverse: a stat documented inert
+//       that quietly gained a consumer).
+// `factor` is the term of the per-instance product (damage-calculation.md §1) or the non-damage
+// consumer; `how` is the composition INSIDE that factor; `gate` is when the term counts at all.
+type Routing = { factor: string; how: string; gate: string };
+const INERT = '—';
+// Display order of the factors: the damage product left-to-right, then non-damage consumers.
+const FACTOR_ORDER = [
+  'FinalATK',
+  'Major (crit)',
+  'Major (core)',
+  'Element',
+  'Charge',
+  'DamageUp',
+  'seqMult',
+  'Taken',
+  'Distributed',
+  'rate%',
+  'Max HP',
+  'Ammo',
+  'Reload',
+  'Fire cadence',
+  'Charge time',
+  'Core geometry',
+  'Burst gauge',
+  'New instance',
+  INERT,
+];
+const BUCKET_ROUTING: Record<string, Routing> = {
+  // ---- FinalATK ----
+  atkPct: {
+    factor: 'FinalATK',
+    how: '`staticAtk × (1 + Σ/100)` — dilutes against other ATK ▲%',
+    gate: 'always',
+  },
+  casterAtkPct: {
+    factor: 'FinalATK',
+    how: 'flat ATK add, resolved at apply to `caster.staticAtk × %` — does NOT dilute',
+    gate: 'always',
+  },
+  highestAllyAtkPct: {
+    factor: 'FinalATK',
+    how: 'flat ATK add of `max(all staticAtk) × %` at apply; stored as `casterAtkPct`',
+    gate: 'always',
+  },
+  atkOfMaxHpPct: {
+    factor: 'FinalATK',
+    how: 'flat ATK add of `% × liveMaxHp`, **re-read every frame**',
+    gate: 'always',
+  },
+  atkOfCasterMaxHpPct: {
+    factor: 'FinalATK',
+    how: "flat ATK add of `% × caster's liveMaxHp` snapshotted at apply; stored as `casterAtkPct`",
+    gate: 'always',
+  },
+  // ---- Major ----
+  critRatePct: {
+    factor: 'Major (crit)',
+    how: 'additive pp into `critRate`, clamped 0..1',
+    gate: 'crit-eligible instances',
+  },
+  critRateNormalPct: {
+    factor: 'Major (crit)',
+    how: 'additive pp into `critRate`, alongside `critRatePct`',
+    gate: "`category === 'normal'` only",
+  },
+  critDamagePct: {
+    factor: 'Major (crit)',
+    how: 'additive pp into `critBonus` (base `(critDamage−100)/100`)',
+    gate: 'crit-eligible instances',
+  },
+  coreDamagePct: {
+    factor: 'Major (core)',
+    how: 'additive pp into `coreBonus`, together with the doll core line',
+    gate: 'core-eligible instances × `coreExposure × ACR`',
+  },
+  // ---- Element ----
+  elementDamagePct: {
+    factor: 'Element',
+    how: 'additive pp on the 1.1 advantage base',
+    gate: 'elemental advantage only',
+  },
+  elemAdvantageDamagePct: {
+    factor: 'Element',
+    how: 'additive pp on the 1.1 base (`ELEMADV=damageup` reroutes it to DamageUp — A/B arm only)',
+    gate: 'elemental advantage only',
+  },
+  // ---- Charge ----
+  chargeDamagePct: {
+    factor: 'Charge',
+    how: 'flat percentage points added AFTER the base term',
+    gate: 'charge instances only',
+  },
+  chargeDamageMultPct: {
+    factor: 'Charge',
+    how: 'scales the BASE charge term (`baseCharge × %`), like the doll/collection lines',
+    gate: 'charge instances only',
+  },
+  // ---- DamageUp ----
+  attackDamagePct: {
+    factor: 'DamageUp',
+    how: 'additive pp — the unflavored member every instance reads',
+    gate: 'always',
+  },
+  sustainedDamagePct: {
+    factor: 'DamageUp',
+    how: 'additive pp',
+    gate: 'sustained-flavored instances',
+  },
+  sequentialDamagePct: {
+    factor: 'DamageUp',
+    how: 'additive pp (dilutes — distinct mechanic from `sequentialMultPct`)',
+    gate: 'sequential-flavored instances',
+  },
+  trueDamagePct: {
+    factor: 'DamageUp',
+    how: 'additive pp',
+    gate: 'true-flavored instances',
+  },
+  pierceDamagePct: {
+    factor: 'DamageUp',
+    how: 'additive pp',
+    gate: 'Pierce-tagged shots (`hasPierce` / live `gainPierce` / per-shot tag)',
+  },
+  projectileExplosionPct: {
+    factor: 'DamageUp',
+    how: 'additive pp, flavor-scoped',
+    gate: 'explosion-flavored hits **plus RL normal attacks** (`projExplOnRlNormals`, default on)',
+  },
+  projectileAttachmentPct: {
+    factor: 'DamageUp',
+    how: 'additive pp, flavor-scoped',
+    gate: 'attachment-flavored hits only',
+  },
+  // ---- own bucket / boss-side ----
+  sequentialMultPct: {
+    factor: 'seqMult',
+    how: 'its OWN multiplicative bucket `1 + Σ/100` — never dilutes',
+    gate: 'sequential-flavored instances',
+  },
+  damageTakenPct: {
+    factor: 'Taken',
+    how: 'additive pp; lives on the ENEMY buff list, not on a unit',
+    gate: 'requires an `enemy`-targeted buff (any other target silently drops)',
+  },
+  distributedDamagePct: {
+    factor: 'Distributed',
+    how: 'TWO consumers by buff target: on a unit → `Distributed = 1 + Σ/100`; on the ENEMY → joins `Taken`, and only while a Damage-Taken ▲ is live',
+    gate: 'distributed-flavored instances',
+  },
+  // ---- rate% / stat economy (not buckets) ----
+  normalAttackPct: {
+    factor: 'rate%',
+    how: 'scales the normal-attack multiplier (with the doll SMG/SG line); bypassed while consolidating',
+    gate: 'normal attacks only',
+  },
+  extraHitDamagePct: {
+    factor: 'New instance',
+    how: "spawns a per-pull rider hit of `value × hitsPerShot` %ATK — `category:'burst'`, crits (`RIDERCRIT`), never cores/ranges",
+    gate: 'per trigger pull',
+  },
+  pelletCountFlat: {
+    factor: 'rate%',
+    how: 'flat add to the SG effective pellet count (damage only — per-trigger gauge is NOT pumped)',
+    gate: 'SG, swap-off',
+  },
+  maxAmmoPct: {
+    factor: 'Ammo',
+    how: 'additive pp with the doll ammo line in `maxAmmo()`',
+    gate: 'always',
+  },
+  maxAmmoFlat: {
+    factor: 'Ammo',
+    how: 'flat rounds added on top of the percentage scaling',
+    gate: 'always',
+  },
+  reloadSpeedPct: {
+    factor: 'Reload',
+    how: 'SUBTRACTIVE on reload frames (`× (1 − Σ/100)`, +13-frame tail)',
+    gate: 'always',
+  },
+  attackSpeedPct: {
+    factor: 'Fire cadence',
+    how: 'ADDS with `fireRatePct` into one `speedMult` (MG ladder + ordinary cadence)',
+    gate: 'always',
+  },
+  fireRatePct: {
+    factor: 'Fire cadence',
+    how: 'same consumer as `attackSpeedPct` — two names, one sum',
+    gate: 'always',
+  },
+  chargeSpeedPct: {
+    factor: 'Charge time',
+    how: 'SUBTRACTIVE on charge frames, capped at 100%, floor 1 frame',
+    gate: 'charge weapons',
+  },
+  hitRatePct: {
+    factor: 'Core geometry',
+    how: 'shrinks the accuracy circle → raises ACR (`acrForHR`); no damage bucket of its own',
+    gate: 'AR/SMG/SG core rolls (`HRCORE`/UNIGEO)',
+  },
+  burstGenPct: {
+    factor: 'Burst gauge',
+    how: 'kit buffs multiply as `(1 + Σ/100)`; cube/OL-sourced burst-gen is a SEPARATE `burstGenMult` factor, so the two multiply rather than add',
+    gate: 'always',
+  },
+  // ---- Max HP grants (feed FinalATK only via the atkOfMaxHpPct readers) ----
+  casterMaxHpPct: {
+    factor: 'Max HP',
+    how: 'flat Max HP grant of `caster.maxHp × %`, stored as `maxHpFlat`',
+    gate: 'feeds an ATK conversion only when self-granted (e3 rule)',
+  },
+  targetMaxHpPct: {
+    factor: 'Max HP',
+    how: "flat Max HP grant of the TARGET's own `maxHp × %`, stored as `maxHpFlat`",
+    gate: 'feeds an ATK conversion only when self-granted (e3 rule)',
+  },
+  highestAllyMaxHpPct: {
+    factor: 'Max HP',
+    how: 'flat Max HP grant of `max(all maxHp) × %` at apply, stored as `maxHpFlat`',
+    gate: 'feeds an ATK conversion only when self-granted (e3 rule)',
+  },
+  maxHpPct: {
+    factor: 'Max HP',
+    how: 'converted at build time to a `maxHpFlat` SELF-grant (Vigor cube path); no kit carrier',
+    gate: 'feeds the holder’s own ATK conversion',
+  },
+  // ---- parsed, deliberately inert ----
+  partsDamagePct: {
+    factor: INERT,
+    how: 'parsed and stored, read by NOTHING — the scope-lock boss is partless',
+    gate: 'never',
+  },
+  defPct: {
+    factor: INERT,
+    how: 'parsed and stored, read by NOTHING — own DEF does not enter own damage',
+    gate: 'never',
+  },
+};
+
+// (a) COVERAGE — the StatKey union vs the routing map.
+// Union members are the only lines in the block that OPEN with `| '…'`; continuation comment lines
+// (which contain apostrophes and quoted kit text) can never match that anchor.
+const typesText = readFileSync(TYPES_TS, 'utf8');
+const statKeyBlock =
+  typesText.split('export type StatKey =')[1]?.split(/^\S/m)[0] ?? '';
+const statKeys = [...statKeyBlock.matchAll(/^\s*\|\s*'([A-Za-z]+)'/gm)].map(
+  (m) => m[1]
+);
+if (statKeys.length < 20) {
+  problems.push(
+    `types.ts: could not parse the StatKey union (got ${statKeys.length} members) — the damage-bucket matrix cannot be checked`
+  );
+}
+for (const k of statKeys) {
+  if (!BUCKET_ROUTING[k]) {
+    problems.push(
+      `damage-bucket-matrix: StatKey \`${k}\` has no BUCKET_ROUTING entry — decide which factor of the damage product it feeds (or mark it inert) in scripts/doc-drift.ts`
     );
   }
 }
+for (const k of Object.keys(BUCKET_ROUTING)) {
+  if (!statKeys.includes(k)) {
+    problems.push(
+      `damage-bucket-matrix: BUCKET_ROUTING lists \`${k}\`, which is no longer a StatKey — drop the entry`
+    );
+  }
+}
+for (const r of Object.values(BUCKET_ROUTING)) {
+  if (!FACTOR_ORDER.includes(r.factor)) {
+    problems.push(
+      `damage-bucket-matrix: unknown factor "${r.factor}" — add it to FACTOR_ORDER`
+    );
+  }
+}
+
+// (b) LIVENESS — a routed stat must still be read by the engine; an inert one must still be unread.
+const simText = readFileSync(SIM_TS, 'utf8');
+for (const [k, r] of Object.entries(BUCKET_ROUTING)) {
+  const readBySim = simText.includes(`'${k}'`);
+  if (r.factor === INERT && readBySim) {
+    problems.push(
+      `damage-bucket-matrix: \`${k}\` is documented INERT but sim.ts now reads it — give it a factor`
+    );
+  }
+  if (r.factor !== INERT && !readBySim) {
+    problems.push(
+      `damage-bucket-matrix: \`${k}\` is routed to "${r.factor}" but sim.ts reads it nowhere — the routing is stale`
+    );
+  }
+}
+
+/**
+ * Units whose override applies a BUFF of StatKey `key`.
+ *
+ * Deliberately NOT `usersOf` (the bare quoted-token matcher the primitive census uses): several
+ * StatKey spellings are also FIELD NAMES elsewhere in the schema, so the loose match over-counts
+ * badly — `atkPct` is the coefficient field on every `flatDamage` effect, which inflated its
+ * carrier count by half the roster. `structural` is re-stringified with JSON.stringify, so key
+ * and value are always adjacent with no whitespace and this anchor is exact.
+ */
+const statCarriers = (key: string): string[] =>
+  slugs.filter((s) => structural.get(s)!.includes(`"stat":"${key}"`));
+
+const bucketRows = [...statKeys].sort((a, b) => {
+  const fa = FACTOR_ORDER.indexOf(BUCKET_ROUTING[a]?.factor ?? INERT);
+  const fb = FACTOR_ORDER.indexOf(BUCKET_ROUTING[b]?.factor ?? INERT);
+  return fa - fb || a.localeCompare(b);
+});
+const bucketLines = [
+  BUCKET_BEGIN,
+  '',
+  '| StatKey | Factor | Composition | Applies to | Carriers | Enacted on |',
+  '| --- | --- | --- | --- | --- | --- |',
+  ...bucketRows.map((k) => {
+    const r = BUCKET_ROUTING[k] ?? { factor: '?', how: '?', gate: '?' };
+    const u = statCarriers(k);
+    const shown =
+      u.length === 0
+        ? '_none_'
+        : u.length > ABBREV_OVER
+          ? `${u.slice(0, ABBREV_OVER).join(', ')}, …`
+          : u.join(', ');
+    return `| \`${k}\` | ${r.factor} | ${r.how} | ${r.gate} | ${u.length} | ${shown} |`;
+  }),
+  '',
+  BUCKET_END,
+];
+
+syncBlock(
+  BUCKET_MD,
+  'damage-bucket-matrix.md',
+  BUCKET_BEGIN,
+  BUCKET_END,
+  'stat-bucket matrix',
+  bucketLines.join('\n'),
+  `stat-bucket matrix updated (${statKeys.length} StatKeys)`
+);
 
 // ── report ───────────────────────────────────────────────────────────────────────────────────
 if (problems.length) {

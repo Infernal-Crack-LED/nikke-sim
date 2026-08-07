@@ -12,6 +12,7 @@ package-lock.json
 # doc-drift parses these as structured text; prettier's table alignment breaks the census check
 docs/STATE.md
 docs/engine-modeling-gaps.md
+docs/data/damage-bucket-matrix.md
 
 # blind-rebuild extracted engine snippets; not valid standalone TS
 scripts/blind-rebuild/code-bundle/*.ts
