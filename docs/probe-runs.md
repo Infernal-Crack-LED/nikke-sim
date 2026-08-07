@@ -7337,3 +7337,62 @@ be taken without its own pre-commit.
 
 ⛔ Nothing enacted. No localizer change, no constant, no threshold. The crops and the ask remain
 built and available if the pixel test does not settle it.
+
+#### §43 THE DECOY PIXEL TEST — ⛔ NOT ESTABLISHED (P3 misses by ONE SHOT), but the structural lock demonstrably leaves the ammo box
+
+**2026-08-06.** Executes `docs/handoffs/2026-08-06-decoy-pixel-PRECOMMIT.md` (`c6604e21`, committed
+before any pixel score existed). Tests §42's hypothesis that the structural locator abandons the
+ammo box for the floating damage numbers on a mislock.
+
+##### §43A — ⚑ THE FIRST RUN VOIDED ON ITS OWN POSITIVE CONTROL
+
+Run 1 scored the ammo-box template on a patch centred at the **crosshair**. P1 — the positive
+control, where the structural lock is on the box _by construction_ — came back at **0.221**, i.e.
+the test could not see the box even where it must be. **A null from an instrument that fails its own
+positive control is not evidence; it is a void instrument.**
+
+Cause: `count-pellets.py:1799` sets `cross_pos = box_centre + (ammo_offset_x, ammo_offset_y)`, and
+these dumps carry **(125, −11)** — so the patch sat 125 px to the right of the box.
+
+⚑ **This was a post-failure fix, and it is declared as one.** It repaired the INSTRUMENT after its
+POSITIVE CONTROL failed — it did **not** move a threshold, and P1/P2/P3's bars are exactly as
+committed.
+
+##### §43B — The result, instrument corrected (`box = cross − offset`)
+
+| #      | prediction                                 | result                            | verdict      |
+| ------ | ------------------------------------------ | --------------------------------- | ------------ |
+| **P1** | structural scores HIGH on normal shots     | **0.633** (n=584)                 | ✅ **HOLDS** |
+| **P2** | structural DROPS > 0.20 median on mislocks | **0.245**, drop **+0.389** (n=82) | ✅ **HOLDS** |
+| **P3** | template outscores structural on ≥ 80%     | **65/82 = 79.3%**                 | ⛔ **FAILS** |
+
+⇒ **By the pre-committed rule — P3 was declared LOAD-BEARING — the hypothesis is NOT ESTABLISHED.**
+It misses by **one shot** (66/82 would be 80.5%).
+
+⚑ **The bar was not moved, and "essentially passed" is not the verdict.** The pre-commit says in
+terms: _"A P3 failure must not be reported as a partial success."_ That clause was written to stop
+exactly this, and this is the **second** pre-commit today to fail by a hair (§41's P2: 109 vs 100).
+
+##### §43C — What IS established, and why P3 was the right gate
+
+**P1 + P2 are decisive: the structural lock demonstrably LEAVES the ammo box on a mislock** —
+0.633 → 0.245. §42's core claim survives.
+
+⛔ **But "therefore use the template lock" does NOT follow, and that is precisely what P3 tested.**
+The template's own score on mislocked shots is **0.515**, below its normal **0.587** — so the
+template is **also degraded** there. On ~21% of mislocked shots the structural position actually
+scores _higher_. ⇒ **On roughly one mislocked shot in five, NEITHER lock is clearly on the box**, and
+no mechanical rule can adjudicate those.
+
+##### §43D — Consequence: the owner ask survives, and can shrink a THIRD time
+
+⇒ **Owner labels are still required** — the pre-commit said the ask proceeds if P3 fails, and it does.
+
+⚑ But the pixel score is now a **triage signal**: for the ~79% where the template clearly outscores
+structural, the mechanical evidence is strong; the informative labelling target is the **17 shots
+where it does not**. ⛔ Re-selecting the ask on that basis is a **separate pass with its own
+pre-commit** — re-cutting a sample using the results of a failed test is exactly how a selection
+effect gets built in.
+
+⛔ Nothing enacted. No localizer change, no constant, no threshold. Still **not magnitude** —
+`count_diff × mislock rate` remains §20D's refuted move.
