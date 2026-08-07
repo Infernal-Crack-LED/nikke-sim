@@ -18,6 +18,10 @@
 > `unmodeled` deliberately do NOT count**, since a unit whose note merely _discusses_ a primitive is
 > not a user. Do not restate these counts in prose elsewhere; link here instead. Primitive list is
 > taken from `docs/STATE.md` §5, so adding a row there enrolls it automatically.
+>
+> **Sibling census, other axis:** [docs/data/damage-bucket-matrix.md](data/damage-bucket-matrix.md)
+> censuses the `StatKey` union instead of the structural primitives, and adds the damage factor each
+> stat feeds. Same script, same override scan, so the two can never disagree.
 
 <!-- BEGIN GENERATED: primitive-census (npx tsx scripts/doc-drift.ts --update) -->
 
