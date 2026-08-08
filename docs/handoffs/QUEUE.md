@@ -60,6 +60,32 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 #### Code / tooling (unblocked, no footage or owner ruling needed)
 
+- **⇒ ENEMY DEF ▼ HAS NO CHANNEL, and the web app runs at nonzero boss DEF (findings-only
+  2026-08-08; enacting is an `src/engine/**` change ⇒ isolated worktree + owner).** Detail:
+  `docs/data/damage-bucket-matrix.md` §5 trap 4 + §6. The engine's enemy-`buff` dispatch
+  (`src/engine/sim.ts` ~L2287) forwards only positive `damageTakenPct` / `distributedDamagePct` to
+  `enemyBuffs`; every other enemy-targeted stat falls out of the switch silently. (Scope note: this
+  is the `buff` channel ONLY — `flatDamage` / `dot` / `targetStatus` / `hitRepeat` / `stackedNuke` /
+  `storedHit` ignore `block.target` entirely and are fine. Do **not** "fix" them through
+  `resolveTargets`, which returns `[]` for `enemy` — sim.ts warns about this in place.)
+  - **Why it was correct:** `bossDef = 0` is the pinned graded-comp basis, evidence-backed by the
+    committed `scripts/battery/boss-def.ts` (real boss-type DEF ~140 ⇒ ≤0.12% board-wide).
+  - **Why it is now a gap:** `web/src/App.tsx` / `TeamBuilderPage.tsx` default the SAME engine to
+    `SR_DEFAULT_DEF = 30930` / `UR_DEFAULT_DEF = 12200`, and App.tsx auto-upgrades an untouched
+    Boss DEF to the Solo Raid value on first roster view. That battery's sweep already shows 6–17%
+    per-unit swing at `bossDef = 20000`, so a dropped DEF ▼ is worth several percent to web users.
+  - **Blast radius:** 12 override files carry an enemy DEF ▼ (`anis`, `cocoa`, `elegg`, `exia`,
+    `frima`, `guilty`, `ludmilla`, `marciana-marine-study`, `mast`, `novel`, `phantom`, `viper` —
+    base-vs-variant slugs verified against each file). Only `guilty` encodes it live
+    (`burst` → `defPct: -20.25`); the rest sit in `unmodeled`/`note` prose. Enemy ATK ▼ (10 files)
+    stays genuinely inert — nothing models incoming damage. Note `mast`'s is a **flat** shave off
+    her own DEF, not a % of boss DEF, so it scales opposite to the other 11.
+  - **Already landed (no follow-up):** `scripts/validate-overrides.ts` warns non-fatally on an
+    enemy-targeted buff outside the allowlist or an allowed stat at a non-positive value. It fires
+    exactly once roster-wide today (`guilty burst[1]`), so it is a working tripwire, not noise.
+  - **Open decision:** whether to give `bossDef` a debuff channel at all. It is zero-impact on every
+    graded comp (so no board A/B can justify it) and material only to the web tool — i.e. this is an
+    owner scope call, not something a measurement resolves.
 - **⇒ ARTIFACT-STORE DECOUPLING — scoped 2026-08-03, Step 0 unblocked and worth doing alone.**
   Plan: `docs/handoffs/2026-08-03-artifact-store-decoupling-plan.md`. Move the generated artifacts
   (6 board JSONs + the 385-image infographic set) out of the deploy critical path; regenerate

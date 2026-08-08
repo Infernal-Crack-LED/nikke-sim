@@ -158,6 +158,32 @@ function collectEffectKinds(
   return out;
 }
 
+// The ONLY stats an `enemy`-targeted buff can deliver. sim.ts applyEffect's `case 'buff'` tests
+// `block.target.kind === 'enemy'` first and forwards to `enemyBuffs` only for these two, at a
+// POSITIVE value; every other stat aimed at the enemy falls out of the switch and is discarded
+// with no diagnostic. Keep in sync with src/engine/sim.ts (~L2287).
+const ENEMY_BUFF_STATS = new Set(['damageTakenPct', 'distributedDamagePct']);
+
+// Every `buff` effect in a block, including buffs nested inside `escalating.steps` — same reason
+// as collectEffectKinds: the engine runs those steps through the same applyEffect.
+function collectBuffEffects(effects: any, out: any[] = []): any[] {
+  if (!Array.isArray(effects)) {
+    return out;
+  }
+  for (const e of effects) {
+    if (!e || typeof e !== 'object') {
+      continue;
+    }
+    if (e.kind === 'buff') {
+      out.push(e);
+    }
+    if (e.kind === 'escalating') {
+      collectBuffEffects(e.steps, out);
+    }
+  }
+  return out;
+}
+
 function checkEffect(e: any, path: string, errors: string[]) {
   if (e.kind === 'ignored' || e.kind === 'unsupported') {
     // offline-parser-only kinds — the engine has no branch for them; the kit
@@ -277,6 +303,11 @@ function validate(slug: string): boolean {
   }
 
   const errors: string[] = [];
+  // Non-fatal authoring notes: the line IS valid JSON and the engine accepts the file, but the
+  // effect will not reach the damage model. Kept out of `errors` on purpose — the carriers are
+  // game-real kit lines whose drop is a documented engine gap, not an authoring mistake, so
+  // failing them would turn verify.sh red on correct data.
+  const authoringWarnings: string[] = [];
   for (const slot of ['skill1', 'skill2', 'burst'] as const) {
     const blocks = (override as any)[slot];
     if (blocks === undefined) {
@@ -401,6 +432,27 @@ function validate(slug: string): boolean {
         errors.push(
           `${p}: a targetStatus effect must sit on a block with target "enemy" (the status is inflicted on the boss)`
         );
+      }
+      // An `enemy`-targeted buff reaches the damage model ONLY as a positive damageTakenPct or
+      // distributedDamagePct (ENEMY_BUFF_STATS). Anything else — an enemy DEF ▼/ATK ▼, or either
+      // allowed stat authored with a negative value — is dropped at dispatch with no diagnostic,
+      // so the JSON reads as a live debuff while contributing nothing. That drop is deliberate on
+      // the scope-lock basis (bossDef = 0; see scripts/battery/boss-def.ts), but the web app runs
+      // the same engine at the Solo/Union Raid DEF defaults (30,930 / 12,200 — web/src/App.tsx),
+      // where a dropped DEF ▼ is worth several percent. Warn, don't fail: the carrier line is
+      // real kit, and the fix is an engine change, not an authoring one.
+      if (b.target?.kind === 'enemy') {
+        for (const e of collectBuffEffects(b.effects)) {
+          if (!ENEMY_BUFF_STATS.has(e.stat)) {
+            authoringWarnings.push(
+              `${p}: enemy-targeted buff "${e.stat}" is DROPPED by the engine (only ${[...ENEMY_BUFF_STATS].join(' / ')} reach enemyBuffs) — the line is inert; record it in "unmodeled" if that is intended`
+            );
+          } else if (typeof e.value === 'number' && e.value <= 0) {
+            authoringWarnings.push(
+              `${p}: enemy-targeted buff "${e.stat}" has a non-positive value (${e.value}) and is DROPPED by the engine (the dispatch requires value > 0) — the line is inert`
+            );
+          }
+        }
       }
       // `hitRepeat` is a rider on the owner's OWN hit ("X% of the damage dealt by self"). The
       // engine reads the parent instance the weapon path recorded on the SAME frame, so the
@@ -527,9 +579,10 @@ function validate(slug: string): boolean {
       flags.push(`suspicious ${(u.share * 100).toFixed(0)}% team share`);
     }
     console.log(
-      `✓ ${slug}: valid | dmg ${(u.totalDamage / 1e6).toFixed(1)}M (${(u.share * 100).toFixed(1)}%) bursts ${u.burstCasts} | remaining warnings: ${resolved.warnings.length}${flags.length ? ' | FLAGS: ' + flags.join('; ') : ''}`
+      `✓ ${slug}: valid | dmg ${(u.totalDamage / 1e6).toFixed(1)}M (${(u.share * 100).toFixed(1)}%) bursts ${u.burstCasts} | remaining warnings: ${resolved.warnings.length + authoringWarnings.length}${flags.length ? ' | FLAGS: ' + flags.join('; ') : ''}`
     );
     resolved.warnings.forEach((w) => console.log(`   ! ${w}`));
+    authoringWarnings.forEach((w) => console.log(`   ! ${w}`));
     return flags.length === 0;
   } catch (e) {
     console.log(`✗ ${slug}: sim crashed — ${(e as Error).message}`);

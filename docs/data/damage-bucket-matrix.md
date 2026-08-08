@@ -174,10 +174,33 @@ deliberate; each has bitten at least once.
    multiply rather than pooling.
 3. **`distributedDamagePct` picks its factor by buff target.** On a unit it is the `Distributed`
    bucket. On the enemy it joins `Taken`, and only while a Damage Taken ▲ is also live.
-4. **Enemy-targeted buffs are a two-item allowlist.** `damageTakenPct` and
-   `distributedDamagePct` with a positive value are the only stats an `enemy`-targeted buff can
-   deliver. Everything else aimed at the enemy is dropped without a warning — correct for the
-   ATK ▼ / DEF ▼ lines it was written for (boss DEF is 0), silent for anything else.
+4. **Enemy-targeted _buffs_ are a two-item allowlist — enemy-targeted _effects_ are not.**
+   `damageTakenPct` and `distributedDamagePct` at a positive value are the only stats an
+   `enemy`-targeted `buff` can deliver; everything else aimed at the enemy falls out of the
+   switch and is discarded with no diagnostic. This is the `buff` channel only. The other
+   boss-facing kinds — `flatDamage`, `dot`, `targetStatus`, `hitRepeat`, `stackedNuke`,
+   `storedHit`, `escalating` — never consult `block.target` at all and are unaffected (across the
+   67 overrides: 172 `flatDamage`, 30 `buff`, 24 `dot`, 15 `targetStatus`, 8 other). Note
+   `resolveTargets({kind:'enemy'})` returns `[]`, so routing any of them through it would delete
+   them — `sim.ts` carries an explicit warning against "fixing" that.
+
+   **What the drop costs is basis-dependent.** Enemy ATK ▼ is genuinely inert (no incoming damage
+   is modeled). Enemy DEF ▼ is not: `bossDef` is a live flat subtraction from `effectiveAtk`. It
+   is worth ~nothing on the validation basis — `scripts/battery/boss-def.ts` measures real
+   boss-type DEF at ~140, ≤0.12% board-wide, which is why `bossDef = 0` is the pinned
+   approximation — **but the web app runs the same engine at the raid defaults**
+   (`SR_DEFAULT_DEF = 30930` / `UR_DEFAULT_DEF = 12200`, `web/src/App.tsx`), and that battery's own
+   sweep already shows 6–17% per-unit swing at `bossDef = 20000`. There, a dropped DEF ▼ is worth
+   several percent. **12 overrides carry an enemy DEF ▼ line** (slugs, base-vs-variant exact:
+   `anis`, `cocoa`, `elegg`, `exia`, `frima`, `guilty`, `ludmilla`, `marciana-marine-study`,
+   `mast`, `novel`, `phantom`, `viper`) and 10 carry an enemy ATK ▼ — all recorded as prose
+   rather than encoded, each citing the DEF = 0 basis. `guilty` is the only one that encodes it
+   live (`burst` → `defPct: -20.25`), and it is silently discarded. Eleven of the twelve shave a
+   **percentage of boss DEF**, so their value grows with the basis; `mast` is the exception — Sea
+   Breeze is a **flat** shave scaled off her own DEF (~81.7 DEF at 50 stacks), which nearly zeroes
+   a 140-DEF boss but is noise against 30,930.
+   `validate-overrides.ts` now warns (non-fatally) on any enemy-targeted buff outside the
+   allowlist, or on an allowed stat authored at a non-positive value.
 5. **`attackSpeedPct` and `fireRatePct` are one consumer under two names.** They are summed into a
    single cadence multiplier; nothing distinguishes them downstream.
 6. **`critRateNormalPct` is not a scoped variant of `critRatePct` — it is a separate pool.** Both
@@ -199,10 +222,20 @@ Recorded, not enacted — none of these changes a value.
   factor is live with one carrier. **Fixed in this pass**; flagged here because the top-line
   formula is what most readers copy.
 - **`partsDamagePct` and `defPct` are carried by more override files than several live stats and
-  are read by nothing.** Both are correct as v1 no-ops (the scope-lock boss is partless; own DEF
-  does not enter own damage), but the carrier counts mean _a kit line's presence in an override is
-  not evidence it is modeled_. The generated matrix now makes that visible per stat instead of
-  requiring a grep.
+  are read by nothing.** `partsDamagePct` is an unambiguous v1 no-op (the scope-lock boss is
+  partless), and `defPct` is one wherever it is **self**-targeted (own DEF does not enter own
+  damage). But the carrier counts mean _a kit line's presence in an override is not evidence it is
+  modeled_. The generated matrix now makes that visible per stat instead of requiring a grep.
+  **One `defPct` carrier is not self-targeted** — see the enemy-debuff finding below.
+- **The enemy `defPct` drop is basis-dependent, and the web app does not run the basis it was
+  justified on** (2026-08-08). Trap 4 above has the detail. In short: `guilty`'s burst encodes
+  `defPct: -20.25` on an `enemy` block, the engine's two-item allowlist discards it with no
+  diagnostic, and 11 further overrides never encoded their DEF ▼ line for the same reason. That is
+  correct at `bossDef = 0` (the graded-comp basis, ≤0.12% per `scripts/battery/boss-def.ts`) and
+  wrong at the web app's own Solo/Union Raid defaults of 30,930 / 12,200, where the same battery's
+  sweep implies several percent per carrier. Recorded, not enacted — closing it is an
+  `src/engine/**` change. `scripts/validate-overrides.ts` now emits a non-fatal warning so the
+  next such line is visible at authoring time rather than silent.
 - **`elementDamagePct` has zero override carriers.** It exists for the cube's strong-element line
   and the Overload `elem` line only; no kit feeds it today.
 - **`fireRatePct` has zero override carriers** while `attackSpeedPct` carries the same consumer.
