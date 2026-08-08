@@ -104,16 +104,12 @@ Datamined (`burst_duration`, einkk `ChangeBurstStepEvent`) and directly measured
   rotations when no Burst 3 is ready: the measured 40s rotation decomposes as fill ~8s →
   chain opens → stage-3 window expires (cinderella on cooldown 32.5s effective) →
   refill → second chain completes exactly when her cooldown ends.
-- Auto-burst selection is **leftmost slot order, with waiting**: inside a timed stage
-  window the chain waits for the leftmost stage-filling unit whose cooldown ends before
-  the window closes, rather than instantly handing the cast to a lower-priority ready
-  unit (user-ruled 2026-07-13: a 3rd-from-left Burst 3 — e.g. Maiden in the elec-weak
-  validation fight — never bursts on auto; no composition has enough cooldown reduction
-  for the leftmost two to sit out an entire 10s window). The
-  recorded run-B alternation (cinderella/neon strictly alternating at 16.4s rotations)
-  falls out of leftmost + real cooldowns + moran's team-wide burst-cooldown reduction —
-  a round-robin selection theory was tried and rejected (it makes bench Burst-3 units
-  cast when real fights never pick them).
+- Auto-burst selection is **first-ready, with waiting** (owner ruling 2026-07-21): inside
+  a timed stage window the chain waits for the stage-filling unit whose cooldown ends
+  **soonest** (tie → leftmost slot), then fires when it is ready. This corrects the old
+  strict-leftmost rule, which let a leftmost Burst 3 monopolize casts when two same-CD
+  units alternated. A 3rd-from-left Burst 3 still does not cast if the leftmost two fill
+  the window first. `B3_LEFTMOST=1` restores the old strict-leftmost pick for A/B comparison.
 
 ## 4. Charge weapons and the camera-focus bonus
 

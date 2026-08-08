@@ -38,29 +38,31 @@ Damage is a product of independent **buckets**; buffs _inside_ a bucket are addi
 buckets _multiply_. DATAMINED + COMMUNITY, cross-validated by our board.
 
 ```
-damage = FinalATK_term × rate% × Major × Element × Charge × DamageUp × Taken × Distributed
+damage = FinalATK_term × rate% × Major × Element × Charge × DamageUp × seqMult × Taken × Distributed
 ```
 
-Major bucket = `1 + 0.5·FB + 0.3·range + critRate·(critDmg−1) + coreRate·(coreMult−1)` —
+Major bucket = `1 + 0.5·FB + 0.3·range + critTerm + coreExposure·ACR·coreBonus` —
 crit, core (+100% base), Full Burst (+50%), and effective range (+30%) all share ONE
 additive bracket. The +50% applies by TIMING: burst-cast damage lands before the window
-opens and never gets it (§8). Full structure, per-bucket membership, and the skill-proc
-("additional damage") rules: **[nikke-damage-formula.md](nikke-damage-formula.md)**.
+opens and never gets it (§8). `coreExposure` is `cfg.coreHitRate`; `ACR` is the accuracy-
+derived core fraction from §7. `seqMult` is the separate sequential-attack multiplier
+bucket. Full structure, per-bucket membership, and the skill-proc ("additional damage")
+rules: **[nikke-damage-formula.md](nikke-damage-formula.md)**.
 Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 ## 2. Weapon fire cadence
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                  | Notes                                 |
-| ------ | ------------------------ | ------------------------------------- |
-| AR     | 12/s                     | 5 frames exactly                      |
-| SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
-| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
-| Pistol | 4/s                      |                                       |
-| SR     | charge cycle + 22f bolt  | §4                                    |
-| RL     | charge cycle             | no bolt recovery                      |
+| Weapon | Cadence                                                | Notes                                 |
+| ------ | ------------------------------------------------------ | ------------------------------------- |
+| AR     | 12/s                                                   | 5 frames exactly                      |
+| SMG    | 20/s ⚠ datamined nominal 24/s, frame-quantized to 20/s | see the frame-quantization note below |
+| SG     | 1.5/s                                                  | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap                                        | after wind-up ladder — §3             |
+| Pistol | 4/s                                                    |                                       |
+| SR     | charge cycle + 22f bolt                                | §4                                    |
+| RL     | charge cycle                                           | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on
@@ -153,7 +155,7 @@ signatures (~~the old table granted machine guns the mid-far band~~ SUPERSEDED 2
 The same recording showed the bonus flips track the boss's physical walk, leading/lagging the
 scripted boundaries by ~4–6 seconds — the real trigger is instantaneous distance crossing the
 weapon's optimal ring, and the band table approximates it. Raw measurements:
-**[range_data.md](range_data.md)** (user, 2026-07-13) + probe u7 battery 4 (2026-07-14). The
+**[range-data.md](range-data.md)** (user, 2026-07-13) + probe u7 battery 4 (2026-07-14). The
 +30%/RL-never rule is community-verified ([nikke.gg damage formula](https://nikke.gg/damage-formula/),
 [ore-game verify-memo](https://ore-game.com/nikke/post/verify-memo/)); the band timeline and
 weapon-band eligibility are OUR boss-specific measurements. Engine: `BOSS_RANGE_SCRIPT`,
@@ -348,10 +350,9 @@ owner-confirmed 2026-08-02) is seeded in the map; no gate consumes it yet.
 
 ## 10. Elemental advantage
 
-×(1.1 + Element Damage ▲ sources) as its own bucket, only with advantage; "Superior
-Elemental Code Attack Damage"-style buffs sit in the Damage-Up bucket instead
-(`elemAdvantageDamagePct`) and also apply only with advantage. Wheel: Fire→Wind→Iron→
-Electric→Water→Fire. No hidden bonus beyond the base 1.1
+×(1.1 + Element Damage ▲ sources + Superior-element Damage ▲ sources) as its own bucket,
+only with advantage; both `elementDamagePct` and `elemAdvantageDamagePct` live here. Wheel:
+Fire→Wind→Iron→Electric→Water→Fire. No hidden bonus beyond the base 1.1
 ([nikke.gg](https://nikke.gg/damage-formula/),
 [ore-game](https://ore-game.com/nikke/post/verify-memo/),
 [official @NIKKE_en stacking clarification](https://x.com/NIKKE_en/status/1678710452862472193)).

@@ -41,8 +41,8 @@ cadence (§2a). No calibrated factor remains in her model.
 Measured auto cast timing: gauge-full → B1 ≈ 0.433s; B1→B2 and B2→B3 ≈ 0.533s each; skill
 EFFECT applies ~0.1s after cast [https://nikke-synergy.com/arena-guide_en]. ≈1.6s per
 rotation vs instant manual casting. Engine approximates with 0.5s per stage cast
-(`STAGE_CAST_GAP_FRAMES = 30`); the remaining difference is inside AUTO_GEN_EFFICIENCY
-([burst-gauge.md](burst-gauge.md) §5).
+(`STAGE_CAST_GAP_FRAMES = 30`); the remaining difference is inside the directly-modeled
+gauge-generation and focus rules (no efficiency fudge factor remains).
 
 ## 4. SG pellet falloff out of near — 0.3 ⚑
 
@@ -54,13 +54,13 @@ calibrated independently.
 
 ## 5. Burst selection on auto
 
-Leftmost-first among ready, stage-eligible units
-[https://m.inven.co.kr/webzine/wznews.php?site=nikke&p=2&idx=303197 ;
-https://nikke.gg/mastering-burst-chains-the-core-combat-mechanic-every-nikke-player-needs-to-understand/].
-Slot order is therefore load-bearing — always record the fielded order (the 2026-07-13
-screenshot audit found three T-fights with wrong assumed orders). Λ units are eligible at
-ANY open stage (positioning them left of the B1 ruins rotations — Inven warns explicitly);
-under our formation rules they count as NO burst type for formation checks (user ruling).
+First-ready, with waiting: inside a timed stage window the chain waits for the stage-
+filling unit whose cooldown ends soonest (tie → leftmost slot). `B3_LEFTMOST=1` restores
+the old strict-leftmost pick. Slot order still matters for ties and for Λ positioning, so
+always record the fielded order (the 2026-07-13 screenshot audit found three T-fights with
+wrong assumed orders). Λ units are eligible at ANY open stage (positioning them left of the
+B1 ruins rotations — Inven warns explicitly); under our formation rules they count as NO
+burst type for formation checks (user ruling).
 
 ## 6. Known auto quirks (documented, not modeled)
 

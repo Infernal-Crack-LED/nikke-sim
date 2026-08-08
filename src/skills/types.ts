@@ -43,7 +43,7 @@ export type StatKey =
   //                    highestAllyAtkPct precedent (static basis; the kit says plain "highest", not
   //                    "final"). Same e3 feed rule. Next expected carrier: sin.
   | 'partsDamagePct' // parsed but inert in v1 (no parts on the boss)
-  | 'pierceDamagePct' // parsed but inert in v1
+  | 'pierceDamagePct' // Damage Up bucket entry for Pierce-tagged attacks (static hasPierce, gainPierce window, or weaponSwap.hasPierce)
   | 'damageTakenPct' // debuff on the boss (positive = boss takes more)
   | 'maxAmmoPct'
   | 'maxAmmoFlat' // Max Ammunition ▲ N rounds — FLAT round count (not %), added on top of the
@@ -55,7 +55,7 @@ export type StatKey =
   | 'extraHitDamagePct' // flat % of final ATK added per normal-attack hit while active
   | 'trueDamagePct' // Damage Up bucket (doc line 8)
   | 'projectileExplosionPct' // Damage Up bucket; only RL kits carry it
-  | 'elemAdvantageDamagePct' // Damage Up bucket, active only with elemental advantage
+  | 'elemAdvantageDamagePct' // Element bucket, active only with elemental advantage (NOT Damage Up)
   | 'distributedDamagePct' // boosts the caster's own distributed-damage hits
   | 'projectileAttachmentPct' // boosts the caster's projectile-attachment procs
   | 'normalAttackPct' // scales the normal attack multiplier (like the SMG/SG doll line)
