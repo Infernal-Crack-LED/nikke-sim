@@ -1,0 +1,80 @@
+{
+  "note": "sin (Sin) — Missilis AR DEFENDER, Electric, Burst II, cd 20s, ammo 60, reloadFrames 81, normalMult 13.65 / coreMult 200, critRate 15 / critDamage 150. Kit-autonomy gauntlet 2026-08-05: GREENFIELD build (no shipped override existed; simSupported was false) — test-first re-derivation (scripts/tests/units/sin.test.ts, groups SN1/SN3/SN4/SN5/SN6 + counterfactual discrimination). A TANK whose offensive surface in the v1 DPS sim is exactly ONE damage line (her burst nuke) plus three structurally-faithful surfaces: the S1 Max-HP duplication, the Full-Burst-end gauge-fill window, and the burst-usage escalation's DEF step. || MODELED TODAY: (1) BURST line 2 → burstCast-keyed flatDamage 176.32 on `enemy` — its OWN ■ block carries NO activation clause, so it is unconditional on cast and NOT gated by the preceding >4-enemies header (the kit's trap reading); 'enemies within attack range' collapses to the single partless boss. Burst-cast damage lands BEFORE the Full Burst window opens, so it correctly never takes the +50% FB major (pinned in the test). (2) SKILL1 'Duplicate 15.03% Max HP of ally with the highest Max HP, lasts for 5 sec' → lastBullet → self highestAllyMaxHpPct 15.03, durationSec 5 — the quency S1 precedent (StatKey comment names sin as the next carrier): resolves at apply time to a maxHpFlat grant of (15.03/100) × max(all units' STATIC maxHp). ROSTER-TIE: every Defender shares the identical 16500+3000+200 static-HP basis and no non-Defender reaches it, so sin is ALWAYS tied for the team max — the highest-ally basis is provably value-identical to a self-% basis on every possible team (equivalence pinned in the test). In-game this line creates a SHIELD; v1 maps it as a Max-HP grant (the shield primitive's maxHpPct basis is caster-only and event-only) — both channels are offensively inert for sin (no HP→ATK conversion, no 'shielded' trigger of her own), so the divergence moves no damage. (3) SKILL2 line 1 'when Full Burst ends → self: Burst Gauge filling speed ▲16.17% for 5 sec' → fullBurstEnd → self burstGenPct 16.17, durationSec 5 — trigger IDENTITY is FB END (pinned frame-exactly against fullBurstEnd events; the fullBurstEnter counterfactual is discriminated). LIVE but damage-INERT at scope-lock: her gaugeGenerated rises (224.6 vs 211.6 without) yet the fixture rotation is CD-limited (liter B1 20s / helm B3 40s cap the chain cadence; the gauge caps before the next chain), so totals are byte-equal with and without it. (4) SKILL2 line 2 — the burst-usage escalation ('Effects vary according to the number of times used. Each subsequent effect triggers all effects before it') → resource pool 'burstUses' (+1 per OWN burstCast, gates read the PRE-increment value — soda-twinkling slot-order precedent): step 1 (lifesteal) fires from cast 1, step 3 (DEF ▲43.2%/5s) from cast 3 on, CUMULATIVE. Step 1's payload is a self heal-HoT (ticks:5 — the helm burst-heal precedent for 'Recover X% of attack damage as HP for N sec'): event-only, self-targeted, behaviorally SILENT in v1 (no log kind for recovery events; no unit consumes sin's own recovery). Step 3's defPct is inert in v1 (own DEF never feeds own damage) but pinned on the escalation schedule (absent on casts 1–2, present on every cast from the 3rd — instant-max and cast-3-only counterfactuals discriminated). || DELIBERATELY UNMODELED (verbatim in `unmodeled`): S1 Attract taunt 5s (no threat model; a partless boss with no ally-targeting AI — nero N7 / delta-ninja-thief Attract precedent); S2 step 2 'Incoming healing ▲ 51%' (no incoming-healing StatKey in the schema — nero grumpy-cat ruling; the escalation GATE still advances on every cast, so steps 1/3 fire on exactly the right casts); BURST line 1 'Damage Taken ▲12.23% for 5 sec' gated on 'enemy unit(s) (excluding Nikkes) are more than 4' — the gate is NEVER satisfied at single-boss scope (1 enemy), so unmodeled IS the faithful encoding (the sim's whole domain is one boss); the schema also has no enemy-count primitive, and the nearest-wrong ungated damageTakenPct would over-credit the WHOLE team ~12% per sin burst — the largest error this kit can produce (S2b's named trap; absence canary in the test). || FIXTURE NOTE: ['liter','sin','helm'] boss Water (her ×1.1 Electric major), focus sin — sin is the SOLE B2 (a crown-style competing B2 would starve her to zero casts — S2b fixture-validity warning, avoided by construction); 10 own casts / 5 Full Bursts in 180s, so the escalation's cast-3 threshold genuinely fires. || EVIDENCE TIER: every magnitude/duration/trigger is kit-text-literal (DATAMINED lvl-10); the only estimates are the ⚑ cadences below. || TIER 2 encoding (scoped self-only buff windows, fullBurstEnd trigger identity, burstCast-vs-fullBurstEnter keying, and a resource-gated usage escalation). ⚑ FLAGS: (⚑1 CADENCE TUPLE, mandatory) AR rate_of_fire 720 (12/s) + ammo 60 + reloadFrames 81 shipped at datamine-synced values (no charFixes; no odd-fire-mode text tell → NOT escalated). Drives her pull count, the S1 lastBullet cadence (~5s mag + 1.35s reload ≈ 6.35s per grant cycle) and her gauge contribution. Estimate = datamine as-is. Recipe = rounds/min + reload gap from any focused sin video. Tier: low. (⚑2 OUT-OF-DOMAIN, multi-enemy content — TIER 3) the burst's Damage Taken ▲12.23%/5s debuff needs an enemy-count gate (>4 non-Nikke enemies) the schema lacks; at single-boss scope its impact is exactly zero (gate never met). Recipe: if multi-target fights ever enter scope — enemy-count gate primitive + the debuff as damageTakenPct on all enemies, 5s per cast. Estimate: zero at scope lock. Faithful > fit; measured > fudge. || Kit-autonomy gauntlet 2026-08-05: cross-family S2b (claude-fable-5) review — converged on SN1/SN3/SN5/SN6 + the taunt/debuff residuals; DIVERGED on the escalation cluster (S2b: model it cumulative; driver had assumed no usage-count primitive — falsified by the resources/resourceGate schema; ruling: model steps 1+3, step 2 unmodeled for the missing StatKey; adjudicated by S7).",
+  "unmodeled": {
+    "skill1": [
+      "Attract: Taunt all enemies for 5 sec. — no threat model in v1: the partless boss deals no damage and has no ally-targeting AI, so taunt has zero in-domain surface (nero N7 / delta-ninja-thief Attract precedent)."
+    ],
+    "skill2": [
+      "Twice: Incoming healing ▲ 51% for 5 sec. — the escalation step-2 payload has no carrier: the schema has no incoming-healing StatKey and heals are event-only (nero grumpy-cat ruling). The escalation GATE is still encoded (the 'burstUses' pool advances on every own cast), so steps 1 and 3 fire on exactly the casts the kit says they fire on."
+    ],
+    "burst": [
+      "Activates when enemy unit(s) (excluding Nikkes) are more than 4. Affects all enemies. Damage Taken ▲ 12.23% for 5 sec. — the enemy-count gate is NEVER satisfied at single-boss scope (1 enemy), so never-firing IS the faithful behaviour here; the schema also has no enemy-count primitive, and the nearest-wrong ungated damageTakenPct would over-credit the whole team ~12% per cast (absence canary in the test). ⚑2 OUT-OF-DOMAIN, recipe in the note."
+    ]
+  },
+  "caveats": [
+    "skill1: 'Duplicate 15.03% Max HP' is mapped as a maxHpFlat grant (highestAllyMaxHpPct — quency precedent), not the shield channel: in-game this creates a shield, but the shield primitive's maxHpPct basis is caster-only and event-only; both channels are offensively inert for sin, and the roster-tie (all Defenders share the max static-HP basis) makes the highest-ally basis provably value-identical to a self-basis on every team",
+    "skill2: the burst-usage escalation is a 'burstUses' resource pool (+1 per own burstCast, gates read the PRE-increment value); the step-2 payload (Incoming healing ▲51%) is unmodeled for the missing StatKey, but the gate still advances — steps 1 and 3 fire on exactly the right casts",
+    "skill2: the step-1 lifesteal is a self heal-HoT (ticks:5, event-only) — behaviorally silent in v1 (no recovery-event log kind, and no unit consumes sin's own recovery)",
+    "burst: the 176.32% nuke is burstCast-keyed (her OWN cast), lands pre-Full-Burst and never takes the +50% FB major; its ■ block has NO activation clause, so it is NOT gated by the preceding >4-enemies header — 'enemies within attack range' collapses to the single partless boss"
+  ],
+  "resources": [{ "name": "burstUses", "initial": 0, "min": 0, "max": 3 }],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "lastBullet" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "highestAllyMaxHpPct",
+          "value": 15.03,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnd" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "burstGenPct",
+          "value": 16.17,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "flatDamage", "atkPct": 176.32 }]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [{ "kind": "heal", "ticks": 5, "intervalSec": 1 }]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "resourceGate": { "name": "burstUses", "min": 2 },
+      "effects": [
+        { "kind": "buff", "stat": "defPct", "value": 43.2, "durationSec": 5 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [{ "kind": "resource", "name": "burstUses", "delta": 1 }]
+    }
+  ]
+}

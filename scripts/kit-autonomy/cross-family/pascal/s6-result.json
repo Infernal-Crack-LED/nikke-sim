@@ -1,0 +1,131 @@
+{
+  "slug": "pascal",
+  "leakDetected": null,
+  "override": {
+    "slug": "pascal",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 10
+        },
+        "target": {
+          "kind": "alliesLowestHp",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "maxHpPct": 6.28
+          }
+        ]
+      }
+    ],
+    "skill2": [],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesLowestHp",
+          "count": 3
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "maxHpPct": 55.29
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "■ Activates when entering Burst Stage 1. Affects 3 ally unit(s) with the lowest remaining HP.",
+        "Incoming healing ▲ 38.4% for 10 sec."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ TARGET STAND-IN: skill1's \"1 ally unit(s) with the highest final DEF\" has no DEF-ranked TargetDef in the schema. Modeled as alliesLowestHp count 1 — cardinality (1) is faithful, identity is NOT (v1 resolves lowest-HP deterministically to the leftmost ally). Damage-neutral today; it only decides WHICH ally's 'recovery' trigger fires.",
+      "⚑ HEAL EFFECT SHAPE: the redacted schema handed to this pass does not list a 'heal' EffectDef kind, but the 'recovery' TriggerDef explicitly reads \"when the owner RECEIVES a heal (a 'heal' effect targets them)\", so the kind exists. Authored as { kind:'heal', maxHpPct } by analogy with the 'shield' effect (maxHpPct = % of CASTER final Max HP), matching the kit's \"% of the skill user's final Max HP\" wording. Field name unverified against live types.ts.",
+      "⚑ CADENCE: skill1's 10-round threshold is paced by the datamined cadence tuple (ammo 6, reloadFrames 171, RL fire rate) — a known-unreliable datamine field, so the number of skill1 procs per fight is an estimate, not a measurement.",
+      "SKIPPED-BUT-NOT-SKIPPABLE-BY-DEFAULT: the heal lines are modeled (not dropped on isolation) purely for the tandem channel — a teammate's \"when recovery takes effect\" trigger. Pascal contributes no direct damage at all; her whole sim footprint is heal events + burst-gauge/rotation participation as a Burst I."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Pascal (pascal, RL/Iron/Supporter/Burst I, cd 40s) is a pure sustain kit — no ATK, crit, damage-taken, weapon-state or gauge line anywhere in the three slots, so she deals and enables ZERO direct damage in the sim. S1 heals 1 ally for 6.28% of Pascal's final Max HP every 10 rounds fired (recurring, not once-per-battle); the burst heals 3 allies for 55.29% on cast. Heals are offensively inert at scope lock (immortal boss, no HP pool), so these blocks exist for exactly one reason: they emit heal events that fire teammates' 'recovery' triggers (crown-style \"when recovery takes effect\") — the tandem/cross-unit rule forbids skipping them on isolation. ⚑ \"highest final DEF\" is a stand-in target (see caveats) because no DEF-ranked TargetDef exists; the count-1 cardinality is faithful, the identity is not. S2 is fully unmodeled: \"Incoming healing ▲ 38.4%\" has no StatKey, and it only scales heal MAGNITUDE, which nothing in v1 consumes (recovery triggers fire on application regardless of amount) — so the omission is magnitude-only, not a lost trigger. Her burst is a Burst I with no damage component, so no noFb / noRange / core question arises anywhere in this kit."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after firing 10 time(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount{count:10} — recurring per-round threshold (RL hitsPerShot 1, so rounds == trigger pulls); NOT a once-per-battle line"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects 1 ally with highest final DEF.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target alliesLowestHp{count:1} as a ⚑ stand-in — no DEF-ranked TargetDef exists; cardinality faithful, identity not (resolves leftmost)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 6.28% of user Max HP as HP.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect heal{maxHpPct:6.28} — % of the CASTER's final Max HP; fires the target's 'recovery' trigger"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates entering Burst Stage 1; 3 allies",
+      "status": "SKIPPED",
+      "effectOrReason": "the block's only payload is unrepresentable (next row), so no block is authored; the stageEnter{stage:1} trigger + alliesLowestHp{count:3} target would carry nothing"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Incoming healing ▲ 38.4% for 10 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "no StatKey for incoming-healing amplification; it scales heal MAGNITUDE only, and v1 has no HP pool — recovery triggers fire on application regardless of amount, so no trigger channel is lost"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 3 allies with lowest remaining HP.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast (own Burst I cast, no separate activation clause) + target alliesLowestHp{count:3}"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 55.29% of user Max HP as HP.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect heal{maxHpPct:55.29} — % of the CASTER's final Max HP; fires 3 allies' 'recovery' triggers per burst"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].target",
+      "estimate": "{ kind:'alliesLowestHp', count:1 } as a stand-in for \"1 ally unit(s) with the highest final DEF\"",
+      "reasoning": "The TargetDef union has ATK-ranked (alliesTopAtk/alliesLowestAtk), HP-ranked (alliesLowestHp), class/element/weapon/positional targets — but nothing ranked by DEF. Cardinality 1 is the load-bearing part (it bounds how many 'recovery' triggers fire); the identity only matters if a teammate's recovery-gated damage buff is in the comp. alliesLowestHp is the schema's documented deterministic stand-in for an indeterminate single-ally survival target at scope lock.",
+      "recipe": "If a recovery-trigger consumer (crown-style) is ever teamed with pascal and the identity moves damage, add an `alliesTopDef` TargetDef ranked on static DEF (the class-based DEF analogue of alliesTopAtk) and re-point this block; otherwise the stand-in stays damage-neutral. Verify by A/B: run the comp with target alliesLowestHp{1} vs allies{} and confirm the consumer's proc count is unchanged."
+    },
+    {
+      "field": "skill1[0].effects[0] / burst[0].effects[0] — heal effect kind + field name",
+      "estimate": "{ kind:'heal', maxHpPct: <6.28 | 55.29> }",
+      "reasoning": "The EffectDef union in the schema copy provided to this blind pass does not enumerate a 'heal' kind, yet the 'recovery' TriggerDef defines itself in terms of one (\"a 'heal' effect targets them\"), so the kind exists in live types.ts. The percentage basis is stated by the kit as \"of the skill user's final Max HP\", which matches the 'shield' effect's documented `maxHpPct` semantics (% of CASTER final Max HP) — hence the field name by analogy.",
+      "recipe": "Read src/skills/types.ts for the heal EffectDef's exact field name/units and run `validate-overrides.ts`; if the field is named differently (e.g. casterMaxHpPct or a flat hpPct), rename — the two magnitudes (6.28 / 55.29) are verbatim from the kit and do not change."
+    },
+    {
+      "field": "skill1[0].trigger.count — proc cadence",
+      "estimate": "10 rounds; realized proc count per 180s fight is datamine-paced (ammo 6, reloadFrames 171 ≈ 2.85s, RL rate_of_fire)",
+      "reasoning": "\"Activates after firing 10 time(s)\" is unambiguous as a threshold, but HOW OFTEN it is reached depends entirely on the cadence tuple, and rate_of_fire / reloadFrames are the known-unreliable datamine fields (nominal rather than 60fps-effective). With ammo 6 the threshold straddles a reload every proc, so reload timing dominates the rate.",
+      "recipe": "Count green heal popups on pascal's ally in a focus recording over a fixed 60s window and divide into rounds fired (ammo-counter read) to get the true rounds-per-proc and effective RL cadence; pin as a scripts/tests/units/pascal.test.ts assertion on heal-event count."
+    },
+    {
+      "field": "skill2 (whole slot) — Incoming Healing ▲ 38.4% / 10 sec",
+      "estimate": "unmodeled (no StatKey); magnitude-only loss, no trigger channel lost",
+      "reasoning": "Healing-amplification is not in the StatKey union and has no consumer: v1 models no HP pool, and the 'recovery' trigger fires on heal APPLICATION, not on healed amount — so a 38.4% larger heal changes nothing the engine reads. Modeling it would require both a new StatKey and a heal-magnitude consumer.",
+      "recipe": "Only revisit if a future kit line scales damage off healing RECEIVED (an \"ATK ▲ by amount healed\" style effect). At that point add an `incomingHealingPct` StatKey, key this block to stageEnter{stage:1} + alliesLowestHp{count:3} with durationSec 10, and validate against a recording where the consumer's buff value changes with pascal present vs absent."
+    }
+  ],
+  "model": "claude-opus-5"
+}

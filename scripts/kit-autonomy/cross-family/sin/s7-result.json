@@ -1,0 +1,104 @@
+{
+  "slug": "sin",
+  "kitDescription": "Sin is an Electric assault-rifle Defender and Burst II tank whose kit is almost entirely survivability and gauge economy. Every time she fires the last bullet of her magazine she briefly gains Max HP equal to 15.03% of the highest-Max-HP ally's HP for 5 seconds and taunts all enemies. Whenever any team Full Burst ends, her own burst gauge fills 16.17% faster for 5 seconds, arming the next rotation. Her burst skill damages enemies within attack range for 176.32% of her final ATK, and each time she casts it she climbs an escalating defensive ladder: lifesteal from the first cast, increased incoming healing from the second, and a DEF boost from the third onward. The burst also carries a Damage Taken debuff on all enemies, but only when more than four non-Nikke enemies are present — a condition that is never met against a single raid boss, so it never fires at scope.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": [
+      "Adapted suite: 'the grant carries a 5-second window, not permanent and not for-N-rounds' — expect(durationShots).toBeUndefined() received null; engine emits durationShots:null on timed buffs, semantic (timed not round-counted) holds and driver's SN1 pins expiresFrame-frame===300; classified RECON_ERROR (null-vs-undefined payload), same class as the nero expiresFrame ruling. Raw S5 file collected 0 tests (four payload-shape RECON_ERRORs: ov.blocks vs bare arrays, .slot vs .position, srcSlot as index vs slot-name, .buckets vs .breakdown) — recon errors, not faithfulness divergences; the mechanical-only adapted copy passes 20/20 with 4 self-declared GAP skips."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Duplicate 15.03% Max HP of highest ally",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "lastBullet → self highestAllyMaxHpPct 15.03 / durationSec 5 → maxHpFlat = 15.03% × max(static maxHp) at apply time (quency S1 precedent); roster-tie proof: all Defenders share the 16500+3000+200 static-HP basis and no non-Defender reaches it, so sin is always tied for team max — self-basis is provably value-identical on every team; shield-vs-HP-grant channel divergence documented in caveats, offensively inert either way",
+        "blindSaid": "S5: pinned trigger/duration/maxHpFlat-stat + inertness; basis filed as GAP (claimed no highestAllyMaxHpPct StatKey — wrong, S6 and driver both use it; RECON_ERROR in S5's skip rationale only, no assertion depended on it). S6: byte-identical block to driver",
+        "formulaCheck": "Max HP grant is not a damage bucket input for sin (no atkOfMaxHpPct in kit); ally-basis conversion at apply time matches the e3 snapshot convention; offensively inert confirmed by byte-equal totals under removal",
+        "fireRateOk": true,
+        "explanation": "Fires per magazine (grant count within [reloads, reloads+1] against engine reload events, robust to liter's live maxAmmo stretch), 300-frame expiry exact, self-scoped, value 0.1503×STATIC_MAX_HP exact, level-1 magnitude 7.94 discriminated. The basis is structurally undecidable (roster tie) and the driver said so instead of fake-discriminating — honest equivalence pin."
+      },
+      {
+        "kitLine": "Attract: Taunt all enemies for 5 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — no threat model, partless boss with no ally-targeting AI (nero N7 / delta-ninja-thief precedent)",
+        "blindSaid": "S2b/S5/S6 all concur: unobservable, correctly unmodeled; S5 GAP skip",
+        "formulaCheck": "No damage-formula surface exists for aggro at scope",
+        "fireRateOk": true,
+        "explanation": "Deliberate, recorded skip with precedent; moves nothing."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Burst Gauge filling speed ▲16.17% 5s on FB end",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnd → self burstGenPct 16.17 / 5s; frame-exact against fullBurstEnd events (count equal, frames equal); LIVE (gaugeGenerated 224.6 vs 211.6 stripped) but damage-inert in the CD-limited fixture; fullBurstEnter counterfactual discriminated (~10s early)",
+        "blindSaid": "S5 adapted: all four gauge assertions green including the fullBurstEnter frame-shift discrimination; S6 byte-identical block",
+        "formulaCheck": "Gauge-fill is outside the damage buckets; trigger identity (END not ENTER) is the load-bearing claim and is proven frame-exactly; FB vocabulary collision with the burstCast-keyed ladder correctly kept distinct",
+        "fireRateOk": true,
+        "explanation": "Fires once per team Full Burst end, self-only, exact value/duration. The damage-inertness canary is honestly framed (rotation is CD-limited; liveness shown via gaugeGenerated, not totals)."
+      },
+      {
+        "kitLine": "Once: Recover 15.3% of attack damage as HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "self heal-HoT ticks:5 intervalSec:1 on own burstCast (helm burst-heal precedent), ungated so it fires from cast 1 cumulatively; behaviorally silent in v1 (no recovery log kind, no consumer of sin's self-recovery) — documented as unassertable rather than asserted vacuously",
+        "blindSaid": "S5 GAP skip (lifesteal unobservable on this fixture); S6 same intent via heal ticks:5 as escalating step 1",
+        "formulaCheck": "No HP pool at scope; heal is event-only per nero grumpy-cat ruling; self-target means it cannot trip an ally's on-recovery consumer — matches tandem rule",
+        "fireRateOk": true,
+        "explanation": "Modeled with the right trigger/target/cadence (every own cast from cast 1); its silence is a fixture limitation, disclosed by driver and both blind agents. Placement in the burst slot rather than skill2 has zero behavioral consequence (non-damage effects; the skill-slot-vs-burst-slot FB-ordering distinction in the SSOT only matters for damage instances)."
+      },
+      {
+        "kitLine": "Twice: Incoming healing ▲ 51% for 5 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — no incoming-healing StatKey (nero grumpy-cat ruling); the 'burstUses' pool still advances every cast so steps 1/3 fire on exactly the right casts",
+        "blindSaid": "S2b: UNMODELED, do not force-encode; S5 GAP skip; S6 same, carried positionally as a defPct:0 placeholder",
+        "formulaCheck": "No consumer exists; must move nothing",
+        "fireRateOk": true,
+        "explanation": "Faithful skip. Driver's count-based gate (vs S6's positional placeholder) is immune to the step-slide S6's placeholder was guarding against — both preserve the ladder's cast mapping."
+      },
+      {
+        "kitLine": "Three times: DEF ▲ 43.2% for 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstUses resource pool (+1 per own burstCast, pre-increment read — soda-twinkling precedent) + resourceGate {min:2}: absent casts 1–2, present every cast from the 3rd (cumulative); value 43.2, 300-frame window, self-only; instant-max and cast-3-only counterfactuals discriminated; inert (defPct v1) byte-equal",
+        "blindSaid": "S5 adapted: ladder keyed to own casts, monotone (first defPct ≥ cast-3 frame), value/duration green; S6 identical intent (escalating kind is non-schema — S6's form RECON_ERROR, semantics convergent)",
+        "formulaCheck": "DEF never enters own damage formula; cumulative 'each subsequent effect triggers all before it' semantics match the prose exactly",
+        "fireRateOk": true,
+        "explanation": "Escalation schedule proven on a 10-cast fixture (sole-B2 comp avoids the S2b starvation warning). The two nearest-wrong readings both fail the driver's tests."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": ">4 enemies: Damage Taken ▲12.23% 5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — gate never satisfiable at single-boss scope (1 enemy), so never-firing IS the faithful behavior; no enemy-count gate primitive exists; absence canary pinned (zero damageTakenPct from sin); ⚑2 out-of-domain recipe recorded",
+        "blindSaid": "S2b named it the kit's highest-leverage trap; S5 absence assertion + ungated-damageTaken inflation discrimination both green (≥3 units hotter, sin hotter under the mis-model); S6 identical caveat",
+        "formulaCheck": "A live ungated Taken-bucket 12.23% would multiply the whole team's damage ~12% per 5s window — the largest error available in this kit; its absence is the correct bucket state at scope",
+        "fireRateOk": true,
+        "explanation": "The single most important line in the kit is handled exactly right by all three agents independently: gated off at scope, recorded, with a revival recipe. Discrimination is proven, not assumed."
+      },
+      {
+        "kitLine": "Deals 176.32% of final ATK as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast-keyed flatDamage 176.32 on enemy — its own ■ block has no activation clause so NOT folded under the >4-enemy header; once per own cast, burst bucket, fbMajorApplied falsy on every instance (cast lands pre-FB); level-1 magnitude 88.16 discriminated; strip counterfactual proves liveness; no crit flag per engine convention (flatDamage crit opt-in; helm H7 / nero N6 pin burst nukes non-crit; laplace the measured outlier)",
+        "blindSaid": "S5 adapted: count-per-cast, FB-exempt, no-range, teammate-byte-identity under strip all green. S6 diverged on crit:true (reads nuke as crit-eligible) and noFb:true (redundant — the window is unreachable either way)",
+        "formulaCheck": "Generic formula table lists burst nukes as crit-eligible, but the repo's measured/pinned precedents (helm H7, nero N6) establish the non-crit flatDamage convention the driver followed — existing labeled artifacts satisfy the independent-method bar; S6's noFb is behaviorally inert",
+        "fireRateOk": true,
+        "explanation": "Correct trigger, magnitude, bucket, FB-exemption, and un-gating from the enemy-count header. The S6 crit divergence is the one genuine cross-agent split; driver's side is backed by shipped precedent, flagged below as the owner spot-check residual."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0 (8/8 kit lines FAITHFUL or DOCUMENTED_GAP)",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. All five load-bearing lines are FAITHFUL with live-fire confirmation and working counterfactual discrimination: the last-bullet Max-HP duplication (cadence pinned against engine reload events, basis honestly declared undecidable via the roster-tie rather than fake-discriminated), the fullBurstEnd gauge window (frame-exact, fullBurstEnter mis-key fails), the cumulative burst-usage escalation (instant-max and cast-3-only both fail; the count-based gate keeps step 3 on cast 3 despite the unmodeled step 2), the FB-exempt 176.32% nuke (correctly NOT folded under the >4-enemy header, level-1 magnitude fails), and — highest-leverage — the >4-enemy Damage Taken debuff correctly never-on at single-boss scope with an absence canary and a proven ungated-inflation counterfactual. The three deliberate skips (taunt, incoming-healing step, gated debuff) are documented verbatim with precedents and recipes. The blind re-derivations converged: S6's skill1 and gauge blocks are byte-identical to the driver's, and every S5 divergence is a RECON_ERROR (four payload-shape crashes in the raw file plus one null-vs-undefined assertion — the mechanical adapted copy passes 20/20 with its 4 self-declared GAP skips), not a faithfulness signal. Two same-model residuals for the owner to spot-check: (1) the burst nuke's crit eligibility — S6 read crit:true off the generic formula table while the driver shipped non-crit per helm H7 / nero N6 flatDamage convention; precedent backs the driver but a one-line owner ruling would close it permanently; (2) the escalation blocks live in the burst slot rather than skill2 — behaviorally null (all payloads are non-damage, so the skill-slot/burst-slot FB-ordering distinction cannot bite) but worth a hygiene note. Nothing must change for GO.",
+  "model": "kimi-code/k3"
+}

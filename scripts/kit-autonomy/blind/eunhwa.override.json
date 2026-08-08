@@ -1,0 +1,101 @@
+{
+  "slug": "eunhwa",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 37.28,
+          "durationShots": 2
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 15.53,
+          "durationShots": 2
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": -29,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 85.62
+        },
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": -2.43,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 4.65,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ durationShots=2 for both S1 buffs: the kit says 'for 2 shots' (Charge Damage) and 'for 2 round(s)' (Charge Speed). Both read as ROUND counts, not seconds; on a 6-round SR every round is a charged shot, so the two wordings collapse to the same window. Unmeasured whether the window covers 2 rounds of the NEXT magazine or is consumed partly by the triggering last bullet itself (engine decrements durationShots right after the firing shot's blocks dispatch).",
+    "⚑ S2 enemy DEF ▼29% is authored as stat 'defPct' with a negative value on target 'enemy' — the only DEF StatKey in the schema, whose comment scopes inertness to SELF DEF. Whether the engine routes an enemy-side defPct into the boss-DEF subtraction is UNVERIFIED from the material available here; if it does not, this line is silently inert and needs an engine-side channel (or damageTakenPct as a proxy, which would be a different mechanic and is NOT used here).",
+    "⚑ Burst flatDamage: crit/noFb/noRange left unset. Per methodology, riders crit at the caster's rate under the engine's global rider-crit path, burst-cast damage is Full-Burst-exempt by TIMING (it lands before the FB window opens), and no-range is engine-automatic. No per-kit noFb is set — that field is measured-only.",
+    "Burst targeting 'Affects 10 enemy unit(s) with the highest final ATK' is scope-trivial: the raid fight has one boss entity, so it is modeled as target 'enemy'. The 10-target fan-out is untestable at scope lock and carries no sim consequence.",
+    "⚑ Cadence tuple (chargeFrames 60, reloadFrames 161, ammo 6) comes from the datamine, which is known-unreliable for fire/reload timing. Shot count per magazine drives last-bullet frequency, which drives BOTH S1 and S2 uptime, so a cadence error propagates to every buff window here."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Eunhwa is a 6-round charge SR (Fire/Attacker/Burst II) whose whole kit hangs off the last-bullet trigger, so both non-burst skills fire once per magazine. S1 (self, on last round): Charge Damage ▲37.28% and Charge Speed ▲15.53%, both authored as ROUND-count windows (durationShots 2) so they span the reload into the next magazine — Charge Damage is additive in the charge bucket, Charge Speed shortens the 60-frame charge and therefore raises shots fired (a weapon-state modifier, not a skippable QoL line). S2 (enemy, on last bullet): DEF ▼29% for 5 sec, authored as a negative defPct on target enemy. Burst: a burst-cast hit for 85.62% of final ATK plus DEF ▼2.43% for 15 sec on the enemy, and Critical Rate ▲4.65% for 15 sec to all allies (self included). No weapon swap, no stack/currency pool, no DoT, no core-strike or Hit-Rate line, no formation/team gate, no mode. Every kit line is implemented; unmodeled is empty for all three slots.",
+  "hasPierce": false
+}

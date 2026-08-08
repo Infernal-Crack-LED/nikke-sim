@@ -1,0 +1,151 @@
+{
+  "slug": "emma",
+  "leakDetected": null,
+  "override": {
+    "slug": "emma",
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 5,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "There is a 5% chance to activate when attacked. Affects all allies.",
+        "Recovers 10.77% of the skill user's final Max HP as HP."
+      ],
+      "skill2": [
+        "Activates when above 90% HP. Affects all allies.",
+        "Incoming healing ▲ 13.33% continuously."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "Emma's entire kit is healing/heal-amplification. She carries NO damage line, NO ATK/crit/damage-bucket stat, and NO burst-CDR — at scope lock she is offensively inert EXCEPT as a source of `recovery` events for heal-synergy consumers (a teammate whose kit reads 'when recovery takes effect'). Her whole modeled value is therefore the burst's two recovery emissions; judge this override on TANDEM behaviour, not on her own damage.",
+      "The engine's `heal` effect models NO HP amount (v1 has no HP pool and the boss deals no damage), so both burst percentages (39.6% of caster final Max HP; 39.6% of attack damage over 5 sec) are recorded for kit completeness only and move no number by themselves.",
+      "⚑ burst HoT tick cadence (5 ticks @ 1 s) is an UNMEASURED convention — the kit says 'over 5 sec' and gives no tick rate. Tick COUNT is what drives an on-recovery consumer's refresh count, so this estimate is load-bearing for tandem comps.",
+      "⚑ skill1 is unmodeled: TriggerDef has no 'when attacked' primitive and the v1 boss deals no damage to the team, so a 5%-on-incoming-attack heal has no derivable firing rate. Modeled activations = 0. If a real incoming-damage model ever lands, this becomes a recurring recovery source and must be revisited.",
+      "⚑ skill2 is unmodeled: 'Incoming healing ▲ 13.33%' has no StatKey (no heal-magnitude channel exists) and heal amounts are not simulated. Its 'above 90% HP' gate is trivially TRUE at scope lock (nobody takes damage), so the only thing lost is the magnitude, not the condition.",
+      "⚑ Base-weapon cadence (MG, 300 ammo, reloadFrames 171) comes from the datamine, which is unreliable for rate_of_fire/reloadFrames; the MG wind-up ladder is an engine-side measured constant. Nothing in this override touches it."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Emma (emma) is an MG/Fire/Supporter/Burst I pure healer. Modeled: her burst's two recovery lines, both as `heal` effects on burstCast → allies (self included; the text says plain 'all allies' with no exception clause) — an instant single-event heal for the flat 'Recover HP equal to 39.6% of final Max HP' line, and a 5-tick/1 s heal-over-time for the 'Recover 39.6% of attack damage as HP over 5 sec' line, so an on-recovery consumer stays refreshed across the window. Deliberately unmodeled: skill1 (no 'when attacked' trigger primitive; the scope-lock boss deals no damage, so the 5% proc has no derivable rate) and skill2 ('Incoming healing ▲' has no StatKey and heal magnitudes are not simulated). No damage, stat, weapon-state, gauge, or CDR effect exists anywhere in this kit, so no fbGate/noFb/range decision applies."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "5% chance to activate when attacked",
+      "status": "SKIPPED",
+      "effectOrReason": "TriggerDef has no 'when attacked' / on-incoming-damage primitive, and the v1 scope-lock boss deals no damage to the team — the proc rate is not derivable from kit text and would be 0 activations even if a trigger existed. Recorded verbatim in unmodeled.skill1; flagged."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 10.77% of user's Max HP",
+      "status": "SKIPPED",
+      "effectOrReason": "Payload of the unfirable trigger above. Would be {kind:'heal'} → allies; not authored because inventing a cadence for it would fabricate recovery events for heal-synergy teammates (over-credit). Recorded verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies.",
+      "status": "SKIPPED",
+      "effectOrReason": "Target clause of the skipped block: {kind:'allies'} (no 'except self' wording). Carried in the unmodeled verbatim line."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when above 90% HP",
+      "status": "SKIPPED",
+      "effectOrReason": "Condition is trivially satisfied at scope lock (no incoming damage → everyone stays at max HP), but the effect it gates has no schema representation, so the whole block is skipped rather than authored as an always-on passive with no stat."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Incoming healing ▲ 13.33% continuously",
+      "status": "SKIPPED",
+      "effectOrReason": "No StatKey for incoming/received healing; heal amounts are not modeled at all (the `heal` effect carries no HP quantity). Not a weapon-state, gauge, DEF/HP-scaler or damage line, so no hard-rule exception applies. Recorded verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies.",
+      "status": "SKIPPED",
+      "effectOrReason": "Target clause of the skipped block: {kind:'allies'}. Carried in the unmodeled verbatim line."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} on both burst blocks — no 'except self' wording, so self is included."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recover HP equal to 39.6% of Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Block 1: trigger {kind:'burstCast'} (her own burst cast; NOT fullBurstEnter — the line lives in her burst block and would over-fire on teammate-driven Full Bursts), target allies, effects [{kind:'heal', ticks:1}] — one instant recovery event per target. The 39.6%-of-caster-Max-HP magnitude has no schema home (heal models no HP amount); noted in caveats, not dropped silently."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recover 39.6% of atk dmg as HP /5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Block 2: trigger {kind:'burstCast'}, target allies, effects [{kind:'heal', ticks:5, intervalSec:1}] — a 5-second heal-over-time emitting recurring recovery events, so an on-recovery consumer is refreshed through the window instead of once at cast. ⚑ tick cadence estimated (kit gives no tick rate); magnitude unmodeled as above."
+    }
+  ],
+  "flags": [
+    {
+      "field": "burst[1].effects[0].ticks / intervalSec",
+      "estimate": "ticks: 5, intervalSec: 1 (5 recovery events, one per second, starting at the burst cast)",
+      "reasoning": "The kit says 'over 5 sec' and gives NO tick rate. The engine's heal effect emits discrete recovery events, and the schema's documented HoT convention is intervalSec default 1, so a 5 s window → 5 ticks. This is the only knob that changes anything measurable about Emma: an on-recovery consumer's refresh COUNT scales 1:1 with it (1 tick vs 5 ticks is a 5× difference in that teammate's uptime). Continuous in-game drain-healing could equally be a per-frame trickle that the sim can only approximate.",
+      "recipe": "Record a comp of Emma + a heal-synergy consumer whose on-recovery buff has a SHORT, readable duration (a 'when recovery takes effect' kit). Focus the consumer, cast Emma's burst, and count that buff's re-application/refresh popups across the 5 s window; the popup count IS the tick count. Cross-check against the buff icon's timer resetting N times. If the consumer's buff never lapses during the window, instead compare its total uptime with and without Emma in the team."
+    },
+    {
+      "field": "skill1 (whole slot — omitted, unmodeled)",
+      "estimate": "0 activations per fight at scope lock (block not authored)",
+      "reasoning": "Two independent reasons, either sufficient: (a) TriggerDef has no 'when attacked' / on-incoming-damage kind, so the activation clause cannot be expressed; (b) the v1 boss deals no damage to the team, so a 5%-per-incoming-attack proc would fire zero times regardless. Authoring it as an interval heal would require inventing BOTH the boss attack rate and the proc cadence — a fabricated recovery-event stream feeding teammates' on-recovery triggers, i.e. exactly the over-credit the prime directive forbids.",
+      "recipe": "Only becomes modelable once incoming boss damage exists in the sim. Then: sec = 1 / (0.05 × boss attacks-per-second against the team), authored as {kind:'interval', sec} + {kind:'heal', ticks:1} → allies. Until then the honest model is zero. Independent check that zero is right: run a comp with a heal-consumer, with and without Emma's skill1 authored, and confirm the consumer's buff uptime is identical to the burst-only model — if a real fight shows extra refreshes outside Emma's burst window, skill1 is firing and this flag is refuted."
+    },
+    {
+      "field": "skill2 (whole slot — omitted, unmodeled)",
+      "estimate": "Inert (0 damage impact) — 'Incoming healing ▲ 13.33%' has no representation",
+      "reasoning": "No StatKey covers received-healing amplification, and the engine models heals as EVENTS with no HP quantity, so even a bespoke stat would have nothing to scale. The 'above 90% HP' gate is trivially true at scope lock. Keeping it out of the blocks is correct today; the risk is only that a future HP/heal-magnitude model silently leaves Emma's amp missing.",
+      "recipe": "Requires an HP-pool + heal-magnitude model to exist first (incoming boss damage, per-unit HP tracking, heal amounts in HP). At that point add a new StatKey (e.g. incomingHealingPct) with a passive → allies block and re-audit every healer/heal-consumer together, not Emma alone. Until then this line is genuinely outside the input domain."
+    },
+    {
+      "field": "base weapon cadence (MG, ammo 300, reloadFrames 171)",
+      "estimate": "Datamined values used as-is; no override-level cadence change authored",
+      "reasoning": "ALWAYS-⚑ item 1 — datamined rate_of_fire / reloadFrames are known-unreliable, and Emma is an MG so the measured wind-up ladder dominates her early shot economy. Flagged for completeness: nothing in her kit modifies fire rate, reload, ammo capacity or weapon state, so this override neither depends on nor perturbs the cadence, and no weapon-state hard-rule line was skipped.",
+      "recipe": "Standard cadence pin: ammo-counter read from a focus recording (shots/sec measured directly off the magazine drain, not inferred from gauge or FB counts), plus reload-window frame count between the last shot and the refill."
+    },
+    {
+      "field": "noFb / fbGate / range / core",
+      "estimate": "Not set anywhere (no damage effect exists in this kit)",
+      "reasoning": "Per the ALWAYS-⚑ taxonomy, noFb defaults OFF and is measured-only; here the question is moot because Emma carries no flatDamage / dot / hitRepeat / storedHit / weaponSwap line at all. Recorded so a later reader can see the decision was checked, not overlooked.",
+      "recipe": "N/A unless a future kit revision adds a damage rider; then the standard rule applies (FB by timing default ON, noFb only from a measured popup comparison inside vs outside the Full Burst window)."
+    }
+  ],
+  "model": "claude-opus-5"
+}

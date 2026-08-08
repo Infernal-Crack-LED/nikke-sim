@@ -1,0 +1,27 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-08-05[39m
+
+ [31m❯[39m scripts/kit-autonomy/blind/emma.adapted.test.ts [2m([22m[2m17 tests[22m[2m | [22m[31m5 failed[39m[2m | [22m[33m3 skipped[39m[2m)[22m[32m 14[2mms[22m[39m
+     [32m✓[39m the control comp actually casts Emma's burst and reaches Full Burst[32m 1[2mms[22m[39m
+     [32m✓[39m Emma is in the comp and deals her own weapon damage[32m 0[2mms[22m[39m
+     [32m✓[39m emits no free-running recovery stream (the proc cannot fire at scope lock)[32m 0[2mms[22m[39m
+     [32m✓[39m removing skill1 entirely changes nothing (it is inert at scope lock)[32m 2[2mms[22m[39m
+[31m     [31m×[31m DISCRIMINATES against the passive-heal mis-read[39m[32m 3[2mms[22m[39m
+     [32m✓[39m is offensively inert — removing skill2 moves NO unit's damage[32m 0[2mms[22m[39m
+     [32m✓[39m grants no offensive stat to anyone[32m 1[2mms[22m[39m
+     [2m[90m↓[39m[22m GAP: "Incoming healing ▲ 13.33%" has no primitive — no incoming-heal StatKey, no HP pool, no heal magnitude modeled. Unobservable payload at scope lock; belongs in `unmodeled.skill2`.
+     [2m[90m↓[39m[22m GAP: the "above 90% HP" activation gate is unobservable — the sim models no HP loss, so the gate is trivially always-true and has no inactive case to discriminate against.
+[31m     [31m×[31m recoveries occur, and every one of them is at or after a burst cast[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m the HoT emits MULTIPLE recovery events per burst, spread over ~5 sec[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m the heal targets ALL allies, not just self[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m the burst is damage-inert — Emma's kit has no damage line at all[39m[32m 3[2mms[22m[39m
+     [2m[90m↓[39m[22m GAP: the healed AMOUNT (39.6% of final Max HP; 39.6% of attack damage) is unobservable — the `heal` effect models no HP quantity, so neither magnitude can be asserted. Both belong in the override note as recorded-for-completeness values.
+     [32m✓[39m Emma's presence changes no teammate's damage through any stat channel[32m 0[2mms[22m[39m
+     [32m✓[39m Emma applies no boss debuff[32m 1[2mms[22m[39m
+     [32m✓[39m Emma applies no weapon-state modifier (no reload/ammo/fire-rate line in the kit)[32m 1[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m9 passed[39m[22m[2m | [22m[33m3 skipped[39m[90m (17)[39m
+[2m   Start at [22m 04:35:00
+[2m   Duration [22m 396ms[2m (transform 83ms, setup 0ms, import 288ms, tests 14ms, environment 0ms)[22m
+

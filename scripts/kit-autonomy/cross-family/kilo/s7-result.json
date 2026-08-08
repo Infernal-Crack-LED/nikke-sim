@@ -1,0 +1,84 @@
+{
+  "slug": "kilo",
+  "kitDescription": "Kilo is a Fire MG Defender whose whole kit keys off one self-status, Nano Coating. At battle start she gains a continuous self-shield equal to 21.12% of her final Max HP. While coated, every 200 normal attacks she repairs the shield for 2.85% of her Max HP, and her burst becomes an AoE nuke dealing 1150.84% of an ATK value derived from 5% of her final Max HP. If she ever bursts while uncoated, she instead buffs her own Max HP by 48% for 20 seconds, re-applies the coating, and stacks escalating Next-Shield-HP bonuses. Since nothing at scope lock ever damages her, the coating never breaks and only the coated branches of the kit ever fire.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S2-a: blind test requires a skill2 block hitCount{count:200} -> shield{maxHpPct:2.85}; the driver ships skill2 = [] with the line verbatim in unmodeled (expected 0 > 0 on the structural block search)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "start of battle: Shield 21.12% Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shield{maxHpPct:21.12} self passive, no durationSec ('continuously'); event-silent in v1 (no HP pool), its observable is the requiresShielded gate it opens",
+        "blindSaid": "S5 structural assertion passes; S6 ships the identical block; S2b FAITHFUL with the Crown-inertness tripwire",
+        "formulaCheck": "No damage bucket involvement; engine shield semantics (durationSec-less = permanent at scope) match the kit's 'continuously'; all three agents converge",
+        "fireRateOk": true,
+        "explanation": "Applies at t=0 and persists for the full 180s; driver proves function via the burst gate (every nuke passes through it) and proves non-hardcoding via fixture C (shield removed on a shield-free team -> zero nukes)."
+      },
+      {
+        "kitLine": "on Burst: re-Shield if not coated",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim — dead at scope (shield never breaks) and no negated-shield-gate primitive exists; ungated encoding would over-fire every burst",
+        "blindSaid": "S5 it.skip (negative gate inexpressible + inert); S6 unmodeled verbatim with the same reasoning; S2b UNMODELED",
+        "formulaCheck": "Branch unreachable under v1 (no incoming damage); omission is the only faithful available encoding",
+        "fireRateOk": true,
+        "explanation": "All agents agree; documented verbatim with reason. Correct disposition."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "200 normal attacks: restore Shield 2.85%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim — the line RESTORES an existing shield's HP pool (no pool in v1); a heal encoding misfires crown-class recovery consumers and a fresh-shield encoding re-fires naga-class shielded triggers every 200 rounds; neither event is what the kit does",
+        "blindSaid": "S5/S6 (opus) model it as hitCount{200} + requiresShielded -> shield{maxHpPct:2.85} under the never-skip-shield rule — this is the single S5 RED; S2b (fable) also disposed FAITHFUL-as-shield-event but flagged the re-fire risk itself",
+        "formulaCheck": "No shield HP pool exists for the 2.85% to restore, so the payload is unobservable in v1; the blind's own encoding is a fresh 2.85% shield APPLICATION, which the prose does not describe ('Restores Shield HP', not 'Creates a Shield')",
+        "fireRateOk": true,
+        "explanation": "The sole convergence break. It is a disposition disagreement over a damage-inert, payload-unobservable defensive line, not an encoding error: the driver's UNMODELED is documented verbatim with a concrete contamination argument (recovery/shielded consumer misfires) that both blind agents' own notes concede. The driver's reading of the prose (restore ≠ new application) is the more literal one. Classified DOCUMENTED_GAP, not REAL-GOTCHA; the blind red is recorded, not adopted."
+      },
+      {
+        "kitLine": "Once/Twice/Thrice: Next Shield HP up",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim — dead at scope (uncoated gate) AND no shield-size-modifier primitive or shield HP pool exists",
+        "blindSaid": "S5 it.skip (no shield-magnitude stat); S6 unmodeled verbatim; S2b UNMODELED with the must-not-feed-the-nuke assertion",
+        "formulaCheck": "No StatKey for shield HP magnitude; branch unreachable at scope; omission faithful",
+        "fireRateOk": true,
+        "explanation": "Unanimous across all four agents. Driver additionally pins no maxHp-stat leak and constant nuke magnitude across casts."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "in Coating: 1150.84% of ATK from 5% MaxHP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "burstCast + requiresShielded + flatDamage{atkPct:1150.84} vs enemy, no core flag, noFb by timing; the HP-derived ATK basis is ⚑ measurement-gated — no basis-replacement primitive exists (effectiveAtk is purely additive), S4 forbids engine edits; documented undercount ~52% at scope (~4% personal / ~1-2% team) plus documented wrong coupling to teammate ATK buffs, with a popup-read recipe (maiden-ice-rose precedent)",
+        "blindSaid": "S5 ships all behavioral assertions GREEN (once-per-cast, pre-FB, no range, no core, material); S5 skips only the magnitude (no primitive). S6 diverges on magnitude (atkPct 575 placeholder from an assumed 9-11x HP:ATK ratio — the MEASURED ratio is 41.3x, so S6's number is ~4.1x low, a fabricated stat ratio) and on crit:true",
+        "formulaCheck": "Routing is correct per SSOT: burst-cast damage lands pre-FB (no +0.5 major — asserted), never cores (asserted structurally + event-level), noRange, crits at caster rate via the flatDamage default (bare-flatDamage = helm validated authoring; S6's explicit crit:true is redundant, not a conflict). The HP basis itself is real prose ('ATK, which is calculated from 5% of final Max HP') but is magnitude/basis scope — owner/measurement-gated per contract VI; the driver ships the prose's own printed multiplier and flags the basis rather than inventing a conversion constant, which is exactly what MEASURED > FUDGE requires (S6's 575 is the fudge this rule exists to prevent)",
+        "fireRateOk": true,
+        "explanation": "Trigger identity (burstCast not fullBurstEnter) is correctly encoded and discriminated (team FBs outnumber kilo casts via helm co-B3); the Nano Coating gate is proven non-hardcoded in shield-free fixture C. The basis gap is the kit's one real residual and is fully documented with estimate + recipe + tier."
+      },
+      {
+        "kitLine": "not in Coating: Max HP up 48% 20s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim — dead at scope; counterfactual proves the shipped file does not launder it into an unconditional maxHpPct buff, and a leak pin shows even a laundered buff cannot feed the nuke under the shipped ATK basis",
+        "blindSaid": "S5 behavioral + structural assertions GREEN (self-calibrating HP48 injection); S6 unmodeled verbatim; S2b UNMODELED with the compounding-over-credit warning",
+        "formulaCheck": "Branch unreachable at scope; an ungated encoding would fire every cast — omission is faithful",
+        "fireRateOk": true,
+        "explanation": "Unanimous; driver's laundered-branch counterfactual is a clean discrimination of exactly the nearest-wrong model S2b named."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: every divergent or unexpressed line is documented verbatim with a reason, and all six kit lines are FAITHFUL or DOCUMENTED_GAP. The single S5 RED (S2-a shield restore) is a disposition disagreement, not a gotcha — both blind agents wanted a hitCount-200 shield event under the tandem-completeness rule, but the prose says 'Restores Shield HP' (a pool top-up, not a new application), no shield HP pool exists in v1, and the driver's contamination argument (heal -> Crown recovery misfire; fresh shield -> shielded-trigger re-fire every 200 rounds) is one the blind agents' own notes concede; the driver's UNMODELED-plus-verbatim is the more defensible reading and the contract treats a reasoned `unmodeled` as DOCUMENTED_GAP. The burst nuke's routing (burstCast, requiresShielded, pre-FB, no core, no range) is faithful and hard-discriminated (helm co-B3 trigger split; shield-free fixture C gate proof); its HP-derived ATK basis is the kit's one real residual and is exactly the documented ⚑ + recipe case the contract scopes out — the driver shipped the prose's printed multiplier and flagged the ~52% undercount rather than fabricating S6's 4.1x-low 575 placeholder, which is the MEASURED > FUDGE rule working as intended. Convergence is otherwise strong: S1 shield, both dead-branch unmodeled sets, and all S5 behavioral burst assertions agree across three independent agents. For GO nothing must change; the owner should spot-check two same-model residuals: (1) the HP-basis popup recipe actually gets run (a ~2x-higher burst popup confirms and calls for an engine primitive — both documented infidelities, basis and ATK-buff coupling, collapse together), and (2) the engine's shieldedUntilFrame window is not name-keyed to Nano Coating, so in any future comp where kilo's shield could break while a teammate shields her, requiresShielded would over-open the coated gate — unobservable at scope today, noted for the day shield-breaking is modeled.",
+  "model": "kimi-code/k3"
+}

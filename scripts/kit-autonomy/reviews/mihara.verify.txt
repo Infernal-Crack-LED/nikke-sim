@@ -1,0 +1,17 @@
+S2d PRE-S3 (RED state, from-scratch unit — no override on disk yet):
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [2mno tests[22m
+[2m   Start at [22m 14:00:27
+[2m   Duration [22m 156ms[2m (transform 80ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)[22m
+
+S2d POST-S3 (GREEN — final verification):
+ [32m✓[39m scripts/tests/units/mihara.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m23 passed[39m[22m[90m (23)[39m
+[2m   Start at [22m 14:02:16
+[2m   Duration [22m 541ms[2m (transform 82ms, setup 0ms, import 477ms, tests 15ms, environment 0ms)[22m
+

@@ -1,0 +1,92 @@
+{
+  "slug": "rapi",
+  "kitDescription": "Rapi is a Fire assault-rifle Burst-III attacker with a simple stat-check kit. Her Skill 2 launches a missile at the highest-attack enemy for 528.97% of her final ATK on a 20-second cooldown and taunts that enemy for 5 seconds. Her burst deals 657.72% of final ATK to that same enemy and then buffs her own ATK by 60.75% for 10 seconds, covering the Full Burst window that follows. Her Skill 1 grants her +21.81% ATK for 20 seconds after she has been attacked 20 times — a defensive-trigger counter that her taunt helps feed in real play. In the scope-lock sim the boss never attacks and there is no aggro model, so Skill 1 and the taunt are documented as unmodeled while the missile and both burst effects are fully live.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates when attacked 20 time(s). Affects self.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim (skill1: [] + unmodeled.skill1); ⚑1 with estimate (taunt-fed, real uptime high) + recipe (needs incoming-damage primitive + measured attacked-20 cadence; any interval approximation must be fire-rate-invariant) + tier (out-of-domain subsystem).",
+        "blindSaid": "S6 encoded hitCount{count:20} on the owner's own rounds, flagged ⚑ IDENTITY MISMATCH with over-credit direction; S2b ruled the faithful state today is unmodeled/measurement-gated, never an outgoing-hit trigger; S5 skipped trigger fidelity as measurement-gated and asserted only shape-or-unmodeled.",
+        "formulaCheck": "Engine scope fact: v1 has no incoming-damage model and no attacked-count trigger — the counter can never accrue. hitCount counts the OWNER's outgoing rounds (Rapi AR ~12/s → ~1.7s re-trigger, near-100% uptime), which is the S2b-named nearest-wrong model, not a faithful stand-in. Driver's omission matches repo precedent (maiden/anis/yulha attacked-cluster rulings, faithfulness 1.0).",
+        "fireRateOk": true,
+        "explanation": "No faithful representation exists in the engine; the driver documents the omission with estimate+recipe+tier. The blind's flagged hitCount proxy is a known-over-credit nearest-wrong encoding the driver's spec pins RED (s1OnDealtHits arm). RECON_ERROR on the blind side, adjudicated below."
+      },
+      {
+        "kitLine": "ATK ▲ 21.81% for 20 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim alongside its trigger; the buff is offensive so the note is explicit that her board reading reflects zero of it, honestly.",
+        "blindSaid": "S6 modeled it as buff atkPct 21.81/20s riding the dealt-hits counter; S5 asserts no silent drop (unmodeled text must mention atk/21.81) and self-scope inertness either way.",
+        "formulaCheck": "A generic unscoped self ATK buff would be FAITHFUL if the trigger existed; without it the value cannot fire. Driver test R4 proves the absence is a choice (no 21.81 buffApply in the log; the counterfactual proxy provably produces them).",
+        "fireRateOk": true,
+        "explanation": "Correctly held unmodeled with the trigger; the value, stat and duration are recorded verbatim so no information is lost. The blind's in-flight encoding over-credits by construction."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Affects 1 enemy unit(s) with the highest final ATK.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "target enemy; 'highest final ATK' selector collapses to the single scope-lock boss (noted in the override note and ⚑ context).",
+        "blindSaid": "S6 identical (target enemy, caveat that the ranking selector is unrepresented); S5 asserts target.kind==='enemy'.",
+        "formulaCheck": "Single-target scope-lock boss makes the selector degenerate — no modeling loss at scope. Consistent with both blind agents and the SSOT target-set rules.",
+        "fireRateOk": true,
+        "explanation": "Target set correct; the multi-enemy ranking is inexpressible and irrelevant at scope, and the collapse is documented by both sides."
+      },
+      {
+        "kitLine": "Deals 528.97% of final ATK as damage.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval{sec:20} → enemy → flatDamage 528.97; 8 fires at t=20/40/.../160; skill bucket, crit-eligible at caster rate, no core, no range, FB by landing timing; cadence is the datamined skillCooldownsSec.skill2=20 (⚑4, datamined tier).",
+        "blindSaid": "S6 converged on magnitude/bucket/target/no-core/noFb-unset but used interval{sec:40}, explicitly flagged as inferred from the burst CD field in a data-starved packet; S5 asserts trigger kind interval (never a specific period), magnitude counterfactual, ≥2 procs, no range.",
+        "formulaCheck": "Function damage rider per SSOT §2b: crit at caster rate ✓, never core ✓, no range ✓, FB by timing ✓. No activation clause → interval trigger with first fire t=sec (the documented ⚑ phase convention). Ground truth section (3) gives skillCooldownsSec.skill2=20 — the driver's 20s is the datamined value; the blind's 40s reads the burst CD field, a data-starvation artifact its own recipe anticipated.",
+        "fireRateOk": true,
+        "explanation": "Fires at the prose+datamine-implied cadence (8 procs/180s, pinned frame-exact by the driver; interval:40 counterfactual provably under-fires). The S6 40s divergence is a RECON_ERROR on the blind side, resolved by the per-skill cooldown in ground truth."
+      },
+      {
+        "kitLine": "Taunt for 5 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim; ⚑2 with estimate (0 damage impact) + recipe (needs aggro model) + tier (out-of-domain); its feeder role for the attacked-counter is recorded.",
+        "blindSaid": "S6 identical verbatim omission with the same feeder interaction recorded; S5 asserts the verbatim taunt text sits in unmodeled.skill2 and skips behavior (it.skip, no aggro model); S2b rules silent-drop or debuff-fudge as the wrong models.",
+        "formulaCheck": "The sim has no boss-attack/aggro model, so a taunt has no consumer and moves zero damage — offensively inert by construction. Not mis-encoded as a damageTaken debuff (the S2b nearest-wrong).",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence on verbatim omission; no damage assertion is possible or needed."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 657.72% of final ATK as Burst Skill damage.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy → flatDamage 657.72; auto FB-exempt (pre-window cast), crit-eligible, no core, no range; fires once per rapi cast only; block ordered BEFORE the same-cast buff so it snapshots pre-buff ATK (load-bearing, pinned by the reordered-block arm).",
+        "blindSaid": "S6 identical (burstCast, enemy, 657.72, explicit noFb:true — behaviorally identical to the engine's auto-derivation); S5 asserts one nuke per cast, burst bucket, fbMajorApplied false, no range, no core.",
+        "formulaCheck": "SSOT Full Burst timing rule (MEASURED, popup-verified): burst-cast damage lands before the window — no +50%, no entry auras ✓. Burst nuke row: crit ✓, no core unless 'as core dmg' ✓, no range ✓. The pre-buff snapshot matches the SSOT's cast-instant self-buff exclusion (same-cast self-buffs do not apply to the cast's own damage).",
+        "fireRateOk": true,
+        "explanation": "Exactly one nuke per rapi burstCast, pre-FB, lvl-10 magnitude. The helm co-B3 fixture makes the burstCast-vs-fullBurstEnter divergence directly assertable and the driver's counterfactual arms prove both over-fire and +50% pickup under the wrong trigger."
+      },
+      {
+        "kitLine": "Affects self. ATK ▲ 60.75% for 10 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self → atkPct 60.75/10s; one application per rapi cast, 600-frame window, sole holder rapi; pinned vs fullBurstEnter, allies-scope, lvl-1 value, 20s duration, and removal arms.",
+        "blindSaid": "S6 identical (burstCast not fullBurstEnter — 'a self buff in the unit's OWN burst block'); S5 asserts trigger kind, value, durationSec 10, self target, one application per FB in the sole-B3 arm, no over-fire in the two-B3 arm.",
+        "formulaCheck": "Generic self ATK buff → sums into the (1+ΣATK%) term on staticAtk ✓. burstCast keying matches the SSOT scope rule (a buff riding her own cast, applying from the cast onward, covering the window by timing) ✓. 10s wall-clock duration, not rounds ✓.",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence on trigger identity, scope, magnitude and duration; the two-B3 fixture proves no leakage onto helm-cast rotations. Load-bearing (removal moves her total)."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Every kit line is accounted for: three FAITHFUL encodings (S2 missile 528.97 on the datamined 20s interval; burst nuke 657.72 pre-FB on her own casts; burst self ATK 60.75/10s on her own casts) and two DOCUMENTED_GAPs (the attacked-20 S1 cluster and the 5s taunt), both verbatim in unmodeled with estimate+recipe+tier ⚑s. The S5 blind suite runs GREEN against the shipped override (18/18 + 2 author-documented skips that map exactly to the two unmodeled lines), and the blind override converges on every modeled value, trigger identity, bucket and scope. The two S6 divergences are both blind-side RECON_ERRORs, not gotchas: (a) the flagged hitCount:20-on-dealt-hits stand-in counts the owner's outgoing rounds (~1.7s re-trigger, near-permanent +21.81% — precisely the S2b nearest-wrong model, refuted by the engine fact that no incoming-damage channel exists and by maiden/anis/yulha repo precedent, so the driver's faithful omission stands); (b) interval:40 was a data-starved inference from the burst CD field that the blind author itself flagged with a recipe to check the per-skill cooldown — ground truth supplies skillCooldownsSec.skill2=20, confirming the driver. Discrimination is adequate: the driver pins 12 counterfactual arms (lvl-1 magnitudes, interval:40, fullBurstEnter nuke/buff with helm co-B3 making the divergence observable, allies scope, 20s duration, removals, same-cast block reordering proving the pre-buff snapshot, and the dealt-hits S1 proxy proving the omission is a choice), and the S5 suite independently carries exact-value, two-B3 and load-bearing arms. Same-model residual for the owner to spot-check: the interval first-fire phase (t=sec vs t=0) is a standing ⚑ convention never popup-measured for this unit, and the 20s cadence rests on the datamined cooldown field rather than a popup count — a single focused-recording read of 528.97%-magnitude popup timestamps would retire both at low cost. No REAL-GOTCHA, no engine-core issue: GO.",
+  "model": "kimi-code/k3"
+}

@@ -1,0 +1,117 @@
+{
+  "slug": "rupee-winter-shopper",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 19.02,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 1.33,
+          "durationSec": 20,
+          "maxStacks": 4
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "burstGenPct",
+          "value": 7.9,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        },
+        {
+          "kind": "reenterStage",
+          "stage": 1
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 63.17,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Activates if Shopping is at max stacks when Full Burst ends. (max-stack precondition on the Burst Gauge filling speed rider is not gated \u2014 no maxStacks-reached block gate exists in the schema)"
+    ],
+    "burst": [
+      "Attract: Taunts all enemies for 5 sec."
+    ]
+  },
+  "caveats": [
+    "\u2691 skill2 Shopping stack trigger: kit says 'when an ally uses a Burst Skill' \u2014 modeled as burstCast on ANY ally (the engine's burstCast trigger is owner-cast-keyed). If the engine keys burstCast to the OWNER only, this UNDER-fires by ~3-4x per rotation; a stageEnter-per-stage triple-block would over/under-fire differently. Unmeasured.",
+    "\u2691 skill2 max-stacks precondition on the Burst Gauge rider is NOT gated: with 3 burst casts per rotation the 4-stack cap (20s duration) is reached during rotation 2 and holds thereafter, so the rider is modeled as always-on from the first fullBurstEnd. This OVER-credits the first ~1-2 rotations' gauge.",
+    "\u2691 Burst Gauge filling speed \u25b27.9% mapped to burstGenPct (the unit's own gauge contribution scaler) applied to all allies. Whether the engine's burstGenPct is per-unit-contribution or a global fill-rate scaler determines whether this is faithful.",
+    "defPct is documented inert in v1 (self DEF does not affect own damage). Both DEF lines are kept for kit completeness / a future consumer, per the HARD RULE that DEF/HP lines are not skippable \u2014 they may drive a teammate's DEF-scaling conversion.",
+    "The burst heal is modeled as 10 recovery events over 10 sec (ticks:10) so on-recovery consumers (e.g. a Crown-style 'when recovery takes effect' partner) stay refreshed; no HP amount is modeled. The 50.47%-of-attack-damage magnitude is not representable.",
+    "Taunt is skipped: the v1 boss deals no damage and there is no aggro model, so a taunt has no damage-relevant channel."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rupee: Winter Shopper is an AR/Electric/Defender Burst I. Her kit carries NO damage effects at all \u2014 it is entirely DEF, heal/taunt, reload speed, burst-gauge, and a Burst-Stage-1 re-entry. The two damage-relevant channels are (a) burst Reload Speed \u25b263.17%/10s to all allies, which is a weapon-state modifier and therefore IS damage (it gates shots fired \u2014 HARD RULE 6), and (b) the reenterStage:1 rotation effect, which lets a second Burst I unit also cast at stage 1 and can materially change the rotation. The Shopping stack and Burst Gauge filling speed lines feed rotation via gauge rate. Both DEF lines (S1 last-bullet 19.02%/5s, S2 Shopping 1.33%\u00d74/20s) are modeled as defPct even though defPct is inert in v1 \u2014 DEF lines are never auto-skipped (tandem/cross-unit rule), and dropping them would erase the kit from the file. All three slots authored; skipped lines are listed verbatim in `unmodeled`.",
+  "hasPierce": false
+}

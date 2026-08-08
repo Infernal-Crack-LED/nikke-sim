@@ -1,0 +1,105 @@
+{
+  "slug": "eunhwa",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Damage ▲ 37.28% for 2 shots",
+      "disposition": "FAITHFUL",
+      "scope": "Charge-bucket only (chargeDamagePct, additive percentage points in the charge bucket) — NOT generic attackDamagePct and NOT chargeDamageMultPct (the kit says plain 'Charge Damage ▲', not 'Charge Damage Multiplier').",
+      "durationSemantics": "ROUND count — 'for 2 shots' = durationShots: 2, expiring right after the holder's 2nd subsequent shot. NEVER durationSec. Critically: the trigger is last-round (reload start) and reloadFrames=161 ≈ 2.68 s, so a durationSec:2 encoding expires MID-RELOAD before a single shot benefits — the line becomes 100% inert.",
+      "triggerIdentity": "lastBullet ('Activates after firing the last round') — per-magazine, ammo 6, so once per ~8.7 s cycle (6×60f charge + 161f reload). No FB gate, no status gate.",
+      "targetSet": "self only ('Affects self').",
+      "nearestWrongModel": "durationSec: 2 instead of durationShots: 2 — the buff silently dies during the 2.68 s reload and never touches a shot (fully inert); secondary misread: encoding as chargeDamageMultPct or generic attackDamagePct.",
+      "distinguishingAssertion": "Filter buffApply events for stat==='chargeDamagePct', value===37.28, casterIdx===targetIdx===eunhwa's slot: each must carry durationShots===2, and each must be applied at a reload-start (lastBullet) frame. Then assert the first TWO post-reload shots' damage events carry the boosted charge bucket while the 3rd+ do not; additionally, withPatchedOverride stripping this effect must REDUCE eunhwa's total (under the nearest-wrong durationSec:2 the strip is a no-op — RED).",
+      "inertness": "Must not buff any ally, must not touch the 3rd–6th shots of a magazine, must not persist permanently.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Speed ▲ 15.53% for 2 rounds",
+      "disposition": "FAITHFUL",
+      "scope": "chargeSpeedPct — a WEAPON-STATE modifier (taxonomy #6): it shortens the 60-frame full-charge time on the next 2 shots, so it changes shots fired over the fight. It is damage; 'skip, defensive/QoL' is wrong.",
+      "durationSemantics": "ROUND count — 'for 2 rounds' = durationShots: 2. Same reload-crossing logic as the Charge Damage line: durationSec:2 < the 2.68 s reload → inert.",
+      "triggerIdentity": "lastBullet (same '■ after firing the last round' header as line 1 — one block, two effects).",
+      "targetSet": "self only.",
+      "nearestWrongModel": "durationSec: 2 (expires mid-reload, inert); or dropping the line entirely as a non-damage utility stat.",
+      "distinguishingAssertion": "buffApply stat==='chargeSpeedPct', value===15.53, durationShots===2, self-targeted, at each reload-start. Behaviorally: the inter-shot interval of the first 2 shots of magazines after the first reload must be SHORTER than the baseline 60-frame charge cadence (read shot-event frame deltas); total shot count over 180 s must strictly EXCEED a run with the effect stripped via withPatchedOverride. Under the nearest-wrong (durationSec:2) shot timing is identical to the stripped run — RED.",
+      "inertness": "Shots 3–6 of each magazine keep the unmodified 60-frame charge; no ally cadence changes.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▼ 29% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Boss DEF reduction — an ENEMY debuff that raises the whole TEAM's damage through the boss-DEF term of the formula (taxonomy #4: an enemy-directed ▼ is a team benefit, not a self stat). Not self defPct (which is inert), not damageTakenPct (a different named stat).",
+      "durationSemantics": "Wall-clock durationSec: 5 — genuine seconds here ('for 5 sec'). The load-bearing subtlety is UPTIME: the magazine cycle is ~8.7 s, so the debuff is live ~57% of the time, never permanent.",
+      "triggerIdentity": "lastBullet ('Activates after firing the last bullet') — once per magazine, on eunhwa's own reload start.",
+      "targetSet": "enemy ('Affects the target') — boss-held; per the harness note the buffApply arrives with casterIdx===null AND targetIdx===null, filter by stat+value.",
+      "nearestWrongModel": "Modeling it as passive/permanent boss DEF ▼ (over-credits the ~43% downtime, roughly doubling effective uptime); or mis-scoping 'the target' to self (inert self defPct); or skipping it as 'DEF is defensive'.",
+      "distinguishingAssertion": "Boss-held buffApply (casterIdx===null, targetIdx===null) with the DEF-down stat at value −29 (or 29 per engine sign convention) must appear ONLY at eunhwa's last-bullet frames with expiresFrame === applyFrame + 300; assert there EXIST frames between magazines where no instance is live (gap between expiresFrame and the next apply). A passive/permanent encoding shows one t=0 apply or zero-gap coverage — RED. Also assert TEAM total damage (not just eunhwa's) drops when the effect is stripped.",
+      "inertness": "No effect on any ally's buff list; no application on frames where eunhwa did not empty her magazine.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 85.62% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "One flatDamage hit, atkPct 85.62, burst bucket. The '10 enemy unit(s) with the highest final ATK' target collapses to exactly ONE hit on the single partless scope-lock boss — never ×10.",
+      "durationSemantics": "Instant, no duration.",
+      "triggerIdentity": "burstCast (her OWN Burst-II cast, cd 20 s) — NOT fullBurstEnter. Burst-cast damage lands BEFORE the Full Burst window opens, so it is FB-exempt (no +50%, no entry auras) and takes no range bonus per the rider defaults.",
+      "targetSet": "enemy (boss).",
+      "nearestWrongModel": "Multiplying the hit ×10 for '10 enemy units'; or letting the hit take the +50% Full Burst major (fbMajorApplied true); or keying to fullBurstEnter so it fires on rotations where crown (the fixture's other Burst II) chains instead of eunhwa.",
+      "distinguishingAssertion": "Per eunhwa burstCast event, EXACTLY ONE damage event with srcSlot===burst-slot, mult===85.62, inFullBurst===false / fbMajorApplied===false, rangeApplied===false. Count of these damage events over the fight === count of eunhwa's burstCast events (never the team's fullBurstStart count, which diverges because crown shares her tier in controlComp).",
+      "inertness": "Zero of these hits on Full Bursts chained by crown's Burst-II cast; no +50% or range bonus on any of them.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▼ 2.43% for 15 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Second boss DEF debuff, same enemy-DEF channel as skill2 but a DISTINCT buff key (different slot/value) — the two must coexist and stack, not overwrite each other.",
+      "durationSemantics": "durationSec: 15 (genuine seconds). With her ~20 s burst cooldown this is ~75% uptime when she casts every rotation — not permanent.",
+      "triggerIdentity": "burstCast (rides the same '■ Affects 10 enemy unit(s)' burst block as the damage line) — not fullBurstEnter, for the same crown-divergence reason.",
+      "targetSet": "enemy (boss-held: casterIdx===null / targetIdx===null on the event).",
+      "nearestWrongModel": "Keying to fullBurstEnter (over-credits on crown-chained FBs); or letting it share/overwrite the skill2 DEF-down key so only one of the two DEF debuffs is ever live; or reading it as damageTakenPct.",
+      "distinguishingAssertion": "Boss-held buffApply at value 2.43 appears ONLY on frames carrying an eunhwa burstCast event, with expiresFrame === applyFrame + 900; assert a frame window where BOTH the 29% (skill2) and 2.43% instances are simultaneously live (distinct keys). Under fullBurstEnter keying, an apply appears on a crown-chained FB with no eunhwa burstCast that frame — RED.",
+      "inertness": "No applies on Full Bursts eunhwa did not burst into; must not displace the skill2 29% instance.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Critical Rate ▲ 4.65% for 15 sec",
+      "disposition": "FAITHFUL",
+      "scope": "GENERIC critRatePct — the kit says plain 'Critical Rate', with no 'of normal attacks' scoping, so critRateNormalPct would UNDER-credit skill/burst crit here (the inverse of the helm trap).",
+      "durationSemantics": "durationSec: 15.",
+      "triggerIdentity": "burstCast — this is a second '■' block inside her OWN burst, so it fires only on rotations SHE bursts. This is the packet's sharpest burstCast-vs-fullBurstEnter divergence: controlComp fields crown, a same-tier Burst II, so team Full Bursts can chain through crown on rotations where eunhwa's 20 s cooldown or selection passes her over — fullBurstEnter keying over-credits exactly there.",
+      "targetSet": "allies, ALL including self ('Affects all allies' — no except-self clause, so no excludeSelf flag).",
+      "nearestWrongModel": "trigger fullBurstEnter (buff granted on every team FB including crown-chained ones); secondary misreads: excludeSelf true, or scoping to critRateNormalPct.",
+      "distinguishingAssertion": "Every buffApply with stat==='critRatePct', value===4.65, casterIdx===eunhwa's index must land on a frame with an eunhwa burstCast event, must cover ALL FIVE unit indices as targets (including targetIdx===casterIdx, the self-inclusion check), with expiresFrame === applyFrame + 900. Assert the count of these apply-batches === eunhwa's burstCast count, NOT the fullBurstStart count. Under fullBurstEnter, a crown-chained FB with no eunhwa cast produces a batch — RED; under excludeSelf, the self-target apply is missing — RED.",
+      "inertness": "No crit-rate applies on crown-chained Full Bursts; skill/burst-bucket crit must move under the buff (it is NOT normal-attack-scoped).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Charge Damage ▲ 37.28% for 2 shots",
+    "skill1:Charge Speed ▲ 15.53% for 2 rounds",
+    "skill2:DEF ▼ 29% for 5 sec",
+    "burst:Deals 85.62% of final ATK as damage",
+    "burst:DEF ▼ 2.43% for 15 sec",
+    "burst:Critical Rate ▲ 4.65% for 15 sec"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Three places I expect a shared-prior misread. (1) BOTH skill1 durations are ROUND counts ('2 shots' / '2 rounds' → durationShots:2), and the trap is unusually sharp here: the trigger is reload-start and reloadFrames=161 ≈ 2.68 s > 2 s, so a durationSec:2 encoding expires mid-reload and makes skill1 SILENTLY, TOTALLY inert — a strip-the-effect A/B (withPatchedOverride) is the cheapest red/green discriminator and every skill1 test should include one. (2) burstCast vs fullBurstEnter is live in this exact fixture: eunhwa is Burst II and controlComp fields crown (also Burst II), so team FBs can chain through crown on rotations eunhwa sits out; all three burst-block effects (nuke, 2.43% DEF ▼, 4.65% crit) must count against eunhwa's burstCast events, never fullBurstStart count. (3) Skill2's 29% boss DEF ▼ has ~57% natural uptime (5 s window per ~8.7 s magazine cycle: 6 shots × 60f charge + 161f reload) — a passive/permanent encoding over-credits ~1.7×; assert coverage GAPS exist between magazines. Also verify the two DEF-down instances (29% skill2, 2.43% burst) coexist under distinct keys rather than same-key overwriting, and that the burst nuke is exactly ONE hit (single boss, never ×10) landing FB-exempt. Engine-support caveat for the driver to reconcile sighted: the schema comments mark defPct 'inert in v1' in the SELF context — confirm the engine actually consumes boss-held DEF ▼ in the damage formula; if it does not, both DEF lines are honestly GAP (engine limitation), not silently-dropped, and belong in unmodeled/note with the team-damage impact flagged.",
+  "model": "claude-fable-5"
+}

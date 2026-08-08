@@ -1,0 +1,82 @@
+{
+  "slug": "eunhwa",
+  "kitDescription": "Eunhwa is a Fire SR Attacker with a 6-round magazine and a 20s Burst II. Each time she empties her magazine, she buffs herself with Charge Damage +37.28% and Charge Speed +15.53% for her first two shots of the next magazine, and simultaneously applies a DEF -29% debuff to her target for 5 seconds. Her burst deals a single hit of 85.62% of final ATK to the highest-ATK enemies (one hit on the single raid boss), applies a small DEF -2.43% debuff for 15 seconds, and grants all allies including herself +4.65% Critical Rate for 15 seconds. In practice her self-buffs give roughly a 2-of-6 shot duty cycle per magazine, and her burst cast lands just before Full Burst begins so it never receives the +50% Full Burst bonus.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Charge Damage ▲ 37.28% for 2 shots",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "lastBullet → self, chargeDamagePct 37.28, durationShots 2, no wall-clock expiry; additive points inside the charge bucket (250→287.28)",
+        "blindSaid": "S5: durationShots===2, self-targeted, ≥6 applies, strip reduces her total; S6: byte-equivalent encoding",
+        "formulaCheck": "SSOT 1d: plain 'Charge Damage ▲' is additive flat points in the charge bucket (not chargeDamageMultPct, not attackDamagePct) — routing correct; round-count windows = durationShots (SSOT §11 'for N round(s)' = round-scoped)",
+        "fireRateOk": true,
+        "explanation": "Fires once per magazine dry-fire (~20x/180s), boosts exactly the first 2 shots of the next magazine at the kit ratio 287.28/250 (driver test pins to 9 decimal places), magazine 0 untouched. The sharp trap (durationSec:2 expiring mid-161f-reload → totally inert) was identified independently by S2b and avoided by both encoders; the round-count reading converged across all three blind agents."
+      },
+      {
+        "kitLine": "Charge Speed ▲ 15.53% for 2 rounds",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "same block, chargeSpeedPct 15.53, durationShots 2; shortens 60f charge to 51f for 2 rounds",
+        "blindSaid": "S5: charge speed buys shots (shot count strictly exceeds stripped run); S6: same encoding",
+        "formulaCheck": "SSOT §4: charge speed subtractive on charge time, base × (1 − ΣCS%) — round(60×15.53/100)=9f shortening pinned exactly by the driver test",
+        "fireRateOk": true,
+        "explanation": "Weapon-state modifier correctly treated as damage (raises shots fired); in-window cycle 51f vs 60f baseline verified per magazine. Same reload-crossing round-count semantics as S1a."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "DEF ▼ 29% for 5 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED, recorded verbatim in unmodeled.skill2 with the engine reason; absence pinned by zero-boss-debuff assertions + damageTakenPct-laundering counterfactual",
+        "blindSaid": "S6 authored enemy defPct -29 with an explicit ⚑ that the engine channel was unverified and a sighted-grep recipe; S5 (adapted A3) pins the honest unmodeled treatment",
+        "formulaCheck": "SSOT 1a: enemy DEF is a small flat subtractive term (~140 boss, ≤0.12% board shift), sim runs bossDef 0; engine enemy-buff dispatch admits only damageTakenPct/distributedDamagePct — no enemy-DEF channel exists. The blind's defPct blocks would dispatch to nothing (silently inert, exactly as its own ⚑ feared), so the two encodings are damage-identical; the driver's verbatim unmodeled record is the S2b-prescribed honest GAP, and at scope lock the debuff's true contribution is ~0.03% of ATK regardless",
+        "fireRateOk": true,
+        "explanation": "Missing engine primitive, documented with full provenance on all three sides. Not a silent drop: the line is recorded verbatim, the absence is behaviorally pinned, and the nearest-wrong laundering (damageTakenPct 29 → fabricated ~29% team lift) is proven RED. Real-world impact at scope lock is negligible per the SSOT's own DEF analysis."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 85.62% of final ATK as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy, flatDamage 85.62, one hit per cast, cast-frame landing, fbMajorApplied never true, critEligible",
+        "blindSaid": "S5: linear atkPct scaling (half/double counterfactuals, ratio 2.0±5%); S6: identical encoding; both note 10-target fan-out collapses to the single boss",
+        "formulaCheck": "SSOT 1b/§8: burst-cast direct damage lands before FB opens (noFb by engine timing), crits at caster rate, never cores, never range — matches; '10 enemy units' collapses to one hit on the partless scope-lock boss, never ×10",
+        "fireRateOk": true,
+        "explanation": "One burst-bucket hit per her cast (>2 casts in rotation fixture), exactly at kit magnitude 85.62, pre-FB exempt. The 10-target selection is out-of-domain at scope lock and pre-declared as a structural GAP skip by the blind author — acceptable."
+      },
+      {
+        "kitLine": "DEF ▼ 2.43% for 15 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED, verbatim in unmodeled.burst, same DEF basis as skill2",
+        "blindSaid": "S6: enemy defPct -2.43 (⚑ same caveat); S5 adapted: verbatim unmodeled pin",
+        "formulaCheck": "Identical to skill2 DEF line — no enemy-DEF channel; contribution at scope lock ≈ 0 (140 flat DEF, 2.43% of it is ~3 ATK)",
+        "fireRateOk": true,
+        "explanation": "Same documented engine gap as skill2; the shared zero-boss-debuff pin covers both DEF lines. Distinct-key coexistence concern from S2b is moot since neither line is enactable; nothing is laundered."
+      },
+      {
+        "kitLine": "Critical Rate ▲ 4.65% for 15 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies (no excludeSelf), critRatePct 4.65, durationSec 15; applies only on HER casts, never on FB-start frames",
+        "blindSaid": "S5: targets include self + all teammates, batch count == her cast count, durationShots null; S6: identical encoding",
+        "formulaCheck": "SSOT 1b: plain 'Critical Rate ▲' is generic critRatePct (no normal-attacks scoping — inverse of the helm trap), lifts all buckets; §8: granted by her own burst skill so burstCast-keyed, not fullBurstEnter",
+        "fireRateOk": true,
+        "explanation": "Functional verification is strong: her normal-bucket crit rate moves by exactly 4.65 ppt in-window (two distinct rates, delta to 9 decimals), and every ally's crit rate changes when the effect is stripped. The burstCast-vs-fullBurstEnter divergence is pinned two independent ways (driver fixture A with a second B2 leading FB cycles; blind's crown-monopolization adaptation A1), and the fullBurstEnter counterfactual is proven to land on disjoint frames."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": 1,
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. All six kit lines are FAITHFUL (4) or DOCUMENTED_GAP (2). The two DEF▼ lines are a genuine missing engine primitive (no enemy-DEF channel; boss DEF is the flat constant 140 that no debuff scales), but the gap is documented verbatim on the driver side, was pre-authorized as the honest-GAP contingency by the S2b reviewer, is behaviorally pinned against the damageTakenPct-laundering wrong model, and carries ~0 damage consequence at scope lock per the SSOT's own DEF analysis — so it is not an engine-core failure. Convergence is real and multi-family: the blind S5 suite runs 15/0-fail/2-pre-declared-GAP-skips against the shipped override unmodified, the S6 blind override is byte-equivalent on every modeled line, and the two sharpest traps (round-count windows that would go silently inert as durationSec:2 across the 2.68s reload; burstCast vs fullBurstEnter keying) were identified independently by S2b and encoded identically by driver and both blind agents. Discrimination holds everywhere: passive-vs-lastBullet, per-shot trigger, strip A/Bs, nuke half/double linearity, fullBurstEnter counterfactual, and the laundering pin all have teeth. Same-model residuals the owner should spot-check: (1) the durationShots consumption phase — the driver pins behaviorally that the triggering last bullet does NOT consume one of the two rounds and the window covers exactly the first two shots of the next magazine; all agents share this reading and it is unmeasured against real footage (⚑-class, low blast radius); (2) the cadence tuple (60f charge / 161f reload / 6 ammo) is datamined and drives both S1 uptime and the (unmodeled) S2 cadence — flagged by S6, shared by everyone; (3) the 10-target fan-out and DEF-debuff payload are structurally unobservable at scope lock and remain standing GAPs if the engine ever gains those channels.",
+  "model": "kimi-code/k3"
+}

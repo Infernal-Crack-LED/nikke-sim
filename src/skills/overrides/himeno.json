@@ -1,0 +1,74 @@
+{
+  "note": "Himeno (slug himeno — the BASE unit; Abnormal SR Supporter, Wind, Burst II, cd 20s, ammo 6, chargeFrames 60, reloadFrames 159, chargeMultiplier 250, normalMult 70.89, SR rarity). FROM-SCRATCH kit-autonomy build 2026-08-05 (no prior override / kit-status row; baseline was bare weapon, simSupported:false). ⚠ EXACT SLUG: `himeno` is the SR/Wind Supporter original — the slug-disambiguation lint ran clean on the full variant description at dispatch. SKILL1 'Weak Spot Attack' ('Activates when hitting a target with Full Charge. Affects the target. DEF ▼ 6.94% for 3 sec.'): UNMODELED — see unmodeled.skill1 and the ⚑ list. SKILL2 'Invisible Hand' (datamined 20s cooldown, no activation clause in prose): ONE block, interval:20 trigger (the CD-driven skill2 convention — poli precedent: an internal-cooldown skill with no visible activation clause fires every CD seconds of battle, first at t=CD; the 20s is the datamined skillCooldownsSec.skill2, pinned by the unit test against the apply-frame spacing), target alliesOfWeapon SR with NO excludeSelf ('all allies with sniper rifles' — she is herself an SR and the kit never says 'except self'), two effects in one block: ATK ▲10.98% (atkPct — scales each target's own ATK) and Max Ammunition Capacity ▲2 round(s) (maxAmmoFlat — the theme-14 FLAT-round primitive: '▲ 2 round(s)' is a MAGNITUDE in flat rounds, NOT a durationShots round-count duration; maxAmmo() = round(base×(1+pct/100)) + flat, so the nearest-wrong maxAmmoPct 2 computes round(6×1.02) = 6 and silently never extends a magazine), BOTH durationSec 10 → a 50% duty cycle (10s window every 20s), NOT a permanent aura. BURST 'Ghost' (burstCast — HER OWN cast, never fullBurstEnter: the buffs are granted by her burst skill, and a fullBurstEnter key would over-fire on every team Full Burst including rotations a competing B2 chains; the STARVED comp in the unit test pins the divergence): ONE block, target alliesTopAtk{count:1, excludeSelf:true, byFinalAtk:true} — the kit literally says 'the highest FINAL ATK' (byFinalAtk = LIVE effectiveAtk ranking per the schema's literal-word rule) and the datamine ulti prefer_target_condition is 'ExcludeSelf' (the prose omits the clause; the datamine is the ground truth); two effects in one block: Charge Damage ▲23.76% (chargeDamagePct — additive percentage points INSIDE the charge bucket, 250 → 273.76 on a standard SR/charge carrier) and Critical Rate ▲16.35% (GENERIC critRatePct — the kit says plain 'Critical Rate' with no 'of normal attacks' scoping, so it lifts every bucket; the inverse of the helm critRateNormalPct trap), BOTH durationSec 10. The chargeDamagePct half is recipient-gated: it only moves damage if the top-ATK ally actually deals charge-bucket damage — inert-on-a-non-charge-carrier is FAITHFUL, not an encoding gap (the unit test exercises a charge-weapon recipient, ada, whose RL is a charge weapon). UNMODELED (1 line, VERBATIM in unmodeled.skill1, never an `ignored` drop): the whole S1 sentence — enemy DEF▼ has no sim channel: the enemy-buff channel admits ONLY damageTakenPct/distributedDamagePct (sim.ts consumes enemyBuffs through no other stat) and the boss's DEF is the flat constant cfg.bossDef that no debuff scales, so an enemy DEF▼ moves nothing — sim.ts drops enemy ATK▼/DEF▼ at dispatch ('other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0'). eunhwa shipped her two same-family datamined 'DEF ▼ x% for N sec' lines the same way earlier in this batch. The full-charge trigger is part of the skipped sentence (an enemy-targeted full-charge effect has no channel either). ⚑ LIST: [1] (no enemy-DEF channel) skill1 'DEF ▼ 6.94% for 3 sec.' estimate: 0 damage impact under ANY encoding on the constant-bossDef basis (in game, at boss DEF ≈140, a 6.94% DEF cut with near-continuous SR uptime would be a small team-wide lift — out of this sim's domain). recipe: needs a debuff-scalable boss-DEF channel before any encoding; NEVER launder into damageTakenPct (a different mechanic — the unit test pins its absence: the laundered counterfactual emits boss debuffs and moves team totals, the shipped model does neither). tier: out-of-domain. [2] (interval phase) S2 first-fire at t=20s is the engine-native interval convention, matching in-game CD skills (first cast when the cooldown completes); pin from footage if an S2-consumer cadence is ever popup-read. tier: engine-native default. [3] (byFinalAtk live re-ranking) the single burst target is re-ranked LIVE at each cast; if buff states reorder final ATK across casts, different allies may receive different casts — faithful to 'highest final ATK', unobservable in the current fixtures (ada tops both static and live ranking), pinned at the encoding level. tier: engine-native default. EVIDENCE TIER: all modeled magnitudes (10.98, 2, 23.76, 16.35) and durations (10s) are SL10 kit-text-literal (DATAMINED); the 20s S2 interval and the burst ExcludeSelf targeting are DATAMINED (skillCooldownsSec / ulti prefer_target_condition). TIER 2: scoped buffs twice (weapon-scoped S2 pool + single-target highest-final-ATK burst grant), the burstCast-vs-fullBurstEnter pin (divergent in the two-B2 fixture), and the interval duty cycle. Cross-family: S2b claude-fable-5 independently CONVERGED on all four FAITHFUL encodings (trigger identity, scopes, durations, flat-round parse) and on the S1 gap-with-gap-surfaced disposition (its upgrade condition — an enemy-DEF consumer — verified false directly in sim.ts); S5/S6 claude-opus-5, S7 kimi-code/k3. Faithful>fit; measured>fudge. Kit-autonomy gauntlet 2026-08-05.",
+  "unmodeled": {
+    "skill1": [
+      "■ Activates when hitting a target with Full Charge. Affects the target.\nDEF ▼ 6.94% for 3 sec. — no sim channel: the enemy-buff path admits only damageTakenPct/distributedDamagePct (sim.ts consumes enemyBuffs through no other stat) and the boss's DEF is the flat constant cfg.bossDef that no debuff scales, so an enemy DEF▼ moves nothing (sim.ts drops enemy ATK▼/DEF▼ at dispatch: 'other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0'; eunhwa precedent, same datamined line family). The whole sentence is skipped — an enemy-targeted full-charge effect has no channel either. The nearest-wrong laundering (damageTakenPct 6.94) would fabricate a team lift the kit never grants; scripts/tests/units/himeno.test.ts pins its absence."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "skill1: 'DEF ▼ 6.94% for 3 sec.' (full-charge-hit target) is game-real but unenactable — recorded verbatim in unmodeled; in game it would be a small team-wide lift at near-continuous SR uptime, in the sim domain its contribution is exactly 0 (constant-bossDef basis).",
+    "skill2: both effects ride ONE interval:20 block (poli precedent for CD-driven skills) with a 10s duration → 50% duty cycle; the passive-always-on counterfactual over-credits by exactly the uncovered half and is discriminated by the apply-frame spacing (first at t=20s, period 1200 frames).",
+    "skill2: '▲ 2 round(s)' is a FLAT magnitude (maxAmmoFlat), not a round-count duration — maxAmmo() adds it on top of the percent scaling, so in-window SR magazines hold 8 rounds; the percent-only nearest-wrong (maxAmmoPct 2) computes round(6×1.02) = 6 and never extends.",
+    "burst: both buffs are keyed to HER burstCast (not fullBurstEnter) — with a second Burst II in the team the two keyings diverge on rotations the other B2 chains; the spec test pins application frames to her casts (and OFF the Full Burst start frames).",
+    "burst: the target is the single highest-FINAL-ATK ally EXCLUDING the skill user — 'highest final ATK' is kit-literal (byFinalAtk, live ranking) and ExcludeSelf is datamined (ulti prefer_target_condition), though the prose omits the except-self clause; pinned at the encoding level because both bases rank the same top candidate in the fixtures.",
+    "burst: the chargeDamagePct half only moves damage for a recipient that deals charge-bucket hits — inert on a non-charge carrier is faithful (the critRatePct half still applies); the fixtures exercise a charge-weapon recipient."
+  ],
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "SR"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 10.98,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoFlat",
+          "value": 2,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1,
+        "excludeSelf": true,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 23.76,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 16.35,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

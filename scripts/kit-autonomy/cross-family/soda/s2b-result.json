@@ -1,0 +1,106 @@
+{
+  "slug": "soda",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ after 180 normal attack(s) → self",
+      "disposition": "FAITHFUL",
+      "scope": "Normal-attack counter only (MG rounds; hitsPerShot 1 so pulls == rounds). The Max HP magnitude is a plain stat, not attack-scoped.",
+      "durationSemantics": "durationSec: 10 (literal 'lasts for 10 sec' — wall-clock, NOT rounds), maxStacks: 5, refresh-on-reapply. Not permanent, not until-reload.",
+      "triggerIdentity": "hitCount count:180 (repeating cumulative-hit counter — fires at 180, 360, 540, …). NOT interval, NOT shotFired.",
+      "targetSet": "self only",
+      "nearestWrongModel": "A passive/instant-to-max self buff (5 stacks live from t=0, or no durationSec so stacks never lapse) — which silently makes the skill2 max-stacks gate near-permanently satisfied instead of marginal.",
+      "distinguishingAssertion": "Filter buffApply stat:'maxHpFlat' targetSlug:'soda': ZERO events before soda's 180th round has fired (correlate with shot events / reloads); each apply carries maxStacks:5 and expiresFrame ≈ applyFrame+600; stacks climbs 1→2→… only as further 180-round thresholds accrue. RED under passive/permanent encodings.",
+      "inertness": "Max HP moves no damage directly (Supporter, no atkOfMaxHpPct consumer in her kit) — totals(res)['soda'] must be unchanged when the buff is patched out; only skill2b's gate cadence may move.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Restores HP equal to 3.23% … Max HP",
+      "disposition": "FIX",
+      "scope": "A heal, not damage — but per the tandem rule it is NOT skippable: heal effects emit recovery events that fire teammates' 'recovery' triggers (crown is in the control fixture and is exactly such a consumer).",
+      "durationSemantics": "Instant single heal event per activation (ticks:1 default).",
+      "triggerIdentity": "⚑ NO activation clause in the prose → interval trigger with a cadence NOT in the kit text. The interval seconds are an ALWAYS-⚑ field (datamined skill CD required); shipping a silent guess is wrong — must be flagged with recipe.",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Dropped entirely as 'defensive, no damage' (taxonomy trap 4) — killing the recovery-event feed to on-recovery consumers like crown.",
+      "distinguishingAssertion": "Run controlComp with crown present: crown's recovery-gated buffApply events occur at soda's skill2 cadence; re-run with withPatchedOverride('soda', o => { o.skill2 = []; }) and those crown buffApply events drop/thin. GREEN only if the heal block exists and targets all allies. (heal/recovery are not onEvent kinds — the downstream consumer's buffApply IS the observable.)",
+      "inertness": "Must add zero damage of its own — no damage events with soda srcSlot skill; soda's own total unchanged by the heal block in a comp with no recovery consumer.",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ when Maid Spirit is at max stacks",
+      "disposition": "FIX",
+      "scope": "Second, larger heal (12.71% of caster Max HP) — same tandem relevance as skill2a.",
+      "durationSemantics": "Instant heal event per qualifying activation.",
+      "triggerIdentity": "Gated on skill1's stack state: fires only while/when Maid Spirit == 5 stacks. Natural encoding: a resource pool mirroring Maid Spirit stacks + resourceGate {min:5} on the heal block (or the max-stack apply event itself as the trigger). NOT an independent ungated interval.",
+      "targetSet": "allies (all)",
+      "nearestWrongModel": "Ungated — a second interval heal that fires regardless of stack state (over-crediting recovery-event cadence to on-recovery consumers), or conversely a gate wired to a stack pool that never reaches 5 so the line is silently dead.",
+      "distinguishingAssertion": "With withPatchedOverride('soda', o => { o.skill1 = []; }) (no Maid Spirit stacks ever), the 12.71%-block's downstream recovery-consumer buffApply events must VANISH while the 3.23% block's persist. RED under the ungated misread (events persist) and detects the dead-gate misread in the baseline run (zero events ever despite stacks reaching 5).",
+      "inertness": "No damage events; no effect on any unit's totals absent a recovery consumer.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ 2 enemy unit(s) randomly → 321.28%",
+      "disposition": "FAITHFUL",
+      "scope": "Instant burst-cast damage, % of final ATK. Solo-raid boss is ONE enemy: a '2 random enemy units' selection lands ONE instance on the single boss — distinct-unit selection, not two hits on the same target.",
+      "durationSemantics": "Instant, per burst cast.",
+      "triggerIdentity": "burstCast (soda's OWN Burst I cast) — never fullBurstEnter. Burst-cast damage lands PRE-FB: no +50% Full Burst major, no FB-entry auras (measured house rule; burst-cast/instant damage is always FB-exempt).",
+      "targetSet": "enemy (boss)",
+      "nearestWrongModel": "Two stacked wrongs to distinguish: (a) doubling to 2×321.28% because the prose says '2 units' (one boss = one instance); (b) letting the hit ride the +50% FB bonus / keying it to fullBurstEnter (any team FB) instead of her own cast.",
+      "distinguishingAssertion": "Per soda burstCast event, EXACTLY ONE damage event with mult 321.28 in the burst bucket, with inFullBurst false / fbMajorApplied false; count of these damage events == count of soda's burstCast events (never 2× per cast, never fired on FBs she didn't cast).",
+      "inertness": "Zero such damage events on rotations where soda does not cast (e.g. when the other Burst I unit takes the slot).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Stun for 1 sec.",
+      "disposition": "UNMODELED",
+      "scope": "Enemy-targeted crowd control.",
+      "durationSemantics": "1 sec.",
+      "triggerIdentity": "Rides the burst cast.",
+      "targetSet": "enemy (boss)",
+      "nearestWrongModel": "Applying the stun EffectDef anyway (it exists for ALLY-side disable — 'target can't fire/charge/reload'); on the boss it has no entity to act on (resolveTargets enemy → []) and any encoding is dead weight or a mis-target.",
+      "distinguishingAssertion": "No engine-visible observable exists or should exist: no buffApply, no shot-cadence change on any unit attributable to this line. Belongs verbatim in unmodeled.burst.",
+      "inertness": "Must move nothing — all five units' totals identical with the line present vs absent.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ all Fire Code allies: Stack count ▲ 1",
+      "disposition": "GAP",
+      "scope": "A meta-effect: increments the STACK COUNT of already-held stackable buffs on Fire-element allies by 1 (capped at each buff's maxStacks). It is not itself a stat buff.",
+      "durationSemantics": "Instant one-shot increment per burst cast; the incremented buff keeps its own duration.",
+      "triggerIdentity": "burstCast (her own burst), target alliesOfElement Fire.",
+      "targetSet": "alliesOfElement element:'Fire' (soda herself qualifies — her own Maid Spirit is the obvious in-kit recipient).",
+      "nearestWrongModel": "Encoding it as a generic stat buff on Fire allies (a phantom atkPct/maxHpPct application), or as a fresh full application of Maid Spirit that REFRESHES duration/re-arms windows rather than incrementing an existing instance's stack count.",
+      "distinguishingAssertion": "The effect schema has NO stack-increment EffectDef — so the faithful v1 disposition is unmodeled-verbatim. Assertion: on soda's burstCast, ZERO new buffApply events targeting Fire allies from her burst slot (phantom-buff detector). If a future primitive lands: soda's live Maid Spirit stacks jump +1 (e.g. 3→4) at cast WITHOUT a reset of expiresFrame.",
+      "inertness": "With no engine primitive, the line must move no totals and emit no events; it must not be silently dropped from the record either.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Maid Spirit 180-hit Max-HP stack buff",
+    "skill2:3.23% caster-Max-HP heal (all allies, ⚑ interval)",
+    "skill2:12.71% heal gated on Maid Spirit max stacks",
+    "burst:321.28% burst-cast damage on the boss"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Stun for 1 sec.",
+      "Stack count of buffs ▲ 1."
+    ]
+  },
+  "notes": "Three things the driver must reconcile. (1) BURST ELIGIBILITY IN THE FIXTURE: soda is Burst I and controlComp fixes liter in B1 — with two B1 units, first-ready in-window selection decides who casts, so the burst-damage assertions are only meaningful if the test first proves soda's burstCast events actually occur (count them; if liter always wins the slot, the comp must be arranged so soda casts). A test that asserts burst damage without confirming she ever casts is vacuously green under a missing burst block. (2) MAX-STACKS REACHABILITY IS EMERGENT AND MARGINAL — a shared-prior misread hotspot: 5 stacks needs the 180-round counter to re-fire within each 10s window across a 300-round belt and a 171-frame (~2.85s) reload, plus MG wind-up; whether the skill2b gate EVER opens must be read off the engine's actual cadence, not assumed either way. The distinguishing tests above are constructed to detect both the never-fires and the always-fires encodings. (3) The skill2a cadence is an ALWAYS-⚑ field (no activation clause in the prose): the interval seconds must be flagged with a datamined-CD recipe, never shipped as a silent guess. Also note the heal magnitudes (3.23%/12.71% of caster final Max HP) are inherently amount-less in the engine's heal primitive — the observable is the recovery EVENT feed (crown-class consumers), which is why skill1's Max-HP buff stays in the model as a documented future-consumer stat even though it moves no damage today.",
+  "model": "claude-fable-5"
+}

@@ -1,0 +1,92 @@
+{
+  "slug": "nihilister",
+  "kitDescription": "Nihilister is a Fire sniper-rifle Attacker built around piercing fire: every fully-charged shot grants her Pierce and a wider piercing line for the following round, and any shot that strikes two or more enemies at once splashes bonus damage onto everything it hits. Her second skill is an automatic blast that periodically damages enemies in her attack range. Her burst hits enemies in range for instant damage, ignites them with a ten-second burn ticking every second, and doubles her own magazine from 6 to 12 rounds for fifteen seconds so she fires far longer between reloads. Against a single boss the multi-enemy splash and piercing radius never come into play, so her practical kit there is the pierce tag, the periodic blast, the burn, and the extended magazine.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Full Charge → Gain Pierce for 1 round(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired → self gainPierce durationSec 4; shotFired IS the full-charge trigger (SR auto-full-charges every shot); '1 round' is round-count but gainPierce has no durationShots, so 4s wall-clock stand-in = worst-case inter-shot gap (reload 2.35s + charge cycle 1.37s ≈ 3.7s); ⚑1 with recipe; per-shot refresh keeps the tag continuous; pinned byte-identical to the static-flag form while firing",
+        "blindSaid": "S6: identical encoding (shotFired → gainPierce) with durationSec 2 stand-in, also ⚑-flagged; S2b: hasPierce or per-shot gainPierce both damage-equivalent at scope, note must name the stand-in (driver's note does); S5: asserts effect-form not static flag, shot-keyed trigger, and damage-inertness without a Pierce Damage ▲ source",
+        "formulaCheck": "SSOT §11: Pierce Damage ▲ is a DamageUp entry needing a Pierce tag; the tag itself is damage-inert without a consumer. Driver's own fixture injects the consumer (d-killer-wife's 13.55 pierceDamagePct to SR allies) so the tag is observable and load-bearing — exactly the isolation method III requires. Round→wall-clock is a documented approximation; driver pins it never lapses between rounds actually fired (byte-identity vs static flag under fixture cadence). First shot of the fight untagged (dispatch order) — documented, one-shot-per-fight effect, negligible.",
+        "fireRateOk": true,
+        "explanation": "Trigger identity, target, and effect kind match the prose and both blinds converged on them independently. The only divergence from the literal text is the round-count→4s conversion, which is schema-forced (no durationShots on gainPierce), documented as ⚑1 with a measurement recipe, and behaviorally pinned. The blind's 2s stand-in would under-cover across reloads; the driver's 4s is the better-argued estimate over the same unmeasured cadence tuple."
+      },
+      {
+        "kitLine": "Piercing Radius ▲ 50% for 1 round(s)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim; geometry not Pierce Damage (rejects the pierceDamagePct +50 misread explicitly); v1 has no spatial/hitbox model and the boss is single/partless; ⚑4 out-of-domain with resurface recipe",
+        "blindSaid": "S2b: UNMODELED, no StatKey, no consumer; nearest-wrong is pierceDamagePct 50. S6: identical verbatim unmodeled. S5: authored as it.skip GAP by the blind writer itself",
+        "formulaCheck": "No radius primitive exists anywhere in the formula SSOT; there is nothing to route it to. Driver test pins no pierceDamagePct stat and no radius stand-in anywhere in skill1",
+        "fireRateOk": true,
+        "explanation": "Deliberately unmodeled with reason recorded and the trap (geometry ≠ Pierce Damage) explicitly fenced by both driver and S2b. Inertness verified."
+      },
+      {
+        "kitLine": "hits 2+ enemies concurrently: 50.33% add'l",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim; single partless boss makes the condition structurally unsatisfiable; an ungated 50.33 flatDamage rider is rejected as the most damaging plausible misread (~+73% of her normal line per shot); ⚑3 out-of-domain with estimate + multi-target recipe",
+        "blindSaid": "S2b: UNMODELED, inertness IS the test. S6: identical verbatim unmodeled. S5: pins zero 50.33-magnitude effects in the override and proves adding the wrong model moves totals >5%",
+        "formulaCheck": "SSOT §11: distributed/multi-target semantics aside, v1 fields one enemy — no engine path can satisfy 'hits 2 or more enemies concurrently'; absence is the faithful model",
+        "fireRateOk": true,
+        "explanation": "All three agents independently refused the over-credit trap. The line is recorded verbatim, fenced structurally (no 50.33 atkPct anywhere), and the out-of-domain estimate+recipe is documented."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Deals 112.64% of final ATK as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval:10 → flatDamage 112.64 vs enemy; cadence SOURCED from datamined characters.json skillCooldownsSec.skill2 = 10 (not invented); no-clause prose → class-1 pure timer (helm-aquamarine precedent); first fire t=10 (⚑2 phase, recipe: focused-solo popup timing); crit-eligible by engine default, never cores, noRange",
+        "blindSaid": "S2b: FAITHFUL provided the cadence comes from datamined skillCooldownsSec or is ⚑-flagged — driver did the former. S6: identical interval:10/112.64 (value converged; blind had to guess-and-flag since its packet lacked the datamine) plus a redundant explicit crit:true (engine default already crit-on, behavior-identical). S5: asserts interval trigger shape, repeated-but-not-per-shot cadence, no ally buff",
+        "formulaCheck": "SSOT §2b: no-activation-clause damage lines are internal-cooldown skills on the interval trigger, first at t=N (⚑ phase convention); function damage crits at caster rate (default on), never core, never range, FB by landing timing. Driver matches every clause",
+        "fireRateOk": true,
+        "explanation": "Driver pins the exact frame set [10,20,…,170]s ×60 — 17 hits — which kills interval:5, hitCount-proxy, and burstCast counterfactuals, all asserted. Cadence provenance is the datamine in the ground-truth packet itself, so this is not the S2b 'silent invented cadence' violation."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 158.59% of final ATK as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → flatDamage 158.59 vs enemy; HER casts only (not fullBurstEnter — a different B2's Full Burst must not fire it); burst-cast damage auto-snapshots pre-FB / FB-exempt by engine convention; pinned: one nuke per own cast, cast frames ≠ FB-start frames, fbMajorApplied false on every nuke",
+        "blindSaid": "S2b: FAITHFUL, burstCast keying, FB-exempt, no core/range. S6: identical (plus redundant crit:true). S5: asserts zero FB-major nuke instances, burstCast trigger, enemy target",
+        "formulaCheck": "SSOT burst timing rule (twice popup-verified): burst-cast damage lands before Full Burst begins — no +50%, no entry auras; engine forces noFb on burst-cast direct damage. Matches exactly",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence on the keying and the boundary rule. Driver's fullBurstEnter counterfactual provably moves the nuke into the window (+50% major) — discrimination demonstrated, not assumed."
+      },
+      {
+        "kitLine": "Burn: 13.19% every 1 sec for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → dot 13.19 / durationSec 10 / intervalSec 1 / flavor 'sustained', NO per-dot crit opt-in: ticks crit via the engine's universal DOT_CRIT gate (default-ON, U13); 10 discrete 1s ticks per cast pinned (gaps exactly 60f, first at cast+1s); cd 20s > 10s window so instances never overlap; never cores",
+        "blindSaid": "S6: identical dot shape, no crit opt-in, and its caveat claims 'default-OFF DOT_CRIT gate'; S2b: 'crit stays default-OFF absent a measurement'; S5: asserts no crit field on the dot (field-absence, which the driver satisfies)",
+        "formulaCheck": "SSOT is unambiguous: 'DoT CRIT — ENABLED by default (DOT_CRIT ON, landed 2026-07-21)' and game-mechanics §9 'tick-crit is ON by default'. The S2b/S6 'default-OFF' prior is STALE — a blind-side recon error, not a driver finding; the driver's no-opt-in + gate-dominated modeling is the SSOT-correct form, and its burnCrit counterfactual (byte-identical) proves the gate dominates. Sustained flavor, no-core, tick timing into FB windows all match",
+        "fireRateOk": true,
+        "explanation": "Driver matches the formula SSOT on every axis including the subtle one (universal DoT crit with no per-dot field). Both blinds converged on the identical encoding; their shared stale crit prior is flagged here as RECON_ERROR on the blind side — worth correcting in S2b's spec template, zero impact on the shipped artifacts since all parties shipped the same no-opt-in JSON."
+      },
+      {
+        "kitLine": "Max Ammunition ▲ 6 round(s) for 15 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self maxAmmoFlat 6 / durationSec 15 — the FLAT primitive, explicitly NOT maxAmmoPct (names both traps: maxAmmoPct 6 ≈ inert, maxAmmoPct 100 coincides at her 6-round base); cap raises live (increases never clip), extended 12-round mag loads at next reload; pinned: once per own cast, self-scoped, 15s expiry, ammoAfter exceeds 5 in-window, removing the block drops totals",
+        "blindSaid": "S2b: FAITHFUL, maxAmmoFlat not maxAmmoPct, wall-clock 15s (the inverse-of-skill1 semantics trap). S6: identical. S5: asserts maxAmmoFlat 6 events, per-cast count, self-only, damage-relevance, and the pct counterfactual measurably worse",
+        "formulaCheck": "SSOT §11: max-ammo increases never clip and sources stack additively — flat +6 on a 6-round base doubles the magazine; ammo capacity gates shots fired, so this is a damage line (S2b taxonomy #6), correctly not dropped as 'QoL'",
+        "fireRateOk": true,
+        "explanation": "Both semantic traps in this line (flat-vs-pct, sec-vs-rounds across the same kit) were identified independently by S2b and S6 and avoided by the driver. Behavioral pins (ammoAfter > 5, totals drop on removal) prove the buff actually fires and converts to shots."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA found: all 7 kit lines are FAITHFUL (5) or DOCUMENTED_GAP (2), with the two unmodeled lines carried verbatim, fenced against their named nearest-wrong misreads, and pinned inert by test. The blind re-derivations converged with the driver on every load-bearing decision — trigger kinds (shotFired / interval:10 / burstCast), targets, magnitudes, the sustained flavor, the flat-ammo primitive, and the exact unmodeled set — and the only deltas are cosmetic or strictly better-argued on the driver's side (S6's redundant explicit crit:true, behavior-identical; S6's gainPierce 2s stand-in vs the driver's reload-aware 4s, both ⚑ over the same unmeasured cadence tuple). S2b's one error is a stale 'DoT crit default-OFF' prior contradicted by the SSOT's DOT_CRIT-ON — a blind-side recon note, not a driver finding, and harmless because all parties shipped the identical no-opt-in dot. Discrimination holds: the S2 frame-set pin kills wrong cadences, the fullBurstEnter counterfactual observably moves the nuke, the collapsed-burn counterfactual differs, and where behavior genuinely cannot discriminate (maxAmmoPct 100 coincidence) the driver says so and carries the pin structurally instead of pretending. Residuals the owner should spot-check (same-model stability, not correctness): (1) the ⚑ set — SR cadence tuple feeding the 4s pierce stand-in and the S2 first-fire t=10 phase — against one focused-solo recording per the override's own recipes; (2) the S5 GREEN was produced through driver-applied mechanical adaptations (fixture swap to sole-B2 per S2b's own prescription, magnitude-keyed tick ID, the 2% teammate gauge-coupling bound) — all commented and intent-preserving on inspection, but the convergence signal is partially driver-mediated, so a spot re-run of the unmodified blind assertions on the two adapted fixtures is the cheap independent confirmation; (3) the d-killer-wife pierce feed that makes the tag observable assumes her pierceDamagePct gates on the pierce tag as the SSOT describes — verified in the driver's load-bearing test, but it is the single fixture coupling the whole N1 argument rests on.",
+  "model": "kimi-code/k3"
+}

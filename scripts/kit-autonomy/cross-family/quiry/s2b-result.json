@@ -1,0 +1,91 @@
+{
+  "slug": "quiry",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "hit w/ Full Charge → ATK ▼ 8.94%",
+      "disposition": "UNMODELED",
+      "scope": "Full-charge hits only; the effect is an ATK reduction ON THE ENEMY (scaled by caster's ATK)",
+      "durationSemantics": "3 sec wall-clock (durationSec 3) — but moot, see disposition",
+      "triggerIdentity": "on-HIT with full charge (per landed full-charge shot)",
+      "targetSet": "the target (enemy/boss)",
+      "nearestWrongModel": "Encoding it as an ally/self ATK buff (misreading ▼ target), or inventing an enemy-ATK stat that leaks into a damage bucket (e.g. mis-mapping to damageTakenPct, which would over-credit the whole team)",
+      "distinguishingAssertion": "With quiry patched in, NO buffApply carries a stat/value pair derived from 8.94% (flat ≈ 0.0894×98367 ≈ 8794) at any point, and totals(res) for every unit are identical with the line present vs stripped via withPatchedOverride — the line must appear only in unmodeled.skill1",
+      "inertness": "Everything — v1 boss deals no damage and the schema has no enemy-ATK stat; this line must move zero damage and emit zero buffApply events. Any movement means it was mis-mapped (most dangerously to damageTakenPct).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "atk w/ Full Charge → 2 Defender ATK ▲",
+      "disposition": "FAITHFUL",
+      "scope": "Fires per full-charge attack (on-ATTACK, not on-hit — sibling line says 'hitting', this says 'attacking'); RL with chargeFrames 60 full-charges every pull, so encoding = per trigger pull",
+      "durationSemantics": "3 sec wall-clock (durationSec 3, no 'round(s)' wording). CRITICAL: quiry's shot cycle is ~1.37s (60f charge + 22f release) so uptime is continuous while firing, but reload (141f ≈ 2.35s) + next charge ≈ 3.7s between last shot of a magazine and first apply of the next — the buff genuinely LAPSES ~0.7s per magazine",
+      "triggerIdentity": "shotFired (every pull = full charge on this RL); no fbGate, no everyN",
+      "targetSet": "2 Defender-class allies — alliesOfClass cls:'Defender' (never self: quiry is a Supporter; never non-Defenders)",
+      "nearestWrongModel": "A passive/permanent encoding (buff applied once at t=0, never lapsing across reloads), OR stat atkPct 5.81 (scaling the TARGET's own ATK) instead of casterAtkPct (flat 5.81% of QUIRY's ATK), OR target 'allies' unscoped",
+      "distinguishingAssertion": "Filter buffApply for stat 'casterAtkPct' with flat value ≈ 0.0581×98367 ≈ 5715 (Supporter static ATK — NOT the raw 5.81): one apply per quiry shot event with expiresFrame − applyFrame = 180; targetSlug is the Defender (crown in the control fixture) and NEVER liter/helm/self; and there exists a window during each reload where no instance is active (expiresFrame of the magazine's last apply < applyFrame of the next). RED under passive (single apply, frame 0), RED under atkPct (value 5.81, target-scaled), RED under unscoped allies",
+      "inertness": "Non-Defender allies' effectiveAtk must not move; quiry's own damage must not move (she is not a Defender); no applies during reload gaps",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "start of battle → Max HP ▲ 11.63%",
+      "disposition": "FAITHFUL",
+      "scope": "Unconditional stat grant, no attack-type scoping",
+      "durationSemantics": "'continuously' = permanent (no durationSec)",
+      "triggerIdentity": "passive (active from frame 0; 'Activates at the start of battle' = setup-time, not an event trigger)",
+      "targetSet": "2 Defender-class allies (alliesOfClass 'Defender'); NOT self, NOT all allies",
+      "nearestWrongModel": "casterMaxHpPct (% of QUIRY's Max HP granted to targets) instead of targetMaxHpPct (% of each TARGET's OWN Max HP) — 'Max HP ▲ X%' with no 'of the skill user' clause is target-own per the blanc/maiden precedent; or dropping the line entirely as 'defensive, inert'",
+      "distinguishingAssertion": "At frame 0 a buffApply with stat 'maxHpFlat' lands on the Defender ally with value = 0.1163 × THAT TARGET's static maxHp (crown's, not quiry's — the two differ, which is exactly what separates targetMaxHpPct from casterMaxHpPct); no such apply on non-Defenders. AND totals(res) for every unit are identical with vs without the block (ally-granted Max HP does not feed a teammate's atkOfMaxHpPct per the e3 rule) — the buff must EXIST yet move zero damage",
+      "inertness": "All damage totals (offensively inert at scope — but the block must still be present as a future-consumer stat grant, taxonomy #7; deleting it is a FIX-tier omission, not a free skip)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 6.96% ... every 1 sec for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Heal-over-time; magnitude (% of skill user's final Max HP) is display-only — the engine models no HP amounts on 'heal' — but the EVENT CADENCE is load-bearing",
+      "durationSemantics": "10 ticks at 1s intervals — heal effect with ticks:10, intervalSec:1; NOT a single instant heal, NOT durationSec on a buff",
+      "triggerIdentity": "burstCast (no activation clause in a burst block = fires when QUIRY casts her burst; NOT fullBurstEnter — quiry is Burst II and the control fixture already contains another B2 (crown), so the two encodings genuinely diverge: fullBurstEnter would fire her heal on rotations CROWN bursts)",
+      "targetSet": "all allies (including self)",
+      "nearestWrongModel": "TANDEM TRAP: ticks:1 default (one instant recovery event) instead of ticks:10 — crown's 'when recovery takes effect' consumers then fire once per burst instead of being re-fed for 10s; second misread: keying to fullBurstEnter, over-firing on crown's rotations",
+      "distinguishingAssertion": "On a rotation where quiry casts (burstCast event with her srcSlot), each ally receives 10 recovery events spaced ~60 frames apart, and crown's recovery-triggered buffApply chain refreshes across the full 10s window (multiple applies, not one). On a rotation where crown takes B2 instead, quiry emits ZERO recovery events. RED under ticks:1 (single event per cast) and RED under fullBurstEnter (events on crown's rotations)",
+      "inertness": "Rotations where quiry does not burst; no direct damage from the heal itself (heal carries no damage)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Defender allies Crit Rate ▲ 19.9% 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Unscoped Critical Rate (generic critRatePct — no 'of normal attacks' clause, so critRateNormalPct would be an over-narrowing)",
+      "durationSemantics": "10 sec wall-clock (durationSec 10; expiresFrame − applyFrame = 600)",
+      "triggerIdentity": "burstCast (same reasoning as the heal line — fires only on quiry's own casts; with crown co-B2 in the fixture, fullBurstEnter is the divergent over-crediting misread)",
+      "targetSet": "all Defender-class allies (alliesOfClass 'Defender') — NOT all allies, NOT self",
+      "nearestWrongModel": "Target 'allies' unscoped (hands the carry B3 +19.9% crit — a large over-credit on the focus unit), or fullBurstEnter (crit uptime on every FB regardless of who bursts)",
+      "distinguishingAssertion": "buffApply stat 'critRatePct' value 19.9, durationSec-derived expiry of 600 frames, targetSlug ∈ Defenders only (crown), emitted only on frames where quiry's burstCast fired; the carry B3 and liter NEVER receive it, and no apply occurs on rotations quiry sat out. RED under unscoped-allies (carry receives it → carry damage moves) and RED under fullBurstEnter (applies on crown's rotations)",
+      "inertness": "Non-Defender crit rates and damage — in particular the focus carry's damage events must show unchanged crit rate whether this block is present or stripped",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:full-charge → 2 Defender casterAtkPct 5.81 / 3s",
+    "skill2:passive → 2 Defender targetMaxHpPct 11.63 continuous",
+    "burst:burstCast → all-allies heal ticks:10 intervalSec:1",
+    "burst:burstCast → Defender critRatePct 19.9 / 10s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "ATK ▼ 8.94% of the skill user's ATK for 3 sec. (enemy ATK debuff — defensive; boss deals no damage in v1 and the schema has no enemy-ATK stat)"
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Three places I expect a shared-prior misread. (1) VACUOUS-GREEN FIXTURE RISK: quiry is Burst II and controlComp already fixes crown at B2 — first-ready in-window selection means one of them may never cast, so every burstCast-keyed test could pass vacuously (zero events asserted-present would fail, but inertness-style tests would 'pass') or the driver may have silently swapped the fixture. The tests MUST first assert quiry actually emits burstCast events in the comp used, and the burstCast-vs-fullBurstEnter distinction is only exercised if BOTH B2s get rotations — verify the fixture produces at least one rotation for each. (2) TARGET-COUNT GAP: the schema's alliesOfClass has NO count field, so '2 Defender ally unit(s)' cannot be capped at 2 — inert in the control fixture (exactly one Defender, crown) but a real divergence on any 3-Defender team; the review expects this recorded as a caveat/GAP note, not silently ignored. (3) FLAT-RESOLUTION ASSERTIONS: both caster-scaled values are emitted flat (casterAtkPct → 0.0581×98367 ≈ 5715 flat ATK; targetMaxHpPct → 'maxHpFlat' = 0.1163×TARGET's static maxHp) — a test asserting the raw 5.81/11.63 on the buffApply value is asserting the WRONG model and would go green under a mis-encoded atkPct. Also: no buffRemove fires on timed expiry, so the S1 reload-lapse assertion must be written off expiresFrame arithmetic, not paired remove events; and the S1 pair's 'hitting' (on-hit, enemy) vs 'attacking' (on-attack, allies) wording difference is real in prose but collapses to the same per-shot cadence in-sim (no miss model for RL body shots) — the ally line must not inherit any hit/core gate (no requiresCore).",
+  "model": "claude-fable-5"
+}

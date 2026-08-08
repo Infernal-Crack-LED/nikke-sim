@@ -1,0 +1,98 @@
+{
+  "slug": "yuni",
+  "model": "claude-opus-5",
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies. On entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter + target {kind:'allies'} (no excludeSelf — 'all allies' includes self). Team-FB trigger, not burstCast: she is Burst II and the text says 'entering Full Burst'."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Speed ▲ 8.97% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackSpeedPct 8.97, durationSec 10. Weapon-state modifier → gates shots fired → damage-relevant, never skipped. ⚑ stat-key mapping (see flags/caveats)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "On attacking with Full Charge; all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired + target {kind:'allies'}. chargeCounter was rejected: it dispatches effects[P] one PHASE at a time, which would split this block's three co-applied effects across charges."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▲ 2.77% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct 2.77, durationSec 10. Inert for damage in v1 but kept per the keep-the-stat rule (future consumer/scaler)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Restores 2.77% of atk dmg as HP /10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal {ticks:10, intervalSec:1} to allies — no HP amount is modeled; the purpose is emitting recovery events so heal-synergy teammates' 'recovery' triggers fire. Lifesteal is explicitly not skippable on isolation."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max Ammunition ▲ 1 round(s) for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff maxAmmoFlat 1, durationSec 5. Ammo capacity = magazine length = shots per reload cycle → damage. Flat, not percent (ally-scoped percent would scale off each ally's own magazine)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects enemies within attack range.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'}; single-target partless boss at scope, so the AoE scope clause is scope-trivial."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 348.73% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 348.73 on trigger burstCast. No core (no 'core strike' wording); crit/range/FB left to engine defaults."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Immobilizes the target(s) for 5 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Enemy crowd control. The sim has no enemy entity (enemy targets resolve empty) and boss movement/range is a fixed measured script, so a stun effect would be a no-op; recorded verbatim in unmodeled.burst instead."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].effects[0].stat",
+      "estimate": "attackSpeedPct 8.97 for 10s (nearest available weapon-state key)",
+      "reasoning": "The kit line is 'Charge Speed ▲', which shortens charge time on charge weapons; the effect schema has no charge-speed StatKey. Skipping is forbidden (weapon-state modifiers ARE damage), so the nearest primitive is used — but if attackSpeedPct only scales fire cadence and not chargeFrames, this encoding delivers zero of the real effect on every charge-weapon ally.",
+      "recipe": "Read maxAmmo()/cadence + charge handling in sim.ts: check whether attackSpeedPct feeds chargeFrames. If not, add a chargeSpeedPct StatKey that divides chargeFrames by (1 + v/100) and re-point this buff; validate by counting a charge unit's shots over a fixed 10s window with the buff on vs off (expect ~+8.97% charge-phase throughput, not +8.97% total shots, since reload time is unaffected)."
+    },
+    {
+      "field": "skill2[0].trigger",
+      "estimate": "shotFired (assume every RL pull is a Full Charge)",
+      "reasoning": "'Activates when attacking with Full Charge' has no schema-level full-charge trigger. Yuni is RL with chargeFrames 90, so the sim's charge weapons fire only fully-charged shots; shotFired is then 1:1 with full charges. If the engine ever emits uncharged pulls for RL, this block over-fires and the three team buffs get near-100% uptime instead of a real duty cycle.",
+      "recipe": "DBG_UNIT=yuni with an onEvent tap counting 'shot' events vs charge completions over 180s; confirm 1:1. If they diverge, gate the block or add a fullCharge trigger."
+    },
+    {
+      "field": "skill2 cadence (chargeFrames 90 / reloadFrames 141 / ammo 6)",
+      "estimate": "6 charges per magazine, ~1.5s per charge + ~2.35s reload → ~1 refresh per ~1.5s while firing",
+      "reasoning": "Datamined chargeFrames/reloadFrames are known-unreliable fields, and this cadence sets the refresh rate of all three S2 team buffs (DEF / lifesteal / +1 ammo). The 5s ammo window in particular is shorter than a full magazine+reload cycle, so its uptime is cadence-sensitive.",
+      "recipe": "Frame-count a focus recording of yuni: measure charge-release interval and reload duration from the ammo counter, then pin as a vitest fixture in scripts/tests/units/yuni.test.ts asserting the shot count over a fixed window."
+    },
+    {
+      "field": "skill2[0].effects[1] (heal ticks/intervalSec)",
+      "estimate": "ticks 10, intervalSec 1 over the 10s window",
+      "reasoning": "The real mechanic is per-hit lifesteal proportional to damage dealt, which the schema cannot express (no HP pool). Tick count is an authoring choice that directly sets how often teammates' on-recovery triggers fire — too many ticks over-credits a heal-synergy carry, too few under-credits.",
+      "recipe": "Only matters when a recovery-consumer is in the comp. A/B the comp with ticks 1 vs 10 and compare the consumer's proc count against a recording's popup count for that consumer's on-recovery rider."
+    },
+    {
+      "field": "skill2[0].effects[2].stat (maxAmmoFlat)",
+      "estimate": "flat +1 round for 5s to all allies",
+      "reasoning": "The kit states a flat round count, and the buff is team-wide, so a percentage encoding is not merely imprecise — it scales off each recipient's own magazine and would grant large-magazine allies many extra rounds. The flat key is required for correctness here, not convenience.",
+      "recipe": "Confirm the flat-rounds StatKey name against src/skills/types.ts and that maxAmmo() applies it BEFORE percentage scaling; assert with a buffApply tap that each ally's effective magazine rises by exactly 1 for 5s."
+    },
+    {
+      "field": "burst[0].effects[0] (noFb / crit / core)",
+      "estimate": "left at engine defaults — FB-by-timing, no explicit noFb, no core, crit per engine rider rule",
+      "reasoning": "Per methodology, noFb is measured-only and defaults OFF, and a burst cast resolves before the Full Burst window opens, so the timing path — not a per-kit flag — should exempt it. Setting noFb blind would be an unmeasured guess; the kit text carries no core-strike wording, so no core.",
+      "recipe": "Tap the damage event for this hit and read inFullBurst/fbMajorApplied at cast; it should be false. If the engine applies the +50% FB major to it, the fix belongs in the burst-cast timing path (or burstSnapshotsPreFb), not in a per-unit noFb."
+    }
+  ]
+}

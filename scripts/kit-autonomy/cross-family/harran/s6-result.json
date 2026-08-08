@@ -1,0 +1,203 @@
+{
+  "slug": "harran",
+  "leakDetected": null,
+  "override": {
+    "slug": "harran",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "everyN": 4,
+        "effects": [
+          {
+            "kind": "dot",
+            "atkPct": 17.28,
+            "durationSec": 5,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "gainPierce",
+            "durationSec": 1.3
+          },
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 2.95,
+            "durationShots": 1
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 999,
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "■ Activates when an enemy afflicted with Virus Transfer is neutralized. Affects 2 nearest enemy unit(s).",
+        "Virus Transfer: Constantly deals 17.28% of final ATK as damage every 1 sec for 5 sec. (spread instance from the neutralize branch)"
+      ],
+      "skill2": [
+        "■ Activates when killing an enemy. Affects self.",
+        "ATK ▲ 3.02%, stacks up to 15 time(s) and lasts for 10 sec."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ everyN:4 on shotFired is the deterministic stand-in for the kit's 25%-per-attack proc chance: the expected rate matches, per-run variance does not, and the phase (everyNOffset) is unpinned.",
+      "⚑ Virus Transfer DoT instances APPEND in the engine (no dedup). At ~1 proc per 4 pulls against a 5 sec duration the overlap is small, but if the in-game status REFRESHES rather than stacks, any faster real proc cadence would over-credit.",
+      "⚑ gainPierce durationSec 1.3 is a proxy for 'for 1 round(s)' — the engine has no round-count pierce window (durationShots exists only on `buff`). Pierce Damage ▲ is inert in v1, so this moves no damage today; it only tags shots.",
+      "⚑ critRatePct durationShots:1 — whether the granting full-charge shot itself crits at the lifted rate, or only the NEXT round does, depends on engine block-dispatch vs damage ordering and is unpinned.",
+      "⚑ Both kill/neutralize-gated lines (S1 spread branch, S2 stacking ATK) are modeled as INERT on the scope-lock premise: one partless immortal boss, no adds, nothing is ever neutralized. They must be revisited for any content with adds.",
+      "⚑ Cadence tuple (ammo 6 / reloadFrames 159 / chargeFrames 60) is datamined and unverified for this unit.",
+      "Every skill2 trigger assumes each SR trigger pull is a Full Charge (the sim charges to full before firing); a cancelled or partial charge would not satisfy the kit's activation clause.",
+      "noFb is deliberately NOT set on the 999% burst hit — the FB exemption comes from cast timing (burst-cast damage lands before Full Burst begins), not from a per-kit flag."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Harran is an SR/Electric/Attacker Burst III charge unit. Skill 1 is a 25%-per-attack Virus Transfer DoT (17.28% of final ATK every 1 sec for 5 sec) modeled deterministically as one proc per 4 trigger pulls (everyN:4) ⚑; its second branch spreads the DoT only when an afflicted enemy is neutralized, which never happens at scope lock (single partless immortal boss, no adds), so that branch is unmodeled. Skill 2 grants, on each full-charge attack, self Pierce and Critical Rate ▲2.95% for 1 round — the crit line uses durationShots:1 (a round count, not seconds), the Pierce line uses a ⚑ durationSec proxy sized to roughly one shot cycle because the engine has no round-count pierce window. Skill 2's kill-gated stacking ATK ▲3.02% (up to 15, 10 sec) is inert at scope lock and unmodeled. Burst is a single 999% of final ATK burst-skill hit on cast, crit-eligible, no core (the text says no core strike), and full-burst-exempt by cast timing rather than by flag."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ There is a 25% chance of activating",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'shotFired'} + everyN:4 — deterministic 1-in-4 stand-in for the 25% per-attack roll (hitsPerShot 1, so one pull = one attack). ⚑ phase/variance."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Virus Transfer: 17.28% every 1 sec 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "dot {atkPct:17.28, durationSec:5, intervalSec:1} on target enemy. crit not set (global DOT_CRIT default-off; no measurement for this unit)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates when an enemy afflicted",
+      "status": "SKIPPED",
+      "effectOrReason": "Neutralize-gated spread to 2 nearest enemies. Scope lock is a single partless boss that is never neutralized and there are no adds — the trigger can never fire. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Virus Transfer: 17.28% (spread copy)",
+      "status": "SKIPPED",
+      "effectOrReason": "The payload of the neutralize branch above; inert for the same reason. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Activates when attacking with Full",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'shotFired'}, target self — for a charge SR every modeled trigger pull is a full charge. No dedicated full-charge trigger exists in the schema (chargeCounter cycles effects per phase, which would wrongly split the two riders)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Gain Pierce for 1 round(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "gainPierce {durationSec:1.3} ⚑ — round-count pierce is inexpressible; timed proxy re-granted every shot. NOT the top-level hasPierce flag (that would tag the whole fight incl. reloads and pre-first-shot)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Rate ▲ 2.95% for 1 round(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff {stat:'critRatePct', value:2.95, durationShots:1} — unscoped crit line (not 'Critical Rate of normal attacks'), so critRatePct not critRateNormalPct; 'round(s)' → durationShots, never durationSec."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Activates when killing an enemy.",
+      "status": "SKIPPED",
+      "effectOrReason": "Kill-gated trigger; nothing dies at scope lock (immortal partless boss, no adds). Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 3.02%, stacks up to 15 time(s)",
+      "status": "SKIPPED",
+      "effectOrReason": "Payload of the kill-gated block above — stack count would be permanently 0. Modeling it as a passive would fabricate up to +45.3% ATK the fight never grants. Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single-boss fight, so 'all enemies' collapses to the one target."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 999% of final ATK as Burst Skill",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage {atkPct:999, crit:true} on trigger burstCast. No core (text says no core strike); noRange is engine-automatic; noFb intentionally unset (FB exemption is by cast timing)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].everyN",
+      "estimate": "4 (one proc per 4 trigger pulls)",
+      "reasoning": "The kit states a 25% activation chance per attack; the engine has no probabilistic trigger. everyN:4 on shotFired reproduces the EXPECTED proc rate exactly while staying deterministic (the sim's default run has no seed). What it does not reproduce is the variance, or the phase — everyNOffset is unset, so the first proc lands on pull 4 rather than a random pull in 1-4.",
+      "recipe": "Focus recording of harran: count Virus Transfer tick clusters over a 180s fight and divide by her total pulls. If the observed proc rate deviates from 0.25 (e.g. a hidden internal cooldown or a per-hit rather than per-pull roll), change everyN accordingly; if opening-window timing matters, pin everyNOffset from the frame of the first tick."
+    },
+    {
+      "field": "skill1[0].effects[0] (DoT instance semantics)",
+      "estimate": "APPEND per proc (engine default), no dedup, 5 sec each",
+      "reasoning": "'Virus Transfer' is a NAMED status, and named statuses in NIKKE typically refresh rather than stack; the engine, however, appends an independent DoT instance per fire. At the modeled cadence (~1 proc / 4 pulls ≈ every 4-6 sec vs a 5 sec duration) overlap is near-zero, so append vs refresh is currently almost damage-neutral — but the two models diverge sharply if the real proc rate is faster than modeled.",
+      "recipe": "From focus footage, count simultaneous 17.28%-band tick popups in one second. Exactly one tick/sec while procs overlap = refresh semantics (and the append model must be rate-limited); two concurrent ticks = append is correct."
+    },
+    {
+      "field": "skill2[0].effects[0].durationSec (gainPierce)",
+      "estimate": "1.3 sec (~one full-charge shot cycle)",
+      "reasoning": "The kit window is 'for 1 round(s)' — a ROUND count. gainPierce carries only durationSec, so a round-count window is inexpressible; 1.3 sec is sized from the datamined chargeFrames 60 (1.0 sec) plus fire/recovery so that each shot's grant covers roughly until the next shot, with the tag lapsing across the 159-frame reload as a round-count window would. Because pierceDamagePct is inert in v1 this choice moves zero damage today; it is flagged so it is not silently inherited once a Pierce consumer ships.",
+      "recipe": "Once any Pierce Damage ▲ consumer is live, measure whether harran's shots are Pierce-tagged during a reload (they should not be). Better: add a durationShots field to gainPierce so the kit's literal round count can be expressed, rather than keeping any seconds estimate."
+    },
+    {
+      "field": "skill2[0].effects[1].durationShots",
+      "estimate": "1 (the granting full-charge shot itself benefits)",
+      "reasoning": "Per the schema, durationShots is decremented right after the shot's blocks dispatch, so the shot that applies the buff is intended to benefit and the buff drops to 0 immediately after. Whether the engine computes that shot's damage BEFORE or AFTER block dispatch decides if the +2.95% crit applies to the granting round or only to the next one — a 1-round buff is maximally sensitive to that ordering. The kit text ('Activates when attacking with Full Charge … for 1 round') does not disambiguate either.",
+      "recipe": "Harness assertion: run a controlComp with harran as carry, tap damage events, and compare the emitted crit rate on shot N vs shot N+1 against her sheet rate. Cross-check against footage crit frequency (orange popups) over a fixed magazine."
+    },
+    {
+      "field": "burst[0].effects[0].noFb (absent) and .crit",
+      "estimate": "noFb unset (FB-exempt by cast timing); crit:true",
+      "reasoning": "Burst-cast damage lands before the Full Burst window opens, so the +50% major is excluded by timing rather than by a per-kit flag — setting noFb unmeasured would risk double-exempting. crit:true follows the rider convention (function damage crits at the caster's sheet rate); it gets no core because the text does not say 'core strike damage'.",
+      "recipe": "Focus recording: locate harran's burst popup relative to the Full Burst banner frame and compare its magnitude against final ATK × 9.99 × the pre-FB multiplier stack. A value 1.5x higher than predicted means the hit is landing inside the FB window and the timing model, not this override, is what needs fixing."
+    },
+    {
+      "field": "cadence tuple (ammo 6 / reloadFrames 159 / chargeFrames 60)",
+      "estimate": "as datamined: 6 rounds, 2.65 sec reload, 1.0 sec charge",
+      "reasoning": "Datamined cadence fields (rate_of_fire, reloadFrames) are on the known-unreliable list; nominal values are also quantized to 60fps frame boundaries in-game. Harran's whole model is cadence-coupled twice over — the S1 proc rate is per-pull and the S2 riders are per-round — so a cadence error scales both her DoT uptime and her crit uptime, not just her normal-attack total.",
+      "recipe": "Ammo-counter read from focus footage: count pulls per magazine and time reload-start to first-shot across several cycles; that measures shots/sec directly rather than inferring it from a downstream quantity."
+    },
+    {
+      "field": "unmodeled.skill1 / unmodeled.skill2 (kill- and neutralize-gated lines)",
+      "estimate": "both inert — 0 spread DoTs, 0 ATK stacks",
+      "reasoning": "This rests on the scope-lock premise: a single partless boss that is never neutralized, with no adds. Under that premise both branches are structurally unreachable rather than merely unmeasured, so modeling them at any nonzero value would fabricate damage. Roughly 45% of harran's kit text is therefore inert at scope lock, which is worth stating plainly because it caps how much of her real-content power this model can ever represent.",
+      "recipe": "No measurement needed at scope lock. Before reusing this override for any content with adds or a killable boss phase, implement the spread branch (a second DoT instance) and the stack branch (buff atkPct 3.02, maxStacks 15, durationSec 10) on a kill-count trigger, which the current schema does not expose."
+    }
+  ],
+  "model": "claude-opus-5"
+}

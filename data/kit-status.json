@@ -14,11 +14,11 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 146,
+      "unit-tested": 182,
       "authored": 1
     },
     "tier": {
-      "MODEL_ONLY": 113,
+      "MODEL_ONLY": 149,
       "VALIDATED": 10,
       "MEASURED": 14,
       "CALIBRATED": 10
@@ -377,6 +377,43 @@
       },
       "board": null
     },
+    "anchor": {
+      "name": "Anchor",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/anchor.json + scripts/kit-autonomy/manual-review/anchor.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6(claude-opus-5)/S7(kimi-k3) converged; FROM-SCRATCH build (simSupported was false) — skill1 DEF lastBullet->self defPct 23.82/5s event-pinned inert + burst burstCast->enemy flatDamage 304.45 FB-exempt single-instance four-way converged; taunt + anti-projectile 25.6% unmodeled verbatim (no primitives; the 25.6% scope-trap independently refused by both blind agents); driver spec 9/9 GREEN (incl. solo-B1 burstCast-vs-fullBurstEnter 8-vs-4 split + reload-event cadence pin absorbing liter maxAmmoPct magazine stretch); S5 blind 16 pass/2 own GAP skips vs driver override; S6 byte-identical load-bearing blocks",
+      "date": "2026-08-05",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "spot-check cluster: (1) 'last bullet hits' = engine lastBullet-at-depletion is precedent-based, never popup-verified for anchor (defPct damage-inert, low stakes); (2) burst 304.45% live-ATK magnitude has no popup anchor (measurement-gated regardless); (3) taunt-positionally-inert rests on the measured fixed boss range script — if a taunt can ever move the boss, the omission becomes damage-relevant",
+      "unmodeled": {
+        "skill1": ["Taunt for 5 sec."],
+        "skill2": [
+          "When attacking an enemy projectile, damage dealt to that projectile ▲ 25.6% continuously."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the taunt half of S1 is unmodeled — enemy aggro manipulation; no taunt primitive and no enemy-behaviour model in the sim, offensively inert by construction",
+        "skill1: the defPct grant is inert-in-v1 (self DEF never feeds own damage) — event-pinned at one application per magazine depletion (the RL magazine STRETCHES 6 -> 8-9 rounds under the fixture's liter escalating maxAmmoPct 45.17%; the pin keys on the engine's reload events, not a shots/ammo division), magnitude + duration + scope pinned, damage-neutral",
+        "skill2: '+25.6% damage vs enemy projectiles' is ⚑ OUT-OF-DOMAIN (engine-core) — no enemy-projectile entities in the sim; estimate zero in every fight the sim can run; recipe: projectile entity model + scoped modifier",
+        "burst: 'Affects all enemies' collapses to ONE instance on the lone partless boss (multi-enemy selection is out of the single-boss scope)"
+      ],
+      "board": null
+    },
     "anchor-innocent-maid": {
       "name": "Anchor: Innocent Maid",
       "burst": "II",
@@ -436,13 +473,12 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "date": "2026-08-04",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
-      "board": null,
-      "date": "2026-08-04",
-      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
       "residual": "judge spot-checks: (a) the no-activation-clause interval-at-skill-CD convention (first fire t=30) is an unmeasured phase convention; (b) burst DEF-lower 32% stays honestly unmodeled (no boss-DEF primitive; ~0.04%/hit) — the one line a future boss-DEF primitive would change on her board reading",
       "unmodeled": {
         "skill1": [
@@ -458,7 +494,8 @@
         "burst: 'DEF ▼ 32% for 5 sec' is UNMODELED — boss DEF is the fixed cfg.bossDef subtraction with no debuff channel; magnitude ~0.04%/hit; NOT damageTakenPct (that would over-credit the whole team ~32% in-window — pinned as a counterfactual in the spec test)",
         "skill2: the 30s interval cadence is the datamined skillCooldownsSec.skill2 (the kit prose carries no number) — ⚑ cadence tuple",
         "weapon: RL cadence tuple (rate_of_fire 60 / chargeFrames 60 / reloadFrames 142 / ammo 6) is an unmeasured datamine estimate"
-      ]
+      ],
+      "board": null
     },
     "anis-sparkling-summer": {
       "name": "Anis: Sparkling Summer",
@@ -931,6 +968,45 @@
       ],
       "board": null
     },
+    "belorta": {
+      "name": "Belorta",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/belorta.json + scripts/kit-autonomy/manual-review/belorta.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when performing a Full Charge attack. Affects self.\nExplosion Radius ▲ 9.55% for 5 sec."
+        ],
+        "skill2": [
+          "■ Activates when an attack hits more than 4 enemy unit(s). Affects the target(s). \nDEF ▼ 3.52% for 5 sec. \nDeals 14.96% of final ATK as additional damage."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "burst: the 192% nuke is burstCast-keyed — pre-FB by engine timing (U10 auto-exempt), crits at the caster rate (U1 FunctionTable rule), never cores, never gets the +30% range bonus",
+        "burst: chargeSpeedPct 2.82/10s targets all allies on HER cast only — a second Burst II sharing rotations would not refresh it (burstCast, not fullBurstEnter)",
+        "skill1: Explosion Radius ▲ is unmodeled — AoE geometry, damage-inert vs the partless single boss; ⚑ out-of-domain, zero in sim domain",
+        "skill2: the >4-enemies-hit gate is unsatisfiable vs one boss, so the DEF ▼ 3.52% and the 14.96% rider are unmodeled — ⚑ out-of-domain; shipping either ungated would be a ~14.96%-per-shot over-credit"
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "burst nuke pre-FB exemption + caster-rate crit rest on engine/datamined convention (U1/U10 FunctionTable rules), not a belorta-specific popup pair — one recorded burst-cast popup pair (crit vs non-crit, no +50%) would confirm",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "biscuit": {
       "name": "Biscuit",
       "burst": "II",
@@ -1055,6 +1131,40 @@
         "skill1/skill2: full cadence tuple (charge time, reload 141f, 22-frame bolt gap vs autofire) is an unmeasured datamine estimate — ~15-20% shot-count swing"
       ],
       "board": null
+    },
+    "brid": {
+      "name": "Brid",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/brid.json + scripts/kit-autonomy/manual-review/brid.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill2 + burst: the 'highest final DEF' targeting selectors collapse to the sole partless scope-lock boss (no HP/DEF ranking to discriminate) — resolved to the plain enemy target; board-inert today, a real selector is only needed for multi-enemy content.",
+        "burst: the 'when at Max HP' gate on the second 1440% instance is modeled always-true — the gate reads the CASTER's HP and the sim has no incoming boss damage (v1 scope lock), so Max HP is the only reachable state. Identical wording adjudicated on soline (2026-08-03); if an HP pool is ever modeled this line needs a status-gate primitive.",
+        "skill2: interval sec:10 fires on the wall clock (first at t=10s) from the datamined cooldown — the first-fire phase is a convention, not a measurement (⚑)."
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05: GO faithfulness 1.0 (judge kimi-code/k3). Cross-family S2b(claude-fable-5)/S5+S6(claude-opus-5)/S7(kimi-code/k3) converged on all 5 lines FAITHFUL; the one divergence (burst Max-HP rider: caster-HP always-true vs enemy-HP inert) adjudicated for the driver by binding soline precedent (identical wording, 2026-08-03). Artifacts: scripts/kit-autonomy/results/brid.json + scripts/kit-autonomy/manual-review/brid.md.",
+      "residual": "spot-check cluster: (1) Max-HP gate reading — caster-HP posture is same-model consensus carried from soline, no popup measurement; recipe = brid focus recording where she takes damage once, watch whether the second 1440% popup stops (if enemy-HP confirmed, remove the second burst block; tests pin the current posture). (2) S2 interval first-fire phase (t=CD vs t=0) is convention; recipe = time the first 211.2% popup in a focus video.",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     },
     "brid-silent-track": {
       "name": "Brid: Silent Track",
@@ -1449,13 +1559,13 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
-      "date": "2026-08-04",
       "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
-      "residual": "spot-checks: (a) S1 enemy-ATK-debuff UNMODELED ruling is load-bearing on the no-boss-offense basis — revisit if a boss-damage model is ever added; (b) rider per-fight count rides the contested SMG 20/s quantized cadence (base-stats-owned, not a kit line)",
+      "date": "2026-08-04",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
+      "residual": "spot-checks: (a) S1 enemy-ATK-debuff UNMODELED ruling is load-bearing on the no-boss-offense basis — revisit if a boss-damage model is ever added; (b) rider per-fight count rides the contested SMG 20/s quantized cadence (base-stats-owned, not a kit line)",
       "unmodeled": {
         "skill1": [
           "■ Affects all enemies. Activates when entering Full Burst.\nATK ▼ 19.93% for 10 sec. — no sim channel: the enemy-buff path admits only damageTakenPct/distributedDamagePct > 0; enemy ATK▼ is dropped at dispatch (sim.ts:2295) and the immortal DEF=0 boss deals no damage, so the debuff moves nothing observable (exia precedent)"
@@ -1467,7 +1577,8 @@
         "skill1: the enemy ATK▼ line is game-real but unenactable in the DPS sim — dropped at dispatch on the DEF=0 basis (boss deals no damage); recorded verbatim in unmodeled and proven damage-neutral by the unit spec (C4)",
         "burst: 'the enemy with the highest final ATK' collapses to the single scope-lock boss — target selection is scope-trivial in the single-target sim (exia/novel precedent)",
         "skill2: the DEF▲ line is faithfully encoded but damage-inert in v1 (self DEF never feeds own damage); kept for kit completeness, pinned inert by the unit spec (C2)"
-      ]
+      ],
+      "board": null
     },
     "crown": {
       "name": "Crown",
@@ -1728,6 +1839,44 @@
         "band": "±8%",
         "temp": "COLD ▼"
       }
+    },
+    "delta": {
+      "name": "Delta",
+      "burst": "II",
+      "weapon": "SR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/delta.json + scripts/kit-autonomy/manual-review/delta.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "burstCast-vs-fullBurstEnter divergence is only LIVE in the driver's STARVED comp (crown starves delta to 0 casts) — the adapted S5 sole-B2 fixture takes the blind file's own else-branch (readings coincide); decoy/taunt out-of-domain until an avatar/threat/aggro subsystem exists; reloadFrames 111 unmeasured datamine",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Decoy: Creates an avatar with 91.68% of the skill user's final Max HP that lasts for 10 sec.",
+          "Attract: Taunts all enemies for 10 sec."
+        ]
+      },
+      "caveats": [
+        "skill1: Max HP ▲ 8.82% is modeled as targetMaxHpPct on shotFired (every SR pull is a full charge); offensively inert in v1 — no atkOfMaxHpPct, no HP pool",
+        "skill2: DEF ▲ 51.42% is keyed to her OWN burstCast ('when using Burst Skills' = own cast, not fullBurstEnter); offensively inert in v1",
+        "burst: both 'Decoy' (avatar) and 'Attract' (taunt) are UNMODELED — no avatar/threat/aggro model; the burst deals no damage and must never be encoded as a shield (shielded-trigger contamination)",
+        "weapon: reloadFrames 111 is an unmeasured datamine estimate (SR charge cadence is the engine's measured universal bolt-recovery rule)"
+      ]
     },
     "delta-ninja-thief": {
       "name": "Delta: Ninja Thief",
@@ -2276,6 +2425,46 @@
       ],
       "board": null
     },
+    "emma": {
+      "name": "Emma",
+      "burst": "I",
+      "weapon": "MG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/emma.json + scripts/kit-autonomy/manual-review/emma.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "ticks:5/intervalSec:1 lifesteal cadence is an unmeasured convention (⚑3 — recipe: frame-read a recovery-consumer's refresh cadence across the 5s window after an emma burst); S1 attacked-5% cluster + S2 incoming-healing line out-of-domain (no incoming-damage model, no HP pool, no incoming-healing StatKey); heal magnitudes unmodeled by design (recovery events, not numbers)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "■ There is a 5% chance to activate when attacked. Affects all allies.\nRecovers 10.77% of the skill user's final Max HP as HP."
+        ],
+        "skill2": [
+          "■ Activates when above 90% HP. Affects all allies.\nIncoming healing ▲ 13.33% continuously."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "⚑ HoT tick granularity: the burst's lifesteal line is stated 'over 5 sec' with NO per-second clause, so ticks:5/intervalSec:1 is an ESTIMATE (marciana's 'over 3 sec' precedent). Tick count is the only thing that block contributes (no HP pool), and it directly scales how many times a teammate's on-recovery consumer fires per emma burst — over-stating ticks over-credits that teammate.",
+        "Heal MAGNITUDES (skill1 10.77% of the caster's final Max HP; burst 39.6% of the caster's final Max HP instant + 39.6% of attack damage lifesteal) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount, and v1 has no HP pool. Both burst lines are implemented for their TANDEM value only (they fire allies' 'recovery' triggers).",
+        "skill1's 'when attacked' trigger has NO engine primitive (TriggerDef has no on-damaged kind) and the v1 boss never acts — the 5% proc can never fire at scope lock. An interval-cadence approximation would fabricate a proc rate from nothing; the line is omitted, not proxied (jackal/maiden/admi attacked-cluster precedent).",
+        "skill2's 'above 90% HP' gate is trivially SATISFIED in v1 (no incoming damage ⇒ everyone sits at full HP), so the omission reason is NOT a dead gate — it is the missing incoming-healing stat primitive (no StatKey scales heal amounts the engine never quantifies). If an HP pool ever lands, the condition degenerates to a passive.",
+        "Zero damage lines and zero weapon-state modifiers in the whole kit — emma is the MG clean-weapon basis cell (harness CLEAN_WEAPON_TEAMS.b): this override is proven damage-neutral vs the bare weapon (CW1 in clean-weapons.test.ts pins the bursts-off solo half; her unit test pins the bursts-on in-team half). Her entire board footprint is cross-unit: recovery events on her own Burst I casts."
+      ]
+    },
     "emma-tactical-upgrade": {
       "name": "Emma: Tactical Upgrade",
       "burst": "I",
@@ -2348,6 +2537,87 @@
         "skill2: the crit-window uptime (~65–80%) rides the datamine cadence tuple (ammo 120 / reloadFrames 81 / RoF 1440) — unverified for this unit (⚑3)"
       ],
       "board": null
+    },
+    "ether": {
+      "name": "Ether",
+      "burst": "I",
+      "weapon": "SG",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/ether.json + scripts/kit-autonomy/manual-review/ether.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "interval:13 trigger identity + first-fire phase t=13 (popup-cadence spot-check); leftmost-3 lowest-HP stand-in; S1 ally mitigation + S2b enemy DEF▼ are documented out-of-domain gaps",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "■ Affects 1 allies with the lowest remaining HP. \nDamage Taken ▼ 52.5% for 5 sec."
+        ],
+        "skill2": [
+          "■ Affects the same enemy unit(s). Activates during Full Burst.\nDEF ▼ 9.38% for 6 sec."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill2: the damage block has NO activation clause and a datamined 13s skill cooldown → interval:13 auto-cast (novel/neve/snow-white precedent; the schema's interval guidance for clause-less CD-bearing lines). 'Activates during Full Burst' sits in the SECOND ■ block's header and governs that block alone (the DEF▼ line, unmodeled below) — the house prose convention attaches an activation clause to the block whose header carries it (ada/kurumi both head their FB-keyed blocks with it). A purely FB-keyed reading also cannot explain the 13s CD: ada/kurumi's purely FB-keyed skill2s have CD null, and an FB cycle is >=20s, so no CD could gate them. ⚑ first-fire phase t=13 (vs t=0) is the engine interval CONVENTION (neve/snow-white/novel precedent) — pin from footage if a consumer's cadence is ever popup-read.",
+        "skill2: the '3 enemy unit(s) with the highest final DEF' targeting collapses to the single scope-lock boss — v1 fields one immortal enemy ({kind:'enemy'} documented stand-in; novel precedent). It is a multi-target SPREAD, NOT a ×3 hit multiplier.",
+        "skill2: the DEF ▼9.38%/6s enemy debuff is UNMODELED — no dynamic enemy-DEF-reduction primitive (cfg.bossDef is fixed; damageTakenPct is a different bucket; novel / mast Sea-Breeze precedent). At the 140-DEF scope-lock boss this is 13.13 flat DEF ≈ ~0.03% team damage — minor, not load-bearing (⚑2). Recipe if a primitive lands: a boss-DEF-reduction debuff (9.38% for 6s, refreshed at every FB entry) feeding the subtractive DEF term.",
+        "skill1: 'Damage Taken ▼52.5% for 5s' on the 1 lowest-remaining-HP ally is UNMODELED — v1 models no ally HP pool and no incoming boss damage, so ally-side mitigation can never move anything (sakura-suzuhara S2 precedent). The boss-facing damageTakenPct channel is deliberately NOT used — wrong direction AND wrong target; encoding it would manufacture a phantom team damage change on the 15s skill cadence (⚑1).",
+        "burst: the shield carries no modeled HP AMOUNT (v1 boss deals no damage) — the encoded substance is the SHIELDED event + the 5s shield-state window on the leftmost-3 targets (fires teammates' 'shielded' triggers / requiresShielded gates; snow-crane precedent). The 'lowest remaining HP' targeting resolves to the leftmost-3 documented stand-in (no HP pool in v1); shield amounts and true lowest-HP selection are measurement-gated on an HP-pool model.",
+        "Ether's modeled kit is one skill-damage rider + one shield-event channel; her sim output is dominated by her bare SG weapon. Her real tank value (S1 mitigation + S2b DEF shred) lives in the two documented engine gaps (⚑1/⚑2)."
+      ]
+    },
+    "eunhwa": {
+      "name": "Eunhwa",
+      "burst": "II",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/eunhwa.json + scripts/kit-autonomy/manual-review/eunhwa.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "■ Activates after firing the last bullet. Affects the target.\nDEF ▼ 29% for 5 sec. — no sim channel: the enemy-buff path admits only damageTakenPct/distributedDamagePct and the boss's DEF is the flat constant cfg.bossDef=140 that no debuff scales, so an enemy DEF▼ moves nothing (sim.ts drops it at dispatch; exia precedent). The whole sentence is skipped — an enemy-targeted lastBullet effect has no channel either."
+        ],
+        "burst": [
+          "DEF ▼ 2.43% for 15 sec. — no sim channel: enemy DEF▼ is dropped at dispatch on the constant-bossDef basis (sim.ts 'other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0'); same basis as the skill2 DEF▼ line"
+        ]
+      },
+      "caveats": [
+        "skill1: both S1 buffs are lastBullet-keyed ROUND-COUNT windows (durationShots 2, no wall-clock expiry) — granted on the frame the magazine runs dry, they survive the 161f reload and cover exactly the first two full charges of the next magazine, then lapse right after the 2nd shot's dispatch (the Nth shot still benefits, then the buff drops at 0 — the standard round-count shape).",
+        "skill1: the nearest-wrong encoding is durationSec:2 — the trigger is reload-start and the reload lasts ~2.68s, so a 2-second timed window expires MID-RELOAD and the line goes silently, totally inert (0 shots ever buffed). scripts/tests/units/eunhwa.test.ts pins the round-count shape behaviorally (duty cycle + 9-frame charge-cycle shortening + magazine-0 untouched).",
+        "skill2: 'DEF ▼ 29% for 5 sec' (last-bullet target) is game-real but unenactable — the engine's enemy-buff channel admits only damageTakenPct/distributedDamagePct (sim.ts drops enemy ATK▼/DEF▼ at dispatch) and the boss's DEF contribution is the flat constant cfg.bossDef=140, which no debuff scales. Recorded verbatim in unmodeled; the nearest-wrong laundering (damageTakenPct 29) would fabricate a ~29% team lift the kit never grants, and the spec test pins its absence.",
+        "burst: the 85.62% nuke is burstCast-keyed — pre-FB by engine timing (auto-exempt from the +50% FB major), crits at the caster rate, never cores, never gets the range bonus; 'the 10 enemy unit(s) with the highest final ATK' collapses to one hit on the single partless boss (multi-target selection out of domain, exia precedent).",
+        "burst: 'DEF ▼ 2.43% for 15 sec' is unmodelable on the same constant-bossDef basis as skill2 (recorded verbatim in unmodeled) — in game it would be a minor multiplicative team lift at ~75% uptime; in sim domain its contribution is exactly 0.",
+        "burst: the critRatePct 4.65 buff is keyed to HER burstCast (not fullBurstEnter) — with a second Burst II in the team the two keyings diverge on rotations the other B2 chains; the spec test pins application frames to her casts. Window 15s vs CD 20s ⇒ ~75% team uptime when she casts every eligible chain (the 5s gap is real, not an encoding artifact)."
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "durationShots consumption phase behaviorally pinned but unmeasured vs footage; datamined cadence tuple (60f/161f/6 ammo); DEF▼ payload + 10-target fan-out structurally unobservable at scope lock",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     },
     "eunhwa-tactical-upgrade": {
       "name": "Eunhwa: Tactical Upgrade",
@@ -2792,6 +3062,44 @@
       ],
       "board": null
     },
+    "harran": {
+      "name": "Harran",
+      "burst": "III",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/harran.json + scripts/kit-autonomy/manual-review/harran.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when an enemy afflicted with Virus Transfer is neutralized. Affects 2 nearest enemy unit(s). Virus Transfer: Constantly deals 17.28% of final ATK as damage every 1 sec for 5 sec. (no kill/neutralize trigger primitive and no add/multi-enemy model — the v1 boss is immortal and alone, so the spread can never fire at scope lock; see ⚑3)"
+        ],
+        "skill2": [
+          "■ Activates when killing an enemy. Affects self. ATK ▲ 3.02%, stacks up to 15 time(s) and lasts for 10 sec. (no kill trigger primitive — the v1 boss never dies and there are no adds; zero stacks accrue at scope lock; see ⚑3)"
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the 25% proc chance is encoded as everyN:4 on shotFired — the expectation-exact periodic thinning for the deterministic sim (⚑1); the engine has no chance primitive, so a per-shot RNG roll is inexpressible; the chosen phase fires on every 4th activation.",
+        "skill2: 'Critical Rate ▲ 2.95% for 1 round(s)' is encoded as the steady-state passive proxy (rampSec 2.2) because the literal shotFired durationShots:1 self-buff is net-inert — the granting firePull decrements it the same frame it is dispatched (MEASURED probe 2026-08-05); the re-trigger cadence (every SR shot is a full charge) makes the in-game steady state permanent uptime (⚑2).",
+        "skill2: 'Gain Pierce for 1 round(s)' is a duration-less gainPierce re-arm on shotFired — gainPierce carries only durationSec (no round count), and a durationSec:1 window would lapse between SR shots (charge cycle > 1s); the per-shot re-arm is behaviorally exact while she fires, and the line is damage-inert at scope lock (partless boss, no Pierce Damage ▲ carrier) (⚑2)."
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check the 2026-08-05 probe claim that a shotFired-granted durationShots:1 buff self-consumes on its granting frame (if overturned, the literal encoding becomes preferable; the flag-2 engine-primitive recipe is the tracked fix); doc nit: override note says DoT non-crit per engine default but DOT_CRIT default is ON per SSOT — encoding carries no crit field so behavior follows the engine default either way",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "helm": {
       "name": "Helm (Treasure)",
       "burst": "III",
@@ -2913,6 +3221,45 @@
       ],
       "board": null
     },
+    "himeno": {
+      "name": "Himeno",
+      "burst": "II",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/himeno.json + scripts/kit-autonomy/manual-review/himeno.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when hitting a target with Full Charge. Affects the target.\nDEF ▼ 6.94% for 3 sec. — no sim channel: the enemy-buff path admits only damageTakenPct/distributedDamagePct (sim.ts consumes enemyBuffs through no other stat) and the boss's DEF is the flat constant cfg.bossDef that no debuff scales, so an enemy DEF▼ moves nothing (sim.ts drops enemy ATK▼/DEF▼ at dispatch: 'other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0'; eunhwa precedent, same datamined line family). The whole sentence is skipped — an enemy-targeted full-charge effect has no channel either. The nearest-wrong laundering (damageTakenPct 6.94) would fabricate a team lift the kit never grants; scripts/tests/units/himeno.test.ts pins its absence."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: 'DEF ▼ 6.94% for 3 sec.' (full-charge-hit target) is game-real but unenactable — recorded verbatim in unmodeled; in game it would be a small team-wide lift at near-continuous SR uptime, in the sim domain its contribution is exactly 0 (constant-bossDef basis).",
+        "skill2: both effects ride ONE interval:20 block (poli precedent for CD-driven skills) with a 10s duration → 50% duty cycle; the passive-always-on counterfactual over-credits by exactly the uncovered half and is discriminated by the apply-frame spacing (first at t=20s, period 1200 frames).",
+        "skill2: '▲ 2 round(s)' is a FLAT magnitude (maxAmmoFlat), not a round-count duration — maxAmmo() adds it on top of the percent scaling, so in-window SR magazines hold 8 rounds; the percent-only nearest-wrong (maxAmmoPct 2) computes round(6×1.02) = 6 and never extends.",
+        "burst: both buffs are keyed to HER burstCast (not fullBurstEnter) — with a second Burst II in the team the two keyings diverge on rotations the other B2 chains; the spec test pins application frames to her casts (and OFF the Full Burst start frames).",
+        "burst: the target is the single highest-FINAL-ATK ally EXCLUDING the skill user — 'highest final ATK' is kit-literal (byFinalAtk, live ranking) and ExcludeSelf is datamined (ulti prefer_target_condition), though the prose omits the except-self clause; pinned at the encoding level because both bases rank the same top candidate in the fixtures.",
+        "burst: the chargeDamagePct half only moves damage for a recipient that deals charge-bucket hits — inert on a non-charge carrier is faithful (the critRatePct half still applies); the fixtures exercise a charge-weapon recipient."
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "S2 interval first-fire phase t=CD is engine-native convention (unmeasured); burst ExcludeSelf is datamined (prose omits the clause); S1 DEF▼ payload worth 0 on the constant-bossDef domain (game-real, unenactable); byFinalAtk live re-ranking unobservable in current fixtures",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "isabel": {
       "name": "Isabel",
       "burst": "III",
@@ -2966,13 +3313,13 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
-      "date": "2026-08-04",
       "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
-      "residual": "S1 attacked-10x cluster + burst 38.91% scoped amp are DOCUMENTED-GAP (maiden/trina precedent); comp reads cold by the flag amounts; flag1 uptime estimate unanchored pending a boss-attack-cadence measurement",
+      "date": "2026-08-04",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
+      "residual": "S1 attacked-10x cluster + burst 38.91% scoped amp are DOCUMENTED-GAP (maiden/trina precedent); comp reads cold by the flag amounts; flag1 uptime estimate unanchored pending a boss-attack-cadence measurement",
       "unmodeled": {
         "skill1": [
           "■ Activates when attacked 10 time(s). Affects 1 enemy unit(s) with the highest final Max HP.",
@@ -2989,7 +3336,8 @@
         "skill1: the whole attacked-10x cluster (Damage Taken ▲9.09% + ATK ▼9.09% on the boss, 10s) is unmodeled — the sim has no incoming-damage model and no attacked-count trigger (maiden Revenge-cluster precedent). If it were fireable it would be a ~+9.09% team amp after the first 10 hits taken; her in-game tanking role feeds the counter, so real uptime is high — honestly absent here (⚑1).",
         "skill2: 'Equally shares damage taken' (self + 2 highest-final-ATK allies, 120s) is unmodeled — no redistribution primitive and no incoming damage at scope; defensive.",
         "Both modeled lines are defPct (damage-INERT in v1): jackal's modeled kit contributes ZERO damage — her sim output is her bare RL weapon. Her real value (the burst amp + the S1 boss debuff) lives entirely in the two documented engine gaps."
-      ]
+      ],
+      "board": null
     },
     "jill": {
       "name": "Jill",
@@ -3131,6 +3479,46 @@
         "skill2: S2c 'removes Fulfillment of Righteousness on FB end' — no FB-end removal primitive; moot (10s duration self-expires ≈ the FB window, re-applied on the next last bullet)."
       ],
       "board": null
+    },
+    "kilo": {
+      "name": "Kilo",
+      "burst": "III",
+      "weapon": "MG",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/kilo.json + scripts/kit-autonomy/manual-review/kilo.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when using Burst Skill. Affects self if not in Nano Coating status.\nNano Coating: Creates a Shield equal to 21.12% of the skill user's final Max HP continuously."
+        ],
+        "skill2": [
+          "■ Activates after performing 200 normal attacks while in Nano Coating status. Affects self.\nRestores Shield HP equal to 2.85% the skill user's final Max HP.",
+          "■ Activates when using Burst Skill while not in Nano Coating status. Affects self.\nEffects vary according to the number of uses. Each subsequent effect triggers all effects before it:\nOnce: Next Shield's HP ▲ 17.75% continuously.\nTwice: Next Shield's HP ▲ 26.66% continuously.\nThree times: Next Shield's HP ▲ 35.53% continuously."
+        ],
+        "burst": [
+          "■ Activates when not in Nano Coating status. Affects self.\nMax HP ▲ 48% for 20 sec."
+        ]
+      },
+      "caveats": [
+        "burst: the in-Nano-Coating nuke is modeled at the kit multiplier (1150.84%) off her own final ATK, but the kit text says that ATK is 'calculated from 5% of final Max HP' — the engine has no HP-basis primitive (effectiveAtk is purely additive; stackedNuke.hpPct is Maiden:IR-specific stack semantics) and the gauntlet forbids engine edits. On the scope-lock basis 5% of her final Max HP ~= 2.07x her ATK, so the nuke is undercounted by up to ~52% (~4% of her personal total, ~1-2% of a team total) AND it wrongly rides teammate ATK buffs (liter/crown windows) that a true HP basis would ignore — both documented infidelities collapse together when the basis is measured. Precedent: maiden-ice-rose shipped her HP-scaled burst portion the same documented-under-model way. MEASUREMENT-GATED: focus recording, read her burst popup vs the ATK x 1150.84 prediction; a popup ~2x higher confirms the HP basis and calls for an engine primitive.",
+        "skill1/skill2/burst: all four uncoated-status lines (S1 re-shield on burst, S2 200-attack shield-HP restore, S2 escalating Next-Shield-HP buffs, burst Max HP +48%/20s) are dead at scope — the battle-start shield has no duration and nothing breaks it — and are recorded verbatim in unmodeled. No negated-shield-gate, shield-HP-pool, or shield-size-modifier primitive exists; encoding them ungated would over-fire them every burst."
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "burst nuke HP basis MEASUREMENT-GATED: shipped at ATK basis, kit says ATK 'calculated from 5% of final Max HP' (~2.07x undercount at scope lock + false coupling to teammate ATK buffs); recipe = focus recording, burst popup vs ATK x 1150.84 prediction, ~2x higher confirms HP basis and calls for a flatDamage HP-basis primitive (S6 route 1). shieldedUntilFrame not name-keyed to Nano Coating: unobservable at scope (shield never breaks), re-check if shield-breaking is ever modeled.",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     },
     "kurumi": {
       "name": "Kurumi",
@@ -3404,13 +3792,20 @@
       "kitParse": {
         "status": "unit-tested",
         "provenance": "gauntlet",
+        "date": "2026-08-04",
         "findings": [
           "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/lily.json + scripts/kit-autonomy/manual-review/lily.md."
-        ],
-        "date": "2026-08-04"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "date": "2026-08-04",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "spot-checks: (a) ⚑1 random-ally stand-in — alliesTopAtk count:1 vs the blind expectation-split; a focus-video popup read settles which ally actually receives each grant; (b) ⚑3 interval first-fire phase (t=15 vs t=0) convention; (c) SR rarity ceiling not applied (helm-in-controlComp precedent) so the casterAtkPct flat basis is slightly warm",
       "unmodeled": {
         "skill1": [],
         "skill2": [
@@ -3428,14 +3823,7 @@
         "weapon: lily's own SMG damage is minor relative to her buffer value; the base-weapon cadence is datamined (RoF 1440, reloadFrames 81) and unverified by footage (⚑2).",
         "rarity: lily is SR; the scope-lock basis (3★/core 7) is an SSR ceiling — the helm-in-controlComp precedent ships her uncapped for spec consistency, and her own ATK (the casterAtkPct basis) is therefore slightly warm (affects the flat grant magnitude, not the structure)."
       ],
-      "board": null,
-      "date": "2026-08-04",
-      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
-      "residual": "spot-checks: (a) ⚑1 random-ally stand-in — alliesTopAtk count:1 vs the blind expectation-split; a focus-video popup read settles which ally actually receives each grant; (b) ⚑3 interval first-fire phase (t=15 vs t=0) convention; (c) SR rarity ceiling not applied (helm-in-controlComp precedent) so the casterAtkPct flat basis is slightly warm",
-      "graded": {
-        "teams": 0,
-        "within3pct": 0
-      }
+      "board": null
     },
     "liter": {
       "name": "Liter",
@@ -3576,13 +3964,13 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
-      "date": "2026-08-04",
       "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
-      "residual": "S1 boss DEF▼ GAP (no primitive, bossDef=0 basis, ⚑1 estimate+recipe recorded); SMG cadence tuple datamined unverified (⚑3); HP gate always-true in v1 (⚑5)",
+      "date": "2026-08-04",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
+      "residual": "S1 boss DEF▼ GAP (no primitive, bossDef=0 basis, ⚑1 estimate+recipe recorded); SMG cadence tuple datamined unverified (⚑3); HP gate always-true in v1 (⚑5)",
       "unmodeled": {
         "skill1": [
           "■ Activates when the last bullet hits the target. Affects the target.\nDEF ▼ 8.4% for 10 sec. — UNMODELED (inert, declared GAP ⚑1): a boss-DEF shave the engine cannot express — sim.ts applyEffect drops enemy ATK▼/DEF▼ debuffs (only positive damageTakenPct/distributedDamagePct reach enemyBuffs) — and the scope-lock basis runs bossDef = 0 regardless (docs/data/damage-calculation.md line 32; scripts/battery/boss-def.ts ≤0.12% board shift), so it moves exactly zero damage here. Her real team-damage lever in game; re-gauntlet if a nonzero bossDef ever enters the basis.",
@@ -3599,7 +3987,8 @@
         "burst: the 10-highest-final-ATK target clause collapses to one hit vs the solo boss (target capacity, not a hit multiplier — ⚑4).",
         "burst: the 'above 50% HP' gate on the ally DEF buff is always-true in v1 (no HP pool) and modeled unconditionally; real-game uptime may be lower if she dips below 50% HP (⚑5).",
         "weapon: the SMG cadence tuple (RoF 1440, reloadFrames 187) is datamined, unverified by footage (⚑3)."
-      ]
+      ],
+      "board": null
     },
     "ludmilla-winter-owner": {
       "name": "Ludmilla: Winter Owner",
@@ -3752,14 +4141,13 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
-      "board": null,
-      "date": "2026-08-04",
       "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
-      "residual": "spot-check: (1) S1 unmodeled-policy call — attacked-20x team reload/DEF never fires at scope lock (no incoming-damage model), board under-ranks her real-game value; (2) heal ticks:10@1s granularity is a shared prior (all agents), not footage-confirmed; (3) SMG cadence tuple datamine as-is",
+      "date": "2026-08-04",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
+      "residual": "spot-check: (1) S1 unmodeled-policy call — attacked-20x team reload/DEF never fires at scope lock (no incoming-damage model), board under-ranks her real-game value; (2) heal ticks:10@1s granularity is a shared prior (all agents), not footage-confirmed; (3) SMG cadence tuple datamine as-is",
       "unmodeled": {
         "skill1": [
           "■ Activates when attacked 20 times. Affects all allies.",
@@ -3784,7 +4172,8 @@
         "skill1/skill2: every line is unmodeled — v1 models no incoming ally damage (no attacked-count trigger, no taunt/aggro, no lethal-damage trigger, no indomitability status); the lethal-gated burstCdr in particular must NEVER be encoded on a reachable trigger (rotation blast radius, ⚑3)",
         "burst: the 'during indomitability' incoming-healing rider is unmodeled — its gate is permanently closed at scope lock (the only indomitability source is itself unmodeled) and no heal amounts exist to amplify (⚑4)",
         "the '■ Affects self.' burst header line is represented by the two modeled blocks' self targets, not carried in unmodeled"
-      ]
+      ],
+      "board": null
     },
     "mana": {
       "name": "Mana",
@@ -3951,6 +4340,45 @@
         "cadence: datamined charge/reload tuple + the SR 22-frame bolt-gap default are unmeasured ⚑ estimates (autofire would add ~15–20% shots)"
       ],
       "board": null
+    },
+    "mary": {
+      "name": "Mary",
+      "burst": "I",
+      "weapon": "SG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/mary.json + scripts/kit-autonomy/manual-review/mary.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Activates when entering Full Burst. Affects all allies. Incoming healing ▲ 23.78% for 15 sec."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "⚑ alliesLowestHp stand-in: the kit's '1 ally unit(s) with the lowest HP percentage' is indeterminate in v1 (no HP pool — nobody takes damage), so the engine resolves it deterministically to the LEFTMOST ally (types.ts documented stand-in, blanc/moran precedent). The target choice moves no damage: the heal carries no modeled HP amount, only a recovery EVENT. The spec fixture puts crown leftmost so the stand-in target is the fixture's recovery consumer and the channel is observable.",
+        "Heal MAGNITUDES (skill1 8.4% / burst 39.6% of the skill user's final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount, and v1 has no HP pool. Both lines are implemented for their TANDEM value only — they fire allies' 'recovery' triggers (helm H2 precedent 'a heal is an event, not a number'; flora/marciana/sakura-suzuhara healer-lineage precedent).",
+        "⚑ lastBullet cadence: the per-magazine firing rate of skill1 depends on ammo (9) and reloadFrames (111) — datamine-unreliable fields (marciana precedent, same SG chassis). A wrong magazine economy scales the whole skill1 recovery channel.",
+        "burst DEF line's 'Activates when above 50% HP' gate is a DERIVED-DETERMINISTIC collapse: v1 models no HP pool and no incoming damage (immortal units), so every unit's HP fraction is permanently 100% > 50% and the gate is ALWAYS satisfied — the line is encoded unconditional on burstCast. Whether the game reads the gate on the CASTER's HP or each TARGET's HP is unobservable in v1 — both readings collapse to the same encoding while nobody takes damage (flora's stage-enter proxy is the same argument shape).",
+        "defPct is declared INERT in v1 (StatKey doc: self DEF doesn't affect own damage): the DEF line is kept for kit completeness + future consumers and is pinned damage-neutral by the spec (byte-identical totals with the line stripped).",
+        "Gauge: mary has no datamined row in data/gauge-per-shot.json; the engine's SG weapon-class modal fallback (400) equals her datamined target_burst_energy_pershot 4000 → 400.0, so the fallback IS her value — no row needed (helm H3 pattern: gauge carried by data, not the override)."
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "alliesLowestHp leftmost stand-in; lastBullet cadence datamine-dependent (ammo 9 / reloadFrames 111); 50pct-HP gate collapse valid only while scope takes no damage",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     },
     "mary-bay-goddess": {
       "name": "Mary: Bay Goddess",
@@ -4161,6 +4589,43 @@
       },
       "board": null
     },
+    "mica": {
+      "name": "Mica",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/mica.json + scripts/kit-autonomy/manual-review/mica.md."
+        ],
+        "date": "2026-08-05"
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "burst DEF▼ gap (comps read cold by a small team-wide lift; ≤0.12% DEF-materiality per SSOT); S2 interval:20 datamined (skillCooldownsSec.skill2), first-fire phase engine-native convention; byFinalAtk live re-ranking unexercised in driver fixture (ranking held static-shaped — spot-check in ATK-buff comps)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when attacked 20 time(s). Affects self.",
+          "DEF ▲ 39.18% for 10S."
+        ],
+        "skill2": [],
+        "burst": ["DEF ▼ 13.32% for 5 sec."]
+      },
+      "caveats": [
+        "skill1: the whole attacked-20x sentence (self DEF ▲39.18% / 10s) is unmodeled — the sim has no incoming-damage model and no attacked-count trigger primitive, and the effect would be damage-inert even if it fired (admi/jackal precedent). Honestly absent (⚑1), not a stale fixture — the unit test pins the zero against the hitCount:20 'attacks' misread.",
+        "burst: the DEF ▼13.32% / 5s enemy debuff is unmodeled — the engine has no debuff-scalable boss-DEF channel (enemyBuffs admits only damageTakenPct/distributedDamagePct; bossDef is a flat constant), himeno/eunhwa precedent. Mica comps read COLD by exactly that small team-wide lift (⚑2); the unit test pins the zero against a damageTakenPct laundering.",
+        "skill2's modeled ammo channel is the kit's only damage lever: the +2-round windows (50% duty cycle, 10s every 20s) lift ONLY the two highest-final-ATK holders' firing uptime; the DEF half is inert. On a basis where mica herself or a low-ATK carry tops the ranking, the holder set re-ranks live per cast (byFinalAtk)."
+      ]
+    },
     "mica-snow-buddy": {
       "name": "Mica: Snow Buddy",
       "burst": "I",
@@ -4196,6 +4661,40 @@
         "skill2: 'Stack count of buffs ▲1' — the SELF portion is folded as a +1 to the tidyingUp pool on hitCount:150 (Block C, accelerates the M4 gate ~78.6s→~46.6s); the CROSS-ALLY portion (teammates' stack buffs) is out-of-domain (⚑ M5)"
       ],
       "board": null
+    },
+    "mihara": {
+      "name": "Mihara",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/mihara.json + scripts/kit-autonomy/manual-review/mihara.md."
+        ],
+        "provenance": "gauntlet",
+        "date": "2026-08-05"
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "FB▼5s net rotation sign (engine net-positive +10.5% team via extra full burst; real-game sign measurement-gated — /sim-battery diff + mihara focus recording before trusting her board number); 266.4% rider cast-2 onset (same-cast arming) + same-cast S2 ATK snapshot — one popup read settles both",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "caveats": [
+        "burst: the Full Burst Duration ▼5s line (fullBurstExtend:-5) shortens ONLY the FB windows mihara's own casts open (5s vs the bare 10s) — its NET rotation effect (lost +50% uptime vs faster re-cycle) is unverified (⚑1, isabel's standing flag); diff via /sim-battery before grading her board number off it.",
+        "burst: the Highway-to-Hell-2-gated additional damage is encoded as the second step of the burst's escalating ladder (no owner-buff-active gate exists in the engine) — the ladder counter ticks on the same burstCast trigger as S2's counter, which coincides with the named status at scope (45s > 40s CD); the spec pins cast-2 onset against the cast-3 counterfactual.",
+        "burst: cast-time simultaneity — the same-cast S2 ATK buff is visible to the same-cast nuke (skill2 dispatches before burst at SLOTS order); in-game order supports this reading but a popup read would settle it (⚑2)."
+      ]
     },
     "mihara-bonding-chain": {
       "name": "Mihara: Bonding Chain",
@@ -4456,6 +4955,13 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged — S6 override byte-identical, S5 green vs driver after 1 blind-wiring RECON_ERROR",
+      "date": "2026-08-04",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "spot-check: heal channel reads crown recovery-consumer event counts (sim-internal observable); HR->core conversion magnitude unmeasured (her whole offensive footprint); SMG cadence tuple + HoT first-tick phase flagged",
       "unmodeled": {
         "skill1": [],
         "skill2": [
@@ -4474,14 +4980,7 @@
         "⚑ CADENCE TUPLE (MANDATORY, datamine-unreliable): pullsPerSec at the measured frame-quantized ~20/s (datamine rate_of_fire 1440 nominally 24/s; SMG frame quantization DEFAULT-ON since 2026-07-23, SMGRATE=24 the documented revert arm — game-mechanics.md §2 'SMG CADENCE IS CONTESTED') / reloadFrames 81 / ammo 120. Both skill1 channels scale directly with it (60/120-hit thresholds ≈ 3s/6s of fire time + reload gaps). Recipe: any Misato focus video — read the ammo counter frame-by-frame over a full magazine. ⚑ HoT first-tick timing: kit says 'every 1 sec for 5 sec'; the engine emits the first tick at the cast frame (5 events spanning 4s) — the t=0-vs-t=1s phase of the first tick is a convention, not measured.",
         "Rarity: SR — spec test runs her at the 2★/core 0 ceiling (claire precedent); scope lock's copies:10 encodes an SSR ceiling an SR can never reach."
       ],
-      "board": null,
-      "date": "2026-08-04",
-      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged — S6 override byte-identical, S5 green vs driver after 1 blind-wiring RECON_ERROR",
-      "residual": "spot-check: heal channel reads crown recovery-consumer event counts (sim-internal observable); HR->core conversion magnitude unmeasured (her whole offensive footprint); SMG cadence tuple + HoT first-tick phase flagged",
-      "graded": {
-        "teams": 0,
-        "within3pct": 0
-      }
+      "board": null
     },
     "modernia": {
       "name": "Modernia",
@@ -4618,13 +5117,13 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
-      "date": "2026-08-04",
       "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5(claude-opus-5)/S6(claude-opus-5)/S7(kimi-code-k3) converged; no REAL-GOTCHA",
-      "residual": "Struggle=shield-presence proxy + 'recover Shield HP' as shield set-effect agreed by construction not measurement (shield-break focus recording) + part-destruction payload out-of-domain on partless boss + cadence tuple datamined unmeasured — spot-check cluster on a mori-focus recording",
+      "date": "2026-08-04",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
+      "residual": "Struggle=shield-presence proxy + 'recover Shield HP' as shield set-effect agreed by construction not measurement (shield-break focus recording) + part-destruction payload out-of-domain on partless boss + cadence tuple datamined unmeasured — spot-check cluster on a mori-focus recording",
       "unmodeled": {
         "skill1": [
           "■ Activates when using Burst Skill. Affects self if not in Struggle status.\nStruggle: Creates a Shield equal to 40.12% of the final Max HP continuously.",
@@ -4646,7 +5145,8 @@
         "burst: buff lands at cast time (burstCast), which precedes the Full Burst window — the line has no FB-timing clause, so no fbGate/noFb annotation (it is a buff, not a damage instance, so the FB major is not in play either way)",
         "gauge: mori has a datamined gauge-per-shot row (base 20 / target 40 = burst_energy_pershot 2000 / target 4000 divided by 100, same convention as every datamined AR row). The AR class-modal fallback (40) happens to coincide with her target value, so the row is documentation-grade as well as correct",
         "fixture: mori is Burst II — the standard controlComp (crown B2) would starve her casts; the unit test fields her as the SOLE B2 (liter/mori/jill) so she casts every chain"
-      ]
+      ],
+      "board": null
     },
     "n102": {
       "name": "N102",
@@ -4801,10 +5301,13 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "date": "2026-08-04",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
+      "residual": "spot-check cluster: (a) scoped-vs-unscoped crit discrimination is structural-only for neon's own hits (her pre-FB nuke never overlaps her own S2 window); (b) durationShots per-trigger-pull vs per-pellet decrement for a 10-pellet SG holder is the assumed (SSOT round=one-bullet) reading, unverified on video; (c) cadence tuple (reloadFrames 129 / RoF 90rpm) datamine-unverified",
       "unmodeled": {
         "skill1": [
           "Activates when killing an enemy. Affects 2 ally unit(s) with the highest final ATK.\nCritical Rate ▲ 3.56% for 5 sec."
@@ -4812,10 +5315,7 @@
         "skill2": [],
         "burst": []
       },
-      "board": null,
-      "date": "2026-08-04",
-      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
-      "residual": "spot-check cluster: (a) scoped-vs-unscoped crit discrimination is structural-only for neon's own hits (her pre-FB nuke never overlaps her own S2 window); (b) durationShots per-trigger-pull vs per-pellet decrement for a 10-pellet SG holder is the assumed (SSOT round=one-bullet) reading, unverified on video; (c) cadence tuple (reloadFrames 129 / RoF 90rpm) datamine-unverified"
+      "board": null
     },
     "neon-blue-ocean": {
       "name": "Neon: Blue Ocean",
@@ -4832,25 +5332,25 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0 (judge kimi-code/k3, 0 gotchas); cross-family S2b(claude-fable-5)/S5(claude-opus-5)/S6(claude-opus-5)/S7(kimi-code-k3) converged; stageEnter:3 ratified by 3 blind derivations + laplace-ultimate-hero/rei-ayanami precedent; judge binding rulings: 11% Fire rider window-scoped + §11 refresh-cap on equal escalating values",
+      "date": "2026-08-04",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "spot-check cluster: (a) §11 refresh-vs-co-stack popup read of the elem mult on a 3rd stage-3 entry (1.5076 vs 1.7096) — only same-model residual with damage weight; (b) ⚑1 swap-weapon cadence/ammo kit-silent (isolated nbo-solo video, rounds in one 7s window); (c) doc hygiene: game-mechanics.md §10 stale Damage-Up wording for elemAdvantageDamagePct (measured SSOT damage-calculation.md §1c says element bucket)",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
         "burst": []
-      },
-      "board": null,
-      "date": "2026-08-04",
-      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0 (judge kimi-code/k3, 0 gotchas); cross-family S2b(claude-fable-5)/S5(claude-opus-5)/S6(claude-opus-5)/S7(kimi-code-k3) converged; stageEnter:3 ratified by 3 blind derivations + laplace-ultimate-hero/rei-ayanami precedent; judge binding rulings: 11% Fire rider window-scoped + §11 refresh-cap on equal escalating values",
-      "residual": "spot-check cluster: (a) §11 refresh-vs-co-stack popup read of the elem mult on a 3rd stage-3 entry (1.5076 vs 1.7096) — only same-model residual with damage weight; (b) ⚑1 swap-weapon cadence/ammo kit-silent (isolated nbo-solo video, rounds in one 7s window); (c) doc hygiene: game-mechanics.md §10 stale Damage-Up wording for elemAdvantageDamagePct (measured SSOT damage-calculation.md §1c says element bucket)",
-      "graded": {
-        "teams": 0,
-        "within3pct": 0
       },
       "caveats": [
         "burst: the swapped weapon's fire cadence + ammo pool are kit-silent — modeled as base MG cadence + full-belt refill (⚑1, measurement-gated; the datamine's unlabeled 90 was NOT enacted)",
         "skill1: Damage to Parts is inert vs the partless scope-lock boss (modeled for fidelity — byte-identical totals with the line removed)",
         "skill2: Elemental Advantage Attack Damage is live only vs an elementally-weak boss (Fire here); it adds to the element bucket, not Damage Up",
         "burst: the 11% additional damage vs Fire Code targets only fires inside the 7s burst-weapon window AND only vs a Fire boss"
-      ]
+      ],
+      "board": null
     },
     "neon-vision-eye": {
       "name": "Neon: Vision Eye",
@@ -4913,6 +5413,50 @@
         "temp": "OK  ·"
       }
     },
+    "nero": {
+      "name": "Nero",
+      "burst": "II",
+      "weapon": "SMG",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/nero.json + scripts/kit-autonomy/manual-review/nero.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0 (judge kimi-code/k3); cross-family S2b(claude-fable-5)/S5/S6(claude-opus-5)/S7(kimi-k3) converged; FROM-SCRATCH build (simSupported was false) — burstCast enemy flatDamage 1104.91 (own cast, lands pre-FB, no FB major) + passive self targetMaxHpPct 60.28 (maxHpFlat self-grant, offensively inert — kept for HP-rank consumers); all six Grumpy-Cat-chain lines carried verbatim as unmodeled (v1 boss deals no damage: no attacked trigger / chance primitive / stack-count gate / heal-amount payload / healer TargetDef)",
+      "date": "2026-08-04",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "spot-check cluster: (1) the 8.26% boss Damage Taken ▲ proc (S2 line 1) is the single largest unmodeled offensive loss (all four cross-family agents concur) — re-open FIRST if the engine ever models incoming attacks, recipe recorded (boss attack cadence x 30%, taunt-amplified during the 15s Attract window, from a focused nero recording); (2) cadence tuple unmeasured (SMG datamine as-is); (3) no board datapoints (tank never recorded)",
+      "unmodeled": {
+        "skill1": [
+          "Activates when recovery takes effect. Affects the target who cast the skill with recovery effect on Nero. Damage Taken ▼ 14.14% for 5 sec.",
+          "Activates when recovery takes effect. Affects self. Cat's Repayment: Damage Taken ▼ 8.43%, stacks up to 5 time(s) and lasts for 5 sec."
+        ],
+        "skill2": [
+          "There is a 30% chance of activating when attacked. Affects the target. Damage Taken ▲ 8.26% for 5 sec.",
+          "There is a 30% chance of activating when attacked in Grumpy Cat status. Affects the target. Deals 158.05% of final ATK as damage."
+        ],
+        "burst": [
+          "Affects self. Attract: Taunts all enemies for 15 sec.",
+          "Activates when Cat's Repayment is at max stacks. Affects self. Grumpy Cat: Incoming healing ▲ 60.08% for 15 sec."
+        ]
+      },
+      "caveats": [
+        "burst: the 1104.91% nuke is burstCast-keyed (her OWN cast) and lands pre-Full-Burst — it never takes the +50% FB major; 'highest remaining HP' collapses to the single partless boss",
+        "skill2: Max HP ▲60.28% is a passive self maxHpFlat grant (targetMaxHpPct → own-% basis), permanent ('continuously'), offensively INERT (no HP→ATK conversion in her kit) but kept — her raised live Max HP is readable by cross-unit consumers (highestAllyMaxHpPct rankers)",
+        "THE GRUMPY-CAT CHAIN (S1 stacks → burst Grumpy Cat status → S2 attacked-procs) is carried verbatim in `unmodeled`: the v1 boss deals no damage, the schema has no 'attacked' trigger / chance primitive / stack-count gate / incoming-healing stat, so the chain has ZERO in-domain observables; activation recipe recorded in the note (engine-capability-gated, TIER 3)",
+        "skill1: nero's `recovery` trigger condition DOES occur in comps with a healer (helm's full-charge pulls in the test fixture) — S1 ships no blocks, so nothing fires; this is the unmodeled ruling, not a missing trigger"
+      ],
+      "board": null
+    },
     "neve": {
       "name": "Neve",
       "burst": "III",
@@ -4945,6 +5489,44 @@
         "skill2: 'Gain Pierce for 2 round(s)' is modeled as gainPierce durationSec:2 — a ⚑ rounds→seconds estimate (gainPierce has no round granularity; ≈2 SG pulls, unmeasured — recipe: read Neve's SG pull cadence from footage). Damage-INERT at scope lock (pierceDamagePct inert in v1; no Pierce Damage ▲ carrier lands on a Water SG), proven byte-identical totals with the effect removed",
         "skill2: ATK ▲124.8% is a 2-ROUND count (durationShots:2, no wall-clock expiry) — the window spans her 2 SG pulls post-FB-entry and would stretch across a reload if she enters FB low on ammo",
         "burst: Hit Rate ▲22.04% feeds the sim's derived Hit-Rate→core-hit lift (hrCoreMult, live by default); the conversion magnitude is a measured-only ⚑, so the test pins the stat application, not a specific core-rate delta"
+      ],
+      "board": null
+    },
+    "nihilister": {
+      "name": "Nihilister",
+      "burst": "II",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/nihilister.json + scripts/kit-autonomy/manual-review/nihilister.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6(claude-opus-5)/S7(kimi-k3) converged; FROM-SCRATCH build (simSupported was false) — shotFired self gainPierce 4s round stand-in, interval:10 flatDamage 112.64 (datamined skill CD), burstCast nuke 158.59 + burn dot 13.19/1s x 10s sustained + self maxAmmoFlat 6/15s; Piercing Radius + 2+-enemy 50.33% rider carried verbatim unmodeled (out-of-domain, single-enemy v1)",
+      "date": "2026-08-04",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "spot-check cluster: ⚑1 SR cadence tuple (chargeFrames 60 + bolt gap -> gainPierce 4s round stand-in) + ⚑2 S2 first-fire t=10 phase — one focused-solo recording each; ⚑3/⚑4 multi-target out-of-domain (2+-enemy 50.33% rider + piercing radius need a multi-enemy engine model)",
+      "unmodeled": {
+        "skill1": [
+          "Piercing Radius ▲ 50% for 1 round(s).",
+          "■ Activates when hits 2 or more enemies concurrently. Affects all enemies hit.\nDeals 50.33% of final ATK as additional damage."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: 'Gain Pierce for 1 round(s)' is a ROUND-COUNT duration carried as a timed gainPierce window (durationSec 4 = worst-case inter-shot gap incl. one empty-mag reload, from the ⚑1 SR cadence tuple; gainPierce has no durationShots) — per-shot shotFired refresh keeps the tag continuous while firing; the grant lags the triggering shot's damage by engine dispatch order (phantom ⚑2 class), so shot 1 is the application event",
+        "skill1: Piercing Radius ▲50% and the 2+-enemies-concurrent 50.33% bonus are UNMODELED verbatim — out-of-domain for v1's single partless boss (no geometry, no second enemy); ⚑3/⚑4",
+        "skill2: the 112.64% hit has NO kit-stated trigger — fires on its datamined internal cooldown (interval:10, skillCooldownsSec.skill2), first fire t=10 (⚑2 phase)",
+        "burst: all three lines are burstCast-keyed (HER casts only — a different B2's Full Burst must not fire them); the Burn is a 10×1s-tick DoT whose ticks crit via the universal DOT_CRIT gate (no per-dot opt-in); the ammo line is maxAmmoFlat 6 (NOT maxAmmoPct — the % form coincides at her 6-round base and is the trap)"
       ],
       "board": null
     },
@@ -5119,6 +5701,47 @@
         "burst: the Damage-Taken mark targets '1 enemy unit(s)' — unspecified WHICH enemy in prose; with one boss it is boss-held regardless (enemy buffs key on the enemyBuffs list). Gate reads the PRE-fire pool at cast time; casts before the 5th Cornucopia stack accrue land without the mark — faithful to 'Activates when Cornucopia is at max stacks'"
       ],
       "board": null
+    },
+    "pascal": {
+      "name": "Pascal",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/pascal.json + scripts/kit-autonomy/manual-review/pascal.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates after firing 10 time(s). Affects 1 ally unit(s) with the highest final DEF. \nRecovers 6.28% of the skill user's final Max HP as HP."
+        ],
+        "skill2": [
+          "■ Activates when entering Burst Stage 1. Affects 3 ally unit(s) with the lowest remaining HP.\nIncoming healing ▲ 38.4% for 10 sec."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "burst: the heal is event-only — the 55.29%-of-final-Max-HP magnitude is unrecordable in v1 (no HP amounts), and 'the skill user's final Max HP' scaling has no carrier; the block's observable is the recovery events it emits to the leftmost-3 allies on her cast frame (pinned via asuka's S1 consumer in the spec fixture)",
+        "burst: keyed burstCast (her own Burst I cast), NOT fullBurstEnter — the cast precedes the Full Burst window and an FB-entry keying would misattribute team FBs another Burst I opened (multi-B1 generality; sora/milk precedent)",
+        "burst ⚑1 (targeting stand-in): 'the 3 ally unit(s) with the lowest remaining HP' is indeterminate in v1 (no HP pool) → alliesLowestHp resolves to the documented LEFTMOST-3 stand-in (types.ts TargetDef comment; sakura-suzuhara/ether precedent). ESTIMATE: in a real fight the heal lands on whoever is actually lowest; an on-recovery consumer only stays refreshed if it is among the real 3 targets — bounded by the consumer's buff value × its window per cast, zero consequence in a comp with no recovery consumer. RECIPE: any pascal focus recording — read which 3 units the heal popups land on vs their HP bars. TIER: low (only moves comps that stack a recovery consumer outside the real target set).",
+        "skill1 ⚑2 (UNMODELED — engine-core: no ally DEF-ranking selector): 'after firing 10 time(s) → the 1 ally with the highest final DEF → Recovers 6.28% of pascal's final Max HP'. The cadence (every 10th shot; RL hitsPerShot 1, so pulls = rounds = hits → hitCount:10) and the heal EVENT are expressible, but the targeting clause is not: resolveTargets has no DEF-ranked ally kind, and S4 forbids the engine edit. Emitting the event on any expressible stand-in would fabricate a recovery attribution (on-recovery consumers key on the RECIPIENT), so the line ships as a priced absence — flora/grave precedent (genuine missing primitive, bounded, documented → DOCUMENTED_GAP, not NO-GO(engine-core)). ESTIMATE: 1 recovery event every 10 pascal shots (≈ every ~9.5s: 10 shots at 90 RPM spanning one 171-frame reload) to the highest-final-DEF ally — in practice usually a Defender-class teammate; damage impact zero unless a teammate with an on-recovery consumer IS that ally, then the consumer's buff value × uptime; the heal amount itself (6.28% of her final Max HP) is survivability-only and out of domain. RECIPE: add a DEF-ranked ally selector to resolveTargets (level-scaled DEF is already computed in stats.ts but not carried into UnitState, so plumb it through prepare first; then mirror alliesTopAtk's evaluated-once ranking), then encode hitCount:10 → {that selector, count 1} → heal; pin from a pascal focus video showing which ally the S1 heal popups land on. TIER: engine-core (new selector primitive), low comp-frequency.",
+        "skill2 ⚑3 (UNMODELED — inert): 'Incoming healing ▲ 38.4% for 10 sec' on the 3 lowest-remaining-HP allies at Burst Stage 1 entry. No incomingHealingPct StatKey exists and heal effects carry no HP amount, so the amplifier multiplies nothing — damage-neutral by construction (sakura-suzuhara's S2 is the identical line and the binding precedent). ESTIMATE: zero damage impact in v1; in game it amplifies the recipients' received healing for 10s per chain. RECIPE: none for DPS — would need an HP pool + an incomingHealingPct stat; the nearest-wrong proxy (a HEAL on stageEnter:1) is pinned RED by the spec: it would spuriously emit recovery events at every chain start and feed on-recovery consumers. TIER: inert/out-of-domain.",
+        "gauge: no gauge-per-shot.json row — RL modal fallback (sim.ts GAUGE_MODAL_BY_WEAPON); her 40s-cd cast cadence in fixtures is gauge/CD-limited by that estimate, which rescales nothing kit-side (no kit line keys off her shots)"
+      ],
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "burst heal leftmost-3 stand-in + unrecordable 55.29/6.28 magnitudes unverified vs real recording; S1 highest-final-DEF targeting unmodeled (no DEF selector)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     },
     "pepper": {
       "name": "Pepper",
@@ -5524,6 +6147,124 @@
         "band": "±5%",
         "temp": "HOT ▲"
       }
+    },
+    "quiry": {
+      "name": "Quiry",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-04",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-04: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/quiry.json + scripts/kit-autonomy/manual-review/quiry.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-04; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6(claude-opus-5)/S7(kimi-k3) converged; FROM-SCRATCH build (simSupported was false) — chargeCounter:1 casterAtkPct 5.81/3s + passive targetMaxHpPct 11.63 + burstCast heal ticks:10 recovery window + burstCast critRatePct 19.9/10s, all Defender-class-scoped; enemy ATK▼ 8.94% + heal magnitude carried verbatim unmodeled (no enemy-ATK model / no HP pool)",
+      "date": "2026-08-04",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "spot-check cluster: burstCooldownSec 60 vs skillCooldownsSec.burst 40 data conflict (engine uses 60; owner glance at which column the game uses); ⚑1 cadence tuple datamine-only (focus video rounds/min + reload gap); ⚑2 count-2 Defender cap unexpressible in alliesOfClass (over-grants only in 3-tank comps)",
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when hitting a target with Full Charge. Affects the target. ATK ▼ 8.94% of the skill user's ATK for 3 sec. — enemy ATK debuff: the engine models no enemy ATK (v1 boss deals no damage; the enemy-buff branch accepts only damageTakenPct/distributedDamagePct > 0), offensively inert by construction."
+        ],
+        "skill2": [],
+        "burst": [
+          "■ Affects all allies. Recovers 6.96% of the skill user's final Max HP every 1 sec for 10 sec. — magnitude only: the engine `heal` carries no HP amount by design (no HP pool); the 10-second recovery-event WINDOW is modeled (burst heal ticks:10 intervalSec:1)."
+        ]
+      },
+      "caveats": [
+        "skill1/skill2/burst: 'Affects 2 Defender ally unit(s)' is modeled as alliesOfClass 'Defender' — the schema has no count cap; exact at ≤2 Defenders, over-grants a 3rd Defender in 3-tank comps (⚑2)",
+        "skill1: the enemy ATK▼ line is unmodeled — the engine models no enemy ATK (boss deals no damage); offensively inert by construction, carried verbatim in unmodeled",
+        "burst: the heal carries no HP amount — recovery-event window only (ticks:10 intervalSec:1); the 6.96%-of-final-Max-HP magnitude is unmodeled, not fudged"
+      ],
+      "board": null
+    },
+    "ram": {
+      "name": "Ram",
+      "burst": "I",
+      "weapon": "SR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/ram.json + scripts/kit-autonomy/manual-review/ram.md.",
+          "med ENCODING (skill1): Squad gate on the Full-Burst-end burst CDR is omitted (modeled always-satisfied); the kit conditions the 20.16s refund on a same-squad ally, so the CDR over-fires in comps without rem/emilia."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "date": "2026-08-05",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "spot-check cluster: same-squad gate modeled always-satisfied — owner confirms ram's in-game squad field (QUEUE.md migration item) then one-line teamHas.sameSquad swap (⚑2, the sole S5 RED, judge-adjudicated DOCUMENTED_GAP) + skill2 interval:15 first-fire phase unpinned by footage (⚑3) + SR cadence tuple datamine-unverified (⚑1) — one ram focus video + one squad-field lookup settles all three",
+      "unmodeled": {
+        "skill1": [
+          "■ Activates after landing 5 normal attack(s). Affects the target(s).\nATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v1 boss deals no damage; the enemy-buff branch accepts only damageTakenPct/distributedDamagePct > 0), offensively inert by construction; the nearest-wrong mapping (damageTakenPct) is a different mechanic (boss-takes-more) that would over-credit the whole team."
+        ],
+        "skill2": [
+          "■ Affects 2 ally unit(s) with the lowest remaining HP.\nDEF ▲ 11.34% of the skill user's DEF for 5 sec. — caster-basis flat DEF add: no such primitive (defPct scales the TARGET's own DEF — wrong basis — and is inert in v1 regardless); the target clause has a primitive (alliesLowestHp count 2, leftmost stand-in) — the blocker is purely the payload."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the burst-CDR's 'an ally from the same squad still on the battlefield' clause is modeled ALWAYS-SATISFIED — ram's collab squad is uncurated (squad membership is owner-confirmed fact; QUEUE.md 'same-squad primitive migrations' says confirm before authoring). If her in-game squad requires rem/emilia, the CDR over-fires in non-collab teams (⚑2: swap in teamHas.sameSquad once curated)",
+        "skill1: the 'after landing 5 normal attacks → target ATK ▼ 7.95%' line is UNMODELED — the engine drops enemy ATK debuffs (they cannot affect damage dealt at DEF=0); NOT damageTakenPct (that is 'boss takes more damage' — a different mechanic)",
+        "skill2: the Max-HP grant fires on the interval:15 convention for kit-silent CD skills (first fire t=15; ⚑3 phase unpinned by footage); it is damage-INERT for ram (no atkOfMaxHpPct consumer) and 'without restoring HP' is honored by construction (a Max-HP grant never emits recovery events)",
+        "skill2: the DEF grant (11.34% of the skill user's DEF → 2 lowest-HP allies) is UNMODELED — no caster-basis DEF stat; defPct would be the wrong basis (target's own %) and is inert in v1 anyway",
+        "burst: the shield is EVENT-ONLY (no HP pool in v1) — it opens shield-state windows and fires 'shielded' triggers (naga-class consumers), keyed to ram's OWN burstCast (never on Full Bursts she sat out); the 10.08%-of-final-Max-HP magnitude is recorded for kit completeness only"
+      ],
+      "board": null
+    },
+    "rapi": {
+      "name": "Rapi",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/rapi.json + scripts/kit-autonomy/manual-review/rapi.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Activates when attacked 20 time(s). Affects self.",
+          "ATK ▲ 21.81% for 20 sec."
+        ],
+        "skill2": ["Taunt for 5 sec."],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the entire attacked-20 cluster (self ATK ▲21.81%/20s) is UNMODELED — the sim has no incoming-damage model and no 'attacked N times' trigger primitive; the boss never acts. Nearest-wrong (hitCount 20 on hits she DEALS) is pinned in the spec test and provably fails",
+        "skill2: 'Taunt for 5 sec.' is UNMODELED — no taunt/aggro primitive; the single partless boss already takes everyone's attacks; its in-game role is feeding the attacked-counter (⚑1)",
+        "skill2: the 20s interval cadence is the datamined skillCooldownsSec.skill2 (the kit prose carries no number) — ⚑ cadence tuple",
+        "burst: block ORDER is load-bearing — the 657.72% nuke dispatches before the +60.75% self buff so the hit snapshots pre-buff ATK (pinned by the spec's reordered-block arm)",
+        "skill1/skill2/burst: AR cadence tuple (rate_of_fire 720 / reloadFrames 81 / ammo 60) is an unmeasured datamine estimate"
+      ],
+      "board": null,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "interval first-fire phase (t=sec) unmeasured at scope; S2 20s cadence is datamined skillCooldownsSec.skill2, not popup-counted; S1 attacked-20 cluster + taunt out-of-domain (no incoming-damage model)"
     },
     "rapi-red-hood": {
       "name": "Rapi: Red Hood",
@@ -6121,6 +6862,42 @@
       ],
       "board": null
     },
+    "rupee-winter-shopper": {
+      "name": "Rupee: Winter Shopper",
+      "burst": "I",
+      "weapon": "AR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/rupee-winter-shopper.json + scripts/kit-autonomy/manual-review/rupee-winter-shopper.md.",
+          "low FIDELITY (skill2): Shopping resource pool never decays while the real Shopping buff lapses 20s after its last refresh — in sole-B1 comps (3 casts/chain) the real max-stack gate never opens, but the sim's pool crosses 4 during chain 2 and the 7.9% gauge buff over-fires from the 2nd FB end onward. Exact in double-B1 comps (the kit's home, where 4 casts/chain keep buff and pool in agreement at every gate read)."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "date": "2026-08-05",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "sole-B1 pool-no-decay gate overfire (caveat 2, measurement-gated — one sole-B1 rws focus recording of the gauge-speed icon settles it); burstGenPct per-holder scaler mapping same-model prior; cadence tuple (datamine)",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Attract: Taunts all enemies for 5 sec. (UNMODELED — no engine taunt primitive; defensive: the v1 partless boss deals no damage and has no target choice, so enemy target-lock moves no damage. The label taunt-immunity precedent.)"
+        ]
+      },
+      "caveats": [
+        "⚑ CADENCE TUPLE (ALWAYS-⚑): AR rate_of_fire 720 = 12 rounds/s nominal + reloadFrames 81 + ammo 60, all datamine (single-chunk reload, reload_bullet 10000) — drives the S1 last-bullet cadence (once per ~5s magazine + reload) and the reload-economy gain from her burst. Recipe: rounds/min + reload gap from any rupee-winter-shopper-focus video.",
+        "⚑ MEASUREMENT-GATED (no-lapse approximation, power/rupee-base precedent): the shopping POOL never decays (no timer-decay primitive) while the Shopping BUFF lapses 20s after its last refresh. In a DOUBLE-B1 comp (the kit's home — her re-entry exists to field one), every chain carries ≥4 burst casts, stacks reach the 4-cap during chain 1, and at each Full Burst END the stacks applied during the just-ended chain are still live (20s duration > the ~10s cast→FB-end span), so the pool and the buff AGREE at every gate-read moment — exact there. In a SOLE-B1 comp on a 40s chain cycle (3 casts/chain), the real buff ramps only to 3 and lapses between chains, so the real gate NEVER opens, but the pool crosses 4 during chain 2 and the sim's gate over-fires from the 2nd FB end onward. ESTIMATE: over-credits a 7.9% gauge-fill window for 5s after each FB end in sole-B1 comps only — a few-percent-of-the-gauge timing nudge on the next chain, zero in any double-B1 comp. RECIPE: a sole-B1 rws focus recording — does the gauge-speed buff icon appear after Full Burst ends? TIER: override-only (a decaying-pool / buff-stack-read primitive would remove the divergence)."
+      ],
+      "board": null
+    },
     "sakura": {
       "name": "Sakura",
       "burst": "I",
@@ -6337,6 +7114,87 @@
         "temp": "COLD ▼"
       }
     },
+    "signal": {
+      "name": "Signal",
+      "burst": "II",
+      "weapon": "SMG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/signal.json + scripts/kit-autonomy/manual-review/signal.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates after landing 60 normal attack(s). Affects the target(s).",
+          "DEF ▼ 5.94% for 5 sec.",
+          "ATK ▼ 5.94% for 5 sec."
+        ],
+        "skill2": [
+          "Recover 44.08% of attack damage as HP over 10 sec. — magnitude only: the engine `heal` carries no HP amount by design (no HP pool); the 10-second recovery-event WINDOW is modeled (fullBurstEnter heal ticks:10 intervalSec:1)."
+        ],
+        "burst": ["DEF ▼ 12.34% for 10 sec."]
+      },
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "enemy DEF▼/ATK▼ channel gap (S1 5.94/5s pair + burst 12.34/10s) — comps read COLD by a small subtractive-DEF lift; S2 44.08% lifesteal magnitude unmodelable without an HP pool (event window modeled)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "caveats": [
+        "skill1: the whole 60-hit ▼ cluster (enemy DEF ▼5.94% / ATK ▼5.94% for 5s) is unmodeled — enemy ATK▼/DEF▼ has no sim channel (enemyBuffs admits only damageTakenPct/distributedDamagePct; bossDef is a flat constant; sim.ts drops them at dispatch), mica/ether/exia precedent. Honestly absent (⚑1), not a stale fixture — the unit test pins the zero against a damageTakenPct laundering on the hitCount:60 counter.",
+        "skill2: the modeled heal is event-only — the 44.08%-of-attack-damage HP magnitude is NOT modeled (no HP pool by design); the 10-second recovery-event WINDOW IS modeled (ticks:10 intervalSec:1). The heal is SELF-targeted: recovery events are delivered to signal herself and fire only HER OWN 'recovery'-triggered blocks (fireRecovery dispatches the recipient's blocks; she has none — the unit test observes the window with an inert probe). Damage-inert by construction: totals are byte-identical with the line removed.",
+        "burst: the DEF ▼12.34% / 10s enemy debuff is unmodeled — same no-channel fate as skill1's DEF▼ (⚑2); the unit test pins the zero against a damageTakenPct laundering. The modeled 229.22% nuke is FB-exempt by cast timing (a B2 cast lands before the Full Burst window opens)."
+      ]
+    },
+    "sin": {
+      "name": "Sin",
+      "burst": "II",
+      "weapon": "AR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/sin.json + scripts/kit-autonomy/manual-review/sin.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged | kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "date": "2026-08-05",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "spot-check cluster | ⚑1 cadence tuple (AR rate_of_fire 720 = 12/s + ammo 60 + reloadFrames 81 datamine; drives pull count, S1 lastBullet cadence, gauge contribution) | ⚑2 OUT-OF-DOMAIN: burst Damage Taken ▲12.23%/5s gated on >4 non-Nikke enemies — never satisfiable at single-boss scope (zero impact); needs an enemy-count gate primitive if multi-target content enters scope | step-1 lifesteal (15.3%/5s) is modeled as self heal-HoT ticks:5 but is event-only and behaviorally silent (no recovery-event log kind; no consumer of sin's own recovery) | S1 Duplicate-Max-HP basis is provably value-tied to self-basis roster-wide (all Defenders share the max static-HP basis) — equivalence pinned, not discriminated | spot-check cluster | ⚑1 cadence tuple (AR rate_of_fire 720 = 12/s + ammo 60 + reloadFrames 81 datamine; drives pull count, S1 lastBullet cadence, gauge contribution) | ⚑2 OUT-OF-DOMAIN: burst Damage Taken ▲12.23%/5s gated on >4 non-Nikke enemies — never satisfiable at single-boss scope (zero impact); needs an enemy-count gate primitive if multi-target content enters scope | step-1 lifesteal (15.3%/5s) is modeled as self heal-HoT ticks:5 but is event-only and behaviorally silent (no recovery-event log kind; no consumer of sin's own recovery) | S1 Duplicate-Max-HP basis is provably value-tied to self-basis roster-wide (all Defenders share the max static-HP basis) — equivalence pinned, not discriminated",
+      "unmodeled": {
+        "skill1": [
+          "Attract: Taunt all enemies for 5 sec. — no threat model in v1: the partless boss deals no damage and has no ally-targeting AI, so taunt has zero in-domain surface (nero N7 / delta-ninja-thief Attract precedent)."
+        ],
+        "skill2": [
+          "Twice: Incoming healing ▲ 51% for 5 sec. — the escalation step-2 payload has no carrier: the schema has no incoming-healing StatKey and heals are event-only (nero grumpy-cat ruling). The escalation GATE is still encoded (the 'burstUses' pool advances on every own cast), so steps 1 and 3 fire on exactly the casts the kit says they fire on."
+        ],
+        "burst": [
+          "Activates when enemy unit(s) (excluding Nikkes) are more than 4. Affects all enemies. Damage Taken ▲ 12.23% for 5 sec. — the enemy-count gate is NEVER satisfied at single-boss scope (1 enemy), so never-firing IS the faithful behaviour here; the schema also has no enemy-count primitive, and the nearest-wrong ungated damageTakenPct would over-credit the whole team ~12% per cast (absence canary in the test). ⚑2 OUT-OF-DOMAIN, recipe in the note."
+        ]
+      },
+      "caveats": [
+        "skill1: 'Duplicate 15.03% Max HP' is mapped as a maxHpFlat grant (highestAllyMaxHpPct — quency precedent), not the shield channel: in-game this creates a shield, but the shield primitive's maxHpPct basis is caster-only and event-only; both channels are offensively inert for sin, and the roster-tie (all Defenders share the max static-HP basis) makes the highest-ally basis provably value-identical to a self-basis on every team",
+        "skill2: the burst-usage escalation is a 'burstUses' resource pool (+1 per own burstCast, gates read the PRE-increment value); the step-2 payload (Incoming healing ▲51%) is unmodeled for the missing StatKey, but the gate still advances — steps 1 and 3 fire on exactly the right casts",
+        "skill2: the step-1 lifesteal is a self heal-HoT (ticks:5, event-only) — behaviorally silent in v1 (no recovery-event log kind, and no unit consumes sin's own recovery)",
+        "burst: the 176.32% nuke is burstCast-keyed (her OWN cast), lands pre-Full-Burst and never takes the +50% FB major; its ■ block has NO activation clause, so it is NOT gated by the preceding >4-enemies header — 'enemies within attack range' collapses to the single partless boss"
+      ],
+      "board": null
+    },
     "snow-crane": {
       "name": "Snow Crane",
       "burst": "II",
@@ -6543,6 +7401,42 @@
       "caveats": [
         "burst: L5 ('Hit count required for Skill 2 ▼ 20 for 10 sec') is enacted as countInFb 30 on the S2 hitCount trigger (RRH precedent) — the engine's hitCount threshold switch is keyed to the GLOBAL FB window, not her cast (only chargeCounter has the owner-anchored inBurst check); exact while she is the sole B3, bounded over-credit (~+1-2 extra 61.69% procs per foreign-B3 window, ~0.5-1% of total) in multi-B3 comps (⚑⚑, S2b-flagged, driver reconciled — an exact encoding needs an engine primitive; S4 freezes src/engine/**)",
         "burst: her cast lands ~0.3s BEFORE the FB window opens (burstCast precedes fullBurstStart), so the countInFb window and the 10s self-buff windows start ~0.3s apart — the kit's cast-anchored 10s is approximated by the FB-anchored 10s for the threshold line only (the 21.12/97.2/unlimited-ammo lines ARE cast-anchored)"
+      ],
+      "board": null
+    },
+    "soda": {
+      "name": "Soda",
+      "burst": "I",
+      "weapon": "MG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/soda.json + scripts/kit-autonomy/manual-review/soda.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6(claude-opus-5)/S7(kimi-k3) converged; FROM-SCRATCH build (simSupported was false) — hitCount180 self Max-HP 13%x5/10s + maidSpirit pool; interval-12 dual heal recovery channel (rider resourceGate min5); burstCast 321.28 single-instance pre-FB; burst self-slice +1 pool; stun + cross-ally stack-amp carried unmodeled/flagged",
+      "date": "2026-08-05",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "spot-check cluster: (1) burst '2 enemy unit(s) randomly' — single-instance collapse vs 2x321.28 is a one-popup measurement on a soda-focus recording (driver ships the spec'd single-instance reading; both opus blinds split on it, S2b named 2x the nearest-wrong); (2) S2 interval-12 first-fire phase t=12 is engine convention (no activation clause in prose; CD from datamined skillCooldownsSec.skill2); (3) cross-ally slice of 'all Fire Code allies: buff stacks +1' is engine-core flagged (no primitive; self-slice modeled, pool clamped at 5)",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": ["Stun for 1 sec."]
+      },
+      "caveats": [
+        "skill2: interval 12 is the datamined skillCooldownsSec.skill2 (the prose carries no activation clause); first-fire phase t=12 is the engine interval convention — ⚑ pin from footage if a recovery-consumer cadence is ever popup-read",
+        "skill2: heal magnitudes 3.23% / 12.71% of the skill user's final Max HP are amount-less by engine design (no HP pool) — carried verbatim in the note, not fudged into fake numbers",
+        "burst: '2 enemy unit(s) randomly' collapses to ONE instance on the lone partless boss (multi-enemy selection is out of the single-boss scope)",
+        "burst: the CROSS-ALLY slice of 'all Fire Code allies: Stack count of buffs ▲1' is ⚑ OUT-OF-DOMAIN (engine-core) — no 'bump each target's stackable buffs by N' primitive (mica-snow-buddy ⚑M5 / pepper ⚑4 precedent); self-slice modeled via the maidSpirit pool",
+        "skill1/burst: the maidSpirit pool is monotonic vs the real 10s per-stack expiry — divergence only in >10s firing gaps (soda-twinkling-bunny Golden-Chip precedent class)"
       ],
       "board": null
     },
@@ -7015,6 +7909,43 @@
         "temp": "OK  ·"
       }
     },
+    "vesti": {
+      "name": "Vesti",
+      "burst": "III",
+      "weapon": "RL",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/vesti.json + scripts/kit-autonomy/manual-review/vesti.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged on all 5 lines (4 FAITHFUL + 1 DOCUMENTED_GAP)",
+      "date": "2026-08-05",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "missile container count 36-vs-18 popup read (⚑3); DoT tick-crit carrier spot-check (⚑2); fullBurstExtend:-5 rotation net sign (⚑4)",
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when performing a Full Charge attack. Affects self.\nExplosion Radius ▲ 15.01% for 10 sec."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: 'Explosion Radius ▲15.01% for 10s' is UNMODELED — no explosion-radius stat exists in the schema and radius is damage-inert vs the single partless boss (vesti-tactical-upgrade carries the identical residual for its burst radius line). The nearest-wrong encoding (projectileExplosionPct 15.01) is pinned absent by the spec",
+        "burst: the missile containers are modeled as TWO dots (one per container, prose-literal + datamine container-count 2) — 36 ticks × 15.56% = 560.16% ATK-equivalent per deployment; the combined-volley alternative is exactly half (⚑3, popup-count recipe). Ticks ride the DoT conventions: never core, noRange, crit per the engine DoT default (DOT_CRIT ON since 2026-07-21 — ticks roll crit at her sheet rate, ⚑2), FB-by-landing-timing (burst-placed dots are not cast-FB-exempt)",
+        "burst: the SI-staged riders are cumulative AND same-cast-inclusive — cast 1 deals 210.62% (the SI stage granted by that same cast; skill2-slot blocks dispatch before burst-slot blocks); cast 3+ deals all three steps = 760.06%. Burst-cast damage lands before the Full Burst window opens → never takes the +50% major",
+        "burst: 'Full Burst Duration ▼ 5 sec' = fullBurstExtend:-5 on her OWN casts (isabel precedent) — her windows run 5s, co-B3-opened windows stay 10s. Net rotation blast-radius sign unverified (⚑4, carried from isabel)"
+      ],
+      "board": null
+    },
     "vesti-tactical-upgrade": {
       "name": "Vesti: Tactical Upgrade",
       "burst": "III",
@@ -7132,6 +8063,37 @@
       ],
       "board": null
     },
+    "yan": {
+      "name": "Yan",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-05",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/yan.json + scripts/kit-autonomy/manual-review/yan.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "date": "2026-08-05",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "burst flight-time convention (instant on cast, unmeasured per-unit for yan); datamined cadence tuple (chargeFrames 90 / reloadFrames 141) is the scope-lock basis, unmeasured per-unit; forced-movement burst CC unmodeled (inert vs scope-lock boss)",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Forced movement toward the center of attack range, lasts for 2 sec. (crowd-control PULL on normal enemies; v1 fights a single scope-lock boss with no enemy movement/position model and bosses are not pulled, so the line moves no damage. NOT re-encoded as a damage or range buff — that would over-credit a benefit the kit does not deliver; viper/phantom/marciana precedent.)"
+        ]
+      },
+      "board": null
+    },
     "yulha": {
       "name": "Yulha",
       "burst": "III",
@@ -7172,6 +8134,42 @@
         "skill1/skill2/burst: SR cadence tuple (charge 60f / reload 133f / bolt gap) is an unmeasured datamine estimate"
       ],
       "board": null
+    },
+    "yuni": {
+      "name": "Yuni",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-05: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/yuni.json + scripts/kit-autonomy/manual-review/yuni.md.",
+          "low FIDELITY (skill2): Lifesteal recovery cadence: heal ticks:10 on a trigger that re-fires every ~1.5s produces ~6-7 overlapping 10-tick chains per ally, likely over-emitting recovery events vs the real refreshed-single-window lifesteal; the independent pre-op reviewer (S2b) recommended one emission per full charge. Consumer-visible outcome (continuous crown buff uptime) is qualitatively right either way; the HP amount itself is out of domain."
+        ],
+        "date": "2026-08-05"
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "date": "2026-08-05",
+      "evidence": "kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged | kit-autonomy gauntlet 2026-08-05; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "S2 lifesteal tick cadence (ticks:10 vs one-emission-per-charge — S2b dissent adjudicated to measurement, ⚑2: popup-read crown on-recovery proc cadence in a yuni+crown focus video); burst Immobilize-5s unmodeled (⚑1 — zero damage impact, no boss-CC channel) | S2 lifesteal tick cadence (ticks:10 vs one-emission-per-charge, S2b dissent adjudicated to measurement — spot-check crown on-recovery proc cadence in a yuni+crown focus video); burst Immobilize-5s unmodeled (zero damage impact, no boss-CC channel)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": ["Immobilizes the target(s) for 5 sec."]
+      },
+      "caveats": [
+        "skill1: chargeSpeedPct is the engine's SUBTRACTIVE charge formula (needed = round(chargeFrames×(1−cs/100)) → 90f→82f) and a TIMING channel only — the unit test pins that no per-shot magnitude moves with it on or off; the buff lands exactly on the fullBurstStart frames (fullBurstEnter, never burstCast).",
+        "skill2: the heal line models NO HP amount — it emits recovery events to all allies (10 ticks at 1s per full-charge pull; the 10s WINDOW is kit-literal, the tick cadence is the engine-native approximation per helm H8 precedent). Its only sim observable is on-recovery consumer behaviour; with no consumer in a comp the line is honestly invisible.",
+        "skill2: the ammo line is FLAT +1 round for 5s (theme-14 primitive) — deliberately shorter than its siblings' 10s windows, and a percent encoding (maxAmmoPct 1 → round(6×1.01)=6) silently never extends a magazine; the DEF half rides the same block and is damage-inert in v1.",
+        "burst: 'Affects enemies within attack range' collapses to the single partless boss at scope lock; the Immobilize half has no boss-CC channel (⚑1) — unmodeled verbatim, never laundered into damageTakenPct or stun."
+      ]
     },
     "zwei": {
       "name": "Zwei (Treasure)",

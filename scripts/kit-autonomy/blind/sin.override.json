@@ -1,0 +1,112 @@
+{
+  "slug": "sin",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "highestAllyMaxHpPct",
+          "value": 15.03,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "burstGenPct",
+          "value": 16.17,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "heal",
+              "ticks": 5,
+              "intervalSec": 1
+            },
+            {
+              "kind": "buff",
+              "stat": "defPct",
+              "value": 0,
+              "durationSec": 5
+            },
+            {
+              "kind": "buff",
+              "stat": "defPct",
+              "value": 43.2,
+              "durationSec": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 176.32,
+          "crit": true,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Attract: Taunt all enemies for 5 sec."
+    ],
+    "skill2": [
+      "Twice: Incoming healing \u25b2 51% for 5 sec."
+    ],
+    "burst": [
+      "\u25a0 Activates when enemy unit(s) (excluding Nikkes) are more than 4. Affects all enemies. Damage Taken \u25b2 12.23% for 5 sec."
+    ]
+  },
+  "caveats": [
+    "\u2691 BURST DAMAGE-TAKEN IS GATED OFF AT SCOPE LOCK, NOT DROPPED. The burst's first sub-block requires >4 enemy units (excluding Nikkes); the scope-lock fight is a single partless raid boss, so the condition is never satisfied and the 12.23% Damage Taken \u25b2 debuff never applies. There is no enemy-count block gate in the schema, so authoring it as a live damageTakenPct block would credit the ENTIRE TEAM a 12.23% boss debuff that the real fight never grants \u2014 the single largest over-credit available in this kit. It is recorded in unmodeled instead. If an enemy-count gate primitive is ever added, this is the block to revive; it stays inert on every graded solo-raid comp either way.",
+    "\u2691 escalating step 2 is a ZERO-VALUE INDEX PLACEHOLDER, not a modeled effect. The `escalating` primitive applies steps 1..N on the Nth activation, so the step list must stay positionally aligned with the kit's Once/Twice/Three-times ladder. 'Incoming healing \u25b2 51%' has no StatKey (the sim models no HP pool, so incoming-healing scaling is unrepresentable), but silently omitting it would slide 'DEF \u25b2 43.2%' from the 3rd burst cast to the 2nd \u2014 a trigger-identity error. The placeholder is defPct:0 (defPct is already inert in v1, and 0 is inert unconditionally). Replace it with a real effect if an incoming-healing stat is ever added.",
+    "\u2691 Skill-2 'Once' lifesteal is modeled as a recovery EVENT emitter only, with no HP amount. 'Recover 15.3% of attack damage as HP' has no HP pool to fill at scope (immortal boss, nobody takes damage), but the heal/shield HARD RULE forbids skipping it: the recovery events it emits are what a teammate's on-recovery consumer reads. Target is self, so at present it fires only Sin's own recovery triggers \u2014 she has none, making it inert TODAY but correct if she is ever paired with a kit that keys off her being healed.",
+    "\u2691 Both Max-HP and DEF grants are offensively inert as modeled. highestAllyMaxHpPct grants Sin flat Max HP, which only converts to ATK through an atkOfMaxHpPct line \u2014 Sin's kit has none \u2014 and ally-granted Max HP does not feed a teammate's conversion (the e3 scope rule). defPct is inert in v1. Both are retained for kit completeness and for a future consumer/scaler, per the HP/DEF-scaler prior; neither should be read as a damage contribution.",
+    "\u2691 EVERY numeric value below that is not literally in the kit prose is an unmeasured estimate. This override has never been scored against a real fight."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Sin (AR/Electric/Defender/Burst II, 20s CD, 60 ammo). Modeled: S1 last-bullet self Max-HP duplication from the highest-Max-HP ally (15.03%, 5s); S2 full-burst-END burst-gauge-generation buff (16.17%, 5s) and a burst-cast escalating ladder (lifesteal recovery events \u2192 [placeholder] \u2192 DEF \u25b2 43.2%); burst instant damage 176.32% of final ATK. Trigger fidelity is the load-bearing read here: S2's gauge buff is fullBurstEnd (NOT fullBurstEnter \u2014 it arms the NEXT rotation, not the current window), and the escalating ladder is burstCast (NOT fullBurstEnter \u2014 it counts only rotations SIN herself bursts, which diverges from team full bursts in any comp carrying a second Burst II unit). The burst damage is FB-exempt because a burst cast resolves before the Full Burst window opens. The burst's Damage Taken \u25b2 12.23% is condition-gated on >4 enemies and is therefore INERT against a single raid boss \u2014 see caveats; it is recorded in unmodeled rather than authored live, because modeling it would hand the whole team a boss debuff the real fight never grants. Sin contributes no team ATK/damage buff: her offensive footprint at scope is her own weapon fire plus a single 176.32% burst hit, and everything else is survivability or gauge economy."
+}

@@ -4,7 +4,9 @@ Paste at the top of a fresh subagent, prepended with the subagent-rules preamble
 (dispatch-claude.sh / dispatch-kimi.sh prepend it automatically). You write a full
 per-unit kit spec test from the kit prose ALONE — the same forcing function the driver used, independently.
 Your convergence with the driver's tests (run unmodified against the driver's override by the judge) is the
-faithfulness signal; a divergence you catch that the driver did not document is the payload.
+faithfulness indicator; a divergence you catch that the driver did not document is the payload.
+<!-- wording guard: never use a bare unit-slug word as generic vocabulary in this template — the build-time
+     leak assertion word-matches the target slug against it, so a common-word slug would false-fail. -->
 
 > **Content gate:** inspect kit prose STRUCTURALLY (the `■` header + `Affects …` clause + the stat keyword
 > before `▲`/`▼`); quote ≤ ~40 chars; keep output clinical. Do not echo full flavorful sentences.

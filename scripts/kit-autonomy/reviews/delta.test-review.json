@@ -1,0 +1,76 @@
+{
+  "slug": "delta",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge attack: Max HP ▲ 8.82% 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Triggers on full-charge attacks only; the granted stat is an unscoped self Max HP buff (no attack-type scoping on the effect itself). With chargeFrames 60, every SR auto shot at scope is a full charge, so uptime is near-permanent while firing — which makes the trigger encoding invisible to totals and pinnable only via the event log.",
+      "durationSemantics": "10 sec wall-clock (durationSec ≈ 600 frames), refreshed on each re-trigger. NOT rounds — text says 'sec' literally. The 111-frame (~1.85s) reload is shorter than 10s, so the buff must persist across reloads.",
+      "triggerIdentity": "Per-full-charge shot by the owner (chargeCounter count:1, or shotFired for an always-full-charging SR — equivalent at scope). NOT passive, NOT lastBullet, NOT interval. No gates.",
+      "targetSet": "self",
+      "nearestWrongModel": "Encoded as a permanent passive active from frame 0 (or with no durationSec) — or dropped entirely as 'defensive, no damage effect'.",
+      "distinguishingAssertion": "Filter buffApply events with stat 'maxHpFlat' targeting delta (maxHpPct self-grants flat-resolve): the FIRST such event lands only at/after her first full-charge shot resolves (frame ≥ ~60), never at frame 0; each apply carries expiresFrame = applyFrame + 600 and value = 0.0882 × delta's static Max HP. Green under faithful; red under passive-from-t0 or permanent-duration encodings. Also assert at least one apply exists (red if the line was silently dropped).",
+      "inertness": "Delta's and every teammate's totalDamage must be IDENTICAL with this block removed via withPatchedOverride — her kit has no atkOfMaxHpPct/HP→ATK scaler, so the Max HP grant is offensively inert (kept per taxonomy rule 7 as a future-consumer stat).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Using Burst Skills: DEF ▲ 51.42% 20s",
+      "disposition": "FAITHFUL",
+      "scope": "Generic self DEF stat (defPct — documented engine-inert in v1: self DEF never affects own damage output).",
+      "durationSemantics": "20 sec wall-clock (durationSec). Not rounds, not until-reload.",
+      "triggerIdentity": "burstCast — 'when using Burst Skills' is this unit's OWN burst cast, and delta is Burst II so it fires ONLY on rotations she wins the stage-2 slot. NOT fullBurstEnter. This is the packet's canonical divergence: controlComp puts crown (also B2) in the team, so team Full Bursts occur where crown casts stage 2 and delta does not — the two encodings produce different apply counts in the standard fixture.",
+      "targetSet": "self",
+      "nearestWrongModel": "Keyed to fullBurstEnter (applies on EVERY team Full Burst including crown-cast rotations — the classic over-credit) — or dropped entirely as a defensive line.",
+      "distinguishingAssertion": "Collect delta-cast burstCast frames and buffApply{stat:'defPct', value:51.42, target delta} frames: the two sets must be EQUAL (one apply per own-cast, at the cast frame), and the apply count must be ≤ delta's own burst casts — strictly fewer than fullBurstStart count whenever crown takes a stage-2 rotation. Under the fullBurstEnter misread, apply count === fullBurstStart count → red. Also red-if-absent (silent drop).",
+      "inertness": "Totals for all five units unchanged with this block removed (defPct is inert in v1); the buffApply event stream is the ONLY observable.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Decoy: avatar, 91.68% final Max HP, 10s",
+      "disposition": "UNMODELED",
+      "scope": "Summons a taunt-decoy entity with an HP pool = 91.68% of caster's final Max HP. No damage component; v1 models no incoming boss damage and no summon entities.",
+      "durationSemantics": "10 sec entity lifetime — irrelevant while unmodeled.",
+      "triggerIdentity": "burstCast (her own burst).",
+      "targetSet": "self (spawns an entity; no ally/enemy stat application).",
+      "nearestWrongModel": "Inventing a mechanic to represent it — most dangerously a shield effect (e.g. shield{maxHpPct:91.68}): that would falsely fire teammates' 'shielded' TRIGGERS and requiresShielded gates (naga-style kits), a real cross-unit contamination path. Second wrong reading: flatDamage or heal on cast.",
+      "distinguishingAssertion": "On every delta burstCast frame: ZERO damage events sourced from her burst slot, ZERO shield events, ZERO heal/recovery events emitted. AND override.unmodeled.burst contains the Decoy line verbatim (no silent drop).",
+      "inertness": "The burst cast must have no damage, gauge, buff, or trigger side-effects beyond the rotation cast itself (which enables skill2 and the FB chain — engine rotation, not override content).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attract: Taunts all enemies for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "Aggro redirection only. The scope-lock boss is partless, immortal, and has no targeting model — taunt has no simulable consequence.",
+      "durationSemantics": "10 sec — irrelevant while unmodeled.",
+      "triggerIdentity": "burstCast (her own burst).",
+      "targetSet": "enemy (all enemies) — no enemy entity exists to receive it.",
+      "nearestWrongModel": "Encoding taunt as a boss debuff — e.g. damageTakenPct or a targetStatus window. Taunt carries no damage-taken component and names no status; any boss-held buffApply from this line is invented.",
+      "distinguishingAssertion": "No buffApply with casterIdx===null && targetIdx===null (boss-held debuff signature) attributable to delta's burst, and no targetStatus window opened by her. AND override.unmodeled.burst contains the Attract line verbatim.",
+      "inertness": "No boss-side state change from her burst; teammates' damage identical whether delta's burst block exists or is empty.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Full Charge → Max HP ▲ 8.82% (10s, self)",
+    "skill2:own Burst cast → DEF ▲ 51.42% (20s, self)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Decoy: Creates an avatar with 91.68% of the skill user's final Max HP that lasts for 10 sec.",
+      "Attract: Taunts all enemies for 10 sec."
+    ]
+  },
+  "notes": "This kit is damage-inert by design (Defender/B2 tank with zero offensive lines), so the whole test surface is event-log discipline, not totals: (1) STRICT INERTNESS — with the entire override stripped via withPatchedOverride, all five units' totals must be identical; any damage delta means an invented mechanic. (2) The expected shared-prior misread is SILENT DROPPING: 'Max HP/DEF/taunt are defensive, skip them' — the correct model still encodes both stat buffs (taxonomy rule 7: keep inert stats for future consumers) and records both burst lines verbatim in unmodeled; tests must be red-if-absent, not just red-if-wrong. (3) skill2's burstCast-vs-fullBurstEnter divergence is LIVE in the standard fixture because controlComp's crown shares Burst II with delta — apply-count-equals-own-casts is the decisive assertion; do not weaken it to 'a defPct apply exists'. (4) The most dangerous creative encoding is modeling Decoy as a 'shield' effect: shields fire other units' shielded triggers and requiresShielded gates, so the error would be invisible on delta solo and only contaminate shield-synergy teammates — assert zero shield events on her burst frames. (5) Note skill1's Max HP grant does feed the Decoy's '% of final Max HP' pool in-game, but with no HP pool modeled there is no consumer; nothing to reconcile. All magnitudes/durations are literal kit text (DATAMINED); no ⚑ fields are needed — no invented cadence, no damage lines lacking triggers.",
+  "model": "claude-fable-5"
+}

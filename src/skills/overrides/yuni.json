@@ -1,0 +1,45 @@
+{
+  "slug": "yuni",
+  "note": "yuni (Yuni — the BASE unit; RL / Defender / Fire / Burst II, cd 20s, ammo 6, reloadFrames 141, chargeFrames 90, chargeMult 350, normalMult 61.3, burstGaugePerShot 1.4, SSR). EXACT SLUG: `yuni` has NO variant twin — lint-slug-disambiguation passes clean on the full kit summary (no disambiguation note required, unlike the mica/mica-snow-buddy family). FROM-SCRATCH kit-autonomy build 2026-08-05 (no prior override / kit-status row; baseline was bare weapon, simSupported:false) — test-first re-derivation pinned by scripts/tests/units/yuni.test.ts (groups Y0–Y7, two fixtures). SKILL1 ('■ Affects all allies. Activates when entering Full Burst. Charge Speed ▲ 8.97% for 10 sec.'): ONE block, fullBurstEnter trigger (team-event keyed — fires on ANY Full Burst, helm H5 precedent), target allies (self included, no exclusion clause), buff chargeSpeedPct 8.97 durationSec 10. chargeSpeedPct is the engine's SUBTRACTIVE charge formula (sim.ts needed = round(chargeFrames×(1−cs/100)); anis-star precedent) → her 90f RL charge shortens to 82f in-window; it is a TIMING channel only — the unit test pins that no per-shot magnitude (atkPct set) moves without it (nearest-wrong family: folding Charge Speed into a damage bucket, S2b reviewer's shared-prior misread). Applied exactly on the fullBurstStart frames — never burstCast (probe 2026-08-05: stage casts precede the FB window by 22–52 frames; fullBurstEnter buffs land exactly on the window frames; unit test pins the frame-set equality). SKILL2 ('■ Activates when attacking with Full Charge. Affects all allies. DEF ▲ 2.77% for 10 sec. Restores 2.77% of attack damage as HP over 10 sec. Max Ammunition Capacity ▲ 1 round(s) for 5 sec.'): ONE block, shotFired trigger — for an RL every trigger pull IS a full charge (helm/cinderella precedent: full-charge riders key per shot) — target allies (self included), three effects on one activation: (1) buff defPct 2.77 durationSec 10 — FAITHFUL but damage-INERT in v1 (self/ally DEF never feeds damage dealt; novel/poli/crust/sakura/diesel/jackal/mica precedent; the unit test proves byte-identical totals with ONLY this effect removed, and the atkPct misread moving totals). (2) heal ticks:10 intervalSec:1 — the engine models NO HP amount; a heal emits recovery events to its targets (helm H8 precedent for the 'FOR/OVER 10 SEC' recovery-window shape: the window LENGTH is kit-literal, the tick CADENCE inside it is the engine-native 1s approximation, documented below). Observable only through on-recovery consumers — the unit test observes it through crown's 'when recovery takes effect' block in a dedicated isolation fixture (crown's own hitCount heal patched out; liter/ada carry no heal effects), where the overlapping per-pull windows keep recovery firing across the whole fight. (3) buff maxAmmoFlat 1 durationSec 5 — the theme-14 FLAT-round primitive (mica M4 precedent): '▲ 1 round(s)' is a MAGNITUDE in flat rounds, NOT a percent and NOT a durationShots round-count; maxAmmo() = round(base×(1+pct/100)) + flat, so the nearest-wrong maxAmmoPct 1 computes round(6×1.01) = 6 and silently never extends a magazine (pinned RED). Note the 5s window is deliberately SHORTER than its siblings' 10s — pinned. LOAD-BEARING weapon-state modifier (hard rule 1 / prior 9): extended magazines → fewer reloads → more firing uptime for every ammo-bound holder. BURST ('■ Affects enemies within attack range. Deals 348.73% of final ATK as damage. Immobilizes the target(s) for 5 sec.', burstCast — HER OWN cast, never fullBurstEnter: as the sole B2 of the test fixture she casts every Full Burst so both keyings fire equal COUNTS; the discrimination is TIMING — the cast lands BEFORE the Full Burst window opens, so the nuke never takes the +50% FB major, milk K5/harran/mica precedent): ONE block, target enemy ('enemies within attack range' collapses to the single partless boss at scope lock), flatDamage atkPct 348.73 (burst bucket, crit-eligible by flatDamage convention). The burst's second line 'Immobilizes the target(s) for 5 sec.' is UNMODELED (verbatim in unmodeled.burst) — there is NO boss-CC channel: the v1 boss never acts (no enemy-action model), so a boss-targeted immobilize moves nothing; the schema's stun primitive describes a NIKKE unable to fire/charge/reload, not a boss freeze. The nearest-wrong encoding — laundering the CC into a boss damageTakenPct debuff (a different mechanic the kit never grants) — is pinned RED (⚑1). Burst gauge: no row in data/gauge-per-shot.json — the class-modal fallback applies; her kit carries no gauge line (flatPerTrigger 0 is faithful). Cadence tuple: RL chargeFrames 90 + reloadFrames 141 + ammo 6 shipped datamine as-is (cadence-tuple ⚑ RETIRED by owner ruling 2026-07-25 — datamine tuple reliable; no charFixes). NO `ignored` blocks. EVIDENCE TIER: every modeled magnitude is SL10 kit-text-literal (DATAMINED): 8.97 / 10s (S1), 2.77 / 10s (S2 DEF), 2.77 / 10s (S2 heal — the HP amount itself is unmodeled; only the recovery channel is), 1 round / 5s (S2 ammo), 348.73 (burst). TIER 2: the fullBurstEnter-vs-burstCast identity (both the S1 window keying and the nuke's FB-major exemption, timing-discriminated in the sole-B2 fixture), the flat-round weapon-state modifier, the recovery-window encoding, and one out-of-domain ⚑ cluster. ⚑ LIST: [⚑1] (OUT-OF-DOMAIN, boss-CC channel — TIER 2) the burst Immobilize-5s line: estimate = ZERO damage impact at scope lock (the boss never acts; immobilization changes nothing about damage dealt or taken in v1) and zero in game too (CC does not modify the boss's DEF or damage-taken); recipe = an enemy-action/boss-behaviour subsystem (engine-core) — no damage primitive can encode it faithfully; NEVER launder into damageTakenPct (a different mechanic — pinned RED) or an ally-side stun; tier = out-of-domain. [⚑2] (recovery tick cadence — engine-native approximation) the heal's 1s tick cadence inside the kit-literal 10s window: at her ~1.5s RL pull cadence the windows overlap and on-recovery consumers stay refreshed continuously regardless of the intra-window cadence; recipe = a popup-read of an on-recovery consumer's proc rate in a yuni+crown focus video if the cadence ever matters; tier = engine-native default (helm H8 precedent). Kit-autonomy gauntlet 2026-08-05.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": ["Immobilizes the target(s) for 5 sec."]
+  },
+  "caveats": [
+    "skill1: chargeSpeedPct is the engine's SUBTRACTIVE charge formula (needed = round(chargeFrames×(1−cs/100)) → 90f→82f) and a TIMING channel only — the unit test pins that no per-shot magnitude moves with it on or off; the buff lands exactly on the fullBurstStart frames (fullBurstEnter, never burstCast).",
+    "skill2: the heal line models NO HP amount — it emits recovery events to all allies (10 ticks at 1s per full-charge pull; the 10s WINDOW is kit-literal, the tick cadence is the engine-native approximation per helm H8 precedent). Its only sim observable is on-recovery consumer behaviour; with no consumer in a comp the line is honestly invisible.",
+    "skill2: the ammo line is FLAT +1 round for 5s (theme-14 primitive) — deliberately shorter than its siblings' 10s windows, and a percent encoding (maxAmmoPct 1 → round(6×1.01)=6) silently never extends a magazine; the DEF half rides the same block and is damage-inert in v1.",
+    "burst: 'Affects enemies within attack range' collapses to the single partless boss at scope lock; the Immobilize half has no boss-CC channel (⚑1) — unmodeled verbatim, never laundered into damageTakenPct or stun."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "chargeSpeedPct", "value": 8.97, "durationSec": 10 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "defPct", "value": 2.77, "durationSec": 10 },
+        { "kind": "heal", "ticks": 10, "intervalSec": 1 },
+        { "kind": "buff", "stat": "maxAmmoFlat", "value": 1, "durationSec": 5 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "flatDamage", "atkPct": 348.73 }]
+    }
+  ]
+}

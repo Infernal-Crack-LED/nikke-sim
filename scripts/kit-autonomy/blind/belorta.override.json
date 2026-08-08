@@ -1,0 +1,109 @@
+{
+  "slug": "belorta",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "projectileExplosionPct",
+          "value": 9.55,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 0,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 14.96,
+          "noRange": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 192,
+          "noRange": true,
+          "noFb": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 2.82,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "DEF \u25bc 3.52% for 5 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 skill1 trigger: kit says 'when performing a Full Charge attack'. The engine has no full-charge trigger kind; modeled as shotFired on a charge-weapon owner (every RL pull is a charge shot at scope lock). If she ever fires uncharged, this over-fires.",
+    "\u2691 skill1 stat mapping: 'Explosion Radius \u25b2' is a geometry stat with no StatKey. Mapped to projectileExplosionPct (the RL-only Damage-Up stat) as the closest damage-bearing analogue \u2014 this is a MODELING CHOICE, not a kit-stated damage buff, and may over-credit. The faithful alternative is to leave it fully unmodeled (zero damage).",
+    "\u2691 skill2 trigger: 'Activates when an attack hits more than 4 enemy unit(s)' is a MULTI-TARGET count gate. The scope-lock boss is a SINGLE partless enemy, so the real in-game condition is NEVER satisfied at scope lock \u2014 the whole skill2 block is arguably INERT. Modeled live on shotFired as the optimistic reading; the pessimistic reading (drop both skill2 blocks) is equally defensible and must be settled by a recording before either number is trusted.",
+    "\u2691 skill2 DEF \u25bc 3.52%: a boss DEF debuff. The schema has no defDown StatKey (defPct is self-DEF and inert). Left in `unmodeled` rather than folded into damageTakenPct \u2014 those are different buckets and the fold would be a fudge. Recipe: model boss DEF reduction when/if the engine gains the channel.",
+    "\u2691 burst noFb: burst-cast damage lands before the Full Burst window opens (verified project fact), so noFb:true on the 192% is convention, not a per-kit measurement.",
+    "\u2691 cadence (ammo 6 / reloadFrames 141 / chargeFrames 90) is datamine-sourced and unreliable; every per-shot rider's rate rides on it."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Belorta is an RL/Electric/Attacker/Burst II. Three kit lines carry damage-relevant content and each has a structural problem the prose does not resolve: (1) S1's Explosion Radius has no damage StatKey \u2014 mapped to projectileExplosionPct as the nearest RL analogue; (2) S2's activation clause requires hitting >4 enemies, a condition the single partless scope-lock boss cannot satisfy, so its DEF\u25bc and 14.96% rider may be entirely inert in this sim's fight; (3) S2's DEF\u25bc has no engine channel and is recorded verbatim in `unmodeled`. The burst is clean: 192% of final ATK instant enemy damage (FB-exempt, burst-cast timing) plus a 2.82%/10s team Charge Speed buff. Full-kit audit: no line silently dropped."
+}

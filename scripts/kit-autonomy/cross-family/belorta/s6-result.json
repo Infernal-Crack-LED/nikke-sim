@@ -1,0 +1,208 @@
+{
+  "slug": "belorta",
+  "leakDetected": null,
+  "override": {
+    "slug": "belorta",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "projectileExplosionPct",
+            "value": 9.55,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 0,
+            "durationSec": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 14.96,
+            "noRange": true
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 192,
+            "noRange": true,
+            "noFb": true
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "chargeSpeedPct",
+            "value": 2.82,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "DEF ▼ 3.52% for 5 sec."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1 trigger: kit says 'when performing a Full Charge attack'. The engine has no full-charge trigger kind; modeled as shotFired on a charge-weapon owner (every RL pull is a charge shot at scope lock). If she ever fires uncharged, this over-fires.",
+      "⚑ skill1 stat mapping: 'Explosion Radius ▲' is a geometry stat with no StatKey. Mapped to projectileExplosionPct (the RL-only Damage-Up stat) as the closest damage-bearing analogue — this is a MODELING CHOICE, not a kit-stated damage buff, and may over-credit. The faithful alternative is to leave it fully unmodeled (zero damage).",
+      "⚑ skill2 trigger: 'Activates when an attack hits more than 4 enemy unit(s)' is a MULTI-TARGET count gate. The scope-lock boss is a SINGLE partless enemy, so the real in-game condition is NEVER satisfied at scope lock — the whole skill2 block is arguably INERT. Modeled live on shotFired as the optimistic reading; the pessimistic reading (drop both skill2 blocks) is equally defensible and must be settled by a recording before either number is trusted.",
+      "⚑ skill2 DEF ▼ 3.52%: a boss DEF debuff. The schema has no defDown StatKey (defPct is self-DEF and inert). Left in `unmodeled` rather than folded into damageTakenPct — those are different buckets and the fold would be a fudge. Recipe: model boss DEF reduction when/if the engine gains the channel.",
+      "⚑ burst noFb: burst-cast damage lands before the Full Burst window opens (verified project fact), so noFb:true on the 192% is convention, not a per-kit measurement.",
+      "⚑ cadence (ammo 6 / reloadFrames 141 / chargeFrames 90) is datamine-sourced and unreliable; every per-shot rider's rate rides on it."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Belorta is an RL/Electric/Attacker/Burst II. Three kit lines carry damage-relevant content and each has a structural problem the prose does not resolve: (1) S1's Explosion Radius has no damage StatKey — mapped to projectileExplosionPct as the nearest RL analogue; (2) S2's activation clause requires hitting >4 enemies, a condition the single partless scope-lock boss cannot satisfy, so its DEF▼ and 14.96% rider may be entirely inert in this sim's fight; (3) S2's DEF▼ has no engine channel and is recorded verbatim in `unmodeled`. The burst is clean: 192% of final ATK instant enemy damage (FB-exempt, burst-cast timing) plus a 2.82%/10s team Charge Speed buff. Full-kit audit: no line silently dropped."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates on Full Charge attack. Self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger shotFired + target self (⚑ no full-charge trigger kind exists; every RL pull at scope lock is a charge shot)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Explosion Radius ▲ 9.55% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff projectileExplosionPct 9.55, durationSec 5. ⚑ Stat-mapping choice: Explosion Radius is geometry, not a StatKey; projectileExplosionPct is the only RL-scoped Damage-Up analogue. May over-credit; see caveats."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when attack hits >4 enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Modeled as shotFired (optimistic). ⚑ The literal condition is unsatisfiable vs a single partless boss — the pessimistic reading makes all of skill2 inert. Measurement-gated."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "DEF ▼ 3.52% for 5 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "No boss-DEF-reduction StatKey in the schema (defPct = self DEF, inert; damageTakenPct is a different bucket and folding it there would be a fudge). Recorded verbatim in unmodeled.skill2. A placeholder damageTakenPct block with value 0 carries the target-status shape without crediting damage."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 14.96% of final ATK as add'l dmg.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 14.96, noRange:true (riders take no +30% range), no core (text says no core strike), FB-by-timing default ON."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects enemies within attack range.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy on the 192% block; single-boss scope makes the AoE scoping damage-neutral."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 192% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 192, noRange:true, noFb:true (burst-cast damage lands pre-FB — verified project fact), trigger burstCast."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies (includes self — no 'except self' clause) on the Charge Speed block."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Speed ▲ 2.82% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeSpeedPct 2.82, durationSec 10, trigger burstCast (her own burst grants it — not fullBurstEnter; keying it to FB-enter would over-credit rotations she does not burst)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "shotFired (every RL pull treated as a full charge)",
+      "reasoning": "The kit's activation clause is 'when performing a Full Charge attack'. TriggerDef has no full-charge kind. On a charge weapon at scope lock the sim fires only full-charge shots, so shotFired is behaviourally equivalent under that assumption — but the assumption is unstated in the kit and untested.",
+      "recipe": "Recording: count buffApply events for the Explosion Radius key per magazine and compare against the observed number of released charge shots (ammo 6 → expect 6 applications per magazine if the equivalence holds)."
+    },
+    {
+      "field": "skill1[0].effects[0].stat",
+      "estimate": "projectileExplosionPct 9.55 (alternative: fully unmodeled, 0 damage)",
+      "reasoning": "'Explosion Radius ▲' is a geometric property (blast area), not a damage multiplier. Against a single partless boss a larger blast radius plausibly contributes ZERO extra damage — nothing new enters the radius. Mapping it to projectileExplosionPct converts a geometry stat into a Damage-Up percentage, which is the optimistic reading; the faithful-conservative reading is that it is inert at scope lock. I flag rather than silently pick a damage number.",
+      "recipe": "Solo Belorta A/B: run with the buff at 9.55 vs 0 and compare total damage against a real solo recording. If the real total matches the 0 case, the stat is inert vs a single-target boss and the block should move to `unmodeled`."
+    },
+    {
+      "field": "skill2 (both blocks) — activation gate",
+      "estimate": "modeled LIVE on every shot; probability the real gate is never met at scope lock: HIGH",
+      "reasoning": "'hits more than 4 enemy unit(s)' is an enemy-COUNT condition. The scope-lock fight is one partless boss (verified project fact: the boss has no parts and hit location never changes a damage value), so a single attack cannot hit >4 enemy units. Under the literal reading, both the DEF▼ and the 14.96% rider are dead for the entire graded fight. I modeled them live because a blind parser must not silently delete a damage line, but this is the single largest uncertainty in the whole override — it is the difference between a per-shot 14.96%-of-ATK rider and nothing at all.",
+      "recipe": "Solo Belorta recording vs the scope-lock boss: sum popup damage and compare against sim totals with the skill2 rider ON vs OFF. The rider is ~15% of ATK per pull — with ammo 6 and a 141-frame reload it should be a clearly separable fraction of her total. Alternatively count damage popups per shot: 2 popups/pull = rider live, 1 popup/pull = gate unmet."
+    },
+    {
+      "field": "skill2[0].effects[0] (DEF ▼ 3.52%)",
+      "estimate": "unmodeled (0 damage contribution)",
+      "reasoning": "There is no schema channel for reducing the boss's DEF. defPct is documented as self-DEF and inert in v1; damageTakenPct is a distinct bucket (boss takes more damage) and is NOT arithmetically equivalent to a DEF reduction under the sim's damage formula, so substituting it would be a fudge that happens to move the number. Recorded verbatim in unmodeled.skill2 instead. The block is retained with value 0 so the kit line has a structural home and is not silently dropped.",
+      "recipe": "Engine work, not measurement: a boss-DEF-reduction StatKey routed through the DEF term of the damage formula. Until then the magnitude (3.52%, small) makes the omission low-impact even if the gate turns out to be satisfiable."
+    },
+    {
+      "field": "burst[1].trigger",
+      "estimate": "burstCast (not fullBurstEnter)",
+      "reasoning": "The Charge Speed line sits in Belorta's OWN burst block with no 'entering Full Burst' clause, so it fires only on rotations where she actually casts. She is Burst II, so in a standard rotation she casts most cycles — but keying it to fullBurstEnter would over-credit any comp running a different B2.",
+      "recipe": "Rotation log (ROT=1) on a comp with a second Burst II unit: confirm the chargeSpeedPct buffApply events appear only on cycles where Belorta is the recorded B2 caster."
+    },
+    {
+      "field": "cadence tuple (ammo 6, reloadFrames 141, chargeFrames 90)",
+      "estimate": "as datamined",
+      "reasoning": "ALWAYS-⚑ per the taxonomy: datamined cadence fields are known-unreliable, and here they set the firing rate of the S1 buff refresh AND the S2 rider — every per-shot number in this override rides on them.",
+      "recipe": "Ammo-counter read from a focus recording: count pulls per magazine and time the reload + charge cycle directly (the ammo counter measures shots/sec, the disputed quantity, rather than a downstream proxy)."
+    }
+  ],
+  "model": "claude-opus-5"
+}

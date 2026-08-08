@@ -1,0 +1,176 @@
+{
+  "slug": "signal",
+  "leakDetected": null,
+  "override": {
+    "slug": "signal",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 60
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": -5.94,
+            "durationSec": 5
+          },
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": -5.94,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 10,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 229.22,
+            "crit": true
+          },
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": -12.34,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "ENEMY-TARGETED STAT LINES ARE ENCODED BUT ENGINE-INERT: resolveTargets({kind:'enemy'}) returns no entity, and the schema has no boss-DEF-debuff channel (defPct is documented as self-DEF, inert in v1). Both DEF ▼ lines (skill1 5.94%, burst 12.34%) are REAL team-wide damage gains in game — they are recorded as blocks per the 'keep the stat buff even if inert' prior, not converted to damageTakenPct, because DEF-subtraction → damage is not a 1:1 percentage map and any conversion factor would be fabricated. Modeling gap, measurement-gated (boss-DEF battery).",
+      "The enemy ATK ▼ 5.94% line is defensive-only at scope lock (no incoming damage, no HP pool) and carries no tandem consumer; encoded for kit completeness, permanently 0 damage.",
+      "skill2 is a self-lifesteal window with no HP pool in v1 — its ONLY live function is emitting `recovery` events for heal-synergy teammates ('when recovery takes effect'). The ⚑ tick count therefore changes a teammate's proc count, not this unit's damage.",
+      "⚑ burst flatDamage takes no explicit noFb: a burstCast-triggered hit resolves before the Full Burst window opens, so the engine's own timing already excludes the +50% major. noFb is left unset (default OFF, measured-only)."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Signal (SMG/Fire/Attacker/Burst II, ammo 120, hitsPerShot 1). Three-line kit, no stacks, no weapon swap, no mode gates, no DoT. skill1 = a per-60-round enemy debuff pair (hitCount:60 counts ROUNDS, not trigger pulls — hitsPerShot 1 so rounds == pulls here); both riders are enemy-scoped and engine-inert (see caveats). skill2 = fullBurstEnter self-lifesteal, modeled as a 10-tick heal-over-time so on-recovery consumers stay fed; trigger is 'entering Full Burst' (any team FB), NOT burstCast — the kit text is literal. burst = a burstCast instant hit at 229.22% of final ATK (crit-eligible at the caster's sheet rate per the rider convention; no core — the text does not say core strike; noRange is engine-automatic and not set) plus a 10 sec enemy DEF ▼ 12.34%. No line was silently dropped; unmodeled is empty because every kit line is represented as a block."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after landing 60 normal attack",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount{count:60}; 'landing' = rounds landed, hitsPerShot 1 so 1 round per pull"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects the target(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} (the boss), not self/allies"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▼ 5.94% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct -5.94 durationSec 5 on enemy — encoded, engine-inert (no boss-DEF debuff channel); see caveats"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▼ 5.94% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct -5.94 durationSec 5 on enemy — defensive, permanently 0 damage at scope lock"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'}"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when entering Full Burst.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter (any team FB) — literal text, NOT burstCast"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recover 44.08% of atk dmg as HP/10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal{ticks:10, intervalSec:1} — no HP pool in v1; emits recovery events for heal-synergy allies. ⛑ tick cadence"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects enemies within attack range.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'}; single partless boss so AoE scope is scope-trivial"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 229.22% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage{atkPct:229.22, crit:true} on burstCast; no core (text says no core strike), noRange engine-automatic, noFb unset (pre-FB timing)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▼ 12.34% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct -12.34 durationSec 10 on enemy — encoded, engine-inert; independent key from the skill1 DEF ▼"
+    }
+  ],
+  "flags": [
+    {
+      "field": "base weapon cadence (SMG pulls/sec — not an override field)",
+      "estimate": "SMG datamined rate_of_fire is NOMINAL; effective = 60/ceil(60/nominal) (e.g. 2.5f → 3f = 20 rounds/s), so the skill1 60-round trigger fires roughly every ~3s, ~2 procs per 120-round magazine",
+      "reasoning": "rate_of_fire and reloadFrames are known-unreliable datamine fields, and this unit's ONLY cadence-gated mechanic (hitCount:60) scales directly with rounds/sec — a cadence error moves the debuff proc rate 1:1",
+      "recipe": "Focus recording: read the ammo counter across a full magazine (rounds consumed / elapsed sec) — the instrument that measures shots/sec directly, not a downstream FB-count read"
+    },
+    {
+      "field": "skill2[0].effects[0] (heal ticks / intervalSec)",
+      "estimate": "ticks:10, intervalSec:1 over the stated 10 sec window",
+      "reasoning": "The kit gives a total recovery percentage 'over 10 sec' with NO tick cadence. Real lifesteal is damage-driven, so recovery events could fire per landed hit (~20/s) rather than once per second; the engine models no HP, so the only observable consequence is how many `recovery` triggers a heal-synergy ally receives. 1/sec is the schema's documented HoT convention, chosen as the conservative estimate rather than a guessed per-hit rate",
+      "recipe": "Run with a heal-consumer teammate whose on-recovery buff is popup/uptime-visible; count that ally's proc/refresh events across one Full Burst window in footage and compare against 10 vs ~200 events"
+    },
+    {
+      "field": "skill1[0].effects[0] and burst[0].effects[1] (enemy DEF ▼)",
+      "estimate": "0 damage in the current engine; true in-game gain is a boss-DEF reduction of 5.94% (5s, per 60 rounds) and 12.34% (10s, per own burst), whose damage value depends on the boss DEF / team ATK ratio and is NOT a 5.94%/12.34% damage increase",
+      "reasoning": "No StatKey expresses an enemy DEF debuff, and enemy targets resolve to no entity. Converting to damageTakenPct would fabricate a magnitude, because DEF enters the formula as a subtraction, not as a damage multiplier — the conversion factor is exactly the unmeasured quantity",
+      "recipe": "Boss-DEF battery: solo the unit with and without the debuff active (compare per-shot popup values inside vs outside the 5s window on a focus recording) to derive the effective damage delta per 1% boss DEF; then either add a bossDefPct channel or pin the measured multiplier"
+    },
+    {
+      "field": "burst[0].effects[0].crit",
+      "estimate": "crit:true (caster sheet crit rate), core:false",
+      "reasoning": "Rider convention: function-damage riders crit at the caster's rate but take no core unless the text says 'core strike damage' — this line says neither, so crit is convention-driven rather than kit-stated",
+      "recipe": "Popup colour read on the burst nuke (orange + crit icon vs white) across several casts in a focus recording; a red CORE HIT tag would additionally refute core:false"
+    }
+  ],
+  "model": "claude-opus-5"
+}

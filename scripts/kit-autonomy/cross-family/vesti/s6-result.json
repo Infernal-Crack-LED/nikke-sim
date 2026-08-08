@@ -1,0 +1,271 @@
+{
+  "slug": "vesti",
+  "leakDetected": null,
+  "override": {
+    "slug": "vesti",
+    "skill1": [],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "escalating",
+            "steps": [
+              {
+                "kind": "buff",
+                "stat": "atkPct",
+                "value": 5.35,
+                "durationSec": 45
+              },
+              {
+                "kind": "buff",
+                "stat": "critDamagePct",
+                "value": 22.34,
+                "durationSec": 45
+              },
+              {
+                "kind": "buff",
+                "stat": "critRatePct",
+                "value": 15.51,
+                "durationSec": 45
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "dot",
+            "atkPct": 15.56,
+            "durationSec": 18,
+            "intervalSec": 1
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "escalating",
+            "steps": [
+              {
+                "kind": "flatDamage",
+                "atkPct": 210.62,
+                "crit": true
+              },
+              {
+                "kind": "flatDamage",
+                "atkPct": 247.25,
+                "crit": true
+              },
+              {
+                "kind": "flatDamage",
+                "atkPct": 302.19,
+                "crit": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "fullBurstExtend",
+            "seconds": -5
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "■ Activates when performing a Full Charge attack. Affects self.",
+        "Explosion Radius ▲ 15.01% for 10 sec."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ Missile Containers split-vs-merge: modeled as ONE 15.56%/s DoT for 18 s. If each of the two containers ticks independently the true rate is 31.12%/s (2× under-credit today). Kit-silent — popup-read required.",
+      "⚑ Both escalating blocks read 'Each subsequent effect triggers all effects before it' CUMULATIVELY (engine `escalating` semantics): the 3rd burst deals 210.62+247.25+302.19 = 760.06% and holds all three Survival Instinct buffs. A replace-not-stack reading of the DAMAGE tiers would give 302.19% only — untested.",
+      "⚑ Survival Instinct stage counter assumed to (a) increment once per OWN burst cast, (b) cap at stage 3 and stay there for the rest of the fight, (c) never reset. Kit text states none of these.",
+      "⚑ 'Full Burst Duration ▼ 5 sec' encoded as fullBurstExtend seconds:-5 on all allies. Whether the engine accepts a NEGATIVE extend (and whether the shortening applies to the FB this cast opens or the next one) is unverified — this is the single largest team-wide term in the kit, so verify before trusting any comp total.",
+      "⚑ crit:true set on the burst tier damage per the rider-crit prior (function-damage riders crit at the caster's sheet rate); DoT ticks left non-crit per the default-OFF DoT-crit rule. Neither is measured for this unit.",
+      "⚑ noFb NOT set on any effect (default-OFF, measured-only). Burst-cast damage is expected to land pre-FB by TIMING; if the engine instead credits it inside the FB window these hits are over-credited by +50%.",
+      "⚑ RL cadence tuple (pullsPerSec / reloadFrames 142 / chargeFrames 60) is datamined and known-unreliable; not overridden here.",
+      "Explosion Radius ▲ has no StatKey and is geometry, not damage — deliberately unmodeled, NOT mapped to projectileExplosionPct (Projectile Explosion DAMAGE is a different stat; mapping it would fabricate damage)."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. vesti — RL/Water/Attacker/Burst III, 40 s CD, 6 ammo, 60-frame full charge. Modeled: (skill2) own-burst-cast escalating self-buff chain, Survival Instinct 1/2/3 = ATK ▲5.35% → Crit DMG ▲22.34% → Crit Rate ▲15.51%, each 45 s, cumulative; (burst) an 18 s / 1 s-interval 15.56%-of-final-ATK DoT from the deployed Missile Containers, an escalating instant-damage tier keyed to the same Survival Instinct count (210.62 / 247.25 / 302.19%), and a team-wide Full Burst Duration ▼5 s encoded as a negative fullBurstExtend. Deliberately unmodeled: skill1's Explosion Radius ▲15.01% (a projectile-geometry stat with no schema StatKey and no damage path against the single partless scope-lock boss). Trigger fidelity: every block keys to burstCast ('when using Burst Skill' / effects living in her own burst block), never fullBurstEnter — keying these to team Full Burst would over-fire in any multi-Burst-III comp. Her 45 s buff windows exceed her 40 s cooldown, so stages overlap and refresh on the same caster-slot key."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates on Full Charge attack. Self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger/target read (full-charge, self) — but the only payload line is skipped, so no block is emitted."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Explosion Radius ▲ 15.01% for 10 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "No StatKey for explosion RADIUS (projectileExplosionPct is Explosion DAMAGE — a different stat; mapping radius→damage would be fabrication). Radius is AoE geometry: inert against the single, partless scope-lock boss. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill. Self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'} + target {kind:'self'} — literal 'when using Burst Skill' = own cast, NOT fullBurstEnter."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effects vary by number of times used",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effects[0] = {kind:'escalating'} — Nth activation applies steps 1..N, matching 'each subsequent effect triggers all effects before it'."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Once: ATK ▲ 5.35% for 45 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 1 — buff atkPct 5.35, durationSec 45, self."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Twice: Critical Damage ▲ 22.34%/45s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 2 — buff critDamagePct 22.34, durationSec 45, self."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "3x: Critical Rate ▲ 15.51% for 45 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 3 — buff critRatePct 15.51, durationSec 45, self. Unscoped Crit Rate (kit says plain 'Critical Rate', not 'of normal attacks')."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deploys two Missile Containers",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Merged into ONE dot instance (⚑ split-vs-merge). Deployment itself has no separate damage term."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "15.56% final ATK every 1 sec for 18 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "dot atkPct 15.56, intervalSec 1, durationSec 18, target enemy. One instance per cast (40 s CD > 18 s ⇒ no overlap/append problem). No noFb/crit set (defaults)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "to enemy with lowest remaining HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trivially satisfied — single-boss scope, no enemy-selection axis in v1; target {kind:'enemy'}."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies; varies by SI stage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Second burst block, trigger burstCast, target enemy, effects[0] = escalating over the three damage tiers (same stage counter as skill2, both driven by her own burst cast)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "SI 1: 210.62% of final ATK add'l dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 1 — flatDamage atkPct 210.62, crit:true, no core (text says no core strike), no noRange/noFb set."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "SI 2: 247.25% of final ATK add'l dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 2 — flatDamage atkPct 247.25, crit:true."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "SI 3: 302.19% of final ATK add'l dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 3 — flatDamage atkPct 302.19, crit:true."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies: FB Duration ▼ 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Third burst block — fullBurstExtend seconds:-5, target allies. NOT skippable: it cuts the team's +50% Full Burst window roughly in half and is the largest team-wide term in the kit."
+    }
+  ],
+  "flags": [
+    {
+      "field": "burst[0].effects[0] (dot atkPct 15.56)",
+      "estimate": "One DoT instance at 15.56%/s (merged). Alternative: two instances = 31.12%/s.",
+      "reasoning": "'Deploys two Missile Containers that deal 15.56% ... every 1 sec' is grammatically ambiguous between per-container and per-deployment. Kit-silent multi-projectile split-vs-merge (ALWAYS-⚑ #5). Chose the conservative merged reading so a blind baseline under-credits rather than fabricates.",
+      "recipe": "Focus recording of vesti's burst: count damage popups in the 18 s post-cast window — 18 ticks ⇒ merged (keep as authored); 36 ticks ⇒ split (duplicate the dot effect or double atkPct to 31.12)."
+    },
+    {
+      "field": "burst[1].effects[0] (escalating damage tiers)",
+      "estimate": "Cumulative: SI3 cast deals 210.62+247.25+302.19 = 760.06% of final ATK.",
+      "reasoning": "Kit uses the identical 'each subsequent effect triggers all effects before it' clause in skill2, where cumulative is unambiguous (all three buffs held at once), so the same clause is read the same way on the damage tiers. But a per-stage REPLACEMENT reading (302.19% only at SI3) is linguistically available and would be a 2.5× difference on her single biggest hit.",
+      "recipe": "Popup-read her 3rd burst cast: one instant popup ≈ 302.19%×ATK ⇒ replacement; three popups (or one ≈760%×ATK) ⇒ cumulative as authored. Scope-lock solo run makes the arithmetic clean against the known static ATK."
+    },
+    {
+      "field": "Survival Instinct stage counter (skill2 + burst escalating)",
+      "estimate": "Increments once per OWN burst cast, caps at 3, never resets; both escalating blocks read the same count.",
+      "reasoning": "The kit names three stages and stops; it states no reset condition, no decay, and no cap wording. Two independent escalating blocks are assumed to advance in lockstep because both are driven by the same event (her burst cast).",
+      "recipe": "Long-fight recording with ≥4 vesti bursts: confirm the 4th cast still shows the SI3 magnitude (cap, no reset) and that the ATK/CritDMG/CritRate buffs are all three live from cast 3 onward."
+    },
+    {
+      "field": "burst[2].effects[0] (fullBurstExtend seconds:-5)",
+      "estimate": "Full Burst window shortened from 10 s to 5 s, team-wide, on each vesti burst cast.",
+      "reasoning": "'Full Burst Duration ▼ 5 sec' is a DEBUFF with no negative-extend primitive in the schema; fullBurstExtend with a negative value is the only faithful encoding available. Whether the engine clamps negatives, and whether the reduction applies to the FB this cast opens or the following one, is unverified — and this term moves EVERY unit in the comp, not just vesti.",
+      "recipe": "Recorded fight with vesti in the comp: time the Full Burst banner→end interval (should read ~5 s, not ~10 s) and cross-check the fight's total FB count. Also unit-test the engine's handling of a negative fullBurstExtend before trusting any board number for a vesti comp."
+    },
+    {
+      "field": "burst[1] flatDamage crit:true / dot crit (absent)",
+      "estimate": "Burst tier damage crits at her sheet rate; DoT ticks do not.",
+      "reasoning": "Prior: function-damage riders crit at the caster's rate, DoTs are validated non-crit unless measured otherwise. Matters more than usual here because her own SI2/SI3 buffs are Crit DMG + Crit Rate, so the crit setting compounds with the stage she is in.",
+      "recipe": "Popup colour read (orange + crit icon) on the burst instant popup and on the per-second container ticks in a focus recording."
+    },
+    {
+      "field": "burst[*] noFb (unset) / cast-vs-FB ordering",
+      "estimate": "Burst-cast damage lands pre-Full-Burst ⇒ no +50%; the 18 s DoT's ticks that fall inside the FB window DO take +50% by timing.",
+      "reasoning": "Per-kit noFb is default-OFF and measured-only (ALWAYS-⚑ #6); the pre-FB exemption for burst-cast damage is expected to fall out of cast TIMING, not a flag. Also unresolved blind: whether the SI buffs applied by skill2 on the same cast are live for that cast's own burst damage.",
+      "recipe": "Compare the instant burst popup magnitude on a cast that opens Full Burst against the known ATK × tier% — a ×1.5 excess means the engine credited FB and noFb:true is needed."
+    },
+    {
+      "field": "cadence tuple (pullsPerSec / reloadFrames 142 / chargeFrames 60)",
+      "estimate": "Left at the datamined values; not overridden.",
+      "reasoning": "Datamined rate_of_fire / reloadFrames are the known-unreliable fields (ALWAYS-⚑ #1), and a nominal rate must be quantized to 60 fps frame boundaries before use. Her normal-attack contribution scales linearly with this.",
+      "recipe": "Ammo-counter read on a focus recording: count trigger pulls per second and time a full 6-round magazine + reload cycle directly, rather than inferring from downstream totals."
+    },
+    {
+      "field": "skill1 (empty array) — Explosion Radius ▲ 15.01%",
+      "estimate": "Zero damage contribution; slot deliberately empty.",
+      "reasoning": "No StatKey represents explosion RADIUS. projectileExplosionPct is Explosion DAMAGE and is a different mechanic — using it would fabricate damage to fill an empty slot. Against the partless single-target scope-lock boss a larger blast radius has no damage path.",
+      "recipe": "If real footage shows vesti's full-charge shots gaining damage after the first full charge (beyond charge-bucket expectations), re-open: the game may fold radius into multi-hit/splash coverage on this boss. Otherwise it stays unmodeled."
+    }
+  ],
+  "model": "claude-opus-5"
+}

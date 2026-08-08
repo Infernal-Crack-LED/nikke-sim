@@ -1,0 +1,44 @@
+{
+  "note": "delta = Delta (BASE) — SR/Defender/Wind/Burst II, cd 40s, ammo 6, chargeFrames 60, reloadFrames 111, normalMult 65.95, coreMult 200, chargeMult 250, critRate 15 / critDamage 150, burstGaugePerShot 2.65, Elysion. Kit-autonomy gauntlet 2026-08-05 — first modeling (no prior override / kit-status row; simSupported was false). ⚠ EXACT SLUG: `delta` is the SR/Wind original (base unit) — NOT `delta-ninja-thief` (MG/Water Defender B2, aka 'dnt'); the slug-disambiguation lint's AMBIGUOUS-base guard was explicitly resolved on the slug. A PURE TANK/decoy kit: ZERO damage lines and ZERO weapon-state modifiers in the whole kit — her sim damage is EXACTLY her bare SR weapon (pinned byte-for-byte in scripts/tests/units/delta.test.ts against the empty-kit counterfactual). || MODELED (2 lines, both self-targeted OFFENSIVELY-INERT stats kept per kit completeness — never silently dropped): (S1) 'Activates when performing a Full Charge attack. Affects self. Max HP ▲ 8.82% for 10 sec.' → shotFired → self targetMaxHpPct 8.82 / 10s — every SR trigger pull IS a full charge (helm/a2 precedent: SR charge model fires one charged pull per trigger), so shotFired == per-full-charge; targetMaxHpPct is the schema's 'Max HP ▲ X%' stat (NOT the raw maxHpPct cube key, which an override buff cannot convert — folkwang precedent; it surfaces in the event log as the converted maxHpFlat); inert in v1 (she carries no atkOfMaxHpPct and there is no HP pool; the 10s window is shorter than nothing that would outlast it — re-application on every ~1.37s pull refreshes it to near-permanent uptime while firing, exactly as in game). (S2) 'Activates when using Burst Skills. Affects self. DEF ▲ 51.42% for 20 sec.' → burstCast → self defPct 51.42 / 20s — 'when using Burst Skills' is HER OWN cast (marciana/delta-ninja-thief precedent), NOT fullBurstEnter: she is Burst II, and keying to fullBurstEnter would over-fire on every team Full Burst including rotations a competing B2 (e.g. crown) casts — the STARVED comp in the spec pins the divergence; defPct is offensively inert in v1 (self DEF feeds no damage — anis/crust precedent), kept for a future DEF consumer. || UNMODELED (2 lines, both VERBATIM in `unmodeled`, never an `ignored` drop — both out-of-domain, ⚑ below): (BURST-DECOY) 'Decoy: Creates an avatar with 91.68% of the skill user's final Max HP that lasts for 10 sec.' — the sim models no avatar/summon entities, no threat model and no HP pool: the boss is immortal and never acts, so a decoy cannot redirect anything; the 91.68% magnitude has no consumer. Deliberately NOT encoded as a `shield` effect (the nearest primitive): a shield would emit shielded-windows and falsely fire teammates' 'shielded' triggers / requiresShielded gates — cross-unit contamination from a mechanic delta does not have (delta-ninja-thief's solo-branch shield is literal kit text; this avatar is not). (BURST-ATTRACT) 'Attract: Taunts all enemies for 10 sec.' — no aggro model; the single partless boss has no targeting to redirect (folkwang/delta-ninja-thief precedent: taunt is not a targetStatus, not a damageTaken debuff). The burst deals NO damage — her burst bucket must stay empty. || ⚑ LIST: [1] (OUT-OF-DOMAIN, avatar/threat subsystem) burst 'Decoy: Creates an avatar with 91.68% of the skill user's final Max HP that lasts for 10 sec.' estimate: 0 damage impact under ANY encoding (boss never acts; no HP pool for the magnitude). recipe: needs an avatar/threat primitive + an HP pool before any encoding; NEVER a shield effect (shielded-trigger contamination). tier: out-of-domain. [2] (OUT-OF-DOMAIN, no aggro model) burst 'Attract: Taunts all enemies for 10 sec.' estimate: 0 damage impact. recipe: needs an enemy-targeting model; not a targetStatus, not a damageTaken debuff. tier: out-of-domain (folkwang precedent). [3] (cadence) reloadFrames 111 is the datamined value (SR charge cadence itself is the engine's MEASURED universal bolt-recovery rule, helm precedent); estimate = datamine as-is; recipe = read the reload gap from any focused delta video; tier: measurement-gated. Low-impact: her damage is bare weapon only, so the reload gap is the sole cadence sensitivity. || EVIDENCE TIER: both modeled magnitudes (8.82, 51.42) and both durations (10s, 20s) are SL10 kit-text-literal (DATAMINED). || TIER 1 (folkwang precedent: zero damage lines, zero weapon-state modifiers; the encoding is two inert self-stats — no scoped buffs, no round counts, no status gates; the burstCast-vs-fullBurstEnter pin is the default own-cast prior, DIV-behaviorally confirmed by the STARVED comp). Faithful>fit; measured>fudge. Cross-family: S2b claude-fable-5 independently CONVERGED on both FAITHFUL encodings (trigger identity, self scope, durations, inertness) and BOTH unmodeled burst lines, including the same nearest-wrong set (lastBullet/magazine-end cadence for S1, fullBurstEnter key for S2, shield-encoding for the Decoy, boss-debuff fudge for Attract); see scripts/kit-autonomy/results/delta.json.",
+  "kitDescription": "Delta is a Wind sniper-rifle Burst-II Defender whose kit is pure survivability and threat redirection: Skill 1 raises her own Max HP after every full-charge shot, Skill 2 raises her own DEF when she casts her burst, and the burst itself deploys a Decoy avatar carrying most of her Max HP while taunting every enemy. The sim models the two self-stat buffs (both offensively inert — her damage is entirely her bare SR weapon) and documents the decoy and taunt as unmodeled: the boss never acts, there is no avatar/threat/aggro model, and the burst deals no damage.",
+  "caveats": [
+    "skill1: Max HP ▲ 8.82% is modeled as targetMaxHpPct on shotFired (every SR pull is a full charge); offensively inert in v1 — no atkOfMaxHpPct, no HP pool",
+    "skill2: DEF ▲ 51.42% is keyed to her OWN burstCast ('when using Burst Skills' = own cast, not fullBurstEnter); offensively inert in v1",
+    "burst: both 'Decoy' (avatar) and 'Attract' (taunt) are UNMODELED — no avatar/threat/aggro model; the burst deals no damage and must never be encoded as a shield (shielded-trigger contamination)",
+    "weapon: reloadFrames 111 is an unmeasured datamine estimate (SR charge cadence is the engine's measured universal bolt-recovery rule)"
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Decoy: Creates an avatar with 91.68% of the skill user's final Max HP that lasts for 10 sec.",
+      "Attract: Taunts all enemies for 10 sec."
+    ]
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 8.82,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "defPct", "value": 51.42, "durationSec": 20 }
+      ]
+    }
+  ],
+  "burst": []
+}

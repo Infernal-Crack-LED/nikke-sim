@@ -1,0 +1,107 @@
+{
+  "slug": "harran",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "25% chance of activating when attacking",
+      "disposition": "FAITHFUL",
+      "scope": "Applies to the owner's attacks (every trigger pull; SR so every shot is a full-charge round at sim cadence). Proc damage is skill-bucket function damage — never core, no +30% range on the rider (engine force-sets no-range), FB +50% by landing timing (default ON per rider convention).",
+      "durationSemantics": "DoT: ticks every 1 sec for 5 sec = exactly 5 ticks per proc instance (dot { atkPct:17.28, durationSec:5, intervalSec:1 }). The 5s is a real durationSec — this is NOT a rounds line.",
+      "triggerIdentity": "shotFired on the owner, thinned to the 25% chance. The sim is deterministic (no seed) — the chance must be encoded deterministically: either everyN:4 on the block (proc every 4th shot) or expected-value scaling. Encoding choice is ⚑. It is NOT an interval trigger — the kit gives an explicit activation clause ('when attacking').",
+      "targetSet": "Enemy (the boss). Engine ignores target on enemy-directed damage; block authored target:'enemy'.",
+      "nearestWrongModel": "Dropping the 25% gate and appending a guaranteed DoT instance per shot (engine appends an independent DoT per fire and never dedups) — a 4x over-credit; secondarily, re-keying to interval{sec} because the DoT 'constantly deals', losing the per-attack proc identity and its cadence coupling to fire rate.",
+      "distinguishingAssertion": "Run controlComp('harran'); collect damage events with srcSlot skill1 (DoT ticks) and shot events for harran. Assert tickCount ≈ harranShots × 0.25 × 5 (±1 proc's worth for fight-end truncation and the deterministic thinning phase) — GREEN under a 25%-gated encoding; a guaranteed per-shot DoT yields ≈ harranShots × 5 ticks (~4×, RED). Also assert each tick's mult corresponds to 17.28% and no tick has core applied.",
+      "inertness": "DoT ticks must show rangeApplied=false and zero core; removing the DoT must not change harran's normal/charge-bucket damage (it is additive skill damage only). Overlap between instances is possible only when procs land <5s apart — with the 25% thinning at SR cadence overlap should be rare; whether the real game REFRESHES a named 'Virus Transfer' rather than stacking instances is kit-silent — the test should pin the chosen convention explicitly rather than leave it implied.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "when an enemy afflicted ... is neutralized",
+      "disposition": "UNMODELED",
+      "scope": "Spread-on-kill: re-applies the Virus Transfer DoT to the 2 nearest OTHER enemies when an afflicted enemy dies. Scope-lock fight is a single immortal partless boss — no enemy is ever neutralized and there are no '2 nearest enemy units' to spread to. Structurally dead at scope.",
+      "durationSemantics": "Same 17.28%/1s/5s DoT if it ever fired — but it cannot fire at scope.",
+      "triggerIdentity": "On-kill of an afflicted target (no engine trigger kind exists for enemy death; correctly so — nothing dies in v1).",
+      "targetSet": "2 nearest enemy units (other than the neutralized one). Empty set at scope.",
+      "nearestWrongModel": "Folding this line into the boss-facing DoT anyway — e.g. doubling proc frequency or adding a second concurrent DoT instance 'because the kit lists Virus Transfer twice' — an invented over-credit on a line that can never trigger.",
+      "distinguishingAssertion": "withPatchedOverride('harran', strip the spread block) must produce IDENTICAL totals(res)['harran'] to the shipped override — GREEN when the line is verbatim-unmodeled or a dead block, RED if it was folded into live boss damage. The line's verbatim text must appear in override.unmodeled.skill1.",
+      "inertness": "Everything — this line must move zero damage, zero gauge, zero events.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge ... Gain Pierce for 1 round(s)",
+      "disposition": "FAITHFUL",
+      "scope": "Self, granted on each full-charge attack. Pierce tagging makes the shot Pierce-Damage-▲-eligible; at scope (one partless boss, no pierceDamagePct carriers in the control comp, pierceDamagePct parsed-but-inert in v1) pierce moves no damage — but the encoding still matters for faithfulness and future consumers.",
+      "durationSemantics": "'for 1 round(s)' is a ROUND count — expires after the holder fires 1 round — NEVER durationSec:1. Note the schema's gainPierce effect carries only durationSec (no durationShots field): the faithful shapes are gainPierce on the full-charge-shot block (re-armed every shot, so continuously live while she fires full-charge rounds — behaviorally exact at SR cadence) or, defensibly, hasPierce:true given every sim SR shot is full-charge. A durationSec:1 encoding is WRONG (SR charge cycle ≈ 60f charge + 22f latency + recovery > 1s, so pierce would lapse between shots).",
+      "triggerIdentity": "Per full-charge attack by the owner — shotFired at SR full-charge cadence (the sim always fires full-charge for a charge weapon). NOT fullBurstEnter, NOT burstCast, no FB gate.",
+      "targetSet": "Self only.",
+      "nearestWrongModel": "durationSec:1 wall-clock (pierce/crit windows that lapse before the next shot, near-zero uptime), or promoting to an unconditionally-on top-level hasPierce while ALSO leaving a duplicate gainPierce (double representation).",
+      "distinguishingAssertion": "Structural: the override represents pierce via gainPierce on the full-charge block (or documented hasPierce with the 1-round wording noted), with NO durationSec:1 anywhere in the block. Behavioral: patch a teammate override to grant harran pierceDamagePct — her shot damage must respond on every shot (continuous pierce uptime), which is GREEN under round-count/per-shot re-arm and RED under a lapsing durationSec:1 window.",
+      "inertness": "On the stock control comp (no Pierce Damage ▲ sources, partless boss) pierce must move ZERO damage — harran's totals with and without the pierce effect must be identical.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Rate ▲ 2.95% for 1 round(s)",
+      "disposition": "FAITHFUL",
+      "scope": "Self, generic critRatePct (kit text does not scope it to normal attacks — critRateNormalPct would be an over-narrowing; plain critRatePct is the literal read).",
+      "durationSemantics": "'for 1 round(s)' = durationShots:1, no durationSec at all. Because the granting trigger is her own full-charge shot, the buff is re-granted every shot: steady-state ≈ permanent +2.95% crit while firing, with the round-count (not a timer) carrying it across the charge cycle and across reloads.",
+      "triggerIdentity": "Same block as the pierce grant: per full-charge attack, self-targeted. One block, two effects.",
+      "targetSet": "Self only — buffApply must show casterIdx === targetIdx === harran's slot.",
+      "nearestWrongModel": "durationSec:1 — the SR fire cycle exceeds 1s, so a wall-clock window expires before the next shot and the crit buff has ~0 effective uptime; the shipped damage then silently loses the 2.95% crit-rate contribution. This is the taxonomy's canonical rounds-vs-seconds trap and the single most likely shared misread on this kit.",
+      "distinguishingAssertion": "Collect buffApply events with stat 'critRatePct' and value 2.95: assert each carries durationShots === 1 (the buffApply event exposes durationShots) and targets self. Corroborate behaviorally: harran's damage events between consecutive shots must reflect the elevated crit rate on essentially every shot — GREEN under durationShots:1 (re-armed per shot), RED under durationSec:1 (buff absent by the time the next shot fires — crit rate reverts to sheet base).",
+      "inertness": "Must NOT apply to teammates (self-only), must NOT be encoded as critRateNormalPct (her burst/skill damage crit would then be under-credited relative to the literal kit text).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "when killing an enemy ... ATK ▲ 3.02% x15",
+      "disposition": "UNMODELED",
+      "scope": "Self ATK stacking on kills. The scope-lock boss is immortal and there are no adds — zero kills, zero stacks, structurally dead at scope.",
+      "durationSemantics": "10 sec per application, 15 stacks max (up to +45.3% ATK) — if it could ever fire, which it cannot here.",
+      "triggerIdentity": "On-kill by the owner — no such event exists in the v1 sim (nothing dies).",
+      "targetSet": "Self.",
+      "nearestWrongModel": "Modeling it as a passive or per-shot stacking ATK ramp 'to represent her sustained output' — an invented up-to-45% ATK over-credit on a line that never triggers at scope. This is the highest-magnitude possible error on this kit.",
+      "distinguishingAssertion": "Assert ZERO buffApply events with stat 'atkPct' and value 3.02 from harran across the full 180s run; and withPatchedOverride stripping the line changes totals(res)['harran'] by exactly 0. Verbatim text must appear in override.unmodeled.skill2.",
+      "inertness": "Everything — no buff, no damage, no gauge from this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 999% of final ATK as Burst Skill damage",
+      "disposition": "FAITHFUL",
+      "scope": "Single instant burst-bucket hit at 999% of her final ATK ('all enemies' collapses to the one boss). Burst-cast damage lands BEFORE the Full Burst window opens (verified project fact): no +50% FB major, no FB-entry auras in its snapshot; no core (no 'core strike' wording); no +30% range on the instance.",
+      "durationSemantics": "Instant, once per burst cast; 40s cooldown drives cadence via the rotation state machine.",
+      "triggerIdentity": "burstCast (fires ONLY on rotations harran herself bursts) — emphatically NOT fullBurstEnter. She is Burst III with a fixed helm B3 co-slot in controlComp, so the two triggers genuinely diverge in the fixture: fullBurstEnter would fire on helm's rotations too, over-crediting a 999% nuke per foreign FB.",
+      "targetSet": "Enemy (boss). flatDamage in the burst slot.",
+      "nearestWrongModel": "Keying to fullBurstEnter (fires on EVERY team Full Burst including helm-led ones — the burstCast-vs-fullBurstEnter trap, and it diverges precisely because the fixture has a second B3), or letting the hit take the +50% FB major / core / range.",
+      "distinguishingAssertion": "Collect burstCast and damage events: every burst-bucket damage instance from harran must be 1:1 with a harran burstCast event (count equality over the run), with fbMajorApplied === false, rangeApplied === false, zero core, and mult consistent with 999%. RED under fullBurstEnter-keying: burst-bucket instances exceed harran's own burstCast count whenever helm carries a rotation. Note: a lone B3 makes ZERO full bursts — the controlComp B1+B2 fixture is mandatory for this assertion to exercise anything.",
+      "inertness": "Must NOT fire on Full Bursts harran did not cast; must NOT receive the +50% FB bonus; must not be emitted as skill-bucket damage.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:VirusTransfer-25pct-DoT",
+    "skill2:FullCharge-pierce-1round",
+    "skill2:FullCharge-critRate-2.95-1round",
+    "burst:999pct-burst-damage"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "■ Activates when an enemy afflicted with Virus Transfer is neutralized. Affects 2 nearest enemy unit(s). Virus Transfer: Constantly deals 17.28% of final ATK as damage every 1 sec for 5 sec."
+    ],
+    "skill2": [
+      "■ Activates when killing an enemy. Affects self. ATK ▲ 3.02%, stacks up to 15 time(s) and lasts for 10 sec."
+    ],
+    "burst": []
+  },
+  "notes": "Three places I expect a shared-prior misread. (1) THE ROUNDS TRAP: both skill2 effects say 'for 1 round(s)' — durationShots:1, never durationSec:1; with an SR whose charge cycle exceeds 1s, a seconds encoding silently zeroes the crit buff's uptime while a rounds encoding (re-armed per full-charge shot) gives ~permanent uptime, so the two readings produce materially different crit-side damage and the test MUST pin durationShots on the buffApply. (2) THE 25% CHANCE: the sim is deterministic — the proc must be thinned deterministically (everyN:4 or an equivalent expected-value scheme); the encoding choice and its phase are ⚑ CALIBRATED even though the 17.28/1s/5s magnitudes are DATAMINED prose. A guaranteed per-shot DoT is a 4x over-credit and the engine's append-per-fire/never-dedup DoT semantics make that failure silent. Whether in-game Virus Transfer REFRESHES vs STACKS when procs overlap is kit-silent — at 25%-thinned SR cadence overlap is rare, but the test should state the convention chosen. (3) BURST TRIGGER: with helm as the fixed co-B3 in controlComp, burstCast vs fullBurstEnter genuinely diverge — a fullBurstEnter-keyed 999% nuke over-credits one full nuke per helm-led rotation; assert 1:1 with harran's own burstCast events and fbMajorApplied=false. Two kit lines (spread-on-neutralize, on-kill ATK stacks) are structurally dead at scope — immortal single boss — and belong verbatim in unmodeled with zero-delta assertions, not approximated into live damage. Pierce is damage-inert on the stock fixture (no Pierce Damage ▲ carrier, partless boss) but the encoding should still be the gainPierce-on-trigger shape (or documented hasPierce given all-shots-full-charge), never a lapsing 1s timer.",
+  "model": "claude-fable-5"
+}

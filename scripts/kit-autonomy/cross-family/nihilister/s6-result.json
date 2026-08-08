@@ -1,0 +1,205 @@
+{
+  "slug": "nihilister",
+  "leakDetected": null,
+  "override": {
+    "slug": "nihilister",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "gainPierce",
+            "durationSec": 2.0
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 10
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 112.64,
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 158.59,
+            "crit": true
+          },
+          {
+            "kind": "dot",
+            "atkPct": 13.19,
+            "durationSec": 10,
+            "intervalSec": 1,
+            "flavor": "sustained"
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "maxAmmoFlat",
+            "value": 6,
+            "durationSec": 15
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Piercing Radius ▲ 50% for 1 round(s).",
+        "Activates when hits 2 or more enemies concurrently. Affects all enemies hit. Deals 50.33% of final ATK as additional damage."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill2 cadence: the 112.64% line carries NO activation clause and the packet supplies no datamined skill cooldown — modeled as interval 10s, first fire at t=10s (no 'Forcefully uses Skill' clause ⇒ interval convention). Every skill-bucket number scales linearly with this guess.",
+      "⚑ skill1 pierce duration: 'for 1 round(s)' is a ROUND count, but gainPierce has no durationShots field — converted to durationSec 2.0 (≈ one SR charge-fire cycle) so pierce stays live across consecutive shots without spanning the reload gap. Not a measured value.",
+      "⚑ skill1 trigger: 'attacking with Full Charge' is modeled as shotFired — there is no full-charge trigger kind, and an SR at scope lock full-charges every shot. If any kit/mode path fires her uncharged, this over-fires.",
+      "⚑ cadence tuple: chargeFrames 60 / reloadFrames 141 / ammo 6 are datamined fields on the known-unreliable list; her shot economy (and therefore the burst's Max Ammunition ▲6 gain) rests on them unmeasured.",
+      "Pierce is offensively INERT at scope lock unless a teammate carries Pierce Damage ▲ (pierceDamagePct is parsed-but-inert in v1); the gainPierce effect is kept for tagging fidelity, not for damage.",
+      "The skill1 multi-enemy branch (2+ enemies hit concurrently) is structurally unreachable on the single, partless scope-lock boss — its 50.33% rider contributes zero and is recorded in unmodeled rather than modeled behind an unreachable gate.",
+      "Riders (skill2 instant, burst instant) are authored crit-eligible at the caster's sheet rate and take NO core (no 'core strike' wording); the burn DoT is left non-crit per the default-OFF DOT_CRIT gate (crit opt-in is measured-only).",
+      "noFb / noRange are deliberately unset: full-burst eligibility is by landing TIMING (default on) and the range exemption is engine-automatic on riders."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Independent prose→JSON read of Nihilister (nihilister, SR/Fire/Attacker/Burst II). Modeled: S1 full-charge Pierce tag (shotFired → gainPierce, ⚑2.0s stand-in for '1 round'); S2 range-wide 112.64% instant on an ⚑interval-10s cadence (no activation clause in the kit text ⇒ interval per the trigger taxonomy); burst 158.59% instant + a 13.19%/s × 10s sustained Burn (one DoT instance per cast, append-not-refresh) + a self Max Ammunition ▲6 rounds for 15s (a weapon-state modifier — it doubles her 6-round magazine and removes reloads inside the window, so it IS damage). Deliberately unmodeled: Piercing Radius ▲50% (no StatKey; a multi-target geometry stat with no meaning against one partless boss) and the whole 'hits 2 or more enemies concurrently' branch incl. its 50.33% rider (the gate cannot be satisfied at scope lock). Burst instant damage resolves pre-Full-Burst by engine convention; the Burn ticks then run through the FB window and take the +50% by tick timing."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when attacking w/ Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'shotFired'}, target self — no full-charge trigger kind exists; her SR full-charges every shot at scope lock (⚑ approximation, flagged)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Gain Pierce for 1 round(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'gainPierce', durationSec:2.0} — timed/step-gated pierce is a gainPierce EFFECT, not the whole-fight hasPierce flag; 'round' → seconds is ⚑"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Piercing Radius ▲ 50% for 1 round(s).",
+      "status": "SKIPPED",
+      "effectOrReason": "No StatKey for piercing radius; it governs how many targets one pierced shot sweeps — dimensionless against a single partless boss. Verbatim in unmodeled.skill1"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when hits 2+ enemies concur.",
+      "status": "SKIPPED",
+      "effectOrReason": "Trigger condition unreachable in v1 (one boss, no parts, no adds) — recorded rather than modeled behind a permanently-false gate"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 50.33% of final ATK as add'l dmg",
+      "status": "SKIPPED",
+      "effectOrReason": "Rider of the unreachable 2+-enemy gate above; contributes zero at scope lock. Verbatim in unmodeled.skill1"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects enemies within attack range.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — range-scoped AoE resolves to the single boss"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 112.64% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'flatDamage', atkPct:112.64, crit:true} on trigger {kind:'interval', sec:10} — no activation clause ⇒ interval; the 10s cadence is ⚑"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects enemies within the attack range",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} on trigger {kind:'burstCast'}"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 158.59% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'flatDamage', atkPct:158.59, crit:true} — burst-cast instant, FB-exempt by engine convention (noFb not authored)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Burn: 13.19% every 1 sec for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'dot', atkPct:13.19, durationSec:10, intervalSec:1, flavor:'sustained'} — one instance per burst cast (engine appends, never dedups); crit left off per the default-OFF DoT-crit gate"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammunition Capacity ▲ 6 round(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'buff', stat:'maxAmmoFlat', value:6, durationSec:15} on target self — flat round count (base ammo 6 → 12), a weapon-state modifier that removes reload downtime inside the window"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[0].trigger.sec (and its first-fire phase)",
+      "estimate": "interval 10s, first fire at t=10s (~17 procs over a 180s fight)",
+      "reasoning": "The 112.64% line carries NO activation clause, so the taxonomy routes it to `interval`; the packet supplies no datamined skillCooldownsSec (the '20s' in the base stats is the Burst II cooldown, not a skill cooldown). 10s is the modal cooldown for an always-on AoE skill-damage line. First fire at t=sec (not t=0) because the kit has no 'Forcefully uses Skill N' clause — the interval-trigger convention. This single value scales her entire skill bucket linearly.",
+      "recipe": "Read nihilister's datamined skillCooldownsSec from data/ and set sec directly. Independently: focus-record a 180s fight and count the 112.64%-shaped popups — 18 vs 12 vs 36 cleanly discriminates 10s / 15s / 5s, and the FIRST popup's timestamp pins the phase (t=0 vs t=CD)."
+    },
+    {
+      "field": "skill1[0].effects[0].durationSec (Pierce, 'for 1 round(s)')",
+      "estimate": "2.0 s",
+      "reasoning": "'1 round(s)' is a ROUND count, not wall-clock, but `gainPierce` exposes only durationSec (no durationShots). Her cycle is chargeFrames 60 (1.0s) + 22-frame release latency + recovery, so ~1.5–2.0s per shot; 2.0s keeps pierce continuously live while she is firing and lets it lapse across the 141-frame (~2.35s) reload rather than running permanently. Authoring it with durationSec ABSENT would make pierce permanent from her first shot, over-crediting any ally Pierce Damage ▲ during reloads.",
+      "recipe": "Measure her real shot interval from focus footage (ammo-counter decrements) and set durationSec to exactly one interval; or extend gainPierce with a durationShots field mirroring the buff round-count semantics and author durationShots:1."
+    },
+    {
+      "field": "skill1[0].trigger (full-charge activation)",
+      "estimate": "{kind:'shotFired'} — every trigger pull activates it",
+      "reasoning": "No `fullCharge` trigger kind exists in the schema. An SR at scope lock charges to full on every shot, so shotFired and 'attacking with Full Charge' coincide; the approximation only breaks if some path lets her release uncharged (none in this kit text).",
+      "recipe": "Confirm from a focus recording that every one of her shots is a full charge (no tap-fire), i.e. shot count == full-charge count over a magazine."
+    },
+    {
+      "field": "cadence tuple (chargeFrames 60 / reloadFrames 141 / ammo 6)",
+      "estimate": "as datamined; ~1.0s charge, ~2.35s reload, 6→12 rounds under the burst buff",
+      "reasoning": "ALWAYS-⚑ #1: the datamined cadence fields are on the known-unreliable list, and here they do double duty — the 15s Max Ammunition ▲6 window's whole value is (shots fired with a 12-round magazine) − (shots fired with 6 + one reload), so a wrong reloadFrames misprices the burst's self-buff, not just her normal bucket.",
+      "recipe": "Ammo-counter read on a focus recording: time 6 consecutive shots for the fire cycle, and reload-start→refill frames for reloadFrames; re-check the same window during her 15s burst buff to confirm the magazine reads 12."
+    },
+    {
+      "field": "override.skill1 — 'hits 2 or more enemies' branch (50.33%)",
+      "estimate": "0 contribution at scope lock (unmodeled, not gated)",
+      "reasoning": "The activation needs 2+ concurrent enemies; the scope-lock boss is single and partless, so no authoring of this block could ever fire. Recording it in `unmodeled` keeps the no-silent-drops ledger honest without shipping a dead block — but it means this override is NOT portable to any multi-target content.",
+      "recipe": "If multi-target/adds content is ever simulated, model it as a flatDamage 50.33% on the same shotFired trigger with an enemy-count gate; validate by popup-counting a wave fight where 2+ targets sit inside her pierce line."
+    }
+  ],
+  "model": "claude-opus-5"
+}

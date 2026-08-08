@@ -1,0 +1,116 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-08-05[39m
+
+ [31m❯[39m scripts/kit-autonomy/blind/signal.adapted.test.ts [2m([22m[2m19 tests[22m[2m | [22m[31m7 failed[39m[2m | [22m[33m5 skipped[39m[2m)[22m[32m 9[2mms[22m[39m
+     [32m✓[39m the control comp actually reaches Full Burst (else every FB-keyed claim is vacuous)[32m 2[2mms[22m[39m
+[31m     [31m×[31m is authored as a hitCount:60 enemy-targeted block carrying the 5.94% / 5 sec debuff(s)[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m procs many times per fight and every 5.94% application is attributable to signal[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m the threshold is a ROUND count — doubling it to 120 halves the procs[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m the debuff lands on the boss only — never on an ally or on self[39m[32m 1[2mms[22m[39m
+     [32m✓[39m the skill1 shred moves NO damage (no enemy-DEF/ATK consumer exists)[32m 0[2mms[22m[39m
+     [2m[90m↓[39m[22m GAP — the MAGNITUDE of enemy DEF -5.94% is unobservable: the schema has no enemy-DEF consumer (defPct is self-DEF and inert), so only the trigger/target/duration are testable
+     [2m[90m↓[39m[22m GAP — enemy ATK -5.94% is structurally unobservable at scope lock: the boss deals no damage in v1, so an enemy ATK debuff has no consumer by construction
+     [32m✓[39m keys on fullBurstEnter (any team Full Burst), targets self, and is not a damage buff[32m 0[2mms[22m[39m
+     [32m✓[39m emits no 44.08% buff anywhere in the fight[32m 0[2mms[22m[39m
+     [32m✓[39m is damage-inert for the whole team — the recovery is self-scoped[32m 0[2mms[22m[39m
+     [2m[90m↓[39m[22m GAP — the 44.08% lifesteal amount is unobservable: v1 models no HP pool and cfg.onEvent has no recovery event kind, so only the trigger/target are testable
+     [32m✓[39m is authored as a burstCast enemy block carrying the 229.22% hit and the 12.34% / 10 sec debuff[32m 0[2mms[22m[39m
+[31m     [31m×[31m the 229.22% hit is live and non-vacuous — zeroing it strictly lowers signal damage[39m[32m 0[2mms[22m[39m
+     [32m✓[39m the burst hit takes NO Full Burst major — forcing noFb is a strict no-op[32m 0[2mms[22m[39m
+[31m     [31m×[31m the burst hit is body-only — forcing core:true strictly raises signal damage[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m the 12.34% debuff fires once per signal burst, on the boss, and moves no damage[39m[32m 0[2mms[22m[39m
+     [2m[90m↓[39m[22m GAP — the MAGNITUDE of enemy DEF -12.34% is unobservable for the same reason as skill1: no enemy-DEF consumer, and boss DEF at scope lock is itself unmeasured
+     [2m[90m↓[39m[22m GAP — the +30% range bonus exclusion on the burst rider is engine-forced and not readable without pinning the damage-event field names, which a blind author must not guess
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 7 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/signal.adapted.test.ts[2m > [22msignal skill1 — 60-round hit counter, enemy DEF/ATK down 5.94% for 5 sec[2m > [22mis authored as a hitCount:60 enemy-targeted block carrying the 5.94% / 5 sec debuff(s)
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/signal.adapted.test.ts:[2m167:23[22m[39m
+    [90m165|[39m     // TRIGGER IDENTITY: a magazine-keyed (lastBullet) or per-shot (sh…
+    [90m166|[39m     [90m// fails here outright.[39m
+    [90m167|[39m     [34mexpect[39m(hc[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                       [31m^[39m
+    [90m168|[39m     [34mexpect[39m(hc[33m.[39m[34msome[39m((b) [33m=>[39m b[33m.[39mtrigger[33m.[39mcount [33m===[39m [34m60[39m))[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+    [90m169|[39m     // TARGET SET: the kit says 'Affects the target(s)' — the enemy, n…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/signal.adapted.test.ts[2m > [22msignal skill1 — 60-round hit counter, enemy DEF/ATK down 5.94% for 5 sec[2m > [22mprocs many times per fight and every 5.94% application is attributable to signal
+[31m[1mAssertionError[22m: expected 0 to be greater than 10[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/signal.adapted.test.ts:[2m193:19[22m[39m
+    [90m191|[39m     // lands in the thousands. A 120-round SMG at ~16 effective rounds…
+    [90m192|[39m     [90m// gives ~40-60 procs at a 60-round threshold.[39m
+    [90m193|[39m     [34mexpect[39m(procs)[33m.[39m[34mtoBeGreaterThan[39m([34m10[39m)[33m;[39m
+    [90m   |[39m                   [31m^[39m
+    [90m194|[39m     [34mexpect[39m(procs)[33m.[39m[34mtoBeLessThan[39m([34m500[39m)[33m;[39m
+    [90m195|[39m     // ATTRIBUTION: nothing else in the control comp emits a 5.94% bos…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/signal.adapted.test.ts[2m > [22msignal skill1 — 60-round hit counter, enemy DEF/ATK down 5.94% for 5 sec[2m > [22mthe threshold is a ROUND count — doubling it to 120 halves the procs
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/signal.adapted.test.ts:[2m202:19[22m[39m
+    [90m200|[39m     [35mconst[39m at60 [33m=[39m [34mprocCount[39m([33mBASE[39m[33m.[39mevents[33m,[39m [34m5.94[39m)[33m;[39m
+    [90m201|[39m     [35mconst[39m at120 [33m=[39m [34mprocCount[39m([33mR_S1_120[39m[33m.[39mevents[33m,[39m [34m5.94[39m)[33m;[39m
+    [90m202|[39m     [34mexpect[39m(at120)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                   [31m^[39m
+    [90m203|[39m     // Estimate-free discriminator. A magazine-keyed (lastBullet) or t…
+    [90m204|[39m     [90m// is untouched by the count patch and lands at ratio ~1.0.[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/signal.adapted.test.ts[2m > [22msignal skill1 — 60-round hit counter, enemy DEF/ATK down 5.94% for 5 sec[2m > [22mthe debuff lands on the boss only — never on an ally or on self
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/signal.adapted.test.ts:[2m212:24[22m[39m
+    [90m210|[39m   it('the debuff lands on the boss only — never on an ally or on self'…
+    [90m211|[39m     [35mconst[39m all [33m=[39m [34mappliesWithValue[39m([33mBASE[39m[33m.[39mevents[33m,[39m [34m5.94[39m)[33m;[39m
+    [90m212|[39m     [34mexpect[39m(all[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                        [31m^[39m
+    [90m213|[39m     [35mfor[39m ([35mconst[39m e [35mof[39m all) {
+    [90m214|[39m       [34mexpect[39m(e[33m.[39mcasterIdx)[33m.[39m[34mtoBeNull[39m()[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/signal.adapted.test.ts[2m > [22msignal burst — 229.22% of final ATK + enemy DEF -12.34% for 10 sec[2m > [22mthe 229.22% hit is live and non-vacuous — zeroing it strictly lowers signal damage
+[31m[1mAssertionError[22m: expected 85054167.92026065 to be less than 85054167.92026065[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/signal.adapted.test.ts:[2m301:41[22m[39m
+    [90m299|[39m
+    [90m300|[39m   it('the 229.22% hit is live and non-vacuous — zeroing it strictly lo…
+    [90m301|[39m     [34mexpect[39m([34mtotals[39m([33mR_B_NODMG[39m[33m.[39mres)[[33mSLUG[39m])[33m.[39m[34mtoBeLessThan[39m([33mT_BASE[39m[[33mSLUG[39m])[33m;[39m
+    [90m   |[39m                                         [31m^[39m
+    [90m302|[39m   })[33m;[39m
+    [90m303|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/signal.adapted.test.ts[2m > [22msignal burst — 229.22% of final ATK + enemy DEF -12.34% for 10 sec[2m > [22mthe burst hit is body-only — forcing core:true strictly raises signal damage
+[31m[1mAssertionError[22m: expected 85054167.92026065 to be greater than 85054167.92026065[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/signal.adapted.test.ts:[2m313:40[22m[39m
+    [90m311|[39m     // Proves the shipped model does not already core (which the kit t…
+    [90m312|[39m     // and that the core path is reachable, so the previous assertion …
+    [90m313|[39m     [34mexpect[39m([34mtotals[39m([33mR_B_CORE[39m[33m.[39mres)[[33mSLUG[39m])[33m.[39m[34mtoBeGreaterThan[39m([33mT_BASE[39m[[33mSLUG[39m])[33m;[39m
+    [90m   |[39m                                        [31m^[39m
+    [90m314|[39m   })[33m;[39m
+    [90m315|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/signal.adapted.test.ts[2m > [22msignal burst — 229.22% of final ATK + enemy DEF -12.34% for 10 sec[2m > [22mthe 12.34% debuff fires once per signal burst, on the boss, and moves no damage
+[31m[1mAssertionError[22m: expected 0 to be greater than 1[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/signal.adapted.test.ts:[2m318:19[22m[39m
+    [90m316|[39m   it('the 12.34% debuff fires once per signal burst, on the boss, and …
+    [90m317|[39m     [35mconst[39m procs [33m=[39m [34mprocCount[39m([33mBASE[39m[33m.[39mevents[33m,[39m [34m12.34[39m)[33m;[39m
+    [90m318|[39m     [34mexpect[39m(procs)[33m.[39m[34mtoBeGreaterThan[39m([34m1[39m)[33m;[39m
+    [90m   |[39m                   [31m^[39m
+    [90m319|[39m     [34mexpect[39m(procs)[33m.[39m[34mtoBeLessThan[39m([34m25[39m)[33m;[39m
+    [90m320|[39m     [35mfor[39m ([35mconst[39m e [35mof[39m [34mbossDebuffs[39m([33mBASE[39m[33m.[39mevents[33m,[39m [34m12.34[39m)) {
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m7 failed[39m[22m[2m | [22m[1m[32m7 passed[39m[22m[2m | [22m[33m5 skipped[39m[90m (19)[39m
+[2m   Start at [22m 16:44:58
+[2m   Duration [22m 505ms[2m (transform 86ms, setup 0ms, import 399ms, tests 9ms, environment 0ms)[22m
+

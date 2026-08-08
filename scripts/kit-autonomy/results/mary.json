@@ -1,0 +1,62 @@
+{
+  "slug": "mary",
+  "kitDescription": "Mary is a pure support healer with no damage skills of her own. Her Skill 1 automatically heals the single most-injured ally each time she fires the last shell of her 9-round shotgun magazine. Her Skill 2 boosts all incoming healing the team receives for 15 seconds whenever the team enters Full Burst. Her Burst heals the entire team for a large chunk of her own Max HP, and while the team is healthy (above 50% HP) it also grants everyone a DEF increase for 10 seconds.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "last bullet → 1 lowest-HP ally heal",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "lastBullet trigger, alliesLowestHp count:1, heal ticks:1; magnitude unmodeled (no HP pool), documented in caveats",
+        "blindSaid": "S6: identical encoding; S5: 4 tests green incl. shotFired-trigger discrimination",
+        "formulaCheck": "heal-as-recovery-event matches the v1 scope facts (no HP pool); lastBullet is per-magazine (ammo 9), not per-pellet — correct for SG hitsPerShot 10",
+        "fireRateOk": true,
+        "explanation": "Trigger, target set, and instant (ticks:1) semantics all match the prose; tests anchor the recovery event to ammoAfter-0 shot frames and exclude shotFired/burstCast misreads. The 8.4% magnitude is unmodeled but explicitly documented with reason (no HP pool) — a scope fact, not a gap."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "FB enter → Incoming healing ▲23.78% 15s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim in skill2: []; negative pins (no skill2 buffApply, no FB-start recovery event)",
+        "blindSaid": "S2b/S5/S6 all concur: no incoming-healing StatKey exists and heals carry no amount, so the line is structurally inexpressible; S6 kept an empty-effects husk, driver omits the block — behaviorally identical",
+        "formulaCheck": "no bucket in the damage formula consumes healing-received; offensively inert by construction",
+        "fireRateOk": true,
+        "explanation": "Correctly recorded verbatim in unmodeled with reason (no StatKey, no HP pool). Driver's negative assertions guard both smuggling paths (stat re-encode, fullBurstEnter heal)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Recovers 39.6% caster Max HP, all allies",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast trigger, allies, heal ticks:1; magnitude documented-unmodeled",
+        "blindSaid": "S6: identical; S5: heal reaches recovery consumer, deleting it strictly reduces buffApplies",
+        "formulaCheck": "burstCast (her own cast) vs fullBurstEnter is the load-bearing identity; per the SSOT burst-cast resolution precedes FB entry, and the contention arm proves no healing on liter-opened rotations",
+        "fireRateOk": true,
+        "explanation": "Own-cast trigger is correct for a Burst I unit competing with liter; driver's two-B1 contention arm and timing arm both pin it, satisfying S2b's live-divergence warning. 39.6% magnitude documented as unmodeled (no HP pool)."
+      },
+      {
+        "kitLine": "above 50% HP → DEF ▲19.8% all, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, allies, defPct 19.8 durationSec 10, gate collapsed (scope-trivial), documented",
+        "blindSaid": "S2b: encode ungated with condition documented — driver matches; S5: exact-value + expiresFrame + damage-neutrality tests green",
+        "formulaCheck": "defPct declared inert in v1 (scope fact); the 50%-HP gate is always true at scope lock (immortal team) — the collapse is documented in caveats with the caster-vs-target HP ambiguity noted",
+        "fireRateOk": true,
+        "explanation": "Exact kit value 19.8 and 10s duration asserted per cast on all allies; noDef/defToAtk arms prove the buff is present AND never leaks into a damage bucket."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: all four kit lines are either faithfully encoded (S1 lastBullet heal event, burst own-cast heal event, burst DEF 19.8/10s) or verbatim-unmodeled with a structural reason (S2 incoming-healing has no StatKey and no HP pool to scale). The S5 blind tests run green (11/11 + 2 documented GAP skips) against the shipped override, and the S6 blind override is behaviorally identical on every line — convergence is mechanical, and the divergences that matter (burstCast vs fullBurstEnter, lastBullet vs shotFired, dropped-vs-inert DEF) are each pinned by a discriminating counterfactual in the driver's own suite, including the B1-contention arm S2b flagged as live. Both heal magnitudes and the S2 line are honestly documented as unmodeled due to v1 scope facts (no HP pool), and every ⚑ (alliesLowestHp leftmost stand-in, lastBullet cadence dependence on datamined ammo/reload) carries reason plus tier. Same-model residual for the owner to spot-check: the alliesLowestHp→leftmost stand-in and the magazine-economy cadence (ammo 9 / reloadFrames 111) are convention-and-datamine-dependent — if either field is wrong, the S1 recovery channel's frequency inherits the error directly; also the DEF line's 50%-HP gate collapse is only valid because nothing takes damage at scope lock.",
+  "model": "kimi-code/k3"
+}
