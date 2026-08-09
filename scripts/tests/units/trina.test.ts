@@ -29,8 +29,7 @@
 //        teammate-COLD lever for all-enemies B3 nukes, feature request)                               [T6]
 //      ■ enemy count (excl. Nikkes) > 2 → all allies: Wilted Roots — same amp ▲64.46% for 5s (GAP,
 //        same missing primitive; never fires in solo raid anyway: enemy count == 1)                   [T6]
-//      ■ all Electric AR allies: Hit Rate ▲45.3% for 10s (UNMODELED — measurement-gated; hitRatePct
-//        lifts AR/SMG/SG core rate and would move the board; queued)                                  [T7]
+//      ■ all Electric AR allies: Hit Rate ▲45.3% for 10s = hitRatePct 45.3 (enacted 2026-08-09)       [T7]
 //      ■ all Electric AR allies: Max Ammunition Capacity ▲20 round(s) for 10s                         [T8]
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest-wrong gates nothing):
@@ -84,10 +83,9 @@
 //       trina emits NO burst-skill-damage-amp buff (her only burst stats are attackDamagePct / maxHpFlat /
 //       maxAmmoFlat). Documented GAP (feature request — candidate for docs/engine-modeling-gaps.md theme
 //       catalog; recorded in scripts/kit-autonomy/manual-review/trina.md + the override caveats + kit-status).
-//   T7  "Hit Rate ▲45.3% for 10s" → all Electric AR allies. UNMODELED (measurement-gated): hitRatePct
-//       lifts AR/SMG/SG core rate via acrForHR and this line targets Electric AR allies, so modeling it
-//       WOULD move the board; queued pending a measurement. PIN the absence: trina emits ZERO hitRatePct
-//       buffs. Documented UNMODELED.
+//   T7  "Hit Rate ▲45.3% for 10s" → all Electric AR allies = hitRatePct 45.3, durationSec 10, on the
+//       burstCast Electric-AR block (kit-text-literal; enacted 2026-08-09 under the owner faithfulness
+//       ruling — hitRatePct is the default-live HR→core channel).
 //   T8  "Max Ammunition Capacity ▲20 round(s) for 10s" → all Electric AR allies = maxAmmoFlat 20 (FLAT
 //       20 rounds, kit-literal; the engine's maxAmmo() adds flat on top of any percent scaling — theme 14,
 //       the flat-rounds path is live, cf. tove/grave/noir). FIX: the shipped override encoded this as
@@ -627,35 +625,40 @@ describe('trina — kit spec', () => {
   });
 
   describe('T6 — Burst Spread Roots (435.6%) / Wilted Roots (64.46%) burst-skill-dmg amp is a documented GAP (no engine primitive)', () => {
-    it('PIN: Trina emits NO burst-skill-damage-amp buff — her burst produces exactly the three modeled effect families (Attack Damage, Max HP, Max Ammo) and nothing else (the amp is UNMODELED, not mis-encoded)', () => {
+    it('PIN: Trina emits NO burst-skill-damage-amp buff — her burst produces exactly the four modeled effect families (Attack Damage, Max HP, Max Ammo, Hit Rate) and nothing else (the amp is UNMODELED, not mis-encoded)', () => {
       const burstStats = new Set(
         buffs(base.events)
           .filter((b) => b.key.includes(':burst:'))
           .map((b) => b.stat)
       );
-      // exactly three modeled families; the Max-Ammo family may be flat (faithful) or pct (the
+      // exactly four modeled families; the Max-Ammo family may be flat (faithful) or pct (the
       // shipped proxy) — either way NO burst-skill-damage-amp stat is present.
       const modeled = new Set([
         'attackDamagePct',
         'maxHpFlat',
         'maxAmmoFlat',
         'maxAmmoPct',
+        'hitRatePct',
       ]);
       for (const s of burstStats) {
         expect(modeled.has(s)).toBe(true);
       }
       expect(burstStats.has('attackDamagePct')).toBe(true);
       expect(burstStats.has('maxHpFlat')).toBe(true);
-      expect(burstStats.size).toBe(3);
+      expect(burstStats.has('hitRatePct')).toBe(true);
+      expect(burstStats.size).toBe(4);
     });
     // The missing primitive is marked formally below; modeling Spread Roots needs a
     // burst-skill-damage-amp primitive that does not exist (teammate-COLD lever, feature request).
     it.skip('GAP: Spread Roots / Wilted Roots needs a burst-skill-damage-amp primitive (missing) — teammate-COLD, inert on Trina; see scripts/kit-autonomy/manual-review/trina.md', () => {});
   });
 
-  describe('T7 — Burst "Hit Rate ▲45.3% for 10s" (all Electric AR allies) is UNMODELED (measurement-gated)', () => {
-    it('PIN: Trina emits ZERO hitRatePct buffs (the line is a documented, queued skip)', () => {
-      expect(byStat(base.events, 'hitRatePct').length).toBe(0);
+  describe('T7 — Burst "Hit Rate ▲45.3% for 10s" → all Electric AR allies = hitRatePct 45.3 (enacted 2026-08-09, owner faithfulness ruling)', () => {
+    it('is hitRatePct 45.3 to the Electric AR allies, once per Trina cast × 2 targets, 10s, on burstCast', () => {
+      const hr = byStat(base.events, 'hitRatePct', 45.3);
+      expect(hr.length).toBe(casts * ELEC_AR.length);
+      expect(targetsOf(hr)).toEqual(ELEC_AR);
+      expect(dursOf(hr)).toEqual([10 * FPS]);
     });
   });
 
