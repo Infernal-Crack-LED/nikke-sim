@@ -428,6 +428,7 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
     it('applies reloadSpeedClamp 60 to herself for one shot', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([60]);
+      expect(applied.every((b) => b.durationShots === 1)).toBe(true);
     });
     it('DISCRIMINATING: stripping the window removes every reloadSpeedClamp application', () => {
       expect(

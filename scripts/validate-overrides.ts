@@ -224,6 +224,17 @@ function checkEffect(e: any, path: string, errors: string[]) {
     ) {
       errors.push(`${path}: noRetriggerWhileActive must be a boolean`);
     }
+    // Stat clamps are fixed-at values; rampSec would scale the clamp and is not implemented.
+    const CLAMP_STATS = new Set([
+      'reloadSpeedClamp',
+      'reloadTimeClamp',
+      'chargeTimeClamp',
+    ]);
+    if (CLAMP_STATS.has(e.stat) && e.rampSec !== undefined) {
+      errors.push(
+        `${path}: clamp stat "${e.stat}" does not support rampSec (not implemented in engine clamp())`
+      );
+    }
   }
   if (e.kind === 'flatDamage') {
     if (typeof e.atkPct !== 'number') {

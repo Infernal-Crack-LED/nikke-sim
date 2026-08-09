@@ -64,10 +64,10 @@ describe('gauge-per-shot fullChargeBonus source', () => {
     expect(mismatches).toEqual([]);
   });
 
-  it('flags no-row units with a non-modal chargeMultiplier so they do not fall back silently', () => {
+  it('flags no-row units with a positive chargeMultiplier so they do not fall back silently', () => {
     for (const slug of NO_ROW_NON_MODAL) {
       const c = characters[slug];
-      expect(c.chargeMultiplier).toBeGreaterThan(250);
+      expect(c.chargeMultiplier).toBe(350);
       expect(
         (gaugeTable as Record<string, { fullChargeBonus?: number }>)[slug]
       ).toBeUndefined();

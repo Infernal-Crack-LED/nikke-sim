@@ -2814,6 +2814,8 @@ export function runSim(
                 (e.stat != null && b.stat !== e.stat) ||
                 (b.expiresFrame !== null && b.expiresFrame <= frame) ||
                 (b.shotsLeft !== undefined && b.shotsLeft <= 0) ||
+                (b.whileSwappedIdx !== undefined &&
+                  units[b.whileSwappedIdx].swap == null) ||
                 b.maxStacks <= 1
               ) {
                 continue;
