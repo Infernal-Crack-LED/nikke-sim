@@ -7,12 +7,10 @@
       "DEF ▲ 39.18% for 10S."
     ],
     "skill2": [],
-    "burst": [
-      "DEF ▼ 13.32% for 5 sec."
-    ]
+    "burst": ["DEF ▼ 13.32% for 5 sec."]
   },
   "caveats": [
-    "skill1: the whole attacked-20x sentence (self DEF ▲39.18% / 10s) is unmodeled — the sim has no incoming-damage model and no attacked-count trigger primitive, and the effect would be damage-inert even if it fired (admi/jackal precedent). Honestly absent (⚑1), not a stale fixture — the unit test pins the zero against the hitCount:20 'attacks' misread.",
+    "skill1: the whole attacked-20x sentence (self DEF ▲39.18% / 10s) is unmodeled — the `attacked` trigger primitive exists (types.ts; makima/yulha encode theirs) but nothing feeds it at scope lock (no incoming-damage model), and the effect (defPct) would be damage-inert even if it fired. Honestly absent (⚑1), not a stale fixture — the unit test pins the zero against the hitCount:20 'attacks' misread.",
     "burst: the DEF ▼13.32% / 5s enemy debuff is unmodeled — the engine has no debuff-scalable boss-DEF channel (enemyBuffs admits only damageTakenPct/distributedDamagePct; bossDef is a flat constant), himeno/eunhwa precedent. Mica comps read COLD by exactly that small team-wide lift (⚑2); the unit test pins the zero against a damageTakenPct laundering.",
     "skill2's modeled ammo channel is the kit's only damage lever: the +2-round windows (50% duty cycle, 10s every 20s) lift ONLY the two highest-final-ATK holders' firing uptime; the DEF half is inert. On a basis where mica herself or a low-ATK carry tops the ranking, the holder set re-ranks live per cast (byFinalAtk)."
   ],
@@ -23,7 +21,12 @@
       "trigger": { "kind": "interval", "sec": 20 },
       "target": { "kind": "alliesTopAtk", "count": 2, "byFinalAtk": true },
       "effects": [
-        { "kind": "buff", "stat": "maxAmmoFlat", "value": 2, "durationSec": 10 },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoFlat",
+          "value": 2,
+          "durationSec": 10
+        },
         { "kind": "buff", "stat": "defPct", "value": 19.89, "durationSec": 10 }
       ]
     }
