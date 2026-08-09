@@ -1395,26 +1395,21 @@ export function runSim(
     if (!isCharge) {
       return per + flat;
     }
-    // Per-unit focus multiplier = fullChargeBonus/100 (2026-07-29, see comment above);
-    // ?? 250 is the fallback for units with no datamined row (e.g. laplace-ultimate-hero) —
-    // byte-identical to the old flat-2.5x default, never lets a missing row zero the gauge.
-    // u.focusChargeMult (charFixes.focusChargeMult) is an explicit per-unit multiplier that
-    // takes priority over both the table lookup and the magDumpRof/PENDING_TEAM_ISOLATION pin
-    // — needed for cinderella (RL/Electric, "cindy"; magDumpRof: her whole-magazine dump-fire
-    // kit doesn't perform the discrete hold-charge/release cycle the einkk chargePercent term
-    // presumes) so her table value (fullChargeBonus 200 -> 2.0x) applies instead of the
-    // magDumpRof pin's FOCUS_CHARGE_GEN fallback.
-    // fcb > 0 (not ?? alone): a handful of gauge rows carry fullChargeBonus:0 as their
-    // non-charge marker, and one live data disagreement (raven: gauge row 250 vs
-    // characters.json chargeMultiplier 0) means a present-but-zero value is reachable —
-    // treat it the same as missing rather than actually zeroing a focused unit's gauge
-    // (implementation review, 2026-07-29).
+    // Per-unit focus multiplier is now SOURCED from characters.json chargeMultiplier
+    // (2026-08-09, gap #20 fix). data/gauge-per-shot.json's fullChargeBonus acts as an
+    // explicit override only when characters.json reports 0 (the non-charge marker for a
+    // handful of units, e.g. raven: chargeMultiplier 0 but gauge row 250 datamined).
+    // This removes the 6 synthesized class-modal rows and the 4 no-row 3.5x units
+    // (belorta/n102/yan/yuni) from silently defaulting to 2.5x.
+    // u.focusChargeMult (charFixes.focusChargeMult) and the magDumpRof/PENDING_TEAM_ISOLATION
+    // pins still take priority over both sources.
+    const charMult = u.char.chargeMultiplier;
     const fcb = entry?.fullChargeBonus;
     const focusMult =
       u.focusChargeMult ??
       (u.magDumpRof || PENDING_TEAM_ISOLATION.has(u.char.slug)
         ? FOCUS_CHARGE_GEN
-        : (fcb && fcb > 0 ? fcb : 250) / 100);
+        : (charMult > 0 ? charMult : fcb && fcb > 0 ? fcb : 250) / 100);
     return per * (u.idx === focusIdx ? focusMult : UNFOCUSED_CHARGE_GEN) + flat;
   };
   const addGauge = (u: UnitState, frame: number, energyPct: number) => {
