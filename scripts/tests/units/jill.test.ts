@@ -233,7 +233,7 @@ describe('jill — kit spec', () => {
     });
   });
 
-  describe('J2 — S1 True Damage ▲34.99% on burst cast (declared; currently damage-inert)', () => {
+  describe('J2 — S1 True Damage ▲34.99% on burst cast (live during the burst true-normals window)', () => {
     const applied = jillBuffs(base.events, 'trueDamagePct');
 
     it('is declared: 34.99% for 10 sec, self-scoped, once per burst cast', () => {
@@ -247,11 +247,8 @@ describe('jill — kit spec', () => {
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([JILL]);
     });
 
-    it('is INERT today: removing it changes no damage (normals are not true-flavored)', () => {
-      // Documents the compensating error: without the burst true-damage CONVERSION (unmodeled),
-      // trueDamagePct has no true-flavored hit to apply to. When the conversion is enacted this
-      // assertion must be flipped to a damage-moving one (⚑ recipe in the override).
-      expect(base.totals.jill).toBe(noTrueDmg.totals.jill);
+    it('MOVES damage: the burst true-normals conversion (weaponSwap.trueNormals, enacted 2026-08-09) gives it true-flavored hits to feed', () => {
+      expect(base.totals.jill).toBeGreaterThan(noTrueDmg.totals.jill);
     });
   });
 
@@ -272,7 +269,9 @@ describe('jill — kit spec', () => {
 
     it('is a real damage source: removing it deletes every tick and a large share of her total', () => {
       expect(jillDot(noDot.events).length).toBe(0);
-      expect(base.totals.jill).toBeGreaterThan(noDot.totals.jill * 1.3);
+      // >1.15: the dot's SHARE of her total shrank when the burst true-normals window
+      // (enacted 2026-08-09) grew her normal damage — the dot itself is unchanged.
+      expect(base.totals.jill).toBeGreaterThan(noDot.totals.jill * 1.15);
     });
   });
 
@@ -386,15 +385,15 @@ describe('jill — kit spec', () => {
       ).toBe(bursts.length);
     });
 
-    it('DISCRIMINATING: without consumeAmmo, most casts have no close reload', () => {
-      const bursts = jillBursts(noConsume.events);
-      const reloads = jillReloads(noConsume.events);
-      const forced = bursts.filter((c) =>
-        reloads.some(
-          (r) => r.frame >= c.frame && r.frame <= c.frame + RELOAD_WINDOW_F
-        )
+    it('DISCRIMINATING: the ammo dump adds reloads — strictly more reloads with consumeAmmo than without', () => {
+      // The old cast-proximity discriminator went blind once the burst true-normals
+      // weaponSwap landed (2026-08-09): applying a swap cancels any in-flight reload at
+      // the cast frame, so a fresh reload start sits near every cast in BOTH fixtures.
+      // The dump's aggregate effect is unambiguous instead: emptying a 9-round magazine
+      // every cast forces extra reload cycles the no-consumeAmmo run never pays.
+      expect(jillReloads(base.events).length).toBeGreaterThan(
+        jillReloads(noConsume.events).length
       );
-      expect(forced.length).toBeLessThan(bursts.length);
     });
   });
 });

@@ -440,15 +440,22 @@ describe('grave — kit spec', () => {
   describe('unmodeled lines (structural pins — documented, inert or missing-primitive)', () => {
     const ov = withPatchedOverride('grave', () => {}) as any;
 
-    it('skill1: Prediction-end ammo removal, Heat-Emission removal, and self-heal are documented verbatim', () => {
+    it('skill1: Heat-Emission removal and self-heal are documented verbatim; the Prediction-end ammo dump is MODELED (consumeAmmo, enacted 2026-08-09)', () => {
       const u: string[] = ov.unmodeled?.skill1 ?? [];
-      expect(u.length).toBe(3);
+      expect(u.length).toBe(2);
       const joined = u.join(' ');
-      expect(joined).toContain('Removes 100% of ammo');
+      expect(joined).not.toContain('Removes 100% of ammo');
       expect(joined).toContain(
         'Removes Heat Emission under certain conditions'
       );
       expect(joined).toContain('Recovers 2%');
+      const dump = (ov.skill1 ?? []).find((b: any) =>
+        (b.effects ?? []).some((e: any) => e.kind === 'consumeAmmo')
+      );
+      expect(dump, 'Prediction-end consumeAmmo block missing').toBeTruthy();
+      expect(dump.trigger.kind).toBe('burstCast');
+      expect(dump.delaySec).toBe(10);
+      expect(dump.effects[0].fraction).toBe(1);
     });
 
     it('skill2: Overheat I "removed upon reloading to max ammunition" is documented (absorbed by sustained approx)', () => {

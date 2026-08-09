@@ -422,9 +422,20 @@ describe('arcana-fortune-mate (SG/Fire/B2 Attacker) — kit spec', () => {
           'utf8'
         )
       );
-      expect(ov.unmodeled.skill2.join(' ')).toMatch(/Reload 6 rounds/);
-      expect(ov.unmodeled.burst.join(' ')).toMatch(/Reload 2 rounds/);
+      // The two reload lines are MODELED since 2026-08-09 (instantReload — reload
+      // economy is damage-live, grave precedent); only the FB-end mode cleanup stays.
+      expect(ov.unmodeled.skill2).toEqual([]);
+      expect(ov.unmodeled.burst).toEqual([]);
       expect(ov.unmodeled.skill1.join(' ')).toMatch(/removes Making Memories/i);
+      const burstReload = ov.burst
+        .flatMap((b: any) => b.effects ?? [])
+        .find((e: any) => e.kind === 'instantReload');
+      expect(burstReload?.fraction).toBeCloseTo(2 / 9, 3);
+      const mmReload = ov.skill2.find((b: any) =>
+        (b.effects ?? []).some((e: any) => e.kind === 'instantReload')
+      );
+      expect(mmReload?.delaySec).toBe(1.5);
+      expect(mmReload?.effects[0].fraction).toBeCloseTo(6 / 9, 3);
       expect(
         JSON.stringify(ov),
         'validator forbids ignored-effect blocks'
