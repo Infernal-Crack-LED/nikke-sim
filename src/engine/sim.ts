@@ -568,6 +568,7 @@ interface UnitState {
     }
   >;
   hitCounters: Map<string, number>;
+  attackedCount: number; // cumulative incoming attacks taken by this unit
   blockActivations: Map<string, number>;
   // live named resource pools (soda-twinkling-bunny's Golden Chip) + their [min,max] bounds
   resources: Map<string, number>;
@@ -889,6 +890,7 @@ export function runSim(
       buffs: [],
       storedHits: new Map(),
       hitCounters: new Map(),
+      attackedCount: 0,
       blockActivations: new Map(),
       resources: new Map(
         (skills.resources ?? []).map((r) => [r.name, r.initial])
@@ -1004,6 +1006,18 @@ export function runSim(
   const usedOncePerBattle = new Set<string>();
   const totalFrames = cfg.durationSec * FPS;
   const rotationLog: string[] = [];
+
+  // manualAttacks test hook: map frame -> unit indices attacked that frame.
+  const manualAttacksByFrame = new Map<number, number[]>();
+  if (cfg.manualAttacks) {
+    cfg.manualAttacks.forEach((frames, uidx) => {
+      for (const f of frames) {
+        const list = manualAttacksByFrame.get(f) ?? [];
+        list.push(uidx);
+        manualAttacksByFrame.set(f, list);
+      }
+    });
+  }
 
   // Monte Carlo mode (cfg.seed set): mulberry32 PRNG — deterministic per seed.
   // rng === null → expected-value sim (crit/core folded into the major bucket,
@@ -2904,6 +2918,18 @@ export function runSim(
     });
   }
 
+  function recordAttack(u: UnitState, frame: number) {
+    u.attackedCount++;
+    u.blocks.forEach((b, bi) => {
+      if (
+        b.trigger.kind === 'attacked' &&
+        u.attackedCount % b.trigger.count === 0
+      ) {
+        applyBlock(u.idx, b, bi, frame);
+      }
+    });
+  }
+
   function maxAmmo(u: UnitState, frame: number): number {
     const base = u.swap?.maxAmmo ?? u.char.ammo;
     if (u.swap?.maxAmmo !== undefined) {
@@ -2955,6 +2981,17 @@ export function runSim(
         (b.trigger.kind === 'bossElement' &&
           b.trigger.element === cfg.bossElement)
       ) {
+        applyBlock(u.idx, b, bi, 0);
+      }
+    })
+  );
+
+  // battle-start triggers fire once at frame 0, but respect durationSec (unlike passive,
+  // which ignores durationSec and stays always-on). Used for kit lines that read
+  // "Activates at the start of battle" and expire afterwards.
+  units.forEach((u) =>
+    u.blocks.forEach((b, bi) => {
+      if (b.trigger.kind === 'battleStart') {
         applyBlock(u.idx, b, bi, 0);
       }
     })
@@ -3024,6 +3061,14 @@ export function runSim(
       fullBursts++;
       emitFbEnter(frame);
       pendingFbStartFrame = -1;
+    }
+
+    // manualAttacks test hook (v1 has no incoming-damage model)
+    const attackedUnits = manualAttacksByFrame.get(frame);
+    if (attackedUnits) {
+      for (const uidx of attackedUnits) {
+        recordAttack(units[uidx], frame);
+      }
     }
 
     // ---- delayed block effects (Block.delaySec) ----

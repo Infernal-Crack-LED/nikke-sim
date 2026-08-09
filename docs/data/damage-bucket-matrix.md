@@ -73,7 +73,7 @@ override files carry it. "Carriers" counts structural occurrences only — a uni
 | `coreDamagePct` | Major (core) | additive pp into `coreBonus`, together with the doll core line | core-eligible instances × `coreExposure × ACR` | 5 | asuka, cinderella-crystal-wave, naga, nayuta, quency-escape-queen |
 | `elemAdvantageDamagePct` | Element | additive pp on the 1.1 base (`ELEMADV=damageup` reroutes it to DamageUp — A/B arm only) | elemental advantage only | 14 | anis-sparkling-summer, asuka, d, e-h, elegg-boom-and-shock, guillotine-winter-slayer, maiden-ice-rose, marciana-marine-study, … |
 | `elementDamagePct` | Element | additive pp on the 1.1 advantage base | elemental advantage only | 0 | _none_ |
-| `chargeDamageMultPct` | Charge | scales the BASE charge term (`baseCharge × %`), like the doll/collection lines | charge instances only | 1 | helm |
+| `chargeDamageMultPct` | Charge | scales the BASE charge term (`baseCharge × %`), like the doll/collection lines | charge instances only | 2 | admi, helm |
 | `chargeDamagePct` | Charge | flat percentage points added AFTER the base term | charge instances only | 15 | a2, alice, ein, emilia, eunhwa, eunhwa-tactical-upgrade, himeno, n102, … |
 | `attackDamagePct` | DamageUp | additive pp — the unflavored member every instance reads | always | 50 | ade-agent-bunny, anchor-innocent-maid, anis-star, arcana, arcana-fortune-mate, asuka, asuka-wille, avistar, … |
 | `pierceDamagePct` | DamageUp | additive pp | Pierce-tagged shots (`hasPierce` / live `gainPierce` / per-shot tag) | 10 | ade-agent-bunny, d-killer-wife, diesel, dorothy-serendipity, grave, mari, milk-blooming-bunny, mint, … |

@@ -1,10 +1,7 @@
 {
-  "note": "admi (Admi) — SR / Supporter / Wind / Burst II, cd 20s, ammo 6, chargeFrames 60, reloadFrames 125, hitsPerShot 1, RoF 60, normalMult 67.37 / chargeMult 250 / coreMult 200, burstGaugePerShot 2.7. Kit-autonomy gauntlet 2026-08-03: FROM-SCRATCH build (no shipped override existed; simSupported was false) — test-first re-derivation (scripts/tests/units/admi.test.ts, groups B1–B3 + absence pins). MODELED: (BURST 'Love Returned') '■ Affects all allies. Reload Speed ▲ 50.91% for 10 sec. Critical Damage ▲ 28.34% for 10 sec.' → ONE burstCast block, target allies (allies includes self), effects reloadSpeedPct 50.91 + critDamagePct 28.34, both durationSec 10. burstCast NOT fullBurstEnter: the kit names no full-burst condition, and her stage-2 cast lands BEFORE the Full Burst window opens, so both 10s windows ride frame-exact on her cast (crust/novel burst-aura convention) — Tier-2 lever, pinned in the test. reloadSpeedPct feeds reloadFramesNeeded (faster reloads → more shots → more gauge); critDamagePct feeds the major bucket at critRate × 28.34pp per in-window hit. UNMODELED (verbatim; both ⚑ out-of-domain — the incoming-damage subsystem the v1 sim deliberately lacks; zero damage impact at scope lock): (S1 'Helping Hand') 'Activates when attacked 20 time(s) → all allies Charge Damage Multiplier ▲ 9.59% for 20 sec' — v1 models NO incoming ally damage and has NO attacked-count trigger primitive, so the 20-hit counter never accrues and the line never fires (noise/yulha precedent). Effect side, IF the trigger were ever modeled: chargeDamageMultPct — the 'Charge Damage Multiplier ▲' wording is the BASE-CHARGE-SCALING stat (helm precedent carries the identical wording; a2's additive chargeDamagePct ruling applies only to the bare 'Charge Damage ▲' wording) — representable but unreachable on this basis. (S2 'Kitten's Breath', cd 20s) 'Affects 2 allies with the highest final ATK. Damage Taken ▼ 28.65% for 10 sec' — ally received-damage mitigation: no incoming damage and no ally HP pool to mitigate; the ONLY damageTakenPct primitive is a BOSS debuff (positive = boss takes MORE) — wrong direction/target, so it is NOT used (encoding it would manufacture a phantom team damage gain — noise precedent); the 'highest FINAL ATK' targeting clause (alliesTopAtk byFinalAtk) is representable but moot with its inert effect. TIER 2: burstCast-vs-fullBurstEnter lever on the burst buffs + out-of-domain ⚑ cluster. ⚑ FLAGS: (⚑1 OUT-OF-DOMAIN, incoming-damage subsystem — TIER 2) the ENTIRE S1 'Helping Hand' line; estimate = zero damage impact at scope lock (never fires); in a real fight where the boss attacks her steadily the window is near-permanent uptime (20s duration, re-trigger every 20 hits taken) ≈ the base charge multiplier of every charge-weapon ally scaled ×(1+9.59%) (an SR 250% chargeMult lifts 2.5 → ~2.74 for the window); recipe = needs an attacked-count trigger primitive (engine-core) + measure hit-accrual cadence from a focus video (boss-targeting dependent — the sim models no boss targeting either). (⚑2 OUT-OF-DOMAIN, incoming-damage subsystem — TIER 2) the S2 mitigation line; estimate = zero damage impact (purely defensive); recipe = not measurable from damage popups at all — log the actual damage-taken reduction during an incoming-damage phase in a focus video once an HP/incoming-damage model exists. (⚑3 CADENCE TUPLE, mandatory) SR chargeFrames 60 + reloadFrames 125 + ammo 6 shipped datamine as-is (no charFixes); recipe = read the charge time + reload gap from any focus video. Kit-autonomy gauntlet 2026-08-03.",
+  "note": "admi (Admi) — SR / Supporter / Wind / Burst II, cd 20s, ammo 6, chargeFrames 60, reloadFrames 125, hitsPerShot 1, RoF 60, normalMult 67.37 / chargeMult 250 / coreMult 200, burstGaugePerShot 2.7. Kit-autonomy gauntlet 2026-08-03: FROM-SCRATCH build (no shipped override existed; simSupported was false) — test-first re-derivation (scripts/tests/units/admi.test.ts, groups B1–B3 + absence pins). MODELED: (BURST 'Love Returned') '■ Affects all allies. Reload Speed ▲ 50.91% for 10 sec. Critical Damage ▲ 28.34% for 10 sec.' → ONE burstCast block, target allies (allies includes self), effects reloadSpeedPct 50.91 + critDamagePct 28.34, both durationSec 10. burstCast NOT fullBurstEnter: the kit names no full-burst condition, and her stage-2 cast lands BEFORE the Full Burst window opens, so both 10s windows ride frame-exact on her cast (crust/novel burst-aura convention) — Tier-2 lever, pinned in the test. reloadSpeedPct feeds reloadFramesNeeded (faster reloads → more shots → more gauge); critDamagePct feeds the major bucket at critRate × 28.34pp per in-window hit. MODELED: (S1 'Helping Hand') 'Activates when attacked 20 time(s) → all allies Charge Damage Multiplier ▲ 9.59% for 20 sec' → skill1 block attacked count:20 → allies chargeDamageMultPct 9.59 durationSec 20. The `attacked` trigger primitive now exists, but the v1 sim still has no incoming-damage source, so in normal runs the 20-hit counter never accrues and the line remains inert (encoded for kit completeness and future incoming-damage work; noise/yulha precedent). The 'Charge Damage Multiplier ▲' wording is the BASE-CHARGE-SCALING stat (helm precedent; a2's additive chargeDamagePct ruling applies only to the bare 'Charge Damage ▲' wording). UNMODELED (out-of-domain): (S2 'Kitten's Breath', cd 20s) 'Affects 2 allies with the highest final ATK. Damage Taken ▼ 28.65% for 10 sec' — ally received-damage mitigation: no incoming damage and no ally HP pool to mitigate; the ONLY damageTakenPct primitive is a BOSS debuff (positive = boss takes MORE) — wrong direction/target, so it is NOT used (encoding it would manufacture a phantom team damage gain — noise precedent); the 'highest FINAL ATK' targeting clause (alliesTopAtk byFinalAtk) is representable but moot with its inert effect. TIER 2: burstCast-vs-fullBurstEnter lever on the burst buffs + out-of-domain ⚑ cluster. ⚑ FLAGS: (⚑1 OUT-OF-DOMAIN, incoming-damage subsystem — TIER 2) the ENTIRE S1 'Helping Hand' line; estimate = zero damage impact at scope lock (never fires); in a real fight where the boss attacks her steadily the window is near-permanent uptime (20s duration, re-trigger every 20 hits taken) ≈ the base charge multiplier of every charge-weapon ally scaled ×(1+9.59%) (an SR 250% chargeMult lifts 2.5 → ~2.74 for the window); recipe = needs an attacked-count trigger primitive (engine-core) + measure hit-accrual cadence from a focus video (boss-targeting dependent — the sim models no boss targeting either). (⚑2 OUT-OF-DOMAIN, incoming-damage subsystem — TIER 2) the S2 mitigation line; estimate = zero damage impact (purely defensive); recipe = not measurable from damage popups at all — log the actual damage-taken reduction during an incoming-damage phase in a focus video once an HP/incoming-damage model exists. (⚑3 CADENCE TUPLE, mandatory) SR chargeFrames 60 + reloadFrames 125 + ammo 6 shipped datamine as-is (no charFixes); recipe = read the charge time + reload gap from any focus video. Kit-autonomy gauntlet 2026-08-03.",
   "unmodeled": {
-    "skill1": [
-      "■ Activates when attacked 20 time(s). Affects all allies.",
-      "Charge Damage Multiplier ▲ 9.59% for 20 sec."
-    ],
+    "skill1": [],
     "skill2": [
       "■ Affects 2 allies with the highest final ATK.",
       "Damage Taken ▼ 28.65% for 10 sec."
@@ -12,12 +9,31 @@
     "burst": []
   },
   "caveats": [
-    "skill1: 'when attacked 20 times → all allies Charge Damage Multiplier ▲9.59% / 20s' is UNMODELED — the v1 sim models no incoming ally damage and has no attacked-count trigger primitive, so the counter never accrues and the line never fires at scope lock; the effect side would be chargeDamageMultPct (base-charge-scaling, helm-wording precedent) IF a trigger ever existed (⚑1; noise/yulha precedent)",
+    "skill1: 'when attacked 20 times → all allies Charge Damage Multiplier ▲9.59% / 20s' is encoded as an `attacked` trigger, but the v1 sim has no incoming-damage source so the counter does not accrue in normal runs and the line is inert at scope lock (⚑1; noise/yulha precedent)",
     "skill2: the 'Damage Taken ▼28.65%' ally mitigation is UNMODELED — the only damageTakenPct primitive is a BOSS debuff (positive = boss takes MORE, wrong direction); NOT encoded (would manufacture a phantom team damage gain); the '2 highest-final-ATK allies' targeting clause is moot with the inert effect (⚑2; noise precedent)",
     "burst: burstCast trigger — both 10s windows ride frame-exact on her stage-2 cast, which lands BEFORE the Full Burst window opens; a fullBurstEnter encoding would shift both windows off her cast frames (Tier-2 lever, pinned in the test)",
     "cadence tuple (SR chargeFrames 60, reloadFrames 125, ammo 6) is the unverified datamine — read the charge time + reload gap from a focus video (⚑3)"
   ],
-  "skill1": [],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "attacked",
+        "count": 20
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamageMultPct",
+          "value": 9.59,
+          "durationSec": 20
+        }
+      ]
+    }
+  ],
   "skill2": [],
   "burst": [
     {

@@ -57,6 +57,8 @@ const STATS = new Set([
 ]);
 const TRIGGERS = new Set([
   'passive',
+  'battleStart',
+  'attacked',
   'burstCast',
   'fullBurstEnter',
   'fullBurstEnd',
@@ -340,6 +342,12 @@ function validate(slug: string): boolean {
         typeof b.trigger.count !== 'number'
       ) {
         errors.push(`${p}: hitCount needs count`);
+      }
+      if (
+        b.trigger?.kind === 'attacked' &&
+        !(typeof b.trigger.count === 'number' && b.trigger.count > 0)
+      ) {
+        errors.push(`${p}: attacked needs count > 0`);
       }
       if (
         b.trigger?.kind === 'interval' &&

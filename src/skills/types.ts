@@ -77,6 +77,8 @@ export type StatKey =
 
 export type TriggerDef =
   | { kind: 'passive' } // always active
+  | { kind: 'battleStart' } // once at frame 0, durationSec respected (unlike passive)
+  | { kind: 'attacked'; count: number } // when the owner has been attacked `count` times
   | { kind: 'burstCast'; stage?: 1 | 2 | 3 } // when the owner casts their burst (optionally only at that stage — Λ kits)
   | { kind: 'fullBurstEnter' } // when full burst begins
   | { kind: 'fullBurstEnd' }
