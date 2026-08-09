@@ -3045,12 +3045,12 @@
       "residual": "max-stack gate over-credits first ~2 casts (~1% of 180s total); DEF▼ verification gap (no enemy debuff events); stale note prose (casterAtkPct→highestAllyAtkPct)",
       "unmodeled": {
         "skill1": [],
-        "skill2": ["Increases stack count of stackable buffs by 1."],
+        "skill2": [],
         "burst": []
       },
       "caveats": [
         "skill1: 'Duplicates 8.81% of the ATK of the ally with the highest ATK' now uses the new highestAllyAtkPct stat (landed 2026-07-21) — resolves to 8.81% × max(all units' staticAtk) at apply time, feeding the same flat-ATK path as casterAtkPct. Solo (guilty is her own max) is byte-identical to the old casterAtkPct proxy; in a team it now correctly sizes off the highest-ATK ally instead of Guilty's own ATK. Basis is STATIC ATK (not final/buffed) per the caster-ATK convention (⚑ a future refinement could rank by live effectiveAtk if measurement shows the duplicate tracks buffed ATK).",
-        "skill2: 'Increases stack count of stackable buffs by 1' is unmodeled (no schema support). Measured REAL solo (guilty-sg-band probe): it bumps her own S1 stack ramp to cap one trigger early; allies' stackable buffs are also not amplified in teams.",
+        "skill2: 'Increases stack count of stackable buffs by 1' is now encoded as an addStack effect on the same hitCount:120 / alliesOfElement Wind block. It accelerates her own S1 stack ramp by one trigger and bumps whatever stackable buffs Wind allies carry in teams.",
         "burst: the 'at max stacks' gate on the DEF ▼ 20.25% + 277.71% additional-damage riders is not modeled (always-on) — a burst cast before the S1 ramp completes is slightly over-credited."
       ],
       "board": null
@@ -4138,11 +4138,7 @@
       },
       "residual": "spot-check: (1) S1 unmodeled-policy call — attacked-20x team reload/DEF never fires at scope lock (no incoming-damage model), board under-ranks her real-game value; (2) heal ticks:10@1s granularity is a shared prior (all agents), not footage-confirmed; (3) SMG cadence tuple datamine as-is",
       "unmodeled": {
-        "skill1": [
-          "■ Activates when attacked 20 times. Affects all allies.",
-          "Reload Speed ▲ 36.96% for 10 sec. ",
-          "DEF ▲ 14.78% for 10 sec."
-        ],
+        "skill1": [],
         "skill2": [
           "■ Activates after landing 120 normal attack(s). Affects self.",
           " Attract: Taunt all enemies for 3 sec.",
@@ -4158,7 +4154,7 @@
       "caveats": [
         "burst: 'Gain Pierce for 10 sec' is a TIMED gainPierce window on her own burstCast (asuka precedent) — damage-inert at scope lock (no pierceDamagePct consumer, PIERCE_CORE_DOUBLE=false; byte-identical totals pinned), encoded for kit completeness + pierce-buff teammates",
         "burst: the 34.02% recovery is event-only (no HP amounts modeled); 'over 10 sec' = ticks:10/intervalSec:1 so a recovery consumer stays refreshed across the whole window (helm H8 precedent); self-targeted — she has no recovery trigger of her own",
-        "skill1/skill2: every line is unmodeled — v1 models no incoming ally damage (no attacked-count trigger, no taunt/aggro, no lethal-damage trigger, no indomitability status); the lethal-gated burstCdr in particular must NEVER be encoded on a reachable trigger (rotation blast radius, ⚑3)",
+        "skill1: the attacked-20x Reload Speed ▲36.96% / DEF ▲14.78% block is now encoded (attacked-count trigger exists); it is damage-inert at scope lock because the boss never attacks (DEF is inert by construction). skill2: every line remains unmodeled — v1 models no incoming ally damage (no taunt/aggro, no lethal-damage trigger, no indomitability status); the lethal-gated burstCdr in particular must NEVER be encoded on a reachable trigger (rotation blast radius, ⚑3)",
         "burst: the 'during indomitability' incoming-healing rider is unmodeled — its gate is permanently closed at scope lock (the only indomitability source is itself unmodeled) and no heal amounts exist to amplify (⚑4)",
         "the '■ Affects self.' burst header line is represented by the two modeled blocks' self targets, not carried in unmodeled"
       ],
@@ -5760,9 +5756,7 @@
           "■ Activates when the last bullet hits the target. Affects all allies.\nRefresh Heart: Incoming healing ▲ 6.53%, stacks up to 5 time(s) and lasts for 15 sec."
         ],
         "skill2": ["ATK ▼ 3.55% for 5 sec."],
-        "burst": [
-          "■ Affects all allies.\nIncreases stack count of stackable buffs by 1."
-        ]
+        "burst": []
       },
       "board": null
     },
@@ -7760,9 +7754,7 @@
       "reference": false,
       "residual": "owner spot-check: confirm Temporary Modification holds at 3 stacks continuously + read live stack count on burst frame for the x3 mirror (steady-state CALIBRATED flags); S1 trigger cadence prose(10 attacks)-vs-datamine(2%); unmodeled self 5.31% reload (no engine primitive). See scripts/kit-autonomy/manual-review/tove.md",
       "unmodeled": {
-        "skill1": [
-          "■ Activates after 10 normal attack(s). Affects self. Emergency-Crafted Bullets: Reload 5.31% of the magazine."
-        ],
+        "skill1": [],
         "skill2": [],
         "burst": []
       },
@@ -8104,10 +8096,7 @@
       },
       "residual": "board reflects HALF Yulha theoretical Calm-active burst + no Calm crit (meta-defining lever) — Calm needs an incoming-damage/attacked-30x primitive the immortal-boss sim lacks; measure Calm uptime (boss attack cadence vs squad; S2 damage-share raises her incoming-hit share so solo cadence under-counts). S2 interval:30 datamined; SR charge/reload tuple measurement-gated. popup-read cluster: Calm icon on/off frames + burst popup count (1 vs 2 x 457.87).",
       "unmodeled": {
-        "skill1": [
-          "Activates when attacked 30 time(s). Affects self.",
-          "Calm: Critical Rate ▲ 24.53% for 20 sec."
-        ],
+        "skill1": [],
         "skill2": ["Equally shares damage taken for 10 sec."],
         "burst": [
           "Affects the same target(s) when in Calm status.",
@@ -8115,7 +8104,7 @@
         ]
       },
       "caveats": [
-        "skill1: the entire Calm mechanic (attacked 30× → Calm: self Critical Rate ▲24.53%/20s) is UNMODELED — the sim has no incoming-damage model, no 'attacked N times' trigger, and no self-status; the boss never acts",
+        "skill1: the attacked-30× self Critical Rate ▲24.53%/20s line is now ENCODED using the attacked-count trigger; it is inert at scope lock because the boss never attacks. The Calm self-status itself remains unmodeled, so the Calm-gated burst rider is still unreachable",
         "burst: the 'when in Calm status → 457.87% additional damage' rider is UNMODELED — it is gated on the untriggerable Calm self-status, so the burst fires at half its theoretical (Calm-active) magnitude",
         "skill2: 'Equally shares damage taken for 10 sec' is UNMODELED — defensive damage redistribution; the boss deals no damage and there is no redistribution primitive",
         "skill1/skill2/burst: SR cadence tuple (charge 60f / reload 133f / bolt gap) is an unmeasured datamine estimate"

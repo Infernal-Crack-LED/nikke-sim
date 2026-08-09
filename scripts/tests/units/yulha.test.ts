@@ -45,6 +45,7 @@
 // Fire, focus yulha) — yulha needs a real rotation to cast her burst at all. Deterministic (no seed).
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
+import { loadOverride } from '../../../src/skills/overrides-node.js';
 import {
   controlComp,
   runComp,
@@ -265,14 +266,25 @@ describe('yulha — kit spec', () => {
     });
   });
 
-  describe('Y3 — S1 (Calm crit buff) is genuinely unmodeled', () => {
-    it('emits NO yulha critRatePct buff (the Calm trigger cannot fire)', () => {
+  describe('Y3 — S1 attacked-30x self crit buff is encoded but inert at scope lock', () => {
+    it('emits NO yulha critRatePct buff because the boss never attacks', () => {
       expect(yulhaCritBuff(base.events).length).toBe(0);
       // The always-Calm counterfactual adds one — the absence is a choice, not a stale fixture.
       expect(
         yulhaCritBuff(calmAlways.events).length,
         'the always-Calm counterfactual must produce a critRatePct buff'
       ).toBeGreaterThan(0);
+    });
+
+    it('structural: S1 is an attacked:30 trigger to self with critRatePct 24.53 / 20s', () => {
+      const ov = loadOverride('yulha') as any;
+      expect(ov.skill1).toHaveLength(1);
+      const s1 = ov.skill1[0];
+      expect(s1.trigger).toEqual({ kind: 'attacked', count: 30 });
+      expect(s1.target).toEqual({ kind: 'self' });
+      expect(s1.effects).toEqual([
+        { kind: 'buff', stat: 'critRatePct', value: 24.53, durationSec: 20 },
+      ]);
     });
   });
 

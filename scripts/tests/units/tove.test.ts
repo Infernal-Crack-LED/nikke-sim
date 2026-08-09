@@ -86,7 +86,8 @@
 // Slot order: tove 0 / crown 1 / helm 2 / noir 3 / isabel 4.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { runComp, withPatchedOverride } from '../lib/harness.js';
+import { loadOverride } from '../../../src/skills/overrides-node.js';
+import { runComp, totals, withPatchedOverride } from '../lib/harness.js';
 
 const FPS = 60;
 const TOVE = 0;
@@ -177,6 +178,16 @@ const cfS1Dur5 = withPatchedOverride('tove', (ov: any) => {
   }
   for (const e of b.effects) {
     e.durationSec = 5;
+  }
+});
+// T1 reference: remove the self-reload instantReload block (ammo-only QoL).
+const cfNoInstantReload = withPatchedOverride('tove', (ov: any) => {
+  const before = ov.skill1.length;
+  ov.skill1 = ov.skill1.filter(
+    (b: any) => !b.effects.some((e: any) => e.kind === 'instantReload')
+  );
+  if (ov.skill1.length === before) {
+    throw new Error('tove S1 instantReload block missing — fixture is stale');
   }
 });
 // The S2 critRatePct 10.08 block (T4 under test, target allies).
@@ -270,6 +281,7 @@ const cfBurstSGAtkPct = withPatchedOverride('tove', (ov: any) => {
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run();
+const noInstantReload = run({ tove: cfNoInstantReload });
 const s1MaxAmmoPct = run({ tove: cfS1MaxAmmoPct });
 const s1ScopeSG = run({ tove: cfS1ScopeSG });
 const s1Dur5 = run({ tove: cfS1Dur5 });
@@ -307,16 +319,27 @@ describe('tove — kit spec', () => {
     });
   });
 
-  describe('T1 — S1 self-reload ("Reload 5.31% of the magazine", self) is UNMODELED (non-damage ammo-refill QoL)', () => {
-    it('PIN: skill1 emits EXACTLY the two modeled effect families {critDamagePct, maxAmmoFlat} and NO reload/ammo-refill effect (the documented skip is not a silent drop or a mis-encoding)', () => {
-      const s1Stats = new Set(
-        buffs(base.events)
-          .filter((b) => b.key.includes(':skill1:'))
-          .map((b) => b.stat)
+  describe('T1 — S1 self-reload is modeled as instantReload 5.31% on hitCount:10 (ammo-only QoL)', () => {
+    it('structural: skill1 contains a hitCount:10 self block with instantReload fraction 0.0531', () => {
+      const ov = loadOverride('tove') as any;
+      const block = ov.skill1.find((b: any) =>
+        b.effects.some((e: any) => e.kind === 'instantReload')
       );
-      expect([...s1Stats].sort()).toEqual(['critDamagePct', 'maxAmmoFlat']);
+      expect(block, 'tove S1 instantReload block missing').toBeTruthy();
+      expect(block.trigger).toEqual({ kind: 'hitCount', count: 10 });
+      expect(block.target).toEqual({ kind: 'self' });
+      expect(block.effects).toEqual([
+        { kind: 'instantReload', fraction: 0.0531 },
+      ]);
     });
-    it('PIN: Tove deals ZERO skill1-sourced damage (the slot is pure team buffing)', () => {
+
+    it('the reload is a shot-count gain, not a damage buff: removing it lowers total damage', () => {
+      expect(totals(base.res).tove).toBeGreaterThan(
+        totals(noInstantReload.res).tove
+      );
+    });
+
+    it('PIN: Tove deals ZERO skill1-sourced damage (the slot is pure team buffing + reload)', () => {
       const skill1Dmg = base.events.filter(
         (e) =>
           e.kind === 'damage' && e.slug === 'tove' && e.srcSlot === 'skill1'
