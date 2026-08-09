@@ -468,6 +468,7 @@ interface WeaponSwap {
   untilFrame: number;
   damagePct: number;
   chargeFrames?: number;
+  chargeTimeClampFrames?: number; // "charge time fixed at X sec" on the swapped weapon
   chargeMultPct?: number;
   maxAmmo?: number;
   pullsPerSec?: number; // swap weapon's own fire cadence (moran: 24/s vs base AR 12/s)
@@ -1566,6 +1567,38 @@ export function runSim(
   const stat = (u: UnitState, key: StatKey, frame: number) =>
     sum(u.buffs, key, frame);
 
+  // STAT CLAMP: "X is fixed at V" kit lines. If any active buff carries a clamp stat, the MOST
+  // RECENT active clamp wins and overrides the additive sum for that stat. Clamps do NOT stack.
+  const clamp = (
+    list: BuffInstance[],
+    key: StatKey,
+    frame: number
+  ): number | undefined => {
+    for (let i = list.length - 1; i >= 0; i--) {
+      const b = list[i];
+      if (
+        b.stat !== key ||
+        (b.expiresFrame !== null && b.expiresFrame <= frame) ||
+        (b.shotsLeft !== undefined && b.shotsLeft <= 0) ||
+        (b.whileSwappedIdx !== undefined &&
+          units[b.whileSwappedIdx].swap == null)
+      ) {
+        continue;
+      }
+      if (b.perResource && b.casterIdx !== undefined) {
+        return (
+          (units[b.casterIdx].resources.get(b.perResource.name) ?? 0) *
+          b.perResource.mult *
+          b.stacks
+        );
+      }
+      return b.value * b.stacks;
+    }
+    return undefined;
+  };
+  const clampStat = (u: UnitState, key: StatKey, frame: number) =>
+    clamp(u.buffs, key, frame);
+
   const advantaged = (u: UnitState) =>
     cfg.bossElement !== null &&
     (BEATS[u.char.element] === cfg.bossElement ||
@@ -2548,6 +2581,9 @@ export function runSim(
             chargeFrames: e.chargeTimeSec
               ? Math.round(e.chargeTimeSec * FPS)
               : undefined,
+            chargeTimeClampFrames: e.chargeTimeClamp
+              ? Math.max(1, Math.round(e.chargeTimeClamp * FPS))
+              : undefined,
             chargeMultPct: e.chargeMultPct,
             maxAmmo: e.maxAmmo,
             pullsPerSec: e.pullsPerSec,
@@ -3278,14 +3314,34 @@ export function runSim(
       }
     }
 
+    // Effective reload frames: honours reloadTimeClamp (seconds) or reloadSpeedClamp (%),
+    // each overriding additive reloadSpeedPct buffs when active.
+    const effectiveReloadFrames = (
+      u: UnitState,
+      baseFrames: number,
+      frame: number
+    ) => {
+      const timeClamp = clampStat(u, 'reloadTimeClamp', frame);
+      if (timeClamp !== undefined) {
+        return Math.max(1, Math.round(timeClamp * FPS));
+      }
+      const speedClamp = clampStat(u, 'reloadSpeedClamp', frame);
+      const pct =
+        speedClamp !== undefined
+          ? speedClamp
+          : stat(u, 'reloadSpeedPct', frame);
+      return reloadFramesNeeded(baseFrames, pct);
+    };
+
     // ---- boss unhittable windows (range transitions) ----
     const unhittable = bossUnhittable(frame);
     if (unhittable && transitionFrames.includes(frame)) {
       // window start: fast reloaders (effective reload <= 1s) snap-refill their mag
       for (const u of units) {
-        const effReload = reloadFramesNeeded(
+        const effReload = effectiveReloadFrames(
+          u,
           u.char.reloadFrames ?? 0,
-          stat(u, 'reloadSpeedPct', frame)
+          frame
         );
         if (effReload <= FPS && !u.reloading) {
           u.ammo = maxAmmo(u, frame);
@@ -3340,10 +3396,7 @@ export function runSim(
         u.reloadProgress += 1;
         if (
           u.reloadProgress >=
-          reloadFramesNeeded(
-            u.char.reloadFrames,
-            stat(u, 'reloadSpeedPct', frame)
-          )
+          effectiveReloadFrames(u, u.char.reloadFrames, frame)
         ) {
           u.reloading = false;
           u.reloadProgress = 0;
@@ -3418,11 +3471,23 @@ export function runSim(
           // lower bound is imposed: an absurd debuff simply yields a charge longer than the
           // fight, which is the faithful outcome.
           // The UPPER clamp is a real rule and stays.
-          const cs =
-            u.swap?.chargeFrames != null
-              ? 0
-              : Math.min(100, stat(u, 'chargeSpeedPct', frame));
-          const needed = Math.max(1, Math.round(chargeFrames * (1 - cs / 100)));
+          let needed: number;
+          if (u.swap?.chargeTimeClampFrames != null) {
+            // Weapon-swap "charge time fixed at X sec" is pre-converted to frames.
+            needed = u.swap.chargeTimeClampFrames;
+          } else {
+            const chargeTimeClamp = clampStat(u, 'chargeTimeClamp', frame);
+            if (chargeTimeClamp !== undefined) {
+              // "Charge time is fixed at X sec" — override the subtractive charge-speed stack.
+              needed = Math.max(1, Math.round(chargeTimeClamp * FPS));
+            } else {
+              const cs =
+                u.swap?.chargeFrames != null
+                  ? 0
+                  : Math.min(100, stat(u, 'chargeSpeedPct', frame));
+              needed = Math.max(1, Math.round(chargeFrames * (1 - cs / 100)));
+            }
+          }
           if (u.chargeProgress >= needed) {
             u.chargeProgress = 0;
             if (u.magDumpRof) {

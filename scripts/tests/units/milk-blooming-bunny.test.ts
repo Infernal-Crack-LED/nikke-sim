@@ -347,7 +347,7 @@ describe('milk-blooming-bunny — kit spec', () => {
       ]).toEqual([-100]);
       expect([
         ...new Set(
-          mbbBuffs(manual.events, 'reloadSpeedPct').map((b) => b.value)
+          mbbBuffs(manual.events, 'reloadSpeedClamp').map((b) => b.value)
         ),
       ]).toEqual([-50]);
     });

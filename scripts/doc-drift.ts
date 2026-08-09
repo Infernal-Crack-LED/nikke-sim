@@ -557,6 +557,16 @@ const BUCKET_ROUTING: Record<string, Routing> = {
     how: 'SUBTRACTIVE on reload frames (`× (1 − Σ/100)`, +13-frame tail)',
     gate: 'always',
   },
+  reloadSpeedClamp: {
+    factor: 'Reload',
+    how: 'OVERRIDES additive `reloadSpeedPct`; most recent active clamp wins',
+    gate: 'when a clamp buff is active',
+  },
+  reloadTimeClamp: {
+    factor: 'Reload',
+    how: 'OVERRIDES both base reload frames and `reloadSpeedPct`; fixed seconds',
+    gate: 'when a clamp buff is active',
+  },
   attackSpeedPct: {
     factor: 'Fire cadence',
     how: 'ADDS with `fireRatePct` into one `speedMult` (MG ladder + ordinary cadence)',
@@ -570,6 +580,11 @@ const BUCKET_ROUTING: Record<string, Routing> = {
   chargeSpeedPct: {
     factor: 'Charge time',
     how: 'SUBTRACTIVE on charge frames, capped at 100%, floor 1 frame',
+    gate: 'charge weapons',
+  },
+  chargeTimeClamp: {
+    factor: 'Charge time',
+    how: 'OVERRIDES additive `chargeSpeedPct`; fixed seconds, also accepted as a `weaponSwap` field',
     gate: 'charge weapons',
   },
   hitRatePct: {

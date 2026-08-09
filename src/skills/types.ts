@@ -50,8 +50,11 @@ export type StatKey =
   //                      maxAmmoPct scaling in maxAmmo() (theme 14: "▲ N round(s)" kit lines that the
   //                      percent-only schema could only approximate — grave/noir/tove/drake/trina)
   | 'reloadSpeedPct'
+  | 'reloadSpeedClamp' // "Reload speed is fixed at X% increase/reduction" — clamps effective reload speed pct, ignoring additive buffs
+  | 'reloadTimeClamp' // "Reload time is fixed at X sec" — clamps effective reload time to X seconds (frames)
   | 'attackSpeedPct'
   | 'fireRatePct'
+  | 'chargeTimeClamp' // "Charge time is fixed at X sec" — clamps effective charge time to X seconds (frames)
   | 'extraHitDamagePct' // flat % of final ATK added per normal-attack hit while active
   | 'trueDamagePct' // Damage Up bucket (doc line 8)
   | 'projectileExplosionPct' // Damage Up bucket; only RL kits carry it
@@ -316,6 +319,7 @@ export type EffectDef =
       kind: 'weaponSwap'; // "Changes the weapon in use:" — temporary weapon override
       damagePct: number; // per-shot multiplier while swapped
       chargeTimeSec?: number; // full-charge time (charge weapons)
+      chargeTimeClamp?: number; // "Charge time is fixed at X sec" on the swapped weapon (seconds)
       chargeMultPct?: number; // "Full Charge Damage: N% of damage"
       maxAmmo?: number;
       // The swap weapon's OWN datamined fire cadence (pulls/s), when it differs from the base

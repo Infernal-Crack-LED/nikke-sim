@@ -93,10 +93,13 @@ override files carry it. "Carriers" counts structural occurrences only — a uni
 | `targetMaxHpPct` | Max HP | flat Max HP grant of the TARGET's own `maxHp × %`, stored as `maxHpFlat` | feeds an ATK conversion only when self-granted (e3 rule) | 17 | 2b, blanc, delta, diesel, folkwang, label, laplace-ultimate-hero, maiden-ice-rose, … |
 | `maxAmmoFlat` | Ammo | flat rounds added on top of the percentage scaling | always | 12 | emilia, grave, himeno, mica, n102, neon, nihilister, noir, … |
 | `maxAmmoPct` | Ammo | additive pp with the doll ammo line in `maxAmmo()` | always | 17 | alice-wonderland-bunny, anis-sparkling-summer, chime, diesel, drake, eve, k, liter, … |
-| `reloadSpeedPct` | Reload | SUBTRACTIVE on reload frames (`× (1 − Σ/100)`, +13-frame tail) | always | 14 | admi, anchor-innocent-maid, anis-sparkling-summer, asuka-wille, crown, exia, ludmilla-winter-owner, mast-romantic-maid, … |
+| `reloadSpeedClamp` | Reload | OVERRIDES additive `reloadSpeedPct`; most recent active clamp wins | when a clamp buff is active | 4 | asuka-wille, exia, jill, milk-blooming-bunny |
+| `reloadSpeedPct` | Reload | SUBTRACTIVE on reload frames (`× (1 − Σ/100)`, +13-frame tail) | always | 11 | admi, anchor-innocent-maid, anis-sparkling-summer, crown, ludmilla-winter-owner, mast-romantic-maid, privaty, privaty-unkind-maid, … |
+| `reloadTimeClamp` | Reload | OVERRIDES both base reload frames and `reloadSpeedPct`; fixed seconds | when a clamp buff is active | 1 | cinderella-crystal-wave |
 | `attackSpeedPct` | Fire cadence | ADDS with `fireRatePct` into one `speedMult` (MG ladder + ordinary cadence) | always | 4 | dorothy-serendipity, soline, sugar, tove |
 | `fireRatePct` | Fire cadence | same consumer as `attackSpeedPct` — two names, one sum | always | 0 | _none_ |
-| `chargeSpeedPct` | Charge time | SUBTRACTIVE on charge frames, capped at 100%, floor 1 frame | charge weapons | 12 | a2, alice, anis-star, belorta, emilia, eunhwa, liberalio, mana, … |
+| `chargeSpeedPct` | Charge time | SUBTRACTIVE on charge frames, capped at 100%, floor 1 frame | charge weapons | 11 | a2, alice, belorta, emilia, eunhwa, liberalio, mana, maxwell, … |
+| `chargeTimeClamp` | Charge time | OVERRIDES additive `chargeSpeedPct`; fixed seconds, also accepted as a `weaponSwap` field | charge weapons | 1 | anis-star |
 | `hitRatePct` | Core geometry | shrinks the accuracy circle → raises ACR (`acrForHR`); no damage bucket of its own | AR/SMG/SG core rolls (`HRCORE`/UNIGEO) | 18 | anchor-innocent-maid, aria, asuka, chisato, dorothy-serendipity, drake, jill, leona, … |
 | `burstGenPct` | Burst gauge | kit buffs multiply as `(1 + Σ/100)`; cube/OL-sourced burst-gen is a SEPARATE `burstGenMult` factor, so the two multiply rather than add | always | 8 | alice-wonderland-bunny, anis-star, grave, label, mana, mica-snow-buddy, rupee-winter-shopper, sin |
 | `extraHitDamagePct` | New instance | spawns a per-pull rider hit of `value × hitsPerShot` %ATK — `category:'burst'`, crits (`RIDERCRIT`), never cores/ranges | per trigger pull | 4 | modernia, nayuta, neon-blue-ocean, neon-vision-eye |

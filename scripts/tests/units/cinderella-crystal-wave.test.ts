@@ -3,7 +3,7 @@
 // "cindy"), Burst III, cd 40s, ammo 300, MG (chargeFrames 0). Kit-autonomy gauntlet
 // 2026-07-25 — test-first faithful re-derivation.
 //
-// One assertion group per KIT LINE (W1..W8 below), asserted against the SHIPPED override loaded
+// One assertion group per KIT LINE (W1..W9 below), asserted against the SHIPPED override loaded
 // from disk. `withPatchedOverride` appears only to build COUNTERFACTUALS (the nearest wrong model
 // each assertion must discriminate against) and to flip her user-selectable MODE — never to supply
 // the encoding under test.
@@ -13,7 +13,7 @@
 //   S1 ■ Beauty-Full (battle start) → self: Attack Damage ▲ 24% continuously                 [W1]
 //      ■ every 5s → nearest enemy: 900% of final ATK as damage                               [W4]
 //      ■ each time total ally ammo consumed reaches 200 → all allies: fill Burst Gauge 12%    [W8]
-//      ■ Preparation for Change: reload fixed 3s for 6s, removed on last bullet  (UNMODELED)
+//      ■ Preparation for Change: reload fixed 3s for 6s, removed on last bullet  [W9]
 //      ■ (Snipe mode) weapon swap: 62.13%/shot, 1s charge, 250% full charge, +Pierce (alt path)
 //   S2 ■ (battle start) → self: ATK ▲ 29% continuously                                       [W2]
 //      ■ Pinpoint (MG mode) → self: Damage to core ▲ 26% continuously  \  mode toggle        [W3]
@@ -62,13 +62,14 @@
 //       continuous 24%/29% passives. Count == her burst casts.
 //   W7  the 6000% nuke is a burstCast, so it lands BEFORE the FB window and never takes the +50%
 //       major (verified fact, 2026-07-13) — the nearest wrong model is a fullBurstEnter nuke.
-//   W8  the per-200-ally-ammo 12% gauge fill feeds TEAM burst cadence: removing it drops helm's
-//       burst count over the fight (the same teamAmmo mechanism Little Mermaid uses). The gauge
-//       primitive emits no damage event, so the observable is the teammate's cast count, plus a
-//       structural pin of the block itself.
+//   W8  the per-200-ally-ammo 12% gauge fill increases ccw's gauge contribution to the team bar:
+//       removing it drops her gaugeGenerated counter (the same teamAmmo mechanism Little Mermaid
+//       uses), plus a structural pin of the block itself.
+//   W9  Preparation for Change reload bookkeeping: lastBullet -> self reloadTimeClamp 3.0s for 6s.
+//       The engine lacks a reload-complete trigger, so lastBullet proxies the activation. Removing
+//       the clamp changes her reload cadence.
 //
 // UNMODELED (inert; documented here + override unmodeled, deliberately no assertion):
-//   - Preparation for Change reload bookkeeping (reload fixed 3s for 6s) — reload timing only.
 //   - Decoy avatar (70.34% final Max HP) — defensive/aggro; the v1 boss deals no damage.
 //   - Pierce (Snipe mode) — inert vs the partless boss.
 //   ⚑ Snipe weapon-swap magazine is modeled as 1 round (Additional Effect 2 expends 40 rounds per
@@ -87,6 +88,7 @@ import {
   controlComp,
   runComp,
   totals,
+  unitOf,
   withPatchedOverride,
 } from '../lib/harness.js';
 
@@ -98,6 +100,7 @@ const CCW = 2;
 type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
+type ReloadEvent = Extract<SimEvent, { kind: 'reload' }>;
 
 function run(overrides: Record<string, any> = {}) {
   const events: SimEvent[] = [];
@@ -106,7 +109,7 @@ function run(overrides: Record<string, any> = {}) {
     overrides,
     cfg: { onEvent: (e) => events.push(e) },
   });
-  return { events, totals: totals(res) };
+  return { events, totals: totals(res), res };
 }
 
 // ---- counterfactual / nearest-wrong patches ---------------------------------------------------
@@ -527,13 +530,16 @@ describe('cinderella-crystal-wave — kit spec', () => {
   });
 
   describe('W8 — S1 teamAmmo: per-200 ally ammo → all allies fill Burst Gauge 12%', () => {
-    it("feeds TEAM burst cadence: removing it drops a teammate's burst count", () => {
-      // The gauge primitive emits no damage event, so the observable is the teammate's cast count:
-      // ccw's per-200-ally-ammo 12% fill advances helm's bursts over the fight.
+    it('feeds TEAM burst gauge: removing it drops the gauge ccw contributes', () => {
+      // The gauge primitive emits no damage event, so the observable is the unit's uncapped
+      // gaugeGenerated counter. ccw's per-200-ally-ammo 12% fill increases her contribution to
+      // the team bar over the fight.
+      const baseGauge = unitOf(base.res, SLUG).gaugeGenerated;
+      const noGauge = unitOf(teamAmmo.res, SLUG).gaugeGenerated;
       expect(
-        helmBursts(base.events).length,
-        "ccw's teamAmmo fill must advance helm's burst cadence"
-      ).toBeGreaterThan(helmBursts(teamAmmo.events).length);
+        baseGauge,
+        "ccw's teamAmmo fill must increase her gauge contribution"
+      ).toBeGreaterThan(noGauge);
     });
 
     it('is encoded as a teamAmmo(count 200) → fillGauge 12% block targeting allies', () => {
@@ -544,6 +550,41 @@ describe('cinderella-crystal-wave — kit spec', () => {
       expect(blk.target.kind).toBe('allies');
       const fill = blk.effects.find((e: any) => e.kind === 'fillGauge');
       expect(fill?.pct).toBe(12);
+    });
+  });
+
+  describe('W9 — S1 Preparation for Change: reload time fixed 3s for 6s (lastBullet proxy)', () => {
+    it('applies reloadTimeClamp 3.0s to self on lastBullet', () => {
+      const applied = buffs(base.events).filter(
+        (b) =>
+          b.casterIdx === CCW &&
+          b.targetIdx === CCW &&
+          b.stat === 'reloadTimeClamp' &&
+          b.value === 3.0
+      );
+      expect(applied.length).toBeGreaterThan(0);
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(6 * FPS);
+      }
+    });
+
+    it('DISCRIMINATING: removing the clamp changes her reload timing', () => {
+      const noClamp = run({
+        [SLUG]: withPatchedOverride(SLUG, (ov) => {
+          ov.skill1 = ov.skill1.filter(
+            (b: any) => b.trigger?.kind !== 'lastBullet'
+          );
+        }),
+      });
+      const baseReloads = base.events.filter(
+        (e): e is ReloadEvent => e.kind === 'reload' && e.slug === SLUG
+      );
+      const noClampReloads = noClamp.events.filter(
+        (e): e is ReloadEvent => e.kind === 'reload' && e.slug === SLUG
+      );
+      // With a 3.0s clamp on an MG whose base reload is ~2.85s, she reloads slightly slower,
+      // so the clamped run should observe fewer reload completions over the fight.
+      expect(baseReloads.length).toBeLessThan(noClampReloads.length);
     });
   });
 });

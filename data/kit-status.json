@@ -25,10 +25,10 @@
     },
     "band": {
       "±3% ✓": 7,
-      "±5%": 6,
-      "±15%": 13,
-      "±8%": 9,
-      ">15%": 10
+      "±5%": 8,
+      "±15%": 14,
+      "±8%": 7,
+      ">15%": 9
     }
   },
   "units": {
@@ -592,7 +592,7 @@
           },
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.7627
+            "ratio": 0.764
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
@@ -600,7 +600,7 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.8768
+            "ratio": 0.8822
           },
           {
             "comp": "PA MiKa (boss Iron)",
@@ -612,11 +612,11 @@
           },
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9559
+            "ratio": 0.9542
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9518
+            "ratio": 0.9547
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
@@ -624,8 +624,8 @@
           }
         ],
         "n": 12,
-        "mean": 0.87,
-        "mad": 0.13,
+        "mean": 0.8706,
+        "mad": 0.1294,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -874,7 +874,7 @@
         "skill1/burst: the Anti A.T. Field CONSUMPTION is instant in-game (all stacks removed at the finisher ~cast+9s) but the engine has no remove-target-buff primitive, so the debuff expires gradually 9s per stack — a short post-window tail over-credits team amp by up to ~1.5x in that tail (⚑6: add a consumeTargetStatus effect keyed to the finisher; Tier 2)",
         "skill2: the Full-Burst-entry Attack Damage buff is fullBurstEnter + ownBurstGate:'cast' (fires at FB entry only on rotations SHE burst in — Annihilation State is granted only by her own burst); identical to FB-enter when she is the only Burst III unit, and it correctly does NOT fire on another Burst III unit's rotations (verified in the dual-B3 control comp)",
         "skill2: Emergency Repair (heal + reload-speed + ammo dump) is encoded at fullBurstEnd + ownBurstGate:'cast' ≈ Annihilation-State end (~cast+9s, ~1s late); the schema has no delayed/state-end trigger keyed to her burst, so fullBurstEnd is the closest proxy",
-        "skill2: 'Removes 100% of ammo' is modeled as consumeAmmo fraction:1 at fullBurstEnd (~10s after the burst's instantReload 0.21, so no collision); its damage content is the forced fast reload covered by the reloadSpeedPct 60 window (⚑3)",
+        "skill2: 'Removes 100% of ammo' is modeled as consumeAmmo fraction:1 at fullBurstEnd (~10s after the burst's instantReload 0.21, so no collision); the paired 'Reload speed is fixed at a 60% increase for 1 round(s)' is modeled as reloadSpeedClamp 60 durationShots 1, clamping the forced reload's speed and overriding any additive reloadSpeedPct buffs for that reload (⚑3)",
         "skill2: the 3.77%-Max-HP heal is a 3-tick self recovery emitter (ticks:3/intervalSec:1) but is damage-INERT in the sim (self-targeted, asuka-wille has no recovery block; verified removing it moves no total) — encoded for kit completeness / future recovery synergy",
         "skill2: 'MG heating up speed ▼ 100% for 3 sec' is UNMODELED (⚑2) — no wind-up primitive; ambiguous (frozen ramp vs instant full spin). Measure her post-Emergency-Repair fire cadence before modeling",
         "burst: the Annihilation finisher (6.62% × stacks) is one 198.6% hit (30-stack cap) with delaySec:9 — it LANDS at state-end inside the FB window (FB-boosted, finding F2) and mirrors the LIVE stack count (no dynamic-stack-scale primitive, so the 30-cap is a documented proxy; the blind rebuild used 10 stacks — verify the popup ÷ 6.62 for the real count, ⚑4/⚑5)"
@@ -1274,11 +1274,11 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9891
+            "ratio": 0.9836
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9687
+            "ratio": 0.983
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
@@ -1286,8 +1286,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.9834,
-        "mad": 0.0166,
+        "mean": 0.9864,
+        "mad": 0.0136,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -1398,9 +1398,7 @@
       "reference": false,
       "residual": "U3 open — elemental-advantage delivery type | Snipe alt-path cluster: maxAmmo 1-vs-15 (40-round-expend clamp, kit-internal contradiction), snipe entry/exit state machine approx (static mode 100% uptime), Preparation reload clamp (no primitive); all non-validated (graded=MG)",
       "unmodeled": {
-        "skill1": [
-          "Activates when reloading to max ammunition capacity. Affects self. Preparation for Change: Reloading Time changes to fixed 3 sec for 6 sec. (Removed when the last bullet is fired.)"
-        ],
+        "skill1": [],
         "skill2": [
           "Activates at the start of battle and when using Burst Skill. Affects self. Creates a Decoy avatar with 70.34% of the caster's Max HP, continuously."
         ],
@@ -1410,17 +1408,17 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.8899
+            "ratio": 0.8937
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9803
+            "ratio": 0.9188
           }
         ],
         "n": 2,
-        "mean": 0.9351,
-        "mad": 0.0649,
-        "band": "±8%",
+        "mean": 0.9063,
+        "mad": 0.0937,
+        "band": "±15%",
         "temp": "COLD ▼"
       }
     },
@@ -1649,7 +1647,7 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9636
+            "ratio": 0.9638
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
@@ -2922,11 +2920,11 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.132
+            "ratio": 1.1295
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.1261
+            "ratio": 1.1264
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -2934,8 +2932,8 @@
           }
         ],
         "n": 3,
-        "mean": 1.1194,
-        "mad": 0.1194,
+        "mean": 1.1186,
+        "mad": 0.1186,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -3156,7 +3154,7 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9834
+            "ratio": 0.9879
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
@@ -3180,8 +3178,8 @@
           }
         ],
         "n": 10,
-        "mean": 0.9776,
-        "mad": 0.027,
+        "mean": 0.978,
+        "mad": 0.0265,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -3367,24 +3365,21 @@
       "unmodeled": {
         "skill1": [],
         "skill2": [],
-        "burst": [
-          "Reload speed is fixed at a 99.96% increase for 10 sec.",
-          "Normal attacks deal True Damage for 10 sec."
-        ]
+        "burst": ["Normal attacks deal True Damage for 10 sec."]
       },
       "caveats": [
-        "burst: \"Reload speed is fixed at a 99.96% increase for 10 sec.\" is a stat LOCK (clamps reload speed at ~normal and blocks reload-speed support for 10s), not a +99.96% boost — the engine has no clamp vocabulary, so it is unmodeled and inert without reload-speed support on the team (open-questions U31)",
+        "burst: \"Reload speed is fixed at a 99.96% increase for 10 sec.\" is modeled as reloadSpeedClamp 99.96/10s — a stat clamp that overrides additive reloadSpeedPct buffs while active, pinning her reload speed at ~normal.",
         "burst: \"Normal attacks deal True Damage for 10 sec\" (damage-type conversion) is unmodeled"
       ],
       "board": {
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9132
+            "ratio": 0.9717
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9355
+            "ratio": 0.9954
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -3392,9 +3387,9 @@
           }
         ],
         "n": 3,
-        "mean": 0.9267,
-        "mad": 0.0733,
-        "band": "±8%",
+        "mean": 0.9662,
+        "mad": 0.0338,
+        "band": "±5%",
         "temp": "COLD ▼"
       }
     },
@@ -3767,7 +3762,7 @@
           },
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.8508
+            "ratio": 0.855
           },
           {
             "comp": "PG iron sweep (boss Electric)",
@@ -3779,8 +3774,8 @@
           }
         ],
         "n": 4,
-        "mean": 0.9154,
-        "mad": 0.1173,
+        "mean": 0.9164,
+        "mad": 0.1162,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -5277,13 +5272,13 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.7907
+            "ratio": 0.967
           }
         ],
         "n": 1,
-        "mean": 0.7907,
-        "mad": 0.2093,
-        "band": ">15%",
+        "mean": 0.967,
+        "mad": 0.033,
+        "band": "±5%",
         "temp": "COLD ▼"
       }
     },
@@ -5614,16 +5609,16 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.8972
+            "ratio": 0.8946
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9067
+            "ratio": 0.9132
           }
         ],
         "n": 2,
-        "mean": 0.902,
-        "mad": 0.098,
+        "mean": 0.9039,
+        "mad": 0.0961,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -6325,7 +6320,7 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.8745
+            "ratio": 0.8741
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -6333,8 +6328,8 @@
           }
         ],
         "n": 5,
-        "mean": 0.9309,
-        "mad": 0.0702,
+        "mean": 0.9308,
+        "mad": 0.0703,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -7900,12 +7895,12 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.9985
+            "ratio": 0.9911
           }
         ],
         "n": 1,
-        "mean": 0.9985,
-        "mad": 0.0015,
+        "mean": 0.9911,
+        "mad": 0.0089,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }

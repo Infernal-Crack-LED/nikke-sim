@@ -6,13 +6,10 @@
   "unmodeled": {
     "skill1": [],
     "skill2": [],
-    "burst": [
-      "Reload speed is fixed at a 99.96% increase for 10 sec.",
-      "Normal attacks deal True Damage for 10 sec."
-    ]
+    "burst": ["Normal attacks deal True Damage for 10 sec."]
   },
   "caveats": [
-    "burst: \"Reload speed is fixed at a 99.96% increase for 10 sec.\" is a stat LOCK (clamps reload speed at ~normal and blocks reload-speed support for 10s), not a +99.96% boost — the engine has no clamp vocabulary, so it is unmodeled and inert without reload-speed support on the team (open-questions U31)",
+    "burst: \"Reload speed is fixed at a 99.96% increase for 10 sec.\" is modeled as reloadSpeedClamp 99.96/10s — a stat clamp that overrides additive reloadSpeedPct buffs while active, pinning her reload speed at ~normal.",
     "burst: \"Normal attacks deal True Damage for 10 sec\" (damage-type conversion) is unmodeled"
   ],
   "skill1": [
@@ -107,6 +104,12 @@
           "kind": "buff",
           "stat": "hitRatePct",
           "value": 80.78,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedClamp",
+          "value": 99.96,
           "durationSec": 10
         },
         {

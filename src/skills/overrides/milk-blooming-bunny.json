@@ -34,7 +34,7 @@
         },
         {
           "kind": "buff",
-          "stat": "reloadSpeedPct",
+          "stat": "reloadSpeedClamp",
           "value": -50
         },
         {

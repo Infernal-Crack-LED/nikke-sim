@@ -55,7 +55,7 @@
 | `countInFb` | 7 | claire, frima, quiry, rapi-red-hood, scarlet-black-shadow, snow-crane, snow-white-innocent-days |
 | `critRateNormalPct` | 3 | biscuit, helm, julia |
 | `delaySec` | 5 | asuka-wille, dorothy, flora, rapi-red-hood, snow-white |
-| `durationShots` | 11 | emilia, eunhwa, harran, helm, miranda, neon, neve, phantom, … |
+| `durationShots` | 12 | asuka-wille, emilia, eunhwa, harran, helm, miranda, neon, neve, … |
 | `escalating` | 11 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, mary-bay-goddess, mihara, … |
 | `everyN` | 8 | clay, harran, mast-romantic-maid, mint, neon-vision-eye, phantom, power, soda-twinkling-bunny |
 | `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
@@ -77,7 +77,7 @@
 | `instantInFb` | 1 | rapi-red-hood |
 | `instantReload` | 11 | alice-wonderland-bunny, asuka-wille, diesel, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, … |
 | `interval` | 37 | ade, anis, brid, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, … |
-| `lastBullet` | 17 | anchor, anis-sparkling-summer, aria, crow, dorothy, epinel, eunhwa, exia, … |
+| `lastBullet` | 18 | anchor, anis-sparkling-summer, aria, cinderella-crystal-wave, crow, dorothy, epinel, eunhwa, … |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 12 | emilia, grave, himeno, mica, n102, neon, nihilister, noir, … |
 | `maxShots` | 3 | e-h, laplace-ultimate-hero, snow-white-heavy-arms |

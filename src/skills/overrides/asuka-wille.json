@@ -13,7 +13,7 @@
     "skill1/burst: the Anti A.T. Field CONSUMPTION is instant in-game (all stacks removed at the finisher ~cast+9s) but the engine has no remove-target-buff primitive, so the debuff expires gradually 9s per stack — a short post-window tail over-credits team amp by up to ~1.5x in that tail (⚑6: add a consumeTargetStatus effect keyed to the finisher; Tier 2)",
     "skill2: the Full-Burst-entry Attack Damage buff is fullBurstEnter + ownBurstGate:'cast' (fires at FB entry only on rotations SHE burst in — Annihilation State is granted only by her own burst); identical to FB-enter when she is the only Burst III unit, and it correctly does NOT fire on another Burst III unit's rotations (verified in the dual-B3 control comp)",
     "skill2: Emergency Repair (heal + reload-speed + ammo dump) is encoded at fullBurstEnd + ownBurstGate:'cast' ≈ Annihilation-State end (~cast+9s, ~1s late); the schema has no delayed/state-end trigger keyed to her burst, so fullBurstEnd is the closest proxy",
-    "skill2: 'Removes 100% of ammo' is modeled as consumeAmmo fraction:1 at fullBurstEnd (~10s after the burst's instantReload 0.21, so no collision); its damage content is the forced fast reload covered by the reloadSpeedPct 60 window (⚑3)",
+    "skill2: 'Removes 100% of ammo' is modeled as consumeAmmo fraction:1 at fullBurstEnd (~10s after the burst's instantReload 0.21, so no collision); the paired 'Reload speed is fixed at a 60% increase for 1 round(s)' is modeled as reloadSpeedClamp 60 durationShots 1, clamping the forced reload's speed and overriding any additive reloadSpeedPct buffs for that reload (⚑3)",
     "skill2: the 3.77%-Max-HP heal is a 3-tick self recovery emitter (ticks:3/intervalSec:1) but is damage-INERT in the sim (self-targeted, asuka-wille has no recovery block; verified removing it moves no total) — encoded for kit completeness / future recovery synergy",
     "skill2: 'MG heating up speed ▼ 100% for 3 sec' is UNMODELED (⚑2) — no wind-up primitive; ambiguous (frozen ramp vs instant full spin). Measure her post-Emergency-Repair fire cadence before modeling",
     "burst: the Annihilation finisher (6.62% × stacks) is one 198.6% hit (30-stack cap) with delaySec:9 — it LANDS at state-end inside the FB window (FB-boosted, finding F2) and mirrors the LIVE stack count (no dynamic-stack-scale primitive, so the 30-cap is a documented proxy; the blind rebuild used 10 stacks — verify the popup ÷ 6.62 for the real count, ⚑4/⚑5)"
@@ -91,9 +91,9 @@
       "effects": [
         {
           "kind": "buff",
-          "stat": "reloadSpeedPct",
+          "stat": "reloadSpeedClamp",
           "value": 60,
-          "durationSec": 10.5
+          "durationShots": 1
         },
         {
           "kind": "heal",
