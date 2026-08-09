@@ -12,12 +12,10 @@
 //      (target = the 2 highest-final-ATK allies, self-eligible)                      [M2 target]
 //   S2 ■ when there are above 5 enemy units (excl. Nikkes) → self:                  [M5 UNMODELED]
 //        Critical Rate ▲4.83% / Critical Damage ▲13.91%
-//   BU ■ self — Change the weapon in use: a single railgun shot                     [M6 single shot]
-//        Damage 813.42% of final ATK                                                 [M7 magnitude]
-//        (the hit crits, never cores)                                                [M8 eligibility]
-//        (the cast lands before the Full Burst window → no +50% major)               [M9 FB-exempt]
-//      Full Charge Damage 300% / Charge Time 2s / Max Ammo 1 / Pierce = the weapon-swap
-//      scaffolding the single-shot model collapses (probe run-G; verbatim in unmodeled).
+//   BU ■ self — Change the weapon in use (kit-literal weaponSwap, enacted 2026-08-09):
+//        Damage 813.42% of final ATK / Full Charge Damage 300% / Charge Time 2s /
+//        Max Ammo 1 / Pierce, 10s window                                             [M6/M7]
+//        (railgun shots are charged weapon fire inside the FB window)                [M8/M9]
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest wrong model gates
 // nothing):
@@ -38,15 +36,16 @@
 //       raid, so the parser correctly drops it (skill2 === []). Documented, not asserted: it is
 //       out-of-domain inert here (⚑ in the override note). The assertion is structural: skill2
 //       contributes no damage and no buff (it is empty), and the line is verbatim in unmodeled.
-//   M6  her burst is ONE railgun shot per cast (probe run-G 1.93→0.81): exactly one burst-bucket
-//       hit per burstCast. The old weaponSwap model fired ~4 shots over 10s; a multi-shot encoding
-//       would multiply the hit count.
-//   M7  the measured UNCHARGED single-shot magnitude 813.42%, not the kit-literal full-charge
-//       2440.26% (the 300% × 3 lever). Measurement-gated: run-G read the burst hit at 813.42.
-//   M8  flatDamage crits by engine default (critEligible) and never cores (coreEligible false) —
-//       F2: the Pierce railgun roll keeps crit, strips core.
-//   M9  a burst CAST lands BEFORE the Full Burst window opens, so it never takes the +50% major
-//       (verified fact, 2026-07-13; burstCast flatDamage is also auto noFb).
+//   M6  her burst is the KIT-LITERAL weapon swap (enacted 2026-08-09, owner faithfulness ruling —
+//       superseding the probe-run-G single-flatDamage collapse, which its own note recorded as
+//       unstable, 0.80 G vs 1.17 N6): each cast opens a 10s swap window firing ≥2 charged railgun
+//       shots (2s charge + 1-round mag + 141f reload ≈ a shot every ~4.7s) and ZERO burst-bucket
+//       nukes. The old-model counterfactual inverts both observables.
+//   M7  window shots carry the swap magnitude atkPct 813.42 (the 300% full-charge lever composes
+//       in `amount` via the charge bucket), vs her base 69.04 outside the window.
+//   M8  railgun shots are real charged weapon fire: crit-eligible at her sheet rate.
+//   M9  they land INSIDE the Full Burst window (cast opens FB ~0.4s later; first shot at ~2.4s),
+//       so they take the +50% major — unlike the old pre-FB flatDamage nuke.
 //
 // Fixture: controlComp('maxwell') = liter (B1) / crown (B2) / maxwell (B3) / helm (B3), boss Fire,
 // focus maxwell — maxwell needs a real rotation (and a co-B3) to cast her burst AND to open Full
@@ -100,40 +99,23 @@ const maxwellAllAllies = withPatchedOverride('maxwell', (ov) => {
   }
   b.target = { kind: 'allies' };
 });
-/** M7 counterfactual: the kit-literal FULL-CHARGE magnitude (813.42 × 3 = 2440.26). */
-const maxwellFullCharge = withPatchedOverride('maxwell', (ov) => {
-  const e = ov.burst[0]?.effects?.find((x: any) => x.kind === 'flatDamage');
-  if (!e) {
-    throw new Error('maxwell burst flatDamage missing — fixture is stale');
-  }
-  e.atkPct = 2440.26;
-});
-/** M6 counterfactual: a second shot in the burst window (the old multi-shot weaponSwap shape). */
-const maxwellMultiShot = withPatchedOverride('maxwell', (ov) => {
+/** M6/M7 counterfactual: the superseded probe-run-G model — one uncharged 813.42% flatDamage
+ *  per cast, no weapon swap. */
+const maxwellOldSingleShot = withPatchedOverride('maxwell', (ov) => {
   const b = ov.burst[0];
-  const e = b?.effects?.find((x: any) => x.kind === 'flatDamage');
+  const e = b?.effects?.find((x: any) => x.kind === 'weaponSwap');
   if (!e) {
-    throw new Error('maxwell burst flatDamage missing — fixture is stale');
+    throw new Error('maxwell burst weaponSwap missing — fixture is stale');
   }
-  b.effects.push({ kind: 'flatDamage', atkPct: 813.42 });
-});
-/** M8 counterfactual: flip the eligibility — strip crit, add core. */
-const maxwellCritCoreFlip = withPatchedOverride('maxwell', (ov) => {
-  const e = ov.burst[0]?.effects?.find((x: any) => x.kind === 'flatDamage');
-  if (!e) {
-    throw new Error('maxwell burst flatDamage missing — fixture is stale');
-  }
-  e.crit = false;
-  e.core = true;
+  b.target = { kind: 'enemy' };
+  b.effects = [{ kind: 'flatDamage', atkPct: 813.42 }];
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run();
 const burstCastTrigger = run({ maxwell: maxwellBurstCastTrigger });
 const allAllies = run({ maxwell: maxwellAllAllies });
-const fullCharge = run({ maxwell: maxwellFullCharge });
-const multiShot = run({ maxwell: maxwellMultiShot });
-const critCoreFlip = run({ maxwell: maxwellCritCoreFlip });
+const oldSingleShot = run({ maxwell: maxwellOldSingleShot });
 
 // ---- readers ----------------------------------------------------------------------------------
 const dmg = (evs: SimEvent[]) =>
@@ -273,61 +255,66 @@ describe('maxwell — kit spec', () => {
     });
   });
 
-  describe('M6 — burst is ONE railgun shot per cast (probe run-G)', () => {
-    it('fires exactly one burst-bucket hit per burst cast', () => {
-      const nukes = maxwellNukes(base.events).length;
-      const casts = maxwellBursts(base.events).length;
-      expect(casts).toBeGreaterThan(0);
+  describe('M6 — burst is the kit-literal 10s railgun weapon swap (enacted 2026-08-09)', () => {
+    const windowShots = (evs: SimEvent[]) => {
+      const casts = maxwellBursts(evs).map((c) => c.frame);
+      return dmg(evs).filter(
+        (d) =>
+          d.slug === 'maxwell' &&
+          d.srcSlot === 'normal' &&
+          d.atkPct === 813.42 &&
+          casts.some((c) => d.frame > c && d.frame <= c + 10 * FPS)
+      );
+    };
+
+    it('each cast opens a swap window firing ≥2 charged railgun shots and ZERO burst-bucket nukes', () => {
+      const casts = maxwellBursts(base.events);
+      expect(casts.length).toBeGreaterThan(0);
+      expect(maxwellNukes(base.events)).toEqual([]);
+      for (const c of casts.map((x) => x.frame)) {
+        const inWindow = windowShots(base.events).filter(
+          (d) => d.frame > c && d.frame <= c + 10 * FPS
+        );
+        expect(
+          inWindow.length,
+          `cast at frame ${c}: expected ≥2 railgun shots in the 10s window (2s charge + 1-round mag + 141f reload)`
+        ).toBeGreaterThanOrEqual(2);
+      }
+    });
+
+    it('DISCRIMINATING: the superseded single-flatDamage model inverts both observables', () => {
+      expect(maxwellNukes(oldSingleShot.events).length).toBe(
+        maxwellBursts(oldSingleShot.events).length
+      );
+      expect(windowShots(oldSingleShot.events)).toEqual([]);
+    });
+
+    it('M7: window shots carry the swap magnitude 813.42, her base cadence 69.04 elsewhere', () => {
+      const shots = windowShots(base.events);
+      expect(shots.length).toBeGreaterThan(0);
+      expect([...new Set(shots.map((d) => d.atkPct))]).toEqual([813.42]);
+      const casts = maxwellBursts(base.events).map((c) => c.frame);
+      const outside = dmg(base.events).filter(
+        (d) =>
+          d.slug === 'maxwell' &&
+          d.srcSlot === 'normal' &&
+          !casts.some((c) => d.frame > c && d.frame <= c + 10 * FPS)
+      );
+      expect(outside.length).toBeGreaterThan(0);
+      expect([...new Set(outside.map((d) => d.atkPct))]).toEqual([69.04]);
+    });
+
+    it('M8: railgun shots are real charged weapon fire — crit-eligible', () => {
+      const shots = windowShots(base.events);
+      expect(shots.every((d) => d.critEligible)).toBe(true);
+    });
+
+    it('M9: railgun shots land INSIDE the Full Burst window and take the +50% major', () => {
+      const shots = windowShots(base.events);
       expect(
-        nukes,
-        `${nukes} burst hits vs ${casts} casts — a multi-shot model multiplies this`
-      ).toBe(casts);
-    });
-
-    it('DISCRIMINATING: a second shot in the window doubles the hit count', () => {
-      expect(maxwellNukes(multiShot.events).length).toBe(
-        maxwellBursts(multiShot.events).length * 2
-      );
-    });
-  });
-
-  describe('M7 — burst magnitude is the measured UNCHARGED 813.42%, not the 3× full-charge lever', () => {
-    it('lands at 813.42% of final ATK in the burst bucket', () => {
-      const nukes = maxwellNukes(base.events);
-      expect(nukes.length).toBeGreaterThan(0);
-      expect([...new Set(nukes.map((d) => d.atkPct))]).toEqual([813.42]);
-      expect([...new Set(nukes.map((d) => d.bucket))]).toEqual(['burst']);
-    });
-
-    it('DISCRIMINATING: the full-charge counterfactual lands at 2440.26%', () => {
-      expect([
-        ...new Set(maxwellNukes(fullCharge.events).map((d) => d.atkPct)),
-      ]).toEqual([2440.26]);
-    });
-  });
-
-  describe('M8 — the railgun hit crits (default) and never cores', () => {
-    it('is crit-eligible and core-ineligible on every burst hit', () => {
-      const nukes = maxwellNukes(base.events);
-      expect(nukes.length).toBeGreaterThan(0);
-      expect(nukes.every((d) => d.critEligible)).toBe(true);
-      expect(nukes.every((d) => !d.coreEligible)).toBe(true);
-    });
-
-    it('DISCRIMINATING: flipping crit:false/core:true inverts both eligibilities', () => {
-      const flipped = maxwellNukes(critCoreFlip.events);
-      expect(flipped.every((d) => !d.critEligible)).toBe(true);
-      expect(flipped.every((d) => d.coreEligible)).toBe(true);
-    });
-  });
-
-  describe('M9 — the burst cast is Full-Burst-exempt (lands before the window opens)', () => {
-    it('never takes the +50% Full Burst major', () => {
-      const nukes = maxwellNukes(base.events);
-      expect(nukes.length).toBeGreaterThan(0);
-      expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual(
-        []
-      );
+        shots.some((d) => d.fbMajorApplied),
+        'the first railgun shot (~2.4s after cast) lands inside the 10s FB window'
+      ).toBe(true);
     });
   });
 });
