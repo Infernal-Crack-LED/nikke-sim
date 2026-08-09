@@ -41,6 +41,7 @@ const STATS = new Set([
   'attackSpeedPct',
   'fireRatePct',
   'chargeTimeClamp',
+  'skillCooldownReductionSec',
   'fireRatePct',
   'extraHitDamagePct',
   'trueDamagePct',

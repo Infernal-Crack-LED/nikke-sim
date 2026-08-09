@@ -2950,13 +2950,15 @@ export function runSim(
   );
 
   // internal-cooldown skills ({kind:'interval', sec}): fire every sec seconds of battle,
-  // first at t=sec (⚑ phase convention — see types.ts; snow-white S2a 144.73%, 15s CD)
+  // first at t=sec (⚑ phase convention — see types.ts; snow-white S2a 144.73%, 15s CD).
+  // The effective period can be shortened by a live `skillCooldownReductionSec` buff on the
+  // owning unit ("Cooldown of Skill X ▼ N sec"), e.g. Dorothy's Manifestation window.
   const intervalBlocks: Array<{
     unitIdx: number;
     block: Block;
     bi: number;
-    period: number;
-    next: number;
+    basePeriod: number;
+    lastFireFrame: number;
   }> = [];
   units.forEach((u) =>
     u.blocks.forEach((b, bi) => {
@@ -2966,8 +2968,8 @@ export function runSim(
           unitIdx: u.idx,
           block: b,
           bi,
-          period,
-          next: period,
+          basePeriod: period,
+          lastFireFrame: 0,
         });
       }
     })
@@ -3106,9 +3108,16 @@ export function runSim(
 
     // ---- internal-cooldown ('interval') skills ----
     for (const ib of intervalBlocks) {
-      if (frame === ib.next) {
+      const reductionSec = stat(
+        units[ib.unitIdx],
+        'skillCooldownReductionSec',
+        frame
+      );
+      const reductionFrames = Math.max(0, Math.round(reductionSec * FPS));
+      const effectivePeriod = Math.max(1, ib.basePeriod - reductionFrames);
+      if (frame - ib.lastFireFrame >= effectivePeriod) {
         applyBlock(ib.unitIdx, ib.block, ib.bi, frame);
-        ib.next += ib.period;
+        ib.lastFireFrame = frame;
       }
     }
 

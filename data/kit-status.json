@@ -2085,14 +2085,12 @@
       "unmodeled": {
         "skill1": [],
         "skill2": [],
-        "burst": [
-          "Manifestation: Cooldown of Skill 2 ▼ 18 sec, lasts for 10 sec. [⚑ skill2-CDR; no primitive to dynamically shorten the interval:20 S2 timer for the 10s window, and no clean phase-independent reduction (extra-cast count depends on burst timing within the S2 cycle). Estimate: S2 20s->~2s for 10s = ~5 extra 216% distributed nukes ≈ +1080% final ATK distributed per burst. Recipe: add a skill2CooldownReductionSec buff stat read by the interval-trigger scheduler to shorten its period while active. Tier 2 (scoped-buff).]"
-        ]
+        "burst": []
       },
       "caveats": [
         "skill1(L2): 'during Manifestation' self-state gate is NOT enforced — partsDamagePct is inert in v1 (no boss parts), so the gate moves no damage; modeled ungated on lastBullet for fidelity",
         "burst(L3 Brand): modeled AT-CAP (flatDamage 8900.83% distributed delaySec:10) — the cap binds with ~11× headroom in any realistic Dorothy comp (team ~98M/10s vs ~29M raw cap); residual ⚑ = the at-cap assumption + the redistribution pipeline-re-multiplication semantics",
-        "burst(L1): 'Manifestation: Cooldown of Skill 2 ▼ 18 sec, lasts for 10 sec' is UNMODELED — no skill2-CDR primitive to dynamically shorten the interval:20 timer, and no clean phase-independent reduction; ⚑ ≈ +5 extra S2 nukes (~1080% distributed) per burst window"
+        "burst(L1): 'Manifestation: Cooldown of Skill 2 ▼ 18 sec, lasts for 10 sec' is modeled as burstCast -> self -> buff skillCooldownReductionSec 18 durationSec 10; the interval scheduler reads this stat and shortens Dorothy's skill2 interval while the buff is live"
       ],
       "board": null
     },

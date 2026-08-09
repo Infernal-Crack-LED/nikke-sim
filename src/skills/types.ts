@@ -30,6 +30,7 @@ export type StatKey =
   | 'chargeDamagePct' // additive percentage points in the charge bucket
   | 'chargeDamageMultPct' // scales by BASE charge damage (collection items, Helm's max-treasure burst)
   | 'chargeSpeedPct'
+  | 'skillCooldownReductionSec' // "Cooldown of Skill X ▼ N sec" — dynamically shortens interval-trigger timers while active
   | 'attackDamagePct' // "Attack Damage" — Damage Up bucket
   | 'sustainedDamagePct'
   | 'sequentialDamagePct' // "Sequential Attack Damage ▲x%" — ADDITIVE in the Damage Up bucket (diluted by other support buffs; e.g. snow-white-heavy-arms)

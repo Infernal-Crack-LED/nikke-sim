@@ -401,6 +401,7 @@ const FACTOR_ORDER = [
   'Charge time',
   'Core geometry',
   'Burst gauge',
+  'Skill cooldown',
   'New instance',
   INERT,
 ];
@@ -596,6 +597,11 @@ const BUCKET_ROUTING: Record<string, Routing> = {
     factor: 'Burst gauge',
     how: 'kit buffs multiply as `(1 + Σ/100)`; cube/OL-sourced burst-gen is a SEPARATE `burstGenMult` factor, so the two multiply rather than add',
     gate: 'always',
+  },
+  skillCooldownReductionSec: {
+    factor: 'Skill cooldown',
+    how: 'shortens the effective period of `interval`-trigger blocks while the buff is live',
+    gate: 'interval-trigger skills on the buff holder',
   },
   // ---- Max HP grants (feed FinalATK only via the atkOfMaxHpPct readers) ----
   casterMaxHpPct: {

@@ -35,10 +35,10 @@
 //       so removing it changes no total. Its TIMED-window encoding is then discriminated behind a
 //       pierceDamagePct probe buff: no-window < timed-window < whole-fight-permanent — proving it
 //       is a bounded 10s window, NOT a permanent hasPierce flag (the nearest wrong model).
-//   D5  the Manifestation S2-CDR is OUT-OF-DOMAIN (no skill2-CDR primitive to dynamically shorten
-//       the interval timer, and no clean phase-independent reduction). A documented gap, NOT a
-//       silent drop — pinned structurally as the single verbatim `unmodeled.burst` entry with ⚑
-//       estimate+recipe+tier.
+//   D5  the Manifestation S2-CDR is modeled as a `skillCooldownReductionSec` self buff (18 sec
+//       reduction, 10 sec duration) read by the interval scheduler; it produces extra S2 Scorch-to-
+//       Dust procs within the Manifestation window and raises Dorothy's total vs the CDR-removed
+//       counterfactual.
 //   D6  Brand has no accumulator primitive, but the cap binds with ~11× headroom (team ~98M/10s vs
 //       ~29M raw cap), so it releases AT CAP every time — exactly expressible as a delayed nuke.
 //       Pinned on magnitude (8900.83%), one-per-her-burst, and the delaySec:10 landing INSIDE the
@@ -49,7 +49,6 @@
 // Fixture: liter (B1) / crown (B2) / ada (B3 carry, focused) / helm (B3) / dorothy (B1), boss Fire
 // (Dorothy is Water → takes the elemental major, exercising her damage). Dorothy needs a real
 // rotation to fire dry (lastBullet) and to cast her burst at all. Deterministic (no seed).
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
 import { runComp, totals, withPatchedOverride } from '../lib/harness.js';
@@ -156,6 +155,21 @@ const piercePermanent = withPatchedOverride('dorothy', (ov) => {
   ov.hasPierce = true;
   ov.burst = ov.burst.filter((b: any) => !hasKind(b, 'gainPierce'));
 });
+/** D5 reference: her burst Skill 2 CDR buff removed entirely. */
+const noSkillCdr = withPatchedOverride('dorothy', (ov) => {
+  const before = ov.burst.length;
+  ov.burst = ov.burst.filter(
+    (b: any) =>
+      !b.effects.some(
+        (e: any) => e.kind === 'buff' && e.stat === 'skillCooldownReductionSec'
+      )
+  );
+  if (ov.burst.length === before) {
+    throw new Error(
+      'dorothy burst skillCooldownReductionSec block missing — fixture is stale'
+    );
+  }
+});
 /** D6 reference: her Brand nuke removed entirely. */
 const noBrand = withPatchedOverride('dorothy', (ov) => {
   const before = ov.burst.length;
@@ -192,6 +206,7 @@ const pierceRemoved = run({ dorothy: noPierce });
 const pierceTimed = run({ dorothy: pierceProbe });
 const pierceNoWin = run({ dorothy: pierceNoWindow });
 const piercePerm = run({ dorothy: piercePermanent });
+const skillCdrRemoved = run({ dorothy: noSkillCdr });
 const brandRemoved = run({ dorothy: noBrand });
 const brandInstantRun = run({ dorothy: brandInstant });
 
@@ -269,8 +284,10 @@ describe('dorothy — kit spec', () => {
       expect([...new Set(hits.map((d) => d.bucket))]).toEqual(['skill']);
     });
 
-    it('fires on the 20s internal-cooldown grid (first at t=20s)', () => {
-      const frames = hits.map((d) => d.frame).sort((a, b) => a - b);
+    it('fires on the 20s internal-cooldown grid when Skill 2 CDR is removed', () => {
+      const frames = dorothySkillHits(skillCdrRemoved.events)
+        .map((d) => d.frame)
+        .sort((a, b) => a - b);
       expect(frames[0], 'first fire at t=20s (interval convention)').toBe(
         20 * FPS
       );
@@ -281,6 +298,15 @@ describe('dorothy — kit spec', () => {
         frames.length,
         'a 180s fight at 20s cadence from t=20 yields 8 fires'
       ).toBe(8);
+    });
+
+    it('the live Manifestation CDR pulls S2 fires earlier than the 20s grid', () => {
+      const baseFrames = hits.map((d) => d.frame).sort((a, b) => a - b);
+      const removedFrames = dorothySkillHits(skillCdrRemoved.events)
+        .map((d) => d.frame)
+        .sort((a, b) => a - b);
+      expect(baseFrames.length).toBeGreaterThan(removedFrames.length);
+      expect(baseFrames[0]).toBeLessThan(removedFrames[0]);
     });
 
     it('DISCRIMINATING cadence: interval:10 fires more, interval:40 fires fewer', () => {
@@ -325,32 +351,31 @@ describe('dorothy — kit spec', () => {
     });
   });
 
-  describe('D5 — Manifestation S2-CDR is a documented gap, not a silent drop', () => {
-    // Out-of-domain: no skill2-CDR primitive to dynamically shorten the interval:20 timer, and no
-    // clean phase-independent reduction. It lives verbatim in the override's unmodeled.burst with
-    // ⚑ estimate+recipe+tier — the "no silent drops" record. (Brand is modeled — see D6.)
-    const unmodeled: string[] = JSON.parse(
-      readFileSync(
-        new URL('../../../src/skills/overrides/dorothy.json', import.meta.url),
-        'utf8'
-      )
-    ).unmodeled.burst;
-
-    it('records the one out-of-domain burst line verbatim', () => {
-      expect(unmodeled.length).toBe(1);
+  describe('D5 — Manifestation S2-CDR ▼18 sec / 10 sec accelerates Scorch to Dust', () => {
+    it('produces strictly more S2 hits than the CDR-removed counterfactual', () => {
+      const withCdr = dorothySkillHits(base.events).length;
+      const without = dorothySkillHits(skillCdrRemoved.events).length;
       expect(
-        unmodeled[0].includes('Cooldown of Skill 2') &&
-          unmodeled[0].includes('18 sec'),
-        'Manifestation S2-CDR line must be recorded verbatim'
-      ).toBe(true);
+        withCdr,
+        'S2-CDR must generate extra Scorch-to-Dust procs'
+      ).toBeGreaterThan(without);
     });
 
-    it('flags it with an estimate + recipe + tier (the ⚑ contract)', () => {
-      for (const line of unmodeled) {
-        expect(line, `⚑ missing estimate: ${line}`).toMatch(/Estimate/i);
-        expect(line, `⚑ missing recipe: ${line}`).toMatch(/Recipe/i);
-        expect(line, `⚑ missing tier: ${line}`).toMatch(/Tier \d/i);
-      }
+    it('concentrates extra S2 hits inside the 10-sec Manifestation windows after burst casts', () => {
+      const castFrames = dorothyBursts(base.events).map((c) => c.frame);
+      const windowHits = (evs: SimEvent[]) =>
+        dorothySkillHits(evs).filter((d) =>
+          castFrames.some((cf) => d.frame >= cf && d.frame <= cf + 10 * FPS)
+        ).length;
+      expect(windowHits(base.events)).toBeGreaterThan(
+        windowHits(skillCdrRemoved.events)
+      );
+    });
+
+    it("is load-bearing: the extra S2 damage moves Dorothy's total", () => {
+      expect(base.totals.dorothy).toBeGreaterThan(
+        skillCdrRemoved.totals.dorothy
+      );
     });
   });
 
