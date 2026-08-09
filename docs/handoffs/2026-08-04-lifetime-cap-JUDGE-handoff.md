@@ -74,7 +74,7 @@ At `h4-marciana` frame 1565, of three red components inside `pellet_radius`:
 | `11117` | 1    | — (+63, −6) —                 | single-frame, same line                                 |
 
 ⇒ `marker = 3` is **1 genuine marker + 2 single-frame banner glyphs**. ⛔ **n = 1 frame, 1 dump, 1
-unit.** Per evidence-proportionality this RECORDS an observation; the `read-pellets.ts:882`
+unit.** Per evidence-proportionality this RECORDS an observation; the `read-pellets.ts:877-885`
 backend-selector defect stays **owner-gated and unfixed**, and no verdict was stamped on it.
 
 ## 2. Provenance ledger — which numbers carry which weight

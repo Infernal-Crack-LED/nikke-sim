@@ -930,7 +930,7 @@ def stale_counting_groundtruth(tracks_dir, score_json):
                                          if a_in["se"] else None)}
     print(json.dumps(out, indent=2))
     print("\nGROUND-TRUTH ARM -- 6-shot `marciana` (SG/Iron) f8-11 fixture, owner-anchored t0")
-    # ⚑ sweep item 3 (docs/handoffs/2026-08-06-band-channel-SWEEP.md §3): these errors are NOT the
+    # ⚑ sweep item 3 (docs/handoffs/closed/2026-08-06-band-channel-SWEEP.md §3): these errors are NOT the
     # shipped reader's. Naming the estimator at the point of output, not just in score-pellets.py.
     print("  ⛔ `err`/bias/rmse below come from score-pellets.py's `current` estimator -- a mean of\n"
           "     raw per-frame detector counts over f8-11. That is NEITHER CHANNEL of the shipped\n"
@@ -2689,7 +2689,7 @@ def oracle_ceiling_selftest():
 # ============================================================
 MERGE_AUDIT_FIXTURE = "scripts/tests/fixtures/pellets/merge-audit-slice.json"
 
-# Mirrors the constants `debounce_shots` hardcodes (count-pellets.py:489). Named here so the
+# Mirrors the constants `debounce_shots` hardcodes (count-pellets.py:603). Named here so the
 # candidate rules can be stated against them instead of re-hardcoding the same magic numbers.
 MERGE_EVENT_MIN = 3          # a frame is ACTIVE at white+red >= 3; the event opens on the first one
 MERGE_MARKER_MIN = 2         # core-hit flag only; it never enters a count
@@ -3031,7 +3031,7 @@ def _merge_slim(ammo, frame_counts, fps, slack, over_idx, keep=MERGE_AUDIT_SLICE
 
 def _expand_frame_counts_row(row):
     """A compact `frame_counts` fixture/dump row is `[white, red, marker]`, or, once the source
-    dump carries the `band` channel (docs/handoffs/2026-08-04-dump-band-LANDING-PLAN.md), `[white,
+    dump carries the `band` channel (docs/handoffs/closed/2026-08-04-dump-band-LANDING-PLAN.md), `[white,
     red, marker, band]`. A 3-wide row means `band` is UNKNOWN and the key is OMITTED from the
     returned dict -- NEVER defaulted to 0 -- because `has_band` (count-pellets.py:598) tests key
     PRESENCE, not truthiness: a fabricated `band: 0` would flip a pre-hybrid replay onto the
@@ -3371,7 +3371,7 @@ def _rep_decompose(shot, links, tracks_by_id, event, cross_count, radius, offset
     what the reader counts against no matter which geometry the crops were cut with. The shot-4
     re-run under the template crosshair is a separate call (§9C).
 
-    ⚑ TWO CHANNELS, BOTH REPORTED (docs/handoffs/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md §2).
+    ⚑ TWO CHANNELS, BOTH REPORTED (docs/handoffs/closed/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md §2).
     `event` is now the HYBRID (shipped) answer -- `cp.debounce_shots` on band-augmented frames --
     so `rep`/`reader_white` are the numbers the production reader actually emits. The population
     those numbers come from therefore differs per event:
@@ -3586,7 +3586,7 @@ def _rep_radius_runs(track, cross, radius, offset=0):
 # ---------------------------------------------------------------- the two halves, assembled
 
 def _rep_hybrid_events(block, cross, params, fps, offset, frame_counts, ev_lo, ev_hi):
-    """THE SHIPPED CHANNEL, for one crop (docs/handoffs/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md
+    """THE SHIPPED CHANNEL, for one crop (docs/handoffs/closed/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md
     §1C/§2.2). Reconstructs production's real `band` series from the labelled block's own
     `tracks_raw` -- `_hla_production_band`, i.e. count-pellets.py's own `_frame_pellet_counts`
     called in-process -- and feeds it to the real `cp.debounce_shots`. The events returned are
@@ -3652,7 +3652,7 @@ def _rep_labelled_report(block, shots, fidelity):
     # are shifted back up immediately. It runs over `event_window`, whose head and tail are quiet --
     # NOT over the whole stored range, which is widened to carry every overlapping track in full.
     ev_lo, ev_hi = block["event_window"]
-    # ⚑ THE SHIPPED CHANNEL, per crop (docs/handoffs/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md
+    # ⚑ THE SHIPPED CHANNEL, per crop (docs/handoffs/closed/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md
     # §2.2). Both `events` and `events_tmpl` come from the REAL `cp.debounce_shots` fed production's
     # reconstructed `band`, so `rep`/`white` below are the numbers the production reader emits --
     # NOT `_merge_events`' median-of-`white+red`, which docs/probe-runs.md §36A established is a
@@ -3800,7 +3800,7 @@ def _rep_series(traj):
     """One event's per-frame counted-owner series, pinned as a list. This is the CATEGORICAL form of
     §9's finding -- where in the series the representative frame lands -- and it is what a candidate
     rule should be scored against, because it has an unambiguous right answer per shot."""
-    # ⚑ TRAP 1 (docs/handoffs/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md §4.1): the representative
+    # ⚑ TRAP 1 (docs/handoffs/closed/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md §4.1): the representative
     # frame is now the HYBRID one, which can sit later in the event than the median one. It is still
     # structurally inside `_rep_trajectory`'s window -- `debounce_shots` only ever picks a frame in
     # [event.start, event.end), and the window is [min(event.start, t0-4), max(event.end+3, t0+15))
@@ -4000,7 +4000,7 @@ def _print_representative_audit(labelled, reports, pooled):
           f"Counting only the band keeps >{REP_HITS_PER_SHOT}\n  to a few percent.")
 
     print(f"\nPOLICY + `valid` CLAMP -- pooled over {pooled['median']['n_events']} events")
-    # ⚑ sweep item 2 (docs/handoffs/2026-08-06-band-channel-SWEEP.md §2): the scoping below was
+    # ⚑ sweep item 2 (docs/handoffs/closed/2026-08-06-band-channel-SWEEP.md §2): the scoping below was
     # correct and documented in code, but NO MARKER REACHED STDOUT -- and since §37 the block a few
     # lines ABOVE this one IS the shipped channel. That adjacency is the §36 defect's exact shape.
     print("  ⛔ LEGACY PRE-HYBRID CHANNEL -- NOT the shipped reader. `median`/`p75`/`max` here are\n"
@@ -4084,7 +4084,7 @@ def _rep_slim_dump(name, dump, fps):
             "max_pellet_frames": dump["params"]["max_pellet_frames"],
             # 3-wide [white, red, marker] when the source dump carries no `band` key (band
             # UNKNOWN), 4-wide [white, red, marker, band] when it does -- never a fabricated
-            # `band: 0` (docs/handoffs/2026-08-04-dump-band-LANDING-PLAN.md §2).
+            # `band: 0` (docs/handoffs/closed/2026-08-04-dump-band-LANDING-PLAN.md §2).
             "frame_counts": [[c["white"], c["red"], c.get("marker", 0)] + (
                 [c["band"]] if "band" in c else []) for c in frame_counts],
             "radius_tracks": out}
@@ -4239,7 +4239,7 @@ def representative_audit_selftest():
 
 
 # ============================================================
-# THE REPRESENTATIVE-FRAME POLICY SCORE (docs/handoffs/2026-08-04-representative-frame-PRECOMMIT.md)
+# THE REPRESENTATIVE-FRAME POLICY SCORE (docs/handoffs/closed/2026-08-04-representative-frame-PRECOMMIT.md)
 # -- of the four pre-committed candidates, does ANY land its representative frame inside the
 # pellet-cohort PLATEAU instead of the pre-cohort muzzle flash §9C found the shipped median sampling
 # on 3 of 5 labelled shots?
@@ -4262,18 +4262,18 @@ def representative_audit_selftest():
 POLICY_SCORE_FIXTURE = "scripts/tests/fixtures/pellets/policy-score-slice.json"
 # §1.4's four mandatory candidates. The three FRAME rules report a `total` of (band-count at the
 # chosen frame) + the SAME core-hit `red` flag `_merge_events` folds into "total"
-# (count-pellets.py:489's own convention) so the ceiling check compares like with like and isolates
+# (count-pellets.py:603's own convention) so the ceiling check compares like with like and isolates
 # the frame-selection difference, not also a change to what "total" means. `lifetime_band_count` is
 # NOT a frame rule (§1.4) and carries no red flag -- it is §9G's own per-event band-track count,
 # verbatim.
 #
-# `hybrid_plateau_median` (docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md §2/§4) is a
+# `hybrid_plateau_median` (docs/handoffs/closed/2026-08-04-representative-frame-PROPOSAL.md §2/§4) is a
 # FIFTH rule, added AFTER the pre-commit doc's four and NOT part of it (that doc's §1.4 enumeration
 # is unedited -- see its own header). It is the enactment PROPOSAL's own candidate: `plateau_median`
 # where the event has a band track in radius, else the shipped median-of-active frame, unchanged --
 # a strict superset of shipped behaviour that can only move events `plateau_median` would otherwise
 # abstain on. THIS IS A MEASUREMENT PASS ONLY -- `debounce_shots` stays untouched in both
-# `count-pellets.py:489` and `read-pellets.ts:627`; this rule lives purely inside this scoring arm.
+# `count-pellets.py:603` and `read-pellets.ts:349`; this rule lives purely inside this scoring arm.
 POLICY_RULES = ("shipped_median", "lifetime_gated_median", "plateau_median", "lifetime_band_count",
                 "hybrid_plateau_median")
 _POLICY_FRAME_RULES = ("shipped_median", "lifetime_gated_median", "plateau_median",
@@ -4282,7 +4282,7 @@ _POLICY_FRAME_RULES = ("shipped_median", "lifetime_gated_median", "plateau_media
 
 def _ps_band(fps, max_pellet_frames, band_hi=None):
     """⛔ HAZARD -- OPEN, MEASURED, NOT YET FIXED (sweep item 4,
-    docs/handoffs/2026-08-06-band-channel-SWEEP.md §4).
+    docs/handoffs/closed/2026-08-06-band-channel-SWEEP.md §4).
 
     `band_hi` defaults to `max_pellet_frames`, i.e. the COUPLED pre-§14 semantics. Of the NINE call
     sites only ONE passes it (`--cap-score`); `--policy-score` (:4504, :4632) and
@@ -4306,7 +4306,7 @@ def _ps_band(fps, max_pellet_frames, band_hi=None):
     census uses (8 frames at 60 fps, scaled down at 30; `max_pellet_frames` is each dump's OWN
     value, never hardcoded -- trap 4).
 
-    `band_hi` (docs/handoffs/2026-08-04-lifetime-cap-PRECOMMIT.md §3.8, pre-op gate revision 7) is
+    `band_hi` (docs/handoffs/closed/2026-08-04-lifetime-cap-PRECOMMIT.md §3.8, pre-op gate revision 7) is
     an OPTIONAL third parameter, STRICTLY ADDITIVE: it defaults to `max_pellet_frames`, so every
     existing caller (six besides this definition -- the labelled/dump policy-score arms and the
     hybrid-landing-audit's equivalence + TS-lockstep arms) is behaviourally unchanged. Only
@@ -4447,7 +4447,7 @@ def _ps_plateau_rep(totals, a, b):
 
 def _ps_red_flag(frame_counts, offset, a, b):
     """The same core-hit-marker-present-in-span flag `_merge_events` folds into "total"
-    (count-pellets.py:489), applied to whichever frame the candidate rule picked instead of the
+    (count-pellets.py:603), applied to whichever frame the candidate rule picked instead of the
     shipped one -- so `total` means the same thing across every frame rule."""
     return 1 if any(frame_counts[j - offset].get("marker", 0) >= MERGE_MARKER_MIN
                     for j in range(a, b)) else 0
@@ -4566,7 +4566,7 @@ def _ps_score_labelled(fx):
         rows.append(row)
 
     # ⚑ TWO "SHIPPED" DEFINITIONS NOW COEXIST -- read this together with `_rep_hybrid_events` /
-    # `_rep_labelled_report` (docs/handoffs/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md §4.2).
+    # `_rep_labelled_report` (docs/handoffs/closed/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md §4.2).
     # `shipped_median` HERE is deliberately the PRE-HYBRID median-of-`white+red` control: this arm
     # exists to SCORE candidate frame rules against each other, and `hybrid_plateau_median` is one
     # of the candidates, so its baseline must be the rule it was proposed to replace. The
@@ -5657,7 +5657,7 @@ def _hla_gate_ids(tracks, params, fps, band_hi_override=None):
     - `band_ids`   -- `_band_lo(fps) <= life <= band_hi`; the gate on `band`.
 
     ⚑ `band_hi` is DECOUPLED from `max_pellet_frames`/`pellet_ids`
-    (docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md). It is read from the dump's OWN persisted
+    (docs/handoffs/closed/2026-08-04-band-hi-LANDING-PLAN.md). It is read from the dump's OWN persisted
     `params` (count-pellets.py:1876 writes it), falls back to `max_pellet_frames` when absent, and
     `band_ids` is built straight off the lifetimes rather than as a subset of `pellet_ids` -- a
     track admitted into `band` need not be admitted into `pellet_ids`/`white`.
@@ -6069,7 +6069,7 @@ def hybrid_landing_audit_selftest():
 
 
 # ============================================================
-# THE LIFETIME-CAP `band_hi` SCORE (docs/handoffs/2026-08-04-lifetime-cap-PRECOMMIT.md) -- a
+# THE LIFETIME-CAP `band_hi` SCORE (docs/handoffs/closed/2026-08-04-lifetime-cap-PRECOMMIT.md) -- a
 # MEASUREMENT-ONLY pass. Scores a DECOUPLED band upper bound (`band_hi`, the counted-pellet band's
 # own ceiling -- NOT a raised `max_pellet_frames`, which also gates `pellet_ids`/segmentation and
 # is explicitly NOT what this arm measures, per the pre-commit's §1) against the pre-committed
@@ -6658,10 +6658,10 @@ def cap_score_selftest():
 
 
 # ============================================================
-# THE RESIDUAL A/B (docs/handoffs/2026-08-06-residual-ab-PRECOMMIT.md; rebuilds docs/probe-runs.md
+# THE RESIDUAL A/B (docs/handoffs/closed/2026-08-06-residual-ab-PRECOMMIT.md; rebuilds docs/probe-runs.md
 # §19's A/B, whose §19E "Reproduction" names only the INPUTS and left `-1.40 pellets/shot` -- the
 # denominator of the whole cold-SG accounting -- with NO committed instrument. Sweep item 1 of
-# docs/handoffs/2026-08-06-band-channel-SWEEP.md §7; second occurrence of the constraint-9 failure
+# docs/handoffs/closed/2026-08-06-band-channel-SWEEP.md §7; second occurrence of the constraint-9 failure
 # the 2026-07-29 gauge instrument caused.)
 #
 # ⛔ WHAT THIS ARM IS FOR, AND THE HAZARD IT IS BUILT AGAINST. `-1.40` is written down in six
@@ -6994,7 +6994,7 @@ def residual_ab(pairs, fps_list, save_fixture=None):
                 "_source": ("The two labelled-clip dumps' own `frame_counts` plus, per pre-"
                             "committed `band_hi` arm, the production `band` series reconstructed "
                             "from their tracks on BOTH crosshairs (structural + template relock) "
-                            "-- docs/handoffs/2026-08-06-residual-ab-PRECOMMIT.md, rebuilding "
+                            "-- docs/handoffs/closed/2026-08-06-residual-ab-PRECOMMIT.md, rebuilding "
                             "docs/probe-runs.md §19's A/B. Constraint 9 self-validation, same "
                             "precedent as the other pellets/*-slice.json fixtures."),
                 "_note": ("Regenerate with analyze-pellet-tracks.py --residual-ab <structural-dump-"
@@ -7648,7 +7648,7 @@ def dump_replay_fidelity_selftest():
 
 
 # ============================================================
-# THE RADIUS GATE -- docs/handoffs/2026-08-05-radius-gate-PRECOMMIT.md, docs/probe-runs.md §35
+# THE RADIUS GATE -- docs/handoffs/closed/2026-08-05-radius-gate-PRECOMMIT.md, docs/probe-runs.md §35
 #
 # §19C named the radius gate and the mislock as carrying the ENTIRE -1.40/shot residual, and the
 # mislock half is now closed at ~0 (§22C, §34). That makes `pellet_radius` the only channel any
@@ -7835,7 +7835,7 @@ def _rg_controls(pooled):
 
 def _print_radius_gate(reports, pooled, checks):
     print("\nTHE RADIUS GATE -- is the 160px cut into the pellet cloud, or in empty space?")
-    print("  (docs/handoffs/2026-08-05-radius-gate-PRECOMMIT.md; verdict read off DENSITY, §2.1)")
+    print("  (docs/handoffs/closed/2026-08-05-radius-gate-PRECOMMIT.md; verdict read off DENSITY, §2.1)")
     gate = reports[0]["pellet_radius"] if reports else 160
     print(f"\n  PELLET-ATTRIBUTABLE (shot - quiet) per shot, by annulus -- gate at {gate}px:")
     print(f"  {'r range':>12s} {'per shot':>10s}   {'':2s}")
@@ -8131,7 +8131,7 @@ def band_production_selftest():
 
 
 # ============================================================
-# MARKER SEMANTICS -- docs/handoffs/2026-08-05-marker-semantics-PRECOMMIT.md
+# MARKER SEMANTICS -- docs/handoffs/closed/2026-08-05-marker-semantics-PRECOMMIT.md
 #
 # §24D: `MARKER_MIN = 2` is met by red UI-BANNER GLYPHS, so the reader raises `core` flags on UI
 # artifacts. ⚑ That is NOT a reporting detail -- BOTH debounce implementations compute
@@ -8492,7 +8492,7 @@ def _ms_expected(reports, pooled):
 
 def _print_marker_semantics(reports, pooled, checks):
     print("\nMARKER SEMANTICS -- are `core` flags raised by UI artifacts? "
-          "(docs/handoffs/2026-08-05-marker-semantics-PRECOMMIT.md)")
+          "(docs/handoffs/closed/2026-08-05-marker-semantics-PRECOMMIT.md)")
     print(f"\n  {'dump':26s} {'mkTracks':>9s} {'LIFE1':>6s} {'ATTCH':>6s} {'FIXED':>6s} "
           f"{'MOVNG':>6s} {'UNDEC':>6s} {'reconΔ':>7s}")
     for r in reports:
@@ -8852,7 +8852,7 @@ def marker_net_selftest():
 
 
 # ============================================================
-# MISLOCK RATE -- docs/handoffs/2026-08-04-mislock-rate-PRECOMMIT.md
+# MISLOCK RATE -- docs/handoffs/closed/2026-08-04-mislock-rate-PRECOMMIT.md
 #
 # What fraction of PRODUCTION shots have a mislocked crosshair? The detector is
 # structural-vs-template DISAGREEMENT at each shot's counting frames t0+8..t0+11 (t0 =
@@ -8960,7 +8960,7 @@ def _mlr_pool(reports):
 
 
 def _print_mislock_rate(reports, pooled):
-    print("\nMISLOCK RATE -- docs/handoffs/2026-08-04-mislock-rate-PRECOMMIT.md")
+    print("\nMISLOCK RATE -- docs/handoffs/closed/2026-08-04-mislock-rate-PRECOMMIT.md")
     for r in reports:
         tag = "EXCLUDED (template lock < 90%, pre-commit §4.1)" if r["excluded"] else "included"
         print(f"\n{r['dump']}  [{tag}]")
@@ -9068,7 +9068,7 @@ def audit_mislock_rate(struct_paths, tmpl_paths, fps_list, save_fixture=None):
         with open(save_fixture, "w") as fh:
             json.dump({
                 "_source": ("count-pellets.py --dump-tracks structural + template pairs (see "
-                           "docs/handoffs/2026-08-04-mislock-rate-PRECOMMIT.md), sliced to just "
+                           "docs/handoffs/closed/2026-08-04-mislock-rate-PRECOMMIT.md), sliced to just "
                            "the counting-frame crosshair positions --mislock-rate consumes."),
                 "_note": ("A SLICE per dump, not the full dumps: `shots` is debounce_shots' own "
                          "event list reduced to `frame`/`start`, and `struct_cross`/`tmpl_cross` "
@@ -9122,7 +9122,7 @@ def mislock_rate_selftest():
 
 
 # ============================================================
-# MISLOCK IDENTITY -- docs/handoffs/2026-08-06-mislock-identity-PRECOMMIT.md
+# MISLOCK IDENTITY -- docs/handoffs/closed/2026-08-06-mislock-identity-PRECOMMIT.md
 #
 # THE CONTRADICTION THIS EXISTS TO RESOLVE (pre-commit §1). §22C measured what a mislock costs by
 # comparing COUNTS under the two locks across 10 owner-adjudicated shots and found ~0. §38C, on one
@@ -9481,7 +9481,7 @@ _MLI_CHANNEL_BANNER = (
 
 def _print_mislock_identity(reports):
     print("\nMISLOCK SEVERITY BY TRACK-SET IDENTITY -- "
-          "docs/handoffs/2026-08-06-mislock-identity-PRECOMMIT.md")
+          "docs/handoffs/closed/2026-08-06-mislock-identity-PRECOMMIT.md")
     print(_MLI_CHANNEL_BANNER)
     print("\nDEFINITIONS (pre-committed): A = ids counted under the STRUCTURAL lock, B = under the "
           "TEMPLATE lock;\n  count_diff = |B| - |A|; jaccard = |A n B| / |A u B|; J_mis / J_ok = "
@@ -9566,7 +9566,7 @@ def audit_mislock_identity(struct_paths, tmpl_paths, fps_list, save_fixture=None
         with open(save_fixture, "w") as fh:
             json.dump({
                 "_source": ("count-pellets.py --dump-tracks structural + template pairs (see "
-                            "docs/handoffs/2026-08-06-mislock-identity-PRECOMMIT.md), sliced to "
+                            "docs/handoffs/closed/2026-08-06-mislock-identity-PRECOMMIT.md), sliced to "
                             "what --mislock-identity-selftest needs to reproduce the score."),
                 "_note": ("A SLICE per dump pair. `frame_counts` and both `band_*` series are kept "
                           "WHOLE so the replay re-runs the real cp.debounce_shots (via _hla_score) "
@@ -9673,7 +9673,7 @@ def mislock_identity_selftest():
 
 
 # ============================================================
-# LOCK ADJUDICATION -- docs/handoffs/2026-08-04-mislock-cost-PRECOMMIT.md's own §21C conclusion:
+# LOCK ADJUDICATION -- docs/handoffs/closed/2026-08-04-mislock-cost-PRECOMMIT.md's own §21C conclusion:
 # "measuring what a mislock costs requires ground truth on mislocked PRODUCTION shots." §21 (the
 # swapped-window Δcount A/B) is VOID and stays void -- this does not retry it. It generates the
 # ground-truth ASK instead: one BLINDED PNG per sampled shot, showing BOTH candidate crosshair
@@ -10015,7 +10015,7 @@ def lock_adjudication(struct_paths, tmpl_paths, fps_list, out_dir, seed=LOCK_ADJ
         with open(save_fixture, "w") as fh:
             json.dump({
                 "_source": ("count-pellets.py --dump-tracks structural + template pairs (see "
-                           "docs/handoffs/2026-08-04-mislock-cost-PRECOMMIT.md's §21C ask), through "
+                           "docs/handoffs/closed/2026-08-04-mislock-cost-PRECOMMIT.md's §21C ask), through "
                            "_la_candidates for all 4 production dumps."),
                 "_note": ("A reduced SLICE, not the full real pools -- pools[name] here is "
                          f"`_la_slim_pools`' first {LOCK_ADJUDICATION_FIXTURE_KEEP_MIS} mislocked + "
@@ -11040,7 +11040,7 @@ def main():
     ap.add_argument("--cap-score-selftest", action="store_true",
                     help=f"replay --cap-score against {CAP_SCORE_FIXTURE} and exit")
     ap.add_argument("--residual-ab", nargs="+", metavar="DUMP_DIR",
-                    help=("THE RESIDUAL A/B (docs/handoffs/2026-08-06-residual-ab-PRECOMMIT.md): "
+                    help=("THE RESIDUAL A/B (docs/handoffs/closed/2026-08-06-residual-ab-PRECOMMIT.md): "
                           "rebuilds docs/probe-runs.md §19's A/B as a committed instrument. Varies "
                           f"`band_hi` ALONE over the pre-committed arms {RESIDUAL_AB_BAND_HI} "
                           "('coupled' = the dump's own stored max_pellet_frames) on the PRODUCTION "
@@ -11112,7 +11112,7 @@ def main():
     ap.add_argument("--dump-replay-fidelity-selftest", action="store_true",
                     help=f"replay {DUMP_REPLAY_FIDELITY_FIXTURE} and exit")
     ap.add_argument("--radius-gate", nargs="+", metavar="TRACKS_JSON",
-                    help=("THE RADIUS GATE (docs/handoffs/2026-08-05-radius-gate-PRECOMMIT.md, "
+                    help=("THE RADIUS GATE (docs/handoffs/closed/2026-08-05-radius-gate-PRECOMMIT.md, "
                           "docs/probe-runs.md §35): is the 160px pellet_radius cutting into the real "
                           "pellet cloud, or sitting in empty space? Radial histogram of "
                           "lifetime-in-band WHITE tracks at each shot's representative frame, with a "
@@ -11157,7 +11157,7 @@ def main():
     ap.add_argument("--band-production-selftest", action="store_true",
                     help=f"replay {BAND_PROD_FIXTURE} and exit")
     ap.add_argument("--marker-semantics", nargs="+", metavar="TRACKS_JSON",
-                    help=("MARKER SEMANTICS (docs/handoffs/2026-08-05-marker-semantics-PRECOMMIT.md, "
+                    help=("MARKER SEMANTICS (docs/handoffs/closed/2026-08-05-marker-semantics-PRECOMMIT.md, "
                           "docs/probe-runs.md §27): what fraction of production `core` flags are "
                           "raised by UI artifacts rather than real crosshair-attached hit-markers, "
                           "and what does that cost? ⚑ A core flag adds +1 to that shot's `total` "
@@ -11200,7 +11200,7 @@ def main():
     ap.add_argument("--fade-screen-crops-out", metavar="DIR", default="/tmp/fade-adjudication",
                     help="output directory for --fade-screen-crops (default /tmp/fade-adjudication)")
     ap.add_argument("--mislock-rate", nargs="+", metavar="STRUCT_TRACKS_JSON",
-                    help=("MISLOCK RATE (docs/handoffs/2026-08-04-mislock-rate-PRECOMMIT.md): what "
+                    help=("MISLOCK RATE (docs/handoffs/closed/2026-08-04-mislock-rate-PRECOMMIT.md): what "
                           "fraction of PRODUCTION shots have a mislocked crosshair, by "
                           "structural-vs-template disagreement at each shot's counting frames "
                           "t0+8..t0+11 (t0 = debounce_shots' own event `start`). A shot is "
@@ -11223,7 +11223,7 @@ def main():
                     help=f"replay {MISLOCK_RATE_FIXTURE} and exit")
     ap.add_argument("--mislock-identity", nargs="+", metavar="STRUCT_TRACKS_JSON",
                     help=("MISLOCK SEVERITY BY TRACK-SET IDENTITY "
-                          "(docs/handoffs/2026-08-06-mislock-identity-PRECOMMIT.md): per shot, the "
+                          "(docs/handoffs/closed/2026-08-06-mislock-identity-PRECOMMIT.md): per shot, the "
                           "SET of track ids the SHIPPED path counts (band_ids members inside "
                           "pellet_radius of the crosshair at the band-plateau frame), built TWICE "
                           "-- under the structural lock and under the template lock -- and reported "
@@ -11246,7 +11246,7 @@ def main():
     ap.add_argument("--mislock-identity-selftest", action="store_true",
                     help=f"replay {MISLOCK_IDENTITY_FIXTURE} and exit")
     ap.add_argument("--lock-adjudication", nargs="+", metavar="STRUCT_TRACKS_JSON",
-                    help=("LOCK ADJUDICATION (docs/handoffs/2026-08-04-mislock-cost-PRECOMMIT.md's "
+                    help=("LOCK ADJUDICATION (docs/handoffs/closed/2026-08-04-mislock-cost-PRECOMMIT.md's "
                           "§21C ask): render a BLINDED image set for the owner to answer, per shot, "
                           "which marked position -- A or B -- is the actual crosshair. 20 "
                           "MISLOCKED + 4 not-mislocked control shots stratified across dumps, "

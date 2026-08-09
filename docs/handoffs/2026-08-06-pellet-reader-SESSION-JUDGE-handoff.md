@@ -150,6 +150,7 @@ treating a signature as new.**
    −0.208). Needs a blast-radius pass and the owner.
 6. **§43D's triage** — the informative labelling target is the ~17 shots where template does NOT
    outscore structural. ⛔ Own pre-commit required (trap 7).
-7. **DECISIONS.md has a SEVEN-landing gap.** `STATE.md` and the ruling text are now arm-attributed
-   (§7 of the sweep), but the entries themselves are still unwritten.
+7. **DECISIONS.md has a SIX-landing gap.** `STATE.md` and the ruling text are now arm-attributed
+   (§7 of the sweep), but the entries themselves are still unwritten. (The 2026-08-06 log
+   mistakenly said seven; `DECISIONS.md:2930-2935` and `QUEUE.md:437` enumerate the six landings.)
 8. **`/patch-notes` + `/doc-maintenance`** owed before `main`.

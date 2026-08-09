@@ -141,7 +141,7 @@ artifact IS before reasoning from its contents.
    the real figure is 3.8% (`docs/probe-runs.md` §8A). ⚑ It also has a rounding trap: the shipped
    value comes from JS `Math.round((13/60) × fps)`, which is half-UP, so at 30 fps it is **7**, where
    a naive Python `round(6.5)` gives 6 (banker's rounding).
-10. **`debounce_shots` exists TWICE — `count-pellets.py:489` and `read-pellets.ts:627` — as two
+10. **`debounce_shots` exists TWICE — `count-pellets.py:603` and `read-pellets.ts:349` — as two
     independent implementations, not a shared module.** Any segmentation change must land in both.
     ⚑ And they may **already be one event apart**: the Python replay reproduces the shipped
     `pellets.json` summaries exactly on 7 of 8 dumps, but on `h4-marciana` (`marciana`, SG/Iron) reads
@@ -245,7 +245,7 @@ build, so it drops to the bottom of the instrument items.
    **7.0% to 4.2–4.5%** while beating shipped on the `guilty` hand window. But changing
    `debounce_shots` moves every detected shot in every dump: **3 committed fixtures FAIL and need
    regeneration** (`missing-shots-slice.json`, `hand-count-slice.json`, `stale-counting-slice.json`;
-   5 pass unaffected), and **`read-pellets.ts:627` is a second implementation that must change in
+   5 pass unaffected), and **`read-pellets.ts:349` is a second implementation that must change in
    lockstep**. It is not a change for the session that discovers it — and it buys a missing-shot
    improvement, **not** a cold-bias fix.
 

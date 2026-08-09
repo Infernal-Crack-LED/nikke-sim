@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # §40C's systematic offset — PRE-COMMIT (2026-08-06)
 
 > AI-facing. **Committed BEFORE the wider-n numbers exist.** Read-only characterization; nothing

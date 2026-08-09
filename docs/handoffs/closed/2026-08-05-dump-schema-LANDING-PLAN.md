@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # `--dump-tracks` schema fidelity — LANDING PLAN (2026-08-05)
 
 > **CLOSED (2026-08-05) — LANDED.** per-frame reds + full-precision positions; the record is `docs/probe-runs.md` §26.

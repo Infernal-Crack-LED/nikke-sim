@@ -4194,7 +4194,7 @@ stands.
 
 > ⚑ **AMENDED (2026-08-06) — the summary sentence above merges FOUR arms with different bases and
 > n into one unattributed claim. It is not withdrawn; it is under-specified.** Attribution, per the
-> band-channel sweep (`docs/handoffs/2026-08-06-band-channel-SWEEP.md`): **−1.40** ⇒ `--residual-ab`
+> band-channel sweep (`docs/handoffs/closed/2026-08-06-band-channel-SWEEP.md`): **−1.40** ⇒ `--residual-ab`
 > (probe-runs §38 — it had **NO committed instrument** until then, the second occurrence of the
 > constraint-9 failure; n=5 shots, one clip, in-sample). **mislocks ≈0** ⇒ `--lock-adjudication`, a
 > **COUNT** observable — ⚑ §37B established that a mislocked count is **refilled by non-pellet

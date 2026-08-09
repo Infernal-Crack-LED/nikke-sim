@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # `band_hi = 20` — LANDING PLAN, with the blast radius DECLARED BEFORE THE EDIT
 
 > **CLOSED (2026-08-05) — LANDED.** band_hi = 20 in production; the record is `docs/probe-runs.md` §16.

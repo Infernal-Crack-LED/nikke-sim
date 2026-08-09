@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # The radius gate — PRE-COMMIT (2026-08-05)
 
 > AI-facing. **Committed BEFORE any production number exists** (the `2026-08-04-mislock-rate-PRECOMMIT.md`

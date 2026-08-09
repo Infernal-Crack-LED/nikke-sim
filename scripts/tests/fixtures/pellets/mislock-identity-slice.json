@@ -1,5 +1,5 @@
 {
-  "_source": "count-pellets.py --dump-tracks structural + template pairs (see docs/handoffs/2026-08-06-mislock-identity-PRECOMMIT.md), sliced to what --mislock-identity-selftest needs to reproduce the score.",
+  "_source": "count-pellets.py --dump-tracks structural + template pairs (see docs/handoffs/closed/2026-08-06-mislock-identity-PRECOMMIT.md), sliced to what --mislock-identity-selftest needs to reproduce the score.",
   "_note": "A SLICE per dump pair. `frame_counts` and both `band_*` series are kept WHOLE so the replay re-runs the real cp.debounce_shots (via _hla_score) and re-derives every representative frame; `cross_*` and `tracks_at_rep` cover only the frames some shot's t0+{8,9,10,11} window or some arm's representative frame touches, and `band_ids` is reduced to the ids that appear at those frames. Regenerate with analyze-pellet-tracks.py --mislock-identity <structural.json...> --mislock-identity-template <template.json...> --mislock-identity-fps <fps...> --save-mislock-identity-fixture <path>. \u26d4 --mislock-identity-fps is MANDATORY and positionally parallel: the labelled clip is 60 fps and every production dump is 30, and fps sets the band's lower bound.",
   "dumps": [
     {

@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # Mislock COST — PRE-COMMITTED decision rule
 
 > **CLOSED (2026-08-05) — EXECUTED.** the VOIDed cost pass, then the owner adjudication; the record is `docs/probe-runs.md` §21/§22.

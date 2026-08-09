@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # The band-less-reader SWEEP — findings + ONE batched proposal (2026-08-06)
 
 > AI-facing. **FINDINGS-ONLY** (CLAUDE.md batch-and-stop): this pass edits no instrument, no

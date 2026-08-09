@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # Backend-selector tie-break — LANDING PLAN, blast radius MEASURED first
 
 > **CLOSED (2026-08-05) — LANDED.** the passenger-channel tie-break fix; the record is `docs/probe-runs.md` §24.
@@ -7,7 +9,7 @@
 
 > AI-facing. Written and committed **before any production file is touched**. Fixes the defect
 > recorded at `docs/probe-runs.md` §11E, carried as item 6 of
-> [`2026-08-04-lifetime-cap-JUDGE-handoff.md`](2026-08-04-lifetime-cap-JUDGE-handoff.md).
+> [`2026-08-04-lifetime-cap-JUDGE-handoff.md`](../2026-08-04-lifetime-cap-JUDGE-handoff.md).
 > Owner-approved 2026-08-04 under the standing principle that **tooling faithfulness is a win
 > regardless of the cold-SG question.** Prior graveyards and traps remain binding.
 >

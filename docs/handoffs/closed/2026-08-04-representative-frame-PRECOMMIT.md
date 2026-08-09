@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # Representative-frame policy — PRE-COMMITTED decision rule
 
 > **CLOSED (2026-08-05) — EXECUTED.** the hybrid_plateau_median score, then its landing; the record is `docs/probe-runs.md` §12/§13.
@@ -8,7 +10,7 @@
 > AI-facing. Written by the JUDGE session **deliberately BEFORE the measurement it specifies runs**.
 > Its whole purpose is that the decision rule is fixed on disk before the numbers exist.
 >
-> Settles item 1 of [`2026-08-03-pellet-reader-JUDGE-handoff.md`](2026-08-03-pellet-reader-JUDGE-handoff.md).
+> Settles item 1 of [`2026-08-03-pellet-reader-JUDGE-handoff.md`](../2026-08-03-pellet-reader-JUDGE-handoff.md).
 > That handoff's graveyard and traps, and those of its two predecessors, are **live and binding**.
 >
 > **Slugs:** `marciana` (SG/Iron — `docs/probes/clean-weapons/marciana-solo.MP4`; **not**
@@ -103,12 +105,12 @@ promoted in this pass**.
 
 ## 3. Evidence discipline — NOTHING HERE ENACTS
 
-- `debounce_shots` stays **UNTOUCHED in both implementations** — `count-pellets.py:489` and
-  `read-pellets.ts:627`. Every candidate is a local scoring variant inside the audit arm.
+- `debounce_shots` stays **UNTOUCHED in both implementations** — `count-pellets.py:603` and
+  `read-pellets.ts:349`. Every candidate is a local scoring variant inside the audit arm.
 - No constant, guard, gate, threshold or default changes. No `DECISIONS.md` entry is edited. No
   verdict is stamped outside `docs/probe-runs.md`.
 - **A 5/5 result produces a PROPOSAL, not a landing.** Enacting a representative-frame change carries
-  the same blast radius as the merge fix — fixtures regenerate, and `read-pellets.ts:627` is a second
+  the same blast radius as the merge fix — fixtures regenerate, and `read-pellets.ts:349` is a second
   independent implementation that must move in lockstep (and may **already** be one event apart on
   `h4-marciana`: `validShots` 177 vs shipped 176). That is a separate owner-gated pass.
 - Instrument goes in the tree at a named path: **extend

@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # §42's decoy hypothesis — the PIXEL TEST — PRE-COMMIT (2026-08-06)
 
 > AI-facing. **Committed BEFORE any pixel score exists.** Slugs: `marciana` (SG/Iron — **not**

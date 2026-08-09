@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # Lifetime cap — PRE-COMMITTED decision rule
 
 > **CLOSED (2026-08-05) — EXECUTED.** the band_hi measurement; the record is `docs/probe-runs.md` §14.
@@ -8,7 +10,7 @@
 > AI-facing. Written by the JUDGE session **deliberately BEFORE the measurement it specifies runs**.
 > Its whole purpose is that the decision rule is fixed on disk before the numbers exist.
 >
-> Settles item 1 of [`2026-08-04-pellet-reader-JUDGE-handoff.md`](2026-08-04-pellet-reader-JUDGE-handoff.md),
+> Settles item 1 of [`2026-08-04-pellet-reader-JUDGE-handoff.md`](../2026-08-04-pellet-reader-JUDGE-handoff.md),
 > and folds in that handoff's item 3 as a REPORT-ONLY sub-deliverable (§6). That handoff's graveyard
 > and traps, and those of its three predecessors, are **live and binding**.
 >

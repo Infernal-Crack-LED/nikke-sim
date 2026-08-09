@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # Owner ask — one hand shot-count, to close the missing-shot channel
 
 > ## ✅ ANSWERED — 2026-08-03

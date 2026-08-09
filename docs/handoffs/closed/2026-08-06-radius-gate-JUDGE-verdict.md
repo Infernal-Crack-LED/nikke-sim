@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # The radius gate (§35) — JUDGE VERDICT (2026-08-06)
 
 > AI-facing. Independent judge pass over `docs/probe-runs.md` §35 and its instrument

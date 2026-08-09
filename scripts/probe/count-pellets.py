@@ -456,7 +456,7 @@ def _track_components(all_comps):
                 best_t['ys'].append(cy)
                 # `reds` is the PER-FRAME is_red, parallel to xs/ys/areas — `is_red` above stays
                 # the track-level (creation-time) value untouched, since eleven out-of-scope call
-                # sites still read it (docs/handoffs/2026-08-05-dump-schema-LANDING-PLAN.md §3).
+                # sites still read it (docs/handoffs/closed/2026-08-05-dump-schema-LANDING-PLAN.md §3).
                 # Appended in BOTH tracker branches (this matched-track one and the new-track one
                 # below) so `reds` never drifts out of alignment with `xs` (§4.2).
                 best_t['reds'].append(is_red)
@@ -476,8 +476,8 @@ def _track_components(all_comps):
 def _frame_pellet_counts(frame_tracks, cross_positions, pellet_ids, band_ids, args):
     """Per-frame {"white", "red", "marker", "band"} counts, windowed by crosshair radius.
 
-    `band` (docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md §2, upper bound decoupled
-    from `pellet_ids` by docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md) is the number of WHITE
+    `band` (docs/handoffs/closed/2026-08-04-representative-frame-PROPOSAL.md §2, upper bound decoupled
+    from `pellet_ids` by docs/handoffs/closed/2026-08-04-band-hi-LANDING-PLAN.md) is the number of WHITE
     (non-red) in-radius tracks on that frame whose OVERALL lifetime falls in `[_band_lo(fps),
     band_hi]`, bounded by radius + non-red only — NOT gated by `pellet_ids`. `white` requires
     lifetime `<= args.max_pellet_frames` (the `pellet_ids` gate) instead. `band` is therefore no
@@ -1178,7 +1178,7 @@ CACHEABLE_PARAMS = [
     'max_pellet_frames', 'pellet_unit_area', 'peanut_circ_lo', 'peanut_aspect', 'peanut_max_mult',
     'fps', 'marker_min', 'bounds', 'band_hi',
 ]
-# `band_hi` (added 2026-08-04, docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md) changes the
+# `band_hi` (added 2026-08-04, docs/handoffs/closed/2026-08-04-band-hi-LANDING-PLAN.md) changes the
 # `band` series the same way every other entry above changes its own output, so a
 # --load-detections replay must re-apply it exactly like the rest of CACHEABLE_PARAMS. It gets
 # ONE exception, though: its own argparse default (None) already IS the historically-correct
@@ -1386,7 +1386,7 @@ CACHE_SELFTEST_COMBO = [{"min_area": 25, "max_area": 750, "min_circ": 0.55}]
 # explicitly) before being pinned here — that agreement IS the fixture's validation.
 #
 # ⚑ MOVED 2026-08-04 (validShots 7->6, avgTotal 7.1->6.7) by the fallback-hybrid representative-
-# frame rule (docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md, landed docs/probe-runs.md
+# frame rule (docs/handoffs/closed/2026-08-04-representative-frame-PROPOSAL.md, landed docs/probe-runs.md
 # §13) — this is a REAL 200-frame slice fed through the full `--temporal --sweep` pipeline, so
 # `build_tracks_and_counts` now always emits a `band` channel and `debounce_shots` always attempts
 # the hybrid. 7 of this slice's 9 events move to a LOWER-total plateau frame instead of the
@@ -1491,7 +1491,7 @@ def main():
     parser.add_argument('--struct-offset-y', type=float, help='crosshair Y offset from the structural digit-row CENTRE in zoomed px (default -6.25*zoom = -12.5 at zoom 2)')
     parser.add_argument('--temporal', action='store_true', help='enable temporal filtering (track components across frames, classify by lifetime)')
     parser.add_argument('--max-pellet-frames', type=int, default=8, help='max frames a pellet component persists (default 8 at 30fps)')
-    parser.add_argument('--band-hi', type=int, default=None, help='upper lifetime bound (frames) for the `band` series (docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md), decoupled from --max-pellet-frames/pellet_ids. Defaults to --max-pellet-frames when omitted, which reproduces the pre-existing band ⊆ pellet_ids behaviour exactly (byte-identical output for every caller that does not pass this flag). Raising it admits longer-lived tracks into `band` WITHOUT admitting them into `pellet_ids`/`white` — band may then exceed white.')
+    parser.add_argument('--band-hi', type=int, default=None, help='upper lifetime bound (frames) for the `band` series (docs/handoffs/closed/2026-08-04-band-hi-LANDING-PLAN.md), decoupled from --max-pellet-frames/pellet_ids. Defaults to --max-pellet-frames when omitted, which reproduces the pre-existing band ⊆ pellet_ids behaviour exactly (byte-identical output for every caller that does not pass this flag). Raising it admits longer-lived tracks into `band` WITHOUT admitting them into `pellet_ids`/`white` — band may then exceed white.')
     parser.add_argument('--dump-tracks', help='(temporal) write full per-track diagnostics JSON to this path')
     parser.add_argument('--dump-detections', help='(temporal) write the RAW pre-filter per-frame component list + crosshair track to this path — the cache half of cache-then-sweep (Phase 1 §1.1, docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md). Detection (mask+CC+contour stats) runs once and is cached; a later --load-detections run replays filtering/tracking against it in seconds instead of minutes.')
     parser.add_argument('--load-detections', help='(temporal) replay filtering + tracking from a --dump-detections cache instead of re-detecting from frame images. The positional `input` arg is ignored in this mode (frame identity comes from the cache). Combine with --min-area/--max-area/--min-circ/--center-exclude/--pellet-radius/--max-pellet-frames/--band-hi/--peanut-* to sweep those cheaply; the crosshair track and raw components are frozen at dump time (re-dump to change --locate or the WHITE_LO/RED_LO color thresholds).')
@@ -1859,7 +1859,7 @@ def main():
         if args.dump_tracks:
             # `len(reds) == len(xs)` for every track — Edit A appends to `reds` in both tracker
             # branches on the assumption that a track can never resume after a missed frame
-            # (docs/handoffs/2026-08-05-dump-schema-LANDING-PLAN.md §4.2); this is the constructive
+            # (docs/handoffs/closed/2026-08-05-dump-schema-LANDING-PLAN.md §4.2); this is the constructive
             # check that a future tracker change hasn't silently broken that assumption.
             for t in tracks:
                 assert len(t['reds']) == len(t['xs']), (

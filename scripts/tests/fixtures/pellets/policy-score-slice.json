@@ -1,5 +1,5 @@
 {
-  "_source": "Scored entirely off the already-committed scripts/tests/fixtures/pellets/representative-audit-slice.json -- no new raw tracks.json, no re-derivation (CLAUDE.md reuse-before-derive). docs/handoffs/2026-08-04-representative-frame-PRECOMMIT.md is the decision rule this arm's numbers are scored against.",
+  "_source": "Scored entirely off the already-committed scripts/tests/fixtures/pellets/representative-audit-slice.json -- no new raw tracks.json, no re-derivation (CLAUDE.md reuse-before-derive). docs/handoffs/closed/2026-08-04-representative-frame-PRECOMMIT.md is the decision rule this arm's numbers are scored against.",
   "_note": "Deliberately carries NO raw track data of its own -- `policy_score`/`policy_score_selftest` both read scripts/tests/fixtures/pellets/representative-audit-slice.json directly, so this fixture only pins the SCORE (`_expected`), not a second copy of the labelled/dumps blocks. Regenerate with analyze-pellet-tracks.py --policy-score --save-policy-score-fixture <path>.",
   "_expected": {
     "band_labelled": [8, 13],

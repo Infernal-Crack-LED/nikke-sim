@@ -1,5 +1,5 @@
 // Backend-selector passenger-channel fix
-// (docs/handoffs/2026-08-04-backend-selector-LANDING-PLAN.md §3).
+// (docs/handoffs/closed/2026-08-04-backend-selector-LANDING-PLAN.md §3).
 //
 // `white`/`red`/`total` are picked by an active-backend median/best-match keyed on
 // `white + red` (read-pellets.ts, untouched by this module). `marker` and `band` are separate,
@@ -37,7 +37,9 @@ export function selectPassengerChannel(
 ): number {
   for (const b of backendEntries) {
     const v = b[channel] ?? 0;
-    if (v > 0) return v;
+    if (v > 0) {
+      return v;
+    }
   }
   return best[channel] ?? 0;
 }

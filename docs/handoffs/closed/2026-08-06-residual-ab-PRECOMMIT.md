@@ -1,7 +1,9 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # Rebuilding §19's A/B as a committed arm — PRE-COMMIT (2026-08-06)
 
 > AI-facing. **Committed BEFORE the rebuilt arm emits any number.** Executes item 1 of
-> `docs/handoffs/2026-08-06-band-channel-SWEEP.md` §7.
+> `docs/handoffs/closed/2026-08-06-band-channel-SWEEP.md` §7.
 >
 > **Slugs.** `marciana` (SG/Iron, `docs/probes/clean-weapons/marciana-solo.MP4` — **not**
 > `marciana-marine-study`, AR/Iron). `groundtruth-f811-*` are dump slugs, not units.

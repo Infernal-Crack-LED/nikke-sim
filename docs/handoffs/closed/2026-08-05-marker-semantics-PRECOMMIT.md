@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # Marker semantics — PRE-COMMIT (2026-08-05)
 
 > **CLOSED (2026-08-05) — EXECUTED.** the marker-semantics measurement; the record is `docs/probe-runs.md` §27.

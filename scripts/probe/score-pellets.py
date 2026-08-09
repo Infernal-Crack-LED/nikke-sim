@@ -1181,7 +1181,7 @@ def compute_estimators(seq, dump, per_offset):
 
       current                    -- CONTROL: mean of raw f8-11 per-frame detector counts.
                                      ⛔ MISNAMED, AND THE NAME IS LOAD-BEARING (sweep item 3,
-                                     docs/handoffs/2026-08-06-band-channel-SWEEP.md §3): this is
+                                     docs/handoffs/closed/2026-08-06-band-channel-SWEEP.md §3): this is
                                      NEITHER CHANNEL of the shipped reader. It is a fixed-window
                                      mean over per-frame detector counts; the shipped per-shot
                                      count is the `band` value at the band-plateau frame chosen by

@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # Pellet lifetime 13 → 14 — LANDING PLAN (2026-08-05)
 
 > **CLOSED (2026-08-05) — LANDED.** the pellet lifetime 13 -> 14 correction; the record is `docs/probe-runs.md` §29.

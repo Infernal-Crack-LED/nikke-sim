@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # `--dump-tracks` must carry the `band` channel — LANDING PLAN, blast radius declared first
 
 > **CLOSED (2026-08-05) — LANDED.** --dump-tracks carries the band channel; the record is `docs/probe-runs.md` §23.
@@ -7,7 +9,7 @@
 
 > AI-facing. Written and committed **before any production file is touched**, so the blast-radius
 > prediction is falsifiable. Fixes the defect recorded at `docs/probe-runs.md` §16E and carried as
-> item 1(a) of [`2026-08-04-lifetime-cap-JUDGE-handoff.md`](2026-08-04-lifetime-cap-JUDGE-handoff.md).
+> item 1(a) of [`2026-08-04-lifetime-cap-JUDGE-handoff.md`](../2026-08-04-lifetime-cap-JUDGE-handoff.md).
 > Owner-approved 2026-08-04 on the stated principle that **tooling faithfulness is a win regardless
 > of the cold-SG question.** Graveyards and traps of the prior handoffs remain binding.
 >

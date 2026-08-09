@@ -1,6 +1,6 @@
 /**
  * Unit tests for the backend-selector passenger-channel fix
- * (docs/handoffs/2026-08-04-backend-selector-LANDING-PLAN.md §3, criterion 6).
+ * (docs/handoffs/closed/2026-08-04-backend-selector-LANDING-PLAN.md §3, criterion 6).
  *
  * `read-pellets.ts` is a CLI entry point (parses argv and exits if no video is given — see
  * read-pellets-ammo-offset.test.ts), so it cannot be imported directly. The channel-selection

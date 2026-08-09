@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # Production mislock rate — PRE-COMMITTED decision rule
 
 > **CLOSED (2026-08-05) — EXECUTED.** the 16.9% production mislock rate; the record is `docs/probe-runs.md` §20.
@@ -7,7 +9,7 @@
 
 > AI-facing. Written **before the production measurement runs**; the calibration in §2 is already
 > recorded and is what the rule is anchored to. Settles item 3 of
-> [`2026-08-04-lifetime-cap-JUDGE-handoff.md`](2026-08-04-lifetime-cap-JUDGE-handoff.md).
+> [`2026-08-04-lifetime-cap-JUDGE-handoff.md`](../2026-08-04-lifetime-cap-JUDGE-handoff.md).
 > The graveyards and traps of the six prior handoffs remain binding.
 >
 > **Slugs:** `marciana` (SG/Iron — `docs/probes/clean-weapons/marciana-solo.MP4`; **not**

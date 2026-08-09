@@ -1,3 +1,5 @@
+> **CLOSED (2026-08-09).** This handoff has landed; live follow-ups are in `docs/handoffs/QUEUE.md`.
+
 # Representative-frame policy — ENACTMENT PROPOSAL
 
 > **CLOSED (2026-08-05) — LANDED.** the fallback-hybrid representative-frame rule; the record is `docs/probe-runs.md` §13.
@@ -104,8 +106,8 @@ Written before the hybrid is measured. Do not adjust after seeing a result.
 
 ## 5. Blast radius
 
-- **Two independent implementations must change in lockstep** — `scripts/probe/count-pellets.py:489`
-  and `scripts/probe/read-pellets.ts:627` (the representative selection is inline at ~`:665`). They
+- **Two independent implementations must change in lockstep** — `scripts/probe/count-pellets.py:603`
+  and `scripts/probe/read-pellets.ts:349` (the representative selection is inline at ~`:665`). They
   are **not** a shared module.
 - **Fixtures regenerate.** §8F measured this empirically for a `debounce_shots` change:
   `missing-shots-slice.json`, `hand-count-slice.json`, `stale-counting-slice.json` fail and need

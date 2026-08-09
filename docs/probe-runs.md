@@ -2482,7 +2482,7 @@ scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py \
 
 #### §4 THE OWNER HAND SHOT-COUNT — the arbiter validated on `isabel`, and the flip rule confirmed
 
-Answers the ask in `docs/handoffs/2026-08-01-OWNER-ASK-shot-count.md`, which §3b's "what would decide
+Answers the ask in `docs/handoffs/closed/2026-08-01-OWNER-ASK-shot-count.md`, which §3b's "what would decide
 it" named as item (a): the arbiter was gate-validated on `marciana` (SG/Iron — **not**
 `marciana-marine-study`, AR/Iron) only, and `isabel` is where it mattered, because her raw and
 admissible readings differ 3.4×.
@@ -2724,7 +2724,7 @@ scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --hand-cou
 #### §5 THE AMMO READ RATE IS NOT AN ATLAS PROBLEM — the red-digit harvest, refuted before it was built
 
 Answers §3b's "what would decide it" item (b) — "lifting the read rate above 52–71%" — and the second
-item of `docs/handoffs/2026-08-01-OWNER-ASK-shot-count.md`, which asked the owner for a nod on a
+item of `docs/handoffs/closed/2026-08-01-OWNER-ASK-shot-count.md`, which asked the owner for a nod on a
 per-video red-digit atlas harvest. **The nod is not needed: the harvest is REFUTED on measurement.**
 The ammo OCR's abstentions are overwhelmingly SEGMENTATION and LOCALIZATION failures, which no digit
 template can fix. **This is a measurement, not a judgement call — it does not need re-testing before
@@ -3403,7 +3403,7 @@ dump, and the only span above which an event demonstrably had room for two shots
 
 ##### §8B — The exact segmentation rule, read off the code
 
-`debounce_shots` (`count-pellets.py:489`) works on `T[i] = white[i] + red[i]`. It **starts** an event
+`debounce_shots` (`count-pellets.py:603`) works on `T[i] = white[i] + red[i]`. It **starts** an event
 at the first frame with `T ≥ event_min` (3, a hardcoded local); **continues** while `T ≥ 3`,
 **bridging** any sub-threshold run of length `≤ max_gap`; **ends** when that run exceeds `max_gap`;
 and emits only if `event_frames ≥ 2`. `max_gap = max(3, round(fps × 0.13))` = **4 at 30 fps, 8 at
@@ -3504,7 +3504,7 @@ single blasts — unexplained spurious 5 → 28 / 48. **They trade a real channe
 (`shots_detected_total` 37 → 38, `MISSED` 1 → 0), `hand-count-slice.json` (`detected_t0` gains
 1390 / 1657 / 1727 / 1745, `MISSED` 11 → 9, `SPURIOUS` 5 → 7, `MISSED_vs_hand` 4 → 0),
 `stale-counting-slice.json` (`n_counting_frames` 43 → 51, `counting_stale_pct` 9.3 → 7.84). **5 PASS
-unaffected.** **`read-pellets.ts:627` is a SECOND implementation of the same algorithm and must
+unaffected.** **`read-pellets.ts:349` is a SECOND implementation of the same algorithm and must
 change in lockstep — it is not a shared module.** ⚑ ESTIMATE, re-extraction compute: **essentially
 zero** (entirely downstream of the cached `frame_counts`; re-segmenting all 8 dumps took < 0.01 s);
 fixture regeneration ~1–2 min. A full rebuild through `read-pellets.ts` would be ~430 s/video ≈ 30
@@ -3946,7 +3946,7 @@ fixture cannot carry 11k tracks. Same split the merge audit uses.
 #### §10 THE REPRESENTATIVE-FRAME POLICY SCORE — two candidates reach 5/5 once shot 4 is scored on its own crop
 
 Executes the measurement specified in
-[`docs/handoffs/2026-08-04-representative-frame-PRECOMMIT.md`](handoffs/2026-08-04-representative-frame-PRECOMMIT.md)
+[`docs/handoffs/closed/2026-08-04-representative-frame-PRECOMMIT.md`](handoffs/closed/2026-08-04-representative-frame-PRECOMMIT.md)
 (committed `ac822e36`, §1–§3 unedited by this entry). Settles §9's own open question ("is there a
 representative rule that lands in the pellet cohort instead?") by scoring the four pre-committed
 candidates — `shipped_median` (control), `lifetime_gated_median`, `plateau_median`,
@@ -4123,7 +4123,7 @@ an already-committed fixture. No guard, gate, threshold or constant was changed;
 entry was edited; no verdict was stamped on anything outside this measurement log and §4 of the
 pre-commit doc it settles. **The 5/5 result here is a PROPOSAL, not a landing** (pre-commit doc §3) —
 enacting a representative-frame change is a separate, owner-gated pass with its own blast radius
-(fixtures regenerate, and `read-pellets.ts:627` is a second independent implementation that must move
+(fixtures regenerate, and `read-pellets.ts:349` is a second independent implementation that must move
 in lockstep).
 
 ##### §10K — Instrument and reproduction
@@ -4144,7 +4144,7 @@ scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --policy-s
 #### §11 THE `h4-marciana` 177-vs-176 DIVERGENCE — it is a MARKER-CHANNEL defect in the shipped TypeScript, not a `debounce_shots` lockstep break
 
 **2026-08-04.** Chased because the representative-frame enactment proposal
-(`docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md` §4.5) makes a lockstep assertion, and
+(`docs/handoffs/closed/2026-08-04-representative-frame-PROPOSAL.md` §4.5) makes a lockstep assertion, and
 asserting lockstep against a baseline already known to be off is how a silent drift becomes
 permanent. **§8H's observation reproduces; both of its guesses are wrong.**
 
@@ -4160,7 +4160,7 @@ grouping is identical. Only `validShots` differs (177 replay vs 176 shipped), wh
 
 ##### §11B — The median tie-break guess is REFUTED BY INSPECTION
 
-`count-pellets.py:489` and `read-pellets.ts:627` are byte-identical in logic: the same
+`count-pellets.py:603` and `read-pellets.ts:349` are byte-identical in logic: the same
 `(sorted[(m-1)//2] + sorted[m//2]) / 2` median, the same **strict `<`** on the distance-to-median
 comparison (`d < best_d` / `d < bestD`), the same `rep.white + shot_red` total. There is no `<` vs
 `<=` difference to find. The two implementations pick the **same representative frame**.
@@ -4282,10 +4282,10 @@ mechanism's unanimity, and which side is "correct" are exactly as open as §11F 
 
 #### §12 THE `hybrid_plateau_median` MEASUREMENT — scores the enactment PROPOSAL's own fallback rule against its pre-committed §4 criteria
 
-**2026-08-04.** Executes `docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md` §4, whose six
+**2026-08-04.** Executes `docs/handoffs/closed/2026-08-04-representative-frame-PROPOSAL.md` §4, whose six
 acceptance criteria were on disk before this entry's numbers existed. **THIS IS A MEASUREMENT PASS
-ONLY — NOTHING HERE ENACTS.** `debounce_shots` stays untouched in both `count-pellets.py:489` and
-`read-pellets.ts:627`; `hybrid_plateau_median` is a fifth scoring variant living entirely inside the
+ONLY — NOTHING HERE ENACTS.** `debounce_shots` stays untouched in both `count-pellets.py:603` and
+`read-pellets.ts:349`; `hybrid_plateau_median` is a fifth scoring variant living entirely inside the
 already-committed `--policy-score` arm (`POLICY_RULES` / `_POLICY_FRAME_RULES` in
 `scripts/probe/analyze-pellet-tracks.py`), added AFTER and separate from the pre-commit doc's own
 §1.4 enumeration (that doc is unedited). No new fixture's raw data was derived — every number below
@@ -4431,7 +4431,7 @@ than a one-time claim.
   `bash scripts/probe/pellet-selftest.sh; echo $?` → `0`, "pellet-selftest: all passed", including
   `--policy-score-selftest` among the 19 tool selftests it runs.
 - **`npm run typecheck` clean**: confirmed. No TypeScript file was touched by this entry —
-  `read-pellets.ts:627` is unmodified, per the task's own constraint.
+  `read-pellets.ts:349` is unmodified, per the task's own constraint.
 
 ##### §12F — n and scope
 
@@ -4477,7 +4477,7 @@ bash scripts/probe/pellet-selftest.sh; echo $?
 #### §13 THE FALLBACK HYBRID LANDS — `band` channel + `debounce_shots`/`debounceShots` hybrid, both implementations, owner-authorized
 
 **2026-08-04.** Executes the owner-authorized implementation pass named in
-[`docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md`](handoffs/2026-08-04-representative-frame-PROPOSAL.md):
+[`docs/handoffs/closed/2026-08-04-representative-frame-PROPOSAL.md`](handoffs/closed/2026-08-04-representative-frame-PROPOSAL.md):
 moves the fallback hybrid on `plateau_median` from a scoring variant inside `--policy-score`
 (§9–§12) into the SHIPPED pipeline — `count-pellets.py:debounce_shots` and its TypeScript mirror
 `read-pellets.ts:debounceShots`. **This entry enacts a change** (unlike §9–§12, which were
@@ -4722,7 +4722,7 @@ bash scripts/verify.sh; echo $?
 #### §14 THE LIFETIME-CAP `band_hi` MEASUREMENT — a decoupled band ceiling; 19 and 20 clear both out-of-sample gates, 21 clears them too but is not lockstep-safe
 
 **2026-08-04.** Executes the measurement pass pre-committed in
-[`docs/handoffs/2026-08-04-lifetime-cap-PRECOMMIT.md`](handoffs/2026-08-04-lifetime-cap-PRECOMMIT.md).
+[`docs/handoffs/closed/2026-08-04-lifetime-cap-PRECOMMIT.md`](handoffs/closed/2026-08-04-lifetime-cap-PRECOMMIT.md).
 **MEASUREMENT ONLY — this entry does not enact anything.** Scores a DECOUPLED upper bound for the
 counted-pellet band (`band_hi`) — never a raised `max_pellet_frames`, which also gates
 `pellet_ids`/segmentation and would move `totalShots`/onsets (the pre-commit's §1) — against the
@@ -4867,7 +4867,7 @@ SAME events (not re-selected):
 not an interpretation.** Two prior documents characterize this population as events with **no
 band-eligible track in radius at all**:
 
-- `docs/handoffs/2026-08-04-representative-frame-PRECOMMIT.md:150` — "112 of the 852 pooled events
+- `docs/handoffs/closed/2026-08-04-representative-frame-PRECOMMIT.md:150` — "112 of the 852 pooled events
   (13.1%) have **no track at all** whose lifetime falls in the band and is ever in radius during the
   event";
 - `docs/handoffs/2026-08-04-pellet-reader-JUDGE-handoff.md:221` (open item 3) — "**No lifetime-band
@@ -4982,7 +4982,7 @@ both re-run at TRUE exit 0 afterwards, and `cap-score-slice.json` never moved.
 #### §15 THE `h4-marciana` FRAME 1565 marker=3 GEOMETRY — one crosshair-attached track, two single-frame components on an unrelated line, not three real markers
 
 **2026-08-04.** Answers the prerequisite `docs/handoffs/2026-08-04-pellet-reader-JUDGE-handoff.md`
-item 7 names before §11's backend-selector defect (`read-pellets.ts:882`, array-order tie-break on a
+item 7 names before §11's backend-selector defect (`read-pellets.ts:877-885`, array-order tie-break on a
 channel the comparison never inspects) can be fixed: **is opencv's `marker = 3` reading at
 `h4-marciana-structural` frame 1565 a true core hit, or an opencv false positive?**
 (`marciana` = SG/Iron, `docs/probes/clean-weapons/marciana-solo.MP4` — NOT `marciana-marine-study`.)
@@ -5024,7 +5024,7 @@ single-frame, single-dump observation, not a swept measurement across the 82 mar
 CLAUDE.md's evidence-proportionality rule, an n=1 single-frame read is HYPOTHESIS-strength: it never
 in the same motion changes a constant/default or stamps a verdict. Specifically:
 
-- `read-pellets.ts:882`'s backend-selector defect stays **owner-gated and unfixed** — nothing here
+- `read-pellets.ts:877-885`'s backend-selector defect stays **owner-gated and unfixed** — nothing here
   fixes it, and fixing it is out of scope for this entry regardless of §15A's reading.
 - No verdict (VALIDATED/REFUTED/SUPERSEDED) is stamped on that defect or on §11F's open question.
   §15A's "false-positive" reading is reported as a hypothesis-strength geometric signal, not a
@@ -5057,7 +5057,7 @@ entry was written. The backend-selector defect (§11) stays owner-gated.
 #### §16 THE `band_hi = 20` LANDING — the decoupled band ceiling is IN PRODUCTION; every pre-stated criterion met and ZERO fixtures moved
 
 Owner-approved 2026-08-04 against the proposal in §14. Plan, with its blast radius **declared before
-any production file was touched**: `docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md` (committed at
+any production file was touched**: `docs/handoffs/closed/2026-08-04-band-hi-LANDING-PLAN.md` (committed at
 `a470a7be`, ahead of the first edit, specifically so the prediction was falsifiable).
 
 ##### §16A — What changed
@@ -5425,7 +5425,7 @@ recoverability prediction is `representative-audit-slice.json`'s `_expected.deco
 
 #### §20 THE PRODUCTION MISLOCK RATE — 16.9%, and mislocks are the DOMINANT remaining undercount channel
 
-Executes `docs/handoffs/2026-08-04-mislock-rate-PRECOMMIT.md`, whose §3 decision rule (160 px
+Executes `docs/handoffs/closed/2026-08-04-mislock-rate-PRECOMMIT.md`, whose §3 decision rule (160 px
 threshold, three rate bands) was committed at `9bc829dd` **before any production number existed**.
 Answers the item open since 08-01: **what fraction of production shots are mislocked?**
 
@@ -5520,7 +5520,7 @@ changed; `debounce_shots` and both readers untouched; no verdict stamped on the 
 
 #### §21 THE MISLOCK COST — ⛔ VOID: the pre-committed falsification control FAILED
 
-Executes `docs/handoffs/2026-08-04-mislock-cost-PRECOMMIT.md` (rule committed at `115f01c7`, before
+Executes `docs/handoffs/closed/2026-08-04-mislock-cost-PRECOMMIT.md` (rule committed at `115f01c7`, before
 any number existed). **The result is VOID by that document's own §3.1, and no cost figure from this
 pass may be quoted.** Recorded because a void result is a real result: it kills a method.
 
@@ -5676,7 +5676,7 @@ default changed; no localizer re-tune; no cold-bias verdict.
 #### §23 `--dump-tracks` NOW CARRIES THE `band` CHANNEL — the silent production/analysis divergence is closed
 
 Fixes the defect recorded at §16E. Plan with blast radius **declared before any production file was
-touched**: `docs/handoffs/2026-08-04-dump-band-LANDING-PLAN.md` (committed `235f573a`); landing
+touched**: `docs/handoffs/closed/2026-08-04-dump-band-LANDING-PLAN.md` (committed `235f573a`); landing
 `bde7a37f`. Owner-approved on the principle that **tooling faithfulness is a win regardless of the
 cold-SG question**.
 
@@ -5749,7 +5749,7 @@ tooling-faithfulness landing: it makes the analysis path agree with the producti
 #### §24 THE BACKEND-SELECTOR TIE-BREAK IS FIXED — and it exposes a downstream defect it deliberately does not fix
 
 Closes §11E's recorded defect (item 6). Plan with blast radius **measured before any production file
-was touched**: `docs/handoffs/2026-08-04-backend-selector-LANDING-PLAN.md` (`42d26077`), pre-op gate
+was touched**: `docs/handoffs/closed/2026-08-04-backend-selector-LANDING-PLAN.md` (`42d26077`), pre-op gate
 folded (`f1341e72`), landing `a662b842`.
 
 ##### §24A — The defect, and what §11E did not say
@@ -5926,7 +5926,7 @@ landing with its own blast-radius pass.
 
 #### §26 THE `--dump-tracks` SCHEMA FIDELITY LANDING — §25's two mechanisms go to ZERO by construction, and a THIRD gap surfaces
 
-**2026-08-05.** Executes `docs/handoffs/2026-08-05-dump-schema-LANDING-PLAN.md` (blast radius
+**2026-08-05.** Executes `docs/handoffs/closed/2026-08-05-dump-schema-LANDING-PLAN.md` (blast radius
 measured before any production file was touched; cross-family pre-op gate `kimi-code/k3`
 **APPROVED-WITH-REVISIONS**, all four revisions executed, verdict quoted in the plan's §7 at receipt
 per trap 6). Landing `8d500ff9`. Implementation delegated to a Sonnet subagent against the approved
@@ -6015,7 +6015,7 @@ open.
 
 #### §27 MARKER SEMANTICS — 21.7% of production `core` flags fail a persistence test, but the pellet-count cost is ~3% of the cold residual
 
-**2026-08-05.** Executes `docs/handoffs/2026-08-05-marker-semantics-PRECOMMIT.md`, whose rule,
+**2026-08-05.** Executes `docs/handoffs/closed/2026-08-05-marker-semantics-PRECOMMIT.md`, whose rule,
 thresholds, decision bands and three falsification controls were committed at **`e909c94c` before
 any production number existed**. Closes §8 item 2 of the 08-04 session handoff as a MEASUREMENT.
 Unblocked by §26 — this could not honestly be asked before the substrate was fixed.
@@ -6209,7 +6209,7 @@ instrument now reports both new quantities alongside it. ⛔ Nothing here touche
 #### §29 THE PELLET LIFETIME IS 14 — LANDED, inert at 30 fps, and a documented cross-language trap is retired
 
 **2026-08-05.** Enacts §28D's owner correction. Plan
-`docs/handoffs/2026-08-05-pellet-lifetime-14-LANDING-PLAN.md` with the blast radius **measured by
+`docs/handoffs/closed/2026-08-05-pellet-lifetime-14-LANDING-PLAN.md` with the blast radius **measured by
 toggling the constant and running the gate before any production file was touched** (then reverted,
 `cmp`-verified byte-identical). Cross-family pre-op gate `kimi-code/k3` **APPROVED-WITH-REVISIONS**,
 all four executed, verdict quoted in the plan's §8 at receipt. Landing `07b82474`.
@@ -6745,7 +6745,7 @@ no committed number.
 #### §35 THE RADIUS GATE — ⚑ THE PRE-COMMITTED BAND FIRED AND AN INDEPENDENT CHECK OVERTURNED IT
 
 > ⛔ **JUDGED 2026-08-06 — §35D/E PARTIALLY SUPERSEDED; read
-> [`docs/handoffs/2026-08-06-radius-gate-JUDGE-verdict.md`](handoffs/2026-08-06-radius-gate-JUDGE-verdict.md)
+> [`docs/handoffs/closed/2026-08-06-radius-gate-JUDGE-verdict.md`](handoffs/closed/2026-08-06-radius-gate-JUDGE-verdict.md)
 > before quoting anything below.** §35A–C stand (the `T = 1.043` contamination finding and its
 > method lesson are correct and independently re-derived). **§35D's ≈0.45 pellets/shot and §35E's
 > "largest single channel yet identified" / "the cloud ends at ~167 px, not a badly-placed cut" do
@@ -6754,7 +6754,7 @@ no committed number.
 > sweep** in this same document already read the same 9 marks as **H_centre** (a mis-centred window)
 > rather than H_radius, with `--representative-audit` agreeing from a third angle. §35 cites neither.
 
-**2026-08-05.** Executes `docs/handoffs/2026-08-05-radius-gate-PRECOMMIT.md`, whose rule and
+**2026-08-05.** Executes `docs/handoffs/closed/2026-08-05-radius-gate-PRECOMMIT.md`, whose rule and
 controls were committed at **`57c1de78` before any number existed**. Chases the only channel any
 measurement had ever named as carrying §19's −1.40/shot (§19C), the mislock half having closed at
 ≈0 (§22C, §34).
@@ -6848,9 +6848,9 @@ $PY scripts/probe/analyze-pellet-tracks.py --radius-gate \
 > be quoted as a property of the shipped reader. §36D's structural finding stands — it is precisely
 > what §37 fixed.
 
-**2026-08-06.** Executes `docs/handoffs/2026-08-06-composition-audit-PRECOMMIT.md`, committed at
+**2026-08-06.** Executes `docs/handoffs/closed/2026-08-06-composition-audit-PRECOMMIT.md`, committed at
 `7bbdd3ed` **before any number existed**. Chases the defect surfaced by
-`docs/handoffs/2026-08-06-radius-gate-JUDGE-verdict.md` §4: `representative-audit-slice.json` reports
+`docs/handoffs/closed/2026-08-06-radius-gate-JUDGE-verdict.md` §4: `representative-audit-slice.json` reports
 **`rep_owner` 12 / `rep_non_owner` 23 / `reader_white` 35 against `owner` 42**, with three of five
 shots counting ZERO owner pellets while still landing near the true total.
 
@@ -6944,7 +6944,7 @@ $PY scripts/probe/count-pellets.py <frames> --temporal --locate structural --bac
 
 #### §37 THE AUDIT NOW SCORES THE SHIPPED CHANNEL — §36's question ANSWERED: the count IS mostly made of pellets
 
-**2026-08-06.** Lands `docs/handoffs/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md`. Closes §36's open
+**2026-08-06.** Lands `docs/handoffs/closed/2026-08-06-rep-audit-hybrid-LANDING-PLAN.md`. Closes §36's open
 item. Commits `313d8c2e` (Route C), `bad4808e` (the `band_hi` whitelist completion), `7962f7d6`
 (three corrections).
 
@@ -7022,7 +7022,7 @@ LABELLED half speaks for production. Not a regression, not a full fix either.
 
 #### §38 §19'S A/B IS REBUILT AS A COMMITTED ARM — and it REPRODUCES EXACTLY (band 1)
 
-**2026-08-06.** Executes `docs/handoffs/2026-08-06-residual-ab-PRECOMMIT.md` (committed at `141258da`
+**2026-08-06.** Executes `docs/handoffs/closed/2026-08-06-residual-ab-PRECOMMIT.md` (committed at `141258da`
 **before the arm emitted any number**) and item 1 of `2026-08-06-band-channel-SWEEP.md` §7. Instrument:
 **`analyze-pellet-tracks.py --residual-ab`** (+ `--residual-ab-selftest`, fixture
 `scripts/tests/fixtures/pellets/residual-ab-slice.json`, `pellet-selftest.sh` now **32 arms**).
@@ -7095,7 +7095,7 @@ right follow-up is an owner-anchored (not count-based) mislock severity measurem
 
 #### §39 MISLOCK SEVERITY BY TRACK-SET IDENTITY — the two locks count DIFFERENT pellets, and §22C's own premise fails
 
-**2026-08-06.** Executes `docs/handoffs/2026-08-06-mislock-identity-PRECOMMIT.md` (committed at
+**2026-08-06.** Executes `docs/handoffs/closed/2026-08-06-mislock-identity-PRECOMMIT.md` (committed at
 `8c9e98e3` **before any Jaccard existed**). Instrument: **`analyze-pellet-tracks.py
 --mislock-identity`** (+ selftest, fixture `mislock-identity-slice.json`, `pellet-selftest.sh` now
 **33 arms**). Tests §37B's refill mechanism, which until now was an _explanation_ rather than a
@@ -7224,7 +7224,7 @@ locator is on before any localizer change is designed.
 
 #### §41 THE LOCK-OFFSET LEAD — ⛔ NOT ESTABLISHED by its own pre-committed rule, but the population is BIMODAL
 
-**2026-08-06.** Executes `docs/handoffs/2026-08-06-lock-offset-PRECOMMIT.md`, committed at
+**2026-08-06.** Executes `docs/handoffs/closed/2026-08-06-lock-offset-PRECOMMIT.md`, committed at
 `67014264` **before the wider-n numbers existed**. Tests §40C's `dx` +322 / `dy` −330 offset, which
 was observed on **10 hand-picked shots** and therefore could not test itself.
 
@@ -7340,7 +7340,7 @@ built and available if the pixel test does not settle it.
 
 #### §43 THE DECOY PIXEL TEST — ⛔ NOT ESTABLISHED (P3 misses by ONE SHOT), but the structural lock demonstrably leaves the ammo box
 
-**2026-08-06.** Executes `docs/handoffs/2026-08-06-decoy-pixel-PRECOMMIT.md` (`c6604e21`, committed
+**2026-08-06.** Executes `docs/handoffs/closed/2026-08-06-decoy-pixel-PRECOMMIT.md` (`c6604e21`, committed
 before any pixel score existed). Tests §42's hypothesis that the structural locator abandons the
 ammo box for the floating damage numbers on a mislock.
 

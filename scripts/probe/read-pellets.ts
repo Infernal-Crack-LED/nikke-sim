@@ -65,7 +65,7 @@ const MAX_PELLETS = 10;
 // needed. Mirrors count-pellets.py's standalone `debounce_shots(frame_counts, fps, ...)` exactly —
 // same input shape ({white,red,marker,band} per frame), same output shape ({shots, summary}) — so
 // the two implementations can be fed the SAME frame_counts array and diffed on a COMMON input
-// (docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md §4 criterion 5, the lockstep
+// (docs/handoffs/closed/2026-08-04-representative-frame-PROPOSAL.md §4 criterion 5, the lockstep
 // requirement; see also §11G on why "common input" matters). `debounceShots` is a hoisted function
 // declaration, so calling it here (before its textual definition further down) is safe. This
 // branch runs BEFORE the video-required check below, so no video argument is needed.
@@ -221,7 +221,7 @@ interface PelletCount {
   band?: number; // lifetime-gated pellet-track count (docs/probe-runs.md §9G/§13), restricted to
   // tracks whose overall lifetime falls in [band_lo, band_hi] and bounded by radius + non-red
   // only (NOT by pellet_ids/`white`'s gate) — may EXCEED `white` when band_hi > max_pellet_frames
-  // (docs/handoffs/2026-08-04-band-hi-LANDING-PLAN.md). Feeds the fallback-hybrid
+  // (docs/handoffs/closed/2026-08-04-band-hi-LANDING-PLAN.md). Feeds the fallback-hybrid
   // representative-frame rule in `debounceShots`.
 }
 interface FrameCounts {
@@ -235,7 +235,7 @@ let frameCounts: FrameCounts[] = [];
 
 // ============================================================
 // debounce: gap-tolerant event grouping, plus the FALLBACK HYBRID representative-frame rule
-// (docs/handoffs/2026-08-04-representative-frame-PROPOSAL.md §2/§4, landed docs/probe-runs.md
+// (docs/handoffs/closed/2026-08-04-representative-frame-PROPOSAL.md §2/§4, landed docs/probe-runs.md
 // §13). A `function` declaration (hoisted) so `--debounce-json` can call it before this point in
 // the file. KEEP THIS IN LOCKSTEP WITH count-pellets.py's `debounce_shots` — a second
 // implementation of the same algorithm, not a shared module (same precedent as the rest of this
