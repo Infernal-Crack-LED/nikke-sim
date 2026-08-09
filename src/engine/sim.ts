@@ -4026,7 +4026,11 @@ export function runSim(
               frame - u.lastBurstCastFrame < 10 * FPS
             : fbEndFrame > frame);
         const threshold = lowered ? b.trigger.countInFb! : b.trigger.count;
-        let c = (u.hitCounters.get(key) ?? 0) + u.char.hitsPerShot;
+        // SG pull-vs-pellet lever: `perPull:true` counts trigger pulls (1 per shot) instead of
+        // landed pellets (`hitsPerShot`). Defaults to the historical pellet-count semantics so
+        // existing overrides stay byte-identical until they opt in.
+        const increment = b.trigger.perPull ? 1 : u.char.hitsPerShot;
+        let c = (u.hitCounters.get(key) ?? 0) + increment;
         while (c >= threshold) {
           c -= threshold;
           applyBlock(u.idx, b, bi, frame);

@@ -24,9 +24,9 @@
 //       (liter SMG / crown MG / drake SG / helm SR) only drake is SG, so the buff targets
 //       exactly 1 unit per FB enter. Counterfactual: target "allies" → 4 targets.
 //   D4  Same scoping as D3 for maxAmmoPct 50.14.
-//   D5  hitCount 100 = 10 trigger PULLS (engine increments by hitsPerShot=10 per pull).
-//       Counterfactual: hitCount 10 (= 1 pull) → 10× more nuke events.
-//   D6  hitCount 50 = 5 pulls. Counterfactual: hitCount 5 → 10× more events.
+//   D5  hitCount 10 with perPull:true = 10 trigger PULLS (the SG pull-vs-pellet lever).
+//       Counterfactual: perPull:false (pellet-counter semantics) → 10× more nuke events.
+//   D6  hitCount 5 with perPull:true = 5 pulls. Counterfactual: perPull:false → 10× more events.
 //   D7  burst nuke atkPct 3009.6 (treasure). Counterfactual: 1254 (untreasured base).
 //   D8  self-scoped maxAmmoPct 72.18 — targetIdx must be drake's slot only.
 //   D9  self-scoped attackDamagePct 31.68 — targetIdx must be drake's slot only.
@@ -80,17 +80,13 @@ const drakeS1AllAllies = withPatchedOverride('drake', (ov) => {
   sgBlock.target = { kind: 'allies' };
 });
 
-/** D5/D6 counterfactual: hitCount reads PELLET hits (10/5) instead of PULL hits (100/50). */
+/** D5/D6 counterfactual: hitCount reads PELLET hits (perPull:false) instead of PULL hits. */
 const drakeS2Pellets = withPatchedOverride('drake', (ov) => {
   for (const b of ov.skill2) {
     if (b.trigger?.kind !== 'hitCount') {
       continue;
     }
-    if (b.trigger.count === 100) {
-      b.trigger.count = 10;
-    } else if (b.trigger.count === 50) {
-      b.trigger.count = 5;
-    }
+    b.trigger.perPull = false;
   }
 });
 
@@ -216,13 +212,13 @@ describe('drake — kit spec', () => {
     });
   });
 
-  describe('D5 — S2 "after 10 attacks" nuke: 98.55% final ATK (hitCount 100 = 10 pulls)', () => {
+  describe('D5 — S2 "after 10 attacks" nuke: 98.55% final ATK (hitCount 10 perPull = 10 pulls)', () => {
     const nukes = drakeDamage(base.events, 'skill2').filter(
       (d) => d.atkPct === 98.55
     );
     const pulls = drakeShots(base.events).length;
 
-    it('fires approximately once per 10 pulls (hitCount 100 in pellet-counter semantics)', () => {
+    it('fires approximately once per 10 pulls (perPull hitCount lever)', () => {
       expect(nukes.length, 'no 98.55% nukes landed').toBeGreaterThan(0);
       const expected = Math.floor(pulls / 10);
       // Allow ±1 for boundary alignment at fight start/end.
@@ -230,7 +226,7 @@ describe('drake — kit spec', () => {
       expect(nukes.length).toBeLessThanOrEqual(expected + 1);
     });
 
-    it('DISCRIMINATING: hitCount 10 (pellet reading) would produce ~10× more nukes', () => {
+    it('DISCRIMINATING: pellet-counter semantics (perPull:false) would produce ~10× more nukes', () => {
       const pelletNukes = drakeDamage(s2Pellets.events, 'skill2').filter(
         (d) => d.atkPct === 98.55
       );
@@ -238,20 +234,20 @@ describe('drake — kit spec', () => {
     });
   });
 
-  describe('D6 — S2 "after 5 attacks" nuke: 201.6% final ATK (hitCount 50 = 5 pulls)', () => {
+  describe('D6 — S2 "after 5 attacks" nuke: 201.6% final ATK (hitCount 5 perPull = 5 pulls)', () => {
     const nukes = drakeDamage(base.events, 'skill2').filter(
       (d) => d.atkPct === 201.6
     );
     const pulls = drakeShots(base.events).length;
 
-    it('fires approximately once per 5 pulls (hitCount 50 in pellet-counter semantics)', () => {
+    it('fires approximately once per 5 pulls (perPull hitCount lever)', () => {
       expect(nukes.length, 'no 201.6% nukes landed').toBeGreaterThan(0);
       const expected = Math.floor(pulls / 5);
       expect(nukes.length).toBeGreaterThanOrEqual(expected - 1);
       expect(nukes.length).toBeLessThanOrEqual(expected + 1);
     });
 
-    it('DISCRIMINATING: hitCount 5 (pellet reading) would produce ~10× more nukes', () => {
+    it('DISCRIMINATING: pellet-counter semantics (perPull:false) would produce ~10× more nukes', () => {
       const pelletNukes = drakeDamage(s2Pellets.events, 'skill2').filter(
         (d) => d.atkPct === 201.6
       );

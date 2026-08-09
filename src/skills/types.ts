@@ -88,6 +88,7 @@ export type TriggerDef =
       count: number;
       countInFb?: number;
       countInFbStage?: number;
+      perPull?: boolean; // true = count trigger PULLS (1 per shot), false/omitted = count landed PELLETS (`hitsPerShot` per shot). The SG 10× lever.
     } // fires every `count` cumulative hits; `countInFb` overrides the threshold DURING Full Burst (RRH rocket meter: 120 out of burst → 60 in her FB). `countInFbStage` SCOPES that override: it then applies ONLY during the 10s window after the owner's OWN burst cast at that stage (prose "▼N for 10 sec" granted by that cast — RRH's ▼60 is a Stage-3 line, owner ruling 2026-08-04), NOT any team FB window; without it the any-FB-state convention stays (SWID)
   | {
       kind: 'chargeCounter';

@@ -2178,7 +2178,7 @@
       "caveats": [
         "skill1: Hit Rate ▲ 20.09% (TREASURE) is modeled as hitRatePct — LIVE since CONE_DELTA (2026-07-19): feeds acrForHR core rate for AR/SMG/SG recipients; the in-game magnitude of the core-hit-rate lift is unmeasured",
         "skill1: the TREASURE 'all Shotgun-wielding allies' ATK 63.88 + Max Ammo 50.14 buff hits every SG ally incl. self on FB enter — run /sim-battery before any board claim on SG teams",
-        "skill2: both nukes read '10/5 attacks' as trigger PULLS (hitCount 100/50 in pellet-counter semantics), anchored by a same-chassis brid-silent-track measurement but unmeasured for drake — pull-vs-pellet is a 10x cadence lever on each",
+        "skill2: both nukes read '10/5 attacks' as trigger PULLS using the perPull hitCount lever (count 10/5, perPull:true), behavior-identical to the prior pellet-counter encoding (hitCount 100/50) — anchored by a same-chassis brid-silent-track measurement but unmeasured for drake",
         "burst: Max Ammunition Capacity ▲ 72.18%/10s only pays out when a reload lands inside the window (cap raise fills on the next reload; no instant ammo grant assumed)"
       ],
       "board": null

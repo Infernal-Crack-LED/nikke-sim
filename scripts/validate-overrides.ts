@@ -345,6 +345,13 @@ function validate(slug: string): boolean {
         errors.push(`${p}: hitCount needs count`);
       }
       if (
+        b.trigger?.kind === 'hitCount' &&
+        b.trigger.perPull != null &&
+        typeof b.trigger.perPull !== 'boolean'
+      ) {
+        errors.push(`${p}: hitCount perPull must be a boolean`);
+      }
+      if (
         b.trigger?.kind === 'attacked' &&
         !(typeof b.trigger.count === 'number' && b.trigger.count > 0)
       ) {
