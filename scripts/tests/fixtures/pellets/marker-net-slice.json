@@ -1,0 +1,252 @@
+{
+  "_source": "count-pellets.py --dump-tracks tracks.json (post-8d500ff9), FULL dumps; docs/probe-runs.md \u00a731. Regenerate with analyze-pellet-tracks.py --marker-net <tracks.json...> --save-marker-net-fixture <path>.",
+  "_note": "POPULATION (2026-08-06 sweep, item 6): the headline -0.043 pellets/shot is the NET of the warm and cold marker channels over 815 shots / 4 `*-schemafix` dumps, on the BAND substrate. \u2691 Not to be confused with \u00a727C's -0.048, which is the WARM channel alone (-39/815); different quantities, both correct.",
+  "_expected": {
+    "pooled": {
+      "n_dumps": 4,
+      "n_shots": 815,
+      "n_core_shipped": 180,
+      "recon_mismatch_frames": 0,
+      "arms": {
+        "shipped": {
+          "n_core": 180,
+          "delta_core": 0,
+          "delta_total_pellets": 0,
+          "delta_per_shot": 0.0
+        },
+        "warm_removed_C1": {
+          "n_core": 141,
+          "delta_core": -39,
+          "delta_total_pellets": -39,
+          "delta_per_shot": -0.0479
+        },
+        "cold_recovered_band_hi_10": {
+          "n_core": 182,
+          "delta_core": 2,
+          "delta_total_pellets": 2,
+          "delta_per_shot": 0.0025
+        },
+        "net_both_band_hi_10": {
+          "n_core": 145,
+          "delta_core": -35,
+          "delta_total_pellets": -35,
+          "delta_per_shot": -0.0429
+        },
+        "cold_recovered_unbounded": {
+          "n_core": 183,
+          "delta_core": 3,
+          "delta_total_pellets": 3,
+          "delta_per_shot": 0.0037
+        },
+        "net_both_unbounded": {
+          "n_core": 146,
+          "delta_core": -34,
+          "delta_total_pellets": -34,
+          "delta_per_shot": -0.0417
+        }
+      }
+    },
+    "dumps": [
+      {
+        "dump": "h4-marciana-schemafix",
+        "n_shots": 218,
+        "n_core_shipped": 35,
+        "recon_mismatch_frames": 0,
+        "arms": {
+          "shipped": {
+            "n_marker_tracks": 400,
+            "n_core": 35,
+            "delta_core": 0,
+            "delta_total_pellets": 0,
+            "delta_per_shot": 0.0
+          },
+          "warm_removed_C1": {
+            "n_marker_tracks": 400,
+            "n_core": 32,
+            "delta_core": -3,
+            "delta_total_pellets": -3,
+            "delta_per_shot": -0.0138
+          },
+          "cold_recovered_band_hi_10": {
+            "n_marker_tracks": 422,
+            "n_core": 36,
+            "delta_core": 1,
+            "delta_total_pellets": 1,
+            "delta_per_shot": 0.0046
+          },
+          "net_both_band_hi_10": {
+            "n_marker_tracks": 422,
+            "n_core": 33,
+            "delta_core": -2,
+            "delta_total_pellets": -2,
+            "delta_per_shot": -0.0092
+          },
+          "cold_recovered_unbounded": {
+            "n_marker_tracks": 427,
+            "n_core": 36,
+            "delta_core": 1,
+            "delta_total_pellets": 1,
+            "delta_per_shot": 0.0046
+          },
+          "net_both_unbounded": {
+            "n_marker_tracks": 427,
+            "n_core": 33,
+            "delta_core": -2,
+            "delta_total_pellets": -2,
+            "delta_per_shot": -0.0092
+          }
+        }
+      },
+      {
+        "dump": "h4-isabel-schemafix",
+        "n_shots": 203,
+        "n_core_shipped": 43,
+        "recon_mismatch_frames": 0,
+        "arms": {
+          "shipped": {
+            "n_marker_tracks": 744,
+            "n_core": 43,
+            "delta_core": 0,
+            "delta_total_pellets": 0,
+            "delta_per_shot": 0.0
+          },
+          "warm_removed_C1": {
+            "n_marker_tracks": 744,
+            "n_core": 37,
+            "delta_core": -6,
+            "delta_total_pellets": -6,
+            "delta_per_shot": -0.0296
+          },
+          "cold_recovered_band_hi_10": {
+            "n_marker_tracks": 773,
+            "n_core": 43,
+            "delta_core": 0,
+            "delta_total_pellets": 0,
+            "delta_per_shot": 0.0
+          },
+          "net_both_band_hi_10": {
+            "n_marker_tracks": 773,
+            "n_core": 38,
+            "delta_core": -5,
+            "delta_total_pellets": -5,
+            "delta_per_shot": -0.0246
+          },
+          "cold_recovered_unbounded": {
+            "n_marker_tracks": 785,
+            "n_core": 43,
+            "delta_core": 0,
+            "delta_total_pellets": 0,
+            "delta_per_shot": 0.0
+          },
+          "net_both_unbounded": {
+            "n_marker_tracks": 785,
+            "n_core": 38,
+            "delta_core": -5,
+            "delta_total_pellets": -5,
+            "delta_per_shot": -0.0246
+          }
+        }
+      },
+      {
+        "dump": "h4-guilty-schemafix",
+        "n_shots": 180,
+        "n_core_shipped": 40,
+        "recon_mismatch_frames": 0,
+        "arms": {
+          "shipped": {
+            "n_marker_tracks": 569,
+            "n_core": 40,
+            "delta_core": 0,
+            "delta_total_pellets": 0,
+            "delta_per_shot": 0.0
+          },
+          "warm_removed_C1": {
+            "n_marker_tracks": 569,
+            "n_core": 24,
+            "delta_core": -16,
+            "delta_total_pellets": -16,
+            "delta_per_shot": -0.0889
+          },
+          "cold_recovered_band_hi_10": {
+            "n_marker_tracks": 596,
+            "n_core": 40,
+            "delta_core": 0,
+            "delta_total_pellets": 0,
+            "delta_per_shot": 0.0
+          },
+          "net_both_band_hi_10": {
+            "n_marker_tracks": 596,
+            "n_core": 25,
+            "delta_core": -15,
+            "delta_total_pellets": -15,
+            "delta_per_shot": -0.0833
+          },
+          "cold_recovered_unbounded": {
+            "n_marker_tracks": 603,
+            "n_core": 40,
+            "delta_core": 0,
+            "delta_total_pellets": 0,
+            "delta_per_shot": 0.0
+          },
+          "net_both_unbounded": {
+            "n_marker_tracks": 603,
+            "n_core": 25,
+            "delta_core": -15,
+            "delta_total_pellets": -15,
+            "delta_per_shot": -0.0833
+          }
+        }
+      },
+      {
+        "dump": "g2-noir-schemafix",
+        "n_shots": 214,
+        "n_core_shipped": 62,
+        "recon_mismatch_frames": 0,
+        "arms": {
+          "shipped": {
+            "n_marker_tracks": 1041,
+            "n_core": 62,
+            "delta_core": 0,
+            "delta_total_pellets": 0,
+            "delta_per_shot": 0.0
+          },
+          "warm_removed_C1": {
+            "n_marker_tracks": 1041,
+            "n_core": 48,
+            "delta_core": -14,
+            "delta_total_pellets": -14,
+            "delta_per_shot": -0.0654
+          },
+          "cold_recovered_band_hi_10": {
+            "n_marker_tracks": 1094,
+            "n_core": 63,
+            "delta_core": 1,
+            "delta_total_pellets": 1,
+            "delta_per_shot": 0.0047
+          },
+          "net_both_band_hi_10": {
+            "n_marker_tracks": 1094,
+            "n_core": 49,
+            "delta_core": -13,
+            "delta_total_pellets": -13,
+            "delta_per_shot": -0.0607
+          },
+          "cold_recovered_unbounded": {
+            "n_marker_tracks": 1103,
+            "n_core": 64,
+            "delta_core": 2,
+            "delta_total_pellets": 2,
+            "delta_per_shot": 0.0093
+          },
+          "net_both_unbounded": {
+            "n_marker_tracks": 1103,
+            "n_core": 50,
+            "delta_core": -12,
+            "delta_total_pellets": -12,
+            "delta_per_shot": -0.0561
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,743 @@
+{
+  "_source": "count-pellets.py --dump-tracks structural + template pairs (see docs/handoffs/closed/2026-08-04-mislock-cost-PRECOMMIT.md's \u00a721C ask), through _la_candidates for all 4 production dumps.",
+  "_note": "A reduced SLICE, not the full real pools -- pools[name] here is `_la_slim_pools`' first 8 mislocked + 3 not-mislocked candidates per dump, by t0. This is NOT the byte-identical live 24-case selection (`rng.sample` reads the FULL population, see _la_select's docstring) -- it validates that --lock-adjudication-selftest's OWN selection is reproducible from its seed, not that it matches this specific live run's real 24 cases. Regenerate with analyze-pellet-tracks.py --lock-adjudication <structural.json...> --lock-adjudication-template <template.json...> --save-lock-adjudication-fixture <path> (also renders the real images to --lock-adjudication-out in the same run).",
+  "seed": 20260804,
+  "dump_order": [
+    "h4-marciana-structural",
+    "h4-isabel-structural",
+    "h4-guilty-structural",
+    "g2-noir-structural"
+  ],
+  "pools": {
+    "h4-marciana-structural": [
+      {
+        "dump": "h4-marciana-structural",
+        "t0": 408,
+        "frame9": 417,
+        "mislocked": true,
+        "median_disp": 428.45,
+        "struct_pos": [1660, 98],
+        "tmpl_pos": [1534, 508],
+        "total_struct": 5,
+        "total_tmpl": null,
+        "tmpl_t0_matched": null
+      },
+      {
+        "dump": "h4-marciana-structural",
+        "t0": 605,
+        "frame9": 614,
+        "mislocked": true,
+        "median_disp": 278.66,
+        "struct_pos": [1882, 258],
+        "tmpl_pos": [1774, 477],
+        "total_struct": 7,
+        "total_tmpl": 5,
+        "tmpl_t0_matched": 605
+      },
+      {
+        "dump": "h4-marciana-structural",
+        "t0": 822,
+        "frame9": 831,
+        "mislocked": true,
+        "median_disp": 289.62,
+        "struct_pos": [1904, 221],
+        "tmpl_pos": [1838, 503],
+        "total_struct": 6,
+        "total_tmpl": 4,
+        "tmpl_t0_matched": 822
+      },
+      {
+        "dump": "h4-marciana-structural",
+        "t0": 1038,
+        "frame9": 1047,
+        "mislocked": true,
+        "median_disp": 324.7,
+        "struct_pos": [2216, 191],
+        "tmpl_pos": [2094, 493],
+        "total_struct": 7,
+        "total_tmpl": 8,
+        "tmpl_t0_matched": 1038
+      },
+      {
+        "dump": "h4-marciana-structural",
+        "t0": 1096,
+        "frame9": 1105,
+        "mislocked": true,
+        "median_disp": 299.96,
+        "struct_pos": [2324, 310],
+        "tmpl_pos": [2105, 511],
+        "total_struct": 4,
+        "total_tmpl": 8,
+        "tmpl_t0_matched": 1095
+      },
+      {
+        "dump": "h4-marciana-structural",
+        "t0": 1400,
+        "frame9": 1409,
+        "mislocked": true,
+        "median_disp": 463.59,
+        "struct_pos": [1549, 184],
+        "tmpl_pos": [1344, 592],
+        "total_struct": 6,
+        "total_tmpl": 4,
+        "tmpl_t0_matched": 1400
+      },
+      {
+        "dump": "h4-marciana-structural",
+        "t0": 1596,
+        "frame9": 1605,
+        "mislocked": true,
+        "median_disp": 217.23,
+        "struct_pos": [975, 514],
+        "tmpl_pos": [778, 603],
+        "total_struct": 7,
+        "total_tmpl": 0,
+        "tmpl_t0_matched": 1595
+      },
+      {
+        "dump": "h4-marciana-structural",
+        "t0": 1616,
+        "frame9": 1625,
+        "mislocked": true,
+        "median_disp": 504.95,
+        "struct_pos": [1181, 255],
+        "tmpl_pos": [778, 603],
+        "total_struct": 4,
+        "total_tmpl": 1,
+        "tmpl_t0_matched": 1619
+      },
+      {
+        "dump": "h4-marciana-structural",
+        "t0": 229,
+        "frame9": 238,
+        "mislocked": false,
+        "median_disp": 3.08,
+        "struct_pos": [1314, 504],
+        "tmpl_pos": [1310, 503],
+        "total_struct": 8,
+        "total_tmpl": 8,
+        "tmpl_t0_matched": 229
+      },
+      {
+        "dump": "h4-marciana-structural",
+        "t0": 249,
+        "frame9": 258,
+        "mislocked": false,
+        "median_disp": 1.0,
+        "struct_pos": [1380, 463],
+        "tmpl_pos": [1378, 463],
+        "total_struct": 7,
+        "total_tmpl": 7,
+        "tmpl_t0_matched": 249
+      },
+      {
+        "dump": "h4-marciana-structural",
+        "t0": 269,
+        "frame9": 278,
+        "mislocked": false,
+        "median_disp": 3.08,
+        "struct_pos": [1434, 490],
+        "tmpl_pos": [1431, 490],
+        "total_struct": 5,
+        "total_tmpl": 5,
+        "tmpl_t0_matched": 269
+      }
+    ],
+    "h4-isabel-structural": [
+      {
+        "dump": "h4-isabel-structural",
+        "t0": 389,
+        "frame9": 398,
+        "mislocked": true,
+        "median_disp": 495.07,
+        "struct_pos": [2120, 224],
+        "tmpl_pos": [1717, 512],
+        "total_struct": 12,
+        "total_tmpl": 5,
+        "tmpl_t0_matched": 389
+      },
+      {
+        "dump": "h4-isabel-structural",
+        "t0": 616,
+        "frame9": 625,
+        "mislocked": true,
+        "median_disp": 494.85,
+        "struct_pos": [2280, 83],
+        "tmpl_pos": [2012, 499],
+        "total_struct": 8,
+        "total_tmpl": 6,
+        "tmpl_t0_matched": 616
+      },
+      {
+        "dump": "h4-isabel-structural",
+        "t0": 823,
+        "frame9": 832,
+        "mislocked": true,
+        "median_disp": 293.0,
+        "struct_pos": [2264, 218],
+        "tmpl_pos": [2252, 507],
+        "total_struct": 10,
+        "total_tmpl": 8,
+        "tmpl_t0_matched": 823
+      },
+      {
+        "dump": "h4-isabel-structural",
+        "t0": 843,
+        "frame9": 852,
+        "mislocked": true,
+        "median_disp": 312.54,
+        "struct_pos": [2370, 200],
+        "tmpl_pos": [2283, 497],
+        "total_struct": 10,
+        "total_tmpl": 6,
+        "tmpl_t0_matched": 843
+      },
+      {
+        "dump": "h4-isabel-structural",
+        "t0": 1070,
+        "frame9": 1079,
+        "mislocked": true,
+        "median_disp": 313.74,
+        "struct_pos": [2735, 230],
+        "tmpl_pos": [2455, 472],
+        "total_struct": 6,
+        "total_tmpl": 6,
+        "tmpl_t0_matched": 1070
+      },
+      {
+        "dump": "h4-isabel-structural",
+        "t0": 1179,
+        "frame9": 1188,
+        "mislocked": true,
+        "median_disp": 306.72,
+        "struct_pos": [1350, 346],
+        "tmpl_pos": [1203, 560],
+        "total_struct": 2,
+        "total_tmpl": null,
+        "tmpl_t0_matched": null
+      },
+      {
+        "dump": "h4-isabel-structural",
+        "t0": 1300,
+        "frame9": 1309,
+        "mislocked": true,
+        "median_disp": 446.06,
+        "struct_pos": [1604, 230],
+        "tmpl_pos": [1086, 569],
+        "total_struct": 6,
+        "total_tmpl": 7,
+        "tmpl_t0_matched": 1300
+      },
+      {
+        "dump": "h4-isabel-structural",
+        "t0": 1469,
+        "frame9": 1478,
+        "mislocked": true,
+        "median_disp": 191.02,
+        "struct_pos": [1804, 524],
+        "tmpl_pos": [1989, 528],
+        "total_struct": 7,
+        "total_tmpl": null,
+        "tmpl_t0_matched": null
+      },
+      {
+        "dump": "h4-isabel-structural",
+        "t0": 229,
+        "frame9": 238,
+        "mislocked": false,
+        "median_disp": 1.0,
+        "struct_pos": [1524, 506],
+        "tmpl_pos": [1524, 506],
+        "total_struct": 13,
+        "total_tmpl": 13,
+        "tmpl_t0_matched": 229
+      },
+      {
+        "dump": "h4-isabel-structural",
+        "t0": 249,
+        "frame9": 258,
+        "mislocked": false,
+        "median_disp": 34.0,
+        "struct_pos": [1617, 466],
+        "tmpl_pos": [1566, 466],
+        "total_struct": 7,
+        "total_tmpl": 6,
+        "tmpl_t0_matched": 249
+      },
+      {
+        "dump": "h4-isabel-structural",
+        "t0": 269,
+        "frame9": 278,
+        "mislocked": false,
+        "median_disp": 1.0,
+        "struct_pos": [1654, 493],
+        "tmpl_pos": [1653, 494],
+        "total_struct": 9,
+        "total_tmpl": 9,
+        "tmpl_t0_matched": 269
+      }
+    ],
+    "h4-guilty-structural": [
+      {
+        "dump": "h4-guilty-structural",
+        "t0": 391,
+        "frame9": 400,
+        "mislocked": true,
+        "median_disp": 394.11,
+        "struct_pos": [1822, 131],
+        "tmpl_pos": [1717, 511],
+        "total_struct": 7,
+        "total_tmpl": 6,
+        "tmpl_t0_matched": 391
+      },
+      {
+        "dump": "h4-guilty-structural",
+        "t0": 641,
+        "frame9": 650,
+        "mislocked": true,
+        "median_disp": 234.31,
+        "struct_pos": [2243, 347],
+        "tmpl_pos": [2063, 502],
+        "total_struct": 2,
+        "total_tmpl": 7,
+        "tmpl_t0_matched": 641
+      },
+      {
+        "dump": "h4-guilty-structural",
+        "t0": 999,
+        "frame9": 1008,
+        "mislocked": true,
+        "median_disp": 223.82,
+        "struct_pos": [2606, 232],
+        "tmpl_pos": [2282, 514],
+        "total_struct": 0,
+        "total_tmpl": 7,
+        "tmpl_t0_matched": 999
+      },
+      {
+        "dump": "h4-guilty-structural",
+        "t0": 1136,
+        "frame9": 1145,
+        "mislocked": true,
+        "median_disp": 682.75,
+        "struct_pos": [1778, 544],
+        "tmpl_pos": [2457, 472],
+        "total_struct": 8,
+        "total_tmpl": null,
+        "tmpl_t0_matched": null
+      },
+      {
+        "dump": "h4-guilty-structural",
+        "t0": 1156,
+        "frame9": 1165,
+        "mislocked": true,
+        "median_disp": 731.62,
+        "struct_pos": [1732, 541],
+        "tmpl_pos": [2457, 472],
+        "total_struct": 10,
+        "total_tmpl": null,
+        "tmpl_t0_matched": null
+      },
+      {
+        "dump": "h4-guilty-structural",
+        "t0": 1176,
+        "frame9": 1185,
+        "mislocked": true,
+        "median_disp": 802.99,
+        "struct_pos": [1662, 552],
+        "tmpl_pos": [2457, 472],
+        "total_struct": 7,
+        "total_tmpl": null,
+        "tmpl_t0_matched": null
+      },
+      {
+        "dump": "h4-guilty-structural",
+        "t0": 1196,
+        "frame9": 1205,
+        "mislocked": true,
+        "median_disp": 791.16,
+        "struct_pos": [1730, 194],
+        "tmpl_pos": [2457, 472],
+        "total_struct": 5,
+        "total_tmpl": null,
+        "tmpl_t0_matched": null
+      },
+      {
+        "dump": "h4-guilty-structural",
+        "t0": 1346,
+        "frame9": 1355,
+        "mislocked": true,
+        "median_disp": 472.75,
+        "struct_pos": [1636, 174],
+        "tmpl_pos": [1348, 552],
+        "total_struct": 6,
+        "total_tmpl": 7,
+        "tmpl_t0_matched": 1346
+      },
+      {
+        "dump": "h4-guilty-structural",
+        "t0": 231,
+        "frame9": 240,
+        "mislocked": false,
+        "median_disp": 1.0,
+        "struct_pos": [1524, 506],
+        "tmpl_pos": [1524, 505],
+        "total_struct": 10,
+        "total_tmpl": 10,
+        "tmpl_t0_matched": 231
+      },
+      {
+        "dump": "h4-guilty-structural",
+        "t0": 251,
+        "frame9": 260,
+        "mislocked": false,
+        "median_disp": 8.52,
+        "struct_pos": [1600, 465],
+        "tmpl_pos": [1600, 465],
+        "total_struct": 9,
+        "total_tmpl": 8,
+        "tmpl_t0_matched": 251
+      },
+      {
+        "dump": "h4-guilty-structural",
+        "t0": 271,
+        "frame9": 280,
+        "mislocked": false,
+        "median_disp": 1.0,
+        "struct_pos": [1654, 494],
+        "tmpl_pos": [1654, 493],
+        "total_struct": 7,
+        "total_tmpl": 7,
+        "tmpl_t0_matched": 271
+      }
+    ],
+    "g2-noir-structural": [
+      {
+        "dump": "g2-noir-structural",
+        "t0": 379,
+        "frame9": 388,
+        "mislocked": true,
+        "median_disp": 318.29,
+        "struct_pos": [1799, 274],
+        "tmpl_pos": [1722, 574],
+        "total_struct": 6,
+        "total_tmpl": 6,
+        "tmpl_t0_matched": 379
+      },
+      {
+        "dump": "g2-noir-structural",
+        "t0": 579,
+        "frame9": 588,
+        "mislocked": true,
+        "median_disp": 327.67,
+        "struct_pos": [1758, 155],
+        "tmpl_pos": [1948, 479],
+        "total_struct": 15,
+        "total_tmpl": 4,
+        "tmpl_t0_matched": 579
+      },
+      {
+        "dump": "g2-noir-structural",
+        "t0": 588,
+        "frame9": 597,
+        "mislocked": true,
+        "median_disp": 412.41,
+        "struct_pos": [2094, 75],
+        "tmpl_pos": [1949, 487],
+        "total_struct": 4,
+        "total_tmpl": 4,
+        "tmpl_t0_matched": 579
+      },
+      {
+        "dump": "g2-noir-structural",
+        "t0": 699,
+        "frame9": 708,
+        "mislocked": true,
+        "median_disp": 194.16,
+        "struct_pos": [2554, 210],
+        "tmpl_pos": [2309, 507],
+        "total_struct": 7,
+        "total_tmpl": 8,
+        "tmpl_t0_matched": 699
+      },
+      {
+        "dump": "g2-noir-structural",
+        "t0": 779,
+        "frame9": 788,
+        "mislocked": true,
+        "median_disp": 363.93,
+        "struct_pos": [2598, 362],
+        "tmpl_pos": [2264, 509],
+        "total_struct": 14,
+        "total_tmpl": 9,
+        "tmpl_t0_matched": 779
+      },
+      {
+        "dump": "g2-noir-structural",
+        "t0": 1175,
+        "frame9": 1184,
+        "mislocked": true,
+        "median_disp": 376.31,
+        "struct_pos": [1917, 318],
+        "tmpl_pos": [1523, 652],
+        "total_struct": 5,
+        "total_tmpl": 7,
+        "tmpl_t0_matched": 1175
+      },
+      {
+        "dump": "g2-noir-structural",
+        "t0": 1475,
+        "frame9": 1484,
+        "mislocked": true,
+        "median_disp": 376.03,
+        "struct_pos": [2141, 234],
+        "tmpl_pos": [1914, 564],
+        "total_struct": 22,
+        "total_tmpl": 13,
+        "tmpl_t0_matched": 1475
+      },
+      {
+        "dump": "g2-noir-structural",
+        "t0": 1534,
+        "frame9": 1543,
+        "mislocked": true,
+        "median_disp": 164.84,
+        "struct_pos": [1976, 438],
+        "tmpl_pos": [1836, 523],
+        "total_struct": 6,
+        "total_tmpl": 3,
+        "tmpl_t0_matched": 1535
+      },
+      {
+        "dump": "g2-noir-structural",
+        "t0": 219,
+        "frame9": 228,
+        "mislocked": false,
+        "median_disp": 3.08,
+        "struct_pos": [1518, 508],
+        "tmpl_pos": [1515, 508],
+        "total_struct": 10,
+        "total_tmpl": 9,
+        "tmpl_t0_matched": 219
+      },
+      {
+        "dump": "g2-noir-structural",
+        "t0": 239,
+        "frame9": 248,
+        "mislocked": false,
+        "median_disp": 1.21,
+        "struct_pos": [1596, 468],
+        "tmpl_pos": [1595, 467],
+        "total_struct": 5,
+        "total_tmpl": 5,
+        "tmpl_t0_matched": 239
+      },
+      {
+        "dump": "g2-noir-structural",
+        "t0": 259,
+        "frame9": 268,
+        "mislocked": false,
+        "median_disp": 3.64,
+        "struct_pos": [1652, 490],
+        "tmpl_pos": [1648, 489],
+        "total_struct": 6,
+        "total_tmpl": 6,
+        "tmpl_t0_matched": 259
+      }
+    ]
+  },
+  "_expected": [
+    {
+      "case_id": "case_01",
+      "dump": "h4-marciana-structural",
+      "t0": 605,
+      "mislocked": true,
+      "letter_struct": "A",
+      "letter_tmpl": "B"
+    },
+    {
+      "case_id": "case_02",
+      "dump": "h4-guilty-structural",
+      "t0": 1196,
+      "mislocked": true,
+      "letter_struct": "A",
+      "letter_tmpl": "B"
+    },
+    {
+      "case_id": "case_03",
+      "dump": "g2-noir-structural",
+      "t0": 1175,
+      "mislocked": true,
+      "letter_struct": "A",
+      "letter_tmpl": "B"
+    },
+    {
+      "case_id": "case_04",
+      "dump": "h4-isabel-structural",
+      "t0": 1469,
+      "mislocked": true,
+      "letter_struct": "A",
+      "letter_tmpl": "B"
+    },
+    {
+      "case_id": "case_05",
+      "dump": "g2-noir-structural",
+      "t0": 699,
+      "mislocked": true,
+      "letter_struct": "B",
+      "letter_tmpl": "A"
+    },
+    {
+      "case_id": "case_06",
+      "dump": "h4-guilty-structural",
+      "t0": 641,
+      "mislocked": true,
+      "letter_struct": "A",
+      "letter_tmpl": "B"
+    },
+    {
+      "case_id": "case_07",
+      "dump": "g2-noir-structural",
+      "t0": 259,
+      "mislocked": false,
+      "letter_struct": "A",
+      "letter_tmpl": "B"
+    },
+    {
+      "case_id": "case_08",
+      "dump": "h4-marciana-structural",
+      "t0": 822,
+      "mislocked": true,
+      "letter_struct": "A",
+      "letter_tmpl": "B"
+    },
+    {
+      "case_id": "case_09",
+      "dump": "g2-noir-structural",
+      "t0": 1534,
+      "mislocked": true,
+      "letter_struct": "B",
+      "letter_tmpl": "A"
+    },
+    {
+      "case_id": "case_10",
+      "dump": "h4-marciana-structural",
+      "t0": 249,
+      "mislocked": false,
+      "letter_struct": "B",
+      "letter_tmpl": "A"
+    },
+    {
+      "case_id": "case_11",
+      "dump": "h4-guilty-structural",
+      "t0": 1176,
+      "mislocked": true,
+      "letter_struct": "B",
+      "letter_tmpl": "A"
+    },
+    {
+      "case_id": "case_12",
+      "dump": "h4-isabel-structural",
+      "t0": 823,
+      "mislocked": true,
+      "letter_struct": "A",
+      "letter_tmpl": "B"
+    },
+    {
+      "case_id": "case_13",
+      "dump": "g2-noir-structural",
+      "t0": 379,
+      "mislocked": true,
+      "letter_struct": "A",
+      "letter_tmpl": "B"
+    },
+    {
+      "case_id": "case_14",
+      "dump": "h4-marciana-structural",
+      "t0": 1038,
+      "mislocked": true,
+      "letter_struct": "A",
+      "letter_tmpl": "B"
+    },
+    {
+      "case_id": "case_15",
+      "dump": "h4-guilty-structural",
+      "t0": 251,
+      "mislocked": false,
+      "letter_struct": "B",
+      "letter_tmpl": "A"
+    },
+    {
+      "case_id": "case_16",
+      "dump": "h4-isabel-structural",
+      "t0": 616,
+      "mislocked": true,
+      "letter_struct": "B",
+      "letter_tmpl": "A"
+    },
+    {
+      "case_id": "case_17",
+      "dump": "h4-marciana-structural",
+      "t0": 1400,
+      "mislocked": true,
+      "letter_struct": "B",
+      "letter_tmpl": "A"
+    },
+    {
+      "case_id": "case_18",
+      "dump": "h4-isabel-structural",
+      "t0": 1300,
+      "mislocked": true,
+      "letter_struct": "A",
+      "letter_tmpl": "B"
+    },
+    {
+      "case_id": "case_19",
+      "dump": "g2-noir-structural",
+      "t0": 1475,
+      "mislocked": true,
+      "letter_struct": "A",
+      "letter_tmpl": "B"
+    },
+    {
+      "case_id": "case_20",
+      "dump": "h4-marciana-structural",
+      "t0": 1096,
+      "mislocked": true,
+      "letter_struct": "B",
+      "letter_tmpl": "A"
+    },
+    {
+      "case_id": "case_21",
+      "dump": "h4-isabel-structural",
+      "t0": 389,
+      "mislocked": true,
+      "letter_struct": "B",
+      "letter_tmpl": "A"
+    },
+    {
+      "case_id": "case_22",
+      "dump": "h4-guilty-structural",
+      "t0": 391,
+      "mislocked": true,
+      "letter_struct": "B",
+      "letter_tmpl": "A"
+    },
+    {
+      "case_id": "case_23",
+      "dump": "h4-guilty-structural",
+      "t0": 1136,
+      "mislocked": true,
+      "letter_struct": "B",
+      "letter_tmpl": "A"
+    },
+    {
+      "case_id": "case_24",
+      "dump": "h4-isabel-structural",
+      "t0": 229,
+      "mislocked": false,
+      "letter_struct": "B",
+      "letter_tmpl": "A"
+    }
+  ]
+}

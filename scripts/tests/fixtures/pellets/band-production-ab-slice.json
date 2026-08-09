@@ -1,0 +1,126 @@
+{
+  "_source": "count-pellets.py --dump-tracks tracks.json (post-8d500ff9), full dumps; docs/probe-runs.md \u00a730. Regenerate with analyze-pellet-tracks.py --band-production-ab <tracks.json...> --save-band-production-fixture <path>.",
+  "_note": "POPULATION (added by the 2026-08-06 band-channel sweep, item 6): the headline +0.4994 pellets/shot is the BAND channel, out-of-sample over 815 shots / 4 units. The arm REFUSES a dump lacking per-frame `reds` or `band`. It measures WHAT THE band_hi LANDING MOVED -- NOT movement toward owner truth (docs/probe-runs.md \u00a730C); there is no owner reference on these dumps.",
+  "_expected": {
+    "pooled": {
+      "n_dumps": 4,
+      "n_shots": 815,
+      "n_shots_moved": 351,
+      "sum_delta_total": 407,
+      "delta_per_shot": 0.4994,
+      "recon_mismatch_frames": 0,
+      "n_valid_control": 617,
+      "n_valid_landed": 652
+    },
+    "dumps": [
+      {
+        "dump": "h4-marciana-schemafix",
+        "fps": 30.0,
+        "band_lo": 4,
+        "control_band_hi": 7,
+        "landed_band_hi": 10,
+        "recon_mismatch_frames": 0,
+        "n_shots": 218,
+        "n_shots_moved": 102,
+        "sum_delta_total": 117,
+        "delta_per_shot": 0.5367,
+        "mean_delta_on_moved": 1.1471,
+        "n_valid_control": 171,
+        "n_valid_landed": 175,
+        "avg_total_control": 6.8187,
+        "avg_total_landed": 7.2514,
+        "delta_hist": {
+          "-3": 1,
+          "-2": 1,
+          "-1": 4,
+          "0": 116,
+          "1": 73,
+          "2": 17,
+          "3": 5,
+          "4": 1
+        }
+      },
+      {
+        "dump": "h4-isabel-schemafix",
+        "fps": 30.0,
+        "band_lo": 4,
+        "control_band_hi": 7,
+        "landed_band_hi": 10,
+        "recon_mismatch_frames": 0,
+        "n_shots": 203,
+        "n_shots_moved": 75,
+        "sum_delta_total": 86,
+        "delta_per_shot": 0.4236,
+        "mean_delta_on_moved": 1.1467,
+        "n_valid_control": 149,
+        "n_valid_landed": 157,
+        "avg_total_control": 6.9195,
+        "avg_total_landed": 7.2675,
+        "delta_hist": {
+          "-4": 1,
+          "-2": 1,
+          "-1": 2,
+          "0": 128,
+          "1": 54,
+          "2": 13,
+          "3": 3,
+          "5": 1
+        }
+      },
+      {
+        "dump": "h4-guilty-schemafix",
+        "fps": 30.0,
+        "band_lo": 4,
+        "control_band_hi": 7,
+        "landed_band_hi": 10,
+        "recon_mismatch_frames": 0,
+        "n_shots": 180,
+        "n_shots_moved": 75,
+        "sum_delta_total": 81,
+        "delta_per_shot": 0.45,
+        "mean_delta_on_moved": 1.08,
+        "n_valid_control": 143,
+        "n_valid_landed": 153,
+        "avg_total_control": 6.7413,
+        "avg_total_landed": 6.8954,
+        "delta_hist": {
+          "-5": 1,
+          "-3": 1,
+          "-1": 1,
+          "0": 105,
+          "1": 57,
+          "2": 13,
+          "3": 1,
+          "4": 1
+        }
+      },
+      {
+        "dump": "g2-noir-schemafix",
+        "fps": 30.0,
+        "band_lo": 4,
+        "control_band_hi": 7,
+        "landed_band_hi": 10,
+        "recon_mismatch_frames": 0,
+        "n_shots": 214,
+        "n_shots_moved": 99,
+        "sum_delta_total": 123,
+        "delta_per_shot": 0.5748,
+        "mean_delta_on_moved": 1.2424,
+        "n_valid_control": 154,
+        "n_valid_landed": 167,
+        "avg_total_control": 6.9545,
+        "avg_total_landed": 7.3952,
+        "delta_hist": {
+          "-3": 1,
+          "-2": 2,
+          "-1": 5,
+          "0": 115,
+          "1": 62,
+          "2": 18,
+          "3": 7,
+          "4": 4
+        }
+      }
+    ]
+  }
+}

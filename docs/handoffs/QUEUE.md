@@ -218,26 +218,286 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     2026-07-22, scope collapsed to ONE workstream — rebuild `BAND_SG_HIT_FRAC` on the aim circle instead
     of the D=162 spread disc, then re-A/B `SGLANDING=geo` against a FRESH baseline (the plan's numbers
     predate the cone + rotation landings). Ground truth: `noir-sg-bands.json`.
-  - **Pellet-reader rebuild — plan of record is
-    `docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md`** (START HERE block at the top;
-    prior art in the companion `…-solution-survey.md`). Findings-only, nothing enacted. Headlines:
-    - **Error budget:** U35 needs ±0.5 pellets/10 discrimination; at n≈40 shots/band a per-shot random
-      SD of ±1.5 pellets is tolerable, but per-band **bias must be ≤ ±0.25 pellets/10**. The counter is
-      ~10–20% cold = 0.8–1.6 ⇒ **3–6× over budget on BIAS. Chase bias, not variance.**
-    - **Owner pellet-lifecycle spec (60fps, 13 frames):** f1 small w/ shadowed surround → f3–4 peak (2×,
-      pellets occlude — least readable) → f5–11 shrink to 1× → f12–13 fade. **Readable frames: f1 and
-      f8–11.** Design: PROCESS all 13, COUNT on ~5.
-    - Per-frame detection is **adequate** (7–10 vs 7–9 ground truth) — detector replacement is an
-      _enabler_, not the fix. The 2026-07-29 REJECT conflated two faults: `guilty`/`isabel` never
-      localized (3 shots/180s), `noir` ran fine but cold. Do NOT use the counter to recalibrate UNIGEO
-      until it passes second-unit validation.
-    - Unblocked, no footage: 0.5 lifecycle stability on `noir` (gates one-template-fits-all-units) ·
-      0.6 are the missed shots **selected** (bias) or random (harmless)?
-    - **⚠ Reproducibility gap:** the 07-30 numbers came from untracked `scratchpad/pellets/run16/`.
-      `scripts/probe/analyze-pellet-tracks.py` is committed but its input is not — distill a fixture
-      before leaning on them further (constraint 9).
-    - Dead paths (survey): VLM counting, SAM 2, Hough circles, further tuning of the current detector.
-      Ring detector **re-opened as a 1h re-test at f8–11** (it was judged on peak frames).
+  - **⇒ 2026-07-30 PELLET-READER REBUILD — plan of record
+    `docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md` (START HERE block at the top;
+    prior-art + sources in the companion `…-solution-survey.md`). Findings-only, nothing enacted.
+    ⇒ READ FIRST: `docs/handoffs/2026-08-04-pellet-reader-SESSION-JUDGE-handoff.md`** — the current
+    judge handoff and the session-close entry point (it continues `2026-08-04-lifetime-cap-…` →
+    `2026-08-04-pellet-reader-…` → `2026-08-03-…` → `2026-08-02-…` → `2026-08-01-pellet-cascade-…`;
+    the graveyards and traps in ALL of them are BINDING). ⚑ Its §8 is the live open-item list.
+    ⚑ Headline: the reader is measurably more faithful (3 landings, 4 items closed, reference
+    OWNER-CONFIRMED) but **the cold SG read is UNEXPLAINED** — the 16.9% mislock rate turned out to
+    cost ~nothing (§22C), so §19's −1.40/shot residual has no identified cause. And **all three
+    landings reach NEW EXTRACTIONS ONLY**, so nothing on the board has moved yet. Work lives on
+    branch `fix/pellet-reader`, **PUSHED to `origin` (owner-authorised 2026-08-04); `main` is still
+    held and lands via PR, never a local merge** (constraint 8). Read any count live with
+    `git rev-list --count origin/fix/pellet-reader..HEAD`, never from a written number.
+    `/patch-notes` is owed before anything reaches `main`.
+    - ⛔ **THE COLD SG READ IS STILL UNEXPLAINED — this is the thread.** §19 leaves **−1.40
+      pellets/shot** after the `band_hi` landing. Every channel investigated so far has been closed
+      or sized small, and **none of them explains it**: mislocks ~0 (§22C, §34), marker semantics
+      −0.043/shot ≈ 3% and in the _wrong_ direction (§31), `band_hi` recovered +0.50/shot
+      out-of-sample (§30B). ⚑ **Closing a candidate is not identifying a cause.**
+      - ⛔ **⚑ AND THE −1.40 ITSELF HAS NO COMMITTED INSTRUMENT (sweep §1, 2026-08-06).** All ~40 arms
+        enumerated; none produces it. §19E is titled "Reproduction" but names only the A/B's INPUTS —
+        there is no script path because the A/B was ad-hoc. **Second occurrence of the constraint-9
+        failure the 2026-07-29 gauge instrument caused.** ⇒ **STOP quoting −1.40 as a measurement**
+        until it is rebuilt as a committed arm; §27C's "3.4%", §31D's "3%" and §35D's "32%" are all
+        fractions of it and inherit the same status. **It is unreproducible, NOT refuted.**
+    - ✅ **THE COMPOSITION QUESTION IS ANSWERED — AND AGAINST THE HYPOTHESIS (`docs/probe-runs.md`
+      §36 → §37, landed 2026-08-06).** `--representative-audit` now scores the shipped channel. On the
+      5 labelled shots the reader reports **35 = 31 owner + 4 non-owner**, against the legacy arm's
+      **35 = 12 owner + 23 non-owner** — ⚑ **identical total, 34% vs 88% owner pellets.** The defect
+      was in the INSTRUMENT, never in the reader.
+      - ⛔ **`rep_owner` 12 / `reader_white` 35 was NEVER a property of the shipped reader** — it
+        described the legacy `pellet_ids` channel. Do not quote it.
+      - ⚑ **The purest compensating-error case yet seen here:** the right total composed of the wrong
+        objects. It is exactly why §22C's count-based severity could not see what a bad lock costs ⇒
+        **any future lock/gate severity measurement must score pellet IDENTITY, not count.**
+      - ✅ **AND THAT IS NOW MEASURED, NOT INFERRED — §39 (`--mislock-identity`, 33 arms).** On
+        mislocked shots the two locks count **largely DIFFERENT pellets**: `J_mis` **0.29–0.60**
+        against `J_ok` **0.95–1.00** on n=24–170 controls, with individual shots at **`jaccard` 0.0000**
+        (disjoint sets, counts differing by 1). ⛔ The pre-committed band that fired is **row 4, not
+        row 1**: `ΔC ≥ 1.0` on ALL six dumps ⇒ **§22C's own premise — that counts barely move — does
+        not hold on this population.** That does NOT overturn §22C; it localizes it to its sample and
+        its observable.
+      - ⚑ **The effect is a LOWER BOUND (§39C).** 19–28 of every 31–41 mislocked shots are UNSCORED
+        because a wrong lock leaves **no band plateau** — the worst mislocks drop out, biasing `J_mis`
+        UP and `ΔC` DOWN, i.e. _against_ the finding.
+      - ⚑ **NEW LEAD, not a verdict (§39C):** "no band plateau" is exactly `debounce_shots`' fallback
+        condition ⇒ **the worst mislocks are systematically routed onto the LEGACY channel**, which is
+        §12D's 112/852 (13.1%) fallback population. Two populations nobody had connected. Inference
+        from the gating logic, **not** a measurement of that population.
+      - **⇒ OPEN — SIZING still needs owner labels.** §39 is MECHANISM, not magnitude: a low Jaccard
+        proves the locks count different pellets, never which is right nor how many real pellets are
+        lost. ⇒ The next measurement wants owner labels on **more mislocked shots** (only 1 of the 5
+        labelled shots is mislocked today) — **owner time**, and the first thing on this thread that
+        genuinely needs it.
+        - ✅ **THE ASK IS BUILT AND WAITING ON THE OWNER (2026-08-06).**
+          `docs/handoffs/2026-08-06-OWNER-ASK-mislock-labels.md`, 10 shots × 4 frames, generated by
+          `analyze-pellet-tracks.py --mislock-crops` into `scratchpad/pellets/mislock-labels/`
+          (gitignored; the script + `mislock-crops-slice.json` fixture are committed, 35 selftest
+          arms). Crops are **midpoint-centred with both counting windows inside**, **unannotated**,
+          and **padded not clipped**; `ANSWERS.json` is pre-filled and ⛔ **must be COMMITTED once
+          answered** (§32D). ⚑ The ask doc's own tabulated `crop r` is superseded — it derives from
+          the median displacement and would clip a candidate window on shots 2 and 5.
+        - ⛔ **THE TASK IS "MARK WHAT YOU SEE", NOT "DO THE GEOMETRY" (2026-08-06 owner ruling).** The
+          owner draws **GREEN** on every real pellet and **MAGENTA** on the reticle where identifiable;
+          `extract-groundtruth-positions.py --marks <dir> --marks-write` reads those positions into
+          `ANSWERS.json` (+ `MARKS.json` provenance), and window membership, per-lock counts and the
+          adjudication are all COMPUTED from them. `INDEX.md` therefore carries **no candidate
+          coordinates and no window radius**, and `ANSWERS.json` has **no verdict field** — the first
+          version asked a human to count pellets inside a 184 px disc centred on a bare coordinate, in
+          an image with nothing drawn on it. `CANDIDATE-KEY.json` is now purely internal. The crops
+          themselves were correct and are **byte-identical** across the rewrite.
+      - **⇒ OPEN — the DUMPS half of that arm still scores the pre-hybrid channel** (an explicitly
+        pre-hybrid `median`/`p75`/`max` policy comparison). Only the LABELLED half speaks for
+        production. Not a regression; not a full fix.
+      - ✅ **THE BAND-LESS-READER SWEEP IS DONE (2026-08-06) ⇒
+        `docs/handoffs/closed/2026-08-06-band-channel-SWEEP.md`.** Verdict: **the channel defect was
+        CONTAINED** — every heavily-cited production number traces to a band-aware arm or an owner
+        hand-count, and **no override cites the CV reader at all**, so the damage model was never
+        exposed. `--merge-audit` / `--backend-marker-audit` are legacy-by-design and **fail loudly**.
+        ⛔ **Its findings are a 7-item BATCHED PROPOSAL awaiting the owner — nothing enacted.**
+      - ⚑ **Residual, now fully decomposed on the correct channel:** `owner 42 = 0 never-detected + 5
+life-gated (`pellet_ids`; they ARE band members at `band_hi` 20) + 8 radius-gated (7 = shot 4's
+template mislock, → 0 on relock) + 29 countable`. 42 − 35 = 7 / 5 shots = **−1.40/shot — the
+        same MAGNITUDE as §19's production residual, not the same measurement** (5 labelled shots vs
+        815 production shots). n=5, one clip, in-sample ⇒ **elimination, not confirmation.**
+    - ⚑ **THE RADIUS GATE (`docs/probe-runs.md` §35) — JUDGED 2026-08-06, its surviving estimate
+      DE-RANKED. ⇒ READ `docs/handoffs/closed/2026-08-06-radius-gate-JUDGE-verdict.md` BEFORE quoting any
+      number from §35.**
+      - ✅ **What holds:** ⛔ **Do NOT quote the 815-shot profile's `T = 1.043/shot`: it is
+        CONTAMINATED.** Owner-marked pellet positions (crop radius 184 > the 160 px gate) max out at
+        **166.8 px with ZERO beyond 180 px** (re-derived independently, exact match), so the profile's
+        material past 180 is shot-correlated VFX, not pellets.
+      - ⛔ **What does NOT hold — §35D/E's ≈0.45 pellets/shot is NOT "the largest single channel yet
+        identified".** Two independent blockers: (a) the 168 label instances are **42 distinct pellets
+        × 4 frames**, and the 9 beyond the gate are **2 pellets in shot 1 plus one borderline in shot
+        5** (160.4 px on f11, 158.9 px on f10) — n_effective ≈ 2.25/42, clustered in 2 of 5 shots, with
+        no interval attached, ranked against §22C's −0.30 ± 0.76; (b) **the 2026-08-01 counting-window
+        sweep already measured this and chose the opposite hypothesis.**
+      - ⛔ **THE LIVE QUESTION IS H_radius vs H_centre, AND IT IS ALREADY HALF-ANSWERED AGAINST §35.**
+        The 08-01 entry (`01fb2c1e`) holds the same 9 marks, the same 166.8 max, and the per-shot
+        centroid offsets (20–52 px), and reads them as **H_centre** — "the signature of a compact cloud
+        **translated off the assumed centre** rather than of a genuinely larger cloud", 8 of the 9
+        being in shot 1 alone. `--representative-audit` agrees from a third angle:
+        `radius_gate_rejected` = 8/42, of which **7 are shot 4's mislock and go to 0 under the correct
+        lock**. ⇒ **Reconcile §35 with both before treating the radius gate as a cold channel at all.**
+      - ⛔ **Do NOT widen `pellet_radius`** — now for the EMPIRICAL reason, not the fudge argument
+        (`pellet_radius` is the reader's CV search window, not a game constant): the 08-01 sweep shows
+        precision **0.906 → 0.853 → 0.807** at 160/175/190, FP **15 → 26 → 36**, 175→190 buying **+10
+        FP and ZERO new TP**, and the confirmed **true-zero shot 0 reporting a pellet at every widened
+        radius**.
+      - ⚑ **UNCLAIMED, ALREADY-MEASURED WIN — `center_exclude` 36 → 24** (same 08-01 sweep): **+4 TP,
+        exactly 0 FP**, precision 0.906 → 0.908, bias −0.375 → −0.208, RMSE 1.571 → 1.177. The INNER
+        window, which §35 never considered. Needs its own blast-radius pass + owner gate.
+      - ⚑ **COUNT IS THE WRONG OBSERVABLE FOR A MISLOCK.** Shot 4 reads `rep_owner: 0`,
+        `rep_non_owner: 4`, `reader_white: 4` — the mislock rejected every real pellet and the count was
+        **refilled by non-pellet tracks**. So §22C's "a bad lock does not change the COUNT" and "a bad
+        lock rejects 7 of 9 real pellets" are both true. Any future lock-severity measurement must score
+        **pellet IDENTITY**, not count.
+      - ⚑ **METHOD LESSON (§35C, extended one level).** A quiet-frame control removes STATIC clutter
+        but **not SHOT-CORRELATED** non-pellet material (muzzle/impact VFX, debris) that survives the
+        lifetime band — any "is X near the crosshair a pellet?" measurement needs a pellet-IDENTITY
+        reference, not a temporal one. ⇒ **And: search for the prior ANALYSIS of an artifact, not just
+        the artifact.** §35 reused the labels and missed the two existing analyses OF those labels
+        (`--representative-audit`, and probe-runs 2026-08-01). `docs/VALIDATION-INDEX.md` surfaced
+        neither and is the place to fix that.
+    - **⇒ OPEN — the abstentions (§8 item 3).** What the 81 `in_band_no_concurrency` events are, and
+      what the 16 that become banded at `band_hi = 20` share. Committed fixtures only, no owner time.
+    - **⇒ OPEN — track fragmentation (§8 item 4), now with fresh evidence.** 70% of tracks dead by
+      frame 2 at 30 fps, 64.3% at 60. ⚑ **§28B measured 18.9% of life-1 marker tracks as
+      fragment-like**, which is the same defect seen from another angle. Plausibly the same root as
+      item 3 — treat together.
+    - **⇒ OPEN — the C1 marker landing is warranted but GATED.** §27's band says land it; §31 says the
+      prize is **−0.043 pellets/shot**. ⛔ **§28B's bracket must be addressed first** — C1 over-drops
+      (≈19% fragment-like) and under-drops (`MOVING` + `UNDECIDABLE` kept), opposite signs, not known
+      to cancel.
+    - **⇒ OPEN — the out-of-frame localizer defect (§33), measured but NOT scored and NOT fixed.**
+      0.43% of locked frames put the crosshair outside the frame, always off the right edge. Its
+      counting effect is one-sided (can only lose pellets). Whether to clamp, drop, or treat as an
+      abstention is a design question with its own blast radius.
+    - **⇒ FOR THE NEXT LOCK ADJUDICATION:** offer `A_imprecise`/`B_imprecise` alongside
+      `A`/`B`/`neither`/`both`/`?` — **and expect the vocabulary to be incomplete again** (it has been
+      too narrow twice running, §22A then §34A). Answers are PRIMARY EVIDENCE: commit `ANSWERS.json`
+      when they arrive (§32).
+    - **⇒ OPEN, FOR THE OWNER — `DECISIONS.md` has a six-landing gap (2026-08-01 → 08-04).** The
+      `band_hi = 20` ceiling, the `band` dump channel, the backend-selector tie-break, the
+      representative-frame hybrid and two pre-committed measurement passes all changed landed state
+      and are recorded ONLY in `docs/probe-runs.md` §13–§24 — a log of MEASUREMENTS, not of settled
+      WHYs. ⚑ **Deliberately not backfilled**: writing them now means inferring another session's
+      rationale from its numbers. The owner should either dictate them or rule that probe-runs is
+      sufficient provenance for that arc.
+    - ⛔ **BASIS TRAPS, binding.** Never difference production per-shot counts against **8.40** (that
+      is an owner f8–11 window count on the labelled `marciana` clip). Never quote `avgTotal` as a
+      per-shot cost (it pools over the `[5,10]` valid subset, whose membership MOVES). Both have been
+      hit once each this session (§27C, §30C, §34D).
+    - **Error budget (the target, computed):** U35 needs ±0.5 pellets/10 discrimination; at n≈40
+      shots/band a per-shot random SD of **±1.5 pellets is tolerable**, but per-band **bias must be
+      ≤ ±0.25 pellets/10**. The counter is ~10–20% cold = 0.8–1.6 → **3–6× over budget on BIAS.**
+      ⇒ **Chase bias, not variance.**
+    - **⚑ PREMISE CORRECTION, load-bearing and it propagates.** The owner's labelled pellet count is
+      **NOT a per-shot landed total** — it counts markers visible in the **f8–11 window**, identical
+      on all four frames of every shot. **So "landed pellets per shot = 8.4", and the 8–16%
+      missing-shot threshold derived from it, are WINDOW-CONDITIONAL.** Re-check anything leaning on
+      them.
+    - **Owner pellet-lifecycle spec (60fps, 14 frames — CORRECTED 2026-08-05, §29)** still governs: f1 small w/ shadowed surround
+      → f3–4 peak (2×, **pellets occlude — least readable**) → f5–11 shrink to 1× → f12–14 fade.
+      **Readable frames are f1 and f8–11.**
+    - **OPEN, IN PRIORITY ORDER.** Records: `docs/probe-runs.md` §4–§9. Instruments (all committed on
+      `scripts/probe/analyze-pellet-tracks.py`, each with a self-validating fixture and wired into
+      `scripts/probe/pellet-selftest.sh`, 30 arms): `--hand-count`, `--ammo-abstention`,
+      `--ammo-oracle-ceiling`, `--merge-audit`, `--representative-audit`.
+      1. **THE REPRESENTATIVE-FRAME POLICY — ⚑ ITS FIX LANDED; only a narrow clause is still open.**
+         The two-phase-event diagnosis (probe-runs §9: the median samples the pre-cohort flash phase
+         on 3 of 5 labelled shots) was ACTED ON — the fallback-hybrid `plateau_median` rule landed
+         §13, the decoupled `band_hi` landed §16, and together they bought **+0.60/shot in-sample
+         (§19) and +0.4994/shot out-of-sample over 815 shots (§30B)**. ⛔ **Do not re-derive this as
+         an open problem.** What actually remains: on shot 1 one owner pellet is still **"one the
+         representative frame does not see"** (§19C) — a single-frame-selection miss that survived
+         the hybrid. n=1; treat as a lead, not a channel.
+      2. **⛔ OWNER-GATED — `debounce_shots` MINIMAL FIX (probe-runs §8F).** `cap_cadence` (~3 LOC)
+         and `resplit` (~10 LOC) both beat shipped on every arm, pooled MISSED **7.0% → 4.2% / 4.5%**.
+         It buys a **missing-shot** improvement, **NOT** a cold-bias fix. Gated because **3 committed
+         fixtures regenerate** (`missing-shots-slice.json`, `hand-count-slice.json`,
+         `stale-counting-slice.json`) and **`read-pellets.ts:349` is a SECOND implementation that must
+         change in lockstep**. ⚑ `cap_cadence`'s reported 35/9/−0.003 **did not reproduce** — the
+         literal 0.9× semantics robustly gives 37/11/−0.019 and only a 1.0× cap reaches 35; the
+         multiplier was NOT fitted. ⛔ **`candA` (the peak-detector rule) is REFUTED — DO NOT
+         RE-PROPOSE**: pooled MISSED 7.0% → **14.5%**, worse on 7 of 8 series, 32 vs a hand count of
+         36 on `isabel`; root defect is **no minimum-duration guard** (fires on a one-frame VFX spike,
+         then refracts over the real shot).
+      3. **THE WORKTREE HOOK GAP — VERIFIED CLOSED (2026-08-06).** `.husky/_` is present in this
+         worktree and `core.hooksPath=.husky/_` resolves; lint-staged + `npm run typecheck` run here.
+         (See `2026-08-06-pellet-reader-SESSION-JUDGE-handoff.md` trap 6.)
+      4. ⚑ **THE f1787 MISS on `guilty` — mechanism UNKNOWN (probe-runs §7.10).** Not explained by
+         cluster-merge: peak T = 8, post-reload lock re-acquisition, on a **measured** lock. n=1
+         event. Do not manufacture a cause.
+      5. ⚑ **PRE-EXISTING PYTHON/TYPESCRIPT ONE-EVENT DIVERGENCE on `h4-marciana` — RESOLVED**
+         (`docs/probe-runs.md` §11): segmentation is byte-identical; the 177-vs-176 delta is the
+         marker-channel/backend-selector defect, not a lockstep break.
+      6. ⚑ **DOES ANY MARKER FADE BEFORE t0+8? — ANSWERED NO** (`docs/probe-runs.md` §18). Nothing
+         dies before t0+8; the 8.40 reference stands.
+      7. **THE GENERATOR'S RADIAL ENVELOPE / Phase 2 steps 4–6 — SUPERSEDED by
+         `2026-07-31-pellet-reader-OWNER-DECISIONS.md` Decision 1 (Option C).** Real footage is the
+         certification path; do not invest further in synthetic-generator fixes.
+  - **Open from the 2026-08-06 session close, not yet ranked above:**
+    1. `_ps_band`'s `band_hi` is omitted at 8 of 9 call sites — thread it through before any re-dump
+       of the labelled block at production parameters (`2026-08-06-band-channel-SWEEP.md` §7.4).
+    2. The five fixtures now carry a population `_note`, but the **writers do not emit them** — sync
+       fixture writers with the `_source`/`_note` schema (`2026-08-06-band-channel-SWEEP.md` §7.6).
+    3. §43D triage: the ~17 shots where template does **not** outscore structural need their own
+       pre-commit before re-cutting the sample on that score.
+    4. The `--representative-audit` DUMPS half still scores the pre-hybrid channel by design; keep the
+       stdout marker and treat it as a policy-comparison caveat, not a production reader defect.
+    - **Also open, unranked — carried, none of these closed:**
+      - **`reconstruct_ammo` magazine-consistency defect (probe-runs §4.3) — needs its own pass.** It
+        accepts a level no magazine could hold, so a 3-frame glyph misread of `0` between a confirmed
+        9 and a confirmed 8 scores as a 9-shot `9 → 0` decrement plus a phantom `0 → 8` reload. **The
+        fix:** within a magazine the value must be the current level or current − 1, and a run of `9`
+        after ≥ 25 frames of break opens a new magazine. **Blast radius:** it also produces the
+        whole-fight numbers in probe-runs §3b AND is pinned by `missing-shots-slice.json`. The
+        `--hand-count` arm's own reporting was ALREADY fixed here — do not re-do it — but
+        `reconstruct_ammo` itself is untouched, so phantom levels are still produced and merely
+        compensated downstream. ⚑ The arm's cap rule is calibrated on the `9 → 0` case only.
+      - **`--hand-count`'s matcher over-credits in-reload onsets** — it credits ANY in-reload onset as
+        that magazine's emptying round, so **`detected_weapon_attributable` is an UPPER BOUND** and
+        **both** hand-count runs inherit it. Matcher-internal fix; `hand-count-slice.json` regenerates.
+      - **The reload phase-locked echo (probe-runs §4.4) — characterized, identity still unnamed.**
+        ⛔ **REFUTED as `isabel`'s S2 "Pointed Feather" rockets** (S2 is real, already modelled at
+        `interval: 15`, measured ~14.7 s, ~12×/180 s — but the echo is **phase-locked to +16–18 frames
+        after each magazine's emptying round**, 6 of 7 inside a 0.07 s spread over four minutes, 6
+        events in 190.7 s, median spacing 22.7 s, sd ≈ 16 s — not periodic). Do NOT cite the arm's
+        "median gap 14.48 s" as a ~15 s period (that set includes 0.67 s and 39.63 s). It is currently
+        counted as a detected shot carrying ~0 pellets, so it inflates detections and deflates the
+        per-shot average at once.
+      - **Safe temporal interpolation — optional, costed, +4.7 pp measured (1,149 frames), 2–4 h.**
+        Fill abstention runs ≤ 5 frames whose bracketing levels differ by ≤ 1. ⚠ It **narrows
+        decrement windows**; it does NOT recover shots hidden in long gaps (58–91% of abstained frames
+        sit in runs of >10 frames, max 226 = 7.5 s). Sharpens timing, not coverage.
+      - **Bright-surround gate — an ACCURACY item, not coverage. ⚑ 0.5–1 day + a threshold study.**
+        ~30–40 confidently-wrong reads per fight (damage numbers read as ammo); **7,825 good/bright
+        frames DO read correctly**, so a naive cut costs real reads.
+      - ⚑ **Undetermined:** whether the confidently-wrong reads propagate into the `--missing-shots`
+        arithmetic in probe-runs §3b. (The companion question — are the 682 `no-lock` frames
+        recoverable — is ANSWERED: no, all 682 are contiguous from index 0, probe-runs §6.2.)
+      - **Is the missing-shot channel SELECTED (bias) or random (harmless)?** Still unanswered; the
+        cold bias now has a different named mechanism, so this is no longer the lead.
+      - ⚠ **The `+62.5` crosshair-offset fix (`b69b5c6`) never merged** — `main` still carries `−62.5`,
+        latent. It did **not** cause the 2026-07-29 REJECT (artifacts 12:19–13:33, commit 15:17).
+      - ⚠ **Phase 2A gate-2 blind spot.** Gate-1's near-crosshair fraction is computed over a WHOLE
+        video, so a short per-shot excursion (shot 4's ~10-frame mislock onto a floating damage-number
+        stack, spanning its OWN f8–11 window) is invisible to it. Worth a per-shot validity check if
+        Phase 2A gate-2 work resumes.
+      - ⚠ **ROI-restriction shot-count sensitivity (RECORD ONLY, n=1) → open-questions U35.**
+        `--ammo-roi-x0 0.55 --ammo-roi-y0 0.50` alone is the difference between 43/29/7.3/0.17 and
+        ~72–74/61–62/7.5–7.6/0.23 on the same `marciana` (SG/Iron) `h1` cache. More shots may be more
+        false locks, not more real ones. Do NOT change `--ammo-roi` defaults off this single reading.
+      - ⚠ **Owner-time ask (generator fidelity gate).** `score-pellets.py --audit-fidelity`'s 0.90
+        both-pass floor is a DERIVED reference, not a measured one; labelling xy positions on the 6
+        owner-counted real crops (`groundtruth-f8-11/shot0{1..5}/`, 4 frames each, ~20–30 min) would
+        let it be swapped for a measurement. Not required to use the gate as-is.
+      - ⚠ **Reproducibility gap:** the 2026-07-30 numbers came from `scratchpad/pellets/run16/`, which
+        is untracked. Distill a fixture before leaning on them further (constraint 9).
+    - **⛔ REFUTED — do not re-propose (records in probe-runs §5, §6, §8, §9):** the per-video
+      red-digit **atlas harvest** (12.2% of abstentions, 95% of those white; the atlas was never
+      white-only — 141 glyphs = 69 white + 72 red, and red is complete at digits 0–4 because every
+      magazine is 9; ceiling +4.8 pp nominal / **+0.21 pp honest**) · **stale-lock localization**
+      (+0.18 pp demonstrated / +1.33 pp optimistic, not +14.3 to +17.1 pp — **70.2% of stale frames
+      render no digits at all**; gate relaxation is strictly WORSE, 27.8 px → 254.9 px; and there is
+      **ONE lock, not two** — `cross_positions − cross_rawloc` is (162, −12)/(162, −13) in 100% of
+      frames in all 7 dumps) · **a `locate_badge_structural` second tier** (~270 LOC / 4–6 h for
+      ≤ +1.6 pp on frames whose semantic value is "reloading") · **cluster-merge as the cold bias**
+      (31 of 815 = 3.8% against the cadence period, ~20 shots pooled = 2.6%; the 5 owner-labelled
+      shots are **bit-identical** under shipped/`cap_cadence`/`resplit` and pooled `avgTotal` moves
+      −0.003 to −0.007 against a 1.08 deficit, the best variants **colder**) · the **31.3%** figure
+      (a category error — `max_pellet_frames` is a per-blob track-lifetime cap that `debounce_shots`
+      never reads) · **`candA`** · **p75**.
+    - Rejected/dead paths recorded in the survey: VLM counting, SAM 2, Hough circles, further tuning of
+      the current detector. Peanut heuristic now **obsolete** (Phase 2 stops counting on peak frames);
+      ring detector **re-opened as a 1h re-test at f8–11** (it was judged on peak frames, where a
+      neighbour destroys the shadowed surround the owner confirms exists).
   - Then: owner core re-trace mid/midfar/far (upgrades ⚑ fit-selected series C); third clean SMG cell
     (de-saturates the ⚑ SMG lens pair); bloom-phase footage for f_bloom; blanc near-HR39 re-count;
     burst-5 near-ON count backstop. `chisato` SMG midfar HR22 stays excluded (WEAK).

@@ -1,0 +1,84 @@
+{
+  "_source": "Scored entirely off the already-committed scripts/tests/fixtures/pellets/representative-audit-slice.json's `labelled` block -- no new raw tracks.json, no re-derivation (CLAUDE.md reuse-before-derive). docs/probe-runs.md \u00a79A is the COULD-NOT-DETERMINE gap this answers.",
+  "_note": "Deliberately carries NO raw track data of its own -- `fade_screen`/`fade_screen_selftest` both read scripts/tests/fixtures/pellets/representative-audit-slice.json directly, so this fixture only pins the SCORE (`_expected`). Regenerate with analyze-pellet-tracks.py --fade-screen --save-fade-screen-fixture <path>.",
+  "_expected": {
+    "histogram": {
+      "1": 69,
+      "2": 50,
+      "3": 9,
+      "4": 10,
+      "5": 1,
+      "22": 1
+    },
+    "n_total": 140,
+    "n_ambiguous": 11,
+    "per_shot": [
+      {
+        "shot": 1,
+        "t0": 1060,
+        "owner": 7,
+        "headroom": 3,
+        "n_dies_before_window": 20,
+        "n_ambiguous": 0,
+        "n_adjudicable": 0,
+        "max_additional": 0,
+        "adjudicable_ids": []
+      },
+      {
+        "shot": 2,
+        "t0": 1096,
+        "owner": 10,
+        "headroom": 0,
+        "n_dies_before_window": 28,
+        "n_ambiguous": 5,
+        "n_adjudicable": 0,
+        "max_additional": 0,
+        "adjudicable_ids": []
+      },
+      {
+        "shot": 3,
+        "t0": 1140,
+        "owner": 8,
+        "headroom": 2,
+        "n_dies_before_window": 26,
+        "n_ambiguous": 1,
+        "n_adjudicable": 1,
+        "max_additional": 1,
+        "adjudicable_ids": [
+          7118
+        ]
+      },
+      {
+        "shot": 4,
+        "t0": 1289,
+        "owner": 9,
+        "headroom": 1,
+        "n_dies_before_window": 37,
+        "n_ambiguous": 3,
+        "n_adjudicable": 3,
+        "max_additional": 1,
+        "adjudicable_ids": [
+          8095,
+          8112,
+          8135
+        ]
+      },
+      {
+        "shot": 5,
+        "t0": 1369,
+        "owner": 8,
+        "headroom": 2,
+        "n_dies_before_window": 29,
+        "n_ambiguous": 2,
+        "n_adjudicable": 2,
+        "max_additional": 2,
+        "adjudicable_ids": [
+          8589,
+          8659
+        ]
+      }
+    ],
+    "pooled_max_additional": 4,
+    "pooled_bound_per_shot": 0.8
+  }
+}

@@ -29,12 +29,25 @@ open-questions **U35**.
   results as evidence about counting — those runs never localized.
 - Prior-art candidates and rejected paths are surveyed. Don't re-research VLM/SAM/Hough.
 
-**Open, in order:** 0.1 (offset fix) · 0.5 (lifecycle stability on `noir`) · 0.6 (missed-shot bias)
-→ Phase 1 infrastructure → Phase 2A ∥ Phase 2 → Phase 3.
+**Open, in order:** ~~0.1~~ ✅ done (incl. the vitest offset pin) · **0.6** (missed-shot bias) →
+**Phase 2A (localization) — now the critical path** → **0.5** (blocked on 2A: it needs a `noir` dump
+with a sound crosshair track) → Phase 1 infrastructure ∥ Phase 2 → Phase 3.
 
-**Do not:** merge `fix/pellet-counter-restore` or `fix/sg-pellet-counter-template` wholesale (both
-branched off an older `origin/main`; cherry-pick only) · tune the current threshold detector further ·
-compare any new number to run16–run19 (the count definition changes in Phase 2).
+> **⚠ Re-ordered 2026-07-30.** 0.5 was attempted and could not be answered: the `noir` dump this plan
+> pinned has a **mislocked crosshair** (details in **⛔ 0.5**). Since 0.5 gates Phase 2's
+> one-template-fits-all-units assumption, and a valid dump requires working localization, **Phase 2A
+> moved ahead of both.** It is no longer a parallel track — it is the critical path.
+
+**Do not:** tune the current threshold detector further · compare any new number to run16–run19 (the
+count definition changes in Phase 2) · merge `fix/sg-pellet-counter-template` wholesale (still
+branched off an older `origin/main`).
+
+> **⚠ Correction 2026-07-30:** an earlier draft of this list also said "do not merge
+> `fix/pellet-counter-restore` wholesale — it deletes ~3,600 lines of tests/fixtures." **That is no
+> longer true.** The branch was reconciled with `main` on 2026-07-30 and merged clean into
+> `fix/pellet-reader` (8 files, +473/−44). It is now IN this branch — see §0.1. Left visible because
+> a stale prohibition is worse than no prohibition: it would have blocked exactly the merge that
+> resolved 0.1.
 
 ### Dispatch — model tier per phase, and how to scope the prompt
 
@@ -110,10 +123,15 @@ open-ended._ The reader exists to answer **U35** (per-band SG landing). That fix
 | -------------------------------------------------------- | ----------------------------- |
 | U35 discrimination threshold (2026-07-29 decision rule)  | **±0.5** pellets/10           |
 | Smallest real gap to resolve (UNIGEO vs `noir` anchors)  | **0.77** pellets/10           |
-| Shots per band (37 s window × 1.5/s, at 60–100% valid)   | **n ≈ 33–56**                 |
+| Shots per band (37 s window × 1.5/s, at 60–100% valid)   | **n ≈ 33–56** ¹               |
 | ⇒ tolerable per-shot **random** SD (band-mean SE ≤ 0.25) | **±1.4 – ±1.9 pellets**       |
 | ⇒ tolerable per-band **systematic bias**                 | **±0.25 pellets/10**          |
 | Current counter's reported bias (~10–20% cold)           | **0.8 – 1.6** → **3–6× over** |
+
+¹ **Updated by H4:** the naive 1.5/s denominator overstates n. Cycle-based rates (accounting for
+reloads, from `data/characters.json`) are 88–100% of a lower expected count, so real n per band is
+~25–45. The conclusion — **chase bias, not variance** — is unchanged: tolerable SD at n=25 is still
+±1.25 pellets, which is enormous.
 
 **⇒ The single most important consequence: chase BIAS, not variance.**
 
@@ -228,10 +246,21 @@ readable frames. The "counts at the worst moment, blind at the best" story is **
 - **The shadowed surround is still a real asset.** A bright core on a dark halo is a textbook
   center-surround signature — the exact response shape of a Laplacian-of-Gaussian. That argues for
   LoG on its merits; it just isn't yet demonstrated here, per correction (2).
-- **Re-open the ring-detector rejection cheaply.** `read-markers.py` was parked for requiring "a dark
-  grey ring our pellets lack" — but the owner says the pellets _do_ have a shadowed surround, and
-  that tool was evaluated on peak frames where a neighbour destroys the ring. A re-test at f8–11 is
-  an hour. (Re-test, not revival — its white thresholds were separately shown to under-count.)
+- **Re-open the ring-detector rejection cheaply — now unblocked.** `read-markers.py` was parked for
+  requiring "a dark grey ring our pellets lack" — but the owner says the pellets _do_ have a shadowed
+  surround, and that tool was evaluated on peak frames where a neighbour destroys the ring. A re-test
+  at f8–11 is an hour. (Re-test, not revival — its white thresholds were separately shown to
+  under-count.) **The 2026-07-30 merge put the code in-tree**: `scripts/unigeo/marker_detect2.py`
+  (+175), `scripts/unigeo/marker_track.py` (+144), and `read-markers.py` (+128, incl. the tuned
+  ammo-box crosshair track). Previously this re-test would have required resurrecting files that were
+  on no merged branch.
+- **Phase 2A's salvage target is now in-tree too.** The plan names `read-markers.py`'s ammo-box
+  crosshair track as "the one sound part" of the parked tool and a candidate localization fix for
+  `guilty`/`isabel`. It arrived with the same merge — Phase 2A no longer starts by reconstructing it.
+- **⚠ Do not read the merge as reviving the ring detector.** `.claude/skills/probe-processing/SKILL.md`
+  came along and now correctly demotes `read-markers.py` to **PARKED WIP** while naming
+  `read-pellets.ts` the SG pellet counter. That matches this plan. The merge makes the parked code
+  _available to re-test_; it does not make it the counter.
 
 **⇒ Consequence for ordering.** Detection is _not_ the top defect, so the draft's promotion of
 matched-filter detection ahead of counting is **withdrawn** — the phase order below stands as
@@ -298,20 +327,33 @@ from `main` displaces the counting window by **125 native px** against a `--pell
 > Recorded because the shard-level evidence (git archaeology) pointed hard at a conclusion the
 > whole-picture check refutes. **The bug is real and latent, not historical.**
 
-**Steps. ⚠ Do NOT run `git cherry-pick b69b5c6` — verified 2026-07-30, it is not a one-line commit.**
-It touches 4 files / +414 lines and would **add `scripts/unigeo/marker_detect2.py` and
-`marker_track.py`, which are not on `main`** — the parked ring-detector code this plan lists as a
-dead path. Nor may you merge `fix/pellet-counter-restore` wholesale: it branched off an older
-`origin/main` and its diff deletes ~3,600 lines of tests/fixtures that exist on `main` today.
+### ✅ 0.1 — DONE 2026-07-30 by merging `fix/pellet-counter-restore`
 
-The fix is **a single character** — `scripts/probe/read-pellets.ts:66`, drop the minus sign:
+**Superseded by events, and the fix is better than this plan specified.** The owner flagged that
+in-progress pellet-counter work had never been merged. `fix/pellet-counter-restore` was brought up to
+date with `main` that same day ("resolving merge conflicts"), which **retired the staleness this plan
+warned about** — the ~3,600-line test/fixture deletion is gone. It now merges **clean**: 8 files,
++473/−44, no mass deletions. Merged into `fix/pellet-reader`.
 
-```ts
--const ammoOffsetXNative = Number(flags['ammo-offset-x'] ?? -62.5);
-+const ammoOffsetXNative = Number(flags['ammo-offset-x'] ?? 62.5);
-```
+It fixes the offset in **both** places — this plan only knew about the first:
 
-Make that edit directly. Then add a vitest pin on the default so it cannot silently flip again.
+| File                                     | Before                                     | After                                      |
+| ---------------------------------------- | ------------------------------------------ | ------------------------------------------ |
+| `scripts/probe/read-pellets.ts:66`       | `?? -62.5`                                 | **`?? 62.5`**                              |
+| `scripts/probe/count-pellets.py:535-536` | `default=None` → `12.5*zoom` / `-100*zoom` | **`default=125` / `default=-11`** (zoomed) |
+
+The Python-side fix matters independently: the plan dismissed it as "always overridden by
+`read-pellets.ts`", which is true only when the TS orchestrator drives it. **Phase 0.5 and the
+diagnostics call `count-pellets.py` directly**, and would have used a crosshair 100 zoomed px off.
+
+**Independent corroboration that `+125 / −11` is right** (checked before trusting the merge): `run16`
+— the run whose output actually matches ground truth (avgTotal 7.6 vs owner 7–9) — recorded
+`ammo_offset_x = 125.0, ammo_offset_y = -11.0` in its own params. The merge makes the shipped
+defaults equal to what the known-good run used. It also confirms every 2026-07-30 measurement in this
+doc, and the committed fixture, were taken with the **correct** crosshair.
+
+**Still open from 0.1:** add a vitest pin on the `read-pellets.ts` default so it cannot silently flip
+again — that is what let `5c62a2d` introduce the wrong sign unnoticed on 2026-07-29.
 
 **Exit criterion.** Re-running `marciana-solo` from `main` reproduces the run18 numbers (70 shots,
 avgTotal 7.6). If it doesn't, the offset was load-bearing in a way this analysis missed — stop and
@@ -424,13 +466,181 @@ Phase 2 is wrong and the design needs revisiting before implementation.
 ### 0.5 — ⚠ Lifecycle stability across units (gates Phase 2 steps 4–6)
 
 Phase 2 assumes one lifecycle template fits every unit and VFX load. That assumption is currently
-supported by exactly one video. Run `analyze-pellet-tracks.py` against a `noir` dump and compare the
-normalised area decay to the prediction table in §2.0.
+supported by exactly one video. Compare a `noir` dump's normalised area decay to the prediction table
+in §2.0.
+
+> **⛔ STOP — the dump pinned below is BROKEN. Do not run this.** Kept only so the mistake is legible.
+> `noir-near-ce36`'s crosshair track is mislocked (1.3% of white tracks near it vs `marciana`'s
+> 14.3%; crosshair frozen at the crop's right edge for all 600 frames). See the **⛔ 0.5** correction
+> below. §0.5 is **blocked on Phase 2A**, which must produce a dump with a sound crosshair track.
+> `analyze-pellet-tracks.py` now refuses to let this pass silently — it prints a
+> `CROSSHAIR TRACK LOOKS BROKEN` banner on any dump under 5% near-fraction.
+
+**~~The dump already exists — do NOT re-run the counter (that is ~13 min/video and unnecessary):~~**
+
+```sh
+/Users/maxwellsutton/nikke-sim/scripts/probe/.venv/bin/python \
+  scripts/probe/analyze-pellet-tracks.py \
+  --tracks scratchpad/pellets/noir-near-ce36/tracks.json
+```
+
+⚠ **Use `noir-near-ce36`, not `noir-near-ce0`.** Verified 2026-07-30: `noir-near-ce36` is
+**parameter-identical to run16** — `ammo_offset_x` 125, `center_exclude` 36, `min_area` 25,
+`max_area` 750, `min_circ` 0.55, `pellet_radius` 160, `max_pellet_frames` 7 — so it is a like-for-like
+comparison. `noir-near-ce0` differs (`center_exclude` 0, which admits crosshair-centre components) and
+would confound the curve. **Also ignore `noir-offset-neg125`, `noir-offset-neg250` and `noir-max3`** —
+those are wrong-offset experiments (`-125`, `-250`, `+25`) and are not valid for this comparison.
+`noir-near-ce36` is 600 frames (~20 s), 7,353 tracks.
+
+The comparison basis is `marciana`'s measured decay **0.93 → 0.57 → 0.43 → 0.33 → 0.22**, which sits
+~10–25% below the phase-mix prediction (see §2.0). `noir` should show the same shape and a similar
+mild undershoot.
 
 **Exit criterion.** `noir`'s decay matches within the same tolerance `marciana`'s does (~10–25% below
 the phase-mix prediction, same shape). **Kill condition:** materially different curve → the template
 must be per-unit or conditioned on VFX load, which changes the Phase 2 design. **One run. Discovering
 this after implementing steps 4–6 is the expensive path.**
+
+### ✅ 0.5 — ANSWERED 2026-07-30: the lifecycle template GENERALISES. Phase 2 steps 4–6 are unblocked.
+
+> **Resolved off the §2A-G2 full `noir` structural dump** (`scratchpad/pellets/g2-noir-structural/`),
+> n = **1,215** long-lived tracks — vastly over the n≥20 floor that made the earlier attempt
+> unanswerable. Both curves below are produced by the **same committed tool** on each run's own dump,
+> so they are directly comparable:
+>
+> | sample            | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    | 9    | 10   | 11   |
+> | ----------------- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+> | `marciana` run16  | 0.88 | 0.59 | 0.49 | 0.38 | 0.26 | 0.27 | 0.34 | 0.32 | 0.41 | 0.55 | 0.62 |
+> | `noir` structural | 0.83 | 0.60 | 0.50 | 0.40 | 0.28 | 0.30 | 0.35 | 0.35 | 0.45 | 0.51 | 0.58 |
+> | Δ                 | −.05 | +.01 | +.01 | +.02 | +.02 | +.03 | +.01 | +.03 | +.04 | −.04 | −.04 |
+>
+> **Agreement is within ±0.05 across all 11 samples** — including the decay minimum at sample 5 and
+> the subsequent rise. This is far stronger than the "qualitatively similar" the §2A-G2 pass claimed.
+>
+> **⇒ VERDICT: PASS.** Two different units, two different videos, two different localization methods,
+> one curve. **The one-lifecycle-template-fits-all-units assumption behind Phase 2 steps 4–6 holds.**
+> The kill condition ("materially different curve ⇒ the template must be per-unit or conditioned on
+> VFX load") does **not** fire.
+>
+> **⚠ Two caveats to carry into Phase 2:**
+>
+> 1. **Fit the template on samples 1–5 only.** Both curves decay to a minimum at sample 5 and then
+>    _rise_ (0.26→0.62 / 0.28→0.58). A pellet does not grow back — that tail is the `life≥5` bucket
+>    picking up damage numbers and persistent VFX at high lifetimes. The pellet signal is the decay
+>    limb; the rise is contamination and must not be fit.
+> 2. **⚠ Curve-quote inconsistency in this doc, corrected here.** §2.0 and the old §0.5 text quote
+>    `marciana` as **0.93 → 0.57 → 0.43 → 0.33 → 0.22**. That came from an ad-hoc driver computation
+>    filtered to `life 5–7`; the committed `analyze-pellet-tracks.py` uses `life≥5` and yields
+>    **0.88 → 0.59 → 0.49 → 0.38 → 0.26**. Both are `marciana`; they differ only by track filter.
+>    **Always compare tool-output to tool-output** — comparing `noir`'s tool output against the ad-hoc
+>    0.93-series is apples-to-oranges and made the agreement look worse than it is.
+
+#### (superseded) ⛔ 0.5 — NOT ANSWERED. The dump I pinned is INVALID, not underpowered.
+
+> **⚠ SUPERSEDED — verdict corrected 2026-07-30 by the driver, same day.** The pass below concluded
+> "underpowered, not contradicted" and treated the tiny sample as a limit of a 20 s dump. **That is
+> wrong, and the error was mine: I pinned a broken dump in this doc and told the agent to trust it.**
+> `noir-near-ce36`'s **crosshair track is mislocked**, so the statistics are computed over
+> near-nothing and merely _look_ underpowered.
+>
+> Three lines of evidence, the last two independent of the first:
+>
+> 1. **Not a duration effect.** 58 near-crosshair white tracks observed; scaling `marciana`'s 1,668
+>    by 600/1800 frames predicts **~556**. A 10× shortfall. As a fraction of white tracks:
+>    **1.3% vs 14.3%**.
+> 2. **The pellets are somewhere else.** Median offset of white tracks from the reported crosshair is
+>    **dx = −1027 px** (`marciana`: −50 px). The cluster sits ~1000 px to the left.
+> 3. **The crosshair never moves.** Its x is pinned to **2514–2601** — an 87 px band at the right
+>    edge of the 2606 px crop — for all 600 frames, while `marciana`'s sweeps **341–2692** tracking
+>    the aim point. It locked onto fixed furniture and stayed.
+>
+> **Ruled out:** resolution/calibration mismatch — both videos are 1206×2622.
+> **Does NOT catch it:** template-match _confidence_ is normal (noir 0.430 vs `marciana` 0.502, 0%
+> below 0.30). That is the documented mislock mode — it locks onto the HP bar/other furniture inside
+> the normal 0.33–0.51 confidence band. Never use confidence as the validity check.
+>
+> **Consequences.**
+>
+> - **§0.5 is still OPEN and is now blocked on Phase 2A**, not on a longer dump. Re-running the
+>   counter on `noir` with today's merged defaults is the way to get a valid dump — but that is the
+>   localization work, so 2A now gates 0.5, which gates Phase 2's one-template assumption.
+> - **This is a third data point for §0.1b.** `guilty`/`isabel` were the known localization failures;
+>   `noir` was thought clean because `noir-sg` produced 179 shots. At least one `noir` dump is also
+>   mislocked. The `noir` = method-only / `guilty`+`isabel` = localization split is **too clean** —
+>   localization is broader than §0.1b claims. **Phase 2A rises in priority accordingly.**
+> - **Instrument hardened so this cannot recur:** `analyze-pellet-tracks.py` now runs
+>   `check_crosshair_validity()` first and prints a loud **CROSSHAIR TRACK LOOKS BROKEN** banner plus
+>   an inline `[crosshair-validity: N% near — OK/BROKEN]` tag below 5%. The agent's reading was
+>   reasonable given a tool that reported a broken dump and a thin dump identically; the tool no
+>   longer does.
+>
+> The original pass is kept below because its _procedure_ was right — it verified params from the
+> dump instead of assuming, refused to force a pass/kill verdict on n=5, cross-checked the script
+> against `run16` to rule out a script defect, and escalated. Only the premise it was handed was bad.
+
+#### Original pass (SUPERSEDED — read the correction above first)
+
+**~~DONE 2026-07-30 — result: underpowered, not contradicted~~**
+
+Ran the exact named command against `noir-near-ce36/tracks.json`. Params confirmed identical to
+`run16` from the dump's own embedded `params` block (not assumed): `ammo_offset_x=125`,
+`ammo_offset_y=-11`, `center_exclude=36`, `min_area=25`, `max_area=750`, `min_circ=0.55`,
+`pellet_radius=160`, `max_pellet_frames=7`.
+
+```
+white tracks within pellet_radius(160) of crosshair: 58
+
+LIFETIME HISTOGRAM (full pellet at 30fps sampling = 6-7):
+  life   1:    41   70.7%
+  life   2:     7   12.1%
+  life   3:     4    6.9%
+  life   4:     1    1.7%
+  life   5:     4    6.9%
+  life   7:     1    1.7%
+
+POSITION OF MAX AREA within a track (life>=5, n=5):
+    sample 1:    5  (100.0%)
+
+  normalised area profile (mean rel-size per sample):
+    (blank — no sample position reaches the script's n>=20 print threshold)
+
+  peak area median   :   430.0 px^2
+  trough area median :    36.0 px^2
+  dynamic range      :    11.9x
+
+  life=1 median area : 50.0 px^2
+  life=1 with a static neighbour within +/-2 frames: 0/41 = 0%
+```
+
+**The exit criterion as literally written cannot be evaluated.** It asks to compare noir's normalised
+area-decay _curve_ to marciana's `0.93 → 0.57 → 0.43 → 0.33 → 0.22`. The script only prints that curve
+for sample positions with ≥20 contributing tracks (by design, to keep it from reporting noise) — and
+`noir-near-ce36` (600 frames / 20 s) yields only **58 near-crosshair white tracks total, of which 5**
+reach life≥5, versus `run16`'s 1668 / 373. No sample position clears the bar, so the profile line is
+empty. Confirmed this is a sample-size limit of the 20 s dump, not a script defect, by re-running the
+same script unchanged against `run16/tracks.json`: it reproduces the doc's quoted profile line
+(`0.88 → 0.59 → 0.49 → 0.38 → 0.26 → …`, n=373) exactly.
+
+**What the n=5 statistics do show, read only as a direction check, not a quantitative match:**
+
+| Metric                    | marciana (`run16`, n=373 long tracks) | noir (`noir-near-ce36`, n=5 long tracks) |
+| ------------------------- | ------------------------------------- | ---------------------------------------- |
+| life=1 fraction           | 58.8%                                 | 70.7%                                    |
+| max-area at sample 1      | 73.5%                                 | 100.0%                                   |
+| peak/trough dynamic range | 8.6x                                  | 11.9x                                    |
+
+Same direction and same order of magnitude on every axis (mostly life=1, acquire-at-peak-then-decay,
+single-digit-x dynamic range) — nothing here shows noir behaving _qualitatively_ differently (no
+plateau, no inverted profile, no order-of-magnitude range jump). But n=5 cannot support "matches
+within tolerance" as the quantitative claim the criterion asks for, and per this session's explicit
+instruction not to re-run the counter, it was not strengthened by generating a longer noir dump.
+
+**Disposition: neither PASS nor KILL — inconclusive on the criterion as written, no contradicting
+signal found.** Phase 2 steps 4–6 rest on "one lifecycle template fits all units." This dump is
+consistent with that at the qualitative level and cannot confirm or refute it at the level the
+criterion asked for. Flagging for the owner rather than picking a side: either accept the qualitative
+read as sufficient to proceed, or a longer/different noir dump (a fresh ~13 min run, out of scope for
+this session) would be needed to get n large enough for the quantitative comparison.
 
 ### 0.6 — ⚠ Are the missed shots SELECTED? (not "why are 22% missed")
 
@@ -460,6 +670,682 @@ vague recall problem.
 > above), a decision on 0.1, and — before any Phase 2 code — the **0.5 lifecycle-stability** and
 > **0.6 denominator** answers. Nothing is built until those two land.
 
+### 0.7 — VLM zero-shot pellet counting (free, ~1 hour, informs Phase 3 detector choice)
+
+**Added 2026-07-30 (owner review).** The early ruling against VLM counting was made before
+structural localization produced clean 320×320 crops and the lifecycle spec identified f8–11 as the
+counting frames. "How many white dots in this small crop" is a different question than "count pellets
+in a full frame" — test whether the local VLM can answer it before committing to a detector path.
+
+**Method.** From `h4-marciana-structural/frames-pellet/` (or any structural dump with a
+`tracks.json`), select 20–30 frames where the track data shows 6–10 white pellets and the frame
+index corresponds to f8–11 timing (shrinking phase, pellets separated). Crop each to the
+`pellet_radius` disc around the structural crosshair position. Send each crop to the local VLM
+(Qwen2-VL-7B or equivalent, via the llama.cpp OpenAI-compatible endpoint):
+
+> _"How many small white circular dots are visible in this image? Count carefully and give only
+> the number."_
+
+Compare the VLM's count to the track-based count for that frame.
+
+**Exit criterion.**
+
+- **≥70% of frames within ±2 of the track count** → VLM is a viable Phase 3 detector candidate.
+  Add VLM-compatible crop outputs to §1.2's labeled set, and include a VLM leg in the Phase 3
+  detector A/B (alongside threshold and LoG/DoG).
+- **Most frames off by >±4** → the model cannot resolve 56 px² pellets at this crop resolution.
+  Record the result, close the question, and proceed with the classical detector path. Do not
+  fine-tune on top of a perception failure.
+
+**This does not replace any phase.** It informs Phase 3's detector choice and tells §1.2 whether to
+emit VLM-ready crops. If the VLM passes, it is a _sensor_ that still needs Phase 2's lifecycle
+temporal logic on top — it counts dots per frame, it does not group frames into shots.
+
+### ✅ 0.7 — DONE 2026-07-30: **VLM NOT VIABLE.** Question closed.
+
+Ran `scripts/probe/vlm-pellet-test.py` (committed) against `h4-marciana-structural`, 80 frames with
+track-based white counts 6–10, 320×320 crops centered on the structural crosshair, Qwen2.5-VL-7B
+(Q4_K_M) at `localhost:8090/v1`, temperature 0.
+
+| Metric          | Value                             |
+| --------------- | --------------------------------- |
+| Frames tested   | 80                                |
+| Parse failures  | 0                                 |
+| Within ±1       | **28.8%**                         |
+| Within ±2       | **46.2%** ← FAIL (threshold: 70%) |
+| Within ±3       | 68.8%                             |
+| Median \|err\|  | 3                                 |
+| Mean err (bias) | +0.55 (slight hot)                |
+| Max \|err\|     | 7                                 |
+
+**The model is not counting — it is estimating.** Responses cluster at "10" (~50% of frames) and
+"5" (~25%), with occasional "8", "7", "6", "3". It does not resolve individual 56 px² pellets at
+this crop resolution; it guesses from overall brightness/density. A track count of 6 is as likely
+to get "10" as "5". The error distribution is not noise around a correct answer — it is a
+systematic rounding to coarse buckets.
+
+**⇒ VERDICT: VLM NOT VIABLE as a per-frame detector.** The early ruling is confirmed under
+conditions that did not exist when it was made (structural localization, f8–11 crops, clean
+320×320 input). The failure is perceptual, not prompt-related — the model cannot see the pellets
+as discrete objects at this resolution. Fine-tuning on top of a perception failure is not
+indicated.
+
+**⇒ Phase 3 proceeds with classical detectors only** (threshold, LoG/DoG). §1.2 does not need
+VLM-ready crops. The question is closed; do not re-test without a fundamentally different input
+(e.g. much higher resolution, or a model trained on this specific task from scratch).
+
+Report: `scratchpad/pellets/vlm-test/report.html` (80 crops with VLM responses, for owner review).
+Raw data: `scratchpad/pellets/vlm-test/results.json`.
+
+---
+
+## Phase H — Hardening (ATTENDED, runs before Phase 2A part 2)
+
+**Added 2026-07-30 after the Phase 2A pass.** Three separate wrong-but-plausible conclusions have now
+been reached in this thread (a bad cherry-pick instruction, a broken pinned dump, a mis-attributed
+bug), each internally consistent and each caught only by an independent check against an artifact.
+The common factor is **silent failure**: the tools return a wrong answer rather than refusing.
+
+⛔ **Do NOT run this phase autonomously** (owner ruling 2026-07-30). Not for difficulty — for the
+failure shape. A `/goal` driver turns a wrong-but-plausible conclusion into the premise for the next
+step, which is exactly how this thread's errors were already starting to chain. The repo's autonomy
+bar ("verifiable by a script that already exists") does not hold here yet, because this subsystem's
+scripts are the thing under suspicion.
+
+**The point of Phase H is to buy that bar back.** Each item converts one silent failure into a loud
+one. Autonomy becomes viable for this thread in proportion to guard coverage, not model tier.
+
+### H1 — Do the reference baselines reproduce against TREE code? (do this first)
+
+Every number this plan cites (`run16`, `run18`, `noir-sg`) came from a `count-pellets.py` that is
+**not what is in the tree** — see the Fix 2 provenance correction. `run16` underpins §2.0's lifecycle
+corroboration and the committed fixture. Until a tree-code run reproduces them, the foundation is
+unverified. This also gates Phase 2A part 2, whose exit criterion compares new dumps against
+`marciana` as the reference.
+
+**Target — `run18`, whose exact config is recorded in its own `pellets.json` header:**
+
+```sh
+npx tsx scripts/probe/read-pellets.ts docs/probes/clean-weapons/marciana-solo.MP4 \
+  --at 30 --dur 60 --fps 30 --zoom 2 --out scratchpad/pellets/h1-marciana-treecode
+```
+
+Reference values to beat/compare: `totalShots` **70**, `validShots` **58**, `avgTotal` **7.6**,
+`avgRed` **0.19**, `expectedShots` 90.
+
+⚠ **An exact match is NOT expected, and a mismatch is NOT a failure.** The two 2026-07-30 fixes
+deliberately change behaviour — stricter crosshair seeding (`--relock-conf-min`), and temporal counts
+that are no longer zeroed. Judge it as:
+
+| Outcome                                       | Reading                                                                                                                               |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| In family (shots ~60–80, `avgTotal` ~7.0–8.2) | Foundation sound. **Record the tree-code run as the new reference** and mark `run18`'s numbers superseded (they came from lost code). |
+| Materially different but non-zero             | **Do not tune toward the old numbers** — that is fitting to an unreproducible artifact. Record both; the tree-code run becomes truth. |
+| Zero / near-zero shots                        | A third bug. **STOP and report** — do not proceed to H2.                                                                              |
+
+Also run `analyze-pellet-tracks.py` on the new dump and confirm `[crosshair-validity: … OK]`.
+
+**Stop condition: one run, record, report. Do not tune, do not sweep parameters.**
+
+### H1 — driver analysis: the gap is 100% LOCK DROPOUT, and the lost shots were REAL
+
+> **Added by the driver after the H1 pass.** The pass executed the protocol correctly and correctly
+> declined to tune. This is the follow-up diagnosis; it turns "materially different, cause unknown"
+> into a bounded fix.
+>
+> **1. The deficit is entirely four dead windows, not a uniform degradation.** Shots per 10 s bucket:
+>
+> ```
+> run18     : 13 12 13  8 11 13      max gap 2.53s   dead-time >2s: 4.64s
+> tree-code : 13  7  2 12  8  1      max gap 11.96s  dead-time >2s: 23.02s
+> ```
+>
+> Dead windows (fightT): **33.2→35.3 (2.1s) · 41.4→53.3 (11.96s) · 53.8→56.0 (2.2s) · 68.7→75.4
+> (6.76s)**. Extra dead time vs run18 ≈ **18.4 s → ~28 missed shots**, against an actual deficit of
+> **27**. The accounting closes.
+>
+> **2. Outside those windows the tree code is indistinguishable from run18** — median inter-shot gap
+> **0.70 s vs 0.67 s** (cadence 1.5/s), `avgTotal` 7.3 vs 7.6. **Per-shot counting is intact.** The
+> regression is purely in _shot detection_, i.e. crosshair lock availability.
+>
+> **3. ⚠ The lost shots were REAL, not garbage.** The obvious hope — that run18's extra 27 shots were
+> a mislocked crosshair counting noise, making 43 the _more_ correct number — is **false**. Splitting
+> run18's shots by whether they fall inside the now-dead windows:
+>
+> | run18 shots                 | n   | mean total | valid (5–10) |
+> | --------------------------- | --- | ---------- | ------------ |
+> | INSIDE the now-dead windows | 23  | **7.70**   | 78%          |
+> | OUTSIDE (both runs detect)  | 47  | 7.13       | 85%          |
+>
+> The lost population is _cleaner than average_. So `--relock-conf-min 0.55` is a **net recall
+> regression** — it trades false-lock for **no-lock**, and in these windows the looser lock was
+> producing correct counts.
+>
+> **Confirmed by an INDEPENDENT method (not the same derivation).** The above uses run18's own shot
+> list, so it could in principle inherit run18's error. `run16` is a _separate_ run (07-24 12:58,
+> max-of-event estimator, no marker fallback) whose **per-frame** counts were produced independently
+> of run18's shot list. Its pellet activity in the windows tree code now goes dark:
+>
+> | window (fightT)                  | run16 frames with pellets | mean when non-zero |
+> | -------------------------------- | ------------------------- | ------------------ |
+> | DEAD 41.4→53.3                   | **46%** (165/359)         | 4.7                |
+> | DEAD 68.7→75.4                   | **46%** (93/203)          | 5.0                |
+> | control 56→68 (both runs detect) | 38% (137/360)             | 5.5                |
+>
+> Pellets are demonstrably on screen throughout both dead windows — at a _higher_ frame-hit rate than
+> the control stretch. Three converging lines (run18 shot quality · cadence arithmetic · run16
+> per-frame activity) all say the same thing. **The bar is met: the lost shots were real, and this is
+> a recall regression to be fixed, not a filter working as intended.**
+>
+> **⇒ Consequences.**
+>
+> - **Fix 1 is directionally right but mis-calibrated.** It genuinely fixed the `noir` seed-freeze;
+>   0.55 is simply too strict for `marciana`. There is very likely a value in **(0.30, 0.55)** that
+>   holds `noir` without going dark on `marciana`. Both test cases now exist, so this is a bounded
+>   sweep with a pre-committed target, not open-ended tuning.
+> - ⚠ **This does NOT violate the "do not tune the detector further" rule.** That rule governs the
+>   _pellet-brightness_ threshold (`WHITE_LO`, areas, circularity). `--relock-conf-min` is
+>   crosshair-lock acquisition — a different subsystem, and one with an objective pass/fail on two
+>   videos.
+> - **§0.6 is answered in the affirmative, and it is worse than assumed.** Missed shots here are
+>   **SELECTED**, not random — contiguous multi-second windows. Detection rate on tree code is
+>   **48%**, not the 78% this plan has been quoting. Since bands are time windows, a dead stretch
+>   inside a band biases that band's mean rather than merely thinning it.
+> - **Phase 2A gains a concrete, reproducible target** better than "make `guilty` work": eliminate
+>   the `marciana` dropout at fightT ≈ 41–53 and ≈ 69–75, while keeping `noir` locked.
+
+### H1 — ✅ DONE 2026-07-30 — result: **materially different but non-zero**
+
+Ran exactly the target command (input video is only present in the main tree, not this worktree —
+gitignored media isn't shared across worktrees — so the video path had to be absolute:
+`/Users/maxwellsutton/nikke-sim/docs/probes/clean-weapons/marciana-solo.MP4`; output written under
+the main tree's `scratchpad/pellets/h1-marciana-treecode/`, same reason).
+
+```
+43 shots (29 valid 5-10, expected ~90)
+avg total: 7.3  avg red: 0.17
+```
+
+| Metric        | run18 (reference) | tree-code (H1) | Δ               |
+| ------------- | ----------------- | -------------- | --------------- |
+| totalShots    | 70                | **43**         | −39%            |
+| validShots    | 58                | **29**         | −50%            |
+| avgTotal      | 7.6               | **7.3**        | −4%, in family  |
+| avgRed        | 0.19              | **0.17**       | −11%, in family |
+| expectedShots | 90                | 90 (same calc) | —               |
+
+Against the pre-committed table: not zero/near-zero, and not "in family" either (shots is far
+outside the 60–80 band even though `avgTotal`/`avgRed` land inside their bands) — this is the
+middle row, **materially different but non-zero**. Per the decision rule: do not tune toward
+`run18`'s numbers, record both, and **the tree-code run becomes the new reference** (43 shots / 29
+valid / avgTotal 7.3 / avgRed 0.17 / expected 90). `run18`'s totalShots/validShots are superseded —
+they came from code no longer in the tree.
+
+**Crosshair validity.** `read-pellets.ts` itself doesn't emit a `tracks.json` (no `--dump-tracks`
+flag was in the target command as written, and adding it would have meant re-running the full
+pipeline including the 60-call VLM timer pass). Since the pellet frames were already extracted by
+the H1 run, `count-pellets.py` was invoked a second time directly against the existing
+`frames-pellet/` dir, replicating `read-pellets.ts`'s own parameter derivation (`--zoom 2` →
+`center-exclude 36`, `min-area 25`, `max-area 750`, `pellet-radius 160`, `ammo-offset-x 125`,
+`ammo-offset-y -11`, `max-pellet-frames 7`, same per-video ammo template) plus `--dump-tracks`, to
+avoid a second full run. Result:
+
+```
+white tracks within pellet_radius(160) of crosshair: 919   [crosshair-validity: 7.9% near — OK]
+```
+
+**OK**, but notably lower than `marciana`/`run16`'s 14.3% — recorded, not chased (H1 is one run,
+not a diagnosis pass).
+
+**Not done, out of scope for H1:** no attempt to explain the 43-vs-70 shot gap (candidates: the
+`--relock-conf-min` stricter seeding losing more events than it gains, or the temporal-count fix
+changing which frames clear the temporal filter) — that is diagnosis work, not H1's stop condition.
+
+### H5 — ⛔ CANCELLED before running: no `--relock-conf-min` value can work. Confidence tuning is a dead end.
+
+**This was drafted as a 6-point sweep. A 4-minute check against data already in hand determined its
+outcome, so it was cancelled rather than run.** Recorded in full because the _reason_ it fails is the
+evidence that sends Phase 2A structural.
+
+**The mechanism, confirmed independently of the shot-count derivation.** H1's dump records
+per-frame `cross_confs`. Fix 1 requires **conf ≥ 0.55** to seed or override a lock:
+
+| window (fightT)             | median conf | <0.30 | 0.30–0.55 | **≥0.55** |
+| --------------------------- | ----------- | ----- | --------- | --------- |
+| DEAD 41.4→53.3              | 0.408       | 0%    | **100%**  | **0%**    |
+| DEAD 68.7→75.4              | 0.371       | 0%    | **100%**  | **0%**    |
+| control 56→68 (both detect) | 0.457       | 0%    | 56%       | 44%       |
+| control 33→41               | 0.366       | 0%    | 91%       | 9%        |
+
+The dead windows are **exactly** the stretches where confidence never reaches 0.55. Mechanism proved
+by a signal entirely separate from the shot counts — the diagnosis is now double-sourced.
+
+**Why no threshold fixes it.** The frozen `noir` lock's own confidence distribution
+(`noir-near-ce36`, 600 frames): **median 0.430**, 61% in 0.30–0.45, **25.5% at ≥0.55**.
+
+- To reject `noir`'s false seed you need a bar **above ~0.45**.
+- To re-lock in `marciana`'s dead windows you need a bar **at or below ~0.40**.
+- **No value satisfies both.** The bands overlap — as the Phase 2A pass already reported
+  ("the false seed and the real box occupy overlapping confidence bands"). That report was right and
+  this doc was briefly about to route around it.
+
+**The sharper statement, and it is what matters.** Fix 1 works on `noir` because `noir` _has_
+high-confidence frames available (25.5% ≥0.55) — the real ammo box outbids the 0.43 smoke.
+`marciana`'s dead windows have **0% ≥0.55**: there is no confident match available _at all_. So
+lowering the bar would not "recover the lock" — it would let whatever happens to score ~0.40 win,
+which on `noir` was demonstrably background smoke. **Lowering the threshold is not a fix; it is a
+gamble that the best sub-0.55 candidate is the real box.**
+
+⇒ **Confidence-threshold policy cannot solve this.** The dead windows need a fundamentally better
+matcher — structural / multi-template localization, i.e. **Phase 2A part 2**. Carry-forward is not an
+alternative either: holding the last position through a 12 s stretch while the aim point moves is
+wrong by construction.
+
+⇒ **Keep `--relock-conf-min 0.55` as-is.** It is correct where a confident match exists, and no other
+value is better. The `marciana` dropout is a _matcher_ limitation, not a _threshold_ one.
+
+<details><summary>Original sweep design (cancelled — kept for the reasoning trail)</summary>
+
+**Why.** H1's diagnosis: `--relock-conf-min 0.55` fixed `noir`'s seed-freeze but goes dark on
+`marciana` for ~18 s, costing 27 real shots (detection 78% → 48%). Directionally right,
+mis-calibrated. Both failure modes now have a cached test case, so this is a **bounded sweep with a
+pre-committed rule**, not open-ended tuning.
+
+⚠ **This does not violate "do not tune the detector further."** That rule governs the
+_pellet-brightness_ threshold (`WHITE_LO`, `min_area`, `min_circ`). This is crosshair-lock
+acquisition — a different subsystem with an objective two-video pass/fail.
+
+**Metrics (both printed by `analyze-pellet-tracks.py` since 2026-07-30):**
+
+| Metric                | Healthy ref (`marciana`/run16) | Frozen ref (`noir-near-ce36`, pre-fix) | Current tree code (H1) |
+| --------------------- | ------------------------------ | -------------------------------------- | ---------------------- |
+| crosshair-validity    | 14.3% near                     | 1.3% near (BROKEN)                     | 7.9% near              |
+| lock wander (x range) | 2351 px                        | 87 px (FROZEN)                         | **898 px**             |
+
+Wander is the **direct** signature of a freeze; near-fraction is an indirect proxy. H1's compressed
+898 px independently corroborates the dead-window finding.
+
+**Method — reuse cached frames, no ffmpeg, no VLM.** Both frame sets already exist:
+
+- `marciana` coverage case: `scratchpad/pellets/h1-marciana-treecode/frames-pellet` (1800 frames)
+  plus that dir's own `ammo-box-template.png`.
+- `noir` freeze case: `scratchpad/pellets/noir-near-ce36/frames-pellet` (600 frames). ⚠ Its committed
+  `tracks.json` is **pre-fix** output — re-running these frames with today's code is precisely the
+  test of whether Fix 1 unfroze it.
+
+Run `count-pellets.py … --temporal --dump-tracks <out>` per sweep point, then
+`analyze-pellet-tracks.py --tracks <out>`. Take each dump's params from its own recorded `params`
+block. Sweep `--relock-conf-min` ∈ **{0.30, 0.35, 0.40, 0.45, 0.50, 0.55}**. ~4.4 min per
+`marciana` point (146 ms/frame × 1800), ~1.5 min per `noir` point — roughly 35 min total.
+
+**Pre-committed decision rule.** For each value record: near-fraction, wander, longest zero-white
+frame run (the dead-stretch metric), and non-zero frame count.
+
+1. **`noir` must PASS**: wander **> 300 px** AND near-fraction **≥ 5%**. This is the guard Fix 1 was
+   introduced for; a value that re-freezes `noir` is disqualified no matter how good `marciana` looks.
+2. **Among the values passing (1), choose the LOWEST** — lower is more permissive, hence better
+   `marciana` coverage.
+3. **`marciana` must actually improve**: longest zero-white run must drop materially below the
+   current tree-code value, toward run18's ≤2.5 s (≈75 frames at 30 fps). If no passing value
+   improves it, **report that and stop** — it means the freeze and the dropout are not separable by
+   this one knob, which is a genuine finding and sends Phase 2A structural.
+4. **Ties → prefer the HIGHER (safer) value.**
+
+**Stop condition.** Record the table, apply the winning default, re-run H1's command once to confirm
+shot recovery, report. **Do not** sweep any other parameter, and do not tune per-video.
+
+### ✅ H2 — DONE 2026-07-30, driver-verified
+
+> ⚠ **Heading restored.** This section lost its `### H2` heading when the H5 block was inserted above
+> it — a driver edit clobbered it, leaving the spec orphaned under H5 with no title. The H2 pass
+> found and executed it correctly regardless. Flagged because a heading-less section is the quiet
+> cousin of a stale claim: the next reader doesn't argue with it, they just never find it.
+>
+> **`scripts/probe/temporal-count-regression.py`** (committed `e2681a5`) — external by design, takes
+> a script path or `--prefix-commit <SHA>`, runs it as a subprocess with `--temporal --backend
+opencv`, asserts non-zero total white.
+>
+> **Red/green demonstration, re-run by the driver — the mandatory part, and it holds:**
+>
+> | script under test       | total white | verdict | exit |
+> | ----------------------- | ----------- | ------- | ---- |
+> | tree `count-pellets.py` | **9**       | PASS    | 0    |
+> | `2a1e99c` (pre-fix)     | **0**       | FAIL    | 1    |
+>
+> Fixture: 4 contiguous frames (`f_00103`–`f_00106`) from `marciana-solo.MP4` (slug **`marciana`**,
+> SG/Iron — not `marciana-marine-study`), a sub-window of the named idx 100–118 range, independently
+> reproducing its cited numbers.
+>
+> ⚠ **Measuring this correctly:** `python … | tail; echo $?` reports **`tail`'s** exit status, not the
+> script's — the RED case then shows exit 0 and looks like the test failed to fail. Capture the exit
+> code without a pipe. The driver hit exactly this and nearly filed a false bug against a correct test.
+>
+> **Two notes, neither blocking:**
+>
+> - **Fixture is 4.9 MB** (4 × ~1.28 MB full 2606×792 PNGs) — an order of magnitude larger than
+>   anything else in `scripts/tests/fixtures/`. A one-time cost for a test that catches a bug class
+>   which survived six days and a merge, so it stands. If it ever needs trimming, **2 contiguous
+>   frames would likely still discriminate** (the shadowing zeroes counts regardless of track length).
+> - **Not in `verify.sh`**, same rationale as the other Python selftests: needs `scripts/probe/.venv`,
+>   absent on a clean checkout. The reader now has **three** manual checks
+>   (`count-pellets.py --selftest`, `analyze-pellet-tracks.py --selftest`,
+>   `temporal-count-regression.py`) — enough that they want one wrapper script rather than three
+>   remembered commands. Worth doing before the count grows again.
+
+#### (spec) H2 — Regression test: temporal counts are never silently zero
+
+The Fix 2 shadowing survived **six days and a merge** because nothing asserted that `--temporal`
+produces output. That is the gap, not the bug.
+
+Add a committed frame fixture (a short **contiguous** run from a known blast — `scratchpad/` is
+gitignored, which is exactly why no such test exists) under `scripts/tests/fixtures/pellets/frames/`,
+and a test asserting that `count-pellets.py --temporal --backend opencv` over it yields
+**total white > 0**. Verify it FAILS against the pre-fix script
+(`git show 2a1e99c:scripts/probe/count-pellets.py`) and passes now — a regression test that never
+went red proves nothing.
+
+**⚠ Design constraint, verified 2026-07-30 — the test must be EXTERNAL to `count-pellets.py`.**
+`2a1e99c` has **no `--selftest`** (that flag postdates it), so a test implemented as another
+`--selftest` mode inside the script **cannot be pointed at the old version**, and the mandatory
+red-demonstration becomes impossible. Write it as a test that invokes a **script path given to it**
+as a subprocess (vitest shelling out, or a small standalone runner), so the same test can run against
+both the current file and `git show 2a1e99c:… > <tmp>/prefix.py`.
+
+**Fixture notes.** Frames must be **contiguous** — temporal mode builds tracks across adjacent
+frames, so scattered frames won't reproduce the behaviour. Known-good source: `run16` frames around
+idx 101 / 118 / 122 / 125 carry white counts 9–11. A driver A/B over `run16` frames 100–118 gave
+**pre-fix total_white = 0, post-fix = 9**, so that range demonstrably discriminates. ⚠ These are
+2606×792 PNGs (~350 KB each) — use the **smallest contiguous run that still shows red-then-green**,
+and state the fixture's total size in the commit.
+
+### H3 — Zoom mismatch must fail loudly (root cause pinned 2026-07-30)
+
+**Diagnosed, so this is now a bounded fix rather than an investigation.** Three facts:
+
+| thing                                                                             | value                                    |
+| --------------------------------------------------------------------------------- | ---------------------------------------- |
+| `read-pellets.ts:70` code default                                                 | `--zoom` **3**                           |
+| `read-pellets.ts:12` + `:54` doc/usage string                                     | `--zoom` **4** ← disagrees with the code |
+| Committed `scripts/probe/ammo-box-template.png`                                   | **74×74**, extracted at zoom **2**       |
+| Every reference run (run16/18, noir-sg, guilty-sg, isabel-sg, g2-noir-structural) | zoom **2**                               |
+
+**Root cause of the silent 0 shots:** in `template` mode, `cv2.matchTemplate` hunts a 74 px box in
+frames rendered at zoom 3, where the box is ~111 px. Match never clears threshold ⇒ no crosshair lock
+⇒ zero counts ⇒ an empty-but-valid `pellets.json`. The template's scale is an **implicit, unchecked
+dependency** on `--zoom`. (Structural mode is not affected — its geometry constants are scaled from
+`--zoom` explicitly — but it inherits the same misleading default.)
+
+**Three-part fix:**
+
+1. **Change the default to `--zoom 2`.** It is what the committed template, all six reference runs,
+   and every command in this plan use. ⚠ This is a _default behaviour change_ — note it in the commit
+   and confirm nothing in-tree relies on 3.
+2. **Make the doc/usage strings agree with the code** (both currently claim 4).
+3. **Fail loudly, which is the durable part.** In `template` mode, verify the template's size is
+   consistent with the run's `--zoom` (a 74 px template implies zoom 2) and **error out with a
+   diagnostic naming both values** rather than proceeding. Independently, a run that ends with
+   **zero locked frames or zero shots should exit non-zero with an explanatory message**, never emit
+   an empty JSON — the same principle as the crosshair-validity banner and H1's zero-shot stop.
+
+**Why this is worth doing now:** the warning has been hand-carried in three consecutive dispatch
+prompts. A trap that must be verbally re-transmitted every time is a bug in the tool, not a briefing
+gap.
+
+`read-pellets.ts` defaults to `--zoom 3`; every historical reference run used `--zoom 2`. The
+mismatch silently produces **0 shots** (it cost the Phase 2A session a run). Make a zero-shot result,
+or a zoom/template-scale mismatch, emit a visible error rather than an empty JSON. Same principle as
+H1's zero-shot stop and the crosshair-validity banner: **a reader that knows it failed is usable; one
+that reports 0 as data is not.**
+
+### ✅ H3 — DONE 2026-07-30
+
+All three parts landed in `scripts/probe/read-pellets.ts` (commit `42fd4e1`):
+
+1. **`--zoom` default changed 3 → 2.** Confirmed nothing in-tree relies on 3 first: every doc/skill/
+   script invocation of `read-pellets.ts` already passes `--zoom 2` explicitly (`frames.ts` and
+   `read-burst-gauge.ts` have their own unrelated `--zoom 3` usage on a different tool, not this
+   default). Called out as a default-behaviour change in the commit message.
+2. **Doc/usage strings corrected** (`read-pellets.ts:12`, `:54`) — both said 4, now say 2.
+3. **Two loud-failure guards added**, both exit non-zero and skip writing `pellets.json` rather than
+   emitting an empty-but-valid one:
+   - **Template-size-vs-zoom check** (before the counter subprocess runs, template mode only): reads
+     the actual ammo template's PNG dimensions, derives the implied zoom (74–82px ⇒ zoom 2, since
+     `extract-ammo-template.py` never rescales its seed template to the run's `--zoom` — every
+     template this pipeline produces is implicitly zoom-2-shaped), and errors with both values named
+     if it disagrees with `--zoom` by more than 0.5.
+   - **Zero-locked / zero-shots check** (after the counter runs): errors if every pellet read is zero
+     (crosshair never locked all run) or if debouncing produced zero shots, naming `--zoom` and
+     `--locate` in the diagnostic.
+
+**Verified the guard actually fires**, not just written: a 6 s clip run in `template` mode at
+`--zoom 3` now exits 1 with the size/zoom-mismatch diagnostic (template read as 82×82px ⇒ implied
+zoom ≈2.2) and no `pellets.json` is written. The same clip at the new `--zoom 2` default instead hit
+the _second_ guard (zero non-zero reads) — a real, different finding: a 6 s window this early
+(`--at 3 --dur 6`) doesn't reliably lock the crosshair, not a false positive. Re-run at the H1
+reference window (`--at 30 --dur 60`) exits 0 and reproduces H1's tree-code numbers exactly (43
+shots, 29 valid, avgTotal 7.3, avgRed 0.17), confirming the fix is behaviour-neutral for a
+correctly-scaled, adequately-long run.
+
+`bash scripts/verify.sh`, `count-pellets.py --selftest`, and `analyze-pellet-tracks.py --selftest`
+all pass.
+
+**~~Not investigated, out of scope for H3:~~ ✅ CLOSED by the driver, same day — it is not an open
+thread and not H5 territory.** The H3 pass correctly deferred "why does a short window fail to lock",
+suspecting `--relock-conf-min` / matcher behaviour. Two controlled 6 s runs settle it:
+
+| 6 s clip                                 | `template`               | `structural`              |
+| ---------------------------------------- | ------------------------ | ------------------------- |
+| control window (fightT 56–62)            | exit 0, 8 valid shots    | exit 0, 8 valid shots     |
+| **known dead window (fightT 41.4–53.3)** | **exit 1 (guard fires)** | **exit 0, 7 valid shots** |
+
+⇒ **There is no short-clip / cold-start limitation** — both matchers handle a 6 s clip fine in a
+normal stretch, so slice-based validation (including the 600-frame gate-1 slices) is sound. The
+zero-lock was `template` mode failing in **the known dead window**, i.e. the exact failure structural
+localization was built to fix and which §H5 already proved no confidence threshold can fix. **Nothing
+new, nothing deferred, no H4/H5/Phase 2A follow-up owed.**
+
+⇒ Two things confirmed as a bonus: the new guard **fires on the real historical failure case** rather
+than only on a synthetic one, and **structural localization fixes the dead window end-to-end through
+the real orchestrator** — independent corroboration of the earlier per-frame finding, by a different
+route.
+
+⚠ Recorded in place because a deferred-but-actually-closed item is the same hazard as a superseded
+verdict: the next session budgets for an investigation that has no work in it. (This doc already
+cost one session exactly that, with the phantom `guilty` gate-1 failure.)
+
+### ✅✅ H4 — DONE + DRIVER EXTENSION: §0.6 RESOLVED — the "missed shots" are RELOADS, and the reader is ~88–100% complete
+
+> **Phase 2A's four-video conjunction is CLOSED.** Gate 1 and gate 2 both met on all four videos under
+> one working matcher — the thing four separate tuning passes failed. Driver-verified: artifacts on
+> disk (2.7–8.9 MB each), gate 1 **19.0 / 19.7 / 19.9%** near with wander **1894 / 2326 / 2080 px**,
+> gate 2 naive **76.5 / 62.7 / 71.0%**, all reproducing the H4 pass's figures exactly.
+>
+> **§0.6 miss-pattern — confirmed scattered, and dramatically better than template era:**
+>
+> | `marciana`     | max gap     | 20 s-bucket shot counts            |
+> | -------------- | ----------- | ---------------------------------- |
+> | template (§H1) | **11.96 s** | 13, 7, **2**, 12, 8, **1**         |
+> | structural     | **2.24 s**  | 21, 25, 25, 25, 27, 22, 25, 24, 24 |
+>
+> All four now sit at median inter-shot gap **0.70 s** — the 1.5/s cadence — with flat buckets.
+>
+> **⇒ DRIVER EXTENSION: the gaps are RELOADS. The H4 pass logged an "~8 s gap periodicity" as an
+> unexplained observation; it is fully explained by datamined weapon stats.**
+>
+> | unit       | reload (datamined) | observed max gap | predicted cycle | observed gap period |
+> | ---------- | ------------------ | ---------------- | --------------- | ------------------- |
+> | `guilty`   | 3.02 s             | **4.00 s**       | 9.02 s          | **8.1 s**           |
+> | `isabel`   | 2.22 s             | **3.20 s**       | 8.22 s          | **7.6 s**           |
+> | `marciana` | 1.85 s             | **2.24 s**       | 7.85 s          | irregular           |
+> | `noir`     | 1.03 s             | —                | 7.03 s          | —                   |
+>
+> Gap lengths track reload time in the **right order and right magnitude** (each ~0.4–1.0 s longer,
+> as expected since a between-shots gap spans the reload plus partial shot intervals at each end).
+> `marciana` looks "irregular" only because its 1.85 s reload falls **below the 2 s gap threshold**, so
+> only its longest reloads register at all — and `noir`'s 1.03 s reload is shorter still, which is why
+> `noir` always looked cleanest.
+>
+> **⇒ The naive `1.5/s × duration` denominator is simply WRONG — it assumes continuous fire with no
+> reloads.** Against a physically correct denominator (`cycle = ammo/1.5 + reloadFrames/60`;
+> `expected = duration/cycle × ammo`, from `data/characters.json`, whose `reloadFrames` is already
+> gated by `verify.sh`'s `check-reload-chunks.ts`):
+>
+> | unit       | observed | naive exp | naive % | cycle-based exp | **real rate** |
+> | ---------- | -------- | --------- | ------- | --------------- | ------------- |
+> | `marciana` | 218      | 285       | 76.5%   | 217.7           | **100.1%**    |
+> | `isabel`   | 203      | 286       | 71.0%   | 208.9           | **97.2%**     |
+> | `guilty`   | 180      | 287       | 62.7%   | 190.9           | **94.3%**     |
+> | `noir`     | 214      | 286       | 74.8%   | 244.1           | **87.7%**     |
+>
+> **The reader is ~88–100% complete, not missing a quarter to a third of every fight.** Every "22%
+> missed" / "48%" / "62.7%" figure in this plan is an artifact of the wrong denominator and must not
+> be quoted again.
+>
+> **⇒ §0.6 IS RESOLVED AND RETIRED.** The misses are a **game mechanic uniformly distributed across
+> the fight**, not a selection effect. They are **not a bias source**, so the error budget's binding
+> constraint stays where it was — per-band bias ≤ ±0.25 pellets/10 — with shot recall no longer
+> competing for attention.
+>
+> **⇒ CONFIRMED BY AN INDEPENDENT LABELED ARTIFACT ALREADY IN THE REPO.** The reload argument above
+> is arithmetic over datamined stats — the same class of derivation throughout. `docs/probe-data/
+guilty-sg-band.json` carries **hand-derived per-band shot counts** from footage analysis that
+> predates this reader entirely (36 + 36 + 39 + 40 + 34 = **185** across ~185 s of banded coverage on
+> a ~191 s fight):
+>
+> | source                                         | `guilty` shots                  |
+> | ---------------------------------------------- | ------------------------------- |
+> | hand-derived band sum (committed, independent) | **185**                         |
+> | structural reader, today                       | **180** (97.3% of hand-derived) |
+> | cycle-based prediction                         | 190.9                           |
+> | naive `1.5/s × duration`                       | **287** ← refuted               |
+>
+> Humans counting this footage found ~185 shots, **not 287**. That independently (a) kills the naive
+> denominator outright and (b) puts the reader within **2.7%** of a hand-derived ground truth. Per
+> `docs/VALIDATION-INDEX.md` §"Validating a READER", scoring against an existing labeled record **is**
+> the validation. **The bar is met — no further experiment is owed here.**
+>
+> **⚠ Two honest caveats, neither celebratory:**
+>
+> 1. The cycle denominator still **ignores boss transitions, cover phases and burst animations**,
+>    which would lower expected shots further and push these rates _higher_. So these are lower
+>    bounds on completeness.
+> 2. Which makes **`marciana` at 100.1% a mild over-detection flag, not a triumph** — with
+>    interruptions unaccounted, a truly complete reader should land _under_ 100%. Worth a look during
+>    Phase 2's precision work; not worth chasing now.
+
+#### (spec) H4 — RE-SCOPED 2026-07-30: full-video gate 2 on the remaining three, which answers §0.6 under current code
+
+**Do not run §0.6 as originally written — half of it is already answered and the other half is
+measured against superseded numbers.**
+
+- **§0.6 Q2 ("are the misses random or selected?") was ANSWERED** by the §H1 driver analysis: under
+  template mode the misses were four **contiguous dead windows** (~18 s), i.e. **selected**, not
+  random. Re-asking it would be a phantom item.
+- **But that answer is about code that no longer runs.** Structural localization eliminated those
+  windows: `noir` went from the template era's dropout to **214 shots / 74.8%** end-to-end. The 48%
+  and "22% missed" figures in §0.6 are **template-era** and must not be quoted as current.
+- **§0.6 Q1 (is ~90 the right denominator?) is still open**, still free, and now better anchored —
+  `noir`'s full structural run gives a real shots-per-fight datum to sanity-check against.
+
+**What is actually open: gate 2 on `marciana`, `guilty`, `isabel`.** Only `noir` has been measured
+end-to-end at full length under structural. That single measurement closes Phase 2A's four-video
+conjunction **and** re-answers §0.6 against live code, so it is one task, not two.
+
+**Method.** For each of the three, the §2A-G2 command with the video swapped:
+
+```sh
+npx tsx scripts/probe/read-pellets.ts "<video>" \
+  --fps 30 --zoom 2 --locate structural --dump-tracks true \
+  --out /Users/maxwellsutton/nikke-sim/scratchpad/pellets/g2-<unit>-structural
+```
+
+`--zoom 2` is now the default (H3) but pass it explicitly anyway; `--dump-tracks true` is required —
+§2A-G2's command omitted it and the run produced no `tracks.json`. ~7 min each.
+
+**Pre-committed exit criteria, per video:**
+
+1. **Gate 2 — detection ≥60%** of expected. Report against **both** denominators (naive 1.5/s × duration,
+   and one adjusted for observed fire-holds) rather than failing on the naive one alone.
+2. **Gate 1 holds at full length** — `analyze-pellet-tracks.py` reports OK (≥5% near) and wander ≫300 px.
+3. **§0.6 miss pattern** — are the gaps **contiguous** (selected ⇒ a bias source, quantify it in
+   pellets/10) or **scattered** (random ⇒ merely thins n, and n is plentiful)? Use §H1's method:
+   shots-per-10 s buckets plus the list of inter-shot gaps >2 s.
+
+**Then Phase 2A can finally be closed or not**, on all four videos together — the conjunction that
+four tuning passes failed and that has never yet been evaluated under one working matcher.
+
+### ✅ H4 — DONE 2026-07-30 — gate 2 MET on all three; §0.6 miss pattern is SCATTERED under structural, not the template-era SELECTED signature
+
+Ran exactly the specified command per video (worktree cwd, absolute main-tree video + `--out`
+paths, `--dump-tracks true`), foreground, ~7 min each:
+
+```sh
+npx tsx scripts/probe/read-pellets.ts "<video>" \
+  --fps 30 --zoom 2 --locate structural --dump-tracks true \
+  --out /Users/maxwellsutton/nikke-sim/scratchpad/pellets/h4-<unit>-structural
+```
+
+**Gate 2 (detection rate ≥60%) — MET on all three, against both denominators:**
+
+| unit     | shots (valid) | totalDur | naive expected (1.5/s×dur) | naive rate | dead-time >2s   | adjusted expected | adjusted rate |
+| -------- | ------------- | -------- | -------------------------- | ---------- | --------------- | ----------------- | ------------- |
+| marciana | 218 (176)     | 189.9s   | 284.9                      | **76.5%**  | 14.8s (7 gaps)  | 262.7             | 83.0%         |
+| guilty   | 180 (150)     | 191.3s   | 286.9                      | **62.7%**  | 60.8s (19 gaps) | 195.6             | 92.0%         |
+| isabel   | 203 (156)     | 190.7s   | 286.0                      | **71.0%**  | 41.7s (17 gaps) | 223.5             | 90.8%         |
+
+All three clear ≥60% on the naive denominator outright — the adjusted (fire-hold-corrected)
+denominator wasn't needed to pass, but is reported per the pre-committed instruction and lands
+83–92%, i.e. correcting only for each run's own observed gaps closes most of the remaining "miss".
+
+**Gate 1 (crosshair validity, full length) — MET on all three:**
+
+| unit     | near-crosshair % | wander (px) |
+| -------- | ---------------- | ----------- |
+| marciana | 19.0% — OK       | 1894        |
+| guilty   | 19.7% — OK       | 2326        |
+| isabel   | 19.9% — OK       | 2080        |
+
+All comfortably clear the ≥5% floor and ≫300px wander bar — in the same ~19–20%/≫300px range as
+`noir`'s full-length reference (21.1%, 1915px from 2A-G2), so the signature holds across the
+four-video conjunction, not just `noir`.
+
+**§0.6 miss-pattern — SCATTERED on all three, unlike the template-era SELECTED signature.**
+10s-bucket shot counts are close to uniform end-to-end (no near-zero buckets except the trailing
+partial bucket after the fight ends near t≈180s), and every gap >2s is individually short
+(2.0–4.0s ≈ 3–6 missed shots) — none of §H1's template-mode 12–24s single-window collapses:
+
+- **marciana**: buckets `9 12 14 11 14 11 14 11 13 14 11 11 13 12 11 13 13 11 [0]`; 7 gaps, all
+  2.0–2.2s, spread across fightT 35–178s.
+- **guilty**: buckets `9 11 10 9 11 9 8 11 7 10 10 11 12 9 11 10 13 9 [0 0]`; 19 gaps, 2.4–4.0s,
+  spread across fightT 17–177s, at a rough (not exact) ~8s cadence for most of the run.
+- **isabel**: buckets `9 11 13 12 10 11 11 13 10 12 11 11 12 12 11 12 10 12 [0 0]`; 17 gaps,
+  2.1–3.2s, spread across fightT 9–176s.
+
+This is qualitatively different from §H1's `marciana`-template-mode finding (4 discrete dead
+windows totalling 18.4s, one of them 12s alone, bucket counts collapsing to `2` and `1`). Under
+structural localization the deficit on all three is many small, evenly-distributed gaps, not a
+few long lock-dropout windows.
+
+⇒ **§0.6 Q2 (random vs selected) under current code: SCATTERED.** The template-era "selected,
+48%" finding described a lock-dropout bug in a mode this doc's own H1→H3→Phase 2A work has since
+replaced — do not quote it as current (per the dispatch instruction).
+
+⇒ **§0.6 Q1 (is the naive denominator right?) still leans no.** `guilty` alone moves 62.7%→92.0%
+once only its own observed gaps are subtracted — a large share of the "miss" is fire-hold/reload
+cadence, not lost detections. **Not further diagnosed here** — the ~8s gap periodicity visible in
+`guilty`'s data is recorded, not root-caused; that would be a diagnosis pass, out of scope for H4.
+
+**Artifacts confirmed on disk after each run (main tree, gitignored `scratchpad/`):**
+
+- `scratchpad/pellets/h4-marciana-structural/{pellets.json (2.8 MB), tracks.json (9.2 MB)}`
+- `scratchpad/pellets/h4-guilty-structural/{pellets.json (2.8 MB), tracks.json (7.9 MB)}`
+- `scratchpad/pellets/h4-isabel-structural/{pellets.json (2.8 MB), tracks.json (9.4 MB)}`
+
+**Phase 2A four-video conjunction — CLOSED.** Gate 1 and gate 2 are both MET on all four videos
+(`noir` per 2A-G2, `marciana`/`guilty`/`isabel` per this pass) under one working matcher
+(`--locate structural`) — the conjunction four tuning passes previously failed and that had never
+been evaluated together until now.
+
 ---
 
 ## Phase 1 — The two pieces of infrastructure everything else needs
@@ -483,12 +1369,105 @@ promote it from an ad-hoc habit to the committed pipeline shape.
 reproduces the current `pellets.json` exactly on `run16` frames (the handoff's existing
 0-mismatch/1800-frame reproduction standard).
 
+⚠ **`--debug-dir` is a no-op with `--temporal`** (the save call only exists in the non-temporal
+branch). If the cache-then-sweep work needs debug images from temporal mode, this must be fixed
+first. Known gap, unfixed as of 2026-07-30.
+
+### ✅ 1.1 — DONE 2026-07-31: exit criterion MET, 0 mismatches, sub-second sweep
+
+**What landed, all in `scripts/probe/count-pellets.py` (no new file — extends the existing
+committed script, per constraint 9's reuse preference):**
+
+- `_raw_components(img, args)` / `_filter_components(raw, args, w, h)` — `detect_components_with_
+pos` split into a raw pass (mask + CC + per-component contour/circularity/hole/bbox stats, ONLY
+  bounded by a generous `--detect-min-area`/`--detect-max-area` headroom floor/ceiling, default
+  4/5000 — not a re-tuning of the settled WHITE_LO/25/750/0.55 filter defaults) and a filter pass
+  (the exact area/circ/hole/center-exclude/peanut accept-reject logic, byte-identical, now
+  replayable against a cached list). `detect_components_with_pos` composes them, so the live path
+  is unchanged.
+- `build_tracks_and_counts(all_comps, cross_positions, args)` — the tracker + lifetime
+  classification + crosshair-radius windowing, factored out of `main()`'s inline loop so both a
+  live run and a `--load-detections` replay/sweep call the identical function.
+- `debounce_shots(frame_counts, fps, ...)` — a Python port of `read-pellets.ts`'s shot-level
+  event-grouping debounce (gap tolerance, median-frame selection, core-hit fallback), so a cache
+  replay can report shot-level totals without the TS/ffmpeg/VLM orchestrator. Exposed via a new
+  `--shots` flag (single run) and used internally by `--sweep`.
+- `--dump-detections <path>` / `--load-detections <path>` — the cache write/read pair. Load mode
+  skips image I/O and crosshair localization entirely (frozen at dump time; re-dump to change
+  `--locate` or the color thresholds) and only re-runs filtering + tracking + debounce.
+- `--sweep <combos.json>` — takes a list of param-override dicts, replays each against the SAME
+  cached raw detections, prints one JSON summary line per combo.
+
+**Validation (H1's tree-code run, `scratchpad/pellets/h1-marciana-treecode/`, 1800 frames,
+30fps, zoom 2 — the same reference this plan's own H1 section established as reproducible from
+tree code, used here as an existing artifact, not a re-run):**
+
+| Check                                                                                                           | Result                                                                                                                                                                                                                                                                                                                              |
+| --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Live run (post-refactor) vs. H1's own committed `pellets.json` summary                                          | **exact match** — `{totalShots: 43, validShots: 29, avgTotal: 7.3, avgRed: 0.17}` both sides. This is the independent check: H1's summary came from the unmodified pre-refactor pipeline: the Python `debounce_shots` port and the `_raw_components`/`_filter_components` split reproduce it exactly, not merely self-consistently. |
+| `--dump-detections` → `--load-detections` replay vs. the live run, frame-by-frame `opencv` counts               | **0 mismatches / 1800 frames** — the exit criterion's literal bar.                                                                                                                                                                                                                                                                  |
+| Live run wall time                                                                                              | 136s (full 1800 frames, one-time cache-build cost — same order as before, expected: raw-pass compute is unchanged, only deferred).                                                                                                                                                                                                  |
+| Cached replay wall time                                                                                         | **0.58s** — ~230× faster.                                                                                                                                                                                                                                                                                                           |
+| 4-combo `--sweep` (varying `min_area`/`max_area`/`min_circ`/`max_pellet_frames`) over the full 1800-frame cache | **2.1s total** — "seconds not minutes" for the exit criterion.                                                                                                                                                                                                                                                                      |
+
+`bash scripts/verify.sh` green (including the pre-existing `count-pellets.py --selftest`,
+`analyze-pellet-tracks.py --selftest`, `temporal-count-regression.py` trio — none touched by this
+refactor, all still pass). Validation artifacts (detections cache, live/replay results, sweep
+combos) are at `scratchpad/pellets/h1-cache-test/` (main tree, gitignored, reproducible by the
+commands recorded here).
+
 ### 1.2 — A real labeled set (the F3 gate)
 
 Six hand-counted shots cannot separate the candidates. Hand-counting more is exactly the
 expensive-derivation failure mode `CLAUDE.md` §⚖ warns about, so generate instead.
 
 **Steps.** `scripts/probe/make-synthetic-pellets.py` (committed):
+
+### ✅ 0 — DONE 2026-07-31: owner-counted, committed
+
+**Corrected premise, checked against the primary source before generating anything:** this
+section's "7/9/7/9/8/8" does not match `scratchpad/pellets/HANDOFF.md`'s own 2026-07-26 table —
+that table's 6 rows are 0 (a confirmed false-positive at 31.73s, red VFX only) / 7 / 9 / 7 / 9 / 8.
+The plan's paraphrase dropped the false-positive row and mis-remembered an extra "8". The primary
+table, not the paraphrase, is what this step regenerated against.
+
+**Generator:** `scripts/probe/make-groundtruth-f811.py` (new, committed) — extracts the same 6
+shots (by video time) at 60fps, locates each shot's t0 via the SAME `EVENT_MIN` onset definition
+`read-pellets.ts`'s debounce uses (an onset-edge search narrower than the ~40-frame inter-shot
+cadence, not a wide scan — an earlier, wider version of this search cross-contaminated adjacent
+shots, caught and fixed before generating the committed crops), then crops t0+8..t0+11 around the
+structural crosshair. Rejects any crop whose crosshair jumped >150 zoomed px from t0 (the same
+bound the live pipeline uses elsewhere) rather than silently emitting a mislocked crop.
+
+**Owner-counted result** (2026-07-31), committed at
+`scripts/tests/fixtures/pellets/groundtruth-f8-11.json` +
+`scripts/tests/fixtures/pellets/groundtruth-f8-11/` (compact re-encoded crops, 3.1MB — the
+3×-upscaled review copies were ~21MB, too large to commit, and detectors work at native crop scale
+anyway):
+
+| shot | video_t | peak-frame count (2026-07-26) | f8-11 count (2026-07-31)                            |
+| ---- | ------- | ----------------------------- | --------------------------------------------------- |
+| 0    | 31.73s  | 0 (false positive)            | **0** — re-confirmed, no blast onset in this window |
+| 1    | 32.88s  | 7                             | **7**                                               |
+| 2    | 33.50s  | 9                             | **10**                                              |
+| 3    | 34.27s  | 7                             | **8**                                               |
+| 4    | 36.48s  | 9                             | **9**                                               |
+| 5    | 37.82s  | 8                             | **8**                                               |
+| —    | —       | —                             | 0 red/core hits on any shot                         |
+
+Directionally consistent with the plan's own prediction ("expect true counts ≥ the peak-frame
+counts" — occlusion at the peak should only ever lose pellets, never gain phantom ones): 2 shots
+rose, 4 stayed flat, none fell.
+
+**One real finding surfaced by this pass, not by design:** shot4's structural localization
+mislocked for ~10 frames spanning its f8-11 window (jumped onto a floating damage-number stack —
+caught by the >150px rejection, not silently absorbed into the label). Recovered via a template-
+mode fallback for that one shot. This is evidence Phase 2A's gate-1 near-fraction metric (computed
+over a whole video) can still hide a short per-shot excursion; worth a `docs/handoffs/QUEUE.md`
+line, not re-litigated here.
+
+**Exit criterion MET:** 6 shots, ≥3 frames each (shot0 is the one exception — 1 confirmation frame,
+since it has no blast to sample f8-11 from), owner-counted, committed.
 
 1. Crop real pellet patches (with alpha) from the owner-labeled frames. **This deliberately avoids
    depending on Phase 5's asset extraction** — the labeled set must not be blocked on the riskiest
@@ -506,19 +1485,116 @@ expensive-derivation failure mode `CLAUDE.md` §⚖ warns about, so generate ins
    Particle-Tracking-Challenge metric pair the reference fields select on — plus **phase-resolved
    recall**, which is Phase 3's exit criterion.
 
-**Exit criterion.** Any candidate detector or counter can be scored on one command, across all four
-video backgrounds, and the current pipeline's score is recorded as the baseline to beat.
+### ✅ Steps 1-5 — DONE 2026-07-31: generator + scorer built, current pipeline's baseline recorded
 
-**⚠ Regenerate the real ground truth at f8–11.** `make-groundtruth.py` currently picks each shot's
-peak frame (max bright-dot count) — the frame the owner identifies as **least** readable, where
-pellets occlude. The existing 6-shot labels were counted there and are suspect; expect true counts
-**≥** the recorded 7/9/7/9/8/8. Re-crop at f8–11 and re-count **before** those labels gate anything.
-This is the one piece of hand-labelling worth paying for, and it is small.
+**`scripts/probe/make-synthetic-pellets.py` (new, committed).** Extracts real pellet patches
+(RGBA, soft-edged) from the owner-counted `groundtruth-f8-11.json` crops (214 patches from 5
+shots), composites N=5-10 of them per blast onto a REAL quiet background frame sampled from each
+of the four videos' EXISTING structural-localization dumps in `scratchpad/pellets/`
+(`h4-marciana-structural`, `g2-noir-structural`, `h4-guilty-structural`, `h4-isabel-structural` —
+reused, not re-derived), rendered as full 13-frame sequences using this script's own linear
+interpolation of the owner's qualitative lifecycle table (size 1x→2x by f3, held f3-4, back to 1x
+by f11, alpha-faded f12-13) — clearly documented as a modeling choice, not a second measurement.
+Positions are fixed per pellet across the blast; occlusion is computed from actual circle overlap
+at each frame's scale, so it emerges naturally at the f3-4 peak rather than being special-cased.
 
-**Honest limit — state it in the fixture's README.** Synthetic labels validate the _detector_, not
-the compositing assumption. If the game blends the marker rather than blitting it, synthetic frames
-are systematically easier than real ones and scores run optimistic. **Mitigation, and it is
-mandatory:** the 6 owner-counted shots and the `docs/probe-data/*-sg-band.json` anchors stay as a
+**Caught before trusting any output:** the naive first pass sampled "quiet" (white==0) frames
+without restricting to the fight window, and picked a pre-fight character-bio menu screen as a
+background — caught by visually inspecting a rendered frame, fixed by bounding the search to
+`fightStartVideoT .. +180s` from each dump's own `pellets.json`.
+
+**`scripts/probe/score-pellets.py` (new, committed).** Runs the real `count-pellets.py --temporal`
+(settled filter defaults) on each synthetic sequence, fed a `--crosshair-file` built from the
+label's KNOWN crosshair position (deliberately isolating detection/counting from localization,
+which Phase 2A already owns). Computes position-level Jaccard/F1 (greedy-matched within 20px),
+count RMSE (f8-11 mean vs true count), and phase-resolved recall (1-13). `--selftest` pins
+`match_greedy`'s TP/FP/FN arithmetic against a fixed 3-point example.
+
+**Caught before trusting the first real score:** false positives were IDENTICAL across all 13
+offsets of every sequence (77 total) — a giveaway, since real detectability varies by lifecycle
+phase. Root cause: `is_pellet` is a track-lifetime classification over the WHOLE frame, not
+radius-windowed; scoring wasn't applying the same `pellet_radius` distance gate the real per-frame
+white/red COUNT does. Fixed; the remaining (smaller, still frame-constant) FP count was verified
+by hand to be real static-background clutter within `pellet_radius` of the crosshair — genuine
+given this generator's own honest limitation (see below), not a residual bug.
+
+> **⛔ SUPERSEDED 2026-07-31 — the baseline below was scored on a mislabeled set.** The generator's
+> pellet placement (`r = max(8, gauss(64, 40))`) let ~28.9% of labeled pellets land inside
+> `--center-exclude 36` or off-frame — pellets the correctly-configured counter can never see,
+> labeled as truth anyway. See the corrected baseline immediately below this block, and the
+> generator fix (commit `d18f014`, "§2.2b synthetic screen measured the generator's own
+> center-exclude violation, not the estimators"). Kept for the record, do not use for comparison.
+
+**Baseline (current pipeline, `--seed 20260731 --sequences-per-video 3`, 12 sequences across all
+four videos):**
+
+```
+count RMSE: 2.141   overall Jaccard: 0.511   overall F1: 0.676
+phase-resolved recall:  f1 .663  f2 .627  f3 .518  f4 .518  f5 .554  f6 .614  f7 .639
+                         f8 .651  f9 .675  f10 .639  f11 .663  f12 .349  f13 .012
+```
+
+**2026-07-31 — independently reproduced from tree code, twice, byte-identical (all three overall
+metrics and all 13 phase-resolved recall values both times).** The on-disk `scratchpad/pellets/
+synthetic/` artifact this baseline was originally taken from had gone stale (its background frames
+sat outside the fight-window bound the generator was later given, idx 5583-5614) and scored
+2.314/0.593/0.744 instead — a phantom improvement anyone diffing against the stale artifact would
+have chased. The generator itself was never the problem; only the leftover output was. Regenerated
+with the exact command below and rescored to confirm the numbers above still hold from a clean run.
+
+**✅ RE-BASELINED 2026-07-31, fixed generator (same seed/params, `--sequences-per-video 3`, 12
+sequences; `make-synthetic-pellets.py --audit-labels` on the regenerated `labels.json` reports
+`uncountable_fraction: 0.0` — 89/89 labeled pellets are inside `[42, 160]px` of the crosshair and
+on-frame). Reproduced twice from a clean regeneration (not just re-scoring the same render), byte-
+identical:**
+
+```
+count RMSE: 2.012   overall Jaccard: 0.592   overall F1: 0.744
+phase-resolved recall:  f1 .742  f2 .753  f3 .506  f4 .506  f5 .528  f6 .596  f7 .719
+                         f8 .753  f9 .753  f10 .753  f11 .742  f12 .427  f13 .011
+```
+
+All three overall metrics improved (RMSE 2.141→2.012, Jaccard 0.511→0.592, F1 0.676→0.744) and
+every phase-resolved recall value moved up or held — consistent with removing labels the counter
+was structurally guaranteed to miss. The f3-4 occlusion dip and f12-13 fade-driven collapse are
+still present and still attributable to the generator's own lifecycle curve, per the original
+finding below.
+
+Reproduce: `scripts/probe/.venv/bin/python scripts/probe/make-synthetic-pellets.py --out
+scratchpad/pellets/synthetic-v3-baseline --seed 20260731 --sequences-per-video 3` then
+`scripts/probe/.venv/bin/python scripts/probe/score-pellets.py --labels
+scratchpad/pellets/synthetic-v3-baseline/labels.json` (main-tree absolute paths from a worktree).
+
+**What this result actually shows.** `make-synthetic-pellets.py`'s own `lifecycle_scale()` renders
+1x→2x by f3, holds f3-4, shrinks back to 1x by f11, and `lifecycle_alpha()` fades f12-13 — so the
+f3-4 recall dip and the f12-13 collapse above are consequences of the generator's own construction,
+recovered by the scorer, not an independent discovery of anything. What the result DOES show: the
+generate→detect→score pipeline is wired correctly end-to-end, phase indexing is not scrambled
+anywhere in that chain, and the real (non-lifecycle-aware) detector does lose merged pellets at the
+synthetically-enlarged f3-4 frames specifically — a real property of the CURRENT detector, useful as
+the Phase 2 baseline it's recorded for. **This is NOT independent corroboration of the owner's
+lifecycle spec** (unlike §2.0's run16 area-decay measurement, which was taken for an unrelated
+purpose before the spec existed) and must not be cited alongside it as if it were a second
+confirming data point.
+
+Reproduce: `scripts/probe/.venv/bin/python scripts/probe/make-synthetic-pellets.py --out
+scratchpad/pellets/synthetic --seed 20260731 --sequences-per-video 3` then `scripts/probe/.venv/
+bin/python scripts/probe/score-pellets.py --labels scratchpad/pellets/synthetic/labels.json`.
+Rendered sequences are NOT committed (reproducible-by-command from the committed ground-truth
+fixture + the existing scratchpad dumps, same precedent as H1/2A-G2's dumps) — only the two
+scripts and this baseline are.
+
+**Exit criterion MET.** Any candidate detector/counter scores on one command
+(`score-pellets.py --labels <path>`), across all four video backgrounds, current-pipeline baseline
+recorded above.
+
+**⚠ Honest limit (mandatory, carried forward — do not drop when Phase 2 reads this).** The
+background for one synthetic blast is a SINGLE real quiet frame repeated across all 13 offsets,
+not a real evolving 13-frame background (avoids a fresh 60fps extraction for guilty/isabel/noir,
+whose existing dumps are 30fps — reuse-before-derive). Alpha-blit compositing is also easier than
+however the game actually blends its pellet markers. Synthetic scores are optimistic BY
+CONSTRUCTION relative to real footage. **Mitigation, and it is mandatory:** the 6 owner-counted
+real shots (`groundtruth-f8-11.json`) and the `docs/probe-data/*-sg-band.json` anchors stay as a
 held-out real-data check. A candidate must pass **both** to be adopted. Per
 `docs/VALIDATION-INDEX.md` §"Validating a READER", the existing labeled records are the right
 instrument here.
@@ -527,15 +1603,30 @@ instrument here.
 
 ## Phase 2A — Crosshair localization (the `guilty`/`isabel` blocker)
 
-**Promoted to a first-class phase by Phase 0.1b.** This is not a contingency — it is an
-already-evidenced fault, and it is the _only_ fault visible on `guilty`/`isabel`, which never get far
-enough for any counting method to matter. It runs in parallel with Phase 2; they touch different
-code.
+**⇒ THE CRITICAL PATH (re-scoped 2026-07-30). Do this before 0.5 and before Phase 1.** It was
+promoted to a first-class phase by §0.1b and to the critical path by the failed §0.5 attempt: 0.5
+needs a `noir` dump with a sound crosshair track, and no such dump exists. 2A now gates 0.5, which
+gates Phase 2's one-template-fits-all-units assumption. It is **no longer parallel to Phase 2**.
 
 **The problem.** Crosshair position comes from `cv2.matchTemplate` on a 74×74 ammo-box template
 extracted from one `marciana` frame. It does not generalize (`guilty-sg`: 3 shots on a 180 s fight).
 The per-video-template patch improved `guilty` 3→21 but regressed `noir` 179→107 — so the current
 state is a trade, not a fix.
+
+**⚠ It is worse than §0.1b said — `noir` is affected too.** §0.1b framed this as "`guilty`/`isabel`
+fail to localize, `noir` runs fine (179 shots)." The 2026-07-30 §0.5 attempt found
+`noir-near-ce36`'s crosshair **frozen at the crop's right edge for all 600 frames**, with 1.3% of
+white tracks near it vs `marciana`'s 14.3%. So localization failure is **not confined to
+`guilty`/`isabel`**, and a healthy-looking shot count does not certify a sound crosshair track.
+Treat every video as suspect until it passes the validity check below.
+
+**You already have the lock-quality metric this phase's kill condition asks for.**
+`scripts/probe/analyze-pellet-tracks.py` gained `check_crosshair_validity()` on 2026-07-30: it prints
+a `CROSSHAIR TRACK LOOKS BROKEN` banner and an inline `[crosshair-validity: N% near — OK/BROKEN]`
+tag whenever under 5% of white tracks fall within `pellet_radius` of the reported crosshair.
+Reference points: `marciana`/run16 = **14.3% (OK)**, `noir-near-ce36` = **1.3% (BROKEN)**. Use it as
+the primary instrument — it is objective, cheap, and catches what template-match **confidence does
+not** (noir's confidence is a normal 0.430; the mislock hides inside the healthy 0.33–0.51 band).
 
 **Steps**
 
@@ -553,14 +1644,409 @@ state is a trade, not a fix.
      sound, tuned component of that otherwise-parked tool.
 3. Keep the template-jump gate (`--max-template-disp 150`) regardless — it is validated and cheap.
 
-**Exit criterion.** `guilty` and `isabel` reach detection rates comparable to `noir` (≥60% of
-expected shots, the pre-committed validity bar from the 2026-07-29 plan) **without** regressing
-`noir` or `marciana`. All four videos must pass together — that conjunction is the whole point.
+**Exit criterion — two gates, both required.**
+
+1. **Crosshair validity (primary, objective).** A fresh dump for **all four** videos — `marciana`,
+   `noir`, `guilty`, `isabel` — each scoring **OK** (≥5% near-fraction) under
+   `analyze-pellet-tracks.py`'s `check_crosshair_validity`, ideally approaching `marciana`/run16's
+   14.3%. This is the gate that unblocks §0.5, so it is the one that matters most.
+2. **Detection rate.** `guilty` and `isabel` reach rates comparable to `noir` (≥60% of expected
+   shots, the pre-committed bar from the 2026-07-29 plan) **without** regressing `noir` or
+   `marciana`.
+
+All four videos must pass **together** — that conjunction is the whole point, and it is the thing
+four previous tuning passes each failed. ⚠ **Do not accept a healthy shot count as evidence of a
+sound crosshair**: `noir-sg` produced 179 shots while a `noir` dump was mislocked. Gate 1 is not
+implied by gate 2.
+
+**Deliverable for §0.5:** at least one `noir` dump that passes gate 1, committed or reproducible by a
+recorded command. §0.5 stays blocked until that exists.
+
+### 2A-G2 — Gate 2 on a full `noir` run (also produces §0.5's deliverable) — DONE, all three pass
+
+Gate 1 is met and driver-verified. Gate 2 is unmeasured. **One full-video run settles both**, and its
+dump is exactly what §0.5 has been blocked on since it needs a `noir` dump that is well-localized
+**and** complete.
+
+**Run the END-TO-END orchestrator, not just the counter.** Gate 2 is a shot-level criterion and
+shot debouncing lives in `read-pellets.ts`; `count-pellets.py` alone yields per-frame counts, not
+shots.
+
+```sh
+npx tsx scripts/probe/read-pellets.ts "docs/probes/ar-sg-smg/noir sg.MP4" \
+  --fps 30 --zoom 2 --locate structural \
+  --out /Users/maxwellsutton/nikke-sim/scratchpad/pellets/g2-noir-structural
+```
+
+**⚠ This command as written does not produce `tracks.json`** — `--dump-tracks` is opt-in in
+`read-pellets.ts` and this copy-paste omits it, even though gates 2/3 both need `tracks.json` via
+`analyze-pellet-tracks.py`. Every other reproduction command in this doc includes `--dump-tracks
+true`; add it here too:
+
+```sh
+npx tsx scripts/probe/read-pellets.ts "docs/probes/ar-sg-smg/noir sg.MP4" \
+  --fps 30 --zoom 2 --locate structural --dump-tracks true \
+  --out /Users/maxwellsutton/nikke-sim/scratchpad/pellets/g2-noir-structural
+```
+
+⚠ **`--zoom 2` is not optional.** `read-pellets.ts` defaults to `--zoom 3`; every reference run used
+2, and the mismatch **silently yields 0 shots** (H3, still unfixed). Passing it explicitly is the
+workaround, not a fix.
+
+**Pre-committed pass conditions:**
+
+1. **Gate 2 — detection rate ≥60%** of expected shots. Reference: the old template run `noir-sg`
+   found **179 shots** over 5,722 frames (~190 s ⇒ ~286 expected at 1.5/s ≈ **63%**). Structural must
+   not regress detection while fixing localization — **≥179 shots, or ≥60%, whichever is the weaker
+   bar.** ⚠ Per §0.6 the ~1.5/s denominator ignores fire-holds and may be too high; if the rate lands
+   just under 60%, report it against **both** denominators rather than failing it outright.
+2. **Gate 1 holds at full length** — `analyze-pellet-tracks.py` on the run's `tracks.json` still
+   reports **OK** (≥5% near) and wander ≫300 px. The 600-frame slice gave 21.2% / 1675 px; a
+   full-run collapse would mean the slice was unrepresentative.
+3. **§0.5 becomes answerable** — the dump must carry enough long-lived tracks for the normalised
+   area-decay curve to print (the script needs n≥20 per sample position; the 600-frame
+   `noir-near-ce36` had only 5, which is what made §0.5 unanswerable). Then compare the curve to
+   `marciana`'s **0.93 → 0.57 → 0.43 → 0.33 → 0.22** per §0.5.
+
+**⚠ THE ARTIFACT MUST SURVIVE.** The Phase 2A part 2 session's validation dumps did not — the driver
+had to re-derive every number. Write to the **main tree's** `scratchpad/` (the worktree has none, and
+`scratchpad/` is gitignored so it will not be committed), and **confirm the `tracks.json` and
+`pellets.json` still exist on disk after the run** before reporting. Record the exact command in this
+doc. If the run is superseded later, that is fine — losing it silently is not.
+
+**Snag to expect:** the timer spine uses a local VLM endpoint (`--endpoint`, default
+`localhost:8090/v1`). Structural mode skips the VLM _crosshair_ fallback but not the _timer_ read. If
+the endpoint is unavailable, take the fight-clock offset from the existing `noir-sg/pellets.json`
+(`fightStartVideoT = 3`) rather than blocking — shot counts do not depend on the timer.
 
 **Kill condition.** If no localization method generalizes, fall back to a per-video calibration step
 with an explicit committed template per recording and a lock-quality metric that **fails loudly**
 rather than silently producing 3 shots. A counter that knows it failed is usable; one that reports
 3 shots as data is not.
+
+### ✅ 2026-07-30 — 2A-G2 run: all three pass conditions MET
+
+Ran the end-to-end orchestrator per the (corrected, `--dump-tracks true`) command above. Took ~7.1
+min total (78.4s frame extraction + 68.4s VLM timer pass, 191/191 reads, no fallback needed +
+280.7s counter), under the ~14 min estimate. `fightStartVideoT=3s` from the real timer spine,
+matching `noir-sg`'s known value.
+
+1. **Gate 2 (detection rate) — MET.** **214 total shots (174 valid 5–10)** over 190.75s. Against
+   the reference (`noir-sg`: 179 shots / ~286 expected @1.5/s ≈ 63%): 214/286 = **74.8%** on total
+   shots, 174/286 = **60.8%** on valid-only — both clear 60%, and 214 beats the **≥179** absolute
+   bar outright. Landed clean, not near the boundary — the §0.6 fire-hold-adjusted denominator
+   wasn't needed.
+2. **Gate 1 at full length — MET.** `analyze-pellet-tracks.py` on the 5,722-frame `tracks.json`:
+   **21.1% near-crosshair, 1915px wander** — essentially unchanged from the 600-frame slice's
+   21.2%/1675px. No full-run collapse.
+3. **§0.5 answerable — MET.** Normalised area-decay curve printed with **n=1,215** long-lived
+   tracks (life≥5), ≫ the n≥20 floor. First 5 samples: **0.83 → 0.60 → 0.50 → 0.40 → 0.28**,
+   qualitatively similar decay to `marciana`'s **0.93 → 0.57 → 0.43 → 0.33 → 0.22** (lower start,
+   similar slope), then rebounds past sample 5 (→0.65 by sample 20) where marciana's shorter
+   reference doesn't extend — flagged for a §0.5 session to interpret, not analyzed further here
+   (out of 2A-G2's scope).
+
+**Artifacts (main tree `scratchpad/`, gitignored, reproducible by the commands recorded here —
+confirmed on disk after the run, not just claimed):**
+
+- `scratchpad/pellets/g2-noir-structural/pellets.json` (2.8 MB)
+- `scratchpad/pellets/g2-noir-structural/tracks.json` (9.8 MB, 43,164 tracks)
+- `scratchpad/pellets/g2-noir-structural/frames-pellet/` (6.3 GB cached frames — large; safe to
+  clear once the dump above is no longer needed, it is regenerable from the command)
+
+`tracks.json` came from a second, faster invocation: rather than re-run the full ~7 min pipeline
+after discovering the `--dump-tracks` gap, `count-pellets.py` was invoked directly on the
+already-extracted `frames-pellet/` cache with the exact flags `read-pellets.ts` computes internally
+for `--zoom 2 --locate structural` (`--center-exclude 36 --min-area 25 --max-area 750
+--locate structural --struct-templ-h 74 --struct-offset-x 162 --struct-offset-y -12.5
+--pellet-radius 160 --marker-radius 65 --temporal --max-pellet-frames 7 --red-r-min 200
+--red-gb-max 60 --pellet-unit-area 320 --peanut-circ-lo 0.3 --peanut-aspect 0.45
+--peanut-max-mult 0 --dump-tracks <path>`), then verified byte-for-byte reproduction against the
+full run's own reported figure (3177/5722 non-zero frames matched exactly) before trusting it for
+gates 1/3 above.
+
+**Exit criterion status: MET.** All three pre-committed pass conditions clear on a full `noir` run.
+
+> **⚠ Correction (driver, same day).** The line originally here said the four-video conjunction was
+> still open because "`guilty` was still failing gate 1 as of the last recorded attempt in this doc."
+> **That was reading stale template-era text** (now banner-marked SUPERSEDED below). `guilty` passes
+> gate 1 at **20.0%** under structural localization, driver-verified. **Gate 1 is met on all four
+> videos.** What genuinely remains is a full-video **gate 2** on `marciana`/`guilty`/`isabel` — only
+> `noir` has been measured end-to-end at full length.
+
+### ⛔ SUPERSEDED (2026-07-30, same day) — TEMPLATE-ERA attempt. `guilty` PASSES gate 1 now; read this as history only.
+
+> **Everything in this subsection predates structural localization** (`--locate structural`) and
+> describes the **template** matcher's behaviour. Its `guilty` verdicts — "2.5% BROKEN", "fails gate 1
+> with BOTH templates at every `--track-conf-min` tried" — are **no longer the status**:
+>
+> | video      | template era (below) | structural, driver-verified |
+> | ---------- | -------------------- | --------------------------- |
+> | `guilty`   | 0–2.5% **BROKEN**    | **20.0% OK**                |
+> | `isabel`   | 6.8% marginal        | **20.5% OK**                |
+> | `noir`     | 1.3% **BROKEN**      | **21.1% OK** (full run)     |
+> | `marciana` | 14.3% OK             | **17.0% OK**                |
+>
+> **This stale text already caused harm**: the §2A-G2 session read it as live and reported "did not
+> touch `guilty`'s remaining gate-1 failure" — there is no such failure. That is precisely the
+> `CLAUDE.md` hazard (superseded narration reads as a live claim to every future agent and
+> manufactures phantom findings). Kept rather than deleted because the _root-cause analysis_ below is
+> still valuable and load-bearing; only its verdicts are dead.
+
+#### (historical) 2026-07-30 — template-era attempt: two bugs found and fixed; exit criterion NOT met under templates
+
+**Root cause of the crosshair mislock (§0.1b / ⛔0.5), found by instrumented A/B, not guessed.**
+`count-pellets.py`'s per-frame lock (`--temporal`) accepts the FIRST frame whose match confidence
+clears the base bar (`conf > 0.3`) as `last_acc`, then only re-accepts a later match if it is within
+`--max-template-disp` (150 zoomed px) of that position — otherwise the stale position is carried
+forward forever. This has no way back once the first lock is wrong: on `noir-near-ce36`'s own 600
+frames, the seed at frame ~2 (conf 0.43, verified by cropping the pixels — plain background smoke,
+no box) froze the lock for the whole clip, while conf 0.5–0.8 matches on the REAL box (verified by
+cropping those too — a legible "006" ammo counter next to the reticle) kept recurring and being
+discarded as "jumps" every single time. Confidence never separated the two: healthy reference
+(`marciana`/run16) sits at conf 0.39–0.53 during its correct, continuously-tracking lock — inside the
+SAME band as `noir`'s false seed.
+
+**Fix 1 — confidence-gated (re)acquisition**, `count-pellets.py` (`--relock-conf-min`, default 0.55;
+`--track-conf-min`, default 0.3 = old behaviour, raise to resist slow drift): the very first lock must
+clear the stronger bar (not the base 0.3), and a later match that clears it may override the distance
+gate rather than being discarded as a jump.
+
+**Fix 2 — independent, more severe: temporal shot counts were unconditionally zero.** A variable-name
+collision: `main()` sets `active` once as the `--backend` selector dict, then the `--temporal`
+per-frame tracking loop reuses the SAME name for its per-frame active-track list (`active = []`),
+permanently rebinding it for the rest of the function. The results loop's `if name in active` then
+checks a backend-name STRING against a list of `(track_id, x, y, is_red)` TUPLES — always false, so
+every entry falls to the zero-fill branch regardless of `--backend` or crosshair quality. Fixed by
+renaming the loop-local list to `frame_active`.
+
+> **✅ The fix is CORRECT — verified independently.** A/B of the pre-fix (`2a1e99c`) and post-fix
+> scripts over the same 19 `run16` frames with `run16`'s own flags: **pre-fix `total_white=0` across
+> all 19 frames; post-fix `8, 1`.** The bug and the fix are both real.
+>
+> **⚠ Two claims about its PROVENANCE were wrong — corrected 2026-07-30 by the driver.**
+>
+> 1. **It was NOT introduced by the `fix/pellet-counter-restore` merge.** The shadowing is byte-identical
+>    at `6cf3dbf` (pre-merge) and `2a1e99c` (post-merge). `git log -S` dates it to **`1d3c721`,
+>    2026-07-24 12:33 ("pellet tuning")** — six days before the merge. The merge is exonerated.
+> 2. **"This is why `noir-near-ce36` under-reported" does not follow**, and there is an unresolved
+>    discrepancy underneath it. Every reference run **postdates** the 12:33 bug commit yet has ~50%
+>    non-zero reads: `run16` (12:58) 73 shots / 927 of 1800 non-zero; `run18` (13:46) 70 / 925;
+>    `noir-sg` (07-29) 179 / 2691. If the committed code zeroed everything, those are impossible.
+>
+> **⇒ The real finding, and it is bigger than the bug.** The committed mainline `count-pellets.py`
+> has been unable to produce temporal counts **since 2026-07-24**, while every reference number this
+> plan cites came from a version that **is not what is in the tree** — almost certainly the
+> `fix/pellet-counter-restore` worktree that was live that day. So the reference runs are **not
+> reproducible from committed code**. That is a constraint-9 problem one level up from the usual one:
+> not "the instrument is in `/tmp`" but "**the instrument in the tree is not the instrument that
+> produced the numbers.**"
+>
+> **Consequences to act on:**
+>
+> - Do **not** treat run16/run18/noir-sg as reproducible baselines until a post-fix run reproduces
+>   them. The `run16` numbers underpin §2.0's lifecycle corroboration and the committed fixture. The
+>   fixture _data_ is unaffected (it is stored output), but its _provenance_ is now uncertain.
+> - **Add a regression test** pinning "temporal mode yields non-zero counts on a known frame set."
+>   This bug survived six days and a merge precisely because nothing asserted it. Needs a small
+>   committed frame fixture — `scratchpad/` is gitignored, which is why no such test exists.
+> - Re-check whether the 2026-07-29 REJECT runs were affected. `noir-sg`'s 179 shots say no, but that
+>   run's provenance is now as uncertain as the rest.
+
+**A/B evidence (600-frame / 20s slices, cached frames where noted, `--relock-conf-min 0.55` default;
+`analyze-pellet-tracks.py`'s `check_crosshair_validity`, ≥5% = OK):**
+
+| Video (window)                                        | Template  | Before (this session's baseline)                   | After both fixes                                         |
+| ----------------------------------------------------- | --------- | -------------------------------------------------- | -------------------------------------------------------- |
+| `noir` t=40–60s (cached frames)                       | global    | 10.5% OK¹ / per-video 1.3% BROKEN                  | 13.3% OK                                                 |
+| `noir` t=40–60s (real pipeline)                       | per-video | —                                                  | **11.8% OK, 15 shots (10 valid), avgTotal 8.3**          |
+| `isabel` t=40–60s (real pipeline)                     | per-video | —                                                  | 6.8% OK, 9 shots (5 valid), avgTotal 7                   |
+| `guilty` t=40–60s (real pipeline)                     | per-video | 0.3–0.0% BROKEN (global) / 0.0% BROKEN (per-video) | **2.5% BROKEN** — still fails                            |
+| `marciana` t=0–60s (cached, =run16 range)             | global    | 14.3% OK (original run16)                          | 10.5% OK                                                 |
+| `marciana` t=40–60s (real pipeline, different window) | per-video | —                                                  | **2.8% BROKEN** — same reference video, different window |
+
+¹ "Before" for `noir` already reflects re-running the ORIGINAL (unfixed) code against the global
+template on this slice — i.e. `noir`'s failure was never inherent to the global template; only the
+per-video template + frozen seed combination failed it. Full method + all raw numbers are reproducible
+from this section's description; nothing here was hand-picked without checking the failing case too.
+
+**Reading the table honestly:**
+
+- Fix 2 is unconditionally correct and load-bearing — it is a straight variable-collision bug, not a
+  tuning question, and it blocks EVERY detection-rate (gate 2) measurement until fixed. Land it
+  regardless of what happens with Fix 1.
+- Fix 1 is a real, measured improvement (`noir` global-template near-fraction 10.5%→13.3%; `isabel`
+  and `noir` per-video-template now both pass where the session's baseline broke) but **not a
+  complete solve**: `marciana` — the healthy reference video itself — fails gate 1 (2.8%) on a
+  DIFFERENT 20s window (t=40–60s) of the same video that passes at t=0–60s. Seed quality is a
+  per-window lottery; raising the relock bar makes bad seeds rarer, not impossible, and costs a
+  bootstrap delay when the first ≥0.55 match happens to be late (measured on `marciana`/run16 full
+  1800-frame replay: 16s / 480 frames before first lock, vs the original code's near-instant lock).
+- `guilty` fails gate 1 with BOTH templates, at every `--track-conf-min` tried (0.3/0.4/0.45/0.5), and
+  its per-video template's own bootstrap extraction (conf 0.546, comparable to `noir`'s 0.545 and
+  `isabel`'s 0.526) is not obviously worse — so this is not simply "the template is bad." Unexplained;
+  not investigated further this session. A structural (non-template) localization method — plan option
+  2 — is the most likely next step, since it doesn't depend on finding one lucky confident match.
+
+**Exit criterion status: NOT MET.** Gate 1 fails for `guilty` on every configuration tried, and the
+"all four videos, together" conjunction the criterion asks for is therefore unmet even though 3 of 4
+pass individually. Gate 2 numbers above are single 20s-window samples, not full-video rates, and
+should not be read as the ≥60%-of-expected figure the criterion asks for.
+
+**Deliverable for §0.5 — MET.** `noir` t=40–60s (real `read-pellets.ts` pipeline, both fixes,
+`--zoom 2`) passes gate 1 at 11.8% with 15 real shots recovered. Reproduce with:
+
+```sh
+npx tsx scripts/probe/read-pellets.ts "docs/probes/ar-sg-smg/noir sg.MP4" \
+  --at 40 --dur 20 --fps 30 --zoom 2 --dump-tracks true --out <dir>
+```
+
+(needs `scripts/probe/.venv` — in a worktree, symlink it from the main tree first; see START HERE.)
+
+**Housekeeping note — `--zoom` default mismatch.** `read-pellets.ts`'s own default is `--zoom 3`, but
+every reference run this plan cites (`run16`, `marciana-solo`, `noir-sg`, `guilty-sg`, `isabel-sg`) was
+produced with `--zoom 2`, and the per-video ammo template extractor's own default is also `--zoom 2`.
+Passing no `--zoom` flag silently extracts frames at 3x while other defaults still assume 2x scaling in
+places, and produced 0 shots in an early attempt this session before the mismatch was caught. Not fixed
+here (out of scope for the localization bug) — pass `--zoom 2` explicitly until it is.
+
+**Not done this session:** guilty's fix, a full-video (not 20s-slice) re-run of any video, and the
+detection-rate (gate 2) measurement the exit criterion actually asks for. Both fixes are code changes
+only, validated on A/B slices; no `docs/probe-data/` fixture or committed dump was added — the noir
+artifact above is reproducible-by-command, not committed (constraint 9 is satisfied by the code fix
+being in the tree at `scripts/probe/count-pellets.py`, not by a raw JSON dump).
+
+### ✅ 2026-07-30 — DRIVER VERIFICATION of the structural-localization result: CONFIRMED, and it is stronger than reported
+
+> **Independently reproduced by the driver on fresh 600-frame slices**, because the session's own
+> validation dumps **did not survive** — no `tracks.json` newer than 12:00 existed anywhere in either
+> tree. The code, fixture and selftest are committed (good); the _evidence_ was not. That is the
+> constraint-9 failure this thread has already been bitten by once, and it is why the numbers below
+> were re-derived rather than accepted.
+>
+> **Gate 1 — reproduced on all four, structural mode, 600-frame slices:**
+>
+> | video (slice)    | reported | driver re-run | wander  | verdict |
+> | ---------------- | -------- | ------------- | ------- | ------- |
+> | `marciana`       | 19.1%    | **17.0%**     | 1304 px | OK      |
+> | `noir-near-ce36` | 21.2%    | **21.2%**     | 1675 px | OK      |
+> | `guilty-sg`      | 19.7%    | **20.0%**     | 1092 px | OK      |
+> | `isabel-sg`      | 19.9%    | **20.5%**     | 1392 px | OK      |
+>
+> All ≥5% and all far clear of the 300 px freeze line. `noir-near-ce36` — the frozen 87 px / 1.3% dump
+> that started this whole thread — now reads **21.2% / 1675 px**.
+>
+> **⇒ NEW: the 17–22% band is legitimate, and run16's "healthy reference" was itself degraded.**
+> The obvious worry was that a _higher_ near-fraction than run16's 14.3% meant the metric was being
+> gamed — a lock parked somewhere busier rather than somewhere correct. Tested directly:
+>
+> - Structural vs run16's validated lock over 600 comparable `marciana` frames: **median distance
+>   1.4 px** (dx +1.0, dy +0.0). The two methods find the _same place_ on ~70% of frames — so
+>   structural is not sitting somewhere else.
+> - On the **183 frames where they disagree by ≥50 px** (bimodal: agree ~1 px, else ~500 px), score
+>   the **same detections** against both candidate crosshairs: **240 white detections near
+>   structural vs 62 near the template — 3.87×.**
+>
+> ⇒ **Where they differ, structural is right and the old template lock was wrong.** The higher
+> near-fraction reflects better localization, not a gamed metric.
+>
+> ⚠ **Consequence for the plan's own reference:** run16's crosshair was wrong on roughly 30% of
+> frames — and the disagreement is _not_ concentrated in the known dead windows (27% dead vs 36%
+> control), so it is a general template weakness, not just a dropout artifact. run16 underpins §2.0's
+> lifecycle corroboration and the committed fixture. The lifecycle curve is computed from per-track
+> areas over time and is unlikely to be overturned, but **the reference is noisier than this plan has
+> been treating it.** Re-derive §2.0's corroboration against a structural-mode run before Phase 2
+> leans on it further.
+>
+> **Still genuinely open (the session flagged this honestly):** gate 2 (detection rate ≥60%) is
+> unmeasured on full videos. Gate 1 is necessary, not sufficient — §0.5 needs a `noir` dump that is
+> both well-localized _and_ complete. Do not mark Phase 2A closed on gate 1 alone.
+
+### ✅ 2026-07-30 — Phase 2A part 2, structural (non-template) localization: gate 1 MET on all four videos
+
+**What it is.** `locate_ammo_structural()` (`scripts/probe/count-pellets.py`) replaces
+`cv2.matchTemplate` with the shape model `segment_ammo_digits` already uses to _read_ the counter:
+2-3 bright-or-red glyph-shaped components sharing a top edge (`DIGIT_H_RANGE`/`DIGIT_W_RANGE`/
+`DIGIT_ROW_TOL`, reused as-is), scored by the mean brightness of the padded margin AROUND the row
+excluding the glyphs (the counter sits on a dark badge; a floating damage number of the same glyph
+shape does not). Selection (`locate_crosshair_structural`) prefers the candidate nearest the previous
+lock within `--max-template-disp` (continuity, same gate the template path uses); whenever the frame
+yields ANY candidate it re-acquires from that frame's own pixels, the darkest-surround candidate
+winning outright if none is within `max_disp`. When candidate generation returns NOTHING it CARRIES
+THE PREVIOUS POSITION FORWARD, returning `(last_acc, None, True)` — the third element, `held`, is the
+explicit signal (per-frame `cross_held` in both dump formats, abstention reason `held-lock`). That
+case is measured as overwhelmingly RELOAD, where the badge is crisp but renders no digits, so relaxing
+the gate to "recover" it is strictly worse than holding — `docs/probe-runs.md` §6. Enabled via `--locate structural` (`count-pellets.py`) / `--locate structural`
+(`read-pellets.ts`, which also skips the now-unneeded per-video template extraction and VLM crosshair
+fallback). `--relock-conf-min 0.55` is untouched — this is a different code path, not a retuned
+threshold, and does not revisit §H5's finding that no confidence value can work for the template path.
+
+**Why this isn't another confidence knob.** §H5 killed `--relock-conf-min` tuning because the false
+seed and the real box occupy overlapping _scalar confidence bands_ — no cutoff separates them. This
+method has no such scalar: admission is categorical (a component either has 2-3 row-mates of digit
+size sharing a top edge, or it doesn't), and disambiguation between two admitted candidates uses two
+cues from a different evidence class (physical badge darkness + frame-to-frame continuity), not a
+threshold on the same channel that failed.
+
+**Result — the concrete target.** `marciana` (slug `marciana`, SG/Iron, `marciana-solo.MP4`) dead
+windows, direct `count-pellets.py --temporal --locate structural` over the cached 1800-frame
+`h1-marciana-treecode` set (same params as H1):
+
+| Window (fightT)             | Old (template, §H5)  | New (structural)                   |
+| --------------------------- | -------------------- | ---------------------------------- |
+| DEAD 41.4-53.3 (358 frames) | 0% frames ≥0.55 conf | **53.9% non-zero, 358/358 locked** |
+| DEAD 68.7-75.4 (202 frames) | 0% frames ≥0.55 conf | **53.5% non-zero, 202/202 locked** |
+| control 56-68 (361 frames)  | both detect          | 48.5% non-zero, 361/361 locked     |
+
+The dead windows are no longer dead — their non-zero-frame rate now _exceeds_ the control window and
+matches run16's independent per-frame-activity prediction (46% both windows, §H1 driver analysis).
+Confirmed end-to-end (not just the direct-frame path) via the real orchestrator on the actual video,
+`fightT` 35-50s spanning straight through the 41.4 dead-window boundary:
+
+```sh
+npx tsx scripts/probe/read-pellets.ts docs/probes/clean-weapons/marciana-solo.MP4 \
+  --at 41 --dur 15 --fps 30 --zoom 2 --locate structural --dump-tracks true --out <dir>
+# -> 19 shots (15 valid, expected ~23), avg total 7.9 — shots recovered continuously through
+#    fight=41.10s..49.77s, the exact stretch that read 0 shots under template matching.
+```
+
+**Gate 1 (crosshair validity) — MET, all four videos together**, via
+`analyze-pellet-tracks.py`'s `check_crosshair_validity()` (≥5% = OK) and `crosshair_wander()`
+(FROZEN below 300px), same cached frame sets `guilty`/`isabel` failed gate 1 on under every
+template configuration tried:
+
+| Video      | Frames | Before (template, this doc's own record) | After (structural)   |
+| ---------- | ------ | ---------------------------------------- | -------------------- |
+| `marciana` | 1800   | 14.3% OK (healthy reference)             | **19.1% OK, 1783px** |
+| `noir`     | 600    | 1.3% BROKEN, 87px FROZEN                 | **21.2% OK, 1675px** |
+| `guilty`   | 5738   | 0.0-2.5% BROKEN on every config tried    | **19.7% OK, 2326px** |
+| `isabel`   | 5721   | 6.8% OK (marginal, per-video template)   | **19.9% OK, 2080px** |
+
+All four now score OK and land in a tight 17-22% band — above `marciana`/run16's own reference
+(14.3%), not just above the 5% bar — with wander 1638-2326px, in family with run16's 2351px and far
+above the 300px freeze line. Full-run lock coverage: `guilty` 97.8%, `isabel` 97.9% (vs "3 shots on a
+180s fight" — i.e. essentially never — under template matching).
+
+**Gate 2 (detection rate ≥60% of expected) — NOT independently re-measured this session** for the
+full-video case on all four; not run for lack of time, not because it failed. What exists: the
+15s `marciana` smoke run above recovers 19/23 shots (83%) through the dead-window boundary, and the
+full-run lock-coverage/non-zero-frame numbers above are consistent with real, continuous firing
+detection rather than the near-total loss template matching produced on `guilty`/`isabel`. A proper
+gate-2 number needs a full-video `read-pellets.ts --locate structural` run (with the VLM timer pass)
+on all four videos, which this session did not do.
+
+**Self-test committed:** `scripts/probe/count-pellets.py --selftest` validates
+`locate_ammo_structural` against `scripts/tests/fixtures/pellets/ammo-box-structural-frame350.png` —
+a real crop (marciana, frame 350, inside the DEAD 41.4-53.3 window) containing both the true ammo
+box and a 5-digit floating damage number of similar glyph brightness, so the test proves the
+STRUCT_ROW_SIZES count filter rejects the look-alike rather than merely getting lucky on one frame.
+
+**Not done / open:** the digit-row → crosshair offset (`--struct-offset-x/y`, default 162/-12.5 at
+zoom 2) was calibrated against the template path's own offset on 30 `marciana` frames (sd < 1px) —
+it has not been independently cross-checked against `noir`/`guilty`/`isabel`, only via the validity
+metric working end-to-end on those videos. Gate 2 (above). Whether the structural method should now
+_replace_ the template default or stay an opt-in `--locate structural` flag is an owner call, not
+made here.
 
 ---
 
@@ -620,17 +2106,81 @@ a measurement nobody took with it in mind.
    per-frame area, circularity, is_red) alongside.
 3. **Add gap tolerance to the linker.** `count-pellets.py:296` matches only `last_frame == fi-1` —
    zero tolerance. One missed frame splits a pellet in two. (Note: Phase 0.2 showed this is _not_ the
-   dominant fault, so this is hygiene, not the fix. Do not over-invest.)
+   dominant fault, so this is hygiene, not the fix. Do not over-invest.) **However:** 58.8% of tracks
+   are life=1, and P0.2 also showed per-frame detection is approximately correct — so the detector
+   _sees_ the pellets and the linker fails to connect them. If Phase 2's track emission still shows
+   > 40% life=1 after gap tolerance, the linker is the bottleneck and `trackpy.link()` moves from
+   > "only if measurable fragmentation" (step 9) to required.
 4. **Estimate t0 per blast** from the ensemble of candidate tracks — the shared-onset constraint makes
    this robust: the correct t0 is the one that maximises how many tracks fit the expected curve.
-5. **Score each track against the lifecycle template** (normalised size-vs-phase, plus the
-   fade-before-vanish requirement). Accept/reject on the fit. **This replaces the `lifetime <= 7`
-   hard cutoff entirely**, which also retires the Phase 0.3 boundary bug.
+   **Overlapping blasts:** at 1.5/s cadence and 60 fps, blasts are ~40 frames apart with 13-frame
+   lifecycles, so they usually don't overlap. When two t0 candidates score within 20% of each other
+   and are separated by <15 frames, treat the window as overlapping blasts: assign tracks to the
+   nearer t0 by onset frame, and count each blast on its own f8–11 window. If the overlap makes
+   phase assignment ambiguous for >30% of tracks in the window, flag the shot as low-confidence
+   rather than forcing a count. (This is a specification, not a suggestion — the implementer should
+   not have to invent the overlap policy.)
+5. **Score each track against the lifecycle template** (normalised size-vs-phase fit over whichever
+   phases the track has observations for). Accept/reject on the fit. **This replaces the
+   `lifetime <= 7` hard cutoff entirely**, which also retires the Phase 0.3 boundary bug.
+
+   **Fade (f12–13) is OPTIONAL corroborating evidence, never a requirement.** An earlier draft of
+   this step required a track to fade before vanishing to score as a pellet. **Revised 2026-07-31**
+   (kimi-k3 preop revision #5, fable preop revision #3, both reviewers independently, `/logic-gate`
+   pre-op on this plan): measured phase-resolved recall on the committed `groundtruth-f8-11.json`
+   fixture is **f12 = 0.349, f13 = 0.012** — the detector essentially never observes the fade, so a
+   "must show fade" acceptance clause would reject nearly every real pellet and manufacture a large
+   cold bias, which is exactly the failure mode this redesign exists to remove. The cross-unit
+   template validation this plan cites (§2.0's corroboration table) also only covered samples 1–5 of
+   the normalised area profile — the tail (fade region) was declared contamination there, so the
+   fade clause never had a validated measurement behind it in the first place. A track that ends at
+   f11 with a monotone decay fit **must** score as a full pellet; a track that also shows f12–13
+   fade scores no worse and may be weighted as slightly higher-confidence, but its absence is never
+   disqualifying.
+
+   **PARTIAL tracks (frames missing to detection dropout) score against the SUBSET of the template
+   their observed frames cover, not the full 13-frame curve.** Specification (to be validated in
+   implementation, not a measured result): after t0-alignment, a track's observed frames map to a
+   set of expected lifecycle phase-indices; the track is scored ONLY against those indices — a track
+   observed solely in the f8–11 window is scored purely on decay-shape fit (each observed frame's
+   area sits within tolerance of that phase's expected size, and successive observed frames are
+   non-increasing), with no penalty and no requirement for f1/peak/fade evidence it was never
+   expected to have. A track observed only near the peak (f3–7) is scored on local shape only (rapid
+   growth then the start of decay), which is the noisiest region and where per-frame tolerance should
+   be loosest. This keeps identity scoring honest about what each fragment actually demonstrates,
+   without attempting to STITCH fragments across the f3–4 merge into one pellet — that (kimi-k3 preop
+   revision #3: the merged-peak fragment/stitch policy) is a separate, still-BLOCKED design question
+   for the owner-gated build pass, not resolved by this specification.
+
 6. **Apply phase-indexed size gating** — at each frame, gate area against the expected size for that
    phase rather than the global 25–750 band.
 7. **Count accepted tracks, using f1 and f8–11 for the count/position read.** Do **not** count on all
    13: f3–4 merge and would re-introduce the occlusion undercount; f12–13 are transparent and add
    variance.
+
+   **The counting rule, precisely (added 2026-07-31, kimi-k3 preop revision #4 / fable preop
+   revision #5, both flagged this as unspecified; `/logic-gate` pre-op on this plan).
+   SPECIFICATION — to be validated in implementation, not a measured result:**
+
+   Per-blast count = the number of **distinct spatial clusters** among accepted-track positions
+   sampled at f1 and f8–11, where two accepted tracks (or track fragments) are merged into one
+   cluster iff their counting-frame position lies within one pellet diameter (`pellet_unit_area`'s
+   implied radius) of each other after t0-alignment. **Not** a per-frame max/mean/median blob count:
+   step 5 already replaced per-component blob-counting with track-level identity scoring, so
+   re-deriving the count from raw per-frame totals across four f8–11 frames would reintroduce the
+   exact frame-to-frame variance phase-locking exists to remove, and would double-count a physical
+   pellet that fragmented into two accepted tracks (a real risk — see the 60 fps ITEM 2 premise-check
+   finding below that gap-tolerance-eligible short tracks remain common even at native 60 fps).
+   Position-based dedup directly targets that fragmentation risk without requiring the full
+   merged-peak stitch policy (kimi-k3 revision #3), which stays a separate, BLOCKED design question.
+
+   **Which frame supplies the position when f1 and f8–11 disagree:** priority order **f1 > f8 > f9 >
+   f10 > f11** — use the track's f1 observation if it has one (the pellet has not yet grown into its
+   2× peak, so it is least likely to be spatially smeared into a neighbour), else the earliest
+   available frame in f8–11 (closest to the tightest, most-decayed-but-still-legible state, least
+   accumulated drift). This is a specification, not a tuned parameter; validate the priority order
+   against the labeled set before relying on it for band assignment.
+
 8. Keep the marker-based binary core-hit fallback (`read-pellets.ts:632–648`) unchanged — it is
    owner-validated and orthogonal. Red pellets follow the same lifecycle, so phase-indexed gating
    applies to them too (with the `red-gb-max` ceiling raised toward the ~90 anti-aliasing floor
@@ -638,18 +2188,466 @@ a measurement nobody took with it in mind.
 9. `trackpy.link()` replaces the greedy linker **only if** the greedy one measurably fragments on
    cached detections. Do not swap speculatively.
 
+### 2.1b — What the 60 fps + ROI migration invalidates (added 2026-07-31)
+
+Step 1's move to 60 fps native sampling + a disc-ROI crop changes the coordinate frame and the
+frame-index meaning of everything downstream. Flagged in `/logic-gate` pre-op (kimi-k3
+blast-radius notes, fable blast-radius notes + revision #6) as under-specified in the original
+draft. Enumerated concretely, by path:
+
+- **30 fps detection caches are invalid inputs for any 60 fps work.** `scratchpad/pellets/run16/`
+  (and the earlier numbered `run*` dirs) were extracted at 30 fps; `scratchpad/pellets/
+h1-marciana-treecode/` was extracted with `--fps 30` (`docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md:770`).
+  None of these can stand in for a 60 fps run — re-extract, don't reuse.
+- **The Phase 1.1 "0-mismatch/1800-frame" cache-replay validation standard is a 30 fps result**
+  (`h1-marciana-treecode`, 1800 frames at 30 fps). It does not transfer to 60 fps and must be
+  re-established there once Phase 1.1's cache format is exercised at 60 fps.
+- **`scripts/tests/fixtures/pellets/h1-cache-slice.json`** (the `--cache-selftest` fixture pinned in
+  `count-pellets.py:1071` as `CACHE_SLICE_FIXTURE`) is a slice of the 30 fps `h1-marciana-treecode`
+  cache. **Must be re-pinned at 60 fps** before `--cache-selftest` says anything about a 60 fps
+  pipeline; until then it validates only that cache-then-sweep still reproduces a 30 fps result.
+- **`scripts/tests/fixtures/pellets/run16-tracks-slice.json`** (the `--selftest` fixture for
+  `analyze-pellet-tracks.py`, `params.max_pellet_frames: 7`) is the 30 fps `run16` slice. Its cited
+  numbers (life=1 58.8%, max-at-first 73.5%) are 30 fps facts about a 30 fps sample and must not be
+  read as 60 fps facts once a 60 fps re-run exists; re-pin only together with a real 60 fps re-run,
+  not preemptively.
+- **`match_dist = 30`** — `temporal_filter`'s default parameter (`count-pellets.py:330`) and the
+  hardcoded fallback in `build_tracks_and_counts` (`count-pellets.py:425`, commented `# match_dist`)
+  — is a fixed **zoomed-pixel** linking radius sized against 30 fps frame-to-frame motion (this
+  plan's own §"What was measured" table: median 4 px, p90 15 px per frame, at 2× zoom). At 60 fps the
+  same physical motion happens over roughly half the time-per-frame, so per-frame displacement is
+  expected to roughly halve; **30 zoomed px is not re-derived for this migration, only flagged** —
+  sweep it against 60 fps cached detections (Phase 1.1) before trusting the linker's frame-to-frame
+  matches at the new rate.
+- **`max_pellet_frames = round((13/60)*fps)`** (`read-pellets.ts:505`) is **already fps-parametrized**
+  and does **not** need migration — at fps=60 it evaluates to exactly 13 (the native lifecycle
+  length), which is the reason this constant was written this way. Listed here only to state
+  explicitly that it is NOT on the invalidated list, since everything around it is.
+- **`scripts/tests/fixtures/pellets/groundtruth-f8-11.json` is already 60 fps native**
+  (`clip: {"at": 15, "dur": 30, "fps": 60, "zoom": 2}`, generated from `marciana-solo.MP4`) — **not**
+  invalidated by this migration. It carries per-shot counts and frame crops, not absolute xy pellet
+  positions, so it is also insulated from a coordinate-frame change in step 1's ROI crop (per
+  fable's assumptionsFlagged: "the existing labeled records... carry counts, not labeled xy pellet
+  positions"). The OLDER, superseded 2026-07-26 6-shot peak-frame ground truth
+  (`scratchpad/pellets/HANDOFF.md`, main-tree, untracked) was already retired by this fixture and is
+  not a live migration concern.
+- **The crosshair-distance filter** (`--pellet-radius`, `--center-exclude`, both in zoomed px, not
+  fps-dependent) is unaffected by the fps change itself, but **is** affected by step 1's ROI crop:
+  today's extraction is a fixed, frame-relative crop (`pelletCrop`, independent of the crosshair),
+  so `cross_positions` are frame-absolute coordinates; a disc ROI crop centred on the tracked
+  crosshair makes the crop itself move frame-to-frame, so downstream code reading `cross_positions`
+  against track `xs`/`ys` must agree on whether those are frame-absolute or ROI-local coordinates.
+  Unspecified in the current draft — an implementation-time decision, not resolved here.
+- **`score-pellets.py` needs partial-track support before a 60 fps track-level number is
+  computable.** It currently scores dense per-frame detections (Jaccard/F1/count RMSE) against
+  synthetic sequences; step 5's identity scoring and step 7's counting rule (§2.1 above) both
+  operate on tracks with potentially-missing phases, which is a different artifact shape than what
+  `score-pellets.py` consumes today. Flagged by fable's blast-radius notes; not built here.
+- **§2.4 already declares run16–run19 non-comparable to anything produced after Phase 2** (the count
+  definition changes). This extends that declaration explicitly to the fixtures above: any number
+  quoted from `h1-cache-slice.json`, `run16-tracks-slice.json`, or the retired 6-shot HANDOFF.md
+  table is a 30 fps (or pre-lifecycle) fact and must not be compared directly to a post-migration 60
+  fps reading without re-deriving the comparison at matching fps.
+
 ### 2.2 — Exit criterion
 
 Count RMSE improves on the Phase 1.2 labeled set **and** the re-generated f8–11 ground truth (per
-Phase 1.2 — the existing 6-shot labels were counted on peak frames and are suspect), **and** the
+Phase 1.2 step 0 — the existing 6-shot labels were counted on peak frames and are suspect), **and** the
 `noir` per-band means move toward the `noir-solo-recon.json` anchors (mid 10.0 / near 8.9 / far 7.4 /
 midfar 8.8) — specifically the far/near = 0.831 and midfar/near = 0.989 **shape ratios**, since the
-2026-07-29 failure was band-dependent flattening.
+2026-07-29 failure was band-dependent flattening. **These anchor values are `impliedRealLanding` ×10
+from `docs/probe-data/noir-solo-recon.json`'s per-band reconciliation table (mid 1.0/near 0.89/
+far 0.74/midfar 0.88) — a damage-counter-derived estimate of real pellet landing, not a directly
+observed pellet count, and its independence from the pixel-based pellet counter under test here has
+never been separately demonstrated. Treat it as the best available anchor, not as ground truth beyond
+dispute.**
+
+> **✅ 2026-07-31 CORRECTION — mandatory, from the owner-invoked `/logic-gate` pre-op (BOTH
+> cross-family reviewers, `kimi-code/k3` and `claude-fable-5`, independently).** The paragraph above
+> and the floor below **cannot, by themselves, discharge a stopping rule**. At exactly the floor
+> (precision 0.90 / recall 0.80), the expected accepted count is `TP/precision = 0.8N/0.9 = 0.889N`
+> — a systematic **−11%** (**−1.1 pellets/10**), **4.4×** the ±0.25 pellets/10 error budget the whole
+> redesign exists to hit. A counter can pass the floor exactly as written and still fail the point of
+> Phase 2 entirely. Separately, "RMSE improves" / "moves toward the anchors" is **directional, not a
+> threshold**, and — the sharper problem — **a uniform cold bias preserves the far/near and
+> midfar/near shape ratios EXACTLY** (both anchor and candidate scale by the same factor), so the
+> shape-ratio check is _structurally blind_ to exactly the error class the budget cares about. Neither
+> check can discharge a stopping rule that is itself stated as a bias number.
+
+**Pre-committed net-bias criterion (governs — the floor below is necessary, not sufficient).**
+
+> Signed bias := mean(estimated_count − true_count) over shots, in pellets.
+
+Pass requires **ALL** of:
+
+- **`|bias| ≤ 0.25 pellets`** on the Phase 1.2 synthetic labeled set, **AND**
+- **`|bias| ≤ 0.25 pellets`** on the 6-shot held-out real set (`groundtruth-f8-11.json`, re-scored
+  per §2.4), **AND**
+- **`|per-band bias| ≤ 0.25 pellets/10`** against the `noir-solo-recon.json` anchors, **where bands
+  exist** (n per band ≈ 25–45 — see §2.2a below for whether this is even measurable).
+
+**Signed bias must be reported PER BAND**, not only as the far/near = 0.831 / midfar/near = 0.989
+shape ratios above — per the correction, a uniform cold bias would pass the shape check while
+failing the bias budget outright.
+
+**Floor (necessary but NOT sufficient — unchanged from the original, do not move/reinterpret):**
+precision ≥ 0.90, recall ≥ 0.80 on the Phase 1.2 labeled set, per the "Quantitative separation
+criterion" below. A candidate must clear the floor **and** the net-bias criterion above; clearing
+only the floor is not a pass.
 
 **Precision check, and it is the real prize:** the "life=1 blips indistinguishable from pellets"
 population should now be separable. Report how many candidate tracks the lifecycle filter rejects and
 spot-check a sample visually. If it rejects near-zero, the lifecycle template is not discriminating
 and step 5 has failed regardless of what the count does.
+
+**Quantitative separation criterion (pre-committed).** "Separates" means: at the chosen score
+threshold, **precision ≥ 0.90** (≤10% of accepted tracks are blips) **and recall ≥ 0.80** (≥80%
+of true pellets accepted), measured on the Phase 1.2 labeled set. If the best threshold cannot reach
+both, the lifecycle template is not discriminating and step 5 has failed. These numbers are
+pre-committed before Phase 2 code is written — do not adjust them after seeing the data.
+
+> **✅ RESOLVED 2026-07-31 (was: flagged open item for the pre-op).** The pre-op's revision above IS
+> the resolution: the 0.90/0.80 floor now explicitly cannot pass alone — it must be paired with the
+> net-bias criterion, which is measured on the SAME held-out real data (`groundtruth-f8-11.json` +
+> `docs/probe-data/*-sg-band.json`) this flagged item already pointed at. The synthetic-set
+> by-construction-passability concern stands as a reason the held-out check is **mandatory**, not
+> optional — unchanged from the original flag.
+
+> **⚠ Consequence of the §1.2/§2.2b generator bug for THIS criterion (recorded 2026-07-31, fixed the
+> same day, commit `d18f014`).** With 28.9% of the old labeled set's pellets structurally
+> uncountable (inside `--center-exclude`, off-frame, or beyond `--pellet-radius`), the maximum
+> achievable recall on that set was **`1 − 0.289 = 0.711`** — below the pre-committed **recall ≥
+> 0.80** floor, for EVERY candidate, regardless of how good its detector is. The floor was
+> **unreachable by any counter** on the old set, not merely hard. The fix does not relax 0.90/0.80 —
+> it restores the set to one where clearing them is possible at all, which is the opposite of
+> adjusting a criterion after seeing data (the numbers are unchanged; what changed is whether the
+> set can honestly be scored against them).
+
+**Owner spot-check gate.** After the metric criteria above are met, present the owner with 10
+randomly selected shots (5 high-count, 5 low-count) showing the f8–11 frames alongside the
+pipeline's per-frame counts. If the owner judges >2 of 10 as clearly wrong, the metrics are passing
+on a technicality and the error is not random — stop and diagnose before proceeding to Phase 3.
+This is the two-minute check applied to the plan's own output: the owner's eyeball is an independent
+method that the metrics cannot substitute for.
+
+### 2.2a — Power calculation: is the ±0.25 bias criterion even measurable on the data we have?
+
+`CLAUDE.md` §⚖.4: state what would be sufficient, up front. For a signed-bias criterion, "sufficient"
+means the standard error of the bias ESTIMATE is comfortably below the ±0.25 pellets/10 target —
+`SE = SD/√n`, where SD is the per-shot count-error standard deviation. Computed per set, using the
+**already-existing, already-committed current-pipeline control** (not a new candidate result — no
+step-2 estimator numbers were used to write this criterion):
+
+| Set                                                                   | n          | measured/estimated per-shot SD                                                                                            | SE                              | vs ±0.25 target                                                                  |
+| --------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | -------------------------------------------------------------------------------- |
+| 6-shot real set (`groundtruth-f8-11.json`, current pipeline)          | **6**      | **1.671** (measured, `score-pellets.py --real-fixture`) — consistent with the plan's own previously-stated 1.25–1.9 range | **0.682**                       | **2.7× LOOSER** — cannot certify ±0.25 alone                                     |
+| Phase 1.2 synthetic set (current pipeline, `--sequences-per-video 3`) | 12         | 1.079 (measured)                                                                                                          | 0.312                           | 1.25× looser at n=12                                                             |
+| `noir-solo-recon.json` per-band anchors                               | **~25–45** | 1.671 (proxy: the real-set SD above — no per-band error distribution exists independently)                                | **0.334 (n=25) – 0.249 (n=45)** | **AT THE EDGE** — resolvable only near the upper end of the plausible per-band n |
+
+**Honest conclusions, per set:**
+
+- **The 6 owner-counted real shots CANNOT certify ±0.25 alone.** At n=6 and the measured per-shot
+  SD of 1.671, SE ≈ 0.68 — nearly 3× looser than the target. This set can **FAIL** a candidate
+  decisively (a bias of 1+ pellets is easily visible at this SE) but it can never, by itself, confirm
+  a candidate clears ±0.25. Treat every "the 6-shot bias is within ±0.25" reading on this set alone as
+  **not yet certified**, regardless of which candidate produces it. This is a limitation of the
+  design, not a footnote — it is why the noir band anchors and the owner spot-check gate exist as
+  separate legs of the criterion, not decoration on top of it.
+- **The synthetic set's n is a free parameter — solve for it.** `n = (SD/target_SE)²`. Using the
+  measured current-pipeline SD (1.079) as the best available planning prior (a new lifecycle-aware
+  candidate's actual SD may differ; this sizes the _set_, not the _verdict_): reaching the ±0.25 bar
+  exactly needs n ≈ 19; reaching it with a comfortable margin (target SE ≤ 0.10, a 2.5× buffer) needs
+  **n ≈ 117**. **Regenerated at n = 120 (30 sequences/video × 4 videos) for step 2**, giving a planning
+  SE ≈ 0.098 at the measured SD — comfortably under the target, though the actual SE for each
+  candidate estimator is reported directly in step 2's output rather than assumed from this planning
+  figure.
+- **The noir per-band anchors are AT THE EDGE, not clearly resolvable.** Using the real-fixture SD
+  (1.671) as the best available proxy for per-shot noise (no independent per-band error distribution
+  exists — the anchors themselves are a damage-counter-derived estimate, not a labeled pellet count):
+  at the low end of the plausible per-band n (~25), SE ≈ 0.334, over target; at the high end (~45),
+  SE ≈ 0.249, just under. **Whether ±0.25 is resolvable at the band level depends on which end of the
+  n range a given band lands on — this is a real, stated limitation, not a pass.**
+
+**⇒ No single available set can certify ±0.25 on its own.** The 6-shot set can only fail a candidate;
+the noir bands are marginal; only the regenerated n≈120 synthetic set has real margin, and it is
+optimistic by construction (§1.2's honest limit). **Flagging for the owner, per this section's own
+instruction:** the practical resolution is that a candidate must clear the synthetic set AND not be
+visibly worse than ±0.25 on the 6-shot set (i.e., not be excluded by the loose real-set SE) AND pass
+the owner spot-check gate — which is what the "ALL of" list in §2.2 already requires — rather than
+expecting any one set to deliver a clean statistical certification by itself.
+
+### 2.2b — Pre-registered cheap-estimator screen (before building steps 4–6)
+
+Both `/logic-gate` pre-op reviewers, independently, proposed the same `simplerPath`: the per-frame
+detector is already approximately unbiased at the readable frames (measured post-filter counts
+10, 7, 7, 9, 8 vs owner truth 7–9), so a dumb aggregation over counts the pipeline **already
+computes** may already sit inside the ±0.25 bias budget — in which case §2.2's stopping rule says
+steps 4–6 (t0 estimation, phase-indexed gating, `trackpy`) are never built. This section
+pre-registers exactly what gets scored, **before** any of it is run, per `CLAUDE.md`'s
+selection-on-the-same-data warning (scoring several and reporting the best one after the fact is
+fishing).
+
+**The full estimator list — every one of these is scored and reported, not just the best:**
+
+| key                        | source            | aggregation                                                                                                                                                                           |
+| -------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `current`                  | CONTROL           | existing pipeline: mean of raw per-frame counts at f8–11                                                                                                                              |
+| `median_persist_readable`  | kimi's form       | median of per-frame counts over the readable window (f1, f8–11), after the minimal temporal filter (persist ≥2 consecutive frames AND non-increasing area after the track's own peak) |
+| `max_nonpeak_persist`      | fable's form      | max of post-filter counts over the blast's non-peak frames                                                                                                                            |
+| `p75_nonpeak_persist`      | fable's form      | 75th-percentile of post-filter counts over non-peak frames                                                                                                                            |
+| `p90_nonpeak_persist`      | fable's form      | 90th-percentile of post-filter counts over non-peak frames                                                                                                                            |
+| `median_readable_nofilter` | no-filter control | same as `median_persist_readable`, RAW counts, no persistence filter — isolates what persistence buys the median family                                                               |
+| `max_nonpeak_nofilter`     | no-filter control | same as `max_nonpeak_persist`, RAW counts, no persistence filter — isolates what persistence buys the max family                                                                      |
+
+Implemented in `scripts/probe/score-pellets.py --estimators` (committed 2026-07-31, this session —
+extends the existing scorer with a flag per constraint 9, no new script). All 13-frame-count math
+reuses the SAME `count-pellets.py --dump-tracks` output `score_sequence()` already computes — no new
+detection/tracking code, only aggregation over its `per_offset`/`tracks` output.
+
+**"Non-peak" — the cheap phase-anchoring proxy, and its known failure mode (per revision 2b).**
+Peak := the max-raw-count frame within the sequence; peak and its immediate neighbour are excluded
+from the "non-peak" set. This is the same cheap proxy `make-groundtruth.py`/`make-groundtruth-f811.py`
+use (peak = the max-bright-dot-count frame), not a solved phase-alignment. **Known failure mode,
+observed in practice, not hypothetical:** on the 6-shot real fixture — which only carries the
+already-non-peak f8–11 window, 4 frames — excluding "the peak and its neighbour" from a 4-frame
+set that has no true peak in it removes most or all of the window. `--estimators` detects and flags
+this per-sequence as `_degenerate_nonpeak` (falls back to using all available frames rather than
+silently returning a near-empty aggregation) — flagged in the results, not silently absorbed.
+
+**Readable window** = frames whose lifecycle offset is in {1, 8, 9, 10, 11}. On the synthetic
+13-frame sequences this is 5 of 13 frames; on the real 6-shot fixture only f8–11 are ever available
+(no f1 crop exists per shot except shot0's single confirmation frame), so the window there is
+whatever subset of {8,9,10,11} the fixture provides.
+
+**Scored on BOTH screens, per §2.2/§2.2a:**
+
+1. The Phase 1.2 synthetic labeled set, regenerated at **n = 120** (`--sequences-per-video 30`)
+   per §2.2a's power calculation — NOT the n = 12 set the original Phase 1.2 baseline used, which
+   is underpowered for a ±0.25 bias read (planning SE ≈ 0.31 at n = 12 vs ≈ 0.10 at n = 120).
+2. The 6-shot real fixture (`score-pellets.py --real-fixture`), honest per §2.2a that this set can
+   only FAIL a candidate, never certify one.
+
+**Not scored in this pass (§2.2e / this task's explicit scope):** the `noir` per-band certification.
+That needs a full-video run and is the next decision point, not part of this cheap-baseline screen.
+
+**Decision rule, unchanged from the pre-op's `simplerPath` and this task's scope:** if a candidate
+clears both screens against the ±0.25 criterion (§2.2), that is a measurement to report to the
+owner — it does **not**, by itself, retire steps 4–6 or change Phase 2's status in this document.
+If none clear both screens, their failure characterizes what steps 4–6 need to fix (which frames,
+which direction) rather than licensing starting them in this pass.
+
+> **⛔ VERDICT SUPERSEDED 2026-07-31.** The synthetic screen below was scored on a mislabeled set —
+> the generator placed ~28.9% of labeled pellets where the correctly-configured counter is
+> guaranteed to reject them (inside `--center-exclude`, off-frame), then counted them as truth
+> anyway (see the §1.2 baseline SUPERSEDED note above; fix in commit `d18f014`). **The synthetic
+> screen was invalid, so the verdict it produced does not stand.** The cheap-estimator question is
+> **UNRESOLVED pending the re-score below**, not answered by the results that follow this notice.
+> The corrected re-score is filed immediately after the original (kept for the record, not for
+> comparison as if it were still valid).
+
+#### Results (2026-07-31) — **NONE of the 7 clear the ±0.25 criterion. `simplerPath` does NOT retire steps 4–6.**
+
+#### (⛔ SUPERSEDED — see notice above and the re-score that follows this section)
+
+Synthetic set regenerated at n=120 (`--sequences-per-video 30`, seed 20260731) per §2.2a; real
+screen is the full 6-shot fixture. Both via `score-pellets.py --estimators` (synthetic) /
+`--estimators --real-fixture` (real), reproduced twice, byte-identical.
+
+**Synthetic screen (n=120) — decisive fail, all 7, small SE:**
+
+| estimator                  | bias (pellets) | SD    | SE    | RMSE  | vs ±0.25   |
+| -------------------------- | -------------- | ----- | ----- | ----- | ---------- |
+| `current` (control)        | **−2.462**     | 1.769 | 0.161 | 3.028 | 9.8× over  |
+| `median_persist_readable`  | **−2.617**     | 1.820 | 0.166 | 3.183 | 10.5× over |
+| `max_nonpeak_persist`      | **−2.192**     | 1.736 | 0.158 | 2.791 | 8.8× over  |
+| `p75_nonpeak_persist`      | **−2.567**     | 1.802 | 0.165 | 3.132 | 10.3× over |
+| `p90_nonpeak_persist`      | **−2.301**     | 1.782 | 0.163 | 2.906 | 9.2× over  |
+| `median_readable_nofilter` | **−2.475**     | 1.815 | 0.166 | 3.065 | 9.9× over  |
+| `max_nonpeak_nofilter`     | **−2.042**     | 1.727 | 0.158 | 2.669 | 8.2× over  |
+
+Position-level (per the "Quantitative separation criterion" floor, for context — not itself the
+bias criterion): raw/is_pellet family precision **0.943** (clears ≥0.90), recall **0.517** (fails
+≥0.80 badly); persisted family precision **0.943**, recall **0.500**. `degenerate_nonpeak_sequences:
+0` — the peak-exclusion proxy behaved normally on the full 13-frame synthetic sequences.
+
+**Real screen (6 shots) — small point-estimate biases, but SE too loose to certify anything (per
+§2.2a, this set can only FAIL, never confirm):**
+
+| estimator                  | bias (pellets) | SD    | SE    | RMSE  |
+| -------------------------- | -------------- | ----- | ----- | ----- |
+| `current` (control)        | −0.375         | 1.671 | 0.682 | 1.571 |
+| `median_persist_readable`  | −0.583         | 1.201 | 0.490 | 1.242 |
+| `max_nonpeak_persist`      | −0.500         | 1.225 | 0.500 | 1.225 |
+| `p75_nonpeak_persist`      | −0.625         | 1.531 | 0.625 | 1.531 |
+| `p90_nonpeak_persist`      | −0.550         | 1.347 | 0.550 | 1.347 |
+| `median_readable_nofilter` | −0.167         | 1.472 | 0.601 | 1.354 |
+| `max_nonpeak_nofilter`     | −0.167         | 1.472 | 0.601 | 1.354 |
+
+`degenerate_nonpeak_sequences: 1` (shot0, the single-frame false-positive confirmation crop — has
+no peak to exclude anything from, falls back to using its one frame, exactly the known failure mode
+§2.2b flagged in advance). Position-level precision/recall are **null** on this screen — the real
+fixture has no labeled pellet xy positions, only counts, so ISBI-style matching does not apply here
+(ONE finding neither reviewer's `simplerPath` spelled out: precision/recall as originally specified
+is a synthetic-only metric).
+
+**Verdict: NO candidate clears both screens.** The synthetic screen fails all 7 by 8–11× the budget
+with tight SE (0.16–0.17) — not a noisy near-miss, a clear and confident fail. The real screen's
+point estimates are all closer to zero than synthetic's, and two (`median_readable_nofilter`,
+`max_nonpeak_nofilter`, both −0.167) are nominally inside ±0.25 — but at SE ≈ 0.6 this is not a
+finding, it is exactly the "cannot certify, can only fail" limit §2.2a predicted, and it does not
+survive being read next to the synthetic screen's decisive fail.
+
+**A finding neither reviewer anticipated: the synthetic screen is COLDER than the real screen, the
+opposite of what §1.2's "optimistic by construction" honest limit predicts.** The synthetic
+generator's own documentation states synthetic scores should be optimistic relative to real footage
+(single repeated background, easier alpha-blit compositing) — so synthetic bias should sit CLOSER TO
+ZERO than real, not 4–10× further from it. Candidate explanations, not investigated further here
+(out of this task's scope — reported, not diagnosed): the synthetic pellet placement
+(`MEDIAN_R=64, R_SPREAD=40`, uniform angle) may pack pellets more densely / with more mutual
+occlusion than real blasts exhibit at the counted f8–11 phase; or the synthetic `n_pellets` draw
+(uniform 5–10) skews the mix differently than the real fixture's mostly-high-count shots (7–10, one
+0). Whichever it is, it means the synthetic screen is not a strictly easier/rosier version of the
+real one for THIS class of cheap aggregator, and should not be read as merely a stricter version of
+the same test.
+
+**A second finding: the n=12 baseline's SD (1.079, used to plan the n=120 regeneration in §2.2a)
+underestimated the true SD (1.769 measured at n=120) by ~64%.** The regenerated set's actual
+planning SE (0.161, using the true n=120 SD) still lands well under the ±0.25 target, so §2.2a's
+sizing decision was not invalidated in practice — but it is a concrete illustration of why §2.2a
+flagged the n=12-derived SD as "a planning prior, may differ for new candidates," and argues for
+treating any single small-n SD estimate (including this task's own real-screen SD) with the same
+caution before it is used to size a future set.
+
+#### Re-score (2026-07-31, fixed generator) — corrected, and it complicates rather than resolves the diagnosis
+
+Regenerated at **n=120** (`--sequences-per-video 30`, same seed `20260731`) with the fixed
+generator (commit `d18f014`). `make-synthetic-pellets.py --audit-labels` on the regenerated
+`labels.json`: `n_labeled: 884, n_inside_center_exclude: 0, n_off_frame: 0,
+n_outside_pellet_radius: 0, uncountable_fraction: 0.0` — PASS, 0 skipped backgrounds. Re-scored with
+`score-pellets.py --labels <path> --estimators`, reproduced twice, byte-identical.
+
+**Synthetic screen (n=120, fixed generator) — still a decisive fail, all 7, small SE:**
+
+| estimator                  | bias (pellets), OLD (invalid) | bias (pellets), NEW (fixed) | Δ (recovered) | SD (new) | SE (new) | RMSE (new) | vs ±0.25  |
+| -------------------------- | ----------------------------- | --------------------------- | ------------- | -------- | -------- | ---------- | --------- |
+| `current` (control)        | −2.462                        | **−2.142**                  | +0.320        | 1.545    | 0.141    | 2.637      | 8.6× over |
+| `median_persist_readable`  | −2.617                        | **−2.350**                  | +0.267        | 1.713    | 0.156    | 2.904      | 9.4× over |
+| `max_nonpeak_persist`      | −2.192                        | **−1.917**                  | +0.275        | 1.559    | 0.142    | 2.466      | 7.7× over |
+| `p75_nonpeak_persist`      | −2.567                        | **−2.298**                  | +0.269        | 1.710    | 0.156    | 2.860      | 9.2× over |
+| `p90_nonpeak_persist`      | −2.301                        | **−2.003**                  | +0.298        | 1.617    | 0.148    | 2.570      | 8.0× over |
+| `median_readable_nofilter` | −2.475                        | **−2.075**                  | +0.400        | 1.620    | 0.148    | 2.628      | 8.3× over |
+| `max_nonpeak_nofilter`     | −2.042                        | **−1.717**                  | +0.325        | 1.421    | 0.130    | 2.225      | 6.9× over |
+
+Position-level (raw/`is_pellet` family): precision **0.940** (vs 0.943 old, clears ≥0.90), recall
+**0.550** (vs 0.517 old, still fails ≥0.80 badly). Persisted family: precision **0.938** (vs 0.943),
+recall **0.529** (vs 0.500). `degenerate_nonpeak_sequences: 0` (same as before).
+
+**Real screen (6 shots) — unaffected by this fix, unchanged, reproduced for completeness:** the real
+fixture never used the synthetic generator, so its numbers are byte-identical to the original
+§2.2b table (`current` −0.375, `median_persist_readable` −0.583, `max_nonpeak_persist` −0.500,
+`p75_nonpeak_persist` −0.625, `p90_nonpeak_persist` −0.550, `median_readable_nofilter` −0.167,
+`max_nonpeak_nofilter` −0.167; `degenerate_nonpeak_sequences: 1`).
+
+**The fix recovered ~0.27–0.40 pellets of bias, not the ~1.8–2.0 the diagnosis predicted, and the
+"synthetic is colder than real" gap was NOT resolved by it.** ⚠ **The explanation that originally
+followed this sentence attributed the shortfall to compositing density (the resampled annulus
+"getting denser, not less crowded") — that explanation is RETRACTED, does not survive a direct
+density measurement, and has been removed from this doc per the current-state doc-hygiene rule
+(stale wording is deleted, not left as a live claim). See "Generator fidelity gate (2026-07-31)"
+immediately below for the measured cause and the retraction's own evidence.**
+
+> **⛔ VERDICT SUPERSEDED 2026-07-31.** The paragraph below ("STILL none of the 7 clear the ±0.25
+> criterion... a clear, confident fail") measures the GENERATOR's rendering fidelity, not estimator
+> quality — see "Generator fidelity gate (2026-07-31)" below. **The cheap-estimator question is
+> UNRESOLVED**, not answered fail. Kept for the record, not for comparison as if it were still a
+> valid estimator verdict.
+
+**Verdict, corrected (SUPERSEDED — see banner above): STILL none of the 7 clear the ±0.25 criterion, on either screen, after the
+fix.** The synthetic screen still fails all 7 by 6.9–9.4× the budget with tight SE (0.13–0.16) — a
+clear, confident fail, not a near-miss. `simplerPath` still does **not** retire Phase 2 steps 4–6.
+This re-score is the answer to the "cheap-estimator question" the invalid verdict above left
+unresolved; it is a **fail**, not a pass obscured by the label bug.
+
+#### Generator fidelity gate (2026-07-31) — root cause found; the densification explanation is RETRACTED
+
+**What forced this.** The re-score above recovered only ~0.27–0.40 pellets of bias, not the
+~1.8–2.0 a naive "removed 2 uncountable labels/sequence" prediction would give, and "synthetic
+colder than real" did not resolve (old ratio of \|synthetic bias\| to \|real bias\| per estimator
+4.1×–14.8×; new ratio 3.6×–12.4×, barely moved). The retracted explanation for that shortfall was
+compositing density — resampling keeps each sequence's `n_pellets` budget fixed and forces 100% of
+it into the countable annulus instead of ~71%, measurably densifying it (mean radius 64px documented
+→ 82.3px measured).
+
+Built the acceptance gate this section names (`score-pellets.py --audit-fidelity`, Phase 1 §1.2's
+missing generator-vs-reality check) and ran it on the exact `synthetic-v3-n120` set the re-score
+above used. For each LABELED true pellet at each counting frame (f8-11), it finds the nearest RAW
+(pre-filter) connected component the real detector would see and reports the cascade
+raw-found → +`min_area 25-750` → +`min_circ ≥ 0.55` → BOTH — i.e. it tests the generator's own
+rendering fidelity, not any estimator.
+
+**Measured (full n=120 set, `score-pellets.py --audit-fidelity`, 3,536 labeled pellet-frame
+instances):**
+
+| stage                                | synthetic true pellets surviving |
+| ------------------------------------ | -------------------------------- |
+| raw component found (≤20px)          | 96.9%                            |
+| ...also passes `min_area 25-750`     | 85.4%                            |
+| ...also passes `min_circ ≥ 0.55`     | 80.2%                            |
+| ...passes BOTH (survives the filter) | **71.6%**                        |
+
+An independent, ad-hoc matching implementation (same threshold rules) on a 40-sequence subset
+earlier this session found the same shape at smaller n: 94.4% / 81.0% / 75.0% / **65.3%**. The two
+instruments agree on the finding — most of the loss is at the FILTER stage, not detection — and
+differ by a few points on magnitude (different implementation, different n). The n=120 number is now
+the one pinned by the committed gate and its fixture; the n=40 number is a corroborating cross-check,
+recorded alongside it rather than reconciled to it.
+
+**Density is not the mechanism — measured directly, not inferred.** True-pellet nearest-neighbour
+spacing on the n=120 set: min 1.7px, p10 16.1px, **median 39.5px**, against a ~15px pellet diameter
+(only 9.3% of pairs closer than 15px; annulus fill fraction under 2%). Raw detection finds a
+component near 94–97% of true pellets, and only 6.0% of those hits share a component with another
+pellet. Crowding at this magnitude cannot produce a ~5–10 point recall loss. The loss is a
+**rendering-fidelity defect**: the generator's alpha-blit compositing produces pellets the settled
+filter throws away at roughly 4× the rate real pellets are inferred to (see the derived ~0.90–0.98
+real-pellet reference in `score-pellets.py`'s `FIDELITY_BOTH_PASS_FLOOR` docstring) — independent of
+how many neighbours are nearby.
+
+**Which filter term dominates.** Of raw-found instances (n=3,426, full set): 88.1% pass `min_area`,
+82.8% pass `min_circ` — `min_circ` rejects more (17.2% of found vs 11.9% for `min_area`).
+Directionally the same on the n=40 independent check (85.8% area / 79.4% circ, of found). `min_circ`
+is the larger single contributor on both measurements, though neither term alone accounts for the
+full gap (0.881 × 0.828 = 0.730 vs the measured 0.739 both-of-found rate — the two constraints are
+close to independent, consistent with rejecting largely different components rather than the same
+ones twice).
+
+**Disposition.** `recall ≥ 0.80` (§2.2's pre-committed quantitative separation criterion) remains
+**UNREACHABLE on this set** — not because of the labeling bug §1.2 fixed (that moved the ceiling from
+0.711 to ~0.65–0.72, per the two measurements above), but because the generator's own composited
+pixels fail the settled filter at ~4× the rate real pellets are inferred to. **The 0.90/0.80 floor is
+UNCHANGED** — this does not relax it, it establishes that THIS SET cannot currently test it. The
+synthetic set stays valid for **precision / false-positive** work (its background clutter is real,
+sampled from the actual videos) but is **NOT currently usable for BIAS measurement** — bias
+certification belongs on real data: the `noir-solo-recon.json` per-band anchors (n ≈ 25–45/band),
+which per §2.2a is the only set with the statistical power to certify ±0.25 anyway. The
+cheap-estimator question §2.2b originally asked (`simplerPath`) is therefore **UNRESOLVED**, not
+answered fail — the re-score above characterized the generator, not the 7 candidates.
+
+**⛔ Per this task's hard stop: no rendering fix attempted here.** Two incremental patches already
+tried to fix this generator and each revealed another layer (§1.2's uncountable-pellet labeling bug,
+then this filter-survival gap). Whether the generator can be brought to real-pellet fidelity at all,
+and whether that effort is worth spending versus moving straight to real-data bias certification, is
+an OWNER-level call. This section stops at a quantified, gated, documented gap — see
+`docs/handoffs/QUEUE.md` for the owner-time ask that would convert the DERIVED ~0.90–0.98
+real-filter-survival reference into a MEASURED one (label xy positions on the 6 owner-counted real
+crops).
+
+Reproduce: `bash scripts/probe/pellet-selftest.sh` runs the gate's own arithmetic selftest
+(`score-pellets.py --audit-fidelity-selftest`, pinned against
+`scripts/tests/fixtures/pellets/synthetic-fidelity-slice.json` — fully reproducible from committed
+code + a fresh render, see that fixture's own `_note`). The full-set cascade above:
+`scripts/probe/.venv/bin/python scripts/probe/score-pellets.py --audit-fidelity
+scratchpad/pellets/synthetic-v3-n120/labels.json` (main-tree absolute paths from a worktree) —
+REFUSES with exit 1, as expected below the 0.90 floor; that refusal IS the finding, not a bug.
 
 ### 2.3 — Kill conditions
 
@@ -803,46 +2801,44 @@ threshold detector**.
 ## Critical path
 
 ```
-0.1 offset fix · 0.1b two-fault decomposition · 0.2 ✅DONE
-0.5 lifecycle stability on noir  ·  0.6 the ~90 denominator     ← both free, both gating
+0.1 ✅ · 0.1b ✅ · 0.2 ✅ · 0.5 ✅ · 0.6 ✅ · 0.7 ✅ (VLM not viable) · H1–H4 ✅ · 2A ✅
                           ↓
-        1.1 cache-then-sweep + 1.2 labeled set (labels at f8–11)
+        1.1 cache-then-sweep + 1.2 labeled set
+            (step 0: f8–11 ground truth, OWNER-GATED)
                           ↓
-        ┌─────────────────┴─────────────────┐
-   2A localization                    2 lifecycle-aware counting
-   (unblocks guilty/isabel)      (60fps + ROI · t0 · template · phase-gated)
-        └─────────────────┬─────────────────┘
+        2 lifecycle-aware counting
+            (design → /logic-gate pre-op [owner-invoked] → code)
                           ↓
-              3 matched-filter detection
-              (scored on PHASE-RESOLVED recall)
+        3 detector A/B (threshold vs LoG/DoG)
+            (scored on PHASE-RESOLVED recall)
                           ↓
-            [4 top-hat/LCM · 5 exact sprite · 6 learned]
-                        as the residual dictates
+        [4 top-hat/LCM · 5 exact sprite · 6 learned]
+                    as the residual dictates
 ```
 
-**Phases 2A and 2 are parallel** — they address the two distinct faults Phase 0.1b separates, and
-they touch different code. Phase 3 follows Phase 2 rather than preceding it, because Phase 2 defines
-what the detector is being asked for (recall at f8–11 and f1/f12–13, plus area fidelity) — without
-that, Phase 3 has no meaningful exit criterion, since aggregate per-frame recall is already adequate.
+**Phase 2A is DONE** — gate 1 and gate 2 met on all four videos under structural localization.
+It is no longer parallel to Phase 2; it is complete. Phase 1 is Phase 2's only blocker.
 
-**Two free Phase 0 items now gate the build:**
+**§0.7 closed the VLM question** — Qwen2.5-VL-7B cannot resolve individual pellets at 320×320
+crop resolution (46% within ±2, threshold 70%). Phase 3 proceeds with classical detectors only.
 
-- **0.5 — lifecycle stability.** Run `analyze-pellet-tracks.py` on a `noir` dump and check the area
-  decay against the same prediction table. Phase 2 steps 4–6 assume one template fits all units; if
-  `noir`'s curve differs materially the template must be per-unit or per-VFX-load. **One run, and
-  discovering it after implementing is the expensive path.**
-- **0.6 — the ~90 denominator.** "70 of ~90 shots" is the largest measured gap, but ~90 assumes
-  uninterrupted 1.5 shots/s across the window. Boss-transition fire-holds would make the real
-  detection rate substantially better than reported. **Check the denominator before treating a 22%
-  miss rate as a defect** — it is free and it may dissolve the problem entirely.
-
-Phase 0 is unblocked today and needs no new footage. **Do not build anything before it lands** — it
-already overturned this plan's own first draft once (see the 0.1 callout).
+**Phase 0 is complete.** 0.5 ✅ (lifecycle generalises, ±0.05 across 11 samples), 0.6 ✅ (misses
+are reloads, not selection; detection ~88–100% against a cycle-based denominator), 0.7 ✅ (VLM
+not viable — perception failure at pellet resolution). Phase 1 is unblocked.
 
 ---
 
 ## Correction log
 
+- **2026-07-30 (owner review pass).** Eight targeted edits after a full-plan review + owner
+  accuracy assessment: (1) §0.7 VLM zero-shot test added as a free pre-P1 experiment; (2) §1.2
+  step 0 — f8–11 ground truth regeneration — made a named, owner-gated step with its own exit
+  criterion; (3) critical-path diagram updated (2A done, H phases done, VLM leg in P3); (4) §2.2
+  pre-committed quantitative separation criterion (precision ≥0.90, recall ≥0.80); (5) §2.1
+  step 4 — t0 overlap policy specified; (6) §2.2 owner spot-check gate added; (7) error budget
+  footnote — H4 denominator correction forward-referenced; (8) §2.1 step 3 — greedy linker
+  escalation threshold (>40% life=1 after gap tolerance → trackpy required). Also: §1.1
+  `--debug-dir`/`--temporal` no-op noted. None of these change the phase ordering or core design.
 - **0.1 rewritten (same session).** First draft led with "the −62.5 offset broke the 2026-07-29
   validation." Refuted on timeline (artifacts 12:19–13:33, commit 15:17) and on magnitude (a
   near-disjoint window collapses counts to ~0; the runs reported `avgTotal` 7.1–7.3). The bug is
@@ -852,6 +2848,14 @@ already overturned this plan's own first draft once (see the 0.1 callout).
   two different faults (`guilty`/`isabel` localization vs `noir` method-level coldness) conflated
   into one "the counter failed" conclusion, plus an un-diagnosed `noir` 179→107 regression in the
   patch that was adopted to fix `guilty`.
+- **`fix/pellet-counter-restore` merged (2026-07-30, owner-flagged).** Resolves §0.1 in both files,
+  retires this plan's own "do not merge it wholesale" warning (the staleness was fixed upstream that
+  day), and lands the parked marker code so the f8–11 ring re-test and Phase 2A's crosshair salvage
+  are unblocked. ⚠ **Touches a protected path** — `.claude/skills/probe-processing/SKILL.md` — which
+  `CLAUDE.md` says never to modify without an explicit owner ask; merged under the owner's
+  "pellet-counter work wasn't merged in" instruction, and the change is corrective (it demotes
+  `read-markers.py` to PARKED WIP and names `read-pellets.ts` the SG counter). **Flagged for owner
+  review rather than treated as covered** — revert that one file if the ask did not extend to it.
 - **Phase 2 rewritten around the lifecycle (owner spec + §2.0 corroboration).** The design changed
   from "count track births" to **process all 13 frames, count on ~5** — separating identity (the
   full curve), counting (f1, f8–11) and phase anchoring (onset). The reason is specific: the record's
@@ -866,3 +2870,89 @@ already overturned this plan's own first draft once (see the 0.1 callout).
   assumption rests on a single video, and finding out after implementing is the expensive path.
   0.6 because the headline "22% of shots missed" may be an artifact of a cadence-derived denominator
   that ignores fire-holds — worth retiring before it drives work.
+- **2026-07-31 — §1.2/§2.2b synthetic labeled set was mislabeled; fixed, re-baselined, re-scored
+  (commit `d18f014`).** `make-synthetic-pellets.py`'s pellet placement (`r = max(8, gauss(64, 40))`)
+  let ~28.9% of labeled pellets land inside `--center-exclude 36` or off-frame — positions the
+  correctly-configured counter is guaranteed to reject, labeled as truth anyway. This alone forced
+  the §2.2 recall≥0.80 floor to be unreachable on the old set (max achievable recall 0.711) and
+  fully explains why the estimators scored ~2 pellets colder on synthetic than on the real 6-shot
+  fixture. **Fixed** by resampling (never clamping) into `[CENTER_EXCLUDE + margin, PELLET_RADIUS]`
+  and rejecting/skipping placements that would clip a frame edge; a standing guard
+  (`make-synthetic-pellets.py --audit-labels`, wired into `score-pellets.py` before it will score any
+  synthetic labels file, `--audit-selftest` pinned in `pellet-selftest.sh`) now refuses to score a
+  mislabeled set again. **Re-baselined §1.2** (RMSE 2.141→2.012, Jaccard 0.511→0.592, F1
+  0.676→0.744, every phase-resolved recall value up) and **re-scored §2.2b's 7 pre-registered
+  estimators** on both screens (old verdict marked SUPERSEDED in place, not deleted). **The fix did
+  NOT resolve the "synthetic colder than real" anomaly**: bias recovered only ~0.27–0.40 pellets
+  (not the ~1.8–2.0 the diagnosis predicted). **⛔ SUPERSEDED 2026-07-31, same session, by the
+  generator fidelity gate entry below — the density explanation that originally followed this
+  sentence was RETRACTED** (it does not survive a direct density measurement: median true-pellet
+  spacing 39.5px against ~15px pellet diameter, <2% annulus fill; deleted from this entry per
+  current-state doc hygiene, see the fidelity-gate entry for the measured cause and the retraction's
+  own evidence). All 7 estimators still fail the ±0.25 bias criterion decisively (6.9–9.4× over
+  budget) on the corrected synthetic screen, **but that verdict is ALSO superseded below** — it
+  measures generator fidelity, not estimator quality; the cheap-estimator question is UNRESOLVED,
+  not answered fail. The residual synthetic-vs-real gap is no longer filed as unexplained — see the
+  fidelity-gate entry below for the measured cause.
+- **2026-07-31, same session — generator fidelity gate built; root cause found; densification
+  explanation RETRACTED; §2.2b's re-scored verdict marked SUPERSEDED.** Three consecutive wrong
+  conclusions in this thread (§1.2's "optimistic by construction" claim, the original §2.2b "decisive
+  fail by 8-11x" verdict, and the density explanation for why the `d18f014` fix only recovered
+  ~0.3 of the predicted ~2 pellets of bias) trace to one root cause: **the synthetic generator
+  (`make-synthetic-pellets.py`) has been reasoned about, and tuned around, but never independently
+  validated against reality — every check so far tested the pipeline THROUGH the generator, never
+  the generator itself.**
+  - **Built `score-pellets.py --audit-fidelity`** (extends the existing scorer, constraint 9 —
+    no new script): for each labeled true pellet at each counting frame (f8-11), finds the nearest
+    RAW (pre-filter) connected component via `count-pellets.py --dump-detections` (WHITE_LO 210,
+    20px match tolerance — the exact raw-detection stage the live pipeline already ships) and
+    reports the cascade raw-found → +`min_area 25-750` → +`min_circ ≥ 0.55` → BOTH. REFUSES (loud
+    banner, exit 1) below a **0.90** both-pass floor. That floor is a **DERIVED** reference, not a
+    direct measurement — the real 6-shot fixture carries counts, not labeled xy positions, so
+    real-pellet filter-survival cannot be measured directly today. It is derived from the real
+    fixture's own bias (-0.17 to -0.625 pellets on a ~8.4-pellet true mean ⇒ implied survival
+    ~0.925-0.98), set conservatively below that range. Documented in code
+    (`FIDELITY_BOTH_PASS_FLOOR`'s docstring) and here; see `docs/handoffs/QUEUE.md` for the
+    owner-time ask that would convert it into a measured reference.
+  - **`--audit-fidelity-selftest`** pins the cascade arithmetic against a committed fixture
+    (`scripts/tests/fixtures/pellets/synthetic-fidelity-slice.json` — 4 real synthetic sequences,
+    one per video, with pre-baked raw f8-11 detections so the selftest needs no images/subprocess/
+    venv-cv2; fully reproducible from committed code + a fresh render, see the fixture's own
+    `_note`), wired into `pellet-selftest.sh`.
+  - **Measured on the full `synthetic-v3-n120` set** (3,536 labeled pellet-frame instances):
+    raw-found 96.9% → +min_area 85.4% → +min_circ 80.2% → **BOTH 71.6%** — below the 0.90 floor, the
+    gate correctly REFUSES. An independent ad-hoc check on a 40-sequence subset found the same shape
+    at smaller n (94.4% / 81.0% / 75.0% / **65.3%**) — both instruments agree most of the loss is at
+    the FILTER stage (`min_circ` dominates slightly over `min_area`: 17.2% vs 11.9% of raw-found
+    instances rejected), not detection (94-97% raw-found either way).
+  - **The density explanation is RETRACTED, not merely superseded — measured directly.** True-pellet
+    nearest-neighbour spacing (n=120 set): min 1.7px, p10 16.1px, median **39.5px** against a ~15px
+    pellet diameter; only 9.3% of pairs closer than 15px; annulus fill fraction under 2%; only 6.0%
+    of raw-found hits share a component with another pellet. Crowding this mild cannot produce the
+    observed loss. The actual mechanism is a **rendering-fidelity defect**: the generator's alpha-blit
+    compositing produces pellets the settled filter rejects at ~4x the rate real pellets are inferred
+    to. Deleted the retracted wording from the §2.2b prose above per current-state doc hygiene
+    (capture-first: the retraction and its evidence live here and in the new §2.2b subsection, not as
+    a lingering live claim in the analysis prose).
+  - **`recall ≥ 0.80` remains UNREACHABLE on this set — the ceiling moved, it did not close.** Before
+    `d18f014`: 0.711 (uncountable-by-labeling). After: ~0.65-0.72 (unfilterable-by-rendering, per the
+    two fidelity measurements above). **The 0.90/0.80 floor is UNCHANGED** — not relaxed, not
+    reinterpreted — the finding is that this SET cannot currently test them, same category of finding
+    as §2.2a's power-calculation limits on the other two screens.
+  - **Disposition.** The synthetic set stays valid for **precision / false-positive** work (its
+    background clutter is real, sampled from the actual videos) but is **NOT currently usable for
+    BIAS measurement**. Bias certification belongs on real data: the `noir-solo-recon.json` per-band
+    anchors (n ≈ 25-45/band), the only set with the statistical power to certify ±0.25 per §2.2a.
+    Phase 2 is **NOT** retired, licensed, or closed by this entry; steps 4-6 are **NOT** built; the
+    `noir` per-band certification is **NOT** run — all three remain explicitly out of this task's
+    scope and are the owner's next decision point, not this session's.
+  - **Meta-lesson, the reason this gets its own entry rather than folding into the bullet above.**
+    Three consecutive wrong conclusions came from the SAME class of gap: a generator that was
+    reasoned about, tuned, and even patched twice, but never given its own acceptance test against
+    reality — every prior check validated the pipeline _through_ the generator (labels vs the
+    pipeline's own output), never the generator's rendering fidelity _against_ what the live filter
+    actually does to real pixels. **A synthetic-data generator needs an acceptance test one level
+    above its label audit** — the label audit (`--audit-labels`) checks the labels are internally
+    consistent with the generator's OWN configuration; the fidelity gate (`--audit-fidelity`) checks
+    the generator's OUTPUT against the real pipeline's independent, already-settled filter. The first
+    can pass while the second fails, which is exactly what happened here.

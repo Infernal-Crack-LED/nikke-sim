@@ -1,0 +1,209 @@
+{
+  "_source": "count-pellets.py --dump-tracks crosshair tracks, regenerated at the groundtruth-f8-11 clip parameters (at=15 dur=30 fps=60 zoom=2, docs/probes/clean-weapons/marciana-solo.MP4 -- slug `marciana`, SG/Iron, NOT `marciana-marine-study`), sliced to the frames the centering audit reads. Structural for shots 1/2/3/5, template for shot 4, matching each shot's own `locate` field in groundtruth-f8-11.json.",
+  "_note": "Indexing was gated before this was written: the crops regenerated from these same dumps are BYTE-IDENTICAL to all 21 committed crops under groundtruth-f8-11/, and find_t0 reproduces every recorded t0 (None/1060/1096/1140/1289/1369). Pins compute_centering() with no images, subprocess or cv2 -- see score-pellets.py --audit-centering-selftest and docs/handoffs/2026-08-01-pellet-centering-test-plan.md.",
+  "clip": {
+    "at": 15,
+    "dur": 30,
+    "fps": 60,
+    "zoom": 2
+  },
+  "shots": [
+    {
+      "shot": 1,
+      "video_t": 32.88,
+      "t0": 1060,
+      "locate": "structural",
+      "owner_white": 7,
+      "offsets": [8, 9, 10, 11],
+      "cross": {
+        "1058": [2098, 438],
+        "1059": [2098, 438],
+        "1060": [2098, 438],
+        "1061": [2070, 511],
+        "1062": [2072, 510],
+        "1068": [2074, 508],
+        "1069": [2074, 509],
+        "1070": [2075, 510],
+        "1071": [2076, 510]
+      },
+      "confs": {
+        "1058": null,
+        "1059": null,
+        "1060": null,
+        "1061": 48.12788533134773,
+        "1062": 46.483027267668334,
+        "1068": 44.47052401746725,
+        "1069": 45.056116722783386,
+        "1070": 44.563078598656745,
+        "1071": 45.46155231406447
+      }
+    },
+    {
+      "shot": 2,
+      "video_t": 33.5,
+      "t0": 1096,
+      "locate": "structural",
+      "owner_white": 10,
+      "offsets": [8, 9, 10, 11],
+      "cross": {
+        "1094": [2078, 504],
+        "1095": [2078, 504],
+        "1096": [2080, 504],
+        "1097": [2064, 504],
+        "1098": [2064, 504],
+        "1104": [2065, 502],
+        "1105": [2081, 502],
+        "1106": [2081, 501],
+        "1107": [2081, 501]
+      },
+      "confs": {
+        "1094": 45.23785117691724,
+        "1095": 45.116607109272145,
+        "1096": 44.633867698544314,
+        "1097": 45.755208333333336,
+        "1098": 45.98773486430063,
+        "1104": 41.70007851347815,
+        "1105": 43.97312023247367,
+        "1106": 43.4541949697081,
+        "1107": 43.241150442477874
+      }
+    },
+    {
+      "shot": 3,
+      "video_t": 34.27,
+      "t0": 1140,
+      "locate": "structural",
+      "owner_white": 8,
+      "offsets": [8, 9, 10, 11],
+      "cross": {
+        "1138": [2114, 496],
+        "1139": [2116, 496],
+        "1140": [2118, 496],
+        "1141": [2120, 496],
+        "1142": [2122, 496],
+        "1148": [2124, 479],
+        "1149": [2126, 475],
+        "1150": [2128, 471],
+        "1151": [2128, 467]
+      },
+      "confs": {
+        "1138": 42.84976258309592,
+        "1139": 42.97237354085603,
+        "1140": 43.116559641953685,
+        "1141": 43.30005837711617,
+        "1142": 43.2879848628193,
+        "1148": 41.24531981279251,
+        "1149": 42.46610992425714,
+        "1150": 41.541714285714285,
+        "1151": 42.66462692459534
+      }
+    },
+    {
+      "shot": 4,
+      "video_t": 36.48,
+      "t0": 1289,
+      "locate": "template",
+      "owner_white": 9,
+      "offsets": [8, 9, 10, 11],
+      "cross": {
+        "1287": [2103, 508],
+        "1288": [2102, 508],
+        "1289": [2101, 509],
+        "1290": [2063, 510],
+        "1291": [2096, 511],
+        "1297": [2064, 516],
+        "1298": [2064, 516],
+        "1299": [2064, 516],
+        "1300": [2064, 516]
+      },
+      "confs": {
+        "1287": 0.5187379121780396,
+        "1288": 0.5247675180435181,
+        "1289": 0.4780253469944,
+        "1290": 0.3144366145133972,
+        "1291": 0.3831649124622345,
+        "1297": 0.4131094813346863,
+        "1298": 0.42234256863594055,
+        "1299": 0.4467264413833618,
+        "1300": 0.45285269618034363
+      }
+    },
+    {
+      "shot": 5,
+      "video_t": 37.82,
+      "t0": 1369,
+      "locate": "structural",
+      "owner_white": 8,
+      "offsets": [8, 9, 10, 11],
+      "cross": {
+        "1367": [2124, 496],
+        "1368": [2126, 494],
+        "1369": [2126, 492],
+        "1370": [2129, 492],
+        "1371": [2114, 492],
+        "1377": [2144, 496],
+        "1378": [2147, 496],
+        "1379": [2149, 497],
+        "1380": [2150, 496]
+      },
+      "confs": {
+        "1367": 95.78508925446272,
+        "1368": 94.87923289564617,
+        "1369": 96.45874587458746,
+        "1370": 95.66551006245663,
+        "1371": 95.71724810929496,
+        "1377": 95.70520231213872,
+        "1378": 96.5126560332871,
+        "1379": 94.79807361541107,
+        "1380": 97.04468684025335
+      }
+    }
+  ],
+  "_expected": {
+    "1": {
+      "DISP": [24, -70],
+      "CLOUD": [-49.19, -2.86],
+      "residual": [-73.19, 67.14],
+      "residual_mag": 99.32,
+      "t0_perturb_max_delta": 78.19,
+      "sign_check_error_mag": 0.75,
+      "residual_spread_across_offsets": 0.75
+    },
+    "2": {
+      "DISP": [15, 2],
+      "CLOUD": [61.78, 15.82],
+      "residual": [46.78, 13.82],
+      "residual_mag": 48.78,
+      "t0_perturb_max_delta": 16.0,
+      "sign_check_error_mag": 0.66,
+      "residual_spread_across_offsets": 0.66
+    },
+    "3": {
+      "DISP": [-6, 17],
+      "CLOUD": [23.66, -24.99],
+      "residual": [29.66, -41.99],
+      "residual_mag": 51.41,
+      "t0_perturb_max_delta": 4.0,
+      "sign_check_error_mag": 0.08,
+      "residual_spread_across_offsets": 0.65
+    },
+    "4": {
+      "DISP": [37, -7],
+      "CLOUD": [18.88, 6.09],
+      "residual": [-18.12, 13.09],
+      "residual_mag": 22.35,
+      "t0_perturb_max_delta": 38.01,
+      "sign_check_error_mag": 0.73,
+      "residual_spread_across_offsets": 1.57
+    },
+    "5": {
+      "DISP": [-18, -4],
+      "CLOUD": [-46.49, 15.15],
+      "residual": [-28.49, 19.15],
+      "residual_mag": 34.33,
+      "t0_perturb_max_delta": 12.0,
+      "sign_check_error_mag": 1.0,
+      "residual_spread_across_offsets": 1.84
+    }
+  }
+}
