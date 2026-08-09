@@ -58,55 +58,32 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
-#### Unmodeled-review enactment candidates (batched findings, 2026-08-09)
+#### Unmodeled-review follow-ups (post-enactment remainder, 2026-08-09)
 
-> Source: 8-agent audit of `docs/unmodeled-entries-review.md` (450 entries) for wrongly-unmodeled
-> lines. The prose staleness sweep + the review-doc generator matcher fix LANDED (branch
-> `fix/unmodeled-staleness`); everything below is the un-enacted remainder — each item needs its
-> own measurement / board A/B / owner pass. Findings-only until then.
+> The 2026-08-09 faithfulness-enactment batch LANDED every enactable finding from the
+> unmodeled-entries audit (DECISIONS 2026-08-09 has the full list + board A/B). What remains:
 
-- **Evidence-fitted holds — run the pending direct measurement** (the rapi-red-hood failure shape:
-  a kit-stated value dropped/held because the FIT was off, when the miss could be a sim error):
-  - `maxwell` burst: the kit-literal weapon swap (2s charge / 300% full-charge / Pierce / 1-round
-    mag) is collapsed to one uncharged 813.42% flatDamage off a 1.93-hot board read; her note
-    admits instability (0.80 run G vs 1.17 N6). Popup-read the burst window in the run-G/N6
-    footage (shot count + charged value) before trusting the collapse.
-  - `jill` burst "Normal attacks deal True Damage for 10 sec": `weaponSwap.trueNormals` exists
-    (note concedes it); held to protect the fit, and her S1 trueDamagePct 34.99 is pinned inert by
-    the same hold. Measure in-burst normal popup value tier in existing jill focus footage.
-  - `nayuta` S2 Memory Absorption (Hit Rate ▲1.4% ×30): dropped as "encoding it would move her"
-    while she reads 0.894 COLD and the note's own estimate is +8–12% self core rate at cap. Run
-    the R3 probe (core rate at 0 vs 42% HR) / gated enact via hitRatePct.
-  - `trina` burst Hit Rate ▲45.3%: skipped because "modeling it would move the board" —
-    hitRatePct is live-by-default for every other carrier. Gated A/B, or record an explicit owner
-    hold (the prika Gains-Pierce shape).
-- **Damage-live encode candidates (primitive exists, line unenacted; per-item A/B):**
-  - `grave` S1 Prediction-end ammo dump → `consumeAmmo` on burstCast + delaySec:10 (~1 forced
-    3.35s reload per burst cycle in comps).
-  - Dropped ally heals with live recovery consumers: `anis-star` S2 per-full-charge team heal
-    (Crown tandem), `ada` S1 lifesteal → heal ticks on her existing fullBurstEnter→burstCasters
-    block (base `asuka` S1 consumer is live today), `mint` S1 Dancing heal (solo-mode only; recipe
-    already in her note).
-  - `snow-white-heavy-arms`: `gainPierce durationSec:5` (live in zwei comps) + base-window
-    `chargeTimeClamp` 1.2s (stops ally charge-speed over-credit).
-  - `arcana-fortune-mate` "Reload 6 rounds" / "Reload 2 rounds" → `instantReload` (currently
-    dropped with NO reason on record).
-  - `neon-vision-eye` FB-end gauge fill → `fillGauge` on fullBurstEnd (first check whether any of
-    her comps are gauge-limited via the ROT rotation log).
-  - `anchor-innocent-maid`: curate her squad in `src/data/squads.ts`, then gate the S1 heal with
-    `teamHas.sameSquad` (today it over-fires recovery events in non-squad teams).
-  - `rosanna` Concealment-gated 561.6% (≈+43% of her burst) → requiresTargetStatus self-status
-    proxy, AFTER the ⚑1 uptime measurement.
-  - `jackal` S1 attacked-10 boss damageTakenPct 9.09% → author the honestly-dormant attacked:10
-    block (fires the day incoming attacks are modeled).
-  - `elegg-boom-and-shock` "Maintains at least 1 ghost" → ghost pool min:1 (verify the
-    branch-timing footprint via her unit test).
-  - `rupee` / `soda` stack-amplifier slices → `addStack` re-encodes (incl. rupee ⚑2 cross-slot
-    Mileage merge candidate).
-- **Semantic conflict to reconcile roster-wide:** "Increases stack count of buffs by 1" —
-  `alice-wonderland-bunny` models a stack-CAP raise; `guilty`/`pepper`/`rupee`/`mica-snow-buddy`
-  model a +1 stack GRANT (dissent on record, rupee ⚑4). One reading is wrong for everyone; settle
-  via the datamined function type or footage, then align the outlier.
+- **`anchor-innocent-maid` same-squad curation (owner lookup, ~10 seconds in-game):** read her
+  unit-detail squad field, add it to `src/data/squads.ts`, then gate her S1 heal with
+  `teamHas.sameSquad`. NOT curated from lore memory — the blanc/noir ruling documents maid
+  variants as a squad-misread trap and the gate fails closed (a wrong guess silently kills the
+  heal). Until curated, the always-satisfied approximation over-fires recovery events in
+  non-squad teams (⚑ in her caveats).
+- **Exposed hot fits from the batch — run the pending direct measurements, then re-tune (never
+  re-fudge):** `jill` 0.966→1.924 (read the in-burst normal popup value tier in her focus
+  footage — true-flavored normals bypass DEF, a different value tier) and `maxwell` 0.889→1.252
+  (popup-read the burst window in run-G/N6 footage: railgun shot count + charged value vs the
+  modeled ~2 × 2440.26%).
+- **`alice-wonderland-bunny` stack-grant reading:** now aligned to the +1-GRANT majority; if a
+  datamine function-type read or footage confirms the 2026-07-28 cap-raise reading instead,
+  revert her addStack block to unmodeled (revert path in her note).
+- **misc B3s (run I) FB shortfall:** sim 12 vs measured 13 since `grave`'s kit-real ammo dump
+  landed (the old match rode its absence) — pinned as `simFullBursts: 12` in
+  scripts/regression.ts; joins the open burst-generation-shortfall thread (the four disabled
+  liberalio comps).
+- **Small ⚑ phase estimates riding the batch** (each flagged in its override, pin from footage
+  if popup-read): `arcana-fortune-mate` reload delaySec 1.5; `neon-vision-eye` in-window normal
+  count (the 330 magnitude); `rosanna` Concealment uptime (kit-duration upper bound).
 
 #### Code / tooling (unblocked, no footage or owner ruling needed)
 

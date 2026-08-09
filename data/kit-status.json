@@ -25,10 +25,10 @@
     },
     "band": {
       "±3% ✓": 7,
-      "±5%": 8,
-      "±15%": 14,
-      "±8%": 7,
-      ">15%": 9
+      "±5%": 7,
+      "±15%": 12,
+      "±8%": 9,
+      ">15%": 10
     }
   },
   "units": {
@@ -135,7 +135,7 @@
       "residual": "F3 Special Modification 'for 1 round(s)': kit-literal durationShots:1 vs shipped weaponSwap durationSec:10 no-maxShots (~2 specials/window); measurement-gated, board 0.99 leans on 2nd shot (kit-literal cap -> ~0.95); owner spot-check = count boosted charge rockets per burst window from popup footage",
       "unmodeled": {
         "skill1": [
-          "Recovers 10% of the damage dealt as HP for 10 sec. (skipped: lifesteal — the event-only `heal` channel is not wired for it; see findings F1/F2: targets bursted Burst-3 allies, whose 'recovery' triggers it would fire — a live B3 on-recovery consumer exists in the roster (asuka S1: self ATK on recovery), so an ada+asuka comp currently misses those refreshes; recipe = event-only heal ticks over the 10s window on the existing fullBurstEnter→burstCasters block)"
+          "Recovers 10% of the damage dealt as HP for 10 sec. — magnitude only: the 10s recovery-event WINDOW is modeled (event-only heal ticks:10 intervalSec:1 on the fullBurstEnter→burstCasters block, firing bursted-B3 on-recovery consumers such as asuka S1); the HP amount has no engine consumer (no HP pool)"
         ],
         "skill2": [],
         "burst": []
@@ -363,9 +363,7 @@
       },
       "residual": "spot-check cluster: (1) Reload 40% as instantReload 0.4 vs reloadSpeedPct — one recording, ammo counter at FB entry; (2) hitCount:60 recurring vs one-shot — count recovery popups; (3) capacity-buff-before-refill ordering (0.4x168 vs 0.4x120 rounds) — swap block order if footage shows base-capacity refill",
       "unmodeled": {
-        "skill1": [
-          "■ Activates after 90 normal attack(s). Affects all Water Code allies.\nStack count of buffs ▲ 1. (a stack-CAP raise, not a +1 stack grant — no engine primitive raises a buff's stack cap; the only stackable buff in play, Carrot Party, is damage-inert in v1: double inert)"
-        ],
+        "skill1": [],
         "skill2": [],
         "burst": [
           "■ Activates when Carrot Party is at max stacks. Affects all allies.\nIncoming healing ▲ 150% for 15 sec. (no healing-received channel — no HP pool at scope; the activation gate references the inert Carrot Party stack count)"
@@ -561,7 +559,7 @@
           "If there are any other Burst 1 allies: Effect 1: Affects self. Cancels My Own Star."
         ],
         "skill2": [
-          "■ Activates when performing a Full Charge attack while in Everyone's Star status. Affects all allies.\nRestores 1.26% of the skill user's final Max HP as HP."
+          "Restores 1.26% of the skill user's final Max HP as HP. — magnitude only: the per-full-charge recovery EVENT is modeled (event-only heal per pull, formation hasB1 = Everyone's Star); the HP amount has no engine consumer (no HP pool)"
         ],
         "burst": [
           "Explosion Radius ▲ 100% for 10 sec.",
@@ -584,7 +582,7 @@
           },
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.8746
+            "ratio": 0.89
           },
           {
             "comp": "T5 wind-weak probe (boss Iron)",
@@ -608,20 +606,20 @@
           },
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9542
+            "ratio": 0.9288
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9547
+            "ratio": 0.9227
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.7882
+            "ratio": 0.787
           }
         ],
         "n": 12,
-        "mean": 0.8706,
-        "mad": 0.1294,
+        "mean": 0.867,
+        "mad": 0.133,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -695,10 +693,8 @@
         "skill1": [
           "Full Burst ends: self removes Making Memories + Snapshots of Youth."
         ],
-        "skill2": [
-          "Normal attacks in Making Memories (one at a time, resets on MM removal): 2 time(s): Reload 6 rounds."
-        ],
-        "burst": ["Making Memories: Reload 2 rounds."]
+        "skill2": [],
+        "burst": []
       },
       "caveats": [
         "skill1/skill2: Making Memories stack buffs (Snapshots +30 normal, Happy Memories +3 pellets via pelletCountFlat 3 — 2026-07-21 A4, was +30 normal, Precious Moments +7.47 ATK) now carry rampSec 11 (theme 3, 2026-07-17) — the real 2/4/6-shot phase counter reaches cap at ~16-18 shots (~10.7-12s at ⚑1.5 pulls/s) ≥ the 11s window, so each buff ramps 0→full across the window (time-avg ~half of cap) and RESETS per window via the engine lapse-reset (the ~9s inter-burst gap fully lapses the buff). Replaces the prior BAKED-to-max encoding. ⚑ rampSec 11 rests on the 1.5 pulls/s SG cadence estimate; a focus recording refines it.",
@@ -709,13 +705,13 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.8977
+            "ratio": 0.9346
           }
         ],
         "n": 1,
-        "mean": 0.8977,
-        "mad": 0.1023,
-        "band": "±15%",
+        "mean": 0.9346,
+        "mad": 0.0654,
+        "band": "±8%",
         "temp": "COLD ▼"
       }
     },
@@ -1270,11 +1266,11 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9836
+            "ratio": 0.9587
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.983
+            "ratio": 0.9514
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
@@ -1282,10 +1278,10 @@
           }
         ],
         "n": 3,
-        "mean": 0.9864,
-        "mad": 0.0136,
-        "band": "±3% ✓",
-        "temp": "OK  ·"
+        "mean": 0.9675,
+        "mad": 0.0325,
+        "band": "±5%",
+        "temp": "COLD ▼"
       }
     },
     "cinderella": {
@@ -1335,7 +1331,7 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.859
+            "ratio": 0.8617
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
@@ -1343,11 +1339,11 @@
           },
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 0.9262
+            "ratio": 0.9622
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 0.9088
+            "ratio": 0.9441
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
@@ -1363,8 +1359,8 @@
           }
         ],
         "n": 7,
-        "mean": 0.882,
-        "mad": 0.1218,
+        "mean": 0.8926,
+        "mad": 0.1112,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -1631,7 +1627,7 @@
           },
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.9785
+            "ratio": 0.9898
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
@@ -1683,8 +1679,8 @@
           }
         ],
         "n": 17,
-        "mean": 1.0021,
-        "mad": 0.05,
+        "mean": 1.0027,
+        "mad": 0.0493,
         "band": "±5%",
         "temp": "OK  ·"
       }
@@ -1816,11 +1812,11 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.9385
+            "ratio": 0.9354
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.8986
+            "ratio": 0.8896
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
@@ -1828,8 +1824,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.9407,
-        "mad": 0.0593,
+        "mean": 0.9367,
+        "mad": 0.0633,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -2012,12 +2008,12 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.8844
+            "ratio": 0.8819
           }
         ],
         "n": 1,
-        "mean": 0.8844,
-        "mad": 0.1156,
+        "mean": 0.8819,
+        "mad": 0.1181,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -2135,12 +2131,12 @@
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.8663
+            "ratio": 0.8678
           }
         ],
         "n": 2,
-        "mean": 0.9228,
-        "mad": 0.0772,
+        "mean": 0.9235,
+        "mad": 0.0765,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -2363,13 +2359,13 @@
           "Required hit count: 100 time(s) in total, cumulative across all allies."
         ],
         "skill2": [],
-        "burst": ["Affects random enemy units", "Maintains at least 1 ghost."]
+        "burst": ["Affects random enemy units"]
       },
       "caveats": [
         "skill1: ghost accrual is interval:6 (the 'Recurring interval: 6 sec' capture CAP; <=1 ghost/6s, pool peaks ~7 while bursting); the 100-cumulative-team-hit gate is folded as clearing inside 6s for a full team (⚑1). The ALTERNATIVE teamAmmo:100 accrual (no cap) over-credits ~1.7x HOT and is rejected here",
         "skill1: the >=1/>=4 tier buffs are gated on the live pool via a teamAmmo:100 pool-CHECK trigger (event-driven, to avoid perturbing the team-generator beam search) + durationSec:6; the >=4 tier (35%) is live only under elemental advantage (⚑3) and lapses ~6s after the pool drops below 4 (⚑ lag)",
         "skill2: the 1100% at-cap nuke is gated on pool>=13; it fires 0x while bursting on cooldown (pool peaks ~7) and from t~78 in a never-burst context (teamAmmo-triggered cadence — fires per 100 rounds at cap, a ⚑ over-fire vs strict per-capture). Known 1-proc post-add off-by-one (low, 0 board impact)",
-        "burst: the 6-hit and 13-hit branches (six / thirteen discrete 800% sequential hits) are resource-gated on the pre-spend pool; while bursting on cooldown the burst is always the 6-hit branch (pool<13); the 13-hit branch is provably reachable at pool=13. 'Maintains at least 1 ghost' is UNENACTED — expressible as pool min:1 (resource init is NOT clamped: pools start at `initial` and min/max clamp only delta adjustments, sim.ts, so min:1 floors the burst spend without lighting frame-0 gates); binds only when the pool is ≤6 at cast — ⚑ verify the branch-timing footprint via the unit test before landing",
+        "burst: the 6-hit and 13-hit branches (six / thirteen discrete 800% sequential hits) are resource-gated on the pre-spend pool; while bursting on cooldown the burst is always the 6-hit branch (pool<13); the 13-hit branch is provably reachable at pool=13. 'Maintains at least 1 ghost' is MODELED as pool min:1 (enacted 2026-08-09): init is not clamped so frame-0 gates stay dark; the floor binds only when the pool is ≤6 at cast",
         "burst/skill2 riders ship crit at the engine flatDamage default (unset); SSOT says function-type damage crits at the caster's rate by default — verify/align repo-wide before changing",
         "cadence: datamined MG fire rate + reloadFrames 171 are unverified (mandatory cadence flag, ⚑2)"
       ],
@@ -2377,12 +2373,12 @@
         "records": [
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.7946
+            "ratio": 0.7951
           }
         ],
         "n": 1,
-        "mean": 0.7946,
-        "mad": 0.2054,
+        "mean": 0.7951,
+        "mad": 0.2049,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2892,7 +2888,6 @@
       "residual": "Mild B3 heat, untuned | Overheat I removeOnReload (enactable); Overheat II/III ramp-in + Prediction-end ammo dump (primitive-blocked); board 1.104 HOT = documented U19 burst-window residual",
       "unmodeled": {
         "skill1": [
-          "Activates when Prediction status ends. Affects self. Removes 100% of ammo.",
           "Removes Heat Emission under certain conditions.",
           "Activates only when in Heat Emission status. Affects self. Recovers 2% Max HP/1s continuously."
         ],
@@ -2904,7 +2899,7 @@
       },
       "caveats": [
         "skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst",
-        "skill1: Prediction-end 'Removes 100% of ammo' (one forced ~3.35s reload per burst cycle in comps) is not modeled — expressible now (`consumeAmmo` empties the magazine + forces the reload, types.ts; Prediction end = burstCast + block delaySec:10, her own casts only); unenacted pending a gated board A/B (damage-live)",
+        "skill1: Prediction-end 'Removes 100% of ammo' is MODELED — burstCast + block delaySec:10 → consumeAmmo fraction 1 (her own casts only; one forced ~3.35s reload per burst cycle in comps; enacted 2026-08-09, owner faithfulness ruling)",
         "skill2: Overheat II/III 30/60-hit build-up approximated as full 10s burst-window uptime (real ramp-in ~2.5s/~5s at the measured 12 rounds/s)",
         "burst: 'Gain Pierce' (10s) is MODELED FAITHFULLY (gainPierce → self, 10s) — its Pierce Damage ▲ +92.78 Damage Up lands during her Prediction window (S1's 48.4 excludeSelf'd, no double-count). This moves her comps ~0.83→1.18 HOT ON PURPOSE (model the real mechanic > fit): the residual HOT is a SEPARATE burst-window over-model, now cleanly isolated and tracked in open-questions U19 (fix with a measurement). Solo unaffected (a lone Burst II never bursts).",
         "burst: team 'Max Ammunition Capacity ▲ 3 round(s)' modeled as maxAmmoFlat 3 to ALL allies, 10s (kit-literal flat rounds; enacted 2026-07-20 per the kit-audit ENACT-NOW item — the prior maxAmmoPct 3 percent proxy was near-inert, and the flat-rounds path was already live in maxAmmo(). Materially larger relative buff to small-mag SG/SR teammates in her 10s burst window than the +3% was — faithful>fit; A/B recorded in DECISIONS)"
@@ -2913,20 +2908,20 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.1295
+            "ratio": 1.0963
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.1264
+            "ratio": 1.0891
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.0999
+            "ratio": 1.0994
           }
         ],
         "n": 3,
-        "mean": 1.1186,
-        "mad": 0.1186,
+        "mean": 1.0949,
+        "mad": 0.0949,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -3313,11 +3308,7 @@
       },
       "residual": "S1 attacked-10x cluster + burst 38.91% scoped amp are DOCUMENTED-GAP (maiden/trina precedent); comp reads cold by the flag amounts; flag1 uptime estimate unanchored pending a boss-attack-cadence measurement",
       "unmodeled": {
-        "skill1": [
-          "■ Activates when attacked 10 time(s). Affects 1 enemy unit(s) with the highest final Max HP.",
-          "Damage Taken ▲ 9.09% for 10 sec.",
-          "ATK ▼ 9.09% for 10 sec."
-        ],
+        "skill1": ["ATK ▼ 9.09% for 10 sec."],
         "skill2": ["Equally shares damage taken  for 120 sec."],
         "burst": [
           "Burst Skill damage of skills with \"Affects 1 enemy unit(s)\" in the description ▲ 38.91% for 15 sec."
@@ -3325,7 +3316,7 @@
       },
       "caveats": [
         "burst: the 38.91% Burst-Skill-Damage amp (scoped to skills whose description says 'Affects 1 enemy unit(s)', 15s per cast) is NOT modeled — the engine has no Burst-Skill-Damage bucket/stat and no description-text scope gate (trina precedent, same mechanic family). Teammates' single-target burst nukes cast within 15s of jackal's cast are missing the amp, so jackal comps read COLD by exactly that amount — a documented engine gap (⚑2), not a tuning residual.",
-        "skill1: the whole attacked-10x cluster (Damage Taken ▲9.09% + ATK ▼9.09% on the boss, 10s) is unmodeled — the `attacked` trigger primitive exists (types.ts; makima/yulha encode theirs) but nothing feeds it at scope lock (no incoming-damage model). If it were fireable it would be a ~+9.09% team amp after the first 10 hits taken (damageTakenPct is a live boss channel); her in-game tanking role feeds the counter, so real uptime is high — honestly absent here (⚑1), encodable as an honestly-dormant attacked:10 block the day incoming attacks are modeled.",
+        "skill1: the attacked-10x Damage Taken ▲9.09%/10s is MODELED as an honestly-DORMANT block (attacked:10 → enemy damageTakenPct 9.09, enacted 2026-08-09, owner faithfulness ruling): the trigger exists but nothing feeds it at scope lock (no incoming-damage model; boss never attacks), so it applies nothing today and goes live the day incoming attacks are modeled — her in-game tanking role feeds the counter, so real uptime is high and comps read COLD by that amp until then (⚑1). The ATK ▼9.09% half stays unmodeled (enemy ATK▼ dropped at dispatch on the DEF≈0 basis).",
         "skill2: 'Equally shares damage taken' (self + 2 highest-final-ATK allies, 120s) is unmodeled — no redistribution primitive and no incoming damage at scope; defensive.",
         "Both modeled lines are defPct (damage-INERT in v1): jackal's modeled kit contributes ZERO damage — her sim output is her bare RL weapon. Her real value (the burst amp + the S1 boss debuff) lives entirely in the two documented engine gaps."
       ],
@@ -3358,32 +3349,32 @@
       "unmodeled": {
         "skill1": [],
         "skill2": [],
-        "burst": ["Normal attacks deal True Damage for 10 sec."]
+        "burst": []
       },
       "caveats": [
         "burst: \"Reload speed is fixed at a 99.96% increase for 10 sec.\" is modeled as reloadSpeedClamp 99.96/10s — a stat clamp that overrides additive reloadSpeedPct buffs while active, setting her reload speed to +99.96%.",
-        "burst: \"Normal attacks deal True Damage for 10 sec\" (damage-type conversion) is unmodeled"
+        "burst: \"Normal attacks deal True Damage for 10 sec\" is modeled as a same-weapon flavor swap — weaponSwap damagePct 71.09 (her exact datamined normalMult, damage-neutral apart from flavor) trueNormals durationSec 10 on burstCast (takina/chisato primitive; enacted 2026-08-09, owner faithfulness ruling). It co-activates the S1 trueDamagePct 34.99 during the window."
       ],
       "board": {
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9717
+            "ratio": 2.3944
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9954
+            "ratio": 2.4585
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.9314
+            "ratio": 0.9187
           }
         ],
         "n": 3,
-        "mean": 0.9662,
-        "mad": 0.0338,
-        "band": "±5%",
-        "temp": "COLD ▼"
+        "mean": 1.9239,
+        "mad": 0.9781,
+        "band": ">15%",
+        "temp": "HOT ▲"
       }
     },
     "julia": {
@@ -3758,7 +3749,7 @@
           },
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.0653
+            "ratio": 1.0672
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
@@ -3766,8 +3757,8 @@
           }
         ],
         "n": 4,
-        "mean": 0.9164,
-        "mad": 0.1162,
+        "mean": 0.9169,
+        "mad": 0.1167,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -4096,7 +4087,7 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.9991
+            "ratio": 1.0048
           },
           {
             "comp": "PF maiden solo (boss Water)",
@@ -4108,8 +4099,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.9364,
-        "mad": 0.0775,
+        "mean": 0.9384,
+        "mad": 0.0788,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -4519,18 +4510,13 @@
         "skill2": [
           "Activates when there are above 5 enemy units, excluding Nikkes. Affects self. Critical Rate ▲ 4.83%. Critical Damage ▲ 13.91%."
         ],
-        "burst": [
-          "Change the weapon in use: Charge Time 2 sec",
-          "Full Charge Damage 300% of damage",
-          "Max Ammunition Capacity 1 round",
-          "Additional Effect: Pierce"
-        ]
+        "burst": []
       },
       "board": {
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.6152
+            "ratio": 1.3412
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
@@ -4538,10 +4524,10 @@
           }
         ],
         "n": 2,
-        "mean": 0.8894,
-        "mad": 0.2742,
+        "mean": 1.2524,
+        "mad": 0.2524,
         "band": ">15%",
-        "temp": "COLD ▼"
+        "temp": "HOT ▲"
       }
     },
     "maxwell-ordinary-mechanic": {
@@ -4823,12 +4809,12 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.2008
+            "ratio": 1.1918
           }
         ],
         "n": 1,
-        "mean": 1.2008,
-        "mad": 0.2008,
+        "mean": 1.1918,
+        "mad": 0.1918,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -4862,7 +4848,7 @@
       "residual": "Singing-gate 50%-uptime halving proxy (dynamic resourceGate/everyN:2 encoding IS available, code-verified — owner spot-check #1 to enact + re-grade); Dancing heal UNMODELED (no HP pool, recovery-consumer channel); Full-Charge->shotFired assumption",
       "unmodeled": {
         "skill1": [
-          "Full Charge in Assigned Part: Dancing: all allies recover 1.8% of caster's Max HP every 1 sec, lasts 3 sec."
+          "Full Charge in Assigned Part: Dancing: all allies recover 1.8% of caster's Max HP every 1 sec, lasts 3 sec. — magnitude only: the 3-tick recovery-event window is modeled (event-only heal, Dancing-gated via the singing resource, solo mode); the HP amount has no engine consumer (no HP pool)"
         ],
         "skill2": [
           "Activates when entering Burst Stage 3 while not in Sing Along status: Cancels Singing and Dancing."
@@ -5068,11 +5054,11 @@
         "records": [
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 0.6586
+            "ratio": 0.7602
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 0.6635
+            "ratio": 0.766
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
@@ -5080,8 +5066,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.66,
-        "mad": 0.34,
+        "mean": 0.7281,
+        "mad": 0.2719,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -5260,14 +5246,14 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.967
+            "ratio": 0.9724
           }
         ],
         "n": 1,
-        "mean": 0.967,
-        "mad": 0.033,
-        "band": "±5%",
-        "temp": "COLD ▼"
+        "mean": 0.9724,
+        "mad": 0.0276,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "neon": {
@@ -5367,7 +5353,7 @@
         ],
         "skill2": [
           "Firepower Gauge bookkeeping: gains 100 Firepower Gauge at battle start; +2 per normal attack during Firepower Charge; +45 when Firepower Charge ends (NOT a block — the steady-state consequence is ABSORBED into the skill1 Super block's everyN 3 / everyNOffset 1: start at 100 → Super on her burst casts 1, 4, 7…; video-confirmed cast-by-cast, Run B)",
-          "When Full Burst ends: charges own burst gauge in proportion to the current Firepower Gauge (gauge→burst-gauge conversion; burst-generation only, unmodeled; empirically does not consume the Firepower cycle — every-3rd-Super held on video)"
+          "When Full Burst ends: 'Burst Gauge filling speed ▲5% × Firepower Gauge charge for 5 sec' is MODELED (enacted 2026-08-09, owner faithfulness ruling) as two everyN:3 self burstGenPct blocks on HER OWN burstCast + delaySec 10 (≈ the FB end of the window her cast opened — cast-keyed, so a co-B3's Full Bursts never fire it), aligned to the Super cycle: after a Super cast the gauge is 0 (offset skipped, no buff); after the 1st charge window burstGenPct 330 for 5s (⚑ 5 × [1 cast + 45 end + 2×~10 in-window normals] — the normal count is a cadence estimate); after the 2nd, burstGenPct 500 (5 × the 100 cap, kit-structural). Empirically does not consume the Firepower cycle — every-3rd-Super held on video"
         ],
         "burst": [
           "Firepower Gauge below 100: activates Firepower Charge, charging the gauge for 10 sec (bookkeeping — ABSORBED into the everyN 3 alternation)",
@@ -5379,22 +5365,22 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.889
+            "ratio": 0.9675
           },
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 1.1195
+            "ratio": 1.1246
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 1.0241
+            "ratio": 1.0289
           }
         ],
         "n": 3,
-        "mean": 1.0109,
-        "mad": 0.0849,
-        "band": "±15%",
-        "temp": "OK  ·"
+        "mean": 1.0403,
+        "mad": 0.062,
+        "band": "±8%",
+        "temp": "HOT ▲"
       }
     },
     "nero": {
@@ -5597,16 +5583,16 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.8946
+            "ratio": 0.8758
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9132
+            "ratio": 0.8919
           }
         ],
         "n": 2,
-        "mean": 0.9039,
-        "mad": 0.0961,
+        "mean": 0.8839,
+        "mad": 0.1161,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -5992,12 +5978,12 @@
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.9622
+            "ratio": 0.9649
           }
         ],
         "n": 3,
-        "mean": 1.1194,
-        "mad": 0.1445,
+        "mean": 1.1203,
+        "mad": 0.1436,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -6120,12 +6106,12 @@
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.0355
+            "ratio": 1.024
           }
         ],
         "n": 2,
-        "mean": 1.0464,
-        "mad": 0.0464,
+        "mean": 1.0407,
+        "mad": 0.0407,
         "band": "±5%",
         "temp": "HOT ▲"
       }
@@ -6310,12 +6296,12 @@
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.9701
+            "ratio": 0.9633
           }
         ],
         "n": 5,
-        "mean": 0.9308,
-        "mad": 0.0703,
+        "mean": 0.9295,
+        "mad": 0.0716,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -6654,22 +6640,20 @@
       "residual": "burst 561.6% concealment-gated rider unmodeled (flag1: no self-status primitive; in-sim concealment uptime ~100% on the no-damage basis, so an ungated+marker encoding would be exact in-domain — owner may greenlight for ~+43% burst); MG cadence tuple datamine-default (flag2, proc counts only)",
       "unmodeled": {
         "skill1": [
-          "Concealment: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.",
+          "Concealment: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit. — targeting-prevention semantics only: the 10s STATUS window itself is modeled (targetStatus proxy feeding the burst rider); the prevention + on-hit removal are defensive/out-of-domain (no incoming attacks at scope)",
           "■ Activates after performing 10 normal attacks. Affects the 2 enemy unit(s) with the highest final ATK. Removes 5 buff(s). Activates once per battle."
         ],
         "skill2": [
-          "■ Activates at the start of battle. Affects self. Concealment: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit.",
+          "■ Activates at the start of battle. Affects self. Concealment: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit. — targeting-prevention semantics only: the battle-start 5s STATUS window is modeled (targetStatus proxy); the prevention + on-hit removal are defensive/out-of-domain",
           "■ Activates when a Nikke is incapacitated. Affects self. Frenzy: ATK ▲ 22.61%. Stacks up to 10 times and lasts for 30 sec. Fills Burst Gauge by 36.54%.",
           "■ Activates when a Nikke is incapacitated. Prioritizes Attacker-type enemies. Affects 1 unit(s). Deals 400% of final ATK as damage."
         ],
-        "burst": [
-          "■ Activates when the skill user is in the Concealment state. Affects the target(s) hit by Assalto. Deals 561.6% of final ATK as additional damage."
-        ]
+        "burst": []
       },
       "caveats": [
-        "burst: the 561.6% additional damage is GATED on the Concealment self-state and is NOT modeled — Concealment has no first-class self-status primitive (proxyable via the requiresTargetStatus boss-status pattern, asuka-wille/marciana precedent) and is left unenacted pending the ⚑1 uptime measurement; ≈+43% burst damage when concealment is up, uptime measurement-gated (⚑1)",
+        "burst: the 561.6% additional damage is MODELED (enacted 2026-08-09, owner faithfulness ruling): burstCast + requiresTargetStatus 'Rosanna Concealment' → flatDamage 561.6 — the Concealment self-state is proxied as a name-keyed boss status (asuka-wille/marciana pattern) opened by S2's battle-start 5s window and S1's per-120-normals 10s window. ⚑1 uptime: in-sim Concealment is near-permanent (120 MG hits ≈ 6s, inside the 10s window, and nothing removes it — no incoming damage), while in-game it is 'removed upon taking a direct hit', so real uptime is LOWER and this encoding is the kit-duration upper bound; refine from Concealment-icon uptime in a rosanna focus video",
         "skill2: only the 500-normal-attack Frenzy source is modeled; the ally-incapacitation Frenzy (+Burst Gauge 36.54%) and the ally-incapacitation 400% hit never fire on the immortal-boss basis (no ally is ever incapacitated)",
-        "skill1: the Concealment (10s) line is unmodeled (self-status; proxyable via the requiresTargetStatus pattern but unenacted pending the ⚑1 uptime measurement); the enemy buff-removal (5 buffs, once per battle) is out-of-domain (no buff-strip primitive)",
+        "skill1: the Concealment (10s) STATUS WINDOW is modeled (targetStatus proxy on the same 120-normal-attacks trigger, feeding the burst rider's gate); its targeting-prevention semantics remain out-of-domain (defensive — no incoming attacks at scope). The enemy buff-removal (5 buffs, once per battle) is out-of-domain (no buff-strip primitive)",
         "burst: the Damage Taken ▲29% debuff applies only against Water Code bosses (bossElementGate 'Water'); inert vs a non-Water boss",
         "cadence: MG fire rate and reload timing are datamined defaults, not yet measured from video (⚑2)"
       ],
@@ -6837,8 +6821,8 @@
       },
       "caveats": [
         "⚑ CADENCE TUPLE (ALWAYS-⚑): AR rate_of_fire 720 = 12 rounds/s nominal + reloadFrames 81 + ammo 60, all datamine (single-chunk reload, reload_bullet 10000) — drives the S1/S2 proc cadence (every 100 / 30 shots), the Mileage ramp timing and hence the burst-gate opening. Recipe: rounds/min + reload gap from any rupee-focus video.",
-        "⚑ MEASUREMENT-GATED (interpretation): the S1 'Increases stack count of buffs by 1' SELF slice is encoded as +1 to the mileage POOL ONLY — the stack's ATK-buff component (13.8%) is NOT granted because buff instances key on caster+slot+stat+value (sim.ts KR stacking rule), so a skill1-slot Mileage buff would be a parallel second instance (double-counted stacks), not a merge into S2's Mileage. ESTIMATE: ≤13.8% of rupee's OWN ATK under-credited during the opening ramp only (the pool reaches 5 at shot ~120; from then on S2 procs alone keep the real buff at 5 stacks, so the missing component exists only while stacks accrue, ≈ first 11s). RECIPE: popup-read rupee's ATK buff icon after an S1 proc in a rupee focus recording — does Mileage show +1 stack carrying the 13.8% value? TIER: override-only (`addStack` can bump the S2-slot Mileage buff cross-slot — a re-encode candidate that would remove the divergence).",
-        "⚑ OUT-OF-DOMAIN (engine-core): the CROSS-ALLY slice of S1 'Increases stack count of buffs by 1' — +1 stack to each Iron ally's OWN stackable buffs (the soda-type team amplifier). ESTIMATE: zero in any encoding the sim can field today (purely a function of which stacking Iron comps are fielded; in the scope-lock fixture the only stackable buff any Iron ally holds is rupee's own Mileage, already folded as the self slice). RECIPE: the primitive now exists — `addStack` (types.ts; flora/k/guilty/pepper carriers) bumps each target's live stackable buffs; encode as an alliesOfElement Iron addStack block if a stacking Iron comp is ever fielded. TIER: override-only (unenacted); the self-slice is the honest in-scope model.",
+        "⚑ MEASUREMENT-GATED (interpretation): the S1 'Increases stack count of buffs by 1' SELF slice is encoded as +1 to the mileage POOL plus a cross-slot `addStack{stat:'atkPct'}` that bumps the live S2 Mileage buff instance (enacted 2026-08-09) — the merge grants the 13.8% ATK component the former pool-only encoding under-credited during the opening ramp. If the S2 buff is not yet live at an S1 proc, the addStack no-ops (kit-literal: no stackable buff to bump). RECIPE stands: popup-read rupee's ATK buff icon after an S1 proc in a focus recording — does Mileage show +1 stack carrying the 13.8% value?",
+        "The CROSS-ALLY slice of S1 'Increases stack count of buffs by 1' is MODELED (enacted 2026-08-09, owner faithfulness ruling): an alliesOfElement Iron (excludeSelf) `addStack` block on the same hitCount:100 trigger bumps each Iron ally's live stackable buffs by 1 (flora/k/guilty/pepper carrier family); excludeSelf because the SELF slice is carried separately (mileage pool +1 plus the cross-slot Mileage merge). Zero movement in the scope-lock fixture (no other Iron ally holds a stackable buff there); live in stacking Iron comps.",
         "⚑ MEASUREMENT-GATED (no-lapse approximation, power/pepper precedent): the mileage POOL never decays (no timer-decay primitive) while the Mileage BUFF lapses 15s after its last refresh. At her sustained scope-lock cadence (S2 procs ≈ every 3.2s; S1 adds one ≈ every 10.6s) applications beat the 15s expiry by ~5×, so stacks never lapse while she keeps firing and the pool and the buff never disagree inside a sim fight — diverges only if she stops firing for >15s. RECIPE: read the Mileage stack icon across a long fire-pause in a rupee focus recording. TIER: override-only.",
         "⚑ INTERPRETATION (awb/diesel dissent on record): alice-wonderland-bunny's gauntlet read the identical sentence as a stack-CAP raise and left it fully unmodeled, warning that a +1-grant reading 'spuriously accelerates the max-stacks gate'; diesel left it unmodeled as ambiguous. This encoding follows the NEWER mica-snow-buddy + pepper majority (self stackable resource folded as +1, cross-ally out-of-domain) because rupee's own stackable buff IS the gate read by her burst, exactly the mica/pepper shape. If a rupee focus recording shows S1 NOT feeding Mileage, drop skill1[1] (the pool block) and the gate simply opens one S2 proc later (shot 150 instead of 120) — the encoding is one block away from the conservative reading."
       ],
@@ -7316,10 +7300,7 @@
           "Auto Fire Ready — Function: Loads Seven Dwarves with ammo. Max ammo loaded by Auto Fire Ready: 5. Deactivation condition: Performing a normal attack.",
           "■ Activates when performing a normal attack while not in Full Burst. Affects self. Removes Seven Dwarves Fully Active."
         ],
-        "skill2": [
-          "Gains Pierce for 5 sec.",
-          "Activates at the start of battle. Affects self. Fixes charge time at 1.2 sec continuously."
-        ],
+        "skill2": [],
         "burst": [
           "Seven Dwarves Fully Active — Function: Increases max number of Lock-On targets and max ammo loaded by Auto Fire Ready, but also increases Charge Time.",
           "Effect 2: Max Lock-On targets ▲ 10 continuously.",
@@ -7342,12 +7323,12 @@
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.9107
+            "ratio": 0.9131
           }
         ],
         "n": 4,
-        "mean": 0.9529,
-        "mad": 0.0482,
+        "mean": 0.9535,
+        "mad": 0.0476,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -7680,12 +7661,12 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.7812
+            "ratio": 0.7804
           }
         ],
         "n": 1,
-        "mean": 0.7812,
-        "mad": 0.2188,
+        "mean": 0.7804,
+        "mad": 0.2196,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -7793,8 +7774,7 @@
         "burst": [
           " Spread Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 435.6% for 5 sec.",
           "Changes Spread Roots to Wilted Roots.",
-          "Wilted Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 64.46% for 5 sec.",
-          "Hit Rate ▲ 45.3% for 10 sec."
+          "Wilted Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 64.46% for 5 sec."
         ]
       },
       "caveats": [
@@ -7807,11 +7787,11 @@
         "records": [
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 1.137
+            "ratio": 1.1512
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 1.1225
+            "ratio": 1.1363
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
@@ -7823,8 +7803,8 @@
           }
         ],
         "n": 4,
-        "mean": 1.1412,
-        "mad": 0.1412,
+        "mean": 1.1482,
+        "mad": 0.1482,
         "band": "±15%",
         "temp": "HOT ▲"
       }

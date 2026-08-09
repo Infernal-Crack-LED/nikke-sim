@@ -11,20 +11,20 @@
 
 | Reason                                  | Entries | Share  |
 | --------------------------------------- | ------- | ------ |
-| Defensive / HP / shield / aggro         | 162     | 36.1%  |
-| Other / see caveats                     | 153     | 34.1%  |
-| Missing engine primitive / trigger      | 72      | 16.0%  |
-| Out-of-domain / parser unsupported      | 27      | 6.0%   |
-| Weapon-state / shot-count approximation | 12      | 2.7%   |
+| Defensive / HP / shield / aggro         | 160     | 37.0%  |
+| Other / see caveats                     | 143     | 33.0%  |
+| Missing engine primitive / trigger      | 71      | 16.4%  |
+| Out-of-domain / parser unsupported      | 27      | 6.2%   |
+| Weapon-state / shot-count approximation | 10      | 2.3%   |
 | Partless boss                           | 7       | 1.6%   |
 | Self-status / stack gate                | 7       | 1.6%   |
-| RNG / probabilistic                     | 5       | 1.1%   |
-| Measurement-gated / unverified cadence  | 4       | 0.9%   |
-| **Total**                               | **449** | 100.0% |
+| RNG / probabilistic                     | 5       | 1.2%   |
+| Measurement-gated / unverified cadence  | 3       | 0.7%   |
+| **Total**                               | **433** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (162)
+### Defensive / HP / shield / aggro (160)
 
 **A2** (a2)
 
@@ -33,7 +33,7 @@
 
 **Ada** (ada)
 
-- **skill1:** Recovers 10% of the damage dealt as HP for 10 sec. (skipped: lifesteal — the event-only `heal` channel is not wired for it; see findings F1/F2: targets bursted Burst-3 allies, whose 'recovery' triggers it would fire — a live B3 on-recovery consumer exists in the roster (asuka S1: self ATK on recovery), so an ada+asuka comp currently misses those refreshes; recipe = event-only heal ticks over the 10s window on the existing fullBurstEnter→burstCasters block)
+- **skill1:** Recovers 10% of the damage dealt as HP for 10 sec. — magnitude only: the 10s recovery-event WINDOW is modeled (event-only heal ticks:10 intervalSec:1 on the fullBurstEnter→burstCasters block, firing bursted-B3 on-recovery consumers such as asuka S1); the HP amount has no engine consumer (no HP pool)
   - _Why:_ See unit note / caveats
 
 **Ade** (ade)
@@ -75,8 +75,7 @@
 
 **Anis: Star** (anis-star)
 
-- **skill2:** ■ Activates when performing a Full Charge attack while in Everyone's Star status. Affects all allies.
-  Restores 1.26% of the skill user's final Max HP as HP.
+- **skill2:** Restores 1.26% of the skill user's final Max HP as HP. — magnitude only: the per-full-charge recovery EVENT is modeled (event-only heal per pull, formation hasB1 = Everyone's Star); the HP amount has no engine consumer (no HP pool)
   - _Why:_ See unit note / caveats
 - **burst:** DEF ▲ 55.01% for 10 sec.
   - _Why:_ See unit note / caveats
@@ -241,15 +240,6 @@
 - **skill1:** Activates only when in Heat Emission status. Affects self. Recovers 2% Max HP/1s continuously.
   - _Why:_ skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst
 
-**Jackal** (jackal)
-
-- **skill1:** ■ Activates when attacked 10 time(s). Affects 1 enemy unit(s) with the highest final Max HP.
-  - _Why:_ skill1: the whole attacked-10x cluster (Damage Taken ▲9.09% + ATK ▼9.09% on the boss, 10s) is unmodeled — the `attacked` trigger primitive exists (types.ts; makima/yulha encode theirs) but nothing feeds it at scope lock (no incoming-damage model). If it were fireable it would be a ~+9.09% team amp after the first 10 hits taken (damageTakenPct is a live boss channel); her in-game tanking role feeds the counter, so real uptime is high — honestly absent here (⚑1), encodable as an honestly-dormant attacked:10 block the day incoming attacks are modeled.
-- **skill1:** Damage Taken ▲ 9.09% for 10 sec.
-  - _Why:_ skill1: the whole attacked-10x cluster (Damage Taken ▲9.09% + ATK ▼9.09% on the boss, 10s) is unmodeled — the `attacked` trigger primitive exists (types.ts; makima/yulha encode theirs) but nothing feeds it at scope lock (no incoming-damage model). If it were fireable it would be a ~+9.09% team amp after the first 10 hits taken (damageTakenPct is a live boss channel); her in-game tanking role feeds the counter, so real uptime is high — honestly absent here (⚑1), encodable as an honestly-dormant attacked:10 block the day incoming attacks are modeled.
-- **skill1:** ATK ▼ 9.09% for 10 sec.
-  - _Why:_ skill1: the whole attacked-10x cluster (Damage Taken ▲9.09% + ATK ▼9.09% on the boss, 10s) is unmodeled — the `attacked` trigger primitive exists (types.ts; makima/yulha encode theirs) but nothing feeds it at scope lock (no incoming-damage model). If it were fireable it would be a ~+9.09% team amp after the first 10 hits taken (damageTakenPct is a live boss channel); her in-game tanking role feeds the counter, so real uptime is high — honestly absent here (⚑1), encodable as an honestly-dormant attacked:10 block the day incoming attacks are modeled.
-
 **Kilo** (kilo)
 
 - **skill1:** ■ Activates when using Burst Skill. Affects self if not in Nano Coating status.
@@ -373,7 +363,7 @@
 
 **Mint** (mint)
 
-- **skill1:** Full Charge in Assigned Part: Dancing: all allies recover 1.8% of caster's Max HP every 1 sec, lasts 3 sec.
+- **skill1:** Full Charge in Assigned Part: Dancing: all allies recover 1.8% of caster's Max HP every 1 sec, lasts 3 sec. — magnitude only: the 3-tick recovery-event window is modeled (event-only heal, Dancing-gated via the singing resource, solo mode); the HP amount has no engine consumer (no HP pool)
   - _Why:_ See unit note / caveats
 
 **Misato** (misato)
@@ -539,6 +529,11 @@
 - **skill2:** ■ Activates at the start of battle. Affects self and 2 Rocket Launcher-wielding ally unit(s) with the highest final ATK. Equally shares HP recovery continuously.
   - _Why:_ skill2: BOTH lines are UNMODELED healing — S2a self lifesteal (42.24% of attack damage as HP) has no lifesteal primitive; S2b HP-recovery share (self + 2 highest-final-ATK RL allies) is a redistribution mechanic; both damage-inert in v1
 
+**Rosanna (Treasure)** (rosanna)
+
+- **skill2:** ■ Activates at the start of battle. Affects self. Concealment: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit. — targeting-prevention semantics only: the battle-start 5s STATUS window is modeled (targetStatus proxy); the prevention + on-hit removal are defensive/out-of-domain
+  - _Why:_ skill2: only the 500-normal-attack Frenzy source is modeled; the ally-incapacitation Frenzy (+Burst Gauge 36.54%) and the ally-incapacitation 400% hit never fire on the immortal-boss basis (no ally is ever incapacitated)
+
 **Rumani** (rumani)
 
 - **skill1:** ■ Activates when landing a Full Charge attack during Full Burst. Affects the target.
@@ -639,7 +634,7 @@
 - **skill2:** Restores 7.52% of Cover HP.
   - _Why:_ skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Other / see caveats (153)
+### Other / see caveats (143)
 
 **A2** (a2)
 
@@ -664,11 +659,6 @@
 **Arcana** (arcana)
 
 - **skill1:** The Magician: Cooldown of Skill 2 ▼ 75% for 15 sec.
-  - _Why:_ See unit note / caveats
-
-**Arcana: Fortune Mate** (arcana-fortune-mate)
-
-- **burst:** Making Memories: Reload 2 rounds.
   - _Why:_ See unit note / caveats
 
 **Bay (Treasure)** (bay)
@@ -779,13 +769,10 @@
 
 **Jackal** (jackal)
 
+- **skill1:** ATK ▼ 9.09% for 10 sec.
+  - _Why:_ See unit note / caveats
 - **burst:** Burst Skill damage of skills with "Affects 1 enemy unit(s)" in the description ▲ 38.91% for 15 sec.
   - _Why:_ burst: the 38.91% Burst-Skill-Damage amp (scoped to skills whose description says 'Affects 1 enemy unit(s)', 15s per cast) is NOT modeled — the engine has no Burst-Skill-Damage bucket/stat and no description-text scope gate (trina precedent, same mechanic family). Teammates' single-target burst nukes cast within 15s of jackal's cast are missing the amp, so jackal comps read COLD by exactly that amount — a documented engine gap (⚑2), not a tuning residual.
-
-**Jill** (jill)
-
-- **burst:** Normal attacks deal True Damage for 10 sec.
-  - _Why:_ burst: "Normal attacks deal True Damage for 10 sec" (damage-type conversion) is unmodeled
 
 **Label** (label)
 
@@ -854,14 +841,6 @@
 
 - **skill2:** Activates when there are above 5 enemy units, excluding Nikkes. Affects self. Critical Rate ▲ 4.83%. Critical Damage ▲ 13.91%.
   - _Why:_ See unit note / caveats
-- **burst:** Change the weapon in use: Charge Time 2 sec
-  - _Why:_ See unit note / caveats
-- **burst:** Full Charge Damage 300% of damage
-  - _Why:_ See unit note / caveats
-- **burst:** Max Ammunition Capacity 1 round
-  - _Why:_ See unit note / caveats
-- **burst:** Additional Effect: Pierce
-  - _Why:_ See unit note / caveats
 
 **Mihara: Bonding Chain** (mihara-bonding-chain)
 
@@ -921,7 +900,7 @@
 
 - **skill2:** Firepower Gauge bookkeeping: gains 100 Firepower Gauge at battle start; +2 per normal attack during Firepower Charge; +45 when Firepower Charge ends (NOT a block — the steady-state consequence is ABSORBED into the skill1 Super block's everyN 3 / everyNOffset 1: start at 100 → Super on her burst casts 1, 4, 7…; video-confirmed cast-by-cast, Run B)
   - _Why:_ See unit note / caveats
-- **skill2:** When Full Burst ends: charges own burst gauge in proportion to the current Firepower Gauge (gauge→burst-gauge conversion; burst-generation only, unmodeled; empirically does not consume the Firepower cycle — every-3rd-Super held on video)
+- **skill2:** When Full Burst ends: 'Burst Gauge filling speed ▲5% × Firepower Gauge charge for 5 sec' is MODELED (enacted 2026-08-09, owner faithfulness ruling) as two everyN:3 self burstGenPct blocks on HER OWN burstCast + delaySec 10 (≈ the FB end of the window her cast opened — cast-keyed, so a co-B3's Full Bursts never fire it), aligned to the Super cycle: after a Super cast the gauge is 0 (offset skipped, no buff); after the 1st charge window burstGenPct 330 for 5s (⚑ 5 × [1 cast + 45 end + 2×~10 in-window normals] — the normal count is a cadence estimate); after the 2nd, burstGenPct 500 (5 × the 100 cap, kit-structural). Empirically does not consume the Firepower cycle — every-3rd-Super held on video
   - _Why:_ See unit note / caveats
 - **burst:** Firepower Gauge below 100: activates Firepower Charge, charging the gauge for 10 sec (bookkeeping — ABSORBED into the everyN 3 alternation)
   - _Why:_ See unit note / caveats
@@ -1012,10 +991,6 @@
 
 **Rosanna (Treasure)** (rosanna)
 
-- **skill1:** ■ Activates after performing 10 normal attacks. Affects the 2 enemy unit(s) with the highest final ATK. Removes 5 buff(s). Activates once per battle.
-  - _Why:_ See unit note / caveats
-- **skill2:** ■ Activates at the start of battle. Affects self. Concealment: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit.
-  - _Why:_ See unit note / caveats
 - **skill2:** ■ Activates when a Nikke is incapacitated. Affects self. Frenzy: ATK ▲ 22.61%. Stacks up to 10 times and lasts for 30 sec. Fills Burst Gauge by 36.54%.
   - _Why:_ skill2: only the 500-normal-attack Frenzy source is modeled; the ally-incapacitation Frenzy (+Burst Gauge 36.54%) and the ally-incapacitation 400% hit never fire on the immortal-boss basis (no ally is ever incapacitated)
 - **skill2:** ■ Activates when a Nikke is incapacitated. Prioritizes Attacker-type enemies. Affects 1 unit(s). Deals 400% of final ATK as damage.
@@ -1068,10 +1043,6 @@
   - _Why:_ See unit note / caveats
 - **skill1:** ■ Activates when performing a normal attack while not in Full Burst. Affects self. Removes Seven Dwarves Fully Active.
   - _Why:_ See unit note / caveats
-- **skill2:** Gains Pierce for 5 sec.
-  - _Why:_ See unit note / caveats
-- **skill2:** Activates at the start of battle. Affects self. Fixes charge time at 1.2 sec continuously.
-  - _Why:_ See unit note / caveats
 - **burst:** Seven Dwarves Fully Active — Function: Increases max number of Lock-On targets and max ammo loaded by Auto Fire Ready, but also increases Charge Time.
   - _Why:_ See unit note / caveats
 - **burst:** Effect 2: Max Lock-On targets ▲ 10 continuously.
@@ -1122,8 +1093,6 @@
   - _Why:_ burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).
 - **burst:** Wilted Roots: Burst Skill damage of skills with "Affects all enemies" ▲ 64.46% for 5 sec.
   - _Why:_ burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).
-- **burst:** Hit Rate ▲ 45.3% for 10 sec.
-  - _Why:_ See unit note / caveats
 
 **Velvet** (velvet)
 
@@ -1160,7 +1129,7 @@
 - **burst:** Cooldown: 20 s
   - _Why:_ See unit note / caveats
 
-### Missing engine primitive / trigger (72)
+### Missing engine primitive / trigger (71)
 
 **A2** (a2)
 
@@ -1175,12 +1144,6 @@
 **Admi** (admi)
 
 - **skill2:** Damage Taken ▼ 28.65% for 10 sec.
-  - _Why:_ See unit note / caveats
-
-**Alice: Wonderland Bunny** (alice-wonderland-bunny)
-
-- **skill1:** ■ Activates after 90 normal attack(s). Affects all Water Code allies.
-  Stack count of buffs ▲ 1. (a stack-CAP raise, not a +1 stack grant — no engine primitive raises a buff's stack cap; the only stackable buff in play, Carrot Party, is damage-inert in v1: double inert)
   - _Why:_ See unit note / caveats
 
 **Anchor: Innocent Maid** (anchor-innocent-maid)
@@ -1436,10 +1399,10 @@
 
 **Rosanna (Treasure)** (rosanna)
 
-- **skill1:** Concealment: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.
-  - _Why:_ skill1: the Concealment (10s) line is unmodeled (self-status; proxyable via the requiresTargetStatus pattern but unenacted pending the ⚑1 uptime measurement); the enemy buff-removal (5 buffs, once per battle) is out-of-domain (no buff-strip primitive)
-- **burst:** ■ Activates when the skill user is in the Concealment state. Affects the target(s) hit by Assalto. Deals 561.6% of final ATK as additional damage.
-  - _Why:_ burst: the 561.6% additional damage is GATED on the Concealment self-state and is NOT modeled — Concealment has no first-class self-status primitive (proxyable via the requiresTargetStatus boss-status pattern, asuka-wille/marciana precedent) and is left unenacted pending the ⚑1 uptime measurement; ≈+43% burst damage when concealment is up, uptime measurement-gated (⚑1)
+- **skill1:** Concealment: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit. — targeting-prevention semantics only: the 10s STATUS window itself is modeled (targetStatus proxy feeding the burst rider); the prevention + on-hit removal are defensive/out-of-domain (no incoming attacks at scope)
+  - _Why:_ skill1: the Concealment (10s) STATUS WINDOW is modeled (targetStatus proxy on the same 120-normal-attacks trigger, feeding the burst rider's gate); its targeting-prevention semantics remain out-of-domain (defensive — no incoming attacks at scope). The enemy buff-removal (5 buffs, once per battle) is out-of-domain (no buff-strip primitive)
+- **skill1:** ■ Activates after performing 10 normal attacks. Affects the 2 enemy unit(s) with the highest final ATK. Removes 5 buff(s). Activates once per battle.
+  - _Why:_ skill1: the Concealment (10s) STATUS WINDOW is modeled (targetStatus proxy on the same 120-normal-attacks trigger, feeding the burst rider's gate); its targeting-prevention semantics remain out-of-domain (defensive — no incoming attacks at scope). The enemy buff-removal (5 buffs, once per battle) is out-of-domain (no buff-strip primitive)
 
 **Rupee: Winter Shopper** (rupee-winter-shopper)
 
@@ -1548,8 +1511,6 @@
   - _Why:_ See unit note / caveats
 - **skill1:** Ability: Find and capture ghosts possessing the enemy.
   - _Why:_ skill1: ghost accrual is interval:6 (the 'Recurring interval: 6 sec' capture CAP; <=1 ghost/6s, pool peaks ~7 while bursting); the 100-cumulative-team-hit gate is folded as clearing inside 6s for a full team (⚑1). The ALTERNATIVE teamAmmo:100 accrual (no cap) over-credits ~1.7x HOT and is rejected here
-- **burst:** Maintains at least 1 ghost.
-  - _Why:_ burst: the 6-hit and 13-hit branches (six / thirteen discrete 800% sequential hits) are resource-gated on the pre-spend pool; while bursting on cooldown the burst is always the 6-hit branch (pool<13); the 13-hit branch is provably reachable at pool=13. 'Maintains at least 1 ghost' is UNENACTED — expressible as pool min:1 (resource init is NOT clamped: pools start at `initial` and min/max clamp only delta adjustments, sim.ts, so min:1 floors the burst spend without lighting frame-0 gates); binds only when the pool is ≤6 at cast — ⚑ verify the branch-timing footprint via the unit test before landing
 
 **Harran** (harran)
 
@@ -1583,13 +1544,16 @@
 - **burst:** A.N. Mode:
   - _Why:_ See unit note / caveats
 
-### Weapon-state / shot-count approximation (12)
+**Rupee** (rupee)
+
+- **skill1:** Increases stack count of buffs by 1. (PARTIALLY MODELED — the SELF slice is folded as +1 to the mileage pool on the same hitCount:100 trigger (skill1[1]); the CROSS-ALLY slice (teammates' stackable buffs) is out-of-domain ⚑3 and the mileage ATK-buff component of the self stack is unrepresentable ⚑2 — the line stays here verbatim as the audit trail)
+  - _Why:_ The CROSS-ALLY slice of S1 'Increases stack count of buffs by 1' is MODELED (enacted 2026-08-09, owner faithfulness ruling): an alliesOfElement Iron (excludeSelf) `addStack` block on the same hitCount:100 trigger bumps each Iron ally's live stackable buffs by 1 (flora/k/guilty/pepper carrier family); excludeSelf because the SELF slice is carried separately (mileage pool +1 plus the cross-slot Mileage merge). Zero movement in the scope-lock fixture (no other Iron ally holds a stackable buff there); live in stacking Iron comps.
+
+### Weapon-state / shot-count approximation (10)
 
 **Arcana: Fortune Mate** (arcana-fortune-mate)
 
 - **skill1:** Full Burst ends: self removes Making Memories + Snapshots of Youth.
-  - _Why:_ skill1/skill2: Making Memories stack buffs (Snapshots +30 normal, Happy Memories +3 pellets via pelletCountFlat 3 — 2026-07-21 A4, was +30 normal, Precious Moments +7.47 ATK) now carry rampSec 11 (theme 3, 2026-07-17) — the real 2/4/6-shot phase counter reaches cap at ~16-18 shots (~10.7-12s at ⚑1.5 pulls/s) ≥ the 11s window, so each buff ramps 0→full across the window (time-avg ~half of cap) and RESETS per window via the engine lapse-reset (the ~9s inter-burst gap fully lapses the buff). Replaces the prior BAKED-to-max encoding. ⚑ rampSec 11 rests on the 1.5 pulls/s SG cadence estimate; a focus recording refines it.
-- **skill2:** Normal attacks in Making Memories (one at a time, resets on MM removal): 2 time(s): Reload 6 rounds.
   - _Why:_ skill1/skill2: Making Memories stack buffs (Snapshots +30 normal, Happy Memories +3 pellets via pelletCountFlat 3 — 2026-07-21 A4, was +30 normal, Precious Moments +7.47 ATK) now carry rampSec 11 (theme 3, 2026-07-17) — the real 2/4/6-shot phase counter reaches cap at ~16-18 shots (~10.7-12s at ⚑1.5 pulls/s) ≥ the 11s window, so each buff ramps 0→full across the window (time-avg ~half of cap) and RESETS per window via the engine lapse-reset (the ~9s inter-burst gap fully lapses the buff). Replaces the prior BAKED-to-max encoding. ⚑ rampSec 11 rests on the 1.5 pulls/s SG cadence estimate; a focus recording refines it.
 
 **Diesel: Winter Sweets** (diesel-winter-sweets)
@@ -1603,11 +1567,6 @@
   - _Why:_ See unit note / caveats
 - **skill1:** Hit Rate ▲ 98.18% 3 rounds
   - _Why:_ See unit note / caveats
-
-**Grave** (grave)
-
-- **skill1:** Activates when Prediction status ends. Affects self. Removes 100% of ammo.
-  - _Why:_ skill1: Prediction-end 'Removes 100% of ammo' (one forced ~3.35s reload per burst cycle in comps) is not modeled — expressible now (`consumeAmmo` empties the magazine + forces the reload, types.ts; Prediction end = burstCast + block delaySec:10, her own casts only); unenacted pending a gated board A/B (damage-live)
 
 **Laplace: Ultimate Hero** (laplace-ultimate-hero)
 
@@ -1714,7 +1673,7 @@
 - **skill2:** There is a 30% chance of activating when attacked.
   - _Why:_ See unit note / caveats
 
-### Measurement-gated / unverified cadence (4)
+### Measurement-gated / unverified cadence (3)
 
 **Ade: Agent Bunny** (ade-agent-bunny)
 
@@ -1730,8 +1689,3 @@
 
 - **skill2:** Explosive Bubble: Damage Taken ▲ 5.05% continuously. Stuns for 3 sec. Removes Bubble.
   - _Why:_ Explosive Bubble (skill 2) is not modeled: the override carries a single permanent Damage Taken ▲ 5.05% (Bubble). If Bubble re-applies after the explosion and Explosive Bubble's debuff persists, the boss would carry BOTH stacks (10.1%) in steady state — unverified, needs an in-game debuff-icon / popup-delta measurement before any change. ⚑ MEASUREMENT-GATED (kit-status F1; independently re-derived by the blind cross-family reviewer, gauntlet 2026-07-26 — the kit-literal reading is a one-time RELOCATION: 'Removes Bubble' + the same 5.05% re-applied, so boss DT stays 5.05% and the 50-hit gate closes forever; the 3s stun is inert, no boss-action model). Estimate: 5.05% (shipped, kit-literal) vs 10.1% (coexistence). Recipe: read the boss debuff icons / popup delta ~5s into a fight (she lands the 50 normals in ~2s at 1440 rpm); if coexistence holds, add a second passive damageTakenPct 5.05 block. Tier: MEASUREMENT-GATED.
-
-**Rupee** (rupee)
-
-- **skill1:** Increases stack count of buffs by 1. (PARTIALLY MODELED — the SELF slice is folded as +1 to the mileage pool on the same hitCount:100 trigger (skill1[1]); the CROSS-ALLY slice (teammates' stackable buffs) is out-of-domain ⚑3 and the mileage ATK-buff component of the self stack is unrepresentable ⚑2 — the line stays here verbatim as the audit trail)
-  - _Why:_ ⚑ MEASUREMENT-GATED (interpretation): the S1 'Increases stack count of buffs by 1' SELF slice is encoded as +1 to the mileage POOL ONLY — the stack's ATK-buff component (13.8%) is NOT granted because buff instances key on caster+slot+stat+value (sim.ts KR stacking rule), so a skill1-slot Mileage buff would be a parallel second instance (double-counted stacks), not a merge into S2's Mileage. ESTIMATE: ≤13.8% of rupee's OWN ATK under-credited during the opening ramp only (the pool reaches 5 at shot ~120; from then on S2 procs alone keep the real buff at 5 stacks, so the missing component exists only while stacks accrue, ≈ first 11s). RECIPE: popup-read rupee's ATK buff icon after an S1 proc in a rupee focus recording — does Mileage show +1 stack carrying the 13.8% value? TIER: override-only (`addStack` can bump the S2-slot Mileage buff cross-slot — a re-encode candidate that would remove the divergence).

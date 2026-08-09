@@ -9,7 +9,47 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-05) THIRD CLEAN-WEAPON OVERRIDE LANDED: `emma` (the MG basis cell) carries a
+- **(2026-08-09) FAITHFULNESS-ENACTMENT BATCH: every wrongly-unmodeled kit line from the
+  unmodeled-entries audit is ENACTED, owner-ruled — "no measurement is needed ahead of time,
+  this is a faithfulness fix; even if it moves the board in a negative way, it's still the
+  correct move."** An 8-agent audit of `docs/unmodeled-entries-review.md` (450 entries) found
+  kit lines dropped for bad reasons: evidence-fitted removals (a kit value deleted because a
+  board fit was off — the rapi-red-hood 400%-modifier failure shape), false "no primitive"
+  claims that predated the 2026-08-08 primitives PR, and "defensive = damage-neutral" misreads
+  (the Grave reload lesson). The owner ruled all of them land as kit-text-literal encodings,
+  fit-exposure accepted. Enacted (all values kit-text SL10 tier): trina burst hitRatePct
+  45.3/10s (Electric-AR pool); nayuta S2 hitRatePct 42 rampSec 90; the dropped ally heals as
+  event-only recovery emitters (ada S1 lifesteal ticks:10, anis-star S2 per-full-charge
+  hasB1-gated, mint S1 Dancing-gated ticks:3 solo-mode); grave Prediction-end consumeAmmo
+  (burstCast+delaySec:10); jill burst same-weapon trueNormals flavor swap (damagePct 71.09 =
+  her datamined normalMult); snow-white-heavy-arms battleStart chargeTimeClamp 1.2 + gainPierce
+  5s (swap chargeTimeSec→chargeTimeClamp 3.2, behavior-identical); arcana-fortune-mate
+  instantReload 2/9 on cast + 6/9 at cast+1.5s (⚑ phase estimate); jackal honestly-dormant
+  attacked:10 → damageTakenPct 9.09; elegg-boom-and-shock ghost pool min:1; rosanna Concealment
+  as the name-keyed targetStatus proxy + the 561.6% burst rider (⚑ kit-duration upper bound —
+  in-game on-hit removal unmodeled); rupee/soda cross-ally addStack slices + rupee's cross-slot
+  Mileage merge; alice-wonderland-bunny "stack count ▲1" aligned to the +1-GRANT majority
+  reading (cap-raise dissent on record, revert path named); neon-vision-eye FB-end burstGenPct
+  330/500 on her own burstCast+delaySec:10 (first attempt keyed to team FB-ends over-fired in
+  the co-B3 elec-battery comp — cast-keying restored the measured 11 FBs); maxwell burst
+  rebuilt to the kit-literal railgun weaponSwap (813.42%/shot, ×300% full-charge, 2s charge,
+  1-round mag, Pierce, 10s), superseding the probe-run-G single-flatDamage collapse whose own
+  note recorded fit instability (0.80 G vs 1.17 N6). NOT enacted: anchor-innocent-maid's
+  same-squad curation (a lore datum, not a measurement — guessing a maid-variant squad is the
+  documented blanc/noir misread trap; needs the in-game squad field). **Board A/B** (142
+  datapoints): aggregate stable (±5% 15→14, ±8% 22→23, worse 23→22); grave 1.119→1.095,
+  arcana-fortune-mate 0.898→0.935, moran 0.660→0.728 improved; jill 0.966→1.924 and maxwell
+  0.889→1.252 went hot — the two evidence-fitted holds' absorbed calibrations now EXPOSED as
+  honest residuals, each with its pending direct measurement on record (jill in-burst popup
+  tier; maxwell run-G/N6 burst-window popup read). Re-tune exposed units separately — never
+  re-fudge (the judge-rotation rule). **Measured-truth handling:** misc B3s (run I) now reads
+  12 FBs vs measured 13 — the old exact match rode the ABSENCE of grave's dump (compensating
+  error); recorded as a `simFullBursts: 12` documented-divergence pin in scripts/regression.ts
+  (measured 13 untouched; the open burst-generation-shortfall class). **Evidence:** branch
+  `fix/unmodeled-staleness` (worktree), per-unit spec tests updated GREEN vs the new encodings
+  and RED vs their superseded models, full regression + snapshot regenerated with the change,
+  board A/B in this entry. The audit's staleness sweep + review-doc generator fix landed on the
+  same branch (separate commits).
   proven-damage-neutral gauntlet override.** The kit-autonomy gauntlet landed `emma` at GO
   faithfulness 1.0, cross-family corroborated (S2b claude-fable-5 / S5+S6 claude-opus-5 / S7
   kimi-code/k3 binding judge). Emma is a PURE HEALER: S1 (5%-on-attacked team heal) and S2
