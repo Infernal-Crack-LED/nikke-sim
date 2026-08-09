@@ -190,9 +190,12 @@ describe('hitsPerShot (multi-round weapons)', () => {
 
   it('DISCRIMINATING: a "for N round(s)" buff spends rounds on the AMMO rule, not the hit rule', () => {
     // durationShots decrements by hitsPerShot for an MG and by 1 otherwise (sim.ts, alongside the
-    // weaponSwap uses-based termination). So the SAME 10-round window covers 5 MG pulls and 10 SMG
-    // pulls on two units with the SAME hitsPerShot. A decrement keyed to hitsPerShot alone gives
-    // both 5; one keyed to pulls gives both 10. Only the weapon-branched rule splits them.
+    // weaponSwap uses-based termination). The grant frame itself does not spend a round (the buff
+    // did not exist when that frame's shot resolved), so a burstCast-granted window also covers the
+    // burst shot. Thus a 10-round window covers 6 MG pulls (burst shot + 5 subsequent, 2 rounds
+    // each) and 11 SMG pulls (burst shot + 10 subsequent, 1 round each). A decrement keyed to
+    // hitsPerShot alone would give both 6; one keyed to pulls would give both 11. Only the
+    // weapon-branched rule splits them.
     const ROUNDS = 10;
     const buffed = (carry: string) => {
       const { events, normals } = capture(carry, (ov) => {
@@ -224,13 +227,24 @@ describe('hitsPerShot (multi-round weapons)', () => {
     };
     const mg = buffed(MG_CARRY);
     const smg = buffed(SMG_CARRY);
+    // The grant frame may or may not coincide with a normal shot, so the absolute count per cast
+    // can be floor(N/R) or 1+floor(N/R). The discriminating fact is the RATIO: with identical
+    // hitsPerShot, the MG (spends hitsPerShot rounds per pull) covers roughly half as many pulls
+    // as the SMG (spends one round per pull).
+    const mgPerCast = mg.pulls / mg.casts;
+    const smgPerCast = smg.pulls / smg.casts;
     expect(
-      mg.pulls / mg.casts,
-      `${MG_CARRY} (MG, hitsPerShot ${charOf(MG_CARRY).hitsPerShot}): a ${ROUNDS}-round window should cover ${ROUNDS / charOf(MG_CARRY).hitsPerShot} pulls`
-    ).toBe(ROUNDS / charOf(MG_CARRY).hitsPerShot);
+      mgPerCast,
+      `${MG_CARRY} (MG, hitsPerShot ${charOf(MG_CARRY).hitsPerShot}): a ${ROUNDS}-round window should cover ~${ROUNDS / charOf(MG_CARRY).hitsPerShot} pulls`
+    ).toBeGreaterThanOrEqual(ROUNDS / charOf(MG_CARRY).hitsPerShot);
+    expect(mgPerCast).toBeLessThanOrEqual(
+      1 + ROUNDS / charOf(MG_CARRY).hitsPerShot
+    );
     expect(
-      smg.pulls / smg.casts,
-      `${SMG_CARRY} (SMG, same hitsPerShot): a ${ROUNDS}-round window should cover ${ROUNDS} pulls`
-    ).toBe(ROUNDS);
+      smgPerCast,
+      `${SMG_CARRY} (SMG, same hitsPerShot): a ${ROUNDS}-round window should cover ~${ROUNDS} pulls`
+    ).toBeGreaterThanOrEqual(ROUNDS);
+    expect(smgPerCast).toBeLessThanOrEqual(ROUNDS + 1);
+    expect(mgPerCast).toBeLessThan(smgPerCast / 1.5);
   });
 });

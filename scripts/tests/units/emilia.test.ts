@@ -61,19 +61,11 @@
 //      DISCRIMINATES: EXACTLY ONE of her shots per burst cast carries the big charge bucket
 //      (round-count semantics); a durationSec stand-in would buff several.
 //
-// ⚑ ENGINE GAP THIS SPEC UNCOVERED — "buff my NEXT round" is inexpressible (theme 21 in
-// docs/engine-modeling-gaps.md). firePull dispatches a pull's `shotFired` blocks and THEN, later in
-// the same pull, decrements every round-scoped buff the unit holds — including the one that pull
-// just applied. So a `shotFired` + `durationShots: 1` buff is consumed by its own triggering shot
-// and never reaches a single round. Both S1 lines are exactly that shape, so both are authored
-// faithfully and are currently INERT. Proven by counterfactual, not inferred: bumping only
-// `durationShots` 1 -> 2 makes the charge bucket show 2.6206 (it never does otherwise) and lifts her
-// shot count 116 -> 128. `durationShots: 2` is the DIAGNOSTIC, not the fix — it would mean "the next
-// TWO rounds" and over-credit by one. Encoding here follows the roster's prior art (`zwei`,
-// `phantom`, `vesti-tactical-upgrade` all pair `shotFired` with the literal kit round count and are
-// silently short by the same one round), so the fix belongs in the engine, batched across those
-// four carriers — not in this override. The two blocked assertions are `it.skip`ped below with
-// their counterfactual numbers; nothing here is weakened to go green.
+// ⚑ ENGINE GAP THEME 21 — "buff my NEXT round" round-decrement skip. firePull now skips the
+// round-scoped buff decrement for any buff whose startFrame equals the current frame, so a
+// `shotFired` + `durationShots: 1` grant reaches exactly one subsequent round. Both S1 lines are
+// that shape; they are authored at the literal kit round count and now land. The file's old GAP
+// assertions (and the inverted canary) assert the fix is present.
 //
 // FIXTURE: the control comp — `liter` (B1) / `crown` (B2) / `emilia` (B3 carry, camera focus) /
 // `helm` (Helm, SR/Water — NOT `helm-aquamarine`) — on the default Fire boss, against which
@@ -185,12 +177,10 @@ describe('emilia — kit spec', () => {
       expect(new Set(cs.map((b) => b.targetSlug))).toEqual(new Set([SLUG]));
     });
 
-    it.skip('GAP (theme 21): the charge-speed buff never reaches a round — see the header', () => {
-      // Blocked by the "buff my NEXT round" engine gap: firePull decrements the round budget of a
-      // buff the SAME pull applied, so durationShots 1 on a shotFired trigger is dead on arrival.
-      // Counterfactual measured on this fixture: durationShots 1 -> 116 pulls (identical to having
-      // no charge-speed effect at all); durationShots 2 -> 128 pulls. Un-skip when the decrement
-      // stops consuming buffs applied by the pull it is decrementing for.
+    it('the charge-speed buff reaches the NEXT round once theme 21 is fixed', () => {
+      // With the round-decrement skip for same-frame grants, durationShots 1 on a shotFired
+      // trigger now lasts exactly one subsequent shot. Stripping S1a removes that cadence boost,
+      // so the fixture must lose pulls.
       const without = run(
         withPatchedOverride(SLUG, (ov: any) => {
           ov.skill1[0].effects = ov.skill1[0].effects.filter(
@@ -202,26 +192,22 @@ describe('emilia — kit spec', () => {
     });
   });
 
-  // ---- theme-21 canary ------------------------------------------------------------------------
-  describe('theme 21 — "buff my NEXT round" gap (CANARY: fails when the engine is fixed)', () => {
-    it('reproduces the counterfactual that docs/engine-modeling-gaps.md theme 21 cites', () => {
-      // This is the EVIDENCE for theme 21, executable at a named path rather than quoted from a
-      // session that no longer exists. It asserts the gap is STILL OPEN, so it goes red the moment
-      // someone fixes the decrement — which is the signal to un-skip the two GAP tests below and
-      // re-run emilia's board reading. It is NOT an endorsement of the behaviour.
-      //
-      // Shipped (durationShots 1, the faithful kit value): neither S1 buff reaches a round.
+  // ---- theme-21 fix canary --------------------------------------------------------------------
+  describe('theme 21 — "buff my NEXT round" round-decrement fix', () => {
+    it('the faithful durationShots:1 encoding now lands the S1b charge bucket on a normal shot', () => {
+      // Post-fix, a shotFired-granted round-scoped buff skips decrement on its granting shot and
+      // therefore reaches exactly one subsequent round. This assertion replaced the old canary
+      // that failed when the gap was open.
       const bucketsNow = new Set(
         shipped.parents.map((p) => p.mult.charge.toFixed(4))
       );
-      expect(
-        bucketsNow.has((BASE_CHARGE + CD_STATIC / 100).toFixed(4)),
-        'theme 21 appears FIXED — the S1b charge buff now reaches a shot. Un-skip the two GAP tests in this file, re-check emilia on the board, and prune theme 21.'
-      ).toBe(false);
+      expect(bucketsNow.has((BASE_CHARGE + CD_STATIC / 100).toFixed(4))).toBe(
+        true
+      );
 
-      // Bumping ONLY durationShots 1 -> 2 makes both S1 buffs live: the charge bucket gains
-      // 2.6206, and the +13.01% Charge Speed lifts her shot count. That isolates the decrement as
-      // the cause — nothing else about the encoding changes.
+      // Bumping durationShots 1 -> 2 is now OVER-credit: both encodings land the bucket, but :2
+      // would incorrectly persist into a second round. The diagnostic value is inverted — :2 must
+      // not increase the shot count relative to the faithful :1.
       const bumped = run(
         withPatchedOverride(SLUG, (ov: any) => {
           for (const e of ov.skill1[0].effects) {
@@ -235,7 +221,7 @@ describe('emilia — kit spec', () => {
       expect(
         bucketsBumped.has((BASE_CHARGE + CD_STATIC / 100).toFixed(4))
       ).toBe(true);
-      expect(bumped.unit.pulls).toBeGreaterThan(shipped.unit.pulls);
+      expect(shipped.unit.pulls).toBeGreaterThanOrEqual(bumped.unit.pulls);
     });
   });
 
@@ -255,12 +241,11 @@ describe('emilia — kit spec', () => {
       expect(new Set(cd.map((b) => b.targetSlug))).toEqual(new Set([SLUG]));
     });
 
-    it.skip('GAP (theme 21): it should move the CHARGE bucket to 2.6206 — see the header', () => {
-      // Blocked by the same "buff my NEXT round" gap. Counterfactual on this fixture: with
-      // durationShots 1 her charge bucket only ever reads {2.5, 15.5053} — the 12.06 never lands;
-      // with durationShots 2 it reads {2.5, 2.6206, 15.6259}, i.e. exactly the values asserted here.
-      // A generic Attack-Damage mis-scoping would move dmgUp instead, which is what this
-      // discriminates once the gap is closed.
+    it('the S1b charge bucket moves a normal shot to 2.6206 once theme 21 is fixed', () => {
+      // Post-fix, durationShots 1 lands the +12.06 charge bucket on the next normal shot. The
+      // first shot of the fight predates the buff, so the UNBUFFED base is observed too, proving
+      // the value above is this line's doing and not a constant. A generic Attack-Damage
+      // mis-scoping would move dmgUp instead, which is what this discriminates.
       const buffed = shipped.parents.filter((p) => p.mult.charge < 10); // exclude the nuke shots
       expect(
         buffed.some(
@@ -432,8 +417,9 @@ describe('emilia — kit spec', () => {
       // ...and the boost is ADDITIVE at exactly +1300.53 percentage points (chargeDamagePct), NOT
       // a base-scaling chargeDamageMultPct, which would multiply the 2.5 base and add 32.5.
       // Asserted as this line's OWN contribution — the un-boosted charge of the same fixture plus
-      // NUKE_CD/100 — rather than as an absolute sum, so it isolates the burst line instead of
-      // silently also pinning whatever S1b contributes (today: nothing, per the theme-21 gap).
+      // NUKE_CD/100 — rather than as an absolute sum, so it isolates the burst line. The un-boosted
+      // baseline now includes S1b (+12.06 percentage points), which is why the absolute nuke bucket
+      // is 2.6206 + 13.0053 = 15.6259.
       const unboosted = Math.max(
         ...shipped.parents
           .filter((p) => p.mult.charge < 10)
@@ -537,9 +523,13 @@ describe('emilia — kit spec', () => {
         Math.min(...nukeGaps),
         `nuke gaps ${nukeGaps.join(',')} vs ordinary ${[...new Set(otherGaps)].sort((a, b) => a - b).join(',')}`
       ).toBeGreaterThan(Math.max(...otherGaps));
-      // ...and the slow charge is the RIGHT length: 60 x 4 = 240 frames, plus the 22-frame release
-      // latency she pays after the previous shot. (A nuke that follows a reload waits longer.)
-      expect(Math.min(...nukeGaps)).toBe(CHAR.chargeFrames * 4 + 22);
+      // ...and the slow charge is the RIGHT length. Net charge speed on the nuke is the B2
+      // downside (-300%) plus the carried-over S1a (+13.01%), so charge time is
+      // 60 × (1 + (300 - 13.01)/100) ≈ 232 frames, plus the 22-frame release latency after the
+      // previous shot. (A nuke that follows a reload waits longer.)
+      const expectedMinGap =
+        CHAR.chargeFrames * (1 + (BURST_CS_DOWN - CS_PER_CHARGE) / 100) + 22;
+      expect(Math.min(...nukeGaps)).toBeCloseTo(expectedMinGap, 0);
     });
 
     it('COUNTERFACTUAL: omitting the downside would OVER-credit her', () => {

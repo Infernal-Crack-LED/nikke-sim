@@ -11,7 +11,7 @@
   },
   "caveats": [
     "skill1: the 25% proc chance is encoded as everyN:4 on shotFired — the expectation-exact periodic thinning for the deterministic sim (⚑1); the engine has no chance primitive, so a per-shot RNG roll is inexpressible; the chosen phase fires on every 4th activation.",
-    "skill2: 'Critical Rate ▲ 2.95% for 1 round(s)' is encoded as the steady-state passive proxy (rampSec 2.2) because the literal shotFired durationShots:1 self-buff is net-inert — the granting firePull decrements it the same frame it is dispatched (MEASURED probe 2026-08-05); the re-trigger cadence (every SR shot is a full charge) makes the in-game steady state permanent uptime (⚑2).",
+    "skill2: 'Critical Rate ▲ 2.95% for 1 round(s)' is encoded as the literal shotFired durationShots:1 self-buff now that the engine skips the same-frame round decrement and refreshes the round clock on re-application; the re-trigger cadence (every SR shot is a full charge) makes the in-game steady state permanent uptime from the second shot on (⚑2).",
     "skill2: 'Gain Pierce for 1 round(s)' is a duration-less gainPierce re-arm on shotFired — gainPierce carries only durationSec (no round count), and a durationSec:1 window would lapse between SR shots (charge cycle > 1s); the per-shot re-arm is behaviorally exact while she fires, and the line is damage-inert at scope lock (partless boss, no Pierce Damage ▲ carrier) (⚑2)."
   ],
   "skill1": [
@@ -52,7 +52,7 @@
     {
       "slot": "skill2",
       "trigger": {
-        "kind": "passive"
+        "kind": "shotFired"
       },
       "target": {
         "kind": "self"
@@ -62,7 +62,7 @@
           "kind": "buff",
           "stat": "critRatePct",
           "value": 2.95,
-          "rampSec": 2.2
+          "durationShots": 1
         }
       ]
     }

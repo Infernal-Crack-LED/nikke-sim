@@ -2061,7 +2061,15 @@ export function runSim(
         existing.stacks = 0;
         // a buff that FULLY lapsed and re-triggers restarts its ramp clock (per-window stack
         // ramps: arcana-fortune-mate's Making Memories rebuild 2/4/6 hits fresh each FB window).
-        // A refresh BEFORE expiry keeps the original startFrame (a continuous, never-dropped ramp).
+        existing.startFrame = frame;
+      } else if (existing.shotsLeft !== undefined) {
+        // ROUND-SCOPED refresh: a re-application while the round budget is still live resets the
+        // round clock from THIS frame. This is required so the same-frame decrement skip below
+        // treats the re-application shot as predating the refreshed budget — otherwise the old
+        // startFrame causes the buff to be consumed on the very shot that just refreshed it,
+        // making "for 1 round(s)" on a per-pull trigger apply every other shot instead of every
+        // subsequent shot (emilia/phantom/zwei). Ramp clocks keep their original startFrame
+        // because durationShots and rampSec are not combined in any current override.
         existing.startFrame = frame;
       }
       existing.stacks = Math.min(existing.stacks + 1, maxStacks);
@@ -3922,10 +3930,12 @@ export function runSim(
     // but counted whether or not ammo was actually deducted: an unlimited-ammo shot still fires a
     // round. Inert for every unit with no round-scoped buff.
     //
-    // EXCEPTION — self-status-gated buffs (noRetriggerWhileActive) whose GRANT happened on THIS
-    // exact shot (startFrame === frame): the granting shot's own charge/fire predates the buff
-    // (it fired before the buff existed, so it could not have benefited from it) and does not
-    // spend one of the buff's own N rounds — "for N round(s)" reads as N rounds AFTER the grant.
+    // EXCEPTION — buffs whose GRANT happened on THIS exact shot (startFrame === frame): the
+    // granting shot's own charge/fire predates the buff (it fired before the buff existed, so it
+    // could not have benefited from it) and does not spend one of the buff's own N rounds —
+    // "for N round(s)" reads as N rounds AFTER the grant. This covers per-pull triggers
+    // (shotFired/hitCount/chargeCounter) that grant a round-scoped buff, including the general
+    // case that the old noRetriggerWhileActive-only carve-out missed.
     // Every other buff (the general case, including a helm-style grant from a DIFFERENT trigger
     // than the one being counted) is unaffected: its startFrame is from an earlier frame than any
     // firePull that decrements it, so this skip never engages.
@@ -3933,7 +3943,7 @@ export function runSim(
       if (
         b.shotsLeft !== undefined &&
         b.shotsLeft > 0 &&
-        !(b.noRetriggerWhileActive && b.startFrame === frame)
+        b.startFrame !== frame
       ) {
         b.shotsLeft -= u.char.weapon === 'MG' ? u.char.hitsPerShot : 1;
       }

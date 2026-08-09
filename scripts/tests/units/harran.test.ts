@@ -38,12 +38,9 @@
 //       and every SR shot IS a full charge — so the in-game steady state is PERMANENT
 //       uptime from the second shot on (each shot's grant covers the next shot, which
 //       re-grants; the S2b reviewer derived the same steady state). The shipped encoding
-//       is the steady-state passive proxy with a short first-trigger ramp, because the
-//       LITERAL encoding — a shotFired durationShots:1 self-buff — is net-INERT in this
-//       engine: the same firePull that dispatches the grant decrements it (probed
-//       2026-08-05: zero crit lift surfaces on any shot). The counterfactual below pins
-//       exactly that; it is the rounds-vs-seconds trap's hidden third variant — neither a
-//       lapsing durationSec:1 window nor a live round count, but a self-consuming grant.
+//       is the literal shotFired durationShots:1 self-buff; the engine now skips the
+//       same-frame round decrement and refreshes the round clock on re-application, so
+//       the buff is live on every shot after the first (⚑2).
 //   R4  the burst nuke lands on her OWN burstCast (6 casts in the fixture), NOT on
 //       fullBurstEnter — the fixture fields helm as a second 40s Burst III, so there are
 //       ~12 Full Burst windows but only 6 of them are hers; a fullBurstEnter encoding
@@ -127,19 +124,18 @@ const harranNoCrit = withPatchedOverride('harran', (ov) => {
     throw new Error('harran S2 critRatePct block missing — fixture is stale');
   }
 });
-/** R3 counterfactual: the LITERAL encoding — shotFired-triggered, durationShots:1.
- *  The engine decrements it on the same firePull that dispatches it (probed 2026-08-05),
- *  so it must be net-inert (zero crit lift). This is the encoding the shipped proxy
- *  replaces. */
-const harranLiteralCrit = withPatchedOverride('harran', (ov) => {
+/** R3 counterfactual: a lapsing durationSec:1 window (the nearest wrong model — the SR
+ *  fire cycle exceeds 1s, so the buff would lapse between shots and give only a sporadic
+ *  crit lift instead of steady-state uptime). */
+const harranWindowCrit = withPatchedOverride('harran', (ov) => {
   const b = ov.skill2.find((x: any) => hasStat(x, 'critRatePct'));
   if (!b) {
     throw new Error('harran S2 critRatePct block missing — fixture is stale');
   }
   b.trigger = { kind: 'shotFired' };
   const e = b.effects.find((x: any) => x.stat === 'critRatePct');
-  delete e.rampSec;
-  e.durationShots = 1;
+  delete e.durationShots;
+  e.durationSec = 1;
 });
 /** R4 counterfactual: the nuke keyed to fullBurstEnter — fires on helm's windows too. */
 const harranFbEnterNuke = withPatchedOverride('harran', (ov) => {
@@ -165,7 +161,7 @@ const base = run();
 const noDot = run({ harran: harranNoDot });
 const ungatedDot = run({ harran: harranUngatedDot });
 const noCrit = run({ harran: harranNoCrit });
-const literalCrit = run({ harran: harranLiteralCrit });
+const windowCrit = run({ harran: harranWindowCrit });
 const fbEnterNuke = run({ harran: harranFbEnterNuke });
 const noPierce = run({ harran: harranNoPierce });
 
@@ -302,7 +298,7 @@ describe('harran — kit spec', () => {
     }
     const deltas = [...deltaByFrame.entries()].sort((a, b) => a[0] - b[0]);
 
-    it('the lift reaches exactly 2.95% once past the first-trigger ramp', () => {
+    it('the lift reaches exactly 2.95% in steady state', () => {
       const steady = deltas.filter(([f]) => f >= 300);
       expect(steady.length).toBeGreaterThan(50);
       for (const [, delta] of steady) {
@@ -315,28 +311,38 @@ describe('harran — kit spec', () => {
       expect(steady.every(([, delta]) => delta > 0.029)).toBe(true);
     });
 
-    it('ramps in from the first full charge (not full-value at t=0)', () => {
+    it('the first full-charge shot predates the buff; every subsequent shot carries it', () => {
       const early = deltas.filter(([f]) => f < 300);
       expect(early.length).toBeGreaterThan(0);
-      expect(early.some(([, delta]) => delta > 0 && delta < 0.0295)).toBe(true);
+      // first shot: delta === 0 (the buff is granted AFTER its damage resolves)
+      expect(early.some(([, delta]) => delta === 0)).toBe(true);
+      // at least one later shot in the opening already has the full lift
+      expect(early.some(([, delta]) => delta > 0.029)).toBe(true);
     });
 
-    it('DISCRIMINATING: the literal shotFired/durationShots:1 encoding is net-inert', () => {
-      // The engine decrements a shotFired-granted durationShots buff on the same firePull
-      // that dispatches it (probed 2026-08-05) — the literal reading produces NO crit lift.
-      const literalByFrame = new Map(
-        normals(literalCrit.events).map((d) => [d.frame, d.critRate])
+    it('DISCRIMINATING: a durationSec:1 window would lapse between SR shots', () => {
+      // The literal round-count encoding gives continuous uptime; a 1-second wall-clock
+      // window cannot cover the full SR charge cycle, so its steady-state lift is smaller.
+      const windowByFrame = new Map(
+        normals(windowCrit.events).map((d) => [d.frame, d.critRate])
       );
+      const windowDeltas: number[] = [];
       for (const d of normals(noCrit.events)) {
-        const l = literalByFrame.get(d.frame);
-        if (l !== undefined) {
-          expect(l).toBeCloseTo(d.critRate, 9);
+        const w = windowByFrame.get(d.frame);
+        if (w !== undefined) {
+          const baseRate = shippedByFrame.get(d.frame)!;
+          windowDeltas.push(baseRate - w);
         }
       }
-      // while the shipped proxy DOES lift (sanity that the discrimination is live)
+      const windowSteady = windowDeltas.filter((_, i) => i > 10);
+      const baseSteady = deltas.filter(([f]) => f >= 300).map(([, d]) => d);
+      expect(baseSteady.length).toBeGreaterThan(0);
+      expect(windowSteady.length).toBeGreaterThan(0);
       expect(
-        deltas.filter(([, delta]) => delta > 0.029).length
-      ).toBeGreaterThan(0);
+        baseSteady.reduce((a, b) => a + b, 0) / baseSteady.length
+      ).toBeGreaterThan(
+        windowSteady.reduce((a, b) => a + b, 0) / windowSteady.length
+      );
     });
   });
 

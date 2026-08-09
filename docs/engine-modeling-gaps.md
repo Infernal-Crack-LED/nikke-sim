@@ -55,7 +55,7 @@
 | `countInFb` | 7 | claire, frima, quiry, rapi-red-hood, scarlet-black-shadow, snow-crane, snow-white-innocent-days |
 | `critRateNormalPct` | 3 | biscuit, helm, julia |
 | `delaySec` | 5 | asuka-wille, dorothy, flora, rapi-red-hood, snow-white |
-| `durationShots` | 10 | emilia, eunhwa, helm, miranda, neon, neve, phantom, snow-white-heavy-arms, … |
+| `durationShots` | 11 | emilia, eunhwa, harran, helm, miranda, neon, neve, phantom, … |
 | `escalating` | 11 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, mary-bay-goddess, mihara, … |
 | `everyN` | 8 | clay, harran, mast-romantic-maid, mint, neon-vision-eye, phantom, power, soda-twinkling-bunny |
 | `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
@@ -94,7 +94,7 @@
 | `perResource` | 7 | e-h, exia, guillotine, mana, marciana-marine-study, phantom, soda-twinkling-bunny |
 | `pierceModes` | 1 | cinderella-crystal-wave |
 | `pullsPerSec` | 2 | jill, k |
-| `rampSec` | 4 | arcana-fortune-mate, cinderella, harran, scarlet |
+| `rampSec` | 3 | arcana-fortune-mate, cinderella, scarlet |
 | `recovery` | 2 | asuka, crown |
 | `reenterStage` | 7 | alice-wonderland-bunny, anis-star, avistar, chime, rupee-winter-shopper, tia, viper |
 | `removeOnReload` | 1 | vesti-tactical-upgrade |
@@ -712,41 +712,13 @@ gauge-row value — the same gated-decision treatment scarlet-black-shadow got. 
 NEW override landing on an SR/RL unit should cross-check `chargeMultiplier` against
 `gauge-per-shot.json` before assuming the fallback/table value is correct.
 
-### 21. "Buff my NEXT round" is inexpressible — a per-pull `durationShots` buff eats its own budget — 4 units (COLD)
+### 21. "Buff my NEXT round" per-pull `durationShots` budget — ✅ FIXED 2026-08-08
 
-Found by the `emilia` test-first build, 2026-08-03. `firePull` dispatches a pull's
-`shotFired` / `hitCount` / `chargeCounter` blocks and then, **later in that same pull**,
-decrements the round budget of every round-scoped buff the unit holds — including the one the
-pull just applied. So a buff granted BY a shot loses a round to that shot, and
-`durationShots: 1` on a per-pull trigger reaches **zero** rounds.
-
-The kit wording this breaks is common: "Activates when attacking with Full Charge … ▲ X% for
-1 round(s)" can only mean "buff my NEXT round" — the granting attack has already resolved, so
-it cannot retroactively benefit. The `burstCast` case is unaffected (a cast is not a pull, so
-the buff survives to the next shot and is consumed by it), which is why the documented design
-carrier, `helm`'s 10-round burst window, works correctly and this went unnoticed.
-
-Carriers (every override pairing a per-pull trigger with `durationShots`):
-
-| Unit                      | Line                                              | Authored | Effective | Effect |
-| ------------------------- | ------------------------------------------------- | -------- | --------- | ------ |
-| `emilia`                  | S1 Charge Speed ▲13.01% / Charge Damage ▲12.06    | 1        | **0**     | both lines fully inert |
-| `zwei`                    | S1 Pierce Damage ▲24.99% (maxStacks 3)            | 1        | **0**     | fully inert |
-| `phantom`                 | S1 Attack Damage ▲75.17%                          | 2        | 1         | half the window |
-| `vesti-tactical-upgrade`  | S1 Charge Speed ▲100% / Charge Damage ▲58.5%      | 3        | 2         | a third of the window |
-
-**Evidence (counterfactual, not inference) — re-runnable at
-`scripts/tests/units/emilia.test.ts`, the "theme 21 … CANARY" block**, which executes the
-counterfactual below on every `verify.sh` and FAILS the moment the gap closes (its message says to
-un-skip that file's two GAP tests, re-read emilia on the board, and prune this section).
-On the `liter`/`crown`/`emilia`/`helm` control comp,
-bumping ONLY `durationShots` 1 → 2 on emilia's S1 block changes her charge bucket from
-`{2.5, 15.5053}` to `{2.5, 2.6206, 15.6259}` — the 12.06 appears for the first time — and lifts her
-shot count 116 → 128 as the +13.01% Charge Speed goes live. `durationShots: 2` is the DIAGNOSTIC,
-not the fix: it means "the next TWO rounds" and over-credits by one.
-
-**Suggested fix (not enacted — batched, board-moving).** Record the apply frame on the buff entry
-and skip the decrement for buffs applied on the frame being decremented. It is a handful of lines,
-but it moves four units COLD→warmer and therefore needs its own board A/B plus a regression-snapshot
-regeneration; it is not an override-level correction. All four overrides are authored faithfully
-today (the literal kit round count) and must NOT be bumped by one to compensate.
+`firePull` now skips the round-budget decrement for any round-scoped buff whose `startFrame`
+equals the current frame, and a refresh of a round-scoped buff resets `startFrame` to the
+refresh frame. This makes "for 1 round(s)" on a `shotFired`/`hitCount`/`chargeCounter` trigger
+reach the next pull instead of eating its own budget. Carriers corrected to the literal kit
+round count: `emilia` (S1 Charge Speed / Charge Damage), `zwei` (S1 Pierce Damage), `phantom`
+(S1 Attack Damage); `vesti-tactical-upgrade` was already fixed via `noRetriggerWhileActive`.
+Evidence and regression coverage lives in `scripts/tests/units/emilia.test.ts` and
+`scripts/tests/engine/duration-shots.test.ts`.

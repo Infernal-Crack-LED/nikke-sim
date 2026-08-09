@@ -346,8 +346,9 @@ describe('phantom (Treasure) — kit spec', () => {
       expect(atkDmg.length).toBeGreaterThan(0);
       expect([...new Set(atkDmg.map((b) => b.targetIdx))]).toEqual([PHANTOM]);
       for (const b of atkDmg) {
-        expect(b.durationShots).toBe(2);
-      } // kit "1 round" + engine-order compensation (header)
+        expect(b.durationShots).toBe(1);
+      } // kit "1 round"; the engine now skips same-frame decrement and resets the round clock on
+      // refresh, so the buff is live on every shot after the battle's first under continuous fire.
       // duty: applies on every shot but the battle's first (the sole application event) — the
       // self-extending window keeps the gate open for the whole fight under continuous fire.
       const duty = atkDmg.length / shots;

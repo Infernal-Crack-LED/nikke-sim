@@ -13,7 +13,7 @@
   "caveats": [
     "skill1: BLOCK ORDER IS LOAD-BEARING — the requiresTargetStatus-gated Attack Damage block precedes the targetStatus-inflicting block in the skill1 array, so the battle's first shot (the sole application event under the self-extending window, gate still closed at dispatch time) does NOT receive the buff. Reversing the two blocks would grant it.",
     "skill1: the Calling Card window self-extends on every shot (shotFired refresh) — the kit's 'not in Calling Card state' application clause collapses to the battle's first shot under continuous fire, where the real window lapses at 5s and the next hit re-applies it immediately (on-shot duty ~98.3-100% at any magazine length). The collapse matches that duty (+1.7% on gated shots) and covers the post-burst extended magazine a fixed phase would mis-model (⚑1).",
-    "skill1: the Attack Damage line carries durationShots:2, authored against the kit's 'for 1 round(s)' as the engine-order compensation (⚑2): shotFired blocks dispatch after the shot's damage, so a :1 budget never contributes; :2 keeps the buff live on every shot from the 3rd on.",
+    "skill1: the Attack Damage line carries durationShots:1, matching the kit's 'for 1 round(s)'. The engine now skips the round-budget decrement on the same frame a round-scoped buff is granted, so the buff reaches the next shot after application.",
     "skill1: Thief's Dagger is a live resource pool read by a perResource hitRatePct buff; the kit's 5s per-stack duration never binds because the consume (hit 60, t≈4.92s) always pre-empts it, so the pool equals the real stack count at every frame. Hit Rate's core-fraction YIELD is a derived estimate (⚑4).",
     "skill2: the max-stacks consume is one block (shotFired + resourceGate thiefsDagger min:3 + requiresTargetStatus 'Calling Card'); block order across slots puts every skill1 grant before this skill2 gate, so the treasure grant at hit 60 opens the gate on that same shot. The requiresTargetStatus clause is always satisfied at the consume instant under steady cadence (consume at t≈4.92s inside the [0,5) window).",
     "skill2: 'Removes Calling Card' is unmodeled (no consume-target-status primitive, ⚑3) — moot: the natural 5s lapse pre-empts the next reapplication under steady fire.",
@@ -37,7 +37,7 @@
           "kind": "buff",
           "stat": "attackDamagePct",
           "value": 75.17,
-          "durationShots": 2
+          "durationShots": 1
         }
       ]
     },
