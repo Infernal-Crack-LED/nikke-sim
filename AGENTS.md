@@ -36,8 +36,10 @@
   `scripts/tests/**`.
 - `bash scripts/verify.sh` — the canonical gate (fast); `full` adds web build + smoke; `deploy`
   adds the DPS-chart artifact. Green before anything leaves the machine.
-- Commit early and often; **never push unless the owner asks**. Agent-authored commits end with
-  `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`.
+- Commit early and often; **never push unless the owner asks**. Agent-authored commits carry a
+  per-harness `Co-Authored-By` trailer — attribute to the harness that actually authored the commit:
+  Claude/Kimi use `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`; **Qwen uses
+  `Co-Authored-By: Qwen Code <noreply@alibaba.com>`**.
 - **NEVER discard working-tree changes** (`git restore` / `git checkout --` / `git reset --hard`)
   — the worktree is shared by concurrent sessions. Engine edits happen on an isolated worktree.
 - Exact-slug is P0; measured > fudge; measurement ≠ enactment; an existing labeled fixture IS an

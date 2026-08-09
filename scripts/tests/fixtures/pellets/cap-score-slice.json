@@ -1,0 +1,1903 @@
+{
+  "_source": "Scored entirely off the already-committed scripts/tests/fixtures/pellets/representative-audit-slice.json -- no new raw tracks.json, no re-derivation (CLAUDE.md reuse-before-derive). docs/handoffs/closed/2026-08-04-lifetime-cap-PRECOMMIT.md is the decision rule this arm's numbers are scored against.",
+  "_note": "Deliberately carries NO raw track data of its own -- `cap_score`/`cap_score_selftest` both read scripts/tests/fixtures/pellets/representative-audit-slice.json directly, so this fixture only pins the SCORE (`_expected`), not a second copy of the labelled/dumps blocks. Regenerate with analyze-pellet-tracks.py --cap-score --save-cap-score-fixture <path>.",
+  "_expected": {
+    "consistency_2_1": {
+      "band_lo": 8,
+      "owner_total": 42,
+      "statics": [22, 36],
+      "per_candidate": {
+        "control": {
+          "band_hi": 13,
+          "owner_admitted": 37,
+          "owner_total": 42,
+          "all_owner_recovered": false,
+          "statics_admitted": [],
+          "pass": false
+        },
+        "19": {
+          "band_hi": 19,
+          "owner_admitted": 42,
+          "owner_total": 42,
+          "all_owner_recovered": true,
+          "statics_admitted": [],
+          "pass": true
+        },
+        "20": {
+          "band_hi": 20,
+          "owner_admitted": 42,
+          "owner_total": 42,
+          "all_owner_recovered": true,
+          "statics_admitted": [],
+          "pass": true
+        },
+        "21": {
+          "band_hi": 21,
+          "owner_admitted": 42,
+          "owner_total": 42,
+          "all_owner_recovered": true,
+          "statics_admitted": [],
+          "pass": true
+        }
+      }
+    },
+    "ceiling_2_3": {
+      "control": {
+        "per_dump": [
+          {
+            "dump": "groundtruth-f811-v4/tracks.json",
+            "fps": 60.0,
+            "band_hi": 13,
+            "n_events": 37,
+            "n_scored": 37,
+            "no_rep": 0,
+            "sum_total": 218,
+            "above_ceiling": 0,
+            "above_ceiling_pct": 0.0,
+            "banded": 30,
+            "fallback": 7
+          },
+          {
+            "dump": "h4-marciana-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 7,
+            "n_events": 218,
+            "n_scored": 218,
+            "no_rep": 0,
+            "sum_total": 1335,
+            "above_ceiling": 1,
+            "above_ceiling_pct": 0.5,
+            "banded": 192,
+            "fallback": 26
+          },
+          {
+            "dump": "h4-isabel-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 7,
+            "n_events": 203,
+            "n_scored": 203,
+            "no_rep": 0,
+            "sum_total": 1250,
+            "above_ceiling": 5,
+            "above_ceiling_pct": 2.5,
+            "banded": 174,
+            "fallback": 29
+          },
+          {
+            "dump": "h4-guilty-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 7,
+            "n_events": 180,
+            "n_scored": 180,
+            "no_rep": 0,
+            "sum_total": 1094,
+            "above_ceiling": 1,
+            "above_ceiling_pct": 0.6,
+            "banded": 155,
+            "fallback": 25
+          },
+          {
+            "dump": "g2-noir-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 7,
+            "n_events": 214,
+            "n_scored": 214,
+            "no_rep": 0,
+            "sum_total": 1348,
+            "above_ceiling": 8,
+            "above_ceiling_pct": 3.7,
+            "banded": 189,
+            "fallback": 25
+          }
+        ],
+        "pooled": {
+          "n_events": 852,
+          "n_scored": 852,
+          "no_rep": 0,
+          "above_ceiling": 15,
+          "above_ceiling_pct": 1.8,
+          "avgTotal": 6.1561,
+          "banded": 740,
+          "fallback": 112,
+          "verdict": "PASS"
+        }
+      },
+      "19": {
+        "per_dump": [
+          {
+            "dump": "groundtruth-f811-v4/tracks.json",
+            "fps": 60.0,
+            "band_hi": 19,
+            "n_events": 37,
+            "n_scored": 37,
+            "no_rep": 0,
+            "sum_total": 244,
+            "above_ceiling": 0,
+            "above_ceiling_pct": 0.0,
+            "banded": 30,
+            "fallback": 7
+          },
+          {
+            "dump": "h4-marciana-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 10,
+            "n_events": 218,
+            "n_scored": 218,
+            "no_rep": 0,
+            "sum_total": 1451,
+            "above_ceiling": 4,
+            "above_ceiling_pct": 1.8,
+            "banded": 196,
+            "fallback": 22
+          },
+          {
+            "dump": "h4-isabel-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 10,
+            "n_events": 203,
+            "n_scored": 203,
+            "no_rep": 0,
+            "sum_total": 1331,
+            "above_ceiling": 6,
+            "above_ceiling_pct": 3.0,
+            "banded": 181,
+            "fallback": 22
+          },
+          {
+            "dump": "h4-guilty-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 10,
+            "n_events": 180,
+            "n_scored": 180,
+            "no_rep": 0,
+            "sum_total": 1176,
+            "above_ceiling": 5,
+            "above_ceiling_pct": 2.8,
+            "banded": 157,
+            "fallback": 23
+          },
+          {
+            "dump": "g2-noir-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 10,
+            "n_events": 214,
+            "n_scored": 214,
+            "no_rep": 0,
+            "sum_total": 1475,
+            "above_ceiling": 11,
+            "above_ceiling_pct": 5.1,
+            "banded": 192,
+            "fallback": 22
+          }
+        ],
+        "pooled": {
+          "n_events": 852,
+          "n_scored": 852,
+          "no_rep": 0,
+          "above_ceiling": 26,
+          "above_ceiling_pct": 3.1,
+          "avgTotal": 6.6631,
+          "banded": 756,
+          "fallback": 96,
+          "verdict": "PASS"
+        }
+      },
+      "20": {
+        "per_dump": [
+          {
+            "dump": "groundtruth-f811-v4/tracks.json",
+            "fps": 60.0,
+            "band_hi": 20,
+            "n_events": 37,
+            "n_scored": 37,
+            "no_rep": 0,
+            "sum_total": 244,
+            "above_ceiling": 0,
+            "above_ceiling_pct": 0.0,
+            "banded": 30,
+            "fallback": 7
+          },
+          {
+            "dump": "h4-marciana-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 10,
+            "n_events": 218,
+            "n_scored": 218,
+            "no_rep": 0,
+            "sum_total": 1451,
+            "above_ceiling": 4,
+            "above_ceiling_pct": 1.8,
+            "banded": 196,
+            "fallback": 22
+          },
+          {
+            "dump": "h4-isabel-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 10,
+            "n_events": 203,
+            "n_scored": 203,
+            "no_rep": 0,
+            "sum_total": 1331,
+            "above_ceiling": 6,
+            "above_ceiling_pct": 3.0,
+            "banded": 181,
+            "fallback": 22
+          },
+          {
+            "dump": "h4-guilty-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 10,
+            "n_events": 180,
+            "n_scored": 180,
+            "no_rep": 0,
+            "sum_total": 1176,
+            "above_ceiling": 5,
+            "above_ceiling_pct": 2.8,
+            "banded": 157,
+            "fallback": 23
+          },
+          {
+            "dump": "g2-noir-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 10,
+            "n_events": 214,
+            "n_scored": 214,
+            "no_rep": 0,
+            "sum_total": 1475,
+            "above_ceiling": 11,
+            "above_ceiling_pct": 5.1,
+            "banded": 192,
+            "fallback": 22
+          }
+        ],
+        "pooled": {
+          "n_events": 852,
+          "n_scored": 852,
+          "no_rep": 0,
+          "above_ceiling": 26,
+          "above_ceiling_pct": 3.1,
+          "avgTotal": 6.6631,
+          "banded": 756,
+          "fallback": 96,
+          "verdict": "PASS"
+        }
+      },
+      "21": {
+        "per_dump": [
+          {
+            "dump": "groundtruth-f811-v4/tracks.json",
+            "fps": 60.0,
+            "band_hi": 21,
+            "n_events": 37,
+            "n_scored": 37,
+            "no_rep": 0,
+            "sum_total": 245,
+            "above_ceiling": 0,
+            "above_ceiling_pct": 0.0,
+            "banded": 30,
+            "fallback": 7
+          },
+          {
+            "dump": "h4-marciana-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 10,
+            "n_events": 218,
+            "n_scored": 218,
+            "no_rep": 0,
+            "sum_total": 1451,
+            "above_ceiling": 4,
+            "above_ceiling_pct": 1.8,
+            "banded": 196,
+            "fallback": 22
+          },
+          {
+            "dump": "h4-isabel-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 10,
+            "n_events": 203,
+            "n_scored": 203,
+            "no_rep": 0,
+            "sum_total": 1331,
+            "above_ceiling": 6,
+            "above_ceiling_pct": 3.0,
+            "banded": 181,
+            "fallback": 22
+          },
+          {
+            "dump": "h4-guilty-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 10,
+            "n_events": 180,
+            "n_scored": 180,
+            "no_rep": 0,
+            "sum_total": 1176,
+            "above_ceiling": 5,
+            "above_ceiling_pct": 2.8,
+            "banded": 157,
+            "fallback": 23
+          },
+          {
+            "dump": "g2-noir-structural/tracks.json",
+            "fps": 30.0,
+            "band_hi": 10,
+            "n_events": 214,
+            "n_scored": 214,
+            "no_rep": 0,
+            "sum_total": 1475,
+            "above_ceiling": 11,
+            "above_ceiling_pct": 5.1,
+            "banded": 192,
+            "fallback": 22
+          }
+        ],
+        "pooled": {
+          "n_events": 852,
+          "n_scored": 852,
+          "no_rep": 0,
+          "above_ceiling": 26,
+          "above_ceiling_pct": 3.1,
+          "avgTotal": 6.6643,
+          "banded": 756,
+          "fallback": 96,
+          "verdict": "PASS"
+        }
+      }
+    },
+    "corridor_2_4": {
+      "lifetime_histograms_by_dump": {
+        "groundtruth-f811-v4/tracks.json": {
+          "1": 586,
+          "2": 396,
+          "3": 90,
+          "4": 53,
+          "5": 32,
+          "6": 31,
+          "7": 19,
+          "8": 12,
+          "9": 29,
+          "10": 82,
+          "11": 56,
+          "12": 18,
+          "13": 17,
+          "14": 6,
+          "15": 16,
+          "16": 6,
+          "17": 6,
+          "18": 2,
+          "20": 1,
+          "21": 1,
+          "22": 3,
+          "23": 2,
+          "24": 1,
+          "25": 1,
+          "28": 1,
+          "32": 1,
+          "34": 1,
+          "36": 1,
+          "38": 2,
+          "39": 1,
+          "49": 1,
+          "51": 1,
+          "53": 1
+        },
+        "h4-marciana-structural/tracks.json": {
+          "1": 3836,
+          "2": 818,
+          "3": 338,
+          "4": 255,
+          "5": 659,
+          "6": 374,
+          "7": 176,
+          "8": 118,
+          "9": 48,
+          "10": 27,
+          "11": 16,
+          "12": 6,
+          "13": 4,
+          "14": 6,
+          "15": 6,
+          "16": 1,
+          "17": 6,
+          "18": 11,
+          "19": 7,
+          "20": 9,
+          "21": 2,
+          "22": 3,
+          "23": 1,
+          "24": 2,
+          "26": 1,
+          "27": 2,
+          "28": 4,
+          "32": 2,
+          "36": 1,
+          "37": 2,
+          "40": 1,
+          "43": 2,
+          "48": 1,
+          "50": 2,
+          "58": 1,
+          "64": 1,
+          "65": 1,
+          "69": 1
+        },
+        "h4-isabel-structural/tracks.json": {
+          "1": 3698,
+          "2": 757,
+          "3": 383,
+          "4": 230,
+          "5": 635,
+          "6": 365,
+          "7": 166,
+          "8": 84,
+          "9": 38,
+          "10": 22,
+          "11": 15,
+          "12": 5,
+          "13": 7,
+          "14": 6,
+          "15": 1,
+          "16": 6,
+          "17": 4,
+          "18": 8,
+          "19": 5,
+          "20": 2,
+          "21": 8,
+          "23": 2,
+          "24": 4,
+          "25": 2,
+          "26": 1,
+          "27": 1,
+          "28": 2,
+          "30": 2,
+          "32": 1,
+          "34": 1,
+          "36": 1,
+          "37": 1,
+          "42": 1,
+          "48": 1,
+          "50": 1,
+          "98": 1,
+          "135": 1
+        },
+        "h4-guilty-structural/tracks.json": {
+          "1": 3200,
+          "2": 652,
+          "3": 297,
+          "4": 225,
+          "5": 591,
+          "6": 272,
+          "7": 121,
+          "8": 110,
+          "9": 28,
+          "10": 20,
+          "11": 15,
+          "12": 6,
+          "13": 6,
+          "14": 2,
+          "15": 8,
+          "16": 1,
+          "17": 3,
+          "18": 6,
+          "19": 2,
+          "20": 3,
+          "21": 7,
+          "22": 2,
+          "23": 2,
+          "24": 1,
+          "28": 1,
+          "29": 1,
+          "30": 1,
+          "32": 3,
+          "34": 1,
+          "36": 1,
+          "37": 1,
+          "39": 2,
+          "42": 1,
+          "43": 1,
+          "46": 1,
+          "56": 1,
+          "57": 1
+        },
+        "g2-noir-structural/tracks.json": {
+          "1": 4339,
+          "2": 952,
+          "3": 406,
+          "4": 358,
+          "5": 711,
+          "6": 326,
+          "7": 144,
+          "8": 130,
+          "9": 47,
+          "10": 23,
+          "11": 12,
+          "12": 7,
+          "13": 10,
+          "14": 5,
+          "15": 4,
+          "16": 4,
+          "17": 6,
+          "18": 6,
+          "19": 9,
+          "20": 5,
+          "21": 4,
+          "22": 1,
+          "23": 1,
+          "24": 2,
+          "25": 3,
+          "26": 2,
+          "27": 3,
+          "28": 3,
+          "29": 3,
+          "30": 1,
+          "31": 1,
+          "33": 1,
+          "35": 1,
+          "36": 1,
+          "37": 1,
+          "41": 1,
+          "42": 2,
+          "44": 1,
+          "57": 1
+        }
+      },
+      "per_candidate": {
+        "control": {
+          "per_dump": {
+            "h4-marciana-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 218,
+              "band_hi": 7,
+              "corridor_admits": 0,
+              "corridor_admits_per_event": 0.0,
+              "verdict": "CONFIRMS"
+            },
+            "h4-isabel-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 203,
+              "band_hi": 7,
+              "corridor_admits": 0,
+              "corridor_admits_per_event": 0.0,
+              "verdict": "CONFIRMS"
+            },
+            "h4-guilty-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 180,
+              "band_hi": 7,
+              "corridor_admits": 0,
+              "corridor_admits_per_event": 0.0,
+              "verdict": "CONFIRMS"
+            },
+            "g2-noir-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 214,
+              "band_hi": 7,
+              "corridor_admits": 0,
+              "corridor_admits_per_event": 0.0,
+              "verdict": "CONFIRMS"
+            }
+          },
+          "h4_marciana": {
+            "fps": 30.0,
+            "n_events": 218,
+            "band_hi": 7,
+            "corridor_admits": 0,
+            "corridor_admits_per_event": 0.0,
+            "verdict": "CONFIRMS"
+          },
+          "other_three": {
+            "h4-isabel-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 203,
+              "band_hi": 7,
+              "corridor_admits": 0,
+              "corridor_admits_per_event": 0.0,
+              "verdict": "CONFIRMS"
+            },
+            "h4-guilty-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 180,
+              "band_hi": 7,
+              "corridor_admits": 0,
+              "corridor_admits_per_event": 0.0,
+              "verdict": "CONFIRMS"
+            },
+            "g2-noir-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 214,
+              "band_hi": 7,
+              "corridor_admits": 0,
+              "corridor_admits_per_event": 0.0,
+              "verdict": "CONFIRMS"
+            }
+          },
+          "n_failing_of_4": 0,
+          "downgrade": false
+        },
+        "19": {
+          "per_dump": {
+            "h4-marciana-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 218,
+              "band_hi": 10,
+              "corridor_admits": 167,
+              "corridor_admits_per_event": 0.7661,
+              "verdict": "CONFIRMS"
+            },
+            "h4-isabel-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 203,
+              "band_hi": 10,
+              "corridor_admits": 129,
+              "corridor_admits_per_event": 0.6355,
+              "verdict": "CONFIRMS"
+            },
+            "h4-guilty-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 180,
+              "band_hi": 10,
+              "corridor_admits": 129,
+              "corridor_admits_per_event": 0.7167,
+              "verdict": "CONFIRMS"
+            },
+            "g2-noir-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 214,
+              "band_hi": 10,
+              "corridor_admits": 179,
+              "corridor_admits_per_event": 0.8364,
+              "verdict": "CONFIRMS"
+            }
+          },
+          "h4_marciana": {
+            "fps": 30.0,
+            "n_events": 218,
+            "band_hi": 10,
+            "corridor_admits": 167,
+            "corridor_admits_per_event": 0.7661,
+            "verdict": "CONFIRMS"
+          },
+          "other_three": {
+            "h4-isabel-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 203,
+              "band_hi": 10,
+              "corridor_admits": 129,
+              "corridor_admits_per_event": 0.6355,
+              "verdict": "CONFIRMS"
+            },
+            "h4-guilty-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 180,
+              "band_hi": 10,
+              "corridor_admits": 129,
+              "corridor_admits_per_event": 0.7167,
+              "verdict": "CONFIRMS"
+            },
+            "g2-noir-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 214,
+              "band_hi": 10,
+              "corridor_admits": 179,
+              "corridor_admits_per_event": 0.8364,
+              "verdict": "CONFIRMS"
+            }
+          },
+          "n_failing_of_4": 0,
+          "downgrade": false
+        },
+        "20": {
+          "per_dump": {
+            "h4-marciana-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 218,
+              "band_hi": 10,
+              "corridor_admits": 167,
+              "corridor_admits_per_event": 0.7661,
+              "verdict": "CONFIRMS"
+            },
+            "h4-isabel-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 203,
+              "band_hi": 10,
+              "corridor_admits": 129,
+              "corridor_admits_per_event": 0.6355,
+              "verdict": "CONFIRMS"
+            },
+            "h4-guilty-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 180,
+              "band_hi": 10,
+              "corridor_admits": 129,
+              "corridor_admits_per_event": 0.7167,
+              "verdict": "CONFIRMS"
+            },
+            "g2-noir-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 214,
+              "band_hi": 10,
+              "corridor_admits": 179,
+              "corridor_admits_per_event": 0.8364,
+              "verdict": "CONFIRMS"
+            }
+          },
+          "h4_marciana": {
+            "fps": 30.0,
+            "n_events": 218,
+            "band_hi": 10,
+            "corridor_admits": 167,
+            "corridor_admits_per_event": 0.7661,
+            "verdict": "CONFIRMS"
+          },
+          "other_three": {
+            "h4-isabel-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 203,
+              "band_hi": 10,
+              "corridor_admits": 129,
+              "corridor_admits_per_event": 0.6355,
+              "verdict": "CONFIRMS"
+            },
+            "h4-guilty-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 180,
+              "band_hi": 10,
+              "corridor_admits": 129,
+              "corridor_admits_per_event": 0.7167,
+              "verdict": "CONFIRMS"
+            },
+            "g2-noir-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 214,
+              "band_hi": 10,
+              "corridor_admits": 179,
+              "corridor_admits_per_event": 0.8364,
+              "verdict": "CONFIRMS"
+            }
+          },
+          "n_failing_of_4": 0,
+          "downgrade": false
+        },
+        "21": {
+          "per_dump": {
+            "h4-marciana-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 218,
+              "band_hi": 10,
+              "corridor_admits": 167,
+              "corridor_admits_per_event": 0.7661,
+              "verdict": "CONFIRMS"
+            },
+            "h4-isabel-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 203,
+              "band_hi": 10,
+              "corridor_admits": 129,
+              "corridor_admits_per_event": 0.6355,
+              "verdict": "CONFIRMS"
+            },
+            "h4-guilty-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 180,
+              "band_hi": 10,
+              "corridor_admits": 129,
+              "corridor_admits_per_event": 0.7167,
+              "verdict": "CONFIRMS"
+            },
+            "g2-noir-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 214,
+              "band_hi": 10,
+              "corridor_admits": 179,
+              "corridor_admits_per_event": 0.8364,
+              "verdict": "CONFIRMS"
+            }
+          },
+          "h4_marciana": {
+            "fps": 30.0,
+            "n_events": 218,
+            "band_hi": 10,
+            "corridor_admits": 167,
+            "corridor_admits_per_event": 0.7661,
+            "verdict": "CONFIRMS"
+          },
+          "other_three": {
+            "h4-isabel-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 203,
+              "band_hi": 10,
+              "corridor_admits": 129,
+              "corridor_admits_per_event": 0.6355,
+              "verdict": "CONFIRMS"
+            },
+            "h4-guilty-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 180,
+              "band_hi": 10,
+              "corridor_admits": 129,
+              "corridor_admits_per_event": 0.7167,
+              "verdict": "CONFIRMS"
+            },
+            "g2-noir-structural/tracks.json": {
+              "fps": 30.0,
+              "n_events": 214,
+              "band_hi": 10,
+              "corridor_admits": 179,
+              "corridor_admits_per_event": 0.8364,
+              "verdict": "CONFIRMS"
+            }
+          },
+          "n_failing_of_4": 0,
+          "downgrade": false
+        }
+      }
+    },
+    "reported_2_5": {
+      "control": {
+        "avgTotal": 6.1561,
+        "no_rep": 0,
+        "fallback_abstentions": 112
+      },
+      "19": {
+        "avgTotal": 6.6631,
+        "no_rep": 0,
+        "fallback_abstentions": 96
+      },
+      "20": {
+        "avgTotal": 6.6631,
+        "no_rep": 0,
+        "fallback_abstentions": 96
+      },
+      "21": {
+        "avgTotal": 6.6643,
+        "no_rep": 0,
+        "fallback_abstentions": 96
+      }
+    },
+    "sub_deliverable_6": {
+      "n_fallback_control": 112,
+      "categories": {
+        "mixed_outside_band": 9,
+        "in_band_no_concurrency": 81,
+        "all_below_band_lo": 18,
+        "all_above_cap": 1,
+        "none_in_radius": 3
+      },
+      "events": [
+        {
+          "dump": "groundtruth-f811-v4/tracks.json",
+          "start": 3,
+          "end": 5,
+          "frames": 2,
+          "white": 7,
+          "category": "mixed_outside_band",
+          "n_overlapping_tracks": 8
+        },
+        {
+          "dump": "groundtruth-f811-v4/tracks.json",
+          "start": 270,
+          "end": 284,
+          "frames": 14,
+          "white": 3,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 12
+        },
+        {
+          "dump": "groundtruth-f811-v4/tracks.json",
+          "start": 310,
+          "end": 321,
+          "frames": 11,
+          "white": 7,
+          "category": "mixed_outside_band",
+          "n_overlapping_tracks": 32
+        },
+        {
+          "dump": "groundtruth-f811-v4/tracks.json",
+          "start": 423,
+          "end": 439,
+          "frames": 16,
+          "white": 5,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 37
+        },
+        {
+          "dump": "groundtruth-f811-v4/tracks.json",
+          "start": 743,
+          "end": 748,
+          "frames": 5,
+          "white": 6,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 16
+        },
+        {
+          "dump": "groundtruth-f811-v4/tracks.json",
+          "start": 1176,
+          "end": 1184,
+          "frames": 8,
+          "white": 6,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 25
+        },
+        {
+          "dump": "groundtruth-f811-v4/tracks.json",
+          "start": 1289,
+          "end": 1307,
+          "frames": 18,
+          "white": 4,
+          "category": "mixed_outside_band",
+          "n_overlapping_tracks": 31
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 408,
+          "end": 412,
+          "frames": 4,
+          "white": 5,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 6
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 585,
+          "end": 592,
+          "frames": 7,
+          "white": 3,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 12
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 605,
+          "end": 610,
+          "frames": 5,
+          "white": 7,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 24
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 822,
+          "end": 824,
+          "frames": 2,
+          "white": 6,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 9
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 866,
+          "end": 871,
+          "frames": 5,
+          "white": 3,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 6
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 1038,
+          "end": 1042,
+          "frames": 4,
+          "white": 7,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 24
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 1096,
+          "end": 1099,
+          "frames": 3,
+          "white": 4,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 9
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 1616,
+          "end": 1626,
+          "frames": 10,
+          "white": 3,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 28
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 1776,
+          "end": 1778,
+          "frames": 2,
+          "white": 2,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 2
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 1833,
+          "end": 1851,
+          "frames": 18,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 29
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 2076,
+          "end": 2085,
+          "frames": 9,
+          "white": 3,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 13
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 2683,
+          "end": 2690,
+          "frames": 7,
+          "white": 6,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 30
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 2900,
+          "end": 2907,
+          "frames": 7,
+          "white": 4,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 20
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 3118,
+          "end": 3120,
+          "frames": 2,
+          "white": 10,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 16
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 3253,
+          "end": 3260,
+          "frames": 7,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 14
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 3475,
+          "end": 3484,
+          "frames": 9,
+          "white": 5,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 21
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 4284,
+          "end": 4288,
+          "frames": 4,
+          "white": 9,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 25
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 4542,
+          "end": 4551,
+          "frames": 9,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 13
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 4702,
+          "end": 4722,
+          "frames": 20,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 61
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 4816,
+          "end": 4819,
+          "frames": 3,
+          "white": 9,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 32
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 4918,
+          "end": 4924,
+          "frames": 6,
+          "white": 6,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 24
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 4933,
+          "end": 4937,
+          "frames": 4,
+          "white": 0,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 6
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 5135,
+          "end": 5148,
+          "frames": 13,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 24
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 5251,
+          "end": 5258,
+          "frames": 7,
+          "white": 6,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 32
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 5271,
+          "end": 5277,
+          "frames": 6,
+          "white": 2,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 26
+        },
+        {
+          "dump": "h4-marciana-structural/tracks.json",
+          "start": 5351,
+          "end": 5359,
+          "frames": 8,
+          "white": 6,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 21
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 389,
+          "end": 392,
+          "frames": 3,
+          "white": 12,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 17
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 516,
+          "end": 518,
+          "frames": 2,
+          "white": 19,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 22
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 723,
+          "end": 728,
+          "frames": 5,
+          "white": 7,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 26
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 843,
+          "end": 846,
+          "frames": 3,
+          "white": 10,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 10
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 1070,
+          "end": 1076,
+          "frames": 6,
+          "white": 6,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 21
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 1124,
+          "end": 1130,
+          "frames": 6,
+          "white": 1,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 7
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 1531,
+          "end": 1535,
+          "frames": 4,
+          "white": 1,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 11
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 1546,
+          "end": 1548,
+          "frames": 2,
+          "white": 4,
+          "category": "mixed_outside_band",
+          "n_overlapping_tracks": 8
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 1665,
+          "end": 1669,
+          "frames": 4,
+          "white": 0,
+          "category": "all_above_cap",
+          "n_overlapping_tracks": 1
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 1819,
+          "end": 1832,
+          "frames": 13,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 15
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 1982,
+          "end": 1987,
+          "frames": 5,
+          "white": 4,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 11
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 1993,
+          "end": 2000,
+          "frames": 7,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 18
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 2013,
+          "end": 2017,
+          "frames": 4,
+          "white": 3,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 5
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 2144,
+          "end": 2149,
+          "frames": 5,
+          "white": 0,
+          "category": "none_in_radius",
+          "n_overlapping_tracks": 0
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 2218,
+          "end": 2222,
+          "frames": 4,
+          "white": 7,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 17
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 2385,
+          "end": 2387,
+          "frames": 2,
+          "white": 11,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 16
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 2445,
+          "end": 2452,
+          "frames": 7,
+          "white": 3,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 12
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 2465,
+          "end": 2471,
+          "frames": 6,
+          "white": 3,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 17
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 2732,
+          "end": 2736,
+          "frames": 4,
+          "white": 7,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 25
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 3046,
+          "end": 3050,
+          "frames": 4,
+          "white": 5,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 21
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 3146,
+          "end": 3152,
+          "frames": 6,
+          "white": 3,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 13
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 3202,
+          "end": 3204,
+          "frames": 2,
+          "white": 3,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 5
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 3693,
+          "end": 3695,
+          "frames": 2,
+          "white": 4,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 7
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 4374,
+          "end": 4376,
+          "frames": 2,
+          "white": 6,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 17
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 4501,
+          "end": 4509,
+          "frames": 8,
+          "white": 3,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 24
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 4601,
+          "end": 4615,
+          "frames": 14,
+          "white": 2,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 42
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 4828,
+          "end": 4844,
+          "frames": 16,
+          "white": 5,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 31
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 5162,
+          "end": 5171,
+          "frames": 9,
+          "white": 8,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 33
+        },
+        {
+          "dump": "h4-isabel-structural/tracks.json",
+          "start": 5292,
+          "end": 5301,
+          "frames": 9,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 29
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 391,
+          "end": 393,
+          "frames": 2,
+          "white": 7,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 14
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 435,
+          "end": 451,
+          "frames": 16,
+          "white": 0,
+          "category": "none_in_radius",
+          "n_overlapping_tracks": 0
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 465,
+          "end": 467,
+          "frames": 2,
+          "white": 1,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 1
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 872,
+          "end": 878,
+          "frames": 6,
+          "white": 9,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 22
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 1456,
+          "end": 1465,
+          "frames": 9,
+          "white": 4,
+          "category": "mixed_outside_band",
+          "n_overlapping_tracks": 20
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 1947,
+          "end": 1963,
+          "frames": 16,
+          "white": 6,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 40
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 2227,
+          "end": 2234,
+          "frames": 7,
+          "white": 6,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 27
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 2247,
+          "end": 2265,
+          "frames": 18,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 49
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 2377,
+          "end": 2384,
+          "frames": 7,
+          "white": 5,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 20
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 2853,
+          "end": 2863,
+          "frames": 10,
+          "white": 5,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 33
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 3089,
+          "end": 3093,
+          "frames": 4,
+          "white": 7,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 12
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 3249,
+          "end": 3253,
+          "frames": 4,
+          "white": 5,
+          "category": "mixed_outside_band",
+          "n_overlapping_tracks": 17
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 3530,
+          "end": 3532,
+          "frames": 2,
+          "white": 5,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 8
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 3658,
+          "end": 3665,
+          "frames": 7,
+          "white": 10,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 18
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 3778,
+          "end": 3780,
+          "frames": 2,
+          "white": 8,
+          "category": "mixed_outside_band",
+          "n_overlapping_tracks": 14
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 4421,
+          "end": 4425,
+          "frames": 4,
+          "white": 3,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 4
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 4578,
+          "end": 4603,
+          "frames": 25,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 56
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 4688,
+          "end": 4696,
+          "frames": 8,
+          "white": 6,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 23
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 4883,
+          "end": 4891,
+          "frames": 8,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 12
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 4980,
+          "end": 4985,
+          "frames": 5,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 7
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 5079,
+          "end": 5081,
+          "frames": 2,
+          "white": 7,
+          "category": "mixed_outside_band",
+          "n_overlapping_tracks": 8
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 5092,
+          "end": 5095,
+          "frames": 3,
+          "white": 3,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 3
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 5189,
+          "end": 5196,
+          "frames": 7,
+          "white": 9,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 26
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 5333,
+          "end": 5344,
+          "frames": 11,
+          "white": 3,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 22
+        },
+        {
+          "dump": "h4-guilty-structural/tracks.json",
+          "start": 5507,
+          "end": 5510,
+          "frames": 3,
+          "white": 4,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 4
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 579,
+          "end": 582,
+          "frames": 3,
+          "white": 15,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 20
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 588,
+          "end": 597,
+          "frames": 9,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 14
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 779,
+          "end": 781,
+          "frames": 2,
+          "white": 14,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 14
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 1277,
+          "end": 1289,
+          "frames": 12,
+          "white": 5,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 33
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 1395,
+          "end": 1411,
+          "frames": 16,
+          "white": 3,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 4
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 1550,
+          "end": 1566,
+          "frames": 16,
+          "white": 0,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 26
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 2094,
+          "end": 2101,
+          "frames": 7,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 19
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 2134,
+          "end": 2138,
+          "frames": 4,
+          "white": 5,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 17
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 2174,
+          "end": 2180,
+          "frames": 6,
+          "white": 3,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 11
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 2254,
+          "end": 2257,
+          "frames": 3,
+          "white": 5,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 16
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 2467,
+          "end": 2472,
+          "frames": 5,
+          "white": 3,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 11
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 2576,
+          "end": 2580,
+          "frames": 4,
+          "white": 2,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 2
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 2854,
+          "end": 2857,
+          "frames": 3,
+          "white": 8,
+          "category": "mixed_outside_band",
+          "n_overlapping_tracks": 23
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 2954,
+          "end": 2958,
+          "frames": 4,
+          "white": 11,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 25
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 3114,
+          "end": 3116,
+          "frames": 2,
+          "white": 10,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 14
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 3134,
+          "end": 3142,
+          "frames": 8,
+          "white": 6,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 23
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 3412,
+          "end": 3416,
+          "frames": 4,
+          "white": 5,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 24
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 3612,
+          "end": 3615,
+          "frames": 3,
+          "white": 9,
+          "category": "all_below_band_lo",
+          "n_overlapping_tracks": 12
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 3809,
+          "end": 3814,
+          "frames": 5,
+          "white": 1,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 12
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 3852,
+          "end": 3859,
+          "frames": 7,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 15
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 4212,
+          "end": 4219,
+          "frames": 7,
+          "white": 5,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 18
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 4579,
+          "end": 4582,
+          "frames": 3,
+          "white": 0,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 14
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 4681,
+          "end": 4687,
+          "frames": 6,
+          "white": 13,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 33
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 4906,
+          "end": 4915,
+          "frames": 9,
+          "white": 0,
+          "category": "none_in_radius",
+          "n_overlapping_tracks": 0
+        },
+        {
+          "dump": "g2-noir-structural/tracks.json",
+          "start": 5460,
+          "end": 5469,
+          "frames": 9,
+          "white": 4,
+          "category": "in_band_no_concurrency",
+          "n_overlapping_tracks": 22
+        }
+      ],
+      "becomes_banded_by_candidate": {
+        "control": 0,
+        "19": 16,
+        "20": 16,
+        "21": 16
+      }
+    }
+  }
+}

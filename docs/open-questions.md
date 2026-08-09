@@ -174,6 +174,206 @@ the crop centre. Calibrating that offset — or confirming the per-video templat
 onto the ammo box and not a right-side HUD/VFX element — is the next step (the ammo-box quality step
 left for later).
 
+**2026-07-31 ROI-restriction shot-count sensitivity (RECORD, DO NOT ACT ON — n=1, discovered
+incidentally, not investigated).** On `marciana-solo`'s (exact slug `marciana`, SG/Iron — not
+`marciana-marine-study`) 1800-frame `h1` cache
+(`scratchpad/pellets/h1-marciana-treecode/frames-pellet`), identical frames and identical
+filter/tracker params, the ONLY difference being `--ammo-roi-x0 0.55 --ammo-roi-y0 0.50`:
+
+```
+with ROI    : totalShots=43 validShots=29 avgTotal=7.3 avgRed=0.17   (H1's reference; reproduced
+                                                                       byte-identically, sha dc64e7cc…)
+without ROI : totalShots=74 validShots=62 avgTotal=7.5 avgRed=0.23   (per-video template)
+              totalShots=72 validShots=61 avgTotal=7.6 avgRed=0.23   (committed-seed template,
+                                                                       scripts/probe/ammo-box-template.png)
+```
+
+The no-ROI figures sit close to `run18`'s 70/58/7.6 and to the ~90 shots expected on a 180s SG
+fight. **The tension is explicit, not resolved:** the ROI was introduced immediately above this
+same 2026-07-29 entry specifically to stop false locks on `guilty`/`isabel`, and demonstrably
+restored their shot detection — so this is NOT "the ROI is a bug." More shots without it may
+equally be more FALSE locks, not more real ones. Discovered while regenerating a lost cache
+fixture for unrelated tooling work (`docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md`
+Phase H). H1's "100% LOCK DROPOUT / the lost shots were REAL" diagnosis (Phase H) was formed on the
+ROI-restricted run and has not been re-examined against this reading.
+
+Artifacts (gitignored — re-derive with the commands below, per constraint 9):
+`scratchpad/pellets/h1-cache-test/roi-results.json` (with ROI),
+`scratchpad/pellets/h1-cache-test/recover-results.json` (without ROI, per-video template),
+`scratchpad/pellets/h1-cache-test/seedtmpl-results.json` (without ROI, committed-seed template),
+`scratchpad/pellets/h1-cache-test/detections-NOROI-agent-regen.json` (an independently-run no-ROI
+regen that agrees with `recover-results.json`, 74/62/7.5/0.23).
+
+Re-derivation (bracketed flag only for the "with ROI" row; swap `--ammo-template` to
+`scripts/probe/ammo-box-template.png` for the committed-seed comparison):
+
+```
+scripts/probe/.venv/bin/python scripts/probe/count-pellets.py \
+  scratchpad/pellets/h1-marciana-treecode/frames-pellet --temporal --backend opencv \
+  --ammo-template scratchpad/pellets/h1-marciana-treecode/ammo-box-template.png \
+  --ammo-offset-x 125 --ammo-offset-y -11 [--ammo-roi-x0 0.55 --ammo-roi-y0 0.50] \
+  --center-exclude 36 --min-area 25 --max-area 750 --min-circ 0.55 \
+  --pellet-radius 160 --max-pellet-frames 7 --shots
+```
+
+**UNANSWERED.** Whether the ROI's false-lock suppression on `guilty`/`isabel` also suppresses REAL
+shots on `marciana`/`noir` (net helpful vs. net harmful) is not determined by this single reading.
+Needs a per-video ROI on/off comparison against each video's own independent anchor (the
+running-total pellet lattice for `marciana`, the `noir-solo-recon.json` band anchors for `noir`)
+before touching the `--ammo-roi-x0`/`--ammo-roi-y0` defaults.
+
+**2026-07-31 do REAL pellets land within `--center-exclude 36`? (RECORD, DO NOT ACT ON — n=1 video,
+incidental, discovered while fixing the synthetic-labeled-set generator, not investigated further).**
+Replayed the existing `scratchpad/pellets/h1-cache-test/detections.json` cache (exact slug
+`marciana`, SG/Iron — not `marciana-marine-study`; the "with ROI" / H1-reference config, 43/29/
+7.3/0.17) with `--center-exclude 0` so components inside the normally-excluded annulus are visible,
+then read the radial distribution of `is_pellet` white-track positions (non-red) relative to each
+frame's own tracked crosshair, restricted to `pellet_radius=160`.
+
+- No persistent, high-lifetime component sits near `r≈0` (max track life anywhere is 120 frames, at
+  mean `r≈1069px` — nowhere near the crosshair) — the "distinguish the reticle from real pellets"
+  concern this question anticipated **did not materialize in this reading**, at least not as a
+  single dominant blob; every track touching `r<36` has life ≤7 frames, the same short lifetime
+  real pellet tracks show generally.
+- Of 919 `is_pellet` tracks that are ever within `pellet_radius` at all, **58 (6.3%)** dip below
+  `r=36` at some point in their life; 93/2230 pellet-radius frame-instances (4.2%) sit below `r=36`.
+  Both are far below the synthetic generator's pre-fix ~24–29% (see the generator-fix commit
+  `d18f014` and this doc's plan-doc correction log) but are **not zero** — if this reading is
+  representative, `--center-exclude 36` is discarding a modest fraction of real pellets, a genuine
+  cold-bias candidate on the live pipeline, distinct from the synthetic-labeling artifact.
+- **Caveat that keeps this UNANSWERED, not a finding:** this cache's crosshair track is the same one
+  the "2026-07-29 near-band diagnostic" entry above flagged as possibly **mislocated** (placed near
+  the ammo-box/right-edge of the crop rather than the actual impact cluster on at least one other
+  video). Whether that mislocation affects `marciana`'s own track here has not been checked. n=1
+  video, one reading, no cross-video replication, no comparison against a labeled real-pellet
+  ground truth — do not change `--center-exclude`, do not touch the synthetic generator's annulus
+  bound on the strength of this alone, and do not draw a conclusion from it.
+
+Re-derivation (uses the already-cached detections, ~1s, no venv setup beyond the existing probe
+venv):
+
+```
+scripts/probe/.venv/bin/python scripts/probe/count-pellets.py \
+  --load-detections scratchpad/pellets/h1-cache-test/detections.json \
+  --temporal --backend opencv --center-exclude 0 \
+  --dump-tracks /tmp/h1-ce0-tracks.json
+```
+
+then read `tracks[].{is_red,is_pellet,first,last,xs,ys}` against `cross_positions[frame_idx]` per
+track frame and bucket `hypot(x-cx, y-cy)` for `is_pellet and not is_red` tracks within
+`pellet_radius=160` (ad hoc analysis, not a committed script — this is a record-only reading, not a
+standing instrument).
+
+**2026-07-31 has the owner's 13-frame lifecycle actually been seen at NATIVE 60 fps? (RECORD, DO NOT
+ACT ON — n=1 video, one ~15s window, `/logic-gate` preop premise check, kimi-k3 revision #1).** Every
+real-data measurement behind the Phase 2 design (area-decay curves, the ±0.05 cross-unit agreement,
+the life=1 statistics) was taken at **30 fps sampling**; the fine f1/f3–4-plateau/f5–11-decay
+structure had only ever been observed in the owner's written spec and in the synthetic generator that
+renders it. Extracted `docs/probes/clean-weapons/marciana-solo.MP4` (exact slug **`marciana`**,
+SG/Iron — not `marciana-marine-study`) at native 60 fps, video t=71–86s (fight-time ≈66–81s, spans the
+near→far band transition):
+
+```
+npx tsx scripts/probe/read-pellets.ts docs/probes/clean-weapons/marciana-solo.MP4 \
+  --at 71 --dur 15 --fps 60 --dump-tracks true --out scratchpad/pellets/run20-60fps-premise
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py \
+  --tracks scratchpad/pellets/run20-60fps-premise/tracks.json \
+  --frames scratchpad/pellets/run20-60fps-premise/frames-pellet \
+  --dup-check --start 0 --count 900
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py \
+  --tracks scratchpad/pellets/run20-60fps-premise/tracks.json --raw-tracks 15 --raw-tracks-min-life 8
+```
+
+- **The 30fps-internal-render-on-60fps-capture concern did not hold up against this reading.**
+  `--dup-check` over 899
+  consecutive frame pairs found only 7.0% near-zero-diff pairs, and even-index vs odd-index mean
+  diffs are statistically indistinguishable (3.765 vs 3.891, ~3% apart) — the alternating
+  near-zero/high pattern a duplicated-half-frame source would produce is absent. Every captured frame
+  carries new content; the 13-frame lifecycle is 13 real samples, not 6.5 doubled ones.
+- **The qualitative shape (small dot → grow → peak → monotone decay) DOES appear on individual raw
+  tracks, not just in the 30 fps population aggregate** — of the 15 longest-lived near-crosshair
+  white tracks (life≥8), ~9–10 show a clear grow-then-monotone-decay profile, and 3 of those
+  (ids 242/568/873) show a peak sitting almost exactly at two adjacent frames as the owner's f3–4
+  plateau predicts (e.g. id=242: `f1=75 f2=458 f3=679 f4=689` then monotone decay to f16=27).
+- **But the peak is noisier/wider than the spec's clean 2-frame table for most tracks** — several
+  (ids 1168/2665/867/575) show an elevated, bumpy region spanning roughly f2–f7 rather than a crisp
+  f3–4 plateau, consistent with the spec's own "pellets occlude" note for that phase, but meaning a
+  strict f3–4-only definition of "peak" would misclassify several genuinely-still-elevated f5–f7
+  frames as already decaying.
+- **New finding not in the 30 fps record: some long-lived near-crosshair tracks are FLAT, not
+  decaying at all** (ids 23/100/728/101/1350 — life 14–32 frames, area oscillating in a narrow band
+  the whole time, no growth or decay). These do not fit the lifecycle at all and are exactly the
+  false-positive population step 5's identity filter should reject; "long life ⇒ real pellet" is not
+  a safe shortcut either.
+- **Detection dropout remains high at native 60 fps**: life=1 39.5%, life≤2 64.3% of near-crosshair
+  white tracks — not materially better than the 30 fps figures despite twice the sampling rate. This
+  corroborates fable's still-open, still-BLOCKED preop revision #4 (gap tolerance as a step-5
+  prerequisite, not late hygiene) with a second, independent (60 fps) reading.
+- **Caveat on trust in this reading:** crosshair-validity was **5.8% near-fraction** (210 of the
+  extraction's white tracks fall within `pellet_radius` of the tracked crosshair) — just above the
+  `analyze-pellet-tracks.py` 5% BROKEN floor, well below the healthy `marciana`/run16 reference
+  (14.3%). The lock did not look frozen (477px wander), but this run's crosshair track is weaker than
+  the reference and the statistics above should be read with that in mind, not as a clean replication.
+
+**UNANSWERED, narrower than before.** ⚑ **The spec referenced throughout this entry is the
+then-13-frame one; the owner corrected the lifecycle to 14 native frames on 2026-08-05 (the added
+frame is a FADE frame — `docs/probe-runs.md` §29/§29E), which does not disturb the dropout finding
+below.** The lifecycle is real at 60 fps, not merely a 30 fps artifact or
+a spec/generator fiction — but the owner's exact 2-frame peak-plateau table is optimistic for a
+majority of individual tracks, and detection dropout (not fps) is now the dominant open question for
+whether steps 4–6's track-level identity scoring has enough surviving evidence per pellet to work at
+all. n=1 video, one window — do not tune template tolerances or the phase table off this reading.
+
+**2026-07-31 does shared-t0 hold, and does it hold BY BAND? (RECORD, DO NOT ACT ON — n=7 near-band
+shots from the same window above; far-band comparison BLOCKED by a crosshair-localization failure,
+kimi-k3 preop revision #2).** §2.0 assumes all ~10 pellets of one blast share a single t0 (pellet
+flight time negligible); a band-correlated violation would directly corrupt the far/near ratio
+(0.831) U35 exists to measure. Added `--onset-spread` to `analyze-pellet-tracks.py` (commits this
+session): for each debounced shot in a sibling `pellets.json`, it gathers near-crosshair white tracks
+whose first frame falls within a window around the shot's frame index and reports the spread
+(max−min) of those first-frames, banded by the boss range schedule (`docs/data/range-data.md`,
+elapsed-fight-seconds: near 33–70s, far 70–106s, midfar 106–144s, near 144–176s, midfar 176–180s —
+sourced, not re-derived here).
+
+```
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py \
+  --tracks scratchpad/pellets/run20-60fps-premise/tracks.json \
+  --onset-spread scratchpad/pellets/run20-60fps-premise/pellets.json \
+  --onset-at 71 --onset-fps 60 --onset-window 10 --onset-min-life 3
+```
+
+- **Near band (n=7 shots, fight-time 66.05–69.63s, all within the 33–70s near window):** with a
+  `min_life>=3` filter (life=1/2 tracks are ~40–65% background/fragmentation noise per the finding
+  above, so an unfiltered spread mixes real onset variance with noise-onset timing), per-shot spread
+  ranged **0–17 frames (0–283 ms)**, mean **7.6 frames (126 ms)** — noticeably less than the ~36–41
+  frame inter-blast spacing, but not negligible: one shot (fight=67.32s) showed 17f/283ms of spread,
+  larger than a single pellet's own 13-frame (217ms) visible lifetime. Unfiltered (no life filter),
+  spreads were larger still (11–32f, 100–533ms mean 15.6f) — almost certainly inflated by background
+  blips sharing the window rather than genuine blast members, given the life=1/2 population size.
+- **Far band: only 1 shot obtained (fight=76.45s, spread 10f/167ms, unfiltered — n too small for
+  `min_life>=3`), and it could not be grown.** Two further attempts to extract dedicated far-band
+  windows on the SAME video (`--at 90 --dur 15` and `--at 82 --dur 12`, both squarely inside the
+  70–106s far window) both returned **zero non-zero pellet reads across the whole window** — the
+  ammo-box template crosshair lock never acquired at all in either extraction. This is a direct,
+  concrete hit of the already-known Phase 2A localization instability (this plan's own §"Phase 2A")
+  — encountered here as a blocker to THIS premise check, not investigated or fixed (out of scope for
+  a record-only pass).
+- **Consequence: the far-vs-near onset-lag question kimi-k3's revision raises could NOT be tested.**
+  Near-band spread is measured (loosely bounded, not exactly zero, well under inter-blast spacing);
+  whether far-band pellets lag near-band pellets by more than the near-band's own spread remains
+  completely open — there is no working far-band sample on this video to compare against. Re-run when
+  Phase 2A localization work lands (do not force more far-band windows on `marciana` in the meantime;
+  each attempt costs a full extraction+count pass for a result already shown likely to fail).
+- **What this implies about t0 granularity, stated as the instruction asked:** a single per-blast t0
+  is a reasonable APPROXIMATION for most near-band shots (spread mostly ≪ one pellet lifecycle), but
+  not a safe assumption for every shot (the 283ms outlier), and the design should not assume it is
+  more precise than "usually within about half a pellet-width of true onset" until the far-band
+  comparison exists. Per-band t0 could not be evaluated at all (blocked above); per-track t0 (i.e. no
+  shared-t0 assumption) remains the safe fallback the plan's own kill condition (§2.3) already names.
+
+**UNANSWERED.** n=1 video, incomplete band coverage. Do not change the t0 design or step 4's overlap
+policy off this reading.
+
 ### U34 — Max-Ammunition ▲ EXPIRY over-cap: does the belt clip immediately, or lazily at the next ▼? (opened 2026-07-23)
 
 The engine clips the current belt to the new cap when a Max-Ammunition ▼ (`maxAmmoPct<0`) LANDS

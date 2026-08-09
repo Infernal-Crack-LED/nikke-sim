@@ -4148,3 +4148,65 @@ post-extraction; PR #85 CI green in 5m38s with the fetch step at ~1.2s. One-time
 additions move every hash once — one full board rebuild on the first deploy, which the deploy path
 performs anyway. Plan + landing record + audit trail:
 `docs/handoffs/2026-08-03-artifact-store-decoupling-plan.md`; PR #85.
+
+## Pellet-reader tooling: substrate faithfulness before accuracy — five landings (2026-08-05)
+
+**Tier: MEASURED + OWNER-MEASURED.** Measurements in `docs/probe-runs.md` §25–§34; plans and
+cross-family gate verdicts in `docs/handoffs/2026-08-05-*`.
+
+**The ruling that organizes all five: fix the SUBSTRATE before chasing the number.** The pellet
+reader has been ~1.4 pellets/shot cold since §19, and the temptation each session is to hunt the
+cold bias directly. Instead these landings made the measurement apparatus faithful first, on the
+principle that a channel measured on a substrate that mislabels 12% of it cannot be trusted either
+way. That ordering was vindicated twice — §27's marker measurement was only askable after §26, and
+§30A found the re-extraction everything was supposedly gated on had never been necessary.
+
+1. **`--dump-tracks` now persists per-frame `is_red` and full-precision positions** (§25/§26). The
+   dump could not replay the `white`/`red`/`marker` split production emitted — 12.20% of the
+   marker-bearing population. Two mechanisms, fully accounted. **Why full precision rather than 2 dp:**
+   the cross-family gate showed 2 dp only shrinks the flip window and leaves the acceptance criterion
+   unprovable; full precision removes the mechanism by construction. Cost +37.8% dump size, accepted.
+2. **The pellet/hit-marker lifetime is 14 native frames, not 13** (§28/§29, OWNER-MEASURED). ⚑ Not a
+   refit — the owner corrected the measured value, the same shape as §18's 8.40 confirmation. Inert
+   at the production 30 fps (`max_pellet_frames = 7` either way), so no prior measurement moved.
+   **Its real value is that it retires a documented trap:** `(13/60)×30 = 6.5` sat exactly on the
+   JS-half-up / Python-half-even tie; `7.0` does not.
+3. **The synthetic generator's fade ramp is a formula, not literals** (§29E). The owner clarified the
+   lifecycle gains one fade frame at the end. The old `0.66`/`0.33` proved to be 2 dp roundings of
+   `2/3, 1/3` — the same ramp at N=2 — so extending it is that rule at N=3, and the selftest
+   re-derives the old values to keep "same rule, one more frame" a CHECKED claim.
+4. **Owner adjudication answers are PRIMARY EVIDENCE and must be committed** (§32/§34). The 08-04
+   answers lived only in chat, so the 4 both-wrong cases became unidentifiable and their cost
+   unmeasurable — recovery was attempted and fails structurally. `--lock-adjudication` now emits a
+   pre-filled `ANSWERS.json`, and `--lock-adjudication-score` scores it. ⚑ **Corollary ruling: never
+   offer only the modes under test.** The vocabulary has been too narrow twice running — 08-04 lacked
+   `both`/`neither` (20% of cases), 08-05 lacked `A_imprecise`/`B_imprecise` (6 of 20). Owner wording
+   is preserved verbatim and never coerced.
+5. **The mislock channel is CLOSED as a cold-bias candidate** (§34). The production lock is bad on
+   **70%** of detected-mislocked shots (replicated to the digit), but the both-wrong subpopulation —
+   §22D's suspected worst case — measures **5.00 vs 5.73**, indistinguishable from zero. §22D's bias
+   caveat is discharged; the channel costs ≈0 pellets/shot.
+
+⛔ **What none of this did: explain the cold bias.** Every channel investigated is now closed or
+sized small — mislocks ≈0, marker semantics −0.043/shot **in the wrong direction**, `band_hi`
++0.50/shot recovered. **Closing candidates is not identifying a cause**, and the ~1.4/shot residual
+stands.
+
+> ⚑ **AMENDED (2026-08-06) — the summary sentence above merges FOUR arms with different bases and
+> n into one unattributed claim. It is not withdrawn; it is under-specified.** Attribution, per the
+> band-channel sweep (`docs/handoffs/closed/2026-08-06-band-channel-SWEEP.md`): **−1.40** ⇒ `--residual-ab`
+> (probe-runs §38 — it had **NO committed instrument** until then, the second occurrence of the
+> constraint-9 failure; n=5 shots, one clip, in-sample). **mislocks ≈0** ⇒ `--lock-adjudication`, a
+> **COUNT** observable — ⚑ §37B established that a mislocked count is **refilled by non-pellet
+> tracks**, so a count observable structurally cannot see the loss, and §38C's n=1 relock (−1.40 →
+> −0.40 on one clip) is in tension with it. ⛔ Neither overturns item 5 above; both are recorded as
+> leads. **−0.043/shot** ⇒ `--marker-net` (815 shots). **+0.50/shot** ⇒ `--band-production-ab` (815
+> shots out-of-sample, measuring what the landing MOVED, not movement toward truth, §30C).
+> ⇒ **Quote the arm, the basis and the n — never the merged sentence.**
+
+⚑ **A gap this pass found and did NOT backfill:** `DECISIONS.md` had no entry between 2026-07-30 and
+this one, while `docs/probe-runs.md` §13–§24 records six 08-01→08-04 landings (the `band_hi = 20`
+ceiling, the `band` dump channel, the backend-selector tie-break, the representative-frame hybrid,
+and two pre-committed measurement passes). Their WHY exists only in the measurement log. Writing
+those entries now would mean inferring another session's rationale from its numbers, so they are
+**flagged for the owner rather than reconstructed** — see `docs/handoffs/QUEUE.md`.
