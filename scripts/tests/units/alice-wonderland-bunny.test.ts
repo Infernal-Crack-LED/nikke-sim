@@ -277,13 +277,27 @@ describe('alice-wonderland-bunny kit spec', () => {
     const nShots = s.shots(AWB).length;
     const shotFrames = s.shots(AWB).map((x) => x.frame);
     const hitFrames = new Set(shotFrames.filter((_, i) => (i + 1) % 60 === 0));
-    const applied = s
+    const allApplied = s
       .applies('partsDamagePct', 2)
       .filter((b) => b.casterIdx === AWB_A);
-    // one application per ally (3) per 60-hit proc
-    expect(applied.length).toBe(Math.floor(nShots / 60) * 3);
+    // The 90-hit addStack grant (enacted 2026-08-09) bumps live pre-cap Carrot Party
+    // instances on its own frames — split those from the 60-hit proc applications.
+    const applied = allApplied.filter((b) => hitFrames.has(b.frame));
+    const bumps = allApplied.filter((b) => !hitFrames.has(b.frame));
+    // one application per ally (3) per 60-hit proc — plus at most one coincident
+    // addStack bump per shared frame (shot 180 = LCM(60,90): both blocks fire there)
+    const sharedFrames = shotFrames.filter(
+      (_, i) => (i + 1) % 180 === 0
+    ).length;
+    expect(applied.length).toBeGreaterThanOrEqual(Math.floor(nShots / 60) * 3);
+    expect(applied.length).toBeLessThanOrEqual(
+      Math.floor(nShots / 60) * 3 + sharedFrames * 3
+    );
+    expect(
+      bumps.length,
+      'the 90-hit addStack must bump at least one live pre-cap instance'
+    ).toBeGreaterThan(0);
     for (const b of applied) {
-      expect(hitFrames.has(b.frame)).toBe(true); // the 60-hit count, not a burst frame
       expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
       expect(b.maxStacks).toBe(5);
     }
