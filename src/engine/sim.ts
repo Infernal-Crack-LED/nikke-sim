@@ -2793,6 +2793,46 @@ export function runSim(
             );
           }
           break;
+        case 'addStack': {
+          // "Increases the stack count of stackable buffs by N". Finds existing buffs on the
+          // target that are still live (not expired, shotsLeft > 0) and match the optional stat
+          // filter; increments their stacks by `count` up to maxStacks. Used by flora's S1
+          // (all stackable Electric-ally buffs +1) and K's Tilted Scale (+29 per last bullet).
+          const count = Math.max(1, e.count ?? 1);
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
+            for (const b of t.buffs) {
+              if (
+                (e.stat != null && b.stat !== e.stat) ||
+                (b.expiresFrame !== null && b.expiresFrame <= frame) ||
+                (b.shotsLeft !== undefined && b.shotsLeft <= 0) ||
+                b.maxStacks <= 1
+              ) {
+                continue;
+              }
+              const prev = b.stacks;
+              b.stacks = Math.min(b.maxStacks, b.stacks + count);
+              if (b.stacks !== prev && onEvent) {
+                onEvent({
+                  kind: 'buffApply',
+                  frame,
+                  sec: frame / FPS,
+                  key: b.key,
+                  stat: b.stat,
+                  value: b.value,
+                  stacks: b.stacks,
+                  maxStacks: b.maxStacks,
+                  casterIdx: b.casterIdx ?? null,
+                  targetIdx: t.idx,
+                  targetSlug: t.char.slug,
+                  refresh: true,
+                  expiresFrame: b.expiresFrame,
+                  durationShots: b.shotsLeft ?? null,
+                });
+              }
+            }
+          }
+          break;
+        }
         case 'stackedNuke': {
           const stacks = Math.min(owner.fbMissedSinceBurst, e.maxStacks ?? 12);
           if (stacks > 0) {

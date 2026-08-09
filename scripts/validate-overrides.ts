@@ -109,6 +109,7 @@ const EFFECTS = new Set([
   'stun',
   'stackedNuke',
   'gainPierce',
+  'addStack',
   'resource',
   'targetStatus',
 ]);

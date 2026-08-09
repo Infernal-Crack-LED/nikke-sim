@@ -31,7 +31,7 @@
 | `alliesLowestAtk` | 1 | liberalio |
 | `alliesLowestHp` | 10 | blanc, ether, mary, misato, naga, pascal, pepper, poli, … |
 | `alliesOfClass` | 3 | biscuit, d, quiry |
-| `alliesOfElement` | 11 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, exia, guillotine-winter-slayer, guilty, maiden-ice-rose, … |
+| `alliesOfElement` | 12 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, exia, flora, guillotine-winter-slayer, guilty, … |
 | `alliesOfElementWeapon` | 3 | ark-ranger-black, sugar, trina |
 | `alliesOfWeapon` | 11 | arcana-fortune-mate, d-killer-wife, drake, himeno, leona, miranda, neon, noir, … |
 | `alliesTopAtk` | 19 | alice, anis, avistar, chime, claire, folkwang, himeno, jackal, … |
@@ -70,7 +70,7 @@
 | `hasTrueNormals` | 0 | _none_ |
 | `highestAllyAtkPct` | 1 | guilty |
 | `highestAllyMaxHpPct` | 2 | quency, sin |
-| `hitCount` | 62 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, … |
+| `hitCount` | 63 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, … |
 | `hitRatePct` | 18 | anchor-innocent-maid, aria, asuka, chisato, dorothy-serendipity, drake, jill, leona, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
 | `inFb` | 9 | clay, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, viper, … |

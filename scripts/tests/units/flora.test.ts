@@ -214,6 +214,42 @@ const floraNoS2 = withPatchedOverride('flora', (ov) => {
   ov.skill2 = [];
 });
 
+// ---- addStack isolation (S1 hitCount:100) ------------------------------------------------------
+/** Dummy stackable self buff for Flora (Electric) so her S1 addStack has a target to increment. */
+const floraDummyStackSelf = withPatchedOverride('flora', (ov) => {
+  ov.skill1.unshift({
+    slot: 'skill1',
+    trigger: { kind: 'passive' },
+    target: { kind: 'self' },
+    effects: [
+      {
+        kind: 'buff',
+        stat: 'critRatePct',
+        value: 10,
+        maxStacks: 10,
+        durationSec: 180,
+      },
+    ],
+  });
+});
+/** Dummy stackable self buff for crown (Iron) to prove addStack ignores non-Electric allies. */
+const crownDummyStackSelf = withPatchedOverride('crown', (ov) => {
+  ov.skill1.unshift({
+    slot: 'skill1',
+    trigger: { kind: 'passive' },
+    target: { kind: 'self' },
+    effects: [
+      {
+        kind: 'buff',
+        stat: 'critRatePct',
+        value: 10,
+        maxStacks: 10,
+        durationSec: 180,
+      },
+    ],
+  });
+});
+
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run();
 const noBurstAtk = run({ flora: floraNoBurstAtk });
@@ -225,6 +261,10 @@ const wide = runWide();
 const noShield = runWide({ flora: floraNoShield });
 const noDelay = runWide({ flora: floraNoDelay });
 const noS2 = runWide({ flora: floraNoS2 });
+const stackRun = run({
+  flora: floraDummyStackSelf,
+  crown: crownDummyStackSelf,
+});
 
 // ---- readers ----------------------------------------------------------------------------------
 const buffs = (evs: SimEvent[]) =>
@@ -369,6 +409,40 @@ describe('flora — kit spec', () => {
 
     it('DISCRIMINATING: removing the HoT collapses the cadence to burst-heal-only', () => {
       expect(hotFrames).toBeGreaterThan(burstOnlyFrames * 3);
+    });
+  });
+
+  describe('F9 — S1 after 100 normal attacks: +1 stack to all Electric allies’ stackable buffs', () => {
+    const dummyStackEvents = (casterIdx: number, targetIdx: number) =>
+      buffs(stackRun.events).filter(
+        (b) =>
+          b.casterIdx === casterIdx &&
+          b.targetIdx === targetIdx &&
+          b.stat === 'critRatePct' &&
+          b.value === 10
+      );
+
+    it('addStack fires on Flora (Electric) and increments the dummy stack above 1', () => {
+      const evs = dummyStackEvents(FLORA, FLORA);
+      expect(evs.length).toBeGreaterThan(0);
+      expect(Math.max(...evs.map((b) => b.stacks))).toBeGreaterThan(1);
+    });
+
+    it('only refreshes the Electric ally; crown (Iron) dummy stacks stay at 1', () => {
+      const floraRefreshes = dummyStackEvents(FLORA, FLORA).filter(
+        (b) => b.refresh
+      );
+      const crownEvs = dummyStackEvents(CROWN, CROWN);
+      expect(floraRefreshes.length).toBeGreaterThan(0);
+      expect(crownEvs.length).toBeGreaterThan(0);
+      expect(Math.max(...crownEvs.map((b) => b.stacks))).toBe(1);
+    });
+
+    it('fires at roughly the hitCount:100 cadence (multiple times per fight)', () => {
+      const refreshes = dummyStackEvents(FLORA, FLORA).filter(
+        (b) => b.refresh
+      ).length;
+      expect(refreshes).toBeGreaterThanOrEqual(3);
     });
   });
 
