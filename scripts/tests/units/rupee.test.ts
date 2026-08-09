@@ -27,20 +27,15 @@
 //      engine's refresh-on-reapply semantics climb to 5 and keep refreshing — asserted directly
 //      (post-cap applies carry stacks 5 + refresh). Nearest-wrong: the flat-passive +69% misread
 //      (one apply at t=0) — strictly over-damages the ramp.
-//   R3 PARTIAL (documented, ⚑ in override) — "Increases stack count of buffs by 1" (word_group
-//      10001; the soda/mica-snow-buddy/pepper sentence). SELF slice: rupee's only stackable buff
-//      is Mileage, folded as +1 to the `mileage` resource pool on the same hitCount:100 trigger.
-//      The pool has NO event channel — it is observable ONLY through R5's gate, and no cast in any
-//      legal fixture falls inside the (shot 120, shot 150) window where the S1 +1 changes gate
-//      timing (casts are ≥20s apart; the window is ~4s), so the block is behaviorally inert here
-//      and carries NO assertion (power-P3 pattern; the acceleration claim lives in the override
-//      caveat, measurement-gated ⚑). The CROSS-ALLY slice (+1 to teammates' own stackable buffs)
-//      is out-of-domain (no engine primitive, ⚑) and the stack's ATK-buff component is
-//      unrepresentable without double-counting (buff instances key on caster+slot+stat+value, ⚑) —
-//      both stay verbatim in the override's unmodeled. What IS pinned here: the pool currency stays
-//      a RESOURCE — rupee emits buffApply events for exactly her three encoded lines and nothing
-//      else, and the Mileage buff is a single keyed instance (a parallel skill1-slot Mileage buff
-//      would surface as a second key — the double-count the encoding deliberately avoids).
+//   R3 MODELED (enacted 2026-08-09, owner faithfulness ruling) — "Increases stack count of buffs
+//      by 1" (word_group 10001; the soda/mica-snow-buddy/pepper sentence). SELF slice: +1 to the
+//      `mileage` resource pool PLUS a cross-slot addStack{stat:'atkPct'} that bumps the live S2
+//      Mileage instance (granting the 13.8% ATK component; R2 splits its bump events from the
+//      30-hit proc applies). CROSS-ALLY slice: alliesOfElement Iron (excludeSelf) addStack —
+//      zero movement in this fixture (no other Iron ally holds a stackable buff), live in
+//      stacking Iron comps. The Mileage buff stays a single keyed instance (the bump merges into
+//      it rather than creating a parallel skill1-slot copy — the double-count the encoding
+//      deliberately avoids).
 //   R4 FAITHFUL — burstCast → enemy → flatDamage 274.28. "% of final ATK" is exactly
 //      flatDamage's caster-final-ATK scaling; the partless v1 boss is the only enemy, so the AoE
 //      "enemies within range" collapses to the boss taking the full value. A burst CAST lands

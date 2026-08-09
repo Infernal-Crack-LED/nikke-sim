@@ -48,11 +48,11 @@
 //
 // UNMODELED (inert at the damage-sim scope; documented, no assertions):
 //   - A3 "■ Activates after 90 normal attack(s). Affects all Water Code allies.\nStack count of
-//     buffs ▲ 1." — a stack-CAP raise on the targets' stackable buffs (the S2b blind reviewer's
-//     reading: cap-raise, NOT a +1 stack GRANT — the nearest-wrong misread would accelerate the
-//     Carrot Party gate). No engine primitive raises a buff's stack cap, and the only stackable
-//     buff in play (Carrot Party) is damage-inert (partsDamagePct, no parts on the v1 boss) —
-//     double inert, unmodeled verbatim.
+//     buffs ▲ 1." — MODELED 2026-08-09 as a +1 stack GRANT (hitCount:90 → Water allies →
+//     addStack), aligning with the guilty/pepper/rupee/mica-snow-buddy majority reading of the
+//     identical sentence; the 2026-07-28 cap-raise dissent stays on record in the override note.
+//     Damage-inert here either way (the only stackable Water buff, Carrot Party, is
+//     partsDamagePct — no parts on the v1 boss); A2 splits its bump events from the 60-hit procs.
 //   - A8 "■ Activates when Carrot Party is at max stacks. Affects all allies.\nIncoming healing
 //     ▲ 150% for 15 sec." — no healing-received channel exists (no HP pool) and the activation
 //     condition references the inert Carrot Party stack count.
