@@ -300,12 +300,12 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
     });
   });
 
-  describe('A8 — Burst charge time fixed at 0.7s → chargeSpeedPct 30 (SUBTRACTIVE), self, 10s', () => {
-    const applied = anisBuff(base.events, 'chargeSpeedPct', ANIS);
+  describe('A8 — Burst charge time fixed at 0.7s → chargeTimeClamp 0.7s, self, 10s', () => {
+    const applied = anisBuff(base.events, 'chargeTimeClamp', ANIS);
 
-    it('is exactly 30 (60f × (1−0.30) = 42f = 0.7s), self-scoped, 10s, once per cast', () => {
+    it('is exactly 0.7s (42f), self-scoped, 10s, once per cast', () => {
       expect(applied.length).toBe(anisBursts(base.events).length);
-      expect([...new Set(applied.map((b) => b.value))]).toEqual([30]);
+      expect([...new Set(applied.map((b) => b.value))]).toEqual([0.7]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
         'self-scoped'

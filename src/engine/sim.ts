@@ -468,6 +468,7 @@ interface WeaponSwap {
   untilFrame: number;
   damagePct: number;
   chargeFrames?: number;
+  chargeTimeClampFrames?: number; // "charge time fixed at X sec" on the swapped weapon
   chargeMultPct?: number;
   maxAmmo?: number;
   pullsPerSec?: number; // swap weapon's own fire cadence (moran: 24/s vs base AR 12/s)
@@ -567,6 +568,7 @@ interface UnitState {
     }
   >;
   hitCounters: Map<string, number>;
+  attackedCount: number; // cumulative incoming attacks taken by this unit
   blockActivations: Map<string, number>;
   // live named resource pools (soda-twinkling-bunny's Golden Chip) + their [min,max] bounds
   resources: Map<string, number>;
@@ -888,6 +890,7 @@ export function runSim(
       buffs: [],
       storedHits: new Map(),
       hitCounters: new Map(),
+      attackedCount: 0,
       blockActivations: new Map(),
       resources: new Map(
         (skills.resources ?? []).map((r) => [r.name, r.initial])
@@ -1003,6 +1006,18 @@ export function runSim(
   const usedOncePerBattle = new Set<string>();
   const totalFrames = cfg.durationSec * FPS;
   const rotationLog: string[] = [];
+
+  // manualAttacks test hook: map frame -> unit indices attacked that frame.
+  const manualAttacksByFrame = new Map<number, number[]>();
+  if (cfg.manualAttacks) {
+    cfg.manualAttacks.forEach((frames, uidx) => {
+      for (const f of frames) {
+        const list = manualAttacksByFrame.get(f) ?? [];
+        list.push(uidx);
+        manualAttacksByFrame.set(f, list);
+      }
+    });
+  }
 
   // Monte Carlo mode (cfg.seed set): mulberry32 PRNG — deterministic per seed.
   // rng === null → expected-value sim (crit/core folded into the major bucket,
@@ -1380,26 +1395,21 @@ export function runSim(
     if (!isCharge) {
       return per + flat;
     }
-    // Per-unit focus multiplier = fullChargeBonus/100 (2026-07-29, see comment above);
-    // ?? 250 is the fallback for units with no datamined row (e.g. laplace-ultimate-hero) —
-    // byte-identical to the old flat-2.5x default, never lets a missing row zero the gauge.
-    // u.focusChargeMult (charFixes.focusChargeMult) is an explicit per-unit multiplier that
-    // takes priority over both the table lookup and the magDumpRof/PENDING_TEAM_ISOLATION pin
-    // — needed for cinderella (RL/Electric, "cindy"; magDumpRof: her whole-magazine dump-fire
-    // kit doesn't perform the discrete hold-charge/release cycle the einkk chargePercent term
-    // presumes) so her table value (fullChargeBonus 200 -> 2.0x) applies instead of the
-    // magDumpRof pin's FOCUS_CHARGE_GEN fallback.
-    // fcb > 0 (not ?? alone): a handful of gauge rows carry fullChargeBonus:0 as their
-    // non-charge marker, and one live data disagreement (raven: gauge row 250 vs
-    // characters.json chargeMultiplier 0) means a present-but-zero value is reachable —
-    // treat it the same as missing rather than actually zeroing a focused unit's gauge
-    // (implementation review, 2026-07-29).
+    // Per-unit focus multiplier is now SOURCED from characters.json chargeMultiplier
+    // (2026-08-09, gap #20 fix). data/gauge-per-shot.json's fullChargeBonus acts as an
+    // explicit override only when characters.json reports 0 (the non-charge marker for a
+    // handful of units, e.g. raven: chargeMultiplier 0 but gauge row 250 datamined).
+    // This removes the 6 synthesized class-modal rows and the 4 no-row 3.5x units
+    // (belorta/n102/yan/yuni) from silently defaulting to 2.5x.
+    // u.focusChargeMult (charFixes.focusChargeMult) and the magDumpRof/PENDING_TEAM_ISOLATION
+    // pins still take priority over both sources.
+    const charMult = u.char.chargeMultiplier;
     const fcb = entry?.fullChargeBonus;
     const focusMult =
       u.focusChargeMult ??
       (u.magDumpRof || PENDING_TEAM_ISOLATION.has(u.char.slug)
         ? FOCUS_CHARGE_GEN
-        : (fcb && fcb > 0 ? fcb : 250) / 100);
+        : (charMult > 0 ? charMult : fcb && fcb > 0 ? fcb : 250) / 100);
     return per * (u.idx === focusIdx ? focusMult : UNFOCUSED_CHARGE_GEN) + flat;
   };
   const addGauge = (u: UnitState, frame: number, energyPct: number) => {
@@ -1565,6 +1575,38 @@ export function runSim(
 
   const stat = (u: UnitState, key: StatKey, frame: number) =>
     sum(u.buffs, key, frame);
+
+  // STAT CLAMP: "X is fixed at V" kit lines. If any active buff carries a clamp stat, the MOST
+  // RECENT active clamp wins and overrides the additive sum for that stat. Clamps do NOT stack.
+  const clamp = (
+    list: BuffInstance[],
+    key: StatKey,
+    frame: number
+  ): number | undefined => {
+    for (let i = list.length - 1; i >= 0; i--) {
+      const b = list[i];
+      if (
+        b.stat !== key ||
+        (b.expiresFrame !== null && b.expiresFrame <= frame) ||
+        (b.shotsLeft !== undefined && b.shotsLeft <= 0) ||
+        (b.whileSwappedIdx !== undefined &&
+          units[b.whileSwappedIdx].swap == null)
+      ) {
+        continue;
+      }
+      if (b.perResource && b.casterIdx !== undefined) {
+        return (
+          (units[b.casterIdx].resources.get(b.perResource.name) ?? 0) *
+          b.perResource.mult *
+          b.stacks
+        );
+      }
+      return b.value * b.stacks;
+    }
+    return undefined;
+  };
+  const clampStat = (u: UnitState, key: StatKey, frame: number) =>
+    clamp(u.buffs, key, frame);
 
   const advantaged = (u: UnitState) =>
     cfg.bossElement !== null &&
@@ -2061,7 +2103,15 @@ export function runSim(
         existing.stacks = 0;
         // a buff that FULLY lapsed and re-triggers restarts its ramp clock (per-window stack
         // ramps: arcana-fortune-mate's Making Memories rebuild 2/4/6 hits fresh each FB window).
-        // A refresh BEFORE expiry keeps the original startFrame (a continuous, never-dropped ramp).
+        existing.startFrame = frame;
+      } else if (existing.shotsLeft !== undefined) {
+        // ROUND-SCOPED refresh: a re-application while the round budget is still live resets the
+        // round clock from THIS frame. This is required so the same-frame decrement skip below
+        // treats the re-application shot as predating the refreshed budget — otherwise the old
+        // startFrame causes the buff to be consumed on the very shot that just refreshed it,
+        // making "for 1 round(s)" on a per-pull trigger apply every other shot instead of every
+        // subsequent shot (emilia/phantom/zwei). Ramp clocks keep their original startFrame
+        // because durationShots and rampSec are not combined in any current override.
         existing.startFrame = frame;
       }
       existing.stacks = Math.min(existing.stacks + 1, maxStacks);
@@ -2540,6 +2590,9 @@ export function runSim(
             chargeFrames: e.chargeTimeSec
               ? Math.round(e.chargeTimeSec * FPS)
               : undefined,
+            chargeTimeClampFrames: e.chargeTimeClamp
+              ? Math.max(1, Math.round(e.chargeTimeClamp * FPS))
+              : undefined,
             chargeMultPct: e.chargeMultPct,
             maxAmmo: e.maxAmmo,
             pullsPerSec: e.pullsPerSec,
@@ -2749,6 +2802,48 @@ export function runSim(
             );
           }
           break;
+        case 'addStack': {
+          // "Increases the stack count of stackable buffs by N". Finds existing buffs on the
+          // target that are still live (not expired, shotsLeft > 0) and match the optional stat
+          // filter; increments their stacks by `count` up to maxStacks. Used by flora's S1
+          // (all stackable Electric-ally buffs +1) and K's Tilted Scale (+29 per last bullet).
+          const count = Math.max(1, e.count ?? 1);
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
+            for (const b of t.buffs) {
+              if (
+                (e.stat != null && b.stat !== e.stat) ||
+                (b.expiresFrame !== null && b.expiresFrame <= frame) ||
+                (b.shotsLeft !== undefined && b.shotsLeft <= 0) ||
+                (b.whileSwappedIdx !== undefined &&
+                  units[b.whileSwappedIdx].swap == null) ||
+                b.maxStacks <= 1
+              ) {
+                continue;
+              }
+              const prev = b.stacks;
+              b.stacks = Math.min(b.maxStacks, b.stacks + count);
+              if (b.stacks !== prev && onEvent) {
+                onEvent({
+                  kind: 'buffApply',
+                  frame,
+                  sec: frame / FPS,
+                  key: b.key,
+                  stat: b.stat,
+                  value: b.value,
+                  stacks: b.stacks,
+                  maxStacks: b.maxStacks,
+                  casterIdx: b.casterIdx ?? null,
+                  targetIdx: t.idx,
+                  targetSlug: t.char.slug,
+                  refresh: true,
+                  expiresFrame: b.expiresFrame,
+                  durationShots: b.shotsLeft ?? null,
+                });
+              }
+            }
+          }
+          break;
+        }
         case 'stackedNuke': {
           const stacks = Math.min(owner.fbMissedSinceBurst, e.maxStacks ?? 12);
           if (stacks > 0) {
@@ -2820,6 +2915,18 @@ export function runSim(
     });
   }
 
+  function recordAttack(u: UnitState, frame: number) {
+    u.attackedCount++;
+    u.blocks.forEach((b, bi) => {
+      if (
+        b.trigger.kind === 'attacked' &&
+        u.attackedCount % b.trigger.count === 0
+      ) {
+        applyBlock(u.idx, b, bi, frame);
+      }
+    });
+  }
+
   function maxAmmo(u: UnitState, frame: number): number {
     const base = u.swap?.maxAmmo ?? u.char.ammo;
     if (u.swap?.maxAmmo !== undefined) {
@@ -2840,13 +2947,15 @@ export function runSim(
   );
 
   // internal-cooldown skills ({kind:'interval', sec}): fire every sec seconds of battle,
-  // first at t=sec (⚑ phase convention — see types.ts; snow-white S2a 144.73%, 15s CD)
+  // first at t=sec (⚑ phase convention — see types.ts; snow-white S2a 144.73%, 15s CD).
+  // The effective period can be shortened by a live `skillCooldownReductionSec` buff on the
+  // owning unit ("Cooldown of Skill X ▼ N sec"), e.g. Dorothy's Manifestation window.
   const intervalBlocks: Array<{
     unitIdx: number;
     block: Block;
     bi: number;
-    period: number;
-    next: number;
+    basePeriod: number;
+    lastFireFrame: number;
   }> = [];
   units.forEach((u) =>
     u.blocks.forEach((b, bi) => {
@@ -2856,8 +2965,8 @@ export function runSim(
           unitIdx: u.idx,
           block: b,
           bi,
-          period,
-          next: period,
+          basePeriod: period,
+          lastFireFrame: 0,
         });
       }
     })
@@ -2871,6 +2980,17 @@ export function runSim(
         (b.trigger.kind === 'bossElement' &&
           b.trigger.element === cfg.bossElement)
       ) {
+        applyBlock(u.idx, b, bi, 0);
+      }
+    })
+  );
+
+  // battle-start triggers fire once at frame 0, but respect durationSec (unlike passive,
+  // which ignores durationSec and stays always-on). Used for kit lines that read
+  // "Activates at the start of battle" and expire afterwards.
+  units.forEach((u) =>
+    u.blocks.forEach((b, bi) => {
+      if (b.trigger.kind === 'battleStart') {
         applyBlock(u.idx, b, bi, 0);
       }
     })
@@ -2942,6 +3062,14 @@ export function runSim(
       pendingFbStartFrame = -1;
     }
 
+    // manualAttacks test hook (v1 has no incoming-damage model)
+    const attackedUnits = manualAttacksByFrame.get(frame);
+    if (attackedUnits) {
+      for (const uidx of attackedUnits) {
+        recordAttack(units[uidx], frame);
+      }
+    }
+
     // ---- delayed block effects (Block.delaySec) ----
     // Resolved at the TOP of the frame, before any damage is dealt this frame, so a buff whose
     // landing frame is F is live for all of frame F (the same convention the interval blocks
@@ -2977,9 +3105,16 @@ export function runSim(
 
     // ---- internal-cooldown ('interval') skills ----
     for (const ib of intervalBlocks) {
-      if (frame === ib.next) {
+      const reductionSec = stat(
+        units[ib.unitIdx],
+        'skillCooldownReductionSec',
+        frame
+      );
+      const reductionFrames = Math.max(0, Math.round(reductionSec * FPS));
+      const effectivePeriod = Math.max(1, ib.basePeriod - reductionFrames);
+      if (frame - ib.lastFireFrame >= effectivePeriod) {
         applyBlock(ib.unitIdx, ib.block, ib.bi, frame);
-        ib.next += ib.period;
+        ib.lastFireFrame = frame;
       }
     }
 
@@ -3270,14 +3405,34 @@ export function runSim(
       }
     }
 
+    // Effective reload frames: honours reloadTimeClamp (seconds) or reloadSpeedClamp (%),
+    // each overriding additive reloadSpeedPct buffs when active.
+    const effectiveReloadFrames = (
+      u: UnitState,
+      baseFrames: number,
+      frame: number
+    ) => {
+      const timeClamp = clampStat(u, 'reloadTimeClamp', frame);
+      if (timeClamp !== undefined) {
+        return Math.max(1, Math.round(timeClamp * FPS));
+      }
+      const speedClamp = clampStat(u, 'reloadSpeedClamp', frame);
+      const pct =
+        speedClamp !== undefined
+          ? speedClamp
+          : stat(u, 'reloadSpeedPct', frame);
+      return reloadFramesNeeded(baseFrames, pct);
+    };
+
     // ---- boss unhittable windows (range transitions) ----
     const unhittable = bossUnhittable(frame);
     if (unhittable && transitionFrames.includes(frame)) {
       // window start: fast reloaders (effective reload <= 1s) snap-refill their mag
       for (const u of units) {
-        const effReload = reloadFramesNeeded(
+        const effReload = effectiveReloadFrames(
+          u,
           u.char.reloadFrames ?? 0,
-          stat(u, 'reloadSpeedPct', frame)
+          frame
         );
         if (effReload <= FPS && !u.reloading) {
           u.ammo = maxAmmo(u, frame);
@@ -3332,10 +3487,7 @@ export function runSim(
         u.reloadProgress += 1;
         if (
           u.reloadProgress >=
-          reloadFramesNeeded(
-            u.char.reloadFrames,
-            stat(u, 'reloadSpeedPct', frame)
-          )
+          effectiveReloadFrames(u, u.char.reloadFrames, frame)
         ) {
           u.reloading = false;
           u.reloadProgress = 0;
@@ -3410,11 +3562,23 @@ export function runSim(
           // lower bound is imposed: an absurd debuff simply yields a charge longer than the
           // fight, which is the faithful outcome.
           // The UPPER clamp is a real rule and stays.
-          const cs =
-            u.swap?.chargeFrames != null
-              ? 0
-              : Math.min(100, stat(u, 'chargeSpeedPct', frame));
-          const needed = Math.max(1, Math.round(chargeFrames * (1 - cs / 100)));
+          let needed: number;
+          if (u.swap?.chargeTimeClampFrames != null) {
+            // Weapon-swap "charge time fixed at X sec" is pre-converted to frames.
+            needed = u.swap.chargeTimeClampFrames;
+          } else {
+            const chargeTimeClamp = clampStat(u, 'chargeTimeClamp', frame);
+            if (chargeTimeClamp !== undefined) {
+              // "Charge time is fixed at X sec" — override the subtractive charge-speed stack.
+              needed = Math.max(1, Math.round(chargeTimeClamp * FPS));
+            } else {
+              const cs =
+                u.swap?.chargeFrames != null
+                  ? 0
+                  : Math.min(100, stat(u, 'chargeSpeedPct', frame));
+              needed = Math.max(1, Math.round(chargeFrames * (1 - cs / 100)));
+            }
+          }
           if (u.chargeProgress >= needed) {
             u.chargeProgress = 0;
             if (u.magDumpRof) {
@@ -3859,7 +4023,11 @@ export function runSim(
               frame - u.lastBurstCastFrame < 10 * FPS
             : fbEndFrame > frame);
         const threshold = lowered ? b.trigger.countInFb! : b.trigger.count;
-        let c = (u.hitCounters.get(key) ?? 0) + u.char.hitsPerShot;
+        // SG pull-vs-pellet lever: `perPull:true` counts trigger pulls (1 per shot) instead of
+        // landed pellets (`hitsPerShot`). Defaults to the historical pellet-count semantics so
+        // existing overrides stay byte-identical until they opt in.
+        const increment = b.trigger.perPull ? 1 : u.char.hitsPerShot;
+        let c = (u.hitCounters.get(key) ?? 0) + increment;
         while (c >= threshold) {
           c -= threshold;
           applyBlock(u.idx, b, bi, frame);
@@ -3922,10 +4090,12 @@ export function runSim(
     // but counted whether or not ammo was actually deducted: an unlimited-ammo shot still fires a
     // round. Inert for every unit with no round-scoped buff.
     //
-    // EXCEPTION — self-status-gated buffs (noRetriggerWhileActive) whose GRANT happened on THIS
-    // exact shot (startFrame === frame): the granting shot's own charge/fire predates the buff
-    // (it fired before the buff existed, so it could not have benefited from it) and does not
-    // spend one of the buff's own N rounds — "for N round(s)" reads as N rounds AFTER the grant.
+    // EXCEPTION — buffs whose GRANT happened on THIS exact shot (startFrame === frame): the
+    // granting shot's own charge/fire predates the buff (it fired before the buff existed, so it
+    // could not have benefited from it) and does not spend one of the buff's own N rounds —
+    // "for N round(s)" reads as N rounds AFTER the grant. This covers per-pull triggers
+    // (shotFired/hitCount/chargeCounter) that grant a round-scoped buff, including the general
+    // case that the old noRetriggerWhileActive-only carve-out missed.
     // Every other buff (the general case, including a helm-style grant from a DIFFERENT trigger
     // than the one being counted) is unaffected: its startFrame is from an earlier frame than any
     // firePull that decrements it, so this skip never engages.
@@ -3933,7 +4103,7 @@ export function runSim(
       if (
         b.shotsLeft !== undefined &&
         b.shotsLeft > 0 &&
-        !(b.noRetriggerWhileActive && b.startFrame === frame)
+        b.startFrame !== frame
       ) {
         b.shotsLeft -= u.char.weapon === 'MG' ? u.char.hitsPerShot : 1;
       }

@@ -315,7 +315,7 @@ describe('makima — kit spec', () => {
     });
   });
 
-  describe('M3 — L1/L2/L3/L4/L7 are UNMODELED: the whole kit is damage-neutral at scope lock', () => {
+  describe('M3 — L1 is now encoded but inert at scope lock; L2/L3/L4/L7 remain unmodeled', () => {
     it('shipped totals are byte-identical to the bare weapon (no phantom damage from any line)', () => {
       expect(base.totals).toEqual(bare.totals);
     });
@@ -324,13 +324,20 @@ describe('makima — kit spec', () => {
       expect(s1Phantom.totals).not.toEqual(bare.totals);
     });
 
-    it('structural: no S1/S2 blocks, burst is exactly [gainPierce 10s self, heal HoT self]', () => {
+    it('structural: S1 encodes the attacked-20x reload/DEF block; S2 stays empty; burst is [gainPierce, heal]', () => {
       const ov = loadOverride('makima') as any;
       expect(ov, 'makima has no override on disk').toBeTruthy();
       expect(
         ov.skill1,
-        'S1 must stay unmodeled (attacked-count trigger is out of domain)'
-      ).toEqual([]);
+        'S1 must now contain the attacked-20x block'
+      ).toHaveLength(1);
+      const s1 = ov.skill1[0];
+      expect(s1.trigger).toEqual({ kind: 'attacked', count: 20 });
+      expect(s1.target).toEqual({ kind: 'allies' });
+      expect(s1.effects).toEqual([
+        { kind: 'buff', stat: 'reloadSpeedPct', value: 36.96, durationSec: 10 },
+        { kind: 'buff', stat: 'defPct', value: 14.78, durationSec: 10 },
+      ]);
       expect(
         ov.skill2,
         'S2 must stay unmodeled (taunt/lethal-damage lines are out of domain — in particular NO burstCdr)'
@@ -355,15 +362,10 @@ describe('makima — kit spec', () => {
       ).toBe(false);
     });
 
-    it('structural: the unmodeled record carries every skipped line (no silent drops)', () => {
+    it('structural: the unmodeled record carries every still-skipped line (no silent drops)', () => {
       const ov = loadOverride('makima') as any;
       const un = ov.unmodeled;
-      expect(
-        un.skill1.some((s: string) => s.includes('attacked 20 times'))
-      ).toBe(true);
-      expect(
-        un.skill1.some((s: string) => s.includes('Reload Speed ▲ 36.96%'))
-      ).toBe(true);
+      expect(un.skill1).toEqual([]);
       expect(
         un.skill2.some((s: string) => s.includes('Taunt all enemies'))
       ).toBe(true);

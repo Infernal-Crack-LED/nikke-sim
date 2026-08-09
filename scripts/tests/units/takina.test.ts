@@ -9,8 +9,8 @@
 // Kit (data/characters.json → characters.takina.skills, levels 10/10/10 — the normalized `skills` prose is the
 // SSOT):
 //   S1 ■ at battle start AND when Full Burst ends → self: ATK ▲80.04% for 5 sec
-//         (battle-start activation UNMODELED — engine has no battleStart trigger; the FB-END activation IS
-//          modeled as the fullBurstEnd block)                                                  [T1 / T2]
+//         (battle-start activation modeled with the `battleStart` trigger; the FB-END activation is the
+//          fullBurstEnd block)                                                                  [T1 / T2]
 //      ■ when entering Full Burst → self: True Damage ▲35.05% for 15 sec                       [T3]
 //   S2 ■ all enemies: Damage Taken ▲10.09% for 5 sec  (+ Stuns 2 sec — UNMODELED, boss-inert)  [T4 / T6]
 //      ■ all allies: True Damage ▲140.49% for 10 sec                                           [T5]
@@ -33,11 +33,9 @@
 // stat+value+targetIdxnull, never by casterIdx. Ally/self buffs carry casterIdx===1 normally.
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest-wrong gates nothing):
-//   T1  PIN (documented skip): the battle-start ATK activation is UNMODELED (no battleStart trigger). The S1
-//       SLOT is active (it emits the T2 FB-end ATK + T3 FB-enter True Damage self-buffs), so this is a specific
-//       within-slot skip. Assert: NO atkPct 80.04 application at frame 0 (battle start) — the first 80.04 lands
-//       at the first FB-END, not at spawn. GREEN vs shipped (no frame-0 80.04), RED if a battle-start passive
-//       were added.
+//   T1  the battle-start ATK activation is modeled with `battleStart` (durationSec 5s, fires once at frame 0).
+//       Assert: there IS an atkPct 80.04 application at frame 0, and it expires at 5s. RED if battleStart is
+//       missing or mis-encoded as a permanent passive (which would ignore durationSec and stay always-on).
 //   T2  "when Full Burst ends → self ATK ▲80.04% for 5 sec" = atkPct 80.04, fullBurstEnd, target self, 5s.
 //       Nearest-wrong (a): trigger fullBurstEnter (lands on FB-START frames, strictly BEFORE the FB-END frames).
 //       (b): target allies (would hit all 3 slots, not just takina). Frame-discriminated (takina is sole B2; her
@@ -337,19 +335,32 @@ describe('takina — kit spec', () => {
     });
   });
 
-  describe('T1 — S1 battle-start ATK activation is UNMODELED (no battleStart trigger)', () => {
-    it('PIN: NO atkPct 80.04 application at frame 0 — the first 80.04 lands at the first FB-END, not at spawn', () => {
-      const atk = tkBuff(base.events, 'atkPct', 80.04);
-      expect(atk.length).toBeGreaterThan(0);
-      expect(atk.every((b) => b.frame > 0)).toBe(true);
-      expect(Math.min(...atk.map((b) => b.frame))).toBe(
+  describe('T1 — S1 battle-start ATK activation (battleStart trigger)', () => {
+    const atk = () => tkBuff(base.events, 'atkPct', 80.04);
+
+    it('fires exactly one atkPct 80.04 application at frame 0', () => {
+      const start = atk().filter((b) => b.frame === 0);
+      expect(start.length).toBe(1);
+      expect(start[0].targetIdx).toBe(TAKINA);
+    });
+
+    it('expires at 5 sec (durationSec respected, not a permanent passive)', () => {
+      const start = atk().find((b) => b.frame === 0);
+      expect(start).toBeDefined();
+      expect(start!.expiresFrame! - start!.frame).toBe(5 * FPS);
+    });
+
+    it('is distinct from the FB-end activations, which land after frame 0', () => {
+      const nonStart = atk().filter((b) => b.frame > 0);
+      expect(nonStart.length).toBeGreaterThan(0);
+      expect(Math.min(...nonStart.map((b) => b.frame))).toBe(
         Math.min(...fbEndFrames(base.events))
       );
     });
   });
 
   describe('T2 — S1 FB-end → self ATK ▲80.04% for 5 sec (fullBurstEnd)', () => {
-    const atk = tkBuff(base.events, 'atkPct', 80.04);
+    const atk = tkBuff(base.events, 'atkPct', 80.04).filter((b) => b.frame > 0);
     it('fires on fullBurstEnd frames, target self only, 5s duration', () => {
       expect(atk.length).toBeGreaterThan(0);
       expect(targetsOf(atk)).toEqual([TAKINA]);
@@ -360,7 +371,9 @@ describe('takina — kit spec', () => {
       expect(atk.every((b) => !fs.includes(b.frame))).toBe(true);
     });
     it('DISCRIMINATING (trigger): fullBurstEnter (nearest-wrong) lands on FB-START frames, not FB-END frames', () => {
-      const cf = tkBuff(s1AtkFbEnter.events, 'atkPct', 80.04);
+      const cf = tkBuff(s1AtkFbEnter.events, 'atkPct', 80.04).filter(
+        (b) => b.frame > 0
+      );
       expect(cf.length).toBeGreaterThan(0);
       expect(
         cf.every((b) => fbStartFrames(s1AtkFbEnter.events).includes(b.frame))

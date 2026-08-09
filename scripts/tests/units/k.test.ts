@@ -132,15 +132,15 @@ const kNoTilted = withPatchedOverride('k', (ov) => {
     throw new Error('k skill1 critRatePct block missing — fixture is stale');
   }
 });
-/** K4 counterfactual: one trigger's worth (21.75) — the "never reached the 100-stack cap" error. */
+/** K4 counterfactual: no addStack — only +1 stack per last bullet, so Tilted Scale ramps slowly. */
 const kWeakTilted = withPatchedOverride('k', (ov) => {
-  const e = ov.skill1
-    .flatMap((b: any) => b.effects)
-    .find((x: any) => x.stat === 'critRatePct');
-  if (!e) {
-    throw new Error('k critRatePct effect missing — fixture is stale');
+  const blk = ov.skill1.find((b: any) =>
+    b.effects.some((e: any) => e.kind === 'addStack')
+  );
+  if (!blk) {
+    throw new Error('k addStack block missing — fixture is stale');
   }
-  e.value = 21.75;
+  blk.effects = blk.effects.filter((e: any) => e.kind !== 'addStack');
 });
 /** K5/K6 reference: S2 (Fulfillment of Righteousness) removed. */
 const kNoS2 = withPatchedOverride('k', (ov) => {
@@ -286,9 +286,12 @@ describe('k — kit spec', () => {
       expect(base.totals.k).toBeGreaterThan(noTilted.totals.k);
     });
 
-    it('DISCRIMINATING: one trigger\'s worth (21.75, "never capped") reads 0.3675, not 0.90', () => {
+    it('DISCRIMINATING: without addStack Tilted Scale ramps slowly and never reaches the 75% cap', () => {
+      const maxCrit = Math.max(...kCritRates(weakTilted.events).map(Number));
       expect(kCritRates(weakTilted.events)).not.toContain((0.9).toFixed(6));
-      expect(kCritRates(weakTilted.events)).toContain((0.3675).toFixed(6));
+      expect(maxCrit, 'slow ramp should stay well below 0.90').toBeLessThan(
+        0.35
+      );
     });
   });
 

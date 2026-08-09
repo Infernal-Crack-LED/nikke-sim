@@ -126,6 +126,7 @@
           "damagePct": 275.18,
           "chargeTimeSec": 2.13,
           "chargeMultPct": 250,
+          "chargeTimeClamp": 1.8,
           "weapon": "SR",
           "durationSec": 10
         },

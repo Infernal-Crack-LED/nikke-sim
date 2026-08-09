@@ -338,17 +338,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     disagreement** — 6/44 SR/RL gauge rows are synthesized, 4 units have a value with no gauge row at
     all, `raven` has a live one-field disagreement; suggested fix (source from `characters.json`,
     gauge row as an override-only-when-it-disagrees) not yet built.
-  - **Theme 21 `durationShots`-eats-its-own-pull engine bug — `vesti-tactical-upgrade`'s SLICE
-    LANDED 2026-08-03** (branch `vesti-missile-guide-gate`, driven by a DPS-chart rank
-    investigation, not this theme's own queue item — the granting-shot-decrement exemption was
-    built and wired scoped behind a NEW `noRetriggerWhileActive` buff flag, deliberately NOT made
-    the unconditional default, so `emilia`/`zwei`/`phantom` are UNTOUCHED by this PR pending their
-    own board A/B). **Still open: emilia, zwei, phantom** — a per-pull `durationShots:1` buff
-    reaches zero rounds (confirmed via `emilia`'s self-clearing CANARY test, still `it.skip`ped).
-    A follow-up could either reuse `noRetriggerWhileActive` on those three (if their kit text also
-    has a "while not in X" gate) or make the granting-shot exemption unconditional for all
-    `durationShots` carriers (matching this theme's original engine-level fix plan) — needs an
-    owner call + board A/B before enacting, per batch-and-stop.
+  - **Theme 21 `durationShots`-eats-its-own-pull engine bug — CLOSED 2026-08-08.** The exemption
+    is now unconditional for all round-scoped buffs (`startFrame === frame` skips the decrement),
+    and a refresh of a round-scoped buff resets `startFrame` to the refresh frame so re-application
+    on every pull gives continuous coverage. `emilia`, `zwei`, and `phantom` were reverted to the
+    literal kit round count; `vesti-tactical-upgrade` keeps its `noRetriggerWhileActive` encoding.
+    Regression coverage: `scripts/tests/units/emilia.test.ts`, `scripts/tests/units/phantom.test.ts`,
+    `scripts/tests/units/zwei.test.ts`, `scripts/tests/engine/duration-shots.test.ts`.
 - **⇒ ROLE-AUDIT FOLLOW-UPS → `docs/handoffs/closed/2026-07-17-role-audit-followups.md`:** (1)
   custom-weaponry `role` sweep — mostly deflated; what's left = pierce-from-kit-text + the
   (data-blocked) weapon-swap secondary-weapon row; (2) **`anis-star` dot-gauge re-model**

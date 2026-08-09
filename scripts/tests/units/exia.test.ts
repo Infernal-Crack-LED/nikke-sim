@@ -152,12 +152,12 @@ const exiaAllAllies = withPatchedOverride('exia', (ov) => {
   block.target = { kind: 'allies' };
 });
 
-/** X3 removed: no FB-entry reload buff. */
+/** X3 removed: no FB-entry reload-speed clamp. */
 const exiaNoReload = withPatchedOverride('exia', (ov) => {
   const before = ov.skill1.length;
-  ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'reloadSpeedPct'));
+  ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'reloadSpeedClamp'));
   if (ov.skill1.length === before) {
-    throw new Error('exia reloadSpeedPct block missing — fixture is stale');
+    throw new Error('exia reloadSpeedClamp block missing — fixture is stale');
   }
 });
 
@@ -244,9 +244,9 @@ describe('exia (Treasure) — kit spec', () => {
     });
   });
 
-  describe('X3 — S1 FB-entry reload speed is 95% for 10s, self-only', () => {
+  describe('X3 — S1 FB-entry reload speed is clamped at 95% for 10s, self-only', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === EXIA && b.stat === 'reloadSpeedPct'
+      (b) => b.casterIdx === EXIA && b.stat === 'reloadSpeedClamp'
     );
 
     it('fires once per Full Burst, at the kit magnitude, on herself, for 10s', () => {

@@ -80,9 +80,9 @@
 // log, not totals.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
+import { loadOverride } from '../../../src/skills/overrides-node.js';
 import { runComp, withPatchedOverride } from '../lib/harness.js';
 
-const FPS = 60;
 /** Fixture slot order: crown 0 / pepper 1 / ada 2. */
 const CROWN = 0;
 const PEPPER = 1;
@@ -107,7 +107,8 @@ function run(overrides: Record<string, any> = {}) {
 // ---- counterfactual / isolation patches -------------------------------------------------------
 const hasHeal = (b: any) => b.effects.some((e: any) => e.kind === 'heal');
 const hasFlat = (b: any) => b.effects.some((e: any) => e.kind === 'flatDamage');
-const hasResource = (b: any) => b.effects.some((e: any) => e.kind === 'resource');
+const hasResource = (b: any) =>
+  b.effects.some((e: any) => e.kind === 'resource');
 
 /** Isolation: crown's own Relax self-heal (hitCount 860) fires her recovery consumer ~once per
  *  26s, masking pepper's contribution. Removing it leaves pepper's heals as the ONLY recovery
@@ -226,7 +227,9 @@ const pepperShots = (evs: SimEvent[]) =>
 const pepperLastBullets = (evs: SimEvent[]) =>
   pepperShots(evs).filter((s) => s.ammoAfter === 0).length;
 const pepperBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'pepper');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'pepper'
+  );
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 
@@ -264,7 +267,10 @@ describe('pepper — kit spec', () => {
     it("drives crown's recovery consumer at HER mag-dump cadence, not once per burst", () => {
       const dumps = pepperLastBullets(isolated.events);
       const bursts = pepperBursts(isolated.events).length;
-      expect(dumps, 'fixture sanity: pepper dumps mags in 180s').toBeGreaterThan(5);
+      expect(
+        dumps,
+        'fixture sanity: pepper dumps mags in 180s'
+      ).toBeGreaterThan(5);
       expect(
         bursts,
         'fixture sanity: pepper casts bursts in 180s'
@@ -374,9 +380,9 @@ describe('pepper — kit spec', () => {
     });
 
     it('DISCRIMINATING: the lv1 magnitude 731.25 is not the shipped value', () => {
-      expect(
-        [...new Set(pepperDamage(nukeLv1.events, 'burst').map((d) => d.atkPct))]
-      ).toEqual([731.25]);
+      expect([
+        ...new Set(pepperDamage(nukeLv1.events, 'burst').map((d) => d.atkPct)),
+      ]).toEqual([731.25]);
     });
   });
 
@@ -384,9 +390,7 @@ describe('pepper — kit spec', () => {
     const shipped = magsAtCast(isolated.events);
     const castFrameSet = new Set(shipped.map((c) => c.castFrame));
     const healsOn = (evs: SimEvent[]) =>
-      new Set(
-        recoveryFrames(evs).filter((f) => castFrameSet.has(f))
-      );
+      new Set(recoveryFrames(evs).filter((f) => castFrameSet.has(f)));
 
     it('fixture sanity: the fight spans the gate transition (silent casts AND capped casts)', () => {
       expect(
@@ -420,12 +424,36 @@ describe('pepper — kit spec', () => {
     });
   });
 
-  describe('P6 — burst grants +1 Refresh Heart BEFORE the gate reads it (self-slice, kit ■ order)', () => {
+  describe('P6 — burst: +1 Refresh Heart resource (self-slice) + addStack count:1 to all allies (cross-ally slice)', () => {
     it('fixture sanity: a cast exists at exactly 4 mags dumped — the discriminating state', () => {
       expect(
         magsAtCast(isolated.events).some((c) => c.mags === 4),
         'no 4-mag cast in this fixture — the +1 slice is not observable'
       ).toBe(true);
+    });
+
+    it('structural: the burst contains a self resource block AND an allies addStack block', () => {
+      const ov = loadOverride('pepper') as any;
+      const resourceBlock = ov.burst.find(
+        (b: any) =>
+          b.target?.kind === 'self' &&
+          b.effects.some(
+            (e: any) => e.kind === 'resource' && e.name === 'refreshHeart'
+          )
+      );
+      const addStackBlock = ov.burst.find(
+        (b: any) =>
+          b.target?.kind === 'allies' &&
+          b.effects.some((e: any) => e.kind === 'addStack')
+      );
+      expect(resourceBlock, 'self-slice resource block missing').toBeTruthy();
+      expect(addStackBlock, 'cross-ally addStack block missing').toBeTruthy();
+      expect(
+        addStackBlock.effects.find((e: any) => e.kind === 'addStack')
+      ).toEqual({
+        kind: 'addStack',
+        count: 1,
+      });
     });
 
     it('a 4-mag cast HEALS shipped (the +1 completes 5)…', () => {
@@ -435,9 +463,10 @@ describe('pepper — kit spec', () => {
           four.some((c) => c.castFrame === f)
         )
       );
-      expect(on.size, 'every 4-mag cast must heal with the increment live').toBe(
-        four.length
-      );
+      expect(
+        on.size,
+        'every 4-mag cast must heal with the increment live'
+      ).toBe(four.length);
     });
 
     it('…and WAITS with the increment removed (gate opens one reload later)', () => {

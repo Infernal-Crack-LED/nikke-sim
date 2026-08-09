@@ -34,6 +34,7 @@
 // bursts; a solo fixture would produce zero burst events.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
+import { loadOverride } from '../../../src/skills/overrides-node.js';
 import { runComp, totals, withPatchedOverride } from '../lib/harness.js';
 
 const FPS = 60;
@@ -70,6 +71,16 @@ const guiltyNoS2 = withPatchedOverride('guilty', (ov) => {
   }
   ov.skill2 = [];
 });
+/** G2 isolation: remove ONLY the addStack effect from the S2 block, keeping the ATK buff. */
+const guiltyNoAddStack = withPatchedOverride('guilty', (ov) => {
+  const block = ov.skill2.find((b: any) =>
+    b.effects.some((e: any) => e.kind === 'addStack')
+  );
+  if (!block) {
+    throw new Error('guilty S2 addStack block missing — fixture is stale');
+  }
+  block.effects = block.effects.filter((e: any) => e.kind !== 'addStack');
+});
 /** G5 isolation: remove ONLY the defPct effect from the burst block, keeping the 277.71% rider. */
 const guiltyNoDefDebuff = withPatchedOverride('guilty', (ov) => {
   const block = ov.burst.find((b: any) =>
@@ -97,6 +108,7 @@ const guiltyNoAdditional = withPatchedOverride('guilty', (ov) => {
 const base = run();
 const noS1 = run({ guilty: guiltyNoS1 });
 const noS2 = run({ guilty: guiltyNoS2 });
+const noAddStack = run({ guilty: guiltyNoAddStack });
 const noDefDebuff = run({ guilty: guiltyNoDefDebuff });
 const noAdditional = run({ guilty: guiltyNoAdditional });
 
@@ -146,6 +158,24 @@ describe('guilty — kit spec', () => {
 
     it('DISCRIMINATING: removing S1 reduces total damage (the stacks are live)', () => {
       expect(base.totals.guilty).toBeGreaterThan(noS1.totals.guilty);
+    });
+  });
+
+  describe('G2 — S2: addStack +1 for Wind allies (accelerates S1 ramp)', () => {
+    it('the S2 block carries an addStack count:1 effect', () => {
+      const ov = loadOverride('guilty') as any;
+      const block = ov.skill2.find((b: any) =>
+        b.effects.some((e: any) => e.kind === 'addStack')
+      );
+      expect(block, 'guilty S2 addStack block missing').toBeTruthy();
+      expect(block.effects.find((e: any) => e.kind === 'addStack')).toEqual({
+        kind: 'addStack',
+        count: 1,
+      });
+    });
+
+    it('DISCRIMINATING: removing only addStack reduces total damage (S1 ramps slower)', () => {
+      expect(base.totals.guilty).toBeGreaterThan(noAddStack.totals.guilty);
     });
   });
 

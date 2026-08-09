@@ -169,7 +169,7 @@ if (explainSlug) {
         }
         target.effects = block.effects.filter((_, i) => i !== ei);
         const v = value({ ...overrides, [explainSlug]: ov });
-        const label = `${slot}[${bi}] ${eff.kind}${'stat' in eff && eff.stat ? ` ${eff.stat} ${eff.value ?? ''}` : ''}`;
+        const label = `${slot}[${bi}] ${eff.kind}${eff.kind === 'buff' && eff.stat ? ` ${eff.stat} ${eff.value ?? ''}` : ''}`;
         process.stdout.write(
           `  without ${label.padEnd(42)} ${v.toFixed(2)}%   (Δ ${(v - shipped).toFixed(2)})\n`
         );

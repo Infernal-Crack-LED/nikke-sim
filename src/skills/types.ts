@@ -30,6 +30,7 @@ export type StatKey =
   | 'chargeDamagePct' // additive percentage points in the charge bucket
   | 'chargeDamageMultPct' // scales by BASE charge damage (collection items, Helm's max-treasure burst)
   | 'chargeSpeedPct'
+  | 'skillCooldownReductionSec' // "Cooldown of Skill X ▼ N sec" — dynamically shortens interval-trigger timers while active
   | 'attackDamagePct' // "Attack Damage" — Damage Up bucket
   | 'sustainedDamagePct'
   | 'sequentialDamagePct' // "Sequential Attack Damage ▲x%" — ADDITIVE in the Damage Up bucket (diluted by other support buffs; e.g. snow-white-heavy-arms)
@@ -50,8 +51,11 @@ export type StatKey =
   //                      maxAmmoPct scaling in maxAmmo() (theme 14: "▲ N round(s)" kit lines that the
   //                      percent-only schema could only approximate — grave/noir/tove/drake/trina)
   | 'reloadSpeedPct'
+  | 'reloadSpeedClamp' // "Reload speed is fixed at X% increase/reduction" — clamps effective reload speed pct, ignoring additive buffs
+  | 'reloadTimeClamp' // "Reload time is fixed at X sec" — clamps effective reload time to X seconds (frames)
   | 'attackSpeedPct'
   | 'fireRatePct'
+  | 'chargeTimeClamp' // "Charge time is fixed at X sec" — clamps effective charge time to X seconds (frames)
   | 'extraHitDamagePct' // flat % of final ATK added per normal-attack hit while active
   | 'trueDamagePct' // Damage Up bucket (doc line 8)
   | 'projectileExplosionPct' // Damage Up bucket; only RL kits carry it
@@ -74,6 +78,8 @@ export type StatKey =
 
 export type TriggerDef =
   | { kind: 'passive' } // always active
+  | { kind: 'battleStart' } // once at frame 0, durationSec respected (unlike passive)
+  | { kind: 'attacked'; count: number } // when the owner has been attacked `count` times
   | { kind: 'burstCast'; stage?: 1 | 2 | 3 } // when the owner casts their burst (optionally only at that stage — Λ kits)
   | { kind: 'fullBurstEnter' } // when full burst begins
   | { kind: 'fullBurstEnd' }
@@ -82,6 +88,7 @@ export type TriggerDef =
       count: number;
       countInFb?: number;
       countInFbStage?: number;
+      perPull?: boolean; // true = count trigger PULLS (1 per shot), false/omitted = count landed PELLETS (`hitsPerShot` per shot). The SG 10× lever.
     } // fires every `count` cumulative hits; `countInFb` overrides the threshold DURING Full Burst (RRH rocket meter: 120 out of burst → 60 in her FB). `countInFbStage` SCOPES that override: it then applies ONLY during the 10s window after the owner's OWN burst cast at that stage (prose "▼N for 10 sec" granted by that cast — RRH's ▼60 is a Stage-3 line, owner ruling 2026-08-04), NOT any team FB window; without it the any-FB-state convention stays (SWID)
   | {
       kind: 'chargeCounter';
@@ -316,6 +323,7 @@ export type EffectDef =
       kind: 'weaponSwap'; // "Changes the weapon in use:" — temporary weapon override
       damagePct: number; // per-shot multiplier while swapped
       chargeTimeSec?: number; // full-charge time (charge weapons)
+      chargeTimeClamp?: number; // "Charge time is fixed at X sec" on the swapped weapon (seconds)
       chargeMultPct?: number; // "Full Charge Damage: N% of damage"
       maxAmmo?: number;
       // The swap weapon's OWN datamined fire cadence (pulls/s), when it differs from the base
@@ -387,6 +395,11 @@ export type EffectDef =
   // The inverse of instantReload. e.g. grave's Prediction-end forced reload, asuka-wille, jill.
   | { kind: 'consumeAmmo'; fraction?: number }
   | { kind: 'gainPierce'; durationSec?: number } // "Gain Pierce": the target's attacks count as Pierce-tagged, so its (and teammates') Pierce Damage ▲ buffs go live. durationSec = timed "for N sec" window; ABSENT = continuous/permanent (pierceUntilFrame → ∞) — used to STEP-GATE pierce that turns on only after a stack threshold (ade-agent-bunny: on a hitCount:10 "Spy Lens at max stacks" trigger, replacing an always-on-from-t=0 hasPierce flag that a boolean can't step-gate)
+  | {
+      kind: 'addStack'; // "Increases the stack count of stackable buffs by N"
+      count?: number; // stacks to add (default 1)
+      stat?: StatKey; // optional filter: only buffs with this stat receive stacks
+    }
   | { kind: 'instantReload'; fraction?: number } // refill magazine (fraction of max, default full)
   | { kind: 'stun'; durationSec: number } // target can't fire/charge/reload (bursting unaffected)
   | {

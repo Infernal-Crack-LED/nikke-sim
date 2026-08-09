@@ -356,4 +356,8 @@ export interface SimConfig {
   // clean-weapon units are recorded with bursting off, so the sim must model that directly
   // rather than relying on their burst blocks happening to be empty.
   disableBursts?: boolean;
+  // Test hook: per-unit frames on which the unit is considered attacked by the boss.
+  // The v1 sim has no incoming-damage model, so this is only used to exercise the
+  // `attacked` trigger primitive in unit/engine tests.
+  manualAttacks?: number[][];
 }

@@ -180,18 +180,18 @@ const awNoAmmoDump = withPatchedOverride(SLUG, (ov) => {
     );
   }
 });
-/** W5 reference: strip the reloadSpeedPct 60 window from Emergency Repair. */
+/** W5 reference: strip the reloadSpeedClamp 60 window from Emergency Repair. */
 const awNoReloadSpeed = withPatchedOverride(SLUG, (ov) => {
   const b = findBlock(
     ov.skill2,
-    (x) => hasStat(x, 'reloadSpeedPct'),
-    'S2 reloadSpeed'
+    (x) => hasStat(x, 'reloadSpeedClamp'),
+    'S2 reloadSpeedClamp'
   );
   const before = b.effects.length;
-  b.effects = b.effects.filter((e: any) => e.stat !== 'reloadSpeedPct');
+  b.effects = b.effects.filter((e: any) => e.stat !== 'reloadSpeedClamp');
   if (b.effects.length === before) {
     throw new Error(
-      'asuka-wille S2 reloadSpeedPct effect missing — fixture is stale'
+      'asuka-wille S2 reloadSpeedClamp effect missing — fixture is stale'
     );
   }
 });
@@ -423,18 +423,16 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
     });
   });
 
-  describe('W5 — S2 Emergency Repair reload speed fixed ▲60% (10.5s window proxy ⚑3)', () => {
-    const applied = awSelfBuff(base.events, 'reloadSpeedPct', 60);
-    it('applies reloadSpeedPct 60 to herself for the 10.5s window', () => {
+  describe('W5 — S2 Emergency Repair reload speed fixed ▲60% for 1 round (⚑3)', () => {
+    const applied = awSelfBuff(base.events, 'reloadSpeedClamp', 60);
+    it('applies reloadSpeedClamp 60 to herself for one shot', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([60]);
-      for (const b of applied) {
-        expect(b.expiresFrame! - b.frame).toBe(Math.round(10.5 * FPS));
-      }
+      expect(applied.every((b) => b.durationShots === 1)).toBe(true);
     });
-    it('DISCRIMINATING: stripping the window removes every reloadSpeedPct application', () => {
+    it('DISCRIMINATING: stripping the window removes every reloadSpeedClamp application', () => {
       expect(
-        awSelfBuff(noReloadSpeed.events, 'reloadSpeedPct', 60).length
+        awSelfBuff(noReloadSpeed.events, 'reloadSpeedClamp', 60).length
       ).toBe(0);
     });
   });

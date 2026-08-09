@@ -36,8 +36,12 @@ const STATS = new Set([
   'maxAmmoPct',
   'maxAmmoFlat',
   'reloadSpeedPct',
+  'reloadSpeedClamp',
+  'reloadTimeClamp',
   'attackSpeedPct',
   'fireRatePct',
+  'chargeTimeClamp',
+  'skillCooldownReductionSec',
   'extraHitDamagePct',
   'trueDamagePct',
   'projectileExplosionPct',
@@ -53,6 +57,8 @@ const STATS = new Set([
 ]);
 const TRIGGERS = new Set([
   'passive',
+  'battleStart',
+  'attacked',
   'burstCast',
   'fullBurstEnter',
   'fullBurstEnd',
@@ -105,6 +111,7 @@ const EFFECTS = new Set([
   'stun',
   'stackedNuke',
   'gainPierce',
+  'addStack',
   'resource',
   'targetStatus',
 ]);
@@ -216,6 +223,17 @@ function checkEffect(e: any, path: string, errors: string[]) {
       typeof e.noRetriggerWhileActive !== 'boolean'
     ) {
       errors.push(`${path}: noRetriggerWhileActive must be a boolean`);
+    }
+    // Stat clamps are fixed-at values; rampSec would scale the clamp and is not implemented.
+    const CLAMP_STATS = new Set([
+      'reloadSpeedClamp',
+      'reloadTimeClamp',
+      'chargeTimeClamp',
+    ]);
+    if (CLAMP_STATS.has(e.stat) && e.rampSec !== undefined) {
+      errors.push(
+        `${path}: clamp stat "${e.stat}" does not support rampSec (not implemented in engine clamp())`
+      );
     }
   }
   if (e.kind === 'flatDamage') {
@@ -335,6 +353,19 @@ function validate(slug: string): boolean {
         typeof b.trigger.count !== 'number'
       ) {
         errors.push(`${p}: hitCount needs count`);
+      }
+      if (
+        b.trigger?.kind === 'hitCount' &&
+        b.trigger.perPull != null &&
+        typeof b.trigger.perPull !== 'boolean'
+      ) {
+        errors.push(`${p}: hitCount perPull must be a boolean`);
+      }
+      if (
+        b.trigger?.kind === 'attacked' &&
+        !(typeof b.trigger.count === 'number' && b.trigger.count > 0)
+      ) {
+        errors.push(`${p}: attacked needs count > 0`);
       }
       if (
         b.trigger?.kind === 'interval' &&
