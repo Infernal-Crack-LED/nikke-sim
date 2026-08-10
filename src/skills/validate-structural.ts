@@ -144,21 +144,14 @@ export const ENEMY_BUFF_STATS = new Set([
   'distributedDamagePct',
 ]);
 
-// Block fields the chargeCounter dispatch IGNORES: sim.ts routes chargeCounter activations
-// straight to applyEffect, never through applyBlock — so every runtime abort-gate, the
-// everyN activation counter, and the block-level delaySec are silently skipped on that
-// trigger. No override combines them today (verified roster-wide 2026-08-10), so authoring
-// the combination is an ERROR until the engine honors it: the alternative is a block whose
-// gate looks live in the JSON and never runs.
+// Block fields the chargeCounter dispatch still IGNORES: the runtime abort-gates are honored
+// there since 2026-08-10 (sim.ts blockGatesPass — the audit-F2.1 fix), but the dispatch applies
+// ONE phase effect per activation rather than routing through applyBlock, so the everyN
+// activation counter and the block-level delaySec remain silently skipped on this trigger. No
+// override combines them today (verified roster-wide 2026-08-10), so authoring the combination
+// is an ERROR until the engine supports it: the alternative is a field that looks live in the
+// JSON and never runs.
 export const CHARGE_COUNTER_BYPASSED = [
-  'requiresCore',
-  'fbGate',
-  'swapGate',
-  'requiresShielded',
-  'requiresTargetStatus',
-  'bossElementGate',
-  'ownBurstGate',
-  'resourceGate',
   'everyN',
   'everyNOffset',
   'delaySec',

@@ -149,8 +149,27 @@ describe('structuralCheck — targetStatus placement (the previously-untested ta
   });
 });
 
-describe('structuralCheck — chargeCounter gate bypass (audit F2.1)', () => {
-  it('errors when a chargeCounter block carries a runtime gate the engine would ignore', () => {
+describe('structuralCheck — chargeCounter still-bypassed fields (audit F2.1)', () => {
+  it('errors when a chargeCounter block carries everyN or delaySec (still not routed)', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        skill1: [
+          block({
+            trigger: { kind: 'chargeCounter', count: 3 },
+            everyN: 2,
+            delaySec: 1.5,
+          }),
+        ],
+      }),
+      CTX
+    );
+    const msg = r.errors.join('\n');
+    expect(msg).toMatch(/chargeCounter dispatch/);
+    expect(msg).toMatch(/everyN, delaySec/);
+  });
+
+  it('accepts a runtime-gated chargeCounter block (gates honored since the blockGatesPass fix)', () => {
     const r = structuralCheck(
       'liter',
       minimal({
@@ -164,9 +183,7 @@ describe('structuralCheck — chargeCounter gate bypass (audit F2.1)', () => {
       }),
       CTX
     );
-    const msg = r.errors.join('\n');
-    expect(msg).toMatch(/chargeCounter dispatch bypasses applyBlock/);
-    expect(msg).toMatch(/fbGate, resourceGate/);
+    expect(r.errors).toEqual([]);
   });
 
   it('accepts an ungated chargeCounter block', () => {

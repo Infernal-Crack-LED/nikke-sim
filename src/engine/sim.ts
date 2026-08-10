@@ -100,7 +100,7 @@ const DOT_CRIT = ENV.DOTCRIT !== 'off';
 const RIDER_CRIT = ENV.RIDERCRIT !== 'off';
 // FBRULE (2026-07-14): candidate HEURISTICS for when SKILL/rider/DoT damage gets the +50% Full Burst
 // major. (Range is settled — skills never get the +30% range bonus; noRange is universal.) The
-// default 'perkit' uses the calibrated per-unit noFb flags; other rules replace them with a GENERAL
+// non-default rules replace the timing gate with a GENERAL
 // rule so `scripts/probe/fb-range-lab.ts` can A/B-grade which rule best fits the measured ground truth
 // (ein feathers = FB-ON, liberalio proc = FB-ON, scarlet procs = FB-OFF, burst-cast nukes = FB-OFF).
 // Burst-cast damage is ALWAYS FB-exempt (U10, measured), regardless of rule.
@@ -2206,28 +2206,27 @@ export function runSim(
     });
   }
 
-  function applyBlock(
+  // The runtime abort-gates shared by every block dispatch path. Returns false when the
+  // block must not fire at this frame. Extracted from applyBlock (2026-08-10) so the
+  // chargeCounter dispatch — which applies ONE phase effect per activation rather than the
+  // whole block, and therefore cannot route through applyBlock — honors the SAME gates
+  // instead of silently ignoring them (the audit-F2.1 bypass; zero gated chargeCounter
+  // carriers existed, so the routing change is behavior-neutral, regression the control).
+  function blockGatesPass(
     ownerIdx: number,
     block: Block,
-    blockIdx: number,
     frame: number
-  ) {
+  ): boolean {
     const owner = units[ownerIdx];
-    const bKey = `${ownerIdx}:${block.slot}:${blockIdx}`;
-    // Abort-gates are evaluated BEFORE the everyN activation counter, so `everyN`
-    // counts only activations that actually pass the gates — e.g. soda's "after casting
-    // 3 normal attacks DURING Full Burst": out-of-FB casts must NOT advance the counter.
-    // (No override combines everyN with these gates today — verified — so this is
-    // behavior-neutral for every existing unit; the regression snapshot is the control.)
     // core-gated blocks never fire in zero-core fights
     if (block.requiresCore && cfg.coreHitRate <= 0) {
-      return;
+      return false;
     }
     // full-burst-state gate ('inFb' / 'outFb'), evaluated when the trigger fires
     if (block.fbGate) {
       const fbActive = fbEndFrame > frame;
       if ((block.fbGate === 'inFb') !== fbActive) {
-        return;
+        return false;
       }
     }
     // weapon-swap-state gate: block fires only while the owner's kit weaponSwap
@@ -2237,7 +2236,7 @@ export function runSim(
     if (block.swapGate) {
       const swapped = owner.swap != null && owner.swap.untilFrame > frame;
       if ((block.swapGate === 'swapped') !== swapped) {
-        return;
+        return false;
       }
     }
     // shield-state gate: "if a Shield is set in front of this unit" evaluated at trigger
@@ -2245,7 +2244,7 @@ export function runSim(
     // 31.02%; owner-ruled default-off/requires-a-shielder 2026-07-20). No shielder in the
     // comp → no shield events → the block never fires.
     if (block.requiresShielded && owner.shieldedUntilFrame <= frame) {
-      return;
+      return false;
     }
     // named target-status gate: "Activates when … hits a target in <Name> status" — the block only
     // activates while the boss currently carries THAT named status (a 'targetStatus' effect's
@@ -2256,13 +2255,13 @@ export function runSim(
       block.requiresTargetStatus &&
       (targetStatuses.get(block.requiresTargetStatus) ?? -1) <= frame
     ) {
-      return;
+      return false;
     }
     // boss-element gate: an element-coded line ("when attacking an Electric Code
     // target", "all Wind Code enemies") fires only when the boss element matches.
     // Composes with the block's real trigger; inert vs a non-matching / neutral boss.
     if (block.bossElementGate && cfg.bossElement !== block.bossElementGate) {
-      return;
+      return false;
     }
     // own-burst gate: block fires only when the owner DID ('cast') or did NOT ('notCast')
     // cast their own burst in the rotation leading into this Full Burst. Composes with a
@@ -2275,20 +2274,38 @@ export function runSim(
     if (block.ownBurstGate) {
       const cast = rotationCasters.includes(ownerIdx);
       if ((block.ownBurstGate === 'cast') !== cast) {
-        return;
+        return false;
       }
     }
     // resource-pool gate: block fires only while a named resource is within [min,max] at trigger
-    // time (soda's burst ATK ▲65.25% only at ≥30 Golden Chips). Evaluated with the other abort
-    // gates (before the activation counter), so a gated-out activation does not advance everyN.
+    // time (soda-twinkling-bunny's burst ATK ▲65.25% only at ≥30 Golden Chips). Evaluated with the
+    // other abort gates (before the activation counter), so a gated-out activation does not
+    // advance everyN.
     if (block.resourceGate) {
       const rv = owner.resources.get(block.resourceGate.name) ?? 0;
       if (
         rv < (block.resourceGate.min ?? -Infinity) ||
         rv > (block.resourceGate.max ?? Infinity)
       ) {
-        return;
+        return false;
       }
+    }
+    return true;
+  }
+
+  function applyBlock(
+    ownerIdx: number,
+    block: Block,
+    blockIdx: number,
+    frame: number
+  ) {
+    const owner = units[ownerIdx];
+    const bKey = `${ownerIdx}:${block.slot}:${blockIdx}`;
+    // Abort-gates are evaluated BEFORE the everyN activation counter, so `everyN`
+    // counts only activations that actually pass the gates — e.g. soda's "after casting
+    // 3 normal attacks DURING Full Burst": out-of-FB casts must NOT advance the counter.
+    if (!blockGatesPass(ownerIdx, block, frame)) {
+      return;
     }
     const activations = (owner.blockActivations.get(bKey) ?? 0) + 1;
     owner.blockActivations.set(bKey, activations);
@@ -4056,18 +4073,26 @@ export function runSim(
           : reqs;
         if (charges >= thr) {
           charges = 0;
-          const bKey = `${u.idx}:${b.slot}:${bi}`;
-          const activations = (u.blockActivations.get(bKey) ?? 0) + 1;
-          u.blockActivations.set(bKey, activations);
-          applyEffect(
-            u.idx,
-            b,
-            b.effects[phase],
-            `${bKey}:${phase}`,
-            activations,
-            frame
-          );
-          phase = (phase + 1) % b.effects.length;
+          // Runtime abort-gates are honored on this dispatch too (2026-08-10 — before this
+          // they were silently ignored here, the audit-F2.1 bypass; zero gated carriers, so
+          // the change is behavior-neutral and the regression suite is the control).
+          // Ordering mirrors the hitCount path + applyBlock: the charge threshold (the
+          // counter) is consumed regardless of the gates, while the activation count and
+          // the phase (the everyN analogs) advance only when the gates pass.
+          if (blockGatesPass(u.idx, b, frame)) {
+            const bKey = `${u.idx}:${b.slot}:${bi}`;
+            const activations = (u.blockActivations.get(bKey) ?? 0) + 1;
+            u.blockActivations.set(bKey, activations);
+            applyEffect(
+              u.idx,
+              b,
+              b.effects[phase],
+              `${bKey}:${phase}`,
+              activations,
+              frame
+            );
+            phase = (phase + 1) % b.effects.length;
+          }
         }
         u.hitCounters.set(pk, phase);
         u.hitCounters.set(ck, charges);

@@ -323,11 +323,12 @@ regression snapshot did not move, because the new path has identical semantics (
 same gate position, expiry checked at read). So the registry now IS exercised by a graded comp, but only
 in its single-status, same-unit, same-frame form. Everything below is what that carrier does NOT reach:
 
-- **`chargeCounter`-triggered blocks bypass EVERY block gate.** `sim.ts` dispatches them straight to
-  `applyEffect`, skipping `applyBlock` — so `requiresCore` / `fbGate` / `bossElementGate` /
-  `resourceGate` **and** `requiresTargetStatus` are all silently ignored there. **Pre-existing and
-  wider than this primitive**, but a future carrier sitting on a `chargeCounter` trigger would get an
-  un-gated block with no error and no warning.
+- **`chargeCounter` gate routing — ✅ FIXED 2026-08-10.** The dispatch now runs `blockGatesPass`
+  (the abort-gates extracted from `applyBlock`), so all 8 runtime gates bind on this trigger
+  (`scripts/tests/engine/block-gates.test.ts` chargeCounter cases; behavior-neutral — zero gated
+  carriers existed, regression byte-identical). Still bypassed BY DESIGN of the one-phase-per-
+  activation dispatch: `everyN` / `everyNOffset` / block `delaySec` — `validate-overrides.ts`
+  errors on authoring those with a `chargeCounter` trigger.
 - **A typo'd status name fails SILENTLY** — matching is exact and case/whitespace-sensitive, and the
   failure mode is a block that never fires (a silent under-model, the exact bug class this primitive
   exists to prevent). Note `d-killer-wife` now depends on two string literals agreeing across two
