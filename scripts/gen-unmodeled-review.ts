@@ -1,9 +1,21 @@
 // gen-unmodeled-review.ts — aggregate every `unmodeled` kit line across shipped overrides
 // into a single review doc with inferred overarching-reason counts.
 //
-// Usage: npx tsx scripts/gen-unmodeled-review.ts
-// Output: docs/unmodeled-entries-review.md
+//   npx tsx scripts/gen-unmodeled-review.ts            # regenerate docs/unmodeled-entries-review.md
+//   npx tsx scripts/gen-unmodeled-review.ts --check     # verify.sh gate: committed doc == regenerated
+//
+// TWO-STEP CHAIN (the reason both guards below exist). This doc is the SECOND link in
+// overrides → data/kit-status.json (kit-status.ts --refresh) → this doc. Only the first link was
+// gated, which left two ways to ship a stale doc and stay green:
+//   1. verify.sh checked kit-status.json against the overrides but never this doc against
+//      kit-status.json, so a doc regenerated one commit too early passed (it did, 2026-08-09 —
+//      it carried a superseded anchor-innocent-maid entry through a green verify until a
+//      cross-family code review caught it). `--check` closes that.
+//   2. Running THIS script alone looks like a successful refresh even when kit-status.json is
+//      itself stale — it prints "Wrote … with N entries" either way. The staleMirrors() gate
+//      below refuses to write in that case and names the command you actually needed.
 import { readFileSync, writeFileSync } from 'node:fs';
+import { staleMirrors } from './lib/kit-status-mirrors.js';
 
 const ROOT = new URL('../', import.meta.url);
 const KIT_STATUS = new URL('data/kit-status.json', ROOT);
@@ -306,7 +318,52 @@ for (const [cat, n] of sortedCounts) {
   md += '\n';
 }
 
-writeFileSync(OUT, md, 'utf8');
-console.log(
-  `Wrote ${OUT.pathname} with ${total} unmodeled entries across ${sortedCounts.length} categories.`
-);
+const mode = process.argv[2];
+
+if (mode === '--check') {
+  // Gate only. Freshness of kit-status.json itself is verify.sh's job — it runs
+  // `kit-status.ts --check` immediately before this, so by here the mirrors are known good.
+  let committed: string;
+  try {
+    committed = readFileSync(OUT, 'utf8');
+  } catch {
+    console.error(
+      `unmodeled-review check FAILED: ${OUT.pathname} missing — run: npx tsx scripts/gen-unmodeled-review.ts`
+    );
+    process.exit(1);
+  }
+  if (committed !== md) {
+    console.error(
+      'unmodeled-review check FAILED: docs/unmodeled-entries-review.md is stale vs data/kit-status.json.'
+    );
+    console.error(
+      '  fix: npx tsx scripts/kit-status.ts --refresh && npx tsx scripts/gen-unmodeled-review.ts'
+    );
+    process.exit(1);
+  }
+  console.log(`unmodeled-review check OK (${total} entries)`);
+} else if (mode != null) {
+  console.error('usage: gen-unmodeled-review.ts [--check]');
+  process.exit(2);
+} else {
+  // Writing from stale mirrors is the failure this refuses to perform silently: the output would
+  // look freshly generated while describing overrides as they were N commits ago.
+  const stale = staleMirrors();
+  if (stale.length) {
+    console.error(
+      'gen-unmodeled-review: data/kit-status.json is STALE vs the overrides — refusing to write a doc derived from it.'
+    );
+    stale.slice(0, 10).forEach((e) => console.error('  - ' + e));
+    if (stale.length > 10) {
+      console.error(`  … and ${stale.length - 10} more`);
+    }
+    console.error(
+      '  fix: npx tsx scripts/kit-status.ts --refresh   (then re-run this)'
+    );
+    process.exit(1);
+  }
+  writeFileSync(OUT, md, 'utf8');
+  console.log(
+    `Wrote ${OUT.pathname} with ${total} unmodeled entries across ${sortedCounts.length} categories.`
+  );
+}

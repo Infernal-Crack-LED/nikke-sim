@@ -53,7 +53,7 @@
 // CONSUMER. Deterministic (no seed); event-log over totals.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import { data, runComp, totals, withPatchedOverride } from '../lib/harness.js';
 
 const FPS = 60;
 const SLUGS = ['liter', 'crown', 'ada', 'soda'] as const;
@@ -274,7 +274,11 @@ const adaStackable = withPatchedOverride('ada', (ov) => {
         kind: 'buff',
         stat: 'attackDamagePct',
         value: 1.23,
-        maxStacks: 5,
+        // maxStacks deliberately far above the ~4 casts a 180s fight gives her: addStack only
+        // re-emits buffApply when the count actually CHANGES (sim.ts, the `b.stacks !== prev`
+        // guard), so a cap reached mid-fight would swallow later bumps and make the frame
+        // equality below fail for a cadence change rather than a keying defect.
+        maxStacks: 12,
         durationSec: 999,
       },
     ],
@@ -447,11 +451,25 @@ describe('soda — kit spec', () => {
     });
 
     it('the CROSS-ALLY slice is structurally inert in this fixture (no other Fire ally)', () => {
-      // soda is the only Fire unit here and the block excludes self, so `alliesOfElement Fire`
-      // resolves empty. Pinned so a future fixture change that adds a Fire ally cannot silently
-      // start moving this comp's numbers without a test noticing.
-      expect(probeBumps(base.events)).toEqual([]);
-      expect(SLUGS.filter((s) => s !== 'soda')).not.toContain('Fire');
+      // Every other SD6 assertion runs through a probe that re-points the block, so this is the
+      // one place the SHIPPED targeting is pinned. Both halves are read from data rather than
+      // restated: the block really does target Fire + excludeSelf, and no other fixture unit is
+      // Fire — so it resolves to an empty target set here. Swap a Fire ally into SLUGS and this
+      // goes red, which is the point: whoever makes that swap has to decide what the now-live
+      // block does to this comp's numbers instead of finding out from a moved snapshot.
+      const shipped = withPatchedOverride('soda', () => {});
+      const block = (shipped as any).burst.find((b: any) =>
+        b.effects.some((e: any) => e.kind === 'addStack')
+      );
+      expect(block?.target).toEqual({
+        kind: 'alliesOfElement',
+        element: 'Fire',
+        excludeSelf: true,
+      });
+      const otherElements = SLUGS.filter((s) => s !== 'soda').map(
+        (s) => data.characters[s].element
+      );
+      expect(otherElements).not.toContain('Fire');
     });
 
     it("the cross-ally slice bumps each Fire ally's stackable buffs, once per own burst cast", () => {

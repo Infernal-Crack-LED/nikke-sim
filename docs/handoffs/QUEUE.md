@@ -81,10 +81,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   citation was the same shape. Nothing checks these. Options: a lint that resolves every
   `sim.ts:<line>` citation in override prose, or a convention that prose names the code block
   ("the charge-frames clamp in sim.ts") and never the line number.
-- **`docs/unmodeled-entries-review.md` freshness is ungated:** `verify.sh` runs
-  `kit-status.ts --check` but nothing checks the review doc against `data/kit-status.json`, so a
-  stale generated doc passes a green verify (it did on this branch). Consider a `--check` mode on
-  `gen-unmodeled-review.ts` wired into verify.sh.
+- **`gen-unmodeled-review.ts` never receives an override `note`:** it calls
+  `matchingCaveat(line, slot, u.caveats, u.note)` and `classify(line, caveat, u.note)`, but
+  `data/kit-status.json` mirrors `unmodeled`/`caveats` and NOT `note` — so `u.note` is
+  `undefined` for all 183 units and both functions silently run without the note signal they
+  were written to use. Predates this branch (the 2026-08-09 caveat-pairing fix did not touch it).
+  Fixing it re-categorizes entries in the generated doc, so it wants its own change: either
+  mirror `note` in kit-status.json or drop the dead parameters.
 - **Small ⚑ phase estimates riding the batch** (each flagged in its override, pin from footage
   if popup-read): `arcana-fortune-mate` reload delaySec 1.5; `neon-vision-eye` in-window normal
   count (the 330 magnitude); `rosanna` Concealment uptime (kit-duration upper bound).
