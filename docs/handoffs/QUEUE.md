@@ -120,15 +120,22 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second carrier).
   Batch 4 (`2026-08-10-faithfulness-batch4-findings.md`, the board-outlier slice: `jill`,
   `ein`, `moran`, `maxwell`, `takina`, `elegg-boom-and-shock`) added NO DEF ▼ encodes —
-  verified against kit text, none of the six carries the line.
+  verified against kit text, none of the six carries the line. **The DEF ▼ carrier list is
+  now EMPTY: `belorta` was struck at her batch-4 remainder review** — her S2 DEF ▼3.52% is
+  gated on "an attack hits more than 4 enemy unit(s)", unsatisfiable against a single partless
+  boss, so the line is out-of-domain inert (her override already disposed it that way and pins
+  it). Second census false positive after `cocoa`, and a NEW failure mode: a kit-text grep
+  finds the LINE but not its GATE. `centi`/`product-23`/`trony` still have no overrides;
+  `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second carrier).
   Enemy ATK ▼ stays genuinely inert. The non-literal `burstDesc` scope-string ruling landed
   2026-08-10 (owner: they all count as targeting the boss — DECISIONS): thirty tags enacted
   across batches (6 + crow/signal/eunhwa/mica + ein/elegg-boom-and-shock ×19); units not yet reviewed with the same clause
   class (e.g. `helm` "the enemy with the highest final ATK") tag at their own phase-4
-  review. Stale-phrase sweep remainder (grep-keyed, whitespace-normalized — the mica.test.ts
-  line-wrap defeated the exact-phrase grep): `jackal` (also cites deleted crow-precedent
-  wording), `quiry`, `ram` — fix at their reviews; `scripts/kit-autonomy/**` archives
-  presumed CHANGELOG-exempt (one explicit ruling wanted).
+  review. **Stale-phrase sweep remainder CLEARED 2026-08-10** (`jackal`, `quiry`, `ram` fixed
+  at their batch-4 remainder reviews — overrides AND spec headers; a whitespace-normalized
+  grep over all 67 overrides + all unit specs now returns zero for the "DEF=0" / "admits only" /
+  extinct-engine-quote class). `scripts/kit-autonomy/**` archives still carry it and are
+  presumed CHANGELOG-exempt — one explicit ruling wanted.
 - **⇒ Unit-card infographic follow-ups (3, code-verified still open 2026-08-02):**
   1. **No vector source for burst icons.** `web/public/nikke-icons/burst_*` is webp-only (~100px native)
      — fine at every size drawn today, but a surface wanting it large has nothing to rasterize from.

@@ -10,7 +10,7 @@
 // Kit (blablalink TREASURE prose, data/characters.json → characters.phantom.skills; the datamined
 // skill1/2/ulti _detail descriptions carry the UNTREASURED base kit — the treasure prose adds the
 // "after landing 30 normal attacks" Thief's Dagger grant):
-//   S1 ■ normal hit on a target NOT in Calling Card state (target): Calling Card DEF ▼32.19% / 5s  [P1 — status WINDOW modeled; DEF content INERT (boss DEF is a negligible flat term; engine drops enemy DEF debuffs)]
+//   S1 ■ normal hit on a target NOT in Calling Card state (target): Calling Card DEF ▼32.19% / 5s  [P1 — status WINDOW modeled; DEF content ENCODED 2026-08-10 on the enemy defPct channel (worth ~0.02% at the graded bossDef = 140, live at the web raid DEF defaults)]
 //      ■ normal hit on a target NOT in Calling Card state (self): Thief's Dagger Hit Rate ▲25.75%,  [P2 — resource thiefsDagger + perResource hitRatePct (live stack count)]
 //        stacks ×3, 5s
 //      ■ (TREASURE) after landing 30 normal attacks (self): Thief's Dagger Hit Rate ▲25.75% ×3 / 5s [P3 — hitCount:30 → resource +1; sets the once-per-magazine CONSUME cadence]

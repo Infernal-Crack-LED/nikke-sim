@@ -37,9 +37,9 @@
 //      confirm before authoring"; squad membership is owner-confirmed fact, never derived),
 //      so the anchor-innocent-maid precedent ships: gate omitted, caveat + ⚑ carried in the
 //      override. "Still on the battlefield" is scope-trivial regardless (nobody dies in v1).
-//   R2 UNMODELED — enemy ATK▼: the engine models NO enemy ATK (v1 boss deals no damage; the
-//      enemy-buff branch accepts only damageTakenPct/distributedDamagePct > 0 — "other enemy
-//      debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0", sim.ts). Offensively inert by
+//   R2 UNMODELED — enemy ATK▼: the engine models NO enemy ATK, because the v1 boss deals no
+//      damage and so an ATK debuff on it has nothing to scale (enemy DEF ▼ is a separate case
+//      with a live channel since 2026-08-10; ATK ▼ is the inert one). Offensively inert by
 //      construction; the nearest-wrong mapping (damageTakenPct — "boss takes more damage") is a
 //      DIFFERENT mechanic that would silently credit the whole team. Pinned by ABSENCE (zero
 //      boss debuffs from ram) + a sensitivity counterfactual proving the pin catches the
@@ -91,7 +91,12 @@
 // assertions read the event log, not totals (except R3's inertness proof).
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { runComp, totals, unitOf, withPatchedOverride } from '../lib/harness.js';
+import {
+  runComp,
+  totals,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 /** Fixture slot order: ram 0 / naga 1 / helm 2. */
@@ -263,7 +268,8 @@ describe('ram R3 — S2 "self Max HP ▲40.72% without restoring HP for 10s"', (
   it('grants an OWN-kit maxHpFlat at the 15s internal cadence, 10s expiry', () => {
     const { events, res } = run();
     const grants = buffs(events).filter(
-      (e) => e.stat === 'maxHpFlat' && e.targetIdx === RAM && e.casterIdx === RAM
+      (e) =>
+        e.stat === 'maxHpFlat' && e.targetIdx === RAM && e.casterIdx === RAM
     );
     // interval:15 — fires at t=15,30,…,165 ⇒ 11 applications in a 180s fight.
     expect(grants.length).toBe(11);

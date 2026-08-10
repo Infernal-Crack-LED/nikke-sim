@@ -1,5 +1,5 @@
 {
-  "note": "belorta (Belorta, SR/Electric/Attacker/B2, RL cd 20s). Kit-autonomy gauntlet 2026-08-05 (test-first; cross-family S2b claude-fable-5 converged on every line). MODEL: BURST 'Tricky Bomber' = burstCast flatDamage 192 (enemies within attack range → one hit vs the single scope-lock boss; engine rider convention U1: crits at caster rate, never cores, never range; U10 auto-exempt from the +50% FB major — the cast lands before the Full Burst window opens) + burstCast chargeSpeedPct 2.82 / durationSec 10 / target ALL allies incl. self (the kit grants it inside the burst skill, NOT 'entering Full Burst' — burstCast-vs-fullBurstEnter is pinned by scripts/tests/units/belorta.test.ts; consumption is live: sim.ts shortens the charge cycle by (1 - cs/100), chargeFrames 90). SKIPS → unmodeled, both OUT OF DOMAIN for the single-enemy scope-lock sim: (S1) Full-Charge self 'Explosion Radius ▲ 9.55% 5s' — radius is AoE GEOMETRY (how many enemies one rocket splash covers), not damage to any enemy hit; the engine has no spatial AoE and the fight has one partless boss, so it moves nothing in domain. Nearest-wrong counterfactual: laundering it into projectileExplosionPct (the Explosion DAMAGE bucket — a different mechanic) or any Damage-Up stat would fabricate per-shot damage the kit never grants. (S2) 'an attack hits more than 4 enemy unit(s)' → DEF ▼ 3.52% 5s + 14.96% of final ATK additional damage — the gate needs ONE attack hitting 5+ distinct enemies, which the single-boss fight can never produce, so both sentences inherit the unsatisfiable gate. Nearest-wrong counterfactuals: dropping the gate (a permanent ~14.96% per-shot rider + phantom burst gauge) or re-reading it as a hit-COUNT trigger; the spec test pins zero skill-bucket damage from her slot against both. ⚑ LIST (out-of-domain, damage contribution in sim domain is exactly 0 for both): (1) Explosion Radius — ESTIMATE: 0 in domain; on multi-enemy wave content it would raise splash COVERAGE, not per-enemy damage; RECIPE: needs a multi-enemy/spatial-AoE encounter model before any radius stat can be load-bearing; TIER: out-of-domain (no single-boss observable). (2) S2 multi-enemy gate + DEF-shred + rider — ESTIMATE: 0 in domain; on 5+-enemy waves it would be a small team lift (3.52% DEF-down is a minor multiplicative vs boss DEF, rider is 14.96% of a 61.3 normal mult on qualifying splashes only); RECIPE: needs a multi-enemy encounter model + a target-DEF-down debuff primitive; TIER: out-of-domain. Weapon cycle (6 ammo, 141f reload, 90f charge, 61.3/350 mults) is carried by characters.json; no charFixes needed. | Kit-autonomy gauntlet 2026-08-05",
+  "note": "belorta (Belorta, SR/Electric/Attacker/B2, RL cd 20s). Kit-autonomy gauntlet 2026-08-05 (test-first; cross-family S2b claude-fable-5 converged on every line). MODEL: BURST 'Tricky Bomber' = burstCast flatDamage 192 tagged burstDesc 'allEnemies' (owner scope-string ruling 2026-08-10 — 'Affects enemies within attack range' is the plural form, signal's applied precedent; dormant today, no burst-skill-damage amp shares her comps) (enemies within attack range → one hit vs the single scope-lock boss; engine rider convention U1: crits at caster rate, never cores, never range; U10 auto-exempt from the +50% FB major — the cast lands before the Full Burst window opens) + burstCast chargeSpeedPct 2.82 / durationSec 10 / target ALL allies incl. self (the kit grants it inside the burst skill, NOT 'entering Full Burst' — burstCast-vs-fullBurstEnter is pinned by scripts/tests/units/belorta.test.ts; consumption is live: sim.ts shortens the charge cycle by (1 - cs/100), chargeFrames 90). SKIPS → unmodeled, both OUT OF DOMAIN for the single-enemy scope-lock sim: (S1) Full-Charge self 'Explosion Radius ▲ 9.55% 5s' — radius is AoE GEOMETRY (how many enemies one rocket splash covers), not damage to any enemy hit; the engine has no spatial AoE and the fight has one partless boss, so it moves nothing in domain. Nearest-wrong counterfactual: laundering it into projectileExplosionPct (the Explosion DAMAGE bucket — a different mechanic) or any Damage-Up stat would fabricate per-shot damage the kit never grants. (S2) 'an attack hits more than 4 enemy unit(s)' → DEF ▼ 3.52% 5s + 14.96% of final ATK additional damage — the gate needs ONE attack hitting 5+ distinct enemies, which the single-boss fight can never produce, so both sentences inherit the unsatisfiable gate. Nearest-wrong counterfactuals: dropping the gate (a permanent ~14.96% per-shot rider + phantom burst gauge) or re-reading it as a hit-COUNT trigger; the spec test pins zero skill-bucket damage from her slot against both. ⚑ LIST (out-of-domain, damage contribution in sim domain is exactly 0 for both): (1) Explosion Radius — ESTIMATE: 0 in domain; on multi-enemy wave content it would raise splash COVERAGE, not per-enemy damage; RECIPE: needs a multi-enemy/spatial-AoE encounter model before any radius stat can be load-bearing; TIER: out-of-domain (no single-boss observable). (2) S2 multi-enemy gate + DEF-shred + rider — ESTIMATE: 0 in domain; on 5+-enemy waves it would be a small team lift (3.52% DEF-down is a minor multiplicative vs boss DEF, rider is 14.96% of a 61.3 normal mult on qualifying splashes only); RECIPE: needs a multi-enemy encounter model + a target-DEF-down debuff primitive; TIER: out-of-domain. Weapon cycle (6 ammo, 141f reload, 90f charge, 61.3/350 mults) is carried by characters.json; no charFixes needed. | Kit-autonomy gauntlet 2026-08-05",
   "unmodeled": {
     "skill1": [
       "■ Activates when performing a Full Charge attack. Affects self.\nExplosion Radius ▲ 9.55% for 5 sec."
@@ -20,16 +20,35 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 192 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 192,
+          "burstDesc": "allEnemies"
+        }
+      ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "buff", "stat": "chargeSpeedPct", "value": 2.82, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 2.82,
+          "durationSec": 10
+        }
       ]
     }
   ]

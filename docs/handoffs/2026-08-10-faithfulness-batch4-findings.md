@@ -139,6 +139,49 @@ would touch all four.
   1% HP lost" (HP-scaling family, inert without an HP pool); `maxwell` S2 ">5 enemy units"
   (enemy-count gate, out-of-domain solo).
 
+## Remainder sweep — the 4 units batches 1–3 queued (`belorta`, `jackal`, `quiry`, `ram`)
+
+Run immediately after batch 4, same discipline. These were queued by name, not by board rank.
+
+- **`belorta` — the DEF ▼ carrier list is now EMPTY, and she is its second false positive.**
+  QUEUE carried her as "the sole override-carrying remainder (S2 −3.52/5s), encodes at her own
+  review". She does not encode: her S2 is gated on **"an attack hits more than 4 enemy
+  unit(s)"**, which a single partless boss can never satisfy, so the DEF ▼ _and_ the paired
+  14.96% additional damage are out-of-domain inert. Her override already disposed it exactly
+  that way and pins zero skill-bucket damage against both nearest-wrong readings (gate dropped /
+  re-read as a hit-count trigger) — no change needed. **New census failure mode:** after the
+  `cocoa` over-count (prose-grep) and the batch-2 under-count (list-keyed), the batch-3 remedy
+  was "grep the kit text". That still over-counts, because a kit-text grep finds the LINE but
+  not its GATE. A carrier census needs line + trigger + gate.
+  - Applied: `burstDesc: 'allEnemies'` on her 192% burst nuke ("Affects enemies within attack
+    range" — `signal`'s applied precedent, same clause). New B1 pin. Dormant.
+- **`jackal` — her note described a unit that no longer exists.** The F3 Burst-Skill-Damage amp
+  landed 2026-08-10 (`burstSkillSingleDamagePct` 38.91, all allies, 15s, on her burstCast) and
+  her S1 Damage-Taken half was encoded 2026-08-09 — but the note still ran ~600 words of "⚑2
+  ENGINE GAP: the engine has no Burst-Skill-Damage bucket / no description-text scope", the
+  first caveat still opened "is NOT modeled", and the note claimed "SKILL1 is UNMODELED IN FULL
+  (all three verbatim lines in unmodeled.skill1)" when only the ATK ▼ line is there. Two of her
+  five caveats flatly contradicted a third. Note and caveats rewritten to the shipped model; the
+  amp's genuinely-open item (unmeasured additive Damage-Up placement) kept as the new ⚑2, with
+  a popup-read recipe. Also fixed: the "immortal DEF=0 boss" phrase and the deleted
+  crow-precedent wording batch 3 flagged.
+- **`quiry` / `ram` — the extinct engine-comment quote, in both override AND spec.** Both cited
+  `"other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0", sim.ts` as the reason
+  their enemy ATK ▼ lines are unmodeled. That comment no longer exists, the DEF ▼ half is false
+  since the channel landed, and the DEF=0 basis was superseded by the bossDef-140 ruling — while
+  the CONCLUSION (enemy ATK ▼ is inert) stays correct for a different reason: the v1 boss deals
+  no damage, so an ATK debuff on it has nothing to scale. Re-based on that reason in 4 places
+  (2 overrides, 2 spec headers), with an explicit "enemy DEF ▼ is NOT the same case" line so the
+  next reader does not re-derive the distinction. No encoding changed; nothing else in either
+  unit needed a fix.
+- **The sweep list was incomplete a third time — two units nobody had listed.** A
+  whitespace-normalized grep across all 67 overrides _and_ all 184 unit spec files (not just the
+  named remainder) found the base-`eunhwa` spec (×3) and the `phantom` spec (×1) still asserting in
+  their headers that their DEF ▼ lines are UNMODELED / "pinned by ABSENCE" — both were ENCODED
+  in batches 3 and 1 respectively, by the same passes that wrote those very groups. Their own
+  `describe` titles say "encoded 2026-08-10"; only the headers lagged. Fixed. **The grep now
+  returns zero across both trees** — verified, not asserted.
+
 ## Batch stats
 
 6 units reviewed / 20 `burstDesc` tags on 2 units + 0 DEF ▼ encodes (none carry the line) +

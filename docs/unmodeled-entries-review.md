@@ -11,8 +11,8 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 154 | 37.2% |
-| Other / see caveats | 103 | 24.9% |
+| Defensive / HP / shield / aggro | 155 | 37.4% |
+| Other / see caveats | 102 | 24.6% |
 | Missing engine primitive / trigger | 89 | 21.5% |
 | Out-of-domain / parser unsupported | 30 | 7.2% |
 | Partless boss | 12 | 2.9% |
@@ -24,7 +24,7 @@
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (154)
+### Defensive / HP / shield / aggro (155)
 
 **A2** (a2)
 
@@ -243,7 +243,7 @@ Recovers 10.77% of the skill user's final Max HP as HP.
 **Jackal** (jackal)
 
 - **skill1:** ATK ▼ 9.09% for 10 sec.
-  - *Why:* ATK ▼ 9.09% for 10 sec.') is UNMODELED IN FULL (all three verbatim lines in unmodeled.skill1): the trigger is a counter of hits RECEIVED — the Damage-Taken half is now encoded on the real attacked:10 trigger (enacted 2026-08-09) but the sim has NO incoming-damage model to feed it and the v1 boss is immortal and never acts, so the block is dormant at scope and applies nothing
+  - *Why:* ATK ▼ 9.09% for 10 sec.'): the Damage-Taken half IS encoded on the kit's real `attacked:10` trigger, and is honestly DORMANT at scope lock — the sim has no incoming-damage model and the v1 boss never acts, so nothing feeds the counter and the block applies nothing
 
 **Kilo** (kilo)
 
@@ -469,6 +469,8 @@ Refresh Heart: Incoming healing ▲ 6.53%, stacks up to 5 time(s) and lasts for 
 
 **Quiry** (quiry)
 
+- **skill1:** ■ Activates when hitting a target with Full Charge. Affects the target. ATK ▼ 8.94% of the skill user's ATK for 3 sec. — enemy ATK debuff: the engine models no enemy ATK because the v1 boss deals no damage, so there is nothing for the debuff to scale. Offensively inert by construction (unlike enemy DEF ▼, which has had a channel since 2026-08-10).
+  - *Why:* skill1: the enemy ATK▼ line is unmodeled — the engine models no enemy ATK (the boss deals no damage); offensively inert by construction, carried verbatim in unmodeled. Not to be confused with enemy DEF ▼, which the engine has channelled since 2026-08-10.
 - **burst:** ■ Affects all allies. Recovers 6.96% of the skill user's final Max HP every 1 sec for 10 sec. — magnitude only: the engine `heal` carries no HP amount by design (no HP pool); the 10-second recovery-event WINDOW is modeled (burst heal ticks:10 intervalSec:1).
   - *Why:* burst: the heal carries no HP amount — recovery-event window only (ticks:10 intervalSec:1); the 6.96%-of-final-Max-HP magnitude is unmodeled, not fudged
 
@@ -625,7 +627,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Other / see caveats (103)
+### Other / see caveats (102)
 
 **A2** (a2)
 
@@ -831,16 +833,11 @@ Critical Rate ▲ 3.56% for 5 sec.
 - **burst:** Designated Target: ATK ▼ 5.02% for 10 sec. (the STATUS is modeled via targetStatus; its ATK-down content is inert in v1 — the boss never attacks)
   - *Why:* STATUS WINDOW: durationSec 10 is DATAMINED, not inferred — the burst line "Designated Target: ATK 5.02% down for 10 sec" IS the status line, so the 10s is the status's own window
 
-**Quiry** (quiry)
-
-- **skill1:** ■ Activates when hitting a target with Full Charge. Affects the target. ATK ▼ 8.94% of the skill user's ATK for 3 sec. — enemy ATK debuff: the engine models no enemy ATK (v1 boss deals no damage; the enemy-buff branch accepts only damageTakenPct/distributedDamagePct > 0), offensively inert by construction.
-  - *Why:* skill1: the enemy ATK▼ line is unmodeled — the engine models no enemy ATK (boss deals no damage); offensively inert by construction, carried verbatim in unmodeled
-
 **Ram** (ram)
 
 - **skill1:** ■ Activates after landing 5 normal attack(s). Affects the target(s).
-ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v1 boss deals no damage; the enemy-buff branch accepts only damageTakenPct/distributedDamagePct > 0), offensively inert by construction; the nearest-wrong mapping (damageTakenPct) is a different mechanic (boss-takes-more) that would over-credit the whole team.
-  - *Why:* skill1: the 'after landing 5 normal attacks → target ATK ▼ 7.95%' line is UNMODELED — the engine drops enemy ATK debuffs (they cannot affect damage dealt at DEF=0); NOT damageTakenPct (that is 'boss takes more damage' — a different mechanic)
+ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK because the v1 boss deals no damage, so there is nothing for the debuff to scale. Offensively inert by construction; the nearest-wrong mapping (damageTakenPct) is a different mechanic (boss-takes-more) that would over-credit the whole team.
+  - *Why:* skill1: the 'after landing 5 normal attacks → target ATK ▼ 7.95%' line is UNMODELED — the engine models no enemy ATK (the boss deals no damage, so the debuff has nothing to scale); NOT damageTakenPct (that is 'boss takes more damage' — a different mechanic). Enemy DEF ▼ is a separate case with a live channel since 2026-08-10; ATK ▼ is the genuinely inert one.
 
 **Rapi: Red Hood** (rapi-red-hood)
 

@@ -43,6 +43,7 @@
 // Deterministic (no seed); event-log over totals.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
+import { loadOverride } from '../../../src/skills/overrides-node.js';
 import { runComp, withPatchedOverride } from '../lib/harness.js';
 
 const FPS = 60;
@@ -68,15 +69,20 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- readers ----------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const belortaBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'belorta');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'belorta'
+  );
 const belortaNukes = (evs: SimEvent[]) =>
   dmg(evs).filter((d) => d.slug === 'belorta' && d.srcSlot === 'burst');
 const csBuffs = (evs: SimEvent[]) =>
-  buffs(evs).filter((b) => b.casterIdx === BELORTA && b.stat === 'chargeSpeedPct');
+  buffs(evs).filter(
+    (b) => b.casterIdx === BELORTA && b.stat === 'chargeSpeedPct'
+  );
 
 // ---- counterfactual patches -------------------------------------------------------------------
 /** B1 counterfactual: the nuke at the LEVEL-1 magnitude (68.57) instead of the maxed 192. */
@@ -106,7 +112,9 @@ const belortaBuffSelf = withPatchedOverride('belorta', (ov) => {
     x.effects.some((e: any) => e.stat === 'chargeSpeedPct')
   );
   if (!b) {
-    throw new Error('belorta burst chargeSpeedPct block missing — fixture is stale');
+    throw new Error(
+      'belorta burst chargeSpeedPct block missing — fixture is stale'
+    );
   }
   b.target = { kind: 'self' };
 });
@@ -116,7 +124,9 @@ const belortaBuffOnFB = withPatchedOverride('belorta', (ov) => {
     x.effects.some((e: any) => e.stat === 'chargeSpeedPct')
   );
   if (!b) {
-    throw new Error('belorta burst chargeSpeedPct block missing — fixture is stale');
+    throw new Error(
+      'belorta burst chargeSpeedPct block missing — fixture is stale'
+    );
   }
   b.trigger = { kind: 'fullBurstEnter' };
 });
@@ -168,16 +178,31 @@ describe('belorta — kit spec', () => {
     });
 
     it('DISCRIMINATING: a crit:false nuke suppresses the caster-rate crit roll', () => {
-      expect(belortaNukes(noCritNuke.events).every((d) => !d.critEligible)).toBe(true);
+      expect(
+        belortaNukes(noCritNuke.events).every((d) => !d.critEligible)
+      ).toBe(true);
+    });
+
+    it('carries the allEnemies scope tag (owner scope-string ruling 2026-08-10)', () => {
+      // "Affects enemies within attack range" — the plural form, so burst-skill-damage amps
+      // scoped on all enemies reach it (signal's applied precedent, same clause). Dormant
+      // today: no jackal/trina-class amp shares her fixture or her comps.
+      const ov = loadOverride('belorta') as any;
+      const nuke = ov.burst
+        .flatMap((b: any) => b.effects)
+        .find((e: any) => e.kind === 'flatDamage');
+      expect(nuke.burstDesc).toBe('allEnemies');
     });
 
     it('DISCRIMINATING: the level-1 magnitude (68.57) is not what ships', () => {
-      expect([...new Set(belortaNukes(lv1Nuke.events).map((d) => d.atkPct))]).toEqual(
-        [68.57]
-      );
-      expect([...new Set(belortaNukes(lv1Nuke.events).map((d) => d.atkPct))]).not.toEqual(
-        [...new Set(belortaNukes(base.events).map((d) => d.atkPct))]
-      );
+      expect([
+        ...new Set(belortaNukes(lv1Nuke.events).map((d) => d.atkPct)),
+      ]).toEqual([68.57]);
+      expect([
+        ...new Set(belortaNukes(lv1Nuke.events).map((d) => d.atkPct)),
+      ]).not.toEqual([
+        ...new Set(belortaNukes(base.events).map((d) => d.atkPct)),
+      ]);
     });
   });
 
@@ -197,9 +222,10 @@ describe('belorta — kit spec', () => {
       expect(applied.length).toBeGreaterThan(0);
       const perFrame = new Map<number, Set<number | null>>();
       for (const b of applied) {
-        (perFrame.get(b.frame) ?? perFrame.set(b.frame, new Set()).get(b.frame)!).add(
-          b.targetIdx
-        );
+        (
+          perFrame.get(b.frame) ??
+          perFrame.set(b.frame, new Set()).get(b.frame)!
+        ).add(b.targetIdx);
       }
       for (const [frame, holders] of perFrame) {
         expect(
@@ -213,21 +239,24 @@ describe('belorta — kit spec', () => {
       const castFrames = belortaBursts(base.events)
         .map((c) => c.frame)
         .sort((a, b) => a - b);
-      const buffFrames = [...new Set(csBuffs(base.events).map((b) => b.frame))].sort(
-        (a, b) => a - b
-      );
+      const buffFrames = [
+        ...new Set(csBuffs(base.events).map((b) => b.frame)),
+      ].sort((a, b) => a - b);
       expect(buffFrames).toEqual(castFrames);
     });
 
     it('DISCRIMINATING: a self-scoped encoding reaches exactly one holder per cast', () => {
       const perFrame = new Map<number, Set<number | null>>();
       for (const b of csBuffs(buffSelf.events)) {
-        (perFrame.get(b.frame) ?? perFrame.set(b.frame, new Set()).get(b.frame)!).add(
-          b.targetIdx
-        );
+        (
+          perFrame.get(b.frame) ??
+          perFrame.set(b.frame, new Set()).get(b.frame)!
+        ).add(b.targetIdx);
       }
       expect([...perFrame.values()].map((s) => s.size)).not.toEqual(
-        [...new Set(csBuffs(base.events).map((b) => b.frame))].map(() => TEAM_SIZE)
+        [...new Set(csBuffs(base.events).map((b) => b.frame))].map(
+          () => TEAM_SIZE
+        )
       );
       for (const holders of perFrame.values()) {
         expect(holders.size).toBe(1);
@@ -236,7 +265,9 @@ describe('belorta — kit spec', () => {
 
     it('DISCRIMINATING: a fullBurstEnter encoding lands LATER than the cast frame', () => {
       const castFrames = belortaBursts(buffOnFB.events).map((c) => c.frame);
-      const fbFrames = [...new Set(csBuffs(buffOnFB.events).map((b) => b.frame))];
+      const fbFrames = [
+        ...new Set(csBuffs(buffOnFB.events).map((b) => b.frame)),
+      ];
       expect(fbFrames.length).toBeGreaterThan(0);
       for (const f of fbFrames) {
         expect(castFrames).not.toContain(f);
@@ -248,7 +279,8 @@ describe('belorta — kit spec', () => {
     it('no skill1/skill2 damage from belorta in the shipped model', () => {
       const fabricated = dmg(base.events).filter(
         (d) =>
-          d.slug === 'belorta' && (d.srcSlot === 'skill1' || d.srcSlot === 'skill2')
+          d.slug === 'belorta' &&
+          (d.srcSlot === 'skill1' || d.srcSlot === 'skill2')
       );
       expect(fabricated).toEqual([]);
     });
@@ -259,7 +291,10 @@ describe('belorta — kit spec', () => {
       const gateless = dmg(gatelessS2.events).filter(
         (d) => d.slug === 'belorta' && d.srcSlot === 'skill2'
       );
-      expect(gateless.length, 'the gate-less rider fires on every shot').toBeGreaterThan(0);
+      expect(
+        gateless.length,
+        'the gate-less rider fires on every shot'
+      ).toBeGreaterThan(0);
       expect(base.totals).not.toEqual(gatelessS2.totals);
     });
   });
