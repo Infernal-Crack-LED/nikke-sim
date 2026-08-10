@@ -2,9 +2,10 @@
 // enemy-targeted `defPct` buff at a nonzero value reaches `enemyBuffs` and scales
 // `cfg.bossDef` by (1 + Σ/100) at damage time (sim.ts bossDefNow), floor 0.
 //
-// The channel is PROVABLY inert on the graded basis — bossDef = 0 short-circuits, a
-// percentage of zero is zero — and live at the web app's raid DEF defaults, where the
-// pre-channel drop was worth several percent per carrier (damage-bucket-matrix §5 trap 4).
+// The channel is sub-0.1% at the graded basis — the scope-lock bossDef is 140 (owner
+// 2026-08-10), so a shave moves a small flat term against six-figure effective ATK — and
+// live at the web app's raid DEF defaults, where the pre-channel drop was worth several
+// percent per carrier (damage-bucket-matrix §5 trap 4).
 //
 // Method: equivalence arms. A permanent −50% shave at bossDef 20,000 must produce the
 // EXACT totals of bossDef 10,000 with no debuff (same comp, same timeline — the debuff

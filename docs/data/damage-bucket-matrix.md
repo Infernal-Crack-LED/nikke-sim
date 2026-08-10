@@ -66,7 +66,7 @@ override files carry it. "Carriers" counts structural occurrences only — a uni
 | `atkOfMaxHpPct` | FinalATK | flat ATK add of `% × liveMaxHp`, **re-read every frame** | always | 4 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose |
 | `atkPct` | FinalATK | `staticAtk × (1 + Σ/100)` — dilutes against other ATK ▲% | always | 76 | a2, ada, ade-agent-bunny, alice, anis-star, arcana-fortune-mate, ark-ranger-black, asuka, … |
 | `casterAtkPct` | FinalATK | flat ATK add, resolved at apply to `caster.staticAtk × %` — does NOT dilute | always | 49 | ada, ade, ade-agent-bunny, anchor-innocent-maid, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, … |
-| `defPct` | FinalATK | ENEMY-targeted at a nonzero value: scales cfg.bossDef by (1 + Σ/100), floor 0 (the DEF ▼ channel, 2026-08-10); SELF/ally-targeted stays read by nothing — own DEF does not enter own damage | enemy-targeted buffs only; sub-0.1% at the graded surfaces (scope-lock bossDef 140), live at the web raid DEF defaults | 28 | anchor, anis, bay, crow, crown, crust, delta, diesel, … |
+| `defPct` | FinalATK | ENEMY-targeted at a nonzero value: scales cfg.bossDef by (1 + Σ/100), floor 0 (the DEF ▼ channel, 2026-08-10); SELF/ally-targeted stays read by nothing — own DEF does not enter own damage | enemy-targeted buffs only; sub-0.1% at the graded surfaces (scope-lock bossDef 140), live at the web raid DEF defaults | 32 | anchor, anis, bay, crow, crown, crust, delta, diesel, … |
 | `highestAllyAtkPct` | FinalATK | flat ATK add of `max(all staticAtk) × %` at apply; stored as `casterAtkPct` | always | 1 | guilty |
 | `critDamagePct` | Major (crit) | additive pp into `critBonus` (base `(critDamage−100)/100`) | crit-eligible instances | 28 | admi, aria, diesel-winter-sweets, dolla, emma-tactical-upgrade, epinel, guillotine, isabel, … |
 | `critRateNormalPct` | Major (crit) | additive pp into `critRate`, alongside `critRatePct` | `category === 'normal'` only | 3 | biscuit, helm, julia |
@@ -198,10 +198,12 @@ deliberate; each has bitten at least once.
    DEF-zeroing at ≤0.12% board-wide), and live at the web app's raid defaults
    (`SR_DEFAULT_DEF = 30930` / `UR_DEFAULT_DEF = 12200`, `web/src/App.tsx`), where the battery
    sweep shows 6–17% per-unit swing at `bossDef = 20000`. `guilty` (`burst` → `defPct: -20.25`)
-   was the first live carrier; every kit-carrying override now encodes its line (batch 1:
-   `exia`, `novel`, `phantom`, `viper`; batch 2, 2026-08-10: `anis`, `elegg`, `frima`,
-   `ludmilla`, `marciana-marine-study`; `cocoa` was a prose-grep false positive — her only
-   enemy-targeted line is ATK ▼, which stays dropped). `mast` stays
+   was the first live carrier; every REVIEWED kit-carrying override encodes its line (batch 1:
+   `exia`, `novel`, `phantom`, `viper`; batch 2: `anis`, `elegg`, `frima`, `ludmilla`,
+   `marciana-marine-study`; batch 3, 2026-08-10: `signal` ×2, `himeno`, `ether`, `eunhwa` ×2,
+   `mica`; `cocoa` was a prose-grep false positive — her only enemy-targeted line is ATK ▼,
+   which stays dropped). The kit-text census (batch 3) found ONE unreviewed override-carrying
+   unit still to encode at its own review: `belorta` (S2 −3.52/5s). `mast` stays
    unmodeled: Sea Breeze is a **flat** shave scaled off her own DEF (no caster-DEF stat exists),
    not a percentage of boss DEF. Equivalence proof:
    `scripts/tests/engine/enemy-def-debuff.test.ts` (−50% at DEF 20,000 ≡ DEF 10,000 exactly).

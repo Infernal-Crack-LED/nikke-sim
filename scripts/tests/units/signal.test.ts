@@ -11,24 +11,24 @@
 //
 // Kit (blablalink prose, data/characters.json → characters.signal.skills, lvl 10):
 //   S1 ■ after landing 60 normal attacks → the target(s):
-//        DEF ▼ 5.94% for 5 sec.                                           [UNMODELED — G1]
+//        DEF ▼ 5.94% for 5 sec.                                           [MODELED — G1]
 //        ATK ▼ 5.94% for 5 sec.                                           [UNMODELED — G1]
 //   S2 ■ self, when entering Full Burst:
 //        Recover 44.08% of attack damage as HP over 10 sec.               [FAITHFUL — G3]
 //   BU ■ enemies within attack range (Burst II, cd 20s):
 //        229.22% of final ATK as damage                                   [FAITHFUL — G2]
-//        DEF ▼ 12.34% for 10 sec.                                         [UNMODELED — G4]
+//        DEF ▼ 12.34% for 10 sec.                                         [MODELED — G4]
 //
 // Signal is a fire-element B2 ATTACKER whose kit splits into three families:
 //
-//   • G1 (the whole S1 sentence) has NO engine channel: both halves are enemy-targeted
-//     ATK▼/DEF▼ debuffs, and sim.ts admits only damageTakenPct/distributedDamagePct into
-//     enemyBuffs — 'other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0'
-//     (sim.ts dispatch; mica/ether/exia/himeno/eunhwa precedent). The hitCount:60 trigger
-//     IS engine-native, but encoding it with dead effects would be noise, so the line ships
-//     verbatim-unmodeled + ⚑ and the omission is pinned by ABSENCE (zero signal buffApply
-//     events) against the damageTakenPct laundering counterfactual which DOES emit boss
-//     debuffs and lift team totals.
+//   • G1 (S1): the DEF ▼ half is MODELED (encoded 2026-08-10) — hitCount:60 → enemy
+//     defPct -5.94 /5s on the enemy DEF channel (bossDefNow scales cfg.bossDef, floor 0;
+//     channel damage math owned by scripts/tests/engine/enemy-def-debuff.test.ts). At the
+//     effective 20 hits/s SMG rate, 60 hits ≈ 3.0s of fire < the 5s window → near-permanent
+//     uptime while firing; first application EARNED, never t=0. The ATK ▼ half stays
+//     verbatim-unmodeled + ⚑ (no incoming-damage model); the damageTakenPct laundering
+//     counterfactual stays pinned RED (it emits boss damageTakenPct debuffs and lifts team
+//     totals — the shipped defPct never does).
 //   • G3 (S2) is the kit's event channel: 'Activates when entering Full Burst' →
 //     fullBurstEnter (NOT burstCast — her own B2 cast lands mid-chain, BEFORE the Full
 //     Burst window opens; the discrimination is the recovery start offset, pinned against
@@ -50,8 +50,10 @@
 //     BEFORE the Full Burst window opens, so the nuke never takes the +50% FB major
 //     (discriminate by the fbMajor flag, not the count). 'Enemies within attack range'
 //     collapses to the single partless boss.
-//   • G4 (burst DEF▼) has the same NO-channel fate as G1 (mica M7 precedent): verbatim
-//     unmodeled + ⚑, pinned against a damageTakenPct laundering.
+//   • G4 (burst DEF▼) is MODELED (encoded 2026-08-10): defPct -12.34 /10s riding the nuke
+//     block AFTER the flatDamage (kit-order effects, frima precedent); the damageTakenPct
+//     laundering stays pinned RED. The nuke carries burstDesc 'allEnemies' ('Affects
+//     enemies within attack range' — plural clause, owner scope-string ruling 2026-08-10).
 //
 // Fixture: liter/signal/ada/asuka, forced-neutral boss (null), camera focus ada (the RL
 // carry). The shape is biscuit's sole-B2 comp: signal is the SOLE Burst II (20s CD covers
@@ -225,7 +227,9 @@ const g4 = runIsolated(g4Laundered);
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const signalBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'signal');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'signal'
+  );
 const signalNukes = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is Damage =>
@@ -255,20 +259,38 @@ describe('signal — kit spec', () => {
     });
   });
 
-  describe('G1 — S1 (every 60 hits → enemy DEF▼5.94%/ATK▼5.94%, 5s) is genuinely unmodeled', () => {
-    it('is recorded VERBATIM in the override unmodeled block', () => {
+  describe('G1 — S1: DEF ▼5.94%/5s per 60 hits on the enemy defPct channel; the ATK ▼ half stays unmodeled', () => {
+    it('the ATK ▼ half (and only it) is recorded VERBATIM in the override unmodeled block', () => {
       const ov = loadOverride('signal') as any;
       const joined = ov.unmodeled.skill1.join('\n');
       expect(joined).toContain('Activates after landing 60 normal attack(s)');
-      expect(joined).toContain('DEF ▼ 5.94% for 5 sec.');
       expect(joined).toContain('ATK ▼ 5.94% for 5 sec.');
+      expect(joined).not.toContain('DEF ▼');
     });
 
-    it('enacts NOTHING: signal emits no buff applications at all (S2 is a heal event, burst is flat damage)', () => {
-      expect(
-        buffs(base.events).filter((b) => b.casterIdx === SIGNAL),
-        'no signal-cast buff may exist'
-      ).toEqual([]);
+    it('every boss-held buff in the run is a signal defPct shave (-5.94 or -12.34) — nothing else', () => {
+      // channel damage math owned by scripts/tests/engine/enemy-def-debuff.test.ts
+      // (reuse-before-derive) — this guard pins emission shape only. Fixture mates cannot
+      // emit a boss-held buff (liter/asuka carry no enemy-targeted blocks; ada's are DoTs).
+      const other = buffs(base.events).filter(
+        (b) =>
+          b.targetIdx === null &&
+          !(b.stat === 'defPct' && (b.value === -5.94 || b.value === -12.34))
+      );
+      expect(other.map((b) => `${b.stat}:${b.value}`)).toEqual([]);
+    });
+
+    it('the -5.94 shave fires on the EARNED 60-hit cadence: first strictly after t=0, 5s windows, near-permanent while firing', () => {
+      const shaves = buffs(base.events).filter(
+        (b) => b.stat === 'defPct' && b.value === -5.94
+      );
+      expect(shaves.length).toBeGreaterThan(10);
+      expect(Math.min(...shaves.map((b) => b.frame))).toBeGreaterThan(0);
+      for (const b of shaves) {
+        expect(b.targetIdx).toBeNull();
+        expect(b.key.startsWith(`${SIGNAL}:skill1:`)).toBe(true);
+        expect(b.expiresFrame! - b.frame).toBe(5 * 60);
+      }
     });
 
     it('DISCRIMINATING: a damageTakenPct laundering on the 60-hit counter emits boss debuffs and lifts team totals', () => {
@@ -307,9 +329,9 @@ describe('signal — kit spec', () => {
     });
 
     it('DISCRIMINATING: the lvl-1 magnitude 114.61 changes every nuke', () => {
-      expect([...new Set(signalNukes(weak.events).map((d) => d.atkPct))]).toEqual(
-        [114.61]
-      );
+      expect([
+        ...new Set(signalNukes(weak.events).map((d) => d.atkPct)),
+      ]).toEqual([114.61]);
     });
 
     it('DISCRIMINATING: fullBurstEnter keying lands INSIDE the FB window (+50% major) off the cast frames', () => {
@@ -423,21 +445,29 @@ describe('signal — kit spec', () => {
     });
   });
 
-  describe('G4 — burst DEF ▼12.34% for 10s is genuinely unmodeled (no enemy-DEF channel)', () => {
-    it('is recorded VERBATIM in the override unmodeled block', () => {
-      const ov = loadOverride('signal') as any;
-      expect(ov.unmodeled.burst.join('\n')).toContain(
-        'DEF ▼ 12.34% for 10 sec.'
+  describe('G4 — burst DEF ▼12.34%/10s rides the nuke block on the enemy defPct channel (encoded 2026-08-10)', () => {
+    it('one -12.34 boss debuff per burst cast, same frames, 10s window, from the burst slot', () => {
+      // Fixture mates cannot emit a boss-held buff: liter and asuka have no enemy-targeted
+      // blocks and ada's are DoTs (damage events, not buffs) — every boss-held buffApply is
+      // attributable to signal. Channel damage math owned by enemy-def-debuff.test.ts.
+      const shaves = buffs(base.events).filter(
+        (b) => b.targetIdx === null && b.stat === 'defPct' && b.value === -12.34
       );
+      const castFrames = signalBursts(base.events).map((c) => c.frame);
+      expect(shaves.length).toBe(castFrames.length);
+      expect(shaves.length).toBeGreaterThan(0);
+      expect(shaves.map((b) => b.frame)).toEqual(castFrames);
+      for (const b of shaves) {
+        expect(b.key.startsWith(`${SIGNAL}:burst:`)).toBe(true);
+        expect(b.expiresFrame! - b.frame).toBe(10 * 60);
+      }
     });
 
-    it('enacts NOTHING: no boss debuff anywhere (DEF▼ is dropped, not laundered)', () => {
-      // Boss debuffs emit with targetIdx null. Fixture mates cannot produce one: liter and
-      // asuka have no enemy-targeted blocks and ada's are DoTs (damage events, not buffs) —
-      // so ANY boss-held buffApply would be a laundering of a signal ▼ line.
+    it('no boss-held damageTakenPct exists anywhere in the shipped run (the laundering trap stays pinned absent)', () => {
       expect(
-        buffs(base.events).filter((b) => b.targetIdx === null),
-        'no boss-targeted debuff may exist'
+        buffs(base.events).filter(
+          (b) => b.targetIdx === null && b.stat === 'damageTakenPct'
+        )
       ).toEqual([]);
     });
 
@@ -452,9 +482,15 @@ describe('signal — kit spec', () => {
   });
 
   describe('trigger + effect encoding — literal kit/datamine semantics', () => {
-    it('S1 is EMPTY (the hitCount:60 trigger is engine-native but both ▼ effects have no channel)', () => {
+    it('S1 is ONE hitCount:60 enemy defPct block (the ATK ▼ half has no channel)', () => {
       const ov = loadOverride('signal') as any;
-      expect(ov.skill1).toEqual([]);
+      expect(ov.skill1.length).toBe(1);
+      const block = ov.skill1[0];
+      expect(block.trigger).toEqual({ kind: 'hitCount', count: 60 });
+      expect(block.target).toEqual({ kind: 'enemy' });
+      expect(block.effects).toEqual([
+        { kind: 'buff', stat: 'defPct', value: -5.94, durationSec: 5 },
+      ]);
     });
 
     it('S2 is ONE fullBurstEnter self-heal block: ticks 10, intervalSec 1', () => {
@@ -468,14 +504,15 @@ describe('signal — kit spec', () => {
       ]);
     });
 
-    it('the burst is ONE flatDamage block keyed to her own cast', () => {
+    it('the burst is ONE block keyed to her own cast: tagged nuke + defPct rider, kit order', () => {
       const ov = loadOverride('signal') as any;
       expect(ov.burst.length).toBe(1);
       const block = ov.burst[0];
       expect(block.trigger).toEqual({ kind: 'burstCast' });
       expect(block.target).toEqual({ kind: 'enemy' });
       expect(block.effects).toEqual([
-        { kind: 'flatDamage', atkPct: 229.22 },
+        { kind: 'flatDamage', atkPct: 229.22, burstDesc: 'allEnemies' },
+        { kind: 'buff', stat: 'defPct', value: -12.34, durationSec: 10 },
       ]);
     });
   });

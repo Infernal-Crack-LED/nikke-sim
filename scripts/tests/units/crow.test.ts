@@ -16,11 +16,11 @@
 //        915.75% of final ATK as Burst Skill damage.                        [C3]
 //
 // Modeling posture (see the override note + caveats for the full story):
-//   * S1 is UNMODELED (verbatim in `unmodeled`): the engine's enemy-buff channel admits only
-//     damageTakenPct/distributedDamagePct > 0 — an enemy ATK▼ is dropped at dispatch
-//     (src/engine/sim.ts:2295) and the immortal DEF=0 boss deals no damage, so the line moves
-//     nothing. C4 proves the skip damage-neutral (marciana/diesel precedent), never fudges it.
-//   * The S2 lines ride the engine's `lastBullet` trigger (magazine fired dry — sim.ts:3930),
+//   * S1 is UNMODELED (verbatim in `unmodeled`): enemy ATK▼ is dropped at dispatch because
+//     no incoming damage is modeled — the boss never attacks into our numbers (the line is
+//     ATK ▼, not the enemy DEF ▼ channel). C4 proves the skip damage-neutral
+//     (marciana/diesel precedent), never fudges it.
+//   * The S2 lines ride the engine's `lastBullet` trigger (magazine runs dry),
 //     the exact kit condition ('when the LAST bullet hits'). The rider is a bare flatDamage
 //     (crit-eligible, skill bucket, srcSlot skill2 — engine rider convention, helm H6). The
 //     DEF▲ is defPct, faithfully encoded but damage-inert in v1 (self DEF never feeds own
@@ -45,6 +45,7 @@
 // Deterministic (no seed); event-log over totals.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
+import { loadOverride } from '../../../src/skills/overrides-node.js';
 import {
   controlComp,
   runComp,
@@ -231,6 +232,18 @@ describe('crow — kit spec', () => {
     });
   });
 
+  describe('C5 — the burst nuke carries the singleEnemy scope tag (owner scope-string ruling 2026-08-10)', () => {
+    it('the shipped flatDamage is tagged singleEnemy ("the enemy with the highest final ATK" — singular clause); dormant in this comp', () => {
+      const ov = loadOverride('crow') as any;
+      const nuke = ov.burst
+        .flatMap((b: any) => b.effects)
+        .find((e: any) => e.kind === 'flatDamage');
+      expect(nuke.burstDesc).toBe('singleEnemy');
+      // amp arithmetic is owned by the engine amp tests; no amp carrier sits in this
+      // fixture, so the tag is byte-identical here (dormant-live convention).
+    });
+  });
+
   describe('C3 — burst nuke: 915.75% of final ATK on HER cast, before the Full Burst window', () => {
     const hits = nukes(base.events);
     const casts = crowCasts(base.events);
@@ -294,7 +307,7 @@ describe('crow — kit spec', () => {
       ).toEqual([]);
     });
 
-    it('enacting it anyway moves NOTHING (dropped at dispatch on the DEF=0 basis)', () => {
+    it('enacting it anyway moves NOTHING (enemy ATK▼ is dropped at dispatch — no incoming-damage model)', () => {
       expect(withS1Debuff.totals).toEqual(base.totals);
       expect(
         buffs(withS1Debuff.events).filter(

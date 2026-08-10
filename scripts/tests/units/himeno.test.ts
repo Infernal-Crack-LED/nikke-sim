@@ -21,16 +21,14 @@
 //        Critical Rate ▲16.35% for 10 sec                                                 [B2]
 //
 // Dispositions:
-//   S1  UNMODELED (pinned by ABSENCE): the sim's enemy-buff channel admits only
-//       damageTakenPct/distributedDamagePct and the boss's DEF is a flat constant no debuff
-//       scales, so an enemy DEF▼ moves nothing (sim.ts drops enemy ATK▼/DEF▼ at dispatch —
-//       'other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0'; eunhwa shipped
-//       her two same-family 'DEF ▼ x% for N sec' datamined lines the same way, earlier in this
-//       batch). The whole sentence is recorded VERBATIM in unmodeled.skill1 — the full-charge
-//       trigger is part of the skipped sentence (an enemy-targeted full-charge effect has no
-//       channel either). Nearest wrong model: laundering the DEF▼ into damageTakenPct (a
-//       different mechanic — the boss taking more damage) would fabricate a team lift the kit
-//       never grants; the ABSENCE pins prove the shipped override is not that model.
+//   S1  MODELED (encoded 2026-08-10): shotFired → enemy defPct -6.94 /3s on the enemy DEF
+//       channel (every SR pull is a full charge — frima's clause-identical batch-2 precedent;
+//       bossDefNow scales cfg.bossDef, floor 0; channel damage math owned by
+//       scripts/tests/engine/enemy-def-debuff.test.ts). Near-continuous uptime while firing
+//       (~1 pull/s vs the 3s window), refresh-not-stack. Nearest wrong model: laundering the
+//       DEF▼ into damageTakenPct (a different mechanic — the boss taking more damage) would
+//       fabricate a team lift the kit never grants; the laundering counterfactual stays
+//       pinned RED and the shipped run carries no damageTakenPct.
 //   S2a FAITHFUL — interval:20 trigger (the CD-driven skill2 convention, poli precedent: a
 //       20s-cooldown skill with no visible activation clause fires every 20s of battle, first
 //       at t=20s), target alliesOfWeapon SR with NO excludeSelf (the kit says 'all allies with
@@ -58,8 +56,9 @@
 //       Burst start frame, the burstCast-vs-fullBurstEnter discriminator. SR allies = {delta,
 //       himeno} — liter (SMG) and ada (RL) are OUT of the S2 scope, so the scope is
 //       discriminated 2-of-4. Delta's kit is self-only (no ally buffs, no boss debuffs); ada's
-//       enemy-targeted blocks are DoTs only; liter has no enemy-targeted blocks — so ANY
-//       boss-held buffApply in this fixture would be a laundering of her S1 DEF▼ line.
+//       enemy-targeted blocks are DoTs only; liter has no enemy-targeted blocks — so every
+//       boss-held buffApply in this fixture is himeno's own S1 defPct shave (and any other
+//       shape would be a laundering of it).
 //   B (solo window): liter / himeno / ada, same basis — she is the ONLY Burst II, so she casts
 //       every FB chain and her 10s windows have clean gaps for functional observation (in/out
 //       crit-rate delta, in/out charge multiplier, magazine extension). NOTE on the ammo pin:
@@ -77,11 +76,11 @@ const FPS = 60;
 /** Fixture A slot order: liter 0 / delta 1 / himeno 2 / ada 3. */
 const DELTA_A = 1;
 const HIMENO_A = 2;
-const ADA_A = 3;
+const _ADA_A = 3; // slot doc — fixture A layout
 const TEAM_SIZE_A = 4;
 /** Fixture B slot order: liter 0 / himeno 1 / ada 2. */
 const HIMENO_B = 1;
-const ADA_B = 2;
+const _ADA_B = 2; // slot doc — fixture B layout
 const HIMENO = 'himeno';
 
 type Damage = Extract<SimEvent, { kind: 'damage' }>;
@@ -117,11 +116,14 @@ function runB(overrides: Record<string, any> = {}) {
 }
 
 // ---- readers ----------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const casts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === HIMENO);
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === HIMENO
+  );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstStart');
 const himenoShots = (evs: SimEvent[]) =>
@@ -156,7 +158,7 @@ const himenoS2Passive = withPatchedOverride(HIMENO, (ov) => {
     ...b,
     trigger: { kind: 'passive' },
     effects: b.effects.map((e: any) => {
-      const { durationSec, ...rest } = e;
+      const { durationSec: _durationSec, ...rest } = e;
       return rest;
     }),
   }));
@@ -257,8 +259,9 @@ const adaChargeMults = (evs: SimEvent[]): number[] =>
 /** Group a unit's shots by magazine ordinal. */
 function byMag(evs: SimEvent[], slug: string): Map<number, Shot[]> {
   const m = new Map<number, Shot[]>();
-  for (const s of
-    evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === slug)) {
+  for (const s of evs.filter(
+    (e): e is Shot => e.kind === 'shot' && e.slug === slug
+  )) {
     (m.get(s.magIndex) ?? m.set(s.magIndex, []).get(s.magIndex)!).push(s);
   }
   return m;
@@ -270,23 +273,39 @@ const firstShotAmmoAfter = (evs: SimEvent[], slug: string): number[] =>
   [...byMag(evs, slug).values()].map((ss) => ss[0].ammoAfter);
 
 describe('himeno — kit spec', () => {
-  describe('S1 — DEF ▼6.94% for 3 sec on full-charge hit is UNMODELED (no enemy-DEF channel)', () => {
-    it('is recorded VERBATIM in the override unmodeled block', () => {
+  describe('S1 — DEF ▼6.94%/3s per full-charge hit on the enemy defPct channel (encoded 2026-08-10)', () => {
+    it('the line is no longer in the unmodeled block (encoded)', () => {
       const ov = loadOverride(HIMENO) as any;
-      expect(ov.unmodeled.skill1.join('\n')).toContain(
-        'DEF ▼ 6.94% for 3 sec.'
-      );
+      expect(ov.unmodeled.skill1).toEqual([]);
     });
 
-    it('enacts NOTHING: no boss debuff anywhere in either fixture', () => {
+    it('every boss-held buff in either fixture is her -6.94 defPct shave — nothing else', () => {
       // Boss debuffs emit with targetIdx null. Fixture mates cannot produce one: liter has no
       // enemy-targeted blocks, delta is self-only, ada's enemy blocks are DoTs (damage events,
-      // not buffs) — so ANY boss-held buffApply would be a laundering of her DEF▼ line.
+      // not buffs). Channel damage math owned by enemy-def-debuff.test.ts (reuse-before-derive).
       for (const evs of [baseA, baseB]) {
+        const other = buffs(evs).filter(
+          (b) =>
+            b.targetIdx === null && !(b.stat === 'defPct' && b.value === -6.94)
+        );
         expect(
-          buffs(evs).filter((b) => b.targetIdx === null),
-          'no boss-targeted debuff may exist (DEF▼ is dropped, not laundered)'
+          other.map((b) => `${b.stat}:${b.value}`),
+          'only the S1 defPct shave may be boss-held'
         ).toEqual([]);
+      }
+    });
+
+    it('one -6.94 shave per full-charge shot, same frames, 3s window, from the skill1 slot (fixture B)', () => {
+      const shaves = buffs(baseB).filter(
+        (b) => b.targetIdx === null && b.stat === 'defPct' && b.value === -6.94
+      );
+      const shotFrames = himenoShots(baseB).map((s) => s.frame);
+      expect(shaves.length).toBe(shotFrames.length);
+      expect(shaves.length).toBeGreaterThan(50);
+      expect(shaves.map((b) => b.frame)).toEqual(shotFrames);
+      for (const b of shaves) {
+        expect(b.key.startsWith(`${HIMENO_B}:skill1:`)).toBe(true);
+        expect(b.expiresFrame! - b.frame).toBe(3 * 60);
       }
     });
 
@@ -341,9 +360,7 @@ describe('himeno — kit spec', () => {
     });
 
     it('FUNCTIONAL: the duty-cycle buff lifts the SR carriers’ totals vs S2 removed', () => {
-      expect(totalOf(baseB, HIMENO)).toBeGreaterThan(
-        totalOf(noS2B, HIMENO)
-      );
+      expect(totalOf(baseB, HIMENO)).toBeGreaterThan(totalOf(noS2B, HIMENO));
     });
 
     it('DISCRIMINATING: a permanent passive applies once at t=0 and over-credits', () => {
@@ -386,7 +403,9 @@ describe('himeno — kit spec', () => {
     const applied = s2AppliesA(baseA, 'maxAmmoFlat');
 
     it('is the flat-round primitive at the same firings as the ATK line, for 10s', () => {
-      const atkFrames = new Set(s2AppliesA(baseA, 'atkPct').map((b) => b.frame));
+      const atkFrames = new Set(
+        s2AppliesA(baseA, 'atkPct').map((b) => b.frame)
+      );
       expect(
         new Set(applied.map((b) => b.frame)),
         'ammo and ATK share one activation (one block, two effects)'
@@ -488,9 +507,10 @@ describe('himeno — kit spec', () => {
         'base run must show both the plain 2.5 and the lifted 2.7376 charge mults'
       ).toContain(2.7376);
       expect(withBuff).toContain(2.5);
-      expect(without, 'the plain 2.5 must exist with the burst removed').toContain(
-        2.5
-      );
+      expect(
+        without,
+        'the plain 2.5 must exist with the burst removed'
+      ).toContain(2.5);
       expect(
         without,
         'with the burst removed, the 2.7376 lifted mult never appears'
@@ -509,7 +529,11 @@ describe('himeno — kit spec', () => {
     });
 
     it('DISCRIMINATING: an all-allies encoding reaches 4 targets per cast', () => {
-      const unscoped = burstApplies(burstAllAlliesA, 'chargeDamagePct', HIMENO_A);
+      const unscoped = burstApplies(
+        burstAllAlliesA,
+        'chargeDamagePct',
+        HIMENO_A
+      );
       expect(unscoped.length).toBe(TEAM_SIZE_A * casts(burstAllAlliesA).length);
     });
   });

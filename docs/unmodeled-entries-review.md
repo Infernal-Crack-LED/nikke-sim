@@ -11,20 +11,20 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 157 | 37.3% |
-| Other / see caveats | 105 | 24.9% |
-| Missing engine primitive / trigger | 92 | 21.9% |
-| Out-of-domain / parser unsupported | 29 | 6.9% |
+| Defensive / HP / shield / aggro | 154 | 37.2% |
+| Other / see caveats | 104 | 25.1% |
+| Missing engine primitive / trigger | 88 | 21.3% |
+| Out-of-domain / parser unsupported | 30 | 7.2% |
 | Partless boss | 12 | 2.9% |
-| Weapon-state / shot-count approximation | 11 | 2.6% |
+| Weapon-state / shot-count approximation | 11 | 2.7% |
 | Self-status / stack gate | 8 | 1.9% |
 | RNG / probabilistic | 4 | 1.0% |
 | Measurement-gated / unverified cadence | 3 | 0.7% |
-| **Total** | **421** | 100.0% |
+| **Total** | **414** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (157)
+### Defensive / HP / shield / aggro (154)
 
 **A2** (a2)
 
@@ -151,6 +151,12 @@ Decoy: Creates an avatar with 96% of the skill user's final Max HP. This effect 
 - **burst:** Activates when Professional Tomato Sauce is at max stacks. Affects all enemies. ATK ▼ 13.59% for 10 sec.
   - *Why:* Burst 'Professional Maid Leader' removes 1 debuff from all allies and — gated on Tomato Sauce at max stacks — drops all enemies' ATK by 13.59% for 10 sec; enemy ATK ▼ debuffs are dropped at dispatch (no incoming-damage model — the boss never attacks into our numbers; the enemy-buff allowlist admits damageTakenPct/distributedDamagePct/defPct only, and this line is ATK ▼, not DEF ▼), and the gate's stacking resource does not exist in v1
 
+**Crow** (crow)
+
+- **skill1:** ■ Affects all enemies. Activates when entering Full Burst.
+ATK ▼ 19.93% for 10 sec. — enemy ATK ▼ is dropped at dispatch: no incoming damage is modeled (the boss never attacks into our numbers), so the debuff moves nothing observable (cocoa precedent; this is NOT the enemy DEF ▼ channel — the line is ATK ▼)
+  - *Why:* skill1: the enemy ATK▼ line is game-real but unenactable in the DPS sim — dropped at dispatch because no incoming-damage model exists (the boss never attacks into our numbers); recorded verbatim in unmodeled and proven damage-neutral by the unit spec (C4)
+
 **Crown** (crown)
 
 - **skill2:** Relax: Incoming healing ▲ 4.06% continuously. Stacks up to 20 times.
@@ -204,12 +210,6 @@ Recovers 10.77% of the skill user's final Max HP as HP.
   - *Why:* Bonus E3 (Exposure activation disabled) is a no-op on the unmodeled taunt, unmodeled even under the mode
 - **burst:** Enhanced Environment Setup — Effect 2: Incoming healing ▲ 29.04%. Effect 2 Target(s): All allies
   - *Why:* ENHANCED ENVIRONMENT SETUP (burst, gated on Environment Setup live at cast via requiresTargetStatus): a SECOND co-stacking damageTakenPct 3.9 boss instance — distinct KR slot key (0:burst:… vs 0:skill1:…) so the overlap sums to 7.8% taken
-
-**Ether** (ether)
-
-- **skill2:** ■ Affects the same enemy unit(s). Activates during Full Burst.
-DEF ▼ 9.38% for 6 sec.
-  - *Why:* skill2: the DEF ▼9.38%/6s enemy debuff is UNMODELED — no dynamic enemy-DEF-reduction primitive (cfg.bossDef is fixed; damageTakenPct is a different bucket; novel / mast Sea-Breeze precedent). At the 140-DEF scope-lock boss this is 13.13 flat DEF ≈ ~0.03% team damage — minor, not load-bearing (⚑2). Recipe if a primitive lands: a boss-DEF-reduction debuff (9.38% for 6s, refreshed at every FB entry) feeding the subtractive DEF term.
 
 **Exia (Treasure)** (exia)
 
@@ -352,8 +352,6 @@ ATK ▲ 20% of the skill user's ATK for 10 sec. — UNMODELED (inert): the destr
   - *Why:* skill1: the whole attacked-20x sentence (self DEF ▲39.18% / 10s) is unmodeled — the `attacked` trigger primitive exists (types.ts; makima/yulha encode theirs) but nothing feeds it at scope lock (no incoming-damage model), and the effect (defPct) would be damage-inert even if it fired. Honestly absent (⚑1), not a stale fixture — the unit test pins the zero against the hitCount:20 'attacks' misread.
 - **skill1:** DEF ▲ 39.18% for 10S.
   - *Why:* DEF ▲ 39.18% for 10S.'): UNMODELED IN FULL (both sentences verbatim in unmodeled.skill1) — the trigger is a counter of hits RECEIVED; the `attacked` trigger primitive exists (types.ts) but the v1 sim models NO incoming ally damage and the boss never acts, so the counter never accrues and the line never fires at scope lock
-- **burst:** DEF ▼ 13.32% for 5 sec.
-  - *Why:* The burst's second line 'DEF ▼ 13.32% for 5 sec' (all enemies) is UNMODELED (verbatim in unmodeled.burst) — ENGINE GAP, himeno/eunhwa precedent (same-family 'DEF ▼ x% for N sec' lines shipped the same way in this batch): the enemy-buff channel admits ONLY damageTakenPct/distributedDamagePct (sim.ts consumes enemyBuffs through no other stat) and the boss's DEF is the flat constant cfg.bossDef that no debuff scales, so an enemy DEF▼ moves nothing — sim.ts drops enemy ATK▼/DEF▼ at dispatch ('other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0')
 
 **Milk (Treasure)** (milk)
 
@@ -552,12 +550,8 @@ Incoming healing ▲ 15.18% for 10 sec.
 
 **Signal** (signal)
 
-- **skill1:** DEF ▼ 5.94% for 5 sec.
-  - *Why:* ⚑ LIST: [⚑1] (ENGINE GAP, minor — the S1 cluster) hitCount:60 → enemy 'DEF ▼ 5.94% / ATK ▼ 5.94% for 5s': estimate = ~8.3 flat boss DEF (5.94% of the 140-DEF scope-lock boss) off every hit during the 5s window at near-permanent uptime (SMG ~24 hits/s ⇒ 60 hits ≈ 2.5s, so the counter refreshes well inside the 5s expiry while firing) — a small team-wide lift, honestly absent; the ATK▼ half is damage-ZERO in v1 (the boss never attacks — a survivability lever only in real fights)
 - **skill2:** Recover 44.08% of attack damage as HP over 10 sec. — magnitude only: the engine `heal` carries no HP amount by design (no HP pool); the 10-second recovery-event WINDOW is modeled (fullBurstEnter heal ticks:10 intervalSec:1).
   - *Why:* skill2: the modeled heal is event-only — the 44.08%-of-attack-damage HP magnitude is NOT modeled (no HP pool by design); the 10-second recovery-event WINDOW IS modeled (ticks:10 intervalSec:1). The heal is SELF-targeted: recovery events are delivered to signal herself and fire only HER OWN 'recovery'-triggered blocks (fireRecovery dispatches the recipient's blocks; she has none — the unit test observes the window with an inert probe). Damage-inert by construction: totals are byte-identical with the line removed.
-- **burst:** DEF ▼ 12.34% for 10 sec.
-  - *Why:* [⚑2] (ENGINE GAP, minor) the burst 'DEF ▼ 12.34% for 10s': estimate = ~17.3 flat boss DEF off every hit during the 10s window per 20s cycle (~50% uptime) — a small team-wide lift; comps read COLD by exactly that amount
 
 **Sin** (sin)
 
@@ -631,7 +625,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Other / see caveats (105)
+### Other / see caveats (104)
 
 **A2** (a2)
 
@@ -920,8 +914,6 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v
 
 - **skill1:** ■ Activates after landing 60 normal attack(s). Affects the target(s).
   - *Why:* SKILL1 'Attack Signal' ('■ Activates after landing 60 normal attack(s)
-- **skill1:** ATK ▼ 5.94% for 5 sec.
-  - *Why:* ⚑ LIST: [⚑1] (ENGINE GAP, minor — the S1 cluster) hitCount:60 → enemy 'DEF ▼ 5.94% / ATK ▼ 5.94% for 5s': estimate = ~8.3 flat boss DEF (5.94% of the 140-DEF scope-lock boss) off every hit during the 5s window at near-permanent uptime (SMG ~24 hits/s ⇒ 60 hits ≈ 2.5s, so the counter refreshes well inside the 5s expiry while firing) — a small team-wide lift, honestly absent; the ATK▼ half is damage-ZERO in v1 (the boss never attacks — a survivability lever only in real fights)
 
 **Snow White: Heavy Arms** (snow-white-heavy-arms)
 
@@ -1003,7 +995,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v
 - **burst:** Cooldown: 20 s
   - *Why:* See unit note / caveats
 
-### Missing engine primitive / trigger (92)
+### Missing engine primitive / trigger (88)
 
 **A2** (a2)
 
@@ -1083,12 +1075,6 @@ Gains debuff immunity to 1 debuff(s) for 10 sec.
 - **burst:** Affects all allies. Removes 1 debuff(s).
   - *Why:* Burst 'Professional Maid Leader' removes 1 debuff from all allies and — gated on Tomato Sauce at max stacks — drops all enemies' ATK by 13.59% for 10 sec; enemy ATK ▼ debuffs are dropped at dispatch (no incoming-damage model — the boss never attacks into our numbers; the enemy-buff allowlist admits damageTakenPct/distributedDamagePct/defPct only, and this line is ATK ▼, not DEF ▼), and the gate's stacking resource does not exist in v1
 
-**Crow** (crow)
-
-- **skill1:** ■ Affects all enemies. Activates when entering Full Burst.
-ATK ▼ 19.93% for 10 sec. — no sim channel: the enemy-buff path admits only damageTakenPct/distributedDamagePct > 0; enemy ATK▼ is dropped at dispatch (sim.ts:2295) and the immortal DEF=0 boss deals no damage, so the debuff moves nothing observable (exia precedent)
-  - *Why:* skill1: the enemy ATK▼ line is game-real but unenactable in the DPS sim — dropped at dispatch on the DEF=0 basis (boss deals no damage); recorded verbatim in unmodeled and proven damage-neutral by the unit spec (C4)
-
 **Crust** (crust)
 
 - **skill2:** Affects all allies not in Reliable Cooking status.
@@ -1142,14 +1128,6 @@ Incoming healing ▲ 13.33% continuously.
 Damage Taken ▼ 52.5% for 5 sec.
   - *Why:* skill1: 'Damage Taken ▼52.5% for 5s' on the 1 lowest-remaining-HP ally is UNMODELED — v1 models no ally HP pool and no incoming boss damage, so ally-side mitigation can never move anything (sakura-suzuhara S2 precedent). The boss-facing damageTakenPct channel is deliberately NOT used — wrong direction AND wrong target; encoding it would manufacture a phantom team damage change on the 15s skill cadence (⚑1).
 
-**Eunhwa** (eunhwa)
-
-- **skill2:** ■ Activates after firing the last bullet. Affects the target.
-DEF ▼ 29% for 5 sec. — no sim channel: the enemy-buff path admits only damageTakenPct/distributedDamagePct and the boss's DEF is the flat constant cfg.bossDef=140 that no debuff scales, so an enemy DEF▼ moves nothing (sim.ts drops it at dispatch; exia precedent). The whole sentence is skipped — an enemy-targeted lastBullet effect has no channel either.
-  - *Why:* skill2: 'DEF ▼ 29% for 5 sec' (last-bullet target) is game-real but unenactable — the engine's enemy-buff channel admits only damageTakenPct/distributedDamagePct (sim.ts drops enemy ATK▼/DEF▼ at dispatch) and the boss's DEF contribution is the flat constant cfg.bossDef=140, which no debuff scales. Recorded verbatim in unmodeled; the nearest-wrong laundering (damageTakenPct 29) would fabricate a ~29% team lift the kit never grants, and the spec test pins its absence.
-- **burst:** DEF ▼ 2.43% for 15 sec. — no sim channel: enemy DEF▼ is dropped at dispatch on the constant-bossDef basis (sim.ts 'other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0'); same basis as the skill2 DEF▼ line
-  - *Why:* burst: 'DEF ▼ 2.43% for 15 sec' is unmodelable on the same constant-bossDef basis as skill2 (recorded verbatim in unmodeled) — in game it would be a minor multiplicative team lift at ~75% uptime; in sim domain its contribution is exactly 0.
-
 **Eunhwa: Tactical Upgrade** (eunhwa-tactical-upgrade)
 
 - **burst:** Special note: Fires an Exploding Bullet dealing area-of-effect damage. (splash radius inert vs the single partless boss; the cannon HIT itself is modeled as the weaponSwap shot)
@@ -1164,12 +1142,6 @@ DEF ▼ 29% for 5 sec. — no sim channel: the enemy-buff path admits only damag
 
 - **skill2:** ■ Activates when killing an enemy. Affects self. ATK ▲ 3.02%, stacks up to 15 time(s) and lasts for 10 sec. (no kill trigger primitive — the v1 boss never dies and there are no adds; zero stacks accrue at scope lock; see ⚑3)
   - *Why:* skill2: 'Gain Pierce for 1 round(s)' is a duration-less gainPierce re-arm on shotFired — gainPierce carries only durationSec (no round count), and a durationSec:1 window would lapse between SR shots (charge cycle > 1s); the per-shot re-arm is behaviorally exact while she fires, and the line is damage-inert at scope lock (partless boss, no Pierce Damage ▲ carrier) (⚑2).
-
-**Himeno** (himeno)
-
-- **skill1:** ■ Activates when hitting a target with Full Charge. Affects the target.
-DEF ▼ 6.94% for 3 sec. — no sim channel: the enemy-buff path admits only damageTakenPct/distributedDamagePct (sim.ts consumes enemyBuffs through no other stat) and the boss's DEF is the flat constant cfg.bossDef that no debuff scales, so an enemy DEF▼ moves nothing (sim.ts drops enemy ATK▼/DEF▼ at dispatch: 'other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0'; eunhwa precedent, same datamined line family). The whole sentence is skipped — an enemy-targeted full-charge effect has no channel either. The nearest-wrong laundering (damageTakenPct 6.94) would fabricate a team lift the kit never grants; scripts/tests/units/himeno.test.ts pins its absence.
-  - *Why:* skill1: 'DEF ▼ 6.94% for 3 sec.' (full-charge-hit target) is game-real but unenactable — recorded verbatim in unmodeled; in game it would be a small team-wide lift at near-continuous SR uptime, in the sim domain its contribution is exactly 0 (constant-bossDef basis).
 
 **Jackal** (jackal)
 
@@ -1391,7 +1363,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **burst:** Immobilizes the target(s) for 5 sec.
   - *Why:* The burst's second line 'Immobilizes the target(s) for 5 sec.' is UNMODELED (verbatim in unmodeled.burst) — there is NO boss-CC channel: the v1 boss never acts (no enemy-action model), so a boss-targeted immobilize moves nothing; the schema's stun primitive describes a NIKKE unable to fire/charge/reload, not a boss freeze
 
-### Out-of-domain / parser unsupported (29)
+### Out-of-domain / parser unsupported (30)
 
 **Anchor** (anchor)
 
@@ -1499,6 +1471,11 @@ Explosion Radius ▲ 15.01% for 10 sec.
 
 - **skill2:** When attacking an enemy projectile, damage to that projectile ▲ 7.74% continuously.
   - *Why:* UNMODELED (out-of-domain): (K2) S2 projectile-intercept damage = Anomaly-only, no projectile channel in the sim
+
+**Signal** (signal)
+
+- **skill1:** ATK ▼ 5.94% for 5 sec.
+  - *Why:* ⚑ LIST: [⚑1] (OUT-OF-DOMAIN) the S1 'ATK ▼ 5.94% for 5 sec' half: estimate = damage-ZERO in v1 (the boss never attacks — a survivability lever only in real fights)
 
 **Sora** (sora)
 

@@ -28,13 +28,14 @@
 //        DEF ▲19.89% for 10 sec                                                [FAITHFUL — M5]
 //   BU ■ all enemies (Burst I, cd 20s):
 //        152.22% of final ATK as Burst Skill damage                            [FAITHFUL — M6]
-//        DEF ▼13.32% for 5 sec                                               [UNMODELED — M7]
+//        DEF ▼13.32% for 5 sec                                               [MODELED — M7]
 //
 // Mica is a wind-element B1 SUPPORTER whose kit splits into three families:
 //
 //   • M1 (the whole S1 sentence) is gated on "attacked 20 times" — a counter of hits
-//     RECEIVED. The sim has NO incoming-damage model, NO attacked-count trigger primitive,
-//     and the v1 boss never acts, so the counter never accrues and the line never fires.
+//     RECEIVED. The sim has NO incoming-damage model (the `attacked` trigger primitive
+//     exists — makima/yulha encode theirs — but the v1 boss never acts, so nothing feeds
+//     it), the counter never accrues and the line never fires.
 //     The effect side (self DEF ▲39.18%) would be damage-INERT even if it fired (self DEF
 //     never feeds damage dealt). admi carries the IDENTICAL "attacked 20 time(s)" S1
 //     archetype and jackal/maiden/noise/yulha the family — all ruled UNMODELED + ⚑.
@@ -60,11 +61,10 @@
 //     the Full Burst window opens, so the nuke never takes the +50% FB major (milk K5
 //     precedent: discriminate by the fbMajor flag, not the count). 'All enemies' collapses
 //     to the single partless boss.
-//   • M7 (burst DEF▼) has NO engine channel: the enemy-buff channel admits only
-//     damageTakenPct/distributedDamagePct and the boss's DEF is the flat constant cfg.bossDef
-//     that no debuff scales — sim.ts drops enemy ATK▼/DEF▼ at dispatch ('other enemy debuffs
-//     (ATK▼, DEF▼) don't affect our damage with DEF=0'). himeno shipped her same-family
-//     'DEF ▼ x% for N sec' line the same way earlier in this batch (eunhwa before her).
+//   • M7 (burst DEF▼) is MODELED (encoded 2026-08-10): a SIBLING burstCast → enemy defPct
+//     -13.32 /5s block on the enemy DEF channel (bossDefNow scales cfg.bossDef, floor 0;
+//     channel damage math owned by scripts/tests/engine/enemy-def-debuff.test.ts; a sibling
+//     so the M6 flatDamage-keyed trigger patcher stays surgical — anis precedent).
 //     Nearest wrong model: laundering the DEF▼ into damageTakenPct (a different mechanic —
 //     the boss taking more damage) would fabricate a team lift the kit never grants; the
 //     ABSENCE pins prove the shipped override is not that model.
@@ -82,9 +82,9 @@
 // ⇒ top-2 = {ada, helm} at every firing, lowest-2 = {mica, admi} (ada's own self
 // atkPct/casterAtkPct windows only lift her FURTHER). Boss-debuff hygiene: admi has NO
 // enemy-targeted blocks (her S1/S2 are unmodeled; her burst buffs allies), ada's are DoTs
-// and helm's are flatDamage (damage events, not buffs) — so ANY boss-held buffApply in
-// this fixture would be a laundering of the M7 DEF▼ line. Deterministic (no seed);
-// event-log over totals.
+// and helm's are flatDamage (damage events, not buffs) — so every boss-held buffApply in
+// this fixture is mica's own M7 defPct shave (any other shape would be a laundering of
+// it). Deterministic (no seed); event-log over totals.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
 import { loadOverride } from '../../../src/skills/overrides-node.js';
@@ -127,9 +127,7 @@ const m1AttacksMisread = withPatchedOverride('mica', (ov) => {
     slot: 'skill1',
     trigger: { kind: 'hitCount', count: 20 },
     target: { kind: 'self' },
-    effects: [
-      { kind: 'buff', stat: 'defPct', value: 39.18, durationSec: 10 },
-    ],
+    effects: [{ kind: 'buff', stat: 'defPct', value: 39.18, durationSec: 10 }],
   });
 });
 /** M2 wrong duty cycle: the whole S2 as ONE permanent passive (no 20s interval, no expiry). */
@@ -139,7 +137,7 @@ const m2Passive = withPatchedOverride('mica', (ov) => {
     ...b,
     trigger: { kind: 'passive' },
     effects: b.effects.map((e: any) => {
-      const { durationSec, ...rest } = e;
+      const { durationSec: _durationSec, ...rest } = e;
       return rest;
     }),
   }));
@@ -280,8 +278,9 @@ const micaNukes = (evs: SimEvent[]) =>
 /** Group a unit's shots by magazine ordinal. */
 function byMag(evs: SimEvent[], slug: string): Map<number, Shot[]> {
   const m = new Map<number, Shot[]>();
-  for (const s of
-    evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === slug)) {
+  for (const s of evs.filter(
+    (e): e is Shot => e.kind === 'shot' && e.slug === slug
+  )) {
     (m.get(s.magIndex) ?? m.set(s.magIndex, []).get(s.magIndex)!).push(s);
   }
   return m;
@@ -312,7 +311,9 @@ describe('mica — kit spec', () => {
 
     it('applies NO defPct 39.18 anywhere — the attacked-20x counter can never accrue in-sim', () => {
       expect(
-        buffs(base.events).filter((b) => b.stat === 'defPct' && b.value === 39.18)
+        buffs(base.events).filter(
+          (b) => b.stat === 'defPct' && b.value === 39.18
+        )
       ).toHaveLength(0);
     });
 
@@ -469,9 +470,10 @@ describe('mica — kit spec', () => {
       // defPct itself is damage-neutral: removing ONLY it (ammo stays) leaves every unit
       // byte-identical.
       for (const s of SLUGS) {
-        expect(defRemoved.totals[s], `${s} total with the DEF half removed`).toEqual(
-          base.totals[s]
-        );
+        expect(
+          defRemoved.totals[s],
+          `${s} total with the DEF half removed`
+        ).toEqual(base.totals[s]);
       }
     });
   });
@@ -501,9 +503,9 @@ describe('mica — kit spec', () => {
     });
 
     it('DISCRIMINATING: the lvl-1 magnitude 66.6 changes every nuke', () => {
-      expect(
-        [...new Set(micaNukes(weak.events).map((d) => d.atkPct))]
-      ).toEqual([66.6]);
+      expect([...new Set(micaNukes(weak.events).map((d) => d.atkPct))]).toEqual(
+        [66.6]
+      );
     });
 
     it('DISCRIMINATING: fullBurstEnter keying lands INSIDE the FB window (+50% major) off the cast frames', () => {
@@ -531,22 +533,30 @@ describe('mica — kit spec', () => {
     });
   });
 
-  describe('M7 — burst DEF ▼13.32% for 5s is genuinely unmodeled (no enemy-DEF channel)', () => {
-    it('is recorded VERBATIM in the override unmodeled block', () => {
-      const ov = loadOverride('mica') as any;
-      expect(ov.unmodeled.burst.join('\n')).toContain(
-        'DEF ▼ 13.32% for 5 sec.'
-      );
-    });
-
-    it('enacts NOTHING: no boss debuff anywhere (DEF▼ is dropped, not laundered)', () => {
+  describe('M7 — burst DEF ▼13.32%/5s as a sibling block on the enemy defPct channel (encoded 2026-08-10)', () => {
+    it('one -13.32 boss debuff per burst cast, same frames, 5s window, from the burst slot', () => {
       // Boss debuffs emit with targetIdx null. Fixture mates cannot produce one: admi has
       // no enemy-targeted blocks; ada's are DoTs and helm's are flatDamage (damage events,
-      // not buffs) — so ANY boss-held buffApply would be a laundering of the DEF▼ line.
-      expect(
-        buffs(base.events).filter((b) => b.targetIdx === null),
-        'no boss-targeted debuff may exist'
-      ).toEqual([]);
+      // not buffs). Channel damage math owned by enemy-def-debuff.test.ts.
+      const shaves = buffs(base.events).filter(
+        (b) => b.targetIdx === null && b.stat === 'defPct' && b.value === -13.32
+      );
+      const castFrames = micaBursts(base.events).map((c) => c.frame);
+      expect(shaves.length).toBe(castFrames.length);
+      expect(shaves.length).toBeGreaterThanOrEqual(6);
+      expect(shaves.map((b) => b.frame)).toEqual(castFrames);
+      for (const b of shaves) {
+        expect(b.key.startsWith(`${MICA}:burst:`)).toBe(true);
+        expect(b.expiresFrame! - b.frame).toBe(5 * 60);
+      }
+    });
+
+    it('no boss-held buff other than the shave exists (the laundering trap stays pinned absent)', () => {
+      const other = buffs(base.events).filter(
+        (b) =>
+          b.targetIdx === null && !(b.stat === 'defPct' && b.value === -13.32)
+      );
+      expect(other.map((b) => `${b.stat}:${b.value}`)).toEqual([]);
     });
 
     it('DISCRIMINATING: a damageTakenPct laundering emits boss debuffs and lifts team totals', () => {
@@ -577,14 +587,18 @@ describe('mica — kit spec', () => {
       expect(stats).toEqual(new Set(['maxAmmoFlat', 'defPct']));
     });
 
-    it('the burst is ONE flatDamage block keyed to her own cast', () => {
+    it('the burst is the tagged nuke block + the defPct sibling, both keyed to her own cast', () => {
       const ov = loadOverride('mica') as any;
-      expect(ov.burst.length).toBe(1);
-      const block = ov.burst[0];
-      expect(block.trigger).toEqual({ kind: 'burstCast' });
-      expect(block.target).toEqual({ kind: 'enemy' });
-      expect(block.effects).toEqual([
-        { kind: 'flatDamage', atkPct: 152.22 },
+      expect(ov.burst.length).toBe(2);
+      expect(ov.burst[0].trigger).toEqual({ kind: 'burstCast' });
+      expect(ov.burst[0].target).toEqual({ kind: 'enemy' });
+      expect(ov.burst[0].effects).toEqual([
+        { kind: 'flatDamage', atkPct: 152.22, burstDesc: 'allEnemies' },
+      ]);
+      expect(ov.burst[1].trigger).toEqual({ kind: 'burstCast' });
+      expect(ov.burst[1].target).toEqual({ kind: 'enemy' });
+      expect(ov.burst[1].effects).toEqual([
+        { kind: 'buff', stat: 'defPct', value: -13.32, durationSec: 5 },
       ]);
     });
   });

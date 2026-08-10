@@ -9,7 +9,28 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) NON-LITERAL BURST SCOPE STRINGS COUNT AS TARGETING THE BOSS — owner
+- **(2026-08-10, latest) FAITHFULNESS PHASE-4 BATCH 3 — the "records the same shape" list
+  held real carriers; 7 more DEF ▼ encodes + 4 scope tags.** Six checklist reviews
+  (`ether`, `eunhwa`, `himeno`, `signal`, `mica`, `crow` — full record
+  `docs/handoffs/2026-08-10-faithfulness-batch3-findings.md`), every carrier claim verified
+  against the kit SSOT. Enacted under the standing rulings (2c DEF channel + the 2026-08-10
+  scope-string ruling; all values kit-verbatim SL10): `signal` S1 −5.94/5s (hitCount:60) +
+  burst −12.34/10s rider; `himeno` S1 −6.94/3s (shotFired — frima's clause-identical shape);
+  `ether` S2b −9.38/6s (SIBLING interval:13 + fbGate:'inFb' — first precedent for the
+  "same-enemies + during-Full-Burst" sub-block class; fullBurstEnter fork ⚑-recorded in her
+  note with a measurement recipe); `eunhwa` S2 −29/5s (lastBullet) + burst −2.43/15s rider
+  (the two shaves SUM while overlapping — distinct slot keys); `mica` burst −13.32/5s
+  (sibling). Tags: `crow` 'singleEnemy' (915.75%), `signal`/`eunhwa`/`mica` 'allEnemies'.
+  `crow` carries no DEF ▼ kit line (ATK ▼ only — stays dropped). The batch-2 "carrier set
+  COMPLETE" claim is superseded in place (under-count); the kit-text census leaves `belorta`
+  as the sole override-carrying remainder (encodes at her review) + `centi`/`product-23`/
+  `trony` (no overrides). Stale-phrase fixes in all six overrides + specs + the
+  `enemy-def-debuff.test.ts` header (the channel-math owner file itself still claimed the
+  bossDef-0 basis); `jackal`/`quiry`/`ram` join the sweep queue (grep must be
+  whitespace-normalized — a line-wrap in mica's spec defeated the exact-phrase grep). Review
+  doc regenerated 421 → 414. Full gate green.
+
+- **(2026-08-10) NON-LITERAL BURST SCOPE STRINGS COUNT AS TARGETING THE BOSS — owner
   ruling; the six logged `burstDesc` tags enacted.** Owner: "for the purposes of this sim,
   yes these will all count as targeting the boss." Resolves batch-2 cross-cutting finding 2.
   The logged non-literal scope clauses are amp-eligible, mapped by clause cardinality:
@@ -26,6 +47,10 @@ lives. Newest first within each section.
   enemy with the highest final ATK") take their tags at their own review under this ruling.
 
 - **(2026-08-10) FAITHFULNESS PHASE-4 BATCH 2 — the DEF ▼ carrier set is COMPLETE.**
+  **[The "COMPLETE" claim SUPERSEDED same day by batch 3 — an under-count: the "records the
+  same shape" secondary list held four real kit-carriers (`signal` ×2, `himeno`, `ether`,
+  `eunhwa` ×2) and the kit-text census found `belorta`; see the batch-3 entry above. The
+  batch-2 encodes themselves stand.]**
   Six parallel checklist reviews (`anis`, `cocoa`, `elegg`, `frima`, `ludmilla`,
   `marciana-marine-study` — full record `docs/handoffs/2026-08-10-faithfulness-batch2-findings.md`).
   Enacted under the standing rulings (2c DEF channel; all values kit-verbatim SL10): DEF ▼
