@@ -280,6 +280,24 @@ describe('elegg-boom-and-shock (Elegg: Boom and Shock) — kit spec', () => {
         'the −9 spend drops every later cast to the 6-hit branch'
       ).toBe(true);
     });
+
+    it('every sequential hit in BOTH branches carries the allEnemies scope tag', () => {
+      // Owner scope-string ruling 2026-08-10: "Affects random enemy units" is a plural
+      // clause, so the burst-skill-damage amps scoped on "all enemies" reach these hits.
+      // Both branches tagged — the 13-hit branch is only unreachable on THIS fixture's
+      // rotation, not in general. Dormant today (no jackal/trina-class amp in the comp).
+      const ov: any = loadOverride('elegg-boom-and-shock');
+      const hits = ov.burst
+        .flatMap((b: any) => b.effects)
+        .filter((e: any) => e.kind === 'flatDamage');
+      expect(
+        hits.length,
+        'six ≠13-branch hits + thirteen =13-branch hits'
+      ).toBe(19);
+      expect([...new Set(hits.map((e: any) => e.burstDesc))]).toEqual([
+        'allEnemies',
+      ]);
+    });
   });
 
   describe('H4 — S1 ≥4-ghost Elemental Advantage tier: gated on pool≥4, live in the default sim', () => {

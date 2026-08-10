@@ -9,7 +9,28 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) FAITHFULNESS PHASE-4 BATCH 3 — the "records the same shape" list
+- **(2026-08-10, latest) FAITHFULNESS PHASE-4 BATCH 4 — the board-outlier slice; `jill`'s
+  1.924 is a DEFECT, not a residual.** Six checklist reviews of the worst-ranked unreviewed
+  board outliers (`jill`, `ein`, `moran`, `maxwell`, `takina`, `elegg-boom-and-shock` — full
+  record `docs/handoffs/2026-08-10-faithfulness-batch4-findings.md`). Enacted under standing
+  rulings only: 20 `burstDesc` tags (`ein` burst nuke 300.02% 'allEnemies'; ALL 19
+  `elegg-boom-and-shock` burst hits across both ghost branches 'allEnemies'), all dormant and
+  byte-identical. **Zero DEF ▼ encodes — verified against kit text, none of the six carries the
+  line.** Prose: 6 bare `sim.ts:<line>` citations fixed, every one of which had already rotted;
+  `moran`'s note (~70% changelog, all of it already here) re-based on the current model;
+  `jill`'s falsified "grades ~1.07–1.34" + "acid dot is noFb" claims and her spec header's
+  three UNMODELED claims deleted. **NOT ENACTED, owner + `/scientific-method` gate:** `jill`'s
+  burst is a same-weapon flavor swap that restates no cadence, and the engine's swap branch
+  reads `u.swap.pullsPerSec ?? PULLS_PER_SEC[...]` without falling back to `u.pullsPerSec` —
+  so her video-MEASURED 2.5/s is discarded for the 10s window and she fires at the AR class
+  default. Three independent confirmations (code read; a direct shot count of 9.28/s in-swap vs
+  1.98/s out; board 1.924 → 0.983 with `pullsPerSec: 2.5` restated, within-±5% 14 → 15). She is
+  the roster's ONLY unit with both a `charFixes.pullsPerSec` and a `weaponSwap`; a
+  `charFixes.reloadFrames` does survive a swap, which is why this went unseen. Instrument
+  committed as jill spec group J8. This displaces the QUEUE's DEF-bypass hypothesis for her HOT
+  (worth ~0.02% at the `bossDef = 140` basis, not 2.4×). Full gate green; board byte-identical.
+
+- **(2026-08-10) FAITHFULNESS PHASE-4 BATCH 3 — the "records the same shape" list
   held real carriers; 7 more DEF ▼ encodes + 4 scope tags.** Six checklist reviews
   (`ether`, `eunhwa`, `himeno`, `signal`, `mica`, `crow` — full record
   `docs/handoffs/2026-08-10-faithfulness-batch3-findings.md`), every carrier claim verified

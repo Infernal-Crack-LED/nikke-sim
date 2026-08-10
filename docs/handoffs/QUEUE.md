@@ -71,11 +71,25 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > The 2026-08-09 faithfulness-enactment batch LANDED every enactable finding from the
 > unmodeled-entries audit (DECISIONS 2026-08-09 has the full list + board A/B). What remains:
 
-- **Exposed hot fits from the batch — run the pending direct measurements, then re-tune (never
-  re-fudge):** `jill` 0.966→1.924 (read the in-burst normal popup value tier in her focus
-  footage — true-flavored normals bypass DEF, a different value tier) and `maxwell` 0.889→1.252
-  (popup-read the burst window in run-G/N6 footage: railgun shot count + charged value vs the
-  modeled ~2 × 2440.26%).
+- **⇒ `jill` 0.966→1.924 — CAUSE FOUND 2026-08-10 (phase-4 batch 4), fix NOT enacted; owner +
+  `/scientific-method`.** Her burst same-weapon flavor swap restates no cadence and the engine's
+  swap branch never falls back to `u.pullsPerSec`, so her video-MEASURED 2.5/s is discarded and
+  she fires at the AR class default for 10s per burst. Three confirmations (code read; direct
+  shot count 9.28/s in-swap vs 1.98/s out; board 1.924 → 0.983 with `pullsPerSec: 2.5`
+  restated). Fix is unit-local (restate 2.5 on her swap) or engine-level (swap branch falls back
+  to `u.pullsPerSec` — behaviour-identical for every other carrier; she is the only unit with
+  both a `charFixes.pullsPerSec` and a swap). Instrument: jill spec group J8. The old DEF-bypass
+  hypothesis for her HOT is displaced (~0.02% at the bossDef-140 basis, not 2.4×) — the popup
+  read is still nice-to-have, not the explanation. Detail:
+  `2026-08-10-faithfulness-batch4-findings.md`.
+- **Exposed hot fit from the batch — run the pending direct measurement, then re-tune (never
+  re-fudge):** `maxwell` 0.889→1.252 (popup-read the burst window in run-G/N6 footage: railgun
+  shot count + charged value vs the modeled ~2 × 2440.26%).
+- **Self-scoped lifesteal recovery-emit split — wants ONE roster ruling (2026-08-10, batch 4):**
+  of the 13 kits with "Recovers X% of attack damage as HP", 8 emit a recovery event and 5 do not
+  (`d`, `moran`, `red-hood`, `rem`, `tia`). Verified board-INERT for `moran` (a self-scoped heal
+  fires recovery only at its own target, so it cannot reach an ally-side crown-class consumer; a
+  probe emit moved the board by zero) — this is a consistency call, not a fit one.
 - **`alice-wonderland-bunny` stack-grant reading:** now aligned to the +1-GRANT majority; if a
   datamine function-type read or footage confirms the 2026-07-28 cap-raise reading instead,
   revert her addStack block to unmodeled (revert path in her note).
@@ -104,9 +118,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `belorta` (S2 −3.52/5s) encodes at her own phase-4 review — the sole override-carrying
   remainder; `centi`/`product-23`/`trony` carry DEF ▼ kit lines but have no overrides;
   `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second carrier).
+  Batch 4 (`2026-08-10-faithfulness-batch4-findings.md`, the board-outlier slice: `jill`,
+  `ein`, `moran`, `maxwell`, `takina`, `elegg-boom-and-shock`) added NO DEF ▼ encodes —
+  verified against kit text, none of the six carries the line.
   Enemy ATK ▼ stays genuinely inert. The non-literal `burstDesc` scope-string ruling landed
-  2026-08-10 (owner: they all count as targeting the boss — DECISIONS): ten tags enacted
-  across batches (6 + crow/signal/eunhwa/mica); units not yet reviewed with the same clause
+  2026-08-10 (owner: they all count as targeting the boss — DECISIONS): thirty tags enacted
+  across batches (6 + crow/signal/eunhwa/mica + ein/elegg-boom-and-shock ×19); units not yet reviewed with the same clause
   class (e.g. `helm` "the enemy with the highest final ATK") tag at their own phase-4
   review. Stale-phrase sweep remainder (grep-keyed, whitespace-normalized — the mica.test.ts
   line-wrap defeated the exact-phrase grep): `jackal` (also cites deleted crow-precedent

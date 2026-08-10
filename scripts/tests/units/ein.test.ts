@@ -60,6 +60,7 @@
 // "≥ her own burst count", not an exact count. Deterministic (no seed); event-log over totals.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
+import { loadOverride } from '../../../src/skills/overrides-node.js';
 import {
   controlComp,
   runComp,
@@ -70,6 +71,7 @@ import {
 const FPS = 60;
 /** controlComp slot order: liter 0 / crown 1 / ein 2 / helm 3. */
 const EIN = 2;
+const EIN_SLUG = 'ein';
 /** Kit per-instance Near Feather true damage (S2). */
 const FEATHER = 90.81;
 /** Prydwen-sourced feather cadence (MEASUREMENT-GATED ⚑2): 34 per her burst, 6 per rotation trickle. */
@@ -289,6 +291,19 @@ describe('ein — kit spec', () => {
     it('is crit-eligible and range-excluded (flatDamage rider convention)', () => {
       expect(nukes.every((d) => d.critEligible)).toBe(true);
       expect(nukes.every((d) => !d.rangeApplied)).toBe(true);
+    });
+
+    it('carries the allEnemies scope tag (owner scope-string ruling 2026-08-10)', () => {
+      // "Affects 10 enemy unit(s) with the highest final DEF" — a capped-multi clause, so
+      // the burst-skill-damage amps that scope on "all enemies" reach it (the base-`eunhwa`
+      // precedent, whose "10 enemy unit(s) with the highest final ATK" maps the same way —
+      // NOT `eunhwa-tactical-upgrade`, who has no burst damage line). Dormant
+      // today: no jackal/trina-class amp shares this fixture.
+      const ov = loadOverride(EIN_SLUG) as any;
+      const nuke = ov.burst
+        .flatMap((b: any) => b.effects)
+        .find((e: any) => e.kind === 'flatDamage');
+      expect(nuke.burstDesc).toBe('allEnemies');
     });
   });
 

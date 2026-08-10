@@ -13,22 +13,24 @@
 //         192% of final ATK as sustained damage every 1 sec for 30 sec (re-applied every reload,
 //         ~5s cadence ⇒ effectively permanent; modeled as a whole-fight dot)
 //      ■ entering Full Burst → self: ATK ▲40.03% for 10 sec                                     [J4]
-//   BU ■ self: Reload speed fixed at 99.96% increase for 10 sec   ⟵ UNMODELED (stat LOCK)        [—]
+//   BU ■ self: Reload speed fixed at 99.96% increase for 10 sec   ⟵ reloadSpeedClamp 99.96/10s   [—]
 //      ■ self: Removes 100% of ammo. Forced Reload.               ⟵ consumeAmmo fraction 1       [J7]
 //      ■ self: Hit Rate ▲80.78% for 10 sec                                                       [J6]
 //      ■ self: Attack Damage ▲75% for 10 sec                                                     [J5]
-//      ■ self: Normal attacks deal True Damage for 10 sec          ⟵ UNMODELED (conversion)      [—]
+//      ■ self: Normal attacks deal True Damage for 10 sec          ⟵ weaponSwap.trueNormals      [J2]
 //
-// UNMODELED lines (no damage assertion; documented here, flagged in the override with ⚑):
+// Lines with no damage assertion of their own:
 //   • "Reload speed is fixed at a 99.96% increase for 10 sec" is a stat LOCK (owner ruling
-//     2026-07-22: "is fixed at" clamps the stat, it does NOT grant +99.96% speed). The engine has
-//     no clamp vocabulary; the line is INERT in any comp without reload-speed support (this
-//     fixture has none), so there is nothing to assert. ⚑ recipe: engine stat-clamp primitive.
-//   • "Normal attacks deal True Damage for 10 sec" is a damage-type conversion. The primitive
-//     EXISTS (weaponSwap.trueNormals — Takina's "Normal attacks deal true damage"), but enacting
-//     it is MEASUREMENT-GATED: it would activate J2's trueDamagePct (currently inert — see J2b),
-//     shifting a MEASURED, video-confirmed fit on an unresolved FB-state popup question (owner:
-//     "do NOT re-fudge"). J2b below pins the present inertness so the compensating error is loud.
+//     2026-07-22: "is fixed at" clamps the stat, it does NOT grant +99.96% speed), encoded as
+//     reloadSpeedClamp 99.96/10s. A clamp is observable only against reload-speed support, and
+//     this fixture has none — so the line is inert HERE and there is nothing to assert.
+//
+// ⚑ KNOWN GAP, recorded 2026-08-10 (phase-4 batch 4) — NOT fixed here, board-moving, owner-gated:
+//   her burst weaponSwap does not restate `pullsPerSec`, and the engine's swap cadence branch
+//   falls back to the AR class default (12/s) instead of her MEASURED charFixes 2.5/s, so she
+//   fires ~4.8x too fast for the 10s window. Board mean 1.924; sim-only A/B with the swap
+//   restating 2.5 → 0.983. Nothing in THIS spec discriminates the swap's fire cadence — add that
+//   pin with the fix.
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest wrong model gates
 // nothing). Jill deals damage from exactly TWO sources — normal attacks and the Acid Ammo dot; she
@@ -394,6 +396,44 @@ describe('jill — kit spec', () => {
       expect(jillReloads(base.events).length).toBeGreaterThan(
         jillReloads(noConsume.events).length
       );
+    });
+  });
+
+  describe('J8 — ⚑ DEFECT INSTRUMENT: the burst swap discards her measured fire cadence', () => {
+    // Recorded 2026-08-10 (faithfulness phase-4 batch 4). Her burst is a SAME-WEAPON flavor
+    // swap — the magnum never changes, only its damage flavor — so its shot cadence must stay
+    // her video-MEASURED 2.5 pulls/sec (charFixes.pullsPerSec; 150 rpm, ammo-counter read,
+    // test battery 2 test 4). The engine's swap branch instead reads
+    // `u.swap.pullsPerSec ?? PULLS_PER_SEC[u.swap.weapon ?? u.char.weapon]` and never falls
+    // back to `u.pullsPerSec`, where charFixes puts that measurement — so inside the 10s window
+    // she fires at the AR class default.
+    //
+    // This group MEASURES the gap rather than blessing it. When the fix lands (restate
+    // pullsPerSec 2.5 on her swap, or make the engine's swap branch fall back to u.pullsPerSec)
+    // these two assertions go RED — that is the point; flip them to assert PARITY then.
+    const cadence = (window: 'in' | 'out') => {
+      const casts = jillBursts(base.events).map((c) => c.frame);
+      const inSwap = (f: number) =>
+        casts.some((c) => f >= c && f < c + 10 * FPS);
+      const shots = jillNormals(base.events).filter((d) =>
+        window === 'in' ? inSwap(d.frame) : !inSwap(d.frame)
+      );
+      const secs =
+        window === 'in' ? casts.length * 10 : FIGHT_SEC - casts.length * 10;
+      return shots.length / secs;
+    };
+
+    it('DOCUMENTS THE DEFECT: in-swap cadence is ~4.7x her out-of-swap cadence', () => {
+      // A same-weapon flavor swap cannot change how fast the gun fires, so the faithful
+      // ratio is ~1 (out-of-swap sits below the nominal 2.5/s only by reload downtime, which
+      // the swap window also pays).
+      const ratio = cadence('in') / cadence('out');
+      expect(ratio).toBeGreaterThan(4);
+    });
+
+    it('quantifies it: ~9.3 shots/sec in the swap vs her measured 2.5/sec nominal', () => {
+      expect(cadence('in')).toBeGreaterThan(8);
+      expect(cadence('out')).toBeLessThan(2.5);
     });
   });
 });

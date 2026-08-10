@@ -12,8 +12,8 @@
 | Reason | Entries | Share |
 | --- | --- | --- |
 | Defensive / HP / shield / aggro | 154 | 37.2% |
-| Other / see caveats | 104 | 25.1% |
-| Missing engine primitive / trigger | 88 | 21.3% |
+| Other / see caveats | 103 | 24.9% |
+| Missing engine primitive / trigger | 89 | 21.5% |
 | Out-of-domain / parser unsupported | 30 | 7.2% |
 | Partless boss | 12 | 2.9% |
 | Weapon-state / shot-count approximation | 11 | 2.7% |
@@ -380,11 +380,11 @@ Damage dealt to Shield ▲ 150% continuously.
 - **skill2:** Once: Max HP ▲ 91% for 3 sec. Activates once per battle.
   - *Why:* See unit note / caveats
 - **skill2:** Twice: Max HP ▲ 69.84% for 3 sec. Activates once per battle.
-  - *Why:* [2026-07-17 THEME-13] Her S2 Perseverance 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are DELIBERATELY still unmodeled: they are HP-loss-gated ('Activates when HP falls below 20%'), so on the immortal partless boss (HP never drops) they NEVER fire — a kill/HP-gate (theme 18), not a theme-13 Max-HP-grant gap
+  - *Why:* PERSEVERANCE: her S2 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are unmodeled by design — HP-loss-gated ('Activates when HP falls below 20%'), so against the immortal partless boss they never fire, and they are self-targeted survival buffs with no atkOfMaxHpPct consumer on her, so they would be offensively inert even if they did
 - **skill2:** Three Times: Max HP ▲ 51.09% for 3 sec. Activates once per battle.
-  - *Why:* [2026-07-17 THEME-13] Her S2 Perseverance 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are DELIBERATELY still unmodeled: they are HP-loss-gated ('Activates when HP falls below 20%'), so on the immortal partless boss (HP never drops) they NEVER fire — a kill/HP-gate (theme 18), not a theme-13 Max-HP-grant gap
+  - *Why:* PERSEVERANCE: her S2 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are unmodeled by design — HP-loss-gated ('Activates when HP falls below 20%'), so against the immortal partless boss they never fire, and they are self-targeted survival buffs with no atkOfMaxHpPct consumer on her, so they would be offensively inert even if they did
 - **burst:** Recovers 36.14% of attack damage as HP over 10 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* ⚑ RECOVERY-EVENT SHAPE (checked 2026-08-10, phase-4 batch 4 — no change needed): her burst's 'Recovers 36.14% of attack damage as HP for 10 sec' is unmodeled as an HP magnitude (correct — no HP pool) and emits no recovery EVENT. Verified board-INERT rather than assumed: the lifesteal is SELF-scoped, the engine's heal effect fires recovery only at the block's own targets, and a 'recovery'-triggered consumer fires only when ITS unit receives one — so a self-lifesteal can never reach the crown-class ally consumer she shares the N9 comp with. A probe adding a shotFired+swapGate self-heal emit to her burst moved the board by exactly zero. Emitting it would still be more faithful (a future self-scoped on-recovery consumer would see it), so this is a consistency item, not a fit item: roster-wide, 8 of the 13 'Recovers X% of attack damage as HP' carriers emit and 5 (incl. her) do not. Wants one roster-wide ruling, not a unit-local fix.
 - **burst:** Attract: Taunts all enemies for 10 sec.
   - *Why:* See unit note / caveats
 - **burst:** Note: Unable to take cover while using Burst Skill.
@@ -625,7 +625,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Other / see caveats (104)
+### Other / see caveats (103)
 
 **A2** (a2)
 
@@ -751,11 +751,6 @@ Attract: Taunts all enemies for 5 sec.
   - *Why:* See unit note / caveats
 - **skill1:** Removes Metal γ.
   - *Why:* See unit note / caveats
-
-**Maxwell** (maxwell)
-
-- **skill2:** Activates when there are above 5 enemy units, excluding Nikkes. Affects self. Critical Rate ▲ 4.83%. Critical Damage ▲ 13.91%.
-  - *Why:* Skill2 (Crit Rate 4.83% + Crit Damage 13.91%) is gated on 'above 5 enemy units, excluding Nikkes'; in a single-boss solo raid that condition is never met, so the parser correctly drops it (deliberately left inactive)
 
 **Mihara: Bonding Chain** (mihara-bonding-chain)
 
@@ -956,7 +951,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v
 **Takina** (takina)
 
 - **skill2:** Deals Stun to all enemies for 2 sec (boss-inert: the sim's boss does not fire/charge/reload, so a stun on it changes nothing; genuinely-skippable class)
-  - *Why:* S2 is a 15s-cooldown pulse (cooldown NOT in the DB text; Prydwen COMMUNITY ⚑ confirms 15s): enemies Damage Taken 10.09%/5s + 2s stun (boss-inert, UNMODELED), allies True Damage 140.49%/10s
+  - *Why:* S2 is a 15s-cooldown pulse (cooldown NOT in the DB text; Prydwen COMMUNITY ⚑ supplies the 15s): enemies Damage Taken 10.09%/5s + 2s stun (boss-inert, UNMODELED), allies True Damage 140.49%/10s
 
 **Trina** (trina)
 
@@ -995,7 +990,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v
 - **burst:** Cooldown: 20 s
   - *Why:* See unit note / caveats
 
-### Missing engine primitive / trigger (88)
+### Missing engine primitive / trigger (89)
 
 **A2** (a2)
 
@@ -1215,6 +1210,11 @@ Damage Taken ▼ 57.86% for 15 sec. — UNMODELED (inert): no incoming-damage mo
 
 - **skill1:** Activates when landing a Full Charge attack. Affects all allies.
   - *Why:* || FULL-KIT AUDIT (every line accounted for): S1 bullet1 'on Full Charge landing → Damage dealt to Shield ▲100.09%/3s (all allies)' = UNMODELED (⚑4) — an offensive buff vs an ENEMY Shield; the v1 raid boss is partless and never shields, and no StatKey exists for shield-damage
+
+**Maxwell** (maxwell)
+
+- **skill2:** Activates when there are above 5 enemy units, excluding Nikkes. Affects self. Critical Rate ▲ 4.83%. Critical Damage ▲ 13.91%.
+  - *Why:* S2 (Critical Rate 4.83% + Critical Damage 13.91%) is gated on 'above 5 enemy unit(s), excluding Nikkes'; against a single partless boss that gate is permanently FALSE and the engine has no enemy-count primitive, so the faithful model is INERT (skill2 empty) — NOT an ungated crit passive
 
 **Mica: Snow Buddy** (mica-snow-buddy)
 
@@ -1495,7 +1495,7 @@ Outgoing healing ▲ 35.2% continuously.
 **Moran (Treasure)** (moran)
 
 - **skill2:** Activates when HP falls below 20%. Affects self. Effects vary according to the number of uses. Perseverance: Only one effect is triggered at a time.
-  - *Why:* [2026-07-17 THEME-13] Her S2 Perseverance 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are DELIBERATELY still unmodeled: they are HP-loss-gated ('Activates when HP falls below 20%'), so on the immortal partless boss (HP never drops) they NEVER fire — a kill/HP-gate (theme 18), not a theme-13 Max-HP-grant gap
+  - *Why:* PERSEVERANCE: her S2 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are unmodeled by design — HP-loss-gated ('Activates when HP falls below 20%'), so against the immortal partless boss they never fire, and they are self-targeted survival buffs with no atkOfMaxHpPct consumer on her, so they would be offensively inert even if they did
 
 **Nihilister** (nihilister)
 
