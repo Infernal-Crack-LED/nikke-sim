@@ -26,6 +26,9 @@ say "override validation (every simSupported unit — a synced unit without an o
 node -e "const d=JSON.parse(require('fs').readFileSync('data/characters.json','utf8')); console.log(Object.values(d.characters).filter(c=>c.simSupported).map(c=>c.slug).join('\n'))" \
   | xargs npx tsx scripts/validate-overrides.ts | tail -2
 
+say "target-status census (cross-slug producer/consumer names — a typo'd gate silently never opens)"
+npx tsx scripts/lint-target-status.ts
+
 say "runtime is prose-free (kit parser lives only in scripts/, never in src/ or web/src/)"
 test ! -f src/skills/parser.ts
 if grep -rnE "from ['\"].*(kit-parser|skills/parser)|parseSkill\(" src web/src --include='*.ts' --include='*.tsx'; then

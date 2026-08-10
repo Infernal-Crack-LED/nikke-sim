@@ -122,6 +122,11 @@ without flipping it. (Root case 2026-07-16: the SG model pass read board `arcana
   `docs/DECISIONS.md`, this file): no invented abbreviations — write fight/probe names out;
   widely-known game terms (B1, MG, SBS) are fine. These may be published to the community.
 - **AI-facing docs** (`docs/handoffs/*`, override JSON notes, scratch): any shorthand.
+- **Code citations in prose name the code block, never the line number** (2026-08-10): a bare
+  `sim.ts:2295`-style citation rots silently as the file is edited — write "the enemy-buff
+  dispatch in sim.ts" instead. `scripts/validate-overrides.ts` warns on line-number citations in
+  override `note`/`caveats`/`unmodeled` prose; existing carriers get cleaned as each unit is
+  touched, not in a bulk sweep.
 
 ## Doc-location rule
 
