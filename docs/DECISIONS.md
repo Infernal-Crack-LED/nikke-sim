@@ -9,6 +9,41 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-10) BURST-SKILL-DAMAGE AMPLIFIERS LANDED — `burstSkillSingleDamagePct` /
+  `burstSkillAoeDamagePct` + the `burstDesc` scope tag (faithfulness-pass phase 2b,
+  owner-approved scope).** The jackal/trina "Burst Skill damage of skills with ⟨Affects clause⟩
+  ▲X%" family had no engine vocabulary (audit F3; both unit specs pinned the omission as the
+  documented gap). Now: two additive Damage-Up stats read only by burst-slot hits whose effect
+  carries the matching `burstDesc` tag ('singleEnemy' / 'allEnemies' — the amplified skill's own
+  kit-description clause). Producers kit-verbatim: `jackal` 38.91/15s (B1 — her cast precedes the
+  chain's B3 by <1s, so the window covers the rotation's nuke); `trina` Spread Roots 435.6/5s —
+  the kit gates it on "enemy count aside from Nikkes is 1", ALWAYS true at solo-raid scope, so no
+  gate is encoded; the Wilted Roots ≥2-enemies branch is unreachable and stays unmodeled
+  verbatim. Beneficiaries tagged after per-line kit verification: `scarlet` (849.15% nuke) and
+  `liberalio` (925% nuke), both "■ Affects all enemies." damage lines; the remaining ~37
+  phrase-scan candidates tag as each unit passes its phase-4 review — an untagged hit reads no
+  amp, so under-tagging is a COLD-side honest omission, never an over-credit. ⚑ Additive
+  Damage-Up placement follows the ginmy-verified "○○ Damage ▲" family rule (damage-formula SSOT
+  §2), unmeasured for these two members — a popup read of an amped nuke pins it. Evidence:
+  regression + control-regression snapshots UNTOUCHED (no pinned comp pairs a producer with a
+  tagged beneficiary); unpinned `N3 scarlet/liberalio iron` measured liberalio 0.877→0.924 COLD ▼
+  (warmer toward 1) with every non-beneficiary unchanged at the third decimal; exact +4.356
+  Damage-Up arithmetic pinned in `scripts/tests/engine/burst-skill-amp.test.ts`. Falls under the
+  2026-08-09 faithfulness-enactment ruling ("no measurement is needed ahead of time … even if it
+  moves the board").
+
+- **(2026-08-10) `chargeCounter` DISPATCH NOW HONORS THE RUNTIME BLOCK GATES (faithfulness-pass
+  phase 2a).** The chargeCounter branch called `applyEffect` directly, silently ignoring all 8
+  abort-gates `applyBlock` enforces (the engine-modeling-gaps §1a bypass) — a latent
+  silent-failure for the first gated carrier. The gates are extracted into `blockGatesPass`,
+  shared by both dispatch paths; semantics mirror the hitCount path (threshold consumed
+  regardless, activation count + phase advance only on gate pass). Behavior-neutral by
+  construction: zero chargeCounter blocks carry any gate (roster scan 2026-08-10), regression +
+  control-regression byte-identical. Still bypassed by the one-phase-per-activation design:
+  `everyN`/`everyNOffset`/block `delaySec` — `validate-overrides.ts` errors on authoring those
+  with a chargeCounter trigger. Positive gate-binding proof:
+  `scripts/tests/engine/block-gates.test.ts` chargeCounter cases.
+
 - **(2026-08-09, later same day) anchor-innocent-maid's same-squad membership is OWNER-CONFIRMED —
   her squadmate is `mast-romantic-maid`, not `privaty-unkind-maid`.** Resolves the QUEUE.md
   "same-squad primitive migrations" blocker and the entry below's "NOT enacted" item (the in-game
