@@ -40,9 +40,9 @@
 //       the normal atkPct moving while the dot total stays BYTE-identical; a generic attackDamagePct
 //       (Damage-Up bucket) would lift the dot too — the counterfactual the shipped model provably
 //       fails.
-//   J2  the trueDamagePct buff is declared (fires once per cast) yet currently changes NO damage,
-//       because her normals are not true-flavored (the conversion above is unmodeled). Asserted BOTH
-//       ways: the buffApply exists AND removing it leaves her total untouched.
+//   J2  the trueDamagePct buff is declared (fires once per cast) AND moves damage, because the
+//       burst true-normals conversion gives it true-flavored hits to feed. Asserted both ways:
+//       the buffApply exists with the kit value/duration/scope, AND removing it lowers her total.
 //   J3  the dot is 192 atkPct on a 1-sec cadence, permanent (re-applied every reload). Count ≈ fight
 //       seconds; removing it deletes every tick and ~40% of her total.
 //   J4  fullBurstEnter, not burstCast: the ATK buff fires once per team Full Burst WINDOW (12 here,
