@@ -186,7 +186,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      in-flight duration mutation; `milk-blooming-bunny` a **reload-count-scoped stat CLAMP** (also the
      `docs/engine-modeling-gaps.md` §1b LOCK gap — NOT a timed window). Do not re-attempt them on the
      registry alone.
-  4. **U28** — `extraHitDamagePct` vs `flatDamage` gauge + flavor asymmetry.
+  4. **U28** — `extraHitDamagePct` vs `flatDamage` gauge + flavor asymmetry. **2026-08-10
+     measurement pass (findings-only): FB-count-neutral in the control-comp shape even under an
+     exaggerated arm** — bound instrument `scripts/battery/u28-gauge-ab.ts`; the batched
+     gauge-cluster proposal (tempo + double-emit reproduce + U28 + theme-20 sourcing, land
+     together) is `docs/handoffs/2026-08-10-gauge-economy-findings.md`.
 - **⇒ ENGINE PRIMITIVE GAP: `addStack`** — no effect increments an existing buff's stack count by N on
   a trigger. Blocks `flora` S1 ("after 100 normal attacks, all Electric Code allies: increases the
   stack count of stackable buffs by 1" — trigger `hitCount:100` and target `alliesOfElement` are both
