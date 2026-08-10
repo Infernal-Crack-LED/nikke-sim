@@ -27,20 +27,15 @@
 //      engine's refresh-on-reapply semantics climb to 5 and keep refreshing — asserted directly
 //      (post-cap applies carry stacks 5 + refresh). Nearest-wrong: the flat-passive +69% misread
 //      (one apply at t=0) — strictly over-damages the ramp.
-//   R3 PARTIAL (documented, ⚑ in override) — "Increases stack count of buffs by 1" (word_group
-//      10001; the soda/mica-snow-buddy/pepper sentence). SELF slice: rupee's only stackable buff
-//      is Mileage, folded as +1 to the `mileage` resource pool on the same hitCount:100 trigger.
-//      The pool has NO event channel — it is observable ONLY through R5's gate, and no cast in any
-//      legal fixture falls inside the (shot 120, shot 150) window where the S1 +1 changes gate
-//      timing (casts are ≥20s apart; the window is ~4s), so the block is behaviorally inert here
-//      and carries NO assertion (power-P3 pattern; the acceleration claim lives in the override
-//      caveat, measurement-gated ⚑). The CROSS-ALLY slice (+1 to teammates' own stackable buffs)
-//      is out-of-domain (no engine primitive, ⚑) and the stack's ATK-buff component is
-//      unrepresentable without double-counting (buff instances key on caster+slot+stat+value, ⚑) —
-//      both stay verbatim in the override's unmodeled. What IS pinned here: the pool currency stays
-//      a RESOURCE — rupee emits buffApply events for exactly her three encoded lines and nothing
-//      else, and the Mileage buff is a single keyed instance (a parallel skill1-slot Mileage buff
-//      would surface as a second key — the double-count the encoding deliberately avoids).
+//   R3 MODELED (enacted 2026-08-09, owner faithfulness ruling) — "Increases stack count of buffs
+//      by 1" (word_group 10001; the soda/mica-snow-buddy/pepper sentence). SELF slice: +1 to the
+//      `mileage` resource pool PLUS a cross-slot addStack{stat:'atkPct'} that bumps the live S2
+//      Mileage instance (granting the 13.8% ATK component; R2 splits its bump events from the
+//      30-hit proc applies). CROSS-ALLY slice: alliesOfElement Iron (excludeSelf) addStack —
+//      zero movement in this fixture (no other Iron ally holds a stackable buff), live in
+//      stacking Iron comps. The Mileage buff stays a single keyed instance (the bump merges into
+//      it rather than creating a parallel skill1-slot copy — the double-count the encoding
+//      deliberately avoids).
 //   R4 FAITHFUL — burstCast → enemy → flatDamage 274.28. "% of final ATK" is exactly
 //      flatDamage's caster-final-ATK scaling; the partless v1 boss is the only enemy, so the AoE
 //      "enemies within range" collapses to the boss taking the full value. A burst CAST lands
@@ -176,7 +171,9 @@ const rupeeNoPool = withPatchedOverride('rupee', (ov) => {
       (b: any) => !b.effects.some((e: any) => e.kind === 'resource')
     );
     if (ov[slot].length === before) {
-      throw new Error(`rupee ${slot} resource block missing — fixture is stale`);
+      throw new Error(
+        `rupee ${slot} resource block missing — fixture is stale`
+      );
     }
   }
 });
@@ -185,7 +182,9 @@ const rupeeNoPool = withPatchedOverride('rupee', (ov) => {
 const rupeeFbeKeyed = withPatchedOverride('rupee', (ov) => {
   const b = ov.burst.find((x: any) => hasStat(x, 'atkPct'));
   if (!b || b.trigger.kind !== 'burstCast') {
-    throw new Error('rupee burstCast-keyed ATK block missing — fixture is stale');
+    throw new Error(
+      'rupee burstCast-keyed ATK block missing — fixture is stale'
+    );
   }
   b.trigger = { kind: 'fullBurstEnter' };
 });
@@ -212,8 +211,9 @@ const rupeeCasts = (evs: SimEvent[]) =>
     (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'rupee'
   );
 const fbStarts = (evs: SimEvent[]) =>
-  evs.filter((e): e is Extract<SimEvent, { kind: 'fullBurstStart' }> =>
-    e.kind === 'fullBurstStart'
+  evs.filter(
+    (e): e is Extract<SimEvent, { kind: 'fullBurstStart' }> =>
+      e.kind === 'fullBurstStart'
   );
 /** rupee's OWN S1 crit applies — one buffApply per holder per firing. */
 const critApplies = (evs: SimEvent[]) =>
@@ -257,9 +257,10 @@ describe('rupee — kit spec', () => {
   describe('R1 — S1 Prize: crit rate to ALL IRON CODE allies every 100 hits', () => {
     it('fires once per 100 landed shots', () => {
       const shots = rupeeShots(base.events).length;
-      expect(shots, 'fixture sanity: sustained AR fire in 180s').toBeGreaterThan(
-        1500
-      );
+      expect(
+        shots,
+        'fixture sanity: sustained AR fire in 180s'
+      ).toBeGreaterThan(1500);
       expect(critFirings(base.events).length).toBe(Math.floor(shots / 100));
     });
 
@@ -289,7 +290,10 @@ describe('rupee — kit spec', () => {
     it('is LIVE: it lifts the normal crit rate, and removing it collapses the rate to base', () => {
       const lifted = normalCritRates(base.events, 'rupee');
       const baseline = normalCritRates(noS1Crit.events, 'rupee');
-      expect(lifted.length, 'base run must show both the bare and the lifted rate').toBe(2);
+      expect(
+        lifted.length,
+        'base run must show both the bare and the lifted rate'
+      ).toBe(2);
       expect(baseline.length, 'removed-crit run must be flat').toBe(1);
       expect(baseline[0]).toBe(lifted[0]);
       expect(Number(lifted[1]) - Number(lifted[0])).toBeCloseTo(0.0224, 6);
@@ -323,14 +327,32 @@ describe('rupee — kit spec', () => {
   });
 
   describe('R2 — S2 Mileage: self ATK stacks, every 30 hits, to 5, with a 15s refresh', () => {
-    it('applies once per 30 landed shots, self-scoped', () => {
+    // The S1 cross-slot merge (addStack{stat:'atkPct'}, enacted 2026-08-09) bumps the live
+    // Mileage instance at the shot-100 S1 proc while stacks are below cap — one extra
+    // buffApply that inherits the ORIGINAL expiry (a bump, not a refresh window).
+    const s2ProcFrames = (evs: SimEvent[]) =>
+      new Set(
+        rupeeShots(evs)
+          .filter((_, i) => (i + 1) % 30 === 0)
+          .map((x) => x.frame)
+      );
+
+    it('applies once per 30 landed shots (plus the pre-cap S1 merge bumps), self-scoped', () => {
       const shots = rupeeShots(base.events).length;
+      const procs = s2ProcFrames(base.events);
       const applies = mileageApplies(base.events);
-      expect(applies.length).toBe(Math.floor(shots / 30));
+      const s2Applies = applies.filter((b) => procs.has(b.frame));
+      const mergeBumps = applies.filter((b) => !procs.has(b.frame));
+      expect(s2Applies.length).toBe(Math.floor(shots / 30));
+      expect(
+        mergeBumps.length,
+        'the S1 cross-slot merge must bump at least once pre-cap'
+      ).toBeGreaterThan(0);
       expect([...new Set(applies.map((b) => b.targetIdx))]).toEqual([RUPEE]);
     });
 
     it('is 13.8% per stack, max 5 stacks, reaching max, with a 15 sec expiry', () => {
+      const procs = s2ProcFrames(base.events);
       const applies = mileageApplies(base.events);
       expect([...new Set(applies.map((b) => b.value))]).toEqual([13.8]);
       expect([...new Set(applies.map((b) => b.maxStacks))]).toEqual([5]);
@@ -338,7 +360,7 @@ describe('rupee — kit spec', () => {
         Math.max(...applies.map((b) => b.stacks)),
         'stacks must actually climb to the 5-stack cap mid-fight'
       ).toBe(5);
-      for (const b of applies) {
+      for (const b of applies.filter((x) => procs.has(x.frame))) {
         expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
       }
     });
@@ -356,7 +378,8 @@ describe('rupee — kit spec', () => {
 
     it('DISCRIMINATING: a flat instant +69% would apply once and over-credit the ramp', () => {
       const selfAtk = buffs(flatAtk.events).filter(
-        (b) => b.casterIdx === RUPEE && b.stat === 'atkPct' && b.targetIdx === RUPEE
+        (b) =>
+          b.casterIdx === RUPEE && b.stat === 'atkPct' && b.targetIdx === RUPEE
       );
       // The 19.8 burst-window buff (rupee holds her own) is untouched by this patch — filter
       // by value: exactly ONE passive 69% apply, and the 13.8% stack buff is gone.
@@ -370,9 +393,12 @@ describe('rupee — kit spec', () => {
   });
 
   describe('R3 — the Mileage stack is a resource pool, not a buff (gate currency for R5)', () => {
-    it("rupee emits buffApply events for EXACTLY her three encoded lines — no stray stack-buff", () => {
+    it('rupee emits buffApply events for EXACTLY her three encoded lines — no stray stack-buff', () => {
       const fromRupee = buffs(base.events).filter((b) => b.casterIdx === RUPEE);
-      expect(fromRupee.length, 'fixture sanity: rupee buffs exist').toBeGreaterThan(0);
+      expect(
+        fromRupee.length,
+        'fixture sanity: rupee buffs exist'
+      ).toBeGreaterThan(0);
       expect(
         [...new Set(fromRupee.map((b) => `${b.stat}:${b.value}`))].sort()
       ).toEqual(['atkPct:13.8', 'atkPct:19.8', 'critRatePct:2.24']);
@@ -392,7 +418,10 @@ describe('rupee — kit spec', () => {
 
     it('fires once per burst cast at the kit magnitude, in the burst bucket', () => {
       const casts = rupeeCasts(base.events);
-      expect(casts.length, 'fixture sanity: rupee casts in 180s').toBeGreaterThan(5);
+      expect(
+        casts.length,
+        'fixture sanity: rupee casts in 180s'
+      ).toBeGreaterThan(5);
       expect(nukes.length).toBe(casts.length);
       expect([...new Set(nukes.map((d) => d.atkPct))]).toEqual([274.28]);
       expect([...new Set(nukes.map((d) => d.bucket))]).toEqual(['burst']);
@@ -409,9 +438,9 @@ describe('rupee — kit spec', () => {
     });
 
     it('DISCRIMINATING: the lv1 magnitude 150.85 is not the shipped value', () => {
-      expect(
-        [...new Set(rupeeNukes(nukeLv1.events).map((d) => d.atkPct))]
-      ).toEqual([150.85]);
+      expect([
+        ...new Set(rupeeNukes(nukeLv1.events).map((d) => d.atkPct)),
+      ]).toEqual([150.85]);
     });
   });
 
@@ -440,9 +469,10 @@ describe('rupee — kit spec', () => {
           .filter((b) => b.frame === frame)
           .map((b) => b.targetIdx)
           .sort();
-        expect(holders, `firing at frame ${frame} must reach all three allies`).toEqual(
-          [LITER, RUPEE, ADA]
-        );
+        expect(
+          holders,
+          `firing at frame ${frame} must reach all three allies`
+        ).toEqual([LITER, RUPEE, ADA]);
       }
       for (const b of applies) {
         expect(b.value).toBe(19.8);
@@ -461,9 +491,10 @@ describe('rupee — kit spec', () => {
 
     it('DISCRIMINATING (gate SOURCE): zeroing the pool never fires the window, nukes intact', () => {
       const casts = rupeeCasts(noPool.events);
-      expect(casts.length, 'fixture sanity: rupee still casts without the pool').toBe(
-        rupeeCasts(base.events).length
-      );
+      expect(
+        casts.length,
+        'fixture sanity: rupee still casts without the pool'
+      ).toBe(rupeeCasts(base.events).length);
       expect(
         burstAtkApplies(noPool.events),
         'with the pool at 0 the Mileage gate must never open'

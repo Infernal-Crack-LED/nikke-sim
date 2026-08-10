@@ -58,6 +58,40 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+#### Unmodeled-review follow-ups (post-enactment remainder, 2026-08-09)
+
+> The 2026-08-09 faithfulness-enactment batch LANDED every enactable finding from the
+> unmodeled-entries audit (DECISIONS 2026-08-09 has the full list + board A/B). What remains:
+
+- **Exposed hot fits from the batch — run the pending direct measurements, then re-tune (never
+  re-fudge):** `jill` 0.966→1.924 (read the in-burst normal popup value tier in her focus
+  footage — true-flavored normals bypass DEF, a different value tier) and `maxwell` 0.889→1.252
+  (popup-read the burst window in run-G/N6 footage: railgun shot count + charged value vs the
+  modeled ~2 × 2440.26%).
+- **`alice-wonderland-bunny` stack-grant reading:** now aligned to the +1-GRANT majority; if a
+  datamine function-type read or footage confirms the 2026-07-28 cap-raise reading instead,
+  revert her addStack block to unmodeled (revert path in her note).
+- **misc B3s (run I) FB shortfall:** sim 12 vs measured 13 since `grave`'s kit-real ammo dump
+  landed (the old match rode its absence) — pinned as `simFullBursts: 12` in
+  scripts/regression.ts; joins the open burst-generation-shortfall thread (the four disabled
+  liberalio comps).
+- **Bare `sim.ts:<line>` citations in override prose drift silently (class, not a one-off):** the
+  cross-family review of this branch caught `anis-star`'s charge-formula citation pointing at the
+  DoT-scheduling case (fixed here by naming the code instead of the line); `phantom`'s enemy-DEF
+  citation was the same shape. Nothing checks these. Options: a lint that resolves every
+  `sim.ts:<line>` citation in override prose, or a convention that prose names the code block
+  ("the charge-frames clamp in sim.ts") and never the line number.
+- **`gen-unmodeled-review.ts` never receives an override `note`:** it calls
+  `matchingCaveat(line, slot, u.caveats, u.note)` and `classify(line, caveat, u.note)`, but
+  `data/kit-status.json` mirrors `unmodeled`/`caveats` and NOT `note` — so `u.note` is
+  `undefined` for all 183 units and both functions silently run without the note signal they
+  were written to use. Predates this branch (the 2026-08-09 caveat-pairing fix did not touch it).
+  Fixing it re-categorizes entries in the generated doc, so it wants its own change: either
+  mirror `note` in kit-status.json or drop the dead parameters.
+- **Small ⚑ phase estimates riding the batch** (each flagged in its override, pin from footage
+  if popup-read): `arcana-fortune-mate` reload delaySec 1.5; `neon-vision-eye` in-window normal
+  count (the 330 magnitude); `rosanna` Concealment uptime (kit-duration upper bound).
+
 #### Code / tooling (unblocked, no footage or owner ruling needed)
 
 - **⇒ ENEMY DEF ▼ HAS NO CHANNEL, and the web app runs at nonzero boss DEF (findings-only
@@ -547,10 +581,6 @@ template mislock, → 0 on relock) + 29 countable`. 42 − 35 = 7 / 5 shots = **
      `buffApply`, …) listed under §1d in the plan — build them as step-3 tests need them.
 - **⇒ SAME-SQUAD PRIMITIVE MIGRATIONS** (the primitive landed 2026-08-02; `teamHas.sameSquad` resolves
   from `src/data/squads.ts`, fail-closed). Remaining units with "same squad" kit text:
-  - `anchor-innocent-maid` (S1 block B heal gate) — modeled always-satisfied (override caveat). BLOCKED
-    on an owner ruling for her squad membership (the maid costumes — `mast-romantic-maid`,
-    `privaty-unkind-maid` — are candidates, NOT verified). Once ruled: add the squad to
-    `src/data/squads.ts`, gate the block, rewrite the caveat.
   - `ram` (S1 "Full Burst ends with an ally from the same squad") — no override yet (not simSupported);
     collab-unit squad unknown, confirm before authoring.
   - `emma-tactical-upgrade` / `eunhwa-tactical-upgrade` (S2 "affects all allies from the same squad") —

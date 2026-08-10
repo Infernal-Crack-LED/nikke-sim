@@ -318,7 +318,8 @@ describe('rosanna (base, MG/Electric/Burst I) — kit spec', () => {
 
   describe('R4 — Burst Assalto 1310.4% of final ATK (burstCast flatDamage, burst bucket)', () => {
     const nukes = rosDmg(W.events, 'burst').filter(
-      (d) => d.srcSlot === 'burst'
+      // exclude the Concealment-gated 561.6% rider (own pin in R6)
+      (d) => d.srcSlot === 'burst' && d.atkPct !== 561.6
     );
 
     it('fires once per burst cast at the kit magnitude, in the burst bucket', () => {
@@ -336,7 +337,7 @@ describe('rosanna (base, MG/Electric/Burst I) — kit spec', () => {
 
     it('DISCRIMINATING: the lvl-9 1244.88 magnitude is a different number', () => {
       const low = rosDmg(W_lowBurst.events, 'burst').filter(
-        (d) => d.srcSlot === 'burst'
+        (d) => d.srcSlot === 'burst' && d.atkPct !== 561.6
       );
       expect([...new Set(low.map((d) => d.atkPct))]).toEqual([1244.88]);
       expect([...new Set(nukes.map((d) => d.atkPct))]).not.toEqual([
@@ -384,12 +385,19 @@ describe('rosanna (base, MG/Electric/Burst I) — kit spec', () => {
     });
   });
 
-  describe('R6 — burst concealment-gated 561.6% additional damage is honestly NOT modeled (⚑1)', () => {
-    it('no rosanna hit at 561.6% exists in any bucket (not silently proxied/always-on)', () => {
-      const proxied = dmg(W.events).filter(
+  describe('R6 — burst concealment-gated 561.6% additional damage (targetStatus proxy, enacted 2026-08-09)', () => {
+    it('fires a 561.6% burst hit once per cast while the Concealment status window is open', () => {
+      // Concealment windows: battle-start 5s (S2) + 10s per 120 MG normals (S1, ≈every 6s
+      // of fire) — near-permanent in-sim (⚑1: in-game removal on direct hit is unmodeled,
+      // so this is the kit-duration upper bound).
+      const riders = dmg(W.events).filter(
         (d) => d.slug === 'rosanna' && d.atkPct === 561.6
       );
-      expect(proxied.map((d) => d.atkPct)).toEqual([]);
+      expect(riders.length).toBeGreaterThan(0);
+      const casts = W.events.filter(
+        (e: any) => e.kind === 'burstCast' && e.slug === 'rosanna'
+      ).length;
+      expect(riders.length).toBeLessThanOrEqual(Math.max(casts, 1));
     });
   });
 

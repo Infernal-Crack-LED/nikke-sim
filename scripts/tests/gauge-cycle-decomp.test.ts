@@ -67,7 +67,11 @@ describe('gauge cycle decomposition (fb-count-regression LOG finding)', () => {
     const t5 = decomp('T5 wind-weak probe (boss Iron)');
     const t1 = decomp('T1 wind-weak (boss Iron)');
     expect(d.excess).toBeGreaterThan(1.5);
-    expect(d.excess).toBeLessThan(3.0);
+    // Band re-derived 2026-08-09 (2.x → 3.16): the faithfulness-enactment batch gave this
+    // comp's grave her kit Prediction-end ammo dump (one forced ~3.35s reload per burst
+    // cycle — MG gauge feed pauses), slowing the comp's refill-from-zero. The negative-
+    // control CLAIM is carried by the relative asserts below, which still hold.
+    expect(d.excess).toBeLessThan(3.5);
     expect(d.excess).toBeLessThan(t5.excess);
     expect(d.excess).toBeLessThan(t1.excess);
   });

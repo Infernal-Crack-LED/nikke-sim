@@ -4,7 +4,6 @@
   "unmodeled": {
     "skill1": [],
     "skill2": [
-      "■ Affects self. Activates when above 80% HP. Gain continuous Pierce.",
       "■ Affects self. Activates when HP falls below 80%. Continuously recover HP by 8.12% of attack damage."
     ],
     "burst": []

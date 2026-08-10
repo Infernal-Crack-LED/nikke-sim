@@ -570,10 +570,11 @@ describe('snow-white-heavy-arms — kit spec', () => {
     it('W2/W3: skill1-keyed buffs emit EXACTLY {damageTakenPct} — no DEF▲42.24 / ammo-loading stat', () => {
       expect(slotKeyedStats(base.events, 'skill1')).toEqual(['damageTakenPct']);
     });
-    it('W11: skill2-keyed buffs emit EXACTLY the four modeled families — no Pierce effect', () => {
+    it('W11: skill2-keyed buffs emit EXACTLY the five modeled families (incl. the 1.2s chargeTimeClamp; Pierce is a gainPierce effect, not a buff stat)', () => {
       expect(slotKeyedStats(base.events, 'skill2')).toEqual([
         'atkPct',
         'chargeDamagePct',
+        'chargeTimeClamp',
         'partsDamagePct',
         'sequentialDamagePct',
       ]);

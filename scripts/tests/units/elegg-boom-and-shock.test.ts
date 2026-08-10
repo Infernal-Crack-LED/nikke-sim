@@ -294,8 +294,11 @@ describe('elegg-boom-and-shock (Elegg: Boom and Shock) — kit spec', () => {
       expect(targetSet(applied)).toEqual(WATER_ALLIES);
     });
 
-    it('is gated on the pool: first apply after the pool reaches 4 (t≈24), not frame 0', () => {
-      expect(firstFrame(applied)).toBeGreaterThanOrEqual(20 * FPS);
+    it('is gated on the pool: first apply after the pool reaches 4 (t≈18), not frame 0', () => {
+      // ≈18s since the pool min:1 landed (2026-08-09, "Maintains at least 1 ghost"): the
+      // pre-18s burst spend now floors at 1 ghost instead of 0, so the ≥4 tier arrives one
+      // 6s capture earlier than the old ≈24s. Still far from frame 0 — the gate is real.
+      expect(firstFrame(applied)).toBeGreaterThanOrEqual(17 * FPS);
     });
 
     it('is the Elemental-Advantage bucket: inert against a neutral (Iron) boss', () => {

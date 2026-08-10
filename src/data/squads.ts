@@ -30,6 +30,11 @@ export const SQUAD_BY_SLUG: Record<string, string> = {
   tia: 'M.M.R.',
   naga: 'M.M.R.',
   marciana: 'M.M.R.',
+
+  // Owner-confirmed 2026-08-09 (in-game squad field): anchor-innocent-maid's squad
+  // partner is mast-romantic-maid.
+  'anchor-innocent-maid': 'Maid',
+  'mast-romantic-maid': 'Maid',
 };
 
 export function squadOf(slug: string): string | undefined {

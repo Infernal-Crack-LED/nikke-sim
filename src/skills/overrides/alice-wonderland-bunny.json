@@ -1,9 +1,7 @@
 {
-  "note": "Alice: Wonderland Bunny (awb) — Tetra SMG Supporter, Water, Burst I (40s CD), variant of base alice (SR/Fire — a different unit). The burst-I rotation-reset enabler: her burst RE-ENTERS Burst Stage 1 (datamined burstMeta use_burst_skill/change_burst_step = Step1) so a second eligible B1 also casts in the same chain — engine reenterStage stage 1 (the Tia / Anis:Star pairing primitive; sim.ts stage-hold). skill1 (both lines fire 'after landing 60 normal attacks', one ■ header → one hitCount:60 trigger each): (1) team heal EVENT — 'Recovers 7.4% of the skill user's final Max HP': the heal effect emits a recovery event to all allies with no HP amount modeled (engine design), feeding recovery-trigger consumers (e.g. crown's 'when recovery takes effect' team Attack Damage); at her SMG cadence (RoF 1440, 120 mag) this fires ~every 2.5s. (2) Carrot Party — 'Damage to Interruption Parts ▲2%, stacks up to 5 time(s), lasts 5 sec': partsDamagePct 2 / maxStacks 5 / 5s, parsed but INERT in v1 (no destructible parts on the boss — the helm partsDamagePct precedent); carried at the event level so the magnitude/stacking are queryable. skill2: (1) 'after Full Burst ends → Burst Gauge filling speed ▲10% for 5 sec' = burstGenPct 10 / 5s on fullBurstEnd (NOT fullBurstEnter — the post-FB refill window, not the in-FB window); (2) 'entering Full Burst → Max Ammunition Capacity ▲40% for 15 sec' = maxAmmoPct 40 / 15s on fullBurstEnter (percent of capacity, NOT maxAmmoFlat rounds — weapon-state modifier, damage-relevant through reload economy); (3) 'Reload 40%' = instantReload fraction 0.4 on the same fullBurstEnter — an INSTANT partial magazine refill, NOT a reloadSpeedPct buff (the two-word line's nearest shared-prior misread). Block order within skill2 is load-bearing for the refill size: the maxAmmoPct block precedes the instantReload block, so the refill reads the raised capacity (0.4 × 168 ≈ 67 rounds at SL10) — both effects land on the same FB-entry frame, capacity-up first. ⚑ the in-game capacity-vs-refill ordering is unmeasured; if a recording shows 40% of BASE capacity (48 rounds) instead, swap the block order. burst: reenterStage stage 1 + team heal event ('Restores 27% of the skill user's final Max HP', amount unmodeled by engine design). UNMODELED: skill1's 90-hit line 'Stack count of buffs ▲ 1' (a stack-CAP raise on Water Code allies' stackable buffs — no engine primitive raises a buff's stack cap, and the only stackable buff in play is the inert Carrot Party; NOT a +1 stack grant, which would spuriously accelerate the max-stacks gate) and the burst's 'when Carrot Party is at max stacks → Incoming healing ▲150% for 15 sec' (no healing-received channel exists and the gate references the inert stack count). Pinned end-to-end by scripts/tests/units/alice-wonderland-bunny.test.ts. Kit-autonomy gauntlet 2026-07-28.",
+  "note": "Alice: Wonderland Bunny (awb) — Tetra SMG Supporter, Water, Burst I (40s CD), variant of base alice (SR/Fire — a different unit). The burst-I rotation-reset enabler: her burst RE-ENTERS Burst Stage 1 (datamined burstMeta use_burst_skill/change_burst_step = Step1) so a second eligible B1 also casts in the same chain — engine reenterStage stage 1 (the Tia / Anis:Star pairing primitive; sim.ts stage-hold). skill1 (both lines fire 'after landing 60 normal attacks', one ■ header → one hitCount:60 trigger each): (1) team heal EVENT — 'Recovers 7.4% of the skill user's final Max HP': the heal effect emits a recovery event to all allies with no HP amount modeled (engine design), feeding recovery-trigger consumers (e.g. crown's 'when recovery takes effect' team Attack Damage); at her SMG cadence (RoF 1440, 120 mag) this fires ~every 2.5s. (2) Carrot Party — 'Damage to Interruption Parts ▲2%, stacks up to 5 time(s), lasts 5 sec': partsDamagePct 2 / maxStacks 5 / 5s, parsed but INERT in v1 (no destructible parts on the boss — the helm partsDamagePct precedent); carried at the event level so the magnitude/stacking are queryable. skill2: (1) 'after Full Burst ends → Burst Gauge filling speed ▲10% for 5 sec' = burstGenPct 10 / 5s on fullBurstEnd (NOT fullBurstEnter — the post-FB refill window, not the in-FB window); (2) 'entering Full Burst → Max Ammunition Capacity ▲40% for 15 sec' = maxAmmoPct 40 / 15s on fullBurstEnter (percent of capacity, NOT maxAmmoFlat rounds — weapon-state modifier, damage-relevant through reload economy); (3) 'Reload 40%' = instantReload fraction 0.4 on the same fullBurstEnter — an INSTANT partial magazine refill, NOT a reloadSpeedPct buff (the two-word line's nearest shared-prior misread). Block order within skill2 is load-bearing for the refill size: the maxAmmoPct block precedes the instantReload block, so the refill reads the raised capacity (0.4 × 168 ≈ 67 rounds at SL10) — both effects land on the same FB-entry frame, capacity-up first. ⚑ the in-game capacity-vs-refill ordering is unmeasured; if a recording shows 40% of BASE capacity (48 rounds) instead, swap the block order. burst: reenterStage stage 1 + team heal event ('Restores 27% of the skill user's final Max HP', amount unmodeled by engine design). skill1's 90-hit line 'Stack count of buffs ▲ 1' is MODELED as a +1 stack GRANT — hitCount:90 → alliesOfElement Water → `addStack` count 1 (enacted 2026-08-09, owner faithfulness ruling): the identical sentence family (word_group 10001) is read as a GRANT by the guilty/pepper/rupee/mica-snow-buddy majority and this override now aligns; ⚑ the minority stack-CAP-raise reading (the 2026-07-28 gauntlet's) stays on record — if a datamine function-type read or footage confirms cap-raise, revert to unmodeled (a cap raise has no primitive). In-fixture movement ≈ nil: the only stackable Water-ally buff is her own Carrot Party (partsDamagePct — partless-boss inert), which the grant merely accelerates toward its cap. UNMODELED: the burst's 'when Carrot Party is at max stacks → Incoming healing ▲150% for 15 sec' (no healing-received channel exists). Pinned end-to-end by scripts/tests/units/alice-wonderland-bunny.test.ts. Kit-autonomy gauntlet 2026-07-28.",
   "unmodeled": {
-    "skill1": [
-      "■ Activates after 90 normal attack(s). Affects all Water Code allies.\nStack count of buffs ▲ 1. (a stack-CAP raise, not a +1 stack grant — no engine primitive raises a buff's stack cap; the only stackable buff in play, Carrot Party, is damage-inert in v1: double inert)"
-    ],
+    "skill1": [],
     "skill2": [],
     "burst": [
       "■ Activates when Carrot Party is at max stacks. Affects all allies.\nIncoming healing ▲ 150% for 15 sec. (no healing-received channel — no HP pool at scope; the activation gate references the inert Carrot Party stack count)"
@@ -41,6 +39,23 @@
           "value": 2,
           "durationSec": 5,
           "maxStacks": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 90
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Water"
+      },
+      "effects": [
+        {
+          "kind": "addStack",
+          "count": 1
         }
       ]
     }

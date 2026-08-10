@@ -2,22 +2,20 @@
   "note": "rosanna (Rosanna, BASE unit — NOT rosanna-chic-ocean the AR/Wind Supporter variant; do NOT conflate) — MG / Attacker / Electric / Burst I, cd 40s. A concealment-and-Frenzy burst DPS whose kit is heavily PVE-survival/utility oriented: most of her lines (Concealment targeting-prevention x3, enemy buff-removal, two ally-death Frenzy/damage triggers) are OUT-OF-DOMAIN for the immortal-boss / no-targeting DPS basis and are documented verbatim in `unmodeled`. The DPS-load-bearing lines that ARE modeled: (S1-crit) after landing 120 normal attacks -> self Critical Rate ▲19.34% for 3 sec -> hitCount:120 -> self critRatePct 19.34 / durationSec 3 (UNSCOPED critRatePct, kit says plain 'Critical Rate', not 'of normal attacks'; recurs every 120 normals, no once-per-battle clause). (S1-elem) 'when the stage target appears ... Elemental Advantage Attack Damage ▲20% continuously' -> passive -> self elemAdvantageDamagePct 20 (engine gates it to the ELEMENT bucket and applies it ONLY while advantaged() — Electric beats Water, so it is live vs a Water boss and inert vs a non-advantaged boss; sim.ts advantaged()/elemAdvantageDamagePct). (S2-frenzy) 'after landing 500 normal attacks on the stage target -> Frenzy: ATK ▲22.61%, stacks up to 10, lasts 30 sec' -> hitCount:500 -> self atkPct 22.61 / maxStacks 10 / durationSec 30 (recurs every 500 normals; the OTHER Frenzy source — on ally incapacitation — is out-of-domain and unmodeled, so only the 500-normal stacks accrue here). (Burst-Assalto) 'Prioritizes Attacker-type enemies, 2 enemies: Assalto 1310.4% of final ATK' -> burstCast -> enemy flatDamage 1310.4 (single boss so '2 enemies / prioritize Attacker' collapses to the one target; burst-cast auto FB-exempt, snapshots pre-FB). (Burst-taken) 'if the target hit by Assalto is a Water Code stage target -> Damage Taken ▲29% for 30 sec' -> burstCast + bossElementGate:'Water' -> enemy damageTakenPct 29 / durationSec 30 (boss-held team-wide taken debuff; INERT vs a non-Water boss, awakes vs Water — same pattern as helm-aquamarine/brid-silent-track). UNMODELED (out-of-domain, verbatim): S1 Concealment (10s, targeting-prevention — no concealment primitive; boss deals no damage so targeting is irrelevant); S1 'Removes 5 buff(s). Activates once per battle' (enemy buff-removal not modeled); S2 battle-start Concealment (5s); S2 'when a Nikke is incapacitated -> Frenzy ATK ▲22.61% x10/30s + Fills Burst Gauge by 36.54%' (ally-death trigger never fires — immortal boss, no ally ever incapacitated); S2 'when a Nikke is incapacitated -> 400% of final ATK to 1 enemy' (same ally-death trigger). ⚑1 (OUT-OF-DOMAIN / MEASUREMENT-GATED, burst additional damage): burst line 'Activates when the skill user is in the Concealment state ... Deals 561.6% of final ATK as additional damage' is NOT modeled — it is gated on the Concealment SELF-STATE, which has no engine primitive (concealment is a targeting-prevention status, out-of-domain for DPS). Estimate: +561.6% of final ATK per burst ON TOP of the 1310.4% Assalto (≈ +43% burst damage) WHEN concealment is up; concealment uptime is itself unmeasured (S2 gives 5s at battle start, S1 gives 10s every 120 normals, so qualitatively high after the opening, but the exact burst-cast-phase overlap is a timing read). Recipe: needs a concealment self-status primitive (window keyed to the S1 120-normal / S2 battle-start sources) AND a burst-cast-timing popup read to pin the overlap; until then it is an honest gap, not a silent drop. Tier: out-of-domain (the gating state is a targeting mechanic the DPS sim does not represent) + measurement-gated (the precise uptime needs footage). RECONCILED vs the cross-family S2b reviewer (kimi-code/k3), which recommended encoding the 561.6% UNGATED + asserting ≈100% in-fixture concealment uptime via an inert marker buff: the reviewer is correct that IN-FIXTURE concealment uptime is ≈100% after the first 120-normal proc (MG cadence ~33 normals/s ⇒ 120 normals ≈ 3.6s proc interval < the 10s window, and the v1 boss deals no damage so 'removed upon taking a direct hit' never fires ⇒ continuous from ~3.6s, covering every 40s+ burst cast). But that ≈100% is a SIM ARTIFACT of the immortal/no-damage boss — in a real fight concealment BREAKS on every direct hit, so real uptime is strictly lower and is a timing read the sim cannot reproduce. Encoding ungated would therefore bake an unmeasured sim artifact into the damage total (fudge), whereas the honest ⚑ preserves 'measured > fudge'; the reviewer's own marker-buff workaround also needs an inert-stat hack (the schema has no concealment/self-status stat). Both positions are defensible; the driver picks the conservative honest gap. The reviewer's spec also OMITTED four real kit lines the driver models (S1 Elemental Advantage 20% = R1, S2 500-normal Frenzy = R3, burst Water-Code Damage Taken 29% = R5, S2 ally-death 400% = R7); these are independently re-derived by the S5/S6/S7 blind roles. ⚑2 cadence tuple: MG pulls/s + reloadFrames 121 + ammo 300 are datamined defaults, not yet measured from video; the hitCount:120 / hitCount:500 proc COUNTS scale with fire cadence, so a measured cadence would refine the absolute proc counts (the encoding — every 120 / every 500 normals — is kit-exact regardless). Recipe: rounds/min + reload gap from a focus video. TIER 2 (bossElementGate status-gate on the burst taken-debuff; scoped self-buffs; hitCount round-count cadence; concealment status-gate ⚑ on the additional damage). Faithful>fit; measured>fudge. || Kit-autonomy gauntlet 2026-07-26: VALIDATED faithful test-first — scripts/tests/units/rosanna.test.ts (23 assertions GREEN vs this override; each of the 5 modeled lines pinned GREEN vs shipped and RED vs its nearest-wrong counterfactual: R1 elemAdvantageDamagePct live vs Water mult.elem 1.30 -> 1.10 on removal AND inert vs Iron 1.00 with the always-on attackDamagePct counterfactual provably NON-inert vs Iron; R2 unscoped critRatePct 19.34/3s at floor(shots/120)=49 applies with the scoped critRateNormalPct counterfactual flipping the stat field; R3 hitCount:500 Frenzy atkPct 22.61 x10/30s at floor(shots/500)=11 pulsed applies (none at frame 0) with the always-on passive counterfactual applying once at frame 0; R4 burstCast Assalto flatDamage 1310.4 once per cast, burst bucket, FB-exempt, with the lvl-9 1244.88 counterfactual moving the magnitude; R5 boss-held (casterIdx+targetIdx null) damageTakenPct 29/30s once per cast, team-wide mult.taken 1.29 in-window, INERT vs Iron (0 applies) with the ungated counterfactual provably firing vs Iron). R6/R7 assert the two most fudge-prone out-of-domain lines are NOT silently proxied (no 561.6% concealment-gated hit, no 400% ally-death hit). Fixture: rosanna (sole B1) / crown (B2) / helm (B3), focus rosanna, Water boss + Iron inert reference; deterministic; 5 full bursts / 5991 normals over 180s. Cross-family corroboration recorded in scripts/kit-autonomy/results/rosanna.json.",
   "unmodeled": {
     "skill1": [
-      "Concealment: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.",
+      "Concealment: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit. — targeting-prevention semantics only: the 10s STATUS window itself is modeled (targetStatus proxy feeding the burst rider); the prevention + on-hit removal are defensive/out-of-domain (no incoming attacks at scope)",
       "■ Activates after performing 10 normal attacks. Affects the 2 enemy unit(s) with the highest final ATK. Removes 5 buff(s). Activates once per battle."
     ],
     "skill2": [
-      "■ Activates at the start of battle. Affects self. Concealment: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit.",
+      "■ Activates at the start of battle. Affects self. Concealment: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit. — targeting-prevention semantics only: the battle-start 5s STATUS window is modeled (targetStatus proxy); the prevention + on-hit removal are defensive/out-of-domain",
       "■ Activates when a Nikke is incapacitated. Affects self. Frenzy: ATK ▲ 22.61%. Stacks up to 10 times and lasts for 30 sec. Fills Burst Gauge by 36.54%.",
       "■ Activates when a Nikke is incapacitated. Prioritizes Attacker-type enemies. Affects 1 unit(s). Deals 400% of final ATK as damage."
     ],
-    "burst": [
-      "■ Activates when the skill user is in the Concealment state. Affects the target(s) hit by Assalto. Deals 561.6% of final ATK as additional damage."
-    ]
+    "burst": []
   },
   "caveats": [
-    "burst: the 561.6% additional damage is GATED on the Concealment self-state and is NOT modeled — concealment is a targeting-prevention status with no engine primitive (out-of-domain for DPS); ≈+43% burst damage when concealment is up, uptime measurement-gated (⚑1)",
+    "burst: the 561.6% additional damage is MODELED (enacted 2026-08-09, owner faithfulness ruling): burstCast + requiresTargetStatus 'Rosanna Concealment' → flatDamage 561.6 — the Concealment self-state is proxied as a name-keyed boss status (asuka-wille/marciana pattern) opened by S2's battle-start 5s window and S1's per-120-normals 10s window. ⚑1 uptime: in-sim Concealment is near-permanent (120 MG hits ≈ 6s, inside the 10s window, and nothing removes it — no incoming damage), while in-game it is 'removed upon taking a direct hit', so real uptime is LOWER and this encoding is the kit-duration upper bound; refine from Concealment-icon uptime in a rosanna focus video",
     "skill2: only the 500-normal-attack Frenzy source is modeled; the ally-incapacitation Frenzy (+Burst Gauge 36.54%) and the ally-incapacitation 400% hit never fire on the immortal-boss basis (no ally is ever incapacitated)",
-    "skill1: the Concealment (10s) and enemy buff-removal (5 buffs, once per battle) lines are out-of-domain (targeting / buff-strip) and unmodeled",
+    "skill1: the Concealment (10s) STATUS WINDOW is modeled (targetStatus proxy on the same 120-normal-attacks trigger, feeding the burst rider's gate); its targeting-prevention semantics remain out-of-domain (defensive — no incoming attacks at scope). The enemy buff-removal (5 buffs, once per battle) is out-of-domain (no buff-strip primitive)",
     "burst: the Damage Taken ▲29% debuff applies only against Water Code bosses (bossElementGate 'Water'); inert vs a non-Water boss",
     "cadence: MG fire rate and reload timing are datamined defaults, not yet measured from video (⚑2)"
   ],
@@ -42,6 +40,18 @@
       "effects": [
         { "kind": "buff", "stat": "elemAdvantageDamagePct", "value": 20 }
       ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 120 },
+      "target": { "kind": "enemy" },
+      "effects": [
+        {
+          "kind": "targetStatus",
+          "name": "Rosanna Concealment",
+          "durationSec": 10
+        }
+      ]
     }
   ],
   "skill2": [
@@ -56,6 +66,18 @@
           "value": 22.61,
           "maxStacks": 10,
           "durationSec": 30
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "battleStart" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        {
+          "kind": "targetStatus",
+          "name": "Rosanna Concealment",
+          "durationSec": 5
         }
       ]
     }
@@ -80,6 +102,13 @@
           "durationSec": 30
         }
       ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "requiresTargetStatus": "Rosanna Concealment",
+      "effects": [{ "kind": "flatDamage", "atkPct": 561.6 }]
     }
   ]
 }

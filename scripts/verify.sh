@@ -35,6 +35,11 @@ fi
 say "kit-status SSOT structural check (roster coverage + unmodeled/provenance mirrors fresh)"
 npx tsx scripts/kit-status.ts --check
 
+say "unmodeled-review doc freshness (the second link of overrides -> kit-status.json -> the review doc)"
+# Ordered AFTER the kit-status check on purpose: this compares the committed doc against what
+# kit-status.json renders to, so it is only meaningful once kit-status.json is known fresh.
+npx tsx scripts/gen-unmodeled-review.ts --check
+
 say "approved-nickname validation (characters.json nicknames unambiguous)"
 npx tsx scripts/validate-nicknames.ts
 

@@ -4,7 +4,7 @@
 //
 // Kit (blablalink prose, data/characters.json → characters.mint.skills; level-10 values):
 //   S1 ■ Full Charge while Assigned Part: Singing → all allies: ATK ▲45.02% of caster ATK / 3s   [M1]
-//      ■ Full Charge while Assigned Part: Dancing → all allies: recover 1.8% caster Max HP/1s/3s  [UNMODELED — defensive heal, no HP pool]
+//      ■ Full Charge while Assigned Part: Dancing → all allies: recover 1.8% caster Max HP/1s/3s  [event-only heal ticks:3, Dancing-gated (singing max:0), solo mode — enacted 2026-08-09; magnitude has no HP-pool consumer]
 //   S2 ■ entering Burst Stage 3 while NOT Sing Along → self: Cancels Singing / Cancels Dancing    [UNMODELED — mode bookkeeping, no dmg/buff]
 //      ■ entering Burst Stage 3 while Singing → all allies: Crit Rate ▲19.94% / 10s               [M2]
 //                                                              Projectile Explosion Dmg ▲50% / 10s [M2]
@@ -55,9 +55,10 @@
 //       untouched — the mode mechanic is live, not cosmetic.
 //
 // UNMODELED (inert / out-of-domain — documented, NOT asserted; see override.unmodeled + note):
-//   - S1 Dancing heal (1.8% Max HP/1s/3s): defensive; the engine models no HP pool, so it is inert
-//     for damage. (It would drive a Crown-style on-recovery consumer if one were present; none is in
-//     this fixture; a separate, still-open residual — not touched by this pass.)
+//   - S1 Dancing heal (1.8% Max HP/1s/3s): MODELED event-only (heal ticks:3 per full-charge pull,
+//     Dancing-gated via the singing resource, solo mode — enacted 2026-08-09). The HP magnitude has
+//     no engine consumer; it moves damage only when an on-recovery consumer is present (none in
+//     this fixture, so totals here are unchanged).
 //   - S2 "Cancels Singing / Dancing" + burst Assigned Part toggle (Status 1/2 prose): pure mode
 //     bookkeeping — the actual toggle EFFECT is now the `singing` resource mechanism above; the prose
 //     lines themselves carry no damage/buff payload of their own and stay in `unmodeled`/`caveats`.
