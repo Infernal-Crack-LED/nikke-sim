@@ -18,7 +18,7 @@
 //      ■ 3 enemies with the highest final DEF (NO activation clause):
 //        Deals 56.32% of final ATK as damage                                  [FAITHFUL — E1]
 //      ■ same enemies. Activates during Full Burst:
-//        DEF ▼9.38% for 6 sec                                                [UNMODELED — E4]
+//        DEF ▼9.38% for 6 sec                                                [MODELED — E4]
 //   BU "Colossal Single Cell" (B1, cd 40s)
 //      ■ 3 allies, lowest remaining HP:
 //        Shield = 96% of the skill user's final Max HP for 5 sec              [FAITHFUL — E2]
@@ -149,7 +149,10 @@ function runA(overrides: Record<string, any> = {}) {
   });
   return { events, totals: totals(res) };
 }
-function runProbe(slugs: readonly string[], overrides: Record<string, any> = {}) {
+function runProbe(
+  slugs: readonly string[],
+  overrides: Record<string, any> = {}
+) {
   const events: SimEvent[] = [];
   runComp({
     slugs: [...slugs],
@@ -298,7 +301,10 @@ describe('ether — kit spec', () => {
       const frames = [...new Set(hits.map((h) => h.frame))];
       expect(frames.length).toBe(hits.length); // one instance per activation, NOT a ×3 fold
       expect(frames).toEqual(
-        Array.from({ length: S2_FIRES_180S }, (_, i) => (i + 1) * S2_CD_SEC * FPS)
+        Array.from(
+          { length: S2_FIRES_180S },
+          (_, i) => (i + 1) * S2_CD_SEC * FPS
+        )
       );
     });
     it('the cadence is the datamined CD, decoupled from the FB count and her shot count', () => {
@@ -334,7 +340,9 @@ describe('ether — kit spec', () => {
       expect(hits.every((h) => starts.has(h.frame))).toBe(true);
     });
     it('DISCRIMINATING: burstCast keying lands on the cast frames, not the interval frames', () => {
-      const castFrames = new Set(etherCasts(a1OnBurstCast.events).map((c) => c.frame));
+      const castFrames = new Set(
+        etherCasts(a1OnBurstCast.events).map((c) => c.frame)
+      );
       const hits = rider(a1OnBurstCast.events);
       expect(hits.length).toBeGreaterThan(0);
       expect(hits.length).not.toBe(S2_FIRES_180S);
@@ -348,7 +356,7 @@ describe('ether — kit spec', () => {
       expect(rider(a1Triple.events).length).toBe(rider(baseA.events).length);
       expect(a1Triple.totals.ether).toBeGreaterThan(baseA.totals.ether);
     });
-    it('is load-bearing: removing the rider drops ether\'s own damage', () => {
+    it("is load-bearing: removing the rider drops ether's own damage", () => {
       expect(a1Removed.totals.ether).toBeLessThan(baseA.totals.ether);
     });
   });
@@ -365,9 +373,10 @@ describe('ether — kit spec', () => {
     });
     it('is damage-INERT in v1: removal leaves EVERY unit byte-identical', () => {
       for (const s of SLUGS_A) {
-        expect(a2Removed.totals[s], `${s} total with the shield removed`).toEqual(
-          baseA.totals[s]
-        );
+        expect(
+          a2Removed.totals[s],
+          `${s} total with the shield removed`
+        ).toEqual(baseA.totals[s]);
       }
     });
     it('TRIGGER identity (fixture B): shields only the FBs ether cast INTO, not every FB', () => {
@@ -402,7 +411,10 @@ describe('ether — kit spec', () => {
     });
     it('the omission is a choice: the boss-channel misread applies the debuff and lifts team totals', () => {
       const applied = buffs(a3BossChannel.events).filter(
-        (b) => b.targetIdx === null && b.stat === 'damageTakenPct' && b.value === 52.5
+        (b) =>
+          b.targetIdx === null &&
+          b.stat === 'damageTakenPct' &&
+          b.value === 52.5
       );
       expect(applied.length).toBeGreaterThan(0);
       expect(sum(a3BossChannel.totals, SLUGS_A)).toBeGreaterThan(
@@ -411,17 +423,40 @@ describe('ether — kit spec', () => {
     });
   });
 
-  describe('E4 — S2b (DEF ▼9.38%/6s on the same enemies) is genuinely unmodeled', () => {
-    it('no boss debuff is applied at baseline (casterIdx is null on the enemy branch)', () => {
+  describe('E4 — S2b DEF ▼9.38%/6s rides the interval clock gated inFb, on the enemy defPct channel (encoded 2026-08-10)', () => {
+    it('no boss damageTakenPct is applied at baseline (the laundering trap stays pinned absent)', () => {
       expect(
         buffs(baseA.events).filter(
           (b) => b.targetIdx === null && b.stat === 'damageTakenPct'
         )
       ).toHaveLength(0);
     });
+
+    it('shave frames are exactly the IN-FB S2a activation frames (the fbGate bites), 6s window', () => {
+      // channel damage math owned by scripts/tests/engine/enemy-def-debuff.test.ts
+      // (reuse-before-derive) — this pins only her magnitude, gate, cadence, and window.
+      const shaves = buffs(baseA.events).filter(
+        (b) => b.targetIdx === null && b.stat === 'defPct' && b.value === -9.38
+      );
+      const inFbFrames = rider(baseA.events)
+        .filter((h) => h.inFullBurst)
+        .map((h) => h.frame);
+      const allFrames = rider(baseA.events).map((h) => h.frame);
+      expect(shaves.map((b) => b.frame)).toEqual(inFbFrames);
+      expect(shaves.length).toBeGreaterThan(0);
+      expect(shaves.length).toBeLessThan(allFrames.length); // proper subset — the gate bites
+      for (const b of shaves) {
+        expect(b.key.startsWith(`${ETHER_A}:skill2:`)).toBe(true);
+        expect(b.expiresFrame! - b.frame).toBe(6 * 60);
+      }
+    });
+
     it('the omission is a choice: the damageTakenPct misread applies per FB entry and lifts team totals', () => {
       const applied = buffs(a4BossChannel.events).filter(
-        (b) => b.targetIdx === null && b.stat === 'damageTakenPct' && b.value === 9.38
+        (b) =>
+          b.targetIdx === null &&
+          b.stat === 'damageTakenPct' &&
+          b.value === 9.38
       );
       expect(applied.length).toBeGreaterThan(0);
       expect(sum(a4BossChannel.totals, SLUGS_A)).toBeGreaterThan(
@@ -437,17 +472,20 @@ describe('ether — kit spec', () => {
         '■ Affects 1 allies with the lowest remaining HP. \nDamage Taken ▼ 52.5% for 5 sec.',
       ]);
     });
-    it('the S2b DEF▼ line sits verbatim in unmodeled.skill2', () => {
-      expect(shipped.unmodeled.skill2).toEqual([
-        '■ Affects the same enemy unit(s). Activates during Full Burst.\nDEF ▼ 9.38% for 6 sec.',
-      ]);
+    it('the S2b DEF▼ line is encoded (unmodeled.skill2 empty)', () => {
+      expect(shipped.unmodeled.skill2).toEqual([]);
       expect(shipped.unmodeled.burst).toEqual([]);
     });
-    it('the shipped skill2 trigger is the interval:13 auto-cast (not fullBurstEnter)', () => {
-      expect(shipped.skill2).toHaveLength(1);
+    it('skill2 is the interval:13 damage block + the inFb-gated defPct sibling (kit order)', () => {
+      expect(shipped.skill2).toHaveLength(2);
       expect(shipped.skill2[0].trigger).toEqual({ kind: 'interval', sec: 13 });
       expect(shipped.skill2[0].effects).toEqual([
         { kind: 'flatDamage', atkPct: 56.32 },
+      ]);
+      expect(shipped.skill2[1].trigger).toEqual({ kind: 'interval', sec: 13 });
+      expect(shipped.skill2[1].fbGate).toBe('inFb');
+      expect(shipped.skill2[1].effects).toEqual([
+        { kind: 'buff', stat: 'defPct', value: -9.38, durationSec: 6 },
       ]);
     });
     it('no ignored blocks anywhere', () => {

@@ -97,12 +97,21 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   §5 trap 4. Batch 1 (2026-08-10, `2026-08-10-faithfulness-batch1-findings.md`) encoded
   `exia`, `novel`, `phantom`, `viper`; batch 2 (`2026-08-10-faithfulness-batch2-findings.md`)
   encoded `anis`, `elegg`, `frima` (×2 lines), `ludmilla`, `marciana-marine-study` and struck
-  `cocoa` as a prose-grep false positive (her only enemy line is ATK ▼). **The carrier set is
-  COMPLETE**; `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second
-  carrier). Enemy ATK ▼ stays genuinely inert. The non-literal `burstDesc` scope-string
-  ruling landed 2026-08-10 (owner: they all count as targeting the boss — DECISIONS): the
-  six logged tags are enacted; units not yet reviewed with the same clause class (e.g.
-  `helm` "the enemy with the highest final ATK") tag at their own phase-4 review.
+  `cocoa` as a prose-grep false positive; batch 3 (`2026-08-10-faithfulness-batch3-findings.md`)
+  encoded `signal` (×2), `himeno`, `ether` (interval+fbGate shape — fork ⚑ in her note),
+  `eunhwa` (×2), `mica`, and found the batch-2 "COMPLETE" claim was an under-count (the
+  "records the same shape" list held real carriers). **Remaining (kit-text census):**
+  `belorta` (S2 −3.52/5s) encodes at her own phase-4 review — the sole override-carrying
+  remainder; `centi`/`product-23`/`trony` carry DEF ▼ kit lines but have no overrides;
+  `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second carrier).
+  Enemy ATK ▼ stays genuinely inert. The non-literal `burstDesc` scope-string ruling landed
+  2026-08-10 (owner: they all count as targeting the boss — DECISIONS): ten tags enacted
+  across batches (6 + crow/signal/eunhwa/mica); units not yet reviewed with the same clause
+  class (e.g. `helm` "the enemy with the highest final ATK") tag at their own phase-4
+  review. Stale-phrase sweep remainder (grep-keyed, whitespace-normalized — the mica.test.ts
+  line-wrap defeated the exact-phrase grep): `jackal` (also cites deleted crow-precedent
+  wording), `quiry`, `ram` — fix at their reviews; `scripts/kit-autonomy/**` archives
+  presumed CHANGELOG-exempt (one explicit ruling wanted).
 - **⇒ Unit-card infographic follow-ups (3, code-verified still open 2026-08-02):**
   1. **No vector source for burst icons.** `web/public/nikke-icons/burst_*` is webp-only (~100px native)
      — fine at every size drawn today, but a surface wanting it large has nothing to rasterize from.

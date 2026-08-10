@@ -100,7 +100,8 @@ function runB(overrides: Record<string, any> = {}) {
 }
 
 // ---- readers ----------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const shots = (evs: SimEvent[]) =>
@@ -121,9 +122,7 @@ const s1Buffs = (evs: SimEvent[], stat: string, slot: number) =>
   );
 /** Her burst-skill crit buff applications. */
 const critBuffs = (evs: SimEvent[], slot: number) =>
-  buffs(evs).filter(
-    (b) => b.casterIdx === slot && b.stat === 'critRatePct'
-  );
+  buffs(evs).filter((b) => b.casterIdx === slot && b.stat === 'critRatePct');
 
 // ---- counterfactual patches -------------------------------------------------------------------
 /** S1 counterfactual: the nearest wrong model — both S1 lines as ONE permanent passive buff
@@ -134,7 +133,7 @@ const eunhwaS1Passive = withPatchedOverride(EUNHWA, (ov) => {
     ...b,
     trigger: { kind: 'passive' },
     effects: b.effects.map((e: any) => {
-      const { durationShots, ...rest } = e;
+      const { durationShots: _durationShots, ...rest } = e;
       return rest;
     }),
   }));
@@ -159,7 +158,9 @@ const eunhwaCritOnFbEnter = withPatchedOverride(EUNHWA, (ov) => {
     b.effects.some((e: any) => e.stat === 'critRatePct')
   );
   if (!block) {
-    throw new Error('eunhwa burst critRatePct block missing — fixture is stale');
+    throw new Error(
+      'eunhwa burst critRatePct block missing — fixture is stale'
+    );
   }
   block.trigger = { kind: 'fullBurstEnter' };
 });
@@ -188,7 +189,9 @@ const noCritB = runB({
       (b: any) => !b.effects.some((e: any) => e.stat === 'critRatePct')
     );
     if (ov.burst.length === before) {
-      throw new Error('eunhwa burst critRatePct block missing — fixture is stale');
+      throw new Error(
+        'eunhwa burst critRatePct block missing — fixture is stale'
+      );
     }
   }),
 });
@@ -208,10 +211,7 @@ function byMag(evs: SimEvent[]): Map<number, Shot[]> {
 }
 const chargeOf = (s: Shot, evs: SimEvent[]): number => {
   const d = dmg(evs).find(
-    (x) =>
-      x.slug === EUNHWA &&
-      x.srcSlot === 'normal' &&
-      x.frame === s.frame
+    (x) => x.slug === EUNHWA && x.srcSlot === 'normal' && x.frame === s.frame
   );
   if (!d) {
     throw new Error(`no normal damage event for shot at frame ${s.frame}`);
@@ -335,32 +335,48 @@ describe('eunhwa — kit spec', () => {
         p0[1].frame - p0[0].frame,
         'passive model: magazine 0 is uniformly buffed'
       ).toBe(p0[2].frame - p0[1].frame);
-      expect(p0[1].frame - p0[0].frame).toBeLessThan(
-        b0[1].frame - b0[0].frame
-      );
+      expect(p0[1].frame - p0[0].frame).toBeLessThan(b0[1].frame - b0[0].frame);
     });
   });
 
-  describe('S2 — DEF ▼29% for 5 sec on the last-bullet target is UNMODELED (DEF=0 basis)', () => {
-    it('is recorded VERBATIM in the override unmodeled block', () => {
+  describe('S2 — DEF ▼29%/5s per magazine-end on the enemy defPct channel (encoded 2026-08-10)', () => {
+    it('the line is no longer in the unmodeled block (encoded); skill2 still produces no damage', () => {
       const ov = loadOverride(EUNHWA) as any;
-      expect(ov.unmodeled.skill2.join('\n')).toContain('DEF ▼ 29% for 5 sec.');
-    });
-
-    it('enacts NOTHING: no skill2 damage, no boss debuff anywhere in her fixtures', () => {
+      expect(ov.unmodeled.skill2).toEqual([]);
       expect(
         dmg(baseA).filter((d) => d.slug === EUNHWA && d.srcSlot === 'skill2'),
         'skill2 must produce no damage instances'
       ).toEqual([]);
-      // Boss debuffs emit with targetIdx null (casterIdx null — the enemyBuffs channel
-      // carries no caster attribution). No fixture mate applies one either (liter/delta
-      // have no enemy-targeted blocks; ada's are DoTs, not buffs), so ANY boss-held
-      // buffApply would be a laundering of one of her two DEF▼ lines.
+    });
+
+    it('every boss-held buff in her fixtures is one of her two defPct shaves (-29 or -2.43) — nothing else', () => {
+      // Boss debuffs emit with targetIdx null (no caster attribution). No fixture mate
+      // applies one (liter/delta have no enemy-targeted blocks; ada's are DoTs, not buffs).
+      // Channel damage math owned by enemy-def-debuff.test.ts (reuse-before-derive).
       for (const evs of [baseA, baseB]) {
+        const other = buffs(evs).filter(
+          (b) =>
+            b.targetIdx === null &&
+            !(b.stat === 'defPct' && (b.value === -29 || b.value === -2.43))
+        );
         expect(
-          buffs(evs).filter((b) => b.targetIdx === null),
-          'no boss-targeted debuff may exist (DEF▼ is dropped, not laundered)'
+          other.map((b) => `${b.stat}:${b.value}`),
+          'only her two defPct shaves may be boss-held'
         ).toEqual([]);
+      }
+    });
+
+    it('the -29 shave fires once per magazine dry-fire, 5s window, from the skill2 slot (fixture B)', () => {
+      const shaves = buffs(baseB).filter(
+        (b) => b.targetIdx === null && b.stat === 'defPct' && b.value === -29
+      );
+      const dryFrames = lastBullets(baseB).map((e) => e.frame);
+      expect(shaves.length).toBe(dryFrames.length);
+      expect(shaves.length).toBeGreaterThan(5);
+      expect(shaves.map((b) => b.frame)).toEqual(dryFrames);
+      for (const b of shaves) {
+        expect(b.key.startsWith(`${EUNHWA_B}:skill2:`)).toBe(true);
+        expect(b.expiresFrame! - b.frame).toBe(5 * 60);
       }
     });
 
@@ -412,13 +428,32 @@ describe('eunhwa — kit spec', () => {
     });
   });
 
-  describe('B2 — burst DEF ▼2.43% for 15 sec is UNMODELED (DEF=0 basis)', () => {
-    it('is recorded VERBATIM in the override unmodeled block', () => {
-      const ov = loadOverride(EUNHWA) as any;
-      expect(ov.unmodeled.burst.join('\n')).toContain('DEF ▼ 2.43% for 15 sec.');
+  describe('B2 — burst DEF ▼2.43%/15s rides the nuke block on the enemy defPct channel (encoded 2026-08-10)', () => {
+    it('one -2.43 boss debuff per burst cast, same frames as the nuke, 15s window', () => {
+      // Rides the flatDamage block AFTER the nuke (kit-order effects); the S2 group's
+      // known-forms guard covers the laundering trap for BOTH DEF▼ lines.
+      const shaves = buffs(baseA).filter(
+        (b) => b.targetIdx === null && b.stat === 'defPct' && b.value === -2.43
+      );
+      const nukeFrames = dmg(baseA)
+        .filter((d) => d.slug === EUNHWA && d.srcSlot === 'burst')
+        .map((d) => d.frame);
+      expect(shaves.length).toBe(nukeFrames.length);
+      expect(shaves.length).toBeGreaterThan(0);
+      expect(shaves.map((b) => b.frame)).toEqual(nukeFrames);
+      for (const b of shaves) {
+        expect(b.key.startsWith(`${EUNHWA_A}:burst:`)).toBe(true);
+        expect(b.expiresFrame! - b.frame).toBe(15 * 60);
+      }
     });
-    // Enactment absence is shared with S2: the S2 group's "no boss debuff from her" assertion
-    // covers BOTH DEF▼ lines (neither may surface as a damageTakenPct laundering).
+
+    it('the nuke carries the allEnemies scope tag (owner scope-string ruling 2026-08-10)', () => {
+      const ov = loadOverride(EUNHWA) as any;
+      const nuke = ov.burst
+        .flatMap((b: any) => b.effects)
+        .find((e: any) => e.kind === 'flatDamage');
+      expect(nuke.burstDesc).toBe('allEnemies');
+    });
   });
 
   describe('B3 — burst grants ALL allies Critical Rate ▲4.65% for 15 sec, on HER cast', () => {
