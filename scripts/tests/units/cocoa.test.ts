@@ -22,8 +22,8 @@
 //       state the fight never contains.
 //   C3  Damage Taken ▼ on SELF — v1 models no incoming damage, so a damage-taken modifier has no
 //       consumer. The 15-stack/5-sec stacking resource is unmodeled with the line it feeds.
-//   C5  ATK ▼ on ALL ENEMIES — the engine EXPLICITLY drops enemy ATK▼/DEF▼ debuffs (src/engine/
-//       sim.ts: "other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0"): the boss
+//   C5  ATK ▼ on ALL ENEMIES — enemy ATK ▼ is dropped at dispatch (no incoming-damage model;
+//       the enemy-buff allowlist admits damageTakenPct/distributedDamagePct/defPct only): the boss
 //       never attacks in a way that feeds our numbers. The nearest wrong encoding is reading the
 //       enemy debuff as enemy `damageTakenPct` (the boss takes MORE damage) — a different mechanic
 //       that would inflate team damage. The max-stacks gate is unmodeled with the line it gates.
@@ -179,7 +179,7 @@ describe('N1 — damage neutrality: the committed override encodes zero effects'
 describe('N2 — DISCRIMINATING: the burst ATK▼ is NOT an enemy damage-taken amp', () => {
   it('re-encoding ATK ▼13.59% as enemy damageTakenPct MOVES team totals', () => {
     // C5's nearest wrong model: "debuff on all enemies" misread as "boss takes more damage". The
-    // engine drops true enemy ATK▼ (it cannot affect damage dealt at DEF=0), so the shipped
+    // engine drops true enemy ATK▼ at dispatch (no incoming-damage model), so the shipped
     // inertness must be the model this counterfactual provably fails.
     expect(totals(atkAsDamageTaken.res)).not.toEqual(totals(base.res));
   });

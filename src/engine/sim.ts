@@ -2390,8 +2390,8 @@ export function runSim(
                 e.stat === 'distributedDamagePct') &&
                 e.value > 0) ||
               // enemy DEF ▼/▲ (2026-08-10, owner-ruled channel): scales cfg.bossDef by
-              // (1 + Σ/100) at damage time — exactly 0 impact on the bossDef = 0 graded
-              // basis, live at the web app's raid DEF defaults. Negative = the kit's
+              // (1 + Σ/100) at damage time — sub-0.1% at the scope-lock bossDef = 140
+              // graded basis, live at the web app's raid DEF defaults. Negative = the kit's
               // DEF ▼ lines (guilty burst -20.25); either sign is admitted, the formula
               // handles both. mast's caster-DEF-basis flat shave stays unmodeled (no
               // caster-DEF stat — see her override prose).

@@ -88,9 +88,10 @@ against.
 
 ### F4. Enemy DEF ▼ has no channel — correct on the graded basis, wrong on the web basis
 
-The most repeated _kit-line_ pattern in the unmodeled review after heals: ~12 overrides carry an
-enemy DEF ▼ line (anis, cocoa, elegg, exia, frima, guilty, ludmilla, marciana-marine-study,
-mast, novel, phantom, viper — plus ether/eunhwa/himeno/signal record the same shape), all
+The most repeated _kit-line_ pattern in the unmodeled review after heals: ~11 overrides carry an
+enemy DEF ▼ line (anis, elegg, exia, frima, guilty, ludmilla, marciana-marine-study,
+mast, novel, phantom, viper — plus ether/eunhwa/himeno/signal record the same shape; `cocoa`
+was a prose-grep false positive struck by her batch-2 review — her only enemy line is ATK ▼), all
 dropped at dispatch. Basis-dependent: ~0.02% per carrier at the graded `bossDef = 140` basis
 (a full DEF-zeroing is bounded ≤0.12% board-wide by the battery), but the web app runs
 the same engine at 30,930 / 12,200 default DEF where the battery sweep shows 6–17% per-unit

@@ -15,7 +15,7 @@
 //        (passive in sim — boss appears at t=0, 1 enemy ≤5)
 //   BU ■ burstCast → self: elemAdvantageDamagePct 30.97%/10s + attackDamagePct 27.45%/10s [M5]
 //      ■ burstCast + bossElementGate:Electric → boss: High-Risk Target 20s             [M6]
-//        (DEF▼10.56% inert at bossDef:0; status gates M2's rider)
+//        (defPct -10.56 rider on the status block, encoded 2026-08-10; status gates M2's rider)
 //
 // Fixture: liter B1 / crown B2 / marciana-marine-study B3 / helm B3, boss Electric
 // (Iron > Electric = elemental advantage, exercises elemAdvantageDamagePct + High-Risk Target).
@@ -346,6 +346,29 @@ describe('marciana-marine-study — kit spec', () => {
 
     it('S1 152.68% rider does NOT fire vs Fire boss (no High-Risk Target)', () => {
       expect(mmsDmg(fireBoss.events, 'skill1', 152.68).length).toBe(0);
+    });
+  });
+
+  describe('M7 — High-Risk Target DEF ▼10.56%/20s rides the status block on the enemy defPct channel (encoded 2026-08-10)', () => {
+    // channel damage math owned by scripts/tests/engine/enemy-def-debuff.test.ts
+    // (reuse-before-derive) — this group pins only her magnitude, cadence, gate, and window.
+    const shaves = (evs: SimEvent[]) =>
+      buffs(evs).filter((b) => b.stat === 'defPct' && b.value === -10.56);
+
+    it('one -10.56 boss debuff per burst cast, same frames as the status, 20s window', () => {
+      const applied = shaves(base.events);
+      const castFrames = mmsBursts(base.events).map((c) => c.frame);
+      expect(applied.length).toBe(castFrames.length);
+      expect(applied.length).toBeGreaterThan(0);
+      expect(applied.map((b) => b.frame)).toEqual(castFrames);
+      for (const b of applied) {
+        expect(b.key.startsWith(`${MARCIANA}:burst:`)).toBe(true);
+        expect(b.expiresFrame! - b.frame).toBe(20 * 60);
+      }
+    });
+
+    it('is Electric-gated like the status it rides: zero applications vs the Fire boss', () => {
+      expect(shaves(fireBoss.events)).toEqual([]);
     });
   });
 });

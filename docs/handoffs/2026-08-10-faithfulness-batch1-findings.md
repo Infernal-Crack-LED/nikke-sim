@@ -75,5 +75,7 @@
 6 units reviewed / 4 DEF ▼ encodes + 6 tag enactments + 4 prose corrections applied / 3
 cross-cutting + 6 per-unit findings recorded / 0 engine or shared-doc edits from sweep findings
 (the basis correction rode its own commit under the 2c authorization). Remaining DEF ▼ carriers
-after this batch: `anis`, `cocoa`, `elegg`, `frima`, `ludmilla`, `marciana-marine-study` (+
-`mast` deferred).
+after this batch: `anis`, `elegg`, `frima`, `ludmilla`, `marciana-marine-study` (+ `mast`
+deferred; `cocoa`, originally on this list, was struck by her batch-2 review as a prose-grep
+false positive — her only enemy-targeted line is ATK ▼). All five encoded in batch 2
+(`2026-08-10-faithfulness-batch2-findings.md`).

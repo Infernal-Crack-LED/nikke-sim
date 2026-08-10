@@ -9,7 +9,25 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) SCOPE-LOCK BASELINE BOSS DEF = 140 — owner ruling; the docs still
+- **(2026-08-10, latest) FAITHFULNESS PHASE-4 BATCH 2 — the DEF ▼ carrier set is COMPLETE.**
+  Six parallel checklist reviews (`anis`, `cocoa`, `elegg`, `frima`, `ludmilla`,
+  `marciana-marine-study` — full record `docs/handoffs/2026-08-10-faithfulness-batch2-findings.md`).
+  Enacted under the standing rulings (2c DEF channel; all values kit-verbatim SL10): DEF ▼
+  encodes on `anis` (burst −32/5s, sibling burstCast block), `elegg` (burst −35.64/10s riding
+  the BOOM-Install status block), `frima` (S1 Sleepy −4 ×5 stacks/10s shotFired + burst rider
+  −9.86/10s, kit-order effects), `ludmilla` (S1 −8.4/10s, new lastBullet block), and
+  `marciana-marine-study` (burst −10.56/20s riding the Electric-gated High-Risk-Target
+  block). `cocoa` was struck from the carrier lists as a prose-grep FALSE POSITIVE — her only
+  enemy-targeted line is the burst ATK ▼ 13.59%, which stays dropped; carrier censuses must
+  verify against kit text, not override prose. Zero `burstDesc` tags (five non-literal scope
+  strings logged for one owner ruling — QUEUE). New spec pins: anis N4, elegg E6 rewrite,
+  frima F5/F6, ludmilla L7 + guard rewrite, marciana-marine-study M7. Prose falsified by the
+  DEF channel / the 140 basis corrected in all six overrides + `guilty` + the second stale
+  enemy-buff dispatch comment in sim.ts (comment-only); anis's note-vs-caveat contradiction
+  on the `attacked` primitive fixed (the primitive exists — makima/yulha). Review doc
+  regenerated 433 → 421 entries. Full gate green.
+
+- **(2026-08-10) SCOPE-LOCK BASELINE BOSS DEF = 140 — owner ruling; the docs still
   saying 0 were stale.** Resolves batch-1 cross-cutting finding 1 (the two contradicting
   owner-attributed records). The graded basis is `bossDef: 140` — measured by the ginmy def
   test (boss-type enemies ≈140), adopted owner "always on" 2026-07-15 in

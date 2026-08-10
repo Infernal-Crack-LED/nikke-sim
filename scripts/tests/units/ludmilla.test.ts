@@ -1,16 +1,16 @@
 // PER-UNIT KIT SPEC — `ludmilla` (Ludmilla, Defender/SMG/Water, Burst I, cd 20s, ammo 120,
 // RoF 1440 (20 shots/s under the engine's default-ON SMG frame quantization), reloadFrames 187,
 // hitsPerShot 1, SSR). Kit-autonomy gauntlet 2026-08-04; test-first re-derivation from kit
-// prose (FROM-SCRATCH build — no prior override, simSupported was false).
+// prose.
 //
-// One assertion group per LOAD-BEARING kit line (L5, L6 below); the four COVER lines
-// (L1..L4) are UNMODELED and get a guard/discrimination group instead. `withPatchedOverride`
-// appears only to build COUNTERFACTUALS (the nearest wrong model each assertion must
-// discriminate against) — never to supply the encoding under test.
+// One assertion group per LOAD-BEARING kit line (L5, L6, L7 below); the remaining COVER
+// lines (L2..L4) are UNMODELED and get a guard/discrimination group instead.
+// `withPatchedOverride` appears only to build COUNTERFACTUALS (the nearest wrong model each
+// assertion must discriminate against) — never to supply the encoding under test.
 //
 // Kit (blablalink prose, data/characters.json → characters.ludmilla.skills):
 //   S1 ■ when the last bullet hits the target → the target:
-//        DEF ▼8.4% for 10 sec                                                            [L1 — UNMODELED]
+//        DEF ▼8.4% for 10 sec                                                            [L1/L7 — modeled]
 //        ATK ▼8.4% for 10 sec                                                            [L2 — UNMODELED]
 //   S2 ■ entering Full Burst → all enemies:
 //        Attract: Taunt all enemies for 15.09 sec                                        [L3 — UNMODELED]
@@ -22,13 +22,13 @@
 //        DEF ▲12.93% for 10 sec                                                          [L6 — modeled]
 //
 // Dispositions:
-//   L1  Enemy DEF▼ is the scope-locked NO-OP class: the sim runs bossDef = 0 (damage-
-//       calculation.md line 32, DECISIONS + scripts/battery/boss-def.ts — boss DEF ≤0.12%
-//       board shift) and sim.ts applyEffect explicitly drops enemy ATK▼/DEF▼ debuffs
-//       ("other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0" — only
-//       positive damageTakenPct / distributedDamagePct reach enemyBuffs). The nearest-wrong
-//       encoding — boss Damage Taken ▲8.4% — WOULD move team damage (~8%+), so the guard
-//       below proves it is absent while a counterfactual shows what it would have done.
+//   L1  Enemy DEF▼ is MODELED (encoded 2026-08-10): lastBullet → enemy defPct -8.4 /10s on
+//       the enemy DEF channel (bossDefNow scales cfg.bossDef, floor 0; sub-0.1% at the
+//       scope-lock 140-DEF basis, live at web raid DEF defaults; channel damage math owned
+//       by scripts/tests/engine/enemy-def-debuff.test.ts). L7 pins its magnitude, cadence,
+//       and window. The nearest-wrong encoding — boss Damage Taken ▲8.4% — WOULD move team
+//       damage (~8%+), so the guard below proves it is absent while a counterfactual shows
+//       what it would have done.
 //   L2  Enemy ATK▼: the boss never attacks in the DPS sim — doubly inert (no consumer AND
 //       dropped by applyEffect). Verbatim in unmodeled.
 //   L3  Taunt/Attract: v1 has no threat/targeting model — the solo boss already "attacks"
@@ -56,8 +56,9 @@
 //   L6  VALUE (12.93, not lv1 7.11), SCOPE (all 4 allies per firing, self included — a
 //       self-only misread reaches exactly 1), WINDOW (10s timed expiry, no round budget),
 //       CAST-COUPLING (one firing = 4 buffApply events per ludmilla cast).
-//   GUARD every ludmilla-cast buffApply is a defPct grant to a unit (targetIdx != null) — no
-//       enemy debuffs (L1/L2), no taunt/DR encoding (L3/L4). The guard is shown NON-VACUOUS
+//   GUARD every ludmilla-cast buffApply is either the ally defPct 12.93 grant (targetIdx !=
+//       null) or the enemy defPct -8.4 shave (targetIdx == null) — no enemy ATK▼ (L2), no
+//       taunt/DR encoding (L3/L4), nothing else. The guard is shown NON-VACUOUS
 //       by injecting the nearest-wrong S1 (boss Damage Taken ▲8.4% on lastBullet), which
 //       measurably moves team totals. L3/L4 counterfactuals are genuinely invisible to a DPS
 //       sim (self damageTakenPct feeds nothing — dmgTakenSum reads enemyBuffs only), so their
@@ -274,14 +275,16 @@ describe('ludmilla — kit spec', () => {
     });
   });
 
-  describe('L1-L4 — the four cover lines are UNMODELED (inert in v1) and pinned absent', () => {
-    it('every ludmilla-cast buff is a defPct grant to a UNIT — no enemy debuffs, nothing else', () => {
+  describe('L2-L4 — the remaining cover lines are UNMODELED (inert in v1) and pinned absent', () => {
+    it('every ludmilla-cast buff is the ally DEF grant or the enemy DEF shave — nothing else', () => {
       const other = ludmillaBuffs(base.events).filter(
-        (b) => b.stat !== 'defPct' || b.targetIdx == null
+        (b) =>
+          !(b.stat === 'defPct' && b.targetIdx != null && b.value === 12.93) &&
+          !(b.stat === 'defPct' && b.targetIdx == null && b.value === -8.4)
       );
       expect(
-        other.map((b) => `${b.stat}@${b.targetIdx}`),
-        'L1/L2 enemy ATK▼/DEF▼ and L3/L4 taunt/DR must have no encoding'
+        other.map((b) => `${b.stat}:${b.value}@${b.targetIdx}`),
+        'L2 enemy ATK▼ and L3/L4 taunt/DR must have no encoding'
       ).toEqual([]);
     });
 
@@ -310,6 +313,24 @@ describe('ludmilla — kit spec', () => {
         moved.length,
         "injecting S1 as damageTakenPct must change somebody's total"
       ).toBeGreaterThan(0);
+    });
+  });
+
+  describe('L7 — S1 DEF ▼8.4%/10s per magazine-end, on the enemy defPct channel (encoded 2026-08-10)', () => {
+    // channel damage math owned by scripts/tests/engine/enemy-def-debuff.test.ts
+    // (reuse-before-derive) — this group pins only her magnitude, cadence, and window.
+    const shaves = buffs(base.events).filter(
+      (b) => b.stat === 'defPct' && b.value === -8.4
+    );
+
+    it('fires on the last-bullet cadence (~one per 9.1s magazine cycle), boss-held, 10s window', () => {
+      // 120 ammo @ 20 shots/s (6.0s) + 187f reload (~3.1s) → ~19 magazine cycles in 180s.
+      expect(shaves.length).toBeGreaterThanOrEqual(15);
+      for (const b of shaves) {
+        expect(b.key.startsWith(`${LUDMILLA}:skill1:`)).toBe(true);
+        expect(b.targetIdx == null).toBe(true);
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
   });
 });

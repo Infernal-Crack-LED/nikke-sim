@@ -95,10 +95,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   defaults) + `guilty`'s previously-discarded `defPct: -20.25` are live; equivalence-proof test
   `scripts/tests/engine/enemy-def-debuff.test.ts`; detail `docs/data/damage-bucket-matrix.md`
   §5 trap 4. Batch 1 (2026-08-10, `2026-08-10-faithfulness-batch1-findings.md`) encoded
-  `exia`, `novel`, `phantom`, `viper`. **Remaining:** `anis`, `cocoa`, `elegg`,
-  `frima`, `ludmilla`, `marciana-marine-study` encode kit-verbatim as each passes its
-  review; `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second
-  carrier). Enemy ATK ▼ stays genuinely inert.
+  `exia`, `novel`, `phantom`, `viper`; batch 2 (`2026-08-10-faithfulness-batch2-findings.md`)
+  encoded `anis`, `elegg`, `frima` (×2 lines), `ludmilla`, `marciana-marine-study` and struck
+  `cocoa` as a prose-grep false positive (her only enemy line is ATK ▼). **The carrier set is
+  COMPLETE**; `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second
+  carrier). Enemy ATK ▼ stays genuinely inert. ⚠ OPEN OWNER RULING (batch-2 cross-cutting
+  finding 2): five non-literal `burstDesc` scope strings are logged untagged ("1 designated",
+  "within attack range", "nearest to the crosshair", "10 highest final ATK/DEF") — one ruling
+  on whether they count as 'singleEnemy'/'allEnemies' in-game resolves the class (dormant
+  today; matters once an amp carrier shares a comp).
 - **⇒ Unit-card infographic follow-ups (3, code-verified still open 2026-08-02):**
   1. **No vector source for burst icons.** `web/public/nikke-icons/burst_*` is webp-only (~100px native)
      — fine at every size drawn today, but a surface wanting it large has nothing to rasterize from.

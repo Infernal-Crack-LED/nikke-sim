@@ -6,23 +6,25 @@
 // prose is the SSOT, DECISIONS 2026-07-17; the datamine skill1/skill2 detail tables carry the
 // UNTREASURED base kit and disagree — base S1 is "4 normal attacks → DEF ▼15.84%", base S2/burst
 // have NO True Damage lines at all):
-//   S1 ■ hitting a target with Full Charge → the target: Sleepy, DEF ▼4%, stacks ×5, 10 sec   [F0a INERT]
+//   S1 ■ hitting a target with Full Charge → the target: Sleepy, DEF ▼4%, stacks ×5, 10 sec   [F5]
 //      ■ landing 6 Full Charges on a max-Sleepy target → self: Wake Up — normal attacks deal
 //        true damage for 10 sec                                                               [F1]
 //   S2 ■ attacking with Full Charge → all allies: Max HP ▲6.09% for 4 sec                     [F0b INERT]
 //      ■ attacking with Full Charge while in Wake Up status → all allies: True Damage ▲28.16%
 //        for 5 sec                                                                            [F2]
-//   BU ■ 10 highest-final-DEF enemies: 101.66% of final ATK as damage (+ DEF ▼9.86% 10s)      [F4 / F0c INERT]
+//   BU ■ 10 highest-final-DEF enemies: 101.66% of final ATK as damage (+ DEF ▼9.86% 10s)      [F4 / F6]
 //      ■ all allies: Max HP ▲30.26% for 4 sec                                                 [F0d INERT]
 //      ■ when in Wake Up status → all allies: True Damage ▲49.97% for 10 sec                  [F3]
 //
-// INERT / UNENACTABLE lines (no assertions; carried verbatim in the override's `unmodeled`):
-//   F0a/F0c the two DEF ▼ lines (Sleepy 4%×5; burst 9.86%) — boss DEF enters the formula only as the
-//     FIXED config constant cfg.bossDef (baseAtk = max(0, effectiveAtk − cfg.bossDef), sim.ts:1722);
-//     NO debuff channel feeds it, so an enemy DEF reduction is unenactable, and the magnitude is
-//     negligible regardless (20% / 9.86% of measured boss DEF ≈140 ≈ 28/14 ATK against scope-lock
-//     ATK in the hundreds of thousands). NOT encoded as damageTakenPct — a different bucket that
-//     would over-credit a team vuln the kit does not deliver (viper/phantom/marciana precedent).
+// DEF ▼ lines — ENCODED 2026-08-10 on the enemy defPct channel (bossDefNow scales cfg.bossDef,
+//   floor 0; channel damage math owned by scripts/tests/engine/enemy-def-debuff.test.ts):
+//   F5 Sleepy = shotFired → enemy defPct -4 /10s maxStacks 5 (every SR pull is a full charge);
+//   F6 the burst rider = defPct -9.86 /10s riding the nuke block AFTER the flatDamage (kit
+//     order). Both sub-0.1% at the scope-lock 140-DEF basis, live at web raid DEF defaults.
+//     NOT encoded as damageTakenPct — a different bucket that would over-credit a team vuln the
+//     kit does not deliver (viper/phantom/marciana precedent).
+//
+// INERT lines (no assertions; carried verbatim in the override's `unmodeled`):
 //   F0b/F0d the two ally Max HP ▲ lines — offensively INERT: ally-granted Max HP does not feed a
 //     teammate's atkOfMaxHpPct conversion (e3 video rule; effectiveAtk counts only OWN-kit
 //     maxHpFlat, casterIdx === u.idx, sim.ts:1513), and frima has no HP scaling of her own.
@@ -219,11 +221,6 @@ type Shot = Extract<SimEvent, { kind: 'shot' }>;
 
 const shots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'frima');
-const frimaNormals = (evs: SimEvent[]) =>
-  evs.filter(
-    (e): e is Damage =>
-      e.kind === 'damage' && e.slug === 'frima' && e.bucket === 'normal'
-  );
 const casts = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'frima'
@@ -325,9 +322,7 @@ describe('frima (Treasure) — kit spec', () => {
     it('DISCRIMINATING: ungated, it would apply from the 1st full charge', () => {
       const ung = trueApplies(runS2Ungated.events, 28.16);
       const sixthUng = shots(runS2Ungated.events)[5];
-      expect(Math.min(...ung.map((b) => b.frame))).toBeLessThan(
-        sixthUng.frame
-      );
+      expect(Math.min(...ung.map((b) => b.frame))).toBeLessThan(sixthUng.frame);
     });
 
     it('moves the true-damage consumers (frima herself + ada) and NOT the non-true controls', () => {
@@ -353,7 +348,9 @@ describe('frima (Treasure) — kit spec', () => {
       expect(castFrames.size).toBeGreaterThanOrEqual(6);
       // The first cast lands BEFORE the Wake Up onset (the gate is live in this fixture):
       // exactly the casts at/after onset apply, each reaching all four allies.
-      const onset = Math.min(...trueApplies(base.events, 28.16).map((b) => b.frame));
+      const onset = Math.min(
+        ...trueApplies(base.events, 28.16).map((b) => b.frame)
+      );
       const gatedCasts = [...castFrames].filter((f) => f >= onset);
       expect(gatedCasts.length).toBe(castFrames.size - 1); // only the first cast is pre-onset
       const appliedFrames = new Set(b49.map((b) => b.frame));
@@ -369,9 +366,7 @@ describe('frima (Treasure) — kit spec', () => {
     it('DISCRIMINATING: ungated, the pre-Wake Up first cast would apply too', () => {
       const ung = trueApplies(runBurstUngated.events, 49.97);
       expect(ung.length).toBeGreaterThan(b49.length);
-      expect(ung.length).toBe(
-        casts(runBurstUngated.events).length * N_ALLIES
-      );
+      expect(ung.length).toBe(casts(runBurstUngated.events).length * N_ALLIES);
     });
 
     it('DISCRIMINATING: the gate keys on Wake Up — zero applications with Wake Up removed, one-per-cast ungated', () => {
@@ -408,6 +403,44 @@ describe('frima (Treasure) — kit spec', () => {
 
     it('the nuke is load-bearing on her total', () => {
       expect(base.totals.frima).toBeGreaterThan(runNoNuke.totals.frima);
+    });
+  });
+
+  describe('F5 — S1 Sleepy: DEF ▼4% ×5 stacks/10s per Full Charge hit, on the enemy defPct channel (encoded 2026-08-10)', () => {
+    // channel damage math owned by scripts/tests/engine/enemy-def-debuff.test.ts
+    // (reuse-before-derive) — this group pins only her magnitude, cadence, and window.
+    const shaves = base.events.filter(
+      (e): e is BuffApply =>
+        e.kind === 'buffApply' && e.stat === 'defPct' && e.value === -4
+    );
+
+    it('one -4 application per full-charge shot, same frames, 10s window, from the skill1 slot', () => {
+      const shotFrames = shots(base.events).map((s) => s.frame);
+      expect(shaves.length).toBe(shotFrames.length);
+      expect(shaves.length).toBeGreaterThan(100);
+      expect(shaves.map((b) => b.frame)).toEqual(shotFrames);
+      for (const b of shaves) {
+        expect(b.key.startsWith(`${FRIMA}:skill1:`)).toBe(true);
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
+    });
+  });
+
+  describe('F6 — burst rider: DEF ▼9.86%/10s riding the nuke block (encoded 2026-08-10)', () => {
+    const shaves = base.events.filter(
+      (e): e is BuffApply =>
+        e.kind === 'buffApply' && e.stat === 'defPct' && e.value === -9.86
+    );
+
+    it('one -9.86 boss debuff per burst cast, same frames, 10s window, from the burst slot', () => {
+      const castFrames = casts(base.events).map((c) => c.frame);
+      expect(shaves.length).toBe(castFrames.length);
+      expect(shaves.length).toBeGreaterThanOrEqual(6);
+      expect(shaves.map((b) => b.frame)).toEqual(castFrames);
+      for (const b of shaves) {
+        expect(b.key.startsWith(`${FRIMA}:burst:`)).toBe(true);
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
   });
 });

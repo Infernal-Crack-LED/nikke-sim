@@ -18,7 +18,8 @@
 //      ■ when the stage target appears, all allies: Fills Burst Gauge 100%, once/battle    [E7]
 //   BU ■ all allies: Distributed Damage dealt ▲39.74% for 10 sec                           [E4]
 //      ■ enemy nearest crosshair: 316.66% of final ATK as Burst Skill damage               [E5]
-//      ■ BOOM Install: DEF ▼35.64% for 10 sec  (DEF▼ inert; the STATUS window gates E3)     [E6]
+//      ■ BOOM Install: DEF ▼35.64% for 10 sec  (defPct rider on the status block; the
+//        STATUS window gates E3; channel math owned by enemy-def-debuff.test.ts)           [E6]
 //
 // THE CRUX (cross-family S2b catch): S1b and S2a are phrased DIFFERENTLY and so gate differently.
 //   S2a: "after landing 60 normal attacks ON A TARGET IN BOOM INSTALL status" — the BOOM gate is in
@@ -146,7 +147,9 @@ const noStatus = withPatchedOverride('elegg', (ov) => {
     (b: any) => !hasEffect(b, (e: any) => e.kind === 'targetStatus')
   );
   if (ov.burst.length === before) {
-    throw new Error('elegg burst targetStatus block missing — fixture is stale');
+    throw new Error(
+      'elegg burst targetStatus block missing — fixture is stale'
+    );
   }
 });
 
@@ -232,14 +235,16 @@ describe('elegg (base, MG/Electric/B2) — kit spec', () => {
       expect(vals[0]).toBeGreaterThan(0);
       const perFrame = new Map<number, Set<number | null>>();
       for (const b of applied) {
-        (perFrame.get(b.frame) ?? perFrame.set(b.frame, new Set()).get(b.frame)!).add(
-          b.targetIdx
-        );
+        (
+          perFrame.get(b.frame) ??
+          perFrame.set(b.frame, new Set()).get(b.frame)!
+        ).add(b.targetIdx);
       }
       for (const [frame, holders] of perFrame) {
-        expect(holders.size, `frame ${frame} reached ${holders.size} allies`).toBe(
-          N_ALLIES
-        );
+        expect(
+          holders.size,
+          `frame ${frame} reached ${holders.size} allies`
+        ).toBe(N_ALLIES);
       }
       for (const b of applied) {
         expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
@@ -263,14 +268,16 @@ describe('elegg (base, MG/Electric/B2) — kit spec', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([39.74]);
       const perFrame = new Map<number, Set<number | null>>();
       for (const b of applied) {
-        (perFrame.get(b.frame) ?? perFrame.set(b.frame, new Set()).get(b.frame)!).add(
-          b.targetIdx
-        );
+        (
+          perFrame.get(b.frame) ??
+          perFrame.set(b.frame, new Set()).get(b.frame)!
+        ).add(b.targetIdx);
       }
       for (const [frame, holders] of perFrame) {
-        expect(holders.size, `frame ${frame} reached ${holders.size} allies`).toBe(
-          N_ALLIES
-        );
+        expect(
+          holders.size,
+          `frame ${frame} reached ${holders.size} allies`
+        ).toBe(N_ALLIES);
       }
       for (const b of applied) {
         expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
@@ -284,7 +291,9 @@ describe('elegg (base, MG/Electric/B2) — kit spec', () => {
     });
 
     it('deleting the buff collapses every S1b proc to mult.distributed 1.0', () => {
-      const without = s1bProcs(rNoDistBuff.events).map((d) => d.mult.distributed);
+      const without = s1bProcs(rNoDistBuff.events).map(
+        (d) => d.mult.distributed
+      );
       expect(without.length).toBeGreaterThan(0);
       expect(closeTo(without, 1.0)).toBe(true);
       expect(distBuffs(rNoDistBuff.events).length).toBe(0);
@@ -309,28 +318,53 @@ describe('elegg (base, MG/Electric/B2) — kit spec', () => {
     });
   });
 
-  describe('E6 — B-c: BOOM Install is a STATUS WINDOW gating S2a (DEF▼ magnitude inert)', () => {
-    it('deleting the status zeroes S2a but leaves S1b (ungated), the nuke and the dist buff intact', () => {
+  describe('E6 — B-c: BOOM Install status window gates S2a; its DEF ▼35.64%/10s rides the same block (encoded 2026-08-10)', () => {
+    it('deleting the status block zeroes S2a but leaves S1b (ungated), the nuke and the dist buff intact', () => {
       expect(s2aBuffs(rNoStatus.events).length).toBe(0); // gated rider → gone
       // ungated S1b unchanged
-      expect(s1bProcs(rNoStatus.events).length).toBe(s1bProcs(base.events).length);
+      expect(s1bProcs(rNoStatus.events).length).toBe(
+        s1bProcs(base.events).length
+      );
       // burst's own lines do NOT depend on the status → unchanged counts
       expect(nukes(rNoStatus.events).length).toBe(nukes(base.events).length);
-      expect(distBuffs(rNoStatus.events).length).toBe(distBuffs(base.events).length);
+      expect(distBuffs(rNoStatus.events).length).toBe(
+        distBuffs(base.events).length
+      );
     });
 
-    it('the inert DEF▼35.64% magnitude is recorded verbatim in unmodeled, not as a block', () => {
+    it('the DEF ▼35.64% rides the status-inflicting block as an enemy defPct — never damageTakenPct', () => {
       const ov = loadOverride('elegg') as any;
-      expect((ov.unmodeled?.burst ?? []).join(' ')).toContain('DEF ▼ 35.64%');
-      // no enemy DEF-debuff block and no damageTakenPct over-credit are authored
-      const hasDefDebuff = ov.burst.some((b: any) =>
-        b.effects.some(
-          (e: any) =>
-            (e.stat === 'defPct' || e.stat === 'damageTakenPct') &&
-            b.target.kind === 'enemy'
-        )
+      const statusBlock = ov.burst.find((b: any) =>
+        b.effects.some((e: any) => e.kind === 'targetStatus')
       );
-      expect(hasDefDebuff).toBe(false);
+      expect(statusBlock).toBeDefined();
+      expect(statusBlock.target.kind).toBe('enemy');
+      const shave = statusBlock.effects.find((e: any) => e.stat === 'defPct');
+      expect(shave).toMatchObject({ value: -35.64, durationSec: 10 });
+      // the ×1.3564 whole-damage over-credit trap stays pinned absent
+      const hasVuln = ov.burst.some((b: any) =>
+        b.effects.some((e: any) => e.stat === 'damageTakenPct')
+      );
+      expect(hasVuln).toBe(false);
+    });
+
+    it('one -35.64 boss debuff per burst cast, same frames as the status, 10s window', () => {
+      // channel damage math owned by scripts/tests/engine/enemy-def-debuff.test.ts
+      // (reuse-before-derive) — this pins only her magnitude, cadence, and window.
+      const shaves = base.events.filter(
+        (e: any) =>
+          e.kind === 'buffApply' && e.stat === 'defPct' && e.value === -35.64
+      ) as any[];
+      const eleggCasts = casts(base.events).filter((c) => c.slug === 'elegg');
+      expect(shaves.length).toBe(eleggCasts.length);
+      expect(shaves.length).toBeGreaterThan(0);
+      expect(shaves.map((b) => b.frame)).toEqual(
+        eleggCasts.map((c) => c.frame)
+      );
+      for (const b of shaves) {
+        expect(b.key.includes(':burst:')).toBe(true);
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
   });
 
