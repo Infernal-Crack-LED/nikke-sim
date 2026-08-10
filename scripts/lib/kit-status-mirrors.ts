@@ -22,6 +22,7 @@ const EMPTY_UNMODELED = { skill1: [], skill2: [], burst: [] };
 interface Mirrored {
   unmodeled?: unknown;
   caveats?: unknown;
+  note?: unknown;
 }
 
 /** The per-unit mirror comparison. Returns one message per stale mirror, [] when fresh.
@@ -44,6 +45,12 @@ export function mirrorStaleness(
     JSON.stringify(override.caveats ?? null)
   ) {
     errors.push(`${slug}: caveats mirror stale (run --refresh)`);
+  }
+  if (
+    JSON.stringify(docUnit.note ?? null) !==
+    JSON.stringify(override.note ?? null)
+  ) {
+    errors.push(`${slug}: note mirror stale (run --refresh)`);
   }
   return errors;
 }
