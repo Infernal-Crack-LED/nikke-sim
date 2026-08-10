@@ -58,6 +58,20 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ FAITHFULNESS PASS phase-4 sweep — NEXT UP IS BATCH 6; a fresh session starts at
+  [2026-08-10-faithfulness-batch6-START-HERE.md](2026-08-10-faithfulness-batch6-START-HERE.md).**
+  That doc is self-contained: worktree/branch state (4 UNPUSHED commits on
+  `fix/faithfulness-pass`), the board baseline to diff against, the 21 remaining graded-comp
+  units with per-unit signals pre-computed (comp count, board reading, burst-damage scope
+  clause, amp-comp and fixture co-occurrence), a suggested six, the three NEW rules from batch 5
+  (tagging paused where an amp reaches; "board-inert" ≠ inert — check fixtures; a carrier census
+  needs line + trigger + gate), and the recurring "note describes a unit that no longer exists"
+  detector. Batch findings: [batch 1](2026-08-10-faithfulness-batch1-findings.md) ·
+  [batch 2](2026-08-10-faithfulness-batch2-findings.md) ·
+  [batch 3](2026-08-10-faithfulness-batch3-findings.md) ·
+  [batch 4 + remainder](2026-08-10-faithfulness-batch4-findings.md) ·
+  [batch 5](2026-08-10-faithfulness-batch5-findings.md).
+
 - **⇒ FAITHFULNESS PASS (2026-08-10) — plan of record:
   [2026-08-10-faithfulness-pass-audit.md](2026-08-10-faithfulness-pass-audit.md).** Repeat-pattern
   audit across engine-modeling-gaps + the formula/bucket docs + the unmodeled review (claims
