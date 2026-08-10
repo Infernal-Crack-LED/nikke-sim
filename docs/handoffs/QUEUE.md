@@ -58,6 +58,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ FAITHFULNESS PASS (2026-08-10) — plan of record:
+  [2026-08-10-faithfulness-pass-audit.md](2026-08-10-faithfulness-pass-audit.md).** Repeat-pattern
+  audit across engine-modeling-gaps + the formula/bucket docs + the unmodeled review (claims
+  re-verified against the tree), with a phased order: doc/input fixes → silent-failure tooling
+  hardening → gated engine fixes (gauge-economy batch, Burst-Skill-Damage amp, enemy DEF ▼
+  scope ruling, self-status trio) → the override manual-review sweep (last, batch-and-stop,
+  per-unit checklist in §2 phase 4). Findings-only; nothing enacted.
+
 #### Unmodeled-review follow-ups (post-enactment remainder, 2026-08-09)
 
 > The 2026-08-09 faithfulness-enactment batch LANDED every enactable finding from the
