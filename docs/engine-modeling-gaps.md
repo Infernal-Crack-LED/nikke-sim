@@ -356,21 +356,26 @@ in its single-status, same-unit, same-frame form. Everything below is what that 
   differently-named statuses held live simultaneously, gated three ways: `target-status-gate.test.ts`
   P4a/P4b/P4c.)
 
-### 1b. "is fixed at" stat LOCKS — no engine vocabulary — 8 units
+### 1b. "is fixed at" stat LOCKS — ✅ CLAMP VOCABULARY LANDED — 8 carriers
 
-Kit lines of the form _"X is **fixed at** V"_ CLAMP a stat for a window (owner ruling 2026-07-22): the
-value is the locked level and it cannot be modified further — not a delta applied on top. Sign varies
-(`milk-blooming-bunny` reads _"fixed at a 50% **reduction**"_, `jill` _"a 99.96% increase"_). The engine
-has stat buffs but no clamp, so all of these are approximated, ignored, or hand-carved:
+Kit lines of the form _"X is **fixed at** V"_ CLAMP a stat (owner ruling 2026-07-22): the value is
+the locked level and it cannot be modified further — not a delta applied on top. Sign varies
+(`milk-blooming-bunny` reads _"fixed at a 50% **reduction**"_, `jill` _"a 99.96% increase"_).
+Expressed by three StatKeys — `reloadSpeedClamp` / `reloadTimeClamp` / `chargeTimeClamp`
+(`src/skills/types.ts`; a clamp OVERRIDES the additive stat, most recent active clamp wins) plus the
+`weaponSwap.chargeTimeClamp` field for swap-scoped charge locks. Live carriers:
 
-| locked stat  | units                                                                                     |
-| ------------ | ----------------------------------------------------------------------------------------- |
-| reload speed | `jill`, `exia`, `asuka-wille`, `milk-blooming-bunny`                                      |
-| charge time  | `anis-star`, `nayuta`, `cinderella-crystal-wave` (also _"reload time is fixed at 3 sec"_) |
-| pellet count | `dorothy-serendipity` — the only one modelled, via her bespoke `consolidation` block      |
+| locked stat  | carriers                                                                                      |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| reload speed | `jill`, `exia`, `asuka-wille`, `milk-blooming-bunny` (`reloadSpeedClamp`)                     |
+| charge time  | `anis-star`, `nayuta`, `snow-white-heavy-arms` (incl. the swap field), `cinderella-crystal-wave` |
+| reload time  | `cinderella-crystal-wave` (`reloadTimeClamp`, _"reload time is fixed at 3 sec"_)              |
+| pellet count | `dorothy-serendipity` — bespoke `consolidation` block, not a clamp StatKey                    |
 
-Impact is comp-dependent (a reload-speed lock only bites when a teammate would otherwise buff reload).
-→ open-questions **U31**, which also carries the `jill` `reloadFrames: 0` consequence.
+Open remainder: `milk-blooming-bunny`'s lock is **reload-count-scoped** in kit text while the shipped
+clamp rides a timed window — the count-scoped variant is the surviving gap (QUEUE 5e builds;
+deprioritized 2026-08-10, owner call). Open-questions **U31** still carries the `jill`
+`reloadFrames: 0` consequence.
 
 ### 2. Defensive / heal / shield with no engine vocabulary — ~25 units
 
