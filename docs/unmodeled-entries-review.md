@@ -11,20 +11,20 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 159 | 37.3% |
-| Other / see caveats | 106 | 24.9% |
-| Missing engine primitive / trigger | 94 | 22.1% |
-| Out-of-domain / parser unsupported | 29 | 6.8% |
-| Partless boss | 12 | 2.8% |
+| Defensive / HP / shield / aggro | 157 | 37.3% |
+| Other / see caveats | 105 | 24.9% |
+| Missing engine primitive / trigger | 92 | 21.9% |
+| Out-of-domain / parser unsupported | 29 | 6.9% |
+| Partless boss | 12 | 2.9% |
 | Weapon-state / shot-count approximation | 11 | 2.6% |
 | Self-status / stack gate | 8 | 1.9% |
-| RNG / probabilistic | 4 | 0.9% |
+| RNG / probabilistic | 4 | 1.0% |
 | Measurement-gated / unverified cadence | 3 | 0.7% |
-| **Total** | **426** | 100.0% |
+| **Total** | **421** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (159)
+### Defensive / HP / shield / aggro (157)
 
 **A2** (a2)
 
@@ -69,8 +69,6 @@ Incoming healing ▲ 150% for 15 sec. (no healing-received channel — no HP poo
 - **skill1:** Activates when attacked 40 time(s). Affects self.
   - *Why:* skill1: the entire attacked-40 cluster (self DEF ▲120%/10s) is UNMODELED — the `attacked` trigger primitive exists (types.ts; makima/yulha encode theirs) but nothing feeds it at scope lock (no incoming-damage model; the boss never acts), and the effect (defPct) is damage-inert regardless. Nearest-wrong (hitCount 40 on hits she DEALS) is pinned in the spec test and provably fails
 - **skill1:** DEF ▲ 120% for 10 sec.
-  - *Why:* See unit note / caveats
-- **burst:** DEF ▼ 32% for 5 sec.
   - *Why:* See unit note / caveats
 
 **Anis: Star** (anis-star)
@@ -150,6 +148,8 @@ Decoy: Creates an avatar with 96% of the skill user's final Max HP. This effect 
 
 - **skill1:** Affects all allies. Restores 17.76% of Cover HP.
   - *Why:* ⚑ Cover-HP restore (17.76% of Cover HP, all allies, skill1 cd 15s) is UNMODELED, tier out-of-domain (no cover/HP pool in v1). It is NOT encoded as a `heal` effect on purpose: cover repair is not HP recovery in the kit's own terms, and a heal would emit recovery events that fire teammates' on-recovery consumers (e.g. crown's 'when recovery takes effect') — a synergy cocoa does not have. Whether in-game cover repair fires on-recovery triggers is UNMEASURED; the default is no-emit, and flipping that default needs a measurement, not a prior. Recipe if a cover pool is ever modeled: emit a cover-restore event on skill1's 15s clock, no recovery trigger.
+- **burst:** Activates when Professional Tomato Sauce is at max stacks. Affects all enemies. ATK ▼ 13.59% for 10 sec.
+  - *Why:* Burst 'Professional Maid Leader' removes 1 debuff from all allies and — gated on Tomato Sauce at max stacks — drops all enemies' ATK by 13.59% for 10 sec; enemy ATK ▼ debuffs are dropped at dispatch (no incoming-damage model — the boss never attacks into our numbers; the enemy-buff allowlist admits damageTakenPct/distributedDamagePct/defPct only, and this line is ATK ▼, not DEF ▼), and the gate's stacking resource does not exist in v1
 
 **Crown** (crown)
 
@@ -230,12 +230,8 @@ DEF ▼ 9.38% for 6 sec.
 
 **Frima (Treasure)** (frima)
 
-- **skill1:** Activates when hitting a target with Full Charge. Sleepy: DEF ▼ 4%, stacks up to 5 time(s) for 10 sec. — INERT and UNENACTABLE: boss DEF enters the formula only as the fixed config constant cfg.bossDef (sim.ts:1722 baseAtk = max(0, effectiveAtk − cfg.bossDef)); no buff/debuff channel feeds it, so the engine cannot apply an enemy DEF reduction at all, and the magnitude is negligible regardless (max 20% of measured boss DEF ≈140 ≈ 28 ATK against scope-lock ATK in the hundreds of thousands ≈ 0.02% damage, docs/data/damage-calculation.md §enemy-DEF). NOT modeled as damageTakenPct (a different bucket/math that would over-credit a ~20% team vuln the kit does not deliver) — viper/phantom/guilty/marciana precedent. Its ONLY load-bearing consequence — the max-stack precondition for Wake Up — is carried by the chargeCounter:6 encoding (see note + caveat 1).
-  - *Why:* ⚑ Wake Up trigger proxy (low): the kit gates the 6-FC count on the target being at MAX Sleepy stacks; the sim counts every full charge (chargeCounter:6) because the Sleepy debuff is unenactable (see unmodeled) and there is no boss-debuff-stack gate. Faithful where it matters: stacks accrue 1/FC hit and max at 5, so the 6th FC always lands on a max-stack target while stacks hold; the proxy would over-fire ONLY if Sleepy stacks lapsed mid-count (a >10s firing pause — boss transitions/downtime, unmodeled in the continuous scope-lock fight). Estimate: damage-neutral at scope (near-permanent uptime either way). Recipe: a boss-debuff-stack channel + a 'target at N stacks' block gate would enact the precondition exactly; popup-read Wake Up icon uptime in a frima focus recording.
 - **skill2:** Activates when attacking with Full Charge. Affects all allies. Max HP ▲ 6.09% for 4 sec. — offensively INERT: v1 has no HP pool and ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion (e3 video rule; effectiveAtk counts only OWN-kit maxHpFlat, casterIdx === u.idx, sim.ts:1513), and frima has no HP scaling of her own — blanc/moran precedent.
-  - *Why:* ⚑ Wake Up trigger proxy (low): the kit gates the 6-FC count on the target being at MAX Sleepy stacks; the sim counts every full charge (chargeCounter:6) because the Sleepy debuff is unenactable (see unmodeled) and there is no boss-debuff-stack gate. Faithful where it matters: stacks accrue 1/FC hit and max at 5, so the 6th FC always lands on a max-stack target while stacks hold; the proxy would over-fire ONLY if Sleepy stacks lapsed mid-count (a >10s firing pause — boss transitions/downtime, unmodeled in the continuous scope-lock fight). Estimate: damage-neutral at scope (near-permanent uptime either way). Recipe: a boss-debuff-stack channel + a 'target at N stacks' block gate would enact the precondition exactly; popup-read Wake Up icon uptime in a frima focus recording.
-- **burst:** DEF ▼ 9.86% for 10 sec (the rider on the 10-highest-DEF enemies) — INERT and UNENACTABLE, same as S1 Sleepy: cfg.bossDef is a fixed config constant with no debuff channel (sim.ts:1722); ~9.86% of ≈140 ≈ 14 ATK ≈ 0.01% damage at scope. NOT damageTakenPct — viper/phantom/marciana precedent.
-  - *Why:* ⚑ Wake Up trigger proxy (low): the kit gates the 6-FC count on the target being at MAX Sleepy stacks; the sim counts every full charge (chargeCounter:6) because the Sleepy debuff is unenactable (see unmodeled) and there is no boss-debuff-stack gate. Faithful where it matters: stacks accrue 1/FC hit and max at 5, so the 6th FC always lands on a max-stack target while stacks hold; the proxy would over-fire ONLY if Sleepy stacks lapsed mid-count (a >10s firing pause — boss transitions/downtime, unmodeled in the continuous scope-lock fight). Estimate: damage-neutral at scope (near-permanent uptime either way). Recipe: a boss-debuff-stack channel + a 'target at N stacks' block gate would enact the precondition exactly; popup-read Wake Up icon uptime in a frima focus recording.
+  - *Why:* ⚑ Wake Up trigger proxy (low): the kit gates the 6-FC count on the target being at MAX Sleepy stacks; the sim counts every full charge (chargeCounter:6) because there is no 'target at N stacks' block-gate primitive (the Sleepy defPct stacks themselves ARE encoded on the enemy DEF channel — only the max-stack PRECONDITION is proxied). Faithful where it matters: stacks accrue 1/FC hit and max at 5, so the 6th FC always lands on a max-stack target while stacks hold; the proxy would over-fire ONLY if Sleepy stacks lapsed mid-count (a >10s firing pause — boss transitions/downtime, unmodeled in the continuous scope-lock fight). Estimate: damage-neutral at scope (near-permanent uptime either way). Recipe: a 'target at N stacks' block gate reading the live stack count would enact the precondition exactly; popup-read Wake Up icon uptime in a frima focus recording.
 - **burst:** Affects all allies. Max HP ▲ 30.26% for 4 sec. — offensively INERT, same as the S2 Max HP line (no HP pool; ally-granted Max HP excluded from atkOfMaxHpPct conversions, sim.ts:1513).
   - *Why:* See unit note / caveats
 
@@ -635,7 +631,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Other / see caveats (106)
+### Other / see caveats (105)
 
 **A2** (a2)
 
@@ -672,11 +668,6 @@ Attract: Taunts all enemies for 5 sec.
   - *Why:* skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES (live from t=0, expire at 60/90/150s — the derived >70%/>55%/>25% crossing times of the 0.5%/s drain — and REFRESH on her own burstCast, which recharges Extrasensory to 100%). Reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts. Replaces the prior permanent encoding that OVER-CREDITED never-burst comps (her ~1.19 board-hotness).
 - **burst:** Charges Extrasensory to 100%.
   - *Why:* Burst ATK 73.16/10s on burstCast (her own cast — hard rule 6); 'Charges Extrasensory to 100%' folded into the trajectory derivation → unmodeled
-
-**Cocoa** (cocoa)
-
-- **burst:** Activates when Professional Tomato Sauce is at max stacks. Affects all enemies. ATK ▼ 13.59% for 10 sec.
-  - *Why:* Burst 'Professional Maid Leader' removes 1 debuff from all allies and — gated on Tomato Sauce at max stacks — drops all enemies' ATK by 13.59% for 10 sec; the engine EXPLICITLY drops enemy ATK▼/DEF▼ debuffs (src/engine/sim.ts: "other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0"), and the gate's stacking resource does not exist in v1
 
 **D: Killer Wife** (d-killer-wife)
 
@@ -1012,7 +1003,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v
 - **burst:** Cooldown: 20 s
   - *Why:* See unit note / caveats
 
-### Missing engine primitive / trigger (94)
+### Missing engine primitive / trigger (92)
 
 **A2** (a2)
 
@@ -1090,7 +1081,7 @@ Gains debuff immunity to 1 debuff(s) for 10 sec.
 - **skill2:** Activates when attacking with Full Charge. Affects self. Professional Tomato Sauce: Damage Taken ▼ 4.37%, stacks up to 15 time(s) and lasts for 5 sec.
   - *Why:* ⚑ Self Damage Taken ▼4.37% per full-charge attack (15 stacks, 5 sec) is UNMODELED, tier out-of-domain: v1 models no incoming damage, so a damage-taken modifier has no consumer. Estimate if it ever mattered: with SR cadence (60-frame charge, 6 ammo, 141 reload) stacks would saturate ~25-30s into the fight and stay up (UNMEASURED derivation). Its only consumer is the burst's max-stacks gate — both are unmodeled together. Nearest-wrong encoding to avoid: the schema's damageTakenPct is a BOSS debuff (positive = boss takes MORE damage); writing this self ▼ line onto the boss would swing team damage up to 15×4.37% ≈ 65.55%.
 - **burst:** Affects all allies. Removes 1 debuff(s).
-  - *Why:* Burst 'Professional Maid Leader' removes 1 debuff from all allies and — gated on Tomato Sauce at max stacks — drops all enemies' ATK by 13.59% for 10 sec; the engine EXPLICITLY drops enemy ATK▼/DEF▼ debuffs (src/engine/sim.ts: "other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0"), and the gate's stacking resource does not exist in v1
+  - *Why:* Burst 'Professional Maid Leader' removes 1 debuff from all allies and — gated on Tomato Sauce at max stacks — drops all enemies' ATK by 13.59% for 10 sec; enemy ATK ▼ debuffs are dropped at dispatch (no incoming-damage model — the boss never attacks into our numbers; the enemy-buff allowlist admits damageTakenPct/distributedDamagePct/defPct only, and this line is ATK ▼, not DEF ▼), and the gate's stacking resource does not exist in v1
 
 **Crow** (crow)
 
@@ -1133,11 +1124,6 @@ ATK ▼ 19.93% for 10 sec. — no sim channel: the enemy-buff path admits only d
 
 - **skill2:** Effect 2: Activates when an ally or self destroys a destructible projectile. Scraps ▲ 1 continuously, up to a maximum of 10.
   - *Why:* skill2: E2/E3/E4 scrap sources (destructible projectile +1, enemy part +5, enemy neutralized +2) are VERBATIM in unmodeled — the v1 sim has no projectile entities, no destructible parts, and the single immortal boss is never neutralized inside the fight, so these triggers never fire; encoding them would require event classes the engine does not emit. Inert at scope (the scrap pool sits at 0 after the frame-0 craft).
-
-**Elegg** (elegg)
-
-- **burst:** BOOM Install: DEF ▼ 35.64% for 10 sec. — the DEF▼ MAGNITUDE is inert (the engine drops enemy DEF debuffs, boss DEF≈0, sim.ts). NOT encoded as damageTakenPct (that would be a ×1.3564 whole-damage over-credit). The BOOM Install status WINDOW itself IS modeled (targetStatus) as the gate for the S2a rider.
-  - *Why:* burst: the DEF ▼35.64% magnitude is inert (engine drops enemy DEF debuffs) and is NOT damageTakenPct; only the BOOM Install status window is load-bearing (it gates S2a)
 
 **Emilia** (emilia)
 
@@ -1214,11 +1200,8 @@ Removes Fulfillment of Righteousness.
 **Ludmilla** (ludmilla)
 
 - **skill1:** ■ Activates when the last bullet hits the target. Affects the target.
-DEF ▼ 8.4% for 10 sec. — UNMODELED (inert, declared GAP ⚑1): a boss-DEF shave the engine cannot express — sim.ts applyEffect drops enemy ATK▼/DEF▼ debuffs (only positive damageTakenPct/distributedDamagePct reach enemyBuffs) — and the scope-lock basis runs bossDef = 0 regardless (docs/data/damage-calculation.md line 32; scripts/battery/boss-def.ts ≤0.12% board shift), so it moves exactly zero damage here. Her real team-damage lever in game; re-gauntlet if a nonzero bossDef ever enters the basis.
-  - *Why:* skill1: the boss DEF▼8.4%/ATK▼8.4% debuffs are declared GAPs (⚑1/⚑2) — inexpressible at scope lock (bossDef = 0; applyEffect drops enemy ATK▼/DEF▼), zero damage impact on this basis, real team-damage value in game.
-- **skill1:** ■ Activates when the last bullet hits the target. Affects the target.
-ATK ▼ 8.4% for 10 sec. — UNMODELED (inert ⚑2): enemy ATK▼ debuff — the boss never attacks in the DPS sim (no incoming-damage model) and applyEffect drops enemy ATK▼ regardless. Doubly inert.
-  - *Why:* skill1: the boss DEF▼8.4%/ATK▼8.4% debuffs are declared GAPs (⚑1/⚑2) — inexpressible at scope lock (bossDef = 0; applyEffect drops enemy ATK▼/DEF▼), zero damage impact on this basis, real team-damage value in game.
+ATK ▼ 8.4% for 10 sec. — UNMODELED (inert ⚑1): enemy ATK▼ debuff — the boss never attacks in the DPS sim (no incoming-damage model) and applyEffect drops enemy ATK▼ regardless. Doubly inert.
+  - *Why:* skill1: the DEF ▼8.4%/10s is MODELED as a lastBullet → enemy defPct block on the enemy DEF channel (sub-0.1% at the scope-lock 140-DEF basis, live at web raid DEF defaults; NOT damageTakenPct — the spec guard pins that channel absent); the ATK ▼8.4%/10s stays a declared GAP (⚑1) — the boss never attacks in the DPS sim and applyEffect drops enemy ATK▼.
 - **skill2:** ■ Activates when entering Full Burst. Affects all enemies. 
 Attract: Taunt all enemies for 15.09 sec. — UNMODELED (inert): no threat/targeting model in v1 — the solo boss already attacks the team abstraction; there is no aggro state to redirect. Trigger identity recorded as fullBurstEnter so a future consumer never misfiles it as burstCast.
   - *Why:* SKILL2 ('Queenly Disposition' — on entering Full Burst): BOTH lines UNMODELED (inert): the 15.09s all-enemy taunt has no threat/targeting model in v1 (the solo boss already attacks the team abstraction; trigger identity fullBurstEnter recorded so a future consumer never misfiles it as burstCast), and the self Damage Taken ▼57.86%/15s has no incoming-damage model to reduce (immortal boss — it is the SELF-targeted ▼ mirror of the boss damageTakenPct channel, never that channel; the spec's zero-damageTakenPct-anywhere guard pins the sign/channel misread)

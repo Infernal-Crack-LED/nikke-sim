@@ -20,7 +20,7 @@ defense-ignore damage (same bucket).
 
 | Bucket          | Contents                                                                                                                                                                              | Engine           |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| `FinalATK_term` | `BaseATK × (1+ΣATK%) + Σ(caster-ATK flat) + Σ(HP→ATK flat)` − `DEF` (DEF floor 0; scope-lock boss DEF = 0)                                                                            | `effectiveAtk()` |
+| `FinalATK_term` | `BaseATK × (1+ΣATK%) + Σ(caster-ATK flat) + Σ(HP→ATK flat)` − `DEF` (DEF floor 0; scope-lock boss DEF = 140, measured)                                                                | `effectiveAtk()` |
 | `rate%`         | weapon per-shot % or the skill's "X% of final ATK"                                                                                                                                    | per-hit `atkPct` |
 | **Major**       | `1 + 0.5·FB + 0.3·range + critRate·critBonus + coreExposure·ACR·coreBonus` — one additive bracket                                                                                     | `major`          |
 | `Element`       | `1.1 + ΣElementDmg% + ΣSuperiorElementDmg%`, only with elemental advantage (superior-element placement MEASURED 2026-07-14, test battery 5 popup ratios)                              | `elem`           |

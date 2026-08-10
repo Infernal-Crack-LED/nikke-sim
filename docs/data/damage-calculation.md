@@ -35,7 +35,7 @@ feeds**, with live per-stat carrier counts — see
 ### 1a. FinalATK
 
 ```
-FinalATK = max(0, effectiveAtk − bossDef)                     // bossDef = 0 at scope lock
+FinalATK = max(0, effectiveAtk − bossDef)                     // bossDef = 140 at scope lock (measured; owner "always on")
 
 effectiveAtk = staticAtk × (1 + Σ ATK ▲ % / 100)
              + Σ (caster-ATK grants, as flat values)
@@ -393,8 +393,9 @@ expected-value path, byte-identical to the web UI's.
 ### 5a. Jill's opening magazine (run I order, electric-weak boss — all four classes measured 99.7%)
 
 FinalATK = 137,059 (staticAtk 120,143 Attacker × her passive ATK stack at fight start).
-⚠ **Pre-correction OL0 basis**: this example uses the old OL0 `staticAtk` value. After the
-2026-07-14 basis correction, scope-lock Attackers use Base 5 gear = 118,027; the popup
+⚠ **Pre-correction OL0 basis**: this example uses the old OL0 `staticAtk` value and no boss-DEF
+subtraction. After the 2026-07-14 basis correction, scope-lock Attackers use Base 5 gear =
+118,027, and the live basis subtracts the measured boss DEF 140 (~0.1% of FinalATK); the popup
 match here is flagged for re-check at the corrected basis (see §1a).
 rate% = 92.4 (71.09 base × her Magnum-Ammo 1.3 multiplier). Element = 1.1. Charge = 1.
 DamageUp = 1.0 pre-buffs. AR in range at mid band → Range 0.3.

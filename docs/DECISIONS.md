@@ -9,7 +9,55 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) FAITHFULNESS PHASE-4 BATCH 1 — six units reviewed, the owner-ruled
+- **(2026-08-10, latest) NON-LITERAL BURST SCOPE STRINGS COUNT AS TARGETING THE BOSS — owner
+  ruling; the six logged `burstDesc` tags enacted.** Owner: "for the purposes of this sim,
+  yes these will all count as targeting the boss." Resolves batch-2 cross-cutting finding 2.
+  The logged non-literal scope clauses are amp-eligible, mapped by clause cardinality:
+  singular wording → `'singleEnemy'` (`viper` "Affects 1 designated enemy unit(s)" 1029.6%;
+  `elegg` "Affects the enemy nearest to the crosshair" 316.66%), plural/capped-multi wording
+  → `'allEnemies'` (`anis` "Affects enemies within attack range" 156.73%; `frima` "Affects
+  10 enemy unit(s) with the highest final DEF" 101.66%; `ludmilla` "Affects 10 enemy unit(s)
+  with the highest final ATK" 163.1%; `exia` "Affects the 10 enemy unit(s) with the highest
+  final DEF" 122.32% on BOTH burst damage lines — the hackingCode-gated "Affects the same
+  target(s)" additional-damage line inherits the scope). All dormant-live per the amp
+  convention (byte-identical until an amp carrier shares a comp; verified neither the
+  `jackal` nor `trina` spec fixture seats a tagged unit, so their tag-absence pins hold).
+  Units not yet through phase-4 review with the same clause class (e.g. `helm` "Affects the
+  enemy with the highest final ATK") take their tags at their own review under this ruling.
+
+- **(2026-08-10) FAITHFULNESS PHASE-4 BATCH 2 — the DEF ▼ carrier set is COMPLETE.**
+  Six parallel checklist reviews (`anis`, `cocoa`, `elegg`, `frima`, `ludmilla`,
+  `marciana-marine-study` — full record `docs/handoffs/2026-08-10-faithfulness-batch2-findings.md`).
+  Enacted under the standing rulings (2c DEF channel; all values kit-verbatim SL10): DEF ▼
+  encodes on `anis` (burst −32/5s, sibling burstCast block), `elegg` (burst −35.64/10s riding
+  the BOOM-Install status block), `frima` (S1 Sleepy −4 ×5 stacks/10s shotFired + burst rider
+  −9.86/10s, kit-order effects), `ludmilla` (S1 −8.4/10s, new lastBullet block), and
+  `marciana-marine-study` (burst −10.56/20s riding the Electric-gated High-Risk-Target
+  block). `cocoa` was struck from the carrier lists as a prose-grep FALSE POSITIVE — her only
+  enemy-targeted line is the burst ATK ▼ 13.59%, which stays dropped; carrier censuses must
+  verify against kit text, not override prose. Zero `burstDesc` tags (five non-literal scope
+  strings logged for one owner ruling — QUEUE). New spec pins: anis N4, elegg E6 rewrite,
+  frima F5/F6, ludmilla L7 + guard rewrite, marciana-marine-study M7. Prose falsified by the
+  DEF channel / the 140 basis corrected in all six overrides + `guilty` + the second stale
+  enemy-buff dispatch comment in sim.ts (comment-only); anis's note-vs-caveat contradiction
+  on the `attacked` primitive fixed (the primitive exists — makima/yulha). Review doc
+  regenerated 433 → 421 entries. Full gate green.
+
+- **(2026-08-10) SCOPE-LOCK BASELINE BOSS DEF = 140 — owner ruling; the docs still
+  saying 0 were stale.** Resolves batch-1 cross-cutting finding 1 (the two contradicting
+  owner-attributed records). The graded basis is `bossDef: 140` — measured by the ginmy def
+  test (boss-type enemies ≈140), adopted owner "always on" 2026-07-15 in
+  `scripts/lib/scope-lock.ts`, and used un-overridden by the regression/control/experiment/
+  vitest harnesses ever since. The 2026-07-14 "`bossDef: 0` stands" entry is superseded in
+  place; the surfaces that kept claiming 0 (damage-calculation.md §1a + the §5a example note,
+  nikke-damage-formula.md, the faithfulness-audit F4 framing, and `validate-overrides.ts`'s
+  smoke cfg, moved 0→140) are reconciled with this entry. Deliberately non-140 surfaces are
+  unchanged and not drift: the B1/B2 DPS comparability boards pin `bossDef = 0` by their own
+  ruling (docs/data/rank-boards.md), and the web raid presets run 30,930 / 12,200. — owner
+  ruling 2026-08-10; batch-1 finding (two reviewers independently, orchestrator-verified
+  against scope-lock.ts).
+
+- **(2026-08-10) FAITHFULNESS PHASE-4 BATCH 1 — six units reviewed, the owner-ruled
   pattern classes enacted.** Six parallel checklist reviews (`viper`, `phantom`, `novel`,
   `exia`, `soda-twinkling-bunny`, `isabel` — full record
   `docs/handoffs/2026-08-10-faithfulness-batch1-findings.md`). Enacted under the standing
@@ -2574,7 +2622,11 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
   distance→core-size model + SG 0–25 research refine it. FB/measured-truth asserts unchanged; snapshot
   regenerated. — 3 solo recordings + coreband2 measurements; open-questions A15; scientific-method
   harness post-op panel (Fable ACCEPT) + owner ruling IMPLEMENT.
-- **(2026-07-14) The scope-lock boss's DEF is negligible; `bossDef: 0` stands.** Enemy DEF in
+- **(2026-07-14) The scope-lock boss's DEF is negligible; `bossDef: 0` stands.** **[SUPERSEDED
+  2026-08-10 — owner ruling: the scope-lock baseline is `bossDef = 140` (adopted "always on"
+  2026-07-15, `scripts/lib/scope-lock.ts`); disregard the "0 stands" disposition. The
+  measurements in this entry (boss-type DEF ≈140; ≤0.12% board impact of the whole term)
+  remain valid.]** Enemy DEF in
   NIKKE is a small FLAT, subtractive value (min-1 damage floor), applied inside the base term
   before the skill coefficient — `dmg = max(0, effectiveATK − bossDEF) × atkPct × …`. ginmy.net's
   def test (empirical, /nikke_def_test) measures Union-Training mobs at DEF 100 and boss-type

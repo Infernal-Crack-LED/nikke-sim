@@ -95,13 +95,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   defaults) + `guilty`'s previously-discarded `defPct: -20.25` are live; equivalence-proof test
   `scripts/tests/engine/enemy-def-debuff.test.ts`; detail `docs/data/damage-bucket-matrix.md`
   §5 trap 4. Batch 1 (2026-08-10, `2026-08-10-faithfulness-batch1-findings.md`) encoded
-  `exia`, `novel`, `phantom`, `viper`. **Remaining:** `anis`, `cocoa`, `elegg`,
-  `frima`, `ludmilla`, `marciana-marine-study` encode kit-verbatim as each passes its
-  review; `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second
-  carrier). Enemy ATK ▼ stays genuinely inert. ⚠ AWAITING OWNER RULING (batch-1 cross-cutting
-  finding 1): the graded surfaces run `bossDef = 140` (scope-lock.ts) while
-  damage-calculation.md §1a/§5a + the validate-overrides smoke still say 0 — pick one statement
-  of the basis so the drift stops regenerating.
+  `exia`, `novel`, `phantom`, `viper`; batch 2 (`2026-08-10-faithfulness-batch2-findings.md`)
+  encoded `anis`, `elegg`, `frima` (×2 lines), `ludmilla`, `marciana-marine-study` and struck
+  `cocoa` as a prose-grep false positive (her only enemy line is ATK ▼). **The carrier set is
+  COMPLETE**; `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second
+  carrier). Enemy ATK ▼ stays genuinely inert. The non-literal `burstDesc` scope-string
+  ruling landed 2026-08-10 (owner: they all count as targeting the boss — DECISIONS): the
+  six logged tags are enacted; units not yet reviewed with the same clause class (e.g.
+  `helm` "the enemy with the highest final ATK") tag at their own phase-4 review.
 - **⇒ Unit-card infographic follow-ups (3, code-verified still open 2026-08-02):**
   1. **No vector source for burst icons.** `web/public/nikke-icons/burst_*` is webp-only (~100px native)
      — fine at every size drawn today, but a surface wanting it large has nothing to rasterize from.

@@ -21,7 +21,7 @@
 //      ■ (same targets): equally shares damage taken for 10 sec                  [N3b UNMODELED]
 //   BU "Pinpoint Missile" (burst, cd 20s)
 //      ■ enemies within attack range: 156.73% of final ATK as damage             [N2]
-//      ■ (same targets): DEF ▼32% for 5 sec                                      [N3c UNMODELED]
+//      ■ (same targets): DEF ▼32% for 5 sec                                      [N4 MODELED]
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest wrong model
 // gates nothing):
@@ -37,25 +37,26 @@
 //       FB-exempt, verified fact 2026-07-13), so the 156.73% nuke must never take the +50%
 //       major; removal empties her burst bucket (she has no other burst line). The SL1 datamine
 //       magnitude 68.57 is the wrong-skill-level nearest-wrong.
-//   N3a the sim has NO incoming-damage model (immortal boss) and NO attacked-N trigger, so S1
-//       can never fire; pinned as an EMPTY skill1 + zero defPct-120 applications. The
+//   N3a the sim has NO incoming-damage model (immortal boss), so S1's attacked-40 trigger can
+//       never fire (the `attacked` primitive exists — makima/yulha encode theirs — but nothing
+//       feeds it at scope lock); pinned as an EMPTY skill1 + zero defPct-120 applications. The
 //       nearest-wrong model — hitCount 40 counting hits she DEALS (an RL at ~1 pull/s reaches
 //       40 around t≈50s) — provably produces defPct-120 applications, so the empty-log
 //       assertion is one that mis-modeling fails.
 //   N3b there is no damage-redistribution primitive (no incoming damage to share; bay
 //       precedent) — pinned structurally: every shipped S2 effect is a defPct buff.
-//   N3c the engine explicitly drops enemy DEF▼ debuffs: boss DEF enters the formula only as
-//       the FIXED cfg.bossDef subtraction (sim.ts), so the line is unenactable AND negligible
-//       (32% of the 140-DEF scope-lock boss ≈ 45 ATK against ~100k effective ≈ 0.04%). The
-//       nearest-wrong encoding — damageTakenPct 32 (a boss-taken amplifier) — would over-credit
-//       the WHOLE team by ~32% during the window; the counterfactual run proves exactly that
-//       inflation, and the shipped run carries no damageTakenPct application from her (viper /
-//       cocoa / marciana precedent).
+//   N3c/N4 the burst's DEF ▼32%/5s is MODELED as a sibling burstCast → enemy defPct block on
+//       the live enemy DEF channel (bossDefNow scales cfg.bossDef, floor 0; ~0.04%/hit at the
+//       scope-lock 140-DEF basis). N4 pins its cadence/magnitude/window; the channel's damage
+//       math is owned by scripts/tests/engine/enemy-def-debuff.test.ts. The nearest-wrong
+//       encoding — damageTakenPct 32 (a boss-taken amplifier) — would over-credit the WHOLE
+//       team by ~32% during the window; the counterfactual run proves exactly that inflation,
+//       and the shipped run carries no damageTakenPct application from her (viper / cocoa /
+//       marciana precedent).
 //
 // UNMODELED ⚑s (inert here; estimate + recipe + tier in the override note/unmodeled):
 //   S1 attacked-cluster — out-of-domain (incoming-damage subsystem; maiden/yulha precedent).
 //   S2 damage-share   — out-of-domain (no redistribution primitive; bay precedent).
-//   BU DEF▼32%        — unenactable + negligible (cfg.bossDef fixed; NOT damageTakenPct).
 //
 // Fixture (deterministic — no seed; event-log over totals where a line is scoping/timing-
 // sensitive): COMP ['liter','anis','helm','ada'] — liter (B1, 20s) opens the chain, anis is
@@ -162,7 +163,9 @@ const anisBurstKeyedDef = withPatchedOverride('anis', (ov) => {
   }
 });
 
-/** N2 reference: the burst nuke removed (proves it is her burst-bucket damage source). */
+/** N2 reference: the burst nuke removed (proves it is her burst-bucket damage source).
+ *  Filters by flatDamage presence, so the sibling defPct shave block survives untouched —
+ *  the counterfactual stays surgical to the nuke. */
 const anisNoNuke = withPatchedOverride('anis', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter(
@@ -201,7 +204,7 @@ const anisDealtHitS1 = withPatchedOverride('anis', (ov) => {
 
 /** N3c nearest-wrong: the burst's enemy DEF▼32% folded into damageTakenPct (the boss-taken
  *  amplifier bucket) — wrong mechanic AND wrong direction-of-fit: it over-credits the whole
- *  team instead of lowering a fixed DEF subtraction the engine never feeds. */
+ *  team instead of shaving the (now channel-fed) DEF subtraction. */
 const anisVulnBurst = withPatchedOverride('anis', (ov) => {
   ov.burst = [
     ...ov.burst,
@@ -423,6 +426,33 @@ describe('anis (base) — kit spec', () => {
           `${slug} total under the vuln counterfactual`
         ).toBeGreaterThan(base.totals[slug]);
       }
+    });
+  });
+
+  describe('N4 — burst DEF ▼32%/5s rides the enemy defPct channel (encoded 2026-08-10)', () => {
+    // boss-held debuff: emitted with anis's burst key prefix, 5s window, one per cast.
+    // The channel's damage math is pinned by scripts/tests/engine/enemy-def-debuff.test.ts
+    // (reuse-before-derive) — this group pins only her magnitude, cadence, and window.
+    const shaves = buffs(base.events).filter(
+      (b) => b.stat === 'defPct' && b.value === -32
+    );
+
+    it('one -32 boss debuff per burst cast, same frames, 5s window, from the burst slot', () => {
+      const castFrames = anisCasts(base.events).map((c) => c.frame);
+      expect(shaves.length).toBe(castFrames.length);
+      expect(shaves.length).toBeGreaterThanOrEqual(6);
+      expect(shaves.map((b) => b.frame)).toEqual(castFrames);
+      for (const b of shaves) {
+        expect(b.key.startsWith(`${ANIS}:burst:`)).toBe(true);
+        expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
+      }
+    });
+
+    it('is SILENT in the STARVED comp (cast-gated, like the nuke)', () => {
+      const starvedShaves = buffs(starved.events).filter(
+        (b) => b.stat === 'defPct' && b.value === -32
+      );
+      expect(starvedShaves).toEqual([]);
     });
   });
 
