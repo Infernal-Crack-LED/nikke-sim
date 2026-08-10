@@ -83,19 +83,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   landed (the old match rode its absence) — pinned as `simFullBursts: 12` in
   scripts/regression.ts; joins the open burst-generation-shortfall thread (the four disabled
   liberalio comps).
-- **Bare `sim.ts:<line>` citations in override prose drift silently (class, not a one-off):** the
-  cross-family review of this branch caught `anis-star`'s charge-formula citation pointing at the
-  DoT-scheduling case (fixed here by naming the code instead of the line); `phantom`'s enemy-DEF
-  citation was the same shape. Nothing checks these. Options: a lint that resolves every
-  `sim.ts:<line>` citation in override prose, or a convention that prose names the code block
-  ("the charge-frames clamp in sim.ts") and never the line number.
-- **`gen-unmodeled-review.ts` never receives an override `note`:** it calls
-  `matchingCaveat(line, slot, u.caveats, u.note)` and `classify(line, caveat, u.note)`, but
-  `data/kit-status.json` mirrors `unmodeled`/`caveats` and NOT `note` — so `u.note` is
-  `undefined` for all 183 units and both functions silently run without the note signal they
-  were written to use. Predates this branch (the 2026-08-09 caveat-pairing fix did not touch it).
-  Fixing it re-categorizes entries in the generated doc, so it wants its own change: either
-  mirror `note` in kit-status.json or drop the dead parameters.
 - **Small ⚑ phase estimates riding the batch** (each flagged in its override, pin from footage
   if popup-read): `arcana-fortune-mate` reload delaySec 1.5; `neon-vision-eye` in-window normal
   count (the 330 magnitude); `rosanna` Concealment uptime (kit-duration upper bound).
