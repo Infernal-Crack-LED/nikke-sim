@@ -9,6 +9,16 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-09, later same day) anchor-innocent-maid's same-squad membership is OWNER-CONFIRMED —
+  her squadmate is `mast-romantic-maid`, not `privaty-unkind-maid`.** Resolves the QUEUE.md
+  "same-squad primitive migrations" blocker and the entry below's "NOT enacted" item (the in-game
+  squad-field lookup that was outstanding there — SUPERSEDED, disregard the "needs the in-game
+  squad field" clause). `src/data/squads.ts` gains the `Maid` squad (both slugs); the S1 block-B
+  heal gate (`recovers 3.04% Max HP every 1s for 8s`) is now `teamHas.sameSquad`-gated instead of
+  always-satisfied — inert in comps without her, active with her. Kit spec
+  (`scripts/tests/units/anchor-innocent-maid.test.ts`) fixture extended with `mast-romantic-maid`
+  and a discriminating test added proving the gate fails closed without her.
+
 - **(2026-08-09) FAITHFULNESS-ENACTMENT BATCH: every wrongly-unmodeled kit line from the
   unmodeled-entries audit is ENACTED, owner-ruled — "no measurement is needed ahead of time,
   this is a faithfulness fix; even if it moves the board in a negative way, it's still the
@@ -36,7 +46,9 @@ lives. Newest first within each section.
   1-round mag, Pierce, 10s), superseding the probe-run-G single-flatDamage collapse whose own
   note recorded fit instability (0.80 G vs 1.17 N6). NOT enacted: anchor-innocent-maid's
   same-squad curation (a lore datum, not a measurement — guessing a maid-variant squad is the
-  documented blanc/noir misread trap; needs the in-game squad field). **Board A/B** (142
+  documented blanc/noir misread trap; needs the in-game squad field). ⚑ SUPERSEDED (2026-08-09,
+  later same day) — disregard, see the entry above: owner confirmed the in-game squad field.
+  **Board A/B** (142
   datapoints): aggregate stable (±5% 15→14, ±8% 22→23, worse 23→22); grave 1.119→1.095,
   arcana-fortune-mate 0.898→0.935, moran 0.660→0.728 improved; jill 0.966→1.924 and maxwell
   0.889→1.252 went hot — the two evidence-fitted holds' absorbed calibrations now EXPOSED as

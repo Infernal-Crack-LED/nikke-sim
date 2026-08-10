@@ -574,10 +574,6 @@ template mislock, → 0 on relock) + 29 countable`. 42 − 35 = 7 / 5 shots = **
      `buffApply`, …) listed under §1d in the plan — build them as step-3 tests need them.
 - **⇒ SAME-SQUAD PRIMITIVE MIGRATIONS** (the primitive landed 2026-08-02; `teamHas.sameSquad` resolves
   from `src/data/squads.ts`, fail-closed). Remaining units with "same squad" kit text:
-  - `anchor-innocent-maid` (S1 block B heal gate) — modeled always-satisfied (override caveat). BLOCKED
-    on an owner ruling for her squad membership (the maid costumes — `mast-romantic-maid`,
-    `privaty-unkind-maid` — are candidates, NOT verified). Once ruled: add the squad to
-    `src/data/squads.ts`, gate the block, rewrite the caveat.
   - `ram` (S1 "Full Burst ends with an ally from the same squad") — no override yet (not simSupported);
     collab-unit squad unknown, confirm before authoring.
   - `emma-tactical-upgrade` / `eunhwa-tactical-upgrade` (S2 "affects all allies from the same squad") —

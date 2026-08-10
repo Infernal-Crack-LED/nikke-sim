@@ -19,7 +19,7 @@
 //        Once:  Potency of HP ▲ 30.96% for 5 sec                         [L1 UNMODELED]
 //        Twice: Distributed Damage ▲ 30.4% for 10 sec                    [L2 FAITHFUL]
 //        Thrice: Stack count of debuffs ▼ 1                              [L3 UNMODELED]
-//      ■ fullBurstEnter (same-squad gate, modeled always-satisfied), all allies:
+//      ■ fullBurstEnter (same-squad gate, teamHas.sameSquad — satisfied by mast-romantic-maid), all allies:
 //        Recovers 3.04% Max HP every 1 sec for 8 sec                     [L4 FAITHFUL]
 //   S2 ■ fullBurstEnd, all allies, escalating Once/Twice/Thrice:
 //        Once:  Hit Rate ▲ 10.13% for 10 sec                             [L5 FAITHFUL]
@@ -43,7 +43,8 @@
 //   L9  burst heal fires a recovery event at the burstCast frame (before FB opens).
 //   L10 casterAtkPct 30.09/10s on every burstCast. Nearest wrong: atkPct.
 //
-// Fixture: liter (B1) / anchor-innocent-maid (B2) / crown (B2, S2 heal removed) / ada (B3).
+// Fixture: liter (B1) / anchor-innocent-maid (B2) / crown (B2, S2 heal removed) / ada (B3) /
+// mast-romantic-maid (B2) — her squadmate, satisfying the L4 same-squad gate.
 // Boss Fire (Water advantage for anchor-innocent-maid). Focus ada.
 // Crown's S2 heal removed so her recovery consumer is driven ONLY by anchor-innocent-maid's
 // heal events (S1 ticks + burst heal). Deterministic (no seed).
@@ -62,6 +63,25 @@ type FullBurstStart = Extract<SimEvent, { kind: 'fullBurstStart' }>;
 type FullBurstEnd = Extract<SimEvent, { kind: 'fullBurstEnd' }>;
 
 function run(overrides: Record<string, any> = {}) {
+  const events: SimEvent[] = [];
+  const res = runComp({
+    slugs: [
+      'liter',
+      'anchor-innocent-maid',
+      'crown',
+      'ada',
+      'mast-romantic-maid',
+    ],
+    bossElement: 'Fire',
+    focusSlug: 'ada',
+    overrides,
+    cfg: { onEvent: (e) => events.push(e) },
+  });
+  return { events, totals: totals(res) };
+}
+
+/** Same fixture minus her squadmate — proves the L4 sameSquad gate fails closed. */
+function runNoSquadmate(overrides: Record<string, any> = {}) {
   const events: SimEvent[] = [];
   const res = runComp({
     slugs: ['liter', 'anchor-innocent-maid', 'crown', 'ada'],
@@ -144,6 +164,7 @@ const crownNoHeal = withPatchedOverride('crown', (ov) => {
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run({ crown: crownNoHeal });
+const noSquadmate = runNoSquadmate({ crown: crownNoHeal });
 const distributedAsAtkDmg = run({
   crown: crownNoHeal,
   'anchor-innocent-maid': aimDistributedAsAtkDmg,
@@ -265,6 +286,25 @@ describe('anchor-innocent-maid — kit spec', () => {
           inWindow.length,
           `FB at frame ${fbFrame}: expected 8 S1 heal ticks in the 8s window, got ${inWindow.length}`
         ).toBeGreaterThanOrEqual(8);
+      }
+    });
+
+    it('DISCRIMINATING: no same-squad ally on the team suppresses the S1 tick train (sameSquad gate is real, not always-satisfied)', () => {
+      const noSquadmateFbStarts = fbStarts(noSquadmate.events).map(
+        (f) => f.frame
+      );
+      const noSquadmateRecoveryFrames = crownRecoveryFrames(noSquadmate.events);
+      expect(noSquadmateFbStarts.length).toBeGreaterThan(0);
+      for (const fbFrame of noSquadmateFbStarts) {
+        const inWindow = noSquadmateRecoveryFrames.filter(
+          (f) => f >= fbFrame && f <= fbFrame + 8 * FPS
+        );
+        // Only the burst heal (L9, 1 event) can land in this window without a
+        // squadmate — the S1 8-tick train is gated off.
+        expect(
+          inWindow.length,
+          `FB at frame ${fbFrame} with no squadmate: expected < 8 recovery firings (S1 gated off), got ${inWindow.length}`
+        ).toBeLessThan(8);
       }
     });
 

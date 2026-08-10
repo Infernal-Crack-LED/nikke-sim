@@ -443,7 +443,7 @@
         ]
       },
       "caveats": [
-        "skill1: 'same squad' heal gate modeled as always-satisfied — the `teamHas.sameSquad` gate + curated squad registry exist (src/data/squads.ts) but anchor-innocent-maid's squad is not yet curated (the gate fails closed, so gating now would silence the heal); until curated, recovery events over-fire in non-squad teams (affects on-recovery consumers only)",
+        "skill1: the 8-tick regen's 'same squad' gate is enforced via `teamHas.sameSquad` — owner-confirmed squad membership in src/data/squads.ts pairs anchor-innocent-maid with mast-romantic-maid; inert in comps without her",
         "skill1: the 8-tick regen (every 1s for 8s) now emits 8 timed recovery events (heal ticks:8) — on-recovery consumers (Crown-type) stay refreshed across the whole window (engine gap #1 fix, 2026-07-17)",
         "skill1: tier-1 'Potency of HP' is a value-0 placeholder kept only for escalating tier order (heal potency has no engine stat)",
         "skill2: Hit Rate ▲ 10.13% modeled as hitRatePct — LIVE since CONE_DELTA (2026-07-19) for AR/SMG/SG recipients via acrForHR; its in-game core-hit-rate lift is unmeasured",
