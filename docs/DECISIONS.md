@@ -9,7 +9,23 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) FAITHFULNESS PHASE-4 BATCH 2 — the DEF ▼ carrier set is COMPLETE.**
+- **(2026-08-10, latest) NON-LITERAL BURST SCOPE STRINGS COUNT AS TARGETING THE BOSS — owner
+  ruling; the six logged `burstDesc` tags enacted.** Owner: "for the purposes of this sim,
+  yes these will all count as targeting the boss." Resolves batch-2 cross-cutting finding 2.
+  The logged non-literal scope clauses are amp-eligible, mapped by clause cardinality:
+  singular wording → `'singleEnemy'` (`viper` "Affects 1 designated enemy unit(s)" 1029.6%;
+  `elegg` "Affects the enemy nearest to the crosshair" 316.66%), plural/capped-multi wording
+  → `'allEnemies'` (`anis` "Affects enemies within attack range" 156.73%; `frima` "Affects
+  10 enemy unit(s) with the highest final DEF" 101.66%; `ludmilla` "Affects 10 enemy unit(s)
+  with the highest final ATK" 163.1%; `exia` "Affects the 10 enemy unit(s) with the highest
+  final DEF" 122.32% on BOTH burst damage lines — the hackingCode-gated "Affects the same
+  target(s)" additional-damage line inherits the scope). All dormant-live per the amp
+  convention (byte-identical until an amp carrier shares a comp; verified neither the
+  `jackal` nor `trina` spec fixture seats a tagged unit, so their tag-absence pins hold).
+  Units not yet through phase-4 review with the same clause class (e.g. `helm` "Affects the
+  enemy with the highest final ATK") take their tags at their own review under this ruling.
+
+- **(2026-08-10) FAITHFULNESS PHASE-4 BATCH 2 — the DEF ▼ carrier set is COMPLETE.**
   Six parallel checklist reviews (`anis`, `cocoa`, `elegg`, `frima`, `ludmilla`,
   `marciana-marine-study` — full record `docs/handoffs/2026-08-10-faithfulness-batch2-findings.md`).
   Enacted under the standing rulings (2c DEF channel; all values kit-verbatim SL10): DEF ▼

@@ -53,14 +53,13 @@
    datamined `description_localkey` templates); the other five batch-2 carriers all check
    out. Lesson for any future carrier census: **verify against kit text, not override
    prose.**
-2. **A burstDesc scope-string ruling would resolve a whole class.** Five non-literal scope
-   clauses are now logged, untagged (kit-faithful default), waiting on one owner ruling on
-   whether they count as 'singleEnemy'/'allEnemies' in-game: `viper` "Affects 1 designated
-   enemy unit(s)" (batch 1), `anis` "Affects enemies within attack range", `elegg` "Affects
-   the enemy nearest to the crosshair", `frima` "Affects 10 enemy unit(s) with the highest
-   final DEF", `ludmilla` "Affects 10 enemy unit(s) with the highest final ATK" (+ `exia`'s
-   identical highest-DEF clause, untagged in batch 1). All are dormant today (tags are
-   byte-identical without an amp carrier in-comp).
+2. **A burstDesc scope-string ruling would resolve a whole class.** — **RESOLVED same day
+   (owner ruling: "these will all count as targeting the boss"; DECISIONS 2026-08-10).**
+   All six logged tags enacted, mapped by clause cardinality: `viper` 'singleEnemy'
+   ("Affects 1 designated enemy unit(s)"), `elegg` 'singleEnemy' ("the enemy nearest to the
+   crosshair"), `anis` / `frima` / `ludmilla` / `exia` (×2 lines) 'allEnemies' (plural /
+   capped-multi clauses). Dormant-live; unreviewed units with the same clause class (e.g.
+   `helm`) tag at their own review.
 3. **The stale-phrase sweep must be grep-keyed, not list-keyed.** `ludmilla` carried the
    "admits only damageTakenPct/distributedDamagePct" phrase but was absent from batch-1's
    ~6-override sweep list; `frima` carried the same falsified claim in different words ("no
