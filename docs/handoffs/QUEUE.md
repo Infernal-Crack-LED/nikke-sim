@@ -128,8 +128,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   finds the LINE but not its GATE. `centi`/`product-23`/`trony` still have no overrides;
   `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second carrier).
   Enemy ATK ▼ stays genuinely inert. The non-literal `burstDesc` scope-string ruling landed
-  2026-08-10 (owner: they all count as targeting the boss — DECISIONS): thirty tags enacted
-  across batches (6 + crow/signal/eunhwa/mica + ein/elegg-boom-and-shock ×19); units not yet reviewed with the same clause
+  2026-08-10 (owner: they all count as targeting the boss — DECISIONS): 39 tag instances across
+  20 units so far. **⇒ TAGGING IS PAUSED for any unit that shares a comp with a burst-amp
+  carrier (batch-5 finding, DECISIONS 2026-08-10):** `trina`'s live Spread Roots amp
+  (`burstSkillAoeDamagePct` 435.6/5s) currently bites only on `liberalio` in N3 (0.917 → 0.929,
+  benign), but tagging `cinderella` — her run-B comp-mate, plural clause, ~half her damage —
+  takes `cinderella` 0.893 COLD → **1.523 HOT**. The real fights refute (435.6 + additive
+  Damage-Up + non-literal scope) at that scale. Validate the amp first (popup-read a qualifying
+  all-enemies nuke inside vs outside a Spread Roots window); until then every new tag needs a
+  board A/B before it lands, and `cinderella` stays untagged (reason recorded in her caveats).
+  Units not yet reviewed with the same clause
   class (e.g. `helm` "the enemy with the highest final ATK") tag at their own phase-4
   review. **Stale-phrase sweep remainder CLEARED 2026-08-10** (`jackal`, `quiry`, `ram` fixed
   at their batch-4 remainder reviews — overrides AND spec headers; a whitespace-normalized

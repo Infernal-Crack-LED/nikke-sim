@@ -9,7 +9,37 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) FAITHFULNESS PHASE-4 BATCH 4 — the board-outlier slice; `jill`'s
+- **(2026-08-10, latest) FAITHFULNESS PHASE-4 BATCH 5 — the graded-comp slice; the burst-amp
+  channel is an UNTESTED LANDMINE.** Six highest-leverage graded-comp reviews (`crown`,
+  `anis-star`, `cinderella`, `little-mermaid`, `helm`, `trina` — full record
+  `docs/handoffs/2026-08-10-faithfulness-batch5-findings.md`). Enacted: prose only — ZERO
+  `burstDesc` tags. `helm`'s 8236.8% nuke qualifies for 'singleEnemy' ("Affects the enemy with
+  the highest final ATK", crow's clause word-for-word) and is board-inert by full A/B diff, but
+  is HELD: jackal's spec fixture seats helm, so the tag switches the amp on there and breaks two
+  jackal pins — a cross-unit edit the sweep does not make. (That failure is also the first
+  end-to-end exercise of the burst-amp channel in the whole suite.) A new helm H7 pin asserts
+  the tag's ABSENCE with the reason, so the hold is deliberate. `trina`'s first caveat still claimed
+  Spread Roots is "NOT modeled" while her fifth said MODELED (same self-contradiction class as
+  `jackal`); corrected. Provenance narration deleted from all six notes. **THE FINDING:**
+  `trina`'s Spread Roots (`burstSkillAoeDamagePct` 435.6, all allies, 5s) is live, its kit gate
+  ("enemy count aside from Nikkes is 1") is always true in solo raid. It bites in exactly ONE
+  place today — `liberalio` in N3, where the amped hit is a small share of her total and the amp
+  moves her mean 0.917 → 0.929, TOWARD her real fight; every other tagged unit is unpaired with
+  her, so the rest of the board is byte-identical either way. The danger is the first BIG
+  pairing. Tagging the obvious next carrier, `cinderella` ("Affects random enemies",
+  plural ⇒ 'allEnemies' under the 2026-08-10 scope-string ruling, and her run-B comp-mate),
+  takes her from **0.893 COLD to 1.523 HOT** — the three trina readings go 0.94/0.96/1.01 →
+  1.91/2.55/2.60. The real fights REFUTE the combination of (435.6 magnitude, additive
+  Damage-Up placement, non-literal scope) AT THAT SCALE; at least one is wrong, most likely the scope (the amp
+  names the literal string "Affects all enemies") or the additive placement (unmeasured ⚑ since
+  it landed). **Consequence for the remaining sweep: the dormancy of the 39 tag instances landed so far (20 units)
+  is NOT evidence of safety — it is evidence that nothing has been paired yet. No further tag
+  on a unit sharing an amp carrier's comp until the amp is validated, and every future tag gets
+  an A/B before it lands.** Validation recipe: popup-read a qualifying all-enemies burst nuke
+  cast inside vs outside a Spread Roots window. `cinderella` stays untagged with the reason in
+  her caveats. Full gate green; board byte-identical.
+
+- **(2026-08-10) FAITHFULNESS PHASE-4 BATCH 4 — the board-outlier slice; `jill`'s
   1.924 is a DEFECT, not a residual.** Six checklist reviews of the worst-ranked unreviewed
   board outliers (`jill`, `ein`, `moran`, `maxwell`, `takina`, `elegg-boom-and-shock` — full
   record `docs/handoffs/2026-08-10-faithfulness-batch4-findings.md`). Enacted under standing

@@ -12,13 +12,13 @@
 | Reason | Entries | Share |
 | --- | --- | --- |
 | Defensive / HP / shield / aggro | 155 | 37.4% |
-| Other / see caveats | 102 | 24.6% |
+| Other / see caveats | 100 | 24.2% |
 | Missing engine primitive / trigger | 89 | 21.5% |
 | Out-of-domain / parser unsupported | 30 | 7.2% |
 | Partless boss | 12 | 2.9% |
 | Weapon-state / shot-count approximation | 11 | 2.7% |
 | Self-status / stack gate | 8 | 1.9% |
-| RNG / probabilistic | 4 | 1.0% |
+| RNG / probabilistic | 6 | 1.4% |
 | Measurement-gated / unverified cadence | 3 | 0.7% |
 | **Total** | **414** | 100.0% |
 
@@ -627,7 +627,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Other / see caveats (102)
+### Other / see caveats (100)
 
 **A2** (a2)
 
@@ -949,13 +949,6 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 
 - **skill2:** Deals Stun to all enemies for 2 sec (boss-inert: the sim's boss does not fire/charge/reload, so a stun on it changes nothing; genuinely-skippable class)
   - *Why:* S2 is a 15s-cooldown pulse (cooldown NOT in the DB text; Prydwen COMMUNITY ⚑ supplies the 15s): enemies Damage Taken 10.09%/5s + 2s stun (boss-inert, UNMODELED), allies True Damage 140.49%/10s
-
-**Trina** (trina)
-
-- **burst:** Changes Spread Roots to Wilted Roots.
-  - *Why:* burst: Spread Roots is MODELED (2026-08-10, faithfulness pass): burstSkillAoeDamagePct 435.6 to all allies for 5s on her burstCast — the kit gates it on 'enemy count aside from Nikkes is 1', which is ALWAYS true in the solo-raid sim, so no gate is encoded. Read only by burst-slot hits tagged burstDesc:'allEnemies' (scarlet/liberalio nukes tagged; further carriers tag as reviewed). As a B2 her cast precedes the chain's B3 by under a second, so the window covers the nuke. The Wilted Roots branch (enemy count ≥2) is unreachable at scope and stays unmodeled verbatim. ⚑ additive Damage-Up placement per the '○○ Damage ▲' family rule (SSOT damage-formula §2); a popup read of an amped all-enemies nuke pins it.
-- **burst:** Wilted Roots: Burst Skill damage of skills with "Affects all enemies" ▲ 64.46% for 5 sec.
-  - *Why:* burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).
 
 **Velvet** (velvet)
 
@@ -1609,7 +1602,7 @@ Deals 50.33% of final ATK as additional damage.
 - **burst:** Deals 457.87% of final ATK as additional damage.
   - *Why:* burst: the 'when in Calm status → 457.87% additional damage' rider is UNMODELED — it is gated on the untriggerable Calm self-status, so the burst fires at half its theoretical (Calm-active) magnitude
 
-### RNG / probabilistic (4)
+### RNG / probabilistic (6)
 
 **Elegg: Boom and Shock** (elegg-boom-and-shock)
 
@@ -1627,6 +1620,13 @@ Deals 50.33% of final ATK as additional damage.
 
 - **skill2:** There is a 30% chance of activating when attacked.
   - *Why:* See unit note / caveats
+
+**Trina** (trina)
+
+- **burst:** Changes Spread Roots to Wilted Roots.
+  - *Why:* burst: Spread Roots is the kit's solo-raid branch — its gate is 'enemy count aside from Nikkes is 1', always true here, so the Wilted Roots (>2 enemies) branch never fires and stays unmodeled. ⚑ VALIDATION-GATED, measured 2026-08-10 (phase-4 batch 5): the amp is LIVE and it already bites in exactly ONE place — `liberalio` in N3, whose tagged burst hit is a small share of her total, so the amp moves her mean 0.917 -> 0.929 (one reading 0.88 -> 0.92), i.e. TOWARD her real fight. Every other tagged unit is unpaired with her, so the rest of the board is byte-identical either way. The danger is the first BIG pairing: cinderella (run-B, 'Affects random enemies' 1365.92% x10, roughly half her damage) is the obvious next tag, and tagging her takes her from 0.893 COLD to 1.523 HOT — her three trina readings go 0.94/0.96/1.01 -> 1.91/2.55/2.60. The real fights therefore REFUTE the combination of (435.6 magnitude, additive Damage-Up placement, non-literal scope) at that scale; one of the three is wrong. Validate before tagging any further comp-mate of hers.
+- **burst:** Wilted Roots: Burst Skill damage of skills with "Affects all enemies" ▲ 64.46% for 5 sec.
+  - *Why:* burst: Spread Roots is the kit's solo-raid branch — its gate is 'enemy count aside from Nikkes is 1', always true here, so the Wilted Roots (>2 enemies) branch never fires and stays unmodeled. ⚑ VALIDATION-GATED, measured 2026-08-10 (phase-4 batch 5): the amp is LIVE and it already bites in exactly ONE place — `liberalio` in N3, whose tagged burst hit is a small share of her total, so the amp moves her mean 0.917 -> 0.929 (one reading 0.88 -> 0.92), i.e. TOWARD her real fight. Every other tagged unit is unpaired with her, so the rest of the board is byte-identical either way. The danger is the first BIG pairing: cinderella (run-B, 'Affects random enemies' 1365.92% x10, roughly half her damage) is the obvious next tag, and tagging her takes her from 0.893 COLD to 1.523 HOT — her three trina readings go 0.94/0.96/1.01 -> 1.91/2.55/2.60. The real fights therefore REFUTE the combination of (435.6 magnitude, additive Damage-Up placement, non-literal scope) at that scale; one of the three is wrong. Validate before tagging any further comp-mate of hers.
 
 ### Measurement-gated / unverified cadence (3)
 
