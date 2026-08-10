@@ -91,14 +91,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 - **⇒ ENEMY DEF ▼ CHANNEL — LANDED 2026-08-10 (owner-ruled "bosses should get -def"); per-unit
   enactments ride the phase-4 review.** The channel (`bossDefNow` — enemy `defPct` scales
-  `cfg.bossDef`, floor 0; provably 0 at the pinned graded basis, live at the web raid defaults)
-  - `guilty`'s previously-discarded `defPct: -20.25` are live; equivalence-proof test
-    `scripts/tests/engine/enemy-def-debuff.test.ts`. Detail: `docs/data/damage-bucket-matrix.md`
-    §5 trap 4 (rewritten). **Remaining:** the 10 prose-recorded DEF ▼ carriers (`anis`, `cocoa`,
-    `elegg`, `exia`, `frima`, `ludmilla`, `marciana-marine-study`, `novel`, `phantom`, `viper`)
-    encode their lines kit-verbatim as each passes its faithfulness review (checklist item 3);
-    `mast` stays unmodeled (flat caster-DEF-basis shave, no caster-DEF stat — build only if a
-    second carrier appears). Enemy ATK ▼ stays genuinely inert.
+  `cfg.bossDef`, floor 0; sub-0.1% at the graded DEF-140 surfaces, live at the web raid
+  defaults) + `guilty`'s previously-discarded `defPct: -20.25` are live; equivalence-proof test
+  `scripts/tests/engine/enemy-def-debuff.test.ts`; detail `docs/data/damage-bucket-matrix.md`
+  §5 trap 4. Batch 1 (2026-08-10, `2026-08-10-faithfulness-batch1-findings.md`) encoded
+  `exia`, `novel`, `phantom`, `viper`. **Remaining:** `anis`, `cocoa`, `elegg`,
+  `frima`, `ludmilla`, `marciana-marine-study` encode kit-verbatim as each passes its
+  review; `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second
+  carrier). Enemy ATK ▼ stays genuinely inert. ⚠ AWAITING OWNER RULING (batch-1 cross-cutting
+  finding 1): the graded surfaces run `bossDef = 140` (scope-lock.ts) while
+  damage-calculation.md §1a/§5a + the validate-overrides smoke still say 0 — pick one statement
+  of the basis so the drift stops regenerating.
 - **⇒ Unit-card infographic follow-ups (3, code-verified still open 2026-08-02):**
   1. **No vector source for burst icons.** `web/public/nikke-icons/burst_*` is webp-only (~100px native)
      — fine at every size drawn today, but a surface wanting it large has nothing to rasterize from.

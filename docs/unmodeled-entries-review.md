@@ -11,20 +11,20 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 161 | 37.4% |
-| Other / see caveats | 106 | 24.6% |
-| Missing engine primitive / trigger | 97 | 22.5% |
-| Out-of-domain / parser unsupported | 29 | 6.7% |
+| Defensive / HP / shield / aggro | 159 | 37.3% |
+| Other / see caveats | 106 | 24.9% |
+| Missing engine primitive / trigger | 94 | 22.1% |
+| Out-of-domain / parser unsupported | 29 | 6.8% |
 | Partless boss | 12 | 2.8% |
 | Weapon-state / shot-count approximation | 11 | 2.6% |
 | Self-status / stack gate | 8 | 1.9% |
 | RNG / probabilistic | 4 | 0.9% |
 | Measurement-gated / unverified cadence | 3 | 0.7% |
-| **Total** | **431** | 100.0% |
+| **Total** | **426** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (161)
+### Defensive / HP / shield / aggro (159)
 
 **A2** (a2)
 
@@ -213,8 +213,8 @@ DEF ▼ 9.38% for 6 sec.
 
 **Exia (Treasure)** (exia)
 
-- **burst:** DEF ▼ 2.71% for 5 sec. — no sim channel: enemy DEF▼ is dropped at dispatch on the DEF=0 basis (same as the skill1 DEF▼ line)
-  - *Why:* burst: the enemy ATK▼/DEF▼ lines (skill1 13.77%/13.77%, burst 2.71%) are game-real but unenactable — the sim's DEF=0 basis drops enemy ATK▼/DEF▼ at dispatch; they are recorded verbatim in unmodeled
+- **skill1:** ■ Activates when the last bullet hits the target. Affects the target if the skill user is in Collect Hacking Code. ATK ▼ 13.77% for 5 sec. — no sim channel: no incoming-damage model, so an enemy ATK ▼ moves nothing (the boss deals no damage)
+  - *Why:* burst+skill1: the enemy DEF ▼ lines (13.77% gated on Collect Hacking Code; 2.71% ungated per cast) ride the enemy defPct channel — sub-0.1% at the scope-lock boss DEF 140, live at the web raid DEF defaults; the enemy ATK ▼ 13.77% line is unmodeled (no incoming-damage model).
 
 **Flora (Treasure)** (flora)
 
@@ -446,11 +446,6 @@ Max HP ▲ 10.09% for 10 sec.
 - **burst:** Affects all allies. Invulnerable for 3 sec.
   - *Why:* Burst 'Invulnerable for 3 sec' UNMODELED: v1 models no HP pool / death / incoming damage. Deliberately NOT encoded as a `shield` effect (the nearest-primitive trap, S2b-flagged): a shield encoding would open the targets' shieldedUntilFrame windows and fire teammates' 'shielded' triggers / requiresShielded gates — fabricating a synergy surface the kit never grants. Invulnerability is a distinct named mechanic from Shield in kit vocabulary (marciana's Storage precedent).
 
-**Novel** (novel)
-
-- **skill1:** DEF ▼ 7.05% for 5 sec.
-  - *Why:* skill1: the DEF ▼ 7.05%/5s enemy debuff is UNMODELED — no dynamic enemy-DEF-reduction primitive (cfg.bossDef is fixed; damageTakenPct is a different bucket). At the 140-DEF scope-lock boss this is 9.87 flat DEF ≈ ~0.02% team damage — minor, not load-bearing. Recipe if a primitive lands: a boss-DEF-reduction debuff (7.05% for 5s, refreshed on the 10s skill CD) feeding the subtractive DEF term
-
 **Pascal** (pascal)
 
 - **skill1:** ■ Activates after firing 10 time(s). Affects 1 ally unit(s) with the highest final DEF. 
@@ -634,8 +629,6 @@ Attract: Taunts all enemies for 5 sec.
 
 - **skill2:** Activates when entering Full Burst. Affects self. Vamp: Prevents being targeted by single-target attacks continuously. This effect is removed upon taking a direct hit. Invulnerable for 1 sec. — DEFENSIVE: no HP pool / targeting model / boss damage in v1, so prevents-targeting + invulnerable move nothing; only the offensive Vamp GATE for skill1's stacks is modeled (via the Full-Burst window, fbGate:'inFb').
   - *Why:* ⚑1 (Vamp permanence, low): the kit's Vamp is granted on FB entry and 'removed upon taking a direct hit'; v1 has no boss damage, so once granted it is PERMANENT for the rest of the fight — strictly, S1b stacks should accrue on every shot after the first FB, not only inside FB windows
-- **burst:** Affects the enemy if the enemy is the stage target. DEF ▼ 19.83% for 10 sec. — INERT and UNENACTABLE: boss DEF enters the formula only as the fixed config constant cfg.bossDef (sim.ts:1719 baseAtk = max(0, effectiveAtk − cfg.bossDef)); no buff/debuff channel feeds it, so the engine cannot apply an enemy DEF reduction at all, and the magnitude is negligible regardless (measured boss DEF ≈140 → ~0.01% damage at scope-lock ATK, docs/data/damage-calculation.md). NOT modeled as damageTakenPct (a different bucket/math that would over-credit a ~19.83% team vuln the kit does not deliver) — phantom/guilty/marciana precedent. The stage-target sustained-damage line that shares this header IS modeled (the dot block).
-  - *Why:* burst: the DEF ▼ 19.83% line is inert (enemy DEF negligible at scope-lock; engine drops enemy DEF debuffs) and is NOT modeled — see unmodeled.burst.
 
 **Zwei (Treasure)** (zwei)
 
@@ -1019,7 +1012,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v
 - **burst:** Cooldown: 20 s
   - *Why:* See unit note / caveats
 
-### Missing engine primitive / trigger (97)
+### Missing engine primitive / trigger (94)
 
 **A2** (a2)
 
@@ -1176,13 +1169,6 @@ DEF ▼ 29% for 5 sec. — no sim channel: the enemy-buff path admits only damag
 - **burst:** Special note: Fires an Exploding Bullet dealing area-of-effect damage. (splash radius inert vs the single partless boss; the cannon HIT itself is modeled as the weaponSwap shot)
   - *Why:* ⚑ MEASUREMENT-GATED (tier 2): the burst cannon swap DURATION is kit-silent — the kit gives 'Max Ammunition Capacity: 1 round' but states neither a 'for N sec' window nor 'deactivates when all rounds fired'. Estimate: durationSec 10 (the Full-Burst-window convention shared with e-h / red-hood); the 1-round magazine cycles over that window (fire / 141f reload / fire …) for ~6 true-damage cannon shots per burst. A shorter real window fires fewer shots (damage is roughly linear in shot count: 10s ≈ 6 shots ≈ double the single-shot reading). Recipe: an eunhwa-tu recording — count cannon popups per burst and the frame her base SR fire resumes; rescale durationSec to match.
 
-**Exia (Treasure)** (exia)
-
-- **skill1:** ■ Activates when the last bullet hits the target. Affects the target if the skill user is in Collect Hacking Code. ATK ▼ 13.77% for 5 sec. — no sim channel: the enemy-buff path admits only damageTakenPct/distributedDamagePct and the boss deals no damage, so an enemy ATK▼ moves nothing (sim.ts, DEF=0 basis)
-  - *Why:* burst: the enemy ATK▼/DEF▼ lines (skill1 13.77%/13.77%, burst 2.71%) are game-real but unenactable — the sim's DEF=0 basis drops enemy ATK▼/DEF▼ at dispatch; they are recorded verbatim in unmodeled
-- **skill1:** DEF ▼ 13.77% for 5 sec. — no sim channel: enemy DEF▼ is dropped at dispatch on the DEF=0 basis (sim.ts 'other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0')
-  - *Why:* burst: the enemy ATK▼/DEF▼ lines (skill1 13.77%/13.77%, burst 2.71%) are game-real but unenactable — the sim's DEF=0 basis drops enemy ATK▼/DEF▼ at dispatch; they are recorded verbatim in unmodeled
-
 **Folkwang** (folkwang)
 
 - **skill1:** Incoming healing ▲ 45.7% for 10 sec.
@@ -1323,8 +1309,6 @@ Outgoing healing ▲ 30.05% continuously.
 
 **Phantom (Treasure)** (phantom)
 
-- **skill1:** Calling Card: DEF ▼ 32.19% for 5 sec. — the DEF▼ MAGNITUDE is inert (enemy DEF is a negligible flat subtractive term at scope-lock ATK, docs/data/damage-calculation.md; the engine drops enemy DEF debuffs at dispatch — the enemy-debuff branch in sim.ts admits only damageTakenPct/distributedDamagePct). The Calling Card status WINDOW itself IS modeled (targetStatus) as the gate for S1's Attack Damage line and S2's max-stacks consume.
-  - *Why:* skill1: BLOCK ORDER IS LOAD-BEARING — the requiresTargetStatus-gated Attack Damage block precedes the targetStatus-inflicting block in the skill1 array, so the battle's first shot (the sole application event under the self-extending window, gate still closed at dispatch time) does NOT receive the buff. Reversing the two blocks would grant it.
 - **skill2:** Removes Calling Card. — the engine has no consume-target-status primitive; the window lapses naturally 5s after application, which under steady fire pre-empts the next magazine-start reapplication (moot). The 84.33% additional damage and the Thief's Dagger stack drain of the same max-stacks event ARE modeled.
   - *Why:* skill2: 'Removes Calling Card' is unmodeled (no consume-target-status primitive, ⚑3) — moot: the natural 5s lapse pre-empts the next reapplication under steady fire.
 

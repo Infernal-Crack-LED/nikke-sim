@@ -643,7 +643,7 @@ const BUCKET_ROUTING: Record<string, Routing> = {
   defPct: {
     factor: 'FinalATK',
     how: 'ENEMY-targeted at a nonzero value: scales cfg.bossDef by (1 + Σ/100), floor 0 (the DEF ▼ channel, 2026-08-10); SELF/ally-targeted stays read by nothing — own DEF does not enter own damage',
-    gate: 'enemy-targeted buffs only; provably 0 at the pinned bossDef = 0 graded basis, live at the web raid DEF defaults',
+    gate: 'enemy-targeted buffs only; sub-0.1% at the graded surfaces (scope-lock bossDef 140), live at the web raid DEF defaults',
   },
 };
 

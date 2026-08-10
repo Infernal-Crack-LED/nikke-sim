@@ -414,12 +414,21 @@ describe('viper (Treasure) — kit spec', () => {
       );
     });
 
-    it('sits VERBATIM in unmodeled.burst (no silent drop)', () => {
+    it('is ENCODED on the enemy defPct channel (2026-08-10): its own burstCast block, -19.83 for 10s', () => {
+      const defBlocks = ov.burst.filter((b: any) =>
+        b.effects.some((e: any) => e.stat === 'defPct')
+      );
+      expect(defBlocks.length).toBe(1);
+      const b = defBlocks[0];
+      expect(b.trigger.kind).toBe('burstCast');
+      expect(b.target.kind).toBe('enemy');
+      const e = b.effects.find((x: any) => x.stat === 'defPct');
+      expect(e.value).toBe(-19.83);
+      expect(e.durationSec).toBe(10);
+      // and the line no longer sits in unmodeled — it is modeled, not silently dropped
       expect(
-        ov.unmodeled.burst.some((s: string) =>
-          s.includes('DEF ▼ 19.83% for 10 sec')
-        )
-      ).toBe(true);
+        ov.unmodeled.burst.some((s: string) => s.includes('DEF ▼ 19.83'))
+      ).toBe(false);
     });
 
     it('DISCRIMINATING: a damageTakenPct model would change team totals; the inert model does not', () => {

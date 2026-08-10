@@ -9,6 +9,23 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-10, latest) FAITHFULNESS PHASE-4 BATCH 1 — six units reviewed, the owner-ruled
+  pattern classes enacted.** Six parallel checklist reviews (`viper`, `phantom`, `novel`,
+  `exia`, `soda-twinkling-bunny`, `isabel` — full record
+  `docs/handoffs/2026-08-10-faithfulness-batch1-findings.md`). Enacted under the standing
+  rulings (2c DEF channel; 2b tag convention; all values kit-verbatim): DEF ▼ encodes on
+  `novel` (−7.05/5s, interval:10 block), `exia` (−13.77/5s lastBullet + `resourceGate
+hackingCode min:1` — the kit's own gate; burst −2.71/5s), `viper` (−19.83/10s burstCast),
+  `phantom` (−32.19/5s riding the Calling Card-inflicting block, array order preserved);
+  `burstDesc` tags on `novel` ('singleEnemy' 330.61%), `phantom` (1457.28%),
+  `soda-twinkling-bunny` (628.7%), `isabel` (149.85 + escalating 299.7/349.65) — all
+  'allEnemies', all byte-identical today (no shared amp carrier). Specs: viper V7 rewritten
+  from the unmodeled-pin, new novel N6 + exia X10 groups; exia X4's arms strip the shave (it
+  reads `baseAtk`, which the DEF window now moves at the DEF-140 harness basis — observable
+  isolation). Full gate green, 127/127 unit specs. Cross-cutting stop-and-surface items (incl.
+  the bossDef 140-vs-0 doc drift ruling) and per-unit follow-ups live in the batch doc, not
+  enacted.
+
 - **(2026-08-10, later) ENEMY DEF ▼ CHANNEL LANDED — owner-ruled "bosses should get -def"
   (faithfulness-pass phase 2c).** An enemy-targeted `defPct` at a nonzero value now reaches
   `enemyBuffs` and scales `cfg.bossDef` by `(1 + Σ/100)`, floor 0, at damage time (`bossDefNow`
