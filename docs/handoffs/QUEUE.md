@@ -98,10 +98,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `exia`, `novel`, `phantom`, `viper`. **Remaining:** `anis`, `cocoa`, `elegg`,
   `frima`, `ludmilla`, `marciana-marine-study` encode kit-verbatim as each passes its
   review; `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second
-  carrier). Enemy ATK ▼ stays genuinely inert. ⚠ AWAITING OWNER RULING (batch-1 cross-cutting
-  finding 1): the graded surfaces run `bossDef = 140` (scope-lock.ts) while
-  damage-calculation.md §1a/§5a + the validate-overrides smoke still say 0 — pick one statement
-  of the basis so the drift stops regenerating.
+  carrier). Enemy ATK ▼ stays genuinely inert.
 - **⇒ Unit-card infographic follow-ups (3, code-verified still open 2026-08-02):**
   1. **No vector source for burst icons.** `web/public/nikke-icons/burst_*` is webp-only (~100px native)
      — fine at every size drawn today, but a surface wanting it large has nothing to rasterize from.

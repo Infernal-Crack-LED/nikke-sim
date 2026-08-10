@@ -91,7 +91,8 @@ against.
 The most repeated _kit-line_ pattern in the unmodeled review after heals: ~12 overrides carry an
 enemy DEF ▼ line (anis, cocoa, elegg, exia, frima, guilty, ludmilla, marciana-marine-study,
 mast, novel, phantom, viper — plus ether/eunhwa/himeno/signal record the same shape), all
-dropped at dispatch. Basis-dependent: ≤0.12% at the pinned `bossDef = 0`, but the web app runs
+dropped at dispatch. Basis-dependent: ~0.02% per carrier at the graded `bossDef = 140` basis
+(a full DEF-zeroing is bounded ≤0.12% board-wide by the battery), but the web app runs
 the same engine at 30,930 / 12,200 default DEF where the battery sweep shows 6–17% per-unit
 swings — several percent per dropped carrier there. Fully characterized in bucket-matrix §5
 trap 4 + QUEUE (findings-only). The open item is an **owner scope decision** (no board A/B can
@@ -277,7 +278,8 @@ review flags for rework.
 ## 3. What this doc does NOT reopen
 
 - DECISIONS-settled rulings (DoT crit per-unit opt-in, FB boundary rule, element placement,
-  additive Damage-Up composition, true-damage crits, `bossDef = 0` graded basis, the SG landing
+  additive Damage-Up composition, true-damage crits, the `bossDef = 140` scope-lock basis
+  (owner ruling 2026-08-10; the older "0" doc claims were drift), the SG landing
   class-table ruling A31/U17, cadence-tuple closure, ROTMODEL=refill).
 - The pellet-reader thread, SG landing / U35, and the SMG re-tune worklist — separately tracked
   in QUEUE with their own plans.

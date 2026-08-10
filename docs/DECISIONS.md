@@ -9,7 +9,21 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) FAITHFULNESS PHASE-4 BATCH 1 — six units reviewed, the owner-ruled
+- **(2026-08-10, latest) SCOPE-LOCK BASELINE BOSS DEF = 140 — owner ruling; the docs still
+  saying 0 were stale.** Resolves batch-1 cross-cutting finding 1 (the two contradicting
+  owner-attributed records). The graded basis is `bossDef: 140` — measured by the ginmy def
+  test (boss-type enemies ≈140), adopted owner "always on" 2026-07-15 in
+  `scripts/lib/scope-lock.ts`, and used un-overridden by the regression/control/experiment/
+  vitest harnesses ever since. The 2026-07-14 "`bossDef: 0` stands" entry is superseded in
+  place; the surfaces that kept claiming 0 (damage-calculation.md §1a + the §5a example note,
+  nikke-damage-formula.md, the faithfulness-audit F4 framing, and `validate-overrides.ts`'s
+  smoke cfg, moved 0→140) are reconciled with this entry. Deliberately non-140 surfaces are
+  unchanged and not drift: the B1/B2 DPS comparability boards pin `bossDef = 0` by their own
+  ruling (docs/data/rank-boards.md), and the web raid presets run 30,930 / 12,200. — owner
+  ruling 2026-08-10; batch-1 finding (two reviewers independently, orchestrator-verified
+  against scope-lock.ts).
+
+- **(2026-08-10) FAITHFULNESS PHASE-4 BATCH 1 — six units reviewed, the owner-ruled
   pattern classes enacted.** Six parallel checklist reviews (`viper`, `phantom`, `novel`,
   `exia`, `soda-twinkling-bunny`, `isabel` — full record
   `docs/handoffs/2026-08-10-faithfulness-batch1-findings.md`). Enacted under the standing
@@ -2574,7 +2588,11 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
   distance→core-size model + SG 0–25 research refine it. FB/measured-truth asserts unchanged; snapshot
   regenerated. — 3 solo recordings + coreband2 measurements; open-questions A15; scientific-method
   harness post-op panel (Fable ACCEPT) + owner ruling IMPLEMENT.
-- **(2026-07-14) The scope-lock boss's DEF is negligible; `bossDef: 0` stands.** Enemy DEF in
+- **(2026-07-14) The scope-lock boss's DEF is negligible; `bossDef: 0` stands.** **[SUPERSEDED
+  2026-08-10 — owner ruling: the scope-lock baseline is `bossDef = 140` (adopted "always on"
+  2026-07-15, `scripts/lib/scope-lock.ts`); disregard the "0 stands" disposition. The
+  measurements in this entry (boss-type DEF ≈140; ≤0.12% board impact of the whole term)
+  remain valid.]** Enemy DEF in
   NIKKE is a small FLAT, subtractive value (min-1 damage floor), applied inside the base term
   before the skill coefficient — `dmg = max(0, effectiveATK − bossDEF) × atkPct × …`. ginmy.net's
   def test (empirical, /nikke_def_test) measures Union-Training mobs at DEF 100 and boss-type

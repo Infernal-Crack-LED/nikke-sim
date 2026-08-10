@@ -70,7 +70,7 @@ function validate(slug: string): boolean {
   const cfg: SimConfig = {
     slugs,
     bossElement: null,
-    bossDef: 0,
+    bossDef: 140,
     level: 400,
     copies: 3,
     doll: false,
