@@ -17,7 +17,7 @@
 //      ■ when Maid Spirit is at max stacks, all allies:
 //        Restores HP equal to 12.71% of the skill user's final Max HP.                  [SD4]
 //   BU ■ 2 random enemies: 321.28% of final ATK as damage. Stun for 1 sec.             [SD5 / stun UNMODELED]
-//      ■ all Fire Code allies: Stack count of buffs ▲ 1.                               [SD6 self-slice / cross-ally ⚑]
+//      ■ all Fire Code allies: Stack count of buffs ▲ 1.                               [SD6 self + cross-ally]
 //
 // Modeling posture (full story lands in the override note at S3):
 //   * S1 is a hit-count COUNTER (hitCount 180 — hitsPerShot 1, so hits == trigger pulls) granting
@@ -42,9 +42,10 @@
 //   * "All Fire Code allies: Stack count of buffs ▲ 1": the SELF slice is modeled (soda is Fire
 //     Code; her own stackable buff is Maid Spirit, so her burst adds +1 maidSpirit pool and one
 //     Max-HP stack). The CROSS-ALLY slice — +1 stack onto each Fire ally's OWN stackable buffs —
-//     is ⚑ OUT-OF-DOMAIN (engine-core): no engine primitive "bump each target's stackable buffs
-//     by N" exists (pepper ⚑4 / mica-snow-buddy ⚑M5 precedent, kit-status line 5880 — "the
-//     self-slice is the honest in-scope model").
+//     is modeled too, as an `addStack` block on the SAME burstCast trigger (this is a burst line,
+//     not S1's "after 180 normal attacks" line). It is structurally inert in THIS fixture — soda
+//     is the only Fire unit and the block excludes self — so SD6 observes it through a probe that
+//     re-points the block at Electric (ada) with the trigger untouched.
 //
 // FIXTURE: liter(B1) / crown(B2) / ada(B3) / soda(B1), boss Fire (soda is Fire → neutral, no
 // element major on her lines), focus ada. The control core minus helm, with soda as a SECOND
@@ -97,20 +98,29 @@ const buffs = (evs: SimEvent[]) =>
 const sodaShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'soda');
 const sodaCasts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'soda');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'soda'
+  );
 
 /** soda's Maid Spirit Max-HP stack applications (S1 hit-count procs + burst self-slice). */
 const maidSpiritApplies = (evs: SimEvent[]) =>
   buffs(evs).filter((b) => b.casterIdx === SODA && b.stat === 'maxHpFlat');
+
+/** SD6 cross-ally observable: the addStack bumps of the probe buff injected on ada. addStack
+ *  re-emits buffApply for the buff it bumped (carrying that buff's OWN casterIdx, not soda's),
+ *  so the probe buff is identified by its unique stat+value and a stack count above the initial
+ *  application. */
+const probeBumps = (evs: SimEvent[]) =>
+  buffs(evs).filter(
+    (b) => b.stat === 'attackDamagePct' && b.value === 1.23 && b.stacks > 1
+  );
 
 /** crown's recovery consumer: one buffApply per (recovery event × 4 allies). Distinct frames =
  *  distinct recovery FIRINGS; per-frame count = 4 × (recovery events that frame). */
 const crownAdApplies = (evs: SimEvent[]) =>
   buffs(evs).filter(
     (b) =>
-      b.casterIdx === CROWN &&
-      b.stat === 'attackDamagePct' &&
-      b.value === 20.99
+      b.casterIdx === CROWN && b.stat === 'attackDamagePct' && b.value === 20.99
   );
 const perFrame = (applies: BuffApply[]) => {
   const m = new Map<number, number>();
@@ -216,6 +226,60 @@ const sodaNoSelfSlice = withPatchedOverride('soda', (ov) => {
     (b: any) => !b.effects.some((e: any) => e.kind === 'resource')
   );
 });
+/** SD6 cross-ally PROBE: soda is the fixture's only Fire unit and the block excludes self, so
+ *  `alliesOfElement Fire` resolves empty and the cross-ally slice is structurally inert here.
+ *  To make it observable, re-point the block at Electric (ada) — the TRIGGER is left untouched,
+ *  so what the probe measures is exactly WHICH FRAMES the block fires on. Paired with
+ *  `adaStackable` (ada carries no stackable buff of her own; addStack needs one to bump). */
+const repointCrossAlly = (ov: any) =>
+  mutateBlock(
+    ov,
+    'burst',
+    (x: any) => x.effects.some((e: any) => e.kind === 'addStack'),
+    (b: any) => {
+      b.target = {
+        kind: 'alliesOfElement',
+        element: 'Electric',
+        excludeSelf: true,
+      };
+    },
+    'soda burst cross-ally addStack block'
+  );
+const sodaCrossAllyProbe = withPatchedOverride('soda', repointCrossAlly);
+/** SD6 counterfactual: the SAME probe, but the cross-ally block re-keyed to S1's hitCount:180
+ *  trigger — the nearest-wrong model, and the one this file's kit header must discriminate
+ *  against: "Stack count of buffs ▲1" is a BURST line, not the "after 180 normal attacks,
+ *  affects self" S1 line. Mis-keyed, it fires on the MG belt in comps where soda never bursts. */
+const sodaCrossAllyOnHits = withPatchedOverride('soda', (ov) => {
+  repointCrossAlly(ov);
+  mutateBlock(
+    ov,
+    'burst',
+    (x: any) => x.effects.some((e: any) => e.kind === 'addStack'),
+    (b: any) => {
+      b.trigger = { kind: 'hitCount', count: 180 };
+    },
+    'soda burst cross-ally addStack block'
+  );
+});
+/** SD6 probe partner: hand ada a stackable buff for the cross-ally slice to bump. She has none
+ *  of her own — the injected buff is the OBSERVABLE, not a claim about her kit (SD2 precedent). */
+const adaStackable = withPatchedOverride('ada', (ov) => {
+  ov.skill1.push({
+    slot: 'skill1',
+    trigger: { kind: 'battleStart' },
+    target: { kind: 'self' },
+    effects: [
+      {
+        kind: 'buff',
+        stat: 'attackDamagePct',
+        value: 1.23,
+        maxStacks: 5,
+        durationSec: 999,
+      },
+    ],
+  });
+});
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run();
@@ -227,6 +291,8 @@ const noS2 = run({ soda: sodaNoS2 });
 const ungatedRider = run({ soda: sodaUngatedRider });
 const fbEnterNuke = run({ soda: sodaFbEnterNuke });
 const noSelfSlice = run({ soda: sodaNoSelfSlice });
+const crossAlly = run({ soda: sodaCrossAllyProbe, ada: adaStackable });
+const crossAllyOnHits = run({ soda: sodaCrossAllyOnHits, ada: adaStackable });
 
 // ---- derived (base-run) quantities -------------------------------------------------------------
 const SODA_MAX_HP = base.res.units[SODA].maxHp;
@@ -277,9 +343,7 @@ describe('soda — kit spec', () => {
     });
 
     it('DISCRIMINATING: the channel is live — an HP→ATK converter she does not own WOULD feed', () => {
-      expect(withHpConversion.totals['soda']).toBeGreaterThan(
-        base.totals['soda']
-      );
+      expect(withHpConversion.totals.soda).toBeGreaterThan(base.totals.soda);
     });
   });
 
@@ -303,7 +367,7 @@ describe('soda — kit spec', () => {
 
     it('is LIVE: removing S2 zeros the recovery firings and drops team damage (crown AD uptime)', () => {
       expect(crownAdApplies(noS2.events).length).toBe(0);
-      expect(noS2.totals['ada']).toBeLessThan(base.totals['ada']);
+      expect(noS2.totals.ada).toBeLessThan(base.totals.ada);
     });
 
     it('DISCRIMINATING: a 6s interval doubles the tick count to 29 (t=6..174 inside the frame budget)', () => {
@@ -380,6 +444,32 @@ describe('soda — kit spec', () => {
     it('DISCRIMINATING: without the self-slice, only hit procs apply stacks', () => {
       const cf = maidSpiritApplies(noSelfSlice.events);
       expect(cf.length).toBe(Math.floor(SHOT_COUNT / 180));
+    });
+
+    it('the CROSS-ALLY slice is structurally inert in this fixture (no other Fire ally)', () => {
+      // soda is the only Fire unit here and the block excludes self, so `alliesOfElement Fire`
+      // resolves empty. Pinned so a future fixture change that adds a Fire ally cannot silently
+      // start moving this comp's numbers without a test noticing.
+      expect(probeBumps(base.events)).toEqual([]);
+      expect(SLUGS.filter((s) => s !== 'soda')).not.toContain('Fire');
+    });
+
+    it("the cross-ally slice bumps each Fire ally's stackable buffs, once per own burst cast", () => {
+      // Probe: block re-pointed at Electric (ada) so it has a target, trigger untouched.
+      const bumpFrames = probeBumps(crossAlly.events).map((b) => b.frame);
+      const castFrames = sodaCasts(crossAlly.events).map((c) => c.frame);
+      expect(bumpFrames.length).toBeGreaterThan(0);
+      expect(bumpFrames).toEqual(castFrames);
+    });
+
+    it("DISCRIMINATING: keyed to S1's hitCount:180 instead, it fires on the MG belt, not her casts", () => {
+      // "Stack count of buffs ▲1" is a BURST line; the nearest-wrong model pastes it onto S1's
+      // "after 180 normal attacks" trigger, which fires even in comps where soda never bursts.
+      const cf = probeBumps(crossAllyOnHits.events).map((b) => b.frame);
+      const castFrames = sodaCasts(crossAllyOnHits.events).map((c) => c.frame);
+      expect(cf.length).toBeGreaterThan(0);
+      expect(cf).not.toEqual(castFrames);
+      expect(cf.some((f) => !castFrames.includes(f))).toBe(true);
     });
   });
 });

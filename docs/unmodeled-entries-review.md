@@ -654,7 +654,7 @@
 **Anchor: Innocent Maid** (anchor-innocent-maid)
 
 - **skill1:** ■ Activates when entering Full Burst while an ally from the same squad is on the battlefield. Affects all allies.
-  - _Why:_ skill1: 'same squad' heal gate modeled as always-satisfied — the `teamHas.sameSquad` gate + curated squad registry exist (src/data/squads.ts) but anchor-innocent-maid's squad is not yet curated (the gate fails closed, so gating now would silence the heal); until curated, recovery events over-fire in non-squad teams (affects on-recovery consumers only)
+  - _Why:_ skill1: the 8-tick regen's 'same squad' gate is enforced via `teamHas.sameSquad` — owner-confirmed squad membership in src/data/squads.ts pairs anchor-innocent-maid with mast-romantic-maid; inert in comps without her
 
 **Arcana** (arcana)
 

@@ -63,12 +63,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > The 2026-08-09 faithfulness-enactment batch LANDED every enactable finding from the
 > unmodeled-entries audit (DECISIONS 2026-08-09 has the full list + board A/B). What remains:
 
-- **`anchor-innocent-maid` same-squad curation (owner lookup, ~10 seconds in-game):** read her
-  unit-detail squad field, add it to `src/data/squads.ts`, then gate her S1 heal with
-  `teamHas.sameSquad`. NOT curated from lore memory — the blanc/noir ruling documents maid
-  variants as a squad-misread trap and the gate fails closed (a wrong guess silently kills the
-  heal). Until curated, the always-satisfied approximation over-fires recovery events in
-  non-squad teams (⚑ in her caveats).
 - **Exposed hot fits from the batch — run the pending direct measurements, then re-tune (never
   re-fudge):** `jill` 0.966→1.924 (read the in-burst normal popup value tier in her focus
   footage — true-flavored normals bypass DEF, a different value tier) and `maxwell` 0.889→1.252
@@ -81,6 +75,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   landed (the old match rode its absence) — pinned as `simFullBursts: 12` in
   scripts/regression.ts; joins the open burst-generation-shortfall thread (the four disabled
   liberalio comps).
+- **Bare `sim.ts:<line>` citations in override prose drift silently (class, not a one-off):** the
+  cross-family review of this branch caught `anis-star`'s charge-formula citation pointing at the
+  DoT-scheduling case (fixed here by naming the code instead of the line); `phantom`'s enemy-DEF
+  citation was the same shape. Nothing checks these. Options: a lint that resolves every
+  `sim.ts:<line>` citation in override prose, or a convention that prose names the code block
+  ("the charge-frames clamp in sim.ts") and never the line number.
+- **`docs/unmodeled-entries-review.md` freshness is ungated:** `verify.sh` runs
+  `kit-status.ts --check` but nothing checks the review doc against `data/kit-status.json`, so a
+  stale generated doc passes a green verify (it did on this branch). Consider a `--check` mode on
+  `gen-unmodeled-review.ts` wired into verify.sh.
 - **Small ⚑ phase estimates riding the batch** (each flagged in its override, pin from footage
   if popup-read): `arcana-fortune-mate` reload delaySec 1.5; `neon-vision-eye` in-window normal
   count (the 330 magnitude); `rosanna` Concealment uptime (kit-duration upper bound).
