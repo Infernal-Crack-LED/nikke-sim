@@ -58,6 +58,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ FAITHFULNESS PASS (2026-08-10) — plan of record:
+  [2026-08-10-faithfulness-pass-audit.md](2026-08-10-faithfulness-pass-audit.md).** Repeat-pattern
+  audit across engine-modeling-gaps + the formula/bucket docs + the unmodeled review (claims
+  re-verified against the tree), with a phased order: doc/input fixes → silent-failure tooling
+  hardening → gated engine fixes (gauge-economy batch, Burst-Skill-Damage amp, enemy DEF ▼
+  scope ruling, self-status trio) → the override manual-review sweep (last, batch-and-stop,
+  per-unit checklist in §2 phase 4). Findings-only; nothing enacted.
+
 #### Unmodeled-review follow-ups (post-enactment remainder, 2026-08-09)
 
 > The 2026-08-09 faithfulness-enactment batch LANDED every enactable finding from the
@@ -75,51 +83,25 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   landed (the old match rode its absence) — pinned as `simFullBursts: 12` in
   scripts/regression.ts; joins the open burst-generation-shortfall thread (the four disabled
   liberalio comps).
-- **Bare `sim.ts:<line>` citations in override prose drift silently (class, not a one-off):** the
-  cross-family review of this branch caught `anis-star`'s charge-formula citation pointing at the
-  DoT-scheduling case (fixed here by naming the code instead of the line); `phantom`'s enemy-DEF
-  citation was the same shape. Nothing checks these. Options: a lint that resolves every
-  `sim.ts:<line>` citation in override prose, or a convention that prose names the code block
-  ("the charge-frames clamp in sim.ts") and never the line number.
-- **`gen-unmodeled-review.ts` never receives an override `note`:** it calls
-  `matchingCaveat(line, slot, u.caveats, u.note)` and `classify(line, caveat, u.note)`, but
-  `data/kit-status.json` mirrors `unmodeled`/`caveats` and NOT `note` — so `u.note` is
-  `undefined` for all 183 units and both functions silently run without the note signal they
-  were written to use. Predates this branch (the 2026-08-09 caveat-pairing fix did not touch it).
-  Fixing it re-categorizes entries in the generated doc, so it wants its own change: either
-  mirror `note` in kit-status.json or drop the dead parameters.
 - **Small ⚑ phase estimates riding the batch** (each flagged in its override, pin from footage
   if popup-read): `arcana-fortune-mate` reload delaySec 1.5; `neon-vision-eye` in-window normal
   count (the 330 magnitude); `rosanna` Concealment uptime (kit-duration upper bound).
 
 #### Code / tooling (unblocked, no footage or owner ruling needed)
 
-- **⇒ ENEMY DEF ▼ HAS NO CHANNEL, and the web app runs at nonzero boss DEF (findings-only
-  2026-08-08; enacting is an `src/engine/**` change ⇒ isolated worktree + owner).** Detail:
-  `docs/data/damage-bucket-matrix.md` §5 trap 4 + §6. The engine's enemy-`buff` dispatch
-  (`src/engine/sim.ts` ~L2287) forwards only positive `damageTakenPct` / `distributedDamagePct` to
-  `enemyBuffs`; every other enemy-targeted stat falls out of the switch silently. (Scope note: this
-  is the `buff` channel ONLY — `flatDamage` / `dot` / `targetStatus` / `hitRepeat` / `stackedNuke` /
-  `storedHit` ignore `block.target` entirely and are fine. Do **not** "fix" them through
-  `resolveTargets`, which returns `[]` for `enemy` — sim.ts warns about this in place.)
-  - **Why it was correct:** `bossDef = 0` is the pinned graded-comp basis, evidence-backed by the
-    committed `scripts/battery/boss-def.ts` (real boss-type DEF ~140 ⇒ ≤0.12% board-wide).
-  - **Why it is now a gap:** `web/src/App.tsx` / `TeamBuilderPage.tsx` default the SAME engine to
-    `SR_DEFAULT_DEF = 30930` / `UR_DEFAULT_DEF = 12200`, and App.tsx auto-upgrades an untouched
-    Boss DEF to the Solo Raid value on first roster view. That battery's sweep already shows 6–17%
-    per-unit swing at `bossDef = 20000`, so a dropped DEF ▼ is worth several percent to web users.
-  - **Blast radius:** 12 override files carry an enemy DEF ▼ (`anis`, `cocoa`, `elegg`, `exia`,
-    `frima`, `guilty`, `ludmilla`, `marciana-marine-study`, `mast`, `novel`, `phantom`, `viper` —
-    base-vs-variant slugs verified against each file). Only `guilty` encodes it live
-    (`burst` → `defPct: -20.25`); the rest sit in `unmodeled`/`note` prose. Enemy ATK ▼ (10 files)
-    stays genuinely inert — nothing models incoming damage. Note `mast`'s is a **flat** shave off
-    her own DEF, not a % of boss DEF, so it scales opposite to the other 11.
-  - **Already landed (no follow-up):** `scripts/validate-overrides.ts` warns non-fatally on an
-    enemy-targeted buff outside the allowlist or an allowed stat at a non-positive value. It fires
-    exactly once roster-wide today (`guilty burst[1]`), so it is a working tripwire, not noise.
-  - **Open decision:** whether to give `bossDef` a debuff channel at all. It is zero-impact on every
-    graded comp (so no board A/B can justify it) and material only to the web tool — i.e. this is an
-    owner scope call, not something a measurement resolves.
+- **⇒ ENEMY DEF ▼ CHANNEL — LANDED 2026-08-10 (owner-ruled "bosses should get -def"); per-unit
+  enactments ride the phase-4 review.** The channel (`bossDefNow` — enemy `defPct` scales
+  `cfg.bossDef`, floor 0; sub-0.1% at the graded DEF-140 surfaces, live at the web raid
+  defaults) + `guilty`'s previously-discarded `defPct: -20.25` are live; equivalence-proof test
+  `scripts/tests/engine/enemy-def-debuff.test.ts`; detail `docs/data/damage-bucket-matrix.md`
+  §5 trap 4. Batch 1 (2026-08-10, `2026-08-10-faithfulness-batch1-findings.md`) encoded
+  `exia`, `novel`, `phantom`, `viper`. **Remaining:** `anis`, `cocoa`, `elegg`,
+  `frima`, `ludmilla`, `marciana-marine-study` encode kit-verbatim as each passes its
+  review; `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second
+  carrier). Enemy ATK ▼ stays genuinely inert. ⚠ AWAITING OWNER RULING (batch-1 cross-cutting
+  finding 1): the graded surfaces run `bossDef = 140` (scope-lock.ts) while
+  damage-calculation.md §1a/§5a + the validate-overrides smoke still say 0 — pick one statement
+  of the basis so the drift stops regenerating.
 - **⇒ Unit-card infographic follow-ups (3, code-verified still open 2026-08-02):**
   1. **No vector source for burst icons.** `web/public/nikke-icons/burst_*` is webp-only (~100px native)
      — fine at every size drawn today, but a surface wanting it large has nothing to rasterize from.
@@ -207,7 +189,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      in-flight duration mutation; `milk-blooming-bunny` a **reload-count-scoped stat CLAMP** (also the
      `docs/engine-modeling-gaps.md` §1b LOCK gap — NOT a timed window). Do not re-attempt them on the
      registry alone.
-  4. **U28** — `extraHitDamagePct` vs `flatDamage` gauge + flavor asymmetry.
+  4. **U28** — `extraHitDamagePct` vs `flatDamage` gauge + flavor asymmetry. **2026-08-10
+     measurement pass (findings-only): FB-count-neutral in the control-comp shape even under an
+     exaggerated arm** — bound instrument `scripts/battery/u28-gauge-ab.ts`; the batched
+     gauge-cluster proposal (tempo + double-emit reproduce + U28 + theme-20 sourcing, land
+     together) is `docs/handoffs/2026-08-10-gauge-economy-findings.md`.
 - **⇒ ENGINE PRIMITIVE GAP: `addStack`** — no effect increments an existing buff's stack count by N on
   a trigger. Blocks `flora` S1 ("after 100 normal attacks, all Electric Code allies: increases the
   stack count of stackable buffs by 1" — trigger `hitCount:100` and target `alliesOfElement` are both

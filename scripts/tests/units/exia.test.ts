@@ -13,7 +13,7 @@
 // sync. Ground truth = the top-level prose):
 //   S1 ■ last bullet hits the target, IF the skill user is in Collect Hacking Code → the target:
 //        ATK ▼ 13.77% for 5 sec                                                    [X1 UNMODELED]
-//        DEF ▼ 13.77% for 5 sec                                                    [X2 UNMODELED]
+//        DEF ▼ 13.77% for 5 sec                                                    [X2 → X10]
 //      ■ entering Full Burst → self: Reload speed FIXED at 95% increase for 10 sec [X3]
 //   S2 ■ landing a Full Charge attack → self: Collect Hacking Code:
 //        ATK ▲ 28%, stacks up to 5 times, 5 sec                                    [X4]
@@ -21,16 +21,16 @@
 //        all Electric Code ally units: ATK ▲ 5.8% of the skill user's ATK,
 //        stacks up to 5 times, 15 sec                                              [X5]
 //   BU ■ the 10 enemies with the highest final DEF: 122.32% of final ATK as damage [X6]
-//        DEF ▼ 2.71% for 5 sec                                                     [X7 UNMODELED]
+//        DEF ▼ 2.71% for 5 sec                                                     [X7 → X10]
 //      ■ Collect Hacking Code at MAX stacks → same targets:
 //        122.32% of final ATK as additional damage                                 [X8]
 //        Damage Taken ▲ 18.04% for 10 sec                                          [X9]
 //
-// X1/X2/X7 are UNMODELED by design, not dropped: the sim runs on a DEF=0 enemy basis and the
-// engine's enemy-buff channel admits ONLY damageTakenPct/distributedDamagePct — enemy ATK▼/DEF▼
-// are dropped at dispatch (sim.ts "other enemy debuffs (ATK▼, DEF▼) don't affect our damage with
-// DEF=0"). They live VERBATIM in the override's `unmodeled` field (the no-silent-drops record)
-// and carry no assertion here.
+// X1 (enemy ATK ▼) is UNMODELED by design, not dropped: no incoming-damage model, so an enemy
+// ATK ▼ moves nothing — it lives VERBATIM in `unmodeled` and carries no assertion. X2/X7 (the
+// two DEF ▼ lines) are ENCODED since 2026-08-10 on the enemy defPct channel (bossDefNow scales
+// cfg.bossDef; the graded surfaces run DEF 140, so the shave is live but sub-0.1%) — pinned by
+// the X10 group; X4's arms strip the shave to keep its baseAtk ramp read clean.
 //
 // Encoding under test (src/skills/overrides/exia.json):
 //   - Collect Hacking Code is a declared RESOURCE POOL `hackingCode` [0..5]: +1 per shotFired
@@ -129,6 +129,14 @@ const exiaNoStacks = withPatchedOverride('exia', (ov) => {
       'exia hackingCode resource effect missing — fixture is stale'
     );
   }
+  // keep this arm's baseAtk reads shave-free too (the S1 defPct block is resourceGate-shut
+  // here anyway — min:1 with no pool — but the burst −2.71 would still fire per cast)
+  ov.skill1 = ov.skill1.filter(
+    (b: any) => !b.effects.some((e: any) => e.stat === 'defPct')
+  );
+  for (const b of ov.burst) {
+    b.effects = b.effects.filter((e: any) => e.stat !== 'defPct');
+  }
 });
 
 /** INSTANT-MAX: X4 as a flat always-on +140% (no ramp). The nearest wrong model for the
@@ -141,6 +149,27 @@ const exiaInstantMax = withPatchedOverride('exia', (ov) => {
     throw new Error('exia perResource ATK block missing — fixture is stale');
   }
   block.effects = [{ kind: 'buff', stat: 'atkPct', value: 140 }];
+  // shave-free baseAtk reads for X4's flatness assertion (same reason as exiaNoDefShave)
+  ov.skill1 = ov.skill1.filter(
+    (b: any) => !b.effects.some((e: any) => e.stat === 'defPct')
+  );
+  for (const b of ov.burst) {
+    b.effects = b.effects.filter((e: any) => e.stat !== 'defPct');
+  }
+});
+
+/** NO-DEF-SHAVE: the S1 enemy defPct −13.77 block removed (encoded 2026-08-10, DEF ▼ channel).
+ *  X4 reads `baseAtk`, which the shave moves during post-lastBullet windows at the harness's
+ *  DEF-140 basis — this arm restores X4's uncontaminated ATK-ramp observable. The shave itself
+ *  is pinned by its own group below (X10). */
+const exiaNoDefShave = withPatchedOverride('exia', (ov) => {
+  const before = ov.skill1.length;
+  ov.skill1 = ov.skill1.filter(
+    (b: any) => !b.effects.some((e: any) => e.stat === 'defPct')
+  );
+  if (ov.skill1.length !== before - 1) {
+    throw new Error('exia S1 defPct block missing — fixture is stale');
+  }
 });
 
 /** ALL-ALLIES: X5 un-scoped. The nearest wrong model for the Electric-only scope assertion. */
@@ -195,6 +224,7 @@ const crownNoShare = withPatchedOverride('crown', (ov) => {
 const base = run({ crown: crownNoShare });
 const noStacks = run({ exia: exiaNoStacks, crown: crownNoShare });
 const instantMax = run({ exia: exiaInstantMax, crown: crownNoShare });
+const noDefShave = run({ exia: exiaNoDefShave, crown: crownNoShare });
 const allAllies = run({ exia: exiaAllAllies, crown: crownNoShare });
 const noReload = run({ exia: exiaNoReload, crown: crownNoShare });
 const noTaken = run({ exia: exiaNoTaken, crown: crownNoShare });
@@ -269,7 +299,10 @@ describe('exia (Treasure) — kit spec', () => {
   describe('X4 — S2 Collect Hacking Code ramps self ATK +28% per stack to 5', () => {
     // baseAtk (ATK after the flat boss-DEF subtraction), NOT amount: the FB major and the
     // Damage Taken window live in other buckets and must not contaminate the ramp read.
-    const mag0Base = exiaNormalDmg(base.events)
+    // All X4 arms run WITHOUT the S1/burst enemy defPct blocks (encoded 2026-08-10): the DEF ▼
+    // shave moves baseAtk during its windows at the harness's DEF-140 basis, which would
+    // contaminate exactly this observable. The shave has its own pin group (X10).
+    const mag0Base = exiaNormalDmg(noDefShave.events)
       .slice(0, 6)
       .map((d) => d.baseAtk);
 
@@ -280,8 +313,8 @@ describe('exia (Treasure) — kit spec', () => {
           `pull ${k + 1} baseAtk ${mag0Base[k]} did not exceed pull ${k} baseAtk ${mag0Base[k - 1]}`
         ).toBeGreaterThan(mag0Base[k - 1]);
       }
-      const shots = exiaShots(base.events);
-      const normals = exiaNormalDmg(base.events);
+      const shots = exiaShots(noDefShave.events);
+      const normals = exiaNormalDmg(noDefShave.events);
       const mag1 = shots
         .map((s, i) => (s.magIndex === 1 ? normals[i].baseAtk : null))
         .filter((v): v is number => v != null);
@@ -307,7 +340,7 @@ describe('exia (Treasure) — kit spec', () => {
         ).size;
       expect(flat(instantMax.events)).toBe(1);
       expect(flat(noStacks.events)).toBe(1);
-      expect(flat(base.events)).toBe(6);
+      expect(flat(noDefShave.events)).toBe(6);
     });
   });
 
@@ -439,6 +472,40 @@ describe('exia (Treasure) — kit spec', () => {
       const sum = (t: Record<string, number>) =>
         Object.values(t).reduce((a, b) => a + b, 0);
       expect(sum(base.totals)).toBeGreaterThan(sum(noTaken.totals));
+    });
+  });
+
+  describe('X10 — the two enemy DEF ▼ lines ride the defPct channel (encoded 2026-08-10)', () => {
+    const defBuffs = (evs: SimEvent[], value: number) =>
+      evs.filter(
+        (e): e is BuffApply =>
+          e.kind === 'buffApply' && e.stat === 'defPct' && e.value === value
+      );
+
+    it('S1 -13.77/5s fires per exia magazine-empty, gated on Collect Hacking Code (min 1)', () => {
+      const s1 = defBuffs(base.events, -13.77).filter((b) =>
+        b.key.startsWith(`${EXIA}:skill1:`)
+      );
+      expect(s1.length).toBeGreaterThan(0);
+      for (const b of s1) {
+        expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
+      }
+      // gate proof: with no stacks the resourceGate {min:1} never opens
+      expect(
+        defBuffs(noStacks.events, -13.77).filter((b) =>
+          b.key.startsWith(`${EXIA}:skill1:`)
+        )
+      ).toEqual([]);
+    });
+
+    it('burst -2.71/5s fires once per cast INCLUDING the opener (ungated — contrast X9 casts-1)', () => {
+      const bu = defBuffs(base.events, -2.71).filter((b) =>
+        b.key.startsWith(`${EXIA}:burst:`)
+      );
+      expect(bu.length).toBe(exiaCasts(base.events).length);
+      for (const b of bu) {
+        expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
+      }
     });
   });
 });

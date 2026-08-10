@@ -100,7 +100,7 @@ const DOT_CRIT = ENV.DOTCRIT !== 'off';
 const RIDER_CRIT = ENV.RIDERCRIT !== 'off';
 // FBRULE (2026-07-14): candidate HEURISTICS for when SKILL/rider/DoT damage gets the +50% Full Burst
 // major. (Range is settled — skills never get the +30% range bonus; noRange is universal.) The
-// default 'perkit' uses the calibrated per-unit noFb flags; other rules replace them with a GENERAL
+// non-default rules replace the timing gate with a GENERAL
 // rule so `scripts/probe/fb-range-lab.ts` can A/B-grade which rule best fits the measured ground truth
 // (ein feathers = FB-ON, liberalio proc = FB-ON, scarlet procs = FB-OFF, burst-cast nukes = FB-OFF).
 // Burst-cast damage is ALWAYS FB-exempt (U10, measured), regardless of rule.
@@ -971,6 +971,7 @@ export function runSim(
     sustained: boolean;
     sequential: boolean;
     trueFlavor: boolean;
+    burstDesc?: 'singleEnemy' | 'allEnemies';
     projFlavor?: 'attachment' | 'explosion';
     // delayed full-charge cannon shot (snow-white): route through the charge bucket, keep its
     // pierce tag, and (unlike ordinary riders) receive the +30% range bonus. Omitted → the
@@ -1649,6 +1650,25 @@ export function runSim(
     );
   }
 
+  // The boss's live DEF at `frame`: cfg.bossDef scaled by any enemy-targeted defPct debuffs
+  // (the DEF ▼ channel, 2026-08-10 — owner-ruled). The zero short-circuit covers any bossDef=0
+  // run (e.g. the validate-overrides smoke). NOTE the GRADED surfaces do NOT run 0: scope-lock.ts
+  // pins bossDef 140 (measured, owner 2026-07-15, "always on") for regression/control/experiment
+  // — there the channel is LIVE but ~0.02%-scale per carrier (a % of 140 against six-figure ATK;
+  // scripts/battery/boss-def.ts: ≤0.12% board-wide even zeroing DEF entirely) and no defPct
+  // carrier sits in a pinned comp today. The channel's real weight is the web app's Solo/Union
+  // Raid DEF defaults (30,930 / 12,200), where the pre-channel drop cost carriers several
+  // percent. Floor 0: DEF cannot shave below zero.
+  function bossDefNow(frame: number): number {
+    if (cfg.bossDef === 0) {
+      return 0;
+    }
+    const shavePct = sum(enemyBuffs, 'defPct', frame);
+    return shavePct === 0
+      ? cfg.bossDef
+      : Math.max(0, cfg.bossDef * (1 + shavePct / 100));
+  }
+
   function dealDamage(
     u: UnitState,
     atkPct: number,
@@ -1672,6 +1692,9 @@ export function runSim(
       // Omitted where the engine has no single source (the summed extraHitDamagePct rider).
       srcSlot?: SkillSlot | 'normal';
       chargeMultPct?: number; // full-charge multiplier override when there is no swap to source it (delayed charge hit — snow-white's cannon); only read when charge:true
+      // Burst-Skill-Damage amp scope tag (jackal/trina family): set from the effect's authored
+      // `burstDesc`; the instance reads the matching burstSkill*DamagePct amp in Damage Up.
+      burstDesc?: 'singleEnemy' | 'allEnemies';
     }
     // RETURNS the instance's final damage. Every existing caller ignores it; it exists so the
     // weapon-fire path can hand the parent hit's FINAL number to a `hitRepeat` rider ("X% of the
@@ -1805,6 +1828,16 @@ export function runSim(
         (opts.sustained ? stat(u, 'sustainedDamagePct', frame) : 0) +
         (opts.sequential ? stat(u, 'sequentialDamagePct', frame) : 0) +
         (opts.trueFlavor ? stat(u, 'trueDamagePct', frame) : 0) +
+        // Burst-Skill-Damage amps (jackal/trina): additive Damage-Up terms scoped by the
+        // amplified instance's own kit-description clause ("Affects 1 enemy unit(s)" vs
+        // "Affects all enemies"), carried as the effect's burstDesc tag. Untagged instances
+        // read neither. ⚑ additive placement per the "○○ Damage ▲" family rule (SSOT §2).
+        (opts.burstDesc === 'singleEnemy'
+          ? stat(u, 'burstSkillSingleDamagePct', frame)
+          : 0) +
+        (opts.burstDesc === 'allEnemies'
+          ? stat(u, 'burstSkillAoeDamagePct', frame)
+          : 0) +
         (advantaged(u) && !elemAdvInElement
           ? stat(u, 'elemAdvantageDamagePct', frame)
           : 0) +
@@ -1835,7 +1868,7 @@ export function runSim(
       ? 1 + stat(u, 'distributedDamagePct', frame) / 100
       : 1;
 
-    const baseAtk = Math.max(0, effectiveAtk(u, frame) - cfg.bossDef);
+    const baseAtk = Math.max(0, effectiveAtk(u, frame) - bossDefNow(frame));
     const dmg =
       baseAtk *
       (atkPct / 100) *
@@ -1932,7 +1965,7 @@ export function runSim(
   ) {
     u.damage[category] += amount;
     if (onEvent) {
-      const baseAtk = Math.max(0, effectiveAtk(u, frame) - cfg.bossDef);
+      const baseAtk = Math.max(0, effectiveAtk(u, frame) - bossDefNow(frame));
       onEvent({
         kind: 'damage',
         frame,
@@ -2206,28 +2239,27 @@ export function runSim(
     });
   }
 
-  function applyBlock(
+  // The runtime abort-gates shared by every block dispatch path. Returns false when the
+  // block must not fire at this frame. Extracted from applyBlock (2026-08-10) so the
+  // chargeCounter dispatch — which applies ONE phase effect per activation rather than the
+  // whole block, and therefore cannot route through applyBlock — honors the SAME gates
+  // instead of silently ignoring them (the audit-F2.1 bypass; zero gated chargeCounter
+  // carriers existed, so the routing change is behavior-neutral, regression the control).
+  function blockGatesPass(
     ownerIdx: number,
     block: Block,
-    blockIdx: number,
     frame: number
-  ) {
+  ): boolean {
     const owner = units[ownerIdx];
-    const bKey = `${ownerIdx}:${block.slot}:${blockIdx}`;
-    // Abort-gates are evaluated BEFORE the everyN activation counter, so `everyN`
-    // counts only activations that actually pass the gates — e.g. soda's "after casting
-    // 3 normal attacks DURING Full Burst": out-of-FB casts must NOT advance the counter.
-    // (No override combines everyN with these gates today — verified — so this is
-    // behavior-neutral for every existing unit; the regression snapshot is the control.)
     // core-gated blocks never fire in zero-core fights
     if (block.requiresCore && cfg.coreHitRate <= 0) {
-      return;
+      return false;
     }
     // full-burst-state gate ('inFb' / 'outFb'), evaluated when the trigger fires
     if (block.fbGate) {
       const fbActive = fbEndFrame > frame;
       if ((block.fbGate === 'inFb') !== fbActive) {
-        return;
+        return false;
       }
     }
     // weapon-swap-state gate: block fires only while the owner's kit weaponSwap
@@ -2237,7 +2269,7 @@ export function runSim(
     if (block.swapGate) {
       const swapped = owner.swap != null && owner.swap.untilFrame > frame;
       if ((block.swapGate === 'swapped') !== swapped) {
-        return;
+        return false;
       }
     }
     // shield-state gate: "if a Shield is set in front of this unit" evaluated at trigger
@@ -2245,7 +2277,7 @@ export function runSim(
     // 31.02%; owner-ruled default-off/requires-a-shielder 2026-07-20). No shielder in the
     // comp → no shield events → the block never fires.
     if (block.requiresShielded && owner.shieldedUntilFrame <= frame) {
-      return;
+      return false;
     }
     // named target-status gate: "Activates when … hits a target in <Name> status" — the block only
     // activates while the boss currently carries THAT named status (a 'targetStatus' effect's
@@ -2256,13 +2288,13 @@ export function runSim(
       block.requiresTargetStatus &&
       (targetStatuses.get(block.requiresTargetStatus) ?? -1) <= frame
     ) {
-      return;
+      return false;
     }
     // boss-element gate: an element-coded line ("when attacking an Electric Code
     // target", "all Wind Code enemies") fires only when the boss element matches.
     // Composes with the block's real trigger; inert vs a non-matching / neutral boss.
     if (block.bossElementGate && cfg.bossElement !== block.bossElementGate) {
-      return;
+      return false;
     }
     // own-burst gate: block fires only when the owner DID ('cast') or did NOT ('notCast')
     // cast their own burst in the rotation leading into this Full Burst. Composes with a
@@ -2275,20 +2307,38 @@ export function runSim(
     if (block.ownBurstGate) {
       const cast = rotationCasters.includes(ownerIdx);
       if ((block.ownBurstGate === 'cast') !== cast) {
-        return;
+        return false;
       }
     }
     // resource-pool gate: block fires only while a named resource is within [min,max] at trigger
-    // time (soda's burst ATK ▲65.25% only at ≥30 Golden Chips). Evaluated with the other abort
-    // gates (before the activation counter), so a gated-out activation does not advance everyN.
+    // time (soda-twinkling-bunny's burst ATK ▲65.25% only at ≥30 Golden Chips). Evaluated with the
+    // other abort gates (before the activation counter), so a gated-out activation does not
+    // advance everyN.
     if (block.resourceGate) {
       const rv = owner.resources.get(block.resourceGate.name) ?? 0;
       if (
         rv < (block.resourceGate.min ?? -Infinity) ||
         rv > (block.resourceGate.max ?? Infinity)
       ) {
-        return;
+        return false;
       }
+    }
+    return true;
+  }
+
+  function applyBlock(
+    ownerIdx: number,
+    block: Block,
+    blockIdx: number,
+    frame: number
+  ) {
+    const owner = units[ownerIdx];
+    const bKey = `${ownerIdx}:${block.slot}:${blockIdx}`;
+    // Abort-gates are evaluated BEFORE the everyN activation counter, so `everyN`
+    // counts only activations that actually pass the gates — e.g. soda's "after casting
+    // 3 normal attacks DURING Full Burst": out-of-FB casts must NOT advance the counter.
+    if (!blockGatesPass(ownerIdx, block, frame)) {
+      return;
     }
     const activations = (owner.blockActivations.get(bKey) ?? 0) + 1;
     owner.blockActivations.set(bKey, activations);
@@ -2336,9 +2386,16 @@ export function runSim(
         case 'buff': {
           if (block.target.kind === 'enemy') {
             if (
-              (e.stat === 'damageTakenPct' ||
+              ((e.stat === 'damageTakenPct' ||
                 e.stat === 'distributedDamagePct') &&
-              e.value > 0
+                e.value > 0) ||
+              // enemy DEF ▼/▲ (2026-08-10, owner-ruled channel): scales cfg.bossDef by
+              // (1 + Σ/100) at damage time — exactly 0 impact on the bossDef = 0 graded
+              // basis, live at the web app's raid DEF defaults. Negative = the kit's
+              // DEF ▼ lines (guilty burst -20.25); either sign is admitted, the formula
+              // handles both. mast's caster-DEF-basis flat shave stays unmodeled (no
+              // caster-DEF stat — see her override prose).
+              (e.stat === 'defPct' && e.value !== 0)
             ) {
               // KR stacking rule: same buff (stat+value) from the same skill slot of the
               // same caster OVERWRITES/refreshes across trigger blocks, never co-stacks
@@ -2352,7 +2409,7 @@ export function runSim(
                 frame
               );
             }
-            // other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0
+            // other enemy debuffs (ATK▼) don't affect our damage — no incoming-damage model
             break;
           }
           const value =
@@ -2484,6 +2541,7 @@ export function runSim(
             sustained: e.flavor === 'sustained',
             sequential: e.flavor === 'sequential',
             trueFlavor: e.flavor === 'true',
+            burstDesc: e.burstDesc,
             projFlavor:
               e.flavor === 'projectileAttachment'
                 ? ('attachment' as const)
@@ -3725,6 +3783,7 @@ export function runSim(
           sustained: p.sustained,
           sequential: p.sequential,
           trueFlavor: p.trueFlavor,
+          burstDesc: p.burstDesc,
           projFlavor: p.projFlavor,
         });
         pendingHits.splice(i, 1);
@@ -4056,18 +4115,26 @@ export function runSim(
           : reqs;
         if (charges >= thr) {
           charges = 0;
-          const bKey = `${u.idx}:${b.slot}:${bi}`;
-          const activations = (u.blockActivations.get(bKey) ?? 0) + 1;
-          u.blockActivations.set(bKey, activations);
-          applyEffect(
-            u.idx,
-            b,
-            b.effects[phase],
-            `${bKey}:${phase}`,
-            activations,
-            frame
-          );
-          phase = (phase + 1) % b.effects.length;
+          // Runtime abort-gates are honored on this dispatch too (2026-08-10 — before this
+          // they were silently ignored here, the audit-F2.1 bypass; zero gated carriers, so
+          // the change is behavior-neutral and the regression suite is the control).
+          // Ordering mirrors the hitCount path + applyBlock: the charge threshold (the
+          // counter) is consumed regardless of the gates, while the activation count and
+          // the phase (the everyN analogs) advance only when the gates pass.
+          if (blockGatesPass(u.idx, b, frame)) {
+            const bKey = `${u.idx}:${b.slot}:${bi}`;
+            const activations = (u.blockActivations.get(bKey) ?? 0) + 1;
+            u.blockActivations.set(bKey, activations);
+            applyEffect(
+              u.idx,
+              b,
+              b.effects[phase],
+              `${bKey}:${phase}`,
+              activations,
+              frame
+            );
+            phase = (phase + 1) % b.effects.length;
+          }
         }
         u.hitCounters.set(pk, phase);
         u.hitCounters.set(ck, charges);

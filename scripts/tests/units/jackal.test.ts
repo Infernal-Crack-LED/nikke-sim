@@ -18,7 +18,7 @@
 //        DEF ▲8.27% for 120 sec                                             [FAITHFUL — J3]
 //   BU ■ all allies:
 //        Burst Skill damage of skills with "Affects 1 enemy unit(s)" in the
-//        description ▲38.91% for 15 sec                                     [UNMODELED — J4]
+//        description ▲38.91% for 15 sec                                     [FAITHFUL — J4]
 //        DEF ▲14.69% for 10 sec                                             [FAITHFUL — J5]
 //
 // JACKAL IS A TANK; HER KIT IS ALMOST ENTIRELY OUT-OF-DOMAIN FOR A DAMAGE SIM. Two of the
@@ -35,16 +35,13 @@
 //     dispatch (boss deals no damage).
 //   • J2 (damage share) has no redistribution primitive and nothing to redistribute
 //     (no incoming damage) — bay/marciana/poli precedent.
-//   • J4 (the burst's headline buff) has NO engine vocabulary: the formula SSOT
-//     (docs/data/nikke-damage-formula.md) has no Burst-Skill-Damage bucket/stat
-//     (StatKey has no burstSkillDamagePct; dealDamage's dmgUp bucket carries no
-//     burst-category term), AND the scope is a per-skill DESCRIPTION-TEXT condition
-//     ("skills with 'Affects 1 enemy unit(s)' in the description") for which no gate
-//     exists. trina carries the SAME mechanic family ("Burst Skill damage of skills with
-//     'Affects all enemies'") and her 2026-07-24 gauntlet (GO, cross-family corroborated)
-//     ruled it UNMODELED + caveat — teammates' scoped burst nukes read COLD in trina/jackal
-//     comps. This spec adopts the binding precedent rather than fake the amp through an
-//     unscoped Damage-Up stat (the nearest-wrong counterfactual below, J4c).
+//   • J4 (the burst's headline buff) is MODELED since 2026-08-10 as the SCOPED
+//     `burstSkillSingleDamagePct` (additive Damage Up, read only by burst-slot hits
+//     tagged burstDesc:'singleEnemy' — trina's Spread Roots is the allEnemies sibling).
+//     The J4 assertions pin the kit-literal grant (38.91 / 15s / all allies / burstCast)
+//     AND that it moves nothing in this untagged fixture comp — the unscoped-38.91%
+//     counterfactual (which lifts totals indiscriminately) remains the pinned
+//     nearest-wrong. Positive amp arithmetic: scripts/tests/engine/burst-skill-amp.test.ts.
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest wrong model
 // gates nothing):
@@ -58,11 +55,10 @@
 //   J1  the omission is a CHOICE: zero damageTakenPct applications at baseline, while the
 //       'always-up' and 'attacks-misread' counterfactuals both apply the debuff and lift
 //       team totals — proving the shipped zero is deliberate, not a stale fixture.
-//   J4  the omission is a CHOICE: zero attackDamagePct (or any damage stat) granted by
-//       jackal at baseline, while the unscoped-38.91% counterfactual lifts team totals —
-//       proving the amp is not implicitly shipped. (The TRUE mechanic would lift only
-//       single-target burst damage; even that weaker amp changes totals, so the totals
-//       discrimination holds against any encoding of the line.)
+//   J4  the SCOPING is the discrimination: jackal grants exactly defPct + the scoped amp
+//       (never attackDamagePct), the unscoped counterfactual lifts totals while the
+//       shipped amp leaves this untagged comp byte-identical (amp-removed arm), and the
+//       kit-literal magnitude/duration are pinned.
 //
 // Fixture: jackal/crown/ada/helm, boss Fire, focus jackal (milk's B1 fixture mirrored —
 // the standard controlComp cannot be used: liter is also Burst I and would take/alternate
@@ -212,6 +208,14 @@ const j4UnscopedAmp = withPatchedOverride('jackal', (ov) => {
     ],
   });
 });
+/** J4 the amp-removed arm: proves the shipped scoped amp moves nothing in THIS comp
+ *  (no burst-slot hit here carries burstDesc:'singleEnemy', so removal is byte-identical —
+ *  the amp's positive proof lives in scripts/tests/engine/burst-skill-amp.test.ts). */
+const j4NoAmp = withPatchedOverride('jackal', (ov) => {
+  ov.burst[0].effects = ov.burst[0].effects.filter(
+    (e: any) => e.stat !== 'burstSkillSingleDamagePct'
+  );
+});
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run();
@@ -228,6 +232,7 @@ const j3removed = run({ jackal: j3Removed });
 const alwaysUp = run({ jackal: j1AlwaysUp });
 const attacksMisread = run({ jackal: j1AttacksMisread });
 const unscopedAmp = run({ jackal: j4UnscopedAmp });
+const noAmp = run({ jackal: j4NoAmp });
 
 // ---- readers ----------------------------------------------------------------------------------
 const buffs = (evs: SimEvent[]) =>
@@ -412,23 +417,42 @@ describe('jackal — kit spec', () => {
     });
   });
 
-  describe('J4 — the burst Burst-Skill-damage amp is genuinely unmodeled (trina precedent)', () => {
-    it('jackal grants NO damage stat — her only buffs are the two inert defPct lines', () => {
+  describe('J4 — the burst Burst-Skill-damage amp is MODELED as the scoped burstSkillSingleDamagePct (2026-08-10)', () => {
+    it('jackal grants exactly defPct + the scoped amp — never an unscoped damage stat', () => {
       const granted = new Set(
         buffs(base.events)
           .filter((b) => b.casterIdx === JACKAL)
           .map((b) => b.stat)
       );
-      expect(granted).toEqual(new Set(['defPct']));
+      expect(granted).toEqual(new Set(['defPct', 'burstSkillSingleDamagePct']));
     });
 
-    it('the omission is a choice: the unscoped-38.91% counterfactual lifts team totals', () => {
+    it('the amp is 38.91 for 15s to all allies on her burstCast, kit-literal', () => {
+      const amp = buffs(base.events).filter(
+        (b) => b.stat === 'burstSkillSingleDamagePct'
+      );
+      expect(amp.length).toBeGreaterThan(0);
+      expect(amp.every((b) => b.value === 38.91)).toBe(true);
+      expect(
+        amp.every(
+          (b) => b.expiresFrame != null && b.expiresFrame - b.frame === 15 * 60
+        )
+      ).toBe(true);
+    });
+
+    it('DISCRIMINATING (scope): the amp moves NOTHING in this comp — no burst-slot hit here carries the singleEnemy tag, so an unscoped-38.91% mis-encode (which lifts totals) is provably absent', () => {
+      // the nearest-wrong counterfactual (attackDamagePct 38.91) lifts team totals …
       expect(
         buffs(unscopedAmp.events).filter(
           (b) => b.stat === 'attackDamagePct' && b.casterIdx === JACKAL
         ).length
       ).toBeGreaterThan(0);
       expect(sum(unscopedAmp.totals)).toBeGreaterThan(sum(base.totals));
+      // … while the shipped scoped amp leaves this untagged comp's totals untouched: the
+      // stat only reaches burst-slot hits tagged burstDesc:'singleEnemy', and none exists
+      // in the fixture comp. (scripts/tests/engine/burst-skill-amp.test.ts proves the
+      // amp DOES land on a tagged hit.)
+      expect(sum(noAmp.totals)).toBe(sum(base.totals));
     });
   });
 

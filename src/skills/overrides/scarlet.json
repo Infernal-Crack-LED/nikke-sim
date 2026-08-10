@@ -13,13 +13,19 @@
     "skill2: the 30%-when-attacked 138.24% proc is unmodeled — the sim has no incoming boss attacks; real-fight contribution is an open ⚑",
     "skill2: the HP<60% gate on the 6.61% crit-damage buff is approximated by rampSec:56 (equal-integral proxy for a step-on at ~28s); the shape is approximate and the crossing time is ⚑-derived (real fights cross earlier)",
     "burst: the HP<50% gate on the 19.57% crit-rate buff is modeled ungated (rampSec unusable on a per-cast window); pre-~37s bursts are over-credited ⚑",
-    "cadence: 20-ammo AR with a 27.08% per-shot multiplier is a non-standard fire-mode tell — the datamined rate of fire and 159-frame reload are unverified estimates"
+    "cadence: 20-ammo AR with a 27.08% per-shot multiplier is a non-standard fire-mode tell — the datamined rate of fire and 159-frame reload are unverified estimates",
+    "burst: the 849.15% nuke carries burstDesc:'allEnemies' (its kit line sits under '■ Affects all enemies.') — it reads the trina-family burstSkillAoeDamagePct amp when cast inside an amp window; no amp in the comp = byte-identical."
   ],
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "hitCount", "count": 10 },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "hitCount",
+        "count": 10
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -34,8 +40,12 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -49,8 +59,12 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -62,9 +76,19 @@
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 849.15 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 849.15,
+          "burstDesc": "allEnemies"
+        }
+      ]
     }
   ]
 }

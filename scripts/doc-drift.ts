@@ -496,6 +496,16 @@ const BUCKET_ROUTING: Record<string, Routing> = {
     how: 'additive pp',
     gate: 'true-flavored instances',
   },
+  burstSkillSingleDamagePct: {
+    factor: 'DamageUp',
+    how: 'additive pp (⚑ placement per the "○○ Damage ▲" family rule, unmeasured)',
+    gate: "burst-slot hits tagged burstDesc:'singleEnemy'",
+  },
+  burstSkillAoeDamagePct: {
+    factor: 'DamageUp',
+    how: 'additive pp (⚑ placement per the "○○ Damage ▲" family rule, unmeasured)',
+    gate: "burst-slot hits tagged burstDesc:'allEnemies'",
+  },
   pierceDamagePct: {
     factor: 'DamageUp',
     how: 'additive pp',
@@ -631,9 +641,9 @@ const BUCKET_ROUTING: Record<string, Routing> = {
     gate: 'never',
   },
   defPct: {
-    factor: INERT,
-    how: 'parsed and stored, read by NOTHING — own DEF does not enter own damage',
-    gate: 'never',
+    factor: 'FinalATK',
+    how: 'ENEMY-targeted at a nonzero value: scales cfg.bossDef by (1 + Σ/100), floor 0 (the DEF ▼ channel, 2026-08-10); SELF/ally-targeted stays read by nothing — own DEF does not enter own damage',
+    gate: 'enemy-targeted buffs only; sub-0.1% at the graded surfaces (scope-lock bossDef 140), live at the web raid DEF defaults',
   },
 };
 

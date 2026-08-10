@@ -341,4 +341,23 @@ describe('novel — kit spec', () => {
       expect(allMarks.length).toBeGreaterThan(marks(base.events).length);
     });
   });
+
+  describe('N6 — S1 DEF ▼7.05%/5s rides the enemy defPct channel (encoded 2026-08-10)', () => {
+    // boss-held debuff: emitted with novel's skill1 key prefix, 5s window, one per S1 proc.
+    // The channel's damage math is pinned by scripts/tests/engine/enemy-def-debuff.test.ts
+    // (reuse-before-derive) — this group pins only novel's magnitude, cadence, and window.
+    const shaves = buffs(base.events).filter(
+      (b) => b.stat === 'defPct' && b.value === -7.05
+    );
+
+    it('one -7.05 boss debuff per S1 proc, same frames, 5s window, from the skill1 slot', () => {
+      const procs = s1Procs(base.events);
+      expect(shaves.length).toBe(procs.length);
+      expect(shaves.map((b) => b.frame)).toEqual(procs.map((d) => d.frame));
+      for (const b of shaves) {
+        expect(b.key.startsWith(`${NOVEL}:skill1:`)).toBe(true);
+        expect(b.expiresFrame! - b.frame).toBe(5 * 60);
+      }
+    });
+  });
 });

@@ -158,12 +158,13 @@ function normalize(s: string): string {
   return s.toLowerCase();
 }
 
-function classify(
-  entry: string,
-  caveat: string | undefined,
-  note: string | undefined
-): string {
-  const text = normalize(entry + ' ' + (caveat ?? '') + ' ' + (note ?? ''));
+// Classification rests on the ENTRY plus its MATCHED explanation only (the caveat or the one
+// note paragraph bestMatchingText selected) — never the whole note. The note is unit-global
+// prose: a "no X primitive" phrase explaining line A would smear line B into the
+// missing-primitive bucket (measured when the full note was first wired in, 2026-08-10: the
+// bucket jumped 71 → 261 and swallowed taunts and RNG procs whole).
+function classify(entry: string, explanation: string | undefined): string {
+  const text = normalize(entry + ' ' + (explanation ?? ''));
   const entryNorm = normalize(entry);
 
   // Entry-only signals first (the kit text itself tells us the bucket).
@@ -259,7 +260,7 @@ for (const [slug, u] of Object.entries(status).sort(([a], [b]) =>
   for (const slot of slots) {
     for (const line of u.unmodeled[slot] ?? []) {
       const caveat = matchingCaveat(line, slot, u.caveats, u.note);
-      const category = classify(line, caveat, u.note);
+      const category = classify(line, caveat);
       entries.push({
         slug,
         name: u.name,

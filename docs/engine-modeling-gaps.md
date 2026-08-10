@@ -323,11 +323,12 @@ regression snapshot did not move, because the new path has identical semantics (
 same gate position, expiry checked at read). So the registry now IS exercised by a graded comp, but only
 in its single-status, same-unit, same-frame form. Everything below is what that carrier does NOT reach:
 
-- **`chargeCounter`-triggered blocks bypass EVERY block gate.** `sim.ts` dispatches them straight to
-  `applyEffect`, skipping `applyBlock` — so `requiresCore` / `fbGate` / `bossElementGate` /
-  `resourceGate` **and** `requiresTargetStatus` are all silently ignored there. **Pre-existing and
-  wider than this primitive**, but a future carrier sitting on a `chargeCounter` trigger would get an
-  un-gated block with no error and no warning.
+- **`chargeCounter` gate routing — ✅ FIXED 2026-08-10.** The dispatch now runs `blockGatesPass`
+  (the abort-gates extracted from `applyBlock`), so all 8 runtime gates bind on this trigger
+  (`scripts/tests/engine/block-gates.test.ts` chargeCounter cases; behavior-neutral — zero gated
+  carriers existed, regression byte-identical). Still bypassed BY DESIGN of the one-phase-per-
+  activation dispatch: `everyN` / `everyNOffset` / block `delaySec` — `validate-overrides.ts`
+  errors on authoring those with a `chargeCounter` trigger.
 - **A typo'd status name fails SILENTLY** — matching is exact and case/whitespace-sensitive, and the
   failure mode is a block that never fires (a silent under-model, the exact bug class this primitive
   exists to prevent). Note `d-killer-wife` now depends on two string literals agreeing across two
@@ -356,21 +357,26 @@ in its single-status, same-unit, same-frame form. Everything below is what that 
   differently-named statuses held live simultaneously, gated three ways: `target-status-gate.test.ts`
   P4a/P4b/P4c.)
 
-### 1b. "is fixed at" stat LOCKS — no engine vocabulary — 8 units
+### 1b. "is fixed at" stat LOCKS — ✅ CLAMP VOCABULARY LANDED — 8 carriers
 
-Kit lines of the form _"X is **fixed at** V"_ CLAMP a stat for a window (owner ruling 2026-07-22): the
-value is the locked level and it cannot be modified further — not a delta applied on top. Sign varies
-(`milk-blooming-bunny` reads _"fixed at a 50% **reduction**"_, `jill` _"a 99.96% increase"_). The engine
-has stat buffs but no clamp, so all of these are approximated, ignored, or hand-carved:
+Kit lines of the form _"X is **fixed at** V"_ CLAMP a stat (owner ruling 2026-07-22): the value is
+the locked level and it cannot be modified further — not a delta applied on top. Sign varies
+(`milk-blooming-bunny` reads _"fixed at a 50% **reduction**"_, `jill` _"a 99.96% increase"_).
+Expressed by three StatKeys — `reloadSpeedClamp` / `reloadTimeClamp` / `chargeTimeClamp`
+(`src/skills/types.ts`; a clamp OVERRIDES the additive stat, most recent active clamp wins) plus the
+`weaponSwap.chargeTimeClamp` field for swap-scoped charge locks. Live carriers:
 
-| locked stat  | units                                                                                     |
-| ------------ | ----------------------------------------------------------------------------------------- |
-| reload speed | `jill`, `exia`, `asuka-wille`, `milk-blooming-bunny`                                      |
-| charge time  | `anis-star`, `nayuta`, `cinderella-crystal-wave` (also _"reload time is fixed at 3 sec"_) |
-| pellet count | `dorothy-serendipity` — the only one modelled, via her bespoke `consolidation` block      |
+| locked stat  | carriers                                                                                      |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| reload speed | `jill`, `exia`, `asuka-wille`, `milk-blooming-bunny` (`reloadSpeedClamp`)                     |
+| charge time  | `anis-star`, `nayuta`, `snow-white-heavy-arms` (incl. the swap field), `cinderella-crystal-wave` |
+| reload time  | `cinderella-crystal-wave` (`reloadTimeClamp`, _"reload time is fixed at 3 sec"_)              |
+| pellet count | `dorothy-serendipity` — bespoke `consolidation` block, not a clamp StatKey                    |
 
-Impact is comp-dependent (a reload-speed lock only bites when a teammate would otherwise buff reload).
-→ open-questions **U31**, which also carries the `jill` `reloadFrames: 0` consequence.
+Open remainder: `milk-blooming-bunny`'s lock is **reload-count-scoped** in kit text while the shipped
+clamp rides a timed window — the count-scoped variant is the surviving gap (QUEUE 5e builds;
+deprioritized 2026-08-10, owner call). Open-questions **U31** still carries the `jill`
+`reloadFrames: 0` consequence.
 
 ### 2. Defensive / heal / shield with no engine vocabulary — ~25 units
 
@@ -711,6 +717,22 @@ fails when an SR/RL unit gains an override while its `chargeMultiplier` is neith
 gauge-row value — the same gated-decision treatment scarlet-black-shadow got. Until then: any
 NEW override landing on an SR/RL unit should cross-check `chargeMultiplier` against
 `gauge-per-shot.json` before assuming the fallback/table value is correct.
+
+### 22. Burst-Skill-Damage amplifiers (jackal/trina) — ✅ CAPABILITY + BOTH PRODUCERS LANDED 2026-08-10
+
+"Burst Skill damage of skills with 'Affects 1 enemy unit(s)' / 'Affects all enemies' in the
+description ▲X%" had no StatKey and no scope gate (the audit-F3 gap; both units' specs pinned the
+omission). Landed: `burstSkillSingleDamagePct` / `burstSkillAoeDamagePct` — additive Damage-Up
+terms read ONLY by burst-slot hits carrying the matching `burstDesc` tag (⚑ additive placement per
+the "○○ Damage ▲" family rule, unmeasured for these members; a popup read of an amped nuke pins
+it). Producers: `jackal` (38.91/15s, B1 → covers the chain's B3 cast) and `trina` Spread Roots
+(435.6/5s — the kit's enemy-count==1 gate is always true at solo scope; Wilted Roots ≥2-enemies
+branch stays unmodeled verbatim). Tagged beneficiaries so far: `scarlet`, `liberalio` (kit-verified
+"■ Affects all enemies" damage lines); **remaining candidates tag as each unit is reviewed**
+(phase-4 checklist item — the census scan found ~33 all-enemies + ~6 single-enemy burst-damage
+carriers, each needing its Affects-clause verified against the damage line before tagging).
+Board: zero movement on pinned comps (no producer+tagged-beneficiary pair); N3 iron measured
+`liberalio` 0.877 → 0.924 COLD▼ with all non-beneficiaries unchanged.
 
 ### 21. "Buff my NEXT round" per-pull `durationShots` budget — ✅ FIXED 2026-08-08
 

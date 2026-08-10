@@ -3,15 +3,14 @@
   "unmodeled": {
     "skill1": ["ATK ▼ 9.09% for 10 sec."],
     "skill2": ["Equally shares damage taken  for 120 sec."],
-    "burst": [
-      "Burst Skill damage of skills with \"Affects 1 enemy unit(s)\" in the description ▲ 38.91% for 15 sec."
-    ]
+    "burst": []
   },
   "caveats": [
     "burst: the 38.91% Burst-Skill-Damage amp (scoped to skills whose description says 'Affects 1 enemy unit(s)', 15s per cast) is NOT modeled — the engine has no Burst-Skill-Damage bucket/stat and no description-text scope gate (trina precedent, same mechanic family). Teammates' single-target burst nukes cast within 15s of jackal's cast are missing the amp, so jackal comps read COLD by exactly that amount — a documented engine gap (⚑2), not a tuning residual.",
     "skill1: the attacked-10x Damage Taken ▲9.09%/10s is MODELED as an honestly-DORMANT block (attacked:10 → enemy damageTakenPct 9.09, enacted 2026-08-09, owner faithfulness ruling): the trigger exists but nothing feeds it at scope lock (no incoming-damage model; boss never attacks), so it applies nothing today and goes live the day incoming attacks are modeled — her in-game tanking role feeds the counter, so real uptime is high and comps read COLD by that amp until then (⚑1). The ATK ▼9.09% half stays unmodeled (enemy ATK▼ dropped at dispatch on the DEF≈0 basis).",
     "skill2: 'Equally shares damage taken' (self + 2 highest-final-ATK allies, 120s) is unmodeled — no redistribution primitive and no incoming damage at scope; defensive.",
-    "Both modeled lines are defPct (damage-INERT in v1): jackal's modeled kit contributes ZERO damage — her sim output is her bare RL weapon. Her real value (the burst amp + the S1 boss debuff) lives entirely in the two documented engine gaps."
+    "Both modeled lines are defPct (damage-INERT in v1): jackal's modeled kit contributes ZERO damage — her sim output is her bare RL weapon. Her real value (the burst amp + the S1 boss debuff) lives entirely in the two documented engine gaps.",
+    "burst: the Burst-Skill-Damage amp ('Affects 1 enemy unit(s)' scope) is MODELED (2026-08-10, faithfulness pass): burstSkillSingleDamagePct 38.91 to all allies for 15s on her burstCast — read only by burst-slot hits tagged burstDesc:'singleEnemy'. As a B1 her cast precedes the chain's B3 by under a second, so the window covers the rotation's single-target burst nuke. ⚑ additive Damage-Up placement per the '○○ Damage ▲' family rule (SSOT damage-formula §2), not directly measured for this stat; a popup read of an amped single-target nuke pins it."
   ],
   "skill1": [
     {
@@ -87,6 +86,12 @@
           "stat": "defPct",
           "value": 14.69,
           "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "burstSkillSingleDamagePct",
+          "value": 38.91,
+          "durationSec": 15
         }
       ]
     }

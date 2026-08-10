@@ -624,33 +624,37 @@ describe('trina — kit spec', () => {
     });
   });
 
-  describe('T6 — Burst Spread Roots (435.6%) / Wilted Roots (64.46%) burst-skill-dmg amp is a documented GAP (no engine primitive)', () => {
-    it('PIN: Trina emits NO burst-skill-damage-amp buff — her burst produces exactly the four modeled effect families (Attack Damage, Max HP, Max Ammo, Hit Rate) and nothing else (the amp is UNMODELED, not mis-encoded)', () => {
+  describe('T6 — Burst Spread Roots (435.6%) amp is MODELED as burstSkillAoeDamagePct (2026-08-10); Wilted Roots stays a documented gap', () => {
+    it('Trina emits the scoped amp plus the four other modeled families and nothing else', () => {
       const burstStats = new Set(
         buffs(base.events)
           .filter((b) => b.key.includes(':burst:'))
           .map((b) => b.stat)
       );
-      // exactly four modeled families; the Max-Ammo family may be flat (faithful) or pct (the
-      // shipped proxy) — either way NO burst-skill-damage-amp stat is present.
       const modeled = new Set([
         'attackDamagePct',
         'maxHpFlat',
         'maxAmmoFlat',
         'maxAmmoPct',
         'hitRatePct',
+        'burstSkillAoeDamagePct',
       ]);
       for (const s of burstStats) {
         expect(modeled.has(s)).toBe(true);
       }
-      expect(burstStats.has('attackDamagePct')).toBe(true);
-      expect(burstStats.has('maxHpFlat')).toBe(true);
-      expect(burstStats.has('hitRatePct')).toBe(true);
-      expect(burstStats.size).toBe(4);
+      expect(burstStats.has('burstSkillAoeDamagePct')).toBe(true);
+      expect(burstStats.size).toBe(5);
     });
-    // The missing primitive is marked formally below; modeling Spread Roots needs a
-    // burst-skill-damage-amp primitive that does not exist (teammate-COLD lever, feature request).
-    it.skip('GAP: Spread Roots / Wilted Roots needs a burst-skill-damage-amp primitive (missing) — teammate-COLD, inert on Trina; see scripts/kit-autonomy/manual-review/trina.md', () => {});
+
+    it('Spread Roots is 435.6 for 5s to all allies on her burstCast — the kit gates it on enemy count == 1, which is ALWAYS true at solo-raid scope, so no gate is encoded', () => {
+      const amp = byStat(base.events, 'burstSkillAoeDamagePct', 435.6);
+      expect(amp.length).toBeGreaterThan(0);
+      expect(dursOf(amp)).toEqual([5 * FPS]);
+    });
+
+    it('DISCRIMINATING (branch): the Wilted Roots magnitude (64.46) is ABSENT — its enemy-count ≥2 gate is unreachable vs the single boss, so encoding it would be the nearest-wrong', () => {
+      expect(byStat(base.events, 'burstSkillAoeDamagePct', 64.46)).toEqual([]);
+    });
   });
 
   describe('T7 — Burst "Hit Rate ▲45.3% for 10s" → all Electric AR allies = hitRatePct 45.3 (enacted 2026-08-09, owner faithfulness ruling)', () => {

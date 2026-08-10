@@ -58,6 +58,14 @@ export type StatKey =
   | 'chargeTimeClamp' // "Charge time is fixed at X sec" — clamps effective charge time to X seconds (frames)
   | 'extraHitDamagePct' // flat % of final ATK added per normal-attack hit while active
   | 'trueDamagePct' // Damage Up bucket (doc line 8)
+  // Burst-Skill-Damage amplifiers (jackal / trina) — additive Damage-Up terms read ONLY by
+  // burst-slot damage instances carrying the matching `burstDesc` scope tag ("Affects 1 enemy
+  // unit(s)" vs "Affects all enemies" in the amplified skill's own description). ⚑ bucket
+  // placement follows the documented "○○ Damage ▲ → additive Damage Up" family rule
+  // (docs/data/nikke-damage-formula.md §2, ginmy-verified for the family, not measured for
+  // these two members specifically).
+  | 'burstSkillSingleDamagePct'
+  | 'burstSkillAoeDamagePct'
   | 'projectileExplosionPct' // Damage Up bucket; only RL kits carry it
   | 'elemAdvantageDamagePct' // Element bucket, active only with elemental advantage (NOT Damage Up)
   | 'distributedDamagePct' // boosts the caster's own distributed-damage hits
@@ -259,6 +267,13 @@ export type EffectDef =
       // Beautiful-mirror: 28.9%×12 stacks ramping over ~36s, so an early burst mirrors fewer
       // stacks). Snapshotted at cast/landing. Omit = full (back-compatible). ⚑ per-unit estimate.
       rampSec?: number;
+      // Kit-description scope tag for the Burst-Skill-Damage amplifier family (jackal/trina):
+      // 'allEnemies' when the kit's damage line sits under an "Affects all enemies" clause,
+      // 'singleEnemy' under "Affects 1 enemy unit(s)". A tagged burst-slot hit reads the matching
+      // burstSkillAoeDamagePct / burstSkillSingleDamagePct amp in the Damage-Up bucket; untagged
+      // hits read neither. Authorable only on burst-slot blocks (validated) — the amps amplify
+      // "Burst Skill damage", never skill procs.
+      burstDesc?: 'singleEnemy' | 'allEnemies';
     }
   | {
       // "%-of-hit repeat" — kit text "Deals Fixed Damage ... equal to X% of the damage dealt

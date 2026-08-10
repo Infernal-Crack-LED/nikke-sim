@@ -11,20 +11,20 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 160 | 37.0% |
-| Other / see caveats | 143 | 33.0% |
-| Missing engine primitive / trigger | 71 | 16.4% |
-| Out-of-domain / parser unsupported | 27 | 6.2% |
-| Weapon-state / shot-count approximation | 10 | 2.3% |
-| Partless boss | 7 | 1.6% |
-| Self-status / stack gate | 7 | 1.6% |
-| RNG / probabilistic | 5 | 1.2% |
+| Defensive / HP / shield / aggro | 159 | 37.3% |
+| Other / see caveats | 106 | 24.9% |
+| Missing engine primitive / trigger | 94 | 22.1% |
+| Out-of-domain / parser unsupported | 29 | 6.8% |
+| Partless boss | 12 | 2.8% |
+| Weapon-state / shot-count approximation | 11 | 2.6% |
+| Self-status / stack gate | 8 | 1.9% |
+| RNG / probabilistic | 4 | 0.9% |
 | Measurement-gated / unverified cadence | 3 | 0.7% |
-| **Total** | **433** | 100.0% |
+| **Total** | **426** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (160)
+### Defensive / HP / shield / aggro (159)
 
 **A2** (a2)
 
@@ -34,7 +34,7 @@
 **Ada** (ada)
 
 - **skill1:** Recovers 10% of the damage dealt as HP for 10 sec. — magnitude only: the 10s recovery-event WINDOW is modeled (event-only heal ticks:10 intervalSec:1 on the fullBurstEnter→burstCasters block, firing bursted-B3 on-recovery consumers such as asuka S1); the HP amount has no engine consumer (no HP pool)
-  - *Why:* See unit note / caveats
+  - *Why:* S1: on full-burst enter, buffs the BURST 3 allies who already burst this rotation (kit text: 'all Burst 3 allies who previously used their Burst Skill' — target burstCasters stage 3; U8 run-E finding 2026-07-13: the unfiltered burstCasters target was feeding her +60%-of-caster ATK grant to crown/rouge every rotation, the source of their ~1.44 heat) with ATK 60% of caster's ATK and True Damage 50% for 10s; the 10% lifesteal's recovery-event WINDOW is modeled as an event-only heal (ticks:10 intervalSec:1) on the same block — it refreshes bursted-B3 on-recovery consumers (asuka S1) every second of the 10s window (enacted 2026-08-09, owner faithfulness ruling); the HP amount itself has no engine consumer (no HP pool)
 
 **Ade** (ade)
 
@@ -50,7 +50,7 @@
 
 - **burst:** ■ Activates when Carrot Party is at max stacks. Affects all allies.
 Incoming healing ▲ 150% for 15 sec. (no healing-received channel — no HP pool at scope; the activation gate references the inert Carrot Party stack count)
-  - *Why:* See unit note / caveats
+  - *Why:* UNMODELED: the burst's 'when Carrot Party is at max stacks → Incoming healing ▲150% for 15 sec' (no healing-received channel exists)
 
 **Anchor** (anchor)
 
@@ -76,19 +76,19 @@ Incoming healing ▲ 150% for 15 sec. (no healing-received channel — no HP poo
 **Anis: Star** (anis-star)
 
 - **skill2:** Restores 1.26% of the skill user's final Max HP as HP. — magnitude only: the per-full-charge recovery EVENT is modeled (event-only heal per pull, formation hasB1 = Everyone's Star); the HP amount has no engine consumer (no HP pool)
-  - *Why:* See unit note / caveats
+  - *Why:* HasB1 (Everyone's Star): the ATK riders are replaced by re-entering burst at Stage 1 (burstEligibility stage 1); its ally Max-HP portion is dropped (defensive; ally-granted Max HP feeds nothing); the 1.26% per-full-charge heal is modeled as an event-only heal per pull (formation hasB1 — Everyone's Star), driving on-recovery consumers (enacted 2026-08-09, owner faithfulness ruling; the HP amount has no engine consumer)
 - **burst:** DEF ▲ 55.01% for 10 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* DEF 55.01% and Explosion Radius 100% remain documented UNMODELED — defensive/AoE-radius, offensively inert; the hasB1 1.26% full-charge heal is now modeled event-only (crown-recovery tandem, enacted 2026-08-09 — the fable reviewer independently re-derived the same tandem-heal concern).]
 
 **Asuka** (asuka)
 
 - **skill1:** Damage dealt to Shield ▲ 601.01% continuously.
-  - *Why:* See unit note / caveats
+  - *Why:* S1: shield-damage 601.01% → unmodeled (no shield-damage StatKey in types.ts; scope-lock partless boss never shields — inert)
 
 **Avistar** (avistar)
 
 - **skill2:** ■ Activates when entering Full Burst while in Stargazer status with over 25% HP. Affects self. Current HP ▼ 20% — UNMODELED: v1 has no HP pool, so the self HP drain (and its >25% HP gate) move no damage and feed no mechanic; Avistar has no low-HP offensive gate.
-  - *Why:* See unit note / caveats
+  - *Why:* The S2 self line (L4) 'while in Stargazer status with over 25% HP → self: Current HP ▼20%' is UNMODELED (no HP pool in v1; the self-drain and its >25% HP gate move no damage)
 
 **Bay (Treasure)** (bay)
 
@@ -113,14 +113,14 @@ Deals 14.96% of final ATK as additional damage.
 **Biscuit** (biscuit)
 
 - **skill2:** Recovers 23.26% of the skill user's final Max HP. Activates 2 time(s) per battle. — UNMODELED (inert): a genuine unit heal, BUT it shares skill2's un-fireable HP-below-50% trigger (no HP pool in v1), so it can never legitimately fire either. NOT encoded on an invented proxy trigger — doing so would spuriously drive a Defender ally's on-recovery kit (Crown-class over-credit); the faithful disposition is UNMODELED + verbatim record.
-  - *Why:* See unit note / caveats
+  - *Why:* S2 ('when a Defender ally's HP falls below 50%') stays UNMODELED: v1 has no HP pool / damage-taken model (immortal boss), so the HP-threshold trigger is indeterminate and can never legitimately fire — both the invincibility and the 23.26% heal share that un-fireable trigger (fable concurred)
 - **burst:** Affects 2 random ally unit(s) whose cover has been destroyed. Rebuild Cover with 93.6% HP. — UNMODELED (inert): restores COVER HP, not a unit's HP; no sim cover-HP representation (same NO-OP class as liter S2, owner ruling 2026-07-21). Emits no unit-recovery event, so it must not trigger recovery-consumer teammates.
   - *Why:* burst: the cover-rebuild line is an inert NO-OP in v1 (no cover representation).
 
 **Blanc** (blanc)
 
 - **burst:** Gain Indomitability for 10 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* SKIPS (burst line 2, target = 1 lowest-remaining-HP ally except self): 'Gain Indomitability for 10 sec.' — genuinely-skippable survival (revive/death-immunity class; boss lethality unmodeled); 'Max HP ▲ 31.68% for 10 sec.' — now modeled via targetMaxHpPct (own-% basis) + alliesLowestHp TargetDef (theme-13, 2026-07-17); offensively inert (e3 rule)
 
 **Chisato** (chisato)
 
@@ -154,7 +154,7 @@ Decoy: Creates an avatar with 96% of the skill user's final Max HP. This effect 
 **Crown** (crown)
 
 - **skill2:** Relax: Incoming healing ▲ 4.06% continuously. Stacks up to 20 times.
-  - *Why:* See unit note / caveats
+  - *Why:* --- S2 Relax cycle: 43 normal attacks per stack x 20 stacks -> heal proc -> team Attack Damage 20.99% for 7s
 - **skill2:** Invulnerable for 5 sec.
   - *Why:* See unit note / caveats
 - **skill2:** Attract: Taunts all enemies for 5 sec.
@@ -174,8 +174,10 @@ Decoy: Creates an avatar with 96% of the skill user's final Max HP. This effect 
 
 **Delta: Ninja Thief** (delta-ninja-thief)
 
-- **skill2:** Effect 2: Attract: Taunt all enemies continuously.
-  - *Why:* See unit note / caveats
+- **skill2:** Effect 1: Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.
+  - *Why:* WITH-DEFENDER mode — Ninjutsu Injection 'recovers 11.22% of attack damage as HP continuously' modeled as an event-only heal to SELF on shotFired (per-pull ≈ continuous; amount unmodeled — heal is event-only; kept per hard rules 2-3 so any recovery consumer works); Camouflage unmodeled (single-target-immunity, defensive vs partless boss); Ninjutsu IFAK ('every 4 sec while in Injection … all allies healed for the stored amount') modeled as heal → allies on interval sec:4 (the engine's timed-interval trigger {kind:'interval', sec:4}, first fire t=4 — same primitive as snow-white S2a / helm-aquamarine), which fires teammate `recovery` triggers (Crown-style consumers, hard rule 2); the 4s storage DELAY + the 165.28%-of-ATK stored-amount cap are unmodeled (heal has no magnitude)
+- **skill2:** Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.
+  - *Why:* WITH-DEFENDER mode — Ninjutsu Injection 'recovers 11.22% of attack damage as HP continuously' modeled as an event-only heal to SELF on shotFired (per-pull ≈ continuous; amount unmodeled — heal is event-only; kept per hard rules 2-3 so any recovery consumer works); Camouflage unmodeled (single-target-immunity, defensive vs partless boss); Ninjutsu IFAK ('every 4 sec while in Injection … all allies healed for the stored amount') modeled as heal → allies on interval sec:4 (the engine's timed-interval trigger {kind:'interval', sec:4}, first fire t=4 — same primitive as snow-white S2a / helm-aquamarine), which fires teammate `recovery` triggers (Crown-style consumers, hard rule 2); the 4s storage DELAY + the 165.28%-of-ATK stored-amount cap are unmodeled (heal has no magnitude)
 - **burst:** Next shield's HP ▲ 20.13% for 10 sec.
   - *Why:* See unit note / caveats
 - **burst:** Maximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec.
@@ -184,7 +186,7 @@ Decoy: Creates an avatar with 96% of the skill user's final Max HP. This effect 
 **Diesel (Treasure)** (diesel)
 
 - **skill1:** Recovers 12.96% of the skill user's final Max HP as HP.
-  - *Why:* See unit note / caveats
+  - *Why:* UNMODELED (verbatim, L2/L3/L8 — all inert for DPS at scope): S1 'when attacked in Attract status -> Recovers 12.96% final Max HP' (the `attacked` trigger exists, types.ts, but no incoming-damage event feeds it in v1; boss deals no damage) and 'after landing 150 normal attacks in Attract status -> Stack count of buffs ▲1' (gated on an unmodeled self-Attract status; the +1 grant is expressible via `addStack` but the Attract-window gate is not, and the grant-vs-cap-raise reading of this sentence is disputed on record — rupee ⚑4); burst 'Attract: Taunt all enemies for 10s' (no taunt/Attract primitive; tanking is out of domain for a DPS sim)
 - **burst:** Attract: Taunt all enemies for 10 sec.
   - *Why:* See unit note / caveats
 
@@ -198,8 +200,10 @@ Recovers 10.77% of the skill user's final Max HP as HP.
 
 - **skill1:** Exposure (Cannot be removed) — Effect: Attract: Taunt all enemies continuously.
   - *Why:* See unit note / caveats
+- **skill2:** Bonus effects when applying AS Formation to self — Effect 3: Affects self. Exposure activation disabled continuously.
+  - *Why:* Bonus E3 (Exposure activation disabled) is a no-op on the unmodeled taunt, unmodeled even under the mode
 - **burst:** Enhanced Environment Setup — Effect 2: Incoming healing ▲ 29.04%. Effect 2 Target(s): All allies
-  - *Why:* See unit note / caveats
+  - *Why:* ENHANCED ENVIRONMENT SETUP (burst, gated on Environment Setup live at cast via requiresTargetStatus): a SECOND co-stacking damageTakenPct 3.9 boss instance — distinct KR slot key (0:burst:… vs 0:skill1:…) so the overlap sums to 7.8% taken
 
 **Ether** (ether)
 
@@ -209,8 +213,8 @@ DEF ▼ 9.38% for 6 sec.
 
 **Exia (Treasure)** (exia)
 
-- **burst:** DEF ▼ 2.71% for 5 sec. — no sim channel: enemy DEF▼ is dropped at dispatch on the DEF=0 basis (same as the skill1 DEF▼ line)
-  - *Why:* burst: the enemy ATK▼/DEF▼ lines (skill1 13.77%/13.77%, burst 2.71%) are game-real but unenactable — the sim's DEF=0 basis drops enemy ATK▼/DEF▼ at dispatch; they are recorded verbatim in unmodeled
+- **skill1:** ■ Activates when the last bullet hits the target. Affects the target if the skill user is in Collect Hacking Code. ATK ▼ 13.77% for 5 sec. — no sim channel: no incoming-damage model, so an enemy ATK ▼ moves nothing (the boss deals no damage)
+  - *Why:* burst+skill1: the enemy DEF ▼ lines (13.77% gated on Collect Hacking Code; 2.71% ungated per cast) ride the enemy defPct channel — sub-0.1% at the scope-lock boss DEF 140, live at the web raid DEF defaults; the enemy ATK ▼ 13.77% line is unmodeled (no incoming-damage model).
 
 **Flora (Treasure)** (flora)
 
@@ -240,6 +244,11 @@ DEF ▼ 9.38% for 6 sec.
 - **skill1:** Activates only when in Heat Emission status. Affects self. Recovers 2% Max HP/1s continuously.
   - *Why:* skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst
 
+**Jackal** (jackal)
+
+- **skill1:** ATK ▼ 9.09% for 10 sec.
+  - *Why:* ATK ▼ 9.09% for 10 sec.') is UNMODELED IN FULL (all three verbatim lines in unmodeled.skill1): the trigger is a counter of hits RECEIVED — the Damage-Taken half is now encoded on the real attacked:10 trigger (enacted 2026-08-09) but the sim has NO incoming-damage model to feed it and the v1 boss is immortal and never acts, so the block is dormant at scope and applies nothing
+
 **Kilo** (kilo)
 
 - **skill1:** ■ Activates when using Burst Skill. Affects self if not in Nano Coating status.
@@ -247,7 +256,7 @@ Nano Coating: Creates a Shield equal to 21.12% of the skill user's final Max HP 
   - *Why:* skill1/skill2/burst: all four uncoated-status lines (S1 re-shield on burst, S2 200-attack shield-HP restore, S2 escalating Next-Shield-HP buffs, burst Max HP +48%/20s) are dead at scope — the battle-start shield has no duration and nothing breaks it — and are recorded verbatim in unmodeled. No negated-shield-gate, shield-HP-pool, or shield-size-modifier primitive exists; encoding them ungated would over-fire them every burst.
 - **skill2:** ■ Activates after performing 200 normal attacks while in Nano Coating status. Affects self.
 Restores Shield HP equal to 2.85% the skill user's final Max HP.
-  - *Why:* See unit note / caveats
+  - *Why:* The 200-normal-attack shield-HP restore (S2) is UNMODELED: it RESTORES an existing shield's HP pool (no pool in v1) — a heal encoding would fire crown-class recovery consumers and a fresh-shield encoding would re-fire naga-class 'shielded' triggers every 200 rounds; neither event is what the kit does (S2b reviewer's tandem-rule suggestion reconciled to UNMODELED on this ground).
 - **skill2:** ■ Activates when using Burst Skill while not in Nano Coating status. Affects self.
 Effects vary according to the number of uses. Each subsequent effect triggers all effects before it:
 Once: Next Shield's HP ▲ 17.75% continuously.
@@ -270,6 +279,10 @@ Max HP ▲ 48% for 20 sec.
   - *Why:* skill1: the Delusion shield is event-only (engine `shield` emits no HP pool); DPS-inert and Label has no `shielded` consumer — modeled for kit-completeness only
 - **skill1:** Activates when using Burst Skill while not in Delusion status. Affects self. Delusion: Creates a Shield equal to 30.15% of the skill user's final Max HP. This effect is continuous.
   - *Why:* skill1: the Delusion shield is event-only (engine `shield` emits no HP pool); DPS-inert and Label has no `shielded` consumer — modeled for kit-completeness only
+- **skill2:** Activates at the start of battle. Affects all allies (except self). Damage taken from Electric Code enemies ▼ 70.4% for 5 sec. Activates 1 time(s) per battle.
+  - *Why:* S2 'start of battle, all allies except self: Damage taken from Electric Code enemies ▼70.4% / 5s, 1x per battle': UNMODELED — defensive damage-taken REDUCTION, conditional on the enemy being Electric Code (the control boss is Fire), and there is no incoming-damage model to reduce
+- **skill2:** Damage taken from Electric Code enemies ▼ 70.4% continuously.
+  - *Why:* S2 'start of battle, all allies except self: Damage taken from Electric Code enemies ▼70.4% / 5s, 1x per battle': UNMODELED — defensive damage-taken REDUCTION, conditional on the enemy being Electric Code (the control boss is Fire), and there is no incoming-damage model to reduce
 - **burst:** Shared Delusion: The Shield created by Label becomes invulnerable for 10 sec.
   - *Why:* skill2: the self ATK ▲93.39% / burst-gauge ▲70.4% are 'only while in Delusion'; Delusion is permanent in the no-incoming-damage sim, so they are encoded passive (frame 0, no expiry). Real shield-break downtime is sub-second and unmodeled (⚑)
 
@@ -312,12 +325,6 @@ ATK ▲ 20% of the skill user's ATK for 10 sec. — UNMODELED (inert): the destr
 
 **Makima** (makima)
 
-- **skill2:** Attract: Taunt all enemies for 3 sec.
-  - *Why:* See unit note / caveats
-- **skill2:** ■ Activates when taking lethal damage. Affects self.
-  - *Why:* See unit note / caveats
-- **skill2:** Gain indomitability for 7 sec. Activates 1 time(s) per battle.
-  - *Why:* See unit note / caveats
 - **burst:** ■ Activates during indomitability. Affects self.
   - *Why:* See unit note / caveats
 - **burst:** Incoming healing ▲ 41.02% for 10 sec.
@@ -325,8 +332,6 @@ ATK ▲ 20% of the skill user's ATK for 10 sec. — UNMODELED (inert): the destr
 
 **Marciana** (marciana)
 
-- **skill1:** Activates when the last bullet hits the target. Affects 2 ally unit(s) with the highest final ATK. Incoming healing ▲ 26.98% for 3 sec.
-  - *Why:* See unit note / caveats
 - **burst:** Storage: Stores excess healing received by the skill user, up to 27.87% of their Max HP. Lasts for 10 sec.
   - *Why:* See unit note / caveats
 
@@ -338,7 +343,7 @@ ATK ▲ 20% of the skill user's ATK for 10 sec. — UNMODELED (inert): the destr
 **Mary** (mary)
 
 - **skill2:** Activates when entering Full Burst. Affects all allies. Incoming healing ▲ 23.78% for 15 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* (L2) S2 'Nursing' — 'entering Full Burst → all allies Incoming healing ▲ 23.78% for 15 sec' → UNMODELED (verbatim below): there is no incomingHealingPct StatKey and no HP pool for healing received to scale — doubly inert, damage-neutral (flora S1 / marciana S1 / sakura-suzuhara L2 precedent)
 
 **Mast** (mast)
 
@@ -350,21 +355,21 @@ ATK ▲ 20% of the skill user's ATK for 10 sec. — UNMODELED (inert): the destr
 - **skill1:** ■ Activates when attacked 20 time(s). Affects self.
   - *Why:* skill1: the whole attacked-20x sentence (self DEF ▲39.18% / 10s) is unmodeled — the `attacked` trigger primitive exists (types.ts; makima/yulha encode theirs) but nothing feeds it at scope lock (no incoming-damage model), and the effect (defPct) would be damage-inert even if it fired. Honestly absent (⚑1), not a stale fixture — the unit test pins the zero against the hitCount:20 'attacks' misread.
 - **skill1:** DEF ▲ 39.18% for 10S.
-  - *Why:* See unit note / caveats
+  - *Why:* DEF ▲ 39.18% for 10S.'): UNMODELED IN FULL (both sentences verbatim in unmodeled.skill1) — the trigger is a counter of hits RECEIVED; the `attacked` trigger primitive exists (types.ts) but the v1 sim models NO incoming ally damage and the boss never acts, so the counter never accrues and the line never fires at scope lock
 - **burst:** DEF ▼ 13.32% for 5 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* The burst's second line 'DEF ▼ 13.32% for 5 sec' (all enemies) is UNMODELED (verbatim in unmodeled.burst) — ENGINE GAP, himeno/eunhwa precedent (same-family 'DEF ▼ x% for N sec' lines shipped the same way in this batch): the enemy-buff channel admits ONLY damageTakenPct/distributedDamagePct (sim.ts consumes enemyBuffs through no other stat) and the boss's DEF is the flat constant cfg.bossDef that no debuff scales, so an enemy DEF▼ moves nothing — sim.ts drops enemy ATK▼/DEF▼ at dispatch ('other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0')
 
 **Milk (Treasure)** (milk)
 
 - **burst:** Incoming healing ▲ 75.5% for 10 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* K7 (BUc, 'Incoming healing ▲ 75.5% for 10 sec'): UNMODELED — no incoming-healing StatKey exists and heals carry no HP amount in v1, so the amplifier could only multiply event-less nothing; provably inert (verbatim in unmodeled.burst; S2b concurs)
 - **burst:** Recovers 16.16% of attack damage as HP — magnitude only: the engine `heal` carries no HP amount by design (no HP pool); the 10-second recovery-event WINDOW is modeled (burst heal ticks:10 intervalSec:1).
-  - *Why:* See unit note / caveats
+  - *Why:* K6 (BUb, 'Recovers 16.16% of attack damage as HP over 10 sec'): burstCast → allies → heal ticks:10 intervalSec:1 — a 10-SECOND WINDOW of recovery events, event-only by engine design (no HP amount modeled; the 16.16% magnitude rides in unmodeled, not fudged)
 
 **Mint** (mint)
 
 - **skill1:** Full Charge in Assigned Part: Dancing: all allies recover 1.8% of caster's Max HP every 1 sec, lasts 3 sec. — magnitude only: the 3-tick recovery-event window is modeled (event-only heal, Dancing-gated via the singing resource, solo mode); the HP amount has no engine consumer (no HP pool)
-  - *Why:* See unit note / caveats
+  - *Why:* (2) DANCING HEAL (1.8% Max HP/1s x3) stays UNMODELED — defensive, engine has no HP pool; its only damage channel is a Crown-style on-recovery consumer, a known cold bias (owner finding F1: 'crown recovery consumer never procs', hard rule 2); estimate small (heal-window recovery uptime on a consumer if one is graded); recipe = wire as a heal event (ticks:3 intervalSec:1, Dancing-gated) and measure the consumer's uplift; tier 2
 
 **Misato** (misato)
 
@@ -381,9 +386,9 @@ Damage dealt to Shield ▲ 150% continuously.
 - **skill2:** Once: Max HP ▲ 91% for 3 sec. Activates once per battle.
   - *Why:* See unit note / caveats
 - **skill2:** Twice: Max HP ▲ 69.84% for 3 sec. Activates once per battle.
-  - *Why:* See unit note / caveats
+  - *Why:* [2026-07-17 THEME-13] Her S2 Perseverance 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are DELIBERATELY still unmodeled: they are HP-loss-gated ('Activates when HP falls below 20%'), so on the immortal partless boss (HP never drops) they NEVER fire — a kill/HP-gate (theme 18), not a theme-13 Max-HP-grant gap
 - **skill2:** Three Times: Max HP ▲ 51.09% for 3 sec. Activates once per battle.
-  - *Why:* See unit note / caveats
+  - *Why:* [2026-07-17 THEME-13] Her S2 Perseverance 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are DELIBERATELY still unmodeled: they are HP-loss-gated ('Activates when HP falls below 20%'), so on the immortal partless boss (HP never drops) they NEVER fire — a kill/HP-gate (theme 18), not a theme-13 Max-HP-grant gap
 - **burst:** Recovers 36.14% of attack damage as HP over 10 sec.
   - *Why:* See unit note / caveats
 - **burst:** Attract: Taunts all enemies for 10 sec.
@@ -416,16 +421,16 @@ Max HP ▲ 10.09% for 10 sec.
 **Nayuta** (nayuta)
 
 - **skill1:** Unchanging Heart: Gain Indomitability for 9 sec. Activates 1 time(s) during battle.
-  - *Why:* See unit note / caveats
+  - *Why:* S1 'when Memory Absorption takes effect' fires every 3s, so its ally buffs (core-damage 25.15%, ATK 30.16% of caster) are treated as permanent passives; the shared HP recovery, the self 25% heal, and the start-of-battle Indomitability are skipped (defensive)
 - **skill1:** Equally shares HP recovery for 5 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* S1 'when Memory Absorption takes effect' fires every 3s, so its ally buffs (core-damage 25.15%, ATK 30.16% of caster) are treated as permanent passives; the shared HP recovery, the self 25% heal, and the start-of-battle Indomitability are skipped (defensive)
 - **skill1:** Recovers 25% of the skill user's final Max HP as HP.
   - *Why:* See unit note / caveats
 
 **Neon: Vision Eye** (neon-vision-eye)
 
 - **skill1:** When attacked while not in Healthy Body: Invulnerability for 3 sec (5 times per battle) and debuff immunity; Healthy Body: incoming healing ▲10.26% for 20 sec (defensive — invuln/immunity/received-heal amp; emits no heal event, no cross-unit consumer wiring needed)
-  - *Why:* See unit note / caveats
+  - *Why:* SKIPPED: S1 invuln/debuff-immunity/Healthy-Body heal (defensive); all gauge-plumbing lines (start +100, +2/attack, +45 on end, burst gauge <100 charge, gauge=100 drain) are bookkeeping for the cycle above; S2 full-burst-end 'burst-gauge fill +5% x gauge' (variable x gauge, burst-gen only); burst Explosion Radius +200% (inert, single boss)
 
 **Nero** (nero)
 
@@ -441,11 +446,6 @@ Max HP ▲ 10.09% for 10 sec.
 - **burst:** Affects all allies. Invulnerable for 3 sec.
   - *Why:* Burst 'Invulnerable for 3 sec' UNMODELED: v1 models no HP pool / death / incoming damage. Deliberately NOT encoded as a `shield` effect (the nearest-primitive trap, S2b-flagged): a shield encoding would open the targets' shieldedUntilFrame windows and fire teammates' 'shielded' triggers / requiresShielded gates — fabricating a synergy surface the kit never grants. Invulnerability is a distinct named mechanic from Shield in kit vocabulary (marciana's Storage precedent).
 
-**Novel** (novel)
-
-- **skill1:** DEF ▼ 7.05% for 5 sec.
-  - *Why:* skill1: the DEF ▼ 7.05%/5s enemy debuff is UNMODELED — no dynamic enemy-DEF-reduction primitive (cfg.bossDef is fixed; damageTakenPct is a different bucket). At the 140-DEF scope-lock boss this is 9.87 flat DEF ≈ ~0.02% team damage — minor, not load-bearing. Recipe if a primitive lands: a boss-DEF-reduction debuff (7.05% for 5s, refreshed on the 10s skill CD) feeding the subtractive DEF term
-
 **Pascal** (pascal)
 
 - **skill1:** ■ Activates after firing 10 time(s). Affects 1 ally unit(s) with the highest final DEF. 
@@ -459,7 +459,7 @@ Incoming healing ▲ 38.4% for 10 sec.
 
 - **skill1:** ■ Activates when the last bullet hits the target. Affects all allies.
 Refresh Heart: Incoming healing ▲ 6.53%, stacks up to 5 time(s) and lasts for 15 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* (S1b) 'Refresh Heart: Incoming healing ▲ 6.53%, stacks up to 5, lasts 15 sec' = SPLIT: the stack COUNT is load-bearing — the burst's conditional heal gates on 'Refresh Heart at max stacks' — so the stacks are IMPLEMENTED as the `refreshHeart` resource pool (initial 0, max 5, +1 per lastBullet)
 
 **Poli (Treasure)** (poli)
 
@@ -469,7 +469,7 @@ Refresh Heart: Incoming healing ▲ 6.53%, stacks up to 5 time(s) and lasts for 
 **Prika** (prika)
 
 - **skill2:** Max HP ▲ 19.98% for 10 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* S2: the 'entering Full Burst -> Max HP +19.98%' block is skipped (defensive HP buff)
 - **burst:** Effect 1 HP MAGNITUDE: Restores 3.04% of the skill user's final max HP as HP — the recovery CADENCE (every 1 sec for 25 sec = 25 ticks) IS modeled (heal ticks:25 intervalSec:1, driving on-recovery consumers); only the HP amount is not (the engine's heal effect carries no HP value). This effect cannot be removed.
   - *Why:* The burst Performance heal's recovery CADENCE (3.04% of caster max HP, every 1s for 25s = 25 ticks) IS emitted as recovery events (heal ticks:25 intervalSec:1) — 'when recovery takes effect' consumer kits (Crown-type) now proc off Prika across the full 25s window. Only the heal's HP MAGNITUDE (3.04%) is unmodeled (the engine's heal effect carries no HP amount).
 
@@ -491,8 +491,6 @@ DEF ▲ 11.34% of the skill user's DEF for 5 sec. — caster-basis flat DEF add:
 
 **Rapunzel** (rapunzel)
 
-- **skill2:** Incoming healing ▲ 13.65% for 15 sec.
-  - *Why:* See unit note / caveats
 - **burst:** ■ Activates when HP falls below 30%. Affects all enemies.
 Stun for 1 sec.
   - *Why:* ⚑ burst enemy STUN (all enemies 1s when an ally falls below 30% HP) is UNMODELED — there is no HP pool to gate the 'below 30%' threshold and no enemy-action model for the stun to interrupt (the boss deals no damage and its actions don't gate ally DPS). Status-gate + inert in a DPS sim.
@@ -509,7 +507,7 @@ Restores Shield HP equal to 3.16% of the skill user's final Max HP every 1 sec c
 - **skill2:** ■ Activates during Beast Cage. Affects all allies. DEF ▲ 50.68% of the skill user's DEF for 10 sec.
   - *Why:* See unit note / caveats
 - **skill2:** ■ Activates during The Last Howl. Affects self. Recovers 23.04% of attack damage as HP over 10 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* Stage-2 lifesteal 23.04% confirmed UNMODELED/out-of-domain (no HP pool; tandem recovery-feed to a future on-recovery teammate recorded as a residual, not a DPS-basis edit)
 - **burst:** Step 2 (The Last Howl): Attract: Taunts all enemies for 10 sec.
   - *Why:* See unit note / caveats
 - **burst:** Step 2 (The Last Howl): Incoming healing ▲ 74.88% for 10 sec.
@@ -518,7 +516,7 @@ Restores Shield HP equal to 3.16% of the skill user's final Max HP every 1 sec c
 **Rei Ayanami** (rei-ayanami)
 
 - **skill2:** Damage dealt to Shield ▲ 700.5% continuously — no shield-damage StatKey in the schema; inert vs the partless scope-lock boss (no shield).
-  - *Why:* See unit note / caveats
+  - *Why:* S2 block A = 'start of battle, self, Damage dealt to Shield ▲ 700.5% continuously' → UNMODELED: the schema has no shield-damage StatKey and the scope-lock boss is partless (no shield), so this buff moves no damage (inert)
 
 **Rem** (rem)
 
@@ -540,6 +538,11 @@ Restores Shield HP equal to 3.16% of the skill user's final Max HP every 1 sec c
 Taunts for 5 sec.
   - *Why:* skill1: the taunt line ('landing a Full Charge attack during Full Burst → Taunts for 5 sec') is UNMODELED verbatim — the sim has no targeting/aggro model and v1 models no damage taken by allies, so a taunt moves nothing observable. Nearest-wrong encoding rejected: targetStatus is the ENEMY-status channel (a boss status) — a taunt is self-aggro, not a boss status; forcing it through that channel would be a fake model.
 
+**Sakura** (sakura)
+
+- **burst:** Damage dealt by Wind Code enemies ▼ 90.72% for 30 sec. Activates 1 time(s) per battle.
+  - *Why:* (K4) burst 'damage dealt by Wind Code enemies ▼90.72% / 1 per battle' = defensive damage-taken reduction; the immortal boss deals no damage
+
 **Sakura Suzuhara** (sakura-suzuhara)
 
 - **skill2:** ■ Activates after landing 60 normal attacks. Affects the 2 ally unit(s) with the lowest HP percentage.
@@ -554,11 +557,11 @@ Incoming healing ▲ 15.18% for 10 sec.
 **Signal** (signal)
 
 - **skill1:** DEF ▼ 5.94% for 5 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* ⚑ LIST: [⚑1] (ENGINE GAP, minor — the S1 cluster) hitCount:60 → enemy 'DEF ▼ 5.94% / ATK ▼ 5.94% for 5s': estimate = ~8.3 flat boss DEF (5.94% of the 140-DEF scope-lock boss) off every hit during the 5s window at near-permanent uptime (SMG ~24 hits/s ⇒ 60 hits ≈ 2.5s, so the counter refreshes well inside the 5s expiry while firing) — a small team-wide lift, honestly absent; the ATK▼ half is damage-ZERO in v1 (the boss never attacks — a survivability lever only in real fights)
 - **skill2:** Recover 44.08% of attack damage as HP over 10 sec. — magnitude only: the engine `heal` carries no HP amount by design (no HP pool); the 10-second recovery-event WINDOW is modeled (fullBurstEnter heal ticks:10 intervalSec:1).
   - *Why:* skill2: the modeled heal is event-only — the 44.08%-of-attack-damage HP magnitude is NOT modeled (no HP pool by design); the 10-second recovery-event WINDOW IS modeled (ticks:10 intervalSec:1). The heal is SELF-targeted: recovery events are delivered to signal herself and fire only HER OWN 'recovery'-triggered blocks (fireRecovery dispatches the recipient's blocks; she has none — the unit test observes the window with an inert probe). Damage-inert by construction: totals are byte-identical with the line removed.
 - **burst:** DEF ▼ 12.34% for 10 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* [⚑2] (ENGINE GAP, minor) the burst 'DEF ▼ 12.34% for 10s': estimate = ~17.3 flat boss DEF off every hit during the 10s window per 20s cycle (~50% uptime) — a small team-wide lift; comps read COLD by exactly that amount
 
 **Sin** (sin)
 
@@ -577,17 +580,17 @@ Incoming healing ▲ 15.18% for 10 sec.
 - **skill1:** Lock-On — Function: Designates the enemy as a target of Seven Dwarves. Max Lock-On targets: 5. Deactivation condition: Performing a normal attack or taking cover.
   - *Why:* See unit note / caveats
 - **skill1:** Auto Fire Ready — Effect: DEF ▲ 42.24% continuously.
-  - *Why:* See unit note / caveats
+  - *Why:* SKIPPED: DEF +42.24% (defensive); Lock-On targeting and Max-Lock-On/ammo caps beyond the ammo counts used above (single boss); Parts-damage buckets (partless boss)
 
 **Soline: Frost Ticket** (soline-frost-ticket)
 
 - **skill2:** Recovers 12.27% of the skill user's final Max HP as HP.
-  - *Why:* See unit note / caveats
+  - *Why:* (S2 blk1, whole block) squad-HP<15% emergency heal (12.27% caster Max HP, ticket ▼1) — a HEAL (hard-rule-2 class) parked in unmodeled DELIBERATELY: the schema has no HP-threshold TriggerDef and the sim models no incoming boss damage, so the trigger is STRUCTURALLY UNREACHABLE in v1 (NOT measurement-gated); wiring it to any available trigger would FABRICATE recovery events (measured > fudge)
 
 **Sora** (sora)
 
 - **skill2:** Storage: Stores excess healing received by the skill user, up to 5.36% of their Max HP. Stacks up to 5 time(s) and lasts for 15 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* (R2) overheal-storage resource — UNMODELED K2 Storage (5.36% Max HP per stack, 5 stacks, 15s): estimate = damage-neutral as worded (the prose names no consumption — stores only; survivability utility); recipe = HP-amount modeling + overheal detection + a per-caster storage pool (also unlocks K1's outgoing-healing amplifier, which only has something to scale once heal amounts exist); Tier 2
 
 **Sugar (Treasure)** (sugar)
 
@@ -601,15 +604,15 @@ Incoming healing ▲ 15.18% for 10 sec.
 **Tia** (tia)
 
 - **skill1:** stacks up to 2 time(s) and lasts for 12 sec (the second CDR stack + 12s stack window need a passive cover-regen proc — environmental: requires boss damage on cover + cover HP regeneration, unmodelable at the v1 damage-only scope; COLD: sim grants one −13s stack per burst, effective CD 27s vs the observed in-game ~20s)
-  - *Why:* See unit note / caveats
+  - *Why:* The SECOND stack + the 12s stack window need an external cover-regen proc the sim cannot produce → documented COLD residual (in-game effective CD is the observed ~20s, anis-star probe note 2026-07-13; the sim's 27s under-credits cadence, but team FB cadence in standard comps is gated by the B2/B3 40s CDs anyway, so the damage impact is ~nil outside double-B1 reentry comps)
 - **skill2:** ■ Activates after landing 5 normal attack(s). Affects self.
 Max HP of Cover ▲ 32.75% of the skill user's Max HP for 5 sec.
 Attract: Taunts all enemies for 5 sec.
   - *Why:* See unit note / caveats
 - **skill2:** Restores Cover HP by 21.41% of the skill user's final Max HP (the restore AMOUNT — no Cover HP pool at scope; the line's trigger-anchor role for skill1 IS enacted via the burstCast proxy)
-  - *Why:* See unit note / caveats
+  - *Why:* skill2: UNMODELED except its trigger-anchor ROLE — the cover-restore NUMBER (21.41%) has no pool to land in; the cover-Max-HP/taunt hitCount-5 block and the 21.96% lifesteal are defensive/inert (carried verbatim)
 - **skill2:** Recovers 21.96% of attack damage as HP over 10 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* skill2: UNMODELED except its trigger-anchor ROLE — the cover-restore NUMBER (21.41%) has no pool to land in; the cover-Max-HP/taunt hitCount-5 block and the 21.96% lifesteal are defensive/inert (carried verbatim)
 
 **Trina** (trina)
 
@@ -625,25 +628,18 @@ Attract: Taunts all enemies for 5 sec.
 **Viper (Treasure)** (viper)
 
 - **skill2:** Activates when entering Full Burst. Affects self. Vamp: Prevents being targeted by single-target attacks continuously. This effect is removed upon taking a direct hit. Invulnerable for 1 sec. — DEFENSIVE: no HP pool / targeting model / boss damage in v1, so prevents-targeting + invulnerable move nothing; only the offensive Vamp GATE for skill1's stacks is modeled (via the Full-Burst window, fbGate:'inFb').
-  - *Why:* See unit note / caveats
-- **burst:** Affects the enemy if the enemy is the stage target. DEF ▼ 19.83% for 10 sec. — INERT and UNENACTABLE: boss DEF enters the formula only as the fixed config constant cfg.bossDef (sim.ts:1719 baseAtk = max(0, effectiveAtk − cfg.bossDef)); no buff/debuff channel feeds it, so the engine cannot apply an enemy DEF reduction at all, and the magnitude is negligible regardless (measured boss DEF ≈140 → ~0.01% damage at scope-lock ATK, docs/data/damage-calculation.md). NOT modeled as damageTakenPct (a different bucket/math that would over-credit a ~19.83% team vuln the kit does not deliver) — phantom/guilty/marciana precedent. The stage-target sustained-damage line that shares this header IS modeled (the dot block).
-  - *Why:* burst: the DEF ▼ 19.83% line is inert (enemy DEF negligible at scope-lock; engine drops enemy DEF debuffs) and is NOT modeled — see unmodeled.burst.
+  - *Why:* ⚑1 (Vamp permanence, low): the kit's Vamp is granted on FB entry and 'removed upon taking a direct hit'; v1 has no boss damage, so once granted it is PERMANENT for the rest of the fight — strictly, S1b stacks should accrue on every shot after the first FB, not only inside FB windows
 
 **Zwei (Treasure)** (zwei)
 
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Other / see caveats (143)
+### Other / see caveats (106)
 
 **A2** (a2)
 
 - **burst:** If own HP dips below 40%, Mode B is removed.
-  - *Why:* See unit note / caveats
-
-**Ade: Agent Bunny** (ade-agent-bunny)
-
-- **burst:** Minimum Effective Range ▲ 55.56% for 10 sec.
   - *Why:* See unit note / caveats
 
 **Admi** (admi)
@@ -659,12 +655,7 @@ Attract: Taunts all enemies for 5 sec.
 **Arcana** (arcana)
 
 - **skill1:** The Magician: Cooldown of Skill 2 ▼ 75% for 15 sec.
-  - *Why:* See unit note / caveats
-
-**Bay (Treasure)** (bay)
-
-- **skill1:** Activates when using Burst Skill, only if self is alive. Affects all allies. Proportionally shares damage taken continuously.
-  - *Why:* See unit note / caveats
+  - *Why:* — SKIPS: skill1 'The Magician: Cooldown of Skill 2 ▼ 75%' → unmodeled (the schema's skill-CD stat `skillCooldownReductionSec` shortens interval-trigger timers only, and skill 2 is event-keyed to fullBurstEnd, so a CD reduction has nothing to act on — IF skill 2 carries an internal CD > the ~20s rotation the ungated 7.5% AD line would over-fire, assumed none)
 
 **Bready** (bready)
 
@@ -680,18 +671,12 @@ Attract: Taunts all enemies for 5 sec.
 - **skill1:** Affects self every 2 sec. Extrasensory ▼ 1%.
   - *Why:* skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES (live from t=0, expire at 60/90/150s — the derived >70%/>55%/>25% crossing times of the 0.5%/s drain — and REFRESH on her own burstCast, which recharges Extrasensory to 100%). Reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts. Replaces the prior permanent encoding that OVER-CREDITED never-burst comps (her ~1.19 board-hotness).
 - **burst:** Charges Extrasensory to 100%.
-  - *Why:* See unit note / caveats
-
-**Clay** (clay)
-
-- **skill2:** ■ Activates when entering Burst Stage 1. Affects all allies.
-Gains debuff immunity to 1 debuff(s) for 10 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* Burst ATK 73.16/10s on burstCast (her own cast — hard rule 6); 'Charges Extrasensory to 100%' folded into the trajectory derivation → unmodeled
 
 **Cocoa** (cocoa)
 
 - **burst:** Activates when Professional Tomato Sauce is at max stacks. Affects all enemies. ATK ▼ 13.59% for 10 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* Burst 'Professional Maid Leader' removes 1 debuff from all allies and — gated on Tomato Sauce at max stacks — drops all enemies' ATK by 13.59% for 10 sec; the engine EXPLICITLY drops enemy ATK▼/DEF▼ debuffs (src/engine/sim.ts: "other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0"), and the gate's stacking resource does not exist in v1
 
 **D: Killer Wife** (d-killer-wife)
 
@@ -700,27 +685,12 @@ Gains debuff immunity to 1 debuff(s) for 10 sec.
 
 **Delta: Ninja Thief** (delta-ninja-thief)
 
-- **skill2:** Effect 1: Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.
-  - *Why:* See unit note / caveats
 - **skill2:** Ninjutsu IFAK lasts for 4 sec.
-  - *Why:* See unit note / caveats
-- **skill2:** Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.
-  - *Why:* See unit note / caveats
-
-**Diesel (Treasure)** (diesel)
-
-- **skill1:** Activates when attacked in Attract status. Affects self.
-  - *Why:* See unit note / caveats
-- **skill1:** Activates after landing 150 normal attack(s) in Attract status. Affects self.
-  - *Why:* See unit note / caveats
-- **skill1:** Stack count of buffs ▲ 1.
   - *Why:* See unit note / caveats
 
 **Diesel: Winter Sweets** (diesel-winter-sweets)
 
 - **skill2:** Activates when an ally or self destroys an enemy's part. Affects all allies (except self).
-  - *Why:* See unit note / caveats
-- **skill2:** Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.
   - *Why:* See unit note / caveats
 - **skill2:** Activates when an ally or self destroys an enemy's part. Affects self.
   - *Why:* See unit note / caveats
@@ -744,11 +714,6 @@ Gains debuff immunity to 1 debuff(s) for 10 sec.
 - **skill1:** Required hit count: 100 time(s) in total, cumulative across all allies.
   - *Why:* skill1: ghost accrual is interval:6 (the 'Recurring interval: 6 sec' capture CAP; <=1 ghost/6s, pool peaks ~7 while bursting); the 100-cumulative-team-hit gate is folded as clearing inside 6s for a full team (⚑1). The ALTERNATIVE teamAmmo:100 accrual (no cap) over-credits ~1.7x HOT and is rejected here
 
-**Emma: Tactical Upgrade** (emma-tactical-upgrade)
-
-- **skill2:** Bonus effects when applying AS Formation to self — Effect 3: Affects self. Exposure activation disabled continuously.
-  - *Why:* See unit note / caveats
-
 **Epinel** (epinel)
 
 - **skill1:** Activates when killing an enemy. Affects self. Total Noob: ATK ▲ 13.86%, stacks up to 5 time(s) and lasts for 15 sec.
@@ -767,20 +732,6 @@ Gains debuff immunity to 1 debuff(s) for 10 sec.
 - **burst:** Current HP ▼ 1% every 1 sec, lasts for 10 sec.
   - *Why:* See unit note / caveats
 
-**Jackal** (jackal)
-
-- **skill1:** ATK ▼ 9.09% for 10 sec.
-  - *Why:* See unit note / caveats
-- **burst:** Burst Skill damage of skills with "Affects 1 enemy unit(s)" in the description ▲ 38.91% for 15 sec.
-  - *Why:* burst: the 38.91% Burst-Skill-Damage amp (scoped to skills whose description says 'Affects 1 enemy unit(s)', 15s per cast) is NOT modeled — the engine has no Burst-Skill-Damage bucket/stat and no description-text scope gate (trina precedent, same mechanic family). Teammates' single-target burst nukes cast within 15s of jackal's cast are missing the amp, so jackal comps read COLD by exactly that amount — a documented engine gap (⚑2), not a tuning residual.
-
-**Label** (label)
-
-- **skill2:** Activates at the start of battle. Affects all allies (except self). Damage taken from Electric Code enemies ▼ 70.4% for 5 sec. Activates 1 time(s) per battle.
-  - *Why:* See unit note / caveats
-- **skill2:** Damage taken from Electric Code enemies ▼ 70.4% continuously.
-  - *Why:* See unit note / caveats
-
 **Laplace: Ultimate Hero** (laplace-ultimate-hero)
 
 - **skill1:** Activates when performing a Full Charge attack. Affects self. Warm Up: Charge Speed ▲ 10% continuously. Stacks up to 5 times.
@@ -791,7 +742,7 @@ Gains debuff immunity to 1 debuff(s) for 10 sec.
 **Leona** (leona)
 
 - **skill1:** ■ Activates after 15 normal attack(s). Affects all allies with a Shotgun.
-  - *Why:* See unit note / caveats
+  - *Why:* MODEL: (S1-Roar) 'after 5 normal attacks' — engine hitCount adds hitsPerShot=10 per PULL (sim.ts:1727), so 5 pulls = count:50; allies critRatePct 2.62, durationSec 5, maxStacks 5
 
 **Liberalio** (liberalio)
 
@@ -800,26 +751,10 @@ Gains debuff immunity to 1 debuff(s) for 10 sec.
 - **skill2:** Activates at battle start. Affects self. Immunity to Increase/Decrease Charge Speed effects, continuous.
   - *Why:* skill2: her charge-speed immunity is only enforced against her OWN Skill 1 buff (excludeSelf); an EXTERNAL Charge Speed buff from a teammate (e.g. Maxwell, Alice) would wrongly speed her up in the sim.
 
-**Little Mermaid** (little-mermaid)
-
-- **skill1:** ■ Activates only when in Focusing status. Affects all allies.
-  - *Why:* See unit note / caveats
-- **skill1:** Focuses fire continuously.
-  - *Why:* See unit note / caveats
-- **skill2:** ■ Activates after landing 50 normal attacks. Affects the target if the target is in Bubble status.
-  - *Why:* See unit note / caveats
-
 **Maiden: Ice Rose** (maiden-ice-rose)
 
 - **skill1:** Activates when entering Full Burst with MP above 1. MP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.
   - *Why:* skill1: unparsed effect "MP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill."
-
-**Makima** (makima)
-
-- **skill2:** ■ Activates after landing 120 normal attack(s). Affects self.
-  - *Why:* See unit note / caveats
-- **skill2:** Cooldown of Burst Skill ▼ 11.58 sec.
-  - *Why:* See unit note / caveats
 
 **Mana** (mana)
 
@@ -832,15 +767,10 @@ Gains debuff immunity to 1 debuff(s) for 10 sec.
 - **skill1:** Removes Metal γ.
   - *Why:* See unit note / caveats
 
-**Mari** (mari)
-
-- **skill1:** Activates when landing a Full Charge attack. Affects all allies.
-  - *Why:* See unit note / caveats
-
 **Maxwell** (maxwell)
 
 - **skill2:** Activates when there are above 5 enemy units, excluding Nikkes. Affects self. Critical Rate ▲ 4.83%. Critical Damage ▲ 13.91%.
-  - *Why:* See unit note / caveats
+  - *Why:* Skill2 (Crit Rate 4.83% + Crit Damage 13.91%) is gated on 'above 5 enemy units, excluding Nikkes'; in a single-boss solo raid that condition is never met, so the parser correctly drops it (deliberately left inactive)
 
 **Mihara: Bonding Chain** (mihara-bonding-chain)
 
@@ -852,7 +782,7 @@ Gains debuff immunity to 1 debuff(s) for 10 sec.
 **Milk: Blooming Bunny** (milk-blooming-bunny)
 
 - **skill2:** ■ Activates only when in Embarrassment status. Affects self.
-  - *Why:* See unit note / caveats
+  - *Why:* Modes added: 'auto (no Embarrassment)' [default — user validation runs are full-auto] keeps only S2's burst DoT + burst buffs; 'manual (Embarrassment cycle)' preserves the previous permanent-cycle model
 - **skill2:** Pierce Damage ▲ 64.7% continuously.
   - *Why:* See unit note / caveats
 - **burst:** Overconfident, Huh?!:
@@ -871,8 +801,6 @@ Gains debuff immunity to 1 debuff(s) for 10 sec.
 
 **Moran (Treasure)** (moran)
 
-- **skill2:** Activates when HP falls below 20%. Affects self. Effects vary according to the number of uses. Perseverance: Only one effect is triggered at a time.
-  - *Why:* See unit note / caveats
 - **burst:** Additional Effect(s):
   - *Why:* See unit note / caveats
 
@@ -888,36 +816,22 @@ Deals 23.23% of final ATK as sustained damage every 1 sec for 15 sec.
 **Nayuta** (nayuta)
 
 - **skill2:** Memory Absorption: Hit Rate ▲ 1.4%, stacks up to 30 time(s) and immune to stack count increase or decrease effects continuously. This effect cannot be removed.
-  - *Why:* See unit note / caveats
+  - *Why:* The stack's own Hit Rate 1.4%/stack = hitRatePct 42 (the 30-stack cap) with rampSec 90 — the kit's +1-stack-per-3s accrual reaches cap at 90s, so the ramp reproduces the real opening-stacks curve instead of full-from-t0 (enacted 2026-08-09, owner faithfulness ruling; kit-text-literal magnitude; the kit's 'immune to stack count increase or decrease effects' clause means ally addStack effects must never bump this buff — no carrier targets her today)
 
 **Neon** (neon)
 
 - **skill1:** Activates when killing an enemy. Affects 2 ally unit(s) with the highest final ATK.
 Critical Rate ▲ 3.56% for 5 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* ESTIMATE: in real multi-add content kills are frequent, so in-game the 2 highest-final-ATK allies run +3.56% crit at near-full uptime (5s refresh vs frequent kills); at scope the value is 0
 
 **Neon: Vision Eye** (neon-vision-eye)
 
 - **skill2:** Firepower Gauge bookkeeping: gains 100 Firepower Gauge at battle start; +2 per normal attack during Firepower Charge; +45 when Firepower Charge ends (NOT a block — the steady-state consequence is ABSORBED into the skill1 Super block's everyN 3 / everyNOffset 1: start at 100 → Super on her burst casts 1, 4, 7…; video-confirmed cast-by-cast, Run B)
-  - *Why:* See unit note / caveats
-- **skill2:** When Full Burst ends: 'Burst Gauge filling speed ▲5% × Firepower Gauge charge for 5 sec' is MODELED (enacted 2026-08-09, owner faithfulness ruling) as two everyN:3 self burstGenPct blocks on HER OWN burstCast + delaySec 10 (≈ the FB end of the window her cast opened — cast-keyed, so a co-B3's Full Bursts never fire it), aligned to the Super cycle: after a Super cast the gauge is 0 (offset skipped, no buff); after the 1st charge window burstGenPct 330 for 5s (⚑ 5 × [1 cast + 45 end + 2×~10 in-window normals] — the normal count is a cadence estimate); after the 2nd, burstGenPct 500 (5 × the 100 cap, kit-structural). Empirically does not consume the Firepower cycle — every-3rd-Super held on video
-  - *Why:* See unit note / caveats
+  - *Why:* Gauge starts at 100 (S2) and takes 2 charge-bursts to refill -> Super fires on her burst casts 1, 4, 7 (everyN 3, everyNOffset 1 — the engine feature added for this)
 - **burst:** Firepower Gauge below 100: activates Firepower Charge, charging the gauge for 10 sec (bookkeeping — ABSORBED into the everyN 3 alternation)
-  - *Why:* See unit note / caveats
+  - *Why:* The FB-end burst-gen line is MODELED (2026-08-09): 'Burst Gauge filling speed ▲5% × Firepower Gauge charge for 5s' = everyN:3 self burstGenPct 330/500 on her OWN burstCast + delaySec 10 (≈ her FB end; co-B3 windows never fire it), zero after a Super (gauge drained); ⚑ in-window normal count estimated
 - **burst:** Firepower Gauge at 100: consumes 100 Firepower Gauge on activating Super Firepower (bookkeeping — ABSORBED into the everyN 3 alternation)
-  - *Why:* See unit note / caveats
-
-**Pepper** (pepper)
-
-- **skill2:** ATK ▼ 3.55% for 5 sec.
-  - *Why:* See unit note / caveats
-
-**Poli (Treasure)** (poli)
-
-- **skill2:** Equally shares damage taken for 10 sec.
-  - *Why:* See unit note / caveats
-- **skill2:** Activates when Police Badge ends. Affects self.
-  - *Why:* See unit note / caveats
+  - *Why:* The FB-end burst-gen line is MODELED (2026-08-09): 'Burst Gauge filling speed ▲5% × Firepower Gauge charge for 5s' = everyN:3 self burstGenPct 330/500 on her OWN burstCast + delaySec 10 (≈ her FB end; co-B3 windows never fire it), zero after a Super (gauge drained); ⚑ in-window normal count estimated
 
 **Prika** (prika)
 
@@ -935,7 +849,7 @@ Critical Rate ▲ 3.56% for 5 sec.
 - **burst:** Stuns for 3 sec.
   - *Why:* See unit note / caveats
 - **burst:** Designated Target: ATK ▼ 5.02% for 10 sec. (the STATUS is modeled via targetStatus; its ATK-down content is inert in v1 — the boss never attacks)
-  - *Why:* See unit note / caveats
+  - *Why:* STATUS WINDOW: durationSec 10 is DATAMINED, not inferred — the burst line "Designated Target: ATK 5.02% down for 10 sec" IS the status line, so the 10s is the status's own window
 
 **Quiry** (quiry)
 
@@ -948,23 +862,16 @@ Critical Rate ▲ 3.56% for 5 sec.
 ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v1 boss deals no damage; the enemy-buff branch accepts only damageTakenPct/distributedDamagePct > 0), offensively inert by construction; the nearest-wrong mapping (damageTakenPct) is a different mechanic (boss-takes-more) that would over-credit the whole team.
   - *Why:* skill1: the 'after landing 5 normal attacks → target ATK ▼ 7.95%' line is UNMODELED — the engine drops enemy ATK debuffs (they cannot affect damage dealt at DEF=0); NOT damageTakenPct (that is 'boss takes more damage' — a different mechanic)
 
-**Rapi** (rapi)
-
-- **skill1:** ATK ▲ 21.81% for 20 sec.
-  - *Why:* See unit note / caveats
-
 **Rapi: Red Hood** (rapi-red-hood)
 
 - **skill2:** Attachable Projectile — Max Ammo: 1 (COSMETIC per owner ruling 2026-08-04: one rocket 'loaded' at meter-full fires alongside the bullet on the first frame after 100%; not reflected in game, no damage effect — nothing to model)
-  - *Why:* See unit note / caveats
+  - *Why:* Max Ammo:1 reclassified COSMETIC (meter-full loads one rocket alongside the bullet; not reflected in game, no damage effect)
 
 **Raven** (raven)
 
 - **skill2:** Activates when an ally or self destroys an enemy's part. Affects self if self is not in A.N. Mode status.
   - *Why:* See unit note / caveats
 - **skill2:** Removes Vital Attack.
-  - *Why:* See unit note / caveats
-- **burst:** Effect 1: Removes Single Point Attack.
   - *Why:* See unit note / caveats
 
 **Red Hood** (red-hood)
@@ -983,7 +890,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v
 - **skill1:** Attack range of Annihilation State's additional effect ▲ 500% for 9 sec.
   - *Why:* skill1: the Full-Burst Annihilation-State ally buff (+1 unit / +500% range / casterAtkPct 17.6) is UNMODELED (⚑2) — needs an ally-self-mode gate + cross-unit param modulation; 0% outside an Eva team
 - **skill1:** ATK ▲ 17.6% of the skill user's ATK for 9 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* (2) Annihilation-State ally buff — see UNMODELED S1 bullet3; estimate 0% in any non-Eva comp, a 17.6%-caster-ATK flat buff to the Annihilation carrier(s) in an Eva team; recipe: add an ally-status/self-mode gate + cross-unit param modulation, record an Eva team; Tier 2
 - **skill2:** ■ Activates when entering Full Burst. Affects all allies with machine guns who have used their Burst Skills.
   - *Why:* skill2: 'Machine Gun Ramp-Up Speed ▲100%' is UNMODELED (⚑3) — the engine models the MG wind-up ladder itself (measured) but has no wind-up-SPEED modifier stat (asuka-wille ⚑2); the omission is damage-relevant only in comps with an MG burst-caster ally (the line targets MG allies who have used their Burst Skill), 0% in current graded comps
 - **skill2:** Machine Gun Ramp-Up Speed ▲ 100% for 13 sec.
@@ -1003,23 +910,11 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v
 
 **Sakura** (sakura)
 
-- **skill2:** When attacking an enemy projectile, damage to that projectile ▲ 7.74% continuously.
-  - *Why:* See unit note / caveats
-- **burst:** Damage dealt by Wind Code enemies ▼ 90.72% for 30 sec. Activates 1 time(s) per battle.
-  - *Why:* See unit note / caveats
 - **burst:** Activates when Cherry Blossom Tea is at max stacks. Affects all allies.
   - *Why:* See unit note / caveats
 
 **Sakura: Bloom in Summer** (sakura-bloom-in-summer)
 
-- **skill1:** Activates when an ally or self destroys an enemy's part. Affects self.
-  - *Why:* See unit note / caveats
-- **skill1:** Sustained Damage ▲ 5.1% for 30 sec.
-  - *Why:* See unit note / caveats
-- **skill1:** Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.
-  - *Why:* See unit note / caveats
-- **skill1:** Dancing Flower Duration ▲ 10.02 sec.
-  - *Why:* See unit note / caveats
 - **skill1:** Activates when an ally or self destroys an enemy's part. Affects all enemies who are in Sakura Petals status.
   - *Why:* skill2: force-cast at t=0 (S1 'Forcefully uses Skill 2') AND re-cast every 30s on its datamined CD — Sakura Petals 256%/s runs 6×15s windows (90s uptime); resolved 2026-07-20 (owner), was a single t=0–15 window
 - **skill1:** Sakura Petals Duration ▲ 10.02 sec.
@@ -1033,22 +928,22 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v
 **Signal** (signal)
 
 - **skill1:** ■ Activates after landing 60 normal attack(s). Affects the target(s).
-  - *Why:* See unit note / caveats
+  - *Why:* SKILL1 'Attack Signal' ('■ Activates after landing 60 normal attack(s)
 - **skill1:** ATK ▼ 5.94% for 5 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* ⚑ LIST: [⚑1] (ENGINE GAP, minor — the S1 cluster) hitCount:60 → enemy 'DEF ▼ 5.94% / ATK ▼ 5.94% for 5s': estimate = ~8.3 flat boss DEF (5.94% of the 140-DEF scope-lock boss) off every hit during the 5s window at near-permanent uptime (SMG ~24 hits/s ⇒ 60 hits ≈ 2.5s, so the counter refreshes well inside the 5s expiry while firing) — a small team-wide lift, honestly absent; the ATK▼ half is damage-ZERO in v1 (the boss never attacks — a survivability lever only in real fights)
 
 **Snow White: Heavy Arms** (snow-white-heavy-arms)
 
 - **skill1:** Auto Fire Ready — Function: Loads Seven Dwarves with ammo. Max ammo loaded by Auto Fire Ready: 5. Deactivation condition: Performing a normal attack.
-  - *Why:* See unit note / caveats
+  - *Why:* Charge-SR with a 'Seven Dwarves' auto-fire that piggybacks every full-charge shot, plus a burst 'Seven Dwarves Fully Active' mode (2 uses)
 - **skill1:** ■ Activates when performing a normal attack while not in Full Burst. Affects self. Removes Seven Dwarves Fully Active.
-  - *Why:* See unit note / caveats
+  - *Why:* Charge-SR with a 'Seven Dwarves' auto-fire that piggybacks every full-charge shot, plus a burst 'Seven Dwarves Fully Active' mode (2 uses)
 - **burst:** Seven Dwarves Fully Active — Function: Increases max number of Lock-On targets and max ammo loaded by Auto Fire Ready, but also increases Charge Time.
-  - *Why:* See unit note / caveats
+  - *Why:* Fully Active mode (2 post-burst shots at 3.2s charge): Auto Fire Ready loads 15 ammo -> volley 105.59x15 per shot; the EXTRA over baseline (1583.85-527.95 = 1055.9% per swap shot) is a swapGate:'swapped' shotFired flat hit riding ONLY her two swapped full-charge shots INSIDE the FB window (2026-07-13 volley-placement fix, panel-ACCEPTED: COMMUNITY twice-confirmed — gamewith JP holds the Fully Active buffs per fully-charged shot 1発間維持, prydwen 7->15-hit structure — replacing the old burstCast 2111.8% lump at cast-instant, which missed seq +158.4 / own burst +84.48 / FB-era ATK / entry auras and stranded her at 0.78-0.83 after the measured cast-boundary revert; she graded 0.95-1.06 in run C under the pre-revert era, and lands ~0.96-1.00 again with this fix; per-shot expression crits like her baseline procs, uses-based delivery follows the shots so a swap shot lost to the 6.5s window also loses its volley — the residual uses-vs-time question is logged as H2 in experiment-harness-ai.md)
 - **burst:** Effect 2: Max Lock-On targets ▲ 10 continuously.
   - *Why:* See unit note / caveats
 - **burst:** ■ Affects all destructible projectiles. Deals 41.9% of final ATK as damage.
-  - *Why:* See unit note / caveats
+  - *Why:* under zwei's team Pierce Damage); Fully-Active use-count bookkeeping and normal-attack removal (sim always full-charges); burst's 41.9% to destructible projectiles (none vs single boss)
 
 **Soda** (soda)
 
@@ -1058,7 +953,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v
 **Soline: Frost Ticket** (soline-frost-ticket)
 
 - **skill1:** Removes First Train Discount.
-  - *Why:* See unit note / caveats
+  - *Why:* SKIPPED → `unmodeled` (verbatim; reasons here): (S1 blk3) 'Removes First Train Discount' — pure ticket-economy bookkeeping (toggles whether the S2 emergency heal consumes a ticket); no damage, no stat, no modeled consumer; inert under scope-lock because the consuming heal never fires anyway
 - **skill2:** ■ Activates when the HP of anyone in the squad is lower than 15%. Affects the target if the target has any tickets.
   - *Why:* See unit note / caveats
 - **skill2:** Ticket count ▼ 1.
@@ -1066,57 +961,45 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v
 - **skill2:** ■ Activates at the start of battle. Affects all allies.
   - *Why:* See unit note / caveats
 - **skill2:** First Train Discount for 6 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* (S2 blk2) 'First Train Discount for 6 sec' + Function text — the same ticket-consumption bookkeeping, gating a heal that never fires; no damage path
 - **skill2:** Function: The effects of I'll Help You Board the Train! will not consume tickets.
-  - *Why:* See unit note / caveats
+  - *Why:* (S2 blk2) 'First Train Discount for 6 sec' + Function text — the same ticket-consumption bookkeeping, gating a heal that never fires; no damage path
 
 **Sora** (sora)
 
-- **skill1:** ■ Activates at the start of battle. Affects self.
-Outgoing healing ▲ 35.2% continuously.
-  - *Why:* See unit note / caveats
-- **skill2:** ■ Activates when an ally or self destroys an enemy's part. Affects all allies.
-  - *Why:* See unit note / caveats
 - **skill2:** ATK ▲ 23.74% of the skill user's ATK for 15 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* Its ATK line is casterAtkPct-shaped (23.74% of SORA's ATK) if ever modeled — NOT atkPct per target; materializing it on a substitute trigger is the nearest-wrong model the spec test discriminates
 
 **Takina** (takina)
 
 - **skill2:** Deals Stun to all enemies for 2 sec (boss-inert: the sim's boss does not fire/charge/reload, so a stun on it changes nothing; genuinely-skippable class)
-  - *Why:* See unit note / caveats
+  - *Why:* S2 is a 15s-cooldown pulse (cooldown NOT in the DB text; Prydwen COMMUNITY ⚑ confirms 15s): enemies Damage Taken 10.09%/5s + 2s stun (boss-inert, UNMODELED), allies True Damage 140.49%/10s
 
 **Trina** (trina)
 
-- **burst:** Spread Roots: Burst Skill damage of skills with "Affects all enemies" ▲ 435.6% for 5 sec.
-  - *Why:* burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).
 - **burst:** Changes Spread Roots to Wilted Roots.
-  - *Why:* burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).
+  - *Why:* burst: Spread Roots is MODELED (2026-08-10, faithfulness pass): burstSkillAoeDamagePct 435.6 to all allies for 5s on her burstCast — the kit gates it on 'enemy count aside from Nikkes is 1', which is ALWAYS true in the solo-raid sim, so no gate is encoded. Read only by burst-slot hits tagged burstDesc:'allEnemies' (scarlet/liberalio nukes tagged; further carriers tag as reviewed). As a B2 her cast precedes the chain's B3 by under a second, so the window covers the nuke. The Wilted Roots branch (enemy count ≥2) is unreachable at scope and stays unmodeled verbatim. ⚑ additive Damage-Up placement per the '○○ Damage ▲' family rule (SSOT damage-formula §2); a popup read of an amped all-enemies nuke pins it.
 - **burst:** Wilted Roots: Burst Skill damage of skills with "Affects all enemies" ▲ 64.46% for 5 sec.
   - *Why:* burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).
 
 **Velvet** (velvet)
 
 - **skill1:** Bullet Snatch (battle start + Burst Stage 2): removes 5% ammo from all enemies; fills own ammo pouch to 6,000 rounds.
-  - *Why:* See unit note / caveats
+  - *Why:* Ammo pouch: refills to 6000 at battle start and on every Burst Stage 2 entry (team rotation state), and per-rotation spend (100/shot outside FB, 300/shot in FB, 300 per proc) stays well under 6000, so pouch bookkeeping is dropped — every ammo-gated effect fires at full uptime
 - **skill1:** Full Charge attack while not in Full Burst: expends 100 ammo from the ammo pouch.
-  - *Why:* See unit note / caveats
+  - *Why:* CORRECTION vs draft: S1's self ATK 30.5% + Attack Damage 30.5% (3s, refreshed per full-charge shot) is text-gated 'while NOT in Full Burst' — the draft ignored the gate, keeping it up through FB windows (72% uptime, where the +50% FB multiplier lives)
 
 **Volume** (volume)
 
 - **skill1:** Affects self when killing an enemy.
-  - *Why:* See unit note / caveats
+  - *Why:* MODEL — S1: 'Affects self when killing an enemy
 - **skill1:** ATK ▲ 12.6% for 5 sec.
   - *Why:* skill1: the kill-gated ATK ▲ 12.6% is UNMODELED — it can never trigger against the raid boss (the boss does not die mid-fight); recorded verbatim, not encoded as a passive/shotFired ATK proxy
 
 **Yan** (yan)
 
 - **burst:** Forced movement toward the center of attack range, lasts for 2 sec. (crowd-control PULL on normal enemies; v1 fights a single scope-lock boss with no enemy movement/position model and bosses are not pulled, so the line moves no damage. NOT re-encoded as a damage or range buff — that would over-credit a benefit the kit does not deliver; viper/phantom/marciana precedent.)
-  - *Why:* See unit note / caveats
-
-**Yuni** (yuni)
-
-- **burst:** Immobilizes the target(s) for 5 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* BURST 'Fat Cat': burstCast → enemy flatDamage 348.73 (burst bucket; 'enemies within attack range' collapses to the single scope-lock boss)
 
 **Zwei (Treasure)** (zwei)
 
@@ -1129,7 +1012,7 @@ Outgoing healing ▲ 35.2% continuously.
 - **burst:** Cooldown: 20 s
   - *Why:* See unit note / caveats
 
-### Missing engine primitive / trigger (71)
+### Missing engine primitive / trigger (94)
 
 **A2** (a2)
 
@@ -1144,12 +1027,12 @@ Outgoing healing ▲ 35.2% continuously.
 **Admi** (admi)
 
 - **skill2:** Damage Taken ▼ 28.65% for 10 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* Damage Taken ▼ 28.65% for 10 sec' — ally received-damage mitigation: no incoming damage and no ally HP pool to mitigate; the ONLY damageTakenPct primitive is a BOSS debuff (positive = boss takes MORE) — wrong direction/target, so it is NOT used (encoding it would manufacture a phantom team damage gain — noise precedent); the 'highest FINAL ATK' targeting clause (alliesTopAtk byFinalAtk) is representable but moot with its inert effect
 
 **Anchor: Innocent Maid** (anchor-innocent-maid)
 
 - **skill1:** Three times: Stack count of debuffs ▼ 1.
-  - *Why:* See unit note / caveats
+  - *Why:* [tier 3] 'Stack count of debuffs ▼ 1' = cleanse — genuinely-skippable class (debuff-cleanse, partless boss applies no modeled debuffs), verbatim in unmodeled; as the LAST tier it needs no placeholder (steps 1..2 still fire correctly on 3rd+ activations)
 
 **Anis** (anis)
 
@@ -1159,7 +1042,12 @@ Outgoing healing ▲ 35.2% continuously.
 **Anis: Star** (anis-star)
 
 - **burst:** Explosion Radius ▲ 100% for 10 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* DEF 55.01% and Explosion Radius 100% remain documented UNMODELED — defensive/AoE-radius, offensively inert; the hasB1 1.26% full-charge heal is now modeled event-only (crown-recovery tandem, enacted 2026-08-09 — the fable reviewer independently re-derived the same tandem-heal concern).]
+
+**Ark Ranger Black** (ark-ranger-black)
+
+- **skill1:** Charges battery by 50% continuously, up to 100%. This effect cannot be removed. (part-destroy trigger — no destructible parts on the partless scope-lock boss; never fires in scope-lock)
+  - *Why:* In the scope-lock (partless boss), the part-destroy trigger NEVER fires, so the battery starts at 0 and the ONLY way to charge it is the burst's Emergency Charge Protocol (Battery ▲100% → Transformation → Battery ▼50% → battery=50% → drains at 5%/s → Transformation lasts 10s)
 
 **Asuka: WILLE** (asuka-wille)
 
@@ -1168,6 +1056,8 @@ Outgoing healing ▲ 35.2% continuously.
 
 **Bay (Treasure)** (bay)
 
+- **skill1:** Activates when using Burst Skill, only if self is alive. Affects all allies. Proportionally shares damage taken continuously.
+  - *Why:* || DELIBERATELY UNMODELED (all seven VERBATIM in `unmodeled`, never an `ignored` drop): S1 'Proportionally shares damage taken continuously' (allies — no incoming-damage model, no redistribution primitive); S2 'shares damage taken' onto SELF'S COVER (cover is not a sim entity); S2 cover-HP HoT 2.88%/1s x5s at Full Burst END (cover repair is NOT a Nikke recovery — a heal ticks:5 self-encoding would falsely pulse on-recovery consumers at every FB end); S2 Treasure 'entering Burst Stage 1 + cover destroyed → self 20% Max HP' (the cover-destroyed gate can never be satisfied at scope — boss deals no damage); burst Treasure 'Rebuild Cover with 20% HP once per battle' (cover + destroyed gate); burst 'Max HP of Cover ▲ 18% for 20s' (COVER Max HP, not unit Max HP — a targetMaxHpPct/maxHpFlat encoding would pollute the HP→ATK feed path); burst 'Damage Taken ▼ 8.87% for 10s' on ALL ALLIES (defensive mitigation — NOT the damageTakenPct stat, which is a boss-targeted amplifier with the wrong direction and target; v1 boss deals no damage so ally mitigation is inert by construction)
 - **burst:** Affects all allies. Damage Taken ▼ 8.87% for 10 sec.
   - *Why:* skill2/burst are EMPTY by construction, not by omission: every line there is out-of-domain for the DPS sim — cover is not an entity the sim models (damage-share onto cover, cover-HP HoT, cover rebuild, cover Max HP), the boss deals no damage (ally Damage Taken ▼ 8.87% has nothing to reduce), and the cover-destroyed gates can never be satisfied at scope. All seven lines live VERBATIM in unmodeled.
 
@@ -1180,12 +1070,18 @@ Explosion Radius ▲ 9.55% for 5 sec.
 **Biscuit** (biscuit)
 
 - **skill2:** Invincible for 5 sec. Activates 2 time(s) per battle. — UNMODELED (inert): defensive invincibility on a Defender ally whose HP falls below 50%; v1 has no damage-taken / HP-threshold model (immortal boss), so the trigger is indeterminate and can never legitimately fire. No invincibility primitive exists in the schema.
-  - *Why:* See unit note / caveats
+  - *Why:* S2 ('when a Defender ally's HP falls below 50%') stays UNMODELED: v1 has no HP pool / damage-taken model (immortal boss), so the HP-threshold trigger is indeterminate and can never legitimately fire — both the invincibility and the 23.26% heal share that un-fireable trigger (fable concurred)
 
 **Claire** (claire)
 
 - **burst:** Removes 1 debuff(s).
   - *Why:* See unit note / caveats
+
+**Clay** (clay)
+
+- **skill2:** ■ Activates when entering Burst Stage 1. Affects all allies.
+Gains debuff immunity to 1 debuff(s) for 10 sec.
+  - *Why:* S2 'WAKE UP!' — first block 'entering Burst Stage 1 → all allies: debuff immunity to 1 debuff(s) for 10 sec' is UNMODELED verbatim: v1 models no ally debuff list (the boss applies nothing), so no immunity is enactable (claire's 'Removes 1 debuff(s)' precedent) — and its stageEnter trigger is dropped WITH it (nothing rides it)
 
 **Cocoa** (cocoa)
 
@@ -1194,7 +1090,7 @@ Explosion Radius ▲ 9.55% for 5 sec.
 - **skill2:** Activates when attacking with Full Charge. Affects self. Professional Tomato Sauce: Damage Taken ▼ 4.37%, stacks up to 15 time(s) and lasts for 5 sec.
   - *Why:* ⚑ Self Damage Taken ▼4.37% per full-charge attack (15 stacks, 5 sec) is UNMODELED, tier out-of-domain: v1 models no incoming damage, so a damage-taken modifier has no consumer. Estimate if it ever mattered: with SR cadence (60-frame charge, 6 ammo, 141 reload) stacks would saturate ~25-30s into the fight and stay up (UNMEASURED derivation). Its only consumer is the burst's max-stacks gate — both are unmodeled together. Nearest-wrong encoding to avoid: the schema's damageTakenPct is a BOSS debuff (positive = boss takes MORE damage); writing this self ▼ line onto the boss would swing team damage up to 15×4.37% ≈ 65.55%.
 - **burst:** Affects all allies. Removes 1 debuff(s).
-  - *Why:* See unit note / caveats
+  - *Why:* Burst 'Professional Maid Leader' removes 1 debuff from all allies and — gated on Tomato Sauce at max stacks — drops all enemies' ATK by 13.59% for 10 sec; the engine EXPLICITLY drops enemy ATK▼/DEF▼ debuffs (src/engine/sim.ts: "other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0"), and the gate's stacking resource does not exist in v1
 
 **Crow** (crow)
 
@@ -1213,6 +1109,25 @@ ATK ▼ 19.93% for 10 sec. — no sim channel: the enemy-buff path admits only d
 
 - **burst:** Attract: Taunts all enemies for 10 sec.
   - *Why:* burst: both 'Decoy' (avatar) and 'Attract' (taunt) are UNMODELED — no avatar/threat/aggro model; the burst deals no damage and must never be encoded as a shield (shielded-trigger contamination)
+
+**Delta: Ninja Thief** (delta-ninja-thief)
+
+- **skill2:** Effect 2: Attract: Taunt all enemies continuously.
+  - *Why:* skill2: SOLO mode — battle-start shield event (maxHpPct 12.25, 10s; event-only, no HP pool — fires `shielded` triggers on self; no in-kit consumer but kept per hard rules 2-3) + hitCount-200 shield ('when performing 200 normal attack(s) while in Attract' — Attract ≡ the solo branch); Attract/Taunt itself unmodeled (taunt, partless boss unaffected)
+
+**Diesel (Treasure)** (diesel)
+
+- **skill1:** Activates when attacked in Attract status. Affects self.
+  - *Why:* UNMODELED (verbatim, L2/L3/L8 — all inert for DPS at scope): S1 'when attacked in Attract status -> Recovers 12.96% final Max HP' (the `attacked` trigger exists, types.ts, but no incoming-damage event feeds it in v1; boss deals no damage) and 'after landing 150 normal attacks in Attract status -> Stack count of buffs ▲1' (gated on an unmodeled self-Attract status; the +1 grant is expressible via `addStack` but the Attract-window gate is not, and the grant-vs-cap-raise reading of this sentence is disputed on record — rupee ⚑4); burst 'Attract: Taunt all enemies for 10s' (no taunt/Attract primitive; tanking is out of domain for a DPS sim)
+- **skill1:** Activates after landing 150 normal attack(s) in Attract status. Affects self.
+  - *Why:* UNMODELED (verbatim, L2/L3/L8 — all inert for DPS at scope): S1 'when attacked in Attract status -> Recovers 12.96% final Max HP' (the `attacked` trigger exists, types.ts, but no incoming-damage event feeds it in v1; boss deals no damage) and 'after landing 150 normal attacks in Attract status -> Stack count of buffs ▲1' (gated on an unmodeled self-Attract status; the +1 grant is expressible via `addStack` but the Attract-window gate is not, and the grant-vs-cap-raise reading of this sentence is disputed on record — rupee ⚑4); burst 'Attract: Taunt all enemies for 10s' (no taunt/Attract primitive; tanking is out of domain for a DPS sim)
+- **skill1:** Stack count of buffs ▲ 1.
+  - *Why:* UNMODELED (verbatim, L2/L3/L8 — all inert for DPS at scope): S1 'when attacked in Attract status -> Recovers 12.96% final Max HP' (the `attacked` trigger exists, types.ts, but no incoming-damage event feeds it in v1; boss deals no damage) and 'after landing 150 normal attacks in Attract status -> Stack count of buffs ▲1' (gated on an unmodeled self-Attract status; the +1 grant is expressible via `addStack` but the Attract-window gate is not, and the grant-vs-cap-raise reading of this sentence is disputed on record — rupee ⚑4); burst 'Attract: Taunt all enemies for 10s' (no taunt/Attract primitive; tanking is out of domain for a DPS sim)
+
+**Diesel: Winter Sweets** (diesel-winter-sweets)
+
+- **skill2:** Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.
+  - *Why:* SKIPPED -> unmodeled (verbatim): the part-gated lines (Mute Noise-Pollution immunity x3 to allies-except-self, and self Sustained 68.04% for 15s) — the v1 boss is partless AND the engine has no part-destruction event, so the trigger never fires; the Highlight-gated burst lines (Noise Pollution Hit Rate -100% for 1s to allies-except-self, and Mute stacks -1) — see flag2
 
 **E.H.** (e-h)
 
@@ -1254,13 +1169,6 @@ DEF ▼ 29% for 5 sec. — no sim channel: the enemy-buff path admits only damag
 - **burst:** Special note: Fires an Exploding Bullet dealing area-of-effect damage. (splash radius inert vs the single partless boss; the cannon HIT itself is modeled as the weaponSwap shot)
   - *Why:* ⚑ MEASUREMENT-GATED (tier 2): the burst cannon swap DURATION is kit-silent — the kit gives 'Max Ammunition Capacity: 1 round' but states neither a 'for N sec' window nor 'deactivates when all rounds fired'. Estimate: durationSec 10 (the Full-Burst-window convention shared with e-h / red-hood); the 1-round magazine cycles over that window (fire / 141f reload / fire …) for ~6 true-damage cannon shots per burst. A shorter real window fires fewer shots (damage is roughly linear in shot count: 10s ≈ 6 shots ≈ double the single-shot reading). Recipe: an eunhwa-tu recording — count cannon popups per burst and the frame her base SR fire resumes; rescale durationSec to match.
 
-**Exia (Treasure)** (exia)
-
-- **skill1:** ■ Activates when the last bullet hits the target. Affects the target if the skill user is in Collect Hacking Code. ATK ▼ 13.77% for 5 sec. — no sim channel: the enemy-buff path admits only damageTakenPct/distributedDamagePct and the boss deals no damage, so an enemy ATK▼ moves nothing (sim.ts, DEF=0 basis)
-  - *Why:* burst: the enemy ATK▼/DEF▼ lines (skill1 13.77%/13.77%, burst 2.71%) are game-real but unenactable — the sim's DEF=0 basis drops enemy ATK▼/DEF▼ at dispatch; they are recorded verbatim in unmodeled
-- **skill1:** DEF ▼ 13.77% for 5 sec. — no sim channel: enemy DEF▼ is dropped at dispatch on the DEF=0 basis (sim.ts 'other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0')
-  - *Why:* burst: the enemy ATK▼/DEF▼ lines (skill1 13.77%/13.77%, burst 2.71%) are game-real but unenactable — the sim's DEF=0 basis drops enemy ATK▼/DEF▼ at dispatch; they are recorded verbatim in unmodeled
-
 **Folkwang** (folkwang)
 
 - **skill1:** Incoming healing ▲ 45.7% for 10 sec.
@@ -1296,6 +1204,13 @@ Removes Fulfillment of Righteousness.
 - **skill1:** Activates when attacking with Full Charge. Affects self. Hero Vision: Explosion Radius ▲ 3.57%, stacks up to 5, 15s.
   - *Why:* skill1: Explosion Radius ▲ is inert vs the partless boss; its stacks only gate the burst true damage (assumed maxed)
 
+**Little Mermaid** (little-mermaid)
+
+- **skill1:** ■ Activates only when in Focusing status. Affects all allies.
+  - *Why:* skill1 overridden to recover the parser-dropped gauge fill: block1 'Focusing status / focuses fire' has no numeric effect and is skipped; block2 (team burst-CDR 7.48s on Full Burst end) and block3 (team Attack Damage 4% for 10s on Full Burst enter) are re-included verbatim; block4 'Fills Burst Gauge 37% each time allies expend 400 ammo' is a TEAM-ammo trigger with no engine equivalent, modeled conservatively as this unit's own hitCount 400 (she is an SMG, 1 hit/shot, so her hits == her ammo)
+- **skill1:** Focuses fire continuously.
+  - *Why:* skill1 overridden to recover the parser-dropped gauge fill: block1 'Focusing status / focuses fire' has no numeric effect and is skipped; block2 (team burst-CDR 7.48s on Full Burst end) and block3 (team Attack Damage 4% for 10s on Full Burst enter) are re-included verbatim; block4 'Fills Burst Gauge 37% each time allies expend 400 ammo' is a TEAM-ammo trigger with no engine equivalent, modeled conservatively as this unit's own hitCount 400 (she is an SMG, 1 hit/shot, so her hits == her ammo)
+
 **Ludmilla** (ludmilla)
 
 - **skill1:** ■ Activates when the last bullet hits the target. Affects the target.
@@ -1306,10 +1221,10 @@ ATK ▼ 8.4% for 10 sec. — UNMODELED (inert ⚑2): enemy ATK▼ debuff — the
   - *Why:* skill1: the boss DEF▼8.4%/ATK▼8.4% debuffs are declared GAPs (⚑1/⚑2) — inexpressible at scope lock (bossDef = 0; applyEffect drops enemy ATK▼/DEF▼), zero damage impact on this basis, real team-damage value in game.
 - **skill2:** ■ Activates when entering Full Burst. Affects all enemies. 
 Attract: Taunt all enemies for 15.09 sec. — UNMODELED (inert): no threat/targeting model in v1 — the solo boss already attacks the team abstraction; there is no aggro state to redirect. Trigger identity recorded as fullBurstEnter so a future consumer never misfiles it as burstCast.
-  - *Why:* See unit note / caveats
+  - *Why:* SKILL2 ('Queenly Disposition' — on entering Full Burst): BOTH lines UNMODELED (inert): the 15.09s all-enemy taunt has no threat/targeting model in v1 (the solo boss already attacks the team abstraction; trigger identity fullBurstEnter recorded so a future consumer never misfiles it as burstCast), and the self Damage Taken ▼57.86%/15s has no incoming-damage model to reduce (immortal boss — it is the SELF-targeted ▼ mirror of the boss damageTakenPct channel, never that channel; the spec's zero-damageTakenPct-anywhere guard pins the sign/channel misread)
 - **skill2:** ■ Activates when entering Full Burst. Affects self. 
 Damage Taken ▼ 57.86% for 15 sec. — UNMODELED (inert): no incoming-damage model in v1 (immortal boss; nobody takes damage), so the window has no observable. This is the SELF-targeted ▼ mirror of the boss damageTakenPct channel, never that channel itself — the unit spec's zero-damageTakenPct-anywhere guard pins the shared-prior sign/channel misread.
-  - *Why:* See unit note / caveats
+  - *Why:* SKILL2 ('Queenly Disposition' — on entering Full Burst): BOTH lines UNMODELED (inert): the 15.09s all-enemy taunt has no threat/targeting model in v1 (the solo boss already attacks the team abstraction; trigger identity fullBurstEnter recorded so a future consumer never misfiles it as burstCast), and the self Damage Taken ▼57.86%/15s has no incoming-damage model to reduce (immortal boss — it is the SELF-targeted ▼ mirror of the boss damageTakenPct channel, never that channel; the spec's zero-damageTakenPct-anywhere guard pins the sign/channel misread)
 
 **Maiden** (maiden)
 
@@ -1318,15 +1233,38 @@ Damage Taken ▼ 57.86% for 15 sec. — UNMODELED (inert): no incoming-damage mo
 - **skill2:** Taunt for 10 sec.
   - *Why:* skill2: 'Affects all enemies. Taunt for 10 sec.' is UNMODELED — no taunt/aggro primitive; the single partless boss already takes everyone's attacks; its in-game role is feeding the attacked-counter (⚑1)
 
+**Makima** (makima)
+
+- **skill2:** ■ Activates after landing 120 normal attack(s). Affects self.
+  - *Why:* (S2-a) 'after landing 120 normal attacks → Attract: Taunt all enemies for 3s' — no taunt/aggro primitive (folkwang/maiden/ludmilla precedent); trigger identity recorded as hitCount:120 (hitsPerShot 1 → 120 hits = one full magazine; NOT lastBullet, which desyncs under any maxAmmo modifier)
+- **skill2:** Attract: Taunt all enemies for 3 sec.
+  - *Why:* (S2-a) 'after landing 120 normal attacks → Attract: Taunt all enemies for 3s' — no taunt/aggro primitive (folkwang/maiden/ludmilla precedent); trigger identity recorded as hitCount:120 (hitsPerShot 1 → 120 hits = one full magazine; NOT lastBullet, which desyncs under any maxAmmo modifier)
+- **skill2:** ■ Activates when taking lethal damage. Affects self.
+  - *Why:* (S2-b) 'taking lethal damage → Indomitability 7s (1/battle)' + 'Cooldown of Burst Skill ▼11.58s' — no lethal-damage trigger; indomitability is the death-immunity class (blanc/poli precedent)
+- **skill2:** Gain indomitability for 7 sec. Activates 1 time(s) per battle.
+  - *Why:* (S2-b) 'taking lethal damage → Indomitability 7s (1/battle)' + 'Cooldown of Burst Skill ▼11.58s' — no lethal-damage trigger; indomitability is the death-immunity class (blanc/poli precedent)
+- **skill2:** Cooldown of Burst Skill ▼ 11.58 sec.
+  - *Why:* (S2-b) 'taking lethal damage → Indomitability 7s (1/battle)' + 'Cooldown of Burst Skill ▼11.58s' — no lethal-damage trigger; indomitability is the death-immunity class (blanc/poli precedent)
+
+**Marciana** (marciana)
+
+- **skill1:** Activates when the last bullet hits the target. Affects 2 ally unit(s) with the highest final ATK. Incoming healing ▲ 26.98% for 3 sec.
+  - *Why:* DELIBERATELY UNMODELED (verbatim in `unmodeled`): skill1's 'Incoming healing ▲ 26.98%' on the 2 highest-final-ATK allies — there is no incoming-healing StatKey and no HP pool for it to amplify; and the burst's 'Storage' of excess healing up to 27.87% of Max HP — a named mechanic distinct from 'Shield' in the kit text, so it is NOT encoded as a `shield` effect (that would emit shield events and falsely satisfy shield-synergy gates such as requiresShielded / the 'shielded' trigger on other units)
+
 **Marciana: Marine Study** (marciana-marine-study)
 
 - **skill2:** ■ Activates every time there are 6 or more Raptures present for a period of 1 sec. Penguin Emergency Dispatch Function: Expends Whistle stacks to attack Raptures when there are 6 or more present. Effect 1: Affects all enemies. Deals 214.36% of final ATK as additional damage. Effect 2: Affects self. Whistle stacks ▼ 1. — UNMODELED: no enemy-count trigger in the engine; inert in the sim (never ≥6 enemies in solo raid).
   - *Why:* skill2: the '≤3 Raptures for 5 sec' Whistle-stack gain is modeled as interval:5 — exact for the solo-raid sim (always 1 enemy, always ≤3). The real trigger is enemy-count-gated.
 
+**Mari** (mari)
+
+- **skill1:** Activates when landing a Full Charge attack. Affects all allies.
+  - *Why:* || FULL-KIT AUDIT (every line accounted for): S1 bullet1 'on Full Charge landing → Damage dealt to Shield ▲100.09%/3s (all allies)' = UNMODELED (⚑4) — an offensive buff vs an ENEMY Shield; the v1 raid boss is partless and never shields, and no StatKey exists for shield-damage
+
 **Mica: Snow Buddy** (mica-snow-buddy)
 
 - **burst:** Affects all allies. Removes 1 debuff(s).
-  - *Why:* See unit note / caveats
+  - *Why:* BURST 'Removes 1 debuff(s), all allies': UNMODELED — defensive/utility debuff cleanse; the v1 boss applies no debuffs, so there is nothing to remove and no DPS channel (carried verbatim in unmodeled.burst)
 
 **Misato** (misato)
 
@@ -1345,6 +1283,10 @@ Outgoing healing ▲ 30.05% continuously.
   - *Why:* skill1: nero's `recovery` trigger condition DOES occur in comps with a healer (helm's full-charge pulls in the test fixture) — S1 ships no blocks, so nothing fires; this is the unmodeled ruling, not a missing trigger
 - **skill1:** Activates when recovery takes effect. Affects self. Cat's Repayment: Damage Taken ▼ 8.43%, stacks up to 5 time(s) and lasts for 5 sec.
   - *Why:* skill1: nero's `recovery` trigger condition DOES occur in comps with a healer (helm's full-charge pulls in the test fixture) — S1 ships no blocks, so nothing fires; this is the unmodeled ruling, not a missing trigger
+- **skill2:** There is a 30% chance of activating when attacked. Affects the target. Damage Taken ▲ 8.26% for 5 sec.
+  - *Why:* RULING (driver, S2c; S2b claude-fable-5 diverged — wanted stacks+status modeled as load-bearing — reconciliation in scripts/kit-autonomy/reviews/nero.test-review.json): the chain is DAMAGE-DEAD in v1 for four independent reasons — (a) its terminal damage effect (the 158.05% counter) and its only boss-facing debuff (the 8.26% Damage Taken ▲) both require a 'when ATTACKED' trigger: the v1 boss deals NO damage and the schema has NO attacked trigger and NO chance primitive — this is an engine-CAPABILITY gap, not a footage gap (a shotFired/hitCount proxy is flatly wrong: 'attacked' ≠ 'attacking'); (b) the Grumpy Cat status's own effect (Incoming healing ▲) has no StatKey carrier and heals are event-only (no HP amount), so the status window would be unobservable; (c) the schema has no stack-count gate, so any Grumpy Cat encoding would degenerate into the unconditional/fullBurstEnter grant (the nearest-wrong model); (d) modeling the 5s stack lapse would enact kit-silent semantics for zero observables — fabrication risk, not faithfulness
+- **skill2:** There is a 30% chance of activating when attacked in Grumpy Cat status. Affects the target. Deals 158.05% of final ATK as damage.
+  - *Why:* RULING (driver, S2c; S2b claude-fable-5 diverged — wanted stacks+status modeled as load-bearing — reconciliation in scripts/kit-autonomy/reviews/nero.test-review.json): the chain is DAMAGE-DEAD in v1 for four independent reasons — (a) its terminal damage effect (the 158.05% counter) and its only boss-facing debuff (the 8.26% Damage Taken ▲) both require a 'when ATTACKED' trigger: the v1 boss deals NO damage and the schema has NO attacked trigger and NO chance primitive — this is an engine-CAPABILITY gap, not a footage gap (a shotFired/hitCount proxy is flatly wrong: 'attacked' ≠ 'attacking'); (b) the Grumpy Cat status's own effect (Incoming healing ▲) has no StatKey carrier and heals are event-only (no HP amount), so the status window would be unobservable; (c) the schema has no stack-count gate, so any Grumpy Cat encoding would degenerate into the unconditional/fullBurstEnter grant (the nearest-wrong model); (d) modeling the 5s stack lapse would enact kit-silent semantics for zero observables — fabrication risk, not faithfulness
 - **burst:** Activates when Cat's Repayment is at max stacks. Affects self. Grumpy Cat: Incoming healing ▲ 60.08% for 15 sec.
   - *Why:* THE GRUMPY-CAT CHAIN (S1 stacks → burst Grumpy Cat status → S2 attacked-procs) is carried verbatim in `unmodeled`: the v1 boss deals no damage, so the `attacked` trigger (which exists, types.ts) never fires, and the schema has no chance primitive / incoming-healing stat (a max-stack gate is expressible via the resource-pool pattern, power precedent), so the chain has ZERO in-domain observables; activation recipe recorded in the note (engine-capability-gated, TIER 3)
 
@@ -1360,15 +1302,22 @@ Outgoing healing ▲ 30.05% continuously.
 - **skill2:** ■ Activates when hitting a target with a Full Charge attack. Affects the target. Taunts for 2 sec. — aggro/targeting control; the sim is single-target with a fixed boss script and no taunt/aggro primitive, so hit location never changes damage. ⚑ inert / out-of-domain (see caveats).
   - *Why:* skill2 (Taunt) ⚑ inert / out-of-domain: 'hitting a target with a Full Charge → Taunts for 2s'. ESTIMATE: damage-neutral — taunt redirects enemy aggro, which a single-target sim with a fixed boss script never exercises. RECIPE: none for DPS (would need a multi-target/aggro model). TIER: inert / out-of-domain.
 
+**Pepper** (pepper)
+
+- **skill2:** ATK ▼ 3.55% for 5 sec.
+  - *Why:* 'ATK ▼ 3.55% for 5 sec' on that enemy = UNMODELED — no enemy-ATK debuff primitive exists (damageTakenPct is a DIFFERENT mechanic: boss-takes-more, not boss-ATK-down) and the boss's ATK feeds nothing in v1 (the boss deals no modeled damage); purely defensive
+
 **Phantom (Treasure)** (phantom)
 
-- **skill1:** Calling Card: DEF ▼ 32.19% for 5 sec. — the DEF▼ MAGNITUDE is inert (enemy DEF is a negligible flat subtractive term at scope-lock ATK, docs/data/damage-calculation.md; the engine drops enemy DEF debuffs at dispatch — the enemy-debuff branch in sim.ts admits only damageTakenPct/distributedDamagePct). The Calling Card status WINDOW itself IS modeled (targetStatus) as the gate for S1's Attack Damage line and S2's max-stacks consume.
-  - *Why:* skill1: BLOCK ORDER IS LOAD-BEARING — the requiresTargetStatus-gated Attack Damage block precedes the targetStatus-inflicting block in the skill1 array, so the battle's first shot (the sole application event under the self-extending window, gate still closed at dispatch time) does NOT receive the buff. Reversing the two blocks would grant it.
 - **skill2:** Removes Calling Card. — the engine has no consume-target-status primitive; the window lapses naturally 5s after application, which under steady fire pre-empts the next magazine-start reapplication (moot). The 84.33% additional damage and the Thief's Dagger stack drain of the same max-stacks event ARE modeled.
   - *Why:* skill2: 'Removes Calling Card' is unmodeled (no consume-target-status primitive, ⚑3) — moot: the natural 5s lapse pre-empts the next reapplication under steady fire.
 
 **Poli (Treasure)** (poli)
 
+- **skill2:** Equally shares damage taken for 10 sec.
+  - *Why:* S2 'Equally shares damage taken for 10s' = UNMODELED (no damage-redistribution primitive; defensive — the v1 boss deals no damage)
+- **skill2:** Activates when Police Badge ends. Affects self.
+  - *Why:* S2 'when Police Badge ends → recovers 5% final Max HP every 1s for 5s' = UNMODELED ⚑1 (expressible at scope as battleStart + block delaySec:10 — the badge end is deterministic and no first-class shield-expiry trigger exists; the heal amount is inert without an HP pool, and the line is SELF-targeted, so its recovery events would fire only the recipient's — poli's — on-recovery blocks and cannot feed a Crown-type consumer on a teammate)
 - **burst:** Activates when in Police Badge status. Affects self.
   - *Why:* burst: Indomitability + 'Removes Police Badge' unmodeled (no primitive; defensive). The badge gate is unsatisfied in graded comps — the badge ends t=10s and her first burst cast waits on the first full-burst chain (burst CDs start ready, sim.ts; gauge fill + chain typically lands past 10s); ⚑ a fast-gauge comp could beat 10s, but the gated effects are inert either way (Indomitability is defensive; the badge removal has no requiresShielded consumer in her kit)
 - **burst:** Gains Indomitability for 5 sec. Removes Police Badge.
@@ -1377,25 +1326,34 @@ Outgoing healing ▲ 30.05% continuously.
 **Power** (power)
 
 - **skill2:** Explosion Radius ▲ 38.61% for 10 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* The S2 'Explosion Radius ▲38.61%' line is UNMODELED: the sim fights one boss — there is no AoE/multi-target axis for an explosion RADIUS to act on, damage-inert (the nearest-wrong encoding projectileExplosionPct is explosion DAMAGE, a different mechanic)
 
 **Rapi** (rapi)
 
+- **skill1:** ATK ▲ 21.81% for 20 sec.
+  - *Why:* UNMODELED (2 lines, all out-of-domain — see ⚑): S1 entirely (the attacked-20 trigger + the 21.81% self ATK buff — offensive but untriggerable), S2 'Taunt for 5 sec.' (no taunt/aggro primitive; the single partless boss already takes everyone's attacks; tanking is out of domain for a DPS sim — and in-game it is the feeder of the attacked-counter, ⚑1's loop)
 - **skill2:** Taunt for 5 sec.
   - *Why:* skill2: 'Taunt for 5 sec.' is UNMODELED — no taunt/aggro primitive; the single partless boss already takes everyone's attacks; its in-game role is feeding the attacked-counter (⚑1)
 
 **Rapi: Red Hood** (rapi-red-hood)
 
 - **burst:** Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)
-  - *Why:* See unit note / caveats
+  - *Why:* A rocket that attaches DURING Full Burst explodes INSTANTLY (storedHit.instantInFb); rockets attached OUT of burst do NOT explode until FB begins, so they ACCUMULATE and the FIRST explosion of each FB is a BATCH of all accumulated rockets
 - **burst:** Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 3 — a second, separate kit line from the Stage 1 instance; inert on the partless boss)
-  - *Why:* See unit note / caveats
+  - *Why:* 2026-08-04 ATTACHMENT REWORK (owner control+carry footage re-read; three owner overrides, gate skipped by owner ruling, test-first kept): (1) the +421.2% Projectile Attachment Damage line (Burst Stage 3, self, 10s) is RESTORED — the 2026-07-14 'MEASURED-INERT' verdict (dead datamine entry 101631006) is OVERTURNED: the amplified attachment bodies it could not attribute were mis-sorted into the explosion class (same flavor family, overlapping popup columns)
 
 **Rapunzel** (rapunzel)
 
+- **skill2:** Incoming healing ▲ 13.65% for 15 sec.
+  - *Why:* DELIBERATELY UNMODELED (verbatim in `unmodeled`): skill2 'Incoming healing ▲13.65%' (no incoming-healing StatKey and no HP pool for it to amplify); burst RESURRECT at 81.67% HP (no resurrection/death/HP-pool primitive — ⚑ meta-defining for real play, inert in a DPS sim); burst enemy STUN 1s gated on an ally falling below 30% HP (no HP pool to gate, no enemy-action model — ⚑ status-gate, inert)
 - **burst:** ■ Affects 1 incapacitated ally unit(s) with the highest final ATK.
 Resurrect with 81.67% HP.
   - *Why:* ⚑ burst RESURRECT (1 incapacitated highest-final-ATK ally at 81.67% HP) is UNMODELED — there is no resurrection / death / HP-pool primitive in a DPS sim where nobody dies on the partless boss. META-DEFINING for real play (Rapunzel's signature raid value) but offensively inert here; estimate of board impact: none on damage, the entire reason she is fielded is unmodeled. Recipe: needs an HP-pool + death/revive model before it can be enacted; tier meta-defining.
+
+**Raven** (raven)
+
+- **burst:** Effect 1: Removes Single Point Attack.
+  - *Why:* S2c part-destroy branch → UNMODELED: 'when an ally or self destroys an enemy's part' can never fire on the partless boss (genuinely-skippable class: parts), so Single Point Attack (sustained ▲47.32, 15s) and 'Removes Vital Attack' never happen; no part-destroy trigger exists in types.ts either
 
 **Rosanna (Treasure)** (rosanna)
 
@@ -1407,7 +1365,7 @@ Resurrect with 81.67% HP.
 **Rupee: Winter Shopper** (rupee-winter-shopper)
 
 - **burst:** Attract: Taunts all enemies for 5 sec. (UNMODELED — no engine taunt primitive; defensive: the v1 partless boss deals no damage and has no target choice, so enemy target-lock moves no damage. The label taunt-immunity precedent.)
-  - *Why:* See unit note / caveats
+  - *Why:* Attract: Taunts all enemies for 5 sec' = UNMODELED (verbatim below): the engine has no taunt primitive and the v1 partless boss deals no damage and has no target choice, so enemy target-lock moves no damage (defensive; the label taunt-immunity precedent)
 
 **Sakura Suzuhara** (sakura-suzuhara)
 
@@ -1445,7 +1403,12 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **skill2:** Equally shares damage taken for 10 sec.
   - *Why:* skill2: 'Equally shares damage taken for 10 sec' is UNMODELED — defensive damage redistribution; the boss deals no damage and there is no redistribution primitive
 
-### Out-of-domain / parser unsupported (27)
+**Yuni** (yuni)
+
+- **burst:** Immobilizes the target(s) for 5 sec.
+  - *Why:* The burst's second line 'Immobilizes the target(s) for 5 sec.' is UNMODELED (verbatim in unmodeled.burst) — there is NO boss-CC channel: the v1 boss never acts (no enemy-action model), so a boss-targeted immobilize moves nothing; the schema's stun primitive describes a NIKKE unable to fire/charge/reload, not a boss freeze
+
+### Out-of-domain / parser unsupported (29)
 
 **Anchor** (anchor)
 
@@ -1462,7 +1425,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 **Ark Ranger Black** (ark-ranger-black)
 
 - **burst:** Activates while in Transformation status: Battery ▲ 50%. (never fires in scope-lock — burst CD 40s > Transformation duration 10s; the burst always fires outside Transformation)
-  - *Why:* See unit note / caveats
+  - *Why:* The burst CD is 40s and Transformation lasts 10s, so the 'while in Transformation: Battery ▲50%' burst branch NEVER fires in scope-lock (the burst always fires outside Transformation)
 
 **Bready** (bready)
 
@@ -1482,9 +1445,9 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **skill1:** Blanching Duration ▲ 2.5 sec.
   - *Why:* skill1: which stance (Blanching vs Maillard) is active is a user-selectable mode (default Blanching — the sim's RL always full-charges, sim.ts:3121, so Blanching is the only reachable stance; Maillard models the alternate tap-fire / distributed-team playstyle and overrides the sim's default cadence) — the stance-entry attack-pattern triggers (3 normal non-Full-Charge vs 3 Full Charges held >1s) are not simulated; pick the mode matching the real team's play pattern
 - **skill1:** Removes Blanching.
-  - *Why:* See unit note / caveats
+  - *Why:* UNMODELED (all in `unmodeled`, no silent drops): S1 L1/L2 'Duration ▲2.5 sec' (a buff-duration-extension maintenance line — the stance ATK buff is modeled at saturated uptime, so extending its duration moves no damage; no generic duration-extend primitive); S1 'Removes Blanching'/'Removes Maillard' (mutual exclusivity enforced STRUCTURALLY by the single selected mode); S2 'Affects all allies not in Reliable Cooking status' (no-refresh gate — the engine has no 'apply only if absent' target filter; the model refreshes instead, inert while defPct is inert) and 'Removes 1 debuff' (no cleanse primitive; the scope-lock boss applies no ally debuffs)
 - **skill1:** Removes Maillard.
-  - *Why:* See unit note / caveats
+  - *Why:* UNMODELED (all in `unmodeled`, no silent drops): S1 L1/L2 'Duration ▲2.5 sec' (a buff-duration-extension maintenance line — the stance ATK buff is modeled at saturated uptime, so extending its duration moves no damage; no generic duration-extend primitive); S1 'Removes Blanching'/'Removes Maillard' (mutual exclusivity enforced STRUCTURALLY by the single selected mode); S2 'Affects all allies not in Reliable Cooking status' (no-refresh gate — the engine has no 'apply only if absent' target filter; the model refreshes instead, inert while defPct is inert) and 'Removes 1 debuff' (no cleanse primitive; the scope-lock boss applies no ally debuffs)
 
 **Diesel: Winter Sweets** (diesel-winter-sweets)
 
@@ -1532,7 +1495,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 **Mint** (mint)
 
 - **skill2:** Activates when entering Burst Stage 3 while not in Sing Along status: Cancels Singing and Dancing.
-  - *Why:* See unit note / caveats
+  - *Why:* The S2 'Cancels Assigned Part' block is an expressibility GAP (no self-buff-active gate — resourceGate reads a resource POOL, not a buff-active/absent state; distinct from the Singing-gate mechanism above, which IS expressible) correctly OMITTED — when Mint casts every rotation (20s CD) her Sing Along is live at every stage-3 entry, so the cancel never fires; the dangerous misread (unconditional cancel stripping parts every rotation) is what the omit avoids
 
 **Modernia** (modernia)
 
@@ -1549,7 +1512,74 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **skill1:** Increases stack count of buffs by 1. (PARTIALLY MODELED — the SELF slice is folded as +1 to the mileage pool on the same hitCount:100 trigger (skill1[1]); the CROSS-ALLY slice (teammates' stackable buffs) is out-of-domain ⚑3 and the mileage ATK-buff component of the self stack is unrepresentable ⚑2 — the line stays here verbatim as the audit trail)
   - *Why:* The CROSS-ALLY slice of S1 'Increases stack count of buffs by 1' is MODELED (enacted 2026-08-09, owner faithfulness ruling): an alliesOfElement Iron (excludeSelf) `addStack` block on the same hitCount:100 trigger bumps each Iron ally's live stackable buffs by 1 (flora/k/guilty/pepper carrier family); excludeSelf because the SELF slice is carried separately (mileage pool +1 plus the cross-slot Mileage merge). Zero movement in the scope-lock fixture (no other Iron ally holds a stackable buff there); live in stacking Iron comps.
 
-### Weapon-state / shot-count approximation (10)
+**Sakura** (sakura)
+
+- **skill2:** When attacking an enemy projectile, damage to that projectile ▲ 7.74% continuously.
+  - *Why:* UNMODELED (out-of-domain): (K2) S2 projectile-intercept damage = Anomaly-only, no projectile channel in the sim
+
+**Sora** (sora)
+
+- **skill1:** ■ Activates at the start of battle. Affects self.
+Outgoing healing ▲ 35.2% continuously.
+  - *Why:* skill1/skill2 are EMPTY BY CONSTRUCTION, not by omission — every line there is out-of-domain for cause: (K1) S1 'Outgoing healing ▲ 35.2%' modifies heal AMOUNTS, which do not exist in the sim — no stat, no channel, and no recovery-consumer reads an amount
+
+### Partless boss (12)
+
+**D: Killer Wife** (d-killer-wife)
+
+- **skill1:** Gain Pierce for 1 shot.
+  - *Why:* skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)
+- **burst:** Buff takes effect depending on the area hit — the PARTS branch ('Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s') is unmodeled (TODO: needs destructible-part modeling; core-only proxy for now — see caveats).
+  - *Why:* burst: [SKIPPED-CONDITIONAL, fixed 2026-07-17] the parts branch 'Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s' is parts-gated — on the partless v1 scope-lock boss no ally can hit parts, so it can never be earned. It was previously modeled as an ungated all-ally coreDamagePct buff, which over-credited every ally's core bucket (core hits DO exist on a partless boss's core). Now REMOVED from the effects array (repo convention for v1-partless-inert lines, cf. brid's Wind-Code debuffs); the body branch 'Allies that hit the body: ATK ▲12.19% of skill user's ATK' (casterAtkPct, always active on the partless body) is KEPT. Re-enable the parts branch (as a parts-hit-gated coreDamagePct) only for a boss with destructible parts (OUT OF SCOPE for v1).
+
+**Moran (Treasure)** (moran)
+
+- **skill2:** Activates when HP falls below 20%. Affects self. Effects vary according to the number of uses. Perseverance: Only one effect is triggered at a time.
+  - *Why:* [2026-07-17 THEME-13] Her S2 Perseverance 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are DELIBERATELY still unmodeled: they are HP-loss-gated ('Activates when HP falls below 20%'), so on the immortal partless boss (HP never drops) they NEVER fire — a kill/HP-gate (theme 18), not a theme-13 Max-HP-grant gap
+
+**Nihilister** (nihilister)
+
+- **skill1:** ■ Activates when hits 2 or more enemies concurrently. Affects all enemies hit.
+Deals 50.33% of final ATK as additional damage.
+  - *Why:* skill1: Piercing Radius ▲50% and the 2+-enemies-concurrent 50.33% bonus are UNMODELED verbatim — out-of-domain for v1's single partless boss (no geometry, no second enemy); ⚑3/⚑4
+
+**Rapi: Red Hood** (rapi-red-hood)
+
+- **skill1:** Damage to Interruption Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)
+  - *Why:* S1 Combat Assist: with NO Burst 1 ally she fills the B1 slot (stage-1 eligibility) and grants team CDR 7.48s + Attack Damage 8.02% on each full burst; WITH a B1 ally she instead self-buffs ATK 95.04% on full burst
+
+**Raven** (raven)
+
+- **skill2:** Single Point Attack: Sustained damage ▲ 47.32% for 15 sec.
+  - *Why:* skill2: Single Point Attack (Sustained damage ▲ 47.32%) keys on destroying an enemy part — it can never fire against the partless scope-lock boss and is not modeled (previously approximated as an always-on passive)
+
+**Sakura** (sakura)
+
+- **burst:** Damage to Interruption Parts ▲ 23.54% for 30 sec.
+  - *Why:* (K6) burst 'at max Tea stacks → Damage to Interruption Parts ▲23.54%' = partsDamagePct, inert vs the partless scope-lock boss (helm H4 precedent) AND gated on the unmodeled K1 stacks
+
+**Sakura: Bloom in Summer** (sakura-bloom-in-summer)
+
+- **skill1:** Activates when an ally or self destroys an enemy's part. Affects self.
+  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
+- **skill1:** Sustained Damage ▲ 5.1% for 30 sec.
+  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
+- **skill1:** Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.
+  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
+- **skill1:** Dancing Flower Duration ▲ 10.02 sec.
+  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
+
+**Sora** (sora)
+
+- **skill2:** ■ Activates when an ally or self destroys an enemy's part. Affects all allies.
+  - *Why:* (K2) S2 is gated on PART DESTRUCTION ('when an ally or self destroys an enemy's part'): the engine emits no part-destroyed event and the scope-lock boss is partless (sim.ts: 'partless test boss ..
+
+### Weapon-state / shot-count approximation (11)
+
+**Ade: Agent Bunny** (ade-agent-bunny)
+
+- **burst:** Minimum Effective Range ▲ 55.56% for 10 sec.
+  - *Why:* BURST (burstCast, B2 cd20) = allies attackDamagePct 55.04 + pierceDamagePct 10.13, dur 10; self Min Effective Range ▲55.56% inert range stat → unmodeled (hard-rule-1 check done: range buffs change the effective-range band, NOT shots fired — no shot-count channel)
 
 **Arcana: Fortune Mate** (arcana-fortune-mate)
 
@@ -1564,9 +1594,9 @@ Explosion Radius ▲ 15.01% for 10 sec.
 **Dorothy: Serendipity** (dorothy-serendipity)
 
 - **skill1:** Hit 160 pellets: Expands Pierce range 200% 3 rounds
-  - *Why:* See unit note / caveats
+  - *Why:* S1 second block (160 pellets -> Expand Pierce range 200%) omitted: pierce is inert on a single boss
 - **skill1:** Hit Rate ▲ 98.18% 3 rounds
-  - *Why:* See unit note / caveats
+  - *Why:* S1: hitting the target with 80 pellets (hitCount:80, re-triggers every ~8 shots -> effectively permanent in sustained fire) grants Attack Damage 72%; Hit Rate 98.18% kept for fidelity (unmodeled as a stat; its in-mode effect is already carried by the measured consolidation config)
 
 **Laplace: Ultimate Hero** (laplace-ultimate-hero)
 
@@ -1592,42 +1622,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **burst:** Additional Effect (weapon-change spec — VERBATIM TEXT NOT AVAILABLE to this audit; fetch from blablalink: likely carries the swap weapon's charge time / ammo / Full Charge Damage spec that pins the swap shot economy)
   - *Why:* burst: swap shot economy is a materialized parser estimate, not hand-verified — engine fires ~10 swapped shots/10s (60f cycle, no bolt gap) each carrying her SR charge-damage bucket on top of the 7% multiplier.
 
-### Partless boss (7)
-
-**Ark Ranger Black** (ark-ranger-black)
-
-- **skill1:** Charges battery by 50% continuously, up to 100%. This effect cannot be removed. (part-destroy trigger — no destructible parts on the partless scope-lock boss; never fires in scope-lock)
-  - *Why:* See unit note / caveats
-
-**D: Killer Wife** (d-killer-wife)
-
-- **skill1:** Gain Pierce for 1 shot.
-  - *Why:* skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)
-- **burst:** Buff takes effect depending on the area hit — the PARTS branch ('Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s') is unmodeled (TODO: needs destructible-part modeling; core-only proxy for now — see caveats).
-  - *Why:* burst: [SKIPPED-CONDITIONAL, fixed 2026-07-17] the parts branch 'Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s' is parts-gated — on the partless v1 scope-lock boss no ally can hit parts, so it can never be earned. It was previously modeled as an ungated all-ally coreDamagePct buff, which over-credited every ally's core bucket (core hits DO exist on a partless boss's core). Now REMOVED from the effects array (repo convention for v1-partless-inert lines, cf. brid's Wind-Code debuffs); the body branch 'Allies that hit the body: ATK ▲12.19% of skill user's ATK' (casterAtkPct, always active on the partless body) is KEPT. Re-enable the parts branch (as a parts-hit-gated coreDamagePct) only for a boss with destructible parts (OUT OF SCOPE for v1).
-
-**Nihilister** (nihilister)
-
-- **skill1:** ■ Activates when hits 2 or more enemies concurrently. Affects all enemies hit.
-Deals 50.33% of final ATK as additional damage.
-  - *Why:* skill1: Piercing Radius ▲50% and the 2+-enemies-concurrent 50.33% bonus are UNMODELED verbatim — out-of-domain for v1's single partless boss (no geometry, no second enemy); ⚑3/⚑4
-
-**Rapi: Red Hood** (rapi-red-hood)
-
-- **skill1:** Damage to Interruption Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)
-  - *Why:* See unit note / caveats
-
-**Raven** (raven)
-
-- **skill2:** Single Point Attack: Sustained damage ▲ 47.32% for 15 sec.
-  - *Why:* skill2: Single Point Attack (Sustained damage ▲ 47.32%) keys on destroying an enemy part — it can never fire against the partless scope-lock boss and is not modeled (previously approximated as an always-on passive)
-
-**Sakura** (sakura)
-
-- **burst:** Damage to Interruption Parts ▲ 23.54% for 30 sec.
-  - *Why:* See unit note / caveats
-
-### Self-status / stack gate (7)
+### Self-status / stack gate (8)
 
 **Eunhwa: Tactical Upgrade** (eunhwa-tactical-upgrade)
 
@@ -1645,6 +1640,11 @@ Deals 50.33% of final ATK as additional damage.
 - **burst:** Deals 457.87% of final ATK as additional damage.
   - *Why:* burst: the 'when in Revenge status → 457.87% additional damage' rider is UNMODELED — it is gated on the untriggerable Revenge self-status, so the burst fires at half its theoretical (Revenge-active) magnitude
 
+**Neon: Vision Eye** (neon-vision-eye)
+
+- **skill2:** When Full Burst ends: 'Burst Gauge filling speed ▲5% × Firepower Gauge charge for 5 sec' is MODELED (enacted 2026-08-09, owner faithfulness ruling) as two everyN:3 self burstGenPct blocks on HER OWN burstCast + delaySec 10 (≈ the FB end of the window her cast opened — cast-keyed, so a co-B3's Full Bursts never fire it), aligned to the Super cycle: after a Super cast the gauge is 0 (offset skipped, no buff); after the 1st charge window burstGenPct 330 for 5s (⚑ 5 × [1 cast + 45 end + 2×~10 in-window normals] — the normal count is a cadence estimate); after the 2nd, burstGenPct 500 (5 × the 100 cap, kit-structural). Empirically does not consume the Firepower cycle — every-3rd-Super held on video
+  - *Why:* KNOWN LOW-SEVERITY FIDELITY NOTE (S7 judge, faithfulness 0.93, GO): the +35.05% Super ATK rider is keyed to her burstCast (inside the everyN 3 / offset 1 Super block) rather than fullBurstEnter as the kit wording ('when entering Full Burst') literally reads, because the engine has no time-windowed self-status gate to express 'FB-enter gated on Super Firepower live'
+
 **Yulha** (yulha)
 
 - **burst:** Affects the same target(s) when in Calm status.
@@ -1652,7 +1652,7 @@ Deals 50.33% of final ATK as additional damage.
 - **burst:** Deals 457.87% of final ATK as additional damage.
   - *Why:* burst: the 'when in Calm status → 457.87% additional damage' rider is UNMODELED — it is gated on the untriggerable Calm self-status, so the burst fires at half its theoretical (Calm-active) magnitude
 
-### RNG / probabilistic (5)
+### RNG / probabilistic (4)
 
 **Elegg: Boom and Shock** (elegg-boom-and-shock)
 
@@ -1661,12 +1661,10 @@ Deals 50.33% of final ATK as additional damage.
 - **burst:** Affects random enemy units
   - *Why:* See unit note / caveats
 
-**Nero** (nero)
+**Little Mermaid** (little-mermaid)
 
-- **skill2:** There is a 30% chance of activating when attacked. Affects the target. Damage Taken ▲ 8.26% for 5 sec.
-  - *Why:* See unit note / caveats
-- **skill2:** There is a 30% chance of activating when attacked in Grumpy Cat status. Affects the target. Deals 158.05% of final ATK as damage.
-  - *Why:* See unit note / caveats
+- **skill2:** ■ Activates after landing 50 normal attacks. Affects the target if the target is in Bubble status.
+  - *Why:* skill2 overridden (parser skipped 3 of 4 blocks on unsupported triggers): block1 Bubble applies Damage Taken 5.05% to the boss continuously -> modeled as a passive enemy debuff; block2 Explosive Bubble (after 50 normals) REMOVES Bubble and re-applies the same 5.05% (plus a 3s stun) -- it relocates the debuff, it does NOT stack to 10.1%, so it is intentionally not added again (stun skipped, boss doesn't act); block3 'every 1s during Full Burst, 63.36% x4 to random enemies' = 253.44%/s modeled as a dot on Full Burst enter, interval 1s, duration 10s (one full-burst window); block4 Bubble Barrage '85% x10 each time allies expend 500 ammo' = 850%, modeled with the same self-ammo proxy as hitCount 500 (UNDERCOUNTS team ammo -- flagged)
 
 **Scarlet** (scarlet)
 

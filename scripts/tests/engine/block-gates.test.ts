@@ -188,3 +188,61 @@ describe('block gates', () => {
     ).toEqual([]);
   });
 });
+
+describe('chargeCounter gate routing (audit F2.1)', () => {
+  // Before 2026-08-10 the chargeCounter dispatch called applyEffect directly and every runtime
+  // abort-gate was silently ignored on this trigger (docs/engine-modeling-gaps.md §1a). It now
+  // runs blockGatesPass — the same gates as every other dispatch. The carry is an RL, which
+  // always full-charges in the sim, so `count: 1` makes every pull an activation.
+  const perCharge = (extra: Record<string, unknown> = {}) => ({
+    trigger: { kind: 'chargeCounter', count: 1 },
+    ...extra,
+  });
+
+  it('control: an ungated chargeCounter block fires on every full-charge pull', () => {
+    const arm = probe(perCharge());
+    expect(
+      arm.shots.length,
+      'the RL carry fired too few pulls to exercise the trigger'
+    ).toBeGreaterThan(6);
+    expect(
+      arm.procs.map((p) => p.frame),
+      'the ungated chargeCounter block did not fire on every full-charge pull'
+    ).toEqual(arm.shots.map((s) => s.frame));
+  });
+
+  it('fbGate partitions chargeCounter activations exactly into in-FB and out-of-FB pulls', () => {
+    // Same exact-partition standard as the shotFired fbGate test above, same per-arm timeline
+    // rule (skill damage feeds gauge, so arms legitimately diverge — each arm is judged
+    // against its own pulls and its own logged Full Burst boundaries).
+    for (const [gate, want] of [
+      ['inFb', true],
+      ['outFb', false],
+    ] as const) {
+      const arm = probe(perCharge({ fbGate: gate }));
+      const expected = arm.shots
+        .filter((s) => arm.inFb(s.frame) === want)
+        .map((s) => s.frame);
+      expect(
+        expected.length,
+        `no pull was ${want ? 'inside' : 'outside'} a Full Burst — arm is vacuous`
+      ).toBeGreaterThan(0);
+      expect(
+        arm.procs.map((p) => p.frame),
+        `fbGate '${gate}' did not bind on the chargeCounter dispatch`
+      ).toEqual(expected);
+    }
+  });
+
+  it('requiresTargetStatus with no producer keeps a chargeCounter block shut all fight', () => {
+    const gated = probe(perCharge({ requiresTargetStatus: 'Never Produced' }));
+    expect(
+      gated.shots.length,
+      'the carry never fired — the arm is vacuous'
+    ).toBeGreaterThan(0);
+    expect(
+      gated.procs,
+      'a status-gated chargeCounter block fired with no producer of the status'
+    ).toEqual([]);
+  });
+});

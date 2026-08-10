@@ -9,6 +9,79 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-10, latest) FAITHFULNESS PHASE-4 BATCH 1 — six units reviewed, the owner-ruled
+  pattern classes enacted.** Six parallel checklist reviews (`viper`, `phantom`, `novel`,
+  `exia`, `soda-twinkling-bunny`, `isabel` — full record
+  `docs/handoffs/2026-08-10-faithfulness-batch1-findings.md`). Enacted under the standing
+  rulings (2c DEF channel; 2b tag convention; all values kit-verbatim): DEF ▼ encodes on
+  `novel` (−7.05/5s, interval:10 block), `exia` (−13.77/5s lastBullet + `resourceGate
+hackingCode min:1` — the kit's own gate; burst −2.71/5s), `viper` (−19.83/10s burstCast),
+  `phantom` (−32.19/5s riding the Calling Card-inflicting block, array order preserved);
+  `burstDesc` tags on `novel` ('singleEnemy' 330.61%), `phantom` (1457.28%),
+  `soda-twinkling-bunny` (628.7%), `isabel` (149.85 + escalating 299.7/349.65) — all
+  'allEnemies', all byte-identical today (no shared amp carrier). Specs: viper V7 rewritten
+  from the unmodeled-pin, new novel N6 + exia X10 groups; exia X4's arms strip the shave (it
+  reads `baseAtk`, which the DEF window now moves at the DEF-140 harness basis — observable
+  isolation). Full gate green, 127/127 unit specs. Cross-cutting stop-and-surface items (incl.
+  the bossDef 140-vs-0 doc drift ruling) and per-unit follow-ups live in the batch doc, not
+  enacted.
+
+- **(2026-08-10, later) ENEMY DEF ▼ CHANNEL LANDED — owner-ruled "bosses should get -def"
+  (faithfulness-pass phase 2c).** An enemy-targeted `defPct` at a nonzero value now reaches
+  `enemyBuffs` and scales `cfg.bossDef` by `(1 + Σ/100)`, floor 0, at damage time (`bossDefNow`
+  in sim.ts). Graded-surface footprint — CORRECTED SAME DAY by the phase-4 batch-1 review: the
+  graded surfaces run `bossDef = 140` (scope-lock.ts, owner 2026-07-15), NOT the 0 several docs
+  claimed (that doc-vs-code drift is a batch-1 finding of its own), so the channel is LIVE there
+  at ~0.02%-scale per carrier (a % of 140 vs six-figure ATK; `scripts/battery/boss-def.ts`
+  bounds a full DEF-zeroing at ≤0.12% board-wide) — and the gate stayed green because `guilty`,
+  the sole live carrier, sits in ZERO pinned comps (all three snapshots checked) and the drift
+  gate tolerates 0.1%. The channel's real weight is the web app's Solo/Union Raid DEF defaults
+  (30,930 / 12,200), where the pre-channel silent drop cost carriers several percent
+  (damage-bucket-matrix §5 trap 4). First live carrier: `guilty` burst `defPct: -20.25` (was
+  encoded and silently discarded). The 10 other prose-recorded DEF ▼ carriers encode
+  kit-verbatim as each passes its phase-4 faithfulness review; `mast` (SMG/Electric) stays
+  unmodeled — Sea Breeze is a flat caster-DEF-basis shave with no caster-DEF stat, deferred
+  until a second carrier appears. Enemy ATK ▼ stays dropped (nothing models incoming damage);
+  the validator warning now covers only genuinely-dropped shapes. Evidence: full verify green,
+  regression + control-regression byte-identical (graded basis untouched); equivalence proof in
+  `scripts/tests/engine/enemy-def-debuff.test.ts` (−50% at DEF 20,000 ≡ DEF 10,000 exactly;
+  −150% ≡ DEF 0; +50% ≡ DEF 30,000).
+
+- **(2026-08-10) BURST-SKILL-DAMAGE AMPLIFIERS LANDED — `burstSkillSingleDamagePct` /
+  `burstSkillAoeDamagePct` + the `burstDesc` scope tag (faithfulness-pass phase 2b,
+  owner-approved scope).** The jackal/trina "Burst Skill damage of skills with ⟨Affects clause⟩
+  ▲X%" family had no engine vocabulary (audit F3; both unit specs pinned the omission as the
+  documented gap). Now: two additive Damage-Up stats read only by burst-slot hits whose effect
+  carries the matching `burstDesc` tag ('singleEnemy' / 'allEnemies' — the amplified skill's own
+  kit-description clause). Producers kit-verbatim: `jackal` 38.91/15s (B1 — her cast precedes the
+  chain's B3 by <1s, so the window covers the rotation's nuke); `trina` Spread Roots 435.6/5s —
+  the kit gates it on "enemy count aside from Nikkes is 1", ALWAYS true at solo-raid scope, so no
+  gate is encoded; the Wilted Roots ≥2-enemies branch is unreachable and stays unmodeled
+  verbatim. Beneficiaries tagged after per-line kit verification: `scarlet` (849.15% nuke) and
+  `liberalio` (925% nuke), both "■ Affects all enemies." damage lines; the remaining ~37
+  phrase-scan candidates tag as each unit passes its phase-4 review — an untagged hit reads no
+  amp, so under-tagging is a COLD-side honest omission, never an over-credit. ⚑ Additive
+  Damage-Up placement follows the ginmy-verified "○○ Damage ▲" family rule (damage-formula SSOT
+  §2), unmeasured for these two members — a popup read of an amped nuke pins it. Evidence:
+  regression + control-regression snapshots UNTOUCHED (no pinned comp pairs a producer with a
+  tagged beneficiary); unpinned `N3 scarlet/liberalio iron` measured liberalio 0.877→0.924 COLD ▼
+  (warmer toward 1) with every non-beneficiary unchanged at the third decimal; exact +4.356
+  Damage-Up arithmetic pinned in `scripts/tests/engine/burst-skill-amp.test.ts`. Falls under the
+  2026-08-09 faithfulness-enactment ruling ("no measurement is needed ahead of time … even if it
+  moves the board").
+
+- **(2026-08-10) `chargeCounter` DISPATCH NOW HONORS THE RUNTIME BLOCK GATES (faithfulness-pass
+  phase 2a).** The chargeCounter branch called `applyEffect` directly, silently ignoring all 8
+  abort-gates `applyBlock` enforces (the engine-modeling-gaps §1a bypass) — a latent
+  silent-failure for the first gated carrier. The gates are extracted into `blockGatesPass`,
+  shared by both dispatch paths; semantics mirror the hitCount path (threshold consumed
+  regardless, activation count + phase advance only on gate pass). Behavior-neutral by
+  construction: zero chargeCounter blocks carry any gate (roster scan 2026-08-10), regression +
+  control-regression byte-identical. Still bypassed by the one-phase-per-activation design:
+  `everyN`/`everyNOffset`/block `delaySec` — `validate-overrides.ts` errors on authoring those
+  with a chargeCounter trigger. Positive gate-binding proof:
+  `scripts/tests/engine/block-gates.test.ts` chargeCounter cases.
+
 - **(2026-08-09, later same day) anchor-innocent-maid's same-squad membership is OWNER-CONFIRMED —
   her squadmate is `mast-romantic-maid`, not `privaty-unkind-maid`.** Resolves the QUEUE.md
   "same-squad primitive migrations" blocker and the entry below's "NOT enacted" item (the in-game

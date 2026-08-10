@@ -1,21 +1,28 @@
 {
-  "note": "TREASURE (favorite-item) KIT — modeled from the blablalink treasure prose in data/characters.json (characters.viper.skills), the authoritative SSOT (DECISIONS 2026-07-17 roster-wide treasure ruling). Viper (Treasure): SG / Attacker / Water / Burst II, cd 20s, ammo 9, reloadFrames 122, hitsPerShot 10 pellets, normalMult 220.4, coreMult 200. Her identity is the Burst-II RE-ENTRY: she casts at Stage 2 and re-enters Stage 2 so a SECOND B2 also casts in the same chain (the Tia/Anis:Star reenterStage mechanic), which is what lets her fire her burst every rotation alongside another B2. SKILL1 (Snake Sense): (S1a) 'Activates when the stage target appears → all allies: ATK ▲25.98% / Hit Rate ▲11.13% for 10 sec' = a battle-start team buff, modeled passive → allies atkPct 25.98 + hitRatePct 11.13, durationSec 10 (the stage target = the boss, present from t=0; the passive applies at setup and lapses at 10s, never refreshing — a once-at-start window). (S1b) 'Only activates when attacking in Vamp status → self: Sustained Damage ▲4.4% / Hit Rate ▲1.84%, stacks ×10, 10 sec' = shotFired → self sustainedDamagePct 4.4 + hitRatePct 1.84, maxStacks 10, durationSec 10, fbGate:'inFb'. Vamp is the Full-Burst status (granted by S2b on FB entry); the sim has no separate Vamp entity, so the offensive GATE ('attacking in Vamp status') is modeled as the Full-Burst window (fbGate:'inFb') — each shot during FB accrues a stack, ramping 1→10 over the opening FB shots (probe: first stack f367, max f806). sustainedDamagePct feeds her sustained-flavored burst DoT (sim.ts:1688 opts.sustained); hitRatePct is the live core-hit lift (sim.ts hrCoreMult, LIVE by default). See ⚑1 for the Vamp-permanence nuance (the load-bearing sustained-DoT coupling is fully captured; the between-FB hit-rate refresh is a conservative under-credit). SKILL2 (Snake Scale): (S2a) 'self: Hit Rate ▲21.96% continuously' = passive → self hitRatePct 21.96 (no expiry). (S2b) 'entering Full Burst → self: Vamp (prevents being targeted by single-target attacks, removed on a direct hit) + Invulnerable 1 sec' = DEFENSIVE, UNMODELED verbatim — v1 has no HP pool, no targeting model and no boss damage, so prevents-targeting/invulnerable move nothing; only its OFFENSIVE consequence (the Vamp status that gates S1b) is modeled, via the FB window. (S2c) 'using Burst Skill → all allies: Re-enters Burst Stage 2' = burstCast → allies reenterStage stage 2 — the meta-defining line. The engine holds the stage at 2 after her cast so a second eligible B2 casts in the same chain (sim.ts reenterStage detection requires trigger burstCast + reenterStage stage === castStage; probe: viper B2 f251 → crown B2 f281, exactly STAGE_CAST_GAP 30f, → helm B3 f311). BURST (Snake Bite, burstCast = her casts; B2 so the cast lands BEFORE Full Burst opens and takes NO +50% FB major, verified fbMajorApplied=false): (B1) '1 designated enemy: 1029.6% of final ATK as damage' = burstCast → enemy flatDamage 1029.6 (burst bucket, PLAIN flavor — NOT sustained, so the S1b sustainedDamagePct stacks do NOT double-dip into it). VALUE PROVENANCE: 1029.6 is the TREASURE prose (authoritative); the datamine ulti_skill_detail description_value_02 carries the UNTREASURED base 462.85% (L10) / skill_value_data 23142 = 231.42% (L1) — the same prose-vs-base-table split as helm (prose 8236.8 vs base 1237.5) and phantom; the favorite-item prose is the SSOT (DECISIONS 2026-07-17). (B2) 'if the enemy is the stage target: 105.3% of final ATK as sustained damage every 1 sec for 10 sec' = burstCast → enemy dot atkPct 105.3, durationSec 10, intervalSec 1, flavor 'sustained' (10 ticks; sustained-flavored so it is the SOLE consumer of her S1b sustainedDamagePct stacks; early ticks land pre-FB, later ticks inside FB). The stage-target condition collapses to always-true in the single-boss sim (the boss IS the stage target). UNMODELED (2 lines, verbatim): (i) the burst's 'DEF ▼ 19.83% for 10 sec' magnitude — INERT and UNENACTABLE: boss DEF enters the formula only as the FIXED config constant cfg.bossDef subtracted at sim.ts:1719 (baseAtk = max(0, effectiveAtk − cfg.bossDef)); NO buff/debuff channel feeds it, so the engine cannot apply an enemy DEF reduction at all, and the magnitude is negligible regardless (measured boss DEF ≈140 → 19.83% of 140 ≈ 28 ATK against scope-lock ATK in the hundreds of thousands ≈ 0.01% damage, docs/data/damage-calculation.md §enemy-DEF). Modeling it as damageTakenPct would over-credit a ~19.83% team vuln the kit does NOT deliver (a different bucket/math) — phantom/guilty/marciana precedent. (ii) the S2b Vamp/invulnerable defensive line (above). NO `ignored` blocks. ⚑1 (Vamp permanence, low): the kit's Vamp is granted on FB entry and 'removed upon taking a direct hit'; v1 has no boss damage, so once granted it is PERMANENT for the rest of the fight — strictly, S1b stacks should accrue on every shot after the first FB, not only inside FB windows. The engine has no 'permanent-after-first-FB' block gate (fbGate is inFb/outFb only; S4 forbids an engine change here), so fbGate:'inFb' is the closest available primitive. It is faithful where it matters: the LOAD-BEARING coupling — sustainedDamagePct boosting the sustained burst DoT — is fully captured, because the DoT's 10s post-cast window lies inside FB + the stacks' own 10s durationSec persistence (probe: FB DoT tick damage drops when S1b is removed). What it conservatively UNDER-credits is the 1.84%×10 hit-rate stack refresh on NORMAL attacks during the ~10s between-FB gap after the buff persistence lapses — a second-order effect that itself routes through the derived hrCoreMult (⚑2). The ungated alternative (stacks from t=0) was rejected: it over-credits the pre-first-FB opening (no Vamp yet) and is the opposite error. Estimate: <~1% of total (between-FB hit-rate-stack core lift on normals only; the sustained DoT — the primary consumer — is unaffected). Recipe: a focus video reading Vamp-icon uptime (expected ~100% after first FB) and the between-FB SG core-hit fraction; a 'permanent-after-first-FB' block gate would enact it exactly. Tier 2. ⚑2 (Hit Rate core yield, derived): the three hitRate lines (11.13 team / 21.96 self / 1.84×10 self) are kit-stated magnitudes but their damage YIELD flows through sim.ts hrCoreMult — a DERIVED reticle-shrink → core-fraction estimate (LIVE by default, HRCORE=0 disables), not a measured per-unit number (phantom ⚑4 class). Recipe: a viper focus video reading the in-window SG core-hit fraction. ⚑3 (SG cadence tuple, standard): ammo 9 / reloadFrames 122 / hitsPerShot 10 / RoF 90 are the datamine (unverified for this unit); the S1b stack ramp/hold derives from this cadence. Recipe: read fire cadence + the reload gap from any focus video. TIER 2: reenterStage (meta-defining B2 re-entry), FB-gated scoped stacks (fbGate + maxStacks), the treasure-prose value resolution, and the Vamp-status gate. Kit-autonomy gauntlet 2026-08-01: cross-family S2b (claude-fable-5) independently re-derived the same 9-line load-bearing set + the nearest-wrong traps (sustained-flavor coupling, reentry invisible in single-B2 comps, nuke-not-sustained, Vamp gating, DEF▼-as-damageTakenPct), leakDetected null; converged FAITHFUL. Two reconciliations: DEF▼ held INERT/unmodeled (reviewer's 'load-bearing boss debuff' framing overridden — cfg.bossDef is a fixed config constant with no debuff channel, sim.ts:1719, and the magnitude is negligible; reviewer agreed damageTakenPct is wrong); Vamp gate held fbGate:'inFb' with ⚑1 refined to the reviewer's 'permanent-after-first-FB' point (load-bearing sustained-DoT coupling fully captured; between-FB hit-rate refresh a conservative under-credit).",
+  "note": "TREASURE (favorite-item) KIT — modeled from the blablalink treasure prose in data/characters.json (characters.viper.skills), the authoritative SSOT (DECISIONS 2026-07-17 roster-wide treasure ruling). Viper (Treasure): SG / Attacker / Water / Burst II, cd 20s, ammo 9, reloadFrames 122, hitsPerShot 10 pellets, normalMult 220.4, coreMult 200. Her identity is the Burst-II RE-ENTRY: she casts at Stage 2 and re-enters Stage 2 so a SECOND B2 also casts in the same chain (the Tia/Anis:Star reenterStage mechanic), which is what lets her fire her burst every rotation alongside another B2. SKILL1 (Snake Sense): (S1a) 'Activates when the stage target appears → all allies: ATK ▲25.98% / Hit Rate ▲11.13% for 10 sec' = a battle-start team buff, modeled passive → allies atkPct 25.98 + hitRatePct 11.13, durationSec 10 (the stage target = the boss, present from t=0; the passive applies at setup and lapses at 10s, never refreshing — a once-at-start window). (S1b) 'Only activates when attacking in Vamp status → self: Sustained Damage ▲4.4% / Hit Rate ▲1.84%, stacks ×10, 10 sec' = shotFired → self sustainedDamagePct 4.4 + hitRatePct 1.84, maxStacks 10, durationSec 10, fbGate:'inFb'. Vamp is the Full-Burst status (granted by S2b on FB entry); the sim has no separate Vamp entity, so the offensive GATE ('attacking in Vamp status') is modeled as the Full-Burst window (fbGate:'inFb') — each shot during FB accrues a stack, ramping 1→10 over the opening FB shots (probe: first stack f367, max f806). sustainedDamagePct feeds her sustained-flavored burst DoT (the opts.sustained Damage-Up term in sim.ts opts.sustained); hitRatePct is the live core-hit lift (sim.ts hrCoreMult, LIVE by default). See ⚑1 for the Vamp-permanence nuance (the load-bearing sustained-DoT coupling is fully captured; the between-FB hit-rate refresh is a conservative under-credit). SKILL2 (Snake Scale): (S2a) 'self: Hit Rate ▲21.96% continuously' = passive → self hitRatePct 21.96 (no expiry). (S2b) 'entering Full Burst → self: Vamp (prevents being targeted by single-target attacks, removed on a direct hit) + Invulnerable 1 sec' = DEFENSIVE, UNMODELED verbatim — v1 has no HP pool, no targeting model and no boss damage, so prevents-targeting/invulnerable move nothing; only its OFFENSIVE consequence (the Vamp status that gates S1b) is modeled, via the FB window. (S2c) 'using Burst Skill → all allies: Re-enters Burst Stage 2' = burstCast → allies reenterStage stage 2 — the meta-defining line. The engine holds the stage at 2 after her cast so a second eligible B2 casts in the same chain (sim.ts reenterStage detection requires trigger burstCast + reenterStage stage === castStage; probe: viper B2 f251 → crown B2 f281, exactly STAGE_CAST_GAP 30f, → helm B3 f311). BURST (Snake Bite, burstCast = her casts; B2 so the cast lands BEFORE Full Burst opens and takes NO +50% FB major, verified fbMajorApplied=false): (B1) '1 designated enemy: 1029.6% of final ATK as damage' = burstCast → enemy flatDamage 1029.6 (burst bucket, PLAIN flavor — NOT sustained, so the S1b sustainedDamagePct stacks do NOT double-dip into it). VALUE PROVENANCE: 1029.6 is the TREASURE prose (authoritative); the datamine ulti_skill_detail description_value_02 carries the UNTREASURED base 462.85% (L10) / skill_value_data 23142 = 231.42% (L1) — the same prose-vs-base-table split as helm (prose 8236.8 vs base 1237.5) and phantom; the favorite-item prose is the SSOT (DECISIONS 2026-07-17). (B2) 'if the enemy is the stage target: 105.3% of final ATK as sustained damage every 1 sec for 10 sec' = burstCast → enemy dot atkPct 105.3, durationSec 10, intervalSec 1, flavor 'sustained' (10 ticks; sustained-flavored so it is the SOLE consumer of her S1b sustainedDamagePct stacks; early ticks land pre-FB, later ticks inside FB). The stage-target condition collapses to always-true in the single-boss sim (the boss IS the stage target). UNMODELED (1 line, verbatim): the S2b Vamp/invulnerable defensive line (above). NO `ignored` blocks. ⚑1 (Vamp permanence, low): the kit's Vamp is granted on FB entry and 'removed upon taking a direct hit'; v1 has no boss damage, so once granted it is PERMANENT for the rest of the fight — strictly, S1b stacks should accrue on every shot after the first FB, not only inside FB windows. The engine has no 'permanent-after-first-FB' block gate (fbGate is inFb/outFb only; S4 forbids an engine change here), so fbGate:'inFb' is the closest available primitive. It is faithful where it matters: the LOAD-BEARING coupling — sustainedDamagePct boosting the sustained burst DoT — is fully captured, because the DoT's 10s post-cast window lies inside FB + the stacks' own 10s durationSec persistence (probe: FB DoT tick damage drops when S1b is removed). What it conservatively UNDER-credits is the 1.84%×10 hit-rate stack refresh on NORMAL attacks during the ~10s between-FB gap after the buff persistence lapses — a second-order effect that itself routes through the derived hrCoreMult (⚑2). The ungated alternative (stacks from t=0) was rejected: it over-credits the pre-first-FB opening (no Vamp yet) and is the opposite error. Estimate: <~1% of total (between-FB hit-rate-stack core lift on normals only; the sustained DoT — the primary consumer — is unaffected). Recipe: a focus video reading Vamp-icon uptime (expected ~100% after first FB) and the between-FB SG core-hit fraction; a 'permanent-after-first-FB' block gate would enact it exactly. Tier 2. ⚑2 (Hit Rate core yield, derived): the three hitRate lines (11.13 team / 21.96 self / 1.84×10 self) are kit-stated magnitudes but their damage YIELD flows through sim.ts hrCoreMult — a DERIVED reticle-shrink → core-fraction estimate (LIVE by default, HRCORE=0 disables), not a measured per-unit number (phantom ⚑4 class). Recipe: a viper focus video reading the in-window SG core-hit fraction. ⚑3 (SG cadence tuple, standard): ammo 9 / reloadFrames 122 / hitsPerShot 10 / RoF 90 are the datamine (unverified for this unit); the S1b stack ramp/hold derives from this cadence. Recipe: read fire cadence + the reload gap from any focus video. TIER 2: reenterStage (meta-defining B2 re-entry), FB-gated scoped stacks (fbGate + maxStacks), the treasure-prose value resolution, and the Vamp-status gate. Kit-autonomy gauntlet 2026-08-01: cross-family S2b (claude-fable-5) independently re-derived the same 9-line load-bearing set + the nearest-wrong traps (sustained-flavor coupling, reentry invisible in single-B2 comps, nuke-not-sustained, Vamp gating, DEF▼-as-damageTakenPct), leakDetected null; converged FAITHFUL. Two reconciliations: ; Vamp gate held fbGate:'inFb' with ⚑1 refined to the reviewer's 'permanent-after-first-FB' point (load-bearing sustained-DoT coupling fully captured; between-FB hit-rate refresh a conservative under-credit). (B3) The burst DEF ▼ 19.83%/10s is encoded as an enemy defPct block on the DEF ▼ channel — sub-0.1% at the scope-lock boss DEF 140, live at the web raid DEF defaults.",
   "unmodeled": {
     "skill1": [],
     "skill2": [
       "Activates when entering Full Burst. Affects self. Vamp: Prevents being targeted by single-target attacks continuously. This effect is removed upon taking a direct hit. Invulnerable for 1 sec. — DEFENSIVE: no HP pool / targeting model / boss damage in v1, so prevents-targeting + invulnerable move nothing; only the offensive Vamp GATE for skill1's stacks is modeled (via the Full-Burst window, fbGate:'inFb')."
     ],
-    "burst": [
-      "Affects the enemy if the enemy is the stage target. DEF ▼ 19.83% for 10 sec. — INERT and UNENACTABLE: boss DEF enters the formula only as the fixed config constant cfg.bossDef (sim.ts:1719 baseAtk = max(0, effectiveAtk − cfg.bossDef)); no buff/debuff channel feeds it, so the engine cannot apply an enemy DEF reduction at all, and the magnitude is negligible regardless (measured boss DEF ≈140 → ~0.01% damage at scope-lock ATK, docs/data/damage-calculation.md). NOT modeled as damageTakenPct (a different bucket/math that would over-credit a ~19.83% team vuln the kit does not deliver) — phantom/guilty/marciana precedent. The stage-target sustained-damage line that shares this header IS modeled (the dot block)."
-    ]
+    "burst": []
   },
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "buff", "stat": "atkPct", "value": 25.98, "durationSec": 10 },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 25.98,
+          "durationSec": 10
+        },
         {
           "kind": "buff",
           "stat": "hitRatePct",
@@ -26,8 +33,12 @@
     },
     {
       "slot": "skill1",
-      "trigger": { "kind": "shotFired" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
       "fbGate": "inFb",
       "effects": [
         {
@@ -50,28 +61,77 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "self" },
-      "effects": [{ "kind": "buff", "stat": "hitRatePct", "value": 21.96 }]
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 21.96
+        }
+      ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "allies" },
-      "effects": [{ "kind": "reenterStage", "stage": 2 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "reenterStage",
+          "stage": 2
+        }
+      ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 1029.6 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1029.6
+        }
+      ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": -19.83,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
         {
           "kind": "dot",
@@ -86,6 +146,6 @@
   "caveats": [
     "skill1: the S1b 'in Vamp status' gate is modeled as the Full-Burst window (fbGate:'inFb'), the closest available primitive — Vamp is technically permanent after the first FB in v1 (no direct hits), so the between-FB hit-rate-stack refresh is conservatively under-credited; the load-bearing sustained-DoT coupling is fully captured (⚑1).",
     "burst: the 1029.6% nuke is the TREASURE prose value (authoritative SSOT); the datamine ulti table carries the untreasured base 462.85%.",
-    "burst: the DEF ▼ 19.83% line is inert (enemy DEF negligible at scope-lock; engine drops enemy DEF debuffs) and is NOT modeled — see unmodeled.burst."
+    "burst: the DEF ▼ 19.83%/10s is encoded as an enemy defPct buff on the DEF ▼ channel (nonzero enemy defPct scales cfg.bossDef at damage time, floor 0) — sub-0.1% at the scope-lock boss DEF 140, live at the web raid DEF defaults. Encoded as its own burstCast block (not a damageTakenPct team vuln — that nearest-wrong stays pinned absent by the spec)."
   ]
 }

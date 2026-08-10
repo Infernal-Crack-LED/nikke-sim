@@ -63,6 +63,7 @@ interface UnitEntry {
   // AUTO
   unmodeled: Record<string, string[]>;
   caveats?: string[];
+  note?: string;
   board: null | {
     records: Array<{ comp: string; ratio: number }>;
     n: number;
@@ -186,6 +187,7 @@ if (mode === '--refresh') {
         : {}),
       unmodeled: o.unmodeled ?? { skill1: [], skill2: [], burst: [] }, // AUTO mirror
       ...(o.caveats ? { caveats: o.caveats } : {}),
+      ...(o.note ? { note: o.note } : {}), // AUTO mirror — gen-unmodeled-review.ts classifies with it
       board: stats
         ? {
             records: stats.records.map((r) => ({
@@ -420,6 +422,11 @@ if (mode === '--refresh') {
   } else {
     delete u.caveats;
   }
+  if (o.note) {
+    u.note = o.note;
+  } else {
+    delete u.note;
+  }
   await saveDoc(doc);
   console.log(
     `${slug}: kitParse.status=unit-tested provenance=${u.kitParse.provenance} date=${date}; ` +
@@ -447,6 +454,11 @@ if (mode === '--refresh') {
     u.caveats = o.caveats;
   } else {
     delete u.caveats;
+  }
+  if (o.note) {
+    u.note = o.note;
+  } else {
+    delete u.note;
   }
   await saveDoc(doc);
   console.log(

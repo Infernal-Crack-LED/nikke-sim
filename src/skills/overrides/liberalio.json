@@ -129,13 +129,15 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 925
+          "atkPct": 925,
+          "burstDesc": "allEnemies"
         }
       ]
     }
   ],
   "caveats": [
     "skill2: Gentle Current (charge time fixed at 1 sec vs non-stage-target Raptures) is not modeled — the solo-raid boss is always the stage target, so Raging Current is permanently active and Gentle Current can never fire.",
-    "skill2: her charge-speed immunity is only enforced against her OWN Skill 1 buff (excludeSelf); an EXTERNAL Charge Speed buff from a teammate (e.g. Maxwell, Alice) would wrongly speed her up in the sim."
+    "skill2: her charge-speed immunity is only enforced against her OWN Skill 1 buff (excludeSelf); an EXTERNAL Charge Speed buff from a teammate (e.g. Maxwell, Alice) would wrongly speed her up in the sim.",
+    "burst: the 925% additional-damage nuke carries burstDesc:'allEnemies' (its kit line sits under '■ Affects all enemies.') — it reads the trina-family burstSkillAoeDamagePct amp when cast inside an amp window; no amp in the comp = byte-identical."
   ]
 }
