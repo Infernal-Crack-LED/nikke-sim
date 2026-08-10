@@ -66,6 +66,7 @@ override files carry it. "Carriers" counts structural occurrences only — a uni
 | `atkOfMaxHpPct` | FinalATK | flat ATK add of `% × liveMaxHp`, **re-read every frame** | always | 4 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose |
 | `atkPct` | FinalATK | `staticAtk × (1 + Σ/100)` — dilutes against other ATK ▲% | always | 76 | a2, ada, ade-agent-bunny, alice, anis-star, arcana-fortune-mate, ark-ranger-black, asuka, … |
 | `casterAtkPct` | FinalATK | flat ATK add, resolved at apply to `caster.staticAtk × %` — does NOT dilute | always | 49 | ada, ade, ade-agent-bunny, anchor-innocent-maid, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, … |
+| `defPct` | FinalATK | ENEMY-targeted at a nonzero value: scales cfg.bossDef by (1 + Σ/100), floor 0 (the DEF ▼ channel, 2026-08-10); SELF/ally-targeted stays read by nothing — own DEF does not enter own damage | enemy-targeted buffs only; provably 0 at the pinned bossDef = 0 graded basis, live at the web raid DEF defaults | 22 | anchor, anis, bay, crow, crown, crust, delta, diesel, … |
 | `highestAllyAtkPct` | FinalATK | flat ATK add of `max(all staticAtk) × %` at apply; stored as `casterAtkPct` | always | 1 | guilty |
 | `critDamagePct` | Major (crit) | additive pp into `critBonus` (base `(critDamage−100)/100`) | crit-eligible instances | 28 | admi, aria, diesel-winter-sweets, dolla, emma-tactical-upgrade, epinel, guillotine, isabel, … |
 | `critRateNormalPct` | Major (crit) | additive pp into `critRate`, alongside `critRatePct` | `category === 'normal'` only | 3 | biscuit, helm, julia |
@@ -106,7 +107,6 @@ override files carry it. "Carriers" counts structural occurrences only — a uni
 | `burstGenPct` | Burst gauge | kit buffs multiply as `(1 + Σ/100)`; cube/OL-sourced burst-gen is a SEPARATE `burstGenMult` factor, so the two multiply rather than add | always | 9 | alice-wonderland-bunny, anis-star, grave, label, mana, mica-snow-buddy, neon-vision-eye, rupee-winter-shopper, … |
 | `skillCooldownReductionSec` | Skill cooldown | shortens the effective period of `interval`-trigger blocks while the buff is live | interval-trigger skills on the buff holder | 1 | dorothy |
 | `extraHitDamagePct` | New instance | spawns a per-pull rider hit of `value × hitsPerShot` %ATK — `category:'burst'`, crits (`RIDERCRIT`), never cores/ranges | per trigger pull | 4 | modernia, nayuta, neon-blue-ocean, neon-vision-eye |
-| `defPct` | — | parsed and stored, read by NOTHING — own DEF does not enter own damage | never | 22 | anchor, anis, bay, crow, crown, crust, delta, diesel, … |
 | `partsDamagePct` | — | parsed and stored, read by NOTHING — the scope-lock boss is partless | never | 14 | a2, alice-wonderland-bunny, anis-sparkling-summer, ark-ranger-black, cinderella-crystal-wave, d, dorothy, helm, … |
 
 <!-- END GENERATED: stat-bucket-matrix -->
@@ -180,33 +180,29 @@ deliberate; each has bitten at least once.
    multiply rather than pooling.
 3. **`distributedDamagePct` picks its factor by buff target.** On a unit it is the `Distributed`
    bucket. On the enemy it joins `Taken`, and only while a Damage Taken ▲ is also live.
-4. **Enemy-targeted _buffs_ are a two-item allowlist — enemy-targeted _effects_ are not.**
-   `damageTakenPct` and `distributedDamagePct` at a positive value are the only stats an
-   `enemy`-targeted `buff` can deliver; everything else aimed at the enemy falls out of the
-   switch and is discarded with no diagnostic. This is the `buff` channel only. The other
+4. **Enemy-targeted _buffs_ are a three-item allowlist — enemy-targeted _effects_ are not.**
+   `damageTakenPct` / `distributedDamagePct` at a positive value, plus `defPct` at any nonzero
+   value (the DEF channel, 2026-08-10), are the only stats an `enemy`-targeted `buff` can
+   deliver; everything else aimed at the enemy (enemy ATK ▼ — genuinely inert, no incoming
+   damage is modeled) falls out of the switch and is discarded, with a non-fatal
+   `validate-overrides.ts` warning at authoring time. This is the `buff` channel only. The other
    boss-facing kinds — `flatDamage`, `dot`, `targetStatus`, `hitRepeat`, `stackedNuke`,
-   `storedHit`, `escalating` — never consult `block.target` at all and are unaffected (across the
-   67 overrides: 172 `flatDamage`, 30 `buff`, 24 `dot`, 15 `targetStatus`, 8 other). Note
+   `storedHit`, `escalating` — never consult `block.target` at all and are unaffected. Note
    `resolveTargets({kind:'enemy'})` returns `[]`, so routing any of them through it would delete
    them — `sim.ts` carries an explicit warning against "fixing" that.
 
-   **What the drop costs is basis-dependent.** Enemy ATK ▼ is genuinely inert (no incoming damage
-   is modeled). Enemy DEF ▼ is not: `bossDef` is a live flat subtraction from `effectiveAtk`. It
-   is worth ~nothing on the validation basis — `scripts/battery/boss-def.ts` measures real
-   boss-type DEF at ~140, ≤0.12% board-wide, which is why `bossDef = 0` is the pinned
-   approximation — **but the web app runs the same engine at the raid defaults**
-   (`SR_DEFAULT_DEF = 30930` / `UR_DEFAULT_DEF = 12200`, `web/src/App.tsx`), and that battery's own
-   sweep already shows 6–17% per-unit swing at `bossDef = 20000`. There, a dropped DEF ▼ is worth
-   several percent. **12 overrides carry an enemy DEF ▼ line** (slugs, base-vs-variant exact:
-   `anis`, `cocoa`, `elegg`, `exia`, `frima`, `guilty`, `ludmilla`, `marciana-marine-study`,
-   `mast`, `novel`, `phantom`, `viper`) and 10 carry an enemy ATK ▼ — all recorded as prose
-   rather than encoded, each citing the DEF = 0 basis. `guilty` is the only one that encodes it
-   live (`burst` → `defPct: -20.25`), and it is silently discarded. Eleven of the twelve shave a
-   **percentage of boss DEF**, so their value grows with the basis; `mast` is the exception — Sea
-   Breeze is a **flat** shave scaled off her own DEF (~81.7 DEF at 50 stacks), which nearly zeroes
-   a 140-DEF boss but is noise against 30,930.
-   `validate-overrides.ts` now warns (non-fatally) on any enemy-targeted buff outside the
-   allowlist, or on an allowed stat authored at a non-positive value.
+   **The DEF ▼ channel (`bossDefNow`):** an enemy `defPct` scales `cfg.bossDef` by
+   `(1 + Σ/100)`, floor 0, at damage time. Provably 0 on the pinned graded basis (`bossDef = 0`;
+   `scripts/battery/boss-def.ts` measured real boss-type DEF ~140 ⇒ ≤0.12% board-wide, which is
+   why 0 is the pinned approximation) and live at the web app's raid defaults
+   (`SR_DEFAULT_DEF = 30930` / `UR_DEFAULT_DEF = 12200`, `web/src/App.tsx`), where the battery
+   sweep shows 6–17% per-unit swing at `bossDef = 20000`. `guilty` (`burst` → `defPct: -20.25`)
+   is the first live carrier; the other DEF ▼ carriers (`anis`, `cocoa`, `elegg`, `exia`,
+   `frima`, `ludmilla`, `marciana-marine-study`, `novel`, `phantom`, `viper` — prose-recorded,
+   never encoded) encode their lines as each passes its faithfulness review. `mast` stays
+   unmodeled: Sea Breeze is a **flat** shave scaled off her own DEF (no caster-DEF stat exists),
+   not a percentage of boss DEF. Equivalence proof:
+   `scripts/tests/engine/enemy-def-debuff.test.ts` (−50% at DEF 20,000 ≡ DEF 10,000 exactly).
 5. **`attackSpeedPct` and `fireRatePct` are one consumer under two names.** They are summed into a
    single cadence multiplier; nothing distinguishes them downstream.
 6. **`critRateNormalPct` is not a scoped variant of `critRatePct` — it is a separate pool.** Both
@@ -233,15 +229,11 @@ Recorded, not enacted — none of these changes a value.
   damage). But the carrier counts mean _a kit line's presence in an override is not evidence it is
   modeled_. The generated matrix now makes that visible per stat instead of requiring a grep.
   **One `defPct` carrier is not self-targeted** — see the enemy-debuff finding below.
-- **The enemy `defPct` drop is basis-dependent, and the web app does not run the basis it was
-  justified on** (2026-08-08). Trap 4 above has the detail. In short: `guilty`'s burst encodes
-  `defPct: -20.25` on an `enemy` block, the engine's two-item allowlist discards it with no
-  diagnostic, and 11 further overrides never encoded their DEF ▼ line for the same reason. That is
-  correct at `bossDef = 0` (the graded-comp basis, ≤0.12% per `scripts/battery/boss-def.ts`) and
-  wrong at the web app's own Solo/Union Raid defaults of 30,930 / 12,200, where the same battery's
-  sweep implies several percent per carrier. Recorded, not enacted — closing it is an
-  `src/engine/**` change. `scripts/validate-overrides.ts` now emits a non-fatal warning so the
-  next such line is visible at authoring time rather than silent.
+- **The enemy `defPct` drop is CLOSED — the DEF ▼ channel landed 2026-08-10** (owner-ruled;
+  faithfulness pass phase 2c). Trap 4 above has the live behavior. `guilty`'s `defPct: -20.25`
+  is the first live carrier; the remaining prose-recorded DEF ▼ lines encode as each unit passes
+  its faithfulness review. The `validate-overrides.ts` warning now covers only genuinely-dropped
+  shapes (enemy ATK ▼, zero-valued defPct, non-positive damageTakenPct/distributedDamagePct).
 - **`elementDamagePct` has zero override carriers.** It exists for the cube's strong-element line
   and the Overload `elem` line only; no kit feeds it today.
 - **`fireRatePct` has zero override carriers** while `attackSpeedPct` carries the same consumer.

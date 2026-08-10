@@ -1650,6 +1650,23 @@ export function runSim(
     );
   }
 
+  // The boss's live DEF at `frame`: cfg.bossDef scaled by any enemy-targeted defPct debuffs
+  // (the DEF ▼ channel, 2026-08-10 — owner-ruled). Short-circuits on the pinned graded basis
+  // (bossDef = 0: a percentage of zero is zero, so the whole channel is provably inert there —
+  // scripts/battery/boss-def.ts measured real boss-type DEF ~140 ⇒ ≤0.12% board-wide, which is
+  // why 0 is the pinned approximation). Live at the web app's Solo/Union Raid DEF defaults
+  // (30,930 / 12,200), where a dropped DEF ▼ was worth several percent per carrier. Floor 0:
+  // DEF cannot shave below zero.
+  function bossDefNow(frame: number): number {
+    if (cfg.bossDef === 0) {
+      return 0;
+    }
+    const shavePct = sum(enemyBuffs, 'defPct', frame);
+    return shavePct === 0
+      ? cfg.bossDef
+      : Math.max(0, cfg.bossDef * (1 + shavePct / 100));
+  }
+
   function dealDamage(
     u: UnitState,
     atkPct: number,
@@ -1849,7 +1866,7 @@ export function runSim(
       ? 1 + stat(u, 'distributedDamagePct', frame) / 100
       : 1;
 
-    const baseAtk = Math.max(0, effectiveAtk(u, frame) - cfg.bossDef);
+    const baseAtk = Math.max(0, effectiveAtk(u, frame) - bossDefNow(frame));
     const dmg =
       baseAtk *
       (atkPct / 100) *
@@ -1946,7 +1963,7 @@ export function runSim(
   ) {
     u.damage[category] += amount;
     if (onEvent) {
-      const baseAtk = Math.max(0, effectiveAtk(u, frame) - cfg.bossDef);
+      const baseAtk = Math.max(0, effectiveAtk(u, frame) - bossDefNow(frame));
       onEvent({
         kind: 'damage',
         frame,
@@ -2367,9 +2384,16 @@ export function runSim(
         case 'buff': {
           if (block.target.kind === 'enemy') {
             if (
-              (e.stat === 'damageTakenPct' ||
+              ((e.stat === 'damageTakenPct' ||
                 e.stat === 'distributedDamagePct') &&
-              e.value > 0
+                e.value > 0) ||
+              // enemy DEF ▼/▲ (2026-08-10, owner-ruled channel): scales cfg.bossDef by
+              // (1 + Σ/100) at damage time — exactly 0 impact on the bossDef = 0 graded
+              // basis, live at the web app's raid DEF defaults. Negative = the kit's
+              // DEF ▼ lines (guilty burst -20.25); either sign is admitted, the formula
+              // handles both. mast's caster-DEF-basis flat shave stays unmodeled (no
+              // caster-DEF stat — see her override prose).
+              (e.stat === 'defPct' && e.value !== 0)
             ) {
               // KR stacking rule: same buff (stat+value) from the same skill slot of the
               // same caster OVERWRITES/refreshes across trigger blocks, never co-stacks
@@ -2383,7 +2407,7 @@ export function runSim(
                 frame
               );
             }
-            // other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0
+            // other enemy debuffs (ATK▼) don't affect our damage — no incoming-damage model
             break;
           }
           const value =

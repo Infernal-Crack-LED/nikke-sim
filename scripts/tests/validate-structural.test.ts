@@ -199,7 +199,7 @@ describe('structuralCheck — chargeCounter still-bypassed fields (audit F2.1)',
 });
 
 describe('structuralCheck — enemy-targeted buff allowlist (warning channel)', () => {
-  it('warns on an enemy DEF ▼ buff (dropped at dispatch)', () => {
+  it('accepts an enemy DEF ▼ buff silently — the DEF channel is live (2026-08-10)', () => {
     const r = structuralCheck(
       'liter',
       minimal({
@@ -213,9 +213,27 @@ describe('structuralCheck — enemy-targeted buff allowlist (warning channel)', 
       CTX
     );
     expect(r.errors).toEqual([]);
-    expect(r.warnings.join('\n')).toMatch(
-      /enemy-targeted buff "defPct" is DROPPED/
+    expect(r.warnings).toEqual([]);
+  });
+
+  it('still warns on an enemy ATK ▼ buff (no channel) and on defPct at exactly 0', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        burst: [
+          block({
+            target: { kind: 'enemy' },
+            effects: [
+              { kind: 'buff', stat: 'atkPct', value: -9.09 },
+              { kind: 'buff', stat: 'defPct', value: 0 },
+            ],
+          }),
+        ],
+      }),
+      CTX
     );
+    expect(r.warnings.join('\n')).toMatch(/"atkPct" is DROPPED/);
+    expect(r.warnings.join('\n')).toMatch(/defPct at value 0 is DROPPED/);
   });
 
   it('warns on an allowed enemy stat at a non-positive value', () => {

@@ -137,13 +137,16 @@ export const TEAM_HAS_FACETS = new Set([
   'sameSquad',
 ]);
 
-// The ONLY stats an `enemy`-targeted buff can deliver. sim.ts applyEffect's `case 'buff'` tests
-// `block.target.kind === 'enemy'` first and forwards to `enemyBuffs` only for these two, at a
-// POSITIVE value; every other stat aimed at the enemy falls out of the switch and is discarded
-// with no diagnostic. Keep in sync with src/engine/sim.ts (~L2287).
+// The stats an `enemy`-targeted buff can deliver. sim.ts applyEffect's `case 'buff'` tests
+// `block.target.kind === 'enemy'` first and forwards to `enemyBuffs` only for: these two at a
+// POSITIVE value, plus `defPct` at any NONZERO value (the DEF ▼ channel, 2026-08-10 — scales
+// cfg.bossDef; inert on the bossDef = 0 graded basis, live at the web raid defaults). Every
+// other stat aimed at the enemy falls out of the switch and is discarded with no diagnostic.
+// Keep in sync with the enemy-buff dispatch in src/engine/sim.ts applyEffect.
 export const ENEMY_BUFF_STATS = new Set([
   'damageTakenPct',
   'distributedDamagePct',
+  'defPct',
 ]);
 
 // Block fields the chargeCounter dispatch still IGNORES: the runtime abort-gates are honored
@@ -534,23 +537,29 @@ export function structuralCheck(
           `${p}: a targetStatus effect must sit on a block with target "enemy" (the status is inflicted on the boss)`
         );
       }
-      // An `enemy`-targeted buff reaches the damage model ONLY as a positive damageTakenPct or
-      // distributedDamagePct (ENEMY_BUFF_STATS). Anything else — an enemy DEF ▼/ATK ▼, or either
-      // allowed stat authored with a negative value — is dropped at dispatch with no diagnostic,
-      // so the JSON reads as a live debuff while contributing nothing. That drop is deliberate on
-      // the scope-lock basis (bossDef = 0; see scripts/battery/boss-def.ts), but the web app runs
-      // the same engine at the Solo/Union Raid DEF defaults (30,930 / 12,200 — web/src/App.tsx),
-      // where a dropped DEF ▼ is worth several percent. Warn, don't fail: the carrier line is
-      // real kit, and the fix is an engine change, not an authoring one.
+      // An `enemy`-targeted buff reaches the damage model ONLY as: a positive damageTakenPct /
+      // distributedDamagePct, or a nonzero defPct (the DEF ▼ channel — scales cfg.bossDef; inert
+      // on the bossDef = 0 graded basis, live at the web raid defaults). Anything else — an
+      // enemy ATK ▼, or an allowed stat at a dropped value — is discarded at dispatch with no
+      // diagnostic, so the JSON reads as a live debuff while contributing nothing. Warn, don't
+      // fail: the carrier line is real kit, and the fix is an engine change, not an authoring one.
       if (b.target?.kind === 'enemy') {
         for (const e of collectEffects(b.effects, 'buff')) {
           if (!ENEMY_BUFF_STATS.has(e.stat)) {
             warnings.push(
               `${p}: enemy-targeted buff "${e.stat}" is DROPPED by the engine (only ${[...ENEMY_BUFF_STATS].join(' / ')} reach enemyBuffs) — the line is inert; record it in "unmodeled" if that is intended`
             );
-          } else if (typeof e.value === 'number' && e.value <= 0) {
+          } else if (
+            e.stat !== 'defPct' &&
+            typeof e.value === 'number' &&
+            e.value <= 0
+          ) {
             warnings.push(
               `${p}: enemy-targeted buff "${e.stat}" has a non-positive value (${e.value}) and is DROPPED by the engine (the dispatch requires value > 0) — the line is inert`
+            );
+          } else if (e.stat === 'defPct' && e.value === 0) {
+            warnings.push(
+              `${p}: enemy-targeted defPct at value 0 is DROPPED by the engine (the DEF channel requires a nonzero value) — the line is inert`
             );
           }
         }

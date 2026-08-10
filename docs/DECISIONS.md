@@ -9,6 +9,23 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-10, later) ENEMY DEF ▼ CHANNEL LANDED — owner-ruled "bosses should get -def"
+  (faithfulness-pass phase 2c).** An enemy-targeted `defPct` at a nonzero value now reaches
+  `enemyBuffs` and scales `cfg.bossDef` by `(1 + Σ/100)`, floor 0, at damage time (`bossDefNow`
+  in sim.ts). Provably ZERO on the pinned graded basis — `bossDef = 0` short-circuits, and
+  `scripts/battery/boss-def.ts` (real boss-type DEF ~140 ⇒ ≤0.12% board-wide) remains the
+  evidence for that pin — while live at the web app's Solo/Union Raid DEF defaults
+  (30,930 / 12,200), where the pre-channel silent drop cost carriers several percent
+  (damage-bucket-matrix §5 trap 4). First live carrier: `guilty` burst `defPct: -20.25` (was
+  encoded and silently discarded). The 10 other prose-recorded DEF ▼ carriers encode
+  kit-verbatim as each passes its phase-4 faithfulness review; `mast` (SMG/Electric) stays
+  unmodeled — Sea Breeze is a flat caster-DEF-basis shave with no caster-DEF stat, deferred
+  until a second carrier appears. Enemy ATK ▼ stays dropped (nothing models incoming damage);
+  the validator warning now covers only genuinely-dropped shapes. Evidence: full verify green,
+  regression + control-regression byte-identical (graded basis untouched); equivalence proof in
+  `scripts/tests/engine/enemy-def-debuff.test.ts` (−50% at DEF 20,000 ≡ DEF 10,000 exactly;
+  −150% ≡ DEF 0; +50% ≡ DEF 30,000).
+
 - **(2026-08-10) BURST-SKILL-DAMAGE AMPLIFIERS LANDED — `burstSkillSingleDamagePct` /
   `burstSkillAoeDamagePct` + the `burstDesc` scope tag (faithfulness-pass phase 2b,
   owner-approved scope).** The jackal/trina "Burst Skill damage of skills with ⟨Affects clause⟩
