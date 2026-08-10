@@ -1651,12 +1651,14 @@ export function runSim(
   }
 
   // The boss's live DEF at `frame`: cfg.bossDef scaled by any enemy-targeted defPct debuffs
-  // (the DEF ▼ channel, 2026-08-10 — owner-ruled). Short-circuits on the pinned graded basis
-  // (bossDef = 0: a percentage of zero is zero, so the whole channel is provably inert there —
-  // scripts/battery/boss-def.ts measured real boss-type DEF ~140 ⇒ ≤0.12% board-wide, which is
-  // why 0 is the pinned approximation). Live at the web app's Solo/Union Raid DEF defaults
-  // (30,930 / 12,200), where a dropped DEF ▼ was worth several percent per carrier. Floor 0:
-  // DEF cannot shave below zero.
+  // (the DEF ▼ channel, 2026-08-10 — owner-ruled). The zero short-circuit covers any bossDef=0
+  // run (e.g. the validate-overrides smoke). NOTE the GRADED surfaces do NOT run 0: scope-lock.ts
+  // pins bossDef 140 (measured, owner 2026-07-15, "always on") for regression/control/experiment
+  // — there the channel is LIVE but ~0.02%-scale per carrier (a % of 140 against six-figure ATK;
+  // scripts/battery/boss-def.ts: ≤0.12% board-wide even zeroing DEF entirely) and no defPct
+  // carrier sits in a pinned comp today. The channel's real weight is the web app's Solo/Union
+  // Raid DEF defaults (30,930 / 12,200), where the pre-channel drop cost carriers several
+  // percent. Floor 0: DEF cannot shave below zero.
   function bossDefNow(frame: number): number {
     if (cfg.bossDef === 0) {
       return 0;

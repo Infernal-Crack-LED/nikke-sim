@@ -192,9 +192,10 @@ deliberate; each has bitten at least once.
    them — `sim.ts` carries an explicit warning against "fixing" that.
 
    **The DEF ▼ channel (`bossDefNow`):** an enemy `defPct` scales `cfg.bossDef` by
-   `(1 + Σ/100)`, floor 0, at damage time. Provably 0 on the pinned graded basis (`bossDef = 0`;
-   `scripts/battery/boss-def.ts` measured real boss-type DEF ~140 ⇒ ≤0.12% board-wide, which is
-   why 0 is the pinned approximation) and live at the web app's raid defaults
+   `(1 + Σ/100)`, floor 0, at damage time. On the graded surfaces — which run `bossDef = 140`
+   (scope-lock.ts, owner 2026-07-15; several docs stale-claim 0, a recorded drift finding) —
+   the channel is live at ~0.02%-scale per carrier (`scripts/battery/boss-def.ts` bounds full
+   DEF-zeroing at ≤0.12% board-wide), and live at the web app's raid defaults
    (`SR_DEFAULT_DEF = 30930` / `UR_DEFAULT_DEF = 12200`, `web/src/App.tsx`), where the battery
    sweep shows 6–17% per-unit swing at `bossDef = 20000`. `guilty` (`burst` → `defPct: -20.25`)
    is the first live carrier; the other DEF ▼ carriers (`anis`, `cocoa`, `elegg`, `exia`,

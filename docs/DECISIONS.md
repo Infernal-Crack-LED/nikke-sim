@@ -12,9 +12,13 @@ lives. Newest first within each section.
 - **(2026-08-10, later) ENEMY DEF ▼ CHANNEL LANDED — owner-ruled "bosses should get -def"
   (faithfulness-pass phase 2c).** An enemy-targeted `defPct` at a nonzero value now reaches
   `enemyBuffs` and scales `cfg.bossDef` by `(1 + Σ/100)`, floor 0, at damage time (`bossDefNow`
-  in sim.ts). Provably ZERO on the pinned graded basis — `bossDef = 0` short-circuits, and
-  `scripts/battery/boss-def.ts` (real boss-type DEF ~140 ⇒ ≤0.12% board-wide) remains the
-  evidence for that pin — while live at the web app's Solo/Union Raid DEF defaults
+  in sim.ts). Graded-surface footprint — CORRECTED SAME DAY by the phase-4 batch-1 review: the
+  graded surfaces run `bossDef = 140` (scope-lock.ts, owner 2026-07-15), NOT the 0 several docs
+  claimed (that doc-vs-code drift is a batch-1 finding of its own), so the channel is LIVE there
+  at ~0.02%-scale per carrier (a % of 140 vs six-figure ATK; `scripts/battery/boss-def.ts`
+  bounds a full DEF-zeroing at ≤0.12% board-wide) — and the gate stayed green because `guilty`,
+  the sole live carrier, sits in ZERO pinned comps (all three snapshots checked) and the drift
+  gate tolerates 0.1%. The channel's real weight is the web app's Solo/Union Raid DEF defaults
   (30,930 / 12,200), where the pre-channel silent drop cost carriers several percent
   (damage-bucket-matrix §5 trap 4). First live carrier: `guilty` burst `defPct: -20.25` (was
   encoded and silently discarded). The 10 other prose-recorded DEF ▼ carriers encode
