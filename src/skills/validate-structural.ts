@@ -45,6 +45,8 @@ export const STATS = new Set([
   'skillCooldownReductionSec',
   'extraHitDamagePct',
   'trueDamagePct',
+  'burstSkillSingleDamagePct',
+  'burstSkillAoeDamagePct',
   'projectileExplosionPct',
   'elemAdvantageDamagePct',
   'distributedDamagePct',
@@ -582,6 +584,24 @@ export function structuralCheck(
         errors.push(
           `${p}: requiresTargetStatus must be a non-empty status name`
         );
+      }
+      // `burstDesc` scopes a hit for the Burst-Skill-Damage amps ("Affects 1 enemy unit(s)" /
+      // "Affects all enemies" in the amplified skill's own description). The amps amplify
+      // "Burst Skill damage", so the tag is only meaningful on burst-slot damage — authored
+      // anywhere else it would silently do nothing (the engine reads it off burst instances).
+      for (const e of collectEffects(b.effects, 'flatDamage')) {
+        if (e.burstDesc !== undefined) {
+          if (!['singleEnemy', 'allEnemies'].includes(e.burstDesc)) {
+            errors.push(
+              `${p}: burstDesc must be 'singleEnemy' or 'allEnemies', got "${e.burstDesc}"`
+            );
+          }
+          if (slot !== 'burst') {
+            errors.push(
+              `${p}: burstDesc tags Burst Skill damage — it belongs on a burst-slot block, not ${slot}`
+            );
+          }
+        }
       }
       if (!Array.isArray(b.effects) || !b.effects.length) {
         errors.push(`${p}: needs effects[]`);

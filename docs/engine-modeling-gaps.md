@@ -718,6 +718,22 @@ gauge-row value — the same gated-decision treatment scarlet-black-shadow got. 
 NEW override landing on an SR/RL unit should cross-check `chargeMultiplier` against
 `gauge-per-shot.json` before assuming the fallback/table value is correct.
 
+### 22. Burst-Skill-Damage amplifiers (jackal/trina) — ✅ CAPABILITY + BOTH PRODUCERS LANDED 2026-08-10
+
+"Burst Skill damage of skills with 'Affects 1 enemy unit(s)' / 'Affects all enemies' in the
+description ▲X%" had no StatKey and no scope gate (the audit-F3 gap; both units' specs pinned the
+omission). Landed: `burstSkillSingleDamagePct` / `burstSkillAoeDamagePct` — additive Damage-Up
+terms read ONLY by burst-slot hits carrying the matching `burstDesc` tag (⚑ additive placement per
+the "○○ Damage ▲" family rule, unmeasured for these members; a popup read of an amped nuke pins
+it). Producers: `jackal` (38.91/15s, B1 → covers the chain's B3 cast) and `trina` Spread Roots
+(435.6/5s — the kit's enemy-count==1 gate is always true at solo scope; Wilted Roots ≥2-enemies
+branch stays unmodeled verbatim). Tagged beneficiaries so far: `scarlet`, `liberalio` (kit-verified
+"■ Affects all enemies" damage lines); **remaining candidates tag as each unit is reviewed**
+(phase-4 checklist item — the census scan found ~33 all-enemies + ~6 single-enemy burst-damage
+carriers, each needing its Affects-clause verified against the damage line before tagging).
+Board: zero movement on pinned comps (no producer+tagged-beneficiary pair); N3 iron measured
+`liberalio` 0.877 → 0.924 COLD▼ with all non-beneficiaries unchanged.
+
 ### 21. "Buff my NEXT round" per-pull `durationShots` budget — ✅ FIXED 2026-08-08
 
 `firePull` now skips the round-budget decrement for any round-scoped buff whose `startFrame`

@@ -11,16 +11,16 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 161 | 37.2% |
-| Other / see caveats | 108 | 24.9% |
-| Missing engine primitive / trigger | 97 | 22.4% |
+| Defensive / HP / shield / aggro | 161 | 37.4% |
+| Other / see caveats | 106 | 24.6% |
+| Missing engine primitive / trigger | 97 | 22.5% |
 | Out-of-domain / parser unsupported | 29 | 6.7% |
 | Partless boss | 12 | 2.8% |
-| Weapon-state / shot-count approximation | 11 | 2.5% |
-| Self-status / stack gate | 8 | 1.8% |
+| Weapon-state / shot-count approximation | 11 | 2.6% |
+| Self-status / stack gate | 8 | 1.9% |
 | RNG / probabilistic | 4 | 0.9% |
 | Measurement-gated / unverified cadence | 3 | 0.7% |
-| **Total** | **433** | 100.0% |
+| **Total** | **431** | 100.0% |
 
 ## Entries by reason
 
@@ -642,7 +642,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Other / see caveats (108)
+### Other / see caveats (106)
 
 **A2** (a2)
 
@@ -738,11 +738,6 @@ Attract: Taunts all enemies for 5 sec.
   - *Why:* skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst
 - **burst:** Current HP ▼ 1% every 1 sec, lasts for 10 sec.
   - *Why:* See unit note / caveats
-
-**Jackal** (jackal)
-
-- **burst:** Burst Skill damage of skills with "Affects 1 enemy unit(s)" in the description ▲ 38.91% for 15 sec.
-  - *Why:* burst: the 38.91% Burst-Skill-Damage amp (scoped to skills whose description says 'Affects 1 enemy unit(s)', 15s per cast) is NOT modeled — the engine has no Burst-Skill-Damage bucket/stat and no description-text scope gate (trina precedent, same mechanic family). Teammates' single-target burst nukes cast within 15s of jackal's cast are missing the amp, so jackal comps read COLD by exactly that amount — a documented engine gap (⚑2), not a tuning residual.
 
 **Laplace: Ultimate Hero** (laplace-ultimate-hero)
 
@@ -989,10 +984,8 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v
 
 **Trina** (trina)
 
-- **burst:** Spread Roots: Burst Skill damage of skills with "Affects all enemies" ▲ 435.6% for 5 sec.
-  - *Why:* burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).
 - **burst:** Changes Spread Roots to Wilted Roots.
-  - *Why:* burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).
+  - *Why:* burst: Spread Roots is MODELED (2026-08-10, faithfulness pass): burstSkillAoeDamagePct 435.6 to all allies for 5s on her burstCast — the kit gates it on 'enemy count aside from Nikkes is 1', which is ALWAYS true in the solo-raid sim, so no gate is encoded. Read only by burst-slot hits tagged burstDesc:'allEnemies' (scarlet/liberalio nukes tagged; further carriers tag as reviewed). As a B2 her cast precedes the chain's B3 by under a second, so the window covers the nuke. The Wilted Roots branch (enemy count ≥2) is unreachable at scope and stays unmodeled verbatim. ⚑ additive Damage-Up placement per the '○○ Damage ▲' family rule (SSOT damage-formula §2); a popup read of an amped all-enemies nuke pins it.
 - **burst:** Wilted Roots: Burst Skill damage of skills with "Affects all enemies" ▲ 64.46% for 5 sec.
   - *Why:* burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).
 

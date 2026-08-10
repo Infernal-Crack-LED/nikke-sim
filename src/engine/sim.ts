@@ -971,6 +971,7 @@ export function runSim(
     sustained: boolean;
     sequential: boolean;
     trueFlavor: boolean;
+    burstDesc?: 'singleEnemy' | 'allEnemies';
     projFlavor?: 'attachment' | 'explosion';
     // delayed full-charge cannon shot (snow-white): route through the charge bucket, keep its
     // pierce tag, and (unlike ordinary riders) receive the +30% range bonus. Omitted → the
@@ -1672,6 +1673,9 @@ export function runSim(
       // Omitted where the engine has no single source (the summed extraHitDamagePct rider).
       srcSlot?: SkillSlot | 'normal';
       chargeMultPct?: number; // full-charge multiplier override when there is no swap to source it (delayed charge hit — snow-white's cannon); only read when charge:true
+      // Burst-Skill-Damage amp scope tag (jackal/trina family): set from the effect's authored
+      // `burstDesc`; the instance reads the matching burstSkill*DamagePct amp in Damage Up.
+      burstDesc?: 'singleEnemy' | 'allEnemies';
     }
     // RETURNS the instance's final damage. Every existing caller ignores it; it exists so the
     // weapon-fire path can hand the parent hit's FINAL number to a `hitRepeat` rider ("X% of the
@@ -1805,6 +1809,16 @@ export function runSim(
         (opts.sustained ? stat(u, 'sustainedDamagePct', frame) : 0) +
         (opts.sequential ? stat(u, 'sequentialDamagePct', frame) : 0) +
         (opts.trueFlavor ? stat(u, 'trueDamagePct', frame) : 0) +
+        // Burst-Skill-Damage amps (jackal/trina): additive Damage-Up terms scoped by the
+        // amplified instance's own kit-description clause ("Affects 1 enemy unit(s)" vs
+        // "Affects all enemies"), carried as the effect's burstDesc tag. Untagged instances
+        // read neither. ⚑ additive placement per the "○○ Damage ▲" family rule (SSOT §2).
+        (opts.burstDesc === 'singleEnemy'
+          ? stat(u, 'burstSkillSingleDamagePct', frame)
+          : 0) +
+        (opts.burstDesc === 'allEnemies'
+          ? stat(u, 'burstSkillAoeDamagePct', frame)
+          : 0) +
         (advantaged(u) && !elemAdvInElement
           ? stat(u, 'elemAdvantageDamagePct', frame)
           : 0) +
@@ -2501,6 +2515,7 @@ export function runSim(
             sustained: e.flavor === 'sustained',
             sequential: e.flavor === 'sequential',
             trueFlavor: e.flavor === 'true',
+            burstDesc: e.burstDesc,
             projFlavor:
               e.flavor === 'projectileAttachment'
                 ? ('attachment' as const)
@@ -3742,6 +3757,7 @@ export function runSim(
           sustained: p.sustained,
           sequential: p.sequential,
           trueFlavor: p.trueFlavor,
+          burstDesc: p.burstDesc,
           projFlavor: p.projFlavor,
         });
         pendingHits.splice(i, 1);

@@ -76,6 +76,8 @@ override files carry it. "Carriers" counts structural occurrences only — a uni
 | `chargeDamageMultPct` | Charge | scales the BASE charge term (`baseCharge × %`), like the doll/collection lines | charge instances only | 2 | admi, helm |
 | `chargeDamagePct` | Charge | flat percentage points added AFTER the base term | charge instances only | 15 | a2, alice, ein, emilia, eunhwa, eunhwa-tactical-upgrade, himeno, n102, … |
 | `attackDamagePct` | DamageUp | additive pp — the unflavored member every instance reads | always | 50 | ade-agent-bunny, anchor-innocent-maid, anis-star, arcana, arcana-fortune-mate, asuka, asuka-wille, avistar, … |
+| `burstSkillAoeDamagePct` | DamageUp | additive pp (⚑ placement per the "○○ Damage ▲" family rule, unmeasured) | burst-slot hits tagged burstDesc:'allEnemies' | 1 | trina |
+| `burstSkillSingleDamagePct` | DamageUp | additive pp (⚑ placement per the "○○ Damage ▲" family rule, unmeasured) | burst-slot hits tagged burstDesc:'singleEnemy' | 1 | jackal |
 | `pierceDamagePct` | DamageUp | additive pp | Pierce-tagged shots (`hasPierce` / live `gainPierce` / per-shot tag) | 10 | ade-agent-bunny, d-killer-wife, diesel, dorothy-serendipity, grave, mari, milk-blooming-bunny, mint, … |
 | `projectileAttachmentPct` | DamageUp | additive pp, flavor-scoped | attachment-flavored hits only | 1 | rapi-red-hood |
 | `projectileExplosionPct` | DamageUp | additive pp, flavor-scoped | explosion-flavored hits **plus RL normal attacks** (`projExplOnRlNormals`, default on) | 8 | anis-star, avistar, emma-tactical-upgrade, eunhwa-tactical-upgrade, mint, prika, rapi-red-hood, vesti-tactical-upgrade |

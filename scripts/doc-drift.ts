@@ -496,6 +496,16 @@ const BUCKET_ROUTING: Record<string, Routing> = {
     how: 'additive pp',
     gate: 'true-flavored instances',
   },
+  burstSkillSingleDamagePct: {
+    factor: 'DamageUp',
+    how: 'additive pp (⚑ placement per the "○○ Damage ▲" family rule, unmeasured)',
+    gate: "burst-slot hits tagged burstDesc:'singleEnemy'",
+  },
+  burstSkillAoeDamagePct: {
+    factor: 'DamageUp',
+    how: 'additive pp (⚑ placement per the "○○ Damage ▲" family rule, unmeasured)',
+    gate: "burst-slot hits tagged burstDesc:'allEnemies'",
+  },
   pierceDamagePct: {
     factor: 'DamageUp',
     how: 'additive pp',

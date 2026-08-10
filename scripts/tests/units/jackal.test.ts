@@ -212,6 +212,14 @@ const j4UnscopedAmp = withPatchedOverride('jackal', (ov) => {
     ],
   });
 });
+/** J4 the amp-removed arm: proves the shipped scoped amp moves nothing in THIS comp
+ *  (no burst-slot hit here carries burstDesc:'singleEnemy', so removal is byte-identical —
+ *  the amp's positive proof lives in scripts/tests/engine/burst-skill-amp.test.ts). */
+const j4NoAmp = withPatchedOverride('jackal', (ov) => {
+  ov.burst[0].effects = ov.burst[0].effects.filter(
+    (e: any) => e.stat !== 'burstSkillSingleDamagePct'
+  );
+});
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run();
@@ -228,6 +236,7 @@ const j3removed = run({ jackal: j3Removed });
 const alwaysUp = run({ jackal: j1AlwaysUp });
 const attacksMisread = run({ jackal: j1AttacksMisread });
 const unscopedAmp = run({ jackal: j4UnscopedAmp });
+const noAmp = run({ jackal: j4NoAmp });
 
 // ---- readers ----------------------------------------------------------------------------------
 const buffs = (evs: SimEvent[]) =>
@@ -412,23 +421,42 @@ describe('jackal — kit spec', () => {
     });
   });
 
-  describe('J4 — the burst Burst-Skill-damage amp is genuinely unmodeled (trina precedent)', () => {
-    it('jackal grants NO damage stat — her only buffs are the two inert defPct lines', () => {
+  describe('J4 — the burst Burst-Skill-damage amp is MODELED as the scoped burstSkillSingleDamagePct (2026-08-10)', () => {
+    it('jackal grants exactly defPct + the scoped amp — never an unscoped damage stat', () => {
       const granted = new Set(
         buffs(base.events)
           .filter((b) => b.casterIdx === JACKAL)
           .map((b) => b.stat)
       );
-      expect(granted).toEqual(new Set(['defPct']));
+      expect(granted).toEqual(new Set(['defPct', 'burstSkillSingleDamagePct']));
     });
 
-    it('the omission is a choice: the unscoped-38.91% counterfactual lifts team totals', () => {
+    it('the amp is 38.91 for 15s to all allies on her burstCast, kit-literal', () => {
+      const amp = buffs(base.events).filter(
+        (b) => b.stat === 'burstSkillSingleDamagePct'
+      );
+      expect(amp.length).toBeGreaterThan(0);
+      expect(amp.every((b) => b.value === 38.91)).toBe(true);
+      expect(
+        amp.every(
+          (b) => b.expiresFrame != null && b.expiresFrame - b.frame === 15 * 60
+        )
+      ).toBe(true);
+    });
+
+    it('DISCRIMINATING (scope): the amp moves NOTHING in this comp — no burst-slot hit here carries the singleEnemy tag, so an unscoped-38.91% mis-encode (which lifts totals) is provably absent', () => {
+      // the nearest-wrong counterfactual (attackDamagePct 38.91) lifts team totals …
       expect(
         buffs(unscopedAmp.events).filter(
           (b) => b.stat === 'attackDamagePct' && b.casterIdx === JACKAL
         ).length
       ).toBeGreaterThan(0);
       expect(sum(unscopedAmp.totals)).toBeGreaterThan(sum(base.totals));
+      // … while the shipped scoped amp leaves this untagged comp's totals untouched: the
+      // stat only reaches burst-slot hits tagged burstDesc:'singleEnemy', and none exists
+      // in the fixture comp. (scripts/tests/engine/burst-skill-amp.test.ts proves the
+      // amp DOES land on a tagged hit.)
+      expect(sum(noAmp.totals)).toBe(sum(base.totals));
     });
   });
 
