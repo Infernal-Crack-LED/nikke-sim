@@ -11,16 +11,16 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 156 | 37.8% |
-| Other / see caveats | 98 | 23.7% |
-| Missing engine primitive / trigger | 89 | 21.5% |
+| Defensive / HP / shield / aggro | 156 | 37.9% |
+| Other / see caveats | 97 | 23.5% |
+| Missing engine primitive / trigger | 90 | 21.8% |
 | Out-of-domain / parser unsupported | 30 | 7.3% |
-| Partless boss | 12 | 2.9% |
 | Weapon-state / shot-count approximation | 11 | 2.7% |
+| Partless boss | 11 | 2.7% |
 | Self-status / stack gate | 8 | 1.9% |
 | RNG / probabilistic | 6 | 1.5% |
 | Measurement-gated / unverified cadence | 3 | 0.7% |
-| **Total** | **413** | 100.0% |
+| **Total** | **412** | 100.0% |
 
 ## Entries by reason
 
@@ -629,7 +629,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Other / see caveats (98)
+### Other / see caveats (97)
 
 **A2** (a2)
 
@@ -666,11 +666,6 @@ Attract: Taunts all enemies for 5 sec.
   - *Why:* skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES (live from t=0, expire at 60/90/150s — the derived >70%/>55%/>25% crossing times of the 0.5%/s drain — and REFRESH on her own burstCast, which recharges Extrasensory to 100%). Reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts. Replaces the prior permanent encoding that OVER-CREDITED never-burst comps (her ~1.19 board-hotness).
 - **burst:** Charges Extrasensory to 100%.
   - *Why:* Burst ATK 73.16/10s on burstCast (her own cast — hard rule 6); 'Charges Extrasensory to 100%' folded into the trajectory derivation → unmodeled
-
-**D: Killer Wife** (d-killer-wife)
-
-- **skill1:** ■ Activates when attacking with Full Charge for 3 time(s). Affects self.
-  - *Why:* See unit note / caveats
 
 **Delta: Ninja Thief** (delta-ninja-thief)
 
@@ -978,7 +973,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 - **burst:** Cooldown: 20 s
   - *Why:* See unit note / caveats
 
-### Missing engine primitive / trigger (89)
+### Missing engine primitive / trigger (90)
 
 **A2** (a2)
 
@@ -1064,6 +1059,11 @@ Gains debuff immunity to 1 debuff(s) for 10 sec.
   - *Why:* skill2: the Reliable Cooking 'DEF ▲10% of the skill user's DEF' grant is encoded as an inert defPct 10 block (kit completeness) — the kit is caster-DEF-derived but no casterDefPct StatKey exists, so it is approximated by the target's own defPct; defPct is damage-inert in v1, so this moves nothing. The 'Removes 1 debuff' cleanse is unmodeled (no ally-debuff model); the 'allies not in Reliable Cooking' no-refresh gate is expressible via `noRetriggerWhileActive` (types.ts, vesti-tactical-upgrade precedent) but left unenacted — the gated grant is defPct, damage-inert in v1
 - **skill2:** Removes 1 debuff.
   - *Why:* skill2: the Reliable Cooking 'DEF ▲10% of the skill user's DEF' grant is encoded as an inert defPct 10 block (kit completeness) — the kit is caster-DEF-derived but no casterDefPct StatKey exists, so it is approximated by the target's own defPct; defPct is damage-inert in v1, so this moves nothing. The 'Removes 1 debuff' cleanse is unmodeled (no ally-debuff model); the 'allies not in Reliable Cooking' no-refresh gate is expressible via `noRetriggerWhileActive` (types.ts, vesti-tactical-upgrade precedent) but left unenacted — the gated grant is defPct, damage-inert in v1
+
+**D: Killer Wife** (d-killer-wife)
+
+- **burst:** Buff takes effect depending on the area hit — the PARTS branch ('Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s') is unmodeled (TODO: needs destructible-part modeling; core-only proxy for now — see caveats).
+  - *Why:* burst: the parts branch ('Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s') is PARKED — not in the effects array. It is parts-gated, and on the partless v1 scope-lock boss no ally can ever hit parts, so it can never be earned (repo convention for v1-partless-inert lines, cf. brid's Wind-Code debuffs). The body branch is what ships. TODO PARTS: re-enable it only for a boss with destructible parts, wired as requiresTargetStatus 'Wipe Out' + requiresCore (the parts→core proxy) + a parts-hit trigger. OUT OF SCOPE for v1.
 
 **Delta** (delta)
 
@@ -1471,57 +1471,6 @@ Explosion Radius ▲ 15.01% for 10 sec.
 Outgoing healing ▲ 35.2% continuously.
   - *Why:* skill1/skill2 are EMPTY BY CONSTRUCTION, not by omission — every line there is out-of-domain for cause: (K1) S1 'Outgoing healing ▲ 35.2%' modifies heal AMOUNTS, which do not exist in the sim — no stat, no channel, and no recovery-consumer reads an amount
 
-### Partless boss (12)
-
-**D: Killer Wife** (d-killer-wife)
-
-- **skill1:** Gain Pierce for 1 shot.
-  - *Why:* skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)
-- **burst:** Buff takes effect depending on the area hit — the PARTS branch ('Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s') is unmodeled (TODO: needs destructible-part modeling; core-only proxy for now — see caveats).
-  - *Why:* burst: [SKIPPED-CONDITIONAL, fixed 2026-07-17] the parts branch 'Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s' is parts-gated — on the partless v1 scope-lock boss no ally can hit parts, so it can never be earned. It was previously modeled as an ungated all-ally coreDamagePct buff, which over-credited every ally's core bucket (core hits DO exist on a partless boss's core). Now REMOVED from the effects array (repo convention for v1-partless-inert lines, cf. brid's Wind-Code debuffs); the body branch 'Allies that hit the body: ATK ▲12.19% of skill user's ATK' (casterAtkPct, always active on the partless body) is KEPT. Re-enable the parts branch (as a parts-hit-gated coreDamagePct) only for a boss with destructible parts (OUT OF SCOPE for v1).
-
-**Moran (Treasure)** (moran)
-
-- **skill2:** Activates when HP falls below 20%. Affects self. Effects vary according to the number of uses. Perseverance: Only one effect is triggered at a time.
-  - *Why:* PERSEVERANCE: her S2 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are unmodeled by design — HP-loss-gated ('Activates when HP falls below 20%'), so against the immortal partless boss they never fire, and they are self-targeted survival buffs with no atkOfMaxHpPct consumer on her, so they would be offensively inert even if they did
-
-**Nihilister** (nihilister)
-
-- **skill1:** ■ Activates when hits 2 or more enemies concurrently. Affects all enemies hit.
-Deals 50.33% of final ATK as additional damage.
-  - *Why:* skill1: Piercing Radius ▲50% and the 2+-enemies-concurrent 50.33% bonus are UNMODELED verbatim — out-of-domain for v1's single partless boss (no geometry, no second enemy); ⚑3/⚑4
-
-**Rapi: Red Hood** (rapi-red-hood)
-
-- **skill1:** Damage to Interruption Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)
-  - *Why:* || S1 'Combat Assist' is FORMATION-BRANCHED: with NO Burst-1 ally she fills the B1 slot (burstEligibility stage 1) and grants the team burstCdr 7.48s + Attack Damage 8.02%/10s on each full burst (formation 'noB1'); WITH a B1 ally she instead self-buffs ATK 95.04%/10s (formation 'hasB1')
-
-**Raven** (raven)
-
-- **skill2:** Single Point Attack: Sustained damage ▲ 47.32% for 15 sec.
-  - *Why:* skill2: Single Point Attack (Sustained damage ▲ 47.32%) keys on destroying an enemy part — it can never fire against the partless scope-lock boss and is not modeled (previously approximated as an always-on passive)
-
-**Sakura** (sakura)
-
-- **burst:** Damage to Interruption Parts ▲ 23.54% for 30 sec.
-  - *Why:* (K6) burst 'at max Tea stacks → Damage to Interruption Parts ▲23.54%' = partsDamagePct, inert vs the partless scope-lock boss (helm H4 precedent) AND gated on the unmodeled K1 stacks
-
-**Sakura: Bloom in Summer** (sakura-bloom-in-summer)
-
-- **skill1:** Activates when an ally or self destroys an enemy's part. Affects self.
-  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
-- **skill1:** Sustained Damage ▲ 5.1% for 30 sec.
-  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
-- **skill1:** Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.
-  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
-- **skill1:** Dancing Flower Duration ▲ 10.02 sec.
-  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
-
-**Sora** (sora)
-
-- **skill2:** ■ Activates when an ally or self destroys an enemy's part. Affects all allies.
-  - *Why:* (K2) S2 is gated on PART DESTRUCTION ('when an ally or self destroys an enemy's part'): the engine emits no part-destroyed event and the scope-lock boss is partless (sim.ts: 'partless test boss ..
-
 ### Weapon-state / shot-count approximation (11)
 
 **Ade: Agent Bunny** (ade-agent-bunny)
@@ -1569,6 +1518,55 @@ Deals 50.33% of final ATK as additional damage.
   - *Why:* skill2: team buff (ATK 25.2% of caster + Charge Damage 100.8%) is kept alive by SWAPPED shots during her own 10s burst weapon-swap — kit requires a Full Charge attack; unverified whether the swap weapon full-charges (needs footage).
 - **burst:** Additional Effect (weapon-change spec — VERBATIM TEXT NOT AVAILABLE to this audit; fetch from blablalink: likely carries the swap weapon's charge time / ammo / Full Charge Damage spec that pins the swap shot economy)
   - *Why:* burst: swap shot economy is a materialized parser estimate, not hand-verified — engine fires ~10 swapped shots/10s (60f cycle, no bolt gap) each carrying her SR charge-damage bucket on top of the 7% multiplier.
+
+### Partless boss (11)
+
+**D: Killer Wife** (d-killer-wife)
+
+- **skill1:** Activates when attacking with Full Charge for 3 time(s). Affects self. Gain Pierce for 1 shot. (Damage-inert on the partless single-target scope-lock boss: the Pierce tag adds no targets. NOTE it is not unconditionally inert — a pierce-tagged shot becomes eligible for Pierce Damage ▲ Damage-Up entries, so a comp pairing her with a Pierce Damage granter would make this live; see caveats.)
+  - *Why:* skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)
+
+**Moran (Treasure)** (moran)
+
+- **skill2:** Activates when HP falls below 20%. Affects self. Effects vary according to the number of uses. Perseverance: Only one effect is triggered at a time.
+  - *Why:* PERSEVERANCE: her S2 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are unmodeled by design — HP-loss-gated ('Activates when HP falls below 20%'), so against the immortal partless boss they never fire, and they are self-targeted survival buffs with no atkOfMaxHpPct consumer on her, so they would be offensively inert even if they did
+
+**Nihilister** (nihilister)
+
+- **skill1:** ■ Activates when hits 2 or more enemies concurrently. Affects all enemies hit.
+Deals 50.33% of final ATK as additional damage.
+  - *Why:* skill1: Piercing Radius ▲50% and the 2+-enemies-concurrent 50.33% bonus are UNMODELED verbatim — out-of-domain for v1's single partless boss (no geometry, no second enemy); ⚑3/⚑4
+
+**Rapi: Red Hood** (rapi-red-hood)
+
+- **skill1:** Damage to Interruption Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)
+  - *Why:* || S1 'Combat Assist' is FORMATION-BRANCHED: with NO Burst-1 ally she fills the B1 slot (burstEligibility stage 1) and grants the team burstCdr 7.48s + Attack Damage 8.02%/10s on each full burst (formation 'noB1'); WITH a B1 ally she instead self-buffs ATK 95.04%/10s (formation 'hasB1')
+
+**Raven** (raven)
+
+- **skill2:** Single Point Attack: Sustained damage ▲ 47.32% for 15 sec.
+  - *Why:* skill2: Single Point Attack (Sustained damage ▲ 47.32%) keys on destroying an enemy part — it can never fire against the partless scope-lock boss and is not modeled (previously approximated as an always-on passive)
+
+**Sakura** (sakura)
+
+- **burst:** Damage to Interruption Parts ▲ 23.54% for 30 sec.
+  - *Why:* (K6) burst 'at max Tea stacks → Damage to Interruption Parts ▲23.54%' = partsDamagePct, inert vs the partless scope-lock boss (helm H4 precedent) AND gated on the unmodeled K1 stacks
+
+**Sakura: Bloom in Summer** (sakura-bloom-in-summer)
+
+- **skill1:** Activates when an ally or self destroys an enemy's part. Affects self.
+  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
+- **skill1:** Sustained Damage ▲ 5.1% for 30 sec.
+  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
+- **skill1:** Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.
+  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
+- **skill1:** Dancing Flower Duration ▲ 10.02 sec.
+  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
+
+**Sora** (sora)
+
+- **skill2:** ■ Activates when an ally or self destroys an enemy's part. Affects all allies.
+  - *Why:* (K2) S2 is gated on PART DESTRUCTION ('when an ally or self destroys an enemy's part'): the engine emits no part-destroyed event and the scope-lock boss is partless (sim.ts: 'partless test boss ..
 
 ### Self-status / stack gate (8)
 

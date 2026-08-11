@@ -114,12 +114,18 @@ attackDamagePct: 72, pierce: true`). I flagged the missing 72% Attack Damage as 
   all to document it in. Recorded, not changed: it is a gauge-economy question and she is HOT,
   so the direction is not obviously wrong. Wants one ruling alongside the other U28 riders rather
   than a unit-local fix.
-- **`d-killer-wife` (0.937 COLD, 1 comp):** clean; her two F2 silent-failure surfaces (the
-  cross-slug `targetStatus` string pair, and load-bearing intra-unit block order) are both
-  documented in her caveats and intact. Minor hygiene: `unmodeled.skill1` splits one kit line
-  across two entries, the first being a bare `"■ Activates when attacking with Full Charge for 3
-time(s). Affects self."` header. Not fixed — cosmetic, and touching it risks the string-pair
-  lint; noted for whoever next edits that file.
+- **`d-killer-wife` (0.937 COLD, 1 comp):** her two F2 silent-failure surfaces (the cross-slug
+  `targetStatus` string pair, and load-bearing intra-unit block order) are intact and documented.
+  Two prose items FIXED on the follow-up pass: `unmodeled.skill1` split one kit line across two
+  entries (a bare `"■ Activates when attacking with Full Charge…"` header plus its effect) —
+  merged, with the disposition stated and the non-obvious caveat that the Pierce tag is NOT
+  unconditionally inert (a pierce-tagged shot becomes eligible for Pierce Damage ▲ entries, so a
+  comp with a Pierce Damage granter makes it live). And three caveats carried history narration
+  of the same class stripped from `grave` and `rapi-red-hood` — "previously ALSO carried
+  requiresCore", "It was previously modeled as an ungated all-ally coreDamagePct buff",
+  "fixed 2026-07-20 … Fable pre-op APPROVED" — rewritten to state the current model and WHY the
+  gates are shaped as they are, without the trail. I first reported her as "clean", which was
+  wrong on checklist item 10.
 
 ## Batch stats
 
