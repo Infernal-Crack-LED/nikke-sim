@@ -58,16 +58,25 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
-- **⇒ OWNER QUESTION OPEN (1, cheap): is the amp's literal test BLOCK-level or SKILL-level?**
-  "skills with X **in the description**" does not say whether the literal must sit on the same
-  `■` block as the damage line or anywhere in the burst description. Three units split on it —
-  `kilo`, `novel`, `sin` — and `novel` is the clean discriminator: her damage block reads
-  "Affects **the** 1 enemy unit(s) with the highest final ATK" while a later, damage-free block
-  reads "Affects 1 enemy unit(s)." verbatim. All three ship UNTAGGED (the inert default) with
-  the hold pinned in `scripts/tests/census-burst-amp-scope.test.ts`. Board-inert either way
-  (`jackal` is in no graded comp), so this can wait — and a popup measurement of the amp would
-  settle it for free. Full context:
-  [burst-amp literal-scope findings](2026-08-10-burst-amp-literal-scope-findings.md) §4.
+- **⇒ RECORDED, NOT ENACTED — a stray article in the English kit text blocks the amp literal for
+  7 units.** `ark-ranger-black`, `guilty`, `nero`, `novel`, `pepper`, `power`, `rapi` (AR/Fire
+  base) read "Affects **the** 1 enemy unit(s) with …", one article off `jackal`'s literal. The
+  article is provably a localization artifact — 7 clause bodies attested both ways, and
+  `pepper`, `rapi` and `maiden-ice-rose` each use BOTH spellings of the same clause in their own
+  kit — but whether the GAME's matcher sees it is unmeasured, so all 7 stay untagged. Zero cost
+  today: every one is on `jackal`'s side and `jackal` is in no graded comp. Owner 2026-08-10:
+  `novel` is low priority, not worth a test. `viper` ("1 **designated** enemy unit(s)") is
+  reported by the same detector but is a genuine non-match, not this class. Detector:
+  `npx tsx scripts/census-burst-amp-scope.ts --near-miss`; full context:
+  [findings](2026-08-10-burst-amp-literal-scope-findings.md) §4a.
+
+- **⇒ ENGINE GAP, recorded: a burst-slot `dot` can never be amp-eligible.** `burstDesc` is
+  plumbed only on `flatDamage` and its pending-hit path. `diesel-winter-sweets` and `mana` carry
+  the literal on their damage block and still cannot be tagged; `ark-ranger-black` and
+  `mihara-bonding-chain` are dot carriers too (non-literal, moot). Board-inert. The fix threads
+  `burstDesc` through the dot record + tick path — an engine change, deliberately out of the
+  faithfulness sweep's scope.
+  [findings](2026-08-10-burst-amp-literal-scope-findings.md) §4b.
 
 - **⇒ RECORDED, NOT APPLIED — 24 literal amp carriers outside the graded slice are untagged.**
   Inert (a missing tag applies no amp) and none shares a comp with `trina`/`jackal`, so tagging

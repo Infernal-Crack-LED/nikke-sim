@@ -20,6 +20,7 @@ import {
   carriesLiteral,
   censusRows,
   kitBlocks,
+  nearMiss,
   normalize,
 } from '../census-burst-amp-scope.js';
 
@@ -123,25 +124,111 @@ describe('burst-amp scope census — the roster invariant', () => {
     expect(row('liberalio').literals).toEqual(['allEnemies']);
   });
 
-  it('HELD: block-vs-skill granularity is UNRULED — these three are the split', () => {
-    // Their literal sits in a burst block that deals NO damage, while their damage block's
-    // clause has no literal. Block-level reading ⇒ untagged (what ships); skill-level reading
-    // ("skills with X in the description" reads skill-wide) ⇒ tagged. The kit text does not
-    // settle it and no measurement exists, so all three ship UNTAGGED and this pin records
-    // the hold — it is a decision, not an unfinished chore. `novel` is the sharpest case: her
-    // damage block is "Affects the 1 enemy unit(s) with the highest final ATK" while a later,
-    // damage-free block is "Affects 1 enemy unit(s).".
+  it('the match is BLOCK-level: a literal on a damage-free block does NOT qualify', () => {
+    // Owner ruling 2026-08-10: the literal must sit in the SAME '■' block as the damage line.
+    // These four have their literal on a block that deals no damage, and their damage block's
+    // clause has no literal — so all four are correctly untagged. `novel` is the sharpest:
+    // her damage block is "Affects the 1 enemy unit(s) with the highest final ATK" while a
+    // later, damage-free block reads "Affects 1 enemy unit(s)." verbatim.
     expect(rows.filter((r) => r.granularitySplit).map((r) => r.slug)).toEqual([
+      'guillotine-winter-slayer',
       'kilo',
       'novel',
       'sin',
     ]);
-    for (const slug of ['kilo', 'novel', 'sin']) {
+    for (const slug of ['guillotine-winter-slayer', 'kilo', 'novel', 'sin']) {
       expect(
         row(slug).tags,
-        `${slug} ships untagged pending the ruling`
+        `${slug} is untagged under the block rule`
       ).toEqual([]);
     }
+  });
+
+  it('scarlet is the cited confirming case: a working amp target, literal ON the damage block', () => {
+    // `scarlet` = AR/Electric base (NOT `scarlet-black-shadow`). Owner names her as a known
+    // working trina amp target. Her burst has two blocks — "Affects self. Activates when HP
+    // falls below 50%." (Crit Rate, no damage) and "Affects all enemies." (the 849.15% nuke).
+    // Note she is CONSISTENT with both readings, so she confirms the block rule rather than
+    // discriminating against the skill-wide one; the ruling is what settles it.
+    const blocks = row('scarlet').blocks;
+    const dmg = blocks.filter((b) => b.dealsDamage);
+    expect(dmg.length).toBe(1);
+    expect(dmg[0].literals).toEqual(['allEnemies']);
+    expect(row('scarlet').granularitySplit).toBe(false);
+  });
+
+  it('a burst-slot dot is STRUCTURALLY amp-ineligible, and the census says so out loud', () => {
+    // `burstDesc` is plumbed only on flatDamage and its pending-hit path, so a burst-slot dot
+    // can never read an amp however its clause reads. These units have a literal on their
+    // damage block and STILL cannot be tagged — an engine gap, not a tagging chore. Pinned
+    // because the census originally skipped dot-only carriers into invisibility, which is how
+    // `ark-ranger-black` went unseen in the first pass.
+    const dotOnly = rows.filter((r) => r.verdict === 'dot-ineligible');
+    expect(dotOnly.map((r) => r.slug)).toEqual([
+      'diesel-winter-sweets',
+      'mana',
+    ]);
+    for (const r of dotOnly) {
+      expect(r.dotDamage, r.slug).toBeGreaterThan(0);
+      expect(r.tags, r.slug).toEqual([]);
+    }
+  });
+
+  it("near-miss: the localization's stray article, reported and never auto-tagged", () => {
+    // Seven clause bodies are attested BOTH with and without "the", and `pepper`, `rapi` and
+    // `maiden-ice-rose` each use both spellings of the SAME clause inside their own kit — so
+    // the article is a localization inconsistency, not a targeting distinction. Whether the
+    // game's own matcher sees it is UNMEASURED, so these stay untagged. All are on jackal's
+    // side, which reaches nothing today. Owner 2026-08-10: `novel` is low priority, do not
+    // spend a test on her specifically.
+    const affected = rows.filter((r) => r.nearMisses.length).map((r) => r.slug);
+    expect(affected).toEqual([
+      'ark-ranger-black',
+      'guilty',
+      'nero',
+      'novel',
+      'pepper',
+      'power',
+      'rapi',
+      'viper',
+    ]);
+    // Two distinct causes, and they must not be conflated. The stray ARTICLE is the
+    // localization artifact; `viper`'s "designated" is a real English word doing real work
+    // ("Affects 1 designated enemy unit(s)" is a different targeting rule), so hers is a
+    // genuine non-match rather than a spelling of the literal.
+    const article = affected.filter((s) =>
+      row(s).nearMisses.every((n) => n.inserted === 'the')
+    );
+    expect(article).toEqual([
+      'ark-ranger-black',
+      'guilty',
+      'nero',
+      'novel',
+      'pepper',
+      'power',
+      'rapi',
+    ]);
+    expect(row('viper').nearMisses.map((n) => n.inserted)).toEqual([
+      'designated',
+    ]);
+    for (const slug of affected) {
+      expect(row(slug).tags, `${slug} must stay untagged`).toEqual([]);
+    }
+  });
+
+  it('nearMiss() matches one inserted word, not a paraphrase', () => {
+    expect(
+      nearMiss('Affects the 1 enemy unit(s) with the highest final ATK.')
+    ).toEqual({ desc: 'singleEnemy', inserted: 'the' });
+    expect(nearMiss('Affects 1 designated enemy unit(s).')).toEqual({
+      desc: 'singleEnemy',
+      inserted: 'designated',
+    });
+    // paraphrases are different clauses, not spellings of the same one
+    expect(nearMiss('Affects random enemies.')).toBeNull();
+    expect(nearMiss('Affects enemies within attack range.')).toBeNull();
+    // an exact match is not a near miss
+    expect(nearMiss('Affects all enemies.')).toBeNull();
   });
 
   it('KNOWN DEBT: the literal carriers outside the graded slice are not yet tagged', () => {

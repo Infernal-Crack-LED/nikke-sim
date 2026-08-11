@@ -47,20 +47,52 @@ lives. Newest first within each section.
   retagged unit shares a comp with `trina`; `jackal` sits in no graded comp) — 7/14/23/22 across
   142 datapoints, unchanged. Six spec pins flipped from asserting the tag to asserting its
   ABSENCE with the reason, so it cannot be silently re-added.
-  **HELD, UNRULED — block-level vs skill-level granularity.** "skills with X in the
-  description" does not say whether the literal must sit on the same "■" block as the damage
-  line or anywhere in the burst description. Three units split on it (`kilo`, `novel`, `sin`);
-  `novel` is the sharpest — her damage block is "Affects **the** 1 enemy unit(s) with the
-  highest final ATK" while a later, damage-free block reads "Affects 1 enemy unit(s)." verbatim.
-  All three ship UNTAGGED (the inert default) with the hold pinned. Two near-misses are worth
-  naming if it is ever measured: an inserted word breaks the match (`viper` "Affects 1
-  **designated** enemy unit(s)") while a trailing qualifier does not (`2b` "Affects 1 enemy
-  unit(s) with the highest remaining HP").
+  **THE MATCH IS BLOCK-LEVEL — owner ruling, same day.** The literal must sit in the SAME "■"
+  block as the damage line it would amplify, not merely somewhere in the burst description.
+  Owner: _"it does require it to be on the same block — look at `scarlet` as an example for a
+  known working trina amp target."_ `scarlet` (AR/Electric base) has two burst blocks, "Affects
+  self. Activates when HP falls below 50%." (Crit Rate, no damage) and "Affects all enemies."
+  (the 849.15% nuke); the literal is on the damage block. Note she is consistent with BOTH
+  readings, so she is a confirming positive control rather than the discriminator — the ruling
+  is what settles it. Four units differ between the readings (`guillotine-winter-slayer`,
+  `kilo`, `novel`, `sin`: literal on a damage-free block) and all four are untagged.
+  **A trailing qualifier does not break the match** (`2b` "Affects 1 enemy unit(s) with the
+  highest remaining HP" qualifies); an inserted word does — see the near-miss entry below.
   Instrument: **`npx tsx scripts/census-burst-amp-scope.ts`** (block-level, whitespace-
-  normalized, `--check` gates over-tagging), self-validated by
-  `scripts/tests/census-burst-amp-scope.test.ts`, which also pins the roster invariant and the
-  explicit list of 24 literal carriers outside the graded slice that are not yet tagged (inert
-  — a missing tag applies no amp — and each one a per-unit review).
+  normalized; `--check` gates over-tagging, `--near-miss` reports the article cases), self-
+  validated by `scripts/tests/census-burst-amp-scope.test.ts`, which also pins the roster
+  invariant and the explicit list of 24 literal carriers outside the graded slice that are not
+  yet tagged (inert — a missing tag applies no amp — and each one a per-unit review).
+
+- **(2026-08-10) A STRAY ARTICLE IN THE ENGLISH KIT TEXT BLOCKS THE AMP LITERAL FOR 7 UNITS —
+  recorded, NOT enacted; the localization is provably inconsistent but the game's own matcher is
+  unmeasured.** `ark-ranger-black`, `guilty`, `nero`, `novel`, `pepper`, `rapi` (AR/Fire base)
+  and `power` have a burst DAMAGE block reading "Affects **the** 1 enemy unit(s) with …", which
+  is one article away from the literal `jackal` names. **The article is a localization artifact,
+  not a targeting distinction:** seven clause bodies are attested BOTH ways across the roster
+  (e.g. "…with the highest remaining HP" — `nero` with, `2b` without; "…with the highest final
+  DEF" — `guilty` with, `dolla`/`milk`/`neon` without), and decisively **`pepper`, `rapi` and
+  `maiden-ice-rose` each use BOTH spellings of the SAME clause inside their own kit**, which no
+  targeting rule can explain.
+  That does NOT settle the enactable question, which is whether the GAME's matcher sees the
+  stray word — string-matching the localized text it would, keying on an internal id it would
+  not. Unmeasured, so all seven stay UNTAGGED and the finding is recorded only. Owner
+  2026-08-10: `novel` is low priority, not worth a test. Cost of being wrong is currently zero —
+  every affected unit is on `jackal`'s side, and `jackal` sits in no graded comp. `viper`
+  ("Affects 1 **designated** enemy unit(s)") is reported by the same detector but is NOT this
+  class: "designated" is a real word describing a real targeting rule, so hers is a genuine
+  non-match. Detector: `npx tsx scripts/census-burst-amp-scope.ts --near-miss`.
+
+- **(2026-08-10) A BURST-SLOT `dot` IS STRUCTURALLY AMP-INELIGIBLE — engine gap, recorded.**
+  `burstDesc` is plumbed only on the `flatDamage` effect and its pending-hit path, so a burst
+  damage line modeled as a `dot` can never read an amp however its kit clause reads.
+  `diesel-winter-sweets` and `mana` have the literal on their damage block and still cannot be
+  tagged; `ark-ranger-black` and `mihara-bonding-chain` are dot carriers too (both non-literal,
+  so moot today). Found because the census originally skipped dot-only carriers into
+  invisibility — it now reports them as a distinct `dot-ineligible` verdict, which is what
+  surfaced `ark-ranger-black`. Board-inert (no dot carrier shares a comp with an amp). Fixing it
+  means threading `burstDesc` through the dot record and its tick path — an engine change, out
+  of scope for the faithfulness sweep.
 
 - **(2026-08-10) FAITHFULNESS PHASE-4 BATCH 5 — the graded-comp slice; the burst-amp
   channel is an UNTESTED LANDMINE.** Six highest-leverage graded-comp reviews (`crown`,

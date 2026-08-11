@@ -93,22 +93,79 @@ and `jackal` sits in no graded comp. `liberalio` is the one board-active pairing
 so her 0.917 → 0.929 movement is untouched. `bash scripts/verify.sh` green; mirrors regenerated
 (414 entries, unchanged count).
 
-## 4. HELD — block-level vs skill-level granularity is UNRULED
+## 4. RULED — the match is BLOCK-level
 
-"skills with X **in the description**" does not say whether the literal must sit on the same `■`
-block as the damage line, or anywhere in the burst description. Three units split:
+Owner, same day: _"it does require it to be on the same block — look at `scarlet` as an example
+for a known working trina amp target."_ The literal must sit in the SAME `■` block as the damage
+line it amplifies, not merely somewhere in the burst description.
 
-- **`novel`** — the sharpest case. Her damage block is "Affects **the** 1 enemy unit(s) with the
-  highest final ATK" (no literal: the inserted "the" breaks it), while a LATER block that deals
-  no damage reads "Affects 1 enemy unit(s)." verbatim. Skill-wide ⇒ she qualifies; per-block ⇒
-  she does not. She shipped tagged; she now ships untagged.
-- **`kilo`**, **`sin`** — same shape, both already untagged.
+`scarlet` (AR/Electric base) has two burst blocks — "Affects self. Activates when HP falls below
+50%." (Crit Rate, no damage) and "Affects all enemies." (the 849.15% nuke) — with the literal on
+the damage block. Worth stating plainly: she is consistent with BOTH readings, so she is a
+confirming positive control, not the discriminator. The ruling is what settles it.
 
-All three ship UNTAGGED: that is the inert default (a missing tag applies no amp) and it matches
-the block-level reading the census enforces. The hold is pinned in the census test so it reads as
-a decision, not an unfinished chore. **This is the one open owner question left in the tag class**
-— and it is cheap to leave open, because `jackal` is in no graded comp, so all three are
-board-inert either way.
+Four units differ between the readings — literal on a damage-free block, no literal on the
+damage block — and all four are correctly UNTAGGED:
+
+- **`novel`** — the sharpest. Damage block "Affects **the** 1 enemy unit(s) with the highest
+  final ATK"; a later, damage-free block reads "Affects 1 enemy unit(s)." verbatim. She shipped
+  tagged; she now ships untagged.
+- **`guillotine-winter-slayer`**, **`kilo`**, **`sin`** — same shape, all already untagged.
+  (`guillotine-winter-slayer` only became visible once the census stopped skipping dot carriers
+  — see §4b.)
+
+Also settled by the same rule: a TRAILING qualifier does not break a match (`2b` "Affects 1 enemy
+unit(s) with the highest remaining HP" qualifies), while an INSERTED word does — §4a.
+
+## 4a. The stray article — 7 units, recorded not enacted
+
+Seven units have a burst DAMAGE block one article away from `jackal`'s literal:
+`ark-ranger-black`, `guilty`, `nero`, `novel`, `pepper`, `power`, `rapi` (AR/Fire base) — all
+reading "Affects **the** 1 enemy unit(s) with …".
+
+**The article is a localization artifact, not a targeting distinction.** Seven clause bodies are
+attested BOTH ways across the roster, and decisively **`pepper`, `rapi` and `maiden-ice-rose`
+each use both spellings of the SAME clause inside their own kit** — no targeting rule can mean
+two things by one clause in one unit's kit.
+
+| clause body                                    | with "the"                                | without                              |
+| ---------------------------------------------- | ----------------------------------------- | ------------------------------------ |
+| …1 enemy unit(s) with the highest remaining HP | `nero`                                    | `2b`                                 |
+| …1 enemy unit(s) with the highest final DEF    | `guilty`                                  | `dolla`, `milk`, `neon`              |
+| …1 enemy unit(s) with the highest final ATK    | `novel`, `pepper`, `power`, `rapi`        | `idoll-flower`, `pepper`, `rapi`     |
+| …1 enemy unit(s) with the highest final Max HP | `marciana-marine-study`                   | `guillotine-winter-slayer`, `jackal` |
+| …1 enemy unit(s) nearest to the crosshair      | `maiden-ice-rose`, `soda-twinkling-bunny` | `maiden-ice-rose`, `mana`            |
+| …2 enemy unit(s) with the highest final ATK    | `anis-sparkling-summer`, `rosanna`        | `product-23`                         |
+| …10 enemy unit(s) with the highest final DEF   | `exia`                                    | `ein`, `frima`                       |
+
+**What this does NOT settle is the enactable question:** whether the GAME's matcher sees the
+stray word. If it string-matches the localized description it does and these seven genuinely
+miss the amp; if it keys on an internal id it does not and they are real targets. Unmeasured, so
+all seven stay untagged. Cost of being wrong is currently ZERO — every one is on `jackal`'s side
+and `jackal` sits in no graded comp. Owner 2026-08-10: `novel` is low priority, not worth a test.
+
+`viper` ("Affects 1 **designated** enemy unit(s)") is reported by the same detector and is NOT
+this class — "designated" is a real word describing a real targeting rule, so hers is a genuine
+non-match. The detector reports the inserted word so the two never get conflated; the census
+test pins them as separate sets.
+
+Detector: `npx tsx scripts/census-burst-amp-scope.ts --near-miss`.
+
+## 4b. A burst-slot `dot` is structurally amp-ineligible (engine gap)
+
+`burstDesc` is plumbed only on `flatDamage` and its pending-hit path, so a burst damage line
+modeled as a `dot` can never read an amp however its clause reads. `diesel-winter-sweets` and
+`mana` have the literal on their damage block and still cannot be tagged; `ark-ranger-black` and
+`mihara-bonding-chain` are dot carriers too (both non-literal, so moot today).
+
+This surfaced as a **defect in the instrument**: the first census skipped units with no burst
+`flatDamage` entirely, which silently hid every dot carrier — `ark-ranger-black` appeared in a
+raw kit-text grep and then vanished from the census, which is what exposed it. The census now
+counts burst dots and reports a distinct `dot-ineligible` verdict; the unit count went 76 → 83.
+Board-inert (no dot carrier shares a comp with an amp). Fixing the gap means threading
+`burstDesc` through the dot record and its tick path — an engine change, out of scope here.
+It also retires a batch-6 item: the START-HERE doc flagged `mihara-bonding-chain` as needing this
+gap recorded, and her clause turns out to be non-literal anyway, so she is moot on both counts.
 
 ## 5. Recorded, not applied — 24 literal carriers outside the graded slice
 
@@ -139,7 +196,19 @@ each one and the board impact is provably zero — but it is the owner's call, n
 
 ## 7. Stats
 
-12 units untagged (31 instances) + 1 held (`novel`) + 3 tagged + 6 kept · 6 spec pins flipped to
+13 units untagged (32 instances) + 3 tagged + 6 kept · 6 spec pins flipped to
 absence-with-reason · 11 override notes/caveats corrected + 3 carrier caveats added · 1 committed
-instrument + 13-pin self-validating fixture + roster invariant · board byte-identical on a full
-diff · verify.sh green · 1 owner question open (§4), 24 units recorded not applied (§5).
+instrument (`--all` / `--check` / `--near-miss`) + 17-pin self-validating fixture + roster
+invariant · board byte-identical on a full diff · verify.sh green.
+
+**Open owner questions: none.** Both scope questions are ruled (literal-only; block-level).
+Three things are RECORDED, not enacted, all board-inert: the 7-unit stray-article class (§4a),
+the burst-`dot` engine gap (§4b), and the 24 untagged literal carriers outside the graded slice
+(§5). Batch 6's per-unit sweep is still open.
+
+**One process note worth carrying.** The instrument had a silent hole — it skipped any unit
+whose burst damage is a `dot`, hiding 7 units including one (`ark-ranger-black`) that a raw
+kit-text grep HAD surfaced. It was caught only because the two methods disagreed and the
+disagreement got chased rather than waved off. A census that silently drops a category is
+strictly worse than no census, because it reads as coverage. Cross-check any new census against
+a dumb grep over the raw source at least once.
