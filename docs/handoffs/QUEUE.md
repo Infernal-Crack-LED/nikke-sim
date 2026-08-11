@@ -95,17 +95,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   U28 rider set rather than a unit-local fix.
   [batch-6 findings](2026-08-10-faithfulness-batch6-findings.md).
 
-- **⇒ ENGINE — `jill` (AR/Electric) loses her MEASURED cadence during her burst swap. HIGHEST-VALUE
-  OPEN ITEM ON THE BOARD.** `u.swap.pullsPerSec ?? PULLS_PER_SEC[u.swap.weapon ?? u.char.weapon]`
-  never falls back to `u.pullsPerSec`, and `jill` is the ONLY carrier roster-wide: her
-  `charFixes.pullsPerSec: 2.5` is discarded for the 10s of every same-weapon `trueNormals` burst
-  swap, which then runs at `PULLS_PER_SEC['AR']` = 12/s (4.8×). A reverted probe moves her
-  **1.924 HOT → 0.983 OK** with **every measured full-burst count preserved** and sub-1% ripple
-  elsewhere. Needs its own `/scientific-method` pass + owner; that pass must decide the fallback's
-  shape for DIFFERENT-weapon swaps (`k`, `nayuta` must NOT inherit the base cadence) and check
-  `jill` for fit-exposure to the buggy cadence.
-  [batch-7 findings](2026-08-10-faithfulness-batch7-findings.md).
-
 - **⇒ OWNER RULING WANTED — two stale provenance tags, one joint decision.** (a) The
   `PARSER BASELINE (HYPOTHESIS — NOT a validated model)` banner on **19 remaining overrides** — all
   carry spec tests + gauntlet passes, and all contradict the banner elsewhere in their own prose. It
@@ -182,17 +171,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > The 2026-08-09 faithfulness-enactment batch LANDED every enactable finding from the
 > unmodeled-entries audit (DECISIONS 2026-08-09 has the full list + board A/B). What remains:
 
-- **⇒ `jill` 0.966→1.924 — CAUSE FOUND 2026-08-10 (phase-4 batch 4), fix NOT enacted; owner +
-  `/scientific-method`.** Her burst same-weapon flavor swap restates no cadence and the engine's
-  swap branch never falls back to `u.pullsPerSec`, so her video-MEASURED 2.5/s is discarded and
-  she fires at the AR class default for 10s per burst. Three confirmations (code read; direct
-  shot count 9.28/s in-swap vs 1.98/s out; board 1.924 → 0.983 with `pullsPerSec: 2.5`
-  restated). Fix is unit-local (restate 2.5 on her swap) or engine-level (swap branch falls back
-  to `u.pullsPerSec` — behaviour-identical for every other carrier; she is the only unit with
-  both a `charFixes.pullsPerSec` and a swap). Instrument: jill spec group J8. The old DEF-bypass
-  hypothesis for her HOT is displaced (~0.02% at the bossDef-140 basis, not 2.4×) — the popup
-  read is still nice-to-have, not the explanation. Detail:
-  `2026-08-10-faithfulness-batch4-findings.md`.
 - **Exposed hot fit from the batch — run the pending direct measurement, then re-tune (never
   re-fudge):** `maxwell` 0.889→1.252 (popup-read the burst window in run-G/N6 footage: railgun
   shot count + charged value vs the modeled ~2 × 2440.26%).

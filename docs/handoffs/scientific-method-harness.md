@@ -591,3 +591,103 @@ scripts/verify.sh` is RED on 3 asserts in `scripts/tests/units/k.test.ts` — th
   open item; the corrected cadence narrows but does not close her burst-vs-sustained-SMG ratio (roughly
   0.74–0.99x now, up from 0.62–0.83x, still not clearly a nuke). Committed on the same worktree/branch
   (`nikke-sim-wt-k-fix`, `k-burst-sg-swap-fix-2026-08-03`, commit `b00826c2`).
+
+- **2026-08-10 — `jill`'s swap-cadence fallback (faithfulness enactment Tier 1, 1.924 → 0.983): DECISION = LOG.**
+  Claim: `src/engine/sim.ts`'s same-weapon swap fire-cadence branch (~3715-3719) never falls back to
+  `charFixes.pullsPerSec`, so `jill`'s 10s post-burst true-damage window fires at the AR class default
+  (~~10/s effective in graded comps) instead of her measured 2.5/s. Full panel run: premise gate (4/4
+  CONFIRM, one uniqueness premise CONFIRMED STRONGER than stated — `jill` is the roster's only
+  `charFixes.pullsPerSec` carrier at all), pre-op APPROVED-WITH-REVISIONS then APPROVED (Fable — added a
+  pre-registered arithmetic acceptance band, a strict byte-identity snapshot-diff control, a measured
+  rather than asserted N1 negative-control premise, and pinned a binding interpretation: any teammate
+  row moving inside a jill comp is an H0d rotation-timing finding, NOT covered by the plan's own named
+  fallback candidate). Work subagent executed on an isolated worktree
+  (`worktree-agent-ad231fa9f5803f0f9`): fit-exposure clean (H0a ruled out — `damagePct: 71.09` is kit-literal
+  `normalMult`, committed a day before the bug was found); mechanism isolated and confirmed (in-window
+  shot counts scale exactly with the cadence ratio, 605→139 vs 139.1 predicted, while per-shot damage and
+  core-hit rate are unchanged to 4 sig figs — H0b ruled out once the pre-registered ratio-band formula's
+  own flaw was found and corrected, see below); fix independently re-verified inert for every other
+  roster carrier (H0c ruled out, carrier-intersection = {jill} exactly); N1 negative control byte-identical
+  with its zero-burst premise measured, not assumed; every FB-count assertion held (12/12/12). Board:
+  jill 1.924 → 0.983, rank 45/45 → 10/45.
+  **What did NOT clear the bar:** the pre-registered per-comp ratio band missed on both bursting comps
+  (~~+0.12 over) — traced to the band formula incorrectly scaling jill's cadence-INDEPENDENT Acid Ammo dot
+  damage along with her cadence-sensitive normal damage; the corrected (post-hoc) formula reproduces the
+  measured values almost exactly, so this is a flaw in the test's own arithmetic, not evidence against
+  the fix. More consequentially, the strict snapshot diff was NOT confined to jill's own rows: four
+  teammates (`grave`, `anis-star`, `chisato`, `noir`) drifted 0.18–2.70% (single-run) / ~0.3% (25-seed
+  MC-mean) in her `misc B3s (run I order)` comp, with FB counts unchanged — traced to sub-second
+  burst-chain cast-timing drift cascading from jill's corrected cast-readiness cadence. This is an H0d
+  finding per the pre-op judge's binding interpretation, and — proven by the blind post-op judge, not
+  merely asserted — the plan's own named fallback (restate `pullsPerSec: 2.5` unit-locally on jill's
+  override instead of the engine-level fix) does NOT resolve it: both candidates compute the identical
+  numeric cadence for jill via the same first-checked field (`u.swap.pullsPerSec`), so both produce the
+  identical downstream timing cascade. Driver (Opus, primary): ACCEPT the mechanism claim, confidence
+  MEDIUM (H0d unresolved, ratio-band formula needed a post-hoc repair). Fable (blind post-op): ACCEPT the
+  same claim, confidence MEDIUM (Q1 partial — applying the measured 2.5/s inside the swap window is a
+  same-weapon kit-shape inference, never itself footage-measured; Q3 control-team validation pending and
+  gates on its own). **2-of-2 ACCEPT at MEDIUM does not clear the HIGH+HIGH bar for IMPLEMENT — LOG.**
+  Nothing committed; the isolated worktree/branch carries the diff (fix + rewritten J8 spec group)
+  UNMERGED, uncommitted — the work subagent halted at its own pre-committed stop-gate rather than
+  proceeding past a failed clause. No engine/override file on the shared main tree was touched.
+  **Owner action items:** (1) decide whether the measured teammate collateral (≤2.70% single-run, ~0.3%
+  MC-mean, zero FB-count change) is acceptable as-is to land either candidate (they are simulation-identical
+  for the whole board), or (2) run a dedicated n≥5 gated pass isolating whether the PI2 chain-timing drift
+  is real signal or seed-level noise before landing, and/or (3) obtain a direct ammo-counter measurement
+  of jill's actual in-swap cadence from a scope-lock recording (the same instrument tier that produced her
+  base 2.5/s) to upgrade the applied-inside-the-window value from kit-shape inference to MEASURED.
+  HARNESS LESSON: the strict-subset snapshot-diff control (added at pre-op revision) caught a real,
+  previously-invisible board-blast-radius side effect that a prior sim-only A/B (cited in jill's own
+  override note, "within-±5% 14→15, seedSD unchanged") had missed entirely — MC-mean board reads smooth
+  over exactly the kind of sub-second single-run timing cascade a deterministic per-comp snapshot pin
+  exposes. Also: a plan's own named REJECT-fallback candidate can be vacuous when two candidates are
+  behaviorally/numerically identical — worth checking "does the alternative actually differ" before
+  writing a fallback clause, not just after a control fires.
+  **ADDENDUM (same day) — owner challenge to the LOG, investigation resolves H0d, DECISION revised to
+  IMPLEMENT.** Owner: "it needs to be fixed — faithfulness always overrules — it should not change
+  anything regarding burst chain timing as it only affects shots fired in full burst, during which no
+  burst is generated anyways. investigate why." Read `addGauge` (`src/engine/sim.ts`): it early-returns
+  on `fbEndFrame > frame || stage !== 0`, so the owner's premise is CONFIRMED — shot count during the
+  swap window genuinely cannot feed the shared gauge, for jill or anyone else. So the H0d ripple could
+  not be a gauge-generation leak; something else had to be moving it. Traced the actual mechanism by
+  toggling the fix on/off (`git stash` / `git stash pop`) and reading jill's real `reload` events in her
+  first 10s swap window: buggy 12/s cadence → 7 magazines burned (mag1..mag7); fixed 2.5/s cadence → 2
+  magazines (mag1, mag2). Her flavor swap does NOT free-refill ammo on exit (`sim.ts` ~3529, an existing
+  primitive predating this fix, general to every `trueNormals` swap carrier). Both cadences are fully
+  inside the gauge-locked window, so neither touches the shared bar WHILE locked — but the two builds
+  leave jill at a different point in her reload cycle at the instant the lock lifts (FB end), so her own
+  first post-lock shot lands on a different frame in each build, nudging the shared gauge's refill curve
+  — which is what surfaces as the sub-second cast-timing drift on `grave`/`anis-star`/`chisato`/`noir`,
+  and even on jill's own 2nd-cycle cast (34.00s → 34.50s pre/post-fix). This is a real, general mechanism
+  (any unit's reload state can ripple into shared rotation timing this way) surfacing through an EXISTING
+  primitive, not a new one — and reload/ammo cycling through Full Burst is itself correct, intended
+  behavior (units keep firing/reloading during FB in-game; only gauge CONTRIBUTION is gated). **H0d is
+  therefore EXPLAINED, not merely observed** — the ripple is faithful collateral of a correct fix, not
+  evidence the fix is unsafe. Landed: `scripts/tests/units/jill.test.ts` gained a J9 group pinning the
+  reload-count mechanism (1-3 reloads in her first swap window, not ~7) as an independent regression
+  guard from a different angle than J8's cadence-ratio pin; `scripts/regression.ts --update` (verified
+  value-by-value against the pre-fix snapshot: only the `misc B3s (run I order)` comp's five rows
+  changed, every other comp byte-identical); `jill.json`'s note rewritten to CURRENT-STATE prose (no
+  history trail — the mechanism explanation lives here and in DECISIONS.md, not in the override file,
+  per the doc-taxonomy rule). One unrelated fixture broke and needed recalibration —
+  `scripts/tests/generators/cross-team-polish.test.ts` — a KNOWN-fragile, already-3x-precedented
+  (2026-07-27, 2026-08-04, 2026-08-09) B3-pool-slice calibration that reopens whenever a pool unit's
+  damage model changes materially; jill sits in the pool and her ~50% drop un-stalled the b3@13 window,
+  re-scanned to b3@15 (greedy=3/polished=4/ratio 1.148, same pattern, >1.09 floor) — pure test-fixture
+  maintenance, not a damage-model or engine change, confirmed by running the SAME test unmodified against
+  the pre-fix tree (passes) to isolate that this fix, not something else, was the trigger. `verify.sh`
+  green (274 files / 4206 tests / engine + control + overload + doll regressions all clean).
+  **DECISION REVISED: IMPLEMENT** (was LOG). The evidence bar for this revision: primary-source code
+  read (not inference) + a reproducible, byte-verifiable A/B toggle isolating the exact causal mechanism
+  - full-suite regression confirmation that no OTHER graded comp moved — stronger than the original
+    panel's blocking concern, which was an unexplained-but-observed correlation. Not a re-litigation of the
+    postop-judge's MEDIUM-confidence verdict — the panel judged the evidence AS IT STOOD (H0d unexplained);
+    this addendum supplies the missing explanation the panel's own reservations named as the resolving next
+    step, satisfying rather than overriding the original gate.
+    HARNESS LESSON: a blind panel correctly declining to IMPLEMENT on an unexplained side effect is not the
+    same as the side effect being a defect — "explained and faithful" is a valid resolution path distinct
+    from "re-measure until the number looks safe" or "gate behind n≥5". When the owner's stated mental model
+    of a mechanic (gauge-lock) is half right, the disciplined move is to verify the confirmed half
+    (addGauge's lock IS real) and keep tracing rather than either dismissing the challenge or accepting its
+    first-guess mechanism uncritically — the actual causal path (reload-phase carryover) was one primitive
+    away from the owner's stated one, not the one they named.

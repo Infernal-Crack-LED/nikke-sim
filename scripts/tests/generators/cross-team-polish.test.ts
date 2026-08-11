@@ -52,6 +52,11 @@ const N = 4;
 // moved several B3 pool units' damage and the b3@15 pool no longer stalls (greedy=4). B3
 // window re-scanned on the current pool: b3@13 measures greedy=3 / polished=4 / ratio 1.1254
 // (>1.09 floor) — the same scenario, re-measured. Next damage-model change re-opens it.
+// RECALIBRATED 2026-08-10 (jill swap-cadence fix, DECISIONS 2026-08-10): jill sits in the B3
+// pool (index 19) and her fix roughly halves her damage (board 1.924 -> 0.983), which is enough
+// to un-stall the b3@13 window (greedy already finds 4 teams there now). B3 window re-scanned:
+// b3@15 measures greedy=3 / polished=4 / ratio 1.1480 (>1.09 floor) — the same scenario,
+// re-measured. Next damage-model change to a pool unit re-opens it.
 const POOL = new Set([
   ...byBurst('I')
     .filter((s) => s !== 'emma-tactical-upgrade')
@@ -59,7 +64,7 @@ const POOL = new Set([
   ...byBurst('II').slice(2, 8),
   ...byBurst('III')
     .filter((s) => s !== 'e-h')
-    .slice(13, 23),
+    .slice(15, 25),
 ]);
 
 // One instance for the whole file: the calc memoizes sims, so both A/B arms and
