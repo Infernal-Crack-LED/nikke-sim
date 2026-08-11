@@ -67,9 +67,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      refuted the ask's own premise, one (M7) by re-filing into the SG investigation.
      `2026-08-10-faithfulness-ENACTMENT-START-HERE.md` is now a historical record, not a worklist.
      **The durable lesson is in its §5: ask the owner before asking for footage.**
-  2. **The two round-count Pierce carriers are the ONE live per-unit question left** — see the item
-     further down. `gainPierce.durationShots` now exists, which removes the reason those two skips
-     were given; both are board-graded, so it moves the board and wants its own pass.
+  2. **The two round-count Pierce carriers are RESOLVED (2026-08-11)** — `d-killer-wife` was a real
+     gap and is enacted (board 0.937 → 1.012); `dorothy-serendipity` was a FALSE POSITIVE whose
+     line is already modelled through her `consolidation` block. See the item further down for
+     both, and for the one follow-up it left (her N1 comp overshoots on `grave`'s known HOT).
   3. **Tier 5 engine primitives stay HELD** (`quency-escape-queen` stage-unlock ordering, the 5e
      state machines, `alice` caster-relative charge speed, the `skillGauge`-fires-twice + charge-B3
      gauge-tempo pair, `chargeCounter` bypassing block gates). Ranked in the ENGINE-WORK ORDER
@@ -140,15 +141,45 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     gates (S1 `casterAtkPct` 45.02; S2's crit 19.94 / projectileExplosion 50 / pierce 32.72) — an
     unanchored-model item, not a mechanism question.
 
-- **Two round-count Pierce carriers still skip the line, and the reason they gave no longer holds.**
-  `dorothy-serendipity` ("Gains Pierce for 3 round(s)") and `d-killer-wife` ("Gain Pierce for 1
-  shot") both carry their Pierce line as unmodeled/damage-inert on their own documented reasoning —
-  part of which was that the engine could not express a round count. It can now
-  (`gainPierce.durationShots`, DECISIONS 2026-08-11). Both are BOARD-GRADED (0.924 / 0.937), so
-  modeling them MOVES the board: a per-unit call, not a mechanical follow-through. Note
-  `dorothy-serendipity`'s stated reason is also that "Pierce is inert on a single boss", which
-  contradicts game-mechanics §11 (Pierce Damage ▲ applies on the partless boss) — check that premise
-  before acting on either.
+- **The two round-count Pierce carriers are RESOLVED — one was a real gap, one was a false
+  positive.** The shared premise this item rested on ("Pierce is inert on a single boss") is
+  REFUTED by `docs/data/game-mechanics.md` §11: Pierce Damage ▲ is an ordinary Damage-Up entry and
+  DOES apply on the partless boss; the multi-part-only mechanic is the core+body double-hit, a
+  different thing that the two were being conflated with.
+  - **`d-killer-wife` — REAL, and enacted.** Her S1-A "Gain Pierce for 1 shot" (every 3 full
+    charges) now encodes as `hitCount 3 → gainPierce durationShots 1`. She is her OWN pierce
+    granter (her S1-B gives SR allies, herself included, Pierce Damage ▲13.55% on FB enter), so
+    the untagged reading was losing damage with no teammate required. Board **0.937 COLD → 1.012
+    OK** (MAD 0.063 → 0.039). ⚑ Per-comp it is NOT uniform, and the spread is the interesting
+    part: +2.4%/+2.6% in her two non-`grave` comps, **+20.0% in N1**, where `grave`'s permanent
+    all-ally `pierceDamagePct` 48.4 is what the tag unlocks. N1 now reads 1.066 HOT — see the
+    follow-up below.
+  - **`dorothy-serendipity` — FALSE POSITIVE, no change made, do not "convert" her.** Her "Gains
+    Pierce for 3 round(s)" is ALREADY modeled, just not via `gainPierce`: it shares one trigger
+    and one 3-round window with the "Pellet count is fixed at 1" clause beside it, so it rides her
+    `consolidation` block's `pierce: true` → per-shot `pierceActive`, scoping pierce to exactly
+    the consolidated rounds. Encoding it a second time would double-book the window. The line she
+    genuinely leaves unmodeled is the OTHER one — S1-B "Expands Pierce **range** by 200%", which
+    is penetration depth through targets and IS correctly inert on a partless single boss. The
+    `src/skills/types.ts` comment that listed her as an unconverted carrier is corrected.
+  - **⇒ OPEN FOLLOW-UP (findings-only, do not chase by shaving the kit-literal line):**
+    `d-killer-wife`'s N1 comp overshoots to 1.066 HOT. N1 is the `grave` comp, and `grave` is
+    herself 1.095 HOT with documented over-credits (always-on Heat Emission uptime; the U19
+    empty-magazine effect). The overshoot most likely rides `grave`'s known HOT, not this line —
+    which is the "re-tune the exposed unit separately, never re-fudge the fix" case. Worth a look
+    when `grave` is next touched.
+
+- **⇒ OWNER-GATED ONE-LINER: the `gainPierce` comment in `src/engine/sim.ts` (~:2891-2894) still
+  carries the claim the 2026-08-11 Pierce work refuted.** It reads "This is the literal form of five
+  kits (nihilister / harran / neve / dorothy-serendipity / d-killer-wife); before it existed they
+  shipped durationSec stand-ins" — but `dorothy-serendipity` never shipped a stand-in and must NOT
+  be converted (her grant rides her `consolidation` block's `pierce: true`; see DECISIONS
+  2026-08-11). The parallel comment in `src/skills/types.ts` was corrected, so the two files now
+  disagree. **Comment-only, zero behaviour** — left unmade solely because `src/engine/**` is a
+  protected path needing explicit owner approval. Raised by the cross-family `/code-review`
+  (`kimi-code/k3`) as a NOTE; full result at
+  `scratchpad/gates/2026-08-11-dkw-pierce/result.json`. Fix = mirror the types.ts wording (four
+  `durationShots` carriers + `dorothy-serendipity` via `consolidation.pierce`).
 
 - **M1 `guillotine-winter-slayer` — the cadence ask is CLOSED, and the "~26% hot normal fire" framing
   was a MISATTRIBUTION.** OWNER RULING 2026-08-11: she uses her datamined fire rate (`pullsPerSec` 12

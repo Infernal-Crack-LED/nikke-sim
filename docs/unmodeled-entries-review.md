@@ -11,16 +11,16 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 157 | 38.2% |
-| Missing engine primitive / trigger | 93 | 22.6% |
+| Defensive / HP / shield / aggro | 157 | 38.3% |
+| Missing engine primitive / trigger | 93 | 22.7% |
 | Other / see caveats | 92 | 22.4% |
 | Out-of-domain / parser unsupported | 30 | 7.3% |
 | Weapon-state / shot-count approximation | 11 | 2.7% |
-| Partless boss | 11 | 2.7% |
-| Self-status / stack gate | 8 | 1.9% |
+| Partless boss | 10 | 2.4% |
+| Self-status / stack gate | 8 | 2.0% |
 | RNG / probabilistic | 6 | 1.5% |
 | Measurement-gated / unverified cadence | 3 | 0.7% |
-| **Total** | **411** | 100.0% |
+| **Total** | **410** | 100.0% |
 
 ## Entries by reason
 
@@ -1523,12 +1523,7 @@ Outgoing healing ▲ 35.2% continuously.
 - **burst:** Additional Effect (weapon-change spec — VERBATIM TEXT NOT AVAILABLE to this audit; fetch from blablalink: likely carries the swap weapon's charge time / ammo / Full Charge Damage spec that pins the swap shot economy)
   - *Why:* burst: swap shot economy is a materialized parser estimate, not hand-verified — engine fires ~10 swapped shots/10s (60f cycle, no bolt gap) each carrying her SR charge-damage bucket on top of the 7% multiplier.
 
-### Partless boss (11)
-
-**D: Killer Wife** (d-killer-wife)
-
-- **skill1:** Activates when attacking with Full Charge for 3 time(s). Affects self. Gain Pierce for 1 shot. (Damage-inert on the partless single-target scope-lock boss: the Pierce tag adds no targets. NOTE it is not unconditionally inert — a pierce-tagged shot becomes eligible for Pierce Damage ▲ Damage-Up entries, so a comp pairing her with a Pierce Damage granter would make this live; see caveats.)
-  - *Why:* skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)
+### Partless boss (10)
 
 **Moran (Treasure)** (moran)
 

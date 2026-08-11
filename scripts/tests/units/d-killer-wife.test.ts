@@ -15,7 +15,7 @@
 //
 // Kit (data/characters.json → characters['d-killer-wife'].skills, levels 10/10/10 — the normalized
 // `skills` prose is the SSOT):
-//   S1 ■ Full Charge x3 → self: Gain Pierce for 1 shot                                          [W1 UNMODELED]
+//   S1 ■ Full Charge x3 → self: Gain Pierce for 1 shot                                          [W1]
 //      ■ entering Full Burst → all allies with a Sniper Rifle: Pierce Damage ▲13.55% for 10 sec  [W2]
 //   S2 ■ Full Charge x8 → all allies: Cooldown of Burst Skill ▼ 7 sec                           [W3]
 //      ■ Full Charge x5 → all allies: Attack damage ▲ 5.06% for 10 sec                          [W4]
@@ -25,18 +25,23 @@
 //          hit body:  ATK ▲ 12.19% of the skill user's ATK for 10 sec                            [W7]
 //
 // WHY EACH LINE IS DISPOSITIONED AS IT IS:
-//   W1 UNMODELED (inert, documented): "Gain Pierce for 1 shot" every 3 full charges is a SELF pierce
-//      TAG (engine `gainPierce` sets pierceUntilFrame, emits NO buffApply). On the partless single-
-//      target boss the Pierce tag adds no extra targets; its only effect would be to make a tagged
-//      shot eligible for the W2 Pierce Damage ▲ during Full Burst (a small own-damage undercount).
-//      The override leaves it out; the S1 SLOT is still active (it emits W2), so this is a specific
-//      within-slot skip. PIN: the skill1 slot emits EXACTLY {pierceDamagePct} and no self-tag/damage
-//      stat — the documented skip, distinguished from a silent drop or a mis-encoding of the tag.
+//   W1 FAITHFUL: hitCount 3 → self → gainPierce durationShots 1. A ROUND BUDGET, not a clock: the
+//      granting round never spends it, so exactly one shot in three carries the Pierce tag and the
+//      budget survives reloads and lulls (a durationSec stand-in would drain through them and can
+//      leave the next round she fires untagged). Both numbers are verbatim from the clause, and
+//      hitCount matches the encoding this file already uses for the identical "Full Charge for N
+//      time(s)" shape on S2 (W3/W4). The Pierce TAG adds no extra TARGETS on the partless boss —
+//      what it does is make the tagged shot read the Damage-Up bucket's Pierce Damage ▲ entries,
+//      which DO apply on a partless boss (docs/data/game-mechanics.md §11; the multi-part-only
+//      mechanic is the core+body double-hit, PIERCE_CORE_DOUBLE=false, a different thing). She is
+//      her OWN granter via W2, so this pays off with no teammate required.
+//      PIN: `gainPierce` emits no buffApply, so the slot's buff signature is UNCHANGED by W1 — the
+//      W1 damage assertions, not the buff-signature pin, are what discriminate it.
 //   W2 FAITHFUL: fullBurstEnter → alliesOfWeapon SR → pierceDamagePct 13.55/10s. alliesOfWeapon has
 //      no excludeSelf, so the SR caster (herself SR) is included. Nearest-wrong: the pre-2026-07-20
 //      encoding targeted ALL allies (reached the non-SR ally). The pierceDamagePct buff is APPLIED on
 //      FB entry regardless of pierce tags; translating to DAMAGE additionally needs a pierce tag
-//      (W1's domain, unmodeled) — so this line is pinned at the buffApply event, not at damage.
+//      (W1's domain) — so this line is pinned at the buffApply event, not at damage.
 //   W3 FAITHFUL (no event — observed via team Full-Burst cadence): hitCount 8 → all allies → burstCdr
 //      7s. `burstCdr` directly lowers burstCdFrames and emits NO event, so it is only observable
 //      downstream. The 2026-07-16 PARSER-BUG FIX: this line previously parsed as shotFired → the 7s
@@ -212,6 +217,21 @@ const cfNukeLv1 = withPatchedOverride('d-killer-wife', (ov: any) => {
   }
   b.effects.find((e: any) => e.kind === 'flatDamage').atkPct = 159.12;
 });
+/** W1 nearest-wrong: the pre-2026-08-11 state — the self Pierce TAG left unmodeled entirely, on the
+ *  reading that "the Pierce tag adds no targets on a partless boss". It adds no TARGETS, but Pierce
+ *  Damage ▲ is a Damage-Up entry that applies on the partless boss (game-mechanics §11), and W2 is
+ *  her OWN 13.55% granted to SR allies including herself — so the untagged reading loses it. */
+const cfNoPierceTag = withPatchedOverride('d-killer-wife', (ov: any) => {
+  const before = ov.skill1.length;
+  ov.skill1 = ov.skill1.filter(
+    (x: any) => !x.effects.some((e: any) => e.kind === 'gainPierce')
+  );
+  if (ov.skill1.length === before) {
+    throw new Error(
+      'd-killer-wife S1 gainPierce block missing — fixture is stale'
+    );
+  }
+});
 /** W6 nearest-wrong: re-add the REMOVED ungated parts branch (all-ally coreDamagePct 16.26) — the
  *  pre-2026-07-17 over-credit. */
 const cfPartsReadded = withPatchedOverride('d-killer-wife', (ov: any) => {
@@ -231,6 +251,7 @@ const pierceAll = run({ 'd-killer-wife': cfPierceAll });
 const cdrEveryShot = run({ 'd-killer-wife': cfCdrEveryShot });
 const atkEveryShot = run({ 'd-killer-wife': cfAtkEveryShot });
 const nukeLv1 = run({ 'd-killer-wife': cfNukeLv1 });
+const noPierceTag = run({ 'd-killer-wife': cfNoPierceTag });
 const partsReadded = run({ 'd-killer-wife': cfPartsReadded });
 // W7 gate-DIRECTION probe: OFF-BASIS coreHitRate 0 (the scope-lock basis is coreHitRate 1). The body
 // branch is gated on Wipe Out ONLY (no requiresCore — that stranded proxy was removed 2026-07-25), so
@@ -256,12 +277,37 @@ describe('d-killer-wife — kit spec', () => {
     });
   });
 
-  describe('W1 — S1 "Gain Pierce for 1 shot" (self, every 3 full charges) is UNMODELED (inert on partless boss)', () => {
-    it('PIN: the skill1 slot emits EXACTLY {pierceDamagePct} — no self pierce-tag / damage stat', () => {
+  describe('W1 — S1 "Gain Pierce for 1 shot" (self, every 3 full charges) — a ROUND-COUNT budget', () => {
+    it('PIN: the skill1 slot still emits EXACTLY {pierceDamagePct} — gainPierce is a TAG, not a buff', () => {
+      // gainPierce sets pierceShotsLeft directly and emits no buffApply, so the slot's buff
+      // signature is unchanged by W1. This pin therefore does NOT discriminate W1 — the damage
+      // assertions below do. It is kept to catch a regression that re-encodes the tag as a stat.
       const stats = [
         ...new Set(dkwBuffs(base.events, 'skill1').map((b) => b.stat)),
       ].sort();
       expect(stats).toEqual(['pierceDamagePct']);
+    });
+    it('DISCRIMINATING: the tag is worth real damage — dropping it costs her, and nobody else', () => {
+      // Pierce Damage ▲ applies on the partless boss (game-mechanics §11) — it is an ordinary
+      // Damage-Up entry, NOT the multi-part core+body double-hit. Her own W2 grants 13.55% to SR
+      // allies including herself, so a tagged shot fired inside a Full Burst reads it.
+      expect(base.totals['d-killer-wife']).toBeGreaterThan(
+        noPierceTag.totals['d-killer-wife']
+      );
+      // teammates carry no pierce tag of their own, so their damage must be byte-identical
+      expect(base.totals.crown).toBe(noPierceTag.totals.crown);
+      expect(base.totals.helm).toBe(noPierceTag.totals.helm);
+    });
+    it('BOUNDED: the gain is far below 13.55% — only 1-in-3 shots is tagged, and only inside a FB', () => {
+      const gain =
+        base.totals['d-killer-wife'] / noPierceTag.totals['d-killer-wife'] - 1;
+      // ⚑ THIS BOUND IS FIXTURE-SCOPED, NOT A GENERAL CLAIM. It holds because the only Pierce
+      // Damage ▲ in this comp is her OWN 13.55% (crown/helm grant none), so 13.55pp is the
+      // ceiling even if every shot were tagged for the whole fight. In a comp carrying an ALLY
+      // pierce granter the tag is worth far more and this bound does NOT apply — e.g. `grave`'s
+      // permanent all-ally pierceDamagePct 48.4 takes her N1 comp +20.0% (measured 2026-08-11).
+      expect(gain).toBeLessThan(0.1355);
+      expect(gain).toBeGreaterThan(0);
     });
   });
 
