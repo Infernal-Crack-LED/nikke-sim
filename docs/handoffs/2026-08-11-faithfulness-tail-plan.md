@@ -107,10 +107,12 @@ Printed by `--skipped`, never silently swallowed:
 
 Each is a generated census, each scored against the graded 45 first.
 
-1. **A2 — `unmodeled` entries that match no kit line.** 83 of 410 entries do not match their kit
-   text verbatim or line-wise. Most are annotated verbatim ("… — magnitude only: …"); the residue
-   would be entries describing lines the kit no longer prints, which read as live gaps forever.
-   Cheap, and it cleans an input every other pass reads.
+1. **A2 — `unmodeled` entries that match no kit line.** Entries are mostly verbatim kit lines, some
+   annotated ("… — magnitude only: …"); the residue would be entries describing lines the kit no
+   longer prints, which read as live gaps forever. Cheap, and it cleans an input every other pass
+   reads. ⚑ A throwaway scoping probe put the non-verbatim residue at roughly a fifth of ~410
+   entries, but that number came from an ad-hoc matcher that was never committed and is NOT
+   evidence — re-derive it as the first step of building A2, don't plan on it.
 2. **A3 — non-percent quantity accounting.** The complement of axis 1: durations, round counts,
    stack caps. Higher noise, but it is the tier that held the `d-killer-wife` defect.
 3. **A4 — "fixed at" lines vs the clamp StatKeys** (phase-4 checklist item 7). `reloadSpeedClamp` /
