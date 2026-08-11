@@ -64,24 +64,34 @@ lives. Newest first within each section.
   invariant and the explicit list of 24 literal carriers outside the graded slice that are not
   yet tagged (inert — a missing tag applies no amp — and each one a per-unit review).
 
-- **(2026-08-10) A STRAY ARTICLE IN THE ENGLISH KIT TEXT BLOCKS THE AMP LITERAL FOR 7 UNITS —
-  recorded, NOT enacted; the localization is provably inconsistent but the game's own matcher is
-  unmeasured.** `ark-ranger-black`, `guilty`, `nero`, `novel`, `pepper`, `rapi` (AR/Fire base)
-  and `power` have a burst DAMAGE block reading "Affects **the** 1 enemy unit(s) with …", which
-  is one article away from the literal `jackal` names. **The article is a localization artifact,
-  not a targeting distinction:** seven clause bodies are attested BOTH ways across the roster
-  (e.g. "…with the highest remaining HP" — `nero` with, `2b` without; "…with the highest final
-  DEF" — `guilty` with, `dolla`/`milk`/`neon` without), and decisively **`pepper`, `rapi` and
-  `maiden-ice-rose` each use BOTH spellings of the SAME clause inside their own kit**, which no
-  targeting rule can explain.
-  That does NOT settle the enactable question, which is whether the GAME's matcher sees the
-  stray word — string-matching the localized text it would, keying on an internal id it would
-  not. Unmeasured, so all seven stay UNTAGGED and the finding is recorded only. Owner
-  2026-08-10: `novel` is low priority, not worth a test. Cost of being wrong is currently zero —
-  every affected unit is on `jackal`'s side, and `jackal` sits in no graded comp. `viper`
-  ("Affects 1 **designated** enemy unit(s)") is reported by the same detector but is NOT this
-  class: "designated" is a real word describing a real targeting rule, so hers is a genuine
-  non-match. Detector: `npx tsx scripts/census-burst-amp-scope.ts --near-miss`.
+- **(2026-08-10) THE ENGLISH KIT TEXT'S STRAY ARTICLE IS FORGIVEN — owner ruling; the amp is
+  assumed to key off an internal targeting id, and 6 more units are tagged.** Owner: _"let's
+  operate under the assumption it keys off internal id because it'd be really dumb if it
+  didn't."_ Seven units have a burst DAMAGE block reading "Affects **the** 1 enemy unit(s) with
+  …", one article off the literal `jackal` names.
+  **The article is a localization artifact, not a targeting distinction** — seven clause bodies
+  are attested BOTH ways across the roster ("…with the highest remaining HP": `nero` with, `2b`
+  without; "…with the highest final DEF": `guilty` with, `dolla`/`milk`/`neon` without), and
+  decisively **`pepper`, `rapi` (AR/Fire base) and `maiden-ice-rose` each use BOTH spellings of
+  the SAME clause inside their own kit**, which no targeting rule can explain.
+  **Enacted:** `stripStrayArticle()` normalizes "Affects the ⟨count⟩" → "Affects ⟨count⟩" before
+  matching, so the census decides this rather than a hardcoded unit list. 8 tag instances added
+  across 6 units — `guilty` (×2: the nuke plus its max-stack "Affects the same target(s)" rider,
+  which inherits the scope per the `exia` precedent), `nero`, `novel`, `pepper`, `power` (×2,
+  same inheriting-rider shape), `rapi`. The 7th, `ark-ranger-black`, qualifies on the clause but
+  her burst damage is a `dot` and is blocked by the engine gap below instead. Board byte-
+  identical on a full diff. `novel` stops being a block-vs-skill case entirely: with the article
+  forgiven, her own damage block carries the literal.
+  **This is an ASSUMPTION, not a measurement, and is recorded as one.** It is safe to adopt now
+  because every affected unit is on `jackal`'s side and `jackal` sits in no graded comp, so being
+  wrong costs zero today; a popup read of an amped nuke on any of the six confirms or refutes it.
+  The rule is deliberately narrow — it fires only where the article precedes a COUNT, which is
+  exactly where the inconsistency is attested, and does not touch "Affects the enemy nearest to
+  the crosshair" / "with the highest final ATK" / "the same target(s)", which are different
+  targeting rules that the literal-only ruling still excludes. `viper` ("Affects 1
+  **designated** enemy unit(s)") stays a genuine non-match — "designated" is a real word doing
+  real work, and the census pins the two classes separately.
+  Detector: `npx tsx scripts/census-burst-amp-scope.ts --near-miss` (now reports `viper` alone).
 
 - **(2026-08-10) A BURST-SLOT `dot` IS STRUCTURALLY AMP-INELIGIBLE — engine gap, recorded.**
   `burstDesc` is plumbed only on the `flatDamage` effect and its pending-hit path, so a burst

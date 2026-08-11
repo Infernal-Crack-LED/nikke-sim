@@ -104,24 +104,23 @@ line it amplifies, not merely somewhere in the burst description.
 the damage block. Worth stating plainly: she is consistent with BOTH readings, so she is a
 confirming positive control, not the discriminator. The ruling is what settles it.
 
-Four units differ between the readings — literal on a damage-free block, no literal on the
-damage block — and all four are correctly UNTAGGED:
+Three units differ between the readings — literal on a damage-free block, no literal on the
+damage block — and all three are correctly UNTAGGED: **`guillotine-winter-slayer`**, **`kilo`**,
+**`sin`**. (`guillotine-winter-slayer` only became visible once the census stopped skipping dot
+carriers — see §4b.)
 
-- **`novel`** — the sharpest. Damage block "Affects **the** 1 enemy unit(s) with the highest
-  final ATK"; a later, damage-free block reads "Affects 1 enemy unit(s)." verbatim. She shipped
-  tagged; she now ships untagged.
-- **`guillotine-winter-slayer`**, **`kilo`**, **`sin`** — same shape, all already untagged.
-  (`guillotine-winter-slayer` only became visible once the census stopped skipping dot carriers
-  — see §4b.)
+`novel` was the sharpest case in this section until §4a landed. Forgiving the stray article puts
+the literal on her OWN damage block, so block-vs-skill no longer decides her and she is tagged.
 
 Also settled by the same rule: a TRAILING qualifier does not break a match (`2b` "Affects 1 enemy
-unit(s) with the highest remaining HP" qualifies), while an INSERTED word does — §4a.
+unit(s) with the highest remaining HP" qualifies), while a MEANINGFUL inserted word does — §4a.
 
-## 4a. The stray article — 7 units, recorded not enacted
+## 4a. The stray article — FORGIVEN, 6 units tagged
 
-Seven units have a burst DAMAGE block one article away from `jackal`'s literal:
-`ark-ranger-black`, `guilty`, `nero`, `novel`, `pepper`, `power`, `rapi` (AR/Fire base) — all
-reading "Affects **the** 1 enemy unit(s) with …".
+Owner: _"let's operate under the assumption it keys off internal id because it'd be really dumb
+if it didn't."_ Seven units have a burst DAMAGE block reading "Affects **the** 1 enemy unit(s)
+with …", one article off `jackal`'s literal: `ark-ranger-black`, `guilty`, `nero`, `novel`,
+`pepper`, `power`, `rapi` (AR/Fire base).
 
 **The article is a localization artifact, not a targeting distinction.** Seven clause bodies are
 attested BOTH ways across the roster, and decisively **`pepper`, `rapi` and `maiden-ice-rose`
@@ -138,34 +137,45 @@ two things by one clause in one unit's kit.
 | …2 enemy unit(s) with the highest final ATK    | `anis-sparkling-summer`, `rosanna`        | `product-23`                         |
 | …10 enemy unit(s) with the highest final DEF   | `exia`                                    | `ein`, `frima`                       |
 
-**What this does NOT settle is the enactable question:** whether the GAME's matcher sees the
-stray word. If it string-matches the localized description it does and these seven genuinely
-miss the amp; if it keys on an internal id it does not and they are real targets. Unmeasured, so
-all seven stay untagged. Cost of being wrong is currently ZERO — every one is on `jackal`'s side
-and `jackal` sits in no graded comp. Owner 2026-08-10: `novel` is low priority, not worth a test.
+**Enacted as a matcher rule, not a unit list.** `stripStrayArticle()` normalizes
+"Affects the ⟨count⟩" → "Affects ⟨count⟩" before matching, so the census decides membership and
+a future unit with the same typo is handled automatically. 8 tag instances across 6 units:
+`guilty` ×2, `nero`, `novel`, `pepper`, `power` ×2, `rapi`. The two doubles are the nuke plus a
+status-gated "Affects the same target(s)" rider inheriting the scope (`exia` precedent).
+`ark-ranger-black` qualifies on the clause but her burst damage is a `dot` — blocked by §4b
+instead. Board byte-identical on a full diff.
 
-`viper` ("Affects 1 **designated** enemy unit(s)") is reported by the same detector and is NOT
-this class — "designated" is a real word describing a real targeting rule, so hers is a genuine
-non-match. The detector reports the inserted word so the two never get conflated; the census
-test pins them as separate sets.
+**It is an ASSUMPTION and is recorded as one.** Cheap to adopt: every affected unit is on
+`jackal`'s side and `jackal` sits in no graded comp, so being wrong costs zero on the board
+today. A popup read of an amped nuke on any of the six confirms or refutes it.
 
-Detector: `npx tsx scripts/census-burst-amp-scope.ts --near-miss`.
+The rule is deliberately narrow — it fires only where the article precedes a COUNT, which is
+exactly where the inconsistency is attested. It does not touch "Affects the enemy nearest to the
+crosshair", "…with the highest final ATK" or "…the same target(s)", which are different
+targeting rules the literal-only ruling still excludes, and it does not forgive a meaningful
+word: `viper` ("Affects 1 **designated** enemy unit(s)") stays a genuine non-match and is the
+only remaining `--near-miss` hit. The census pins the two classes separately.
+
+**Knock-on:** `novel` stops being a block-vs-skill case at all — with the article forgiven her
+own damage block carries the literal, so §4's rule is no longer what decides her.
 
 ## 4b. A burst-slot `dot` is structurally amp-ineligible (engine gap)
 
 `burstDesc` is plumbed only on `flatDamage` and its pending-hit path, so a burst damage line
-modeled as a `dot` can never read an amp however its clause reads. `diesel-winter-sweets` and
-`mana` have the literal on their damage block and still cannot be tagged; `ark-ranger-black` and
-`mihara-bonding-chain` are dot carriers too (both non-literal, so moot today).
+modeled as a `dot` can never read an amp however its clause reads. Three units are blocked by
+this and nothing else — `ark-ranger-black`, `diesel-winter-sweets` and `mana` all have a
+qualifying literal on their damage block and still cannot be tagged. (`ark-ranger-black` joined
+that set via §4a: forgiving the article qualified her clause, leaving the dot as the only
+obstacle.) `mihara-bonding-chain` is a dot carrier too but her clause is non-literal, so she is
+moot on both counts — which retires the batch-6 START-HERE item that flagged her.
 
 This surfaced as a **defect in the instrument**: the first census skipped units with no burst
-`flatDamage` entirely, which silently hid every dot carrier — `ark-ranger-black` appeared in a
-raw kit-text grep and then vanished from the census, which is what exposed it. The census now
-counts burst dots and reports a distinct `dot-ineligible` verdict; the unit count went 76 → 83.
+`flatDamage` entirely, silently hiding every dot carrier — `ark-ranger-black` appeared in a raw
+kit-text grep and then vanished from the census, which is what exposed it. The census now counts
+burst dots and reports a distinct `dot-ineligible` verdict; the unit count went 76 → 83.
+
 Board-inert (no dot carrier shares a comp with an amp). Fixing the gap means threading
 `burstDesc` through the dot record and its tick path — an engine change, out of scope here.
-It also retires a batch-6 item: the START-HERE doc flagged `mihara-bonding-chain` as needing this
-gap recorded, and her clause turns out to be non-literal anyway, so she is moot on both counts.
 
 ## 5. Recorded, not applied — 24 literal carriers outside the graded slice
 
@@ -196,19 +206,24 @@ each one and the board impact is provably zero — but it is the owner's call, n
 
 ## 7. Stats
 
-13 units untagged (32 instances) + 3 tagged + 6 kept · 6 spec pins flipped to
-absence-with-reason · 11 override notes/caveats corrected + 3 carrier caveats added · 1 committed
-instrument (`--all` / `--check` / `--near-miss`) + 17-pin self-validating fixture + roster
-invariant · board byte-identical on a full diff · verify.sh green.
+13 units untagged (32 instances) then 9 units tagged (11 instances: 3 `allEnemies` carriers +
+6 article-forgiven `singleEnemy` carriers) + 6 tags kept · 6 spec pins flipped to
+absence-with-reason · 17 override notes/caveats corrected or added · 1 committed instrument
+(`--all` / `--check` / `--near-miss`) + 18-pin self-validating fixture + roster invariant ·
+**board byte-identical on a full diff at every step** · verify.sh green.
 
-**Open owner questions: none.** Both scope questions are ruled (literal-only; block-level).
-Three things are RECORDED, not enacted, all board-inert: the 7-unit stray-article class (§4a),
-the burst-`dot` engine gap (§4b), and the 24 untagged literal carriers outside the graded slice
-(§5). Batch 6's per-unit sweep is still open.
+**Open owner questions: none.** Three scope questions ruled — literal-only, block-level, and the
+stray article forgiven on the internal-id assumption.
 
-**One process note worth carrying.** The instrument had a silent hole — it skipped any unit
-whose burst damage is a `dot`, hiding 7 units including one (`ark-ranger-black`) that a raw
-kit-text grep HAD surfaced. It was caught only because the two methods disagreed and the
-disagreement got chased rather than waved off. A census that silently drops a category is
-strictly worse than no census, because it reads as coverage. Cross-check any new census against
-a dumb grep over the raw source at least once.
+Recorded, not enacted, all board-inert: the burst-`dot` engine gap (§4b, 3 units blocked on
+qualifying clauses) and the 24 untagged literal carriers outside the graded slice (§5). One
+standing assumption to confirm when convenient: the internal-id premise behind §4a — a popup read
+of an amped nuke on any of `guilty`/`nero`/`novel`/`pepper`/`power`/`rapi` settles it, and being
+wrong costs nothing on the board today.
+
+**One process note worth carrying.** The instrument had a silent hole — it skipped any unit whose
+burst damage is a `dot`, hiding 7 units including one (`ark-ranger-black`) that a raw kit-text
+grep HAD surfaced. It was caught only because the two methods disagreed and the disagreement got
+chased rather than waved off. A census that silently drops a category is strictly worse than no
+census, because it reads as coverage. Cross-check any new census against a dumb grep over the raw
+source at least once.

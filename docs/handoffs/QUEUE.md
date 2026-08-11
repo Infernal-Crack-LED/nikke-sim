@@ -58,24 +58,21 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
-- **⇒ RECORDED, NOT ENACTED — a stray article in the English kit text blocks the amp literal for
-  7 units.** `ark-ranger-black`, `guilty`, `nero`, `novel`, `pepper`, `power`, `rapi` (AR/Fire
-  base) read "Affects **the** 1 enemy unit(s) with …", one article off `jackal`'s literal. The
-  article is provably a localization artifact — 7 clause bodies attested both ways, and
-  `pepper`, `rapi` and `maiden-ice-rose` each use BOTH spellings of the same clause in their own
-  kit — but whether the GAME's matcher sees it is unmeasured, so all 7 stay untagged. Zero cost
-  today: every one is on `jackal`'s side and `jackal` is in no graded comp. Owner 2026-08-10:
-  `novel` is low priority, not worth a test. `viper` ("1 **designated** enemy unit(s)") is
-  reported by the same detector but is a genuine non-match, not this class. Detector:
-  `npx tsx scripts/census-burst-amp-scope.ts --near-miss`; full context:
+- **⇒ STANDING ASSUMPTION to confirm when convenient — the amp keys off an INTERNAL TARGETING ID,
+  not the rendered English.** Owner ruling 2026-08-10 ("it'd be really dumb if it didn't"), which
+  forgave the localization's stray article and tagged 6 units (`guilty` ×2, `nero`, `novel`,
+  `pepper`, `power` ×2, `rapi` — AR/Fire base). The artifact case is airtight (7 clause bodies
+  attested both ways; `pepper`, `rapi` and `maiden-ice-rose` each spell the same clause both ways
+  in their OWN kit), but the id-vs-text premise is an assumption, not a measurement. **A popup
+  read of an amped nuke on any of the six settles it**, and being wrong costs zero on the board
+  today — all six are on `jackal`'s side and `jackal` is in no graded comp.
   [findings](2026-08-10-burst-amp-literal-scope-findings.md) §4a.
 
 - **⇒ ENGINE GAP, recorded: a burst-slot `dot` can never be amp-eligible.** `burstDesc` is
-  plumbed only on `flatDamage` and its pending-hit path. `diesel-winter-sweets` and `mana` carry
-  the literal on their damage block and still cannot be tagged; `ark-ranger-black` and
-  `mihara-bonding-chain` are dot carriers too (non-literal, moot). Board-inert. The fix threads
-  `burstDesc` through the dot record + tick path — an engine change, deliberately out of the
-  faithfulness sweep's scope.
+  plumbed only on `flatDamage` and its pending-hit path, so three units — `ark-ranger-black`,
+  `diesel-winter-sweets`, `mana` — carry a QUALIFYING literal on their damage block and still
+  cannot be tagged. Board-inert. The fix threads `burstDesc` through the dot record + tick path —
+  an engine change, deliberately out of the faithfulness sweep's scope.
   [findings](2026-08-10-burst-amp-literal-scope-findings.md) §4b.
 
 - **⇒ RECORDED, NOT APPLIED — 24 literal amp carriers outside the graded slice are untagged.**

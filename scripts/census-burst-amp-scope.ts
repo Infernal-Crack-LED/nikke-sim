@@ -41,13 +41,16 @@
 // are always the game's own pairing. "Affects the same target(s)…" inherits the preceding
 // block's clause, as the kit means it (cinderella / exia second blocks).
 //
-// --near-miss: clauses that would match but for ONE inserted word. This exists because the
-// English localization is inconsistent about an article: SEVEN distinct clause bodies appear
-// both as "Affects 1 enemy unit(s) with …" and "Affects the 1 enemy unit(s) with …", and
-// `maiden-ice-rose` uses BOTH spellings of the same clause inside her own kit. Whether the
-// game's own matcher sees that stray "the" is unknown and unmeasured — if it string-matches the
-// localized text it does, if it keys on an internal id it does not. So the near-misses are
-// REPORTED, never auto-tagged. All of them are on jackal's side, which reaches nothing today.
+// THE STRAY ARTICLE IS FORGIVEN — owner ruling 2026-08-10: the game is assumed to key the amp
+// off an internal targeting id rather than the rendered English, so a translator's stray "the"
+// cannot change eligibility. See stripStrayArticle() for the rule and the evidence. This is an
+// ASSUMPTION, not a measurement — deliberately adopted because the alternative is absurd, and
+// safe to adopt because every affected unit is on jackal's side and jackal reaches nothing on
+// the board today. A popup read of an amped nuke on any of them would confirm it.
+//
+// --near-miss survives for what the article rule does NOT forgive: a clause one MEANINGFUL word
+// off a literal. Only `viper` ("Affects 1 designated enemy unit(s)") is left — "designated"
+// describes a real targeting rule, so hers is a genuine non-match, not a respelling.
 //
 // Self-validating fixture: scripts/tests/census-burst-amp-scope.test.ts pins the discriminating
 // cases (liberalio literal-qualifying, cinderella paraphrase, viper/novel inserted-word
@@ -69,9 +72,30 @@ export function normalize(text: string): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
+/**
+ * Strip the English localization's stray article before matching: "Affects the 1 enemy unit(s)"
+ * → "Affects 1 enemy unit(s)".
+ *
+ * OWNER RULING 2026-08-10: the game is assumed to key the amp off an internal targeting id, not
+ * off the rendered English, so an article the translators dropped in cannot change eligibility.
+ * The article is provably a localization artifact and not a targeting distinction — seven clause
+ * bodies are attested BOTH ways across the roster, and `pepper`, `rapi` (AR/Fire base) and
+ * `maiden-ice-rose` each use both spellings of the SAME clause inside their own kit.
+ *
+ * DELIBERATELY NARROW. It fires only when the article precedes a COUNT ("the 1 …", "the 10 …",
+ * "the all …"), which is exactly where the inconsistency is attested. It does NOT touch
+ * "Affects the enemy nearest to the crosshair", "Affects the enemy with the highest final ATK"
+ * or "Affects the same target(s)" — those are different targeting rules, not respellings, and
+ * the literal-only ruling still excludes them. Nor does it forgive a meaningful inserted word
+ * (`viper` "Affects 1 designated enemy unit(s)" stays a non-match).
+ */
+export function stripStrayArticle(text: string): string {
+  return text.replace(/\bAffects the (?=(?:\d+|all)\b)/g, 'Affects ');
+}
+
 /** Does this burst description literally contain the string the amp names? */
 export function carriesLiteral(burstText: string, desc: BurstDesc): boolean {
-  return normalize(burstText).includes(AMP_LITERALS[desc]);
+  return stripStrayArticle(normalize(burstText)).includes(AMP_LITERALS[desc]);
 }
 
 export interface KitBlock {
@@ -109,7 +133,7 @@ export function kitBlocks(burstText: string): KitBlock[] {
       clause: clause || '(no scope clause)',
       dealsDamage: DAMAGE_LINE.test(seg),
       literals: (Object.keys(AMP_LITERALS) as BurstDesc[]).filter((d) =>
-        clause.includes(AMP_LITERALS[d])
+        stripStrayArticle(clause).includes(AMP_LITERALS[d])
       ),
     });
   }
@@ -128,7 +152,7 @@ export function kitBlocks(burstText: string): KitBlock[] {
 export function nearMiss(
   clause: string
 ): { desc: BurstDesc; inserted: string } | null {
-  const text = normalize(clause);
+  const text = stripStrayArticle(normalize(clause));
   const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   for (const desc of Object.keys(AMP_LITERALS) as BurstDesc[]) {
     if (text.includes(AMP_LITERALS[desc])) {

@@ -16,7 +16,8 @@
   "caveats": [
     "skill1: the 'Blood Fiend at max stacks' condition is read from a `bloodFiend` resource pool (0→5, +1 per full charge), not from the buff itself — the engine has no buff-stack gate primitive. The pool does NOT expire; the real buff drops 3 sec after the last full charge. ⚑ estimate: zero divergence at scope-lock cadence — measured, her longest apply-to-apply gap in a sim fight is the 172f (2.87s) reload boundary, under the 3s expiry by 8 frames, so the pool and the buff never disagree in-fight; divergence only after a >3s fire pause. Recipe: a focused Power recording spanning a >3s fire pause (boss phase transition) — read the Blood Fiend icon expiry vs whether the next S2/burst still consumed the max-stacks condition. Tier: low (outside every graded comp's cadence).",
     "skill2: 'Activates 1 time(s) per battle' is encoded as everyN 999 / everyNOffset 1 — first gated activation only; no generic once-per-battle block field exists (burstCdr.oncePerBattle is effect-local).",
-    "burst: 'the 1 enemy unit(s) with the highest final ATK' resolves to the single scope-lock boss (target enemy) — the sim has no multi-enemy axis to rank."
+    "burst: 'the 1 enemy unit(s) with the highest final ATK' resolves to the single scope-lock boss (target enemy) — the sim has no multi-enemy axis to rank.",
+    "burst: the 1584% nuke and its max-stack 1584% rider both carry burstDesc:'singleEnemy'. Her damage block reads '■ Affects the 1 enemy unit(s) with the highest final ATK.' and the Blood-Fiend-gated rider's '■ ... Affects the same target(s).' inherits that scope (exia precedent) — one article off the literal jackal's amp names ('skills with \"Affects 1 enemy unit(s)\" in the description'), and that article is a LOCALIZATION artifact, not a targeting rule: seven clause bodies are attested both ways across the roster and pepper, rapi (AR/Fire base) and maiden-ice-rose each use both spellings of the SAME clause in their own kit. Owner ruling 2026-08-10: the game is ASSUMED to key the amp off an internal targeting id rather than the rendered English, so the stray 'the' does not block eligibility. Assumption, not a measurement — safe today because jackal shares no graded comp, so the tag is board-inert (full A/B diff byte-identical); a popup read of an amped nuke would confirm it. ⚑ the amp's additive Damage-Up placement is unmeasured. Decidable by `npx tsx scripts/census-burst-amp-scope.ts`."
   ],
   "skill1": [
     {
@@ -92,7 +93,8 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 1584
+          "atkPct": 1584,
+          "burstDesc": "singleEnemy"
         }
       ]
     },
@@ -111,7 +113,8 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 1584
+          "atkPct": 1584,
+          "burstDesc": "singleEnemy"
         }
       ]
     }

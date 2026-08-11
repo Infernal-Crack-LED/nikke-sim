@@ -21,6 +21,7 @@ import {
   censusRows,
   kitBlocks,
   nearMiss,
+  stripStrayArticle,
   normalize,
 } from '../census-burst-amp-scope.js';
 
@@ -126,17 +127,16 @@ describe('burst-amp scope census — the roster invariant', () => {
 
   it('the match is BLOCK-level: a literal on a damage-free block does NOT qualify', () => {
     // Owner ruling 2026-08-10: the literal must sit in the SAME '■' block as the damage line.
-    // These four have their literal on a block that deals no damage, and their damage block's
-    // clause has no literal — so all four are correctly untagged. `novel` is the sharpest:
-    // her damage block is "Affects the 1 enemy unit(s) with the highest final ATK" while a
-    // later, damage-free block reads "Affects 1 enemy unit(s)." verbatim.
+    // These three have their literal on a block that deals no damage while their damage block's
+    // clause has none, so all three are correctly untagged. (`novel` used to be the sharpest
+    // case here and no longer is: once the stray article is forgiven, HER damage block carries
+    // the literal outright, so block-vs-skill stopped being what decides her.)
     expect(rows.filter((r) => r.granularitySplit).map((r) => r.slug)).toEqual([
       'guillotine-winter-slayer',
       'kilo',
-      'novel',
       'sin',
     ]);
-    for (const slug of ['guillotine-winter-slayer', 'kilo', 'novel', 'sin']) {
+    for (const slug of ['guillotine-winter-slayer', 'kilo', 'sin']) {
       expect(
         row(slug).tags,
         `${slug} is untagged under the block rule`
@@ -162,9 +162,11 @@ describe('burst-amp scope census — the roster invariant', () => {
     // can never read an amp however its clause reads. These units have a literal on their
     // damage block and STILL cannot be tagged — an engine gap, not a tagging chore. Pinned
     // because the census originally skipped dot-only carriers into invisibility, which is how
-    // `ark-ranger-black` went unseen in the first pass.
+    // `ark-ranger-black` went unseen in the first pass — and she is now IN this set: forgiving
+    // the article qualified her clause, and the dot is the only thing still blocking her.
     const dotOnly = rows.filter((r) => r.verdict === 'dot-ineligible');
     expect(dotOnly.map((r) => r.slug)).toEqual([
+      'ark-ranger-black',
       'diesel-winter-sweets',
       'mana',
     ]);
@@ -174,52 +176,50 @@ describe('burst-amp scope census — the roster invariant', () => {
     }
   });
 
-  it("near-miss: the localization's stray article, reported and never auto-tagged", () => {
-    // Seven clause bodies are attested BOTH with and without "the", and `pepper`, `rapi` and
-    // `maiden-ice-rose` each use both spellings of the SAME clause inside their own kit — so
-    // the article is a localization inconsistency, not a targeting distinction. Whether the
-    // game's own matcher sees it is UNMEASURED, so these stay untagged. All are on jackal's
-    // side, which reaches nothing today. Owner 2026-08-10: `novel` is low priority, do not
-    // spend a test on her specifically.
+  it('near-miss: only a MEANINGFUL inserted word is left — the article is forgiven', () => {
+    // Owner ruling 2026-08-10: the game is ASSUMED to key the amp off an internal targeting id,
+    // not the rendered English, so the localization's stray article cannot block eligibility.
+    // stripStrayArticle() normalizes it away, which qualified 7 units (6 tagged; the 7th,
+    // `ark-ranger-black`, is a burst-dot and blocked by the engine gap instead).
+    // What survives as a near miss is a clause off by a word that MEANS something: `viper`'s
+    // "Affects 1 designated enemy unit(s)" is a different targeting rule, not a respelling, so
+    // she stays a genuine non-match. The two must never be conflated.
     const affected = rows.filter((r) => r.nearMisses.length).map((r) => r.slug);
-    expect(affected).toEqual([
-      'ark-ranger-black',
-      'guilty',
-      'nero',
-      'novel',
-      'pepper',
-      'power',
-      'rapi',
-      'viper',
-    ]);
-    // Two distinct causes, and they must not be conflated. The stray ARTICLE is the
-    // localization artifact; `viper`'s "designated" is a real English word doing real work
-    // ("Affects 1 designated enemy unit(s)" is a different targeting rule), so hers is a
-    // genuine non-match rather than a spelling of the literal.
-    const article = affected.filter((s) =>
-      row(s).nearMisses.every((n) => n.inserted === 'the')
-    );
-    expect(article).toEqual([
-      'ark-ranger-black',
-      'guilty',
-      'nero',
-      'novel',
-      'pepper',
-      'power',
-      'rapi',
-    ]);
+    expect(affected).toEqual(['viper']);
     expect(row('viper').nearMisses.map((n) => n.inserted)).toEqual([
       'designated',
     ]);
-    for (const slug of affected) {
-      expect(row(slug).tags, `${slug} must stay untagged`).toEqual([]);
-    }
+    expect(row('viper').tags).toEqual([]);
   });
 
-  it('nearMiss() matches one inserted word, not a paraphrase', () => {
+  it('the 6 article-forgiven units are tagged; the burst-dot one is not', () => {
+    for (const slug of ['guilty', 'nero', 'novel', 'pepper', 'power', 'rapi']) {
+      expect(
+        row(slug).tags.every((t2) => t2 === 'singleEnemy'),
+        slug
+      ).toBe(true);
+      expect(row(slug).tags.length, `${slug} has every burst hit tagged`).toBe(
+        row(slug).tags.length + row(slug).untaggedDamage
+      );
+    }
+    // guilty + power each carry a second, status-gated "Affects the same target(s)" rider that
+    // inherits the scope (exia precedent), so both of their hits are tagged.
+    expect(row('guilty').tags).toEqual(['singleEnemy', 'singleEnemy']);
+    expect(row('power').tags).toEqual(['singleEnemy', 'singleEnemy']);
+    // ark-ranger-black qualifies on the clause but her burst damage is a dot — engine gap.
+    expect(row('ark-ranger-black').tags).toEqual([]);
+    expect(row('ark-ranger-black').verdict).toBe('dot-ineligible');
+  });
+
+  it('nearMiss() matches one inserted word, not a paraphrase or a forgiven article', () => {
+    // the article is stripped before matching, so it is no longer a near miss at all
     expect(
       nearMiss('Affects the 1 enemy unit(s) with the highest final ATK.')
-    ).toEqual({ desc: 'singleEnemy', inserted: 'the' });
+    ).toBeNull();
+    expect(stripStrayArticle('Affects the 1 enemy unit(s).')).toBe(
+      'Affects 1 enemy unit(s).'
+    );
+    // a meaningful inserted word still is one
     expect(nearMiss('Affects 1 designated enemy unit(s).')).toEqual({
       desc: 'singleEnemy',
       inserted: 'designated',
