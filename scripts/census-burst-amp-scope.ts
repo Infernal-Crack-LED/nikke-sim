@@ -30,10 +30,12 @@
 // THE MATCH IS BLOCK-LEVEL — owner ruling 2026-08-10: the literal must sit in the SAME '■'
 // block as the damage line it would amplify, not merely somewhere in the burst description.
 // Cited confirming case: `scarlet` (AR/Electric base), a known-working trina amp target, whose
-// "Affects all enemies." sits on her damage block. The rejected alternative was a skill-wide
-// reading of "skills with X in the description"; it differs for `kilo`, `novel` and `sin`,
-// whose literal sits on a block that deals NO damage, and all three are correctly untagged.
-// The census still computes both and reports `granularitySplit` so those units stay visible.
+// "Affects all enemies." sits on her damage block. (She is consistent with BOTH readings, so
+// she is a confirming positive control, not the discriminator — the ruling is what settles it.)
+// The rejected alternative was a skill-wide reading of "skills with X in the description"; it
+// differs for `guillotine-winter-slayer`, `kilo`, `novel` and `sin`, whose literal sits on a
+// block that deals NO damage, and all four are correctly untagged. The census still computes
+// both and reports `granularitySplit` so those units stay visible.
 //
 // Blocks are read from the kit text, not the override, so the scope clause and the damage line
 // are always the game's own pairing. "Affects the same target(s)…" inherits the preceding
