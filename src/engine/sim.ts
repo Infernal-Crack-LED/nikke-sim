@@ -3711,10 +3711,17 @@ export function runSim(
           (stat(u, 'attackSpeedPct', frame) + stat(u, 'fireRatePct', frame)) /
             100;
         // During a weapon swap the swap's OWN cadence governs (moran: 24/s vs base AR 12/s):
-        // explicit swap pullsPerSec wins, else the swap weapon-class default, else base behavior.
+        // explicit swap pullsPerSec wins; else, for a SAME-WEAPON swap (the resolved swap
+        // weapon class equals the unit's own — covers both an omitted `weapon` field and one
+        // that redundantly restates the unit's own class), fall back to the unit's own measured
+        // pullsPerSec (charFixes) before the weapon-class default — a same-weapon swap cannot
+        // change how fast the gun fires. A different-weapon swap keeps falling straight to the
+        // swap weapon's class default, unchanged.
+        const swapWeapon = u.swap?.weapon ?? u.char.weapon;
         const basePps = u.swap
           ? (u.swap.pullsPerSec ??
-            PULLS_PER_SEC[u.swap.weapon ?? u.char.weapon])
+            (swapWeapon === u.char.weapon ? u.pullsPerSec : undefined) ??
+            PULLS_PER_SEC[swapWeapon])
           : (u.pullsPerSec ?? PULLS_PER_SEC[u.char.weapon]);
         const rate = (basePps ?? 4) / FPS;
         u.fireAcc += rate * speedMult;
