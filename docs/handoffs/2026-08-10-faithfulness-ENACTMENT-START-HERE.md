@@ -1,5 +1,12 @@
 # Faithfulness pass — ENACTMENT phase: start here (written 2026-08-10, for a fresh session)
 
+> **⚑ CLOSED 2026-08-11 — this is now a HISTORICAL RECORD, not a worklist.** Every tier resolved:
+> Tier 0 (five rulings + two follow-ups), Tier 1 (`jill`), Tier 2 (owner-ruled, no recording), Tier
+> 3 (the recording list — 10 of 12 answered without a camera, 1 refuted by A/B, 1 re-filed into the
+> SG thread), Tier 4 (all four consistency items). Tier 5 primitives remain HELD by design.
+> **The live queue is `QUEUE.md`; the WHY is `docs/DECISIONS.md` (four 2026-08-11 entries).** Read
+> §5 before writing another recording ask — its lesson is the durable output of this pass.
+
 > **The finding phase is over for the 45 board-graded units.** Batches 1–8 reviewed every one of
 > them ([batch 1](2026-08-10-faithfulness-batch1-findings.md) ·
 > [2](2026-08-10-faithfulness-batch2-findings.md) · [3](2026-08-10-faithfulness-batch3-findings.md) ·
@@ -28,12 +35,18 @@ So the highest-value remaining output of an enactment session is: get the batche
 made, and **hand the owner a recording list** — because the remaining accuracy is behind footage,
 not behind code.
 
+> **⚑ THAT LAST SENTENCE WAS HALF WRONG, and the correction is this doc's most useful output.** Ten
+> of the twelve recording asks were answered without a camera — eight from owner game knowledge, one
+> by an A/B that refuted its own premise, one by re-filing. **Ask the owner before asking for
+> footage.** See §5.
+
 ## 1. Tree state
 
 - PRs #98 (batches 7+8) and #99 (`jill`) are both MERGED — branch fresh off `main`. Engine work
   gets its own worktree regardless (CLAUDE.md constraint 8).
-- Board: **`±3% 7 | ±5% 15 | ±8% 24 | worse 21`, 142 datapoints / 45 units** (the one-unit gain over
-  this doc's original figures is `jill` landing). Re-read it yourself
+- Board (AS OF 2026-08-10, superseded — the 2026-08-11 landings moved `ada`, `prika` and `red-hood`;
+  re-read before quoting): **`±3% 7 | ±5% 15 | ±8% 24 | worse 21`**, 142 datapoints / 45 units.
+  Re-read it yourself
   (`npx tsx scripts/board-read.ts`) before touching anything; if it differs, find out why first.
 - `verify.sh` green. `validate-overrides.ts` clean. Burst-amp census `--under` = 0.
 

@@ -16,7 +16,8 @@ A frame-tick damage simulator for NIKKE solo raids, run by its owner on a Mac. T
 per-unit damage for 5-unit teams over a 180-second fight against the raid boss; the owner records
 real fights (screenshots + video) under a fixed "scope lock" preset and we drive sim-vs-real error
 toward **±3% per unit**. There is also a web UI (Vite/React) that runs the same engine client-side,
-and a community-facing docs layer. Current board: median ~0.93–0.99 across 86 unit readings, with
+and a community-facing docs layer. Current board (2026-08-11, `npx tsx scripts/board-read.ts`):
+**±3% 7 | ±5% 14 | ±8% 25 | worse 20** over 142 datapoints / 45 units, with
 rotation (full-burst counts) measured-exact on all graded comps.
 
 ## Hard constraints (do not violate)

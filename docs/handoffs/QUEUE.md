@@ -58,6 +58,30 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒⇒ START HERE IF YOU ARE PICKING UP AFTER THE 2026-08-11 SESSION (branch
+  `fix/faithfulness-tier0`, PR open).** That branch closed the faithfulness pass end to end and left
+  the tree in a clean state; what follows is what it did NOT do, in the order it would take them.
+  Full WHY for every item: `docs/DECISIONS.md`, the four 2026-08-11 entries.
+  1. **The faithfulness pass is DONE through Tier 4, and the Tier 3 RECORDING LIST is fully
+     retired** — 10 of its 12 asks were answered from owner game knowledge, one (M1) by an A/B that
+     refuted the ask's own premise, one (M7) by re-filing into the SG investigation.
+     `2026-08-10-faithfulness-ENACTMENT-START-HERE.md` is now a historical record, not a worklist.
+     **The durable lesson is in its §5: ask the owner before asking for footage.**
+  2. **The two round-count Pierce carriers are the ONE live per-unit question left** — see the item
+     further down. `gainPierce.durationShots` now exists, which removes the reason those two skips
+     were given; both are board-graded, so it moves the board and wants its own pass.
+  3. **Tier 5 engine primitives stay HELD** (`quency-escape-queen` stage-unlock ordering, the 5e
+     state machines, `alice` caster-relative charge speed, the `skillGauge`-fires-twice + charge-B3
+     gauge-tempo pair, `chargeCounter` bypassing block gates). Ranked in the ENGINE-WORK ORDER
+     below. None of them was touched.
+  4. **The phase-4 TAIL is the next big body of work** — 185 override files against 45 graded
+     units. Its scoping note is at the bottom of this file; it wants a generated-census approach and
+     its own entry doc, NOT a batch sweep.
+  5. **Two primitives landed this session and each has exactly one carrier** —
+     `gainPierce.durationShots` (5 carriers, 3 converted) and `convertExcess` (1 carrier). If a
+     second `convertExcess` carrier ever appears, revisit the deliberate MAX-on-refresh and the
+     passive-trigger-only restriction; both are documented in `src/skills/types.ts`.
+
 - **⇒ STANDING ASSUMPTION to confirm when convenient — the amp keys off an INTERNAL TARGETING ID,
   not the rendered English.** Owner ruling 2026-08-10 ("it'd be really dumb if it didn't"), which
   forgave the localization's stray article and tagged 6 units (`guilty` ×2, `nero`, `novel`,
@@ -147,9 +171,9 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   asks for `noir` pellet marking, so the same footage may serve both).
 
 - **⇒ OWNER RULINGS 2026-08-11 (M-list triage) — SIX of the twelve recording asks answered from game
-  knowledge, no footage needed. M5, M9 and M8 have since LANDED and M4 needed no change at all
-  (see DECISIONS 2026-08-11). **M6 is the only one left**: "ALL STACKS REFRESH unless a kit says
-  otherwise" is a general rule that belongs in `docs/modeling-priors.md`, not yet written there.**
+  knowledge, no footage needed. **ALL SIX ARE NOW CLOSED** (DECISIONS 2026-08-11): M5, M8 and M9
+  landed as code, M4 needed no change (already implemented + pinned), M2 and M11 confirmed the
+  shipped model, and M6 landed as `docs/modeling-priors.md` prior 12.**
   1. **Tier 2 / M2 — `trina`'s Burst-Skill-Damage amp follows the LITERAL wording only, and
      `cinderella` (RL/Electric) does NOT receive it.** The Tier 2 blocker is retired WITHOUT a
      recording: her untagged state is owner-CONFIRMED, not provisional, and the 0.893 → 1.523 blowup
@@ -165,9 +189,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `maxShots` 1 on the burst weaponSwap. Board cost was larger than the ~0.95 estimate: **0.995 →
      0.924 COLD**, accepted under faithful > fit. Her cadence shift also rippled into two other
      units' fixtures (see the `nihilister` item above and little-mermaid M4).
-  4. **M6 — ALL STACKS REFRESH in this game unless a kit says otherwise.** A GENERAL RULE, not an
-     `ade-agent-bunny` fact → belongs in `docs/modeling-priors.md`, and it confirms her `hitCount:10`
-     gate does open (the plateau-at-3–5 failure mode is ruled out).
+  4. **M6 — ALL STACKS REFRESH unless a kit says otherwise. ✅ LANDED 2026-08-11** as
+     `docs/modeling-priors.md` prior 12 (a GAME-WIDE rule, not an `ade-agent-bunny` fact). Her
+     `hitCount:10` gate is confirmed live — measured first firing at 14.9s, 10× per fight — so the
+     plateau-at-3–5 failure mode that would have made her whole S2 package dead code is ruled out.
   5. **M9 — `prika` IS Pierce-tagged during Performance. ✅ LANDED 2026-08-11** (`gainPierce`, self,
      `skill1`, burstCast; 25s solo / 9999 duet). The ~+8% estimate was far low: **0.890 → 1.065**.
      Decomposed on PA MiKa — the TAG is worth ~+0.03, the duet WINDOW ~+0.15, so what actually moved
