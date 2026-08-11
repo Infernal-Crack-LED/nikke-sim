@@ -157,10 +157,26 @@ change re-litigating a DECISIONS entry needs same-tier new evidence or it is dea
   **step 7, the implementation review, before it merges back.** Engine edits happen on an **isolated
   worktree**, never the shared main tree (CLAUDE.md constraint 8) — which is also what scopes the diff
   step 7 reviews.
-- **LOG** — 2-of-2 ACCEPT but either judge is below HIGH, OR control-team validation is pending (Q3),
-  OR it is a plausible one-character quirk (Q4) not hard-proven. Record as **approved-by-judges + an
-  owner action item** (decision log + `docs/DECISIONS.md` pending, or `docs/handoffs/QUEUE.md`).
-  **Do NOT touch the engine.**
+  - **FAITHFULNESS FIX ≠ AUTOMATIC LOG (owner ruling, 2026-08-10).** A change that restores an
+    already-measured/kit-verified value the engine was discarding or misapplying is not the same risk
+    class as a fit/calibration change, and Q3/Q4 must not be applied as if it were. Q3 does not gate a
+    value that is already independently measured — the control-team framework would be a third
+    confirmation, not the first. Q4's board-cost concern is about UNEXPLAINED movement in units beyond
+    the target; a ripple TRACED to a verified mechanism, with every hard rule (rotation/FB-count
+    preservation, no leak beyond the predicted carriers, no refit of a measured constant elsewhere)
+    checked, is evidence the fix is correctly modeled — it clears IMPLEMENT, it does not cap at LOG.
+    "It moves the board" is never by itself a reason to hold a faithfulness fix at LOG; "it moves other
+    units and nobody has explained why yet" is — the fix is to explain it, not to leave it in LOG
+    forever. Full statement + the fit-vs-faithfulness distinction: `.claude/agents/postop-judge.md`
+    Hard rules, `.claude/agents/preop-judge.md` failure modes (canonical; keep this note in sync).
+- **LOG** — 2-of-2 ACCEPT but either judge is below HIGH, OR control-team validation is pending on a
+  value with NO other evidence tier (Q3), OR it is a plausible one-character quirk (Q4) not hard-proven,
+  OR — for any change, faithfulness fix included — a ripple on other units is observed but not yet
+  traced to a verified mechanism. Record as **approved-by-judges + an owner action item** (decision log
+  - `docs/DECISIONS.md` pending, or `docs/handoffs/QUEUE.md`) — for a faithfulness fix, the action item
+    is normally "trace the mechanism," not "gather a fresh independent measurement of an already-measured
+    value." **Do NOT touch the engine** until the mechanism is either explained or accepted as an owner
+    call on the collateral.
 - **REJECT** — not 2-of-2 ACCEPT. Log the rationale so it is not re-run blind. No engine change.
 
 **Append every outcome** (IMPLEMENT / LOG / REJECT + both confidences + the harness lesson) to the
@@ -204,11 +220,16 @@ success. Both are diff-reading problems, not numerical ones.
 ## Confidence rubric (both judges score independently)
 
 Q1 provability from HARD DATA · Q2 math naturalness (no free knobs) · Q3 control-team validatability
-(**PENDING — not yet calibrated → caps at LOG**) · Q4 one-character-at-board-cost (if yes, loop to Q1).
-HIGH = Q1 strong + Q2 natural + Q4 clean, Q3 not gating. MEDIUM = any one partial/bounded/pending.
-LOW = Q2 fitted via unbacked assumptions, or Q4 one-char fit without Q1 backing — **a LOW ACCEPT should
-not exist.** Full wording lives in `.claude/agents/postop-judge.md` (the judge's own copy is canonical;
-keep this summary in sync with it). **HIGH+HIGH → Implement; anything less → Log.**
+(**PENDING — not yet calibrated → caps a value with NO OTHER evidence tier at LOG; does not gate a
+value that is already independently measured/kit-verified — a faithfulness fix's restored value is
+that case**) · Q4 one-character-at-board-cost, i.e. UNEXPLAINED movement in units beyond the target (if
+yes, loop to Q1) — a ripple TRACED to a verified mechanism and clean on every other hard rule is not Q4
+risk, it is confirmation the fix is correctly modeled. HIGH = Q1 strong + Q2 natural + Q4 clean, Q3 not
+gating. MEDIUM = any one partial/bounded/pending. LOW = Q2 fitted via unbacked assumptions, or Q4
+one-char fit without Q1 backing — **a LOW ACCEPT should not exist.** Full wording (including the
+faithfulness-fix-vs-fit/calibration-change distinction) lives in `.claude/agents/postop-judge.md` (the
+judge's own copy is canonical; keep this summary in sync with it). **HIGH+HIGH → Implement; anything
+less → Log.**
 
 ## Gotchas
 

@@ -62,6 +62,17 @@ If the packet is genuinely insufficient to judge the method, that is APPROVED-WI
   or downgrade the stated outcome to a logged observation. Say which.
 - **One-character engine change.** A change that improves a single unit at board cost should be a
   per-unit override quirk, not an engine change, unless it is hard-proven and general.
+- **Faithfulness fix vs. fit/calibration change (owner ruling, 2026-08-10) — the plan must say which.**
+  A FAITHFULNESS fix restores an already-measured/kit-verified value the engine itself was discarding
+  or misapplying (a `charFixes` constant, a datamined kit-literal, a value the engine computes and then
+  ignores) — the plan's job is proving the defect and its mechanism, not choosing a new number. A FIT/
+  CALIBRATION change picks or tunes a previously-unmeasured value to make totals agree. For a genuine
+  faithfulness fix, do NOT require a fresh independent measurement of the value it restores (the value
+  is already measured) and do NOT flag "it moves comps beyond the target unit" as disqualifying on its
+  own — require instead that the plan's method will TRACE any such movement to a verified mechanism
+  (not just observe-and-hope-it's-small). If the plan cannot say which kind of change it is, or claims
+  faithfulness while actually choosing an unmeasured value, treat it as a fit and hold it to the full
+  bar (named rivals, Q2 no-free-knobs, board-mover predictions in advance).
 - **Load-bearing premises carried as givens.** Anchor identity (exact slug — base ≠ variant is a P0
   failure), basis cleanliness, ground-truth values, and prior results pulled from session memory must
   each have been CONFIRMed by the step-0 premise gate. If the plan rests on one that was not, the

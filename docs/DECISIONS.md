@@ -9,7 +9,96 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) FAITHFULNESS BATCH 8 — the graded-comp slice of phase 4 is COMPLETE, and
+- **(2026-08-10, latest) HARNESS RULING — a faithfulness fix is not automatically capped at LOG for
+  "moving the board" or moving comps beyond its target unit.** Prompted directly by the `jill` landing
+  below: the panel correctly routed that fix to LOG on an UNEXPLAINED small ripple in a shared comp,
+  then correctly revised to IMPLEMENT once the ripple was traced to a verified mechanism — but the
+  confidence rubric's Q3 (control-team validatability, worded as an unconditional cap while the control
+  team stays uncalibrated) and Q4 (board-cost risk) would have kept ANY well-diagnosed faithfulness fix
+  at LOG forever, independent of how well it was explained, because they did not distinguish "restores
+  an already-measured value" from "chooses a new unmeasured one." Ruling: a FAITHFULNESS fix (restores
+  a value the engine already measures/holds but discards or misapplies — a `charFixes` constant, a
+  datamined kit-literal, a computed-then-ignored value) is judged on whether the defect and its
+  mechanism are correctly diagnosed, not on whether it moves the board or other units. Q3 does not gate
+  a value that is already independently measured — the control-team framework would be a third
+  confirmation, not the first. Q4's board-cost concern is about UNEXPLAINED movement in units beyond the
+  target; a ripple traced to a verified mechanism, clean on every other hard rule (rotation/FB-count
+  preservation, no leak beyond predicted carriers, no refit of a measured constant elsewhere), is
+  evidence the fix is correctly modeled, not risk. This does NOT relax anything for a FIT/calibration
+  change (an unmeasured value chosen to make totals agree) — that class keeps the full bar, including
+  Q3/Q4 at full strength, exactly as before; the plan must say which kind of change it is. Landed in
+  `.claude/agents/postop-judge.md` (canonical rubric), `.claude/agents/preop-judge.md` (the
+  faithfulness-vs-fit failure-mode entry), and `.claude/skills/scientific-method/SKILL.md` (step 6 +
+  rubric summary, kept in sync with the agent copies).
+
+- **(2026-08-10) `jill`'s swap-cadence fix: IMPLEMENTED after the LOG-blocking teammate
+  ripple was traced to a real, faithful mechanism — not a rotation-engine defect.** Owner
+  challenge to the LOG gate below: burst gauge generation IS provably locked for the entire swap
+  window (`addGauge`'s `fbEndFrame > frame || stage !== 0` early return, `src/engine/sim.ts`), so
+  shot COUNT during the window cannot leak into the shared gauge — that part of the LOG entry's
+  concern was correctly reasoned about the wrong mechanism. What actually moves the next chain's
+  timing is `jill`'s RELOAD-CYCLE PHASE, which the gauge lock does not gate: her same-weapon
+  flavor swap does not free-refill ammo on exit (`sim.ts` ~3529, `"no free reload on exit
+either"` — an existing, already-general primitive, not new). Toggling the fix on/off and
+  tracing her actual reload events in the first 10s swap window: the buggy 12/s cadence burns 7
+  magazines in that window; the fixed 2.5/s cadence burns 2. Both are fully inside the
+  gauge-locked window, so neither touches the shared bar DURING the lock — but when the lock
+  lifts the instant Full Burst ends, `jill` sits at a different point in her reload cycle in each
+  build, so her own first post-lock shot lands on a different frame, nudging the shared gauge's
+  refill curve — which is what surfaces as sub-second cast-timing drift on `grave` / `anis-star`
+  / `chisato` / `noir` in the `misc B3s (run I order)` comp (and even on `jill`'s own next cast:
+  2nd-cycle burst moves 34.00s → 34.50s). This is the SAME class of effect that lets any unit's
+  reload state ripple into shared rotation timing generally — reload/ammo cycling THROUGH Full
+  Burst is itself correct, intended behavior (units keep firing and reloading during FB in the
+  real game; only their GAUGE contribution is gated) — so the ripple is real, faithful collateral
+  of fixing `jill`'s cadence, not a bug the fix introduces. **Faithful > fit stands: the fix
+  lands.** Board: 1.924 → 0.983 (0.92 / 1.00 / 1.03). Snapshot diff, verified value-by-value
+  (not just pass/fail): confined to the ONE pinned comp containing `jill` — `misc B3s (run I
+order)` — `jill`'s own row (a 58.22% DECREASE, expected) plus the four now-EXPLAINED teammate
+  rows (`grave` +0.57%, `anis-star` -0.18%, `chisato` -2.70%, `noir` +0.62%); every other pinned
+  comp byte-identical. Her other two graded (real-recording) comps, `N1` (never bursts — moved
+  zero, confirmed) and `PI` (same 5-unit roster as PI2 in a different slot order, jill 1.03), are
+  NOT snapshot-pinned, so the same reload-phase ripple on `PI`'s four teammates is real but
+  unmeasured by the regression gate — a coverage gap, not a different outcome; pin it or accept
+  the gap explicitly if this becomes load-bearing later. Every measured full-burst-count assertion
+  preserved (12/12/12 on her three comps). Mechanism
+  pinned as a new spec-test group (`scripts/tests/units/jill.test.ts` J9) that asserts her first
+  swap window completes only 1-3 reload cycles, not the ~7 the buggy cadence forced — a regression
+  guard against the bug's reintroduction from the reload-count angle, independent of J8's
+  cadence-ratio angle. `verify.sh` green (274 files / 4206 tests). One unrelated fixture needed
+  re-calibration as a KNOWN, already-3x-precedented maintenance cost — see the roster-generator
+  entry below. Full investigation trail:
+  [scientific-method-harness.md](handoffs/scientific-method-harness.md) (2026-08-10 addendum).
+- **(2026-08-10) SUPERSEDED (2026-08-10) — disregard the LOG verdict below; the blocking finding
+  was explained (see the entry above), not resolved by further gating.** `jill`'s swap-cadence
+  fix: `/scientific-method` gate returns LOG, not IMPLEMENT — a real teammate side effect, not a
+  rejection of the diagnosis. Full panel run on the
+  faithfulness-enactment Tier-1 fix (batch 4's finding: `src/engine/sim.ts`'s same-weapon swap branch
+  never falls back to `charFixes.pullsPerSec`, so `jill` fires her 10s true-damage window at the AR
+  class default ~10/s instead of her measured 2.5/s). Premise gate 4/4 CONFIRM (uniqueness premise
+  CONFIRMED STRONGER: she's the roster's only `charFixes.pullsPerSec` carrier at all). Both judges
+  (driver + blind Fable) ACCEPT the mechanism — H0a fit-exposure ruled out (`damagePct: 71.09` is
+  kit-literal, predates the bug's discovery by a day), H0b wrong-mechanism ruled out (in-window shot
+  counts scale exactly with the cadence ratio; per-shot damage/core-rate unchanged to 4 sig figs), H0c
+  leak-to-other-carriers ruled out (fix independently re-verified inert for every other roster unit).
+  Board: 1.924 → 0.983. **But the pre-registered acceptance band missed on both bursting comps** (a
+  flaw in the band formula, which double-counted her cadence-independent Acid Ammo dot — corrected math
+  reproduces the measured numbers almost exactly), **and — the blocking finding — the strict snapshot
+  diff was NOT confined to jill's own rows: `grave`, `anis-star`, `chisato`, `noir` all drifted
+  0.18–2.70% (single-run) / ~0.3% (MC-mean) in her `misc B3s (run I order)` comp, FB counts unchanged,
+  traced to sub-second burst-chain cast-timing drift.** The blind post-op judge proved (not merely
+  asserted) that the plan's own named fallback — a unit-local override restate instead of the engine
+  fix — does NOT resolve this: both candidates compute the identical numeric cadence for jill via the
+  same first-checked field, so both cause the identical downstream timing cascade; landing either one
+  requires accepting or first resolving this collateral, not routing around it via candidate choice.
+  2-of-2 ACCEPT at MEDIUM confidence does not clear the HIGH+HIGH bar for IMPLEMENT. **Nothing landed
+  — the isolated worktree carries the diff unmerged, uncommitted; no engine/override file on the shared
+  main tree changed.** Full record + owner action items:
+  [scientific-method-harness.md](handoffs/scientific-method-harness.md) (2026-08-10 entry, bottom of
+  the decision log). This does not reverse batch 4's original diagnosis — the defect and its fix are
+  correctly identified; what's unresolved is whether the measured teammate collateral is acceptable, or
+  needs its own gated pass first.
+- **(2026-08-10) FAITHFULNESS BATCH 8 — the graded-comp slice of phase 4 is COMPLETE, and
   an "inertness" claim turns out to be worth 22.6%.** All 9 remaining graded-comp units reviewed:
   `red-hood` (SR/Iron), `quency-escape-queen`, `alice` (SR/Fire), `mihara-bonding-chain`, `ada`,
   `ade-agent-bunny`, `mast-romantic-maid`, `guillotine-winter-slayer`, `mint`. Applied = prose only;
