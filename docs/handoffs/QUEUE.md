@@ -94,26 +94,37 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   — see ENGINE-WORK ORDER item 4 and `2026-08-10-gauge-economy-findings.md`.
   [batch-6 findings](2026-08-10-faithfulness-batch6-findings.md).
 
-- **⇒ OWNER RULINGS 2026-08-11, SECOND BATCH (M-list triage part 2). ENACTMENT PENDING for 2 of them.** 7. **M3 — distributed damage CAN crit.** This CONFIRMS the shipped engine default: `flatDamage`
-  procs crit unless a block sets `crit: false`, and a roster sweep shows all 12 distributed
-  carriers (`quency-escape-queen`'s 1736.31 nuke, `dorothy`'s 8900.83, `phantom`, `2b`,
-  `scarlet-black-shadow`, …) already run crit-on. **Nothing to enact — the question closes.** 8. **M8 — `red-hood`: do NOT average the ramp, model the actual stack ramp.** Her
-  `chargeDamagePct` 90 ⚑ is today's ramp AVERAGE against a cap-faithful 93.36 ((138.9 − 100) ×
-  2.4, at 100.8 swap + 3.81 × 10 stacks). ENACTMENT: drive it off the live stack count instead of
-  a baked average — the `rampSec` primitive is the nearest existing tool, but the faithful shape
-  is per-stack, so check whether a stack-driven value is expressible before assuming it is. 9. **M10 — `rouge`: ALL THREE coin statuses CO-EXIST; the earlier ones REMAIN when the next
-  activates.** This is a MODEL DEFECT, not a caveat: the override encodes `coin` as a
-  mutually-exclusive resource (0 = Sword, 1 = Shield, 2 = Double Sword), so Sword's Attack Damage
-  ▲ 6.65% is switched OFF the moment Shield activates at 30 full charges. Under the ruling it
-  should persist for the rest of the fight, on `selfAndAdjacent`. Direction of the fix is a team
-  damage INCREASE from ~the first quarter onward. ⚠ Interacts with **U38** (whether
-  `selfAndAdjacent.sides: 2` reaches 3 allies or 5) — the two decide the same buff's reach, so
-  land them together or state which is assumed. 10. **M12 — `mint`'s alternation starts on DANCING and flips on her OWN cast.** CONFIRMS the
-  shipped model: resource `singing` initial 0 (= Dancing) with two `mode:'solo'` `burstCast`
-  blocks at `everyN` 2 / offsets 0 and 1, i.e. +1 on her first cast and alternating thereafter.
-  **Nothing to enact.** Her solo mode still has no real-fight anchor for the MAGNITUDES it gates
-  (S1 `casterAtkPct` 45.02; S2's crit 19.94 / projectileExplosion 50 / pierce 32.72) — that part
-  of M12 stands as an unanchored-model item, not as a mechanism question.
+- **⇒ OWNER RULINGS 2026-08-11, SECOND BATCH (M-list triage part 2). ONE still open: M8.**
+  - **M3 — distributed damage CAN crit. CLOSED, nothing to enact.** It CONFIRMS the shipped engine
+    default: `flatDamage` procs crit unless a block sets `crit: false`, and a roster sweep shows all
+    12 distributed carriers (`quency-escape-queen`'s 1736.31 nuke, `dorothy`'s 8900.83, `phantom`,
+    `2b`, `scarlet-black-shadow`, …) already run crit-on.
+  - **M8 — `red-hood`: do NOT average the ramp, model the actual stack ramp. STILL OPEN — the only
+    unenacted ruling of the batch.** Her `chargeDamagePct` 90 ⚑ is today's ramp AVERAGE against a
+    cap-faithful 93.36 ((138.9 − 100) × 2.4, at 100.8 swap + 3.81 × 10 stacks). ENACTMENT: drive it
+    off the live stack count instead of a baked average. ⚠ `rampSec` is a TIME ramp and hers is
+    PER-STACK, so confirm a stack-driven value is expressible before assuming the primitive fits.
+  - **M10 — `rouge` coin CO-EXISTENCE: ENACTED 2026-08-11**, and **this entry's original premise was
+    WRONG** — worth recording because it nearly aimed the fix at the wrong line. It claimed Sword's
+    Attack Damage ▲6.65% "switches OFF the moment Shield activates"; in fact that line was already an
+    ungated permanent passive and never switched off. What WAS exclusive were the three burst Max-HP
+    riders, so the fix made their gates cumulative (Sword rider ungated, Shield `{min:1}`, Double
+    Sword `{min:2}`) and is **damage-inert** — ally-granted Max HP does not feed a teammate's
+    `atkOfMaxHpPct` (theme 13). The stated ⚠ U38 coupling is therefore MOOT for this change.
+  - **M12 — `mint` starts on DANCING and flips on her OWN cast. CLOSED, nothing to enact** — it
+    confirms the shipped `singing` resource (initial 0, two `mode:'solo'` `burstCast` blocks at
+    `everyN` 2 / offsets 0 and 1). Her solo mode still has no real-fight anchor for the MAGNITUDES it
+    gates (S1 `casterAtkPct` 45.02; S2's crit 19.94 / projectileExplosion 50 / pierce 32.72) — an
+    unanchored-model item, not a mechanism question.
+
+- **`nihilister`'s `gainPierce` window is UNDERSIZED — surfaced 2026-08-11, deliberately NOT retuned.**
+  Her ⚑1 derives `durationSec` 4 as "the longest inter-shot gap she actually fires across (~3.7s worst
+  case)". Measured in her own control fixture: the longest gap is **~4.5s**, so one shot per fight
+  fires untagged inside a live `pierceDamagePct` window and a static-flag form out-damages the shipped
+  window by <0.2%. `durationSec` 5 restores exact equality. Left open because it is a DERIVED constant
+  on a unit outside the owner's 2026-08-11 batch — it needs its own pass, not a drive-by. The
+  measurement re-derives itself on every run (`scripts/tests/units/nihilister.test.ts` N1). Found by
+  the cross-family review of the enactment diff, because `ada`'s cadence change perturbed the fixture.
 
 - **M1 `guillotine-winter-slayer` — the cadence ask is CLOSED, and the "~26% hot normal fire" framing
   was a MISATTRIBUTION.** OWNER RULING 2026-08-11: she uses her datamined fire rate (`pullsPerSec` 12
@@ -136,7 +147,8 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   asks for `noir` pellet marking, so the same footage may serve both).
 
 - **⇒ OWNER RULINGS 2026-08-11 (M-list triage) — SIX of the twelve recording asks answered from game
-  knowledge, no footage needed. ENACTMENT PENDING: one gated pass each, none of them landed yet.**
+  knowledge, no footage needed. M5 and M9 have since LANDED (see DECISIONS 2026-08-11); M4 and M6
+  are the two still awaiting enactment.**
   1. **Tier 2 / M2 — `trina`'s Burst-Skill-Damage amp follows the LITERAL wording only, and
      `cinderella` (RL/Electric) does NOT receive it.** The Tier 2 blocker is retired WITHOUT a
      recording: her untagged state is owner-CONFIRMED, not provisional, and the 0.893 → 1.523 blowup
@@ -145,13 +157,18 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      unmeasured, but they now bite ONLY units that literally qualify.
   2. **M4 — true damage CAN core hit.** Engine-global and a large lever (SMG `coreMult` 250 on
      `chisato`). Needs the gated pass: it changes every true-damage carrier at once.
-  3. **M5 — `ada` fires ONE special-charged shot per burst window** (`maxShots` 1, the kit-literal
-     answer). Owner-decided under faithful > fit: it costs board (0.995 → ~0.95) and is still right.
+  3. **M5 — `ada` fires ONE special-charged shot per burst window. ✅ LANDED 2026-08-11** as
+     `maxShots` 1 on the burst weaponSwap. Board cost was larger than the ~0.95 estimate: **0.995 →
+     0.924 COLD**, accepted under faithful > fit. Her cadence shift also rippled into two other
+     units' fixtures (see the `nihilister` item above and little-mermaid M4).
   4. **M6 — ALL STACKS REFRESH in this game unless a kit says otherwise.** A GENERAL RULE, not an
      `ade-agent-bunny` fact → belongs in `docs/modeling-priors.md`, and it confirms her `hitCount:10`
      gate does open (the plateau-at-3–5 failure mode is ruled out).
-  5. **M9 — `prika` IS Pierce-tagged during Performance.** The standing OWNER HOLD is released;
-     est. ~+8% personal SR damage, small at board level (she is a buffer).
+  5. **M9 — `prika` IS Pierce-tagged during Performance. ✅ LANDED 2026-08-11** (`gainPierce`, self,
+     `skill1`, burstCast; 25s solo / 9999 duet). The ~+8% estimate was far low: **0.890 → 1.065**.
+     Decomposed on PA MiKa — the TAG is worth ~+0.03, the duet WINDOW ~+0.15, so what actually moved
+     her is a premise (Performance never lapses in duet) shared with her `chargeDamagePct`, not the
+     ruling. Move both windows together or neither.
   6. **M11 — `mihara-bonding-chain`'s burst RESETS Ensnaring stacks**; the kit's theme is building
      stacks OUTSIDE her B3 window and consuming them with B3. This confirms the mechanism her note
      already models, so no footage is needed — the 12-stack rebuild average stays the one fitted

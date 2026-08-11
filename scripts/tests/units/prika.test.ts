@@ -282,10 +282,13 @@ describe('prika — kit spec', () => {
         [13.09]
       );
     });
-    it('is damage-INERT at scope lock (no Pierce-tagged recipient until "Gains Pierce" is modeled)', () => {
-      // Removing ONLY this effect leaves every unit's total byte-identical — the buff applies but no
-      // recipient is Pierce-tagged, so it spends nothing. This is exactly the F1 ⚑: modeling Prika's
-      // "Gains Pierce" would light it up on her own SR fire.
+    it('is LIVE on her own fire — "Gains Pierce" during Performance gives it a recipient', () => {
+      // Removing ONLY this effect now moves HER total: her burst tags herself Pierce for the
+      // Performance window (kit: "Activates only while in Performance status. Affects self. Gains
+      // Pierce."), so the 13.09 she grants the team is spent by her own SR shots inside it.
+      // Owner-ruled 2026-08-11 — this was the F1 ⚑ hold, and its release is what makes the buff live.
+      // Fixture roster: controlComp('prika') — the ONLY Pierce-tagged recipient in it is prika
+      // herself, so a teammate delta here would mean the self-scope leaked.
       const noPierce = withPatchedOverride('prika', (ov) => {
         for (const b of ov.skill1) {
           b.effects = b.effects.filter(
@@ -293,7 +296,39 @@ describe('prika — kit spec', () => {
           );
         }
       });
-      expect(run({ prika: noPierce }).totals).toEqual(base.totals);
+      const after = run({ prika: noPierce }).totals;
+      expect(after.prika).toBeLessThan(base.totals.prika);
+      for (const slug of Object.keys(base.totals)) {
+        if (slug !== 'prika') {
+          expect(after[slug], `${slug} moved — pierce self-scope leaked`).toBe(
+            base.totals[slug]
+          );
+        }
+      }
+    });
+
+    it('DISCRIMINATING: the tag is SELF-scoped and window-bounded, not a team-wide or permanent grant', () => {
+      // Two nearest-wrong encodings this rules out: targeting `allies` (every teammate becomes
+      // Pierce-tagged and starts spending the 13.09) and dropping durationSec (permanent tag from
+      // her first cast). Both would raise teammate totals; the kit says self, while in Performance.
+      // The gainPierce blocks live in skill1 — that is the slot the kit line is printed in
+      // ("■ Activates only while in Performance status. Affects self. Gains Pierce."), even though
+      // the trigger is her burstCast (Performance IS her burst status).
+      const teamWide = withPatchedOverride('prika', (ov) => {
+        for (const b of ov.skill1) {
+          if (b.effects.some((e: any) => e.kind === 'gainPierce')) {
+            b.target = { kind: 'allies' };
+          }
+        }
+      });
+      const teamTotals = run({ prika: teamWide }).totals;
+      const movedTeammates = Object.keys(base.totals).filter(
+        (s) => s !== 'prika' && teamTotals[s] !== base.totals[s]
+      );
+      expect(
+        movedTeammates.length,
+        'team-wide pierce did not move any teammate — the fixture cannot discriminate self vs allies here'
+      ).toBeGreaterThan(0);
     });
   });
 

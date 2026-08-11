@@ -11,16 +11,16 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 157 | 38.1% |
+| Defensive / HP / shield / aggro | 157 | 38.2% |
 | Missing engine primitive / trigger | 93 | 22.6% |
-| Other / see caveats | 93 | 22.6% |
+| Other / see caveats | 92 | 22.4% |
 | Out-of-domain / parser unsupported | 30 | 7.3% |
 | Weapon-state / shot-count approximation | 11 | 2.7% |
 | Partless boss | 11 | 2.7% |
 | Self-status / stack gate | 8 | 1.9% |
 | RNG / probabilistic | 6 | 1.5% |
 | Measurement-gated / unverified cadence | 3 | 0.7% |
-| **Total** | **412** | 100.0% |
+| **Total** | **411** | 100.0% |
 
 ## Entries by reason
 
@@ -1021,7 +1021,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **burst:** Immobilizes the target(s) for 5 sec.
   - *Why:* The burst's second line 'Immobilizes the target(s) for 5 sec.' is UNMODELED (verbatim in unmodeled.burst) — there is NO boss-CC channel: the v1 boss never acts (no enemy-action model), so a boss-targeted immobilize moves nothing; the schema's stun primitive describes a NIKKE unable to fire/charge/reload, not a boss freeze
 
-### Other / see caveats (93)
+### Other / see caveats (92)
 
 **A2** (a2)
 
@@ -1200,8 +1200,6 @@ Critical Rate ▲ 3.56% for 5 sec.
 
 **Prika** (prika)
 
-- **skill1:** Gains Pierce. This effect is continuous.
-  - *Why:* See unit note / caveats
 - **skill2:** Effect 1: Affects the member who initiated Sing Along. Assigned Part: Singing. This effect is continuous and cannot be removed.
   - *Why:* See unit note / caveats
 - **skill2:** Effect 2: Affects all allies. Performance duration ▲ 21 sec.

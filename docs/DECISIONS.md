@@ -9,7 +9,44 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-11, latest) TIER 0 FOLLOW-UPS — both open owner questions ruled: the D1 banner gets a
+- **(2026-08-11, latest) THREE M-LIST RULINGS ENACTED — and a scope change to the gate itself:
+  `/scientific-method` resolves UNKNOWNS, it is not a tax on every engine edit.** Owner ruling: where
+  the modeling question is already ANSWERED (an owner ruling on game behaviour, a literal kit line, an
+  existing labeled fixture) the judges have nothing to gate, so the pipeline is skipped and the diff
+  goes to `/code-review` instead — **the onus moves to the CODE being correct, not the answer being
+  true.** `verify.sh` + spec tests stay mandatory on both paths. Landed in the four places that stated
+  the old "ALWAYS" rule (the skill, `CLAUDE.md`, the pre-write hook's P9, the code-review skill).
+  Enacted under the new rule, each pinned test-first and cross-family reviewed:
+  1. **`ada` — Special Modification is ONE round.** The kit says "for 1 round(s)"; the swap shipped
+     uncapped and fired ~2 special-charged shots per window. Now `maxShots` 1. **Board 0.995 → 0.924
+     COLD, accepted under faithful > fit** — the old reading leaned on damage the kit does not grant.
+     Cost more than the ~0.95 estimate. Her cadence shift also perturbed two OTHER units' fixtures
+     (`little-mermaid` M4, `nihilister` N1), whose "byte-identical in this fixture" assertions were
+     true only for the old ada — restated, not suppressed.
+  2. **`prika` — she IS Pierce-tagged during Performance.** Kit S1: "Activates only while in
+     Performance status. Affects self. Gains Pierce." Now a self-targeted `gainPierce` on her
+     burstCast in `skill1`, windowed per mode (25s solo, 9999 duet). **Board 0.890 → 1.065**, far
+     past the ~+8% estimate — and the decomposition matters: measured on PA MiKa, the TAG is worth
+     ~+0.03 and the duet WINDOW ~+0.15. The 9999 rests on the same premise as her duet
+     `chargeDamagePct` (Encore re-extends Performance while `mint` keeps bursting), so the two move
+     together or not at all. Do not close her HOT read by deleting the tag or shaving the datamined
+     13.09; the open question is the window.
+  3. **`rouge` — all three coin statuses CO-EXIST**, earlier ones remaining as later ones activate.
+     `coin` is now a highest-reached marker, not an exclusive state: the Sword burst rider is ungated
+     (Sword Coin starts at back-row assignment and never ends), Shield is `{min:1}`, Double Sword
+     `{min:2}`, and the three co-stack because the buff key carries the value. **Damage-inert**
+     (1.027 → 1.024, and that drift is `ada`'s) — ally-granted Max HP does not feed a teammate's
+     `atkOfMaxHpPct`. Worth recording: the QUEUE entry that proposed this fix had the WRONG premise —
+     it claimed Sword's Attack Damage ▲6.65% switched off at Shield, when that line was already an
+     ungated permanent passive. The defect was in the Max-HP riders, not the damage line.
+     The cross-family review (Opus reviewing this Claude-authored diff) returned BLOCKED and was right:
+     it caught `prika`'s "Gains Pierce" still sitting in `unmodeled` while the engine modeled it, the two
+     new blocks filed under `burst` when the kit prints the line in `skill1`, and four stale
+     caveat/residual strings still describing the pre-change encoding. All fixed before landing. It also
+     measured what this session had asserted loosely — the prika window decomposition above is its
+     number, independently reproduced here.
+
+- **(2026-08-11) TIER 0 FOLLOW-UPS — both open owner questions ruled: the D1 banner gets a
   MECHANICAL guard, and inertness claims join the hook's verdict verbs.** Tier 0 (below) closed five
   rulings but left two questions the owner had to answer, one of them because it needed a protected
   path. Both are now approved and landed, and both are enforcement, not modeling: **zero engine lines,
