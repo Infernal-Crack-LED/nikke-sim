@@ -220,7 +220,8 @@ DamageUp = 1 + ( Attack Damage ▲ %
                + Sequential Damage ▲ %     [only on sequential-flavored instances]
                + True Damage ▲ %           [only on true-flavored instances]
                + Pierce Damage ▲ %         [only for Pierce-tagged shots: static hasPierce,
-                                            a live gainPierce window, or a swap-scoped
+                                            a live gainPierce window (seconds) or unspent round
+                                            budget (gainPierce.durationShots), or a swap-scoped
                                             weaponSwap.hasPierce shot (snow-white cannon)]
                + Projectile Explosion ▲ %  [explosion-flavored hits, plus RL NORMAL attacks — see 1f]
                + Projectile Attachment ▲ % [attachment-flavored hits — see 1f]

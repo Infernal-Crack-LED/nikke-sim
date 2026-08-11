@@ -139,12 +139,32 @@ in the review checklist.
 
 ### F7. Stack-ramp bake-to-max backlog — systematic HOT bias on opening seconds (theme 3)
 
-Capability (`rampSec`) landed 2026-07-17; ~10 units still bake ramp buffs at cap from t=0:
-chisato, leona, guilty, mast-romantic-maid, mihara-bonding-chain, laplace (base), red-hood,
-rouge, sakura-bloom-in-summer, soda-twinkling-bunny (hand-averaged — do not double-correct;
-same for cinderella / arcana-fortune-mate). Per-unit measurement-gated; a known HOT-direction
-bias class the review should flag rather than fix inline. Related capability-with-carriers-held:
-`addStack` (2 carriers — flora, k; owner rule says log a third before building).
+Capability (`rampSec`) landed 2026-07-17. **The membership below was grep-assembled and has now been
+verified unit by unit (2026-08-11, all 12 names). It was mostly wrong: 2 of 12 are cap-bakes.** Do
+not forward the old list as a per-unit prior — the corrected classes:
+
+- **CAP-BAKE (the real F7 members, HOT-direction, measurement-gated) — 2:** `sakura-bloom-in-summer`
+  (⚑4 burst DoT ships hit-applied at the full 10 stacks from tick 1, 351.6%/s; a per-second self-ramp
+  would be ×0.55 — her own note states the discriminating recipe) and `laplace` (RL/Iron, not
+  `laplace-ultimate-hero`) (S1 Hero Vision's
+  stack GATE is assumed maxed for the whole burst window, so the burst's true-damage conversion is
+  open from t=0; the radius buff itself is unmodeled-inert vs the partless boss).
+- **PARTIAL, and already carrying `rampSec` — 2:** `cinderella` (RL/Electric, not
+  `cinderella-crystal-wave`; Beautiful is baked at the ~36s
+  steady state, 2.71 × 1.192 = 3.23%, which IS the cap value from t=0; her charge-speed ramp is
+  separately re-expressed as +45) and `arcana-fortune-mate` (2/4/6-hit phase stacks baked to max,
+  but the pellet primitive runs `rampSec` 11). Neither is "hand-averaged" as the old list said.
+- **TIME-AVERAGE, not cap-bake — 4:** `mihara-bonding-chain` (12 of 20 stacks, the one fitted number
+  in her file), `red-hood` (`chargeDamagePct` 90 ⚑ is explicitly the ramp AVERAGE; cap-faithful is
+  93.36 — this is M8), `mast-romantic-maid` (cycle average of 2), `soda-twinkling-bunny` (measured
+  chip time-average ~31.6 × 1.32). Different approximation with a different sign — correcting these
+  as if they were cap-bakes would double-correct them.
+- **NOT MEMBERS — 4:** `leona` and `guilty` compute the stack level LIVE from cadence (engine
+  ratcheting on a `hitCount` trigger with `maxStacks`; no haircut baked), and `chisato` / `rouge`
+  carry no stack-ramp line at all.
+
+Related capability-with-carriers-held: `addStack` (2 carriers — flora, k; owner rule says log a
+third before building).
 
 ### F8. Weapon-swap economy rides estimates (theme 7 + gauntlet findings)
 

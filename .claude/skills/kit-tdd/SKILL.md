@@ -176,10 +176,21 @@ Movement is **expected** and is not a failure. Classify it:
    today**; `unmodeled` gets the verbatim skipped lines. **No history** — no "previously believed inert",
    no "REFUTED on <date>", no superseded-value trail (2026-07-22 owner ruling: retained narration reads as
    a live claim to every future agent and manufactures phantom findings). The WHY goes to DECISIONS.
+   - **The `/kit-parse` banner is now FALSE for this unit — delete it.** Writing spec tests is exactly
+     what makes `PARSER BASELINE (HYPOTHESIS — NOT a validated model)` untrue, and `kit-status.ts --check`
+     fails on it (`scripts/lib/baseline-banner.ts`, DECISIONS 2026-08-11). Keep only the part still true —
+     `No real-fight recording yet — every ⚑ below is an unmeasured estimate. Structure is test-pinned (…)`
+     — or delete outright if the unit is also graded. That claim is checked too: it fails once the unit has
+     board readings, so a unit with a fight says what it measured, not that it has none.
+   - An **inertness / A-B claim** in the prose must name its fixture AND the enabling teammate it did or
+     did not seat — the pre-write hook escalates on `inert`/`byte-identical` here (docs/CONVENTIONS.md,
+     "An inertness or A/B claim must NAME ITS ROSTER"). Not yet A/B'd ⇒ write the plan, not a result.
 2. **`docs/DECISIONS.md`** — one entry per ruling made (append-only; date + evidence tier + board delta).
 3. **`data/kit-status.json`** — `npx tsx scripts/kit-status.ts --set <slug> ...` / `--finding <slug> "..."`;
    close any reconciliation-backlog / engine-modeling-gaps row this session resolved (and open the new GAP
-   rows). Then `npx tsx scripts/kit-status.ts --check`.
+   rows). Any `note`/`caveats`/`unmodeled` edit from step 1 also needs
+   `npx tsx scripts/kit-status.ts --sync-mirrors <slug>` — per-unit, **never** a global `--refresh`, which
+   would sweep every other session's pending mirror updates into this diff. Then `--check`.
 4. **`bash scripts/verify.sh`** green (the vitest glob wires the new file in automatically — no verify.sh
    edit). Regenerate snapshots only together with the change they reflect, and only once the movement is
    understood; measured-truth asserts are never updated without a new measurement.

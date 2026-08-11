@@ -253,6 +253,87 @@ describe('structuralCheck — enemy-targeted buff allowlist (warning channel)', 
   });
 });
 
+describe('structuralCheck — boss-side stat on an ally-side target (Tier 0 / D2, 2026-08-10)', () => {
+  // Live carriers when this landed: moran (allies, damageTakenPct -35.14), rouge
+  // (selfAndAdjacent, -15.2), rumani (self, -20.06). All three are kit damage-reduction
+  // clauses kept for fidelity; the engine reads damageTakenPct only off the boss (sim.ts:1861).
+  it.each([
+    ['allies', -35.14],
+    ['self', -20.06],
+  ])('warns on an ally-side damageTakenPct (target %s)', (kind, value) => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        burst: [
+          block({
+            target: { kind },
+            effects: [{ kind: 'buff', stat: 'damageTakenPct', value }],
+          }),
+        ],
+      }),
+      CTX
+    );
+    expect(r.errors).toEqual([]);
+    expect(r.warnings.join('\n')).toMatch(
+      /BOSS-SIDE stat on an ally-side target/
+    );
+  });
+
+  it('does NOT warn on an ally-side defPct — 28 overrides carry ordinary DEF ▲ kit lines', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        skill2: [
+          block({ effects: [{ kind: 'buff', stat: 'defPct', value: 30 }] }),
+        ],
+      }),
+      CTX
+    );
+    expect(r.errors).toEqual([]);
+    expect(r.warnings).toEqual([]);
+  });
+
+  it('does NOT warn on an ally-side distributedDamagePct — the unit-side read is live (sim.ts:1868)', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        skill1: [
+          block({
+            effects: [
+              { kind: 'buff', stat: 'distributedDamagePct', value: 24.3 },
+            ],
+          }),
+        ],
+      }),
+      CTX
+    );
+    expect(r.errors).toEqual([]);
+    expect(r.warnings).toEqual([]);
+  });
+
+  it('catches a boss-side stat nested inside escalating steps', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        skill1: [
+          block({
+            effects: [
+              {
+                kind: 'escalating',
+                steps: [{ kind: 'buff', stat: 'damageTakenPct', value: -10 }],
+              },
+            ],
+          }),
+        ],
+      }),
+      CTX
+    );
+    expect(r.warnings.join('\n')).toMatch(
+      /BOSS-SIDE stat on an ally-side target/
+    );
+  });
+});
+
 describe('structuralCheck — same-unit status order warning (audit F2.5)', () => {
   it('warns when one unit both produces and consumes the same status name', () => {
     const r = structuralCheck(

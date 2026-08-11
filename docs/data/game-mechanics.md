@@ -387,9 +387,18 @@ Fire→Wind→Iron→Electric→Water→Fire. No hidden bonus beyond the base 1.
 - Max Ammunition ▼ clips the CURRENT belt when it lands (MEASURED/user); max-ammo sources
   stack additively. Increases never clip.
 - Distributed damage deals the same TOTAL against 1 target as against many (user-verified).
+- **Charge Speed above 100% does nothing to charge TIME** (the engine caps it at 100 when it
+  computes the charge, `sim.ts`), which is why kits that push past 100 pair it with a conversion
+  line: `red-hood`'s "Convert excess value over 100% of Charge Speed to Charge Damage ▲240% of the
+  excess" is modeled as the `convertExcess` DERIVED-stat primitive (2026-08-11) — Charge Damage is
+  recomputed from her live Charge Speed on every read, so it ramps with her stacks (1.92 at zero →
+  93.36 at ten) instead of being baked to an average.
 - Pierce Damage ▲ is a **Damage-Up-bucket** entry that benefits any Pierce-damage-type unit —
   static (`hasPierce`/`pierceModes`), during a timed "Gain Pierce for N sec" window
-  (`gainPierce` → `pierceUntilFrame`, 2026-07-17), OR — swap-scoped — on the shots of a burst
+  (`gainPierce` → `pierceUntilFrame`, 2026-07-17), while a **"Gain Pierce for N round(s)" budget is
+  unspent** (`gainPierce.durationShots` → `pierceShotsLeft`, 2026-08-11 — a ROUND count, spent by
+  firing rather than by the clock, so it survives reloads and lulls; one round per pull,
+  `hitsPerShot` per pull for a machine gun, and the granting round never spends it), OR — swap-scoped — on the shots of a burst
   weapon-swap whose "Additional Effect: Pierce" belongs to the swapped weapon only
   (`weaponSwap.hasPierce` → per-shot tag, 2026-07-20, owner-ruled; Snow White `snow-white`'s
   cannon). It **applies on the partless boss** (it is ordinary damage-up, not the double-hit

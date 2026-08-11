@@ -75,7 +75,7 @@ override files carry it. "Carriers" counts structural occurrences only — a uni
 | `elemAdvantageDamagePct` | Element | additive pp on the 1.1 base (`ELEMADV=damageup` reroutes it to DamageUp — A/B arm only) | elemental advantage only | 14 | anis-sparkling-summer, asuka, d, e-h, elegg-boom-and-shock, guillotine-winter-slayer, maiden-ice-rose, marciana-marine-study, … |
 | `elementDamagePct` | Element | additive pp on the 1.1 advantage base | elemental advantage only | 0 | _none_ |
 | `chargeDamageMultPct` | Charge | scales the BASE charge term (`baseCharge × %`), like the doll/collection lines | charge instances only | 2 | admi, helm |
-| `chargeDamagePct` | Charge | flat percentage points added AFTER the base term | charge instances only | 15 | a2, alice, ein, emilia, eunhwa, eunhwa-tactical-upgrade, himeno, n102, … |
+| `chargeDamagePct` | Charge | flat percentage points added AFTER the base term | charge instances only | 14 | a2, alice, ein, emilia, eunhwa, eunhwa-tactical-upgrade, himeno, n102, … |
 | `attackDamagePct` | DamageUp | additive pp — the unflavored member every instance reads | always | 50 | ade-agent-bunny, anchor-innocent-maid, anis-star, arcana, arcana-fortune-mate, asuka, asuka-wille, avistar, … |
 | `burstSkillAoeDamagePct` | DamageUp | additive pp (⚑ placement per the "○○ Damage ▲" family rule, unmeasured) | burst-slot hits tagged burstDesc:'allEnemies' | 1 | trina |
 | `burstSkillSingleDamagePct` | DamageUp | additive pp (⚑ placement per the "○○ Damage ▲" family rule, unmeasured) | burst-slot hits tagged burstDesc:'singleEnemy' | 1 | jackal |

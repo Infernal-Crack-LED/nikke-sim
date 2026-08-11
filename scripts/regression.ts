@@ -193,7 +193,9 @@ const COMPS: Comp[] = [
     realFullBursts: 12,
   },
   // T4: KNOWN MISMATCH — real = 14 FBs with privaty focus (probe u7, 2026-07-14) vs sim 13.
-  // Do NOT pin until the ~1s-fast cycle increment lands (see experiment-harness-ai.md).
+  // Do NOT pin until the ~1s-fast cycle increment lands (the thread was logged in
+  // experiment-harness-ai.md, CLOSED 2026-07-21 and archived out of the tree; successor decision
+  // log: docs/handoffs/scientific-method-harness.md).
   {
     name: 'T4',
     slugs: ['anis-star', 'privaty', 'snow-white-heavy-arms', 'helm', 'crown'],

@@ -322,12 +322,12 @@ describe('ada — kit spec', () => {
       expect(noSwap.totals.ada).toBeLessThan(base.totals.ada * 0.95);
     });
 
-    // RESIDUAL (kit-status F3, MEASUREMENT-GATED): the swap has no maxShots cap, so it over-fires
-    // ~2 special shots per window vs the kit's literal "for 1 round(s)". The board (≈0.99) leans on
-    // the 2nd shot; capping to kit-literal drops the board to ~0.95. This pin records the CURRENT
-    // (shipped) per-window count so any change is visible — it does NOT certify the count as
-    // kit-literal. Resolving it needs popup footage (see manual-review/ada.md).
-    it('PIN (current shipped cadence, F3 residual): ≥1 swapped shot per burst window', () => {
+    // KIT-LITERAL, owner-ruled 2026-08-11: Special Modification lasts "for 1 round(s)" and the
+    // owner confirms ONE special-charged shot per window, so the swap carries maxShots 1 and the
+    // engine ends it right after that shot fires (the uses-based termination measured 2026-07-14).
+    // This assertion is EXACTLY 1, not ≥1: the failure mode it guards is the over-fire that shipped
+    // before (~2 shots/window), which the board leaned on — the board is the thing that was wrong.
+    it('EXACTLY one swapped shot per burst window (kit: "for 1 round(s)")', () => {
       const bursts = adaBursts(base.events);
       const shots = swappedShots(base.events);
       for (const cast of bursts) {
@@ -336,8 +336,8 @@ describe('ada — kit spec', () => {
         );
         expect(
           inWindow.length,
-          `burst at ${(cast.frame / FPS).toFixed(1)}s produced no swapped shot`
-        ).toBeGreaterThanOrEqual(1);
+          `burst at ${(cast.frame / FPS).toFixed(1)}s fired ${inWindow.length} swapped shots, kit allows 1`
+        ).toBe(1);
       }
     });
   });

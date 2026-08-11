@@ -9,7 +9,220 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) HARNESS RULING — a faithfulness fix is not automatically capped at LOG for
+- **(2026-08-11, latest) M8 + M4 CLOSED. New DERIVED-STAT primitive `convertExcess` for `red-hood`;
+  true-damage-core needed nothing — it was already implemented AND already pinned.**
+  - **M4 — true damage CAN core hit: ALREADY SHIPPED.** The owner suspected this was done, and it
+    was. The core gate (`opts.core && cfg.coreHitRate > 0`) carries no true-flavor exclusion, exactly
+    as crit carries none, and the normal-attack path passes `core: true` regardless of flavor.
+    Measured on `chisato`: all 324 of her true-flavored swap normals are core-eligible at a live
+    core rate, identical to her 2,819 ordinary normals. It is also already pinned —
+    `scripts/tests/units/chisato.test.ts`, "ENGINE ⚑ PIN: true swap normals remain crit+core-eligible".
+    **Zero engine change.** (True-flavored skill RIDERS still never core, but that is the rider
+    convention — riders crit at the caster rate and never core — not a true-damage rule.)
+  - **M8 — `red-hood`'s stack ramp is now LITERAL, via a new primitive.** Her kit pairs "Charge Speed
+    ▲3.81%, stacks up to 10" with "Convert excess value over 100% of Charge Speed to Charge Damage
+    ▲240% of the excess". The engine had no way to derive one stat from another's overflow, so she
+    shipped `chargeDamagePct` 90 — a hand-averaged constant against a real 1.92→93.36 range. The
+    owner directed building the primitive rather than accepting the average. `convertExcess`
+    {`from`, `over`, `to`, `rate`} installs a rule on the unit; `stat()` recomputes the target from
+    the source's LIVE value on every read (short-circuited to zero cost for the 182 units with no
+    rule). Result: her Charge Damage now steps 9.144pp per stack (3.81 × 2.4), reaching 93.36 from
+    her own kit alone — the ladder is visible as charge multipliers 2.5 → 3.4336 and is what the test
+    pins. **93.36 is a SOLO-KIT ceiling, not a cap:** the conversion reads her LIVE total Charge
+    Speed, allies included, which is what the kit says ("excess value over 100% of Charge Speed").
+    Six roster units buff ally `chargeSpeedPct`, and her own graded `PA MiKa` comp fields one
+    (`alice` ▲11.67), carrying her to 153.4 there. Her damage is now team-composition-sensitive in a
+    way the flat 90 could not be — that coupling is part of why the board improved, and it is pinned
+    by its own case rather than left to the snapshot.
+  - **The load-bearing discovery: her Red Wolf "Charge Speed ▲100.8% for 10 sec" was never modeled.**
+    It existed only implicitly, folded into the swap's `chargeTimeSec` 0.3 clamp. Converting the
+    excess from her S1 stacks alone therefore found NO excess (they peak at 38.1 < 100) and her
+    Charge Damage silently vanished — measured 0.775 COLD on the first attempt. Encoding the kit line
+    as a real `chargeSpeedPct` buff fixed it. Her cadence is untouched, but NOT by a clamp — the
+    mechanism is `sim.ts`'s `u.swap?.chargeFrames != null ? 0 : Math.min(100, …)` guard, which zeroes
+    the charge-speed term whenever a swap supplies its own `chargeFrames` (her `chargeTimeSec` 0.3).
+    Naming it precisely matters: delete that guard as "redundant" and her 18-frame Red Wolf gate
+    collapses to 1 frame.
+  - **Board: 0.970 → 1.002** (0.99 / 1.02), from outside ±5% into ±3%. A faithfulness fix that
+    improved accuracy rather than costing it — the opposite of `ada` earlier the same day. Only her
+    own two totals moved; no teammate drifted, so the snapshot edit is two values.
+  - ONE carrier, deliberately built anyway on owner direction (the standing "log a third carrier
+    before building" heuristic is about speculative primitives; this one has a wrong constant to
+    replace today). `sugar`'s "Converts damage to Elemental Advantage damage" is a DIFFERENT
+    mechanic — a damage-type conversion, not a stat overflow — and is not a second carrier.
+    Pinned by `scripts/tests/engine/convert-excess.test.ts` + `red-hood`'s rewritten R1/R2.
+
+- **(2026-08-11) ENGINE PRIMITIVE — `gainPierce` takes a ROUND COUNT (`durationShots`),
+  because "Gain Pierce for N round(s)" is what five kits actually print.** Owner-directed. Until now
+  `gainPierce` accepted only `durationSec`, so every round-count carrier shipped an approximation:
+  `nihilister` a 4s stand-in, `neve` a 2s stand-in for "2 round(s)", `harran` a permanent tag for
+  "1 round(s)". A seconds window drains through reloads, burst animations and lulls; a round budget
+  is spent by FIRING and waits, unspent, for however long she holds. The two are indistinguishable
+  while a holder fires steadily and diverge exactly when she stops — which is not hypothetical:
+  `nihilister`'s 4s was derived as "the longest inter-shot gap she fires across (~3.7s worst case)",
+  her steady cycle does max at 3.87s, and her control fixture holds ONE 4.50s lull, so the shot after
+  it fired untagged every fight (~87k of her 61.5M normal-bucket damage).
+  - **Round accounting mirrors the round-scoped BUFF rule**, and sits in the same place in
+    `firePull` so the two can never disagree about what a round is: one round per pull
+    (`hitsPerShot` per pull for MG — a round is a PULL, not a pellet, pinned on `neve`), counted
+    whether or not ammo was deducted, and **the granting round never spends the budget**
+    (`pierceGrantFrame`, the analogue of a buff's `startFrame` carve-out) — "for N round(s)" reads as
+    N rounds AFTER the grant. One deliberate difference from buffs: a re-grant takes the MAX of the
+    budgets (as the seconds window does) where `applyBuff` SETs; unreachable today, since no unit
+    carries two round-count pierce sources. New unit state: `pierceShotsLeft` / `pierceGrantFrame`.
+    `durationSec` and `durationShots` are mutually exclusive — `validate-structural.ts` rejects both
+    on one effect (no kit prints both, and "ends first" vs "lasts longer" disagree), and it now
+    range-checks `durationShots` for EVERY effect kind rather than only `buff`: scoped to buffs, a
+    `durationShots: 0` gainPierce validated clean and produced a wholly inert line.
+  - **Converted the three stand-in carriers** (`nihilister` 1, `harran` 1, `neve` 2). For `harran`
+    it is a pure fidelity change and behaviourally a NO-OP — her grant re-arms on every shot, so the
+    budget never decrements and the tag stays live exactly as her old permanent form did. The lull
+    argument is `nihilister`'s (a non-refreshing gap) and `neve`'s (an FB-keyed grant). Board-inert:
+    both regressions pass UNCHANGED and no snapshot moved — none of the three is in a graded comp,
+    and `harran`/`neve` carry no Pierce Damage ▲ source at scope lock anyway. The gain is fidelity,
+    plus `neve`'s ⚑ "rounds→seconds estimate, recipe: read her SG pull cadence from footage" is
+    DISCHARGED — the engine counts rounds now, so no footage is needed to convert them.
+  - **NOT converted, deliberately:** `dorothy-serendipity` ("3 round(s)") and `d-killer-wife` ("for
+    1 shot") both decided their Pierce line is unmodeled/damage-inert for their own documented
+    reasons, and both are board-graded. Re-opening those is a separate call, not a side effect of
+    adding a primitive.
+  - Pinned by `scripts/tests/engine/gain-pierce-rounds.test.ts` (5 cases: load-bearing, survives a
+    lull that drains a seconds window, budget spent per round on a non-refreshing trigger, granting
+    round exempt, self-scoped). Written RED first — it failed on the ladder assertion, which is the
+    one an unimplemented param cannot fake.
+
+- **(2026-08-11) THREE M-LIST RULINGS ENACTED — and a scope change to the gate itself:
+  `/scientific-method` resolves UNKNOWNS, it is not a tax on every engine edit.** Owner ruling: where
+  the modeling question is already ANSWERED (an owner ruling on game behaviour, a literal kit line, an
+  existing labeled fixture) the judges have nothing to gate, so the pipeline is skipped and the diff
+  goes to `/code-review` instead — **the onus moves to the CODE being correct, not the answer being
+  true.** `verify.sh` + spec tests stay mandatory on both paths. Landed in the four places that stated
+  the old "ALWAYS" rule (the skill, `CLAUDE.md`, the pre-write hook's P9, the code-review skill).
+  Enacted under the new rule, each pinned test-first and cross-family reviewed:
+  1. **`ada` — Special Modification is ONE round.** The kit says "for 1 round(s)"; the swap shipped
+     uncapped and fired ~2 special-charged shots per window. Now `maxShots` 1. **Board 0.995 → 0.924
+     COLD, accepted under faithful > fit** — the old reading leaned on damage the kit does not grant.
+     Cost more than the ~0.95 estimate. Her cadence shift also perturbed two OTHER units' fixtures
+     (`little-mermaid` M4, `nihilister` N1), whose "byte-identical in this fixture" assertions were
+     true only for the old ada — restated, not suppressed.
+  2. **`prika` — she IS Pierce-tagged during Performance.** Kit S1: "Activates only while in
+     Performance status. Affects self. Gains Pierce." Now a self-targeted `gainPierce` on her
+     burstCast in `skill1`, windowed per mode (25s solo, 9999 duet). **Board 0.890 → 1.065**, far
+     past the ~+8% estimate — and the decomposition matters: measured on PA MiKa, the TAG is worth
+     ~+0.03 and the duet WINDOW ~+0.15. The 9999 rests on the same premise as her duet
+     `chargeDamagePct` (Encore re-extends Performance while `mint` keeps bursting), so the two move
+     together or not at all. Do not close her HOT read by deleting the tag or shaving the datamined
+     13.09; the open question is the window.
+  3. **`rouge` — all three coin statuses CO-EXIST**, earlier ones remaining as later ones activate.
+     `coin` is now a highest-reached marker, not an exclusive state: the Sword burst rider is ungated
+     (Sword Coin starts at back-row assignment and never ends), Shield is `{min:1}`, Double Sword
+     `{min:2}`, and the three co-stack because the buff key carries the value. **Damage-inert**
+     (1.027 → 1.024, and that drift is `ada`'s) — ally-granted Max HP does not feed a teammate's
+     `atkOfMaxHpPct`. Worth recording: the QUEUE entry that proposed this fix had the WRONG premise —
+     it claimed Sword's Attack Damage ▲6.65% switched off at Shield, when that line was already an
+     ungated permanent passive. The defect was in the Max-HP riders, not the damage line.
+     The cross-family review (Opus reviewing this Claude-authored diff) returned BLOCKED and was right:
+     it caught `prika`'s "Gains Pierce" still sitting in `unmodeled` while the engine modeled it, the two
+     new blocks filed under `burst` when the kit prints the line in `skill1`, and four stale
+     caveat/residual strings still describing the pre-change encoding. All fixed before landing. It also
+     measured what this session had asserted loosely — the prika window decomposition above is its
+     number, independently reproduced here.
+
+- **(2026-08-11) TIER 0 FOLLOW-UPS — both open owner questions ruled: the D1 banner gets a
+  MECHANICAL guard, and inertness claims join the hook's verdict verbs.** Tier 0 (below) closed five
+  rulings but left two questions the owner had to answer, one of them because it needed a protected
+  path. Both are now approved and landed, and both are enforcement, not modeling: **zero engine lines,
+  zero damage values, board untouched.**
+  1. **D1 durability — `kit-status.ts --check` now fails on a provenance claim the tree contradicts.**
+     `/kit-parse` writes the `PARSER BASELINE (HYPOTHESIS — NOT a validated model)` banner into every
+     new baseline, which is ACCURATE the day it is written. The staleness came from the other end:
+     nothing removed it once the unit gained spec tests, a gauntlet pass, or a real fight — which is
+     exactly how 19 carriers came to assert the opposite of the tree. The banner is a claim ABOUT this
+     repo, so the gate can read the repo and check it: `scripts/lib/baseline-banner.ts` (pinned by
+     `scripts/tests/baseline-banner.test.ts`, 9 cases) fails `--check` when (a) the HYPOTHESIS banner
+     sits beside a `scripts/tests/units/<slug>.test.ts` or a `Kit-autonomy gauntlet` marker, or (b) the
+     reworded `No real-fight recording yet` claim — the wording D1 KEPT on 18 units — sits beside board
+     readings or graded teams. Arm (b) is SILENT on today's tree (all 18 carriers have zero board
+     readings) and exists so the surviving wording cannot repeat the failure it was rewritten out of.
+     Consequence to expect: a `/kit-tdd` session that pins a still-bannered baseline now gets a red
+     verify until it rewrites that one note line — which is the ruling working, not a false positive.
+     The rejected alternative was rewording the `/kit-parse` banner itself: it would leave every
+     ALREADY-authored baseline unguarded and needs a protected path to fix nothing mechanical.
+  2. **D5 — `inert` / `inertness` / `byte-identical` / "moved by exactly zero" are now VERDICT VERBS**
+     in `.claude/hooks/pre-write-discipline.py` (r5, protected path edited with explicit owner
+     go-ahead). Routed exactly like the existing verdict verbs — content predicate AND a
+     `SHARED_ARTIFACT` target — with its own escalation text, because the burden an inertness claim
+     carries is not "at what n" but "in WHICH FIXTURE, with which enabling teammate seated". The
+     repo-wide pattern LINT stays rejected on the same numbers as before (620 mentions / 153 files,
+     mostly "board A/B is the discriminator" — a plan, not a result); a write-time guard sees one claim
+     at a time, so the false-positive arithmetic that killed the lint does not apply. Verified against
+     sample payloads: fires on an override or DECISIONS write carrying the claim, silent on the plan
+     wording, on `.claude/**` itself, and on ordinary code. Backfill of the 620 existing mentions
+     remains opportunistic, not a sweep (`QUEUE.md`).
+
+- **(2026-08-10) FAITHFULNESS TIER 0 — five batched owner rulings, all board-inert (0 engine
+  lines changed, 0 damage values touched).** Board before and after: `±3% 7 | ±5% 15 | ±8% 24 |
+worse 21` over 142 datapoints / 45 units.
+  1. **STALE PROVENANCE TAGS — deleted, not reworded.** The `PARSER BASELINE (HYPOTHESIS — NOT a
+validated model)` banner (19 overrides) and `[materialized … NOT hand-verified]` (8) both
+     asserted the opposite of the tree: all 27 carriers hold spec tests in
+     `scripts/tests/units/<slug>.test.ts` (11–29 cases each), and **all 8 materialized carriers are
+     board-GRADED**, i.e. every one has a real fight. Several banners contradicted themselves in the
+     same string (`arcana`'s sat beside "PRESERVED VERBATIM from the 2026-07-13 hand reconciliation";
+     `d-killer-wife`'s "still NOT hand-verified" beside a 2026-07-25 test-first re-audit). Because the
+     two tags were wrong in DIFFERENT ways they got different treatment: the 8 materialized tags are
+     pure authoring history → deleted outright (override prose carries no history, per the doc
+     taxonomy); 18 of the 19 banners kept the part still true, as `No real-fight recording yet — every
+⚑ below is an unmeasured estimate. Structure is test-pinned (…)`; `modernia`'s was deleted (she is
+     graded, test-pinned AND hand-authored — false on all three counts). Per-value ⚑ marks, which is
+     where the real unmeasured-ness lives, are untouched.
+  2. **ALLY-TARGETED `damageTakenPct` — kept for kit fidelity, now machine-flagged.** Exactly 3
+     carriers (`moran` allies −35.14, `rouge` selfAndAdjacent −15.2, `rumani` self −20.06), all
+     negative = kit damage-REDUCTION lines. The engine sums the stat off `enemyBuffs` alone
+     (`sim.ts:1861`) and the dispatch admits it only at `target.kind === 'enemy'` with `value > 0`
+     (`sim.ts:2389`), so they cannot reach damage by any path, sign flip included. Moving them to
+     `unmodeled` would discard the kit magnitude and the inversion-trap explanation already written in
+     those files, so instead `BOSS_ONLY_BUFF_STATS` in `src/skills/validate-structural.ts` warns on the
+     mismatch (pinned by `scripts/tests/validate-structural.test.ts`). Its job is to stop a future
+     session "correcting" the sign or target and turning a defensive line into a damage multiplier.
+     `defPct` is deliberately EXCLUDED from that set — boss-only for damage too, but 28 overrides carry
+     ordinary ally-side DEF ▲ lines with no inversion hazard, and warning on them would bury 3 real
+     mismatches in 28 lines of noise. `distributedDamagePct` is excluded because it is genuinely LIVE
+     on a unit (`sim.ts:1868`).
+  3. **SELF-SCOPED LIFESTEAL — stays recorded, emits NO recovery event.** `fireRecovery` fires the
+     blocks of the unit that RECEIVED the heal and nobody else, so a self-lifesteal reaches a consumer
+     only if the CARRIER owns one. The roster has exactly two `recovery` consumers — `asuka` (self,
+     `atkPct` 96.98 / 25s) and `crown` (allies, fired when `crown` herself is healed) — and none of the
+     5 non-emitters (`d`, `moran`, `red-hood`, `rem`, `tia`) owns a `recovery` block, so all five are
+     inert by MECHANISM, not merely by measurement. Second reason to withhold: lifesteal is a per-hit
+     line, so emitting would turn it into a hit-cadence event stream at an unmeasured cadence. The
+     scope-decides-liveness prior is now `docs/modeling-priors.md` §11 with `asuka` as the named
+     counterexample — "self-scoped therefore inert" is a property of the PAIRING, never of lifesteal.
+  4. **U28 RIDER GAUGE — direction settled, enactment still bundled.** A function-damage instance that
+     lands on the boss SHOULD generate weapon-base gauge; the engine already does it for `flatDamage`
+     (`sim.ts:2568`), `hitRepeat` (2605) and DoT ticks (3803), and the `extraHitDamagePct` path
+     (`sim.ts:4053`) is the sole omission — a DEFECT, not a modeling choice, so the open question is
+     only WHEN, never WHETHER. It does NOT land unit-locally: `scripts/battery/u28-gauge-ab.ts` already
+     bounded it (all 4 carriers hold FB count exactly under a deliberate over-emission arm — `modernia`
+     10=10, `nayuta` 5=5, `neon-blue-ocean` 11=11, `neon-vision-eye` 13=13), and it remains unmeasured
+     in the refill-bound charge-B3 comps where gauge deltas actually bind. The batched gauge cluster
+     partially cancels (double-emit is gauge-DOWN, this is gauge-UP, tempo comp-dependent), so the
+     compensating-errors rule requires one timeline → `2026-08-10-gauge-economy-findings.md`,
+     `QUEUE.md` ENGINE-WORK ORDER item 4. Recorded in all four carriers' notes. Note `modernia`'s S1 is
+     a `flatDamage` _because_ of this asymmetry — closing it retires that workaround.
+  5. **AN INERTNESS / A-B CLAIM MUST NAME ITS ROSTER — convention, not lint.** Such a result is a
+     statement about a FIXTURE, never a property of an encoding; it must state the comp measured AND
+     the enabling teammate it did or did not seat. Root: `alice` (SR/Fire) carried "inert, verified
+     byte-identical" for `hasPierce` from a pierce-free fixture — the tag moves no damage alone, it
+     confers ELIGIBILITY for `pierceDamagePct`, and her only graded comp seats `mint` (32.72 to all
+     allies), where it is worth **22.6%** of her damage (444M/1.100 on vs 362M/0.897 off). Correctly
+     measured, wrong roster, and the wording hid which. A lint was rejected with numbers: 620 mentions
+     across 153 override files, mostly "board A/B is the discriminator" (a plan, not a result) → mostly
+     false positives over a ~100-file backfill. Landed in `docs/CONVENTIONS.md`; backfill is
+     opportunistic, never a sweep. **Open:** whether `inert`/`byte-identical` join the pre-write hook's
+     verdict-verb escalation (`.claude/**` is protected — untouched, tracked in `QUEUE.md`).
+
+- **(2026-08-10) HARNESS RULING — a faithfulness fix is not automatically capped at LOG for
   "moving the board" or moving comps beyond its target unit.** Prompted directly by the `jill` landing
   below: the panel correctly routed that fix to LOG on an UNEXPLAINED small ripple in a shared comp,
   then correctly revised to IMPLEMENT once the ripple was traced to a verified mechanism — but the

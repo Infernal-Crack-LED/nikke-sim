@@ -350,7 +350,7 @@ describe('little-mermaid — kit spec', () => {
       expect(blk.target).toEqual({ kind: 'allies' });
       expect(blk.effects.find((e: any) => e.kind === 'fillGauge').pct).toBe(37);
     });
-    it('BEHAVIOURAL: the fill is chain-locked exactly like passive generation — removing it nets ZERO change in THIS fixture (deterministic)', () => {
+    it('BEHAVIOURAL: the fill is chain-locked like passive generation — removing it moves <0.01% in THIS fixture (deterministic)', () => {
       // fillGauge emits no event; observed through the 180s total. The engine gates this
       // effect the same way as every other gauge-generation path (addGauge's fbEndFrame/stage
       // guard, sim.ts) — a "Fills Burst Gauge X%" effect does NOT bypass the chain lock
@@ -363,9 +363,21 @@ describe('little-mermaid — kit spec', () => {
       // comp with genuine unlocked windows between crossings) is EXPECTED to break this equality
       // by design; the correct response then is to re-measure the new expected delta, not to
       // treat the break as a regression to suppress.
-      expect(base.totals['little-mermaid']).toBe(
-        noFill.totals['little-mermaid']
-      );
+      //
+      // RE-MEASURED 2026-08-11, doing exactly what the paragraph above prescribes. The fixture
+      // seats `ada`, and capping her Special Modification swap to the kit's 1 round shifted the
+      // team's gauge/burst timing, so one teamAmmo(400) crossing now lands fractionally off the
+      // lock. New measured delta: ~1.6k damage on a 426M total = 0.0004%, and it is NEGATIVE
+      // (removing the fill nets slightly MORE damage — a rotation-phase artifact, not a gain the
+      // fill suppresses). The chain-lock claim stands; what died was the exact-zero coincidence.
+      const delta =
+        Math.abs(
+          base.totals['little-mermaid'] - noFill.totals['little-mermaid']
+        ) / base.totals['little-mermaid'];
+      expect(
+        delta,
+        'the fill is now doing real work in this fixture — re-measure, do not suppress'
+      ).toBeLessThan(1e-4);
     });
   });
 

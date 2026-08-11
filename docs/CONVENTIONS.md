@@ -86,6 +86,65 @@ with no hand-tuned override yet; neither is the build path. Engine primitives ca
 `scripts/tests/engine/`. Every file under `scripts/tests/` runs from the single `npx vitest run` step
 in `verify.sh`, so a new test file joins the gate by existing.
 
+## ASK THE OWNER BEFORE ASKING FOR FOOTAGE
+
+A recording request is one of the most expensive things this project can ask for: the owner has to
+field a specific team, run a 180-second fight, capture video plus the end-of-fight screenshot, and
+then someone has to process it. Treat it as a last resort, not a default.
+
+**Root (2026-08-11).** The faithfulness pass produced a 12-item recording list, introduced as "where
+the remaining accuracy is — behind footage, not behind code". **Ten of the twelve needed no camera.**
+Eight were game rules the owner simply stated in a sentence each (true damage can core hit;
+distributed damage can crit; all stacks refresh unless a kit says otherwise; `trina`'s amp is
+literal-wording-only; `rouge`'s coin statuses co-exist; `mint` starts on Dancing; `ada` fires one
+special-charged shot; `prika` is Pierce-tagged during Performance). One (`guillotine-winter-slayer`)
+dissolved under an A/B that refuted the ask's own premise — her board reading was already inside
+±3%, and the "26% hot" it chased came from stale readings in another context. One (`noir`) belonged
+inside an investigation that already owned its blast radius.
+
+So, before writing a recording ask, sort the question:
+
+1. **Is it a GAME RULE?** ("can X crit", "do stacks refresh", "does status A replace status B") —
+   the owner plays the game. Ask them. This is most of them.
+2. **Is it a KIT-TEXT reading?** — read the kit; if it is literal, it is not a measurement.
+3. **Is the residual it chases even real?** — re-derive it from a CURRENT board reading first. A
+   number carried forward in a `residual` field is not evidence that anything is wrong today.
+4. **Only then**: a timing/magnitude question that genuinely needs frames (a cadence, a reload gap,
+   a per-hit popup value). Those are real, and they are the minority.
+
+## An inertness or A/B claim must NAME ITS ROSTER
+
+A recorded "this is inert" / "byte-identical" / "the board moved by exactly zero" result is a
+statement about a **fixture**, never a property of the encoding. Whether a tag reaches damage
+depends on who else is in the comp, so the identical claim can be true in one team and wrong by
+tens of percent in another.
+
+Any such claim written into override prose, a handoff, or DECISIONS must state **(1)** the
+comp/fixture it was measured in, and **(2)** the enabling teammate it did or did not seat — the
+unit whose buff the tag is eligible FOR. A claim missing (2) is not a weaker claim, it is an
+unfalsifiable one.
+
+Root (2026-08-10, faithfulness batch 8): `alice` (SR/Fire, not `alice-wonderland-bunny`) carried
+"inert, verified byte-identical" for her `hasPierce`, measured in a pierce-free fixture.
+`hasPierce` moves no damage on its own — it makes her ELIGIBLE for `pierceDamagePct`, and her only
+graded comp seats `mint`, whose S2 grants all allies 32.72. On that comp the tag is worth **22.6%
+of her damage** (on = 444M / ratio 1.100; off = 362M / 0.897, every other unit byte-identical). The
+A/B was not run carelessly — it was run correctly in the wrong roster, and nothing in its wording
+revealed which roster that was. That is the failure mode this rule exists to catch.
+
+Enforced at WRITE time, not by a repo lint. `inert` / `inertness` / `byte-identical` / "moved by
+exactly zero" are verdict verbs in the pre-write discipline hook (`.claude/hooks/pre-write-
+discipline.py`, r5): writing one onto a shared artifact — an override, DECISIONS, STATE, a
+mechanics doc — raises an escalation demanding the fixture and the enabling teammate. Like every
+guard there it gates on the TARGET, so prose about inertness elsewhere stays silent, and the
+plan wording ("board A/B is the discriminator — not yet run") does not trip it at all.
+
+A repo-wide pattern lint was rejected with numbers: 620 `inert`/`byte-identical`/`board-inert`
+mentions across 153 override files, most of the strong-looking ones being that same "A/B is the
+discriminator" plan, so it would be mostly false positives over a ~100-file backfill. Backfill an
+existing file's claims when you next touch it for another reason; `alice`'s own note is the model
+wording.
+
 ## Ratio direction (sim/real vs real/sim) — DO NOT CONFLATE
 
 Two accuracy metrics live in this repo and they point in **OPPOSITE directions**. Treating one as

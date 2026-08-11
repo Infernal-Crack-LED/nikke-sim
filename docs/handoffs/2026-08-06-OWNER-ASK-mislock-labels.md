@@ -89,6 +89,21 @@ therefore whether the reader can be trusted to diagnose the **15.7% SG sim gap**
   which is why this ask still exists. Had either passed, it would have been withdrawn.
 - ⚑ **The task itself was wrong in v1** and you caught it. Rewritten to marks-only.
 
+## 5b. Riding along: `noir`'s reload gap belongs to this thread (owner-directed 2026-08-11)
+
+Not part of this ask — do NOT let it change what you mark — but recorded here because it is the same
+unit and the same investigation. `noir`'s recon reads a reload of **~0.6–0.9s against the datamined
+62f ≈ 1.03s**, and she sits 0.884 COLD on her two graded comps with no measurement-gated retune. It
+was queued as a standalone recording ask (item M7 of the M1–M12 recording list in
+`docs/handoffs/2026-08-10-faithfulness-ENACTMENT-START-HERE.md` §5); the owner folded it into **the ongoing
+SG investigation** instead, because `noir` is the SG-landing-table calibration anchor
+(`docs/probe-data/noir-solo-recon.json`) — moving her cadence moves the band table's own basis, so
+it cannot be settled beside the SG work, only inside it.
+
+Practical consequence for whoever schedules the next SG capture: the same `noir` footage can serve
+both — pellet marking for this ask, and a rounds-plus-reload-gap read for the cadence question. The
+live tracker is the `noir` entry in `docs/handoffs/QUEUE.md`.
+
 ## 6. Notes for whoever processes the results
 
 - The crops are **midpoint-centred** between the two candidates at a per-shot radius, so both

@@ -409,7 +409,48 @@ export type EffectDef =
   // the belt to 0, forces an immediate reload (fires lastBullet triggers, same as firing dry).
   // The inverse of instantReload. e.g. grave's Prediction-end forced reload, asuka-wille, jill.
   | { kind: 'consumeAmmo'; fraction?: number }
-  | { kind: 'gainPierce'; durationSec?: number } // "Gain Pierce": the target's attacks count as Pierce-tagged, so its (and teammates') Pierce Damage ▲ buffs go live. durationSec = timed "for N sec" window; ABSENT = continuous/permanent (pierceUntilFrame → ∞) — used to STEP-GATE pierce that turns on only after a stack threshold (ade-agent-bunny: on a hitCount:10 "Spy Lens at max stacks" trigger, replacing an always-on-from-t=0 hasPierce flag that a boolean can't step-gate)
+  | {
+      kind: 'gainPierce'; // "Gain Pierce": the target's attacks count as Pierce-tagged, so its (and
+      // teammates') Pierce Damage ▲ buffs go live.
+      durationSec?: number; // timed "for N sec" window
+      // ROUND-COUNT window: "Gain Pierce for N round(s)" / "for 1 shot" — a BUDGET spent by FIRING,
+      // not by the clock, mirroring the round-scoped buff rule (`durationShots` on a buff): one
+      // round per pull, hitsPerShot per pull for MG, counted whether or not ammo was deducted, and
+      // the GRANTING round never spends the budget (N rounds AFTER the grant). Five kits print this
+      // form — nihilister / harran (1 round), neve (2), dorothy-serendipity (3), d-killer-wife
+      // ("for 1 shot") — and every one of them previously shipped a durationSec stand-in, which
+      // drains through reloads and lulls and can leave the next round she fires untagged. A budget
+      // waits for the round. Pinned by scripts/tests/engine/gain-pierce-rounds.test.ts.
+      durationShots?: number;
+      // BOTH ABSENT = continuous/permanent (pierceUntilFrame → ∞) — used to STEP-GATE pierce that
+      // turns on only after a stack threshold (ade-agent-bunny: on a hitCount:10 "Spy Lens at max
+      // stacks" trigger, replacing an always-on-from-t=0 hasPierce flag that a boolean can't
+      // step-gate). If BOTH are given, both windows run and pierce is live while EITHER holds.
+    }
+  | {
+      // "Convert excess value over X% of <stat A> to <stat B>. B ▲ R% of the excess value
+      // continuously." A DERIVED stat: B is recomputed from A's live value every time it is read,
+      // so it tracks A's stacks up and down instead of being baked to a constant.
+      //
+      // ONE carrier today — `red-hood` S1 ("excess over 100% of Charge Speed → Charge Damage ▲240%
+      // of the excess"). Built anyway on owner direction (2026-08-11) because the alternative was a
+      // hand-averaged constant, and an average of a ramp is wrong at both ends: hers shipped
+      // `chargeDamagePct` 90 against a 1.92-at-zero-stacks / 93.36-at-ten-stacks range.
+      //
+      // ⚠ `from` is read as the target's LIVE TOTAL for that stat, allies included — which is what
+      // the kit says ("excess value over 100% of Charge Speed", not "of your own Charge Speed").
+      // So 93.36 is her SOLO-KIT ceiling, not a cap: six roster units grant `chargeSpeedPct` to
+      // allies, and on her graded `PA MiKa` comp `alice`'s ▲11.67 carries her to 153.4. A carrier's
+      // output is therefore team-composition-sensitive in a way a baked constant never was.
+      //
+      // The 100% threshold is not arbitrary — the engine already caps `chargeSpeedPct` at 100 when
+      // it computes charge time, so the excess genuinely does nothing until a kit line converts it.
+      kind: 'convertExcess';
+      from: StatKey; // the stat whose overflow is converted (read live, incl. stacks)
+      over: number; // the threshold it must exceed (percentage points)
+      to: StatKey; // the stat the overflow is converted INTO
+      rate: number; // % of the excess granted, e.g. 240 = ▲240% of the excess
+    }
   | {
       kind: 'addStack'; // "Increases the stack count of stackable buffs by N"
       count?: number; // stacks to add (default 1)
