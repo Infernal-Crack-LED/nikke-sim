@@ -10,9 +10,7 @@
   ],
   "unmodeled": {
     "skill1": [],
-    "skill2": [
-      "Explosion Radius ▲ 38.61% for 10 sec."
-    ],
+    "skill2": ["Explosion Radius ▲ 38.61% for 10 sec."],
     "burst": []
   },
   "caveats": [

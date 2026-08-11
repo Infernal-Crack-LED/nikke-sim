@@ -12,9 +12,7 @@
     "cadence: datamined MG fire rate + reloadFrames 171 are unverified; they drive the hitCount proc counts AND the hpLost accumulation / gate-crossing timing (⚑1, mandatory)",
     "hpLost is MONOTONE (no decrement): engine heals carry no HP amount, so a healing ally (e.g. liter in the control fixture) cannot retreat the below-70%/below-50% thresholds the way real HP refill would — once crossed, the HP gates never close, over-crediting S2b/Bb vs a healed real fight (⚑5; the boss-damage direction in ⚑2 under-credits, this heal direction over-credits). No v1 behavioral change is possible (nothing to wire); a focus-video HP-bar read across a heal tick would settle it"
   ],
-  "resources": [
-    { "name": "hpLost", "initial": 0, "min": 0, "max": 100 }
-  ],
+  "resources": [{ "name": "hpLost", "initial": 0, "min": 0, "max": 100 }],
   "skill1": [
     {
       "slot": "skill1",

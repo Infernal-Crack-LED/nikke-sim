@@ -9,9 +9,7 @@
       "Storage: Stores excess healing received by the skill user, up to 5.36% of their Max HP. Stacks up to 5 time(s) and lasts for 15 sec.",
       "ATK ▲ 23.74% of the skill user's ATK for 15 sec."
     ],
-    "burst": [
-      "Removes 1 debuff(s)."
-    ]
+    "burst": ["Removes 1 debuff(s)."]
   },
   "caveats": [
     "burst: the heal is event-only — the 52.27%-of-final-Max-HP magnitude is unrecordable in v1 (no HP amounts), and 'final Max HP' scaling has no carrier; the block's observable is the recovery events it emits to allies on her cast frame",

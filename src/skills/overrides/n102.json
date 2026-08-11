@@ -21,8 +21,18 @@
         "byFinalAtk": true
       },
       "effects": [
-        { "kind": "buff", "stat": "maxAmmoFlat", "value": 3, "durationSec": 10 },
-        { "kind": "buff", "stat": "critDamagePct", "value": 10.34, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "maxAmmoFlat",
+          "value": 3,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 10.34,
+          "durationSec": 10
+        }
       ]
     }
   ],
@@ -36,7 +46,12 @@
         "byFinalAtk": true
       },
       "effects": [
-        { "kind": "buff", "stat": "chargeDamagePct", "value": 25.84, "durationSec": 5 }
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 25.84,
+          "durationSec": 5
+        }
       ]
     }
   ],

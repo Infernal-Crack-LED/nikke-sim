@@ -29,16 +29,20 @@
       "trigger": { "kind": "chargeCounter", "count": 1 },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "targetMaxHpPct", "value": 3.04, "maxStacks": 5, "durationSec": 2 }
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 3.04,
+          "maxStacks": 5,
+          "durationSec": 2
+        }
       ]
     },
     {
       "slot": "skill1",
       "trigger": { "kind": "chargeCounter", "count": 1 },
       "target": { "kind": "self" },
-      "effects": [
-        { "kind": "resource", "name": "muscleUp", "delta": 1 }
-      ]
+      "effects": [{ "kind": "resource", "name": "muscleUp", "delta": 1 }]
     }
   ],
   "skill2": [
@@ -47,7 +51,12 @@
       "trigger": { "kind": "hitCount", "count": 5 },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "partsDamagePct", "value": 10.05, "durationSec": 5 }
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 10.05,
+          "durationSec": 5
+        }
       ]
     }
   ],
@@ -57,7 +66,12 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "targetMaxHpPct", "value": 15.13, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 15.13,
+          "durationSec": 10
+        }
       ]
     },
     {
@@ -65,7 +79,12 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "normalAttackPct", "value": 10.05, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "normalAttackPct",
+          "value": 10.05,
+          "durationSec": 10
+        }
       ]
     },
     {
@@ -74,7 +93,12 @@
       "resourceGate": { "name": "muscleUp", "min": 5 },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "damageTakenPct", "value": -20.06, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": -20.06,
+          "durationSec": 10
+        }
       ]
     }
   ]

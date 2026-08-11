@@ -27,9 +27,7 @@
       "slot": "skill1",
       "trigger": { "kind": "passive" },
       "target": { "kind": "self" },
-      "effects": [
-        { "kind": "buff", "stat": "critDamagePct", "value": 50.94 }
-      ]
+      "effects": [{ "kind": "buff", "stat": "critDamagePct", "value": 50.94 }]
     },
     {
       "slot": "skill1",
@@ -40,9 +38,7 @@
         "excludeSelf": true,
         "byFinalAtk": true
       },
-      "effects": [
-        { "kind": "buff", "stat": "critDamagePct", "value": 50.94 }
-      ]
+      "effects": [{ "kind": "buff", "stat": "critDamagePct", "value": 50.94 }]
     }
   ],
   "skill2": [
@@ -51,7 +47,12 @@
       "trigger": { "kind": "passive" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "critRatePct", "value": 23.56, "durationSec": 30 }
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 23.56,
+          "durationSec": 30
+        }
       ]
     },
     {
@@ -64,7 +65,12 @@
         "byFinalAtk": true
       },
       "effects": [
-        { "kind": "buff", "stat": "critRatePct", "value": 23.56, "durationSec": 30 }
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 23.56,
+          "durationSec": 30
+        }
       ]
     }
   ],
@@ -74,7 +80,12 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "casterMaxHpPct", "value": 86.2, "durationSec": 7 }
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 86.2,
+          "durationSec": 7
+        }
       ]
     },
     {
@@ -87,7 +98,12 @@
         "byFinalAtk": true
       },
       "effects": [
-        { "kind": "buff", "stat": "casterMaxHpPct", "value": 86.2, "durationSec": 7 }
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 86.2,
+          "durationSec": 7
+        }
       ]
     },
     {
@@ -95,7 +111,12 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "critDamagePct", "value": 25.19, "durationSec": 7 }
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 25.19,
+          "durationSec": 7
+        }
       ]
     },
     {
@@ -108,7 +129,12 @@
         "byFinalAtk": true
       },
       "effects": [
-        { "kind": "buff", "stat": "critDamagePct", "value": 25.19, "durationSec": 7 }
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 25.19,
+          "durationSec": 7
+        }
       ]
     },
     {

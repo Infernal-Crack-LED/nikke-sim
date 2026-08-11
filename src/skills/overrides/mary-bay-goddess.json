@@ -46,9 +46,24 @@
         {
           "kind": "escalating",
           "steps": [
-            { "kind": "buff", "stat": "elemAdvantageDamagePct", "value": 20.85, "durationSec": 3 },
-            { "kind": "buff", "stat": "elemAdvantageDamagePct", "value": 13.88, "durationSec": 5 },
-            { "kind": "buff", "stat": "elemAdvantageDamagePct", "value": 8.36, "durationSec": 10 }
+            {
+              "kind": "buff",
+              "stat": "elemAdvantageDamagePct",
+              "value": 20.85,
+              "durationSec": 3
+            },
+            {
+              "kind": "buff",
+              "stat": "elemAdvantageDamagePct",
+              "value": 13.88,
+              "durationSec": 5
+            },
+            {
+              "kind": "buff",
+              "stat": "elemAdvantageDamagePct",
+              "value": 8.36,
+              "durationSec": 10
+            }
           ]
         }
       ]
@@ -77,7 +92,12 @@
         "kind": "allies"
       },
       "effects": [
-        { "kind": "buff", "stat": "casterMaxHpPct", "value": 27.87, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 27.87,
+          "durationSec": 10
+        }
       ]
     }
   ]

@@ -18,7 +18,12 @@
       "trigger": { "kind": "fullBurstEnter" },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "chargeSpeedPct", "value": 8.97, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 8.97,
+          "durationSec": 10
+        }
       ]
     }
   ],

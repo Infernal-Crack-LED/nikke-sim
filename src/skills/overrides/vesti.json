@@ -23,9 +23,24 @@
         {
           "kind": "escalating",
           "steps": [
-            { "kind": "buff", "stat": "atkPct", "value": 5.35, "durationSec": 45 },
-            { "kind": "buff", "stat": "critDamagePct", "value": 22.34, "durationSec": 45 },
-            { "kind": "buff", "stat": "critRatePct", "value": 15.51, "durationSec": 45 }
+            {
+              "kind": "buff",
+              "stat": "atkPct",
+              "value": 5.35,
+              "durationSec": 45
+            },
+            {
+              "kind": "buff",
+              "stat": "critDamagePct",
+              "value": 22.34,
+              "durationSec": 45
+            },
+            {
+              "kind": "buff",
+              "stat": "critRatePct",
+              "value": 15.51,
+              "durationSec": 45
+            }
           ]
         }
       ]

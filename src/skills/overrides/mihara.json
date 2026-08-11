@@ -17,7 +17,12 @@
       "trigger": { "kind": "lastBullet" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "critDamagePct", "value": 18.7, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 18.7,
+          "durationSec": 10
+        }
       ]
     }
   ],
@@ -30,8 +35,18 @@
         {
           "kind": "escalating",
           "steps": [
-            { "kind": "buff", "stat": "atkPct", "value": 15.56, "durationSec": 45 },
-            { "kind": "buff", "stat": "critRatePct", "value": 11.28, "durationSec": 45 }
+            {
+              "kind": "buff",
+              "stat": "atkPct",
+              "value": 15.56,
+              "durationSec": 45
+            },
+            {
+              "kind": "buff",
+              "stat": "critRatePct",
+              "value": 11.28,
+              "durationSec": 45
+            }
           ]
         }
       ]
