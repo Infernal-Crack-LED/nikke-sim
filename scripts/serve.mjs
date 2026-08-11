@@ -2,9 +2,9 @@
 // Used as the Railway start command. Binds to $PORT (Railway provides it) on
 // 0.0.0.0. Serves dist/, falling back to index.html so the SPA always loads.
 import { createServer } from 'node:http';
-import { existsSync } from 'node:fs';
+import { existsSync, realpathSync } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
-import { join, normalize, extname } from 'node:path';
+import { join, normalize, extname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DIST =
@@ -41,20 +41,23 @@ const MIME = {
 // ---- per-tab embed metadata -------------------------------------------------
 // Crawlers (Discord/Twitter/etc.) don't run JS, so a shared link's Open Graph
 // card must be baked into the HTML the server returns. We branch the OG/Twitter
-// tags on the URL's `?tab=` (mirrors the client's tabFromLocation) so each tab is
-// independently linkable with its own title/description.
+// tags on the URL's path (tabFromReqUrl below, mirrors the client's tabKey) so
+// each route is independently linkable with its own title/description. MUST stay
+// in lockstep with useDocumentHead.ts META and src/server/static.ts TAB_META —
+// scripts/tests/share/meta-parity.test.ts enforces it.
 const SITE = 'https://nikkesim.app';
-let TAB_META = {
+export let TAB_META = {
   sim: {
     title:
       'NIKKE Solo Raid Sim — DPS Calculator, Overload Optimizer & Team Builder',
     label: 'Sim',
-    desc: 'NIKKE solo-raid damage simulator: per-unit DPS calculator, overload optimizer, best overload lines, team builder, and game mechanics reference. Frame-tick accuracy, runs in your browser.',
+    desc: 'NIKKE solo raid damage simulator: per-unit DPS calculator, overload optimizer, best overload lines, team builder, and game mechanics reference. Frame-tick accuracy, runs in your browser.',
   },
   dpschart: {
-    title: 'NIKKE DPS Rankings — Best Units & Overload Lines Tier List',
+    title:
+      'NIKKE DPS Rankings — Neutral, Elemental Advantaged, with and without Supports',
     label: 'DPS Rankings',
-    desc: 'Ranked DPS of every NIKKE B3 carry under standardized solo-raid frameworks. Compare units, see best overload lines, and find your best carries.',
+    desc: 'Ranked DPS of every B3 under standardized frameworks.',
   },
   dps: {
     title: 'Unit Comparison — NIKKE Head-to-Head DPS Comparator',
@@ -63,29 +66,30 @@ let TAB_META = {
   },
   ranks: {
     title:
-      'NIKKE Support Rankings — Burst Gen, Burst CDR, Sustain & Team Buffs Boards',
+      'NIKKE Support Rankings — Team Damage Buffs, Burst Gen, Burst CDR, & Sustain',
     label: 'Support Rankings',
-    desc: 'Ranked NIKKE support boards: burst generation, burst cooldown reduction, sustain (team HP), and buffer value — precomputed from the same frame-tick solo-raid sim as the DPS rankings.',
+    desc: 'Ranked NIKKE support boards: team damage buffs, burst generation, burst cooldown reduction, and sustain. Computed from the same frame-tick solo raid sim as the DPS rankings.',
   },
   team: {
-    title: 'NIKKE Team Generator — Best 5-Unit Solo Raid Team',
+    title: 'NIKKE Team Generator — Best 5 Nikke Team',
     label: 'Team Generator',
-    desc: 'Generate the best 5-Nikke solo-raid team against a custom boss profile. Factors element, burst rotation, and overload synergy.',
+    desc: 'Generate the best 5 Nikke team against a custom boss profile. Factors element, burst rotation, and overload synergy.',
   },
   roster: {
-    title: 'NIKKE Roster Generator — Best Solo-Raid Teams from Your Units',
+    title:
+      'NIKKE Roster Generator — Best Solo Raid/Union Raid Teams from Your Units',
     label: 'Roster Generator',
-    desc: 'Input your NIKKE roster and generate the optimal solo-raid teams. Accounts for your actual units, gear, and overload lines.',
+    desc: 'Input your NIKKE roster and generate the optimal solo raid teams. Accounts for your actual units, gear, and overload lines.',
   },
   rostersim: {
-    title: 'NIKKE Roster Sim — Compare All Your Solo-Raid Teams',
+    title: 'NIKKE Roster Sim — Sim Your Solo Raid and Union Raid Teams',
     label: 'Roster Sim',
-    desc: 'Sim your own five solo-raid teams at once and compare their damage side by side. See which roster lineup deals the most DPS.',
+    desc: 'Sim your own five solo raid teams at once and compare their damage side by side. See which roster lineup deals the most DPS.',
   },
   overload: {
     title: 'NIKKE Overload Optimizer — Best Overload Lines Calculator',
     label: 'Overload Optimizer',
-    desc: 'Find the optimal 3rd overload line for every NIKKE B3. The overload calculator uses frame-tick sim data to rank every roll by DPS gain.',
+    desc: 'Find the optimal overload lines for any Nikke. The overload calculator uses frame-tick sim data to rank every roll by DPS gain.',
   },
   olsim: {
     title: 'NIKKE Overload Rolling Simulator — Module Cost Calculator',
@@ -105,12 +109,13 @@ let TAB_META = {
   teambuilder: {
     title: 'NIKKE Team Builder — Visual Team Planner & Loadout Editor',
     label: 'Team Builder',
-    desc: 'Build and share NIKKE solo-raid teams visually. Filter the full roster, set loadouts, and copy your team into the sim or roster sim.',
+    desc: 'Build and share NIKKE solo raid and union raid teams visually. Filter the full roster, set loadouts, and copy your team into the sim or roster sim.',
   },
   resources: {
-    title: 'NIKKE Resource Calculator — Daily Custom Module & Fragment Income',
+    title:
+      'NIKKE Resource Calculator — Daily Custom Module & Anomaly Interception Outcome',
     label: 'Resource Calculator',
-    desc: 'Expected daily solo-raid resource drops by stage: overload custom modules, module fragments, locks, and XP fodder. Plan your daily farming.',
+    desc: 'Expected daily custom module and T9 drops by stage. Supports Kraken and other Anomaly Interception bosses. Plan your daily farming.',
   },
   howto: {
     title: 'How to Use the NIKKE Solo Raid Sim — Quick Start Guide',
@@ -118,9 +123,10 @@ let TAB_META = {
     desc: 'Learn how to use the NIKKE Solo Raid Sim: build a team, configure the boss, read DPS results, and optimize your overload lines.',
   },
   mechanics: {
-    title: 'NIKKE Game Mechanics Reference — Damage Formula & Solo Raid Guide',
+    title:
+      'NIKKE Game Mechanics Reference — Damage Formula & Other Game Mechanics',
     label: 'Mechanics',
-    desc: 'Comprehensive NIKKE mechanics reference: damage formula, burst rotation, charge math, and solo-raid mechanics — all sourced and tiered.',
+    desc: 'Comprehensive NIKKE mechanics reference: damage formula, burst rotation, charge math, and other game mechanics — all sourced and tiered.',
   },
   dev: {
     title: 'Meet the Dev — NIKKE Solo Raid Sim',
@@ -143,7 +149,7 @@ let TAB_META = {
     desc: 'Import your real NIKKE roster into the sim via blablalink. Auto-fills your units, gear, and overload lines for accurate team generation.',
   },
   builder: {
-    title: 'NIKKE Card Builder — Custom Infographics',
+    title: 'NIKKE Card Builder — Custom DPS Charts & Infographics',
     label: 'Card Builder',
     desc: 'Build a shareable NIKKE infographic: Nikke Card, custom DPS chart, unit comparison, rank board, and more. Live preview and specialized formatting for Discord and X.',
     // Showcases an actual generated card (the builder's Nikke Card default
@@ -874,9 +880,19 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  const bound = server.address();
-  console.log(
-    `nikke-sim serving ${DIST} on 0.0.0.0:${bound ? bound.port : PORT}`
-  );
-});
+// Bind the port only when run directly (`npm start` / Railway); the
+// meta-parity test imports this module for TAB_META and must not get a
+// second server.
+const entry = process.argv[1] ? resolve(process.argv[1]) : '';
+const isDirectRun =
+  !!entry &&
+  existsSync(entry) &&
+  realpathSync(entry) === realpathSync(fileURLToPath(import.meta.url));
+if (isDirectRun) {
+  server.listen(PORT, '0.0.0.0', () => {
+    const bound = server.address();
+    console.log(
+      `nikke-sim serving ${DIST} on 0.0.0.0:${bound ? bound.port : PORT}`
+    );
+  });
+}

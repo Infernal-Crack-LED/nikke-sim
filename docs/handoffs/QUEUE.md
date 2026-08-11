@@ -739,14 +739,6 @@ template mislock, → 0 on relock) + 29 countable`. 42 − 35 = 7 / 5 shots = **
 
 #### Product / web
 
-- **⇒ META-TABLE DRIFT — the three per-route title/desc tables disagree on 11 routes, and
-  `/characters` has no client entry.** The deployed server (`src/server/static.ts`) was reworded
-  ALONE (`d1c84a26`, 2026-07-30 — union-raid/anomaly wording verified ACCURATE against shipped
-  features), then `serve.mjs`'s builder entry ALONE (`30460baf`); `useDocumentHead.ts` is the
-  fossilized copy, so JS users see older strings than crawlers. Full census + per-route proposal
-  (owner calls: dpschart title, builder pair, team/ranks/mechanics/overload wording) + fix plan
-  incl. a meta-parity test so the lockstep rule is enforced, not just stated →
-  [docs/handoffs/2026-08-11-meta-table-drift.md](2026-08-11-meta-table-drift.md).
 - **⇒ SEO FOLLOW-UPS — deferred pending a real crawl: [docs/seo-followups.md](../seo-followups.md).**
   Search-visibility decisions that are NOT answerable from the repo. Nothing to do until Search
   Console has ~4-6 weeks of data; the doc carries the measurement, the options and a 4-step

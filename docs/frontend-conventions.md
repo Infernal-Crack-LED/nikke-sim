@@ -570,10 +570,13 @@ twitter:image. Missing key/manifest → the generic `/og.png` stays.
 
 **Lockstep rule (maintenance hazard):** route titles/descriptions exist in
 THREE tables — `useDocumentHead.ts` `META`, `static.ts` `TAB_META`, and
-`serve.mjs` `TAB_META`. They have drifted before; when you add or reword a
-route, update all three, and keep `/characters` covered on the client too. The
-serve test suites assert served bytes — if a test pins a stale string, update
-the string everywhere, not just the test.
+`serve.mjs` `TAB_META`. They drifted once (resolved 2026-08-11 by unifying on
+the deployed `static.ts` strings); when you add or reword a route, update all
+three, and keep `/characters` covered on the client too.
+`scripts/tests/share/meta-parity.test.ts` imports all three tables and fails
+on any per-key title/desc disagreement or key-set drift. The serve test suites
+assert served bytes — if a test pins a stale string, update the string
+everywhere, not just the test.
 
 ### 6.4 Structured data (JSON-LD)
 
