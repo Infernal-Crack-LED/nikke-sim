@@ -76,6 +76,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   deliberately out of the faithfulness sweep's scope.
   [findings](2026-08-10-burst-amp-literal-scope-findings.md) §4b.
 
+- **⇒⇒ FAITHFULNESS PASS — ENACTMENT PHASE. A fresh session starts at
+  [2026-08-10-faithfulness-ENACTMENT-START-HERE.md](2026-08-10-faithfulness-ENACTMENT-START-HERE.md).**
+  The finding phase is DONE for all 45 board-graded units (batches 1–8). That doc orders every
+  enactable finding into tiers — Tier 0 the five batched OWNER DECISIONS (D1–D5, all listed
+  separately below), Tier 1 the one board-moving fix (`jill`), Tier 2 the burst-amp validation that
+  BLOCKS further tagging, **Tier 3 the RECORDING LIST (M1–M12) — the highest-leverage owner action,
+  since the remaining accuracy is behind footage, not code**, Tier 4 safe consistency enactments,
+  Tier 5 held engine primitives. It opens with the honest framing: enacting everything ready today
+  improves the board by roughly ONE unit.
+
 - **⇒ ONE RULING WANTED (U28 class): `neon-vision-eye`'s Super Firepower "Deals 262.79% of final
   ATK as additional damage" is modeled as an `extraHitDamagePct` RIDER, not a `flatDamage`
   instance** — so it generates no burst gauge of its own, where a damage instance would. Per U28
@@ -85,23 +95,79 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   U28 rider set rather than a unit-local fix.
   [batch-6 findings](2026-08-10-faithfulness-batch6-findings.md).
 
-- **⇒ FAITHFULNESS PASS phase-4 sweep — NEXT UP IS BATCH 7; a fresh session starts at
-  [2026-08-10-faithfulness-batch7-START-HERE.md](2026-08-10-faithfulness-batch7-START-HERE.md).**
-  Self-contained: tree state, what the three burst-amp rulings changed, the 15 remaining
-  graded-comp units with per-unit signals (comps / board / note length / history-phrase count), a
-  suggested six, the recurring-defect detector, and the batch-6 lesson about silent holes in
-  instruments. **It SUPERSEDES the batch-6 START-HERE doc** — do not work from that one.
+- **⇒ ENGINE — `jill` (AR/Electric) loses her MEASURED cadence during her burst swap. HIGHEST-VALUE
+  OPEN ITEM ON THE BOARD.** `u.swap.pullsPerSec ?? PULLS_PER_SEC[u.swap.weapon ?? u.char.weapon]`
+  never falls back to `u.pullsPerSec`, and `jill` is the ONLY carrier roster-wide: her
+  `charFixes.pullsPerSec: 2.5` is discarded for the 10s of every same-weapon `trueNormals` burst
+  swap, which then runs at `PULLS_PER_SEC['AR']` = 12/s (4.8×). A reverted probe moves her
+  **1.924 HOT → 0.983 OK** with **every measured full-burst count preserved** and sub-1% ripple
+  elsewhere. Needs its own `/scientific-method` pass + owner; that pass must decide the fallback's
+  shape for DIFFERENT-weapon swaps (`k`, `nayuta` must NOT inherit the base cadence) and check
+  `jill` for fit-exposure to the buggy cadence.
+  [batch-7 findings](2026-08-10-faithfulness-batch7-findings.md).
 
-- **Sweep record (batches 1–6, all landed — reference only, nothing open here):**
+- **⇒ OWNER RULING WANTED — two stale provenance tags, one joint decision.** (a) The
+  `PARSER BASELINE (HYPOTHESIS — NOT a validated model)` banner on **19 remaining overrides** — all
+  carry spec tests + gauntlet passes, and all contradict the banner elsewhere in their own prose. It
+  conflates "kit-faithfulness unvalidated" (false for all of them) with "magnitude not hand-tuned
+  against a graded fight" (true for most). (b) The `[materialized … NOT hand-verified]` tag on **8
+  remaining units** — `cinderella-crystal-wave`, `d-killer-wife`, `liberalio`, `maiden-ice-rose`,
+  `milk-blooming-bunny`, `naga`, `scarlet-black-shadow`, `velvet` — every one since pinned
+  test-first, so the tag asserts the opposite of the tree. Same shape, want one wording decision;
+  `noir` / `chisato` (batch 7) and `alice` / `red-hood` / `mint` / `mihara-bonding-chain` (batch 8)
+  are the worked examples.
+
+- **⇒ CONVENTION WANTED — an inertness/A-B claim in override prose must NAME THE ROSTER it was
+  measured on.** `alice`'s "damage-INERT at scope lock … verified byte-identical totals with/without
+  hasPierce" was true in `controlComp()` (liter/crown/carry/`helm`, no pierce source) and wrong by
+  **22.6%** on her only graded comp, which seats `mint` and her `pierceDamagePct` 32.72. Fixture-inert
+  is not board-inert. Cheap enforcement options: a caveat-prose lint, or a harness helper that stamps
+  the comp into the claim. [batch-8 findings](2026-08-10-faithfulness-batch8-findings.md).
+
+- **Clean 3 bare parser-warning caveats in 2 units** — `maiden-ice-rose` (1) and
+  `milk-blooming-bunny` (2) still ship raw `unparsed effect` / `unsupported trigger` strings as
+  caveats. `validate-overrides.ts` echoes caveats, so they read as live unresolved failures on every
+  run; both units also record the same lines' real dispositions in `unmodeled`.
+
+- **⇒ OWNER RULING WANTED — ally-targeted `damageTakenPct` on 3 carriers** (`moran`, `rouge`,
+  `rumani`). The StatKey is boss-side (the engine sums it from the enemy buff list only), so all
+  three are applied-and-never-read: correct in outcome, live-looking in the file. Either move them
+  to `unmodeled` or have `validate-overrides.ts` warn on the target/stat mismatch.
+
+- **The audit doc's F7 ramp-bake list is nought for three — do not forward its membership as a
+  per-unit prior.** `chisato` and `rouge` carry no stack-ramp line at all; `mast-romantic-maid` has a
+  ramp (Drunken 1→2→3) but is baked at the cycle AVERAGE of 2, not "at cap from t=0" as F7 describes
+  — a different approximation with a different sign. The remaining ~7 names are unchecked.
+
+- **Re-file `snow-white-heavy-arms`'s Fully-Active "uses vs time" residual.** It was logged as H2
+  in `experiment-harness-ai.md`, closed 2026-07-21 and archived out of the tree, and is tracked
+  nowhere else; it now lives only in her override prose. Also 4 live citations still point at that
+  closed doc: `scripts/regression.ts:196`,
+  `scripts/blind-rebuild/code-bundle/code-sim-setup.ts:45`, `code-sim-effects.ts:125`,
+  `sim-core-c.ts:58` — successor is `docs/handoffs/scientific-method-harness.md`.
+
+- **⇒ FAITHFULNESS PASS phase-4 — the GRADED-COMP slice is COMPLETE (batches 1–8 cover all 45
+  board-graded units). What remains is item (c), THE TAIL.** 185 override files against 45 graded
+  units, so the tail is large and its per-unit value is much lower: no ratio to explain and no comp
+  to check inertness against. It wants its own entry doc and probably a GENERATED-CENSUS approach
+  (the pattern that demonstrably works here — `scripts/doc-drift.ts`, the burst-amp census,
+  `lint-target-status.ts`) rather than per-unit reads. The batch-7 START-HERE doc is CLOSED with
+  batch 8. Still open and roster-wide from the sweep: the 5-carrier lifesteal non-emitter ruling
+  (`d`, `moran`, `red-hood`, `rem`, `tia` — `red-hood` is confirmed SELF-scoped, so a consistency
+  item, not a fit one) and the U28 rider-gauge class.
+
+- **Sweep record (batches 1–8, all landed — reference only, nothing open here):**
   [batch 1](2026-08-10-faithfulness-batch1-findings.md) ·
   [batch 2](2026-08-10-faithfulness-batch2-findings.md) ·
   [batch 3](2026-08-10-faithfulness-batch3-findings.md) ·
   [batch 4 + remainder](2026-08-10-faithfulness-batch4-findings.md) ·
   [batch 5](2026-08-10-faithfulness-batch5-findings.md) ·
   [batch 6](2026-08-10-faithfulness-batch6-findings.md) ·
+  [batch 7](2026-08-10-faithfulness-batch7-findings.md) ·
+  [batch 8](2026-08-10-faithfulness-batch8-findings.md) ·
   [burst-amp literal scope](2026-08-10-burst-amp-literal-scope-findings.md).
-  The batch-6 START-HERE doc is CLOSED (archived to `docs/handoffs/closed/`, untracked) — it was
-  superseded the same day by the burst-amp rulings.
+  The batch-6 and batch-7 START-HERE docs are both CLOSED (archived to `docs/handoffs/closed/`,
+  untracked).
 
 - **⇒ FAITHFULNESS PASS (2026-08-10) — plan of record:
   [2026-08-10-faithfulness-pass-audit.md](2026-08-10-faithfulness-pass-audit.md).** Repeat-pattern

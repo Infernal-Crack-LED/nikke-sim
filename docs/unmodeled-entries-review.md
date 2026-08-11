@@ -11,10 +11,10 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 156 | 37.9% |
-| Other / see caveats | 97 | 23.5% |
-| Missing engine primitive / trigger | 90 | 21.8% |
-| Out-of-domain / parser unsupported | 30 | 7.3% |
+| Defensive / HP / shield / aggro | 157 | 38.1% |
+| Other / see caveats | 94 | 22.8% |
+| Missing engine primitive / trigger | 93 | 22.6% |
+| Out-of-domain / parser unsupported | 29 | 7.0% |
 | Weapon-state / shot-count approximation | 11 | 2.7% |
 | Partless boss | 11 | 2.7% |
 | Self-status / stack gate | 8 | 1.9% |
@@ -24,7 +24,7 @@
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (156)
+### Defensive / HP / shield / aggro (157)
 
 **A2** (a2)
 
@@ -34,7 +34,7 @@
 **Ada** (ada)
 
 - **skill1:** Recovers 10% of the damage dealt as HP for 10 sec. — magnitude only: the 10s recovery-event WINDOW is modeled (event-only heal ticks:10 intervalSec:1 on the fullBurstEnter→burstCasters block, firing bursted-B3 on-recovery consumers such as asuka S1); the HP amount has no engine consumer (no HP pool)
-  - *Why:* S1: on full-burst enter, buffs the BURST 3 allies who already burst this rotation (kit text: 'all Burst 3 allies who previously used their Burst Skill' — target burstCasters stage 3; U8 run-E finding 2026-07-13: the unfiltered burstCasters target was feeding her +60%-of-caster ATK grant to crown/rouge every rotation, the source of their ~1.44 heat) with ATK 60% of caster's ATK and True Damage 50% for 10s; the 10% lifesteal's recovery-event WINDOW is modeled as an event-only heal (ticks:10 intervalSec:1) on the same block — it refreshes bursted-B3 on-recovery consumers (asuka S1) every second of the 10s window (enacted 2026-08-09, owner faithfulness ruling); the HP amount itself has no engine consumer (no HP pool)
+  - *Why:* Grants casterAtkPct 60 + trueDamagePct 50, 10s, plus the lifesteal's recovery-event WINDOW as an event-only heal (ticks 10, intervalSec 1) on the same block, refreshing bursted-B3 on-recovery consumers (asuka S1) once a second across the window
 
 **Ade** (ade)
 
@@ -44,7 +44,7 @@
 **Alice** (alice)
 
 - **skill2:** ■ Affects self. Activates when HP falls below 80%. Continuously recover HP by 8.12% of attack damage.
-  - *Why:* skill2: lifesteal 'recover HP by 8.12% of attack damage' below 80% HP is UNMODELED. ⚑ OUT-OF-DOMAIN (engine-core: needs an HP pool + incoming-damage model). Estimate: exactly 0 impact at scope lock — the boss deals no damage, no unit ever drops below the 80% gate, and there is no HP pool to heal, so the line can move no damage and emits no event. Recipe: add an HP-pool / damage-taken primitive, then encode the <80%HP gate + 8.12%-of-attack-damage continuous recovery (and watch crown's 'when recovery takes effect' consumer in the control comp for leaked ally heals). Tier: out-of-domain (no primitive); inert in v1.
+  - *Why:* skill2: the below-80%-HP lifesteal ('recover HP by 8.12% of attack damage') is UNMODELED. ⚑ OUT-OF-DOMAIN (needs an HP pool + incoming-damage model). Exactly 0 impact at scope lock — no unit ever drops below the gate, and there is no HP pool. Recipe: add the HP-pool primitive, then encode the <80% gate, and watch crown's 'when recovery takes effect' consumer in the control comp for leaked ally heals.
 
 **Alice: Wonderland Bunny** (alice-wonderland-bunny)
 
@@ -123,7 +123,9 @@ Deals 14.96% of final ATK as additional damage.
 **Chisato** (chisato)
 
 - **skill1:** Only when at 100%: Dodging Bullets: Invulnerable for 2 sec.
-  - *Why:* skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES (live from t=0, expire at 60/90/150s — the derived >70%/>55%/>25% crossing times of the 0.5%/s drain — and REFRESH on her own burstCast, which recharges Extrasensory to 100%). Reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts. Replaces the prior permanent encoding that OVER-CREDITED never-burst comps (her ~1.19 board-hotness).
+  - *Why:* NOT ENCODED (folded into the derivation or genuinely skippable): the battle-start charge line and the 1%/2s drain line are currency bookkeeping the fuse durations already express; the burst's 'Charges Extrasensory to 100%' is the refresh block; the 100%-only 'Dodging Bullets: Invulnerable 2 sec' is invulnerability, inert with no HP pool
+- **burst:** Charges Extrasensory to 100%.
+  - *Why:* NOT ENCODED (folded into the derivation or genuinely skippable): the battle-start charge line and the 1%/2s drain line are currency bookkeeping the fuse durations already express; the burst's 'Charges Extrasensory to 100%' is the refresh block; the 100%-only 'Dodging Bullets: Invulnerable 2 sec' is invulnerability, inert with no HP pool
 
 **Cinderella** (cinderella)
 
@@ -365,7 +367,7 @@ ATK ▲ 20% of the skill user's ATK for 10 sec. — UNMODELED (inert): the destr
 **Mint** (mint)
 
 - **skill1:** Full Charge in Assigned Part: Dancing: all allies recover 1.8% of caster's Max HP every 1 sec, lasts 3 sec. — magnitude only: the 3-tick recovery-event window is modeled (event-only heal, Dancing-gated via the singing resource, solo mode); the HP amount has no engine consumer (no HP pool)
-  - *Why:* (2) DANCING HEAL (1.8% Max HP/1s x3) stays UNMODELED — defensive, engine has no HP pool; its only damage channel is a Crown-style on-recovery consumer, a known cold bias (owner finding F1: 'crown recovery consumer never procs', hard rule 2); estimate small (heal-window recovery uptime on a consumer if one is graded); recipe = wire as a heal event (ticks:3 intervalSec:1, Dancing-gated) and measure the consumer's uplift; tier 2
+  - *Why:* skill1/skill2: the Singing-gated lines run at FULL kit-literal value on alternate rotations (resourceGate {singing min 1}), not at half value every rotation. ⚑ this assumes teammate damage is spread evenly across her Singing and Dancing windows; solo mode has no real-fight anchor, since her only graded comp forces 'duet (w/ Prika)'.
 
 **Misato** (misato)
 
@@ -465,9 +467,9 @@ Refresh Heart: Incoming healing ▲ 6.53%, stacks up to 5 time(s) and lasts for 
 **Prika** (prika)
 
 - **skill2:** Max HP ▲ 19.98% for 10 sec.
-  - *Why:* S2: the 'entering Full Burst -> Max HP +19.98%' block is skipped (defensive HP buff)
+  - *Why:* See unit note / caveats
 - **burst:** Effect 1 HP MAGNITUDE: Restores 3.04% of the skill user's final max HP as HP — the recovery CADENCE (every 1 sec for 25 sec = 25 ticks) IS modeled (heal ticks:25 intervalSec:1, driving on-recovery consumers); only the HP amount is not (the engine's heal effect carries no HP value). This effect cannot be removed.
-  - *Why:* The burst Performance heal's recovery CADENCE (3.04% of caster max HP, every 1s for 25s = 25 ticks) IS emitted as recovery events (heal ticks:25 intervalSec:1) — 'when recovery takes effect' consumer kits (Crown-type) now proc off Prika across the full 25s window. Only the heal's HP MAGNITUDE (3.04%) is unmodeled (the engine's heal effect carries no HP amount).
+  - *Why:* The burst Performance heal's recovery CADENCE (3.04% of caster max HP, every 1s for 25s = 25 ticks) IS emitted as recovery events (heal ticks:25 intervalSec:1) — 'when recovery takes effect' consumer kits (Crown-type) proc off Prika across the full 25s window. Only the heal's HP MAGNITUDE (3.04%) is unmodeled (the engine's heal effect carries no HP amount).
 
 **Quiry** (quiry)
 
@@ -505,10 +507,8 @@ Restores Shield HP equal to 3.16% of the skill user's final Max HP every 1 sec c
 - **skill2:** ■ Activates during Beast Cage. Affects all allies. DEF ▲ 50.68% of the skill user's DEF for 10 sec.
   - *Why:* See unit note / caveats
 - **skill2:** ■ Activates during The Last Howl. Affects self. Recovers 23.04% of attack damage as HP over 10 sec.
-  - *Why:* Stage-2 lifesteal 23.04% confirmed UNMODELED/out-of-domain (no HP pool; tandem recovery-feed to a future on-recovery teammate recorded as a residual, not a DPS-basis edit)
+  - *Why:* skill2: 'Recovers 23.04% of attack damage as HP' is recorded, not emitted as a recovery event. Her lifesteal is SELF-scoped, so it could never reach an ally-side on-recovery consumer (a heal fires recovery only at its own block's targets) — this is a roster-wide consistency question across the 5 non-emitting lifesteal carriers, wanting one ruling, not a unit-local fix.
 - **burst:** Step 2 (The Last Howl): Attract: Taunts all enemies for 10 sec.
-  - *Why:* See unit note / caveats
-- **burst:** Step 2 (The Last Howl): Incoming healing ▲ 74.88% for 10 sec.
   - *Why:* See unit note / caveats
 
 **Rei Ayanami** (rei-ayanami)
@@ -572,9 +572,11 @@ Incoming healing ▲ 15.18% for 10 sec.
 **Snow White: Heavy Arms** (snow-white-heavy-arms)
 
 - **skill1:** Lock-On — Function: Designates the enemy as a target of Seven Dwarves. Max Lock-On targets: 5. Deactivation condition: Performing a normal attack or taking cover.
-  - *Why:* See unit note / caveats
+  - *Why:* UNMODELED / inert: DEF ▲ 42.24% (defensive, no HP pool); Lock-On targeting and the Max-Lock-On / max-ammo caps beyond the ammo counts used above (single boss); parts-damage buckets (partless boss); Fully-Active use-count bookkeeping and its normal-attack removal condition (the sim always full-charges); the burst's 41.9% to destructible projectiles (none vs a single boss)
 - **skill1:** Auto Fire Ready — Effect: DEF ▲ 42.24% continuously.
-  - *Why:* SKIPPED: DEF +42.24% (defensive); Lock-On targeting and Max-Lock-On/ammo caps beyond the ammo counts used above (single boss); Parts-damage buckets (partless boss)
+  - *Why:* UNMODELED / inert: DEF ▲ 42.24% (defensive, no HP pool); Lock-On targeting and the Max-Lock-On / max-ammo caps beyond the ammo counts used above (single boss); parts-damage buckets (partless boss); Fully-Active use-count bookkeeping and its normal-attack removal condition (the sim always full-charges); the burst's 41.9% to destructible projectiles (none vs a single boss)
+- **burst:** ■ Affects all destructible projectiles. Deals 41.9% of final ATK as damage.
+  - *Why:* UNMODELED / inert: DEF ▲ 42.24% (defensive, no HP pool); Lock-On targeting and the Max-Lock-On / max-ammo caps beyond the ammo counts used above (single boss); parts-damage buckets (partless boss); Fully-Active use-count bookkeeping and its normal-attack removal condition (the sim always full-charges); the burst's 41.9% to destructible projectiles (none vs a single boss)
 
 **Soline: Frost Ticket** (soline-frost-ticket)
 
@@ -629,7 +631,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Other / see caveats (97)
+### Other / see caveats (94)
 
 **A2** (a2)
 
@@ -661,11 +663,9 @@ Attract: Taunts all enemies for 5 sec.
 **Chisato** (chisato)
 
 - **skill1:** Activates at the start of battle. Affects self. Charges Extrasensory to 100%, up to 100%. This effect is continuous and cannot be removed.
-  - *Why:* skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES (live from t=0, expire at 60/90/150s — the derived >70%/>55%/>25% crossing times of the 0.5%/s drain — and REFRESH on her own burstCast, which recharges Extrasensory to 100%). Reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts. Replaces the prior permanent encoding that OVER-CREDITED never-burst comps (her ~1.19 board-hotness).
+  - *Why:* skill1: the Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES — live from t=0, expiring at 60 / 90 / 150s, the derived >70% / >55% / >25% crossing times of the kit's 0.5%/s drain — and REFRESHED by her own burstCast, which recharges Extrasensory to 100%. This reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts.
 - **skill1:** Affects self every 2 sec. Extrasensory ▼ 1%.
-  - *Why:* skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES (live from t=0, expire at 60/90/150s — the derived >70%/>55%/>25% crossing times of the 0.5%/s drain — and REFRESH on her own burstCast, which recharges Extrasensory to 100%). Reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts. Replaces the prior permanent encoding that OVER-CREDITED never-burst comps (her ~1.19 board-hotness).
-- **burst:** Charges Extrasensory to 100%.
-  - *Why:* Burst ATK 73.16/10s on burstCast (her own cast — hard rule 6); 'Charges Extrasensory to 100%' folded into the trajectory derivation → unmodeled
+  - *Why:* skill1: the Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES — live from t=0, expiring at 60 / 90 / 150s, the derived >70% / >55% / >25% crossing times of the kit's 0.5%/s drain — and REFRESHED by her own burstCast, which recharges Extrasensory to 100%. This reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts.
 
 **Delta: Ninja Thief** (delta-ninja-thief)
 
@@ -749,10 +749,12 @@ Attract: Taunts all enemies for 5 sec.
 
 **Mihara: Bonding Chain** (mihara-bonding-chain)
 
+- **skill2:** Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.
+  - *Why:* skill2: 'when the skill user is incapacitated → Ensnaring Chains stacks ▲20' is inert — the boss deals no damage at scope lock, so she is never incapacitated.
 - **skill2:** Ensnaring Chains stacks ▲ 20.
-  - *Why:* skill2: unparsed effect "Ensnaring Chains stacks ▲ 1."
+  - *Why:* skill2: 'when the skill user is incapacitated → Ensnaring Chains stacks ▲20' is inert — the boss deals no damage at scope lock, so she is never incapacitated.
 - **skill2:** Restraint Chain ▲ 1, up to 10.
-  - *Why:* skill2: unparsed effect "Restraint Chain ▲ 1, up to 10."
+  - *Why:* skill2: 'when an enemy is neutralized → Restraint Chain ▲1, up to 10' is inert — the boss never dies at scope lock.
 
 **Milk: Blooming Bunny** (milk-blooming-bunny)
 
@@ -768,11 +770,11 @@ Attract: Taunts all enemies for 5 sec.
 **Mint** (mint)
 
 - **burst:** Only one Assigned Part is applied according to Mint's current status.
-  - *Why:* burst: unparsed effect "Only one Assigned Part is applied according to Mint's current status."
+  - *Why:* burst: the three 'Assigned Part' status lines (Only one Assigned Part is applied…; Status 1 Dancing→Singing; Status 2 →Dancing) are the toggle's bookkeeping and carry no damage or buff of their own — they are EXPRESSED by the `singing` resource and its two everyN burstCast blocks, not dropped.
 - **burst:** Status 1: If in the Assigned Part: Dancing status, Mint gains Assigned Part: Singing. This effect is continuous and cannot be removed.
-  - *Why:* burst: unparsed effect "Status 1: If in the Assigned Part: Dancing status, Mint gains Assigned Part: Singing. This effect is continuous and cannot be removed."
+  - *Why:* burst: the three 'Assigned Part' status lines (Only one Assigned Part is applied…; Status 1 Dancing→Singing; Status 2 →Dancing) are the toggle's bookkeeping and carry no damage or buff of their own — they are EXPRESSED by the `singing` resource and its two everyN burstCast blocks, not dropped.
 - **burst:** Status 2: If not in the Assigned Part: Dancing status, Mint gains Assigned Part: Dancing. This effect is continuous and cannot be removed.
-  - *Why:* burst: unparsed effect "Status 2: If not in the Assigned Part: Dancing status, Mint gains Assigned Part: Dancing. This effect is continuous and cannot be removed."
+  - *Why:* burst: the three 'Assigned Part' status lines (Only one Assigned Part is applied…; Status 1 Dancing→Singing; Status 2 →Dancing) are the toggle's bookkeeping and carry no damage or buff of their own — they are EXPRESSED by the `singing` resource and its two everyN burstCast blocks, not dropped.
 
 **Moran (Treasure)** (moran)
 
@@ -810,8 +812,6 @@ Critical Rate ▲ 3.56% for 5 sec.
 
 **Prika** (prika)
 
-- **skill1:** Outgoing healing ▲ 49.92% continuously.
-  - *Why:* See unit note / caveats
 - **skill1:** Gains Pierce. This effect is continuous.
   - *Why:* See unit note / caveats
 - **skill2:** Effect 1: Affects the member who initiated Sing Along. Assigned Part: Singing. This effect is continuous and cannot be removed.
@@ -842,11 +842,6 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 - **skill2:** Activates when an ally or self destroys an enemy's part. Affects self if self is not in A.N. Mode status.
   - *Why:* See unit note / caveats
 - **skill2:** Removes Vital Attack.
-  - *Why:* See unit note / caveats
-
-**Red Hood** (red-hood)
-
-- **burst:** Step 3 (Red Wolf): Expand Pierce range by 100% for 10 sec.
   - *Why:* See unit note / caveats
 
 **Rei Ayanami (Tentative Name)** (rei-ayanami-tentative-name)
@@ -903,15 +898,13 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 **Snow White: Heavy Arms** (snow-white-heavy-arms)
 
 - **skill1:** Auto Fire Ready — Function: Loads Seven Dwarves with ammo. Max ammo loaded by Auto Fire Ready: 5. Deactivation condition: Performing a normal attack.
-  - *Why:* Charge-SR with a 'Seven Dwarves' auto-fire that piggybacks every full-charge shot, plus a burst 'Seven Dwarves Fully Active' mode (2 uses)
+  - *Why:* (b) shotFired, ungated: 41.9% AoE + 527.95% sequential — the baseline volley, 105.59% x the 5 ammo Auto Fire Ready loads
 - **skill1:** ■ Activates when performing a normal attack while not in Full Burst. Affects self. Removes Seven Dwarves Fully Active.
   - *Why:* Charge-SR with a 'Seven Dwarves' auto-fire that piggybacks every full-charge shot, plus a burst 'Seven Dwarves Fully Active' mode (2 uses)
 - **burst:** Seven Dwarves Fully Active — Function: Increases max number of Lock-On targets and max ammo loaded by Auto Fire Ready, but also increases Charge Time.
-  - *Why:* Fully Active mode (2 post-burst shots at 3.2s charge): Auto Fire Ready loads 15 ammo -> volley 105.59x15 per shot; the EXTRA over baseline (1583.85-527.95 = 1055.9% per swap shot) is a swapGate:'swapped' shotFired flat hit riding ONLY her two swapped full-charge shots INSIDE the FB window (2026-07-13 volley-placement fix, panel-ACCEPTED: COMMUNITY twice-confirmed — gamewith JP holds the Fully Active buffs per fully-charged shot 1発間維持, prydwen 7->15-hit structure — replacing the old burstCast 2111.8% lump at cast-instant, which missed seq +158.4 / own burst +84.48 / FB-era ATK / entry auras and stranded her at 0.78-0.83 after the measured cast-boundary revert; she graded 0.95-1.06 in run C under the pre-revert era, and lands ~0.96-1.00 again with this fix; per-shot expression crits like her baseline procs, uses-based delivery follows the shots so a swap shot lost to the 6.5s window also loses its volley — the residual uses-vs-time question is logged as H2 in experiment-harness-ai.md)
+  - *Why:* Charge-SR with a 'Seven Dwarves' auto-fire that piggybacks every full-charge shot, plus a burst 'Seven Dwarves Fully Active' mode (2 uses)
 - **burst:** Effect 2: Max Lock-On targets ▲ 10 continuously.
   - *Why:* See unit note / caveats
-- **burst:** ■ Affects all destructible projectiles. Deals 41.9% of final ATK as damage.
-  - *Why:* under zwei's team Pierce Damage); Fully-Active use-count bookkeeping and normal-attack removal (sim always full-charges); burst's 41.9% to destructible projectiles (none vs single boss)
 
 **Soda** (soda)
 
@@ -973,7 +966,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 - **burst:** Cooldown: 20 s
   - *Why:* See unit note / caveats
 
-### Missing engine primitive / trigger (90)
+### Missing engine primitive / trigger (93)
 
 **A2** (a2)
 
@@ -1271,6 +1264,11 @@ Outgoing healing ▲ 30.05% continuously.
 - **skill2:** Explosion Radius ▲ 38.61% for 10 sec.
   - *Why:* The S2 'Explosion Radius ▲38.61%' line is UNMODELED: the sim fights one boss — there is no AoE/multi-target axis for an explosion RADIUS to act on, damage-inert (the nearest-wrong encoding projectileExplosionPct is explosion DAMAGE, a different mechanic)
 
+**Prika** (prika)
+
+- **skill1:** Outgoing healing ▲ 49.92% continuously.
+  - *Why:* NOT MODELED: Encore's 'Performance duration ▲21 sec' (no primitive extends a named ally status window, so in solo mode the Charge Damage ▲25% and the heal run 25s instead of an extended ~46s); Encore's Singing part assignment (inert); S1's Outgoing healing ▲49.92% (no HP pool); S2's Full-Burst-enter Max HP ▲19.98% (defensive)
+
 **Rapi** (rapi)
 
 - **skill1:** ATK ▲ 21.81% for 20 sec.
@@ -1297,6 +1295,13 @@ Resurrect with 81.67% HP.
 
 - **burst:** Effect 1: Removes Single Point Attack.
   - *Why:* S2c part-destroy branch → UNMODELED: 'when an ally or self destroys an enemy's part' can never fire on the partless boss (genuinely-skippable class: parts), so Single Point Attack (sustained ▲47.32, 15s) and 'Removes Vital Attack' never happen; no part-destroy trigger exists in types.ts either
+
+**Red Hood** (red-hood)
+
+- **burst:** Step 2 (The Last Howl): Incoming healing ▲ 74.88% for 10 sec.
+  - *Why:* UNMODELED / inert: Beast Cage's DEF ▲50.68% of caster DEF (defensive, no HP pool); The Last Howl's 'Recovers 23.04% of attack damage as HP' — SELF-scoped, so it cannot reach an ally-side on-recovery consumer even if emitted, making the missing emit a consistency item and not a fit one; Step 2's taunt and Incoming healing ▲74.88% (the boss never acts, no HP pool); Step 3's 'Expand Pierce range by 100%' (no range primitive, and the boss is partless)
+- **burst:** Step 3 (Red Wolf): Expand Pierce range by 100% for 10 sec.
+  - *Why:* UNMODELED / inert: Beast Cage's DEF ▲50.68% of caster DEF (defensive, no HP pool); The Last Howl's 'Recovers 23.04% of attack damage as HP' — SELF-scoped, so it cannot reach an ally-side on-recovery consumer even if emitted, making the missing emit a consistency item and not a fit one; Step 2's taunt and Incoming healing ▲74.88% (the boss never acts, no HP pool); Step 3's 'Expand Pierce range by 100%' (no range primitive, and the boss is partless)
 
 **Rosanna (Treasure)** (rosanna)
 
@@ -1351,7 +1356,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **burst:** Immobilizes the target(s) for 5 sec.
   - *Why:* The burst's second line 'Immobilizes the target(s) for 5 sec.' is UNMODELED (verbatim in unmodeled.burst) — there is NO boss-CC channel: the v1 boss never acts (no enemy-action model), so a boss-targeted immobilize moves nothing; the schema's stun primitive describes a NIKKE unable to fire/charge/reload, not a boss freeze
 
-### Out-of-domain / parser unsupported (30)
+### Out-of-domain / parser unsupported (29)
 
 **Anchor** (anchor)
 
@@ -1430,15 +1435,13 @@ Explosion Radius ▲ 15.01% for 10 sec.
 
 **Mihara: Bonding Chain** (mihara-bonding-chain)
 
-- **skill2:** Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.
-  - *Why:* skill2: unsupported trigger "Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state." — its effects are skipped
 - **skill2:** Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.
-  - *Why:* skill2: unsupported trigger "Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self." — its effects are skipped
+  - *Why:* skill2: 'when the skill user is incapacitated → Ensnaring Chains stacks ▲20' is inert — the boss deals no damage at scope lock, so she is never incapacitated.
 
 **Mint** (mint)
 
 - **skill2:** Activates when entering Burst Stage 3 while not in Sing Along status: Cancels Singing and Dancing.
-  - *Why:* The S2 'Cancels Assigned Part' block is an expressibility GAP (no self-buff-active gate — resourceGate reads a resource POOL, not a buff-active/absent state; distinct from the Singing-gate mechanism above, which IS expressible) correctly OMITTED — when Mint casts every rotation (20s CD) her Sing Along is live at every stage-3 entry, so the cancel never fires; the dangerous misread (unconditional cancel stripping parts every rotation) is what the omit avoids
+  - *Why:* skill2: 'entering Burst Stage 3 while NOT in Sing Along status → Cancels Assigned Part' is deliberately NOT encoded — an expressibility gap, since resourceGate reads a resource pool rather than a buff-active/absent state. Safe direction: at her 20s cooldown Sing Along is live at every stage-3 entry, so the real cancel never fires, whereas an unconditional encoding would strip her parts every rotation.
 
 **Modernia** (modernia)
 
@@ -1476,7 +1479,7 @@ Outgoing healing ▲ 35.2% continuously.
 **Ade: Agent Bunny** (ade-agent-bunny)
 
 - **burst:** Minimum Effective Range ▲ 55.56% for 10 sec.
-  - *Why:* BURST (burstCast, B2 cd20) = allies attackDamagePct 55.04 + pierceDamagePct 10.13, dur 10; self Min Effective Range ▲55.56% inert range stat → unmodeled (hard-rule-1 check done: range buffs change the effective-range band, NOT shots fired — no shot-count channel)
+  - *Why:* The self Minimum Effective Range ▲55.56% is an inert range stat → unmodeled; range buffs change the effective-range BAND, not shots fired, so there is no shot-count channel for it to move
 
 **Arcana: Fortune Mate** (arcana-fortune-mate)
 
@@ -1629,7 +1632,7 @@ Deals 50.33% of final ATK as additional damage.
 **Ade: Agent Bunny** (ade-agent-bunny)
 
 - **skill1:** Spy Lens: Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec.
-  - *Why:* skill1: team ATK (15.2% of caster ATK) is keyed to a shotFired proxy for 'landing Full Charge attacks within effective range' — assumes every trigger pull is a landed full charge (⚑ unmeasured)
+  - *Why:* skill1: the team ATK grant (15.2% of caster ATK) is keyed to a shotFired proxy for 'landing Full Charge attacks within effective range' — it assumes every trigger pull is a landed full charge (⚑ unmeasured)
 
 **Laplace (Treasure)** (laplace)
 

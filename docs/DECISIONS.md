@@ -9,7 +9,78 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) THE UNTAGGED AMP-CARRIER DEBT IS CLEARED — 28 `burstDesc` instances
+- **(2026-08-10, latest) FAITHFULNESS BATCH 8 — the graded-comp slice of phase 4 is COMPLETE, and
+  an "inertness" claim turns out to be worth 22.6%.** All 9 remaining graded-comp units reviewed:
+  `red-hood` (SR/Iron), `quency-escape-queen`, `alice` (SR/Fire), `mihara-bonding-chain`, `ada`,
+  `ade-agent-bunny`, `mast-romantic-maid`, `guillotine-winter-slayer`, `mint`. Applied = prose only;
+  every block array byte-identical, board byte-identical (7/14/23/22, 142 datapoints), `verify.sh`
+  green. Findings: [batch-8 findings](handoffs/2026-08-10-faithfulness-batch8-findings.md).
+  **`alice`'s override claimed her `hasPierce` was "damage-INERT at scope lock … verified
+  byte-identical totals with/without hasPierce". Measured A/B on her only graded comp: 1.100 HOT
+  with it, 0.897 COLD without — 444M vs 362M, +22.6%, every other unit in the comp unchanged.** The
+  original verification was correct IN ITS FIXTURE and wrong where it mattered: `hasPierce` is a hit
+  TAG that only confers `pierceDamagePct` ELIGIBILITY (`PIERCE_CORE_DOUBLE` is false, so no
+  double-hit), and `controlComp()` seats `liter` / `crown` / carry / `helm` (SR/Water), none of which
+  grants pierce damage — whereas her graded comp PA MiKa seats `mint`, whose S2 grants allies
+  `pierceDamagePct` 32.72/10s. The ENCODING is faithful and stays (the kit says "Gain continuous
+  Pierce"); the prose was inviting a future reviewer to delete the tag as dead weight. **RULE, the
+  mirror of "board-inert is not inert": FIXTURE-INERT IS NOT BOARD-INERT — an inertness or A/B claim
+  in override prose must NAME THE ROSTER it was measured on**, because a cross-unit-dependent
+  property (a pierce tag, a recovery consumer, an amp literal) cannot be generalized from a
+  single-comp check. Other findings, none enacted: bare parser warnings persist as caveats beside
+  their own resolutions (cleaned on `mihara-bonding-chain` 9 → 6 and `mint` 3 → 5; **3 instances
+  remain in 2 units — `maiden-ice-rose`, `milk-blooming-bunny`**); the `[materialized … NOT
+hand-verified]` provenance tag is stale on **8 remaining units** (`cinderella-crystal-wave`,
+  `d-killer-wife`, `liberalio`, `maiden-ice-rose`, `milk-blooming-bunny`, `naga`,
+  `scarlet-black-shadow`, `velvet`), same class as batch 7's `PARSER BASELINE` banner (19 carriers left after this batch cleared
+  `ade-agent-bunny` and `guillotine-winter-slayer`) and worth one joint ruling; and the audit doc's F7 ramp-bake list is now **nought for three** — `chisato` and
+  `rouge` carry no ramp at all, and `mast-romantic-maid` is baked at the cycle AVERAGE (2 of 3), not
+  "at cap from t=0". Per-unit, `mihara-bonding-chain`'s note stated model values (270.9 / 730.1) that
+  are not what ships (301 / 700), contradicted by its own REFIT sentence 1,500 chars later;
+  `mast-romantic-maid` had `caveats: null` while carrying four owner-ruled approximations, so none of
+  them surfaced in any lint output; `mint`'s residual (2) proposed as future work the exact heal
+  block the file already ships. `red-hood`'s lifesteal is confirmed SELF-scoped — a consistency item,
+  not a fit one — leaving the 5-carrier roster ruling open. **What remains of phase 4 is item (c),
+  the tail**: 185 override files against 45 board-graded units, with no ratio to explain and no comp
+  to check inertness against, so it wants a generated-census approach rather than per-unit reads.
+
+- **(2026-08-10) FAITHFULNESS BATCH 7 — six graded-comp prose reviews, and the board's
+  worst unit localized to an engine fallback (SURFACED, NOT ENACTED).** Units reviewed against the
+  phase-4 checklist: `noir` (SG/Wind), `privaty` (AR/Water Treasure), `snow-white-heavy-arms`,
+  `chisato` (SMG/Iron), `rouge` (SR/Electric), `prika` (SR/Water). Applied = prose only; every
+  block array byte-identical, board byte-identical (7/14/23/22, 142 datapoints), `verify.sh` green.
+  Findings: [batch-7 findings](handoffs/2026-08-10-faithfulness-batch7-findings.md).
+  **The finding that matters is `jill` (AR/Electric).** The F8 swap-cadence gap —
+  `u.swap.pullsPerSec ?? PULLS_PER_SEC[...]`, which never falls back to `u.pullsPerSec` — has
+  exactly ONE carrier roster-wide, and it is the board's single worst unit. She carries a MEASURED
+  `charFixes.pullsPerSec: 2.5` (named in the engine's own table comment) and her burst is a
+  same-weapon `trueNormals` swap with no `weapon` field, so for 10s of every burst the branch
+  resolves to `PULLS_PER_SEC['AR']` = 12/s — **4.8× her measured cadence**, in the window where her
+  normals are also true damage. A reverted probe (fall back to `u.pullsPerSec` only when
+  `u.swap.weapon` is undefined) moves her **1.924 HOT → 0.983 OK** (0.92/2.39/2.46 → 0.92/1.00/1.03,
+  MAD 0.978 → 0.038, rank 45/45 → 10/45) with the board at ±5% 14→15, ±8% 23→24. **Every measured
+  full-burst count is preserved**, and the unchanged `0.92` datapoint is the N1 comp where she never
+  bursts — an independent discriminator for the mechanism. This is a faithfulness defect (a measured
+  constant discarded by a `??` chain), not a calibration one, but it is an ENGINE change: it needs
+  its own `/scientific-method` pass + owner, which must settle the fallback's shape for
+  different-weapon swaps (`k`, `nayuta`) and check `jill` for fit-exposure to the buggy cadence.
+  Three further cross-cutting items surfaced, none enacted: the `PARSER BASELINE (HYPOTHESIS — NOT
+a validated model)` banner is stale as a class on **23 overrides** (all now have spec tests and
+  gauntlet passes, and all 23 self-contradict the banner elsewhere in their own prose — one wording
+  decision, not 23 judgement calls); **ally-targeted `damageTakenPct` is off-contract on 3 carriers**
+  (`moran`, `rouge`, `rumani`) — the engine reads that StatKey from the enemy buff list only, so all
+  three are applied-and-never-read, correct in outcome but live-looking; and **the audit doc's F7
+  ramp-bake list has false positives** (`chisato` and `rouge` carry no stack-ramp line at all).
+  Per-unit, the largest defect was `chisato`'s note asserting "CRIT now OFF on true normals …
+  enforced at the engine `crit && !trueFlavor` guard" as a live claim — doubly false, since no such
+  guard has ever existed and the 2026-07-21 ruling behind it was itself reversed in-game-confirmed on
+  2026-07-25 — with the file contradicting itself ~2,000 chars later. Prose across the six went
+  34,233 → 28,101 chars (−17.9%), deleting 2 self-contradictions, 4 falsified live claims and 3
+  rotted citations. **Method lesson: the audit's own findings docs are premises too** — the F8 claim
+  forwarded by the START-HERE doc was true and produced the `jill` finding, while its F7 membership
+  was wrong for both of this batch's units on that list.
+
+- **(2026-08-10) THE UNTAGGED AMP-CARRIER DEBT IS CLEARED — 28 `burstDesc` instances
   across 25 units; a third localization phrasing-hole found doing it.** Owner-directed after the
   literal-only + block-level + stray-article rulings. Every unit whose burst damage block carries
   a qualifying literal is now tagged. **Board byte-identical on a full diff** (7/14/23/22, 142
