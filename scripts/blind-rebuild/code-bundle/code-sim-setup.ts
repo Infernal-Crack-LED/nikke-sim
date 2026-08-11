@@ -42,7 +42,9 @@ const ENV: Record<string, string | undefined> =
 import type { Block, ConsolidationConfig, EffectDef, StatKey, TargetDef } from '../skills/types.js';
 
 const FPS = 60;
-// Experiment-only slug-scoped knobs (see experiment-harness-ai.md; all default OFF/empty):
+// Experiment-only slug-scoped knobs (documented in docs/STATE.md's ENV table; the old
+// experiment-harness-ai.md citation died when that doc CLOSED 2026-07-21 — successor decision log
+// is docs/handoffs/scientific-method-harness.md). All default OFF/empty:
 // XCRIT=<slug,slug> dot ticks + stored-hit releases roll crit for those units;
 // XCORE=<slug,...>  same paths roll core (subject to AUTO_CORE_RATE);
 // XINSTEXPL=<slug>  stored hits release each frame DURING full burst instead of

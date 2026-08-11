@@ -8,9 +8,6 @@
     "skill2": [],
     "burst": []
   },
-  "caveats": [
-    "skill1: unparsed effect \"MP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.\""
-  ],
   "skill1": [
     {
       "slot": "skill1",

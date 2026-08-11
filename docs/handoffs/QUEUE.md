@@ -94,22 +94,22 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   — see ENGINE-WORK ORDER item 4 and `2026-08-10-gauge-economy-findings.md`.
   [batch-6 findings](2026-08-10-faithfulness-batch6-findings.md).
 
-- **Clean 3 bare parser-warning caveats in 2 units** — `maiden-ice-rose` (1) and
-  `milk-blooming-bunny` (2) still ship raw `unparsed effect` / `unsupported trigger` strings as
-  caveats. `validate-overrides.ts` echoes caveats, so they read as live unresolved failures on every
-  run; both units also record the same lines' real dispositions in `unmodeled`.
+- **The two REAL F7 cap-bakes, now that the list is verified** (2026-08-11, all 12 names checked —
+  the audit doc's F7 section carries the corrected classes): `sakura-bloom-in-summer` ⚑4 (burst DoT
+  hit-applied at the full 10 stacks from tick 1; a self-ramp reading is ×0.55, and her note states
+  the discriminating recipe — read the sustained tick popups right after her burst) and `laplace`
+  (RL/Iron) (S1 Hero Vision's stack GATE assumed maxed for the whole burst window, opening the burst
+  true-damage conversion from t=0). Both HOT-direction and measurement-gated. `cinderella`
+  (RL/Electric) and `arcana-fortune-mate` are PARTIAL (one baked line each, `rampSec` already on
+  another); the other 8 names are time-averages or non-members — **do not "correct" those, it would
+  double-correct them.**
 
-- **The audit doc's F7 ramp-bake list is nought for three — do not forward its membership as a
-  per-unit prior.** `chisato` and `rouge` carry no stack-ramp line at all; `mast-romantic-maid` has a
-  ramp (Drunken 1→2→3) but is baked at the cycle AVERAGE of 2, not "at cap from t=0" as F7 describes
-  — a different approximation with a different sign. The remaining ~7 names are unchecked.
-
-- **Re-file `snow-white-heavy-arms`'s Fully-Active "uses vs time" residual.** It was logged as H2
-  in `experiment-harness-ai.md`, closed 2026-07-21 and archived out of the tree, and is tracked
-  nowhere else; it now lives only in her override prose. Also 4 live citations still point at that
-  closed doc: `scripts/regression.ts:196`,
-  `scripts/blind-rebuild/code-bundle/code-sim-setup.ts:45`, `code-sim-effects.ts:125`,
-  `sim-core-c.ts:58` — successor is `docs/handoffs/scientific-method-harness.md`.
+- **`scripts/blind-rebuild/code-bundle/` is a STALE extract of the engine.** Found while repairing
+  its dead citations: it holds ~2,400 lines against `src/engine/sim.ts`'s 4,278, and its `ROTMODEL`
+  comments describe `floor` as the default — inverted since the 2026-08-04 owner ruling (`refill` is
+  the default; `floor` is the opt-in A/B arm). The two citation sites now say so inline, but the
+  bundle as a whole was not re-extracted. A blind-rebuild reviewer reads it as the engine, so a
+  re-extract should precede the next blind-rebuild/`/audit-kit` run that uses it.
 
 - **⇒ FAITHFULNESS PASS phase-4 — the GRADED-COMP slice is COMPLETE (batches 1–8 cover all 45
   board-graded units). What remains is item (c), THE TAIL.** 185 override files against 45 graded

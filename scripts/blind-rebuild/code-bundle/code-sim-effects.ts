@@ -121,8 +121,11 @@
       // camera/re-engage window. Generation keeps running during it.
       // ENV.ROTMODEL='refill': experiment arm removing the fixed post-FB block (chain opens
       // on gauge-full; SWHA 13-window bar traces). HELD — floor removal breaks the pinned
-      // wind-weak 13s until the T5/T1 refill over-speed is measured (see cycle-rework design
-      // in experiment-harness-ai.md). Default 'floor' = current measured-constant behavior.
+      // wind-weak 13s until the T5/T1 refill over-speed is measured (the cycle-rework design lived
+      // in experiment-harness-ai.md, CLOSED 2026-07-21 and archived out of the tree; successor
+      // decision log: docs/handoffs/scientific-method-harness.md). Default 'floor' = the behavior
+      // at extract time — SUPERSEDED in the live engine, where 'refill' is the default and
+      // ROTMODEL=floor is the opt-in A/B arm (owner ruling 2026-08-04, docs/STATE.md ENV table).
       chainBlockedUntil =
         ENV.ROTMODEL === 'refill' ? frame : frame + POST_FB_CHAIN_DELAY_FRAMES;
     }

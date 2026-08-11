@@ -137,19 +137,28 @@ Cheap and mechanical. The three that were gated on a Tier-0 decision (the D1 tag
 carriers, D2 on `moran`/`rouge`/`rumani`, D3 across the 5 lifesteal non-emitters) LANDED with Tier 0
 — see §2. What remains needs no decision:
 
-- **Clean the last 3 bare parser-warning caveats** — `maiden-ice-rose` (1), `milk-blooming-bunny`
-  (2). They ship raw `unparsed effect` / `unsupported trigger` strings that `validate-overrides.ts`
-  echoes as live failures, while both units record the same lines' real dispositions in `unmodeled`.
-  No decision needed; just do it.
-- **Repair 4 rotted citations to `experiment-harness-ai.md`** (CLOSED 2026-07-21, archived out of
-  the tree): `scripts/regression.ts:196`,
-  `scripts/blind-rebuild/code-bundle/code-sim-setup.ts:45`, `code-sim-effects.ts:125`,
-  `sim-core-c.ts:58`. Successor is `docs/handoffs/scientific-method-harness.md`.
-- **Re-file `snow-white-heavy-arms`'s Fully-Active "uses vs time" residual.** It lost its tracker
-  when its host doc closed and now lives only in her override prose.
-- **Verify the audit doc's F7 ramp-bake membership.** It is **nought for three** on the names
-  checked (`chisato` and `rouge` have no ramp at all; `mast-romantic-maid` is baked at the cycle
-  AVERAGE of 2, not "at cap from t=0"). Check the remaining ~7 before anyone plans on them.
+**ALL FOUR LANDED 2026-08-11** — board-inert as predicted, `verify.sh` green:
+
+- **The 3 bare parser-warning caveats are gone** — `maiden-ice-rose` (1, her `caveats` field dropped
+  entirely) and `milk-blooming-bunny` (2). Both lines' real dispositions were already in `unmodeled`.
+  `validate-overrides.ts` warnings: `maiden-ice-rose` 1 → 0, `milk-blooming-bunny` 4 → 1 (the one
+  left is her substantive pierce caveat, echoed by design). Her two bare line-number citations were
+  repaired in the same pass — both had already rotted (`sim.ts:663` now points at Monte Carlo
+  aggregation, `sim.ts:1400` at charge-gauge sourcing), so they name the code blocks now.
+- **The 4 rotted `experiment-harness-ai.md` citations are repaired** — each states that the doc
+  CLOSED 2026-07-21 and names the successor. Found while doing it, and filed to `QUEUE.md`:
+  `scripts/blind-rebuild/code-bundle/` is a **stale extract of the engine** (~2,400 lines against
+  sim.ts's 4,278) whose `ROTMODEL` comments are inverted relative to the 2026-08-04 ruling. The two
+  sites say so inline; the bundle was NOT re-extracted (out of scope, and it feeds blind reviewers).
+- **`snow-white-heavy-arms`'s Fully-Active residual is re-filed as open-questions U39**, with the
+  discriminating recipe (perturb the swap timing, count the Fully-Active shots: two = by uses, one =
+  by time) and a `⇒ open-questions U39` pointer in her override prose.
+- **F7's membership is verified — it was mostly wrong: 2 of 12 are cap-bakes.** Corrected classes in
+  the audit doc's F7 section. Real members: `sakura-bloom-in-summer` and `laplace` (RL/Iron).
+  Partial (already carrying `rampSec`): `cinderella` (RL/Electric), `arcana-fortune-mate`. Four are
+  time-averages (`mihara-bonding-chain`, `red-hood`, `mast-romantic-maid`, `soda-twinkling-bunny`) —
+  correcting those would double-correct them. Four are not members at all (`leona` and `guilty`
+  compute stacks live from cadence; `chisato` and `rouge` carry no ramp line).
 
 ## 7. Tier 5 — engine primitives (HOLD; do not start these opportunistically)
 
