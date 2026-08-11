@@ -444,12 +444,18 @@ describe('eunhwa — kit spec', () => {
       }
     });
 
-    it('the nuke carries the allEnemies scope tag (owner scope-string ruling 2026-08-10)', () => {
+    it('the nuke carries NO scope tag — a 10-target cap is not the literal string the amp names', () => {
+      // "Affects 10 enemy unit(s) with the highest final ATK". Owner ruling 2026-08-10: the
+      // Burst-Skill-Damage amps are LITERAL-ONLY — trina's amplifies 'skills with "Affects
+      // all enemies"' and this clause does not contain that string. Asserted ABSENT
+      // deliberately: the tag was landed on the plural-cardinality reading and removed when
+      // the owner ruled the scope literal, so it must not be silently re-added.
+      // Decided by `npx tsx scripts/census-burst-amp-scope.ts`.
       const ov = loadOverride(EUNHWA) as any;
       const nuke = ov.burst
         .flatMap((b: any) => b.effects)
         .find((e: any) => e.kind === 'flatDamage');
-      expect(nuke.burstDesc).toBe('allEnemies');
+      expect(nuke.burstDesc).toBeUndefined();
     });
   });
 

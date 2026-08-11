@@ -128,8 +128,7 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 122.32,
-          "burstDesc": "allEnemies"
+          "atkPct": 122.32
         },
         {
           "kind": "buff",
@@ -154,8 +153,7 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 122.32,
-          "burstDesc": "allEnemies"
+          "atkPct": 122.32
         }
       ]
     },

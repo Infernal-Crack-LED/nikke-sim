@@ -293,17 +293,19 @@ describe('ein — kit spec', () => {
       expect(nukes.every((d) => !d.rangeApplied)).toBe(true);
     });
 
-    it('carries the allEnemies scope tag (owner scope-string ruling 2026-08-10)', () => {
-      // "Affects 10 enemy unit(s) with the highest final DEF" — a capped-multi clause, so
-      // the burst-skill-damage amps that scope on "all enemies" reach it (the base-`eunhwa`
-      // precedent, whose "10 enemy unit(s) with the highest final ATK" maps the same way —
-      // NOT `eunhwa-tactical-upgrade`, who has no burst damage line). Dormant
-      // today: no jackal/trina-class amp shares this fixture.
+    it('carries NO scope tag — a capped-multi clause is not the literal string the amp names', () => {
+      // "Affects 10 enemy unit(s) with the highest final DEF". Owner ruling 2026-08-10: the
+      // Burst-Skill-Damage amps are LITERAL-ONLY — trina's names 'skills with "Affects all
+      // enemies"', and a 10-target cap is not that string however plural it reads. Same
+      // outcome for the base-`eunhwa` precedent this tag was originally copied from (her
+      // "10 enemy unit(s) with the highest final ATK" — NOT `eunhwa-tactical-upgrade`, who
+      // has no burst damage line). Asserted ABSENT deliberately, not merely untested.
+      // Decided by `npx tsx scripts/census-burst-amp-scope.ts`.
       const ov = loadOverride(EIN_SLUG) as any;
       const nuke = ov.burst
         .flatMap((b: any) => b.effects)
         .find((e: any) => e.kind === 'flatDamage');
-      expect(nuke.burstDesc).toBe('allEnemies');
+      expect(nuke.burstDesc).toBeUndefined();
     });
   });
 

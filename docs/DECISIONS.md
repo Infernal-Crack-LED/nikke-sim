@@ -9,7 +9,60 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) FAITHFULNESS PHASE-4 BATCH 5 — the graded-comp slice; the burst-amp
+- **(2026-08-10, latest) THE BURST-SKILL-DAMAGE AMPS ARE LITERAL-ONLY — owner ruling; the
+  `burstDesc` tag set is rebuilt from the kit strings and 13 units are untagged.** Owner, asked
+  whether `trina`'s Spread Roots reaches a non-literal scope clause: **"trina's amp is literal
+  only."** Both amps quote a string and amplify skills whose description contains it — `trina`
+  `'Burst Skill damage of skills with "Affects all enemies" ▲ 435.6% for 5 sec'`, `jackal`
+  `'Burst Skill damage of skills with "Affects 1 enemy unit(s)" in the description ▲ 38.91% for
+15 sec'`. `jackal`'s "in the description" is explicit and `trina`'s is the same construction,
+  so the ruling is applied to both. A clause that paraphrases the same meaning in English does
+  NOT qualify.
+  **This SCOPES, and does not overturn, the earlier same-day scope-string ruling** — that one
+  answered whether such clauses count as TARGETING THE BOSS (they do, and the damage still
+  lands), which is a different question from whether they satisfy an amp that names a literal
+  string. Batch 5 flagged exactly this conflation; `burstDesc` feeds nothing in the engine but
+  these two amps, so a tag is precisely a claim of amp eligibility.
+  **Resolves the batch-5 refutation by localizing the wrong term.** Tagging `cinderella`
+  ("Affects **random** enemies") had taken her 0.893 COLD → 1.523 HOT, her three `trina`
+  readings 0.94/0.96/1.01 → 1.91/2.55/2.60, and the real fights refused it. The scope was the
+  wrong term — the 435.6 magnitude and the ⚑ additive Damage-Up placement are untouched by
+  this and remain unmeasured.
+  **Enacted:** 31 tag instances removed across 12 units whose damage-block clause holds no
+  literal (`anis`, `belorta`, `crow`, `ein`, `elegg`, `elegg-boom-and-shock` ×19, `eunhwa`,
+  `exia` ×2, `frima`, `ludmilla`, `signal`, `viper`) plus `novel` (see the hold below);
+  `allEnemies` added to the three true carriers in the graded slice (`noir` 351.64%, `privaty`
+  — the AR/Water Treasure base — 1407.64%, `quency-escape-queen` 1736.31%), whose damage blocks
+  read "■ Affects all enemies." verbatim. `isabel`, `liberalio`, `mica`, `phantom`, `scarlet`
+  and `soda-twinkling-bunny` keep theirs — all literal. `liberalio` is the one board-active
+  pairing (N3 with `trina`) and is unaffected, so her 0.917 → 0.929 amp movement stands.
+  Every slug in this entry is exact and several are ambiguous base names — read them as the BASE
+  unit: `anis` = RL/Iron (not `anis-star`), `elegg` = MG/Electric (not `elegg-boom-and-shock`,
+  listed separately), `eunhwa` = SR/Fire (not `eunhwa-tactical-upgrade`), `helm` = SR/Water
+  Treasure (not `helm-aquamarine`), `ludmilla` = SMG/Water, `mica` = RL/Wind, `scarlet` =
+  AR/Electric (not `scarlet-black-shadow`), `cinderella` = RL/Electric (not
+  `cinderella-crystal-wave`), `privaty` = AR/Water Treasure (not `privaty-unkind-maid`).
+  `helm`'s batch-5 hold COLLAPSES: her clause is non-literal, so there was never a tag to land
+  and the coordinated `jackal` J4/J5 edit is moot. **Board byte-identical on a full diff** (no
+  retagged unit shares a comp with `trina`; `jackal` sits in no graded comp) — 7/14/23/22 across
+  142 datapoints, unchanged. Six spec pins flipped from asserting the tag to asserting its
+  ABSENCE with the reason, so it cannot be silently re-added.
+  **HELD, UNRULED — block-level vs skill-level granularity.** "skills with X in the
+  description" does not say whether the literal must sit on the same "■" block as the damage
+  line or anywhere in the burst description. Three units split on it (`kilo`, `novel`, `sin`);
+  `novel` is the sharpest — her damage block is "Affects **the** 1 enemy unit(s) with the
+  highest final ATK" while a later, damage-free block reads "Affects 1 enemy unit(s)." verbatim.
+  All three ship UNTAGGED (the inert default) with the hold pinned. Two near-misses are worth
+  naming if it is ever measured: an inserted word breaks the match (`viper` "Affects 1
+  **designated** enemy unit(s)") while a trailing qualifier does not (`2b` "Affects 1 enemy
+  unit(s) with the highest remaining HP").
+  Instrument: **`npx tsx scripts/census-burst-amp-scope.ts`** (block-level, whitespace-
+  normalized, `--check` gates over-tagging), self-validated by
+  `scripts/tests/census-burst-amp-scope.test.ts`, which also pins the roster invariant and the
+  explicit list of 24 literal carriers outside the graded slice that are not yet tagged (inert
+  — a missing tag applies no amp — and each one a per-unit review).
+
+- **(2026-08-10) FAITHFULNESS PHASE-4 BATCH 5 — the graded-comp slice; the burst-amp
   channel is an UNTESTED LANDMINE.** Six highest-leverage graded-comp reviews (`crown`,
   `anis-star`, `cinderella`, `little-mermaid`, `helm`, `trina` — full record
   `docs/handoffs/2026-08-10-faithfulness-batch5-findings.md`). Enacted: prose only — ZERO

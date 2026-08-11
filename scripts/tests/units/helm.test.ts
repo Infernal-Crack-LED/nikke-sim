@@ -302,15 +302,14 @@ describe('helm (Treasure) — kit spec', () => {
       ).toEqual([]);
     });
 
-    it('is deliberately UNTAGGED pending the burst-amp validation (batch 5, 2026-08-10)', () => {
-      // Her clause "Affects the enemy with the highest final ATK" IS singular, so the
-      // 2026-08-10 scope-string ruling maps it to 'singleEnemy' (crow precedent, same
-      // clause) — the tag is correct in principle and board-inert in practice (full A/B
-      // diff: jackal, the only burstSkillSingleDamagePct carrier, shares no real comp with
-      // her). It is held anyway: jackal's spec fixture DOES seat helm, so tagging switches
-      // the amp on there and breaks two jackal pins that assert it reaches nothing. That
-      // makes the tag a cross-unit edit, which waits for the amp validation. This pin keeps
-      // the hold deliberate — when the amp is validated, tag her and flip this assertion.
+    it("is UNTAGGED — her clause is not the literal string jackal's amp names", () => {
+      // Owner ruling 2026-08-10: the Burst-Skill-Damage amps are LITERAL-ONLY. jackal's reads
+      // 'Burst Skill damage of skills with "Affects 1 enemy unit(s)" in the description' —
+      // an explicit literal-string test — and helm's clause is "Affects the enemy with the
+      // highest final ATK", which does not contain it. So no amp reaches this nuke, and
+      // there is no pending tag: this assertion is the settled state, not a hold.
+      // (crow carried the same clause and the same tag; both are untagged under the ruling.)
+      // Enforced roster-wide by scripts/tests/census-burst-amp-scope.test.ts.
       const ov = loadOverride('helm') as any;
       const nuke = ov.burst
         .flatMap((b: any) => b.effects)

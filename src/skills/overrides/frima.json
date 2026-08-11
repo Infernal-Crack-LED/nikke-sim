@@ -65,7 +65,7 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "enemy" },
       "effects": [
-        { "kind": "flatDamage", "atkPct": 101.66, "burstDesc": "allEnemies" },
+        { "kind": "flatDamage", "atkPct": 101.66 },
         { "kind": "buff", "stat": "defPct", "value": -9.86, "durationSec": 10 }
       ]
     },

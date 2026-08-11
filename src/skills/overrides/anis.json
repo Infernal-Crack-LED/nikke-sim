@@ -45,9 +45,7 @@
       "slot": "burst",
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "enemy" },
-      "effects": [
-        { "kind": "flatDamage", "atkPct": 156.73, "burstDesc": "allEnemies" }
-      ]
+      "effects": [{ "kind": "flatDamage", "atkPct": 156.73 }]
     },
     {
       "slot": "burst",

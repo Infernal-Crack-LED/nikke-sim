@@ -183,15 +183,21 @@ describe('belorta — kit spec', () => {
       ).toBe(true);
     });
 
-    it('carries the allEnemies scope tag (owner scope-string ruling 2026-08-10)', () => {
-      // "Affects enemies within attack range" — the plural form, so burst-skill-damage amps
-      // scoped on all enemies reach it (signal's applied precedent, same clause). Dormant
-      // today: no jackal/trina-class amp shares her fixture or her comps.
+    it('carries NO scope tag — "within attack range" is not the literal string the amp names', () => {
+      // Owner ruling 2026-08-10 (amp scope is LITERAL-ONLY): trina's Spread Roots amplifies
+      // 'skills with "Affects all enemies"', and her clause is "Affects enemies within attack
+      // range" — a paraphrase that means the same thing in English and is NOT that string, so
+      // the amp does not reach this nuke. The earlier same-day scope-string ruling
+      // ("these all count as targeting the boss") answered a TARGETING question and does not
+      // carry over to amp eligibility. Asserted as ABSENT deliberately, not left untested:
+      // this tag was landed on the cardinality reading and removed again, so a future reviewer
+      // must not re-add it without a new ruling. Decided by
+      // `npx tsx scripts/census-burst-amp-scope.ts`.
       const ov = loadOverride('belorta') as any;
       const nuke = ov.burst
         .flatMap((b: any) => b.effects)
         .find((e: any) => e.kind === 'flatDamage');
-      expect(nuke.burstDesc).toBe('allEnemies');
+      expect(nuke.burstDesc).toBeUndefined();
     });
 
     it('DISCRIMINATING: the level-1 magnitude (68.57) is not what ships', () => {

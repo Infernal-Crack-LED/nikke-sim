@@ -281,11 +281,13 @@ describe('elegg-boom-and-shock (Elegg: Boom and Shock) — kit spec', () => {
       ).toBe(true);
     });
 
-    it('every sequential hit in BOTH branches carries the allEnemies scope tag', () => {
-      // Owner scope-string ruling 2026-08-10: "Affects random enemy units" is a plural
-      // clause, so the burst-skill-damage amps scoped on "all enemies" reach these hits.
-      // Both branches tagged — the 13-hit branch is only unreachable on THIS fixture's
-      // rotation, not in general. Dormant today (no jackal/trina-class amp in the comp).
+    it('NO sequential hit in EITHER branch carries a scope tag — "random enemy units" is not the literal string', () => {
+      // Owner ruling 2026-08-10: the Burst-Skill-Damage amps are LITERAL-ONLY. trina's
+      // amplifies 'skills with "Affects all enemies"'; her clause is "Affects random enemy
+      // units if the number of ghosts is …", which is not that string. The 19 tags landed on
+      // the plural-cardinality reading are removed — asserted ABSENT across BOTH branches so
+      // a partial re-tag of one branch also fails.
+      // Decided by `npx tsx scripts/census-burst-amp-scope.ts`.
       const ov: any = loadOverride('elegg-boom-and-shock');
       const hits = ov.burst
         .flatMap((b: any) => b.effects)
@@ -295,7 +297,7 @@ describe('elegg-boom-and-shock (Elegg: Boom and Shock) — kit spec', () => {
         'six ≠13-branch hits + thirteen =13-branch hits'
       ).toBe(19);
       expect([...new Set(hits.map((e: any) => e.burstDesc))]).toEqual([
-        'allEnemies',
+        undefined,
       ]);
     });
   });

@@ -8,6 +8,9 @@
       "Designated Target: ATK ▼ 5.02% for 10 sec. (the STATUS is modeled via targetStatus; its ATK-down content is inert in v1 — the boss never attacks)"
     ]
   },
+  "caveats": [
+    "burst: the 1407.64% nuke carries burstDesc:'allEnemies' — its kit line sits under '■ Affects all enemies.', the exact string trina's Spread Roots names, so she is a TRUE carrier under the literal-only ruling (owner 2026-08-10). It reads the trina-family burstSkillAoeDamagePct amp when cast inside an amp window; no amp shares her comps today, so the tag is board-inert (full A/B diff byte-identical). ⚑ the amp's additive Damage-Up placement is unmeasured."
+  ],
   "skill1": [
     {
       "slot": "skill1",
@@ -115,7 +118,8 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 1407.64
+          "atkPct": 1407.64,
+          "burstDesc": "allEnemies"
         },
         {
           "kind": "targetStatus",

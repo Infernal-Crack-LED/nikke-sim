@@ -504,14 +504,19 @@ describe('signal — kit spec', () => {
       ]);
     });
 
-    it('the burst is ONE block keyed to her own cast: tagged nuke + defPct rider, kit order', () => {
+    it('the burst is ONE block keyed to her own cast: UNtagged nuke + defPct rider, kit order', () => {
+      // The nuke carries no `burstDesc`: owner ruling 2026-08-10 makes the Burst-Skill-Damage
+      // amps LITERAL-ONLY, and "Affects enemies within attack range" is not the string
+      // trina's Spread Roots names ('skills with "Affects all enemies"'). The tag landed here
+      // on the plural-cardinality reading — this exact-shape assert is what pins its removal.
+      // Decided by `npx tsx scripts/census-burst-amp-scope.ts`.
       const ov = loadOverride('signal') as any;
       expect(ov.burst.length).toBe(1);
       const block = ov.burst[0];
       expect(block.trigger).toEqual({ kind: 'burstCast' });
       expect(block.target).toEqual({ kind: 'enemy' });
       expect(block.effects).toEqual([
-        { kind: 'flatDamage', atkPct: 229.22, burstDesc: 'allEnemies' },
+        { kind: 'flatDamage', atkPct: 229.22 },
         { kind: 'buff', stat: 'defPct', value: -12.34, durationSec: 10 },
       ]);
     });

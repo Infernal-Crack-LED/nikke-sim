@@ -58,15 +58,42 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
-- **⇒ FAITHFULNESS PASS phase-4 sweep — NEXT UP IS BATCH 6; a fresh session starts at
+- **⇒ OWNER QUESTION OPEN (1, cheap): is the amp's literal test BLOCK-level or SKILL-level?**
+  "skills with X **in the description**" does not say whether the literal must sit on the same
+  `■` block as the damage line or anywhere in the burst description. Three units split on it —
+  `kilo`, `novel`, `sin` — and `novel` is the clean discriminator: her damage block reads
+  "Affects **the** 1 enemy unit(s) with the highest final ATK" while a later, damage-free block
+  reads "Affects 1 enemy unit(s)." verbatim. All three ship UNTAGGED (the inert default) with
+  the hold pinned in `scripts/tests/census-burst-amp-scope.test.ts`. Board-inert either way
+  (`jackal` is in no graded comp), so this can wait — and a popup measurement of the amp would
+  settle it for free. Full context:
+  [burst-amp literal-scope findings](2026-08-10-burst-amp-literal-scope-findings.md) §4.
+
+- **⇒ RECORDED, NOT APPLIED — 24 literal amp carriers outside the graded slice are untagged.**
+  Inert (a missing tag applies no amp) and none shares a comp with `trina`/`jackal`, so tagging
+  moves nothing today; listed rather than swept because each is a per-unit phase-4 review. The
+  list is pinned in the census test so it shrinks deliberately and never grows silently. Doing
+  all 24 in one mechanical pass is a legitimate owner call — `npx tsx
+scripts/census-burst-amp-scope.ts` decides each one and the board impact is provably zero.
+  Full list: [findings](2026-08-10-burst-amp-literal-scope-findings.md) §5.
+
+- **⇒ FAITHFULNESS PASS phase-4 sweep — BATCH 6's per-unit slice is STILL OPEN; a fresh session
+  starts at
   [2026-08-10-faithfulness-batch6-START-HERE.md](2026-08-10-faithfulness-batch6-START-HERE.md).**
-  That doc is self-contained: worktree/branch state (4 UNPUSHED commits on
-  `fix/faithfulness-pass`), the board baseline to diff against, the 21 remaining graded-comp
-  units with per-unit signals pre-computed (comp count, board reading, burst-damage scope
-  clause, amp-comp and fixture co-occurrence), a suggested six, the three NEW rules from batch 5
-  (tagging paused where an amp reaches; "board-inert" ≠ inert — check fixtures; a carrier census
-  needs line + trigger + gate), and the recurring "note describes a unit that no longer exists"
-  detector. Batch findings: [batch 1](2026-08-10-faithfulness-batch1-findings.md) ·
+  That doc is self-contained: worktree/branch state, the board baseline to diff against, the 21
+  remaining graded-comp units with per-unit signals pre-computed (comp count, board reading,
+  burst-damage scope clause, amp-comp and fixture co-occurrence), a suggested six, and the
+  recurring "note describes a unit that no longer exists" detector.
+  **⚠ Two of its rules are now SUPERSEDED by the literal-only ruling** (see the findings doc):
+  its rule 2 ("tagging is PAUSED where an amp can reach") is lifted — the tag question is
+  decided by the census, not by comp adjacency — and its §3 table's tag column is stale: the
+  three "Affects all enemies" carriers it flagged (`noir`, `privaty`, `quency-escape-queen`)
+  are DONE and tagged, `rapi-red-hood` and `d-killer-wife` do NOT get `singleEnemy` tags (their
+  "nearest to the crosshair" clause is a paraphrase), and the `elegg`/`crow` precedents it cites
+  were themselves untagged. Its rules 3–6 (check fixtures, census needs line+trigger+gate,
+  whitespace-normalized greps over both trees, verify before writing) all still bind. The
+  per-unit reviews themselves are untouched and still to do.
+  Batch findings: [batch 1](2026-08-10-faithfulness-batch1-findings.md) ·
   [batch 2](2026-08-10-faithfulness-batch2-findings.md) ·
   [batch 3](2026-08-10-faithfulness-batch3-findings.md) ·
   [batch 4 + remainder](2026-08-10-faithfulness-batch4-findings.md) ·
@@ -141,19 +168,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   it). Second census false positive after `cocoa`, and a NEW failure mode: a kit-text grep
   finds the LINE but not its GATE. `centi`/`product-23`/`trony` still have no overrides;
   `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second carrier).
-  Enemy ATK ▼ stays genuinely inert. The non-literal `burstDesc` scope-string ruling landed
-  2026-08-10 (owner: they all count as targeting the boss — DECISIONS): 39 tag instances across
-  20 units so far. **⇒ TAGGING IS PAUSED for any unit that shares a comp with a burst-amp
-  carrier (batch-5 finding, DECISIONS 2026-08-10):** `trina`'s live Spread Roots amp
-  (`burstSkillAoeDamagePct` 435.6/5s) currently bites only on `liberalio` in N3 (0.917 → 0.929,
-  benign), but tagging `cinderella` — her run-B comp-mate, plural clause, ~half her damage —
-  takes `cinderella` 0.893 COLD → **1.523 HOT**. The real fights refute (435.6 + additive
-  Damage-Up + non-literal scope) at that scale. Validate the amp first (popup-read a qualifying
-  all-enemies nuke inside vs outside a Spread Roots window); until then every new tag needs a
-  board A/B before it lands, and `cinderella` stays untagged (reason recorded in her caveats).
-  Units not yet reviewed with the same clause
-  class (e.g. `helm` "the enemy with the highest final ATK") tag at their own phase-4
-  review. **Stale-phrase sweep remainder CLEARED 2026-08-10** (`jackal`, `quiry`, `ram` fixed
+  Enemy ATK ▼ stays genuinely inert. **The `burstDesc` tag class is now DECIDED BY A CENSUS, not
+  by judgement (owner ruling 2026-08-10 — the amps are LITERAL-ONLY; DECISIONS):** a damage block
+  qualifies only when its own scope clause contains the exact string the amp names
+  (`"Affects all enemies"` / `"Affects 1 enemy unit(s)"`). Run
+  `npx tsx scripts/census-burst-amp-scope.ts`; it answers per unit and `--check` gates
+  over-tagging. That untagged 13 units whose tags rested on the cardinality reading, tagged the
+  3 true carriers in the graded slice, and left the board byte-identical. The earlier same-day
+  scope-string ruling still stands for what it actually answered — those clauses DO target the
+  boss — which is a different question. `cinderella` stays untagged, now by ruling rather than
+  pending a measurement, which is what resolves her 1.523-HOT refutation; the amp's 435.6
+  magnitude and ⚑ additive Damage-Up placement are untouched and still want the popup read. **Stale-phrase sweep remainder CLEARED 2026-08-10** (`jackal`, `quiry`, `ram` fixed
   at their batch-4 remainder reviews — overrides AND spec headers; a whitespace-normalized
   grep over all 67 overrides + all unit specs now returns zero for the "DEF=0" / "admits only" /
   extinct-engine-quote class). `scripts/kit-autonomy/**` archives still carry it and are

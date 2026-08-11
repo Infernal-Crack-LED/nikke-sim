@@ -8,7 +8,8 @@
   "caveats": [
     "skill2: Max Ammo +5 rounds now modeled kit-literal (maxAmmoFlat 5, ALL allies, 10s — enacted 2026-07-20; a focused-SG-teammate mag-length read remains the nice-to-have confirmation ⚑)",
     "burst: Hit Rate ▲ (13.93% SG-allies /10s, 11.61% allies /30s) modeled as hitRatePct — LIVE since CONE_DELTA (2026-07-19): feeds acrForHR core-hit fraction for AR/SMG/SG recipients (MG/SR/RL keep the flat table); in-game magnitude unmeasured (⚑)",
-    "burst: the 11.61%/19.36% block is gated on a same-squad ally in the team (teamHas.sameSquad — noir's curated squad in src/data/squads.ts holds blanc + rouge, plus the ranks-layer synthetic noop-rouge-b1 which never shares a team with her); inert in comps without one"
+    "burst: the 11.61%/19.36% block is gated on a same-squad ally in the team (teamHas.sameSquad — noir's curated squad in src/data/squads.ts holds blanc + rouge, plus the ranks-layer synthetic noop-rouge-b1 which never shares a team with her); inert in comps without one",
+    "burst: the 351.64% nuke carries burstDesc:'allEnemies' — its kit line sits under '■ Affects all enemies.', the exact string trina's Spread Roots names ('skills with \"Affects all enemies\"'), so she is a TRUE carrier under the literal-only ruling (owner 2026-08-10). It reads the trina-family burstSkillAoeDamagePct amp when cast inside an amp window; no amp shares her comps today, so the tag is board-inert (full A/B diff byte-identical) — but it is live the day one does. ⚑ the amp's additive Damage-Up placement is unmeasured."
   ],
   "skill1": [
     {
@@ -39,7 +40,9 @@
       "slot": "burst",
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 351.64 }]
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 351.64, "burstDesc": "allEnemies" }
+      ]
     },
     {
       "slot": "burst",
