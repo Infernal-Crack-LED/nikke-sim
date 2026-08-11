@@ -32,10 +32,10 @@
 // Cited confirming case: `scarlet` (AR/Electric base), a known-working trina amp target, whose
 // "Affects all enemies." sits on her damage block. (She is consistent with BOTH readings, so
 // she is a confirming positive control, not the discriminator — the ruling is what settles it.)
-// The rejected alternative was a skill-wide reading of "skills with X in the description"; it
-// differs for `guillotine-winter-slayer`, `kilo`, `novel` and `sin`, whose literal sits on a
-// block that deals NO damage, and all four are correctly untagged. The census still computes
-// both and reports `granularitySplit` so those units stay visible.
+// The rejected alternative was a skill-wide reading of "skills with X in the description". It
+// differs for exactly ONE unit — `sin`, whose literal sits on a damage-free block while her
+// damage block reads "Affects enemies within attack range" — and she is correctly untagged. The
+// census still computes both readings and reports `granularitySplit` so any future case shows up.
 //
 // Blocks are read from the kit text, not the override, so the scope clause and the damage line
 // are always the game's own pairing. "Affects the same target(s)…" inherits the preceding
@@ -100,11 +100,26 @@ export function carriesLiteral(burstText: string, desc: BurstDesc): boolean {
 
 export interface KitBlock {
   clause: string; // the effective "Affects …" scope clause ('same target(s)' resolved)
-  dealsDamage: boolean; // carries a "Deals X% of final ATK" line
+  dealsDamage: boolean; // carries a recognised damage line
+  /** mentions damage but in a phrasing DAMAGE_LINE does not recognise — needs a human look */
+  unrecognisedDamagePhrasing: boolean;
   literals: BurstDesc[]; // amp literals present in THIS block's clause
 }
 
-const DAMAGE_LINE = /Deals\s+[\d.]+%\s+of\s+final\s+ATK/i;
+// Matches every damage phrasing the kit actually uses, not just the common one:
+//   "Deals 176.32% of final ATK as damage."
+//   "Deals damage equal to 1150.84% of the ATK, which is calculated from 5% of final Max HP."
+//   "Deals continuous damage equal to 20.87% of the final ATK * Hero Level every sec for 10 sec."
+// The narrow first form alone silently misread `guillotine-winter-slayer`, `kilo` and
+// `maiden-ice-rose` damage blocks as damage-FREE, which produced two wrong granularity-split
+// verdicts before it was caught. Any change here must keep DAMAGE_LINE_LOOSE below in sync.
+const DAMAGE_LINE = /\bDeals\b[^.]*?\b[\d.]+%/i;
+
+// Deliberately over-broad: anything that so much as mentions dealing damage. A block that trips
+// this but NOT `DAMAGE_LINE` is an unrecognised phrasing, and the census reports it rather than
+// silently classifying it damage-free — the failure mode that bit this instrument twice.
+const DAMAGE_LINE_LOOSE =
+  /\bdeals?\b[^.]*?\bdamage\b|\bdamage\b[^.]*?\bdeals?\b/i;
 
 /**
  * Split a burst description into its '■' blocks, pairing each scope clause with whether that
@@ -132,6 +147,8 @@ export function kitBlocks(burstText: string): KitBlock[] {
     out.push({
       clause: clause || '(no scope clause)',
       dealsDamage: DAMAGE_LINE.test(seg),
+      unrecognisedDamagePhrasing:
+        !DAMAGE_LINE.test(seg) && DAMAGE_LINE_LOOSE.test(seg),
       literals: (Object.keys(AMP_LITERALS) as BurstDesc[]).filter((d) =>
         stripStrayArticle(clause).includes(AMP_LITERALS[d])
       ),
@@ -209,7 +226,8 @@ interface Row {
   slug: string;
   tags: BurstDesc[]; // burstDesc values carried by burst-slot damage effects
   untaggedDamage: number; // burst-slot damage effects with NO burstDesc
-  /** burst-slot `dot` effects — structurally amp-ineligible (burstDesc is flatDamage-only) */
+  /** burst-slot `dot`/`stackedNuke` effects — structurally amp-ineligible (burstDesc is
+   * authorable on `flatDamage` only) */
   dotDamage: number;
   literals: BurstDesc[]; // block-level: literal on a block that deals damage
   skillLiterals: BurstDesc[]; // skill-level: literal anywhere in the burst description
@@ -247,7 +265,9 @@ export function censusRows(): Row[] {
         // `dot` is therefore STRUCTURALLY amp-ineligible however its kit clause reads — an
         // engine gap, not a tagging decision. Counted so the census surfaces those units
         // instead of skipping them into invisibility.
-        if (e.kind === 'dot') {
+        // `stackedNuke` is a third burst damage primitive (maiden-ice-rose) and, like `dot`,
+        // carries no burstDesc — same structural amp-ineligibility, same reason to be visible.
+        if (e.kind === 'dot' || e.kind === 'stackedNuke') {
           dotDamage++;
           return;
         }
@@ -310,8 +330,8 @@ export function censusRows(): Row[] {
           .map((d) => AMP_LITERALS[d])
           .join(
             '" / "'
-          )}" but the burst damage is ${dotDamage} dot effect(s) — ` +
-        'burstDesc is plumbed only on flatDamage, so this unit is STRUCTURALLY ' +
+          )}" but its burst damage is ${dotDamage} dot/stackedNuke effect(s) — ` +
+        'burstDesc is authorable on flatDamage only, so this unit is STRUCTURALLY ' +
         'amp-ineligible however it is tagged. Engine gap, not a tagging decision.';
     } else if (under.length && untaggedDamage > 0) {
       verdict = 'under-tagged';
@@ -456,6 +476,22 @@ function main() {
       split.length ? `: ${split.map((r) => r.slug).join(', ')}` : ''
     }`
   );
+  // Loud, unconditional: a phrasing the damage-line matcher does not recognise means a block
+  // may be misclassified as damage-free, which silently changes a unit's verdict. This is the
+  // failure mode that produced two wrong granularity-split calls before it was caught.
+  const unrecognised = rows.flatMap((r) =>
+    r.blocks
+      .filter((b) => b.unrecognisedDamagePhrasing)
+      .map((b) => `${r.slug}: ${b.clause}`)
+  );
+  if (unrecognised.length) {
+    console.log(
+      `\n⚠ ${unrecognised.length} burst block(s) mention damage in a phrasing DAMAGE_LINE does ` +
+        'not recognise — verify each by hand before trusting its verdict:'
+    );
+    unrecognised.forEach((u) => console.log(`    ${u}`));
+  }
+
   const wrong = rows.filter(
     (r) => r.verdict === 'over-tagged' || r.verdict === 'no-burst-text'
   );

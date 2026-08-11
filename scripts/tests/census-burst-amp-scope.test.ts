@@ -127,21 +127,47 @@ describe('burst-amp scope census — the roster invariant', () => {
 
   it('the match is BLOCK-level: a literal on a damage-free block does NOT qualify', () => {
     // Owner ruling 2026-08-10: the literal must sit in the SAME '■' block as the damage line.
-    // These three have their literal on a block that deals no damage while their damage block's
-    // clause has none, so all three are correctly untagged. (`novel` used to be the sharpest
-    // case here and no longer is: once the stray article is forgiven, HER damage block carries
-    // the literal outright, so block-vs-skill stopped being what decides her.)
+    // `sin` is the only unit on the roster where the two readings disagree — her literal
+    // ("Affects all enemies", on a Damage-Taken block) deals no damage, while her damage block
+    // reads "Affects enemies within attack range". Correctly untagged.
+    //
+    // This list was WRONG on first authoring and is pinned tightly for that reason: it also
+    // named `guillotine-winter-slayer` and `kilo`, whose damage blocks were misclassified as
+    // damage-free because DAMAGE_LINE only recognised "Deals X% of final ATK" and their kits say
+    // "Deals continuous damage equal to …" / "Deals damage equal to …". `novel` left the list
+    // separately when the stray article was forgiven.
     expect(rows.filter((r) => r.granularitySplit).map((r) => r.slug)).toEqual([
-      'guillotine-winter-slayer',
-      'kilo',
       'sin',
     ]);
-    for (const slug of ['guillotine-winter-slayer', 'kilo', 'sin']) {
-      expect(
-        row(slug).tags,
-        `${slug} is untagged under the block rule`
-      ).toEqual([]);
-    }
+    expect(row('sin').tags).toEqual([]);
+  });
+
+  it('DAMAGE_LINE recognises every damage phrasing the kits actually use', () => {
+    // Regression pin for the misclassification above. Each of these blocks MUST read as
+    // damage-bearing; if one flips to damage-free, a unit's verdict silently changes.
+    const dmgBlocks = (slug: string) =>
+      row(slug).blocks.filter((b) => b.dealsDamage).length;
+    expect(dmgBlocks('sin'), 'Deals X% of final ATK').toBeGreaterThan(0);
+    expect(dmgBlocks('kilo'), 'Deals damage equal to X%').toBeGreaterThan(0);
+    expect(
+      dmgBlocks('guillotine-winter-slayer'),
+      'Deals continuous damage equal to X%'
+    ).toBeGreaterThan(0);
+    expect(
+      dmgBlocks('maiden-ice-rose'),
+      'Deals damage equal to X% of the sum of …'
+    ).toBeGreaterThan(0);
+  });
+
+  it('an unrecognised damage phrasing is REPORTED, never silently called damage-free', () => {
+    // The escape hatch that makes the bug above self-announcing next time. Only `dorothy`
+    // (AR/Water base) trips it today — her Brand block accumulates damage rather than
+    // stating a "Deals …%" line, and its clause ("Affects a designated enemy") is not a literal
+    // either way, so no verdict turns on it.
+    const flagged = rows.flatMap((r) =>
+      r.blocks.filter((b) => b.unrecognisedDamagePhrasing).map(() => r.slug)
+    );
+    expect(flagged).toEqual(['dorothy']);
   });
 
   it('scarlet is the cited confirming case: a working amp target, literal ON the damage block', () => {
@@ -157,17 +183,23 @@ describe('burst-amp scope census — the roster invariant', () => {
     expect(row('scarlet').granularitySplit).toBe(false);
   });
 
-  it('a burst-slot dot is STRUCTURALLY amp-ineligible, and the census says so out loud', () => {
-    // `burstDesc` is plumbed only on flatDamage and its pending-hit path, so a burst-slot dot
-    // can never read an amp however its clause reads. These units have a literal on their
-    // damage block and STILL cannot be tagged — an engine gap, not a tagging chore. Pinned
-    // because the census originally skipped dot-only carriers into invisibility, which is how
-    // `ark-ranger-black` went unseen in the first pass — and she is now IN this set: forgiving
-    // the article qualified her clause, and the dot is the only thing still blocking her.
+  it('a burst-slot dot/stackedNuke is STRUCTURALLY amp-ineligible, and the census says so', () => {
+    // `burstDesc` is authorable on flatDamage only, so a burst damage line modeled as a `dot`
+    // or a `stackedNuke` can never read an amp however its clause reads. All five of these
+    // carry a QUALIFYING literal on their damage block and still cannot be tagged — an engine
+    // gap, not a tagging chore.
+    //
+    // This set grew twice while being pinned, both times because the census could not SEE the
+    // units: it first skipped dot-only carriers entirely (hiding `ark-ranger-black`), then
+    // misread two damage blocks as damage-free via DAMAGE_LINE (hiding
+    // `guillotine-winter-slayer` and `maiden-ice-rose`, whose burst damage is also the only
+    // `stackedNuke` on the roster).
     const dotOnly = rows.filter((r) => r.verdict === 'dot-ineligible');
     expect(dotOnly.map((r) => r.slug)).toEqual([
       'ark-ranger-black',
       'diesel-winter-sweets',
+      'guillotine-winter-slayer',
+      'maiden-ice-rose',
       'mana',
     ]);
     for (const r of dotOnly) {
@@ -256,6 +288,7 @@ describe('burst-amp scope census — the roster invariant', () => {
       'epinel',
       'harran',
       'helm-aquamarine',
+      'kilo',
       'laplace-ultimate-hero',
       'maiden',
       'mari',

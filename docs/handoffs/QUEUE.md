@@ -68,12 +68,22 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   today — all six are on `jackal`'s side and `jackal` is in no graded comp.
   [findings](2026-08-10-burst-amp-literal-scope-findings.md) §4a.
 
-- **⇒ ENGINE GAP, recorded: a burst-slot `dot` can never be amp-eligible.** `burstDesc` is
-  plumbed only on `flatDamage` and its pending-hit path, so three units — `ark-ranger-black`,
-  `diesel-winter-sweets`, `mana` — carry a QUALIFYING literal on their damage block and still
-  cannot be tagged. Board-inert. The fix threads `burstDesc` through the dot record + tick path —
-  an engine change, deliberately out of the faithfulness sweep's scope.
+- **⇒ ENGINE GAP, recorded: a burst-slot `dot`/`stackedNuke` can never be amp-eligible.**
+  `burstDesc` is authorable on `flatDamage` only, so FIVE units — `ark-ranger-black`,
+  `diesel-winter-sweets`, `guillotine-winter-slayer`, `maiden-ice-rose`, `mana` — carry a
+  QUALIFYING literal on their damage block and still cannot be tagged. Board-inert. The fix
+  threads `burstDesc` through the dot/stackedNuke records + their tick paths — an engine change,
+  deliberately out of the faithfulness sweep's scope.
   [findings](2026-08-10-burst-amp-literal-scope-findings.md) §4b.
+
+- **⇒ ONE RULING WANTED (U28 class): `neon-vision-eye`'s Super Firepower "Deals 262.79% of final
+  ATK as additional damage" is modeled as an `extraHitDamagePct` RIDER, not a `flatDamage`
+  instance** — so it generates no burst gauge of its own, where a damage instance would. Per U28
+  that is a gauge-economy decision, not cosmetic. It may well be right (it is an "additional
+  damage" rider on her normals) but it is undocumented, and she carries no `caveats` array at
+  all. She is HOT (1.040), so the direction is not obviously wrong. Wants ONE ruling across the
+  U28 rider set rather than a unit-local fix.
+  [batch-6 findings](2026-08-10-faithfulness-batch6-findings.md).
 
 - **⇒ RECORDED, NOT APPLIED — 24 literal amp carriers outside the graded slice are untagged.**
   Inert (a missing tag applies no amp) and none shares a comp with `trina`/`jackal`, so tagging
@@ -83,8 +93,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 scripts/census-burst-amp-scope.ts` decides each one and the board impact is provably zero.
   Full list: [findings](2026-08-10-burst-amp-literal-scope-findings.md) §5.
 
-- **⇒ FAITHFULNESS PASS phase-4 sweep — BATCH 6's per-unit slice is STILL OPEN; a fresh session
-  starts at
+- **⇒ FAITHFULNESS PASS phase-4 sweep — BATCH 6 IS DONE
+  ([findings](2026-08-10-faithfulness-batch6-findings.md): `grave`, `dorothy-serendipity`,
+  `maiden-ice-rose`, `rapi-red-hood`, `neon-vision-eye`, `d-killer-wife`); **15 graded-comp units
+  remain**. The next session still starts at
   [2026-08-10-faithfulness-batch6-START-HERE.md](2026-08-10-faithfulness-batch6-START-HERE.md).**
   That doc is self-contained: worktree/branch state, the board baseline to diff against, the 21
   remaining graded-comp units with per-unit signals pre-computed (comp count, board reading,

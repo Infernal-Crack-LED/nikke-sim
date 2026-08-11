@@ -696,10 +696,12 @@ COLD to **1.178/1.171/1.219 HOT**. The faithful pierce is now ENABLED (owner-dir
 faithful>fit) — so the HOT is a live, isolated residual, not the pierce. Since the pierce is real, the
 overshoot is diagnostic: grave's 0.836 COLD was a **NET of two errors** — the missing pierce (COLD) was
 MASKING a compensating over-model in her burst window (HOT = the documented "AR-carry burst-window
-residual"). **Open question:** where is the burst-window over-model? Candidates — Overheat II/III ramp
-modeled as full-window uptime (her own ⚑3 says durationSec 7.5/5.0 would match the real ramp-in vs the
-current 10s), the unmodeled Prediction-end forced reload (~9-11/fight, ⚑2, would cut shots), or her
-burst-window fire-rate/crit stack. **Method:** a focused grave burst-window recording — fire count across
+residual"). **Open question:** where is the burst-window over-model? **TWO candidates remain** — Overheat
+II/III ramp modeled as full-window uptime (her override's ⚑ says durationSec 7.5/5.0 would match the real
+~2.5s/~5s ramp-in vs the current 10s), or her burst-window fire-rate/crit stack. **The third candidate is
+CLOSED: the Prediction-end forced reload IS modeled** (`burstCast` + block `delaySec: 10` → `consumeAmmo`
+fraction 1, which empties the magazine at Prediction end and forces the measured ~201f reload). It was
+listed here as unmodeled long after it landed — verified against the shipped override 2026-08-10, batch 6. **Method:** a focused grave burst-window recording — fire count across
 the 10s Prediction window + a Pierce-Damage-on/off popup to pin the real pierce magnitude; then trim the
 burst-window over-model (grave should land back near 1.0 with pierce ON). Links: grave override ⚑1,
 engine-modeling-gaps theme 5 / fix #7, damage-calculation.md dmgUp bucket.

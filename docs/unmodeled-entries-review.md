@@ -11,20 +11,20 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 155 | 37.4% |
-| Other / see caveats | 100 | 24.2% |
+| Defensive / HP / shield / aggro | 156 | 37.8% |
+| Other / see caveats | 98 | 23.7% |
 | Missing engine primitive / trigger | 89 | 21.5% |
-| Out-of-domain / parser unsupported | 30 | 7.2% |
+| Out-of-domain / parser unsupported | 30 | 7.3% |
 | Partless boss | 12 | 2.9% |
 | Weapon-state / shot-count approximation | 11 | 2.7% |
 | Self-status / stack gate | 8 | 1.9% |
-| RNG / probabilistic | 6 | 1.4% |
+| RNG / probabilistic | 6 | 1.5% |
 | Measurement-gated / unverified cadence | 3 | 0.7% |
-| **Total** | **414** | 100.0% |
+| **Total** | **413** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (155)
+### Defensive / HP / shield / aggro (156)
 
 **A2** (a2)
 
@@ -238,6 +238,8 @@ Recovers 10.77% of the skill user's final Max HP as HP.
 **Grave** (grave)
 
 - **skill1:** Activates only when in Heat Emission status. Affects self. Recovers 2% Max HP/1s continuously.
+  - *Why:* skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst
+- **burst:** Prediction: Current HP ▼ 1% every 1 sec, lasts for 10 sec (self HP cost; no HP pool is modeled, no damage channel)
   - *Why:* skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst
 
 **Jackal** (jackal)
@@ -627,7 +629,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Other / see caveats (100)
+### Other / see caveats (98)
 
 **A2** (a2)
 
@@ -713,10 +715,6 @@ Attract: Taunts all enemies for 5 sec.
 - **skill1:** Removes Heat Emission under certain conditions.
   - *Why:* skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst
 - **skill2:** Removed upon reloading to max ammunition.
-  - *Why:* See unit note / caveats
-- **burst:** Prediction:
-  - *Why:* skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst
-- **burst:** Current HP ▼ 1% every 1 sec, lasts for 10 sec.
   - *Why:* See unit note / caveats
 
 **Laplace: Ultimate Hero** (laplace-ultimate-hero)
@@ -842,7 +840,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 **Rapi: Red Hood** (rapi-red-hood)
 
 - **skill2:** Attachable Projectile — Max Ammo: 1 (COSMETIC per owner ruling 2026-08-04: one rocket 'loaded' at meter-full fires alongside the bullet on the first frame after 100%; not reflected in game, no damage effect — nothing to model)
-  - *Why:* Max Ammo:1 reclassified COSMETIC (meter-full loads one rocket alongside the bullet; not reflected in game, no damage effect)
+  - *Why:* MECHANIC (owner-measured red rocket meter): the meter right of the crosshair fills 0->100%; at 100% one rocket attaches
 
 **Raven** (raven)
 
@@ -1283,9 +1281,9 @@ Outgoing healing ▲ 30.05% continuously.
 **Rapi: Red Hood** (rapi-red-hood)
 
 - **burst:** Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)
-  - *Why:* A rocket that attaches DURING Full Burst explodes INSTANTLY (storedHit.instantInFb); rockets attached OUT of burst do NOT explode until FB begins, so they ACCUMULATE and the FIRST explosion of each FB is a BATCH of all accumulated rockets
+  - *Why:* A rocket attaching DURING Full Burst explodes INSTANTLY; rockets attached OUT of burst do NOT explode until FB begins, so they ACCUMULATE and the first explosion of each FB is a BATCH of all accrued rockets, rendering as exact integer multiples of the single-body value
 - **burst:** Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 3 — a second, separate kit line from the Stage 1 instance; inert on the partless boss)
-  - *Why:* 2026-08-04 ATTACHMENT REWORK (owner control+carry footage re-read; three owner overrides, gate skipped by owner ruling, test-first kept): (1) the +421.2% Projectile Attachment Damage line (Burst Stage 3, self, 10s) is RESTORED — the 2026-07-14 'MEASURED-INERT' verdict (dead datamine entry 101631006) is OVERTURNED: the amplified attachment bodies it could not attribute were mis-sorted into the explosion class (same flavor family, overlapping popup columns)
+  - *Why:* A rocket attaching DURING Full Burst explodes INSTANTLY; rockets attached OUT of burst do NOT explode until FB begins, so they ACCUMULATE and the first explosion of each FB is a BATCH of all accrued rockets, rendering as exact integer multiples of the single-body value
 
 **Rapunzel** (rapunzel)
 
@@ -1496,7 +1494,7 @@ Deals 50.33% of final ATK as additional damage.
 **Rapi: Red Hood** (rapi-red-hood)
 
 - **skill1:** Damage to Interruption Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)
-  - *Why:* S1 Combat Assist: with NO Burst 1 ally she fills the B1 slot (stage-1 eligibility) and grants team CDR 7.48s + Attack Damage 8.02% on each full burst; WITH a B1 ally she instead self-buffs ATK 95.04% on full burst
+  - *Why:* || S1 'Combat Assist' is FORMATION-BRANCHED: with NO Burst-1 ally she fills the B1 slot (burstEligibility stage 1) and grants the team burstCdr 7.48s + Attack Damage 8.02%/10s on each full burst (formation 'noB1'); WITH a B1 ally she instead self-buffs ATK 95.04%/10s (formation 'hasB1')
 
 **Raven** (raven)
 

@@ -54,8 +54,10 @@ lives. Newest first within each section.
   self. Activates when HP falls below 50%." (Crit Rate, no damage) and "Affects all enemies."
   (the 849.15% nuke); the literal is on the damage block. Note she is consistent with BOTH
   readings, so she is a confirming positive control rather than the discriminator — the ruling
-  is what settles it. Four units differ between the readings (`guillotine-winter-slayer`,
-  `kilo`, `novel`, `sin`: literal on a damage-free block) and all four are untagged.
+  is what settles it. **Exactly ONE unit differs between the readings — `sin`** (literal on a
+  Damage-Taken block; her damage block reads "Affects enemies within attack range"), and she is
+  untagged. [This originally named four units; `guillotine-winter-slayer` and `kilo` were a
+  census bug — see the batch-6 entry — and `novel` left when the article was forgiven.]
   **A trailing qualifier does not break the match** (`2b` "Affects 1 enemy unit(s) with the
   highest remaining HP" qualifies); an inserted word does — see the near-miss entry below.
   Instrument: **`npx tsx scripts/census-burst-amp-scope.ts`** (block-level, whitespace-
@@ -96,13 +98,13 @@ lives. Newest first within each section.
 - **(2026-08-10) A BURST-SLOT `dot` IS STRUCTURALLY AMP-INELIGIBLE — engine gap, recorded.**
   `burstDesc` is plumbed only on the `flatDamage` effect and its pending-hit path, so a burst
   damage line modeled as a `dot` can never read an amp however its kit clause reads.
-  `diesel-winter-sweets` and `mana` have the literal on their damage block and still cannot be
-  tagged; `ark-ranger-black` and `mihara-bonding-chain` are dot carriers too (both non-literal,
-  so moot today). Found because the census originally skipped dot-only carriers into
-  invisibility — it now reports them as a distinct `dot-ineligible` verdict, which is what
-  surfaced `ark-ranger-black`. Board-inert (no dot carrier shares a comp with an amp). Fixing it
-  means threading `burstDesc` through the dot record and its tick path — an engine change, out
-  of scope for the faithfulness sweep.
+  **FIVE units carry a qualifying literal on their damage block and still cannot be tagged** —
+  `ark-ranger-black`, `diesel-winter-sweets`, `guillotine-winter-slayer`, `maiden-ice-rose`,
+  `mana`. (`maiden-ice-rose`'s burst is a `stackedNuke`, the roster's only one, and carries no
+  `burstDesc` either — same structural gap, third primitive.) `mihara-bonding-chain` is a dot
+  carrier too but her clause is non-literal, so she is moot on both counts. Board-inert (no dot
+  carrier shares a comp with an amp). Fixing it means threading `burstDesc` through the
+  dot/stackedNuke records and their tick paths — an engine change, out of scope for the sweep.
 
 - **(2026-08-10) FAITHFULNESS PHASE-4 BATCH 5 — the graded-comp slice; the burst-amp
   channel is an UNTESTED LANDMINE.** Six highest-leverage graded-comp reviews (`crown`,
