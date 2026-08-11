@@ -81,9 +81,20 @@ defect); revised to IMPLEMENT. Board 1.924 HOT → 0.983 OK. Full trail: `docs/D
 (2026-08-10 IMPLEMENT entry) and `docs/handoffs/scientific-method-harness.md` (2026-08-10
 addendum) — nothing left open here.
 
-## 4. Tier 2 — the blocker: validate the burst-amp channel before ANY further tagging
+## 4. Tier 2 — RULED BY THE OWNER 2026-08-11, no recording needed
 
-Batch 5's result, and it is a risk item rather than an opportunity.
+**`trina`'s amp follows the LITERAL wording only, and `cinderella` (RL/Electric) does NOT receive
+it** (owner, 2026-08-11). That settles the scope question the blocker rested on: her untagged state
+is CONFIRMED rather than provisional, and the 0.893 → 1.523 blowup was the candidate tag being
+wrong, not the sim. `scripts/census-burst-amp-scope.ts` (literal-only, `--check` gates over-tagging)
+is the rule of record; `--under` is 0, so no qualifying unit is missing a tag.
+
+What did NOT get settled, and stays ⚑: the amp's PLACEMENT (+435.6pp additive into Damage-Up) and
+its MAGNITUDE (the SL10 datamine). Both are unmeasured, but they now bite only units that literally
+qualify — the near-dormancy that made this a risk is no longer load-bearing, since the paraphrase
+units are ruled out by the scope rule rather than by nobody having paired them yet.
+
+The rest of this section is the ORIGINAL framing, kept because it explains why the risk was real:
 
 `trina`'s Spread Roots amp is LIVE (`burstSkillAoeDamagePct` 435.6, all allies, 5s, on her
 burstCast) and its kit gate is always true in solo raid. Today it bites in exactly one place
@@ -198,9 +209,10 @@ Ranked in `QUEUE.md`'s standing ENGINE-WORK ORDER; listed here only so nobody re
 
 ## 9. What NOT to do
 
-- **Do not tag any further `burstDesc` instances** until §4 is settled.
-- **Do not "finish the chore" on `cinderella`** — her untagged state is deliberate and her caveats
-  say why.
+- **Tag `burstDesc` by the LITERAL clause and nothing else** (owner 2026-08-11, §4). The census is
+  the arbiter; `--check` fails an over-tag.
+- **Do not "finish the chore" on `cinderella`** (RL/Electric) — she does NOT receive `trina`'s amp
+  (owner-ruled, §4). Her untagged state is correct, not a gap waiting to be closed.
 - **Do not re-fit `grave`** by disabling her timed pierce (owner ruling, faithful > fit), or
   `privaty` (AR/Water Treasure) by adding `noFb` / shaving her datamined coefficients.
 - **Do not touch `noir`'s cadence** as a side effect of anything — she is the SG-landing table's

@@ -94,6 +94,28 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   — see ENGINE-WORK ORDER item 4 and `2026-08-10-gauge-economy-findings.md`.
   [batch-6 findings](2026-08-10-faithfulness-batch6-findings.md).
 
+- **⇒ OWNER RULINGS 2026-08-11 (M-list triage) — SIX of the twelve recording asks answered from game
+  knowledge, no footage needed. ENACTMENT PENDING: one gated pass each, none of them landed yet.**
+  1. **Tier 2 / M2 — `trina`'s Burst-Skill-Damage amp follows the LITERAL wording only, and
+     `cinderella` (RL/Electric) does NOT receive it.** The Tier 2 blocker is retired WITHOUT a
+     recording: her untagged state is owner-CONFIRMED, not provisional, and the 0.893 → 1.523 blowup
+     was the tag being wrong, not the sim. The literal-only census (`scripts/census-burst-amp-scope.ts`)
+     is the rule of record. Placement (additive into Damage-Up) and magnitude (435.6) remain ⚑
+     unmeasured, but they now bite ONLY units that literally qualify.
+  2. **M4 — true damage CAN core hit.** Engine-global and a large lever (SMG `coreMult` 250 on
+     `chisato`). Needs the gated pass: it changes every true-damage carrier at once.
+  3. **M5 — `ada` fires ONE special-charged shot per burst window** (`maxShots` 1, the kit-literal
+     answer). Owner-decided under faithful > fit: it costs board (0.995 → ~0.95) and is still right.
+  4. **M6 — ALL STACKS REFRESH in this game unless a kit says otherwise.** A GENERAL RULE, not an
+     `ade-agent-bunny` fact → belongs in `docs/modeling-priors.md`, and it confirms her `hitCount:10`
+     gate does open (the plateau-at-3–5 failure mode is ruled out).
+  5. **M9 — `prika` IS Pierce-tagged during Performance.** The standing OWNER HOLD is released;
+     est. ~+8% personal SR damage, small at board level (she is a buffer).
+  6. **M11 — `mihara-bonding-chain`'s burst RESETS Ensnaring stacks**; the kit's theme is building
+     stacks OUTSIDE her B3 window and consuming them with B3. This confirms the mechanism her note
+     already models, so no footage is needed — the 12-stack rebuild average stays the one fitted
+     number, now derivable from the kit's own rebuild cadence rather than from a recording.
+
 - **The two REAL F7 cap-bakes, now that the list is verified** (2026-08-11, all 12 names checked —
   the audit doc's F7 section carries the corrected classes): `sakura-bloom-in-summer` ⚑4 (burst DoT
   hit-applied at the full 10 stacks from tick 1; a self-ramp reading is ×0.55, and her note states
