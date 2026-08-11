@@ -1,0 +1,162 @@
+# 2026-08-11 — Faithfulness phase-4 TAIL: entry doc + census method
+
+> **Purpose.** The entry doc QUEUE.md asked for. The faithfulness sweep's phase-4 GRADED slice is
+> complete (batches 1–8 cover all 45 board-graded units); what remains is **the tail** — the 138
+> override files with no board reading. QUEUE's scoping note called for "a GENERATED-CENSUS
+> approach … rather than per-unit reads", and this doc is that method, plus the first axis built,
+> calibrated, run and fully dispositioned.
+>
+> **Status: FINDINGS-ONLY.** Nothing here edits an override, the engine, or a shared artifact
+> (CLAUDE.md batch-and-stop). Axis 1 produced ONE batched proposal for the owner (§5) and zero
+> engine changes. Tooling + its fixture are committed (constraint 9).
+
+---
+
+## 1. What the tail is, and why per-unit reads are the wrong instrument for it
+
+183 overrides carry kit text (185 files − the 2 synthetic `noop-*` fixtures). 45 are board-graded;
+**138 are the tail.** The graded slice's per-unit read had two things the tail does not:
+
+- **a ratio to explain** — a hot/cold board reading that says _something_ is wrong before you open
+  the file, and
+- **a comp to check inertness against** — a way to prove a line is board-inert rather than assume it.
+
+A tail unit offers neither, so the same read costs the same and buys much less. What a tail unit
+CAN still be caught on, with no board at all, is structural: **a kit line the model never actually
+encodes.** That is a mechanical question, so it gets a mechanical instrument.
+
+**Method rule adopted here — every census is scored against the graded 45 before its tail output is
+trusted.** Those units were read line-by-line by batches 1–8, so they are an existing labeled set
+(the SUFFICIENCY rule: no new ground truth needs generating). A census that fires on units that
+slice already cleared is measuring its own noise. This is the cheapest possible validation and it
+is available for free on every axis below.
+
+---
+
+## 2. Axis 1 — kit magnitudes vs the override (BUILT, RUN, DISPOSITIONED)
+
+**Instrument:** `scripts/census-kit-numbers.ts` · fixture `scripts/tests/census-kit-numbers.test.ts`
+
+It asks one deliberately narrow question per kit line: _where does the digit string the kit prints
+appear in the override file?_ Two tiers:
+
+| Tier           | Meaning                                                                     |
+| -------------- | --------------------------------------------------------------------------- |
+| **SILENT**     | nowhere in the file — not encoded, not in `unmodeled`, not in prose         |
+| **PROSE-ONLY** | only in `note`/`caveats` — reasoned about, then never recorded structurally |
+
+**Calibration (graded 45):** the SILENT tier fires on exactly one line roster-wide — `crown`'s heal
+magnitude, inert by design. 44 of 45 clean agrees with the hand sweep, so a tail hit is worth
+opening a file for.
+
+**Historical positive control:** `red-hood`'s Red Wolf "Charge Speed ▲ 100.8%" was found BY HAND in
+the M8 pass and had never been modelled. Replayed against her pre-fix override
+(`git show 94de2eb2^`), this census puts her in **PROSE-ONLY** — 100.8 appears exactly once, inside
+a note sentence. So the one known defect of this class sits in the prose-only tier, which is why
+that tier — not the louder SILENT one — is the worklist.
+
+### 2a. Result
+
+| Tier                   | Units | Lines | Disposition                                     |
+| ---------------------- | ----- | ----- | ----------------------------------------------- |
+| SILENT (graded)        | 1     | 1     | `crown` — inert heal magnitude                  |
+| SILENT (tail)          | 3     | 4     | `power` false positive; `biscuit`×2/`sin` heals |
+| PROSE-ONLY, HP-restore | 28    | 42    | inert by design (no HP pool) — see §5           |
+| **PROSE-ONLY, other**  | 15    | 21    | **the worklist — all 15 read, see 2b**          |
+
+**All 15 were read and dispositioned this session. Zero new defects.** Fourteen are legitimate,
+prose-documented transformations; one (`kilo`) is an acknowledged gap that the structured record
+does not carry.
+
+### 2b. The transformation vocabulary this produced
+
+The reason a correctly-modelled magnitude goes missing from the blocks. Worth having as a named
+list — every future axis and every reviewer hits these:
+
+| Class                         | Carriers found                                                                                                                                                                      |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| percent → fraction            | `power` (100% → `instantReload.fraction 1`), `asuka-wille` (21 → 0.21), `diesel` (86.62 → 0.8662), `tove` (5.31 → 0.0531)                                                           |
+| per-hit × count consolidation | `eve` (240 × 3 → `atkPct 720`), `sakura-bloom-in-summer` (35.16 × 10 → 351.6), `mast` (4.52 × 50 → 226), `tove` (2.32/24.21 × 3)                                                    |
+| expectation / probability     | `julia` (100% crit-gated rider → EV 22.23, `crit:false`), `harran` (25% proc → `everyN 4`)                                                                                          |
+| unit conversion               | `bready` (Charge Speed ▼20% → `charFixes.chargeFrames 72`), `k` (Attack speed ▼90% → `pullsPerSec 2.4`)                                                                             |
+| static basis substitution     | `emilia` (2.01 × base ammo 6 → 12.06), `soline-frost-ticket` (10% × 2 tickets → `casterMaxHpPct 20`)                                                                                |
+| duplicate-instance scaling    | `emma-tactical-upgrade` — burst "Damage taken multiplier … scaled by 100%" encoded as a SECOND `damageTakenPct 3.9` instance, which doubles it under additive Damage-Up composition |
+| carried outside the override  | `maxwell-ordinary-mechanic` — "Fills Burst Gauge by 7.15%" lives in `data/gauge-per-shot.json` as `flatPerTrigger 715` (the `helm` S2 convention)                                   |
+
+The last row is a genuine structural blind spot: a kit line can be faithfully modelled in a **data
+file** rather than the override, and no override-only census can see it.
+
+---
+
+## 3. What axis 1 cannot see
+
+Printed by `--skipped`, never silently swallowed:
+
+- **Non-percent quantities** — durations, round/shot counts, stack caps, ammo counts. An entire
+  real defect class (`d-killer-wife`'s round-count Pierce, resolved 2026-08-11) is invisible here.
+- **Qualitative lines** — "Gain Pierce", "Pellet count is fixed at 1", mode swaps.
+- **Wrongness that is present but incorrect** — a number on the wrong stat, target or duration
+  reads as clean. This census can only falsify "the model never saw this line".
+- **Coincidental digit matches** — `emma-tactical-upgrade`'s "100" matched a `/100` in an unrelated
+  prose sentence, downgrading her from SILENT to PROSE-ONLY. Conservative in the safe direction
+  (it can under-report severity, never invent a finding).
+
+---
+
+## 4. Proposed further axes (NOT built — ordered by expected yield per hour)
+
+Each is a generated census, each scored against the graded 45 first.
+
+1. **A2 — `unmodeled` entries that match no kit line.** 83 of 410 entries do not match their kit
+   text verbatim or line-wise. Most are annotated verbatim ("… — magnitude only: …"); the residue
+   would be entries describing lines the kit no longer prints, which read as live gaps forever.
+   Cheap, and it cleans an input every other pass reads.
+2. **A3 — non-percent quantity accounting.** The complement of axis 1: durations, round counts,
+   stack caps. Higher noise, but it is the tier that held the `d-killer-wife` defect.
+3. **A4 — "fixed at" lines vs the clamp StatKeys** (phase-4 checklist item 7). `reloadSpeedClamp` /
+   `reloadTimeClamp` / `chargeTimeClamp` exist and 8 units carry them; a kit-text census of "is
+   fixed at" phrasings against clamp usage is a small, decisive check.
+4. **A5 — held-primitive carrier scan** (F11). Grep the tail's kit text for the shapes of primitives
+   held for want of carriers (`addStack`, DEF-ranked selectors, empty-magazine effects). Logs new
+   carriers against the gap; does not propose builds.
+5. **A6 — recovery emit/consume**, already served by `scripts/census-synergy-events.ts`. The tail's
+   job is to READ it, not rebuild it.
+
+---
+
+## 5. The one batched proposal for the owner (board-inert, needs a ruling not a measurement)
+
+**The structured record of inert heal magnitudes is ~50/50 across the roster, line by line.**
+
+- 29 overrides DO file a heal line under `unmodeled` — `ada`'s is the model wording: _"Recovers 10%
+  of the damage dealt as HP for 10 sec. — magnitude only: the 10s recovery-event WINDOW is modeled
+  …; the HP amount has no engine consumer (no HP pool)"_.
+- ~30 do not (`biscuit`, `crown`, `sin` silently; 28 more with the number only in prose).
+
+Nothing about damage changes either way — heal amounts have no engine consumer, and the recovery
+EVENT (the board-relevant half, audit F9) is modelled independently of this. What changes is
+whether `unmodeled` is a **complete index**: `gen-unmodeled-review.ts`, `kit-status.json` and every
+reviewer's grep read that field, so a half-populated one quietly under-reports what the model
+skips. `kilo` is the same shape outside the heal class — her burst's "calculated from 5% of final
+Max HP" basis gap is fully documented in prose, with a ⚑ and a measurement recipe, and appears
+nowhere in her structured record.
+
+**The ask is one ruling:** file inert-by-design magnitudes under `unmodeled` (the `ada` convention,
+~30 units to backfill, prose-only edits, zero board movement), or declare prose sufficient and
+document that `unmodeled` is not a complete index. Either answer makes the field trustworthy; the
+current split makes it neither. Not enacted here — a cross-cutting signal across ~30 units is a
+STOP-and-propose, not a sweep-time edit.
+
+---
+
+## 6. Stop rule
+
+The tail is DONE when each axis above is either built-and-dispositioned or explicitly declined,
+**not** when 138 files have been opened. Axis 1 is closed: instrument committed, fixture pins the
+matcher and the worklist, every finding read. If a future axis fires on a unit, `--explain <slug>`
+gives the kit line, the prose that mentions the magnitude, and the slot's encoded values — which is
+everything the disposition needs.
+
+`census-kit-numbers.ts --check` is deliberately NOT in `verify.sh` yet: it would gate on the four
+undispositioned SILENT lines, three of which are the heal class awaiting the §5 ruling. Wire it
+once that ruling lands, and the class can never grow back.
