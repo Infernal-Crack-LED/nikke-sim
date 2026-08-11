@@ -92,29 +92,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   suggested six, the recurring-defect detector, and the batch-6 lesson about silent holes in
   instruments. **It SUPERSEDES the batch-6 START-HERE doc** — do not work from that one.
 
-- **⇒ (superseded pointer) BATCH 6 IS DONE
-  ([findings](2026-08-10-faithfulness-batch6-findings.md): `grave`, `dorothy-serendipity`,
-  `maiden-ice-rose`, `rapi-red-hood`, `neon-vision-eye`, `d-killer-wife`); **15 graded-comp units
-  remain**. The next session still starts at
-  [2026-08-10-faithfulness-batch6-START-HERE.md](2026-08-10-faithfulness-batch6-START-HERE.md).**
-  That doc is self-contained: worktree/branch state, the board baseline to diff against, the 21
-  remaining graded-comp units with per-unit signals pre-computed (comp count, board reading,
-  burst-damage scope clause, amp-comp and fixture co-occurrence), a suggested six, and the
-  recurring "note describes a unit that no longer exists" detector.
-  **⚠ Two of its rules are now SUPERSEDED by the literal-only ruling** (see the findings doc):
-  its rule 2 ("tagging is PAUSED where an amp can reach") is lifted — the tag question is
-  decided by the census, not by comp adjacency — and its §3 table's tag column is stale: the
-  three "Affects all enemies" carriers it flagged (`noir`, `privaty`, `quency-escape-queen`)
-  are DONE and tagged, `rapi-red-hood` and `d-killer-wife` do NOT get `singleEnemy` tags (their
-  "nearest to the crosshair" clause is a paraphrase), and the `elegg`/`crow` precedents it cites
-  were themselves untagged. Its rules 3–6 (check fixtures, census needs line+trigger+gate,
-  whitespace-normalized greps over both trees, verify before writing) all still bind. The
-  per-unit reviews themselves are untouched and still to do.
-  Batch findings: [batch 1](2026-08-10-faithfulness-batch1-findings.md) ·
+- **Sweep record (batches 1–6, all landed — reference only, nothing open here):**
+  [batch 1](2026-08-10-faithfulness-batch1-findings.md) ·
   [batch 2](2026-08-10-faithfulness-batch2-findings.md) ·
   [batch 3](2026-08-10-faithfulness-batch3-findings.md) ·
   [batch 4 + remainder](2026-08-10-faithfulness-batch4-findings.md) ·
-  [batch 5](2026-08-10-faithfulness-batch5-findings.md).
+  [batch 5](2026-08-10-faithfulness-batch5-findings.md) ·
+  [batch 6](2026-08-10-faithfulness-batch6-findings.md) ·
+  [burst-amp literal scope](2026-08-10-burst-amp-literal-scope-findings.md).
+  The batch-6 START-HERE doc is CLOSED (archived to `docs/handoffs/closed/`, untracked) — it was
+  superseded the same day by the burst-amp rulings.
 
 - **⇒ FAITHFULNESS PASS (2026-08-10) — plan of record:
   [2026-08-10-faithfulness-pass-audit.md](2026-08-10-faithfulness-pass-audit.md).** Repeat-pattern
