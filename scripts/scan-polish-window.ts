@@ -11,13 +11,21 @@
  * now no committed instrument produced it (CLAUDE.md constraint 9). This is that instrument.
  *
  * USAGE
- *   npx tsx scripts/scan-polish-window.ts              # scan b3 starts 10..25 (the usual knob)
+ *   npx tsx scripts/scan-polish-window.ts              # verify the CURRENT PIN, then sweep b3
  *   npx tsx scripts/scan-polish-window.ts --b3 13      # score one window
- *   npx tsx scripts/scan-polish-window.ts --b1 1 --b2 2 --b3-range 5:30
+ *   npx tsx scripts/scan-polish-window.ts --b1-range 0:3 --b2-range 0:4 --b3-range 12:18
+ *
+ * The bare run first re-scores the window the fixture pins TODAY (`PIN` below) and says whether it
+ * still reproduces, because "the pin broke" and "no window anywhere works" are different problems
+ * and only the second is a roster-level finding. It then sweeps b3 around the pin.
  *
  * A window QUALIFIES when greedy === 3, polished === 4 and ratio > 1.09 — the three assertions
  * the fixture makes. Pick the qualifying window with the most headroom over the 1.09 floor, put
- * it in the test's slice, and paste this script's line into a new RECALIBRATED note.
+ * it in the test's slice, update `PIN`, and paste this script's line into a new RECALIBRATED note.
+ *
+ * ⚠ KEEP `PIN` IN LOCKSTEP WITH THE TEST'S SLICES. If it drifts, the bare run scores a window
+ * nobody uses and reports a false "no qualifying window" alarm (caught in cross-family review
+ * 2026-08-11, when `PIN` still held the superseded b2@2/b3@15).
  */
 import { makeCalc } from '../src/teamcalc.js';
 import { scopeLockCfg } from './lib/scope-lock.js';
@@ -46,9 +54,19 @@ function starts(name: 'b1' | 'b2' | 'b3', dflt: number): number[] {
   return Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
 }
 
-const b1Starts = starts('b1', 1);
-const b2Starts = starts('b2', 2);
-const b3Starts = starts('b3', 15);
+/**
+ * The window `scripts/tests/generators/cross-team-polish.test.ts` pins TODAY. Update this together
+ * with the test's slices — see the ⚠ in the header for what drift costs.
+ */
+const PIN = { b1: 1, b2: 1, b3: 12 };
+/** Bare invocation = no flags at all: verify the pin, then sweep b3 around it. */
+const bare = argv.length === 0;
+
+const b1Starts = starts('b1', PIN.b1);
+const b2Starts = starts('b2', PIN.b2);
+const b3Starts = bare
+  ? Array.from({ length: 21 }, (_, i) => 8 + i)
+  : starts('b3', PIN.b3);
 
 const { genChars, chars, overrides } = generatorPool();
 const byBurst = (b: string) =>
@@ -97,6 +115,19 @@ async function score(b1Start: number, b2Start: number, b3Start: number) {
   };
 }
 
+const qualifies = (r: { greedy: number; polished: number; ratio: number }) =>
+  r.greedy === 3 && r.polished === 4 && r.ratio > RATIO_FLOOR;
+
+// Bare run: re-score the pinned window FIRST. "the pin broke" and "no window anywhere works" are
+// different problems, and only the second is a roster-level finding worth reporting.
+if (bare) {
+  const p = await score(PIN.b1, PIN.b2, PIN.b3);
+  console.log(
+    `current pin b1@${PIN.b1}/b2@${PIN.b2}/b3@${PIN.b3}: greedy=${p.greedy} polished=${p.polished} ` +
+      `ratio ${p.ratio.toFixed(4)} — ${qualifies(p) ? 'REPRODUCES ✓' : 'BROKEN ✗ (re-scan below)'}\n`
+  );
+}
+
 const rows: Awaited<ReturnType<typeof score>>[] = [];
 for (const b1 of b1Starts) {
   for (const b2 of b2Starts) {
@@ -109,7 +140,7 @@ for (const b1 of b1Starts) {
 console.log(`N=${N}, ratio floor ${RATIO_FLOOR}\n`);
 console.log('  b1  b2  b3   greedy  polished    ratio   qualifies');
 for (const r of rows) {
-  const ok = r.greedy === 3 && r.polished === 4 && r.ratio > RATIO_FLOOR;
+  const ok = qualifies(r);
   console.log(
     `  ${String(r.b1Start).padStart(2)}  ${String(r.b2Start).padStart(2)}  ${String(
       r.b3Start
@@ -119,14 +150,14 @@ for (const r of rows) {
   );
 }
 
-const qualifying = rows.filter(
-  (r) => r.greedy === 3 && r.polished === 4 && r.ratio > RATIO_FLOOR
-);
+const qualifying = rows.filter(qualifies);
 if (qualifying.length === 0) {
   console.log(
-    `\nNO qualifying window in this range — widen it with --b3-range, or the greedy stall this ` +
-      `fixture demonstrates may no longer exist on the current roster (that is a real finding, ` +
-      `not a scan failure: report it rather than loosening the assertions).`
+    `\nNO qualifying window IN THE RANGE SCANNED. That is not yet a finding — widen it first ` +
+      `(--b1-range / --b2-range / --b3-range; the b3 knob alone was not enough on 2026-08-11, ` +
+      `when a Burst-I pool unit moved and un-stalled greedy across all of b3 8..27). Only if a ` +
+      `WIDE sweep finds nothing does the greedy stall this fixture demonstrates genuinely no ` +
+      `longer exist on the current roster — report that, do not loosen the assertions.`
   );
 } else {
   const best = qualifying.reduce((a, b) => (b.ratio > a.ratio ? b : a));

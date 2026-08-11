@@ -169,6 +169,18 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     which is the "re-tune the exposed unit separately, never re-fudge the fix" case. Worth a look
     when `grave` is next touched.
 
+- **⇒ OWNER-GATED ONE-LINER: the `gainPierce` comment in `src/engine/sim.ts` (~:2891-2894) still
+  carries the claim the 2026-08-11 Pierce work refuted.** It reads "This is the literal form of five
+  kits (nihilister / harran / neve / dorothy-serendipity / d-killer-wife); before it existed they
+  shipped durationSec stand-ins" — but `dorothy-serendipity` never shipped a stand-in and must NOT
+  be converted (her grant rides her `consolidation` block's `pierce: true`; see DECISIONS
+  2026-08-11). The parallel comment in `src/skills/types.ts` was corrected, so the two files now
+  disagree. **Comment-only, zero behaviour** — left unmade solely because `src/engine/**` is a
+  protected path needing explicit owner approval. Raised by the cross-family `/code-review`
+  (`kimi-code/k3`) as a NOTE; full result at
+  `scratchpad/gates/2026-08-11-dkw-pierce/result.json`. Fix = mirror the types.ts wording (four
+  `durationShots` carriers + `dorothy-serendipity` via `consolidation.pierce`).
+
 - **M1 `guillotine-winter-slayer` — the cadence ask is CLOSED, and the "~26% hot normal fire" framing
   was a MISATTRIBUTION.** OWNER RULING 2026-08-11: she uses her datamined fire rate (`pullsPerSec` 12
   / `rate_of_fire` 720); do not refit it. Checked the owner's hypothesis (is the level-up ammo refill
