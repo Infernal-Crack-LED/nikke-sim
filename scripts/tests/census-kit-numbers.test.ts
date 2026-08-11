@@ -172,6 +172,51 @@ describe('the three dispositions', () => {
     ).toEqual(['22.22', '33.33']);
   });
 
+  it('counts a magnitude encoded in a NON-slot structured field as accounted', () => {
+    // The structured side is a deny-list of prose fields, not an allow-list of slots: overrides
+    // also encode values in charFixes/resources/modes/consolidation/…, and an allow-list would
+    // report those as missing.
+    const row = auditUnit(
+      'fixture',
+      { skill1: '■ Affects self.\nCharge Speed ▼ 20% for 50 sec.' },
+      JSON.stringify({
+        note: 'charge-speed debuff modelled as a charge-time increase',
+        charFixes: { chargeFrames: 72, chargeSpeedDelta: 20 },
+      }),
+      false
+    );
+    expect(row.silent).toEqual([]);
+    expect(row.proseOnly).toEqual([]);
+  });
+
+  it('treats kitDescription as PROSE, not as an encoding', () => {
+    // 10 overrides carry a human-readable kit summary that QUOTES magnitudes. Counting it as
+    // structured would quietly clear every line it mentions on exactly those units.
+    const row = auditUnit(
+      'fixture',
+      { skill1: '■ Affects all allies.\nReload Speed ▲ 36.96% for 10 sec.' },
+      JSON.stringify({
+        note: 'x',
+        kitDescription:
+          'The attacked-20x team Reload Speed ▲36.96% line is inert at scope lock.',
+        skill1: [],
+      }),
+      false
+    );
+    expect(row.silent).toEqual([]);
+    expect(row.proseOnly.map((f) => f.missing).flat()).toEqual(['36.96']);
+  });
+
+  it('flags an unreviewed top-level field instead of silently trusting it', () => {
+    const row = auditUnit(
+      'fixture',
+      { skill1: '■ Affects self.\nATK ▲ 11.11% for 10 sec.' },
+      JSON.stringify({ note: 'x', someNewField: 'whatever 11.11' }),
+      false
+    );
+    expect(row.unreviewedFields).toEqual(['someNewField']);
+  });
+
   it('does not confuse a digit string with a longer one that contains it', () => {
     const row = auditUnit(
       'fixture',
@@ -210,9 +255,9 @@ describe('roster calibration — scored against the sweep-reviewed slice', () =>
 
   it('holds the PROSE-ONLY damage-relevant worklist to its known set', () => {
     // The tail pass's actual read list (2026-08-11): units whose kit prints a NON-heal magnitude
-    // that their override discusses in prose and encodes in no block. 18 units instead of 138
-    // file opens. Reading one and dispositioning it shrinks this set; a new slug appearing is a
-    // new finding, not a test to update blindly.
+    // that their override discusses in prose and encodes in no block — the list below instead of
+    // 138 file opens. Reading one and dispositioning it shrinks this set; a new slug appearing is
+    // a new finding, not a test to update blindly.
     const known = [
       'asuka-wille',
       'bready',

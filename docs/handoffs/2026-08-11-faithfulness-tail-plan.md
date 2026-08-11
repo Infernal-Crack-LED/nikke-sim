@@ -98,8 +98,15 @@ Printed by `--skipped`, never silently swallowed:
 - **Wrongness that is present but incorrect** — a number on the wrong stat, target or duration
   reads as clean. This census can only falsify "the model never saw this line".
 - **Coincidental digit matches** — `emma-tactical-upgrade`'s "100" matched a `/100` in an unrelated
-  prose sentence, downgrading her from SILENT to PROSE-ONLY. Conservative in the safe direction
-  (it can under-report severity, never invent a finding).
+  prose sentence, downgrading her from SILENT to PROSE-ONLY. A collision in the STRUCTURED half is
+  worse than a severity downgrade: it removes the finding entirely.
+- **INTEGER magnitudes, very nearly as a class.** 282 of 1259 kit magnitudes print no decimal
+  point, and 281 of them appear as a bare digit token somewhere in their override — collided with a
+  duration, a stack cap, a trigger count. An integer magnitude is therefore effectively auto-clean,
+  and this axis's discriminative power sits almost entirely on DECIMAL magnitudes. The one integer
+  that survives roster-wide is `power`'s "100". This is the axis's single biggest limitation; the
+  worklist happens to be decimal-heavy, which is why the calibration still holds. Restated by
+  `--skipped` on every run.
 
 ---
 
@@ -124,16 +131,37 @@ Each is a generated census, each scored against the graded 45 first.
 5. **A6 — recovery emit/consume**, already served by `scripts/census-synergy-events.ts`. The tail's
    job is to READ it, not rebuild it.
 
+**Carried follow-up on axis 1 itself:** tighten the integer-magnitude case (§3) rather than only
+disclosing it — e.g. require `%`-adjacency when matching an integer in prose, and treat a bare
+integer token inside a structured block as WEAK evidence that still surfaces at low severity
+instead of clearing the line. Raised by the cross-family review (`kimi-code/k3`, 2026-08-11) as a
+FOLLOW-UP; not done here because it changes matcher semantics and would want its own
+graded-45 re-calibration.
+
 ---
 
 ## 5. The one batched proposal for the owner (board-inert, needs a ruling not a measurement)
 
-**The structured record of inert heal magnitudes is ~50/50 across the roster, line by line.**
+**The structured record of inert heal magnitudes is about half-populated, and the split is
+per-LINE, not per-unit** — the same override often files one heal line and leaves its others
+unrecorded, so this cannot be read as "these units are tidy and those are not".
 
-- 29 overrides DO file a heal line under `unmodeled` — `ada`'s is the model wording: _"Recovers 10%
-  of the damage dealt as HP for 10 sec. — magnitude only: the 10s recovery-event WINDOW is modeled
-  …; the HP amount has no engine consumer (no HP pool)"_.
-- ~30 do not (`biscuit`, `crown`, `sin` silently; 28 more with the number only in prose).
+Method (reproducible from the committed instrument, not a hand grep): the population is every kit
+line that both restores HP (`HEAL_LINE`) and prints a percent magnitude; the tiers come from
+`npx tsx scripts/census-kit-numbers.ts --json`.
+
+| Heal-magnitude kit lines                       | Lines  | Units |
+| ---------------------------------------------- | ------ | ----- |
+| **total**                                      | **92** | 62    |
+| structurally recorded (encoded or `unmodeled`) | 42     | —     |
+| in `note`/`caveats` prose only                 | 46     | 31    |
+| absent from the override entirely (SILENT)     | 4      | 3     |
+
+`ada` is the model wording for the recorded half: _"Recovers 10% of the damage dealt as HP for 10
+sec. — magnitude only: the 10s recovery-event WINDOW is modeled …; the HP amount has no engine
+consumer (no HP pool)"_. `biscuit` is why the per-unit framing misleads: she files her skill2 heal
+in exactly that style, while her skill1 (1.53%) and burst (55.44%) heals are silent. `crown` and
+`sin` are silent on their one heal line each.
 
 Nothing about damage changes either way — heal amounts have no engine consumer, and the recovery
 EVENT (the board-relevant half, audit F9) is modelled independently of this. What changes is
@@ -143,11 +171,11 @@ skips. `kilo` is the same shape outside the heal class — her burst's "calculat
 Max HP" basis gap is fully documented in prose, with a ⚑ and a measurement recipe, and appears
 nowhere in her structured record.
 
-**The ask is one ruling:** file inert-by-design magnitudes under `unmodeled` (the `ada` convention,
-~30 units to backfill, prose-only edits, zero board movement), or declare prose sufficient and
-document that `unmodeled` is not a complete index. Either answer makes the field trustworthy; the
-current split makes it neither. Not enacted here — a cross-cutting signal across ~30 units is a
-STOP-and-propose, not a sweep-time edit.
+**The ask is one ruling:** file inert-by-design magnitudes under `unmodeled` (the `ada` convention —
+50 lines across 32 units to backfill, prose-only edits, zero board movement), or declare prose
+sufficient and document that `unmodeled` is not a complete index. Either answer makes the field
+trustworthy; the current split makes it neither. Not enacted here — a cross-cutting signal across
+30-odd units is a STOP-and-propose, not a sweep-time edit.
 
 ---
 

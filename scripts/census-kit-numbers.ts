@@ -63,6 +63,13 @@
 //     example is `power` skill2: her kit's "Reloads 100% of the magazine" IS encoded, as
 //     `instantReload fraction: 1`, so the digit string "100" never appears and she reads SILENT.
 //     A percent stored as a fraction is invisible to a digit-string matcher by construction.
+//   * INTEGER magnitudes, very nearly as a class. 282 of 1259 kit magnitudes print no decimal
+//     point, and 281 of those 282 appear as a bare digit token SOMEWHERE in their override —
+//     collided with a duration, a stack cap, a trigger count. So an integer magnitude is
+//     effectively auto-clean and this census's discriminative power sits almost entirely on
+//     DECIMAL magnitudes, which are distinctive enough not to collide. The single integer that
+//     survives roster-wide is `power`'s "100", the live SILENT finding. Do not read a clean
+//     integer line as evidence of anything; `--skipped` restates this at every run.
 //   * Any unit whose slug has no `data/characters.json` entry, or whose slot ships empty kit text.
 //
 // `--check` IS NOT WIRED INTO verify.sh — deliberately, and this comment is the record of why.
@@ -74,7 +81,7 @@
 // Self-validating fixture: scripts/tests/census-kit-numbers.test.ts pins the discriminating cases
 // (a condition threshold is not a magnitude; prose-only vs silent; the calibration bound on the
 // graded slice) so a later refactor cannot loosen the matcher without going red.
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 
 const ROOT = new URL('../', import.meta.url);
 const OVERRIDES_DIR = new URL('src/skills/overrides/', ROOT);
@@ -176,6 +183,33 @@ function numberTokens(blob: string): Set<string> {
  */
 export const HEAL_LINE = /\b(?:recovers?|restores?|heals?)\b/i;
 
+/**
+ * The override's PROSE fields — the ones whose numbers are discussion, not encoding. Everything
+ * else in the file counts as structured (see auditUnit).
+ *
+ * `kitDescription` (10 units) belongs here and is easy to miss: it is a human-readable kit summary
+ * that QUOTES magnitudes ("Reload Speed ▲36.96% … for 10s", "528.97%-of-final-ATK missile"). Were
+ * it treated as structured, every magnitude it quotes would read as encoded and those 10 units
+ * would go quietly clean — the exact silent-hole failure this census is supposed to avoid.
+ */
+export const PROSE_FIELDS = ['note', 'caveats', 'kitDescription'] as const;
+
+/** Top-level fields that are neither prose nor block arrays — new ones should be reviewed once. */
+const KNOWN_STRUCTURED = new Set([
+  'slug',
+  'skill1',
+  'skill2',
+  'burst',
+  'unmodeled',
+  'resources',
+  'modes',
+  'charFixes',
+  'hasPierce',
+  'pierceModes',
+  'burstSnapshotsPreFb',
+  'consolidation',
+]);
+
 export interface LineFinding {
   slot: Slot;
   line: string;
@@ -192,6 +226,12 @@ export interface Row {
   emptySlots: Slot[];
   conditionsStripped: string[];
   linesWithoutMagnitude: number;
+  /**
+   * Loudness: top-level override fields this census has never been reviewed against. They are
+   * counted as STRUCTURED (the safe default for encoded data), but a future PROSE field landing
+   * here would silently weaken the prose-only tier, so it is surfaced rather than assumed.
+   */
+  unreviewedFields: string[];
 }
 
 export interface Census {
@@ -209,16 +249,21 @@ export function auditUnit(
   graded: boolean
 ): Row {
   const override = JSON.parse(overrideRaw) as Record<string, unknown>;
-  // Whole-file tokens decide SILENT; structured-only tokens decide PROSE-ONLY. The structured
-  // side is the encoded blocks PLUS `unmodeled` — a line deliberately filed as unmodeled is
-  // accounted for, which is the entire point of that field.
+  // Whole-file tokens decide SILENT; structured-only tokens decide PROSE-ONLY.
+  //
+  // The structured side is EVERYTHING EXCEPT the prose fields — a deny-list, not an allow-list.
+  // An allow-list of `skill1/skill2/burst/unmodeled` was the first cut and it is a latent
+  // false-positive source: overrides also encode values in `charFixes` (6 units), `resources`
+  // (24), `modes` (8), `consolidation`, `pierceModes`, `hasPierce`, `burstSnapshotsPreFb`, and the
+  // schema has plainly been growing faster than any enumeration here would be maintained. A
+  // magnitude encoded ONLY in one of those would have been reported as missing. Deny-listing means
+  // a newly-added encoded field is in scope the day it appears.
   const fileTokens = numberTokens(overrideRaw);
-  const structured = numberTokens(
-    JSON.stringify([
-      ...SLOTS.map((s) => override[s] ?? []),
-      override.unmodeled ?? {},
-    ])
-  );
+  const { ...structuredOnly } = override;
+  for (const f of PROSE_FIELDS) {
+    delete structuredOnly[f];
+  }
+  const structured = numberTokens(JSON.stringify(structuredOnly));
 
   const row: Row = {
     slug,
@@ -228,6 +273,11 @@ export function auditUnit(
     emptySlots: [],
     conditionsStripped: [],
     linesWithoutMagnitude: 0,
+    unreviewedFields: Object.keys(override).filter(
+      (k) =>
+        !KNOWN_STRUCTURED.has(k) &&
+        !(PROSE_FIELDS as readonly string[]).includes(k)
+    ),
   };
 
   for (const slot of SLOTS) {
@@ -338,10 +388,15 @@ function explain(slug: string): void {
     console.error(`census-kit-numbers: no characters.json kit for '${slug}'`);
     process.exit(2);
   }
-  const raw = readFileSync(
-    new URL(`${slug}.json`, OVERRIDES_DIR),
-    'utf8'
-  ) as string;
+  const overrideUrl = new URL(`${slug}.json`, OVERRIDES_DIR);
+  if (!existsSync(overrideUrl)) {
+    // Most of the roster has kit text and no override — say so plainly instead of an ENOENT stack.
+    console.error(
+      `census-kit-numbers: '${slug}' has kit text but no override at src/skills/overrides/${slug}.json — nothing to audit against.`
+    );
+    process.exit(2);
+  }
+  const raw = readFileSync(overrideUrl, 'utf8') as string;
   const override = JSON.parse(raw);
   const status = JSON.parse(readFileSync(KIT_STATUS, 'utf8')).units;
   const row = auditUnit(slug, skills, raw, Boolean(status[slug]?.board));
@@ -450,6 +505,23 @@ function main(): void {
       `  ${noStatusEntry.length} override(s) absent from kit-status.json (graded/tail unknown, counted as tail)${
         noStatusEntry.length ? `: ${noStatusEntry.join(', ')}` : ''
       }`
+    );
+    const unreviewed = [
+      ...new Set(rows.flatMap((r) => r.unreviewedFields)),
+    ].sort();
+    console.log(
+      `  ${unreviewed.length} unreviewed top-level override field(s) — counted as STRUCTURED; if any is PROSE it weakens the prose-only tier${
+        unreviewed.length ? `: ${unreviewed.join(', ')}` : ''
+      }`
+    );
+    const integers = rows
+      .flatMap((r) => [...r.silent, ...r.proseOnly])
+      .flatMap((f) => f.missing)
+      .filter((v) => !v.includes('.'));
+    console.log(
+      `  integer magnitudes have near-zero presence signal (a bare digit collides with durations, ` +
+        `counts and stack caps elsewhere in the file) — this census's discriminative power is ` +
+        `almost entirely on DECIMAL magnitudes; ${integers.length} of the findings above are integers`
     );
     return;
   }

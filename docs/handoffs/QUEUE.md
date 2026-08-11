@@ -259,20 +259,24 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   override — `scripts/census-kit-numbers.ts` + its fixture) is built, calibrated against the graded
   45, run, and every finding dispositioned: **zero new defects**, 14 prose-documented
   transformations (the doc names the vocabulary), 1 acknowledged-in-prose gap (`kilo`'s HP-basis
-  nuke). Two things are open:
+  nuke). The batch-7 START-HERE doc is CLOSED with batch 8, and both roster-wide items the sweep
+  surfaced (the 5-carrier lifesteal non-emitter ruling and the U28 rider-gauge class) are RULED —
+  see DECISIONS 2026-08-10 Tier 0. **Three things are open:**
   - **OWNER RULING WANTED (board-inert, no measurement needed):** the structured record of inert
-    heal magnitudes is ~50/50 roster-wide — 29 overrides file them under `unmodeled` (`ada` is the
-    model wording), ~30 leave the number in prose only. Either convention is fine; the SPLIT is
-    what makes `unmodeled` an unreliable index for `gen-unmodeled-review.ts`, `kit-status.json`
+    heal magnitudes is about half-populated, and the split is per-LINE not per-unit — of 92
+    heal-magnitude kit lines across 62 units, 42 are structurally recorded (`ada` is the model
+    wording), 46 sit in prose only and 4 are absent entirely. Either convention is fine; the SPLIT
+    is what makes `unmodeled` an unreliable index for `gen-unmodeled-review.ts`, `kit-status.json`
     and every reviewer grep. Ruling → tail-plan §5.
   - **Axes A2–A6 proposed, none built** — `unmodeled` entries matching no kit line; non-percent
     quantity accounting (the tier that held the `d-killer-wife` round-count defect); "fixed at" vs
     the clamp StatKeys; held-primitive carrier scan; and READ (do not rebuild)
     `scripts/census-synergy-events.ts`. Tail-plan §4.
-  - `census-kit-numbers.ts --check` is deliberately NOT in verify.sh until the heal ruling lands.
-    The batch-7 START-HERE doc is CLOSED with batch 8. Both roster-wide items the sweep surfaced
-    (the 5-carrier lifesteal non-emitter ruling and the U28 rider-gauge class) are RULED — see
-    DECISIONS 2026-08-10 Tier 0.
+  - **Axis 1's own carried follow-up** — integer magnitudes are near-auto-clean (281 of 282 collide
+    with a duration/count elsewhere in the file), so the axis discriminates almost only on decimals.
+    Disclosed in the doc and by `--skipped`; tightening the matcher is deferred because it needs its
+    own graded-45 re-calibration. `census-kit-numbers.ts --check` stays out of verify.sh until the
+    heal ruling lands.
 
 - **Sweep record (batches 1–8, all landed — reference only, nothing open here):**
   [batch 1](2026-08-10-faithfulness-batch1-findings.md) ·
