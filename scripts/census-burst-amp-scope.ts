@@ -17,7 +17,10 @@
 // jackal's "in the description" is explicit; trina's is the same construction. Owner ruling
 // 2026-08-10: the scope is LITERAL-ONLY — a paraphrase that means the same thing in English
 // ("Affects random enemies", "Affects the enemy nearest to the crosshair") does NOT qualify.
-// See docs/DECISIONS.md and docs/handoffs/2026-08-10-faithfulness-batch5-findings.md.
+// Full record: docs/DECISIONS.md (the ruling) and
+// docs/handoffs/2026-08-10-burst-amp-literal-scope-findings.md (what it changed and what it
+// left open); docs/handoffs/2026-08-10-faithfulness-batch5-findings.md is the measurement that
+// raised the question.
 //
 // `burstDesc` feeds NOTHING in the engine except these two amps (sim.ts dmgUp, the only two
 // reads), so a tag is exactly a claim of amp eligibility and nothing else — which makes this
