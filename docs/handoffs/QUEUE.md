@@ -76,6 +76,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   deliberately out of the faithfulness sweep's scope.
   [findings](2026-08-10-burst-amp-literal-scope-findings.md) §4b.
 
+- **⇒⇒ FAITHFULNESS PASS — ENACTMENT PHASE. A fresh session starts at
+  [2026-08-10-faithfulness-ENACTMENT-START-HERE.md](2026-08-10-faithfulness-ENACTMENT-START-HERE.md).**
+  The finding phase is DONE for all 45 board-graded units (batches 1–8). That doc orders every
+  enactable finding into tiers — Tier 0 the five batched OWNER DECISIONS (D1–D5, all listed
+  separately below), Tier 1 the one board-moving fix (`jill`), Tier 2 the burst-amp validation that
+  BLOCKS further tagging, **Tier 3 the RECORDING LIST (M1–M12) — the highest-leverage owner action,
+  since the remaining accuracy is behind footage, not code**, Tier 4 safe consistency enactments,
+  Tier 5 held engine primitives. It opens with the honest framing: enacting everything ready today
+  improves the board by roughly ONE unit.
+
 - **⇒ ONE RULING WANTED (U28 class): `neon-vision-eye`'s Super Firepower "Deals 262.79% of final
   ATK as additional damage" is modeled as an `extraHitDamagePct` RIDER, not a `flatDamage`
   instance** — so it generates no burst gauge of its own, where a damage instance would. Per U28
