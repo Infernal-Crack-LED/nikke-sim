@@ -23,9 +23,10 @@
  * the fixture makes. Pick the qualifying window with the most headroom over the 1.09 floor, put
  * it in the test's slice, update `PIN`, and paste this script's line into a new RECALIBRATED note.
  *
- * ⚠ KEEP `PIN` IN LOCKSTEP WITH THE TEST'S SLICES. If it drifts, the bare run scores a window
- * nobody uses and reports a false "no qualifying window" alarm (caught in cross-family review
- * 2026-08-11, when `PIN` still held the superseded b2@2/b3@15).
+ * ⚠ KEEP `PIN` IN LOCKSTEP WITH THE TEST'S SLICES (b1/b2/b3 starts = the first argument of each
+ * `.slice()` there). If it drifts, the bare run reports a spurious `BROKEN ✗` for a window nobody
+ * uses and sends you re-scanning for nothing. Drift the other way — test moved, `PIN` stale — turns
+ * the fixture red in CI, so neither direction fails silently.
  */
 import { makeCalc } from '../src/teamcalc.js';
 import { scopeLockCfg } from './lib/scope-lock.js';
@@ -35,9 +36,15 @@ const N = 4;
 const RATIO_FLOOR = 1.09;
 
 const argv = process.argv.slice(2);
+/** argv slots consumed by recognized flags — anything left over is a typo, see the check below. */
+let consumed = 0;
 const flag = (name: string) => {
   const i = argv.indexOf(name);
-  return i >= 0 ? argv[i + 1] : undefined;
+  if (i < 0) {
+    return undefined;
+  }
+  consumed += 2; // the flag and its value
+  return argv[i + 1];
 };
 
 /** `--bN x` pins one value; `--bN-range lo:hi` sweeps. Every combination is scored. */
@@ -67,6 +74,25 @@ const b2Starts = starts('b2', PIN.b2);
 const b3Starts = bare
   ? Array.from({ length: 21 }, (_, i) => 8 + i)
   : starts('b3', PIN.b3);
+
+// HARD-FAIL on anything unrecognized. Without this, a typo (`--b3-rang 10:20`) silently opts out
+// of the bare pin-check-then-sweep path AND matches no flag, so it scores one point at the pin and
+// prints a confident "BEST:" — a run that looks successful while doing neither documented mode.
+// Hard-fail rather than warn: this is a calibration instrument whose output gets pasted into a
+// RECALIBRATED note, so a silently-wrong run is worse than no run.
+if (consumed !== argv.length) {
+  const recognized = ['b1', 'b2', 'b3'].flatMap((b) => [
+    `--${b}`,
+    `--${b}-range`,
+  ]);
+  console.error(
+    `unrecognized or malformed arguments: ${argv.join(' ')}\n` +
+      `recognized flags: ${recognized.join(' ')} (each takes a value; ` +
+      `--bN <int>, --bN-range <lo:hi>)\n` +
+      `bare (no arguments) = verify the current pin, then sweep b3.`
+  );
+  process.exit(2);
+}
 
 const { genChars, chars, overrides } = generatorPool();
 const byBurst = (b: string) =>
@@ -120,6 +146,9 @@ const qualifies = (r: { greedy: number; polished: number; ratio: number }) =>
 
 // Bare run: re-score the pinned window FIRST. "the pin broke" and "no window anywhere works" are
 // different problems, and only the second is a roster-level finding worth reporting.
+// Note this re-scores the pin, which the sweep below also covers (b3 8..28 includes PIN.b3) — one
+// redundant sim pair out of 22. Kept deliberately: printing the verdict BEFORE the sweep table is
+// the whole point, and ~5% of an already multi-minute run is not worth the splice.
 if (bare) {
   const p = await score(PIN.b1, PIN.b2, PIN.b3);
   console.log(
