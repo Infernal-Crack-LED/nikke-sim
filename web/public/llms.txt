@@ -24,6 +24,7 @@ with or endorsed by the game's publisher.
 - [DPS Rankings](https://nikkesim.app/ranks): Ranked DPS of every NIKKE B3 under standardized frameworks — neutral and elementally advantaged, with and without supports.
 - [Support Rankings](https://nikkesim.app/ranks/support): Ranked support boards — burst generation, burst cooldown reduction, sustain (team HP), and buffer value — from the same sim data as the DPS rankings.
 - [Unit Comparison](https://nikkesim.app/ranks/compare): Head-to-head per-unit DPS comparison with a custom control group.
+- [Characters](https://nikkesim.app/characters): Every NIKKE character — filter by element, weapon, burst stage, class or kit role, then open a Nikke for her full kit, best overload lines, and solo-raid DPS ranking.
 - [Card Builder](https://nikkesim.app/builder): Compose a shareable NIKKE infographic (DPS chart, unit comparison, rank board, unit card, or overload table) with a hosted, Discord-embeddable image URL.
 
 ## Overload
@@ -35,7 +36,7 @@ with or endorsed by the game's publisher.
 ## Tools
 
 - [Doll Leveling Calculator](https://nikkesim.app/doll): The most resource-efficient path to level a doll (Favorite Item) to SR phase 15.
-- [Resource Calculator](https://nikkesim.app/resources): Expected daily solo-raid resource drops by stage — Custom Modules, module fragments, locks, XP fodder.
+- [Resource Calculator](https://nikkesim.app/resources): Expected daily Custom Module and T9 drops by stage — supports Kraken and other Anomaly Interception bosses.
 
 ## Reference
 

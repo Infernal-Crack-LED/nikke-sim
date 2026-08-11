@@ -83,12 +83,15 @@ describe('per-route head meta parity across the three lockstep tables', () => {
     expect(drifted).toEqual([]);
   });
 
-  it('route + unit/<slug> keys partition each server table completely', () => {
+  it('route + unit/<slug> keys partition each table completely', () => {
     // A key that is neither '/'-free (route) nor unit/<slug> would be checked
     // by NONE of the assertions above — assert the partition is total so an
-    // unclassified key fails loudly here instead of drifting silently.
+    // unclassified key fails loudly here instead of drifting silently. The
+    // client table is in the loop too: it carries no '/'-bearing keys today
+    // and a future one would be unreachable dead config worth flagging.
     const unclassified: string[] = [];
     for (const [name, table] of [
+      ['useDocumentHead.ts', META],
       ['static.ts', STATIC_META],
       ['serve.mjs', LEGACY_META],
     ] as const) {

@@ -825,15 +825,15 @@ template mislock, → 0 on relock) + 29 countable`. 42 − 35 = 7 / 5 shots = **
 
 #### Product / web
 
-- **⇒ META-PARITY FOLLOW-UPS (code-review 2026-08-11,
-  `scratchpad/gates/2026-08-11-meta-table-parity/result.json`):** (1) **OWNER one-line ruling
-  wanted: `/ranks` title** — the fix branch kept the DEPLOYED static.ts title ("…Neutral,
-  Elemental Advantaged, with and without Supports") as the status quo; the retired alternative is
-  "…Best Units & Overload Lines Tier List" (keyword-dense). Either stands; say which. (2) The
-  parity guard enforces CONSISTENCY between the three tables, not COVERAGE of the route set —
-  add an assertion that every fixed route in `scripts/build-sitemap.ts` resolves to a key present
-  in all three tables (export `tabFromReqUrl` from `src/server/static.ts` and reuse it rather than
-  reimplementing the `/ranks`, `/ranks/support`, `/ranks/compare`, `/` special cases in the test).
+- **⇒ META-PARITY FOLLOW-UPS (cross-family code-review by claude-opus-5, 2026-08-11):** (1) **OWNER
+  one-line ruling wanted: `/ranks` title** — the fix branch kept the DEPLOYED static.ts title
+  ("…Neutral, Elemental Advantaged, with and without Supports") as the status quo; the retired
+  alternative is "…Best Units & Overload Lines Tier List" (keyword-dense). Either stands; say
+  which. (2) The parity guard (`scripts/tests/share/meta-parity.test.ts`) enforces CONSISTENCY
+  between the three tables, not COVERAGE of the route set — add an assertion that every fixed
+  route in `scripts/build-sitemap.ts` resolves to a key present in all three tables (export
+  `tabFromReqUrl` from `src/server/static.ts` and reuse it rather than reimplementing the
+  `/ranks`, `/ranks/support`, `/ranks/compare`, `/` special cases in the test).
 - **⇒ SEO FOLLOW-UPS — deferred pending a real crawl: [docs/seo-followups.md](../seo-followups.md).**
   Search-visibility decisions that are NOT answerable from the repo. Nothing to do until Search
   Console has ~4-6 weeks of data; the doc carries the measurement, the options and a 4-step
