@@ -86,6 +86,32 @@ with no hand-tuned override yet; neither is the build path. Engine primitives ca
 `scripts/tests/engine/`. Every file under `scripts/tests/` runs from the single `npx vitest run` step
 in `verify.sh`, so a new test file joins the gate by existing.
 
+## ASK THE OWNER BEFORE ASKING FOR FOOTAGE
+
+A recording request is one of the most expensive things this project can ask for: the owner has to
+field a specific team, run a 180-second fight, capture video plus the end-of-fight screenshot, and
+then someone has to process it. Treat it as a last resort, not a default.
+
+**Root (2026-08-11).** The faithfulness pass produced a 12-item recording list, introduced as "where
+the remaining accuracy is — behind footage, not behind code". **Ten of the twelve needed no camera.**
+Eight were game rules the owner simply stated in a sentence each (true damage can core hit;
+distributed damage can crit; all stacks refresh unless a kit says otherwise; `trina`'s amp is
+literal-wording-only; `rouge`'s coin statuses co-exist; `mint` starts on Dancing; `ada` fires one
+special-charged shot; `prika` is Pierce-tagged during Performance). One (`guillotine-winter-slayer`)
+dissolved under an A/B that refuted the ask's own premise — her board reading was already inside
+±3%, and the "26% hot" it chased came from stale readings in another context. One (`noir`) belonged
+inside an investigation that already owned its blast radius.
+
+So, before writing a recording ask, sort the question:
+
+1. **Is it a GAME RULE?** ("can X crit", "do stacks refresh", "does status A replace status B") —
+   the owner plays the game. Ask them. This is most of them.
+2. **Is it a KIT-TEXT reading?** — read the kit; if it is literal, it is not a measurement.
+3. **Is the residual it chases even real?** — re-derive it from a CURRENT board reading first. A
+   number carried forward in a `residual` field is not evidence that anything is wrong today.
+4. **Only then**: a timing/magnitude question that genuinely needs frames (a cadence, a reload gap,
+   a per-hit popup value). Those are real, and they are the minority.
+
 ## An inertness or A/B claim must NAME ITS ROSTER
 
 A recorded "this is inert" / "byte-identical" / "the board moved by exactly zero" result is a
