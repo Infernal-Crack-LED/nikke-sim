@@ -14,21 +14,44 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "hitCount", "count": 30 },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 131.34 }]
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 131.34
+        }
+      ]
     },
     {
       "slot": "skill1",
-      "trigger": { "kind": "fullBurstEnter" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
         {
           "kind": "escalating",
           "steps": [
-            { "kind": "burstCdr", "seconds": 1.82 },
-            { "kind": "burstCdr", "seconds": 2.2 },
-            { "kind": "burstCdr", "seconds": 2.6 }
+            {
+              "kind": "burstCdr",
+              "seconds": 1.82
+            },
+            {
+              "kind": "burstCdr",
+              "seconds": 2.2
+            },
+            {
+              "kind": "burstCdr",
+              "seconds": 2.6
+            }
           ]
         }
       ]
@@ -37,15 +60,29 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "interval", "sec": 4 },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 105.58 }]
+      "trigger": {
+        "kind": "interval",
+        "sec": 4
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 105.58
+        }
+      ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "shotFired" },
+      "trigger": {
+        "kind": "shotFired"
+      },
       "bossElementGate": "Electric",
-      "target": { "kind": "enemy" },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -60,16 +97,35 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 164.83 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 164.83,
+          "burstDesc": "allEnemies"
+        }
+      ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
+      "trigger": {
+        "kind": "burstCast"
+      },
       "bossElementGate": "Electric",
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 164.83 }]
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 164.83
+        }
+      ]
     }
   ]
 }

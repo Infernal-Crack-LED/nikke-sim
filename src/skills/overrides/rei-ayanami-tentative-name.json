@@ -26,24 +26,48 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "hitCount", "count": 18 },
+      "trigger": {
+        "kind": "hitCount",
+        "count": 18
+      },
       "requiresTargetStatus": "Anti A.T. Field",
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 590.64 }]
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 590.64
+        }
+      ]
     },
     {
       "slot": "skill1",
-      "trigger": { "kind": "hitCount", "count": 7 },
+      "trigger": {
+        "kind": "hitCount",
+        "count": 7
+      },
       "requiresTargetStatus": "Attack State",
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 286.37 }]
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 286.37
+        }
+      ]
     }
   ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "fullBurstEnter" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -57,8 +81,12 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -76,17 +104,35 @@
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
-        { "kind": "targetStatus", "name": "Attack State", "durationSec": 10 }
+        {
+          "kind": "targetStatus",
+          "name": "Attack State",
+          "durationSec": 10
+        }
       ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 990.2 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 990.2,
+          "burstDesc": "allEnemies"
+        }
+      ]
     }
   ]
 }

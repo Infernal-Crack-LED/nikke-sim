@@ -18,8 +18,13 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "attacked", "count": 30 },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "attacked",
+        "count": 30
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -33,19 +38,39 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "interval", "sec": 30 },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "interval",
+        "sec": 30
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "buff", "stat": "atkPct", "value": 90.75, "durationSec": 5 }
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 90.75,
+          "durationSec": 5
+        }
       ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 457.87 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.87,
+          "burstDesc": "allEnemies"
+        }
+      ]
     }
   ]
 }

@@ -9,7 +9,35 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) THE BURST-SKILL-DAMAGE AMPS ARE LITERAL-ONLY — owner ruling; the
+- **(2026-08-10, latest) THE UNTAGGED AMP-CARRIER DEBT IS CLEARED — 28 `burstDesc` instances
+  across 25 units; a third localization phrasing-hole found doing it.** Owner-directed after the
+  literal-only + block-level + stray-article rulings. Every unit whose burst damage block carries
+  a qualifying literal is now tagged. **Board byte-identical on a full diff** (7/14/23/22, 142
+  datapoints) — none of the 25 shares a comp with `trina` or `jackal`.
+  22 units tagged wholesale (every damage block qualifying and wanting the SAME tag); 3 tagged
+  PER BLOCK because only some of their damage blocks qualify — `2b` (`allEnemies` on the 2439.36%
+  distributed nuke, `singleEnemy` on the 792% additional-damage line: two different literals in
+  one burst), `helm-aquamarine` (the Electric-gated "Affects the target" block excluded) and
+  `laplace-ultimate-hero` (the four Over-Energy "nearest to the crosshair" blocks excluded).
+  **Third phrasing-variant hole, same family as the DAMAGE_LINE bug and the stray article:** the
+  "this block reuses the previous block's scope" rule matched only `Affects the same target(s)`,
+  while the localization spells it SEVEN ways across 13 occurrences (`targets`, `target`,
+  `enemy unit(s)`, `enemy units`, plus status-qualified variants). It had silently dropped
+  inheritance on `epinel`, `sakura-bloom-in-summer`, `julia`, `brid`, `guillotine`, `ether`,
+  `mihara-bonding-chain` and `laplace`. Now matched loosely. The standing lesson: **this
+  instrument kept being too literal about a kit text that is not written consistently** — three
+  holes of one shape in one session, each caught only by a naive grep disagreeing with it.
+  The census's vitest pin no longer carries a maintained list; it asserts the under-tagged set is
+  EMPTY and that every remaining mismatch is the `dot`/`stackedNuke` engine-gap class. The
+  `--under` flag is committed as the worklist generator, splitting future work into "safe to tag
+  wholesale" vs "tag per block". Slugs: `2b`, `anchor` (RL/Wind), `arcana` (RL/Electric),
+  `arcana-fortune-mate`, `d` (SMG/Wind), `delta-ninja-thief`, `dolla`, `epinel`, `harran`,
+  `helm-aquamarine`, `kilo`, `laplace-ultimate-hero`, `maiden` (SG/Electric), `mari`, `mihara`
+  (AR/Water), `milk` (SR/Water), `nayuta`, `neon` (SG/Fire), `privaty-unkind-maid`, `raven`,
+  `rei-ayanami`, `rei-ayanami-tentative-name`, `vesti` (RL/Water), `vesti-tactical-upgrade`,
+  `yulha`.
+
+- **(2026-08-10) THE BURST-SKILL-DAMAGE AMPS ARE LITERAL-ONLY — owner ruling; the
   `burstDesc` tag set is rebuilt from the kit strings and 13 units are untagged.** Owner, asked
   whether `trina`'s Spread Roots reaches a non-literal scope clause: **"trina's amp is literal
   only."** Both amps quote a string and amplify skills whose description contains it — `trina`

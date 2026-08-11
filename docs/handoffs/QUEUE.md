@@ -85,14 +85,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   U28 rider set rather than a unit-local fix.
   [batch-6 findings](2026-08-10-faithfulness-batch6-findings.md).
 
-- **⇒ RECORDED, NOT APPLIED — 24 literal amp carriers outside the graded slice are untagged.**
-  Inert (a missing tag applies no amp) and none shares a comp with `trina`/`jackal`, so tagging
-  moves nothing today; listed rather than swept because each is a per-unit phase-4 review. The
-  list is pinned in the census test so it shrinks deliberately and never grows silently. Doing
-  all 24 in one mechanical pass is a legitimate owner call — `npx tsx
-scripts/census-burst-amp-scope.ts` decides each one and the board impact is provably zero.
-  Full list: [findings](2026-08-10-burst-amp-literal-scope-findings.md) §5.
-
 - **⇒ FAITHFULNESS PASS phase-4 sweep — BATCH 6 IS DONE
   ([findings](2026-08-10-faithfulness-batch6-findings.md): `grave`, `dorothy-serendipity`,
   `maiden-ice-rose`, `rapi-red-hood`, `neon-vision-eye`, `d-killer-wife`); **15 graded-comp units

@@ -22,8 +22,12 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "fullBurstEnter" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -35,16 +39,29 @@
     },
     {
       "slot": "skill1",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
-        { "kind": "buff", "stat": "atkPct", "value": 15.04, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 15.04,
+          "durationSec": 10
+        }
       ]
     },
     {
       "slot": "skill1",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -58,38 +75,80 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
       "mode": "solo defender",
-      "effects": [{ "kind": "shield", "maxHpPct": 12.25, "durationSec": 10 }]
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 12.25,
+          "durationSec": 10
+        }
+      ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "hitCount", "count": 200 },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "hitCount",
+        "count": 200
+      },
+      "target": {
+        "kind": "self"
+      },
       "mode": "solo defender",
-      "effects": [{ "kind": "shield", "maxHpPct": 12.25, "durationSec": 10 }]
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 12.25,
+          "durationSec": 10
+        }
+      ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "shotFired" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
       "mode": "with defender ally",
-      "effects": [{ "kind": "heal" }]
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "interval", "sec": 4 },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "interval",
+        "sec": 4
+      },
+      "target": {
+        "kind": "allies"
+      },
       "mode": "with defender ally",
-      "effects": [{ "kind": "heal" }]
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -107,10 +166,19 @@
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
-        { "kind": "flatDamage", "atkPct": 170, "flavor": "distributed" }
+        {
+          "kind": "flatDamage",
+          "atkPct": 170,
+          "flavor": "distributed",
+          "burstDesc": "allEnemies"
+        }
       ]
     }
   ]

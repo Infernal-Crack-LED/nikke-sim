@@ -1,6 +1,13 @@
 {
   "note": "Kit-autonomy gauntlet 2026-07-28 (NEW character; no prior override). Laplace: Ultimate Hero (laplace-ultimate-hero, RL/Attacker/Wind/Burst III) — a DIFFERENT unit from base laplace (RL/Iron 'Treasure'); nothing carried over. MODEL: charge RL (chargeFrames 60, chargeMult 250 — every pull is a full charge). || LOAD-BEARING CORE, faithfully encoded with measured primitives: (S1a) 'ATK ▲ 4.05% of the skill user's final max HP continuously' = passive self atkOfMaxHpPct 4.05 — the DOMINANT ATK driver (4.05% of ~13.5k base HP ≈ +547 ATK on a 600 base; measured load-bearing 1.475×, removing it drops her total 362.7M→245.9M). atkOfMaxHpPct is live per-frame in effectiveAtk and is fed by self maxHp grants. (S2c) 'entering Burst Stage 3 → Attack Damage ▲ 52.14% for 10 sec' = stageEnter:3 self attackDamagePct 52.14/10s — keyed to stageEnter:3 (the B3 cast frame, fires on ANY stage-3 caster incl. the co-B3 helm), NOT burstCast (own casts only — would halve uptime in a two-B3 comp) and NOT fullBurstEnter (lands ~22f late, past the cast frame); S2b cross-family reviewer (claude-fable-5) converged on stageEnter:3 as the literal read of 'entering Burst Stage 3'. (Burst) 'ATK ▲ 63.36% for 10 sec' = burstCast self atkPct 63.36/10s; 'Deals 2953.84% of final ATK as Burst Skill damage' = burstCast enemy flatDamage 2953.84 (auto FB-exempt: burst-cast resolves before the FB window, verified fact). || WEAPON SWAP (S1c) 'Warm Up at max stacks → Changes the weapon in use: Electric Power, Fully Full Charge / Damage 9.45% of final ATK / Max Ammunition 120 / Deactivation: when all rounds fired / Gains Pierce' = weaponSwap damagePct 9.45 / maxAmmo 120 / maxShots 120 / hasPierce true / durationSec 300, triggered hitCount:5 + swapGate:'unswapped' (Warm Up stacks once per base full charge, max 5 → swap after 5 base charges; swapGate keeps the 120 swap shots from re-triggering it). The end is USES-BASED: maxShots:120 terminates right after the 120th round ('deactivation: when all rounds are fired'); durationSec 300 is a hard bound longer than any fight so it NEVER truncates the 120 rounds (S2b reviewer: a durationSec that expires before round 120 is the single largest error available in this kit). hasPierce is inert at scope lock (PIERCE_CORE_DOUBLE hard-off, no pierceDamagePct carrier → byte-identical totals; tagged for kit completeness, scoped to swap shots only). || OVER ENERGY STAGE → BURST ADDITIONAL DAMAGE (modeled, S2b reviewer's flagship GAP): the burst's '934.76% of final ATK × Over Energy stage' additional hit is decomposed into FOUR burstCast enemy flatDamage 934.76 riders, each resourceGate'd at oeStage min 1/2/3/4 — they sum to stage × 934.76 (kit-exact ×stage law; flatDamage has no perResource field, so the stacked-gate decomposition is the faithful encoding). The oeStage resource (0..4) advances via hitCount:240 + swapGate:'swapped' → resource oeStage +1: the kit builds Over Energy +5% per 12 normal attacks WHILE in the swap, so 100% (= stage 1) accrues after 20 procs = 240 swapped normals, stage 2 after 480, etc. — the count is kit-exact; only the WALL-CLOCK timing of each stage is ⚑ (it rides the kit-silent swap cadence). STAGE MAX HP (S2b 'Stage 1: Max HP ▲ 2% continuously. Stage 2: Max HP ▲ 3% continuously. Stage 3: Max HP ▲ 7% continuously. Stage 4: Max HP ▲ 10.5% continuously', kit-cumulative: 'Each subsequent effect triggers all effects before it') is MODELED as four targetMaxHpPct SELF-grants (2/3/7/10.5, continuous, no duration) riding the SAME advance — each resourceGate'd at oeStage min 1/2/3/4 and dispatched AFTER the delta block, so each stage advance grants its own line and refreshes every earlier one (cumulative 22.5% at stage 4). The self-grants feed her own atkOfMaxHpPct conversion via liveMaxHp (own-kit, e3-admitted — ≈+123 ATK at stage 4, low-single-digit % damage, H7 in the spec). They carry the SAME ⚑ stage-timing as the riders (they ride the same advance); magnitudes are kit-exact. || UNMODELED (honest residuals, each with the reason): (S1b) 'Warm Up: Charge Speed ▲ 10% ×5' — cadence-only; the swap weapon is charge-speed-IMMUNE (fixed chargeTimeSec) and the sawtooth stack-RESET on swap entry has no primitive (a maxStacks buff never drops), so only the warm-up-phase cadence would be affected; not modeled (low). (S1d) 'when Electric Power ends: removes 100% of ammo' — INERT in the engine's shared-magazine model: the swap refills the mag to maxAmmo:120 on activation and maxShots:120 fires all 120, so the magazine is already at 0 when the swap ends and the base weapon forces its own reload; the explicit dump removes nothing that isn't already gone. (S2 Over Energy 0-100% meter) — intermediate state whose ONLY consumer is the stage advance, which is keyed directly to the kit-exact 240-normal count; the meter itself is not tracked. This also folds the verbatim 'Activates when Over Energy reaches 100%. Resets Over Energy...' trigger of the stage-effects line — its damage-relevant payload (the advance + the stage Max HP buffs) IS modeled (see the OVER ENERGY STAGE paragraph). || TOP ⚑ (dominant unmeasured lever): the Electric Power swap weapon's fire CADENCE is kit-silent (no datamined swap shot, no prose fire rate) — chargeTimeSec 0.25 (4 rounds/s, 120 rounds in 30s) is an ESTIMATE borrowed by analogy from base laplace (Treasure)'s beam tick rate; it sets the swap-mode DPS (9.45% × 120 per cycle), how fast oeStage builds, and thus when the burst additional damage unlocks. Measure the Electric Power fire rate in a focus video before trusting her board number. Secondary ⚑: the oeStage advance (hitCount:240) counts CUMULATIVE shots and swapGate gates FIRING not COUNTING, so the stage-unlock phasing is approximate (the per-stage MAGNITUDE is kit-exact; only the timing is ⚑).",
-  "resources": [{ "name": "oeStage", "initial": 0, "min": 0, "max": 4 }],
+  "resources": [
+    {
+      "name": "oeStage",
+      "initial": 0,
+      "min": 0,
+      "max": 4
+    }
+  ],
   "unmodeled": {
     "skill1": [
       "Activates when performing a Full Charge attack. Affects self. Warm Up: Charge Speed ▲ 10% continuously. Stacks up to 5 times.",
@@ -15,15 +22,30 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "self" },
-      "effects": [{ "kind": "buff", "stat": "atkOfMaxHpPct", "value": 4.05 }]
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkOfMaxHpPct",
+          "value": 4.05
+        }
+      ]
     },
     {
       "slot": "skill1",
-      "trigger": { "kind": "hitCount", "count": 5 },
+      "trigger": {
+        "kind": "hitCount",
+        "count": 5
+      },
       "swapGate": "unswapped",
-      "target": { "kind": "self" },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "weaponSwap",
@@ -40,47 +62,119 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "hitCount", "count": 240 },
+      "trigger": {
+        "kind": "hitCount",
+        "count": 240
+      },
       "swapGate": "swapped",
-      "target": { "kind": "self" },
-      "effects": [{ "kind": "resource", "name": "oeStage", "delta": 1 }]
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "oeStage",
+          "delta": 1
+        }
+      ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "hitCount", "count": 240 },
+      "trigger": {
+        "kind": "hitCount",
+        "count": 240
+      },
       "swapGate": "swapped",
-      "resourceGate": { "name": "oeStage", "min": 1 },
-      "target": { "kind": "self" },
-      "effects": [{ "kind": "buff", "stat": "targetMaxHpPct", "value": 2 }]
+      "resourceGate": {
+        "name": "oeStage",
+        "min": 1
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 2
+        }
+      ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "hitCount", "count": 240 },
+      "trigger": {
+        "kind": "hitCount",
+        "count": 240
+      },
       "swapGate": "swapped",
-      "resourceGate": { "name": "oeStage", "min": 2 },
-      "target": { "kind": "self" },
-      "effects": [{ "kind": "buff", "stat": "targetMaxHpPct", "value": 3 }]
+      "resourceGate": {
+        "name": "oeStage",
+        "min": 2
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 3
+        }
+      ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "hitCount", "count": 240 },
+      "trigger": {
+        "kind": "hitCount",
+        "count": 240
+      },
       "swapGate": "swapped",
-      "resourceGate": { "name": "oeStage", "min": 3 },
-      "target": { "kind": "self" },
-      "effects": [{ "kind": "buff", "stat": "targetMaxHpPct", "value": 7 }]
+      "resourceGate": {
+        "name": "oeStage",
+        "min": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 7
+        }
+      ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "hitCount", "count": 240 },
+      "trigger": {
+        "kind": "hitCount",
+        "count": 240
+      },
       "swapGate": "swapped",
-      "resourceGate": { "name": "oeStage", "min": 4 },
-      "target": { "kind": "self" },
-      "effects": [{ "kind": "buff", "stat": "targetMaxHpPct", "value": 10.5 }]
+      "resourceGate": {
+        "name": "oeStage",
+        "min": 4
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 10.5
+        }
+      ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "stageEnter", "stage": 3 },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 3
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -94,45 +188,112 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
-        { "kind": "buff", "stat": "atkPct", "value": 63.36, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 63.36,
+          "durationSec": 10
+        }
       ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 2953.84 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 2953.84,
+          "burstDesc": "allEnemies"
+        }
+      ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "resourceGate": { "name": "oeStage", "min": 1 },
-      "effects": [{ "kind": "flatDamage", "atkPct": 934.76 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "resourceGate": {
+        "name": "oeStage",
+        "min": 1
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 934.76
+        }
+      ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "resourceGate": { "name": "oeStage", "min": 2 },
-      "effects": [{ "kind": "flatDamage", "atkPct": 934.76 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "resourceGate": {
+        "name": "oeStage",
+        "min": 2
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 934.76
+        }
+      ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "resourceGate": { "name": "oeStage", "min": 3 },
-      "effects": [{ "kind": "flatDamage", "atkPct": 934.76 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "resourceGate": {
+        "name": "oeStage",
+        "min": 3
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 934.76
+        }
+      ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "resourceGate": { "name": "oeStage", "min": 4 },
-      "effects": [{ "kind": "flatDamage", "atkPct": 934.76 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "resourceGate": {
+        "name": "oeStage",
+        "min": 4
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 934.76
+        }
+      ]
     }
   ],
   "caveats": [

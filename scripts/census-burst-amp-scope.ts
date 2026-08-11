@@ -5,6 +5,7 @@
 //   npx tsx scripts/census-burst-amp-scope.ts --all      # every unit with a burst damage line
 //   npx tsx scripts/census-burst-amp-scope.ts --check    # exit 1 on an OVER-tag (gate mode)
 //   npx tsx scripts/census-burst-amp-scope.ts --near-miss # damage clauses one inserted word off
+//   npx tsx scripts/census-burst-amp-scope.ts --under    # the untagged-but-qualifying worklist
 //
 // `--check` fails on over-tagging only — a tag whose literal is absent is a WRONG claim of amp
 // eligibility. Under-tagging is a missing tag, which applies no amp and is therefore inert; the
@@ -121,9 +122,18 @@ const DAMAGE_LINE = /\bDeals\b[^.]*?\b[\d.]+%/i;
 const DAMAGE_LINE_LOOSE =
   /\bdeals?\b[^.]*?\bdamage\b|\bdamage\b[^.]*?\bdeals?\b/i;
 
+// "Affects the same …" = this block reuses the PREVIOUS block's scope, so it inherits its
+// literal. The localization spells it SEVEN ways across 13 occurrences — "target(s)", "targets",
+// "target", "enemy unit(s)", "enemy units", plus status-qualified variants ("… when in Calm
+// status") — so matching only the "target(s)" form silently dropped the inheritance on `epinel`,
+// `sakura-bloom-in-summer`, `julia`, `brid`, `guillotine`, `ether`, `mihara-bonding-chain` and
+// `laplace`. Third phrasing-variant hole of the same family as DAMAGE_LINE and the stray
+// article; matched loosely on purpose.
+const SAME_TARGET = /Affects the same (?:target|enemy unit)/i;
+
 /**
  * Split a burst description into its '■' blocks, pairing each scope clause with whether that
- * block deals damage. "Affects the same target(s)" inherits the previous block's clause.
+ * block deals damage. An "Affects the same …" block inherits the previous block's clause.
  */
 export function kitBlocks(burstText: string): KitBlock[] {
   const out: KitBlock[] = [];
@@ -139,7 +149,7 @@ export function kitBlocks(burstText: string): KitBlock[] {
     let clause = affects.join(' ');
     if (!clause) {
       clause = lastScope; // "Activates when …" with no Affects — inherits
-    } else if (/Affects the same target\(s\)/i.test(clause)) {
+    } else if (SAME_TARGET.test(clause)) {
       clause = `${clause} [inherits: ${lastScope}]`;
     } else {
       lastScope = clause;
@@ -439,6 +449,50 @@ function reportNearMisses(rows: Row[]) {
   );
 }
 
+/**
+ * The under-tagged worklist, split by how safe a mechanical tag would be. A unit whose EVERY
+ * damage-bearing block carries the literal can be tagged wholesale; one with a mix needs the tag
+ * placed per block, because only some of its damage lines qualify.
+ */
+function reportUnderTagged(rows: Row[]) {
+  const under = rows.filter((r) => r.verdict === 'under-tagged');
+  const clean: Row[] = [];
+  const mixed: Row[] = [];
+  for (const r of under) {
+    const dmg = r.blocks.filter((b) => b.dealsDamage);
+    const lit = dmg.filter((b) => b.literals.length);
+    // Wholesale is safe only when every damage block qualifies AND they all want the SAME tag.
+    // `2b` is the counter-example: "Affects all enemies" on her distributed nuke and "Affects 1
+    // enemy unit(s) with the highest remaining HP" on her additional-damage line, so a single
+    // blanket value would mis-tag one of the two.
+    const distinct = new Set(dmg.flatMap((b) => b.literals));
+    (lit.length === dmg.length && distinct.size === 1 ? clean : mixed).push(r);
+  }
+  console.log(
+    'Untagged units whose damage block DOES carry a literal. Tagging them is board-inert while\n' +
+      'no amp shares their comps, but it is a real eligibility claim the day one does.\n'
+  );
+  console.log(
+    `SAFE TO TAG WHOLESALE — every damage block qualifies (${clean.length}):`
+  );
+  for (const r of clean) {
+    console.log(
+      `  ${r.slug.padEnd(28)} ${String(r.untaggedDamage).padStart(2)} effect(s)  ${r.literals.join('+')}`
+    );
+  }
+  console.log(
+    `\nTAG PER BLOCK — only some damage blocks qualify (${mixed.length}):`
+  );
+  for (const r of mixed) {
+    console.log(`  ${r.slug} (${r.untaggedDamage} untagged effect(s))`);
+    for (const b of r.blocks.filter((x) => x.dealsDamage)) {
+      console.log(
+        `      ${b.literals.length ? 'QUALIFIES  ' : 'no literal '} ${b.clause}`
+      );
+    }
+  }
+}
+
 function main() {
   const argv = process.argv.slice(2);
   const showAll = argv.includes('--all');
@@ -448,6 +502,10 @@ function main() {
 
   if (argv.includes('--near-miss')) {
     reportNearMisses(rows);
+    return;
+  }
+  if (argv.includes('--under')) {
+    reportUnderTagged(rows);
     return;
   }
 

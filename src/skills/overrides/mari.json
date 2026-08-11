@@ -16,8 +16,12 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "shotFired" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -32,22 +36,44 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "shotFired" },
-      "target": { "kind": "self" },
-      "effects": [{ "kind": "gainPierce", "durationSec": 5 }]
-    },
-    {
-      "slot": "skill2",
-      "trigger": { "kind": "shotFired" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
-        { "kind": "buff", "stat": "atkPct", "value": 30.78, "durationSec": 5 }
+        {
+          "kind": "gainPierce",
+          "durationSec": 5
+        }
       ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "shotFired" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 30.78,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -61,14 +87,28 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 639.36 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 639.36,
+          "burstDesc": "allEnemies"
+        }
+      ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
         {
           "kind": "buff",

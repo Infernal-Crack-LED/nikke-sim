@@ -15,39 +15,91 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "interval", "sec": 20 },
-      "target": { "kind": "alliesTopAtk", "count": 3, "byFinalAtk": true },
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 3,
+        "byFinalAtk": true
+      },
       "effects": [
-        { "kind": "buff", "stat": "atkPct", "value": 31.83, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 31.83,
+          "durationSec": 10
+        }
       ]
     }
   ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "allies" },
-      "effects": [{ "kind": "buff", "stat": "critDamagePct", "value": 11.13 }]
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 11.13
+        }
+      ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "chargeCounter", "count": 10 },
-      "target": { "kind": "allies" },
-      "effects": [{ "kind": "burstCdr", "seconds": 2.83 }]
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 10
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 2.83
+        }
+      ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 367.34 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 367.34,
+          "burstDesc": "singleEnemy"
+        }
+      ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "allies" },
-      "effects": [{ "kind": "heal", "ticks": 10, "intervalSec": 1 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
     }
   ]
 }

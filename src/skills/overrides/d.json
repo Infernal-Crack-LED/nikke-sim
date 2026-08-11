@@ -1,6 +1,13 @@
 {
   "note": "Kit-autonomy gauntlet 2026-08-03. UNIT: d — the display name 'D', SMG Attacker, Wind, Burst III, Elysion, cd 40s, ammo 120; NOT 'D: Killer Wife' (slug d-killer-wife, SR/Fire) — the lint-slug-disambiguation base 'D' is inherently ambiguous, this override keys the exact slug `d`. NEW UNIT (first model; no prior override, simSupported flipped by this gauntlet). All lvl-10 magnitudes datamined. Cross-family corroborated: S2b claude-fable-5 test-faithfulness review converged on all 9 line dispositions (incl. the two refinements it drove: UNMODELED self-lifesteal, time-bounded immunity window); S5/S6 claude-opus-5 blind test-writer / override-writer and S7 kimi-code/k3 reconciling judge — see scripts/kit-autonomy/results/d.json. || LINE INVENTORY (9 kit lines, all accounted): MODELLED (7 load-bearing): (S1) fullBurstEnter -> self -> elemAdvantageDamagePct 46.93 /15s — 'Elemental Advantage Attack Damage' is the advantage-gated Damage-Up ELEMENT bucket (MEASURED placement 2026-07-14 battery 5, sim.ts elem bucket: counted only when BEATS[Wind]=Iron === boss element), NOT generic attackDamagePct; fires on EVERY team Full Burst (trigger is literal 'entering Full Burst', not her own cast) and refreshes per entry. (S2-a) passive -> all allies -> fillGauge 98.56 — 'Fills Burst Gauge by 98.56%. Activates 1 time(s) per battle' at 'stage target appears' = battle start: a passive applies exactly once at frame 0 (engine semantics), which IS the once-per-battle fill; an instant fill, NOT a burstGenPct rate buff. (S2-b) passive -> self -> resource stunImmune +1, and (S2-c-expiry) interval:36.95 -> self -> resource stunImmune -1 — together these two blocks are 'Gains immunity to Stun for 36.95 sec': the engine has no CC/immunity model (the v1 boss never stuns), so the immunity is defensively INERT, but it is the load-bearing GATE FEED of the burst's conditional FB extension — modeled as a resource window seeded to 1 at frame 0 and decremented at t=36.95s, reproducing the window [0, 36.95s] the gate reads. The defensive all-ally scope of the immunity (boss applies no stun at scope) contributes nothing else. (S2-d) passive -> self -> elemAdvantageDamagePct 91.09 /15s — fused frame-0 timed passive (e-h precedent): 'when the stage target appears' = battle start, ONE application, expires at 15s, never re-applied (NOT permanent, NOT fullBurstEnter-keyed). (burst-a) burstCast -> enemy -> flatDamage 426.24 — 'Deals 426.24% of final ATK as Burst Skill damage' to all enemies (= the single partless boss); burstCast resolves pre-FB so it never takes the +50% FB major (verified engine fact); keyed to HER OWN casts (a co-B3's rotations produce no nuke). (burst-b) burstCast -> alliesOfClass Attacker -> partsDamagePct 42.38 /15s — 'Damage to Parts' on all Attacker allies (includes self: d is an Attacker); parsed-but-INERT in v1 (partless boss) — kept as a real stat buff for kit fidelity per repo convention (helm/anis-sparkling-summer), never laundered into a live bucket. (burst-c) burstCast -> all allies -> fullBurstExtend 5.04, resourceGate stunImmune>=1 — 'Full Burst Duration ▲5.04 sec IF the skill user has immunity to Stun': the gate reads the timed immunity window above at cast time. WHOLE-PICTURE: her burst CD (40s) EXCEEDS the immunity window (36.95s), so at most ONE of her casts can ever land inside it — with her own 98.56% opener fill the first FB chain opens in the first seconds and she casts into it (gate OPEN, FB extended to ~15.04s); every later cast lands after 36.95s (gate CLOSED, base 10s FB). SKIPPED -> unmodeled (verbatim, both S1 lifesteal lines): self-targeted HP recovery — v1 models no HP amounts, and a `recovery` trigger fires only when the OWNER of the trigger RECEIVES a heal, so a self-heal is unobservable in ANY comp and feeds no consumer; encoding a `heal` effect would assert nothing (cross-family S2b claude-fable-5 independently converged on UNMODELED; the no-silent-drop record is the encoding, pinned by scripts/tests/units/d.test.ts D2). || ⚑ FLAGS (all UNMEASURED estimates): (⚑1, mandatory cadence tuple) SMG pullsPerSec / reloadFrames 111 / rolling-reload are datamine-unverified; her ammo 120 belt + 24/s-class SMG cadence drive her normal damage + burst-gauge contribution. Recipe: rounds/min + reload gap from any d focus video. (⚑2) STUN-GATE TIMING — the window is modeled at the datamined 36.95s via interval decrement; verify in-game that her SECOND burst (t>=40s) does NOT extend the FB window and her first does (FB-duration popup / banner length on a d focus recording). Residual semantics note: the modeled condition is the WINDOW, not a cast counter — a cast inside the window is extended whether or not it is her first; at scope (CD 40s > window 36.95s) the two readings coincide. (⚑3) elemAdvantageDamagePct pays out ONLY under real Wind advantage (vs an Iron boss) — byte-identical with the lines removed vs any other boss (pinned by test); confirm boss element when grading her board number. (⚑4) fillGauge landing = frame 0 (chain lock open at setup) — if a future scope adds boss-transition re-entries, 'stage target appears' could re-fire; at single-boss scope the once-per-battle reading is exact. ENGINE SEMANTICS CONFIRMED (gauntlet): passive applies once at frame 0; interval first-fires at t=sec; resourceGate reads the pool at trigger time; fullBurstExtend applied pre-FB accrues to pendingFbExtendSec and lands on the next FB start (sim.ts), observable as fullBurstStart.endFrame = frame + 600 + 302; partsDamagePct contributes 0 on the partless boss (byte-identical removal).",
-  "resources": [{ "name": "stunImmune", "initial": 0, "min": 0, "max": 1 }],
+  "resources": [
+    {
+      "name": "stunImmune",
+      "initial": 0,
+      "min": 0,
+      "max": 1
+    }
+  ],
   "unmodeled": {
     "skill1": [
       "Recovers 3.52% of attack damage as HP, lasts for 15 sec.",
@@ -17,8 +24,12 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "fullBurstEnter" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -32,20 +43,43 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "allies" },
-      "effects": [{ "kind": "fillGauge", "pct": 98.56 }]
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "fillGauge",
+          "pct": 98.56
+        }
+      ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "self" },
-      "effects": [{ "kind": "resource", "name": "stunImmune", "delta": 1 }]
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "stunImmune",
+          "delta": 1
+        }
+      ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -57,22 +91,48 @@
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "interval", "sec": 36.95 },
-      "target": { "kind": "self" },
-      "effects": [{ "kind": "resource", "name": "stunImmune", "delta": -1 }]
+      "trigger": {
+        "kind": "interval",
+        "sec": 36.95
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "stunImmune",
+          "delta": -1
+        }
+      ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 426.24 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 426.24,
+          "burstDesc": "allEnemies"
+        }
+      ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "alliesOfClass", "cls": "Attacker" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfClass",
+        "cls": "Attacker"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -84,10 +144,22 @@
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "allies" },
-      "resourceGate": { "name": "stunImmune", "min": 1 },
-      "effects": [{ "kind": "fullBurstExtend", "seconds": 5.04 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "resourceGate": {
+        "name": "stunImmune",
+        "min": 1
+      },
+      "effects": [
+        {
+          "kind": "fullBurstExtend",
+          "seconds": 5.04
+        }
+      ]
     }
   ]
 }

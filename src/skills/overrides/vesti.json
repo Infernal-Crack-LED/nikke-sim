@@ -17,8 +17,12 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "escalating",
@@ -49,40 +53,83 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
-        { "kind": "dot", "atkPct": 15.56, "durationSec": 18, "intervalSec": 1 }
+        {
+          "kind": "dot",
+          "atkPct": 15.56,
+          "durationSec": 18,
+          "intervalSec": 1
+        }
       ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
-        { "kind": "dot", "atkPct": 15.56, "durationSec": 18, "intervalSec": 1 }
+        {
+          "kind": "dot",
+          "atkPct": 15.56,
+          "durationSec": 18,
+          "intervalSec": 1
+        }
       ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
         {
           "kind": "escalating",
           "steps": [
-            { "kind": "flatDamage", "atkPct": 210.62 },
-            { "kind": "flatDamage", "atkPct": 247.25 },
-            { "kind": "flatDamage", "atkPct": 302.19 }
+            {
+              "kind": "flatDamage",
+              "atkPct": 210.62,
+              "burstDesc": "allEnemies"
+            },
+            {
+              "kind": "flatDamage",
+              "atkPct": 247.25,
+              "burstDesc": "allEnemies"
+            },
+            {
+              "kind": "flatDamage",
+              "atkPct": 302.19,
+              "burstDesc": "allEnemies"
+            }
           ]
         }
       ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "allies" },
-      "effects": [{ "kind": "fullBurstExtend", "seconds": -5 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "fullBurstExtend",
+          "seconds": -5
+        }
+      ]
     }
   ]
 }

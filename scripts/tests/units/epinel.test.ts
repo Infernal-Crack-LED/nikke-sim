@@ -346,7 +346,12 @@ describe('E5 — structure + documentation: nothing dropped, nothing fabricated'
     const b = shipped.burst[0];
     expect(b.trigger).toEqual({ kind: 'burstCast' });
     expect(b.target).toEqual({ kind: 'enemy' });
-    expect(b.effects).toEqual([{ kind: 'flatDamage', atkPct: 457.87 }]);
+    // burstDesc: her damage block reads '■ Affects all enemies.', the literal trina's amp
+    // names, so she is a true carrier under the literal-only ruling (owner 2026-08-10).
+    // Board-inert today — no amp shares her comps — but a real eligibility claim.
+    expect(b.effects).toEqual([
+      { kind: 'flatDamage', atkPct: 457.87, burstDesc: 'allEnemies' },
+    ]);
   });
 
   it('the modeled burst line is NOT in unmodeled; no `ignored` block anywhere', () => {

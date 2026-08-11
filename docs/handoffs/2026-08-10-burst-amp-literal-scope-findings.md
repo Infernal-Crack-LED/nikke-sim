@@ -177,21 +177,39 @@ burst dots and reports a distinct `dot-ineligible` verdict; the unit count went 
 Board-inert (no dot carrier shares a comp with an amp). Fixing the gap means threading
 `burstDesc` through the dot record and its tick path — an engine change, out of scope here.
 
-## 5. Recorded, not applied — 24 literal carriers outside the graded slice
+## 5. The untagged-carrier debt is CLEARED
 
-The census finds 24 units whose damage block IS literal and which carry no tag:
+The 24-unit list this section used to hold (25 after the batch-6 census fix reclassified `kilo`)
+is gone — owner-directed, all tagged. **28 instances across 25 units**, board byte-identical on a
+full diff because none of them shares a comp with `trina` or `jackal`.
 
-`2b` `anchor` `arcana` `arcana-fortune-mate` `d` `delta-ninja-thief` `dolla` `epinel` `harran`
-`helm-aquamarine` `laplace-ultimate-hero` `maiden` `mari` `mihara` `milk` `nayuta` `neon`
-`privaty-unkind-maid` `raven` `rei-ayanami-tentative-name` `rei-ayanami` `vesti-tactical-upgrade`
-`vesti` `yulha`
+- **22 units tagged wholesale** — every damage block qualifies AND wants the same tag.
+- **3 units tagged PER BLOCK**, because only some of their damage blocks qualify:
+  - `2b` — `allEnemies` on the 2439.36% distributed nuke, `singleEnemy` on the 792%
+    additional-damage line. Two different literals in one burst; a blanket tag would have
+    mis-tagged one of them, which is why the worklist now refuses to call a multi-literal unit
+    "safe to tag wholesale".
+  - `helm-aquamarine` — `allEnemies` on the 164.83% nuke; the Electric-Code-gated second block
+    ("Affects the target") is NOT a literal and stays untagged.
+  - `laplace-ultimate-hero` — `allEnemies` on the 2953.84% nuke; the four Over-Energy-staged
+    934.76% blocks ("Affects the enemy nearest to the crosshair") stay untagged.
 
-Under-tagging is inert — a missing tag applies no amp — and none of these shares a comp with
-`trina` or `jackal`, so tagging them moves nothing today. They are LISTED rather than swept
-because each is a per-unit review under the phase-4 checklist (batch-and-stop). The list is
-pinned in the census test so it can shrink deliberately and never grow silently. Tagging all 24
-in one mechanical pass is a legitimate alternative if the owner prefers it — the census decides
-each one and the board impact is provably zero — but it is the owner's call, not the sweep's.
+The vitest pin no longer holds a list: it asserts the debt set is EMPTY, and that every remaining
+census mismatch is the engine-gap class. An empty invariant beats a list that needs maintaining,
+and anything reappearing there is a NEW gap rather than a known one.
+
+**A third phrasing-variant hole surfaced doing this** — the same family as the DAMAGE_LINE and
+stray-article bugs. The "this block reuses the previous block's scope" rule matched only
+`Affects the same target(s)`, but the localization spells it SEVEN ways across 13 occurrences
+(`targets`, `target`, `enemy unit(s)`, `enemy units`, plus status-qualified variants). Matching
+only the parenthesised form silently dropped inheritance on `epinel`, `sakura-bloom-in-summer`,
+`julia`, `brid`, `guillotine`, `ether`, `mihara-bonding-chain` and `laplace` — `epinel` was
+misfiled as needing per-block care when her second block plainly inherits "Affects all enemies".
+Now matched loosely. **Three holes of one shape in one session: the instrument was too literal
+about a kit text that is not written consistently.**
+
+The worklist that drove all this is committed as `--under`, which splits the remaining work into
+"safe to tag wholesale" and "tag per block" so the next person does not have to re-derive it.
 
 ## 6. Two carry-forwards for whoever tests the amp
 

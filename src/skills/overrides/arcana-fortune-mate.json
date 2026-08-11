@@ -146,7 +146,8 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 554.4
+          "atkPct": 554.4,
+          "burstDesc": "allEnemies"
         }
       ]
     }

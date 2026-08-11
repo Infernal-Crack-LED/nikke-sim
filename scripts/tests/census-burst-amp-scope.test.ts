@@ -263,47 +263,30 @@ describe('burst-amp scope census — the roster invariant', () => {
     expect(nearMiss('Affects all enemies.')).toBeNull();
   });
 
-  it('KNOWN DEBT: the literal carriers outside the graded slice are not yet tagged', () => {
-    // Under-tagging is inert (a missing tag applies no amp), and none of these units shares a
-    // comp with trina or jackal, so tagging them moves nothing today. They are listed rather
-    // than swept because each one is a per-unit review under the phase-4 checklist. This pin
-    // exists so the debt is VISIBLE and any change to it is deliberate: shrink the list as
-    // units are reviewed, never grow it silently.
-    // EVERY entry below is an EXACT override slug (the list is derived from the filenames in
-    // src/skills/overrides/), so the bare base names are the BASE units, not their variants —
-    // `helm-aquamarine` is here and `helm` is not; `privaty-unkind-maid` AND `privaty` (the
-    // AR/Water Treasure base) are both here; `d` is the SMG/Wind base, not `d-killer-wife`;
-    // `neon` is the SG/Fire base, not `neon-vision-eye` or `neon-blue-ocean`.
+  it('NO literal carrier is left untagged — the debt is CLEARED', () => {
+    // This pin held an explicit 25-unit list of qualifying-but-untagged units. They are all
+    // tagged now: 25 instances across 22 units wholesale (every damage block wanting the same
+    // tag) plus 3 units tagged per block, because only some of their damage blocks qualify —
+    // `2b` (allEnemies on the distributed nuke, singleEnemy on the additional-damage line),
+    // `helm-aquamarine` ("Affects the target" second block excluded) and
+    // `laplace-ultimate-hero` (four "nearest to the crosshair" Over-Energy blocks excluded).
+    // Board byte-identical: none of them shares a comp with trina or jackal.
+    //
+    // The list is gone rather than emptied on purpose — an empty invariant is stronger than a
+    // list that has to be maintained. Anything that reappears here is a NEW gap.
     const under = rows
       .filter((r) => r.verdict === 'under-tagged')
       .map((r) => r.slug);
-    expect(under).toEqual([
-      '2b',
-      'anchor',
-      'arcana-fortune-mate',
-      'arcana',
-      'd',
-      'delta-ninja-thief',
-      'dolla',
-      'epinel',
-      'harran',
-      'helm-aquamarine',
-      'kilo',
-      'laplace-ultimate-hero',
-      'maiden',
-      'mari',
-      'mihara',
-      'milk',
-      'nayuta',
-      'neon',
-      'privaty-unkind-maid',
-      'raven',
-      'rei-ayanami-tentative-name',
-      'rei-ayanami',
-      'vesti-tactical-upgrade',
-      'vesti',
-      'yulha',
-    ]);
+    expect(under).toEqual([]);
+  });
+
+  it('the only remaining mismatches are the engine-gap dot/stackedNuke carriers', () => {
+    // With the debt cleared, every unit the census still flags is blocked by the primitive,
+    // not by a missing tag. If a non-dot verdict shows up here, something regressed.
+    const flagged = rows.filter((r) => r.verdict !== 'ok');
+    expect(flagged.map((r) => r.verdict)).toEqual(
+      flagged.map(() => 'dot-ineligible')
+    );
   });
 
   it('the two literals are exactly the strings the two amps quote', () => {
