@@ -85,14 +85,48 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   U28 rider set rather than a unit-local fix.
   [batch-6 findings](2026-08-10-faithfulness-batch6-findings.md).
 
-- **⇒ FAITHFULNESS PASS phase-4 sweep — NEXT UP IS BATCH 7; a fresh session starts at
-  [2026-08-10-faithfulness-batch7-START-HERE.md](2026-08-10-faithfulness-batch7-START-HERE.md).**
-  Self-contained: tree state, what the three burst-amp rulings changed, the 15 remaining
-  graded-comp units with per-unit signals (comps / board / note length / history-phrase count), a
-  suggested six, the recurring-defect detector, and the batch-6 lesson about silent holes in
-  instruments. **It SUPERSEDES the batch-6 START-HERE doc** — do not work from that one.
+- **⇒ ENGINE — `jill` (AR/Electric) loses her MEASURED cadence during her burst swap. HIGHEST-VALUE
+  OPEN ITEM ON THE BOARD.** `u.swap.pullsPerSec ?? PULLS_PER_SEC[u.swap.weapon ?? u.char.weapon]`
+  never falls back to `u.pullsPerSec`, and `jill` is the ONLY carrier roster-wide: her
+  `charFixes.pullsPerSec: 2.5` is discarded for the 10s of every same-weapon `trueNormals` burst
+  swap, which then runs at `PULLS_PER_SEC['AR']` = 12/s (4.8×). A reverted probe moves her
+  **1.924 HOT → 0.983 OK** with **every measured full-burst count preserved** and sub-1% ripple
+  elsewhere. Needs its own `/scientific-method` pass + owner; that pass must decide the fallback's
+  shape for DIFFERENT-weapon swaps (`k`, `nayuta` must NOT inherit the base cadence) and check
+  `jill` for fit-exposure to the buggy cadence.
+  [batch-7 findings](2026-08-10-faithfulness-batch7-findings.md).
 
-- **Sweep record (batches 1–6, all landed — reference only, nothing open here):**
+- **⇒ OWNER RULING WANTED — the `PARSER BASELINE (HYPOTHESIS — NOT a validated model)` banner on
+  23 overrides.** All 23 now carry spec tests + gauntlet passes, and all 23 contradict the banner
+  elsewhere in their own prose. It conflates "kit-faithfulness unvalidated" (false for all of them)
+  with "magnitude not hand-tuned against a graded fight" (true for most). Want ONE wording
+  decision; `noir` and `chisato` were done per-unit in batch 7 as the worked example.
+
+- **⇒ OWNER RULING WANTED — ally-targeted `damageTakenPct` on 3 carriers** (`moran`, `rouge`,
+  `rumani`). The StatKey is boss-side (the engine sums it from the enemy buff list only), so all
+  three are applied-and-never-read: correct in outcome, live-looking in the file. Either move them
+  to `unmodeled` or have `validate-overrides.ts` warn on the target/stat mismatch.
+
+- **Verify the audit doc's F7 ramp-bake membership before the next batch leans on it.** Two of its
+  ~10 names (`chisato`, `rouge`) carry no stack-ramp line at all; the other 8 are unchecked.
+
+- **Re-file `snow-white-heavy-arms`'s Fully-Active "uses vs time" residual.** It was logged as H2
+  in `experiment-harness-ai.md`, closed 2026-07-21 and archived out of the tree, and is tracked
+  nowhere else; it now lives only in her override prose. Also 4 live citations still point at that
+  closed doc: `scripts/regression.ts:196`,
+  `scripts/blind-rebuild/code-bundle/code-sim-setup.ts:45`, `code-sim-effects.ts:125`,
+  `sim-core-c.ts:58` — successor is `docs/handoffs/scientific-method-harness.md`.
+
+- **⇒ FAITHFULNESS PASS phase-4 sweep — 9 graded-comp units remain**: `ada`, `ade-agent-bunny`,
+  `alice` (SR/Fire), `guillotine-winter-slayer`, `mast-romantic-maid`, `mihara-bonding-chain`,
+  `mint`, `quency-escape-queen`, `red-hood` (SR/Iron, NOT `rapi-red-hood`). Entry point stays
+  [2026-08-10-faithfulness-batch7-START-HERE.md](2026-08-10-faithfulness-batch7-START-HERE.md)
+  — its §2 rules, §4 open threads, §5 recurring-defect detector and §6/§7 procedure all still
+  bind; its §3 table is now 9 rows, not 15, and its suggested six is spent.
+  `quency-escape-queen` is still only tag-reviewed (checklist never run). `red-hood` carries the
+  5-unit lifesteal non-emitter question, which wants one roster-wide ruling, not 5 local fixes.
+
+- **Sweep record (batches 1–7, all landed — reference only, nothing open here):**
   [batch 1](2026-08-10-faithfulness-batch1-findings.md) ·
   [batch 2](2026-08-10-faithfulness-batch2-findings.md) ·
   [batch 3](2026-08-10-faithfulness-batch3-findings.md) ·

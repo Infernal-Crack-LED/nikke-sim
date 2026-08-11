@@ -12,17 +12,12 @@
 `data/characters.json` 2026-08-10 — do not trust a remembered pairing, five of eight were wrong on
 the first draft of this very paragraph:
 
-| slug       | is                | NOT                                              |
-| ---------- | ----------------- | ------------------------------------------------ |
-| `noir`     | SG/Wind           | —                                                |
-| `privaty`  | AR/Water Treasure | `privaty-unkind-maid` (SG/Electric)              |
-| `alice`    | SR/Fire           | `alice-wonderland-bunny` (SMG/Water)             |
-| `ada`      | RL/Electric       | —                                                |
-| `mint`     | RL/Iron           | —                                                |
-| `prika`    | SR/Water          | —                                                |
-| `rouge`    | SR/Electric       | —                                                |
-| `chisato`  | SMG/Iron          | —                                                |
-| `red-hood` | SR/Iron           | **`rapi-red-hood` (MG/Fire) — a DIFFERENT unit** |
+| slug       | is          | NOT                                              |
+| ---------- | ----------- | ------------------------------------------------ |
+| `alice`    | SR/Fire     | `alice-wonderland-bunny` (SMG/Water)             |
+| `ada`      | RL/Electric | —                                                |
+| `mint`     | RL/Iron     | —                                                |
+| `red-hood` | SR/Iron     | **`rapi-red-hood` (MG/Fire) — a DIFFERENT unit** |
 
 Hyphenated slugs in the table below (`quency-escape-queen` SMG/Water, `ade-agent-bunny` SR/Iron,
 `guillotine-winter-slayer` AR/Water, `mast-romantic-maid` MG/Water, `mihara-bonding-chain`
@@ -76,58 +71,72 @@ Full record: [burst-amp literal-scope findings](2026-08-10-burst-amp-literal-sco
    AND `scripts/tests/units/*`).
 5. **Verify claims before writing them down.** This is not boilerplate — see §5.
 
-## 3. The 15 remaining graded-comp units
+## 3. The 9 remaining graded-comp units
+
+> **Batch 7 is done** — `noir`, `privaty`, `snow-white-heavy-arms`, `chisato`, `rouge` and `prika`
+> are reviewed and struck from the table below; its results are in
+> [batch-7 findings](2026-08-10-faithfulness-batch7-findings.md). Everything else in THIS doc
+> still binds: §2's rules, §4's open threads (minus the two it resolved), §5's recurring-defect
+> detector, §6's instrument lesson and §7's per-unit procedure. **§0's tree state is stale** — work
+> from a fresh branch off `main` and re-read the board yourself.
+>
+> Batch 7 added one more entry to §5's defect class and one to §6's lesson: the **audit doc's own
+> pattern lists are premises too**. Its F8 swap-cadence claim was true and led to the `jill`
+> (AR/Electric) finding — the board's worst unit, 1.924 → 0.983 under a reverted probe — while its
+> F7 ramp-bake membership was WRONG for both of the batch's units on that list. Verify a forwarded
+> per-unit prior before you spend a review on it.
 
 `hist` = count of history/inertness phrases in note+caveats (the §4 detector's cheap proxy — a
 high number is a strong prior for a falsified claim, not proof of one).
 
 | unit                       | comps | board      | note len | hist | notes                                                                                 |
 | -------------------------- | ----- | ---------- | -------- | ---- | ------------------------------------------------------------------------------------- |
-| `snow-white-heavy-arms`    | 4     | 0.954 COLD | 4,864    | 4    | most comps in the slice                                                               |
-| `privaty`                  | 3     | 1.120 HOT  | 3,101    | 4    | **hottest**; tagged this session, checklist NOT run                                   |
-| `chisato`                  | 3     | 0.968 COLD | 5,684    | 1    | F7 ramp-bake + F8 swap-economy carrier                                                |
-| `rouge`                    | 3     | 1.027      | 4,230    | 3    | shares N3 with `trina`                                                                |
-| `noir`                     | 2     | 0.884 COLD | 5,037    | 4    | **coldest**; tagged this session, checklist NOT run                                   |
 | `mast-romantic-maid`       | 2     | 0.951 COLD | 1,940    | 2    | F7 ramp-bake carrier                                                                  |
 | `red-hood`                 | 2     | 0.970 COLD | 2,634    | 2    | one of the 5 lifesteal non-emitters (see §4)                                          |
 | `ada`                      | 2     | 0.995      | 1,530    | 1    | smallest note in the slice                                                            |
 | `mihara-bonding-chain`     | 2     | 1.034 HOT  | 2,920    | 2    | burst damage is a `dot`; her clause is NON-literal, so the engine gap is MOOT for her |
 | `quency-escape-queen`      | 2     | 1.041 HOT  | 4,069    | 1    | tagged this session, checklist NOT run                                                |
 | `alice`                    | 1     | 1.101 HOT  | 1,236    | 4    | high hist-density for a short note                                                    |
-| `prika`                    | 1     | 0.890 COLD | 6,992    | 6    | **highest hist count**; 5e trio (cross-unit event bus) — held                         |
 | `mint`                     | 1     | 1.015      | 6,378    | 2    | 5e trio (XOR toggle) — held                                                           |
 | `ade-agent-bunny`          | 1     | 0.964 COLD | 2,757    | 2    |                                                                                       |
 | `guillotine-winter-slayer` | 1     | 1.024      | 5,483    | 3    | burst is a `dot` with a QUALIFYING literal → engine-gap blocked                       |
 
-**Three units are PARTIALLY reviewed.** `noir`, `privaty` and `quency-escape-queen` had their
-`burstDesc` tags applied and carrier caveats written this session, but the **11-item checklist was
-never run on them**. Treat them as unreviewed apart from the tag.
+**`quency-escape-queen` is PARTIALLY reviewed** — her `burstDesc` tag and carrier caveat were
+applied, but the **11-item checklist was never run on her**. Treat her as unreviewed apart from
+the tag. (`noir` and `privaty` were in the same state; batch 7 finished both.)
 
-### Suggested batch-7 six
+### Picking the next batch
 
-`noir` (0.884, coldest, 2 comps), `privaty` (1.120, hottest, 3 comps), `snow-white-heavy-arms`
-(4 comps), `chisato` (3 comps + two F-pattern carries), `rouge` (3 comps), `prika` (highest
-hist-density, and 0.890 COLD). That is the board-pain × comp-count × prose-risk product. Swap
-`prika` for `alice` (1.101 HOT) if you would rather not touch a held 5e-trio unit.
+Board pain x comp-count x prose-risk, same product as before. `red-hood` (SR/Iron, 2 comps) and
+`quency-escape-queen` (1.041 HOT, 2 comps, tag-only review so far) carry the most unresolved
+structure; `mihara-bonding-chain` (1.034 HOT) and `ade-agent-bunny` (0.964 COLD) are the next
+board pain; `alice` (1.101 HOT, SR/Fire) has the highest history-phrase density per character of
+note left. `mint` and `guillotine-winter-slayer` are structurally blocked (5e trio / the burst-dot
+amp engine gap) and are cheap prose-only passes at best.
 
-## 4. Open threads a batch-7 unit will run into
+## 4. Open threads the next batch will run into
 
 - **`red-hood` is one of 5 lifesteal non-emitters** (`d`, `moran`, `red-hood`, `rem`, `tia` of 13
   carriers). Batch 4 proved the class board-inert for a SELF-scoped lifesteal (a heal fires
   recovery only at its own targets, so it cannot reach an ally-side consumer; a probe emit on
   `moran` moved the board by zero). Check her scope; if self, it is a consistency item, not a fit
   item. **One roster-wide ruling is wanted, not 5 unit-local fixes.**
-- **`chisato` / `mast-romantic-maid` are F7 ramp-bake carriers** — flag, never inline-fix, and do
-  not double-correct hand-averaged units.
-- **`chisato` is an F8 swap-economy unit.** The engine's swap branch reads
-  `u.swap.pullsPerSec ?? PULLS_PER_SEC[...]` and never falls back to `u.pullsPerSec`.
-- **`mint` / `prika` are 2 of the 5e state-machine trio** — explicitly NOT solvable by one
-  registry; leave held.
+- **`mast-romantic-maid` is listed as an F7 ramp-bake carrier — VERIFY THAT BEFORE ACTING ON IT.**
+  Batch 7 checked the two F7 names in its own six (`chisato`, `rouge`) and BOTH were false
+  positives: neither carries a stack-ramp line at all. The remaining F7 names are unchecked. When
+  a carrier is real: flag, never inline-fix, and do not double-correct hand-averaged units.
+- **The F8 swap-cadence gap is REAL but has exactly ONE carrier — `jill` (AR/Electric), and it is
+  the largest open item on the board.** `u.swap.pullsPerSec ?? PULLS_PER_SEC[...]` never falls back
+  to `u.pullsPerSec`; `jill` is the only unit with both a measured `charFixes.pullsPerSec` and a
+  weapon swap. `chisato` was cleared (no measured cadence, same-weapon swap). See QUEUE + the
+  batch-7 findings; it needs `/scientific-method` + owner, not a sweep edit.
+- **`mint` is one of the 5e state-machine trio** — explicitly NOT solvable by one registry; leave
+  held. (`prika`, the second, was prose-reviewed in batch 7 with her state machine untouched.)
 - **`guillotine-winter-slayer`** carries a qualifying amp literal on a burst `dot`, so she is
   structurally amp-ineligible (engine gap, QUEUE). Nothing to tag; do not try.
 - **U28 rider class is OPEN** — `neon-vision-eye`'s "additional damage" modeled as
   `extraHitDamagePct` rather than `flatDamage` (a gauge-economy choice). Owner deferred it
-  2026-08-10. **If another unit in your six has the same shape, add it to that one ruling rather
+  2026-08-10. **If another unit has the same shape, add it to that one ruling rather
   than fixing it locally.**
 
 ## 5. The recurring defect class — it is still the highest-yield finding, and it got worse

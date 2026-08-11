@@ -9,7 +9,43 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) THE UNTAGGED AMP-CARRIER DEBT IS CLEARED — 28 `burstDesc` instances
+- **(2026-08-10, latest) FAITHFULNESS BATCH 7 — six graded-comp prose reviews, and the board's
+  worst unit localized to an engine fallback (SURFACED, NOT ENACTED).** Units reviewed against the
+  phase-4 checklist: `noir` (SG/Wind), `privaty` (AR/Water Treasure), `snow-white-heavy-arms`,
+  `chisato` (SMG/Iron), `rouge` (SR/Electric), `prika` (SR/Water). Applied = prose only; every
+  block array byte-identical, board byte-identical (7/14/23/22, 142 datapoints), `verify.sh` green.
+  Findings: [batch-7 findings](handoffs/2026-08-10-faithfulness-batch7-findings.md).
+  **The finding that matters is `jill` (AR/Electric).** The F8 swap-cadence gap —
+  `u.swap.pullsPerSec ?? PULLS_PER_SEC[...]`, which never falls back to `u.pullsPerSec` — has
+  exactly ONE carrier roster-wide, and it is the board's single worst unit. She carries a MEASURED
+  `charFixes.pullsPerSec: 2.5` (named in the engine's own table comment) and her burst is a
+  same-weapon `trueNormals` swap with no `weapon` field, so for 10s of every burst the branch
+  resolves to `PULLS_PER_SEC['AR']` = 12/s — **4.8× her measured cadence**, in the window where her
+  normals are also true damage. A reverted probe (fall back to `u.pullsPerSec` only when
+  `u.swap.weapon` is undefined) moves her **1.924 HOT → 0.983 OK** (0.92/2.39/2.46 → 0.92/1.00/1.03,
+  MAD 0.978 → 0.038, rank 45/45 → 10/45) with the board at ±5% 14→15, ±8% 23→24. **Every measured
+  full-burst count is preserved**, and the unchanged `0.92` datapoint is the N1 comp where she never
+  bursts — an independent discriminator for the mechanism. This is a faithfulness defect (a measured
+  constant discarded by a `??` chain), not a calibration one, but it is an ENGINE change: it needs
+  its own `/scientific-method` pass + owner, which must settle the fallback's shape for
+  different-weapon swaps (`k`, `nayuta`) and check `jill` for fit-exposure to the buggy cadence.
+  Three further cross-cutting items surfaced, none enacted: the `PARSER BASELINE (HYPOTHESIS — NOT
+a validated model)` banner is stale as a class on **23 overrides** (all now have spec tests and
+  gauntlet passes, and all 23 self-contradict the banner elsewhere in their own prose — one wording
+  decision, not 23 judgement calls); **ally-targeted `damageTakenPct` is off-contract on 3 carriers**
+  (`moran`, `rouge`, `rumani`) — the engine reads that StatKey from the enemy buff list only, so all
+  three are applied-and-never-read, correct in outcome but live-looking; and **the audit doc's F7
+  ramp-bake list has false positives** (`chisato` and `rouge` carry no stack-ramp line at all).
+  Per-unit, the largest defect was `chisato`'s note asserting "CRIT now OFF on true normals …
+  enforced at the engine `crit && !trueFlavor` guard" as a live claim — doubly false, since no such
+  guard has ever existed and the 2026-07-21 ruling behind it was itself reversed in-game-confirmed on
+  2026-07-25 — with the file contradicting itself ~2,000 chars later. Prose across the six went
+  34,233 → 28,101 chars (−17.9%), deleting 2 self-contradictions, 4 falsified live claims and 3
+  rotted citations. **Method lesson: the audit's own findings docs are premises too** — the F8 claim
+  forwarded by the START-HERE doc was true and produced the `jill` finding, while its F7 membership
+  was wrong for both of this batch's units on that list.
+
+- **(2026-08-10) THE UNTAGGED AMP-CARRIER DEBT IS CLEARED — 28 `burstDesc` instances
   across 25 units; a third localization phrasing-hole found doing it.** Owner-directed after the
   literal-only + block-level + stray-article rulings. Every unit whose burst damage block carries
   a qualifying literal is now tagged. **Board byte-identical on a full diff** (7/14/23/22, 142

@@ -11,9 +11,9 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 156 | 37.9% |
-| Other / see caveats | 97 | 23.5% |
-| Missing engine primitive / trigger | 90 | 21.8% |
+| Defensive / HP / shield / aggro | 158 | 38.3% |
+| Other / see caveats | 94 | 22.8% |
+| Missing engine primitive / trigger | 91 | 22.1% |
 | Out-of-domain / parser unsupported | 30 | 7.3% |
 | Weapon-state / shot-count approximation | 11 | 2.7% |
 | Partless boss | 11 | 2.7% |
@@ -24,7 +24,7 @@
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (156)
+### Defensive / HP / shield / aggro (158)
 
 **A2** (a2)
 
@@ -123,7 +123,9 @@ Deals 14.96% of final ATK as additional damage.
 **Chisato** (chisato)
 
 - **skill1:** Only when at 100%: Dodging Bullets: Invulnerable for 2 sec.
-  - *Why:* skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES (live from t=0, expire at 60/90/150s — the derived >70%/>55%/>25% crossing times of the 0.5%/s drain — and REFRESH on her own burstCast, which recharges Extrasensory to 100%). Reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts. Replaces the prior permanent encoding that OVER-CREDITED never-burst comps (her ~1.19 board-hotness).
+  - *Why:* NOT ENCODED (folded into the derivation or genuinely skippable): the battle-start charge line and the 1%/2s drain line are currency bookkeeping the fuse durations already express; the burst's 'Charges Extrasensory to 100%' is the refresh block; the 100%-only 'Dodging Bullets: Invulnerable 2 sec' is invulnerability, inert with no HP pool
+- **burst:** Charges Extrasensory to 100%.
+  - *Why:* NOT ENCODED (folded into the derivation or genuinely skippable): the battle-start charge line and the 1%/2s drain line are currency bookkeeping the fuse durations already express; the burst's 'Charges Extrasensory to 100%' is the refresh block; the 100%-only 'Dodging Bullets: Invulnerable 2 sec' is invulnerability, inert with no HP pool
 
 **Cinderella** (cinderella)
 
@@ -465,9 +467,9 @@ Refresh Heart: Incoming healing ▲ 6.53%, stacks up to 5 time(s) and lasts for 
 **Prika** (prika)
 
 - **skill2:** Max HP ▲ 19.98% for 10 sec.
-  - *Why:* S2: the 'entering Full Burst -> Max HP +19.98%' block is skipped (defensive HP buff)
+  - *Why:* See unit note / caveats
 - **burst:** Effect 1 HP MAGNITUDE: Restores 3.04% of the skill user's final max HP as HP — the recovery CADENCE (every 1 sec for 25 sec = 25 ticks) IS modeled (heal ticks:25 intervalSec:1, driving on-recovery consumers); only the HP amount is not (the engine's heal effect carries no HP value). This effect cannot be removed.
-  - *Why:* The burst Performance heal's recovery CADENCE (3.04% of caster max HP, every 1s for 25s = 25 ticks) IS emitted as recovery events (heal ticks:25 intervalSec:1) — 'when recovery takes effect' consumer kits (Crown-type) now proc off Prika across the full 25s window. Only the heal's HP MAGNITUDE (3.04%) is unmodeled (the engine's heal effect carries no HP amount).
+  - *Why:* The burst Performance heal's recovery CADENCE (3.04% of caster max HP, every 1s for 25s = 25 ticks) IS emitted as recovery events (heal ticks:25 intervalSec:1) — 'when recovery takes effect' consumer kits (Crown-type) proc off Prika across the full 25s window. Only the heal's HP MAGNITUDE (3.04%) is unmodeled (the engine's heal effect carries no HP amount).
 
 **Quiry** (quiry)
 
@@ -572,9 +574,11 @@ Incoming healing ▲ 15.18% for 10 sec.
 **Snow White: Heavy Arms** (snow-white-heavy-arms)
 
 - **skill1:** Lock-On — Function: Designates the enemy as a target of Seven Dwarves. Max Lock-On targets: 5. Deactivation condition: Performing a normal attack or taking cover.
-  - *Why:* See unit note / caveats
+  - *Why:* UNMODELED / inert: DEF ▲ 42.24% (defensive, no HP pool); Lock-On targeting and the Max-Lock-On / max-ammo caps beyond the ammo counts used above (single boss); parts-damage buckets (partless boss); Fully-Active use-count bookkeeping and its normal-attack removal condition (the sim always full-charges); the burst's 41.9% to destructible projectiles (none vs a single boss)
 - **skill1:** Auto Fire Ready — Effect: DEF ▲ 42.24% continuously.
-  - *Why:* SKIPPED: DEF +42.24% (defensive); Lock-On targeting and Max-Lock-On/ammo caps beyond the ammo counts used above (single boss); Parts-damage buckets (partless boss)
+  - *Why:* UNMODELED / inert: DEF ▲ 42.24% (defensive, no HP pool); Lock-On targeting and the Max-Lock-On / max-ammo caps beyond the ammo counts used above (single boss); parts-damage buckets (partless boss); Fully-Active use-count bookkeeping and its normal-attack removal condition (the sim always full-charges); the burst's 41.9% to destructible projectiles (none vs a single boss)
+- **burst:** ■ Affects all destructible projectiles. Deals 41.9% of final ATK as damage.
+  - *Why:* UNMODELED / inert: DEF ▲ 42.24% (defensive, no HP pool); Lock-On targeting and the Max-Lock-On / max-ammo caps beyond the ammo counts used above (single boss); parts-damage buckets (partless boss); Fully-Active use-count bookkeeping and its normal-attack removal condition (the sim always full-charges); the burst's 41.9% to destructible projectiles (none vs a single boss)
 
 **Soline: Frost Ticket** (soline-frost-ticket)
 
@@ -629,7 +633,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Other / see caveats (97)
+### Other / see caveats (94)
 
 **A2** (a2)
 
@@ -661,11 +665,9 @@ Attract: Taunts all enemies for 5 sec.
 **Chisato** (chisato)
 
 - **skill1:** Activates at the start of battle. Affects self. Charges Extrasensory to 100%, up to 100%. This effect is continuous and cannot be removed.
-  - *Why:* skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES (live from t=0, expire at 60/90/150s — the derived >70%/>55%/>25% crossing times of the 0.5%/s drain — and REFRESH on her own burstCast, which recharges Extrasensory to 100%). Reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts. Replaces the prior permanent encoding that OVER-CREDITED never-burst comps (her ~1.19 board-hotness).
+  - *Why:* skill1: the Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES — live from t=0, expiring at 60 / 90 / 150s, the derived >70% / >55% / >25% crossing times of the kit's 0.5%/s drain — and REFRESHED by her own burstCast, which recharges Extrasensory to 100%. This reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts.
 - **skill1:** Affects self every 2 sec. Extrasensory ▼ 1%.
-  - *Why:* skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES (live from t=0, expire at 60/90/150s — the derived >70%/>55%/>25% crossing times of the 0.5%/s drain — and REFRESH on her own burstCast, which recharges Extrasensory to 100%). Reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts. Replaces the prior permanent encoding that OVER-CREDITED never-burst comps (her ~1.19 board-hotness).
-- **burst:** Charges Extrasensory to 100%.
-  - *Why:* Burst ATK 73.16/10s on burstCast (her own cast — hard rule 6); 'Charges Extrasensory to 100%' folded into the trajectory derivation → unmodeled
+  - *Why:* skill1: the Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES — live from t=0, expiring at 60 / 90 / 150s, the derived >70% / >55% / >25% crossing times of the kit's 0.5%/s drain — and REFRESHED by her own burstCast, which recharges Extrasensory to 100%. This reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts.
 
 **Delta: Ninja Thief** (delta-ninja-thief)
 
@@ -810,8 +812,6 @@ Critical Rate ▲ 3.56% for 5 sec.
 
 **Prika** (prika)
 
-- **skill1:** Outgoing healing ▲ 49.92% continuously.
-  - *Why:* See unit note / caveats
 - **skill1:** Gains Pierce. This effect is continuous.
   - *Why:* See unit note / caveats
 - **skill2:** Effect 1: Affects the member who initiated Sing Along. Assigned Part: Singing. This effect is continuous and cannot be removed.
@@ -903,15 +903,13 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 **Snow White: Heavy Arms** (snow-white-heavy-arms)
 
 - **skill1:** Auto Fire Ready — Function: Loads Seven Dwarves with ammo. Max ammo loaded by Auto Fire Ready: 5. Deactivation condition: Performing a normal attack.
-  - *Why:* Charge-SR with a 'Seven Dwarves' auto-fire that piggybacks every full-charge shot, plus a burst 'Seven Dwarves Fully Active' mode (2 uses)
+  - *Why:* (b) shotFired, ungated: 41.9% AoE + 527.95% sequential — the baseline volley, 105.59% x the 5 ammo Auto Fire Ready loads
 - **skill1:** ■ Activates when performing a normal attack while not in Full Burst. Affects self. Removes Seven Dwarves Fully Active.
   - *Why:* Charge-SR with a 'Seven Dwarves' auto-fire that piggybacks every full-charge shot, plus a burst 'Seven Dwarves Fully Active' mode (2 uses)
 - **burst:** Seven Dwarves Fully Active — Function: Increases max number of Lock-On targets and max ammo loaded by Auto Fire Ready, but also increases Charge Time.
-  - *Why:* Fully Active mode (2 post-burst shots at 3.2s charge): Auto Fire Ready loads 15 ammo -> volley 105.59x15 per shot; the EXTRA over baseline (1583.85-527.95 = 1055.9% per swap shot) is a swapGate:'swapped' shotFired flat hit riding ONLY her two swapped full-charge shots INSIDE the FB window (2026-07-13 volley-placement fix, panel-ACCEPTED: COMMUNITY twice-confirmed — gamewith JP holds the Fully Active buffs per fully-charged shot 1発間維持, prydwen 7->15-hit structure — replacing the old burstCast 2111.8% lump at cast-instant, which missed seq +158.4 / own burst +84.48 / FB-era ATK / entry auras and stranded her at 0.78-0.83 after the measured cast-boundary revert; she graded 0.95-1.06 in run C under the pre-revert era, and lands ~0.96-1.00 again with this fix; per-shot expression crits like her baseline procs, uses-based delivery follows the shots so a swap shot lost to the 6.5s window also loses its volley — the residual uses-vs-time question is logged as H2 in experiment-harness-ai.md)
+  - *Why:* Charge-SR with a 'Seven Dwarves' auto-fire that piggybacks every full-charge shot, plus a burst 'Seven Dwarves Fully Active' mode (2 uses)
 - **burst:** Effect 2: Max Lock-On targets ▲ 10 continuously.
   - *Why:* See unit note / caveats
-- **burst:** ■ Affects all destructible projectiles. Deals 41.9% of final ATK as damage.
-  - *Why:* under zwei's team Pierce Damage); Fully-Active use-count bookkeeping and normal-attack removal (sim always full-charges); burst's 41.9% to destructible projectiles (none vs single boss)
 
 **Soda** (soda)
 
@@ -973,7 +971,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 - **burst:** Cooldown: 20 s
   - *Why:* See unit note / caveats
 
-### Missing engine primitive / trigger (90)
+### Missing engine primitive / trigger (91)
 
 **A2** (a2)
 
@@ -1270,6 +1268,11 @@ Outgoing healing ▲ 30.05% continuously.
 
 - **skill2:** Explosion Radius ▲ 38.61% for 10 sec.
   - *Why:* The S2 'Explosion Radius ▲38.61%' line is UNMODELED: the sim fights one boss — there is no AoE/multi-target axis for an explosion RADIUS to act on, damage-inert (the nearest-wrong encoding projectileExplosionPct is explosion DAMAGE, a different mechanic)
+
+**Prika** (prika)
+
+- **skill1:** Outgoing healing ▲ 49.92% continuously.
+  - *Why:* NOT MODELED: Encore's 'Performance duration ▲21 sec' (no primitive extends a named ally status window, so in solo mode the Charge Damage ▲25% and the heal run 25s instead of an extended ~46s); Encore's Singing part assignment (inert); S1's Outgoing healing ▲49.92% (no HP pool); S2's Full-Burst-enter Max HP ▲19.98% (defensive)
 
 **Rapi** (rapi)
 
