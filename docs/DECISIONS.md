@@ -9,7 +9,42 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) FAITHFULNESS BATCH 7 — six graded-comp prose reviews, and the board's
+- **(2026-08-10, latest) FAITHFULNESS BATCH 8 — the graded-comp slice of phase 4 is COMPLETE, and
+  an "inertness" claim turns out to be worth 22.6%.** All 9 remaining graded-comp units reviewed:
+  `red-hood` (SR/Iron), `quency-escape-queen`, `alice` (SR/Fire), `mihara-bonding-chain`, `ada`,
+  `ade-agent-bunny`, `mast-romantic-maid`, `guillotine-winter-slayer`, `mint`. Applied = prose only;
+  every block array byte-identical, board byte-identical (7/14/23/22, 142 datapoints), `verify.sh`
+  green. Findings: [batch-8 findings](handoffs/2026-08-10-faithfulness-batch8-findings.md).
+  **`alice`'s override claimed her `hasPierce` was "damage-INERT at scope lock … verified
+  byte-identical totals with/without hasPierce". Measured A/B on her only graded comp: 1.100 HOT
+  with it, 0.897 COLD without — 444M vs 362M, +22.6%, every other unit in the comp unchanged.** The
+  original verification was correct IN ITS FIXTURE and wrong where it mattered: `hasPierce` is a hit
+  TAG that only confers `pierceDamagePct` ELIGIBILITY (`PIERCE_CORE_DOUBLE` is false, so no
+  double-hit), and `controlComp()` seats `liter` / `crown` / carry / `helm` (SR/Water), none of which
+  grants pierce damage — whereas her graded comp PA MiKa seats `mint`, whose S2 grants allies
+  `pierceDamagePct` 32.72/10s. The ENCODING is faithful and stays (the kit says "Gain continuous
+  Pierce"); the prose was inviting a future reviewer to delete the tag as dead weight. **RULE, the
+  mirror of "board-inert is not inert": FIXTURE-INERT IS NOT BOARD-INERT — an inertness or A/B claim
+  in override prose must NAME THE ROSTER it was measured on**, because a cross-unit-dependent
+  property (a pierce tag, a recovery consumer, an amp literal) cannot be generalized from a
+  single-comp check. Other findings, none enacted: bare parser warnings persist as caveats beside
+  their own resolutions (cleaned on `mihara-bonding-chain` 9 → 6 and `mint` 3 → 5; **3 instances
+  remain in 2 units — `maiden-ice-rose`, `milk-blooming-bunny`**); the `[materialized … NOT
+hand-verified]` provenance tag is stale on **8 remaining units** (`cinderella-crystal-wave`,
+  `d-killer-wife`, `liberalio`, `maiden-ice-rose`, `milk-blooming-bunny`, `naga`,
+  `scarlet-black-shadow`, `velvet`), same class as batch 7's `PARSER BASELINE` banner (19 carriers left after this batch cleared
+  `ade-agent-bunny` and `guillotine-winter-slayer`) and worth one joint ruling; and the audit doc's F7 ramp-bake list is now **nought for three** — `chisato` and
+  `rouge` carry no ramp at all, and `mast-romantic-maid` is baked at the cycle AVERAGE (2 of 3), not
+  "at cap from t=0". Per-unit, `mihara-bonding-chain`'s note stated model values (270.9 / 730.1) that
+  are not what ships (301 / 700), contradicted by its own REFIT sentence 1,500 chars later;
+  `mast-romantic-maid` had `caveats: null` while carrying four owner-ruled approximations, so none of
+  them surfaced in any lint output; `mint`'s residual (2) proposed as future work the exact heal
+  block the file already ships. `red-hood`'s lifesteal is confirmed SELF-scoped — a consistency item,
+  not a fit one — leaving the 5-carrier roster ruling open. **What remains of phase 4 is item (c),
+  the tail**: 185 override files against 45 board-graded units, with no ratio to explain and no comp
+  to check inertness against, so it wants a generated-census approach rather than per-unit reads.
+
+- **(2026-08-10) FAITHFULNESS BATCH 7 — six graded-comp prose reviews, and the board's
   worst unit localized to an engine fallback (SURFACED, NOT ENACTED).** Units reviewed against the
   phase-4 checklist: `noir` (SG/Wind), `privaty` (AR/Water Treasure), `snow-white-heavy-arms`,
   `chisato` (SMG/Iron), `rouge` (SR/Electric), `prika` (SR/Water). Applied = prose only; every
