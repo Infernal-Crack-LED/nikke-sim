@@ -157,6 +157,43 @@ behavior) and **per-kit priors** (apply as a starting guess, then verify per uni
     window a duration'd buff. (Root 2026-07-16: arcana MM keyed to `fullBurstEnter` over-credited every
     multi-B2 team; audit also flagged cinderella-crystal-wave's burst nuke, same class.)
 
+11. **Healing SCOPE decides whether a heal is inert — read the target, not the magnitude (owner
+    ruling 2026-08-10).** The sim has no HP pool, so a heal's only reachable consequence is firing a
+    `recovery`-triggered block — and `fireRecovery` fires the blocks of the unit that RECEIVED the
+    heal, nobody else. So: an **ally/team-scoped** heal is LIVE (it can reach a teammate's
+    on-recovery consumer — crown's "when recovery takes effect → team Attack Damage ▲" is the
+    canonical one) and must be encoded, while a **self-scoped** lifesteal ("Recovers X% of attack
+    damage as HP") reaches a consumer only if the CARRIER itself owns a `recovery` block. **Prior for
+    a new unit: record self-scoped lifesteal in `unmodeled` and emit NO `heal`** — but check the
+    carrier's own kit for an on-recovery line first, because that flips it. `asuka` (AR/Fire, the
+    BASE unit — not `asuka-wille`) is the live counterexample: her S1 is
+    `recovery → self atkPct 96.98 / 25s`, so a self-heal on HER is worth ~97% ATK, not zero. Do not
+    read "self-scoped, therefore inert" as a property of lifesteal; it is a property of the pairing.
+    A second reason to withhold the emit: lifesteal is a per-hit line, so emitting turns it into a
+    hit-cadence event stream, and that cadence is unmeasured. Roster when this landed: 8 of 13
+    carriers emit, 5 do not — `d` (SMG/Wind, not `d-killer-wife`), `moran`, `red-hood` (SR/Iron, not
+    `rapi-red-hood`), `rem`, `tia` — and none of the five owns a `recovery` block, so all five are
+    inert today and stay recorded-only. The two consumers roster-wide: `asuka` (self) and `crown`
+    (allies, fired when `crown` herself is healed).
+
+12. **STACKS REFRESH — the whole stack, not the oldest one — unless a kit says otherwise (OWNER
+    RULING 2026-08-11).** This is a GAME-WIDE rule, not a per-unit finding: when a stacking buff
+    re-triggers, the existing stacks' duration is refreshed rather than each application expiring
+    individually. Model a stacking line as "ratchets up while the trigger keeps firing, and lapses
+    only when the whole window goes cold" — which is what the engine already does (`applyBuff`
+    refreshes the instance's expiry on every re-application, and `maxStacks` caps the count).
+    **Why it matters: the failure mode it rules out is a gate that never opens.** If stacks expired
+    individually, a slow trigger would plateau below its cap and any "at max stacks" gate would be
+    dead code — you would model a kit line, watch it never fire, and go looking for the bug in the
+    gate. Concrete case: `ade-agent-bunny`'s Spy Lens (10 stacks) gates her S2 Pierce package; under
+    per-application expiry she would plateau at ~3–5 and the whole package would be unreachable. It
+    reaches the cap, so the gate is live and the package is real. Same reasoning underwrites `leona`
+    and `guilty`, whose steady-state stack level the engine COMPUTES from cadence rather than baking
+    (see the F7 verification in the faithfulness audit).
+    **The exception is the kit text itself** — a line that spells out per-application expiry, or a
+    "cannot be refreshed"/"does not refresh" clause, overrides this. Absent such wording, assume
+    refresh, and do NOT spend a recording establishing it.
+
 ## The offsetting-errors principle (why bare-frame + firing-validation matter)
 
 A unit graded ~1.0 in normal (buffed, advantaged) teams can still be **wrong** — its value calibrated

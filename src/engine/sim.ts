@@ -501,6 +501,19 @@ interface UnitState {
   hasTrueNormals: boolean; // kit's normal attacks are ALWAYS True-flavored — STATIC, unlike
   // swap.trueNormals (a temporary swap-scoped flavor change)
   pierceUntilFrame: number; // timed "Gain Pierce for N sec" window end (0 = none); pierce active when > frame
+  // "Convert excess over X% of stat A into stat B at R%" — DERIVED stats, recomputed on every read
+  // of B from A's LIVE value, so B tracks A's stacks up and down. Installed by a `convertExcess`
+  // effect; empty for every unit but the carrier (red-hood), and `stat()` short-circuits on empty.
+  statConversions: Array<{
+    from: StatKey;
+    over: number;
+    to: StatKey;
+    rate: number;
+  }>;
+  pierceShotsLeft: number; // ROUND-COUNT "Gain Pierce for N round(s)" budget (0 = none); pierce active
+  // while > 0, spent by FIRING (see the round-scoped decrement in firePull)
+  pierceGrantFrame: number; // frame the round budget was last granted on — the granting round never
+  // spends it, same carve-out as round-scoped buffs (startFrame === frame)
   shieldedUntilFrame: number; // shield-state window end (0 = none): set when a 'shield' effect targets this
   // unit (durationSec; none = permanent at scope — boss damage unmodeled, nothing
   // breaks shields). Read by the requiresShielded block gate (naga's burst 31.02%)
@@ -823,7 +836,10 @@ export function runSim(
         skills.hasPierce === true ||
         (skills.pierceModes?.includes(selectedMode ?? '') ?? false),
       hasTrueNormals: skills.hasTrueNormals === true,
+      statConversions: [],
       pierceUntilFrame: 0,
+      pierceShotsLeft: 0,
+      pierceGrantFrame: -1,
       shieldedUntilFrame: 0,
       consolidation: skills.consolidation,
       landedAcc: 0,
@@ -1574,8 +1590,24 @@ export function runSim(
       return s + contrib;
     }, 0);
 
-  const stat = (u: UnitState, key: StatKey, frame: number) =>
-    sum(u.buffs, key, frame);
+  const stat = (u: UnitState, key: StatKey, frame: number) => {
+    const base = sum(u.buffs, key, frame);
+    if (u.statConversions.length === 0) {
+      return base; // every unit but the carrier — no cost on the hot path
+    }
+    // DERIVED contribution: "▲ R% of the excess value" (red-hood's charge-speed overflow). Read
+    // from the raw buff sum rather than through stat(), so a conversion can never feed itself or
+    // another conversion — with one carrier there is no chained case to model, and a cycle here
+    // would be an infinite loop rather than a wrong number.
+    let derived = 0;
+    for (const c of u.statConversions) {
+      if (c.to === key) {
+        derived +=
+          (c.rate / 100) * Math.max(0, sum(u.buffs, c.from, frame) - c.over);
+      }
+    }
+    return base + derived;
+  };
 
   // STAT CLAMP: "X is fixed at V" kit lines. If any active buff carries a clamp stat, the MOST
   // RECENT active clamp wins and overrides the additive sum for that stat. Clamps do NOT stack.
@@ -1809,9 +1841,14 @@ export function runSim(
     // Q10: Pierce Damage ▲ empowers Pierce-tagged units' attacks — a Damage Up
     // bucket addition, only while the unit's attacks are Pierce-tagged: static kit
     // pierce (hasPierce), a live timed "Gain Pierce for N sec" window
-    // (pierceUntilFrame), or the per-shot consolidation-bullet tag (opts.pierceActive).
+    // (pierceUntilFrame), an unspent ROUND budget from "Gain Pierce for N round(s)"
+    // (pierceShotsLeft — spent by firing, so it survives reloads and lulls), or the
+    // per-shot consolidation-bullet tag (opts.pierceActive).
     const pierceTagged =
-      u.hasPierce || u.pierceUntilFrame > frame || opts.pierceActive;
+      u.hasPierce ||
+      u.pierceUntilFrame > frame ||
+      u.pierceShotsLeft > 0 ||
+      opts.pierceActive;
     const pierce = pierceTagged ? stat(u, 'pierceDamagePct', frame) : 0;
     // Q9 A/B: Prydwen says projExpl also hits regular RL normal attacks
     // "as ATK DMG on the base multiplier". Off by default (our validated rule is
@@ -2848,16 +2885,57 @@ export function runSim(
           break;
         case 'gainPierce':
           // "Gain Pierce": mark the target Pierce-tagged so its (and teammates') Pierce
-          // Damage ▲ buffs go live. durationSec present = timed "for N sec" window; absent =
-          // continuous/permanent (step-gated pierce turned on at a stack threshold — ade-agent-bunny
-          // on hitCount:10, staying on thereafter while she keeps firing).
+          // Damage ▲ buffs go live. Three forms, and a block may carry both windows (pierce is
+          // then live while EITHER holds):
+          //   durationShots — "for N round(s)" / "for 1 shot": a ROUND BUDGET spent by firing,
+          //     never by the clock, so it survives reloads, burst animations and lulls. This is
+          //     the literal form of five kits (nihilister / harran / neve / dorothy-serendipity /
+          //     d-killer-wife); before it existed they shipped durationSec stand-ins, which drain
+          //     during a gap and can leave the next round untagged.
+          //   durationSec   — a genuine "for N sec" window (asuka 25s, dorothy 10s, mari 5s, …).
+          //   neither       — continuous/permanent (step-gated pierce turned on at a stack
+          //     threshold — ade-agent-bunny on hitCount:10, staying on thereafter).
           for (const t of resolveTargets(block.target, ownerIdx, frame)) {
-            t.pierceUntilFrame = Math.max(
-              t.pierceUntilFrame,
-              e.durationSec != null
-                ? frame + Math.round(e.durationSec * FPS)
-                : Number.MAX_SAFE_INTEGER
+            if (e.durationShots != null) {
+              // Round budget. MAX, not SET: a re-grant refreshes rather than accumulating rounds
+              // the kit never promised. (The buff path SETs on refresh — the difference is
+              // unreachable today, since no unit carries two round-count pierce sources.)
+              t.pierceShotsLeft = Math.max(t.pierceShotsLeft, e.durationShots);
+              t.pierceGrantFrame = frame;
+            } else if (e.durationSec != null) {
+              t.pierceUntilFrame = Math.max(
+                t.pierceUntilFrame,
+                frame + Math.round(e.durationSec * FPS)
+              );
+            } else {
+              // Neither: continuous/permanent. Written as an explicit third branch so a malformed
+              // budget can never silently swallow the fallback and leave the line modeling nothing
+              // — validate-structural rejects a non-positive durationShots, and this shape means a
+              // future field cannot re-open that hole by accident.
+              t.pierceUntilFrame = Number.MAX_SAFE_INTEGER;
+            }
+          }
+          break;
+        case 'convertExcess':
+          // Install a DERIVED-stat rule on the target: "▲ R% of the excess value continuously".
+          // Idempotent — the kit line is continuous, so a re-fire (a passive re-applied, or the
+          // same block reached twice) must not double the conversion.
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
+            const already = t.statConversions.some(
+              (c) =>
+                c.from === e.from &&
+                c.to === e.to &&
+                c.over === e.over &&
+                c.rate === e.rate
             );
+            if (!already) {
+              t.statConversions.push({
+                from: e.from,
+                over: e.over,
+                to: e.to,
+                rate: e.rate,
+              });
+            }
           }
           break;
         case 'addStack': {
@@ -4181,6 +4259,17 @@ export function runSim(
       ) {
         b.shotsLeft -= u.char.weapon === 'MG' ? u.char.hitsPerShot : 1;
       }
+    }
+    // The Pierce TAG's own round budget ("Gain Pierce for N round(s)") — same rule, same place, so
+    // a round-scoped tag and a round-scoped buff can never disagree about what a round is: one per
+    // pull (hitsPerShot for MG), counted whether or not ammo was deducted, and the granting round
+    // is exempt via pierceGrantFrame exactly as buffs are via startFrame. Clamped at 0 so an MG's
+    // hitsPerShot decrement cannot drive it negative and revive the tag on a later re-grant.
+    if (u.pierceShotsLeft > 0 && u.pierceGrantFrame !== frame) {
+      u.pierceShotsLeft = Math.max(
+        0,
+        u.pierceShotsLeft - (u.char.weapon === 'MG' ? u.char.hitsPerShot : 1)
+      );
     }
 
     if (!unlimited) {

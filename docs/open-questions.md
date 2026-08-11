@@ -14,6 +14,29 @@ DECISIONS leaves the stale question here reading as live — always move it.
 
 ## UNANSWERED
 
+### U39 — `snow-white-heavy-arms` Fully Active: is the volley delivered by USES or by TIME? (opened 2026-08-11, re-filed)
+
+Her burst "Seven Dwarves Fully Active" is modeled as a weapon swap carrying the same 69.04% shot at
+`chargeTimeClamp` 3.2 with `durationSec` 10 and `maxShots` 2 — the kit states **2 uses**, and ~6.5s
+of 3.2s rounds is exactly 2 shots, so **the two readings agree at the current cadence and the sim
+delivers by uses.**
+
+They diverge only if a swap shot is DISPLACED — a shot lost to the window boundary, a cadence change,
+or anything that shifts the round timing. Delivered by uses, a displaced shot still lands (the use is
+owed); delivered by time, it is lost with the window. Her `maxShots` 2 therefore encodes an
+assumption nothing currently tests.
+
+**Resolving it:** a focus recording of a Fully Active window where the swap timing is perturbed
+(entering the burst mid-charge is the natural case) — count the Fully-Active shots delivered. Two
+shots regardless of entry phase = by uses; one = by time.
+
+**Blast radius:** small today (the readings coincide), but it becomes live the moment her cadence
+moves — which is why it is filed rather than folded into her prose. Related: M5 (`ada`) is the same
+class of question, a `maxShots` count that a recording settles.
+
+This question was originally logged as H2 in `experiment-harness-ai.md`, which CLOSED 2026-07-21 and
+was archived out of the tree; it survived only in her override prose until this re-filing.
+
 ### U38 — "self and 2 allies on both sides": does `selfAndAdjacent.sides` mean 1 each side or 2? (opened 2026-08-03)
 
 Two overrides use the positional `selfAndAdjacent` selector and both author `sides: 2`, which the

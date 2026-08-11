@@ -37,8 +37,9 @@
 //       Damage ▲ either). Modeled for kit-completeness (naga/alice convention) as a gainPierce effect
 //       on the fullBurstEnter block — NEVER a top-level hasPierce (the boolean cannot time-gate a
 //       2-round FB window; the ade-agent-bunny failure shape). Proven faithfully inert by
-//       byte-identical totals with the effect removed. The 2-rounds→seconds duration is a flagged ⚑
-//       estimate (gainPierce has no round granularity).
+//       byte-identical totals with the effect removed. The duration is now LITERAL — gainPierce
+//       durationShots 2 (the round-count form, 2026-08-11) — so the old ⚑ rounds→seconds estimate
+//       is discharged: 2 rounds means 2 of her SG PULLS (a round is a pull, not a pellet).
 //   N5  burst Critical Rate is the UNSCOPED critRatePct (lifts every neve hit, incl. the S1 rider's
 //       crit roll), self-scoped, 20s, keyed to burstCast (fires ONLY on neve's own casts). Pinned:
 //       value 31.95, 20s expiry, self, count === neve's burstCast count (NOT the FB count). A
@@ -167,13 +168,15 @@ const buffs = (evs: SimEvent[]) =>
 const neveBuffs = (evs: SimEvent[], stat: string) =>
   buffs(evs).filter((b) => b.casterIdx === NEVE && b.stat === stat);
 const neveBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'neve');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'neve'
+  );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e): e is FbStart => e.kind === 'fullBurstStart');
 
 describe('neve — kit spec', () => {
   // The fixture's dual-B3 divergence is what makes the trigger pins meaningful — guard it once.
-  it('fixture: Full Bursts outnumber neve\'s own casts (co-B3 helm alternates)', () => {
+  it("fixture: Full Bursts outnumber neve's own casts (co-B3 helm alternates)", () => {
     const fb = fbStarts(base.events).length;
     const casts = neveBursts(base.events).length;
     expect(fb).toBeGreaterThan(0);
@@ -194,9 +197,9 @@ describe('neve — kit spec', () => {
     });
 
     it('DISCRIMINATING: the level-1 magnitude (63.63) fails the same pin', () => {
-      expect(
-        [...new Set(neveS1Damage(s1LowLevel.events).map((d) => d.atkPct))]
-      ).toEqual([63.63]);
+      expect([
+        ...new Set(neveS1Damage(s1LowLevel.events).map((d) => d.atkPct)),
+      ]).toEqual([63.63]);
     });
   });
 
@@ -237,9 +240,10 @@ describe('neve — kit spec', () => {
 
     it('fires on every Full Burst entry (fullBurstEnter), held by neve alone', () => {
       const fb = fbStarts(base.events).length;
-      expect(atk.length, 'fullBurstEnter fires once per FB, not per neve cast').toBe(
-        fb
-      );
+      expect(
+        atk.length,
+        'fullBurstEnter fires once per FB, not per neve cast'
+      ).toBe(fb);
       expect([...new Set(atk.map((b) => b.targetIdx))]).toEqual([NEVE]);
     });
 
@@ -253,7 +257,7 @@ describe('neve — kit spec', () => {
       expect([...new Set(timed.map((b) => b.durationShots))]).toEqual([null]);
     });
 
-    it('DISCRIMINATING (trigger): a burstCast re-key collapses the count to neve\'s own casts', () => {
+    it("DISCRIMINATING (trigger): a burstCast re-key collapses the count to neve's own casts", () => {
       const rekeyed = neveBuffs(s2BurstCast.events, 'atkPct');
       const casts = neveBursts(base.events).length;
       const fb = fbStarts(base.events).length;
@@ -263,6 +267,20 @@ describe('neve — kit spec', () => {
   });
 
   describe('N4 — S2 "Gain Pierce for 2 round(s)" is faithfully inert at scope lock', () => {
+    it('is a TWO-ROUND budget, not a seconds window (the kit prints rounds)', () => {
+      const shipped = withPatchedOverride('neve', () => {}) as any;
+      const b = (shipped.skill2 ?? []).find((x: any) =>
+        (x.effects ?? []).some((e: any) => e.kind === 'gainPierce')
+      );
+      expect(b, 'the S2 gainPierce block must exist').toBeTruthy();
+      const e = b.effects.find((x: any) => x.kind === 'gainPierce');
+      expect(e.durationShots, 'the kit prints "for 2 round(s)"').toBe(2);
+      expect(
+        e.durationSec,
+        'the rounds→seconds estimate is discharged — the engine counts rounds'
+      ).toBeUndefined();
+    });
+
     it('removing the gainPierce effect changes NO unit total by a single point', () => {
       // gainPierce emits no event and pierceDamagePct is inert in v1, so the line's only correct
       // observable is exactly this: byte-identical totals with the effect present vs removed.
@@ -275,7 +293,9 @@ describe('neve — kit spec', () => {
 
     it('is 31.95% for 20 sec on neve, once per neve burst cast (NOT every FB)', () => {
       const casts = neveBursts(base.events).length;
-      expect(crit.length, 'burstCast fires on neve\'s own casts only').toBe(casts);
+      expect(crit.length, "burstCast fires on neve's own casts only").toBe(
+        casts
+      );
       expect([...new Set(crit.map((b) => b.value))]).toEqual([31.95]);
       expect([...new Set(crit.map((b) => b.targetIdx))]).toEqual([NEVE]);
       for (const b of crit) {

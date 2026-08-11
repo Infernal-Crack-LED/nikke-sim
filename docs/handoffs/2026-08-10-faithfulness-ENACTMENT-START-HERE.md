@@ -1,5 +1,12 @@
 # Faithfulness pass — ENACTMENT phase: start here (written 2026-08-10, for a fresh session)
 
+> **⚑ CLOSED 2026-08-11 — this is now a HISTORICAL RECORD, not a worklist.** Every tier resolved:
+> Tier 0 (five rulings + two follow-ups), Tier 1 (`jill`), Tier 2 (owner-ruled, no recording), Tier
+> 3 (the recording list — 10 of 12 answered without a camera, 1 refuted by A/B, 1 re-filed into the
+> SG thread), Tier 4 (all four consistency items). Tier 5 primitives remain HELD by design.
+> **The live queue is `QUEUE.md`; the WHY is `docs/DECISIONS.md` (four 2026-08-11 entries).** Read
+> §5 before writing another recording ask — its lesson is the durable output of this pass.
+
 > **The finding phase is over for the 45 board-graded units.** Batches 1–8 reviewed every one of
 > them ([batch 1](2026-08-10-faithfulness-batch1-findings.md) ·
 > [2](2026-08-10-faithfulness-batch2-findings.md) · [3](2026-08-10-faithfulness-batch3-findings.md) ·
@@ -28,20 +35,45 @@ So the highest-value remaining output of an enactment session is: get the batche
 made, and **hand the owner a recording list** — because the remaining accuracy is behind footage,
 not behind code.
 
+> **⚑ THAT LAST SENTENCE WAS HALF WRONG, and the correction is this doc's most useful output.** Ten
+> of the twelve recording asks were answered without a camera — eight from owner game knowledge, one
+> by an A/B that refuted its own premise, one by re-filing. **Ask the owner before asking for
+> footage.** See §5.
+
 ## 1. Tree state
 
-- **PR #98** (`fix/faithfulness-batch7`, batches 7+8) is open against `main`. If it has merged,
-  branch fresh off `main`; if not, do NOT branch off it for engine work — engine work gets its own
-  worktree either way (CLAUDE.md constraint 8).
-- Board at the time of writing: **`±3% 7 | ±5% 14 | ±8% 23 | worse 22`, 142 datapoints / 45 units.**
-  Re-read it yourself (`npx tsx scripts/board-read.ts`) before touching anything; if it differs,
-  find out why first.
+- PRs #98 (batches 7+8) and #99 (`jill`) are both MERGED — branch fresh off `main`. Engine work
+  gets its own worktree regardless (CLAUDE.md constraint 8).
+- Board (AS OF 2026-08-10, superseded — the 2026-08-11 landings moved `ada`, `prika` and `red-hood`;
+  re-read before quoting): **`±3% 7 | ±5% 15 | ±8% 24 | worse 21`**, 142 datapoints / 45 units.
+  Re-read it yourself
+  (`npx tsx scripts/board-read.ts`) before touching anything; if it differs, find out why first.
 - `verify.sh` green. `validate-overrides.ts` clean. Burst-amp census `--under` = 0.
 
-## 2. Tier 0 — OWNER DECISIONS (do these first, in one sitting)
+## 2. Tier 0 — OWNER DECISIONS — ALL FIVE RULED AND ENACTED 2026-08-10
 
-None of these need code or measurement. Each currently blocks or muddies work downstream, and they
-are cheap to answer together. **Bring them as one batch, not five conversations.**
+Nothing open here. All five were brought as one batch, ruled, and landed board-inert (board
+identical before/after; 0 engine lines, 0 damage values). Full rationale for each:
+`docs/DECISIONS.md`, the 2026-08-10 "FAITHFULNESS TIER 0" entry — that is the durable record, and
+the table below is kept only so the shape of the batch stays legible.
+
+What landed, in one line each: **D1** both tags DELETED rather than reworded (the 8 materialized
+carriers are all board-graded, and all 19 banner carriers already classified `gauntlet` by
+`kit-status` provenance, so the banner's own classifier branch had been dead code) · **D2** kept for
+fidelity + a new `BOSS_ONLY_BUFF_STATS` validator warning (fires on exactly the 3 carriers) ·
+**D3** self-scoped lifesteal stays recorded, no emit — inert by MECHANISM, prior in
+`modeling-priors.md` §11 · **D4** direction ruled (the omission is a defect), enactment still
+bundled with the gauge cluster · **D5** convention in `CONVENTIONS.md`, lint rejected with numbers.
+
+**The two follow-up questions this batch left open were RULED AND LANDED 2026-08-11** (DECISIONS,
+"TIER 0 FOLLOW-UPS"): (a) `inert`/`inertness`/`byte-identical`/"moved by exactly zero" ARE now
+verdict verbs in the pre-write hook (r5, protected path edited with owner go-ahead), escalating only
+on a shared-artifact target; (b) D1 is durable — `kit-status.ts --check` fails when a note's
+provenance claim contradicts the tree (`scripts/lib/baseline-banner.ts`, pinned by
+`scripts/tests/baseline-banner.test.ts`). `/kit-parse`'s SKILL.md is deliberately unchanged: the
+banner is correct at authoring time, so the guard belongs at the other end. Nothing open in Tier 0.
+
+<details><summary>The original decision table (historical — all five now ruled)</summary>
 
 | #   | Decision                                             | Scope                                                                                               | Why it matters                                                                                                                                                                                                                                     |
 | --- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -50,6 +82,8 @@ are cheap to answer together. **Bring them as one batch, not five conversations.
 | D3  | Self-scoped lifesteal: emit a recovery event or not? | 5 non-emitters of 13 carriers — `d` (SMG/Wind), `moran`, `red-hood` (SR/Iron), `rem`, `tia`         | Proven board-inert for self scope (batch 4 probe on `moran` moved zero; `red-hood` confirmed self-scoped in batch 8). Pure consistency — but it only stays inert while no unit has a self-recovery consumer, and `asuka` (AR/Fire) is one.         |
 | D4  | U28 rider gauge economy                              | `modernia`, `nayuta`, `neon-blue-ocean`, `neon-vision-eye`                                          | `extraHitDamagePct` riders emit no `skillGauge` where an equivalent `flatDamage` instance would. A gauge-economy choice, not cosmetic. Interacts with the `skillGauge`-fires-twice bug — see §5.                                                   |
 | D5  | Inertness-claim convention                           | roster-wide                                                                                         | Batch 8: `alice` (SR/Fire) — an "inert, verified byte-identical" claim was wrong by 22.6% because it was measured in a pierce-free fixture. Require an inertness/A-B claim in override prose to NAME its roster. Enforce by lint or by convention? |
+
+</details>
 
 ## 3. Tier 1 — the one board-moving fix: `jill` (AR/Electric) — LANDED 2026-08-10
 
@@ -60,9 +94,20 @@ defect); revised to IMPLEMENT. Board 1.924 HOT → 0.983 OK. Full trail: `docs/D
 (2026-08-10 IMPLEMENT entry) and `docs/handoffs/scientific-method-harness.md` (2026-08-10
 addendum) — nothing left open here.
 
-## 4. Tier 2 — the blocker: validate the burst-amp channel before ANY further tagging
+## 4. Tier 2 — RULED BY THE OWNER 2026-08-11, no recording needed
 
-Batch 5's result, and it is a risk item rather than an opportunity.
+**`trina`'s amp follows the LITERAL wording only, and `cinderella` (RL/Electric) does NOT receive
+it** (owner, 2026-08-11). That settles the scope question the blocker rested on: her untagged state
+is CONFIRMED rather than provisional, and the 0.893 → 1.523 blowup was the candidate tag being
+wrong, not the sim. `scripts/census-burst-amp-scope.ts` (literal-only, `--check` gates over-tagging)
+is the rule of record; `--under` is 0, so no qualifying unit is missing a tag.
+
+What did NOT get settled, and stays ⚑: the amp's PLACEMENT (+435.6pp additive into Damage-Up) and
+its MAGNITUDE (the SL10 datamine). Both are unmeasured, but they now bite only units that literally
+qualify — the near-dormancy that made this a risk is no longer load-bearing, since the paraphrase
+units are ruled out by the scope rule rather than by nobody having paired them yet.
+
+The rest of this section is the ORIGINAL framing, kept because it explains why the risk was real:
 
 `trina`'s Spread Roots amp is LIVE (`burstSkillAoeDamagePct` 435.6, all allies, 5s, on her
 burstCast) and its kit gate is always true in solo raid. Today it bites in exactly one place
@@ -88,7 +133,37 @@ are safe only while unpaired.
 inside vs outside a `trina` Spread Roots window and compare the ratio against `1 + 4.356` additive
 in Damage-Up. Any comp with `trina` plus a plural-clause B3 gives it.
 
-## 5. Tier 3 — THE RECORDING LIST (hand this to the owner; it is where the remaining accuracy is)
+## 5. Tier 3 — THE RECORDING LIST — **TRIAGED BY THE OWNER 2026-08-11: 10 of 12 CLOSED**
+
+The premise of this section — "the remaining accuracy is behind footage" — was **half wrong**. Ten
+of the twelve asks were answered without a camera: eight from owner game knowledge, one (M1) by an
+A/B that refuted the ask's own premise, one (M7) by re-filing it into the SG investigation that owns
+its blast radius. **The durable lesson: ask the owner before asking for footage** — a recording
+request is expensive and several of these were game rules he could state in a sentence.
+
+Status of each, with the rulings in `QUEUE.md` (enactment pending, one gated pass each):
+
+- **CLOSED, nothing to enact:** M2 (`trina` amp is literal-only; `cinderella` RL/Electric does not
+  receive it), M3 (distributed damage CAN crit — confirms the shipped default on all 12 carriers),
+  M6 (ALL STACKS REFRESH unless a kit says otherwise — a general rule, so `ade-agent-bunny`'s
+  `hitCount:10` gate does open), M11 (`mihara-bonding-chain`'s burst RESETS Ensnaring; build outside
+  B3, consume with B3 — the mechanism her note already models), M12 (`mint` starts on Dancing and
+  flips on her own cast — confirms the shipped `singing` resource), M1 (see below).
+- **CLOSED, ENACTMENT PENDING:** M4 (true damage CAN core hit — engine-global), M5 (`ada` fires ONE
+  special-charged shot; kit-literal, costs board 0.995 → ~0.95), M8 (`red-hood`: model the ACTUAL
+  stack ramp, do not average), M9 (`prika` IS Pierce-tagged during Performance — hold released),
+  M10 (`rouge`: all three coin statuses CO-EXIST — a model defect, the override makes them
+  mutually exclusive).
+- **M1 `guillotine-winter-slayer` — the ask was built on a misattribution.** Owner: she uses her
+  datamined fire rate. A/B on her graded comp: the level-up ammo refill is worth **+0.6% of her
+  shots** (1813 → 1802 with the block removed), the EXP/level blend ~1.4% — and **her board reading
+  is 1.0238, inside ±3%**. The "~26% hot" came from two old unit-level readings in a different
+  context, and `12 / 1.26 ≈ 9.5/s` was an arithmetic coincidence promoted to a suspect.
+- **M7 `noir` — folded into the ongoing SG investigation**, cross-referenced from
+  `2026-08-06-OWNER-ASK-mislock-labels.md` §5b. She is the SG-landing anchor, so her cadence cannot
+  be settled beside the SG work, only inside it.
+
+<details><summary>The original table (historical — see the status above before acting on any row)</summary>
 
 Ordered by payoff. Several settle a question for MANY units at once — those first.
 
@@ -110,26 +185,36 @@ Ordered by payoff. Several settle a question for MANY units at once — those fi
 `/hand-tune-batches` builds the teams; `/testing-requests` publishes asks for units the owner does
 not own; `/probe-processing` scores what comes back.
 
+</details>
+
 ## 6. Tier 4 — safe consistency enactments (board-inert, do after Tier 0 answers)
 
-Cheap, mechanical, and each is gated only on its Tier-0 decision:
+Cheap and mechanical. The three that were gated on a Tier-0 decision (the D1 tag sweep across 19 + 8
+carriers, D2 on `moran`/`rouge`/`rumani`, D3 across the 5 lifesteal non-emitters) LANDED with Tier 0
+— see §2. What remains needs no decision:
 
-- Sweep the D1 provenance tags across the 19 + 8 carriers.
-- Apply D2 to `moran` / `rouge` / `rumani`.
-- Apply D3 across the 5 lifesteal non-emitters.
-- **Clean the last 3 bare parser-warning caveats** — `maiden-ice-rose` (1), `milk-blooming-bunny`
-  (2). They ship raw `unparsed effect` / `unsupported trigger` strings that `validate-overrides.ts`
-  echoes as live failures, while both units record the same lines' real dispositions in `unmodeled`.
-  No decision needed; just do it.
-- **Repair 4 rotted citations to `experiment-harness-ai.md`** (CLOSED 2026-07-21, archived out of
-  the tree): `scripts/regression.ts:196`,
-  `scripts/blind-rebuild/code-bundle/code-sim-setup.ts:45`, `code-sim-effects.ts:125`,
-  `sim-core-c.ts:58`. Successor is `docs/handoffs/scientific-method-harness.md`.
-- **Re-file `snow-white-heavy-arms`'s Fully-Active "uses vs time" residual.** It lost its tracker
-  when its host doc closed and now lives only in her override prose.
-- **Verify the audit doc's F7 ramp-bake membership.** It is **nought for three** on the names
-  checked (`chisato` and `rouge` have no ramp at all; `mast-romantic-maid` is baked at the cycle
-  AVERAGE of 2, not "at cap from t=0"). Check the remaining ~7 before anyone plans on them.
+**ALL FOUR LANDED 2026-08-11** — board-inert as predicted, `verify.sh` green:
+
+- **The 3 bare parser-warning caveats are gone** — `maiden-ice-rose` (1, her `caveats` field dropped
+  entirely) and `milk-blooming-bunny` (2). Both lines' real dispositions were already in `unmodeled`.
+  `validate-overrides.ts` warnings: `maiden-ice-rose` 1 → 0, `milk-blooming-bunny` 4 → 1 (the one
+  left is her substantive pierce caveat, echoed by design). Her two bare line-number citations were
+  repaired in the same pass — both had already rotted (`sim.ts:663` now points at Monte Carlo
+  aggregation, `sim.ts:1400` at charge-gauge sourcing), so they name the code blocks now.
+- **The 4 rotted `experiment-harness-ai.md` citations are repaired** — each states that the doc
+  CLOSED 2026-07-21 and names the successor. Found while doing it, and filed to `QUEUE.md`:
+  `scripts/blind-rebuild/code-bundle/` is a **stale extract of the engine** (~2,400 lines against
+  sim.ts's 4,278) whose `ROTMODEL` comments are inverted relative to the 2026-08-04 ruling. The two
+  sites say so inline; the bundle was NOT re-extracted (out of scope, and it feeds blind reviewers).
+- **`snow-white-heavy-arms`'s Fully-Active residual is re-filed as open-questions U39**, with the
+  discriminating recipe (perturb the swap timing, count the Fully-Active shots: two = by uses, one =
+  by time) and a `⇒ open-questions U39` pointer in her override prose.
+- **F7's membership is verified — it was mostly wrong: 2 of 12 are cap-bakes.** Corrected classes in
+  the audit doc's F7 section. Real members: `sakura-bloom-in-summer` and `laplace` (RL/Iron).
+  Partial (already carrying `rampSec`): `cinderella` (RL/Electric), `arcana-fortune-mate`. Four are
+  time-averages (`mihara-bonding-chain`, `red-hood`, `mast-romantic-maid`, `soda-twinkling-bunny`) —
+  correcting those would double-correct them. Four are not members at all (`leona` and `guilty`
+  compute stacks live from cadence; `chisato` and `rouge` carry no ramp line).
 
 ## 7. Tier 5 — engine primitives (HOLD; do not start these opportunistically)
 
@@ -169,9 +254,10 @@ Ranked in `QUEUE.md`'s standing ENGINE-WORK ORDER; listed here only so nobody re
 
 ## 9. What NOT to do
 
-- **Do not tag any further `burstDesc` instances** until §4 is settled.
-- **Do not "finish the chore" on `cinderella`** — her untagged state is deliberate and her caveats
-  say why.
+- **Tag `burstDesc` by the LITERAL clause and nothing else** (owner 2026-08-11, §4). The census is
+  the arbiter; `--check` fails an over-tag.
+- **Do not "finish the chore" on `cinderella`** (RL/Electric) — she does NOT receive `trina`'s amp
+  (owner-ruled, §4). Her untagged state is correct, not a gap waiting to be closed.
 - **Do not re-fit `grave`** by disabling her timed pierce (owner ruling, faithful > fit), or
   `privaty` (AR/Water Treasure) by adding `noFb` / shaving her datamined coefficients.
 - **Do not touch `noir`'s cadence** as a side effect of anything — she is the SG-landing table's

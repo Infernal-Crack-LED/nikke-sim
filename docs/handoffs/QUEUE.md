@@ -58,6 +58,30 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒⇒ START HERE IF YOU ARE PICKING UP AFTER THE 2026-08-11 SESSION (branch
+  `fix/faithfulness-tier0`, PR open).** That branch closed the faithfulness pass end to end and left
+  the tree in a clean state; what follows is what it did NOT do, in the order it would take them.
+  Full WHY for every item: `docs/DECISIONS.md`, the four 2026-08-11 entries.
+  1. **The faithfulness pass is DONE through Tier 4, and the Tier 3 RECORDING LIST is fully
+     retired** — 10 of its 12 asks were answered from owner game knowledge, one (M1) by an A/B that
+     refuted the ask's own premise, one (M7) by re-filing into the SG investigation.
+     `2026-08-10-faithfulness-ENACTMENT-START-HERE.md` is now a historical record, not a worklist.
+     **The durable lesson is in its §5: ask the owner before asking for footage.**
+  2. **The two round-count Pierce carriers are the ONE live per-unit question left** — see the item
+     further down. `gainPierce.durationShots` now exists, which removes the reason those two skips
+     were given; both are board-graded, so it moves the board and wants its own pass.
+  3. **Tier 5 engine primitives stay HELD** (`quency-escape-queen` stage-unlock ordering, the 5e
+     state machines, `alice` caster-relative charge speed, the `skillGauge`-fires-twice + charge-B3
+     gauge-tempo pair, `chargeCounter` bypassing block gates). Ranked in the ENGINE-WORK ORDER
+     below. None of them was touched.
+  4. **The phase-4 TAIL is the next big body of work** — 185 override files against 45 graded
+     units. Its scoping note is at the bottom of this file; it wants a generated-census approach and
+     its own entry doc, NOT a batch sweep.
+  5. **Two primitives landed this session and each has exactly one carrier** —
+     `gainPierce.durationShots` (5 carriers, 3 converted) and `convertExcess` (1 carrier). If a
+     second `convertExcess` carrier ever appears, revisit the deliberate MAX-on-refresh and the
+     passive-trigger-only restriction; both are documented in `src/skills/types.ts`.
+
 - **⇒ STANDING ASSUMPTION to confirm when convenient — the amp keys off an INTERNAL TARGETING ID,
   not the rendered English.** Owner ruling 2026-08-10 ("it'd be really dumb if it didn't"), which
   forgave the localization's stray article and tagged 6 units (`guilty` ×2, `nero`, `novel`,
@@ -86,54 +110,115 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   Tier 5 held engine primitives. It opens with the honest framing: enacting everything ready today
   improves the board by roughly ONE unit.
 
-- **⇒ ONE RULING WANTED (U28 class): `neon-vision-eye`'s Super Firepower "Deals 262.79% of final
-  ATK as additional damage" is modeled as an `extraHitDamagePct` RIDER, not a `flatDamage`
-  instance** — so it generates no burst gauge of its own, where a damage instance would. Per U28
-  that is a gauge-economy decision, not cosmetic. It may well be right (it is an "additional
-  damage" rider on her normals) but it is undocumented, and she carries no `caveats` array at
-  all. She is HOT (1.040), so the direction is not obviously wrong. Wants ONE ruling across the
-  U28 rider set rather than a unit-local fix.
+- **U28 rider-gauge class — DIRECTION RULED (2026-08-10, Tier 0 / D4), enactment still bundled.**
+  `extraHitDamagePct` riders emit no `skillGauge` where an equivalent `flatDamage` instance would
+  (`sim.ts:4053` vs 2568/2605/3803); the omission is a DEFECT, not a modeling choice, so only WHEN
+  is open. All four carriers (`modernia`, `nayuta`, `neon-blue-ocean`, `neon-vision-eye`) now record
+  the ruling in their notes. Lands with the batched gauge cluster, whose corrections partially cancel
+  — see ENGINE-WORK ORDER item 4 and `2026-08-10-gauge-economy-findings.md`.
   [batch-6 findings](2026-08-10-faithfulness-batch6-findings.md).
 
-- **⇒ OWNER RULING WANTED — two stale provenance tags, one joint decision.** (a) The
-  `PARSER BASELINE (HYPOTHESIS — NOT a validated model)` banner on **19 remaining overrides** — all
-  carry spec tests + gauntlet passes, and all contradict the banner elsewhere in their own prose. It
-  conflates "kit-faithfulness unvalidated" (false for all of them) with "magnitude not hand-tuned
-  against a graded fight" (true for most). (b) The `[materialized … NOT hand-verified]` tag on **8
-  remaining units** — `cinderella-crystal-wave`, `d-killer-wife`, `liberalio`, `maiden-ice-rose`,
-  `milk-blooming-bunny`, `naga`, `scarlet-black-shadow`, `velvet` — every one since pinned
-  test-first, so the tag asserts the opposite of the tree. Same shape, want one wording decision;
-  `noir` / `chisato` (batch 7) and `alice` / `red-hood` / `mint` / `mihara-bonding-chain` (batch 8)
-  are the worked examples.
+- **⇒ OWNER RULINGS 2026-08-11, SECOND BATCH (M-list triage part 2). ONE still open: M8.**
+  - **M3 — distributed damage CAN crit. CLOSED, nothing to enact.** It CONFIRMS the shipped engine
+    default: `flatDamage` procs crit unless a block sets `crit: false`, and a roster sweep shows all
+    12 distributed carriers (`quency-escape-queen`'s 1736.31 nuke, `dorothy`'s 8900.83, `phantom`,
+    `2b`, `scarlet-black-shadow`, …) already run crit-on.
+  - **M8 — `red-hood`'s stack ramp: ✅ LANDED 2026-08-11** as the new `convertExcess` derived-stat
+    primitive (`rampSec` was indeed the wrong tool — it is a TIME ramp and hers is per-stack).
+    Board 0.970 → 1.002. Found and fixed along the way: her Red Wolf "Charge Speed ▲100.8%" was
+    never modeled at all, only implied by the swap's charge-time clamp.
+  - **M10 — `rouge` coin CO-EXISTENCE: ENACTED 2026-08-11**, and **this entry's original premise was
+    WRONG** — worth recording because it nearly aimed the fix at the wrong line. It claimed Sword's
+    Attack Damage ▲6.65% "switches OFF the moment Shield activates"; in fact that line was already an
+    ungated permanent passive and never switched off. What WAS exclusive were the three burst Max-HP
+    riders, so the fix made their gates cumulative (Sword rider ungated, Shield `{min:1}`, Double
+    Sword `{min:2}`) and is **damage-inert** — ally-granted Max HP does not feed a teammate's
+    `atkOfMaxHpPct` (theme 13). The stated ⚠ U38 coupling is therefore MOOT for this change.
+  - **M12 — `mint` starts on DANCING and flips on her OWN cast. CLOSED, nothing to enact** — it
+    confirms the shipped `singing` resource (initial 0, two `mode:'solo'` `burstCast` blocks at
+    `everyN` 2 / offsets 0 and 1). Her solo mode still has no real-fight anchor for the MAGNITUDES it
+    gates (S1 `casterAtkPct` 45.02; S2's crit 19.94 / projectileExplosion 50 / pierce 32.72) — an
+    unanchored-model item, not a mechanism question.
 
-- **⇒ CONVENTION WANTED — an inertness/A-B claim in override prose must NAME THE ROSTER it was
-  measured on.** `alice`'s "damage-INERT at scope lock … verified byte-identical totals with/without
-  hasPierce" was true in `controlComp()` (liter/crown/carry/`helm`, no pierce source) and wrong by
-  **22.6%** on her only graded comp, which seats `mint` and her `pierceDamagePct` 32.72. Fixture-inert
-  is not board-inert. Cheap enforcement options: a caveat-prose lint, or a harness helper that stamps
-  the comp into the claim. [batch-8 findings](2026-08-10-faithfulness-batch8-findings.md).
+- **Two round-count Pierce carriers still skip the line, and the reason they gave no longer holds.**
+  `dorothy-serendipity` ("Gains Pierce for 3 round(s)") and `d-killer-wife` ("Gain Pierce for 1
+  shot") both carry their Pierce line as unmodeled/damage-inert on their own documented reasoning —
+  part of which was that the engine could not express a round count. It can now
+  (`gainPierce.durationShots`, DECISIONS 2026-08-11). Both are BOARD-GRADED (0.924 / 0.937), so
+  modeling them MOVES the board: a per-unit call, not a mechanical follow-through. Note
+  `dorothy-serendipity`'s stated reason is also that "Pierce is inert on a single boss", which
+  contradicts game-mechanics §11 (Pierce Damage ▲ applies on the partless boss) — check that premise
+  before acting on either.
 
-- **Clean 3 bare parser-warning caveats in 2 units** — `maiden-ice-rose` (1) and
-  `milk-blooming-bunny` (2) still ship raw `unparsed effect` / `unsupported trigger` strings as
-  caveats. `validate-overrides.ts` echoes caveats, so they read as live unresolved failures on every
-  run; both units also record the same lines' real dispositions in `unmodeled`.
+- **M1 `guillotine-winter-slayer` — the cadence ask is CLOSED, and the "~26% hot normal fire" framing
+  was a MISATTRIBUTION.** OWNER RULING 2026-08-11: she uses her datamined fire rate (`pullsPerSec` 12
+  / `rate_of_fire` 720); do not refit it. Checked the owner's hypothesis (is the level-up ammo refill
+  modelled wrong?) by A/B on her graded comp `PH water B3s`: removing the `instantReload` block
+  entirely moves her 1813 → 1802 shots and 280M → 279M — **the whole ammo channel is +0.6% of her
+  shots**, so it cannot inflate a fire rate either. Re-cadencing the EXP/level blend to a realistic
+  core fraction (c = 0.44: `hitCount` 3 → 4, level-up 30 → 42) is worth ~1.4% (1.023 → 1.006). AND
+  the whole-picture check nobody ran: **her board reading is 1.0238, inside ±3%.** The 26% traces to
+  two OLD unit-level readings (`run H` slot-5 + `N8` focus, 1.21–1.34) recorded in her `residual`
+  line, i.e. a different context, and `12 / 1.26 ≈ 9.5/s` was an arithmetic coincidence turned into a
+  suspect. If anyone wants the residual re-opened, re-derive it from a CURRENT reading first.
 
-- **⇒ OWNER RULING WANTED — ally-targeted `damageTakenPct` on 3 carriers** (`moran`, `rouge`,
-  `rumani`). The StatKey is boss-side (the engine sums it from the enemy buff list only), so all
-  three are applied-and-never-read: correct in outcome, live-looking in the file. Either move them
-  to `unmodeled` or have `validate-overrides.ts` warn on the target/stat mismatch.
+- **M7 `noir` reload gap → folded into the ONGOING SG INVESTIGATION** (owner-directed 2026-08-11),
+  not a standalone recording ask. Her recon reads a reload of ~0.6–0.9s against the datamined 62f ≈
+  1.03s and she sits 0.884 COLD on 2 graded comps, but she is the **SG-landing-table calibration
+  anchor** (`docs/probe-data/noir-solo-recon.json`), so a cadence change moves the band table's own
+  basis — which is exactly why it belongs to the SG thread rather than beside it. Cross-referenced
+  from `docs/handoffs/2026-08-06-OWNER-ASK-mislock-labels.md`, the live SG owner-ask (it already
+  asks for `noir` pellet marking, so the same footage may serve both).
 
-- **The audit doc's F7 ramp-bake list is nought for three — do not forward its membership as a
-  per-unit prior.** `chisato` and `rouge` carry no stack-ramp line at all; `mast-romantic-maid` has a
-  ramp (Drunken 1→2→3) but is baked at the cycle AVERAGE of 2, not "at cap from t=0" as F7 describes
-  — a different approximation with a different sign. The remaining ~7 names are unchecked.
+- **⇒ OWNER RULINGS 2026-08-11 (M-list triage) — SIX of the twelve recording asks answered from game
+  knowledge, no footage needed. **ALL SIX ARE NOW CLOSED** (DECISIONS 2026-08-11): M5, M8 and M9
+  landed as code, M4 needed no change (already implemented + pinned), M2 and M11 confirmed the
+  shipped model, and M6 landed as `docs/modeling-priors.md` prior 12.**
+  1. **Tier 2 / M2 — `trina`'s Burst-Skill-Damage amp follows the LITERAL wording only, and
+     `cinderella` (RL/Electric) does NOT receive it.** The Tier 2 blocker is retired WITHOUT a
+     recording: her untagged state is owner-CONFIRMED, not provisional, and the 0.893 → 1.523 blowup
+     was the tag being wrong, not the sim. The literal-only census (`scripts/census-burst-amp-scope.ts`)
+     is the rule of record. Placement (additive into Damage-Up) and magnitude (435.6) remain ⚑
+     unmeasured, but they now bite ONLY units that literally qualify.
+  2. **M4 — true damage CAN core hit. ✅ NO CHANGE NEEDED — already implemented AND already pinned.**
+     The core gate carries no true-flavor exclusion (just as crit carries none), and the
+     normal-attack path passes `core: true` regardless of flavor. Measured on `chisato`: all 324 of
+     her true-flavored swap normals are core-eligible at a live core rate. Pinned by
+     `scripts/tests/units/chisato.test.ts` ("ENGINE ⚑ PIN: true swap normals remain crit+core-eligible").
+  3. **M5 — `ada` fires ONE special-charged shot per burst window. ✅ LANDED 2026-08-11** as
+     `maxShots` 1 on the burst weaponSwap. Board cost was larger than the ~0.95 estimate: **0.995 →
+     0.924 COLD**, accepted under faithful > fit. Her cadence shift also rippled into two other
+     units' fixtures (see the `nihilister` item above and little-mermaid M4).
+  4. **M6 — ALL STACKS REFRESH unless a kit says otherwise. ✅ LANDED 2026-08-11** as
+     `docs/modeling-priors.md` prior 12 (a GAME-WIDE rule, not an `ade-agent-bunny` fact). Her
+     `hitCount:10` gate is confirmed live — measured first firing at 14.9s, 10× per fight — so the
+     plateau-at-3–5 failure mode that would have made her whole S2 package dead code is ruled out.
+  5. **M9 — `prika` IS Pierce-tagged during Performance. ✅ LANDED 2026-08-11** (`gainPierce`, self,
+     `skill1`, burstCast; 25s solo / 9999 duet). The ~+8% estimate was far low: **0.890 → 1.065**.
+     Decomposed on PA MiKa — the TAG is worth ~+0.03, the duet WINDOW ~+0.15, so what actually moved
+     her is a premise (Performance never lapses in duet) shared with her `chargeDamagePct`, not the
+     ruling. Move both windows together or neither.
+  6. **M11 — `mihara-bonding-chain`'s burst RESETS Ensnaring stacks**; the kit's theme is building
+     stacks OUTSIDE her B3 window and consuming them with B3. This confirms the mechanism her note
+     already models, so no footage is needed — the 12-stack rebuild average stays the one fitted
+     number, now derivable from the kit's own rebuild cadence rather than from a recording.
 
-- **Re-file `snow-white-heavy-arms`'s Fully-Active "uses vs time" residual.** It was logged as H2
-  in `experiment-harness-ai.md`, closed 2026-07-21 and archived out of the tree, and is tracked
-  nowhere else; it now lives only in her override prose. Also 4 live citations still point at that
-  closed doc: `scripts/regression.ts:196`,
-  `scripts/blind-rebuild/code-bundle/code-sim-setup.ts:45`, `code-sim-effects.ts:125`,
-  `sim-core-c.ts:58` — successor is `docs/handoffs/scientific-method-harness.md`.
+- **The two REAL F7 cap-bakes, now that the list is verified** (2026-08-11, all 12 names checked —
+  the audit doc's F7 section carries the corrected classes): `sakura-bloom-in-summer` ⚑4 (burst DoT
+  hit-applied at the full 10 stacks from tick 1; a self-ramp reading is ×0.55, and her note states
+  the discriminating recipe — read the sustained tick popups right after her burst) and `laplace`
+  (RL/Iron) (S1 Hero Vision's stack GATE assumed maxed for the whole burst window, opening the burst
+  true-damage conversion from t=0). Both HOT-direction and measurement-gated. `cinderella`
+  (RL/Electric) and `arcana-fortune-mate` are PARTIAL (one baked line each, `rampSec` already on
+  another); the other 8 names are time-averages or non-members — **do not "correct" those, it would
+  double-correct them.**
+
+- **`scripts/blind-rebuild/code-bundle/` is a STALE extract of the engine.** Found while repairing
+  its dead citations: it holds ~2,400 lines against `src/engine/sim.ts`'s 4,278, and its `ROTMODEL`
+  comments describe `floor` as the default — inverted since the 2026-08-04 owner ruling (`refill` is
+  the default; `floor` is the opt-in A/B arm). The two citation sites now say so inline, but the
+  bundle as a whole was not re-extracted. A blind-rebuild reviewer reads it as the engine, so a
+  re-extract should precede the next blind-rebuild/`/audit-kit` run that uses it.
 
 - **⇒ FAITHFULNESS PASS phase-4 — the GRADED-COMP slice is COMPLETE (batches 1–8 cover all 45
   board-graded units). What remains is item (c), THE TAIL.** 185 override files against 45 graded
@@ -141,9 +226,8 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   to check inertness against. It wants its own entry doc and probably a GENERATED-CENSUS approach
   (the pattern that demonstrably works here — `scripts/doc-drift.ts`, the burst-amp census,
   `lint-target-status.ts`) rather than per-unit reads. The batch-7 START-HERE doc is CLOSED with
-  batch 8. Still open and roster-wide from the sweep: the 5-carrier lifesteal non-emitter ruling
-  (`d`, `moran`, `red-hood`, `rem`, `tia` — `red-hood` is confirmed SELF-scoped, so a consistency
-  item, not a fit one) and the U28 rider-gauge class.
+  batch 8. Both roster-wide items the sweep surfaced (the 5-carrier lifesteal
+  non-emitter ruling and the U28 rider-gauge class) are RULED — see DECISIONS 2026-08-10 Tier 0.
 
 - **Sweep record (batches 1–8, all landed — reference only, nothing open here):**
   [batch 1](2026-08-10-faithfulness-batch1-findings.md) ·
@@ -174,11 +258,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **Exposed hot fit from the batch — run the pending direct measurement, then re-tune (never
   re-fudge):** `maxwell` 0.889→1.252 (popup-read the burst window in run-G/N6 footage: railgun
   shot count + charged value vs the modeled ~2 × 2440.26%).
-- **Self-scoped lifesteal recovery-emit split — wants ONE roster ruling (2026-08-10, batch 4):**
-  of the 13 kits with "Recovers X% of attack damage as HP", 8 emit a recovery event and 5 do not
-  (`d`, `moran`, `red-hood`, `rem`, `tia`). Verified board-INERT for `moran` (a self-scoped heal
-  fires recovery only at its own target, so it cannot reach an ally-side crown-class consumer; a
-  probe emit moved the board by zero) — this is a consistency call, not a fit one.
 - **`alice-wonderland-bunny` stack-grant reading:** now aligned to the +1-GRANT majority; if a
   datamine function-type read or footage confirms the 2026-07-28 cap-raise reading instead,
   revert her addStack block to unmodeled (revert path in her note).
@@ -323,6 +402,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      exaggerated arm** — bound instrument `scripts/battery/u28-gauge-ab.ts`; the batched
      gauge-cluster proposal (tempo + double-emit reproduce + U28 + theme-20 sourcing, land
      together) is `docs/handoffs/2026-08-10-gauge-economy-findings.md`.
+     **DIRECTION SETTLED (owner ruling 2026-08-10, faithfulness Tier 0 / D4):** a function-damage
+     instance that lands on the boss SHOULD generate weapon-base gauge — the rider path's omission
+     is a DEFECT, not a modeling choice, so the open question is only WHEN and with what, never
+     WHETHER. Sequencing is unchanged (lands with the cluster, ENV-gated, `/scientific-method`),
+     and the ruling is now recorded in all four carriers' notes (`modernia`, `nayuta`,
+     `neon-blue-ocean`, `neon-vision-eye`). Note `modernia`'s S1 is a `flatDamage` _because_ of
+     this asymmetry — closing it retires that workaround.
 - **⇒ ENGINE PRIMITIVE GAP: `addStack`** — no effect increments an existing buff's stack count by N on
   a trigger. Blocks `flora` S1 ("after 100 normal attacks, all Electric Code allies: increases the
   stack count of stackable buffs by 1" — trigger `hitCount:100` and target `alliesOfElement` are both
@@ -818,3 +904,8 @@ template mislock, → 0 on relock) + 29 countable`. 42 − 35 = 7 / 5 shots = **
 - **AR-burst-window residual (moran/jill)** — footage-blocked. moran's swap coldness is THROUGHPUT
   (~1.3× more hits in the swap window), NOT per-shot (the '1440'=24/s datamine was measured-refuted; base
   ~12/s stands); needs an isolated moran-solo recording or the swap weapon's `shot_count` datamine.
+- **Inertness-claim backfill is OPPORTUNISTIC, never a sweep.** The write-time guard (hook r5) and the
+  convention both landed 2026-08-11, but the ~620 pre-existing `inert`/`byte-identical` mentions across
+  153 override files are NOT a worklist — most strong-looking ones are "board A/B is the discriminator",
+  a plan rather than a result. Fix a file's claims when you next touch it for another reason; `alice`
+  (SR/Fire) is the model wording.

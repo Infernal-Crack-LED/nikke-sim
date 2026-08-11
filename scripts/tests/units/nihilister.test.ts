@@ -22,14 +22,14 @@
 //      engine model); ⚑ with estimate+recipe in the override note.
 //
 // Encoding shape (see src/skills/overrides/nihilister.json):
-//   N1 = shotFired → self gainPierce durationSec 4. SR auto-full-charges every shot
-//        (milk-blooming-bunny precedent), so shotFired IS the full-charge trigger. "for 1
-//        round(s)" is a ROUND-COUNT duration and gainPierce carries no durationShots — the
-//        wall-clock stand-in must cover the longest inter-shot gap the holder actually fires
-//        across (an empty-magazine reload 2.35s + a full-charge cycle ≈1.37s ≈ 3.7s worst
-//        case), so 4s: the per-shot refresh keeps the tag continuous while she fires, and it
-//        never lapses BETWEEN two rounds she actually fires (the timed stand-in degrades to
-//        ~100% on-shot duty exactly like the round-count original under steady fire; ⚑ cadence).
+//   N1 = shotFired → self gainPierce durationShots 1. SR auto-full-charges every shot
+//        (milk-blooming-bunny precedent), so shotFired IS the full-charge trigger, and "for 1
+//        round(s)" is encoded LITERALLY as a round budget (the durationShots form of gainPierce,
+//        added 2026-08-11 — five kits print this shape). The budget is spent by firing, never by
+//        the clock, so no reload or lull can drain it: the round she fires next is the round the
+//        kit promised. It replaced a durationSec 4 stand-in derived as "the longest inter-shot gap
+//        she fires across (~3.7s)" — her steady cycle maxes at 3.87s but the fixture holds one
+//        4.50s lull, so the stand-in silently dropped one shot's tag per fight.
 //        The grant lands AFTER the triggering shot's damage (shotFired dispatch order — the
 //        phantom ⚑2 engine-order class), so shot 1 is the application event and every shot
 //        from the 2nd on is tagged while firing. gainPierce emits NO event (sets
@@ -58,11 +58,12 @@
 // Why each assertion discriminates:
 //   N1  the static `hasPierce:true` flag (nearest-wrong — tags from frame 0, no trigger) is
 //       rejected structurally (shipped carries a windowed shotFired block, no top-level flag);
-//       the timed window is proven LOAD-BEARING behaviourally: removing it un-tags her attacks,
-//       d-killer-wife's 13.55 pierceDamagePct goes inert on her (sim.ts pierceTagged gate) and
-//       her total drops; and the steady-fire continuity pin proves the 4s window covers like a
-//       static tag WHILE she fires (byte-identical totals) — so the encoding neither under- nor
-//       over-covers under the fixture cadence.
+//       the round budget is proven LOAD-BEARING behaviourally: removing it un-tags her attacks,
+//       d-killer-wife's 13.55 pierceDamagePct goes inert on her (sim.ts pierceTagged gate) and her
+//       total drops. The steady-fire pin then asserts EXACT equality with an always-on flag while
+//       she fires, and re-derives the fixture's 4.50s lull on every run so the assertion keeps
+//       discriminating rounds from seconds — that lull is what the old durationSec 4 stand-in
+//       could not cover. The seconds form is the nearest-wrong encoding, not just a coarser one.
 //   N4  the exact frame set [10,20,…,170]s kills every wrong cadence (an interval:5 over-fires,
 //       a hitCount proxy fires on HER shot rhythm ≈1.37s, a burstCast key fires ≈ per cast);
 //       the magnitude pin kills the lvl-9 102.4.
@@ -84,7 +85,6 @@
 // RED state (pre-S3): nihilister has NO override on disk — runComp throws "no override" for
 // her, so this whole suite is RED until src/skills/overrides/nihilister.json lands (S3).
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
 import type { SimEvent } from '../../../src/types.js';
 import { loadOverride } from '../../../src/skills/overrides-node.js';
 import { runComp, totals, withPatchedOverride } from '../lib/harness.js';
@@ -134,7 +134,9 @@ const cfNoGainPierce = withPatchedOverride('nihilister', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasKind(b, 'gainPierce'));
   if (ov.skill1.length === before) {
-    throw new Error('nihilister S1 gainPierce block missing — fixture is stale');
+    throw new Error(
+      'nihilister S1 gainPierce block missing — fixture is stale'
+    );
   }
 });
 /** N1 nearest-wrong: the STATIC hasPierce flag instead of the windowed grant. */
@@ -192,7 +194,9 @@ const cfNoAmmo = withPatchedOverride('nihilister', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'maxAmmoFlat'));
   if (ov.burst.length === before) {
-    throw new Error('nihilister burst maxAmmoFlat block missing — fixture is stale');
+    throw new Error(
+      'nihilister burst maxAmmoFlat block missing — fixture is stale'
+    );
   }
 });
 /** N7 nearest-wrong: maxAmmoPct 100 (coincides at her 6-round base — the trap). */
@@ -201,7 +205,9 @@ const cfAmmoPct = withPatchedOverride('nihilister', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((e: any) => e.stat === 'maxAmmoFlat');
   if (!eff) {
-    throw new Error('nihilister burst maxAmmoFlat effect missing — fixture is stale');
+    throw new Error(
+      'nihilister burst maxAmmoFlat effect missing — fixture is stale'
+    );
   }
   eff.stat = 'maxAmmoPct';
   eff.value = 100;
@@ -221,7 +227,9 @@ const ammoPct = run({ nihilister: cfAmmoPct });
 
 // ---- readers ----------------------------------------------------------------------------------
 const dmg = (evs: SimEvent[]) =>
-  evs.filter((e): e is Extract<SimEvent, { kind: 'damage' }> => e.kind === 'damage');
+  evs.filter(
+    (e): e is Extract<SimEvent, { kind: 'damage' }> => e.kind === 'damage'
+  );
 const herDamage = (evs: SimEvent[], srcSlot: 'skill2' | 'burst') =>
   dmg(evs).filter((d) => d.slug === 'nihilister' && d.srcSlot === srcSlot);
 const herShots = (evs: SimEvent[]) =>
@@ -272,21 +280,34 @@ function burnTicksPerFullWindow(evs: SimEvent[]) {
 
 describe('nihilister — kit spec', () => {
   describe('N1 — S1 full-charge: Gain Pierce for 1 round (windowed gainPierce on shotFired)', () => {
-    it('is a shotFired-keyed, self-targeted, TIMED gainPierce — not a static hasPierce flag', () => {
+    it('is a shotFired-keyed, self-targeted, ROUND-COUNT gainPierce — not a static flag and not a seconds stand-in', () => {
       const ov = shipped();
-      expect(ov.hasPierce, 'shipped must not be the static-flag form').toBeUndefined();
+      expect(
+        ov.hasPierce,
+        'shipped must not be the static-flag form'
+      ).toBeUndefined();
       const blk = ov.skill1.find((b: any) => hasKind(b, 'gainPierce'));
       expect(blk, 'no gainPierce block in skill1').toBeDefined();
       expect(blk.trigger.kind).toBe('shotFired');
       expect(blk.target.kind).toBe('self');
       const eff = blk.effects.find((e: any) => e.kind === 'gainPierce');
+      // The kit says "for 1 round(s)" — a ROUND budget, which the engine now expresses directly
+      // (durationShots, 2026-08-11). The seconds stand-in it replaced is the nearest-wrong form:
+      // it drains during a lull, and hers has a 4.50s gap against the 4s window it shipped with.
+      expect(eff.durationShots, 'the kit prints rounds, not seconds').toBe(1);
       expect(
         eff.durationSec,
-        'a round-count window needs a timed stand-in — permanent-after-first-shot is wrong'
+        'a seconds window would re-introduce the lull bug'
+      ).toBeUndefined();
+      expect(
+        eff.durationShots,
+        'an absent budget is the permanent-from-first-shot form, which the kit does not grant'
       ).toBeGreaterThan(0);
       // unmodeled.skill1 must NOT claim the Pierce line (it is modeled)
       expect(
-        (ov.unmodeled?.skill1 ?? []).some((s: string) => s.includes('Gain Pierce')),
+        (ov.unmodeled?.skill1 ?? []).some((s: string) =>
+          s.includes('Gain Pierce')
+        ),
         'the Pierce grant is modeled, not carried as unmodeled'
       ).toBe(false);
     });
@@ -297,12 +318,34 @@ describe('nihilister — kit spec', () => {
         pierceBuffWindows(base.events).length,
         'no pierceDamagePct window landed on nihilister — fixture is inert'
       ).toBeGreaterThan(0);
-      expect(base.totals.nihilister).toBeGreaterThan(noGainPierce.totals.nihilister);
+      expect(base.totals.nihilister).toBeGreaterThan(
+        noGainPierce.totals.nihilister
+      );
     });
 
-    it('covers steady fire like the round-count original (byte-identical to the static flag while firing)', () => {
-      // The timed stand-in must never lapse BETWEEN two rounds she actually fires: under the
-      // fixture cadence the static-flag counterfactual and the shipped window must agree exactly.
+    it('the ROUND budget covers every round she fires, INCLUDING across her longest lull', () => {
+      // The discriminating property of a round budget: it is spent by FIRING, so a gap of any
+      // length cannot drain it. This assertion IS the instrument (CLAUDE.md constraint 9) — it
+      // re-derives the lull on every run instead of citing a number from a lost scratch script.
+      //
+      // The history worth pinning: this suite shipped a `durationSec: 4` stand-in, derived as "the
+      // longest inter-shot gap she actually fires across (~3.7s worst case)". Her steady cycle does
+      // max out at 3.87s — but the fixture holds ONE 4.50s lull, so under seconds the shot after it
+      // fired UNTAGGED (measured 2026-08-11: ~87k of her 61.5M normal-bucket damage). The fix was
+      // not a bigger number: `gainPierce` gained `durationShots`, so "for 1 round(s)" is now encoded
+      // literally. The exact static-flag equality below is this suite's ORIGINAL pin, restored —
+      // under a round budget it holds for a principled reason instead of by fixture luck.
+      const shotFrames = herShots(base.events)
+        .map((s) => s.frame)
+        .sort((a, b) => a - b);
+      const gaps = shotFrames.slice(1).map((f, i) => (f - shotFrames[i]) / FPS);
+      expect(
+        Math.max(...gaps),
+        'fixture no longer holds a lull long enough to discriminate rounds from seconds'
+      ).toBeGreaterThan(4);
+
+      // A static always-on flag is the upper bound on any windowed form. Under a round budget the
+      // shipped model MEETS it exactly while she fires: no lull can cost her a tagged round.
       expect(staticPierce.totals.nihilister).toBe(base.totals.nihilister);
     });
   });
@@ -316,9 +359,7 @@ describe('nihilister — kit spec', () => {
         'Piercing Radius line missing from unmodeled.skill1'
       ).toBe(true);
       expect(
-        s1u.some(
-          (s) => s.includes('2 or more enemies') && s.includes('50.33')
-        ),
+        s1u.some((s) => s.includes('2 or more enemies') && s.includes('50.33')),
         'the 2+-target bonus line missing from unmodeled.skill1'
       ).toBe(true);
       // no radius primitive and no 50.33 rider may exist anywhere in skill1
@@ -364,9 +405,9 @@ describe('nihilister — kit spec', () => {
 
     it('DISCRIMINATING: wrong cadences move the hit set', () => {
       const shippedFrames = hits.map((d) => d.frame);
-      expect(herDamage(s2Fast.events, 'skill2').map((d) => d.frame)).not.toEqual(
-        shippedFrames
-      );
+      expect(
+        herDamage(s2Fast.events, 'skill2').map((d) => d.frame)
+      ).not.toEqual(shippedFrames);
       expect(
         herDamage(s2BurstKeyed.events, 'skill2').map((d) => d.frame)
       ).not.toEqual(shippedFrames);
@@ -378,7 +419,10 @@ describe('nihilister — kit spec', () => {
 
     it('fires once per burst cast at the kit magnitude', () => {
       const casts = herCasts(base.events);
-      expect(casts.length, 'nihilister never cast — fixture is broken').toBeGreaterThan(0);
+      expect(
+        casts.length,
+        'nihilister never cast — fixture is broken'
+      ).toBeGreaterThan(0);
       expect(nukes.length).toBe(casts.length);
       expect([...new Set(nukes.map((d) => d.atkPct))]).toEqual([BURST_ATK]);
     });
@@ -401,9 +445,7 @@ describe('nihilister — kit spec', () => {
       expect(
         fbNukes.some((d) => d.fbMajorApplied) ||
           fbNukes.length !== nukes.length ||
-          !fbNukes.every(
-            (d, i) => d.frame === nukes[i]?.frame
-          ),
+          !fbNukes.every((d, i) => d.frame === nukes[i]?.frame),
         'the fullBurstEnter counterfactual must be observably different'
       ).toBe(true);
       expect(burstFbEnter.totals.nihilister).not.toBe(base.totals.nihilister);
@@ -413,7 +455,10 @@ describe('nihilister — kit spec', () => {
   describe('N6 — Burn: 13.19% sustained every 1s for 10s per cast (a real DoT; ticks on the DOT_CRIT gate)', () => {
     it('ticks exactly 10× at 1s spacing per full-window cast, at the kit magnitude', () => {
       const { casts, ticks } = burnTicksPerFullWindow(base.events);
-      expect(casts.length, 'no burst cast has a full 10s window inside the fight').toBeGreaterThan(0);
+      expect(
+        casts.length,
+        'no burst cast has a full 10s window inside the fight'
+      ).toBeGreaterThan(0);
       for (const cast of casts) {
         const inWindow = ticks.filter(
           (d) => d.frame > cast.frame && d.frame <= cast.frame + 10 * FPS
@@ -426,7 +471,10 @@ describe('nihilister — kit spec', () => {
         const gaps = inWindow.map((d, i) =>
           i === 0 ? d.frame - cast.frame : d.frame - inWindow[i - 1].frame
         );
-        expect([...new Set(gaps)], 'ticks must land exactly 1s apart, first at cast+1s').toEqual([FPS]);
+        expect(
+          [...new Set(gaps)],
+          'ticks must land exactly 1s apart, first at cast+1s'
+        ).toEqual([FPS]);
         expect([...new Set(inWindow.map((d) => d.atkPct))]).toEqual([BURN_ATK]);
       }
     });
@@ -443,9 +491,10 @@ describe('nihilister — kit spec', () => {
       const eff = ov.burst
         .flatMap((b: any) => b.effects)
         .find((e: any) => e.kind === 'dot');
-      expect(eff.flavor, 'the burn is sustained damage — the flavor feeds sustainedDamagePct').toBe(
-        'sustained'
-      );
+      expect(
+        eff.flavor,
+        'the burn is sustained damage — the flavor feeds sustainedDamagePct'
+      ).toBe('sustained');
       expect(
         eff.crit,
         'the universal gate covers the ticks — a per-dot opt-in needs a measurement'
@@ -474,7 +523,9 @@ describe('nihilister — kit spec', () => {
     it('applies once per HER cast, self-scoped, value 6, 15s expiry', () => {
       expect(applied.length).toBe(herCasts(base.events).length);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([6]);
-      expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([NIHILISTER]);
+      expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([
+        NIHILISTER,
+      ]);
       for (const b of applied) {
         expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
       }
@@ -490,11 +541,15 @@ describe('nihilister — kit spec', () => {
     });
 
     it('behavioural: an extended magazine exists in-window (ammoAfter exceeds the base-mag max)', () => {
-      const maxAfterBase = Math.max(...herShots(base.events).map((s) => s.ammoAfter));
+      const maxAfterBase = Math.max(
+        ...herShots(base.events).map((s) => s.ammoAfter)
+      );
       const maxAfterRemoved = Math.max(
         ...herShots(noAmmo.events).map((s) => s.ammoAfter)
       );
-      expect(maxAfterRemoved, 'base 6-round mag: max rounds-after is 5').toBe(5);
+      expect(maxAfterRemoved, 'base 6-round mag: max rounds-after is 5').toBe(
+        5
+      );
       expect(
         maxAfterBase,
         'with +6 rounds the belt must exceed the base-mag maximum'

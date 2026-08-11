@@ -54,10 +54,11 @@
 | `chargeMultPct` | 10 | ada, cinderella-crystal-wave, e-h, eunhwa-tactical-upgrade, maxwell, maxwell-ordinary-mechanic, nayuta, red-hood, … |
 | `consolidation` | 1 | dorothy-serendipity |
 | `consumeAmmo` | 3 | asuka-wille, grave, jill |
+| `convertExcess` | 1 | red-hood |
 | `countInFb` | 7 | claire, frima, quiry, rapi-red-hood, scarlet-black-shadow, snow-crane, snow-white-innocent-days |
 | `critRateNormalPct` | 3 | biscuit, helm, julia |
 | `delaySec` | 8 | arcana-fortune-mate, asuka-wille, dorothy, flora, grave, neon-vision-eye, rapi-red-hood, snow-white |
-| `durationShots` | 12 | asuka-wille, emilia, eunhwa, harran, helm, miranda, neon, neve, … |
+| `durationShots` | 13 | asuka-wille, emilia, eunhwa, harran, helm, miranda, neon, neve, … |
 | `escalating` | 11 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, mary-bay-goddess, mihara, … |
 | `everyN` | 8 | clay, harran, mast-romantic-maid, mint, neon-vision-eye, phantom, power, soda-twinkling-bunny |
 | `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
@@ -66,7 +67,7 @@
 | `flatDamage` | 98 | 2b, a2, anchor, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 6 | d, isabel, mihara, modernia, soda-twinkling-bunny, vesti |
-| `gainPierce` | 13 | ade-agent-bunny, asuka, dorothy, grave, harran, makima, mari, milk-blooming-bunny, … |
+| `gainPierce` | 14 | ade-agent-bunny, asuka, dorothy, grave, harran, makima, mari, milk-blooming-bunny, … |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
 | `hasPierce` | 7 | alice, laplace, laplace-ultimate-hero, maxwell, maxwell-ordinary-mechanic, red-hood, zwei |
 | `hasTrueNormals` | 0 | _none_ |
@@ -82,7 +83,7 @@
 | `lastBullet` | 19 | anchor, anis-sparkling-summer, aria, cinderella-crystal-wave, crow, dorothy, epinel, eunhwa, … |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 12 | emilia, grave, himeno, mica, n102, neon, nihilister, noir, … |
-| `maxShots` | 3 | e-h, laplace-ultimate-hero, snow-white-heavy-arms |
+| `maxShots` | 4 | ada, e-h, laplace-ultimate-hero, snow-white-heavy-arms |
 | `mode` | 8 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, milk-blooming-bunny, mint, prika |
 | `modes` | 8 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, milk-blooming-bunny, mint, prika |
 | `noB1` | 2 | anis-star, rapi-red-hood |
@@ -155,7 +156,7 @@
 | ------------------------ | -------------------------------------- | ----------------------------------------------------------------------------------------- |
 | 3. Stack-ramp            | `buff.rampSec`                         | ENACTED cinderella + arcana-fortune-mate + scarlet (HP-gate proxy); rest (chisato/leona/guilty/…) measurement-gated |
 | 4. Team-composition gate | `teamHas:{element/class/weapon/burst/sameSquad}` | ENACTED blanc, eunhwa-tactical-upgrade, noir (sameSquad); arcana (mono-Electric predicate) deferred (no board data + WoF gate unmodeled) |
-| 5. Timed pierce          | `gainPierce`/`pierceUntilFrame`        | ENACTED ade-agent-bunny, asuka, dorothy, grave (0.83→1.18, faithful>fit, U19), mari, naga, neve; milk/prika deferred |
+| 5. Timed pierce          | `gainPierce`/`pierceUntilFrame`        | ENACTED ade-agent-bunny, asuka, dorothy, grave (0.83→1.18, faithful>fit, U19), mari, naga, neve; milk deferred; prika ENACTED 2026-08-11 |
 | 7. Weapon-swap spec      | `weaponSwap.weapon`/`pullsPerSec`      | nayuta FIXED; moran throughput + chisato/takina/velvet pending                            |
 | 14. Flat Max-Ammo        | `maxAmmoFlat` StatKey                  | ENACTED (kit-literal) emilia, grave, n102, noir, rem, tove, trina                          |
 | 15. Ammo-dump            | `consumeAmmo` effect                   | ENACTED asuka-wille, jill; grave's Prediction-end trigger remains open (U19)               |
@@ -207,14 +208,15 @@
   `targetMaxHpPct` do not feed a teammate's `atkOfMaxHpPct` (rouge/noir/trina), neutralizing the
   Max-HP double-counts as damage-irrelevant.
 - **Themes 3/4/5/7/11/14:** audit re-confirmed stack-ramp (3), conditional/team-gated buffs (4: naga
-  shield-gate, mint mode-default), pierce gating (5: prika missing Gains Pierce = the one SILENT_DROP-class
-  pierce finding), weapon-swap economy (7), excludeSelf (11), flat Max-Ammo (14: noir +5 self-only) on the
+  shield-gate, mint mode-default), pierce gating (5: prika's missing Gains Pierce was the one SILENT_DROP-class
+  pierce finding — ENACTED 2026-08-11), weapon-swap economy (7), excludeSelf (11), flat Max-Ammo (14: noir +5 self-only) on the
   relevant units.
 
 **Genuinely-new unit-level findings surfaced by the audit** (not previously itemized):
 
-- `prika` — continuous "Gains Pierce" (while in Performance) is unmodeled and no `hasPierce` tag is carried
-  → her own Pierce Damage ▲13.09% never lands (SILENT_DROP-class; theme-5 enactment, COLD 0.691).
+- `prika` — continuous "Gains Pierce" (while in Performance) — **ENACTED 2026-08-11** (owner-ruled) as a
+  self-targeted `gainPierce` on her burstCast in `skill1`, windowed per mode (25s solo / 9999 duet). Her own
+  Pierce Damage ▲13.09% and partner Pierce buffs now land on her; board 0.890 → 1.065.
 - `snow-white` — "Full Charge Damage: 1000% of damage" encoded as multiplicative ×10 (chargeMultPct 1000
   → 4995%/full shot) AND swap shot economy capped at exactly 1 cannon shot/burst (engine zeroes charge-speed
   during swap) — two high ENGINE/ENCODING items.

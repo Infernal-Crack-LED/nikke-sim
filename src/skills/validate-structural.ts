@@ -114,6 +114,7 @@ export const EFFECTS = new Set([
   'stun',
   'stackedNuke',
   'gainPierce',
+  'convertExcess',
   'addStack',
   'resource',
   'targetStatus',
@@ -148,6 +149,23 @@ export const ENEMY_BUFF_STATS = new Set([
   'distributedDamagePct',
   'defPct',
 ]);
+
+// The mirror hazard: a stat the engine reads ONLY off the boss's buff list, aimed at an
+// ally-side target — applied and never read. `damageTakenPct` is summed from `enemyBuffs` alone
+// (sim.ts:1861), and the SIGN carries opposite meanings on the two sides: positive on the boss
+// = boss takes more, while the kit clauses that target allies are damage-REDUCTION (negative).
+// That is the trap worth a diagnostic — a later session "correcting" the sign or the target
+// turns a defensive line into a damage multiplier.
+//
+// Two stats are deliberately EXCLUDED rather than overlooked:
+//   - `distributedDamagePct` is read off the boss (1864, shared-taken debuff) AND off the unit
+//     (1868, the carrier's own distributed boost), so an ally-targeted one is LIVE.
+//   - `defPct` is boss-only for damage (1666, the DEF shave), but 28 overrides carry ordinary
+//     ally-side DEF ▲ kit lines. They are inert for damage too, yet they carry no sign-inversion
+//     hazard and the sim models no ally DEF at all — warning on them would bury the 3 real
+//     mismatches in 28 lines of noise. Verified roster-wide 2026-08-10.
+// Warn, don't fail: the carriers are real kit lines kept for fidelity. Keep in sync with 1861.
+export const BOSS_ONLY_BUFF_STATS = new Set(['damageTakenPct']);
 
 // Block fields the chargeCounter dispatch still IGNORES: the runtime abort-gates are honored
 // there since 2026-08-10 (sim.ts blockGatesPass — the audit-F2.1 fix), but the dispatch applies
@@ -228,7 +246,7 @@ export function collectEffects(
   return out;
 }
 
-function checkEffect(e: any, path: string, errors: string[]) {
+function checkEffect(e: any, path: string, errors: string[], trigger?: string) {
   if (e.kind === 'ignored' || e.kind === 'unsupported') {
     // offline-parser-only kinds — the engine has no branch for them; the kit
     // text belongs verbatim in the override's `unmodeled` field instead
@@ -241,21 +259,67 @@ function checkEffect(e: any, path: string, errors: string[]) {
     errors.push(`${path}: unknown effect kind "${e.kind}"`);
     return;
   }
+  // "for N round(s)" — a whole positive number of the holder's own rounds. Checked for EVERY
+  // effect kind that can carry it, not just `buff`: `gainPierce` gained the field 2026-08-11, and
+  // scoping the check to buffs left a silent hole — `durationShots: 0` on a gainPierce validated
+  // clean and produced a wholly inert effect (no budget, and the permanent fallback suppressed),
+  // i.e. a kit line that models nothing while reading as modeled. Unrecognised input must be LOUD.
+  if (
+    e.durationShots !== undefined &&
+    !(Number.isInteger(e.durationShots) && e.durationShots > 0)
+  ) {
+    errors.push(
+      `${path}: durationShots must be a positive integer (rounds fired), got ${e.durationShots}`
+    );
+  }
+  if (e.kind === 'convertExcess') {
+    // "Convert excess over X% of A to B ▲ R% of the excess" — every field is load-bearing and a
+    // typo in either StatKey would silently convert nothing (or convert the wrong stat).
+    for (const k of ['from', 'to'] as const) {
+      if (!STATS.has(e[k])) {
+        errors.push(`${path}: convertExcess unknown ${k} stat "${e[k]}"`);
+      }
+    }
+    if (typeof e.over !== 'number' || !Number.isFinite(e.over)) {
+      errors.push(`${path}: convertExcess needs a numeric "over" threshold`);
+    }
+    if (typeof e.rate !== 'number' || !Number.isFinite(e.rate) || e.rate <= 0) {
+      errors.push(
+        `${path}: convertExcess "rate" must be a positive number (% of the excess), got ${e.rate}`
+      );
+    }
+    if (e.from === e.to) {
+      errors.push(
+        `${path}: convertExcess from and to are the same stat ("${e.from}") — a stat cannot feed itself`
+      );
+    }
+    // The rule installs PERMANENTLY — there is no uninstall, expiry or window. That is exactly
+    // right for the kit phrasing it exists for ("…continuously"), and wrong for anything else: on
+    // a burstCast/hitCount trigger it would install on first fire and keep converting long after
+    // the window the kit scoped it to. Fail loudly rather than let that be authored silently.
+    if (trigger !== 'passive' && trigger !== 'battleStart') {
+      errors.push(
+        `${path}: convertExcess is permanent once installed, so it must sit on a passive/battleStart block (got "${trigger}") — a windowed form needs engine support first`
+      );
+    }
+  }
+  if (
+    e.kind === 'gainPierce' &&
+    e.durationShots !== undefined &&
+    e.durationSec !== undefined
+  ) {
+    // No kit prints both, and the two plausible readings (whichever ends FIRST vs whichever lasts
+    // LONGER) disagree. Reject until a carrier forces the question, rather than shipping a guess.
+    errors.push(
+      `${path}: gainPierce takes durationSec OR durationShots, not both — no kit prints both and the combined semantics is unsettled`
+    );
+  }
   if (e.kind === 'buff') {
     if (!STATS.has(e.stat)) {
       errors.push(`${path}: unknown stat "${e.stat}"`);
     }
     if (typeof e.value !== 'number') {
       errors.push(`${path}: buff needs numeric value`);
-    }
-    // "for N round(s)" — a whole positive number of the holder's own rounds
-    if (
-      e.durationShots !== undefined &&
-      !(Number.isInteger(e.durationShots) && e.durationShots > 0)
-    ) {
-      errors.push(
-        `${path}: durationShots must be a positive integer (rounds fired), got ${e.durationShots}`
-      );
     }
     if (
       e.noRetriggerWhileActive !== undefined &&
@@ -333,7 +397,7 @@ function checkEffect(e: any, path: string, errors: string[]) {
       errors.push(`${path}: escalating needs steps[]`);
     } else {
       e.steps.forEach((s: any, i: number) =>
-        checkEffect(s, `${path}.steps[${i}]`, errors)
+        checkEffect(s, `${path}.steps[${i}]`, errors, trigger)
       );
     }
   }
@@ -563,6 +627,20 @@ export function structuralCheck(
             );
           }
         }
+      } else {
+        // The inverse mismatch (owner ruling 2026-08-10, faithfulness Tier 0 / D2): a boss-side
+        // stat pointed at an ally-side target. Applied and never read — see
+        // BOSS_ONLY_BUFF_STATS. Today's carriers are all kit damage-reduction clauses
+        // (moran allies, rouge selfAndAdjacent, rumani self) kept for fidelity, so this warns
+        // rather than fails; its job is to make the mismatch visible before someone "corrects"
+        // the sign or the target and turns a defensive line into a damage multiplier.
+        for (const e of collectEffects(b.effects, 'buff')) {
+          if (BOSS_ONLY_BUFF_STATS.has(e.stat)) {
+            warnings.push(
+              `${p}: buff "${e.stat}" is a BOSS-SIDE stat on an ally-side target ("${b.target?.kind}") — the engine reads it only off the boss, so the line is applied and never read; keep it for kit fidelity and say so in "note", or move it to "unmodeled"`
+            );
+          }
+        }
       }
       // `hitRepeat` is a rider on the owner's OWN hit ("X% of the damage dealt by self"). The
       // engine reads the parent instance the weapon path recorded on the SAME frame, so the
@@ -616,7 +694,7 @@ export function structuralCheck(
         errors.push(`${p}: needs effects[]`);
       } else {
         b.effects.forEach((e: any, ei: number) =>
-          checkEffect(e, `${p}.effects[${ei}]`, errors)
+          checkEffect(e, `${p}.effects[${ei}]`, errors, b.trigger?.kind)
         );
       }
     });

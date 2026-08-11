@@ -46,12 +46,14 @@
 //       ~12 Full Burst windows but only 6 of them are hers; a fullBurstEnter encoding
 //       fires the nuke on helm's windows too. A burst CAST also lands BEFORE the Full
 //       Burst window opens, so it must never take the +50% major (verified 2026-07-13).
-//   R5  "Gain Pierce for 1 round(s)" has no round-counted primitive (gainPierce carries
-//       only durationSec). The encoding is the per-shot RE-ARM: a duration-less gainPierce
-//       on her own shotFired, re-granted by every full-charge shot, so her shots are
-//       Pierce-tagged continuously while she fires — behaviorally exact at SR cadence.
-//       A durationSec:1 wall-clock window is the nearest wrong model (the SR fire cycle
-//       exceeds 1s, so pierce would lapse between shots). At scope lock the line is
+//   R5  "Gain Pierce for 1 round(s)" is encoded LITERALLY as gainPierce durationShots 1 on
+//       her own shotFired (the round-count form, 2026-08-11). Every full-charge shot
+//       re-grants the one-round budget, so her shots are Pierce-tagged continuously while
+//       she fires. Two nearest-wrong models are rejected: a durationSec:1 wall-clock window
+//       (the SR fire cycle exceeds 1s, so pierce would lapse between shots) and a
+//       duration-less permanent tag (what she shipped before the primitive existed — for a
+//       per-shot re-arm carrier it is behaviourally identical, so only the STRUCTURAL pin
+//       below can tell them apart). At scope lock the line is
 //       damage-inert (partless boss, no Pierce Damage ▲ carrier in the fixture): removing
 //       it must leave every unit's total byte-identical.
 //
@@ -379,15 +381,20 @@ describe('harran — kit spec', () => {
       )
     );
 
-    it('is a duration-less gainPierce on her own shotFired (a re-arm, not a 1s timer)', () => {
+    it('is a ONE-ROUND budget on her own shotFired (not a 1s timer, not a permanent tag)', () => {
       const b = (ov.skill2 ?? []).find((x: any) => hasGainPierce(x));
       expect(b, 'the pierce re-arm block must exist').toBeTruthy();
       expect(b.trigger).toEqual({ kind: 'shotFired' });
       expect(b.target).toEqual({ kind: 'self' });
       const e = b.effects.find((x: any) => x.kind === 'gainPierce');
+      // The kit prints rounds. This is a STRUCTURAL pin by necessity: for a per-shot re-arm
+      // carrier the round budget and the old permanent tag produce byte-identical damage
+      // (the re-grant refreshes the budget every pull, so it never decrements), so nothing
+      // behavioural can distinguish them — only the encoding can.
+      expect(e.durationShots, 'the kit prints "for 1 round(s)"').toBe(1);
       expect(
         e.durationSec,
-        'a durationSec:1 window lapses between SR shots — the re-arm must be duration-less'
+        'a durationSec:1 window lapses between SR shots'
       ).toBeUndefined();
     });
 

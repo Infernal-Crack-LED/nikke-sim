@@ -16,7 +16,8 @@ A frame-tick damage simulator for NIKKE solo raids, run by its owner on a Mac. T
 per-unit damage for 5-unit teams over a 180-second fight against the raid boss; the owner records
 real fights (screenshots + video) under a fixed "scope lock" preset and we drive sim-vs-real error
 toward **±3% per unit**. There is also a web UI (Vite/React) that runs the same engine client-side,
-and a community-facing docs layer. Current board: median ~0.93–0.99 across 86 unit readings, with
+and a community-facing docs layer. Current board (2026-08-11, `npx tsx scripts/board-read.ts`):
+**±3% 7 | ±5% 14 | ±8% 25 | worse 20** over 142 datapoints / 45 units, with
 rotation (full-burst counts) measured-exact on all graded comps.
 
 ## Hard constraints (do not violate)
@@ -213,11 +214,17 @@ These paths are load-bearing for the sim's accuracy guarantees. **Never modify t
 
 - See [docs/CONVENTIONS.md](docs/CONVENTIONS.md) — evidence tiers, validation methodology,
   verify discipline, doc audience/location/hygiene rules.
-- Skills by task area: **any empirical test / engine-constant change / verdict stamp → `/scientific-method`**
-  (the procedure of record — premise gate → Fable pre-op → work → driver gate → BLIND Fable post-op →
+- Skills by task area: **`/scientific-method` RESOLVES UNKNOWNS — an empirical test, a DERIVED
+  engine constant, a measurement-driven retune, a verdict stamp, a DECISIONS overturn** (the
+  procedure of record — premise gate → Fable pre-op → work → driver gate → BLIND Fable post-op →
   2-of-2 → IMPLEMENT/LOG/REJECT → **step 7 PR-style review of the landed code**; drives the
   `premise-verifier` / `preop-judge` / `postop-judge` / `implementation-reviewer` agents in
-  `.claude/agents/`); **per-unit kit work (model/re-model/re-tune from kit text) → `/kit-tdd`** — the
+  `.claude/agents/`). **It is NOT a tax on every engine edit (owner ruling 2026-08-11): when the
+  modeling question is already ANSWERED — an owner ruling on game behaviour, a literal kit line, an
+  existing labeled fixture — skip the pipeline and encode it, then run `/code-review` on the diff.
+  The onus there is on the CODE being correct, not on the answer being true**, so the gate moves
+  rather than disappears (`verify.sh` + spec tests stay mandatory either way). Rule of thumb: _do we
+  know the answer?_ no ⇒ the pipeline; yes ⇒ encode + `/code-review`; **per-unit kit work (model/re-model/re-tune from kit text) → `/kit-tdd`** — the
   test-first session that is now the PRIMARY kit build path (TDD transition step 3), demoting
   `/audit-kit` + `/kit-parse` to post-validation sampling / untuned-unit baselines;
   processing a recording → `/probe-processing`; engine/data changed →

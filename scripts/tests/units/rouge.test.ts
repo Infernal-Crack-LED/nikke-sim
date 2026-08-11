@@ -168,9 +168,12 @@ const noCoinState = withPatchedOverride('rouge', (ov) => {
       }
     }
   }
-  if (stripped < 7) {
+  // 6 since the 2026-08-11 co-existence ruling: the Sword-status burst rider lost its gate
+  // entirely (Sword Coin starts at battle assignment and never ends, so "when in Sword Coin
+  // status" is unconditionally true), leaving 6 genuinely coin-gated blocks.
+  if (stripped < 6) {
     throw new Error(
-      `expected >=7 coin-gated blocks, stripped ${stripped} — fixture stale`
+      `expected >=6 coin-gated blocks, stripped ${stripped} — fixture stale`
     );
   }
 });
@@ -364,6 +367,54 @@ describe('rouge (Rouge) — kit spec [Tier 2, coin-state support]', () => {
           b.expiresFrame,
           '15.08 Double Sword line is continuous'
         ).toBeNull();
+      }
+    });
+
+    it('CO-EXISTENCE (owner 2026-08-11): the earlier tiers KEEP firing after a later coin activates', () => {
+      // The statuses accumulate — gaining Shield does not end Sword, gaining Double Sword ends
+      // neither. So a shield-era burst carries BOTH 10.15 and 20.1, and a Double-Sword-era burst
+      // carries all three. The nearest-wrong model (what shipped before) made them exclusive, so
+      // each tier switched OFF as the next switched on.
+      const framesOf = (v: number) =>
+        new Set(tier(base.events, v).map((b) => b.frame));
+      const swordFrames = framesOf(10.15);
+      const shieldFrames = framesOf(20.1);
+      const doubleFrames = framesOf(30.02);
+
+      expect(
+        shieldFrames.size,
+        'no Shield-tier casts to check'
+      ).toBeGreaterThan(0);
+      for (const f of shieldFrames) {
+        expect(
+          swordFrames.has(f),
+          `Sword tier missing on the shield-era cast at frame ${f}`
+        ).toBe(true);
+      }
+      expect(
+        doubleFrames.size,
+        'no Double-Sword-tier casts to check'
+      ).toBeGreaterThan(0);
+      for (const f of doubleFrames) {
+        expect(
+          swordFrames.has(f),
+          `Sword tier missing on the double-sword cast at frame ${f}`
+        ).toBe(true);
+        expect(
+          shieldFrames.has(f),
+          `Shield tier missing on the double-sword cast at frame ${f}`
+        ).toBe(true);
+      }
+      // They co-STACK rather than overwrite: distinct values ⇒ distinct buff keys
+      // (`${caster}:${slot}:${stat}:${value}`), so the three are separate live instances. Assert
+      // the exact three, not a count — a Double-Sword cast also carries skill2's continuous 15.08,
+      // so a `size >= 3` check would pass with one of the three riders missing.
+      const lastDouble = Math.max(...doubleFrames);
+      for (const v of [10.15, 20.1, 30.02]) {
+        expect(
+          tier(base.events, v).some((b) => b.frame === lastDouble),
+          `${v}% rider absent from the Double-Sword cast — the tiers are overwriting, not stacking`
+        ).toBe(true);
       }
     });
 
