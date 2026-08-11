@@ -42,8 +42,11 @@ lives. Newest first within each section.
   - **⇒ ONE READING LEFT OPEN FOR THE OWNER — `kilo`, drafted and then DROPPED.** Her burst nuke IS
     modelled and fires (`flatDamage 1150.84`, `requiresShielded`), but off her own final ATK
     instead of the kit's "ATK … calculated from 5% of final Max HP" basis, because no HP-basis
-    primitive exists. The basis clause is therefore unmodelled and lives only in her `caveats`,
-    with a ⚑ and a measurement recipe. Under the ruling's plain text ("record ALL unmodeled
+    SUBSTITUTION primitive exists. (HP-basis terms do exist — `effectiveAtk`'s `atkOfMaxHpPct`
+    conversion and `stackedNuke`'s `hpPct` — but `atkOfMaxHpPct` is ADDITIVE and applies to the
+    whole ATK stat, where her kit replaces the basis for one line.) The basis clause is therefore
+    unmodelled and lives only in her `caveats`,
+    with an explicit estimate and a measurement recipe. Under the ruling's plain text ("record ALL unmodeled
     behavior…") that is arguably prose-recorded unmodelled behaviour and should be filed; under the
     reading this pass shipped, an APPROXIMATION of a modelled line is not "behaviour left in prose"
     — and the `ada` amount/event wording does not fit a basis substitution anyway. **Shipped: not

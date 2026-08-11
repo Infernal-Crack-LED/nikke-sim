@@ -161,7 +161,7 @@ graded-45 re-calibration.
 >
 > **`kilo` was drafted and then DROPPED — one reading left open for the owner.** Her burst nuke IS
 > modelled; only the kit's "ATK … calculated from 5% of final Max HP" BASIS is not, and that lives
-> in her `caveats` with a ⚑ and a recipe. Filing it would have asserted the nuke is unmodelled,
+> in her `caveats` with an estimate and a measurement recipe. Filing it would have asserted the nuke is unmodelled,
 > which is false — but the ruling's plain text arguably covers a basis clause sitting in prose.
 > Shipped: not filed. Full statement of both readings in DECISIONS (2026-08-11).
 >
@@ -207,7 +207,7 @@ EVENT (the board-relevant half, audit F9) is modelled independently of this. Wha
 whether `unmodeled` is a **complete index**: `gen-unmodeled-review.ts`, `kit-status.json` and every
 reviewer's grep read that field, so a half-populated one quietly under-reports what the model
 skips. `kilo` is the same shape outside the heal class — her burst's "calculated from 5% of final
-Max HP" basis gap is fully documented in prose, with a ⚑ and a measurement recipe, and appears
+Max HP" basis gap is fully documented in prose, with an estimate and a measurement recipe, and appears
 nowhere in her structured record.
 
 The backfill was exactly that population: the 46 prose-only lines in 31 units plus the 4 silent

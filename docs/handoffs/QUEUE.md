@@ -267,7 +267,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   are open:**
   - **⇒ OWNER CALL, one line: does the ruling cover `kilo`?** Her burst nuke IS modelled, but off
     her own ATK rather than the kit's "5% of final Max HP" basis; the basis clause sits in her
-    `caveats` with a ⚑ and a recipe. Filed as an `unmodeled` entry or left as an approximation —
+    `caveats` with an estimate and a measurement recipe. Filed as an `unmodeled` entry or left as an approximation —
     the pass shipped the latter. Both readings written out in DECISIONS 2026-08-11. If filed, it is
     a hand edit (the backfill script is heal-only).
   - **Axes A2–A6 proposed, none built** — `unmodeled` entries matching no kit line; non-percent
@@ -277,8 +277,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   - **Axis 1's own carried follow-up** — integer magnitudes are near-auto-clean (281 of 282 collide
     with a duration/count elsewhere in the file), so the axis discriminates almost only on decimals.
     Disclosed in the doc and by `--skipped`; tightening the matcher is deferred because it needs its
-    own graded-45 re-calibration. `census-kit-numbers.ts --check` stays out of verify.sh until the
-    heal ruling lands.
+    own graded-45 re-calibration.
 
 - **Sweep record (batches 1–8, all landed — reference only, nothing open here):**
   [batch 1](2026-08-10-faithfulness-batch1-findings.md) ·
