@@ -21,14 +21,14 @@ with or endorsed by the game's publisher.
 
 ## Rankings
 
-- [DPS Rankings](https://nikkesim.app/ranks): Ranked DPS of every NIKKE B3 carry under standardized solo-raid frameworks, with best overload lines per unit.
+- [DPS Rankings](https://nikkesim.app/ranks): Ranked DPS of every NIKKE B3 under standardized frameworks — neutral and elementally advantaged, with and without supports.
 - [Support Rankings](https://nikkesim.app/ranks/support): Ranked support boards — burst generation, burst cooldown reduction, sustain (team HP), and buffer value — from the same sim data as the DPS rankings.
 - [Unit Comparison](https://nikkesim.app/ranks/compare): Head-to-head per-unit DPS comparison with a custom control group.
 - [Card Builder](https://nikkesim.app/builder): Compose a shareable NIKKE infographic (DPS chart, unit comparison, rank board, unit card, or overload table) with a hosted, Discord-embeddable image URL.
 
 ## Overload
 
-- [Overload Optimizer](https://nikkesim.app/overload): Find the optimal 3rd overload line for a NIKKE B3, ranked by simulated DPS gain.
+- [Overload Optimizer](https://nikkesim.app/overload): Find the optimal overload lines for any Nikke, ranked by simulated DPS gain.
 - [Overload Rolling Simulator](https://nikkesim.app/olsim): Estimate the rerolls and Custom Modules needed to hit a target overload build.
 - [Overload Breakpoints](https://nikkesim.app/charge): Charge-speed frame breakpoints and max-ammo line costs for every RL and SR.
 

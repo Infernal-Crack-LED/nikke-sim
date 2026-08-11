@@ -4,7 +4,7 @@
 // (src/server/static.ts TAB_META), and the legacy mirror
 // (scripts/serve.mjs TAB_META) must carry IDENTICAL titles/descriptions per
 // route key. The 2026-08-11 drift
-// (docs/handoffs/2026-08-11-meta-table-drift.md) happened because
+// (docs/handoffs/closed/2026-08-11-meta-table-drift.md) happened because
 // single-table edits went unenforced; this test is the enforcement. A new
 // route must be added to ALL THREE tables; a reword must land in all three.
 import { describe, expect, it } from 'vitest';
@@ -81,5 +81,23 @@ describe('per-route head meta parity across the three lockstep tables', () => {
       }
     }
     expect(drifted).toEqual([]);
+  });
+
+  it('route + unit/<slug> keys partition each server table completely', () => {
+    // A key that is neither '/'-free (route) nor unit/<slug> would be checked
+    // by NONE of the assertions above — assert the partition is total so an
+    // unclassified key fails loudly here instead of drifting silently.
+    const unclassified: string[] = [];
+    for (const [name, table] of [
+      ['static.ts', STATIC_META],
+      ['serve.mjs', LEGACY_META],
+    ] as const) {
+      for (const key of Object.keys(table)) {
+        if (key.includes('/') && !key.startsWith('unit/')) {
+          unclassified.push(`${name}: ${key}`);
+        }
+      }
+    }
+    expect(unclassified).toEqual([]);
   });
 });

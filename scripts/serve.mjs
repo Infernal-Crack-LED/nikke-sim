@@ -57,7 +57,7 @@ export let TAB_META = {
     title:
       'NIKKE DPS Rankings — Neutral, Elemental Advantaged, with and without Supports',
     label: 'DPS Rankings',
-    desc: 'Ranked DPS of every B3 under standardized frameworks.',
+    desc: 'Ranked DPS of every NIKKE B3 under standardized frameworks: neutral and elementally advantaged, with and without supports.',
   },
   dps: {
     title: 'Unit Comparison — NIKKE Head-to-Head DPS Comparator',

@@ -21,7 +21,8 @@ export const META: Record<string, HeadMeta> = {
   dpschart: {
     title:
       'NIKKE DPS Rankings — Neutral, Elemental Advantaged, with and without Supports',
-    description: 'Ranked DPS of every B3 under standardized frameworks.',
+    description:
+      'Ranked DPS of every NIKKE B3 under standardized frameworks: neutral and elementally advantaged, with and without supports.',
   },
   dps: {
     title: 'Unit Comparison — NIKKE Head-to-Head DPS Comparator',
@@ -187,7 +188,7 @@ function tabKey(): string {
     }
     return 'dpschart';
   }
-  if (segs[0] && META[segs[0]]) {
+  if (segs[0] && Object.hasOwn(META, segs[0])) {
     return segs[0];
   }
   return 'sim';
