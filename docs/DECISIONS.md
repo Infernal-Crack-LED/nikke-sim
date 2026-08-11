@@ -9,7 +9,56 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-11, latest) M8 + M4 CLOSED. New DERIVED-STAT primitive `convertExcess` for `red-hood`;
+- **(2026-08-11, latest) The two round-count Pierce carriers, closed: `d-killer-wife` was a real
+  gap, `dorothy-serendipity` was a false positive — and the premise BOTH rested on was wrong.**
+  - **The shared premise, REFUTED — tier: the mechanics SSOT plus the engine source, not a
+    measurement.** No fight was recorded for this and none was needed; the claim is settled
+    doc + code, which is why it can carry a verdict verb. Both overrides justified skipping their
+    Pierce line with some form of "Pierce is inert on a single boss".
+    `docs/data/game-mechanics.md` §11 says the opposite:
+    Pierce Damage ▲ is an ordinary **Damage-Up-bucket** entry and **does apply on the partless
+    boss**. What is multi-part-only is the **core+body double-hit** (`PIERCE_CORE_DOUBLE = false`) —
+    a different mechanic the two notes had conflated with it. The engine already encodes the
+    distinction exactly (`sim.ts`: `pierce = pierceTagged ? stat(u,'pierceDamagePct',frame) : 0`),
+    so a Pierce TAG is worth precisely whatever Pierce Damage ▲ is live on that unit — no more, and
+    **nothing at all** if none is.
+  - **`d-killer-wife` (SR/Fire) — REAL, enacted.** S1-A "Activates when attacking with Full Charge
+    for 3 time(s). Affects self. Gain Pierce for 1 shot." now encodes as `hitCount 3 → gainPierce
+durationShots 1`. Kit-literal — both numbers verbatim, and `hitCount` is the encoding this file
+    already used for the identical "Full Charge for N time(s)" shape on S2. Nothing fitted, so this
+    needed no `/scientific-method` pass; the gate is her spec + `verify.sh`.
+    **She is her own granter**, which is why the skip cost real damage with no teammate involved:
+    her S1-B grants Pierce Damage ▲13.55% to SR allies, and she is SR. That premise was confirmed
+    independently by the pre-existing W2 pin, which already asserted the buff's targets.
+  - **⚑ THE MAGNITUDE IS COMP-DEPENDENT, AND THE WHOLE-PICTURE CHECK IS THE POINT.** Her board
+    reading moved +8.0%, which is far too large for 13.55pp on one shot in three inside a Full
+    Burst (~1.5% by arithmetic). Decomposed rather than accepted: **+2.6% / +2.4%** in her two
+    non-`grave` comps — matching the arithmetic — and **+20.0% in N1**, the `grave` comp. `grave`
+    grants a **permanent all-ally `pierceDamagePct` 48.4**, which does nothing for an untagged unit
+    and a great deal for a tagged one. Mechanism, not a defect. The generalisable lesson: **the
+    value of a Pierce tag is a property of the COMP, not of the unit** — never quote one number.
+  - **Board: 0.937 COLD → 1.012 OK**, MAD 0.063 → 0.039, rank 19 → 11; ±5% bucket 14 → 15, no other
+    unit moved. Exactly one regression entry drifted (N1, +19.89%). All Full-Burst-count asserts
+    unchanged — the tag adds damage, not gauge.
+  - **`dorothy-serendipity` (SG/Water) — FALSE POSITIVE; do NOT "convert" her.** Her "Gains Pierce
+    for 3 round(s)" is already modelled, just not through `gainPierce`: it shares one trigger and
+    one 3-round window with the "Pellet count is fixed at 1" clause beside it, so it rides her
+    `consolidation` block's `pierce: true` → per-shot `pierceActive`, scoping pierce to exactly the
+    consolidated rounds. That is the MORE faithful encoding, and adding `gainPierce` too would
+    double-book the window. The line she genuinely leaves unmodeled is the other one — S1-B
+    "Expands Pierce **range** by 200%" — and that one is inert **BY MECHANISM, not by a fixture
+    A/B**: it widens how far a pierce shot penetrates THROUGH targets, there is only ever one
+    partless target at scope lock, and the engine has no pierce-range concept for any unit to
+    consume (no `pierceRange`-family StatKey exists in `src/skills/types.ts`). No enabling teammate
+    could exist, so this is the stronger claim, not the weaker one.
+    `src/skills/types.ts` had listed her among the unconverted carriers; corrected.
+  - **Left open (findings-only):** her N1 comp now reads 1.066 HOT. N1 is the `grave` comp and
+    `grave` is herself 1.095 HOT with documented over-credits (always-on Heat Emission uptime, the
+    U19 empty-magazine effect), so the overshoot most likely rides `grave`. **Do not shave a
+    kit-literal line to close it** — re-tune the exposed unit separately (`judge-rotation-change`
+    rule, and faithful > fit).
+
+- **(2026-08-11) M8 + M4 CLOSED. New DERIVED-STAT primitive `convertExcess` for `red-hood`;
   true-damage-core needed nothing — it was already implemented AND already pinned.**
   - **M4 — true damage CAN core hit: ALREADY SHIPPED.** The owner suspected this was done, and it
     was. The core gate (`opts.core && cfg.coreHitRate > 0`) carries no true-flavor exclusion, exactly
