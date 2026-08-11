@@ -5,7 +5,8 @@
       "Attract: Taunt all enemies for 5 sec. — no threat model in v1: the partless boss deals no damage and has no ally-targeting AI, so taunt has zero in-domain surface (nero N7 / delta-ninja-thief Attract precedent)."
     ],
     "skill2": [
-      "Twice: Incoming healing ▲ 51% for 5 sec. — the escalation step-2 payload has no carrier: the schema has no incoming-healing StatKey and heals are event-only (nero grumpy-cat ruling). The escalation GATE is still encoded (the 'burstUses' pool advances on every own cast), so steps 1 and 3 fire on exactly the casts the kit says they fire on."
+      "Twice: Incoming healing ▲ 51% for 5 sec. — the escalation step-2 payload has no carrier: the schema has no incoming-healing StatKey and heals are event-only (nero grumpy-cat ruling). The escalation GATE is still encoded (the 'burstUses' pool advances on every own cast), so steps 1 and 3 fire on exactly the casts the kit says they fire on.",
+      "Once: Recover 15.3% of attack damage as HP for 5 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount."
     ],
     "burst": [
       "Activates when enemy unit(s) (excluding Nikkes) are more than 4. Affects all enemies. Damage Taken ▲ 12.23% for 5 sec. — the enemy-count gate is NEVER satisfied at single-boss scope (1 enemy), so never-firing IS the faithful behaviour here; the schema also has no enemy-count primitive, and the nearest-wrong ungated damageTakenPct would over-credit the whole team ~12% per cast (absence canary in the test). ⚑2 OUT-OF-DOMAIN, recipe in the note."

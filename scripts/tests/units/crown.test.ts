@@ -272,7 +272,10 @@ describe('crown — unmodeled lines (structural pins)', () => {
   it('C3-C5: Relax/Invulnerable/Taunt are documented in unmodeled', () => {
     const ov = withPatchedOverride('crown', () => {});
     const unmodeled = (ov as any).unmodeled?.skill2 ?? [];
-    expect(unmodeled.length).toBe(3);
+    // Four since the 2026-08-11 owner ruling: her "Restores HP equal to 5.23% of the skill user's
+    // final Max HP." magnitude is now filed here too (DECISIONS — unmodeled behaviour is recorded,
+    // not left to prose). The recovery EVENT is modelled; the amount has no engine consumer.
+    expect(unmodeled.length).toBe(4);
     const joined = unmodeled.join(' ');
     expect(joined).toContain('Relax');
     expect(joined).toContain('Invulnerable');

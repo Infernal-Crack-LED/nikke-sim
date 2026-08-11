@@ -90,9 +90,12 @@
       "■ Activates when recovery takes effect if the recovery is not coming from this unit. Affects self. Proof of Violation: Outgoing healing ▼ 10% continuously, up to 3 time(s)."
     ],
     "skill2": [
-      "■ Activates when Proof of Violation reaches max stacks. Affects self. Terminated Contract: Gains immunity to Proof of Violation continuously. Recovers 0.24% of the skill user's final Max HP as HP every 1 sec continuously."
+      "■ Activates when Proof of Violation reaches max stacks. Affects self. Terminated Contract: Gains immunity to Proof of Violation continuously. Recovers 0.24% of the skill user's final Max HP as HP every 1 sec continuously.",
+      "Recovers 1.32% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount."
     ],
-    "burst": []
+    "burst": [
+      "Recovers 44.68% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount."
+    ]
   },
   "caveats": [
     "⚑ S1a's activation clause 'Activates only while not in Terminated Contract status' is NOT gated: there is no negative self-status primitive, and Terminated Contract is unreachable without the unmodeled Proof-of-Violation stack counter below — so the ERA aura reads unconditional. Offensively inert either way (ally-granted Max HP feeds no damage path; the atkOfMaxHpPct conversion is self-only, and snow-crane carries no HP→ATK scaler).",

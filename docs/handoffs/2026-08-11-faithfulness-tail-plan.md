@@ -148,11 +148,36 @@ graded-45 re-calibration.
 
 ---
 
-## 5. The one batched proposal for the owner (board-inert, needs a ruling not a measurement)
+## 5. The batched proposal — RULED AND ENACTED (owner, 2026-08-11)
 
-**The structured record of inert heal magnitudes is about half-populated, and the split is
-per-LINE, not per-unit** — the same override often files one heal line and leaves its others
-unrecorded, so this cannot be read as "these units are tidy and those are not".
+> **OWNER RULING:** _"We should record all unmodeled behavior as unmodeled rather than leaving it in
+> prose."_ Enacted in this pass. `unmodeled` is now the complete index the field was always read as.
+>
+> **What was filed:** the 50 heal-magnitude lines below across 34 units
+> (`scripts/backfill-unmodeled-heal-magnitudes.ts`, idempotent, re-runnable after a roster sync),
+> plus `kilo`'s burst HP-basis clause — the one non-heal gap this axis found. Each entry records
+> what is missing (the amount) and what is not (the recovery event), in the `ada` wording, so nobody
+> later "fixes" a filed line by adding a second emitter.
+>
+> **What was deliberately NOT filed, and why that is not a loophole:** every remaining PROSE-ONLY
+> line was checked, and all of them are magnitudes that ARE modelled, in transformed form (§2b) —
+> `nayuta` folds 150 + 380.46 into one 530.46 rider, `takina` uptime-averages 140.49 × 10/15 = 93.66,
+> `mihara-bonding-chain` ships 12 × 25.08, `soda-twinkling-bunny` sums 52.04 + 85.02. Filing those
+> under `unmodeled` would assert something false. The ruling covers unmodeled BEHAVIOUR, and a
+> transformed encoding is modelled behaviour.
+>
+> **The guard:** `census-kit-numbers.ts --check` now runs in `verify.sh`. A kit magnitude that
+> appears nowhere in its override fails the gate, so the class cannot grow back silently. The one
+> accepted exception is `power`'s "Reloads 100% of the magazine" (encoded as `instantReload
+fraction: 1` — a percent stored as a fraction is invisible to a digit matcher), recorded with its
+> reason in `ACCEPTED_SILENT` and pinned by a test that fails if it ever stops firing.
+
+### What the split looked like before the ruling
+
+The structured record of inert heal magnitudes was about half-populated, and the split was
+per-LINE, not per-unit — the same override often filed one heal line and left its others
+unrecorded, so it could never be read as "these units are tidy and those are not". That shape is
+why the ruling was worth asking for: no per-unit heuristic would have found the gaps.
 
 Method (reproducible from the committed instrument, not a hand grep): the population is every kit
 line that both restores HP (`HEAL_LINE`) and prints a percent magnitude; the tiers come from
@@ -179,12 +204,9 @@ skips. `kilo` is the same shape outside the heal class — her burst's "calculat
 Max HP" basis gap is fully documented in prose, with a ⚑ and a measurement recipe, and appears
 nowhere in her structured record.
 
-**The ask is one ruling:** file inert-by-design magnitudes under `unmodeled` (the `ada` convention —
-50 lines across 34 units to backfill: the 46 prose-only lines in 31 units plus the 4 silent lines in
-3 more, with no unit in both sets — prose-only edits, zero board movement), or declare prose
-sufficient and document that `unmodeled` is not a complete index. Either answer makes the field
-trustworthy; the current split makes it neither. Not enacted here — a cross-cutting signal across
-30-odd units is a STOP-and-propose, not a sweep-time edit.
+The backfill was exactly that population: the 46 prose-only lines in 31 units plus the 4 silent
+lines in 3 more, no unit in both sets — 50 lines, 34 units, prose-only edits, zero board movement
+(the regression snapshot is untouched, which is the proof).
 
 ---
 
@@ -196,6 +218,7 @@ matcher and the worklist, every finding read. If a future axis fires on a unit, 
 gives the kit line, the prose that mentions the magnitude, and the slot's encoded values — which is
 everything the disposition needs.
 
-`census-kit-numbers.ts --check` is deliberately NOT in `verify.sh` yet: it would gate on the four
-undispositioned SILENT lines, three of which are the heal class awaiting the §5 ruling. Wire it
-once that ruling lands, and the class can never grow back.
+`census-kit-numbers.ts --check` now runs in `verify.sh` (§5): a kit magnitude that appears nowhere
+in its override fails the gate. The PROSE-ONLY tier stays advisory on purpose — a magnitude living
+only in prose is usually a legitimate transformation, so gating it would demand `unmodeled` entries
+for lines that are modelled.

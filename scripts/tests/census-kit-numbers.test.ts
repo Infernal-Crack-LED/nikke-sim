@@ -17,6 +17,7 @@
 //   and stays green, while a new unit shipping a dropped kit line goes red — which is the point.
 import { describe, expect, it } from 'vitest';
 import {
+  ACCEPTED_SILENT,
   HEAL_LINE,
   auditUnit,
   auditableLines,
@@ -240,17 +241,25 @@ describe('roster calibration — scored against the sweep-reviewed slice', () =>
     expect(rows.filter((r) => r.graded)).toHaveLength(45);
   });
 
-  it('fires on at most `crown` across the 45 line-by-line-reviewed graded units', () => {
-    // The sweep cleared these units by hand. `crown`'s 5.23% is an HP-pool heal magnitude, inert
-    // by design (no HP pool) — the one accepted residue. Anything else here is a matcher bug.
-    expect(silent(true).filter((s) => s !== 'crown')).toEqual([]);
+  it('leaves no SILENT line anywhere except the accepted matcher blind spots', () => {
+    // The standing guard for the owner ruling (2026-08-11): unmodeled behaviour is RECORDED under
+    // `unmodeled`, not left to prose. Everything that fired here has been dispositioned — the heal
+    // magnitudes are filed roster-wide, and what remains is `power`, whose "Reloads 100% of the
+    // magazine" is genuinely encoded as instantReload fraction: 1 and cannot be digit-matched.
+    // This is the same invariant `--check` enforces in verify.sh.
+    const acceptedSlugs = new Set(ACCEPTED_SILENT.map((a) => a.slug));
+    expect(
+      [...silent(true), ...silent(false)].filter((s) => !acceptedSlugs.has(s))
+    ).toEqual([]);
   });
 
-  it('holds the tail worklist to its known set', () => {
-    // Dispositioning any of these shrinks the set (still green). A NEW slug appearing means a
-    // unit shipped with a kit magnitude its override never mentions — go read it.
-    const known = ['biscuit', 'power', 'sin'];
-    expect(silent(false).filter((s) => !known.includes(s))).toEqual([]);
+  it('keeps every accepted blind spot real — it must still actually fire', () => {
+    // An ACCEPTED_SILENT entry for a line that no longer fires is dead weight that would hide a
+    // future regression on the same unit.
+    for (const a of ACCEPTED_SILENT) {
+      const row = rows.find((r) => r.slug === a.slug);
+      expect(row?.silent.flatMap((f) => f.missing)).toContain(a.value);
+    }
   });
 
   it('holds the PROSE-ONLY damage-relevant worklist to its known set', () => {
@@ -268,6 +277,10 @@ describe('roster calibration — scored against the sweep-reviewed slice', () =>
       'harran',
       'julia',
       'k',
+      // `kilo` stays: her burst nuke IS modelled, just off her own ATK rather than the kit's
+      // "calculated from 5% of final Max HP" basis (no HP-basis primitive). That is an
+      // APPROXIMATION, not unmodeled behaviour, so the 2026-08-11 ruling does not file it — her
+      // caveats carry it with a ⚑ and a measurement recipe.
       'kilo',
       'mast',
       'maxwell-ordinary-mechanic',

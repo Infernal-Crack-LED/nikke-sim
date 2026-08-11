@@ -480,9 +480,19 @@ describe('C4 — burst R+G+B heal: one recovery landing on all allies per own ca
 
 describe('U1 — "Removes 1 debuff(s)." is documented, not dropped or fabricated', () => {
   it('the line lives verbatim in `unmodeled.burst` (never an `ignored` drop)', () => {
-    expect(shipped.unmodeled?.burst?.length).toBe(1);
+    // Counts include the heal MAGNITUDE lines filed roster-wide by the 2026-08-11 owner ruling
+    // ("record all unmodeled behavior as unmodeled rather than leaving it in prose", DECISIONS):
+    // burst also carries her 34.35% restore, skill1 her 2.86% Green Herb heal. Their recovery
+    // EVENTS are modelled — it is the amount that has no engine consumer, and each entry says so.
+    expect(shipped.unmodeled?.burst?.length).toBe(2);
     expect(shipped.unmodeled.burst.join(' ')).toContain('Removes 1 debuff(s).');
-    expect(shipped.unmodeled?.skill1 ?? []).toEqual([]);
+    expect(shipped.unmodeled.burst.join(' ')).toContain(
+      'Restores 34.35% of the skill user'
+    );
+    expect(shipped.unmodeled?.skill1?.length).toBe(1);
+    expect(shipped.unmodeled.skill1.join(' ')).toContain(
+      'Green Herb: Recovers 2.86% of the skill user'
+    );
     expect(shipped.unmodeled?.skill2 ?? []).toEqual([]);
     expect(shipped.ignored).toBeUndefined();
   });

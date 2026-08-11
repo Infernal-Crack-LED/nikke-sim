@@ -72,11 +72,18 @@
 //     integer line as evidence of anything; `--skipped` restates this at every run.
 //   * Any unit whose slug has no `data/characters.json` entry, or whose slot ships empty kit text.
 //
-// `--check` IS NOT WIRED INTO verify.sh — deliberately, and this comment is the record of why.
-// The tier currently fires on 4 real, undispositioned lines; gating on it today would either
-// paint the tree red or force a same-session enactment, and a roster sweep is FINDINGS-ONLY
-// (CLAUDE.md batch-and-stop). Wire it once those four carry a disposition, and it becomes the
-// guard that keeps the class from ever growing back.
+// `--check` IS WIRED INTO verify.sh (since 2026-08-11) and is the standing guard for the OWNER
+// RULING that produced it: "record all unmodeled behavior as unmodeled rather than leaving it in
+// prose". The four SILENT lines that blocked the wiring are dispositioned — three were inert heal
+// magnitudes, now filed under `unmodeled` across the roster
+// (scripts/backfill-unmodeled-heal-magnitudes.ts), and the fourth is `power`, a matcher blind spot
+// recorded in ACCEPTED_SILENT. From here a kit magnitude that appears nowhere in its override
+// fails the gate, so the class cannot grow back silently.
+//
+// NOTE what the gate does NOT enforce: the PROSE-ONLY tier stays advisory, because a magnitude
+// living only in prose is usually a legitimate TRANSFORMATION (see §2b of the tail plan) rather
+// than a gap — every one of the 32 remaining prose-only units was checked and is modelled in
+// transformed form. Gating that tier would demand `unmodeled` entries for lines that ARE modelled.
 //
 // Self-validating fixture: scripts/tests/census-kit-numbers.test.ts pins the discriminating cases
 // (a condition threshold is not a magnitude; prose-only vs silent; the calibration bound on the
@@ -213,6 +220,26 @@ const KNOWN_STRUCTURED = new Set([
   'burstSnapshotsPreFb',
   'consolidation',
 ]);
+
+/**
+ * SILENT findings that are KNOWN false positives of the digit-string method, each with the reason
+ * it cannot be matched. `--check` ignores exactly these and fails on anything else, which is what
+ * lets the gate run green while staying meaningful.
+ *
+ * Keep this list tiny and specific. An entry here is a claim that the line IS modelled and the
+ * matcher simply cannot see it — never a way to silence a finding nobody wants to deal with.
+ */
+export const ACCEPTED_SILENT: Array<{
+  slug: string;
+  value: string;
+  why: string;
+}> = [
+  {
+    slug: 'power',
+    value: '100',
+    why: 'skill2 "Reloads 100% of the magazine" IS encoded, as instantReload fraction: 1 — a percent stored as a fraction is invisible to a digit-string matcher',
+  },
+];
 
 export interface LineFinding {
   slot: Slot;
@@ -565,13 +592,29 @@ function main(): void {
     );
   }
 
-  if (argv.includes('--check') && silentUnits.length > 0) {
-    console.error(
-      `\n${silentUnits.length} unit(s) carry a kit magnitude their override never mentions: ${silentUnits
-        .map((r) => r.slug)
-        .join(', ')}`
+  if (argv.includes('--check')) {
+    const accepted = (slug: string, value: string) =>
+      ACCEPTED_SILENT.some((a) => a.slug === slug && a.value === value);
+    const unexpected = rows.flatMap((r) =>
+      r.silent
+        .filter((f) => f.missing.some((v) => !accepted(r.slug, v)))
+        .map((f) => `${r.slug} ${f.slot}: ${f.line} [${f.missing.join(', ')}]`)
     );
-    process.exitCode = 1;
+    if (ACCEPTED_SILENT.length > 0) {
+      console.log(
+        `\n${ACCEPTED_SILENT.length} accepted SILENT line(s) (known matcher blind spots, not gaps): ` +
+          ACCEPTED_SILENT.map((a) => `${a.slug} ${a.value}`).join(', ')
+      );
+    }
+    if (unexpected.length > 0) {
+      console.error(
+        `\n${unexpected.length} kit magnitude(s) the override never mentions — record the line under ` +
+          `\`unmodeled\` (owner ruling 2026-08-11: unmodeled behaviour is recorded, not left to prose), ` +
+          `or add it to ACCEPTED_SILENT with the reason it cannot be matched:\n    ` +
+          unexpected.join('\n    ')
+      );
+      process.exitCode = 1;
+    }
   }
 }
 

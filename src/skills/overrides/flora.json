@@ -6,7 +6,9 @@
       "■ Activates when entering Burst Stage 2. Affects all allies in the Peace of Mind state. Max HP ▲ 15.01% of the skill user's max HP (without restoring HP) for 2 sec. — the Max HP STAT is not granted (ally-granted Max HP does not feed a teammate's atkOfMaxHpPct, e3 video rule; 'without restoring HP' so no recovery event). Its CONSEQUENCE is modeled: the 86.95% HP fraction it forces, and the return to max HP 2 sec later, are what the skill2 blocks' `stageEnter{stage:2}` (+ `delaySec: 2`) triggers stand in for."
     ],
     "skill2": [],
-    "burst": []
+    "burst": [
+      "Restores HP equal to 10.45% of the skill user's final max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount."
+    ]
   },
   "caveats": [
     "skill2 (trigger form) ⚑ derived-deterministic: the three S2 lines are worded as HP triggers ('HP drops to 90% or below', 'reaches max HP', 'a shield is placed in front of this unit'), and v1 models no HP pool. They are keyed to Burst Stage 2 entry instead, because Flora's own S1 forces exactly those HP transitions there: the 2-sec Max HP ▲ 15.01% grant (without restoring HP) drops Peace-of-Mind allies to 86.95% HP at stage-2 entry, and returns them to max HP 2 sec later. The proxy is exact for the self-procced chain; what it does NOT represent is any ADDITIONAL firing driven by real boss damage (a raid boss that damages allies would re-open the 'HP ≤ 90%' trigger between rotations), so this is a floor on the line's real uptime, not a ceiling.",

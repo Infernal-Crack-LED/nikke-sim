@@ -261,13 +261,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   transformations (the doc names the vocabulary), 1 acknowledged-in-prose gap (`kilo`'s HP-basis
   nuke). The batch-7 START-HERE doc is CLOSED with batch 8, and both roster-wide items the sweep
   surfaced (the 5-carrier lifesteal non-emitter ruling and the U28 rider-gauge class) are RULED —
-  see DECISIONS 2026-08-10 Tier 0. **Three things are open:**
-  - **OWNER RULING WANTED (board-inert, no measurement needed):** the structured record of inert
-    heal magnitudes is about half-populated, and the split is per-LINE not per-unit — of 92
-    heal-magnitude kit lines across 62 units, 42 are structurally recorded (`ada` is the model
-    wording), 46 sit in prose only and 4 are absent entirely. Either convention is fine; the SPLIT
-    is what makes `unmodeled` an unreliable index for `gen-unmodeled-review.ts`, `kit-status.json`
-    and every reviewer grep. Ruling → tail-plan §5.
+  see DECISIONS 2026-08-10 Tier 0. The §5 proposal it raised is RULED AND ENACTED (owner
+  2026-08-11: unmodeled behaviour is recorded under `unmodeled`, never left to prose — 50 heal
+  lines across 34 units + `kilo`'s HP-basis clause; `census-kit-numbers.ts --check` now gates it in
+  verify.sh). **Two things are open:**
   - **Axes A2–A6 proposed, none built** — `unmodeled` entries matching no kit line; non-percent
     quantity accounting (the tier that held the `d-killer-wife` round-count defect); "fixed at" vs
     the clamp StatKeys; held-primitive carrier scan; and READ (do not rebuild)

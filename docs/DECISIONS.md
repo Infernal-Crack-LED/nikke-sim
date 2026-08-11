@@ -9,7 +9,43 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-11, latest) The two round-count Pierce carriers, closed: `d-killer-wife` was a real
+- **(2026-08-11, latest) Unmodeled behaviour is RECORDED under `unmodeled`, never left to prose.**
+  - **The ruling (owner):** _"We should record all unmodeled behavior as unmodeled rather than
+    leaving it in prose."_ Asked and answered off the phase-4 tail pass's §5 proposal
+    ([2026-08-11-faithfulness-tail-plan.md](handoffs/2026-08-11-faithfulness-tail-plan.md)).
+  - **What raised it — tier: a committed instrument over the whole roster, not a sample.**
+    `scripts/census-kit-numbers.ts` showed the record was half-populated and, worse, split
+    per-LINE rather than per-unit: of 92 heal-magnitude kit lines across 62 units, 42 were
+    structurally recorded, 46 sat in `note`/`caveats` prose only, and 4 appeared nowhere in their
+    override. The same file would file one heal line and silently drop its others (`biscuit` filed
+    her skill2 heal and not her skill1/burst ones), so no per-unit spot check could have found it.
+  - **Why it matters although it moves zero damage.** A heal's AMOUNT has no engine consumer (no HP
+    pool) — the board cannot see any of this. What it changes is whether `unmodeled` can be TRUSTED
+    as the index of what the model skips, which is exactly how `data/kit-status.json`,
+    `scripts/gen-unmodeled-review.ts` and every reviewer's grep read it. Half-populated, it
+    under-reports; complete, it is an answer.
+  - **Enacted:** 50 heal-magnitude lines across 34 units, via
+    `scripts/backfill-unmodeled-heal-magnitudes.ts` (idempotent, re-runnable after a roster sync),
+    plus `kilo`'s burst HP-basis clause. Entries use the `ada` wording — they record that the
+    AMOUNT is unmodeled while the recovery EVENT is modelled, so a later reader does not "fix" a
+    filed line by adding a second emitter. **Inert BY MECHANISM, not by fixture:** `unmodeled` has
+    no engine consumer at all — `src/engine/sim.ts` never reads the field (it is carried onto the
+    parsed skill at `src/skills/index.ts:122` and read only by `validate-structural.ts` and the
+    docs tooling), so no comp or enabling teammate could expose it. The untouched regression
+    snapshot is corroboration, not the claim.
+  - **Scope limit, deliberate:** a magnitude that lives only in prose is usually a legitimate
+    TRANSFORMATION, not a gap — every remaining prose-only line was checked and is modelled in
+    transformed form (`nayuta` 150 + 380.46 → one 530.46 rider; `takina` 140.49 × 10/15 = 93.66;
+    `mihara-bonding-chain` 12 × 25.08; `soda-twinkling-bunny` 52.04 + 85.02). Filing those under
+    `unmodeled` would assert something false. The ruling binds unmodeled BEHAVIOUR; transformed
+    encodings are modelled behaviour.
+  - **The standing guard:** `census-kit-numbers.ts --check` runs in `verify.sh`, so a kit magnitude
+    that appears nowhere in its override now fails the gate. One accepted blind spot — `power`'s
+    "Reloads 100% of the magazine", genuinely encoded as `instantReload fraction: 1`, which a
+    digit-string matcher cannot see — is recorded with its reason in `ACCEPTED_SILENT` and pinned
+    by a test that fails if it ever stops firing.
+
+- **(2026-08-11) The two round-count Pierce carriers, closed: `d-killer-wife` was a real
   gap, `dorothy-serendipity` was a false positive — and the premise BOTH rested on was wrong.**
   - **The shared premise, REFUTED — tier: the mechanics SSOT plus the engine source, not a
     measurement.** No fight was recorded for this and none was needed; the claim is settled

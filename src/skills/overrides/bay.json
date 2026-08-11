@@ -39,7 +39,8 @@
   "burst": [],
   "unmodeled": {
     "skill1": [
-      "Activates when using Burst Skill, only if self is alive. Affects all allies. Proportionally shares damage taken continuously."
+      "Activates when using Burst Skill, only if self is alive. Affects all allies. Proportionally shares damage taken continuously.",
+      "Recovers 4% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount."
     ],
     "skill2": [
       "Activates when using Burst Skill, only if self is alive. Affects self's cover. Proportionally shares damage taken continuously.",

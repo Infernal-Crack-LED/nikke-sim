@@ -3,10 +3,13 @@
   "resources": [{ "name": "refreshHeart", "initial": 0, "min": 0, "max": 5 }],
   "unmodeled": {
     "skill1": [
-      "■ Activates when the last bullet hits the target. Affects all allies.\nRefresh Heart: Incoming healing ▲ 6.53%, stacks up to 5 time(s) and lasts for 15 sec."
+      "■ Activates when the last bullet hits the target. Affects all allies.\nRefresh Heart: Incoming healing ▲ 6.53%, stacks up to 5 time(s) and lasts for 15 sec.",
+      "Restores HP equal to 4.45% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount."
     ],
     "skill2": ["ATK ▼ 3.55% for 5 sec."],
-    "burst": []
+    "burst": [
+      "Restores HP equal to 27.22% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount."
+    ]
   },
   "caveats": [
     "burst: the 1237.5% nuke carries burstDesc:'singleEnemy'. Her damage block reads '■ Affects the 1 enemy unit(s) with the highest final ATK.'; pepper is one of the three units that spell the same clause both ways inside their own kit — one article off the literal jackal's amp names ('skills with \"Affects 1 enemy unit(s)\" in the description'), and that article is a LOCALIZATION artifact, not a targeting rule: seven clause bodies are attested both ways across the roster and pepper, rapi (AR/Fire base) and maiden-ice-rose each use both spellings of the SAME clause in their own kit. Owner ruling 2026-08-10: the game is ASSUMED to key the amp off an internal targeting id rather than the rendered English, so the stray 'the' does not block eligibility. Assumption, not a measurement — safe today because jackal shares no graded comp, so the tag is board-inert (full A/B diff byte-identical); a popup read of an amped nuke would confirm it. ⚑ the amp's additive Damage-Up placement is unmeasured. Decidable by `npx tsx scripts/census-burst-amp-scope.ts`."

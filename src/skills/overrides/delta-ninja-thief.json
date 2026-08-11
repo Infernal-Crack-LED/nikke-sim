@@ -12,7 +12,8 @@
       "Effect 2: Attract: Taunt all enemies continuously.",
       "Effect 1: Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.",
       "Ninjutsu IFAK lasts for 4 sec.",
-      "Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK."
+      "Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.",
+      "Effect 2: Ninjutsu Injection: Recovers 11.22% of attack damage as HP continuously. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount."
     ],
     "burst": [
       "Next shield's HP ▲ 20.13% for 10 sec.",
