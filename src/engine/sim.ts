@@ -501,6 +501,15 @@ interface UnitState {
   hasTrueNormals: boolean; // kit's normal attacks are ALWAYS True-flavored — STATIC, unlike
   // swap.trueNormals (a temporary swap-scoped flavor change)
   pierceUntilFrame: number; // timed "Gain Pierce for N sec" window end (0 = none); pierce active when > frame
+  // "Convert excess over X% of stat A into stat B at R%" — DERIVED stats, recomputed on every read
+  // of B from A's LIVE value, so B tracks A's stacks up and down. Installed by a `convertExcess`
+  // effect; empty for every unit but the carrier (red-hood), and `stat()` short-circuits on empty.
+  statConversions: Array<{
+    from: StatKey;
+    over: number;
+    to: StatKey;
+    rate: number;
+  }>;
   pierceShotsLeft: number; // ROUND-COUNT "Gain Pierce for N round(s)" budget (0 = none); pierce active
   // while > 0, spent by FIRING (see the round-scoped decrement in firePull)
   pierceGrantFrame: number; // frame the round budget was last granted on — the granting round never
@@ -827,6 +836,7 @@ export function runSim(
         skills.hasPierce === true ||
         (skills.pierceModes?.includes(selectedMode ?? '') ?? false),
       hasTrueNormals: skills.hasTrueNormals === true,
+      statConversions: [],
       pierceUntilFrame: 0,
       pierceShotsLeft: 0,
       pierceGrantFrame: -1,
@@ -1580,8 +1590,24 @@ export function runSim(
       return s + contrib;
     }, 0);
 
-  const stat = (u: UnitState, key: StatKey, frame: number) =>
-    sum(u.buffs, key, frame);
+  const stat = (u: UnitState, key: StatKey, frame: number) => {
+    const base = sum(u.buffs, key, frame);
+    if (u.statConversions.length === 0) {
+      return base; // every unit but the carrier — no cost on the hot path
+    }
+    // DERIVED contribution: "▲ R% of the excess value" (red-hood's charge-speed overflow). Read
+    // from the raw buff sum rather than through stat(), so a conversion can never feed itself or
+    // another conversion — with one carrier there is no chained case to model, and a cycle here
+    // would be an infinite loop rather than a wrong number.
+    let derived = 0;
+    for (const c of u.statConversions) {
+      if (c.to === key) {
+        derived +=
+          (c.rate / 100) * Math.max(0, sum(u.buffs, c.from, frame) - c.over);
+      }
+    }
+    return base + derived;
+  };
 
   // STAT CLAMP: "X is fixed at V" kit lines. If any active buff carries a clamp stat, the MOST
   // RECENT active clamp wins and overrides the additive sum for that stat. Clamps do NOT stack.
@@ -2887,6 +2913,28 @@ export function runSim(
               // — validate-structural rejects a non-positive durationShots, and this shape means a
               // future field cannot re-open that hole by accident.
               t.pierceUntilFrame = Number.MAX_SAFE_INTEGER;
+            }
+          }
+          break;
+        case 'convertExcess':
+          // Install a DERIVED-stat rule on the target: "▲ R% of the excess value continuously".
+          // Idempotent — the kit line is continuous, so a re-fire (a passive re-applied, or the
+          // same block reached twice) must not double the conversion.
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
+            const already = t.statConversions.some(
+              (c) =>
+                c.from === e.from &&
+                c.to === e.to &&
+                c.over === e.over &&
+                c.rate === e.rate
+            );
+            if (!already) {
+              t.statConversions.push({
+                from: e.from,
+                over: e.over,
+                to: e.to,
+                rate: e.rate,
+              });
             }
           }
           break;

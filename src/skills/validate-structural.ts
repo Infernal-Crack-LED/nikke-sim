@@ -114,6 +114,7 @@ export const EFFECTS = new Set([
   'stun',
   'stackedNuke',
   'gainPierce',
+  'convertExcess',
   'addStack',
   'resource',
   'targetStatus',
@@ -245,7 +246,7 @@ export function collectEffects(
   return out;
 }
 
-function checkEffect(e: any, path: string, errors: string[]) {
+function checkEffect(e: any, path: string, errors: string[], trigger?: string) {
   if (e.kind === 'ignored' || e.kind === 'unsupported') {
     // offline-parser-only kinds — the engine has no branch for them; the kit
     // text belongs verbatim in the override's `unmodeled` field instead
@@ -270,6 +271,37 @@ function checkEffect(e: any, path: string, errors: string[]) {
     errors.push(
       `${path}: durationShots must be a positive integer (rounds fired), got ${e.durationShots}`
     );
+  }
+  if (e.kind === 'convertExcess') {
+    // "Convert excess over X% of A to B ▲ R% of the excess" — every field is load-bearing and a
+    // typo in either StatKey would silently convert nothing (or convert the wrong stat).
+    for (const k of ['from', 'to'] as const) {
+      if (!STATS.has(e[k])) {
+        errors.push(`${path}: convertExcess unknown ${k} stat "${e[k]}"`);
+      }
+    }
+    if (typeof e.over !== 'number' || !Number.isFinite(e.over)) {
+      errors.push(`${path}: convertExcess needs a numeric "over" threshold`);
+    }
+    if (typeof e.rate !== 'number' || !Number.isFinite(e.rate) || e.rate <= 0) {
+      errors.push(
+        `${path}: convertExcess "rate" must be a positive number (% of the excess), got ${e.rate}`
+      );
+    }
+    if (e.from === e.to) {
+      errors.push(
+        `${path}: convertExcess from and to are the same stat ("${e.from}") — a stat cannot feed itself`
+      );
+    }
+    // The rule installs PERMANENTLY — there is no uninstall, expiry or window. That is exactly
+    // right for the kit phrasing it exists for ("…continuously"), and wrong for anything else: on
+    // a burstCast/hitCount trigger it would install on first fire and keep converting long after
+    // the window the kit scoped it to. Fail loudly rather than let that be authored silently.
+    if (trigger !== 'passive' && trigger !== 'battleStart') {
+      errors.push(
+        `${path}: convertExcess is permanent once installed, so it must sit on a passive/battleStart block (got "${trigger}") — a windowed form needs engine support first`
+      );
+    }
   }
   if (
     e.kind === 'gainPierce' &&
@@ -365,7 +397,7 @@ function checkEffect(e: any, path: string, errors: string[]) {
       errors.push(`${path}: escalating needs steps[]`);
     } else {
       e.steps.forEach((s: any, i: number) =>
-        checkEffect(s, `${path}.steps[${i}]`, errors)
+        checkEffect(s, `${path}.steps[${i}]`, errors, trigger)
       );
     }
   }
@@ -662,7 +694,7 @@ export function structuralCheck(
         errors.push(`${p}: needs effects[]`);
       } else {
         b.effects.forEach((e: any, ei: number) =>
-          checkEffect(e, `${p}.effects[${ei}]`, errors)
+          checkEffect(e, `${p}.effects[${ei}]`, errors, b.trigger?.kind)
         );
       }
     });

@@ -1,5 +1,5 @@
 {
-  "note": "Red Hood (SR/Iron — NOT `rapi-red-hood`, MG/Fire). Board: 0.970 COLD on 2 graded comps (0.93 / 1.01). Kit-faithfulness is pinned test-first in scripts/tests/units/red-hood.test.ts, which pins every load-bearing line green vs shipped and red vs counterfactual.\nHer Lambda burst is STAGE-CONDITIONAL and the three steps are encoded as three separate burstCast blocks. Step 1 (Beast Cage): allies casterAtkPct 77.55 / 10s, plus a self burstCdr 40 oncePerBattle. Step 2 (The Last Howl): a self burstCdr 40 oncePerBattle — the two refunds are read as two INDEPENDENT per-step once-per-battle grants, which is the prose-literal reading. Step 3 (Red Wolf): weaponSwap 51.46%/shot, chargeMultPct 250, 10s, chargeTimeSec 0.3, plus the S2 rider atkPct 71.42 / 10s, unlimitedAmmo 10s, and the charge-damage conversion below.\nRED WOLF CADENCE is decoded game data (skill 1470610 + weapon 1047002), not an estimate: rate_of_fire 200rpm = exactly 1 shot per 18 frames (0.3s) REGARDLESS of charge speed. The step-3 Charge Speed ▲100.8% makes the charge instant, so the window is fire-rate-gated, not charge-gated — that is why the line appears as chargeTimeSec 0.3 rather than as a chargeSpeedPct buff, and why it is neither a block nor an unmodeled entry. ~33 shots per window; max_ammo 99 with the kit's infinite ammo, so no reload inside the window (ammo resets to max at swap expiry, which is the engine's swap behavior).\nS1: 'Charge Speed ▲3.81%, stacks up to 10, 5 sec' on every normal attack = hitCount 1 chargeSpeedPct 3.81 / 5s / maxStacks 10. Its partner line — 'Convert excess over 100% Charge Speed to Charge Damage ▲240% of the excess' — is APPROXIMATED, not dropped: at 100.8 (swap) + 3.81 x 10 (stacks) = 138.9, the excess is 38.9 and the faithful value is (138.9 - 100) x 2.4 = 93.36. It ships as chargeDamagePct 90 ⚑, a stack-ramp AVERAGE, gated inside the stage-3 block. The mechanism is exact; only the ramp is averaged. Outside the burst her total Charge Speed is 38.1, below the 100 cap, so the faithful excess there is ZERO and the gating is correct. Do not fudge 90 to the warm 93.36 — the gap is the ramp, and closing it wants a measurement, not a rounder number. Recipe: full-charge popup read inside vs outside Red Wolf.\nOUTSIDE Red Wolf she is an ordinary bolt-action SR and takes the engine's +22f bolt recovery (owner-confirmed). Her Pierce is a top-level hasPierce, so partner Pierce Damage buffs (e.g. mint's 32.72) land on her.\nUNMODELED / inert: Beast Cage's DEF ▲50.68% of caster DEF (defensive, no HP pool); The Last Howl's 'Recovers 23.04% of attack damage as HP' — SELF-scoped, so it cannot reach an ally-side on-recovery consumer even if emitted, making the missing emit a consistency item and not a fit one; Step 2's taunt and Incoming healing ▲74.88% (the boss never acts, no HP pool); Step 3's 'Expand Pierce range by 100%' (no range primitive, and the boss is partless).\nSWAP CADENCE: her swap sets no `weapon` and she carries no measured unit-level pullsPerSec, and her window is charge-time-gated anyway, so the 'a swap shadows a unit's measured cadence' engine gap does not reach her.",
+  "note": "Red Hood (SR/Iron — NOT `rapi-red-hood`, MG/Fire). Board: 1.002 on 2 graded comps (0.99 / 1.02). Kit-faithfulness is pinned test-first in scripts/tests/units/red-hood.test.ts, which pins every load-bearing line green vs shipped and red vs counterfactual.\nHer Lambda burst is STAGE-CONDITIONAL and the three steps are encoded as three separate burstCast blocks. Step 1 (Beast Cage): allies casterAtkPct 77.55 / 10s, plus a self burstCdr 40 oncePerBattle. Step 2 (The Last Howl): a self burstCdr 40 oncePerBattle — the two refunds are read as two INDEPENDENT per-step once-per-battle grants, which is the prose-literal reading. Step 3 (Red Wolf): weaponSwap 51.46%/shot, chargeMultPct 250, 10s, chargeTimeSec 0.3, plus the S2 rider atkPct 71.42 / 10s, unlimitedAmmo 10s, and the charge-damage conversion below.\nRED WOLF CADENCE is decoded game data (skill 1470610 + weapon 1047002), not an estimate: rate_of_fire 200rpm = exactly 1 shot per 18 frames (0.3s) REGARDLESS of charge speed. The step-3 Charge Speed ▲100.8% makes the charge instant, so the window is fire-rate-gated, not charge-gated — that is why her CADENCE is chargeTimeSec 0.3 even though the Charge Speed ▲100.8% is also carried as a real chargeSpeedPct buff — the buff is what the excess-conversion below reads, and the swap's chargeFrames guard keeps it out of the charge-time path. ~33 shots per window; max_ammo 99 with the kit's infinite ammo, so no reload inside the window (ammo resets to max at swap expiry, which is the engine's swap behavior).\nS1: 'Charge Speed ▲3.81%, stacks up to 10, 5 sec' on every normal attack = hitCount 1 chargeSpeedPct 3.81 / 5s / maxStacks 10. Its partner line — 'Convert excess over 100% Charge Speed to Charge Damage ▲240% of the excess' — is now modeled LITERALLY, as the derived-stat primitive convertExcess {from chargeSpeedPct, over 100, to chargeDamagePct, rate 240} on a passive self block (owner-directed 2026-08-11). Charge Damage is RECOMPUTED from her live Charge Speed on every read, so it ramps with her stacks instead of sitting at a baked average: 2.4 x (100.8 + 3.81 x stacks - 100) = 1.92 at zero stacks, stepping 9.144pp per stack, reaching 93.36 at ten from her own kit alone. That 93.36 is a SOLO-KIT ceiling, not a cap: the conversion reads her LIVE total Charge Speed, allies included (which is what the kit says), so on her graded PA MiKa comp alice's ▲11.67 carries her to chargeDamagePct 153.4. Her output is now team-composition-sensitive — a real consequence of modeling this faithfully, and one the flat 90 could not express. Two consequences worth knowing. (1) Red Wolf's 'Charge Speed ▲100.8% for 10 sec' is now encoded as a real chargeSpeedPct buff, where it previously existed only implicitly as the swap's chargeTimeSec 0.3 — without it the conversion has no source and reads ZERO, which is exactly what a first attempt at this measured (0.775 COLD). Her CADENCE is unchanged, but NOT via a clamp — chargeTimeSec 0.3 populates the swap's own chargeFrames, and sim.ts forces the charge-speed term to ZERO whenever swap.chargeFrames is set ('u.swap?.chargeFrames != null ? 0 : Math.min(100, …)'). That guard is what stops the 100.8 shortening her cadence; do not remove it as redundant, or her 18-frame Red Wolf gate collapses to 1 frame. (2) Outside Red Wolf her Charge Speed peaks at 38.1, far below the 100 threshold, so the conversion floors at zero there with no gating needed — the block is passive because the kit says 'continuously', and the threshold does the gating. Board 0.970 -> 1.002 (0.99 / 1.02). Pinned by scripts/tests/engine/convert-excess.test.ts (the per-stack ladder, the 93.36 cap, the zero floor, and the flat-90 counterfactual).\nOUTSIDE Red Wolf she is an ordinary bolt-action SR and takes the engine's +22f bolt recovery (owner-confirmed). Her Pierce is a top-level hasPierce, so partner Pierce Damage buffs (e.g. mint's 32.72) land on her.\nUNMODELED / inert: Beast Cage's DEF ▲50.68% of caster DEF (defensive, no HP pool); The Last Howl's 'Recovers 23.04% of attack damage as HP' — SELF-scoped, so it cannot reach an ally-side on-recovery consumer even if emitted, making the missing emit a consistency item and not a fit one; Step 2's taunt and Incoming healing ▲74.88% (the boss never acts, no HP pool); Step 3's 'Expand Pierce range by 100%' (no range primitive, and the boss is partless).\nSWAP CADENCE: her swap sets no `weapon` and she carries no measured unit-level pullsPerSec, and her window is charge-time-gated anyway, so the 'a swap shadows a unit's measured cadence' engine gap does not reach her.",
   "hasPierce": true,
   "unmodeled": {
     "skill1": [],
@@ -14,7 +14,7 @@
     ]
   },
   "caveats": [
-    "skill1: the continuous excess-Charge-Speed → Charge-Damage conversion (Charge Damage ▲240% of the excess over the +100% cap) is APPROXIMATED, not dropped — it ships as the static stage-3-gated chargeDamagePct 90 ⚑, a stack-ramp average against a warm value of 93.36 = (138.9 - 100) x 2.4. Out of burst her total Charge Speed of 38.1 sits below the cap, so the faithful excess there is zero and the stage-3 gate is right. Pending a full-charge popup read inside vs outside Red Wolf.",
+    "skill1: the continuous excess-Charge-Speed → Charge-Damage conversion is modeled LITERALLY (convertExcess from chargeSpeedPct over 100 to chargeDamagePct at 240) and needs no measurement — Charge Damage is derived from her live Charge Speed on every read. Out of burst her total sits at 38.1, below the threshold, so the excess is zero there with no gate needed.",
     "skill2: 'Recovers 23.04% of attack damage as HP' is recorded, not emitted as a recovery event. Her lifesteal is SELF-scoped, so it could never reach an ally-side on-recovery consumer (a heal fires recovery only at its own block's targets). ROSTER RULING (owner, 2026-08-10, faithfulness Tier 0 / D3): self-scoped lifesteal stays RECORDED and emits NO recovery event. A heal fires 'recovery' blocks only at its own block's targets, so a self-lifesteal reaches a consumer only if the CARRIER itself has one — and none of the five non-emitters does (the roster's only consumers are asuka's self atkPct 96.98/25s and crown's, which fires when crown is healed). Emitting would also turn a per-hit line into a hit-cadence event stream at an unmeasured cadence. Emit only if this unit gains a self-recovery block. Prior: docs/modeling-priors.md."
   ],
   "skill1": [
@@ -34,6 +34,24 @@
           "value": 3.81,
           "durationSec": 5,
           "maxStacks": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "convertExcess",
+          "from": "chargeSpeedPct",
+          "over": 100,
+          "to": "chargeDamagePct",
+          "rate": 240
         }
       ]
     }
@@ -121,8 +139,8 @@
         },
         {
           "kind": "buff",
-          "stat": "chargeDamagePct",
-          "value": 90,
+          "stat": "chargeSpeedPct",
+          "value": 100.8,
           "durationSec": 10
         }
       ]

@@ -99,11 +99,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     default: `flatDamage` procs crit unless a block sets `crit: false`, and a roster sweep shows all
     12 distributed carriers (`quency-escape-queen`'s 1736.31 nuke, `dorothy`'s 8900.83, `phantom`,
     `2b`, `scarlet-black-shadow`, …) already run crit-on.
-  - **M8 — `red-hood`: do NOT average the ramp, model the actual stack ramp. STILL OPEN — the only
-    unenacted ruling of the batch.** Her `chargeDamagePct` 90 ⚑ is today's ramp AVERAGE against a
-    cap-faithful 93.36 ((138.9 − 100) × 2.4, at 100.8 swap + 3.81 × 10 stacks). ENACTMENT: drive it
-    off the live stack count instead of a baked average. ⚠ `rampSec` is a TIME ramp and hers is
-    PER-STACK, so confirm a stack-driven value is expressible before assuming the primitive fits.
+  - **M8 — `red-hood`'s stack ramp: ✅ LANDED 2026-08-11** as the new `convertExcess` derived-stat
+    primitive (`rampSec` was indeed the wrong tool — it is a TIME ramp and hers is per-stack).
+    Board 0.970 → 1.002. Found and fixed along the way: her Red Wolf "Charge Speed ▲100.8%" was
+    never modeled at all, only implied by the swap's charge-time clamp.
   - **M10 — `rouge` coin CO-EXISTENCE: ENACTED 2026-08-11**, and **this entry's original premise was
     WRONG** — worth recording because it nearly aimed the fix at the wrong line. It claimed Sword's
     Attack Damage ▲6.65% "switches OFF the moment Shield activates"; in fact that line was already an
@@ -148,16 +147,20 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   asks for `noir` pellet marking, so the same footage may serve both).
 
 - **⇒ OWNER RULINGS 2026-08-11 (M-list triage) — SIX of the twelve recording asks answered from game
-  knowledge, no footage needed. M5 and M9 have since LANDED (see DECISIONS 2026-08-11); M4 and M6
-  are the two still awaiting enactment.**
+  knowledge, no footage needed. M5, M9 and M8 have since LANDED and M4 needed no change at all
+  (see DECISIONS 2026-08-11). **M6 is the only one left**: "ALL STACKS REFRESH unless a kit says
+  otherwise" is a general rule that belongs in `docs/modeling-priors.md`, not yet written there.**
   1. **Tier 2 / M2 — `trina`'s Burst-Skill-Damage amp follows the LITERAL wording only, and
      `cinderella` (RL/Electric) does NOT receive it.** The Tier 2 blocker is retired WITHOUT a
      recording: her untagged state is owner-CONFIRMED, not provisional, and the 0.893 → 1.523 blowup
      was the tag being wrong, not the sim. The literal-only census (`scripts/census-burst-amp-scope.ts`)
      is the rule of record. Placement (additive into Damage-Up) and magnitude (435.6) remain ⚑
      unmeasured, but they now bite ONLY units that literally qualify.
-  2. **M4 — true damage CAN core hit.** Engine-global and a large lever (SMG `coreMult` 250 on
-     `chisato`). Needs the gated pass: it changes every true-damage carrier at once.
+  2. **M4 — true damage CAN core hit. ✅ NO CHANGE NEEDED — already implemented AND already pinned.**
+     The core gate carries no true-flavor exclusion (just as crit carries none), and the
+     normal-attack path passes `core: true` regardless of flavor. Measured on `chisato`: all 324 of
+     her true-flavored swap normals are core-eligible at a live core rate. Pinned by
+     `scripts/tests/units/chisato.test.ts` ("ENGINE ⚑ PIN: true swap normals remain crit+core-eligible").
   3. **M5 — `ada` fires ONE special-charged shot per burst window. ✅ LANDED 2026-08-11** as
      `maxShots` 1 on the burst weaponSwap. Board cost was larger than the ~0.95 estimate: **0.995 →
      0.924 COLD**, accepted under faithful > fit. Her cadence shift also rippled into two other

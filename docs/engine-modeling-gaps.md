@@ -54,6 +54,7 @@
 | `chargeMultPct` | 10 | ada, cinderella-crystal-wave, e-h, eunhwa-tactical-upgrade, maxwell, maxwell-ordinary-mechanic, nayuta, red-hood, … |
 | `consolidation` | 1 | dorothy-serendipity |
 | `consumeAmmo` | 3 | asuka-wille, grave, jill |
+| `convertExcess` | 1 | red-hood |
 | `countInFb` | 7 | claire, frima, quiry, rapi-red-hood, scarlet-black-shadow, snow-crane, snow-white-innocent-days |
 | `critRateNormalPct` | 3 | biscuit, helm, julia |
 | `delaySec` | 8 | arcana-fortune-mate, asuka-wille, dorothy, flora, grave, neon-vision-eye, rapi-red-hood, snow-white |

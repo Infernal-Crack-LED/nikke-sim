@@ -428,6 +428,30 @@ export type EffectDef =
       // step-gate). If BOTH are given, both windows run and pierce is live while EITHER holds.
     }
   | {
+      // "Convert excess value over X% of <stat A> to <stat B>. B ▲ R% of the excess value
+      // continuously." A DERIVED stat: B is recomputed from A's live value every time it is read,
+      // so it tracks A's stacks up and down instead of being baked to a constant.
+      //
+      // ONE carrier today — `red-hood` S1 ("excess over 100% of Charge Speed → Charge Damage ▲240%
+      // of the excess"). Built anyway on owner direction (2026-08-11) because the alternative was a
+      // hand-averaged constant, and an average of a ramp is wrong at both ends: hers shipped
+      // `chargeDamagePct` 90 against a 1.92-at-zero-stacks / 93.36-at-ten-stacks range.
+      //
+      // ⚠ `from` is read as the target's LIVE TOTAL for that stat, allies included — which is what
+      // the kit says ("excess value over 100% of Charge Speed", not "of your own Charge Speed").
+      // So 93.36 is her SOLO-KIT ceiling, not a cap: six roster units grant `chargeSpeedPct` to
+      // allies, and on her graded `PA MiKa` comp `alice`'s ▲11.67 carries her to 153.4. A carrier's
+      // output is therefore team-composition-sensitive in a way a baked constant never was.
+      //
+      // The 100% threshold is not arbitrary — the engine already caps `chargeSpeedPct` at 100 when
+      // it computes charge time, so the excess genuinely does nothing until a kit line converts it.
+      kind: 'convertExcess';
+      from: StatKey; // the stat whose overflow is converted (read live, incl. stacks)
+      over: number; // the threshold it must exceed (percentage points)
+      to: StatKey; // the stat the overflow is converted INTO
+      rate: number; // % of the excess granted, e.g. 240 = ▲240% of the excess
+    }
+  | {
       kind: 'addStack'; // "Increases the stack count of stackable buffs by N"
       count?: number; // stacks to add (default 1)
       stat?: StatKey; // optional filter: only buffs with this stat receive stacks

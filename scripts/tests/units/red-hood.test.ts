@@ -32,15 +32,15 @@
 // nothing):
 //   R1  the CS stacks fire on EVERY normal attack (count == shot count) and ramp to 10 — a
 //       burst-only or once-per-battle trigger lands near the burst count. maxStacks 10 + 5s.
-//   R2  MEASUREMENT-GATED ⚑. The true conversion is dynamic (excess-CS × 2.4, continuous from
-//       battle start, fed by her stack ramp AND any team Charge-Speed buffers). The engine has no
-//       "convert stat-A excess to stat-B" primitive driven off the live CS total, so the override
-//       models it as a STATIC chargeDamagePct 90 applied inside the Red Wolf window (the warm
-//       excess is ~38.9 → ×2.4 = 93.36; 90 is the averaged ⚑ estimate, mechanism exact). This file
-//       PINs the modeled approximation and its damage signature (swap charge-mult 3.4 = 2.5 full
-//       charge + 0.9 from the buff) and discriminates it from "no conversion"; the residual to the
-//       true dynamic value is the unit's known COLD ~0.867 (kit-status F2a/F2b). NOT fudged to
-//       93.36 — that would invent precision the scope-lock basis cannot measure.
+//   R2  LITERAL since 2026-08-11. The conversion is dynamic — excess Charge Speed × 2.4, tracking
+//       her live stack count — and the engine now has the primitive for it (`convertExcess`, built
+//       on owner direction because averaging a ramp is wrong at both ends). Charge Damage is
+//       DERIVED on every read: 2.4 × (100.8 + 3.81×stacks − 100) = 1.92 at zero stacks, +9.144pp
+//       per stack, capping at 93.36 at ten. This file pins the LADDER (many charge multipliers,
+//       evenly spaced) and discriminates it from both "no conversion" and the flat 90 it replaced.
+//       Red Wolf's Charge Speed ▲100.8% is now a real chargeSpeedPct buff — it is the conversion's
+//       SOURCE; her cadence is untouched (the swap's charge-time clamp still wins). Board 0.970 →
+//       1.002. Engine-level pins: scripts/tests/engine/convert-excess.test.ts.
 //   R3  hasPierce models "Gain Pierce continuously". Vs the single partless boss there is nothing
 //       to pierce THROUGH and no Pierce-Damage buffer is fielded, so it is damage-INERT here:
 //       asserted structurally (flag present) + proven inert (removing it moves no total). Its role
@@ -122,15 +122,14 @@ const rhNoChargeSpeed = withPatchedOverride('red-hood', (ov) => {
     );
   }
 });
-/** R2 counterfactual: the chargeDamagePct-90 conversion approximation removed from Red Wolf. */
+/** R2 counterfactual: the excess→Charge-Damage conversion removed entirely. */
 const rhNoChargeDmg = withPatchedOverride('red-hood', (ov) => {
-  const b = stage3(ov);
-  const before = b.effects.length;
-  b.effects = b.effects.filter((e: any) => e.stat !== 'chargeDamagePct');
-  if (b.effects.length === before) {
-    throw new Error(
-      'red-hood stage-3 chargeDamagePct missing — fixture is stale'
-    );
+  const before = ov.skill1.length;
+  ov.skill1 = ov.skill1.filter(
+    (b: any) => !(b.effects ?? []).some((e: any) => e.kind === 'convertExcess')
+  );
+  if (ov.skill1.length === before) {
+    throw new Error('red-hood convertExcess block missing — fixture is stale');
   }
 });
 /** R3 counterfactual: permanent Pierce removed. */
@@ -221,13 +220,21 @@ const uaShots = (evs: SimEvent[]) =>
 
 describe('red-hood — kit spec', () => {
   describe('R1 — S1 Charge Speed stacks fire on every normal attack, ×10, 5 sec', () => {
-    const cs = rhCastBuff(base.events, 'chargeSpeedPct');
+    // TWO chargeSpeedPct sources since 2026-08-11: the S1 per-shot stack (3.81) and Red Wolf's own
+    // "Charge Speed ▲100.8% for 10 sec", which used to live only implicitly inside the swap's
+    // charge-time clamp. Both are real kit lines and both feed the R2 excess conversion, so these
+    // pins scope by VALUE rather than asserting a single source.
+    const cs = rhCastBuff(base.events, 'chargeSpeedPct').filter(
+      (b) => b.value === 3.81
+    );
+    const redWolfCs = rhCastBuff(base.events, 'chargeSpeedPct').filter(
+      (b) => b.value === 100.8
+    );
 
     it('is 3.81% per stack, max 10 stacks, 5-sec duration, self-scoped', () => {
       expect(cs.length, 'no chargeSpeedPct buff was applied').toBeGreaterThan(
         0
       );
-      expect([...new Set(cs.map((b) => b.value))]).toEqual([3.81]);
       expect([...new Set(cs.map((b) => b.maxStacks))]).toEqual([10]);
       expect([...new Set(cs.map((b) => b.expiresFrame! - b.frame))]).toEqual([
         5 * FPS,
@@ -243,50 +250,71 @@ describe('red-hood — kit spec', () => {
       ).toBe(10);
     });
 
-    it('DISCRIMINATING: removing the S1 line deletes every chargeSpeedPct buff', () => {
-      expect(rhCastBuff(noChargeSpeed.events, 'chargeSpeedPct').length).toBe(0);
+    it('Red Wolf ALSO grants Charge Speed ▲100.8% (10s, self) — the conversion source', () => {
+      // Without this the R2 excess is zero and her Charge Damage silently vanishes (measured:
+      // 0.775 COLD on a first attempt that converted from the S1 stacks alone).
+      expect(redWolfCs.length, 'the kit line is not modeled').toBeGreaterThan(
+        0
+      );
+      expect([
+        ...new Set(redWolfCs.map((b) => b.expiresFrame! - b.frame)),
+      ]).toEqual([10 * FPS]);
+      expect([...new Set(redWolfCs.map((b) => b.targetIdx))]).toEqual([RH]);
+      expect(redWolfCs.length).toBe(rhStageCasts(base.events, 3).length);
+    });
+
+    it('DISCRIMINATING: removing the S1 line deletes its per-shot stacks', () => {
+      expect(
+        rhCastBuff(noChargeSpeed.events, 'chargeSpeedPct').filter(
+          (b) => b.value === 3.81
+        ).length
+      ).toBe(0);
     });
   });
 
-  describe('R2 — S1 excess-CS→Charge-Damage conversion (MEASUREMENT-GATED ⚑, static 90 in Red Wolf)', () => {
-    const cd = rhCastBuff(base.events, 'chargeDamagePct');
+  describe('R2 — S1 excess-CS→Charge-Damage conversion (LITERAL: convertExcess, ramps with stacks)', () => {
+    const swapMults = (evs: typeof base.events) => [
+      ...new Set(swapDamage(evs).map((d) => +d.mult.charge.toFixed(6))),
+    ];
 
-    it('is modeled as a static chargeDamagePct 90, self-scoped, 10 sec, fired on each Red Wolf cast', () => {
-      expect(cd.length, 'no chargeDamagePct buff was applied').toBeGreaterThan(
-        0
+    it('RAMPS: Red Wolf shots carry MANY charge multipliers, one per Charge-Speed stack', () => {
+      const mults = swapMults(base.events).sort((a, b) => a - b);
+      expect(
+        mults.length,
+        'a single swap charge multiplier means the conversion is baked, not derived'
+      ).toBeGreaterThan(3);
+      // Every step is one stack: 3.81 × 2.4 = 9.144pp of Charge Damage = +0.09144 on the mult.
+      for (let i = 1; i < mults.length; i++) {
+        expect(mults[i] - mults[i - 1]).toBeCloseTo(0.09144, 4);
+      }
+    });
+
+    it('CAPS at the kit arithmetic: 2.5 + 2.4×(138.9−100)/100 = 3.4336', () => {
+      expect(Math.max(...swapMults(base.events))).toBeCloseTo(3.4336, 4);
+    });
+
+    it('DISCRIMINATING: removing the conversion collapses the ladder to the bare 2.5', () => {
+      expect(swapMults(noChargeDmg.events)).toEqual([2.5]);
+      expect(noChargeDmg.totals['red-hood']).toBeLessThan(
+        base.totals['red-hood']
       );
-      expect([...new Set(cd.map((b) => b.value))]).toEqual([90]);
-      expect([...new Set(cd.map((b) => b.targetIdx))]).toEqual([RH]);
-      expect([...new Set(cd.map((b) => b.expiresFrame! - b.frame))]).toEqual([
-        10 * FPS,
-      ]);
-      expect(cd.length).toBe(rhStageCasts(base.events, 3).length);
     });
 
-    it('adds exactly +0.9 to the swap charge multiplier (2.5 full charge → 3.4)', () => {
-      const shipped = [
-        ...new Set(
-          swapDamage(base.events).map((d) => +d.mult.charge.toFixed(6))
-        ),
-      ];
-      expect(
-        shipped,
-        'swap shots must carry a single charge multiplier'
-      ).toEqual([3.4]);
-    });
-
-    it('DISCRIMINATING: removing the conversion drops the swap charge mult by exactly 0.9', () => {
-      const counter = [
-        ...new Set(
-          swapDamage(noChargeDmg.events).map((d) => +d.mult.charge.toFixed(6))
-        ),
-      ];
-      expect(counter.length).toBe(1);
-      expect(
-        3.4 - counter[0],
-        'the buff must contribute exactly +0.9 (90/100) to the charge mult'
-      ).toBeCloseTo(0.9, 6);
-      expect(rhCastBuff(noChargeDmg.events, 'chargeDamagePct').length).toBe(0);
+    it('DISCRIMINATING: the flat 90 it replaced produces ONE multiplier, not a ladder', () => {
+      const flat90 = withPatchedOverride('red-hood', (ov: any) => {
+        ov.skill1 = ov.skill1.filter(
+          (b: any) =>
+            !(b.effects ?? []).some((e: any) => e.kind === 'convertExcess')
+        );
+        stage3(ov).effects.push({
+          kind: 'buff',
+          stat: 'chargeDamagePct',
+          value: 90,
+          durationSec: 10,
+        });
+      });
+      const flatRun = run({ 'red-hood': flat90 });
+      expect(swapMults(flatRun.events)).toEqual([3.4]);
     });
   });
 

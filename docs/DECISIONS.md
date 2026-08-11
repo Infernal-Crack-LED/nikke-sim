@@ -9,7 +9,50 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-11, latest) ENGINE PRIMITIVE — `gainPierce` takes a ROUND COUNT (`durationShots`),
+- **(2026-08-11, latest) M8 + M4 CLOSED. New DERIVED-STAT primitive `convertExcess` for `red-hood`;
+  true-damage-core needed nothing — it was already implemented AND already pinned.**
+  - **M4 — true damage CAN core hit: ALREADY SHIPPED.** The owner suspected this was done, and it
+    was. The core gate (`opts.core && cfg.coreHitRate > 0`) carries no true-flavor exclusion, exactly
+    as crit carries none, and the normal-attack path passes `core: true` regardless of flavor.
+    Measured on `chisato`: all 324 of her true-flavored swap normals are core-eligible at a live
+    core rate, identical to her 2,819 ordinary normals. It is also already pinned —
+    `scripts/tests/units/chisato.test.ts`, "ENGINE ⚑ PIN: true swap normals remain crit+core-eligible".
+    **Zero engine change.** (True-flavored skill RIDERS still never core, but that is the rider
+    convention — riders crit at the caster rate and never core — not a true-damage rule.)
+  - **M8 — `red-hood`'s stack ramp is now LITERAL, via a new primitive.** Her kit pairs "Charge Speed
+    ▲3.81%, stacks up to 10" with "Convert excess value over 100% of Charge Speed to Charge Damage
+    ▲240% of the excess". The engine had no way to derive one stat from another's overflow, so she
+    shipped `chargeDamagePct` 90 — a hand-averaged constant against a real 1.92→93.36 range. The
+    owner directed building the primitive rather than accepting the average. `convertExcess`
+    {`from`, `over`, `to`, `rate`} installs a rule on the unit; `stat()` recomputes the target from
+    the source's LIVE value on every read (short-circuited to zero cost for the 182 units with no
+    rule). Result: her Charge Damage now steps 9.144pp per stack (3.81 × 2.4), reaching 93.36 from
+    her own kit alone — the ladder is visible as charge multipliers 2.5 → 3.4336 and is what the test
+    pins. **93.36 is a SOLO-KIT ceiling, not a cap:** the conversion reads her LIVE total Charge
+    Speed, allies included, which is what the kit says ("excess value over 100% of Charge Speed").
+    Six roster units buff ally `chargeSpeedPct`, and her own graded `PA MiKa` comp fields one
+    (`alice` ▲11.67), carrying her to 153.4 there. Her damage is now team-composition-sensitive in a
+    way the flat 90 could not be — that coupling is part of why the board improved, and it is pinned
+    by its own case rather than left to the snapshot.
+  - **The load-bearing discovery: her Red Wolf "Charge Speed ▲100.8% for 10 sec" was never modeled.**
+    It existed only implicitly, folded into the swap's `chargeTimeSec` 0.3 clamp. Converting the
+    excess from her S1 stacks alone therefore found NO excess (they peak at 38.1 < 100) and her
+    Charge Damage silently vanished — measured 0.775 COLD on the first attempt. Encoding the kit line
+    as a real `chargeSpeedPct` buff fixed it. Her cadence is untouched, but NOT by a clamp — the
+    mechanism is `sim.ts`'s `u.swap?.chargeFrames != null ? 0 : Math.min(100, …)` guard, which zeroes
+    the charge-speed term whenever a swap supplies its own `chargeFrames` (her `chargeTimeSec` 0.3).
+    Naming it precisely matters: delete that guard as "redundant" and her 18-frame Red Wolf gate
+    collapses to 1 frame.
+  - **Board: 0.970 → 1.002** (0.99 / 1.02), from outside ±5% into ±3%. A faithfulness fix that
+    improved accuracy rather than costing it — the opposite of `ada` earlier the same day. Only her
+    own two totals moved; no teammate drifted, so the snapshot edit is two values.
+  - ONE carrier, deliberately built anyway on owner direction (the standing "log a third carrier
+    before building" heuristic is about speculative primitives; this one has a wrong constant to
+    replace today). `sugar`'s "Converts damage to Elemental Advantage damage" is a DIFFERENT
+    mechanic — a damage-type conversion, not a stat overflow — and is not a second carrier.
+    Pinned by `scripts/tests/engine/convert-excess.test.ts` + `red-hood`'s rewritten R1/R2.
+
+- **(2026-08-11) ENGINE PRIMITIVE — `gainPierce` takes a ROUND COUNT (`durationShots`),
   because "Gain Pierce for N round(s)" is what five kits actually print.** Owner-directed. Until now
   `gainPierce` accepted only `durationSec`, so every round-count carrier shipped an approximation:
   `nihilister` a 4s stand-in, `neve` a 2s stand-in for "2 round(s)", `harran` a permanent tag for
