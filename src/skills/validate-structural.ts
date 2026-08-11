@@ -258,21 +258,36 @@ function checkEffect(e: any, path: string, errors: string[]) {
     errors.push(`${path}: unknown effect kind "${e.kind}"`);
     return;
   }
+  // "for N round(s)" — a whole positive number of the holder's own rounds. Checked for EVERY
+  // effect kind that can carry it, not just `buff`: `gainPierce` gained the field 2026-08-11, and
+  // scoping the check to buffs left a silent hole — `durationShots: 0` on a gainPierce validated
+  // clean and produced a wholly inert effect (no budget, and the permanent fallback suppressed),
+  // i.e. a kit line that models nothing while reading as modeled. Unrecognised input must be LOUD.
+  if (
+    e.durationShots !== undefined &&
+    !(Number.isInteger(e.durationShots) && e.durationShots > 0)
+  ) {
+    errors.push(
+      `${path}: durationShots must be a positive integer (rounds fired), got ${e.durationShots}`
+    );
+  }
+  if (
+    e.kind === 'gainPierce' &&
+    e.durationShots !== undefined &&
+    e.durationSec !== undefined
+  ) {
+    // No kit prints both, and the two plausible readings (whichever ends FIRST vs whichever lasts
+    // LONGER) disagree. Reject until a carrier forces the question, rather than shipping a guess.
+    errors.push(
+      `${path}: gainPierce takes durationSec OR durationShots, not both — no kit prints both and the combined semantics is unsettled`
+    );
+  }
   if (e.kind === 'buff') {
     if (!STATS.has(e.stat)) {
       errors.push(`${path}: unknown stat "${e.stat}"`);
     }
     if (typeof e.value !== 'number') {
       errors.push(`${path}: buff needs numeric value`);
-    }
-    // "for N round(s)" — a whole positive number of the holder's own rounds
-    if (
-      e.durationShots !== undefined &&
-      !(Number.isInteger(e.durationShots) && e.durationShots > 0)
-    ) {
-      errors.push(
-        `${path}: durationShots must be a positive integer (rounds fired), got ${e.durationShots}`
-      );
     }
     if (
       e.noRetriggerWhileActive !== undefined &&

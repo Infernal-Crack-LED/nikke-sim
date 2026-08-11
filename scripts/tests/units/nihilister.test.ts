@@ -22,14 +22,14 @@
 //      engine model); ⚑ with estimate+recipe in the override note.
 //
 // Encoding shape (see src/skills/overrides/nihilister.json):
-//   N1 = shotFired → self gainPierce durationSec 4. SR auto-full-charges every shot
-//        (milk-blooming-bunny precedent), so shotFired IS the full-charge trigger. "for 1
-//        round(s)" is a ROUND-COUNT duration and gainPierce carries no durationShots — the
-//        wall-clock stand-in must cover the longest inter-shot gap the holder actually fires
-//        across (an empty-magazine reload 2.35s + a full-charge cycle ≈1.37s ≈ 3.7s worst
-//        case), so 4s: the per-shot refresh keeps the tag continuous while she fires, and it
-//        never lapses BETWEEN two rounds she actually fires (the timed stand-in degrades to
-//        ~100% on-shot duty exactly like the round-count original under steady fire; ⚑ cadence).
+//   N1 = shotFired → self gainPierce durationShots 1. SR auto-full-charges every shot
+//        (milk-blooming-bunny precedent), so shotFired IS the full-charge trigger, and "for 1
+//        round(s)" is encoded LITERALLY as a round budget (the durationShots form of gainPierce,
+//        added 2026-08-11 — five kits print this shape). The budget is spent by firing, never by
+//        the clock, so no reload or lull can drain it: the round she fires next is the round the
+//        kit promised. It replaced a durationSec 4 stand-in derived as "the longest inter-shot gap
+//        she fires across (~3.7s)" — her steady cycle maxes at 3.87s but the fixture holds one
+//        4.50s lull, so the stand-in silently dropped one shot's tag per fight.
 //        The grant lands AFTER the triggering shot's damage (shotFired dispatch order — the
 //        phantom ⚑2 engine-order class), so shot 1 is the application event and every shot
 //        from the 2nd on is tagged while firing. gainPierce emits NO event (sets
@@ -58,13 +58,12 @@
 // Why each assertion discriminates:
 //   N1  the static `hasPierce:true` flag (nearest-wrong — tags from frame 0, no trigger) is
 //       rejected structurally (shipped carries a windowed shotFired block, no top-level flag);
-//       the timed window is proven LOAD-BEARING behaviourally: removing it un-tags her attacks,
-//       d-killer-wife's 13.55 pierceDamagePct goes inert on her (sim.ts pierceTagged gate) and
-//       her total drops; and the steady-fire pin MEASURES the coverage: her longest inter-shot gap
-//       is now ~4.5s against the 4s window, so exactly one shot fires untagged and the static-flag
-//       form out-damages the window by <0.2%. ⚑ That falsifies ⚑1's "no gap exceeds 4s"
-//       derivation — surfaced, not retuned (durationSec is a derived constant on a unit outside
-//       the 2026-08-11 batch). Tracked in QUEUE.md.
+//       the round budget is proven LOAD-BEARING behaviourally: removing it un-tags her attacks,
+//       d-killer-wife's 13.55 pierceDamagePct goes inert on her (sim.ts pierceTagged gate) and her
+//       total drops. The steady-fire pin then asserts EXACT equality with an always-on flag while
+//       she fires, and re-derives the fixture's 4.50s lull on every run so the assertion keeps
+//       discriminating rounds from seconds — that lull is what the old durationSec 4 stand-in
+//       could not cover. The seconds form is the nearest-wrong encoding, not just a coarser one.
 //   N4  the exact frame set [10,20,…,170]s kills every wrong cadence (an interval:5 over-fires,
 //       a hitCount proxy fires on HER shot rhythm ≈1.37s, a burstCast key fires ≈ per cast);
 //       the magnitude pin kills the lvl-9 102.4.
@@ -281,7 +280,7 @@ function burnTicksPerFullWindow(evs: SimEvent[]) {
 
 describe('nihilister — kit spec', () => {
   describe('N1 — S1 full-charge: Gain Pierce for 1 round (windowed gainPierce on shotFired)', () => {
-    it('is a shotFired-keyed, self-targeted, TIMED gainPierce — not a static hasPierce flag', () => {
+    it('is a shotFired-keyed, self-targeted, ROUND-COUNT gainPierce — not a static flag and not a seconds stand-in', () => {
       const ov = shipped();
       expect(
         ov.hasPierce,
@@ -292,9 +291,17 @@ describe('nihilister — kit spec', () => {
       expect(blk.trigger.kind).toBe('shotFired');
       expect(blk.target.kind).toBe('self');
       const eff = blk.effects.find((e: any) => e.kind === 'gainPierce');
+      // The kit says "for 1 round(s)" — a ROUND budget, which the engine now expresses directly
+      // (durationShots, 2026-08-11). The seconds stand-in it replaced is the nearest-wrong form:
+      // it drains during a lull, and hers has a 4.50s gap against the 4s window it shipped with.
+      expect(eff.durationShots, 'the kit prints rounds, not seconds').toBe(1);
       expect(
         eff.durationSec,
-        'a round-count window needs a timed stand-in — permanent-after-first-shot is wrong'
+        'a seconds window would re-introduce the lull bug'
+      ).toBeUndefined();
+      expect(
+        eff.durationShots,
+        'an absent budget is the permanent-from-first-shot form, which the kit does not grant'
       ).toBeGreaterThan(0);
       // unmodeled.skill1 must NOT claim the Pierce line (it is modeled)
       expect(
@@ -316,47 +323,30 @@ describe('nihilister — kit spec', () => {
       );
     });
 
-    it('MEASURES the coverage gap: her longest inter-shot gap EXCEEDS the 4s window, so exactly one shot fires untagged', () => {
-      // This assertion IS the instrument (CLAUDE.md constraint 9) — it re-derives the measurement
-      // rather than citing a number from a lost scratch run.
+    it('the ROUND budget covers every round she fires, INCLUDING across her longest lull', () => {
+      // The discriminating property of a round budget: it is spent by FIRING, so a gap of any
+      // length cannot drain it. This assertion IS the instrument (CLAUDE.md constraint 9) — it
+      // re-derives the lull on every run instead of citing a number from a lost scratch script.
       //
-      // It used to assert `staticPierce.totals === base.totals` exactly. That equality held only
-      // under the fixture's OLD cadence: the comp seats `ada`, and capping her Special Modification
-      // swap to the kit's literal 1 round (2026-08-11) shifted team burst timing enough to stretch
-      // one of her inter-shot gaps past the window. Rather than loosen the pin to a tolerance, this
-      // states the true fact and its size, so the ⚑ below is visible instead of averaged away.
+      // The history worth pinning: this suite shipped a `durationSec: 4` stand-in, derived as "the
+      // longest inter-shot gap she actually fires across (~3.7s worst case)". Her steady cycle does
+      // max out at 3.87s — but the fixture holds ONE 4.50s lull, so under seconds the shot after it
+      // fired UNTAGGED (measured 2026-08-11: ~87k of her 61.5M normal-bucket damage). The fix was
+      // not a bigger number: `gainPierce` gained `durationShots`, so "for 1 round(s)" is now encoded
+      // literally. The exact static-flag equality below is this suite's ORIGINAL pin, restored —
+      // under a round budget it holds for a principled reason instead of by fixture luck.
       const shotFrames = herShots(base.events)
         .map((s) => s.frame)
         .sort((a, b) => a - b);
       const gaps = shotFrames.slice(1).map((f, i) => (f - shotFrames[i]) / FPS);
-      const longest = Math.max(...gaps);
-      const window = shipped()
-        .skill1.find((b: any) => hasKind(b, 'gainPierce'))
-        .effects.find((e: any) => e.kind === 'gainPierce').durationSec;
+      expect(
+        Math.max(...gaps),
+        'fixture no longer holds a lull long enough to discriminate rounds from seconds'
+      ).toBeGreaterThan(4);
 
-      // ⚑ OPEN (2026-08-11): her override's ⚑1 derives durationSec 4 as "the longest inter-shot gap
-      // she actually fires across (~3.7s worst case)". At the current cadence the longest gap is
-      // ~4.5s, which FALSIFIES that derivation — the window no longer covers her slowest stretch.
-      // Bumping it to 5 restores exact static-flag equality, but that is a DERIVED constant on a
-      // unit outside this batch, so it is surfaced, not silently retuned. Tracked in QUEUE.md.
-      expect(
-        longest,
-        'the derivation behind durationSec 4 is that no gap exceeds it'
-      ).toBeGreaterThan(window);
-
-      // The consequence, bounded: a static flag is an upper bound on the window (tagged always vs
-      // only while live), and the shortfall is one shot's worth — sub-0.2% of her total.
-      const shortfall =
-        (staticPierce.totals.nihilister - base.totals.nihilister) /
-        base.totals.nihilister;
-      expect(
-        shortfall,
-        'the window cannot out-damage an always-on flag'
-      ).toBeGreaterThanOrEqual(0);
-      expect(
-        shortfall,
-        'more than a single uncovered shot — the window is badly undersized'
-      ).toBeLessThan(0.002);
+      // A static always-on flag is the upper bound on any windowed form. Under a round budget the
+      // shipped model MEETS it exactly while she fires: no lull can cost her a tagged round.
+      expect(staticPierce.totals.nihilister).toBe(base.totals.nihilister);
     });
   });
 

@@ -389,7 +389,10 @@ Fire→Wind→Iron→Electric→Water→Fire. No hidden bonus beyond the base 1.
 - Distributed damage deals the same TOTAL against 1 target as against many (user-verified).
 - Pierce Damage ▲ is a **Damage-Up-bucket** entry that benefits any Pierce-damage-type unit —
   static (`hasPierce`/`pierceModes`), during a timed "Gain Pierce for N sec" window
-  (`gainPierce` → `pierceUntilFrame`, 2026-07-17), OR — swap-scoped — on the shots of a burst
+  (`gainPierce` → `pierceUntilFrame`, 2026-07-17), while a **"Gain Pierce for N round(s)" budget is
+  unspent** (`gainPierce.durationShots` → `pierceShotsLeft`, 2026-08-11 — a ROUND count, spent by
+  firing rather than by the clock, so it survives reloads and lulls; one round per pull,
+  `hitsPerShot` per pull for a machine gun, and the granting round never spends it), OR — swap-scoped — on the shots of a burst
   weapon-swap whose "Additional Effect: Pierce" belongs to the swapped weapon only
   (`weaponSwap.hasPierce` → per-shot tag, 2026-07-20, owner-ruled; Snow White `snow-white`'s
   cannon). It **applies on the partless boss** (it is ordinary damage-up, not the double-hit

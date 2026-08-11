@@ -409,7 +409,24 @@ export type EffectDef =
   // the belt to 0, forces an immediate reload (fires lastBullet triggers, same as firing dry).
   // The inverse of instantReload. e.g. grave's Prediction-end forced reload, asuka-wille, jill.
   | { kind: 'consumeAmmo'; fraction?: number }
-  | { kind: 'gainPierce'; durationSec?: number } // "Gain Pierce": the target's attacks count as Pierce-tagged, so its (and teammates') Pierce Damage ▲ buffs go live. durationSec = timed "for N sec" window; ABSENT = continuous/permanent (pierceUntilFrame → ∞) — used to STEP-GATE pierce that turns on only after a stack threshold (ade-agent-bunny: on a hitCount:10 "Spy Lens at max stacks" trigger, replacing an always-on-from-t=0 hasPierce flag that a boolean can't step-gate)
+  | {
+      kind: 'gainPierce'; // "Gain Pierce": the target's attacks count as Pierce-tagged, so its (and
+      // teammates') Pierce Damage ▲ buffs go live.
+      durationSec?: number; // timed "for N sec" window
+      // ROUND-COUNT window: "Gain Pierce for N round(s)" / "for 1 shot" — a BUDGET spent by FIRING,
+      // not by the clock, mirroring the round-scoped buff rule (`durationShots` on a buff): one
+      // round per pull, hitsPerShot per pull for MG, counted whether or not ammo was deducted, and
+      // the GRANTING round never spends the budget (N rounds AFTER the grant). Five kits print this
+      // form — nihilister / harran (1 round), neve (2), dorothy-serendipity (3), d-killer-wife
+      // ("for 1 shot") — and every one of them previously shipped a durationSec stand-in, which
+      // drains through reloads and lulls and can leave the next round she fires untagged. A budget
+      // waits for the round. Pinned by scripts/tests/engine/gain-pierce-rounds.test.ts.
+      durationShots?: number;
+      // BOTH ABSENT = continuous/permanent (pierceUntilFrame → ∞) — used to STEP-GATE pierce that
+      // turns on only after a stack threshold (ade-agent-bunny: on a hitCount:10 "Spy Lens at max
+      // stacks" trigger, replacing an always-on-from-t=0 hasPierce flag that a boolean can't
+      // step-gate). If BOTH are given, both windows run and pierce is live while EITHER holds.
+    }
   | {
       kind: 'addStack'; // "Increases the stack count of stackable buffs by N"
       count?: number; // stacks to add (default 1)

@@ -9,7 +9,46 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-11, latest) THREE M-LIST RULINGS ENACTED — and a scope change to the gate itself:
+- **(2026-08-11, latest) ENGINE PRIMITIVE — `gainPierce` takes a ROUND COUNT (`durationShots`),
+  because "Gain Pierce for N round(s)" is what five kits actually print.** Owner-directed. Until now
+  `gainPierce` accepted only `durationSec`, so every round-count carrier shipped an approximation:
+  `nihilister` a 4s stand-in, `neve` a 2s stand-in for "2 round(s)", `harran` a permanent tag for
+  "1 round(s)". A seconds window drains through reloads, burst animations and lulls; a round budget
+  is spent by FIRING and waits, unspent, for however long she holds. The two are indistinguishable
+  while a holder fires steadily and diverge exactly when she stops — which is not hypothetical:
+  `nihilister`'s 4s was derived as "the longest inter-shot gap she fires across (~3.7s worst case)",
+  her steady cycle does max at 3.87s, and her control fixture holds ONE 4.50s lull, so the shot after
+  it fired untagged every fight (~87k of her 61.5M normal-bucket damage).
+  - **Round accounting mirrors the round-scoped BUFF rule**, and sits in the same place in
+    `firePull` so the two can never disagree about what a round is: one round per pull
+    (`hitsPerShot` per pull for MG — a round is a PULL, not a pellet, pinned on `neve`), counted
+    whether or not ammo was deducted, and **the granting round never spends the budget**
+    (`pierceGrantFrame`, the analogue of a buff's `startFrame` carve-out) — "for N round(s)" reads as
+    N rounds AFTER the grant. One deliberate difference from buffs: a re-grant takes the MAX of the
+    budgets (as the seconds window does) where `applyBuff` SETs; unreachable today, since no unit
+    carries two round-count pierce sources. New unit state: `pierceShotsLeft` / `pierceGrantFrame`.
+    `durationSec` and `durationShots` are mutually exclusive — `validate-structural.ts` rejects both
+    on one effect (no kit prints both, and "ends first" vs "lasts longer" disagree), and it now
+    range-checks `durationShots` for EVERY effect kind rather than only `buff`: scoped to buffs, a
+    `durationShots: 0` gainPierce validated clean and produced a wholly inert line.
+  - **Converted the three stand-in carriers** (`nihilister` 1, `harran` 1, `neve` 2). For `harran`
+    it is a pure fidelity change and behaviourally a NO-OP — her grant re-arms on every shot, so the
+    budget never decrements and the tag stays live exactly as her old permanent form did. The lull
+    argument is `nihilister`'s (a non-refreshing gap) and `neve`'s (an FB-keyed grant). Board-inert:
+    both regressions pass UNCHANGED and no snapshot moved — none of the three is in a graded comp,
+    and `harran`/`neve` carry no Pierce Damage ▲ source at scope lock anyway. The gain is fidelity,
+    plus `neve`'s ⚑ "rounds→seconds estimate, recipe: read her SG pull cadence from footage" is
+    DISCHARGED — the engine counts rounds now, so no footage is needed to convert them.
+  - **NOT converted, deliberately:** `dorothy-serendipity` ("3 round(s)") and `d-killer-wife` ("for
+    1 shot") both decided their Pierce line is unmodeled/damage-inert for their own documented
+    reasons, and both are board-graded. Re-opening those is a separate call, not a side effect of
+    adding a primitive.
+  - Pinned by `scripts/tests/engine/gain-pierce-rounds.test.ts` (5 cases: load-bearing, survives a
+    lull that drains a seconds window, budget spent per round on a non-refreshing trigger, granting
+    round exempt, self-scoped). Written RED first — it failed on the ladder assertion, which is the
+    one an unimplemented param cannot fake.
+
+- **(2026-08-11) THREE M-LIST RULINGS ENACTED — and a scope change to the gate itself:
   `/scientific-method` resolves UNKNOWNS, it is not a tax on every engine edit.** Owner ruling: where
   the modeling question is already ANSWERED (an owner ruling on game behaviour, a literal kit line, an
   existing labeled fixture) the judges have nothing to gate, so the pipeline is skipped and the diff

@@ -782,7 +782,7 @@ Damage Taken ▼ 52.5% for 5 sec.
 **Harran** (harran)
 
 - **skill2:** ■ Activates when killing an enemy. Affects self. ATK ▲ 3.02%, stacks up to 15 time(s) and lasts for 10 sec. (no kill trigger primitive — the v1 boss never dies and there are no adds; zero stacks accrue at scope lock; see ⚑3)
-  - *Why:* skill2: 'Gain Pierce for 1 round(s)' is a duration-less gainPierce re-arm on shotFired — gainPierce carries only durationSec (no round count), and a durationSec:1 window would lapse between SR shots (charge cycle > 1s); the per-shot re-arm is behaviorally exact while she fires, and the line is damage-inert at scope lock (partless boss, no Pierce Damage ▲ carrier) (⚑2).
+  - *Why:* skill2: 'Gain Pierce for 1 round(s)' is encoded LITERALLY as gainPierce durationShots 1 on shotFired (the round-count form, 2026-08-11). For HER this is a pure fidelity change and behaviourally a NO-OP: the per-shot re-grant refreshes the budget on every pull, so it never decrements and the tag stays live exactly as the duration-less form did (measured byte-identical, same tagged-frame set — only her first shot is untagged, in both, because the grant lands after that shot's damage). The round budget matters for carriers whose grant does NOT re-arm every shot; here it just says what the kit says. Damage-inert at scope lock (partless boss, no Pierce Damage ▲ carrier lands on her).
 
 **Jackal** (jackal)
 
