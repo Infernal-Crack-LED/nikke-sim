@@ -121,10 +121,21 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   Her ⚑1 derives `durationSec` 4 as "the longest inter-shot gap she actually fires across (~3.7s worst
   case)". Measured in her own control fixture: the longest gap is **~4.5s**, so one shot per fight
   fires untagged inside a live `pierceDamagePct` window and a static-flag form out-damages the shipped
-  window by <0.2%. `durationSec` 5 restores exact equality. Left open because it is a DERIVED constant
-  on a unit outside the owner's 2026-08-11 batch — it needs its own pass, not a drive-by. The
-  measurement re-derives itself on every run (`scripts/tests/units/nihilister.test.ts` N1). Found by
-  the cross-family review of the enactment diff, because `ada`'s cadence change perturbed the fixture.
+  window by <0.2%. Measured precisely (110 shots / 180s): every gap in her steady cycle is ≤ **3.87s**
+  (reload + full-charge, exactly what ⚑1 derived), and there is ONE late-fight outlier of **4.50s**
+  (173.85s → 178.35s). 6 `d-killer-wife` pierce windows land on her covering 35 shots; 34 carry the
+  full `dmgUp` 1.1861 and the shot at 178.35s carries 1.0506 — untagged, worth ~87k of her 61.5M
+  normal-bucket damage.
+  **The real defect is not the number 4, it is that `gainPierce` cannot express the kit line.** The kit
+  says "Gain Pierce for 1 round(s)" — a ROUND count — and the engine already has round-count expiry
+  (`durationShots`, `shotsLeft`, sim.ts ~2123–2198) but only on the `buff` path; `gainPierce` accepts
+  `durationSec` alone (`src/skills/types.ts` ~412). So 4s is a wall-clock STAND-IN for "until her next
+  round", and any gap longer than the stand-in re-breaks it. `durationSec` 5 patches this fixture and
+  leaves the class intact; adding `durationShots` to `gainPierce` makes it exact and retires the ⚑.
+  Left open because it is a DERIVED constant (option A) or an engine primitive (option B) on a unit
+  outside the owner's 2026-08-11 batch — it needs its own pass, not a drive-by. The gap measurement
+  re-derives itself on every run (`scripts/tests/units/nihilister.test.ts` N1). Found by the
+  cross-family review of the enactment diff, because `ada`'s cadence change perturbed the fixture.
 
 - **M1 `guillotine-winter-slayer` — the cadence ask is CLOSED, and the "~26% hot normal fire" framing
   was a MISATTRIBUTION.** OWNER RULING 2026-08-11: she uses her datamined fire rate (`pullsPerSec` 12
