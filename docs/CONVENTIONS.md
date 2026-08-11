@@ -86,6 +86,34 @@ with no hand-tuned override yet; neither is the build path. Engine primitives ca
 `scripts/tests/engine/`. Every file under `scripts/tests/` runs from the single `npx vitest run` step
 in `verify.sh`, so a new test file joins the gate by existing.
 
+## An inertness or A/B claim must NAME ITS ROSTER
+
+A recorded "this is inert" / "byte-identical" / "the board moved by exactly zero" result is a
+statement about a **fixture**, never a property of the encoding. Whether a tag reaches damage
+depends on who else is in the comp, so the identical claim can be true in one team and wrong by
+tens of percent in another.
+
+Any such claim written into override prose, a handoff, or DECISIONS must state **(1)** the
+comp/fixture it was measured in, and **(2)** the enabling teammate it did or did not seat — the
+unit whose buff the tag is eligible FOR. A claim missing (2) is not a weaker claim, it is an
+unfalsifiable one.
+
+Root (2026-08-10, faithfulness batch 8): `alice` (SR/Fire, not `alice-wonderland-bunny`) carried
+"inert, verified byte-identical" for her `hasPierce`, measured in a pierce-free fixture.
+`hasPierce` moves no damage on its own — it makes her ELIGIBLE for `pierceDamagePct`, and her only
+graded comp seats `mint`, whose S2 grants all allies 32.72. On that comp the tag is worth **22.6%
+of her damage** (on = 444M / ratio 1.100; off = 362M / 0.897, every other unit byte-identical). The
+A/B was not run carelessly — it was run correctly in the wrong roster, and nothing in its wording
+revealed which roster that was. That is the failure mode this rule exists to catch.
+
+Enforced by convention, not by lint: there are 620 `inert`/`byte-identical`/`board-inert` mentions
+across 153 override files, and most of the strong-looking ones are "board A/B is the discriminator"
+— a plan, not a result — so a pattern lint would be mostly false positives over a ~100-file
+backfill. Backfill a file's claims when you next touch it for another reason; `alice`'s own note is
+the model wording. (Open owner question, tracked in `QUEUE.md`: whether to add `inert` /
+`byte-identical` to the pre-write discipline hook's verdict-verb escalation, which would catch the
+claim at write time — `.claude/**` is protected, so it needs an explicit go-ahead.)
+
 ## Ratio direction (sim/real vs real/sim) — DO NOT CONFLATE
 
 Two accuracy metrics live in this repo and they point in **OPPOSITE directions**. Treating one as

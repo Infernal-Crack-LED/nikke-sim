@@ -157,6 +157,25 @@ behavior) and **per-kit priors** (apply as a starting guess, then verify per uni
     window a duration'd buff. (Root 2026-07-16: arcana MM keyed to `fullBurstEnter` over-credited every
     multi-B2 team; audit also flagged cinderella-crystal-wave's burst nuke, same class.)
 
+11. **Healing SCOPE decides whether a heal is inert — read the target, not the magnitude (owner
+    ruling 2026-08-10).** The sim has no HP pool, so a heal's only reachable consequence is firing a
+    `recovery`-triggered block — and `fireRecovery` fires the blocks of the unit that RECEIVED the
+    heal, nobody else. So: an **ally/team-scoped** heal is LIVE (it can reach a teammate's
+    on-recovery consumer — crown's "when recovery takes effect → team Attack Damage ▲" is the
+    canonical one) and must be encoded, while a **self-scoped** lifesteal ("Recovers X% of attack
+    damage as HP") reaches a consumer only if the CARRIER itself owns a `recovery` block. **Prior for
+    a new unit: record self-scoped lifesteal in `unmodeled` and emit NO `heal`** — but check the
+    carrier's own kit for an on-recovery line first, because that flips it. `asuka` (AR/Fire, the
+    BASE unit — not `asuka-wille`) is the live counterexample: her S1 is
+    `recovery → self atkPct 96.98 / 25s`, so a self-heal on HER is worth ~97% ATK, not zero. Do not
+    read "self-scoped, therefore inert" as a property of lifesteal; it is a property of the pairing.
+    A second reason to withhold the emit: lifesteal is a per-hit line, so emitting turns it into a
+    hit-cadence event stream, and that cadence is unmeasured. Roster when this landed: 8 of 13
+    carriers emit, 5 do not — `d` (SMG/Wind, not `d-killer-wife`), `moran`, `red-hood` (SR/Iron, not
+    `rapi-red-hood`), `rem`, `tia` — and none of the five owns a `recovery` block, so all five are
+    inert today and stay recorded-only. The two consumers roster-wide: `asuka` (self) and `crown`
+    (allies, fired when `crown` herself is healed).
+
 ## The offsetting-errors principle (why bare-frame + firing-validation matter)
 
 A unit graded ~1.0 in normal (buffed, advantaged) teams can still be **wrong** — its value calibrated

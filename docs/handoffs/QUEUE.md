@@ -323,6 +323,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      exaggerated arm** — bound instrument `scripts/battery/u28-gauge-ab.ts`; the batched
      gauge-cluster proposal (tempo + double-emit reproduce + U28 + theme-20 sourcing, land
      together) is `docs/handoffs/2026-08-10-gauge-economy-findings.md`.
+     **DIRECTION SETTLED (owner ruling 2026-08-10, faithfulness Tier 0 / D4):** a function-damage
+     instance that lands on the boss SHOULD generate weapon-base gauge — the rider path's omission
+     is a DEFECT, not a modeling choice, so the open question is only WHEN and with what, never
+     WHETHER. Sequencing is unchanged (lands with the cluster, ENV-gated, `/scientific-method`),
+     and the ruling is now recorded in all four carriers' notes (`modernia`, `nayuta`,
+     `neon-blue-ocean`, `neon-vision-eye`). Note `modernia`'s S1 is a `flatDamage` _because_ of
+     this asymmetry — closing it retires that workaround.
 - **⇒ ENGINE PRIMITIVE GAP: `addStack`** — no effect increments an existing buff's stack count by N on
   a trigger. Blocks `flora` S1 ("after 100 normal attacks, all Electric Code allies: increases the
   stack count of stackable buffs by 1" — trigger `hitCount:100` and target `alliesOfElement` are both
@@ -818,3 +825,14 @@ template mislock, → 0 on relock) + 29 countable`. 42 − 35 = 7 / 5 shots = **
 - **AR-burst-window residual (moran/jill)** — footage-blocked. moran's swap coldness is THROUGHPUT
   (~1.3× more hits in the swap window), NOT per-shot (the '1440'=24/s datamine was measured-refuted; base
   ~12/s stands); needs an isolated moran-solo recording or the swap weapon's `shot_count` datamine.
+- **ONE OWNER DECISION OPEN from faithfulness Tier 0 (D5): should `inert` / `byte-identical` join the
+  pre-write discipline hook's verdict-verb escalation list?** The convention itself LANDED — an
+  inertness/A-B claim must name its fixture AND the enabling teammate it did or did not seat
+  (`docs/CONVENTIONS.md`, "An inertness or A/B claim must NAME ITS ROSTER"; root cause `alice`
+  (SR/Fire), whose "byte-identical" claim was measured in a pierce-free fixture and was wrong by
+  22.6% on her actual graded comp). A pattern LINT was rejected with numbers: 620 mentions across 153
+  override files, and most strong-looking ones are "board A/B is the discriminator" — a plan, not a
+  result — so it would be mostly false positives over a ~100-file backfill. The hook is the one place
+  that could catch the claim at WRITE time instead. **`.claude/**` is protected, so this needs an
+  explicit owner go-ahead; nothing was changed there.** Backfill of existing claims is opportunistic
+  (when a file is touched for another reason), not a sweep.

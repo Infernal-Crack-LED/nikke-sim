@@ -149,6 +149,23 @@ export const ENEMY_BUFF_STATS = new Set([
   'defPct',
 ]);
 
+// The mirror hazard: a stat the engine reads ONLY off the boss's buff list, aimed at an
+// ally-side target — applied and never read. `damageTakenPct` is summed from `enemyBuffs` alone
+// (sim.ts:1861), and the SIGN carries opposite meanings on the two sides: positive on the boss
+// = boss takes more, while the kit clauses that target allies are damage-REDUCTION (negative).
+// That is the trap worth a diagnostic — a later session "correcting" the sign or the target
+// turns a defensive line into a damage multiplier.
+//
+// Two stats are deliberately EXCLUDED rather than overlooked:
+//   - `distributedDamagePct` is read off the boss (1864, shared-taken debuff) AND off the unit
+//     (1868, the carrier's own distributed boost), so an ally-targeted one is LIVE.
+//   - `defPct` is boss-only for damage (1666, the DEF shave), but 28 overrides carry ordinary
+//     ally-side DEF ▲ kit lines. They are inert for damage too, yet they carry no sign-inversion
+//     hazard and the sim models no ally DEF at all — warning on them would bury the 3 real
+//     mismatches in 28 lines of noise. Verified roster-wide 2026-08-10.
+// Warn, don't fail: the carriers are real kit lines kept for fidelity. Keep in sync with 1861.
+export const BOSS_ONLY_BUFF_STATS = new Set(['damageTakenPct']);
+
 // Block fields the chargeCounter dispatch still IGNORES: the runtime abort-gates are honored
 // there since 2026-08-10 (sim.ts blockGatesPass — the audit-F2.1 fix), but the dispatch applies
 // ONE phase effect per activation rather than routing through applyBlock, so the everyN
@@ -560,6 +577,20 @@ export function structuralCheck(
           } else if (e.stat === 'defPct' && e.value === 0) {
             warnings.push(
               `${p}: enemy-targeted defPct at value 0 is DROPPED by the engine (the DEF channel requires a nonzero value) — the line is inert`
+            );
+          }
+        }
+      } else {
+        // The inverse mismatch (owner ruling 2026-08-10, faithfulness Tier 0 / D2): a boss-side
+        // stat pointed at an ally-side target. Applied and never read — see
+        // BOSS_ONLY_BUFF_STATS. Today's carriers are all kit damage-reduction clauses
+        // (moran allies, rouge selfAndAdjacent, rumani self) kept for fidelity, so this warns
+        // rather than fails; its job is to make the mismatch visible before someone "corrects"
+        // the sign or the target and turns a defensive line into a damage multiplier.
+        for (const e of collectEffects(b.effects, 'buff')) {
+          if (BOSS_ONLY_BUFF_STATS.has(e.stat)) {
+            warnings.push(
+              `${p}: buff "${e.stat}" is a BOSS-SIDE stat on an ally-side target ("${b.target?.kind}") — the engine reads it only off the boss, so the line is applied and never read; keep it for kit fidelity and say so in "note", or move it to "unmodeled"`
             );
           }
         }

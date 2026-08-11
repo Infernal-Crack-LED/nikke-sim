@@ -15,7 +15,7 @@
   },
   "caveats": [
     "skill1: the continuous excess-Charge-Speed → Charge-Damage conversion (Charge Damage ▲240% of the excess over the +100% cap) is APPROXIMATED, not dropped — it ships as the static stage-3-gated chargeDamagePct 90 ⚑, a stack-ramp average against a warm value of 93.36 = (138.9 - 100) x 2.4. Out of burst her total Charge Speed of 38.1 sits below the cap, so the faithful excess there is zero and the stage-3 gate is right. Pending a full-charge popup read inside vs outside Red Wolf.",
-    "skill2: 'Recovers 23.04% of attack damage as HP' is recorded, not emitted as a recovery event. Her lifesteal is SELF-scoped, so it could never reach an ally-side on-recovery consumer (a heal fires recovery only at its own block's targets) — this is a roster-wide consistency question across the 5 non-emitting lifesteal carriers, wanting one ruling, not a unit-local fix."
+    "skill2: 'Recovers 23.04% of attack damage as HP' is recorded, not emitted as a recovery event. Her lifesteal is SELF-scoped, so it could never reach an ally-side on-recovery consumer (a heal fires recovery only at its own block's targets). ROSTER RULING (owner, 2026-08-10, faithfulness Tier 0 / D3): self-scoped lifesteal stays RECORDED and emits NO recovery event. A heal fires 'recovery' blocks only at its own block's targets, so a self-lifesteal reaches a consumer only if the CARRIER itself has one — and none of the five non-emitters does (the roster's only consumers are asuka's self atkPct 96.98/25s and crown's, which fires when crown is healed). Emitting would also turn a per-hit line into a hit-cadence event stream at an unmeasured cadence. Emit only if this unit gains a self-recovery block. Prior: docs/modeling-priors.md."
   ],
   "skill1": [
     {

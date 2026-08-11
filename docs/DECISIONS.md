@@ -9,7 +9,69 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) HARNESS RULING — a faithfulness fix is not automatically capped at LOG for
+- **(2026-08-10, latest) FAITHFULNESS TIER 0 — five batched owner rulings, all board-inert (0 engine
+  lines changed, 0 damage values touched).** Board before and after: `±3% 7 | ±5% 15 | ±8% 24 |
+worse 21` over 142 datapoints / 45 units.
+  1. **STALE PROVENANCE TAGS — deleted, not reworded.** The `PARSER BASELINE (HYPOTHESIS — NOT a
+validated model)` banner (19 overrides) and `[materialized … NOT hand-verified]` (8) both
+     asserted the opposite of the tree: all 27 carriers hold spec tests in
+     `scripts/tests/units/<slug>.test.ts` (11–29 cases each), and **all 8 materialized carriers are
+     board-GRADED**, i.e. every one has a real fight. Several banners contradicted themselves in the
+     same string (`arcana`'s sat beside "PRESERVED VERBATIM from the 2026-07-13 hand reconciliation";
+     `d-killer-wife`'s "still NOT hand-verified" beside a 2026-07-25 test-first re-audit). Because the
+     two tags were wrong in DIFFERENT ways they got different treatment: the 8 materialized tags are
+     pure authoring history → deleted outright (override prose carries no history, per the doc
+     taxonomy); 18 of the 19 banners kept the part still true, as `No real-fight recording yet — every
+⚑ below is an unmeasured estimate. Structure is test-pinned (…)`; `modernia`'s was deleted (she is
+     graded, test-pinned AND hand-authored — false on all three counts). Per-value ⚑ marks, which is
+     where the real unmeasured-ness lives, are untouched.
+  2. **ALLY-TARGETED `damageTakenPct` — kept for kit fidelity, now machine-flagged.** Exactly 3
+     carriers (`moran` allies −35.14, `rouge` selfAndAdjacent −15.2, `rumani` self −20.06), all
+     negative = kit damage-REDUCTION lines. The engine sums the stat off `enemyBuffs` alone
+     (`sim.ts:1861`) and the dispatch admits it only at `target.kind === 'enemy'` with `value > 0`
+     (`sim.ts:2389`), so they cannot reach damage by any path, sign flip included. Moving them to
+     `unmodeled` would discard the kit magnitude and the inversion-trap explanation already written in
+     those files, so instead `BOSS_ONLY_BUFF_STATS` in `src/skills/validate-structural.ts` warns on the
+     mismatch (pinned by `scripts/tests/validate-structural.test.ts`). Its job is to stop a future
+     session "correcting" the sign or target and turning a defensive line into a damage multiplier.
+     `defPct` is deliberately EXCLUDED from that set — boss-only for damage too, but 28 overrides carry
+     ordinary ally-side DEF ▲ lines with no inversion hazard, and warning on them would bury 3 real
+     mismatches in 28 lines of noise. `distributedDamagePct` is excluded because it is genuinely LIVE
+     on a unit (`sim.ts:1868`).
+  3. **SELF-SCOPED LIFESTEAL — stays recorded, emits NO recovery event.** `fireRecovery` fires the
+     blocks of the unit that RECEIVED the heal and nobody else, so a self-lifesteal reaches a consumer
+     only if the CARRIER owns one. The roster has exactly two `recovery` consumers — `asuka` (self,
+     `atkPct` 96.98 / 25s) and `crown` (allies, fired when `crown` herself is healed) — and none of the
+     5 non-emitters (`d`, `moran`, `red-hood`, `rem`, `tia`) owns a `recovery` block, so all five are
+     inert by MECHANISM, not merely by measurement. Second reason to withhold: lifesteal is a per-hit
+     line, so emitting would turn it into a hit-cadence event stream at an unmeasured cadence. The
+     scope-decides-liveness prior is now `docs/modeling-priors.md` §11 with `asuka` as the named
+     counterexample — "self-scoped therefore inert" is a property of the PAIRING, never of lifesteal.
+  4. **U28 RIDER GAUGE — direction settled, enactment still bundled.** A function-damage instance that
+     lands on the boss SHOULD generate weapon-base gauge; the engine already does it for `flatDamage`
+     (`sim.ts:2568`), `hitRepeat` (2605) and DoT ticks (3803), and the `extraHitDamagePct` path
+     (`sim.ts:4053`) is the sole omission — a DEFECT, not a modeling choice, so the open question is
+     only WHEN, never WHETHER. It does NOT land unit-locally: `scripts/battery/u28-gauge-ab.ts` already
+     bounded it (all 4 carriers hold FB count exactly under a deliberate over-emission arm — `modernia`
+     10=10, `nayuta` 5=5, `neon-blue-ocean` 11=11, `neon-vision-eye` 13=13), and it remains unmeasured
+     in the refill-bound charge-B3 comps where gauge deltas actually bind. The batched gauge cluster
+     partially cancels (double-emit is gauge-DOWN, this is gauge-UP, tempo comp-dependent), so the
+     compensating-errors rule requires one timeline → `2026-08-10-gauge-economy-findings.md`,
+     `QUEUE.md` ENGINE-WORK ORDER item 4. Recorded in all four carriers' notes. Note `modernia`'s S1 is
+     a `flatDamage` _because_ of this asymmetry — closing it retires that workaround.
+  5. **AN INERTNESS / A-B CLAIM MUST NAME ITS ROSTER — convention, not lint.** Such a result is a
+     statement about a FIXTURE, never a property of an encoding; it must state the comp measured AND
+     the enabling teammate it did or did not seat. Root: `alice` (SR/Fire) carried "inert, verified
+     byte-identical" for `hasPierce` from a pierce-free fixture — the tag moves no damage alone, it
+     confers ELIGIBILITY for `pierceDamagePct`, and her only graded comp seats `mint` (32.72 to all
+     allies), where it is worth **22.6%** of her damage (444M/1.100 on vs 362M/0.897 off). Correctly
+     measured, wrong roster, and the wording hid which. A lint was rejected with numbers: 620 mentions
+     across 153 override files, mostly "board A/B is the discriminator" (a plan, not a result) → mostly
+     false positives over a ~100-file backfill. Landed in `docs/CONVENTIONS.md`; backfill is
+     opportunistic, never a sweep. **Open:** whether `inert`/`byte-identical` join the pre-write hook's
+     verdict-verb escalation (`.claude/**` is protected — untouched, tracked in `QUEUE.md`).
+
+- **(2026-08-10) HARNESS RULING — a faithfulness fix is not automatically capped at LOG for
   "moving the board" or moving comps beyond its target unit.** Prompted directly by the `jill` landing
   below: the panel correctly routed that fix to LOG on an UNEXPLAINED small ripple in a shared comp,
   then correctly revised to IMPLEMENT once the ripple was traced to a verified mechanism — but the
