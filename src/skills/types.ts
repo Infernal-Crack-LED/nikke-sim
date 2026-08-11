@@ -416,11 +416,17 @@ export type EffectDef =
       // ROUND-COUNT window: "Gain Pierce for N round(s)" / "for 1 shot" — a BUDGET spent by FIRING,
       // not by the clock, mirroring the round-scoped buff rule (`durationShots` on a buff): one
       // round per pull, hitsPerShot per pull for MG, counted whether or not ammo was deducted, and
-      // the GRANTING round never spends the budget (N rounds AFTER the grant). Five kits print this
-      // form — nihilister / harran (1 round), neve (2), dorothy-serendipity (3), d-killer-wife
-      // ("for 1 shot") — and every one of them previously shipped a durationSec stand-in, which
-      // drains through reloads and lulls and can leave the next round she fires untagged. A budget
-      // waits for the round. Pinned by scripts/tests/engine/gain-pierce-rounds.test.ts.
+      // the GRANTING round never spends the budget (N rounds AFTER the grant). The alternative a
+      // durationSec stand-in gives you drains through reloads and lulls and can leave the next
+      // round the unit fires untagged; a budget waits for the round.
+      // Pinned by scripts/tests/engine/gain-pierce-rounds.test.ts.
+      // Five kits print this form. FOUR use this field: nihilister / harran (1 round), neve (2),
+      // d-killer-wife ("for 1 shot"). The fifth, dorothy-serendipity ("Gains Pierce for 3
+      // round(s)"), deliberately does NOT and must not be "converted": her grant shares one
+      // trigger and one 3-round window with the "Pellet count is fixed at 1" clause beside it, so
+      // it rides her `consolidation` block's `pierce: true` → the per-shot `pierceActive` tag,
+      // which scopes pierce to exactly the consolidated rounds. Encoding it here as well would
+      // double-book the same window.
       durationShots?: number;
       // BOTH ABSENT = continuous/permanent (pierceUntilFrame → ∞) — used to STEP-GATE pierce that
       // turns on only after a stack threshold (ade-agent-bunny: on a hitCount:10 "Spy Lens at max
