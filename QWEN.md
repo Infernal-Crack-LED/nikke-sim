@@ -15,12 +15,15 @@ Primary use: **front-end development** (React 18 + Vite 5 + TypeScript in `web/`
 and data pipeline are mature; treat the protected paths in CLAUDE.md as read-only unless
 explicitly asked to change them.
 
-- **Read `docs/frontend-conventions.md` before writing any front-end code** — CSS design tokens,
-  component patterns, naming, layout patterns. All styles live in `web/src/styles.css` — no CSS
-  modules, no Tailwind, no styled-components.
-- The sim runs entirely client-side — no backend calls from the front end (the API proxy is
-  dev-only for auth). Share/link features encode team state in URLs — preserve this when modifying
-  routing or state.
+- **Read `docs/frontend-conventions.md` before writing any front-end code** — it is the binding,
+  harness-agnostic reference for ALL user-visible web work: architecture, styling (`web/src/styles.css`
+  is the only CSS file — no CSS modules, no Tailwind), routing, SEO + embed metadata, the no-JS
+  crawler surface, backend/data flow, share-card/infographic pipelines, and image scaling. New
+  pages have a multi-file touch-point checklist (§13) — follow it.
+- The sim and all game data run entirely client-side. The ONLY backend calls are the user-data
+  API through `web/src/auth.ts` (bakery-bot, cross-origin) and the same-origin share-image API
+  (`/api/v1/img/*`) — conventions doc §8 is the boundary spec. Share/link features encode team
+  state in URLs — preserve this when modifying routing or state.
 - Front-end root is `web/` (not `src/web/`): `web/src/App.tsx` entry, components in
   `web/src/components/`.
 
